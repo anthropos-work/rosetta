@@ -29,6 +29,8 @@ If you are an AI Agent or Engineer picking up this project:
     *   **[Architecture Overview](./architecture/architecture_overview.md)**: High-level system design, services, and communication patterns.
     *   **[Frontend Architecture](./architecture/frontend_architecture.md)**: Deep dive into the Next.js monorepo.
     *   **[Dependency Map](./architecture/dependency_map.md)**: Matrix of service inter-dependencies.
+*   **[Tools](./tools/)**: Registry of development tools.
+    *   **[Toolchain Overview](./tools/toolchain_overview.md)**: Map of tools for setup, dev, and runtime.
 *   **[Services](./services/)**: Individual service documentation and developer maps.
 *   **[Setup](./setup/)**: Complete setup documentation for local development environment.
     *   **[Setup Guide](./setup/setup_guide.md)**: Step-by-step instructions for macOS and Linux.
