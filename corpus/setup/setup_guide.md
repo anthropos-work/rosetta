@@ -2,6 +2,8 @@
 
 This guide is designed to take you from a **fresh computer** (or a clean folder) to a fully running Anthropos development environment.
 
+> **Companion Checklist**: This guide is paired with OS-specific setup checklists ([macOS](./setup_checklist_macos.md) | [Linux](./setup_checklist_linux.md)). We recommend AI Agents and Engineers copy the appropriate checklist to their workspace to track progress, pause/resume setup, and log any errors encountered.
+
 ## 1. Prerequisites
 
 Before we write any code, ensure you have the following tools installed.
@@ -171,3 +173,14 @@ make gen
 ### "Connection Refused" / Docker Issues
 *   **General**: Ensure Docker containers are running (`docker ps`). If a service in Docker is failing, check logs: `docker compose logs -f [service_name]`.
 *   **Linux Permission Denied**: If you see "permission denied while trying to connect to the Docker daemon", you likely skipped the `usermod` step. Run `sudo usermod -aG docker $USER`, then log out and back in (or `newgrp docker`).
+
+---
+
+## 8. Maintenance Guidelines
+
+This `setup_guide.md` and the OS-specific checklists (`setup_checklist_macos.md`, `setup_checklist_linux.md`) are paired documents.
+
+*   **Always Update Pairwise**: If you add a step here, add a checkbox to both OS checklists. If you remove a tool here, remove it from both checklists.
+*   **Keep Checklists Lean**: The checklists are for tracking status, not for detailed instruction. Keep them simple.
+*   **OS-Specific Differences**: When a step differs between macOS and Linux, ensure each checklist reflects the appropriate commands/tools for that OS.
+*   **Agent-Friendly**: Ensure all documents remain parseable and clear for autonomous agents.

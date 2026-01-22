@@ -5,10 +5,10 @@
 ## 📂 Documentation Corpus
 All documentation is located in the **[corpus](./corpus/README.md)** directory.
 
-*   **[Setup Guide](./corpus/setup_guide.md)**: Start here to recreate the Dev Environment.
-*   **[Architecture Overview](./corpus/architecture_overview.md)**: Understanding the system.
+*   **[Setup Guide](./corpus/setup/setup_guide.md)**: Start here to recreate the Dev Environment.
+*   **[Architecture Overview](./corpus/architecture/architecture_overview.md)**: Understanding the system.
 *   **[Service Maps](./corpus/services/TEMPLATE.md)**: Detailed docs for each service.
-*   **[Frontend Architecture](./corpus/frontend_architecture.md)**: Deep dive into the UI.
+*   **[Frontend Architecture](./corpus/architecture/frontend_architecture.md)**: Deep dive into the UI.
 
 ## 🏗️ Development Scratchpad
 The `anthropos-dev/` directory is an ignored workspace. Use it to follow the **Setup Guide** and clone repositories without affecting the documentation repository.
