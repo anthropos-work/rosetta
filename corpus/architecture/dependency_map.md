@@ -6,7 +6,7 @@ This document outlines the inter-service dependencies inferred from configuratio
 
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **Backend** (`app`) | Sentinel, CMS, Skillpath (Inferred) | Postgres, Redis |
+| **Backend** (`app`) | Sentinel, CMS, Skillpath (Inferred) | Postgres, Redis, **Clerk** |
 | **CMS** | - | Postgres, Redis, **Directus** |
 | **Sentinel** | - | Postgres |
 | **Jobsimulation** | Sentinel, Backend, Storage, Chronos, CMS | Postgres, Redis |
@@ -16,12 +16,15 @@ This document outlines the inter-service dependencies inferred from configuratio
 | **Chronos** | - | Postgres, Redis |
 | **Intelligence** | - | Postgres (Connection to Backend/Skiller DB) |
 | **Graphql** | Backend, Skiller, Jobsimulation, Intelligence, CMS | - |
+| **Studio Desk** | - | **Clerk**, **OpenAI** (Copilot) |
+| **Studio Room** | CMS | **OpenAI**, **Anthropic**, **Azure OpenAI** |
 
 ## Key Flows
 
 ### 1. User Authentication
 `Frontend` -> `Backend` -> `Sentinel`
 *   The Backend validates requests using Sentinel.
+*   **Studio Desk** authenticates directly via **Clerk**.
 
 ### 2. Job Simulation
 `Frontend` -> `Backend` / `Jobsimulation`
@@ -32,3 +35,9 @@ This document outlines the inter-service dependencies inferred from configuratio
 ### 3. Content Delivery
 `Frontend` -> `CMS` -> `Directus`
 *   CMS acts as the gateway to Directus content.
+
+### 4. Studio Content Creation
+`Studio Desk` -> `CMS` -> `Studio Room`
+*   **Studio Desk** creates blueprints.
+*   **Studio Room** reads blueprints from **CMS** and uses AI Providers to generate content.
+*   **Directus** serves as the storage backend for CMS content.

@@ -43,7 +43,11 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `node --version && pnpm --version`
 6.  **Build Tools**:
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
+    *   Ensure XCode CLI tools are installed: `xcode-select --install`
     *   *Verification*: `xcode-select -p`
+7.  **Python** (v3.8+ for Studio-Room):
+    *   `brew install python`
+    *   *Verification*: `python3 --version`
 
 </details>
 
@@ -70,8 +74,29 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 5.  **Node.js** (v20+) & **pnpm**:
     *   Use [nodesource](https://github.com/nodesource/distributions) or `nvm` to get v20+.
     *   `corepack enable` or `npm install -g pnpm`.
+6.  **Python** (v3.8+ for Studio-Room):
+    *   `sudo apt-get install python3 python3-pip python3-venv`
+    *   *Verification*: `python3 --version`
 
 </details>
+
+---
+
+## Automated Setup with Claude Code
+
+If you're using **Claude Code**, you can automate this entire setup process using the `/anthropos-setup` skill:
+
+```bash
+/anthropos-setup
+```
+
+The skill will:
+*   Execute each step with verification before and after
+*   Request your confirmation before installing tools or making changes
+*   Copy and track progress in a local checklist
+*   Auto-improve this documentation when it discovers issues
+
+See [`.claude/skills/anthropos-setup/`](../../.claude/skills/anthropos-setup/) for details.
 
 ---
 
@@ -177,6 +202,13 @@ git clone git@github.com:anthropos-work/next-web-app.git
 ```
 *Verification*: `ls -la next-web-app` should show Next.js project files including `package.json`.
 
+### Studio Services
+Clone the studio monorepo containing Studio-Desk and Studio-Room.
+```bash
+git clone git@github.com:anthropos-work/studio.git
+```
+*Verification*: `ls -la studio` should show `studio-desk` and `studio-room` directories.
+
 ---
 
 ## 5. Environment Configuration
@@ -192,6 +224,17 @@ All services share a **single centralized `.env` file** located in the `platform
     cp .env_example .env
     ```
 2.  **Populate secrets**: Edit `platform/.env` and fill in all required secret values from 1Password or the Engineering Manager.
+    
+    **Critical Keys Required**:
+    *   `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
+    *   `OPENAI_API_KEY` (AI services)
+    *   `ANTHROPIC_API_KEY` (AI services)
+    *   `AZURE_API_KEY` (Optional, if using Azure OpenAI)
+    *   `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
+
+3.  **Studio Environment**:
+    *   Copy `studio/studio-desk/.env.example` to `studio/studio-desk/.env`
+    *   Populate matching keys from `platform/.env` (Clerk, OpenAI)
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
 **Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Individual service repositories do not need their own `.env` files when running via Docker.
@@ -254,7 +297,37 @@ We use the `-p anthropos-rosetta` flag to set a custom project name. This create
 
 ---
 
-## 8. Troubleshooting
+## 8. Running Studio Services
+
+### Studio-Desk (Design Tool)
+1.  Navigate to studio-desk:
+    ```bash
+    cd ../studio/studio-desk
+    ```
+2.  Install dependencies & start:
+    ```bash
+    npm install
+    npm run dev
+    ```
+3.  Access at `http://localhost:3100`
+
+### Studio-Room (AI Pipeline)
+1.  Navigate to studio-room:
+    ```bash
+    cd ../studio-room
+    ```
+2.  Install requirements:
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+3.  Run a test generation:
+    ```bash
+    python3 gen.py --media simulation --template default
+    ```
+
+---
+
+## 9. Troubleshooting
 
 ### "Generated code missing" / "command not found: make"
 If running Go services locally (outside Docker), you may hit errors about missing files.
@@ -274,11 +347,30 @@ make gen
 
 ---
 
-## 9. Maintenance Guidelines
+## 10. Maintenance Guidelines
 
-This `setup_guide.md` and the OS-specific checklists (`setup_checklist_macos.md`, `setup_checklist_linux.md`) are paired documents.
+This `setup_guide.md`, the OS-specific checklists (`setup_checklist_macos.md`, `setup_checklist_linux.md`), and the `/anthropos-setup` Claude skill are interconnected documents that must be maintained together.
 
-*   **Always Update Pairwise**: If you add a step here, add a checkbox to both OS checklists. If you remove a tool here, remove it from both checklists.
-*   **Keep Checklists Lean**: The checklists are for tracking status, not for detailed instruction. Keep them simple.
-*   **OS-Specific Differences**: When a step differs between macOS and Linux, ensure each checklist reflects the appropriate commands/tools for that OS.
-*   **Agent-Friendly**: Ensure all documents remain parseable and clear for autonomous agents.
+### When You Update This Setup Guide
+
+If you modify the setup process (add/remove/reorder steps), you must update:
+
+1.  **Setup Checklists** (`setup_checklist.md`): Add, remove, or reorder checkboxes to match the guide structure
+2.  **Anthropos Setup Skill** (`.claude/skills/anthropos-setup/SKILL.md`): Update phase definitions, step sequences, and verification commands
+3.  **This Guide**: Ensure all steps have verification commands documented
+
+### Checklist Usage Pattern
+
+The checklist is for **progress tracking**, not detailed instruction:
+
+*   **User Workflow**: Copy the checklist to your `anthropos-dev/` workspace (e.g., `anthropos-dev/my_setup_progress.md`)
+*   **Track Progress**: Check off items `[x]` as you complete them in YOUR local copy
+*   **Resume Setup**: Use your local checklist to resume where you left off
+*   **Report Issues**: Use the "Notes / Errors" table in your local copy to document problems for other developers
+*   **Keep Checklists Lean**: The original checklist in `corpus/setup/` is only updated when the setup guide structure changes
+
+### General Guidelines
+
+*   **OS-Specific Differences**: When a step differs between macOS and Linux, ensure each checklist reflects the appropriate commands/tools for that OS
+*   **Agent-Friendly**: Ensure all documents remain parseable and clear for autonomous agents
+*   **Verification Commands**: Every installation step should have a documented verification command
