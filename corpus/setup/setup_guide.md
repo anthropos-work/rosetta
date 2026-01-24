@@ -203,11 +203,18 @@ git clone git@github.com:anthropos-work/next-web-app.git
 *Verification*: `ls -la next-web-app` should show Next.js project files including `package.json`.
 
 ### Studio Services
-Clone the studio monorepo containing Studio-Desk and Studio-Room.
+Clone the Studio-Desk (design tool) and Studio-Room (AI pipeline) repositories.
 ```bash
-git clone git@github.com:anthropos-work/studio.git
+git clone git@github.com:anthropos-work/studio-desk.git
+git clone git@github.com:anthropos-work/anthropos-studio-room.git studio-room
 ```
-*Verification*: `ls -la studio` should show `studio-desk` and `studio-room` directories.
+*Verification*: `ls -la studio-desk studio-room` should show both directories.
+
+**CMS Dependency**: The CMS service requires studio-room to be present within its build context. Since Docker does not follow symlinks outside the build context, we must clone the repository directly:
+```bash
+git clone git@github.com:anthropos-work/anthropos-studio-room.git cms/studio
+```
+*Verification*: `ls -la cms/studio` should show the studio-room files (e.g., `gen.py`, `requirements.txt`).
 
 ---
 
