@@ -38,3 +38,4 @@ Complete setup documentation for local development environment.
 *   **Understanding the System?** → [Architecture Overview](./architecture/architecture_overview.md)
 *   **Working on a Service?** → [Services Directory](./services/)
 *   **Need Project Context?** → [Root README](../README.md)
+*   **Updating This Corpus?** → Use `/anthropos-integrate` skill (see [Root README](../README.md#-updating-documentation-with-claude))

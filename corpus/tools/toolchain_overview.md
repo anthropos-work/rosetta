@@ -48,6 +48,11 @@ Tools specific to developing, building, and running the Go-based microservices.
     *   *User*: Backend Engineers.
     *   *Context*: Inspecting local database state exposed by Docker on forwarded ports.
 
+*   **Atlas**
+    *   *Function*: Database Schema Management.
+    *   *User*: Backend Engineers.
+    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations (`public`, `cms`, `jobsimulation`, `skiller`) and versioning. Used via `atlas migrate apply`.
+
 ## 3. Web Development (Frontend)
 Tools specific to the Next.js monorepo and web applications.
 
@@ -78,3 +83,13 @@ Recommended environment for efficiency.
     *   *Function*: Command Line Interface.
     *   *User*: All Engineers.
     *   *Context*: Primary interface for all `git`, `make`, and `docker` commands.
+
+## 5. Internal Applications & Experiments
+
+Internal tools and sandboxes that support team workflows but are not part of the core platform.
+
+*   **Anthropos Labs** (`experiments`)
+    *   *Function*: Internal experiments hub for PoCs and prototypes.
+    *   *User*: All Engineers.
+    *   *Context*: Vanilla JS/HTML experiments with Clerk auth, hosted on Vercel. Used for UI prototyping, internal tools, and demos before platform integration.
+    *   *Details*: [→ Anthropos Labs](./anthropos-labs.md)

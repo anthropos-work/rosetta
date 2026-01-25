@@ -48,6 +48,9 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 7.  **Python** (v3.8+ for Studio-Room):
     *   `brew install python`
     *   *Verification*: `python3 --version`
+8.  **Atlas** (Database Schema Manager):
+    *   `curl -sSf https://atlasgo.sh | sh`
+    *   *Verification*: `atlas version`
 
 </details>
 
@@ -216,6 +219,15 @@ git clone git@github.com:anthropos-work/anthropos-studio-room.git cms/studio
 ```
 *Verification*: `ls -la cms/studio` should show the studio-room files (e.g., `gen.py`, `requirements.txt`).
 
+### Internal Tools (Optional)
+Clone the internal experiments hub for access to PoCs, prototypes, and internal tools.
+```bash
+git clone git@github.com:anthropos-work/experiments.git
+```
+*Verification*: `ls -la experiments` should show the experiments hub files (e.g., `package.json`, `vite.config.js`).
+
+See [Anthropos Labs documentation](../tools/anthropos-labs.md) for usage details.
+
 ---
 
 ## 5. Environment Configuration
@@ -275,7 +287,32 @@ We use the `-p anthropos-rosetta` flag to set a custom project name. This create
     ```
     *Verification*: `docker ps` should show `anthropos-rosetta-postgresql-1` and `anthropos-rosetta-redis-1` containers running.
 
-3.  Start the services:
+3.  **Initialize Database Schemas**:
+    The Postgres database starts empty. You must create the schemas for the core services (`backend`, `cms`, `jobsimulation`) using Atlas.
+    
+    *   **Install Atlas** (if you skipped it in Prerequisites):
+        ```bash
+        curl -sSf https://atlasgo.sh | sh
+        ```
+    *   **Apply Migrations**:
+        Run the following commands from the `anthropos-dev` directory (where you cloned the repos):
+        ```bash
+        # Backend Schema (public)
+        (cd backend && atlas migrate apply --env local)
+        
+        # CMS Schema (cms)
+        (cd cms && atlas migrate apply --env local)
+        
+        # JobSimulation Schema (jobsimulation)
+        (cd jobsimulation && atlas migrate apply --env local)
+
+        # Skiller Schema (skiller)
+        (cd skiller && atlas migrate apply --env local)
+        ```
+        *Note: The parenthesis `(...)` ensure you return to the current directory after the command.*
+    *   **Verification**: The commands should complete successfully without error, outputting the migration steps applied.
+
+4.  Start the services:
     ```bash
     docker compose -p anthropos-rosetta up -d backend cms jobsimulation
     ```

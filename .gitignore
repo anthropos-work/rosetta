@@ -1,2 +1,114 @@
+# =============================================================================
+# Project Rosetta .gitignore
+# =============================================================================
+# This file defines what should NOT be tracked in the documentation corpus.
+# The corpus itself (corpus/) is tracked; the workspace (anthropos-dev/) is not.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# WORKSPACE
+# -----------------------------------------------------------------------------
+# The anthropos-dev/ directory is a scratchpad for:
+# - Cloning platform repositories
+# - Building local development environments
+# - Inspecting code for documentation purposes
+#
+# This keeps the documentation repo clean while allowing hands-on work.
+# -----------------------------------------------------------------------------
 anthropos-dev/
+
+# -----------------------------------------------------------------------------
+# ENVIRONMENT & SECRETS
+# -----------------------------------------------------------------------------
+# Never commit secrets or environment-specific configuration.
+# These may appear if someone accidentally creates them at repo root.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# -----------------------------------------------------------------------------
+# OS-SPECIFIC FILES
+# -----------------------------------------------------------------------------
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# -----------------------------------------------------------------------------
+# EDITOR & IDE
+# -----------------------------------------------------------------------------
+# VSCode (workspace settings are OK, but user settings are not)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+
+# Vim
+*.swp
+*.swo
+*.swn
+Session.vim
+
+# Emacs
+*~
+\#*\#
+.#*
+
+# -----------------------------------------------------------------------------
+# TEMPORARY & GENERATED
+# -----------------------------------------------------------------------------
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Build artifacts (shouldn't exist in a docs repo, but just in case)
+dist/
+build/
+out/
+
+# Node modules (if any tooling is added)
+node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.Python
+*.egg-info/
+
+# -----------------------------------------------------------------------------
+# DOCUMENTATION TOOLING (if added later)
+# -----------------------------------------------------------------------------
+# MkDocs / Sphinx / Hugo build output
+site/
+_build/
+public/
+
+# -----------------------------------------------------------------------------
+# CLAUDE CODE
+# -----------------------------------------------------------------------------
+# Claude Code may create local settings that shouldn't be shared
+.claude/settings.local.json

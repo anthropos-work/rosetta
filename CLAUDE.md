@@ -26,6 +26,26 @@ This skill executes `corpus/setup/setup_guide.md` with:
 - Progress tracking in `anthropos-dev/setup_progress.md`
 - Auto-improvement of documentation when issues are found
 
+### Using the Corpus Integration Skill
+
+For integrating new platform evidence into the Rosetta documentation:
+```bash
+/anthropos-integrate
+```
+
+This skill analyzes new evidence about the Anthropos platform and updates the corpus:
+- **New repos/tools**: Clone, inspect, create service documentation
+- **New features**: Analyze code, update affected service docs
+- **Setup feedback**: Parse issues from setup_progress.md, improve setup guide
+- **Missing aspects**: Document undocumented platform elements
+
+Evidence types:
+- `A` - New repository, project, or tool
+- `B` - New feature/code in existing service
+- `C` - New directory in anthropos-dev/
+- `D` - Setup feedback (setup_progress.md with issues)
+- `E` - Missing platform aspect
+
 ### Working in the Scratchpad
 
 The `anthropos-dev/` directory is a git-ignored workspace for:
@@ -185,8 +205,11 @@ These files must be maintained together:
 1. `corpus/setup/setup_guide.md`: Detailed setup instructions
 2. `corpus/setup/setup_checklist_macos.md` / `setup_checklist_linux.md`: OS-specific checklists
 3. `.claude/skills/anthropos-setup/SKILL.md`: Automated setup skill
+4. `.claude/skills/anthropos-integrate/SKILL.md`: Corpus integration skill
 
 **When to update checklists**: Only when setup structure changes (steps added/removed/reordered), not for clarifications or verification command additions.
+
+**When to use anthropos-integrate**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill ensures corpus updates follow the modus operandi.
 
 ### Modus Operandi
 

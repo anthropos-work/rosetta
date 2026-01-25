@@ -1,98 +1,141 @@
-# Project Rosetta: Anthropos Platform Documentation
+# Project Rosetta
 
-Welcome to Project Rosetta. This documentation corpus serves as the cognitive kernel for the **Anthropos** platform. It is designed to support three recursive activities by targeting the source code (conceptually located at `@anthropos`):
+**The documentation corpus for the Anthropos platform.**
 
-1.  **Documentation Repository**: A comprehensive guide for new developers to understand the platform's architecture ("how it works").
-2.  **Environment Setup**: A manual for humans and AI agents to build, configure, and verify a local development environment.
-3.  **Recursive Inspection**: A tool for "reverse engineering" the platform—inspecting existing code to document, build, and recursively improve this corpus itself.
+## What Is This?
 
-## Modus Operandi
+Project Rosetta is a **documentation repository** - not the Anthropos platform itself. It contains:
 
-Project Rosetta follows a strict **iterative approach** to reverse engineering and documenting the Anthropos platform.
+- Architecture guides explaining how the platform works
+- Setup instructions for building a local development environment
+- Service documentation for each microservice
+- Tools for reverse-engineering and documenting the platform
 
-1.  **Iterative & Goal-Oriented**: We move in distinct iterations. Each iteration must have a clear, achievable goal (e.g., "Map the high-level architecture", "Document the Backend service"). We do not attempt to boil the ocean in one go.
-2.  **Autoconsistent & Discoverable**: This documentation constitutes a self-contained corpus. A new agent or engineer should be able to land here, read this README, and understand exactly where to find information and how to proceed with the next task.
-3.  **The "Recreation" Standard**: The ultimate acceptance criteria for this documentation is whether an autonomous agent or a new engineer can use it to **recreate a full development environment** from scratch on a new machine.
-4.  **Dual-Level Documentation**: Key documents should provide two layers of depth:
-    *   **High-Level / For PMs**: Simplified, conceptual explanations.
-    *   **Engineering / Deep Dive**: Technical specifics, configuration details, and inter-service dependencies.
+**The actual platform code lives in separate repositories** under the `anthropos-work` GitHub organization.
 
-## Guidelines for Agents & Engineers
+## Who Is This For?
 
-If you are an AI Agent or Engineer picking up this project:
+| Audience | What You'll Find |
+|----------|------------------|
+| **New Engineers** | Setup guides to get running, architecture docs to understand the system |
+| **Product Managers** | High-level explanations of what each component does |
+| **AI Agents** | Structured, parseable documentation for autonomous operation |
 
-*   **Start Here**: This README is your source of truth for the project status and structure.
-*   **Check `task.md`**: The `task.md` file (in the `brain` directory or mirrored here if applicable) tracks the granular progress.
-*   **Respect the Structure**: Maintain the separation between "High-Level" and "Deep Dive" sections.
-*   **Verify**: Do not assume the docs are 100% correct. Always verify against the actual code (`docker-compose.yaml`, `go.mod`, source code) when detailed accuracy is required.
-*   **Update**: If you discover something new or fix a gap, update these documents immediately. The docs must evolve with the understanding.
+All documentation follows a **dual-level approach**: simplified explanations for PMs alongside technical deep-dives for engineers.
 
-## 📂 Documentation Structure
+## Project Goals
 
-All documentation is located in the **[corpus](./corpus/)** directory:
+### 1. The "Recreation Standard"
+Can someone use this documentation to **recreate a full development environment from scratch** on a new machine? That's our acceptance criteria.
 
-*   **[Architecture](./corpus/architecture/)**: Complete architecture documentation.
-    *   [Architecture Overview](./corpus/architecture/architecture_overview.md): High-level system design, three-tier service model, and communication patterns.
-    *   [Service Taxonomy](./corpus/architecture/service_taxonomy.md): Service categorization (Core, Studio, External tiers).
-    *   [Frontend Architecture](./corpus/architecture/frontend_architecture.md): Deep dive into the Next.js monorepo.
-    *   [External Services](./corpus/architecture/external_services.md): Third-party integrations (Clerk, Directus, GraphQL).
-    *   [Dependency Map](./corpus/architecture/dependency_map.md): Matrix of service inter-dependencies.
-*   **[Tools](./corpus/tools/)**: Registry of development tools.
-    *   [Toolchain Overview](./corpus/tools/toolchain_overview.md): Map of tools for setup, dev, and runtime.
-*   **[Services](./corpus/services/)**: Individual service documentation and developer maps.
-    *   Core Backend Services: 9 Go microservices (Backend, CMS, Sentinel, Skiller, etc.)
-    *   Studio Services: [Studio-Desk](./corpus/services/studio-desk.md) (content design) and [Studio-Room](./corpus/services/studio-room.md) (AI generation)
-*   **[Setup](./corpus/setup/)**: Complete setup documentation for local development environment.
-    *   [Setup Guide](./corpus/setup/setup_guide.md): Step-by-step instructions for macOS and Linux.
-    *   [Setup Checklists](./corpus/setup/): OS-specific checklists for tracking setup progress.
+### 2. Autoconsistent & Discoverable
+A new engineer or AI agent should land here, read this README, and know exactly where to find information and what to do next.
 
-## 🚀 Quick Start
+### 3. Living Documentation
+This corpus evolves with the platform. When you discover gaps or better approaches, update the docs immediately.
 
-**New to the project?** Start with these documents in order:
+## Quick Start
 
-1.  **[Setup Guide](./corpus/setup/setup_guide.md)**: Recreate the development environment from scratch.
-2.  **[Architecture Overview](./corpus/architecture/architecture_overview.md)**: Understand the system design and service interactions.
-3.  **[Service Taxonomy](./corpus/architecture/service_taxonomy.md)**: Learn how services are organized into Core, Studio, and External tiers.
+**Setting up for the first time?** Follow these in order:
 
-### 🤖 Automated Setup with Claude
+1. **[Setup Guide](./corpus/setup/setup_guide.md)** - Build your local development environment
+2. **[Architecture Overview](./corpus/architecture/architecture_overview.md)** - Understand how the platform works
+3. **[Service Taxonomy](./corpus/architecture/service_taxonomy.md)** - Learn the three-tier service model
 
-If you're using Claude Code, you can use the `/anthropos-setup` skill to automate the environment setup:
+### Using Claude Code?
 
+Automate the setup process:
 ```bash
 /anthropos-setup
 ```
 
+This skill executes the setup guide step-by-step with verification, asks for confirmation before changes, and auto-improves documentation when it finds issues.
+
+## Documentation Structure
+
+```
+corpus/
+├── architecture/          # System design and service relationships
+│   ├── architecture_overview.md    # Start here for the big picture
+│   ├── service_taxonomy.md         # Core, Studio, External tiers
+│   ├── frontend_architecture.md    # Next.js monorepo details
+│   ├── external_services.md        # Clerk, Directus, GraphQL
+│   └── dependency_map.md           # Service inter-dependencies
+│
+├── services/              # Individual service documentation
+│   ├── backend.md, cms.md, sentinel.md, ...  # Core services
+│   └── studio-desk.md, studio-room.md        # Studio services
+│
+├── setup/                 # Environment setup
+│   ├── setup_guide.md              # The main setup instructions
+│   ├── setup_checklist_macos.md    # macOS progress tracker
+│   └── setup_checklist_linux.md    # Linux progress tracker
+│
+└── tools/                 # Development tools
+    ├── toolchain_overview.md       # Required tools registry
+    └── anthropos-labs.md           # Internal experiments hub
+```
+
+## The Workspace
+
+The `anthropos-dev/` directory is a **git-ignored scratchpad** for:
+
+- Cloning Anthropos platform repositories
+- Building your local development environment
+- Inspecting platform code for documentation
+
+All hands-on work happens here. The documentation corpus stays clean.
+
+## Modus Operandi
+
+Project Rosetta follows a strict **iterative approach**:
+
+| Principle | Meaning |
+|-----------|---------|
+| **Iterative & Goal-Oriented** | One clear goal per iteration. Don't boil the ocean. |
+| **Autoconsistent** | Everything you need is in this repo. No hidden dependencies. |
+| **Recreation Standard** | Docs must enable full environment recreation from scratch. |
+| **Dual-Level** | Every key concept has both PM-friendly and engineer-deep explanations. |
+
+## Updating the Corpus
+
+When you discover new platform elements or documentation gaps:
+
+```bash
+/anthropos-integrate
+```
+
 This skill:
-*   Executes the setup guide step-by-step with verification at each stage
-*   Requests confirmation before installing tools or making system changes
-*   Tracks progress using the setup checklist
-*   **Auto-improves documentation** when it discovers issues or better approaches
-*   Follows the STEP RUN guidelines (verify before/after, request confirmation, document improvements)
+- Analyzes new evidence (repos, features, setup issues)
+- Creates an update plan
+- Implements documentation changes following our standards
 
-See [`.claude/skills/anthropos-setup/`](./.claude/skills/anthropos-setup/) for skill details.
+**Evidence types**: New repos (A), new features (B), new directories (C), setup feedback (D), missing docs (E).
 
-## 🏗️ Development Scratchpad
+## Platform Architecture (Summary)
 
-The `anthropos-dev/` directory is an ignored workspace for hands-on activities:
+Anthropos uses a **three-tier microservices architecture**:
 
-*   **Environment Setup**: Follow the Setup Guide, clone repositories, and build the local development environment.
-*   **Recursive Inspection**: Inspect the actual Anthropos platform code to reverse-engineer, document, and recursively improve this corpus.
+| Tier | Services | Technology |
+|------|----------|------------|
+| **Core Backend** | Backend, CMS, Sentinel, Skiller, Jobsimulation, Skillpath, Storage, Chronos, Intelligence | Go |
+| **Studio** | Studio-Desk (design tool), Studio-Room (AI pipeline) | TypeScript, Python |
+| **External** | Clerk (auth), Directus (CMS), GraphQL/Wundergraph (gateway) | SaaS / Docker |
 
-This keeps the documentation repository clean while providing a dedicated space for working with the actual codebase.
+See [Architecture Overview](./corpus/architecture/architecture_overview.md) for the full picture.
 
-## Status
+## Guidelines for Contributors
 
-**Current Phase**: Phase 5 - Studio Services & External Integrations.
+- **Verify against code**: Don't assume docs are correct. Check the actual source.
+- **Update immediately**: Found a gap? Fix it now, not later.
+- **Work in `anthropos-dev/`**: Keep the corpus clean.
+- **Never commit secrets**: No `.env` files in any repo.
+- **Follow dual-level**: PM summary + engineer deep-dive for key concepts.
 
-*   [x] Initial Service Enumeration
-*   [x] High-Level Tech Stack Identification
-*   [x] Establish Documentation Standards (Modus Operandi)
-*   [x] Service Architecture & Developer Map
-    *   *Focus: Role, Internal Architecture, Locality, Setup/Test procedures.*
-    *   *Note: detailed API endpoints are excluded; we document how to find/consult them.*
-*   [x] Frontend Architecture Deep Dive
-    *   *Monorepo structure, Key Apps (Hiring), and Data Layer.*
-*   [x] Studio Services & External Integrations
-    *   *Documented studio-desk (content design) and studio-room (AI generation)*
-    *   *Documented external services: Clerk (auth), Directus (CMS), GraphQL (gateway)*
-    *   *Created three-tier service taxonomy (Core, Studio, External)*
+## Related Resources
+
+| Resource | Location |
+|----------|----------|
+| Platform repos | `anthropos-work` GitHub org |
+| Claude skills | [.claude/skills/](./.claude/skills/) |
+| Setup progress | `anthropos-dev/setup_progress.md` (your local copy) |

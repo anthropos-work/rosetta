@@ -22,6 +22,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] Verified with `go version`
 - [ ] **Node.js** (v20+) installed (via nodesource or nvm)
 - [ ] **pnpm** installed (`corepack enable` or `npm i -g pnpm`)
+- [ ] **Atlas** (Database Schema Manager) installed (`curl -sSf https://atlasgo.sh | sh`)
+    - [ ] Verified with `atlas version`
 
 ## 2. Workspace Setup
 
@@ -35,8 +37,11 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] `app` repo cloned as `backend` directory
     - [ ] `cms` repo cloned
     - [ ] `jobsimulation` repo cloned
+    - [ ] `skiller` repo cloned
 - [ ] **Frontend**
     - [ ] `next-web-app` repo cloned
+- [ ] **Internal Tools (Optional)**
+    - [ ] `experiments` repo cloned (Anthropos Labs)
 
 ## 4. Environment Configuration
 
@@ -47,6 +52,11 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
 ## 5. Running the Platform
 
 - [ ] Docker Compose: Core Infra (`postgresql`, `redis`) up
+- [ ] **Database Schemas Initialized** (after Core Infra is up)
+    - [ ] Backend schema applied: `(cd backend && atlas migrate apply --env local)`
+    - [ ] CMS schema applied: `(cd cms && atlas migrate apply --env local)`
+    - [ ] JobSimulation schema applied: `(cd jobsimulation && atlas migrate apply --env local)`
+    - [ ] Skiller schema applied: `(cd skiller && atlas migrate apply --env local)`
 - [ ] Docker Compose: Services (`backend`, `cms`, `jobsimulation`) up
 - [ ] Verification: `docker ps` shows healthy containers
 

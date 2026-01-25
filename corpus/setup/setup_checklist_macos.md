@@ -25,6 +25,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] Verified with `node --version && pnpm --version`
 - [ ] **XCode CLI Tools** installed (`xcode-select --install`)
     - [ ] Verified with `xcode-select -p`
+- [ ] **Atlas** (Database Schema Manager) installed (`curl -sSf https://atlasgo.sh | sh`)
+    - [ ] Verified with `atlas version`
 
 ## 2. GitHub SSH Access
 
@@ -49,10 +51,14 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] `app` repo cloned as `backend` directory
     - [ ] `cms` repo cloned
     - [ ] `jobsimulation` repo cloned
-    - [ ] Verified: `ls -la backend cms jobsimulation` shows Go files
+    - [ ] `skiller` repo cloned
+    - [ ] Verified: `ls -la backend cms jobsimulation skiller` shows Go files
 - [ ] **Frontend**
     - [ ] `next-web-app` repo cloned
     - [ ] Verified: `ls -la next-web-app` shows `package.json`
+- [ ] **Internal Tools (Optional)**
+    - [ ] `experiments` repo cloned (Anthropos Labs)
+    - [ ] Verified: `ls -la experiments` shows `package.json`, `vite.config.js`
 
 ## 5. Environment Configuration
 
@@ -72,6 +78,11 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
 - [ ] Docker Compose: Core Infra started
     - [ ] Command: `docker compose -p anthropos-rosetta up -d postgresql redis`
     - [ ] Verified: `docker ps` shows `anthropos-rosetta-postgresql-1` and `anthropos-rosetta-redis-1` running
+- [ ] **Database Schemas Initialized**
+    - [ ] Backend schema applied: `(cd backend && atlas migrate apply --env local)`
+    - [ ] CMS schema applied: `(cd cms && atlas migrate apply --env local)`
+    - [ ] JobSimulation schema applied: `(cd jobsimulation && atlas migrate apply --env local)`
+    - [ ] Skiller schema applied: `(cd skiller && atlas migrate apply --env local)`
 - [ ] Docker Compose: Services started
     - [ ] Command: `docker compose -p anthropos-rosetta up -d backend cms jobsimulation`
     - [ ] Verified: `docker ps` shows healthy containers for backend, cms, jobsimulation

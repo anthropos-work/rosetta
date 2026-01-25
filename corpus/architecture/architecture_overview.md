@@ -164,3 +164,29 @@ graph TD
 
 For detailed integration patterns, see [External Services](./external_services.md).
 
+### Data Architecture & Schema Management
+
+The platform uses a **Code-First** approach to data management, relying on strictly typed schemas in Go.
+
+#### 1. Data Modeling (Ent)
+*   **ORM**: We use [Ent](https://entgo.io/) as our Entity Framework.
+*   **Definition**: Schemas are defined in Go code within `internal/data/ent/schema` or `internal/ent/schema`.
+*   **Source of Truth**: The Go code is the single source of truth for the database structure.
+
+#### 2. Schema Management (Atlas)
+*   **Tooling**: We use [Atlas](https://atlasgo.io/) to manage database migrations.
+*   **Workflow**:
+    1.  **Define**: Engineers modify Ent schemas in Go.
+    2.  **Generate**: `make gen` runs Ent codegen to update the Go client.
+    3.  **Migration Diff**: Atlas compares the Go schema against the migration directory to create a new `.sql` migration plan.
+    4.  **Apply**: `atlas migrate apply` executes pending migrations against the target database.
+
+#### 3. Database Separation
+Although all services may share a physical PostgreSQL instance (in dev/docker), they are logically separated by **PostgreSQL Schemas**:
+*   `backend` service → `public` schema
+*   `cms` service → `cms` schema
+*   `jobsimulation` service → `jobsimulation` schema
+*   `skiller` service → `skiller` schema
+
+> [!IMPORTANT]
+> **Manual Setup Required**: The platform does *not* automatically apply migrations on startup (to prevent accidental production overrides). Developers must run `atlas migrate apply` manually when setting up a fresh environment or pulling schema changes.
