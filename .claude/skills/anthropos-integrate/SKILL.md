@@ -99,7 +99,7 @@ Create an **Update Plan** before making changes. Consider:
 | New service (Core) | `corpus/services/{service-name}.md` + update `architecture_overview.md` |
 | New service (Studio) | `corpus/services/studio-{name}.md` + update `service_taxonomy.md` |
 | New external integration | `corpus/architecture/external_services.md` |
-| New setup step | `corpus/setup/setup_guide.md` + both checklists |
+| New setup step | `corpus/ops/setup/setup_guide.md` + both checklists |
 | New tool | `corpus/tools/toolchain_overview.md` |
 | Architecture change | `corpus/architecture/architecture_overview.md` |
 | Dependency change | `corpus/architecture/dependency_map.md` |
@@ -128,9 +128,9 @@ Create an **Update Plan** before making changes. Consider:
 
 ### Files to Update
 - [ ] `corpus/architecture/architecture_overview.md` - Add to service list
-- [ ] `corpus/setup/setup_guide.md` - Add clone step
-- [ ] `corpus/setup/setup_checklist_macos.md` - Add checkbox
-- [ ] `corpus/setup/setup_checklist_linux.md` - Add checkbox
+- [ ] `corpus/ops/setup/setup_guide.md` - Add clone step
+- [ ] `corpus/ops/setup/setup_checklist_macos.md` - Add checkbox
+- [ ] `corpus/ops/setup/setup_checklist_linux.md` - Add checkbox
 
 ### Claude Assets
 - [ ] `.claude/skills/anthropos-setup/SKILL.md` - Add new phase
@@ -213,10 +213,10 @@ When documenting a new service, follow `corpus/services/TEMPLATE.md`:
 
 When adding setup steps:
 
-1. Add step to `corpus/setup/setup_guide.md` with verification
+1. Add step to `corpus/ops/setup/setup_guide.md` with verification
 2. Add checkbox to BOTH checklists:
-   - `corpus/setup/setup_checklist_macos.md`
-   - `corpus/setup/setup_checklist_linux.md`
+   - `corpus/ops/setup/setup_checklist_macos.md`
+   - `corpus/ops/setup/setup_checklist_linux.md`
 3. Update `anthropos-setup` skill if phase structure changes
 
 ## Error Handling

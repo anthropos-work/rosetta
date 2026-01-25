@@ -11,9 +11,9 @@ This skill implements a **setup-and-improve** loop:
 ## File References
 
 ### Documentation Sources
-- `corpus/setup/setup_guide.md` - Master setup guide
-- `corpus/setup/setup_checklist_macos.md` - macOS progress tracking checklist
-- `corpus/setup/setup_checklist_linux.md` - Linux progress tracking checklist
+- `corpus/ops/setup/setup_guide.md` - Master setup guide
+- `corpus/ops/setup/setup_checklist_macos.md` - macOS progress tracking checklist
+- `corpus/ops/setup/setup_checklist_linux.md` - Linux progress tracking checklist
 - `corpus/architecture/` - Platform architecture context
 
 ### Working Directory
@@ -71,7 +71,7 @@ tool_name --version
 ```markdown
 # Pattern: Update guide immediately
 Edit({
-  file_path: "corpus/setup/setup_guide.md",
+  file_path: "corpus/ops/setup/setup_guide.md",
   old_string: "1. Install Docker Desktop",
   new_string: "1. Install Docker Desktop\n   * Verification: `docker --version && docker compose version`"
 })
@@ -89,7 +89,7 @@ Edit({
 # Only update ORIGINAL when setup guide structure changes
 # (new step, removed step, reordered steps)
 Edit({
-  file_path: "corpus/setup/setup_checklist_macos.md",  # ORIGINAL - only for structure changes (use appropriate OS)
+  file_path: "corpus/ops/setup/setup_checklist_macos.md",  # ORIGINAL - only for structure changes (use appropriate OS)
   old_string: "## 3. Cloning Repositories",
   new_string: "## 3. GitHub SSH Access\n\n- [ ] SSH key generated\n\n## 4. Cloning Repositories"
 })
@@ -97,11 +97,11 @@ Edit({
 
 ## Docker Isolation Strategy
 
-The skill uses `-p anthropos-rosetta` project name to create isolated Docker resources:
+The skill uses `-p ant-rosetta` project name to create isolated Docker resources:
 
-**Containers**: `anthropos-rosetta-{service}-1`
-**Networks**: `anthropos-rosetta_app-network`
-**Volumes**: `anthropos-rosetta_postgres_data`
+**Containers**: `ant-rosetta-{service}-1`
+**Networks**: `ant-rosetta_app-network`
+**Volumes**: `ant-rosetta_postgres_data`
 
 This prevents conflicts with other Anthropos environments but may cause **port conflicts**. The skill should detect these and guide resolution.
 

@@ -38,9 +38,10 @@ This corpus evolves with the platform. When you discover gaps or better approach
 
 **Setting up for the first time?** Follow these in order:
 
-1. **[Setup Guide](./corpus/setup/setup_guide.md)** - Build your local development environment
-2. **[Architecture Overview](./corpus/architecture/architecture_overview.md)** - Understand how the platform works
-3. **[Service Taxonomy](./corpus/architecture/service_taxonomy.md)** - Learn the three-tier service model
+1. **[Setup Guide](./corpus/ops/setup/setup_guide.md)** - Build your local development environment
+2. **[Run Guide](./corpus/ops/run/run_guide.md)** - Start the platform locally
+3. **[Architecture Overview](./corpus/architecture/architecture_overview.md)** - Understand how the platform works
+4. **[Service Taxonomy](./corpus/architecture/service_taxonomy.md)** - Learn the three-tier service model
 
 ### Using Claude Code?
 
@@ -66,10 +67,14 @@ corpus/
 │   ├── backend.md, cms.md, sentinel.md, ...  # Core services
 │   └── studio-desk.md, studio-room.md        # Studio services
 │
-├── setup/                 # Environment setup
-│   ├── setup_guide.md              # The main setup instructions
-│   ├── setup_checklist_macos.md    # macOS progress tracker
-│   └── setup_checklist_linux.md    # Linux progress tracker
+├── ops/                   # Operations guides
+│   ├── setup/             # Environment setup
+│   │   ├── setup_guide.md          # The main setup instructions
+│   │   ├── setup_checklist_macos.md # macOS progress tracker
+│   │   └── setup_checklist_linux.md # Linux progress tracker
+│   └── run/               # Running the platform
+│       ├── run_guide.md            # Start services locally
+│       └── run_checklist.md        # Run progress tracker
 │
 └── tools/                 # Development tools
     ├── toolchain_overview.md       # Required tools registry

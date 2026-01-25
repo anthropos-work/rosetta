@@ -6,15 +6,15 @@ argument-hint: [step-name or 'full']
 
 # Anthropos Development Environment Setup
 
-Execute the Anthropos platform setup by following `corpus/setup/setup_guide.md` while applying STEP RUN guidelines and auto-improving documentation.
+Execute the Anthropos platform setup by following `corpus/ops/setup/setup_guide.md` while applying STEP RUN guidelines and auto-improving documentation.
 
 ## Your Mission
 
-1. **Follow the guide**: Use `corpus/setup/setup_guide.md` as your source of truth
+1. **Follow the guide**: Use `corpus/ops/setup/setup_guide.md` as your source of truth
 2. **Apply STEP RUN guidelines**: Verify before/after, request confirmation, document improvements
 3. **Track progress locally**: Copy checklist to `anthropos-dev/setup_progress.md` and update as you go
 4. **Auto-improve docs**: Update setup_guide.md when you discover issues or better approaches
-5. **Update structure only when needed**: Only modify OS-specific checklists (`corpus/setup/setup_checklist_macos.md`, `setup_checklist_linux.md`) and this skill when setup structure changes
+5. **Update structure only when needed**: Only modify OS-specific checklists (`corpus/ops/setup/setup_checklist_macos.md`, `setup_checklist_linux.md`) and this skill when setup structure changes
 
 ## STEP RUN Guidelines (Apply to Every Step)
 
@@ -48,8 +48,8 @@ Update `anthropos-dev/setup_progress.md` as you complete steps (NOT the original
 
 ## Initial Setup
 
-1. Copy checklist: `cp corpus/setup/setup_checklist_macos.md anthropos-dev/setup_progress.md` (or `setup_checklist_linux.md` for Linux)
-2. Read `corpus/setup/setup_guide.md` to understand the process
+1. Copy checklist: `cp corpus/ops/setup/setup_checklist_macos.md anthropos-dev/setup_progress.md` (or `setup_checklist_linux.md` for Linux)
+2. Read `corpus/ops/setup/setup_guide.md` to understand the process
 3. Navigate to `anthropos-dev/` workspace
 4. Follow guide section by section
 
@@ -94,7 +94,7 @@ Use local checklist (`anthropos-dev/setup_progress.md`) for detailed step tracki
 
 - Work in `anthropos-dev/` scratchpad only
 - Never commit .env files
-- Use `-p anthropos-rosetta` for Docker isolation
+- Use `-p ant-rosetta` for Docker isolation
 - Ask before every destructive operation
 - Follow the guide - don't improvise unless needed
 - Update docs immediately when improvements found
@@ -111,4 +111,4 @@ Setup complete when:
 7. Documentation improvements committed (if any)
 8. Local checklist fully complete
 
-**Follow `corpus/setup/setup_guide.md` as your primary reference. Apply these guidelines to execute it reliably and improve it recursively.**
+**Follow `corpus/ops/setup/setup_guide.md` as your primary reference. Apply these guidelines to execute it reliably and improve it recursively.**

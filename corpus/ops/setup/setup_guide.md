@@ -266,12 +266,12 @@ The easiest way to start is using Docker Compose.
 
 ### Docker Compose Project Name
 
-We use the `-p anthropos-rosetta` flag to set a custom project name. This creates an isolated Docker stack that won't conflict with other Anthropos environments you may have running.
+We use the `-p ant-rosetta` flag to set a custom project name. This creates an isolated Docker stack that won't conflict with other Anthropos environments you may have running.
 
 **What this does:**
-- Creates containers named `anthropos-rosetta-postgresql-1`, `anthropos-rosetta-backend-1`, etc.
-- Creates isolated networks: `anthropos-rosetta_app-network`
-- Creates isolated volumes: `anthropos-rosetta_postgres_data`
+- Creates containers named `ant-rosetta-postgresql-1`, `ant-rosetta-backend-1`, etc.
+- Creates isolated networks: `ant-rosetta_app-network`
+- Creates isolated volumes: `ant-rosetta_postgres_data`
 
 **Note**: If you have another Anthropos stack running (e.g., "platform"), they will be completely separate. However, you may encounter **port conflicts** if both stacks try to use the same ports. Stop the other stack first or modify port mappings in docker-compose.yml.
 
@@ -283,9 +283,9 @@ We use the `-p anthropos-rosetta` flag to set a custom project name. This create
     ```
 2.  Start the core infrastructure (Postgres, Redis):
     ```bash
-    docker compose -p anthropos-rosetta up -d postgresql redis
+    docker compose -p ant-rosetta up -d postgresql redis
     ```
-    *Verification*: `docker ps` should show `anthropos-rosetta-postgresql-1` and `anthropos-rosetta-redis-1` containers running.
+    *Verification*: `docker ps` should show `ant-rosetta-postgresql-1` and `ant-rosetta-redis-1` containers running.
 
 3.  **Initialize Database Schemas**:
     The Postgres database starts empty. You must create the schemas for the core services (`backend`, `cms`, `jobsimulation`) using Atlas.
@@ -314,12 +314,12 @@ We use the `-p anthropos-rosetta` flag to set a custom project name. This create
 
 4.  Start the services:
     ```bash
-    docker compose -p anthropos-rosetta up -d backend cms jobsimulation
+    docker compose -p ant-rosetta up -d backend cms jobsimulation
     ```
     *(Note: Sentinel and others will be pulled as images if you didn't build them).*
 
 4.  **Verification**:
-    Run `docker ps`. You should see healthy containers: `anthropos-rosetta-backend-1`, `anthropos-rosetta-cms-1`, `anthropos-rosetta-postgresql-1`, etc.
+    Run `docker ps`. You should see healthy containers: `ant-rosetta-backend-1`, `ant-rosetta-cms-1`, `ant-rosetta-postgresql-1`, etc.
 
 ---
 
@@ -411,7 +411,7 @@ The checklist is for **progress tracking**, not detailed instruction:
 *   **Track Progress**: Check off items `[x]` as you complete them in YOUR local copy
 *   **Resume Setup**: Use your local checklist to resume where you left off
 *   **Report Issues**: Use the "Notes / Errors" table in your local copy to document problems for other developers
-*   **Keep Checklists Lean**: The original checklist in `corpus/setup/` is only updated when the setup guide structure changes
+*   **Keep Checklists Lean**: The original checklist in `corpus/ops/setup/` is only updated when the setup guide structure changes
 
 ### General Guidelines
 

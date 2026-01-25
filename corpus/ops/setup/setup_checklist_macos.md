@@ -76,17 +76,17 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
 ## 6. Running the Platform (Docker)
 
 - [ ] Docker Compose: Core Infra started
-    - [ ] Command: `docker compose -p anthropos-rosetta up -d postgresql redis`
-    - [ ] Verified: `docker ps` shows `anthropos-rosetta-postgresql-1` and `anthropos-rosetta-redis-1` running
+    - [ ] Command: `docker compose -p ant-rosetta up -d postgresql redis`
+    - [ ] Verified: `docker ps` shows `ant-rosetta-postgresql-1` and `ant-rosetta-redis-1` running
 - [ ] **Database Schemas Initialized**
     - [ ] Backend schema applied: `(cd backend && atlas migrate apply --env local)`
     - [ ] CMS schema applied: `(cd cms && atlas migrate apply --env local)`
     - [ ] JobSimulation schema applied: `(cd jobsimulation && atlas migrate apply --env local)`
     - [ ] Skiller schema applied: `(cd skiller && atlas migrate apply --env local)`
 - [ ] Docker Compose: Services started
-    - [ ] Command: `docker compose -p anthropos-rosetta up -d backend cms jobsimulation`
+    - [ ] Command: `docker compose -p ant-rosetta up -d backend cms jobsimulation`
     - [ ] Verified: `docker ps` shows healthy containers for backend, cms, jobsimulation
-    - *Note: Using `-p anthropos-rosetta` creates an isolated stack that won't conflict with other environments*
+    - *Note: Using `-p ant-rosetta` creates an isolated stack that won't conflict with other environments*
 
 ## 7. Running Frontend
 
