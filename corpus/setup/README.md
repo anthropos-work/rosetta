@@ -10,8 +10,6 @@ This directory contains all documentation related to setting up the Anthropos de
 
 *   **[setup_checklist_linux.md](./setup_checklist_linux.md)**: Linux-specific checklist for tracking setup progress. Copy this to your workspace to track your setup status and log errors.
 
-*   **[setup_checklist.md](./setup_checklist.md)**: Generic checklist (deprecated in favor of OS-specific versions above).
-
 ## Quick Start
 
 1.  Read the **[Setup Guide](./setup_guide.md)** for detailed instructions.

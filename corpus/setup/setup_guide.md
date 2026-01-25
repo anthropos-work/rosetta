@@ -399,7 +399,7 @@ This `setup_guide.md`, the OS-specific checklists (`setup_checklist_macos.md`, `
 
 If you modify the setup process (add/remove/reorder steps), you must update:
 
-1.  **Setup Checklists** (`setup_checklist.md`): Add, remove, or reorder checkboxes to match the guide structure
+1.  **Setup Checklists** (`setup_checklist_macos.md`, `setup_checklist_linux.md`): Add, remove, or reorder checkboxes to match the guide structure
 2.  **Anthropos Setup Skill** (`.claude/skills/anthropos-setup/SKILL.md`): Update phase definitions, step sequences, and verification commands
 3.  **This Guide**: Ensure all steps have verification commands documented
 

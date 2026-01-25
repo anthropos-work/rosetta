@@ -12,7 +12,8 @@ This skill implements a **setup-and-improve** loop:
 
 ### Documentation Sources
 - `corpus/setup/setup_guide.md` - Master setup guide
-- `corpus/setup/setup_checklist.md` - Progress tracking checklist
+- `corpus/setup/setup_checklist_macos.md` - macOS progress tracking checklist
+- `corpus/setup/setup_checklist_linux.md` - Linux progress tracking checklist
 - `corpus/architecture/` - Platform architecture context
 
 ### Working Directory
@@ -88,7 +89,7 @@ Edit({
 # Only update ORIGINAL when setup guide structure changes
 # (new step, removed step, reordered steps)
 Edit({
-  file_path: "corpus/setup/setup_checklist.md",  # ORIGINAL - only for structure changes
+  file_path: "corpus/setup/setup_checklist_macos.md",  # ORIGINAL - only for structure changes (use appropriate OS)
   old_string: "## 3. Cloning Repositories",
   new_string: "## 3. GitHub SSH Access\n\n- [ ] SSH key generated\n\n## 4. Cloning Repositories"
 })
@@ -193,7 +194,7 @@ After:
 ### Two-Level Tracking System
 
 **Level 1: Local Checklist** (`anthropos-dev/setup_progress.md`)
-- Copied from `corpus/setup/setup_checklist.md` at the start
+- Copied from OS-specific checklist at the start
 - Updated as each step completes
 - Used for resuming interrupted setup
 - Contains "Notes / Errors" table for issue reporting
@@ -216,7 +217,7 @@ Example TodoWrite tracking:
 
 ### When to Update Original Checklist
 
-Only update `corpus/setup/setup_checklist.md` when:
+Only update OS-specific checklists when:
 - Adding a NEW step to setup_guide.md (structure change)
 - Removing a step from setup_guide.md (structure change)
 - Reordering steps in setup_guide.md (structure change)
