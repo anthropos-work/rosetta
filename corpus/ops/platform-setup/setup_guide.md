@@ -411,7 +411,7 @@ The checklist is for **progress tracking**, not detailed instruction:
 *   **Track Progress**: Check off items `[x]` as you complete them in YOUR local copy
 *   **Resume Setup**: Use your local checklist to resume where you left off
 *   **Report Issues**: Use the "Notes / Errors" table in your local copy to document problems for other developers
-*   **Keep Checklists Lean**: The original checklist in `corpus/ops/setup/` is only updated when the setup guide structure changes
+*   **Keep Checklists Lean**: The original checklist in `corpus/ops/platform-setup/` is only updated when the setup guide structure changes
 
 ### General Guidelines
 

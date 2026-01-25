@@ -20,7 +20,7 @@ For building the Anthropos development environment:
 /anthropos-setup
 ```
 
-This skill executes `corpus/ops/setup/setup_guide.md` with:
+This skill executes `corpus/ops/platform-setup/setup_guide.md` with:
 - Verification before/after each step
 - User confirmation before destructive operations
 - Progress tracking in `anthropos-dev/setup_progress.md`
@@ -111,13 +111,17 @@ This prevents conflicts with other Anthropos environments.
 ## Key Documentation Locations
 
 ### Setup & Onboarding
-- `corpus/ops/setup/setup_guide.md`: Complete environment setup instructions
-- `corpus/ops/setup/setup_checklist_macos.md`: macOS-specific setup checklist
-- `corpus/ops/setup/setup_checklist_linux.md`: Linux-specific setup checklist
+- `corpus/ops/platform-setup/setup_guide.md`: Complete environment setup instructions
+- `corpus/ops/platform-setup/setup_checklist_macos.md`: macOS-specific setup checklist
+- `corpus/ops/platform-setup/setup_checklist_linux.md`: Linux-specific setup checklist
 
 ### Running the Platform
-- `corpus/ops/run/run_guide.md`: Start the platform locally after setup
-- `corpus/ops/run/run_checklist.md`: Progress tracker for running services
+- `corpus/ops/platform-run/run_guide.md`: Start the platform locally after setup
+- `corpus/ops/platform-run/run_checklist.md`: Progress tracker for running services
+
+### Updating the Platform
+- `corpus/ops/platform-update/update_guide.md`: Sync code, dependencies, and database schemas
+- `corpus/ops/platform-update/update_checklist.md`: Progress tracker for updates
 
 ### Architecture Documentation
 - `corpus/architecture/architecture_overview.md`: High-level system design
@@ -197,7 +201,7 @@ python3 gen.py --media simulation --template default
 
 ### STEP RUN Guidelines
 
-When updating `corpus/ops/setup/setup_guide.md`, follow these principles:
+When updating `corpus/ops/platform-setup/setup_guide.md`, follow these principles:
 1. **Verify Before Install**: Include commands to check if tools exist
 2. **Verify After Install**: Include commands to confirm successful installation
 3. **Request Confirmation**: Document where user approval is needed
@@ -206,8 +210,8 @@ When updating `corpus/ops/setup/setup_guide.md`, follow these principles:
 ### Interconnected Documentation
 
 These files must be maintained together:
-1. `corpus/ops/setup/setup_guide.md`: Detailed setup instructions
-2. `corpus/ops/setup/setup_checklist_macos.md` / `setup_checklist_linux.md`: OS-specific checklists
+1. `corpus/ops/platform-setup/setup_guide.md`: Detailed setup instructions
+2. `corpus/ops/platform-setup/setup_checklist_macos.md` / `setup_checklist_linux.md`: OS-specific checklists
 3. `.claude/skills/anthropos-setup/SKILL.md`: Automated setup skill
 4. `.claude/skills/anthropos-integrate/SKILL.md`: Corpus integration skill
 
@@ -239,9 +243,10 @@ rosetta/
 ├── corpus/                    # All documentation
 │   ├── architecture/          # System design docs
 │   ├── services/              # Per-service documentation
-│   ├── ops/                   # Operations guides (setup, running, etc.)
-│   │   ├── setup/             # Environment setup guides
-│   │   └── run/               # Running the platform locally
+│   ├── ops/                   # Operations guides
+│   │   ├── platform-setup/    # Environment setup guides
+│   │   ├── platform-run/      # Running the platform locally
+│   │   └── platform-update/   # Updating code, deps, and schemas
 │   └── tools/                 # Development tools registry
 ├── anthropos-dev/             # Git-ignored scratchpad for platform work
 ├── .claude/skills/            # Claude Code automation skills
@@ -259,7 +264,7 @@ rosetta/
 ## Quick Start for New Developers
 
 1. Read `README.md` for project overview
-2. Follow `corpus/ops/setup/setup_guide.md` to build environment (or use `/anthropos-setup`)
-3. Follow `corpus/ops/run/run_guide.md` to start the platform locally
+2. Follow `corpus/ops/platform-setup/setup_guide.md` to build environment (or use `/anthropos-setup`)
+3. Follow `corpus/ops/platform-run/run_guide.md` to start the platform locally
 4. Read `corpus/architecture/architecture_overview.md` for system understanding
 5. Consult `corpus/services/` for specific service details

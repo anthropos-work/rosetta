@@ -2,7 +2,7 @@
 
 This guide takes you from a **completed setup** to a **running local platform** that you can access in your browser.
 
-> **Prerequisites**: This guide assumes you have completed the [Setup Guide](../setup/setup_guide.md). All tools must be installed and repositories cloned to `anthropos-dev/`.
+> **Prerequisites**: This guide assumes you have completed the [Setup Guide](../platform-setup/setup_guide.md). All tools must be installed and repositories cloned to `anthropos-dev/`.
 
 > **Companion Checklist**: This guide is paired with a run checklist ([run_checklist.md](./run_checklist.md)). Copy it to your workspace to track progress and log issues.
 

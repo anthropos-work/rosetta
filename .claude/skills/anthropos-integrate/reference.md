@@ -64,9 +64,9 @@ User invokes /anthropos-integrate
 | `corpus/architecture/dependency_map.md` | Service dependencies | Dependency changes |
 | `corpus/services/{service}.md` | Per-service docs | New or updated service |
 | `corpus/tools/toolchain_overview.md` | Development tools | New tool required |
-| `corpus/ops/setup/setup_guide.md` | Setup instructions | New setup step |
-| `corpus/ops/setup/setup_checklist_macos.md` | macOS progress | Setup structure change |
-| `corpus/ops/setup/setup_checklist_linux.md` | Linux progress | Setup structure change |
+| `corpus/ops/platform-setup/setup_guide.md` | Setup instructions | New setup step |
+| `corpus/ops/platform-setup/setup_checklist_macos.md` | macOS progress | Setup structure change |
+| `corpus/ops/platform-setup/setup_checklist_linux.md` | Linux progress | Setup structure change |
 
 ### Claude Assets
 
@@ -197,7 +197,7 @@ Documentation Impact:
   - Create: corpus/services/{name}.md
   - Update: corpus/architecture/architecture_overview.md
   - Update: corpus/architecture/service_taxonomy.md
-  - Update: corpus/ops/setup/setup_guide.md (clone + migrations)
+  - Update: corpus/ops/platform-setup/setup_guide.md (clone + migrations)
   - Update: Both setup checklists
 ```
 
@@ -238,7 +238,7 @@ Analysis Steps:
 Documentation Impact:
   - Create: corpus/services/studio-{name}.md (usually Studio tier)
   - Update: corpus/architecture/service_taxonomy.md
-  - Update: corpus/ops/setup/setup_guide.md (pip install steps)
+  - Update: corpus/ops/platform-setup/setup_guide.md (pip install steps)
 ```
 
 ### Pattern 4: Setup Feedback
@@ -260,7 +260,7 @@ Analysis Steps:
      - OS-specific issues
 
 Documentation Impact:
-  - Update: corpus/ops/setup/setup_guide.md
+  - Update: corpus/ops/platform-setup/setup_guide.md
   - Update: Troubleshooting section
   - Update: Checklists if structure changed
 ```
