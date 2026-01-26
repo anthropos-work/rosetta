@@ -1,5 +1,5 @@
 ---
-name: anthropos-integrate
+name: ant-integrate
 description: Integrate new evidence into the Rosetta corpus through reflection and analysis
 argument-hint: [evidence-type] or interactive
 ---
@@ -108,7 +108,7 @@ Create an **Update Plan** before making changes. Consider:
 
 | Evidence Type | Claude Assets |
 |---------------|---------------|
-| New setup requirements | Update `anthropos-setup` skill |
+| New setup requirements | Update `ant-setup` skill |
 | New skill needed | Create new skill in `.claude/skills/` |
 | New permissions needed | Update `.claude/settings.local.json` |
 | Context changes | Update `CLAUDE.md` |
@@ -133,7 +133,7 @@ Create an **Update Plan** before making changes. Consider:
 - [ ] `corpus/ops/platform-setup/setup_checklist_linux.md` - Add checkbox
 
 ### Claude Assets
-- [ ] `.claude/skills/anthropos-setup/SKILL.md` - Add new phase
+- [ ] `.claude/skills/ant-setup/SKILL.md` - Add new phase
 
 ### Verification
 [How to verify the documentation is accurate]
@@ -217,7 +217,7 @@ When adding setup steps:
 2. Add checkbox to BOTH checklists:
    - `corpus/ops/platform-setup/setup_checklist_macos.md`
    - `corpus/ops/platform-setup/setup_checklist_linux.md`
-3. Update `anthropos-setup` skill if phase structure changes
+3. Update `ant-setup` skill if phase structure changes
 
 ## Error Handling
 
@@ -252,15 +252,15 @@ Integration complete when:
 
 ```bash
 # Interactive mode - will ask for evidence type
-/anthropos-integrate
+/ant-integrate
 
 # Specific evidence type
-/anthropos-integrate A    # New repo
-/anthropos-integrate D    # Setup feedback
+/ant-integrate A    # New repo
+/ant-integrate D    # Setup feedback
 
 # With target specified
-/anthropos-integrate new-repo studio-analytics
-/anthropos-integrate setup-feedback anthropos-dev/setup_progress.md
+/ant-integrate new-repo studio-analytics
+/ant-integrate setup-feedback anthropos-dev/setup_progress.md
 ```
 
 ## Integration with Project Rosetta

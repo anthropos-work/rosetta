@@ -247,26 +247,31 @@ anthropos-dev/
 │   └── .env (secrets)
 ├── backend/ (cloned from app)
 ├── cms/
+│   └── studio/ (cloned studio-room for Docker build)
 ├── jobsimulation/
+├── skiller/
+├── skillpath/ (optional - for migrations)
+├── chronos/ (optional - for migrations)
 ├── next-web-app/
-└── studio/
-    ├── studio-desk/
-    └── studio-room/
+├── studio-desk/
+└── studio-room/
 ```
+
+**Note**: `skillpath` and `chronos` are built by Docker directly from GitHub. Only clone them if you need to apply migrations or develop on them locally.
 
 ## Skill Invocation
 
 ```bash
 # Full setup from scratch
-/anthropos-setup
+/ant-setup
 
 # Run complete setup
-/anthropos-setup full
+/ant-setup full
 
 # Jump to specific phase
-/anthropos-setup repos
-/anthropos-setup docker
-/anthropos-setup frontend
+/ant-setup repos
+/ant-setup docker
+/ant-setup frontend
 ```
 
 ## Integration with Project Rosetta

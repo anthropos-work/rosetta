@@ -12,7 +12,7 @@ This skill implements an **inspect-plan-implement** loop:
 ## Evidence Type Decision Tree
 
 ```
-User invokes /anthropos-integrate
+User invokes /ant-integrate
     │
     ├─ Argument provided?
     │   ├─ Yes → Parse evidence type (A/B/C/D/E/F)
@@ -72,8 +72,8 @@ User invokes /anthropos-integrate
 
 | Asset | Purpose | Update Trigger |
 |-------|---------|----------------|
-| `.claude/skills/anthropos-setup/SKILL.md` | Setup automation | New setup phase |
-| `.claude/skills/anthropos-integrate/SKILL.md` | This skill | Improve integration process |
+| `.claude/skills/ant-setup/SKILL.md` | Setup automation | New setup phase |
+| `.claude/skills/ant-integrate/SKILL.md` | This skill | Improve integration process |
 | `.claude/settings.local.json` | Permissions | New command patterns needed |
 | `CLAUDE.md` | Agent context | Significant platform changes |
 
@@ -433,28 +433,28 @@ At completion, verify:
 
 ```bash
 # Interactive - asks for evidence type
-/anthropos-integrate
+/ant-integrate
 
 # Direct evidence type
-/anthropos-integrate A              # New repo
-/anthropos-integrate B              # New feature
-/anthropos-integrate C              # New directory
-/anthropos-integrate D              # Setup feedback
-/anthropos-integrate E              # Missing aspect
+/ant-integrate A              # New repo
+/ant-integrate B              # New feature
+/ant-integrate C              # New directory
+/ant-integrate D              # Setup feedback
+/ant-integrate E              # Missing aspect
 
 # With path argument
-/anthropos-integrate A studio-analytics
-/anthropos-integrate D anthropos-dev/setup_progress.md
+/ant-integrate A studio-analytics
+/ant-integrate D anthropos-dev/setup_progress.md
 ```
 
 ## Integration with Other Skills
 
-### Handoff to anthropos-setup
+### Handoff to ant-setup
 
 If integration reveals new setup requirements:
 1. Document in setup_guide.md
 2. Update checklists
-3. Suggest user run `/anthropos-setup` to test changes
+3. Suggest user run `/ant-setup` to test changes
 
 ### Recursive Improvement
 

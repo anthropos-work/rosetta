@@ -1,5 +1,5 @@
 ---
-name: anthropos-setup
+name: ant-setup
 description: Build Anthropos dev environment following setup guide with auto-improvement
 argument-hint: [step-name or 'full']
 ---
@@ -66,7 +66,7 @@ Update `anthropos-dev/setup_progress.md` as you complete steps (NOT the original
 - Typo fixes
 - Troubleshooting additions
 
-**When structure changes, also update this skill** (`.claude/skills/anthropos-setup/SKILL.md`) if needed.
+**When structure changes, also update this skill** (`.claude/skills/ant-setup/SKILL.md`) if needed.
 
 ## Error Handling
 

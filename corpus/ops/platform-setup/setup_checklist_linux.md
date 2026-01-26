@@ -38,6 +38,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] `cms` repo cloned
     - [ ] `jobsimulation` repo cloned
     - [ ] `skiller` repo cloned
+    - [ ] `skillpath` repo cloned (optional - for migrations)
+    - [ ] `chronos` repo cloned (optional - for migrations)
 - [ ] **Frontend**
     - [ ] `next-web-app` repo cloned
 - [ ] **Internal Tools (Optional)**
@@ -57,6 +59,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] CMS schema applied: `(cd cms && atlas migrate apply --env local)`
     - [ ] JobSimulation schema applied: `(cd jobsimulation && atlas migrate apply --env local)`
     - [ ] Skiller schema applied: `(cd skiller && atlas migrate apply --env local)`
+    - [ ] Skillpath schema applied: `(cd skillpath && atlas migrate apply --env local)`
+    - [ ] Chronos schema applied: `(cd chronos && atlas migrate apply --env local)`
 - [ ] Docker Compose: Services (`backend`, `cms`, `jobsimulation`) up
 - [ ] Verification: `docker ps` shows healthy containers
 

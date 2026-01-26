@@ -52,6 +52,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] `cms` repo cloned
     - [ ] `jobsimulation` repo cloned
     - [ ] `skiller` repo cloned
+    - [ ] `skillpath` repo cloned (optional - for migrations)
+    - [ ] `chronos` repo cloned (optional - for migrations)
     - [ ] Verified: `ls -la backend cms jobsimulation skiller` shows Go files
 - [ ] **Frontend**
     - [ ] `next-web-app` repo cloned
@@ -83,6 +85,8 @@ This file is a companion to the `setup_guide.md`. Use it to track your progress 
     - [ ] CMS schema applied: `(cd cms && atlas migrate apply --env local)`
     - [ ] JobSimulation schema applied: `(cd jobsimulation && atlas migrate apply --env local)`
     - [ ] Skiller schema applied: `(cd skiller && atlas migrate apply --env local)`
+    - [ ] Skillpath schema applied: `(cd skillpath && atlas migrate apply --env local)`
+    - [ ] Chronos schema applied: `(cd chronos && atlas migrate apply --env local)`
 - [ ] Docker Compose: Services started
     - [ ] Command: `docker compose -p ant-rosetta up -d backend cms jobsimulation`
     - [ ] Verified: `docker ps` shows healthy containers for backend, cms, jobsimulation

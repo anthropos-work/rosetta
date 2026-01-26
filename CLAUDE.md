@@ -13,11 +13,20 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 
 ## Development Commands
 
-### Using the Automated Setup Skill
+### Available Skills
+
+| Skill | Purpose | Guide |
+|-------|---------|-------|
+| `/ant-setup` | Build the dev environment from scratch | `corpus/ops/platform-setup/setup_guide.md` |
+| `/ant-run` | Start the platform locally | `corpus/ops/platform-run/run_guide.md` |
+| `/ant-update` | Sync code, deps, and schemas | `corpus/ops/platform-update/update_guide.md` |
+| `/ant-integrate` | Integrate new evidence into corpus | N/A (meta-skill) |
+
+### Using the Setup Skill
 
 For building the Anthropos development environment:
 ```bash
-/anthropos-setup
+/ant-setup
 ```
 
 This skill executes `corpus/ops/platform-setup/setup_guide.md` with:
@@ -26,11 +35,37 @@ This skill executes `corpus/ops/platform-setup/setup_guide.md` with:
 - Progress tracking in `anthropos-dev/setup_progress.md`
 - Auto-improvement of documentation when issues are found
 
-### Using the Corpus Integration Skill
+### Using the Run Skill
+
+For starting the platform locally after setup:
+```bash
+/ant-run
+```
+
+This skill executes `corpus/ops/platform-run/run_guide.md` with:
+- Service health verification
+- Proper startup sequence (infra → backend → frontend)
+- Port conflict detection and resolution
+- Progress tracking in `anthropos-dev/run_progress.md`
+
+### Using the Update Skill
+
+For syncing code, dependencies, and database schemas:
+```bash
+/ant-update
+```
+
+This skill executes `corpus/ops/platform-update/update_guide.md` with:
+- Daily/weekly/full update scenarios
+- Git conflict handling
+- Migration application
+- Docker image rebuilding
+
+### Using the Integrate Skill
 
 For integrating new platform evidence into the Rosetta documentation:
 ```bash
-/anthropos-integrate
+/ant-integrate
 ```
 
 This skill analyzes new evidence about the Anthropos platform and updates the corpus:
@@ -212,12 +247,16 @@ When updating `corpus/ops/platform-setup/setup_guide.md`, follow these principle
 These files must be maintained together:
 1. `corpus/ops/platform-setup/setup_guide.md`: Detailed setup instructions
 2. `corpus/ops/platform-setup/setup_checklist_macos.md` / `setup_checklist_linux.md`: OS-specific checklists
-3. `.claude/skills/anthropos-setup/SKILL.md`: Automated setup skill
-4. `.claude/skills/anthropos-integrate/SKILL.md`: Corpus integration skill
+3. `corpus/ops/platform-run/run_guide.md` / `run_checklist.md`: Platform startup instructions
+4. `corpus/ops/platform-update/update_guide.md` / `update_checklist.md`: Update instructions
+5. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
+6. `.claude/skills/ant-run/SKILL.md`: Automated run skill
+7. `.claude/skills/ant-update/SKILL.md`: Automated update skill
+8. `.claude/skills/ant-integrate/SKILL.md`: Corpus integration skill
 
-**When to update checklists**: Only when setup structure changes (steps added/removed/reordered), not for clarifications or verification command additions.
+**When to update checklists**: Only when guide structure changes (steps added/removed/reordered), not for clarifications or verification command additions.
 
-**When to use anthropos-integrate**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill ensures corpus updates follow the modus operandi.
+**When to use ant-integrate**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill ensures corpus updates follow the modus operandi.
 
 ### Modus Operandi
 
@@ -264,7 +303,7 @@ rosetta/
 ## Quick Start for New Developers
 
 1. Read `README.md` for project overview
-2. Follow `corpus/ops/platform-setup/setup_guide.md` to build environment (or use `/anthropos-setup`)
-3. Follow `corpus/ops/platform-run/run_guide.md` to start the platform locally
+2. Follow `corpus/ops/platform-setup/setup_guide.md` to build environment (or use `/ant-setup`)
+3. Follow `corpus/ops/platform-run/run_guide.md` to start the platform locally (or use `/ant-run`)
 4. Read `corpus/architecture/architecture_overview.md` for system understanding
 5. Consult `corpus/services/` for specific service details

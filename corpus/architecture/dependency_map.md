@@ -11,7 +11,7 @@ This document outlines the inter-service dependencies inferred from configuratio
 | **Sentinel** | - | Postgres |
 | **Jobsimulation** | Sentinel, Backend, Storage, Chronos, CMS | Postgres, Redis |
 | **Skiller** | - | Postgres, Redis |
-| **Skillpath** | CMS | Postgres, Redis |
+| **Skillpath** | CMS, Jobsimulation (RPC + Redis Stream), Sentinel | Postgres, Redis |
 | **Storage** | CMS | Postgres, Redis |
 | **Chronos** | - | Postgres, Redis |
 | **Intelligence** | - | Postgres (Connection to Backend/Skiller DB) |
@@ -41,3 +41,9 @@ This document outlines the inter-service dependencies inferred from configuratio
 *   **Studio Desk** creates blueprints.
 *   **Studio Room** reads blueprints from **CMS** and uses AI Providers to generate content.
 *   **Directus** serves as the storage backend for CMS content.
+
+### 5. Skill Path Progress (Event-Driven)
+`Jobsimulation` -> `Redis Stream` -> `Skillpath`
+*   When a user completes a simulation, **Jobsimulation** publishes an event.
+*   **Skillpath** subscribes to the Jobsimulation stream and updates step/chapter/path progress.
+*   Skillpath queries **CMS** (RPC) for skill path structure and **Sentinel** for authorization.

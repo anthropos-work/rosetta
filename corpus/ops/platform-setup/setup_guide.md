@@ -192,9 +192,11 @@ Clone the core Go services.
 git clone git@github.com:anthropos-work/app.git backend
 git clone git@github.com:anthropos-work/cms.git
 git clone git@github.com:anthropos-work/jobsimulation.git
-# Remote-only services (optional source, strictly needed only if editing):
+# Remote-only services (optional, clone only if editing source or applying migrations):
 # git clone git@github.com:anthropos-work/sentinel.git
 # git clone git@github.com:anthropos-work/skiller.git
+# git clone git@github.com:anthropos-work/skillpath.git
+# git clone git@github.com:anthropos-work/chronos.git
 ```
 *Verification*: `ls -la backend cms jobsimulation` should show all three directories with Go files.
 
@@ -308,8 +310,15 @@ We use the `-p ant-rosetta` flag to set a custom project name. This creates an i
 
         # Skiller Schema (skiller)
         (cd skiller && atlas migrate apply --env local)
+
+        # Skillpath Schema (skillpath)
+        (cd skillpath && atlas migrate apply --env local)
+
+        # Chronos Schema (chronos)
+        (cd chronos && atlas migrate apply --env local)
         ```
         *Note: The parenthesis `(...)` ensure you return to the current directory after the command.*
+        *Note: Skillpath and Chronos services are run as Docker images. Only clone these repos if you need to run migrations or develop on them.*
     *   **Verification**: The commands should complete successfully without error, outputting the migration steps applied.
 
 4.  Start the services:
