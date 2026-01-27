@@ -2,9 +2,7 @@
 
 This guide takes you from a **completed setup** to a **running local platform** that you can access in your browser.
 
-> **Prerequisites**: This guide assumes you have completed the [Setup Guide](../platform-setup/setup_guide.md). All tools must be installed and repositories cloned to `anthropos-dev/`.
-
-> **Companion Checklist**: This guide is paired with a run checklist ([run_checklist.md](./run_checklist.md)). Copy it to your workspace to track progress and log issues.
+> **Prerequisites**: This guide assumes you have completed the [Setup Guide](setup_guide.md). All tools must be installed and repositories cloned to `anthropos-dev/`.
 
 ## Quick Reference: Service URLs
 
@@ -167,6 +165,27 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 ## 4. Start Frontend (Next.js Web App)
 
 The frontend runs outside Docker for faster development iteration.
+
+### Verify Node.js Version (Critical)
+
+The frontend requires **Node.js v20 LTS**. Node.js v22+ removed the `import ... assert` syntax used by the codebase.
+
+```bash
+node --version
+```
+
+*Expected*: `v20.x.x`
+
+**If using Node.js v22+ or v24+**: Switch to Node 20 using nvm:
+```bash
+nvm use 20
+```
+
+If nvm is not installed or Node 20 is not available:
+```bash
+nvm install 20
+nvm use 20
+```
 
 ### Navigate to Frontend Directory
 
@@ -442,15 +461,14 @@ docker exec ant-rosetta-postgresql-1 psql -U postgres -c "\dn"
 
 ## 9. Maintenance Guidelines
 
-This guide, the run checklist, and any future `/anthropos-run` skill are interconnected documents.
+This guide and the `/ant-run` skill are interconnected documents.
 
 ### When You Update This Guide
 
 If you modify the run process:
 
-1. **Update Checklist**: Add/remove/reorder items in `run_checklist.md`
-2. **Update Skills**: If an `/anthropos-run` skill exists, sync its steps
-3. **Document Issues**: Add troubleshooting entries for new problems
+1. **Update Skills**: Sync changes with `.claude/skills/ant-run/SKILL.md`
+2. **Document Issues**: Add troubleshooting entries for new problems
 
 ### Continuous Improvement
 

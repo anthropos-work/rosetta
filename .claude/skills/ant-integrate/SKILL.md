@@ -99,7 +99,7 @@ Create an **Update Plan** before making changes. Consider:
 | New service (Core) | `corpus/services/{service-name}.md` + update `architecture_overview.md` |
 | New service (Studio) | `corpus/services/studio-{name}.md` + update `service_taxonomy.md` |
 | New external integration | `corpus/architecture/external_services.md` |
-| New setup step | `corpus/ops/platform-setup/setup_guide.md` + both checklists |
+| New setup step | `corpus/ops/setup_guide.md` |
 | New tool | `corpus/tools/toolchain_overview.md` |
 | Architecture change | `corpus/architecture/architecture_overview.md` |
 | Dependency change | `corpus/architecture/dependency_map.md` |
@@ -128,9 +128,7 @@ Create an **Update Plan** before making changes. Consider:
 
 ### Files to Update
 - [ ] `corpus/architecture/architecture_overview.md` - Add to service list
-- [ ] `corpus/ops/platform-setup/setup_guide.md` - Add clone step
-- [ ] `corpus/ops/platform-setup/setup_checklist_macos.md` - Add checkbox
-- [ ] `corpus/ops/platform-setup/setup_checklist_linux.md` - Add checkbox
+- [ ] `corpus/ops/setup_guide.md` - Add clone step
 
 ### Claude Assets
 - [ ] `.claude/skills/ant-setup/SKILL.md` - Add new phase
@@ -213,11 +211,8 @@ When documenting a new service, follow `corpus/services/TEMPLATE.md`:
 
 When adding setup steps:
 
-1. Add step to `corpus/ops/platform-setup/setup_guide.md` with verification
-2. Add checkbox to BOTH checklists:
-   - `corpus/ops/platform-setup/setup_checklist_macos.md`
-   - `corpus/ops/platform-setup/setup_checklist_linux.md`
-3. Update `ant-setup` skill if phase structure changes
+1. Add step to `corpus/ops/setup_guide.md` with verification
+2. Update `ant-setup` skill if phase structure changes
 
 ## Error Handling
 
@@ -244,7 +239,7 @@ Use TodoWrite to track:
 Integration complete when:
 1. All planned documentation created/updated
 2. New information is discoverable from corpus README
-3. Setup guide updated if needed (with checklists)
+3. Setup guide updated if needed
 4. Claude assets updated if needed
 5. Changes committed with clear message
 

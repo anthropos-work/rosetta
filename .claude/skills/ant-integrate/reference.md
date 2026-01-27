@@ -39,7 +39,7 @@ User invokes /ant-integrate
     │   ├─ Read setup_progress.md
     │   ├─ Parse checkboxes and notes
     │   ├─ Categorize: missing/incorrect/env-specific
-    │   └─ Plan: setup guide + checklists + troubleshooting
+    │   └─ Plan: setup guide + troubleshooting
     │
     ├─ Type E: Missing Aspect
     │   ├─ AskUserQuestion for specifics
@@ -64,9 +64,7 @@ User invokes /ant-integrate
 | `corpus/architecture/dependency_map.md` | Service dependencies | Dependency changes |
 | `corpus/services/{service}.md` | Per-service docs | New or updated service |
 | `corpus/tools/toolchain_overview.md` | Development tools | New tool required |
-| `corpus/ops/platform-setup/setup_guide.md` | Setup instructions | New setup step |
-| `corpus/ops/platform-setup/setup_checklist_macos.md` | macOS progress | Setup structure change |
-| `corpus/ops/platform-setup/setup_checklist_linux.md` | Linux progress | Setup structure change |
+| `corpus/ops/setup_guide.md` | Setup instructions | New setup step |
 
 ### Claude Assets
 
@@ -197,8 +195,7 @@ Documentation Impact:
   - Create: corpus/services/{name}.md
   - Update: corpus/architecture/architecture_overview.md
   - Update: corpus/architecture/service_taxonomy.md
-  - Update: corpus/ops/platform-setup/setup_guide.md (clone + migrations)
-  - Update: Both setup checklists
+  - Update: corpus/ops/setup_guide.md (clone + migrations)
 ```
 
 ### Pattern 2: New TypeScript Service
@@ -238,7 +235,7 @@ Analysis Steps:
 Documentation Impact:
   - Create: corpus/services/studio-{name}.md (usually Studio tier)
   - Update: corpus/architecture/service_taxonomy.md
-  - Update: corpus/ops/platform-setup/setup_guide.md (pip install steps)
+  - Update: corpus/ops/setup_guide.md (pip install steps)
 ```
 
 ### Pattern 4: Setup Feedback
@@ -260,9 +257,8 @@ Analysis Steps:
      - OS-specific issues
 
 Documentation Impact:
-  - Update: corpus/ops/platform-setup/setup_guide.md
+  - Update: corpus/ops/setup_guide.md
   - Update: Troubleshooting section
-  - Update: Checklists if structure changed
 ```
 
 ## Documentation Quality Enforcement
@@ -453,8 +449,7 @@ At completion, verify:
 
 If integration reveals new setup requirements:
 1. Document in setup_guide.md
-2. Update checklists
-3. Suggest user run `/ant-setup` to test changes
+2. Suggest user run `/ant-setup` to test changes
 
 ### Recursive Improvement
 

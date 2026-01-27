@@ -17,9 +17,9 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 
 | Skill | Purpose | Guide |
 |-------|---------|-------|
-| `/ant-setup` | Build the dev environment from scratch | `corpus/ops/platform-setup/setup_guide.md` |
-| `/ant-run` | Start the platform locally | `corpus/ops/platform-run/run_guide.md` |
-| `/ant-update` | Sync code, deps, and schemas | `corpus/ops/platform-update/update_guide.md` |
+| `/ant-setup` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
+| `/ant-run` | Start the platform locally | `corpus/ops/run_guide.md` |
+| `/ant-update` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/ant-integrate` | Integrate new evidence into corpus | N/A (meta-skill) |
 
 ### Using the Setup Skill
@@ -29,7 +29,7 @@ For building the Anthropos development environment:
 /ant-setup
 ```
 
-This skill executes `corpus/ops/platform-setup/setup_guide.md` with:
+This skill executes `corpus/ops/setup_guide.md` with:
 - Verification before/after each step
 - User confirmation before destructive operations
 - Progress tracking in `anthropos-dev/setup_progress.md`
@@ -42,11 +42,11 @@ For starting the platform locally after setup:
 /ant-run
 ```
 
-This skill executes `corpus/ops/platform-run/run_guide.md` with:
+This skill executes `corpus/ops/run_guide.md` with:
 - Service health verification
 - Proper startup sequence (infra → backend → frontend)
 - Port conflict detection and resolution
-- Progress tracking in `anthropos-dev/run_progress.md`
+- Progress tracking via TodoWrite
 
 ### Using the Update Skill
 
@@ -55,7 +55,7 @@ For syncing code, dependencies, and database schemas:
 /ant-update
 ```
 
-This skill executes `corpus/ops/platform-update/update_guide.md` with:
+This skill executes `corpus/ops/update_guide.md` with:
 - Daily/weekly/full update scenarios
 - Git conflict handling
 - Migration application
@@ -146,17 +146,14 @@ This prevents conflicts with other Anthropos environments.
 ## Key Documentation Locations
 
 ### Setup & Onboarding
-- `corpus/ops/platform-setup/setup_guide.md`: Complete environment setup instructions
-- `corpus/ops/platform-setup/setup_checklist_macos.md`: macOS-specific setup checklist
-- `corpus/ops/platform-setup/setup_checklist_linux.md`: Linux-specific setup checklist
+- `corpus/ops/setup_guide.md`: Complete environment setup instructions
 
 ### Running the Platform
-- `corpus/ops/platform-run/run_guide.md`: Start the platform locally after setup
-- `corpus/ops/platform-run/run_checklist.md`: Progress tracker for running services
+- `corpus/ops/run_guide.md`: Start the platform locally after setup
 
 ### Updating the Platform
-- `corpus/ops/platform-update/update_guide.md`: Sync code, dependencies, and database schemas
-- `corpus/ops/platform-update/update_checklist.md`: Progress tracker for updates
+- `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
+- `corpus/ops/update_checklist.md`: Progress tracker for updates
 
 ### Architecture Documentation
 - `corpus/architecture/architecture_overview.md`: High-level system design
@@ -236,7 +233,7 @@ python3 gen.py --media simulation --template default
 
 ### STEP RUN Guidelines
 
-When updating `corpus/ops/platform-setup/setup_guide.md`, follow these principles:
+When updating `corpus/ops/setup_guide.md`, follow these principles:
 1. **Verify Before Install**: Include commands to check if tools exist
 2. **Verify After Install**: Include commands to confirm successful installation
 3. **Request Confirmation**: Document where user approval is needed
@@ -245,16 +242,13 @@ When updating `corpus/ops/platform-setup/setup_guide.md`, follow these principle
 ### Interconnected Documentation
 
 These files must be maintained together:
-1. `corpus/ops/platform-setup/setup_guide.md`: Detailed setup instructions
-2. `corpus/ops/platform-setup/setup_checklist_macos.md` / `setup_checklist_linux.md`: OS-specific checklists
-3. `corpus/ops/platform-run/run_guide.md` / `run_checklist.md`: Platform startup instructions
-4. `corpus/ops/platform-update/update_guide.md` / `update_checklist.md`: Update instructions
-5. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
-6. `.claude/skills/ant-run/SKILL.md`: Automated run skill
-7. `.claude/skills/ant-update/SKILL.md`: Automated update skill
-8. `.claude/skills/ant-integrate/SKILL.md`: Corpus integration skill
-
-**When to update checklists**: Only when guide structure changes (steps added/removed/reordered), not for clarifications or verification command additions.
+1. `corpus/ops/setup_guide.md`: Detailed setup instructions
+2. `corpus/ops/run_guide.md`: Platform startup instructions
+3. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
+4. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
+5. `.claude/skills/ant-run/SKILL.md`: Automated run skill
+6. `.claude/skills/ant-update/SKILL.md`: Automated update skill
+7. `.claude/skills/ant-integrate/SKILL.md`: Corpus integration skill
 
 **When to use ant-integrate**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill ensures corpus updates follow the modus operandi.
 
@@ -282,10 +276,7 @@ rosetta/
 ├── corpus/                    # All documentation
 │   ├── architecture/          # System design docs
 │   ├── services/              # Per-service documentation
-│   ├── ops/                   # Operations guides
-│   │   ├── platform-setup/    # Environment setup guides
-│   │   ├── platform-run/      # Running the platform locally
-│   │   └── platform-update/   # Updating code, deps, and schemas
+│   ├── ops/                   # Operations guides (setup, run, update)
 │   └── tools/                 # Development tools registry
 ├── anthropos-dev/             # Git-ignored scratchpad for platform work
 ├── .claude/skills/            # Claude Code automation skills
@@ -303,7 +294,7 @@ rosetta/
 ## Quick Start for New Developers
 
 1. Read `README.md` for project overview
-2. Follow `corpus/ops/platform-setup/setup_guide.md` to build environment (or use `/ant-setup`)
-3. Follow `corpus/ops/platform-run/run_guide.md` to start the platform locally (or use `/ant-run`)
+2. Follow `corpus/ops/setup_guide.md` to build environment (or use `/ant-setup`)
+3. Follow `corpus/ops/run_guide.md` to start the platform locally (or use `/ant-run`)
 4. Read `corpus/architecture/architecture_overview.md` for system understanding
 5. Consult `corpus/services/` for specific service details

@@ -1,285 +1,168 @@
 # Anthropos Setup Skill - Technical Reference
 
-## Architecture
-
-This skill implements a **setup-and-improve** loop:
-1. Execute setup steps from corpus documentation
-2. Observe real-world execution results
-3. Update documentation based on observations
-4. Continue execution with improved docs
+Quick reference for verification commands and error recovery. For full setup instructions, see `corpus/ops/setup_guide.md`.
 
 ## File References
 
-### Documentation Sources
-- `corpus/ops/platform-setup/setup_guide.md` - Master setup guide
-- `corpus/ops/platform-setup/setup_checklist_macos.md` - macOS progress tracking checklist
-- `corpus/ops/platform-setup/setup_checklist_linux.md` - Linux progress tracking checklist
-- `corpus/architecture/` - Platform architecture context
+| Type | Path |
+|------|------|
+| Master Guide | `corpus/ops/setup_guide.md` |
+| Ops Reports | `anthropos-dev/ops-reports/` |
+| Working Dir | `anthropos-dev/` |
 
-### Working Directory
-- `anthropos-dev/` - Git-ignored scratchpad for all setup activities
+## Verification Commands
 
-## Tool Usage Strategy
-
-### Read-Only Tools (Verification)
-- `Bash` for verification commands (`--version`, `docker ps`, etc.)
-- `Read` for reading documentation and .env examples
-- `Glob` for finding configuration files
-
-### Write Tools (Execution & Documentation)
-- `Bash` for installation and cloning (after user confirmation)
-- `Edit` for updating documentation (auto-improvement)
-- `Write` for creating .env files
-
-### Interactive Tools
-- `AskUserQuestion` for all confirmations before:
-  - Installing system tools
-  - Cloning repositories
-  - Starting services
-  - Populating secrets
-
-## STEP RUN Guidelines Implementation
-
-### Guideline 1: Verify Before Install
 ```bash
-# Pattern: Check existence first
-command -v tool_name || echo "Not installed"
-tool_name --version 2>/dev/null || echo "Not installed"
+# Prerequisites
+git --version
+docker --version && docker compose version
+go version
+node --version && pnpm --version
+python3 --version
+atlas version
+xcode-select -p  # macOS only
+
+# GitHub SSH
+ssh -T git@github.com
+
+# Docker services
+docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
+
+# Database
+docker exec ant-rosetta-postgresql-1 pg_isready -U postgres
+docker exec ant-rosetta-redis-1 redis-cli ping
+
+# Services
+curl -s http://localhost:3000 > /dev/null && echo "Frontend OK"
+curl -s http://localhost:5050/health && echo "GraphQL OK"
+curl -s http://localhost:8082/health && echo "Backend OK"
 ```
 
-### Guideline 2: Request Confirmation
-```typescript
-// Pattern: Always ask before destructive operations
-AskUserQuestion({
-  question: "Install Docker Desktop? This will download ~500MB.",
-  header: "Install Tool",
-  options: [
-    { label: "Yes, install", description: "Proceed with installation" },
-    { label: "Skip for now", description: "I'll install manually" }
-  ]
-})
-```
+## Common Docker Commands
 
-### Guideline 3: Verify After Install
 ```bash
-# Pattern: Same command as "verify before"
-tool_name --version
-# Exit code 0 = success
+# Start infrastructure
+docker compose -p ant-rosetta up -d postgresql redis
+
+# Prepare PostgreSQL extensions (before migrations)
+docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+
+# Start full backend
+docker compose -p ant-rosetta --profile graphql up -d
+
+# View logs
+docker compose -p ant-rosetta logs -f [service]
 ```
 
-### Guideline 4: Document Improvements
-```markdown
-# Pattern: Update guide immediately
-Edit({
-  file_path: "corpus/ops/platform-setup/setup_guide.md",
-  old_string: "1. Install Docker Desktop",
-  new_string: "1. Install Docker Desktop\n   * Verification: `docker --version && docker compose version`"
-})
+## Atlas Migrations
+
+```bash
+# From anthropos-dev/
+(cd backend && atlas migrate apply --env local)
+(cd cms && atlas migrate apply --env local)
+(cd jobsimulation && atlas migrate apply --env local)
+(cd skiller && atlas migrate apply --env local)
+(cd skillpath && atlas migrate apply --env local)
+(cd chronos && atlas migrate apply --env local)
 ```
-
-### Guideline 5: Track Progress in Local Checklist
-```markdown
-# Pattern: Update LOCAL copy as you progress
-Edit({
-  file_path: "anthropos-dev/setup_progress.md",  # LOCAL working copy
-  old_string: "- [ ] **Docker Desktop / Engine** installed & running",
-  new_string: "- [x] **Docker Desktop / Engine** installed & running"
-})
-
-# Only update ORIGINAL when setup guide structure changes
-# (new step, removed step, reordered steps)
-Edit({
-  file_path: "corpus/ops/platform-setup/setup_checklist_macos.md",  # ORIGINAL - only for structure changes (use appropriate OS)
-  old_string: "## 3. Cloning Repositories",
-  new_string: "## 3. GitHub SSH Access\n\n- [ ] SSH key generated\n\n## 4. Cloning Repositories"
-})
-```
-
-## Docker Isolation Strategy
-
-The skill uses `-p ant-rosetta` project name to create isolated Docker resources:
-
-**Containers**: `ant-rosetta-{service}-1`
-**Networks**: `ant-rosetta_app-network`
-**Volumes**: `ant-rosetta_postgres_data`
-
-This prevents conflicts with other Anthropos environments but may cause **port conflicts**. The skill should detect these and guide resolution.
 
 ## Error Recovery Patterns
 
-### Pattern 1: Tool Not Found
-```yaml
-Error: command not found: pnpm
-Recovery:
-  1. Check if npm is installed
-  2. Run: corepack enable
-  3. Verify: pnpm --version
-  4. Document in troubleshooting
+### Permission Denied (Docker on Linux)
+
+```bash
+# Check group membership
+groups | grep docker
+
+# Fix
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verify
+docker ps
 ```
 
-### Pattern 2: Permission Denied (Docker on Linux)
-```yaml
-Error: permission denied while connecting to Docker daemon
-Recovery:
-  1. Check: groups | grep docker
-  2. Fix: sudo usermod -aG docker $USER
-  3. Reload: newgrp docker
-  4. Verify: docker ps
-  5. Update setup_guide.md with emphasis
+### Port Already in Use
+
+```bash
+# Find what's using the port
+lsof -i :3000
+
+# Options:
+# - Kill process: kill -9 <PID>
+# - Change port: PORT=3001 pnpm dev
 ```
 
-### Pattern 3: Port Already in Use
-```yaml
-Error: bind: address already in use
-Recovery:
-  1. Identify: lsof -i :3000
-  2. Options:
-     a. Stop conflicting service
-     b. Change port in config
-  3. Document resolution
+### Missing pgvector Extension
+
+```bash
+# Create extensions schema
+docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
+
+# Retry migration
+(cd cms && atlas migrate apply --env local)
 ```
 
-### Pattern 4: Missing Environment Variable
-```yaml
-Error: CLERK_SECRET_KEY is not set
-Recovery:
-  1. Check: .env file exists
-  2. Verify: grep CLERK_SECRET_KEY .env
-  3. Guide: Populate from 1Password
-  4. Emphasize in setup_guide.md
+### Docker Build Fails (SSH)
+
+```bash
+# Check SSH agent
+ssh-add -l
+
+# If no identities, add key
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# Verify GitHub access
+ssh -T git@github.com
 ```
 
-## Auto-Improvement Examples
+## Ops Report Template
 
-### Example 1: Add Missing Verification
+When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
+
 ```markdown
-Before:
-> 4. **Go** (v1.23+): `brew install go`
+# Ops Report: [Brief Title]
 
-After:
-> 4. **Go** (v1.23+): `brew install go`
->    * *Verification*: `go version`
+**Date**: YYYY-MM-DD HH:MM
+**Skill**: /ant-setup
+**OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
+**Phase**: [Prerequisites / Repos / Docker / Frontend / etc.]
+
+## Issue Encountered
+[Exact error message]
+
+## Context
+[What was being done, what commands ran]
+
+## Resolution
+[How fixed, or "Unresolved"]
+
+## Suggested Documentation Update
+[What to add/change in setup_guide.md]
 ```
-
-### Example 2: Add Troubleshooting Entry
-```markdown
-Before:
-> ## 9. Troubleshooting
-> (existing entries)
-
-After:
-> ## 9. Troubleshooting
-> (existing entries)
->
-> ### "corepack: command not found"
-> If pnpm installation fails, ensure Node.js v16+ is installed.
-> * **Fix**: `npm install -g corepack && corepack enable`
-```
-
-### Example 3: Clarify Ambiguous Step
-```markdown
-Before:
-> 2. **Populate secrets**: Edit `platform/.env`
-
-After:
-> 2. **Populate secrets**: Edit `platform/.env` and fill in all required secret values from 1Password vault "Engineering/Env".
->
->    **Critical Keys Required**:
->    * `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
->    * `OPENAI_API_KEY` (AI services)
-```
-
-## Progress Tracking
-
-### Two-Level Tracking System
-
-**Level 1: Local Checklist** (`anthropos-dev/setup_progress.md`)
-- Copied from OS-specific checklist at the start
-- Updated as each step completes
-- Used for resuming interrupted setup
-- Contains "Notes / Errors" table for issue reporting
-- This is the USER'S working copy
-
-**Level 2: TodoWrite Tool**
-- High-level phase tracking
-- Immediate next steps
-- Blockers requiring user input
-
-Example TodoWrite tracking:
-```markdown
-- [x] Phase 0: Copied checklist to anthropos-dev/
-- [x] Phase 1: Prerequisites - Git verified
-- [x] Phase 1: Prerequisites - Docker verified
-- [ ] Phase 1: Prerequisites - Go verification
-- [ ] Phase 2: GitHub SSH access
-- [ ] Documentation: Add verification for Go
-```
-
-### When to Update Original Checklist
-
-Only update OS-specific checklists when:
-- Adding a NEW step to setup_guide.md (structure change)
-- Removing a step from setup_guide.md (structure change)
-- Reordering steps in setup_guide.md (structure change)
-
-Do NOT update original checklist when:
-- Clarifying existing step details
-- Adding verification commands
-- Fixing typos or improving descriptions
-- Adding troubleshooting information
-
-## Success Validation
-
-At the end of setup, the skill should verify:
-
-1. **Services Running**: `docker ps` shows healthy containers
-2. **Frontend Accessible**: `curl -s http://localhost:3000` returns HTML
-3. **Studio-Desk Accessible**: `curl -s http://localhost:3100` returns HTML
-4. **Environment Valid**: All required keys present in .env files
-5. **Documentation Updated**: Git shows modifications to setup docs
 
 ## Repository Structure Post-Setup
 
 ```
 anthropos-dev/
-├── platform/
-│   ├── docker-compose.yml
-│   └── .env (secrets)
-├── backend/ (cloned from app)
+├── platform/           # Docker config + .env
+├── backend/            # Main API (cloned from app)
 ├── cms/
-│   └── studio/ (cloned studio-room for Docker build)
+│   └── studio/         # Studio-room for Docker build
 ├── jobsimulation/
 ├── skiller/
-├── skillpath/ (optional - for migrations)
-├── chronos/ (optional - for migrations)
-├── next-web-app/
+├── next-web-app/       # Frontend
 ├── studio-desk/
-└── studio-room/
+├── studio-room/
+└── ops-reports/        # Operational feedback
 ```
 
-**Note**: `skillpath` and `chronos` are built by Docker directly from GitHub. Only clone them if you need to apply migrations or develop on them locally.
+## Related Skills
 
-## Skill Invocation
-
-```bash
-# Full setup from scratch
-/ant-setup
-
-# Run complete setup
-/ant-setup full
-
-# Jump to specific phase
-/ant-setup repos
-/ant-setup docker
-/ant-setup frontend
-```
-
-## Integration with Project Rosetta
-
-This skill embodies the **Recursive Inspection** objective:
-- It uses the corpus to execute setup
-- It observes real execution to improve the corpus
-- It updates the corpus for future agents/engineers
-- It validates the "Recreation Standard" criterion
-
-The skill is both a **consumer** and **improver** of the documentation corpus.
+| Skill | Use When |
+|-------|----------|
+| `/ant-run` | Start platform after setup complete |
+| `/ant-update` | Sync code/deps after initial setup |
+| `/ant-integrate` | Process ops-reports into corpus |

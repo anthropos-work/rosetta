@@ -2,9 +2,7 @@
 
 This guide covers keeping your local development environment **up-to-date** with the latest code, dependencies, and database schemas.
 
-> **Prerequisites**: This guide assumes you have completed the [Platform Setup Guide](../platform-setup/setup_guide.md) and have a working local environment.
-
-> **Companion Checklist**: Copy [update_checklist.md](./update_checklist.md) to your workspace to track progress.
+> **Prerequisites**: This guide assumes you have completed the [Platform Setup Guide](setup_guide.md) and have a working local environment.
 
 ## When to Update
 
@@ -452,5 +450,5 @@ This guide follows the same iterative improvement pattern as other ops guides:
 
 ### Related Guides
 
-- [Platform Setup](../platform-setup/setup_guide.md) - Initial environment build
-- [Platform Run](../platform-run/run_guide.md) - Starting the platform
+- [Platform Setup](setup_guide.md) - Initial environment build
+- [Platform Run](run_guide.md) - Starting the platform

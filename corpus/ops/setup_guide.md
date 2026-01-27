@@ -2,8 +2,6 @@
 
 This guide is designed to take you from a **fresh computer** (or a clean folder) to a fully running Anthropos development environment.
 
-> **Companion Checklist**: This guide is paired with OS-specific setup checklists ([macOS](./setup_checklist_macos.md) | [Linux](./setup_checklist_linux.md)). We recommend AI Agents and Engineers copy the appropriate checklist to their workspace to track progress, pause/resume setup, and log any errors encountered.
-
 ## 1. Prerequisites
 
 Before we write any code, ensure you have the following tools installed.
@@ -37,10 +35,18 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `code --version`
 4.  **Go** (v1.23+): `brew install go`
     *   *Verification*: `go version`.
-5.  **Node.js** (v20+) & **pnpm**:
-    *   `brew install node`
-    *   `corepack enable` or `npm install -g pnpm`.
+5.  **Node.js** (v20 LTS - **not v22+**) & **pnpm**:
+    *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
+        ```bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+        source ~/.nvm/nvm.sh
+        nvm install 20
+        nvm use 20
+        ```
+    *   Alternative: `brew install node@20` (not `brew install node` which installs latest)
+    *   `corepack enable` or `npm install -g pnpm`
     *   *Verification*: `node --version && pnpm --version`
+    *   **Warning**: Node.js v22+ removed `import ... assert` syntax used by the frontend. Use v20 LTS.
 6.  **Build Tools**:
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
@@ -74,9 +80,16 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 4.  **Go** (v1.23+):
     *   [Official Install](https://go.dev/doc/install) is recommended to get the latest version, as apt repos are often outdated.
     *   *Verification*: `go version`.
-5.  **Node.js** (v20+) & **pnpm**:
-    *   Use [nodesource](https://github.com/nodesource/distributions) or `nvm` to get v20+.
-    *   `corepack enable` or `npm install -g pnpm`.
+5.  **Node.js** (v20 LTS - **not v22+**) & **pnpm**:
+    *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
+        ```bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+        source ~/.nvm/nvm.sh
+        nvm install 20
+        nvm use 20
+        ```
+    *   `corepack enable` or `npm install -g pnpm`
+    *   **Warning**: Node.js v22+ removed `import ... assert` syntax used by the frontend. Use v20 LTS.
 6.  **Python** (v3.8+ for Studio-Room):
     *   `sudo apt-get install python3 python3-pip python3-venv`
     *   *Verification*: `python3 --version`
@@ -96,8 +109,8 @@ If you're using **Claude Code**, you can automate this entire setup process usin
 The skill will:
 *   Execute each step with verification before and after
 *   Request your confirmation before installing tools or making changes
-*   Copy and track progress in a local checklist
-*   Auto-improve this documentation when it discovers issues
+*   Track progress using TodoWrite
+*   Create ops reports when issues are discovered
 
 See [`.claude/skills/anthropos-setup/`](../../.claude/skills/anthropos-setup/) for details.
 
@@ -230,6 +243,34 @@ git clone git@github.com:anthropos-work/experiments.git
 
 See [Anthropos Labs documentation](../tools/anthropos-labs.md) for usage details.
 
+### Understanding Docker's Build-From-Git Architecture
+
+**Most backend services do NOT need local clones to run.** The `docker-compose.yml` builds them directly from GitHub using SSH authentication:
+
+| Service | Builds From | Local Clone Needed? |
+|---------|-------------|---------------------|
+| `graphql` | `git@github.com:anthropos-work/graphql-wundergraph.git` | No |
+| `sentinel` | `git@github.com:anthropos-work/sentinel.git` | No |
+| `backend` | `git@github.com:anthropos-work/app.git` | No |
+| `skiller` | `git@github.com:anthropos-work/skiller.git` | No |
+| `skillpath` | `git@github.com:anthropos-work/skillpath.git` | No |
+| `storage` | `git@github.com:anthropos-work/storage.git` | No |
+| `chronos` | `git@github.com:anthropos-work/chronos.git` | No |
+| `intelligence` | `git@github.com:anthropos-work/intelligence.git` | No |
+| `cms` | Local (`../cms`) | **Yes** |
+
+**When to clone a repo:**
+- You need to apply database migrations (Atlas requires local migration files)
+- You're developing on that service (editing source code)
+- You need to run the service outside Docker
+
+**Why this matters:** When you run `docker compose up`, Docker will:
+1. Clone the repo from GitHub (if not cached)
+2. Build the image using the Dockerfile in that repo
+3. Start the container
+
+This requires your SSH agent to be running with GitHub access: `ssh-add -l`
+
 ---
 
 ## 5. Environment Configuration
@@ -289,7 +330,22 @@ We use the `-p ant-rosetta` flag to set a custom project name. This creates an i
     ```
     *Verification*: `docker ps` should show `ant-rosetta-postgresql-1` and `ant-rosetta-redis-1` containers running.
 
-3.  **Initialize Database Schemas**:
+3.  **Prepare PostgreSQL Extensions** (required before migrations):
+
+    Wait for PostgreSQL to be healthy, then create the required schemas and extensions:
+    ```bash
+    # Wait for PostgreSQL to be ready
+    sleep 5
+
+    # Create extensions schema with pgvector (required by CMS and Skiller)
+    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+
+    # Create sentinel schema (required by Sentinel for Casbin authorization)
+    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+    ```
+    *Verification*: Commands should complete without errors.
+
+4.  **Initialize Database Schemas**:
     The Postgres database starts empty. You must create the schemas for the core services (`backend`, `cms`, `jobsimulation`) using Atlas.
     
     *   **Install Atlas** (if you skipped it in Prerequisites):
@@ -321,32 +377,82 @@ We use the `-p ant-rosetta` flag to set a custom project name. This creates an i
         *Note: Skillpath and Chronos services are run as Docker images. Only clone these repos if you need to run migrations or develop on them.*
     *   **Verification**: The commands should complete successfully without error, outputting the migration steps applied.
 
-4.  Start the services:
+5.  Start all backend services using the `graphql` profile:
     ```bash
-    docker compose -p ant-rosetta up -d backend cms jobsimulation
+    docker compose -p ant-rosetta --profile graphql up -d
     ```
-    *(Note: Sentinel and others will be pulled as images if you didn't build them).*
+    This starts: `sentinel`, `backend`, `cms`, `skiller`, `skillpath`, `storage`, `chronos`, `jobsimulation`, `intelligence`, and `graphql`.
 
-4.  **Verification**:
-    Run `docker ps`. You should see healthy containers: `ant-rosetta-backend-1`, `ant-rosetta-cms-1`, `ant-rosetta-postgresql-1`, etc.
+    *Note*: First run may take several minutes as Docker builds images from GitHub. Ensure your SSH agent is running (`ssh-add -l`).
+
+6.  **Verification**:
+    Run `docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"`. You should see all services running:
+    - `ant-rosetta-postgresql-1` (healthy)
+    - `ant-rosetta-redis-1` (healthy)
+    - `ant-rosetta-sentinel-1`
+    - `ant-rosetta-backend-1`
+    - `ant-rosetta-cms-1`
+    - `ant-rosetta-graphql-1`
+    - And others...
+
+### Ongoing Operations
+
+For daily platform operations (starting, stopping, rebuilding services), see the [Run Guide](run_guide.md).
 
 ---
 
 ## 7. Running Frontend
 
+The Next.js frontend is a monorepo with multiple apps. Each app needs its own `.env` file.
+
+### Configure Environment Files
+
 1.  Navigate to the frontend repo:
     ```bash
     cd ../next-web-app
     ```
-2.  Install dependencies:
+
+2.  **Create `.env` files** for each app you want to run:
+    ```bash
+    # Main web app (required)
+    cp apps/web/.env.example apps/web/.env
+
+    # Hiring app (optional)
+    cp apps/hiring/.env.example apps/hiring/.env
+
+    # Integration app (optional)
+    cp apps/integration/.env.example apps/integration/.env
+    ```
+
+3.  **Populate Clerk keys** from `platform/.env`:
+
+    Open `apps/web/.env` and set:
+    ```
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<from platform/.env CLERK_PUBLISHABLE_KEY>
+    CLERK_SECRET_KEY=<from platform/.env CLERK_SECRET_KEY>
+    ```
+
+    *Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082` which are correct for local development.
+
+    *Verification*: `ls apps/web/.env` should show the file exists.
+
+### Install and Run
+
+4.  Install dependencies:
     ```bash
     pnpm install
     ```
-3.  Run the development server:
+
+5.  Run the development server:
     ```bash
     pnpm dev
     ```
-4.  Open `http://localhost:3000` (or the port shown in terminal).
+    This starts all apps in the monorepo (web, hiring, integration).
+
+6.  Open `http://localhost:3000` (or the port shown in terminal).
+    - Web app: http://localhost:3000
+    - Hiring app: http://localhost:3001
+    - Integration app: http://localhost:3002
 
 ---
 
@@ -398,32 +504,71 @@ make gen
 *   **General**: Ensure Docker containers are running (`docker ps`). If a service in Docker is failing, check logs: `docker compose logs -f [service_name]`.
 *   **Linux Permission Denied**: If you see "permission denied while trying to connect to the Docker daemon", you likely skipped the `usermod` step. Run `sudo usermod -aG docker $USER`, then log out and back in (or `newgrp docker`).
 
+### "SyntaxError: Unexpected identifier 'assert'" (Frontend)
+The frontend uses `import ... assert { type: 'json' }` syntax which was removed in Node.js v22+.
+*   **Solution**: Use Node.js v20 LTS. Install via nvm:
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+    source ~/.nvm/nvm.sh
+    nvm install 20
+    nvm use 20
+    ```
+*   Then run the frontend: `cd next-web-app && pnpm dev`
+
+### "schema 'extensions' does not exist" (Atlas migrations)
+CMS and Skiller services require the pgvector extension for vector embeddings.
+*   **Solution**: Create the extensions schema and install pgvector:
+    ```bash
+    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
+    ```
+*   Then retry the migrations: `cd [service] && atlas migrate apply --env local`
+
+### Sentinel Crashing / Restarting
+Sentinel requires its own database schema for Casbin authorization.
+*   **Solution**: Create the sentinel schema:
+    ```bash
+    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+    ```
+*   Then restart sentinel: `docker restart ant-rosetta-sentinel-1`
+
+### Port Already In Use
+If you have another Docker stack running (e.g., "platform"), ports may conflict.
+*   **Solution**: Stop the other stack first:
+    ```bash
+    docker compose -p platform stop
+    ```
+
+### Docker Build Fails with "Permission denied (publickey)"
+Docker builds services from GitHub and needs SSH access.
+*   **Solution**: Ensure your SSH agent is running with keys loaded:
+    ```bash
+    # Check if SSH agent has keys
+    ssh-add -l
+
+    # If "no identities" or "agent not running", start it and add your key:
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+
+    # Verify GitHub access
+    ssh -T git@github.com
+    ```
+*   Then retry: `docker compose -p ant-rosetta --profile graphql up -d --build`
+
 ---
 
 ## 10. Maintenance Guidelines
 
-This `setup_guide.md`, the OS-specific checklists (`setup_checklist_macos.md`, `setup_checklist_linux.md`), and the `/anthropos-setup` Claude skill are interconnected documents that must be maintained together.
+This `setup_guide.md` and the `/ant-setup` Claude skill are interconnected documents that must be maintained together.
 
 ### When You Update This Setup Guide
 
 If you modify the setup process (add/remove/reorder steps), you must update:
 
-1.  **Setup Checklists** (`setup_checklist_macos.md`, `setup_checklist_linux.md`): Add, remove, or reorder checkboxes to match the guide structure
-2.  **Anthropos Setup Skill** (`.claude/skills/anthropos-setup/SKILL.md`): Update phase definitions, step sequences, and verification commands
-3.  **This Guide**: Ensure all steps have verification commands documented
-
-### Checklist Usage Pattern
-
-The checklist is for **progress tracking**, not detailed instruction:
-
-*   **User Workflow**: Copy the checklist to your `anthropos-dev/` workspace (e.g., `anthropos-dev/my_setup_progress.md`)
-*   **Track Progress**: Check off items `[x]` as you complete them in YOUR local copy
-*   **Resume Setup**: Use your local checklist to resume where you left off
-*   **Report Issues**: Use the "Notes / Errors" table in your local copy to document problems for other developers
-*   **Keep Checklists Lean**: The original checklist in `corpus/ops/platform-setup/` is only updated when the setup guide structure changes
+1.  **Anthropos Setup Skill** (`.claude/skills/ant-setup/SKILL.md`): Update phase definitions, step sequences, and verification commands
+2.  **This Guide**: Ensure all steps have verification commands documented
 
 ### General Guidelines
 
-*   **OS-Specific Differences**: When a step differs between macOS and Linux, ensure each checklist reflects the appropriate commands/tools for that OS
+*   **OS-Specific Differences**: When a step differs between macOS and Linux, ensure this guide reflects the appropriate commands/tools for each OS
 *   **Agent-Friendly**: Ensure all documents remain parseable and clear for autonomous agents
 *   **Verification Commands**: Every installation step should have a documented verification command

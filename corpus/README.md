@@ -26,15 +26,16 @@ Individual service documentation and developer maps.
     *   [Studio-Desk](./services/studio-desk.md): Content design service
     *   [Studio-Room](./services/studio-room.md): AI generation service
 
-### [Setup](./setup/)
-Complete setup documentation for local development environment.
+### [Ops](./ops/)
+Operations guides for setting up, running, and updating the platform.
 
-*   [Setup Guide](./setup/setup_guide.md): Step-by-step instructions for macOS and Linux.
-*   [Setup Checklists](./setup/): OS-specific checklists for tracking setup progress.
+*   [Setup Guide](./ops/setup_guide.md): Step-by-step instructions for macOS and Linux.
+*   [Run Guide](./ops/run_guide.md): Start the platform locally.
+*   [Update Guide](./ops/update_guide.md): Sync code, dependencies, and schemas.
 
 ## Navigation
 
-*   **Getting Started?** → [Setup Guide](./setup/setup_guide.md)
+*   **Getting Started?** → [Setup Guide](./ops/setup_guide.md)
 *   **Understanding the System?** → [Architecture Overview](./architecture/architecture_overview.md)
 *   **Working on a Service?** → [Services Directory](./services/)
 *   **Need Project Context?** → [Root README](../README.md)
