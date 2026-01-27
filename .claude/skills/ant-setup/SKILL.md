@@ -79,11 +79,11 @@ Use TodoWrite with phases from the guide:
 - GitHub SSH access configured
 - Workspace created (anthropos-dev/)
 - Repositories cloned
-- Environment files configured
+- Environment files configured (platform + studio-desk)
 - Database schemas initialized
 - Docker services running
 - Frontend accessible
-- Studio services running (optional)
+- Studio-Desk running
 
 ## Critical Rules
 
@@ -98,9 +98,10 @@ Use TodoWrite with phases from the guide:
 Setup complete when:
 1. All tools installed and verified
 2. All repositories cloned
-3. Environment files configured
+3. Environment files configured (platform/.env and studio-desk/.env)
 4. Docker services running and healthy
 5. Frontend accessible at localhost:3000
+6. Studio-Desk accessible at localhost:3100
 
 ## Additional Resources
 

@@ -84,6 +84,7 @@ Use TodoWrite with these phases:
 - Backend services running
 - GraphQL gateway healthy
 - Frontend accessible
+- Studio-Desk running
 
 ## Critical Rules
 
