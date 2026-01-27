@@ -20,7 +20,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/ant-setup` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
 | `/ant-run` | Start the platform locally | `corpus/ops/run_guide.md` |
 | `/ant-update` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
-| `/ant-integrate` | Integrate new evidence into corpus | N/A (meta-skill) |
+| `/ant-document` | Document new evidence across the corpus | N/A (meta-skill) |
 
 ### Using the Setup Skill
 
@@ -61,25 +61,23 @@ This skill executes `corpus/ops/update_guide.md` with:
 - Migration application
 - Docker image rebuilding
 
-### Using the Integrate Skill
+### Using the Document Skill
 
-For integrating new platform evidence into the Rosetta documentation:
+For documenting new platform evidence across the Rosetta corpus:
 ```bash
-/ant-integrate
+/ant-document [evidence description]
 ```
 
-This skill analyzes new evidence about the Anthropos platform and updates the corpus:
-- **New repos/tools**: Clone, inspect, create service documentation
-- **New features**: Analyze code, update affected service docs
-- **Setup feedback**: Parse issues from setup_progress.md, improve setup guide
-- **Missing aspects**: Document undocumented platform elements
+This skill analyzes new evidence and performs a **corpus-wide sweep** to update all relevant documentation:
+- Inspects the evidence (repos, features, tools, feedback)
+- Checks ALL corpus sections that may need updates
+- Updates Claude skills when automation is affected
+- Ensures new content is discoverable from parent docs
 
-Evidence types:
-- `A` - New repository, project, or tool
-- `B` - New feature/code in existing service
-- `C` - New directory in anthropos-dev/
-- `D` - Setup feedback (setup_progress.md with issues)
-- `E` - Missing platform aspect
+Example invocations:
+- `/ant-document the new studio-analytics repo`
+- `/ant-document issues found in setup_progress.md`
+- `/ant-document the Redis caching layer isn't documented`
 
 ### Working in the Scratchpad
 
@@ -248,9 +246,9 @@ These files must be maintained together:
 4. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
 5. `.claude/skills/ant-run/SKILL.md`: Automated run skill
 6. `.claude/skills/ant-update/SKILL.md`: Automated update skill
-7. `.claude/skills/ant-integrate/SKILL.md`: Corpus integration skill
+7. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
 
-**When to use ant-integrate**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill ensures corpus updates follow the modus operandi.
+**When to use ant-document**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 
 ### Modus Operandi
 
