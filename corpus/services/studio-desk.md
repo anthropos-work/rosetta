@@ -19,7 +19,7 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | TypeScript, Vite, Express.js, React |
 | **Deployment** | Standalone (not in docker-compose) |
-| **Port(s)** | 3100 (frontend), 4000 (backend) |
+| **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Authentication** | Clerk |
 | **Repository** | Local `studio/studio-desk/` |
 
@@ -40,8 +40,8 @@ Studio-Desk is a **full-stack TypeScript application** with:
 
 ```mermaid
 graph LR
-    User[Content Creator] --> Frontend[Vite Frontend :3100]
-    Frontend --> Backend[Express Backend :4000]
+    User[Content Creator] --> Frontend[Vite Frontend :9100]
+    Frontend --> Backend[Express Backend :9000]
     Backend --> GraphQL[Wundergraph :5050]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
@@ -145,15 +145,15 @@ Studio-Desk works with these primary entities (stored via CMS → Directus):
 Create `.env` file:
 
 ```bash
-# Server
-PORT=4000
+# Server (defaults to 9000 if not specified)
+PORT=9000
+FRONTEND_PORT=9100
 NODE_ENV=development
 CLERK_SECRET_KEY=sk_test_xxxxx
-CLERK_SIGN_IN_URL=http://localhost:3100/login
+CLERK_SIGN_IN_URL=http://localhost:3000/login
 
 # Frontend
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-VITE_CLERK_SIGN_IN_URL=http://localhost:3100/login
 VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
 VITE_WEB_APP_URL=http://localhost:3000
 
@@ -180,12 +180,12 @@ npm run dev
 ```
 
 This starts:
-- Frontend: `http://localhost:3100` (Vite dev server)
-- Backend: `http://localhost:4000` (Express API)
+- Frontend: `http://localhost:9100` (Vite dev server, configurable via `FRONTEND_PORT`)
+- Backend: `http://localhost:9000` (Express API, configurable via `PORT`)
 
 4. **Access the application**:
-   - Development: `http://localhost:3100`
-   - With full auth flow: `http://localhost:4000` (proxies to frontend)
+   - Development: `http://localhost:9100` (direct frontend access)
+   - Backend API: `http://localhost:9000` (API server with `/api` routes)
 
 #### Testing
 
@@ -210,7 +210,7 @@ npm run build
 npm start
 ```
 
-Serves the app from `http://localhost:4000` (backend serves frontend static files).
+Serves the app from `http://localhost:9000` (backend serves frontend static files, or configured via `PORT`).
 
 ### Deployment
 

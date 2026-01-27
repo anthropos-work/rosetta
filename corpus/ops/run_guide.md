@@ -11,8 +11,8 @@ Once running, access these URLs in your browser:
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
+| **Studio-Desk** | http://localhost:9100 | Simulation design tool |
 | **GraphQL Playground** | http://localhost:5050 | API gateway (Wundergraph) |
-| **Studio-Desk** | http://localhost:3100 | Simulation design tool |
 | **Directus CMS** | http://localhost:8055 | Content management (if running) |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
@@ -240,65 +240,99 @@ Options:
 
 ---
 
-## 5. Start Studio Services (Optional)
+## 5. Start Studio-Desk (Design Tool)
 
-Studio services are needed for content creation and simulation design.
+Studio-Desk is the simulation design tool used by content creators. It runs alongside the frontend.
 
-### Studio-Desk (Design Tool)
+### Navigate to Studio-Desk Directory
 
 ```bash
 cd anthropos-dev/studio-desk
 ```
 
-#### Install Dependencies (if needed)
+### Install Dependencies (if needed)
+
 ```bash
 ls node_modules > /dev/null 2>&1 && echo "Dependencies installed" || npm install
 ```
 
-#### Check Environment File
+### Verify Environment File
+
+Studio-Desk requires its own `.env` file with Clerk and OpenAI credentials.
+
 ```bash
-ls .env > /dev/null 2>&1 && echo ".env exists" || echo "Copy .env.example to .env"
+ls .env > /dev/null 2>&1 && echo ".env exists" || echo "Missing: Copy .env.example to .env"
 ```
 
-If missing:
+If missing, create it:
 ```bash
 cp .env.example .env
-# Edit .env with required keys (CLERK_*, OPENAI_API_KEY)
 ```
 
-#### Start Studio-Desk
+Then populate the required keys from `platform/.env`:
+- `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY` (copy from platform)
+- `OPENAI_API_KEY` (copy from platform)
+
+### Start Studio-Desk
+
 ```bash
 npm run dev
 ```
 
-*Expected*: Server on http://localhost:3100
+*Expected*:
+- Frontend starts on http://localhost:9100 (configurable via `FRONTEND_PORT` in `.env`)
+- Backend starts on http://localhost:9000 (configurable via `PORT` or `BACKEND_PORT` in `.env`)
 
-### Studio-Room (AI Pipeline)
+### Verify Studio-Desk
 
-Studio-Room is typically run for specific generation tasks, not as a persistent service.
+Open http://localhost:9100 in your browser.
+
+*Expected*: Studio-Desk login page (uses Clerk authentication).
+
+### Troubleshooting: Port Already in Use
+
+```bash
+# Find what's using port 9100 or 9000
+lsof -i :9100
+lsof -i :9000
+```
+
+To use different ports, edit `studio-desk/.env`:
+```
+FRONTEND_PORT=9200
+PORT=9001
+```
+
+---
+
+## 6. Start Studio-Room (Optional - On-Demand)
+
+Studio-Room is the AI-powered generation pipeline. Unlike other services, it runs **on-demand** for specific generation tasks, not as a persistent service.
+
+### Navigate to Studio-Room Directory
 
 ```bash
 cd anthropos-dev/studio-room
 ```
 
-#### Verify Python Environment
+### Verify Python Environment
 ```bash
 python3 --version
 ```
 
-#### Install Dependencies (if needed)
+### Install Dependencies (if needed)
 ```bash
 pip3 install -r requirements.txt
 ```
 
-#### Run a Generation
+### Run a Generation
 ```bash
 python3 gen.py --media simulation --template default
 ```
 
 ---
 
-## 6. Stopping Services
+## 7. Stopping Services
 
 ### Stop Frontend
 Press `Ctrl+C` in the terminal running `pnpm dev:web`.
@@ -328,7 +362,7 @@ docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
 
 ---
 
-## 7. Common Scenarios
+## 8. Common Scenarios
 
 ### Scenario: Resume After Computer Restart
 
@@ -336,6 +370,7 @@ docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
 2. Start infrastructure: `docker compose -p ant-rosetta up -d postgresql redis`
 3. Start backend: `docker compose -p ant-rosetta --profile graphql up -d`
 4. Start frontend: `cd next-web-app && pnpm dev:web`
+5. Start Studio-Desk: `cd studio-desk && npm run dev`
 
 ### Scenario: Quick Frontend Development
 
@@ -382,7 +417,7 @@ docker compose -p ant-rosetta up -d --build backend
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### "Connection Refused" Errors
 
@@ -459,7 +494,7 @@ docker exec ant-rosetta-postgresql-1 psql -U postgres -c "\dn"
 
 ---
 
-## 9. Maintenance Guidelines
+## 10. Maintenance Guidelines
 
 This guide and the `/ant-run` skill are interconnected documents.
 

@@ -294,10 +294,34 @@ All services share a **single centralized `.env` file** located in the `platform
     *   `AZURE_API_KEY` (Optional, if using Azure OpenAI)
     *   `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
 
-3.  **Studio Environment**:
-    *   Copy `studio/studio-desk/.env.example` to `studio/studio-desk/.env`
-    *   Populate matching keys from `platform/.env` (Clerk, OpenAI)
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
+
+### Studio-Desk Environment
+
+Studio-Desk requires its own `.env` file with Clerk and OpenAI credentials.
+
+1.  **Create the environment file**:
+    ```bash
+    cd ../studio-desk
+    cp .env.example .env
+    ```
+
+2.  **Populate required keys** from `platform/.env`:
+
+    Open `studio-desk/.env` and set:
+    ```
+    # Server
+    CLERK_SECRET_KEY=<from platform/.env>
+
+    # Frontend
+    VITE_CLERK_PUBLISHABLE_KEY=<from platform/.env CLERK_PUBLISHABLE_KEY>
+    VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+
+    # OpenAI (for Copilot)
+    OPENAI_API_KEY=<from platform/.env>
+    ```
+
+3.  **Verification**: `ls -la studio-desk/.env` should show the file exists.
 
 **Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Individual service repositories do not need their own `.env` files when running via Docker.
 
@@ -456,21 +480,36 @@ The Next.js frontend is a monorepo with multiple apps. Each app needs its own `.
 
 ---
 
-## 8. Running Studio Services
+## 8. Running Studio-Desk (Design Tool)
 
-### Studio-Desk (Design Tool)
+Studio-Desk is the simulation design tool - a required part of the full platform for content creation workflows.
+
 1.  Navigate to studio-desk:
     ```bash
-    cd ../studio/studio-desk
+    cd ../studio-desk
     ```
-2.  Install dependencies & start:
+
+2.  Install dependencies:
     ```bash
     npm install
+    ```
+
+3.  Start the development server:
+    ```bash
     npm run dev
     ```
-3.  Access at `http://localhost:3100`
+    This starts both the frontend (port 9100) and backend (port 9000). Ports are configurable via `.env`.
 
-### Studio-Room (AI Pipeline)
+4.  Access at `http://localhost:9100`
+
+    *Verification*: You should see the Studio-Desk login page (uses Clerk authentication).
+
+---
+
+## 9. Running Studio-Room (Optional - On-Demand)
+
+Studio-Room is the AI generation pipeline. It runs **on-demand** for specific generation tasks, not as a persistent service.
+
 1.  Navigate to studio-room:
     ```bash
     cd ../studio-room
@@ -486,7 +525,7 @@ The Next.js frontend is a monorepo with multiple apps. Each app needs its own `.
 
 ---
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 ### "Generated code missing" / "command not found: make"
 If running Go services locally (outside Docker), you may hit errors about missing files.
@@ -556,7 +595,7 @@ Docker builds services from GitHub and needs SSH access.
 
 ---
 
-## 10. Maintenance Guidelines
+## 11. Maintenance Guidelines
 
 This `setup_guide.md` and the `/ant-setup` Claude skill are interconnected documents that must be maintained together.
 

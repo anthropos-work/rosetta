@@ -85,7 +85,7 @@ docker compose up -d backend cms sentinel skiller jobsimulation
 | Property | Value |
 |:---------|:------|
 | **Technology** | TypeScript, Vite, Express.js, React |
-| **Port** | 3100 (frontend), 4000 (backend) |
+| **Port** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Purpose** | User-facing design tool for creating job simulation blueprints |
 | **Authentication** | Clerk |
 | **Location** | `studio/studio-desk/` |
@@ -100,7 +100,7 @@ docker compose up -d backend cms sentinel skiller jobsimulation
 ```bash
 cd studio-desk
 npm install
-npm run dev  # Starts both frontend (3100) and backend (4000)
+npm run dev  # Starts both frontend (9100) and backend (9000)
 ```
 
 #### Studio-Room

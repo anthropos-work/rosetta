@@ -44,7 +44,7 @@ For starting the platform locally after setup:
 
 This skill executes `corpus/ops/run_guide.md` with:
 - Service health verification
-- Proper startup sequence (infra → backend → frontend)
+- Proper startup sequence (infra → backend → frontend → studio-desk)
 - Port conflict detection and resolution
 - Progress tracking via TodoWrite
 
@@ -125,7 +125,9 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 ### Environment Configuration
 
-All services share a **single centralized `.env` file** in the `platform` repository. Individual service repositories do not need their own `.env` files when running via Docker.
+**Platform services** share a **single centralized `.env` file** in the `platform` repository. Docker-based services do not need their own `.env` files.
+
+**Studio-Desk** requires its own `.env` file (`studio-desk/.env`) with Clerk and OpenAI credentials copied from `platform/.env`.
 
 Critical environment variables:
 - `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
@@ -215,7 +217,7 @@ pnpm test
 ```bash
 cd studio-desk
 npm install
-npm run dev    # Runs on localhost:3100
+npm run dev    # Runs on localhost:9100 (frontend) and localhost:9000 (backend)
 ```
 
 **Studio-Room** (Python):

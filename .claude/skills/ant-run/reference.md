@@ -149,7 +149,7 @@ TodoWrite({
 | Frontend | http://localhost:3000 | Browser loads |
 | GraphQL | http://localhost:5050 | `/health` |
 | Backend | http://localhost:8082 | `/health` |
-| Studio-Desk | http://localhost:3100 | Browser loads |
+| Studio-Desk | http://localhost:9100 | Browser loads |
 | Directus | http://localhost:8055 | Browser loads |
 
 ## Ops Report Template
