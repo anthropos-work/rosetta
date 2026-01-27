@@ -18,6 +18,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | Skill | Purpose | Guide |
 |-------|---------|-------|
 | `/ant-setup` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
+| `/ant-setup-github` | Configure GitHub SSH access for the org | `corpus/ops/setup_github_guide.md` |
 | `/ant-run` | Start the platform locally | `corpus/ops/run_guide.md` |
 | `/ant-update` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/ant-document` | Document new evidence across the corpus | N/A (meta-skill) |
@@ -34,6 +35,20 @@ This skill executes `corpus/ops/setup_guide.md` with:
 - User confirmation before destructive operations
 - Progress tracking in `anthropos-dev/setup_progress.md`
 - Auto-improvement of documentation when issues are found
+
+### Using the GitHub Setup Skill
+
+For configuring GitHub SSH access to contribute to `anthropos-work` repositories:
+```bash
+/ant-setup-github
+```
+
+This skill executes `corpus/ops/setup_github_guide.md` with:
+- Support for single account or dual account (personal + work) setups
+- SSH key generation and configuration
+- Ensuring work account is the default (critical for Docker compatibility)
+- Key persistence across terminal/computer restarts
+- Progress tracking via TodoWrite
 
 ### Using the Run Skill
 
@@ -147,6 +162,7 @@ This prevents conflicts with other Anthropos environments.
 
 ### Setup & Onboarding
 - `corpus/ops/setup_guide.md`: Complete environment setup instructions
+- `corpus/ops/setup_github_guide.md`: GitHub SSH access configuration
 
 ### Running the Platform
 - `corpus/ops/run_guide.md`: Start the platform locally after setup
@@ -243,12 +259,14 @@ When updating `corpus/ops/setup_guide.md`, follow these principles:
 
 These files must be maintained together:
 1. `corpus/ops/setup_guide.md`: Detailed setup instructions
-2. `corpus/ops/run_guide.md`: Platform startup instructions
-3. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
-4. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
-5. `.claude/skills/ant-run/SKILL.md`: Automated run skill
-6. `.claude/skills/ant-update/SKILL.md`: Automated update skill
-7. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
+2. `corpus/ops/setup_github_guide.md`: GitHub SSH access configuration
+3. `corpus/ops/run_guide.md`: Platform startup instructions
+4. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
+5. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
+6. `.claude/skills/ant-setup-github/SKILL.md`: GitHub SSH setup skill
+7. `.claude/skills/ant-run/SKILL.md`: Automated run skill
+8. `.claude/skills/ant-update/SKILL.md`: Automated update skill
+9. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
 
 **When to use ant-document**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 
