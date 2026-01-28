@@ -8,6 +8,7 @@ This directory contains guides for operating the Anthropos platform locally.
 |-------|---------|-------------|
 | [Platform Setup](./setup_guide.md) | Build the development environment | First time on a new machine |
 | [Platform Run](./run_guide.md) | Start the platform locally | Daily development work |
+| [Webhook Setup](./webhook_setup.md) | Configure Clerk webhooks for user sync | When you need user/org data locally |
 | [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
 

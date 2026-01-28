@@ -131,26 +131,25 @@ CLERK_SIGN_IN_URL=http://localhost:3000/login
 
 ### Development Workflow
 
-#### Local User Sync (Optional)
+#### Local Webhook Setup (For User/Org Sync)
 
-To sync Clerk users to the local database during development, use **Tailscale Funnel**:
+Clerk webhooks sync user and organization data to your local database. Without working webhooks, users created in Clerk won't appear locally.
 
-1. Install and run Tailscale on your machine
-2. Enable Funnel for your organization
-3. Expose your local Sentinel service:
-
+**Quick Start** (no account needed):
 ```bash
-# Option A: Mac App Store install
-/Applications/Tailscale.app/Contents/MacOS/Tailscale funnel http://localhost:8082
-
-# Option B: Website install
-tailscale funnel http://localhost:8082
+# Start a tunnel to expose localhost:8082
+npx localtunnel --port 8082
 ```
 
-4. Configure Clerk webhooks to point to your Tailscale funnel URL
-5. Log in at `http://localhost:3000/login` to trigger user creation
+Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url>/api/webhook/clerk`.
 
-This is only needed the **first time** or when you need to mirror new users/organizations.
+**For detailed setup instructions**, see the [Webhook Setup Guide](../ops/webhook_setup.md), which covers:
+- Full localtunnel setup with Clerk configuration
+- More reliable alternatives (ngrok, Tailscale Funnel)
+- Troubleshooting common issues
+- Security considerations
+
+**Note**: This is only needed when you need user/org sync. For pure frontend development with existing test accounts, webhook setup can be skipped.
 
 ### Security Considerations
 

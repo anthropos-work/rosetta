@@ -166,6 +166,7 @@ This prevents conflicts with other Anthropos environments.
 
 ### Running the Platform
 - `corpus/ops/run_guide.md`: Start the platform locally after setup
+- `corpus/ops/webhook_setup.md`: Configure Clerk webhooks for user/org sync
 
 ### Updating the Platform
 - `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
@@ -261,12 +262,13 @@ These files must be maintained together:
 1. `corpus/ops/setup_guide.md`: Detailed setup instructions
 2. `corpus/ops/setup_github_guide.md`: GitHub SSH access configuration
 3. `corpus/ops/run_guide.md`: Platform startup instructions
-4. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
-5. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
-6. `.claude/skills/ant-setup-github/SKILL.md`: GitHub SSH setup skill
-7. `.claude/skills/ant-run/SKILL.md`: Automated run skill
-8. `.claude/skills/ant-update/SKILL.md`: Automated update skill
-9. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
+4. `corpus/ops/webhook_setup.md`: Clerk webhook tunnel configuration
+5. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
+6. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
+7. `.claude/skills/ant-setup-github/SKILL.md`: GitHub SSH setup skill
+8. `.claude/skills/ant-run/SKILL.md`: Automated run skill
+9. `.claude/skills/ant-update/SKILL.md`: Automated update skill
+10. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
 
 **When to use ant-document**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 

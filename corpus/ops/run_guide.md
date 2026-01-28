@@ -305,6 +305,30 @@ PORT=9001
 
 ---
 
+## 5.5 Start Webhook Tunnel (Optional)
+
+If you need Clerk webhooks to sync user/organization data to your local database, start a tunnel:
+
+```bash
+# Quick start - no account needed
+npx localtunnel --port 8082
+```
+
+Copy the URL (e.g., `https://gentle-flies-think.loca.lt`) and configure it in Clerk Dashboard > Webhooks with path `/api/webhook/clerk`.
+
+**When is this needed?**
+- Creating new users/organizations
+- Testing membership changes
+- Working on user management features
+
+**When can you skip this?**
+- Pure frontend development with existing test accounts
+- Working on features that don't involve user/org sync
+
+For detailed setup (including more reliable alternatives like ngrok), see [Webhook Setup Guide](webhook_setup.md).
+
+---
+
 ## 6. Start Studio-Room (Optional - On-Demand)
 
 Studio-Room is the AI-powered generation pipeline. Unlike other services, it runs **on-demand** for specific generation tasks, not as a persistent service.

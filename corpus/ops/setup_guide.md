@@ -325,6 +325,21 @@ Studio-Desk requires its own `.env` file with Clerk and OpenAI credentials.
 
 **Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Individual service repositories do not need their own `.env` files when running via Docker.
 
+### Clerk Webhook Setup (Optional)
+
+If you need Clerk user and organization data to sync to your local database (required for user management features), you'll need to set up a webhook tunnel.
+
+**Quick start** (no account required):
+```bash
+npx localtunnel --port 8082
+```
+
+Then configure the webhook in the Clerk dashboard.
+
+**For full instructions**, see [Webhook Setup Guide](webhook_setup.md).
+
+**Note**: This step can be skipped if you're only working on frontend features with existing test accounts.
+
 ---
 
 ## 6. Running the Platform (Docker)
