@@ -6,18 +6,46 @@ This document outlines the inter-service dependencies inferred from configuratio
 
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **Backend** (`app`) | Sentinel, CMS, Skillpath (Inferred) | Postgres, Redis, **Clerk** |
+| **Backend** (`app`) | Sentinel, CMS, Skillpath, Messenger | Postgres, Redis, **Clerk** |
 | **CMS** | - | Postgres, Redis, **Directus** |
 | **Sentinel** | - | Postgres |
-| **Jobsimulation** | Sentinel, Backend, Storage, Chronos, CMS | Postgres, Redis |
-| **Skiller** | - | Postgres, Redis |
+| **Jobsimulation** | Sentinel, Backend, Storage, Chronos, CMS, Roadrunner | Postgres, Redis, **LiveKit**, **AWS Chime**, **AI Providers** |
+| **Skiller** | - | Postgres, Redis, **AI Providers** (embeddings) |
 | **Skillpath** | CMS, Jobsimulation (RPC + Redis Stream), Sentinel | Postgres, Redis |
-| **Storage** | CMS | Postgres, Redis |
+| **Storage** | CMS | Postgres, Redis, **S3** |
 | **Chronos** | - | Postgres, Redis |
 | **Intelligence** | - | Postgres (Connection to Backend/Skiller DB) |
-| **Graphql** | Backend, Skiller, Jobsimulation, Intelligence, CMS | - |
+| **Messenger** | - | **Brevo** (email delivery) |
+| **Roadrunner** | - | **Judge0** (code execution) |
+| **db-backup** | - | Postgres, **S3**, **Azure**, **Hetzner** |
+| **Graphql (Cosmo Router)** | Backend, Skiller, Jobsimulation, CMS, Skillpath | - |
 | **Studio Desk** | - | **Clerk**, **OpenAI** (Copilot) |
 | **Studio Room** | CMS | **OpenAI**, **Anthropic**, **Azure OpenAI** |
+
+### Shared Libraries
+
+These are imported as Go modules by services, not deployed independently:
+
+| Library | Used By |
+| :--- | :--- |
+| **colony** | All Go services (logging, DB, Redis, middleware, pub/sub) |
+| **authn** | All services needing Clerk JWT auth |
+| **proto** | All services using RPC (contract definitions) |
+| **ai** | Jobsimulation, Skiller, CMS, Studio-Desk (AI provider wrapper) |
+| **taxonomy** | Skiller, CMS (60K skills, 18K roles data) |
+
+## Event Streams (Redis Streams via Watermill)
+
+Services communicate asynchronously through named Redis Streams:
+
+| Stream Name | Producer | Consumer(s) | Events |
+| :--- | :--- | :--- | :--- |
+| `backend` | App | Skiller, Intelligence | User/org updates |
+| `skiller` | Skiller | App, Intelligence | Skill score changes |
+| `jobsimulation` | Jobsimulation | Skillpath, App | Session completed, insights generated |
+| `cms` | CMS | Jobsimulation, Skillpath | Content published |
+| `skillpath` | Skillpath | App | Session updated, chapters completed |
+| `chronos` | Chronos | Jobsimulation | Timer events (e.g., session timeout) |
 
 ## Key Flows
 

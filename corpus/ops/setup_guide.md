@@ -234,6 +234,15 @@ git clone git@github.com:anthropos-work/anthropos-studio-room.git cms/studio
 ```
 *Verification*: `ls -la cms/studio` should show the studio-room files (e.g., `gen.py`, `requirements.txt`).
 
+### Knowledge Base (Optional)
+Clone the Anthropos knowledge base — a Claude Code plugin that provides product, technical, and design context across all Anthropos codebases.
+```bash
+git clone git@github.com:anthropos-work/anthropos-knowledge-base.git
+```
+*Verification*: `ls -la anthropos-knowledge-base` should show the knowledge base files (e.g., `README.md`, `knowledge/`, `skills/`).
+
+See the repo's `README.md` for plugin installation instructions (`/plugin marketplace add` and `/plugin install`).
+
 ### Internal Tools (Optional)
 Clone the internal experiments hub for access to PoCs, prototypes, and internal tools.
 ```bash

@@ -85,6 +85,10 @@ Run these commands to pull latest code:
 
 # CMS studio dependency (keep in sync with studio-room)
 (cd cms/studio && git pull origin main)
+
+# Optional repos (if cloned)
+(cd anthropos-knowledge-base && git pull origin main) 2>/dev/null || true
+(cd experiments && git pull origin main) 2>/dev/null || true
 ```
 
 *Note*: The parentheses `(...)` ensure you return to the current directory after each command.
@@ -97,6 +101,11 @@ For convenience, you can run all pulls in sequence:
 for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio; do
   echo "Updating $repo..."
   (cd "$repo" 2>/dev/null && git pull origin main) || echo "  Skipped: $repo not found"
+done
+
+# Optional repos
+for repo in anthropos-knowledge-base experiments; do
+  (cd "$repo" 2>/dev/null && git pull origin main) || true
 done
 ```
 

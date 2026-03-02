@@ -107,16 +107,26 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 ### Three-Tier Service Model
 
-**Core Backend Services (Tier 1)**: 9 Go microservices
+**Core Backend Services (Tier 1)**: 12 Go microservices
 - Backend (`app`): Main API gateway and user management
 - CMS: Content management and Directus proxy
-- Sentinel: Authorization and authentication
-- Jobsimulation: Job environments and task simulation
-- Skiller: Skill management and assessment
+- Sentinel: Authorization and authentication (Casbin RBAC/ABAC)
+- Jobsimulation: Job environments and task simulation (voice, chat, code, documents)
+- Skiller: Skill management, assessment, and taxonomy (60K skills, 18K roles)
 - Skillpath: Skill progression paths
 - Storage: File/blob storage management
 - Chronos: Scheduling and time-based events
-- Intelligence: AI/ML integration layer
+- Intelligence: Background data sync between backend and skiller schemas
+- Messenger: Email notifications via Brevo (Sendinblue)
+- Roadrunner: Code execution proxy to Judge0 sandbox
+- db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
+
+**Shared Libraries** (imported by services, not deployed):
+- colony: Platform framework (logging, DB, Redis, middleware, pub/sub via Watermill)
+- authn: Clerk JWT authentication middleware
+- proto: Protobuf definitions (RPC contracts)
+- ai: Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) with cost tracking
+- taxonomy: Skills taxonomy data
 
 **Studio Services (Tier 2)**: Content creation tools
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
@@ -125,18 +135,23 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
-- GraphQL/Wundergraph: API gateway and GraphQL federation
+- GraphQL/Cosmo Router: Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath)
+- AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
+- LiveKit: Real-time voice engine for simulations
+- AWS Chime: Video/audio recording
 
-**Frontend Applications**: Next.js monorepo
+**Frontend Applications**: Next.js 14 monorepo on Vercel
 - Next Web App: Main user-facing application
 - Hiring App: Recruiting and hiring workflows
 - Mobile App: Expo/React Native mobile experience
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: HTTP/RPC (Connect RPC) + Redis Streams for async messaging
-- **Frontend/Studio → Backend**: GraphQL via Wundergraph (unified gateway)
-- **External Integrations**: Clerk SDK + middleware, Directus proxied via CMS service
+- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging
+- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 5 subgraphs)
+- **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via CMS service
+- **AI**: EU-first routing via shared `ai` library (Azure OpenAI EU → Bedrock EU → Mistral EU → US fallback)
+- **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)
 
 ### Environment Configuration
 
@@ -176,8 +191,10 @@ This prevents conflicts with other Anthropos environments.
 - `corpus/architecture/architecture_overview.md`: High-level system design
 - `corpus/architecture/service_taxonomy.md`: Three-tier service categorization
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
-- `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL integration patterns
-- `corpus/architecture/dependency_map.md`: Service inter-dependency matrix
+- `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime
+- `corpus/architecture/dependency_map.md`: Service inter-dependency matrix with Redis Streams events
+- `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
+- `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
 
 ### Service Documentation
 - `corpus/services/`: Individual service documentation following TEMPLATE.md pattern

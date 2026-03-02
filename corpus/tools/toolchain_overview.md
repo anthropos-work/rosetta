@@ -88,6 +88,12 @@ Recommended environment for efficiency.
 
 Internal tools and sandboxes that support team workflows but are not part of the core platform.
 
+*   **Anthropos Knowledge Base** (`anthropos-knowledge-base`)
+    *   *Function*: Claude Code plugin providing product, technical, and design context.
+    *   *User*: All Engineers.
+    *   *Context*: Installed as a Claude Code plugin, gives Claude full Anthropos context (product details, architecture, design system, competitor analysis) when working in any Anthropos codebase. Includes skills like `/build-feature` and auto-triggered design system enforcement.
+    *   *Setup*: Clone repo, then use `/plugin marketplace add` and `/plugin install` in Claude Code.
+
 *   **Anthropos Labs** (`experiments`)
     *   *Function*: Internal experiments hub for PoCs and prototypes.
     *   *User*: All Engineers.

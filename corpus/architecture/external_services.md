@@ -470,19 +470,28 @@ When backend services add new GraphQL types or operations:
 
 ## AI Providers (External Intelligence)
 
-The platform relies on several AI providers for the **Studio-Desk Copilot** and **Studio-Room generation pipeline**.
+The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides unified access, EU-first routing, and cost tracking.
+
+For full details on models, routing, voice engines, and recording architecture, see [AI Architecture](./ai_architecture.md).
 
 ### Supported Providers
 
-| Provider | Service | Integration Point | Purpose |
+| Provider | Routing | Integration Points | Purpose |
 |:---|:---|:---|:---|
-| **OpenAI** | SaaS | Studio-Desk, Studio-Room | GPT-4o, GPT-5.x for content generation |
-| **Anthropic** | SaaS | Studio-Room | Claude 3.x for analytical tasks |
-| **Azure OpenAI** | SaaS | Studio-Room | Private enterprise deployment of GPT models |
+| **Azure OpenAI (EU)** | Primary | Jobsimulation, Skiller, CMS, Studio | GPT-5.x, GPT-4.1 for simulations and content |
+| **AWS Bedrock (EU)** | Primary | Jobsimulation, Skiller | Claude 4.5/4 Sonnet for simulations |
+| **Mistral (EU)** | Primary | CMS | OCR and specialized tasks |
+| **OpenAI Direct (US)** | Fallback | All services | Fallback when EU unavailable |
+| **Anthropic Direct (US)** | Fallback | Studio-Room | Fallback for analytical tasks |
+
+### EU-First Routing
+
+AI requests follow a strict EU-first policy for data residency compliance:
+1. Azure OpenAI (EU-West) → 2. AWS Bedrock (EU) → 3. Mistral (EU) → 4. OpenAI Direct (US) → 5. Anthropic Direct (US)
 
 ### Configuration
 
-AI services are configured via environment variables in `platform/.env` (for backend) or `studio/.env` (for studio services):
+AI services are configured via environment variables in `platform/.env`:
 
 ```bash
 # OpenAI
@@ -492,7 +501,7 @@ OPENAI_ORG_ID=org-xxxxx
 # Anthropic
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 
-# Azure OpenAI (Optional)
+# Azure OpenAI
 AZURE_OPENAI_KEY=xxxxx
 AZURE_OPENAI_ENDPOINT=https://resource.openai.azure.com/
 AZURE_OPENAI_DEPLOYMENT=deployment-name
@@ -500,15 +509,52 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
 
 ### Usage Patterns
 
-1. **Studio-Desk Copilot**:
+1. **Simulation Engine** (Jobsimulation):
+   - AI-powered conversations (voice + chat) with configurable model per simulation
+   - Voice calls via **LiveKit + GPT Realtime** agents
+   - Document analysis and code evaluation
+
+2. **Skills Matching** (Skiller):
+   - Embeddings (Text Embedding 3 Small) for 60K skills + 18K roles
+   - RAG for job role matching
+
+3. **Studio-Desk Copilot**:
    - Uses **OpenAI** directly via backend proxy
    - Supports streaming responses for real-time interaction
    - Uses `gpt-5.1` (experimental) or `gpt-4o` (stable)
 
-2. **Studio-Room Pipeline**:
+4. **Studio-Room Pipeline**:
    - Uses abstract **AI Service Layer** (`services/ai.py`)
-   - Can switch providers based on task type (Creative vs Analytical)
+   - Configurable model slots (FAST, STRICT, EXECUTION, CREATIVE, REASONING)
    - Configured in `studio-room/configs/*.ini`
+
+---
+
+## LiveKit (Voice Engine)
+
+| Property | Value |
+|:---------|:------|
+| **Type** | External SaaS |
+| **Purpose** | Real-time voice conversations in AI Simulations |
+| **Integration** | Jobsimulation service |
+
+LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** (`anthropos-agent-eu` / `anthropos-agent-us`) inside LiveKit rooms, enabling AI actors to hold voice conversations with players.
+
+- **Audio**: Recorded as MP3
+- **Transcripts**: Generated from conversation events
+- **Replaces**: ElevenLabs (deprecated)
+
+---
+
+## AWS Chime SDK (Recording)
+
+| Property | Value |
+|:---------|:------|
+| **Type** | AWS Service |
+| **Purpose** | Video/audio recording of simulation sessions |
+| **Integration** | Jobsimulation service |
+
+AWS Chime SDK captures the full simulation session (camera, screensharing, microphone) as a composited MP4 grid view. This runs in parallel with LiveKit's audio-only recording.
 
 ---
 
@@ -617,6 +663,8 @@ docker compose restart graphql
 
 ## Related Documentation
 - [Service Taxonomy](./service_taxonomy.md) - Service categorization
+- [AI Architecture](./ai_architecture.md) - Full AI model inventory, voice, recording
+- [Security & Compliance](./security_compliance.md) - Data protection, EU compliance
 - [CMS Service](../services/cms.md) - Directus proxy/adapter
 - [Studio-Desk](../services/studio-desk.md) - Uses Clerk + GraphQL
 - [Architecture Overview](./architecture_overview.md) - System architecture

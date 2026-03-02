@@ -61,7 +61,20 @@ graph TB
 | **Jobsimulation** | 8400-8401 | Job Environment Simulation | `git@github.com:anthropos-work/jobsimulation.git` |
 | **Storage** | 8300-8301 | File/Blob Storage Management | `git@github.com:anthropos-work/storage.git` |
 | **Chronos** | 8500-8501 | Scheduling & Time-based Events | `git@github.com:anthropos-work/chronos.git` |
-| **Intelligence** | - | AI/ML Integration | `git@github.com:anthropos-work/intelligence.git` |
+| **Intelligence** | - | Background data sync (backend ↔ skiller) | `git@github.com:anthropos-work/intelligence.git` |
+| **Messenger** | - | Email notifications via Brevo | Internal (platform repo) |
+| **Roadrunner** | - | Code execution proxy to Judge0 | Internal (platform repo) |
+| **db-backup** | - | Scheduled PostgreSQL backups (6h cycle) | Internal (platform repo) |
+
+**Shared Libraries** (imported by services, not deployed):
+
+| Library | Purpose | Repository |
+|:--------|:--------|:-----------|
+| **colony** | Platform framework: logging, DB/Redis, middleware, pub/sub (Watermill) | `git@github.com:anthropos-work/colony.git` |
+| **authn** | Clerk JWT authentication middleware | `git@github.com:anthropos-work/authn.git` |
+| **proto** | Protobuf definitions (single source of truth for RPC contracts) | `git@github.com:anthropos-work/proto.git` |
+| **ai** | Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) + cost tracking | `git@github.com:anthropos-work/ai.git` |
+| **taxonomy** | Skills taxonomy data (60K skills, 18K roles) | `git@github.com:anthropos-work/taxonomy.git` |
 
 **Development Pattern**:
 ```bash
@@ -176,14 +189,15 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 - Local: `./data/directus/uploads`
 - Cloud: S3 (via AWS credentials)
 
-#### GraphQL/Wundergraph (Dockerized - API Gateway)
+#### GraphQL/Cosmo Router (Dockerized - API Gateway)
 
 | Property | Value |
 |:---------|:------|
-| **Type** | Third-party with custom config |
+| **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
 | **Port** | 5050 |
-| **Purpose** | GraphQL federation, unified API gateway |
+| **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
+| **Subgraphs** | app, skiller, jobsimulation, cms, skillpath |
 
 **Aggregates**:
 - Backend, CMS, Skiller, Jobsimulation, Intelligence services
@@ -248,8 +262,9 @@ python gen.py --media simulation --template default
 
 | Tier | Services | Technology | Deployment | Management |
 |:-----|:---------|:-----------|:-----------|:-----------|
-| **Core Backend** | 9 microservices | Go | Docker Compose | GitHub repos |
+| **Core Backend** | 12 microservices | Go | Docker Compose | GitHub repos |
+| **Shared Libraries** | 5 libraries | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | 2 applications | TypeScript, Python | Standalone | Local directories |
-| **External** | 3 integrations | Various | SaaS/Docker | Configuration |
+| **External** | 6+ integrations | Various | SaaS/Docker | Configuration |
 
-**Total**: 14 distinct services/integrations comprising the Anthropos platform.
+**Total**: 20+ distinct services, libraries, and integrations comprising the Anthropos platform.

@@ -1,6 +1,6 @@
 ---
 name: ant-document
-description: Document new platform evidence across the Rosetta corpus with corpus-wide sweep
+description: Document new platform evidence across the Rosetta corpus with corpus-wide sweep. use when you are asked to document something that is not already documented.
 argument-hint: [evidence description]
 ---
 
