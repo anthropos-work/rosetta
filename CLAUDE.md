@@ -107,7 +107,7 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 ### Three-Tier Service Model
 
-**Core Backend Services (Tier 1)**: 12 Go microservices
+**Core Backend Services (Tier 1)**: 14 Go microservices
 - Backend (`app`): Main API gateway and user management
 - CMS: Content management and Directus proxy
 - Sentinel: Authorization and authentication (Casbin RBAC/ABAC)
@@ -119,6 +119,8 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 - Intelligence: Background data sync between backend and skiller schemas
 - Messenger: Email notifications via Brevo (Sendinblue)
 - Roadrunner: Code execution proxy to Judge0 sandbox
+- Realtime: LiveKit voice agent coordination
+- CustomerIO Sync: Background data sync to Customer.io
 - db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
 
 **Shared Libraries** (imported by services, not deployed):
@@ -160,18 +162,45 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 **Studio-Desk** requires its own `.env` file (`studio-desk/.env`) with Clerk and OpenAI credentials copied from `platform/.env`.
 
 Critical environment variables:
+- `GH_PAT` (GitHub Personal Access Token — required for Docker builds to pull private Go modules)
 - `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
 - `OPENAI_API_KEY` & `ANTHROPIC_API_KEY` (AI services)
 - `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
 
-### Docker Compose Project Naming
+### Makefile-Driven Workflow
 
-Services run with `-p ant-rosetta` flag for isolation:
-- Creates containers: `ant-rosetta-postgresql-1`, `ant-rosetta-backend-1`, etc.
-- Creates networks: `ant-rosetta_app-network`
-- Creates volumes: `ant-rosetta_postgres_data`
+The `platform` repository provides a Makefile as the single entry point for all development operations. All service repos are cloned as siblings via `make init` and Docker builds from local code.
 
-This prevents conflicts with other Anthropos environments.
+```bash
+# First-time setup
+cd anthropos-dev/platform
+make init              # Clone all repos defined in repos.yml
+make up                # Build from local code and start (graphql profile)
+make migrate           # Apply all database migrations
+
+# Daily development
+make pull              # Pull main on all repos (auto-stash dirty changes)
+make status            # Git status across all repos
+make up                # Rebuild and start (auto-builds from local code)
+make down              # Stop all services
+make ps                # Show running containers
+make logs S=cms        # Tail logs for a service
+make dev S=cms         # Stop container, develop natively
+make reset-db          # Wipe DB, restart, re-migrate (WARNING: data loss)
+```
+
+Docker Compose profiles control which services start:
+
+| Profile | Services |
+|---------|----------|
+| `graphql` (default) | All backend + Cosmo Router |
+| `backend` | app only |
+| `cms` | cms only |
+| `frontend` | next-web-app (containerized) |
+| `studio-desk` | studio-desk (containerized) |
+| `all` | Everything |
+
+Usage: `make up PROFILE=cms`
 
 ## Key Documentation Locations
 
@@ -261,7 +290,7 @@ pip3 install -r requirements.txt
 python3 gen.py --media simulation --template default
 ```
 
-**Note**: CMS service requires studio-room to be symlinked as `cms/studio` for Docker builds.
+**Note**: Studio-Desk can also run containerized via `make up PROFILE=studio-desk`.
 
 ## Documentation Maintenance
 

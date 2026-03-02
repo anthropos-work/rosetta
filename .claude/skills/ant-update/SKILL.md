@@ -29,20 +29,20 @@ Apply to EVERY step in the guide:
 ## Confirmation Policy
 
 **Proceed WITHOUT confirmation**:
-- Checking git status or service state
+- Checking git status or service state (`make status`, `make ps`)
 - Health checks and verifications
 
 **ASK for confirmation before**:
-- Stopping running services
-- Pulling repository changes
-- Running database migrations
-- Rebuilding Docker images
-- Data-destructive operations (`docker compose down -v`)
+- Stopping running services (`make down`)
+- Pulling repository changes (`make pull`)
+- Running database migrations (`make migrate`)
+- Rebuilding Docker images (`make up`)
+- Data-destructive operations (`make reset-db`)
 
 ## Error Handling
 
 1. Do NOT skip errors - resolve first
-2. Check logs: `docker compose -p ant-rosetta logs [service]`
+2. Check logs: `cd anthropos-dev/platform && make logs S=[service]`
 3. Create ops report (see below)
 4. Continue
 
@@ -74,22 +74,22 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in update_guide.md]
 ```
 
-3. These reports feed into `/ant-integrate` for corpus improvements
+3. These reports feed into `/ant-document` for corpus improvements
 
 ## Progress Tracking
 
 Use TodoWrite with these phases:
-- Services stopped
-- Repositories updated
-- Dependencies installed
-- Migrations applied
-- Docker images rebuilt
-- Services verified healthy
+- Services stopped (`make down`)
+- Repositories updated (`make pull`)
+- Dependencies installed (frontend: pnpm install)
+- Migrations applied (`make migrate`)
+- Services rebuilt and started (`make up`)
+- Services verified healthy (`make ps` + health checks)
 
 ## Critical Rules
 
 - Work in `anthropos-dev/` only
-- Use `-p ant-rosetta` for Docker isolation
+- Use `make` commands for all platform operations
 - Stop services before pulling code
 - Handle git conflicts before continuing
 - Verify health after updates

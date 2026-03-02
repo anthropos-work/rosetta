@@ -190,95 +190,61 @@ We will create a dedicated workspace to house all the microservices and the fron
 
 ## 4. Cloning Repositories
 
-We need to fetch the code for the platform. Run the following commands inside `rosetta/anthropos-dev`:
+The platform uses a **Makefile-driven workflow**. The `platform` repo is the orchestration hub, and `make init` automatically clones all required service repos as sibling directories.
 
-### Platform Configuration
-This repository contains the `docker-compose.yml` to orchestrate everything.
+### Clone the Platform Repo
 ```bash
 git clone git@github.com:anthropos-work/platform.git
 ```
-*Verification*: `ls -la platform` should show `docker-compose.yml` and other config files.
+*Verification*: `ls platform/Makefile platform/repos.yml` should show both files.
 
-### Backend Services
-Clone the core Go services.
+### Clone All Service Repos (Automated)
+The `make init` command reads `repos.yml` and clones all repos that don't already exist:
 ```bash
-git clone git@github.com:anthropos-work/app.git backend
-git clone git@github.com:anthropos-work/cms.git
-git clone git@github.com:anthropos-work/jobsimulation.git
-# Remote-only services (optional, clone only if editing source or applying migrations):
-# git clone git@github.com:anthropos-work/sentinel.git
-# git clone git@github.com:anthropos-work/skiller.git
-# git clone git@github.com:anthropos-work/skillpath.git
-# git clone git@github.com:anthropos-work/chronos.git
+cd platform
+make init
 ```
-*Verification*: `ls -la backend cms jobsimulation` should show all three directories with Go files.
+*Verification*: `make status` should list all repos with their branch and status.
 
-### Frontend
-Clone the Next.js monorepo.
-```bash
-git clone git@github.com:anthropos-work/next-web-app.git
-```
-*Verification*: `ls -la next-web-app` should show Next.js project files including `package.json`.
+This clones the following repos as siblings of `platform/`:
 
-### Studio Services
-Clone the Studio-Desk (design tool) and Studio-Room (AI pipeline) repositories.
-```bash
-git clone git@github.com:anthropos-work/studio-desk.git
-git clone git@github.com:anthropos-work/anthropos-studio-room.git studio-room
-```
-*Verification*: `ls -la studio-desk studio-room` should show both directories.
+| Repo | Type | Has Migrations |
+|------|------|---------------|
+| `app` | Go backend | Yes (public schema) |
+| `cms` | Go backend | Yes (cms schema) |
+| `jobsimulation` | Go backend | Yes (jobsimulation schema) |
+| `skiller` | Go backend | Yes (skiller schema) |
+| `skillpath` | Go backend | Yes (skillpath schema) |
+| `chronos` | Go backend | Yes (chronos schema) |
+| `sentinel` | Go backend | No |
+| `intelligence` | Go backend | No |
+| `storage` | Go backend | No |
+| `messenger` | Go backend | No |
+| `roadrunner` | Go backend | No |
+| `next-web-app` | Node.js (pnpm) | No |
+| `studio-desk` | Node.js (npm) | No |
+| `graphql-wundergraph` | Node.js (npm) | No |
 
-**CMS Dependency**: The CMS service requires studio-room to be present within its build context. Since Docker does not follow symlinks outside the build context, we must clone the repository directly:
-```bash
-git clone git@github.com:anthropos-work/anthropos-studio-room.git cms/studio
-```
-*Verification*: `ls -la cms/studio` should show the studio-room files (e.g., `gen.py`, `requirements.txt`).
+### How Local Builds Work
 
-### Knowledge Base (Optional)
-Clone the Anthropos knowledge base — a Claude Code plugin that provides product, technical, and design context across all Anthropos codebases.
+**All services build from local directories.** Docker Compose uses `context: ../service` to build each service from its local clone using `Dockerfile.dev` (fast dev builds with BuildKit cache mounts).
+
+This means:
+- Every service **requires a local clone** to build
+- `make init` handles cloning everything
+- Changes to local code are picked up on `make up` (which runs `--build`)
+
+### Optional Repos
+
+These are not in `repos.yml` but useful for development:
+
 ```bash
+# Knowledge Base (Claude Code plugin for AI-assisted development)
 git clone git@github.com:anthropos-work/anthropos-knowledge-base.git
-```
-*Verification*: `ls -la anthropos-knowledge-base` should show the knowledge base files (e.g., `README.md`, `knowledge/`, `skills/`).
 
-See the repo's `README.md` for plugin installation instructions (`/plugin marketplace add` and `/plugin install`).
-
-### Internal Tools (Optional)
-Clone the internal experiments hub for access to PoCs, prototypes, and internal tools.
-```bash
+# Internal experiments hub
 git clone git@github.com:anthropos-work/experiments.git
 ```
-*Verification*: `ls -la experiments` should show the experiments hub files (e.g., `package.json`, `vite.config.js`).
-
-See [Anthropos Labs documentation](../tools/anthropos-labs.md) for usage details.
-
-### Understanding Docker's Build-From-Git Architecture
-
-**Most backend services do NOT need local clones to run.** The `docker-compose.yml` builds them directly from GitHub using SSH authentication:
-
-| Service | Builds From | Local Clone Needed? |
-|---------|-------------|---------------------|
-| `graphql` | `git@github.com:anthropos-work/graphql-wundergraph.git` | No |
-| `sentinel` | `git@github.com:anthropos-work/sentinel.git` | No |
-| `backend` | `git@github.com:anthropos-work/app.git` | No |
-| `skiller` | `git@github.com:anthropos-work/skiller.git` | No |
-| `skillpath` | `git@github.com:anthropos-work/skillpath.git` | No |
-| `storage` | `git@github.com:anthropos-work/storage.git` | No |
-| `chronos` | `git@github.com:anthropos-work/chronos.git` | No |
-| `intelligence` | `git@github.com:anthropos-work/intelligence.git` | No |
-| `cms` | Local (`../cms`) | **Yes** |
-
-**When to clone a repo:**
-- You need to apply database migrations (Atlas requires local migration files)
-- You're developing on that service (editing source code)
-- You need to run the service outside Docker
-
-**Why this matters:** When you run `docker compose up`, Docker will:
-1. Clone the repo from GitHub (if not cached)
-2. Build the image using the Dockerfile in that repo
-3. Start the container
-
-This requires your SSH agent to be running with GitHub access: `ssh-add -l`
 
 ---
 
@@ -295,44 +261,29 @@ All services share a **single centralized `.env` file** located in the `platform
     cp .env_example .env
     ```
 2.  **Populate secrets**: Edit `platform/.env` and fill in all required secret values from 1Password or the Engineering Manager.
-    
+
     **Critical Keys Required**:
+    *   `GH_PAT` (GitHub Personal Access Token — required for Docker builds)
     *   `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
     *   `OPENAI_API_KEY` (AI services)
     *   `ANTHROPIC_API_KEY` (AI services)
     *   `AZURE_API_KEY` (Optional, if using Azure OpenAI)
-    *   `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
-### Studio-Desk Environment
+**Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
 
-Studio-Desk requires its own `.env` file with Clerk and OpenAI credentials.
+### Studio-Desk Environment (Only for Native Development)
 
-1.  **Create the environment file**:
-    ```bash
-    cd ../studio-desk
-    cp .env.example .env
-    ```
+If running Studio-Desk **outside Docker** (natively), it requires its own `.env` file:
 
-2.  **Populate required keys** from `platform/.env`:
+```bash
+cd ../studio-desk
+cp .env.example .env
+# Copy CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY, OPENAI_API_KEY from platform/.env
+```
 
-    Open `studio-desk/.env` and set:
-    ```
-    # Server
-    CLERK_SECRET_KEY=<from platform/.env>
-
-    # Frontend
-    VITE_CLERK_PUBLISHABLE_KEY=<from platform/.env CLERK_PUBLISHABLE_KEY>
-    VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
-
-    # OpenAI (for Copilot)
-    OPENAI_API_KEY=<from platform/.env>
-    ```
-
-3.  **Verification**: `ls -la studio-desk/.env` should show the file exists.
-
-**Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Individual service repositories do not need their own `.env` files when running via Docker.
+**Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
 
 ### Clerk Webhook Setup (Optional)
 
@@ -351,20 +302,9 @@ Then configure the webhook in the Clerk dashboard.
 
 ---
 
-## 6. Running the Platform (Docker)
+## 6. Running the Platform (Docker via Makefile)
 
-The easiest way to start is using Docker Compose.
-
-### Docker Compose Project Name
-
-We use the `-p ant-rosetta` flag to set a custom project name. This creates an isolated Docker stack that won't conflict with other Anthropos environments you may have running.
-
-**What this does:**
-- Creates containers named `ant-rosetta-postgresql-1`, `ant-rosetta-backend-1`, etc.
-- Creates isolated networks: `ant-rosetta_app-network`
-- Creates isolated volumes: `ant-rosetta_postgres_data`
-
-**Note**: If you have another Anthropos stack running (e.g., "platform"), they will be completely separate. However, you may encounter **port conflicts** if both stacks try to use the same ports. Stop the other stack first or modify port mappings in docker-compose.yml.
+The platform uses a **Makefile** as the single entry point for all developer operations.
 
 ### Starting the Services
 
@@ -372,76 +312,50 @@ We use the `-p ant-rosetta` flag to set a custom project name. This creates an i
     ```bash
     cd platform
     ```
-2.  Start the core infrastructure (Postgres, Redis):
+
+2.  **Start all backend services** (default `graphql` profile):
     ```bash
-    docker compose -p ant-rosetta up -d postgresql redis
+    make up
     ```
-    *Verification*: `docker ps` should show `ant-rosetta-postgresql-1` and `ant-rosetta-redis-1` containers running.
+    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Chronos, Jobsimulation, Intelligence, Roadrunner, and the GraphQL/Cosmo Router.
 
-3.  **Prepare PostgreSQL Extensions** (required before migrations):
+    *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
-    Wait for PostgreSQL to be healthy, then create the required schemas and extensions:
+3.  **Verification**:
     ```bash
-    # Wait for PostgreSQL to be ready
-    sleep 5
-
-    # Create extensions schema with pgvector (required by CMS and Skiller)
-    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
-
-    # Create sentinel schema (required by Sentinel for Casbin authorization)
-    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+    make ps
     ```
-    *Verification*: Commands should complete without errors.
+    You should see all services running. PostgreSQL and Redis should show as healthy.
 
-4.  **Initialize Database Schemas**:
-    The Postgres database starts empty. You must create the schemas for the core services (`backend`, `cms`, `jobsimulation`) using Atlas.
-    
-    *   **Install Atlas** (if you skipped it in Prerequisites):
-        ```bash
-        curl -sSf https://atlasgo.sh | sh
-        ```
-    *   **Apply Migrations**:
-        Run the following commands from the `anthropos-dev` directory (where you cloned the repos):
-        ```bash
-        # Backend Schema (public)
-        (cd backend && atlas migrate apply --env local)
-        
-        # CMS Schema (cms)
-        (cd cms && atlas migrate apply --env local)
-        
-        # JobSimulation Schema (jobsimulation)
-        (cd jobsimulation && atlas migrate apply --env local)
+### Database Migrations
 
-        # Skiller Schema (skiller)
-        (cd skiller && atlas migrate apply --env local)
+After the first startup, apply database schemas:
+```bash
+make migrate
+```
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (app, cms, jobsimulation, skiller, skillpath, chronos).
 
-        # Skillpath Schema (skillpath)
-        (cd skillpath && atlas migrate apply --env local)
+*Verification*: Commands should complete without errors.
 
-        # Chronos Schema (chronos)
-        (cd chronos && atlas migrate apply --env local)
-        ```
-        *Note: The parenthesis `(...)` ensure you return to the current directory after the command.*
-        *Note: Skillpath and Chronos services are run as Docker images. Only clone these repos if you need to run migrations or develop on them.*
-    *   **Verification**: The commands should complete successfully without error, outputting the migration steps applied.
+To migrate a single service:
+```bash
+make migrate S=cms
+```
 
-5.  Start all backend services using the `graphql` profile:
-    ```bash
-    docker compose -p ant-rosetta --profile graphql up -d
-    ```
-    This starts: `sentinel`, `backend`, `cms`, `skiller`, `skillpath`, `storage`, `chronos`, `jobsimulation`, `intelligence`, and `graphql`.
+### Profiles
 
-    *Note*: First run may take several minutes as Docker builds images from GitHub. Ensure your SSH agent is running (`ssh-add -l`).
+Start specific service groups instead of the full stack:
 
-6.  **Verification**:
-    Run `docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"`. You should see all services running:
-    - `ant-rosetta-postgresql-1` (healthy)
-    - `ant-rosetta-redis-1` (healthy)
-    - `ant-rosetta-sentinel-1`
-    - `ant-rosetta-backend-1`
-    - `ant-rosetta-cms-1`
-    - `ant-rosetta-graphql-1`
-    - And others...
+| Command | What it starts |
+|---------|---------------|
+| `make up` | All backend + GraphQL router (default) |
+| `make up PROFILE=backend` | Backend (app) only |
+| `make up PROFILE=cms` | CMS only |
+| `make up PROFILE=frontend` | Next.js in Docker |
+| `make up PROFILE=studio-desk` | Studio-Desk in Docker |
+| `make up-all` | Everything |
+
+Base services (PostgreSQL, Redis, Sentinel) always start regardless of profile.
 
 ### Ongoing Operations
 
@@ -564,7 +478,7 @@ make gen
 ```
 
 ### "Connection Refused" / Docker Issues
-*   **General**: Ensure Docker containers are running (`docker ps`). If a service in Docker is failing, check logs: `docker compose logs -f [service_name]`.
+*   **General**: Ensure Docker containers are running (`make ps` or `docker compose ps`). If a service is failing, check logs: `make logs S=service_name`.
 *   **Linux Permission Denied**: If you see "permission denied while trying to connect to the Docker daemon", you likely skipped the `usermod` step. Run `sudo usermod -aG docker $USER`, then log out and back in (or `newgrp docker`).
 
 ### "SyntaxError: Unexpected identifier 'assert'" (Frontend)
@@ -580,29 +494,26 @@ The frontend uses `import ... assert { type: 'json' }` syntax which was removed 
 
 ### "schema 'extensions' does not exist" (Atlas migrations)
 CMS and Skiller services require the pgvector extension for vector embeddings.
-*   **Solution**: Create the extensions schema and install pgvector:
+*   **Solution**: The custom PostgreSQL image (built from `platform/postgresql/`) should include pgvector. If missing:
     ```bash
-    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
+    docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
     ```
-*   Then retry the migrations: `cd [service] && atlas migrate apply --env local`
+*   Then retry: `make migrate`
 
 ### Sentinel Crashing / Restarting
 Sentinel requires its own database schema for Casbin authorization.
 *   **Solution**: Create the sentinel schema:
     ```bash
-    docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+    docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
     ```
-*   Then restart sentinel: `docker restart ant-rosetta-sentinel-1`
+*   Then restart sentinel: `docker compose restart sentinel`
 
 ### Port Already In Use
-If you have another Docker stack running (e.g., "platform"), ports may conflict.
-*   **Solution**: Stop the other stack first:
-    ```bash
-    docker compose -p platform stop
-    ```
+If you have another Docker stack running, ports may conflict.
+*   **Solution**: Stop the other stack first, or run `make down` to stop the current stack.
 
 ### Docker Build Fails with "Permission denied (publickey)"
-Docker builds services from GitHub and needs SSH access.
+Docker builds services from local repos but needs SSH access for Go module downloads.
 *   **Solution**: Ensure your SSH agent is running with keys loaded:
     ```bash
     # Check if SSH agent has keys
@@ -615,7 +526,15 @@ Docker builds services from GitHub and needs SSH access.
     # Verify GitHub access
     ssh -T git@github.com
     ```
-*   Then retry: `docker compose -p ant-rosetta --profile graphql up -d --build`
+*   Also ensure `GH_PAT` is set in `platform/.env`
+*   Then retry: `make up`
+
+### Full Database Reset
+If your database is corrupted or you want a clean start:
+```bash
+make reset-db
+```
+This removes PostgreSQL data, restarts the container, and re-runs all migrations.
 
 ---
 

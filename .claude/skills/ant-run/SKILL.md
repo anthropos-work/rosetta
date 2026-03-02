@@ -29,20 +29,20 @@ Apply to EVERY step in the guide:
 ## Confirmation Policy
 
 **Proceed WITHOUT confirmation**:
-- Starting Docker services
+- Starting Docker services (`make up`)
 - Starting frontend/studio servers
 - Health checks and verifications
 
 **ASK for confirmation before**:
 - Stopping or restarting services
 - Killing processes (port conflicts)
-- Data-destructive operations (`docker compose down -v`)
+- Data-destructive operations (`make reset-db`)
 - Changing ports or environment configuration
 
 ## Error Handling
 
 1. Do NOT skip errors - resolve first
-2. Check logs: `docker compose -p ant-rosetta logs [service]`
+2. Check logs: `cd anthropos-dev/platform && make logs S=[service]`
 3. Create ops report (see below)
 4. Continue
 
@@ -59,7 +59,7 @@ When you discover errors, missing steps, or better approaches:
 **Date**: YYYY-MM-DD HH:MM
 **Skill**: /ant-run
 **OS**: [macOS/Linux/version]
-**Phase**: [Docker / Infrastructure / Backend / Frontend]
+**Phase**: [Docker / Backend / Frontend / Studio]
 
 ## Issue Encountered
 [Exact error message or problem description]
@@ -74,22 +74,22 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in run_guide.md]
 ```
 
-3. These reports feed into `/ant-integrate` for corpus improvements
+3. These reports feed into `/ant-document` for corpus improvements
 
 ## Progress Tracking
 
 Use TodoWrite with these phases:
 - Docker environment verified
-- Infrastructure running (PostgreSQL, Redis)
-- Backend services running
-- GraphQL gateway healthy
-- Frontend accessible
-- Studio-Desk running
+- Backend services started (`make up`)
+- All containers healthy (`make ps`)
+- GraphQL gateway healthy (localhost:5050)
+- Frontend running (native or containerized)
+- Studio-Desk running (native or containerized)
 
 ## Critical Rules
 
 - Work in `anthropos-dev/` only
-- Use `-p ant-rosetta` for Docker isolation
+- Use `make` commands for all platform operations
 - Verify health after every start
 - Follow the guide - don't improvise
 

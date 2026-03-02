@@ -12,8 +12,7 @@ Once running, access these URLs in your browser:
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
-| **GraphQL Playground** | http://localhost:5050 | API gateway (Wundergraph) |
-| **Directus CMS** | http://localhost:8055 | Content management (if running) |
+| **GraphQL Playground** | http://localhost:5050 | API gateway (Cosmo Router) |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
 ---
@@ -54,22 +53,20 @@ Wait 30-60 seconds for Docker to initialize, then re-verify.
 sudo systemctl start docker
 ```
 
-### Check for Existing Anthropos Containers
+### Check for Existing Containers
 
 ```bash
-docker ps -a --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+cd anthropos-dev/platform
+make ps
 ```
 
-This shows any existing containers from previous runs. They may be:
-- **Running**: Already up and healthy
-- **Exited**: Stopped, can be restarted
-- **Not present**: Need to be started fresh
+This shows any existing containers from previous runs.
 
 ---
 
-## 2. Start Infrastructure Services
+## 2. Start Backend Services
 
-The platform requires PostgreSQL and Redis to be running before any backend services.
+The platform uses a **Makefile** as the single entry point. Infrastructure (PostgreSQL, Redis) and Sentinel start automatically with any profile.
 
 ### Navigate to Platform Directory
 
@@ -77,79 +74,46 @@ The platform requires PostgreSQL and Redis to be running before any backend serv
 cd anthropos-dev/platform
 ```
 
-### Start PostgreSQL and Redis
+### Option A: Start Full Backend (Recommended)
+
+This starts all backend services + GraphQL router (default `graphql` profile):
 
 ```bash
-docker compose -p ant-rosetta up -d postgresql redis
+make up
 ```
 
-### Verify Infrastructure Health
+This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Chronos, Jobsimulation, Intelligence, Roadrunner, and GraphQL/Cosmo Router.
+
+*Note*: First run may take several minutes as Docker builds images from local repos.
+
+### Option B: Start Specific Profile
+
+Start only the services you need:
 
 ```bash
-# Check containers are running
-docker ps --filter "name=ant-rosetta-postgresql" --filter "name=ant-rosetta-redis" --format "table {{.Names}}\t{{.Status}}"
+make up PROFILE=backend    # Backend (app) only
+make up PROFILE=cms        # CMS only
+make up-all                # Everything including frontend and studio-desk
 ```
 
-*Expected*: Both containers showing `Up` with `(healthy)` status.
-
-```bash
-# Test PostgreSQL connection
-docker exec ant-rosetta-postgresql-1 pg_isready -U postgres
-```
-
-*Expected*: `/var/run/postgresql:5432 - accepting connections`
-
-```bash
-# Test Redis connection
-docker exec ant-rosetta-redis-1 redis-cli ping
-```
-
-*Expected*: `PONG`
-
----
-
-## 3. Start Backend Services
-
-With infrastructure running, start the core backend services.
-
-### Option A: Start All Backend Services (Recommended)
-
-This starts the full backend stack needed for the web application:
-
-```bash
-docker compose -p ant-rosetta --profile graphql up -d
-```
-
-This starts: `sentinel`, `backend`, `cms`, `skiller`, `skillpath`, `storage`, `chronos`, `jobsimulation`, `intelligence`, and `graphql`.
-
-*Note*: First run may take several minutes as Docker builds images from source.
-
-### Option B: Start Minimal Backend (Faster)
-
-For a lighter setup, start only essential services:
-
-```bash
-docker compose -p ant-rosetta up -d sentinel backend cms
-```
-
-*Note*: Some frontend features may not work without the full stack.
+See [Setup Guide](setup_guide.md#profiles) for the full profile list.
 
 ### Verify Backend Services
 
 ```bash
-docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+make ps
 ```
 
-*Expected*: All started containers showing `Up` status.
+*Expected*: All started containers showing `Up` status. PostgreSQL and Redis should show `(healthy)`.
 
 ### Check Service Logs (if issues)
 
 ```bash
 # View logs for a specific service
-docker compose -p ant-rosetta logs -f backend
+make logs S=backend
 
 # View logs for all services
-docker compose -p ant-rosetta logs -f
+make logs
 ```
 
 ### Health Check: GraphQL Gateway
@@ -242,66 +206,38 @@ Options:
 
 ## 5. Start Studio-Desk (Design Tool)
 
-Studio-Desk is the simulation design tool used by content creators. It runs alongside the frontend.
+Studio-Desk is the simulation design tool used by content creators.
 
-### Navigate to Studio-Desk Directory
+### Option A: Run in Docker (Recommended)
+
+```bash
+cd anthropos-dev/platform
+make up PROFILE=studio-desk
+```
+
+This starts Studio-Desk in Docker along with its dependencies (GraphQL, CMS).
+
+### Option B: Run Natively
+
+For development with hot-reloading:
 
 ```bash
 cd anthropos-dev/studio-desk
-```
-
-### Install Dependencies (if needed)
-
-```bash
-ls node_modules > /dev/null 2>&1 && echo "Dependencies installed" || npm install
-```
-
-### Verify Environment File
-
-Studio-Desk requires its own `.env` file with Clerk and OpenAI credentials.
-
-```bash
-ls .env > /dev/null 2>&1 && echo ".env exists" || echo "Missing: Copy .env.example to .env"
-```
-
-If missing, create it:
-```bash
-cp .env.example .env
-```
-
-Then populate the required keys from `platform/.env`:
-- `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY` (copy from platform)
-- `OPENAI_API_KEY` (copy from platform)
-
-### Start Studio-Desk
-
-```bash
+npm install
 npm run dev
 ```
 
+*Note*: Requires its own `.env` file when running natively. See [Setup Guide](setup_guide.md#studio-desk-environment-only-for-native-development).
+
 *Expected*:
-- Frontend starts on http://localhost:9100 (configurable via `FRONTEND_PORT` in `.env`)
-- Backend starts on http://localhost:9000 (configurable via `PORT` or `BACKEND_PORT` in `.env`)
+- Frontend: http://localhost:9100
+- Backend: http://localhost:9000
 
 ### Verify Studio-Desk
 
 Open http://localhost:9100 in your browser.
 
 *Expected*: Studio-Desk login page (uses Clerk authentication).
-
-### Troubleshooting: Port Already in Use
-
-```bash
-# Find what's using port 9100 or 9000
-lsof -i :9100
-lsof -i :9000
-```
-
-To use different ports, edit `studio-desk/.env`:
-```
-FRONTEND_PORT=9200
-PORT=9001
-```
 
 ---
 
@@ -361,7 +297,7 @@ python3 gen.py --media simulation --template default
 ### Stop Frontend
 Press `Ctrl+C` in the terminal running `pnpm dev:web`.
 
-### Stop Studio-Desk
+### Stop Studio-Desk (Native)
 Press `Ctrl+C` in the terminal running `npm run dev`.
 
 ### Stop Docker Services
@@ -369,20 +305,17 @@ Press `Ctrl+C` in the terminal running `npm run dev`.
 ```bash
 cd anthropos-dev/platform
 
-# Stop all Anthropos services (keeps data)
-docker compose -p ant-rosetta down
-
-# Stop and remove volumes (WARNING: deletes database data)
-docker compose -p ant-rosetta down -v
+# Stop all services (keeps data)
+make down
 ```
 
 ### Check All Services Stopped
 
 ```bash
-docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
+make ps
 ```
 
-*Expected*: No containers listed, or all showing `Exited`.
+*Expected*: No containers listed.
 
 ---
 
@@ -391,10 +324,9 @@ docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
 ### Scenario: Resume After Computer Restart
 
 1. Start Docker Desktop
-2. Start infrastructure: `docker compose -p ant-rosetta up -d postgresql redis`
-3. Start backend: `docker compose -p ant-rosetta --profile graphql up -d`
-4. Start frontend: `cd next-web-app && pnpm dev:web`
-5. Start Studio-Desk: `cd studio-desk && npm run dev`
+2. Start backend: `cd anthropos-dev/platform && make up`
+3. Start frontend: `cd anthropos-dev/next-web-app && pnpm dev:web`
+4. (Optional) Start Studio-Desk: `cd anthropos-dev/studio-desk && npm run dev`
 
 ### Scenario: Quick Frontend Development
 
@@ -402,10 +334,21 @@ If you only need to work on the frontend and backend is already running:
 
 ```bash
 # Verify backend is up
-docker ps --filter "name=ant-rosetta-backend" --format "{{.Status}}"
+cd anthropos-dev/platform && make ps
 
 # Start frontend
-cd anthropos-dev/next-web-app && pnpm dev:web
+cd ../next-web-app && pnpm dev:web
+```
+
+### Scenario: Develop a Single Service Natively
+
+To stop a service's Docker container and run it locally:
+
+```bash
+cd anthropos-dev/platform
+make dev S=cms           # Stops the Docker container for CMS
+cd ../cms
+go run .                 # Run natively with hot-reload
 ```
 
 ### Scenario: Database Reset
@@ -414,29 +357,18 @@ To wipe the database and start fresh:
 
 ```bash
 cd anthropos-dev/platform
-
-# Stop everything and remove volumes
-docker compose -p ant-rosetta down -v
-
-# Start fresh
-docker compose -p ant-rosetta up -d postgresql redis
-
-# Re-apply migrations
-(cd ../backend && atlas migrate apply --env local)
-(cd ../cms && atlas migrate apply --env local)
-(cd ../jobsimulation && atlas migrate apply --env local)
-(cd ../skiller && atlas migrate apply --env local)
-
-# Start services
-docker compose -p ant-rosetta --profile graphql up -d
+make reset-db
 ```
+
+This removes PostgreSQL data, restarts the container, and re-runs all migrations automatically.
 
 ### Scenario: Update a Single Service
 
-To rebuild and restart just one service:
+To rebuild and restart just one service after code changes:
 
 ```bash
-docker compose -p ant-rosetta up -d --build backend
+cd anthropos-dev/platform
+make up   # Runs --build automatically
 ```
 
 ---
@@ -449,15 +381,12 @@ docker compose -p ant-rosetta up -d --build backend
 
 **Diagnosis**:
 ```bash
-# Check if backend is running
-docker ps --filter "name=ant-rosetta-backend"
-
-# Check backend logs
-docker compose -p ant-rosetta logs backend
+make ps              # Check what's running
+make logs S=backend  # Check backend logs
 ```
 
 **Common Fixes**:
-- Start the backend services (see Section 3)
+- Start the backend services: `make up`
 - Check `.env` file has correct values
 - Verify GraphQL gateway is running
 
@@ -467,39 +396,22 @@ docker compose -p ant-rosetta logs backend
 
 **Diagnosis**:
 ```bash
-# Find what's using a port (example: 3000)
-lsof -i :3000
+lsof -i :3000  # Find what's using a port
 ```
 
 **Common Fixes**:
 - Stop the conflicting process
-- Use a different port
-- Stop other Anthropos environments
+- Run `make down` then `make up`
 
 ### Docker Build Failures
 
-**Symptoms**: `docker compose up` fails during image build.
-
-**Diagnosis**:
-```bash
-# Check Docker build logs
-docker compose -p ant-rosetta logs --tail=100
-```
+**Symptoms**: `make up` fails during image build.
 
 **Common Fixes**:
 - Ensure SSH agent is running: `eval "$(ssh-agent -s)" && ssh-add`
 - Check GitHub access: `ssh -T git@github.com`
+- Ensure `GH_PAT` is set in `.env`
 - Clean Docker cache: `docker system prune -f`
-
-### "Module Not Found" in Frontend
-
-**Symptoms**: Next.js fails to start with import errors.
-
-**Fix**:
-```bash
-cd anthropos-dev/next-web-app
-pnpm install
-```
 
 ### Database Connection Errors
 
@@ -507,14 +419,11 @@ pnpm install
 
 **Diagnosis**:
 ```bash
-# Check PostgreSQL status
-docker exec ant-rosetta-postgresql-1 pg_isready -U postgres
-
-# Check if schemas exist
-docker exec ant-rosetta-postgresql-1 psql -U postgres -c "\dn"
+docker compose exec postgresql pg_isready -U postgres
+docker compose exec postgresql psql -U postgres -c "\dn"
 ```
 
-**Fix**: Re-apply migrations (see "Database Reset" scenario above).
+**Fix**: Reset the database: `make reset-db`
 
 ---
 

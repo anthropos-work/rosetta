@@ -44,7 +44,7 @@ graph TB
 
 **Characteristics**:
 - **Language**: Go
-- **Deployment**: Docker Compose (local) / Kubernetes (production)
+- **Deployment**: Docker Compose with Makefile automation (local) / AWS ECS (production)
 - **Communication**: HTTP/RPC + Redis Streams
 - **Database**: PostgreSQL (dedicated schemas per service)
 - **Source**: Private GitHub repositories
@@ -62,9 +62,11 @@ graph TB
 | **Storage** | 8300-8301 | File/Blob Storage Management | `git@github.com:anthropos-work/storage.git` |
 | **Chronos** | 8500-8501 | Scheduling & Time-based Events | `git@github.com:anthropos-work/chronos.git` |
 | **Intelligence** | - | Background data sync (backend ↔ skiller) | `git@github.com:anthropos-work/intelligence.git` |
-| **Messenger** | - | Email notifications via Brevo | Internal (platform repo) |
-| **Roadrunner** | - | Code execution proxy to Judge0 | Internal (platform repo) |
-| **db-backup** | - | Scheduled PostgreSQL backups (6h cycle) | Internal (platform repo) |
+| **Messenger** | 8200-8201 | Email notifications via Brevo | `git@github.com:anthropos-work/messenger.git` |
+| **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | `git@github.com:anthropos-work/roadrunner.git` |
+| **Realtime** | 10500-10501 | LiveKit voice agent coordination | `git@github.com:anthropos-work/realtime.git` |
+| **CustomerIO Sync** | 8080 | Background data sync to Customer.io | `git@github.com:anthropos-work/customerio-sync.git` |
+| **db-backup** | - | Scheduled PostgreSQL backups (6h cycle) | Production only |
 
 **Shared Libraries** (imported by services, not deployed):
 
@@ -78,9 +80,12 @@ graph TB
 
 **Development Pattern**:
 ```bash
-# Start all core services
+# Clone all repos and start all backend services
 cd platform
-docker compose up -d backend cms sentinel skiller jobsimulation
+make init              # Clone all repos (first time only)
+make up                # Build from local code and start (graphql profile)
+make up PROFILE=cms    # Start a specific profile
+make dev S=cms         # Stop Docker container, develop natively
 ```
 
 ---
@@ -226,35 +231,53 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 
 ## Development Environment Setup
 
-### Minimal Setup (Core Only)
+The platform uses a **Makefile** as the single entry point. All service repos are cloned as siblings via `make init` and built from local code.
+
+### Quick Start
 ```bash
 cd platform
-docker compose up -d backend cms sentinel postgresql redis
+make init              # Clone all repos (first time)
+make up                # Start all backend services (graphql profile)
 ```
 
-### Full Platform (Core + Studio)
+### Full Platform (Backend + Frontend + Studio)
 ```bash
-# Terminal 1: Core services
+# Terminal 1: All backend services
 cd platform
-docker compose up -d backend cms sentinel skiller jobsimulation storage chronos postgresql redis directus
+make up
 
-# Terminal 2: Frontend
+# Terminal 2: Frontend (native, hot-reload)
 cd next-web-app
-pnpm dev
+pnpm install && pnpm dev:web
 
-# Terminal 3: Studio-Desk
+# Terminal 3: Studio-Desk (native, hot-reload)
 cd studio-desk
-npm run dev
-
-# Terminal 4: Studio-Room (on-demand)
-cd studio-room
-python gen.py --media simulation --template default
+npm install && npm run dev
 ```
 
-### External Service Setup
-- **Clerk**: Sign up at clerk.com, configure environment variables
-- **Directus**: Runs in Docker, auto-configured via docker-compose
-- **GraphQL**: Auto-starts with `docker compose up graphql`
+Or run everything in Docker:
+```bash
+cd platform
+make up-all
+```
+
+### Native Development (Single Service)
+```bash
+cd platform
+make dev S=cms         # Stops Docker container
+cd ../cms
+go run .               # Run natively
+```
+
+### Profiles
+| Profile | Services |
+|---------|----------|
+| `graphql` (default) | All backend + Cosmo Router |
+| `backend` | app only |
+| `cms` | cms only |
+| `frontend` | next-web-app (containerized) |
+| `studio-desk` | studio-desk (containerized) |
+| `all` | Everything |
 
 ---
 
@@ -262,7 +285,7 @@ python gen.py --media simulation --template default
 
 | Tier | Services | Technology | Deployment | Management |
 |:-----|:---------|:-----------|:-----------|:-----------|
-| **Core Backend** | 12 microservices | Go | Docker Compose | GitHub repos |
+| **Core Backend** | 14 microservices | Go | Docker Compose + Makefile | GitHub repos |
 | **Shared Libraries** | 5 libraries | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | 2 applications | TypeScript, Python | Standalone | Local directories |
 | **External** | 6+ integrations | Various | SaaS/Docker | Configuration |

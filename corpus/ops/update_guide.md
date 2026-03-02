@@ -32,19 +32,15 @@ Before updating, stop any running services to avoid conflicts.
 ### Check What's Running
 
 ```bash
-# Check Docker services
-docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
-
-# Check for running Node processes (frontend)
-pgrep -f "next-web-app" || echo "No frontend running"
+cd anthropos-dev/platform
+make ps
 ```
 
 ### Stop Services
 
 ```bash
 # Stop Docker services
-cd anthropos-dev/platform
-docker compose -p ant-rosetta down
+make down
 
 # Stop frontend (Ctrl+C in terminal, or)
 pkill -f "pnpm dev:web" 2>/dev/null || true
@@ -54,60 +50,32 @@ pkill -f "pnpm dev:web" 2>/dev/null || true
 
 ## 2. Update Repository Code
 
-Pull latest changes from all repositories.
+Pull latest changes from all repositories using the Makefile.
 
-### Navigate to Workspace
+### Navigate to Platform Directory
 
 ```bash
-cd anthropos-dev
+cd anthropos-dev/platform
 ```
 
 ### Update All Repositories
 
-Run these commands to pull latest code:
+The `make pull` command updates all repos defined in `repos.yml`. It automatically:
+- Stashes dirty changes before pulling
+- Checks out main/master branch
+- Pulls with rebase
 
 ```bash
-# Platform configuration
-(cd platform && git pull origin main)
-
-# Backend services
-(cd backend && git pull origin main)
-(cd cms && git pull origin main)
-(cd jobsimulation && git pull origin main)
-(cd skiller && git pull origin main)
-
-# Frontend
-(cd next-web-app && git pull origin main)
-
-# Studio services
-(cd studio-desk && git pull origin main)
-(cd studio-room && git pull origin main)
-
-# CMS studio dependency (keep in sync with studio-room)
-(cd cms/studio && git pull origin main)
-
-# Optional repos (if cloned)
-(cd anthropos-knowledge-base && git pull origin main) 2>/dev/null || true
-(cd experiments && git pull origin main) 2>/dev/null || true
+make pull
 ```
 
-*Note*: The parentheses `(...)` ensure you return to the current directory after each command.
-
-### Quick Update Script
-
-For convenience, you can run all pulls in sequence:
+### Check Repository Status
 
 ```bash
-for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio; do
-  echo "Updating $repo..."
-  (cd "$repo" 2>/dev/null && git pull origin main) || echo "  Skipped: $repo not found"
-done
-
-# Optional repos
-for repo in anthropos-knowledge-base experiments; do
-  (cd "$repo" 2>/dev/null && git pull origin main) || true
-done
+make status
 ```
+
+This shows branch, dirty status, and commits behind for all repos.
 
 ### Handle Git Conflicts
 
@@ -172,107 +140,45 @@ go mod tidy
 
 If schema changes were made, apply new migrations.
 
-### Check Migration Status
+### Apply All Migrations
 
 ```bash
-# Ensure PostgreSQL is running
-docker compose -p ant-rosetta up -d postgresql
-sleep 5  # Wait for PostgreSQL to be ready
+cd anthropos-dev/platform
+make migrate
 ```
 
-### Apply Migrations
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (app, cms, jobsimulation, skiller, skillpath, chronos).
+
+### Apply Single Service Migration
 
 ```bash
-cd anthropos-dev
-
-# Backend schema
-(cd backend && atlas migrate apply --env local)
-
-# CMS schema
-(cd cms && atlas migrate apply --env local)
-
-# Jobsimulation schema
-(cd jobsimulation && atlas migrate apply --env local)
-
-# Skiller schema
-(cd skiller && atlas migrate apply --env local)
+make migrate S=cms
 ```
 
 *Expected*: Each command shows applied migrations or "No migration files to apply".
 
 ### If Migrations Fail
 
-Common issues:
+**Connection refused**: PostgreSQL not started. Run `make up` first.
 
-**Schema already exists**: The migration may have been partially applied.
-```bash
-# Check current schema state
-docker exec ant-rosetta-postgresql-1 psql -U postgres -c "\dn"
-```
-
-**Connection refused**: PostgreSQL not ready yet.
-```bash
-# Wait and retry
-docker exec ant-rosetta-postgresql-1 pg_isready -U postgres
-```
-
-**Dirty migration state**: Reset migration history (use with caution).
-```bash
-# Check atlas migration status
-cd [service]
-atlas migrate status --env local
-```
+**Dirty migration state**: Check status, then consider `make reset-db` (WARNING: data loss).
 
 ---
 
-## 5. Rebuild Docker Images
+## 5. Rebuild and Start Services
 
-If Dockerfiles or Go code changed, rebuild the affected services.
-
-### Rebuild Specific Service
+The `make up` command automatically rebuilds images from local code (`--build` flag) and starts services.
 
 ```bash
 cd anthropos-dev/platform
-docker compose -p ant-rosetta build backend  # or cms, jobsimulation, etc.
+make up
 ```
 
-### Rebuild All Services
-
-```bash
-docker compose -p ant-rosetta build
-```
-
-*Note*: This can take several minutes as it pulls and compiles code.
-
-### Force Fresh Build (no cache)
-
-```bash
-docker compose -p ant-rosetta build --no-cache
-```
-
----
-
-## 6. Verify Updated Environment
-
-After updating, verify everything works.
-
-### Start Services
-
-```bash
-cd anthropos-dev/platform
-
-# Start infrastructure
-docker compose -p ant-rosetta up -d postgresql redis
-
-# Start backend
-docker compose -p ant-rosetta --profile graphql up -d
-```
-
-### Health Checks
+### Verify Updated Environment
 
 ```bash
 # Check all containers are healthy
-docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
+make ps
 
 # Test backend
 curl -s http://localhost:8082/health || echo "Backend not responding"
@@ -292,26 +198,17 @@ Open http://localhost:3000 and verify the application loads.
 
 ---
 
-## 7. Quick Update Scenarios
+## 6. Quick Update Scenarios
 
 ### Scenario: Daily Sync (Quick)
 
 Minimal update when starting work:
 
 ```bash
-cd anthropos-dev
-
-# Pull main repos
-(cd platform && git pull origin main)
-(cd backend && git pull origin main)
-(cd next-web-app && git pull origin main)
-
-# Update frontend deps
-(cd next-web-app && pnpm install)
-
-# Restart services
-cd platform
-docker compose -p ant-rosetta up -d
+cd anthropos-dev/platform
+make pull              # Pull all repos
+make up                # Rebuild and start
+cd ../next-web-app && pnpm install && pnpm dev:web
 ```
 
 ### Scenario: Weekly Sync (Full)
@@ -319,31 +216,14 @@ docker compose -p ant-rosetta up -d
 Comprehensive update:
 
 ```bash
-cd anthropos-dev
+cd anthropos-dev/platform
+make down              # Stop everything
+make pull              # Pull all repos
+make up                # Rebuild and start
+make migrate           # Apply any new migrations
 
-# Stop everything
-cd platform && docker compose -p ant-rosetta down && cd ..
-
-# Pull all repos
-for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio; do
-  (cd "$repo" 2>/dev/null && git pull origin main) || true
-done
-
-# Update all dependencies
-(cd next-web-app && pnpm install)
-(cd studio-desk && npm install)
-(cd studio-room && pip3 install -r requirements.txt --upgrade)
-
-# Apply migrations
-cd platform && docker compose -p ant-rosetta up -d postgresql && sleep 5 && cd ..
-(cd backend && atlas migrate apply --env local)
-(cd cms && atlas migrate apply --env local)
-(cd jobsimulation && atlas migrate apply --env local)
-(cd skiller && atlas migrate apply --env local)
-
-# Rebuild and start
-cd platform
-docker compose -p ant-rosetta --profile graphql up -d --build
+# Update frontend deps and start
+cd ../next-web-app && pnpm install && pnpm dev:web
 ```
 
 ### Scenario: After Major Release
@@ -351,29 +231,14 @@ docker compose -p ant-rosetta --profile graphql up -d --build
 When significant changes are announced:
 
 ```bash
-cd anthropos-dev
+cd anthropos-dev/platform
+make down              # Stop everything
+make pull              # Pull all repos
+make reset-db          # Fresh database + migrations
+make up                # Rebuild and start
 
-# Full stop
-cd platform && docker compose -p ant-rosetta down -v && cd ..
-
-# Fresh pull all repos
-for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room; do
-  (cd "$repo" 2>/dev/null && git fetch origin && git reset --hard origin/main) || true
-done
-
-# Clean and reinstall deps
-(cd next-web-app && rm -rf node_modules && pnpm install)
-(cd studio-desk && rm -rf node_modules && npm install)
-
-# Fresh database
-cd platform && docker compose -p ant-rosetta up -d postgresql redis && sleep 10 && cd ..
-(cd backend && atlas migrate apply --env local)
-(cd cms && atlas migrate apply --env local)
-(cd jobsimulation && atlas migrate apply --env local)
-(cd skiller && atlas migrate apply --env local)
-
-# Fresh build
-cd platform && docker compose -p ant-rosetta --profile graphql up -d --build
+# Clean and reinstall frontend deps
+cd ../next-web-app && rm -rf node_modules && pnpm install && pnpm dev:web
 ```
 
 ---
@@ -401,9 +266,9 @@ Schema out of sync with code.
 cd [service]
 atlas migrate status --env local
 
-# If stuck, may need to reset (WARNING: data loss)
-docker compose -p ant-rosetta down -v
-# Then re-apply all migrations
+# If stuck, full reset (WARNING: data loss)
+cd anthropos-dev/platform
+make reset-db
 ```
 
 ### Docker Build Errors After Update
@@ -414,8 +279,8 @@ Image cache may be stale.
 # Clean Docker cache
 docker system prune -f
 
-# Rebuild without cache
-docker compose -p ant-rosetta build --no-cache
+# Rebuild
+make up
 ```
 
 ### Git Conflicts During Pull

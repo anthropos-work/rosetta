@@ -70,7 +70,7 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in setup_guide.md]
 ```
 
-3. These reports feed into `/ant-integrate` for corpus improvements
+3. These reports feed into `/ant-document` for corpus improvements
 
 ## Progress Tracking
 
@@ -78,18 +78,19 @@ Use TodoWrite with phases from the guide:
 - Prerequisites verified (Git, Docker, Go, Node, pnpm)
 - GitHub SSH access configured
 - Workspace created (anthropos-dev/)
-- Repositories cloned
-- Environment files configured (platform + studio-desk)
-- Database schemas initialized
-- Docker services running
-- Frontend accessible
-- Studio-Desk running
+- Platform repo cloned
+- All repos cloned via `make init`
+- Environment file configured (platform/.env)
+- Services started via `make up`
+- Database migrations applied via `make migrate`
+- Frontend running (native or containerized)
+- Studio-Desk running (native or containerized)
 
 ## Critical Rules
 
 - Work in `anthropos-dev/` scratchpad only
 - Never commit .env files
-- Use `-p ant-rosetta` for Docker isolation
+- Use `make` commands for all platform operations
 - Ask before every install/modification
 - Follow the guide - don't improvise
 
@@ -97,11 +98,11 @@ Use TodoWrite with phases from the guide:
 
 Setup complete when:
 1. All tools installed and verified
-2. All repositories cloned
-3. Environment files configured (platform/.env and studio-desk/.env)
-4. Docker services running and healthy
+2. All repositories cloned (via `make init`)
+3. Environment file configured (platform/.env with GH_PAT, Clerk, AI keys)
+4. Docker services running and healthy (`make ps`)
 5. Frontend accessible at localhost:3000
-6. Studio-Desk accessible at localhost:3100
+6. Studio-Desk accessible at localhost:9100
 
 ## Additional Resources
 
