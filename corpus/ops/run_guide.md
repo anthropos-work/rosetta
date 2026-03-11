@@ -130,26 +130,15 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 
 The frontend runs outside Docker for faster development iteration.
 
-### Verify Node.js Version (Critical)
+### Verify Node.js Version
 
-The frontend requires **Node.js v20 LTS**. Node.js v22+ removed the `import ... assert` syntax used by the codebase.
+The frontend requires **Node.js v20 LTS or v22+**.
 
 ```bash
 node --version
 ```
 
-*Expected*: `v20.x.x`
-
-**If using Node.js v22+ or v24+**: Switch to Node 20 using nvm:
-```bash
-nvm use 20
-```
-
-If nvm is not installed or Node 20 is not available:
-```bash
-nvm install 20
-nvm use 20
-```
+*Expected*: `v20.x.x` or `v22.x.x`
 
 ### Navigate to Frontend Directory
 
@@ -328,6 +317,8 @@ make ps
 3. Start frontend: `cd anthropos-dev/next-web-app && pnpm dev:web`
 4. (Optional) Start Studio-Desk: `cd anthropos-dev/studio-desk && npm run dev`
 
+> **Note**: PostgreSQL schemas (extensions, sentinel) persist across restarts. You do NOT need to re-create them unless you run `make reset-db`.
+
 ### Scenario: Quick Frontend Development
 
 If you only need to work on the frontend and backend is already running:
@@ -361,6 +352,8 @@ make reset-db
 ```
 
 This removes PostgreSQL data, restarts the container, and re-runs all migrations automatically.
+
+> **Important**: After `reset-db`, you must re-create the PostgreSQL schemas before migrations will succeed. See [Setup Guide — Prepare PostgreSQL Schemas](setup_guide.md#prepare-postgresql-schemas-first-run-only).
 
 ### Scenario: Update a Single Service
 

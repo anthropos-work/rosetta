@@ -163,8 +163,9 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 Critical environment variables:
 - `GH_PAT` (GitHub Personal Access Token — required for Docker builds to pull private Go modules)
-- `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
-- `OPENAI_API_KEY` & `ANTHROPIC_API_KEY` (AI services)
+- `CLERK_SECRET_KEY` (Auth — backend services)
+- `OPENAI_KEY` (AI services)
+- `VITE_CLERK_PUBLISHABLE_KEY` (Studio-Desk via Docker)
 - `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
 
 ### Makefile-Driven Workflow

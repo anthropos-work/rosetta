@@ -1,6 +1,6 @@
 ---
 name: ant-setup
-description: Build Anthropos dev environment following setup guide with auto-improvement
+description: Build or resume the Anthropos development environment from scratch, by following the official setup guide with verification at each step. Use for initial setup, or to continue/setup after interruption. Do NOT use for general platform updates or for single-service configuration—this is only for end-to-end environment setup and documenting setup issues or improvements.
 argument-hint: [step-name or 'full']
 ---
 
@@ -75,16 +75,18 @@ When you discover errors, missing steps, or better approaches:
 ## Progress Tracking
 
 Use TodoWrite with phases from the guide:
-- Prerequisites verified (Git, Docker, Go, Node, pnpm)
+- Prerequisites verified (Git, Docker, Go, Node, pnpm, Python, Atlas)
 - GitHub SSH access configured
 - Workspace created (anthropos-dev/)
 - Platform repo cloned
 - All repos cloned via `make init`
+- CMS studio submodule cloned (`cd cms && make init-studio`)
 - Environment file configured (platform/.env)
 - Services started via `make up`
+- PostgreSQL schemas prepared (extensions, sentinel)
 - Database migrations applied via `make migrate`
-- Frontend running (native or containerized)
-- Studio-Desk running (native or containerized)
+- Frontend configured and dependencies installed
+- Studio-Desk configured and dependencies installed
 
 ## Critical Rules
 
@@ -98,11 +100,23 @@ Use TodoWrite with phases from the guide:
 
 Setup complete when:
 1. All tools installed and verified
-2. All repositories cloned (via `make init`)
-3. Environment file configured (platform/.env with GH_PAT, Clerk, AI keys)
-4. Docker services running and healthy (`make ps`)
-5. Frontend accessible at localhost:3000
-6. Studio-Desk accessible at localhost:9100
+2. All repositories cloned (via `make init`) + CMS studio submodule (`make init-studio`)
+3. Environment file configured (platform/.env with GH_PAT, CLERK_SECRET_KEY, OPENAI_KEY)
+4. Docker services running and healthy (`make ps`), including Sentinel (not restarting)
+5. PostgreSQL schemas created (extensions + sentinel) and migrations applied
+6. Frontend dependencies installed and `.env` configured
+7. Studio-Desk dependencies installed and `.env` configured
+
+## Known First-Run Issues
+
+These are expected on a fresh setup and are handled in the guide:
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| CMS Docker build fails: `"/studio": not found` | Studio-Room not cloned into `cms/studio/` | Run `cd cms && make init-studio` before `make up` |
+| Sentinel crash-loops: `pq: no schema has been selected` | Missing `sentinel` schema in PostgreSQL | Create schema + restart sentinel (see guide §6) |
+| Migrations fail: `schema 'extensions' does not exist` | Missing pgvector extension | Create extensions schema (see guide §6) |
+| `VITE_CLERK_PUBLISHABLE_KEY` warning | Key not in platform `.env` | Non-critical; only needed for Studio-Desk via Docker |
 
 ## Additional Resources
 

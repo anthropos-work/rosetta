@@ -35,18 +35,17 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `code --version`
 4.  **Go** (v1.23+): `brew install go`
     *   *Verification*: `go version`.
-5.  **Node.js** (v20 LTS - **not v22+**) & **pnpm**:
+5.  **Node.js** (v20 LTS or v22+) & **pnpm**:
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
         ```bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
         source ~/.nvm/nvm.sh
-        nvm install 20
-        nvm use 20
+        nvm install 22
+        nvm use 22
         ```
-    *   Alternative: `brew install node@20` (not `brew install node` which installs latest)
+    *   Alternative: `brew install node` (installs latest LTS)
     *   `corepack enable` or `npm install -g pnpm`
     *   *Verification*: `node --version && pnpm --version`
-    *   **Warning**: Node.js v22+ removed `import ... assert` syntax used by the frontend. Use v20 LTS.
 6.  **Build Tools**:
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
@@ -80,16 +79,15 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 4.  **Go** (v1.23+):
     *   [Official Install](https://go.dev/doc/install) is recommended to get the latest version, as apt repos are often outdated.
     *   *Verification*: `go version`.
-5.  **Node.js** (v20 LTS - **not v22+**) & **pnpm**:
+5.  **Node.js** (v20 LTS or v22+) & **pnpm**:
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
         ```bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
         source ~/.nvm/nvm.sh
-        nvm install 20
-        nvm use 20
+        nvm install 22
+        nvm use 22
         ```
     *   `corepack enable` or `npm install -g pnpm`
-    *   **Warning**: Node.js v22+ removed `import ... assert` syntax used by the frontend. Use v20 LTS.
 6.  **Python** (v3.8+ for Studio-Room):
     *   `sudo apt-get install python3 python3-pip python3-venv`
     *   *Verification*: `python3 --version`
@@ -225,13 +223,23 @@ This clones the following repos as siblings of `platform/`:
 | `studio-desk` | Node.js (npm) | No |
 | `graphql-wundergraph` | Node.js (npm) | No |
 
+### Initialize CMS Studio Submodule
+
+The CMS service requires the Studio-Room Python project inside `cms/studio/` for its Docker build. This is **not** included in `make init` and must be cloned separately:
+
+```bash
+cd ../cms
+make init-studio
+```
+*Verification*: `ls cms/studio/requirements.txt` should show the file exists.
+
 ### How Local Builds Work
 
 **All services build from local directories.** Docker Compose uses `context: ../service` to build each service from its local clone using `Dockerfile.dev` (fast dev builds with BuildKit cache mounts).
 
 This means:
 - Every service **requires a local clone** to build
-- `make init` handles cloning everything
+- `make init` handles cloning everything (except CMS studio submodule — see above)
 - Changes to local code are picked up on `make up` (which runs `--build`)
 
 ### Optional Repos
@@ -264,10 +272,12 @@ All services share a **single centralized `.env` file** located in the `platform
 
     **Critical Keys Required**:
     *   `GH_PAT` (GitHub Personal Access Token — required for Docker builds)
-    *   `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` (Auth)
-    *   `OPENAI_API_KEY` (AI services)
-    *   `ANTHROPIC_API_KEY` (AI services)
-    *   `AZURE_API_KEY` (Optional, if using Azure OpenAI)
+    *   `CLERK_SECRET_KEY` (Auth — backend services)
+    *   `OPENAI_KEY` (AI services)
+    *   `AZURE_OPENAI_KEY` & `AZURE_OPENAI_ENDPOINT_URL` (Optional, Azure OpenAI)
+    *   `AZURE_API_KEY` & `AZURE_ENDPOINT` (Optional, Azure Cognitive Services)
+    *   `VITE_CLERK_PUBLISHABLE_KEY` (Only needed for Studio-Desk via Docker)
+    *   `CLERK_WEBHOOK_SECRET` (Only needed if using Clerk webhooks)
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
@@ -280,7 +290,7 @@ If running Studio-Desk **outside Docker** (natively), it requires its own `.env`
 ```bash
 cd ../studio-desk
 cp .env.example .env
-# Copy CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY, OPENAI_API_KEY from platform/.env
+# Copy CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY, OPENAI_KEY from platform/.env
 ```
 
 **Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
@@ -327,6 +337,25 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```
     You should see all services running. PostgreSQL and Redis should show as healthy.
 
+### Prepare PostgreSQL Schemas (First Run Only)
+
+After the first `make up`, PostgreSQL is running but missing schemas required by Sentinel and migrations. Create them now:
+
+```bash
+# Create pgvector extensions (required by CMS and Skiller migrations)
+docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+
+# Create Sentinel schema (required for Casbin authorization)
+docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+
+# Restart Sentinel (it was crash-looping without its schema)
+docker compose restart sentinel
+```
+
+*Verification*: `make ps` should show Sentinel with `Up` status (not `Restarting`).
+
+> **Note**: These schemas only need to be created once. They persist across `make down` / `make up` cycles. Only `make reset-db` requires re-creating them.
+
 ### Database Migrations
 
 After the first startup, apply database schemas:
@@ -369,30 +398,19 @@ The Next.js frontend is a monorepo with multiple apps. Each app needs its own `.
 
 ### Configure Environment Files
 
+<!-- TODO: Improve keys management — currently each app needs manual .env setup with keys copied from platform/.env. Consider a shared env solution or a script to automate this. -->
+
 1.  Navigate to the frontend repo:
     ```bash
     cd ../next-web-app
     ```
 
-2.  **Create `.env` files** for each app you want to run:
+2.  **Create the web app `.env`**:
     ```bash
-    # Main web app (required)
     cp apps/web/.env.example apps/web/.env
-
-    # Hiring app (optional)
-    cp apps/hiring/.env.example apps/hiring/.env
-
-    # Integration app (optional)
-    cp apps/integration/.env.example apps/integration/.env
     ```
 
-3.  **Populate Clerk keys** from `platform/.env`:
-
-    Open `apps/web/.env` and set:
-    ```
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<from platform/.env CLERK_PUBLISHABLE_KEY>
-    CLERK_SECRET_KEY=<from platform/.env CLERK_SECRET_KEY>
-    ```
+3.  **Populate keys** in `apps/web/.env`: Copy `CLERK_SECRET_KEY` from `platform/.env` and set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` to the Clerk publishable key from 1Password or the Engineering Manager.
 
     *Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082` which are correct for local development.
 
@@ -481,16 +499,8 @@ make gen
 *   **General**: Ensure Docker containers are running (`make ps` or `docker compose ps`). If a service is failing, check logs: `make logs S=service_name`.
 *   **Linux Permission Denied**: If you see "permission denied while trying to connect to the Docker daemon", you likely skipped the `usermod` step. Run `sudo usermod -aG docker $USER`, then log out and back in (or `newgrp docker`).
 
-### "SyntaxError: Unexpected identifier 'assert'" (Frontend)
-The frontend uses `import ... assert { type: 'json' }` syntax which was removed in Node.js v22+.
-*   **Solution**: Use Node.js v20 LTS. Install via nvm:
-    ```bash
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-    source ~/.nvm/nvm.sh
-    nvm install 20
-    nvm use 20
-    ```
-*   Then run the frontend: `cd next-web-app && pnpm dev`
+### "SyntaxError: Unexpected identifier 'assert'" (Frontend - Legacy)
+This issue occurred with older versions of the frontend that used `import ... assert { type: 'json' }` syntax removed in Node.js v22+. The frontend has since been updated and now works with Node.js v22+. If you encounter this error on an old branch, switch to the latest `main` branch.
 
 ### "schema 'extensions' does not exist" (Atlas migrations)
 CMS and Skiller services require the pgvector extension for vector embeddings.

@@ -26,11 +26,11 @@ xcode-select -p  # macOS only
 ssh -T git@github.com
 
 # Docker services
-docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
+docker ps --filter "name=platform" --format "table {{.Names}}\t{{.Status}}"
 
 # Database
-docker exec ant-rosetta-postgresql-1 pg_isready -U postgres
-docker exec ant-rosetta-redis-1 redis-cli ping
+docker exec anthropos-postgresql-1 pg_isready -U postgres
+docker exec anthropos-redis-1 redis-cli ping
 
 # Services
 curl -s http://localhost:3000 > /dev/null && echo "Frontend OK"
@@ -42,17 +42,17 @@ curl -s http://localhost:8082/health && echo "Backend OK"
 
 ```bash
 # Start infrastructure
-docker compose -p ant-rosetta up -d postgresql redis
+docker compose up -d postgresql redis
 
 # Prepare PostgreSQL extensions (before migrations)
-docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
-docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+docker exec anthropos-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+docker exec anthropos-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
 
 # Start full backend
-docker compose -p ant-rosetta --profile graphql up -d
+docker compose --profile graphql up -d
 
 # View logs
-docker compose -p ant-rosetta logs -f [service]
+docker compose logs -f [service]
 ```
 
 ## Atlas Migrations
@@ -98,7 +98,7 @@ lsof -i :3000
 
 ```bash
 # Create extensions schema
-docker exec ant-rosetta-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
+docker exec anthropos-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
 
 # Retry migration
 (cd cms && atlas migrate apply --env local)
@@ -147,16 +147,24 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
 
 ```
 anthropos-dev/
-├── platform/           # Docker config + .env
-├── backend/            # Main API (cloned from app)
+├── platform/            # Docker config + .env (orchestration hub)
+├── app/                 # Main backend API
 ├── cms/
-│   └── studio/         # Studio-room for Docker build
+│   └── studio/          # Studio-Room (cloned via make init-studio)
 ├── jobsimulation/
 ├── skiller/
-├── next-web-app/       # Frontend
-├── studio-desk/
-├── studio-room/
-└── ops-reports/        # Operational feedback
+├── skillpath/
+├── chronos/
+├── sentinel/
+├── intelligence/
+├── storage/
+├── messenger/
+├── roadrunner/
+├── next-web-app/        # Frontend (Next.js monorepo)
+├── studio-desk/         # Simulation design tool
+├── graphql-wundergraph/ # GraphQL federation config
+├── zEnvs/               # Env file backups (platform.env, desk.env)
+└── ops-reports/         # Operational feedback
 ```
 
 ## Related Skills
