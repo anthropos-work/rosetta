@@ -281,6 +281,14 @@ All services share a **single centralized `.env` file** located in the `platform
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
+> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails and `messenger` will send them on any flow that triggers a notification. Blank the key in `platform/.env`:
+>
+> ```bash
+> sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
+> ```
+>
+> Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
+
 **Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
 
 ### Studio-Desk Environment (Only for Native Development)
@@ -545,6 +553,41 @@ If your database is corrupted or you want a clean start:
 make reset-db
 ```
 This removes PostgreSQL data, restarts the container, and re-runs all migrations.
+
+### "Permission denied" when starting Postgres after a fresh checkout
+Bitnami Postgres runs as uid 1001 inside the container. The bind-mount root (`platform/data/postgresql`) is created by Docker as root and the container can't write to it. Pre-create with the right ownership before first start:
+```bash
+sudo mkdir -p platform/data/postgresql && sudo chown -R 1001:1001 platform/data/postgresql
+docker compose up -d postgresql
+```
+
+### CMS image build fails on `COPY studio/` / `pip install studio/requirements.txt`
+The `studio/` submodule has been removed from `cms/main` but `cms/Dockerfile.dev` still references it. Edit `cms/Dockerfile.dev` and remove these two lines:
+```dockerfile
+COPY studio/ ./studio/
+RUN pip install --no-cache-dir -r studio/requirements.txt
+```
+The Go binary runs without the Python studio runner.
+
+### `studio-desk` fails to bind host port 9100
+Conflicts with `node_exporter` (Prometheus monitoring) if you have any observability stack running on the box. Edit `platform/docker-compose.yml`:
+```yaml
+studio-desk:
+  ports:
+    - "9101:9100"   # was 9100:9100
+```
+
+### Next.js (`next-web-app`) build crashes with `STRIPE_SECRET_KEY is not configured`
+Next.js statically evaluates server routes (e.g. `/api/create-subscription`) at build time and reads from `process.env`. Compose's `env_file` is runtime-only — the build step doesn't see it. Drop a gitignored `next-web-app/apps/web/.env.production` containing the keys those routes touch (`STRIPE_SECRET_KEY`, `OPENAI_API_KEY`, `AZURE_OPENAI_*`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `NEXT_PUBLIC_BACKEND_API_URL`, `NEXT_PUBLIC_HOSTING_URL`) before `docker compose build`.
+
+### Backend GraphQL "404 Not Found" at `/graphql`
+The backend GraphQL endpoint is `/graphql/query`. The `/graphql` path returns the embedded Apollo Sandbox playground UI. CORS preflight + auth happen at `/query`.
+
+### Tailscale / cross-device access — frontend points at `localhost`
+`NEXT_PUBLIC_*` vars are baked into the Next.js client bundle at build time. To make the staging accessible from another device on your Tailscale network, set `PUBLIC_HOST=100.x.y.z` (your host's Tailscale IP) in `platform/.env` BEFORE `docker compose build next-web-app`, then add the Tailscale origin to the backend CORS allowlist (`app/internal/cors/cors.go`) and to the dev Clerk app's allowed origins.
+
+### Logged in but Members table empty / "forbidden" on enterprise routes
+You restored a prod DB dump and the engineer-to-Clerk rebind is incomplete. See [staging_from_dump.md](staging_from_dump.md) — typically you need to (a) apply the colony patch, (b) sync `sentinel.casbin_rules.g2` from `public.memberships`, and (c) restart sentinel.
 
 ---
 
