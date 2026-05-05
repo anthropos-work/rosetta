@@ -338,6 +338,29 @@ If you want to open the staging from another device on your Tailscale network (e
 4. Add the same origin in your dev Clerk app's "Allowed origins" list.
 5. From the other device, open `http://100.x.y.z:3000/login`.
 
+### Tailscale aliases (so URLs aren't IP-numbers)
+
+Tailscale's MagicDNS gives each device one canonical short name (e.g., `calypso.taildc510.ts.net`). To have *additional* friendly aliases (e.g., let the same machine answer to both `calypso` and `calypsostaging`), add them to the **`hosts:`** section of the tailnet ACL:
+
+```hcl
+{
+  "hosts": {
+    "calypso":        "100.83.121.80",
+    "calypsostaging": "100.83.121.80",
+    "ithaca":         "100.120.254.65",
+    "ithacastaging":  "100.120.254.65",
+  },
+  // ... rest of ACL ...
+}
+```
+
+Save in https://login.tailscale.com/admin/acls/file (or `POST /api/v2/tailnet/<tailnet>/acl`) and resolution is instant tailnet-wide. After this, both `http://calypso:3000` and `http://calypsostaging:3000` work from any tailnet device. Remember to add each new alias to:
+
+- **Clerk allowed origins** (https://api.clerk.com/v1/instance with `allowed_origins`).
+- **Backend CORS** (`app/internal/cors/cors.go`'s `colony.Development` block).
+
+Both lists must contain `http://<alias>:3000` for the browser to trust it.
+
 ---
 
 ## 7. Verify
