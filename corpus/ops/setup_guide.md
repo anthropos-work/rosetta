@@ -589,6 +589,29 @@ The backend GraphQL endpoint is `/graphql/query`. The `/graphql` path returns th
 ### Logged in but Members table empty / "forbidden" on enterprise routes
 You restored a prod DB dump and the engineer-to-Clerk rebind is incomplete. See [staging_from_dump.md](staging_from_dump.md) — typically you need to (a) apply the colony patch, (b) sync `sentinel.casbin_rules.g2` from `public.memberships`, and (c) restart sentinel.
 
+### Blank page on first sign-in / "Clerk: infinite redirect loop" in next-web-app logs
+Clerk's Next.js middleware reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from `process.env` at runtime even though the same value is baked into the client bundle at build time. If only `VITE_CLERK_PUBLISHABLE_KEY` is in the runtime env (which is what compose's `env_file: .env` provides for Studio-Desk), the server-side Clerk init fails and trips the "infinite redirect loop" detector — pages render blank until the cookie cache rescues them.
+
+Fix: add the Clerk vars to `next-web-app`'s runtime `environment:` block in `platform/docker-compose.yml`:
+
+```yaml
+next-web-app:
+  environment:
+    # ... existing ...
+    - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    - NEXT_PUBLIC_CLERK_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/login}
+    - NEXT_PUBLIC_CLERK_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_URL:-/sign-up}
+    - NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL:-/}
+    - NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:-/onboarding}
+```
+
+Then `docker compose up -d next-web-app` to restart with the new env (no rebuild needed — these are runtime-only vars, the bundle was already correct). After the fix you should see all five `NEXT_PUBLIC_CLERK_*` keys in `docker compose exec next-web-app env`.
+
+If you still see blank pages in your browser after the fix, clear cookies for the staging origin (`ithacastaging`, `calypsostaging`, or your equivalent) — stale dev-browser cookies bound to a prior origin can keep the redirect loop alive client-side.
+
+### Frontend slow to load over Tailscale
+By default the root layout loads Plausible, Google Tag Manager, BetterStack, analytics.bellasio.com, and PostHog — ~10 third-party blocking requests that drag page-load time over Tailscale and pollute prod analytics with staging traffic. Disable them per [staging_from_dump.md](staging_from_dump.md) — set `NEXT_PUBLIC_DISABLE_ANALYTICS=true` in `platform/.env`, blank `POSTHOG_API_KEY`/`POSTHOG_SERVER_SIDE_KEY`, rebuild `next-web-app`. Production leaves the flag unset and keeps analytics on.
+
 ---
 
 ## 11. Maintenance Guidelines

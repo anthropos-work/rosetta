@@ -59,6 +59,32 @@ Apply the same caution to any other live-customer integration you don't intend t
 
 The cheap heuristic: if disabling the integration would only break "email/notification went out", keep it disabled until you specifically need it.
 
+### Also disable third-party analytics (page-load speed + don't pollute prod analytics)
+
+The frontend's root layout eagerly loads Plausible, Google Tag Manager (GTM-PXRTBZK fans out to GA + LinkedIn pixel + Facebook pixel + Google Ads), BetterStack, and analytics.bellasio.com — that's ~10 third-party blocking requests on every page load. On staging this slows everything down over Tailscale and pollutes prod dashboards with staging traffic.
+
+Set `NEXT_PUBLIC_DISABLE_ANALYTICS=true` in `platform/.env` and rebuild `next-web-app`. Also blank `POSTHOG_API_KEY` and `POSTHOG_SERVER_SIDE_KEY` for the same reasons:
+
+```bash
+cat >> platform/.env <<'EOF'
+NEXT_PUBLIC_DISABLE_ANALYTICS=true
+EOF
+sed -i 's/^POSTHOG_API_KEY=.*/POSTHOG_API_KEY=/' platform/.env
+sed -i 's/^POSTHOG_SERVER_SIDE_KEY=.*/POSTHOG_SERVER_SIDE_KEY=/' platform/.env
+
+docker compose -f platform/docker-compose.yml build next-web-app
+docker compose -f platform/docker-compose.yml up -d --no-deps next-web-app
+```
+
+Verify the analytics scripts are gone from the served HTML:
+
+```bash
+curl -s http://localhost:3000/login | grep -oE "plausible|googletagmanager|bellasio|betterstack|GTM-" | sort -u
+# Expected: empty output
+```
+
+The flag is gated in `apps/web/src/app/layout.tsx` — production builds (which leave the flag unset) keep all analytics; only staging skips them.
+
 ---
 
 ## 2. Restore the prod DB dump
