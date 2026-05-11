@@ -49,24 +49,43 @@ graph TB
 - **Database**: PostgreSQL (dedicated schemas per service)
 - **Source**: Private GitHub repositories
 
-**Services**:
+**Services** (current local docker-compose, as of 2026-05-11):
 
-| Service | Port(s) | Purpose | Repository |
-|:--------|:--------|:--------|:-----------|
-| **Backend/App** | 8081-8083 | Main API Gateway, User Management | `git@github.com:anthropos-work/app.git` |
-| **Sentinel** | 8087 | Authentication & Authorization | `git@github.com:anthropos-work/sentinel.git` |
-| **CMS** | 8090-8091 | Content Management, Directus Proxy | Local `../cms` |
-| **Skiller** | 8085-8086 | Skill Management & Assessment | `git@github.com:anthropos-work/skiller.git` |
-| **Skillpath** | 8100-8101 | Skill Progression Paths | `git@github.com:anthropos-work/skillpath.git` |
-| **Jobsimulation** | 8400-8401 | Job Environment Simulation | `git@github.com:anthropos-work/jobsimulation.git` |
-| **Storage** | 8300-8301 | File/Blob Storage Management | `git@github.com:anthropos-work/storage.git` |
-| **Chronos** | 8500-8501 | Scheduling & Time-based Events | `git@github.com:anthropos-work/chronos.git` |
-| **Intelligence** | - | Background data sync (backend ↔ skiller) | `git@github.com:anthropos-work/intelligence.git` |
-| **Messenger** | 8200-8201 | Email notifications via Brevo | `git@github.com:anthropos-work/messenger.git` |
-| **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | `git@github.com:anthropos-work/roadrunner.git` |
-| **Realtime** | 10500-10501 | LiveKit voice agent coordination | `git@github.com:anthropos-work/realtime.git` |
-| **CustomerIO Sync** | 8080 | Background data sync to Customer.io | `git@github.com:anthropos-work/customerio-sync.git` |
-| **db-backup** | - | Scheduled PostgreSQL backups (6h cycle) | Production only |
+| Service | Port(s) | Purpose | Profile | Source |
+|:--------|:--------|:--------|:--------|:-------|
+| **Backend/App** | 8081-8083 | Main API Gateway, User Management | graphql, backend | Local `../app` |
+| **Sentinel** | 8087 | Authentication & Authorization | (always on) | Local `../sentinel` |
+| **CMS** | 8090-8091 | Content Management, Directus Proxy, **embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` submodule = `anthropos-studio-room`) |
+| **Skiller** | 8085-8086 | Skill Management, Assessment, Vector Embeddings (RAG) | graphql, skiller | Local `../skiller` |
+| **Skillpath** | 8100-8101 | Skill Progression Paths | graphql, skillpath | Local `../skillpath` |
+| **Jobsimulation** | 8400-8401 | Job Environment Simulation | graphql, jobsimulation | Local `../jobsimulation` |
+| **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
+| **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | graphql, roadrunner | Local `../roadrunner` |
+| **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | graphql, backend | Third-party image `gotenberg/gotenberg:8` |
+| **Graphql** (Cosmo Router) | 5050 | Apollo Federation v2 gateway | graphql | Local `../graphql-wundergraph` (built into local image) |
+
+**Available but not in default `graphql` profile**:
+
+| Service | Port(s) | Purpose | Profile | Source |
+|:--------|:--------|:--------|:--------|:-------|
+| **Messenger** | 8200-8201 | Email notifications via Brevo | messenger | Local `../messenger` |
+| **CustomerIO Sync** | 8080 | Background data sync to Customer.io | customerio-sync | Built directly from `git@github.com:anthropos-work/customerio-sync.git#main` (not cloned locally) |
+| **Studio-Desk** | 9000, 9100 | Studio design tool (containerized variant) | studio-desk | Local `../studio-desk` |
+| **Next-Web-App** | 3000 | Frontend (containerized variant) | frontend | Local `../next-web-app` |
+
+**Base services (no profile, always on with any `make up`)**:
+- **PostgreSQL** :5432 (custom image with pgvector extension)
+- **Redis** :6379 (`bitnamilegacy/redis:latest`)
+
+**Archived (removed from local orchestration; repo dirs may still exist on disk)**:
+
+| Service | Why removed | Reference |
+|:--------|:------------|:----------|
+| **Chronos** | Removed from local dev orchestration | Platform commit `045857c` |
+| **Intelligence** | Removed from local dev orchestration | Platform commit `fdfa189` |
+
+**Production-only (deployed but not in local docker-compose)**:
+- **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
 
 **Shared Libraries** (imported by services, not deployed):
 
@@ -121,29 +140,37 @@ npm install
 npm run dev  # Starts both frontend (9100) and backend (9000)
 ```
 
-#### Studio-Room
+#### Studio-Room (embedded in CMS)
 
 | Property | Value |
 |:---------|:------|
-| **Technology** | Python 3.x, asyncio, OpenAI/Anthropic APIs |
+| **Technology** | Python 3.11, asyncio, OpenAI/Anthropic/Mistral APIs |
 | **Purpose** | AI-powered content generation pipeline |
-| **Input** | Blueprints from Studio-Desk |
-| **Output** | Final job simulations and learning content |
-| **Location** | `studio/studio-room/` |
+| **Input** | Blueprints (StudioDocuments) created in Studio-Desk and stored via CMS |
+| **Output** | Generated simulations and learning content; CMS persists results |
+| **Repo** | `git@github.com:anthropos-work/anthropos-studio-room.git` |
+| **Location** | `cms/studio/` — cloned in by `cd cms && make init-studio` (git submodule pattern, not a real `.gitmodules` entry) |
+| **Runtime** | Baked into the cms Docker image (`Dockerfile.dev` final stage uses `python:3.11-slim` + `pip install -r studio/requirements.txt`) |
 
 **Generation Pipeline**:
 1. **Pre-generation**: Load template, validate parameters
 2. **AI Generation**: Execute multi-step generation workflow
 3. **Post-generation**: Translation, metadata, guidance generation
 
-**Development**:
+**Local development** (no cms container needed):
 ```bash
-cd studio-room
+cd cms/studio
 pip install -r requirements.txt
 python gen.py --media simulation --template <name>
 ```
 
-**Relationship**: Studio-Desk creates the *design* (blueprint), Studio-Room performs the *implementation* (AI generation).
+**Sync the studio submodule** when upstream changes:
+```bash
+cd cms
+make update-studio   # pulls latest in cms/studio/
+```
+
+**Relationship**: Studio-Desk creates the *design* (blueprint). The cms service (Go) orchestrates `StudioTask` records; the studio-room Python code runs inside the same container to execute generation.
 
 ---
 
@@ -270,24 +297,30 @@ go run .               # Run natively
 ```
 
 ### Profiles
-| Profile | Services |
-|---------|----------|
-| `graphql` (default) | All backend + Cosmo Router |
-| `backend` | app only |
-| `cms` | cms only |
-| `frontend` | next-web-app (containerized) |
-| `studio-desk` | studio-desk (containerized) |
-| `all` | Everything |
+| Profile | Services started |
+|---------|------------------|
+| (none — default `docker compose up`) | postgresql, redis, sentinel only |
+| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, skiller, skillpath, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
+| `backend` | postgresql, redis, sentinel, backend, gotenberg |
+| `skiller` / `skillpath` / `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
+| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation/skiller/skillpath — bring those up too) |
+| `customerio-sync` | postgresql, redis, sentinel, customerio-sync |
+| `frontend` | + next-web-app (containerized) |
+| `studio-desk` | + studio-desk (containerized) |
+| `all` | Everything in the compose file |
+
+Use `docker compose --profile <name> config --services` to verify the actual member list for a given profile.
 
 ---
 
 ## Summary Table
 
-| Tier | Services | Technology | Deployment | Management |
-|:-----|:---------|:-----------|:-----------|:-----------|
-| **Core Backend** | 14 microservices | Go | Docker Compose + Makefile | GitHub repos |
-| **Shared Libraries** | 5 libraries | Go | Imported (not deployed) | GitHub repos |
-| **Studio** | 2 applications | TypeScript, Python | Standalone | Local directories |
-| **External** | 6+ integrations | Various | SaaS/Docker | Configuration |
-
-**Total**: 20+ distinct services, libraries, and integrations comprising the Anthropos platform.
+| Tier | Count | Technology | Deployment | Management |
+|:-----|:------|:-----------|:-----------|:-----------|
+| **Core Backend (local `graphql` profile)** | 10 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
+| **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
+| **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
+| **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
+| **Archived** | Chronos, Intelligence | Go | Removed from local orchestration (2026-Q2) | GitHub repos still exist |
+| **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

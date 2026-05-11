@@ -35,17 +35,19 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `code --version`
 4.  **Go** (v1.23+): `brew install go`
     *   *Verification*: `go version`.
-5.  **Node.js** (v20 LTS or v22+) & **pnpm**:
+5.  **Node.js** (v24+ required) & **pnpm**:
+    *   `next-web-app/package.json` declares `"engines": { "node": ">=24.0.0" }`. Older Node versions will fail `pnpm install` with `WARN  Unsupported engine`.
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
         ```bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
         source ~/.nvm/nvm.sh
-        nvm install 22
-        nvm use 22
+        nvm install 24
+        nvm use 24
+        nvm alias default 24    # optional: make it the default for new shells
         ```
     *   Alternative: `brew install node` (installs latest LTS)
     *   `corepack enable` or `npm install -g pnpm`
-    *   *Verification*: `node --version && pnpm --version`
+    *   *Verification*: `node --version` should print `v24.x.x`, then `pnpm --version`.
 6.  **Build Tools**:
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
     *   Ensure XCode CLI tools are installed: `xcode-select --install`
@@ -79,13 +81,14 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 4.  **Go** (v1.23+):
     *   [Official Install](https://go.dev/doc/install) is recommended to get the latest version, as apt repos are often outdated.
     *   *Verification*: `go version`.
-5.  **Node.js** (v20 LTS or v22+) & **pnpm**:
+5.  **Node.js** (v24+ required) & **pnpm**:
+    *   `next-web-app/package.json` declares `"engines": { "node": ">=24.0.0" }`.
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
         ```bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
         source ~/.nvm/nvm.sh
-        nvm install 22
-        nvm use 22
+        nvm install 24
+        nvm use 24
         ```
     *   `corepack enable` or `npm install -g pnpm`
 6.  **Python** (v3.8+ for Studio-Room):
@@ -98,10 +101,10 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 
 ## Automated Setup with Claude Code
 
-If you're using **Claude Code**, you can automate this entire setup process using the `/anthropos-setup` skill:
+If you're using **Claude Code**, you can automate this entire setup process using the `/ant-setup` skill:
 
 ```bash
-/anthropos-setup
+/ant-setup
 ```
 
 The skill will:
@@ -110,7 +113,7 @@ The skill will:
 *   Track progress using TodoWrite
 *   Create ops reports when issues are discovered
 
-See [`.claude/skills/anthropos-setup/`](../../.claude/skills/anthropos-setup/) for details.
+See [`.claude/skills/ant-setup/SKILL.md`](../../.claude/skills/ant-setup/SKILL.md) for details.
 
 ---
 
@@ -204,7 +207,7 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
-This clones the following repos as siblings of `platform/`:
+This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-05:
 
 | Repo | Type | Has Migrations |
 |------|------|---------------|
@@ -213,15 +216,15 @@ This clones the following repos as siblings of `platform/`:
 | `jobsimulation` | Go backend | Yes (jobsimulation schema) |
 | `skiller` | Go backend | Yes (skiller schema) |
 | `skillpath` | Go backend | Yes (skillpath schema) |
-| `chronos` | Go backend | Yes (chronos schema) |
 | `sentinel` | Go backend | No |
-| `intelligence` | Go backend | No |
 | `storage` | Go backend | No |
 | `messenger` | Go backend | No |
 | `roadrunner` | Go backend | No |
 | `next-web-app` | Node.js (pnpm) | No |
 | `studio-desk` | Node.js (npm) | No |
 | `graphql-wundergraph` | Node.js (npm) | No |
+
+> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`). Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
 ### Initialize CMS Studio Submodule
 
@@ -370,7 +373,7 @@ After the first startup, apply database schemas:
 ```bash
 make migrate
 ```
-This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (app, cms, jobsimulation, skiller, skillpath, chronos).
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skiller, skillpath).
 
 *Verification*: Commands should complete without errors.
 

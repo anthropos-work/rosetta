@@ -6,21 +6,22 @@ This document provides a high-level overview of the Anthropos platform architect
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic:
+*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), and learning paths
+    *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), learning paths, and vector embeddings (RAG)
     *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks
-    *   **CMS**: Content management and Directus integration
-    *   **Chronos**: Timer scheduling and delayed events
+    *   **CMS**: Content management, Directus integration, and the embedded Studio-Room AI content generation pipeline (Python, in the same container)
     *   **Storage**: File/blob storage
-    *   **Intelligence**: Background data sync between services
-    *   **Messenger**: Email notifications (via Brevo/Sendinblue)
     *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
-    *   **db-backup**: Scheduled PostgreSQL backups
+    *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
+
+    Off by default (opt-in via Docker profile): **Messenger** (Brevo email), **CustomerIO Sync**.
+    Archived (removed from local orchestration): Chronos, Intelligence.
+    Production-only: **db-backup** (scheduled PostgreSQL backups).
 *   **Studio Services**: Specialized tools for content creation:
     *   **Studio-Desk**: Web app where creators design job simulations
-    *   **Studio-Room**: AI pipeline that generates content from those designs
+    *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the CMS container** as `cms/studio/` (cloned via `cd cms && make init-studio`) — not a standalone deployment anymore.
 *   **Frontend**: Next.js 14 applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
@@ -47,11 +48,12 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private access
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
-**Service Tiers**:
-1. **Core Backend Services**: 12 Go microservices (dockerized)
-2. **Studio Services**: 2 custom applications for content creation (TypeScript + Python)
+**Service Tiers** (local development reality, default `graphql` profile):
+1. **Core Backend Services**: 9 Go microservices (Backend/App, Sentinel, CMS, Skiller, Skillpath, Jobsimulation, Storage, Roadrunner, Messenger when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is now embedded in the CMS container.
 3. **External Services**: Clerk, Directus, GraphQL, AI providers, LiveKit, AWS Chime
 4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
+5. **Production-only / not in local compose**: db-backup, archived Chronos/Intelligence
 
 Services communicate via **Connect-RPC/HTTP** for synchronous operations and **Redis Streams** (via Watermill) for asynchronous messaging.
 
@@ -75,15 +77,13 @@ graph TD
     subgraph Core["⚙️ Core Backend Services (Go)"]
         Gateway[Backend / App Gateway]
         Sentinel[Sentinel]
-        CMS_Service[CMS Service]
+        CMS_Service[CMS Service<br/>+ embedded Studio-Room]
         Skiller[Skiller]
         JobSim[Job Simulation]
         Skillpath[Skillpath]
         Storage[Storage]
-        Chronos[Chronos]
-        Intelligence[Intelligence]
-        Messenger[Messenger]
         Roadrunner[Roadrunner]
+        Gotenberg[Gotenberg<br/>PDF conversion]
     end
 
     subgraph Data["💾 Data & Infrastructure"]
@@ -103,19 +103,20 @@ graph TD
     Desk --> GraphQL
     Room -.->|generates from| Desk
     
-    %% GraphQL aggregation
+    %% GraphQL aggregation (5 subgraphs: backend, skiller, jobsimulation, cms, skillpath)
     GraphQL --> Gateway
     GraphQL --> CMS_Service
     GraphQL --> Skiller
     GraphQL --> JobSim
-    GraphQL --> Intelligence
-    
+    GraphQL --> Skillpath
+
     %% Core service dependencies
     Gateway --> Sentinel
+    Gateway --> Gotenberg
     CMS_Service --> Directus
     JobSim --> CMS_Service
     JobSim --> Storage
-    JobSim --> Chronos
+    JobSim --> Roadrunner
     
     %% Data connections
     Gateway --> Postgres
@@ -137,20 +138,39 @@ graph TD
 
 #### Core Backend Services (Tier 1)
 
+Default local development set (started by `make up`, profile `graphql`):
+
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
 | **Backend** (`app`) | Go | Main API Gateway / User Backend | [→](../services/backend.md) |
-| **CMS** | Go | Content Management / Directus Proxy | [→](../services/cms.md) |
+| **CMS** | Go + embedded Python (studio-room) | Content Management, Directus Proxy, AI generation pipeline | [→](../services/cms.md) |
 | **Sentinel** | Go | Authorization & Authentication | [→](../services/sentinel.md) |
 | **Jobsimulation** | Go | Job environments & task simulation | [→](../services/jobsimulation.md) |
-| **Skiller** | Go | Skill management & assessment | [→](../services/skiller.md) |
+| **Skiller** | Go | Skill management, assessment, vector embeddings (RAG) | [→](../services/skiller.md) |
 | **Skillpath** | Go | Skill progression paths | [→](../services/skillpath.md) |
 | **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
-| **Chronos** | Go | Scheduling & time-based events | [→](../services/chronos.md) |
-| **Intelligence** | Go | Background data sync between backend and skiller schemas | [→](../services/intelligence.md) |
-| **Messenger** | Go | Email notifications via Brevo (Sendinblue) | [→](../services/messenger.md) |
 | **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
+| **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
+
+Available but off by default (opt-in via Docker profile):
+
+| Service Name | Profile | Responsibility | Documentation |
+| :--- | :--- | :--- | :--- |
+| **Messenger** | `messenger` | Email notifications via Brevo (Sendinblue) | [→](../services/messenger.md) |
+| **CustomerIO Sync** | `customerio-sync` | Background data sync to Customer.io | [→](../services/customerio-sync.md) |
+
+Production-only (deployed but not in local docker-compose):
+
+| Service Name | Technology | Responsibility | Documentation |
+| :--- | :--- | :--- | :--- |
 | **db-backup** | Go | Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner | [→](../services/db-backup.md) |
+
+Archived (removed from local orchestration; repos still exist):
+
+| Service Name | Status | Documentation |
+| :--- | :--- | :--- |
+| **Chronos** | Removed via platform commit `045857c` | [→](../services/chronos.md) |
+| **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 
 #### Shared Libraries (Not Deployed)
 
@@ -210,7 +230,7 @@ A typical API request follows this path:
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
   → Subgraph service (app/skiller/jobsim/cms/skillpath)
-    → gRPC to internal services (sentinel, chronos, storage, messenger, roadrunner)
+    → gRPC to internal services (sentinel, storage, roadrunner, ...)
     → Redis Streams for async events
 ```
 
@@ -242,14 +262,14 @@ The platform uses a **Code-First** approach to data management, relying on stric
     4.  **Apply**: `atlas migrate apply` executes pending migrations against the target database.
 
 #### 3. Database Separation
-Although all services may share a physical PostgreSQL instance (in dev/docker), they are logically separated by **PostgreSQL Schemas**:
+Although all services may share a physical PostgreSQL instance (in dev/docker), they are logically separated by **PostgreSQL Schemas** (source: `platform/repos.yml` `schema:` field for services with `migrations: true`):
 *   `backend` service → `public` schema
 *   `cms` service → `cms` schema
 *   `jobsimulation` service → `jobsimulation` schema
 *   `skiller` service → `skiller` schema
 *   `skillpath` service → `skillpath` schema
-*   `sentinel` service → `sentinel` schema
-*   `chronos` service → `chronos` schema
+*   `sentinel` service → `sentinel` schema (created manually during setup; sentinel does not run migrations)
+*   `extensions` schema → houses `pgvector` extension (required by skiller embeddings)
 
 > [!IMPORTANT]
 > **Manual Setup Required**: The platform does *not* automatically apply migrations on startup (to prevent accidental production overrides). Developers must run `atlas migrate apply` manually when setting up a fresh environment or pulling schema changes.
