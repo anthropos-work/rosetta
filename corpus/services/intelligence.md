@@ -1,22 +1,18 @@
 # Intelligence Service
 
-## Role & Responsibility
-*   **Primary Goal**: AI/ML Integration service.
-*   **Key Functions**:
-    *   Likely interfaces with LLMs (Mistral, OpenAI) or internal models.
+> ## ⚠️ Archived — no longer in local orchestration
+>
+> Intelligence was removed from `platform/docker-compose.yml` and `platform/repos.yml` in mid-2026:
+> - Platform: commit `fdfa189` — "remove intelligence service from local dev orchestration"
+>
+> The Intelligence GitHub repository still exists but is no longer cloned by `make init` and no service in the current compose file depends on it. The original role was background data sync between the backend (`public`) and skiller schemas via direct DB connections (`DB_CONNECTION_BACKEND`, `DB_CONNECTION_SKILLER`). The cross-schema reads it performed are now handled inside the consuming services themselves (skiller does its own taxonomy + user-skill joins).
+>
+> The skeleton below is preserved for historical context. If intelligence is ever brought back, the doc should be rewritten against the current code in the repo.
 
-## Architecture & Code Map
-*   **Codebase**: **Remote Only** (`git@github.com:anthropos-work/intelligence.git`).
-*   **Language**: Go.
-*   **Connection**: Interfaces with Backend and Skiller via DB Connections (strange pattern? `DB_CONNECTION_BACKEND`, `DB_CONNECTION_SKILLER` env vars in compose).
-*   **Port**: Not exposed to host in `docker-compose.yml`, suggesting it might process tasks asynchronously (Redis Streams?) or be internal only.
+## Historical Role (pre-2026-Q2)
 
-## Interface Discovery
-*   **Async**: Likely listens on Redis Streams or connects directly to other service DBs (based on env vars).
-
-## Local Development
-*   **Docker Only**:
-    ```bash
-    cd platform
-    docker compose up -d intelligence
-    ```
+* **Primary Goal**: Background data sync between Backend and Skiller schemas.
+* **Codebase**: `git@github.com:anthropos-work/intelligence.git` (no longer cloned locally)
+* **Language**: Go
+* **Connection**: Interfaced with Backend (`public`) and Skiller schemas via direct DB connections (`DB_CONNECTION_BACKEND`, `DB_CONNECTION_SKILLER` env vars).
+* **Port**: Not exposed; processed work asynchronously.

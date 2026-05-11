@@ -1,6 +1,6 @@
 ---
 name: ant-run
-description: Start and manage the Anthropos platform locally with health verification
+description: Start and manage the Anthropos platform locally with health verification. Use when you are asked to start or restart the anthropos platform locally.
 argument-hint: [scenario or 'full']
 ---
 
@@ -81,10 +81,29 @@ When you discover errors, missing steps, or better approaches:
 Use TodoWrite with these phases:
 - Docker environment verified
 - Backend services started (`make up`)
-- All containers healthy (`make ps`)
+- All containers healthy (`make ps`) — expect 12 containers in default `graphql` profile: postgresql, redis, sentinel, backend, cms, skiller, skillpath, jobsimulation, storage, roadrunner, graphql, gotenberg
 - GraphQL gateway healthy (localhost:5050)
-- Frontend running (native or containerized)
+- Frontend running (native or containerized; requires Node v24+)
 - Studio-Desk running (native or containerized)
+
+## Expected Service Set (default `graphql` profile)
+
+| Container | Port(s) | Notes |
+|-----------|---------|-------|
+| anthropos-postgresql-1 | 5432 | Healthy gate for others |
+| anthropos-redis-1 | 6379 | Healthy gate for others |
+| anthropos-sentinel-1 | 8087 | Always on (no profile) |
+| anthropos-backend-1 | 8081-8083 | |
+| anthropos-skiller-1 | 8085-8086 | |
+| anthropos-skillpath-1 | 8100-8101 | |
+| anthropos-cms-1 | 8090-8091 | Includes embedded Python studio-room |
+| anthropos-jobsimulation-1 | 8400-8401 | |
+| anthropos-storage-1 | 8300-8301 | |
+| anthropos-roadrunner-1 | 10400-10401 | |
+| anthropos-graphql-1 | 5050 | Cosmo Router |
+| anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
+
+Services in `repos.yml` but NOT in this profile (don't expect them running): `messenger`, `customerio-sync` (need explicit profile). Services no longer orchestrated locally: `chronos`, `intelligence` (archived 2026-Q2).
 
 ## Critical Rules
 

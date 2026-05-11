@@ -107,21 +107,29 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 ### Three-Tier Service Model
 
-**Core Backend Services (Tier 1)**: 14 Go microservices
+**Core Backend Services (Tier 1)**: Go microservices
+
+In the default local profile (`graphql`):
 - Backend (`app`): Main API gateway and user management
-- CMS: Content management and Directus proxy
+- CMS: Content management, Directus proxy, **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo as a submodule)
 - Sentinel: Authorization and authentication (Casbin RBAC/ABAC)
 - Jobsimulation: Job environments and task simulation (voice, chat, code, documents)
-- Skiller: Skill management, assessment, and taxonomy (60K skills, 18K roles)
+- Skiller: Skill management, assessment, taxonomy (60K skills, 18K roles), and vector embeddings (RAG)
 - Skillpath: Skill progression paths
 - Storage: File/blob storage management
-- Chronos: Scheduling and time-based events
-- Intelligence: Background data sync between backend and skiller schemas
-- Messenger: Email notifications via Brevo (Sendinblue)
 - Roadrunner: Code execution proxy to Judge0 sandbox
-- Realtime: LiveKit voice agent coordination
-- CustomerIO Sync: Background data sync to Customer.io
+- Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
+
+Available in other profiles but NOT started by default:
+- Messenger (`messenger` profile): Email notifications via Brevo (Sendinblue)
+- CustomerIO Sync (`customerio-sync` profile): Background data sync to Customer.io. Unique build pattern — built directly from GitHub URL, not cloned locally.
+
+Production-only / deployed-only (not in local docker-compose):
 - db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
+
+Archived (removed from local orchestration; repo dirs may still exist on disk):
+- Chronos (was: scheduling & time-based events) — removed via platform commit `045857c`
+- Intelligence (was: background data sync between backend and skiller schemas) — removed via platform commit `fdfa189`
 
 **Shared Libraries** (imported by services, not deployed):
 - colony: Platform framework (logging, DB, Redis, middleware, pub/sub via Watermill)
@@ -132,7 +140,7 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 **Studio Services (Tier 2)**: Content creation tools
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
-- Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`)
+- Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the cms container** as `cms/studio/` via `cd cms && make init-studio`; no longer a standalone deployment.
 
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)

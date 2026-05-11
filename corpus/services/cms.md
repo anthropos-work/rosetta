@@ -1,107 +1,166 @@
 # CMS Service
 
 ## Role & Responsibility
-*   **Primary Goal**: Manages content delivery for the platform, acting as a **smart proxy/adapter** on top of Directus (Headless CMS).
-*   **Key Functions**:
-    *   **Content API**: Exposes a **GraphQL API** for frontend apps and Studio-Desk to query content (Simulations, Skills, Skill Paths, Studio entities)
-    *   **Directus Proxy**: Adds business logic, caching, and platform-specific features on top of Directus
-    *   **Studio Entity Management**: Manages `StudioDocument` and `StudioTask` for content creation workflows
-    *   **RPC Server**: Serves internal requests from other backend services (Backend, JobSim, Skillpath)
+
+The CMS service is the **content layer of the platform**. It does three things:
+
+1. **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — job simulations, skill path chapters, the content library — proxied through Directus with Anthropos-specific business logic on top.
+2. **Owns the Studio data model** — `StudioDocument` (simulation blueprints), `StudioTask` (generation jobs), and related entities for the content-authoring workflow.
+3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is cloned into `cms/studio/` and baked into the cms Docker image. The Go service dispatches generation work; the Python code executes it against OpenAI / Anthropic / Mistral.
+
+This last point is the structural shift: **studio-room is no longer a standalone deployable**. It lives inside the cms container and runs as a subprocess invoked by the Go service.
 
 ## Architecture & Code Map
-*   **Codebase**: `cms` (Local directory).
-*   **Language**: Go.
-*   **Database**: PostgreSQL (via `ent`). Connects to Directus.
-*   **Key Directories**:
-    *   `internal/graph`: **GraphQL Implementation** (using `gqlgen`)
-    *   `internal/graph/schemas/`: **GraphQL Definitions** (`*.graphqls`) - The API contract!
-        *   `studio.graphqls`: Studio entity schemas (StudioDocument, StudioTask)
-        *   `simulations.graphqls`: Job simulation schemas
-        *   `skills.graphqls`: Skill and skill path schemas
-    *   `internal/rpcsrv`: RPC server for inter-service communication
-    *   `internal/directus`: Directus client and integration logic
-    *   `internal/studio`: Studio-specific business logic (StudioManager)
-    *   `ent/schema/`: Database entity definitions
-        *   `studioDocument.go`: Studio blueprint entity
-        *   `studioTask.go`: Generation task entity
-    *   `cmd/`: Application entry point
 
-## Directus Integration Pattern
+* **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/anthropos-work/cms`)
+* **Language**: Go 1.25 (primary) + Python 3.11 (studio-room)
+* **Database**: PostgreSQL `cms` schema (via Ent)
+* **Ports**: 8090 (GraphQL/HTTP), 8091 (Connect-RPC)
+* **Docker image**: Two-stage build — Go binary built in `golang:1.25-bookworm`, copied into a `python:3.11-slim` final stage along with `cms/studio/` and its `pip install -r studio/requirements.txt`. The Go binary is the entrypoint; it shells out to Python when a generation task fires.
 
-The CMS service acts as a **proxy/adapter** between applications and Directus:
+### Key directories
 
-```mermaid
-graph LR
-    Frontend[Frontend Apps] --> GraphQL[CMS GraphQL API]
-    Desk[Studio-Desk] --> GraphQL
-    GraphQL --> BizLogic[Business Logic Layer]
-    BizLogic --> Cache[Redis Cache]
-    BizLogic --> Directus[Directus API]
-    Directus --> PG[(PostgreSQL)]
+```
+cmd/                       Service entrypoints
+internal/
+  graph/                   GraphQL layer (gqlgen)
+    schemas/*.graphqls     API contract — simulation.graphqls, skills.graphqls, studio.graphqls
+    *.resolvers.go         Hand-written resolvers
+    model/models_gen.go    Auto-generated (DO NOT EDIT)
+  directus/                Directus client + collection queries
+  rpcsrv/                  Connect-RPC server (port 8091)
+  auth/                    Authn middleware
+  event/                   Watermill event handling
+  worker/                  Background workers (Redis Streams consumers)
+  studio/                  Studio data-model business logic (StudioManager)
+  library/                 Content library
+  exporter/                Content export
+  importer/                Content import
+  aivideo/                 AI video processing (HeyGen integration)
+  similarity/              Similarity/matching algorithms
+ent/                       Ent schema + generated code
+studio/                    Python AI generation pipeline (cloned via `make init-studio`)
+  gen.py                   Pipeline entrypoint
+  postgen.py               Post-generation steps
+  templates/               Generation templates
+  agents/                  Agent definitions
+  requirements.txt         openai, anthropic, mistralai, rich, pyyaml, python-docx, jinja2, pytest
+terraform/                 IaC
+go.work                    Go workspace (links to ../proto for local dev)
 ```
 
-**Why this pattern?**
-- **Business Logic**: Add platform-specific rules and validation
-- **Caching**: Reduce load on Directus with Redis caching
-- **Abstraction**: Hide Directus implementation details from clients
-- **Migration Path**: Easier to replace CMS backend in the future
+## Studio Generation Pipeline
 
-## Studio Entity Management
+The Studio entities and the Python pipeline are tightly coupled. The flow:
 
-The CMS service manages **Studio-specific entities** for content creation:
+```mermaid
+sequenceDiagram
+    participant Desk as Studio-Desk
+    participant CMS as CMS (Go)
+    participant DB as PostgreSQL
+    participant Studio as studio/gen.py (Python)
+    participant AI as AI Providers
 
-### StudioDocument
-- **Purpose**: Stores simulation blueprints created in Studio-Desk
-- **Schema**: `ent/schema/studioDocument.go`
-- **Fields**: Blueprint data, metadata, associations with simulations
-- **GraphQL**: Exposed via `studio.graphqls`
+    Desk->>CMS: createStudioDocument(blueprint)
+    CMS->>DB: INSERT studio_documents
+    Desk->>CMS: generateContent(documentId)
+    CMS->>DB: INSERT studio_tasks (pending)
+    CMS->>Studio: exec gen.py --media simulation --template <name>
+    Studio->>AI: prompts (FAST → STRICT → EXECUTION → CREATIVE slots)
+    AI-->>Studio: generated content
+    Studio->>CMS: results (stdout / files)
+    CMS->>DB: UPDATE studio_tasks (completed) + persist content
+```
 
-### StudioTask
-- **Purpose**: Tracks generation tasks in Studio-Room pipeline
-- **Schema**: `ent/schema/studioTask.go`
-- **Fields**: Task status, progress, generation parameters
-- **Status Enum**: `ent/enum/studio_status.go`
+### Studio entities
 
-**Workflow**:
-1. Studio-Desk creates `StudioDocument` (blueprint)
-2. User triggers generation → creates `StudioTask`
-3. Studio-Room processes task → updates status
-4. CMS stores final generated content → links to simulation
+* **StudioDocument** (`ent/schema/studioDocument.go`): the blueprint a Studio-Desk user authored
+* **StudioTask** (`ent/schema/studioTask.go`): a generation job — status, progress, params
+
+## Directus integration
+
+CMS acts as a proxy + business-logic layer over Directus:
+
+```
+Frontend / Studio-Desk → CMS GraphQL → Business Logic → Redis Cache → Directus API → PostgreSQL
+```
+
+Why this pattern: business rules and validation live in CMS, caching reduces Directus load, and the abstraction makes it easier to swap the storage backend later.
 
 ## Interface Discovery
-*   **How to find the API**:
-    *   **GraphQL Playground**: Run CMS service and visit GraphQL endpoint (typically `:8090/graphql`)
-    *   **Schema Files**: Check `internal/graph/schemas/*.graphqls`
-    *   **RPC**: Check `internal/rpcsrv` for inter-service APIs
-*   **Dependencies**:
-    *   **Upstream Consumers**:
-        *   Next Web App (GraphQL queries)
-        *   Studio-Desk (GraphQL for studio entities)
-        *   Backend, Jobsimulation, Skillpath (RPC calls)
-    *   **Downstream Dependencies**:
-        *   **Directus** (Content storage)
-        *   **PostgreSQL** (Direct DB access for some queries)
 
-## Local Development (The "How-To")
+* **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. Playground on `:8090/graphql` when running locally.
+* **RPC**: `internal/rpcsrv` — used by Backend, Jobsimulation, Skillpath via `CMS_RPC_ADDR=http://cms:8091`.
+* **Federation**: CMS is one of the 5 subgraphs federated by Cosmo Router (`backend`, `skiller`, `jobsimulation`, `cms`, `skillpath`).
 
-### 1. Running Standalone
-*   **Prerequisites**:
-    *   Access to Directus (URL/Token in `.env`).
-    *   Postgres/Redis.
-*   **Setup**:
-    ```bash
-    make setup  # Installs ent, atlas, gqlgen
-    make gen    # Regenerates GraphQL resolvers & Ent code
-    ```
-*   **Run**:
-    ```bash
-    go run main.go
-    ```
+### Upstream consumers
+* Next Web App (GraphQL)
+* Studio-Desk (GraphQL for studio entities)
+* Backend, Jobsimulation, Skillpath (RPC + Redis Streams)
 
-### 2. Running in Docker
-*   **Service Name**: `cms`
-*   **Command**:
-    ```bash
-    cd platform
-    docker compose up -d cms
-    ```
+### Downstream dependencies
+* Directus (content storage)
+* PostgreSQL (Ent ORM, `cms` schema)
+* Redis (cache, Watermill streams)
+* AI providers (Anthropic, OpenAI, Mistral — used by `cms/studio/` Python pipeline)
+
+## Local Development
+
+### First-time setup
+
+The Python studio submodule must be cloned **before** any docker build, otherwise `make up` fails with `"/studio": not found`:
+
+```bash
+cd cms
+make init-studio   # clones anthropos-studio-room into cms/studio/
+make setup         # installs ent, atlas, gqlgen
+make gen           # regenerates GraphQL resolvers + Ent code
+```
+
+### Run in Docker (with the rest of the platform)
+
+```bash
+cd platform
+make up                  # graphql profile — includes cms
+# or just cms:
+make up PROFILE=cms
+```
+
+### Run natively (single service)
+
+```bash
+cd platform
+make dev S=cms           # stops the docker container for cms
+cd ../cms
+go run .
+```
+
+For Python pipeline development:
+
+```bash
+cd cms/studio
+pip install -r requirements.txt
+python gen.py --media simulation --template <name>
+```
+
+### Sync the studio submodule
+
+When `anthropos-studio-room` upstream changes:
+
+```bash
+cd cms
+make update-studio       # cd studio && git pull
+```
+
+## Testing
+
+```bash
+go test ./...            # Go tests
+cd studio && pytest      # Python tests (requires `pip install -r requirements.txt`)
+```
+
+## Related Documentation
+
+* [AI Architecture](../architecture/ai_architecture.md) — model routing, generation slots
+* [Service Taxonomy](../architecture/service_taxonomy.md) — orchestration profile
+* [Dependency Map](../architecture/dependency_map.md) — RPC and event-stream relationships

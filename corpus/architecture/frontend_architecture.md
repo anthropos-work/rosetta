@@ -8,20 +8,22 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 
 ### 1. Applications (`apps/`)
 
-| App Name | Path | Description |
-| :--- | :--- | :--- |
-| **Hiring** | `apps/hiring` | The main "Hiring" product interface? |
-| **Web** | `apps/web` | The core "Web" application (Dashboard, User Profile)? |
-| **Mobile** | `apps/mobile` | Mobile-specific views or React Native app? |
-| **Maintenance** | `apps/maintenance` | Maintenance mode pages? |
+| App Name | Path | Port | Description |
+| :--- | :--- | :--- | :--- |
+| **Web** | `apps/web` | 3000 | Main user-facing app (dashboard, simulations, skill paths, onboarding, "Talk to Data" UI) |
+| **Hiring** | `apps/hiring` | 3001 | Hiring / recruiting product (job ladders, candidate funnels) |
+| **Integration** | `apps/integration` | 3002 | Embedded / third-party integration surface (iframe-able views, partner workflows) |
+| **Mobile** | `apps/mobile` | — | Expo / React Native mobile app |
+| **Maintenance** | `apps/maintenance` | — | Static maintenance / outage pages |
 
 ### 2. Core Packages (`packages/`)
 
 | Package Name | Path | Responsibility |
 | :--- | :--- | :--- |
-| **UI Kit** | `packages/ui` | Shared UI components (Design System). |
-| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, hooks, and types (generated from backend). |
+| **UI Kit** | `packages/ui` | Shared UI components (Design System). Recent work: `SkillCard` mini-card, `SkillCardCallout`, onboarding `SkillsRefinement` cluster card. |
+| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the Cosmo Router supergraph. |
 | **Core JS** | `packages/core-js` | Common utilities and helpers. |
+| **TSConfig** | `configs/tsconfig` (workspace-scoped as `@anthropos/tsconfig`) | Shared TypeScript configs. |
 
 ## Data Layer & Communication
 
@@ -37,22 +39,62 @@ The frontend communicates with the backend services through two primary methods:
 *   **Implementation**: Services expose gRPC/Connect handlers. The frontend likely uses `@connectrpc/connect-web`.
 
 ## Key Technologies
-*   **Framework**: Next.js (React)
-*   **Build System**: Turborepo
-*   **Package Manager**: pnpm
-*   **Styling**: (Check: Tailwind? CSS Modules? `packages/ui` will reveal this)
-*   **State Management**: (Check: Local state, Context, or external lib?)
+
+* **Framework**: Next.js 14 (App Router), React
+* **Build System**: Turborepo 2.x
+* **Package Manager**: pnpm 10.x (`packageManager: "pnpm@10.30.3"`)
+* **Node**: **v24+ required** (`engines.node: ">=24.0.0"` in `package.json`)
+* **Lint / format / typecheck**: ESLint + Prettier + TypeScript 5.9, orchestrated by Turbo (`turbo check`, `check:lint`, `check:types`, `check:deprecations`)
+* **Commits**: Conventional commits enforced via `@commitlint/cli` + `husky`
+* **CHANGELOG**: Generated from conventional commits (cog)
 
 ## Development Workflow
 
-### Running an App
-To run a specific app (e.g., `hiring`):
+### Setup
+
+Make sure Node 24+ is active before installing:
 
 ```bash
 cd next-web-app
-pnpm dev --filter=hiring
+nvm use 24             # or: nvm install 24 && nvm use 24
+pnpm install
 ```
-Or run all apps:
+
+Older Node will fail with `WARN Unsupported engine` and pnpm will refuse to wipe `node_modules` in non-TTY shells (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`).
+
+### Running an app
+
+Top-level `turbo dev` runs all apps. To run a specific app:
+
 ```bash
-pnpm dev
+pnpm dev --filter=@anthropos/web-app     # apps/web
+pnpm dev --filter=@anthropos/hiring-app  # apps/hiring
+pnpm dev --filter=@anthropos/integration # apps/integration
 ```
+
+### Codegen
+
+GraphQL types are regenerated from the upstream subgraph schemas:
+
+```bash
+pnpm codegen           # one-shot
+pnpm codegen:watch     # incremental
+```
+
+### Cleaning
+
+Several granular targets for cache management; the common one is:
+
+```bash
+pnpm clean:quick       # drops node_modules, .next, .turbo, dist
+```
+
+## Recent UX Work (May 2026)
+
+The frontend is high-velocity (300+ commits / month). Recent themes from the CHANGELOG:
+
+* **Onboarding redesign**: SkillsRefinement cluster cards, viewport-relative grid heights, swiper layouts, OnboardCard size tuning
+* **SkillCard component**: Reusable info-callout mini-card used across import/refinement flows
+* **AI Academy**: Iframe header simplification
+* **Talk to Data**: SSE-streaming Q&A UI (counterpart to backend's `ask`/`askengine`)
+* **Hiring talk-to-data**: Variant scoped to hiring workflows

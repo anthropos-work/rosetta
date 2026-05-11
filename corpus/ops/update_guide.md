@@ -46,6 +46,14 @@ make down
 pkill -f "pnpm dev:web" 2>/dev/null || true
 ```
 
+> **Caveat**: `make down` is plain `docker compose down` with no profile or `--remove-orphans`. If the previous run was on an older `docker-compose.yml` that included services since removed (e.g. chronos, intelligence), those orphaned containers will keep the network alive and `make down` will fail with `Network anthropos_app-network  Resource is still in use`. In that case run:
+>
+> ```bash
+> docker compose --profile all down --remove-orphans
+> ```
+>
+> This stops every service the current compose file knows about, plus any orphaned containers from older revisions. Use it after pulling platform changes that remove or rename services. See troubleshooting below for context.
+
 ---
 
 ## 2. Update Repository Code
@@ -110,6 +118,15 @@ pnpm install
 
 *Verification*: No errors during install, `node_modules` updated.
 
+> **Node version**: As of 2026-05, `next-web-app/package.json` requires `node >=24.0.0`. If you're on an older Node you'll see `WARN  Unsupported engine` and pnpm will refuse to wipe `node_modules` from a non-TTY shell with `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`. Fix:
+>
+> ```bash
+> nvm install 24 && nvm use 24
+> pnpm install
+> ```
+>
+> Use `nvm alias default 24` to make it stick across shells.
+
 ### Studio-Desk
 
 ```bash
@@ -147,7 +164,7 @@ cd anthropos-dev/platform
 make migrate
 ```
 
-This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (app, cms, jobsimulation, skiller, skillpath, chronos).
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skiller, skillpath).
 
 ### Apply Single Service Migration
 
@@ -282,6 +299,17 @@ docker system prune -f
 # Rebuild
 make up
 ```
+
+### `make down` Fails: "Network anthropos_app-network  Resource is still in use"
+
+Containers from a previous `docker-compose.yml` revision are still running but no longer listed in the current compose file (typical after pulling commits that remove a service). `docker compose down` doesn't see them, so the network can't be torn down.
+
+**Fix**:
+```bash
+docker compose --profile all down --remove-orphans
+```
+
+This catches every profile member plus any container whose service no longer exists in the current compose file. Encountered today (2026-05-11) after `chronos` and `intelligence` were removed from `repos.yml`; see ops report `op_20260511_173232_update_orphaned_chronos_intelligence.md`.
 
 ### Git Conflicts During Pull
 

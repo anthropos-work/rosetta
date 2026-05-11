@@ -48,10 +48,10 @@ All Go services access AI through the shared `ai` library, which provides:
 | Service | AI Use Case |
 |:--------|:------------|
 | **Jobsimulation** | Simulation conversations (chat + voice), document analysis, code evaluation |
-| **Skiller** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy |
-| **CMS** | Content generation, similarity matching, AI video (HeyGen) |
+| **Skiller** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy (see [Vector storage](#vector-storage-in-skiller)) |
+| **CMS** | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
 | **Studio-Desk** | Copilot AI assistant for content authoring |
-| **Studio-Room** (Python) | Full simulation generation pipeline |
+| **Studio-Room** (Python) | Full simulation generation pipeline. **Runs as a subprocess inside the CMS container** (lives at `cms/studio/`, cloned from `anthropos-studio-room` via `cd cms && make init-studio`). |
 
 ### Studio-Room Generation Slots
 
@@ -67,10 +67,32 @@ The Python generation pipeline uses configurable model slots:
 
 ### Embeddings & RAG (Skiller)
 
-- **Model**: Text Embedding 3 Small (OpenAI)
+- **Model**: Text Embedding 3 Small (OpenAI), 1536-dim
 - **Data**: Vectors for 60K skills and 18K job roles
 - **Process**: RAG matches user input to taxonomy using OpenAI (Azure EU) or Anthropic (Bedrock EU)
 - **Caching**: Redis for frequent matches
+
+#### Vector storage in skiller
+
+As of 2026-Q2 (migrations `20260417103036` and `20260417120309`), embeddings are stored in **dedicated tables**, not as columns on the entity tables:
+
+```
+job_role_embeddings(
+  id BIGSERIAL PK,
+  job_role_id UUID FK → job_roles.id,
+  small_embedding3 extensions.vector(1536),
+  -- IVFFLAT index on small_embedding3
+)
+
+skill_embeddings(
+  id BIGSERIAL PK,
+  skill_id UUID FK → skills.id,
+  small_embedding3 extensions.vector(1536),
+  -- IVFFLAT index on small_embedding3
+)
+```
+
+The previous denormalized `small_embedding3` columns on `job_roles` and `skills` were dropped in the same migration. The `extensions` schema (which houses the `pgvector` extension) must exist before applying these migrations — this is handled in `corpus/ops/setup_guide.md`.
 
 ---
 

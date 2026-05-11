@@ -1,5 +1,15 @@
 # Chronos Service
 
+> ## ⚠️ Archived — no longer in local orchestration
+>
+> Chronos was removed from `platform/docker-compose.yml` and `platform/repos.yml` in mid-2026:
+> - Platform: commit `045857c` — "remove chronos service from orchestration"
+> - Jobsimulation: PR `#395` (`feat/remove-chronos-and-realtime`), commit `09631fb2` — "remove Chronos references and update documentation to reflect Asynq integration for session timeout management"
+>
+> The use cases Chronos covered (session timeouts, delayed events from Jobsimulation) have moved to **in-process [Asynq](https://github.com/hibiken/asynq)** running inside jobsimulation. The Chronos GitHub repository still exists but is no longer cloned by `make init` and no service in the current compose file depends on it.
+>
+> The detail below is preserved for historical context and in case a future need for a generic timer service resurfaces.
+
 ## Role & Responsibility
 *   **Primary Goal**: Timer scheduling service that enables other services to schedule delayed events and asynchronous jobs.
 *   **Key Functions**:

@@ -335,68 +335,113 @@ Directus can trigger webhooks on content changes:
 
 ---
 
-## GraphQL/Wundergraph (API Gateway)
+## GraphQL Gateway — WunderGraph Cosmo Router
 
 ### Overview
 
 | Property | Value |
 |:---------|:------|
 | **Type** | Configured third-party (Dockerized) |
-| **Technology** | Wundergraph (Next.js-based) |
-| **Port** | 5050 |
-| **Purpose** | GraphQL federation, unified API gateway |
-| **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
+| **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
+| **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
+| **Port** | 5050 (host) → 8080 (container) |
+| **Purpose** | Federated GraphQL API gateway over 5 subgraphs |
+| **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
-### What Wundergraph Provides
+### What the gateway provides
 
-- **GraphQL Federation**: Combines multiple service APIs into one
-- **Type-Safe Client**: Auto-generated TypeScript clients
-- **Authentication**: Integrates with Clerk
-- **Caching**: Built-in response caching
-- **Subscriptions**: Real-time data via GraphQL subscriptions
+- **Federation v2**: Composes five subgraphs (`backend`, `skiller`, `jobsimulation`, `cms`, `skillpath`) into one supergraph
+- **Subscriptions** for `jobsimulation` over SSE POST (`subscription.protocol: sse_post`)
+- **Apollo-compatibility flags** enabled for stricter validation behavior
+- **Playground** at `/graphql` for local development
+- **Introspection** enabled in dev mode
 
 ### Architecture
-
-Wundergraph **aggregates all backend services** into a unified GraphQL API:
 
 ```mermaid
 graph TB
     subgraph Frontend
-        Web[Next.js Web]
+        Web[Next.js Web App]
+        Hiring[Next.js Hiring App]
         Desk[Studio-Desk]
     end
-    
+
     subgraph Gateway
-        WG[Wundergraph :5050]
+        WG[Cosmo Router :5050]
     end
-    
-    subgraph Backend[Backend Services]
-        Backend[Backend]
-        CMS[CMS]
-        Skiller[Skiller]
-        JobSim[Job Simulation]
-        Intelligence[Intelligence]
+
+    subgraph Subgraphs[5 GraphQL Subgraphs]
+        Backend[backend :8082]
+        Skiller[skiller :8085]
+        Skillpath[skillpath :8100]
+        Jobsim[jobsimulation :8400]
+        CMS[cms :8090]
     end
-    
+
     Web --> WG
+    Hiring --> WG
     Desk --> WG
     WG --> Backend
-    WG --> CMS
     WG --> Skiller
-    WG --> JobSim
-    WG --> Intelligence
+    WG --> Skillpath
+    WG --> Jobsim
+    WG --> CMS
 ```
 
 ### Service Dependencies
 
-From `docker-compose.yml`, Wundergraph depends on:
-- Backend
-- CMS
-- Skiller
-- Jobsimulation
-- Intelligence
+From `docker-compose.yml`, the gateway `depends_on`:
+- backend
+- skiller
+- jobsimulation
+- cms
+- skillpath
+- storage
 
-**Starts only when all these services are running.**
+It starts after these services have reported "started" (not necessarily healthy — there are no per-subgraph healthchecks). The composed `config.json` is generated at image build time, so adding a new subgraph means rebuilding the gateway.
+
+### Build-time composition
+
+The gateway's `Dockerfile.dev` does multi-stage composition with the WunderGraph CLI:
+
+```dockerfile
+RUN npm install -g wgc@0.104.0
+COPY graphql-wundergraph/supergraph-config-compose.yaml ./supergraph-config.yaml
+COPY graphql-wundergraph/config.compose.yaml ./config.yaml
+COPY app/internal/web/backend/graphql/graph/schemas/ /tmp/schemas/backend/
+COPY skiller/graph/schemas/schema.graphqls ./schemas/skiller.graphqls
+COPY cms/internal/graph/schemas/ /tmp/schemas/cms/
+COPY jobsimulation/internal/graph/schemas/ /tmp/schemas/jobsimulation/
+COPY skillpath/internal/graph/schemas/ /tmp/schemas/skillpath/
+RUN awk ... /tmp/schemas/backend/* > ./schemas/backend.graphqls && ...
+RUN wgc router compose -i supergraph-config.yaml -o config.json
+```
+
+In other words: **the gateway image is built from the platform's monorepo context with all subgraph repos as siblings**. This is why `make up` rebuilds gateway whenever any subgraph schema changes.
+
+The composed `config.json` is then served by the Cosmo router binary at runtime.
+
+### Subgraph routing URLs
+
+From `graphql-wundergraph/supergraph-config-compose.yaml`:
+
+| Subgraph | URL (Docker network) |
+|----------|----------------------|
+| backend | `http://backend:8082/graphql/query` |
+| skiller | `http://skiller:8085/query` |
+| jobsimulation | `http://jobsimulation:8400/query` (SSE POST for subscriptions) |
+| cms | `http://cms:8090/query` |
+| skillpath | `http://skillpath:8100/query` |
+
+### Configuration
+
+**Environment**:
+```bash
+ENVIRONMENT=compose  # or production
+ENVIRONMENT_CONFIG=compose
+```
+
+**Build Context**: the platform monorepo (`context: ..`) — not the upstream repo. This was changed from the old "git+url" build because the composition needs sibling repos.
 
 ### Configuration
 

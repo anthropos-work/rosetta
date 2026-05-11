@@ -75,16 +75,16 @@ When you discover errors, missing steps, or better approaches:
 ## Progress Tracking
 
 Use TodoWrite with phases from the guide:
-- Prerequisites verified (Git, Docker, Go, Node, pnpm, Python, Atlas)
+- Prerequisites verified (Git, Docker, Go, **Node v24+**, pnpm, Python, Atlas)
 - GitHub SSH access configured
 - Workspace created (anthropos-dev/)
 - Platform repo cloned
 - All repos cloned via `make init`
 - CMS studio submodule cloned (`cd cms && make init-studio`)
 - Environment file configured (platform/.env)
-- Services started via `make up`
+- Services started via `make up` — expect 12 containers in `graphql` profile (incl. gotenberg)
 - PostgreSQL schemas prepared (extensions, sentinel)
-- Database migrations applied via `make migrate`
+- Database migrations applied via `make migrate` (5 services with migrations: app, cms, jobsimulation, skiller, skillpath)
 - Frontend configured and dependencies installed
 - Studio-Desk configured and dependencies installed
 
@@ -99,12 +99,12 @@ Use TodoWrite with phases from the guide:
 ## Success Criteria
 
 Setup complete when:
-1. All tools installed and verified
+1. All tools installed and verified (Node must be **v24+** — `next-web-app/package.json` declares `engines.node: ">=24.0.0"`)
 2. All repositories cloned (via `make init`) + CMS studio submodule (`make init-studio`)
 3. Environment file configured (platform/.env with GH_PAT, CLERK_SECRET_KEY, OPENAI_KEY)
-4. Docker services running and healthy (`make ps`), including Sentinel (not restarting)
-5. PostgreSQL schemas created (extensions + sentinel) and migrations applied
-6. Frontend dependencies installed and `.env` configured
+4. Docker services running and healthy (`make ps`), including Sentinel (not restarting). Expect 12 containers in `graphql` profile: postgresql, redis, sentinel, backend, cms, skiller, skillpath, jobsimulation, storage, roadrunner, graphql, **gotenberg** (third-party PDF service).
+5. PostgreSQL schemas created (`extensions` + `sentinel`) and migrations applied
+6. Frontend dependencies installed (`pnpm install` with Node 24) and `.env` configured
 7. Studio-Desk dependencies installed and `.env` configured
 
 ## Known First-Run Issues
