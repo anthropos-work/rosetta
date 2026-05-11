@@ -10,7 +10,7 @@
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
 
-* **Talk to Data** (`internal/ask`, `internal/askengine`) — SSE-streaming natural-language Q&A over the platform's data, powered by Bedrock (Anthropic) with a SQL-validation sandbox. Added 2026-Q2 (v1.266+).
+* **Talk to Data** (`internal/askengine`) — SSE-streaming natural-language Q&A over the platform's data, powered by Bedrock (Anthropic) with a SQL-validation sandbox. Added 2026-Q2 (v1.266+).
 * **Workforce analytics** (`internal/workforce`) — aggregations of skills, simulations, and growth across org members
 * **Job-simulation feedback** (`internal/jobsimfeedback`) — post-session signals routed back to skiller
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
@@ -37,7 +37,7 @@ internal/
   ai/, aiusage/             AI provider wrapper consumers + cost tracking
   analytics/                PostHog / internal analytics
   app/                      Component wire-up
-  ask/, askengine/          "Talk to Data" — SSE streaming SQL Q&A
+  askengine/                "Talk to Data" — SSE streaming SQL Q&A
     rules.md                Source of truth for SQL guardrails + business rules
     bedrock.go              AWS Bedrock client middleware
     sandbox.go              SQL validator (whitelist + read-only enforcement)

@@ -8,7 +8,7 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **Backend** (`app`) | Sentinel, CMS, Skiller, Skillpath, Storage, Gotenberg | Postgres, Redis, **Clerk** |
+| **Backend** (`app`) | Sentinel, CMS, Skiller, Skillpath, Storage (compose `depends_on`); Gotenberg (runtime HTTP, no startup-order dep) | Postgres, Redis, **Clerk** |
 | **CMS** | Sentinel, Skiller, Storage | Postgres, Redis, **Directus**, **AI Providers** (Anthropic, OpenAI, Mistral — via embedded studio-room) |
 | **Sentinel** | - | Postgres |
 | **Jobsimulation** | Sentinel, Backend, CMS, Roadrunner, Skiller, Storage | Postgres, Redis, **LiveKit**, **AWS Chime**, **AI Providers** |
