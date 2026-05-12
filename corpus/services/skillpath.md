@@ -9,11 +9,12 @@
     *   **Event Subscription**: Listens to Jobsimulation events to update step completion when simulations finish
 
 ## Architecture & Code Map
-*   **Codebase**: `anthropos-dev/skillpath` (or `git@github.com:anthropos-work/skillpath.git`)
-*   **Language**: Go 1.24.11
-*   **ORM**: [Ent](https://entgo.io/) (Entity Framework)
-*   **Database**: PostgreSQL (`search_path=skillpath`)
-*   **Ports**: `8080` (HTTP/GraphQL), `8081` (RPC)
+*   **Codebase**: `anthropos-dev/skillpath` (repo `git@github.com:anthropos-work/skillpath`)
+*   **Language**: Go 1.25
+*   **Frameworks**: gqlgen (GraphQL Federation v2), Connect-RPC, Ent ORM, goverter (Ent → domain converters)
+*   **Database**: PostgreSQL (`search_path=skillpath`); migrations live in `terraform/migrations/` (Atlas, applied via Terraform/Atlas provider)
+*   **Ports**: `8100` (host) → `8080` (container, HTTP/GraphQL); `8101` (host) → `8081` (container, Connect-RPC)
+*   **Profile**: `graphql` (default) and `skillpath`
 *   **Key Directories**:
     *   `main.go`: Application entry point, server initialization
     *   `rpc.go`: RPC server implementation (`GetSkillPathSession`)
@@ -123,14 +124,15 @@ GetSkillPathSession(ctx, req *skillpathv1.GetSkillPathSessionRequest) (*skillpat
 ### Dependencies
 
 *   **Upstream Consumers**:
-    *   GraphQL/Wundergraph (federated queries)
-    *   Backend service (user journey orchestration)
+    *   Cosmo Router (federated queries — skillpath is one of the 5 subgraphs)
+    *   Backend (`app`) — depends on skillpath at compose startup
 *   **Downstream Dependencies**:
-    *   **CMS** (RPC): Fetches skill path structure, chapters, steps
-    *   **Jobsimulation** (RPC): Gets simulation session details
-    *   **Sentinel** (RPC): Authorization checks
-    *   **Redis**: Pub/sub for event subscription
-    *   **PostgreSQL**: Session state persistence
+    *   **Sentinel** (Connect-RPC): authorization (manager + admin checks)
+    *   **CMS** (Connect-RPC): skill path content structure on session creation (`CMS_RPC_ADDR=http://cms:8091`)
+    *   **Jobsimulation** (Redis Streams, consumed): simulation step completion events
+    *   **PostgreSQL** (`skillpath` schema), **Redis** (Watermill subscriber)
+
+> Note: skillpath consumes the jobsimulation event stream rather than calling jobsimulation via RPC.
 
 ## Event-Driven Architecture
 
@@ -197,13 +199,11 @@ go test -cover ./internal/session/...
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PORT` | HTTP server port | `8080` |
-| `RPC_PORT` | RPC server port | `8081` |
+| `PORT` | Container HTTP/GraphQL port | `8100` |
+| `RPC_PORT` | Container Connect-RPC port | `8101` |
 | `DB_CONNECTION` | PostgreSQL connection string | `postgres://...?search_path=skillpath` |
-| `REDIS_ADDR` | Redis server address | `localhost:6379` |
-| `REDIS_STREAMS_INDEX` | Redis DB index for streams | `2` |
+| `REDIS_ADDR` | Redis server address | `redis:6379` |
+| `REDIS_STREAMS_INDEX` | Redis DB index for streams | `4` |
 | `CMS_RPC_ADDR` | CMS service RPC address | `http://cms:8091` |
-| `JOBSIMULATION_RPC_ADDR` | Jobsimulation RPC address | `http://jobsimulation:8081` |
-| `AUTHORIZATION_ADDRESS` | Sentinel service address | `http://sentinel:8081` |
-| `CLERK_SECRET_KEY` | Clerk authentication key | `sk_test_...` |
 | `JOBSIMULATION_STREAM` | Redis stream to subscribe | `jobsimulation` |
+| `AUTHORIZATION_ADDRESS` | Sentinel service address | `http://sentinel:8087` |
