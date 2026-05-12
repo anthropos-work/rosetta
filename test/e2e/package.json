@@ -1,0 +1,14 @@
+{
+  "name": "rosetta-test-platform-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Black-box Playwright smoke tests against the running Anthropos platform. Owned by rosetta; does NOT duplicate next-web-app's own E2E suite.",
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
