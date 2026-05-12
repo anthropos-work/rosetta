@@ -12,7 +12,7 @@ Sentinel does **not** handle authentication — that's Clerk's job. It also does
 * **Language**: Go 1.25
 * **Framework**: Connect-RPC, Casbin v3
 * **Database**: PostgreSQL `sentinel` schema (single table: `casbin_rules`) — **no Ent ORM**
-* **Port**: `8087` (host) → `8080` (container)
+* **Port**: 8087 (HTTP + Connect-RPC; `PORT=8087` in compose, same on host and inside container). The sentinel binary's default is 8080 (per its own README/CLAUDE.md), but the platform compose overrides it to 8087 explicitly.
 * **Profile**: always on (no `profiles:` declared in compose — runs with every `make up`)
 * **No outbound RPC** to other platform services — sentinel is a leaf
 * **No Redis, no GraphQL, no background workers** — stateless request/response only
@@ -130,7 +130,7 @@ All tests use in-memory Casbin enforcers — no PostgreSQL or fixtures required.
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DB_CONNECTION` | yes | — | PostgreSQL DSN with `search_path=sentinel` |
-| `PORT` | no | `8080` | HTTP server port (host: 8087) |
+| `PORT` | no | `8087` | HTTP + Connect-RPC port (compose sets this explicitly; binary default is 8080) |
 | `ENVIRONMENT` | no | — | Environment name |
 | `SERVICE_NAME` | no | `sentinel` | Logging label |
 | `SENTRY_DSN` | no | — | Sentry error tracking |

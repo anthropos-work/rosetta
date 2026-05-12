@@ -40,7 +40,7 @@ internal/
 
 ### Whitelabel rendering (2026-Q2)
 
-Recent work in v0.34.0 added **whitelabel support**: when an org has custom branding (logo URL, custom invitation templates), Messenger renders subject and body separately so the Brevo send can include the org's logo and styling. The whitelabel lookup uses a **read-only Postgres connection** (`READONLY_DB_CONN`, formerly `COPILOT_DB_CONN`) so the rendering path doesn't contend with the write-heavy backend load.
+Recent work in v0.34.0 added **whitelabel support**: when an org has custom branding (logo URL, custom invitation templates), Messenger renders subject and body separately so the Brevo send can include the org's logo and styling. The org lookup uses a **read-only Postgres connection** (`READONLY_DB_CONNECTION`, formerly `COPILOT_DB_CONNECTION` — see `cmd/root.go:145`) so the rendering path doesn't contend with the write-heavy backend load.
 
 ## Interface Discovery
 

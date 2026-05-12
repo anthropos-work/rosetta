@@ -13,7 +13,7 @@
 *   **Language**: Go 1.25
 *   **Frameworks**: gqlgen (GraphQL Federation v2), Connect-RPC, Ent ORM, goverter (Ent → domain converters)
 *   **Database**: PostgreSQL (`search_path=skillpath`); migrations live in `terraform/migrations/` (Atlas, applied via Terraform/Atlas provider)
-*   **Ports**: `8100` (host) → `8080` (container, HTTP/GraphQL); `8101` (host) → `8081` (container, Connect-RPC)
+*   **Ports**: 8100 (HTTP/GraphQL), 8101 (Connect-RPC) — same port on host and inside container per `platform/docker-compose.yml`
 *   **Profile**: `graphql` (default) and `skillpath`
 *   **Key Directories**:
     *   `main.go`: Application entry point, server initialization

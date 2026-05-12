@@ -13,7 +13,7 @@ It also hosts a small **LSP** (language-server) helper used by the in-simulation
 * **Codebase**: `roadrunner` (local) — repo `git@github.com:anthropos-work/roadrunner`
 * **Language**: Go 1.25
 * **Frameworks**: Connect-RPC, [Asynq](https://github.com/hibiken/asynq) (`v0.25.1` background tasks), `gorilla/websocket`
-* **Ports**: `10400` (host) → `9000` (container, HTTP/WebSocket); `10401` (host) → `10401` (container, Connect-RPC)
+* **Ports**: 10400 (HTTP + WebSocket), 10401 (Connect-RPC) — same on host and inside container per `platform/docker-compose.yml` (`PORT=10400`, `RPC_PORT=10401`)
 * **Profile**: `graphql` (default) and `roadrunner`
 * **Execution backend**: [Judge0](https://judge0.com/) — external sandboxed API at `JUDGE0_BASE_URL`
 
@@ -100,8 +100,8 @@ buf curl --schema ./proto/roadrunner.proto \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `9000` | HTTP + WebSocket port (mapped to 10400 on host) |
-| `RPC_PORT` | `10401` | Connect-RPC port (mapped to 10401 on host) |
+| `PORT` | `10400` | HTTP + WebSocket port |
+| `RPC_PORT` | `10401` | Connect-RPC port |
 | `JUDGE0_BASE_URL` | `http://52.48.139.23:2358` | Judge0 API endpoint |
 | `REDIS_ADDR` | `redis:6379` | Redis address for Asynq |
 | `REDIS_STREAMS_INDEX` | `4` | Redis DB index for streams |

@@ -12,7 +12,7 @@ Storage is stateless and owns no database: all state lives in S3 (with a local-f
 * **Language**: Go 1.25
 * **Framework**: Connect-RPC (via the shared `colony` library), Cobra CLI
 * **Database**: none — all state lives in S3 (or local filesystem in dev)
-* **Ports**: `8300` (host) → `8080` (container, HTTP health); `8301` (host) → `8081` (container, Connect-RPC)
+* **Ports**: 8300 (HTTP health), 8301 (Connect-RPC) — `PORT=8300` and `RPC_PORT=8301` in compose, mapped 1:1 to host (CLAUDE.md mentions different defaults at the binary level, but the platform compose pins them to 8300/8301 in both directions)
 * **Profile**: `graphql` (default) and `storage`
 
 ### Two storage managers
@@ -139,10 +139,10 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8080` | HTTP health port (mapped to 8300 on host) |
-| `RPC_PORT` | `8081` | Connect-RPC port (mapped to 8301 on host) |
+| Variable | Compose value | Description |
+|----------|---------------|-------------|
+| `PORT` | `8300` | HTTP health port (binary default 8080, overridden in compose) |
+| `RPC_PORT` | `8301` | Connect-RPC port (binary default 8081, overridden in compose) |
 | `STORAGE_S3_BUCKET` | (empty) | Private bucket. Empty → local FS fallback. |
 | `STORAGE_S3_PUBLIC_BUCKET` | (empty) | Public bucket. Empty → local FS fallback. |
 | `AWS_REGION` / `AWS_DEFAULT_REGION` | `eu-west-1` | AWS region (EU-first) |
