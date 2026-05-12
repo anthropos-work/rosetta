@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(.claude/skills/**)",
+      "Write(.claude/skills/**)"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}
