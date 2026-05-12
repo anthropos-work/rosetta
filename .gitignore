@@ -113,3 +113,22 @@ public/
 # -----------------------------------------------------------------------------
 # Claude Code may create local settings that shouldn't be shared
 .claude/settings.local.json
+
+# -----------------------------------------------------------------------------
+# AGENTSPACE
+# -----------------------------------------------------------------------------
+# Local scratchpad for skill output: test-platform reports, future skills'
+# transient artifacts. The skill writes timestamped markdown reports here;
+# they're for the operator to read, not for the corpus.
+.agentspace/
+
+# -----------------------------------------------------------------------------
+# TEST PLATFORM ARTIFACTS
+# -----------------------------------------------------------------------------
+# Playwright / test runner output that should never land in the corpus.
+test/e2e/test-results/
+test/e2e/playwright-report/
+test/e2e/storageState.json
+test/.coverage/
+test/.cache/
+test/node_modules/
