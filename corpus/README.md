@@ -29,9 +29,15 @@ Individual service documentation and developer maps.
 ### [Ops](./ops/)
 Operations guides for setting up, running, and updating the platform.
 
-*   [Setup Guide](./ops/setup_guide.md): Step-by-step instructions for macOS and Linux.
-*   [Run Guide](./ops/run_guide.md): Start the platform locally.
-*   [Update Guide](./ops/update_guide.md): Sync code, dependencies, and schemas.
+*   **Personal staging (full onboarding for new engineers + AI agents):**
+    *   [Staging Bringup](./ops/staging-bringup.md): The spine doc — fresh VM → Tailscale-attached staging with live prod data + dev Clerk login + daily sync. **Start here if you're new.**
+    *   [Staging Sync](./ops/staging-sync.md): Daily force-reset to `origin/main`, skip-worktree mechanics, recovery from clobbered WIP.
+    *   [Staging Clerk](./ops/staging-clerk.md): Shared dev Clerk app, cross-engineer test login, the load-bearing `clerk-fetch-fix.js` monkey-patch.
+*   **General platform operations:**
+    *   [Setup Guide](./ops/setup_guide.md): Step-by-step instructions for macOS and Linux.
+    *   [Run Guide](./ops/run_guide.md): Start the platform locally.
+    *   [Update Guide](./ops/update_guide.md): Sync code, dependencies, and schemas.
+    *   [Staging from Dump](./ops/staging_from_dump.md): Engineer-rebind reference (creates Clerk users + remaps DB).
 
 ## Navigation
 

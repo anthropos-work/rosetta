@@ -6,11 +6,14 @@ This directory contains guides for operating the Anthropos platform locally.
 
 | Guide | Purpose | When to Use |
 |-------|---------|-------------|
-| [Platform Setup](./setup_guide.md) | Build the development environment | First time on a new machine |
-| [Personal Staging from a Prod Dump](./staging_from_dump.md) | Restore a prod DB dump, rebind to a dev Clerk app, kill outbound email, apply colony/Clerk patches | When you want a per-engineer staging populated with real customer data |
+| **[Staging Bringup](./staging-bringup.md)** | **Full personal-staging onboarding (fresh VM → working Tailscale staging + live prod data + dev Clerk + daily sync)** | **New engineer (or AI agent) joining the team — start here** |
+| [Staging Sync](./staging-sync.md) | Daily force-reset to `origin/main` + skip-worktree mechanics + recovery | Understanding what the daily 06:00 UTC routine does, or recovering clobbered WIP |
+| [Staging Clerk](./staging-clerk.md) | Dev Clerk app `national-elk-17`, shared cross-engineer test login, the load-bearing `clerk-fetch-fix.js` monkey-patch | Setting up auth on a new staging or debugging Clerk symptoms |
+| [Platform Setup](./setup_guide.md) | Build the development environment | First time on a new machine (no prod-dump path) |
+| [Personal Staging from a Prod Dump](./staging_from_dump.md) | Restore a prod DB dump, rebind to a dev Clerk app, kill outbound email, apply colony/Clerk patches | Engineer-rebind reference (called from `staging-bringup.md`) |
 | [Platform Run](./run_guide.md) | Start the platform locally | Daily development work |
 | [Webhook Setup](./webhook_setup.md) | Configure Clerk webhooks for user sync | When you need user/org data locally |
-| [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features |
+| [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features (superseded by `staging-sync.md` on staging hosts) |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
 
 ## Workflow
