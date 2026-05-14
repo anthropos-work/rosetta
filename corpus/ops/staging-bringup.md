@@ -10,6 +10,23 @@ This is the **spine doc** for setting up a personal Anthropos staging environmen
 - [`staging-sync.md`](./staging-sync.md) — the daily sync routine that keeps every staging on `origin/main`.
 - [`staging-clerk.md`](./staging-clerk.md) — the shared dev Clerk app and the cross-engineer test login.
 
+**Sections:**
+
+- [§ 0 Mental model](#0-mental-model)
+- [§ 1 Prerequisites](#1-prerequisites)
+- [§ 2 Clone repos and lay out the workspace](#2-clone-repos-and-lay-out-the-workspace)
+- [§ 3 Environment file](#3-environment-file)
+- [§ 4 Live data — restoring the prod pg_dump](#4-live-data--restoring-the-prod-pg_dump)
+- [§ 4.5 Apply pending Atlas migrations](#45-apply-pending-atlas-migrations) — **read before §5**, prod dump is always behind `main` migrations
+- [§ 5 Bring up the stack](#5-bring-up-the-stack) — incl. **Quirk #11 (colony v1+v2 JWT)**, **Quirk #3 (cms studio submodule)**, and the rest of the 19-quirk narrative
+- [§ 6 Engineer rebind — make Clerk match your DB](#6-engineer-rebind--make-clerk-match-your-db)
+- [§ 7 Optional HTTPS via `tailscale serve`](#7-optional-https-via-tailscale-serve)
+- [§ 8 Install the sync routine](#8-install-the-sync-routine)
+- [§ 9 Apply skip-worktree hygiene](#9-apply-skip-worktree-hygiene)
+- [§ 10 Smoke check](#10-smoke-check)
+- [§ 10.5 Known schema drifts (expected on staging)](#105-known-schema-drifts-expected-on-staging)
+- [§ 11 You're done](#11-youre-done)
+
 ---
 
 ## 0. Mental model
@@ -168,9 +185,18 @@ STRIPE_SECRET_KEY=sk_test_…
 OPENAI_API_KEY=sk-…
 AZURE_OPENAI_ENDPOINT=…
 AZURE_OPENAI_API_KEY=…
+
+# Required if you want Talk to Data (/ask/stream) to actually answer questions.
+# Without these, the SSE stream opens fine but the agentic loop fails with
+# "no EC2 IMDS role found" (the AWS SDK falls through to instance-metadata
+# lookup, which times out on Tailscale VMs). Use the prod-equivalent inference
+# profile region — eu-west-1 today.
+AWS_ACCESS_KEY_ID=AKIA…
+AWS_SECRET_ACCESS_KEY=…
+AWS_REGION=eu-west-1
 ```
 
-Production keys are NOT used here. Only dev/test keys.
+Production keys are NOT used here. Only dev/test keys. The AWS creds are an exception — Talk to Data calls Bedrock via the prod inference profile (no dev tenancy yet), so use the dedicated staging IAM user Stefano keeps for this. Ask Stefano if you don't have those.
 
 **Quirk #4** — Next.js 15 statically evaluates server routes at build time (`/api/create-subscription`, `/api/wundergraph/*`). Compose `env_file` is **runtime-only**, so build-time evaluation will crash with `STRIPE_SECRET_KEY is not configured` etc. Drop a gitignored `.env.production` into `next-web-app/apps/web/`:
 
@@ -219,6 +245,10 @@ cat ~/prod_dump.sql | docker compose exec -T postgresql psql -U postgres -d post
 
 ### Sanity-check the restore
 
+**Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `skiller`, `cms`, `skillpath`, `jobsimulation`) all sit *inside* `postgres`. Running `docker compose exec -T postgresql psql -U postgres -c '\l'` listing only `postgres / template0 / template1` is the **expected** post-restore shape — it is **not** evidence that the restore failed. The 2026-05-14 Ithaca repair burned an hour on this misread; don't repeat it.
+
+To actually sanity-check the data, you must query *inside* the `postgres` DB (note the `-d postgres`):
+
 ```bash
 docker compose exec -T postgresql psql -U postgres -d postgres -c "
   SELECT 'users' tbl, COUNT(*) FROM public.users
@@ -228,7 +258,7 @@ docker compose exec -T postgresql psql -U postgres -d postgres -c "
 "
 ```
 
-You should see thousands of users, hundreds of orgs, etc.
+You should see thousands of users (~5,951 in the 2026-05-14 dump), hundreds of orgs (~250), thousands of memberships (~3,597), and thousands of casbin rules (~5,168). If those numbers are zero or the schemas don't exist, *that's* a failed restore — re-check `/tmp/restore.log` for `ERROR` lines that aren't covered by Quirk #9 / #14.
 
 ### If restore fails completely
 
@@ -243,6 +273,94 @@ docker compose up -d postgresql
 ```
 
 You can re-restore later (after an upstream schema migration breaks something) by repeating the wipe+restore cycle. No need to re-do steps 5-7 since the dev Clerk binding is per-row in the DB, but you WILL need to re-do step 6 (engineer rebind) since the dump's `clerk_id` columns get overwritten.
+
+---
+
+## 4.5. Apply pending Atlas migrations
+
+**Read this before §5.** The prod dump is taken at a single point in time — every migration applied to prod *after* that snapshot date is sitting in the service repos' `terraform/migrations/` directories but has **not** been replayed against your restored DB. On 2026-05-14 the gap was 11 migrations across 3 services (app: 6, skiller: 3, jobsimulation: 2) including `ask_conversations` / `ask_messages` (which Talk to Data writes to) and `skill_translations` (which the skiller subgraph reads). Without these migrations, you bring the stack up "successfully" but Talk to Data 500s with `relation "ask_conversations" does not exist` the first time anyone tries to send a query.
+
+Neither `make migrate` (no longer wired on staging clones) nor the daily `anthropos-staging-sync` ([`staging-sync.md`](./staging-sync.md)) runs Atlas. **This is an operator responsibility** — every fresh bringup, and every time prod ships new migrations you want reflected on staging.
+
+### Install Atlas (one-time)
+
+```bash
+curl -sSf https://atlasgo.sh | sh        # installs /usr/local/bin/atlas
+atlas version                            # confirm — 0.30+ or v1.x both work
+```
+
+### Apply per service
+
+Each Go service that owns DB schema has its own `terraform/migrations/` directory and its own Atlas config under `terraform/atlas.hcl` declaring the `local` env. The pattern for each:
+
+```bash
+cd ~/<service>
+
+# See what's pending against the running staging DB
+atlas migrate status --env local \
+  --url "postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=<schema>"
+
+# Apply
+atlas migrate apply --env local \
+  --url "postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=<schema>"
+```
+
+Per-service `<schema>` values (this is the `search_path` Atlas writes the `atlas_schema_revisions` table into and treats as default):
+
+| Service           | `search_path=` | Why                                                          |
+| ----------------- | -------------- | ------------------------------------------------------------ |
+| `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs |
+| `cms`             | `cms`          | Directus / content schema                                    |
+| `skiller`         | `skiller`      | Skill graph, translations, embeddings                        |
+| `skillpath`       | `skillpath`    | Skill-path runtime                                           |
+| `jobsimulation`   | `jobsimulation`| Job sims, interview extraction results                       |
+
+Apply in any order — schemas don't cross-reference at the migration level. `sentinel` is not in the table because it uses raw Casbin schema management, not Atlas.
+
+### Baselining (only if `atlas migrate apply` complains about non-linear history)
+
+You may see:
+
+```
+Error: pending migration files are not in a linear order: 20240304140158.sql
+```
+
+This means a migration file exists in the repo but is not recorded in `atlas_schema_revisions`. Sometimes the file's effects are already in the DB (applied via a later migration that overlapped, or out-of-band). To check whether it's truly missing or just unrecorded, run the relevant `\d <table>` and inspect for columns the file would have added.
+
+If the effects are already present, re-baseline to the latest *real* migration **before** the out-of-order file's revision, then apply normally:
+
+```bash
+# Set the revisions table to a known-applied version so Atlas re-bases on it.
+# Use a version that you can confirm IS applied (latest non-conflicting one).
+atlas migrate set <latest-applied-version> --env local --url "..."
+
+# OR, use --exec-order linear-skip to bypass the linearity check and apply
+# the newer migrations cleanly while leaving the out-of-order file flagged.
+atlas migrate apply --exec-order linear-skip --env local --url "..."
+```
+
+**Gotcha (cost an hour on Ithaca):** `atlas migrate set <old-version>` *truncates* the revisions table down to that version. If you pick a version too far back, Atlas will then try to re-apply already-applied intermediate migrations and fail again. The safer move is `atlas migrate set <latest-applied-version>` to keep the table consistent, or `--exec-order linear-skip` as above. The 2026-05-14 Ithaca run used `linear-skip`; Calypso used `migrate set` to the latest applied revision — both worked.
+
+### Restart the services whose schemas moved
+
+```bash
+cd ~/platform
+docker compose restart backend skiller jobsimulation
+# replace with whatever services you applied migrations for
+```
+
+A `restart` is enough — the Go services re-open DB connections on boot. No rebuild needed unless the migration came with a code change (it usually does, but the daily sync's `docker compose build` covers that path).
+
+### Reference
+
+The 2026-05-14 Calypso bringup applied:
+
+- **app** (6 migrations, public): `20260414085836` (drop legacy triggers) → `20260506145258` (`ask_query_lessons`).
+- **skiller** (3 migrations, skiller): `20260417103036` → `20260511094027` (`job_role_translations`, `skill_translations` + multilingual tsvector indexes).
+- **jobsimulation** (2 migrations, jobsimulation): `20260402145459` (`interview_extraction_results`) → `20260409131539` (`summary` jsonb column).
+- **cms** + **skillpath**: already up to date.
+
+The per-service apply logs from that run live at `/tmp/calypso-migrations/{app,skiller,jobsimulation}-apply.log` on Calypso (kept for ~30 days). Use them as expected-output reference when something looks off.
 
 ---
 
@@ -269,7 +387,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 2. **Quirk #2 — `customerio-sync` builds from a git URL** — already addressed in §2. Use `context: ../customerio-sync`.
 
-3. **Quirk #3 — `cms/Dockerfile.dev` references removed `studio/` submodule** — `COPY studio/` and `RUN pip install -r studio/requirements.txt` fail with `not found`. Comment them out; the Go binary runs fine without the Python studio runner. The 2026-05-14 cleanup opened [`anthropos-work/cms#fix/dockerfile-remove-studio-submodule`](https://github.com/anthropos-work/cms/pulls) to fix upstream — once merged, this skip-worktree patch goes away.
+3. **Quirk #3 — `cms/Dockerfile.dev` references removed `studio/` submodule** — `COPY studio/` (line ~39) and `RUN pip install -r studio/requirements.txt` (line ~42) fail with `not found`. Comment them out (mark the lines with `# Staging patch (Quirk #3)` so the next operator knows why); the Go binary runs fine without the Python studio runner. The 2026-05-14 cleanup opened [`anthropos-work/cms#fix/dockerfile-remove-studio-submodule`](https://github.com/anthropos-work/cms/pulls) to fix upstream — **PR is still open and unmerged as of 2026-05-14**, so the patch must be re-applied on every fresh clone and is one of the long-lived skip-worktree files on each staging. When the PR lands, the daily sync's `git reset --hard origin/main` will drop the staging-local comments naturally and the skip-worktree entry on `cms/Dockerfile.dev` can be removed.
 
 4. **Quirks #4 + #5 — Next.js needs build-time env vars** — already addressed in §3. Drop `apps/web/.env.production` before first build. Make sure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also in compose's runtime `environment:` block (not just `env_file:`) — see Quirk #15.
 
@@ -289,9 +407,58 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 8. **Quirk #10 — Backend GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns Apollo Sandbox UI; CORS preflight + auth happen at `/query`. The Wundergraph router (`:5050`) federates these into `/5050/graphql`. Tools that expect `/graphql` directly need to know.
 
-9. **Quirk #11 — `colony` v0.34.0 nil-deref panic in `authn/provider/clerk.GetUser`.** Constructs `&User{}` without wiring the `client` field; `u.client.Get()` panics if the JWT lacks custom claims (which dev Clerk apps don't ship by default). Same panic in `Email()` when `PrimaryEmailAddressID` is nil. The 2026-05-14 cleanup opened [`anthropos-work/colony#fix/clerk-getuser-nil-client`](https://github.com/anthropos-work/colony/pulls) to fix upstream. Until merged, two paths:
-   - **Vendor it** (current Ithaca pattern): `cp -r ~/colony app/vendor-colony`, add `replace github.com/anthropos-work/colony => ./vendor-colony` to `app/go.mod` (and `cms/go.mod` — same panic hits CMS), add `COPY vendor-colony ./vendor-colony` in each `Dockerfile.dev` immediately after `COPY go.sum ./` (before `RUN go mod download`), `go mod tidy`, rebuild.
-   - **Wait for the upstream PR.** The fix is small; if the PR is open by the time you bring up, just point at the merged colony release.
+9. **Quirk #11 — `colony` has two separate Clerk auth bugs.** Both bite every staging today; the working fix on Ithaca + Calypso is a single vendored copy of `colony` that patches both. **Read both halves before reaching for the vendor recipe** — the recipe is identical, but knowing what each piece fixes is what lets you keep it pruned over time.
+
+   **Bug 1 — nil-client / nil-email panic** (`colony@v0.34.0`). `authn/provider/clerk.GetUser` constructs `&User{}` without wiring the `client` field; `u.client.Get()` panics if the JWT lacks custom claims (which dev Clerk apps don't ship by default). Same panic in `Email()` when `PrimaryEmailAddressID` is nil. The 2026-05-14 cleanup opened [`anthropos-work/colony#fix/clerk-getuser-nil-client`](https://github.com/anthropos-work/colony/pulls) to fix upstream — that branch fixes the panic but NOT bug 2 below.
+
+   **Bug 2 — Clerk v2-JWT claim shape unsupported.** New Clerk apps (including `national-elk-17`) default to a v2 session-token format (`"v": 2`) that nests org info under a single `o` key:
+
+   ```json
+   {
+     "o": { "id": "org_…", "rol": "admin", "slg": "while-true-srl-…" },
+     "sub": "user_…",
+     "sid": "sess_…",
+     "v": 2
+   }
+   ```
+
+   `colony` v0.34.0 (and the `fix/clerk-getuser-nil-client` branch on top) only reads v1 names: `org_id`, `org_role`, `org.eid`. On a v2 token, `GetOrganization()` returns `nil` → every `colony.User.GetOrganization()`-gated endpoint (Talk to Data `/ask/*`, Members listing, Workforce Intelligence, anything else REST-backed) 403s with `missing organization context`. The GraphQL ent privacy layer is unaffected, so the bug *looks* like "REST is broken, GraphQL is fine," which is misleading — it's a single common root cause.
+
+   The dashboard "Customize session token" template (per [`staging-clerk.md`](./staging-clerk.md#customizing-the-dev-clerk-session-token-recommended)) could in principle inject `org.eid` directly and sidestep bug 2, but the dev app currently has no template configured, the REST `PATCH /v1/instance` for `session_token_template` is silently dropped (dashboard-only as of 2026-05), and `POST /v1/jwt_templates` creates a template that only takes effect if the frontend explicitly calls `getToken({template: 'colony'})` — which it doesn't. So a code-side fix is the only viable path until upstream colony lands.
+
+   **The working fix on Ithaca + Calypso** is a 309-LOC patch on top of `fix/clerk-getuser-nil-client` (saved at `/tmp/colony-v2-jwt-patch.diff` on Ithaca, 2026-05-14). Three pieces, all in `authn/provider/clerk/`:
+
+   - `clerk.go`: `Clerk` struct gains an `orgClient OrganizationClient` field; `NewProvider` wires `organization.NewClient(cfg)` into it (reuses the same `BackendConfig` already used by `user.Client` + `jwks.Client`).
+   - `clerk_user.go`: new constant `claimOrgV2 = "o"`, new `OrganizationClient` interface (one-method `Get(ctx, idOrSlug)`), new process-wide `orgEidCache` (clerk-org-id → eid). `GetOrganization()` reads v1 claims first, then falls back to `tokenClaims.Extra["o"].{id, rol, public_metadata.eid}` for any field v1 didn't supply. If `orgEid` is still empty (the realistic case — v2 tokens omit `public_metadata` by default), a new `lookupOrgEid(clerkOrgID)` helper fetches the org from the Clerk Backend API, reads `public_metadata.eid` from `clerk.Organization.PublicMetadata` (a `json.RawMessage`), caches it, and returns it. Errors return `""` quietly so the caller sees the existing "no org context" → 403, never a panic.
+   - `clerk_user_test.go`: three new tests (`TestUser_ValidOrgClaims_V2`, `TestUser_V2Claims_LazyFetchEID` with cache-hit assertion, `TestUser_V1ClaimsStillWork` regression check). All pass; full clerk suite stays green.
+
+   **Until both upstream changes land (the nil-client PR + a v2-claim follow-up that doesn't exist yet)**, vendor it. Same Ithaca recipe as before — the layout in §6 / Dockerfile.dev `COPY vendor-colony` lines / `replace` directive in each `go.mod` is unchanged; just make sure the source `colony` tree you copy from has the patch applied:
+
+   ```bash
+   # one-time on each new staging clone
+   cd ~ && git clone https://github.com/anthropos-work/colony.git
+   cd colony && git checkout fix/clerk-getuser-nil-client
+   git apply /path/to/colony-v2-jwt-patch.diff
+   go test ./authn/provider/clerk/...      # all green incl. v2 tests
+   for svc in app cms skiller jobsimulation; do
+     rm -rf ~/$svc/vendor-colony
+     cp -r ~/colony ~/$svc/vendor-colony
+     rm -rf ~/$svc/vendor-colony/.git
+     grep -q "replace github.com/anthropos-work/colony => ./vendor-colony" ~/$svc/go.mod \
+       || printf '\nreplace github.com/anthropos-work/colony => ./vendor-colony\n' >> ~/$svc/go.mod
+     grep -q "vendor-colony" ~/$svc/Dockerfile.dev \
+       || sed -i '/^COPY go.sum/a COPY vendor-colony ./vendor-colony' ~/$svc/Dockerfile.dev
+     (cd ~/$svc && go mod tidy)
+     (cd ~/$svc && git update-index --skip-worktree go.mod go.sum Dockerfile.dev)
+     grep -q "^vendor-colony/" ~/$svc/.git/info/exclude \
+       || echo "vendor-colony/" >> ~/$svc/.git/info/exclude
+   done
+   cd ~/platform && docker compose up --build -d backend cms skiller jobsimulation
+   ```
+
+   Four services vendor `colony` because all four call `colony.User.GetOrganization()`: `app`, `cms`, `skiller`, `jobsimulation`. `go.mod` colony pins (v0.34.0 / v0.33.2 / v0.34.0 / v0.33.0 respectively) stay unchanged — the `replace` directive overrides them. The `go.mod`, `go.sum`, `Dockerfile.dev` get `skip-worktree`'d so the daily sync doesn't reset them; `vendor-colony/` goes in `.git/info/exclude` so it survives `reset --hard` as an unknown file.
+
+   **Why two PRs, not one:** the nil-client PR is small and obviously correct — likely lands soon. The v2-claim fallback needs a follow-up upstream because it adds a real dependency on the Clerk Backend API at request time (rate-limited), and the long-term fix is the dashboard session-token template plus a colony switch that prefers it. Until then, the lazy fetch + cache works fine at staging-scale traffic.
 
 10. **Quirk #12 — Dev Clerk needs Organizations enabled + per-user/org `external_id` set.** Documented as the rebind procedure in §6 below.
 
@@ -422,6 +589,20 @@ Pass criteria:
 - Workforce Intelligence sidebar item is present.
 
 If smoke fails, check `docker compose logs --since 5m next-web-app` for `UND_ERR_CONNECT_TIMEOUT`, `infinite redirect loop`, or `clerkError`. Most of the time the culprit is the clerk-fetch-fix not being loaded (see [`staging-clerk.md`](./staging-clerk.md#symptom-und_err_connect_timeout-from-server-components)) or a Tailscale alias / Clerk allowed_origin / backend CORS gap.
+
+---
+
+## 10.5. Known schema drifts (expected on staging)
+
+These are *expected* failures on a current staging — they're not bringup mistakes and don't need a local fix. They show up because `next-web-app@main` and `app@main` aren't perfectly in lockstep at every moment of every day, and the daily sync force-resets both to whatever HEAD looks like at 06:00 UTC. The drifts are upstream-coordination matters; flag them in `#anthropos-eng` and wait.
+
+| Drift                                                                       | Symptom                                                                                                              | Backend response                                                                                                            | First seen   |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `Membership.jobRole` / `Membership.targetRole` / `Info.jobRole` / `Query.recapUserSkills` pass a `language: ContentLanguage` argument the backend doesn't expose | Members page renders "0 / 50 — No data" despite 47+ active members in the DB; Workforce Intelligence is unaffected | `Unknown argument "language" on field …` from Wundergraph; some skillpath subgraph queries also return 422 (`Failed to fetch from Subgraph 'skillpath'`) | 2026-05-14   |
+
+**Do not patch this locally.** Resolving it means regenerating `next-web-app/packages/graphql/` against the current backend schema (a frontend team change) or extending the schema to accept the arg (a backend team change) — neither is a staging-local edit. If Members 0/50 is blocking demo work *today*, you can either (a) demo a different surface (Workforce Intelligence renders fine), or (b) check out matching versions of `next-web-app` and `app` from before the drift on a non-staging workspace (NOT on a staging clone — see [`staging-sync.md` § What if I want to test a feature branch](./staging-sync.md#what-if-i-want-to-test-a-feature-branch-with-prod-shape-data)).
+
+When a drift here is resolved, delete its row.
 
 ---
 

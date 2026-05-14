@@ -188,6 +188,44 @@ Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Bui
 
 **Never rebuilt:** `postgresql`, `redis`, `gotenberg` (vendored images, no local source).
 
+### Atlas migrations are NOT run by sync
+
+The daily sync pulls new source and rebuilds containers, but it does **not** run `atlas migrate apply`. The Go services boot fine against an out-of-date schema; the breakage only surfaces the first time code paths reach a missing table or column (e.g., `ask_conversations does not exist` for Talk to Data, `skill_translations does not exist` for the skiller subgraph). On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
+
+**This is an operator responsibility, not a sync-routine job.** Reasons sync doesn't run Atlas itself:
+
+- `atlas` is not preinstalled on a fresh staging box; the sync routine can't fail soft on a missing binary across the fleet without losing more than it gains.
+- Some pending migrations (out-of-order files, baseline mismatches) need interactive `migrate set` / `--exec-order` decisions — wrong choice truncates `atlas_schema_revisions` and is a non-trivial recovery.
+- Migrations occasionally fail with destructive intent (rename + drop in two passes), and silently applying them at 06:00 UTC against prod-shape data is a worse failure mode than "Talk to Data 500s until the operator runs Atlas."
+
+**What to do periodically** (≥weekly, or whenever a new feature lands on `main`):
+
+```bash
+# Install atlas once (idempotent)
+command -v atlas >/dev/null || curl -sSf https://atlasgo.sh | sh
+
+# Check + apply per service. Schemas per service in
+# staging-bringup.md § 4.5.
+for svc_schema in "app:public" "skiller:skiller" "jobsimulation:jobsimulation" "cms:cms" "skillpath:skillpath"; do
+  svc="${svc_schema%%:*}"; schema="${svc_schema##*:}"
+  echo "=== $svc → $schema ==="
+  (cd ~/$svc && atlas migrate status --env local \
+    --url "postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=$schema") || true
+done
+
+# Then apply where needed:
+cd ~/<service>
+atlas migrate apply --env local \
+  --url "postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=<schema>"
+
+# Restart any service whose schema moved
+cd ~/platform && docker compose restart <service>
+```
+
+Full procedure incl. the out-of-order / baseline gotcha lives in [`staging-bringup.md § 4.5`](./staging-bringup.md#45-apply-pending-atlas-migrations).
+
+**Open question:** whether to fold this into the daily sync once Atlas is preinstalled fleet-wide. Stefano's call as of 2026-05-14 is "keep it manual" — the explicit-pause-before-DDL property is more valuable than the operational tax of remembering. Revisit if the fleet grows beyond 3-4 hosts.
+
 ---
 
 ## Smoke test
