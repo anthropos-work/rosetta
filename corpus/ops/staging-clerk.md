@@ -404,6 +404,53 @@ Clerk's session token doesn't include your DB UUID by default, so colony's auth 
 
 This is dashboard-only as of 2026-05; there's no public REST endpoint to script it. Once set, every issued session token carries the DB UUIDs in its claims and colony's auth path can skip the per-request Backend API fetch.
 
+### Dev app currently has no custom template (2026-05-14)
+
+Verified during the Ithaca repair: `national-elk-17` is issuing **bare v2 session tokens** with no custom claims attached. The dashboard "Customize session token" template appears empty (or was never configured). Programmatic workarounds tried and failed:
+
+- `PATCH /v1/instance` with `{"session_token_template": {"claims": …}}` returns HTTP 204 but the next-issued JWT has none of the custom claims. The endpoint is silently accepted-and-ignored — session-token customization is genuinely dashboard-only.
+- `POST /v1/jwt_templates` with name `colony` creates a template (returns a `jtmp_…` id) but only takes effect if the **frontend** explicitly calls `getToken({template: 'colony'})`. `next-web-app` doesn't — it uses the bare session token via Clerk middleware. Extending the frontend to use a named template would also require teaching the backend to accept template-issued JWTs (different audience / signing rules), so it's not a small change.
+
+Until someone with dashboard access logs in and applies the template, **plan on the lazy Clerk Backend API fetch path** described in [`staging-bringup.md` Quirk #11](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative). The colony v2-JWT patch already implements this with a process-wide eid cache (`clerk-org-id → DB uuid`), so per-request load on the Clerk API is bounded to one-fetch-per-distinct-org-per-process-lifetime.
+
+### Anatomy of a v2 session token
+
+The token shape colony has to read is now v2 — flat in `v: 1` (`org_id`, `org_role`, `org.eid`), nested in `v: 2` under a single `o` key. Both shapes live in the wild because Clerk only flipped the default for new apps; older apps can be migrated via dashboard toggle, but `national-elk-17` was created post-flip and only emits v2.
+
+```jsonc
+// What a freshly-issued dev session token (decoded) looks like today:
+{
+  "exp": 1778764223,
+  "iat": 1778764163,
+  "iss": "https://national-elk-17.clerk.accounts.dev",
+  "nbf": 1778764153,
+  "o": {                                       // ← v2 nesting
+    "id":  "org_3DIcUoSDXZjxmD82ipAh7xMijhi",  // ← v1 name was "org_id"
+    "rol": "admin",                            // ← v1 name was "org_role"
+    "slg": "while-true-srl-1777973042707468570"
+  },
+  // NOTE: "public_metadata" is NOT included by default in v2 tokens —
+  // the dashboard custom template is the only built-in way to inject it.
+  // colony falls back to `OrganizationClient.Get()` to resolve eid.
+  "sid": "sess_3DiTGfLL0JDk4tnHwN1m6cdPZrp",
+  "sts": "active",
+  "sub": "user_3DIYdXgwlr0Q0R12qDNbk4z95aZ",
+  "v": 2                                       // ← format version marker
+}
+```
+
+You can capture a real one with:
+
+```bash
+SESS=sess_…                              # from Clerk dashboard → Sessions, or browser cookies
+curl -s -X POST "https://api.clerk.com/v1/sessions/$SESS/tokens" \
+  -H "Authorization: Bearer $CLERK_SECRET_KEY" \
+  | python3 -c "import json,sys,base64; t=json.load(sys.stdin)['jwt']; \
+    print(json.dumps(json.loads(base64.urlsafe_b64decode(t.split('.')[1] + '==')), indent=2))"
+```
+
+If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colony build doesn't need the v2 fallback. If it's `"v": 2` with nested `o.*`, the colony build that resolves `GetOrganization()` must support v2 (vendored patch or the future upstream fix).
+
 ---
 
 ## Related

@@ -6,9 +6,9 @@ This directory contains guides for operating the Anthropos platform locally.
 
 | Guide | Purpose | When to Use |
 |-------|---------|-------------|
-| **[Staging Bringup](./staging-bringup.md)** | **Full personal-staging onboarding (fresh VM → working Tailscale staging + live prod data + dev Clerk + daily sync)** | **New engineer (or AI agent) joining the team — start here** |
-| [Staging Sync](./staging-sync.md) | Daily force-reset to `origin/main` + skip-worktree mechanics + recovery | Understanding what the daily 06:00 UTC routine does, or recovering clobbered WIP |
-| [Staging Clerk](./staging-clerk.md) | Dev Clerk app `national-elk-17`, shared cross-engineer test login, the load-bearing `clerk-fetch-fix.js` monkey-patch | Setting up auth on a new staging or debugging Clerk symptoms |
+| **[Staging Bringup](./staging-bringup.md)** | **Full personal-staging onboarding (fresh VM → working Tailscale staging + live prod data + dev Clerk + daily sync). Includes the [colony v2-JWT vendoring recipe](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative) (Quirk #11), the [Atlas migrations gap fix](./staging-bringup.md#45-apply-pending-atlas-migrations) (§4.5), and the [known-schema-drifts table](./staging-bringup.md#105-known-schema-drifts-expected-on-staging) (§10.5).** | **New engineer (or AI agent) joining the team — start here** |
+| [Staging Sync](./staging-sync.md) | Daily force-reset to `origin/main` + skip-worktree mechanics + recovery. **Note:** Atlas migrations are NOT in the daily run — see [Atlas migrations are NOT run by sync](./staging-sync.md#atlas-migrations-are-not-run-by-sync). | Understanding what the daily 06:00 UTC routine does, recovering clobbered WIP, or remembering to run Atlas periodically |
+| [Staging Clerk](./staging-clerk.md) | Dev Clerk app `national-elk-17`, shared cross-engineer test login, the load-bearing `clerk-fetch-fix.js` monkey-patch, and the [v2 session-token anatomy](./staging-clerk.md#anatomy-of-a-v2-session-token) | Setting up auth on a new staging or debugging Clerk symptoms |
 | [Platform Setup](./setup_guide.md) | Build the development environment | First time on a new machine (no prod-dump path) |
 | [Personal Staging from a Prod Dump](./staging_from_dump.md) | Restore a prod DB dump, rebind to a dev Clerk app, kill outbound email, apply colony/Clerk patches | Engineer-rebind reference (called from `staging-bringup.md`) |
 | [Platform Run](./run_guide.md) | Start the platform locally | Daily development work |
