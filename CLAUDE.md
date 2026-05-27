@@ -138,9 +138,10 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 - ai: Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) with cost tracking
 - taxonomy: Skills taxonomy data
 
-**Studio Services (Tier 2)**: Content creation tools
+**Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
 - Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the cms container** as `cms/studio/` via `cd cms && make init-studio`; no longer a standalone deployment.
+- Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** Cloned by `make init` (in `repos.yml`); runs natively via `cd ant-academy/code && npm run dev` (port 3077). No platform backend dependencies at runtime — only Clerk. See `corpus/services/ant-academy.md`.
 
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
@@ -168,6 +169,8 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 **Platform services** share a **single centralized `.env` file** in the `platform` repository. Docker-based services do not need their own `.env` files.
 
 **Studio-Desk** requires its own `.env` file (`studio-desk/.env`) with Clerk and OpenAI credentials copied from `platform/.env`.
+
+**Ant Academy** requires its own `.env` file at `ant-academy/code/.env` (not the repo root — the React app reads only from `code/.env`). Reuse `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` from `platform/.env`, and add `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` for the `/api/ai/chat` route. Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` for solo local dev to skip the org-membership gate.
 
 Critical environment variables:
 - `GH_PAT` (GitHub Personal Access Token — required for Docker builds to pull private Go modules)
@@ -300,6 +303,22 @@ python3 gen.py --media simulation --template default
 ```
 
 **Note**: Studio-Desk can also run containerized via `make up PROFILE=studio-desk`.
+
+**Ant Academy** (Next.js 16 + Expo — native only, not in docker-compose):
+```bash
+# Web app
+cd ant-academy/code
+cp .env.example .env   # fill Clerk + AI keys (see corpus/ops/setup_guide.md)
+npm install
+npm run dev            # next dev — port 3077
+
+# Mobile app (optional, separate process)
+cd ant-academy/mobile
+pnpm install
+pnpm run dev:web       # web preview on port 8555
+```
+
+See [Ant Academy service doc](corpus/services/ant-academy.md) for the full picture (auth gates, content layout, Cosmo AI assistant, repo-local authoring skills).
 
 ## Documentation Maintenance
 

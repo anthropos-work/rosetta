@@ -44,7 +44,7 @@ docker compose -p ant-rosetta down
 
 # Pull all repos
 cd anthropos-dev
-for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio; do
+for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio ant-academy; do
   (cd "$repo" 2>/dev/null && git pull origin main) || echo "Skipped: $repo"
 done
 
@@ -52,6 +52,8 @@ done
 (cd next-web-app && pnpm install)
 (cd studio-desk && npm install)
 (cd studio-room && pip3 install -r requirements.txt --upgrade)
+(cd ant-academy/code && npm install)   # internal learning portal, native only
+# Optional: (cd ant-academy/mobile && pnpm install)  # only if you run the Expo app
 
 # Apply migrations (ensure PostgreSQL is running)
 docker compose -p ant-rosetta up -d postgresql && sleep 5
@@ -170,15 +172,16 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`:
 ## Repository Update Order
 
 ```
-1. platform      (Docker configs, shared .env)
-2. backend       (main API)
-3. cms           (content management)
+1. platform       (Docker configs, shared .env)
+2. backend        (main API)
+3. cms            (content management)
 4. jobsimulation
 5. skiller
-6. next-web-app  (frontend)
+6. next-web-app   (frontend)
 7. studio-desk
 8. studio-room
-9. cms/studio    (symlinked studio-room)
+9. cms/studio     (symlinked studio-room)
+10. ant-academy   (internal learning portal — independent of backend, safe to update last)
 ```
 
 ## Related Skills

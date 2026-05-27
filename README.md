@@ -65,7 +65,8 @@ corpus/
 │
 ├── services/              # Individual service documentation
 │   ├── backend.md, cms.md, sentinel.md, ...  # Core services
-│   └── studio-desk.md, studio-room.md        # Studio services
+│   ├── studio-desk.md, studio-room.md        # Studio services
+│   └── ant-academy.md                        # Internal learning portal (standalone)
 │
 ├── ops/                   # Operations guides
 │   ├── setup_guide.md     # Build local development environment
@@ -119,8 +120,8 @@ Anthropos uses a **three-tier microservices architecture**:
 
 | Tier | Services | Technology |
 |------|----------|------------|
-| **Core Backend** | Backend, CMS, Sentinel, Skiller, Jobsimulation, Skillpath, Storage, Chronos, Intelligence | Go |
-| **Studio** | Studio-Desk (design tool), Studio-Room (AI pipeline) | TypeScript, Python |
+| **Core Backend** | Backend, CMS, Sentinel, Skiller, Jobsimulation, Skillpath, Storage, Roadrunner | Go |
+| **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline, embedded in CMS), Ant Academy (internal learning portal) | TypeScript, Python, Next.js + Expo |
 | **External** | Clerk (auth), Directus (CMS), GraphQL/Wundergraph (gateway) | SaaS / Docker |
 
 See [Architecture Overview](./corpus/architecture/architecture_overview.md) for the full picture.

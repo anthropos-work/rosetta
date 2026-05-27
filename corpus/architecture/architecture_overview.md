@@ -22,6 +22,8 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **Studio Services**: Specialized tools for content creation:
     *   **Studio-Desk**: Web app where creators design job simulations
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the CMS container** as `cms/studio/` (cloned via `cd cms && make init-studio`) — not a standalone deployment anymore.
+*   **Standalone Internal Apps**: Independent products that reuse platform identity (Clerk) but do not depend on the backend services:
+    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel.
 *   **Frontend**: Next.js 14 applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
@@ -204,6 +206,7 @@ Archived (removed from local orchestration; repos still exist):
 | **Next Web App** | Next.js | Main user-facing application | [→](./frontend_architecture.md) |
 | **Hiring App** | Next.js | Recruiting & hiring workflows | [→](./frontend_architecture.md) |
 | **Mobile App** | Expo/React Native | Mobile experience | [→](./frontend_architecture.md) |
+| **Ant Academy** | Next.js 16 + Expo | Internal learning portal for `@anthropos.work` employees (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
 
 ### Communication Patterns
 

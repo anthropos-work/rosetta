@@ -22,9 +22,10 @@ Registry of development tools and toolchains.
 Individual service documentation and developer maps.
 
 *   **Core Backend Services**: 9 Go microservices (Backend, CMS, Sentinel, Skiller, etc.)
-*   **Studio Services**:
-    *   [Studio-Desk](./services/studio-desk.md): Content design service
-    *   [Studio-Room](./services/studio-room.md): AI generation service
+*   **Studio Services & Standalone Internal Apps**:
+    *   [Studio-Desk](./services/studio-desk.md): Content design tool
+    *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
+    *   [Ant Academy](./services/ant-academy.md): Internal learning portal for `@anthropos.work` employees (Next.js 16 + Expo, Vercel)
 
 ### [Ops](./ops/)
 Operations guides for setting up, running, and updating the platform.
