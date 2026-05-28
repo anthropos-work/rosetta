@@ -33,7 +33,7 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
   - Serve chapter content as a Next.js App Router site at `/chapters/<slug>/`
   - Cache chapters offline via a Serwist-built service worker
   - Bundle the same chapter JSON into the iOS / Android Expo app at build time
-  - Provide an in-app AI assistant ("Cosmo") that talks to OpenAI / Anthropic directly from the browser
+  - Provide an opt-in in-app AI assistant ("Cosmo", behind a feature flag) that talks to OpenAI directly from the browser
   - Author / publish / benchmark content via repo-local Claude skills (`.claude/skills/author-chapter`, `author-skill-path`, `author-podcast`, `author-cover`, `benchmark-chapter`, `build-index`, …)
 
 ### Repository Layout
@@ -101,7 +101,7 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 | Layer | Technology |
 |:------|:-----------|
 | **Framework** | Next.js 16 App Router + React 19.2 (React Compiler enabled, Turbopack default) |
-| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (`clerkMiddleware()` + `@anthropos.work` domain gate) |
+| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/free/*` (other `/api/*` stay gated). |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
 | **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro |
@@ -143,16 +143,20 @@ The **app's** env file is `code/.env`, not the repo root:
 ```bash
 cd anthropos-dev/ant-academy/code
 cp .env.example .env
-# Fill in:
+# Minimum to boot locally:
 #   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 #   CLERK_SECRET_KEY
 #   FONTAWESOME_NPM_AUTH_TOKEN
-#   OPENAI_API_KEY        (server-side; for /api/ai/chat)
-#   ANTHROPIC_API_KEY     (server-side; for /api/ai/chat)
-#   NEXT_PUBLIC_STUDIO_URL  (optional — Studio Desk URL bridge)
+# Needed only for the server-side /api/ai/chat route handler:
+#   OPENAI_API_KEY        (server-side)
+#   ANTHROPIC_API_KEY     (server-side)
+# Optional:
+#   NEXT_PUBLIC_STUDIO_URL              (Studio Desk URL bridge)
+#   NEXT_PUBLIC_FEATURE_TRAINING_COACH  (1/true to turn on Cosmo — default OFF)
+#   REQUIRE_ORGANIZATION_MEMBERSHIP     (0/false to skip the org gate in solo dev)
 ```
 
-Reuse the **same Clerk keys** as in `platform/.env` so dev login works across the platform and the academy with a single session.
+`code/.env.example` is the authoritative, fuller list (it also carries Sentry / Better Stack DSN vars and the `NEXT_PUBLIC_CLERK_SIGN_IN_URL` / `SIGN_UP_URL` family used to keep Clerk on the in-app sign-in page). Reuse the **same Clerk keys** as in `platform/.env` so dev login works across the platform and the academy with a single session.
 
 > **Org-membership gate**: by default, `proxy.js` redirects signed-in users with zero org memberships to `/no-organization`. For solo local dev without an org, set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` in `code/.env`.
 
@@ -213,7 +217,7 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 ### Integration Points
 
 - **Clerk (shared)**: Uses the same Clerk app as the rest of the platform. Domain-gated to `@anthropos.work` so external users cannot enter.
-- **OpenAI / Anthropic (direct)**: The in-app "Cosmo" assistant calls the model providers directly from the browser using a per-user `localStorage('openai_api_key')` — it does **not** route through the platform's shared `ai` library.
+- **OpenAI (direct, browser, opt-in)**: The in-app "Cosmo" assistant — gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default OFF) — calls the **OpenAI Responses API** (`gpt-5.2`, `https://api.openai.com/v1/responses`) directly from the browser using a per-user `localStorage('openai_api_key')`. It is OpenAI-only and does **not** route through the platform's shared `ai` library or the `/api/ai/chat` route. (The separate server-side `/api/ai/chat` route handler does support both OpenAI and Anthropic with server keys, but Cosmo does not use it.)
 - **Studio Desk (loose link)**: `NEXT_PUBLIC_STUDIO_URL` can deep-link from the academy to the Studio Desk UI; nothing required at runtime.
 - **Backend services**: **None.** No GraphQL calls, no Connect-RPC, no Redis events.
 

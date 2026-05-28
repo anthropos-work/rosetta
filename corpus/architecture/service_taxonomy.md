@@ -183,13 +183,13 @@ make update-studio   # pulls latest in cms/studio/
 | **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
 | **Location** | Local `../ant-academy` (clone via `make init`) |
 | **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |
-| **Platform dependencies** | **None at runtime.** Reuses platform Clerk; calls OpenAI/Anthropic directly. No GraphQL, no Connect-RPC, no Redis. |
+| **Platform dependencies** | **None at runtime.** Reuses platform Clerk; any AI calls go straight to the providers (never through the platform `ai` library). No GraphQL, no Connect-RPC, no Redis. |
 
 **Key Features**:
 - Static chapter JSON in `code/public/content/<series>/<skill-path>/`
 - PWA via Serwist 9 (offline chapters)
 - Companion iOS / Android app (Expo SDK 54) bundling the same chapters at build time
-- In-app "Cosmo" AI assistant calling OpenAI / Anthropic from the browser
+- Opt-in in-app "Cosmo" AI assistant (`NEXT_PUBLIC_FEATURE_TRAINING_COACH`, default OFF) — calls the OpenAI Responses API (`gpt-5.2`) directly from the browser via a per-user `localStorage` key
 - Repo-local Claude skills (`.claude/skills/`) for authoring chapters, podcasts, covers, and benchmarks
 
 **Development** (web):
