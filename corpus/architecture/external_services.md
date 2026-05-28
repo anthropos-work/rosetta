@@ -47,11 +47,13 @@ graph TB
     Hiring[Next.js Hiring App]
     Mobile[Expo Mobile App]
     Desk[Studio-Desk]
+    Academy[Ant Academy<br/>@anthropos.work only]
     
     Web --> Clerk
     Hiring --> Clerk
     Mobile --> Clerk
     Desk --> Clerk
+    Academy --> Clerk
     
     Clerk --> Webhook[Clerk Webhooks]
     Webhook --> Sentinel[Sentinel Service]
@@ -84,6 +86,15 @@ EXPO_PUBLIC_CLERK_SIGN_IN_URL=/login
 // Backend: @clerk/express
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
+```
+
+**Ant Academy** (internal learning portal — `@anthropos.work` domain gate enforced in `proxy.js`):
+```typescript
+// Uses @clerk/nextjs SDK (same shape as the main Next.js apps)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+CLERK_SECRET_KEY=sk_test_xxxxx
+// Optional opt-out of the org-membership gate (default ON in production):
+REQUIRE_ORGANIZATION_MEMBERSHIP=0
 ```
 
 #### Backend Services

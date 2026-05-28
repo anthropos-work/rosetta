@@ -109,13 +109,13 @@ make dev S=cms         # Stop Docker container, develop natively
 
 ---
 
-### Tier 2: Studio Services (Custom Applications)
+### Tier 2: Studio Services & Standalone Internal Apps
 
 **Characteristics**:
-- **Deployment**: Standalone processes (not in main docker-compose)
-- **Purpose**: Content creation and AI-powered generation
-- **Users**: Internal content creators and designers
-- **Integration**: Connect to Core Services via GraphQL/HTTP
+- **Deployment**: Standalone processes (not in main docker-compose) — typically Vercel or local-only
+- **Purpose**: Content creation, AI-powered generation, and internal learning
+- **Users**: Internal content creators, designers, and Anthropos employees
+- **Integration**: Reuse platform identity (Clerk). Some connect to Core Services via GraphQL/HTTP (Studio-Desk); others are fully independent of the backend (Ant Academy).
 
 #### Studio-Desk
 
@@ -171,6 +171,43 @@ make update-studio   # pulls latest in cms/studio/
 ```
 
 **Relationship**: Studio-Desk creates the *design* (blueprint). The cms service (Go) orchestrates `StudioTask` records; the studio-room Python code runs inside the same container to execute generation.
+
+#### Ant Academy
+
+| Property | Value |
+|:---------|:------|
+| **Technology** | Next.js 16 App Router + React 19.2 (web) + Expo / React Native (mobile) |
+| **Port** | 3077 (web dev), 8555 (mobile web preview) |
+| **Purpose** | Internal learning portal — micro-chapters on AI engineering, agent frameworks, Claude Code, etc., for `@anthropos.work` employees |
+| **Authentication** | Clerk (domain-gated to `@anthropos.work` + org-membership gate) |
+| **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
+| **Location** | Local `../ant-academy` (clone via `make init`) |
+| **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |
+| **Platform dependencies** | **None at runtime.** Reuses platform Clerk; any AI calls go straight to the providers (never through the platform `ai` library). No GraphQL, no Connect-RPC, no Redis. |
+
+**Key Features**:
+- Static chapter JSON in `code/public/content/<series>/<skill-path>/`
+- PWA via Serwist 9 (offline chapters)
+- Companion iOS / Android app (Expo SDK 54) bundling the same chapters at build time
+- Opt-in in-app "Cosmo" AI assistant (`NEXT_PUBLIC_FEATURE_TRAINING_COACH`, default OFF) — calls the OpenAI Responses API (`gpt-5.2`) directly from the browser via a per-user `localStorage` key
+- Repo-local Claude skills (`.claude/skills/`) for authoring chapters, podcasts, covers, and benchmarks
+
+**Development** (web):
+```bash
+cd ant-academy/code
+cp .env.example .env   # fill Clerk + AI keys
+npm install
+npm run dev            # next dev — port 3077
+```
+
+**Mobile** (optional):
+```bash
+cd ant-academy/mobile
+pnpm install
+pnpm run dev:web       # web preview at :8555
+```
+
+See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 
 ---
 
@@ -321,6 +358,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 | **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
+| **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` (cloned via `make init`) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
 | **Archived** | Chronos, Intelligence | Go | Removed from local orchestration (2026-Q2) | GitHub repos still exist |
 | **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

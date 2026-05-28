@@ -1,6 +1,12 @@
 # Frontend Architecture (`next-web-app`)
 
-This document outlines the architecture of the Anthropos frontend, which is organized as a **Monorepo** using **Turborepo** and **pnpm** workspaces.
+This document outlines the architecture of the Anthropos **main customer-facing frontend** (`next-web-app`), organized as a **Monorepo** using **Turborepo** and **pnpm** workspaces.
+
+> **Note**: There are **two other frontend products** that live outside this monorepo and have their own architecture:
+> - **[Studio-Desk](../services/studio-desk.md)** — Vite + Express, simulation design tool
+> - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo, internal learning portal for `@anthropos.work` employees
+>
+> Both are pulled by `make init` from `repos.yml` and run natively (not in docker-compose by default). The rest of this document is about `next-web-app` specifically.
 
 ## Monorepo Structure
 

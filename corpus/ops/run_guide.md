@@ -12,6 +12,7 @@ Once running, access these URLs in your browser:
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
+| **Ant Academy** | http://localhost:3077 | Internal learning portal (`@anthropos.work` only) |
 | **GraphQL Playground** | http://localhost:5050 | API gateway (Cosmo Router) |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
@@ -227,6 +228,72 @@ npm run dev
 Open http://localhost:9100 in your browser.
 
 *Expected*: Studio-Desk login page (uses Clerk authentication).
+
+---
+
+## 5.1 Start Ant Academy (Optional — Internal Learning Portal)
+
+Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.work` employees. It runs **natively only** — no docker-compose profile. It does not depend on any backend service to function (it only needs Clerk).
+
+### Navigate
+
+```bash
+cd anthropos-dev/ant-academy/code
+```
+
+> **Note**: the Next.js app lives in `code/`, not the repo root. The repo-root `.env` is for content-authoring tooling, **not** the React app.
+
+### Verify Node Version
+
+```bash
+node --version
+```
+
+*Expected*: `v22.x.x` or newer (declared in `code/package.json` `engines.node: ">=22"`).
+
+> If you use nvm and the rest of the platform is on v24, that works too — Ant Academy's `>=22` is a lower bound, not a pin.
+
+### Verify Env
+
+```bash
+ls .env > /dev/null 2>&1 && echo ".env present" || echo "Copy .env.example -> .env and fill keys (see setup_guide.md)"
+```
+
+### Install Dependencies (first run only)
+
+```bash
+npm install
+```
+
+> **Font Awesome Pro**: the install needs `FONTAWESOME_NPM_AUTH_TOKEN` in env or `~/.npmrc`. Ask the team if you don't have one yet.
+
+### Start
+
+```bash
+npm run dev
+```
+
+*Expected*: dev server on **http://localhost:3077** (not 3000 — that port is reserved for `next-web-app`).
+
+### Verify
+
+Open <http://localhost:3077>. You should land on the Clerk sign-in page; sign in with an `@anthropos.work` Google account.
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Redirect to `/no-organization` | Org-membership gate (default ON) | Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` in `code/.env` for solo dev |
+| Sign-in fails with "domain not allowed" | Account not on `@anthropos.work` | Sign in with a work account, or update the Clerk app's allowed domain |
+| 401 from `/api/ai/chat` | Missing `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` server-side | Fill `code/.env` with the server keys (different from the in-app Cosmo's localStorage key) |
+
+### Mobile App (Optional)
+
+```bash
+cd ../mobile
+pnpm install
+pnpm run dev:web    # web preview on http://localhost:8555
+```
 
 ---
 

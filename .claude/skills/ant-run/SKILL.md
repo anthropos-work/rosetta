@@ -85,6 +85,7 @@ Use TodoWrite with these phases:
 - GraphQL gateway healthy (localhost:5050)
 - Frontend running (native or containerized; requires Node v24+)
 - Studio-Desk running (native or containerized)
+- Ant Academy running (optional — native only on port 3077; not in docker-compose. See [run_guide.md §5.1](../../../corpus/ops/run_guide.md))
 
 ## Expected Service Set (default `graphql` profile)
 
@@ -103,7 +104,7 @@ Use TodoWrite with these phases:
 | anthropos-graphql-1 | 5050 | Cosmo Router |
 | anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
 
-Services in `repos.yml` but NOT in this profile (don't expect them running): `messenger`, `customerio-sync` (need explicit profile). Services no longer orchestrated locally: `chronos`, `intelligence` (archived 2026-Q2).
+Services in `repos.yml` but NOT in this profile (don't expect them running): `messenger`, `customerio-sync` (need explicit profile), `ant-academy` (native-only, never in docker-compose). Services no longer orchestrated locally: `chronos`, `intelligence` (archived 2026-Q2).
 
 ## Critical Rules
 

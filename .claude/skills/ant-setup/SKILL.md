@@ -79,7 +79,7 @@ Use TodoWrite with phases from the guide:
 - GitHub SSH access configured
 - Workspace created (anthropos-dev/)
 - Platform repo cloned
-- All repos cloned via `make init`
+- All repos cloned via `make init` (incl. `ant-academy`, the internal learning portal — Next.js 16 + Expo, native-only)
 - CMS studio submodule cloned (`cd cms && make init-studio`)
 - Environment file configured (platform/.env)
 - Services started via `make up` — expect 12 containers in `graphql` profile (incl. gotenberg)
@@ -87,6 +87,7 @@ Use TodoWrite with phases from the guide:
 - Database migrations applied via `make migrate` (5 services with migrations: app, cms, jobsimulation, skiller, skillpath)
 - Frontend configured and dependencies installed
 - Studio-Desk configured and dependencies installed
+- Ant Academy configured (only if user wants to run it): `ant-academy/code/.env` filled, `npm install` complete (port 3077). See [Ant Academy service doc](../../../corpus/services/ant-academy.md). Not in docker-compose.
 
 ## Critical Rules
 

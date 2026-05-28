@@ -222,6 +222,7 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 | `roadrunner` | Go backend | No |
 | `next-web-app` | Node.js (pnpm) | No |
 | `studio-desk` | Node.js (npm) | No |
+| `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
 | `graphql-wundergraph` | Node.js (npm) | No |
 
 > **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`). Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
@@ -305,6 +306,25 @@ cp .env.example .env
 ```
 
 **Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
+
+### Ant Academy Environment (Native Only — Not in Docker)
+
+Ant Academy is the internal learning portal and **always** runs natively (no docker-compose profile). The Next.js app reads from `code/.env`, **not** the repo root:
+
+```bash
+cd ../ant-academy/code
+cp .env.example .env
+# Fill from platform/.env where possible:
+#   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY  (same as VITE_CLERK_PUBLISHABLE_KEY)
+#   CLERK_SECRET_KEY
+#   OPENAI_API_KEY            (server-side; for /api/ai/chat)
+#   ANTHROPIC_API_KEY         (server-side; for /api/ai/chat)
+#   FONTAWESOME_NPM_AUTH_TOKEN  (issued by the team; required for npm install)
+# Optional:
+#   REQUIRE_ORGANIZATION_MEMBERSHIP=0  # disable org-gate for solo local dev
+```
+
+See [Ant Academy service doc](../services/ant-academy.md) for details. Ant Academy is deployed to Vercel; nothing platform-side needs to change to run it.
 
 ### Clerk Webhook Setup (Optional)
 
