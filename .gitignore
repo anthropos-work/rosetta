@@ -132,3 +132,10 @@ test/e2e/storageState.json
 test/.coverage/
 test/.cache/
 test/node_modules/
+
+# -----------------------------------------------------------------------------
+# EMAIL / MARKETING ASSETS
+# -----------------------------------------------------------------------------
+# Binary images staged for email campaigns (e.g. Ant Academy launch). These are
+# marketing assets, not corpus documentation, and should be kept out of the repo.
+_email-assets/
