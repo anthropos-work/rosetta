@@ -235,7 +235,8 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 - `CLERK_SIGN_IN_URL`
 
 **Used By**: 
-- Next.js apps (Web, Hiring, Mobile)
+- Next.js apps (Web, Hiring)
+- Mobile app (Expo / React Native, via `@clerk/clerk-expo`)
 - Studio-Desk
 - Backend services (authenticate via the `authn` library; authorization is Sentinel's job)
 

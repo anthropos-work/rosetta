@@ -46,7 +46,7 @@ graph TB
     Clerk[Clerk SaaS]
     
     Web[Next.js Web App]
-    Hiring[Next.js Hiring App]
+    Hiring[Next.js Hiring App<br/>apps/hiring in next-web-app]
     Mobile[Expo Mobile App]
     Desk[Studio-Desk]
     Academy[Ant Academy<br/>@anthropos.work only]
@@ -63,7 +63,7 @@ graph TB
 
 #### Per-application integration
 
-Each app authenticates with its framework's Clerk SDK — `@clerk/nextjs` (next-web-app + ant-academy), `@clerk/clerk-expo` (mobile), `@clerk/clerk-js` + `@clerk/express` (studio-desk), and `colony/authn` + `clerk-sdk-go/v2` (Go services). The next-web-app `/enterprise` area, studio-desk admin tooling, and ant-academy content are additionally gated **directly** on Clerk `org:admin` / org membership. Per-repo SDKs and the auth/authz split: [Clerk Integration → Dependent Repos](../services/clerk-integration.md#dependent-repos--how-they-integrate).
+Each app authenticates with its framework's Clerk SDK — `@clerk/nextjs` (next-web-app web/hiring/integration + ant-academy), `@clerk/clerk-expo` (mobile), `@clerk/clerk-js` + `@clerk/express` (studio-desk), and `colony/authn` + `clerk-sdk-go/v2` (Go services). The next-web-app `/enterprise` area, studio-desk admin tooling, and ant-academy content are additionally gated **directly** on Clerk `org:admin` / org membership. Per-repo SDKs and the auth/authz split: [Clerk Integration → Dependent Repos](../services/clerk-integration.md#dependent-repos--how-they-integrate).
 
 #### Backend Services
 
@@ -314,7 +314,7 @@ Directus can trigger webhooks on content changes:
 graph TB
     subgraph Frontend
         Web[Next.js Web App]
-        Hiring[Next.js Hiring App]
+        Hiring[Next.js Hiring App<br/>apps/hiring in next-web-app]
         Desk[Studio-Desk]
     end
 

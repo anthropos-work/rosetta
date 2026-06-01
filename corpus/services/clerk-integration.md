@@ -18,7 +18,7 @@ Clerk is **not** the platform's permission engine. For the backend, *deciding wh
 | **Authentication** | ✅ | Issues session JWTs; verified platform-wide against Clerk's JWKS. The "are you signed in?" gate. |
 | **Identity / profile** | ✅ | User id (internal `eid` + Clerk subject), email, first/last name. |
 | **Organizations & membership** | ✅ | Clerk Organizations are the source of truth for which org a user belongs to. |
-| **Org roles** | ✅ | `org_role` (`admin` / `basic_member`, surfaced as `org:admin`) rides in the JWT. |
+| **Org roles** | ✅ | `org_role` rides in the JWT. **Server-side it is the bare `admin` / `basic_member`** (what `AuthRole()` and Next.js `auth()` server routes see — e.g. `metabase/route.ts` checks `orgRole === 'admin'`); the **client `useAuth().orgRole`** is prefixed (`org:admin`). Server checks should match the bare form or accept both. |
 | **Authorization (backend)** | ⚠️ indirect | Backend permission decisions are made by **Sentinel**, not Clerk. Clerk org roles are *synced into* Sentinel at webhook time, then Sentinel decides. |
 | **Authorization (frontend/standalone)** | ✅ direct | next-web-app, studio-desk, and ant-academy read Clerk's `org:admin` / membership **directly** to allow/deny features (no Sentinel). |
 
@@ -41,7 +41,7 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 | `email`, `firstname`, `lastname` | profile (lazy `user.Client.Get` fallback if absent) |
 | `org` (public-metadata map, its `eid`) | `Organization.ID()` — internal org UUID |
 | `org_id` | `Organization.AuthID()` — Clerk org id |
-| `org_role` | `Organization.AuthRole()` — e.g. `org:admin` |
+| `org_role` | `Organization.AuthRole()` — returned **verbatim**. The backend session token carries the **bare** form (`admin` / `basic_member`); only the client-side `useAuth().orgRole` is prefixed (`org:admin`). Match the bare form server-side, or accept both. |
 
 `AuthRole()` is **exposed as a getter and never enforced inside `authn`** — consumers decide what to do with it.
 
@@ -55,7 +55,7 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 | **next-web-app / studio-desk / ant-academy** | authenticate **and** authorize | **local app code** reading Clerk `org:admin` / membership |
 
 ### 4. Org/role sync — how Clerk reaches Sentinel
-The **backend `app`** receives **svix-verified Clerk webhooks** (`user.*`, `organization.*`, `organizationMembership.*`). On membership change it:
+The **backend `app`** receives **svix-verified Clerk webhooks** (`user.*`, `organization.*`, `organizationInvitation.*`, `organizationMembership.*`). On membership change it:
 1. upserts the local user/org/membership, and
 2. **translates the Clerk role** (`admin` / `basic_member`) and **pushes it into Sentinel** (`OrgAddUserToRole` / `OrgReplaceUserRole` / `OrgRemoveUserFromRole`).
 
@@ -70,7 +70,7 @@ So Clerk org roles become Sentinel roles at **sync time** — that's the only wa
 | **jobsimulation, cms, skiller, skillpath** | `colony/authn` (`clerk-sdk-go/v2` transitively) | Authenticate only; authorization → Sentinel. |
 | **storage, messenger** | — | No Clerk / no auth. |
 | **sentinel** | — (none) | Does **not** import Clerk/authn; pure Casbin authorization. |
-| **next-web-app** (web) | `@clerk/nextjs` `^6.39` (+ `@clerk/localizations`, `@clerk/types`) | `clerkMiddleware` route protection; `useAuth`/`auth()` org claims gate `/enterprise` + `/api/metabase` on `org:admin`. |
+| **next-web-app** (`apps/web`, `apps/hiring`, `apps/integration`) | `@clerk/nextjs` `^6.39` (+ `@clerk/localizations`, `@clerk/types`) | All three Next.js apps use the same `@clerk/nextjs` setup — `clerkMiddleware` (`auth.protect()`) for **authentication only**. In `apps/web`: `/enterprise` is gated **client-side** (`EnterpriseWrapper` redirects non-admins via `useAuth().orgRole`), and `/api/metabase` **server-side** via `auth()` on the bare `orgRole === 'admin'` **AND** a specific hardcoded org id. |
 | **next-web-app** (mobile) | `@clerk/clerk-expo` `~2.6` | Mobile sign-in/session (Expo). |
 | **studio-desk** | `@clerk/clerk-js` `^5.52` (frontend) + `@clerk/express` `^1.3` (backend) | Client + server auth; **all admin tooling gated on `org:admin`** (`checkEnterpriseAndAdmin` server-side, `UserService.isAdmin()` client-side). |
 | **ant-academy** | `@clerk/nextjs` `^7.2` | `clerkMiddleware` in `proxy.js`; **requires ≥1 org membership** (`REQUIRE_ORGANIZATION_MEMBERSHIP` → `/no-organization`). |
