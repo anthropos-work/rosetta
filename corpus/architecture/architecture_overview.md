@@ -130,7 +130,7 @@ graph TD
     Directus --> Postgres
     
     %% Clerk integration
-    Clerk -.->|webhooks| Sentinel
+    Clerk -.->|webhooks| Gateway
 ```
 
 ### Service Inventory
@@ -146,7 +146,7 @@ Default local development set (started by `make up`, profile `graphql`):
 | :--- | :--- | :--- | :--- |
 | **Backend** (`app`) | Go | Main API Gateway / User Backend | [→](../services/backend.md) |
 | **CMS** | Go + embedded Python (studio-room) | Content Management, Directus Proxy, AI generation pipeline | [→](../services/cms.md) |
-| **Sentinel** | Go | Authorization & Authentication | [→](../services/sentinel.md) |
+| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
 | **Jobsimulation** | Go | Job environments & task simulation | [→](../services/jobsimulation.md) |
 | **Skiller** | Go | Skill management, assessment, vector embeddings (RAG) | [→](../services/skiller.md) |
 | **Skillpath** | Go | Skill progression paths | [→](../services/skillpath.md) |

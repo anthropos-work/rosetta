@@ -111,8 +111,8 @@ All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
 
 In the default local profile (`graphql`):
 - Backend (`app`): Main API gateway and user management
-- CMS: Content management, Directus proxy, **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo as a submodule)
-- Sentinel: Authorization and authentication (Casbin RBAC/ABAC)
+- CMS: Content management, Directus proxy, **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry)
+- Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
 - Jobsimulation: Job environments and task simulation (voice, chat, code, documents)
 - Skiller: Skill management, assessment, taxonomy (60K skills, 18K roles), and vector embeddings (RAG)
 - Skillpath: Skill progression paths
@@ -161,7 +161,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 - **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging
 - **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 5 subgraphs)
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via CMS service
-- **AI**: EU-first routing via shared `ai` library (Azure OpenAI EU → Bedrock EU → Mistral EU → US fallback)
+- **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)
 
 ### Environment Configuration

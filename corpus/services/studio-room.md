@@ -22,7 +22,7 @@ Studio-Room does not run as its own deployment. It is embedded inside the **CMS 
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | Python 3.x, asyncio |
-| **Deployment** | Embedded in the CMS container (`cms/studio/`) — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the CMS Asynq worker (StudioQueue, concurrency 3); not a standalone deployment |
+| **Deployment** | Embedded in the CMS container (`cms/studio/`) — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the CMS Asynq worker on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
 | **AI Providers** | OpenAI, Azure OpenAI, Anthropic |
 | **Repository** | Cloned into the CMS repo at `cms/studio/` (repo: `anthropos-studio-room`) |
 

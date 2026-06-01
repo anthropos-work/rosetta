@@ -584,7 +584,7 @@ LiveKit provides the real-time voice infrastructure for simulation voice calls. 
 
 - **Audio**: Recorded as MP3
 - **Transcripts**: Generated from conversation events
-- **Replaces**: ElevenLabs (deprecated)
+- **Coexists with ElevenLabs**: LiveKit + OpenAI Realtime powers new sessions (gated by `flag_use_realtime_openai`); ElevenLabs remains the active default for the call/reply pipeline and transcript improvement
 
 ---
 

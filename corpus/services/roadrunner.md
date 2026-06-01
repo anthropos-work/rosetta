@@ -13,7 +13,7 @@ It also runs an **Asynq** worker pool for asynchronous batch submissions.
 * **Codebase**: `roadrunner` (local) — repo `git@github.com:anthropos-work/roadrunner`
 * **Language**: Go 1.25
 * **Frameworks**: Connect-RPC, [Asynq](https://github.com/hibiken/asynq) (`v0.25.1` background tasks), `gorilla/websocket`
-* **Ports**: 10400 (HTTP + WebSocket), 10401 (Connect-RPC) — same on host and inside container per `platform/docker-compose.yml` (`PORT=10400`, `RPC_PORT=10401`)
+* **Ports**: 10400 (HTTP — `/_meta` health only), 10401 (Connect-RPC) — same on host and inside container per `platform/docker-compose.yml` (`PORT=10400`, `RPC_PORT=10401`)
 * **Profile**: `graphql` (default) and `roadrunner`
 * **Execution backend**: [Judge0](https://judge0.com/) — external sandboxed API at `JUDGE0_BASE_URL`
 
@@ -105,7 +105,7 @@ buf curl http://localhost:10401/roadrunner.v1.RoadRunnerService/SubmissionResult
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `10400` | HTTP + WebSocket port |
+| `PORT` | `10400` | HTTP health port (`/_meta` only) |
 | `RPC_PORT` | `10401` | Connect-RPC port |
 | `JUDGE0_BASE_URL` | `http://52.48.139.23:2358` | Judge0 API endpoint |
 | `JUDGE0_API_KEY` | — (required) | Judge0 `X-Auth-Token`; the one Judge0 var NOT set in the compose environment block — supplied via platform/.env |

@@ -148,11 +148,11 @@ make up PROFILE=skiller
 cd platform
 make dev S=skiller
 cd ../skiller
-go generate ./...             # gqlgen codegen only (the only //go:generate directive; see generate.go)
+go generate ./...             # runs all 3 //go:generate directives: gqlgen (generate.go), Ent/entc (ent/generate.go), mockgen (internal/cache/memoize.go)
 go run .
 ```
 
-Ent code is committed; regenerate it with the `ent` CLI (installed by `make setup`) and produce migrations via `make migrations` (`atlas migrate diff --env local`).
+`go generate ./...` regenerates Ent (`ent/generate.go` → `go run entc.go`), gqlgen, and mockgen mocks — all committed. The `ent`/atlas tooling (installed by `make setup`) is needed to produce **migrations** via `make migrations` (`atlas migrate diff --env local`).
 
 ### Migrations
 
