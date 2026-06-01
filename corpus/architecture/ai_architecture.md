@@ -50,7 +50,7 @@ All Go services access AI through the shared `ai` library, which provides:
 | **Jobsimulation** | Simulation conversations (chat + voice), document analysis, code evaluation |
 | **Skiller** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy (see [Vector storage](#vector-storage-in-skiller)) |
 | **CMS** | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
-| **Studio-Desk** | Copilot AI assistant for content authoring |
+| **Studio-Desk** | Copilot AI assistant for content authoring (multi-provider chain: Azure OpenAI / OpenAI / Anthropic via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** (Python) | Full simulation generation pipeline. **Runs as a subprocess inside the CMS container** (lives at `cms/studio/`, cloned from `anthropos-studio-room` via `cd cms && make init-studio`). |
 
 ### Studio-Room Generation Slots

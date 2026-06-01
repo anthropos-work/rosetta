@@ -41,11 +41,13 @@ erDiagram
         uuid id PK
         uuid user_id
         uuid skillpath_id "CMS SkillPath reference"
+        uuid tenant_id "optional, multi-tenancy (set when skill path is private)"
         int progress "0-100"
         enum status "pending|active|completed|archived"
         string version
         timestamp started_at
         timestamp ended_at
+        timestamp archived_at
     }
 
     ChapterSession {
@@ -68,6 +70,8 @@ erDiagram
     }
 ```
 
+> Note: `duration` (int64), `progress`, `status`, `version`, `started_at`, `ended_at`, `archived_at`, `created_at`, and `updated_at` are shared across all three entities via `PathMixin` — so `SkillPathSession` also carries `duration` and `archived_at` (the diagram previously showed `duration` only on `ChapterSession`/`StepSession`).
+
 **Status Enum** (`internal/ent/enum/status.go`):
 - `pending`: Session created but not started
 - `active`: User currently working through content
@@ -78,7 +82,7 @@ erDiagram
 
 ### GraphQL API
 
-Access the **GraphQL Playground** at `http://localhost:8080/` when running locally.
+Access the **GraphQL Playground** (Apollo Sandbox) at `http://localhost:8100/` when running locally (the GraphQL endpoint is `http://localhost:8100/query`).
 
 **Queries** (`internal/graph/schemas/queries.graphqls`):
 ```graphql
@@ -108,6 +112,9 @@ type Mutation {
 
   # Bulk upgrade all users on a skill path (admin)
   upgradeAllSkillPathSessionsToLatest(skillPathId: ID!, userId: ID!): UpgradeAllSkillPathSessionsResult!
+
+  # (Deprecated) Create a session directly — use upgradeSkillPathSessionToLatest instead
+  createSkillPathSession(userId: ID!, skillPathId: ID!, version: String): SkillPathSession! @deprecated(reason: "Use upgradeSkillPathSessionToLatest instead")
 }
 ```
 
@@ -130,9 +137,10 @@ GetSkillPathSession(ctx, req *skillpathv1.GetSkillPathSessionRequest) (*skillpat
     *   **Sentinel** (Connect-RPC): authorization (manager + admin checks)
     *   **CMS** (Connect-RPC): skill path content structure on session creation (`CMS_RPC_ADDR=http://cms:8091`)
     *   **Jobsimulation** (Redis Streams, consumed): simulation step completion events
+    *   **Jobsimulation** (Connect-RPC, `GetSessions`): reconcile already-completed simulations on session create/upgrade
     *   **PostgreSQL** (`skillpath` schema), **Redis** (Watermill subscriber)
 
-> Note: skillpath consumes the jobsimulation event stream rather than calling jobsimulation via RPC.
+> Note: skillpath both consumes the jobsimulation Redis stream (start/end events, via `JOBSIMULATION_STREAM`) AND calls jobsimulation via Connect-RPC (`GetSessions`) when (re)building sessions (during `getOrCreateSkillPathSession` / `CreateSession` and version migration) to reconcile already-completed simulations.
 
 ## Event-Driven Architecture
 
@@ -158,6 +166,11 @@ sequenceDiagram
 - Processes events via `SessionManager.JobSimulationSubscriber()`
 - Updates step completion status based on simulation results
 
+**Published events**:
+- skillpath publishes to its own `skillpath` Redis stream (consumed by App):
+    - `EventSkillPathSessionUpdated` (on session create, step complete/uncomplete, and session archive/migration)
+    - `EventChapterStepSessionCompleted` (on step completion, carrying skill-path/chapter/step IDs and `completedAt`)
+
 ## Local Development
 
 ### 1. Running Standalone
@@ -169,7 +182,7 @@ sequenceDiagram
 *   **Setup**:
     ```bash
     cd anthropos-dev/skillpath
-    make setup    # Install tools (ent, atlas)
+    make setup    # Install tools (ent, atlas, gqlgen, goverter)
     make gen      # Generate Ent code
     atlas migrate apply --env local  # Apply migrations
     ```
@@ -205,5 +218,8 @@ go test -cover ./internal/session/...
 | `REDIS_ADDR` | Redis server address | `redis:6379` |
 | `REDIS_STREAMS_INDEX` | Redis DB index for streams | `4` |
 | `CMS_RPC_ADDR` | CMS service RPC address | `http://cms:8091` |
+| `JOBSIMULATION_RPC_ADDR` | Jobsimulation service RPC address (GetSessions reconciliation) | `http://jobsimulation:8401` |
 | `JOBSIMULATION_STREAM` | Redis stream to subscribe | `jobsimulation` |
 | `AUTHORIZATION_ADDRESS` | Sentinel service address | `http://sentinel:8087` |
+
+> ⚠️ The default platform `docker-compose.yml` skillpath service block does NOT set `JOBSIMULATION_RPC_ADDR` (nor is it in `platform/.env`), and the block does not `depends_on` jobsimulation. Until it is added to the skillpath service environment, simulation-step reconciliation via `GetSessions` (called during session create/upgrade) will fail.

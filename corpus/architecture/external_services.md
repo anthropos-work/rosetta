@@ -56,7 +56,7 @@ graph TB
     Academy --> Clerk
     
     Clerk --> Webhook[Clerk Webhooks]
-    Webhook --> Sentinel[Sentinel Service]
+    Webhook --> Backend[Backend / app service]
 ```
 
 #### Frontend Applications
@@ -100,13 +100,13 @@ REQUIRE_ORGANIZATION_MEMBERSHIP=0
 #### Backend Services
 
 **Sentinel Service**:
-- Acts as the **authentication & authorization gateway**
-- Validates Clerk tokens for backend services
-- Syncs Clerk organizations and users to local database
+- Acts as the centralized **authorization** service (Casbin RBAC/ABAC)
+- Does NOT perform authentication and does NOT validate Clerk tokens — JWT validation is done in each consuming service via the shared `authn` library (now `colony/authn`)
+- Clerk user/org sync is handled by the `app`/backend service via Clerk webhooks (see [webhook_setup.md](../ops/webhook_setup.md)), not by Sentinel
 
 **Other Backend Services**:
-- Don't directly integrate with Clerk
-- Route authentication through Sentinel
+- Don't directly integrate with Clerk for sync (that's the backend's job)
+- Call Sentinel via Connect-RPC for authorization decisions; authenticate independently via the `authn`/Clerk JWT middleware
 - Trust Sentinel's authorization decisions
 
 ### Configuration
@@ -452,23 +452,9 @@ ENVIRONMENT=compose  # or production
 ENVIRONMENT_CONFIG=compose
 ```
 
-**Build Context**: the platform monorepo (`context: ..`) — not the upstream repo. This was changed from the old "git+url" build because the composition needs sibling repos.
+**Build Context**: the platform monorepo (`context: ..`) — not the upstream repo. This was changed from the old "git+url" build because the composition needs sibling repos. Composition is **build-time and static** (the supergraph `config.json` is baked into the image; the router does not live-introspect subgraphs), so adding/changing a subgraph requires a rebuild + restart.
 
-### Configuration
-
-**Environment**:
-```bash
-ENVIRONMENT=compose  # or production
-```
-
-**Build Context**:
-```yaml
-build:
-  context: git@github.com:anthropos-work/graphql-wundergraph.git#main
-  ssh: ["default"]
-  args:
-    ENVIRONMENT: compose
-```
+> **Developer/code map**: see the [GraphQL Gateway service doc](../services/graphql-wundergraph.md) for the two Dockerfiles, per-environment routing URLs, version pins, and compose profiles.
 
 ### Development Usage
 
@@ -526,7 +512,7 @@ When backend services add new GraphQL types or operations:
 
 ## AI Providers (External Intelligence)
 
-The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides unified access, EU-first routing, and cost tracking.
+The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides **unified provider access** behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). **EU-first routing and cost tracking are implemented in the consuming services, not in the `ai` library itself** — see [Shared Libraries → ai](./shared_libraries.md#ai).
 
 For full details on models, routing, voice engines, and recording architecture, see [AI Architecture](./ai_architecture.md).
 
@@ -575,9 +561,9 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
    - RAG for job role matching
 
 3. **Studio-Desk Copilot**:
-   - Uses **OpenAI** directly via backend proxy
+   - Uses a configurable multi-provider chain (Azure OpenAI / OpenAI / Anthropic) via backend proxy, with tier-based model selection and circuit-breaker failover (`AI_PROVIDER_CHAIN`, default `azure-openai,openai`)
    - Supports streaming responses for real-time interaction
-   - Uses `gpt-5.1` (experimental) or `gpt-4o` (stable)
+   - Default models: `gpt-5.2` (OpenAI/Azure) or `claude-sonnet-4-5` / `claude-opus-4-5` (Anthropic)
 
 4. **Studio-Room Pipeline**:
    - Uses abstract **AI Service Layer** (`services/ai.py`)
@@ -706,7 +692,7 @@ docker compose logs directus
 docker compose ps graphql
 
 # Check dependent services are up
-docker compose ps backend cms skiller jobsimulation intelligence
+docker compose ps backend cms skiller jobsimulation skillpath storage
 ```
 
 **Schema outdated**:

@@ -15,4 +15,4 @@
 * **Codebase**: `git@github.com:anthropos-work/intelligence.git` (no longer cloned locally)
 * **Language**: Go
 * **Connection**: Interfaced with Backend (`public`) and Skiller schemas via direct DB connections (`DB_CONNECTION_BACKEND`, `DB_CONNECTION_SKILLER` env vars).
-* **Port**: Not exposed; processed work asynchronously.
+* **Port**: Exposed an HTTP server on :8080 (PORT env override) serving only a /_meta health endpoint for ECS checks; all real work ran on a 5-minute async ticker, not via the API.

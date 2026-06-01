@@ -20,13 +20,13 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 cmd/                    Entrypoints
 internal/
   graph/                GraphQL layer
-    schemas/*.graphqls  simulation.graphqls is the main contract
+    schemas/*.graphqls  schema.graphqls is the main contract (also mutations/queries/subscriptions/activites)
   rpcsrv/               Connect-RPC server
   simulator/            Core simulation runtime
     manager/            Session lifecycle, interview extraction reports
-  worker/               Background workers (Redis Streams + Asynq)
-  ent/                  Generated Ent code
-ent/schema/             Ent entity definitions
+  worker/               Asynq background workers (two pools: standard concurrency=10, real-time concurrency=25)
+  ent/                  Generated Ent code (internal/ent/)
+  ent/schema/           Ent entity definitions — source of truth (internal/ent/schema/)
 ```
 
 ## Recent structural changes (2026-Q2)
@@ -37,7 +37,7 @@ ent/schema/             Ent entity definitions
 
 ## Interface Discovery
 
-* **GraphQL**: schemas at `internal/graph/schemas/simulation.graphqls`. Federated into the platform schema by Cosmo Router.
+* **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). Federated into the platform schema by Cosmo Router.
 * **RPC**: `internal/rpcsrv` — consumed by Backend, Skillpath, Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
 
 ### Direct dependencies (from compose `depends_on` + env)
@@ -54,13 +54,18 @@ ent/schema/             Ent entity definitions
 
 * **LiveKit** — primary voice engine (`LIVEKIT_HOST_URL`, `LIVEKIT_RECORDINGS_BUCKET_NAME`)
 * **AWS Chime SDK** — video/camera/screensharing recording (`CHIME_RECORDINGS_BUCKET_NAME=ant-prod-chime-demo`)
-* **ElevenLabs** — legacy voice agents (`ELEVENLABS_TEMPLATE_AGENT_ID`, `ELEVENLABS_EU_TEMPLATE_AGENT_ID`); replaced by LiveKit + GPT Realtime for new sessions
+* **ElevenLabs** — voice agents still used in the call/reply pipeline (`ELEVENLABS_TEMPLATE_AGENT_ID`, `ELEVENLABS_EU_TEMPLATE_AGENT_ID`); new sessions increasingly use LiveKit + OpenAI Realtime (gated by the `flag_use_realtime_openai` PostHog flag)
+* **AssemblyAI** — EU voice transcription for call recordings (`ASSEMBLYAI_API_KEY`)
+* **Bunny.net** — video stream hosting / tokenized playback (`BUNNY_REC_STREAM_API_KEY`, `BUNNY_TOKEN_HASH_KEY`)
+* **PostHog** — feature flags + telemetry (`POSTHOG_API_KEY`); the OpenAI Realtime voice path is gated by the `flag_use_realtime_openai` PostHog flag
 * **AI providers** — via the shared `ai` library
 
 ### Redis Streams
 
 * Producer: `jobsimulation` stream (session completed, insights generated)
-* Consumer: `cms` (content events), `skiller` (skill updates)
+* Consumer (subscribes to): `cms` (content events) and `roadrunner` (code-execution events)
+
+Redis Streams consumption is handled by the colony pubsub `SubscriberServer` wired up in `cmd/root.go`, not by `internal/worker/` (which is Asynq-only).
 
 ## Local Development
 
@@ -79,8 +84,8 @@ make up PROFILE=jobsimulation
 cd platform
 make dev S=jobsimulation          # stops the docker container
 cd ../jobsimulation
-make setup                        # installs ent, atlas, gqlgen
-make gen                          # regenerates Ent + GraphQL code
+make setup                        # installs ent, atlas, gqlgen, goverter
+make gen                          # regenerates Ent + Goverter + gqlgen
 go run .
 ```
 

@@ -54,8 +54,8 @@ graph TB
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
 | **Backend/App** | 8081-8083 | Main API Gateway, User Management | graphql, backend | Local `../app` |
-| **Sentinel** | 8087 | Authentication & Authorization | (always on) | Local `../sentinel` |
-| **CMS** | 8090-8091 | Content Management, Directus Proxy, **embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` submodule = `anthropos-studio-room`) |
+| **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
+| **CMS** | 8090-8091 | Content Management, Directus Proxy, **embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
 | **Skiller** | 8085-8086 | Skill Management, Assessment, Vector Embeddings (RAG) | graphql, skiller | Local `../skiller` |
 | **Skillpath** | 8100-8101 | Skill Progression Paths | graphql, skillpath | Local `../skillpath` |
 | **Jobsimulation** | 8400-8401 | Job Environment Simulation | graphql, jobsimulation | Local `../jobsimulation` |
@@ -87,15 +87,15 @@ graph TB
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
 
-**Shared Libraries** (imported by services, not deployed):
+**Shared Libraries** (imported as private Go modules — **not** cloned by `make init`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). Full reference: [Shared Libraries](./shared_libraries.md).
 
 | Library | Purpose | Repository |
 |:--------|:--------|:-----------|
-| **colony** | Platform framework: logging, DB/Redis, middleware, pub/sub (Watermill) | `git@github.com:anthropos-work/colony.git` |
-| **authn** | Clerk JWT authentication middleware | `git@github.com:anthropos-work/authn.git` |
-| **proto** | Protobuf definitions (single source of truth for RPC contracts) | `git@github.com:anthropos-work/proto.git` |
-| **ai** | Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) + cost tracking | `git@github.com:anthropos-work/ai.git` |
-| **taxonomy** | Skills taxonomy data (60K skills, 18K roles) | `git@github.com:anthropos-work/taxonomy.git` |
+| **colony** | Platform framework: logging, DB/Redis, GraphQL/RPC servers, middleware, pub/sub (Watermill); also contains `authn` | `git@github.com:anthropos-work/colony.git` |
+| **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types | `git@github.com:anthropos-work/proto.git` |
+| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib | `git@github.com:anthropos-work/ai.git` |
+| **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) | `git@github.com:anthropos-work/authn.git` |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K/18K data lives in skiller | `git@github.com:anthropos-work/taxonomy.git` |
 
 **Development Pattern**:
 ```bash
@@ -125,7 +125,7 @@ make dev S=cms         # Stop Docker container, develop natively
 | **Port** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Purpose** | User-facing design tool for creating job simulation blueprints |
 | **Authentication** | Clerk |
-| **Location** | `studio/studio-desk/` |
+| **Location** | Local `../studio-desk` (sibling of platform, cloned by `make init`) |
 
 **Key Features**:
 - Simulation Builder with visual designer
@@ -268,8 +268,10 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
 | **Subgraphs** | app, skiller, jobsimulation, cms, skillpath |
 
+> Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
+
 **Aggregates**:
-- Backend, CMS, Skiller, Jobsimulation, Intelligence services
+- Backend (app), CMS, Skiller, Jobsimulation, Skillpath services
 
 **Consumed By**:
 - Next.js frontend applications

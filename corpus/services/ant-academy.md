@@ -101,14 +101,14 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 | Layer | Technology |
 |:------|:-----------|
 | **Framework** | Next.js 16 App Router + React 19.2 (React Compiler enabled, Turbopack default) |
-| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/free/*` (other `/api/*` stay gated). |
+| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/library/*`, `/free`, `/free/*`, `/local-content/*`, `/catalog.json`, `/academy-manifest.json` (other `/api/*` stay gated). The last three are public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest (gating any of them 307s the fetch through sign-in and breaks it). |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
 | **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro |
 | **PWA** | Serwist 9 (configurator mode); service worker compiled by `serwist build` |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
-| **Testing** | Vitest (happy-dom + node), Playwright (e2e). ~1135 Vitest tests + 14 Playwright suites. |
-| **Deployment** | Vercel native (no `vercel.json`) |
+| **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
+| **Deployment** | Vercel native (minimal `code/vercel.json` — only `{"framework": "nextjs"}`; Next.js handles routing). Mobile builds via Expo. |
 | **Node** | `>= 22` (declared in `code/package.json` `engines`) |
 
 ### Local Development
@@ -201,7 +201,11 @@ npm run validate -- --all # course-validator across all chapters
 | `author-podcast` | Generate the `path-intro.mp3` companion audio (uses AutoContent API) |
 | `author-cover` | Generate the `cover.{png,webp}` for a skill path (uses OpenAI `gpt-image-2`) |
 | `benchmark-chapter` | Drive Playwright through a chapter for visual + content benchmarking |
-| `check-plagiarism`, `consolidate-library`, `extend-library`, `build-index`, `publish`, `preview` | Other content-pipeline helpers |
+| `translate-path` | Translate a skill path into another language (i18n pipeline) |
+| `benchmark-translation` | Benchmark translation quality/coverage for a translated path |
+| `check-plagiarism`, `consolidate-library`, `extend-library`, `build-index`, `publish`, `preview`, `cover-scale` | Other content-pipeline helpers |
+
+Academy is multi-language: content is authored per language, `catalog.json` is emitted per chapter × language, and `proxy.js` propagates `?lang=` into SSR via an `x-locale` header (see `tests/e2e/i18n-language-toggle.spec.js`).
 
 These are **isolated to the ant-academy repo** and are loaded only when working inside it. They share no state with the Rosetta corpus skills.
 
@@ -219,7 +223,8 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 - **Clerk (shared)**: Uses the same Clerk app as the rest of the platform. Domain-gated to `@anthropos.work` so external users cannot enter.
 - **OpenAI (direct, browser, opt-in)**: The in-app "Cosmo" assistant — gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default OFF) — calls the **OpenAI Responses API** (`gpt-5.2`, `https://api.openai.com/v1/responses`) directly from the browser using a per-user `localStorage('openai_api_key')`. It is OpenAI-only and does **not** route through the platform's shared `ai` library or the `/api/ai/chat` route. (The separate server-side `/api/ai/chat` route handler does support both OpenAI and Anthropic with server keys, but Cosmo does not use it.)
 - **Studio Desk (loose link)**: `NEXT_PUBLIC_STUDIO_URL` can deep-link from the academy to the Studio Desk UI; nothing required at runtime.
-- **Backend services**: **None.** No GraphQL calls, no Connect-RPC, no Redis events.
+- **next-web-app (iframe embed):** the Workforce app loads Academy in an iframe with `?embed=anthropos`; `proxy.js` detects this server-side (`Sec-Fetch-Dest=iframe` + an `embed-mode` cookie, or an explicit `?embed=anthropos`), stamps an `x-embed-mode` request header, persists the cookie, and SSRs a light-themed, topbar-less variant (`data-embed` + `data-theme=light`). No data flows back — it is a presentation/cookie coupling only.
+- **Backend services**: **None.** No GraphQL calls, no Connect-RPC, no Redis events. (Academy initiates no backend calls. The reverse exists: per a comment in `proxy.js`, the platform backend's Talk-to-Data indexer pulls Academy's public `/catalog.json` — a metadata-only, per-chapter × language index.)
 
 ### Why It's Not in `docker-compose.yml`
 

@@ -27,7 +27,8 @@ The enforcer defines **6 request types, 6 policy types, 3 role groupings, 6 matc
 
 | Matcher | Pattern | Use case |
 |---------|---------|----------|
-| `m`, `m6` | User-tier quota | "Free users can run X simulations/month" |
+| `m` | User-tier quota | A user passes if they are in the policy's tier (`g(user, tier)`) OR the policy tier is `TIER_FREE` (free-tier policies act as an unconditional baseline, substituted from the proto enum `Tier_TIER_FREE`), AND the requested `count` <= the tier `max`. |
+| `m6` | Org-level feature quota | Org-membership check via `g3(org, user)` AND `feat` match AND requested `count` <= the org policy `max` (no tier logic). |
 | `m2` | Org role-based action | "Admins can invite members" |
 | `m3` | Org feature access | Role-based gating of insights, workforce, members CRUD, etc. |
 | `m4` | Direct user action | Subject-object-action equality |
@@ -111,10 +112,20 @@ go run main.go
 
 ```bash
 cd sentinel
-make initdb        # applies init_policy.sql against the configured DB
+make initdb        # runs init_policy.sql via psql against a HARD-CODED local DSN
 ```
 
-The `init_policy.sql` seed defines the base RBAC rules. "default" org policies apply to all organizations unless overridden by org-specific entries.
+`make initdb` does NOT read `DB_CONNECTION` — it always targets `postgresql://postgres@localhost:5432/postgres` (sslmode=disable). It works only against a local Postgres on port 5432, and relies on `init_policy.sql` being schema-qualified (`sentinel.casbin_rules`) so the seed lands in the right schema regardless of search_path. For a non-local DB, run psql with your own DSN: `psql "$DB_URL" -f init_policy.sql`. The seed defines the base RBAC rules; "default" org policies apply to all organizations unless overridden by org-specific entries.
+
+### Superadmin / elevated local grants
+
+`init_policy.sql` intentionally omits sensitive capabilities (notably `org:feature:taxonomy:write`, see init_policy.sql:63-66). To grant them locally, apply the on-demand seed:
+
+```bash
+psql "$DB_URL" -f local_superadmin_grants.sql
+```
+
+This grants org-scoped `taxonomy:write` (p3) to every org admin, and contains a commented-out block of global superadmin rules (p4: impersonation/cross-org reads, global content & taxonomy writes) that you uncomment after substituting a concrete user UUID. **Local-only — never run in staging or production.** After applying, restart sentinel or call the `Reload` RPC so the Casbin enforcer picks up the new rows.
 
 ## Testing
 

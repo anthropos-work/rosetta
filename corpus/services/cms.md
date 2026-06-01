@@ -12,7 +12,7 @@ This last point is the structural shift: **studio-room is no longer a standalone
 
 ## Architecture & Code Map
 
-* **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/anthropos-work/cms`)
+* **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/cms.git`)
 * **Language**: Go 1.25 (primary) + Python 3.11 (studio-room)
 * **Database**: PostgreSQL `cms` schema (via Ent)
 * **Ports**: 8090 (GraphQL/HTTP), 8091 (Connect-RPC)
@@ -44,10 +44,11 @@ studio/                    Python AI generation pipeline (cloned via `make init-
   postgen.py               Post-generation steps
   templates/               Generation templates
   agents/                  Agent definitions
-  requirements.txt         openai, anthropic, mistralai, rich, pyyaml, python-docx, jinja2, pytest
+  requirements.txt         openai, anthropic, mistralai, rich, pyyaml, python-docx, requests, jinja2, pytest, pytest-asyncio (see studio/requirements.txt)
 terraform/                 IaC
-go.work                    Go workspace (links to ../proto for local dev)
 ```
+
+> Note: local proto development requires the developer to create their own (uncommitted) `go.work` linking `../proto`; it is not committed to the repo.
 
 ## Studio Generation Pipeline
 
@@ -89,7 +90,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 ## Interface Discovery
 
-* **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. Playground on `:8090/graphql` when running locally.
+* **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. GraphQL API served at `:8090/query`; Apollo Sandbox playground at `:8090/` when running locally. (There is also a Directus webhook receiver at `:8090/webhooks/`.)
 * **RPC**: `internal/rpcsrv` — used by Backend, Jobsimulation, Skillpath via `CMS_RPC_ADDR=http://cms:8091`.
 * **Federation**: CMS is one of the 5 subgraphs federated by Cosmo Router (`backend`, `skiller`, `jobsimulation`, `cms`, `skillpath`).
 
@@ -142,6 +143,8 @@ cd cms/studio
 pip install -r requirements.txt
 python gen.py --media simulation --template <name>
 ```
+
+> Note: when the Go service runs in development mode it auto-provisions a venv at `studio/studio-venv`, runs `pip3 install -r studio/requirements.txt`, and invokes `python3 studio/gen.py ...` / `studio/postgen.py` from the cms repo root via `bash -c` (paths are `studio/...`, not from inside `studio/`). For standalone Python work, use a venv to match the service's behavior.
 
 ### Sync the studio submodule
 

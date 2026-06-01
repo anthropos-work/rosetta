@@ -20,7 +20,7 @@
 
 ## Architecture & Code Map
 *   **Codebase**: `anthropos-dev/chronos` (or `git@github.com:anthropos-work/chronos.git`)
-*   **Language**: Go 1.24.1
+*   **Language**: Go 1.25
 *   **ORM**: [sqlc](https://sqlc.dev/) (raw SQL code generation, NOT Ent)
 *   **CLI**: [Cobra](https://github.com/spf13/cobra) command framework
 *   **Database**: PostgreSQL (`search_path=chronos`)
@@ -56,6 +56,11 @@ CREATE TABLE timers (
 
 -- Unique constraint: same event can't be scheduled twice at same time by same service
 CREATE UNIQUE INDEX "timers_unique_scheduled_event" ON "timers" ("scheduled_at", "scheduled_by", "event");
+
+-- Secondary indexes for the triggerer's due-timer scan and state lookups
+CREATE INDEX "timers_idx_scheduled_at" ON "timers" ("scheduled_at");
+CREATE INDEX "timers_idx_completed_at" ON "timers" ("completed_at");
+CREATE INDEX "timers_idx_cancelled_at" ON "timers" ("cancelled_at");
 ```
 
 **Timer States**:
@@ -150,6 +155,7 @@ sequenceDiagram
 - **Polling Interval**: Configurable via `--interval` flag (default: 1 second)
 - **Timeout**: Each run has a 3-second timeout to prevent blocking
 - **Transaction Safety**: Fetches and marks complete within a single transaction
+- **Batch & Locking**: Each tick fetches up to 10 due timers (`LIMIT 10`) selected with `FOR UPDATE SKIP LOCKED`, so multiple instances never double-fire the same timer; the due window is `scheduled_at < now() + interval '1 second'`.
 - **Error Handling**: Failed timers remain pending, logged for retry
 - **Health Monitoring**: Sends heartbeat to Sentry cron monitor every minute
 
@@ -176,12 +182,8 @@ sequenceDiagram
     ```
 
 ### 2. Running in Docker
-*   **Service Name**: `chronos`
-*   **Command**:
-    ```bash
-    cd platform
-    docker compose up -d chronos
-    ```
+
+> Chronos is no longer present in `platform/docker-compose.yml` (removed in platform commit `045857c`), so `docker compose up -d chronos` will fail with "no such service". The only way to run it now is standalone (see section 1 above) against a local PostgreSQL + Redis.
 
 ### 3. Testing
 ```bash

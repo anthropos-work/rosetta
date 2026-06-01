@@ -6,7 +6,7 @@ Roadrunner is the **code-execution proxy** for the platform. When a simulation i
 
 Roadrunner exists for one reason: it gives the platform a clean, language-agnostic boundary for running untrusted code without ever executing it in our own services or on our own infrastructure.
 
-It also hosts a small **LSP** (language-server) helper used by the in-simulation code editor for hints and diagnostics, plus an **Asynq** worker pool for asynchronous batch submissions.
+It also runs an **Asynq** worker pool for asynchronous batch submissions.
 
 ## Architecture & Code Map
 
@@ -23,8 +23,9 @@ It also hosts a small **LSP** (language-server) helper used by the in-simulation
 main.go                       Entry point
 cmd/
   root.go                     Server startup (HTTP + RPC + worker)
+  runcode/                    Debug CLI subcommand (runcode.go + launch.go) — lists Judge0 languages
 internal/
-  lsp/lsp.go                  Language-server helper (over WebSocket)
+  lsp/lsp.go                  Experimental WebSocket LSP proxy — NOT wired into any running server
   rpcsrv/                     Connect-RPC handlers
   runner/
     runner.go                 Judge0 client + execution loop
@@ -33,7 +34,7 @@ internal/
     worker.go                 Asynq server bootstrap
     client/                   Asynq client (called by handlers)
     queues/                   Queue/priority definitions
-    tasks/                    Task type definitions + handlers
+    tasks/                    Task-type constant only ('roadrunner:submissionresult'); handler lives in internal/runner/runner.go
 ```
 
 ## Interface Discovery
@@ -48,12 +49,14 @@ internal/
 
 ### HTTP / WebSocket
 
-* `POST /run` — REST entrypoint for code submission (alternate to RPC for browser-side callers).
-* WebSocket — LSP wire protocol for the in-simulation editor. Implemented in `internal/lsp/lsp.go`.
+* The HTTP server (`PORT` 10400) exposes only the `/_meta` health endpoint. All code submission goes through Connect-RPC on `RPC_PORT` 10401.
+* The repo contains an experimental WebSocket LSP proxy (`internal/lsp/lsp.go`) that is NOT wired into any running server — there is no reachable LSP endpoint today.
 
 ### Async tasks
 
-Long-running or batch submissions are dispatched onto Asynq queues (`internal/worker/queues`) and processed by the worker pool (`internal/worker/worker.go`). The Asynq client is in `internal/worker/client`, called from the RPC and HTTP handlers when the work shouldn't run synchronously on the request path.
+Every submission enqueues exactly one poll task on the `roadrunner:default` queue (MaxRetry 3) from `runner.CreateSubmission`; the worker (10 concurrent, `internal/worker/worker.go`) runs `HandleSubmissionResultTask`, which polls Judge0 up to 15 times at 1s intervals, then publishes a `RoadrunnerSubmissionCompleted` event. The RPC handlers call the runner directly and never invoke the Asynq client; there are no HTTP handlers.
+
+On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub; jobsimulation consumes it as the async signal that execution finished.
 
 ## Dependencies
 
@@ -81,18 +84,20 @@ cd ../roadrunner
 go run main.go
 ```
 
+Native runs require the platform `.env` to be sourced (or `REDIS_ADDR`, `REDIS_STREAMS_INDEX`, `REDIS_WORKER_INDEX`, `JUDGE0_BASE_URL`, `JUDGE0_API_KEY` exported). `REDIS_WORKER_INDEX` must be a valid integer — if unset/non-numeric the process exits immediately (`strconv.Atoi` error in `cmd/root.go`). `main.go` auto-loads a local `.env` (`godotenv/autoload`) if one is present in the working directory.
+
 ### Smoke-test execution
 
+There is no REST submission endpoint — submit via Connect-RPC on port 10401. The language map accepts `py`, not `python`. Note: proto contracts are NOT vendored in the roadrunner repo; they come from the shared `github.com/anthropos-work/proto` module (`proto/roadrunner/v1/roadrunner.proto`). Rely on server reflection rather than a local `--schema` flag.
+
 ```bash
-# Submit a Python script
-curl -X POST http://localhost:10400/run \
-  -H 'content-type: application/json' \
-  -d '{"runtime":"python","source_code":"print(2+2)","stdin":""}'
+# Submit a Python script (returns a token)
+buf curl http://localhost:10401/roadrunner.v1.RoadRunnerService/Submission \
+  -d '{"runtime":"py","source_code":"print(2+2)","stdin":""}'
 # → {"token":"..."}
 
 # Fetch result (poll until status != "in_queue")
-buf curl --schema ./proto/roadrunner.proto \
-  http://localhost:10401/roadrunner.v1.RoadRunnerService/SubmissionResult \
+buf curl http://localhost:10401/roadrunner.v1.RoadRunnerService/SubmissionResult \
   -d '{"token":"..."}'
 ```
 
@@ -103,6 +108,8 @@ buf curl --schema ./proto/roadrunner.proto \
 | `PORT` | `10400` | HTTP + WebSocket port |
 | `RPC_PORT` | `10401` | Connect-RPC port |
 | `JUDGE0_BASE_URL` | `http://52.48.139.23:2358` | Judge0 API endpoint |
+| `JUDGE0_API_KEY` | — (required) | Judge0 `X-Auth-Token`; the one Judge0 var NOT set in the compose environment block — supplied via platform/.env |
+| `SENTRY_DSN` | — (optional) | Sentry error-tracking DSN |
 | `REDIS_ADDR` | `redis:6379` | Redis address for Asynq |
 | `REDIS_STREAMS_INDEX` | `4` | Redis DB index for streams |
 | `REDIS_WORKER_INDEX` | `0` | Redis DB index for Asynq |
@@ -110,9 +117,11 @@ buf curl --schema ./proto/roadrunner.proto \
 
 ## Testing
 
+Roadrunner currently has NO test suite — there are zero `*_test.go` files, so `go test ./...` (also run at Docker build time, `Dockerfile` line 18) is a no-op that passes vacuously.
+
 ```bash
 cd roadrunner
-go test ./...
+go test ./...   # currently no tests defined
 ```
 
 ## Related Documentation

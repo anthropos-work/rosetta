@@ -131,12 +131,12 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 - Chronos (was: scheduling & time-based events) — removed via platform commit `045857c`
 - Intelligence (was: background data sync between backend and skiller schemas) — removed via platform commit `fdfa189`
 
-**Shared Libraries** (imported by services, not deployed):
-- colony: Platform framework (logging, DB, Redis, middleware, pub/sub via Watermill)
-- authn: Clerk JWT authentication middleware
-- proto: Protobuf definitions (RPC contracts)
-- ai: Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) with cost tracking
-- taxonomy: Skills taxonomy data
+**Shared Libraries** (imported as private Go modules — **not** cloned by `make init`/`repos.yml`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). See `corpus/architecture/shared_libraries.md`.
+- colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
+- proto: Protobuf definitions (RPC contracts) + hand-written domain types
+- ai: AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). NOTE: cost tracking lives in `app/internal/aiusage`, and EU-first routing lives in each consumer's wrapper — **not** in this library
+- authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
+- taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in skiller
 
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
@@ -151,7 +151,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
 
-**Frontend Applications**: Next.js 14 monorepo on Vercel
+**Frontend Applications**: Next.js 15 monorepo on Vercel (`next-web-app`; see `corpus/services/next-web-app.md`)
 - Next Web App: Main user-facing application
 - Hiring App: Recruiting and hiring workflows
 - Mobile App: Expo/React Native mobile experience
@@ -234,12 +234,15 @@ Usage: `make up PROFILE=cms`
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
 - `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime
 - `corpus/architecture/dependency_map.md`: Service inter-dependency matrix with Redis Streams events
+- `corpus/architecture/shared_libraries.md`: The five internal Go libraries (colony, proto, ai, authn, taxonomy)
 - `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
 - `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
 
 ### Service Documentation
 - `corpus/services/`: Individual service documentation following TEMPLATE.md pattern
+- Includes the GraphQL gateway (`graphql-wundergraph.md`) and main frontend (`next-web-app.md`)
 - Each service doc includes: Role, Architecture, Interface Discovery, Local Development, Testing
+- `corpus/ops/platform_repo.md`: The `platform` orchestrator repo (Make targets, profiles, compose, repos.yml)
 
 ### Tools & Development
 - `corpus/tools/toolchain_overview.md`: Development tools registry

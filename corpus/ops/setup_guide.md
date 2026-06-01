@@ -358,7 +358,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Chronos, Jobsimulation, Intelligence, Roadrunner, and the GraphQL/Cosmo Router.
+    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router.
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 

@@ -20,7 +20,7 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **Messenger** (opt-in profile) | Backend, CMS, Jobsimulation, Skiller, Skillpath | Postgres, Redis, **Brevo** (email delivery) |
 | **CustomerIO Sync** (opt-in profile) | Postgres | **Customer.io** |
 | **Graphql (Cosmo Router)** | Backend, Skiller, Jobsimulation, CMS, Skillpath, Storage | - |
-| **Studio-Desk** (opt-in profile) | Graphql, CMS | **Clerk**, **OpenAI** (Copilot) |
+| **Studio-Desk** (opt-in profile) | Graphql, CMS | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** | (runs inside CMS container; depends on CMS process) | **OpenAI**, **Anthropic**, **Mistral** |
 
 Production-only:
@@ -30,15 +30,15 @@ Production-only:
 
 ### Shared Libraries
 
-These are imported as Go modules by services, not deployed independently:
+Imported as private Go modules (not deployed, **not** cloned by `make init`). Full reference: [Shared Libraries](./shared_libraries.md).
 
 | Library | Used By |
 | :--- | :--- |
-| **colony** | All Go services (logging, DB, Redis, middleware, pub/sub) |
-| **authn** | All services needing Clerk JWT auth |
-| **proto** | All services using RPC (contract definitions) |
-| **ai** | Jobsimulation, Skiller, CMS, Studio-Desk (AI provider wrapper) |
-| **taxonomy** | Skiller, CMS (60K skills, 18K roles data) |
+| **colony** | All Go services (logging, DB, Redis, middleware, pub/sub); also bundles `authn` |
+| **proto** | All Go services using RPC (contract definitions) + domain types |
+| **ai** | app, cms, jobsimulation, skiller (AI provider wrapper — Go services only, not Studio-Desk). Cost & routing live in the consumers, not the lib |
+| **authn** | Imported via `colony/authn` by app, cms, jobsimulation, skiller, skillpath (standalone `authn` repo is legacy) |
+| **taxonomy** | **node-id library** (not data): direct — app, cms, jobsimulation, messenger, skiller; indirect — skillpath, storage, sentinel |
 
 ## Event Streams (Redis Streams via Watermill)
 
@@ -51,6 +51,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 | `jobsimulation` | Jobsimulation | Skillpath, App, Messenger (if running) | Session completed, insights generated |
 | `cms` | CMS | Jobsimulation, Skillpath, Backend | Content published |
 | `skillpath` | Skillpath | App | Session updated, chapters completed |
+| `roadrunner` | Roadrunner | Jobsimulation | `RoadrunnerSubmissionCompleted` (code execution finished; carries the Judge0 token) |
 | `AI` | (multiple) | (multiple) | AI usage / cost telemetry — see `AI_USAGE_STREAM=AI` env var |
 
 > **Note**: The `chronos` stream was previously used by Chronos for timer events but is gone with the chronos service removal. Jobsimulation no longer has chronos as a dependency.

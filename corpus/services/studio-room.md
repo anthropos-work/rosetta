@@ -12,6 +12,8 @@
 
 It's completely automated - you provide a template or blueprint, and Studio-Room orchestrates the entire generation pipeline.
 
+Studio-Room does not run as its own deployment. It is embedded inside the **CMS container** (at `cms/studio/`) and is triggered by a CMS Asynq task rather than run directly by users — the CMS service shells out to it as a subprocess when a generation job is enqueued.
+
 ## Technical Deep Dive (For Engineers)
 
 ### Service Overview
@@ -20,9 +22,9 @@ It's completely automated - you provide a template or blueprint, and Studio-Room
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | Python 3.x, asyncio |
-| **Deployment** | Standalone CLI/pipeline (on-demand execution) |
+| **Deployment** | Embedded in the CMS container (`cms/studio/`) — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the CMS Asynq worker (StudioQueue, concurrency 3); not a standalone deployment |
 | **AI Providers** | OpenAI, Azure OpenAI, Anthropic |
-| **Repository** | Local `studio/studio-room/` |
+| **Repository** | Cloned into the CMS repo at `cms/studio/` (repo: `anthropos-studio-room`) |
 
 ### Architecture
 
@@ -51,21 +53,32 @@ studio-room/
 ├── postgen.py          # Post-generation pipeline
 ├── console.py          # CLI output formatting
 ├── format.py           # File formatting utilities
+├── errors.py           # Error types
+├── cert.py             # Certificate / signing helpers
 ├── agents/             # Media generator agents
-│   ├── simulation.py   # Simulation generator
-│   ├── article.py      # Article generator
-│   └── role.py         # Role generator
+│   └── simulation/     # Simulation generator package
+│       ├── prep.py
+│       ├── story.py
+│       ├── assets.py
+│       ├── export.py
+│       ├── guidelines.py
+│       ├── model.py
+│       ├── postgen/
+│       └── validation/
 ├── services/           # Core services
-│   └── ai.py           # AI service abstraction
-├── templates/          # Generation templates
+│   ├── ai.py           # AI service abstraction
+│   ├── taxonomy.py     # Skills taxonomy client
+│   └── usage_trace.py  # AI usage / cost tracking
 ├── configs/            # Environment configs
 │   ├── local_config.ini
 │   └── production_config.ini
-├── tools/              # Utility scripts
-├── workspace/          # Generation workspace
-├── worklog/            # Generation state files
-├── postgen/            # Post-processed output
-└── published/          # Final published files
+├── benchmark/          # Benchmark suites
+├── knowledge/          # Knowledge / reference data
+└── workspace/          # Generation workspace
+    ├── attachments/    # Input/blueprint files
+    ├── trace/          # Generation state files (worklog_path)
+    ├── postgen/        # Post-processed output
+    └── published/      # Final published files
 ```
 
 ### Generation Pipeline
@@ -92,24 +105,29 @@ studio-room/
 The generation is orchestrated by **media-specific generator agents** (e.g., `SimulationGenerator`). Each agent defines a sequence of **execution steps**:
 
 ```python
-# Example step from agents/simulation.py
-@gen_instruction(
+# Example step from agents/simulation/
+@generation_step(
     phase="content",
-    title="Generate Dialogue",
+    title="Generate Cast",
     brief="Creating realistic job conversations",
-    exec_mode=GenMode.CREATIVE  # Uses creative AI model
+    exec_mode=GenMode.EXECUTION  # Selects the AI model for this step
 )
-async def generate_dialogue(engine, render, request):
+async def generate_cast(engine, log, request):
     # Step implementation
     # - Uses AI service
     # - Updates request state
-    # - Renders progress
+    # - Logs progress
     pass
 ```
 
-**Generation Modes**:
+The `@generation_step(...)` decorator attaches a `gen_instruction` metadata dict to the function. Steps may be sync or async — `gen.py` awaits the result if it is awaitable.
+
+**Generation Modes** (`GenMode` enum):
+- `GenMode.FAST`: Lightweight / low-latency steps
+- `GenMode.STRICT`: Tightly-constrained, deterministic output
+- `GenMode.EXECUTION`: Default mode (`DEFAULT = EXECUTION`)
 - `GenMode.CREATIVE`: For content requiring creativity (dialogue, scenarios)
-- `GenMode.ANALYTICAL`: For structured content (assessments, metadata)
+- `GenMode.REASONING`: For steps that benefit from deeper reasoning
 
 **Features**:
 - **Async execution**: Steps run asynchronously for performance
@@ -122,17 +140,21 @@ async def generate_dialogue(engine, render, request):
 Post-generation is modularized with multiple targets:
 
 ```bash
-python postgen.py --simid <id> --target translation,metadata,guidance
+python postgen.py --media simulation --simid <id> --target guidance,metadata,translation --branch stable
 ```
+
+`--media`, `--simid`, and `--target` are all required for `postgen.py`.
 
 **Post-Generation Targets**:
 
 | Target | Purpose | Output |
 |:-------|:--------|:-------|
-| `translation` | Translate to multiple languages | Localized versions |
-| `metadata` | Extract structured metadata | JSON metadata file |
 | `guidance` | Generate instructor guidance | Guidance documents |
-| `packaging` | Create final ZIP bundle | Publishable artifact |
+| `metadata` | Extract structured metadata | JSON metadata file |
+| `translation` | Translate to multiple languages | Localized versions |
+| `toolkit` | Build the simulation toolkit | Toolkit artifacts |
+
+A `testing` phase module also exists. ZIP packaging/export is **not** a selectable post-gen target — it is performed by the exporter (the `export` step in the simulation agent).
 
 All targets can run independently or in pipeline mode.
 
@@ -144,8 +166,8 @@ All targets can run independently or in pipeline mode.
 python gen.py [OPTIONS]
 
 Options:
-  -m, --media TYPE          Media type (simulation, article, role)
-  -t, --template NAME       Template name (from templates/)
+  -m, --media TYPE          Media type (simulation; article is registered but secondary)
+  -t, --template NAME       Template name
   --simid ID                Simulation ID (auto-generated if not provided)
   --branch BRANCH           stable or experimental AI models
   -f, --force               Force regeneration from scratch
@@ -153,7 +175,9 @@ Options:
   --pipeline PIPELINE       Generation pipeline (default: linear)
   --prompt TEXT             Custom prompt text
   --annotations JSON        Custom annotations
-  --postgen TARGETS         Comma-separated post-gen targets
+  --blueprint FILE          JSON blueprint file in workspace/attachments/
+                            (mutually exclusive with content params like --prompt/--annotations)
+  --evaluation_skills "a, b"  Pass-through content parameter (consumed by prep)
 ```
 
 #### Examples
@@ -168,56 +192,46 @@ python gen.py --media simulation --template customer_service
 python gen.py --media simulation --template interview --branch experimental --force
 ```
 
-**Custom prompt with specific post-gen targets**:
+**Custom prompt generation**:
 ```bash
 python gen.py \
   --media simulation \
   --prompt "Create a software engineering interview" \
-  --postgen "translation,metadata" \
   --branch stable
 ```
 
 ### AI Service Configuration
 
-AI models are configured per generation mode in `configs/{env}_config.ini`:
+AI models are configured per generation mode in `configs/{env}_config.ini`. Each model key follows the pattern `{MODE}_AI_{BRANCH}_MODEL = service, model, thinking`:
 
 ```ini
 [SERVICES]
-# Format: service, model, thinking_mode
-creative_ai_stable_model = openai, gpt-4o, none
-creative_ai_experimental_model = openai, gpt-5.1, extended
-analytical_ai_stable_model = anthropic, claude-3-opus, none
-analytical_ai_experimental_model = openai, gpt-5.2, extended
+# Format: {MODE}_AI_{BRANCH}_MODEL = service, model, thinking
+FAST_AI_STABLE_MODEL = azure, gpt-5-mini, none
+EXECUTION_AI_STABLE_MODEL = azure, gpt-5.4, none
+CREATIVE_AI_STABLE_MODEL = azure, gpt-5.4, low
+REASONING_AI_STABLE_MODEL = azure, gpt-5.4, medium
 
-# API Keys (or set via env vars)
-openai_api_key = ${OPENAI_API_KEY}
-openai_endpoint = https://api.openai.com/v1
-anthropic_api_key = ${ANTHROPIC_API_KEY}
-azure_api_key = ${AZURE_API_KEY}
-azure_endpoint = ${AZURE_ENDPOINT}
+# API keys + endpoints (literal values, or override via matching env vars)
+AZURE_API_KEY = <literal-key>
+AZURE_ENDPOINT = <endpoint-url>
+OPENAI_API_KEY = <literal-key>
+ANTHROPIC_API_KEY = <literal-key>
 
 max_tokens = 4096
 ```
 
-**Thinking Modes**:
-- `none`: Standard generation
-- `extended`: Enable chain-of-thought reasoning (for supported models)
+API keys can be set EITHER as literal values in `configs/{env}_config.ini` under `[SERVICES]` (key names `AZURE_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`, plus matching `*_ENDPOINT`), OR via the matching environment variables (`AZURE_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `*_ENDPOINT`). When the env var is set, it overrides the INI value at load time (`gen.py` `load_services_settings`). `configparser` does **not** expand `${VAR}` from the OS environment, so the override is handled in code rather than via interpolation. Note `configs/local_*` and `configs/test_*` are gitignored — never commit real keys to tracked configs.
+
+**Thinking Modes** (only for supported models):
+- `none`
+- `low`
+- `medium`
+- `high`
 
 ### Templates
 
-Templates define preset configurations for common simulation types:
-
-```
-templates/
-├── simulations/
-│   ├── customer_service.json
-│   ├── software_interview.json
-│   └── sales_pitch.json
-├── articles/
-│   └── technical_guide.json
-└── roles/
-    └── product_manager.json
-```
+Templates define preset configurations for common simulation types. (There is no standalone top-level `templates/` directory in the repo.)
 
 **Template Structure**:
 ```json
@@ -235,34 +249,26 @@ templates/
 
 ### State Management & Resume
 
-Generation state is saved to `worklog/{simid}.json` after each step:
+Generation state is checkpointed after each step to the configured `worklog_path` (set to `workspace/trace/` in the shipped configs; the in-code fallback is a literal `worklog/` only if unset). State is written as two files per sim:
 
-```json
-{
-  "simid": "uuid-here",
-  "executed_step": 5,
-  "media": "simulation",
-  "type": "Job Interview",
-  "usage": {
-    "total_tokens": 12580,
-    "total_cost": 0.52
-  }
-}
-```
+- `{simid}_pre_generation.json` — the original request
+- `{simid}_task_state.json` — the public task state
+
+plus a per-run `{simid}_usage.json` usage trace.
 
 **Resume generation**:
 ```bash
-# Automatically resumes from last completed step
+# Re-run with the same --simid to resume from the last completed step
 python gen.py --simid <uuid>
 
-# Force restart
+# Force restart from scratch
 python gen.py --simid <uuid> --force
 ```
 
 ### Development Setup
 
 #### Prerequisites
-- Python 3.8+
+- Python 3.9+ (runtime image when embedded in CMS: `python:3.11-slim`)
 - AI API keys (OpenAI, Anthropic, or Azure)
 
 #### Installation
@@ -272,13 +278,19 @@ cd studio/studio-room
 pip install -r requirements.txt
 ```
 
-**Requirements**:
+**Requirements** (unpinned in `requirements.txt`):
 ```
-openai>=1.0.0
-anthropic>=0.18.0
-aiohttp
-asyncio
+openai          # AI provider
+anthropic       # AI provider
+mistralai       # AI provider
+rich            # console output
+pyyaml
+requests        # taxonomy client
+jinja2          # templating
+pytest          # tests
+pytest-asyncio  # tests
 ```
+(`asyncio` is part of the standard library; no `aiohttp` dependency.)
 
 #### Configuration
 
@@ -307,15 +319,19 @@ python gen.py --media simulation --template default --branch stable
 
 ### Integration Points
 
-#### With Studio-Desk
-- **Input**: Blueprints created in Studio-Desk (via CMS/Directus)
-- **Output**: Generated content stored back to CMS/Directus
-- **Workflow**: Desk designs → Room generates → CMS stores
+Orchestration is performed by the **CMS Go code**, not by studio-room itself. studio-room makes no GraphQL or Directus calls; its only outbound API call is to the skills taxonomy service (`api.anthropos.work`) via `services/taxonomy.py`.
 
 #### With CMS Service
-- Fetch simulation blueprints via GraphQL/REST
-- Store generated content and metadata
-- Update task status during generation
+The CMS service drives the full lifecycle:
+1. Receives a GraphQL mutation requesting generation
+2. Enqueues an Asynq task and fetches the input documents
+3. Invokes `gen.py` as a subprocess (output written to `workspace/published/`)
+4. Reads the resulting ZIP and imports it into Directus
+
+#### With Studio-Desk
+- **Input**: Blueprints created in Studio-Desk, passed in by CMS
+- **Output**: Generated content imported into Directus by CMS
+- **Workflow**: Desk designs → CMS enqueues → Room generates → CMS imports into Directus
 
 ### Output Structure
 

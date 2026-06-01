@@ -47,7 +47,7 @@ This corpus evolves with the platform. When you discover gaps or better approach
 
 Automate the setup process:
 ```bash
-/anthropos-setup
+/setup-platform
 ```
 
 This skill executes the setup guide step-by-step with verification, asks for confirmation before changes, and auto-improves documentation when it finds issues.
@@ -61,14 +61,17 @@ corpus/
 │   ├── service_taxonomy.md         # Core, Studio, External tiers
 │   ├── frontend_architecture.md    # Next.js monorepo details
 │   ├── external_services.md        # Clerk, Directus, GraphQL
-│   └── dependency_map.md           # Service inter-dependencies
+│   ├── dependency_map.md           # Service inter-dependencies
+│   └── shared_libraries.md         # colony, proto, ai, authn, taxonomy
 │
 ├── services/              # Individual service documentation
-│   ├── backend.md, cms.md, sentinel.md, ...  # Core services
-│   ├── studio-desk.md, studio-room.md        # Studio services
-│   └── ant-academy.md                        # Internal learning portal (standalone)
+│   ├── backend.md, cms.md, sentinel.md, ...     # Core services
+│   ├── graphql-wundergraph.md, next-web-app.md  # Gateway + main frontend
+│   ├── studio-desk.md, studio-room.md           # Studio services
+│   └── ant-academy.md                           # Internal learning portal (standalone)
 │
 ├── ops/                   # Operations guides
+│   ├── platform_repo.md   # The orchestrator repo (Make targets, profiles, compose)
 │   ├── setup_guide.md     # Build local development environment
 │   ├── run_guide.md       # Start services locally
 │   └── update_guide.md    # Sync code and dependencies
@@ -104,7 +107,7 @@ Project Rosetta follows a strict **iterative approach**:
 When you discover new platform elements or documentation gaps:
 
 ```bash
-/anthropos-integrate
+/update-knowledge
 ```
 
 This skill:

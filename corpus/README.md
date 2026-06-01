@@ -12,6 +12,7 @@ Complete architecture documentation for the Anthropos platform.
 *   [Frontend Architecture](./architecture/frontend_architecture.md): Deep dive into the Next.js monorepo.
 *   [External Services](./architecture/external_services.md): Third-party integrations (Clerk, Directus, GraphQL).
 *   [Dependency Map](./architecture/dependency_map.md): Matrix of service inter-dependencies.
+*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries (colony, proto, ai, authn, taxonomy).
 
 ### [Tools](./tools/)
 Registry of development tools and toolchains.
@@ -22,6 +23,9 @@ Registry of development tools and toolchains.
 Individual service documentation and developer maps.
 
 *   **Core Backend Services**: 9 Go microservices (Backend, CMS, Sentinel, Skiller, etc.)
+*   **Gateway & Frontend**:
+    *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
+    *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)
 *   **Studio Services & Standalone Internal Apps**:
     *   [Studio-Desk](./services/studio-desk.md): Content design tool
     *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
@@ -35,6 +39,7 @@ Operations guides for setting up, running, and updating the platform.
     *   [Staging Sync](./ops/staging-sync.md): Daily force-reset to `origin/main`, skip-worktree mechanics, recovery from clobbered WIP.
     *   [Staging Clerk](./ops/staging-clerk.md): Shared dev Clerk app, cross-engineer test login, the load-bearing `clerk-fetch-fix.js` monkey-patch.
 *   **General platform operations:**
+    *   [Platform Repo Reference](./ops/platform_repo.md): The orchestrator repo — Make targets, profiles, docker-compose, repos.yml.
     *   [Setup Guide](./ops/setup_guide.md): Step-by-step instructions for macOS and Linux.
     *   [Run Guide](./ops/run_guide.md): Start the platform locally.
     *   [Update Guide](./ops/update_guide.md): Sync code, dependencies, and schemas.
@@ -46,4 +51,4 @@ Operations guides for setting up, running, and updating the platform.
 *   **Understanding the System?** → [Architecture Overview](./architecture/architecture_overview.md)
 *   **Working on a Service?** → [Services Directory](./services/)
 *   **Need Project Context?** → [Root README](../README.md)
-*   **Updating This Corpus?** → Use `/anthropos-integrate` skill (see [Root README](../README.md#-updating-documentation-with-claude))
+*   **Updating This Corpus?** → Use `/update-knowledge` skill (see [Root README](../README.md#updating-the-corpus))
