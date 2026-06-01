@@ -126,7 +126,7 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-setup
+**Skill**: /setup-platform
 **OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
 **Phase**: [Prerequisites / Repos / Docker / Frontend / etc.]
 
@@ -171,6 +171,6 @@ anthropos-dev/
 
 | Skill | Use When |
 |-------|----------|
-| `/ant-run` | Start platform after setup complete |
-| `/ant-update` | Sync code/deps after initial setup |
-| `/ant-integrate` | Process ops-reports into corpus |
+| `/start-platform` | Start platform after setup complete |
+| `/update-platform` | Sync code/deps after initial setup |
+| `/update-knowledge` | Process ops-reports into corpus |

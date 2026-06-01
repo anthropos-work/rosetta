@@ -17,17 +17,17 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 
 | Skill | Purpose | Guide |
 |-------|---------|-------|
-| `/ant-setup` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
-| `/ant-setup-github` | Configure GitHub SSH access for the org | `corpus/ops/setup_github_guide.md` |
-| `/ant-run` | Start the platform locally | `corpus/ops/run_guide.md` |
-| `/ant-update` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
-| `/ant-document` | Document new evidence across the corpus | N/A (meta-skill) |
+| `/setup-platform` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
+| `/setup-github` | Configure GitHub SSH access for the org | `corpus/ops/setup_github_guide.md` |
+| `/start-platform` | Start the platform locally | `corpus/ops/run_guide.md` |
+| `/update-platform` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
+| `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
 
 ### Using the Setup Skill
 
 For building the Anthropos development environment:
 ```bash
-/ant-setup
+/setup-platform
 ```
 
 This skill executes `corpus/ops/setup_guide.md` with:
@@ -40,7 +40,7 @@ This skill executes `corpus/ops/setup_guide.md` with:
 
 For configuring GitHub SSH access to contribute to `anthropos-work` repositories:
 ```bash
-/ant-setup-github
+/setup-github
 ```
 
 This skill executes `corpus/ops/setup_github_guide.md` with:
@@ -54,7 +54,7 @@ This skill executes `corpus/ops/setup_github_guide.md` with:
 
 For starting the platform locally after setup:
 ```bash
-/ant-run
+/start-platform
 ```
 
 This skill executes `corpus/ops/run_guide.md` with:
@@ -67,7 +67,7 @@ This skill executes `corpus/ops/run_guide.md` with:
 
 For syncing code, dependencies, and database schemas:
 ```bash
-/ant-update
+/update-platform
 ```
 
 This skill executes `corpus/ops/update_guide.md` with:
@@ -80,7 +80,7 @@ This skill executes `corpus/ops/update_guide.md` with:
 
 For documenting new platform evidence across the Rosetta corpus:
 ```bash
-/ant-document [evidence description]
+/update-knowledge [evidence description]
 ```
 
 This skill analyzes new evidence and performs a **corpus-wide sweep** to update all relevant documentation:
@@ -90,9 +90,9 @@ This skill analyzes new evidence and performs a **corpus-wide sweep** to update 
 - Ensures new content is discoverable from parent docs
 
 Example invocations:
-- `/ant-document the new studio-analytics repo`
-- `/ant-document issues found in setup_progress.md`
-- `/ant-document the Redis caching layer isn't documented`
+- `/update-knowledge the new studio-analytics repo`
+- `/update-knowledge issues found in setup_progress.md`
+- `/update-knowledge the Redis caching layer isn't documented`
 
 ### Working in the Scratchpad
 
@@ -338,13 +338,13 @@ These files must be maintained together:
 3. `corpus/ops/run_guide.md`: Platform startup instructions
 4. `corpus/ops/webhook_setup.md`: Clerk webhook tunnel configuration
 5. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
-6. `.claude/skills/ant-setup/SKILL.md`: Automated setup skill
-7. `.claude/skills/ant-setup-github/SKILL.md`: GitHub SSH setup skill
-8. `.claude/skills/ant-run/SKILL.md`: Automated run skill
-9. `.claude/skills/ant-update/SKILL.md`: Automated update skill
-10. `.claude/skills/ant-document/SKILL.md`: Corpus documentation skill
+6. `.claude/skills/setup-platform/SKILL.md`: Automated setup skill
+7. `.claude/skills/setup-github/SKILL.md`: GitHub SSH setup skill
+8. `.claude/skills/start-platform/SKILL.md`: Automated run skill
+9. `.claude/skills/update-platform/SKILL.md`: Automated update skill
+10. `.claude/skills/update-knowledge/SKILL.md`: Corpus documentation skill
 
-**When to use ant-document**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
+**When to use update-knowledge**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 
 ### Modus Operandi
 
@@ -388,7 +388,7 @@ rosetta/
 ## Quick Start for New Developers
 
 1. Read `README.md` for project overview
-2. Follow `corpus/ops/setup_guide.md` to build environment (or use `/ant-setup`)
-3. Follow `corpus/ops/run_guide.md` to start the platform locally (or use `/ant-run`)
+2. Follow `corpus/ops/setup_guide.md` to build environment (or use `/setup-platform`)
+3. Follow `corpus/ops/run_guide.md` to start the platform locally (or use `/start-platform`)
 4. Read `corpus/architecture/architecture_overview.md` for system understanding
 5. Consult `corpus/services/` for specific service details

@@ -1,5 +1,5 @@
 ---
-name: ant-run
+name: start-platform
 description: Start and manage the Anthropos platform locally with health verification. Use when you are asked to start or restart the anthropos platform locally.
 argument-hint: [scenario or 'full']
 ---
@@ -57,7 +57,7 @@ When you discover errors, missing steps, or better approaches:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-run
+**Skill**: /start-platform
 **OS**: [macOS/Linux/version]
 **Phase**: [Docker / Backend / Frontend / Studio]
 
@@ -74,7 +74,7 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in run_guide.md]
 ```
 
-3. These reports feed into `/ant-document` for corpus improvements
+3. These reports feed into `/update-knowledge` for corpus improvements
 
 ## Progress Tracking
 

@@ -39,7 +39,7 @@ Pick the scope you want via the argument: `live`, `repos`, `census`, `full`. Def
 | `census` | All repos cloned (read-only — no toolchain needed) | `ls anthropos-dev/` |
 | `full` | All of the above | — |
 
-If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/ant-run` first instead of probing a dead stack.
+If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/start-platform` first instead of probing a dead stack.
 
 ## Confirmation Policy
 
@@ -87,7 +87,7 @@ The generated report has these sections (only those relevant to the chosen scope
 
 ## Error Handling
 
-1. **`make ps` shows nothing**: tell the user the platform isn't running and offer `/ant-run`.
+1. **`make ps` shows nothing**: tell the user the platform isn't running and offer `/start-platform`.
 2. **A specific service is down**: do not retry or restart. Report it and let the user decide.
 3. **A repo test suite fails**: capture the log path from the report and quote the last 10 lines to the user. Do not attempt to fix the test — that's a per-repo PR.
 4. **Missing toolchain (no Go, no pnpm, etc.)**: the runner marks the repo as `skipped` automatically. Surface this and recommend installation.

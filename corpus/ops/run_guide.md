@@ -489,13 +489,13 @@ docker compose exec postgresql psql -U postgres -c "\dn"
 
 ## 10. Maintenance Guidelines
 
-This guide and the `/ant-run` skill are interconnected documents.
+This guide and the `/start-platform` skill are interconnected documents.
 
 ### When You Update This Guide
 
 If you modify the run process:
 
-1. **Update Skills**: Sync changes with `.claude/skills/ant-run/SKILL.md`
+1. **Update Skills**: Sync changes with `.claude/skills/start-platform/SKILL.md`
 2. **Document Issues**: Add troubleshooting entries for new problems
 
 ### Continuous Improvement

@@ -1,5 +1,5 @@
 ---
-name: ant-update
+name: update-platform
 description: Sync Anthropos code, dependencies, and database schemas with latest changes
 argument-hint: [scenario: 'daily' | 'weekly' | 'full']
 ---
@@ -57,7 +57,7 @@ When you discover errors, missing steps, or better approaches:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-update
+**Skill**: /update-platform
 **OS**: [macOS/Linux/version]
 **Phase**: [Stop / Pull / Dependencies / Migrations / Rebuild / Verify]
 
@@ -74,7 +74,7 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in update_guide.md]
 ```
 
-3. These reports feed into `/ant-document` for corpus improvements
+3. These reports feed into `/update-knowledge` for corpus improvements
 
 ## Progress Tracking
 

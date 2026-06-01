@@ -1,5 +1,5 @@
 ---
-name: ant-setup
+name: setup-platform
 description: Build or resume the Anthropos development environment from scratch, by following the official setup guide with verification at each step. Use for initial setup, or to continue/setup after interruption. Do NOT use for general platform updates or for single-service configuration—this is only for end-to-end environment setup and documenting setup issues or improvements.
 argument-hint: [step-name or 'full']
 ---
@@ -53,7 +53,7 @@ When you discover errors, missing steps, or better approaches:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-setup
+**Skill**: /setup-platform
 **OS**: [macOS/Linux/version]
 **Phase**: [Which setup phase]
 
@@ -70,7 +70,7 @@ When you discover errors, missing steps, or better approaches:
 [What should be added/changed in setup_guide.md]
 ```
 
-3. These reports feed into `/ant-document` for corpus improvements
+3. These reports feed into `/update-knowledge` for corpus improvements
 
 ## Progress Tracking
 
