@@ -197,7 +197,7 @@ Archived (removed from local orchestration; repos still exist):
 
 | Service Name | Type | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Clerk** | SaaS | User authentication & organization management | [→](./external_services.md#clerk-authentication-service) |
+| **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
 | **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath) | [→](../services/graphql-wundergraph.md) |
 

@@ -225,7 +225,9 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 | **Type** | External SaaS |
 | **Purpose** | User authentication, organization management |
 | **Integration Points** | Frontend apps, Backend middleware, Studio-Desk |
-| **SDK** | `@clerk/nextjs`, `@clerk/express`, `@clerk/clerk-js` |
+| **SDK** | `@clerk/nextjs`, `@clerk/express`, `@clerk/clerk-js`, `@clerk/clerk-expo`, `clerk-sdk-go/v2` |
+
+> Full integration picture (dependent repos, the auth-vs-authz split): [Clerk Integration](../services/clerk-integration.md).
 
 **Environment Variables**:
 - `CLERK_PUBLISHABLE_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
@@ -233,9 +235,10 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 - `CLERK_SIGN_IN_URL`
 
 **Used By**: 
-- Next.js apps (Web, Hiring, Mobile)
+- Next.js apps (Web, Hiring)
+- Mobile app (Expo / React Native, via `@clerk/clerk-expo`)
 - Studio-Desk
-- Backend services (via Sentinel)
+- Backend services (authenticate via the `authn` library; authorization is Sentinel's job)
 
 #### Directus (Dockerized - Headless CMS)
 
