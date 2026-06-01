@@ -26,6 +26,8 @@ These services allow us to focus on core features while leveraging best-in-class
 | **Website** | [clerk.com](https://clerk.com) |
 | **Pricing Model** | Freemium (pay per active user) |
 
+> **Full integration picture** — what Clerk is used for (the authentication-vs-authorization split), how it's wired, which repos depend on it, and each one's SDK — lives in **[Clerk Integration](../services/clerk-integration.md)**. This section is the external-services-catalog overview.
+
 ### What Clerk Provides
 
 - **Authentication**: Email/password, OAuth (Google, GitHub, etc.), magic links
@@ -59,43 +61,9 @@ graph TB
     Webhook --> Backend[Backend / app service]
 ```
 
-#### Frontend Applications
+#### Per-application integration
 
-**Next.js Apps** (Web, Hiring, Integration):
-```typescript
-// Uses @clerk/nextjs SDK
-import { ClerkProvider } from '@clerk/nextjs'
-
-// Environment variables
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-```
-
-**Expo Mobile App**:
-```typescript
-// Uses Clerk mobile SDK
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-EXPO_PUBLIC_CLERK_SIGN_IN_URL=/login
-```
-
-**Studio-Desk**:
-```typescript
-// Frontend: @clerk/clerk-js
-// Backend: @clerk/express
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
-```
-
-**Ant Academy** (internal learning portal — `@anthropos.work` domain gate enforced in `proxy.js`):
-```typescript
-// Uses @clerk/nextjs SDK (same shape as the main Next.js apps)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
-// Optional opt-out of the org-membership gate (default ON in production):
-REQUIRE_ORGANIZATION_MEMBERSHIP=0
-```
+Each app authenticates with its framework's Clerk SDK — `@clerk/nextjs` (next-web-app + ant-academy), `@clerk/clerk-expo` (mobile), `@clerk/clerk-js` + `@clerk/express` (studio-desk), and `colony/authn` + `clerk-sdk-go/v2` (Go services). The next-web-app `/enterprise` area, studio-desk admin tooling, and ant-academy content are additionally gated **directly** on Clerk `org:admin` / org membership. Per-repo SDKs and the auth/authz split: [Clerk Integration → Dependent Repos](../services/clerk-integration.md#dependent-repos--how-they-integrate).
 
 #### Backend Services
 
@@ -111,34 +79,7 @@ REQUIRE_ORGANIZATION_MEMBERSHIP=0
 
 ### Configuration
 
-#### Required Environment Variables
-
-**Public Keys** (safe for frontend):
-```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-```
-
-**Secret Keys** (backend only):
-```bash
-CLERK_SECRET_KEY=sk_test_xxxxx
-```
-
-**URLs**:
-```bash
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-CLERK_SIGN_IN_URL=http://localhost:3000/login
-```
-
-#### Getting Clerk Credentials
-
-1. Sign up at [clerk.com](https://clerk.com)
-2. Create a new application
-3. Copy publishable and secret keys from dashboard
-4. Configure Auth providers (Google, GitHub, etc.)
-5. Set up webhooks (for user sync)
+Credentials live in `platform/.env` (backend) and each app's own env: a backend `CLERK_SECRET_KEY` + `CLERK_WEBHOOK_SECRET`, plus a framework-prefixed publishable key per frontend (`NEXT_PUBLIC_` / `VITE_` / `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`) and sign-in/up URLs. Full key list: [Clerk Integration → Configuration](../services/clerk-integration.md#configuration-keys). Get keys by creating an app at [clerk.com](https://clerk.com) (use **separate dev/prod apps**) and configuring webhooks for user/org sync.
 
 ### Development Workflow
 

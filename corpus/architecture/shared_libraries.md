@@ -145,6 +145,8 @@ Provider-agnostic authentication: verifies bearer tokens (Clerk JWTs in practice
 injects a typed `User`/`Organization` into request context for `net/http`, Echo, and
 GraphQL servers.
 
+> This is the Clerk JWT library; for the platform-wide picture (dependent repos, SDKs, the auth-vs-authz split) see [Clerk Integration](../services/clerk-integration.md).
+
 * `authn.NewManager(providers…)` tries each provider in order; only **Clerk** and a
   **Dummy** (test) provider exist.
 * Clerk flow (`provider/clerk`): `jwt.Verify` against Clerk JWKS, then `jwt.Decode` to

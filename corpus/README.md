@@ -26,6 +26,8 @@ Individual service documentation and developer maps.
 *   **Gateway & Frontend**:
     *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
     *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)
+*   **Integrations**:
+    *   [Clerk Integration](./services/clerk-integration.md): Identity / authentication / organizations — what it's used for, dependent repos, SDKs
 *   **Studio Services & Standalone Internal Apps**:
     *   [Studio-Desk](./services/studio-desk.md): Content design tool
     *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
