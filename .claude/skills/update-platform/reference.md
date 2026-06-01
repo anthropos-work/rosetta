@@ -152,7 +152,7 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-update
+**Skill**: /update-platform
 **OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
 **Phase**: [Stop / Pull / Dependencies / Migrations / Rebuild / Verify]
 
@@ -188,6 +188,6 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`:
 
 | Skill | Use When |
 |-------|----------|
-| `/ant-setup` | First-time environment setup |
-| `/ant-run` | Start platform after updating |
-| `/ant-integrate` | Process ops-reports into corpus |
+| `/setup-platform` | First-time environment setup |
+| `/start-platform` | Start platform after updating |
+| `/update-knowledge` | Process ops-reports into corpus |

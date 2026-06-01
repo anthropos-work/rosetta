@@ -24,7 +24,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the CMS container** as `cms/studio/` (cloned via `cd cms && make init-studio`) — not a standalone deployment anymore.
 *   **Standalone Internal Apps**: Independent products that reuse platform identity (Clerk) but do not depend on the backend services:
     *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel.
-*   **Frontend**: Next.js 14 applications deployed on Vercel
+*   **Frontend**: Next.js 15 applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
@@ -40,7 +40,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
-- **Frontend**: Next.js 14 + TypeScript on Vercel
+- **Frontend**: Next.js 15 + React 19 + TypeScript on Vercel
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM; each service has its own schema
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
@@ -130,7 +130,7 @@ graph TD
     Directus --> Postgres
     
     %% Clerk integration
-    Clerk -.->|webhooks| Sentinel
+    Clerk -.->|webhooks| Gateway
 ```
 
 ### Service Inventory
@@ -146,7 +146,7 @@ Default local development set (started by `make up`, profile `graphql`):
 | :--- | :--- | :--- | :--- |
 | **Backend** (`app`) | Go | Main API Gateway / User Backend | [→](../services/backend.md) |
 | **CMS** | Go + embedded Python (studio-room) | Content Management, Directus Proxy, AI generation pipeline | [→](../services/cms.md) |
-| **Sentinel** | Go | Authorization & Authentication | [→](../services/sentinel.md) |
+| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
 | **Jobsimulation** | Go | Job environments & task simulation | [→](../services/jobsimulation.md) |
 | **Skiller** | Go | Skill management, assessment, vector embeddings (RAG) | [→](../services/skiller.md) |
 | **Skillpath** | Go | Skill progression paths | [→](../services/skillpath.md) |
@@ -176,13 +176,15 @@ Archived (removed from local orchestration; repos still exist):
 
 #### Shared Libraries (Not Deployed)
 
+> Imported as private Go modules — **not** cloned by `make init`. Full reference: [Shared Libraries](./shared_libraries.md).
+
 | Library | Purpose |
 | :--- | :--- |
-| **colony** | Platform framework: logging, DB/Redis helpers, middleware, pub/sub (Watermill) |
-| **authn** | Clerk JWT authentication middleware |
-| **proto** | Protobuf definitions (single source of truth for RPC contracts) |
-| **ai** | Unified AI provider wrapper (OpenAI, Anthropic, Mistral, Azure) with cost tracking |
-| **taxonomy** | Skills taxonomy data (60K skills, 18K roles) |
+| **colony** | Platform framework: logging+Sentry, DB/Redis helpers, GraphQL/RPC servers, middleware, pub/sub (Watermill); also contains `authn` |
+| **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types |
+| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib |
+| **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in skiller |
 
 #### Studio Services (Tier 2)
 
@@ -197,13 +199,13 @@ Archived (removed from local orchestration; repos still exist):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](./external_services.md#clerk-authentication-service) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath) | [→](./external_services.md#graphqlwundergraph-api-gateway) |
+| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath) | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
 | Application | Technology | Purpose | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Next Web App** | Next.js | Main user-facing application | [→](./frontend_architecture.md) |
+| **Next Web App** | Next.js 15 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
 | **Hiring App** | Next.js | Recruiting & hiring workflows | [→](./frontend_architecture.md) |
 | **Mobile App** | Expo/React Native | Mobile experience | [→](./frontend_architecture.md) |
 | **Ant Academy** | Next.js 16 + Expo | Internal learning portal for `@anthropos.work` employees (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |

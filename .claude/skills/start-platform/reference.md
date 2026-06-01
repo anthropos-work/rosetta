@@ -160,7 +160,7 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-run
+**Skill**: /start-platform
 **OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
 **Phase**: [Docker / Infrastructure / Backend / Frontend]
 
@@ -181,6 +181,6 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`:
 
 | Skill | Use When |
 |-------|----------|
-| `/ant-setup` | First-time environment setup |
-| `/ant-update` | Sync code/deps before running |
-| `/ant-integrate` | Process ops-reports into corpus |
+| `/setup-platform` | First-time environment setup |
+| `/update-platform` | Sync code/deps before running |
+| `/update-knowledge` | Process ops-reports into corpus |

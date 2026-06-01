@@ -21,21 +21,21 @@ This directory contains guides for operating the Anthropos platform locally.
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     First Time Setup                             │
-│  /ant-setup  or  corpus/ops/setup_guide.md                       │
+│  /setup-platform  or  corpus/ops/setup_guide.md                  │
 │  Install tools, clone repos, configure environment               │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Daily Development                           │
-│  /ant-run  or  corpus/ops/run_guide.md                           │
+│  /start-platform  or  corpus/ops/run_guide.md                    │
 │  Start Docker, backend services, frontend                        │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Periodic Updates                              │
-│  /ant-update  or  corpus/ops/update_guide.md                     │
+│  /update-platform  or  corpus/ops/update_guide.md                │
 │  Pull latest code, install deps, run migrations                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -46,7 +46,7 @@ All operations use Claude's **TodoWrite** tool for real-time progress tracking.
 
 ## Ops Reports
 
-When `/ant-setup`, `/ant-run`, or `/ant-update` encounter errors or discover improvements, they create **ops reports** in `anthropos-dev/ops-reports/`:
+When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `anthropos-dev/ops-reports/`:
 
 ```
 anthropos-dev/ops-reports/
@@ -61,7 +61,7 @@ anthropos-dev/ops-reports/
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-setup | /ant-run | /ant-update
+**Skill**: /setup-platform | /start-platform | /update-platform
 **OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
 **Phase**: [Which operation phase]
 
@@ -83,7 +83,7 @@ anthropos-dev/ops-reports/
 Ops reports are **not** automatically applied to documentation. Instead:
 
 1. Skills create reports during execution
-2. Run `/ant-integrate` to review and apply improvements
+2. Run `/update-knowledge` to review and apply improvements
 3. Human reviews and commits changes
 
 This separates "live execution" from "corpus maintenance".

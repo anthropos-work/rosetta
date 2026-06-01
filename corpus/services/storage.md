@@ -4,7 +4,7 @@
 
 Storage is the **centralized file/blob service** for the platform. Other services (`jobsimulation`, `cms`, `app`) push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
 
-Storage is stateless and owns no database: all state lives in S3 (with a local-filesystem fallback for dev when no bucket env vars are set).
+Storage is stateless and owns no database: all state lives in S3 (the private manager falls back to local filesystem in dev when `STORAGE_S3_BUCKET` is unset; the public manager is wired to production S3 in compose).
 
 ## Architecture & Code Map
 
@@ -22,7 +22,7 @@ Storage is stateless and owns no database: all state lives in S3 (with a local-f
 | Private | `STORAGE_S3_BUCKET` | Internal data: session recordings, documents. Reads via RPC or presigned URLs. |
 | Public | `STORAGE_S3_PUBLIC_BUCKET` | Public assets served via CloudFront at `media.<root_domain>`. |
 
-When a bucket env var is empty, the storage manager falls back to local filesystem at `/tmp/anthropos-storage/`.
+Each manager falls back to local filesystem only when ITS bucket env var is empty (private → `/tmp/anthropos-storage/`, public → `/tmp/anthropos-public-storage/`). In the platform compose, `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the production public bucket, so locally the PUBLIC manager talks to real S3 (`PutPublicObject`/`GetPublicObject` require AWS credentials), while the PRIVATE manager uses local FS.
 
 ### Object layout
 
@@ -116,7 +116,7 @@ make up                       # default graphql profile — includes storage
 make up PROFILE=storage
 ```
 
-In local dev without S3 credentials, storage falls back to `/tmp/anthropos-storage/` automatically. Presigned URLs return empty strings in that mode.
+In local dev the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically (`STORAGE_S3_BUCKET` is unset in compose), and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is NOT sandboxed locally — compose hardcodes `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and fail without AWS credentials (none are set in `platform/.env`). To run public storage fully local, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
 
 ### Run natively
 
@@ -124,10 +124,10 @@ In local dev without S3 credentials, storage falls back to `/tmp/anthropos-stora
 cd platform
 make dev S=storage
 cd ../storage
-make setup       # installs gqlgen (and tools if missing)
-make gen         # go generate ./...
-go run main.go
+go run main.go   # or: go run .
 ```
+
+`make setup`/`make gen` exist in the Makefile but are legacy no-ops — the repo has no codegen (no `//go:generate` directives, no gqlgen/graphql usage; gqlgen is vestigial).
 
 ### Sync between backends
 
@@ -143,8 +143,8 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 |----------|---------------|-------------|
 | `PORT` | `8300` | HTTP health port (binary default 8080, overridden in compose) |
 | `RPC_PORT` | `8301` | Connect-RPC port (binary default 8081, overridden in compose) |
-| `STORAGE_S3_BUCKET` | (empty) | Private bucket. Empty → local FS fallback. |
-| `STORAGE_S3_PUBLIC_BUCKET` | (empty) | Public bucket. Empty → local FS fallback. |
+| `STORAGE_S3_BUCKET` | (empty) | Private bucket. Absent from compose env and `.env` → local FS fallback at `/tmp/anthropos-storage/`. |
+| `STORAGE_S3_PUBLIC_BUCKET` | `production-storage-public20240919130721114900000001` | Public bucket — hardcoded to a real PRODUCTION S3 bucket in compose (`docker-compose.yml:324`). NOT empty in local dev. |
 | `AWS_REGION` / `AWS_DEFAULT_REGION` | `eu-west-1` | AWS region (EU-first) |
 | `ENVIRONMENT` | (empty) | Environment name |
 | `SERVICE_NAME` | `storage` | Logging label |
@@ -156,6 +156,8 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 cd storage
 go test -v ./...
 ```
+
+Note: the service currently ships NO automated tests (no `*_test.go` files in the repo), so `go test ./...` is a trivial no-op. The same command is baked into the production Dockerfile (`Dockerfile:18`) as a build gate, but it likewise tests nothing — do not read it as evidence of a real suite.
 
 ## Related Documentation
 

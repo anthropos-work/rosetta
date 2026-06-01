@@ -101,10 +101,10 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 
 ## Automated Setup with Claude Code
 
-If you're using **Claude Code**, you can automate this entire setup process using the `/ant-setup` skill:
+If you're using **Claude Code**, you can automate this entire setup process using the `/setup-platform` skill:
 
 ```bash
-/ant-setup
+/setup-platform
 ```
 
 The skill will:
@@ -113,7 +113,7 @@ The skill will:
 *   Track progress using TodoWrite
 *   Create ops reports when issues are discovered
 
-See [`.claude/skills/ant-setup/SKILL.md`](../../.claude/skills/ant-setup/SKILL.md) for details.
+See [`.claude/skills/setup-platform/SKILL.md`](../../.claude/skills/setup-platform/SKILL.md) for details.
 
 ---
 
@@ -358,7 +358,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Chronos, Jobsimulation, Intelligence, Roadrunner, and the GraphQL/Cosmo Router.
+    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router.
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -639,13 +639,13 @@ By default the root layout loads Plausible, Google Tag Manager, BetterStack, ana
 
 ## 11. Maintenance Guidelines
 
-This `setup_guide.md` and the `/ant-setup` Claude skill are interconnected documents that must be maintained together.
+This `setup_guide.md` and the `/setup-platform` Claude skill are interconnected documents that must be maintained together.
 
 ### When You Update This Setup Guide
 
 If you modify the setup process (add/remove/reorder steps), you must update:
 
-1.  **Anthropos Setup Skill** (`.claude/skills/ant-setup/SKILL.md`): Update phase definitions, step sequences, and verification commands
+1.  **Anthropos Setup Skill** (`.claude/skills/setup-platform/SKILL.md`): Update phase definitions, step sequences, and verification commands
 2.  **This Guide**: Ensure all steps have verification commands documented
 
 ### General Guidelines

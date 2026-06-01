@@ -24,7 +24,7 @@ PLATFORM="$DEVDIR/platform"
 
 if [ ! -d "$PLATFORM" ]; then
   echo "✗ anthropos-dev/platform not found at $PLATFORM" >&2
-  echo "  run /ant-setup first" >&2
+  echo "  run /setup-platform first" >&2
   exit 2
 fi
 

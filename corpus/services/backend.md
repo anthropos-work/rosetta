@@ -16,14 +16,15 @@ It also hosts a growing number of cross-cutting features that don't fit neatly i
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
 * **Bootstrap & admin** (`internal/admin`, `internal/bootstrap`, `cmd/bootstrap-org`) — provisioning utilities
 * **Copilot** (`internal/copilot`) — internal assistant flows
+* **AI Labs LabSession** (`internal/labsession`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is currently wired as nil, so Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions).
 * **Document → PDF conversion** (`internal/converter/gotenberg.go`) — via the Gotenberg service
 
 ## Architecture & Code Map
 
 * **Codebase**: `app` (local) — repo `git@github.com:anthropos-work/app`
-* **Language**: Go 1.25
+* **Language**: Go 1.26
 * **Database**: PostgreSQL `public` schema (Ent ORM + Atlas migrations)
-* **Ports**: 8081 (HTTP), 8082 (HTTP/GraphQL), 8083 (Connect-RPC)
+* **Ports**: 8082 (HTTP/GraphQL — `PORT`), 8083 (Connect-RPC — `RPC_PORT`), 8084 (meta/health — `META_PORT`). Container publishes 8081/8082/8083; 8081 is reserved/unused.
 * **Profile**: `graphql` (default) and `backend`
 * **Versioning**: Semantic; CHANGELOG.md is generated from conventional commits. Tags trigger production deploys.
 
@@ -34,7 +35,8 @@ main.go, rpc.go             Entry points
 cmd/                        CLIs (bootstrap-org, migrations utilities)
 internal/
   admin/                    Admin operations
-  ai/, aiusage/             AI provider wrapper consumers + cost tracking
+  aiacademy/                Periodic AI Academy catalog sync (fetches catalog.json, populates aiacademy_courses for Talk to Data)
+  aiusage/                  AI usage / cost tracking ledger (AI Redis Stream)
   analytics/                PostHog / internal analytics
   app/                      Component wire-up
   askengine/                "Talk to Data" — SSE streaming SQL Q&A
@@ -51,11 +53,13 @@ internal/
   companysearch/            Company search (LinkedIn / external sources)
   converter/                gotenberg.go for Office → PDF
   copilot/                  Internal copilot flows
+  cors/                     CORS configuration
   data/ent/                 Ent schema + generated code (public schema)
   deadletterqueue/          DLQ handling for Redis Streams
   experiencepoint/          User XP tracking
   jobsimfeedback/           Post-session signal routing
   jobsimulations/           Backend's view of jobsim data
+  labsession/               AI Labs LabSession RPC handlers
   linkedin/                 LinkedIn import / profile sync
   meta/                     Metadata utilities
   organization/             Org domain logic
@@ -85,11 +89,12 @@ internal/
 * **Bedrock task role policy statements** (v1.267.1): IAM additions for Bedrock model access from the prod ECS task role.
 * **Company context (M1/M2)** (`feat/company-context-m1m2` branch): Org-level context propagation through AI calls.
 * **Taxonomy translations** (`feat/taxonomy-translations` branch): Localized skill/role labels.
+* **AI Labs LabSession** (Phase B PR 2, #896): Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a new `lab_sessions` Ent table — `id` supplied by labs-api as a 12-char hex (not a UUID); `user_id`, `organization_id` (optional — empty for individual payers), `template`, `mode` (test/build/teach), `status` (booting/ready/grading/stopped/failed/cancelled), `budget_usd`/`spend_usd`/`total_tokens`, `started_at`/`stopped_at`, `grade_result` JSON. Registered as a third RPC handler in `main.go` after Users and Organizations. The labs-api client (`LabsAPIClient`) is wired as nil for now, so Create persists the LabSession row but does not boot a VM (no `ide_url`/`preview_url` returned) and Cancel marks the row cancelled without calling labs-api; the real HTTP client that drives VM lifecycle lands in PR 6.
 
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by skiller, jobsim, skillpath, cms via `BACKEND_USERS_RPC_ADDR=http://backend:8083`.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by skiller, jobsim, skillpath, cms via `BACKEND_USERS_RPC_ADDR=http://backend:8083`. Services include `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) registered in `main.go` as a third RPC handler after Users and Organizations.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
@@ -145,6 +150,8 @@ You'll need `platform/.env` reachable (or copy relevant vars). The infra service
 cd platform
 make migrate S=app
 ```
+
+Versioned Atlas migrations live in `terraform/migrations/` (per `atlas.hcl`: `dir = "file://terraform/migrations"`, source `ent://internal/data/ent/schema`), not in the top-level `migrations/` dir (which holds only `atlas.sum`). Generate a new migration after an Ent schema change with `make migrations` (`atlas migrate diff --env local`); apply with `atlas migrate apply --env local` (or `make migrate S=app`).
 
 The `public` schema is the largest in the platform; the most recent set of migrations (May 2026) touched simulation-type definitions and content JSON defaults.
 

@@ -1,5 +1,5 @@
 ---
-name: ant-setup-github
+name: setup-github
 description: Configure GitHub SSH access for Anthropos organization with single or dual account support
 argument-hint: [single|dual]
 ---
@@ -83,7 +83,7 @@ When you discover errors, missing steps, or better approaches:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-setup-github
+**Skill**: /setup-github
 **OS**: [macOS/Linux/version]
 **Phase**: [Which setup phase]
 **Scenario**: [Single/Dual account]

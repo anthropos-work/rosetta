@@ -1,5 +1,5 @@
 ---
-name: ant-document
+name: update-knowledge
 description: Document new platform evidence across the Rosetta corpus with corpus-wide sweep. use when you are asked to document something that is not already documented.
 argument-hint: [evidence description]
 ---
@@ -22,11 +22,11 @@ When invoking, describe what you want to document:
 
 | Evidence | Example Invocation |
 |----------|-------------------|
-| New repository | `/ant-document the new studio-analytics repo` |
-| New feature | `/ant-document the new skill progression API in skiller` |
-| New tool | `/ant-document we added pnpm as required tooling` |
-| Setup feedback | `/ant-document issues found in setup_progress.md` |
-| Missing aspect | `/ant-document the Redis caching layer isn't documented` |
+| New repository | `/update-knowledge the new studio-analytics repo` |
+| New feature | `/update-knowledge the new skill progression API in skiller` |
+| New tool | `/update-knowledge we added pnpm as required tooling` |
+| Setup feedback | `/update-knowledge issues found in setup_progress.md` |
+| Missing aspect | `/update-knowledge the Redis caching layer isn't documented` |
 
 If invoked without arguments, ask the user what they want to document.
 
@@ -66,10 +66,10 @@ Apply to EVERY documentation update:
 - `corpus/tools/toolchain_overview.md` - New development tools
 
 ### Claude Skills (check if automation affected)
-- `.claude/skills/ant-setup/` - Setup automation changes
-- `.claude/skills/ant-run/` - Run automation changes
-- `.claude/skills/ant-update/` - Update automation changes
-- `.claude/skills/ant-document/` - This skill (if process improves)
+- `.claude/skills/setup-platform/` - Setup automation changes
+- `.claude/skills/start-platform/` - Run automation changes
+- `.claude/skills/update-platform/` - Update automation changes
+- `.claude/skills/update-knowledge/` - This skill (if process improves)
 - `CLAUDE.md` - Agent context changes
 
 ## Writing Guidelines
@@ -115,7 +115,7 @@ Apply to EVERY documentation update:
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /ant-document
+**Skill**: /update-knowledge
 **Evidence**: [What was being documented]
 
 ## Discovery

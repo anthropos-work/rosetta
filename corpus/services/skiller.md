@@ -6,6 +6,8 @@ Skiller is the **skills graph** of the platform. It owns the 60K-skill / 18K-job
 
 This is the AI-heaviest pure-Go service: every other AI surface (jobsimulation, cms) uses skiller for skill-aware behavior.
 
+The 60K-skill / 18K-role taxonomy **data** is loaded into the skiller DB by the `importskills` and `importjobroles` cobra subcommands (`cmd/importSkills`, `cmd/importJobRole`), which read the CSVs and call `TaxonomyManager.CreateSkill` / `JobRoleManager.CreateJobRole`. The `anthropos-work/taxonomy` library only supplies NodeID generation helpers, not the data.
+
 ## Architecture & Code Map
 
 * **Codebase**: `skiller` (Local directory; repo `git@github.com:anthropos-work/skiller`)
@@ -21,9 +23,14 @@ This is the AI-heaviest pure-Go service: every other AI surface (jobsimulation, 
 ```
 main.go                       Entry point
 cmd/
-  importer/                   Bulk taxonomy import tool
+  importSkills/               Bulk skill/specialization/category import from CSV (cobra subcommand: importskills)
+  importJobRole/              Bulk job-role import + skill linking from CSV (cobra subcommand: importjobroles)
+  importer/                   Standalone taxonomy-directory importer (reads a skill-taxonomy/ path arg)
   jrembeddings/               Job-role embeddings backfill CLI
   skillembeddings/            Skill embeddings backfill CLI
+  jrtranslations/             Translate job roles into ContentLanguages (cobra subcommand: jrtranslations)
+  skilltranslations/          Translate skills into ContentLanguages (cobra subcommand: skilltranslations)
+  backfilltranslations/       Seed english *_translations rows from legacy fields (cobra subcommand: backfilltranslations)
   jobroleMeta/                Job-role metadata utility
   jobroleSkills/              Job-role ↔ skill linking utility
   skillmatchbenchmark/        Benchmark/eval harness
@@ -31,7 +38,9 @@ internal/
   ai/                         AI integration (matching prompts)
   authorization/              Sentinel client
   cache/                      Redis caching
+  content/                    Localized content access
   embeddings/                 Vector embedding generation + storage
+  localization/               Per-skill / per-role translation management
   rag/                        Retrieval-augmented generation for role matching
   jobrole/                    Job-role business logic
   organization/               Org-scoping for taxonomy
@@ -39,12 +48,14 @@ internal/
   search/                     Skill / role search
   taxonomy/                   Anthropos taxonomy ops (60K skills, 18K roles)
   templates/                  Prompt templates
+  translation/                Translation generation pipeline
   worker/                     Async background workers
 graph/
   schemas/schema.graphqls     GraphQL contract (federated by Cosmo Router)
 ent/schema/                   Ent entity definitions:
                               skill.go, jobrole.go, category.go, specialization.go,
                               jobroleEmbeddings.go, skillEmbeddings.go,
+                              skillTranslation.go, jobroleTranslation.go,
                               jobroleskill.go, jobroleCategory.go, mixin.go
 ```
 
@@ -72,6 +83,22 @@ The `extensions` schema (which houses `pgvector`) must exist before applying the
 
 See [AI Architecture → Embeddings & RAG](../architecture/ai_architecture.md#embeddings--rag-skiller) for the full picture.
 
+## Localization / Multilingual content
+
+Skiller stores per-skill / per-job-role translations (`skill_translations`, `job_role_translations` tables; `ent/schema/skillTranslation.go`, `jobroleTranslation.go`) across 8 `ContentLanguage`s (english, italian, spanish, french, german, dutch, japanese, portuguese).
+
+Most GraphQL queries/mutations accept an optional `language: ContentLanguage` arg (`skillDetails`, `skillsByName`, `matchSkill`, `jobRoleDetails`, `matchJobRole`, `jobRoleSkills`, etc.); `Skill` / `JobRole` expose `language` and `availableLanguages`.
+
+Translations are generated/seeded via cobra subcommands of the skiller binary:
+
+```bash
+go run . skilltranslations <node_id>...
+go run . jrtranslations <node_id>...
+go run . backfilltranslations          # seeds english rows from legacy fields; idempotent
+```
+
+A `localizationManager` (`cmd/root.go:172`) is wired into the Connect-RPC server.
+
 ## Interface Discovery
 
 * **GraphQL**: `graph/schemas/schema.graphqls`. Skiller is one of 5 subgraphs in the Cosmo Router federation.
@@ -79,7 +106,15 @@ See [AI Architecture → Embeddings & RAG](../architecture/ai_architecture.md#em
 
 ### Notable RPC operations
 
+(per `internal/rpcsrv/rpc.go`)
+
 * `MatchJobRole(name, context, organization_id)` — AI-powered job role matching using embeddings + RAG
+* `MatchMultipleSkills` — batch skill matching
+* `MatchMultipleJobRoles` — batch job-role matching
+* `GetSimilarJobRoles` — nearest-neighbour job roles via embeddings
+* `GetJobRoleMatch` — fetch a previously computed job-role match
+* `FilterSkills` — filtered skill lookup
+* `SearchSkill` — skill search
 * Job-role and skill CRUD types
 
 ### Upstream consumers
@@ -113,9 +148,11 @@ make up PROFILE=skiller
 cd platform
 make dev S=skiller
 cd ../skiller
-go generate ./...             # gqlgen + Ent codegen
+go generate ./...             # runs all 3 //go:generate directives: gqlgen (generate.go), Ent/entc (ent/generate.go), mockgen (internal/cache/memoize.go)
 go run .
 ```
+
+`go generate ./...` regenerates Ent (`ent/generate.go` → `go run entc.go`), gqlgen, and mockgen mocks — all committed. The `ent`/atlas tooling (installed by `make setup`) is needed to produce **migrations** via `make migrations` (`atlas migrate diff --env local`).
 
 ### Migrations
 

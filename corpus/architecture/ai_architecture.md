@@ -36,10 +36,10 @@ EU data residency is non-negotiable. Customer data never leaves EU unless all EU
 ### Unified AI Library
 
 All Go services access AI through the shared `ai` library, which provides:
-- Unified interface across providers (OpenAI, Anthropic, Mistral, Azure)
-- Automatic EU-first routing
-- Centralized token tracking (input + output tokens, latency, cost per model)
-- Provider fallback chain
+- A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
+- Per-provider client constructors that return provider token counts (`MetaData.Usage`)
+
+> **EU-first routing/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: routing/fallback in each service's `internal/ai/ai.go` (EU Azure default → US Azure via the PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic is always Bedrock `eu-west-1`), and cost tracking in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
 
 ---
 
@@ -50,7 +50,7 @@ All Go services access AI through the shared `ai` library, which provides:
 | **Jobsimulation** | Simulation conversations (chat + voice), document analysis, code evaluation |
 | **Skiller** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy (see [Vector storage](#vector-storage-in-skiller)) |
 | **CMS** | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
-| **Studio-Desk** | Copilot AI assistant for content authoring |
+| **Studio-Desk** | Copilot AI assistant for content authoring (multi-provider chain: Azure OpenAI / OpenAI / Anthropic via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** (Python) | Full simulation generation pipeline. **Runs as a subprocess inside the CMS container** (lives at `cms/studio/`, cloned from `anthropos-studio-room` via `cd cms && make init-studio`). |
 
 ### Studio-Room Generation Slots
@@ -110,14 +110,14 @@ Player → LiveKit Room → GPT Realtime Agent (anthropos-agent-eu / anthropos-a
 - **Transcript**: Generated from LiveKit conversation events
 - **Configuration**: Voice engine is selectable per simulation in CMS (`livekitgptrealtime`)
 
-### Deprecated Engines
+### Legacy / Transitioning Engines
 
 | Engine | Status | Description |
 |:-------|:-------|:------------|
-| `elevenlabs` | Deprecated | Standalone ElevenLabs; template duplicated per session |
+| `elevenlabs` | Active (legacy default) | ElevenLabs conversational agents; still used by the call/reply pipeline (`getJobSimulationCallSignedUrl` / `getJobSimulationCallConversationToken`) and transcript improvement |
 | `gptrealtime` | Deprecated | Direct OpenAI Realtime without LiveKit |
 
-LiveKit replaced ElevenLabs as the primary voice engine for better reliability and cost efficiency.
+LiveKit + OpenAI Realtime is the engine for **new** sessions (gated by the `flag_use_realtime_openai` PostHog flag); **ElevenLabs remains the active default** for the call/reply pipeline and transcript improvement, so it is not yet fully replaced.
 
 ---
 
@@ -155,7 +155,7 @@ Scoring is deliberately kept deterministic:
 
 ## Cost Tracking
 
-The shared `ai` Go library provides centralized cost tracking across all microservices:
+Cost is tracked centrally in the backend `app` service (`internal/aiusage/ai_usage.go`), fed by `Event_AiUsage` messages that the AI-consuming services publish over Redis Streams (the shared `ai` library itself only returns provider token counts):
 
 - **Tokens**: Input and output token counts per request
 - **Latency**: Request duration per model
