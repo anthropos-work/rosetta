@@ -22,6 +22,9 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/start-platform` | Start the platform locally | `corpus/ops/run_guide.md` |
 | `/update-platform` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
+| `/test-platform` | Verify a running platform (probes, repo suites, census) | `.claude/skills/test-platform/SKILL.md` |
+| `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
+| `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 
 ### Using the Setup Skill
 
@@ -237,6 +240,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/architecture/shared_libraries.md`: The five internal Go libraries (colony, proto, ai, authn, taxonomy)
 - `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
 - `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
+- `corpus/architecture/alignment_testing.md`: The alignment test class + framework (`test/alignment/`) — measuring how faithfully a mirror engine (e.g. Clerkenstein) reproduces a source engine as a 0–100% score
 
 ### Service Documentation
 - `corpus/services/`: Individual service documentation following TEMPLATE.md pattern

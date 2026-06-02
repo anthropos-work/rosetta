@@ -62,7 +62,8 @@ corpus/
 │   ├── frontend_architecture.md    # Next.js monorepo details
 │   ├── external_services.md        # Clerk, Directus, GraphQL
 │   ├── dependency_map.md           # Service inter-dependencies
-│   └── shared_libraries.md         # colony, proto, ai, authn, taxonomy
+│   ├── shared_libraries.md         # colony, proto, ai, authn, taxonomy
+│   └── alignment_testing.md        # The alignment test class + framework (test/alignment/)
 │
 ├── services/              # Individual service documentation
 │   ├── backend.md, cms.md, sentinel.md, ...     # Core services
