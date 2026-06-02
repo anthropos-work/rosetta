@@ -24,6 +24,27 @@ Clerk is **not** the platform's permission engine. For the backend, *deciding wh
 
 > **One-line answer to "auth only, or authz too?"** — Clerk handles **authentication + identity + organization/role management** everywhere. It is **not** the backend authorization engine (Sentinel is, fed by Clerk via sync), but the **frontend/standalone apps authorize directly off Clerk org roles/membership**.
 
+## Clerk Feature Surface — used vs. not used
+
+Clerk's catalog is large; the platform uses a **focused subset**. Unused features are dashboard-toggled SaaS capabilities that cost nothing by being off — the real integration effort is in the design (custom claims, org-role sync), not the feature breadth.
+
+**Used**
+- **Authentication** — session JWT + JWKS verification (backend). Sign-in/up UI: prebuilt `<SignIn>` / `<SignUp>` + `<UserProfile>` (next-web-app), `<SignIn>` (ant-academy web); studio-desk delegates to the web app; ant-academy mobile uses a custom email+password form.
+- **Session JWT as the API bearer** — `getToken()` is called with **no template** (the default token); the custom claims are baked into that default token via dashboard config.
+- **Organizations + memberships** — active org, `setActive`, `publicMetadata.eid` → tenant id (core to multi-tenancy).
+- **Org roles** (`admin` / `basic_member`) — coarse RBAC gating; synced into Sentinel.
+- **Org invitations** — backend create/revoke (+ a hand-rolled bulk call); frontend list/accept.
+- **Webhooks** (svix, 12 event types) — Clerk → Postgres + Sentinel sync.
+- **Backend API** — org/membership/invitation CRUD, user-create CLI, `external_id` + metadata write-back, lookups.
+- **User/org metadata** — `unsafeMetadata` (trial/stripe flags), `publicMetadata` (eid, isHiring, role).
+- **Sign-in tokens** — **only** for app-native admin impersonation (chosen over Enterprise-tier Actor Tokens).
+- **Localization** — 8 locales (`@clerk/localizations`).
+
+**Not used** (available but untouched)
+MFA / TOTP / passkeys · OAuth / social / SAML / Enterprise SSO (mobile is email+password only) · device & multi-session management · Clerk Billing (billing is Stripe) · custom org **permissions** / `has()` / `<Protect>` (only coarse admin/member) · Clerk-native impersonation / Actor Tokens · Waitlist / GoogleOneTap / Web3 · `@clerk/themes` · most prebuilt components (`<UserButton>`, `<OrganizationSwitcher>`, `<OrganizationProfile>`, … — org UI is custom).
+
+> **⚠️ Caveat:** ant-academy **mobile sign-in aborts on any second factor** (`ClerkSignInForm.tsx`), so enabling MFA in the Clerk dashboard would **break mobile login**. Treat MFA as an explicit on/off decision, not a silent dashboard toggle.
+
 ## How It Works (Deep Dive)
 
 ### 1. Authentication — the `authn` library
@@ -63,17 +84,23 @@ So Clerk org roles become Sentinel roles at **sync time** — that's the only wa
 
 ## Dependent Repos & How They Integrate
 
-| Repo | Clerk SDK / lib | Integration |
-|------|-----------------|-------------|
-| **colony** (`/authn`) | `clerk-sdk-go/v2` (`jwt`, `jwks`, `user`) | The auth core: JWT/JWKS verification + claim extraction. Imported by every authenticated Go service. |
-| **app** (backend) | `clerk-sdk-go/v2` (`organization`, `organizationmembership`, `organizationinvitation`, `user`, `signintoken`) + `svix-webhooks/go` + `colony/authn` | Authn via colony; svix webhook → user/org/membership sync → seed Sentinel roles; org/role writes back to Clerk. |
-| **jobsimulation, cms, skiller, skillpath** | `colony/authn` (`clerk-sdk-go/v2` transitively) | Authenticate only; authorization → Sentinel. |
+Clerk ships a **separate package per framework** (Go, Next.js, Express, browser-JS, Expo). Each is a **thin adapter over Clerk's shared core** — one server-side core and one browser-side core — **not** a separate auth implementation. The column below lists the **package each repo actually installs** (its declared dependency); the internal/transitive modules those adapters pull in are inferable from the lockfile and intentionally not tracked here.
+
+| Repo / app | Installed Clerk package(s) | What it's for |
+|------------|----------------------------|---------------|
+| **colony** (`/authn`) — imported by every Go service | `clerk-sdk-go/v2` | Verifies the session JWT (JWKS) + reads claims. The shared auth core for all Go services. |
+| **app** (backend) | `clerk-sdk-go/v2`, `svix-webhooks/go` | Authn (via colony) + org/membership/invitation Backend-API writes + svix-verified webhook sync → Postgres + Sentinel. |
+| **jobsimulation, cms, skiller, skillpath** | *(none direct — via `colony/authn`)* | Authenticate only; authorization → Sentinel. |
 | **storage, messenger** | — | No Clerk / no auth. |
-| **sentinel** | — (none) | Does **not** import Clerk/authn; pure Casbin authorization. |
-| **next-web-app** (`apps/web`, `apps/hiring`, `apps/integration`) | `@clerk/nextjs` `^6.39` (+ `@clerk/localizations`, `@clerk/types`) | All three Next.js apps use the same `@clerk/nextjs` setup — `clerkMiddleware` (`auth.protect()`) for **authentication only**. In `apps/web`: `/enterprise` is gated **client-side** (`EnterpriseWrapper` redirects non-admins via `useAuth().orgRole`), and `/api/metabase` **server-side** via `auth()` on the bare `orgRole === 'admin'` **AND** a specific hardcoded org id. |
-| **next-web-app** (mobile) | `@clerk/clerk-expo` `~2.6` | Mobile sign-in/session (Expo). |
-| **studio-desk** | `@clerk/clerk-js` `^5.52` (frontend) + `@clerk/express` `^1.3` (backend) | Client + server auth; **all admin tooling gated on `org:admin`** (`checkEnterpriseAndAdmin` server-side, `UserService.isAdmin()` client-side). |
-| **ant-academy** | `@clerk/nextjs` `^7.2` | `clerkMiddleware` in `proxy.js`; **requires ≥1 org membership** (`REQUIRE_ORGANIZATION_MEMBERSHIP` → `/no-organization`). |
+| **sentinel** | — | Does **not** use Clerk; pure Casbin authorization. |
+| **next-web-app** — `apps/web`, `apps/hiring`, `apps/integration` | `@clerk/nextjs` (+ `@clerk/localizations`) | Next.js App Router auth: `clerkMiddleware` route protection, `useAuth().getToken()` bearer, org/role gating (see deep-dive). |
+| **next-web-app** — `apps/mobile` | `@clerk/clerk-expo` | Expo / React Native session (paused PoC). |
+| **next-web-app** — `e2e` | `@clerk/testing`, `@clerk/backend` | **Test-only**: Playwright bypass token + programmatic user/session seeding. |
+| **studio-desk** | `@clerk/clerk-js` (frontend), `@clerk/express` (backend) | Vanilla-TS browser SDK + Express middleware; admin tooling gated on `org:admin`. |
+| **ant-academy** — web | `@clerk/nextjs` | `clerkMiddleware` in `proxy.js`; **requires ≥1 org membership** (`REQUIRE_ORGANIZATION_MEMBERSHIP` → `/no-organization`). |
+| **ant-academy** — mobile | `@clerk/clerk-expo` | Expo session-only gate (custom email+password form). |
+
+> **Version drift worth aligning:** `@clerk/nextjs` is on **two majors** — `^6.39` (next-web-app) vs `^7.2` (ant-academy); `@clerk/clerk-expo` `~2.6.18` (next-web-app) vs `^2.19.31` (ant-academy); `clerk-sdk-go/v2` `v2.5.1` (app) vs `v2.6.0` (colony). Same library, different versions — different majors can mean different session/claim behavior.
 
 ## Configuration (Keys)
 
