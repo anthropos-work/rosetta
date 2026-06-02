@@ -16,7 +16,8 @@ this lifecycle yet, so there is no `plan-legacy/` archive.
 - One directory per milestone, named `m{N}-{slug}/`
 - Each milestone dir has at minimum an `overview.md`. As the milestone progresses, optional companion files: `progress.md` (deliverable checklist), `decisions.md` (implementation choices with rationale), `spec-notes.md` (technical details).
 - Status values: `planned` → `in-progress` → `complete`
-- Milestone numbering (this is rosetta's first version): **flat sequential** — M1, M2, … ; B-milestones append `b` (e.g. M2b).
+- Milestone numbering (this is rosetta's first version): **flat sequential** — M0, M1, M2, … ; B-milestones append `b` (e.g. M1b).
+- Milestone **shapes** can be mixed within a version: `section` (fixed checklist) or `iterative` (measurable exit gate, uncertain path). v1.0 has both — M0/M1b/M2 are section; **M1 is iterative** (alignment-score gate).
 - Date format throughout: ISO `YYYY-MM-DD`
 
 ## Workflow
@@ -32,10 +33,11 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.0 "body double"** (Clerkenstein) — designed 2026-06-02, **branch not yet cut**. The
-`release/01.00-body-double` branch + milestone dirs are created when v1.0 is scaffolded (Phase 8,
-deferred) or on the first `/developer-kit:build-milestone`. v1.1 "show floor" (M3–M5) is next, staged
-in `roadmap-vision.md`.
+**Active:** **v1.0 "body double"** (Clerkenstein) — designed 2026-06-02 (refined same day to add the
+M0 alignment framework), **branch not yet cut**. Next milestone: **M0** (alignment measurement
+framework). The `release/01.00-body-double` branch + milestone dirs are created when v1.0 is scaffolded
+(Phase 8, deferred) or on the first build-skill run. v1.1 "show floor" (M3–M5) is next, staged in
+`roadmap-vision.md`.
 
 ## Project note
 
