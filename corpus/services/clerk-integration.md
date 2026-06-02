@@ -100,7 +100,7 @@ Clerk ships a **separate package per framework** (Go, Next.js, Express, browser-
 | **ant-academy** — web | `@clerk/nextjs` | `clerkMiddleware` in `proxy.js`; **requires ≥1 org membership** (`REQUIRE_ORGANIZATION_MEMBERSHIP` → `/no-organization`). |
 | **ant-academy** — mobile | `@clerk/clerk-expo` | Expo session-only gate (custom email+password form). |
 
-> **Version drift worth aligning:** `@clerk/nextjs` is on **two majors** — `^6.39` (next-web-app) vs `^7.2` (ant-academy); `@clerk/clerk-expo` `~2.6.18` (next-web-app) vs `^2.19.31` (ant-academy); `clerk-sdk-go/v2` `v2.5.1` (app) vs `v2.6.0` (colony). Same library, different versions — different majors can mean different session/claim behavior.
+> **SDK versions:** the JS Clerk SDKs are **aligned** across `next-web-app` and `ant-academy` — both on `@clerk/nextjs ^6.39.2` and `@clerk/clerk-expo ~2.6.18`. The only remaining drift is a minor `clerk-sdk-go/v2` mismatch — `v2.5.1` (app) vs `v2.6.0` (colony) — worth bumping `app` for consistency.
 
 ## Configuration (Keys)
 
