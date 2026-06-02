@@ -3,8 +3,10 @@ milestone: M0
 slug: alignment-framework
 version: v1.0 "body double"
 milestone_shape: section
-status: in-progress
+status: archived
 started: 2026-06-02
+last_updated: 2026-06-02
+completed: 2026-06-02
 ---
 
 # M0 — Alignment measurement framework
