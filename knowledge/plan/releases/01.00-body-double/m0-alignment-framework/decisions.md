@@ -39,3 +39,23 @@ docs live on `feat/demo-environment` (2 commits ahead of `main`, not yet merged)
 branch from `main` would lose the planning. So: `release/01.00-body-double` ← `feat/demo-environment`,
 `m0/alignment-framework` ← release. `feat/demo-environment` → `main` reconciliation is deferred to
 release close (or a separate merge), tracked here. No three-fate item — this is branch topology, not scope.
+
+## M0-D7 — Gene-id + weight input validation (close-review hardening)
+The close-milestone adversarial lens found that gene ids (capability/variant, user-authored in the
+DNA) became file paths under `--golden-dir` with no character validation — a crafted id (`..`, `/`,
+leading separator) could read/write outside the dir. Separately, an unbounded explicit `weight` could
+overflow the score sum.
+**Decision:** `dna.Validate` now enforces capability + variant ids match `^[A-Za-z0-9][A-Za-z0-9_-]*$`
+(matches the documented PascalCase/kebab grammar AND prevents path traversal) and bounds explicit
+weight to `1..1_000_000`. Defense-in-depth: `outcome.goldenPath` independently refuses any path that
+resolves outside the golden dir. Both pinned by regression tests (`TestValidateRejectsUnsafeIDs`,
+`TestValidateWeightBounds`, `TestGoldenPathContainment`). Also extracted the duplicated canonical-JSON
+logic into `internal/canon` (used by both `compare` and the CLI differ).
+
+## Adversarial review (Phase 2c — scenarios considered)
+- **Path traversal via gene ids** → fixed (M0-D7): charset validation + golden-dir containment guard.
+- **Score integer overflow via huge weights** → fixed (M0-D7): weight upper bound.
+- **Malformed runner output / partial JSON / missing genes / empty DNA / duplicate gene ids** → already handled (ParseSet errors surface; missing genes report "no source/mirror outcome"; duplicate ids rejected by Validate).
+- **Runner not found / exits non-zero / writes to stderr / empty --runner** → handled (runRunner wraps exec errors; empty runner rejected).
+- **Concurrency / purity** → the operators + `Evaluate` are pure (no shared mutable state); safe to call concurrently.
+- **Zero critical genes** → `pct(0,0)` returns 100.0 by design (no critical genes ⇒ critical gate vacuously met); intentional, documented behavior.

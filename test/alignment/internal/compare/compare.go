@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"anthropos.dev/alignment/internal/canon"
 	"anthropos.dev/alignment/internal/dna"
 	"anthropos.dev/alignment/internal/outcome"
 )
@@ -142,11 +143,11 @@ func errStr(p *string) string {
 
 // eqValue compares two JSON values canonically (object key order is normalized by json.Marshal).
 func eqValue(a, b json.RawMessage) (bool, string) {
-	ca, err := canonical(a)
+	ca, err := canon.Bytes(a)
 	if err != nil {
 		return false, "source value: invalid JSON"
 	}
-	cb, err := canonical(b)
+	cb, err := canon.Bytes(b)
 	if err != nil {
 		return false, "mirror value: invalid JSON"
 	}
@@ -156,33 +157,13 @@ func eqValue(a, b json.RawMessage) (bool, string) {
 	return false, fmt.Sprintf("value differs: source=%s mirror=%s", truncate(ca), truncate(cb))
 }
 
-// decodeAny parses JSON into a generic value, preserving integer precision (UseNumber)
-// so large IDs / timestamps compare exactly rather than lossily via float64.
-func decodeAny(raw json.RawMessage) (any, error) {
-	dec := json.NewDecoder(bytes.NewReader(nz(raw)))
-	dec.UseNumber()
-	var v any
-	if err := dec.Decode(&v); err != nil {
-		return nil, err
-	}
-	return v, nil
-}
-
-func canonical(raw json.RawMessage) ([]byte, error) {
-	v, err := decodeAny(raw)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(v) // map keys are emitted sorted → canonical form
-}
-
 // eqShape compares JSON structure: matching keys and value *types*, values ignored.
 func eqShape(a, b json.RawMessage) (bool, string) {
-	va, err := decodeAny(a)
+	va, err := canon.Decode(a)
 	if err != nil {
 		return false, "source value: invalid JSON"
 	}
-	vb, err := decodeAny(b)
+	vb, err := canon.Decode(b)
 	if err != nil {
 		return false, "mirror value: invalid JSON"
 	}
@@ -238,7 +219,7 @@ func zeroPaths(raw json.RawMessage, paths []string) (json.RawMessage, error) {
 	if len(paths) == 0 {
 		return raw, nil
 	}
-	v, err := decodeAny(raw)
+	v, err := canon.Decode(raw)
 	if err != nil {
 		return nil, err
 	}
@@ -260,13 +241,6 @@ func deletePath(v any, path []string) {
 	if child, ok := m[path[0]]; ok {
 		deletePath(child, path[1:])
 	}
-}
-
-func nz(r json.RawMessage) []byte {
-	if len(r) == 0 {
-		return []byte("null")
-	}
-	return r
 }
 
 func pct(n, d int) float64 {

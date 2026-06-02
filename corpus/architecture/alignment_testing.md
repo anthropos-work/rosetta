@@ -100,6 +100,12 @@ Field reference:
 | `variant.normalize` | Dot-paths zeroed before comparison (only for `operator: normalized`). |
 | `variant.weight` | Optional explicit weight; overrides the criticality default. |
 
+`alignctl dna validate` enforces the contract: capability and variant ids must be safe path
+segments — `^[A-Za-z0-9][A-Za-z0-9_-]*$` (PascalCase capability, kebab-case variant; no path
+separators, so a gene id can never escape the golden dir), gene ids must be unique, `normalized`
+genes must list `normalize` paths, and an explicit `weight` must be `1..1000000` (bounding the score
+sum). The golden IO independently refuses any path that would resolve outside `--golden-dir`.
+
 ## Equivalence operators
 
 Each gene declares how source and mirror outcomes are compared:

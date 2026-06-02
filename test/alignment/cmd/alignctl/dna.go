@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
 
+	"anthropos.dev/alignment/internal/canon"
 	"anthropos.dev/alignment/internal/dna"
 )
 
@@ -53,7 +53,7 @@ func dnaList(args []string) int {
 		for _, g := range genes {
 			rows = append(rows, row{g.ID, g.Capability, string(g.Operator), string(g.Criticality), g.Weight})
 		}
-		b, _ := json.MarshalIndent(rows, "", "  ")
+		b, _ := json.MarshalIndent(rows, "", "  ") // rows is a flat struct slice; marshal cannot fail
 		fmt.Println(string(b))
 		return 0
 	}
@@ -131,6 +131,7 @@ func dnaDiff(args []string) int {
 	sort.Strings(changed)
 
 	if *asJSON {
+		// a map[string][]string of plain strings; marshal cannot fail
 		b, _ := json.MarshalIndent(map[string][]string{
 			"added": added, "removed": removed, "changed": changed,
 		}, "", "  ")
@@ -172,29 +173,10 @@ func geneChanged(a, b dna.Gene) bool {
 	}
 	// Compare inputs canonically so reformatting / key reordering / integer formatting
 	// don't register as spurious drift (M1b must only fire on real contract changes).
-	if canonJSON(a.Input) != canonJSON(b.Input) {
+	if canon.String(a.Input) != canon.String(b.Input) {
 		return true
 	}
 	return joinNorm(a.Normalize) != joinNorm(b.Normalize)
-}
-
-// canonJSON returns a canonical, precision-preserving string form of a JSON value
-// (sorted keys, normalized whitespace, exact integers), or the raw bytes if unparseable.
-func canonJSON(raw json.RawMessage) string {
-	if len(raw) == 0 {
-		return "null"
-	}
-	dec := json.NewDecoder(bytes.NewReader(raw))
-	dec.UseNumber()
-	var v any
-	if err := dec.Decode(&v); err != nil {
-		return string(raw)
-	}
-	b, err := json.Marshal(v)
-	if err != nil {
-		return string(raw)
-	}
-	return string(b)
 }
 
 func joinNorm(s []string) string {

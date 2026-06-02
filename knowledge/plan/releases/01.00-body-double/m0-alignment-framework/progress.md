@@ -62,3 +62,38 @@ No KB-worthy findings. Hardening confirmed existing documented behavior (precisi
 
 ### Stop condition
 Stopped after Pass 2: core library packages stabilized at 83–96%; the qualitative 6-dimension scan found nothing further worth adding beyond `main()` dispatch + trivial fixtures (not worth shallow tests); 0 flakes. Performance: no SLAs documented for the framework → benchmarks N/A. 28 test/fuzz functions added (3 fuzz); 41 total.
+
+## M0: Final Review (close-milestone, 2026-06-02)
+
+Four-lens parallel review (code-quality · adversarial · docs · test-scope). Scope GREEN (all S1–S5 delivered, every checkbox checked, 0 TODOs); Phase 1b deferral re-audit GREEN (first milestone, no prior ledger). Findings below — all Fate-1 (fix now).
+
+### Adversarial (the real finds)
+- [ ] [must-fix] **Path traversal via gene ids** — `outcome.goldenPath` joins unvalidated capability/variant into a file path; a crafted DNA id (`..`, `/`, leading `/`) could read/write outside `--golden-dir`. Fix: enforce safe id charset in `dna.Validate` (primary) + a containment guard in `goldenPath` (defense-in-depth) + regression tests.
+- [ ] [should-fix] **Score integer overflow** — `dna.Validate` bounds weight `> 0` but not above; `MaxInt` weights overflow `sumW` negative → nonsensical score. Fix: upper-bound weight in `Validate` + test.
+- [ ] [should-fix] **Gene-id format not enforced** (same root cause as path traversal) — fold into the charset validation.
+
+### Code quality
+- [ ] [should-fix] Duplicate canonical-JSON logic (`compare.canonical` vs `cmd/alignctl.canonJSON`) → extract shared `internal/canon`.
+- [ ] [nice] `compare.GateMet` missing doc comment.
+- [ ] [nice] `dna.go` ignored `json.MarshalIndent` errors → add rationale comment.
+
+### Documentation
+- [ ] [should-fix] CLAUDE.md skills table missing `/align-dna`, `/align-run` (+ `/test-platform`).
+- [ ] [nice] Main README has no pointer to alignment_testing.md.
+- [x] state.md "2 commits" staleness → handled by Phase 10 state.md REPLACE (not a separate fix).
+
+### Tests & scope
+- Confirmed (no action): full suite green both tiers; all public funcs tested; both build-phase bug regressions pinned (TestGeneChanged/reformatted-input, TestLargeIntExactValue); 0 flakes; scope fully delivered; exit criteria met.
+
+### Decision triage
+- M0-D1..D6 already reflected in `alignment_testing.md` + this milestone's docs; they stay in `decisions.md` as archive (maintainer-only rationale). New adversarial fixes recorded as D7 (id/weight validation) in decisions.md.
+
+### Resolution (all Fate-1, landed in this milestone)
+- [x] Path traversal (must-fix) → `dna.Validate` gene-id charset `^[A-Za-z0-9][A-Za-z0-9_-]*$` + `goldenPath` containment guard (M0-D7).
+- [x] Score integer overflow (should-fix) → weight bounded `1..1_000_000` (M0-D7).
+- [x] Gene-id format (should-fix) → same charset validation (M0-D7).
+- [x] Duplicate canonical-JSON (should-fix) → extracted `internal/canon` (used by compare + CLI differ).
+- [x] CLAUDE.md skills table (should-fix) → added `/align-dna`, `/align-run`, `/test-platform`.
+- [x] Ignored MarshalIndent (nice) → rationale comments added. Main README pointer (nice) → added. Doc: validation rules documented in alignment_testing.md.
+- [n/a] GateMet doc comment — already present (reviewer miscounted lines).
+- Verification: 5/5 flake gate (random order); coverage dna 98.3% / canon 94.7% / compare 89.7% / outcome 92.5% / report 96.2% / runner 83.3% / cmd 67.5%; vet+gofmt clean; cross-refs resolve.

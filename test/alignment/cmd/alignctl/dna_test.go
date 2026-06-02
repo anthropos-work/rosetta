@@ -42,24 +42,6 @@ func TestGeneChanged(t *testing.T) {
 	}
 }
 
-func TestCanonJSON(t *testing.T) {
-	// key order + whitespace normalize to the same canonical string
-	if canonJSON(json.RawMessage(`{"b":2,"a":1}`)) != canonJSON(json.RawMessage(`{ "a":1, "b":2 }`)) {
-		t.Error("canonJSON should normalize key order + whitespace")
-	}
-	// large integers preserved exactly (no float precision loss)
-	big := `9223372036854775807`
-	if got := canonJSON(json.RawMessage(big)); got != big {
-		t.Errorf("canonJSON lost integer precision: %s", got)
-	}
-	if canonJSON(nil) != "null" {
-		t.Error("empty should canonicalize to null")
-	}
-	if canonJSON(json.RawMessage(`{bad`)) != `{bad` {
-		t.Error("unparseable input should pass through raw (no panic)")
-	}
-}
-
 func TestJoinNormOrderIndependent(t *testing.T) {
 	if joinNorm([]string{"a", "b"}) != joinNorm([]string{"b", "a"}) {
 		t.Error("joinNorm should be order-independent")

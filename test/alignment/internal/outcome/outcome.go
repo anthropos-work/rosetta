@@ -31,18 +31,29 @@ func ParseSet(b []byte) (Set, error) {
 	return s, nil
 }
 
-// goldenPath maps a gene id ("<Capability>/<variant>") to its on-disk golden file.
-func goldenPath(dir, geneID string) string {
-	parts := strings.SplitN(geneID, "/", 2)
-	if len(parts) == 2 {
-		return filepath.Join(dir, parts[0], parts[1]+".json")
+// goldenPath maps a gene id ("<Capability>/<variant>") to its on-disk golden file, and
+// guarantees the result stays within dir. dna.Validate is the primary guard against a gene
+// id containing path-traversal, but the golden IO refuses to escape dir regardless (defense
+// in depth), so a malformed/unvalidated id can never read or write outside the golden dir.
+func goldenPath(dir, geneID string) (string, error) {
+	rel := geneID + ".json"
+	if parts := strings.SplitN(geneID, "/", 2); len(parts) == 2 {
+		rel = filepath.Join(parts[0], parts[1]+".json")
 	}
-	return filepath.Join(dir, geneID+".json")
+	p := filepath.Join(dir, rel)
+	clean := filepath.Clean(dir)
+	if p != clean && !strings.HasPrefix(p, clean+string(os.PathSeparator)) {
+		return "", fmt.Errorf("gene id %q escapes the golden dir", geneID)
+	}
+	return p, nil
 }
 
 // WriteGolden records one gene's source outcome under dir.
 func WriteGolden(dir, geneID string, o Outcome) error {
-	p := goldenPath(dir, geneID)
+	p, err := goldenPath(dir, geneID)
+	if err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		return err
 	}
@@ -55,7 +66,11 @@ func WriteGolden(dir, geneID string, o Outcome) error {
 
 // LoadGolden reads one gene's recorded source outcome.
 func LoadGolden(dir, geneID string) (Outcome, error) {
-	b, err := os.ReadFile(goldenPath(dir, geneID))
+	p, err := goldenPath(dir, geneID)
+	if err != nil {
+		return Outcome{}, err
+	}
+	b, err := os.ReadFile(p)
 	if err != nil {
 		return Outcome{}, err
 	}

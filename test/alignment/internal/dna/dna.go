@@ -10,8 +10,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 )
+
+// idPattern constrains capability and variant ids to safe path segments: alphanumeric start,
+// then alphanumeric / '-' / '_'. This both matches the documented grammar (PascalCase
+// capability, kebab-case variant) and prevents path traversal, since gene ids become file
+// paths under the golden dir (no '/', '\', '.', '..', or leading separator can appear).
+const idPattern = `^[A-Za-z0-9][A-Za-z0-9_-]*$`
+
+// maxWeight bounds an explicit gene weight so the weighted score sum can't overflow int.
+const maxWeight = 1_000_000
+
+var idRE = regexp.MustCompile(idPattern)
 
 // Criticality sets a capability's default gene weight and feeds the "critical %" gate.
 type Criticality string
@@ -164,8 +176,8 @@ func (d *DNA) Validate() []error {
 	}
 	seen := map[string]bool{}
 	for _, c := range d.Capabilities {
-		if c.ID == "" {
-			errs = append(errs, fmt.Errorf("capability with empty id"))
+		if !idRE.MatchString(c.ID) {
+			errs = append(errs, fmt.Errorf("capability id %q must match %s", c.ID, idPattern))
 		}
 		if c.Criticality.Weight() == 0 {
 			errs = append(errs, fmt.Errorf("%s: invalid criticality %q", c.ID, c.Criticality))
@@ -175,8 +187,8 @@ func (d *DNA) Validate() []error {
 		}
 		for _, v := range c.Variants {
 			gid := GeneID(c.ID, v.ID)
-			if v.ID == "" {
-				errs = append(errs, fmt.Errorf("%s: variant with empty id", c.ID))
+			if !idRE.MatchString(v.ID) {
+				errs = append(errs, fmt.Errorf("%s: variant id %q must match %s", c.ID, v.ID, idPattern))
 			}
 			if seen[gid] {
 				errs = append(errs, fmt.Errorf("duplicate gene id %q", gid))
@@ -188,8 +200,8 @@ func (d *DNA) Validate() []error {
 			if v.Operator == OpNormalized && len(v.Normalize) == 0 {
 				errs = append(errs, fmt.Errorf("%s: operator=normalized requires non-empty normalize", gid))
 			}
-			if v.Weight != nil && *v.Weight <= 0 {
-				errs = append(errs, fmt.Errorf("%s: weight must be > 0", gid))
+			if v.Weight != nil && (*v.Weight <= 0 || *v.Weight > maxWeight) {
+				errs = append(errs, fmt.Errorf("%s: weight must be in 1..%d", gid, maxWeight))
 			}
 		}
 	}
