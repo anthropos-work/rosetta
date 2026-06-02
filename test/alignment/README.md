@@ -48,7 +48,7 @@ cmd/alignctl            run | capture | dna list|diff|validate
 internal/dna            DNA model, load, validate, weight derivation
 internal/outcome        Outcome type, outcomes/golden IO
 internal/compare        the 4 operators + weighted score  (divergence detection)
-internal/report         human + --json render
+internal/report         human-readable render (JSON report = compare.Report via `alignctl run --report`)
 examples/toy            self-contained reference (source, mirror, DNA, runner, golden, alignment test)
 ```
 

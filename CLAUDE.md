@@ -237,6 +237,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/architecture/shared_libraries.md`: The five internal Go libraries (colony, proto, ai, authn, taxonomy)
 - `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
 - `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
+- `corpus/architecture/alignment_testing.md`: The alignment test class + framework (`test/alignment/`) — measuring how faithfully a mirror engine (e.g. Clerkenstein) reproduces a source engine as a 0–100% score
 
 ### Service Documentation
 - `corpus/services/`: Individual service documentation following TEMPLATE.md pattern

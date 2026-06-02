@@ -1,0 +1,71 @@
+---
+name: align-dna
+description: Build or update an Alignment DNA — the enumerated set of (capability × variant) "genes" a mirror engine must reproduce — for a source framework at a pinned version, then diff it across versions and capture source goldens. Use when starting a new mirror, adding capabilities/variants to measure, or reconciling a mirror after the source library bumps versions. Pairs with /align-run (which scores against the DNA). Full reference: corpus/architecture/alignment_testing.md.
+argument-hint: [source framework + version, e.g. "clerk-sdk-go v2.6.0"]
+---
+
+# Author the Alignment DNA
+
+The **Alignment DNA** is the genome a mirror must reproduce: the complete, enumerated set of
+**genes** (one per `<Capability>/<variant>` pair) for a source engine at a pinned version. It is the
+denominator of the alignment score. This skill authors and maintains it. Concepts:
+[`corpus/architecture/alignment_testing.md`](../../../corpus/architecture/alignment_testing.md).
+Harness: [`test/alignment/`](../../../test/alignment/) (`alignctl`).
+
+> **Where this runs.** The framework (`alignctl`, the skills, the doc) lives in **rosetta**. A
+> specific mirror's DNA, goldens, alignment tests, and runner live in **that mirror's own repo**
+> (e.g. `clerkenstein`), cloned under the gitignored `anthropos-demo/`. Author the DNA *in the
+> mirror's repo*; pull the source into *its* `.agentspace/`.
+
+## Your mission
+
+1. **Pin the source.** Clone the source library at the exact requested version into the mirror
+   repo's gitignored `.agentspace/` (e.g. `clerk-sdk-go @ v2.6.0`). Record name + version + ref —
+   they go in the DNA's `source` block.
+2. **Enumerate the *consumed* capabilities — not the whole SDK.** Grep the *consumer* (the platform
+   code that calls the source) for the functions/endpoints it actually uses; that scoped set is your
+   capabilities (axis 1). Enumerating the entire SDK inflates the DNA with genes nobody depends on.
+3. **Enumerate variants per capability** (axis 2): the standard case, plus the corner and error
+   cases that matter — empty/min, max/oversized, duplicate, missing-required, malformed, the known
+   edge cases. Each (capability × variant) is one gene.
+4. **Pick an operator per gene** (see the operator table in the doc): `exact` by default; `shape`
+   when only structure is guaranteed; `normalized` (with `normalize` paths) when the response
+   carries generated ids/timestamps; `error_class` for genes whose point is the error behavior.
+5. **Write `dna.json`** (`schema_version: 1`; `source`/`mirror` refs; `capabilities[].variants[]`
+   with `operator`, `input`, and — when needed — `normalize`/`weight`). Set each capability's
+   `criticality` (`critical`/`standard`/`optional`); it drives default weight and the critical gate.
+6. **Validate:** `alignctl dna validate --dna PATH` — fixes every structural error before proceeding.
+7. **List to eyeball coverage:** `alignctl dna list --dna PATH` — confirm every consumed capability
+   is present and the gene count/weights look right. A capability the consumer calls but the DNA
+   omits is a blind spot the score will hide.
+8. **Ensure the runner handles every capability.** The mirror repo ships a runner
+   (`RUNNER --target {source|mirror} --dna PATH` → outcomes JSON). Each capability id in the DNA must
+   have a branch in the runner that invokes it with the gene's `input`.
+9. **Capture source goldens:**
+   `alignctl capture --dna PATH --runner CMD --golden-dir DIR` — records the source's outcome per
+   gene so the mirror can be scored offline. Commit the goldens.
+
+## Reconciling after a source version bump (feeds /developer-kit M1b drift detection)
+
+1. Re-clone the source at the new version into `.agentspace/`.
+2. `alignctl dna diff --old OLD.json --new NEW.json` (exit 1 = the DNA moved). It reports:
+   - **added** genes → new source behavior; add variants + decide operators, extend the runner.
+   - **removed** genes → source dropped a capability/variant; remove them (and any dead mirror code).
+   - **changed** genes → an operator/weight/input/normalize change; re-confirm intent.
+3. Update `dna.json` accordingly, then **re-capture goldens** against the new source.
+4. Hand off to `/align-run` to re-score the mirror against the bumped source.
+
+## `alignctl` commands this skill uses
+
+| Command | Purpose |
+|---|---|
+| `alignctl dna validate --dna PATH` | structural checks (every gene has a valid operator; `normalized` genes have `normalize` paths; no duplicate gene ids). |
+| `alignctl dna list --dna PATH [--json]` | list genes with operator / weight / criticality; count coverage. |
+| `alignctl dna diff --old PATH --new PATH [--json]` | added / removed / changed genes between two DNA versions; exit 1 on drift. |
+| `alignctl capture --dna PATH --runner CMD --golden-dir DIR` | record source goldens for offline replay. |
+
+## Done when
+- `alignctl dna validate` passes; `alignctl dna list` shows every consumed capability covered;
+- goldens captured for every gene (0 missing);
+- the runner has a branch for every capability id.
+Then run `/align-run` to measure the mirror against the DNA.

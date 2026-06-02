@@ -24,12 +24,13 @@ harness → toy (these two co-define and must compile/run together) → skills �
 - [x] **VERIFIED:** `go test -tags alignment ./examples/toy/...` GREEN (gate met) while logging the tolerated divergence
 - [x] **VERIFIED:** `dna diff` fires only on real contract changes (canonical input compare), exit 1 on drift — the M1b signal
 
-## S4 — The two skills
-- [ ] `.claude/skills/align-dna/SKILL.md` — build/update DNA, diff across versions, scaffold (drives `alignctl dna …` + capture)
-- [ ] `.claude/skills/align-run/SKILL.md` — measure alignment, compose score, read divergence (drives `alignctl run`)
-- [ ] flag-consistency: every flag the skills document exists in `alignctl` (both directions)
+## S4 — The two skills — DONE
+- [x] `.claude/skills/align-dna/SKILL.md` — build/update DNA, diff across versions, scaffold, capture goldens (drives `alignctl dna …` + capture)
+- [x] `.claude/skills/align-run/SKILL.md` — measure alignment, compose score, triage divergence, iterate to gate (drives `alignctl run`)
+- [x] both registered (appear in the skill list); flag-consistency VERIFIED both directions (m0-doc-verify lens: ok, 0 findings)
 
-## S5 — Canonical doc + discoverability
-- [ ] `corpus/architecture/alignment_testing.md` — vocabulary, test class, DNA format, operators, record/replay, score, the two skills, the toy walkthrough
-- [ ] discoverable: linked from `corpus/architecture/README.md` (+ CLAUDE.md architecture-docs list if applicable)
-- [ ] `last_updated` set; cross-refs valid
+## S5 — Canonical doc + discoverability — DONE
+- [x] `corpus/architecture/alignment_testing.md` — vocabulary, test class, DNA format, operators, record/replay, score, the two skills, alignctl ref, the verified toy walkthrough, M1/M1b consumption, repo split, layout
+- [x] discoverable: linked from `corpus/architecture/README.md` + CLAUDE.md architecture-docs list
+- [x] `last_updated` set; cross-refs valid
+- [x] VERIFIED by m0-doc-verify workflow (3 lenses): flag-consistency ok, reproducibility ok (every documented command runs, 86.7% reproduces), fidelity — 1 should-fix + 1 nit (layout-table `internal/report` description + critical-% clarifier) FIXED
