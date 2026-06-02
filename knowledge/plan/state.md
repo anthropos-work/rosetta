@@ -1,8 +1,8 @@
 # State
 
 **Active version:** **v1.0 "body double"** (Clerkenstein) — **designed 2026-06-02 (refined same day to add M0), not yet branched.** First version under rosetta's planning lifecycle.
-**Active milestone:** _(none building yet)_ — **M0 "Alignment measurement framework"** is next.
-**Next up:** scaffold the v1.0 milestone dirs + cut `release/01.00-body-double` from `main` (Phase 8 of design-roadmap — **deferred by user choice**), OR run the build skills directly (they cut the release branch on demand). Start at **M0** (section → `/developer-kit:build-milestone`); M1 is iterative → `/developer-kit:build-mstone-iters`.
+**Active milestone:** **M0 "Alignment measurement framework"** — **BUILT** (S1–S5 complete on `m0/alignment-framework`, 2 commits), not yet closed/merged. `alignctl` harness + toy (verified 86.7%/100% crit, catches the planted divergence), `/align-dna` + `/align-run` skills, and `corpus/architecture/alignment_testing.md`. Adversarially verified (m0-doc-verify, 3 lenses).
+**Next up:** optional `/developer-kit:harden-milestone` then `/developer-kit:close-milestone` (merges M0 → `release/01.00-body-double`). Then **M1** (Clerkenstein backend mirror, **iterative**) via `/developer-kit:build-mstone-iters` — it authors the Clerk DNA with `/align-dna` and drives `/align-run`'s score to the gate.
 **Paused:** _(none)_
 
 ## v1.0 "body double" milestones (designed 2026-06-02)
@@ -26,6 +26,6 @@ Alignment-framework-first: **M0** the reusable alignment measurement process (th
 
 ## Branch model
 
-Standard developer-kit flow. **No release branch cut yet** — currently on `feat/demo-environment`; `release/01.00-body-double` is created when v1.0 is scaffolded (Phase 8, deferred) or on the first build-skill run. M0/M1b/M2 = section (`/developer-kit:build-milestone`); **M1 = iterative** (`/developer-kit:build-mstone-iters`, closes on a Gate Outcome Ledger).
+Standard developer-kit flow. `release/01.00-body-double` was cut from `feat/demo-environment` (not `main` — see M0-D6 decision: the v1.0 design lives on `feat/demo-environment`, 2 commits ahead of `main`); `m0/alignment-framework` branched off it and holds the M0 build. M0/M1b/M2 = section (`/developer-kit:build-milestone`); **M1 = iterative** (`/developer-kit:build-mstone-iters`, closes on a Gate Outcome Ledger).
 
-_Last updated: 2026-06-02 (v1.0 refined: added M0 alignment framework, M1 → iterative; planning docs written, branch + scaffolds deferred)._
+_Last updated: 2026-06-02 (M0 alignment framework BUILT on `m0/alignment-framework`; ready for harden/close. Release branch cut from feat/demo-environment)._
