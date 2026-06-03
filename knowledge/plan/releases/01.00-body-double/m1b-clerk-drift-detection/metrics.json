@@ -1,0 +1,15 @@
+{
+  "milestone": "M1b",
+  "slug": "clerk-drift-detection",
+  "version": "01.00-body-double",
+  "shape": "section",
+  "kind": "B-milestone (tooling/automation over M0)",
+  "date": "2026-06-03",
+  "sections": 2,
+  "tests": { "shell": { "drift_test_assertions": 9, "all_pass": true }, "go": "unchanged (mirror suite still green)" },
+  "ci": { "workflow": ".github/workflows/alignment.yml", "steps": ["shellcheck", "go test", "alignment gate", "drift tests"], "schedule": "push + weekly" },
+  "harden": { "passes": 1, "stop": "stabilized" },
+  "flake_count": 0,
+  "close_review": { "code_must_fix": 0, "scope_gaps": 0, "doc_gaps": 0, "decisions_to_blend": 0 },
+  "notes": "Mechanizes Clerk drift detection by reusing M0 wholesale: gate.sh + drift-check.sh (exit-code contract 0/1/2/3) + a weekly CI gate, in the clerkenstein repo. No new measurement machinery. drift-test.sh pins the contract + the 2 build-phase fixes."
+}

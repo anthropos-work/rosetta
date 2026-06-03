@@ -81,6 +81,32 @@ cd test/alignment && go run ./cmd/alignctl run \
   the milestone's exit criterion and the regression signal **M1b** will CI-gate across Clerk version
   bumps (re-`/align-dna` the new version, re-`/align-run`).
 
+## Drift detection (M1b)
+
+Clerk moves; the mirror must stay aligned. M1b makes a Clerk bump a **flagged, mechanical event** by
+reusing M0 wholesale — no new measurement machinery, just two scripts + a CI gate (in the clerkenstein
+repo):
+
+- **`scripts/gate.sh`** — the alignment gate: builds the runner + a fresh `alignctl`, runs
+  `alignctl run --gate-overall 95 --gate-critical 100`. **Exit 0** = gate met, **2** = the mirror
+  regressed. (Uses a built `alignctl` binary, not `go run`, so the exact exit code propagates.)
+- **`scripts/drift-check.sh --new <bumped-DNA>`** — wraps the gate with a DNA-diff step. **Exit codes:**
+  **0** no drift & gate met · **1** the DNA moved (`alignctl dna diff` shows added/removed/changed
+  genes — the Clerk surface changed) · **2** the gate regressed (genes broke).
+- **`.github/workflows/alignment.yml`** — runs the gate on push + a **weekly** schedule (the brief's
+  "follow platform updates within minutes" cadence), turning a Clerk break into a red build.
+
+**The bump runbook** (when `clerk-sdk-go` / `@clerk/*` updates):
+1. `/align-dna` the new version → a new DNA. `drift-check.sh --new …` reports what moved (exit 1).
+2. Re-author the changed/added genes in the DNA; **re-capture goldens** for the moved genes
+   (`alignctl capture`, or hand-author per the hybrid M1-D1 path).
+3. `/align-run` (or `gate.sh`) re-scores the mirror against the bumped surface; close any new
+   divergences in the twin until the gate is green again.
+4. Re-pin the DNA version. The weekly CI keeps it honest between bumps.
+
+`ALIGN_DIR` (default `../../test/alignment`) locates rosetta's `alignctl`. Verified across all exit
+paths against a simulated `clerk@2.7.0` bump.
+
 ## See also
 - [Alignment Testing](../architecture/alignment_testing.md) — the framework that measures this mirror.
 - [Clerk integration](clerk-integration.md) — the real Clerk surface Clerkenstein mirrors.
