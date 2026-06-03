@@ -1,12 +1,13 @@
 # State
 
-**Active version:** **v1.0 "body double"** (Clerkenstein) — in development on `release/01.00-body-double`. **Last milestone of v1.0.**
-**Active milestone:** **M2 "Clerkenstein — browser session + webhook coherence (JS)"** (section) — the JS/FAPI side: a fake Clerk FAPI for `@clerk/nextjs`/`clerk-js` (publishable-key + base-URL override, **fallback** to the real dev Clerk app for the browser while the backend stays mocked); a webhook injector into `app/internal/clerk/events/`; and the **fake-Clerk-API-server** that ALSO wires M1's routed-forward orgclient injection (M1-D2). **Highest technical risk in v1.0** (SDKs hard-code Clerk FAPI; no documented base-URL override — spike early).
-**Next up:** M2 **build complete** (S1–S5 done; Go gate 100%/100% + JS gate 100%/100%). `/developer-kit:harden-milestone` (optional) then `/developer-kit:close-milestone` on M2, then `/developer-kit:close-release` (ships v1.0 → `main`).
-**Last closed:** M1b — 2026-06-03.
+**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **All milestones (M0→M1→M1b→M2) closed; release ready to ship.**
+**Active milestone:** _(between milestones — v1.0 complete)_ — M2 closed; no further milestone in v1.0.
+**Next up:** **`/developer-kit:close-release`** — the release-level review + merge of `release/01.00-body-double` → `main` (and the deferred `feat/demo-environment` → `main` reconciliation, M0-D6). v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md) once v1.0 ships.
+**Last closed:** M2 — 2026-06-03.
 **Paused:** _(none)_
 
 ## Recently closed
+- **M2 "Clerkenstein — browser session + webhook coherence (JS)"** (2026-06-03) — closes the last two Clerk seams (Clerk-free end to end): fake FAPI (browser login via a minted publishable key — config-only, no SDK fork; M2-D1), fake BAPI disarming the platform's networked orgclient (M1-D2 pickup, concurrency-safe store), the svix-signed webhook injector, and a 2nd Alignment DNA (`clerk-js-5`, 9 genes) at 100%/100% — proving M0 is surface-generic. Close found+fixed a ChangeRole nil-map panic (M2-D4). roadmap.md § M2.
 - **M1b "Clerk drift detection"** (2026-06-03) — automation over M0: `gate.sh` + `drift-check.sh` (exit-code contract 0/1/2/3) + a weekly CI alignment gate + a 9-assertion `drift-test.sh`, in the clerkenstein repo. Makes a Clerk bump a flagged, mechanical event. 0 close findings. roadmap.md § M1b.
 - **M1 "Clerkenstein backend mirror"** (2026-06-03, closed-on-gate) — first mirror built by M0: 100%/100% alignment vs `clerk@2.6.0`, offline. roadmap.md § M1.
 - **M0 "Alignment measurement framework"** (2026-06-02) — the reusable alignment framework. roadmap.md § M0.
@@ -17,7 +18,7 @@
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
 ## v1.0 "body double" milestones
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (active — last). Full design + execution graph + risks in [roadmap.md](roadmap.md).
+**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done — last). **All closed; release ready for `/developer-kit:close-release`.** Full design + execution graph + risks in [roadmap.md](roadmap.md).
 
 ## Design decisions locked at design time (2026-06-02)
 - **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
@@ -27,6 +28,6 @@
 - **Two-version split:** v1.0 = Clerkenstein (M0–M2); v1.1 "show floor" = stacks + seeding + recipes (M3–M5, [roadmap-vision.md](roadmap-vision.md)).
 
 ## Branch model
-M1b closed — **merging `m1b/clerk-drift-detection` → `release/01.00-body-double` (`--no-ff`)**, then deleting the branch. Release branch cut from `feat/demo-environment` (M0-D6); `feat/demo-environment` → `main` reconciliation at release close. M2 = section (`/developer-kit:build-milestone`).
+M2 closed — **merged `m2/browser-webhook-coherence` → `release/01.00-body-double` (`--no-ff`)**, branch deleted. All v1.0 milestone branches are now merged into the release branch. **Remaining (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`, NOT by milestone close.
 
-_Last updated: 2026-06-03 (M2 build complete — fake FAPI + BAPI redirect + webhook injector + JS DNA at 100%/100%; ready for close)._
+_Last updated: 2026-06-03 (M2 closed — final v1.0 milestone; merged to release/01.00-body-double; next is /developer-kit:close-release)._
