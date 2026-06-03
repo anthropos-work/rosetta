@@ -1,8 +1,8 @@
 # State
 
-**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **All milestones (M0→M1→M1b→M2) closed; release ready to ship.**
-**Active milestone:** _(between milestones — v1.0 complete)_ — M2 closed; no further milestone in v1.0.
-**Next up:** **`/developer-kit:close-release`** — the release-level review + merge of `release/01.00-body-double` → `main` (and the deferred `feat/demo-environment` → `main` reconciliation, M0-D6). v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md) once v1.0 ships.
+**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **M0→M1→M1b→M2 closed; a cleanup B-milestone M2b (repo consolidation) was added before `/developer-kit:close-release`.**
+**Active milestone:** **M2b "Clerkenstein repo consolidation + knowledge base"** (section, `planned`) — reorganize the `clerkenstein` repo into **library-named** dirs (`authn/ clerk-backend/ clerk-frontend/ clerk-webhook/`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + a gitignored `.agentspace/`, following `/singularity-kit:repo-consolidate`. **Pure cleanup — no behavior change; gates stay green (Go 22/22, JS 9/9, drift 9/9).** Designed + scaffolded 2026-06-03; not yet built. Dir: [m2b-clerkenstein-consolidation/](releases/01.00-body-double/m2b-clerkenstein-consolidation/).
+**Next up:** `/developer-kit:work-milestone M2b` (build → harden → close). ⚠ S4 runs `/singularity-kit:repo-consolidate code`, which is **user-invoked** (disable-model-invocation). Then **`/developer-kit:close-release`** (merge `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main`, M0-D6). v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md) once v1.0 ships.
 **Last closed:** M2 — 2026-06-03.
 **Paused:** _(none)_
 
@@ -18,7 +18,7 @@
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
 ## v1.0 "body double" milestones
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done — last). **All closed; release ready for `/developer-kit:close-release`.** Full design + execution graph + risks in [roadmap.md](roadmap.md).
+**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (active — repo consolidation, then close). Full design + execution graph + risks in [roadmap.md](roadmap.md).
 
 ## Design decisions locked at design time (2026-06-02)
 - **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
@@ -26,8 +26,9 @@
 - **Repo layout:** the M0 framework + skills + docs live in **rosetta**; the Clerk DNA + tests + the `clerkenstein` mirror live in their own repo under gitignored `anthropos-demo/`.
 - **"Zero platform-code changes"** = build-time `go.mod replace` (authn) / fake-API-server (orgclient + JS) + skip-worktree; upstream never modified.
 - **Two-version split:** v1.0 = Clerkenstein (M0–M2); v1.1 "show floor" = stacks + seeding + recipes (M3–M5, [roadmap-vision.md](roadmap-vision.md)).
+- **M2b (added 2026-06-03):** before shipping, consolidate the `clerkenstein` repo — **library-named** dirs (one per mocked dependency: `colony/authn`, `clerk-sdk-go/v2`, `@clerk/clerk-js`+`@clerk/nextjs`, `svix`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + `.agentspace/`, via `/singularity-kit:repo-consolidate`. Pure cleanup, gates stay green. (M2b-D2 = library-named scheme; M2b-D1 = Go package names for hyphenated dirs; M2b-D3 = repo-consolidate is user-invoked.)
 
 ## Branch model
-M2 closed — **merged `m2/browser-webhook-coherence` → `release/01.00-body-double` (`--no-ff`)**, branch deleted. All v1.0 milestone branches are now merged into the release branch. **Remaining (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`, NOT by milestone close.
+M2 closed + merged. **M2b** builds on `m2b/clerkenstein-consolidation` (cut from `release/01.00-body-double`) → merged back at close; the `clerkenstein` repo's own reorg commits stack on its `main` (no branch model). **After M2b closes (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`.
 
-_Last updated: 2026-06-03 (M2 closed — final v1.0 milestone; merged to release/01.00-body-double; next is /developer-kit:close-release)._
+_Last updated: 2026-06-03 (M2b designed + scaffolded — repo-consolidation B-milestone inserted before close-release; next is /developer-kit:work-milestone M2b)._
