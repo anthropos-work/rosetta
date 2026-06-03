@@ -18,6 +18,10 @@
 anthropos-dev/
 anthropos-dev-2/
 
+# Demo-environment scratchpad (v1.0 "body double"): the clerkenstein mirror repo +
+# disposable demo stacks are built here, never tracked by the docs corpus.
+anthropos-demo/
+
 # -----------------------------------------------------------------------------
 # ENVIRONMENT & SECRETS
 # -----------------------------------------------------------------------------

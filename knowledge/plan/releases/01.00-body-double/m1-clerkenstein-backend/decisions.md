@@ -43,3 +43,8 @@ SDK** is in-scope/available here (network for `git clone github.com/clerk/clerk-
 **Recommendation:** (c) hybrid — start offline (authn live-capturable locally; orgclient hand-authored
 from SDK types) so tiks make real score progress immediately, and reconcile orgclient against live
 Clerk when credentials are available. Needs user confirmation before iter-02 runs.
+
+**RESOLVED 2026-06-03 (user):** **(c) hybrid**, and **proceed with iter-02 now**. The
+`anthropos-demo/clerkenstein` workspace is created locally (rosetta `.gitignore` now excludes
+`anthropos-demo/`); orgclient goldens are hand-authored from `clerk-sdk-go/v2` response types, to be
+reconciled against live Clerk when credentials land (M1b's `dna diff` + re-capture path).

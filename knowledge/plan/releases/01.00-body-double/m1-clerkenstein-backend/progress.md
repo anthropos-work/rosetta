@@ -4,7 +4,14 @@ Iterative milestone. Exit gate: `alignctl run` ≥ 100% critical / ≥95% overal
 DNA. Protocol: `corpus/architecture/alignment_testing.md`. One entry per closed iter.
 
 ## Running ledger
-- iter-01 (tok/bootstrap): authored TOK-01 (build-order + golden-capture strategy); surfaced the central open decision (orgclient golden source for the live Clerk API) — see iter-01/progress.md.
+- iter-01 (tok/bootstrap): authored TOK-01 (build-order + golden-capture strategy); surfaced D1 (orgclient golden source). closed-fixed.
+- iter-02 (tik): authored + validated the Clerk Alignment DNA (`clerk@2.6.0`, **22 genes / 11 caps, 13 critical**); stood up the `clerkenstein` workspace; D1 resolved (hybrid). closed-fixed. Gate NOT MET (score 0% — genome only).
+
+## Score history
+| iter | alignment score | note |
+|------|-----------------|------|
+| (gate) | 100% critical / ≥95% overall | exit gate |
+| iter-02 | — (DNA authored; no mirror yet) | 22-gene genome validated |
 
 ## Next-iter queue
-- iter-02 (tik, **blocked pending user decision** — see iter-01 close): stand up `anthropos-demo/clerkenstein` + author the Clerk Alignment DNA from the consumed surface. Requires the golden-capture decision (live Clerk credentials vs hand-authored from SDK types) + confirmation that creating the `anthropos-demo/clerkenstein` workspace + cloning the pinned Clerk SDK is in-scope/available in this environment.
+- **iter-03 (tik)** — build the authn-provider twin (satisfy the cached `colony/authn` Provider interface; local JWT mint/verify; one universal credential) + its `--target source|mirror` runner + locally-captured authn goldens → first real `alignctl run` on the 6 critical authn genes. Resolve iter-01-D1 (colony replace granularity) here. **Feasible:** colony v0.34.1 + clerk-sdk-go confirmed in the module cache.
