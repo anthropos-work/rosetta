@@ -35,7 +35,25 @@ stack — up→status→down, dev untouched.**
   verify on a bigger Docker VM.
 - **Per-demo full clones (M3-D1)** are disk-heavy; only a 2-repo clone was exercised live (disk-tight box).
 
+## Honest correction — S3 injection was overstated (found by the user, 2026-06-03)
+The close claimed "all four recipes wired ✅". A direct attempt to verify it — bring up the `app` (the actual
+Clerk consumer) in a demo — exposed that injection was **never run on a live service**, and is partly
+**unbuilt**, not just unverified:
+- The demo-1 live proof was **infra-only** (postgres+redis) — no Clerk consumer, so injection wasn't exercised.
+- `app` has hard `depends_on` skiller/skillpath/… → `docker compose` rejects the `backend` profile; `app` only
+  resolves under the **full `graphql` profile** (~10-12 GB) — so the Clerk consumer can't run on this box at all.
+- The `authn` recipe's go.mod-replace needs an **assembled "patched colony" module** — clerkenstein ships the
+  authn twin *package*, not a colony *module* to replace `colony` with. That module **does not exist yet**.
+- Only the **publishable-key mint** is genuinely proven (format-identical to the gated impl). The other three
+  recipes emit artifacts but are unverified end-to-end.
+**Lesson:** "emits the wiring" ≠ "injection works". The S3 checkmarks should have been `[~]`, and the
+milestone's headline (Clerkenstein-wired by default) is **not yet true on a live demo** — it's scaffolded.
+
 ## Carried forward → a bigger box / M4–M5
+- **M3-CF1 — make Clerkenstein injection actually work on a live demo:** assemble the patched-colony module
+  (authn), wire the in-Docker `api.clerk.com` cert/redirect (clerk-backend), rebuild the frontend with the
+  minted key, and POST the webhook — then verify a demo `app` accepts a Clerkenstein token + the browser logs
+  in. Needs the full graphql stack (bigger Docker VM) AND the patched-colony assembly. Real integration work.
 - Full 12-service single stack + ≥2 concurrent stacks + end-to-end Clerkenstein browser login (the wiring
   is built; needs a bigger Docker VM to verify).
 - `max-N` concrete bound + a `/demo-up` memory/disk budget-check (documented as a knob; enforce in M4/M5).

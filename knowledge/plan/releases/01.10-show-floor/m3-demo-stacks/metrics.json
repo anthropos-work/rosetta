@@ -25,6 +25,8 @@
     "M3-D4": "tooling home = own gitignored anthropos-demo/demo-stacks repo; skills+guide in rosetta",
     "M3-D5": "acceptance adjusted to 1 stack alongside dev (16 GB host can't fit 2 full stacks)"
   },
-  "resource_gated": "full 12-service single stack + 2+ concurrent stacks + end-to-end Clerkenstein browser login — wiring built, verify on a bigger Docker VM",
-  "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's full lifecycle"
+  "injection_status": "S3 is WIRING SCAFFOLD only — NOT verified on live services. Proven: the publishable-key mint (format-identical to clerkenstein's gated impl). Unverified: clerk-backend/authn/clerk-webhook recipes (artifacts emitted, not run). Unbuilt: the patched-colony module the authn go.mod-replace needs (clerkenstein ships the authn twin package, not a colony module).",
+  "resource_gated": "the `app` (Clerk consumer) needs the full graphql profile (~10-12 GB; hard depends_on skiller/skillpath/...) — doesn't fit Docker's ~8 GB VM beside the dev stack. So injection can't be verified here.",
+  "carried_forward": "M3-CF1 — assemble the patched-colony module + verify all 4 injection recipes end-to-end (demo app accepts a Clerkenstein token + browser login) on the full stack / a bigger Docker VM. Real integration work, not just a hardware wait.",
+  "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's lifecycle AND the failed app-bring-up attempt"
 }

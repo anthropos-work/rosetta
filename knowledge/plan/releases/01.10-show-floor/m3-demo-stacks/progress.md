@@ -15,12 +15,14 @@ by side; `status` listed it; `down --purge` cleanly removed it — and the **dev
 fully intact** (12 containers, postgres healthy) the whole time. This satisfies the M3-D5 acceptance
 ("one demo stack alongside the dev stack, untouched").
 
-**2026-06-03 — M3 COMPLETE (all 5 sections built + hardened).** Tooling in `anthropos-demo/demo-stacks/`
+**2026-06-03 — M3 sections built + hardened; S3 corrected (see below).** Tooling in `anthropos-demo/demo-stacks/`
 (commits `946c5ba` S2 · `cda2db3` S1 · `31bdcd8` S3 · `b626020` harden) + rosetta `/demo-*` skills + the
-ops guide. 12 tooling unit tests green; shellcheck + python compile clean. Acceptance met per **M3-D5**:
-demo-1 ran isolated alongside the dev stack (up→status→down, dev untouched). The full 12-service /
-two-concurrent-stack / end-to-end Clerkenstein browser-login proofs are **resource-gated** → bigger Docker
-VM (the wiring is built; only the live verification awaits the hardware).
+ops guide. 12 tooling unit tests green; shellcheck + python compile clean. **Genuinely proven:** S1
+(clone-at-tag), S2 (the override/isolation engine — demo-1 live alongside the dev stack, M3-D5), the
+publishable-key mint, S4 skills, S5 guide. **Corrected (S3):** the Clerkenstein injection is **wiring scaffold
+only, NOT verified on live services** — a direct attempt to run the `app` exposed two hard blockers (app
+needs the full graphql profile; no patched-colony module exists for the authn replace). Reframed below +
+routed to M3-CF1.
 
 ## S1 — layout + per-demo clone-at-release-tag (M3-D1 + M3-D3) ✅
 - [x] `anthropos-demo/demo-stacks/stacks/demo-N/` workspace layout
@@ -33,12 +35,19 @@ VM (the wiring is built; only the live verification awaits the hardware).
 - [x] `.env.demo-N` template + generation (project name, offset, + Clerkenstein endpoint vars via S3)
 - [x] per-stack Postgres data dir isolation
 
-## S3 — Clerkenstein live-injection wiring (the 4 recipes) ✅ (deterministic wiring; full proof RAM-gated)
-- [x] `authn` go.mod-replace directive emitted for the per-demo clone (throwaway clone → no skip-worktree)
-- [x] `clerk-backend` api.clerk.com → fake-BAPI via an `app` `extra_hosts` `!override` snippet (cert step documented)
-- [x] `clerk-frontend` minted publishable key → env (byte-identical to clerkenstein's gated `MintPublishableKey`)
-- [x] `clerk-webhook` svix-signed injector invocation → `/api/webhook/clerk`
-- _full app-stack verification (rebuild-with-replace + trusted cert + browser login) is RAM-gated (M3-D5)_
+## S3 — Clerkenstein injection: WIRING SCAFFOLD only — NOT verified on live services (honest correction 2026-06-03)
+> **Correction.** The original S3 checkmarks overstated this. `inject` *emits artifacts*; only the
+> publishable-key recipe is actually proven. The injection was **never run against a live Clerk consumer** —
+> the demo-1 live proof was infra-only (postgres+redis, no Clerk consumer). A direct attempt to bring up the
+> `app` (the Clerk consumer) revealed **two hard blockers** (see retro): (1) `app` has hard `depends_on`
+> skiller/skillpath/… so it needs the **full `graphql` profile** (the ~10-12 GB stack — doesn't fit here);
+> (2) the `authn` recipe's go.mod-replace needs an **assembled "patched colony" module that does not exist** —
+> clerkenstein ships the authn twin *package*, not a colony *module* to replace `colony` with.
+- [x] `clerk-frontend` minted publishable key → env — **PROVEN** (byte-identical to clerkenstein's gated `MintPublishableKey`; round-trip). This is the only recipe whose *mechanism* is verified.
+- [~] `clerk-backend` api.clerk.com → fake-BAPI — the `app` `extra_hosts` `!override` snippet is *emitted*; **NOT verified** (needs the app running + a trusted cert).
+- [~] `authn` go.mod-replace — the *directive text* is emitted; **NOT buildable yet** (no patched-colony module to point at — real integration work).
+- [~] `clerk-webhook` svix-signed POST — the injector invocation is *documented*; **NOT run** (needs a live `/api/webhook/clerk`).
+- **Carried forward (M3-CF1):** assemble the patched-colony module + verify all four recipes end-to-end on the full stack (bigger Docker VM). This is genuine integration work, not just a hardware wait.
 
 ## S4 — lifecycle skills + teardown (M3-D2 manual only) ✅
 - [x] `/demo-up [N]` skill (wraps `demo-stack clone → inject → up`, resource-aware)
