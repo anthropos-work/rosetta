@@ -212,7 +212,7 @@ Divergences (1):
 `go test -tags alignment ./examples/toy/...` passes (the toy gate is 80% overall / 100% critical, and
 the divergence is a non-critical gene) while logging the tolerated divergence.
 
-## How M1 and M1b consume this
+## How M1, M1b, and M2 consume this
 
 - **M1 (Clerkenstein backend mirror)** runs the loop: `/align-dna` authors the **Clerk DNA**
   (`clerk@2.6.0` genome), then the build drives `/align-run`'s score up to its **exit gate** (100%
@@ -223,6 +223,11 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   source — a CI gate on the alignment score turns a silent break into a flagged, mechanical update.
   Mechanized as `scripts/{gate,drift-check}.sh` + a weekly CI workflow in the clerkenstein repo; the
   bump runbook + exit-code contract are in [Clerkenstein § Drift detection](../services/clerkenstein.md#drift-detection-m1b).
+- **M2 (browser session + webhook)** proves the framework is **surface-generic**: it authors a *second*
+  DNA — `clerk-js-5` (the FAPI/browser surface) — with its own runner (`jsfapirun`) and goldens, scored
+  by the same `alignctl` to the same gate (100%/100%, 9 genes). Same machinery, a new surface; the
+  parameterized `gate.sh` CI-gates it alongside the Go DNA. See
+  [Clerkenstein § JS browser session](../services/clerkenstein.md#js-browser-session--webhook-coherence-m2).
 
 ## Where things live
 

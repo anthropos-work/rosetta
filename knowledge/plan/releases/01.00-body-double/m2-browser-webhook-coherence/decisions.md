@@ -24,4 +24,18 @@ explicitly routed "make it concurrency-safe" to **injection time = M2**, because
 instance serves concurrent demo requests. S2 adds the mutex + a concurrency regression test. This is the
 Fate-1 home M1-D2 named; recorded here as the pickup.
 
+## M2-D3 — M1 latent bug: `cmd/clerkrun/main.go` was never tracked (fixed inline, Fate 1) — 2026-06-03
+
+**Found during S4** while adding the JS runner's binary to `.gitignore`: M1's `.gitignore` used an
+**unanchored** pattern `clerkrun`, which matches not only the built binary but also the `cmd/clerkrun/`
+**directory** — so the M1 Go-surface runner *source* (`cmd/clerkrun/main.go`) was **silently excluded
+from git** the whole time. The M1 alignment gate built from a working-tree-only file; a fresh clone
+would have had no runner and could not reproduce the 100%/100% gate.
+
+**Fix (Fate 1, lands in M2):** anchored the ignores to repo-root binaries (`/clerkrun`, `/jsfapirun`)
+so `cmd/*/` source is tracked, and committed the previously-untracked `cmd/clerkrun/main.go`. The JS
+runner (`cmd/jsfapirun/main.go`) is tracked from the start. No behavior change — the runner source is
+byte-identical to what M1 has been building; this only makes the repo reproducible. Surfaced here per
+the no-hide rule rather than silently re-ignoring.
+
 ## (template) — further decisions recorded as sections land
