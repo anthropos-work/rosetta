@@ -1,0 +1,23 @@
+{
+  "milestone": "M1",
+  "slug": "clerkenstein-backend",
+  "version": "01.00-body-double",
+  "shape": "iterative",
+  "date": "2026-06-03",
+  "gate": { "metric": "alignment score", "target": "100% critical / >=95% overall", "achieved": "100% overall / 100% critical", "status": "closed-on-gate" },
+  "iters": { "total": 5, "tok": 1, "tik": 4 },
+  "score_history": [
+    { "iter": "iter-02", "note": "22-gene Clerk DNA validated (no mirror)" },
+    { "iter": "iter-03", "overall": 21.1, "critical": 30.8, "note": "authn twin" },
+    { "iter": "iter-04", "overall": 68.4, "critical": 100.0, "note": "critical orgclient" },
+    { "iter": "iter-05", "overall": 100.0, "critical": 100.0, "note": "standard orgclient — GATE MET" }
+  ],
+  "tests": {
+    "clerkenstein_go": { "test_funcs": 27, "fuzz_funcs": 1, "note": "harden final pass; 0 bugs" }
+  },
+  "coverage_pct": { "authn": 100.0, "orgclient": 100.0, "cmd/clerkrun": "integration (alignctl run)" },
+  "alignment": { "dna": "clerk@2.6.0", "genes": 22, "capabilities": 11, "critical_genes": 13 },
+  "flake_count": 0,
+  "close_review": { "code_must_fix": 0, "scope_items": 2, "fate_1": 1, "fate_3": 1, "adversarial_scenarios": 3, "all_disarmed_by_design": true },
+  "notes": "First mirror built by the M0 alignment framework. Clerkenstein backend (authn colony/authn.Provider drop-in + disarmed in-memory orgclient) scores 100% alignment vs clerk@2.6.0, offline. authn injects via go.mod replace whole-colony; orgclient injection (fake-Clerk-API-server) routed to M2 (M1-D2). Code lives in gitignored anthropos-demo/clerkenstein (own git, 5 commits)."
+}

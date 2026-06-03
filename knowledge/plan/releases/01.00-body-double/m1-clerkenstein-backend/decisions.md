@@ -60,3 +60,15 @@ M2. **Decision:** the ALIGNMENT (M1's gate) measures Clerkenstein's orgclient *b
 in-memory twin provides regardless of injection — so the gate fires now. The fake-API-server
 *injection* is routed to the **injection tik** (post-gate) and noted for M2; if it proves
 release-scope-significant, surface at close. No platform-code changes either way.
+
+## Adversarial review (Phase 2c — close, scenarios considered)
+The clerkenstein mirror is ~250 lines, 100% covered, with adversarial-flavored harden tests (tampered
+sig/body, malformed forms, fuzz). The close adversarial pass found **0 must-fix bugs** — the scenarios
+below are all *deliberate disarmed-mirror properties*, documented in `corpus/services/clerkenstein.md`:
+- **JWT alg-confusion:** `parse` ignores the header `alg` and verifies the HMAC regardless. Real Clerk
+  rejects alg mismatch; the mock accepts by design (security disarmed). Not measured by the DNA.
+- **orgclient `Store` not thread-safe** (plain maps). Irrelevant to the alignment gate (the runner uses
+  a fresh seeded store per gene, single-threaded). Relevant only at *injection* time if one instance
+  serves concurrent demo requests → flagged for the injection work (M2-shared fake-API-server).
+- **Tokens with `exp == 0` never expire.** Accepted (disarmed; the runner sets exp for valid tokens).
+No "accept-with-risk" sign-off needed — these are the mock's intended properties, not latent defects.
