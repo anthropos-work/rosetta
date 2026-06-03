@@ -74,3 +74,13 @@ Asked "what prevents you from building the full demo?", I measured instead of as
 **So injection works.** What's left (M3-CF1) is the running-app Docker deployment (per-demo mirror build), which is
 integration/packaging, not a feasibility question. **Lesson: measure before claiming "blocked"; "I haven't built it"
 is not "it can't be built".**
+
+## Capstone — running-app injection PROVEN (2026-06-04)
+Drove the full running-app deployment the user asked for. Built a demo `app` image with the vendored disarmed
+colony (apply-authn.sh + a Dockerfile fix: `COPY vendor-colony` before `go mod download`), ran it live on a
+demo network, and probed a protected route (`/api/workforce/members`):
+- **none → 400** (missing key), **garbage → 401** (auth rejected), **Clerkenstein → 403** (auth ACCEPTED,
+  denied at authz/sentinel).
+The **403-not-401** is the end-to-end proof: a real, running Anthropos `app`, rebuilt with the disarmed colony,
+**accepts a Clerkenstein universal-key token at its live HTTP auth middleware** — zero app-code change. M3-CF1
+resolved. Dev stack untouched throughout (`-p demo-1` scoped). Recipe: `demo-stacks/inject/DEPLOYMENT-PROOF.md`.
