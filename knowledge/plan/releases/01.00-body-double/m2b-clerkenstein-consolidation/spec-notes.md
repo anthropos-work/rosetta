@@ -72,3 +72,14 @@ finalize + manifest step, **user-invoked** (the skill is `disable-model-invocati
 **Phase 0b — KB-fidelity** runs at build (S1). The load-bearing contract docs all exist
 (`corpus/services/clerkenstein.md`, `corpus/architecture/alignment_testing.md`); M2b *adds* the repo's own
 `knowledge/` base + slims the corpus doc. Expect GREEN.
+
+### Pre-flight audits — S1 (restructure)
+**Verdict: GREEN** (2026-06-03, sha `26b2490`, report `kb-fidelity-audit.md`). Both load-bearing corpus
+docs PAIRED + ALIGNED with the current flat repo; baseline green-gate confirmed before any move (Go 22/22,
+JS 9/9, drift ALL PASS, `-race`/gofmt/vet/shellcheck clean). The repo's own `knowledge/` base is a planned
+S2 deliverable, not a blind area. No applied fixes, no open items.
+
+Topic → doc → code triples (for fast re-audit of later sections):
+- Clerkenstein mirror → `corpus/services/clerkenstein.md` → `anthropos-demo/clerkenstein/{authn,bapi,orgclient,fapi,webhook,cmd,dna,golden,golden-js,scripts}`
+- Alignment framework → `corpus/architecture/alignment_testing.md` → `test/alignment/`
+- Repo `knowledge/` base → (authored in S2) → `anthropos-demo/clerkenstein/knowledge/`

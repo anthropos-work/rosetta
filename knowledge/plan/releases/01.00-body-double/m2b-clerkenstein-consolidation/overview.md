@@ -3,7 +3,7 @@ milestone: M2b
 slug: clerkenstein-consolidation
 version: v1.0 "body double"
 milestone_shape: section
-status: planned
+status: archived
 started:
 last_updated: 2026-06-03
 ---
