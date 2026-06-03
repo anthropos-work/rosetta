@@ -3,8 +3,10 @@ milestone: M1b
 slug: clerk-drift-detection
 version: v1.0 "body double"
 milestone_shape: section
-status: in-progress
+status: archived
 started: 2026-06-03
+last_updated: 2026-06-03
+completed: 2026-06-03
 ---
 
 # M1b — Clerk drift detection
