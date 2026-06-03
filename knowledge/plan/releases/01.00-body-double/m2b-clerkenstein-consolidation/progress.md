@@ -55,3 +55,66 @@
   compliant. Formal `/singularity-kit:repo-consolidate code` run is a USER finalize (M2b-D3/D8).
 - **S5** (rosetta `492fc84`): slimmed `corpus/services/clerkenstein.md` 197→62 lines to a pointer at the
   repo's `knowledge/`; fixed 2 stale refs in `alignment_testing.md`. M1b drift-runbook pointer kept.
+
+## M2b: Hardening
+
+### Pass 1 — 2026-06-03
+**Scope manifest (milestone-touched code — clerkenstein repo, separate git):** the reorg is 69
+history-preserving renames; the substantive surface is whether coverage/behavior held on the new
+library-named layout. 7 Go packages, all tests co-located, all 5 fuzz harnesses travelled with their
+seed corpora. Genuinely-new surface = the `shared/` extraction boundary (M2b-D4: `parse`→`Parse`
+exported because mint now lives in `clerk-frontend`, verify in `authn`).
+
+**Coverage (milestone-touched packages — confirms the move did NOT lose coverage vs M2 baseline):**
+| Package | M2 baseline | M2b new layout | Verdict |
+|---|---|---|---|
+| `authn` | ~100% | 100.0% | held |
+| `shared` (jwt) | ~100% | 100.0% | held |
+| `clerk-frontend` (fapi) | ~100% | 100.0% | held |
+| `clerk-backend` (bapi+orgclient **merged**) | ~96–98% | 97.4% | held — merge exposed no gap |
+| `clerk-webhook` | ~96% | 95.6% | held |
+| `alignment/cmd/clerkrun` | ~97% | 96.8% | held |
+| `alignment/cmd/jsfapirun` | ~94% | 93.8% | held |
+
+Every test travelled with its code; no regression from the 69 renames. Statement-coverage delta vs
+pass-start: **+0%** on all packages — by design. This is a pure reorg; the anti-pattern guard forbids
+manufacturing shallow tests on unchanged moved code to bump a number, so the one test added deepens
+*behavioral* coverage of the new cross-package seam, not line count.
+
+**Tests added:**
+- `authn/authn_test.go`: 1 regression (`TestGetUserErrorClassesCrossBoundary`, 4 sub-cases) — pins the
+  three error classes (`malformed` ×2 shapes, `bad-signature`, `expired`) surviving the
+  `shared.Parse → authn.GetUser` package boundary with their bare-string identity intact (the runner +
+  VerifyToken gene compare `err.Error()` strings per M2b-D4), plus the nil-user-on-error contract.
+  Commit `c3649ab`.
+
+**Merge scan (clerk-backend = bapi + orgclient now one package):** `Store` and `Server` coexist without
+collision (`go vet` clean); `orgclient.X→X` rename applied cleanly; 34 test/fuzz funcs (both test sets)
+present; the merge *removed* a cross-package import (server now references in-package `Store`). No
+merge-exposed path; nothing to deepen.
+
+**Fuzz harnesses (confirmed travelled + crash-free on new layout, ~3s each):** `shared/FuzzParse`
+(923k execs, 0 crashes), `clerk-frontend/{FuzzParsePublishableKey,FuzzMintParseRoundtrip}`,
+`clerk-backend/{FuzzCreateOrganizationBody,FuzzBulkInviteBody}`.
+
+**Bugs fixed inline:** none — the move changed no behavior; all gates were green before and after.
+
+**Flakes stabilized:** none — new test 3/3 clean under `-race -shuffle=on`.
+
+**Knowledge backfill:** no KB-worthy findings. The error-string contract is already documented in
+decision M2b-D4 ("the runner consumes error *strings* via `err.Error()`") and the repo's own
+`knowledge/coverage-index.md`; the new test pins an already-documented invariant rather than surfacing
+a new one. The repo's `knowledge/` base (authored in S2) already covers the universal-key JWT flow and
+the shared/ mint↔verify split.
+
+**Post-harden green-gate re-verify (offline, `GOFLAGS=-mod=mod GOPROXY=off GOSUMDB=off`):**
+`go test -race -count=1 ./...` 7/7 ok · Go gate 100.0%/100.0% **22/22**, exit 0 · JS gate
+100.0%/100.0% **9/9**, exit 0 · `drift-test.sh` **ALL PASS** (9/9), exit 0 · gofmt/vet/shellcheck clean.
+
+### Stop condition
+Stopped after Pass 1 (legitimate for a pure reorg). All stop conditions met: the full Step 2b scan
+across all six dimensions found nothing further worth adding (the two sub-100% bands — webhook/clerkrun/
+jsfapirun — contain only unchanged *moved* code that the anti-pattern guard forbids padding; both 100%
+packages have no uncovered branches; the merged clerk-backend scan was clean); coverage delta negligible
+(+0%, by design); zero flakes (3 consecutive clean `-race -shuffle` runs). The move held coverage and
+the `shared/` boundary is solid.
