@@ -1,12 +1,13 @@
 # State
 
-**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **M0→M1→M1b→M2 closed; a cleanup B-milestone M2b (repo consolidation) was added before `/developer-kit:close-release`.**
-**Active milestone:** **M2b "Clerkenstein repo consolidation + knowledge base"** (section, `built` — awaiting `/developer-kit:close-milestone`) — reorganized the `clerkenstein` repo into **library-named** dirs (`authn/ clerk-backend/ clerk-frontend/ clerk-webhook/`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + a gitignored `.agentspace/`, to the `/singularity-kit:repo-consolidate` standard. **Pure cleanup — no behavior change; gates stayed green (Go 22/22, JS 9/9, drift 9/9).** All S1–S5 built 2026-06-03; the formal `repo-consolidate code` run is a USER finalize (M2b-D3/D8). Dir: [m2b-clerkenstein-consolidation/](releases/01.00-body-double/m2b-clerkenstein-consolidation/).
-**Next up:** `/developer-kit:work-milestone M2b` (build → harden → close). ⚠ S4 runs `/singularity-kit:repo-consolidate code`, which is **user-invoked** (disable-model-invocation). Then **`/developer-kit:close-release`** (merge `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main`, M0-D6). v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md) once v1.0 ships.
-**Last closed:** M2 — 2026-06-03.
+**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **ALL milestones (M0→M1→M1b→M2→M2b) closed + merged. v1.0 is ready for `/developer-kit:close-release`.**
+**Active milestone:** _(between milestones — v1.0 feature-complete + consolidated; next action is release close, not a milestone)._
+**Next up:** **`/developer-kit:close-release`** — release-level review + merge `release/01.00-body-double` → `main`, **plus** the deferred `feat/demo-environment` → `main` reconciliation (M0-D6). Then v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md). ⚠ One open **user action** (not a deferral, M2b-D3/D8): run `/singularity-kit:repo-consolidate code` at the `clerkenstein` repo to formally finalize the consolidation (the repo is already authored to its standard; the run is a verification that refreshes `CLAUDE.md`/`singularity-manifest.md`).
+**Last closed:** M2b — 2026-06-03.
 **Paused:** _(none)_
 
 ## Recently closed
+- **M2b "Clerkenstein repo consolidation + knowledge base"** (2026-06-03) — pure-cleanup B-milestone: reorganized the `clerkenstein` repo into **library-named** dirs (`authn/ clerk-backend/ clerk-frontend/ clerk-webhook/`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + `CLAUDE.md`/`singularity-manifest.md` + gitignored `.agentspace/`, via 69 history-preserving renames. No behavior change — both gates (Go 22/22, JS 9/9) + drift (9/9) stayed green. Close fixed 1 stale comment + 2 doc count drifts; deferral audit GREEN. **Last v1.0 milestone.** roadmap.md § M2b.
 - **M2 "Clerkenstein — browser session + webhook coherence (JS)"** (2026-06-03) — closes the last two Clerk seams (Clerk-free end to end): fake FAPI (browser login via a minted publishable key — config-only, no SDK fork; M2-D1), fake BAPI disarming the platform's networked orgclient (M1-D2 pickup, concurrency-safe store), the svix-signed webhook injector, and a 2nd Alignment DNA (`clerk-js-5`, 9 genes) at 100%/100% — proving M0 is surface-generic. Close found+fixed a ChangeRole nil-map panic (M2-D4). roadmap.md § M2.
 - **M1b "Clerk drift detection"** (2026-06-03) — automation over M0: `gate.sh` + `drift-check.sh` (exit-code contract 0/1/2/3) + a weekly CI alignment gate + a 9-assertion `drift-test.sh`, in the clerkenstein repo. Makes a Clerk bump a flagged, mechanical event. 0 close findings. roadmap.md § M1b.
 - **M1 "Clerkenstein backend mirror"** (2026-06-03, closed-on-gate) — first mirror built by M0: 100%/100% alignment vs `clerk@2.6.0`, offline. roadmap.md § M1.
@@ -14,11 +15,11 @@
 
 ## Headline numbers (v1.0 so far)
 - **Alignment gates:** **100% overall / 100% critical** on BOTH surfaces — Go (22/22 genes, `clerk@2.6.0`) and JS/FAPI (9/9 genes, `clerk-js@5`); CI-gated weekly + on push (M1b), parameterized for both DNAs (M2).
-- **clerkenstein:** 7 packages, **112 Go test/fuzz funcs** (107 tests + 5 fuzz) + a 9-assertion shell drift harness; flake 5/5 (`-race`, shuffled); gofmt/vet/shellcheck clean. Coverage: authn/orgclient/fapi 100%, clerkrun 97%, bapi 96%, webhook 96%, jsfapirun 94%.
+- **clerkenstein:** 7 packages (library-named: authn/clerk-backend/clerk-frontend/clerk-webhook/shared + alignment/cmd), **113 Go test/fuzz funcs** (108 tests + 5 fuzz) + a 9-assertion shell drift harness; flake 5/5 (`-race`, shuffled); gofmt/vet/shellcheck clean. Coverage: authn/shared/clerk-frontend 100%, clerk-backend 97%, clerkrun 97%, clerk-webhook 96%, jsfapirun 94%.
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
 ## v1.0 "body double" milestones
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (active — repo consolidation, then close). Full design + execution graph + risks in [roadmap.md](roadmap.md).
+**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done). **All milestones closed — v1.0 ready for `/developer-kit:close-release`.** Full design + execution graph + risks in [roadmap.md](roadmap.md).
 
 ## Design decisions locked at design time (2026-06-02)
 - **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
@@ -31,4 +32,4 @@
 ## Branch model
 M2 closed + merged. **M2b** builds on `m2b/clerkenstein-consolidation` (cut from `release/01.00-body-double`) → merged back at close; the `clerkenstein` repo's own reorg commits stack on its `main` (no branch model). **After M2b closes (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`.
 
-_Last updated: 2026-06-03 (M2b designed + scaffolded — repo-consolidation B-milestone inserted before close-release; next is /developer-kit:work-milestone M2b)._
+_Last updated: 2026-06-03 (M2b closed + merged to release/01.00-body-double — all v1.0 milestones done; next is /developer-kit:close-release)._
