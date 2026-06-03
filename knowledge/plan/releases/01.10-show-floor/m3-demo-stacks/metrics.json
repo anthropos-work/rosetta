@@ -1,0 +1,30 @@
+{
+  "milestone": "M3",
+  "title": "Disposable multi-instance demo stacks",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-03",
+  "sections": { "total": 5, "done": 5 },
+  "acceptance": "M3-D5: one demo stack (postgres+redis) isolated alongside the dev anthropos stack — up/status/down, dev untouched. Verified live on a 16 GB box.",
+  "tooling": {
+    "repo": "anthropos-demo/demo-stacks (gitignored, own git)",
+    "python_modules": ["gen_override.py", "clone_repos.py", "inject.py"],
+    "cli": "demo-stack (bash: up/down/clone/inject/status/gen)",
+    "unit_tests": 12,
+    "lint": "shellcheck clean, py_compile clean",
+    "commits": 5
+  },
+  "rosetta_deliverables": {
+    "skills": ["demo-up", "demo-down", "demo-status"],
+    "guide": "corpus/ops/demo_stacks.md (cross-linked from corpus/ops/README.md)"
+  },
+  "decisions": {
+    "M3-D1": "per-demo service-repo clones",
+    "M3-D2": "manual teardown only",
+    "M3-D3": "clone at latest release tag, not main",
+    "M3-D4": "tooling home = own gitignored anthropos-demo/demo-stacks repo; skills+guide in rosetta",
+    "M3-D5": "acceptance adjusted to 1 stack alongside dev (16 GB host can't fit 2 full stacks)"
+  },
+  "resource_gated": "full 12-service single stack + 2+ concurrent stacks + end-to-end Clerkenstein browser login — wiring built, verify on a bigger Docker VM",
+  "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's full lifecycle"
+}

@@ -3,7 +3,8 @@ milestone: M3
 slug: demo-stacks
 version: v1.1 "show floor"
 milestone_shape: section
-status: planned
+status: done
+completed: 2026-06-03
 created: 2026-06-03
 last_updated: 2026-06-03
 delivers: corpus/ops/demo_stacks.md
