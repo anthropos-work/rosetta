@@ -3,8 +3,11 @@ milestone: M1
 slug: clerkenstein-backend
 version: v1.0 "body double"
 milestone_shape: iterative
-status: in-progress
+status: archived
 started: 2026-06-03
+last_updated: 2026-06-03
+completed: 2026-06-03
+close_status: closed-on-gate
 exit_gate: "alignctl run reports 100% alignment on the platform-consumed Clerk Go surface (critical capabilities) AND >=95% overall, with any waived genes documented + justified"
 iteration_protocol_ref: corpus/architecture/alignment_testing.md
 ---
