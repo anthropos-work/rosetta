@@ -34,3 +34,16 @@ B-milestone: automation/config over M0 (`alignctl dna diff` + `alignctl run --ga
 
 ### Stop condition
 Stabilized after Pass 1: the exit-path matrix + edge cases (empty/not-found/unknown-arg) + both regression-pins are covered; dimensions 5 (fuzzing — the DNA parser is alignctl's, fuzzed in M0) and 6 (perf — no SLA) are N/A for a 2-script shell milestone; 0 flakes. Nothing further worth adding.
+
+## M1b: Final Review (close-milestone, 2026-06-03)
+
+Section, all sections + harden complete. Phase 1b deferral re-audit GREEN. In-thread review (2 shell scripts + CI YAML + docs). **0 code must-fixes, 0 scope gaps, 0 doc gaps, 0 decisions to blend.**
+
+### Scope — all Fate-1 delivered
+- drift-check + gate scripts, CI workflow (S1), drift runbook doc (S2), drift-test harness + CI shellcheck/drift-test steps (harden). overview In-list fully delivered; "Out" items are M2/v1.1 (correctly scoped).
+
+### Adversarial review (Phase 2c — recorded in decisions.md)
+- All script failure modes are exercised by `drift-test.sh`: missing/not-found/unknown-arg (→3), reformatted-identical DNA (→0, no spurious drift), the built-binary exit-2 + abspath regressions. 0 latent issues.
+
+### Decision triage
+- M1b's drift contract (exit codes) is already in `corpus/services/clerkenstein.md` § Drift detection + spec-notes — nothing new to blend; decisions.md stays archive.
