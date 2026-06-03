@@ -24,6 +24,22 @@ each demo is running). Clerkenstein injection (go.mod replace + skip-worktree) i
 checked-out tag. (Open: exact "release tag" pattern — `v*` only vs any tag — settle in S1 against the actual org
 repos' tagging conventions.)
 
+## M3-D4 — tooling home: a new gitignored `anthropos-demo/demo-stacks/` repo (build, 2026-06-03)
+The demo-stack tooling (override generator, lifecycle CLI, registry, clone/injection logic) lives in a
+**new gitignored repo at `anthropos-demo/demo-stacks/`** with its own git — the same pattern as
+`clerkenstein/`. The user-facing **`/demo-*` slash-command skills** and the **`corpus/ops/demo_stacks.md`**
+guide live in the **rosetta** repo (tracked, on the `m3/demo-stacks` branch). Rationale: `anthropos-demo/`
+is gitignored from rosetta, so runtime tooling can't be rosetta-tracked; skills + docs are rosetta's domain.
+
+## M3-D5 — acceptance bar adjusted to "1 demo stack alongside the dev stack" (user-directed, 2026-06-03)
+The design acceptance was *two* concurrent full stacks. The dev box is **16 GB with Docker's VM capped at
+~8 GB and a full `anthropos` dev stack already running** — two full stacks (~20-24 GB) is physically
+impossible here. User direction: "do the best you can; 1 is ok; if you can make a demo live alongside the
+dev stack without messing with it, that's already a great test." So the **acceptance is one isolated demo
+stack co-resident with the dev stack**, proving the isolation mechanism. The full 12-service single-stack
+run + end-to-end Clerkenstein browser login are **resource-gated** → verified on a bigger Docker VM / box
+(documented in the ops guide), not on this hardware.
+
 ## Open (resolve during build)
 - Max-N + exact port-offset sizing (below the ephemeral range, no overlap with the 24 base mappings).
 - The `clerk-backend` `api.clerk.com` → fake-BAPI redirect mechanism **inside Docker** (extra_hosts + trusted CA
