@@ -4,11 +4,11 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-03):** **v1.0 "body double"** (Clerkenstein) **SHIPPED** — all six milestones
-(M0 → M1 → M1b → M2 → M2b → M2c) closed, merged to `main`, and tagged `v1.0`; the release records are
-archived under [`releases/archive/01.00-body-double/`](releases/archive/01.00-body-double/). Now **between
-releases** — `/developer-kit:design-roadmap` promotes v1.1 "show floor" next. (No `roadmap-legacy.md` yet —
-that appears when a whole *major* version retires; v1.1 is the same major.)
+**Status (2026-06-03):** **v1.0 "body double"** SHIPPED (tagged `v1.0`; records archived under
+[`releases/archive/01.00-body-double/`](releases/archive/01.00-body-double/)). **v1.1 "show floor" is now IN
+DEVELOPMENT** on `release/01.10-show-floor` — M3 (demo stacks) → M4 (seeding) → M5 (recipes), all section-shaped,
+built additively under the gitignored `anthropos-demo/`. Live state: [`state.md`](state.md). (No `roadmap-legacy.md`
+yet — that appears when a whole *major* version retires; v1.1 is the same major.)
 
 ## Files
 
@@ -39,10 +39,10 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** _(between releases)_ — **v1.0 "body double" shipped** (merged to `main`, tagged `v1.0`,
-2026-06-03). **v1.1 "show floor"** (M3–M5: disposable stacks + seeding + recipes) is next, staged in
-[`roadmap-vision.md`](roadmap-vision.md) and promoted to active by `/developer-kit:design-roadmap`.
-_(For the live milestone/branch state, read [`state.md`](state.md).)_
+**Active:** **v1.1 "show floor"** — in development on `release/01.10-show-floor` (designed 2026-06-03). M3
+(disposable demo stacks) → M4 (declarative seeding) → M5 (corpus + recipes + polish), strictly sequential, all
+additive under `anthropos-demo/`. v1.0 "body double" shipped (tag `v1.0`, 2026-06-03). _(Live milestone/branch
+state: [`state.md`](state.md). v2+ proposals: [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

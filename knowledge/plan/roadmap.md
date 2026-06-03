@@ -9,23 +9,77 @@ builder skills).
 > the cloned platform in `anthropos-dev/`. Gap analysis:
 > [`.agentspace/scratch/roadmap-research-2026-06-02.md`](../../.agentspace/scratch/roadmap-research-2026-06-02.md).
 >
-> **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`). All six milestones
-> (M0→M2c) closed + merged; full detail in the `## Done` section below. **Now between releases** — the next
-> action is `/developer-kit:design-roadmap` to promote **v1.1 "show floor"** (M3–M5) from
-> [`roadmap-vision.md`](roadmap-vision.md) into active development.
+> **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
+> **v1.1 "show floor" — IN DEVELOPMENT** on `release/01.10-show-floor` (designed 2026-06-03 from the staged
+> vision; M3 → M4 → M5, sequential). Next action: `/developer-kit:work-milestone M3` (or `:build-milestone M3`).
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| v1.1 | show floor | Disposable, richly-seeded demo stacks on demand | M3 → M4 → M5 | **next** — promotes from [roadmap-vision.md](roadmap-vision.md) via `/developer-kit:design-roadmap` |
+| **v1.1** | **show floor** | Disposable, richly-seeded demo stacks on demand | M3 → M4 → M5 | 🚧 **in development** (`release/01.10-show-floor`, designed 2026-06-03) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
 repo** (current or future) and **no disruption to the dev environment** — demo clones live under the
 gitignored `anthropos-demo/` (mirroring `anthropos-dev/`). Full brief:
 [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.1 "show floor"
+
+**Theme:** v1.0 made the platform run *without* Clerk; v1.1 makes it run *as many disposable, richly-seeded demo
+worlds as you want*. Sales / CS / PM can spin up an isolated demo stack in the morning, seed it to a specific
+use-case (an org of 1k users with months of activity), demo it, and kill it at night — no Clerk friction, no
+shared-staging contention. Built **entirely under the gitignored `anthropos-demo/` scratchpad** as additive
+overlay/orchestration — **zero changes to any read-only platform repo** (the v1.0 hard constraint holds).
+
+**Designed 2026-06-03** (3 research agents against the real `anthropos-dev/platform` compose/Makefile/seeding
+surface). Decisions locked: **per-demo service-repo clones** (M3-D1) + **manual teardown only** (M3-D2).
+
+### M3: Disposable multi-instance demo stacks (`anthropos-demo`)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m3-demo-stacks/](releases/01.10-show-floor/m3-demo-stacks/)
+**Goal:** Spin up `demo-1`, `demo-2`, … as isolated full stacks on one box — each Clerkenstein-wired (auth-working,
+no real Clerk) — killable cleanly, without editing any read-only platform file.
+**Why buildable now:** the collision surface is fully grounded — 24 hard-coded ports, one fixed
+`COMPOSE_PROJECT_NAME`, one relative Postgres bind-mount — each fixed additively (a generated compose **override**
+with a port-offset, a per-stack project name + `.env.demo-N`, per-demo data dirs, the four Clerkenstein
+live-injection recipes wired by default, lifecycle skills `/demo-up|down|status` + a registry).
+**Delivers →** `corpus/ops/demo_stacks.md`. **Depends on:** v1.0 (Clerkenstein). **Biggest risk:** the
+`clerk-backend` `api.clerk.com`→fake-BAPI redirect has never been wired inside a live Docker stack (spike first).
+
+### M4: Declarative data seeding
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m4-declarative-seeding/](releases/01.10-show-floor/m4-declarative-seeding/)
+**Goal:** One `demo.seed.yaml` (org size, role mix, content, activity span) backfills an M3 stack — orchestrating
+the platform's **existing** bootstrap/import CLIs (`bootstrap-{user,org}`/`JoinOrg`, `import{Skills,JobRole}`,
+`jobsim`) in dependency order. **Hard line:** structural data only (AI transcripts/embeddings deferred; consumes a
+pre-embedded skiller snapshot). `--validate`/`--dry-run` folded in (the M4b hedge, M4-D1). **Delivers →**
+`corpus/ops/seeding-spec.md`. **Depends on:** M3. Clerkenstein removing Clerk's rate limit makes 1k-user seeding
+pure DB inserts.
+
+### M5: Demo corpus + use-case recipes + skill polish
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m5-demo-corpus-recipes/](releases/01.10-show-floor/m5-demo-corpus-recipes/)
+**Goal:** Make demos repeatable + discoverable — a demo-env corpus family, 2–3 use-case recipes, 2–3 curated seed
+presets (200/500/1k), the demo skills in `CLAUDE.md`, and the **v1.0 express-gate CI carry-forward** wired (a demo
+stack materializes `@clerk/express`). **Delivers →** `corpus/ops/demo/` family. **Depends on:** M3 + M4 (build-blocked until both ship).
+
+### Execution graph (v1.1)
+```
+v1.1 "show floor"   — disposable, richly-seeded demo worlds on demand
+   M3 ──────────────→ M4 ──────────────→ M5
+   (stacks)           (seeding)          (recipes + presets + polish)
+```
+**Strictly sequential — no internal parallelism:** M4 needs a stack to seed into; M5 curates M4's output +
+validates against M3's stacks. (The lone parallel opportunity — the express-gate CI pickup — is small and parked in M5.)
+
+### Risks (v1.1)
+- **(blocks-M3)** Clerkenstein `clerk-backend` DNS/cert redirect inside Docker — never wired live (spike; fallback = base-URL env override).
+- **(degrades-quality)** `next-web-app` bakes the Clerk publishable key at *build* time → per-demo frontend rebuild.
+- **(scope)** M4 is large — backdating fidelity (ent-Immutable/DB-default timestamps) + 1k-scale perf + the pre-embedded-snapshot provenance.
+- **(scope)** Box capacity: full stacks are ~10–12 GB RAM each; per-demo clones (M3-D1) add disk — `/demo-up` should budget-check.
+
+### Open decisions (resolve during build)
+Max-N + port-offset sizing; Directus content tenancy in a multi-demo world; external shareability (Tailscale vs ingress); the AI-content STRETCH trigger (M5).
 
 ## Done — v1.0 "body double" (SHIPPED 2026-06-03 · tag `v1.0`)
 

@@ -1,8 +1,8 @@
 # State
 
-**Active version:** _(between releases)_ — **v1.0 "body double" SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; `release/01.00-body-double` + `feat/demo-environment` deleted).
-**Active milestone:** _(between releases — awaiting `/developer-kit:design-roadmap` to promote v1.1 "show floor")._
-**Next up:** **`/developer-kit:design-roadmap`** — promote **v1.1 "show floor"** (M3–M5: disposable demo stacks + declarative data seeding + use-case recipes) from [roadmap-vision.md](roadmap-vision.md) into active development. (v1.0 carry-forward, picked up there: wire the `@clerk/express` gate into CI — needs Node + `@clerk/express` present.)
+**Active version:** **v1.1 "show floor"** — IN DEVELOPMENT on `release/01.10-show-floor` (designed 2026-06-03). Disposable, richly-seeded demo stacks on demand, built entirely under the gitignored `anthropos-demo/` scratchpad (zero platform-repo changes). M3 → M4 → M5, strictly sequential.
+**Active milestone:** **M3 "Disposable multi-instance demo stacks"** (section, `planned`) — spin up `demo-1`, `demo-2`, … as isolated full stacks on one box, each Clerkenstein-wired (auth-working, no real Clerk), killable cleanly, via an additive compose overlay (port-offset + per-stack project/data + the 4 live-injection recipes) — no read-only platform file touched. Dir: [m3-demo-stacks/](releases/01.10-show-floor/m3-demo-stacks/).
+**Next up:** **`/developer-kit:work-milestone M3`** (or `:build-milestone M3`) on `release/01.10-show-floor`. Then M4 (seeding) → M5 (recipes + polish) → `/developer-kit:close-release`.
 **Last shipped:** **v1.0 "body double"** — 2026-06-03 (tag `v1.0`). · **Last closed milestone:** M2c — 2026-06-03.
 **Paused:** _(none)_
 
@@ -10,31 +10,25 @@
 - **v1.0 "body double"** — **2026-06-03**, tag `v1.0`. The alignment-testing framework (`test/alignment/`) + **Clerkenstein**, a *measured* drop-in Clerk mock at **100%/100% on all three surfaces** (Go · JS/FAPI · `@clerk/express`), zero platform-code change. 6 milestones (M0→M2c). close-release caught + fixed 1 blocker (an `@clerk/express` gate regression from the M2c close). Records: [releases/archive/01.00-body-double/](releases/archive/01.00-body-double/) (review · retro · metrics · stats · lockfile).
 
 ## Recently closed
-- **M2c "`@clerk/express` backend session verification (RS256/JWKS)"** (2026-06-03, iterative, closed-on-gate) — brought the last un-gated Clerk consumer (`@clerk/express`, studio-desk's Node backend) under alignment at **100%/100%** on a 3rd DNA (`clerk-express-1.json`, 9 genes). The defining risk (the **RS256 wall** — `@clerk/express` hard-rejects HS256) was solved the **additive** way: an RS256 path (RSA keypair + real JWKS + RS256 minting) the *genuine* SDK accepts networkless via `jwtKey` — **no HS256 migration**, so M1 (22/22) + M2 (9/9) stayed green throughout. `@clerk/express` is *verified, not reimplemented* (no mock dir — the svix pattern, reused). 5 iters (1 bootstrap tok + 4 tiks; iter-04 = crux proof, iter-05 = gate). Close fixed an adversarial latent flake (`tamperSig`) + a gitignore gap. **Last v1.0 milestone.** roadmap.md § M2c.
-- **M2b "Clerkenstein repo consolidation + knowledge base"** (2026-06-03) — pure-cleanup B-milestone: reorganized the `clerkenstein` repo into **library-named** dirs (`authn/ clerk-backend/ clerk-frontend/ clerk-webhook/`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + `CLAUDE.md`/`singularity-manifest.md` + gitignored `.agentspace/`, via 69 history-preserving renames. No behavior change — both gates (Go 22/22, JS 9/9) + drift (9/9) stayed green. Close fixed 1 stale comment + 2 doc count drifts; deferral audit GREEN. roadmap.md § M2b.
-- **M2 "Clerkenstein — browser session + webhook coherence (JS)"** (2026-06-03) — closes the last two Clerk seams (Clerk-free end to end): fake FAPI (browser login via a minted publishable key — config-only, no SDK fork; M2-D1), fake BAPI disarming the platform's networked orgclient (M1-D2 pickup, concurrency-safe store), the svix-signed webhook injector, and a 2nd Alignment DNA (`clerk-js-5`, 9 genes) at 100%/100% — proving M0 is surface-generic. Close found+fixed a ChangeRole nil-map panic (M2-D4). roadmap.md § M2.
-- **M1b "Clerk drift detection"** (2026-06-03) — automation over M0: `gate.sh` + `drift-check.sh` (exit-code contract 0/1/2/3) + a weekly CI alignment gate + a 9-assertion `drift-test.sh`, in the clerkenstein repo. Makes a Clerk bump a flagged, mechanical event. 0 close findings. roadmap.md § M1b.
-- **M1 "Clerkenstein backend mirror"** (2026-06-03, closed-on-gate) — first mirror built by M0: 100%/100% alignment vs `clerk@2.6.0`, offline. roadmap.md § M1.
-_(M0 "Alignment measurement framework" — 2026-06-02 — rolled off the recently-closed window; see roadmap.md § M0.)_
+_(v1.0's milestones M0→M2c moved to [roadmap.md](roadmap.md) § Done — v1.0 at ship. No v1.1 milestone closed yet — M3 is next.)_
 
-## Headline numbers (v1.0 — feature-complete)
-- **Alignment gates:** **100% overall / 100% critical** on **ALL THREE surfaces** — Go (22/22 genes, `clerk@2.6.0`), JS/FAPI (9/9 genes, `clerk-js@5`), and **`@clerk/express` (9/9 genes, M2c — RS256/JWKS)**; the Go + JS gates are CI-gated weekly + on push (M1b), parameterized per-DNA (M2). The express gate is Node-dependent (verifies against the genuine SDK) → CI-wiring carried to v1.1.
-- **clerkenstein:** **8 packages** (library-named: authn/clerk-backend/clerk-frontend/clerk-webhook/shared + alignment/cmd ×{clerkrun, jsfapirun, expressrun}), **128 Go test/fuzz funcs** (122 tests + 6 fuzz) + a 9-assertion shell drift harness; flake 0 (`-race`, shuffled); gofmt/vet/shellcheck clean. Coverage: authn/clerk-frontend 100%, clerk-backend 97%, shared 96% (RS256 added), clerkrun 97%, clerk-webhook 96%, jsfapirun 94%, expressrun 49% (mirror path Node-dependent — gate-covered).
-- (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
+## Headline numbers (inherited from v1.0 close — baseline for v1.1)
+- **Alignment gates (v1.0 — held green):** **100%/100%** on all three surfaces — Go (22/22, `clerk@2.6.0`), JS/FAPI (9/9, `clerk-js@5`), `@clerk/express` (9/9, RS256/JWKS). Clerkenstein: 8 packages, 128 Go test/fuzz funcs, flake 0. v1.1 must keep these green (the demo stacks consume Clerkenstein, they don't change it).
+- **rosetta framework:** `test/alignment/` 43 test + 3 fuzz, stdlib-only.
+- **v1.1 baseline:** no new code-metric baseline yet — set as M3/M4 land their seeder + overlay tooling under `anthropos-demo/`.
 
-## v1.0 "body double" milestones (shipped)
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done) → **M2c** (done — iterative, `@clerk/express` RS256/JWKS, closed-on-gate). **All milestones closed + merged + SHIPPED 2026-06-03 (tag `v1.0`).** Full design + execution graph + risks in [roadmap.md](roadmap.md) § Done — v1.0.
+## v1.1 "show floor" milestones (planned)
+**M3** (planned — demo stacks) → **M4** (planned — declarative seeding) → **M5** (planned — corpus + recipes + polish). Strictly sequential. Full design + execution graph + risks in [roadmap.md](roadmap.md) § In Development — v1.1.
 
-## Design decisions locked at design time (2026-06-02)
-- **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
-- **M2 frontend:** attempt the fake Clerk FAPI server; **fall back to the real dev Clerk app for the browser** (backend fully mocked) if base-URL override proves too fragile. M2 also owns the **fake-Clerk-API-server** that wires M1's orgclient injection (M1-D2).
-- **Repo layout:** the M0 framework + skills + docs live in **rosetta**; the Clerk DNA + tests + the `clerkenstein` mirror live in their own repo under gitignored `anthropos-demo/`.
-- **"Zero platform-code changes"** = build-time `go.mod replace` (authn) / fake-API-server (orgclient + JS) + skip-worktree; upstream never modified.
-- **Two-version split:** v1.0 = Clerkenstein (M0–M2); v1.1 "show floor" = stacks + seeding + recipes (M3–M5, [roadmap-vision.md](roadmap-vision.md)).
-- **M2b (added 2026-06-03):** before shipping, consolidate the `clerkenstein` repo — **library-named** dirs (one per mocked dependency: `colony/authn`, `clerk-sdk-go/v2`, `@clerk/clerk-js`+`@clerk/nextjs`, `svix`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + `.agentspace/`, via `/singularity-kit:repo-consolidate`. Pure cleanup, gates stay green. (M2b-D2 = library-named scheme; M2b-D1 = Go package names for hyphenated dirs; M2b-D3 = repo-consolidate is user-invoked.)
-- **M2c (added 2026-06-03):** complete the mock before shipping — bring **`@clerk/express`** (studio-desk's Node backend, the last un-gated Clerk consumer) under alignment as an **iterative** milestone (new `clerk-express/` seam + 3rd DNA → gate). Research-confirmed the **RS256 wall** (M2c-D1: `@clerk/express` rejects HS256; needs RS256+JWKS). Central open iteration (M2c-D2): additive RS256 vs migrating the HS256 seams (re-gating M1/M2). Placement v1.0 by user choice (M2c-D3 — re-opens the release, accepts the re-gating risk). **Correction (2026-06-03):** `svix` is a *real used* dep, not mocked — what's mocked is Clerk's event emission (clerkenstein `3170cef`).
+## v1.1 decisions locked at design (2026-06-03)
+- **M3-D1 — per-demo service-repo clones** (user-chosen): each `demo-N` re-clones the service repos under `anthropos-demo/stacks/demo-N/` (full isolation, ~N× disk) rather than sharing the `anthropos-dev/*` clones.
+- **M3-D2 — manual teardown only** (user-chosen): `/demo-down [N]` is the only reclaim path; no nightly auto-reaper in M3.
+- **M4-D1 — fold `--validate`/`--dry-run` into M4** (no separate M4b yet): split out an M4b only if that surface grows beyond a flag.
+- **Carried into v1.1 (inherited hard constraint):** **zero changes to any read-only platform repo** — all demo work is additive overlay/orchestration under the gitignored `anthropos-demo/`. Clerkenstein (v1.0) is consumed, not modified.
+- **Express-gate CI carry-forward** (from v1.0) lands in **M5** (a demo stack materializes `@clerk/express` in `node_modules`).
 
 ## Branch model
-**v1.0 SHIPPED:** `release/01.00-body-double` merged `--no-ff` → `main` and tagged **`v1.0`**; the release branch is deleted. `feat/demo-environment` (the M0-D6 reconciliation) was an **ancestor** of the release — subsumed by the merge, then deleted (no separate merge needed). The `clerkenstein` mirror lives in its own gitignored repo on `main` (no branch model). **Local merge + tag only — not pushed to `origin`** (the push is the maintainer's call). Next branch work: `/developer-kit:design-roadmap` cuts `release/01.10-show-floor` when v1.1 is promoted.
+**v1.0 SHIPPED + pushed:** `release/01.00-body-double` merged `--no-ff` → `main`, tagged **`v1.0`** (both pushed to `origin`); release branch deleted. Clerkenstein published **private** at `anthropos-work/clerkenstein`.
+**v1.1 IN DEVELOPMENT:** `release/01.10-show-floor` cut from `main` (2026-06-03); the v1.1 design + milestone scaffolds (M3/M4/M5) live on it. `main` stays at the v1.0-shipped state until v1.1 closes. Milestone branches `m{3,4,5}/{slug}` cut from the release branch by `/developer-kit:build-milestone`; merged back at each close; the release merges → `main` + tags `v1.1` at `/developer-kit:close-release`. _(The v1.1 release branch is local — not yet pushed.)_
 
-_Last updated: 2026-06-03 (v1.0 "body double" shipped — merged to main + tagged `v1.0`; between releases, next is /developer-kit:design-roadmap for v1.1)._
+_Last updated: 2026-06-03 (v1.1 "show floor" promoted to active — release/01.10-show-floor cut, M3/M4/M5 scaffolded; next is /developer-kit:work-milestone M3)._
