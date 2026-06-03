@@ -57,3 +57,13 @@ real-SDK fidelity for the express surface; the Node runner verifies against the 
 it (`alignctl dna validate`).
 
 <!-- Iteration decisions (toks, escape-hatch escalations, user-blockers) recorded here as they arise. -->
+
+## Adversarial review (close Phase 2c)
+- **`expressrun` bad-signature tamper could be a no-op (latent gate flake).** The runner built the
+  bad-signature scenario as `valid[:len-3]+"AAA"`. The token carries `iat`/`nbf` from `now`, so its
+  signature tail varies per run — if it ever *were* `AAA`, the tamper would be a no-op and
+  `ExpressAuth/bad-signature` would see a *valid* token (divergent → a rare gate flake). **Fixed at close:**
+  `tamperSig` flips the last char to a guaranteed-different one, pinned by `TestTamperSig`.
+- Other modules surfaced no non-obvious failure: the RS256 key is a fixed demo credential (no keygen
+  nondeterminism); the new store reads are mutex-guarded; `verifyViaNode` fails loud if `@clerk/express`
+  isn't resolvable (clear error, not a silent pass).

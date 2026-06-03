@@ -1,7 +1,7 @@
 # M2c — progress (iterative · Gate Outcome Ledger)
 
 **Milestone:** M2c — `@clerk/express` backend session verification (RS256/JWKS) · **Shape:** iterative
-**Status:** **GATE MET** (iter-05, 2026-06-03 — 100%/100% on clerk-express-1.json). Next: `/developer-kit:harden-mstone-iters` → `/developer-kit:close-milestone`.
+**Status:** `archived` (completed 2026-06-03) — GATE MET (100%/100% on clerk-express-1.json), merged to release/01.00-body-double.
 
 ## Exit gate
 **alignment ≥ 95% overall AND 100% critical on `clerk-express-1.json`**, AND the load-bearing test passes:
@@ -42,4 +42,25 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 ## Green-gate guard (if Option B / migration is chosen)
 Any iteration that touches `authn` / `clerk-frontend` / `shared` MUST re-run the existing gates before
 closing: Go gate 22/22, JS gate 9/9, drift-test 9/9 — re-capturing goldens as needed. A migration that
-leaves M1/M2 red is incomplete.
+leaves M1/M2 red is incomplete. **(Moot — additive path chosen; M1/M2 never touched.)**
+
+## M2c: Close — Gate Outcome Ledger (closed-on-gate)
+
+**Gate:** target ≥95% overall / 100% critical · achieved **100% / 100% (9/9)** · distance **0** · status
+**closed-on-gate** (no carry-forward needed).
+**Iter ledger:** iter-01 (bootstrap TOK-01) + iter-02…05 (4 tiks), all closed-fixed (iter-04 = crux proof,
+iter-05 = GATE). 1 final harden pass → stabilized.
+**Routes carried forward:** wire the express gate into CI (needs Node + `@clerk/express`) → v1.1 demo-stack
+(recorded in `retro.md` + `metrics.json`). No iter-internal carry-forward.
+**Dropped:** none. **Protocol evolution:** none — the alignment protocol held; the additive-RS256 +
+verify-against-the-real-SDK pattern is the svix discipline reused.
+
+## M2c: Final Review (close)
+
+### Scope — 0 gaps (gate met, all 5 iters closed)
+### Code Quality — 0 must-fix (race 8/8, gofmt/vet/shellcheck clean, RS256 path additive)
+### Adversarial (2c) — 1 fixed: `expressrun` bad-sig tamper could be a no-op (latent flake) → `tamperSig` + `TestTamperSig` (decisions.md § Adversarial)
+### Documentation — folded the `@clerk/express` surface (3rd DNA) into alignment/sources/coverage-index/architecture/kb-index/CLAUDE.md + the corpus pointer; fixed stale "two gates" / "empty JWKS" / "un-gated" claims
+### Tests — clerk-backend reads + shared RS256 (+ fuzz) + `tamperSig` regressions; 128 funcs total
+### Hygiene — gitignored the `expressrun` runner binary
+### Decision Triage — M2c-D1/D2 tagged into `alignment.md`; D3/D4/D5 + adversarial archived (maintainer-only)

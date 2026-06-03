@@ -3,7 +3,8 @@ milestone: M2c
 slug: clerk-express-alignment
 version: v1.0 "body double"
 milestone_shape: iterative
-status: planned
+status: archived
+completed: 2026-06-03
 exit_gate: "alignment >= 95% overall AND 100% critical on clerk-express-1.json, AND a real @clerk/express instance accepts a Clerkenstein-minted token and extracts the right identity"
 iteration_protocol_ref: corpus/architecture/alignment_testing.md
 started: 2026-06-03

@@ -2,6 +2,8 @@
   "milestone": "M2c",
   "title": "@clerk/express backend session verification (RS256/JWKS)",
   "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "closed": "2026-06-03",
   "iters": 5,
   "tiks": 4,
   "toks": 1,
@@ -9,7 +11,20 @@
   "exit_gate": "alignment >= 95% overall AND 100% critical on clerk-express-1.json",
   "score": { "overall": 100.0, "critical": 100.0, "genes_aligned": "9/9" },
   "dna": "clerk-express-1.json (9 genes / 4 capabilities / 7 critical)",
-  "additive": "M1 Go gate 22/22 + M2 JS gate 9/9 + drift 9/9 stay green (no HS256 migration)",
-  "score_arc": "0 (iters 02-04 setup) -> GATE (iter-05 runner)",
-  "updated": "2026-06-03"
+  "tests": {
+    "go_test_funcs": 122,
+    "go_fuzz_funcs": 6,
+    "packages": 8,
+    "delta_vs_M2b": "+14 test +1 fuzz (M2c added clerk-backend reads, shared/rsa, expressrun)"
+  },
+  "coverage": { "clerk-backend": 97.2, "shared": 95.9, "expressrun": 49.1, "note": "expressrun mirror path is Node-dependent — gate-covered, not unit-covered" },
+  "flake_count": 0,
+  "gates": { "go": "22/22 100/100", "js": "9/9 100/100", "express": "9/9 100/100", "drift": "ALL PASS" },
+  "additive": "no HS256 migration — M1 (22/22) + M2 (9/9) gates stay green",
+  "harden": { "passes": 2, "mode": "final", "stop_condition": "stabilized" },
+  "close": {
+    "findings": "doc fold-in (3rd DNA into knowledge/+corpus) + gitignore gap (expressrun binary) + 1 adversarial flake (tamperSig no-op) — all fixed Fate-1",
+    "deferral_audit": "GREEN",
+    "carried_forward": "wire the express gate into CI (alignment.yml) — needs Node + @clerk/express in CI; routed to v1.1 demo-stack (where studio-desk's node_modules exists)"
+  }
 }
