@@ -12,8 +12,8 @@
 - **M0 "Alignment measurement framework"** (2026-06-02) — the reusable alignment framework. roadmap.md § M0.
 
 ## Headline numbers (v1.0 so far)
-- **Alignment gate:** **100% overall / 100% critical** (22/22 genes) vs `clerk@2.6.0`, now **CI-gated weekly** + on push (M1b).
-- **clerkenstein:** authn + orgclient **100%** unit (27 Go tests +1 fuzz) + a 9-assertion shell drift harness; flake 5/5; shellcheck clean.
+- **Alignment gates:** **100% overall / 100% critical** on BOTH surfaces — Go (22/22 genes, `clerk@2.6.0`) and JS/FAPI (9/9 genes, `clerk-js@5`); CI-gated weekly + on push (M1b), parameterized for both DNAs (M2).
+- **clerkenstein:** 7 packages, **112 Go test/fuzz funcs** (107 tests + 5 fuzz) + a 9-assertion shell drift harness; flake 5/5 (`-race`, shuffled); gofmt/vet/shellcheck clean. Coverage: authn/orgclient/fapi 100%, clerkrun 97%, bapi 96%, webhook 96%, jsfapirun 94%.
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
 ## v1.0 "body double" milestones
