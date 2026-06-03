@@ -15,6 +15,14 @@ Technical notes accumulated during build. Seeded from the Phase 1 research (2026
 - The override remaps each `host:container` to `host+offset:container` and repoints the postgres bind-mount.
 - Port offset: `demo-N → base + N·100` (default OFFSET=100); the registry assigns N + reserves the range.
 
+## Clone-ref resolution (M3-D3)
+Per repo, `/demo-up` resolves the checkout ref in this order:
+1. caller-specified ref (skill arg, global or per-repo) — e.g. `--ref app=v2.4.0`, or `--ref main` to override;
+2. latest release tag — `git tag` filtered to `v*`, sorted by version (`git -c versionsort.suffix=- tag --sort=-v:refname`), take the top; or `git describe --tags --abbrev=0` on the default branch;
+3. default branch (`main`) — only if the repo has no tags.
+Record the resolved ref per repo in the stack registry. Injection (go.mod replace + skip-worktree) is applied after checkout.
+Open: confirm the org repos' tag convention (are releases tagged `v*`? any non-release tags to exclude?) in S1.
+
 ## Clerkenstein live-injection recipes (the contract to wire)
 See `anthropos-demo/clerkenstein/knowledge/injection.md` — four seams: authn (go.mod replace + skip-worktree),
 clerk-backend (api.clerk.com redirect), clerk-frontend (minted publishable key), clerk-webhook (svix POST).

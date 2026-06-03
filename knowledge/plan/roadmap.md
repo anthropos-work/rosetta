@@ -35,7 +35,8 @@ shared-staging contention. Built **entirely under the gitignored `anthropos-demo
 overlay/orchestration — **zero changes to any read-only platform repo** (the v1.0 hard constraint holds).
 
 **Designed 2026-06-03** (3 research agents against the real `anthropos-dev/platform` compose/Makefile/seeding
-surface). Decisions locked: **per-demo service-repo clones** (M3-D1) + **manual teardown only** (M3-D2).
+surface). Decisions locked: **per-demo service-repo clones** (M3-D1) · **clone at the latest release tag, not
+`main`** (M3-D3, caller-overridable; falls back to `main` only if untagged) · **manual teardown only** (M3-D2).
 
 ### M3: Disposable multi-instance demo stacks (`anthropos-demo`)
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m3-demo-stacks/](releases/01.10-show-floor/m3-demo-stacks/)

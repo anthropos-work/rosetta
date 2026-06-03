@@ -40,6 +40,10 @@ shape (not iterative). This milestone is **orchestration glue around the existin
 - **Per-demo service-repo clones** (M3-D1): each `demo-N` re-clones the platform service repos under its own
   `stacks/demo-N/` (full filesystem isolation; Clerkenstein injection applied per-clone). Disk cost accepted
   for isolation + future per-demo config divergence.
+- **Clone at the latest release tag, not `main`** (M3-D3): each repo is checked out at its **most recent release
+  tag** so a demo runs a *released*, reproducible version. Resolution per repo: caller-specified ref (if given) →
+  latest release tag (`v*` by version order) → default branch only if the repo is untagged. The resolved ref per
+  repo is recorded in the stack registry. Clerkenstein injection is applied on top of the checked-out tag.
 - **A generated compose override** (`docker-compose.demo.yml`, applied `docker compose -f <base> -f <override>`)
   that remaps the 24 host ports by the stack's offset and points volumes at the per-demo data dir. The
   read-only base compose is **never edited**.

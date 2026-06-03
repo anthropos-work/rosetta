@@ -6,8 +6,8 @@ Sections derived from `overview.md` Scope.In (check off as `/developer-kit:build
 
 ## S1 — `anthropos-demo/stacks/` layout + per-demo clone mechanism (M3-D1)
 - [ ] `anthropos-demo/stacks/demo-N/` workspace layout
-- [ ] per-demo service-repo clone step (clone the platform service repos into the stack dir)
-- [ ] the stack registry/ledger (`registry.{json,md}`: live N, ports owned, started-at)
+- [ ] per-demo service-repo clone step — clone each repo at its **latest release tag** (caller-overridable ref; fall back to `main` only if untagged), into the stack dir (M3-D1 + M3-D3)
+- [ ] the stack registry/ledger (`registry.{json,md}`: live N, ports owned, started-at, **resolved ref per repo**)
 
 ## S2 — compose override + port-offset + per-stack project/env/data
 - [ ] generated `docker-compose.demo.yml` override (remaps the 24 ports; points volumes at the per-demo data dir)
