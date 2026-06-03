@@ -53,3 +53,17 @@ While repointing `.github/workflows/alignment.yml` to `alignment/scripts/`, adde
 GOLDEN_DIR=golden-js`). M2 parameterized `gate.sh` for both surfaces and both DNAs now exist, but CI only
 ran the Go gate — the reorg is the natural point to make CI honest about what's gated. Additive; no
 behavior change to the mocks.
+
+## M2b-D8 — S4 authored to repo-consolidate standard; formal run is a USER finalize (build, S4)
+`/singularity-kit:repo-consolidate` is `disable-model-invocation` (M2b-D3), so the build **authored the
+repo TO** the published repo-consolidate standards directly instead of running the skill:
+- `CLAUDE.md` (slim, 60 lines, trigger table + compaction instructions — base-repo Rule 2),
+- `singularity-manifest.md` (repo-type=code · repo-class=library · variant=go-library ·
+  consolidation-version=`0.1.1` from singularity-kit `plugin.json` · last-date 2026-06-03),
+- `knowledge/kb-index.md` + `coverage-index.md` (already substantive from S2),
+- a code-repo-standard coverage map in `kb-index.md` (which required library area lives where;
+  data-model/deployment/service-deps n/a for a library).
+Self-audit against base + code-repo(library) + asset-hygiene standards: **compliant**. The formal
+`/singularity-kit:repo-consolidate code` run is therefore a **USER finalize that should report compliant**
+(emit/refresh `CLAUDE.md` + `singularity-manifest.md`, re-verify gates). This is a **documented user
+action, NOT a deferral** — recorded so the milestone doesn't mistake the un-runnable skill for a blocker.
