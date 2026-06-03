@@ -35,4 +35,35 @@ test runs a real `@clerk/express` instance against the mock. Runner shape (Node-
 vs a Go RS256 verifier fallback) — **to resolve in iteration 1–2** (depends on offline availability of
 `@clerk/express` under `anthropos-dev/studio-desk/node_modules`).
 
+## TOK-01: RS256-native, additive-first, real-SDK runner — 2026-06-03
+
+**Tok type:** bootstrap (iter-01)
+**Initial strategy:** Add an RS256 path so the **real** `@clerk/express` (v1.7.79, offline) accepts
+Clerkenstein tokens — the faithful target (real Clerk is RS256/JWKS everywhere). Build a new
+`clerk-express/` seam + a 3rd DNA (`clerk-express-1.json`), measured by a **Node runner driving the
+genuine `@clerk/express`** (the svix-pattern). **Additive-first:** add an RSA keypair + RS256 minting (in
+`shared/`) + a real non-empty JWKS from `clerk-frontend` **without removing HS256** — so M1/M2 stay green
+(their HS256 tokens + `authn` HS256 verification untouched); the `clerk-express/` seam uses RS256
+exclusively. studio-desk's separate Clerk instance makes additive viable (studio-desk RS256, main app
+HS256). **Escalate to migration** (authn also verifies RS256, re-gate M1/M2) only if a tik proves the
+token is shared across apps.
+**Rationale:** RS256 is what real Clerk does; additive keeps the shipped seams green while achieving
+real-SDK fidelity for the express surface; the Node runner verifies against the **genuine** library
+(highest fidelity, the svix discipline). Lower risk than a blanket migration the user can still opt into.
+**Strategy class:** new-direction
+**Distance-to-gate context:** gate = **≥95% overall / 100% critical** on `clerk-express-1.json` + a real
+`@clerk/express` accepts a Clerkenstein token. **Start: 0%** (no DNA, no seam, HS256-only).
+**Next-tik direction:** iter-02 authors `clerk-express-1.json` (~8 genes from `spec-notes.md`) + validates
+it (`alignctl dna validate`).
+
 <!-- Iteration decisions (toks, escape-hatch escalations, user-blockers) recorded here as they arise. -->
+
+## Adversarial review (close Phase 2c)
+- **`expressrun` bad-signature tamper could be a no-op (latent gate flake).** The runner built the
+  bad-signature scenario as `valid[:len-3]+"AAA"`. The token carries `iat`/`nbf` from `now`, so its
+  signature tail varies per run — if it ever *were* `AAA`, the tamper would be a no-op and
+  `ExpressAuth/bad-signature` would see a *valid* token (divergent → a rare gate flake). **Fixed at close:**
+  `tamperSig` flips the last char to a guaranteed-different one, pinned by `TestTamperSig`.
+- Other modules surfaced no non-obvious failure: the RS256 key is a fixed demo credential (no keygen
+  nondeterminism); the new store reads are mutex-guarded; `verifyViaNode` fails loud if `@clerk/express`
+  isn't resolvable (clear error, not a silent pass).

@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.2 (v1.0 "body double" · M1 + M2 + M2b consolidation) · **Last updated:** 2026-06-03
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express`) · **Last updated:** 2026-06-03
 **Repo:** `anthropos-demo/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
@@ -18,10 +18,12 @@ repos keep "thinking" they use Clerk with **zero source changes**.
 
 It is the **first mirror produced by the M0 alignment process** (not a hand-built mock): its fidelity is
 *measured* as a 0–100% alignment score against a Clerk **Alignment DNA**, driven to the gate — **100%
-critical / 100% overall** on both the Go surface (22/22 genes, `clerk-sdk-go/v2 @ v2.6.0`, M1) and the
-JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2). The DNAs + mirror + goldens +
-runners live in the clerkenstein repo; the *measuring machinery* ([`test/alignment/`](../../test/alignment/)
-+ `/align-dna` + `/align-run`) lives here in rosetta.
+critical / 100% overall** on **all three** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
+@ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), and the
+**`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express` ^1.3.47, M2c — RS256/JWKS, the
+genuine SDK *satisfied*, not reimplemented). The DNAs + mirror + goldens + runners live in the clerkenstein
+repo; the *measuring machinery* ([`test/alignment/`](../../test/alignment/) + `/align-dna` + `/align-run`)
+lives here in rosetta.
 
 ## Repo structure (library-named, since M2b)
 
@@ -39,6 +41,13 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 The browser-login → backend-verify coherence chain runs through `shared`: `clerk-frontend` mints the
 HS256 universal-key JWT, `authn` verifies that exact token — pinned by the JS DNA's
 `SessionToken/decoded-identity` gene (operator `exact`).
+
+**`@clerk/express` (M2c) added no new dir** — it's a *consumer* (a Node backend verifier we satisfy), so
+its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real JWKS from `clerk-frontend/`
++ read endpoints in `clerk-backend/`), measured by the `alignment/cmd/expressrun` runner driving the
+**genuine `@clerk/backend`** — the same "verify against the real library" discipline `clerk-webhook/` uses
+with `svix`. `@clerk/express` verifies RS256-via-JWKS and rejects HS256, so the RS256 path is additive (the
+HS256 seams + M1/M2 gates stay green).
 
 ## Read next (in the clerkenstein repo)
 

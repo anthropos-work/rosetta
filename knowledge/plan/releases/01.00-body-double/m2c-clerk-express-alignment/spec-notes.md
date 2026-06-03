@@ -88,3 +88,12 @@ seam, Clerkenstein's job is to **produce** artifacts (RS256 tokens + a real JWKS
 Phase 0 (build-mstone-iters) runs against this. Load-bearing docs: `corpus/architecture/alignment_testing.md`
 (the iteration protocol + DNA format), the clerkenstein `knowledge/` (alignment/architecture/injection),
 and the `@clerk/express`/`@clerk/backend` source. No blind area expected (the framework + mirror exist).
+
+### Pre-flight audits — iter-01 (bootstrap)
+**Verdict: YELLOW** (lightweight check, 2026-06-03). The alignment framework + protocol
+(`corpus/architecture/alignment_testing.md`) and the clerkenstein `knowledge/` base are **fresh** (just
+authored/consolidated in M2b). The `@clerk/express` surface is **greenfield** — a doc area this milestone
+*delivers* (the new `clerk-express/` README + alignment/architecture/sources updates), not a stale
+load-bearing claim (same posture M0 took toward alignment). No RED blocker; TOK-01 accounts for the
+greenfield area as known work. (Full `/developer-kit:audit-kb-fidelity` not invoked inline; the equivalent
+contract-doc check is recorded here.)
