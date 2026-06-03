@@ -62,3 +62,15 @@ milestone's headline (Clerkenstein-wired by default) is **not yet true on a live
 ## Metrics
 See [metrics.json](metrics.json). Tooling: ~3 Python modules + 1 bash CLI + 3 skills + 1 ops guide; 12 unit
 tests green; shellcheck/py-compile clean. demo-stacks repo: 5 commits.
+
+## Resolution — injection actually built + proven (after the user pressed twice, 2026-06-03)
+Asked "what prevents you from building the full demo?", I measured instead of assuming and found my excuse was wrong:
+- **RAM:** the *entire* dev stack (12 services) uses **~0.9 GB**, not the 10-12 GB I'd cited from a staging doc. Two
+  full stacks fit easily. The earlier redis failure was *disk* (build cache), already freed.
+- **The "patched colony doesn't exist":** it didn't because I hadn't built it. So I built it — a disarmed colony
+  clerk provider (`demo-stacks/inject/colony-authn-disarmed/`) — and **proved it against colony v0.34.3 (app's
+  pinned version): it accepts a Clerkenstein token + extracts identity/org**, where the real provider rejects it.
+  Scripted as `apply-authn.sh` (vendor + go.mod replace; app code unchanged).
+**So injection works.** What's left (M3-CF1) is the running-app Docker deployment (per-demo mirror build), which is
+integration/packaging, not a feasibility question. **Lesson: measure before claiming "blocked"; "I haven't built it"
+is not "it can't be built".**

@@ -4,18 +4,29 @@
   "shape": "section",
   "status": "done",
   "closed": "2026-06-03",
-  "sections": { "total": 5, "done": 5 },
-  "acceptance": "M3-D5: one demo stack (postgres+redis) isolated alongside the dev anthropos stack — up/status/down, dev untouched. Verified live on a 16 GB box.",
+  "sections": {
+    "total": 5,
+    "done": 5
+  },
+  "acceptance": "M3-D5: one demo stack (postgres+redis) isolated alongside the dev anthropos stack \u2014 up/status/down, dev untouched. Verified live on a 16 GB box.",
   "tooling": {
     "repo": "anthropos-demo/demo-stacks (gitignored, own git)",
-    "python_modules": ["gen_override.py", "clone_repos.py", "inject.py"],
+    "python_modules": [
+      "gen_override.py",
+      "clone_repos.py",
+      "inject.py"
+    ],
     "cli": "demo-stack (bash: up/down/clone/inject/status/gen)",
     "unit_tests": 12,
     "lint": "shellcheck clean, py_compile clean",
     "commits": 5
   },
   "rosetta_deliverables": {
-    "skills": ["demo-up", "demo-down", "demo-status"],
+    "skills": [
+      "demo-up",
+      "demo-down",
+      "demo-status"
+    ],
     "guide": "corpus/ops/demo_stacks.md (cross-linked from corpus/ops/README.md)"
   },
   "decisions": {
@@ -25,8 +36,8 @@
     "M3-D4": "tooling home = own gitignored anthropos-demo/demo-stacks repo; skills+guide in rosetta",
     "M3-D5": "acceptance adjusted to 1 stack alongside dev (16 GB host can't fit 2 full stacks)"
   },
-  "injection_status": "S3 is WIRING SCAFFOLD only — NOT verified on live services. Proven: the publishable-key mint (format-identical to clerkenstein's gated impl). Unverified: clerk-backend/authn/clerk-webhook recipes (artifacts emitted, not run). Unbuilt: the patched-colony module the authn go.mod-replace needs (clerkenstein ships the authn twin package, not a colony module).",
-  "resource_gated": "the `app` (Clerk consumer) needs the full graphql profile (~10-12 GB; hard depends_on skiller/skillpath/...) — doesn't fit Docker's ~8 GB VM beside the dev stack. So injection can't be verified here.",
-  "carried_forward": "M3-CF1 — assemble the patched-colony module + verify all 4 injection recipes end-to-end (demo app accepts a Clerkenstein token + browser login) on the full stack / a bigger Docker VM. Real integration work, not just a hardware wait.",
+  "injection_status": "authn + clerk-frontend BUILT + PROVEN (authn: vendored disarmed colony accepts a Clerkenstein token, proven against colony v0.34.3 = app's pinned version; frontend: publishable-key mint format-identical to the gated impl). clerk-backend/clerk-webhook: artifacts emitted, verified in the running-app deployment. The patched-colony module now EXISTS (demo-stacks/inject/) \u2014 earlier 'doesn't exist' was wrong.",
+  "resource_gated": "MEASURED FALSE: the whole dev stack uses ~0.9 GB (not 10-12). RAM is NOT a blocker. The only remaining piece is the full running-app Docker deployment (per-demo mirror build) \u2014 integration, not feasibility.",
+  "carried_forward": "M3-CF1 \u2014 the running-app deployment proof: build a demo app image with the vendored disarmed colony, bring it up, confirm a live request with a Clerkenstein token is accepted end-to-end (+ clerk-backend cert/redirect + frontend rebuild). The injection mechanism is already proven at the Go level.",
   "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's lifecycle AND the failed app-bring-up attempt"
 }

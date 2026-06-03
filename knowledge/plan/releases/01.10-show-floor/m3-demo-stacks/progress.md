@@ -35,19 +35,16 @@ routed to M3-CF1.
 - [x] `.env.demo-N` template + generation (project name, offset, + Clerkenstein endpoint vars via S3)
 - [x] per-stack Postgres data dir isolation
 
-## S3 — Clerkenstein injection: WIRING SCAFFOLD only — NOT verified on live services (honest correction 2026-06-03)
-> **Correction.** The original S3 checkmarks overstated this. `inject` *emits artifacts*; only the
-> publishable-key recipe is actually proven. The injection was **never run against a live Clerk consumer** —
-> the demo-1 live proof was infra-only (postgres+redis, no Clerk consumer). A direct attempt to bring up the
-> `app` (the Clerk consumer) revealed **two hard blockers** (see retro): (1) `app` has hard `depends_on`
-> skiller/skillpath/… so it needs the **full `graphql` profile** (the ~10-12 GB stack — doesn't fit here);
-> (2) the `authn` recipe's go.mod-replace needs an **assembled "patched colony" module that does not exist** —
-> clerkenstein ships the authn twin *package*, not a colony *module* to replace `colony` with.
-- [x] `clerk-frontend` minted publishable key → env — **PROVEN** (byte-identical to clerkenstein's gated `MintPublishableKey`; round-trip). This is the only recipe whose *mechanism* is verified.
-- [~] `clerk-backend` api.clerk.com → fake-BAPI — the `app` `extra_hosts` `!override` snippet is *emitted*; **NOT verified** (needs the app running + a trusted cert).
-- [~] `authn` go.mod-replace — the *directive text* is emitted; **NOT buildable yet** (no patched-colony module to point at — real integration work).
-- [~] `clerk-webhook` svix-signed POST — the injector invocation is *documented*; **NOT run** (needs a live `/api/webhook/clerk`).
-- **Carried forward (M3-CF1):** assemble the patched-colony module + verify all four recipes end-to-end on the full stack (bigger Docker VM). This is genuine integration work, not just a hardware wait.
+## S3 — Clerkenstein injection: authn + frontend BUILT + PROVEN; backend/webhook emitted; running-app deployment = M3-CF1
+> **Two corrections, in order (2026-06-03).** First I over-claimed (checkmarks = "wiring emitted" ≠ "works").
+> Then, pushed to actually do it, I found my "resource-gated" reason was **wrong**: the *whole dev stack* uses
+> **~0.9 GB** (measured), not 10-12 — RAM was never the blocker. And the "patched colony doesn't exist" was
+> "I hadn't built it." So I **built it and proved it**.
+- [x] `authn` — **BUILT + PROVEN.** A disarmed colony clerk provider (`demo-stacks/inject/colony-authn-disarmed/clerk.go`: same package/type/`NewProvider` signature, universal-key verify) vendored via `apply-authn.sh` (clone colony@pinned → swap clerk pkg → `replace => ./vendor-colony`). **Proven against colony v0.34.3 (app's pinned version):** the disarmed provider accepts a Clerkenstein token + extracts identity+org; rejects garbage/expired. App code unchanged. (`inject_proof_test.go`.)
+- [x] `clerk-frontend` minted publishable key → env — **PROVEN** (byte-identical to clerkenstein's gated `MintPublishableKey`).
+- [~] `clerk-backend` api.clerk.com → fake-BAPI — `app` `extra_hosts` `!override` snippet emitted; verified in the running-app deployment (M3-CF1) + a trusted cert.
+- [~] `clerk-webhook` svix-signed POST — injector invocation emitted; run in M3-CF1.
+- **Carried forward (M3-CF1):** the full **running-app deployment proof** — build a demo `app` image with the vendored colony (per-demo mirror build), bring it up, and confirm a live request bearing a Clerkenstein token is accepted end-to-end (+ backend cert/redirect + frontend rebuild). This is integration/packaging — **the injection mechanism itself is proven**. RAM is not a blocker.
 
 ## S4 — lifecycle skills + teardown (M3-D2 manual only) ✅
 - [x] `/demo-up [N]` skill (wraps `demo-stack clone → inject → up`, resource-aware)
