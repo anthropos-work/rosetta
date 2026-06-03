@@ -15,6 +15,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 | 01 | tok (bootstrap) | authored TOK-01 (RS256-native, additive-first, real-SDK runner) | 0% / 0% (no DNA yet) | — |
 | 02 | tik | authored clerk-express-1.json (9 genes / 4 caps / 7 critical); validates | 0% / 0% (no mirror yet) | NOT MET |
 | 03 | tik | RS256 foundation: keypair + MintRS256 + real JWKS (additive; M1/M2 green) | 0% / 0% (no runner yet) | NOT MET |
+| 04 | tik | **CRUX PROVEN** — real @clerk/backend accepts our RS256 token (+ runner skeleton + Node verifier) | 0% formal (RS256 wall solved) | NOT MET |
 
 ## Suggested opening iterations (the build refines these)
 1. **tok (strategy) — resolve M2c-D2 + D5:** read how studio-desk's Clerk instance is wired vs the app's
@@ -34,6 +35,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 - iter-01 (tok/bootstrap): authored TOK-01 — RS256-native, additive-first, real-`@clerk/express` Node runner — see iter-01/progress.md
 - iter-02 (tik): authored `clerk-express-1.json` (9 genes / 4 caps / 7 critical), validates — see iter-02/progress.md
 - iter-03 (tik): RS256 crypto foundation (keypair + MintRS256 + real JWKS), additive, gates green — see iter-03/progress.md
+- iter-04 (tik): **CRUX PROVEN** — real @clerk/backend verifies a Clerkenstein RS256 token + extracts identity; runner skeleton + Node verifier — see iter-04/progress.md
 
 ## Green-gate guard (if Option B / migration is chosen)
 Any iteration that touches `authn` / `clerk-frontend` / `shared` MUST re-run the existing gates before
