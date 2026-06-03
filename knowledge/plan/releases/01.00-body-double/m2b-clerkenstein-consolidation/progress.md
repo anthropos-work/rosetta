@@ -1,7 +1,7 @@
 # M2b — progress
 
 **Milestone:** M2b — Clerkenstein repo consolidation + knowledge base · **Shape:** section
-**Status:** built (all S1–S5 sections complete 2026-06-03; awaiting `/developer-kit:close-milestone`)
+**Status:** `archived` (completed 2026-06-03; closed + merged to `release/01.00-body-double`)
 **Green-gate invariant:** after every code/script section → Go gate 22/22, JS gate 9/9, drift-test 9/9, `-race` clean.
 **Open user action (not a deferral, M2b-D3/D8):** run `/singularity-kit:repo-consolidate code` at the clerkenstein repo to formally finalize (should report compliant).
 
@@ -118,3 +118,24 @@ jsfapirun — contain only unchanged *moved* code that the anti-pattern guard fo
 packages have no uncovered branches; the merged clerk-backend scan was clean); coverage delta negligible
 (+0%, by design); zero flakes (3 consecutive clean `-race -shuffle` runs). The move held coverage and
 the `shared/` boundary is solid.
+
+## M2b: Final Review
+
+Deferral re-audit (Phase 1b): **GREEN** — 2 inherited single deferrals (DEF-M0-01 `feat/demo-environment`→main owned by close-release; DEF-M2-01 live-wiring owned by M3/v1.1), 0 repeat/chronic/aged-out, 0 M2b-originated. Report: [audit-deferrals/deferral-audit-2026-06-03-m2b-close.md](audit-deferrals/deferral-audit-2026-06-03-m2b-close.md).
+
+### Scope
+- [x] All S1–S5 delivered; S4 user-action box (`/singularity-kit:repo-consolidate code`) is a documented user-finalize (M2b-D3/D8, `disable-model-invocation`), not a deferral — no scope gap.
+
+### Code Quality
+- [x] [should-fix] CQ-1: stale comment in `clerk-backend/fuzz_test.go:15` names pre-reorg packages (`authn.FuzzParse` / `fapi.FuzzParsePublishableKey`) — repoint to `shared.FuzzParse` / `clerkfrontend.FuzzParsePublishableKey`.
+
+### Documentation
+- [x] DOC-1: `knowledge/coverage-index.md` test count drifted after the harden pass added `TestGetUserErrorClassesCrossBoundary` (authn 6→7, total 112→113) — reconcile the table + total against ground truth.
+- [x] DOC-2: rosetta `state.md` Headline numbers quote 112 + stale surface-named coverage (`orgclient/fapi/bapi`) — refresh to 113 + library-named coverage in Phase 8 per the state.md contract.
+
+### Tests & Benchmarks
+- [x] No gaps. Full suite 7/7 green (uncached, `-race`); gates Go 22/22, JS 9/9, drift 9/9. No benchmarks (the alignment gates are the threshold assertions). Adversarial `shared/` seam already pinned.
+
+### Decision Triage
+- [x] D1 (Go pkg naming), D2 (library-named scheme), D4 (`shared.Parse`/mint↔verify split) — already blended into the repo's `knowledge/architecture.md` + `CLAUDE.md` with `#M2b-D` tags during S2/S4. No new blend.
+- [x] D3, D5, D6, D7, D8 → archive (maintainer/process-only — repo-consolidate-is-user-invoked, script depth, binary gitignore anchors, CI JS-gate step).
