@@ -48,3 +48,15 @@ Clerk when credentials are available. Needs user confirmation before iter-02 run
 `anthropos-demo/clerkenstein` workspace is created locally (rosetta `.gitignore` now excludes
 `anthropos-demo/`); orgclient goldens are hand-authored from `clerk-sdk-go/v2` response types, to be
 reconciled against live Clerk when credentials land (M1b's `dna diff` + re-capture path).
+
+## M1-D2 — orgclient injection differs from authn (surfaced iter-04)
+**Finding:** authn injects cleanly via `go.mod replace` of the whole `colony` module (Clerkenstein
+implements the real `colony/authn.Provider`). The **orgclient is different**: it's `app`-internal
+(`app/internal/clerk/orgclient`, not a published module) and it calls `api.clerk.com` over HTTP — so
+it can't be `go.mod replace`d, and disarming it in the platform needs a **fake-Clerk-API-server**
+(DNS / base-URL redirect of `api.clerk.com` → a local mock). That mechanism is the **same one M2's JS
+side needs**. So the fake-Clerk-API-server is a shared component across M1's orgclient injection and
+M2. **Decision:** the ALIGNMENT (M1's gate) measures Clerkenstein's orgclient *behavior*, which the
+in-memory twin provides regardless of injection — so the gate fires now. The fake-API-server
+*injection* is routed to the **injection tik** (post-gate) and noted for M2; if it proves
+release-scope-significant, surface at close. No platform-code changes either way.
