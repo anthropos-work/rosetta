@@ -6,16 +6,16 @@
 
 ## Sections
 
-### S1 — Restructure into library-named dirs
-- [ ] Create `shared/` and move the universal-key JWT + `Claims` + mint/parse out of `authn/` (package `shared`)
-- [ ] `authn/` keeps provider + user, imports `shared` (still mocks `colony/authn`; `var _ authn.Provider` holds)
-- [ ] Merge `bapi/` + `orgclient/` → `clerk-backend/` (`package clerkbackend`)
-- [ ] `fapi/` → `clerk-frontend/` (`package clerkfrontend`), imports `shared`
-- [ ] `webhook/` → `clerk-webhook/` (`package clerkwebhook`)
-- [ ] Move runners + assets → `alignment/{cmd,dna,golden,golden-js,scripts}/`
-- [ ] Repoint all imports + `gate.sh`/`drift-check.sh`/`drift-test.sh` defaults + CI YAML (ALIGN_DIR depth)
-- [ ] **Gates green** (Go 22/22, JS 9/9, drift-test 9/9, `-race` clean, gofmt/vet/shellcheck)
-- [ ] Tests co-located within each library dir (no stragglers)
+### S1 — Restructure into library-named dirs ✅
+- [x] Create `shared/` and move the universal-key JWT + `Claims` + mint/parse out of `authn/` (package `shared`) — `parse`→`Parse` exported (M2b-D4)
+- [x] `authn/` keeps provider + user, imports `shared` (still mocks `colony/authn`; `var _ authn.Provider` holds)
+- [x] Merge `bapi/` + `orgclient/` → `clerk-backend/` (`package clerkbackend`) — `orgclient.X`→`X`, import dropped
+- [x] `fapi/` → `clerk-frontend/` (`package clerkfrontend`), imports `shared` (mint side) — testdata fuzz corpus moved too
+- [x] `webhook/` → `clerk-webhook/` (`package clerkwebhook`)
+- [x] Move runners + assets → `alignment/{cmd,dna,golden,golden-js,scripts}/`
+- [x] Repoint all imports + `gate.sh`/`drift-check.sh`/`drift-test.sh` defaults + CI YAML (ALIGN_DIR depth +1, M2b-D5)
+- [x] **Gates green** (Go 22/22, JS 9/9, drift-test 9/9, `-race` clean, gofmt/vet/shellcheck) — verified post-move
+- [x] Tests co-located within each library dir (no stragglers); empty old dirs removed; binaries re-gitignored (M2b-D6)
 
 ### S2 — Knowledge base + per-library READMEs
 - [ ] `knowledge/{kb-index,scope,architecture,alignment,injection,coverage-index}.md` (real content, not skeletons)
@@ -38,4 +38,7 @@
 - [ ] Milestone records consistent (overview/decisions reflect what shipped)
 
 ## Running ledger
-_(build appends per-section one-liners here.)_
+- **S1** (clerkenstein `512bd49`): restructured flat layout → `authn/ clerk-backend/ clerk-frontend/
+  clerk-webhook/ shared/ alignment/` (69 git-mv renames, history preserved). Merged orgclient into
+  clerk-backend; extracted shared JWT (mint=clerk-frontend, verify=authn); repointed imports + scripts +
+  CI. Green-gate confirmed post-move (Go 22/22, JS 9/9, drift 9/9, lints clean). Decisions M2b-D4..D7.
