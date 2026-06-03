@@ -1,0 +1,27 @@
+{
+  "release": "v1.0",
+  "codename": "body double",
+  "shipped": "2026-06-03",
+  "milestones": ["M0", "M1", "M1b", "M2", "M2b", "M2c"],
+  "aggregate": {
+    "rosetta_framework": { "module": "anthropos.dev/alignment", "test_funcs": 43, "fuzz_funcs": 3, "external_deps": 0 },
+    "clerkenstein_mirror": { "test_funcs": 123, "fuzz_funcs": 6, "packages": 8, "dnas": 3, "runners": 3 }
+  },
+  "coverage_snapshot": {
+    "rosetta": { "internal/dna": 98.3, "internal/outcome": 92.5, "internal/compare": 89.7, "internal/report": 96.2, "internal/canon": 94.7, "cmd/alignctl": 67.5 },
+    "clerkenstein": { "authn": 100.0, "clerk-frontend": 100.0, "clerk-backend": 97.2, "shared": 95.9, "clerk-webhook": 96.0, "expressrun": 49.1, "note": "expressrun mirror path Node-dependent — gate-covered" }
+  },
+  "alignment_gates": { "go": "22/22 100/100", "js": "9/9 100/100", "express": "9/9 100/100", "drift": "9/9" },
+  "triple_clean_runs": 3,
+  "flake_count": 0,
+  "supply_chain": "GREEN — rosetta release is stdlib-only (zero external modules)",
+  "regression_vs_prev": "n/a — first release under the lifecycle; this is the baseline",
+  "close_release": {
+    "blockers_found": 1,
+    "blockers_fixed": 1,
+    "blocker_detail": "@clerk/express gate regressed to 88.0%/85.7% from the M2c-close tamperSig change; fixed (clerkenstein abe4f33), restored to 9/9 100/100",
+    "should_fix_found": 4,
+    "should_fix_fixed": 4,
+    "deferred_to_v1.1": ["express-gate CI wiring (needs Node)", "dna.Validate zero-critical-genes guard (dormant)"]
+  }
+}
