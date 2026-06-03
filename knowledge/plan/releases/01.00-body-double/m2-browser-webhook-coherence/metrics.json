@@ -1,0 +1,52 @@
+{
+  "milestone": "M2",
+  "slug": "browser-webhook-coherence",
+  "version": "01.00-body-double",
+  "shape": "section",
+  "kind": "JS/FAPI browser surface + webhook coherence + orgclient BAPI injection (M1-D2 pickup)",
+  "date": "2026-06-03",
+  "sections": 5,
+  "tests": {
+    "clerkenstein_go": {
+      "test_funcs": 107,
+      "fuzz_funcs": 5,
+      "total_funcs": 112,
+      "delta_vs_prev": "+84 vs M1 (M1: 27 test + 1 fuzz = 28); M2 adds fapi/bapi/webhook/jsfapirun/clerkrun suites + harden + 1 close regression",
+      "race_clean": true
+    }
+  },
+  "coverage_pct": {
+    "authn": 100.0,
+    "orgclient": 100.0,
+    "fapi": 100.0,
+    "cmd/clerkrun": 96.8,
+    "bapi": 95.8,
+    "webhook": 95.6,
+    "cmd/jsfapirun": 93.8,
+    "note": "post-M2-harden (4 passes); residual gaps are os.Exit wrappers + unreachable disarmed-path defensive branches"
+  },
+  "alignment": {
+    "go": { "dna": "clerk@2.6.0", "genes": 22, "overall": 100.0, "critical": 100.0 },
+    "js": { "dna": "clerk-js@5", "genes": 9, "overall": 100.0, "critical": 100.0 }
+  },
+  "gates": { "go_gate_exit": 0, "js_gate_exit": 0, "drift_test_exit": 0, "drift_assertions": 9 },
+  "lint": { "gofmt": "clean", "go_vet": "clean", "shellcheck": "clean" },
+  "harden": { "passes": 4, "stop": "stabilized (next-pass delta <2%)", "bugs_fixed": 1 },
+  "flake_count": 0,
+  "flake_gate": "5/5 (-race, shuffled, sequential)",
+  "close_review": {
+    "scope_gaps": 0,
+    "code_must_fix": 1,
+    "code_should_fix": 1,
+    "doc_must_fix": 1,
+    "adversarial_scenarios": 5,
+    "adversarial_bugs_found": 1,
+    "decisions_to_blend": 2,
+    "decisions_archived": 1,
+    "new_decisions": 1,
+    "all_fixed": true,
+    "deferrals": 0,
+    "deferral_audit": "GREEN (3 items, 0 repeat/chronic)"
+  },
+  "notes": "Closes the two remaining Clerk seams so a demo stack is Clerk-free end to end: fake FAPI (browser session via minted publishable key — M2-D1 config-only override, no SDK fork), fake BAPI (api.clerk.com redirect disarming the platform's networked orgclient — M1-D2 pickup, M2-D2 concurrency-safe store), and the svix-signed webhook injector. JS fidelity expressed as a second Alignment DNA (clerk-js-5, 9 genes) scored like the Go side — proves the M0 framework is surface-generic. Close found + fixed an orgclient.ChangeRole nil-map panic + phantom-membership divergence the alignment gate missed (M2-D4) — reachable via the bapi/ server. Code lives in gitignored anthropos-demo/clerkenstein (own git). FINAL milestone of v1.0."
+}
