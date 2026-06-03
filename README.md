@@ -2,6 +2,15 @@
 
 **The documentation corpus for the Anthropos platform.**
 
+> **v1.0 "body double" — shipped.** Beyond documentation, Rosetta now hosts an **alignment-testing
+> framework** ([`test/alignment/`](test/alignment/)) — a measurement discipline that scores how faithfully a
+> *mirror* engine reproduces a *source* library as a 0–100% number. Its first product is **Clerkenstein**, a
+> measured drop-in mock of Clerk that lets the platform run demos Clerk-free with zero platform-code change
+> (100% on all three measured surfaces: Go, JS/FAPI, `@clerk/express`). See
+> [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md) and
+> [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md). v1.1 "show floor" (disposable demo
+> stacks) is staged next.
+
 ## What Is This?
 
 Project Rosetta is a **documentation repository** - not the Anthropos platform itself. It contains:

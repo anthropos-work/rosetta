@@ -5,7 +5,7 @@
   "shape": "section",
   "date": "2026-06-02",
   "tests": {
-    "go": { "test_funcs": 45, "fuzz_funcs": 3, "delta_vs_prev": "+45 (first milestone under the lifecycle)" }
+    "go": { "test_funcs": 42, "fuzz_funcs": 3, "delta_vs_prev": "+45 funcs (42 test + 3 fuzz; first milestone under the lifecycle)" }
   },
   "coverage_pct": {
     "internal/dna": 98.3, "internal/outcome": 92.5, "internal/compare": 89.7,

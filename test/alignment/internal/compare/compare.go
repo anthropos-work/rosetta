@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"anthropos.dev/alignment/internal/canon"
 	"anthropos.dev/alignment/internal/dna"
@@ -254,9 +255,15 @@ func round1(f float64) float64 { return float64(int(f*10+0.5)) / 10 }
 
 func truncate(b []byte) string {
 	const max = 120
-	if s := string(b); len(s) > max {
-		return s[:max] + "..."
-	} else {
+	s := string(b)
+	if len(s) <= max {
 		return s
 	}
+	// Cut on a rune boundary so a multibyte rune straddling index `max` isn't split into
+	// invalid UTF-8 in the divergence diagnostic. Back up to the last rune start at/below max.
+	cut := max
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return s[:cut] + "..."
 }

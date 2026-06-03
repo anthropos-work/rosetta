@@ -1,0 +1,22 @@
+# dependencies.lock — v1.0 "body double" (rosetta release branch)
+# Supply-chain snapshot of the code SHIPPED IN THIS RELEASE DIFF (release/01.00-body-double → main).
+# Captured 2026-06-03 at close-release Phase 0. Plain text by design (incident-response record).
+
+## rosetta-committed code (this release)
+module  anthropos.dev/alignment   go 1.25
+require (none)            # test/alignment/ is STDLIB-ONLY — zero external modules; no go.sum present.
+                         # Supply-chain GREEN by construction: nothing transitive ships in v1.0.
+
+Everything else in the release diff is Markdown (corpus/, knowledge/) + 2 skills + .gitignore.
+No package manager manifest other than test/alignment/go.mod is committed to rosetta.
+
+## Reference — NOT part of this release (separate gitignored repo: anthropos-demo/clerkenstein)
+# The Clerkenstein mock lives in its own git (on its own `main`) and is gitignored from rosetta,
+# so its dependencies are NOT in the rosetta release diff. Recorded here for completeness only;
+# they are pinned in clerkenstein's own go.mod / the consuming node_modules:
+#   - github.com/clerk/clerk-sdk-go/v2   (the Go BAPI type surface the clerk-backend/ mock mirrors)
+#   - github.com/svix/svix-webhooks/go   (the genuine svix library clerk-webhook/ signs against)
+#   - @clerk/express / @clerk/backend     (the genuine Node SDK the expressrun runner verifies against;
+#                                          resolved from studio-desk/node_modules at gate time)
+# License posture: internal (anthropos.work); no GPL/AGPL in any distribution surface. stdlib + the
+# above MIT/permissive SDKs only.

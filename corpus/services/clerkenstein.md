@@ -25,6 +25,14 @@ genuine SDK *satisfied*, not reimplemented). The DNAs + mirror + goldens + runne
 repo; the *measuring machinery* ([`test/alignment/`](../../test/alignment/) + `/align-dna` + `/align-run`)
 lives here in rosetta.
 
+> **What "100%" means (and doesn't).** The score measures the mirror as *indistinguishable from the source
+> goldens*. Those goldens are **hand-authored / hybrid** (decision M1-D1) — the reference behavior derived
+> from the real libraries' documented + observed semantics (and, for `@clerk/express`, confirmed by driving
+> the *genuine* SDK), **not** captured from a live, network-connected real-Clerk tenant. So 100% means "the
+> mirror reproduces the behavior we encoded as the reference," not "diffed byte-for-byte against a running
+> Clerk instance." Re-capturing goldens against a live source on a Clerk version bump is the M1b drift loop's
+> job. This is the right bar for a *demo* mock; it is not a conformance certificate against production Clerk.
+
 ## Repo structure (library-named, since M2b)
 
 The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b-D2):
@@ -36,7 +44,7 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 | `clerk-frontend/` | `@clerk/clerk-js` + `@clerk/nextjs` | fake Frontend API + publishable-key codec — **mints** JWTs |
 | `clerk-webhook/` | `svix` | the signed-webhook injector |
 | `shared/` | — | universal-key HS256 JWT (the mint side + verify side agree here) |
-| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun}` + `dna/` + `golden{,-js}/` + `scripts/` |
+| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,expressrun}` + `dna/` (three) + `golden{,-js,-express}/` + `scripts/` |
 
 The browser-login → backend-verify coherence chain runs through `shared`: `clerk-frontend` mints the
 HS256 universal-key JWT, `authn` verifies that exact token — pinned by the JS DNA's

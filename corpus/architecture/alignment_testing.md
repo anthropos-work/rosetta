@@ -1,6 +1,6 @@
 # Alignment Testing
 
-**Status:** canonical · **Last updated:** 2026-06-02 · **Reference implementation:** [`test/alignment/`](../../test/alignment/)
+**Status:** canonical · **Last updated:** 2026-06-03 · **Reference implementation:** [`test/alignment/`](../../test/alignment/)
 
 ## What this is (and why)
 
@@ -212,7 +212,7 @@ Divergences (1):
 `go test -tags alignment ./examples/toy/...` passes (the toy gate is 80% overall / 100% critical, and
 the divergence is a non-critical gene) while logging the tolerated divergence.
 
-## How M1, M1b, and M2 consume this
+## How M1, M1b, M2, and M2c consume this
 
 - **M1 (Clerkenstein backend mirror)** runs the loop: `/align-dna` authors the **Clerk DNA**
   (`clerk@2.6.0` genome), then the build drives `/align-run`'s score up to its **exit gate** (100%
@@ -230,15 +230,26 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   parameterized `gate.sh` CI-gates it alongside the Go DNA. See
   [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
   browser↔backend coherence chain).
+- **M2c (`@clerk/express` backend session verification)** exercises the framework a **third** time, on the
+  Node backend surface: a *third* DNA — `clerk-express-1` (9 genes) — with its own runner (`expressrun`)
+  and goldens, scored by the same `alignctl` to the same gate (100%/100%). Its runner drives the **genuine
+  `@clerk/express`/`@clerk/backend` SDK** (the *verify-against-the-real-library* discipline, the same one
+  `clerk-webhook/` uses with `svix`) rather than a reimplementation — so the score measures whether the real
+  SDK accepts Clerkenstein's tokens. It added an **additive RS256/JWKS** path beside the existing HS256
+  seams (no migration; M1/M2 gates untouched). The express gate has a Node dependency (the real SDK), so it
+  runs locally/at close rather than in the pure-Go CI — CI-wiring is a v1.1 carry-forward.
+
+Clerkenstein now drives **three DNAs across two languages via three runners** (`clerkrun`, `jsfapirun`,
+`expressrun`) through the one `alignctl` — the clearest evidence the framework is surface-generic.
 
 ## Where things live
 
 | In **rosetta** (this framework — reusable) | In the **mirror's own repo** (e.g. `clerkenstein`) |
 |---|---|
 | `test/alignment/` — `alignctl` + the toy | the mirror engine itself |
-| `/align-dna`, `/align-run` skills | the source's DNA (the genome) |
+| `/align-dna`, `/align-run` skills | the source's DNA(s) (the genome — e.g. Clerkenstein ships three) |
 | this doc | the alignment tests + goldens |
-| | the engine's runner |
+| | the engine's runner(s) (one per surface — e.g. `clerkrun`/`jsfapirun`/`expressrun`) |
 
 Rosetta never contains a specific mirror's source — it ships the measuring machinery and a toy that
 proves it.

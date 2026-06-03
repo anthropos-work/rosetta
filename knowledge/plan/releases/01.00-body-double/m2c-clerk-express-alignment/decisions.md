@@ -6,13 +6,20 @@
 HS256 universal-key tokens cannot pass. ⟹ M2c **must** add an RS256 path (RSA keypair + real JWKS + RS256
 minting). No HS256 verification shim is possible. (Research: `clerk-express-milestone-research`, 2026-06-03.)
 
-## M2c-D2 — additive RS256 vs. RS256 migration: OPEN (the central iteration)
-Whether RS256 can be **additive** (a parallel token type for `clerk-express/` only, M1/M2 seams untouched)
-or requires a **migration** (existing `authn`/`clerk-frontend`/`shared` move to RS256, re-gating M1/M2)
-depends on whether studio-desk's `@clerk/express` verifies the **same** session token the Go `app`
-backend verifies via `authn`. **To resolve in iteration 1** by reading how the platform wires
-studio-desk's Clerk instance vs the app's. Prefer **additive** (Option A) — try it first; fall back to
-migration (Option B) only if the token is genuinely shared. Record the resolution here when settled.
+## M2c-D2 — additive RS256 vs. RS256 migration → RESOLVED: additive (no migration)
+Whether RS256 can be **additive** (a parallel token type for the `@clerk/express` seam only, M1/M2 seams
+untouched) or requires a **migration** (existing `authn`/`clerk-frontend`/`shared` move to RS256, re-gating
+M1/M2) depends on whether studio-desk's `@clerk/express` verifies the **same** session token the Go `app`
+backend verifies via `authn`. Prefer **additive** (Option A) — try it first; fall back to migration
+(Option B) only if the token is genuinely shared.
+
+**RESOLVED 2026-06-03 → ADDITIVE (Option A); no migration.** The token domains are separable: studio-desk's
+`@clerk/express` verifies its *own* RS256/JWKS session, independent of the Go `app` backend's HS256 universal
+key. So an RS256 path was added **beside** the HS256 seams (`shared/rsa.go` + a real JWKS from
+`clerk-frontend` + `MintRS256`) — `authn`/`clerk-frontend`/`shared` were *extended, not changed*. M1 (22/22)
+and M2 (9/9) gates stayed green throughout; no goldens were re-captured. The crux (the genuine
+`@clerk/backend` accepts our RS256 token networkless via `jwtKey`) was proven in iter-04 before the full
+runner was built. The accepted re-gating risk (M2c-D3) never materialized.
 
 ## M2c-D3 — placement = v1.0 (user-chosen 2026-06-03), re-opening the release a 3rd time
 The user chose **v1.0 as M2c** over v1.1 / a standalone track, to **complete the mock before shipping** —

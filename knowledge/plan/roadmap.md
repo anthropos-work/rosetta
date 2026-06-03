@@ -152,7 +152,7 @@ app for the browser session** (backend stays fully mocked) if base-URL override 
 **Depends on:** M2 (the FAPI + token machinery it extends) + M2b (the consolidated repo it adds a seam to). **Precedes:** `/developer-kit:close-release`.
 **Estimated complexity:** large — **highest fidelity-risk in v1.0**: the RS256 path may force a token-algorithm migration of the existing 100%-gated seams.
 **KB dependencies:** `corpus/architecture/alignment_testing.md`; the clerkenstein repo's own `knowledge/` (alignment / architecture / injection / sources); the `@clerk/express` + `@clerk/backend` source under `anthropos-dev/studio-desk/node_modules`.
-**Delivers → the clerkenstein repo's `knowledge/`** (a `clerk-express/` README + alignment/architecture/sources updates) **+ a 3rd DNA;** updates `corpus/services/clerkenstein.md`'s surface count (3→4 mocked libraries) + the alignment scorecard.
+**Delivered → the clerkenstein repo's `knowledge/`** (alignment/architecture/sources updates) **+ a 3rd DNA + the `expressrun` runner;** updated `corpus/services/clerkenstein.md`'s scorecard to a **3rd *measured surface*** (`@clerk/express`, **verified-not-mocked** — no new mock dir, per M2c-D5; the genuine SDK is *satisfied* via an additive RS256/JWKS path).
 
 ### Execution graph
 

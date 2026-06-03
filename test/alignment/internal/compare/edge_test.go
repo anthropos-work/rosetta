@@ -1,10 +1,34 @@
 package compare
 
 import (
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"anthropos.dev/alignment/internal/dna"
 )
+
+func TestTruncate_cutsOnRuneBoundary(t *testing.T) {
+	// A short string passes through unchanged.
+	if got := truncate([]byte("hello")); got != "hello" {
+		t.Fatalf("short string altered: %q", got)
+	}
+	// A long string with a multibyte rune straddling the 120-byte cut must stay valid UTF-8
+	// (no split rune) and be shortened with an ellipsis.
+	long := strings.Repeat("a", 119) + "é" + strings.Repeat("b", 50) // 'é' is 2 bytes, starts at index 119
+	got := truncate([]byte(long))
+	if !strings.HasSuffix(got, "...") {
+		t.Fatalf("want ellipsis suffix, got %q", got)
+	}
+	body := strings.TrimSuffix(got, "...")
+	if !utf8.ValidString(body) {
+		t.Fatalf("truncate produced invalid UTF-8: %q", body)
+	}
+	// The straddling 'é' must be dropped whole (cut backs up to index 119), not split.
+	if strings.ContainsRune(body, 'é') == false && len(body) != 119 {
+		t.Fatalf("expected cut at the rune boundary (len 119), got len %d", len(body))
+	}
+}
 
 func opGene(op dna.Operator, norm ...string) dna.Gene {
 	return dna.Gene{ID: "C/v", Capability: "C", Operator: op, Weight: 1, Criticality: dna.Standard, Normalize: norm}
