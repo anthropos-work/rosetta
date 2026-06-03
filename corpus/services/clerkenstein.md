@@ -46,6 +46,14 @@ A concurrency-safe HTTP server (`fapi/server.go`) serving the minimal FAPI boots
 `fapi/key.go` is the publishable-key codec (`MintPublishableKey(host)` ↔ `ParsePublishableKey`), which
 is how the browser is *pointed* at this server — see the JS path section.
 
+> **Codec invariant (M2 hardening):** the encoded payload is exactly `base64("<host>$")` — the trailing
+> `$` is a **terminator sentinel**, and a valid FAPI host never contains `$` (`MintPublishableKey`
+> rejects such hosts). So `ParsePublishableKey` requires the decoded value to *end* with `$` and the
+> host portion to be `$`-free; a key whose decoded bytes carry an embedded `$` (or no trailing `$`) is
+> rejected, not returned with the sentinel leaking into the host. This makes Parse the strict inverse of
+> Mint. A `FuzzParsePublishableKey` fuzz test guards this boundary (it surfaced the original
+> trailing-only-trim bug). Cf. `authn`'s `FuzzParse` on the token-verify boundary.
+
 ### `bapi/` — the fake Clerk **Backend API** (M2, the `api.clerk.com` redirect target)
 The HTTP server (`bapi/server.go`) that the platform's real `orgclient` hits when `api.clerk.com` is
 redirected to it (M1-D2). It serves the Clerk-SDK wire shapes for the 10 consumed methods, **backed by
@@ -134,10 +142,17 @@ go run ./cmd/alignctl run --dna <…>/clerkenstein/dna/clerk-js-5.json \
 
 ## Testing
 
-- **Unit:** `authn` + `orgclient` at **100%**; `fapi` 99%, `bapi` 96%, `webhook` 91% — all race-clean.
-  Highlights: the browser-minted FAPI token is backend-verifiable (`fapi`); a *real* `clerk-sdk-go/v2`
-  client parses every `bapi` response; the injector's svix signature passes the platform's `svix.Verify`
-  (`webhook`). The runners (`cmd/clerkrun`, `cmd/jsfapirun`) are integration-covered by the alignment run.
+- **Unit (post-M2-hardening):** `authn`, `orgclient`, `fapi` at **100%**; `clerkrun` 97%, `bapi` 96%,
+  `webhook` 96%, `jsfapirun` 94% — all race-clean (residual gaps are `os.Exit` wrappers + unreachable
+  defensive branches). Highlights: the browser-minted FAPI token is backend-verifiable (`fapi`); a *real*
+  `clerk-sdk-go/v2` client parses every `bapi` response; the injector's svix signature passes the
+  platform's `svix.Verify` (`webhook`). Both runners are *also* unit-tested at the CLI/protocol surface
+  (`run(args,stdout,stderr)` exit-code contract), on top of the integration coverage from the alignment run.
+- **Robustness dimensions (M2 hardening):** the untrusted-input parsers carry Go fuzz tests —
+  `fapi.FuzzParsePublishableKey`/`FuzzMintParseRoundtrip` (the key codec) and `bapi`'s body-decoder
+  fuzzers (`FuzzCreateOrganizationBody`/`FuzzBulkInviteBody`) — all clean after the codec fix. The
+  `orgclient` store (concurrency-safe per M2-D2) has 5 `-race` concurrency tests asserting
+  exactly-one-winner contention invariants under up to 64 goroutines against one shared store.
 - **Alignment:** two gates — `alignctl run` reports **100%/100%** over the 22-gene `clerk@2.6.0` Go DNA
   (M1) **and** the 9-gene `clerk-js-5` JS/FAPI DNA (M2). These are the exit criteria and the regression
   signal **M1b** CI-gates across Clerk version bumps (re-`/align-dna` the new version, re-`/align-run`).
