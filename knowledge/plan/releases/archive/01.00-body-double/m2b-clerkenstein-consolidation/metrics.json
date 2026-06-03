@@ -1,0 +1,53 @@
+{
+  "milestone": "M2b",
+  "slug": "clerkenstein-consolidation",
+  "version": "01.00-body-double",
+  "shape": "section",
+  "kind": "Clerkenstein repo consolidation — library-named dirs + self-contained knowledge base (pure reorg, no behavior change)",
+  "date": "2026-06-03",
+  "sections": 5,
+  "tests": {
+    "clerkenstein_go": {
+      "test_funcs": 108,
+      "fuzz_funcs": 5,
+      "total_funcs": 113,
+      "delta_vs_prev": "+1 vs M2 (M2: 107 test + 5 fuzz = 112); M2b adds 1 cross-package-seam regression (authn/TestGetUserErrorClassesCrossBoundary) pinning error-class identity across the new shared/ boundary. Pure reorg: 69 history-preserving renames, all tests travelled with their code.",
+      "race_clean": true
+    }
+  },
+  "coverage_pct": {
+    "authn": 100.0,
+    "shared": 100.0,
+    "clerk-frontend": 100.0,
+    "clerk-backend": 97.4,
+    "clerk-webhook": 95.6,
+    "alignment/cmd/clerkrun": 96.8,
+    "alignment/cmd/jsfapirun": 93.8,
+    "note": "library-named packages (M2b-D2); clerk-backend = bapi+orgclient merged (97.4%, merge exposed no gap). Coverage held vs M2 baseline (+0% by design — pure reorg). Residual sub-100% = os.Exit wrappers + unreachable disarmed-path defensive branches."
+  },
+  "alignment": {
+    "go": { "dna": "clerk@2.6.0", "genes": 22, "overall": 100.0, "critical": 100.0 },
+    "js": { "dna": "clerk-js@5", "genes": 9, "overall": 100.0, "critical": 100.0 }
+  },
+  "gates": { "go_gate_exit": 0, "js_gate_exit": 0, "drift_test_exit": 0, "drift_assertions": 9 },
+  "lint": { "gofmt": "clean", "go_vet": "clean", "shellcheck": "clean" },
+  "harden": { "passes": 1, "stop": "stabilized after pass 1 (pure reorg; coverage held, +0% delta, anti-pattern guard forbids padding moved code)", "bugs_fixed": 0 },
+  "flake_count": 0,
+  "flake_gate": "5/5 (-race, shuffled random seeds, sequential, uncached)",
+  "close_review": {
+    "scope_gaps": 0,
+    "code_must_fix": 0,
+    "code_should_fix": 1,
+    "doc_findings": 2,
+    "adversarial_scenarios": 1,
+    "adversarial_bugs_found": 0,
+    "decisions_to_blend": 0,
+    "decisions_already_blended": 3,
+    "decisions_archived": 5,
+    "new_decisions": 0,
+    "all_fixed": true,
+    "deferrals": 0,
+    "deferral_audit": "GREEN (2 inherited single deferrals, 0 repeat/chronic/aged-out, 0 M2b-originated)"
+  },
+  "notes": "Pure reorganization B-milestone over the M2-complete repo. Reorganized clerkenstein into library-named dirs (authn/colony-authn, clerk-backend/clerk-sdk-go-v2 = bapi+orgclient merged, clerk-frontend/clerk-js+nextjs, clerk-webhook/svix) + shared/ (universal-key JWT, mint↔verify split) + alignment/ harness + a self-contained knowledge/ base + CLAUDE.md + singularity-manifest.md + gitignored .agentspace/. 69 history-preserving git-mv renames; no mock-behavior change — both alignment gates (Go 22/22, JS 9/9) + the drift harness (9/9) stayed green throughout. Close review: 0 scope gaps; 1 should-fix code-quality (stale fuzz-test comment naming pre-reorg packages, fixed) + 2 doc findings (coverage-index count drift 112->113, fixed; state.md Headline refresh, done). Adversarial: the shared/ extraction seam is the only new surface — already pinned by the harden-pass cross-boundary test. Decision triage: D1/D2/D4 already blended into the repo's knowledge/ during the build; D3/D5/D6/D7/D8 archived (maintainer/process-only). S4 (run /singularity-kit:repo-consolidate code) is a documented USER finalize of a disable-model-invocation skill — NOT a deferral. clerkenstein close fixes committed on its own main (ad87545). Code lives in gitignored anthropos-demo/clerkenstein. LAST milestone of v1.0 -> next is /developer-kit:close-release."
+}

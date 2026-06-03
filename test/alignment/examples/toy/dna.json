@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "source": { "name": "toy", "version": "v1", "ref": "examples/toy/source" },
+  "mirror": { "name": "toy-mirror", "version": "v1", "ref": "examples/toy/mirror" },
+  "capabilities": [
+    {
+      "id": "Add",
+      "description": "integer addition with int64 overflow handling",
+      "criticality": "critical",
+      "variants": [
+        { "id": "two-positives", "description": "ordinary positive addition", "operator": "exact", "input": { "a": 2, "b": 3 } },
+        { "id": "with-negative", "description": "mixed signs", "operator": "exact", "input": { "a": 5, "b": -8 } },
+        { "id": "overflow", "description": "result exceeds int64", "operator": "error_class", "input": { "a": 9223372036854775807, "b": 1 } }
+      ]
+    },
+    {
+      "id": "Greet",
+      "description": "format a greeting, normalizing input whitespace",
+      "criticality": "standard",
+      "variants": [
+        { "id": "basic", "description": "ordinary name", "operator": "exact", "input": { "name": "World" } },
+        { "id": "empty-name", "description": "empty input", "operator": "exact", "input": { "name": "" } },
+        { "id": "padded-name", "description": "leading/trailing/internal whitespace (mirror diverges here)", "operator": "exact", "input": { "name": "  El  Nino  " } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "snapshot": "release-close",
+  "release": "v1.0",
+  "codename": "body double",
+  "date": "2026-06-03",
+  "captured_at_commit": "release/01.00-body-double tip (pre-merge)",
+  "note": "Generated manually at close-release Phase 8c (the /developer-kit:project-stats skill was not invoked to avoid guessing an unverified skill name; this is the equivalent measurable snapshot).",
+  "milestones": { "count": 6, "ids": ["M0", "M1", "M1b", "M2", "M2b", "M2c"], "shapes": { "section": 4, "iterative": 2 } },
+  "commits": { "rosetta_release_branch": 50, "clerkenstein_repo_total": 39 },
+  "rosetta_committed_code": {
+    "module": "anthropos.dev/alignment",
+    "go_loc_non_test": 1324,
+    "go_loc_test": 1201,
+    "test_funcs": 43,
+    "fuzz_funcs": 3,
+    "external_deps": 0,
+    "coverage_pct": { "internal/dna": 98.3, "internal/outcome": 92.5, "internal/compare": 89.7, "internal/report": 96.2, "internal/canon": 94.7, "examples/toy/runner": 83.3, "cmd/alignctl": 67.5 }
+  },
+  "docs_loc_markdown": { "corpus_plus_knowledge": 14153 },
+  "clerkenstein_repo": {
+    "note": "separate gitignored repo; the v1.0 mirror deliverable, not part of the rosetta merge",
+    "go_loc_non_test": 2357,
+    "go_loc_test": 2713,
+    "test_funcs": 123,
+    "fuzz_funcs": 6,
+    "packages": 8,
+    "dnas": 3,
+    "runners": ["clerkrun", "jsfapirun", "expressrun"]
+  },
+  "alignment_gates": {
+    "go_clerk_2.6.0": "22/22 100/100",
+    "js_clerk-js-5": "9/9 100/100",
+    "express_clerk-express-1": "9/9 100/100",
+    "drift_harness": "9/9",
+    "triple_clean_runs": 3,
+    "flakes": 0
+  },
+  "supply_chain": "rosetta release: stdlib-only, zero external modules (GREEN). See dependencies.lock.",
+  "regression_vs_prev": "n/a — first release under the developer-kit lifecycle; this snapshot is the baseline."
+}

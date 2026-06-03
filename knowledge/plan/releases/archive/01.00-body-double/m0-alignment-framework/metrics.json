@@ -1,0 +1,19 @@
+{
+  "milestone": "M0",
+  "slug": "alignment-framework",
+  "version": "01.00-body-double",
+  "shape": "section",
+  "date": "2026-06-02",
+  "tests": {
+    "go": { "test_funcs": 42, "fuzz_funcs": 3, "delta_vs_prev": "+45 funcs (42 test + 3 fuzz; first milestone under the lifecycle)" }
+  },
+  "coverage_pct": {
+    "internal/dna": 98.3, "internal/outcome": 92.5, "internal/compare": 89.7,
+    "internal/report": 96.2, "internal/canon": 94.7,
+    "examples/toy/runner": 83.3, "cmd/alignctl": 67.5
+  },
+  "benchmarks": null,
+  "flake_count": 0,
+  "close_review": { "must_fix": 1, "should_fix": 4, "nice_to_have": 5, "all_fixed": true },
+  "notes": "Reusable alignment measurement framework (alignctl + toy + /align-dna + /align-run + canonical doc). Stdlib-only Go, builds/runs offline. Close-review adversarial lens found+fixed a path-traversal (gene-id->golden-path) must-fix + score-overflow + canon dedup. 5/5 flake gate. cmd/alignctl uncovered remainder = main() os.Exit dispatch + trivial toy fixtures (exercised e2e by 4 test files)."
+}

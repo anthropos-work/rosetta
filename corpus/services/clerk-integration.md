@@ -100,7 +100,7 @@ Clerk ships a **separate package per framework** (Go, Next.js, Express, browser-
 | **ant-academy** — web | `@clerk/nextjs` | `clerkMiddleware` in `proxy.js`; **requires ≥1 org membership** (`REQUIRE_ORGANIZATION_MEMBERSHIP` → `/no-organization`). |
 | **ant-academy** — mobile | `@clerk/clerk-expo` | Expo session-only gate (custom email+password form). |
 
-> **SDK versions:** the JS Clerk SDKs are **aligned** across `next-web-app` and `ant-academy` — both on `@clerk/nextjs ^6.39.2` and `@clerk/clerk-expo ~2.6.18`. The only remaining drift is a minor `clerk-sdk-go/v2` mismatch — `v2.5.1` (app) vs `v2.6.0` (colony) — worth bumping `app` for consistency.
+> **SDK versions:** the JS Clerk SDKs are **aligned** across `next-web-app` and `ant-academy` — both on `@clerk/nextjs ^6.39.2` and `@clerk/clerk-expo ~2.6.18`. The Go side is also aligned: both `app` and `colony` are on `clerk-sdk-go/v2 v2.6.0` (the earlier `app` `v2.5.1` mismatch is resolved) — the version the Clerkenstein Alignment DNA targets.
 
 ## Configuration (Keys)
 

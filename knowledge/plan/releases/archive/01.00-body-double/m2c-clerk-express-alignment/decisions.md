@@ -1,0 +1,76 @@
+# M2c — decisions
+
+## M2c-D1 — RS256 is mandatory; the HS256 shim is a dead end (design-time, research-confirmed)
+`@clerk/express` (via `@clerk/backend`) verifies **RS256/RS384/RS512 only** and rejects HS256 at
+`assertHeaderAlgorithm` (`TokenInvalidAlgorithm`) before any middleware interception. Clerkenstein's
+HS256 universal-key tokens cannot pass. ⟹ M2c **must** add an RS256 path (RSA keypair + real JWKS + RS256
+minting). No HS256 verification shim is possible. (Research: `clerk-express-milestone-research`, 2026-06-03.)
+
+## M2c-D2 — additive RS256 vs. RS256 migration → RESOLVED: additive (no migration)
+Whether RS256 can be **additive** (a parallel token type for the `@clerk/express` seam only, M1/M2 seams
+untouched) or requires a **migration** (existing `authn`/`clerk-frontend`/`shared` move to RS256, re-gating
+M1/M2) depends on whether studio-desk's `@clerk/express` verifies the **same** session token the Go `app`
+backend verifies via `authn`. Prefer **additive** (Option A) — try it first; fall back to migration
+(Option B) only if the token is genuinely shared.
+
+**RESOLVED 2026-06-03 → ADDITIVE (Option A); no migration.** The token domains are separable: studio-desk's
+`@clerk/express` verifies its *own* RS256/JWKS session, independent of the Go `app` backend's HS256 universal
+key. So an RS256 path was added **beside** the HS256 seams (`shared/rsa.go` + a real JWKS from
+`clerk-frontend` + `MintRS256`) — `authn`/`clerk-frontend`/`shared` were *extended, not changed*. M1 (22/22)
+and M2 (9/9) gates stayed green throughout; no goldens were re-captured. The crux (the genuine
+`@clerk/backend` accepts our RS256 token networkless via `jwtKey`) was proven in iter-04 before the full
+runner was built. The accepted re-gating risk (M2c-D3) never materialized.
+
+## M2c-D3 — placement = v1.0 (user-chosen 2026-06-03), re-opening the release a 3rd time
+The user chose **v1.0 as M2c** over v1.1 / a standalone track, to **complete the mock before shipping** —
+no Clerk consumer left un-faithful before `/developer-kit:close-release`. Trade-off **explicitly
+accepted**: this re-opens v1.0 (after M2b), delays close-release, and risks the RS256 path re-gating the
+shipped HS256 seams (M2c-D2). Alternatives considered: v1.1 first-milestone (ship v1.0 now; demo runs via
+studio-desk's `MOCK_CLERK` bypass) and a standalone "surface expansion" track — both rejected in favor of
+completeness-first.
+
+## M2c-D4 — `clerkClient.*` BAPI calls are already covered (de-scope to integration genes)
+studio-desk's `@clerk/express` use includes `clerkClient.users.getOrganizationMembershipList()` +
+`clerkClient.organizations.getOrganization()` — these are **BAPI** calls already 100%-mocked by
+`clerk-backend/` (M1/M2). M2c adds **integration** genes confirming the path resolves against the existing
+mock; it does **not** build a new BAPI mock.
+
+## M2c-D5 — measured like svix (verify against the real library), not a reimplementation
+`@clerk/express` is the verifier/consumer; Clerkenstein **produces** RS256 tokens + a real JWKS the
+**genuine** `@clerk/express` accepts (the svix-pattern). The "mirror" is the producer; the load-bearing
+test runs a real `@clerk/express` instance against the mock. Runner shape (Node-side vs Go-shells-to-Node
+vs a Go RS256 verifier fallback) — **to resolve in iteration 1–2** (depends on offline availability of
+`@clerk/express` under `anthropos-dev/studio-desk/node_modules`).
+
+## TOK-01: RS256-native, additive-first, real-SDK runner — 2026-06-03
+
+**Tok type:** bootstrap (iter-01)
+**Initial strategy:** Add an RS256 path so the **real** `@clerk/express` (v1.7.79, offline) accepts
+Clerkenstein tokens — the faithful target (real Clerk is RS256/JWKS everywhere). Build a new
+`clerk-express/` seam + a 3rd DNA (`clerk-express-1.json`), measured by a **Node runner driving the
+genuine `@clerk/express`** (the svix-pattern). **Additive-first:** add an RSA keypair + RS256 minting (in
+`shared/`) + a real non-empty JWKS from `clerk-frontend` **without removing HS256** — so M1/M2 stay green
+(their HS256 tokens + `authn` HS256 verification untouched); the `clerk-express/` seam uses RS256
+exclusively. studio-desk's separate Clerk instance makes additive viable (studio-desk RS256, main app
+HS256). **Escalate to migration** (authn also verifies RS256, re-gate M1/M2) only if a tik proves the
+token is shared across apps.
+**Rationale:** RS256 is what real Clerk does; additive keeps the shipped seams green while achieving
+real-SDK fidelity for the express surface; the Node runner verifies against the **genuine** library
+(highest fidelity, the svix discipline). Lower risk than a blanket migration the user can still opt into.
+**Strategy class:** new-direction
+**Distance-to-gate context:** gate = **≥95% overall / 100% critical** on `clerk-express-1.json` + a real
+`@clerk/express` accepts a Clerkenstein token. **Start: 0%** (no DNA, no seam, HS256-only).
+**Next-tik direction:** iter-02 authors `clerk-express-1.json` (~8 genes from `spec-notes.md`) + validates
+it (`alignctl dna validate`).
+
+<!-- Iteration decisions (toks, escape-hatch escalations, user-blockers) recorded here as they arise. -->
+
+## Adversarial review (close Phase 2c)
+- **`expressrun` bad-signature tamper could be a no-op (latent gate flake).** The runner built the
+  bad-signature scenario as `valid[:len-3]+"AAA"`. The token carries `iat`/`nbf` from `now`, so its
+  signature tail varies per run — if it ever *were* `AAA`, the tamper would be a no-op and
+  `ExpressAuth/bad-signature` would see a *valid* token (divergent → a rare gate flake). **Fixed at close:**
+  `tamperSig` flips the last char to a guaranteed-different one, pinned by `TestTamperSig`.
+- Other modules surfaced no non-obvious failure: the RS256 key is a fixed demo credential (no keygen
+  nondeterminism); the new store reads are mutex-guarded; `verifyViaNode` fails loud if `@clerk/express`
+  isn't resolvable (clear error, not a silent pass).
