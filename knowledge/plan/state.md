@@ -1,8 +1,8 @@
 # State
 
-**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **ALL milestones (M0→M1→M1b→M2→M2b) closed + merged. v1.0 is ready for `/developer-kit:close-release`.**
-**Active milestone:** _(between milestones — v1.0 feature-complete + consolidated; next action is release close, not a milestone)._
-**Next up:** **`/developer-kit:close-release`** — release-level review + merge `release/01.00-body-double` → `main`, **plus** the deferred `feat/demo-environment` → `main` reconciliation (M0-D6). Then v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md). ⚠ One open **user action** (not a deferral, M2b-D3/D8): run `/singularity-kit:repo-consolidate code` at the `clerkenstein` repo to formally finalize the consolidation (the repo is already authored to its standard; the run is a verification that refreshes `CLAUDE.md`/`singularity-manifest.md`).
+**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **M0→M1→M1b→M2→M2b closed + merged; M2c (iterative, `@clerk/express` RS256) added to complete the mock before `/developer-kit:close-release`.**
+**Active milestone:** **M2c "`@clerk/express` backend session verification (RS256/JWKS)"** (iterative, `planned`) — bring the last un-gated Clerk consumer (`@clerk/express`, studio-desk's Node backend) under the alignment framework: a new `clerk-express/` seam + a 3rd DNA (`clerk-express-1.json`) driven to a gate. **Defining unknown (the RS256 wall):** `@clerk/express` verifies RS256-via-JWKS only + hard-rejects HS256, so M2c must add an RS256 path (RSA keypair + real JWKS + RS256 minting) — and may have to migrate the existing HS256 seams (re-gating M1/M2). Designed + scaffolded 2026-06-03. Dir: [m2c-clerk-express-alignment/](releases/01.00-body-double/m2c-clerk-express-alignment/).
+**Next up:** `/developer-kit:build-mstone-iters M2c` (iterate to the gate) → `/developer-kit:harden-mstone-iters` → `/developer-kit:close-milestone`. **Then** `/developer-kit:close-release` (merge `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main`, M0-D6); v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md). (The M2b repo-consolidate finalize is **done** — ran 2026-06-03; clerkenstein `78131c0`/`3170cef`.)
 **Last closed:** M2b — 2026-06-03.
 **Paused:** _(none)_
 
@@ -19,7 +19,7 @@
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
 ## v1.0 "body double" milestones
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done). **All milestones closed — v1.0 ready for `/developer-kit:close-release`.** Full design + execution graph + risks in [roadmap.md](roadmap.md).
+**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done) → **M2c** (active — iterative, `@clerk/express` RS256). Full design + execution graph + risks in [roadmap.md](roadmap.md).
 
 ## Design decisions locked at design time (2026-06-02)
 - **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
@@ -28,8 +28,9 @@
 - **"Zero platform-code changes"** = build-time `go.mod replace` (authn) / fake-API-server (orgclient + JS) + skip-worktree; upstream never modified.
 - **Two-version split:** v1.0 = Clerkenstein (M0–M2); v1.1 "show floor" = stacks + seeding + recipes (M3–M5, [roadmap-vision.md](roadmap-vision.md)).
 - **M2b (added 2026-06-03):** before shipping, consolidate the `clerkenstein` repo — **library-named** dirs (one per mocked dependency: `colony/authn`, `clerk-sdk-go/v2`, `@clerk/clerk-js`+`@clerk/nextjs`, `svix`) + `shared/` + `alignment/` + a self-contained `knowledge/` base + `.agentspace/`, via `/singularity-kit:repo-consolidate`. Pure cleanup, gates stay green. (M2b-D2 = library-named scheme; M2b-D1 = Go package names for hyphenated dirs; M2b-D3 = repo-consolidate is user-invoked.)
+- **M2c (added 2026-06-03):** complete the mock before shipping — bring **`@clerk/express`** (studio-desk's Node backend, the last un-gated Clerk consumer) under alignment as an **iterative** milestone (new `clerk-express/` seam + 3rd DNA → gate). Research-confirmed the **RS256 wall** (M2c-D1: `@clerk/express` rejects HS256; needs RS256+JWKS). Central open iteration (M2c-D2): additive RS256 vs migrating the HS256 seams (re-gating M1/M2). Placement v1.0 by user choice (M2c-D3 — re-opens the release, accepts the re-gating risk). **Correction (2026-06-03):** `svix` is a *real used* dep, not mocked — what's mocked is Clerk's event emission (clerkenstein `3170cef`).
 
 ## Branch model
-M2 closed + merged. **M2b** builds on `m2b/clerkenstein-consolidation` (cut from `release/01.00-body-double`) → merged back at close; the `clerkenstein` repo's own reorg commits stack on its `main` (no branch model). **After M2b closes (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`.
+M2b closed + merged. **M2c** (iterative) builds on `m2c/clerk-express-alignment` (cut from `release/01.00-body-double`) via `/developer-kit:build-mstone-iters` → merged back at close; the `clerkenstein` repo's own `clerk-express/` seam + DNA + runner commits stack on its `main` (no branch model). **After M2c closes (release close):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6) — both owned by `/developer-kit:close-release`.
 
-_Last updated: 2026-06-03 (M2b closed + merged to release/01.00-body-double — all v1.0 milestones done; next is /developer-kit:close-release)._
+_Last updated: 2026-06-03 (M2c designed + scaffolded — iterative `@clerk/express` RS256 milestone inserted before close-release; next is /developer-kit:build-mstone-iters M2c)._

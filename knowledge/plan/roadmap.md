@@ -17,7 +17,7 @@ builder skills).
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b | **all milestones done — ready for `/developer-kit:close-release`** |
+| **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | **active — M2c (iterative; @clerk/express RS256), then close** |
 | v1.1 | show floor | Disposable, richly-seeded demo stacks on demand | M3 → M4 → M5 | next ([roadmap-vision.md](roadmap-vision.md)) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
@@ -129,11 +129,28 @@ app for the browser session** (backend stays fully mocked) if base-URL override 
   - In (**2 — Knowledge base**): a self-contained `knowledge/` dir documenting Clerkenstein — scope/goal; how it's built (the 4 mocks + shared); how fidelity is **validated with alignment tests against a pinned Clerk version** (the M0 framework + the two DNAs + the gate); **per-library injection recipes** (`go.mod replace` for `authn`; `api.clerk.com` HTTP/DNS redirect for `clerk-backend`; config-only publishable-key override for `clerk-frontend`; direct svix-signed POST for `clerk-webhook`); a coverage index. Per-library `README.md`s + a top-level index. Solid, well-written, well-distributed.
   - In (**3 — Hygiene**): an `.agentspace/` dir with contents **gitignored**; `.gitignore` cleanup (the current comment is mismatched); built-binary + transient hygiene per `repo-consolidate`'s asset-hygiene checks.
   - In (**4 — Consolidate**): run `/singularity-kit:repo-consolidate code` to standardize the repo (emit `CLAUDE.md` + `singularity-manifest.md`, audit against the code-repo + asset-hygiene standards, apply fixes), then re-verify both gates + the drift harness. **Note:** `repo-consolidate` is `disable-model-invocation` (user-invoked) — the build authors the structure TO its standard so the run is a clean finalize; the **user types the skill** (pointed at the `clerkenstein` repo).
-  - Out: new library support / new alignment genes (the `@clerk/express` coverage gap stays a v1.1 item); any live injection wiring into a running platform (still v1.1/M3); any change to rosetta's M0 framework or to the platform repos.
+  - Out: new library support / new alignment genes (the `@clerk/express` coverage gap — **now picked up by M2c**); any live injection wiring into a running platform (still v1.1/M3); any change to rosetta's M0 framework or to the platform repos.
 **Depends on:** M2 (consolidates the M2-complete repo). **Parallel with:** none (touches the whole repo). **Precedes:** `/developer-kit:close-release`.
 **Estimated complexity:** medium — mechanical but wide (touches every package + the gate/drift scripts); the only real risk is import/script repointing, fully caught by the **green-gate invariant** (gates + drift re-run after each section).
 **KB dependencies:** `corpus/services/clerkenstein.md`, `corpus/architecture/alignment_testing.md`; the `/singularity-kit:repo-consolidate` standards (base + code-repo + asset-hygiene).
 **Delivers → the `clerkenstein` repo's own `knowledge/` base** (net-new, self-contained) **+ slims `corpus/services/clerkenstein.md`** (rosetta) to a pointer at the repo's `knowledge/` + the new structure.
+
+### M2c: Clerkenstein — `@clerk/express` backend session verification (RS256/JWKS)
+**Status:** `planned`
+**Shape:** `iterative` (alignment-score gate, like M1) — a **feature** milestone; the letter suffix marks *insertion after M2b*, not a B/tooling milestone.
+**Dir:** [m2c-clerk-express-alignment/](releases/01.00-body-double/m2c-clerk-express-alignment/)
+**Goal:** Bring the **last un-gated Clerk consumer — `@clerk/express`** (studio-desk's Node backend auth) under the alignment framework: a new **`clerk-express/`** seam + a **3rd Alignment DNA**, driven to a gate, so studio-desk's backend genuinely verifies Clerkenstein tokens (not via its `MOCK_CLERK=true` bypass). Completes v1.0's thesis — *no* Clerk seam left un-faithful before shipping.
+**Why iterative + the defining unknown (the RS256 wall):** `@clerk/express` (via `@clerk/backend`) verifies **RS256 via JWKS only** and **hard-rejects HS256** (`assertHeaderAlgorithm` → `TokenInvalidAlgorithm`). Clerkenstein mints HS256 universal-key tokens + serves an **empty JWKS**, so an HS256 shim is a dead end. The milestone must add an **RS256 path** (RSA keypair + a real JWKS from the fake FAPI + RS256 minting + the real-`@clerk/express` verifier). **The central iteration question:** can RS256 be **additive/parallel**, or must the existing HS256 seams (`authn`/`clerk-frontend`/`shared`) **migrate to RS256** — re-capturing the Go DNA goldens + re-gating M1/M2? The gate-driven iterations resolve it.
+**Scope:**
+  - In: a new **`clerk-express/`** seam (library-named); an **RSA keypair + a real (non-empty) JWKS** served by the fake FAPI (`clerk-frontend`'s `/.well-known/jwks.json`); **RS256 token minting**; the `@clerk/express` **DNA** (`clerk-express-1.json`, source `@clerk/express ^1.3.47`); a runner that drives **the real `@clerk/express` SDK** against the mock (the svix-pattern — verify against the genuine library); the **alignment gate** as the exit criterion.
+  - In (confirm, don't rebuild): `@clerk/express` also calls `clerkClient.{getOrganizationMembershipList, getOrganization}` — those are **BAPI**, already 100%-mocked by `clerk-backend/`; M2c adds *integration* genes confirming that path, not a new BAPI mock.
+  - Out: changing studio-desk or any platform repo (the `MOCK_CLERK` bypass is the platform's own); a webhook (svix) DNA (separate future gap); live injection into a running studio-desk (demo-stack work, v1.1).
+**Candidate genes (~8, `clerk-express-1.json`):** `ExpressAuth/{valid, expired, malformed, bad-signature, no-token}` (error_class) · `ExtractIdentity/universal-user` (exact: verified claims → `req.auth`) · `JWKS/non-empty-rsa` (shape) · `ClerkClientBAPI/{org-membership-list, get-organization}` (integration vs `clerk-backend`).
+**Exit gate:** alignment **≥ 95% overall / 100% critical** on `clerk-express-1.json`, AND the load-bearing test passes (a **real `@clerk/express` instance accepts a Clerkenstein-minted token + extracts the right identity**).
+**Depends on:** M2 (the FAPI + token machinery it extends) + M2b (the consolidated repo it adds a seam to). **Precedes:** `/developer-kit:close-release`.
+**Estimated complexity:** large — **highest fidelity-risk in v1.0**: the RS256 path may force a token-algorithm migration of the existing 100%-gated seams.
+**KB dependencies:** `corpus/architecture/alignment_testing.md`; the clerkenstein repo's own `knowledge/` (alignment / architecture / injection / sources); the `@clerk/express` + `@clerk/backend` source under `anthropos-dev/studio-desk/node_modules`.
+**Delivers → the clerkenstein repo's `knowledge/`** (a `clerk-express/` README + alignment/architecture/sources updates) **+ a 3rd DNA;** updates `corpus/services/clerkenstein.md`'s surface count (3→4 mocked libraries) + the alignment scorecard.
 
 ### Execution graph
 
@@ -150,6 +167,9 @@ v1.0 "body double"   — a stand-in the platform can't tell apart, and we can pr
               │  (both closed — repo feature-complete)
               ↓
     M2b (repo consolidation — library-named dirs + self-contained knowledge base; gates stay green)
+              │
+              ↓
+    M2c (ITERATIVE: @clerk/express RS256/JWKS — new clerk-express/ seam + 3rd DNA → alignment gate)
               │
               ↓
     /developer-kit:close-release → v1.0 ships to main
@@ -177,9 +197,10 @@ v1.0 "body double"   — a stand-in the platform can't tell apart, and we can pr
 
 `release/01.00-body-double` (cut from `feat/demo-environment` at M0). Milestone branches:
 `m0/alignment-framework`, `m1/clerkenstein-backend`, `m1b/clerk-drift-detection`,
-`m2/browser-webhook-coherence`, `m2b/clerkenstein-consolidation`. **M1 is iterative** → built by
-`/developer-kit:build-mstone-iters` (closes on a Gate Outcome Ledger). M0/M1b/M2/M2b are section →
-`/developer-kit:build-milestone`. All → `/developer-kit:close-milestone` → `/developer-kit:close-release`.
+`m2/browser-webhook-coherence`, `m2b/clerkenstein-consolidation`, `m2c/clerk-express-alignment`.
+**M1 + M2c are iterative** → built by `/developer-kit:build-mstone-iters` (close on a Gate Outcome Ledger).
+M0/M1b/M2/M2b are section → `/developer-kit:build-milestone`. All → `/developer-kit:close-milestone` →
+`/developer-kit:close-release`.
 The `clerkenstein` repo's own code commits stack on its `main` (its own gitignored git, no branch model);
 the rosetta-side milestone records + corpus pointer land on the `m{N}/…` branch.
 
@@ -194,6 +215,6 @@ _(none yet — no version has shipped under this lifecycle.)_
 
 ## Notes
 
-- Milestone numbering is **flat sequential** (M0, M1, M2, …); B-milestones append `b` (M1b, M2b). See [`context.md`](context.md).
-- v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 is iterative** (alignment-score gate).
+- Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix marks a milestone **inserted after** the fact. `b` has been tooling/cleanup (M1b drift CI, M2b consolidation); **M2c is a letter-suffixed *feature* milestone** (iterative) — the suffix only means "inserted after M2b", since the next flat number M3 is already claimed by v1.1. See [`context.md`](context.md).
+- v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 + M2c are iterative** (alignment-score gates).
 - v1.1 "show floor" (M3, M4, M5) is detailed in [`roadmap-vision.md`](roadmap-vision.md); it promotes into this file when v1.0 closes.
