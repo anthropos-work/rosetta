@@ -221,13 +221,15 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
 - **M1b (Clerk drift detection)** reuses the framework wholesale: on a Clerk version bump, `alignctl
   dna diff` shows what changed and `alignctl run` re-scores the existing mirror against the new
   source — a CI gate on the alignment score turns a silent break into a flagged, mechanical update.
-  Mechanized as `scripts/{gate,drift-check}.sh` + a weekly CI workflow in the clerkenstein repo; the
-  bump runbook + exit-code contract are in [Clerkenstein § Drift detection](../services/clerkenstein.md#drift-detection-m1b).
+  Mechanized as `alignment/scripts/{gate,drift-check}.sh` + a weekly CI workflow in the clerkenstein repo;
+  the bump runbook + exit-code contract are in the repo's own
+  [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from [Clerkenstein](../services/clerkenstein.md)).
 - **M2 (browser session + webhook)** proves the framework is **surface-generic**: it authors a *second*
   DNA — `clerk-js-5` (the FAPI/browser surface) — with its own runner (`jsfapirun`) and goldens, scored
   by the same `alignctl` to the same gate (100%/100%, 9 genes). Same machinery, a new surface; the
   parameterized `gate.sh` CI-gates it alongside the Go DNA. See
-  [Clerkenstein § JS browser session](../services/clerkenstein.md#js-browser-session--webhook-coherence-m2).
+  [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
+  browser↔backend coherence chain).
 
 ## Where things live
 
