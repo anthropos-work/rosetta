@@ -12,7 +12,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 ## Score arc (overall % / critical %) — update each iter
 | Iter | Shape | What it did | Score (overall / critical) | Gate? |
 |---|---|---|---|---|
-| _(none yet)_ | | | 0% / 0% (no DNA authored) | — |
+| 01 | tok (bootstrap) | authored TOK-01 (RS256-native, additive-first, real-SDK runner) | 0% / 0% (no DNA yet) | — |
 
 ## Suggested opening iterations (the build refines these)
 1. **tok (strategy) — resolve M2c-D2 + D5:** read how studio-desk's Clerk instance is wired vs the app's
@@ -29,7 +29,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
    gates green — that re-gating is part of M2c, recorded as a tok.)
 
 ## Running ledger
-_(build-mstone-iters appends one line per closed iter here — `iter(M2c/NN): {tik|tok} — {outcome} → score X/Y`.)_
+- iter-01 (tok/bootstrap): authored TOK-01 — RS256-native, additive-first, real-`@clerk/express` Node runner — see iter-01/progress.md
 
 ## Green-gate guard (if Option B / migration is chosen)
 Any iteration that touches `authn` / `clerk-frontend` / `shared` MUST re-run the existing gates before

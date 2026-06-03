@@ -5,7 +5,8 @@ version: v1.0 "body double"
 milestone_shape: iterative
 status: planned
 exit_gate: "alignment >= 95% overall AND 100% critical on clerk-express-1.json, AND a real @clerk/express instance accepts a Clerkenstein-minted token and extracts the right identity"
-started:
+iteration_protocol_ref: corpus/architecture/alignment_testing.md
+started: 2026-06-03
 last_updated: 2026-06-03
 ---
 
@@ -81,3 +82,8 @@ The user chose to land this in **v1.0** (re-opening the release a 3rd time) to c
 shipping, **accepting** that the RS256 path may force re-capturing the Go DNA goldens + re-gating M1/M2's
 HS256 seams. If an iteration shows the migration is too disruptive, the escape hatch is to keep RS256
 **additive** (a parallel token type for the `@clerk/express` seam only) — the iterations decide.
+
+## Re-scope trigger
+If 5 consecutive triggered toks fail to produce a viable new strategy, OR the additive-RS256 path proves
+infeasible AND the migration path would re-gate M1/M2 beyond acceptable scope, escalate to
+user-strategic-replan (the user weighs migration cost vs. accepting studio-desk's `MOCK_CLERK` bypass).

@@ -35,4 +35,25 @@ test runs a real `@clerk/express` instance against the mock. Runner shape (Node-
 vs a Go RS256 verifier fallback) — **to resolve in iteration 1–2** (depends on offline availability of
 `@clerk/express` under `anthropos-dev/studio-desk/node_modules`).
 
+## TOK-01: RS256-native, additive-first, real-SDK runner — 2026-06-03
+
+**Tok type:** bootstrap (iter-01)
+**Initial strategy:** Add an RS256 path so the **real** `@clerk/express` (v1.7.79, offline) accepts
+Clerkenstein tokens — the faithful target (real Clerk is RS256/JWKS everywhere). Build a new
+`clerk-express/` seam + a 3rd DNA (`clerk-express-1.json`), measured by a **Node runner driving the
+genuine `@clerk/express`** (the svix-pattern). **Additive-first:** add an RSA keypair + RS256 minting (in
+`shared/`) + a real non-empty JWKS from `clerk-frontend` **without removing HS256** — so M1/M2 stay green
+(their HS256 tokens + `authn` HS256 verification untouched); the `clerk-express/` seam uses RS256
+exclusively. studio-desk's separate Clerk instance makes additive viable (studio-desk RS256, main app
+HS256). **Escalate to migration** (authn also verifies RS256, re-gate M1/M2) only if a tik proves the
+token is shared across apps.
+**Rationale:** RS256 is what real Clerk does; additive keeps the shipped seams green while achieving
+real-SDK fidelity for the express surface; the Node runner verifies against the **genuine** library
+(highest fidelity, the svix discipline). Lower risk than a blanket migration the user can still opt into.
+**Strategy class:** new-direction
+**Distance-to-gate context:** gate = **≥95% overall / 100% critical** on `clerk-express-1.json` + a real
+`@clerk/express` accepts a Clerkenstein token. **Start: 0%** (no DNA, no seam, HS256-only).
+**Next-tik direction:** iter-02 authors `clerk-express-1.json` (~8 genes from `spec-notes.md`) + validates
+it (`alignctl dna validate`).
+
 <!-- Iteration decisions (toks, escape-hatch escalations, user-blockers) recorded here as they arise. -->
