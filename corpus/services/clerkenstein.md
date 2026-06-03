@@ -34,7 +34,9 @@ claim set (`eid`→`ID`, `email`, `firstname`, `lastname`, `org.eid`→org `ID`,
 A small in-memory store (`orgclient/store.go`, `orgclient/invitations.go`) reproducing the
 success/error semantics of the 10 consumed methods (CreateOrganization, CreateMembership, ChangeRole,
 DeleteOrganizationMembership, InviteMember, BulkInviteMembers, RevokeInvitation, the 3 metadata
-writes). No network calls.
+writes). No network calls. Mutators that target an existing membership (`ChangeRole`,
+`DeleteMembership`) require that membership to exist first — a `ChangeRole` for a non-member returns
+`ErrNotMember` (→ BAPI 404), mirroring real Clerk rather than minting a phantom membership (#M2-D4).
 
 ### `fapi/` — the fake Clerk **Frontend API** (M2, the browser side)
 A concurrency-safe HTTP server (`fapi/server.go`) serving the minimal FAPI bootstrap surface

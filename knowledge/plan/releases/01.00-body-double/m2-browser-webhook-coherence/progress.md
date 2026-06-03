@@ -144,3 +144,39 @@ Stopped after Pass 4 (well under the 5-pass cap): the full Step-2b scan found no
 worth a real test — remaining uncovered lines are `os.Exit` wrappers and unreachable defensive branches.
 Next-pass marginal coverage delta < 2%; no flakes. Handing off to `/developer-kit:close-milestone`
 (its Phase 4 audit runs independently as defense-in-depth).
+
+## M2: Final Review (close)
+
+Baseline (pre-fix): 7 pkgs pass `-race -count=1` (111 funcs); Go gate 100/100 22/22, JS gate 100/100 9/9,
+drift 9/9; `go vet` + shellcheck clean. Phase 1b deferral audit GREEN. Scope: no gaps (S1–S5 done,
+D1–D3 recorded, no untracked TODOs).
+
+### Scope
+- [x] No scope gaps — every S1–S5 item checked, decisions complete, no orphan TODO/FIXME.
+
+### Code Quality
+- [x] [must-fix] gofmt NOT clean — `bapi/malformed_test.go`, `cmd/clerkrun/main_test.go`,
+      `fapi/fuzz_test.go` had mis-aligned trailing comments (harden's "gofmt clean" claim was wrong). Run gofmt.
+- [x] [should-fix] `orgclient.Store` doc says "every mutating/reading method takes mu", but
+      `BulkInviteMembers` takes no lock. It touches no shared store state (pure id-gen, no persistence) so
+      it's safe — clarify the doc comment so the invariant statement is accurate.
+
+### Adversarial (Phase 2c)
+- [x] [must-fix] `orgclient.ChangeRole` nil-map panic + phantom-membership divergence (M2-D4) — guard
+      membership existence, return `ErrNotMember`; add regression tests.
+
+### Documentation
+- [x] [must-fix] `anthropos-demo/clerkenstein/README.md` is M1-era — describes only authn/orgclient/
+      clerkrun, says "milestone M1", omits all M2 units (`fapi/`, `bapi/`, `webhook/`, `cmd/jsfapirun/`,
+      `dna/clerk-js-5.json`, `golden-js/`). Per-unit handbook contract: refresh to reflect M2 surface.
+
+### Tests & Benchmarks
+- [x] Regression tests for M2-D4 (covered under Adversarial above).
+- [x] Test-count/coverage reconciliation: `clerkenstein.md` Testing section coverage figures match
+      progress.md final coverage — no drift. README quotes no counts.
+
+### Decision Triage
+- [x] M2-D1 (config override, no fork) → already blended into `clerkenstein.md` § JS browser session. Verify tag.
+- [x] M2-D2 (orgclient concurrency-safe) → already blended into `clerkenstein.md` § Disarmed properties. Verify tag.
+- [x] M2-D3 (`.gitignore` recovery of `cmd/clerkrun`) → archive (maintainer-only; repo-reproducibility detail).
+- [x] M2-D4 (ChangeRole fix) → blend a one-line membership-guard note into `clerkenstein.md` § orgclient.

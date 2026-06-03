@@ -38,4 +38,42 @@ runner (`cmd/jsfapirun/main.go`) is tracked from the start. No behavior change �
 byte-identical to what M1 has been building; this only makes the repo reproducible. Surfaced here per
 the no-hide rule rather than silently re-ignoring.
 
+## M2-D4 — close review: `orgclient.ChangeRole` nil-map panic + phantom-membership divergence (fixed inline, Fate 1) — 2026-06-03
+
+**Found at close (Phase 2c adversarial review).** `Store.ChangeRole` checked only `validRole` + org
+existence, then assigned `s.members[org][user] = role` **unconditionally**. Two defects:
+1. **Panic** — if the org exists but its `members` map is nil (any org created via `CreateOrganization`,
+   which never initializes `s.members[id]`; or any org whose members map was never allocated), the
+   assignment hits a **nil map → "assignment to entry in nil map" panic**. Reachable through the `bapi/`
+   server in a live demo: `POST /v1/organizations` then `PATCH …/memberships/{user}` (ChangeRole) on the
+   new org panics the HTTP goroutine. The alignment gate missed it: the `ChangeRole` gene only targets the
+   seeded `o_1`/`u_1` (an existing member), so the nil-map path is never exercised by the runner.
+2. **Behavioral divergence** — even on a seeded org, `ChangeRole` for a user who is *not* a member
+   silently **created a phantom membership** instead of returning `ErrNotMember`. Real Clerk 404s
+   (`resource_not_found`); the `bapi.membershipErr` switch already maps `not-a-member` → 404, so the twin
+   was wired for the error it never produced.
+
+**Fix (Fate 1, lands in M2):** `ChangeRole` now requires the (org, user) membership to exist before
+mutating — mirroring `DeleteMembership`'s `if _, ok := s.members[org][user]; !ok` guard — returning
+`ErrNotMember` for a non-member (whether the org's members map is nil or the user is simply absent).
+Adds `orgclient` regression tests (nil-map repro + non-member-on-seeded-org) and re-verifies both
+alignment gates (still 100%/100% — the seeded-member ChangeRole gene is unaffected). No platform-code
+change; no wire-shape change.
+
+## Adversarial review (Phase 2c) — scenarios considered at close
+
+- **`orgclient.ChangeRole` on an org with no allocated members map / a non-member user** → nil-map panic +
+  phantom-membership creation. **Real risk in the shipped code** (reachable via the `bapi/` server). Fixed
+  inline — see M2-D4 above.
+- **`fapi.ParsePublishableKey` with an embedded/missing `$` sentinel** → already hardened at M2 harden
+  Pass 1 (`FuzzParsePublishableKey`, commit e80a257); Parse is the strict inverse of Mint. No residual.
+- **`bapi` malformed/oversized/wrong-type request bodies** → covered by `bapi/malformed_test.go` +
+  `bapi/fuzz_test.go` (harden Pass 2); decoders fail soft (the disarmed handlers tolerate a zero-value
+  body), no crash.
+- **`webhook.Injector` with a transport error / non-2xx endpoint** → covered by `injector_error_test.go`
+  (harden Pass 2); `Inject` fails loud on non-2xx and wraps transport errors. No silent drop.
+- **Concurrent `orgclient.Store` mutation through one shared store** (the M2-D2 injection-time concern) →
+  5 `-race` concurrency tests (harden Pass 1) assert exactly-one-winner invariants under up to 64
+  goroutines. No race.
+
 ## (template) — further decisions recorded as sections land
