@@ -1,7 +1,7 @@
 # M2c — progress (iterative · Gate Outcome Ledger)
 
 **Milestone:** M2c — `@clerk/express` backend session verification (RS256/JWKS) · **Shape:** iterative
-**Status:** planned (scaffolded 2026-06-03; not yet built — `/developer-kit:build-mstone-iters M2c`)
+**Status:** **GATE MET** (iter-05, 2026-06-03 — 100%/100% on clerk-express-1.json). Next: `/developer-kit:harden-mstone-iters` → `/developer-kit:close-milestone`.
 
 ## Exit gate
 **alignment ≥ 95% overall AND 100% critical on `clerk-express-1.json`**, AND the load-bearing test passes:
@@ -16,6 +16,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 | 02 | tik | authored clerk-express-1.json (9 genes / 4 caps / 7 critical); validates | 0% / 0% (no mirror yet) | NOT MET |
 | 03 | tik | RS256 foundation: keypair + MintRS256 + real JWKS (additive; M1/M2 green) | 0% / 0% (no runner yet) | NOT MET |
 | 04 | tik | **CRUX PROVEN** — real @clerk/backend accepts our RS256 token (+ runner skeleton + Node verifier) | 0% formal (RS256 wall solved) | NOT MET |
+| 05 | tik | **full runner → GATE MET** (ExpressAuth 5/5 + ExtractIdentity 1/1 + JWKS 1/1 + ClerkClientBAPI 2/2) | **100% / 100% (9/9)** | **MET ✓** |
 
 ## Suggested opening iterations (the build refines these)
 1. **tok (strategy) — resolve M2c-D2 + D5:** read how studio-desk's Clerk instance is wired vs the app's
@@ -36,6 +37,7 @@ identity**. (Iterate with `/developer-kit:build-mstone-iters`; harden every ~10 
 - iter-02 (tik): authored `clerk-express-1.json` (9 genes / 4 caps / 7 critical), validates — see iter-02/progress.md
 - iter-03 (tik): RS256 crypto foundation (keypair + MintRS256 + real JWKS), additive, gates green — see iter-03/progress.md
 - iter-04 (tik): **CRUX PROVEN** — real @clerk/backend verifies a Clerkenstein RS256 token + extracts identity; runner skeleton + Node verifier — see iter-04/progress.md
+- iter-05 (tik): **GATE MET** — full expressrun runner + bapi reads + goldens → 100%/100% (9/9); additive (M1/M2/drift green) — see iter-05/progress.md
 
 ## Green-gate guard (if Option B / migration is chosen)
 Any iteration that touches `authn` / `clerk-frontend` / `shared` MUST re-run the existing gates before
