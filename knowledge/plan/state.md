@@ -1,10 +1,13 @@
 # State
 
-**Active version:** **v1.0 "body double"** (Clerkenstein) — on `release/01.00-body-double`. **ALL milestones (M0→M1→M1b→M2→M2b→M2c) closed + merged. v1.0 is feature-complete + consolidated + all four Clerk libraries gated — ready for `/developer-kit:close-release`.**
-**Active milestone:** _(between milestones — v1.0 feature-complete; the next action is the release close, not a milestone)._
-**Next up:** **`/developer-kit:close-release`** — release-level review + merge `release/01.00-body-double` → `main`, **plus** the deferred `feat/demo-environment` → `main` reconciliation (M0-D6). Then v1.1 "show floor" (M3–M5) promotes from [roadmap-vision.md](roadmap-vision.md). (One carried-forward enhancement: wire the `@clerk/express` gate into CI — needs Node + `@clerk/express` present — → v1.1 demo-stack, where studio-desk's `node_modules` exists.)
-**Last closed:** M2c — 2026-06-03.
+**Active version:** _(between releases)_ — **v1.0 "body double" SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; `release/01.00-body-double` + `feat/demo-environment` deleted).
+**Active milestone:** _(between releases — awaiting `/developer-kit:design-roadmap` to promote v1.1 "show floor")._
+**Next up:** **`/developer-kit:design-roadmap`** — promote **v1.1 "show floor"** (M3–M5: disposable demo stacks + declarative data seeding + use-case recipes) from [roadmap-vision.md](roadmap-vision.md) into active development. (v1.0 carry-forward, picked up there: wire the `@clerk/express` gate into CI — needs Node + `@clerk/express` present.)
+**Last shipped:** **v1.0 "body double"** — 2026-06-03 (tag `v1.0`). · **Last closed milestone:** M2c — 2026-06-03.
 **Paused:** _(none)_
+
+## Shipped releases
+- **v1.0 "body double"** — **2026-06-03**, tag `v1.0`. The alignment-testing framework (`test/alignment/`) + **Clerkenstein**, a *measured* drop-in Clerk mock at **100%/100% on all three surfaces** (Go · JS/FAPI · `@clerk/express`), zero platform-code change. 6 milestones (M0→M2c). close-release caught + fixed 1 blocker (an `@clerk/express` gate regression from the M2c close). Records: [releases/archive/01.00-body-double/](releases/archive/01.00-body-double/) (review · retro · metrics · stats · lockfile).
 
 ## Recently closed
 - **M2c "`@clerk/express` backend session verification (RS256/JWKS)"** (2026-06-03, iterative, closed-on-gate) — brought the last un-gated Clerk consumer (`@clerk/express`, studio-desk's Node backend) under alignment at **100%/100%** on a 3rd DNA (`clerk-express-1.json`, 9 genes). The defining risk (the **RS256 wall** — `@clerk/express` hard-rejects HS256) was solved the **additive** way: an RS256 path (RSA keypair + real JWKS + RS256 minting) the *genuine* SDK accepts networkless via `jwtKey` — **no HS256 migration**, so M1 (22/22) + M2 (9/9) stayed green throughout. `@clerk/express` is *verified, not reimplemented* (no mock dir — the svix pattern, reused). 5 iters (1 bootstrap tok + 4 tiks; iter-04 = crux proof, iter-05 = gate). Close fixed an adversarial latent flake (`tamperSig`) + a gitignore gap. **Last v1.0 milestone.** roadmap.md § M2c.
@@ -19,8 +22,8 @@ _(M0 "Alignment measurement framework" — 2026-06-02 — rolled off the recentl
 - **clerkenstein:** **8 packages** (library-named: authn/clerk-backend/clerk-frontend/clerk-webhook/shared + alignment/cmd ×{clerkrun, jsfapirun, expressrun}), **128 Go test/fuzz funcs** (122 tests + 6 fuzz) + a 9-assertion shell drift harness; flake 0 (`-race`, shuffled); gofmt/vet/shellcheck clean. Coverage: authn/clerk-frontend 100%, clerk-backend 97%, shared 96% (RS256 added), clerkrun 97%, clerk-webhook 96%, jsfapirun 94%, expressrun 49% (mirror path Node-dependent — gate-covered).
 - (M0 baseline: `test/alignment/` 45 funcs, core coverage 83–98%.)
 
-## v1.0 "body double" milestones
-**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done) → **M2c** (done — iterative, `@clerk/express` RS256/JWKS, closed-on-gate). **All milestones closed — v1.0 is feature-complete, ready for `/developer-kit:close-release`.** Full design + execution graph + risks in [roadmap.md](roadmap.md).
+## v1.0 "body double" milestones (shipped)
+**M0** (done) → **M1** (done) → **M1b** (done) → **M2** (done) → **M2b** (done) → **M2c** (done — iterative, `@clerk/express` RS256/JWKS, closed-on-gate). **All milestones closed + merged + SHIPPED 2026-06-03 (tag `v1.0`).** Full design + execution graph + risks in [roadmap.md](roadmap.md) § Done — v1.0.
 
 ## Design decisions locked at design time (2026-06-02)
 - **Alignment is a first-class test class**; framework = **M0** (done); **M1** built the first mirror with it (done); **M1b** CI-gates drift (done).
@@ -32,6 +35,6 @@ _(M0 "Alignment measurement framework" — 2026-06-02 — rolled off the recentl
 - **M2c (added 2026-06-03):** complete the mock before shipping — bring **`@clerk/express`** (studio-desk's Node backend, the last un-gated Clerk consumer) under alignment as an **iterative** milestone (new `clerk-express/` seam + 3rd DNA → gate). Research-confirmed the **RS256 wall** (M2c-D1: `@clerk/express` rejects HS256; needs RS256+JWKS). Central open iteration (M2c-D2): additive RS256 vs migrating the HS256 seams (re-gating M1/M2). Placement v1.0 by user choice (M2c-D3 — re-opens the release, accepts the re-gating risk). **Correction (2026-06-03):** `svix` is a *real used* dep, not mocked — what's mocked is Clerk's event emission (clerkenstein `3170cef`).
 
 ## Branch model
-**M2c closed + merged** (`m2c/clerk-express-alignment` → `release/01.00-body-double`, `--no-ff`; the milestone branch is deleted). The `clerkenstein` repo's own `clerk-express`-supporting commits (RS256 in `shared/`, real JWKS in `clerk-frontend/`, BAPI reads in `clerk-backend/`, the `alignment/cmd/expressrun` runner + 3rd DNA) stack on its `main` (no branch model). **All v1.0 milestones are now merged onto `release/01.00-body-double`. Release close (owned by `/developer-kit:close-release`):** `release/01.00-body-double` → `main` + the deferred `feat/demo-environment` → `main` reconciliation (M0-D6).
+**v1.0 SHIPPED:** `release/01.00-body-double` merged `--no-ff` → `main` and tagged **`v1.0`**; the release branch is deleted. `feat/demo-environment` (the M0-D6 reconciliation) was an **ancestor** of the release — subsumed by the merge, then deleted (no separate merge needed). The `clerkenstein` mirror lives in its own gitignored repo on `main` (no branch model). **Local merge + tag only — not pushed to `origin`** (the push is the maintainer's call). Next branch work: `/developer-kit:design-roadmap` cuts `release/01.10-show-floor` when v1.1 is promoted.
 
-_Last updated: 2026-06-03 (M2c closed-on-gate at 100%/100% + merged — v1.0 is feature-complete; next is /developer-kit:close-release)._
+_Last updated: 2026-06-03 (v1.0 "body double" shipped — merged to main + tagged `v1.0`; between releases, next is /developer-kit:design-roadmap for v1.1)._

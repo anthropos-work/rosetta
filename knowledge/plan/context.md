@@ -4,17 +4,18 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-03):** **v1.0 "body double"** (Clerkenstein) is **feature-complete** — all six milestones
-(M0 → M1 → M1b → M2 → M2b → M2c) are closed and merged onto `release/01.00-body-double`, and the release is
-in **`/developer-kit:close-release`** (merge → `main` + tag `v1.0`). No major version has fully shipped +
-tagged yet, so there is no `roadmap-legacy.md` / `plan-legacy/` archive (it appears at the first tag).
+**Status (2026-06-03):** **v1.0 "body double"** (Clerkenstein) **SHIPPED** — all six milestones
+(M0 → M1 → M1b → M2 → M2b → M2c) closed, merged to `main`, and tagged `v1.0`; the release records are
+archived under [`releases/archive/01.00-body-double/`](releases/archive/01.00-body-double/). Now **between
+releases** — `/developer-kit:design-roadmap` promotes v1.1 "show floor" next. (No `roadmap-legacy.md` yet —
+that appears when a whole *major* version retires; v1.1 is the same major.)
 
 ## Files
 
 - [`roadmap.md`](roadmap.md) — active version (its milestones, execution graph, risks) + shipped-version archive
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` — full design + per-milestone scope. _**v1.0's six milestone dirs are scaffolded and closed** under [`releases/01.00-body-double/`](releases/01.00-body-double/) (M0/M1/M1b/M2/M2b/M2c); the `release/01.00-body-double` branch is cut and carries all their merges. At release close these archive to `releases/archive/01.00-body-double/`._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _**v1.0's six milestone dirs (M0/M1/M1b/M2/M2b/M2c) are closed and archived** under [`releases/archive/01.00-body-double/`](releases/archive/01.00-body-double/), each with overview/progress/decisions/retro/metrics. The next active version's dirs appear under `releases/{VV.VV}-{codename}/` when `/developer-kit:design-roadmap` scaffolds it._
 
 ## Conventions
 
@@ -38,11 +39,10 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.0 "body double"** (Clerkenstein) — **feature-complete, in release-close.** All six
-milestones (M0→M2c) closed + merged onto `release/01.00-body-double`; `/developer-kit:close-release` merges
-it → `main` and tags `v1.0`. **v1.1 "show floor"** (M3–M5: disposable stacks + seeding + recipes) is next,
-staged in [`roadmap-vision.md`](roadmap-vision.md) and promoted to active by `/developer-kit:design-roadmap`
-after v1.0 tags. _(For the live milestone/branch state, read [`state.md`](state.md).)_
+**Active:** _(between releases)_ — **v1.0 "body double" shipped** (merged to `main`, tagged `v1.0`,
+2026-06-03). **v1.1 "show floor"** (M3–M5: disposable stacks + seeding + recipes) is next, staged in
+[`roadmap-vision.md`](roadmap-vision.md) and promoted to active by `/developer-kit:design-roadmap`.
+_(For the live milestone/branch state, read [`state.md`](state.md).)_
 
 ## Project note
 
