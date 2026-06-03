@@ -15,6 +15,7 @@ This directory contains guides for operating the Anthropos platform locally.
 | [Webhook Setup](./webhook_setup.md) | Configure Clerk webhooks for user sync | When you need user/org data locally |
 | [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features (superseded by `staging-sync.md` on staging hosts) |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
+| [Demo Stacks](./demo_stacks.md) | **Disposable, isolated demo stacks (`demo-N`) alongside the dev stack — Clerkenstein-wired, offset ports, killable cleanly, zero platform-repo change. Skills `/demo-up`, `/demo-down`, `/demo-status`.** (v1.1/M3) | Spinning up a throwaway demo environment to seed (M4) + show |
 
 ## Workflow
 
