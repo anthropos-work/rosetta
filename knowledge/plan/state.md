@@ -2,7 +2,7 @@
 
 **Active version:** **v1.0 "body double"** (Clerkenstein) — in development on `release/01.00-body-double`. **Last milestone of v1.0.**
 **Active milestone:** **M2 "Clerkenstein — browser session + webhook coherence (JS)"** (section) — the JS/FAPI side: a fake Clerk FAPI for `@clerk/nextjs`/`clerk-js` (publishable-key + base-URL override, **fallback** to the real dev Clerk app for the browser while the backend stays mocked); a webhook injector into `app/internal/clerk/events/`; and the **fake-Clerk-API-server** that ALSO wires M1's routed-forward orgclient injection (M1-D2). **Highest technical risk in v1.0** (SDKs hard-code Clerk FAPI; no documented base-URL override — spike early).
-**Next up:** `/developer-kit:build-milestone` on M2. Then `/developer-kit:close-release` (ships v1.0 → `main`).
+**Next up:** M2 **build complete** (S1–S5 done; Go gate 100%/100% + JS gate 100%/100%). `/developer-kit:harden-milestone` (optional) then `/developer-kit:close-milestone` on M2, then `/developer-kit:close-release` (ships v1.0 → `main`).
 **Last closed:** M1b — 2026-06-03.
 **Paused:** _(none)_
 
@@ -29,4 +29,4 @@
 ## Branch model
 M1b closed — **merging `m1b/clerk-drift-detection` → `release/01.00-body-double` (`--no-ff`)**, then deleting the branch. Release branch cut from `feat/demo-environment` (M0-D6); `feat/demo-environment` → `main` reconciliation at release close. M2 = section (`/developer-kit:build-milestone`).
 
-_Last updated: 2026-06-03 (M1b closed + merged; M2 next — the last v1.0 milestone)._
+_Last updated: 2026-06-03 (M2 build complete — fake FAPI + BAPI redirect + webhook injector + JS DNA at 100%/100%; ready for close)._
