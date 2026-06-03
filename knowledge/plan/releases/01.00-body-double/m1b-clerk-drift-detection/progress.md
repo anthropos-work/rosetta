@@ -13,3 +13,24 @@ B-milestone: automation/config over M0 (`alignctl dna diff` + `alignctl run --ga
 - [x] `corpus/services/clerkenstein.md` — "Drift detection (M1b)" section: the scripts, the exit-code contract, and the bump → DNA-diff → re-capture goldens → re-score → CI runbook.
 - [x] `corpus/architecture/alignment_testing.md` § "How M1 and M1b consume this" — points to the runbook + scripts.
 - [x] cross-refs resolve.
+
+## M1b: Hardening
+
+### Pass 1 — 2026-06-03
+**Scope manifest:** the milestone's "code" is 2 shell scripts (`scripts/gate.sh`, `scripts/drift-check.sh`) + a CI YAML — all had **no automated test** (exit paths were verified ad-hoc during build). Single stack (shell); scanned in-thread.
+
+**Coverage:** no `%`-coverage tool for bash (project convention is shell+Playwright, not unit-coverage); the relevant "coverage" is the **exit-code matrix**, now fully covered.
+
+**Tests added:** `scripts/drift-test.sh` — **9 assertions** pinning the full contract:
+- gate.sh: met → 0; regression → **exactly 2** (regression test for the built-binary fix, vs the `go run` exit-squash).
+- drift-check: no-drift → 0; **reformatted-identical DNA → 0** (canonical no-drift, no spurious flag); **relative `--new` path → 0** (regression test for the abspath fix); bumped DNA → 1; missing/not-found/unknown-arg → 3.
+- Wired **shellcheck** + **drift-test** as CI steps in `alignment.yml`.
+
+**Bugs fixed inline:** none new (the 2 build-phase bugs were fixed during S1; this pass *pins* them as regressions). 1 shellcheck SC2164 on the new harness fixed (`cd || exit`).
+
+**Flakes stabilized:** none — 3/3 consecutive clean; shellcheck clean; Go suite green.
+
+**Knowledge backfill:** none KB-worthy — the exit-code contract is documented in `clerkenstein.md` § Drift detection + `spec-notes.md`; the `go run`-squash gotcha is captured inline (gate.sh "built binary, not go run"). Question asked, nothing to propagate.
+
+### Stop condition
+Stabilized after Pass 1: the exit-path matrix + edge cases (empty/not-found/unknown-arg) + both regression-pins are covered; dimensions 5 (fuzzing — the DNA parser is alignctl's, fuzzed in M0) and 6 (perf — no SLA) are N/A for a 2-script shell milestone; 0 flakes. Nothing further worth adding.
