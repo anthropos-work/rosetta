@@ -46,13 +46,13 @@ Spun up `demo-N` as isolated, Clerkenstein-wired full stacks; the full Clerk-fre
 LIVE-PROVEN; the deployment/injection alignment surface (`clerk-deploy-1`, 7/7) landed. 78 demo-stack tests, 218
 clerkenstein funcs. **Delivered** `corpus/ops/rosetta_demo.md` + `/demo-*` skills.
 
-### M4: Consolidate into the `rosetta-extensions` monorepo
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m4-consolidate-extensions/](releases/01.10-show-floor/m4-consolidate-extensions/)
-**Goal:** Two repos. Create the **`rosetta-extensions`** monorepo; `git subtree`-import `clerkenstein` → `clerkenstein/`
-+ `rosetta-demo` → `demo-stack/` **with full history**; stand up the lightweight `knowledge/` nav (lists sections,
-points into each section's own KB); thin rosetta's corpus to pointers; verify every suite under the new paths;
-push; then **remove the old `clerkenstein` + `rosetta-demo` repos completely** (org + local) — history is safe inside
-the monorepo. **Delivers →** the monorepo + `rosetta-extensions/knowledge/README.md` + thinned rosetta pointers.
+### M4: Consolidate into the `rosetta-extensions` monorepo ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m4-consolidate-extensions/](releases/01.10-show-floor/m4-consolidate-extensions/)
+Created the **`rosetta-extensions`** monorepo (private, 73 commits); `git subtree`-imported `clerkenstein` +
+`rosetta-demo`(→`demo-stack`) **with full history preserved**; the `knowledge/` nav; thinned rosetta to pointers;
+fixed a +1-depth path break the verify gate caught (M4-D4); verified under the new paths (78 demo-stack tests +
+deploy gate 7/7); pushed; **removed the old `clerkenstein` + `rosetta-demo` repos** (local + org, 404). Decisions
+M4-D1 (subtree) / D2 (delete-not-archive) / D3 (alignment framework stays in rosetta) / D4 (path-depth fix).
 
 ### M5: Extract the reusable `stack-injection` layer
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m5-stack-injection/](releases/01.10-show-floor/m5-stack-injection/)

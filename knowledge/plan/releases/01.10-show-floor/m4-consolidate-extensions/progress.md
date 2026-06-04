@@ -1,6 +1,6 @@
 # M4 — progress (section checklist)
 
-**Milestone:** M4 — Consolidate into the `rosetta-extensions` monorepo · **Shape:** section · **Status:** in-progress (2026-06-04)
+**Milestone:** M4 — Consolidate into the `rosetta-extensions` monorepo · **Shape:** section · **Status:** done (2026-06-04)
 
 ## Done
 - [x] **`rosetta-extensions` monorepo created** — private org repo `anthropos-work/rosetta-extensions`, cloned
@@ -19,13 +19,24 @@
 - [x] **Local old dirs removed** — `anthropos-demo/{clerkenstein,rosetta-demo}` deleted; `anthropos-demo/` now holds
   only `rosetta-extensions/`.
 
-## Blocked (one open scope item)
-- [ ] **Delete the old ORG repos** `anthropos-work/clerkenstein` + `anthropos-work/rosetta-demo` (M4-D2). **Blocked on
-  the `delete_repo` GitHub scope** — the current `gh` token has `repo`/`read:org`/`workflow`/`gist` but not
-  `delete_repo`, and the scope can't be granted non-interactively. Their full history is safely inside the monorepo,
-  so this is the only step left. **Unblock:** `gh auth refresh -h github.com -s delete_repo` (then retry `gh repo
-  delete`), or delete via the GitHub web UI (Settings → Delete repository).
+- [x] **Old ORG repos deleted** — `anthropos-work/clerkenstein` + `anthropos-work/rosetta-demo` both gone (404).
+  The `gh` token lacked the `delete_repo` scope, so the user deleted them via the GitHub web UI; their full history
+  lives inside `rosetta-extensions`. `anthropos-work/rosetta-extensions` (PRIVATE, 73 commits) is the sole survivor.
+
+## Completeness Ledger (section)
+- **Done (Fate 1):** all `In:` items — the monorepo + history-preserving subtree import, the `knowledge/` nav, the
+  rosetta thinning (pointers + repoints), the path-depth fixes (caught by verify), full verification under the new
+  paths (78 demo-stack + clerkenstein suites + deploy gate 7/7), the monorepo push, and the old-repo removal (local
+  + org).
+- **Routed (Fate 3) → M5:** the shared port-offset engine's home; the M4+M5-merge question (now moot — M4 closed
+  standalone, M5 proceeds as planned).
+- **Dropped / escape-hatch:** none.
 
 ## Decisions
 M4-D1 git subtree (history-preserving) · M4-D2 delete (not archive) the old repos · M4-D3 alignment framework stays
-in rosetta. (Details in [decisions.md] — to be written at close.)
+in rosetta · M4-D4 path-depth fix for the +1 monorepo level (verify-caught). See [decisions.md](decisions.md).
+
+## Verification
+monorepo 73 commits (full history of both repos, proven); demo-stack **78 tests** + clerkenstein suites green;
+**deploy gate 100%/100% (7/7)** held throughout; shellcheck clean; monorepo self-contained (0 old-path refs); the
+two old org repos deleted (404). dev stack untouched.

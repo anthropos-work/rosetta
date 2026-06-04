@@ -1,0 +1,34 @@
+{
+  "milestone": "M4",
+  "title": "Consolidate into the rosetta-extensions monorepo",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-04",
+  "monorepo": {
+    "name": "anthropos-work/rosetta-extensions",
+    "visibility": "private",
+    "commits": 73,
+    "history_preserved": "full — 50 clerkenstein + 16 rosetta-demo + init/merges/fixups; every spot-checked SHA reachable",
+    "sections": ["clerkenstein", "demo-stack", "knowledge"],
+    "method": "git subtree add (no squash), history-preserving"
+  },
+  "rosetta_thinned": {
+    "pointers": ["corpus/ops/rosetta_demo.md", "corpus/services/clerkenstein.md"],
+    "repointed": ["/demo-up", "/demo-down", "/demo-status skills"],
+    "moved_to_monorepo": "demo-stack/GUIDE.md (was corpus/ops/rosetta_demo.md content)"
+  },
+  "verification": "demo-stack 78 tests + clerkenstein suites green under new paths; deploy gate 100%/100% (7/7); shellcheck clean; 0 old-path refs; dev stack untouched",
+  "bug_caught_by_verify": "path-depth +1: $HERE/../.. -> $HERE/../../.. (REPO_ROOT/DEV) + up-injected CLERK -> monorepo sibling (M4-D4)",
+  "old_repos_removed": {
+    "local": ["anthropos-demo/clerkenstein", "anthropos-demo/rosetta-demo"],
+    "org": ["anthropos-work/clerkenstein (404)", "anthropos-work/rosetta-demo (404)"],
+    "note": "user deleted org repos via web UI (gh token lacked delete_repo); history redundant — preserved in the monorepo"
+  },
+  "decisions": {
+    "M4-D1": "git subtree (history-preserving)",
+    "M4-D2": "delete (not archive) the old repos",
+    "M4-D3": "alignment framework stays in rosetta",
+    "M4-D4": "path-depth fix for the +1 monorepo level (verify-caught)"
+  },
+  "routed_to_M5": "the shared port-offset engine's home"
+}
