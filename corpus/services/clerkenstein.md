@@ -18,12 +18,15 @@ repos keep "thinking" they use Clerk with **zero source changes**.
 
 It is the **first mirror produced by the M0 alignment process** (not a hand-built mock): its fidelity is
 *measured* as a 0–100% alignment score against a Clerk **Alignment DNA**, driven to the gate — **100%
-critical / 100% overall** on **all three** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
-@ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), and the
+critical / 100% overall** on **all four** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
+@ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
 **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express` ^1.3.47, M2c — RS256/JWKS, the
-genuine SDK *satisfied*, not reimplemented). The DNAs + mirror + goldens + runners live in the clerkenstein
-repo; the *measuring machinery* ([`test/alignment/`](../../test/alignment/) + `/align-dna` + `/align-run`)
-lives here in rosetta.
+genuine SDK *satisfied*, not reimplemented), and the **deployment/injection** surface (7/7 genes,
+`clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against the platform's real
+`colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural* alignment ≠
+*deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
+The DNAs + mirror + goldens + runners live in the clerkenstein repo; the *measuring machinery*
+([`test/alignment/`](../../test/alignment/) + `/align-dna` + `/align-run`) lives here in rosetta.
 
 > **What "100%" means (and doesn't).** The score measures the mirror as *indistinguishable from the source
 > goldens*. Those goldens are **hand-authored / hybrid** (decision M1-D1) — the reference behavior derived

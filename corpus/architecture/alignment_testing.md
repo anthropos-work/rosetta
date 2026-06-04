@@ -1,6 +1,6 @@
 # Alignment Testing
 
-**Status:** canonical · **Last updated:** 2026-06-03 · **Reference implementation:** [`test/alignment/`](../../test/alignment/)
+**Status:** canonical · **Last updated:** 2026-06-04 · **Reference implementation:** [`test/alignment/`](../../test/alignment/)
 
 ## What this is (and why)
 
@@ -239,8 +239,35 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   seams (no migration; M1/M2 gates untouched). The express gate has a Node dependency (the real SDK), so it
   runs locally/at close rather than in the pure-Go CI — CI-wiring is a v1.1 carry-forward.
 
-Clerkenstein now drives **three DNAs across two languages via three runners** (`clerkrun`, `jsfapirun`,
-`expressrun`) through the one `alignctl` — the clearest evidence the framework is surface-generic.
+- **Deployment / injection (`clerk-deploy-1`, added after M3)** measures a *different kind* of fidelity — see
+  the next section. Its runner (`deployrun`) drives the **real platform consumer** (colony) the way `expressrun`
+  drives the real `@clerk/express`.
+
+Clerkenstein now drives **four DNAs via four runners** (`clerkrun`, `jsfapirun`, `expressrun`, `deployrun`)
+through the one `alignctl` — the clearest evidence the framework is surface-generic.
+
+## What alignment proves — and what it doesn't (the M3 lesson)
+
+The behavioural DNAs (`clerk@2.6.0`, `clerk-js-5`, `clerk-express-1`) measure **behavioural fidelity**: given
+an input, the mirror produces the same *outcome* as the source. That is necessary but **not** the same as
+**deployability** — that the mock can be *injected into the running platform's exact consumption shape*. v1.0
+proved the first and the v1.0 narrative ("a stand-in the platform can't tell apart") implied the second;
+**M3 (the first real demo bring-up) was the first test of the second, and it required building things the
+alignment never covered** — a vendored `colony` with the disarmed provider in the *concrete* package the
+platform builds against (not the standalone `authn.Provider` the Go DNA tested), and runnable fake-server
+binaries (the DNAs tested in-process `http.Handler`s). Neither the tool nor a DNA was *buggy*; the **scope**
+of the genes didn't cover deployment, and a couple of seams were tested against *idealized interfaces* rather
+than the platform's actual ones (the Go authn DNA even pinned a different `colony` version than production).
+
+The fix is a **deployment/injection dimension**, not a patch: the `clerk-deploy-1` DNA + `deployrun` runner
+score whether Clerkenstein's injection **artifact** (`deploy/colony-authn`, the disarmed
+`colony/authn/provider/clerk` drop-in) **compiles against the platform's real `colony`** and satisfies its
+contract (`clerk.NewProvider(...).GetUser` accepts a Clerkenstein token, rejects garbage/expired) — the runner
+*compiling* against real colony **is** the contract check, so a colony bump that breaks the seam turns the gate
+RED instead of surfacing during a demo. The heavier end-to-end gene (a built platform app accepting a token
+over HTTP) is **deployment-gated** — proven once in M3, run where a demo stack exists — like the express gate's
+Node dependency. **General principle for any mirror: align both the *behaviour* of the surface and the
+*deployability* of the injection artifact, against the consumer's real interface and pinned version.**
 
 ## Where things live
 
