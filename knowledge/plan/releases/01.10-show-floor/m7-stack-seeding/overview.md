@@ -1,12 +1,12 @@
 ---
-milestone: M4
-slug: declarative-seeding
+milestone: M7
+slug: stack-seeding
 version: v1.1 "show floor"
 milestone_shape: section
 status: planned
 created: 2026-06-03
-last_updated: 2026-06-03
-delivers: corpus/ops/seeding-spec.md
+last_updated: 2026-06-04
+delivers: rosetta-extensions/stack-seeding/ + corpus/ops/seeding-spec.md
 ---
 
 # M4 — Declarative data seeding

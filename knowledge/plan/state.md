@@ -1,8 +1,8 @@
 # State
 
-**Active version:** **v1.1 "show floor"** — IN DEVELOPMENT on `release/01.10-show-floor` (designed 2026-06-03). Disposable, richly-seeded demo stacks on demand, built entirely under the gitignored `anthropos-demo/` scratchpad (zero platform-repo changes). M3 → M4 → M5, strictly sequential.
-**Active milestone:** **M4 "Declarative data seeding"** (section, `planned`) — one `demo.seed.yaml` (org size, role mix, content, activity span) backfills an M3 demo stack by orchestrating the platform's existing bootstrap/import CLIs in dependency order; structural data only (M4-D1 fold validate/dry-run). Dir: [m4-declarative-seeding/](releases/01.10-show-floor/m4-declarative-seeding/).
-**Next up:** **`/developer-kit:work-milestone M4`** on `release/01.10-show-floor`. Then M5 (recipes + polish) → `/developer-kit:close-release`.
+**Active version:** **v1.1 "show floor"** — IN DEVELOPMENT on `release/01.10-show-floor`. **Refactored 2026-06-04** from "disposable demo stacks" into **the platform-operations extension framework**: collapse the repo constellation into 2 repos (`rosetta` + the `rosetta-extensions` monorepo), then finish the seeded-demo capability and generalize to dev. M3 ✅ → M4 → M5 → M6 → M7 → M8. Zero platform-repo change.
+**Active milestone:** **M4 "Consolidate into the `rosetta-extensions` monorepo"** (section, `planned`) — create the monorepo; `git subtree`-import `clerkenstein` + `rosetta-demo`(→`demo-stack`) with full history; the `knowledge/` nav; thin rosetta to pointers; verify; push; **then remove the old `clerkenstein` + `rosetta-demo` repos completely (org + local)** — M4-D2, user-directed. Dir: [m4-consolidate-extensions/](releases/01.10-show-floor/m4-consolidate-extensions/).
+**Next up:** **`/developer-kit:work-milestone M4`** on `release/01.10-show-floor`. Then M5 (stack-injection) → M6 (dev-stack) → M7 (seeding) → M8 (recipes) → `/developer-kit:close-release`.
 **Last shipped:** **v1.0 "body double"** — 2026-06-03 (tag `v1.0`). · **Last closed milestone:** M3 — 2026-06-03.
 **Paused:** _(none)_
 
