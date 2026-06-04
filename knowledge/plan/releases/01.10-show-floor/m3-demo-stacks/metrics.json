@@ -13,13 +13,36 @@
     "repo": "anthropos-demo/demo-stacks (gitignored, own git)",
     "python_modules": [
       "gen_override.py",
+      "gen_injected_override.py",
       "clone_repos.py",
       "inject.py"
     ],
-    "cli": "demo-stack (bash: up/down/clone/inject/status/gen)",
-    "unit_tests": 12,
+    "cli": "demo-stack (bash: up/down/clone/inject/status/gen) + up-injected.sh + migrate-demo.sh + inject/apply-authn.sh",
+    "unit_tests": 78,
     "lint": "shellcheck clean, py_compile clean",
-    "commits": 5
+    "commits": 8
+  },
+  "hardening": {
+    "pass": 1,
+    "date": "2026-06-04",
+    "scope": "the post-close extended-work surface (full injected stack + deployment/injection)",
+    "test_counts_before_after": {
+      "clerkenstein/deploy/colony-authn": "2 -> 34 (100% stmt cov; +2 fuzzers)",
+      "clerkenstein/alignment/cmd/deployrun": "2 -> 31 (94.9%)",
+      "clerkenstein/cmd/fake-fapi": "0 -> 10",
+      "clerkenstein/cmd/fake-bapi": "0 -> 12",
+      "demo-stacks/tests/test_tooling.py": "13 -> 55 (gen_injected_override 88% -> 98%)",
+      "demo-stacks/tests/test_inject_scripts.py": "0 -> 23 (new)"
+    },
+    "clerkenstein_total_test_funcs": 218,
+    "bugs_fixed_inline": [
+      "apply-authn.sh: set -e+pipefail abort-before-guard on a no-match colony grep (+ || true)",
+      "migrate-demo.sh: SC2015 A && ok || warn -> if/then/else"
+    ],
+    "prod_refactors": "extracted newServer() in both fake servers + build_lines() in gen_injected_override.py (testability only)",
+    "gates": "deploy alignment gate held 100%/100% (7/7); clerkenstein all 13 pkgs green -race; flake gate 3/3",
+    "finding_to_M4": "the demo identity is user_clerkenstein / demo@anthropos.test / org_clerkenstein (DefaultDemoUser); deployrun/expressrun use a user_2clerkenstein FIXTURE only — M4 seed must use the real DefaultDemoUser identity",
+    "commits": ["clerkenstein 6150198", "demo-stacks 5ab7b51 (fix)", "demo-stacks 5ab3818 (harden)"]
   },
   "rosetta_deliverables": {
     "skills": [

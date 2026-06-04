@@ -62,5 +62,37 @@ extensions) + the pgvector/pg_trgm/pgcrypto extensions, atlas-migrates the 5 ser
 restarts sentinel+backend. **Result:** sentinel stops crash-looping (it needed its `sentinel` schema for
 casbin) — **0 restarts, healthy**; `/api/health → 200`; 6/6 schemas migrated. **Still 403 on *authorized*
 endpoints** (e.g. /api/workforce/members) — that needs the **M4 seed** (casbin policies + the demo user/org
-matching the Clerkenstein universal identity), not the migrate step. Found an M4 nuance: `init_policy.sql`
+matching the Clerkenstein demo identity), not the migrate step. Found an M4 nuance: `init_policy.sql`
 seeds `casbin_rules` (plural) but the gorm adapter auto-creates `casbin_rule` (singular).
+
+## M3: Hardening
+
+### Pass 1 — 2026-06-04 (the extended-work surface)
+Test-deepening on the **post-close extended work** (the full injected stack + deployment/injection
+surface), which shipped with thin or zero coverage. Driven as a 6-target × (deepen + adversarial-strengthen)
+workflow; full-suite + flake gate + commits done in the main thread. **No production behaviour changed; the
+deployment alignment gate held 100%/100% (7/7 genes) throughout.**
+
+**Test counts (funcs/methods), before → after:**
+- `clerkenstein/deploy/colony-authn` (clerk.go, the disarmed provider): **2 → 34** (100% stmt cov). Edge/error-class grid, exp boundary (strict `>`), a drift-equivalence battery vs `clerkenstein/shared`, header-tamper, base64-alphabet pin, `GetUserByID` via colony's real Manager fan-out, **2 fuzzers** (zero crashers).
+- `clerkenstein/alignment/cmd/deployrun`: **2 → 31** (94.9% cov; remaining lines unreachable-by-design — the real provider never rejects a valid universal-key token). Both bad-sig flip arms, exact wire-key casing pin, unknown-variant divergence, empty-DNA path.
+- `clerkenstein/cmd/fake-fapi`: **0 → 10**; `cmd/fake-bapi`: **0 → 12** (newServer 100%; only the `ListenAndServe` shell uncovered). httptest smokes incl. the **mint→backend-authn round-trip**, fresh-seed isolation, method-scoped 405.
+- `demo-stacks/tests/test_tooling.py`: **13 → 55** (added `TestGenInjectedOverride`: real-YAML-tree parse of the injected override — a mutation test proved the prior substring checks missed an alias mis-indent — + fuzz + the `resolved()` docker boundary stubbed; `gen_injected_override.py` 88% → **98%**).
+- `demo-stacks/tests/test_inject_scripts.py`: **0 → 23** (new). `apply-authn.sh` fully tested offline with a stubbed `git`; `up-injected.sh`/`migrate-demo.sh` get shellcheck + structural-wiring regression (re-arming couplings shellcheck can't see).
+
+**Bugs fixed inline (harden-surfaced, with regression tests):**
+- `inject/apply-authn.sh` (`5ab7b51`): the colony-version `grep` runs under `set -e`+`pipefail`, so a no-match aborted the script **before** the explicit guard — bare `exit 1`, no diagnostic. Added `|| true` to fall through to the actionable guard.
+- `migrate-demo.sh` (`5ab7b51`): SC2015 `A && log ok || log warn` (warn could misfire if the ok-log failed) → `if/then/else`.
+
+**Production refactors (testability only, no behaviour change):** extracted `newServer()` from `main()` in both fake servers; extracted a pure `build_lines()` from `gen_injected_override.py`'s `main()`.
+
+**Finding routed to M4 — the demo identity is `user_clerkenstein`, not the runner fixture.** The harden exposed **two divergent demo identities** in clerkenstein: the real browser-login/demo seed `clerkfrontend.DefaultDemoUser()` = **`user_clerkenstein` / `demo@anthropos.test` / `org_clerkenstein` / admin**, vs. the alignment **runner fixtures** (`deployrun`/`expressrun`) = `user_2clerkenstein` / `demo@anthropos.work` / `org_clerkenstein`. They agree on org but diverge on user-sub + email. The gates are self-consistent (the fixture is just the contract's test vector — harmless to them), but **the M4 seed must seed `user_clerkenstein` / `demo@anthropos.test`** (what the browser flow actually produces), NOT the `user_2clerkenstein` fixture some earlier notes propagated. (Earlier S3 notes/`DEPLOYMENT-PROOF.md` cite the fixture identity + a non-existent `org_demo`; corrected in the corpus sweep.) **M4 action:** seed the real `DefaultDemoUser` identity; optionally reconcile the runner fixtures to it (would require re-capturing the deploy/express goldens — out of scope here).
+
+**Hygiene swept (commits `6150198` clerkenstein · `5ab3818` demo-stacks):** untracked a stray `fake-bapi` Mach-O build artifact + a `.coverage` file; added `/fake-fapi /fake-bapi /mintpk` to clerkenstein `.gitignore` and `.coverage`/`__pycache__/` to demo-stacks.
+
+**Knowledge backfill:** clerkenstein `knowledge/coverage-index.md` refreshed; the demo identity + deployment surface folded into the rosetta corpus (see the corpus sweep). 
+
+**Verification:** clerkenstein **all 13 packages green under `-race`** (gofmt + vet clean); demo-stacks **78 tests green** (shellcheck clean); deploy gate **100%/100%**; **flake gate 3/3 clean**.
+
+### Stop condition
+Stopped after one pass: the highest-value targets reached saturation (clerk.go 100%, gen_injected_override 98%, both fake servers at their testable ceiling), the adversarial pass found only depth gaps (now filled) not new bugs, and the two genuine production bugs were fixed + pinned. The shell orchestrators (`up-injected.sh`/`migrate-demo.sh`) are honestly documented as I/O-bound-uncoverable-offline with a three-fold compensating strategy (shellcheck + structural-wiring regression + the live `DEPLOYMENT-PROOF.md`).
