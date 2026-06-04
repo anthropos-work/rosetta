@@ -1,0 +1,26 @@
+{
+  "milestone": "M6",
+  "title": "dev-stack: tooled local dev environment",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-04",
+  "sections_created": ["rosetta-extensions/stack-core/", "rosetta-extensions/dev-stack/"],
+  "stack_core": "extracted gen_override.py (the shared port-offset/!override engine) from demo-stack; demo + dev consume it (settles M5 open question)",
+  "dev_stack": "isolated dev stacks (dev-N, offset ports, -p dev-N guarded), real Clerk default, optional injection via stack-injection (--inject), reuses stack-core + stack-injection",
+  "tests": {
+    "stack_core": 4,
+    "demo_stack": 5,
+    "stack_injection": 69,
+    "dev_stack": 9,
+    "total": 87,
+    "delta": "+9 (dev-stack); the 78 were preserved/re-split across stack-core/demo-stack",
+    "flake": "3/3 clean"
+  },
+  "verification": "87 tests green; shellcheck clean (dev-stack + repointed demo CLI); clerkenstein untouched -> deploy gate 100%/100% (7/7)",
+  "decisions": {
+    "M6-D1": "gen_override.py -> stack-core/ (shared); settles the M5-routed port-offset engine home",
+    "M6-D2": "dev-stack scoped to proven value (shared engine + tooling + optional injection); not speculative multi-dev; full injected-dev reuses demo's flow",
+    "M6-D3": "dev uses the platform compose directly, no per-stack clones by default (clone_repos stays in demo-stack)"
+  },
+  "monorepo": {"commits": 75, "sections": ["clerkenstein", "demo-stack", "dev-stack", "stack-core", "stack-injection"]}
+}

@@ -3,10 +3,11 @@ milestone: M6
 slug: dev-stack
 version: v1.1 "show floor"
 milestone_shape: section
-status: planned
+status: done
+completed: 2026-06-04
 created: 2026-06-04
 last_updated: 2026-06-04
-delivers: rosetta-extensions/dev-stack/
+delivers: rosetta-extensions/dev-stack/ + rosetta-extensions/stack-core/
 ---
 
 # M6 — `dev-stack`: tooled local dev environment

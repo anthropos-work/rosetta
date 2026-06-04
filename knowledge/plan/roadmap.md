@@ -62,11 +62,12 @@ in clerkenstein (dependency runs stack-injection→clerkenstein, M5-D1); the por
 (M5-D2, settles the M4 open question — moves to shared in M6). Split the tests, repointed the consumers; **78
 preserved**, flake 3/3, deploy gate 100%/100%.
 
-### M6: `dev-stack` — tooled local dev environment
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m6-dev-stack/](releases/01.10-show-floor/m6-dev-stack/)
-**Goal:** Bring the local dev env under the demo-stack pattern — multi-instance via the shared port-offset engine,
-**Clerkenstein injection OPTIONAL (default OFF)**; the heavy build still driven by rosetta's `/setup|start|update-platform`
-skills. **Depends on:** M5 (the toggle + shared engine).
+### M6: `dev-stack` — tooled local dev environment ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m6-dev-stack/](releases/01.10-show-floor/m6-dev-stack/)
+Extracted the shared port-offset engine into a new **`stack-core/`** section (settles the M5-routed question —
+demo + dev share it, M6-D1) and added a focused **`dev-stack/`**: isolated dev stacks (`dev-N`, offset ports,
+guarded `-p dev-N`), **real Clerk by default**, Clerkenstein injection **optional** (reuses stack-injection).
+Scoped to the proven value (M6-D2 — not speculative multi-dev). **87 tests** (+9), flake 3/3, deploy gate 100%/100%.
 
 ### M7: `stack-seeding` — declarative data seeding
 **Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7-stack-seeding/](releases/01.10-show-floor/m7-stack-seeding/)
