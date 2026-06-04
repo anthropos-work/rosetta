@@ -55,3 +55,12 @@ routed to M3-CF1.
 ## S5 — the ops guide + the acceptance demo ✅
 - [x] `corpus/ops/demo_stacks.md` (collision problem + additive fix + `!override` + port-offset + clone-at-tag + Clerkenstein recipes + safety + resource budget + proven-vs-gated split); cross-linked from `corpus/ops/README.md`
 - [x] **acceptance (M3-D5):** demo-1 (postgres+redis) ran isolated alongside the dev stack on offset ports with its own data; up→status→down; **dev stack untouched throughout**. (Two-concurrent-full-stack acceptance is resource-gated → bigger box.)
+
+## Migrate step (2026-06-04) — sentinel healthy + /api/health 200; authorized 200s = M4 seed
+`/demo-up` now runs `migrate-demo.sh`: creates the schemas (sentinel/cms/jobsimulation/skiller/skillpath +
+extensions) + the pgvector/pg_trgm/pgcrypto extensions, atlas-migrates the 5 services against the demo DB,
+restarts sentinel+backend. **Result:** sentinel stops crash-looping (it needed its `sentinel` schema for
+casbin) — **0 restarts, healthy**; `/api/health → 200`; 6/6 schemas migrated. **Still 403 on *authorized*
+endpoints** (e.g. /api/workforce/members) — that needs the **M4 seed** (casbin policies + the demo user/org
+matching the Clerkenstein universal identity), not the migrate step. Found an M4 nuance: `init_policy.sql`
+seeds `casbin_rules` (plural) but the gorm adapter auto-creates `casbin_rule` (singular).
