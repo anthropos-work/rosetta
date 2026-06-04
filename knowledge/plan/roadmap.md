@@ -79,15 +79,15 @@ demo + dev share it, M6-D1) and added a focused **`dev-stack/`**: isolated dev s
 guarded `-p dev-N`), **real Clerk by default**, Clerkenstein injection **optional** (reuses stack-injection).
 Scoped to the proven value (M6-D2 — not speculative multi-dev). **87 tests** (+9), flake 3/3, deploy gate 100%/100%.
 
-### M7a: Seeding framework + production-isolation safety
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/01.10-show-floor/m7a-seeding-framework/)
-**Goal:** The foundation every seeder plugs into — the `stack.seed.yaml` blueprint, a modular seeder contract/
-registry, a dependency-**DAG** orchestrator, the **Go-link-ent + `COPY` + fan-out** perf path, and (the
-load-bearing part) a **production-isolation guard** that makes a non-prod run *unable* to write a shared/prod store
-(Directus block · S3-public override · Clerk→Clerkenstein · a clean **seeding audit log**) — plus the **minimum
-proof**: seed org + the real `user_clerkenstein` identity + casbin (plural/singular gotcha) → a browser login
-returns **200**. After M7a a demo is *usable and provably safe*. **Delivers** `corpus/ops/seeding-spec.md`.
-**Depends on:** M4 (monorepo home) + M3 (a stack to seed).
+### M7a: Seeding framework + production-isolation safety ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/01.10-show-floor/m7a-seeding-framework/)
+Built `rosetta-extensions/stack-seeding/` — a host Go module that seeds a stack by talking **directly to its
+Postgres** (offset port, `COPY`; *not* ent-linking — `app/internal/bootstrap` is internal, unimportable, M7a-D3)
+behind a **3-layer production-isolation guard** (CheckWrite · PreflightEnv · AssertClean). **LIVE-PROVEN**: a
+fresh injected `demo-1` → `migrate-demo.sh` (now bootstraps the global Sentinel policy) → `stackseed` (org + 1000
+users + the real `user_clerkenstein` identity + the casbin `g2` grant, isolation audit clean) → authenticated
+login returns **HTTP 200** (`membershipsCount: 1001`). The proof caught + fixed **2 real bugs** (the g2 arg-order;
+the missing global-policy bootstrap — M7a-D4). **68 tests**, all gates green. Delivered `corpus/ops/seeding-spec.md`.
 
 ### M7b: The data-alignment dimension ("data DNA")
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/01.10-show-floor/m7b-data-dna/)

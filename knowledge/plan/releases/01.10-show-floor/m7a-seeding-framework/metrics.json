@@ -1,0 +1,39 @@
+{
+  "milestone": "M7a",
+  "title": "Seeding framework + production-isolation safety",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-04",
+  "section_created": "rosetta-extensions/stack-seeding/",
+  "architecture": "host Go module -> direct Postgres (offset port) -> COPY/SQL; NOT ent-linking (app/internal/bootstrap is internal, unimportable) NOR CLI-shelling (the slow path); drift mitigated by M7b data-DNA (M7a-D3)",
+  "packages": ["blueprint", "isolation", "seeder", "pg", "seeders", "cmd/stackseed"],
+  "tests": {
+    "blueprint": 8, "isolation": 18, "seeder": 6, "dag": 10, "pg": 9, "seeders": 11, "cmd": 6,
+    "total": 68,
+    "gates": "build + vet + -race + gofmt clean; shellcheck clean (migrate-demo.sh)"
+  },
+  "coverage": {
+    "blueprint": "97.9%", "isolation": "97.1%", "seeder": "88.1%", "seeders": "89.0%",
+    "pg": "61.9% (DB-touching live-proven)", "cmd/stackseed": "47.4% (DB-touching live-proven)"
+  },
+  "isolation_guard": "3 layers — CheckWrite (shared/external blocked on non-prod regardless of opt-in) + PreflightEnv (S3-public override, real-Clerk/Directus rejection) + AuditLog.AssertClean (zero-pollution proof). Registry: Directus/S3-public/Clerk/Customer.io/Brevo/AI=shared, coresignal=external, Postgres/Redis/pgvector=per-stack",
+  "live_proof": {
+    "stack": "demo-1 (injected, 14 containers, Clerkenstein FAPI+BAPI)",
+    "reproducible": "yes — wipe -> migrate-demo.sh (applies global policy) -> stackseed -> 200, no manual SQL",
+    "seed": "org=1, identity=3, users=2000 (1000 users + 1000 memberships); isolation audit CLEAN",
+    "arc": "no token -> 'unknown viewer'; token pre-seed -> 403; token post-seed -> HTTP 200 {membershipsCount: 1001}",
+    "vehicle": "authenticated GraphQL membershipsCount query (the ent-wired path)"
+  },
+  "bugs_caught_by_proof": [
+    "casbin g2 arg-order swapped (model matches g2(org,sub,role); row is (org,user,role)) — fixed in identity.go + regression test",
+    "migrate-demo.sh never bootstrapped the global Sentinel policy (init_policy.sql ~47 rows) — fixed (platform bootstrap, guarded fresh-only)"
+  ],
+  "platform_findings": "/api/workforce/* panics on a nil *sql.DB in the injected demo build (demo-build defect, not seeding) — noted for a future stack-build pass",
+  "decisions": {
+    "M7a-D1": "split M7 into M7a/M7b/M7c, all in v1.1 (user)",
+    "M7a-D2": "the isolation guard is the load-bearing deliverable (hard tested boundary)",
+    "M7a-D3": "perf path = direct Postgres COPY (internal-import blocked; CLI-shelling too slow)",
+    "M7a-D4": "the live login->200 proof caught + fixed the g2 arg-order + the global-policy bootstrap"
+  },
+  "monorepo": {"commits_added": 3, "sections": 6, "section_list": ["clerkenstein", "demo-stack", "dev-stack", "stack-core", "stack-injection", "stack-seeding"]}
+}

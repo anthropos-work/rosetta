@@ -35,3 +35,19 @@ arg-order in `identity.go`; the missing global-policy bootstrap in `migrate-demo
 
 **Build status:** `stack-seeding` complete — 19 files, **62 tests** (build/vet/`-race`/gofmt clean), shellcheck
 clean (`migrate-demo.sh`). All sections S1–S5 done.
+
+## M7a: Hardening
+
+### Pass 1 — 2026-06-04
+**Coverage (milestone-touched packages):** blueprint 97.9% · isolation **97.1%** (load-bearing guard) · seeder
+88.1% · seeders 89.0% · pg 61.9% (DB-touching `Connect`/`CopyRows` live-proven) · **cmd/stackseed 0% → 47.4%**.
+**Tests added (+6 → 68 total):** `cmd/stackseed/main_test.go` — the safety-critical **`--reset` refuses the main
+dev stack (N=0)** guard (hermetic — fires before any DB connect), validate (valid/invalid/missing-seed), and the
+dry-run plan + isolation preview + `--stack` override.
+**Bugs fixed inline:** none in this pass (the 2 real bugs — g2 arg-order + global-policy bootstrap — were caught
++ fixed during the live proof, M7a-D4, with the g2 regression pinned in `TestIdentitySeeder_ResolvesPluralCasbinTable`).
+**Knowledge backfill:** the casbin arg-order + global-policy-prerequisite findings written into
+`corpus/ops/seeding-spec.md` + the section README.
+**Stop condition:** the high-value gaps (CLI safety, validate, dry-run) are closed; the load-bearing guard is at
+97%; remaining uncovered code is the DB real-run path, proven end-to-end by the live login→200. One pass is
+proportionate (build was already 62-test + live-proven).
