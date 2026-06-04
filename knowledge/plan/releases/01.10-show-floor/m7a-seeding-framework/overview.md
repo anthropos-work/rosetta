@@ -3,8 +3,9 @@ milestone: M7a
 slug: seeding-framework
 version: v1.1 "show floor"
 milestone_shape: section
-status: planned
+status: done
 created: 2026-06-04
+completed: 2026-06-04
 last_updated: 2026-06-04
 delivers: rosetta-extensions/stack-seeding/ (framework + safety guard) + corpus/ops/seeding-spec.md
 ---
@@ -59,9 +60,11 @@ stack, so this is already neutralised — the seeder must just declare each surf
   on any shared-write from a non-prod stack (S3-public override, Clerk→Clerkenstein, Directus write → hard
   error); a **seeding audit log** (every write tagged `scenario_id` / `seeded_by` / `isolation_class`) that
   *proves* zero prod/shared pollution after a run.
-- **The perf architecture** (research-decided): a **Go orchestrator that links the platform's ent client +
-  Postgres `COPY` bulk-insert + a goroutine fan-out**; CLIs/RPC reserved only for side-effecting primitives
-  (Sentinel grants). The bottleneck is DB-IO, not CPU — Rust buys nothing; the win is bulk + parallel.
+- **The perf architecture** (spike-revised, M7a-D3): a **host Go module that connects DIRECTLY to the target
+  stack's Postgres** (offset port) + **`COPY`/batched SQL** bulk-insert + a goroutine fan-out; direct SQL for
+  side-effecting primitives (the Clerkenstein identity, Sentinel/casbin). *Not* ent-linking (blocked — `app/
+  internal/bootstrap` is an `internal/` package, unimportable from a separate module without a platform edit) and
+  *not* per-row CLI-shelling (the slow bottleneck). The drift risk of direct SQL is mitigated by M7b's data-DNA.
 - **`--reset` / `--validate` / `--dry-run`** (folded in, M4-D1 hedge): per-stack DB reset; schema + semantic
   checks; ordered insert plan + per-store row counts + **the isolation audit preview** (which stores a run would
   touch) before execution.
@@ -93,8 +96,8 @@ isolation guard (must be airtight: a single un-guarded shared-write pollutes pro
 
 ## Open questions (resolve during build)
 - Directus content: snapshot-and-replay into the per-stack store vs hard-block-and-skip for the demo MVP.
-- Linking `app/internal/bootstrap` / `ent.Client.*.CreateBulk` directly vs `go run` CLIs (the perf path) — confirm
-  the platform packages import cleanly into a `rosetta-extensions/` Go module without a platform edit.
+- ~~Linking the platform ent client vs CLIs~~ — **RESOLVED (M7a-D3):** neither; direct Postgres `COPY`/SQL over
+  the stack's offset port (`app/internal/bootstrap` is internal → unimportable; CLI-shelling is the slow path).
 - Backdating fidelity: which `created_at`/timestamps are settable via direct SQL vs ent-Immutable/DB-default `now()`.
 - Whether the audit log lives in the per-stack DB (a `seeding_audit` table) or a sidecar file.
 
