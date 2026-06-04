@@ -17,13 +17,13 @@ read-only platform repo**. Source of truth: [`corpus/ops/demo_stacks.md`](../../
    the box — multiple full stacks need a bigger Docker VM (M3-D5).
 3. **Bring it up** via the tooling (the tooling lives in the gitignored `anthropos-demo/demo-stacks/`):
    ```bash
-   DS=anthropos-demo/demo-stacks/demo-stack
-   # full demo (clone at release tags -> inject Clerkenstein -> up), RAM permitting:
-   "$DS" clone  N                 # per-demo clones at each repo's latest release tag (M3-D3)
-   "$DS" inject N --fapi-host localhost:$((5400+N*100))   # wire the 4 Clerkenstein recipes
-   "$DS" up     N --profile graphql                       # bring up -p demo-N on offset ports
-   # minimal stack (infra only — proves isolation, fits a tight box):
-   "$DS" up     N --services "postgresql redis"
+   DEMO=anthropos-demo/demo-stacks
+   # FULL Clerk-free demo (every Clerk seam injected — real Clerk never used):
+   "$DEMO/up-injected.sh" N        # clones + injects the 5 Clerk services (disarmed colony),
+                                   # reuses dev images for the rest, runs the fake FAPI/BAPI,
+                                   # brings up the full graphql stack -p demo-N. (~15-25 min first build.)
+   # minimal stack (infra only — proves isolation, fits a tight box, fast):
+   "$DEMO/demo-stack" up N --services "postgresql redis"
    ```
 4. **Verify** — `"$DS" status`; confirm demo-N is on offset ports and the **dev stack is untouched**.
 
