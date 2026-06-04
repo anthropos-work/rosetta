@@ -36,8 +36,9 @@
     "M3-D4": "tooling home = own gitignored anthropos-demo/demo-stacks repo; skills+guide in rosetta",
     "M3-D5": "acceptance adjusted to 1 stack alongside dev (16 GB host can't fit 2 full stacks)"
   },
-  "injection_status": "PROVEN END-TO-END. authn: a real running app (rebuilt with the vendored disarmed colony) accepts a Clerkenstein token at its live HTTP auth middleware \u2014 /api/workforce/members: none->400, garbage->401 (rejected), Clerkenstein->403 (accepted, past authn). clerk-frontend: publishable-key mint format-identical to the gated impl. clerk-backend cert/redirect + clerk-webhook: recipes emitted, the authn path fully demonstrated.",
+  "injection_status": "FULL STACK PROVEN. /demo-up brought up a 13-container demo with all 5 Clerk-consuming services injected (disarmed colony) + fake FAPI/BAPI; the demo backend accepts a Clerkenstein token live (403 not 401), real Clerk never used. /demo-down tears it all down, dev stack untouched. Remaining for a fully FUNCTIONAL demo (not Clerk): migrations/seeding (M4), browser login, BAPI HTTPS cert.",
   "carried_forward": "M3-CF1 RESOLVED (running-app deployment proven). Optional remaining: verify the clerk-backend in-Docker cert/redirect + the webhook POST live (the load-bearing authn path is proven). Recipe: demo-stacks/inject/DEPLOYMENT-PROOF.md.",
   "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's lifecycle AND the failed app-bring-up attempt",
-  "resource_note": "RAM was never a blocker \u2014 the whole dev stack uses ~0.9 GB (measured), not the 10-12 GB doc estimate. The full app built + ran fine alongside the dev stack."
+  "resource_note": "RAM was never a blocker \u2014 the whole dev stack uses ~0.9 GB (measured), not the 10-12 GB doc estimate. The full app built + ran fine alongside the dev stack.",
+  "skills_proven": "/demo-up (up-injected.sh \u2014 full Clerk-free stack) + /demo-down (full teardown) demonstrated end-to-end live"
 }

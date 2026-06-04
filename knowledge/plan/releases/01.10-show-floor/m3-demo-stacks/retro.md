@@ -84,3 +84,14 @@ demo network, and probed a protected route (`/api/workforce/members`):
 The **403-not-401** is the end-to-end proof: a real, running Anthropos `app`, rebuilt with the disarmed colony,
 **accepts a Clerkenstein universal-key token at its live HTTP auth middleware** — zero app-code change. M3-CF1
 resolved. Dev stack untouched throughout (`-p demo-1` scoped). Recipe: `demo-stacks/inject/DEPLOYMENT-PROOF.md`.
+
+## FULL injected demo — PROVEN live (2026-06-04, after the user pushed for the real thing)
+`/demo-up` (up-injected.sh) brought up a **13-container demo stack** with all 5 Clerk-consuming services
+(backend/skiller/cms/jobsimulation/skillpath) rebuilt on `demo-1-<svc>:injected` (disarmed colony) + the two
+fake Clerkenstein servers (FAPI/BAPI) + dev-image reuse for the non-Clerk services. The demo **backend
+accepts a Clerkenstein token at its live HTTP auth** (none→400, garbage→401, Clerkenstein→403) — real Clerk
+never used. `/demo-down` tore the whole project down; the dev stack stayed intact (12 containers) throughout.
+Live-run fixes: offset ×10000 (×100 collided with dev base ports), the cms studio-submodule copy, the
+injected-override teardown. **Both skills (/demo-up full injected, /demo-down) demonstrated end-to-end.**
+Still open for a *fully functional* demo (not a Clerk question): run migrations/seeding so sentinel + handlers
+work (the M4 step), the browser/FAPI login, and the BAPI HTTPS cert.
