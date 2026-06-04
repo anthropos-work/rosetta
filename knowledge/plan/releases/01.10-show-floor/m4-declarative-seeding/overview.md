@@ -73,7 +73,7 @@ fidelity (some `created_at` columns are DB-default `now()` / ent-Immutable).
 - `corpus/architecture/architecture_overview.md` (multi-tenancy: `organization_id` on every table, 3-layer isolation)
 - `corpus/ops/staging_from_dump.md` (snapshot/restore patterns for the pre-embedded skiller snapshot)
 - `corpus/services/{backend,skiller,jobsimulation,skillpath,cms}.md` (the bootstrap/import CLIs + store schemas)
-- M3's `corpus/ops/demo_stacks.md` (the stack to seed into)
+- M3's `corpus/ops/rosetta_demo.md` (the stack to seed into)
 
 ## Delivers → `corpus/ops/seeding-spec.md` (net-new)
 The declarative-seeding spec: `demo.seed.yaml` reference, the dependency-order pipeline, the snapshot prerequisite.

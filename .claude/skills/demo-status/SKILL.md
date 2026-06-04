@@ -6,12 +6,12 @@ argument-hint: (no args)
 
 # Demo Status — list running demo stacks
 
-Reports the demo-stack registry (which `demo-N` exist, their offset, profile, services, and resolved
+Reports the rosetta-demo registry (which `demo-N` exist, their offset, profile, services, and resolved
 per-repo clone refs) plus a live `ps` per demo project.
 
 ## Mission
 ```bash
-anthropos-demo/demo-stacks/demo-stack status
+anthropos-demo/rosetta-demo/rosetta-demo status
 ```
 Then summarize for the user: which demos are live, on which offset ports, their health, and — useful for
 reproduction — the release tag each repo was cloned at (from the registry's `clones` field).

@@ -35,7 +35,7 @@ turns M3+M4's mechanisms into a usable, documented product.
   consistent and parent docs (README, CLAUDE.md) point at the demo-env story.
 
 ### Out
-- The demo-env lifecycle guide (`corpus/ops/demo_stacks.md`) — **M3's** deliverable; M5 only indexes/links it.
+- The demo-env lifecycle guide (`corpus/ops/rosetta_demo.md`) — **M3's** deliverable; M5 only indexes/links it.
 - The seeding spec + the seeder code — **M4's** deliverable.
 - Any new runtime mechanism / compose change / skill behavior change — M5 is documentation + curation + discoverability.
 - AI-generated rich transcripts/embeddings — at most a documented **STRETCH** (only pulled forward from M4's
@@ -57,7 +57,7 @@ the CI pickup), no uncertain path.
 - STRETCH gate for AI content generation — define the trigger at kickoff; don't pre-commit.
 
 ## KB dependencies (read as contract)
-- The M3 + M4 delivered docs (`corpus/ops/demo_stacks.md`, `corpus/ops/seeding-spec.md`)
+- The M3 + M4 delivered docs (`corpus/ops/rosetta_demo.md`, `corpus/ops/seeding-spec.md`)
 - `corpus/README.md` + `corpus/services/TEMPLATE.md` (doc conventions + where the section links in)
 - `anthropos-demo/clerkenstein/` CI workflow (`.github/workflows/alignment.yml`) for the express-gate pickup
 

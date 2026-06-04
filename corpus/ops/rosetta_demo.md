@@ -1,6 +1,6 @@
 # Disposable Demo Stacks
 
-**Status:** v1.1 "show floor" / M3 · **Last updated:** 2026-06-04 · **Tooling:** `anthropos-demo/demo-stacks/` (gitignored, own git, no remote) · **Skills:** `/demo-up`, `/demo-down`, `/demo-status` · **Full injected stack:** LIVE-PROVEN (bring-up → migrate → schema → Clerk-free auth; `/api/health` 200)
+**Status:** v1.1 "show floor" / M3 · **Last updated:** 2026-06-04 · **Tooling:** `anthropos-demo/rosetta-demo/` (gitignored, own git, no remote) · **Skills:** `/demo-up`, `/demo-down`, `/demo-status` · **Full injected stack:** LIVE-PROVEN (bring-up → migrate → schema → Clerk-free auth; `/api/health` 200)
 
 > Spin up `demo-1`, `demo-2`, … as **isolated, full Anthropos stacks on one box**, each Clerkenstein-wired
 > so it runs **without real Clerk**, killable cleanly — **without modifying a single read-only platform
@@ -17,7 +17,7 @@ The platform compose (`anthropos-dev/platform`) was built for **one** stack:
 - **one fixed `COMPOSE_PROJECT_NAME=anthropos`** → container/network name clashes.
 - **one relative Postgres bind-mount** (`./data/postgresql`) → two stacks share one database.
 
-`demo-stack` fixes all three **additively** — it never edits the platform compose:
+`rosetta-demo` fixes all three **additively** — it never edits the platform compose:
 1. **`-p demo-N`** isolates container/network/volume names.
 2. A **generated compose override** (`docker-compose.demo.yml`) remaps every published host port to
    `host + N·OFFSET` and repoints Postgres's data bind to a per-demo dir. It uses Compose's **`!override`**
@@ -33,14 +33,14 @@ the dev stack's base ports. The registry assigns N and records the ports each de
 
 ## Lifecycle
 ```bash
-DS=anthropos-demo/demo-stacks/demo-stack
+DS=anthropos-demo/rosetta-demo/rosetta-demo
 
 # Full Clerk-free demo — ONE call (measured ~0.9 GB; LIVE-PROVEN co-resident with the dev stack):
-anthropos-demo/demo-stacks/up-injected.sh 1   # clone@tag → inject 4 recipes → build → override → up
-anthropos-demo/demo-stacks/migrate-demo.sh 1  # schemas + atlas migrations → sentinel healthy
+anthropos-demo/rosetta-demo/up-injected.sh 1   # clone@tag → inject 4 recipes → build → override → up
+anthropos-demo/rosetta-demo/migrate-demo.sh 1  # schemas + atlas migrations → sentinel healthy
                                               # /api/health → 200 (authorized routes need the M4 seed)
 
-# Or the individual demo-stack verbs (minimal/manual, e.g. an infra-only proof):
+# Or the individual rosetta-demo verbs (minimal/manual, e.g. an infra-only proof):
 "$DS" clone  1                 # per-demo clones, each repo at its LATEST RELEASE TAG (M3-D3)
 "$DS" inject 1 --fapi-host localhost:15400   # wire the 4 Clerkenstein recipes (Clerk-free by default)
 "$DS" up     1 --profile graphql            # bring up -p demo-1 on offset ports
@@ -114,7 +114,7 @@ if a repo is untagged. The resolved ref per repo is recorded in the registry for
 identity-agnostic (straight-through claim mapping — it extracts whatever the minted token carries).
 
 ## Safety
-Every `demo-stack` op is scoped `-p demo-N`. `down` **hard-refuses** any N that resolves to the dev
+Every `rosetta-demo` op is scoped `-p demo-N`. `down` **hard-refuses** any N that resolves to the dev
 project name (read from the platform `.env`), so it can never tear down the dev stack. **Verified live:**
 demo-1 up → status → down with the dev `anthropos` stack (12 containers, postgres healthy) untouched.
 
@@ -138,13 +138,13 @@ VM memory.
   minted key + trusted cert) is built + documented; its full live walk-through follows the same path.
 
 ## Testing & verification
-The demo-stacks tooling carries **78 unit tests** (pytest):
+The rosetta-demo tooling carries **78 unit tests** (pytest):
 - `tests/test_tooling.py` (707 loc, 55 tests) — the override generator, clone resolver, publishable-key
   minter, and registry.
 - `tests/test_inject_scripts.py` (439 loc, 23 tests) — the four injection recipes.
 
 ```bash
-cd anthropos-demo/demo-stacks && python3 -m pytest tests/ -v
+cd anthropos-demo/rosetta-demo && python3 -m pytest tests/ -v
 ```
 The load-bearing one is `test_mint_matches_clerkenstein_source`: it shells out to Clerkenstein's
 authoritative Go `cmd/mintpk` and **fails** if the Python `mint_pk` ever diverges from it — keeping the demo
@@ -155,7 +155,7 @@ publishable key byte-identical to the alignment-gated contract.
   (100% / 100% on all four alignment surfaces, including the deployment/injection dimension).
 - `anthropos-demo/clerkenstein/knowledge/kb-index.md` — Clerkenstein's own KB (architecture, alignment,
   injection recipes, coverage); in the gitignored scratchpad alongside the source.
-- `anthropos-demo/demo-stacks/inject/DEPLOYMENT-PROOF.md` — the M3 injection bring-up proof.
+- `anthropos-demo/rosetta-demo/inject/DEPLOYMENT-PROOF.md` — the M3 injection bring-up proof.
 - [`corpus/ops/platform_repo.md`](platform_repo.md) — the platform compose/Makefile this overlays.
 - [`corpus/ops/run_guide.md`](run_guide.md) · [`corpus/ops/quick_ops.md`](quick_ops.md) — the dev-stack lifecycle.
 - M4 (declarative seeding) + M5 (recipes) build on this — see `knowledge/plan/roadmap.md` § In Development — v1.1.

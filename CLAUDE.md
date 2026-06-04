@@ -23,9 +23,9 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/update-platform` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
 | `/test-platform` | Verify a running platform (probes, repo suites, census) | `.claude/skills/test-platform/SKILL.md` |
-| `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/demo_stacks.md` |
-| `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/demo_stacks.md` |
-| `/demo-status` | List running demo stacks and their details | `corpus/ops/demo_stacks.md` |
+| `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/rosetta_demo.md` |
+| `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
+| `/demo-status` | List running demo stacks and their details | `corpus/ops/rosetta_demo.md` |
 | `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
 | `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 

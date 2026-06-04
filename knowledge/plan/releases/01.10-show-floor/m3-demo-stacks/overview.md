@@ -7,7 +7,7 @@ status: done
 completed: 2026-06-03
 created: 2026-06-03
 last_updated: 2026-06-03
-delivers: corpus/ops/demo_stacks.md
+delivers: corpus/ops/rosetta_demo.md
 ---
 
 # M3 — Disposable multi-instance demo stacks (`anthropos-demo`)
@@ -61,9 +61,9 @@ shape (not iterative). This milestone is **orchestration glue around the existin
   `docker compose -p demo-N` up + migrate → optional bootstrap-dev), `/demo-down [N]` (stop + remove that
   demo's containers/network + data dir — **manual teardown only**, decision M3-D2), `/demo-status` (live demos,
   ports owned, health).
-- **A demo-stack registry/ledger** (`anthropos-demo/stacks/registry.{json,md}`): which N are live, ports owned,
+- **A rosetta-demo registry/ledger** (`anthropos-demo/stacks/registry.{json,md}`): which N are live, ports owned,
   started-at — so `/demo-status` + teardown are reliable and offset assignment is collision-free.
-- **Delivers** the net-new ops guide **`corpus/ops/demo_stacks.md`**: the lifecycle (spin up / kill), the
+- **Delivers** the net-new ops guide **`corpus/ops/rosetta_demo.md`**: the lifecycle (spin up / kill), the
   port-offset table, the Clerkenstein-by-default wiring, and the per-demo-clone layout.
 
 ### Out
@@ -122,4 +122,4 @@ Clerkenstein redirect.
 ## Exit (section)
 All `In:` deliverables land + `progress.md` checklist complete: two demo stacks (`demo-1`, `demo-2`) run
 concurrently, isolated, each Clerkenstein-wired (browser login works, backend verifies, no real Clerk), and
-`/demo-down` cleanly reclaims one without touching the other — documented in `corpus/ops/demo_stacks.md`.
+`/demo-down` cleanly reclaims one without touching the other — documented in `corpus/ops/rosetta_demo.md`.

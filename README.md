@@ -63,7 +63,7 @@ Automate the setup process:
 /demo-status         # Check: list running demo stacks, their offset ports, and health
 ```
 
-These skills execute the guides step-by-step with verification, ask for confirmation before changes, and auto-improve documentation when issues are found. The demo skills are isolated per stack (`-p demo-N`, offset ports) and never touch the dev stack — see [`corpus/ops/demo_stacks.md`](./corpus/ops/demo_stacks.md).
+These skills execute the guides step-by-step with verification, ask for confirmation before changes, and auto-improve documentation when issues are found. The demo skills are isolated per stack (`-p demo-N`, offset ports) and never touch the dev stack — see [`corpus/ops/rosetta_demo.md`](./corpus/ops/rosetta_demo.md).
 
 ## Documentation Structure
 

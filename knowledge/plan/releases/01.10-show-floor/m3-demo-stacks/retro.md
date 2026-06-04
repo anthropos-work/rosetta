@@ -1,9 +1,9 @@
 # M3 — Retro
 
-**Summary:** Built the disposable demo-stack layer for v1.1 — bring up `demo-N` as an isolated Anthropos
+**Summary:** Built the disposable rosetta-demo layer for v1.1 — bring up `demo-N` as an isolated Anthropos
 stack alongside the dev stack, Clerkenstein-wired, on offset ports, killable cleanly, **with zero
-read-only-platform change**. Tooling lives in a new gitignored `anthropos-demo/demo-stacks/` repo (the
-clerkenstein pattern); the `/demo-*` skills + `corpus/ops/demo_stacks.md` are rosetta-tracked. All 5
+read-only-platform change**. Tooling lives in a new gitignored `anthropos-demo/rosetta-demo/` repo (the
+clerkenstein pattern); the `/demo-*` skills + `corpus/ops/rosetta_demo.md` are rosetta-tracked. All 5
 sections built + hardened (12 unit tests). **Acceptance met (M3-D5): demo-1 ran isolated alongside the dev
 stack — up→status→down, dev untouched.**
 
@@ -61,14 +61,14 @@ milestone's headline (Clerkenstein-wired by default) is **not yet true on a live
 
 ## Metrics
 See [metrics.json](metrics.json). Tooling: ~3 Python modules + 1 bash CLI + 3 skills + 1 ops guide; 12 unit
-tests green; shellcheck/py-compile clean. demo-stacks repo: 5 commits.
+tests green; shellcheck/py-compile clean. rosetta-demo repo: 5 commits.
 
 ## Resolution — injection actually built + proven (after the user pressed twice, 2026-06-03)
 Asked "what prevents you from building the full demo?", I measured instead of assuming and found my excuse was wrong:
 - **RAM:** the *entire* dev stack (12 services) uses **~0.9 GB**, not the 10-12 GB I'd cited from a staging doc. Two
   full stacks fit easily. The earlier redis failure was *disk* (build cache), already freed.
 - **The "patched colony doesn't exist":** it didn't because I hadn't built it. So I built it — a disarmed colony
-  clerk provider (`demo-stacks/inject/colony-authn-disarmed/`) — and **proved it against colony v0.34.3 (app's
+  clerk provider (`rosetta-demo/inject/colony-authn-disarmed/`) — and **proved it against colony v0.34.3 (app's
   pinned version): it accepts a Clerkenstein token + extracts identity/org**, where the real provider rejects it.
   Scripted as `apply-authn.sh` (vendor + go.mod replace; app code unchanged).
 **So injection works.** What's left (M3-CF1) is the running-app Docker deployment (per-demo mirror build), which is
@@ -83,7 +83,7 @@ demo network, and probed a protected route (`/api/workforce/members`):
   denied at authz/sentinel).
 The **403-not-401** is the end-to-end proof: a real, running Anthropos `app`, rebuilt with the disarmed colony,
 **accepts a Clerkenstein universal-key token at its live HTTP auth middleware** — zero app-code change. M3-CF1
-resolved. Dev stack untouched throughout (`-p demo-1` scoped). Recipe: `demo-stacks/inject/DEPLOYMENT-PROOF.md`.
+resolved. Dev stack untouched throughout (`-p demo-1` scoped). Recipe: `rosetta-demo/inject/DEPLOYMENT-PROOF.md`.
 
 ## FULL injected demo — PROVEN live (2026-06-04, after the user pushed for the real thing)
 `/demo-up` (up-injected.sh) brought up a **13-container demo stack** with all 5 Clerk-consuming services

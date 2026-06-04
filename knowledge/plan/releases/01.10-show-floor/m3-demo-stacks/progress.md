@@ -5,9 +5,9 @@
 ## Build log
 
 **2026-06-03 — S2 (the override/isolation engine) built + LIVE-PROVEN.** Tooling in the new gitignored
-`anthropos-demo/demo-stacks/` repo (M3-D4; commit `946c5ba`): `lib/gen_override.py` (offset ports +
+`anthropos-demo/rosetta-demo/` repo (M3-D4; commit `946c5ba`): `lib/gen_override.py` (offset ports +
 repoint Postgres bind, via Compose `!override` so sequences are *replaced* not appended — the append would
-re-bind the base port and collide with the dev stack) + the `demo-stack` lifecycle CLI (`up`/`down`/
+re-bind the base port and collide with the dev stack) + the `rosetta-demo` lifecycle CLI (`up`/`down`/
 `status`/`gen`, every op `-p demo-N`-scoped, `down` hard-refuses the dev project) + `registry.json`.
 **Live proof on this 16 GB box, alongside the running 12-container dev stack:** `demo-1` (postgresql+redis)
 came up on offset ports **5532/6479** with its own data dir → two independent live Postgres instances side
@@ -15,7 +15,7 @@ by side; `status` listed it; `down --purge` cleanly removed it — and the **dev
 fully intact** (12 containers, postgres healthy) the whole time. This satisfies the M3-D5 acceptance
 ("one demo stack alongside the dev stack, untouched").
 
-**2026-06-03 — M3 sections built + hardened; S3 corrected (see below).** Tooling in `anthropos-demo/demo-stacks/`
+**2026-06-03 — M3 sections built + hardened; S3 corrected (see below).** Tooling in `anthropos-demo/rosetta-demo/`
 (commits `946c5ba` S2 · `cda2db3` S1 · `31bdcd8` S3 · `b626020` harden) + rosetta `/demo-*` skills + the
 ops guide. 12 tooling unit tests green; shellcheck + python compile clean. **Genuinely proven:** S1
 (clone-at-tag), S2 (the override/isolation engine — demo-1 live alongside the dev stack, M3-D5), the
@@ -25,8 +25,8 @@ needs the full graphql profile; no patched-colony module exists for the authn re
 routed to M3-CF1.
 
 ## S1 — layout + per-demo clone-at-release-tag (M3-D1 + M3-D3) ✅
-- [x] `anthropos-demo/demo-stacks/stacks/demo-N/` workspace layout
-- [x] per-demo clone step — `clone_repos.py` + `demo-stack clone`; each repo at its latest release tag (caller-overridable; bare + `v`-semver; main if untagged) — resolution proven on all 14 repos + real clones
+- [x] `anthropos-demo/rosetta-demo/stacks/demo-N/` workspace layout
+- [x] per-demo clone step — `clone_repos.py` + `rosetta-demo clone`; each repo at its latest release tag (caller-overridable; bare + `v`-semver; main if untagged) — resolution proven on all 14 repos + real clones
 - [x] the stack registry/ledger (`registry.json`: live N, ports, profile/services, **resolved ref per repo**)
 
 ## S2 — compose override + port-offset + per-stack project/env/data ✅ (live-proven)
@@ -40,20 +40,20 @@ routed to M3-CF1.
 > Then, pushed to actually do it, I found my "resource-gated" reason was **wrong**: the *whole dev stack* uses
 > **~0.9 GB** (measured), not 10-12 — RAM was never the blocker. And the "patched colony doesn't exist" was
 > "I hadn't built it." So I **built it and proved it**.
-- [x] `authn` — **BUILT + PROVEN.** A disarmed colony clerk provider (`demo-stacks/inject/colony-authn-disarmed/clerk.go`: same package/type/`NewProvider` signature, universal-key verify) vendored via `apply-authn.sh` (clone colony@pinned → swap clerk pkg → `replace => ./vendor-colony`). **Proven against colony v0.34.3 (app's pinned version):** the disarmed provider accepts a Clerkenstein token + extracts identity+org; rejects garbage/expired. App code unchanged. (`inject_proof_test.go`.)
+- [x] `authn` — **BUILT + PROVEN.** A disarmed colony clerk provider (`rosetta-demo/inject/colony-authn-disarmed/clerk.go`: same package/type/`NewProvider` signature, universal-key verify) vendored via `apply-authn.sh` (clone colony@pinned → swap clerk pkg → `replace => ./vendor-colony`). **Proven against colony v0.34.3 (app's pinned version):** the disarmed provider accepts a Clerkenstein token + extracts identity+org; rejects garbage/expired. App code unchanged. (`inject_proof_test.go`.)
 - [x] `clerk-frontend` minted publishable key → env — **PROVEN** (byte-identical to clerkenstein's gated `MintPublishableKey`).
-- [x] **running-app deployment — PROVEN end-to-end (M3-CF1 RESOLVED, 2026-06-04).** Built a demo `app` image with the vendored disarmed colony (`apply-authn.sh` + a Dockerfile fix), ran it live, and hit a protected route (`/api/workforce/members`) with three tokens: **none → 400, garbage → 401 (rejected), Clerkenstein → 403 (ACCEPTED — past authn, denied at authz)**. The 403-not-401 is the proof: a real running Anthropos `app` accepts a Clerkenstein universal-key token at its live HTTP auth middleware. Recipe + result: `demo-stacks/inject/DEPLOYMENT-PROOF.md`.
+- [x] **running-app deployment — PROVEN end-to-end (M3-CF1 RESOLVED, 2026-06-04).** Built a demo `app` image with the vendored disarmed colony (`apply-authn.sh` + a Dockerfile fix), ran it live, and hit a protected route (`/api/workforce/members`) with three tokens: **none → 400, garbage → 401 (rejected), Clerkenstein → 403 (ACCEPTED — past authn, denied at authz)**. The 403-not-401 is the proof: a real running Anthropos `app` accepts a Clerkenstein universal-key token at its live HTTP auth middleware. Recipe + result: `rosetta-demo/inject/DEPLOYMENT-PROOF.md`.
 - [~] `clerk-backend` api.clerk.com → fake-BAPI — `app` `extra_hosts` `!override` snippet emitted; the cert/redirect is the one remaining recipe to verify live (the authn path is fully proven).
 - [~] `clerk-webhook` svix-signed POST — injector invocation emitted; run when the webhook flow is exercised.
 - **M3-CF1 RESOLVED.** The headline ("a demo comes up Clerk-free, accepting Clerkenstein tokens") is now **demonstrated on a live app**, not just scaffolded. RAM was never a blocker (the whole dev stack uses ~0.9 GB — measured).
 
 ## S4 — lifecycle skills + teardown (M3-D2 manual only) ✅
-- [x] `/demo-up [N]` skill (wraps `demo-stack clone → inject → up`, resource-aware)
-- [x] `/demo-down [N]` skill (wraps `demo-stack down N --purge`; `-p`-scoped, dev stack untouched — proven)
-- [x] `/demo-status` skill (wraps `demo-stack status`; registry + per-demo `ps` + resolved refs)
+- [x] `/demo-up [N]` skill (wraps `rosetta-demo clone → inject → up`, resource-aware)
+- [x] `/demo-down [N]` skill (wraps `rosetta-demo down N --purge`; `-p`-scoped, dev stack untouched — proven)
+- [x] `/demo-status` skill (wraps `rosetta-demo status`; registry + per-demo `ps` + resolved refs)
 
 ## S5 — the ops guide + the acceptance demo ✅
-- [x] `corpus/ops/demo_stacks.md` (collision problem + additive fix + `!override` + port-offset + clone-at-tag + Clerkenstein recipes + safety + resource budget + proven-vs-gated split); cross-linked from `corpus/ops/README.md`
+- [x] `corpus/ops/rosetta_demo.md` (collision problem + additive fix + `!override` + port-offset + clone-at-tag + Clerkenstein recipes + safety + resource budget + proven-vs-gated split); cross-linked from `corpus/ops/README.md`
 - [x] **acceptance (M3-D5):** demo-1 (postgres+redis) ran isolated alongside the dev stack on offset ports with its own data; up→status→down; **dev stack untouched throughout**. (Two-concurrent-full-stack acceptance is resource-gated → bigger box.)
 
 ## Migrate step (2026-06-04) — sentinel healthy + /api/health 200; authorized 200s = M4 seed
@@ -77,8 +77,8 @@ deployment alignment gate held 100%/100% (7/7 genes) throughout.**
 - `clerkenstein/deploy/colony-authn` (clerk.go, the disarmed provider): **2 → 34** (100% stmt cov). Edge/error-class grid, exp boundary (strict `>`), a drift-equivalence battery vs `clerkenstein/shared`, header-tamper, base64-alphabet pin, `GetUserByID` via colony's real Manager fan-out, **2 fuzzers** (zero crashers).
 - `clerkenstein/alignment/cmd/deployrun`: **2 → 31** (94.9% cov; remaining lines unreachable-by-design — the real provider never rejects a valid universal-key token). Both bad-sig flip arms, exact wire-key casing pin, unknown-variant divergence, empty-DNA path.
 - `clerkenstein/cmd/fake-fapi`: **0 → 10**; `cmd/fake-bapi`: **0 → 12** (newServer 100%; only the `ListenAndServe` shell uncovered). httptest smokes incl. the **mint→backend-authn round-trip**, fresh-seed isolation, method-scoped 405.
-- `demo-stacks/tests/test_tooling.py`: **13 → 55** (added `TestGenInjectedOverride`: real-YAML-tree parse of the injected override — a mutation test proved the prior substring checks missed an alias mis-indent — + fuzz + the `resolved()` docker boundary stubbed; `gen_injected_override.py` 88% → **98%**).
-- `demo-stacks/tests/test_inject_scripts.py`: **0 → 23** (new). `apply-authn.sh` fully tested offline with a stubbed `git`; `up-injected.sh`/`migrate-demo.sh` get shellcheck + structural-wiring regression (re-arming couplings shellcheck can't see).
+- `rosetta-demo/tests/test_tooling.py`: **13 → 55** (added `TestGenInjectedOverride`: real-YAML-tree parse of the injected override — a mutation test proved the prior substring checks missed an alias mis-indent — + fuzz + the `resolved()` docker boundary stubbed; `gen_injected_override.py` 88% → **98%**).
+- `rosetta-demo/tests/test_inject_scripts.py`: **0 → 23** (new). `apply-authn.sh` fully tested offline with a stubbed `git`; `up-injected.sh`/`migrate-demo.sh` get shellcheck + structural-wiring regression (re-arming couplings shellcheck can't see).
 
 **Bugs fixed inline (harden-surfaced, with regression tests):**
 - `inject/apply-authn.sh` (`5ab7b51`): the colony-version `grep` runs under `set -e`+`pipefail`, so a no-match aborted the script **before** the explicit guard — bare `exit 1`, no diagnostic. Added `|| true` to fall through to the actionable guard.
@@ -88,11 +88,11 @@ deployment alignment gate held 100%/100% (7/7 genes) throughout.**
 
 **Finding routed to M4 — the demo identity is `user_clerkenstein`, not the runner fixture.** The harden exposed **two divergent demo identities** in clerkenstein: the real browser-login/demo seed `clerkfrontend.DefaultDemoUser()` = **`user_clerkenstein` / `demo@anthropos.test` / `org_clerkenstein` / admin**, vs. the alignment **runner fixtures** (`deployrun`/`expressrun`) = `user_2clerkenstein` / `demo@anthropos.work` / `org_clerkenstein`. They agree on org but diverge on user-sub + email. The gates are self-consistent (the fixture is just the contract's test vector — harmless to them), but **the M4 seed must seed `user_clerkenstein` / `demo@anthropos.test`** (what the browser flow actually produces), NOT the `user_2clerkenstein` fixture some earlier notes propagated. (Earlier S3 notes/`DEPLOYMENT-PROOF.md` cite the fixture identity + a non-existent `org_demo`; corrected in the corpus sweep.) **M4 action:** seed the real `DefaultDemoUser` identity; optionally reconcile the runner fixtures to it (would require re-capturing the deploy/express goldens — out of scope here).
 
-**Hygiene swept (commits `6150198` clerkenstein · `5ab3818` demo-stacks):** untracked a stray `fake-bapi` Mach-O build artifact + a `.coverage` file; added `/fake-fapi /fake-bapi /mintpk` to clerkenstein `.gitignore` and `.coverage`/`__pycache__/` to demo-stacks.
+**Hygiene swept (commits `6150198` clerkenstein · `5ab3818` rosetta-demo):** untracked a stray `fake-bapi` Mach-O build artifact + a `.coverage` file; added `/fake-fapi /fake-bapi /mintpk` to clerkenstein `.gitignore` and `.coverage`/`__pycache__/` to rosetta-demo.
 
 **Knowledge backfill:** clerkenstein `knowledge/coverage-index.md` refreshed; the demo identity + deployment surface folded into the rosetta corpus (see the corpus sweep). 
 
-**Verification:** clerkenstein **all 13 packages green under `-race`** (gofmt + vet clean); demo-stacks **78 tests green** (shellcheck clean); deploy gate **100%/100%**; **flake gate 3/3 clean**.
+**Verification:** clerkenstein **all 13 packages green under `-race`** (gofmt + vet clean); rosetta-demo **78 tests green** (shellcheck clean); deploy gate **100%/100%**; **flake gate 3/3 clean**.
 
 ### Stop condition
 Stopped after one pass: the highest-value targets reached saturation (clerk.go 100%, gen_injected_override 98%, both fake servers at their testable ceiling), the adversarial pass found only depth gaps (now filled) not new bugs, and the two genuine production bugs were fixed + pinned. The shell orchestrators (`up-injected.sh`/`migrate-demo.sh`) are honestly documented as I/O-bound-uncoverable-offline with a three-fold compensating strategy (shellcheck + structural-wiring regression + the live `DEPLOYMENT-PROOF.md`).

@@ -10,10 +10,10 @@ Stops and removes `demo-N` **only** — its containers, network, and (with `--pu
 the dev `anthropos` stack and any other demos untouched. Manual teardown is the only reclaim path (M3-D2).
 
 ## Mission
-1. **Confirm N** — which demo to reclaim (`anthropos-demo/demo-stacks/demo-stack status` lists live demos).
+1. **Confirm N** — which demo to reclaim (`anthropos-demo/rosetta-demo/rosetta-demo status` lists live demos).
 2. **Tear down**:
    ```bash
-   DS=anthropos-demo/demo-stacks/demo-stack
+   DS=anthropos-demo/rosetta-demo/rosetta-demo
    "$DS" down N            # stop + remove demo-N's containers/network
    "$DS" down N --purge    # also remove demo-N's data dir (full reclaim)
    ```

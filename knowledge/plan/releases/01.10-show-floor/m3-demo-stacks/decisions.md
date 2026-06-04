@@ -24,11 +24,11 @@ each demo is running). Clerkenstein injection (go.mod replace + skip-worktree) i
 checked-out tag. (Open: exact "release tag" pattern — `v*` only vs any tag — settle in S1 against the actual org
 repos' tagging conventions.)
 
-## M3-D4 — tooling home: a new gitignored `anthropos-demo/demo-stacks/` repo (build, 2026-06-03)
-The demo-stack tooling (override generator, lifecycle CLI, registry, clone/injection logic) lives in a
-**new gitignored repo at `anthropos-demo/demo-stacks/`** with its own git — the same pattern as
-`clerkenstein/`. The user-facing **`/demo-*` slash-command skills** and the **`corpus/ops/demo_stacks.md`**
-guide live in the **rosetta** repo (tracked, on the `m3/demo-stacks` branch). Rationale: `anthropos-demo/`
+## M3-D4 — tooling home: a new gitignored `anthropos-demo/rosetta-demo/` repo (build, 2026-06-03)
+The rosetta-demo tooling (override generator, lifecycle CLI, registry, clone/injection logic) lives in a
+**new gitignored repo at `anthropos-demo/rosetta-demo/`** with its own git — the same pattern as
+`clerkenstein/`. The user-facing **`/demo-*` slash-command skills** and the **`corpus/ops/rosetta_demo.md`**
+guide live in the **rosetta** repo (tracked, on the `m3/rosetta-demo` branch). Rationale: `anthropos-demo/`
 is gitignored from rosetta, so runtime tooling can't be rosetta-tracked; skills + docs are rosetta's domain.
 
 ## M3-D5 — acceptance bar adjusted to "1 demo stack alongside the dev stack" (user-directed, 2026-06-03)
