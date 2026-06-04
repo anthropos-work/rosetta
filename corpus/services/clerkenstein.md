@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express`) · **Last updated:** 2026-06-03
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection) · **Last updated:** 2026-06-04
 **Repo:** `anthropos-demo/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
@@ -47,7 +47,9 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 | `clerk-frontend/` | `@clerk/clerk-js` + `@clerk/nextjs` | fake Frontend API + publishable-key codec — **mints** JWTs |
 | `clerk-webhook/` | `svix` | the signed-webhook injector |
 | `shared/` | — | universal-key HS256 JWT (the mint side + verify side agree here) |
-| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,expressrun}` + `dna/` (three) + `golden{,-js,-express}/` + `scripts/` |
+| `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony @ v0.34.3`) |
+| `cmd/` | — | standalone binaries: `mintpk` (authoritative publishable-key minter) · `fake-fapi` / `fake-bapi` (standalone fake servers for demos) |
+| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,expressrun,deployrun}` + `dna/` (four) + `golden{,-js,-express,-deploy}/` + `scripts/` |
 
 The browser-login → backend-verify coherence chain runs through `shared`: `clerk-frontend` mints the
 HS256 universal-key JWT, `authn` verifies that exact token — pinned by the JS DNA's
@@ -59,6 +61,17 @@ its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real 
 **genuine `@clerk/backend`** — the same "verify against the real library" discipline `clerk-webhook/` uses
 with `svix`. `@clerk/express` verifies RS256-via-JWKS and rejects HS256, so the RS256 path is additive (the
 HS256 seams + M1/M2 gates stay green).
+
+**The deployment/injection surface (M3) *did* add `deploy/` + `cmd/`.** Unlike the `authn/` twin (which
+mocks the standalone `colony/authn` interface), the platform actually consumes `colony/authn/provider/clerk`
+*inside* the `colony` module. So the **deployable** drop-in lives in `deploy/colony-authn/`: the disarmed
+provider — same package, same `Clerk` type, same `NewProvider(apiKey)` signature — compiled against the
+platform's **real** `colony @ v0.34.3` so an injected demo app accepts Clerkenstein-minted tokens with zero
+source changes. It is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
+carries, not a hard-coded user). Its contract is checked at *compile time* and scored by the
+`alignment/cmd/deployrun` runner (the `clerk-deploy-1` DNA). `cmd/` ships the supporting standalone tools:
+`mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers
+for demos).
 
 ## Read next (in the clerkenstein repo)
 
