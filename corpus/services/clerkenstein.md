@@ -1,11 +1,11 @@
 # Clerkenstein
 
 **Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection) · **Last updated:** 2026-06-04
-**Repo:** `anthropos-demo/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
+**Repo:** `anthropos-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
 > **This is a pointer.** The full, self-contained documentation now lives **in the clerkenstein repo's own
-> knowledge base** (added in M2b): start at `anthropos-demo/clerkenstein/knowledge/kb-index.md`. This page
+> knowledge base** (added in M2b): start at `anthropos-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
 > keeps only the platform-side orientation + the cross-links a rosetta reader needs — it deliberately does
 > **not** duplicate the repo's KB.
 
