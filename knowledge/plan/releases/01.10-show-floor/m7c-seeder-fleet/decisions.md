@@ -36,6 +36,20 @@ Validate (it's the command that makes the DNA valid); `measure`/`diff` still val
 `TestShippedManifest` to be M7c-aware (the 4 core surfaces stay critical+seeded; promoted surfaces are
 non-critical with a non-empty shape; the stable invariant is the total catalog size, not a fixed planned count).
 
+## iter-03/04/05 — the believability core complete + the re-scope point (2026-06-04)
+Three more activity seeders landed (skillpath-sessions, assignments, activity), all on the iter-02 pattern →
+**coverage 50%→80% (8/10)**, `measure` Overall/Critical 100%, the full 8-seeder seed runs in **0.69s**. Iter find:
+the skillpath table has a UNIQUE `(user_id, skill_path_id, version)` — the seeder collided on its first live run;
+fixed by indexing `skill_path_id` by session number (a user's paths are distinct). assignments/activity carry
+real FKs (memberships, sessions) all referentially valid.
+**Gate status: 3 of 4 met** — (a) login 200 ✓, (c) <2min (0.69s) ✓, (d) zero shared writes ✓; (b) coverage is
+**80%**, short of the 90% threshold because the last 2 surfaces (taxonomy, content) are **snapshot-blocked**.
+**Re-scope decision (the Re-scope-trigger fires here):** taxonomy needs the pre-embedded skiller snapshot;
+content is the shared Directus (snapshot-replay only). Both are the **hard line** — M7c seeds structural data, it
+does not author the 60K-skill taxonomy nor write shared Directus. Options surfaced to the user: **(A) waive the
+two** and close at 80%/100%-over-reachable (the believable-demo subset is complete), or **(B) keep M7c open** to
+solve the snapshot (heavy; arguably v1.2). Awaiting the user's call.
+
 ## Open (resolve during iters)
 - The must-cover surface subset that makes a demo "believable" (sets which genes are critical).
 - Per-surface backdating fidelity (direct-SQL vs ent-Immutable/DB-default).
