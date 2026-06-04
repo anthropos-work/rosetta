@@ -89,15 +89,16 @@ users + the real `user_clerkenstein` identity + the casbin `g2` grant, isolation
 login returns **HTTP 200** (`membershipsCount: 1001`). The proof caught + fixed **2 real bugs** (the g2 arg-order;
 the missing global-policy bootstrap — M7a-D4). **68 tests**, all gates green. Delivered `corpus/ops/seeding-spec.md`.
 
-### M7b: The data-alignment dimension ("data DNA")
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/01.10-show-floor/m7b-data-dna/)
-**Goal:** Extend the v1.0 **M0 alignment framework** to a **data** dimension — a machine-readable **data-DNA** that
-(a) *enumerates the seedable surfaces* = the authoritative **catalog of seeders to build** (drives M7c) and (b)
-*measures each seeder's output conforms to the platform's current schema*, so a schema change **surfaces as a DNA
-diff** instead of a silently broken seeder. Additive (M7b-D1): reuses M0's manifest/diff/score, adds **structural
-operators** (FK-valid/constraint/type-match/row-count) + **schema-as-source via introspection**. **Delivers** the
-data dimension into `corpus/architecture/alignment_testing.md` + `rosetta-extensions/stack-seeding/dna/`.
-**Depends on:** M7a (the seeder contract) + M0 (the framework).
+### M7b: The data-alignment dimension ("data DNA") ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/01.10-show-floor/m7b-data-dna/)
+Extended the **M0 alignment framework** to a **data** dimension — the `datadna` harness (`rosetta-extensions/
+stack-seeding/dna/`) that (a) enumerates the seedable surfaces (**4 seeded + 6 planned** — the M7c checklist) and
+(b) measures a seeder's output conforms to the platform's **current schema** via **structural operators**
+(type-match / constraint-satisfied [NOT-NULL + UNIQUE] / fk-valid / row-count) with **schema-as-source via
+introspection**. A separate harness, not an alignctl runner (M7b-D3). **PROVEN live** on the M7a-seeded `demo-1`:
+`measure` **100% / Critical 100%** across the 4 seeded surfaces; `diff` flags an injected column (exit 1) and
+reads clean on revert. Caught + fixed the planned-surface introspection bug; hardened the UNIQUE leg (M7b-D4).
+**dna 49 + cmd/datadna 10 + pg 17 tests.** Delivered the data dimension into `corpus/architecture/alignment_testing.md`.
 
 ### M7c: The seeder fleet, to a coverage gate
 **Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/01.10-show-floor/m7c-seeder-fleet/)

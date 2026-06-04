@@ -1,0 +1,33 @@
+{
+  "milestone": "M7b",
+  "title": "The data-alignment dimension (data DNA)",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-04",
+  "section_created": "rosetta-extensions/stack-seeding/dna/ + cmd/datadna",
+  "concept": "extend the v1.0 alignment framework to DATA — reuse manifest/score/diff structure, one-sided (seeder output -> live schema) with STRUCTURAL operators; separate harness, not an alignctl runner (M7b-D3)",
+  "operators": ["type-match", "constraint-satisfied (NOT-NULL + UNIQUE)", "fk-valid", "row-count"],
+  "two_jobs": "catalog (enumerate seedable surfaces = the M7c checklist) + conformance-gate/drift-detector (introspect captures the contract, measure scores conformance, diff flags schema drift)",
+  "catalog": {"seeded": 4, "planned": 6, "seeded_surfaces": ["organizations", "users", "memberships", "casbin-grant"], "planned_surfaces": ["taxonomy", "content", "skillpath-sessions", "jobsim-sessions", "assignments", "activity"]},
+  "tests": {
+    "dna": 49, "cmd/datadna": 10, "pg": "16 -> 17 (+CountDuplicatesSQL)",
+    "gates": "build + vet + -race + gofmt clean; hermetic (fake Introspector, no live DB)"
+  },
+  "pg_additions": ["ListForeignKeysSQL", "ListNotNullColumnsSQL", "ListUniqueColumnsSQL", "CountRowsSQL", "CountNullsSQL", "CountOrphansSQL", "CountDuplicatesSQL", "QuoteIdent", "Conn.Query (multi-row)"],
+  "live_proof": {
+    "stack": "demo-1 (the M7a-seeded injected stack)",
+    "introspect": "captured full live shapes (seeded-only): organizations 10 cols, users 9, memberships 26 cols/4 FKs, casbin-grant 7",
+    "measure": "Overall 100% / Critical 100% across the 4 seeded surfaces (type-match, NOT-NULL + UNIQUE, fk-valid on memberships' 4 FKs, row-count)",
+    "diff": "baseline clean (exit 0) -> add column -> 'DRIFT: added-column' (exit 1) -> revert -> clean (exit 0)"
+  },
+  "bug_caught_by_proof": "introspect was populating PLANNED surfaces (where the table exists) -> Validate rejects (planned must be empty) -> measure/diff aborted. Fixed: introspect captures seeded surfaces only.",
+  "harden": "wired the UNIQUE leg of constraint-satisfied (PgIntrospector.CountDuplicates + pg.CountDuplicatesSQL) — was silently a no-op; now active (verified live: '1 UNIQUE column(s) satisfied')",
+  "decisions": {
+    "M7b-D1": "extend M0 to a data dimension, don't fork it (design)",
+    "M7b-D2": "the data-DNA is the catalog that drives M7c (design)",
+    "M7b-D3": "separate datadna harness, not a new alignctl runner (build)",
+    "M7b-D4": "the live proof caught the planned-surface bug + drove the UNIQUE-leg harden"
+  },
+  "delivers": "the data dimension in corpus/architecture/alignment_testing.md + rosetta-extensions/stack-seeding/dna/ (manifest, harness, CLI, README)",
+  "monorepo": {"commits_added": 1, "sections": 6}
+}
