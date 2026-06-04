@@ -22,7 +22,7 @@ yet — that appears when a whole *major* version retires; v1.1 is the same majo
 - One directory per milestone, named `m{N}-{slug}/`
 - Each milestone dir has at minimum an `overview.md`. As the milestone progresses, optional companion files: `progress.md` (deliverable checklist), `decisions.md` (implementation choices with rationale), `spec-notes.md` (technical details).
 - Status values: `planned` → `in-progress` → `done` → `archived` (terminal, set at release close).
-- Milestone numbering (this is rosetta's first version): **flat sequential** — M0, M1, M2, … ; a letter suffix marks a milestone **inserted after** the fact (M1b drift CI, M2b consolidation, M2c the iterative `@clerk/express` feature).
+- Milestone numbering (this is rosetta's first version): **flat sequential** — M0, M1, M2, … . A letter suffix has two uses: (1) a milestone **inserted after** the fact (M1b drift CI, M2b consolidation, M2c the iterative `@clerk/express` feature); and (2) a **split** of one planned milestone into a sequential mini-arc (**M7a → M7b → M7c** = the former M7 "seeding" split into framework+safety / data-DNA / fleet, 2026-06-04). Context disambiguates which.
 - Milestone **shapes** can be mixed within a version: `section` (fixed checklist) or `iterative` (measurable exit gate, uncertain path). v1.0 has both — **M0/M1b/M2/M2b are section; M1 and M2c are iterative** (alignment-score gates).
 - Date format throughout: ISO `YYYY-MM-DD`
 

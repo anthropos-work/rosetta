@@ -19,14 +19,16 @@ and its successor's shape is clear. Likely seeds, carried forward from v1.1's op
   customer-facing demos (a security-posture decision deferred from v1.1; could anchor a "shareable demos"
   version).
 - **AI-generated demo content** — LLM-generated transcripts / AI-scored validation narratives /
-  freshly-computed embeddings. v1.1 draws a hard line excluding these (M4 ships structural data only); pulling
-  them forward is a natural v1.2 theme (richer, more believable demo worlds).
-- **Mirroring engines beyond Clerk** — the M0 alignment framework is engine-generic but v1.0 only exercised it
-  on Clerk; a future version could mirror another third-party dependency the same way.
+  freshly-computed embeddings. v1.1's seeding (M7a/M7b/M7c) draws a hard line excluding these — it ships
+  **structural data only** (the data-DNA discipline + the seeder fleet make *that* robust + drift-proof). AI
+  content is the natural v1.2 theme: richer, more believable demo worlds layered on the M7 seeding foundation.
+- **Mirroring engines beyond Clerk** — the M0 alignment framework is engine-generic; v1.0 exercised it on Clerk
+  (behavioral) and v1.1's M7b extends it to **data** (structural). A future version could mirror another
+  third-party dependency, or add further alignment dimensions.
 
 ## Codename notes
 - **v1.1 "show floor"** (in development — codename still changeable until ship): alternatives were
   "open house" · "set piece" · "dry run".
 - _(v1.0 "body double" shipped — its codename is now permanent.)_
 
-_Last updated: 2026-06-03 (v1.1 "show floor" promoted to active in roadmap.md; no future version staged yet)._
+_Last updated: 2026-06-04 (v1.1 seeding redesigned into M7a/M7b/M7c — kept in v1.1; v1.2 seeds refined: AI-content layers on the M7 foundation, and M7b already extends M0 to a data dimension)._

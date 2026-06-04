@@ -10,15 +10,15 @@ builder skills).
 > [`.agentspace/scratch/roadmap-research-2026-06-02.md`](../../.agentspace/scratch/roadmap-research-2026-06-02.md).
 >
 > **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
-> **v1.1 "show floor" — IN DEVELOPMENT** on `release/01.10-show-floor` (designed 2026-06-03 from the staged
-> vision; M3 → M4 → M5, sequential). Next action: `/developer-kit:work-milestone M3` (or `:build-milestone M3`).
+> **v1.1 "show floor" — IN DEVELOPMENT** on `release/01.10-show-floor`. M3–M6 shipped (extension framework + demo/
+> dev stacks); seeding redesigned 2026-06-04 into M7a → M7b → M7c → M8. Next action: `/developer-kit:work-milestone M7a`.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 → M5 → M6 → M7 → M8 | 🚧 **in development** (`release/01.10-show-floor`; refactored 2026-06-04) |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a → M7b → M7c → M8 | 🚧 **in development** (`release/01.10-show-floor`; seeding redesigned 2026-06-04) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -39,6 +39,16 @@ Everything stays **additive — zero change to any read-only platform repo**.
 former M4 (seeding) → **M7**, former M5 (recipes) → **M8**; new structural milestones M4–M6 inserted. Decisions:
 **git subtree, history-preserving** (M4-D1) · **delete the old repos, not archive** (M4-D2, user) · **the
 alignment framework stays in rosetta** (M4-D3) · per-demo clones (M3-D1) · clone-at-release-tag (M3-D3).
+
+**Seeding redesigned 2026-06-04** (M3–M6 all shipped): the user asked to make seeding robust/resilient/drift-proof/
+fast/**production-safe**, so the single `section` M7 splits into **M7a → M7b → M7c** (a section + section +
+iterative "mix"). 3 research agents over the platform grounded it: the prod-pollution boundary is *small + fixed*
+(Directus, S3-public, live Clerk/external SaaS — everything in the per-stack Postgres is isolated); the M0 alignment
+pattern *extends to data* (new structural operators + schema-as-source); the perf bottleneck is *DB-IO, not CPU*
+(Go-link-ent + `COPY` + fan-out; Rust buys nothing). Decisions: **3-way split, all in v1.1** (M7a-D1, user chose
+keep-in-v1.1 over a v1.2 spin-out) · **the isolation guard is the load-bearing deliverable** (M7a-D2) · **extend
+M0 to a data dimension, don't fork it** (M7b-D1) · **the data-DNA is the catalog that drives the fleet** (M7b-D2)
+· **the fleet is iterative, gated on data-DNA coverage** (M7c-D1).
 
 ### M3: Disposable multi-instance demo stacks ✅ DONE (2026-06-03; extended close 2026-06-04)
 **Status:** `done` · **Shape:** `section` · **Dir:** [m3-demo-stacks/](releases/01.10-show-floor/m3-demo-stacks/)
@@ -69,36 +79,63 @@ demo + dev share it, M6-D1) and added a focused **`dev-stack/`**: isolated dev s
 guarded `-p dev-N`), **real Clerk by default**, Clerkenstein injection **optional** (reuses stack-injection).
 Scoped to the proven value (M6-D2 — not speculative multi-dev). **87 tests** (+9), flake 3/3, deploy gate 100%/100%.
 
-### M7: `stack-seeding` — declarative data seeding
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7-stack-seeding/](releases/01.10-show-floor/m7-stack-seeding/)
-**Goal:** (former M4) One `demo.seed.yaml` backfills a stack via the platform's existing bootstrap/import CLIs in
-dependency order; **structural data only**; seeds the real `user_clerkenstein` login identity + the casbin gotcha
-(inherited M3 routings). Now a `rosetta-extensions/stack-seeding/` section. **Depends on:** M4 (+ a stack to seed).
+### M7a: Seeding framework + production-isolation safety
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/01.10-show-floor/m7a-seeding-framework/)
+**Goal:** The foundation every seeder plugs into — the `stack.seed.yaml` blueprint, a modular seeder contract/
+registry, a dependency-**DAG** orchestrator, the **Go-link-ent + `COPY` + fan-out** perf path, and (the
+load-bearing part) a **production-isolation guard** that makes a non-prod run *unable* to write a shared/prod store
+(Directus block · S3-public override · Clerk→Clerkenstein · a clean **seeding audit log**) — plus the **minimum
+proof**: seed org + the real `user_clerkenstein` identity + casbin (plural/singular gotcha) → a browser login
+returns **200**. After M7a a demo is *usable and provably safe*. **Delivers** `corpus/ops/seeding-spec.md`.
+**Depends on:** M4 (monorepo home) + M3 (a stack to seed).
+
+### M7b: The data-alignment dimension ("data DNA")
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/01.10-show-floor/m7b-data-dna/)
+**Goal:** Extend the v1.0 **M0 alignment framework** to a **data** dimension — a machine-readable **data-DNA** that
+(a) *enumerates the seedable surfaces* = the authoritative **catalog of seeders to build** (drives M7c) and (b)
+*measures each seeder's output conforms to the platform's current schema*, so a schema change **surfaces as a DNA
+diff** instead of a silently broken seeder. Additive (M7b-D1): reuses M0's manifest/diff/score, adds **structural
+operators** (FK-valid/constraint/type-match/row-count) + **schema-as-source via introspection**. **Delivers** the
+data dimension into `corpus/architecture/alignment_testing.md` + `rosetta-extensions/stack-seeding/dna/`.
+**Depends on:** M7a (the seeder contract) + M0 (the framework).
+
+### M7c: The seeder fleet, to a coverage gate
+**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/01.10-show-floor/m7c-seeder-fleet/)
+**Goal:** Implement the fleet — one seeder per M7b-catalogued surface (users · orgs/memberships/casbin · features
+· taxonomy · content · skillpath · jobsim sessions+results · assignments · backdated activity), each measured
+against its conformance gene — until a `stack.seed.yaml` yields a *believable, fully-populated, provably-safe*
+demo. **Exit gate:** 1k-user org → demo identity logs in **200** · data-DNA **coverage ≥ 90% / critical 100%** ·
+seeding **< 2 min** · audit log **zero shared/prod writes**. Iterative (M7c-D1) — like M1, drive a measured score
+to a gate. **Depends on:** M7a + M7b.
 
 ### M8: Corpus + use-case recipes + polish
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/01.10-show-floor/m8-corpus-recipes/)
-**Goal:** (former M5) Repeatable + discoverable demos — recipes, 2–3 seed presets (200/500/1k), discoverability,
-the express-gate CI carry-forward, the finalized rosetta↔extensions reference story. **Depends on:** M4 + M7.
+**Goal:** (former M5) Repeatable + discoverable demos — recipes, seed presets, discoverability, the express-gate
+CI carry-forward, the finalized rosetta↔extensions reference story. **Depends on:** M4 + M7a/M7b/M7c.
 
 ### Execution graph (v1.1)
 ```
 v1.1 "show floor" — the platform-operations extension framework (demo + dev, in 2 repos)
-   M3 ✅ ─→ M4 (consolidate) ─→ M5 (stack-injection) ─→ M6 (dev-stack)
-                                         └────────────→ M7 (seeding) ─→ M8 (recipes)
+   M3 ✅ ─→ M4 ✅ (consolidate) ─→ M5 ✅ (stack-injection) ─→ M6 ✅ (dev-stack)
+                                            └──→ M7a (framework+safety) ─→ M7b (data-DNA) ─→ M7c (seeder fleet) ─→ M8 (recipes)
 ```
-**Mostly sequential.** M4 is the gate — everything rehomes through the monorepo. M5 unblocks both M6 (dev-stack's
-optional injection) and a clean tree for M7 (seeding). M7 needs a stack to seed; M8 curates M7's output.
+**Sequential.** M4–M6 shipped (the extension framework + demo/dev stacks). M7a lands the framework + the
+isolation guard (a usable, safe demo); M7b builds the data-DNA catalog that lists + gates the seeders; M7c drives
+the fleet to the coverage gate; M8 curates the output.
 
 ### Risks (v1.1)
-- **(M4, blocks-everything)** the `git subtree` import + the **irreversible old-repo deletion** — mitigate by
-  verify-then-delete (the monorepo must prove it holds the full history before the originals are removed).
-- **(M5)** the shared JWT-codec dependency direction (clerkenstein ↔ stack-injection) — keep the mock's packages clean.
-- **(M7, scope)** seeding is large — backdating fidelity + 1k-scale + the pre-embedded-snapshot provenance.
-- **(M6, scope)** dev-stack multi-concurrent demand is unproven — scope to the tooling + optional-injection value.
+- **(M7a, blocks-prod-safety)** a single un-guarded **shared-write reaching prod** (Directus / S3-public bucket) —
+  mitigate with the hard isolation guard + the clean-audit assertion as a tested acceptance gate, not a convention.
+- **(M7a, scope)** linking the platform's `app/internal/bootstrap`/ent client into a `rosetta-extensions/` Go
+  module without a platform edit — confirm the import path early (fallback: `go run` CLIs, slower).
+- **(M7b)** trustworthy schema-as-source — get ent introspection / `atlas inspect` golden right or the drift diff lies.
+- **(M7c, scope)** the heaviest build: ~8–10 seeders + 1k-scale `COPY` perf + backdating fidelity, each gated on
+  conformance — the believable-demo *subset* of surfaces is the real target (waive unreachable genes, don't chase 100%).
 
 ### Open decisions (resolve during build)
-The shared port-offset engine's home (M5); whether M4+M5 merge if consolidation lands small; Directus content
-tenancy in multi-stack; external shareability (Tailscale vs ingress); the AI-content STRETCH trigger (M8).
+Directus snapshot-replay vs hard-block-and-skip for the demo MVP (M7a); ent-introspection vs `atlas inspect`
+golden for schema-as-source (M7b); whether seed presets ship in M7c or M8; external shareability (Tailscale vs
+ingress); the AI-content STRETCH trigger (now firmly v1.2, not M8).
 
 ## Done — v1.0 "body double" (SHIPPED 2026-06-03 · tag `v1.0`)
 
@@ -301,6 +338,6 @@ the rosetta-side milestone records + corpus pointer land on the `m{N}/…` branc
 
 ## Notes
 
-- Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix marks a milestone **inserted after** the fact. `b` has been tooling/cleanup (M1b drift CI, M2b consolidation); **M2c is a letter-suffixed *feature* milestone** (iterative) — the suffix only means "inserted after M2b", since the next flat number M3 is already claimed by v1.1. See [`context.md`](context.md).
+- Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix has two uses: (1) a milestone **inserted after** the fact — `b` for tooling/cleanup (M1b drift CI, M2b consolidation), and the letter-suffixed *feature* milestone M2c (iterative, "inserted after M2b"); and (2) a **split** of one planned milestone into a sequential mini-arc — **M7a → M7b → M7c** is the single former M7 "seeding" split into framework+safety / data-DNA / fleet (2026-06-04, M7a-D1). Both reuse the letter suffix; context disambiguates. See [`context.md`](context.md).
 - v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 + M2c are iterative** (alignment-score gates).
-- v1.1 "show floor" (M3, M4, M5) is detailed in [`roadmap-vision.md`](roadmap-vision.md); it promotes into this file when v1.0 closes.
+- v1.1 "show floor" mixes shapes too: M3–M6 + M7a/M7b + M8 are **section**; **M7c is iterative** (data-DNA coverage gate).

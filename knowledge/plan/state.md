@@ -1,8 +1,8 @@
 # State
 
-**Active version:** **v1.1 "show floor"** — IN DEVELOPMENT on `release/01.10-show-floor`. **Refactored 2026-06-04** from "disposable demo stacks" into **the platform-operations extension framework**: collapse the repo constellation into 2 repos (`rosetta` + the `rosetta-extensions` monorepo), then finish the seeded-demo capability and generalize to dev. M3 ✅ → M4 → M5 → M6 → M7 → M8. Zero platform-repo change.
-**Active milestone:** **M7 "`stack-seeding`: declarative data seeding"** (section, `planned`) — one `demo.seed.yaml` (org size, role mix, content, activity span) backfills a stack via the platform's existing bootstrap/import CLIs in dependency order; **structural data only**; **must seed the real `user_clerkenstein` login identity** + handle the `casbin_rules`/`casbin_rule` gotcha (inherited M3 routings). Lands as `rosetta-extensions/stack-seeding/`. Dir: [m7-stack-seeding/](releases/01.10-show-floor/m7-stack-seeding/).
-**Next up:** **`/developer-kit:work-milestone M7`** on `release/01.10-show-floor`. Then M8 (recipes) → `/developer-kit:close-release`.
+**Active version:** **v1.1 "show floor"** — IN DEVELOPMENT on `release/01.10-show-floor`. **Refactored 2026-06-04** from "disposable demo stacks" into **the platform-operations extension framework**: collapse the repo constellation into 2 repos (`rosetta` + the `rosetta-extensions` monorepo), then finish the seeded-demo capability and generalize to dev. M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → **M7a → M7b → M7c** → M8. Zero platform-repo change. **Seeding redesigned 2026-06-04** (M7a-D1, user): the single M7 split into a section+section+iterative "mix" to make seeding robust/drift-proof/fast/**production-safe**; all kept in v1.1.
+**Active milestone:** **M7a "Seeding framework + production-isolation safety"** (section, `planned`) — the foundation: `stack.seed.yaml` blueprint + modular seeder contract + dependency-DAG orchestrator + the **Go-link-ent + `COPY` + fan-out** perf path + (load-bearing) a **production-isolation guard** (the prod-pollution vectors are small + fixed: Directus, S3-public, live Clerk/external SaaS — everything in per-stack Postgres is isolated) + the **minimum proof** (seed org + real `user_clerkenstein` + casbin `casbin_rules`/`casbin_rule` gotcha → browser login **200**). Lands as `rosetta-extensions/stack-seeding/` + `corpus/ops/seeding-spec.md`. Dir: [m7a-seeding-framework/](releases/01.10-show-floor/m7a-seeding-framework/).
+**Next up:** **`/developer-kit:work-milestone M7a`** on `release/01.10-show-floor`. Then M7b (data-DNA, section) → M7c (seeder fleet, iterative — `:work-mstone-iters`) → M8 (recipes) → `/developer-kit:close-release`.
 **Last shipped:** **v1.0 "body double"** — 2026-06-03 (tag `v1.0`). · **Last closed milestone:** M6 — 2026-06-04.
 **Paused:** _(none)_
 
@@ -19,20 +19,21 @@ _(v1.0's milestones M0→M2c are in [roadmap.md](roadmap.md) § Done — v1.0.)_
 ## Headline numbers (inherited from v1.0 close — baseline for v1.1)
 - **Alignment gates (v1.0 — held green):** **100%/100%** on all three surfaces — Go (22/22, `clerk@2.6.0`), JS/FAPI (9/9, `clerk-js@5`), `@clerk/express` (9/9, RS256/JWKS). Clerkenstein: 8 packages, 128 Go test/fuzz funcs, flake 0. v1.1 must keep these green (the demo stacks consume Clerkenstein, they don't change it).
 - **rosetta framework:** `test/alignment/` 43 test + 3 fuzz, stdlib-only.
-- **v1.1 (M3 landed):** `rosetta-demo` tooling **78 unit tests** (shellcheck + py_compile clean); clerkenstein grew the **deployment/injection** surface → **218 Go test/fuzz funcs**, **4 alignment gates all 100%/100%** (Go 22/22, JS 9/9, `@clerk/express` 9/9, deploy 7/7). Flake 0.
+- **v1.1 (M3–M6 landed):** the `rosetta-extensions` monorepo (75 commits, 5 sections: clerkenstein · demo-stack · stack-injection · stack-core · dev-stack) — **87 unit tests** (shellcheck + py_compile clean); clerkenstein at **218 Go test/fuzz funcs**, **4 alignment gates all 100%/100%** (Go 22/22, JS 9/9, `@clerk/express` 9/9, deploy 7/7). Flake 0. Seeding (M7a/b/c) is the next surface.
 
-## v1.1 "show floor" milestones (planned)
-**M3** (done — demo stacks) → **M4** (planned — declarative seeding) → **M5** (planned — corpus + recipes + polish). Strictly sequential. Full design + execution graph + risks in [roadmap.md](roadmap.md) § In Development — v1.1.
+## v1.1 "show floor" milestones
+**M3** ✅ → **M4** ✅ (consolidate → `rosetta-extensions` monorepo) → **M5** ✅ (stack-injection) → **M6** ✅ (dev-stack + stack-core) → **M7a** (framework+safety, section) → **M7b** (data-DNA, section) → **M7c** (seeder fleet, iterative) → **M8** (recipes). Sequential. Full design + execution graph + risks in [roadmap.md](roadmap.md) § In Development — v1.1.
 
-## v1.1 decisions locked at design (2026-06-03)
-- **M3-D1 — per-demo service-repo clones** (user-chosen): each `demo-N` re-clones the service repos under `anthropos-demo/stacks/demo-N/` (full isolation, ~N× disk) rather than sharing the `anthropos-dev/*` clones.
-- **M3-D2 — manual teardown only** (user-chosen): `/demo-down [N]` is the only reclaim path; no nightly auto-reaper in M3.
-- **M4-D1 — fold `--validate`/`--dry-run` into M4** (no separate M4b yet): split out an M4b only if that surface grows beyond a flag.
-- **Carried into v1.1 (inherited hard constraint):** **zero changes to any read-only platform repo** — all demo work is additive overlay/orchestration under the gitignored `anthropos-demo/`. Clerkenstein (v1.0) is consumed, not modified.
-- **Express-gate CI carry-forward** (from v1.0) lands in **M5** (a demo stack materializes `@clerk/express` in `node_modules`).
+## v1.1 decisions locked
+- **M3-D1 — per-demo service-repo clones** (user): each stack re-clones the service repos (full isolation) rather than sharing `anthropos-dev/*`.
+- **M3-D2 — manual teardown only** (user): `/demo-down [N]` is the only reclaim path.
+- **M4-D1…D4 — the 2-repo consolidation:** `git subtree` history-preserving import into `rosetta-extensions`; **delete the old `clerkenstein`+`rosetta-demo` repos** (user); the alignment framework stays in rosetta; the +1-depth path fix.
+- **M7a-D1 — seeding split into M7a/M7b/M7c, all in v1.1** (user, 2026-06-04): make seeding robust/drift-proof/fast/**production-safe**; section + section + iterative "mix". M7a-D2 the isolation guard is load-bearing; M7b-D1 extend M0 to a data dimension; M7c-D1 the fleet is iterative on data-DNA coverage.
+- **Carried hard constraint:** **zero changes to any read-only platform repo** — all extension work is additive overlay/orchestration under the gitignored `anthropos-demo/` (the `rosetta-extensions` monorepo). Clerkenstein (v1.0) is consumed, not modified.
+- **Express-gate CI carry-forward** (from v1.0) lands in **M8**.
 
 ## Branch model
-**v1.0 SHIPPED + pushed:** `release/01.00-body-double` merged `--no-ff` → `main`, tagged **`v1.0`** (both pushed to `origin`); release branch deleted. Clerkenstein published **private** at `anthropos-work/clerkenstein`.
-**v1.1 IN DEVELOPMENT:** `release/01.10-show-floor` cut from `main` (2026-06-03); the v1.1 design + milestone scaffolds (M3/M4/M5) live on it. `main` stays at the v1.0-shipped state until v1.1 closes. Milestone branches `m{3,4,5}/{slug}` cut from the release branch by `/developer-kit:build-milestone`; merged back at each close; the release merges → `main` + tags `v1.1` at `/developer-kit:close-release`. _(`release/01.10-show-floor` is pushed to `origin`; the demo tooling is published **private** at `anthropos-work/rosetta-demo`.)_
+**v1.0 SHIPPED + pushed:** `release/01.00-body-double` merged `--no-ff` → `main`, tagged **`v1.0`**; release branch deleted.
+**v1.1 IN DEVELOPMENT:** `release/01.10-show-floor` (cut from `main` 2026-06-03, pushed to `origin`). M3–M6 closed + merged in. The seeding redesign (M7a/M7b/M7c) + M8 scaffolds live on it. `main` stays at the v1.0-shipped state until v1.1 closes. Milestone branches `m{7a,7b,7c,8}/{slug}` cut from the release branch by `/developer-kit:work-milestone`; merged back at each close; the release merges → `main` + tags `v1.1` at `/developer-kit:close-release`. _(Extensions code is the **private** `anthropos-work/rosetta-extensions` monorepo, gitignored at `anthropos-demo/`; the old standalone `clerkenstein`+`rosetta-demo` repos were deleted at M4.)_
 
-_Last updated: 2026-06-04 (M3 extended work closed — full injected stack + deployment surface + harden + rename to rosetta-demo; M4 declarative seeding is next)._
+_Last updated: 2026-06-04 (seeding redesigned — M7 split into M7a framework+safety / M7b data-DNA / M7c seeder-fleet, all in v1.1; M7a is next)._
