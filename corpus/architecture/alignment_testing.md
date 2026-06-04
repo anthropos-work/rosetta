@@ -269,6 +269,41 @@ over HTTP) is **deployment-gated** — proven once in M3, run where a demo stack
 Node dependency. **General principle for any mirror: align both the *behaviour* of the surface and the
 *deployability* of the injection artifact, against the consumer's real interface and pinned version.**
 
+## The data dimension (M7b) — alignment applied to *data*, not behaviour
+
+v1.0 exercised the framework on **behaviour** (does the mirror return the same outcome as Clerk?) and M3 added
+**deployability** (does the injection artifact compile against the platform?). **M7b adds a third dimension:
+DATA** — does a *stack-seeder's output* conform to the platform's *current database schema*? This is the
+discipline that keeps the seeder fleet (M7c) from silently breaking when the platform's data model drifts.
+
+The reinterpretation reuses the manifest / score / diff *structure* but flips two things:
+
+| Behavioural DNA (v1.0) | Data-DNA (M7b) |
+|---|---|
+| Capability = an endpoint/function | Capability = a **seedable surface** (`users`, `memberships`, `casbin-grant`) |
+| Source = the live engine; **input → output** (two-sided) | **Source = the platform's live schema, introspected**; **output → schema** (one-sided — no input to compare) |
+| Operators = exact / shape / normalized / error_class (**value** semantics) | **Structural operators** — `type-match`, `constraint-satisfied` (NOT-NULL + UNIQUE), `fk-valid`, `row-count` |
+| Drift = re-score after a version bump (M1b) | Drift = **schema diff** — an added/removed/changed column or FK flags the catalog stale |
+
+The data-DNA does **two jobs**: (1) it **enumerates the seedable surfaces** — the machine-readable *catalog of
+seeders to build* that drives M7c (4 seeded in M7a, ~6 planned); and (2) it is the **conformance gate + drift
+detector** — `introspect` captures each seeded surface's shape from a live (migrated) stack as the contract,
+`measure` runs the structural operators against a seeded stack (a weighted `Overall` + an unweighted `Critical`,
+exactly like the behavioural score), and `diff` re-introspects to flag drift (exit-code contract `0 none / 1
+moved / 3 usage`, mirroring `drift-check.sh`).
+
+**Where the analogy holds:** the enumerated genome forces *completeness + drift detection*; the score's two
+metrics + the diff machinery carry over; introspection is the record/replay analogue (capture the schema once,
+re-introspect to detect change). **Where it breaks:** the operators are structural (FK/constraint/type), not
+value-equivalence, and the measurement is one-sided (seeder output vs the schema, not source vs mirror) — which
+is why this is a **separate harness** (`rosetta-extensions/stack-seeding/dna/`, the `datadna` CLI), not a new
+`alignctl` runner. It connects directly to the stack's Postgres (offset port), never linking the platform.
+
+**Proven live (M7b):** against the M7a-seeded `demo-1`, `measure` reports **100% / Critical 100%** across the 4
+seeded surfaces, and `diff` flags an injected column (`added-column`, exit 1) then reads clean again on revert.
+The general principle: **a mirror/seeder is faithful only if its *data* conforms to the consumer's *current*
+schema — and that conformance is enumerable, measurable, and drift-gated, just like behaviour.**
+
 ## Where things live
 
 | In **rosetta** (this framework — reusable) | In the **mirror's own repo** (e.g. `clerkenstein`) |
