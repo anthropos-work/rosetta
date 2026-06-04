@@ -27,9 +27,19 @@ The platform compose (`anthropos-dev/platform`) was built for **one** stack:
    creds/secrets — no secret duplication.
 
 ### Port-offset scheme
-`demo-N → base_port + N·100` (default `OFFSET=100`, override with `DEMO_OFFSET`). So demo-1's Postgres is
-`5532` (base `5432`), redis `6479` (base `6379`), graphql `5150` (base `5050`), etc. — none collide with
-the dev stack's base ports. The registry assigns N and records the ports each demo owns.
+`demo-N → base_port + N·OFFSET` (default `OFFSET=10000`, override with `DEMO_OFFSET`). So demo-1's Postgres
+is `15432` (base `5432`), redis `16379`, storage `18300`, etc. **Why 10000, not a smaller step:** the dev
+stack hard-codes 24 ports including storage `8300` and jobsimulation `8400`, so an `OFFSET` of 100 maps
+demo-1's storage `8300+100=8400` straight onto the dev jobsimulation port — a real collision (this is the bug
+the base `up` path shipped with until the close fixed the default to 10000, matching `up-injected.sh`).
+**Trade-off — `max-N ≈ 5`:** `base + N·10000` must stay below 65535, and with the highest base port (~8400)
+only demos 1–5 fit. If you tune `DEMO_OFFSET` smaller to pack more demos, keep it **larger than the spread of
+the 24 base ports (~3000)** or stacks will collide with the dev stack and each other. The registry assigns N
+and records the ports each demo owns.
+
+> **If `up-injected.sh` fails partway** (a service build or `compose up` errors out under `set -e`), the
+> demo's clones + any started containers may linger. Run `rosetta-demo down <N> --purge` to reclaim cleanly
+> before retrying — it's `-p demo-N`-scoped and never touches the dev stack.
 
 ## Lifecycle
 ```bash

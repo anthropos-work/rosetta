@@ -39,6 +39,15 @@ is therefore writable now → **section**. The weight is in volume + backdating 
   schema allows).
 - **Idempotency/cleanup**: a `--reset` path (per-demo DB only) + stable, derivable demo identities
   (e.g. `user{i}@demo-N.local`) so re-running is deterministic.
+- **Inherited from M3 (Fate-3, deferral audit 2026-06-04) — the login identity must be real.** Beyond the bulk
+  `user{i}@demo-N.local` users, the seed MUST create the org's **admin/login user matching
+  `clerkfrontend.DefaultDemoUser()`** — `user_clerkenstein` / `demo@anthropos.test` / `org_clerkenstein`
+  (role `admin`) — so a browser login (which mints exactly that identity) resolves to a *seeded* user and
+  authorized routes return 200 instead of 403. (This is the real demo identity — NOT the `user_2clerkenstein`
+  alignment-runner fixture some early M3 notes propagated.) Two M3 gotchas to honor: (a) Sentinel's
+  `init_policy.sql` seeds `casbin_rules` (plural) while the gorm adapter auto-creates `casbin_rule` (singular)
+  — reconcile or the policies won't load; (b) clerkenstein's `clerk-webhook` injector is an available mechanism
+  to feed identities into the platform sync pipeline post-seed (an alternative to direct DB inserts).
 - **Folded-in validation**: a `--validate` (schema + semantic checks) and `--dry-run` (ordered insert plan +
   per-store row counts) mode **in the seeder itself** (the M4b hedge — see Decisions).
 - **Delivers** `corpus/ops/seeding-spec.md`: the `demo.seed.yaml` reference + the dependency-order pipeline + the

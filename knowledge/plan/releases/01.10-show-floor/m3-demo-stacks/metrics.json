@@ -44,6 +44,17 @@
     "finding_to_M4": "the demo identity is user_clerkenstein / demo@anthropos.test / org_clerkenstein (DefaultDemoUser); deployrun/expressrun use a user_2clerkenstein FIXTURE only — M4 seed must use the real DefaultDemoUser identity",
     "commits": ["clerkenstein 6150198", "rosetta-demo 5ab7b51 (fix)", "rosetta-demo 5ab3818 (harden)"]
   },
+  "extended_close": {
+    "date": "2026-06-04",
+    "kind": "accountability layer (M3 already done + on release branch + pushed; no branch merge / no archive flip)",
+    "deferral_audit": "YELLOW (7 single, 0 repeat/aged); Fate-3 -> M4 (login identity user_clerkenstein + casbin gotcha) + M5 (cert/redirect + browser-login)",
+    "must_fixes": [
+      "port-offset x100 collision: base `rosetta-demo up` defaulted OFFSET=100 (demo-1 storage 8400 == dev jobsimulation 8400) -> default 10000, max-N~=5",
+      "registry.json concurrent lost-write -> portable fcntl lock (proven vs 20 concurrent writers)"
+    ],
+    "verification": "rosetta-demo 78 green + shellcheck; clerkenstein 218 -race; deploy gate 7/7 (100/100); flake 5/5",
+    "decisions": ["M3-D6 rename demo-stack->rosetta-demo", "M3-D7 close routings"]
+  },
   "rosetta_deliverables": {
     "skills": [
       "demo-up",

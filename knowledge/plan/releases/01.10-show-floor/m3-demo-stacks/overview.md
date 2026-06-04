@@ -24,7 +24,7 @@ impossible today — and each blocker has a concrete, additive fix:
 
 | Blocker (real file) | Why it collides | M3's additive fix |
 |---|---|---|
-| **24 hard-coded host ports** (`docker-compose.yml` + `common.yml`, zero env indirection) | a 2nd `make up` binds the same ports | a generated compose **override** remaps all 24 via a **port-offset** (`demo-N → base + N·100`) |
+| **24 hard-coded host ports** (`docker-compose.yml` + `common.yml`, zero env indirection) | a 2nd `make up` binds the same ports | a generated compose **override** remaps all 24 via a **port-offset** (`demo-N → base + N·10000`) |
 | **One fixed `COMPOSE_PROJECT_NAME=anthropos`** (`.env:22`; no `-p` in the Makefile) | container/network name clashes | a per-stack project name `demo-N` (`-p demo-N` / generated `.env.demo-N`) |
 | **One relative Postgres bind-mount** `./data/postgresql` (`common.yml:7-8`; no named volumes) | two stacks share one database | per-stack data dir under `anthropos-demo/stacks/demo-N/` |
 | **Clerkenstein injection is "recipe-only"** (v1.0 left live wiring to v1.1) | a fresh stack still wants real Clerk | M3 **wires the 4 injection recipes live, by default** |
@@ -48,7 +48,7 @@ shape (not iterative). This milestone is **orchestration glue around the existin
 - **A generated compose override** (`docker-compose.demo.yml`, applied `docker compose -f <base> -f <override>`)
   that remaps the 24 host ports by the stack's offset and points volumes at the per-demo data dir. The
   read-only base compose is **never edited**.
-- **A deterministic port-offset scheme** (`demo-N → base + N·OFFSET`, default OFFSET=100) + a **max-N** chosen
+- **A deterministic port-offset scheme** (`demo-N → base + N·OFFSET`, default OFFSET=10000) + a **max-N** chosen
   so ranges never overlap the 24 mappings or the ephemeral range.
 - **A per-stack `.env.demo-N`** generated from a tracked template: inherits the shared platform `.env`, then
   overrides `COMPOSE_PROJECT_NAME`, the offset-derived ports, and the Clerkenstein endpoints.

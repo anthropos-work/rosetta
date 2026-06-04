@@ -31,7 +31,7 @@ routed to M3-CF1.
 
 ## S2 — compose override + port-offset + per-stack project/env/data ✅ (live-proven)
 - [x] generated `docker-compose.demo.yml` override (`!override` remaps ports; repoints the Postgres bind)
-- [x] port-offset scheme (`demo-N → base + N·100`) — _max-N bound documented as a tuning knob in the guide_
+- [x] port-offset scheme (`demo-N → base + N·10000`) — _max-N bound documented as a tuning knob in the guide_
 - [x] `.env.demo-N` template + generation (project name, offset, + Clerkenstein endpoint vars via S3)
 - [x] per-stack Postgres data dir isolation
 
@@ -96,3 +96,40 @@ deployment alignment gate held 100%/100% (7/7 genes) throughout.**
 
 ### Stop condition
 Stopped after one pass: the highest-value targets reached saturation (clerk.go 100%, gen_injected_override 98%, both fake servers at their testable ceiling), the adversarial pass found only depth gaps (now filled) not new bugs, and the two genuine production bugs were fixed + pinned. The shell orchestrators (`up-injected.sh`/`migrate-demo.sh`) are honestly documented as I/O-bound-uncoverable-offline with a three-fold compensating strategy (shellcheck + structural-wiring regression + the live `DEPLOYMENT-PROOF.md`).
+
+## M3-extended: Close Review (2026-06-04)
+
+`/developer-kit:close-milestone` over the extended work (full injected stack + deployment surface + harden +
+corpus + rename). M3 was already `done` + on the release branch + pushed, so this close = the accountability
+layer (review + verify + ledger + retro), **no branch merge / no archive flip** (M3 archives at close-release).
+
+**Phase 1b deferral audit:** YELLOW (not blocking) — 7 single deferrals, 0 repeat/chronic/aged-out; Fate-3
+routings annotated into M4 (login identity + casbin gotcha) and M5 (the two interactive-demo recipes). Report:
+[audit-deferrals/deferral-audit-2026-06-04-m3-extended-close.md](audit-deferrals/deferral-audit-2026-06-04-m3-extended-close.md).
+
+**Review found findings across 3 dimensions** (workflow: scope/decisions · code-quality · docs/tests/adversarial). Fixed:
+- **[must-fix] ×100 port-offset collision** — the base `rosetta-demo up` path defaulted `OFFSET=100`, so demo-1's
+  storage `8300+100=8400` collided with the dev stack's jobsimulation `8400` (a real bug the base path shipped
+  with; `up-injected.sh` already used `N·10000`). Fixed the CLI default → **10000** (collision-free, matches
+  `up-injected.sh`, identical ports); documented the `max-N ≈ 5` trade-off + offset-tuning guidance.
+- **[must-fix] registry.json concurrent corruption** — the read-modify-write had no locking, so two concurrent
+  `up`/`clone` could lose each other's entries. Added a **portable `fcntl` lock** (not `flock(1)` — absent on
+  macOS) around all three registry writes; proven against 20 concurrent writers (no lost writes).
+- **[should-fix] docs consistency** — swept every stale `N·100`/`default 100` → `N·10000` (ops guide, README,
+  overview, progress, decisions); added the partial-bring-up recovery note + the `gen_override` offset-convention
+  comment + an `injection.md` demo-identity callout.
+- **[should-fix] stale state.md** — refreshed headline numbers (78 + 218), the M3 entry, the "release branch
+  pushed" note. Decisions M3-D6 (rename) / M3-D7 (close routings) recorded; the "Open" items resolved.
+- **Accepted as-is (nice-to-have, documented in the review, not bugs):** registry schema versioning, a `parse_pk`
+  fuzz, a `clone_repos` warning-log, an `apply-authn` error-message hint, the `REUSE_DEV`/dead-`else` comments.
+
+**Phase 9 — Completeness Ledger (section):**
+- **Done (Fate 1):** all original S1–S5 + the extended full-injected-stack + migrate + the deployment/injection
+  alignment surface + the harden (+125 funcs) + the corpus update + the rename + the two close must-fixes.
+- **Annotated (Fate 3):** clerk-backend cert/redirect + browser-login → M5; clerk-webhook live POST + the
+  login-identity (`user_clerkenstein`) + casbin plural/singular gotcha → M4.
+- **Confirmed-covered (Fate 2):** express-gate CI → M5 (already in its `In:`).
+- **Dropped / deliberate non-goal:** nightly auto-reaper (M3-D2). **Escape-hatch (cross-release):** none.
+
+**Verification:** rosetta-demo **78 tests** green + shellcheck clean; clerkenstein 218 funcs green `-race`; deploy
+gate **100%/100% (7/7)**; **flake gate 5/5**. dev stack untouched (12 containers).

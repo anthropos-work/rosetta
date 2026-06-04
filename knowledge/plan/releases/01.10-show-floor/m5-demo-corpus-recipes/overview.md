@@ -31,6 +31,12 @@ turns M3+M4's mechanisms into a usable, documented product.
   wrapping M4's seeder) added to the root `CLAUDE.md` "Available Skills" table + made discoverable.
 - **The v1.0 express-gate CI carry-forward** (default landing spot): wire the `@clerk/express` alignment gate
   into CI now that the demo stack materializes `node_modules/@clerk/express` (needs a Node CI step).
+- **Complete the two M3 injection recipes (Fate-3, deferral audit 2026-06-04)** as part of the end-to-end recipe
+  docs: the `clerk-backend` `api.clerk.com`→fake-BAPI **cert/redirect** (so the app's orgclient trusts the fake
+  BAPI over TLS) and the **browser-login walk-through** (frontend rebuilt with the minted publishable key → log
+  in → land in a seeded org). M3 proved the load-bearing authn seam (a live app returns 403-not-401 on a
+  protected route with a Clerkenstein token); these two finish the *interactive* demo. (Optional: verify 2
+  concurrent full stacks on a bigger box — M3 proved 1 co-resident with the dev stack.)
 - **Release-boundary doc reconciliation**: ensure the M3 demo-env guide + M4 seeding spec are internally
   consistent and parent docs (README, CLAUDE.md) point at the demo-env story.
 

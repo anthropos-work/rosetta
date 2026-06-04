@@ -40,8 +40,48 @@ stack co-resident with the dev stack**, proving the isolation mechanism. The ful
 run + end-to-end Clerkenstein browser login are **resource-gated** → verified on a bigger Docker VM / box
 (documented in the ops guide), not on this hardware.
 
-## Open (resolve during build)
-- Max-N + exact port-offset sizing (below the ephemeral range, no overlap with the 24 base mappings).
-- The `clerk-backend` `api.clerk.com` → fake-BAPI redirect mechanism **inside Docker** (extra_hosts + trusted CA
-  vs a base-URL env override). Load-bearing — spike in S3.
-- Whether the v1.0 express-gate CI carry-forward lands here vs M5 (default: M5).
+## M3-D6 — tooling renamed `demo-stack` → `rosetta-demo` (user-directed, 2026-06-04)
+The demo-environment tooling (repo dir, CLI, ops guide) was renamed from `demo-stack(s)` to **`rosetta-demo`**
+and pushed as a **private org repo** `anthropos-work/rosetta-demo`. The CLI `demo-stack` → `rosetta-demo`; the
+repo dir `anthropos-demo/demo-stacks` → `anthropos-demo/rosetta-demo`; the guide `corpus/ops/demo_stacks.md` →
+`corpus/ops/rosetta_demo.md`. **Preserved** (milestone identity, not the tool): the `m3-demo-stacks` milestone
+dir, `slug: demo-stacks`, the title "Disposable multi-instance demo stacks", the `/demo-up|down|status` skill
+names, and `demo-N`/`-p demo-N` instance naming. Archived v1.0 records left frozen. Verified: 78 tests green +
+deploy gate 100%/100% under the new name. (So the milestone keeps its name; its *deliverable* is now rosetta-demo.)
+
+## M3-D7 — extended-work close: deferral routings (2026-06-04)
+The post-close extended work (full injected stack + deployment/injection alignment surface + harden + corpus +
+rename) was closed via `/developer-kit:close-milestone` against the already-`done` M3 (no branch merge — the work
+was committed directly on `release/01.10-show-floor` + the two scratchpad mains, all pushed). The deferral audit
+([audit-deferrals/deferral-audit-2026-06-04-m3-extended-close.md](audit-deferrals/deferral-audit-2026-06-04-m3-extended-close.md),
+**YELLOW**) routed the open items: **clerk-backend cert/redirect → M5** (Fate 3, annotated), **clerk-webhook live
+POST → M4** (Fate 3), **the demo login identity `user_clerkenstein` + the casbin plural/singular gotcha → M4**
+(Fate 3, annotated — prevents the seed-the-wrong-user 403 trap), **express-gate CI → M5** (Fate 2, already owned).
+M3-CF1 RESOLVED. The nightly auto-reaper stays a deliberate non-goal (M3-D2).
+
+## Resolved (were "Open during build")
+- **Port-offset sizing** — `demo-N → base + N·OFFSET`; **OFFSET defaults to 10000** (raised from 100 at the
+  extended-work close, 2026-06-04, after the close review caught that 100 maps demo-1's storage `8300→8400`
+  straight onto the dev stack's jobsimulation `8400` — a real collision the base `up` path had shipped with).
+  Both the base `rosetta-demo up` path and `up-injected.sh` now use `N·10000`; trade-off is **max-N ≈ 5**
+  (`base + N·10000` must stay < 65535). Fixed in `rosetta-demo` line 16 + the ops guide.
+- **`clerk-backend` redirect mechanism** — resolved to `extra_hosts: api.clerk.com:<ip>` (base path) + a
+  `network alias` on the fake-BAPI service (injected path); the TLS-cert trust is the M5 Fate-3 item above.
+- **Express-gate CI location** — M5 (confirmed, M3-D7).
+
+## Adversarial review (extended-work close, 2026-06-04)
+Scenarios the close review considered against the extended orchestration code:
+- **Port-offset collision (CONFIRMED bug, fixed).** With `OFFSET=100`, `demo-N`'s storage port `8300 + N·100`
+  lands on a dev base port for small N (demo-1 → `8400` == dev jobsimulation). The base `rosetta-demo up` path
+  had this; `up-injected.sh` didn't (`N·10000`). Fixed the default to `10000` (both paths now identical), with
+  `max-N ≈ 5` documented. A misconfigured `DEMO_OFFSET` smaller than the ~3000 base-port spread re-introduces it
+  — documented as an operator caveat in the ops guide.
+- **registry.json lost-write under concurrency (fixed).** Two concurrent `up`/`clone` could read-modify-write
+  the shared registry and clobber each other (multi-instance is the tool's purpose). Fixed with an `fcntl`
+  exclusive lock around every registry RMW — portable across macOS + Linux (`flock(1)` is Linux-only). A
+  deterministic regression test for a bash-internal RMW would be timing-sensitive (would risk the flake gate);
+  the lock is correct-by-construction (proven inline against 20 concurrent writers) and the scenario is recorded
+  here per the adversarial-review protocol.
+- **Partial bring-up (accepted + documented).** If `up-injected.sh` fails mid-way under `set -e`, clones/containers
+  linger; `rosetta-demo down N --purge` reclaims cleanly (`-p demo-N`-scoped). Documented as the recovery step in
+  the ops guide rather than auto-rollback (a trap-based rollback is M5 polish, not load-bearing).

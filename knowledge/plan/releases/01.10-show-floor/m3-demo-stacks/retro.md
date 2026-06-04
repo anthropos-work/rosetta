@@ -95,3 +95,37 @@ Live-run fixes: offset ×10000 (×100 collided with dev base ports), the cms stu
 injected-override teardown. **Both skills (/demo-up full injected, /demo-down) demonstrated end-to-end.**
 Still open for a *fully functional* demo (not a Clerk question): run migrations/seeding so sentinel + handlers
 work (the M4 step), the browser/FAPI login, and the BAPI HTTPS cert.
+
+## Extended-work harden + close (2026-06-04)
+**Summary.** After the live proof, the extended surface got the full lifecycle: a hygiene sweep (untracked
+binaries, a verified mint mirror, single-sourced disarmed colony), a **deployment/injection alignment surface**
+(`clerk-deploy-1`, 7/7 — the gap that "behaviour-aligned ≠ deployable" exposed), a **harden** pass (+125 test
+funcs → clerkenstein 218, rosetta-demo 78), a corpus update, a **rename** demo-stack → rosetta-demo (+ a private
+org repo), and a `/developer-kit:close-milestone`.
+
+**Incidents / findings this cycle.**
+- **P1 — the ×100 offset collision survived in the base path.** The live run fixed `up-injected.sh` to `N·10000`,
+  but the base `rosetta-demo up` path kept defaulting `OFFSET=100` — so `rosetta-demo up 1 --profile graphql`
+  would still map storage `8300→8400` onto dev jobsimulation. The **close review caught it**; fixed the CLI
+  default to 10000 (both paths identical now). Lesson: when you fix a bug in one code path, grep for the same
+  pattern in sibling paths.
+- **P2 — registry.json had no write-locking.** Concurrent `up`/`clone` could lose entries. Fixed with a portable
+  `fcntl` lock (macOS has no `flock(1)`).
+- **P2 — my own harden hard-constraint carried a stale identity** (`user_2clerkenstein`). The harden agents read
+  `DefaultDemoUser()` from source instead and surfaced the real one (`user_clerkenstein`) — now the M4 seed
+  constraint. Lesson: agents verifying against source beat a hand-written constraint.
+
+**What went well.** Workflow-driven harden (6 targets × deepen+adversarial-strengthen) + a corpus survey/apply +
+a close review each caught real things a single pass would miss (the offset collision, a YAML-nesting mutation
+the substring tests missed, the identity divergence). Disarmed-by-design held — no agent "hardened" the universal
+key into real crypto.
+
+**What didn't.** The interactive demo (browser login + the BAPI TLS cert) is still scaffolded, not proven →
+M5. 2-concurrent full stacks still resource-gated.
+
+**Carried forward (Fate-3, audit-recorded).** → **M4:** seed the real `user_clerkenstein` login identity (not the
+runner fixture); the `casbin_rules`/`casbin_rule` gotcha; the clerk-webhook feed. → **M5:** the clerk-backend
+cert/redirect + browser-login recipe; express-gate CI (already owned).
+
+**Metrics delta.** rosetta-demo 12 → **78** tests; clerkenstein → **218** test/fuzz funcs (the deployment surface);
+4 alignment gates 100%/100%; flake 0. See [metrics.json](metrics.json).
