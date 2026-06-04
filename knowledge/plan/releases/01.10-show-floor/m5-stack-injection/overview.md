@@ -3,7 +3,8 @@ milestone: M5
 slug: stack-injection
 version: v1.1 "show floor"
 milestone_shape: section
-status: planned
+status: done
+completed: 2026-06-04
 created: 2026-06-04
 last_updated: 2026-06-04
 delivers: rosetta-extensions/stack-injection/

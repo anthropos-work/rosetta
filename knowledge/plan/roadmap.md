@@ -54,11 +54,13 @@ fixed a +1-depth path break the verify gate caught (M4-D4); verified under the n
 deploy gate 7/7); pushed; **removed the old `clerkenstein` + `rosetta-demo` repos** (local + org, 404). Decisions
 M4-D1 (subtree) / D2 (delete-not-archive) / D3 (alignment framework stays in rosetta) / D4 (path-depth fix).
 
-### M5: Extract the reusable `stack-injection` layer
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m5-stack-injection/](releases/01.10-show-floor/m5-stack-injection/)
-**Goal:** Pull the generic Clerk-mock injection (the 4-recipe wiring, `apply-authn`, the svix injector, the shared
-JWT codec) into `stack-injection/`, consumable by **any** stack, with a **demo-ON / dev-OFF** toggle. clerkenstein
-keeps the mock itself. **Depends on:** M4.
+### M5: Extract the reusable `stack-injection` layer ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m5-stack-injection/](releases/01.10-show-floor/m5-stack-injection/)
+Extracted the generic injection (`inject.py`, `gen_injected_override.py`, `apply-authn.sh`) into
+`rosetta-extensions/stack-injection/`, consumable by any stack with a **demo-ON / dev-OFF** toggle; the mock stayed
+in clerkenstein (dependency runs stack-injection→clerkenstein, M5-D1); the port-offset engine stayed in demo-stack
+(M5-D2, settles the M4 open question — moves to shared in M6). Split the tests, repointed the consumers; **78
+preserved**, flake 3/3, deploy gate 100%/100%.
 
 ### M6: `dev-stack` — tooled local dev environment
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m6-dev-stack/](releases/01.10-show-floor/m6-dev-stack/)
