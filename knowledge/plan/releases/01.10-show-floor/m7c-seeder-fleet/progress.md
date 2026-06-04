@@ -9,12 +9,11 @@
 re-measure data-DNA coverage), via M7b's data dimension. Built by `/developer-kit:build-mstone-iters`.
 
 ## Running ledger
-_(one entry per closed iter; `/developer-kit:build-mstone-iters` creates `iter-01/` on first invocation,
-starting with a bootstrap tok that surveys the catalog + sequences the fleet by believability weight.)_
 
 | Iter | Type | Surface(s) | Coverage | Notes |
 |------|------|-----------|----------|-------|
-| _(pending)_ | | | | |
+| 01 | tok-bootstrap | — | 40% (4/10, baseline) | TOK-01 strategy; reachability survey; corrected 3 guessed catalog table names. Believability core (activity surfaces) reachable w/o Directus. |
+| 02 | tik | jobsim-sessions | **50% (5/10)** | The believability core: `JobsimSessionsSeeder` — 1980 backdated, pass/fail-weighted sessions (deterministic, time-distributed over the activity span). Promoted planned→seeded; `measure` [PASS] 100%/Critical 100% live on demo-1; isolation clean. Caught + fixed a harness bug: `introspect` couldn't load a freshly-promoted surface (Validate-before-populate). seeders 14 tests. |
 
 ## Routes carried forward
-_(none yet)_
+- **taxonomy** + **content** are snapshot-blocked (skiller snapshot / shared Directus) → tail iter or waiver per the Re-scope trigger (confirm at close).
