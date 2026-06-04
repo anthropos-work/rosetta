@@ -52,6 +52,18 @@ The mirror repo also ships a build-tagged alignment suite. `go test -tags alignm
 same comparison core over the same DNA + goldens, reporting one subtest per gene and asserting the
 mirror's configured gate — use it in CI. `alignctl run` and the tagged suite agree by construction.
 
+## Surface kinds + dependency-gated runners
+`alignctl run` is identical for **behavioural** and **deployment/injection** DNAs — same scoring, same
+gate. Two practical notes:
+- A mirror's full fidelity is **both kinds**; if it has a deployment DNA (e.g. `clerk-deploy-1`), run that
+  gate too, not just the behavioural ones. A green behavioural gate does **not** imply the injection
+  artifact deploys (the M3 lesson — see `/align-dna` and `alignment_testing.md`).
+- Some runners are **dependency-gated**: they need the consumer's real toolchain to even build/run — e.g.
+  the deployment runner needs the consumer's private module (`colony` via `GH_PAT`); the `@clerk/express`
+  runner needs `node` + a `node_modules`. Run those where the dependency exists (locally / a configured
+  CI), and let the others stay pure. A runner that *won't build* against the consumer's pinned version is
+  itself a RED result — that's the deployment contract failing, not a setup nuisance.
+
 ## After a source version bump (with /align-dna + M1b)
 `/align-dna` diffs + updates the DNA and refreshes goldens for the new source version; then run this
 skill to re-score the existing mirror against it. A score drop names exactly which genes the bump

@@ -1,6 +1,6 @@
 ---
 name: align-dna
-description: Build or update an Alignment DNA — the enumerated set of (capability × variant) "genes" a mirror engine must reproduce — for a source framework at a pinned version, then diff it across versions and capture source goldens. Use when starting a new mirror, adding capabilities/variants to measure, or reconciling a mirror after the source library bumps versions. Pairs with /align-run (which scores against the DNA). Full reference: corpus/architecture/alignment_testing.md.
+description: Build or update an Alignment DNA — the enumerated set of (capability × variant) "genes" a mirror engine must reproduce — for a source framework at a pinned version, then diff it across versions and capture source goldens. Authors both BEHAVIOURAL DNAs (the mock matches the source's outcomes) and DEPLOYMENT/INJECTION DNAs (the injection artifact compiles against the consumer's real module + satisfies its contract). Use when starting a new mirror, adding capabilities/variants to measure, adding a deployment surface, or reconciling a mirror after the source library bumps versions. Pairs with /align-run (which scores against the DNA). Full reference: corpus/architecture/alignment_testing.md.
 argument-hint: [source framework + version, e.g. "clerk-sdk-go v2.6.0"]
 ---
 
@@ -17,7 +17,28 @@ Harness: [`test/alignment/`](../../../test/alignment/) (`alignctl`).
 > (e.g. `clerkenstein`), cloned under the gitignored `anthropos-demo/`. Author the DNA *in the
 > mirror's repo*; pull the source into *its* `.agentspace/`.
 
-## Your mission
+## Two kinds of surface — author BOTH (the M3 lesson)
+
+A mirror has two kinds of fidelity, and each needs its own DNA. **"Your mission" below is the
+behavioural path; do the deployment path too for any injected mirror** — skipping it is exactly the gap
+that let v1.0 read "100%" while the first real demo (M3) still had to hand-build the injection.
+
+| | **Behavioural DNA** (default) | **Deployment / injection DNA** |
+|---|---|---|
+| Proves | the mock produces the **same outcomes** as the source, in isolation | the injection **artifact deploys** into the consumer's real shape |
+| "Source" | the **live library**, cloned + captured (goldens) | a **hand-authored contract** (what a correctly-injected consumer must do — the M1-D1 hybrid; no live capture) |
+| Runner | drives the **mock's** surface | drives the **consumer's REAL interface** at its **pinned version** (the svix / `@clerk/express` / colony pattern) — and *compiling against it IS the contract check* |
+| Genes | capability × variant of the source API | the injection contract: the artifact satisfies the consumer's interface + accepts/rejects inputs correctly |
+| Example | `clerk-2.6.0`, `clerk-js-5`, `clerk-express-1` | `clerk-deploy-1` (the disarmed `colony/authn/provider/clerk` drop-in vs **real `colony @ v0.34.3`**) |
+
+For a deployment DNA: skip step 1's live-clone (the "source" is your hand-authored expected); in step 8
+the runner must **import/build against the consumer's real module at the version the *consumer* pins**
+(not whatever the mirror happens to pin — check both); a bump that breaks the interface should fail the
+build → RED gate. The heavier end-to-end gene (the real consumer running + accepting the mock's output
+over the wire) is **deployment-gated** — document it, run it where the stack exists (cf. the express
+gate's Node dependency, the deploy gate's private-module/`GH_PAT` dependency).
+
+## Your mission (behavioural surface; for a deployment DNA see the box above)
 
 1. **Pin the source.** Clone the source library at the exact requested version into the mirror
    repo's gitignored `.agentspace/` (e.g. `clerk-sdk-go @ v2.6.0`). Record name + version + ref —
