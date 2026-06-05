@@ -3,9 +3,11 @@ milestone: M7c
 slug: seeder-fleet
 version: v1.1 "show floor"
 milestone_shape: iterative
-status: planned
+status: done
 created: 2026-06-04
-last_updated: 2026-06-04
+completed: 2026-06-05
+close_kind: gate-met-over-reachable + waiver (taxonomy + content, Re-scope trigger, user-confirmed)
+last_updated: 2026-06-05
 exit_gate: "A `stack.seed.yaml` for a 1k-user org with N months of activity yields a stack where (a) the demo identity logs in → 200, (b) data-DNA coverage ≥ 90% across the catalogued surfaces (critical 100%), (c) seeding completes < 2 min wall-clock, (d) the seeding audit log shows ZERO shared/prod writes."
 iteration_protocol_ref: corpus/architecture/alignment_testing.md
 delivers: rosetta-extensions/stack-seeding/seeders/ (the fleet + backdated activity generator) + the seed presets

@@ -18,7 +18,7 @@ builder skills).
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a → M7b → M7c → M8 | 🚧 **in development** (`release/01.10-show-floor`; seeding redesigned 2026-06-04) |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → **M8** | 🚧 **in development** (`release/01.10-show-floor`; seeding done — M8 is the last milestone) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -100,14 +100,17 @@ introspection**. A separate harness, not an alignctl runner (M7b-D3). **PROVEN l
 reads clean on revert. Caught + fixed the planned-surface introspection bug; hardened the UNIQUE leg (M7b-D4).
 **dna 49 + cmd/datadna 10 + pg 17 tests.** Delivered the data dimension into `corpus/architecture/alignment_testing.md`.
 
-### M7c: The seeder fleet, to a coverage gate
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/01.10-show-floor/m7c-seeder-fleet/)
-**Goal:** Implement the fleet — one seeder per M7b-catalogued surface (users · orgs/memberships/casbin · features
-· taxonomy · content · skillpath · jobsim sessions+results · assignments · backdated activity), each measured
-against its conformance gene — until a `stack.seed.yaml` yields a *believable, fully-populated, provably-safe*
-demo. **Exit gate:** 1k-user org → demo identity logs in **200** · data-DNA **coverage ≥ 90% / critical 100%** ·
-seeding **< 2 min** · audit log **zero shared/prod writes**. Iterative (M7c-D1) — like M1, drive a measured score
-to a gate. **Depends on:** M7a + M7b.
+### M7c: The seeder fleet, to a coverage gate ✅ DONE (2026-06-05, gate-met-over-reachable + waiver)
+**Status:** `done` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/01.10-show-floor/m7c-seeder-fleet/)
+Built the fleet across 5 iters (TOK-01 strategy → jobsim-sessions → skillpath-sessions → assignments → activity),
+each a deterministic **backdated-activity** seeder (time-distributed, pass/fail per `pass_rate`, content refs as
+free values — the believability core is reachable **without** the shared Directus). Drove data-DNA coverage
+**40%→80%**, promoting each surface planned→seeded + conformance-gated. **Gate: 3 of 4 met outright** — (a)
+login→**200** · (c) full 8-seeder seed **0.69s** (~8500 rows, <2min) · (d) isolation **clean**; (b) coverage is
+**100% over the 8 reachable surfaces / critical 100%**, with **taxonomy + content waived** (the hard line —
+skiller snapshot + shared Directus; Re-scope trigger, user-confirmed → ~v1.2). Caught + fixed 2 live bugs (the
+skillpath UNIQUE constraint; the introspect-load harness bug). **20 seeder / 145 module tests.** Delivered
+`rosetta-extensions/stack-seeding/seeders/` + the `waived` data-DNA status.
 
 ### M8: Corpus + use-case recipes + polish
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/01.10-show-floor/m8-corpus-recipes/)
