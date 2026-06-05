@@ -1,0 +1,78 @@
+{
+  "milestone": "M3",
+  "title": "Disposable multi-instance demo stacks",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-03",
+  "sections": {
+    "total": 5,
+    "done": 5
+  },
+  "acceptance": "M3-D5: one demo stack (postgres+redis) isolated alongside the dev anthropos stack \u2014 up/status/down, dev untouched. Verified live on a 16 GB box.",
+  "tooling": {
+    "repo": "anthropos-demo/rosetta-demo (gitignored, own git)",
+    "python_modules": [
+      "gen_override.py",
+      "gen_injected_override.py",
+      "clone_repos.py",
+      "inject.py"
+    ],
+    "cli": "rosetta-demo (bash: up/down/clone/inject/status/gen) + up-injected.sh + migrate-demo.sh + inject/apply-authn.sh",
+    "unit_tests": 78,
+    "lint": "shellcheck clean, py_compile clean",
+    "commits": 8
+  },
+  "hardening": {
+    "pass": 1,
+    "date": "2026-06-04",
+    "scope": "the post-close extended-work surface (full injected stack + deployment/injection)",
+    "test_counts_before_after": {
+      "clerkenstein/deploy/colony-authn": "2 -> 34 (100% stmt cov; +2 fuzzers)",
+      "clerkenstein/alignment/cmd/deployrun": "2 -> 31 (94.9%)",
+      "clerkenstein/cmd/fake-fapi": "0 -> 10",
+      "clerkenstein/cmd/fake-bapi": "0 -> 12",
+      "rosetta-demo/tests/test_tooling.py": "13 -> 55 (gen_injected_override 88% -> 98%)",
+      "rosetta-demo/tests/test_inject_scripts.py": "0 -> 23 (new)"
+    },
+    "clerkenstein_total_test_funcs": 218,
+    "bugs_fixed_inline": [
+      "apply-authn.sh: set -e+pipefail abort-before-guard on a no-match colony grep (+ || true)",
+      "migrate-demo.sh: SC2015 A && ok || warn -> if/then/else"
+    ],
+    "prod_refactors": "extracted newServer() in both fake servers + build_lines() in gen_injected_override.py (testability only)",
+    "gates": "deploy alignment gate held 100%/100% (7/7); clerkenstein all 13 pkgs green -race; flake gate 3/3",
+    "finding_to_M4": "the demo identity is user_clerkenstein / demo@anthropos.test / org_clerkenstein (DefaultDemoUser); deployrun/expressrun use a user_2clerkenstein FIXTURE only — M4 seed must use the real DefaultDemoUser identity",
+    "commits": ["clerkenstein 6150198", "rosetta-demo 5ab7b51 (fix)", "rosetta-demo 5ab3818 (harden)"]
+  },
+  "extended_close": {
+    "date": "2026-06-04",
+    "kind": "accountability layer (M3 already done + on release branch + pushed; no branch merge / no archive flip)",
+    "deferral_audit": "YELLOW (7 single, 0 repeat/aged); Fate-3 -> M4 (login identity user_clerkenstein + casbin gotcha) + M5 (cert/redirect + browser-login)",
+    "must_fixes": [
+      "port-offset x100 collision: base `rosetta-demo up` defaulted OFFSET=100 (demo-1 storage 8400 == dev jobsimulation 8400) -> default 10000, max-N~=5",
+      "registry.json concurrent lost-write -> portable fcntl lock (proven vs 20 concurrent writers)"
+    ],
+    "verification": "rosetta-demo 78 green + shellcheck; clerkenstein 218 -race; deploy gate 7/7 (100/100); flake 5/5",
+    "decisions": ["M3-D6 rename demo-stack->rosetta-demo", "M3-D7 close routings"]
+  },
+  "rosetta_deliverables": {
+    "skills": [
+      "demo-up",
+      "demo-down",
+      "demo-status"
+    ],
+    "guide": "corpus/ops/rosetta_demo.md (cross-linked from corpus/ops/README.md)"
+  },
+  "decisions": {
+    "M3-D1": "per-demo service-repo clones",
+    "M3-D2": "manual teardown only",
+    "M3-D3": "clone at latest release tag, not main",
+    "M3-D4": "tooling home = own gitignored anthropos-demo/rosetta-demo repo; skills+guide in rosetta",
+    "M3-D5": "acceptance adjusted to 1 stack alongside dev (16 GB host can't fit 2 full stacks)"
+  },
+  "injection_status": "FULL STACK PROVEN. /demo-up brought up a 13-container demo with all 5 Clerk-consuming services injected (disarmed colony) + fake FAPI/BAPI; the demo backend accepts a Clerkenstein token live (403 not 401), real Clerk never used. /demo-down tears it all down, dev stack untouched. Remaining for a fully FUNCTIONAL demo (not Clerk): migrations/seeding (M4), browser login, BAPI HTTPS cert.",
+  "carried_forward": "M3-CF1 RESOLVED (running-app deployment proven). Optional remaining: verify the clerk-backend in-Docker cert/redirect + the webhook POST live (the load-bearing authn path is proven). Recipe: rosetta-demo/inject/DEPLOYMENT-PROOF.md.",
+  "dev_stack_safety": "every op -p demo-N scoped; down hard-refuses the dev project; verified the dev stack (12 containers) stayed intact across demo-1's lifecycle AND the failed app-bring-up attempt",
+  "resource_note": "RAM was never a blocker \u2014 the whole dev stack uses ~0.9 GB (measured), not the 10-12 GB doc estimate. The full app built + ran fine alongside the dev stack.",
+  "skills_proven": "/demo-up (up-injected.sh \u2014 full Clerk-free stack) + /demo-down (full teardown) demonstrated end-to-end live"
+}

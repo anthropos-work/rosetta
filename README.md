@@ -56,10 +56,15 @@ This corpus evolves with the platform. When you discover gaps or better approach
 
 Automate the setup process:
 ```bash
-/setup-platform
+/setup-platform      # First time: build the dev environment
+/start-platform      # Daily: start the platform locally
+/demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
+/demo-seed N         # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
+/demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data)
+/demo-status         # Check: list running demo stacks, their offset ports, and health
 ```
 
-This skill executes the setup guide step-by-step with verification, asks for confirmation before changes, and auto-improves documentation when it finds issues.
+These skills execute the guides step-by-step with verification, ask for confirmation before changes, and auto-improve documentation when issues are found. The demo skills are isolated per stack (`-p demo-N`, offset ports) and never touch the dev stack, and the seeder is **production-safe** (it cannot write a shared/prod store) — start at the demo-env family index [`corpus/ops/demo/README.md`](./corpus/ops/demo/README.md).
 
 ## Documentation Structure
 

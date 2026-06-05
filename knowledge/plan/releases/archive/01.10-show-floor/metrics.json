@@ -1,0 +1,38 @@
+{
+  "release": "v1.1",
+  "codename": "show floor",
+  "shipped": "2026-06-05",
+  "milestones": ["M3", "M4", "M5", "M6", "M7a", "M7b", "M7c", "M8"],
+  "theme": "the platform-operations extension framework (demo + dev, in 2 repos) — disposable, Clerk-free, production-safely-seeded demo stacks",
+  "aggregate": {
+    "rosetta_framework": {"module": "anthropos.dev/alignment", "test_funcs": 43, "fuzz_funcs": 3, "external_deps": 0, "note": "unchanged from v1.0 — the alignment framework"},
+    "clerkenstein_mirror": {"test_funcs": 212, "fuzz_funcs": 6, "packages": 13, "dnas": 4, "runners": 4, "note": "grew via the deployment/injection surface (clerk-deploy-1) + mintpk (M3-extended)"},
+    "stack_seeding": {"packages": 8, "test_funcs": 145, "note": "NET-NEW in v1.1 — blueprint/isolation/seeder/pg/seeders/dna/cmd; the seeding stack (M7a/b/c)"},
+    "demo_tooling": {"test_funcs": 87, "note": "shell + py: stack-core 4 + demo-stack 5 + stack-injection 69 + dev-stack 9 (M3-M6)"},
+    "total_go_test_funcs": 409,
+    "baseline_v1_0": 175,
+    "delta": "+234 (+134%) — no regression (v1.1 adds the seeding stack + grows clerkenstein)"
+  },
+  "alignment_gates": {
+    "go_clerk_2_6_0": "22/22 — 100%/100%",
+    "js_fapi_clerk_js_5": "9/9 — 100%/100%",
+    "clerk_express_1_3_47": "9/9 — 100%/100%",
+    "deployment_injection_clerk_deploy_1": "7/7 — 100%/100%",
+    "drift_contract": "9/9",
+    "boundary_reconfirmed": "all 4 gates re-run green at the v1.1 close boundary"
+  },
+  "seeding_gates": {
+    "isolation_guard": "3-layer (CheckWrite / PreflightEnv / AssertClean); audit clean on every run",
+    "data_dna_measure": "100% / critical 100% over the 8 reachable surfaces (taxonomy + content waived -> v1.2)",
+    "data_dna_drift": "proven — diff flags an injected column (exit 1), clean on revert (exit 0)",
+    "login_200": "user_clerkenstein authenticated login -> HTTP 200 on demo-1",
+    "seed_perf": "full 8-seeder seed (~8500-9500 rows) in ~0.7s (gate <2min)"
+  },
+  "coverage_snapshot": {
+    "stack_seeding": {"isolation": 97.1, "blueprint": 97.9, "seeder": 88.1, "seeders": 88.6, "dna": 81.3, "pg": 60.0, "cmd_stackseed": 49.6, "cmd_datadna": 43.8, "note": "pg/cmd lower numbers are DB-touching paths, live-proven"}
+  },
+  "triple_clean_runs": "3/3 clean (stack-seeding suite; offline-deterministic; project flake history 0)",
+  "supply_chain": {"audit": "clean — all deps permissive (BSD/MIT/Apache), no known high/critical CVEs", "lockfile": "dependencies.lock"},
+  "repos": {"rosetta": "the corpus + plan + alignment framework (public)", "rosetta-extensions": "the monorepo (private) — 6 sections: clerkenstein, demo-stack, dev-stack, stack-core, stack-injection, stack-seeding"},
+  "deferrals": {"waived_to_v1_2": ["taxonomy (skiller snapshot)", "content (Directus snapshot-replay)"], "local_gate": "deployment/injection CI (needs colony via GH_PAT)", "escape_hatch_count": 0, "fate_3_undelivered": 0}
+}

@@ -9,23 +9,142 @@ builder skills).
 > the cloned platform in `anthropos-dev/`. Gap analysis:
 > [`.agentspace/scratch/roadmap-research-2026-06-02.md`](../../.agentspace/scratch/roadmap-research-2026-06-02.md).
 >
-> **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`). All six milestones
-> (M0→M2c) closed + merged; full detail in the `## Done` section below. **Now between releases** — the next
-> action is `/developer-kit:design-roadmap` to promote **v1.1 "show floor"** (M3–M5) from
-> [`roadmap-vision.md`](roadmap-vision.md) into active development.
+> **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
+> **v1.1 "show floor" — SHIPPED 2026-06-05** (merged to `main`, tagged `v1.1`; full detail in `## Done — v1.1`
+> below). 8 milestones M3→M8: the 2-repo consolidation + demo/dev stacks + the production-safe seeding stack
+> (framework + data-DNA + fleet) + the corpus product layer. Next action: `/developer-kit:design-roadmap` for v1.2.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| v1.1 | show floor | Disposable, richly-seeded demo stacks on demand | M3 → M4 → M5 | **next** — promotes from [roadmap-vision.md](roadmap-vision.md) via `/developer-kit:design-roadmap` |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | 🏁 **all milestones done** — ready for `/developer-kit:close-release` (`release/01.10-show-floor`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
 repo** (current or future) and **no disruption to the dev environment** — demo clones live under the
 gitignored `anthropos-demo/` (mirroring `anthropos-dev/`). Full brief:
 [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## Done — v1.1 "show floor" (SHIPPED 2026-06-05 · tag `v1.1`)
+
+**Theme (broadened 2026-06-04):** v1.0 made the platform run *without* Clerk; v1.1 started as "disposable
+demo stacks" (M3 ✅) and now becomes **the platform-operations extension framework** — consolidate the repo
+constellation into **two repos** (`rosetta` = the platform corpus + dev-env skills; `rosetta-extensions` = a
+monorepo of operations sections), then deliver the seeded-demo capability *and* generalize the pattern to dev.
+Everything stays **additive — zero change to any read-only platform repo**.
+
+**Refactored 2026-06-04** (after M3 shipped, to keep the constellation from exploding): the standalone
+`clerkenstein` + `rosetta-demo` repos collapse into `rosetta-extensions/{clerkenstein,demo-stack,…}`; the
+former M4 (seeding) → **M7**, former M5 (recipes) → **M8**; new structural milestones M4–M6 inserted. Decisions:
+**git subtree, history-preserving** (M4-D1) · **delete the old repos, not archive** (M4-D2, user) · **the
+alignment framework stays in rosetta** (M4-D3) · per-demo clones (M3-D1) · clone-at-release-tag (M3-D3).
+
+**Seeding redesigned 2026-06-04** (M3–M6 all shipped): the user asked to make seeding robust/resilient/drift-proof/
+fast/**production-safe**, so the single `section` M7 splits into **M7a → M7b → M7c** (a section + section +
+iterative "mix"). 3 research agents over the platform grounded it: the prod-pollution boundary is *small + fixed*
+(Directus, S3-public, live Clerk/external SaaS — everything in the per-stack Postgres is isolated); the M0 alignment
+pattern *extends to data* (new structural operators + schema-as-source); the perf bottleneck is *DB-IO, not CPU*
+(Go-link-ent + `COPY` + fan-out; Rust buys nothing). Decisions: **3-way split, all in v1.1** (M7a-D1, user chose
+keep-in-v1.1 over a v1.2 spin-out) · **the isolation guard is the load-bearing deliverable** (M7a-D2) · **extend
+M0 to a data dimension, don't fork it** (M7b-D1) · **the data-DNA is the catalog that drives the fleet** (M7b-D2)
+· **the fleet is iterative, gated on data-DNA coverage** (M7c-D1).
+
+### M3: Disposable multi-instance demo stacks ✅ DONE (2026-06-03; extended close 2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m3-demo-stacks/](releases/archive/01.10-show-floor/m3-demo-stacks/)
+Spun up `demo-N` as isolated, Clerkenstein-wired full stacks; the full Clerk-free injected stack + migrate are
+LIVE-PROVEN; the deployment/injection alignment surface (`clerk-deploy-1`, 7/7) landed. 78 demo-stack tests, 218
+clerkenstein funcs. **Delivered** `corpus/ops/rosetta_demo.md` + `/demo-*` skills.
+
+### M4: Consolidate into the `rosetta-extensions` monorepo ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m4-consolidate-extensions/](releases/archive/01.10-show-floor/m4-consolidate-extensions/)
+Created the **`rosetta-extensions`** monorepo (private, 73 commits); `git subtree`-imported `clerkenstein` +
+`rosetta-demo`(→`demo-stack`) **with full history preserved**; the `knowledge/` nav; thinned rosetta to pointers;
+fixed a +1-depth path break the verify gate caught (M4-D4); verified under the new paths (78 demo-stack tests +
+deploy gate 7/7); pushed; **removed the old `clerkenstein` + `rosetta-demo` repos** (local + org, 404). Decisions
+M4-D1 (subtree) / D2 (delete-not-archive) / D3 (alignment framework stays in rosetta) / D4 (path-depth fix).
+
+### M5: Extract the reusable `stack-injection` layer ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m5-stack-injection/](releases/archive/01.10-show-floor/m5-stack-injection/)
+Extracted the generic injection (`inject.py`, `gen_injected_override.py`, `apply-authn.sh`) into
+`rosetta-extensions/stack-injection/`, consumable by any stack with a **demo-ON / dev-OFF** toggle; the mock stayed
+in clerkenstein (dependency runs stack-injection→clerkenstein, M5-D1); the port-offset engine stayed in demo-stack
+(M5-D2, settles the M4 open question — moves to shared in M6). Split the tests, repointed the consumers; **78
+preserved**, flake 3/3, deploy gate 100%/100%.
+
+### M6: `dev-stack` — tooled local dev environment ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m6-dev-stack/](releases/archive/01.10-show-floor/m6-dev-stack/)
+Extracted the shared port-offset engine into a new **`stack-core/`** section (settles the M5-routed question —
+demo + dev share it, M6-D1) and added a focused **`dev-stack/`**: isolated dev stacks (`dev-N`, offset ports,
+guarded `-p dev-N`), **real Clerk by default**, Clerkenstein injection **optional** (reuses stack-injection).
+Scoped to the proven value (M6-D2 — not speculative multi-dev). **87 tests** (+9), flake 3/3, deploy gate 100%/100%.
+
+### M7a: Seeding framework + production-isolation safety ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/archive/01.10-show-floor/m7a-seeding-framework/)
+Built `rosetta-extensions/stack-seeding/` — a host Go module that seeds a stack by talking **directly to its
+Postgres** (offset port, `COPY`; *not* ent-linking — `app/internal/bootstrap` is internal, unimportable, M7a-D3)
+behind a **3-layer production-isolation guard** (CheckWrite · PreflightEnv · AssertClean). **LIVE-PROVEN**: a
+fresh injected `demo-1` → `migrate-demo.sh` (now bootstraps the global Sentinel policy) → `stackseed` (org + 1000
+users + the real `user_clerkenstein` identity + the casbin `g2` grant, isolation audit clean) → authenticated
+login returns **HTTP 200** (`membershipsCount: 1001`). The proof caught + fixed **2 real bugs** (the g2 arg-order;
+the missing global-policy bootstrap — M7a-D4). **68 tests**, all gates green. Delivered `corpus/ops/seeding-spec.md`.
+
+### M7b: The data-alignment dimension ("data DNA") ✅ DONE (2026-06-04)
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/archive/01.10-show-floor/m7b-data-dna/)
+Extended the **M0 alignment framework** to a **data** dimension — the `datadna` harness (`rosetta-extensions/
+stack-seeding/dna/`) that (a) enumerates the seedable surfaces (**4 seeded + 6 planned** — the M7c checklist) and
+(b) measures a seeder's output conforms to the platform's **current schema** via **structural operators**
+(type-match / constraint-satisfied [NOT-NULL + UNIQUE] / fk-valid / row-count) with **schema-as-source via
+introspection**. A separate harness, not an alignctl runner (M7b-D3). **PROVEN live** on the M7a-seeded `demo-1`:
+`measure` **100% / Critical 100%** across the 4 seeded surfaces; `diff` flags an injected column (exit 1) and
+reads clean on revert. Caught + fixed the planned-surface introspection bug; hardened the UNIQUE leg (M7b-D4).
+**dna 49 + cmd/datadna 10 + pg 17 tests.** Delivered the data dimension into `corpus/architecture/alignment_testing.md`.
+
+### M7c: The seeder fleet, to a coverage gate ✅ DONE (2026-06-05, gate-met-over-reachable + waiver)
+**Status:** `done` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/archive/01.10-show-floor/m7c-seeder-fleet/)
+Built the fleet across 5 iters (TOK-01 strategy → jobsim-sessions → skillpath-sessions → assignments → activity),
+each a deterministic **backdated-activity** seeder (time-distributed, pass/fail per `pass_rate`, content refs as
+free values — the believability core is reachable **without** the shared Directus). Drove data-DNA coverage
+**40%→80%**, promoting each surface planned→seeded + conformance-gated. **Gate: 3 of 4 met outright** — (a)
+login→**200** · (c) full 8-seeder seed **0.69s** (~8500 rows, <2min) · (d) isolation **clean**; (b) coverage is
+**100% over the 8 reachable surfaces / critical 100%**, with **taxonomy + content waived** (the hard line —
+skiller snapshot + shared Directus; Re-scope trigger, user-confirmed → ~v1.2). Caught + fixed 2 live bugs (the
+skillpath UNIQUE constraint; the introspect-load harness bug). **20 seeder / 145 module tests.** Delivered
+`rosetta-extensions/stack-seeding/seeders/` + the `waived` data-DNA status.
+
+### M8: Corpus + use-case recipes + polish ✅ DONE (2026-06-05) — LAST v1.1 milestone
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/archive/01.10-show-floor/m8-corpus-recipes/)
+The consolidation/discoverability layer: a **`corpus/ops/demo/` family** (index + 3 end-to-end recipes —
+enterprise-onboarding, skill-progression, browser-login [which lands the 2 M3-deferred injection recipes: the
+`api.clerk.com` cert-redirect + the browser-login walk-through]); **3 seed presets** (small/mid/large, mid-500 +
+large-1k seed-proven end-to-end); the **`/demo-seed` skill** + the CLAUDE.md skill table; the v1.0
+**express-gate CI carry-forward** wired into clerkenstein `alignment.yml` (**validated 9/9** locally); and
+cross-linking from corpus/README + root README + CLAUDE.md (all doc links resolve). **Next:** `/developer-kit:close-release`.
+
+### Execution graph (v1.1)
+```
+v1.1 "show floor" — the platform-operations extension framework (demo + dev, in 2 repos)
+   M3 ✅ ─→ M4 ✅ (consolidate) ─→ M5 ✅ (stack-injection) ─→ M6 ✅ (dev-stack)
+                                            └──→ M7a (framework+safety) ─→ M7b (data-DNA) ─→ M7c (seeder fleet) ─→ M8 (recipes)
+```
+**Sequential.** M4–M6 shipped (the extension framework + demo/dev stacks). M7a lands the framework + the
+isolation guard (a usable, safe demo); M7b builds the data-DNA catalog that lists + gates the seeders; M7c drives
+the fleet to the coverage gate; M8 curates the output.
+
+### Risks (v1.1)
+- **(M7a, blocks-prod-safety)** a single un-guarded **shared-write reaching prod** (Directus / S3-public bucket) —
+  mitigate with the hard isolation guard + the clean-audit assertion as a tested acceptance gate, not a convention.
+- **(M7a, scope)** linking the platform's `app/internal/bootstrap`/ent client into a `rosetta-extensions/` Go
+  module without a platform edit — confirm the import path early (fallback: `go run` CLIs, slower).
+- **(M7b)** trustworthy schema-as-source — get ent introspection / `atlas inspect` golden right or the drift diff lies.
+- **(M7c, scope)** the heaviest build: ~8–10 seeders + 1k-scale `COPY` perf + backdating fidelity, each gated on
+  conformance — the believable-demo *subset* of surfaces is the real target (waive unreachable genes, don't chase 100%).
+
+### Open decisions (resolve during build)
+Directus snapshot-replay vs hard-block-and-skip for the demo MVP (M7a); ent-introspection vs `atlas inspect`
+golden for schema-as-source (M7b); whether seed presets ship in M7c or M8; external shareability (Tailscale vs
+ingress); the AI-content STRETCH trigger (now firmly v1.2, not M8).
 
 ## Done — v1.0 "body double" (SHIPPED 2026-06-03 · tag `v1.0`)
 
@@ -83,7 +202,7 @@ app for the browser session** (backend stays fully mocked) if base-URL override 
 **Shape:** `iterative`
 **Goal:** The first real mirror — a drop-in Go stand-in for `colony/authn`'s provider + the Clerk `orgclient`, built *by* the M0 process and injected via `go.mod replace` (zero platform-repo edits), so backend services authenticate with one universal credential and locally-minted JWTs.
 
-**Closed 2026-06-03** (5 iters: bootstrap tok TOK-01 → DNA → authn twin → critical orgclient → standard orgclient → **gate** → final harden → close). The **Clerkenstein backend mirror** (in the gitignored `anthropos-demo/clerkenstein` repo, its own git) scores **100% alignment / 100% critical** against the `clerk@2.6.0` DNA (22 genes), built offline. authn implements the real `colony/authn.Provider` (HS256, one universal key); orgclient is a disarmed in-memory twin. Score arc: 0 → 21.1 → 68.4 → **100%**. Final harden: authn + orgclient **0 → 100%** unit coverage (+1 fuzz, 0 bugs). Decisions: D1 hybrid goldens; iter-01-D1 authn injects via `go.mod replace` whole-colony; **M1-D2 orgclient injects via a fake-Clerk-API-server → routed to M2** (shared HTTP-interception with the JS side). Delivered `corpus/services/clerkenstein.md`. Retro: [m1-clerkenstein-backend/retro.md](releases/archive/01.00-body-double/m1-clerkenstein-backend/retro.md). The gate (alignment fidelity) is met; live injection into a running platform is demo-stack work (v1.1) / M2 (orgclient).
+**Closed 2026-06-03** (5 iters: bootstrap tok TOK-01 → DNA → authn twin → critical orgclient → standard orgclient → **gate** → final harden → close). The **Clerkenstein backend mirror** (in the gitignored `anthropos-demo/clerkenstein` repo, its own git) scores **100% alignment / 100% critical** against the `clerk@2.6.0` DNA (22 genes), built offline. authn implements the real `colony/authn.Provider` (HS256, one universal key); orgclient is a disarmed in-memory twin. Score arc: 0 → 21.1 → 68.4 → **100%**. Final harden: authn + orgclient **0 → 100%** unit coverage (+1 fuzz, 0 bugs). Decisions: D1 hybrid goldens; iter-01-D1 authn injects via `go.mod replace` whole-colony; **M1-D2 orgclient injects via a fake-Clerk-API-server → routed to M2** (shared HTTP-interception with the JS side). Delivered `corpus/services/clerkenstein.md`. Retro: [m1-clerkenstein-backend/retro.md](releases/archive/01.00-body-double/m1-clerkenstein-backend/retro.md). The gate (alignment fidelity) is met; live injection into a running platform is rosetta-demo work (v1.1) / M2 (orgclient).
 **Exit gate:** `/align-run` reports **100% alignment on the platform-consumed Clerk Go surface (critical capabilities) and ≥95% overall**, with any waived genes documented + justified in the divergence report.
 **Iteration protocol:** `corpus/architecture/alignment_testing.md` (the M0-delivered alignment-measurement process) — the measure → fix-diverging-genes → re-measure loop.
 **Why iterative (not section):** the deliverables are writable, but *which genes diverge and how costly each is to close* only emerges from measuring against the real Clerk — a fixed up-front checklist would be speculative. The score is the commitment; the path to it is open.
@@ -155,7 +274,7 @@ app for the browser session** (backend stays fully mocked) if base-URL override 
 **Scope:**
   - In: a new **`clerk-express/`** seam (library-named); an **RSA keypair + a real (non-empty) JWKS** served by the fake FAPI (`clerk-frontend`'s `/.well-known/jwks.json`); **RS256 token minting**; the `@clerk/express` **DNA** (`clerk-express-1.json`, source `@clerk/express ^1.3.47`); a runner that drives **the real `@clerk/express` SDK** against the mock (the svix-pattern — verify against the genuine library); the **alignment gate** as the exit criterion.
   - In (confirm, don't rebuild): `@clerk/express` also calls `clerkClient.{getOrganizationMembershipList, getOrganization}` — those are **BAPI**, already 100%-mocked by `clerk-backend/`; M2c adds *integration* genes confirming that path, not a new BAPI mock.
-  - Out: changing studio-desk or any platform repo (the `MOCK_CLERK` bypass is the platform's own); a webhook (svix) DNA (separate future gap); live injection into a running studio-desk (demo-stack work, v1.1).
+  - Out: changing studio-desk or any platform repo (the `MOCK_CLERK` bypass is the platform's own); a webhook (svix) DNA (separate future gap); live injection into a running studio-desk (rosetta-demo work, v1.1).
 **Candidate genes (~8, `clerk-express-1.json`):** `ExpressAuth/{valid, expired, malformed, bad-signature, no-token}` (error_class) · `ExtractIdentity/universal-user` (exact: verified claims → `req.auth`) · `JWKS/non-empty-rsa` (shape) · `ClerkClientBAPI/{org-membership-list, get-organization}` (integration vs `clerk-backend`).
 **Exit gate:** alignment **≥ 95% overall / 100% critical** on `clerk-express-1.json`, AND the load-bearing test passes (a **real `@clerk/express` instance accepts a Clerkenstein-minted token + extracts the right identity**).
 **Depends on:** M2 (the FAPI + token machinery it extends) + M2b (the consolidated repo it adds a seam to). **Precedes:** `/developer-kit:close-release`.
@@ -228,6 +347,6 @@ the rosetta-side milestone records + corpus pointer land on the `m{N}/…` branc
 
 ## Notes
 
-- Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix marks a milestone **inserted after** the fact. `b` has been tooling/cleanup (M1b drift CI, M2b consolidation); **M2c is a letter-suffixed *feature* milestone** (iterative) — the suffix only means "inserted after M2b", since the next flat number M3 is already claimed by v1.1. See [`context.md`](context.md).
+- Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix has two uses: (1) a milestone **inserted after** the fact — `b` for tooling/cleanup (M1b drift CI, M2b consolidation), and the letter-suffixed *feature* milestone M2c (iterative, "inserted after M2b"); and (2) a **split** of one planned milestone into a sequential mini-arc — **M7a → M7b → M7c** is the single former M7 "seeding" split into framework+safety / data-DNA / fleet (2026-06-04, M7a-D1). Both reuse the letter suffix; context disambiguates. See [`context.md`](context.md).
 - v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 + M2c are iterative** (alignment-score gates).
-- v1.1 "show floor" (M3, M4, M5) is detailed in [`roadmap-vision.md`](roadmap-vision.md); it promotes into this file when v1.0 closes.
+- v1.1 "show floor" mixes shapes too: M3–M6 + M7a/M7b + M8 are **section**; **M7c is iterative** (data-DNA coverage gate).

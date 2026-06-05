@@ -1,0 +1,28 @@
+{
+  "milestone": "M8",
+  "title": "Corpus + use-case recipes + polish",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-05",
+  "kind": "consolidation / discoverability (docs + curation + 2 concrete artifacts)",
+  "delivered": {
+    "corpus_family": "corpus/ops/demo/ — README.md (the up->seed->use->down flow + index) + 3 recipes",
+    "recipes": ["recipe-enterprise-onboarding.md", "recipe-skill-progression.md", "recipe-browser-login.md (lands the 2 M3 Fate-3 injection recipes: cert-redirect + browser-login)"],
+    "presets": "rosetta-extensions/stack-seeding/presets/ — small-200, mid-500, large-1k (all --validate; mid-500 + large-1k seed-proven end-to-end)",
+    "skill": "/demo-seed (wraps stackseed) + the CLAUDE.md Available Skills table (all 4 demo skills)",
+    "ci_carry_forward": "clerkenstein alignment.yml — the @clerk/express gate wired (setup-node + npm install @clerk/express + gate), VALIDATED locally 9/9",
+    "cross_linking": "corpus/README (new Demo environments Ops subsection) + root README + CLAUDE.md doc-locations"
+  },
+  "validation": {
+    "presets_seeded": "mid-500 (Globex, 501 users, ~4800 rows, 0.7s) + large-1k (~9500 rows, 0.76s) — both isolation clean",
+    "express_gate": "9/9 (ExpressAuth 5/5, ClerkClientBAPI 2/2, ExtractIdentity 1/1, JWKS 1/1) with a freshly npm-installed @clerk/express, exit 0",
+    "doc_links": "all .md links across 8 files resolve (machine-checked)"
+  },
+  "constraints": {
+    "deploy_gate": "the 4th (deployment/injection) gate stays a LOCAL gate — needs colony via GH_PAT, not CI-clean",
+    "cert_redirect": "documented recipe (the fake BAPI is built + gated; the DNS/cert wiring is recipe-only, consistent with M3)"
+  },
+  "is_last_milestone": true,
+  "next": "/developer-kit:close-release — merge release/01.10-show-floor -> main, tag v1.1 'show floor'",
+  "v1_2_seed": "richer demo worlds — the data-DNA waived surfaces (taxonomy snapshot + Directus content replay) + AI-generated rich content"
+}

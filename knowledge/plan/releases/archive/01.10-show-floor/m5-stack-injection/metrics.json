@@ -1,0 +1,25 @@
+{
+  "milestone": "M5",
+  "title": "Extract the reusable stack-injection layer",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-04",
+  "section_created": "rosetta-extensions/stack-injection/",
+  "extracted_from_demo_stack": ["inject.py", "gen_injected_override.py", "apply-authn.sh", "README-recipes.md", "DEPLOYMENT-PROOF.md"],
+  "tests": {
+    "stack_injection": 69,
+    "demo_stack": 9,
+    "total": 78,
+    "note": "preserved across the split (was 78 in demo-stack)",
+    "flake": "3/3 clean"
+  },
+  "verification": "78 tests green; shellcheck clean both sections; py_compile clean; clerkenstein untouched -> deploy gate 100%/100% (7/7)",
+  "consumers_repointed": ["demo-stack/up-injected.sh", "demo-stack/rosetta-demo (CLI inject cmd)"],
+  "decisions": {
+    "M5-D1": "the mock stays in clerkenstein; stack-injection only consumes it",
+    "M5-D2": "gen_override.py (port-offset engine) stays in demo-stack -> shared in M6 (settles M4 open question)",
+    "M5-D3": "test split: injection tests to stack-injection; cross-section wiring tests live with apply-authn"
+  },
+  "routed_to_M6": "extract gen_override.py to a shared location when dev-stack is its second consumer",
+  "monorepo_commits": 74
+}
