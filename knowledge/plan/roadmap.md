@@ -18,7 +18,7 @@ builder skills).
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → **M8** | 🚧 **in development** (`release/01.10-show-floor`; seeding done — M8 is the last milestone) |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | 🏁 **all milestones done** — ready for `/developer-kit:close-release` (`release/01.10-show-floor`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -112,10 +112,14 @@ skiller snapshot + shared Directus; Re-scope trigger, user-confirmed → ~v1.2).
 skillpath UNIQUE constraint; the introspect-load harness bug). **20 seeder / 145 module tests.** Delivered
 `rosetta-extensions/stack-seeding/seeders/` + the `waived` data-DNA status.
 
-### M8: Corpus + use-case recipes + polish
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/01.10-show-floor/m8-corpus-recipes/)
-**Goal:** (former M5) Repeatable + discoverable demos — recipes, seed presets, discoverability, the express-gate
-CI carry-forward, the finalized rosetta↔extensions reference story. **Depends on:** M4 + M7a/M7b/M7c.
+### M8: Corpus + use-case recipes + polish ✅ DONE (2026-06-05) — LAST v1.1 milestone
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/01.10-show-floor/m8-corpus-recipes/)
+The consolidation/discoverability layer: a **`corpus/ops/demo/` family** (index + 3 end-to-end recipes —
+enterprise-onboarding, skill-progression, browser-login [which lands the 2 M3-deferred injection recipes: the
+`api.clerk.com` cert-redirect + the browser-login walk-through]); **3 seed presets** (small/mid/large, mid-500 +
+large-1k seed-proven end-to-end); the **`/demo-seed` skill** + the CLAUDE.md skill table; the v1.0
+**express-gate CI carry-forward** wired into clerkenstein `alignment.yml` (**validated 9/9** locally); and
+cross-linking from corpus/README + root README + CLAUDE.md (all doc links resolve). **Next:** `/developer-kit:close-release`.
 
 ### Execution graph (v1.1)
 ```

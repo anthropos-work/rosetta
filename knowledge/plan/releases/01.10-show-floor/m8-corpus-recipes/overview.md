@@ -3,9 +3,10 @@ milestone: M8
 slug: corpus-recipes
 version: v1.1 "show floor"
 milestone_shape: section
-status: planned
+status: done
 created: 2026-06-03
-last_updated: 2026-06-04
+completed: 2026-06-05
+last_updated: 2026-06-05
 delivers: corpus/ops/demo/ (the demo-env corpus family + recipes) + curated seed presets
 ---
 
