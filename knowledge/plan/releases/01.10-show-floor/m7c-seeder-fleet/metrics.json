@@ -1,0 +1,44 @@
+{
+  "milestone": "M7c",
+  "title": "The seeder fleet, to a coverage gate",
+  "shape": "iterative",
+  "status": "done",
+  "closed": "2026-06-05",
+  "close_kind": "gate-met-over-reachable + waiver (Re-scope trigger, user-confirmed)",
+  "iters": 5,
+  "iter_summary": [
+    "iter-01 (tok): TOK-01 strategy + reachability survey + corrected 3 catalog table names",
+    "iter-02: jobsim-sessions (1980 backdated sessions) — coverage 40%->50%; fixed introspect-load harness bug",
+    "iter-03: skillpath-sessions (1024) — 50%->60%; fixed a real UNIQUE(user,path,version) constraint",
+    "iter-04: assignments (505, 3 FKs) — 60%->70%",
+    "iter-05: activity (4000, FK->sessions) — 70%->80%; full believability core complete"
+  ],
+  "gate_outcome_ledger": {
+    "a_login_200": "MET — HTTP 200 (membershipsCount: 1001) live on demo-1",
+    "b_coverage": "MET-over-reachable — 100% over the 8 non-waived surfaces (critical 100%); taxonomy+content waived",
+    "c_seed_under_2min": "MET — 0.69s for ~8500 rows (8 seeders)",
+    "d_zero_shared_writes": "MET — isolation audit clean"
+  },
+  "coverage": {"start": "40% (4/10)", "end": "80% (8/10) = 100% over non-waived", "seeded": 8, "waived": 2},
+  "waived": {
+    "taxonomy": "needs the pre-embedded skiller node-hierarchy snapshot (empty in demo-1) — structural-snapshot work",
+    "content": "the shared Directus instance — isolation guard blocks live writes; snapshot-replay only",
+    "rationale": "M7c's declared hard line (seeds structural data, not the 60K-skill taxonomy nor shared Directus); ~v1.2",
+    "machine_visible": "recorded as waived-m7c status + Note in data-dna.json; excluded from DNA.Coverage() denominator"
+  },
+  "the_pattern": "deterministic backdated-activity generator — time-distributed over the activity span, pass/fail per pass_rate, content refs (sim_id/skill_path_id/resource_id) as FREE values (no DB FK) so reachable without Directus; bulk COPY",
+  "seeders_added": ["jobsim-sessions", "skillpath-sessions", "assignments", "activity"],
+  "perf": "full 8-seeder seed (~8500 rows across 5 schemas) in 0.69s (gate <2min)",
+  "tests": {"seeders": 20, "module_total": 145, "gates": "build/vet/-race/gofmt clean; seeders 88.6% coverage"},
+  "bugs_caught_live": [
+    "skillpath UNIQUE(user_id, skill_path_id, version) collision — fixed by indexing the path by session number",
+    "datadna introspect Validate-before-load — a freshly-promoted seeded surface couldn't load; introspect now loads without Validate"
+  ],
+  "harness_added": "the waived-* status + DNA.Coverage()/Waived() + the catalog WAIVED section (keeps the manifest honest about the hard line)",
+  "decisions": {
+    "M7c-D1": "iterative, gated on data-DNA coverage",
+    "TOK-01": "sequence by reachability; believability core reachable without Directus; taxonomy/content snapshot-blocked tail",
+    "M7c re-scope": "waive taxonomy+content (user-confirmed); close gate-met-over-reachable"
+  },
+  "monorepo": {"commits_added": 3, "sections": 6}
+}
