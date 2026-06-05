@@ -26,6 +26,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/rosetta_demo.md` |
 | `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
 | `/demo-status` | List running demo stacks and their details | `corpus/ops/rosetta_demo.md` |
+| `/demo-seed` | Seed a demo stack with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |
 | `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
 | `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 
@@ -229,6 +230,11 @@ Usage: `make up PROFILE=cms`
 ### Running the Platform
 - `corpus/ops/run_guide.md`: Start the platform locally after setup
 - `corpus/ops/webhook_setup.md`: Configure Clerk webhooks for user/org sync
+
+### Demo Environments (disposable, Clerk-free, seeded — v1.1 "show floor")
+- `corpus/ops/demo/README.md`: **The demo-env family index** — the up→seed→use→down flow + recipes + presets
+- `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
+- `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** + the data-DNA
 
 ### Updating the Platform
 - `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
