@@ -2,6 +2,30 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.1] "show floor" — 2026-06-05
+
+The platform-operations extension framework: spin up a **disposable, Clerk-free, realistically-populated** copy of the platform — for a demo, screenshots, or QA — alongside the dev stack, **without touching production or any read-only platform repo**.
+
+### Added
+- **Disposable demo stacks** (`/demo-up`, `/demo-down`, `/demo-status`) — bring up `demo-N` isolated on offset ports, Clerkenstein-wired (Clerk-free), with its own data; killable cleanly; the dev stack never touched. (M3)
+- **Declarative, production-safe seeding** (`/demo-seed` + the `stackseed` tool) — backfill a stack from one `stack.seed.yaml` (or a curated preset): an org + 1,000 users + the real `user_clerkenstein` login identity + months of **backdated** job-sim / skill-path sessions, assignments, and activity — a believable world a stakeholder can log into (authorized routes return **200**). It connects **directly to the stack's Postgres** (`COPY`; ~0.7s for ~9,500 rows) behind a **3-layer production-isolation guard** that makes it *structurally impossible* for a non-prod run to write a shared/prod store (Directus, the prod S3-public bucket, live Clerk, marketing/AI SaaS), and proves zero pollution with an audit log. (M7a)
+- **The data-DNA** — the alignment framework extended to a third dimension, **data**: the `datadna` CLI enumerates the seedable surfaces, **conformance-gates** each seeder's output against the platform's current schema, and **detects drift** when that schema moves (`measure` 100% / `diff` flags a changed column). (M7b)
+- **The seeder fleet** — backdated-activity seeders for the believability core (job-sim + skill-path sessions, assignments, activity events), driven to a data-DNA coverage gate. (M7c)
+- **`dev-stack`** — the same multi-instance tooling for isolated *dev* stacks (`dev-N`), real Clerk by default, optional Clerkenstein injection. (M6)
+- **Demo-env corpus family** (`corpus/ops/demo/`) — a family index + 3 end-to-end recipes (enterprise onboarding · skill progression · interactive browser login) + 3 curated seed presets (small-200 / mid-500 / large-1k). (M8)
+- **`@clerk/express` alignment gate wired into CI** — the v1.0 carry-forward; clerkenstein's CI now materializes the SDK + runs the gate (validated 9/9). (M8)
+
+### Changed
+- **Repo consolidation** — the standalone `clerkenstein` + `rosetta-demo` repos collapsed into one private `rosetta-extensions` monorepo (history preserved via `git subtree`); the old org repos were removed; `rosetta` thinned to documentation + the alignment framework + pointers. The reusable Clerk-mock injection layer (`stack-injection`) and the shared port-offset engine (`stack-core`) were extracted as sections. (M4/M5/M6)
+- **Clerkenstein gained a 4th measured surface** — deployment/injection (`clerk-deploy-1`, 7/7): the disarmed `colony/authn` drop-in compiles against the platform's real `colony` and satisfies its contract. All four gates held 100%/100% throughout v1.1. (M3 extended)
+
+### Known limitations
+- Seeding ships **structural data only** by design. Two surfaces are **waived** to v1.2: the skill *taxonomy* (needs a pre-embedded skiller snapshot) and Directus *content* (the shared instance — snapshot-replay only). AI-generated rich content (transcripts/embeddings) is also out of scope. Data-DNA coverage is 100% over the 8 reachable surfaces; the waived surfaces are recorded as `waived-m7c` in the manifest.
+- The deployment/injection alignment gate stays a **local** gate (it needs the platform's `colony` via a private token); the other three surfaces run in CI.
+
+### Supply chain
+- No new runtime deps beyond the Postgres driver (`jackc/pgx/v5 v5.9.2`) + `gopkg.in/yaml.v3` for the seeder. All deps permissive (BSD/MIT/Apache); lockfile at `knowledge/plan/releases/archive/01.10-show-floor/dependencies.lock`.
+
 ## [v1.0] "body double" — 2026-06-03
 
 The first release under the developer-kit planning lifecycle. Rosetta gains a measurement discipline and its first product: a drop-in Clerk mock you can *prove* is faithful.

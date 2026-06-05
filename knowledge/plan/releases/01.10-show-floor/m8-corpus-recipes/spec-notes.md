@@ -1,4 +1,4 @@
-# M5 — Spec notes
+# M8 — Spec notes
 
 Seeded from Phase 1 research (2026-06-03); fill in at kickoff (build-blocked on M3+M4).
 

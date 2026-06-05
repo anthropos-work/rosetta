@@ -18,6 +18,12 @@ and its successor's shape is clear. Likely seeds, carried forward from v1.1's op
 - **External shareability of demo stacks** — Tailscale-only (like staging) vs public ingress for
   customer-facing demos (a security-posture decision deferred from v1.1; could anchor a "shareable demos"
   version).
+- **The snapshot mechanism — lift M7c's `waived` surfaces** (the most concrete v1.2 seed). M7c seeded the
+  believability core but **waived `taxonomy` + `content`** as the hard line (recorded `waived-m7c` in the
+  data-DNA): `taxonomy` needs the pre-embedded **skiller node-hierarchy snapshot**, and `content` needs a
+  **Directus content snapshot-replay** (the isolation guard blocks live shared-Directus writes). A v1.2
+  "snapshot" capability would capture these once + replay them per-stack, promoting both surfaces seeded→ and
+  taking data-DNA coverage to 100% of the full catalog.
 - **AI-generated demo content** — LLM-generated transcripts / AI-scored validation narratives /
   freshly-computed embeddings. v1.1's seeding (M7a/M7b/M7c) draws a hard line excluding these — it ships
   **structural data only** (the data-DNA discipline + the seeder fleet make *that* robust + drift-proof). AI

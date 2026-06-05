@@ -130,6 +130,23 @@ stackseed --stack demo-1 --seed demo.seed.yaml --dsn '<base-dsn>' # seed (direct
 stackseed --stack demo-1 --reset                                 # per-stack reset (refuses n=0 dev unless --force)
 ```
 
+### Verifying a seed — `datadna` (the data-DNA CLI, M7b)
+
+After seeding, the **`datadna`** CLI (built from `rosetta-extensions/stack-seeding/cmd/datadna`) measures that
+the seeded data **conforms to the platform's current schema** and detects schema **drift** — the data dimension
+of the alignment framework (full reference:
+[`../architecture/alignment_testing.md`](../architecture/alignment_testing.md) § "The data dimension"):
+
+```bash
+datadna catalog   --dna <dna.json>                       # the seedable-surface catalog (seeded / planned / waived + coverage)
+datadna introspect --stack demo-1 --dna <dna.json>       # capture each seeded surface's live shape (the contract)
+datadna measure   --stack demo-1 --dna <dna.json>        # conformance score; exit 1 if critical < 100%
+datadna diff      --stack demo-1 --dna <dna.json>        # recorded shapes vs the live schema; exit 1 on drift
+```
+
+The shipped manifest is `rosetta-extensions/stack-seeding/dna/data-dna.json` (8 seeded surfaces conformance-gated;
+`taxonomy` + `content` are **waived** — the snapshot/shared-store hard line, ~v1.2).
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),

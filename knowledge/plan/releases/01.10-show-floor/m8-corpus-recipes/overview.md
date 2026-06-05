@@ -10,7 +10,7 @@ last_updated: 2026-06-05
 delivers: corpus/ops/demo/ (the demo-env corpus family + recipes) + curated seed presets
 ---
 
-# M5 — Demo corpus + use-case recipes + skill polish
+# M8 — Corpus + use-case recipes + polish
 
 ## Goal
 Make demos **repeatable and discoverable**: author the demo-env corpus section, 2–3 end-to-end
