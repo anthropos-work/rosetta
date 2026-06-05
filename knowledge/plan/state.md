@@ -1,9 +1,9 @@
 # State
 
-**Active version:** _(none — between releases)._ v1.1 "show floor" shipped 2026-06-05. The next version is not yet scoped — run **`/developer-kit:design-roadmap`** to draft v1.2 (the staged seed is "richer demo worlds": lift M7c's `waived` taxonomy + content via a snapshot mechanism, + AI-generated rich content; see `roadmap-vision.md`).
-**Active milestone:** _(between releases)._
-**Next up:** **`/developer-kit:design-roadmap`** to scope + cut the next release.
-**Phase:** between releases — awaiting `/developer-kit:design-roadmap`.
+**Active version:** **v1.2 "set dressing"** — in development on `release/01.20-set-dressing` (designed 2026-06-05). Richer demo worlds: the **snapshot mechanism** lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to **100% data-DNA coverage** — capture the real skill taxonomy + content library once, replay per-stack, measured-faithful via a new snapshot-fidelity alignment dimension. 3 milestones, all `section`: **M9** (framework + fidelity DNA + taxonomy) → **M10** (Directus content snapshot-replay) → **M11** (recipes + presets + corpus). AI-content + shareability held to v1.3 (user, 2026-06-05).
+**Active milestone:** **M9 — Snapshot framework + fidelity DNA + taxonomy snapshot** (`planned` · `section` · large). Next: **`/developer-kit:build-milestone`** (creates `m9/snapshot-framework` from the release branch).
+**Next up:** **M10** (Directus content → 100% coverage) → **M11** (richer-world recipes + corpus) → `/developer-kit:close-release`.
+**Phase:** designed — milestone dirs scaffolded, release branch cut. Awaiting `/developer-kit:build-milestone` on M9.
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -16,8 +16,8 @@
 - **Seeding gates:** the 3-layer production-isolation guard (audit-proven zero pollution) · data-DNA `measure` 100%/critical 100% over the 8 reachable surfaces · drift detection · login→200 · full seed ~0.7s (<2min).
 
 ## Branch model
-**v1.1 SHIPPED + pushed:** `release/01.10-show-floor` merged `--no-ff` → `main`, tagged **`v1.1`** (both pushed to `origin`); release branch deleted. The extensions code is the **private** `anthropos-work/rosetta-extensions` monorepo (gitignored at `anthropos-demo/`).
+**v1.2 IN DEVELOPMENT:** `release/01.20-set-dressing` cut from `main` (2026-06-05). Milestone branches `m{N}/{slug}` (`m9/snapshot-framework`, `m10/content-snapshot`, `m11/richer-recipes`) branch from it; merge back at close-milestone; the release merges `--no-ff` → `main` + tags `v1.2` at close-release. The snapshot/seeding code lands in the **private** `anthropos-work/rosetta-extensions` monorepo (gitignored at `anthropos-demo/`); the rosetta-side milestone records + corpus updates land on the `m{N}/…` branches.
+**v1.1 SHIPPED + pushed:** `release/01.10-show-floor` merged `--no-ff` → `main`, tagged **`v1.1`**; release branch deleted.
 **v1.0 SHIPPED:** tagged `v1.0` (2026-06-03).
-**Next version:** `/developer-kit:design-roadmap` cuts `release/{VV.VV}-{codename}` from `main` when v1.2 is scoped.
 
-_Last updated: 2026-06-05 (v1.1 "show floor" shipped — close-release: review GREEN, merged → main, tagged v1.1, records archived)._
+_Last updated: 2026-06-05 (v1.2 "set dressing" designed — `/developer-kit:design-roadmap`: deferral audit GREEN, KB preflight done, 3 milestones M9/M10/M11 scaffolded, release branch cut)._

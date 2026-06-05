@@ -12,20 +12,163 @@ builder skills).
 > **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
 > **v1.1 "show floor" — SHIPPED 2026-06-05** (merged to `main`, tagged `v1.1`; full detail in `## Done — v1.1`
 > below). 8 milestones M3→M8: the 2-repo consolidation + demo/dev stacks + the production-safe seeding stack
-> (framework + data-DNA + fleet) + the corpus product layer. Next action: `/developer-kit:design-roadmap` for v1.2.
+> (framework + data-DNA + fleet) + the corpus product layer.
+>
+> **v1.2 "set dressing" — IN DEVELOPMENT** (designed 2026-06-05 on `release/01.20-set-dressing`). 3 milestones
+> M9→M10→M11: the **snapshot mechanism** that lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to
+> **100% data-DNA coverage** — capture the real skill taxonomy + content library once, replay them per-stack,
+> *measured-faithful* via a new snapshot-fidelity alignment dimension. Full design in `## In Development` below.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | 🏁 **all milestones done** — ready for `/developer-kit:close-release` (`release/01.10-show-floor`) |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
+| **v1.2** | **set dressing** | Richer demo worlds — the real taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9 → M10 → M11 | 🚧 **IN DEVELOPMENT** (`release/01.20-set-dressing`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
 repo** (current or future) and **no disruption to the dev environment** — demo clones live under the
 gitignored `anthropos-demo/` (mirroring `anthropos-dev/`). Full brief:
 [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.2 "set dressing"
+
+**Theme:** v1.1 made demo stacks *structurally* populated (orgs, users, backdated activity) but consciously
+**waived two surfaces** — `taxonomy` (the 60K-skill / 18K-role node hierarchy + embeddings) and `content` (the
+shared Directus content library) — because they can't be *fabricated* structurally: taxonomy is reference data,
+content lives in a shared store the isolation guard blocks. v1.2 lifts both via a **snapshot mechanism** —
+capture the *real* surface once from a source, replay it per-stack — taking data-DNA coverage from "8 reachable
+surfaces" to **100% of the full catalog**. The elevation: snapshot replay is itself an **alignment problem**
+(does the replayed surface faithfully reproduce the captured source?), so v1.2 extends the M0/M7b
+alignment+data-DNA discipline with a **snapshot-fidelity dimension** rather than shipping plain plumbing. Demo
+worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable props.
+
+> **Designed 2026-06-05** from the v1.1 carry-forward (the user-confirmed M7c waiver → roadmap-vision seed).
+> Phase 0a deferral audit **GREEN** (6 carry-forwards, all single, clear v1.2/vision homes — no repeats/chronic;
+> [`.agentspace/scratch/deferral-audit-2026-06-05.md`](../../.agentspace/scratch/deferral-audit-2026-06-05.md)).
+> Phase 0b KB blind-area check: snapshot/AI-content/deploy-CI **YELLOW** (anchored, need a spec doc as a
+> `Delivers →`); shareability **RED** (blind area — deferred to v1.3, not in v1.2). 3 research agents over the
+> seeding stack, the skiller taxonomy + Directus content surfaces, and milestone history — verified against the
+> clones in `anthropos-dev/` (platform) + `anthropos-demo/rosetta-extensions/` (the seeding stack). Gap analysis:
+> [`.agentspace/scratch/roadmap-research-2026-06-05.md`](../../.agentspace/scratch/roadmap-research-2026-06-05.md).
+>
+> **Scope decided (user, 2026-06-05):** **snapshot spine only** — `taxonomy` + `content` to 100% coverage.
+> **AI-generated rich content** (transcripts / AI-scored narratives / fresh embeddings) and **external
+> shareability** (Tailscale vs ingress) are confirmed **v1.3** (kept in `roadmap-vision.md`), so v1.2 stays the
+> tight, well-grounded release the snapshot work warrants. Codename **"set dressing"** continues the stage
+> metaphor (body double → show floor → set dressing).
+
+### The snapshot surfaces (what's waived, and why each needs a different mechanism)
+- **`taxonomy`** — lives in the **per-stack** Postgres `skiller` schema but ships *empty* (normally loaded via the
+  `importskills`/`importjobroles` cobras): 60K skills + 18K roles + categories + specializations + **pgvector
+  embeddings**. The isolation guard does **not** block it (per-stack store). So the snapshot is
+  **Postgres→Postgres**: capture-once from a source DB, **bulk-`COPY` replay** per-stack (the M7a perf path),
+  with the embeddings carried verbatim. The *cleaner* surface — it proves the framework. (`data-dna.json`:
+  `taxonomy` status `waived-m7c`.)
+- **`content`** — lives in the **shared Directus** instance (`content.anthropos.work`); the isolation guard
+  **hard-blocks writes on non-prod** (`directus` is `SharedPollutionRisk`). So replay can **never** touch shared
+  Directus — it needs a **per-stack content store**. The defining M10 decision (resolve early): per-stack Directus
+  container fed from the captured snapshot vs replay straight into the per-stack Directus Postgres DB (Directus's
+  own backing store is Postgres → stays in the per-stack-isolated class). The *highest-risk* surface in v1.2.
+  (`data-dna.json`: `content` status `waived-m7c`.)
+
+### M9: Snapshot framework + fidelity DNA + taxonomy snapshot
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m9-snapshot-framework/](releases/01.20-set-dressing/m9-snapshot-framework/)
+**Goal:** A generic **capture → serialize → replay** mechanism for *snapshot-class* surfaces (reference data
+captured once from a source, replayed per-stack), an **alignment extension that measures replay fidelity**
+(source-vs-replay), and the first surface — **taxonomy** — proving it end-to-end, driving data-DNA coverage from
+`waived` to its first snapshot-seeded surface.
+**Scope:**
+  - In: the **snapshot contract + portable format** (capture manifest + payload — how a captured surface is
+    serialized, versioned, and pinned per stack); the **snapshot-store abstraction** honoring the isolation
+    boundary (capture = a *privileged read* from a source; replay writes **only** to per-stack-isolated stores —
+    a tested guard, extending M7a's `isolation/`); the **data-DNA extension** — a new surface status
+    `snapshot-seeded` + a **snapshot-fidelity gene class** (source-vs-replay row-count / structural conformance /
+    referential integrity / **embedding-dimension integrity**) added to the `datadna` harness; the **`stacksnap`
+    CLI** (`capture` / `replay`) + `datadna` recognizing snapshot surfaces; the **taxonomy snapshot seeder**
+    (Postgres→Postgres capture + bulk-`COPY` replay of skiller categories/specializations/skills/roles +
+    pgvector embeddings), gated on its fidelity gene.
+  - Out: the Directus content snapshot (M10); recipes/presets/corpus product layer (M11); AI-generated content +
+    shareability (v1.3).
+**Depends on:** v1.1's M7a (isolation guard + perf path) + M7b (the data-DNA harness it extends). **Parallel with:** none (gates M10 + M11).
+**Open questions:** the snapshot *source* (a captured golden file committed to the extensions repo vs a live
+privileged read from a reference DB at capture-time) — pick the reproducible, offline-replayable path (the M0
+golden discipline); embedding capture fidelity (carry vectors verbatim vs recompute — verbatim, to stay offline
++ deterministic); snapshot versioning when the skiller schema drifts (the data-DNA `diff` already flags it).
+**KB dependencies:** `corpus/ops/seeding-spec.md` (the framework + isolation boundary), `corpus/architecture/alignment_testing.md` (the data dimension to extend), `corpus/services/skiller.md` (the taxonomy schema + embeddings), `corpus/ops/staging_from_dump.md` (the snapshot precedent).
+**Delivers → `corpus/ops/snapshot-spec.md`** (net-new — the capture/replay contract + format + per-stack injection rules) **+ extends `corpus/architecture/alignment_testing.md`** (the snapshot-fidelity dimension).
+
+### M10: Directus content snapshot-replay
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large (highest-risk) · **Dir:** [m10-content-snapshot/](releases/01.20-set-dressing/m10-content-snapshot/)
+**Goal:** Capture the shared-Directus content library and replay it into a **per-stack content store** — never
+touching shared Directus — taking data-DNA coverage to **100% of the full catalog** (the last `waived` surface
+promoted to `snapshot-seeded` + fidelity-gated).
+**Scope:**
+  - In: the **per-stack content-store decision** resolved + built (per-stack Directus container vs direct
+    per-stack Directus-Postgres replay — the defining fork, resolve in the first iter/spike); the **content
+    capture** (export shared Directus collections + media references — a privileged read, isolation-clean); the
+    **content replay seeder** wired into the snapshot framework + the seeder DAG (M7a), respecting the guard;
+    the **content fidelity gene** in the data-DNA; the **`sim_id`/`skill_path_id`/`resource_id` linkage** so the
+    v1.1 session/assignment seeders' content refs resolve against real content (closing the "free-value refs" gap).
+  - Out: AI-generated/authored content (v1.3 — this replays *real* captured content, it does not generate);
+    recipes/presets (M11); shareability (v1.3).
+**Depends on:** **M9** (the snapshot framework + fidelity DNA + the `stacksnap` CLI it reuses). **Parallel with:** none (M11 curates its output).
+**Open questions:** the content-store fork (above) — the load-bearing decision; whether media/blobs are in-scope
+or refs-only for the demo MVP (S3-private is per-stack-isolated, so blobs *can* be replayed — confirm at build);
+how much of the Directus collection set the demo needs (the believable subset, per the M7c "reachable" discipline).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (M9's contract), `corpus/services/cms.md` (Directus + the `cms` schema), `corpus/ops/seeding-spec.md` (the isolation guard + the session/assignment content refs), `corpus/services/{jobsimulation,skillpath}.md` (the consumers of `sim_id`/`skill_path_id`).
+**Delivers → extends `corpus/ops/snapshot-spec.md`** (the Directus content path + the store decision) **+ updates `corpus/ops/seeding-spec.md`** (content surface promoted from `waived` to `snapshot-seeded`).
+
+### M11: Richer-world recipes, presets + corpus polish
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m11-richer-recipes/](releases/01.20-set-dressing/m11-richer-recipes/)
+**Goal:** The product/discoverability layer that closes v1.2 (the M8-analog): make the full-fidelity worlds
+*usable + discoverable* — refresh presets + recipes so a demo curator gets a real-taxonomy, real-content world
+out of the box, and update the corpus to reflect 100% coverage.
+**Scope:**
+  - In: refreshed **seed presets** (small/mid/large) that now include the taxonomy + content snapshots; an updated
+    **`corpus/ops/demo/` recipe family** (the end-to-end recipes now showcase a *set-dressed* world — real skills
+    in the catalog, real simulations/skill-paths behind the seeded sessions); a **`/demo-snapshot` (or extended
+    `/demo-seed`) skill** for capture/replay; cross-linking + corpus updates (the data-DNA now reads 100%);
+    the **release-close hygiene** carry (any small items surfaced in M9/M10).
+  - Out: new snapshot surfaces (M9/M10 own them); AI-content + shareability (v1.3).
+**Depends on:** **M9 + M10** (curates their output). **Parallel with:** none (the closing milestone before `/developer-kit:close-release`).
+**Open questions:** whether snapshot capture is a curator step or a one-time maintained golden (decide with M9's source decision); `/demo-seed` extension vs a new `/demo-snapshot` skill.
+**KB dependencies:** `corpus/ops/demo/README.md` + the recipes, `corpus/ops/seeding-spec.md`, `corpus/ops/snapshot-spec.md`, the `/demo-seed` skill.
+**Delivers → refreshes `corpus/ops/demo/`** (recipes + presets to full-fidelity) **+ the `/demo-snapshot` skill + the CLAUDE.md skill table.**
+
+### Execution graph (v1.2)
+```
+v1.2 "set dressing" — richer demo worlds: the real taxonomy + content, measured-faithful, to 100% coverage
+   M9 (snapshot framework + fidelity DNA + taxonomy) ─→ M10 (Directus content snapshot-replay) ─→ M11 (recipes + presets + corpus)
+```
+**Sequential.** M9 lands the snapshot framework + the fidelity-DNA dimension, proven on the cleaner taxonomy
+surface (coverage waived→taxonomy-seeded). M10 takes the harder Directus content surface to **100% coverage**.
+M11 curates the full-fidelity worlds into usable recipes/presets + closes the release. No parallel tracks — the
+two snapshot surfaces share one framework + one data-DNA; serializing them keeps the merge surface clean (the
+v1.1 spine discipline).
+
+### Risks (v1.2)
+- **(M10, blocks-100%-coverage)** the **content-store fork** — replaying Directus content per-stack without ever
+  writing shared Directus is the load-bearing unknown. Mitigate: resolve the store decision in an M10 spike
+  *first* (Directus's backing store *is* Postgres → a per-stack Directus-Postgres replay stays in the isolated
+  class); fall back to refs-only believability if a full Directus stand-up proves too heavy for the demo MVP.
+- **(M9, scope)** **embedding fidelity** — carrying 60K-skill pgvector embeddings verbatim through capture/replay
+  (dimension + value integrity) vs recompute. Mitigate: capture verbatim (offline + deterministic), gate it with
+  the embedding-dimension fidelity gene; never recompute (that's AI-content, v1.3).
+- **(M9, scope)** **snapshot reproducibility** — a live privileged read at capture-time isn't replayable offline.
+  Mitigate: commit a captured **golden** to the extensions repo (the M0 record/replay discipline), refreshed on a
+  schema bump (the data-DNA `diff` flags drift).
+- **(cross-cut)** **the isolation guard must hold for privileged reads too** — capture reads a shared/reference
+  source. Mitigate: capture is read-only + audited; replay writes only to per-stack-isolated stores, the existing
+  3-layer guard asserts clean (extend `AssertClean` to cover snapshot replay).
+
+### Open decisions (resolve during build)
+The snapshot *source* (committed golden vs live privileged read) — M9; embedding capture (verbatim vs recompute)
+— M9 (lean verbatim); the **per-stack content-store fork** (per-stack Directus container vs direct
+Directus-Postgres replay) — M10, the defining decision; media/blobs in-scope vs refs-only — M10; `/demo-seed`
+extension vs a new `/demo-snapshot` skill — M11.
 
 ## Done — v1.1 "show floor" (SHIPPED 2026-06-05 · tag `v1.1`)
 
@@ -350,3 +493,6 @@ the rosetta-side milestone records + corpus pointer land on the `m{N}/…` branc
 - Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix has two uses: (1) a milestone **inserted after** the fact — `b` for tooling/cleanup (M1b drift CI, M2b consolidation), and the letter-suffixed *feature* milestone M2c (iterative, "inserted after M2b"); and (2) a **split** of one planned milestone into a sequential mini-arc — **M7a → M7b → M7c** is the single former M7 "seeding" split into framework+safety / data-DNA / fleet (2026-06-04, M7a-D1). Both reuse the letter suffix; context disambiguates. See [`context.md`](context.md).
 - v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 + M2c are iterative** (alignment-score gates).
 - v1.1 "show floor" mixes shapes too: M3–M6 + M7a/M7b + M8 are **section**; **M7c is iterative** (data-DNA coverage gate).
+- v1.2 "set dressing" is **all `section`** (M9/M10/M11) — the snapshot surfaces are decomposable up front (the
+  framework + 2 known surfaces + the product layer); the fidelity gate is a per-surface acceptance check, not an
+  emergent-path iterative gate. (AI-content, the iterative-shaped candidate, was held to v1.3.)
