@@ -10,8 +10,9 @@ builder skills).
 > [`.agentspace/scratch/roadmap-research-2026-06-02.md`](../../.agentspace/scratch/roadmap-research-2026-06-02.md).
 >
 > **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
-> **v1.1 "show floor" — IN DEVELOPMENT** on `release/01.10-show-floor`. M3–M6 shipped (extension framework + demo/
-> dev stacks); seeding redesigned 2026-06-04 into M7a → M7b → M7c → M8. Next action: `/developer-kit:work-milestone M7a`.
+> **v1.1 "show floor" — SHIPPED 2026-06-05** (merged to `main`, tagged `v1.1`; full detail in `## Done — v1.1`
+> below). 8 milestones M3→M8: the 2-repo consolidation + demo/dev stacks + the production-safe seeding stack
+> (framework + data-DNA + fleet) + the corpus product layer. Next action: `/developer-kit:design-roadmap` for v1.2.
 
 ## Version plan
 
@@ -26,7 +27,7 @@ repo** (current or future) and **no disruption to the dev environment** — demo
 gitignored `anthropos-demo/` (mirroring `anthropos-dev/`). Full brief:
 [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.1 "show floor"
+## Done — v1.1 "show floor" (SHIPPED 2026-06-05 · tag `v1.1`)
 
 **Theme (broadened 2026-06-04):** v1.0 made the platform run *without* Clerk; v1.1 started as "disposable
 demo stacks" (M3 ✅) and now becomes **the platform-operations extension framework** — consolidate the repo
@@ -51,13 +52,13 @@ M0 to a data dimension, don't fork it** (M7b-D1) · **the data-DNA is the catalo
 · **the fleet is iterative, gated on data-DNA coverage** (M7c-D1).
 
 ### M3: Disposable multi-instance demo stacks ✅ DONE (2026-06-03; extended close 2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Dir:** [m3-demo-stacks/](releases/01.10-show-floor/m3-demo-stacks/)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m3-demo-stacks/](releases/archive/01.10-show-floor/m3-demo-stacks/)
 Spun up `demo-N` as isolated, Clerkenstein-wired full stacks; the full Clerk-free injected stack + migrate are
 LIVE-PROVEN; the deployment/injection alignment surface (`clerk-deploy-1`, 7/7) landed. 78 demo-stack tests, 218
 clerkenstein funcs. **Delivered** `corpus/ops/rosetta_demo.md` + `/demo-*` skills.
 
 ### M4: Consolidate into the `rosetta-extensions` monorepo ✅ DONE (2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Dir:** [m4-consolidate-extensions/](releases/01.10-show-floor/m4-consolidate-extensions/)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m4-consolidate-extensions/](releases/archive/01.10-show-floor/m4-consolidate-extensions/)
 Created the **`rosetta-extensions`** monorepo (private, 73 commits); `git subtree`-imported `clerkenstein` +
 `rosetta-demo`(→`demo-stack`) **with full history preserved**; the `knowledge/` nav; thinned rosetta to pointers;
 fixed a +1-depth path break the verify gate caught (M4-D4); verified under the new paths (78 demo-stack tests +
@@ -65,7 +66,7 @@ deploy gate 7/7); pushed; **removed the old `clerkenstein` + `rosetta-demo` repo
 M4-D1 (subtree) / D2 (delete-not-archive) / D3 (alignment framework stays in rosetta) / D4 (path-depth fix).
 
 ### M5: Extract the reusable `stack-injection` layer ✅ DONE (2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Dir:** [m5-stack-injection/](releases/01.10-show-floor/m5-stack-injection/)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m5-stack-injection/](releases/archive/01.10-show-floor/m5-stack-injection/)
 Extracted the generic injection (`inject.py`, `gen_injected_override.py`, `apply-authn.sh`) into
 `rosetta-extensions/stack-injection/`, consumable by any stack with a **demo-ON / dev-OFF** toggle; the mock stayed
 in clerkenstein (dependency runs stack-injection→clerkenstein, M5-D1); the port-offset engine stayed in demo-stack
@@ -73,14 +74,14 @@ in clerkenstein (dependency runs stack-injection→clerkenstein, M5-D1); the por
 preserved**, flake 3/3, deploy gate 100%/100%.
 
 ### M6: `dev-stack` — tooled local dev environment ✅ DONE (2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Dir:** [m6-dev-stack/](releases/01.10-show-floor/m6-dev-stack/)
+**Status:** `done` · **Shape:** `section` · **Dir:** [m6-dev-stack/](releases/archive/01.10-show-floor/m6-dev-stack/)
 Extracted the shared port-offset engine into a new **`stack-core/`** section (settles the M5-routed question —
 demo + dev share it, M6-D1) and added a focused **`dev-stack/`**: isolated dev stacks (`dev-N`, offset ports,
 guarded `-p dev-N`), **real Clerk by default**, Clerkenstein injection **optional** (reuses stack-injection).
 Scoped to the proven value (M6-D2 — not speculative multi-dev). **87 tests** (+9), flake 3/3, deploy gate 100%/100%.
 
 ### M7a: Seeding framework + production-isolation safety ✅ DONE (2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/01.10-show-floor/m7a-seeding-framework/)
+**Status:** `done` · **Shape:** `section` · **Complexity:** large · **Dir:** [m7a-seeding-framework/](releases/archive/01.10-show-floor/m7a-seeding-framework/)
 Built `rosetta-extensions/stack-seeding/` — a host Go module that seeds a stack by talking **directly to its
 Postgres** (offset port, `COPY`; *not* ent-linking — `app/internal/bootstrap` is internal, unimportable, M7a-D3)
 behind a **3-layer production-isolation guard** (CheckWrite · PreflightEnv · AssertClean). **LIVE-PROVEN**: a
@@ -90,7 +91,7 @@ login returns **HTTP 200** (`membershipsCount: 1001`). The proof caught + fixed 
 the missing global-policy bootstrap — M7a-D4). **68 tests**, all gates green. Delivered `corpus/ops/seeding-spec.md`.
 
 ### M7b: The data-alignment dimension ("data DNA") ✅ DONE (2026-06-04)
-**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/01.10-show-floor/m7b-data-dna/)
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m7b-data-dna/](releases/archive/01.10-show-floor/m7b-data-dna/)
 Extended the **M0 alignment framework** to a **data** dimension — the `datadna` harness (`rosetta-extensions/
 stack-seeding/dna/`) that (a) enumerates the seedable surfaces (**4 seeded + 6 planned** — the M7c checklist) and
 (b) measures a seeder's output conforms to the platform's **current schema** via **structural operators**
@@ -101,7 +102,7 @@ reads clean on revert. Caught + fixed the planned-surface introspection bug; har
 **dna 49 + cmd/datadna 10 + pg 17 tests.** Delivered the data dimension into `corpus/architecture/alignment_testing.md`.
 
 ### M7c: The seeder fleet, to a coverage gate ✅ DONE (2026-06-05, gate-met-over-reachable + waiver)
-**Status:** `done` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/01.10-show-floor/m7c-seeder-fleet/)
+**Status:** `done` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [m7c-seeder-fleet/](releases/archive/01.10-show-floor/m7c-seeder-fleet/)
 Built the fleet across 5 iters (TOK-01 strategy → jobsim-sessions → skillpath-sessions → assignments → activity),
 each a deterministic **backdated-activity** seeder (time-distributed, pass/fail per `pass_rate`, content refs as
 free values — the believability core is reachable **without** the shared Directus). Drove data-DNA coverage
@@ -113,7 +114,7 @@ skillpath UNIQUE constraint; the introspect-load harness bug). **20 seeder / 145
 `rosetta-extensions/stack-seeding/seeders/` + the `waived` data-DNA status.
 
 ### M8: Corpus + use-case recipes + polish ✅ DONE (2026-06-05) — LAST v1.1 milestone
-**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/01.10-show-floor/m8-corpus-recipes/)
+**Status:** `done` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m8-corpus-recipes/](releases/archive/01.10-show-floor/m8-corpus-recipes/)
 The consolidation/discoverability layer: a **`corpus/ops/demo/` family** (index + 3 end-to-end recipes —
 enterprise-onboarding, skill-progression, browser-login [which lands the 2 M3-deferred injection recipes: the
 `api.clerk.com` cert-redirect + the browser-login walk-through]); **3 seed presets** (small/mid/large, mid-500 +
