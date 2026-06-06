@@ -44,4 +44,16 @@ _`.claude/skills/db-query/SKILL.md` + `corpus/ops/db-access.md`; documents the `
 
 ## Tiny reference surface
 _Proves capture→store→replay→fidelity-gate end-to-end, independent of taxonomy (M0 toy-mirror discipline)._
+
+## Pre-flight audits — §1 (stack-snapshot extension + CLI)
+**KB-fidelity (M9a): GREEN.** Report: [`kb-fidelity-audit.md`](kb-fidelity-audit.md) (sha 232a4fc). All 5 topics
+PAIRED or intentional DOC-ONLY; live-prod verified the db-access.md numbers + the MCP connection. One STALE
+load-bearing claim fixed inline (db-access.md capture-source preference → M9a-D3 precedence).
+
+Topic→doc→code triples (fast-start for later sections):
+- seeding DAG + isolation guard → `corpus/ops/seeding-spec.md` → `rosetta-extensions/stack-seeding/{isolation,seeder,pg}/`
+- data-DNA harness (extend) → `corpus/architecture/alignment_testing.md` §"data dimension" → `stack-seeding/dna/` + `cmd/datadna`
+- read foundation + public/customer boundary → `corpus/ops/db-access.md` + `/db-query` → live prod (MCP `postgres`)
+- full-clone contrast → `corpus/ops/staging_from_dump.md` (operational, no code)
+- snapshot extension (deliver) → `corpus/ops/snapshot-spec.md` (M9a authors) → `rosetta-extensions/stack-snapshot/` (M9a creates)
 </content>

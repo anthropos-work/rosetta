@@ -31,8 +31,11 @@ customer-scoped rows as if they were shareable reference data.**
    **catalog-only** queries — `pg_class.reltuples`, `pg_total_relation_size(oid)`, `information_schema.columns` —
    which are instant and scan nothing. Avoid `COUNT(*)` / full scans on the GB tables (`skiller.skill_embeddings`,
    `skiller.skills`, `public.ai_usages`, `jobsimulation.interactions/validation_*/activity_events`). The snapshot
-   **capture-source policy** ([`snapshot-spec.md`](snapshot-spec.md)) generalizes this: never read the hot primary
-   under load — read a **non-primary copy** (read replica → restore-from-backup) and bound the session.
+   **capture-source policy** ([`snapshot-spec.md`](snapshot-spec.md)) generalizes this with a source-pluggable
+   precedence (M9a-D3): **ingest an existing prod `pg_dump` [default, zero new prod load]** → **safe throttled
+   primary read [fallback]** (MVCC means a read-only `SELECT`/`COPY` never blocks writers — off-peak + chunked +
+   bounded is tolerable) → **restore-from-snapshot / read replica [zero-primary-impact upgrades, once AWS/infra is
+   wired]**. Whichever the source, **bound the session** (`SET TRANSACTION READ ONLY`, `statement_timeout`).
 2. **The public ↔ customer boundary.** `organization_id IS NULL` = **global/public** reference data;
    `organization_id = <uuid>` = **customer-private**. Anything that *leaves* prod (a snapshot) must be **public
    only** — the snapshot tenant-data firewall (`AssertPublicOnly`) hard-fails on any captured row with a non-null
