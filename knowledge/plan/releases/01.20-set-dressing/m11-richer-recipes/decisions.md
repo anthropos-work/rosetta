@@ -13,3 +13,51 @@ _Implementation decisions with rationale. ID scheme: M11-D1, M11-D2, …_
 _(none)_ — all M11 work landed Fate-1. No items punted; no escape-hatch invoked. The only candidate (DEF-M10-01
 S3 blob bytes) is already Fate-2-covered by the v1.3 cloud-store roadmap-vision seed (recorded in M10's decisions),
 and M11's media-ref handling honors that boundary (refs are the floor; blob bytes are v1.3).
+Re-confirmed GREEN at the M11 close deferral re-audit:
+[`audit-deferrals/deferral-audit-2026-06-06-m11-close.md`](audit-deferrals/deferral-audit-2026-06-06-m11-close.md).
+
+## Adversarial review (close Phase 2c)
+The close ran an external-perspective pass over each non-trivial M11 surface. M11 ships **no new
+production code path** — only a one-line help-text fix, comment-only preset headers, two regression
+test files, and markdown. The scenarios therefore target the *contracts* the milestone pins and the
+docs it ships, not new runtime behavior:
+
+1. **A new snapshot surface is registered but the `--help` text is never updated** (the exact M10→M11
+   drift class). → `TestHelp_NamesEveryRegisteredSurface` drives off `surfaceNames()`, so ANY
+   future registered-but-unlisted surface fails, not just `directus`. Mutation-proven: dropping the
+   directus line / reverting the tag → both `TestHelp_*` FAIL. **Handled.**
+2. **The `/demo-snapshot` skill (sibling rosetta repo) documents a `stacksnap` flag the parser
+   doesn't have, or a parser rename strands a documented flag.** → `TestDocsFlagsExistInParser`
+   probes the live parser for every documented flag; `TestDroppedDumpFlagStaysGone` asserts the
+   M9b-D9-removed `--dump` never returns. The cross-repo contract is mirrored as an explicit list
+   with a lockstep comment. **Handled** (the asymmetry that bites — code drifting from the docs — is
+   what's probed).
+3. **A preset edit (the M11 §1 comment header, or any future change) silently breaks a shipped
+   preset past the strict `KnownFields(true)` loader, surfacing only at a curator's runtime.** →
+   `TestShippedPresets_ParseStrictAndValidate` loads every shipped file through the CLI's exact
+   Load+Validate path. Mutation-proven: an unknown field → FAIL; a pure comment line → PASS (proving
+   the comment-only header style is safe). `TestShippedPresets_SizesAreDistinctAndOrdered` guards the
+   small<mid<large contract the README size table advertises. **Handled.**
+4. **A documented `--source` value (`dump-ingest`/`primary-read`) drifts from the real
+   `source.Kind` constants.** → `TestDocumentedSourceKindsAreReal` resolves each documented kind AND
+   asserts the literal string matches the constant. **Handled.**
+
+No scenario revealed an unhandled risk; all are pinned by the harden-pass regression tests, each
+mutation-verified to bite. No escape-hatch / documented-risk acceptance was needed.
+
+## Decision triage (close Phase 5)
+- **M11-D1** (`/demo-snapshot` is a NEW skill) → already blended: the rationale (capture = privileged
+  prod READ vs seeding = per-stack WRITE; sibling extensions; replay-headline/capture-rare) is woven
+  into the `/demo-snapshot` SKILL.md, `recipe-snapshot-world.md`, and the README flow. **Stays
+  archive** (the "why" is in the corpus; full options-considered list stays here).
+- **M11-D2** (snapshot capture is a cache-first golden, not a per-curator step) → already blended into
+  `recipe-snapshot-world.md` ("almost always a cache-hit", `store.Resolve` zero-prod-read) + the
+  skill body. **Stays archive.**
+- **M11-D3** (presets stay structural; snapshot prerequisite documented, not encoded) → already
+  blended into each preset's FULL-FIDELITY PREREQUISITE header + the README preset paragraph.
+  **Stays archive.**
+- **M11-D4** (the `stacksnap --help` hygiene fix) → maintainer-only code-hygiene record; the fixed
+  help text is self-documenting and pinned by `TestHelp_*`. **Stays archive.**
+
+No decision needs a net-new knowledge edit — all the user-facing "why" already flowed into the corpus
+during build. Nothing maintainer-only was promoted.

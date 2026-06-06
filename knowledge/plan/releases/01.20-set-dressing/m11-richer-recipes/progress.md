@@ -46,5 +46,38 @@
 ### Stop condition
 Loop stopped after Pass 1 (expected short pass for a docs/discoverability milestone): the Step 2b scan found exactly the two real Fate-1 gaps (the unpinned help contract + the unloaded shipped presets, plus the docs↔parser drift), all closed; coverage delta negligible by design (assertion-depth, not line, was the gap); zero flakes. Remaining touched surface is markdown (not testable) and live-DB paths (out of hermetic scope, integration-covered).
 
-## Final review
-_(filled at close)_
+## M11: Final Review
+
+Review found **0 findings** — the build + harden left a clean surface (the milestone is docs/
+discoverability over already-shipped M9a/M9b/M10 code). Nothing required a Phase 7 fix beyond the
+close's own bookkeeping (the deferral re-audit record + the adversarial/triage entries in
+decisions.md).
+
+### Scope
+- [x] All 5 sections checked off in the section checklist; every overview `Scope.In` item maps to a
+      delivered artifact (presets, recipe family + new recipe-snapshot-world.md, the /demo-snapshot
+      skill, corpus cross-links + CLAUDE.md row, the §5 hygiene fix). No silent drops; 0 code
+      TODO/FIXME/HACK in M11-touched source.
+
+### Code Quality
+- [x] [verified] `stacksnap --help` fix correct (tag → M9a/M9b/M10, lists `directus` with M10
+      provenance); preset headers are well-formed comment-only blocks, consistent across all three;
+      the 2 new test files are registry-driven + provenance-commented. gofmt clean, `go vet` clean,
+      both modules `-race` green. No must/should/nice findings.
+
+### Documentation
+- [x] [verified] README/recipes/skill/CLAUDE.md all refreshed; the false "waived/future-v1.2" note
+      removed from recipe-skill-progression; all cross-references resolve (snapshot-spec ↔ demo
+      family ↔ new recipe bidirectional). Per-unit handbook contract: the new /demo-snapshot skill is
+      indexed in CLAUDE.md (line 31) + the demo README skills list.
+
+### Tests & Benchmarks
+- [x] [verified] 708 Go funcs (+7 over M10's 701: 5 in main_drift_test.go + 2 in presets_test.go).
+      Counts reconciled to ground truth; no handbook quotes hardcoded counts. Flake gate 5/5 clean
+      (shuffled, both M11-touched packages). No new benchmark-relevant code.
+
+### Decision Triage
+- [x] M11-D1/D2/D3 → archive (the user-facing "why" already blended into the corpus during build —
+      verified accurate). M11-D4 → archive (maintainer-only code hygiene; pinned by `TestHelp_*`).
+- [x] Adversarial review (Phase 2c): 4 scenarios recorded in decisions.md, each pinned by a
+      mutation-verified harden test; no unhandled risk.

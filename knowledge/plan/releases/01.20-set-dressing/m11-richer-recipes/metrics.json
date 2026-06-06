@@ -1,0 +1,73 @@
+{
+  "milestone": "M11",
+  "title": "Richer-world recipes, presets + corpus polish: the product/discoverability layer that closes v1.2 — refreshed seed presets (snapshot prerequisite documented) + the set-dressed corpus/ops/demo/ recipe family (+ new recipe-snapshot-world.md) + the /demo-snapshot skill + corpus cross-links + CLAUDE.md skill-table row + the stacksnap --help hygiene fix",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-06",
+  "is_last_milestone": true,
+  "kind": "curation/discoverability over the shipped M9a/M9b/M10 snapshot surfaces — no new production code path (a one-line help-text fix, comment-only preset headers, 2 regression test files, and markdown); makes the 100%-coverage full-fidelity world usable + discoverable; the M8-analog that closes v1.2",
+  "tests": {
+    "go_total": 708,
+    "go_delta_vs_m10": 7,
+    "by_module": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 232,
+      "stack-snapshot": 212
+    },
+    "stack_snapshot_delta": "+5 (207 -> 212): the harden regression set in cmd/stacksnap/main_drift_test.go — TestHelp_NamesEveryRegisteredSurface + TestHelp_FrameworkTagIncludesLatestMilestone (pin the §5/M11-D4 help fix, registry-driven) + TestDocsFlagsExistInParser + TestDroppedDumpFlagStaysGone + TestDocumentedSourceKindsAreReal (the docs<->parser drift guard for the /demo-snapshot skill + recipes)",
+    "stack_seeding_delta": "+2 (230 -> 232): blueprint/presets_test.go — TestShippedPresets_ParseStrictAndValidate (each shipped preset through Load[strict KnownFields]+Validate) + TestShippedPresets_SizesAreDistinctAndOrdered (small<mid<large contract)",
+    "fuzz_targets": "none added in M11 (the M9a/M9b/M10 targets unchanged; M11 added no new parser/data path to fuzz)",
+    "race": "both Go modules pass go test ./... -race",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean across shuffled sequential runs of both M11-touched packages (stack-snapshot/cmd/stacksnap, stack-seeding/blueprint)"
+  },
+  "coverage": {
+    "note": "harden ran 1 pass (expected short pass for a docs/discoverability milestone; cap not needed). The M11-touched code gaps were assertion-depth, not line: cmd/stacksnap statements 77.7% -> 77.7% (usage was already line-executed by TestRun_Help; the help string content was the unpinned gap). The blueprint preset tests load the real shipped files (a path the suite never exercised before) — value is regression-pinning the product files, not a % move. Remaining uncovered statements are live-DB capture/replay paths (integration-tested, need Postgres; not M11-touched).",
+    "by_package_m11_touched_after_harden": {
+      "cmd/stacksnap_help_contract": "100% assertion-pinned (help string content now pinned by TestHelp_* + the docs<->parser drift guards; package total 77.7%, unchanged — the gap was depth not lines)",
+      "blueprint_shipped_presets": "the 3 shipped preset files now loaded through the CLI's strict Load+Validate path (new regression anchor; package total unchanged)"
+    }
+  },
+  "delivered": {
+    "presets": "small-200/mid-500/large-1k gained a documented FULL-FIDELITY PREREQUISITE comment-header (replay taxonomy + directus snapshots BEFORE seeding for a set-dressed world; graceful structural-only degradation without). Presets stay PURELY STRUCTURAL — snapshots are stack-global reference data, not org-scoped, so no schema field added (M11-D3)",
+    "recipe_family": "both org/onboarding + skill-progression recipes gained a /demo-snapshot replay step + call out the set-dressed result (real catalog in the skills view, real templates behind seeded sessions); the FALSE 'waived/future-v1.2' Notes paragraph in recipe-skill-progression.md rewritten to the shipped reality (taxonomy + content snapshot-seeded, 100% coverage); NEW recipe-snapshot-world.md documents the capture->replay->set-dressed-world flow end-to-end, cross-linked from the README index",
+    "demo_snapshot_skill": ".claude/skills/demo-snapshot/SKILL.md — a NEW skill (M11-D1, resolves M11-Q2) driving the stacksnap CLI (replay [headline] / capture [rare maintenance] / status); frontmatter + body follow the /demo-seed convention; source-of-truth pointer to snapshot-spec.md; flags verified against the real parser by the drift tests",
+    "corpus_crosslinks": "CLAUDE.md skills table gained the /demo-snapshot row (guide -> snapshot-spec.md) + a key-docs entry; snapshot-spec <-> seeding-spec <-> the demo family + the new recipe cross-linked bidirectionally; the demo README indexes the snapshot-spec mechanism guide + the new recipe + lists /demo-snapshot in the flow and skills; data-DNA reads 100% throughout",
+    "hygiene_fix": "the stale stacksnap --help text fixed (M11-D4, §5): framework tag M9a/M9b -> M9a/M9b/M10 + the registered-but-unlisted directus surface now listed (the M11 KB-fidelity audit's help-vs-registry drift finding)",
+    "coverage_statement": "data-DNA remains 100% over the full catalog (both formerly-waived surfaces snapshot-seeded since M9b/M10); M11 makes that fully discoverable in the corpus + curator flow"
+  },
+  "extensions": {
+    "module": "rosetta-extensions/stack-snapshot/ (cmd/stacksnap help fix + drift tests) and stack-seeding/ (preset headers + presets test)",
+    "head": "1e18df6",
+    "tag": "stack-snapshot-m11",
+    "build_commits": [
+      "7987e1d (M11 §1: document the snapshot prerequisite in the three seed presets)",
+      "ae59150 (M11 §5 hygiene carry: fix stale stacksnap --help — M10 directus surface)"
+    ],
+    "harden_commits": [
+      "767c291 (harden: pin the stacksnap --help contract + docs<->parser flag drift)",
+      "1e18df6 (harden: pin the shipped seed presets parse + validate)"
+    ],
+    "close_commit": "none — close found 0 extensions-code findings (the tag is set at 1e18df6, the final harden HEAD)"
+  },
+  "review": {
+    "findings": 0,
+    "scope": "GREEN — all 5 sections checked; every overview Scope.In item maps to a delivered artifact; 0 code TODO/FIXME/HACK in M11-touched source; M11-D1..D4 recorded; M11-Q1/Q2 resolved to D-numbers",
+    "code_quality": "GREEN — the --help fix correct (tag + directus surface with M10 provenance); preset headers well-formed comment-only blocks, consistent across all three; the 2 new test files registry-driven + provenance-commented; gofmt clean, go vet clean, both modules -race green",
+    "docs": "GREEN — README/recipes/skill/CLAUDE.md refreshed; the false 'waived/future-v1.2' note removed; all cross-references resolve bidirectionally; per-unit handbook contract met (the /demo-snapshot skill indexed in CLAUDE.md + the demo README)",
+    "tests": "GREEN — 708 Go total (+7 over M10's 701); both modules -race green; flake gate 5/5 both M11-touched packages; counts reconciled to ground truth, no handbook drift",
+    "decision_triage": "0 net-new knowledge edits — M11-D1/D2/D3's user-facing 'why' already blended into the corpus during build (verified accurate); M11-D4 maintainer-only (pinned by TestHelp_*); all stay archive",
+    "adversarial": "4 scenarios recorded (Phase 2c): registered-but-unlisted surface, docs<->parser flag drift / dropped --dump, preset strict-load drift past KnownFields, --source value<->constant drift — each pinned by a mutation-verified harden test; no unhandled risk, no documented-risk acceptance needed",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.20-set-dressing/m11-richer-recipes/audit-deferrals/deferral-audit-2026-06-06-m11-close.md — 1 inherited (DEF-M10-01 S3 blob bytes, Fate-2 -> v1.3, unchanged), 0 repeat, 0 aged-out, 0 new; M11 added zero deferrals (all Fate-1)"
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 5 sections (presets, recipe family + new recipe, /demo-snapshot skill, corpus cross-links + CLAUDE.md, the §5 hygiene fix)",
+    "confirmed_covered_fate2": "DEF-M10-01 (S3 blob bytes) -> v1.3 cloud-store seed (inherited, unchanged)",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none"
+  },
+  "notes": "M11 is the LAST milestone of v1.2 'set dressing'. It is the M8-analog product/discoverability layer: it curates the 100%-coverage full-fidelity world (shipped by M9a/M9b/M10) into usable presets + recipes + the /demo-snapshot skill, with zero new production code path. Build was sound; the single harden pass pinned two real Fate-1 gaps (the unpinned help contract + the unloaded shipped presets, plus a docs<->parser drift guard) — no production-code defect surfaced. Close found 0 findings. With M11 closed, v1.2 is complete -> the next step is /developer-kit:close-release (merge release/01.20-set-dressing -> main, tag v1.2). The close-milestone Phase 11 merges m11/richer-recipes -> release/01.20-set-dressing and sets the stack-snapshot-m11 extensions tag at 1e18df6; it does NOT run close-release.",
+  "next": "v1.2 is complete (M11 was the last milestone) -> /developer-kit:close-release (release-level review + merge release/01.20-set-dressing -> main + tag v1.2)"
+}
