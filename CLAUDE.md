@@ -28,6 +28,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
 | `/demo-status` | List running demo stacks and their details | `corpus/ops/rosetta_demo.md` |
 | `/demo-seed` | Seed a demo stack with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |
+| `/demo-snapshot` | Set-dress a stack — replay the real public taxonomy + Directus content into it (or capture/status) | `corpus/ops/snapshot-spec.md` |
 | `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
 | `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 
@@ -264,12 +265,13 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/run_guide.md`: Start the platform locally after setup
 - `corpus/ops/webhook_setup.md`: Configure Clerk webhooks for user/org sync
 
-### Demo Environments (disposable, Clerk-free, seeded — v1.1 "show floor")
-- `corpus/ops/demo/README.md`: **The demo-env family index** — the up→seed→use→down flow + recipes + presets
+### Demo Environments (disposable, Clerk-free, seeded + set-dressed — v1.1 "show floor" + v1.2 "set dressing")
+- `corpus/ops/demo/README.md`: **The demo-env family index** — the up→snapshot→seed→use→down flow + recipes + presets
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
-- `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA
+- `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)
 - `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
-- `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a) — capture a public reference surface once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack; the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
+- `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/demo-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
+- `corpus/ops/demo/recipe-snapshot-world.md`: The **set-dressing recipe** — capture→replay the real public library so a demo world's catalog + content templates are real
 
 ### Updating the Platform
 - `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
