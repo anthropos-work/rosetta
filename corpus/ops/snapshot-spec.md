@@ -59,10 +59,17 @@ A capture must never block the hot primary. The source is **pluggable** and trie
 | # | Source | When it applies | Prod impact |
 |---|--------|------|-------------|
 | 0 | **cache-hit** | the cached manifest's schema version matches the stack | **zero read** |
-| 1 | **dump-ingest** *(default)* | a prod `pg_dump` exists (staging already produces them) | **zero new load** |
+| 1 | **dump-ingest** *(default)* | a staging prod `pg_dump` exists → restore it into a throwaway Postgres, point `--dsn` at the restore | **zero new prod load** (the restore is the ingest) |
 | 2 | **primary-read** *(fallback)* | only a read DSN is available | low — see below |
 | 3 | **restore-from-snapshot** *(upgrade)* | once eu-west-1 AWS access is wired | zero (throwaway instance) |
 | 4 | **read-replica** *(upgrade)* | once a terraform replica exists | zero (cleanest steady state) |
+
+**Both live sources read over `--dsn`** — there is **no offline pg_dump-FILE reader**. A `pg_dump` is "ingested" by
+**restoring it into Postgres and pointing `--dsn` at the restore** (Postgres bulk-load handles the restore well; a
+schema-scoped `pg_dump -n skiller` is small to restore). `dump-ingest` and `primary-read` differ only in *what*
+`--dsn` addresses — a restored dump vs the prod read endpoint — plus the manifest label + precedence. (A direct
+offline file-reader was considered and **dropped**, M9b-D9: it adds no new capability — the produced snapshot is
+identical — and no reliable speed gain; restore-then-`--dsn` + the safe primary read cover the need.)
 
 **Why a safe primary read is tolerable (the MVCC correction).** PostgreSQL MVCC means a read-only `SELECT`/`COPY`
 **never takes a lock that conflicts with writers** — the only cost is I/O + buffer-cache pressure. So an off-peak,
@@ -156,13 +163,15 @@ captured dimension.
 
 ```bash
 stacksnap capture --surface <name> [--source dump-ingest|primary-read] \
-                  [--dsn <prod read DSN>] [--dump <pg_dump path>] [--store <root>] [--dry-run]
+                  --dsn <DSN> [--store <root>] [--dry-run]
 stacksnap replay  --surface <name> --stack <demo-N|dev-N> [--dsn <base>] \
                   [--schema-version <ver>] [--store <root>]
 stacksnap status  [--store <root>]
 ```
 
-- **`capture`** reads a public surface once from a safe source, firewalls it, and serializes it to the store.
+- **`capture`** reads a public surface once **over `--dsn`** (a restored-dump Postgres for `dump-ingest`, the prod
+  read endpoint for `primary-read`), firewalls it, and serializes it to the store. `--source` (or the default
+  precedence) picks the kind; both kinds read over `--dsn` — there is no `--dump` file path (M9b-D9).
   **`--dry-run`** sizes the surface (catalog-only) and asserts the firewall plan **without reading data** — the
   cheap pre-flight before a real read.
 - **`replay`** resolves cache-hit vs stale against the stack's live schema, then loads the cached snapshot via bulk
