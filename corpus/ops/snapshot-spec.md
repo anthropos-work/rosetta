@@ -4,10 +4,13 @@
 the global content library) is **captured once from production safely**, cached outside git, and **replayed into
 any stack** — with a tested **tenant-data firewall** (never customer data) and a **measured fidelity** gate.
 
-> **Scope.** This doc covers the **M9a framework**: the capture/serialize/replay contract + portable format, the
+> **Scope.** This doc covers the **M9a framework** (the capture/serialize/replay contract + portable format, the
 > production-safe capture-source policy, the tenant-data firewall, the `.agentspace` manifest-cached pluggable
-> store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension. The first *real* surface (the ~2.1 GB
-> public taxonomy) is **M9b**; the public Directus content library is **M10**; richer-world recipes are **M11**.
+> store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension) **plus the M9b taxonomy surface** — the
+> first *real* surface (the ~2.1 GB public skiller catalog: the 10-table set, the parent-scope capture filter, the
+> pgvector index-rebuild-on-replay, and the `datadna measure-snapshot` fidelity gate; see [The taxonomy
+> surface](#the-taxonomy-surface-m9b--the-first-real-surface)). The public Directus content library is **M10**;
+> richer-world recipes are **M11**.
 > The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
 > snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
@@ -56,10 +59,17 @@ A capture must never block the hot primary. The source is **pluggable** and trie
 | # | Source | When it applies | Prod impact |
 |---|--------|------|-------------|
 | 0 | **cache-hit** | the cached manifest's schema version matches the stack | **zero read** |
-| 1 | **dump-ingest** *(default)* | a prod `pg_dump` exists (staging already produces them) | **zero new load** |
+| 1 | **dump-ingest** *(default)* | a staging prod `pg_dump` exists → restore it into a throwaway Postgres, point `--dsn` at the restore | **zero new prod load** (the restore is the ingest) |
 | 2 | **primary-read** *(fallback)* | only a read DSN is available | low — see below |
 | 3 | **restore-from-snapshot** *(upgrade)* | once eu-west-1 AWS access is wired | zero (throwaway instance) |
 | 4 | **read-replica** *(upgrade)* | once a terraform replica exists | zero (cleanest steady state) |
+
+**Both live sources read over `--dsn`** — there is **no offline pg_dump-FILE reader**. A `pg_dump` is "ingested" by
+**restoring it into Postgres and pointing `--dsn` at the restore** (Postgres bulk-load handles the restore well; a
+schema-scoped `pg_dump -n skiller` is small to restore). `dump-ingest` and `primary-read` differ only in *what*
+`--dsn` addresses — a restored dump vs the prod read endpoint — plus the manifest label + precedence. (A direct
+offline file-reader was considered and **dropped**, M9b-D9: it adds no new capability — the produced snapshot is
+identical — and no reliable speed gain; restore-then-`--dsn` + the safe primary read cover the need.)
 
 **Why a safe primary read is tolerable (the MVCC correction).** PostgreSQL MVCC means a read-only `SELECT`/`COPY`
 **never takes a lock that conflicts with writers** — the only cost is I/O + buffer-cache pressure. So an off-peak,
@@ -153,13 +163,15 @@ captured dimension.
 
 ```bash
 stacksnap capture --surface <name> [--source dump-ingest|primary-read] \
-                  [--dsn <prod read DSN>] [--dump <pg_dump path>] [--store <root>] [--dry-run]
+                  --dsn <DSN> [--store <root>] [--dry-run]
 stacksnap replay  --surface <name> --stack <demo-N|dev-N> [--dsn <base>] \
                   [--schema-version <ver>] [--store <root>]
 stacksnap status  [--store <root>]
 ```
 
-- **`capture`** reads a public surface once from a safe source, firewalls it, and serializes it to the store.
+- **`capture`** reads a public surface once **over `--dsn`** (a restored-dump Postgres for `dump-ingest`, the prod
+  read endpoint for `primary-read`), firewalls it, and serializes it to the store. `--source` (or the default
+  precedence) picks the kind; both kinds read over `--dsn` — there is no `--dump` file path (M9b-D9).
   **`--dry-run`** sizes the surface (catalog-only) and asserts the firewall plan **without reading data** — the
   cheap pre-flight before a real read.
 - **`replay`** resolves cache-hit vs stale against the stack's live schema, then loads the cached snapshot via bulk
@@ -189,6 +201,93 @@ Go tests are **hermetic** (the DB behind small `Capturer` / `Replayer` / `Fideli
 fakes); the end-to-end test composes the *real* capture + store + replay packages through one in-memory DB and
 asserts row-count parity, the vector rebuild, the stale-cache refresh path, and that **customer data never crosses
 the firewall**. A live-run recipe (the DDL in `reference/reference.go`) stands the surface up in a throwaway schema.
+
+## The taxonomy surface (M9b — the first REAL surface)
+
+M9b proves the framework on the live **public skiller taxonomy** — the ~60K-skill / 18K-role library behind the
+product (~2.1 GB, prod-measured ~98% public). The surface is enumerated in `stack-snapshot/taxonomy/` (one source of
+truth shared by the CLI registry, the fidelity gene, and any live-run recipe): `stacksnap capture --surface taxonomy`.
+
+### The 10 tables, in FK (replay) dependency order
+
+A table is listed AFTER every table it references, so a bulk-COPY replay never violates an FK:
+
+| # | Table | Capture scope | Public rows (2026-06-06) |
+|---|-------|---------------|--------------------------|
+| 1 | `skiller.categories` | `organization_id IS NULL` | 22 |
+| 2 | `skiller.job_role_categories` | **pure-reference** (no org column) — captured whole | 22 |
+| 3 | `skiller.specializations` | `organization_id IS NULL` | 1,442 |
+| 4 | `skiller.skills` | `organization_id IS NULL` | 42,763 |
+| 5 | `skiller.job_roles` | `organization_id IS NULL` | 22,315 |
+| 6 | `skiller.skill_embeddings` | public-via `skills` — vector `small_embedding3` dim **1536** | 42,763 |
+| 7 | `skiller.job_role_embeddings` | public-via `job_roles` — vector `small_embedding3` dim 1536 | 18,904 |
+| 8 | `skiller.skill_translations` | public-via `skills` | 85,491 |
+| 9 | `skiller.job_role_translations` | public-via `job_roles` | 43,550 |
+| 10 | `skiller.job_role_skills` | public-via **BOTH** `job_roles` AND `skills` | 72,556 |
+
+The FK graph: `skills.parent → specializations`, `specializations.parent → categories`,
+`job_roles.category_id → job_role_categories` (a **separate** pure-reference parent — NOT `skiller.categories`),
+the embeddings/translations → their parent, and `job_role_skills → {job_roles, skills}`. The public hierarchy is
+referentially closed: 0 public skills with a customer/missing specialization parent, 0 public specs with a
+customer/missing category, 0 public roles with a missing category.
+
+### The parent-scope capture filter (the M9a-framework extension M9b adds)
+
+The embedding/translation/link tables carry **no `organization_id` of their own** — they are public iff their
+parent skill/role is public. M9a recorded the parent name (`PublicVia`) in the manifest but applied an **empty**
+capture filter to column-less tables (it would have captured the whole table, including customer-parented rows).
+M9b closes this with `TableSpec.ParentScopes` (the FK column + the public-bearing parent) so the capture applies a
+real predicate:
+
+```sql
+-- one parent (skill_embeddings / skill_translations):
+skill_id IN (SELECT id FROM skiller.skills WHERE organization_id IS NULL)
+-- two parents, ANDed (job_role_skills — role AND skill must both be public):
+job_role_id IN (SELECT id FROM skiller.job_roles WHERE organization_id IS NULL)
+  AND skill_id IN (SELECT id FROM skiller.skills WHERE organization_id IS NULL)
+```
+
+The post-capture firewall probe (`AssertCaptured`) is parent-aware: for a column-less table it counts rows **within
+the captured set** whose parent is a customer row (the capture filter ANDed with the inverse predicate) — 0 by
+construction for a correct filter, a hard abort otherwise.
+
+**Why `job_role_skills` needs both endpoints.** Prod has **3** rows where a public role links a customer skill.
+Scoping by the role alone would capture those 3 links whose `skill_id` is absent from the public skill set → FK
+orphans on replay. Both-endpoints scoping keeps the surface referentially closed (`72,559` public-role links − 3 =
+`72,556`).
+
+### The pgvector index rebuild on replay
+
+`skill_embeddings` is 692 MB total but its **heap is only ~3 MB** — ~689 MB is the IVFFLAT index. The vectors are
+carried verbatim in the payload; the **index is NOT transported**. Replay loads the rows then `REINDEX TABLE`s to
+populate the index DDL the stack's migrated schema already defines (the platform migration owns the index params;
+replay does not re-issue `CREATE INDEX`). The **embedding-dimension fidelity gene** then confirms the replayed
+vectors carry the captured width (1536, read catalog-only via `atttypmod`).
+
+### Captured columns exclude the generated `ts_search`
+
+The taxonomy tables carry a `ts_search` tsvector that the stack regenerates; it is **not** in the captured column
+set (it would be stale on replay). The captured set is the identity + descriptive + scope columns the COPY
+serializes in order.
+
+### The fidelity measure (`datadna measure-snapshot`)
+
+The two-sided fidelity gene needs a **source** side (the captured manifest) and a **replay** side (the live stack).
+M9b wires both: `dna.CapturedFromManifest` derives the per-table expectations from a real `manifest.json` (refusing
+a non-public-only manifest), and `datadna measure-snapshot --stack demo-N --dna <dna> --manifest <taxonomy.json>`
+runs the five fidelity operators (row-count / structural / referential / embedding-dim / public-only) against the
+replayed stack, exiting non-zero if critical fidelity < 100%.
+
+**Read-side public-only is asymmetric to the capture side** (pinned by the M9b hardening pass — `PgFidelityProbe`):
+- A table **with an org column** (categories/specializations/skills/job_roles) is tenant-checked directly — the
+  probe counts replayed rows whose `organization_id` is non-null, which must be 0.
+- A **column-less** table (embeddings/translations/`job_role_skills`) reports **0 tenant rows by construction** and
+  the probe short-circuits without a second query: it has no org column of its own to count, AND the replayed stack
+  holds only the public snapshot — there is no customer parent in the stack for a row to reference. The capture-side
+  parent-scope leak probe (above) is what actually enforces public-only for these tables; on the replay side there
+  is simply nothing customer-scoped left to find. The embedding-dimension probe is likewise catalog-only
+  (`atttypmod`): a non-vector column reads `NULL`/`-1` and is rejected as "not a fixed-dimension vector" rather than
+  passing the gene as a 0-dim vector.
 
 ## See also
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.

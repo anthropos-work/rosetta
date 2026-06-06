@@ -37,10 +37,11 @@ clean, the close found 1 finding (a trailing tag) and zero code defects.
   bounded read-only session (`SET TRANSACTION READ ONLY` + timeouts) caps the impact.
 
 ## What didn't / constraints
-- **dump-ingest selects but still needs a DSN in M9a.** The offline pg_dump *reader* is deferred to the M9b
-  path (the dump-format work belongs with the first real surface); for M9a, `dump-ingest` resolves but the
-  CLI requires `--dsn` to stream from a restored dump. Documented in the CLI + spec — not a gap, a scoped
-  boundary.
+- **dump-ingest = restore-then-`--dsn`.** ~~The offline pg_dump *reader* is deferred to the M9b path.~~
+  **RESOLVED in M9b: the offline file-reader was DROPPED** (M9b-D9, 2026-06-06 — user). Dump-ingest is
+  the restore-the-dump-into-Postgres-then-`--dsn` path (plus the safe-primary-read path); there is no
+  direct offline file reader and it is not deferred to any later release. The CLI requires `--dsn` by
+  design — point it at a restored dump or the safe prod read endpoint.
 - **The live capture path is proven only on the toy surface.** The real ~2.1 GB taxonomy read (and the
   pgvector index-rebuild cost) is M9b's job; M9a proves the *mechanism* hermetically + on `reference-toy`,
   not against prod scale. That is the intended split.
@@ -52,7 +53,9 @@ clean, the close found 1 finding (a trailing tag) and zero code defects.
 - Prove the framework on the **real public taxonomy** — `skiller.{categories,specializations,skills,
   job_roles}` filtered `organization_id IS NULL`, embeddings/translations via the public parent, bulk-`COPY`
   replay, **rebuild the ~689 MB pgvector index on replay** (carry vectors verbatim).
-- Wire the **offline dump-ingest reader** (the M9a-scoped boundary above) as part of the first real capture.
+- ~~Wire the **offline dump-ingest reader** as part of the first real capture.~~ **CUT — DROPPED in M9b**
+  (M9b-D9, 2026-06-06, user): restore-then-`--dsn` + the safe primary read cover the need; the direct
+  file-reader adds no new capability and no reliable speed gain. Not carried forward, not seeded to v1.3.
 - **Tag after the final harden pass**, not at build-end (the one close finding).
 
 ## Metrics delta (from metrics.json)

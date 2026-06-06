@@ -3,8 +3,9 @@ milestone: M9b
 slug: taxonomy-snapshot
 version: v1.2 "set dressing"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-06
+last_updated: 2026-06-06
 complexity: large
 delivers: extends corpus/ops/snapshot-spec.md (the taxonomy capture/replay path) + updates corpus/ops/seeding-spec.md (taxonomy promoted waived → snapshot-seeded)
 ---

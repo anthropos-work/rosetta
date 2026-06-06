@@ -72,7 +72,9 @@ concurrently. The canonical order:
 migrate → Sentinel policy → org → users → memberships + casbin + feature → taxonomy/content (snapshot) → activity
 ```
 
-M7a ships the spine: `org` → `users` (bulk COPY) and the `identity` seeder. M7c fills the fleet.
+M7a ships the spine: `org` → `users` (bulk COPY) and the `identity` seeder. M7c fills the fleet. **M9b** wires the
+`taxonomy` snapshot node into the DAG (the public skiller catalog, replayed out-of-band; `activity` orders behind
+it) — see [`snapshot-spec.md`](snapshot-spec.md#the-taxonomy-surface-m9b--the-first-real-surface).
 
 ### The production-isolation boundary (the safety contract)
 
@@ -140,14 +142,21 @@ of the alignment framework (full reference:
 [`../architecture/alignment_testing.md`](../architecture/alignment_testing.md) § "The data dimension"):
 
 ```bash
-datadna catalog   --dna <dna.json>                       # the seedable-surface catalog (seeded / planned / waived + coverage)
+datadna catalog   --dna <dna.json>                       # the seedable-surface catalog (seeded / snapshot / waived + coverage)
 datadna introspect --stack demo-1 --dna <dna.json>       # capture each seeded surface's live shape (the contract)
 datadna measure   --stack demo-1 --dna <dna.json>        # conformance score; exit 1 if critical < 100%
+datadna measure-snapshot --stack demo-1 --dna <dna.json> --manifest <taxonomy.json>  # snapshot-fidelity gate (M9b)
 datadna diff      --stack demo-1 --dna <dna.json>        # recorded shapes vs the live schema; exit 1 on drift
 ```
 
-The shipped manifest is `rosetta-extensions/stack-seeding/dna/data-dna.json` (8 seeded surfaces conformance-gated;
-`taxonomy` + `content` are **waived** — the snapshot/shared-store hard line, ~v1.2).
+The shipped manifest is `rosetta-extensions/stack-seeding/dna/data-dna.json` (8 seeded surfaces conformance-gated +
+**1 snapshot-seeded**). **As of M9b** the `taxonomy` surface is no longer waived: it is promoted
+`waived-m7c → snapshot-seeded-m9b` and **counts toward coverage** — captured public-only + replayed per-stack by the
+[`stack-snapshot` extension](snapshot-spec.md#the-taxonomy-surface-m9b--the-first-real-surface) and fidelity-gated by
+the five snapshot operators (row-count / structural / referential / embedding-dim / public-only). Coverage now reads
+**100%** with only `content` still waived (M10 lifts that via the public Directus snapshot). The taxonomy snapshot is
+the `taxonomy` DAG node (`… → taxonomy (snapshot) → activity`): a verification/ordering node whose actual data load
+runs out-of-band (`stacksnap replay --surface taxonomy`) before `stackseed`, so `activity` orders behind it.
 
 ## Status
 

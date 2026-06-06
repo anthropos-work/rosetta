@@ -1,0 +1,67 @@
+{
+  "milestone": "M9b",
+  "title": "Taxonomy snapshot (the first real surface): the 10-table public skiller catalog + parent-scope firewall + snapshot-fidelity measure + DAG node",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-06",
+  "kind": "first real capture surface (taxonomy) on the M9a framework; parent-scoped read-side firewall; manifest->CapturedTable fidelity bridge; TaxonomySnapshotSeeder DAG node",
+  "tests": {
+    "go_total": 595,
+    "go_delta_vs_m9a": 39,
+    "by_module": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 204,
+      "stack-snapshot": 167
+    },
+    "stack_snapshot_delta": "+39 (128 -> 167): build (taxonomy surface + parent-scope firewall tests) + 3 harden passes (fidelity probe, tenant-probe dispatch, capture error paths) + 2 close regressions (TestCapture_DumpFlagRemoved, TestCapture_DSNAlonePicksDumpIngestDefault)",
+    "stack_seeding_delta": "+40 (164 -> 204): the CapturedFromManifest bridge + MeasureSnapshot + PgFidelityProbe + datadna measure-snapshot CLI + harden",
+    "fuzz_targets": "FuzzSplitCSV (1.7M execs) + FuzzBuildParentLeakProbe (766K execs) — 0 crashers",
+    "race": "both Go modules pass go test ./... -race",
+    "flake_count": 0,
+    "flake_gate": "0 failures across 5x shuffled sequential runs of stack-snapshot (the close-fix-touched module); stack-seeding unchanged + green -race"
+  },
+  "coverage": {
+    "note": "harden ran 3 passes (recorded in progress.md); the close fix added the source-resolution regressions, raising cmd/stacksnap further",
+    "by_package_after_close": {
+      "firewall": "100.0%",
+      "reference": "100.0%",
+      "replay": "100.0%",
+      "source": "100.0%",
+      "capture": "95.5%",
+      "cmd/stacksnap": "76.4% (up from 72.3% at harden; rest is live-DB Conn dial bodies behind the interface seam)",
+      "dna_fidelity_probe": "100.0%",
+      "dna_module": "87.3%"
+    }
+  },
+  "delivered": {
+    "taxonomy_surface": "10-table public skiller surface in FK replay order (categories, job_role_categories -> specializations -> skills, job_roles -> skill_embeddings, job_role_embeddings, skill_translations, job_role_translations, job_role_skills); org-IS-NULL filters + parent-scoped predicates for column-less tables (M9b-D1..D3)",
+    "parent_scope_firewall": "TableSpec.PublicViaFK + firewall.ParentScopeFilter build a real WHERE <fk> IN (SELECT id FROM <parent> WHERE organization_id IS NULL) predicate; the post-capture leak probe ANDs the capture filter (M9b-D2; PR-review fix)",
+    "index_rebuild": "pgvector index rebuilt via REINDEX TABLE on replay (not transported); vector column + dim 1536 in the manifest, gated by the embedding-dimension gene (M9b-D5)",
+    "fidelity_measure": "dna.CapturedFromManifest (manifest.json -> source expectations, refuses non-public-only) + PgFidelityProbe (replay side) + MeasureSnapshot (composes the score, gates critical 100%) + a datadna measure-snapshot CLI (M9b-D6)",
+    "dag_node": "TaxonomySnapshotSeeder verification/ordering node (Surface()==taxonomy, verifies replay rather than writing rows); activity DependsOn(taxonomy) (M9b-D7)",
+    "coverage_promotion": "data-DNA taxonomy surface waived-m7c -> snapshot-seeded-m9b (all 5 fidelity operators); catalog 100%",
+    "corpus": "extended corpus/ops/snapshot-spec.md (the taxonomy capture/replay path + the read-side public-only invariant) + updated corpus/ops/seeding-spec.md (taxonomy promoted) + the alignment_testing wired-to-real-surface note"
+  },
+  "extensions": {
+    "module": "rosetta-extensions/stack-snapshot/ (and stack-seeding/dna/)",
+    "head": "55ee0e6",
+    "tag": "stack-snapshot-m9b",
+    "tag_object": "4136548",
+    "tag_dereferences_to": "55ee0e6 (verified == pushed HEAD)",
+    "build_commits": ["59c6a0d (impl)", "0404760 (PR-review fix: parent-leak-probe AND)"],
+    "harden_commits": ["eb20183 (fidelity probe)", "016991c (tenant-probe dispatch)", "f9fabc3 (capture error paths)"],
+    "close_commit": "55ee0e6 (M9b-D9: drop the offline pg_dump-FILE reader; align docs/code to restore-then---dsn)"
+  },
+  "review": {
+    "findings": 4,
+    "scope": "GREEN — all 7 sections checked; 0 code TODOs; DEF-M9b-01 LANDED, DEF-M9b-02b DROPPED-by-user (M9b-D9), DEF-M9b-03 tag set",
+    "code_quality": "GREEN — removed the dead --dump flag; gofmt + vet clean; both modules -race green",
+    "docs": "GREEN — the offline-reader contradiction fixed in code (main.go/source.go/README) + corpus (snapshot-spec.md); all cross-references resolve",
+    "adversarial": "the M9b adversarial scenarios were recorded during build/harden (parent-leak-probe AND, atttypmod guard, empty-filter-but-has-org-column edge); no new scenario from the close fix",
+    "deferral_audit": "GREEN (close attempt 2) — DEF-M9b-02b RESOLVED dropped-by-user; 0 unresolved repeat/aged-out"
+  },
+  "notes": "Close attempt 1 BLOCKED at Phase 1b on a RED deferral audit (DEF-M9b-02b, the offline pg_dump-FILE reader, an M9a->M9b repeat/aged-out deferral). The user FATED it DROP. Attempt 2 records the drop (M9b-D9 + audit verdict->GREEN + cut the M9a-retro source carry-forward, NOT seeded to v1.3), lands the companion correctness fix (docs+code stop claiming an offline reader exists; dump-ingest = restore-then---dsn), and proceeds clean to merge.",
+  "is_last_milestone": false,
+  "next": "M10 — public Directus content surface (-> 100% data-DNA coverage)"
+}
