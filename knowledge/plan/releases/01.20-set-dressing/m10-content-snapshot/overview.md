@@ -3,9 +3,10 @@ milestone: M10
 slug: content-snapshot
 version: v1.2 "set dressing"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-05
 refined: 2026-06-06
+last_updated: 2026-06-06
 complexity: large
 delivers: extends corpus/ops/snapshot-spec.md (Directus content path + store decision) + updates corpus/ops/seeding-spec.md (content surface promoted waived → snapshot-seeded)
 ---
