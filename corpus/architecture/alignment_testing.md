@@ -343,13 +343,16 @@ column diff (flag-and-fix). The general principle generalizes: **a replayed refe
 its data reproduces the captured public source — row-for-row, structurally, referentially, at the right embedding
 dimension, and with zero tenant leakage — and that fidelity is enumerable and measurable, just like behaviour.**
 
-**Wired to a real surface (M9b).** The dimension stops being theoretical at M9b: the **taxonomy** surface (the
+**Wired to real surfaces (M9b + M10).** The dimension stops being theoretical at M9b: the **taxonomy** surface (the
 public skiller catalog) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries all five
-fidelity operators. The two-sided measure is driven by `datadna measure-snapshot`: `dna.CapturedFromManifest`
-derives the **source** side from the real snapshot `manifest.json`, `PgFidelityProbe` reads the **replay** side off
-the live stack, and the gate exits non-zero if critical fidelity < 100%. The catalog now reads **100% coverage**
-(taxonomy counts as filled), with only `content` waived until M10. See
-[`../ops/snapshot-spec.md`](../ops/snapshot-spec.md#the-taxonomy-surface-m9b--the-first-real-surface).
+fidelity operators. **M10** promotes the **content** surface (the public Directus template library)
+`waived-m7c → snapshot-seeded-m10`, carrying four operators (no `embedding-dim` — content has no vectors) with the
+**public-only gene measured against the per-surface directus predicate** (`private=false AND tenant_id IS NULL AND
+status='published'`), not `organization_id`. The two-sided measure is driven by `datadna measure-snapshot`:
+`dna.CapturedFromManifest` derives the **source** side from the real snapshot `manifest.json` (per-surface
+`PublicFilter` included), `PgFidelityProbe` reads the **replay** side off the live stack, and the gate exits non-zero
+if critical fidelity < 100%. With content promoted, **NOTHING is left waived → 100% coverage over the full catalog**.
+See [`../ops/snapshot-spec.md`](../ops/snapshot-spec.md#the-directus-content-surface-m10--the-second-real-surface).
 
 ## Where things live
 

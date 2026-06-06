@@ -6,11 +6,12 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 
 > **Scope.** This doc covers the **M9a framework** (the capture/serialize/replay contract + portable format, the
 > production-safe capture-source policy, the tenant-data firewall, the `.agentspace` manifest-cached pluggable
-> store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension) **plus the M9b taxonomy surface** — the
-> first *real* surface (the ~2.1 GB public skiller catalog: the 10-table set, the parent-scope capture filter, the
-> pgvector index-rebuild-on-replay, and the `datadna measure-snapshot` fidelity gate; see [The taxonomy
-> surface](#the-taxonomy-surface-m9b--the-first-real-surface)). The public Directus content library is **M10**;
-> richer-world recipes are **M11**.
+> store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension), the **M9b taxonomy surface** (the
+> ~2.1 GB public skiller catalog), **and the M10 Directus content surface** — the public simulation / skill-path
+> template library (the 9-table set under the per-surface `directus` public predicate, the per-stack Directus store
+> fork, the media refs, the content fidelity gene, and the `sim_id`/`skill_path_id` linkage; see [The Directus
+> content surface](#the-directus-content-surface-m10--the-second-real-surface)). With M10 the **last `waived` surface
+> is promoted to `snapshot-seeded` → 100% data-DNA coverage** (the v1.2 thesis complete). Richer-world recipes are **M11**.
 > The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
 > snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
@@ -94,15 +95,24 @@ This adds the **read half** the M7a isolation guard lacks — that guard classif
 
 ## The tenant-data firewall (note #3 — the load-bearing safety)
 
-`firewall.AssertPublicOnly` is the **read-side analog of seeding's `AssertClean`**. The boundary (prod-verified, see
-[`db-access.md`](db-access.md)): `organization_id IS NULL` = **public** reference; `organization_id = <uuid>` =
-**customer-private**. A table is admissible iff **one** of:
+`firewall.AssertPublicOnly` is the **read-side analog of seeding's `AssertClean`**.
 
-- it has **no org column** (a pure-reference table — e.g. `skiller.categories`), captured whole; OR
-- it is **filtered `organization_id IS NULL`** (the public subset of a tenant-bearing table — e.g.
-  `skiller.skills`: 42,763 public vs 794 customer); OR
-- it is **column-less but scoped via a public parent** (embeddings/translations carry no org column; they are
-  public iff their parent skill/role is public).
+**The public boundary is per-surface, not one fixed column (M10 generalization, M10-D1).** What "public" means
+differs by surface: the **taxonomy** surface uses `organization_id IS NULL`; the **Directus content** surface uses
+`private = false AND tenant_id IS NULL AND status = 'published'`. The firewall therefore takes a **`PublicPredicate`**
+per surface — the scope column(s) that decide public-vs-customer, plus the SQL `WHERE` that selects the public subset.
+The org-only predicate is the **default** (`firewall.DefaultPredicate`), so taxonomy + the reference surfaces are
+unchanged; a new surface declares its own. A table is admissible iff **one** of:
+
+- it has **none of the predicate's scope columns** (a pure-reference table — e.g. `skiller.categories` or
+  `directus.resource`), captured whole; OR
+- it **carries a scope column and is filtered to the public subset** (the predicate's filter — e.g.
+  `skiller.skills`: `organization_id IS NULL`, 42,763 public vs 794 customer; or `directus.simulations`:
+  `private=false AND tenant_id IS NULL AND status='published'`, 304 public-published of 2,597); OR
+- it is **column-less but scoped via a public parent** (embeddings/translations/`sim_tasks` carry no scope column;
+  they are public iff their parent is — judged under the surface's predicate). **Multi-level chains** (M10-D4): a
+  child whose immediate parent is itself column-less (directus `task_checks → sim_tasks → simulations`) carries a
+  `ParentScope.ParentFilter` that chases to the scope-bearing root in one subquery.
 
 The firewall runs **twice, defense in depth**:
 
@@ -112,10 +122,16 @@ The firewall runs **twice, defense in depth**:
 2. **POST-capture** (after the rows are in hand): `AssertCaptured` — a hard re-check that the captured set holds
    **zero** tenant rows. A single leaked row **aborts the capture; nothing is written to the store.**
 
-Prod-proven filters: taxonomy = `organization_id IS NULL`; embeddings/translations via the public parent; the
-app-Postgres `cms.studio_*` tables are **100% customer** (`studio_documents`: 0 public / 3,060 customer) → **excluded
-entirely**. The public content *template* library is **not** in app-Postgres `cms` — it is in the separate
-self-hosted Directus store (`content.anthropos.work`); that store's public/global subset is the **M10** source.
+Prod-proven filters: taxonomy = `organization_id IS NULL`; directus content = `private=false AND tenant_id IS NULL
+AND status='published'`; embeddings/translations/content-children via the public parent; the app-Postgres
+`cms.studio_*` tables are **100% customer** (`studio_documents`: 0 public / 3,060 customer) → **excluded entirely**.
+
+**The Directus content source — self-resolved (M10-D2).** The spike inferred a "separate self-hosted Directus
+Postgres" with no reachable DSN. That was **wrong**: the public content *template* library lives in a **`directus`
+schema inside the SAME `postgres` database** the taxonomy capture already reads — reachable read-only via the wired
+`postgres` MCP (`marco_read`). So the content surface captures over the **same `--dsn`** as taxonomy, just a different
+schema (no new credential). Verified read-only 2026-06-06: `directus.simulations` = 2,597 total / 647 `private=false`
+/ **304** strict-public-published; `directus.skill_paths` = 263 / **22** strict.
 
 ## The portable format (note #2 — the contract)
 
@@ -288,6 +304,75 @@ replayed stack, exiting non-zero if critical fidelity < 100%.
   is simply nothing customer-scoped left to find. The embedding-dimension probe is likewise catalog-only
   (`atttypmod`): a non-vector column reads `NULL`/`-1` and is rejected as "not a fixed-dimension vector" rather than
   passing the gene as a 0-dim vector.
+
+## The Directus content surface (M10 — the second REAL surface)
+
+M10 captures the **public Directus content library** — the global simulation / skill-path templates behind the
+product (the CMS + studio-desk integrate with Directus directly). The surface is enumerated in
+`stack-snapshot/directus/` (one source of truth for the CLI registry, the fidelity gene, and the live recipe):
+`stacksnap capture --surface directus --dsn <same DSN as taxonomy>`.
+
+### The 9 tables, in FK (replay) dependency order
+
+Directus has **no DB-level FKs** (relations live in the app layer), so closure is by convention — the parent-scope
+filters keep the captured child set parent-closed. Public counts prod-verified read-only 2026-06-06:
+
+| # | Table | Capture scope (under the directus predicate) | Public rows |
+|---|-------|----------------------------------------------|-------------|
+| 1 | `directus.simulations` | scope-bearing root: `private=false AND tenant_id IS NULL AND status='published'` | 304 |
+| 2 | `directus.skill_paths` | scope-bearing root (same predicate) | 22 |
+| 3 | `directus.resource` | **pure-reference** (global learning-resource library; no tenant column) | 1,543 |
+| 4 | `directus.roles` | parent-scoped via `simulations` (col `simulations`) | 953 |
+| 5 | `directus.sim_tasks` | parent-scoped via `simulations` (col `simulation`) | 949 |
+| 6 | `directus.sequences` | parent-scoped via `simulations` (col `simulation`) | 304 |
+| 7 | `directus.task_checks` | **multi-level** via `sim_tasks`→`simulations` (`ParentFilter`) | 2,242 |
+| 8 | `directus.task_sub_checks` | **multi-level** via `task_checks`→`sim_tasks`→`simulations` | 2,850 |
+| 9 | `directus.sequences_roles` | parent-scoped via **BOTH** `sequences` AND `roles` | 953 |
+
+### The per-stack Directus store fork (M10-D2)
+
+Booting a per-stack Directus needs its `directus_*` **system schema** (collections/fields/permissions DDL) AND the
+content rows. The store fork is **bootstrap → replay → boot** (`stack-snapshot/directus/provision.go`):
+
+1. **`directus bootstrap`** creates the `directus_*` system tables + the user-collection table STRUCTURE against the
+   stack's empty Postgres `directus` schema. The snapshot **never** carries the `directus_*` system tables — Directus
+   owns their version-specific DDL (capturing them would couple the snapshot to a Directus version).
+2. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
+   now-existing user-collection tables (the framework's generic `CopyIn(schema, table)` → the `directus` schema,
+   class `postgres` = `PerStackIsolated` = always allowed; the shared prod Directus is never written).
+3. **Boot the per-stack Directus** pointed at the stack's `directus` schema; CMS / studio-desk for THIS stack point
+   `DIRECTUS_BASE_ADDR` at the offset-port container, **not** `content.anthropos.work`. `EnvContract.Validate()`
+   hard-rejects any per-stack env that resolves to the prod Directus.
+
+The live container boot is a **documented operational step** (the M9b discipline) — the build proves the contract +
+plan hermetically; standing up a per-stack Directus in-build is the operator's recipe.
+
+### Media / blobs (M10-D4) — refs are the floor, blob bytes are S3-gated
+
+Content references media (`simulations.cover`, `skill_paths.{cover,image,video}`, `roles.avatar`,
+`sequences.scenario_video`, `resource.{image,file}` — all uuid `directus_files` ids; `sequences.intro_video` is a
+varchar embed, NOT a file ref). The **file refs** — the **1,311** `directus_files` rows the public content references
+(of 10,340) — are the **floor**: always captured + replayed. The **blob bytes** live in Directus's OWN S3 bucket;
+mirroring them needs **S3 read access to that bucket, not confirmed wired here** (`BlobBytesAvailable() == false`).
+Until then the per-stack Directus serves refs with a local-storage adapter + placeholder assets (a believable
+structural demo); blob-byte mirroring is the operational add (replay ONLY to the per-stack-isolated private bucket,
+never the shared prod S3).
+
+### The content fidelity gene + the `sim_id`/`skill_path_id` linkage
+
+The content surface is the data-DNA `content` gene, **promoted `waived-m7c` → `snapshot-seeded-m10`** — the last
+waived surface lifted to real coverage. It names `snapshot-row-count` / `-structural` / `-referential` /
+`-public-only` (no `-embedding-dim` — content has no vectors). The **public-only gene is measured against the
+directus predicate** (not `organization_id`): a `CapturedTable.PublicFilter` carries the per-surface predicate on the
+scope-bearing tables, and `PgFidelityProbe.ReplayedNonPublicRows` counts replayed rows `WHERE NOT (<predicate>)` — 0
+or it fails. `datadna measure-snapshot … --manifest <directus.json>` runs it.
+
+The **`ContentSnapshotSeeder`** DAG node (sibling of `TaxonomySnapshotSeeder`) verifies the content snapshot was
+replayed (counts public `directus.simulations`) and is the ordering anchor the **session/assignment seeders sit
+behind**: with content present, the v1.1 seeders' `sim_id` / `skill_path_id` / `resource_id` — previously **free
+`deterministicUUID` values with no FK** — resolve against the **real replayed public template ids** (the M10 linkage,
+`stack-seeding/seeders/contentref.go`). When no content snapshot is replayed (a structural-only run), the resolver
+falls back to the free values (graceful degradation; the snapshot is a prerequisite, not a hard requirement).
 
 ## See also
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.

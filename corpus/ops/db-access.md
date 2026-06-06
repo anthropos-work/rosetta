@@ -55,8 +55,12 @@ customer-scoped rows as if they were shareable reference data.**
 | `cms.similarities` | 274 | 733 | public only |
 
 The **public content template library** (global simulations/skill-paths) is **not** in the app-Postgres `cms`
-schema — it lives in the **separate self-hosted Directus store** (`content.anthropos.work`); that store's
-public/global subset is the v1.2 M10 content-snapshot source.
+schema — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
+`content.anthropos.work`, but its rows are reachable read-only via the wired `postgres` MCP / `marco_read`, NOT a
+separate Postgres — M10-D2 corrected the spike's "separate store" inference). That `directus` schema's public subset
+(predicate `private=false AND tenant_id IS NULL AND status='published'`) is the v1.2 M10 content-snapshot source —
+`directus.simulations` 2,597 total / 647 `private=false` / **304** strict-public-published; `directus.skill_paths`
+263 / **22** strict.
 
 ### Sizing the snapshot surfaces (the catalog-only pattern)
 
