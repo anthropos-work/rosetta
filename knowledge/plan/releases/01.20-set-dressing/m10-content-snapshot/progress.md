@@ -1,6 +1,6 @@
 # M10 — Progress
 
-**Shape:** section · **Status:** planned
+**Shape:** section · **Status:** archived (completed 2026-06-06)
 
 ## Section checklist (from overview Scope.In)
 - [x] Per-stack content-store decision resolved + built (the defining fork — bootstrap→replay→boot per-stack Directus, M10-D2)
@@ -70,5 +70,23 @@ runs per module; both modules pass `-race`; fuzz corpora 0 crashers).
 gene, the env-guard) is already documented in `snapshot-spec.md` / `seeding-spec.md`
 / `decisions.md` (M10-D1..D4). The hardening confirmed the docs, surfaced nothing new.
 
-## Final review
-_(filled at close)_
+## M10: Final Review
+
+Review found **2 findings**: 0 scope · 0 code-quality · 1 docs · 0 tests · 1 decision-triage.
+Phase 1b deferral re-audit GREEN (S3-blob DEF-M10-01 = Fate-2 → v1.3, confirmed-covered). All fixed.
+
+### Scope
+- [x] All 7 sections checked; M10-D1..D4 recorded; Q1/Q2/Q3 resolved to D-numbers; no orphan TODO/FIXME in M10 code.
+
+### Code Quality
+- [x] Firewall generalization pure + back-compat (zero-value predicate → org-only default); directus surface consistent with the M9b parent-scope pattern; ParentFilter SQL is surface-author constants, identifiers quoted; vet + gofmt clean both modules. No defects.
+
+### Documentation
+- [x] [docs] `stack-snapshot/README.md` package index was missing the `taxonomy` (M9b) and `directus` (M10) rows — added both (per-unit handbook contract). snapshot-spec/seeding-spec/db-access/alignment_testing reflect 100% coverage + the directus path.
+
+### Tests & Benchmarks
+- [x] Both modules green `-race`; 701 Go test funcs (+66 over M9b's 635); flake gate clean (Phase 8); no count-drift in handbooks (READMEs quote no hardcoded counts).
+
+### Decision Triage
+- [x] M10-D5 recorded (S3-blob → Fate 2 → v1.3, confirmed-covered by roadmap-vision cloud-store seed) — per the Phase 1b audit's Applied Changes.
+- [x] M10-D1..D4 → already blended into `snapshot-spec.md`/`seeding-spec.md` during build (verified accurate); archive-only details stay in `decisions.md`.

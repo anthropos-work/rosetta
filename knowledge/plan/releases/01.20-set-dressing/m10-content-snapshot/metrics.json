@@ -1,0 +1,80 @@
+{
+  "milestone": "M10",
+  "title": "Public Directus content snapshot (the second real surface): the 9-table public Directus content library + per-surface PublicPredicate firewall + per-stack Directus store fork + content fidelity gene + sim_id/skill_path_id/resource_id linkage",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-06",
+  "kind": "second real capture surface (public Directus content) on the M9a framework; generalized the firewall to a per-surface PublicPredicate; multi-level parent-scope chains via ParentScope.ParentFilter; per-stack Directus store fork (bootstrap->replay->boot); ContentSnapshotSeeder DAG node + linkage resolver; content surface waived-m7c -> snapshot-seeded-m10 => 100% data-DNA coverage (v1.2 thesis complete)",
+  "tests": {
+    "go_total": 701,
+    "go_delta_vs_m9b": 66,
+    "by_module": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 230,
+      "stack-snapshot": 207
+    },
+    "stack_snapshot_delta": "+40 (167 -> 207): build (the directus surface + the per-surface PublicPredicate firewall generalization + multi-level ParentFilter + per-stack store fork + media refs) + 5 harden passes (firewall multi-level chain, directus E2E + provision env-guard disguises, the public-only fidelity gene's concrete probe, the CLI-adapter multi-level leak probe + fuzz, linkage-seeder guards) + the close handbook-index fix (doc-only)",
+    "stack_seeding_delta": "+26 (204 -> 230): the ContentSnapshotSeeder DAG node + the contentref linkage resolver + content fidelity gene (ReplayedNonPublicRows) + assignments isolation + harden",
+    "fuzz_targets": "the multi-level parent-leak fuzz (185K execs, 0 crashers) + the M9a/M9b targets (FuzzSplitCSV, FuzzBuildParentLeakProbe) — all 0 crashers",
+    "race": "both Go modules pass go test ./... -race",
+    "flake_count": 0,
+    "flake_gate": "0 failures across 5x shuffled sequential runs of both M10-touched module subsets (stack-snapshot directus/firewall/capture/cmd; stack-seeding seeders/dna)"
+  },
+  "coverage": {
+    "note": "harden ran 5 passes (cap reached cleanly; recorded in progress.md); the close fix is doc-only (handbook index), no coverage movement",
+    "by_package_m10_touched_after_harden": {
+      "firewall": "100.0% (95.9% -> 100%)",
+      "directus": "100.0%",
+      "capture": "98.8% (93.8% -> 98.8%; residual = manifest-invalid-by-construction, unreachable from a validated plan)",
+      "cmd/stacksnap_m10_adapters": "100.0% (CountTenantRows, buildParentLeakProbe, CopyPublic, buildPublicSelect; package total 77.7%)",
+      "seeders_m10_touched": "100.0% (contentref, content_snapshot, jobsim_sessions, skillpath_sessions, assignments; package total 95.2%)",
+      "dna_fidelity_probe": "100.0% (ReplayedNonPublicRows 0% -> 100%; package total 87.2%)"
+    }
+  },
+  "delivered": {
+    "firewall_generalization": "per-surface PublicPredicate (ScopeColumns + PublicFilter + Label) replacing the hardcoded organization_id IS NULL; zero-value predicate falls back to DefaultPredicate (org-null) so taxonomy/reference are byte-for-byte unchanged; threaded through AssertPlan/FilterFor/ParentScopeFilter/BuildPlan/the leak probe (M10-D1)",
+    "directus_surface": "9-table public Directus content surface in FK replay order (simulations + skill_paths scope-bearing roots -> resource pure-reference -> roles/sim_tasks/sequences parent-scoped via simulations -> task_checks/task_sub_checks MULTI-LEVEL chains -> sequences_roles via BOTH); predicate private=false AND tenant_id IS NULL AND status='published' (M10-D3); prod-verified counts (304 sims / 22 paths / 1543 resources / ...)",
+    "multi_level_parent_scope": "ParentScope.ParentFilter chases column-less intermediates (task_checks -> sim_tasks -> simulations) to the scope-bearing root in one subquery, no nested structs; empty ParentFilter keeps the scope-bearing-parent default (taxonomy unchanged) (M10-D4)",
+    "store_fork": "per-stack Directus container on the per-stack Directus-backing Postgres directus schema (class postgres = PerStackIsolated); bootstrap (Directus DDL) -> replay (bulk COPY) -> boot; EnvContract.Validate hard-rejects any per-stack env pointing at prod Directus; capture read-only via marco_read (M10-D2)",
+    "media": "file-REFS floor landed (ref columns + ReferencedFilesFilter + the 1311 public directus_files rows + per-stack local-storage/placeholder adapter); blob BYTES gated by BlobBytesAvailable()==false -> Fate 2 -> v1.3 (M10-D4/D5)",
+    "content_fidelity_gene": "public-only gene measured against the directus predicate (ReplayedNonPublicRows, the firewall's measured replay-side counterpart); promotes content waived-m7c -> snapshot-seeded-m10",
+    "linkage_resolver": "contentref resolves the v1.1 session/assignment seeders' sim_id/skill_path_id/resource_id (previously free deterministicUUID, no FK) against the real replayed public templates; free-value fallback when no content snapshot is replayed",
+    "dag_node": "ContentSnapshotSeeder verification/ordering node; sessions/assignments order behind it so their content refs resolve",
+    "coverage_promotion": "data-DNA content surface waived-m7c -> snapshot-seeded-m10; NOTHING left waived => coverage reads 100% over the full catalog (the v1.2 thesis complete)",
+    "corpus": "extended corpus/ops/snapshot-spec.md (the public-Directus content path + the per-surface predicate + the per-stack store fork + the self-resolved capture source) + updated corpus/ops/seeding-spec.md (content promoted; 100% coverage) + corpus/ops/db-access.md (the directus-schema-in-same-DB source-location fix, KB-1) + corpus/architecture/alignment_testing.md (the content surface)"
+  },
+  "extensions": {
+    "module": "rosetta-extensions/stack-snapshot/ (directus + firewall) and stack-seeding/ (seeders + dna)",
+    "head": "df410f5",
+    "tag": "stack-snapshot-m10",
+    "build_commits": [
+      "fb0976f (§1 firewall per-surface predicate)",
+      "6f0fc4a (§2 directus content surface)",
+      "0f3c0d4 (§3 store fork + media refs)",
+      "83843fa (§4 content fidelity gene + DNA promotion)",
+      "2af9f62 (§5 ContentSnapshotSeeder DAG node + linkage resolver)"
+    ],
+    "harden_commits": [
+      "2df85bd (firewall multi-level ParentFilter chain + linkage error-path)",
+      "d841c91 (directus per-surface-predicate capture E2E + provision env-guard disguises)",
+      "0a05904 (the directus public-only fidelity gene concrete probe)",
+      "6700250 (the CLI-adapter directus multi-level leak probe + fuzz)",
+      "1842576 (linkage-seeder guard + copy-error paths + assignments isolation)"
+    ],
+    "close_commit": "df410f5 (index the taxonomy + directus surface packages in the stack-snapshot handbook)"
+  },
+  "review": {
+    "findings": 2,
+    "scope": "GREEN — all 7 sections checked; 0 code TODO/FIXME/HACK in M10-touched source/tests; M10-D1..D4 recorded; Q1/Q2/Q3 resolved to D-numbers",
+    "code_quality": "GREEN — firewall generalization pure (DB-free) + back-compat (zero-value predicate -> org-only); directus surface consistent with the M9b parent-scope pattern; ParentFilter SQL is surface-author constants with quoted identifiers; gofmt + go vet clean both modules; both -race green",
+    "docs": "1 finding (fixed) — the stack-snapshot README package index was missing the taxonomy (M9b) and directus (M10) rows; added both (per-unit handbook contract). snapshot-spec/seeding-spec/db-access/alignment_testing reflect 100% coverage + the directus path; cross-references resolve",
+    "tests": "GREEN — both modules green -race; 701 Go total (+66 over M9b 635); flake gate 5/5 both modules; no handbook test-count drift (READMEs quote no hardcoded counts)",
+    "decision_triage": "1 — M10-D5 recorded (S3 blob bytes -> Fate 2 -> v1.3, confirmed-covered by roadmap-vision cloud-store seed); M10-D1..D4 already blended into snapshot-spec/seeding-spec during build (verified accurate)",
+    "adversarial": "the multi-level ParentFilter SQL embeds surface-author constants (never user input), identifiers quoted via quoteIdent -> no injection surface; the empty-ParentFilter back-compat path keeps taxonomy unchanged; provision env-guard rejects disguised prod targets (creds-embedded host, uppercase, prod-base+local-db) — all probed in harden",
+    "deferral_audit": "GREEN — DEF-M10-01 (S3 blob bytes) first-appearance Fate-2 -> v1.3, confirmed-covered; 0 unresolved repeat/aged-out; all inherited M9a/M9b deferrals resolved at M9b close"
+  },
+  "notes": "M10 build was sound; hardening (5 passes, cap reached cleanly) surfaced no production-code defects, only uncovered correct paths. Close found 2 findings: the handbook package-index gap (taxonomy + directus rows missing — a latent M9b miss caught at M10) and the M10-D5 decision record for the S3-blob Fate-2 routing. The content surface promotion takes data-DNA coverage to 100% over the full catalog — the last waived surface promoted, the v1.2 set-dressing thesis complete.",
+  "is_last_milestone": false,
+  "next": "M11 — richer-world recipes + presets + corpus polish (the product/discoverability layer that closes v1.2) -> /developer-kit:close-release"
+}
