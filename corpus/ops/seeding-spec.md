@@ -74,7 +74,10 @@ migrate → Sentinel policy → org → users → memberships + casbin + feature
 
 M7a ships the spine: `org` → `users` (bulk COPY) and the `identity` seeder. M7c fills the fleet. **M9b** wires the
 `taxonomy` snapshot node into the DAG (the public skiller catalog, replayed out-of-band; `activity` orders behind
-it) — see [`snapshot-spec.md`](snapshot-spec.md#the-taxonomy-surface-m9b--the-first-real-surface).
+it). **M10** wires the `content` snapshot node (the public Directus template library) and orders the
+session/assignment seeders **behind** it, so their `sim_id` / `skill_path_id` / `resource_id` refs resolve against
+the **real replayed public templates** (the M10 linkage; free-value fallback when no content snapshot is replayed) —
+see [`snapshot-spec.md`](snapshot-spec.md#the-directus-content-surface-m10--the-second-real-surface).
 
 ### The production-isolation boundary (the safety contract)
 
@@ -83,7 +86,7 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 
 | Store | Class | Why / guard action |
 |---|---|---|
-| **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**; content arrives via snapshot-replay (M7c) |
+| **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**; content arrives via snapshot-replay into the **per-stack** Directus Postgres (M10), never the shared one |
 | **S3 public bucket** | shared-pollution-risk | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
@@ -145,18 +148,24 @@ of the alignment framework (full reference:
 datadna catalog   --dna <dna.json>                       # the seedable-surface catalog (seeded / snapshot / waived + coverage)
 datadna introspect --stack demo-1 --dna <dna.json>       # capture each seeded surface's live shape (the contract)
 datadna measure   --stack demo-1 --dna <dna.json>        # conformance score; exit 1 if critical < 100%
-datadna measure-snapshot --stack demo-1 --dna <dna.json> --manifest <taxonomy.json>  # snapshot-fidelity gate (M9b)
+datadna measure-snapshot --stack demo-1 --dna <dna.json> --manifest <taxonomy.json> --manifest <directus.json>  # snapshot-fidelity gate (M9b taxonomy + M10 content)
 datadna diff      --stack demo-1 --dna <dna.json>        # recorded shapes vs the live schema; exit 1 on drift
 ```
 
 The shipped manifest is `rosetta-extensions/stack-seeding/dna/data-dna.json` (8 seeded surfaces conformance-gated +
-**1 snapshot-seeded**). **As of M9b** the `taxonomy` surface is no longer waived: it is promoted
-`waived-m7c → snapshot-seeded-m9b` and **counts toward coverage** — captured public-only + replayed per-stack by the
-[`stack-snapshot` extension](snapshot-spec.md#the-taxonomy-surface-m9b--the-first-real-surface) and fidelity-gated by
-the five snapshot operators (row-count / structural / referential / embedding-dim / public-only). Coverage now reads
-**100%** with only `content` still waived (M10 lifts that via the public Directus snapshot). The taxonomy snapshot is
-the `taxonomy` DAG node (`… → taxonomy (snapshot) → activity`): a verification/ordering node whose actual data load
-runs out-of-band (`stacksnap replay --surface taxonomy`) before `stackseed`, so `activity` orders behind it.
+**2 snapshot-seeded**). **As of M10 NOTHING is left waived → coverage reads 100% over the full catalog** (the v1.2
+thesis complete). The two formerly-waived surfaces are both promoted and **count toward coverage**:
+- **`taxonomy`** (M9b): `waived-m7c → snapshot-seeded-m9b` — the public skiller catalog, fidelity-gated by five
+  snapshot operators (row-count / structural / referential / embedding-dim / public-only).
+- **`content`** (M10): `waived-m7c → snapshot-seeded-m10` — the public Directus template library (schema `directus`,
+  predicate `private=false AND tenant_id IS NULL AND status='published'`), fidelity-gated by four operators (the four
+  above **minus embedding-dim** — content has no vectors), the **public-only gene measured against the directus
+  predicate** (not `organization_id`).
+
+Both are DAG nodes (`… → taxonomy / content (snapshot) → sessions/assignments → activity`): verification/ordering
+nodes whose actual data load runs out-of-band (`stacksnap replay --surface taxonomy|directus`) before `stackseed`.
+The `content` node additionally **gates the linkage** — sessions/assignments order behind it so their content refs
+resolve against the replayed public templates.
 
 ## Status
 
