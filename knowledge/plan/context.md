@@ -10,7 +10,7 @@ archived under [`releases/archive/`](releases/archive/)). **v1.2 "set dressing" 
 `stack-snapshot` extension**: M9a (framework + capture-safety + tenant firewall + `.agentspace` store + `/db-query`
 port + fidelity-DNA) → M9b (taxonomy surface) → M10 (public Directus content) → M11 (recipes + corpus), all
 section-shaped, lifting M7c's `waived` taxonomy + content to 100% data-DNA coverage (capturing **public** data only,
-from a **safe non-primary source**), built additively under the gitignored `stack-demo/rosetta-extensions/`. Live
+from a **safe, low-impact source** — default a prod `pg_dump`, fallback a throttled read-only pull), built additively under the gitignored `stack-demo/rosetta-extensions/`. Live
 state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.2
 is the same major.)
 

@@ -17,7 +17,7 @@ builder skills).
 > **v1.2 "set dressing" — IN DEVELOPMENT** (designed 2026-06-05 on `release/01.20-set-dressing`; **refined
 > 2026-06-06** against live prod). 4 milestones M9a→M9b→M10→M11: a **dedicated `stack-snapshot` extension** that
 > lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to **100% data-DNA coverage** — capture the real
-> *public* skill taxonomy + content library once from a **safe non-primary source**, replay per-stack,
+> *public* skill taxonomy + content library once from a **safe, low-impact source** (default a prod `pg_dump`), replay per-stack,
 > *measured-faithful* via a new snapshot-fidelity dimension, with a tested **tenant-data firewall** (never customer
 > data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Full design in
 > `## In Development` below.
@@ -72,9 +72,10 @@ worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable p
 > **Refined 2026-06-06** (user — 5 notes on M9+) with **live production read access** (the wired
 > `mcp__postgres__query` tool, `marco_read` over Tailscale; catalog-only queries — no GB scans). Changes: (1)
 > snapshotting becomes a **dedicated reusable `rosetta-extensions/stack-snapshot/` section** (capture-read
-> decoupled from seeding-write); (2) a **production-safe capture-source policy** — read a **non-primary** copy
-> (read replica → restore-from-backup fallback; primary only behind `--allow-primary`), never block the hot
-> primary; (3) a tested **tenant-data firewall** (`AssertPublicOnly`) — capture *only* `organization_id IS NULL`
+> decoupled from seeding-write); (2) a **production-safe capture-source policy** — source-pluggable, default
+> **ingest an existing prod `pg_dump`** → fallback **safe throttled primary read** (MVCC = read-only never blocks
+> writers), with **restore-from-snapshot / read replica** as zero-impact upgrades; (3) a tested **tenant-data
+> firewall** (`AssertPublicOnly`) — capture *only* `organization_id IS NULL`
 > reference data, never customer rows; (4) snapshots live in a **`.agentspace` manifest-cached, pluggable store**
 > (no GB blobs in git; cloud/S3 = v1.3); (5) the **`/db-query` skill is ported** into rosetta as the prod-read
 > foundation. Former **M9 split → M9a (framework) + M9b (taxonomy surface)** (the M7a→M7c precedent). Prod
@@ -102,7 +103,7 @@ worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable p
 ### M9a: Snapshot extension — capture-safe, public-only, manifest-cached framework + `/db-query` port
 **Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m9a-snapshot-framework/](releases/01.20-set-dressing/m9a-snapshot-framework/)
 **Goal:** A **dedicated, reusable `rosetta-extensions/stack-snapshot/` section** that captures a *public* reference
-surface once from a **safe non-primary source**, serializes it to a `.agentspace` manifest-cached store, and
+surface once from a **safe, low-impact source** (default a prod `pg_dump`), serializes it to a `.agentspace` manifest-cached store, and
 replays it per-stack — with a tested **tenant-data firewall** (never customer data) + an **alignment extension that
 measures replay fidelity**. Proven on a tiny reference surface (M0 toy-mirror discipline); ports the **`/db-query`**
 skill as the prod-read foundation.
@@ -110,9 +111,10 @@ skill as the prod-read foundation.
   - In: **(note #1)** the dedicated **`stack-snapshot/`** section (capture + serialize + store + replay + the
     `stacksnap` CLI) — capture (a privileged prod **read**) decoupled from seeding (per-stack **writes**); the
     **snapshot contract + portable format** (per-table `COPY` payloads + `manifest.json`); **(note #2)** the
-    **production-safe capture-source policy** — cache-hit (no prod read) → **read-replica** refresh (fallback
-    restore-from-backup) → `--allow-primary` last resort, with bounded read-only sessions + a catalog-first
-    dry-run (the **read half** the M7a guard lacks); **(note #3)** the **tenant-data firewall** `AssertPublicOnly`
+    **production-safe capture-source policy** (source-pluggable) — cache-hit (no prod read) → **(1) prod-`pg_dump`
+    ingest** [default, zero new load] → **(2) safe throttled primary read** [MVCC = no write blocking] → **(3)
+    restore-from-snapshot / (4) read replica** [zero-impact upgrades once eu-west-1 AWS/infra is wired], with
+    bounded read-only sessions + a catalog-first dry-run (the **read half** the M7a guard lacks); **(note #3)** the **tenant-data firewall** `AssertPublicOnly`
     + a **public-only/provenance gene** (hard-fail on any captured tenant row); **(note #4)** the **`.agentspace`
     manifest-cached, pluggable `SnapshotStore`** (localfs now, cloud/S3 = v1.3; no GB blobs in git); the **data-DNA
     extension** — `snapshot-seeded` status + a **snapshot-fidelity gene class** (row-count / structural conformance
@@ -122,9 +124,10 @@ skill as the prod-read foundation.
   - Out: the taxonomy surface (M9b); the Directus content snapshot (M10); recipes/presets (M11); the cloud store
     backend + AI-generated content + shareability (v1.3).
 **Depends on:** v1.1's M7a (isolation guard + perf path) + M7b (the data-DNA harness it extends). **Parallel with:** none (gates M9b + M10 + M11).
-**Open questions:** confirm a prod RDS **read-replica** endpoint over Tailscale (else restore-from-backup is the
-default refresh); the manifest schema + cache-staleness rule; embedding capture (vectors verbatim, **rebuild the
-~689 MB pgvector index on replay**); the `SnapshotStore` interface so the v1.3 cloud swap is a backend change.
+**Open questions:** capture source resolved (M9a-D3, investigated 2026-06-06 — no replica + no local AWS creds →
+default **prod-`pg_dump` ingest**, fallback **safe primary read**; restore-from-snapshot/replica = later upgrades);
+the manifest schema + cache-staleness rule; embedding capture (vectors verbatim, **rebuild the ~689 MB pgvector
+index on replay**); the `SnapshotStore` interface so the v1.3 cloud swap is a backend change.
 **KB dependencies:** `corpus/ops/seeding-spec.md` (the framework + isolation boundary + the DAG node), `corpus/architecture/alignment_testing.md` (the data dimension to extend), `corpus/ops/staging_from_dump.md` (the full-dump **anti-pattern** to contrast), the source `db-query` skill (ported).
 **Delivers → `corpus/ops/snapshot-spec.md`** (net-new — the extension + capture/replay contract + capture-source policy + tenant firewall + the `.agentspace` manifest store) **+ `corpus/ops/db-access.md`** (net-new) **+ the `/db-query` skill** **+ extends `corpus/architecture/alignment_testing.md`** (the snapshot-fidelity + public-only genes).
 
@@ -208,9 +211,9 @@ closes the release. No parallel tracks — one extension + one data-DNA; seriali
 
 ### Risks (v1.2)
 - **(M9a, blocks-prod-safety)** a capture that **reads the hot primary** under load, or **leaks a tenant row**.
-  Mitigate: the capture-source policy (cache-hit → read-replica → restore-from-backup; primary only behind
-  `--allow-primary`) + bounded read-only sessions; the **tenant firewall** `AssertPublicOnly` + public-only gene —
-  tested gates, not conventions.
+  Mitigate: the capture-source policy (cache-hit → prod-`pg_dump` ingest → safe throttled primary read [MVCC = no
+  write blocking] → restore-from-snapshot/replica upgrades) + bounded read-only sessions; the **tenant firewall**
+  `AssertPublicOnly` + public-only gene — tested gates, not conventions.
 - **(M10, blocks-100%-coverage)** the **content-store fork** + locating the public Directus template subset (a
   *separate* store). Mitigate: resolve the store decision in an M10 spike *first* (Directus's backing store *is*
   Postgres → a per-stack Directus-Postgres replay stays in the isolated class); fall back to refs-only believability
@@ -225,8 +228,9 @@ closes the release. No parallel tracks — one extension + one data-DNA; seriali
   3-layer guard asserts clean (extend `AssertClean` to cover snapshot replay).
 
 ### Open decisions (resolve during build)
-The **capture refresh source** (read replica vs restore-from-backup — confirm the replica endpoint) — M9a (user
-2026-06-06: read-replica preferred, auto); the manifest schema + cache-staleness rule — M9a; embedding capture
+The **capture source** — **resolved** M9a-D3 (user 2026-06-06): default **prod-`pg_dump` ingest** → fallback **safe
+throttled primary read**; restore-from-snapshot/replica = zero-impact upgrades once eu-west-1 AWS/infra is wired;
+the manifest schema + cache-staleness rule — M9a; embedding capture
 (verbatim + rebuild-index-on-replay) — M9b (lean verbatim); the **per-stack content-store fork** (per-stack
 Directus container vs direct Directus-Postgres replay) — M10, the defining decision; identifying the public
 Directus template subset — M10; media/blobs in-scope vs refs-only — M10; `/demo-seed` extension vs a new

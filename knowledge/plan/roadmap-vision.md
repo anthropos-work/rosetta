@@ -8,7 +8,7 @@ and a `release/{version}` branch is cut.
 > **v1.1 "show floor"** → `roadmap.md` 2026-06-03 (shipped 2026-06-05, tag `v1.1`).
 > **v1.2 "set dressing"** → `roadmap.md` 2026-06-05 (in development on `release/01.20-set-dressing`; **refined
 > 2026-06-06** — a **dedicated `stack-snapshot` extension** lifting M7c's `waived` taxonomy + content to 100%
-> coverage, capturing **public** data only from a **safe non-primary source**, cached in `.agentspace`).
+> coverage, capturing **public** data only from a **safe, low-impact source** (default a prod `pg_dump`), cached in `.agentspace`).
 > **No future version (v1.3 / v2+) is scoped yet** — this file is the staging area for the next one.
 
 ---

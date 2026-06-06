@@ -11,9 +11,13 @@ consumes it at the DAG `taxonomy/content (snapshot)` node._
 _Per-table COPY payloads + `manifest.json`; schema-version pinned; per-stack addressing._
 
 ## Production-safe capture-source policy (note #2)
-_Precedence: cache-hit (no prod read) → read-replica refresh → restore-from-backup fallback → `--allow-primary`
-last resort. Bounded read-only session (`SET TRANSACTION READ ONLY`, statement_timeout, chunked COPY streamed to
-disk). Catalog-first dry-run sizes the read. Adds the read half the M7a guard lacks._
+_Precedence (M9a-D3, user 2026-06-06; source-pluggable): **cache-hit** (no prod read) → **(1, default) ingest an
+existing prod `pg_dump`** (staging already produces them → zero new prod load) → **(2, fallback) safe throttled
+primary read** via `marco_read` (MVCC = read-only never blocks writers; off-peak + chunked + public-only) →
+**(3) restore-from-snapshot / (4) read replica** (zero-primary-impact upgrades, once eu-west-1 AWS/infra is wired).
+Bounded read-only session (`SET TRANSACTION READ ONLY`, statement_timeout, chunked COPY streamed to disk).
+Catalog-first dry-run sizes the read. Adds the read half the M7a guard lacks. Infra: standalone RDS PG 15.12,
+`terraform-2024…`, eu-west-1; no replica today; no local AWS creds._
 
 ## Tenant-data firewall (note #3)
 _`AssertPublicOnly`: every captured table has no org column OR is filtered `organization_id IS NULL`; hard-fail on

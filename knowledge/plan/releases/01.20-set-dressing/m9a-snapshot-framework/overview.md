@@ -44,12 +44,13 @@ The fidelity gate is a per-surface acceptance check, not an emergent-path gate.
   - **(note #2) The production-safe capture-source policy** — a **source-pluggable** refresh, fully automatic,
     that never blocks the hot primary:
     1. **cache-hit (default):** replay from the existing `.agentspace` snapshot — *zero* prod read;
-    2. **refresh — pluggable source** (investigated 2026-06-06; **no read replica exists today**, eu-west-1
-       instance `terraform-2024…`, no local AWS creds): default to **ingest an existing prod `pg_dump`** (the team
-       already produces these for staging → zero new prod load) **or** a **safe throttled primary read** via the
-       existing `marco_read` access — PostgreSQL **MVCC means a read-only `SELECT`/`COPY` never blocks writers**, so
-       off-peak + throttled + public-only (data, not indexes) is tolerable. Zero-primary-impact upgrades once
-       AWS/infra is wired: **restore-from-snapshot** to a throwaway instance, or a **provisioned read replica**.
+    2. **refresh — pluggable source, ordered** (investigated 2026-06-06; **no read replica today**, eu-west-1
+       instance `terraform-2024…`, no local AWS creds): **(1, default) ingest an existing prod `pg_dump`** (the team
+       already produces these for staging → *zero new prod load*) → **(2, fallback) safe throttled primary read**
+       via the existing `marco_read` access — PostgreSQL **MVCC means a read-only `SELECT`/`COPY` never blocks
+       writers**, so off-peak + throttled + public-only (data, not indexes) is tolerable. **Zero-primary-impact
+       upgrades** once AWS/infra is wired: **(3) restore-from-snapshot** to a throwaway instance, or **(4) a
+       provisioned read replica**. (M9a-D3, user 2026-06-06.)
     3. **bounded read session:** `SET TRANSACTION READ ONLY`, `statement_timeout` + `idle_in_transaction_session_timeout`,
        modest `work_mem`, `COPY (SELECT … WHERE org_id IS NULL) TO STDOUT` streamed to disk (keyset-chunked for the
        biggest tables); **catalog-first dry-run** sizes the read before any data flows.
