@@ -1,6 +1,6 @@
 # M9b — Progress
 
-**Shape:** section · **Status:** built (ready for harden/close)
+**Shape:** section · **Status:** `archived` (completed 2026-06-06)
 
 ## Section checklist (from overview Scope.In)
 - [x] Public taxonomy capture: `skiller.{categories,specializations,skills,job_roles}` filtered `org_id IS NULL` — plus `job_role_categories` (a separate pure-reference parent of job_roles, surfaced + landed Fate 1)
@@ -51,6 +51,40 @@
 ### Stop condition
 Stopped at Pass 3. The Phase-2b scan found no further pure-logic behaviour to add — the meaningful M9b surfaces (the fidelity probe, the manifest bridge, the parent-scope-leak dispatch, the capture error paths, the CLI rendering) are now 100% or near. All remaining uncovered statements are DB-pass-through plumbing (CLI `main`/`connect`/`*Cmd` dial bodies, `replayAdapter` concrete-`*pg.Conn` methods, the `pg` driver wrappers) behind a live-Postgres seam — covering them needs a running PG, not more unit tests. Next-pass delta on real logic would be < 2%.
 
-## Final review
-_(filled at close)_
+## M9b: Final Review
+
+Close attempt 2 (2026-06-06). Attempt 1 BLOCKED at Phase 1b on a RED deferral audit (DEF-M9b-02b, the
+offline pg_dump-FILE reader, an M9a→M9b repeat/aged-out deferral). The user FATED it **DROP**. This close
+applies the drop + the companion correctness fix, then proceeds clean to merge.
+
+🔍 **Review found 4 findings:** 1 scope (the dropped deferral) · 0 code-quality must/should-fix · 2 docs
+(the offline-reader lie in code-comments+CLI+README and in `snapshot-spec.md`) · 1 tests (regressions for
+the flag removal) · 1 decision-triage (M9b-D9 → blended into snapshot-spec.md). Addressed all fully.
+
+### Scope
+- [x] DEF-M9b-02b (offline pg_dump-FILE reader) → **DROPPED by user** (M9b-D9). Decision recorded;
+  audit verdict → GREEN; source carry-forward (M9a retro) cut so it can't re-surface; NOT seeded to v1.3.
+- [x] DEF-M9b-01 (prove framework on real taxonomy) → LANDED (M9b-D1…D8, all sections checked).
+- [x] DEF-M9b-03 (tag after final harden) → tag `stack-snapshot-m9b` @ `55ee0e6` set + pushed (Phase 11 area).
+
+### Code Quality
+- [x] [must-fix] Remove the dead `--dump <path>` flag from `cmd/stacksnap/main.go` (it selected the
+  dump-ingest KIND but was then dropped — `--dsn` was always required). Both sources read over `--dsn`.
+
+### Documentation
+- [x] `source.go` package/precedence/Kind comments + `Resolve` errors: dump-ingest = restored-dump-over-DSN,
+  not an offline file reader. `main.go` package doc + usage text rewritten. `README.md` source-table corrected.
+- [x] `corpus/ops/snapshot-spec.md`: removed `--dump` from the CLI signature; corrected the dump-ingest row +
+  added the explicit "no offline file-reader; restore-then-`--dsn`" note (M9b-D9).
+
+### Tests & Benchmarks
+- [x] Regression `TestCapture_DumpFlagRemoved` (the removed `--dump` is an unknown-flag usage error) +
+  `TestCapture_DSNAlonePicksDumpIngestDefault` (`--dsn` alone resolves the default kind). Updated
+  `TestCapture_{NoSource,DumpIngestNeedsDSN,UnknownSourceKind,ExplicitSourceWithoutItsInput}` for the model.
+  `go test ./... -race` green on both modules; gofmt + vet clean.
+
+### Decision Triage
+- [x] M9b-D9 → blended into `corpus/ops/snapshot-spec.md` (the source-policy section + CLI section) with the
+  `(M9b-D9)` reference tag. Alternatives (build the reader / defer to v1.3) stay in `decisions.md`.
+- [x] M9b-D1…D8 were already flowed into `snapshot-spec.md` during build (verified accurate).
 </content>
