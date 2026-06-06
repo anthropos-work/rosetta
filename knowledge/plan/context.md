@@ -4,13 +4,15 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-05):** **v1.0 "body double"** + **v1.1 "show floor"** SHIPPED (tagged `v1.0` / `v1.1`; records
-archived under [`releases/archive/`](releases/archive/)). **v1.2 "set dressing" is now IN DEVELOPMENT** on
-`release/01.20-set-dressing` — the **snapshot mechanism**: M9 (framework + fidelity DNA + taxonomy) → M10 (Directus
-content snapshot-replay) → M11 (recipes + corpus), all section-shaped, lifting M7c's `waived` taxonomy + content to
-100% data-DNA coverage, built additively under the gitignored `anthropos-demo/rosetta-extensions/`. Live state:
-[`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.2 is the
-same major.)
+**Status (2026-06-06):** **v1.0 "body double"** + **v1.1 "show floor"** SHIPPED (tagged `v1.0` / `v1.1`; records
+archived under [`releases/archive/`](releases/archive/)). **v1.2 "set dressing" is IN DEVELOPMENT** on
+`release/01.20-set-dressing` (designed 2026-06-05, **refined 2026-06-06** against live prod) — a **dedicated
+`stack-snapshot` extension**: M9a (framework + capture-safety + tenant firewall + `.agentspace` store + `/db-query`
+port + fidelity-DNA) → M9b (taxonomy surface) → M10 (public Directus content) → M11 (recipes + corpus), all
+section-shaped, lifting M7c's `waived` taxonomy + content to 100% data-DNA coverage (capturing **public** data only,
+from a **safe non-primary source**), built additively under the gitignored `stack-demo/rosetta-extensions/`. Live
+state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.2
+is the same major.)
 
 ## Files
 
@@ -27,6 +29,7 @@ same major.)
 - Milestone numbering (this is rosetta's first version): **flat sequential** — M0, M1, M2, … . A letter suffix has two uses: (1) a milestone **inserted after** the fact (M1b drift CI, M2b consolidation, M2c the iterative `@clerk/express` feature); and (2) a **split** of one planned milestone into a sequential mini-arc (**M7a → M7b → M7c** = the former M7 "seeding" split into framework+safety / data-DNA / fleet, 2026-06-04). Context disambiguates which.
 - Milestone **shapes** can be mixed within a version: `section` (fixed checklist) or `iterative` (measurable exit gate, uncertain path). v1.0 has both — **M0/M1b/M2/M2b are section; M1 and M2c are iterative** (alignment-score gates).
 - Date format throughout: ISO `YYYY-MM-DD`
+- **Stack workspaces & extension tooling (v1.2):** each gitignored `stack-*/` dir spans one full local stack — its platform service repos **plus** its own clone of rosetta-extensions. The scratchpad rename convention: `anthropos-dev/` → `stack-dev/` (dev), `anthropos-demo/` → `stack-demo/` (demo), `anthropos-dev-2/` → `stack-dev-2/` (secondary dev), with future `stack-stage/` and `stack-tests/`. rosetta-extensions has **two clone roles**: (a) an **authoring** copy at `.agentspace/rosetta-extensions/` — spawned on demand to read/build/**test** tooling, then committed + **tagged**; and (b) **per-stack consumption** copies `stack-<role>/rosetta-extensions @ <tag>` — each stack consumes the tooling at a pinned tag. **Policy:** v1.2 extension code is built+tested in the authoring copy, tagged, then consumed per-stack — never scattered in the rosetta corpus, never authored ad-hoc inside a stack dir. rosetta = read-only doc corpus + dev-env skills; rosetta-extensions = the executable stack tooling.
 
 ## Workflow
 
@@ -41,11 +44,12 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.2 "set dressing"** — in development on `release/01.20-set-dressing` (designed 2026-06-05). M9
-(snapshot framework + fidelity DNA + taxonomy) → M10 (Directus content snapshot-replay) → M11 (richer-world
-recipes + presets + corpus), strictly sequential, all additive under `anthropos-demo/rosetta-extensions/`. v1.0
-"body double" + v1.1 "show floor" shipped (tags `v1.0` / `v1.1`). _(Live milestone/branch state:
-[`state.md`](state.md). v1.3+ proposals: [`roadmap-vision.md`](roadmap-vision.md).)_
+**Active:** **v1.2 "set dressing"** — in development on `release/01.20-set-dressing` (designed 2026-06-05, refined
+2026-06-06). M9a (snapshot framework + capture-safety + tenant firewall + `.agentspace` store + `/db-query` port +
+fidelity-DNA) → M9b (taxonomy surface) → M10 (public Directus content) → M11 (richer-world recipes + presets +
+corpus), strictly sequential, all additive under `stack-demo/rosetta-extensions/`. v1.0 "body double" + v1.1 "show
+floor" shipped (tags `v1.0` / `v1.1`). _(Live milestone/branch state: [`state.md`](state.md). v1.3+ proposals:
+[`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

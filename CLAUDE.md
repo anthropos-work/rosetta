@@ -23,6 +23,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/update-platform` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
 | `/test-platform` | Verify a running platform (probes, repo suites, census) | `.claude/skills/test-platform/SKILL.md` |
+| `/db-query` | Query the prod Postgres read-only (investigate data, size/inspect surfaces) | `corpus/ops/db-access.md` |
 | `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/rosetta_demo.md` |
 | `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
 | `/demo-status` | List running demo stacks and their details | `corpus/ops/rosetta_demo.md` |
@@ -40,7 +41,7 @@ For building the Anthropos development environment:
 This skill executes `corpus/ops/setup_guide.md` with:
 - Verification before/after each step
 - User confirmation before destructive operations
-- Progress tracking in `anthropos-dev/setup_progress.md`
+- Progress tracking in `stack-dev/setup_progress.md`
 - Auto-improvement of documentation when issues are found
 
 ### Using the GitHub Setup Skill
@@ -101,14 +102,46 @@ Example invocations:
 - `/update-knowledge issues found in setup_progress.md`
 - `/update-knowledge the Redis caching layer isn't documented`
 
-### Working in the Scratchpad
+### Working in stack workspaces
 
-The `anthropos-dev/` directory is a git-ignored workspace for:
-- Cloning Anthropos platform repositories
-- Building the local development environment
-- Inspecting platform code without affecting this documentation repo
+Hands-on work with the Anthropos platform happens in a **stack workspace** — a
+git-ignored `stack-*/` directory that "spans" one full local stack. Each holds its
+cloned platform service repos **plus its own clone of the `rosetta-extensions`
+tooling monorepo**:
 
-All hands-on work with the Anthropos platform should happen in `anthropos-dev/`.
+| Workspace | Stack |
+|-----------|-------|
+| `stack-dev/` | the local **dev** stack (platform repos + its dev tooling clone) |
+| `stack-demo/` | disposable **demo** stacks (Clerkenstein-wired, offset ports) |
+| `stack-dev-2/` | a secondary dev stack |
+| `stack-stage/`, `stack-tests/`, … | future stacks, same pattern |
+
+All hands-on platform work happens inside a `stack-*/` dir; the documentation
+corpus stays clean. (Setup/run/update progress is tracked in
+`stack-dev/setup_progress.md`.)
+
+### `rosetta-extensions` — where stack tooling lives
+
+`rosetta-extensions` (private: `anthropos-work/rosetta-extensions`) is the
+executable-tooling monorepo that **operates** stacks — sections: `clerkenstein`
+(the Clerk mock), `demo-stack`, `dev-stack`, `stack-injection`, `stack-core`,
+`stack-seeding`, `alignment`. `rosetta` documents *how the platform works*;
+`rosetta-extensions` is *the tooling that spins up, injects, and seeds copies of
+it*. It has **two clone roles**:
+
+- **Authoring copy → `.agentspace/rosetta-extensions/`** — the single working clone
+  you spawn on demand to **read / build / test** the tooling, then commit and
+  **tag**. New tools are developed here.
+- **Per-stack consumption copies → `stack-<role>/rosetta-extensions @ <tag>`** —
+  each stack consumes the tooling at a **pinned tag** (reproducible). The
+  `/demo-*` and `/align-*` skills drive a stack's own clone.
+
+**Policy:** all code/scripts that operate the corpus/platform on a spawned stack
+live in `rosetta-extensions` — never scattered in the `rosetta` corpus, never
+authored ad-hoc inside a stack dir. A new need/tool is built and tested in the
+`.agentspace/rosetta-extensions/` authoring copy, tagged, then consumed per-stack
+via its tagged clone. See [`corpus/ops/rosetta_demo.md`](corpus/ops/rosetta_demo.md)
+and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 ## Architecture Overview
 
@@ -192,7 +225,7 @@ The `platform` repository provides a Makefile as the single entry point for all 
 
 ```bash
 # First-time setup
-cd anthropos-dev/platform
+cd stack-dev/platform
 make init              # Clone all repos defined in repos.yml
 make up                # Build from local code and start (graphql profile)
 make migrate           # Apply all database migrations
@@ -234,7 +267,8 @@ Usage: `make up PROFILE=cms`
 ### Demo Environments (disposable, Clerk-free, seeded — v1.1 "show floor")
 - `corpus/ops/demo/README.md`: **The demo-env family index** — the up→seed→use→down flow + recipes + presets
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
-- `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** + the data-DNA
+- `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA
+- `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
 
 ### Updating the Platform
 - `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
@@ -388,14 +422,17 @@ rosetta/
 │   ├── services/              # Per-service documentation
 │   ├── ops/                   # Operations guides (setup, run, update)
 │   └── tools/                 # Development tools registry
-├── anthropos-dev/             # Git-ignored scratchpad for platform work
+├── stack-dev/                 # Git-ignored DEV-stack workspace (one of the stack-*/ family)
+├── stack-demo/                # Git-ignored DEMO-stack workspace (+ its rosetta-extensions clone)
+├── .agentspace/               # Git-ignored: skill output + the rosetta-extensions authoring copy
 ├── .claude/skills/            # Claude Code automation skills
 └── README.md                  # Project overview and status
 ```
 
 ## Critical Rules
 
-- **Work in `anthropos-dev/` only** when dealing with actual platform code
+- **Work inside a `stack-*/` workspace** (e.g. `stack-dev/`) when dealing with actual platform code — never in the corpus
+- **All stack-operating tooling lives in `rosetta-extensions`** — built/tested in the `.agentspace/rosetta-extensions/` authoring copy and tagged, then consumed per-stack via a pinned-tag clone; never scattered in `rosetta`, never authored ad-hoc inside a stack dir
 - **Never commit `.env` files** to any repository
 - **Update documentation immediately** when discovering gaps or better approaches
 - **Verify against actual code** - don't assume documentation is 100% correct

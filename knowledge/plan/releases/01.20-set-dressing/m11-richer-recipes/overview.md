@@ -17,7 +17,7 @@ discoverable* — refresh presets + recipes so a demo curator gets a real-taxono
 box, and update the corpus to reflect 100% coverage.
 
 ## Why section (not iterative)
-Pure curation/discoverability over M9+M10's shipped surfaces — a finite checklist (presets, recipes, a skill,
+Pure curation/discoverability over M9a/M9b/M10's shipped surfaces — a finite checklist (presets, recipes, a skill,
 corpus cross-links). Same shape as v1.1's M8.
 
 ## Scope
@@ -33,13 +33,13 @@ corpus cross-links). Same shape as v1.1's M8.
   - AI-content + external shareability (v1.3).
 
 ## Depends on
-**M9 + M10** (curates their output). **Parallel with:** none (the closing milestone before
+**M9a + M9b + M10** (curates their output). **Parallel with:** none (the closing milestone before
 `/developer-kit:close-release`).
 
 ## Open questions (resolve during build)
-- Whether snapshot **capture** is a curator step or a one-time maintained golden (decide alongside M9's source
-  decision).
-- **`/demo-seed` extension vs a new `/demo-snapshot` skill** — pick the cleaner UX.
+- Whether snapshot **capture** is a curator step or a manifest-cached refresh (decide alongside M9a's
+  capture-source policy — cache-hit by default, refresh on schema drift).
+- **`/demo-seed` extension vs a new `/demo-snapshot` skill** (driving the `stacksnap` CLI) — pick the cleaner UX.
 
 ## KB dependencies (read as contract)
 - `corpus/ops/demo/README.md` + the recipe files (the family to refresh)
