@@ -269,6 +269,17 @@ a non-public-only manifest), and `datadna measure-snapshot --stack demo-N --dna 
 runs the five fidelity operators (row-count / structural / referential / embedding-dim / public-only) against the
 replayed stack, exiting non-zero if critical fidelity < 100%.
 
+**Read-side public-only is asymmetric to the capture side** (pinned by the M9b hardening pass — `PgFidelityProbe`):
+- A table **with an org column** (categories/specializations/skills/job_roles) is tenant-checked directly — the
+  probe counts replayed rows whose `organization_id` is non-null, which must be 0.
+- A **column-less** table (embeddings/translations/`job_role_skills`) reports **0 tenant rows by construction** and
+  the probe short-circuits without a second query: it has no org column of its own to count, AND the replayed stack
+  holds only the public snapshot — there is no customer parent in the stack for a row to reference. The capture-side
+  parent-scope leak probe (above) is what actually enforces public-only for these tables; on the replay side there
+  is simply nothing customer-scoped left to find. The embedding-dimension probe is likewise catalog-only
+  (`atttypmod`): a non-vector column reads `NULL`/`-1` and is rejected as "not a fixed-dimension vector" rather than
+  passing the gene as a 0-dim vector.
+
 ## See also
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary + the DAG node that consumes a snapshot.
