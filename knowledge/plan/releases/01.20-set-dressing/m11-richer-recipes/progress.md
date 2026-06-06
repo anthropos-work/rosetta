@@ -1,6 +1,6 @@
 # M11 — Progress
 
-**Shape:** section · **Status:** build complete
+**Shape:** section · **Status:** `archived` (completed 2026-06-06)
 
 ## Section checklist (from overview Scope.In)
 - [x] Refreshed seed presets (small/mid/large) — documented snapshot prerequisite (presets stay structural, M11-D3); README full-fidelity flow
