@@ -81,7 +81,9 @@ extends). **Parallel with:** none (gates M9b + M10 + M11).
 ## Open questions (resolve during build)
 - The **replica endpoint**: confirm a prod RDS read-replica is reachable over Tailscale; if not, the
   restore-from-backup fallback is the default refresh path. (User decision 2026-06-06: read replica preferred,
-  fully automatic via rosetta-extensions — no manual dump.)
+  fully automatic via rosetta-extensions — no manual dump.) **Investigated 2026-06-06 (M9a-Q1):** **no read replica
+  exists today** (DB-side: primary, 0 standbys/walsenders/slots; AWS describe un-runnable — CLI unconfigured) →
+  **restore-from-backup is the de-facto refresh path** unless a replica is provisioned. See `decisions.md` M9a-Q1.
 - The **manifest schema** + the cache-staleness rule (schema-version mismatch and/or checksum) that triggers a refresh.
 - **Embedding capture**: carry pgvector vectors verbatim but **rebuild the index on replay** (don't carry the
   ~689 MB index) — confirm the replay rebuild cost is acceptable.
