@@ -304,6 +304,45 @@ seeded surfaces, and `diff` flags an injected column (`added-column`, exit 1) th
 The general principle: **a mirror/seeder is faithful only if its *data* conforms to the consumer's *current*
 schema — and that conformance is enumerable, measurable, and drift-gated, just like behaviour.**
 
+## The snapshot-fidelity dimension (M9a) — alignment applied to a *replayed snapshot*
+
+M7b measures a **row-by-row seeder's** output against the schema (one-sided). v1.2's snapshot mechanism
+([`snapshot-spec.md`](../ops/snapshot-spec.md)) fills the two surfaces M7c **waived** (taxonomy + content) by
+**capturing the real public surface from prod once and replaying it per-stack**. That needs a *different* fidelity
+question: **does the replayed data reproduce what was captured?** This is **two-sided again** — captured *source*
+(recorded in the snapshot manifest) vs replayed *stack* — so it is a genuine alignment reinterpretation, not just
+more structural operators.
+
+| Behavioural DNA (v1.0) | Data-DNA (M7b) | Snapshot-DNA (M9a) |
+|---|---|---|
+| Capability = endpoint | Capability = seedable surface | Capability = a **snapshot surface** (`taxonomy`) |
+| live engine; input→output (two-sided) | live schema; output→schema (one-sided) | **captured manifest vs replayed stack (two-sided)** |
+| value operators | structural operators | **fidelity operators** (below) |
+| drift = re-score on bump | drift = schema diff | staleness = **schema-version mismatch** triggers re-capture |
+
+The snapshot dimension extends the **same** data-DNA harness (`rosetta-extensions/stack-seeding/dna/`, the
+`datadna` CLI) rather than spawning a third one — it shares the gene/score/criticality machinery. It adds:
+
+- a new surface **status `snapshot-seeded`** that — unlike `waived` — **counts toward coverage**. A surface M7c
+  waived (the snapshot/shared-store hard line) becomes `snapshot-seeded` once a snapshot fills it, so the fleet
+  reads **100% coverage with nothing left waived** — the v1.2 thesis (M7c's two waived surfaces lifted to real,
+  measured coverage). `Coverage()` counts seeded **OR** snapshot-seeded over the non-waived denominator;
+- a **snapshot-fidelity gene class** (`dna/snapshot.go`) — five two-sided operators over a `FidelityProbe` (the
+  replayed stack) compared to the captured manifest: **`snapshot-row-count`** (source-vs-replay parity),
+  **`snapshot-structural`** (every captured column present after replay), **`snapshot-referential`** (the captured
+  surface is referentially closed — every FK's parent table is in the captured set), **`snapshot-embedding-dim`**
+  (pgvector columns replayed at the captured dimension — the index was rebuilt, the vectors must carry the same
+  width), and **`snapshot-public-only`** (the **provenance gene** — zero tenant-scoped rows after replay, the
+  firewall's measured counterpart). A snapshot gene names **snapshot** operators; a structural gene names
+  **structural** operators — `Validate` rejects a cross-wire so the two classes never mix.
+
+**Where it breaks from M7b (and why it's a separate gene class, not new structural operators):** the comparison is
+captured-vs-replayed (two-sided), the public-only gene asserts a **safety provenance** (no customer data) rather
+than a schema property, and the staleness trigger is a **schema-version digest mismatch** (re-capture), not a
+column diff (flag-and-fix). The general principle generalizes: **a replayed reference surface is faithful only if
+its data reproduces the captured public source — row-for-row, structurally, referentially, at the right embedding
+dimension, and with zero tenant leakage — and that fidelity is enumerable and measurable, just like behaviour.**
+
 ## Where things live
 
 rosetta documents the discipline and ships the skills; **all executable machinery — the reusable harness

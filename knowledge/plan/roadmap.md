@@ -28,7 +28,7 @@ builder skills).
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
 | **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
-| **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a → M9b → M10 → M11 | 🚧 **IN DEVELOPMENT** (`release/01.20-set-dressing`) |
+| **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b → M10 → M11 | 🚧 **IN DEVELOPMENT** (`release/01.20-set-dressing`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -101,7 +101,8 @@ worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable p
   (`data-dna.json`: `content` status `waived-m7c`.)
 
 ### M9a: Snapshot extension — capture-safe, public-only, manifest-cached framework + `/db-query` port
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m9a-snapshot-framework/](releases/01.20-set-dressing/m9a-snapshot-framework/)
+**Status:** `done` (2026-06-06) · **Shape:** `section` · **Complexity:** large · **Dir:** [m9a-snapshot-framework/](releases/01.20-set-dressing/m9a-snapshot-framework/)
+**Closed 2026-06-06** (build → harden 2 passes → close review → merged to `release/01.20-set-dressing`). Delivered the dedicated **`rosetta-extensions/stack-snapshot/`** section (9 Go pkgs + the `stacksnap` CLI, tagged `stack-snapshot-m9a` @ `1cc4dd2`): the capture/serialize/replay contract + portable `manifest.json` format; the **production-safe capture-source policy** (M9a-D3: cache-hit → dump-ingest [default] → safe primary read [MVCC] → restore/replica [AWS-gated upgrades]) with a bounded read-only session + catalog-first dry-run; the **tenant-data firewall** `AssertPublicOnly` (plan-time + post-capture, hard-fail on any tenant row, in-memory stash so nothing persists on a leak); the **`.agentspace` manifest-cached pluggable `SnapshotStore`** (localfs now, cloud/S3 = v1.3); the **data-DNA snapshot dimension** (`stack-seeding/dna/snapshot.go` — `snapshot-seeded` status that counts toward coverage + 5 two-sided fidelity operators) + the `/db-query` port. Proven end-to-end on the hermetic `reference-toy` surface. **556 Go test funcs (+147; stack-snapshot 128 new, stack-seeding 145→164)**, flake **0** (5× shuffled, `-race`), gofmt+vet clean. Close: scope/code/docs/tests **GREEN**; 1 finding fixed (the tag trailed HEAD by the harden commits → re-pointed + force-pushed); 5 adversarial scenarios recorded; deferral audit GREEN. Decisions M9a-D1…D7 + Q2/Q3/Q4. Retro: [m9a-snapshot-framework/retro.md](releases/01.20-set-dressing/m9a-snapshot-framework/retro.md). **Next:** M9b (the real ~2.1 GB taxonomy surface).
 **Goal:** A **dedicated, reusable `rosetta-extensions/stack-snapshot/` section** that captures a *public* reference
 surface once from a **safe, low-impact source** (default a prod `pg_dump`), serializes it to a `.agentspace` manifest-cached store, and
 replays it per-stack — with a tested **tenant-data firewall** (never customer data) + an **alignment extension that

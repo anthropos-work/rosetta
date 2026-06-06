@@ -1,0 +1,197 @@
+# Stack Snapshot — Spec
+
+**The reference for `rosetta-extensions/stack-snapshot/`** — how a **public reference surface** (the taxonomy,
+the global content library) is **captured once from production safely**, cached outside git, and **replayed into
+any stack** — with a tested **tenant-data firewall** (never customer data) and a **measured fidelity** gate.
+
+> **Scope.** This doc covers the **M9a framework**: the capture/serialize/replay contract + portable format, the
+> production-safe capture-source policy, the tenant-data firewall, the `.agentspace` manifest-cached pluggable
+> store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension. The first *real* surface (the ~2.1 GB
+> public taxonomy) is **M9b**; the public Directus content library is **M10**; richer-world recipes are **M11**.
+> The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
+> at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
+> snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
+> production-isolation boundary is [`seeding-spec.md`](seeding-spec.md). The cloud/S3 store + AI-generated content +
+> shareability are **v1.3**.
+
+## For PMs — what it does
+
+A demo world needs more than an org with users — it needs the **library** behind the product: the ~60K-skill /
+18K-role taxonomy and the global content templates. That library is **public reference data** (the same for every
+customer), but it lives in production. The snapshot mechanism copies the **public** part of that library out of
+prod **once**, in a way that **cannot slow the live product** and **cannot copy any customer's private data**,
+stores it locally (never in git — it's gigabytes), and **stamps it into each demo/dev stack** on demand. The
+result is a demo world that looks like the real product, built from real public data, with a **measured guarantee**
+that what got stamped in faithfully matches what was captured.
+
+## The architecture, in one paragraph
+
+`stacksnap` connects DIRECTLY to a safe prod source (never the platform code), runs a **catalog-only dry-run** to
+size the surface (scans nothing), opens a **bounded read-only session**, `COPY`s each table's **public subset**
+out, runs the **firewall** (hard-fail on any tenant-scoped row), and writes a small `manifest.json` + per-table
+`*.copy` payloads to the **workspace-level `.agentspace/snapshots/<surface>/<schema-version>/`** cache. Replay reads
+that cache, **verifies every payload checksum before writing a row**, bulk-`COPY`s each table into a stack in
+dependency order, and **rebuilds any pgvector index** that was deliberately not transported. `stack-seeding`
+consumes a replayed snapshot at its existing DAG node (`… → taxonomy/content (snapshot) → activity`).
+
+```
+[safe prod source] → stacksnap capture (public-only, firewalled)
+       → .agentspace/snapshots/<surface>/<schema-ver>/{manifest.json, *.copy}
+       → stacksnap replay (per stack: verify → bulk COPY → rebuild pgvector index)
+```
+
+## Why capture is its own extension (decoupled from seeding)
+
+Capture is a **privileged prod READ**; seeding is a set of **per-stack WRITES**. They have different blast radii and
+different safety contracts, so snapshotting is a **dedicated `stack-snapshot/` section**, a sibling of
+`stack-seeding` — not folded into it (M9a-D2). Capture runs **once per release**; replay runs for **every** stack
+off the one shared cache. The decoupling makes capture reusable (staging, tests) and keeps the read/write isolation
+boundaries distinct: `stack-seeding`'s `AssertClean` guards **writes**; this extension's `AssertPublicOnly` guards
+**reads** — together they close both halves.
+
+## The capture-source policy (M9a-D3 — the read-half safety)
+
+A capture must never block the hot primary. The source is **pluggable** and tried in a fixed precedence:
+
+| # | Source | When it applies | Prod impact |
+|---|--------|------|-------------|
+| 0 | **cache-hit** | the cached manifest's schema version matches the stack | **zero read** |
+| 1 | **dump-ingest** *(default)* | a prod `pg_dump` exists (staging already produces them) | **zero new load** |
+| 2 | **primary-read** *(fallback)* | only a read DSN is available | low — see below |
+| 3 | **restore-from-snapshot** *(upgrade)* | once eu-west-1 AWS access is wired | zero (throwaway instance) |
+| 4 | **read-replica** *(upgrade)* | once a terraform replica exists | zero (cleanest steady state) |
+
+**Why a safe primary read is tolerable (the MVCC correction).** PostgreSQL MVCC means a read-only `SELECT`/`COPY`
+**never takes a lock that conflicts with writers** — the only cost is I/O + buffer-cache pressure. So an off-peak,
+throttled, public-only, **catalog-sized-first** read of a few-hundred-MB surface is not a scary last resort; it is a
+sanctioned fallback. The **bounded read-only session** caps the impact:
+
+```sql
+SET TRANSACTION READ ONLY;                          -- structurally unable to write
+SET statement_timeout = 1800000;                    -- 30 min: a runaway COPY aborts
+SET idle_in_transaction_session_timeout = 60000;    -- a stuck client never pins a snapshot
+SET work_mem = '64MB';                              -- modest, no buffer-cache pressure
+```
+
+**Infra facts (prod-verified 2026-06-06).** Standalone **RDS PostgreSQL 15.12**, instance
+`terraform-20240826114413395400000001`, region **eu-west-1**, terraform-managed. **No read replica today** (not
+Aurora; 0 standbys / 0 walsenders / 0 replication slots; `rds.logical_replication=off`). **No local AWS creds**
+(`~/.aws/credentials` is empty), so (3)/(4) cannot be driven from this machine — they activate automatically once
+the `source` package's `Kind.Available()` flips true. The live default is therefore (1) dump-ingest or (2) safe
+primary read. A definitive AWS check (run by someone with creds) lives in the M9a `decisions.md`.
+
+This adds the **read half** the M7a isolation guard lacks — that guard classifies and gates **writes** only.
+
+## The tenant-data firewall (note #3 — the load-bearing safety)
+
+`firewall.AssertPublicOnly` is the **read-side analog of seeding's `AssertClean`**. The boundary (prod-verified, see
+[`db-access.md`](db-access.md)): `organization_id IS NULL` = **public** reference; `organization_id = <uuid>` =
+**customer-private**. A table is admissible iff **one** of:
+
+- it has **no org column** (a pure-reference table — e.g. `skiller.categories`), captured whole; OR
+- it is **filtered `organization_id IS NULL`** (the public subset of a tenant-bearing table — e.g.
+  `skiller.skills`: 42,763 public vs 794 customer); OR
+- it is **column-less but scoped via a public parent** (embeddings/translations carry no org column; they are
+  public iff their parent skill/role is public).
+
+The firewall runs **twice, defense in depth**:
+
+1. **PLAN time** (before any read): `AssertPlan` — every table policy must be admissible (a tenant-bearing table
+   declares the public filter; a column-less table is pure-reference or public-via). A bad plan refuses **before a
+   single byte flows**.
+2. **POST-capture** (after the rows are in hand): `AssertCaptured` — a hard re-check that the captured set holds
+   **zero** tenant rows. A single leaked row **aborts the capture; nothing is written to the store.**
+
+Prod-proven filters: taxonomy = `organization_id IS NULL`; embeddings/translations via the public parent; the
+app-Postgres `cms.studio_*` tables are **100% customer** (`studio_documents`: 0 public / 3,060 customer) → **excluded
+entirely**. The public content *template* library is **not** in app-Postgres `cms` — it is in the separate
+self-hosted Directus store (`content.anthropos.work`); that store's public/global subset is the **M10** source.
+
+## The portable format (note #2 — the contract)
+
+A snapshot is a small **`manifest.json`** head plus large, gitignored per-table **`*.copy`** payloads:
+
+| Manifest field | Meaning |
+|---|---|
+| `format_version` | on-disk schema version; an unknown version is treated as stale |
+| `surface` | logical surface name (`taxonomy`, `reference-toy`) |
+| `source` | the capture-source kind that produced it (provenance) |
+| `schema_version` | the platform schema digest the capture was taken against — **the staleness key** |
+| `captured_at` | UTC capture timestamp |
+| `tables[]` | per-table: schema, table, captured columns (COPY order), row count, public-only filter, `public_via`, payload file, **SHA-256**, `vector_columns` (index rebuilt on replay) |
+| `public_only` | the firewall result — **must be `true`** or the manifest is never replayable |
+
+Tables are listed in **dependency (replay) order** so a bulk COPY never violates an FK. The **schema version** is a
+catalog-only digest (`md5` over `information_schema.columns` for the surface's schema) — instant, no table scan;
+when the platform schema moves, the digest changes and the cached snapshot is **stale**.
+
+## The `.agentspace` manifest-cached store (note #4 — pluggable, gitignored)
+
+Payloads live under the **workspace-level `.agentspace/snapshots/<surface>/<schema-version>/`** (M9a-D5: **one
+shared cache**, captured once + replayed by every stack — `stack-demo` / `stack-dev` / tests — **not per-stack**).
+The cache is **gitignored** — GB blobs never enter any git repo. The `manifest.json` drives the **cache-hit vs
+stale→refresh** decision (`store.Resolve`):
+
+- **cache-hit** — a cached manifest exists and its `schema_version` matches the target stack → replay, **zero prod
+  read**.
+- **stale** — the schema moved (or the format version is unknown) → a refresh is required.
+- **miss** — no snapshot for the surface → capture it first.
+
+`store.SnapshotStore` is an **interface** with a `localfs` backend now; the **cloud/S3 backend is the named v1.3
+swap** — the manifest already addresses payloads by location, so a remote backend re-implements the same
+`PutManifest` / `PutPayload` / `GetManifest` / `GetPayload` / `List` surface with no contract change.
+
+## Embedding capture (M9a-Q3)
+
+pgvector columns are captured **verbatim** (the vectors are in the payload), but the **index is NOT transported** —
+for `skiller.skill_embeddings` the index is ~689 MB of a 692 MB total (heap is only ~3 MB). The dry-run flags any
+table whose total size dwarfs its heap as **index-rebuild-on-replay**; replay runs `REINDEX` after loading the
+table's rows. The **embedding-dimension integrity** fidelity gene then confirms the replayed vectors carry the
+captured dimension.
+
+## The `stacksnap` CLI
+
+```bash
+stacksnap capture --surface <name> [--source dump-ingest|primary-read] \
+                  [--dsn <prod read DSN>] [--dump <pg_dump path>] [--store <root>] [--dry-run]
+stacksnap replay  --surface <name> --stack <demo-N|dev-N> [--dsn <base>] \
+                  [--schema-version <ver>] [--store <root>]
+stacksnap status  [--store <root>]
+```
+
+- **`capture`** reads a public surface once from a safe source, firewalls it, and serializes it to the store.
+  **`--dry-run`** sizes the surface (catalog-only) and asserts the firewall plan **without reading data** — the
+  cheap pre-flight before a real read.
+- **`replay`** resolves cache-hit vs stale against the stack's live schema, then loads the cached snapshot via bulk
+  COPY + rebuilds any pgvector index.
+- **`status`** lists cached snapshots (surface, schema version, rows, source, capture time).
+
+Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage error.
+The store root defaults to `<workspace>/.agentspace/snapshots` (overridable via `--store` or `STACKSNAP_STORE`).
+
+## The fidelity gate (extends the data-DNA)
+
+The snapshot dimension extends the M7b data-DNA harness (`stack-seeding/dna/`, the `datadna` CLI) — see
+[`alignment_testing.md`](../architecture/alignment_testing.md). It adds:
+
+- a **`snapshot-seeded`** surface status that **counts toward coverage** (unlike `waived`): a surface that M7c
+  waived (taxonomy + content, the snapshot/shared-store hard line) becomes `snapshot-seeded` once a snapshot fills
+  it — **lifting the two waived surfaces to real, measured coverage**, the v1.2 thesis;
+- a **snapshot-fidelity gene class** (two-sided: captured source vs replayed stack) — **row-count parity**,
+  **structural conformance**, **referential closure**, **embedding-dimension integrity**, and the **public-only /
+  provenance** gene (the firewall's measured counterpart: zero tenant rows after replay).
+
+## Proven end-to-end (M9a)
+
+The `reference-toy` surface (four tables exercising every firewall branch + the vector path) proves
+capture→store→replay→fidelity end-to-end, independent of any real platform table (the M0 toy-mirror discipline). The
+Go tests are **hermetic** (the DB behind small `Capturer` / `Replayer` / `FidelityProbe` interfaces, tested against
+fakes); the end-to-end test composes the *real* capture + store + replay packages through one in-memory DB and
+asserts row-count parity, the vector rebuild, the stale-cache refresh path, and that **customer data never crosses
+the firewall**. A live-run recipe (the DDL in `reference/reference.go`) stands the surface up in a throwaway schema.
+
+## See also
+- [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.
+- [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary + the DAG node that consumes a snapshot.
+- [`staging_from_dump.md`](staging_from_dump.md) — the full-clone-with-customer-data precedent; the snapshot mechanism is its public-only, low-impact inverse.
+- [`alignment_testing.md`](../architecture/alignment_testing.md) — the snapshot-fidelity + public-only gene class alongside the behavioural (v1.0) + structural data-DNA (v1.1 M7b) dimensions.

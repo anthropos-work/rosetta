@@ -10,6 +10,43 @@ _Implementation decisions with rationale. ID scheme: M9a-D1, M9a-D2, …_
 | M9a-D4 | Snapshots live in a **`.agentspace` manifest-cached store** (gitignored payload), pluggable `SnapshotStore`; **cloud/S3 = v1.3** | No GB blobs in any git repo; manifest drives cache-hit vs refresh; cloud swap is a backend change. (note #4) | 2026-06-06 (user) |
 | M9a-D5 | The canonical cache root is the **workspace-level `.agentspace/snapshots/`** (one shared cache, not per-stack) | Captured once, replayed by every stack (stack-demo/dev/tests); matches note #4 literally; gitignored + inspectable alongside the workspace. (Alt considered: `~/.cache/rosetta-snapshots/`.) | 2026-06-06 (user) |
 
+## Resolved during build (2026-06-06)
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| M9a-D6 | The data-DNA snapshot extension lands in the EXISTING `stack-seeding/dna/` harness (`snapshot.go`), NOT a new harness | Fate-2: the M7b data-DNA already owns the gene/score/criticality machinery + the `datadna` CLI + the `waived` status these surfaces carry today; extending it (a `snapshot.go` file + a `snapshot-seeded` status + a snapshot-operator set) is the minimal, cohesive change. A snapshot gene names SNAPSHOT operators; a structural gene names STRUCTURAL operators; `Validate` rejects a cross-wire. `Coverage()` now counts seeded OR snapshot-seeded over the non-waived denominator — so a snapshot-filled formerly-waived surface reads as covered (the v1.2 thesis). |
+| M9a-Q2→D | Manifest staleness key = a **catalog-only schema-version digest** (`md5` over `information_schema.columns` for the surface's schema) + the `format_version`. A mismatch (or unknown format) → stale → refresh | The digest is instant (no table scan), changes exactly when the schema moves, and partitions the cache by schema version (`<surface>/<schema-ver>/`) so a moved schema lands in a sibling dir without clobbering a still-valid older snapshot. Checksum corruption is a SEPARATE, replay-time check (needs the payload bytes) — `replay.Run` verifies every payload's SHA-256 before writing a single row. |
+| M9a-Q3→D | pgvector: carry the **vectors verbatim** in the payload, **rebuild the index on replay** (`REINDEX TABLE`), do NOT transport the index | Confirmed via live catalog sizing: `skill_embeddings` is 692 MB total but only ~3 MB heap → ~689 MB is the index. The capture dry-run flags any table whose total dwarfs heap as index-rebuild-on-replay; the `snapshot-embedding-dim` fidelity gene confirms the replayed vectors carry the captured dimension. |
+| M9a-Q4→D | `SnapshotStore` interface = `PutManifest`/`PutPayload`/`GetManifest`/`GetPayload`/`List` + a separate `Resolve(store, ref, targetSchemaVer)` cache-hit/refresh brain; manifest addresses payloads BY LOCATION (filename) | This makes the **v1.3 cloud/S3 swap** a clean backend re-implementation of the same 5 methods — the manifest already names payload files, so a remote backend stores/fetches them by the same key. localfs is the only M9a backend. |
+| M9a-D7 | Each module re-declares the small shared helpers it needs (`ParseStackN`, the offset-DSN math, `QuoteIdent`) rather than importing `stack-seeding` | `stack-snapshot` is a SEPARATE Go module (own `go.mod`) — importing across the two would couple their version graphs. The grammar (`{prefix}-{N}` offset, `5432 + N*10000`) is the documented shared convention; re-declaring ~30 lines is cheaper than a cross-module dependency. |
+
+## Adversarial review (close — 2026-06-06)
+Scenarios considered at close (the *scenario* is recorded so future reviewers see what was weighed; each
+was verified handled in the shipped code, no fix needed):
+
+- **Partial-capture tenant leak.** Could a tenant row reach the store if a later table in the capture
+  loop fails the firewall? No — `capture.Run` **stashes every payload in memory** and runs
+  `firewall.AssertCaptured` over ALL tables BEFORE writing a single byte; any non-zero tenant-row count
+  aborts with nothing persisted. (Defense-in-depth with the plan-time `AssertPlan`.) Verified by
+  `capture/capture_harden_test.go` (store-write-error + tenant-probe-error paths).
+- **Corrupt-cache half-replay.** Could a corrupt payload load a partial snapshot into a stack? No —
+  `replay.Run` **verifies every payload's SHA-256 against the manifest before the first `CopyIn`**; a
+  mismatch aborts before any row is written. Verified by `replay/replay_harden_test.go` (payload-read
+  fault aborts before COPY).
+- **Path traversal via surface/ref/payload names.** A hostile surface name or payload filename escaping
+  the cache root? No — `store.sanitize` (Ref keys, with a `..`-collapse-to-fixpoint) + `safeFilename`
+  (payloads, rejecting `/ \ ..`) keep all writes inside the root. Fuzzed (`FuzzSanitize`, 6.3M execs, no
+  escape). Pinned observation: `sanitize("a...b") → "a-.b"` — still safe.
+- **Replay into prod by a wrong DSN.** `replayCmd`'s `--dsn` defaults to `localhost:5432` and the
+  port-offset math derives the per-stack port from the stack name; replay only ever writes to the
+  resolved per-stack-isolated DSN (the M7a isolated class). Capture is structurally read-only
+  (`SET TRANSACTION READ ONLY` in the bounded session). Both halves stay on their side of the
+  read/write boundary by construction.
+- **Schema-drift silent replay.** Could an old-schema snapshot replay into a moved-schema stack? No —
+  `Resolve` keys the cache by schema-version digest and `IsStaleFor` treats a digest mismatch (or an
+  unknown `target` version) as stale → refuse-and-refresh, not silent drift.
+
+No adversarial scenario revealed release-scope-breaking work; all are Fate-1-handled in the shipped code.
+
 ## Open at design (to resolve during build)
 - M9a-Q1: which capture source to use (read replica / restore-from-snapshot / safe primary read).
   - **Investigated 2026-06-06, double-checked (user push).** Infra facts (from the wired `postgres` MCP DSN in

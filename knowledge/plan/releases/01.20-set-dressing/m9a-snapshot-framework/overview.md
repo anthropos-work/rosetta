@@ -3,9 +3,10 @@ milestone: M9a
 slug: snapshot-framework
 version: v1.2 "set dressing"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-05
 refined: 2026-06-06
+last_updated: 2026-06-06
 complexity: large
 delivers: corpus/ops/snapshot-spec.md (new) + corpus/ops/db-access.md (new) + the /db-query skill + extends corpus/architecture/alignment_testing.md (snapshot-fidelity + public-only gene class)
 ---
