@@ -1,6 +1,6 @@
 # M9a — Progress
 
-**Shape:** section · **Status:** built (awaiting close)
+**Shape:** section · **Status:** `archived` (completed 2026-06-06)
 
 ## Section checklist (from overview Scope.In)
 - [x] (note #1) The dedicated `rosetta-extensions/stack-snapshot/` section + the `stacksnap` CLI (capture / replay / status) — 9 Go packages, tagged `stack-snapshot-m9a`
