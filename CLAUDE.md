@@ -269,6 +269,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA
 - `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
+- `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a) — capture a public reference surface once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack; the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
 
 ### Updating the Platform
 - `corpus/ops/update_guide.md`: Sync code, dependencies, and database schemas
