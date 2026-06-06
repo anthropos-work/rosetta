@@ -11,7 +11,9 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > template library (the 9-table set under the per-surface `directus` public predicate, the per-stack Directus store
 > fork, the media refs, the content fidelity gene, and the `sim_id`/`skill_path_id` linkage; see [The Directus
 > content surface](#the-directus-content-surface-m10--the-second-real-surface)). With M10 the **last `waived` surface
-> is promoted to `snapshot-seeded` → 100% data-DNA coverage** (the v1.2 thesis complete). Richer-world recipes are **M11**.
+> is promoted to `snapshot-seeded` → 100% data-DNA coverage** (the v1.2 thesis complete). **M11** curates this into
+> the usable product layer — the refreshed presets + the set-dressed `corpus/ops/demo/` recipe family + the
+> `/demo-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)).
 > The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
 > snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
@@ -375,6 +377,8 @@ behind**: with content present, the v1.1 seeders' `sim_id` / `skill_path_id` / `
 falls back to the free values (graceful degradation; the snapshot is a prerequisite, not a hard requirement).
 
 ## See also
+- [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/demo-snapshot`) sits in the up→snapshot→seed→use→down flow.
+- [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md) — the **set-dressing recipe**: the operator walk-through of capture→replay→a real-catalog/real-content world (this spec is its source of truth).
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary + the DAG node that consumes a snapshot.
 - [`staging_from_dump.md`](staging_from_dump.md) — the full-clone-with-customer-data precedent; the snapshot mechanism is its public-only, low-impact inverse.

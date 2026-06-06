@@ -3,8 +3,9 @@ milestone: M11
 slug: richer-recipes
 version: v1.2 "set dressing"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-05
+last_updated: 2026-06-06
 complexity: medium
 delivers: refreshes corpus/ops/demo/ (recipes + presets to full-fidelity) + the /demo-snapshot skill + the CLAUDE.md skill table
 ---

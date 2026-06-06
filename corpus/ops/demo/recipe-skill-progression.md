@@ -20,10 +20,12 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
 
 ## Steps
 
-1. **Bring up + pick a long activity window.** A longer span makes the timeline richer. Use the `large-1k`
-   preset (9 months) or author your own:
+1. **Bring up + replay the real library (set-dressing) + pick a long activity window.** A longer span makes the
+   timeline richer; the snapshot replay makes the sessions link to **real** simulation / skill-path templates
+   instead of placeholder ids. Use the `large-1k` preset (9 months) or author your own:
    ```bash
    /demo-up 1
+   /demo-snapshot replay 1            # taxonomy + directus — the real catalog + content templates (set-dressing)
    cat > /tmp/progression.seed.yaml <<'YAML'
    stack: demo-1
    org: { name: Stark Industries, slug: stark }
@@ -53,9 +55,15 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
 ## Notes
 - **Deterministic.** The generator uses no random source — a given `stack.seed.yaml` always produces the same
   world, so a re-seed reproduces the exact demo (good for scripted walkthroughs / screenshots).
-- **The hard line.** This recipe seeds *structural* activity (sessions/events with real shapes). It does **not**
-  fabricate AI transcripts, AI-scored narratives, or fresh embeddings, and it does **not** author the skill
-  *taxonomy* (the 60K-skill snapshot) or write the shared Directus content store — those are waived (see the
-  data-DNA `waived` surfaces) and are a future (v1.2) "richer demo worlds" theme.
+- **Set-dressed (v1.2).** With the snapshot replay in step 1, the catalog view shows the **real 60K-skill
+  taxonomy** and the seeded sessions link to the **real public simulation / skill-path templates** (the v1.2
+  "set dressing" — both surfaces are now `snapshot-seeded`, **100%** data-DNA coverage, nothing `waived`). See
+  [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the capture→replay mechanism. If you **skip** the
+  replay, the recipe still works — it degrades gracefully to structural-only activity with an empty catalog and
+  free (unlinked) content refs.
+- **The hard line (still true).** This recipe seeds *structural* activity (sessions/events with real shapes). It
+  does **not** fabricate AI transcripts, AI-scored narratives, or fresh embeddings — those (plus external
+  shareability) are the **v1.3** "richer demo worlds" theme. The taxonomy + content *libraries* are real (the
+  snapshot); the *per-session AI narrative* is not.
 - **Tuning.** `activity.months` widens the timeline; `activity.pass_rate` shifts the pass/fail balance; `size`
   scales the population. Schema reference: [`../seeding-spec.md`](../seeding-spec.md).
