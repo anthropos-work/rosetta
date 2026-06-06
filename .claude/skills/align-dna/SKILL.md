@@ -10,12 +10,16 @@ The **Alignment DNA** is the genome a mirror must reproduce: the complete, enume
 **genes** (one per `<Capability>/<variant>` pair) for a source engine at a pinned version. It is the
 denominator of the alignment score. This skill authors and maintains it. Concepts:
 [`corpus/architecture/alignment_testing.md`](../../../corpus/architecture/alignment_testing.md).
-Harness: [`test/alignment/`](../../../test/alignment/) (`alignctl`).
+Harness: `rosetta-extensions/alignment/` (`alignctl`) — a section of the extensions repo, consumed per-stack at a tag.
 
-> **Where this runs.** The framework (`alignctl`, the skills, the doc) lives in **rosetta**. A
-> specific mirror's DNA, goldens, alignment tests, and runner live in **that mirror's own repo**
-> (e.g. `clerkenstein`), cloned under the gitignored `anthropos-demo/`. Author the DNA *in the
-> mirror's repo*; pull the source into *its* `.agentspace/`.
+> **Where this runs.** The skills + this doc live in **rosetta**; the `alignctl` harness is the
+> `rosetta-extensions/alignment/` section, and a specific mirror's DNA, goldens, alignment tests, and
+> runner live in **that mirror's own section of rosetta-extensions** (e.g. `clerkenstein/`),
+> cloned under the gitignored `stack-demo/`. Author the DNA *in the
+> mirror's repo*; pull the source into *its* `.agentspace/`. Note this mirror-repo-LOCAL
+> `.agentspace/` (the pinned source-library clone for golden capture) is **distinct** from the
+> rosetta-extensions authoring copy at `.agentspace/rosetta-extensions/` — different things, same
+> `.agentspace/` parent; leave the mirror-local one intact.
 
 ## Two kinds of surface — author BOTH (the M3 lesson)
 

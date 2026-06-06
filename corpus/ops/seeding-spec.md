@@ -8,7 +8,9 @@ structural data from one declarative blueprint, the dependency order, and (most 
 > orchestrator, the direct-Postgres perf path, and the isolation guard. The full **seeder fleet** (taxonomy,
 > content, sessions, backdated activity at scale) is M7c; the **data-DNA** schema-conformance/drift gate is
 > M7b. The seeding code lives in the gitignored `rosetta-extensions` monorepo (its own git), consumed by the
-> `/demo-*` skills — **no platform repo is modified.**
+> `/demo-*` skills — **no platform repo is modified.** It is also **not** scattered in the rosetta corpus: it's
+> authored and tagged in the authoring copy at `.agentspace/rosetta-extensions/`, then consumed per-stack at a
+> pinned tag (`stack-<role>/rosetta-extensions @ <tag>`).
 
 ## For PMs — what it does
 

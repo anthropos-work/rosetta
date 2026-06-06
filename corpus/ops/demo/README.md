@@ -44,8 +44,11 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 **Skills:** `/demo-up` · `/demo-seed` · `/demo-status` · `/demo-down` (see the root `CLAUDE.md` skills table).
 
 ## Hard constraints (always true)
-- **Zero platform-repo change.** All demo tooling lives in the gitignored `anthropos-demo/rosetta-extensions/`
-  (the demo-stack overlay + the seeder + Clerkenstein). The platform clones are consumed as-is.
+- **Zero platform-repo change.** All demo tooling lives in `rosetta-extensions` (the demo-stack overlay + the
+  seeder + Clerkenstein), never scattered in the rosetta corpus and never authored ad-hoc inside a stack dir.
+  It is authored + tested + tagged in the authoring copy at `.agentspace/rosetta-extensions/`, and the demo
+  stack consumes a pinned-tag clone at `stack-demo/rosetta-extensions @ <tag>`. The platform clones are
+  consumed as-is.
 - **Production-safe.** The seeder's isolation guard makes it *structurally impossible* for a non-prod stack to
   write a shared/prod store (Directus, the prod S3-public bucket, live Clerk, Customer.io/Brevo, AI APIs); it
   seeds only the per-stack Postgres/Redis, and proves it with an audit log. See `../seeding-spec.md`.

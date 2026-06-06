@@ -19,7 +19,7 @@
     *   **Health Monitoring**: Sentry cron monitor integration for reliability tracking
 
 ## Architecture & Code Map
-*   **Codebase**: `anthropos-dev/chronos` (or `git@github.com:anthropos-work/chronos.git`)
+*   **Codebase**: `stack-dev/chronos` (or `git@github.com:anthropos-work/chronos.git`)
 *   **Language**: Go 1.25
 *   **ORM**: [sqlc](https://sqlc.dev/) (raw SQL code generation, NOT Ent)
 *   **CLI**: [Cobra](https://github.com/spf13/cobra) command framework
@@ -168,7 +168,7 @@ sequenceDiagram
     *   Environment variables: `DB_CONNECTION`, `REDIS_ADDR`
 *   **Setup**:
     ```bash
-    cd anthropos-dev/chronos
+    cd stack-dev/chronos
     # Apply database schema (using atlas)
     atlas migrate apply --env local
     ```
@@ -187,7 +187,7 @@ sequenceDiagram
 
 ### 3. Testing
 ```bash
-cd anthropos-dev/chronos
+cd stack-dev/chronos
 go test ./...
 ```
 

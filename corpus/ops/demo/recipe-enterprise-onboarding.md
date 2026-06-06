@@ -10,7 +10,7 @@ org looks like in Anthropos" demo.
 
 1. **Bring up an isolated stack** (Clerkenstein-wired, offset ports):
    ```bash
-   /demo-up 1            # or: anthropos-demo/rosetta-extensions/demo-stack/up-injected.sh 1
+   /demo-up 1            # or: stack-demo/rosetta-extensions/demo-stack/up-injected.sh 1
    ```
    This brings up `demo-1` on offset ports (`+10000`), Clerk-free, with its own data — the dev stack
    untouched. `migrate-demo.sh` runs automatically and bootstraps the global Sentinel policy (required for
@@ -27,7 +27,7 @@ org looks like in Anthropos" demo.
 
 3. **(Optional) verify** the world is coherent:
    ```bash
-   SS=anthropos-demo/rosetta-extensions/stack-seeding
+   SS=stack-demo/rosetta-extensions/stack-seeding
    /tmp/datadna measure --stack demo-1 --dna "$SS/dna/data-dna.json"   # conformance 100% over reachable surfaces
    /tmp/datadna catalog --dna "$SS/dna/data-dna.json"                  # what's seeded vs waived
    ```

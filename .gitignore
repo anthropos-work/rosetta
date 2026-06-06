@@ -2,25 +2,26 @@
 # Project Rosetta .gitignore
 # =============================================================================
 # This file defines what should NOT be tracked in the documentation corpus.
-# The corpus itself (corpus/) is tracked; the workspace (anthropos-dev/) is not.
+# The corpus itself (corpus/) is tracked; the per-stack workspaces (stack-*/) are not.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# WORKSPACE
+# STACK WORKSPACES
 # -----------------------------------------------------------------------------
-# The anthropos-dev/ directory is a scratchpad for:
-# - Cloning platform repositories
-# - Building local development environments
-# - Inspecting code for documentation purposes
+# Each stack-*/ directory is a gitignored scratchpad that "spans" one full local
+# stack: its cloned platform service repos PLUS its own clone of the
+# rosetta-extensions tooling monorepo, checked out at a pinned tag
+# (stack-<role>/rosetta-extensions @ <tag>). One directory per stack:
+#   stack-dev/    - the local DEV stack (platform repos + its dev tooling clone)
+#   stack-demo/   - disposable demo stacks (Clerkenstein-wired, offset ports)
+#   stack-dev-2/  - a secondary dev stack
+#   stack-stage/, stack-tests/, ...  - future stacks, same pattern
 #
-# This keeps the documentation repo clean while allowing hands-on work.
+# This keeps the documentation corpus clean while allowing hands-on stack work.
+# The rosetta-extensions AUTHORING copy (where tooling is built/tested/tagged)
+# lives separately under .agentspace/ — see the AGENTSPACE block below.
 # -----------------------------------------------------------------------------
-anthropos-dev/
-anthropos-dev-2/
-
-# Demo-environment scratchpad (v1.0 "body double"): the clerkenstein mirror repo +
-# disposable demo stacks are built here, never tracked by the docs corpus.
-anthropos-demo/
+/stack-*/
 
 # -----------------------------------------------------------------------------
 # ENVIRONMENT & SECRETS
@@ -124,18 +125,12 @@ public/
 # Local scratchpad for skill output: test-platform reports, future skills'
 # transient artifacts. The skill writes timestamped markdown reports here;
 # they're for the operator to read, not for the corpus.
+#
+# ALSO hosts the rosetta-extensions AUTHORING copy at .agentspace/rosetta-extensions/
+# — the single working clone you spawn on demand to READ / BUILD / TEST the stack
+# tooling before committing + tagging it. Each stack then consumes a pinned-tag
+# clone under its own stack-*/ dir (see the STACK WORKSPACES block above).
 .agentspace/
-
-# -----------------------------------------------------------------------------
-# TEST PLATFORM ARTIFACTS
-# -----------------------------------------------------------------------------
-# Playwright / test runner output that should never land in the corpus.
-test/e2e/test-results/
-test/e2e/playwright-report/
-test/e2e/storageState.json
-test/.coverage/
-test/.cache/
-test/node_modules/
 
 # -----------------------------------------------------------------------------
 # EMAIL / MARKETING ASSETS

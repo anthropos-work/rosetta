@@ -32,7 +32,7 @@ Before updating, stop any running services to avoid conflicts.
 ### Check What's Running
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make ps
 ```
 
@@ -63,7 +63,7 @@ Pull latest changes from all repositories using the Makefile.
 ### Navigate to Platform Directory
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 ```
 
 ### Update All Repositories
@@ -112,7 +112,7 @@ After pulling code, install any new or updated dependencies.
 ### Frontend (Next.js Monorepo)
 
 ```bash
-cd anthropos-dev/next-web-app
+cd stack-dev/next-web-app
 pnpm install
 ```
 
@@ -130,14 +130,14 @@ pnpm install
 ### Studio-Desk
 
 ```bash
-cd anthropos-dev/studio-desk
+cd stack-dev/studio-desk
 npm install
 ```
 
 ### Studio-Room (Python)
 
 ```bash
-cd anthropos-dev/studio-room
+cd stack-dev/studio-room
 pip3 install -r requirements.txt --upgrade
 ```
 
@@ -146,7 +146,7 @@ pip3 install -r requirements.txt --upgrade
 Go modules update automatically on build, but you can force an update:
 
 ```bash
-cd anthropos-dev/backend
+cd stack-dev/backend
 go mod download
 go mod tidy
 ```
@@ -160,7 +160,7 @@ If schema changes were made, apply new migrations.
 ### Apply All Migrations
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make migrate
 ```
 
@@ -187,7 +187,7 @@ make migrate S=cms
 The `make up` command automatically rebuilds images from local code (`--build` flag) and starts services.
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make up
 ```
 
@@ -207,7 +207,7 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 ### Start and Test Frontend
 
 ```bash
-cd anthropos-dev/next-web-app
+cd stack-dev/next-web-app
 pnpm dev:web
 ```
 
@@ -222,7 +222,7 @@ Open http://localhost:3000 and verify the application loads.
 Minimal update when starting work:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make pull              # Pull all repos
 make up                # Rebuild and start
 cd ../next-web-app && pnpm install && pnpm dev:web
@@ -233,7 +233,7 @@ cd ../next-web-app && pnpm install && pnpm dev:web
 Comprehensive update:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make down              # Stop everything
 make pull              # Pull all repos
 make up                # Rebuild and start
@@ -248,7 +248,7 @@ cd ../next-web-app && pnpm install && pnpm dev:web
 When significant changes are announced:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make down              # Stop everything
 make pull              # Pull all repos
 make reset-db          # Fresh database + migrations
@@ -284,7 +284,7 @@ cd [service]
 atlas migrate status --env local
 
 # If stuck, full reset (WARNING: data loss)
-cd anthropos-dev/platform
+cd stack-dev/platform
 make reset-db
 ```
 

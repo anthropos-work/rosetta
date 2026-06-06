@@ -128,7 +128,7 @@ Apply to EVERY documentation update:
 [What should be done]
 ```
 
-Save to: `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_doc_<topic>.md`
+Save to: `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_doc_<topic>.md`
 
 ## Progress Tracking
 
@@ -153,7 +153,8 @@ Use TodoWrite with corpus sections as checklist:
 - **Link new content** - make it discoverable
 - **Follow templates** - use TEMPLATE.md for services
 - **Update skills** - when ops procedures change
-- Work in `anthropos-dev/` for evidence inspection only
+- Work in `stack-dev/` for evidence inspection only
+- **Know the corpus/tooling boundary** - rosetta is a read-only doc corpus + dev-env skills; all code/scripts that operate the platform on a spawned stack live in **rosetta-extensions**, the executable stack tooling. When new evidence is EXECUTABLE stack tooling, it does NOT get documented as scripts into the rosetta corpus — it belongs in rosetta-extensions, authored and tested in the AUTHORING copy at `.agentspace/rosetta-extensions/`, committed, then **tagged**. Each stack consumes it as a pinned per-stack copy (`stack-<role>/rosetta-extensions @ <tag>`). Make the sweep aware of both: the `.agentspace/rosetta-extensions/` authoring copy and the per-stack `stack-*/rosetta-extensions @ <tag>` consumption copies.
 
 ## Success Criteria
 

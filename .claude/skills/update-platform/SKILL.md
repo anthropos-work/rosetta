@@ -42,7 +42,7 @@ Apply to EVERY step in the guide:
 ## Error Handling
 
 1. Do NOT skip errors - resolve first
-2. Check logs: `cd anthropos-dev/platform && make logs S=[service]`
+2. Check logs: `cd stack-dev/platform && make logs S=[service]`
 3. Create ops report (see below)
 4. Continue
 
@@ -50,7 +50,7 @@ Apply to EVERY step in the guide:
 
 When you discover errors, missing steps, or better approaches:
 
-1. Create a report file: `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`
+1. Create a report file: `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`
 2. Use this template:
 
 ```markdown
@@ -88,12 +88,14 @@ Use TodoWrite with these phases:
 
 ## Critical Rules
 
-- Work in `anthropos-dev/` only
+- Work in `stack-dev/` only
 - Use `make` commands for all platform operations
 - Stop services before pulling code
 - Handle git conflicts before continuing
 - Verify health after updates
 - Follow the guide - don't improvise
+
+> **Updating a stack's tooling is NOT editing scripts in place.** Each gitignored `stack-*/` dir spans one full local stack — its platform service repos PLUS its own clone of rosetta-extensions consumed at a pinned tag (`stack-<role>/rosetta-extensions @ <tag>`). To update that tooling, bump the stack's pinned rosetta-extensions tag — re-clone or checkout at the new tag — rather than hand-editing scripts inside the stack dir. New tooling work happens first in the AUTHORING copy at `.agentspace/rosetta-extensions/` (build + TEST, then commit + TAG); stacks only ever consume tooling at a pinned tag.
 
 ## Additional Resources
 

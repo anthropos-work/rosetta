@@ -17,9 +17,11 @@ store). Source of truth: [`corpus/ops/seeding-spec.md`](../../../corpus/ops/seed
    boundary**, the casbin subtleties). Confirm the target is a **non-prod** demo stack.
 2. **Confirm the stack is up + migrated** — `/demo-up N` first if needed. `migrate-demo.sh` bootstraps the
    global Sentinel policy (required for authorized routes to return 200).
-3. **Seed** via the tool (gitignored at `anthropos-demo/rosetta-extensions/stack-seeding/`):
+3. **Seed** via the tool (gitignored at `stack-demo/rosetta-extensions/stack-seeding/`). The seeder
+   (section `stack-seeding`, unchanged) is consumed from the stack's tagged `stack-demo/rosetta-extensions`
+   clone; its canonical source is the `.agentspace/rosetta-extensions/` authoring copy:
    ```bash
-   SS=anthropos-demo/rosetta-extensions/stack-seeding
+   SS=stack-demo/rosetta-extensions/stack-seeding
    go build -o /tmp/stackseed "$SS/cmd/stackseed"
    # a curated preset (recommended):
    /tmp/stackseed --stack demo-N --seed "$SS/presets/mid-500.seed.yaml"

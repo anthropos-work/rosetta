@@ -15,9 +15,12 @@ read-only platform repo**. Source of truth: [`corpus/ops/rosetta_demo.md`](../..
 2. **Resource check** — a full stack is ~10–12 GB. Confirm headroom (`docker info` MemTotal vs running
    stacks). For a tight box, bring up a minimal stack (infra only) or a reduced profile. **Never** exceed
    the box — multiple full stacks need a bigger Docker VM (M3-D5).
-3. **Bring it up** via the tooling (the tooling lives in the gitignored `anthropos-demo/rosetta-extensions/demo-stack/`):
+3. **Bring it up** via the tooling. The demo stack consumes `demo-stack` tooling from its **OWN**
+   `stack-demo/rosetta-extensions` clone pinned at a tag — never edited ad-hoc inside `stack-demo`.
+   New or changed tooling is authored + tested in the `.agentspace/rosetta-extensions/` authoring copy
+   and tagged first, then consumed per-stack at that pinned tag.
    ```bash
-   DEMO=anthropos-demo/rosetta-extensions/demo-stack
+   DEMO=stack-demo/rosetta-extensions/demo-stack
    # FULL Clerk-free demo (every Clerk seam injected — real Clerk never used):
    "$DEMO/up-injected.sh" N        # clones + injects the 5 Clerk services (disarmed colony),
                                    # reuses dev images for the rest, runs the fake FAPI/BAPI,

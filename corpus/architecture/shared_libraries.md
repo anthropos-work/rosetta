@@ -21,7 +21,7 @@ third-party dependency. This keeps the services consistent and small.
 
 > ### How they are consumed (this matters)
 > **None of these are cloned by `make init`** — they are **absent from
-> `platform/repos.yml`**, so there is no `anthropos-dev/colony` (etc.) directory.
+> `platform/repos.yml`**, so there is no `stack-dev/colony` (etc.) directory.
 > Each is pulled as a **private Go module** during a service's Docker build:
 > `platform/docker-compose.yml` passes `GH_ACCESS_TOKEN=$GH_PAT` as a build arg, and the
 > service Dockerfiles set `GOPRIVATE=github.com/anthropos-work/*` plus a

@@ -2,6 +2,8 @@
 
 This directory contains guides for operating the Anthropos platform locally.
 
+> **Corpus vs. extensions boundary:** rosetta is a read-only doc corpus + dev-env skills; ALL executable tooling that operates a spawned stack lives in rosetta-extensions — authored in `.agentspace/rosetta-extensions/`, tagged, and consumed per-stack via a pinned-tag clone.
+
 ## Available Operations
 
 | Guide | Purpose | When to Use |
@@ -47,10 +49,10 @@ All operations use Claude's **TodoWrite** tool for real-time progress tracking.
 
 ## Ops Reports
 
-When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `anthropos-dev/ops-reports/`:
+When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `stack-dev/ops-reports/`:
 
 ```
-anthropos-dev/ops-reports/
+stack-dev/ops-reports/
 ├── op_20250127_143022_setup_pgvector.md
 ├── op_20250127_151045_run_port_conflict.md
 └── op_20250128_092311_update_migration_fail.md

@@ -9,7 +9,7 @@
     *   **Event Subscription**: Listens to Jobsimulation events to update step completion when simulations finish
 
 ## Architecture & Code Map
-*   **Codebase**: `anthropos-dev/skillpath` (repo `git@github.com:anthropos-work/skillpath`)
+*   **Codebase**: `stack-dev/skillpath` (repo `git@github.com:anthropos-work/skillpath`)
 *   **Language**: Go 1.25
 *   **Frameworks**: gqlgen (GraphQL Federation v2), Connect-RPC, Ent ORM, goverter (Ent → domain converters)
 *   **Database**: PostgreSQL (`search_path=skillpath`); migrations live in `terraform/migrations/` (Atlas, applied via Terraform/Atlas provider)
@@ -181,7 +181,7 @@ sequenceDiagram
     *   Environment variables: `DB_CONNECTION`, `REDIS_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`, `CLERK_SECRET_KEY`
 *   **Setup**:
     ```bash
-    cd anthropos-dev/skillpath
+    cd stack-dev/skillpath
     make setup    # Install tools (ent, atlas, gqlgen, goverter)
     make gen      # Generate Ent code
     atlas migrate apply --env local  # Apply migrations
@@ -201,7 +201,7 @@ sequenceDiagram
 
 ### 3. Testing
 ```bash
-cd anthropos-dev/skillpath
+cd stack-dev/skillpath
 go test ./...
 
 # With coverage

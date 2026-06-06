@@ -12,7 +12,7 @@
 builds/runs the microservices locally **from source**. It is the one repo you `cd` into to
 operate everything else.
 
-* **Repo**: `git@github.com:anthropos-work/platform` → cloned to `anthropos-dev/platform`
+* **Repo**: `git@github.com:anthropos-work/platform` → cloned to `stack-dev/platform`
 * **Drivers**: GNU Make (`SHELL=/bin/bash`), Docker Compose v2, YAML
 * **No application code, no tests, no CI** (orchestration only; per-service tests run inside each cloned repo)
 

@@ -1,6 +1,6 @@
 # Alignment Testing
 
-**Status:** canonical · **Last updated:** 2026-06-04 · **Reference implementation:** [`test/alignment/`](../../test/alignment/)
+**Status:** canonical · **Last updated:** 2026-06-06 · **Reference implementation:** `rosetta-extensions/alignment/` (section of the [extensions repo](https://github.com/anthropos-work/rosetta-extensions); consumed per-stack at a tag)
 
 ## What this is (and why)
 
@@ -176,7 +176,7 @@ The process is driven by two skills (they orchestrate `alignctl` and own the jud
 
 ## `alignctl` reference
 
-The executable harness ([`test/alignment/cmd/alignctl`](../../test/alignment/cmd/alignctl)):
+The executable harness (`rosetta-extensions/alignment/cmd/alignctl`):
 
 ```
 alignctl run      --dna P --runner CMD [--golden-dir D] [--source golden|live]
@@ -189,7 +189,7 @@ alignctl dna validate --dna P
 
 ## Worked example: the toy reference
 
-[`test/alignment/examples/toy/`](../../test/alignment/examples/toy/) is a self-contained proof: a
+`rosetta-extensions/alignment/examples/toy/` is a self-contained proof: a
 `source` engine and a `mirror` engine that match **except for one intentional divergence**
 (`Greet/padded-name` — the source normalizes input whitespace, the mirror forgets to). It exists to
 prove the framework **catches misalignment**, not merely that it reports green.
@@ -306,20 +306,30 @@ schema — and that conformance is enumerable, measurable, and drift-gated, just
 
 ## Where things live
 
-| In **rosetta** (this framework — reusable) | In the **mirror's own repo** (e.g. `clerkenstein`) |
-|---|---|
-| `test/alignment/` — `alignctl` + the toy | the mirror engine itself |
-| `/align-dna`, `/align-run` skills | the source's DNA(s) (the genome — e.g. Clerkenstein ships three) |
-| this doc | the alignment tests + goldens |
-| | the engine's runner(s) (one per surface — e.g. `clerkrun`/`jsfapirun`/`expressrun`) |
+rosetta documents the discipline and ships the skills; **all executable machinery — the reusable harness
+*and* each mirror — lives in rosetta-extensions** and is consumed per-stack at a tag:
 
-Rosetta never contains a specific mirror's source — it ships the measuring machinery and a toy that
-proves it.
+| In **rosetta** (docs + skills, read-only) | In **rosetta-extensions** (executable, consumed per-stack) |
+|---|---|
+| this doc — the alignment test class + method | `alignment/` — the reusable harness (`alignctl` + the toy) |
+| `/align-dna`, `/align-run` skills | each **mirror** section (e.g. `clerkenstein/`) — the mirror engine itself |
+| | the source's DNA(s) (the genome — e.g. Clerkenstein ships three) |
+| | the alignment tests + goldens + the engine's runner(s) (one per surface — `clerkrun`/`jsfapirun`/`expressrun`) |
+
+rosetta never contains executable alignment code — neither a specific mirror's source nor the reusable
+harness. Both are sections of the **rosetta-extensions** monorepo, which carries two clone roles: an
+**authoring copy** at `.agentspace/rosetta-extensions/` (spawned on demand — where the `alignment/`
+harness, DNAs, goldens, and runners are built, tested, and **tagged**), and **per-stack consumption
+copies** `stack-*/rosetta-extensions @ <tag>` (each stack consumes the tooling at a pinned tag). Policy:
+all executable stack tooling — the `alignment/` harness, seeders, injection, and each mirror — lives in
+rosetta-extensions, built and tagged in the authoring copy, then consumed per-stack; it is never
+scattered in the rosetta corpus or authored ad-hoc inside a stack dir. rosetta stays a read-only doc
+corpus plus dev-env skills.
 
 ## Layout
 
 ```
-test/alignment/
+rosetta-extensions/alignment/        (section of the extensions monorepo)
   cmd/alignctl            run | capture | dna list|diff|validate
   internal/dna            DNA model, load, validate, weight derivation
   internal/outcome        Outcome type + outcomes/golden IO
@@ -328,4 +338,4 @@ test/alignment/
   examples/toy            the self-contained reference example
 ```
 
-Stdlib-only Go — builds and runs offline.
+Stdlib-only Go (module `anthropos.dev/alignment`) — builds and runs offline.

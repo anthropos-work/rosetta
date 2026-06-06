@@ -7,8 +7,8 @@ Quick reference for update commands and error recovery. For full update instruct
 | Type | Path |
 |------|------|
 | Master Guide | `corpus/ops/update_guide.md` |
-| Ops Reports | `anthropos-dev/ops-reports/` |
-| Working Dir | `anthropos-dev/` |
+| Ops Reports | `stack-dev/ops-reports/` |
+| Working Dir | `stack-dev/` |
 
 ## Update Scenarios
 
@@ -25,7 +25,7 @@ Quick reference for update commands and error recovery. For full update instruct
 docker ps --filter "name=ant-rosetta" --format "table {{.Names}}\t{{.Status}}"
 
 # Check git status across repos
-cd anthropos-dev
+cd stack-dev
 for repo in platform backend cms jobsimulation skiller next-web-app; do
   echo "=== $repo ==="
   (cd "$repo" && git status -s) 2>/dev/null || echo "  Not found"
@@ -39,11 +39,11 @@ done
 
 ```bash
 # Stop services before pulling
-cd anthropos-dev/platform
+cd stack-dev/platform
 docker compose -p ant-rosetta down
 
 # Pull all repos
-cd anthropos-dev
+cd stack-dev
 for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room cms/studio ant-academy; do
   (cd "$repo" 2>/dev/null && git pull origin main) || echo "Skipped: $repo"
 done
@@ -146,7 +146,7 @@ TodoWrite({
 
 ## Ops Report Template
 
-When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`:
+When creating `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_update_<topic>.md`:
 
 ```markdown
 # Ops Report: [Brief Title]

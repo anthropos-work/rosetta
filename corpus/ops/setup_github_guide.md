@@ -554,8 +554,8 @@ The ultimate test of your setup is successfully cloning an organization reposito
 ### Create Workspace Directory
 
 ```bash
-mkdir -p ./anthropos-dev
-cd ./anthropos-dev
+mkdir -p ./stack-dev
+cd ./stack-dev
 ```
 
 ### Clone Rosetta Repository
@@ -619,4 +619,4 @@ Setup is complete when:
 6. (Dual setup) Personal alias works: `ssh -T git@github.com-personal`
 7. Organization access requested/granted
 8. Keys persist after terminal/computer restart
-9. Successfully cloned `rosetta` repo to `./anthropos-dev/rosetta`
+9. Successfully cloned `rosetta` repo to `./stack-dev/rosetta`

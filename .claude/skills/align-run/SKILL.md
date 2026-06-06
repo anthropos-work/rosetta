@@ -9,11 +9,20 @@ argument-hint: [dna path + mirror runner, e.g. "dna.json + 'go run ./cmd/clerkru
 Run a **mirror** against a **source** across an Alignment DNA and report how faithfully the mirror
 reproduces the source as a **0–100% score**. Concepts:
 [`corpus/architecture/alignment_testing.md`](../../../corpus/architecture/alignment_testing.md).
-Harness: [`test/alignment/`](../../../test/alignment/) (`alignctl`).
+Harness: the `rosetta-extensions/alignment/` section (`alignctl`).
 
-> **Where this runs.** `alignctl` + this skill live in **rosetta**; the DNA, goldens, mirror, and
-> its runner live in the **mirror's own repo** (e.g. `clerkenstein`) under `anthropos-demo/`. Run
+> **Where this runs.** This skill + the doc live in **rosetta**; `alignctl` is the
+> `rosetta-extensions/alignment/` section. The DNA, goldens, mirror, and
+> its runner live in the **mirror's own repo** (e.g. `clerkenstein`) under `stack-demo/`. Run
 > this from the mirror repo so the `--runner` relative path and goldens resolve.
+>
+> Stack-dir rename: `anthropos-demo/` → `stack-demo/` (and `anthropos-dev/` → `stack-dev/` where
+> present). Each gitignored `stack-*/` dir spans one full local stack — its platform service repos
+> plus its own clone of rosetta-extensions consumed at a pinned tag (`stack-<role>/rosetta-extensions @ <tag>`).
+> Same `.agentspace/` disambiguation as align-dna: the only `.agentspace/` path this rename
+> introduces is the authoring copy `.agentspace/rosetta-extensions/` (spawn on demand to read/build/
+> test tooling, then commit + tag); the mirror-repo-local `.agentspace/` that pins the source-SDK
+> clone for goldens is a distinct, pre-existing meaning and stays as-is.
 
 ## Prerequisites
 - A validated DNA (authored by `/align-dna`) and captured source **goldens** (or use `--source live`).

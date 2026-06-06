@@ -10,7 +10,7 @@ This directory contains all documentation related to the Anthropos platform arch
 
 *   **[dependency_map.md](./dependency_map.md)**: Matrix of service inter-dependencies showing how different components interact with each other.
 
-*   **[alignment_testing.md](./alignment_testing.md)**: The **alignment test class** (a third class beside unit and integration) and its reusable framework — how we measure, as a 0–100% score, how faithfully a *mirror* engine (e.g. Clerkenstein) reproduces a *source* engine. Reference implementation in [`test/alignment/`](../../test/alignment/).
+*   **[alignment_testing.md](./alignment_testing.md)**: The **alignment test class** (a third class beside unit and integration) and its reusable framework — how we measure, as a 0–100% score, how faithfully a *mirror* engine (e.g. Clerkenstein) reproduces a *source* engine. Reference implementation: `rosetta-extensions/alignment/`.
 
 ## Quick Start
 

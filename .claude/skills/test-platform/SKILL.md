@@ -18,25 +18,25 @@ Pick the scope you want via the argument: `live`, `repos`, `census`, `full`. Def
 
 1. **Decide scope**. Default to `live`. If the user passes `repos`, `census`, or `full`, honor it.
 2. **Confirm pre-conditions** (see below) before running anything that takes more than a few seconds.
-3. **Run the underlying tooling** in `./test/reports/generate.sh <scope>`. Do not reinvent the probes — the bash scripts under `./test/` are the source of truth.
+3. **Run the underlying tooling** — `stack-verify/reports/generate.sh <scope>` from the `rosetta-extensions` clone (see *How to invoke*). Do not reinvent the probes — the bash scripts under `stack-verify/` are the source of truth.
 4. **Surface the report** to the user: print the path, summarize pass/fail, point at any 0-test repos or service failures, and suggest follow-up actions.
 
 ## Scope semantics
 
 | Scope | What runs | Typical duration | When to use |
 |---|---|---|---|
-| `live` (default) | Liveness + readiness probes (`test/live/verify.sh`) | seconds | Quick "is the platform up?" check, after `make up` |
-| `repos` | Each platform repo's own test suite via `test/repos/run.sh` | minutes (10-30+) | Pre-commit / post-update verification of test-suite health |
-| `census` | Test-file inventory via `test/census/inventory.sh` | seconds | "Which repos lack tests?" development-health audit |
+| `live` (default) | Liveness + readiness probes (`stack-verify/live/verify.sh`) | seconds | Quick "is the platform up?" check, after `make up` |
+| `repos` | Each platform repo's own test suite via `stack-verify/repos/run.sh` | minutes (10-30+) | Pre-commit / post-update verification of test-suite health |
+| `census` | Test-file inventory via `stack-verify/census/inventory.sh` | seconds | "Which repos lack tests?" development-health audit |
 | `full` | All three sequentially | 10-30+ min | Full health check, daily / pre-release |
 
 ## Pre-conditions per scope
 
 | Scope | Requires | Verify with |
 |---|---|---|
-| `live` | Platform running (`make ps` shows containers up) | `cd anthropos-dev/platform && make ps` |
-| `repos` | All non-studio repos cloned (`make init`); language toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls anthropos-dev/` and `node -v` |
-| `census` | All repos cloned (read-only — no toolchain needed) | `ls anthropos-dev/` |
+| `live` | Platform running (`make ps` shows containers up) | `cd stack-dev/platform && make ps` |
+| `repos` | All non-studio repos cloned (`make init`); language toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
+| `census` | All repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
 | `full` | All of the above | — |
 
 If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/start-platform` first instead of probing a dead stack.
@@ -53,16 +53,30 @@ If `make ps` shows the platform is down and the user asked for `live` or `full`,
 
 ## How to invoke
 
-The skill is a thin wrapper around `./test/reports/generate.sh`. Concretely:
+The probes/runners live in the **`rosetta-extensions`** repo, section
+`stack-verify/` (rosetta keeps only this skill). Locate the toolkit, then run its
+driver with two env vars:
+
+- `STACK_ROOT` — the stack being tested (the dir that holds `platform/`), e.g. `stack-dev`.
+- `REPORT_DIR` — where to write the report. Use rosetta's `.agentspace/test-platform/`
+  so reports land where this skill has always written them.
 
 ```bash
-cd /Users/kirality/Dropbox/Workspaces/swarm/rosetta   # repo root
-./test/reports/generate.sh <scope>
+ROSETTA=/Users/kirality/Dropbox/Workspaces/swarm/rosetta
+# Verification toolkit: prefer the target stack's own clone; else the authoring copy.
+VERIFY="$ROSETTA/.agentspace/rosetta-extensions/stack-verify"
+# (or "$ROSETTA/stack-dev/rosetta-extensions/stack-verify" once the dev stack has its own clone)
+# If neither exists: git clone https://github.com/anthropos-work/rosetta-extensions.git \
+#   --branch v1.2.0 "$ROSETTA/.agentspace/rosetta-extensions"
+
+STACK_ROOT="$ROSETTA/stack-dev" \
+REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
+  bash "$VERIFY/reports/generate.sh" <scope>
 ```
 
 The script:
 - Runs the underlying probes in order
-- Writes `.agentspace/test-platform/op_YYYYMMDD_HHMMSS_<scope>.md` (the human report)
+- Writes `$REPORT_DIR/op_YYYYMMDD_HHMMSS_<scope>.md` (the human report)
 - Also writes `op_YYYYMMDD_HHMMSS_<scope>.raw.txt` (raw stderr/stdout for failure forensics)
 - Returns exit code 0 on full pass, 1 on any failure, 2 if anything was skipped due to missing tools / missing checkout
 
@@ -80,7 +94,8 @@ The generated report has these sections (only those relevant to the chosen scope
 
 ## Critical Rules
 
-- **Scope boundary**: rosetta's probes speak each service's **external interface only** — HTTP, GraphQL, Connect-RPC, psql, redis-cli, Playwright. Never import service internals from `./test/`. If a check would require touching internals, it belongs in that service's own test suite, invoked by `scope=repos`.
+- **Scope boundary**: the probes speak each service's **external interface only** — HTTP, GraphQL, Connect-RPC, psql, redis-cli, Playwright. Never import service internals into `stack-verify/`. If a check would require touching internals, it belongs in that service's own test suite, invoked by `scope=repos`.
+- **Tooling home**: the probes live in `rosetta-extensions/stack-verify/`, not in rosetta. New/changed probes are built and tested in the `.agentspace/rosetta-extensions/` authoring copy and tagged; a stack runs them from its pinned clone. Never hand-write probe scripts into the rosetta corpus.
 - **No duplication**: do not re-implement what a service already tests. The `repos` scope exists precisely to delegate to each repo's runner.
 - **No mutations**: probes are read-only. The census never executes code. The repo runner invokes each repo's own runner (which may write to a local DB — that's expected for integration tests, but `repos` scope should NOT be run against shared infra).
 - **Report only**: the skill produces a report. It does not commit anything, push anything, or fix anything. Fixes are a separate conversation with the user.
@@ -94,9 +109,11 @@ The generated report has these sections (only those relevant to the chosen scope
 
 ## Adding new probes or new repos
 
-* **New service**: edit `test/lib/services.sh` (registry row) + optionally `test/lib/readiness.sh` (deeper probe) + call the new readiness function from `test/live/verify.sh`.
-* **New repo**: edit the `TEST_CMD` map in `test/repos/run.sh` and the `should_skip` logic if it needs a new toolchain.
-* **New e2e flow**: add a `.spec.ts` under `test/e2e/tests/`. Keep it unauthenticated — authenticated flows belong to next-web-app's own E2E suite.
+These edits happen in the `.agentspace/rosetta-extensions/` authoring copy (then commit + tag), never in rosetta:
+
+* **New service**: edit `stack-verify/lib/services.sh` (registry row) + optionally `stack-verify/lib/readiness.sh` (deeper probe) + call the new readiness function from `stack-verify/live/verify.sh`.
+* **New repo**: edit the `TEST_CMD` map in `stack-verify/repos/run.sh` and the `should_skip` logic if it needs a new toolchain.
+* **New e2e flow**: add a `.spec.ts` under `stack-verify/e2e/tests/`. Keep it unauthenticated — authenticated flows belong to next-web-app's own E2E suite.
 
 ## Anti-patterns to refuse
 
@@ -106,7 +123,8 @@ The generated report has these sections (only those relevant to the chosen scope
 
 ## Additional Resources
 
-- `./test/README.md` — layout overview
-- `./test/lib/services.sh` — current service registry
-- `./test/lib/readiness.sh` — readiness probe functions
-- `./test/reports/generate.sh` — top-level driver
+All in the `rosetta-extensions` clone, section `stack-verify/`:
+- `stack-verify/README.md` — layout overview + the `STACK_ROOT`/`REPORT_DIR` contract
+- `stack-verify/lib/services.sh` — current service registry
+- `stack-verify/lib/readiness.sh` — readiness probe functions
+- `stack-verify/reports/generate.sh` — top-level driver
