@@ -41,12 +41,15 @@ The fidelity gate is a per-surface acceptance check, not an emergent-path gate.
     **read**) is decoupled from seeding (per-stack **writes**). Reusable by staging/tests too.
   - **The snapshot contract + portable format** — per-table `COPY` payloads + a `manifest.json` describing how a
     surface is serialized, versioned (schema-version pinned), and addressed.
-  - **(note #2) The production-safe capture-source policy** — the tool reads from a **non-primary source**,
-    fully automatic, never blocking the hot primary:
+  - **(note #2) The production-safe capture-source policy** — a **source-pluggable** refresh, fully automatic,
+    that never blocks the hot primary:
     1. **cache-hit (default):** replay from the existing `.agentspace` snapshot — *zero* prod read;
-    2. **refresh:** read from a **read replica** (the chosen source — RDS read-only twin over Tailscale), with an
-       automatic fallback to **restore-from-backup** (throwaway instance from a nightly RDS snapshot) where no
-       replica exists; the **primary** is reachable only behind an explicit `--allow-primary` (off-peak, last resort).
+    2. **refresh — pluggable source** (investigated 2026-06-06; **no read replica exists today**, eu-west-1
+       instance `terraform-2024…`, no local AWS creds): default to **ingest an existing prod `pg_dump`** (the team
+       already produces these for staging → zero new prod load) **or** a **safe throttled primary read** via the
+       existing `marco_read` access — PostgreSQL **MVCC means a read-only `SELECT`/`COPY` never blocks writers**, so
+       off-peak + throttled + public-only (data, not indexes) is tolerable. Zero-primary-impact upgrades once
+       AWS/infra is wired: **restore-from-snapshot** to a throwaway instance, or a **provisioned read replica**.
     3. **bounded read session:** `SET TRANSACTION READ ONLY`, `statement_timeout` + `idle_in_transaction_session_timeout`,
        modest `work_mem`, `COPY (SELECT … WHERE org_id IS NULL) TO STDOUT` streamed to disk (keyset-chunked for the
        biggest tables); **catalog-first dry-run** sizes the read before any data flows.
@@ -79,11 +82,10 @@ v1.1's **M7a** (isolation guard + the `COPY` perf path + the seeder DAG) + **M7b
 extends). **Parallel with:** none (gates M9b + M10 + M11).
 
 ## Open questions (resolve during build)
-- The **replica endpoint**: confirm a prod RDS read-replica is reachable over Tailscale; if not, the
-  restore-from-backup fallback is the default refresh path. (User decision 2026-06-06: read replica preferred,
-  fully automatic via rosetta-extensions — no manual dump.) **Investigated 2026-06-06 (M9a-Q1):** **no read replica
-  exists today** (DB-side: primary, 0 standbys/walsenders/slots; AWS describe un-runnable — CLI unconfigured) →
-  **restore-from-backup is the de-facto refresh path** unless a replica is provisioned. See `decisions.md` M9a-Q1.
+- **Capture source** (M9a-Q1, investigated + double-checked 2026-06-06): standalone RDS (not Aurora), eu-west-1,
+  `terraform-2024…`; **no read replica today**; no local AWS creds. Default source = **prod-dump ingest** or a
+  **safe throttled primary read** (MVCC = no write blocking); zero-impact upgrades (restore-from-snapshot / a
+  provisioned replica) need eu-west-1 AWS/terraform access. Stays source-pluggable. See `decisions.md` M9a-Q1.
 - The **manifest schema** + the cache-staleness rule (schema-version mismatch and/or checksum) that triggers a refresh.
 - **Embedding capture**: carry pgvector vectors verbatim but **rebuild the index on replay** (don't carry the
   ~689 MB index) — confirm the replay rebuild cost is acceptable.
