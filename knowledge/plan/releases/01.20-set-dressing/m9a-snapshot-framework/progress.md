@@ -75,6 +75,39 @@ _Module B — `stack-seeding/dna/` (extended):_ `snapshot.go` (new, snapshot-fid
 ### Stop condition
 Loop terminated after **Pass 2** (well under the 5-pass cap). All three stop criteria met: the full Step 2b scan found nothing more worth adding (the residual uncovered code — `cmd/stacksnap` adapters, `pg.Conn` methods, `main()`'s `os.Exit` shim, post-`pg.Connect` orchestration — is **irreducibly live-DB-bound**, sitting behind the deliberate `Capturer`/`Replayer`/`SnapshotStore` interface seam that lets all logic be hermetically tested via fakes); coverage deltas <2% on every touched file; zero flakes across the gate. **Knowledge backfill:** none warranted — the snapshot framework's behavioral invariants (firewall double-check, checksum-before-write, cache-staleness key, public-only provenance) are already documented in `corpus/ops/snapshot-spec.md` and the `alignment_testing.md` snapshot dimension; the harden surfaced no new system truth not already captured there.
 
-## Final review
-_(filled at close)_
+## M9a: Final Review
+
+Review (close-milestone, 2026-06-06). 6 phases of scans → 1 finding to fix. Code/docs/tests all GREEN.
+
+### Scope
+- [x] **Tag `stack-snapshot-m9a` trailed HEAD** — the tag sat at `2e0696d` but the 2 harden commits
+  (`7e62fc6` snapshot tests, `72603d4` dna tests) + the pass-2 commit (`1cc4dd2`) landed AFTER it, so a
+  per-stack clone pinning the tag would miss the hardened (test-only) code. Fix: re-pointed the tag to
+  HEAD `1cc4dd2` + force-pushed the tag (test-only delta, no production-code change). → fixed at close.
+
+### Code Quality
+- [x] GREEN — gofmt clean, `go vet ./...` clean, both modules build; no dead code, no must-fix, no
+  should-fix. Patterns consistent across all 9 packages (package docs, DB-as-interface seam, hard-fail
+  safety gates, QuoteIdent on every identifier). Nothing to fix.
+
+### Documentation
+- [x] GREEN — `snapshot-spec.md` (new) + `db-access.md` + the `alignment_testing.md` snapshot-fidelity
+  dimension all accurate vs code; `stack-snapshot/README.md` handbook exists + indexed in the extensions
+  `knowledge/README.md` nav; `/db-query` skill present; all cross-references resolve. Nothing to fix.
+
+### Tests & Benchmarks
+- [x] GREEN — both Go modules pass `-race`; flake gate **0 failures / 10 shuffled suite-runs**;
+  stack-snapshot 128 test funcs (127 + 1 fuzz), stack-seeding 164 (+19 from the dna snapshot extension).
+  Hermetic via the `Capturer`/`Replayer`/`FidelityProbe`/`SnapshotStore` interface seams. Harden (2
+  passes) already deepened error/edge/traversal coverage. Nothing to fix.
+
+### Adversarial review
+- [x] 5 scenarios recorded in `decisions.md` (partial-capture leak, corrupt-cache half-replay, path
+  traversal, wrong-DSN replay, schema-drift silent replay) — all Fate-1-handled in the shipped code.
+
+### Decision Triage
+- [x] M9a-D2/D3/D5 + Q2/Q3/Q4 → already blended into `snapshot-spec.md` / `db-access.md` /
+  `alignment_testing.md` during build (verified accurate, reference tags present). Archive.
+- [x] M9a-D1 (the M9→M9a/M9b split) + M9a-D7 (per-module helper re-declaration) → maintainer-only,
+  stay in `decisions.md`. Archive.
 </content>
