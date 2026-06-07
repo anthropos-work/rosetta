@@ -1,6 +1,6 @@
 # M15 — Progress
 
-**Shape:** section · **Status:** built (all sections landed; ready for close)
+**Shape:** section · **Status:** `archived` (completed 2026-06-07)
 
 ## Section checklist (from overview Scope.In)
 - [x] `corpus/ops/safety.md` — read-side (private-data avoidance: firewall + public predicates + public-only gene) — §1, code-verified
@@ -9,8 +9,56 @@
 - [x] Update `rosetta-extensions/knowledge/` for the v1.3 converged model + safety contract — ext repo `main` @ `1d0d2d7` (converged-model + safety-contract sections; stale pre-M14 skill names fixed)
 - [x] Refresh root READMEs + demo/ recipes for the unified `stack-*` skills + dev-as-peer — README + CLAUDE.md + demo/README + recipe-snapshot-world (safety.md discoverable; dev-as-peer noted)
 
-## Final review
-_(filled at close)_
+## M15: Final Review
+
+**Review verdict: GREEN — 1 finding (a self-referential docs-accuracy fix), 0 code/test/scope.** Addressed fully.
+
+### Scope
+- [x] All 5 overview Scope.In sections delivered Fate-1; Out: empty (closing milestone). No silently-dropped item.
+
+### Code Quality
+- [x] [n/a] No production code path in rosetta. Extensions drift-guard tests idiomatic (in-package for unexported vars; graceful `t.Skip` on unreachable corpus). gofmt+vet clean; `dev-setdress.sh` shellcheck-clean; py_compile clean.
+
+### Documentation
+- [x] [must-fix] `decisions.md` M15-D4 text said the n=0 over-claim was "not fixed here" but harden had landed it Fate-1 — corrected the cell to record the Fate-1 harden landing.
+- [x] safety.md indexed (CLAUDE.md + root README + demo/ family) + back-linked from all 4 siblings; `#multi-tenant-data-isolation` anchor + §1.1/§2.5 deep-links resolve. Extensions `knowledge/` converged-model + safety sections present; 0 retired skill names.
+
+### Tests & Benchmarks
+- [x] All 4 Go modules `-race -count=1` green (713 funcs, +7 vs M14 baseline = the 7 drift guards). 174 Python passed. Flake gate 5/5 on both touched packages (0 flakes).
+- [x] Drift guards mutation-proven fail-closed at close (read-side predicate + write-side bucket-override mutations both tripped; safety.md restored byte-identical).
+
+### Decision Triage
+- [x] M15-D1…D4 → archive (doc-authoring rationale; the user-facing truth is already IN safety.md). D4 decisions.md text corrected (above).
+
+### Phase 1b deferral re-audit — **GREEN**
+`audit-deferrals/deferral-audit-2026-06-07-m15-close.md`. 1 inherited (DEF-M10-01 cloud snapshot store + S3 blob bytes → v1.4, signed escape-hatch, NOT aged out — all 4 aging triggers negative); 0 new, 0 repeat, 0 chronic, 0 aged-out. M15 added zero deferrals (M15-D3 + M15-D4 both Fate-1). As the terminal milestone, run as the de-facto pre-release sweep across M12→M15.
+
+## M15: Completeness Ledger
+
+**Shape:** section. Every overview Scope.In item placed in exactly one three-fate category. No "tracked-for-later" residue.
+
+### Done (Fate 1) — landed completely in M15
+- `corpus/ops/safety.md` read-side (§1) — firewall `AssertPlan`/`AssertCaptured`, per-surface public predicates (code-verified), public-only data-DNA gene, bounded read-only capture.
+- `corpus/ops/safety.md` write-side (§2) — the 3-layer guard `CheckWrite`/`PreflightEnv`/`AssertClean`, never-write shared Directus/prod-S3, capture-source policy, doubled n=0 guards, audit-proven zero-pollution.
+- Cross-links from `db-access.md` / `snapshot-spec.md` / `seeding-spec.md` / `security_compliance.md` — back-links in all four, resolve both directions.
+- `rosetta-extensions/knowledge/` refresh — v1.3 converged dev≡demo model + safety-contract section; 0 stale pre-M14 skill names.
+- Root `README.md` + `CLAUDE.md` + `demo/` recipe family refresh — unified `stack-*` skills + dev-as-peer + safety.md discoverability.
+- (harden, Fate-1) the M15-D4 n=0 over-claim fix in `dev-setdress.sh` + the sibling test comment.
+- (close, Fate-1) the decisions.md M15-D4 text correction.
+
+### Confirmed-covered (Fate 2)
+- None (closing milestone — empty Out: list).
+
+### Annotated (Fate 3)
+- None.
+
+### Dropped
+- None new. (M15-D3 ensures safety.md does not resurrect the offline pg_dump-FILE reader claim — that drop was M9b-D9 in v1.2.)
+
+### Release-scope-breaking deferral (escape hatch)
+- None introduced by M15. **DEF-M10-01** (cloud snapshot store + S3 media blob bytes) is INHERITED from v1.2, signed to **v1.4**, re-audited GREEN this close (not aged out). safety.md documents only the current refs-only/local-store posture with a labelled Future(v1.4) pointer.
+
+**Ledger verdict: all scope items delivered as Fate 1. Nothing routed, dropped, or escape-hatch-deferred by M15.** → proceed to merge (no sign-off prompt — 0 escape-hatch entries).
 
 ## Build notes
 - Phase 0b KB-fidelity: **GREEN** (`kb-fidelity-audit.md`) — every read/write safety claim verified against the actual extensions code before authoring. Two accuracy guardrails carried in: M15-D3 (no offline file reader), M15-D4 (precise n=0 scope; flagged a pre-existing over-claim in the dev-setdress source comment).
