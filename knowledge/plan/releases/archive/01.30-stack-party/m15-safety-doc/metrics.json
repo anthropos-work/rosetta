@@ -1,0 +1,79 @@
+{
+  "milestone": "M15",
+  "title": "Safety & security doc + dual-repo knowledge consolidation. A single authoritative, code-cited doc (corpus/ops/safety.md) on how the rosetta-extensions stack tooling stays safe: it never reads private/customer data (read-side: the tenant firewall AssertPlan/AssertCaptured, the public predicates byte-matched to firewall.go, the public-only data-DNA gene, read-only bounded capture) and it never touches production data or services (write-side: the 3-layer isolation guard CheckWrite/PreflightEnv/AssertClean, never-write shared Directus/prod-S3, the capture-source policy, the doubled n=0-dev guards, the audit-proven zero-pollution assertion). Cross-linked from all 4 sibling docs. Plus a dual-repo KB refresh: rosetta-extensions/knowledge/ to the v1.3 converged dev-equals-demo model + safety contract; root READMEs + corpus/ops/demo/ recipes to the unified stack-* skills + dev-as-peer.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-07",
+  "is_last_milestone": true,
+  "is_last_milestone_note": "M15 is the LAST milestone of v1.3 'stack party'. With it closed, all 4 milestones (M12->M15) are done and the release is ready for /developer-kit:close-release (merge release/01.30-stack-party -> main, tag v1.3). close-release is the user's separate next step, NOT run here.",
+  "kind": "a documentation/consolidation milestone + harden drift-guard tests (the M14 shape). The deliverable is a claim surface (safety.md) trusted by future readers, plus drift guards that pin its load-bearing claims to code. No new production code path; the value is doc accuracy + reference integrity + the fail-closed docs<->code guards. All quoted predicates/symbols are byte-matched to the real extensions code.",
+  "tests": {
+    "language": "markdown (corpus/ops/safety.md + 4 siblings + READMEs + extensions knowledge/ — the deliverable) + go (extensions safety.md<->code drift guards) + python (dev-stack + stack-core/demo-stack/injection pytest, unchanged) + shellcheck/py_compile",
+    "go_total": 713,
+    "go_total_matcher_note": "713 counted with a consistent '^func Test' matcher across all 4 modules (alignment 43, clerkenstein 210, stack-seeding 236, stack-snapshot 224). The M14 headline (721) used a looser matcher; under the SAME '^func Test' matcher the M14-tag baseline is 706, so the milestone delta is the load-bearing figure: 706 -> 713 (+7), matching the 7 new drift-guard funcs.",
+    "go_delta_vs_m14": 7,
+    "go_breakdown": {
+      "alignment": 43,
+      "clerkenstein": 210,
+      "stack-seeding": 236,
+      "stack-snapshot": 224
+    },
+    "go_note": "M15 added +7 Go test funcs, all docs<->code drift guards in the extensions clone: stack-snapshot/cmd/stacksnap/main_drift_test.go +3 (TestSafetyDocPredicatesMatchCode, TestSafetyDocNamesRealFirewallGates, TestSafetyDocBoundedReadSessionMatchesCode) and stack-seeding/isolation/safety_doc_drift_test.go +4 (TestSafetyDocClerkHostsMatchCode, TestSafetyDocDirectusTokenKeysMatchCode, TestSafetyDocForcedBucketOverride, TestSafetyDocNamesRealGuardSymbols). Each reads the real safety.md and asserts against actual code vars/symbols; each skips gracefully (t.Skip) when the sibling rosetta corpus is unreachable (per-stack pinned-tag clone / CI) so it guards drift only in the authoring copy where the doc is edited.",
+    "python_unchanged": {
+      "dev-stack/tests + stack-core + demo-stack + injection": 174,
+      "note": "M15 touched no Python production surface; 174 passed (dev-stack 38 + stack-core 54 + demo-stack 13 + stack-injection 69 — unchanged from M14)."
+    },
+    "race": "all 4 Go modules pass -race -count=1 (alignment, clerkenstein, stack-seeding 8 pkgs, stack-snapshot 12 pkgs all ok)",
+    "gofmt_vet": "gofmt -l empty + go vet clean on all 4 modules",
+    "shellcheck": "the M15-touched dev-stack/dev-setdress.sh is shellcheck-CLEAN. (Two pre-existing info-level findings in stack-verify/ — SC1091 follow-source + SC2015 idiom note — are not M15-touched, not in the diff, and info-level only.)",
+    "py_compile": "all extension Python sources py_compile CLEAN",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean on both M15-touched packages — stack-snapshot/cmd/stacksnap 5x and stack-seeding/isolation 5x, each -count=1 -shuffle=on, all PASS. 0 flakes."
+  },
+  "coverage": {
+    "note": "harden ran 4 passes (recorded in progress.md): 3 net-new drift-guard passes + 1 stabilization. M15 is a docs/consolidation milestone — the milestone-touched rosetta surface is entirely markdown (the new safety.md, the 4 sibling cross-links, READMEs + demo recipes, plan records). No code-coverage surface in rosetta. The code changes are the extensions-clone drift-guard tests + the M15-D4 fix.",
+    "drift_guard_completeness": "every verbatim-literal / code-block / load-bearing-symbol claim in safety.md is now pinned by a fail-closed drift test: read-side public predicates (taxonomy + directus) + the AssertPlan/AssertCaptured gate names + the bounded-read-only SQL (source.DefaultBounds().SetupSQL); write-side the complete realClerkHosts + directusTokenKeys rejection lists + the forced STORAGE_S3_PUBLIC_BUCKET='' override + the CheckWrite/PreflightEnv/AssertClean guard symbols; plus the pre-existing --source-kinds + dropped-dump-flag guards. Remaining unpinned items are descriptive prose mentions (IsolationClass String values, AllowSharedOptIn, Record, Validate()) — deliberately not pinned (brittle prose string-matching).",
+    "mutation_proven": "each guard proven fail-closed at close (Phase 2c): mutating safety.md's taxonomy predicate (organization_id IS NULL -> IS NOT NULL) tripped TestSafetyDocPredicatesMatchCode; renaming STORAGE_S3_PUBLIC_BUCKET tripped TestSafetyDocForcedBucketOverride. safety.md restored byte-identical after each; guards green again."
+  },
+  "delivered": {
+    "safety_md": "corpus/ops/safety.md (net-new, 248 lines) — the authoritative read-side + write-side safety contract of the tooling. Dual-level: a PM 'two promises in one paragraph' section + an engineer deep-dive citing the real Go symbols/predicates/SQL. Part 1 (read side): the tenant firewall (AssertPlan + AssertCaptured), the per-surface public predicate (taxonomy organization_id IS NULL; directus private=false AND tenant_id IS NULL AND status='published'), the public-only data-DNA gene, the capture-source policy (dump-ingest -> bounded primary-read, MVCC, SET TRANSACTION READ ONLY + timeouts, no offline file reader). Part 2 (write side): the store registry (3 isolation classes), the 3-layer guard (CheckWrite/PreflightEnv/AssertClean), never-write shared Directus/prod-S3, the doubled n=0-dev guards, the audit-proven zero-pollution assertion. Plus a 'how this relates to the platform's own isolation' section + a clearly-labelled 'Future (v1.4 — DEF-M10-01)' forward pointer.",
+    "cross_links": "back-links to safety.md added in all 4 siblings: db-access.md (read foundation), snapshot-spec.md (capture/replay + firewall, with a deep-link to safety.md §1.1), seeding-spec.md (write-side detail), architecture/security_compliance.md (the platform's own posture, the layer below). All resolve both directions.",
+    "extensions_kb_refresh": "rosetta-extensions/knowledge/README.md refreshed to the v1.3 converged dev-equals-demo model (dev as a full-fidelity peer via dev-setdress.sh; the one generic stack-* operation set) + a cross-cutting safety-contract section (firewall gates + 3-layer guard named to real symbols, linking out to rosetta's safety.md). 0 stale pre-M14 skill names anywhere in the extensions knowledge/ base.",
+    "root_readme_recipe_refresh": "root README.md + CLAUDE.md index safety.md (Key Documentation Locations); corpus/ops/demo/README.md (family index + 3 inline refs, incl the n=0 guard ref to safety.md §2.5) + recipe-snapshot-world.md refreshed for the unified stack-* skills + dev-as-peer + safety.md discovery.",
+    "m15_d4_fix": "the M15-D4 Fate-1 fix landed in harden (ext c8a0589): the dev-setdress.sh:19-22 source comment AND the sibling provision-plan/main_test.go:179-181 comment both over-claimed 'stacksnap/stackseed independently refuse N=0 too' — stacksnap replay has NO N=0 guard (correct). Both corrected to match the shipped safety.md §2.5."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — the M15 KB refresh (knowledge/README.md + README.md) + 3 docs<->code drift-guard test files + the M15-D4 source/test comment fix. No CLI behavior change; the only non-test code touch is the dev-setdress.sh comment correction.",
+    "head": "51ca18b",
+    "tag": "stack-party-m15",
+    "tag_note": "v1.3 tag naming is release-and-milestone (stack-party-mN), matching M12 (stack-party-m12 @ be1c979) + M13 (stack-party-m13 @ cca4464) + M14 (stack-party-m14 @ 33fc525). Set on the extensions main HEAD at close (51ca18b — the final harden commit). NO per-milestone branch in the extensions authoring clone; it commits straight to main.",
+    "build_commits": [
+      "1d0d2d7 (docs(v1.3/M15): KB refresh — converged dev-equals-demo model + safety contract)"
+    ],
+    "harden_commits": [
+      "c8a0589 (harden(v1.3/M15): safety.md<->code drift guard + M15-D4 n=0 over-claim fix)",
+      "7f6e53c (harden(v1.3/M15): pin the WRITE-SIDE safety-doc claims to code — stack-seeding)",
+      "51ca18b (harden(v1.3/M15): pin safety.md's bounded-read-session SQL to source.DefaultBounds())"
+    ],
+    "close_commit": "(none — extensions had 0 close fixes; tag set on 51ca18b)"
+  },
+  "review": {
+    "findings": 1,
+    "findings_note": "1 finding — a docs-accuracy drift in the milestone's OWN decisions.md (M15-D4's text said the n=0 over-claim was 'flagged, not fixed here' but harden had in fact landed the fix Fate-1). Corrected the decisions.md cell to record the Fate-1 harden landing. No code/test/scope finding.",
+    "scope": "GREEN — all 5 sections checked; every overview Scope.In item delivered Fate 1; Out: is empty (closing milestone). M15-D1..D4 recorded, Q1 -> D1. 0 orphan TODO/FIXME/HACK in M15-touched files (both repos).",
+    "code_quality": "GREEN — no production code path in rosetta; the extensions drift-guard tests are idiomatic (in-package where they read unexported vars; graceful t.Skip on unreachable corpus). gofmt+vet clean, shellcheck clean (dev-setdress.sh), py_compile clean; 0 must-fix.",
+    "docs": "GREEN — safety.md indexed (CLAUDE.md + root README + demo/ family) + back-linked from all 4 siblings; #multi-tenant-data-isolation anchor exists; safety.md deep-links (§1.1, §2.5) resolve; extensions knowledge/ converged-model + safety sections present; 0 retired skill names in the extensions KB. Per-unit handbook contract satisfied (safety.md indexed where the corpus maintains its doc index).",
+    "tests": "GREEN — full suites (not iter-subsets): all 4 Go modules -race -count=1 green (713 funcs under a consistent matcher, +7 vs the M14 baseline = the 7 drift guards); 174 Python passed; flake gate 5/5 on both touched packages (0 flakes). No handbook test-count drift to reconcile (safety.md quotes no test counts; the guards quote symbols/predicates, not counts).",
+    "decision_triage": "M15-D1..D4 are doc-authoring rationale (doc home; name real Go funcs not the umbrella; no offline file reader; precise n=0 scope) — the user-facing truth is already IN safety.md (it names AssertPlan/AssertCaptured, omits the offline reader, scopes n=0 precisely), so the decisions stay archive in decisions.md; no further knowledge-doc blend warranted. D4's decisions.md text was corrected (the harden Fate-1 landing).",
+    "adversarial": "Phase 2c (recorded in decisions.md): the docs+guard milestone's adversarial question is the guard false-negative. Mutating safety.md's read-side predicate and write-side bucket-override each tripped its guard (FAIL as designed; restored byte-identical). The consumption-clone path verified: guards t.Skip when the sibling corpus is unreachable, so a pinned-tag clone does not red. Conclusion: guards are genuinely fail-closed, not theatre. 0 bugs surfaced; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.30-stack-party/m15-safety-doc/audit-deferrals/deferral-audit-2026-06-07-m15-close.md — 1 inherited (DEF-M10-01 cloud snapshot store + S3 blob bytes -> v1.4, signed escape-hatch, NOT aged out: all 4 aging triggers negative), 0 repeat, 0 chronic, 0 aged-out, 0 new; M15 added zero deferrals (M15-D3 + M15-D4 both Fate-1). As the terminal milestone this re-audit was run as the de-facto pre-release sweep across M12->M15."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 5 sections: safety.md read-side (§1, code-verified), safety.md write-side (§2, code-verified), cross-links from the 4 siblings, the rosetta-extensions/knowledge/ refresh to the converged model + safety contract, the root README + demo/ recipe refresh. Plus the M15-D4 over-claim fix (landed Fate-1 in harden) and the close decisions.md accuracy correction.",
+    "confirmed_covered_fate2": "none (closing milestone — empty Out: list).",
+    "annotated_fate3": "none",
+    "dropped": "none new. (M15-D3 records that the offline pg_dump-FILE reader claim is NOT made in safety.md — but that drop happened in M9b-D9, v1.2; M15 only ensured the new doc doesn't resurrect it.)",
+    "escape_hatch_release_scope_breaking": "none introduced by M15. DEF-M10-01 (cloud snapshot store + S3 media blob bytes) is INHERITED from v1.2, signed to v1.4; safety.md documents only the current refs-only/local-store posture with a labelled Future(v1.4) pointer. Unchanged."
+  },
+  "notes": "M15 is the LAST v1.3 milestone — closing it makes the release ready for /developer-kit:close-release. The defining shape: a claim-surface milestone. safety.md is a doc a future reader trusts to know the tooling is safe, so the bar is (a) every claim byte-matched to real code at author time (Phase 0b KB-fidelity GREEN) and (b) a fail-closed drift guard pinning each load-bearing claim so future code/doc drift becomes a test failure rather than a silent lie. The 7 new guards + the 2 mutation proofs at close are that bar met. The one close finding was a self-referential docs-accuracy drift (M15-D4's own decisions.md text lagged the harden fix) — fixed. Deferral re-audit GREEN, run release-wide (M12->M15) as the terminal-milestone pre-release sweep. Next: /developer-kit:close-release (merge release/01.30-stack-party -> main, tag v1.3) — the user's separate step."
+}

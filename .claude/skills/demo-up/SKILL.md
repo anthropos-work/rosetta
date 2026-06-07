@@ -32,4 +32,20 @@ read-only platform repo**. Source of truth: [`corpus/ops/rosetta_demo.md`](../..
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.
-Resolved per-repo refs are recorded in the registry for reproduction.
+Resolved per-repo refs are recorded in the registry for reproduction. N is allocated from the **unified
+dev+demo registry** (M12), so a `demo-N` can never collide with a `dev-N` on ports.
+
+## After bring-up
+
+Set-dress + seed the demo with the generic stack-ops (they accept `demo-N` or `dev-N`):
+`/stack-snapshot N` (replay the real public catalog + content) → `/stack-seed N` (a believable data world)
+→ log in. List live stacks with `/stack-list`.
+
+## Related skills
+
+| Skill | Use when |
+|-------|----------|
+| `/demo-down` | Tear down a demo stack |
+| `/dev-up` · `/dev-down` | The **dev** lifecycle — the peer of demo-up/demo-down, same registry + offset-port model |
+| `/stack-snapshot` · `/stack-seed` | Set-dress + seed the demo (generic — any `dev-N \| demo-N`) |
+| `/stack-list` | List live dev + demo stacks |

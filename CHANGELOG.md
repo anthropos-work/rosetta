@@ -2,6 +2,54 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.3] "stack party" — 2026-06-07
+
+dev + demo stacks become **first-class peers**: a dev stack gets the demo treatment (its own local Directus,
+an auto-snapshot of the real reference data, a light default seed), one unified registry keeps dev and demo
+from colliding on ports, and **one converged skill set** operates any stack — plus a single authoritative,
+code-cited safety doc.
+
+### Added
+- **`/dev-up`** / **`/dev-down`** — the dev-stack lifecycle, mirroring `/demo-up` / `/demo-down`. `/dev-up`
+  builds-or-starts the main dev stack (consolidating the former `setup-platform` + `start-platform`), and for
+  an additional `dev-N` set-dresses it by default (local Directus + cache-first snapshot replay + a light
+  `dev-min` seed). `/dev-down` tears a `dev-N` down and frees its registry slot. (M13/M14)
+- **Dev stacks are now full-fidelity peers of demo for data** — a fresh `dev-N` is never empty: it gets a
+  per-stack local Directus, an auto-snapshot replay of the real public taxonomy + content, and a light
+  `dev-min` seed (~1 org + ~10 users), all default-on (escapes: `--no-snapshot`, `--no-setdress`). Capture is
+  never run against prod from a dev stack (replay-only). (M13)
+- **A unified stack registry + first-available-N allocation** — one shared N-pool spans dev *and* demo, so a
+  bring-up always claims the lowest free slot and `dev-N`/`demo-N` can never collide on ports (e.g. building
+  dev, demo, dev, demo, demo yields `dev-1, demo-2, dev-3, demo-4, demo-5`). `/stack-list` surfaces it. (M12)
+- **`corpus/ops/safety.md`** — the authoritative, code-cited safety contract of the stack tooling: it **never
+  reads private/customer data** (the tenant firewall + public predicates + bounded read-only capture) and
+  **never touches production** (the 3-layer isolation guard + never-write shared Directus/prod-S3 + the audit-
+  proven zero-pollution assertion). Every load-bearing claim is pinned to the source by a fail-closed drift
+  guard. (M15)
+
+### Changed
+- **The stack-operation skills were hard-renamed to generic `stack-*` forms (no aliases)** — each accepts a
+  `dev-N` or `demo-N` target: `/demo-status` → **`/stack-list`**, `/demo-seed` → **`/stack-seed`**,
+  `/demo-snapshot` → **`/stack-snapshot`**, `/update-platform` → **`/stack-update`**. `/demo-up` / `/demo-down`
+  stay as the demo lifecycle (now aligned with `/dev-up` / `/dev-down`). (M14)
+
+### Removed
+- The old skill names `/setup-platform`, `/start-platform`, `/update-platform`, `/demo-status`, `/demo-seed`,
+  `/demo-snapshot` (and their skill dirs) — a clean break, no back-compat shims. Update any saved invocations
+  to the converged names above. (M14)
+
+### Supply chain
+- No dependency changes; all deps permissive (MIT / BSD-3 / Apache-2.0 / ISC); **0 called third-party CVEs**.
+  **Recommendation:** build with the **go1.25.11+** toolchain to clear 12 Go-stdlib (parsing/DoS-class)
+  govulncheck findings (same class as v1.2). Lockfile: `knowledge/plan/releases/archive/01.30-stack-party/dependencies.lock`.
+
+### Known limitations
+- Demo/dev media still renders structure + file **references** (placeholder bytes); the actual S3 media blob
+  **bytes** and a **cloud snapshot store** are now deferred to **v1.4** (DEF-M10-01 — gated on eu-west-1 S3-read
+  access not wired here). *(This corrects the v1.2 changelog note below, which named v1.3 as the destination
+  before the item was re-scoped to v1.4.)* AI-generated rich content (transcripts/embeddings) and external
+  stack shareability are also v1.4.
+
 ## [v1.2] "set dressing" — 2026-06-07
 
 The **snapshot mechanism**: *set-dress* a disposable demo stack with the **real public reference library** — the actual skills taxonomy and the Directus simulation/skill-path templates — so the catalog and the content behind seeded sessions are real, not placeholders. Everything is captured **read-only** from production; **customer data is never copied** (a tested tenant-data firewall).

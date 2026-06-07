@@ -1,0 +1,78 @@
+{
+  "milestone": "M14",
+  "title": "Unified stack-* skills + dev-up/dev-down (hard-renamed). One coherent stack-operations skill set that works on any stack (dev-N|demo-N), with the dev lifecycle mirroring demo's. dev-up consolidates the former setup-platform + start-platform into one dev bring-up that drives the M13 set-dress flow; dev-down is net-new. The 4 ops skills are hard-renamed (no aliases): stack-list (<-demo-status), stack-seed (<-demo-seed), stack-snapshot (<-demo-snapshot), stack-update (<-update-platform), each accepting a dev-N|demo-N target. The 6 old skill dirs are removed. Full reference sweep: CLAUDE.md skill table rewritten, READMEs, corpus/ops/ guides + demo/ recipes, CHANGELOG; demo-up/demo-down retained + aligned with the dev lifecycle.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-07",
+  "is_last_milestone": false,
+  "kind": "a rename/consolidation + reference-sweep milestone — the deliverable is the converged skill SKILL.md set + the corpus reference integrity, not new production code. No new Go/Python/TS production path in rosetta. The one new test is a reference-integrity guard in the extensions clone (TestDocSourceSkillRename_M14). The headline is the contract/reference integrity (rename invariant, CLAUDE.md bijection, skill->CLI contract), not new test counts.",
+  "tests": {
+    "language": "markdown (skills + corpus — the deliverable) + go (extensions reference-integrity guard) + python (dev-stack pytest, unchanged) + shellcheck/py_compile",
+    "go_total": 721,
+    "go_delta_vs_m13": 1,
+    "go_breakdown": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 233,
+      "stack-snapshot": 224
+    },
+    "go_note": "stack-snapshot 223 -> 224 (+1: TestDocSourceSkillRename_M14 — asserts .claude/skills/stack-snapshot/SKILL.md exists + the retired demo-snapshot dir stays gone; skips gracefully when the sibling rosetta repo isn't reachable). alignment + clerkenstein + stack-seeding unchanged. Go total 720 -> 721 (+1).",
+    "python_unchanged": {
+      "dev-stack/tests + stack-core + demo-stack + injection + verify": 174,
+      "note": "M14 touched no Python production surface; 174 passed (dev-stack 38 unchanged from M13)."
+    },
+    "race": "all 4 Go modules pass -race -count=1 (alignment, clerkenstein, stack-seeding 8 pkgs, stack-snapshot 12 pkgs all ok)",
+    "gofmt_vet": "gofmt -l empty + go vet clean on all modules",
+    "shellcheck": "dev-stack/dev-stack + dev-stack/dev-setdress.sh + demo-stack/rosetta-demo all CLEAN",
+    "py_compile": "stack-core/stack_registry.py CLEAN",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean — stack-snapshot {cmd/stackscap (the rename-guard package) + full module} 5x -count=1 -shuffle=on, all PASS. 0 flakes."
+  },
+  "coverage": {
+    "note": "harden ran 1 pass (recorded in progress.md). M14 is a rename/docs milestone — the milestone-touched rosetta surface is entirely markdown (renamed/consolidated SKILL.md, CLAUDE.md table, corpus/ops guides + demo recipes, plan records). No code-coverage surface in rosetta. The one code change is the extensions-clone reference-integrity test guard.",
+    "reference_integrity": "the 4 dimensions verified clean at close (independently of the harden record): (1) hard-rename invariant — 0 live stragglers project-wide, every retired-name mention is a provenance marker; (2) CLAUDE.md table <-> 14 skill dirs perfect bijection; (3) SKILL.md name: frontmatter <-> dir name 0 mismatches; (4) skill->CLI contract — every driven binary (dev-stack, stackseed, stacksnap, provision-plan, stack_registry.py, rosetta-demo) resolves in the extensions clone.",
+    "doc_links": "all ../-relative .md links in the new/renamed skill SKILL.md files resolve to real targets; 0 broken links to deleted skill dirs."
+  },
+  "delivered": {
+    "dev_up": ".claude/skills/dev-up/ (SKILL.md + reference.md) — consolidates the former setup-platform + start-platform into one dev bring-up; drives the M13 set-dress flow (per-stack Directus + auto-snapshot + dev-min seed). dev-up N (N>=1) spins additional isolated dev-N. Element-by-element diff against the former setup+start bodies: no dropped step (STEP RUN, confirmation policy, ops reports, TodoWrite progress, 12-container set, error recovery). (M14-D2)",
+    "dev_down": ".claude/skills/dev-down/SKILL.md — net-new, drives dev-stack down.",
+    "stack_list": ".claude/skills/stack-list/SKILL.md (<-demo-status) — the unified live-stacks view (dev-N + demo-N) via rosetta-demo status + stack_registry.py.",
+    "stack_seed": ".claude/skills/stack-seed/SKILL.md (<-demo-seed) — seeds dev-N|demo-N via stackseed --stack. --preset NAME is a skill-level shorthand mapped to --seed presets/NAME.seed.yaml (M14-D5, the PR-review fix); 4 presets (dev-min/small-200/mid-500/large-1k) exist.",
+    "stack_snapshot": ".claude/skills/stack-snapshot/SKILL.md (<-demo-snapshot) — replays the public taxonomy+directus into dev-N|demo-N via stacksnap. The skill namespace is distinct from the stack-snapshot extensions SECTION name (called out in the body to avoid collision).",
+    "stack_update": ".claude/skills/stack-update/SKILL.md (+ reference.md) (<-update-platform) — syncs a stack (main dev N=0 or a named dev-N) via make pull/migrate/up.",
+    "old_dirs_removed": "6 dirs removed (hard rename, no shims): setup-platform, start-platform, update-platform, demo-status, demo-seed, demo-snapshot.",
+    "reference_sweep": "CLAUDE.md skill table rewritten (14-skill set); root + corpus READMEs; corpus/ops/ guides (setup/run/update/demo) + the demo/ recipe family; CHANGELOG (new Unreleased v1.3 Added/Changed/Removed, v1.1/v1.2 dated entries left immutable — M14-D6). demo-up/demo-down retained + aligned with the dev lifecycle.",
+    "extensions_doc_sweep": "4 extension-clone references updated on main (b37e831): dev-stack header + README, demo-stack GUIDE, stack-verify run.sh — doc/comment-only, no CLI/section-name change."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — doc-only reference sweep (dev-stack header/README, demo-stack GUIDE, stack-verify run.sh) + the harden reference-integrity guard (stack-snapshot/cmd/stacksnap/main_drift_test.go: comments re-pointed /demo-snapshot -> /stack-snapshot + new TestDocSourceSkillRename_M14).",
+    "head": "33fc525",
+    "tag": "stack-party-m14",
+    "tag_note": "v1.3 tag naming is release-and-milestone (stack-party-mN), matching M12 (stack-party-m12 @ be1c979) + M13 (stack-party-m13 @ cca4464). Set on the extensions main HEAD at close (33fc525 — the harden commit). NO per-milestone branch in the extensions authoring clone; it commits straight to main.",
+    "build_commits": [
+      "b37e831 (docs: update rosetta skill references to the v1.3/M14 converged set)"
+    ],
+    "harden_commits": [
+      "33fc525 (harden(M14): update stacksnap docs<->parser drift guard for the /demo-snapshot -> /stack-snapshot rename + TestDocSourceSkillRename_M14)"
+    ],
+    "close_commit": "(none — extensions had 0 close fixes; tag set on 33fc525)"
+  },
+  "review": {
+    "findings": 0,
+    "scope": "GREEN — all 5 sections checked; every overview Scope.In item delivered Fate 1; the single Out: item (safety doc -> M15) is Fate-2 confirmed-covered (M15 In: owns corpus/ops/safety.md); M14-D1..D6 recorded, Q1/Q2/Q3 -> D2/D3/D4; 0 orphan TODO/FIXME/HACK tied to a v1.3 milestone.",
+    "code_quality": "GREEN (reference-integrity) — 4 dimensions clean: hard-rename invariant (0 live stragglers), CLAUDE.md 14-skill bijection, SKILL.md frontmatter<->dir (0 mismatches), skill->CLI contract resolves. gofmt+vet clean, shellcheck clean (3 CLIs), py_compile clean; 0 must-fix.",
+    "docs": "GREEN — 0 broken links to deleted skill dirs; all ../-relative links in new/renamed skill files resolve; dev-up/stack-update reference.md present; the corpus already documents the rename forward.",
+    "tests": "GREEN — full suites (not iter-subsets): all 4 Go modules -race -count=1 green (721 funcs, +1 the M14 rename guard); 174 Python passed; flake gate 5/5 (0 flakes). No numeric handbook test-count drift (the renamed skills quote no test counts).",
+    "decision_triage": "M14-D1..D6 are maintainer rationale (rename policy, consolidation boundary, target-detection UX, --preset mapping, CHANGELOG convention) — all stay archive in decisions.md; the user-facing rename is already in the corpus + encoded as TestDocSourceSkillRename_M14, so no further knowledge-doc blend warranted.",
+    "adversarial": "Phase 2c for a docs/rename milestone = reference-integrity adversarial probes (recorded in progress.md harden section): re-appearing a retired skill dir fails the new guard (negative-tested); a renamed skill driving a non-existent CLI flag would break the skill->CLI contract check (all resolve). 0 bugs surfaced; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.30-stack-party/m14-unified-skills/audit-deferrals/deferral-audit-2026-06-07-m14-close.md — 1 inherited (DEF-M10-01 S3 blob bytes + cloud store -> v1.4, signed/unchanged, not aged out), 0 repeat, 0 aged-out, 0 new; M14 added zero deferrals (all Fate-1)."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 5 sections (dev-up consolidation + dev-down; the 4 hard-renames stack-list/seed/snapshot/update with dev-N|demo-N targets; the 6 old-dir removals; the full reference sweep across CLAUDE.md + READMEs + corpus/ops guides + demo recipes + CHANGELOG; demo-up/demo-down retained + aligned). Plus the M14-D5 --preset shorthand-mapping PR-review fix landed inline.",
+    "confirmed_covered_fate2": "the safety & security doc + dual-repo KB refresh -> M15 (M15 In: list owns corpus/ops/safety.md + the rosetta-extensions/knowledge/ refresh).",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none (DEF-M10-01 S3 blob bytes + cloud store is INHERITED from v1.2, signed to v1.4 at v1.3 design — not introduced by M14)."
+  },
+  "notes": "M14 converges the operation skills onto both stack kinds via a hard rename (no aliases — the user accepted the clean-break tradeoff; the blast radius was contained by sweeping every in-repo reference). The defining shape: this is a docs/reference-integrity milestone, so the quality bar is the contract (rename invariant, CLAUDE.md<->dirs bijection, skill->CLI resolution) rather than new test counts. The one new test (TestDocSourceSkillRename_M14) turns the silent-comment-rot / dir-resurrection failure mode into a test failure. The skill SKILL.md namespace stack-snapshot is deliberately distinct from the extensions SECTION stack-snapshot/ (the skill drives the stacksnap CLI that section builds) — called out in the body to avoid conceptual collision. Next: M15 (safety & security doc + dual-repo KB refresh — the LAST v1.3 milestone) -> /developer-kit:close-release."
+}

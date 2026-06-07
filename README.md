@@ -2,12 +2,16 @@
 
 **The documentation corpus for the Anthropos platform.**
 
-> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" — shipped.** Beyond documentation, Rosetta drives
-> the executable demo-environment tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
-> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run demos Clerk-free
+> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" — shipped.** Beyond documentation, Rosetta drives
+> the executable stack tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
+> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run stacks Clerk-free
 > with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
-> demo stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
-> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. See
+> stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
+> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. In v1.3
+> **dev and demo stacks converged** — a unified first-available-N registry, dev as a full-fidelity peer (local
+> Directus + auto-snapshot + light seed), and one generic `/dev-up` + `/stack-*` skill set. The
+> tooling's two safety guarantees — **never reads private/customer data, never touches prod** — are stated
+> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). See also
 > [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
 > [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
 > [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
@@ -57,16 +61,16 @@ This corpus evolves with the platform. When you discover gaps or better approach
 
 Automate the setup process:
 ```bash
-/setup-platform      # First time: build the dev environment
-/start-platform      # Daily: start the platform locally
+/dev-up              # First time / daily: build + start the dev environment (one skill — was setup + start)
+/dev-up N            # When needed: an additional isolated dev-N stack, set-dressed by default
 /demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
-/demo-snapshot N     # Set-dress it: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
-/demo-seed N         # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
-/demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data)
-/demo-status         # Check: list running demo stacks, their offset ports, and health
+/stack-snapshot N    # Set-dress any stack: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
+/stack-seed N        # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
+/demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data); /dev-down N for dev
+/stack-list          # Check: list the live dev + demo stacks, their offset ports, and health
 ```
 
-These skills execute the guides step-by-step with verification, ask for confirmation before changes, and auto-improve documentation when issues are found. The demo skills are isolated per stack (`-p demo-N`, offset ports) and never touch the dev stack, and the seeder is **production-safe** (it cannot write a shared/prod store) — start at the demo-env family index [`corpus/ops/demo/README.md`](./corpus/ops/demo/README.md).
+These skills execute the guides step-by-step with verification, ask for confirmation before changes, and auto-improve documentation when issues are found. The generic `stack-*` ops (`/stack-list`, `/stack-seed`, `/stack-snapshot`, `/stack-update`) work on **any** stack — `dev-N` or `demo-N` — which the unified registry keeps from colliding on ports; each stack is isolated (`-p dev-N` / `-p demo-N`, offset ports) and the seeder is **production-safe** (it cannot write a shared/prod store) — start at the demo-env family index [`corpus/ops/demo/README.md`](./corpus/ops/demo/README.md).
 
 ## Documentation Structure
 
@@ -91,7 +95,11 @@ corpus/
 │   ├── platform_repo.md   # The orchestrator repo (Make targets, profiles, compose)
 │   ├── setup_guide.md     # Build local development environment
 │   ├── run_guide.md       # Start services locally
-│   └── update_guide.md    # Sync code and dependencies
+│   ├── update_guide.md    # Sync code and dependencies
+│   ├── safety.md          # The tooling safety contract (never reads customer data / touches prod)
+│   ├── snapshot-spec.md   # Capture+replay the public reference library (read-side)
+│   ├── seeding-spec.md    # Declarative stack seeding (write-side isolation boundary)
+│   └── demo/              # Demo-environment family index + recipes
 │
 └── tools/                 # Development tools
     ├── toolchain_overview.md       # Required tools registry

@@ -154,3 +154,5 @@ Key sub-processors include:
 - [Architecture Overview](./architecture_overview.md)
 - [AI Architecture](./ai_architecture.md)
 - [Service Taxonomy](./service_taxonomy.md)
+- [Rosetta Tooling Safety Contract](../ops/safety.md) — how the demo/dev stack **tooling** stays safe (never reads
+  customer data, never touches prod); the layer *above* the platform's own tenant-isolation posture described here.

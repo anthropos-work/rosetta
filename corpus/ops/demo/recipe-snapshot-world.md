@@ -19,18 +19,20 @@ stacksnap replay  …   →  stamp the cached snapshot into a stack (verify chec
 stacksnap status      →  list cached snapshots (surface, schema version, rows, source, capture time)
 ```
 
-`/demo-snapshot` drives all three; `replay` is the headline verb. Because the store is **cache-first**
+`/stack-snapshot` drives all three; `replay` is the headline verb. Because the store is **cache-first**
 (`store.Resolve`: a cached manifest whose `schema_version` matches the stack → **zero prod read**), a curator
 almost always just replays an existing snapshot. Capture is the rare refresh op.
 
 ## A — replay into a stack (the common path)
 
-**Prerequisite.** A stack up (`/demo-up N`) and migrated (so the `skiller` + `directus` schemas exist as replay
-targets). The snapshot is **stack-global** public reference data — replay it once per stack, independent of which
-org you then `/demo-seed`.
+**Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`
+alike) and migrated (so the `skiller` + `directus` schemas exist as replay targets). Note a `/dev-up N` of a
+non-primary dev stack already runs this replay by default; you only call `/stack-snapshot replay` explicitly to
+re-run or to set-dress a `demo-N`. The snapshot is **stack-global** public reference data — replay it once per
+stack, independent of which org you then `/stack-seed`.
 
 ```bash
-/demo-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call
+/stack-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
@@ -45,7 +47,7 @@ transported (the ~689 MB `skill_embeddings` IVFFLAT index is rebuilt via `REINDE
 
 **Then seed + log in.** With the library in place, seed an org and the seeded sessions link to the real templates:
 ```bash
-/demo-seed 1 --preset mid-500
+/stack-seed 1 --preset mid-500
 # log in per recipe-browser-login.md → the catalog + assigned content are real, not placeholder.
 ```
 
@@ -55,7 +57,7 @@ content surface needs its per-stack Directus **booted against the stack's own `d
 replay → boot), pointed at the offset-port container — **never** `content.anthropos.work`. The
 `EnvContract.Validate()` guard hard-rejects any per-stack env that resolves to the shared prod Directus. See
 [`../snapshot-spec.md`](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2) for the boot steps. Until S3
-blob-byte mirroring is wired (v1.3), the per-stack Directus serves media **refs** with a local-storage adapter +
+blob-byte mirroring is wired (v1.4 — DEF-M10-01), the per-stack Directus serves media **refs** with a local-storage adapter +
 placeholder assets — a believable structural demo.
 
 ## B — capture (the rare maintenance op)
@@ -111,8 +113,8 @@ With both surfaces replayed + gated, `datadna catalog` reads **100%** coverage �
 
 ## Notes
 - **Gigabytes, never in git.** Payloads live in the gitignored `.agentspace/snapshots/` cache (one shared cache,
-  captured once + replayed by every stack). The cloud/S3 store is a named **v1.3** swap (same `SnapshotStore`
+  captured once + replayed by every stack). The cloud/S3 store is a named **v1.4** swap (DEF-M10-01 — same `SnapshotStore`
   interface, no contract change).
 - **What's real vs not.** The taxonomy + content **libraries** are real (captured from prod public data). The
   per-session **AI narrative** (transcripts, AI scores, fresh embeddings) is **not** generated — that, plus
-  external shareability, is the **v1.3** theme.
+  external shareability, is the **v1.4** theme.

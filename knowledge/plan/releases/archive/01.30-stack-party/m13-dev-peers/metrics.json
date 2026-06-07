@@ -1,0 +1,82 @@
+{
+  "milestone": "M13",
+  "title": "Dev stacks as full-fidelity peers: local per-stack Directus + auto-snapshot + light seed. The dev-stack up bring-up gets the demo treatment by default — a per-stack Directus (via the new stack-snapshot/cmd/provision-plan runner that makes the M10 directus.ProvisionPlan/EnvContract contract executable) + a cache-first stacksnap replay of the public taxonomy+directus surfaces + the dev-min light seed (~1 org + ~10 users). Delivers corpus/ops/seeding-spec.md (dev-min preset + dev auto-seed) + corpus/ops/snapshot-spec.md (dev as a replay target + local Directus on dev).",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-07",
+  "is_last_milestone": false,
+  "kind": "the meatiest v1.3 milestone — reuses M10's per-stack Directus + the M9/M7 snapshot/seed framework. New Go: a small CLI runner (stack-snapshot/cmd/provision-plan) making the library-only M10 contract executable. New bash: dev-stack/dev-setdress.sh + the dev-stack up set-dress wiring. New declarative data: stack-seeding/presets/dev-min.seed.yaml. No new platform code path.",
+  "tests": {
+    "language": "go (stack-snapshot + stack-seeding) + python (dev-stack pytest) + shellcheck",
+    "go_total": 720,
+    "go_delta_vs_m12": 12,
+    "go_breakdown": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 233,
+      "stack-snapshot": 223
+    },
+    "go_note": "stack-snapshot 212 -> 223 (+11: the new cmd/provision-plan runner — 6 at build + 5 at harden); stack-seeding 232 -> 233 (+1: the dev-min preset pin extends presets_test.go to a 4-preset ordered set + floor test). alignment + clerkenstein unchanged. Go total 708 -> 720 (+12).",
+    "python_m13_touched": {
+      "dev-stack/tests (DevSetdress + DevStackSetdressWiring + the existing contract suites)": 38,
+      "delta_vs_m12": "33 -> 38 (+5 at harden: DevStackSetdressWiring x3 — non-fatal failed set-dress, the re-run-hint flag-fidelity regression, --no-setdress skips; DevSetdress x2 — trailing-value-flag regression, value-flag happy path). (pytest collects 38 cases; 33 def test_ functions, the rest parametrized.)"
+    },
+    "race": "both Go modules pass -race -count=1 (12 stack-snapshot pkgs + 8 stack-seeding pkgs all ok)",
+    "gofmt_vet": "gofmt -l empty + go vet clean on both modules",
+    "shellcheck": "dev-stack/dev-setdress.sh + dev-stack/dev-stack both CLEAN",
+    "py_compile": "test_dev_stack.py CLEAN",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean — Go: stack-snapshot {cmd/provision-plan, directus} + stack-seeding {blueprint} 5x -race -shuffle=on; Python: dev-stack pytest 5x sequential (38 passed each run). 0 flakes."
+  },
+  "coverage": {
+    "note": "harden ran 1 pass (recorded in progress.md). The M13 surface is 4 source files (one small Go runner + two bash CLIs + one declarative YAML).",
+    "cmd_provision_plan_main_go": "93.0% statements (90.7% -> 93.0% at harden); run() 100%, checkEnvContract 100%. Residual misses: the main() os.Exit shim + a printPlan defensive branch pinned-unreachable by TestDefaultEnvContract_AlwaysProdSafe_AcrossPorts (an invariant test).",
+    "directus_provision_go": "100% (the M10 surface the runner reuses — ProvisionPlan/DefaultEnvContract/Validate/sanitizeEnv).",
+    "blueprint_dev_min_loader": "100% (the dev-min preset parses + validates under strict KnownFields, pinned by presets_test.go).",
+    "bash_clis": "no native bash coverage tool — exercised by subprocess integration tests (the project's documented CLI strategy); pytest 38 (one go-guarded real-build test pins build_cli)."
+  },
+  "delivered": {
+    "dev_min_preset": "stack-seeding/presets/dev-min.seed.yaml — ~1 org (Dev Sandbox) + 10 users (role mix ~1 admin/~6 members/~3 candidates, fixed admin dev@anthropos.test) + 1 month activity. Seeds <1s. Pinned by presets_test.go (4-preset ordered set dev-min < small-200 < mid-500 < large-1k + floor test). (M13-D1)",
+    "provision_plan_runner": "stack-snapshot/cmd/provision-plan/main.go — makes the M10 directus.ProvisionPlan/EnvContract/Validate contract EXECUTABLE (was library-only). Prints the bootstrap->replay->boot recipe; --check-env firewall-validates a concrete per-stack Directus env against the prod-Directus rule (exit 1 on a prod-resolving env). One source of truth for the recipe + the firewall, reused by both kinds. (M13-D2)",
+    "dev_setdress": "dev-stack/dev-setdress.sh — the set-dressing pass (default-on, non-fatal) run by dev-stack up: per-stack Directus recipe + firewall-check, cache-first stacksnap replay of taxonomy+directus into dev-N, then the dev-min seed. Escapes --no-snapshot (seed only) / --no-setdress (skip all). The set-dress's own n=0-dev guard (refuse N=0 without --force) is a SECOND layer above stackseed --reset's. (M13-D3)",
+    "dev_stack_wiring": "dev-stack/dev-stack cmd_up — calls dev-setdress.sh after bring-up, default-on, non-fatal; the re-run hint echoes the SAME flags the bring-up used (no spurious --no-snapshot).",
+    "corpus_snapshot_spec": "corpus/ops/snapshot-spec.md — new 'Dev as a full-fidelity peer (M13)' section (the 3-step pass + escapes + safety + prod-safety-holds) + dev added to the replay-CLI line + the stale 'cloud/S3 store = v1.3' claim fixed to v1.4.",
+    "corpus_seeding_spec": "corpus/ops/seeding-spec.md — new 'The shipped presets' table (4 presets) + the 'dev-min — the dev auto-seed' subsection + the two-layer n=0-dev guard note + the stackseed dev-min CLI line."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/stack-snapshot (NEW cmd/provision-plan + .gitignore + README index row), stack-seeding/presets (NEW dev-min.seed.yaml + presets_test.go), dev-stack (NEW dev-setdress.sh + up wiring + README + tests), knowledge/README.md nav.",
+    "head": "cca4464",
+    "tag": "stack-party-m13",
+    "tag_note": "v1.3 tag naming is release-and-milestone (stack-party-mN), matching the M12 precedent stack-party-m12 @ be1c979 — NOT the v1.2 stack-snapshot-mN form. Set at the final extensions HEAD after the close doc-fix commit.",
+    "build_commits": [
+      "ccff8d3 (M13 §1: dev-min seed preset ~1 org + ~10 users, the dev-stack auto-seed default)",
+      "ba1835d (M13 §2: dev bring-up gets the demo treatment — per-stack Directus + cache-first snapshot + dev-min seed)",
+      "3e983b6 (M13 §2 review fix: build_cli resolved the cmd package one dir too high)",
+      "6ffe924 (M13 §2 docs: dev-stack README + knowledge nav — the set-dressing pass)"
+    ],
+    "harden_commits": [
+      "1e8a510 (fix: provision-plan --check-env green-lit a whitespace-only Directus env as prod-safe + regression tests)",
+      "b654573 (fix: dev-stack set-dress re-run hint always said --no-snapshot + wiring regression tests)",
+      "3404863 (fix: dev-setdress trailing --dsn/--seed leaked a raw set -u error + regression tests)"
+    ],
+    "close_commit": "cca4464 (docs(M13 close): index cmd/provision-plan in the stack-snapshot README packages table)"
+  },
+  "review": {
+    "findings": 6,
+    "scope": "GREEN — all 5 sections checked; every overview Scope.In item maps to a delivered artifact; Out: items (generic skills -> M14 Fate-2, blob bytes -> v1.4 = DEF-M10-01) confirmed-covered; 0 TODO/FIXME/HACK in M13-touched source; M13-D1..D4 recorded; M13-Q1/Q2/Q3 resolved to D-numbers.",
+    "code_quality": "GREEN — gofmt + go vet clean (both modules), shellcheck clean (both CLIs), py_compile clean; the runner is a pure recipe-printer + env-validator (no held resources), the bash CLIs build into a per-invocation mktemp BIN_DIR (no shared-dir race), the preset is declarative; no dead code, no cross-module reach-in; 0 must-fix.",
+    "docs": "1 fix (must-fix, FIXED) — the stack-snapshot README Packages table was missing the new cmd/provision-plan row (per-unit handbook-index contract); added it. The dev-stack README + both corpus delivery docs were already complete + accurate; all 4 cross-reference anchors resolve (GitHub slug rule); no numeric handbook test-count to reconcile.",
+    "tests": "GREEN — full suites (not iter-subsets): stack-snapshot 223 + stack-seeding 233 Go funcs both -race -count=1 green; all Python suites green (dev-stack 38, stack-core+demo-stack 67, injection+verify 69); flake gate 5/5 (0 flakes); coverage pinned in harden (provision-plan 93%, directus + blueprint 100%).",
+    "decision_triage": "M13-D1 (dev-min size) / M13-D2 (executable M10 contract) / M13-D3 (default-on-non-fatal) already blended into the corpus during build (verified accurate) — added (#M13-DN) reference tags at close; M13-D4 (build_cli cmd-pkg path bug) stays archive (maintainer-only implementation fix).",
+    "adversarial": "4 scenarios recorded (Phase 2c): replay-DSN offset-rewrite vs the firewall'd Directus env (replay's write-target is offset-derived via pg.DSNForOffset, never the base port); concurrent mktemp BIN_DIR (disjoint per invocation); --no-snapshot seed still guarded (stackseed's own isolation guard); N=0 recipe-printer boundary (printer is text-only, N=0 refusal is the caller's, pinned). 0 bugs surfaced; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.30-stack-party/m13-dev-peers/audit-deferrals/deferral-audit-2026-06-07-m13-close.md — 1 inherited (DEF-M10-01 S3 blob bytes + cloud store -> v1.4, signed/unchanged), 0 repeat, 0 aged-out, 0 new; M13 added zero deferrals (all Fate-1)."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 5 sections (dev-min preset + its pin; the dev bring-up set-dressing pass = per-stack Directus via the provision-plan runner + cache-first snapshot replay + dev-min auto-seed; the n=0-dev guard preserved + doubled; the seeding-spec.md + snapshot-spec.md corpus deliveries + the README handbook-index fix).",
+    "confirmed_covered_fate2": "the generic stack-* skill renames (incl. dev-up/dev-down) -> M14 (roadmap M14 In: list); the safety & security doc -> M15.",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none (DEF-M10-01 S3 blob bytes + cloud store is INHERITED from v1.2, signed to v1.4 at v1.3 design — not introduced by M13)."
+  },
+  "notes": "M13 is the meatiest v1.3 milestone — it converges dev with demo for DATA (M12 converged them for N-allocation). The key reuse insight (M13-D2): rather than re-encode the M10 Directus recipe in shell, a small Go runner (cmd/provision-plan) makes the library-only M10 contract executable, giving the recipe + the prod-Directus firewall ONE source of truth shared by both kinds. Prod-safety held unchanged: capture is never run on dev (replay only), media stays refs-only (blob bytes = v1.4), the read-side AssertPublicOnly + write-side isolation guard both hold, and the n=0-dev guard is now doubled (the set-dress pass + stackseed --reset). Harden fixed 3 robustness bugs inline (whitespace-env firewall fail-closed, the re-run-hint --no-snapshot leak, a set -u trailing-flag error), each mutation-pinned. Next: M14 (unified stack-* skills + dev-up/dev-down, hard-renamed)."
+}

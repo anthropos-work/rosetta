@@ -101,10 +101,11 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 
 ## Automated Setup with Claude Code
 
-If you're using **Claude Code**, you can automate this entire setup process using the `/setup-platform` skill:
+If you're using **Claude Code**, you can automate this entire setup process using the `/dev-up` skill (which
+consolidates the former setup-platform + start-platform — it builds the environment AND starts it):
 
 ```bash
-/setup-platform
+/dev-up
 ```
 
 The skill will:
@@ -113,7 +114,7 @@ The skill will:
 *   Track progress using TodoWrite
 *   Create ops reports when issues are discovered
 
-See [`.claude/skills/setup-platform/SKILL.md`](../../.claude/skills/setup-platform/SKILL.md) for details.
+See [`.claude/skills/dev-up/SKILL.md`](../../.claude/skills/dev-up/SKILL.md) for details.
 
 ---
 
@@ -645,13 +646,13 @@ By default the root layout loads Plausible, Google Tag Manager, BetterStack, ana
 
 ## 11. Maintenance Guidelines
 
-This `setup_guide.md` and the `/setup-platform` Claude skill are interconnected documents that must be maintained together.
+This `setup_guide.md` and the `/dev-up` Claude skill (which consolidates the former setup-platform + start-platform) are interconnected documents that must be maintained together.
 
 ### When You Update This Setup Guide
 
 If you modify the setup process (add/remove/reorder steps), you must update:
 
-1.  **Anthropos Setup Skill** (`.claude/skills/setup-platform/SKILL.md`): Update phase definitions, step sequences, and verification commands
+1.  **Dev-Up Skill** (`.claude/skills/dev-up/SKILL.md`): Update phase definitions, step sequences, and verification commands
 2.  **This Guide**: Ensure all steps have verification commands documented
 
 ### General Guidelines

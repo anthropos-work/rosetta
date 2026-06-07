@@ -6,7 +6,7 @@ recipes land — the **`api.clerk.com` cert-redirect** (so the backend's orgclie
 TLS) and the **browser-login walk-through** (the frontend points at the fake FAPI via a minted publishable
 key).
 
-**Prerequisite.** A stack up (`/demo-up N`) and seeded (`/demo-seed N`) — the demo identity
+**Prerequisite.** A stack up (`/demo-up N`) and seeded (`/stack-seed N`) — the demo identity
 `user_clerkenstein` must exist as a member (otherwise login authenticates but org-gated routes 403). See
 [`recipe-enterprise-onboarding.md`](recipe-enterprise-onboarding.md).
 
@@ -49,7 +49,7 @@ the SDK sub-clients and the three raw-HTTP methods.
    decodes the host from the key and talks to the fake FAPI — **no real Clerk, no SDK fork**.
 3. **Log in.** Open the frontend; the fake FAPI serves the `DefaultDemoUser` session — `user_clerkenstein` /
    `demo@anthropos.test`, **admin** of `org_clerkenstein`. The browser is now authenticated.
-4. **Land in the seeded org.** Because `/demo-seed` created `user_clerkenstein` as a seeded admin member (+ the
+4. **Land in the seeded org.** Because `/stack-seed` created `user_clerkenstein` as a seeded admin member (+ the
    casbin grant + the global Sentinel policy), authorized routes return **200** — the populated workforce, not
    a 403 wall.
 

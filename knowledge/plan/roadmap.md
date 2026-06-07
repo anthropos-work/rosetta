@@ -19,8 +19,15 @@ builder skills).
 > lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to **100% data-DNA coverage** — capture the real
 > *public* skill taxonomy + content library once from a **safe, low-impact source** (default a prod `pg_dump`), replay per-stack,
 > *measured-faithful* via a new snapshot-fidelity dimension, with a tested **tenant-data firewall** (never customer
-> data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Full design in
-> `## In Development` below.
+> data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Detail in `## Done — v1.2` below.
+>
+> **v1.3 "stack party" — SHIPPED 2026-06-07** (tag `v1.3`, merged `--no-ff` → `main`; designed + built + closed
+> 2026-06-07). 4 milestones M12→M13→M14→M15: the **dev/demo convergence** — dev stacks became first-class peers
+> (local per-stack Directus + auto-snapshot + a light default seed on build), a **unified stack registry** that
+> allocates the first-available N across dev+demo (no port collisions), one **generic `stack-*` skill set**
+> (`stack-list`/`seed`/`snapshot`/`update` + `dev-up`/`dev-down`), and a code-cited **safety & security doc** (how
+> the tooling never reads private data + never touches prod). Full detail in `## Done — v1.3` below. (The former
+> v1.3 seeds — cloud store, S3 blobs, AI content, shareability — moved to **v1.4**.)
 
 ## Version plan
 
@@ -29,6 +36,7 @@ builder skills).
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
 | **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
+| **v1.3** | **stack party** | dev + demo stacks as first-class peers — local Directus, auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -41,6 +49,114 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## Done — v1.3 "stack party" (SHIPPED 2026-06-07 · tag `v1.3`)
+
+**Theme:** v1.0 made the platform run Clerk-free; v1.1 built the demo/dev stack framework; v1.2 set-dressed *demo*
+stacks with the real public catalog. v1.3 **throws the party** — it makes **dev and demo stacks first-class peers**
+that work the same way. A dev stack gets the demo treatment (its own **local Directus**, **auto-snapshot** of the
+real reference data on build, a **light default seed** so it's never empty); a **unified stack registry** allocates
+the first-available N across both kinds so they never collide on ports; and one **generic `stack-*` skill set**
+operates any stack. The safety story (read-side private-data avoidance + write-side prod-protection) is consolidated
+into a dedicated doc, and **both** the rosetta corpus and the `rosetta-extensions` knowledge base are brought to the
+converged model.
+
+> **Designed 2026-06-07** from 6 user requirements (the dev/demo convergence). Phase 0a deferral audit **GREEN**
+> (v1.2 close — 1 open item, DEF-M10-01 S3 blobs + the cloud-store escape-hatch). **Scope decided (user, 2026-06-07):**
+> the former v1.3 seeds (cloud store, S3 blobs, AI content, shareability, more mirrors) **move to v1.4**; v1.3 is the
+> tight convergence release. M13 stays one milestone; the operation-skill renames are a **hard rename, no aliases**.
+> Phase 0b KB blind-area: the **safety & security doc** is the one blind area → M15 `Delivers →` it. Research:
+> [`.agentspace/scratch/roadmap-research-2026-06-07.md`](../../.agentspace/scratch/roadmap-research-2026-06-07.md).
+
+### M12: Unified stack registry + first-available-N allocation
+**Status:** `done` (completed 2026-06-07) · **Shape:** `section` · **Complexity:** medium · **Dir:** [m12-stack-registry/](releases/archive/01.30-stack-party/m12-stack-registry/)
+**Closed 2026-06-07** (build → 3 harden passes → close review → merged to `release/01.30-stack-party`). **The first milestone of v1.3** and the only non-Go surface to date — the unified registry is **Python** (`stack-core/stack_registry.py`) + shell-CLI wiring. Delivered: a **single shared module** `stack_registry.py` (M12-D1 — one shared N-pool across both kinds, so `dev-1`/`demo-1` can never coexist; runtime file `stack-core/.stacks/registry.json`, gitignored) implementing **first-available-N allocation** — `allocate(type, n=None)` auto-allocates the lowest free N across dev+demo or validates an explicit N, the whole **read-reconcile-pick-write under one `fcntl.flock(LOCK_EX)`** on a sidecar `.lock` (portable macOS+Linux, M12-D3) with **atomic temp+`os.replace` writes** + corrupt-JSON recovery; **registry-of-record + `docker ps` reconcile that only ADDS used-N, never subtracts** (M12-D2 — adopts unmanaged live stacks; `release()` is the only free path = the race guard). Both up-paths wired (`dev-stack` + `rosetta-demo`): `up [N]` (explicit or `auto`/omit), an **ERR-trap that frees the slot on a failed bring-up** (installed *before* the post-allocation re-guard — the §2 review fix), `set-ports` records resolved host ports, `down` releases; `status` leads with the unified dev+demo view. KB-1 resolved (the GUIDE.md "registry assigns N" claim converged to truth). The guarantee — `dev, demo, dev, demo, demo` → `dev-1, demo-2, dev-3, demo-4, demo-5`, any interleaving, either CLI — verified at the **OS-process level** (12-process auto-allocation + a close-added 6-process explicit-N collision, not just threads). Extensions: tag `stack-party-m12` @ `be1c979` (v1.3 release-and-milestone tag naming). **89 Python test funcs** across the 3 M12-touched suites (stack-core 54 / dev-stack 22 / demo-stack 13; +52 net new), `stack_registry.py` 98% (2 structurally-unreachable misses); flake **0** (5/5); shellcheck + py_compile clean; Go total 708 unchanged (M12 touched no Go). Close: scope/code/docs/tests **GREEN**, **3 findings** (1 test added — the concurrent explicit-N collision; 2 decision-triage → archive); 4 adversarial scenarios recorded; deferral re-audit **GREEN** (1 inherited DEF-M10-01 → v1.4 signed, 0 repeat/aged/new — M12 added zero deferrals). Decisions M12-D1…D3 + KB-1 + Q1/Q2/Q3 resolved. Retro: [m12-stack-registry/retro.md](releases/archive/01.30-stack-party/m12-stack-registry/retro.md). **Next:** M13 (dev peers — local Directus + auto-snapshot + light seed).
+**Goal:** One shared registry across **dev + demo** that tracks live stacks and allocates the **lowest free N**, so
+bring-ups never collide on ports (build `dev, demo, dev, demo, demo` → `dev-1, demo-2, dev-3, demo-4, demo-5`).
+**Scope:** In: a **unified stack registry** (extend the demo `registry.json` to span both kinds — type + N + ports +
+status) in `stack-core`; a **first-available-N allocator** (reconcile the registry against live `docker ps`, return
+the lowest free N) — race-safe (locked write); the up-paths **accept explicit-N or auto-allocate**; teardown frees
+the slot. Out: the skill renames that consume it (M14); dev local-Directus/snapshot/seed (M13).
+**Depends on:** v1.1's `stack-core` (the port-offset engine) + the demo-stack `registry.json`. **Parallel with:** M13 (feasible — different surfaces; lean sequential so M13's dev bring-up consumes the registry).
+**Open questions:** registry as a lockfile vs `docker ps`-derived (lean: registry-of-record + `docker ps` reconcile); how a manually-started stack (outside the skills) is reconciled.
+**KB dependencies:** `corpus/ops/rosetta_demo.md` (the demo registry/ports), the `stack-core`/`demo-stack`/`dev-stack` extension sections.
+**Delivers → updates `corpus/ops/rosetta_demo.md`** (the unified registry + first-available-N model).
+
+### M13: Dev stacks as full-fidelity peers — local Directus + auto-snapshot + light seed
+**Status:** `done` (completed 2026-06-07) · **Shape:** `section` · **Complexity:** large · **Dir:** [m13-dev-peers/](releases/archive/01.30-stack-party/m13-dev-peers/)
+**Closed 2026-06-07** (build → 1 harden pass → close review → merged to `release/01.30-stack-party`). **The meatiest milestone of v1.3** — it converges dev with demo for **DATA** (M12 converged them for N-allocation). Delivered: a `dev-stack up` bring-up now gets the **demo treatment by default** via a new **set-dressing pass** (`dev-stack/dev-setdress.sh`, default-on + non-fatal): (1) a **per-stack Directus** — the M10 store-fork recipe + the prod-Directus firewall, both made **executable** by a NEW small Go runner `stack-snapshot/cmd/provision-plan` that turns the library-only M10 `directus.ProvisionPlan`/`EnvContract`/`Validate` contract into a CLI (M13-D2 — one source of truth for the recipe AND the firewall, shared by both kinds; `--check-env` hard-aborts the pass before any replay if the per-stack Directus env ever resolves to prod); (2) a **cache-first `stacksnap replay`** of the public `taxonomy`+`directus` surfaces into `dev-N` (replay never captures; a stale/missing cache is a warning, the seed still runs — M13-D3 default-on-but-non-fatal, resolving the bring-up-heaviness Q1 + the default-on Q2); (3) the new **`dev-min` seed preset** (`stack-seeding/presets/dev-min.seed.yaml` — ~1 org + ~10 users + 1mo, fixed admin `dev@anthropos.test` → login 200; the role-mix floor, M13-D1 resolving Q3) so the stack is never empty. The **n=0-dev guard is doubled** — the set-dress pass refuses N=0 without `--force`, a second layer above `stackseed --reset`'s own refusal. **Escapes:** `--no-snapshot` (seed only) / `--no-setdress` (bare bring-up). **Prod-safety held unchanged:** capture is never run on dev (replay only — a per-stack WRITE to the isolated offset Postgres), media stays **refs-only** (blob bytes = v1.4), `AssertPublicOnly` + the isolation guard both hold. Corpus: `snapshot-spec.md` (the "Dev as a full-fidelity peer" section + dev as a replay target) + `seeding-spec.md` (the shipped-presets table + the dev-min/dev-auto-seed subsection + the two-layer n=0 guard); the stale "cloud/S3 store = v1.3" claim fixed to **v1.4**. Harden fixed **3 robustness bugs** inline (whitespace-env firewall fail-closed · the `--no-snapshot` re-run-hint leak · a `set -u` trailing-flag error), each mutation-pinned, +10 regression/edge tests. Close found **6 findings** (1 doc must-fix: the stack-snapshot README Packages table was missing the new `cmd/provision-plan` row — a per-unit handbook-index miss, fixed; 5 GREEN/no-action incl. 4 adversarial scenarios + 3 decision-triage blends ref-tagged); deferral re-audit **GREEN** (1 inherited DEF-M10-01 → v1.4 signed/unchanged, 0 repeat/aged/new — M13 added **zero** deferrals, all Fate-1). Decisions M13-D1…D4 + Q1/Q2/Q3 resolved. Extensions: tag **`stack-party-m13`** @ `cca4464`. Go test funcs 708→**720** (stack-snapshot 212→223 the provision-plan runner; stack-seeding 232→233 the dev-min pin); dev-stack pytest 33→**38**; flake **0** (5/5 both languages); both Go modules `-race` + gofmt + `go vet` clean; both CLIs shellcheck-clean. Retro: [m13-dev-peers/retro.md](releases/archive/01.30-stack-party/m13-dev-peers/retro.md). **Next:** M14 (unified `stack-*` skills + `dev-up`/`dev-down`, hard-renamed).
+**Goal:** A freshly-built dev stack gets the demo treatment — its **own local per-stack Directus** (no longer
+pointing at shared prod), an **auto-snapshot** on build that fills the real public reference data (taxonomy + the
+now-local content), and a **light default seed** so it's never empty.
+**Scope:** In: wire the dev bring-up to **spawn a per-stack Directus** (reuse M10's `stack-snapshot/directus/provision.go`
+per-stack-Directus mechanism) + repoint the dev CMS at it; **auto-run `stacksnap replay`** (taxonomy + directus) as
+part of dev build (cache-first, fast); a **`dev-min` seed preset** (smaller than demo's `small-200` — ~1 org + ~10
+users + minimal activity) applied on build; keep the n=0-dev-reset guard. Out: the generic skills (M14); blob bytes
+(v1.4 — refs-only, as for demo).
+**Depends on:** **M12** (consumes the registry for dev-N) + v1.2's M10 (the per-stack Directus + the content snapshot) + v1.1's M6 (dev-stack) + M7 (seeding). **Parallel with:** none (gates M14).
+**Open questions:** does spawning Directus + snapshot + seed make dev bring-up too heavy? (mitigate: cache-first snapshot, minimal seed, reuse M10's provision); should the auto-snapshot be default-on or opt-in for dev (lean: default-on, `--no-snapshot` to skip).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (capture/replay + the per-stack Directus store), `corpus/ops/seeding-spec.md` (presets + the dev/n=0 guard), `corpus/services/cms.md` (Directus), the `dev-stack` extension section.
+**Delivers → updates `corpus/ops/seeding-spec.md`** (the `dev-min` preset + dev auto-seed) **+ `corpus/ops/snapshot-spec.md`** (dev as a replay target + the local-Directus-on-dev path).
+
+### M14: Unified `stack-*` skills + `dev-up`/`dev-down`
+**Status:** `done` (completed 2026-06-07) · **Shape:** `section` · **Complexity:** large · **Dir:** [m14-unified-skills/](releases/archive/01.30-stack-party/m14-unified-skills/)
+**Closed 2026-06-07** (build → 1 harden pass → close review → merged to `release/01.30-stack-party`). **The tooling-convergence milestone of v1.3** — it unifies the operation skills onto both stack kinds via a **hard rename, no aliases** (user 2026-06-07; the clean-break blast radius contained by sweeping every in-repo reference). Delivered: **`dev-up`** (consolidates the former `setup-platform` + `start-platform` into one dev bring-up — element-by-element diff against both former bodies confirmed **no dropped step**: STEP RUN discipline, confirmation policy, ops reports, the 12-container set, error recovery; `dev-up N` for N≥1 spins additional isolated dev-N; drives the M13 set-dress flow, M14-D2) + net-new **`dev-down`**; the 4 ops skills hard-renamed each taking a `dev-N|demo-N` target — **`stack-list`** (←`demo-status`), **`stack-seed`** (←`demo-seed`), **`stack-snapshot`** (←`demo-snapshot`), **`stack-update`** (←`update-platform`); the **6 old skill dirs removed** (no shims); a **full reference sweep** (CLAUDE.md skill table rewritten to the 14-skill set, root+corpus READMEs, all `corpus/ops/` guides + the `demo/` recipe family, CHANGELOG — new Unreleased v1.3 Added/Changed/Removed, v1.1/v1.2 dated entries left immutable, M14-D6); `demo-up`/`demo-down` retained + aligned with the dev lifecycle. The `--preset NAME` UX is kept as a **skill-level shorthand** mapped to `--seed presets/NAME.seed.yaml` (M14-D5, the PR-review fix — the `stackseed` binary only knows `--seed <path>`). Extensions: a doc-only reference sweep on `main` (`b37e831`: dev-stack header/README, demo-stack GUIDE, stack-verify run.sh) + the harden reference-integrity guard (`33fc525`: re-pointed the stacksnap drift-guard comments `/demo-snapshot`→`/stack-snapshot` + added **`TestDocSourceSkillRename_M14`** — asserts the renamed skill dir exists + the retired one stays gone, turning silent comment-rot/dir-resurrection into a test failure; negative-tested). The skill namespace `stack-snapshot` is deliberately distinct from the extensions **section** `stack-snapshot/` (the skill drives the `stacksnap` CLI that section builds — called out in the body). Tag **`stack-party-m14`** @ `33fc525` (v1.3 release-and-milestone naming, matching M12 `stack-party-m12` @ `be1c979` + M13 `stack-party-m13` @ `cca4464`). Close: scope/code/docs/tests **GREEN** with **0 findings** — a clean straight-through close; the close re-verified the 4 reference-integrity dimensions **independently** (rename invariant **0 live stragglers** project-wide, CLAUDE.md ⇄ 14 skill dirs perfect bijection, SKILL.md `name:`⇄dir 0 mismatches, skill→CLI contract resolves) + all `../`-relative doc links resolve + 0 broken links to deleted dirs. Deferral re-audit **GREEN** (1 inherited DEF-M10-01 → v1.4 signed/unchanged/not-aged, 0 repeat/aged/new — M14 added **zero** deferrals, all Fate-1). Decisions M14-D1…D6 (D2/D3/D4 resolve Q1/Q2/Q3; D5 = the `--preset` fix; D6 = CHANGELOG convention). Go test funcs 720→**721** (stack-snapshot 223→224: the rename guard; alignment/clerkenstein/stack-seeding unchanged); all 4 Go modules `-race -count=1` + gofmt + `go vet` clean; 174 Python green; all 3 CLIs shellcheck-clean; py_compile clean; flake **0** (5/5). Retro: [m14-unified-skills/retro.md](releases/archive/01.30-stack-party/m14-unified-skills/retro.md). **Next:** M15 (safety & security doc + dual-repo KB refresh — the LAST v1.3 milestone).
+**Goal:** One coherent stack-operations skill set that works on any stack (`dev-N | demo-N`), with the dev lifecycle
+mirroring demo's.
+**Scope:** In: **`dev-up`** (consolidate `setup-platform` + `start-platform` into one dev bring-up that drives the M13
+flow) + **`dev-down`**; **hard-rename** (no aliases, user 2026-06-07) the operation skills to generic, stack-target
+forms — **`stack-list`** (←`demo-status`), **`stack-seed`** (←`demo-seed`), **`stack-snapshot`** (←`demo-snapshot`),
+**`stack-update`** (←`update-platform`) — each detecting/accepting a `dev-N|demo-N` target; **remove** the old skill
+dirs (`setup-platform`, `start-platform`, `update-platform`, `demo-status`, `demo-seed`, `demo-snapshot`); update
+**every reference** (CLAUDE.md skill table, READMEs, the corpus skill docs + recipes). `demo-up`/`demo-down` stay as
+the demo lifecycle (aligned with `dev-up`/`dev-down`). Out: the safety doc (M15).
+**Depends on:** **M12 + M13** (the generic skills drive the registry + the dev peer capabilities). **Parallel with:** none.
+**Open questions:** how much of `setup-platform`'s first-time machine setup (tool install, org clone) folds into `dev-up` vs stays a one-time prerequisite; the exact target-detection UX (`stack-seed dev-1` vs `stack-seed --stack dev-1`).
+**KB dependencies:** the existing skill SKILL.md files, `corpus/ops/*` guides (setup/run/update/demo), `CLAUDE.md` (the skill table).
+**Delivers → the unified `stack-*` + `dev-up`/`dev-down` skills + a rewritten `CLAUDE.md` skill table + refreshed `corpus/ops/` guides** (the converged stack model, hard-renamed).
+
+### M15: Safety & security doc + dual-repo knowledge consolidation
+**Status:** `done` (completed 2026-06-07) · **Shape:** `section` · **Complexity:** medium · **Dir:** [m15-safety-doc/](releases/archive/01.30-stack-party/m15-safety-doc/)
+**Closed 2026-06-07** (build → 4 harden passes → close review → merged to `release/01.30-stack-party`). **The closing milestone of v1.3 — the LAST of the four; with it done the release is ready for `/developer-kit:close-release`.** A documentation/consolidation milestone (the M8/M11-analog). Delivered the net-new **`corpus/ops/safety.md`** (248 lines, code-cited, dual-level): the two inviolable guarantees of the `rosetta-extensions` tooling — **never reads private/customer data** (read-side: the tenant firewall `AssertPlan`/`AssertCaptured` [the conceptual `AssertPublicOnly` named to its two real Go gates, M15-D2], the per-surface public predicates byte-matched to `firewall.go` [`organization_id IS NULL` / `private = false AND tenant_id IS NULL AND status = 'published'`], the public-only data-DNA gene, bounded read-only capture [`SET TRANSACTION READ ONLY` + timeouts, **no offline file reader** — M15-D3 keeps the M9b-D9 drop true]) and **never touches prod data or services** (write-side: the 3-layer isolation guard `CheckWrite`/`PreflightEnv`/`AssertClean`, never-write shared Directus/prod-S3, the capture-source policy, the **doubled** n=0-dev guards [scoped precisely — `stacksnap` replay has none, correctly, M15-D4], the audit-proven zero-pollution assertion). Cross-linked from all 4 siblings (`db-access`/`snapshot-spec`/`seeding-spec`/`security_compliance`, both directions). Plus a **dual-repo KB refresh**: `rosetta-extensions/knowledge/` to the v1.3 converged dev≡demo model + safety contract (0 stale pre-M14 skill names); root READMEs + `CLAUDE.md` + the `demo/` recipe family for the unified `stack-*` skills + dev-as-peer + safety.md discoverability. **Harden** (4 passes) made doc accuracy a *test*: 7 fail-closed docs↔code drift guards pin every load-bearing literal/symbol/SQL-block safety.md quotes to the real code (read-side predicates + gate names + the bounded-read SQL `source.DefaultBounds().SetupSQL()`; write-side the complete `realClerkHosts` + `directusTokenKeys` rejection lists + the forced `STORAGE_S3_PUBLIC_BUCKET=""` override + the `CheckWrite`/`PreflightEnv`/`AssertClean` symbols), each `t.Skip`-ping gracefully in pinned-tag consumption clones; harden also landed the **M15-D4** n=0 over-claim fix (corrected in both `dev-setdress.sh` + the sibling test comment to match the shipped safety.md §2.5). Close found **1 finding** (a self-referential docs-accuracy drift: `decisions.md` M15-D4's text lagged the harden fix — corrected; 0 code/test/scope) and proved the guards fail-closed at close (Phase 2c — mutating the read-side predicate + the write-side bucket override each tripped its guard; safety.md restored byte-identical). Deferral re-audit **GREEN**, run release-wide M12→M15 as the terminal-milestone pre-release sweep (1 inherited DEF-M10-01 → v1.4 signed/unchanged/**not aged out**; 0 repeat/aged/new — M15 added **zero** deferrals, all Fate-1). Decisions M15-D1…D4 + Q1 resolved. Extensions: tag **`stack-party-m15`** @ `51ca18b`. Go test funcs **+7** (the 7 drift guards: stack-snapshot +3, stack-seeding +4); 174 Python (unchanged); all 4 Go modules `-race -count=1` + gofmt + `go vet` clean; `dev-setdress.sh` shellcheck-clean; py_compile clean; **flake 0** (5/5 both touched packages). Retro: [m15-safety-doc/retro.md](releases/archive/01.30-stack-party/m15-safety-doc/retro.md). **Next:** **`/developer-kit:close-release`** (merge `release/01.30-stack-party` → `main`, tag `v1.3`) — the user's separate step.
+**Goal:** A single authoritative doc on **how the rosetta tooling stays safe** — it never reads private/customer data,
+and it never touches production data or services — plus a refresh of **both** knowledge bases to the v1.3 model.
+**Scope:** In: a new **`corpus/ops/safety.md`** consolidating (a) the **read-side** (private-data avoidance: the
+tenant firewall `AssertPublicOnly`, the `organization_id IS NULL` / `private = false AND tenant_id IS NULL` public
+predicates, the public-only data-DNA gene) and (b) the **write-side** (prod-protection: the 3-layer isolation guard,
+read-only capture, never-write-shared-Directus / prod-S3, the capture-source policy, the n=0-dev guards); cross-link
+from `snapshot-spec`/`seeding-spec`/`db-access`/`security_compliance`; **update the `rosetta-extensions/knowledge/`**
+(the repo's own KB) for the converged stack model + the safety contract; refresh the root READMEs + the `demo/`
+recipe family for the unified `stack-*` skills + dev-as-peer. Out: nothing (closing milestone).
+**Depends on:** **M12 + M13 + M14** (documents their converged result). **Parallel with:** none (the closing milestone before `/developer-kit:close-release`).
+**Open questions:** doc home — `corpus/ops/safety.md` vs `corpus/architecture/tooling-safety.md` (lean: `corpus/ops/safety.md`, ops-adjacent to seeding/snapshot/db-access).
+**KB dependencies:** `corpus/ops/{snapshot-spec,seeding-spec,db-access}.md`, `corpus/architecture/security_compliance.md`, the `rosetta-extensions/knowledge/` base.
+**Delivers → `corpus/ops/safety.md`** (net-new — the tooling's read-side + write-side safety contract) **+ updates the `rosetta-extensions/knowledge/` base** to the v1.3 converged model.
+
+### Execution graph (v1.3)
+```
+v1.3 "stack party" — dev + demo stacks become first-class peers, one unified skill set
+   M12 (unified registry + first-free-N) ─→ M13 (dev peers: local Directus + auto-snapshot + light seed) ─→ M14 (unified stack-* skills) ─→ M15 (safety doc + dual-repo KB)
+```
+**Sequential.** M12 lays the shared registry/port foundation; M13 makes dev a full peer (the meatiest — reuses M10's
+per-stack Directus + the snapshot/seed framework); M14 converges the skills onto both stack kinds (hard rename); M15
+consolidates the safety story + both knowledge bases. M12∥M13 is feasible (stack-core vs dev bring-up) but
+serializing keeps M13's bring-up consuming the new registry cleanly. No B-milestones — M14 *is* the tooling layer.
+
+### Risks (v1.3)
+- **(M13, scope)** spawning a per-stack Directus + auto-snapshot + seed on **every dev build** could make dev
+  bring-up slow/heavy. Mitigate: reuse M10's proven `provision.go`; cache-first snapshot (replay, not capture);
+  minimal `dev-min` seed; `--no-snapshot` escape.
+- **(M12, correctness)** the first-available-N allocator must be **race-safe** (two concurrent `up`s) and reconcile
+  with reality. Mitigate: locked registry write + `docker ps` as the used-N source of truth.
+- **(M14, blast radius)** the **hard rename** (no aliases) breaks any external reference to `setup-platform` /
+  `demo-seed` / etc. Mitigate: update **every** in-repo reference in M14; the user accepted the clean-break tradeoff.
+- **(cross-cut)** dev was historically the *protected* environment (real Clerk, the n=0 guard). Making it a
+  snapshot/seed target must preserve those guards. Mitigate: M15's safety doc + the kept n=0-reset guard + read-only capture.
+
+### Open decisions (resolve during build)
+Registry-of-record vs `docker ps`-derived — M12 (lean registry + reconcile); dev auto-snapshot default-on vs opt-in
+— M13 (lean default-on, `--no-snapshot`); how much first-time setup folds into `dev-up` — M14; the safety doc home
+(`corpus/ops/safety.md`) — M15.
 
 ## Done — v1.2 "set dressing" (SHIPPED 2026-06-07 · tag `v1.2`)
 

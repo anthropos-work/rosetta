@@ -1,35 +1,42 @@
 ---
-name: demo-snapshot
-description: Set-dress a demo/dev stack with the real PUBLIC reference library — replay the captured taxonomy + Directus content snapshots into the stack so the catalog + content templates are real (not placeholder). Drives the stacksnap CLI (replay / capture / status). Use after /demo-up and before /demo-seed for a full-fidelity world, or when asked to snapshot / set-dress / replay the catalog into a demo.
-argument-hint: [N] [replay|capture|status] [--surface taxonomy|directus] [--dsn DSN] [--dry-run]
+name: stack-snapshot
+description: Set-dress a stack (dev-N or demo-N) with the real PUBLIC reference library — replay the captured taxonomy + Directus content snapshots into the stack so the catalog + content templates are real (not placeholder). Drives the stacksnap CLI (replay / capture / status). Use after the stack is up and before seeding for a full-fidelity world, or when asked to snapshot / set-dress / replay the catalog.
+argument-hint: [dev-N|demo-N] [replay|capture|status] [--surface taxonomy|directus] [--dsn DSN] [--dry-run]
 ---
 
-# Demo Snapshot — stamp the real public library into a stack (the v1.2 "set dressing" layer)
+# Stack Snapshot — stamp the real public library into a stack (the v1.2 "set dressing" layer)
 
 Replays the real **public** reference library — the ~60K-skill / 18K-role taxonomy and the global simulation /
-skill-path content templates — into `demo-N` (or `dev-N`) so the catalog view shows **real** skills and the seeded
-sessions link to **real** templates. It drives the `stacksnap` CLI: `replay` (the headline verb, per-stack),
-`capture` (the rare prod-read maintenance op), `status` (list the cache). Source of truth:
+skill-path content templates — into `dev-N` or `demo-N` so the catalog view shows **real** skills and the
+seeded sessions link to **real** templates. It drives the `stacksnap` CLI: `replay` (the headline verb,
+per-stack), `capture` (the rare prod-read maintenance op), `status` (list the cache). Source of truth:
 [`corpus/ops/snapshot-spec.md`](../../../corpus/ops/snapshot-spec.md). The set-dressing recipe:
 [`corpus/ops/demo/recipe-snapshot-world.md`](../../../corpus/ops/demo/recipe-snapshot-world.md).
+(Formerly `/demo-snapshot`, now naming both stack types as first-class targets.)
+
+> **Two `stack-snapshot` namespaces, kept distinct.** This **skill** (`/stack-snapshot`) drives the `stacksnap`
+> CLI. The extensions **section** named `stack-snapshot` (`rosetta-extensions/stack-snapshot/`) is where that
+> CLI is built. The skill operates the tooling; the section name inside the repo is unchanged.
 
 ## Where this sits in the flow
-`/demo-up N` → **`/demo-snapshot replay N`** → `/demo-seed N` → log in. The snapshot is **stack-global** public
-reference data (independent of which org you seed), it is **optional** (skip it for a quick structural-only world —
-the seeder degrades gracefully to an empty catalog + free content refs), and it is almost always a **cache-hit**
-(zero prod read — captured once per release, replayed by every stack).
+`/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,
+`/dev-up` already runs this set-dress pass by default — use this skill to re-run or refresh it.) The snapshot
+is **stack-global** public reference data (independent of which org you seed), it is **optional** (skip it for
+a quick structural-only world — the seeder degrades gracefully to an empty catalog + free content refs), and
+it is almost always a **cache-hit** (zero prod read — captured once per release, replayed by every stack).
 
 ## Mission
 
 1. **Read the spec** — `corpus/ops/snapshot-spec.md` (the capture/replay contract, the read-side **tenant-data
-   firewall**, the cache-first store, the fidelity gate). Confirm the target is a **non-prod** stack (`demo-N` /
-   `dev-N`, never production).
-2. **Confirm the stack is up + migrated** — `/demo-up N` first if needed, so the `skiller` + `directus` schemas
-   exist as replay targets.
-3. **Build the tool** (gitignored at `stack-demo/rosetta-extensions/stack-snapshot/`; canonical source is the
-   `.agentspace/rosetta-extensions/` authoring copy):
+   firewall**, the cache-first store, the fidelity gate). Confirm the target is a **non-prod** stack (`dev-N` /
+   `demo-N`, never production).
+2. **Confirm the stack is up + migrated** — `/dev-up N` or `/demo-up N` first if needed, so the `skiller` +
+   `directus` schemas exist as replay targets.
+3. **Build the tool** (gitignored at `stack-<role>/rosetta-extensions/stack-snapshot/`; canonical source is the
+   `.agentspace/rosetta-extensions/` authoring copy). Use the matching per-stack clone for the target
+   (`stack-dev/` for a dev-N, `stack-demo/` for a demo-N):
    ```bash
-   SN=stack-demo/rosetta-extensions/stack-snapshot
+   SN=stack-demo/rosetta-extensions/stack-snapshot   # or stack-dev/... for a dev-N
    go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
    ```
 4. **Run the requested verb:**
@@ -39,10 +46,10 @@ the seeder degrades gracefully to an empty catalog + free content refs), and it 
    loop them:
    ```bash
    for s in taxonomy directus; do
-     /tmp/stacksnap replay --surface "$s" --stack demo-N
+     /tmp/stacksnap replay --surface "$s" --stack dev-N      # or demo-N
    done
    # or a single surface:
-   /tmp/stacksnap replay --surface taxonomy --stack demo-N
+   /tmp/stacksnap replay --surface taxonomy --stack dev-N
    ```
    Replay resolves **cache-hit vs stale** against the stack's live schema, **verifies every payload checksum**
    before writing, bulk-`COPY`s in dependency order, and **rebuilds any pgvector index** (the ~689 MB
@@ -66,12 +73,12 @@ the seeder degrades gracefully to an empty catalog + free content refs), and it 
    ```bash
    /tmp/stacksnap status
    ```
-5. **Verify** — replay prints `replayed "<surface>" into demo-N: <T> table(s), <R> row(s) loaded [, reindexed …]`.
+5. **Verify** — replay prints `replayed "<surface>" into <stack>: <T> table(s), <R> row(s) loaded [, reindexed …]`.
    Optionally gate fidelity (captured source vs replayed stack):
    ```bash
    SS=stack-demo/rosetta-extensions/stack-seeding
    SNAP=.agentspace/snapshots
-   /tmp/datadna measure-snapshot --stack demo-N --dna "$SS/dna/data-dna.json" \
+   /tmp/datadna measure-snapshot --stack dev-N --dna "$SS/dna/data-dna.json" \
      --manifest "$SNAP/taxonomy/<ver>/manifest.json" --manifest "$SNAP/directus/<ver>/manifest.json"
    ```
    With both surfaces replayed + gated, `datadna catalog` reads **100%** coverage (both formerly-`waived` surfaces
@@ -95,6 +102,14 @@ the seeder degrades gracefully to an empty catalog + free content refs), and it 
 
 ## Defaults
 - Store root: `--store` → `STACKSNAP_STORE` env → `<workspace>/.agentspace/snapshots` (gitignored; GB blobs never
-  enter git). The cloud/S3 store is the named **v1.3** swap.
+  enter git). The cloud/S3 store is the named **v1.4** swap.
 - Base DSN (replay): `postgres://postgres@localhost:5432/postgres` with the port replaced by the stack offset.
 - Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage.
+
+## Related skills
+
+| Skill | Use when |
+|-------|----------|
+| `/stack-seed` | Seed the stack **after** set-dressing for a full-fidelity world |
+| `/stack-list` | List live stacks to pick a target |
+| `/dev-up` · `/demo-up` | Bring up the stack first (dev-up already set-dresses by default) |
