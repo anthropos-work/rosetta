@@ -14,13 +14,13 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 
 ```
 /demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data)   [corpus/ops/rosetta_demo.md]
-/demo-snapshot N  →  replay the real public catalog + content into the stack (set-dressing) [corpus/ops/snapshot-spec.md]
-/demo-seed N      →  backfill it with a believable data world (a preset or stack.seed.yaml) [corpus/ops/seeding-spec.md]
+/stack-snapshot N  →  replay the real public catalog + content into the stack (set-dressing) [corpus/ops/snapshot-spec.md]
+/stack-seed N      →  backfill it with a believable data world (a preset or stack.seed.yaml) [corpus/ops/seeding-spec.md]
   …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
 /demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
 ```
 
-**The snapshot step is what makes the world *set-dressed* (v1.2).** `/demo-snapshot replay N` stamps the real
+**The snapshot step is what makes the world *set-dressed* (v1.2).** `/stack-snapshot replay N` stamps the real
 **public** reference library — the ~60K-skill taxonomy + the global simulation / skill-path content templates —
 into the stack BEFORE you seed, so the catalog view shows real skills and the seeded sessions link to real
 templates (not free placeholder ids). It's a **stack-global reference replay**, independent of which org you then
@@ -54,12 +54,12 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 
 **Curated seed presets** (instances of `stack.seed.yaml`, validated to seed):
 `rosetta-extensions/stack-seeding/presets/` — `small-200` (quick) · `mid-500` (the default "looks real") ·
-`large-1k` (scale). Run via `/demo-seed N --preset mid-500`. The presets are **purely structural** (they describe
-an org, not the platform's reference library); for a **set-dressed** world `/demo-snapshot replay N` first (each
+`large-1k` (scale). Run via `/stack-seed N --preset mid-500`. The presets are **purely structural** (they describe
+an org, not the platform's reference library); for a **set-dressed** world `/stack-snapshot replay N` first (each
 preset's header documents the prerequisite). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
 
-**Skills:** `/demo-up` · `/demo-snapshot` · `/demo-seed` · `/demo-status` · `/demo-down` (see the root
+**Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
 `CLAUDE.md` skills table).
 
 ## Hard constraints (always true)

@@ -54,7 +54,7 @@ former v1.3 seeds → v1.4. _(Live milestone/branch state: [`state.md`](state.md
 ## Project note
 
 Rosetta is the **documentation corpus** for the Anthropos platform (architecture guides + the
-`/setup-platform` / `/start-platform` / `/update-platform` skills that build the local *dev*
-environment). The planning lifecycle tracked here governs **extensions to rosetta itself** — the
+`/dev-up` / `/dev-down` / `/stack-update` skills that build, run, and sync the local *dev*
+environment — converged from the former setup/start/update skills in v1.3/M14). The planning lifecycle tracked here governs **extensions to rosetta itself** — the
 first being a second corpus + skill set for building disposable, fully-seeded **demo** environments.
 It does **not** track changes to the Anthropos platform repos (those live under `anthropos-work`).

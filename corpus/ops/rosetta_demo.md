@@ -13,7 +13,7 @@
 - **The clone-role/tag model:** the authoring copy lives at `.agentspace/rosetta-extensions/` (build/test/tag the
   tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
-  `/demo-status` drive that tooling.
+  and the generic `/stack-list` drive that tooling (the dev peer is `/dev-up` / `/dev-down`).
 - **The mock it injects:** `rosetta-extensions/clerkenstein/` — see [clerkenstein.md](../services/clerkenstein.md).
 
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)

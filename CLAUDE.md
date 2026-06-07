@@ -17,33 +17,44 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 
 | Skill | Purpose | Guide |
 |-------|---------|-------|
-| `/setup-platform` | Build the dev environment from scratch | `corpus/ops/setup_guide.md` |
+| `/dev-up` | Build / start / set-dress a dev stack (consolidates the former setup-platform + start-platform; drives the M13 dev set-dress flow) | `corpus/ops/setup_guide.md` + `corpus/ops/run_guide.md` |
+| `/dev-down` | Tear down an additional dev stack (`dev-N`, N ≥ 1) — frees its registry slot | `corpus/ops/rosetta_demo.md` |
 | `/setup-github` | Configure GitHub SSH access for the org | `corpus/ops/setup_github_guide.md` |
-| `/start-platform` | Start the platform locally | `corpus/ops/run_guide.md` |
-| `/update-platform` | Sync code, deps, and schemas | `corpus/ops/update_guide.md` |
 | `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
 | `/test-platform` | Verify a running platform (probes, repo suites, census) | `.claude/skills/test-platform/SKILL.md` |
 | `/db-query` | Query the prod Postgres read-only (investigate data, size/inspect surfaces) | `corpus/ops/db-access.md` |
 | `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/rosetta_demo.md` |
 | `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
-| `/demo-status` | List running demo stacks and their details | `corpus/ops/rosetta_demo.md` |
-| `/demo-seed` | Seed a demo stack with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |
-| `/demo-snapshot` | Set-dress a stack — replay the real public taxonomy + Directus content into it (or capture/status) | `corpus/ops/snapshot-spec.md` |
+| `/stack-list` | List the live stacks — every `dev-N` and `demo-N` — from the unified registry | `corpus/ops/rosetta_demo.md` |
+| `/stack-seed` | Seed a stack (`dev-N` or `demo-N`) with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |
+| `/stack-snapshot` | Set-dress a stack (`dev-N` or `demo-N`) — replay the real public taxonomy + Directus content into it (or capture/status) | `corpus/ops/snapshot-spec.md` |
+| `/stack-update` | Sync a stack's code, deps, and schemas (the dev side — demo = teardown + bring-up at a tag) | `corpus/ops/update_guide.md` |
 | `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
 | `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 
-### Using the Setup Skill
+> **The skill set converged in v1.3 "stack party" (M14, hard-rename, no aliases):** the dev lifecycle
+> (`/dev-up`, `/dev-down`) mirrors the demo lifecycle (`/demo-up`, `/demo-down`); one generic stack-ops
+> set (`/stack-list`, `/stack-seed`, `/stack-snapshot`, `/stack-update`) works on **any** `dev-N | demo-N`.
+> `/dev-up` consolidates the former `setup-platform` + `start-platform`; `/stack-update` ← `update-platform`;
+> `/stack-list` ← `demo-status`; `/stack-seed` ← `demo-seed`; `/stack-snapshot` ← `demo-snapshot`.
 
-For building the Anthropos development environment:
+### Using the Dev-Up Skill
+
+For building, starting, or set-dressing the Anthropos development environment:
 ```bash
-/setup-platform
+/dev-up           # the main dev stack (N=0): first-time build (or resume) + start
+/dev-up 2         # an additional isolated dev-2 stack, set-dressed by default
 ```
 
-This skill executes `corpus/ops/setup_guide.md` with:
-- Verification before/after each step
-- User confirmation before destructive operations
-- Progress tracking in `stack-dev/setup_progress.md`
-- Auto-improvement of documentation when issues are found
+`/dev-up` consolidates the former `setup-platform` + `start-platform`. It executes
+`corpus/ops/setup_guide.md` (first-time build) + `corpus/ops/run_guide.md` (start + health) with:
+- Verification before/after each step + user confirmation before destructive operations
+- Progress tracking via TodoWrite
+- For an additional `dev-N`: the M13 set-dress pass (per-stack Directus + cache-first snapshot replay
+  + a light `dev-min` seed), default-on + non-fatal
+- Auto-improvement of documentation when issues are found (ops-reports → `/update-knowledge`)
+
+Tear an additional dev stack down with `/dev-down N` (mirrors `/demo-down`).
 
 ### Using the GitHub Setup Skill
 
@@ -59,31 +70,22 @@ This skill executes `corpus/ops/setup_github_guide.md` with:
 - Key persistence across terminal/computer restarts
 - Progress tracking via TodoWrite
 
-### Using the Run Skill
+### Using the Stack-Update Skill
 
-For starting the platform locally after setup:
+For syncing a stack's code, dependencies, and database schemas:
 ```bash
-/start-platform
+/stack-update           # the main dev stack
+/stack-update dev-2     # a named additional dev stack
 ```
 
-This skill executes `corpus/ops/run_guide.md` with:
-- Service health verification
-- Proper startup sequence (infra → backend → frontend → studio-desk)
-- Port conflict detection and resolution
-- Progress tracking via TodoWrite
-
-### Using the Update Skill
-
-For syncing code, dependencies, and database schemas:
-```bash
-/update-platform
-```
-
-This skill executes `corpus/ops/update_guide.md` with:
+This skill (← the former `update-platform`) executes `corpus/ops/update_guide.md` with:
 - Daily/weekly/full update scenarios
 - Git conflict handling
 - Migration application
 - Docker image rebuilding
+
+(Demo stacks aren't updated in place — they're disposable; re-create with `/demo-down` + `/demo-up` at the
+desired refs.)
 
 ### Using the Document Skill
 
@@ -270,7 +272,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)
 - `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
-- `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/demo-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
+- `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/stack-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
 - `corpus/ops/demo/recipe-snapshot-world.md`: The **set-dressing recipe** — capture→replay the real public library so a demo world's catalog + content templates are real
 
 ### Updating the Platform
@@ -391,11 +393,10 @@ These files must be maintained together:
 3. `corpus/ops/run_guide.md`: Platform startup instructions
 4. `corpus/ops/webhook_setup.md`: Clerk webhook tunnel configuration
 5. `corpus/ops/update_guide.md` / `update_checklist.md`: Update instructions
-6. `.claude/skills/setup-platform/SKILL.md`: Automated setup skill
+6. `.claude/skills/dev-up/SKILL.md`: The consolidated dev build + start + set-dress skill (← setup-platform + start-platform)
 7. `.claude/skills/setup-github/SKILL.md`: GitHub SSH setup skill
-8. `.claude/skills/start-platform/SKILL.md`: Automated run skill
-9. `.claude/skills/update-platform/SKILL.md`: Automated update skill
-10. `.claude/skills/update-knowledge/SKILL.md`: Corpus documentation skill
+8. `.claude/skills/stack-update/SKILL.md`: The stack code/deps/schema sync skill (← update-platform)
+9. `.claude/skills/update-knowledge/SKILL.md`: Corpus documentation skill
 
 **When to use update-knowledge**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 
@@ -444,7 +445,6 @@ rosetta/
 ## Quick Start for New Developers
 
 1. Read `README.md` for project overview
-2. Follow `corpus/ops/setup_guide.md` to build environment (or use `/setup-platform`)
-3. Follow `corpus/ops/run_guide.md` to start the platform locally (or use `/start-platform`)
+2. Follow `corpus/ops/setup_guide.md` to build environment + `corpus/ops/run_guide.md` to start it (or use `/dev-up`, which drives both)
 4. Read `corpus/architecture/architecture_overview.md` for system understanding
 5. Consult `corpus/services/` for specific service details

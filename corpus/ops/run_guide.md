@@ -491,13 +491,13 @@ docker compose exec postgresql psql -U postgres -c "\dn"
 
 ## 10. Maintenance Guidelines
 
-This guide and the `/start-platform` skill are interconnected documents.
+This guide and the `/dev-up` skill (which consolidates the former start-platform + setup-platform) are interconnected documents.
 
 ### When You Update This Guide
 
 If you modify the run process:
 
-1. **Update Skills**: Sync changes with `.claude/skills/start-platform/SKILL.md`
+1. **Update Skills**: Sync changes with `.claude/skills/dev-up/SKILL.md`
 2. **Document Issues**: Add troubleshooting entries for new problems
 
 ### Continuous Improvement

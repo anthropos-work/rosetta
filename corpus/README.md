@@ -37,7 +37,7 @@ Individual service documentation and developer maps.
 Operations guides for setting up, running, and updating the platform.
 
 *   **Demo environments (disposable, Clerk-free, seeded stacks — v1.1 "show floor"):**
-    *   [Demo Environments — family index](./ops/demo/README.md): **Start here.** The 4-step flow (`/demo-up` → `/demo-seed` → use → `/demo-down`) + the index of guides, recipes, and presets.
+    *   [Demo Environments — family index](./ops/demo/README.md): **Start here.** The 4-step flow (`/demo-up` → `/stack-seed` → use → `/demo-down`) + the index of guides, recipes, and presets.
     *   [Rosetta Demo](./ops/rosetta_demo.md): The lifecycle mechanism — bring-up, port-offset, Clerkenstein injection, per-stack isolation, teardown.
     *   [Seeding Spec](./ops/seeding-spec.md): The `stack.seed.yaml` blueprint, the dependency-DAG, the **production-isolation boundary**, the data-DNA.
     *   Recipes: [enterprise onboarding](./ops/demo/recipe-enterprise-onboarding.md) · [skill progression](./ops/demo/recipe-skill-progression.md) · [browser login](./ops/demo/recipe-browser-login.md).

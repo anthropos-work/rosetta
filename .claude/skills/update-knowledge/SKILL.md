@@ -66,9 +66,10 @@ Apply to EVERY documentation update:
 - `corpus/tools/toolchain_overview.md` - New development tools
 
 ### Claude Skills (check if automation affected)
-- `.claude/skills/setup-platform/` - Setup automation changes
-- `.claude/skills/start-platform/` - Run automation changes
-- `.claude/skills/update-platform/` - Update automation changes
+- `.claude/skills/dev-up/` - Dev build + start + set-dress automation changes (← the former setup-platform + start-platform)
+- `.claude/skills/dev-down/` - Dev teardown automation changes
+- `.claude/skills/stack-update/` - Stack code/deps/schema sync automation changes (← update-platform)
+- `.claude/skills/stack-list/`, `stack-seed/`, `stack-snapshot/` - Generic stack-ops changes (← demo-status/seed/snapshot)
 - `.claude/skills/update-knowledge/` - This skill (if process improves)
 - `CLAUDE.md` - Agent context changes
 

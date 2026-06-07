@@ -197,6 +197,6 @@ New content must be linked from at least one parent:
 
 | Scenario | Action |
 |----------|--------|
-| New setup requirements | Update `setup_guide.md` → suggest `/setup-platform` to test |
-| New run requirements | Update `run_guide.md` → update `start-platform` skill if needed |
+| New setup requirements | Update `setup_guide.md` → suggest `/dev-up` to test |
+| New run requirements | Update `run_guide.md` → update the `dev-up` skill if needed |
 | Found issues during documentation | Create ops report for `/update-knowledge` follow-up |

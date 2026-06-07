@@ -13,7 +13,7 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > content surface](#the-directus-content-surface-m10--the-second-real-surface)). With M10 the **last `waived` surface
 > is promoted to `snapshot-seeded` → 100% data-DNA coverage** (the v1.2 thesis complete). **M11** curates this into
 > the usable product layer — the refreshed presets + the set-dressed `corpus/ops/demo/` recipe family + the
-> `/demo-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)). **v1.3 M13** extends the
+> `/stack-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)). **v1.3 M13** extends the
 > mechanism from demo-only to **dev**: a `dev-stack up` bring-up now replays the cached surfaces + stands up a
 > per-stack Directus + light-seeds itself by default — see [Dev as a full-fidelity
 > peer](#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed).
@@ -384,7 +384,8 @@ falls back to the free values (graceful degradation; the snapshot is a prerequis
 
 ## Dev as a full-fidelity peer (M13 — local Directus + auto-snapshot + light seed)
 
-Through v1.2 the snapshot mechanism was demo-facing: `/demo-snapshot replay N` set-dressed a **demo** stack.
+Through v1.2 the snapshot mechanism was demo-facing: a replay set-dressed a **demo** stack (driven by the
+skill that v1.3/M14 hard-renamed `/demo-snapshot` → `/stack-snapshot`).
 Replay was always **dev-aware in the contract** (`stacksnap replay --stack <demo-N|dev-N>`; `pg.ParseStackN`
 parses `dev-3 => 3`), but a **dev** bring-up did none of it — a fresh dev stack had no per-stack Directus (it
 pointed at shared prod Directus) and no seeded data. **M13 makes a freshly-built dev stack a full-fidelity peer
@@ -433,7 +434,7 @@ The net effect: **dev and demo are now the same world built two ways** — the s
 for **N-allocation** (the unified registry); M13 makes it a peer for **data**.
 
 ## See also
-- [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/demo-snapshot`) sits in the up→snapshot→seed→use→down flow.
+- [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/stack-snapshot`) sits in the up→snapshot→seed→use→down flow.
 - [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md) — the **set-dressing recipe**: the operator walk-through of capture→replay→a real-catalog/real-content world (this spec is its source of truth).
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary + the DAG node that consumes a snapshot.

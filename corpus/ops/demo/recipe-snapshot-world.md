@@ -19,7 +19,7 @@ stacksnap replay  …   →  stamp the cached snapshot into a stack (verify chec
 stacksnap status      →  list cached snapshots (surface, schema version, rows, source, capture time)
 ```
 
-`/demo-snapshot` drives all three; `replay` is the headline verb. Because the store is **cache-first**
+`/stack-snapshot` drives all three; `replay` is the headline verb. Because the store is **cache-first**
 (`store.Resolve`: a cached manifest whose `schema_version` matches the stack → **zero prod read**), a curator
 almost always just replays an existing snapshot. Capture is the rare refresh op.
 
@@ -27,10 +27,10 @@ almost always just replays an existing snapshot. Capture is the rare refresh op.
 
 **Prerequisite.** A stack up (`/demo-up N`) and migrated (so the `skiller` + `directus` schemas exist as replay
 targets). The snapshot is **stack-global** public reference data — replay it once per stack, independent of which
-org you then `/demo-seed`.
+org you then `/stack-seed`.
 
 ```bash
-/demo-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call
+/stack-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
@@ -45,7 +45,7 @@ transported (the ~689 MB `skill_embeddings` IVFFLAT index is rebuilt via `REINDE
 
 **Then seed + log in.** With the library in place, seed an org and the seeded sessions link to the real templates:
 ```bash
-/demo-seed 1 --preset mid-500
+/stack-seed 1 --preset mid-500
 # log in per recipe-browser-login.md → the catalog + assigned content are real, not placeholder.
 ```
 

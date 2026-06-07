@@ -18,7 +18,7 @@ org looks like in Anthropos" demo.
 
 2. **Set-dress the stack** — replay the real public library so the catalog + content templates are real:
    ```bash
-   /demo-snapshot replay 1            # taxonomy + directus — the real 60K-skill catalog + content templates
+   /stack-snapshot replay 1            # taxonomy + directus — the real 60K-skill catalog + content templates
    ```
    This stamps the real **public** taxonomy + Directus content into the stack (almost always a cache-hit → zero
    prod read). It's **optional** (skip for a quick structural-only world — the seeder degrades gracefully), but
@@ -27,7 +27,7 @@ org looks like in Anthropos" demo.
 
 3. **Seed the org** with a curated preset:
    ```bash
-   /demo-seed 1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
+   /stack-seed 1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
    # or --preset large-1k for a 1,000-member scale demo
    ```
    The seeder backfills, in dependency order: the org → 500 users → memberships (with the role mix) → the real
@@ -67,5 +67,5 @@ org looks like in Anthropos" demo.
 
 ## Tuning the org
 Copy a preset and edit it (it's a `stack.seed.yaml`): `org.name`, `size`, `role_mix`/`tier_mix`,
-`activity.months` / `activity.pass_rate`. Re-seed with `/demo-seed 1 --seed my.seed.yaml` (run `--reset` first
+`activity.months` / `activity.pass_rate`. Re-seed with `/stack-seed 1 --seed my.seed.yaml` (run `--reset` first
 to clear the prior data). Schema reference: [`../seeding-spec.md`](../seeding-spec.md).
