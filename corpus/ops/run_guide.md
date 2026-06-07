@@ -2,7 +2,9 @@
 
 This guide takes you from a **completed setup** to a **running local platform** that you can access in your browser.
 
-> **Prerequisites**: This guide assumes you have completed the [Setup Guide](setup_guide.md). All tools must be installed and repositories cloned to `anthropos-dev/`.
+> **Prerequisites**: This guide assumes you have completed the [Setup Guide](setup_guide.md). All tools must be installed and repositories cloned to `stack-dev/`.
+>
+> `stack-dev/` is the DEV stack dir under the `stack-*` convention — a gitignored workspace spanning the dev stack's platform service repos plus its own clone of rosetta-extensions. Any stack tooling it runs comes from its tagged `stack-dev/rosetta-extensions` clone (authored in `.agentspace/rosetta-extensions/`, then committed + tagged), not ad-hoc scripts in rosetta.
 
 ## Quick Reference: Service URLs
 
@@ -57,7 +59,7 @@ sudo systemctl start docker
 ### Check for Existing Containers
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make ps
 ```
 
@@ -72,7 +74,7 @@ The platform uses a **Makefile** as the single entry point. Infrastructure (Post
 ### Navigate to Platform Directory
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 ```
 
 ### Option A: Start Full Backend (Recommended)
@@ -144,7 +146,7 @@ node --version
 ### Navigate to Frontend Directory
 
 ```bash
-cd anthropos-dev/next-web-app
+cd stack-dev/next-web-app
 ```
 
 ### Install Dependencies (if needed)
@@ -201,7 +203,7 @@ Studio-Desk is the simulation design tool used by content creators.
 ### Option A: Run in Docker (Recommended)
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make up PROFILE=studio-desk
 ```
 
@@ -212,7 +214,7 @@ This starts Studio-Desk in Docker along with its dependencies (GraphQL, CMS).
 For development with hot-reloading:
 
 ```bash
-cd anthropos-dev/studio-desk
+cd stack-dev/studio-desk
 npm install
 npm run dev
 ```
@@ -238,7 +240,7 @@ Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.
 ### Navigate
 
 ```bash
-cd anthropos-dev/ant-academy/code
+cd stack-dev/ant-academy/code
 ```
 
 > **Note**: the Next.js app lives in `code/`, not the repo root. The repo-root `.env` is for content-authoring tooling, **not** the React app.
@@ -328,7 +330,7 @@ Studio-Room is the AI-powered generation pipeline. Unlike other services, it run
 ### Navigate to Studio-Room Directory
 
 ```bash
-cd anthropos-dev/studio-room
+cd stack-dev/studio-room
 ```
 
 ### Verify Python Environment
@@ -359,7 +361,7 @@ Press `Ctrl+C` in the terminal running `npm run dev`.
 ### Stop Docker Services
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 
 # Stop all services (keeps data)
 make down
@@ -380,9 +382,9 @@ make ps
 ### Scenario: Resume After Computer Restart
 
 1. Start Docker Desktop
-2. Start backend: `cd anthropos-dev/platform && make up`
-3. Start frontend: `cd anthropos-dev/next-web-app && pnpm dev:web`
-4. (Optional) Start Studio-Desk: `cd anthropos-dev/studio-desk && npm run dev`
+2. Start backend: `cd stack-dev/platform && make up`
+3. Start frontend: `cd stack-dev/next-web-app && pnpm dev:web`
+4. (Optional) Start Studio-Desk: `cd stack-dev/studio-desk && npm run dev`
 
 > **Note**: PostgreSQL schemas (extensions, sentinel) persist across restarts. You do NOT need to re-create them unless you run `make reset-db`.
 
@@ -392,7 +394,7 @@ If you only need to work on the frontend and backend is already running:
 
 ```bash
 # Verify backend is up
-cd anthropos-dev/platform && make ps
+cd stack-dev/platform && make ps
 
 # Start frontend
 cd ../next-web-app && pnpm dev:web
@@ -403,7 +405,7 @@ cd ../next-web-app && pnpm dev:web
 To stop a service's Docker container and run it locally:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make dev S=cms           # Stops the Docker container for CMS
 cd ../cms
 go run .                 # Run natively with hot-reload
@@ -414,7 +416,7 @@ go run .                 # Run natively with hot-reload
 To wipe the database and start fresh:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make reset-db
 ```
 
@@ -427,7 +429,7 @@ This removes PostgreSQL data, restarts the container, and re-runs all migrations
 To rebuild and restart just one service after code changes:
 
 ```bash
-cd anthropos-dev/platform
+cd stack-dev/platform
 make up   # Runs --build automatically
 ```
 

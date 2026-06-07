@@ -7,8 +7,8 @@ Quick reference for health checks, error recovery, and Docker commands. For full
 | Type | Path |
 |------|------|
 | Master Guide | `corpus/ops/run_guide.md` |
-| Ops Reports | `anthropos-dev/ops-reports/` |
-| Working Dir | `anthropos-dev/` |
+| Ops Reports | `stack-dev/ops-reports/` |
+| Working Dir | `stack-dev/` |
 
 ## Service Dependency Graph
 
@@ -154,7 +154,7 @@ TodoWrite({
 
 ## Ops Report Template
 
-When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`:
+When creating `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`:
 
 ```markdown
 # Ops Report: [Brief Title]

@@ -99,19 +99,19 @@ docker exec ant-rosetta-redis-1 redis-cli KEYS "*"
 ### Start web app (dev)
 
 ```bash
-cd anthropos-dev/next-web-app && pnpm dev:web
+cd stack-dev/next-web-app && pnpm dev:web
 ```
 
 ### Build web app
 
 ```bash
-cd anthropos-dev/next-web-app && pnpm build:web
+cd stack-dev/next-web-app && pnpm build:web
 ```
 
 ### Clean and reinstall deps
 
 ```bash
-cd anthropos-dev/next-web-app && rm -rf node_modules && pnpm install
+cd stack-dev/next-web-app && rm -rf node_modules && pnpm install
 ```
 
 ---
@@ -121,7 +121,7 @@ cd anthropos-dev/next-web-app && rm -rf node_modules && pnpm install
 ### Apply all migrations
 
 ```bash
-cd anthropos-dev
+cd stack-dev
 (cd backend && atlas migrate apply --env local)
 (cd cms && atlas migrate apply --env local)
 (cd jobsimulation && atlas migrate apply --env local)
@@ -131,7 +131,7 @@ cd anthropos-dev
 ### Check migration status
 
 ```bash
-cd anthropos-dev/backend && atlas migrate status --env local
+cd stack-dev/backend && atlas migrate status --env local
 ```
 
 ---
@@ -141,7 +141,7 @@ cd anthropos-dev/backend && atlas migrate status --env local
 ### Pull all repos
 
 ```bash
-cd anthropos-dev
+cd stack-dev
 for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room; do
   (cd "$repo" 2>/dev/null && git pull origin main) || true
 done

@@ -2,6 +2,8 @@
 
 This directory contains guides for operating the Anthropos platform locally.
 
+> **Corpus vs. extensions boundary:** rosetta is a read-only doc corpus + dev-env skills; ALL executable tooling that operates a spawned stack lives in rosetta-extensions — authored in `.agentspace/rosetta-extensions/`, tagged, and consumed per-stack via a pinned-tag clone.
+
 ## Available Operations
 
 | Guide | Purpose | When to Use |
@@ -16,6 +18,10 @@ This directory contains guides for operating the Anthropos platform locally.
 | [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features (superseded by `staging-sync.md` on staging hosts) |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
 | [Demo Stacks](./rosetta_demo.md) | **Disposable, isolated demo stacks (`demo-N`) alongside the dev stack — Clerkenstein-wired, offset ports, killable cleanly, zero platform-repo change. Skills `/demo-up`, `/demo-down`, `/demo-status`.** (v1.1/M3) | Spinning up a throwaway demo environment to seed (M4) + show |
+| [Seeding Spec](./seeding-spec.md) | Declaratively backfill a stack with structural data (blueprint + DAG + the 3-layer write isolation guard). Skill `/demo-seed`. (v1.1/M7) | Populating a demo/dev stack with an org + users + activity |
+| [DB Access](./db-access.md) | Read-only prod DB access (the wired `postgres` MCP tool **or** Tailscale + `~/.pgpass`) + the public-vs-customer boundary. Skill `/db-query`. (v1.2/M9a) | Investigating data, sizing a surface, or telling public reference data from customer data |
+| [Snapshot Spec](./snapshot-spec.md) | Capture a **public** reference surface once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack — tenant-data firewall + snapshot-fidelity. `stacksnap` CLI. (v1.2/M9a) | Filling a stack with the real public taxonomy/content library |
+| [Demo Recipes](./demo/README.md) | The end-to-end demo-env recipe family (up → **snapshot** → seed → use → down) + presets; the `/demo-snapshot` skill *set-dresses* a stack with the real public taxonomy + Directus content (100% catalog). (v1.2/M11) | Running a believable, full-fidelity demo world |
 
 ## Workflow
 
@@ -47,10 +53,10 @@ All operations use Claude's **TodoWrite** tool for real-time progress tracking.
 
 ## Ops Reports
 
-When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `anthropos-dev/ops-reports/`:
+When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `stack-dev/ops-reports/`:
 
 ```
-anthropos-dev/ops-reports/
+stack-dev/ops-reports/
 ├── op_20250127_143022_setup_pgvector.md
 ├── op_20250127_151045_run_port_conflict.md
 └── op_20250128_092311_update_migration_fail.md

@@ -183,9 +183,15 @@ We will create a dedicated workspace to house all the microservices and the fron
 2.  Navigate to the `rosetta` directory in this repository.
 3.  Enter the scratchpad directory:
     ```bash
-    cd anthropos-dev
+    cd stack-dev
     ```
     *(Note: This directory is git-ignored, so you can clone anything here without messing up the main repo).*
+
+    **Stack-workspace convention**: each local stack lives in its own gitignored `stack-<role>/` dir — `stack-dev` (the dev stack we're building here), `stack-demo` (demo), `stack-dev-2` (a secondary dev stack), and future `stack-stage`/`stack-tests`. Each `stack-*/` dir spans one full local stack: its platform service repos **plus its own clone of `rosetta-extensions`** pinned to a tag.
+
+    **`rosetta-extensions` clone roles**: all code/scripts that operate the corpus/platform on a spawned stack live in `rosetta-extensions` (never scattered in the rosetta corpus, never authored ad-hoc inside a stack dir). It has two clone roles:
+    - **Authoring copy** at `.agentspace/rosetta-extensions/` — spawned on demand to read/build/**test** tooling, then commit + **tag**.
+    - **Per-stack consumption copy** `stack-dev/rosetta-extensions @ <tag>` — each stack consumes the tooling at a pinned tag.
 
 ---
 

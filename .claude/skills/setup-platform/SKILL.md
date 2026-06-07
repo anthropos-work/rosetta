@@ -46,7 +46,7 @@ Apply to EVERY step in the guide:
 
 When you discover errors, missing steps, or better approaches:
 
-1. Create a report file: `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`
+1. Create a report file: `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`
 2. Use this template:
 
 ```markdown
@@ -77,7 +77,7 @@ When you discover errors, missing steps, or better approaches:
 Use TodoWrite with phases from the guide:
 - Prerequisites verified (Git, Docker, Go, **Node v24+**, pnpm, Python, Atlas)
 - GitHub SSH access configured
-- Workspace created (anthropos-dev/)
+- Workspace created (stack-dev/)
 - Platform repo cloned
 - All repos cloned via `make init` (incl. `ant-academy`, the internal learning portal — Next.js 16 + Expo, native-only)
 - CMS studio submodule cloned (`cd cms && make init-studio`)
@@ -91,11 +91,12 @@ Use TodoWrite with phases from the guide:
 
 ## Critical Rules
 
-- Work in `anthropos-dev/` scratchpad only
+- Work in `stack-dev/` scratchpad only
 - Never commit .env files
 - Use `make` commands for all platform operations
 - Ask before every install/modification
 - Follow the guide - don't improvise
+- All stack-operating code/scripts live in rosetta-extensions — never scattered in the rosetta corpus, never authored ad-hoc inside a stack dir. New tooling is built and tested in the authoring copy (`.agentspace/rosetta-extensions/`), tagged, then consumed per-stack via a tagged clone (`stack-<role>/rosetta-extensions @ <tag>`). rosetta = read-only doc corpus + dev-env skills; rosetta-extensions = the executable stack tooling.
 
 ## Success Criteria
 

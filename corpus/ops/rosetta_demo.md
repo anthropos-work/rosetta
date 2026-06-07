@@ -8,8 +8,10 @@
   ports, killable cleanly — **zero read-only-platform change**.
 - **The guide:** `rosetta-extensions/demo-stack/GUIDE.md` (lifecycle, port-offset scheme, the 4 injection recipes,
   `migrate-demo.sh`, safety).
-- **The tooling (gitignored locally):** `anthropos-demo/rosetta-extensions/demo-stack/` — the `rosetta-demo` CLI,
+- **The tooling (gitignored locally):** `stack-demo/rosetta-extensions/demo-stack/` — the `rosetta-demo` CLI,
   `up-injected.sh`, `migrate-demo.sh`, `inject/`.
+- **The clone-role/tag model:** the authoring copy lives at `.agentspace/rosetta-extensions/` (build/test/tag the
+  tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
   `/demo-status` drive that tooling.
 - **The mock it injects:** `rosetta-extensions/clerkenstein/` — see [clerkenstein.md](../services/clerkenstein.md).

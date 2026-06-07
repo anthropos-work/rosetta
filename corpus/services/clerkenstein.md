@@ -1,13 +1,20 @@
 # Clerkenstein
 
 **Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection) · **Last updated:** 2026-06-04
-**Repo:** `anthropos-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
+**Repo:** `stack-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
 > **This is a pointer.** The full, self-contained documentation now lives **in the clerkenstein repo's own
-> knowledge base** (added in M2b): start at `anthropos-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
+> knowledge base** (added in M2b): start at `stack-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
 > keeps only the platform-side orientation + the cross-links a rosetta reader needs — it deliberately does
 > **not** duplicate the repo's KB.
+
+> **One monorepo, two clone roles.** `rosetta-extensions` is ONE private monorepo with sections
+> (`clerkenstein`, `demo-stack`, `stack-injection`, `stack-core`, `stack-seeding`, `alignment`). It is
+> authored / built / tested / aligned in the **authoring copy** at `.agentspace/rosetta-extensions/`, then
+> **tagged**, and consumed by each stack via that stack's own **pinned-tag** clone
+> (`stack-demo/rosetta-extensions @ <tag>`). So the KB above is **read from the authoring copy**; a running
+> stack uses its pinned consumption copy.
 
 ## Role (platform-side orientation)
 
@@ -25,8 +32,9 @@ genuine SDK *satisfied*, not reimplemented), and the **deployment/injection** su
 `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against the platform's real
 `colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural* alignment ≠
 *deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
-The DNAs + mirror + goldens + runners live in the clerkenstein repo; the *measuring machinery*
-([`test/alignment/`](../../test/alignment/) + `/align-dna` + `/align-run`) lives here in rosetta.
+The DNAs + mirror + goldens + runners live in the clerkenstein repo; the `/align-dna` + `/align-run`
+skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc live in rosetta, while the
+`alignctl` harness is the `rosetta-extensions/alignment/` section (a sibling of `clerkenstein/`).
 
 > **What "100%" means (and doesn't).** The score measures the mirror as *indistinguishable from the source
 > goldens*. Those goldens are **hand-authored / hybrid** (decision M1-D1) — the reference behavior derived
@@ -82,8 +90,8 @@ for demos).
   spike-proven / recipe-only) for disarming the platform's Clerk with no platform-code change.
 - **`knowledge/alignment.md`** — how fidelity is measured against a pinned Clerk version + the **drift
   runbook** (M1b: `gate.sh` / `drift-check.sh` exit-code contract / weekly CI; re-`/align-dna` +
-  re-`/align-run` on a Clerk bump). `ALIGN_DIR` default is `../../../test/alignment` (scripts live at
-  `alignment/scripts/`).
+  re-`/align-run` on a Clerk bump). `ALIGN_DIR` default is `../../alignment` (the sibling section; scripts
+  live at `alignment/scripts/`).
 - **`knowledge/coverage-index.md`** — per-package test coverage + known gaps.
 - Per-library `README.md` in each dir for the code-level entry point.
 

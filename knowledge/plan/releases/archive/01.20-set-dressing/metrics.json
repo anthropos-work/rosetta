@@ -1,0 +1,55 @@
+{
+  "release": "v1.2",
+  "codename": "set dressing",
+  "shipped": "2026-06-07",
+  "milestones": ["M9a", "M9b", "M10", "M11"],
+  "theme": "the snapshot mechanism — capture the PUBLIC reference library (taxonomy + Directus content) and replay it into a stack, lifting the two M7c-waived surfaces to 100% data-DNA coverage (the full-fidelity, set-dressed demo world)",
+  "aggregate": {
+    "alignment_framework": {"module": "anthropos.dev/alignment", "test_funcs": 43, "fuzz_funcs": 3, "go_total": 46, "external_deps": 0, "note": "stdlib-only; moved from rosetta/test/alignment into the extensions clone in v1.1; unchanged in v1.2"},
+    "clerkenstein_mirror": {"test_funcs": 210, "fuzz_funcs": 8, "go_total": 218, "note": "unchanged vs v1.1 close (the mock surface)"},
+    "stack_snapshot": {"test_funcs": 209, "fuzz_funcs": 3, "go_total": 212, "packages": 11, "note": "NET-NEW in v1.2 (M9a framework -> M9b taxonomy surface -> M10 directus content surface -> M11 hygiene/drift guards)"},
+    "stack_seeding": {"test_funcs": 231, "fuzz_funcs": 1, "go_total": 232, "note": "grew via the snapshot-fidelity dimension: CapturedFromManifest bridge, PgFidelityProbe, MeasureSnapshot, ContentSnapshotSeeder DAG node, contentref linkage resolver, shipped-preset regression tests"},
+    "total_go_test_funcs": 708,
+    "total_go_test_funcs_split": {"test": 693, "fuzz": 15},
+    "baseline_v1_1": 409,
+    "delta": "+299 (+73%) — no regression; v1.2 adds the stack-snapshot module and extends stack-seeding's snapshot-fidelity dimension",
+    "demo_tooling_shell_py": 87
+  },
+  "test_health": {
+    "race": "all 4 Go modules pass go test ./... -race (exit 0)",
+    "flake_count": 0,
+    "flake_gate": "triple-clean: 3 consecutive clean runs of both v1.2-touched modules (stack-snapshot, stack-seeding), -race + -shuffle",
+    "gofmt": "clean (all 4 modules)",
+    "go_vet": "clean (all 4 modules)"
+  },
+  "coverage_snapshot": {
+    "stack_snapshot": {"firewall": 100.0, "directus": 100.0, "reference": 100.0, "replay": 100.0, "source": 100.0, "taxonomy": 100.0, "capture": 98.8, "manifest": 98.2, "store": 90.0, "cmd_stacksnap": 77.7, "pg": 52.5, "note": "pg/cmd lower numbers are live-DB Conn bodies behind the interface seam, integration-proven"},
+    "stack_seeding": {"blueprint": 100.0, "isolation": 97.1, "seeders": 95.2, "seeder": 88.1, "dna": 87.2, "pg": 57.3, "cmd_datadna": 52.6, "cmd_stackseed": 50.4, "note": "pg -2.7pp vs v1.1 (60.0) is denominator growth from new live-DB Conn methods, no tests removed; all pure-logic packages rose"},
+    "regression_vs_v1_1": "no logic-coverage regression: blueprint +2.1, seeders +6.6, dna +5.9, cmd_datadna +8.8; pg movement is live-DB-method denominator growth, integration-tested"
+  },
+  "snapshot_gates": {
+    "tenant_firewall": "per-surface PublicPredicate, plan-time AssertPlan + post-capture AssertCaptured, hard-fail on any tenant row; payloads stashed in-memory until ALL tables pass (nothing persisted on a leak)",
+    "data_dna_coverage": "100% over the full catalog — taxonomy (snapshot-seeded-M9b) + Directus content (snapshot-seeded-M10), the two M7c-waived surfaces promoted; nothing left waived (the v1.2 thesis complete)",
+    "fidelity": "CapturedFromManifest (source) vs PgFidelityProbe (replay) -> MeasureSnapshot composes score, gates critical 100%; 5 snapshot-fidelity operators (row-count/structural/referential/embedding-dim/public-only)",
+    "fuzz": "FuzzSanitize, FuzzSplitCSV, FuzzBuildParentLeakProbe (incl. multi-level chain) — all 0 crashers"
+  },
+  "supply_chain": {
+    "audit": "govulncheck v1.3.0 + go vet (clean) + license scan",
+    "third_party_called_vulns": 0,
+    "stdlib_called_vulns": "12 (clerkenstein) — Go stdlib go1.25.3, all fixed go1.25.6..go1.25.11; cleared by building with the go1.25.11+ toolchain",
+    "high_critical_dependency_cves": 0,
+    "licenses": "all permissive — MIT / BSD-3 / Apache-2.0 / ISC; NO GPL/AGPL/LGPL",
+    "lockfile": "dependencies.lock"
+  },
+  "repos": {
+    "rosetta": "the corpus + plan + knowledge (public); ZERO tracked .go files — the v1.2 release diff's 33 .go entries are all DELETIONS (the test/alignment + test/*.sh trees moved into the extensions clone)",
+    "rosetta_extensions": "the private monorepo — 4 Go modules: clerkenstein, alignment, stack-snapshot (new), stack-seeding"
+  },
+  "deferrals": {
+    "carried_to_v1_3": ["DEF-M10-01 — Directus S3 blob bytes (media.go BlobBytesAvailable + provision.go per-stack Directus provisioning: built + unit-tested, unreachable from any entrypoint, gated on S3-read access — Fate-2 -> v1.3 cloud-store seed)"],
+    "escape_hatch_count": 0,
+    "fate_3_undelivered": 0
+  },
+  "verdict": "GREEN — test count +73% (no decrease), coverage up/flat on every continuing logic package (pg movement is live-DB denominator growth), flake 0, vet/gofmt clean, zero third-party CVEs, all-permissive licenses. The only supply-chain item is a Go-stdlib toolchain bump (go1.25.11+)."
+}
+</content>

@@ -9,11 +9,15 @@ argument-hint: [N] [--purge]
 Stops and removes `demo-N` **only** — its containers, network, and (with `--purge`) its data dir — leaving
 the dev `anthropos` stack and any other demos untouched. Manual teardown is the only reclaim path (M3-D2).
 
+> The teardown tooling lives in `rosetta-extensions` (the executable stack tooling), consumed from the demo
+> stack's per-stack copy `stack-demo/rosetta-extensions @ <tag>` — its pinned consumption clone. (Path renamed:
+> `anthropos-demo/` → `stack-demo/`.) The `demo-stack` section name inside `rosetta-extensions` is unchanged.
+
 ## Mission
-1. **Confirm N** — which demo to reclaim (`anthropos-demo/rosetta-extensions/demo-stack/rosetta-demo status` lists live demos).
+1. **Confirm N** — which demo to reclaim (`stack-demo/rosetta-extensions/demo-stack/rosetta-demo status` lists live demos).
 2. **Tear down**:
    ```bash
-   DS=anthropos-demo/rosetta-extensions/demo-stack/rosetta-demo
+   DS=stack-demo/rosetta-extensions/demo-stack/rosetta-demo
    "$DS" down N            # stop + remove demo-N's containers/network
    "$DS" down N --purge    # also remove demo-N's data dir (full reclaim)
    ```

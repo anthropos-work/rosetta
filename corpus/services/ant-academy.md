@@ -22,7 +22,7 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
 | **Deployment** | **Vercel native** (no Docker, no docker-compose entry). Mobile builds via Expo. |
 | **Local dev port** | **3077** (web); **8555** (mobile web preview) |
 | **Authentication** | Clerk (`@anthropos.work` domain gate + org-membership gate) |
-| **Repository** | `git@github.com:anthropos-work/ant-academy.git` → `anthropos-dev/ant-academy/` |
+| **Repository** | `git@github.com:anthropos-work/ant-academy.git` → `stack-dev/ant-academy/` |
 | **In `repos.yml`** | Yes — `type: node-npm`, `migrations: false` (pulled by `make init` / `make pull`) |
 | **In `docker-compose.yml`** | **No** — runs natively only |
 
@@ -125,14 +125,14 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 The repo is now in `platform/repos.yml`, so:
 
 ```bash
-cd anthropos-dev/platform
-make init    # clones ant-academy into anthropos-dev/ant-academy/ if missing
+cd stack-dev/platform
+make init    # clones ant-academy into stack-dev/ant-academy/ if missing
 ```
 
 Or directly:
 
 ```bash
-cd anthropos-dev
+cd stack-dev
 git clone git@github.com:anthropos-work/ant-academy.git
 ```
 
@@ -141,7 +141,7 @@ git clone git@github.com:anthropos-work/ant-academy.git
 The **app's** env file is `code/.env`, not the repo root:
 
 ```bash
-cd anthropos-dev/ant-academy/code
+cd stack-dev/ant-academy/code
 cp .env.example .env
 # Minimum to boot locally:
 #   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -163,7 +163,7 @@ cp .env.example .env
 #### 3. Install & run (web)
 
 ```bash
-cd anthropos-dev/ant-academy/code
+cd stack-dev/ant-academy/code
 npm install
 npm run dev          # next dev — port 3077 (3000 is reserved on dev machines)
 ```
@@ -173,7 +173,7 @@ Open <http://localhost:3077>.
 #### 4. Install & run (mobile, optional)
 
 ```bash
-cd anthropos-dev/ant-academy/mobile
+cd stack-dev/ant-academy/mobile
 pnpm install
 pnpm run dev:web     # web preview at :8555 (Playwright-friendly)
 # or run on a real device / simulator with Expo Go

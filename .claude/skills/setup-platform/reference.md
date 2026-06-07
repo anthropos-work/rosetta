@@ -7,8 +7,8 @@ Quick reference for verification commands and error recovery. For full setup ins
 | Type | Path |
 |------|------|
 | Master Guide | `corpus/ops/setup_guide.md` |
-| Ops Reports | `anthropos-dev/ops-reports/` |
-| Working Dir | `anthropos-dev/` |
+| Ops Reports | `stack-dev/ops-reports/` |
+| Working Dir | `stack-dev/` |
 
 ## Verification Commands
 
@@ -58,7 +58,7 @@ docker compose logs -f [service]
 ## Atlas Migrations
 
 ```bash
-# From anthropos-dev/
+# From stack-dev/
 (cd backend && atlas migrate apply --env local)
 (cd cms && atlas migrate apply --env local)
 (cd jobsimulation && atlas migrate apply --env local)
@@ -120,7 +120,7 @@ ssh -T git@github.com
 
 ## Ops Report Template
 
-When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
+When creating `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
 
 ```markdown
 # Ops Report: [Brief Title]
@@ -146,7 +146,7 @@ When creating `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_setup_<topic>.md`:
 ## Repository Structure Post-Setup
 
 ```
-anthropos-dev/
+stack-dev/
 ├── platform/            # Docker config + .env (orchestration hub)
 ├── app/                 # Main backend API
 ├── cms/

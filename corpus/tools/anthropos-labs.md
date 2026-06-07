@@ -36,7 +36,7 @@ The experiments hub contains various PoCs and internal tools:
 
 ```bash
 # Navigate to experiments directory
-cd anthropos-dev/experiments
+cd stack-dev/experiments
 
 # Install dependencies
 npm install

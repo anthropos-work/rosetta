@@ -42,7 +42,7 @@ Apply to EVERY step in the guide:
 ## Error Handling
 
 1. Do NOT skip errors - resolve first
-2. Check logs: `cd anthropos-dev/platform && make logs S=[service]`
+2. Check logs: `cd stack-dev/platform && make logs S=[service]`
 3. Create ops report (see below)
 4. Continue
 
@@ -50,7 +50,7 @@ Apply to EVERY step in the guide:
 
 When you discover errors, missing steps, or better approaches:
 
-1. Create a report file: `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`
+1. Create a report file: `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_run_<topic>.md`
 2. Use this template:
 
 ```markdown
@@ -108,8 +108,9 @@ Services in `repos.yml` but NOT in this profile (don't expect them running): `me
 
 ## Critical Rules
 
-- Work in `anthropos-dev/` only
+- Work in `stack-dev/` only (the gitignored dev stack workspace — its platform service repos plus its own clone of rosetta-extensions)
 - Use `make` commands for all platform operations
+- Stack-operating tooling is consumed from the stack's tagged `rosetta-extensions` clone (`stack-dev/rosetta-extensions @ <tag>`), never improvised inside the stack dir; rosetta stays a read-only doc corpus + dev-env skills
 - Verify health after every start
 - Follow the guide - don't improvise
 

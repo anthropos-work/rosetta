@@ -2,14 +2,15 @@
 
 **The documentation corpus for the Anthropos platform.**
 
-> **v1.0 "body double" — shipped.** Beyond documentation, Rosetta now hosts an **alignment-testing
-> framework** ([`test/alignment/`](test/alignment/)) — a measurement discipline that scores how faithfully a
-> *mirror* engine reproduces a *source* library as a 0–100% number. Its first product is **Clerkenstein**, a
-> measured drop-in mock of Clerk that lets the platform run demos Clerk-free with zero platform-code change
-> (100% on all three measured surfaces: Go, JS/FAPI, `@clerk/express`). See
-> [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md) and
-> [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md). v1.1 "show floor" (disposable demo
-> stacks) is staged next.
+> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" — shipped.** Beyond documentation, Rosetta drives
+> the executable demo-environment tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
+> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run demos Clerk-free
+> with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
+> demo stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
+> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. See
+> [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
+> [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
+> [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
 
 ## What Is This?
 
@@ -59,6 +60,7 @@ Automate the setup process:
 /setup-platform      # First time: build the dev environment
 /start-platform      # Daily: start the platform locally
 /demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
+/demo-snapshot N     # Set-dress it: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
 /demo-seed N         # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
 /demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data)
 /demo-status         # Check: list running demo stacks, their offset ports, and health
@@ -77,7 +79,7 @@ corpus/
 │   ├── external_services.md        # Clerk, Directus, GraphQL
 │   ├── dependency_map.md           # Service inter-dependencies
 │   ├── shared_libraries.md         # colony, proto, ai, authn, taxonomy
-│   └── alignment_testing.md        # The alignment test class + framework (test/alignment/)
+│   └── alignment_testing.md        # The alignment test class + framework (rosetta-extensions/alignment/)
 │
 ├── services/              # Individual service documentation
 │   ├── backend.md, cms.md, sentinel.md, ...     # Core services
@@ -98,13 +100,15 @@ corpus/
 
 ## The Workspace
 
-The `anthropos-dev/` directory is a **git-ignored scratchpad** for:
+Hands-on work happens in **stack workspaces** — git-ignored `stack-*/` directories, each spanning one full local stack: its platform service repos **plus its own clone of rosetta-extensions**. The family is `stack-dev` (dev), `stack-demo` (demo), `stack-dev-2` (secondary dev), and future `stack-stage` / `stack-tests`. Each stack-dir is used for:
 
 - Cloning Anthropos platform repositories
 - Building your local development environment
 - Inspecting platform code for documentation
 
-All hands-on work happens here. The documentation corpus stays clean.
+`rosetta-extensions` — the executable stack tooling — has **two clone roles**: an **authoring** copy at `.agentspace/rosetta-extensions/`, spawned on demand to read/build/test tooling, then committed and **tagged**; and **per-stack consumption** copies, `stack-<role>/rosetta-extensions @ <tag>`, where each stack consumes the tooling at a pinned tag.
+
+All hands-on work happens in these stack-dirs. The documentation corpus stays clean.
 
 ## Modus Operandi
 
@@ -148,7 +152,8 @@ See [Architecture Overview](./corpus/architecture/architecture_overview.md) for 
 
 - **Verify against code**: Don't assume docs are correct. Check the actual source.
 - **Update immediately**: Found a gap? Fix it now, not later.
-- **Work in `anthropos-dev/`**: Keep the corpus clean.
+- **Work in a `stack-*/` workspace**: Keep the corpus clean.
+- **Tool in rosetta-extensions, not here**: any new stack-operating tool is built and tested in the `.agentspace/rosetta-extensions/` authoring copy and **tagged** — never added to the rosetta repo, never hand-written inside a stack dir. Stacks consume it at a pinned tag.
 - **Never commit secrets**: No `.env` files in any repo.
 - **Follow dual-level**: PM summary + engineer deep-dive for key concepts.
 
@@ -158,4 +163,4 @@ See [Architecture Overview](./corpus/architecture/architecture_overview.md) for 
 |----------|----------|
 | Platform repos | `anthropos-work` GitHub org |
 | Claude skills | [.claude/skills/](./.claude/skills/) |
-| Setup progress | `anthropos-dev/setup_progress.md` (your local copy) |
+| Setup progress | `stack-dev/setup_progress.md` (your local copy) |

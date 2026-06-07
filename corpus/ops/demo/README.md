@@ -10,14 +10,23 @@ of activity), reproducibly, on offset ports, killable cleanly — and you must n
 dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `../run_guide.md`. If you need
 *staging*, see the `../staging-*` family.
 
-## The end-to-end flow (4 steps, ~minutes)
+## The end-to-end flow (~minutes)
 
 ```
-/demo-up N      →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data)   [corpus/ops/rosetta_demo.md]
-/demo-seed N    →  backfill it with a believable data world (a preset or stack.seed.yaml) [corpus/ops/seeding-spec.md]
-  …use it…      →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
-/demo-down N    →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
+/demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data)   [corpus/ops/rosetta_demo.md]
+/demo-snapshot N  →  replay the real public catalog + content into the stack (set-dressing) [corpus/ops/snapshot-spec.md]
+/demo-seed N      →  backfill it with a believable data world (a preset or stack.seed.yaml) [corpus/ops/seeding-spec.md]
+  …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
+/demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
 ```
+
+**The snapshot step is what makes the world *set-dressed* (v1.2).** `/demo-snapshot replay N` stamps the real
+**public** reference library — the ~60K-skill taxonomy + the global simulation / skill-path content templates —
+into the stack BEFORE you seed, so the catalog view shows real skills and the seeded sessions link to real
+templates (not free placeholder ids). It's a **stack-global reference replay**, independent of which org you then
+seed; it's **optional** (skip it for a quick structural-only world — the seeder degrades gracefully), and almost
+always a **cache-hit** (zero prod read — the snapshot is captured once per release, then replayed by every stack).
+See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture→replay→set-dressed walk-through.
 
 ## Index
 
@@ -26,26 +35,39 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
   Clerkenstein injection, the per-stack project/data isolation, the resource budget, teardown. (M3)
 - [`../seeding-spec.md`](../seeding-spec.md) — the **seeding** reference: the `stack.seed.yaml` blueprint, the
   dependency-DAG, the **production-isolation boundary**, the casbin subtleties, the data-DNA. (M7a/b)
+- [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
+  Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
+  outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
+  With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).
 
 **Use-case recipes (the "build a demo for X"):**
 - [`recipe-enterprise-onboarding.md`](recipe-enterprise-onboarding.md) — a populated enterprise org (admin +
-  hundreds of members), end to end.
+  hundreds of members), end to end — now **set-dressed** (real catalog + content behind the seeded org).
 - [`recipe-skill-progression.md`](recipe-skill-progression.md) — months of believable skill-progression
-  activity (backdated job-sim + skill-path sessions).
+  activity (backdated job-sim + skill-path sessions) linked to the real template library.
+- [`recipe-snapshot-world.md`](recipe-snapshot-world.md) — the **set-dressing** recipe: capture →
+  replay the public taxonomy + content into a stack so the catalog + templates are real, not placeholder.
 - [`recipe-browser-login.md`](recipe-browser-login.md) — the **interactive** demo: the `@clerk/express` /
   orgclient cert-redirect + the browser-login walk-through, log in → land in a seeded org.
 
 **Curated seed presets** (instances of `stack.seed.yaml`, validated to seed):
 `rosetta-extensions/stack-seeding/presets/` — `small-200` (quick) · `mid-500` (the default "looks real") ·
-`large-1k` (scale). Run via `/demo-seed N --preset mid-500`.
+`large-1k` (scale). Run via `/demo-seed N --preset mid-500`. The presets are **purely structural** (they describe
+an org, not the platform's reference library); for a **set-dressed** world `/demo-snapshot replay N` first (each
+preset's header documents the prerequisite). Without a replay the seeder degrades gracefully (empty catalog, free
+content refs).
 
-**Skills:** `/demo-up` · `/demo-seed` · `/demo-status` · `/demo-down` (see the root `CLAUDE.md` skills table).
+**Skills:** `/demo-up` · `/demo-snapshot` · `/demo-seed` · `/demo-status` · `/demo-down` (see the root
+`CLAUDE.md` skills table).
 
 ## Hard constraints (always true)
-- **Zero platform-repo change.** All demo tooling lives in the gitignored `anthropos-demo/rosetta-extensions/`
-  (the demo-stack overlay + the seeder + Clerkenstein). The platform clones are consumed as-is.
+- **Zero platform-repo change.** All demo tooling lives in `rosetta-extensions` (the demo-stack overlay + the
+  seeder + Clerkenstein), never scattered in the rosetta corpus and never authored ad-hoc inside a stack dir.
+  It is authored + tested + tagged in the authoring copy at `.agentspace/rosetta-extensions/`, and the demo
+  stack consumes a pinned-tag clone at `stack-demo/rosetta-extensions @ <tag>`. The platform clones are
+  consumed as-is.
 - **Production-safe.** The seeder's isolation guard makes it *structurally impossible* for a non-prod stack to
   write a shared/prod store (Directus, the prod S3-public bucket, live Clerk, Customer.io/Brevo, AI APIs); it
   seeds only the per-stack Postgres/Redis, and proves it with an audit log. See `../seeding-spec.md`.

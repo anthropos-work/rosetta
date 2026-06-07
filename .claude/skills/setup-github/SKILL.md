@@ -76,7 +76,7 @@ ssh -T git@github.com-personal
 
 When you discover errors, missing steps, or better approaches:
 
-1. Create a report file: `anthropos-dev/ops-reports/op_YYYYMMDD_HHMMSS_github_<topic>.md`
+1. Create a report file: `stack-dev/ops-reports/op_YYYYMMDD_HHMMSS_github_<topic>.md`
 2. Use this template:
 
 ```markdown
@@ -114,7 +114,9 @@ Use TodoWrite with phases appropriate to the scenario:
 - Add public key to GitHub
 - Test connection
 - Request organization access
-- Clone test: rosetta repo to ./anthropos-dev/
+- Clone test: rosetta repo to ./stack-dev/
+
+> **On the `stack-dev/` clone target**: `stack-dev/` is the dev stack workspace — a gitignored `stack-*/` dir that spans one full local stack. It holds BOTH the platform service repos AND its own pinned `stack-dev/rosetta-extensions @ <tag>` consumption clone (separate from the `.agentspace/rosetta-extensions/` authoring copy, where new stack tooling is built, tested, and tagged before each stack consumes it at a pinned tag).
 
 ### Dual Account Phases
 - Determine scenario (single vs dual)
@@ -126,7 +128,7 @@ Use TodoWrite with phases appropriate to the scenario:
 - Add keys to both GitHub accounts
 - Test both connections
 - Request organization access
-- Clone test: rosetta repo to ./anthropos-dev/
+- Clone test: rosetta repo to ./stack-dev/
 
 ## Critical Rules
 
@@ -159,7 +161,7 @@ Setup complete when:
 4. Key added to GitHub account
 5. `ssh -T git@github.com` shows correct username
 6. Organization access requested
-7. Successfully cloned `rosetta` to `./anthropos-dev/rosetta`
+7. Successfully cloned `rosetta` to `./stack-dev/rosetta`
 
 ### Dual Account
 1. Both SSH keys generated and secured
@@ -170,7 +172,7 @@ Setup complete when:
 6. `ssh -T git@github.com-personal` shows PERSONAL username
 7. Organization access requested
 8. Keys persist after restart
-9. Successfully cloned `rosetta` to `./anthropos-dev/rosetta`
+9. Successfully cloned `rosetta` to `./stack-dev/rosetta`
 
 ## Additional Resources
 

@@ -1,0 +1,62 @@
+{
+  "milestone": "M9a",
+  "title": "Snapshot extension: capture-safe, public-only, manifest-cached framework + /db-query port",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-06",
+  "kind": "framework (a dedicated rosetta-extensions section + the data-DNA snapshot dimension + corpus spec + /db-query port)",
+  "tests": {
+    "go_total": 556,
+    "go_delta_vs_v1_1": 147,
+    "by_module": {
+      "alignment": 46,
+      "clerkenstein": 218,
+      "stack-seeding": 164,
+      "stack-snapshot": 128
+    },
+    "stack_snapshot_breakdown": "127 test + 1 fuzz (FuzzSanitize, 6.3M execs) across 9 packages",
+    "stack_seeding_delta": "+19 (the dna snapshot-fidelity extension: snapshot_test.go + snapshot_harden_test.go)",
+    "demo_tooling_shell_py": 87,
+    "race": "both Go modules pass go test ./... -race",
+    "flake_count": 0,
+    "flake_gate": "0 failures across 5x shuffled sequential runs of both modules"
+  },
+  "coverage": {
+    "note": "harden ran 2 passes (recorded in progress.md); deltas <2% on every touched file at stop",
+    "by_package_after_harden": {
+      "firewall": "100.0%",
+      "reference": "100.0%",
+      "replay": "100.0%",
+      "source": "100.0%",
+      "manifest": "98.2%",
+      "capture": "89.7%",
+      "store": "90.0%",
+      "cmd/stacksnap": "60.1%",
+      "pg": "52.5% (rest is irreducibly live-DB Conn methods behind the interface seam)",
+      "dna_snapshot": "snapshot.go near-100% (module 85.0%)"
+    }
+  },
+  "delivered": {
+    "extension": "rosetta-extensions/stack-snapshot/ — 9 Go pkgs (manifest/firewall/source/store/pg/capture/replay/reference + cmd/stacksnap) + README handbook; tagged stack-snapshot-m9a (re-pointed to HEAD 1cc4dd2 at close)",
+    "data_dna": "stack-seeding/dna/snapshot.go — snapshot-seeded status (counts toward coverage) + 5 snapshot-fidelity operators (row-count/structural/referential/embedding-dim/public-only)",
+    "corpus": "corpus/ops/snapshot-spec.md (new) + corpus/ops/db-access.md (capture-source policy) + the alignment_testing.md snapshot-fidelity dimension",
+    "skill": "/db-query (.claude/skills/db-query/SKILL.md) — the prod-read foundation"
+  },
+  "safety": {
+    "tenant_firewall": "firewall.AssertPublicOnly — plan-time + post-capture, hard-fail on any tenant row; capture stashes payloads in-memory until ALL tables pass (nothing persisted on a leak)",
+    "capture_source_policy": "M9a-D3 precedence: cache-hit -> dump-ingest [default] -> safe primary read [MVCC] -> restore/replica [AWS-gated upgrades]; bounded read-only session",
+    "replay_integrity": "every payload SHA-256 verified before the first row is written (fail-before-write)",
+    "path_traversal": "store.sanitize (Ref keys, ..-collapse-to-fixpoint) + safeFilename (payloads); FuzzSanitize found no escape"
+  },
+  "review": {
+    "findings": 1,
+    "findings_detail": "tag stack-snapshot-m9a trailed HEAD by 3 harden commits (test-only); re-pointed + force-pushed at close",
+    "scope": "GREEN — all 9 sections checked, 0 code TODOs, 3 Out-items Fate-2 owned (M9b/M10/M11)",
+    "code_quality": "GREEN — gofmt + vet clean, both build, no dead code, no must-fix",
+    "docs": "GREEN — accurate, handbook indexed, all cross-references resolve",
+    "adversarial": "5 scenarios recorded in decisions.md, all Fate-1-handled in shipped code",
+    "deferral_audit": "GREEN — 4 single, 0 repeat/chronic/aged-out"
+  },
+  "is_last_milestone": false,
+  "next": "M9b — Taxonomy snapshot (prove the framework on the real ~2.1 GB public skiller surface)"
+}

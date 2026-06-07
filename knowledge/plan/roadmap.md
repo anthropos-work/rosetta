@@ -6,26 +6,240 @@ builder skills).
 > **Designed 2026-06-02** from the Demo Environment + Clerkenstein brief, **refined 2026-06-02** to
 > promote alignment measurement into a first-class discipline (new **M0**). 3 research agents over the
 > Clerk integration, the staging/dev-env tooling, and the data/seeding surface — all verified against
-> the cloned platform in `anthropos-dev/`. Gap analysis:
+> the cloned platform in `stack-dev/`. Gap analysis:
 > [`.agentspace/scratch/roadmap-research-2026-06-02.md`](../../.agentspace/scratch/roadmap-research-2026-06-02.md).
 >
 > **v1.0 "body double" — SHIPPED 2026-06-03** (merged to `main`, tagged `v1.0`; full detail in `## Done` below).
 > **v1.1 "show floor" — SHIPPED 2026-06-05** (merged to `main`, tagged `v1.1`; full detail in `## Done — v1.1`
 > below). 8 milestones M3→M8: the 2-repo consolidation + demo/dev stacks + the production-safe seeding stack
-> (framework + data-DNA + fleet) + the corpus product layer. Next action: `/developer-kit:design-roadmap` for v1.2.
+> (framework + data-DNA + fleet) + the corpus product layer.
+>
+> **v1.2 "set dressing" — SHIPPED 2026-06-07** (tag `v1.2`, merged to `main`; designed 2026-06-05, **refined
+> 2026-06-06** against live prod). 4 milestones M9a→M9b→M10→M11: a **dedicated `stack-snapshot` extension** that
+> lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to **100% data-DNA coverage** — capture the real
+> *public* skill taxonomy + content library once from a **safe, low-impact source** (default a prod `pg_dump`), replay per-stack,
+> *measured-faithful* via a new snapshot-fidelity dimension, with a tested **tenant-data firewall** (never customer
+> data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Full design in
+> `## In Development` below.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
-| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | 🏁 **all milestones done** — ready for `/developer-kit:close-release` (`release/01.10-show-floor`) |
+| **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
+| **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
-repo** (current or future) and **no disruption to the dev environment** — demo clones live under the
-gitignored `anthropos-demo/` (mirroring `anthropos-dev/`). Full brief:
-[`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+repo** (current or future) and **no disruption to the dev environment**. Each local stack lives in its
+own gitignored **`stack-*/`** workspace spanning one full stack — its platform service repos *plus* its
+own clone of `rosetta-extensions`: `stack-dev` (dev), `stack-demo` (demo), `stack-dev-2` (secondary
+dev), and future `stack-stage` / `stack-tests`. **Policy:** all code/scripts that operate the
+corpus/platform on a spawned stack live in `rosetta-extensions` — never scattered in the rosetta corpus,
+never authored ad-hoc inside a stack dir. New tooling is built + tested in the authoring copy at
+`.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
+(rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
+Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## Done — v1.2 "set dressing" (SHIPPED 2026-06-07 · tag `v1.2`)
+
+**Theme:** v1.1 made demo stacks *structurally* populated (orgs, users, backdated activity) but consciously
+**waived two surfaces** — `taxonomy` (the 60K-skill / 18K-role node hierarchy + embeddings) and `content` (the
+shared Directus content library) — because they can't be *fabricated* structurally: taxonomy is reference data,
+content lives in a shared store the isolation guard blocks. v1.2 lifts both via a **snapshot mechanism** —
+capture the *real* surface once from a source, replay it per-stack — taking data-DNA coverage from "8 reachable
+surfaces" to **100% of the full catalog**. The elevation: snapshot replay is itself an **alignment problem**
+(does the replayed surface faithfully reproduce the captured source?), so v1.2 extends the M0/M7b
+alignment+data-DNA discipline with a **snapshot-fidelity dimension** rather than shipping plain plumbing. Demo
+worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable props.
+
+> **Designed 2026-06-05** from the v1.1 carry-forward (the user-confirmed M7c waiver → roadmap-vision seed).
+> Phase 0a deferral audit **GREEN** (6 carry-forwards, all single, clear v1.2/vision homes — no repeats/chronic;
+> [`.agentspace/scratch/deferral-audit-2026-06-05.md`](../../.agentspace/scratch/deferral-audit-2026-06-05.md)).
+> Phase 0b KB blind-area check: snapshot/AI-content/deploy-CI **YELLOW** (anchored, need a spec doc as a
+> `Delivers →`); shareability **RED** (blind area — deferred to v1.3, not in v1.2). 3 research agents over the
+> seeding stack, the skiller taxonomy + Directus content surfaces, and milestone history — verified against the
+> clones in `stack-dev/` (platform) + `stack-demo/rosetta-extensions/` (the seeding stack). Gap analysis:
+> [`.agentspace/scratch/roadmap-research-2026-06-05.md`](../../.agentspace/scratch/roadmap-research-2026-06-05.md).
+>
+> **Scope decided (user, 2026-06-05):** **snapshot spine only** — `taxonomy` + `content` to 100% coverage.
+> **AI-generated rich content** (transcripts / AI-scored narratives / fresh embeddings) and **external
+> shareability** (Tailscale vs ingress) are confirmed **v1.3** (kept in `roadmap-vision.md`), so v1.2 stays the
+> tight, well-grounded release the snapshot work warrants. Codename **"set dressing"** continues the stage
+> metaphor (body double → show floor → set dressing).
+>
+> **Refined 2026-06-06** (user — 5 notes on M9+) with **live production read access** (the wired
+> `mcp__postgres__query` tool, `marco_read` over Tailscale; catalog-only queries — no GB scans). Changes: (1)
+> snapshotting becomes a **dedicated reusable `rosetta-extensions/stack-snapshot/` section** (capture-read
+> decoupled from seeding-write); (2) a **production-safe capture-source policy** — source-pluggable, default
+> **ingest an existing prod `pg_dump`** → fallback **safe throttled primary read** (MVCC = read-only never blocks
+> writers), with **restore-from-snapshot / read replica** as zero-impact upgrades; (3) a tested **tenant-data
+> firewall** (`AssertPublicOnly`) — capture *only* `organization_id IS NULL`
+> reference data, never customer rows; (4) snapshots live in a **`.agentspace` manifest-cached, pluggable store**
+> (no GB blobs in git; cloud/S3 = v1.3); (5) the **`/db-query` skill is ported** into rosetta as the prod-read
+> foundation. Former **M9 split → M9a (framework) + M9b (taxonomy surface)** (the M7a→M7c precedent). Prod
+> findings (skiller ≈ 2.1 GB, taxonomy ~98% public, app-Postgres `cms.studio_*` = 100% customer → excluded, the
+> public content lives in a *separate* Directus store): [`.agentspace/scratch/roadmap-research-2026-06-06.md`](../../.agentspace/scratch/roadmap-research-2026-06-06.md).
+
+### The snapshot surfaces (prod-grounded 2026-06-06 — public-only, and why each needs a different mechanism)
+- **`taxonomy`** — lives in the **per-stack** Postgres `skiller` schema but ships *empty* (normally loaded via the
+  `importskills`/`importjobroles` cobras). Prod-measured: **~2.1 GB**, and **~98% public** — `skills` 42,763
+  public / 794 private, `job_roles` 22,315 / 2,381. So the **tenant firewall** captures `organization_id IS NULL`
+  (keeping the full public catalog, dropping the customer tail automatically); embeddings + translations carry no
+  org column → scoped via the **public parent**. The snapshot is **Postgres→Postgres**: capture-once from a safe
+  source, **bulk-`COPY` replay** per-stack (the M7a perf path). One refinement: `skill_embeddings` is 692 MB but
+  the heap is 3.3 MB — ~689 MB is the **pgvector index**, so capture vectors verbatim and **rebuild the index on
+  replay**. The *cleaner* surface — it proves the framework (M9b). (`data-dna.json`: `taxonomy` status `waived-m7c`.)
+- **`content`** — the **public** simulation / skill-path **template library**. Prod correction: it is **not** the
+  app-Postgres `cms` schema — `cms.studio_documents` + `cms.studio_tasks` are **100% org-scoped customer data (0
+  public rows)** → **excluded** by the firewall. The public library lives in the **shared self-hosted Directus
+  store** (`content.anthropos.work`) — *(M10 build later found this is the `directus` schema of the **same** prod
+  Postgres, read-only via `marco_read`, not separate infra — see the M10 close note)*; the isolation guard hard-blocks writes to shared Directus,
+  so replay needs a **per-stack content store**. The defining M10 decision (resolve early): per-stack Directus
+  container fed from the captured snapshot vs replay straight into the per-stack Directus Postgres DB (Directus's
+  own backing store is Postgres → stays in the per-stack-isolated class). The *highest-risk* surface in v1.2.
+  (`data-dna.json`: `content` status `waived-m7c`.)
+
+### M9a: Snapshot extension — capture-safe, public-only, manifest-cached framework + `/db-query` port
+**Status:** `done` (2026-06-06) · **Shape:** `section` · **Complexity:** large · **Dir:** [m9a-snapshot-framework/](releases/archive/01.20-set-dressing/m9a-snapshot-framework/)
+**Closed 2026-06-06** (build → harden 2 passes → close review → merged to `release/01.20-set-dressing`). Delivered the dedicated **`rosetta-extensions/stack-snapshot/`** section (9 Go pkgs + the `stacksnap` CLI, tagged `stack-snapshot-m9a` @ `1cc4dd2`): the capture/serialize/replay contract + portable `manifest.json` format; the **production-safe capture-source policy** (M9a-D3: cache-hit → dump-ingest [default] → safe primary read [MVCC] → restore/replica [AWS-gated upgrades]) with a bounded read-only session + catalog-first dry-run; the **tenant-data firewall** `AssertPublicOnly` (plan-time + post-capture, hard-fail on any tenant row, in-memory stash so nothing persists on a leak); the **`.agentspace` manifest-cached pluggable `SnapshotStore`** (localfs now, cloud/S3 = v1.3); the **data-DNA snapshot dimension** (`stack-seeding/dna/snapshot.go` — `snapshot-seeded` status that counts toward coverage + 5 two-sided fidelity operators) + the `/db-query` port. Proven end-to-end on the hermetic `reference-toy` surface. **556 Go test funcs (+147; stack-snapshot 128 new, stack-seeding 145→164)**, flake **0** (5× shuffled, `-race`), gofmt+vet clean. Close: scope/code/docs/tests **GREEN**; 1 finding fixed (the tag trailed HEAD by the harden commits → re-pointed + force-pushed); 5 adversarial scenarios recorded; deferral audit GREEN. Decisions M9a-D1…D7 + Q2/Q3/Q4. Retro: [m9a-snapshot-framework/retro.md](releases/archive/01.20-set-dressing/m9a-snapshot-framework/retro.md). **Next:** M9b (the real ~2.1 GB taxonomy surface).
+**Goal:** A **dedicated, reusable `rosetta-extensions/stack-snapshot/` section** that captures a *public* reference
+surface once from a **safe, low-impact source** (default a prod `pg_dump`), serializes it to a `.agentspace` manifest-cached store, and
+replays it per-stack — with a tested **tenant-data firewall** (never customer data) + an **alignment extension that
+measures replay fidelity**. Proven on a tiny reference surface (M0 toy-mirror discipline); ports the **`/db-query`**
+skill as the prod-read foundation.
+**Scope:**
+  - In: **(note #1)** the dedicated **`stack-snapshot/`** section (capture + serialize + store + replay + the
+    `stacksnap` CLI) — capture (a privileged prod **read**) decoupled from seeding (per-stack **writes**); the
+    **snapshot contract + portable format** (per-table `COPY` payloads + `manifest.json`); **(note #2)** the
+    **production-safe capture-source policy** (source-pluggable) — cache-hit (no prod read) → **(1) prod-`pg_dump`
+    ingest** [default, zero new load] → **(2) safe throttled primary read** [MVCC = no write blocking] → **(3)
+    restore-from-snapshot / (4) read replica** [zero-impact upgrades once eu-west-1 AWS/infra is wired], with
+    bounded read-only sessions + a catalog-first dry-run (the **read half** the M7a guard lacks); **(note #3)** the **tenant-data firewall** `AssertPublicOnly`
+    + a **public-only/provenance gene** (hard-fail on any captured tenant row); **(note #4)** the **`.agentspace`
+    manifest-cached, pluggable `SnapshotStore`** (localfs now, cloud/S3 = v1.3; no GB blobs in git); the **data-DNA
+    extension** — `snapshot-seeded` status + a **snapshot-fidelity gene class** (row-count / structural conformance
+    / referential integrity / **embedding-dimension integrity**); **(note #5)** the **ported `/db-query` skill** +
+    `corpus/ops/db-access.md` (the MCP-tool **and** pgpass/psql paths); a tiny reference surface proving
+    capture→store→replay→fidelity-gate end-to-end.
+  - Out: the taxonomy surface (M9b); the Directus content snapshot (M10); recipes/presets (M11); the cloud store
+    backend + AI-generated content + shareability (v1.3).
+**Depends on:** v1.1's M7a (isolation guard + perf path) + M7b (the data-DNA harness it extends). **Parallel with:** none (gates M9b + M10 + M11).
+**Open questions:** capture source resolved (M9a-D3, investigated 2026-06-06 — no replica + no local AWS creds →
+default **prod-`pg_dump` ingest**, fallback **safe primary read**; restore-from-snapshot/replica = later upgrades);
+the manifest schema + cache-staleness rule; embedding capture (vectors verbatim, **rebuild the ~689 MB pgvector
+index on replay**); the `SnapshotStore` interface so the v1.3 cloud swap is a backend change.
+**KB dependencies:** `corpus/ops/seeding-spec.md` (the framework + isolation boundary + the DAG node), `corpus/architecture/alignment_testing.md` (the data dimension to extend), `corpus/ops/staging_from_dump.md` (the full-dump **anti-pattern** to contrast), the source `db-query` skill (ported).
+**Delivers → `corpus/ops/snapshot-spec.md`** (net-new — the extension + capture/replay contract + capture-source policy + tenant firewall + the `.agentspace` manifest store) **+ `corpus/ops/db-access.md`** (net-new) **+ the `/db-query` skill** **+ extends `corpus/architecture/alignment_testing.md`** (the snapshot-fidelity + public-only genes).
+
+### M9b: Taxonomy snapshot (the first real surface)
+**Status:** `done` (completed 2026-06-06) · **Shape:** `section` · **Complexity:** large · **Dir:** [m9b-taxonomy-snapshot/](releases/archive/01.20-set-dressing/m9b-taxonomy-snapshot/)
+**Closed 2026-06-06** (build → 3 harden passes → close attempt 1 BLOCKED at a RED deferral audit → user fate decision → close attempt 2 clean → merged to `release/01.20-set-dressing`). Delivered: the **10-table public taxonomy surface** in FK replay order (`categories`, `job_role_categories` → `specializations` → `skills`, `job_roles` → embeddings/translations/`job_role_skills`), `org_id IS NULL` filters + **parent-scoped predicates** for column-less tables (`TableSpec.PublicViaFK` + `firewall.ParentScopeFilter` — closing M9a's empty-filter gap, M9b-D2; `job_role_skills` both-endpoints, M9b-D3), **pgvector index rebuilt via `REINDEX` on replay** (vectors verbatim, dim 1536 in the manifest, M9b-D5), the **manifest→`CapturedTable` fidelity bridge** + `datadna measure-snapshot` CLI (M9b-D6), and the **`TaxonomySnapshotSeeder` DAG node** (`… → taxonomy → activity`, M9b-D7). Coverage `waived-m7c → snapshot-seeded-m9b` (all 5 fidelity operators). PR-review fix: the parent-leak probe must AND the capture filter (was scanning the whole table → false abort). **Deferral fate (M9b-D9):** the **offline pg_dump-FILE reader was DROPPED by the user** (an M9a→M9b repeat/aged-out deferral) — restore-then-`--dsn` + the safe primary read cover the need; the dead `--dump` flag was removed and docs+code corrected (dump-ingest = restore-the-dump-into-Postgres-then-`--dsn`, no offline reader, not seeded to v1.3). Decisions M9b-D1…D9. Extensions: tag `stack-snapshot-m9b` @ `55ee0e6`. Go test funcs 556→**635** (stack-snapshot 128→167, stack-seeding 164→204); flake 0; both modules `-race` green. Retro: [m9b-taxonomy-snapshot/retro.md](releases/archive/01.20-set-dressing/m9b-taxonomy-snapshot/retro.md).
+**Goal:** Prove the M9a framework on the **real ~2.1 GB taxonomy surface** — capture the *public* skiller catalog
+from a safe source, bulk-`COPY` replay per-stack, **rebuild the pgvector index on replay**, fidelity- + public-only
+gated — driving data-DNA coverage from `waived` to its first `snapshot-seeded` surface.
+**Scope:**
+  - In: **public taxonomy capture** — `skiller.{categories,specializations,skills,job_roles}` filtered
+    `organization_id IS NULL` (full public catalog, customer tail dropped); `{skill,job_role}_embeddings` (vectors
+    only) + `{skill,job_role}_translations` + `job_role_skills` via the **public-parent** join; **bulk-`COPY`
+    replay** per-stack (M7a perf path, per-stack-isolated only); **pgvector index rebuild on replay** (carry
+    vectors verbatim, don't transport the ~689 MB index); the **taxonomy fidelity + public-only genes**;
+    wiring into the `stack-seeding` DAG node. Coverage `waived → taxonomy-seeded`.
+  - Out: the Directus content surface (M10); recipes/presets (M11); recompute of embeddings (v1.3).
+**Depends on:** **M9a** (the `stack-snapshot` extension + capture-source policy + firewall + store + fidelity genes). **Parallel with:** none (gates M10 + M11).
+**Open questions:** keyset-chunked vs single streamed `COPY` for skills/embeddings (size via the dry-run); the
+pgvector index params to rebuild (match prod, record in the manifest); `job_role_skills` referential integrity vs
+the public-skill set.
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (M9a's contract), `corpus/services/skiller.md` (the taxonomy schema + embeddings + translations), `corpus/ops/seeding-spec.md` (the perf path + the DAG node), `corpus/architecture/alignment_testing.md` (the genes).
+**Delivers → extends `corpus/ops/snapshot-spec.md`** (the taxonomy capture/replay path) **+ updates `corpus/ops/seeding-spec.md`** (taxonomy promoted `waived` → `snapshot-seeded`).
+
+### M10: Directus content snapshot-replay
+**Status:** `done` (completed 2026-06-06) · **Shape:** `section` · **Complexity:** large (highest-risk) · **Dir:** [m10-content-snapshot/](releases/archive/01.20-set-dressing/m10-content-snapshot/)
+**Closed 2026-06-06** (spike → build → 5 harden passes → close clean → merged to `release/01.20-set-dressing`). Delivered the **second real surface**: the **9-table public Directus content** library (`simulations` + `skill_paths` scope-bearing roots → `resource` pure-reference → `roles`/`sim_tasks`/`sequences` parent-scoped → `task_checks`/`task_sub_checks` **multi-level chains** → `sequences_roles` via BOTH). Generalized the firewall to a **per-surface `PublicPredicate`** (the spike-flagged org-only gap, M10-D1; taxonomy byte-for-byte unchanged via the zero-value→`DefaultPredicate` fallback); the directus predicate `private=false AND tenant_id IS NULL AND status='published'` (M10-D3, prod-verified); **multi-level parent chains** via `ParentScope.ParentFilter` chasing column-less intermediates to the scope-bearing root in one subquery (M10-D4); the **per-stack Directus store fork** = bootstrap→replay→boot on the per-stack Directus-backing Postgres `directus` schema (`PerStackIsolated`, M10-D2), `EnvContract.Validate` hard-rejecting any prod-Directus target; media **REFS** landed (ref columns + `ReferencedFilesFilter` + the 1,311 public `directus_files` rows + a local-storage/placeholder adapter) with blob **BYTES** S3-gated → **Fate 2 → v1.3** (M10-D5, confirmed-covered by the roadmap-vision cloud-store seed); the **content fidelity + public-only genes** (`ReplayedNonPublicRows`); the **`ContentSnapshotSeeder`** DAG node + the **`sim_id`/`skill_path_id`/`resource_id` linkage resolver** (v1.1 free-value refs now resolve against real replayed public templates; free-value fallback when no snapshot). Capture source **self-resolved**: the `directus` schema lives in the SAME app Postgres, read-only via `marco_read` (the spike's "separate store" premise disproven, KB-1 corrected). Coverage `content` **`waived-m7c → snapshot-seeded-m10`** → **NOTHING left waived → 100% over the full catalog (the v1.2 set-dressing thesis complete)**. Close found **2 findings** (both fixed): the stack-snapshot README package index was missing the `taxonomy`+`directus` rows (per-unit handbook contract — a latent M9b miss caught here), and the M10-D5 decision record. Decisions M10-D1…D5. Extensions: tag `stack-snapshot-m10` @ `df410f5`. Go test funcs 635→**701** (stack-snapshot 167→207, stack-seeding 204→230); flake 0 (5/5 both modules); both modules `-race` green; gofmt+vet clean. Retro: [m10-content-snapshot/retro.md](releases/archive/01.20-set-dressing/m10-content-snapshot/retro.md).
+**Goal:** Capture the shared-Directus content library and replay it into a **per-stack content store** — never
+touching shared Directus — taking data-DNA coverage to **100% of the full catalog** (the last `waived` surface
+promoted to `snapshot-seeded` + fidelity-gated).
+**Source correction (prod, 2026-06-06):** the content source is **not** app-Postgres `cms` — `cms.studio_documents`
++ `cms.studio_tasks` are **100% org-scoped customer data (0 public rows)** → **excluded** by the firewall. The
+public template library lives in the **separate self-hosted Directus store**; M10 captures **only its public/global
+templates**.
+**Scope:**
+  - In: the **per-stack content-store decision** resolved + built (per-stack Directus container vs direct
+    per-stack Directus-Postgres replay — the defining fork, resolve in the first iter/spike); the **public content
+    capture** (export the public/global Directus templates + media references from the separate Directus store — a
+    privileged read via M9a's capture-source policy + tenant firewall, isolation-clean); the **content replay
+    seeder** wired into M9a's snapshot framework + the seeder DAG (M7a), respecting the guard; the **content
+    fidelity + public-only genes** in the data-DNA; the **`sim_id`/`skill_path_id`/`resource_id` linkage** so the
+    v1.1 session/assignment seeders' content refs resolve against the real **public** templates (closing the
+    "free-value refs" gap).
+  - Out: app-Postgres `cms.studio_*` customer content (excluded — tenant data); AI-generated/authored content
+    (v1.3 — this replays *real* captured public content, it does not generate); recipes/presets (M11); shareability (v1.3).
+**Depends on:** **M9a + M9b** (the snapshot framework + fidelity DNA + the `stacksnap` CLI + the proven taxonomy surface). **Parallel with:** none (M11 curates its output).
+**Open questions:** the content-store fork (above) — the load-bearing decision; where the public Directus templates
+physically live + how the public/global subset is identified (confirm against the Directus store); whether
+media/blobs are in-scope or refs-only for the demo MVP (S3-private is per-stack-isolated, so blobs *can* be
+replayed — confirm at build); how much of the collection set the demo needs (the believable subset, per the M7c "reachable" discipline).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (M9a's contract), `corpus/services/cms.md` (Directus) + `corpus/ops/db-access.md` (the Directus store connection), `corpus/ops/seeding-spec.md` (the isolation guard + the session/assignment content refs), `corpus/services/{jobsimulation,skillpath}.md` (the consumers of `sim_id`/`skill_path_id`).
+**Delivers → extends `corpus/ops/snapshot-spec.md`** (the public-Directus content path + the store decision) **+ updates `corpus/ops/seeding-spec.md`** (content surface promoted from `waived` to `snapshot-seeded`).
+
+### M11: Richer-world recipes, presets + corpus polish
+**Status:** `done` (completed 2026-06-06) · **Shape:** `section` · **Complexity:** medium · **Dir:** [m11-richer-recipes/](releases/archive/01.20-set-dressing/m11-richer-recipes/)
+**Closed 2026-06-06** (build → 1 harden pass → close review → merged to `release/01.20-set-dressing`). **The LAST milestone of v1.2** — the product/discoverability layer (the M8-analog) that curates the 100%-coverage full-fidelity world (M9a/M9b/M10) into usable recipes/presets, with **zero new production code path**. Delivered: the 3 **seed presets** (`small-200`/`mid-500`/`large-1k`) gained a documented FULL-FIDELITY PREREQUISITE comment-header (replay `taxonomy` + `directus` BEFORE seeding; graceful structural-only degradation without) — **presets stay purely structural** (snapshots are stack-global reference data, not org-scoped → no schema field, M11-D3); the **set-dressed `corpus/ops/demo/` recipe family** (both org-onboarding + skill-progression recipes gained a `/demo-snapshot` replay step + call out the real catalog/templates; the FALSE "waived/future-v1.2" note in `recipe-skill-progression.md` rewritten to the shipped 100%-coverage reality) + a **new `recipe-snapshot-world.md`** (the capture→replay→set-dressed-world curator walk-through); the **`/demo-snapshot` skill** (M11-D1, resolves M11-Q2 — a NEW skill, not a `/demo-seed` extension: capture = privileged prod READ vs seeding = per-stack WRITE; `replay` headline / `capture` rare-maintenance / `status`); corpus cross-links (CLAUDE.md skill-table row + key-docs entry; `snapshot-spec` ↔ `seeding-spec` ↔ the demo family bidirectional; data-DNA reads 100% throughout); the **§5 release-close hygiene carry** — the stale `stacksnap --help` text fixed (M11-D4: framework tag M9a/M9b → M9a/M9b/M10 + the registered-but-unlisted `directus` surface now listed). Decisions M11-D1…D4 + Q1/Q2 resolved. Extensions: tag `stack-snapshot-m11` @ `1e18df6`. Go test funcs 701→**708** (stack-snapshot 207→212: the `--help` contract pins + docs↔parser flag-drift guard; stack-seeding 230→232: shipped-preset strict-parse/validate + size-order); flake **0** (5/5 both M11-touched packages); both modules `-race` + gofmt + `go vet` clean. Close: deferral re-audit **GREEN** (1 inherited DEF-M10-01 unchanged, 0 repeat/aged/new — M11 added zero deferrals, all Fate-1); scope/code/docs/tests **GREEN** with **0 findings**; 4 adversarial scenarios recorded (each mutation-pinned). Retro: [m11-richer-recipes/retro.md](releases/archive/01.20-set-dressing/m11-richer-recipes/retro.md). **v1.2 is now complete → next: `/developer-kit:close-release`** (merge `release/01.20-set-dressing` → `main`, tag `v1.2`).
+**Goal:** The product/discoverability layer that closes v1.2 (the M8-analog): make the full-fidelity worlds
+*usable + discoverable* — refresh presets + recipes so a demo curator gets a real-taxonomy, real-content world
+out of the box, and update the corpus to reflect 100% coverage.
+**Scope:**
+  - In: refreshed **seed presets** (small/mid/large) that now include the taxonomy + content snapshots; an updated
+    **`corpus/ops/demo/` recipe family** (the end-to-end recipes now showcase a *set-dressed* world — real skills
+    in the catalog, real simulations/skill-paths behind the seeded sessions); a **`/demo-snapshot` (or extended
+    `/demo-seed`) skill** driving the `stacksnap` CLI; cross-linking + corpus updates (the data-DNA now reads 100%);
+    the **release-close hygiene** carry (any small items surfaced in M9a/M9b/M10).
+  - Out: new snapshot surfaces (M9a/M9b/M10 own them); AI-content + shareability (v1.3).
+**Depends on:** **M9a + M9b + M10** (curates their output). **Parallel with:** none (the closing milestone before `/developer-kit:close-release`).
+**Open questions:** whether snapshot capture is a curator step or a manifest-cached refresh (decide with M9a's capture-source policy); `/demo-seed` extension vs a new `/demo-snapshot` skill.
+**KB dependencies:** `corpus/ops/demo/README.md` + the recipes, `corpus/ops/seeding-spec.md`, `corpus/ops/snapshot-spec.md`, the `/demo-seed` skill.
+**Delivers → refreshes `corpus/ops/demo/`** (recipes + presets to full-fidelity) **+ the `/demo-snapshot` skill + the CLAUDE.md skill table.**
+
+### Execution graph (v1.2)
+```
+v1.2 "set dressing" — richer demo worlds: the real *public* taxonomy + content, measured-faithful, to 100% coverage
+   M9a (stack-snapshot framework: capture-safety + tenant firewall + .agentspace store + /db-query + fidelity-DNA)
+        └─→ M9b (taxonomy surface: public skiller + embeddings, rebuild index) ─→ M10 (public Directus content) ─→ M11 (recipes + presets + corpus)
+```
+**Sequential.** M9a lands the **dedicated `stack-snapshot` extension** + the capture-source policy + the tenant
+firewall + the `.agentspace` manifest store + the fidelity-DNA + the `/db-query` port, proven on a toy surface.
+M9b proves it on the cleaner ~2.1 GB taxonomy (coverage waived→taxonomy-seeded). M10 takes the harder public
+Directus content surface to **100% coverage**. M11 curates the full-fidelity worlds into usable recipes/presets +
+closes the release. No parallel tracks — one extension + one data-DNA; serializing keeps the merge surface clean
+(the v1.1 spine discipline).
+
+### Risks (v1.2)
+- **(M9a, blocks-prod-safety)** a capture that **reads the hot primary** under load, or **leaks a tenant row**.
+  Mitigate: the capture-source policy (cache-hit → prod-`pg_dump` ingest → safe throttled primary read [MVCC = no
+  write blocking] → restore-from-snapshot/replica upgrades) + bounded read-only sessions; the **tenant firewall**
+  `AssertPublicOnly` + public-only gene — tested gates, not conventions.
+- **(M10, blocks-100%-coverage)** the **content-store fork** + locating the public Directus template subset (a
+  *separate* store). Mitigate: resolve the store decision in an M10 spike *first* (Directus's backing store *is*
+  Postgres → a per-stack Directus-Postgres replay stays in the isolated class); fall back to refs-only believability
+  if a full Directus stand-up proves too heavy for the demo MVP.
+- **(M9b, scope)** **embedding fidelity** — carrying pgvector embeddings verbatim (dimension + value integrity) and
+  **rebuilding the ~689 MB index on replay** rather than transporting it. Mitigate: capture vectors verbatim
+  (offline + deterministic), gate the embedding-dimension gene; never recompute (that's AI-content, v1.3).
+- **(note #4 → v1.3)** the local `.agentspace` cache doesn't share across machines / scale. Mitigate: the
+  `SnapshotStore` interface keeps the **cloud/S3 swap** a v1.3 backend change (the manifest already addresses by location).
+- **(cross-cut)** **the isolation guard's missing read half** — capture reads a reference source. Mitigate: capture
+  is read-only + audited (the capture-source policy); replay writes only to per-stack-isolated stores, the existing
+  3-layer guard asserts clean (extend `AssertClean` to cover snapshot replay).
+
+### Open decisions (resolve during build)
+The **capture source** — **resolved** M9a-D3 (user 2026-06-06): default **prod-`pg_dump` ingest** → fallback **safe
+throttled primary read**; restore-from-snapshot/replica = zero-impact upgrades once eu-west-1 AWS/infra is wired;
+the manifest schema + cache-staleness rule — M9a; embedding capture
+(verbatim + rebuild-index-on-replay) — M9b (lean verbatim); the **per-stack content-store fork** (per-stack
+Directus container vs direct Directus-Postgres replay) — M10, the defining decision; identifying the public
+Directus template subset — M10; media/blobs in-scope vs refs-only — M10; `/demo-seed` extension vs a new
+`/demo-snapshot` skill — M11.
 
 ## Done — v1.1 "show floor" (SHIPPED 2026-06-05 · tag `v1.1`)
 
@@ -350,3 +564,7 @@ the rosetta-side milestone records + corpus pointer land on the `m{N}/…` branc
 - Milestone numbering is **flat sequential** (M0, M1, M2, …); a letter suffix has two uses: (1) a milestone **inserted after** the fact — `b` for tooling/cleanup (M1b drift CI, M2b consolidation), and the letter-suffixed *feature* milestone M2c (iterative, "inserted after M2b"); and (2) a **split** of one planned milestone into a sequential mini-arc — **M7a → M7b → M7c** is the single former M7 "seeding" split into framework+safety / data-DNA / fleet (2026-06-04, M7a-D1). Both reuse the letter suffix; context disambiguates. See [`context.md`](context.md).
 - v1.0 mixes shapes: M0/M1b/M2/M2b are **section**; **M1 + M2c are iterative** (alignment-score gates).
 - v1.1 "show floor" mixes shapes too: M3–M6 + M7a/M7b + M8 are **section**; **M7c is iterative** (data-DNA coverage gate).
+- v1.2 "set dressing" is **all `section`** (M9a/M9b/M10/M11) — the snapshot surfaces are decomposable up front (the
+  framework + 2 known surfaces + the product layer); the fidelity gate is a per-surface acceptance check, not an
+  emergent-path iterative gate. (AI-content, the iterative-shaped candidate, was held to v1.3.) The former M9 split
+  into **M9a (framework) + M9b (taxonomy surface)** on the 2026-06-06 refinement — the M7a→M7c precedent.
