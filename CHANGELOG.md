@@ -2,6 +2,32 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.2] "set dressing" — 2026-06-07
+
+The **snapshot mechanism**: *set-dress* a disposable demo stack with the **real public reference library** — the actual skills taxonomy and the Directus simulation/skill-path templates — so the catalog and the content behind seeded sessions are real, not placeholders. Everything is captured **read-only** from production; **customer data is never copied** (a tested tenant-data firewall).
+
+### Added
+- **`/demo-snapshot N`** — replay the captured public taxonomy + Directus content into a demo/dev stack (drives the `stacksnap` CLI: capture / replay / status). New demo flow: `/demo-up → /demo-snapshot → /demo-seed`. (M11)
+- **`/db-query`** — read-only production DB investigation skill (the wired `postgres` MCP tool, or Tailscale + `~/.pgpass`), with the public-vs-customer data boundary documented. (M9a)
+- **The `stack-snapshot` extension** — capture a public reference surface once from a safe source, manifest-cache it under `.agentspace`, replay per-stack — behind a firewall that hard-fails on any captured customer row. (M9a)
+- **Real public skills taxonomy** in demo stacks (42.8K skills + roles + embeddings + translations; pgvector index rebuilt on replay). (M9b)
+- **Real public Directus content** in demo stacks (published simulation/skill-path templates), served by a per-stack Directus; seeded sessions/assignments now resolve to real templates. (M10)
+- A **snapshot-fidelity** alignment dimension and **100% data-DNA coverage** (the two formerly-`waived` surfaces promoted).
+- New docs: `corpus/ops/snapshot-spec.md`, `corpus/ops/db-access.md`; the set-dressed `corpus/ops/demo/` recipe family (incl. `recipe-snapshot-world.md`).
+
+### Changed
+- Seeding spec: `taxonomy` + `content` promoted `waived` → `snapshot-seeded` (100% catalog coverage; nothing waived).
+- Capture-source policy: default **ingest an existing prod `pg_dump`**, fallback a **safe throttled read-only primary read** (PostgreSQL MVCC = a read never blocks prod writes).
+
+### Removed
+- The planned offline `pg_dump`-**FILE** reader was dropped — restore-then-`--dsn` covers the need with no new capability or speed gain; the `--dump` flag is gone.
+
+### Supply chain
+- No dependency changes; all deps permissive (MIT / BSD-3 / Apache-2.0 / ISC); **0 third-party CVEs**. **Recommendation:** build with the **go1.25.11+** toolchain to clear 12 Go-stdlib (DoS/parsing-class) govulncheck findings.
+
+### Known limitations
+- Demo media renders structure + file references; the actual S3 blob **bytes** and a **cloud snapshot store** are deferred to v1.3 (gated on S3/AWS access not wired here).
+
 ## [v1.1] "show floor" — 2026-06-05
 
 The platform-operations extension framework: spin up a **disposable, Clerk-free, realistically-populated** copy of the platform — for a demo, screenshots, or QA — alongside the dev stack, **without touching production or any read-only platform repo**.
