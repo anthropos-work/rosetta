@@ -1,9 +1,9 @@
 # State
 
 **Active version:** **v1.3 "stack party"** — in development on `release/01.30-stack-party` (designed 2026-06-07). The **dev/demo convergence**: dev stacks become first-class peers (a **local per-stack Directus** + **auto-snapshot** of the real reference data + a **light `dev-min` seed** on build), a **unified stack registry** allocates the first-available N across dev+demo (no port collisions), one **generic `stack-*` skill set** (`stack-list`/`seed`/`snapshot`/`update` + `dev-up`/`dev-down`, **hard-renamed**, no aliases), and a dedicated **safety & security doc** + a refresh of **both** knowledge bases. 4 milestones, all `section`: **M12** (unified registry + first-free-N) → **M13** (dev peers: local Directus + snapshot + light seed) → **M14** (unified stack-* skills) → **M15** (safety doc + dual-repo KB). Former v1.3 seeds (cloud store / S3 blobs, AI content, shareability, more mirrors) → **v1.4** (user, 2026-06-07).
-**Active milestone:** **M12 — Unified stack registry + first-available-N allocation** (`planned` · `section` · medium). Next: **`/developer-kit:build-milestone`** (creates `m12/stack-registry` from the release branch).
+**Active milestone:** **M12 — Unified stack registry + first-available-N allocation** (`built` · `section` · medium). Next: **`/developer-kit:close-milestone`** (review + merge `m12/stack-registry` → `release/01.30-stack-party`).
 **Next up:** **M13** (dev peers) → **M14** (unified skills) → **M15** (safety doc + dual-repo KB) → `/developer-kit:close-release`.
-**Phase:** designed — milestone dirs scaffolded (M12–M15), release branch `release/01.30-stack-party` cut. Awaiting `/developer-kit:build-milestone` on M12.
+**Phase:** M12 built — all 5 sections landed on `m12/stack-registry` (shared `stack_registry.py` allocator + both up-paths wired + docs). Awaiting `/developer-kit:close-milestone`.
 **Paused:** _(none)_
 
 ## Recently shipped releases
