@@ -78,6 +78,8 @@ Prod headline (2026-06-06): `skiller` ≈ **2.1 GB** (the v1.2 taxonomy snapshot
 436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The `cms` content tables are tens of MB.
 
 ## See also
+- [`safety.md`](safety.md) — the tooling's consolidated read-side + write-side safety contract (this public-vs-customer
+  boundary is the read-side foundation it builds on).
 - [`/db-query`](../../.claude/skills/db-query/SKILL.md) — the full schema reference + cross-service relationships.
 - [`snapshot-spec.md`](snapshot-spec.md) — the snapshot capture-source policy + tenant firewall (M9a).
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary (the read side is here).

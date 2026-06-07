@@ -268,6 +268,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/webhook_setup.md`: Configure Clerk webhooks for user/org sync
 
 ### Demo Environments (disposable, Clerk-free, seeded + set-dressed — v1.1 "show floor" + v1.2 "set dressing")
+- `corpus/ops/safety.md`: **The tooling safety contract** — the consolidated read-side (tenant-data firewall + public predicates + read-only capture) + write-side (3-layer isolation guard + never-write-prod + n=0 guards + audit-proven zero pollution) statement. The *why-it-is-safe* anchor for the whole demo/dev family (v1.3 M15)
 - `corpus/ops/demo/README.md`: **The demo-env family index** — the up→snapshot→seed→use→down flow + recipes + presets
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)

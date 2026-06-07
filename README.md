@@ -7,7 +7,9 @@
 > framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run demos Clerk-free
 > with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
 > demo stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
-> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. See
+> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. The
+> tooling's two safety guarantees — **never reads private/customer data, never touches prod** — are stated
+> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). See also
 > [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
 > [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
 > [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
@@ -91,7 +93,11 @@ corpus/
 │   ├── platform_repo.md   # The orchestrator repo (Make targets, profiles, compose)
 │   ├── setup_guide.md     # Build local development environment
 │   ├── run_guide.md       # Start services locally
-│   └── update_guide.md    # Sync code and dependencies
+│   ├── update_guide.md    # Sync code and dependencies
+│   ├── safety.md          # The tooling safety contract (never reads customer data / touches prod)
+│   ├── snapshot-spec.md   # Capture+replay the public reference library (read-side)
+│   ├── seeding-spec.md    # Declarative stack seeding (write-side isolation boundary)
+│   └── demo/              # Demo-environment family index + recipes
 │
 └── tools/                 # Development tools
     ├── toolchain_overview.md       # Required tools registry

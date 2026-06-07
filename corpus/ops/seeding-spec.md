@@ -83,6 +83,9 @@ see [`snapshot-spec.md`](snapshot-spec.md#the-directus-content-surface-m10--the-
 
 ### The production-isolation boundary (the safety contract)
 
+> **The consolidated safety contract** — this write-side boundary plus the snapshot read-side firewall — is
+> stated authoritatively in [`safety.md`](safety.md). What follows is the write-side detail.
+
 The only true cross-stack / prod-pollution vectors are a **small, fixed set of shared/external services** —
 everything in the per-stack Postgres/Redis is inherently isolated (each stack has its own container).
 
