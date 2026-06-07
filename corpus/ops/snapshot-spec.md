@@ -100,7 +100,11 @@ This adds the **read half** the M7a isolation guard lacks — that guard classif
 
 ## The tenant-data firewall (note #3 — the load-bearing safety)
 
-`firewall.AssertPublicOnly` is the **read-side analog of seeding's `AssertClean`**.
+> The firewall + the capture-source policy together are the **read-side half** of the tooling's consolidated
+> safety contract, [`safety.md`](safety.md) (the write-side half is in [`seeding-spec.md`](seeding-spec.md)).
+
+`firewall.AssertPublicOnly` is the **read-side analog of seeding's `AssertClean`** — a *concept* enforced by two
+real Go gates, `AssertPlan` (plan-time) and `AssertCaptured` (post-capture); see [`safety.md`](safety.md) §1.1.
 
 **The public boundary is per-surface, not one fixed column (M10 generalization, M10-D1).** What "public" means
 differs by surface: the **taxonomy** surface uses `organization_id IS NULL`; the **Directus content** surface uses
