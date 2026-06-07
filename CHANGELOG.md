@@ -2,6 +2,29 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [Unreleased] "stack party" — v1.3 (in development)
+
+dev + demo stacks become **first-class peers**: a dev stack gets the demo treatment (its own local Directus,
+an auto-snapshot of the real reference data, a light default seed), one unified registry keeps dev and demo
+from colliding on ports, and **one converged skill set** operates any stack.
+
+### Added
+- **`/dev-up`** / **`/dev-down`** — the dev-stack lifecycle, mirroring `/demo-up` / `/demo-down`. `/dev-up`
+  builds-or-starts the main dev stack (consolidating the former `setup-platform` + `start-platform`), and for
+  an additional `dev-N` set-dresses it by default (local Directus + cache-first snapshot replay + a light
+  `dev-min` seed). `/dev-down` tears a `dev-N` down and frees its registry slot. (M13/M14)
+
+### Changed
+- **The stack-operation skills were hard-renamed to generic `stack-*` forms (no aliases)** — each accepts a
+  `dev-N` or `demo-N` target: `/demo-status` → **`/stack-list`**, `/demo-seed` → **`/stack-seed`**,
+  `/demo-snapshot` → **`/stack-snapshot`**, `/update-platform` → **`/stack-update`**. `/demo-up` / `/demo-down`
+  stay as the demo lifecycle (now aligned with `/dev-up` / `/dev-down`). (M14)
+
+### Removed
+- The old skill names `/setup-platform`, `/start-platform`, `/update-platform`, `/demo-status`, `/demo-seed`,
+  `/demo-snapshot` (and their skill dirs) — a clean break, no back-compat shims. Update any saved invocations
+  to the converged names above. (M14)
+
 ## [v1.2] "set dressing" — 2026-06-07
 
 The **snapshot mechanism**: *set-dress* a disposable demo stack with the **real public reference library** — the actual skills taxonomy and the Directus simulation/skill-path templates — so the catalog and the content behind seeded sessions are real, not placeholders. Everything is captured **read-only** from production; **customer data is never copied** (a tested tenant-data firewall).

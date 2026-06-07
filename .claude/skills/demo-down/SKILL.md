@@ -27,3 +27,12 @@ the dev `anthropos` stack and any other demos untouched. Manual teardown is the 
 ## Safety
 `down` is hard-scoped `-p demo-N` and **refuses any N that resolves to the dev project name** — it can never
 tear down the dev stack. Verified live: demo-1 up→status→down with the dev stack (12 containers) untouched.
+Teardown **frees the demo's slot** in the unified dev+demo registry (M12), so its N is re-allocatable.
+
+## Related skills
+
+| Skill | Use when |
+|-------|----------|
+| `/demo-up` | Bring up a demo stack |
+| `/dev-up` · `/dev-down` | The **dev** lifecycle — the peer of demo-up/demo-down (`/dev-down` tears down a `dev-N`) |
+| `/stack-list` | List live dev + demo stacks and their freed/used slots |
