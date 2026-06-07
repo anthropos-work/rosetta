@@ -3,8 +3,9 @@ milestone: M14
 slug: unified-skills
 version: v1.3 "stack party"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-07
+last_updated: 2026-06-07
 complexity: large
 delivers: the unified stack-* + dev-up/dev-down skills + a rewritten CLAUDE.md skill table + refreshed corpus/ops/ guides
 ---

@@ -1,6 +1,6 @@
 # M14 — Progress
 
-**Shape:** section · **Status:** build complete (all 5 sections landed)
+**Shape:** section · **Status:** `archived` (completed 2026-06-07)
 
 ## Section checklist (from overview Scope.In)
 - [x] `dev-up` (consolidate setup-platform + start-platform → dev bring-up, drives M13 flow) + `dev-down` — §1, commit `e6c2da6`
@@ -81,5 +81,49 @@ Single pass. The reference-integrity surface is finite and fully verified (4 dim
 the one stale guard-comment, now fixed + actively guarded). No code-coverage surface to iterate on
 (docs/rename milestone). Step 2b scan found nothing else worth adding → loop terminates after pass 1.
 
-## Final review
-_(filled at close)_
+## M14: Final Review
+
+**Closed 2026-06-07** — clean straight-through close, **0 findings**, 0 fixes needed.
+
+🔍 **M14 review found 0 findings:** 0 scope · 0 code-quality · 0 docs · 0 tests · 0 decision-triage.
+A rename/consolidation + reference-sweep milestone — the close re-verified the reference-integrity surface
+independently (not trusting the harden record) and found everything already clean.
+
+### Scope (Phase 1) — clean
+- All 5 sections checked off in the section checklist; every `overview.md` `In:` item delivered Fate 1.
+- The single `Out:` item — "the safety doc (M15)" — is **Fate 2 (confirmed-covered)**: M15's `In:` list owns
+  `corpus/ops/safety.md` (verified). Not a deferral.
+- 0 unrecorded implementation choices (M14-D1…D6 cover every decision; Q1/Q2/Q3 → D2/D3/D4).
+- No orphan TODO/FIXME/HACK tied to a v1.3 milestone. (The lone pre-existing `setup_guide.md:439` keys-mgmt
+  doc-TODO predates the release, isn't tied to any deferral ledger, and is out of audit scope — see the M14
+  deferral audit.)
+
+### Phase 1b deferral re-audit — **GREEN**
+`audit-deferrals/deferral-audit-2026-06-07-m14-close.md`. 1 inherited (DEF-M10-01 S3 blob bytes + cloud store →
+v1.4, signed escape-hatch, not aged out); 0 new, 0 repeat, 0 chronic, 0 aged-out. M14 added zero deferrals.
+
+### Code-quality / reference-integrity (Phase 2/2c) — clean
+- **Hard-rename invariant:** all 6 retired skill names swept project-wide (excl. plan history + immutable
+  CHANGELOG) → **0 live stragglers**; every remaining mention is a "formerly /X → /Y" provenance marker.
+- **CLAUDE.md table ⇄ skill dirs:** perfect bijection — exactly 14 skills both in the table and on disk; zero
+  ghosts, zero missing rows.
+- **Frontmatter ⇄ dir:** every SKILL.md `name:` matches its dir name (0 mismatches).
+- **Skill→CLI contract:** every driven binary exists in the extensions clone (`dev-stack`, `stackseed`,
+  `stacksnap`, `provision-plan`, `stack_registry.py`, `rosetta-demo`).
+
+### Documentation (Phase 3) — clean
+- 0 broken links to deleted skill dirs; all `../`-relative links in the new/renamed skill SKILL.md files resolve
+  to real targets; `dev-up`/`stack-update` `reference.md` present.
+
+### Tests & benchmarks (Phase 4/8) — green
+- Go: all 4 modules `-race -count=1` green — alignment 46 · clerkenstein 218 · stack-seeding 233 ·
+  stack-snapshot **224** (+1, `TestDocSourceSkillRename_M14` the rename guard) = **721** (720→721).
+- Python: 174 passed (dev-stack 38 + stack-core/demo-stack/injection/verify).
+- gofmt + go vet clean (all modules); all 3 CLIs shellcheck-clean; `stack_registry.py` py_compile clean.
+- **Flake gate: 5/5** (sequential shuffled on the M14-touched `stacksnap` package + full stack-snapshot module).
+
+### Decision triage (Phase 5)
+M14-D1…D6 are codebase-maintainer rationale (rename policy, consolidation boundary, target-detection UX,
+`--preset` shorthand mapping, CHANGELOG convention). All already flowed forward where user-facing: the rename is
+documented in the corpus (CLAUDE.md table, snapshot-spec §, the "formerly /X" markers) + encoded as a test
+(`TestDocSourceSkillRename_M14`). No further knowledge-doc blend warranted → all **archive** in `decisions.md`.
