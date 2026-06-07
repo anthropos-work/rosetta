@@ -4,9 +4,37 @@ _Implementation decisions with rationale. ID scheme: M12-D1, M12-D2, …_
 
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
-| _(none yet)_ | | | |
+| KB-1 (RESOLVED §3) | GUIDE.md ~L39 claimed "the registry assigns N" but pre-M12 code only *recorded* a caller-passed N. **Resolved in §3**: the allocator now exists, so the claim is true — GUIDE.md prose rewritten to describe the unified cross-type allocator (auto/explicit N, frees on teardown). | From Phase 0b KB-fidelity (YELLOW). The claim converged to truth at close, exactly as planned — reconciled in the §3 doc-delivery pass. | 2026-06-07 |
+| M12-D1 | The registry is a **single shared module** `stack-core/stack_registry.py` (not an extension of demo's `registry.json`). N is keyed by docker project `"<type>-<N>"` but allocated from **one shared N-pool across both types** — `dev-1` and `demo-1` can never coexist. Runtime file at `stack-core/.stacks/registry.json` (gitignored), the identical path from both CLIs (both reach it as `../stack-core/stack_registry.py`). | The collision bug is that `dev-N`/`demo-N` both compute `base+N*OFFSET`. Making N a shared pool is the minimal fix; co-locating the runtime file with the module guarantees both CLIs share one registry. The demo `registry.json` stays as-is (M14 wires the skills); this is the new cross-type source of truth. | 2026-06-07 |
+| M12-D2 (Q1+Q3) | **Registry-of-record + `docker ps` reconcile that only ADDS used-N, never subtracts.** A reserved row keeps its N until explicit `release()`; `docker ps` adopts unmanaged live stacks (so a manually-started stack reserves its N) but a lagging/empty `docker ps` never frees a reserved slot. | Resolves Q1 (registry is the record) and Q3 (manual stacks adopted). The "never subtract" rule is the race guard: a stack reserved-but-not-yet-started must not lose its N to a racing `up` the instant `docker ps` lags. Teardown (`release`) is the only free path → deterministic. | 2026-06-07 |
+| M12-D3 (Q2) | **Concurrency via `fcntl.flock(LOCK_EX)` on a sidecar `.lock`** around the whole read-reconcile-pick-write in `allocate()`; portable macOS+Linux (unlike `flock(1)`). Registry writes are **atomic** (temp + `os.replace`). | Two concurrent `up`s must never pick the same N. flock on a persistent sidecar matches the existing demo `reg_set`/`reg_del` pattern (consistency). Atomic write + corrupt-JSON recovery in `_load` make a crash mid-write non-wedging. | 2026-06-07 |
 
-## Open at design (to resolve during build)
-- M12-Q1: registry-of-record vs docker-ps-derived (lean: registry + reconcile).
-- M12-Q2: lock mechanism for concurrent up's.
-- M12-Q3: reconciling manually-started stacks.
+## Open at design — RESOLVED during build
+- ~~M12-Q1: registry-of-record vs docker-ps-derived~~ → **M12-D2**: registry is the record; docker-ps reconciles (adds-only).
+- ~~M12-Q2: lock mechanism for concurrent up's~~ → **M12-D3**: fcntl.flock on a sidecar + atomic write.
+- ~~M12-Q3: reconciling manually-started stacks~~ → **M12-D2**: live containers with no registry row are adopted (reserve their N).
+
+## Adversarial review (close — Phase 2c)
+
+Scenarios considered against the just-shipped allocator (the *scenario*, not just the fix — so future reviewers
+see what was probed). Each was either already covered or pinned with a new regression test at close.
+
+1. **Concurrent *explicit-N* collision.** The cross-process race test covered concurrent *auto*-allocation
+   ({1..12} distinct), but every contender claiming the **same explicit `--n`** was only ever probed
+   single-threaded (`test_explicit_n_rejected_when_taken_by_other_type`). Under load, the validate-then-reserve
+   must run inside the same flock as the write or two `up <N>`s with identical N could both pass the "is N free"
+   check. **Verified handled** — 6 OS processes all claiming `--n 5` → exactly one exits 0 (prints 5), five exit 2
+   ("N taken"), one `dev-5` row persisted, no `.tmp` leak. Pinned: `test_concurrent_explicit_N_collision_exactly_one_wins`.
+2. **Stale `.lock` file from a crashed holder.** A process that dies mid-allocate leaves the sidecar `.lock` file
+   on disk. If the lock were a presence-check (file-exists = locked), this would wedge every future allocate.
+   **Verified handled** — `fcntl.flock` is advisory and auto-released on fd-close / process death, so a fresh
+   `allocate()` with a stale `.lock` file present succeeds (returns N=1, no block). Probed at close; the design
+   (flock, not a lockfile-presence check) is correct — no new test needed (the lock semantics are OS-guaranteed).
+3. **Empty / port-less override → `set_ports([])`.** `ports_from_override` returns empty when an override
+   publishes no host ports; the CLI then calls `set-ports … --ports ""`. **Verified handled** — `set_ports("demo",
+   1, [])` records `"ports": []` without crash or record fabrication (already covered by the existing
+   `set_ports`-on-missing/malformed no-op tests + the `--ports ""` parse path). No corruption, no exception.
+4. **Corrupt / truncated registry mid-allocate.** A crash during a non-atomic write could leave invalid JSON.
+   **Verified handled** — `_load` recovers a corrupt/truncated registry to `{}` (the `docker ps` reconcile still
+   protects live N from re-allocation), and writes are atomic (temp + `os.replace`) so no partial file is ever
+   the committed registry. Already covered: `test_corrupt_registry_does_not_wedge_allocation` + `test_write_leaves_no_tmp_file`.
