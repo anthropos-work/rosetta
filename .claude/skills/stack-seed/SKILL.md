@@ -37,6 +37,10 @@ shared/prod store). Source of truth: [`corpus/ops/seeding-spec.md`](../../../cor
    # reset a stack's seeded tables (per-stack only; refuses the main dev stack N=0 without --force):
    /tmp/stackseed --stack demo-N --reset
    ```
+   > **`--preset NAME` is the skill-level shorthand** (the argument-hint above), not a `stackseed` CLI flag —
+   > resolve it to `--seed "$SS/presets/NAME.seed.yaml"` when you build the command (the binary only knows
+   > `--stack`, `--seed`, `--dsn`, `--reset`, `--validate`, `--dry-run`, `--force`).
+
    Presets: `dev-min` (~1 org / ~10 users — the dev default), `small-200` (quick), `mid-500` (the default
    "looks real"), `large-1k` (scale).
 4. **Verify** — the run prints per-surface row counts + `isolation: clean`; a browser/API login (the seeded
