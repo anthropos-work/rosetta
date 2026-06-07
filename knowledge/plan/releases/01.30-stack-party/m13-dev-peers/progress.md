@@ -1,6 +1,6 @@
 # M13 — Progress
 
-**Shape:** section · **Status:** planned
+**Shape:** section · **Status:** `archived` (completed 2026-06-07)
 
 ## Section checklist (from overview Scope.In)
 - [x] Dev bring-up spawns a per-stack Directus (reuse M10 provision.go) + dev CMS repointed at it _(§2: `dev-setdress.sh` emits the M10 bootstrap→replay→boot recipe via the new `stack-snapshot/cmd/provision-plan` runner — makes the M10 `directus.ProvisionPlan`/`EnvContract` contract executable — + firewall-checks the per-stack Directus env (prod-Directus abort); CMS repoint = the `DIRECTUS_BASE_ADDR` offset-port env in the recipe. Live boot = operator step, M9b/M10 discipline.)_
@@ -41,5 +41,45 @@
 ### Stop condition
 Pass 1 only. Surface is small (4 source files); the full Step-2b scan is exhausted — every logic-bearing path is covered or pinned-unreachable, the only uncovered lines are the conventional `os.Exit` shim + an invariant-guarded defensive branch. 3 real bugs found, fixed, and pinned (each fails on pre-fix code). A pass 2 would yield <2% delta with no new qualitative gaps. Both modules `-race` clean (`-count=1`); gofmt + vet clean; both CLIs shellcheck-clean; py_compile clean; 0 flakes.
 
-## Final review
-_(filled at close)_
+## M13: Final Review
+
+Close review 2026-06-07 (`/developer-kit:close-milestone`). Phases 1–5 ran over the M13 surface (the
+`provision-plan` runner · `dev-setdress.sh` · the `dev-stack` set-dress wiring · the `dev-min` preset + its
+test pin · the two delivered corpus docs). **6 findings — 5 GREEN/no-action, 1 doc fix.** No scope gaps, no
+code-quality must-fixes, no test gaps, no escape-hatch deferrals.
+
+### Scope
+- [x] All 5 sections checked; every `overview.md` `In:` item delivered; both `Out:` items correctly fated
+  (generic skills → M14 Fate-2; blob bytes → v1.4 = DEF-M10-01). No orphan TODO/FIXME/HACK in source. (GREEN)
+
+### Code Quality
+- [x] [GREEN] Consistency / dead-code / boundary-safety / resource scan over the 4 touched source files —
+  clean. The runner is a pure recipe-printer + env-validator (no resources held); the bash CLIs build into a
+  per-invocation `mktemp` BIN_DIR (no shared-dir race); the preset is declarative YAML. gofmt + `go vet` clean
+  (both Go modules), shellcheck clean (both CLIs), py_compile clean.
+- [x] [GREEN] Phase 2c adversarial — 4 scenarios probed (replay-DSN offset-rewrite vs the firewall'd Directus
+  env · concurrent `mktemp` BIN_DIR · `--no-snapshot` seed still guarded · N=0 recipe-printer boundary). All
+  handled by existing code/tests; recorded in `decisions.md § Adversarial review`. No code change needed.
+
+### Documentation
+- [x] [must-fix → FIXED] The `stack-snapshot/README.md` Packages table was missing the new `cmd/provision-plan`
+  command row (per-unit handbook-index contract — a unit shipped without an index row). Added the
+  `cmd/provision-plan` row (+ enriched the `cmd/stacksnap` row). The dev-stack README + both corpus delivery
+  docs (`snapshot-spec.md` § "Dev as a full-fidelity peer", `seeding-spec.md` § "The shipped presets") were
+  already complete + accurate; all cross-reference anchors resolve.
+
+### Tests & Benchmarks
+- [x] [GREEN] Full suites (not iter-subsets): stack-snapshot **223** + stack-seeding **233** Go funcs, both
+  `-race -count=1` green; all Python suites green (dev-stack 38, stack-core+demo-stack 67, injection+verify 69).
+  No benchmark targets apply (no perf-sensitive code; the seed-time floor is asserted by the seeder's own
+  `<2min` gate, dev-min seeds <1s). Handbook test-count reconciliation: no README quotes a count → no drift.
+
+### Decision Triage
+- [x] M13-D1 (dev-min size rationale) → blend (already in `seeding-spec.md § dev-min`; ref-tagged `#M13-D1`)
+- [x] M13-D2 (executable M10 contract via provision-plan runner) → blend (already in `snapshot-spec.md`; ref-tagged `#M13-D2`)
+- [x] M13-D3 (set-dressing default-on but non-fatal) → blend (already in `snapshot-spec.md § Escapes + safety`; ref-tagged `#M13-D3`)
+- [x] M13-D4 (build_cli cmd-pkg path bug) → archive (maintainer-only implementation bug, fixed in §2 PR review)
+
+### Deferral re-audit (Phase 1b)
+- [x] GREEN — `audit-deferrals/deferral-audit-2026-06-07-m13-close.md`. 1 inherited (DEF-M10-01 S3 blob bytes +
+  cloud store → v1.4, signed/unchanged), 0 repeat, 0 aged-out, 0 new. M13 added zero deferrals (all Fate-1).

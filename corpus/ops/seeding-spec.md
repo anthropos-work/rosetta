@@ -148,7 +148,7 @@ spine to click through — without paying a demo-scale seed (it still seeds in w
 the floor that still exercises the role mix (~1 admin + ~6 members + ~3 candidates) so authz / memberships /
 activity all render; its fixed admin is **`dev@anthropos.test`** (the local dev login identity → a browser login
 to the fresh dev stack returns **200**, not 403). It targets `dev-N` (vs the demo presets' `demo-1`). The
-dev-stack bring-up applies it via the set-dressing pass — see [`snapshot-spec.md`](snapshot-spec.md#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed).
+dev-stack bring-up applies it via the set-dressing pass — see [`snapshot-spec.md`](snapshot-spec.md#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed). (size rationale: #M13-D1)
 
 ### The CLI
 

@@ -400,7 +400,8 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
    boot) and **firewall-checks the per-stack Directus env** — the dev CMS points its `DIRECTUS_BASE_ADDR` at the
    **per-stack** offset-port Directus, **never** the shared `content.anthropos.work`. Both the recipe and the
    firewall come from one source of truth: the **`stack-snapshot/cmd/provision-plan`** runner, which makes the M10
-   `directus.ProvisionPlan` / `EnvContract` / `Validate` contract *executable* (it was library-only through v1.2).
+   `directus.ProvisionPlan` / `EnvContract` / `Validate` contract *executable* (it was library-only through v1.2 —
+   #M13-D2).
    `provision-plan --check-env --base-addr … --dsn …` exits non-zero — **hard-aborting the pass before any
    replay** — if the per-stack Directus env ever resolves to the prod Directus. The **live container boot remains a
    documented operational step** (the M9b/M10 discipline): the recipe is printed + the env validated; the operator
@@ -418,7 +419,7 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
 - **`--no-snapshot`** keeps the seed but skips the heavier per-stack Directus + replay (lean bring-up).
 - **`--no-setdress`** skips the whole pass (a bare bring-up — the pre-M13 behaviour).
 - **Non-fatal.** The pass is non-fatal on `dev-stack up`: a not-yet-migrated stack still comes **UP**; re-run
-  `dev-setdress.sh <N>` by hand after migration (cache-first + idempotent).
+  `dev-setdress.sh <N>` by hand after migration (cache-first + idempotent). (default-on-but-non-fatal: #M13-D3)
 - **The n=0-dev guard.** The pass **hard-refuses N=0** (the main `anthropos` dev stack) without `--force`, so an
   auto-set-dress can never touch the developer's primary stack (a second layer above `stackseed --reset`'s own
   n=0 refusal — see [`seeding-spec.md`](seeding-spec.md#the-cli)).
