@@ -7,10 +7,12 @@ structural data from one declarative blueprint, the dependency order, and (most 
 > **Scope.** This doc covers the **M7a framework**: the blueprint, the seeder contract, the dependency-DAG
 > orchestrator, the direct-Postgres perf path, and the isolation guard. The full **seeder fleet** (taxonomy,
 > content, sessions, backdated activity at scale) is M7c; the **data-DNA** schema-conformance/drift gate is
-> M7b. The seeding code lives in the gitignored `rosetta-extensions` monorepo (its own git), consumed by the
-> `/demo-*` skills — **no platform repo is modified.** It is also **not** scattered in the rosetta corpus: it's
-> authored and tagged in the authoring copy at `.agentspace/rosetta-extensions/`, then consumed per-stack at a
-> pinned tag (`stack-<role>/rosetta-extensions @ <tag>`).
+> M7b; the shipped **presets** + the **`dev-min` dev auto-seed** (v1.3 M13 — applied on a `dev-stack up` build
+> so a fresh dev stack is never empty) are in [The shipped presets](#the-shipped-presets-stack-seedingpresets).
+> The seeding code lives in the gitignored `rosetta-extensions` monorepo (its own git), consumed by the
+> `/demo-*` skills + the dev-stack bring-up — **no platform repo is modified.** It is also **not** scattered in
+> the rosetta corpus: it's authored and tagged in the authoring copy at `.agentspace/rosetta-extensions/`, then
+> consumed per-stack at a pinned tag (`stack-<role>/rosetta-extensions @ <tag>`).
 
 ## For PMs — what it does
 
@@ -128,14 +130,40 @@ browser login mints exactly that identity, so an authorized route returns **200,
 it is applied by the **demo-stack bring-up** (`migrate-demo.sh`), not the seeder. The seeder supplies the demo
 data (org, users, identity, the per-user `g2` grant) on top of it.
 
+### The shipped presets (`stack-seeding/presets/`)
+
+Four presets ship, ordered by population — `dev-min` < `small-200` < `mid-500` < `large-1k` (the order is
+regression-pinned: a curator picking "small" for a low-resource box relies on it actually being smaller):
+
+| Preset | Users | Activity | Org | Used by |
+|---|---|---|---|---|
+| **`dev-min`** | **~10** | 1 month | Dev Sandbox | **the dev-stack auto-seed** (M13) — the "never empty" floor |
+| `small-200` | 200 | 3 months | Northwind | quick demo walkthroughs / low-resource boxes |
+| `mid-500` | 500 | 6 months | Globex | the default "looks real on screen" demo |
+| `large-1k` | 1,000 | 9 months | Initech | scale / perf demos |
+
+**`dev-min` — the dev auto-seed (M13).** The lightest preset (~1 org + ~10 users + 1 month of activity) is the
+**default applied on a `dev-stack up` build**, so a freshly-built dev stack is **never empty** — a structural
+spine to click through — without paying a demo-scale seed (it still seeds in well under a second). 10 users is
+the floor that still exercises the role mix (~1 admin + ~6 members + ~3 candidates) so authz / memberships /
+activity all render; its fixed admin is **`dev@anthropos.test`** (the local dev login identity → a browser login
+to the fresh dev stack returns **200**, not 403). It targets `dev-N` (vs the demo presets' `demo-1`). The
+dev-stack bring-up applies it via the set-dressing pass — see [`snapshot-spec.md`](snapshot-spec.md#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed).
+
 ### The CLI
 
 ```bash
 stackseed --seed demo.seed.yaml --validate                       # schema + semantic checks
 stackseed --stack demo-1 --seed demo.seed.yaml --dry-run         # ordered plan + row estimates + isolation preview
 stackseed --stack demo-1 --seed demo.seed.yaml --dsn '<base-dsn>' # seed (direct Postgres, offset port)
+stackseed --stack dev-1  --seed presets/dev-min.seed.yaml        # the dev auto-seed (M13; run by the dev bring-up)
 stackseed --stack demo-1 --reset                                 # per-stack reset (refuses n=0 dev unless --force)
 ```
+
+**The n=0-dev guard, two layers (M13).** `--reset` already refuses N=0 (the main `anthropos` dev stack) unless
+`--force`. M13's **auto-seed on dev build** adds a second, earlier guard in the bring-up's set-dressing pass
+(`dev-setdress.sh`): it **refuses to auto-set-dress N=0 without `--force`**, so an automatic dev seed can never
+touch the developer's primary stack. The auto-seed targets the bring-up's own `dev-N` (offset port), never N=0.
 
 ### Verifying a seed — `datadna` (the data-DNA CLI, M7b)
 
@@ -174,4 +202,6 @@ replay first for the set-dressed world.
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
 **62 unit tests** (green, `-race` clean), verified schema-correct against a live stack. M7b adds the data-DNA
-schema-conformance/drift gate; M7c the full seeder fleet + backdated activity + presets.
+schema-conformance/drift gate; M7c the full seeder fleet + backdated activity + presets. **v1.3 M13** adds the
+**`dev-min` preset** + wires it as the **dev auto-seed on `dev-stack up`** (the second n=0-dev guard lives in the
+bring-up's set-dressing pass) — see [The shipped presets](#the-shipped-presets-stack-seedingpresets).
