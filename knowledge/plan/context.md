@@ -10,7 +10,7 @@ delivered the **dedicated `stack-snapshot` extension**: M9a (framework + capture
 `.agentspace` store + `/db-query` port + fidelity-DNA) → M9b (taxonomy surface) → M10 (public Directus content) →
 M11 (recipes + `/demo-snapshot` + corpus), all section-shaped, lifting M7c's `waived` taxonomy + content to **100%
 data-DNA coverage** (capturing **public** data only, from a **safe, low-impact source** — default a prod `pg_dump`,
-fallback a throttled read-only pull). **Now between releases — `/developer-kit:design-roadmap` scopes v1.3.** Live
+fallback a throttled read-only pull). **v1.3 "stack party" is now IN DEVELOPMENT** on `release/01.30-stack-party` (designed 2026-06-07) — the **dev/demo convergence**: M12 (unified first-available-N stack registry) → M13 (dev stacks as first-class peers: local Directus + auto-snapshot + light seed) → M14 (generic `stack-*` skills, hard-renamed) → M15 (safety & security doc + dual-repo KB). Former v1.3 seeds (cloud store / S3 blobs, AI content, shareability) → v1.4. Live
 state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.2
 is the same major.)
 
@@ -44,11 +44,11 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **(none — between releases).** **v1.2 "set dressing" SHIPPED 2026-06-07** (tag `v1.2`): M9a (snapshot
-framework + capture-safety + tenant firewall + `.agentspace` store + `/db-query` port + fidelity-DNA) → M9b
-(taxonomy surface) → M10 (public Directus content) → M11 (richer-world recipes + presets + `/demo-snapshot` +
-corpus), strictly sequential, all additive under `stack-demo/rosetta-extensions/`. v1.0 / v1.1 / v1.2 shipped (tags
-`v1.0` / `v1.1` / `v1.2`); **next: `/developer-kit:design-roadmap` to scope v1.3.** _(Live milestone/branch state: [`state.md`](state.md). v1.3+ proposals:
+**Active:** **v1.3 "stack party"** — in development on `release/01.30-stack-party` (designed 2026-06-07). The
+**dev/demo convergence**: M12 (unified stack registry + first-available-N) → M13 (dev peers: local Directus +
+auto-snapshot + light seed) → M14 (generic `stack-*` skills + `dev-up`/`dev-down`, hard-renamed) → M15 (safety &
+security doc + dual-repo KB), strictly sequential. v1.0 / v1.1 / v1.2 shipped (tags `v1.0` / `v1.1` / `v1.2`); the
+former v1.3 seeds → v1.4. _(Live milestone/branch state: [`state.md`](state.md). v1.4 proposals:
 [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note

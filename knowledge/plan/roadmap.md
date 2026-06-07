@@ -19,8 +19,15 @@ builder skills).
 > lifts M7c's two `waived` surfaces (`taxonomy` + `content`) to **100% data-DNA coverage** — capture the real
 > *public* skill taxonomy + content library once from a **safe, low-impact source** (default a prod `pg_dump`), replay per-stack,
 > *measured-faithful* via a new snapshot-fidelity dimension, with a tested **tenant-data firewall** (never customer
-> data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Full design in
-> `## In Development` below.
+> data) + a **`.agentspace` manifest cache** (snapshots never land in any git repo). Detail in `## Done — v1.2` below.
+>
+> **v1.3 "stack party" — IN DEVELOPMENT** (designed 2026-06-07 on `release/01.30-stack-party`). 4 milestones
+> M12→M13→M14→M15: the **dev/demo convergence** — dev stacks become first-class peers (local per-stack Directus +
+> auto-snapshot + a light default seed on build), a **unified stack registry** that allocates the first-available N
+> across dev+demo (no port collisions), one **generic `stack-*` skill set** (`stack-list`/`seed`/`snapshot`/`update`
+> + `dev-up`/`dev-down`), and a dedicated **safety & security doc** (how the tooling never reads private data + never
+> touches prod). Full design in `## In Development` below. (The former v1.3 seeds — cloud store, S3 blobs, AI
+> content, shareability — moved to **v1.4**.)
 
 ## Version plan
 
@@ -29,6 +36,7 @@ builder skills).
 | **v1.0** | **body double** | A *measured* stand-in the platform can't tell from the real thing | M0 → M1 → { M1b ∥ M2 } → M2b → M2c | ✅ **SHIPPED 2026-06-03** (tag `v1.0`) |
 | **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
+| **v1.3** | **stack party** | dev + demo stacks as first-class peers — local Directus, auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 → M13 → M14 → M15 | 🚧 **IN DEVELOPMENT** (`release/01.30-stack-party`) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -41,6 +49,110 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.3 "stack party"
+
+**Theme:** v1.0 made the platform run Clerk-free; v1.1 built the demo/dev stack framework; v1.2 set-dressed *demo*
+stacks with the real public catalog. v1.3 **throws the party** — it makes **dev and demo stacks first-class peers**
+that work the same way. A dev stack gets the demo treatment (its own **local Directus**, **auto-snapshot** of the
+real reference data on build, a **light default seed** so it's never empty); a **unified stack registry** allocates
+the first-available N across both kinds so they never collide on ports; and one **generic `stack-*` skill set**
+operates any stack. The safety story (read-side private-data avoidance + write-side prod-protection) is consolidated
+into a dedicated doc, and **both** the rosetta corpus and the `rosetta-extensions` knowledge base are brought to the
+converged model.
+
+> **Designed 2026-06-07** from 6 user requirements (the dev/demo convergence). Phase 0a deferral audit **GREEN**
+> (v1.2 close — 1 open item, DEF-M10-01 S3 blobs + the cloud-store escape-hatch). **Scope decided (user, 2026-06-07):**
+> the former v1.3 seeds (cloud store, S3 blobs, AI content, shareability, more mirrors) **move to v1.4**; v1.3 is the
+> tight convergence release. M13 stays one milestone; the operation-skill renames are a **hard rename, no aliases**.
+> Phase 0b KB blind-area: the **safety & security doc** is the one blind area → M15 `Delivers →` it. Research:
+> [`.agentspace/scratch/roadmap-research-2026-06-07.md`](../../.agentspace/scratch/roadmap-research-2026-06-07.md).
+
+### M12: Unified stack registry + first-available-N allocation
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m12-stack-registry/](releases/01.30-stack-party/m12-stack-registry/)
+**Goal:** One shared registry across **dev + demo** that tracks live stacks and allocates the **lowest free N**, so
+bring-ups never collide on ports (build `dev, demo, dev, demo, demo` → `dev-1, demo-2, dev-3, demo-4, demo-5`).
+**Scope:** In: a **unified stack registry** (extend the demo `registry.json` to span both kinds — type + N + ports +
+status) in `stack-core`; a **first-available-N allocator** (reconcile the registry against live `docker ps`, return
+the lowest free N) — race-safe (locked write); the up-paths **accept explicit-N or auto-allocate**; teardown frees
+the slot. Out: the skill renames that consume it (M14); dev local-Directus/snapshot/seed (M13).
+**Depends on:** v1.1's `stack-core` (the port-offset engine) + the demo-stack `registry.json`. **Parallel with:** M13 (feasible — different surfaces; lean sequential so M13's dev bring-up consumes the registry).
+**Open questions:** registry as a lockfile vs `docker ps`-derived (lean: registry-of-record + `docker ps` reconcile); how a manually-started stack (outside the skills) is reconciled.
+**KB dependencies:** `corpus/ops/rosetta_demo.md` (the demo registry/ports), the `stack-core`/`demo-stack`/`dev-stack` extension sections.
+**Delivers → updates `corpus/ops/rosetta_demo.md`** (the unified registry + first-available-N model).
+
+### M13: Dev stacks as full-fidelity peers — local Directus + auto-snapshot + light seed
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m13-dev-peers/](releases/01.30-stack-party/m13-dev-peers/)
+**Goal:** A freshly-built dev stack gets the demo treatment — its **own local per-stack Directus** (no longer
+pointing at shared prod), an **auto-snapshot** on build that fills the real public reference data (taxonomy + the
+now-local content), and a **light default seed** so it's never empty.
+**Scope:** In: wire the dev bring-up to **spawn a per-stack Directus** (reuse M10's `stack-snapshot/directus/provision.go`
+per-stack-Directus mechanism) + repoint the dev CMS at it; **auto-run `stacksnap replay`** (taxonomy + directus) as
+part of dev build (cache-first, fast); a **`dev-min` seed preset** (smaller than demo's `small-200` — ~1 org + ~10
+users + minimal activity) applied on build; keep the n=0-dev-reset guard. Out: the generic skills (M14); blob bytes
+(v1.4 — refs-only, as for demo).
+**Depends on:** **M12** (consumes the registry for dev-N) + v1.2's M10 (the per-stack Directus + the content snapshot) + v1.1's M6 (dev-stack) + M7 (seeding). **Parallel with:** none (gates M14).
+**Open questions:** does spawning Directus + snapshot + seed make dev bring-up too heavy? (mitigate: cache-first snapshot, minimal seed, reuse M10's provision); should the auto-snapshot be default-on or opt-in for dev (lean: default-on, `--no-snapshot` to skip).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (capture/replay + the per-stack Directus store), `corpus/ops/seeding-spec.md` (presets + the dev/n=0 guard), `corpus/services/cms.md` (Directus), the `dev-stack` extension section.
+**Delivers → updates `corpus/ops/seeding-spec.md`** (the `dev-min` preset + dev auto-seed) **+ `corpus/ops/snapshot-spec.md`** (dev as a replay target + the local-Directus-on-dev path).
+
+### M14: Unified `stack-*` skills + `dev-up`/`dev-down`
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Dir:** [m14-unified-skills/](releases/01.30-stack-party/m14-unified-skills/)
+**Goal:** One coherent stack-operations skill set that works on any stack (`dev-N | demo-N`), with the dev lifecycle
+mirroring demo's.
+**Scope:** In: **`dev-up`** (consolidate `setup-platform` + `start-platform` into one dev bring-up that drives the M13
+flow) + **`dev-down`**; **hard-rename** (no aliases, user 2026-06-07) the operation skills to generic, stack-target
+forms — **`stack-list`** (←`demo-status`), **`stack-seed`** (←`demo-seed`), **`stack-snapshot`** (←`demo-snapshot`),
+**`stack-update`** (←`update-platform`) — each detecting/accepting a `dev-N|demo-N` target; **remove** the old skill
+dirs (`setup-platform`, `start-platform`, `update-platform`, `demo-status`, `demo-seed`, `demo-snapshot`); update
+**every reference** (CLAUDE.md skill table, READMEs, the corpus skill docs + recipes). `demo-up`/`demo-down` stay as
+the demo lifecycle (aligned with `dev-up`/`dev-down`). Out: the safety doc (M15).
+**Depends on:** **M12 + M13** (the generic skills drive the registry + the dev peer capabilities). **Parallel with:** none.
+**Open questions:** how much of `setup-platform`'s first-time machine setup (tool install, org clone) folds into `dev-up` vs stays a one-time prerequisite; the exact target-detection UX (`stack-seed dev-1` vs `stack-seed --stack dev-1`).
+**KB dependencies:** the existing skill SKILL.md files, `corpus/ops/*` guides (setup/run/update/demo), `CLAUDE.md` (the skill table).
+**Delivers → the unified `stack-*` + `dev-up`/`dev-down` skills + a rewritten `CLAUDE.md` skill table + refreshed `corpus/ops/` guides** (the converged stack model, hard-renamed).
+
+### M15: Safety & security doc + dual-repo knowledge consolidation
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [m15-safety-doc/](releases/01.30-stack-party/m15-safety-doc/)
+**Goal:** A single authoritative doc on **how the rosetta tooling stays safe** — it never reads private/customer data,
+and it never touches production data or services — plus a refresh of **both** knowledge bases to the v1.3 model.
+**Scope:** In: a new **`corpus/ops/safety.md`** consolidating (a) the **read-side** (private-data avoidance: the
+tenant firewall `AssertPublicOnly`, the `organization_id IS NULL` / `private = false AND tenant_id IS NULL` public
+predicates, the public-only data-DNA gene) and (b) the **write-side** (prod-protection: the 3-layer isolation guard,
+read-only capture, never-write-shared-Directus / prod-S3, the capture-source policy, the n=0-dev guards); cross-link
+from `snapshot-spec`/`seeding-spec`/`db-access`/`security_compliance`; **update the `rosetta-extensions/knowledge/`**
+(the repo's own KB) for the converged stack model + the safety contract; refresh the root READMEs + the `demo/`
+recipe family for the unified `stack-*` skills + dev-as-peer. Out: nothing (closing milestone).
+**Depends on:** **M12 + M13 + M14** (documents their converged result). **Parallel with:** none (the closing milestone before `/developer-kit:close-release`).
+**Open questions:** doc home — `corpus/ops/safety.md` vs `corpus/architecture/tooling-safety.md` (lean: `corpus/ops/safety.md`, ops-adjacent to seeding/snapshot/db-access).
+**KB dependencies:** `corpus/ops/{snapshot-spec,seeding-spec,db-access}.md`, `corpus/architecture/security_compliance.md`, the `rosetta-extensions/knowledge/` base.
+**Delivers → `corpus/ops/safety.md`** (net-new — the tooling's read-side + write-side safety contract) **+ updates the `rosetta-extensions/knowledge/` base** to the v1.3 converged model.
+
+### Execution graph (v1.3)
+```
+v1.3 "stack party" — dev + demo stacks become first-class peers, one unified skill set
+   M12 (unified registry + first-free-N) ─→ M13 (dev peers: local Directus + auto-snapshot + light seed) ─→ M14 (unified stack-* skills) ─→ M15 (safety doc + dual-repo KB)
+```
+**Sequential.** M12 lays the shared registry/port foundation; M13 makes dev a full peer (the meatiest — reuses M10's
+per-stack Directus + the snapshot/seed framework); M14 converges the skills onto both stack kinds (hard rename); M15
+consolidates the safety story + both knowledge bases. M12∥M13 is feasible (stack-core vs dev bring-up) but
+serializing keeps M13's bring-up consuming the new registry cleanly. No B-milestones — M14 *is* the tooling layer.
+
+### Risks (v1.3)
+- **(M13, scope)** spawning a per-stack Directus + auto-snapshot + seed on **every dev build** could make dev
+  bring-up slow/heavy. Mitigate: reuse M10's proven `provision.go`; cache-first snapshot (replay, not capture);
+  minimal `dev-min` seed; `--no-snapshot` escape.
+- **(M12, correctness)** the first-available-N allocator must be **race-safe** (two concurrent `up`s) and reconcile
+  with reality. Mitigate: locked registry write + `docker ps` as the used-N source of truth.
+- **(M14, blast radius)** the **hard rename** (no aliases) breaks any external reference to `setup-platform` /
+  `demo-seed` / etc. Mitigate: update **every** in-repo reference in M14; the user accepted the clean-break tradeoff.
+- **(cross-cut)** dev was historically the *protected* environment (real Clerk, the n=0 guard). Making it a
+  snapshot/seed target must preserve those guards. Mitigate: M15's safety doc + the kept n=0-reset guard + read-only capture.
+
+### Open decisions (resolve during build)
+Registry-of-record vs `docker ps`-derived — M12 (lean registry + reconcile); dev auto-snapshot default-on vs opt-in
+— M13 (lean default-on, `--no-snapshot`); how much first-time setup folds into `dev-up` — M14; the safety doc home
+(`corpus/ops/safety.md`) — M15.
 
 ## Done — v1.2 "set dressing" (SHIPPED 2026-06-07 · tag `v1.2`)
 
