@@ -191,7 +191,7 @@ thesis complete). The two formerly-waived surfaces are both promoted and **count
   predicate** (not `organization_id`).
 
 Both are DAG nodes (`… → taxonomy / content (snapshot) → sessions/assignments → activity`): verification/ordering
-nodes whose actual data load runs out-of-band (`stacksnap replay --surface taxonomy|directus`, or `/demo-snapshot
+nodes whose actual data load runs out-of-band (`stacksnap replay --surface taxonomy|directus`, or `/stack-snapshot
 replay N`) before `stackseed`. The `content` node additionally **gates the linkage** — sessions/assignments order
 behind it so their content refs resolve against the replayed public templates. The full mechanism + the operator
 recipe: [`snapshot-spec.md`](snapshot-spec.md) + [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md).

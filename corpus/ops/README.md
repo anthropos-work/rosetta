@@ -17,32 +17,26 @@ This directory contains guides for operating the Anthropos platform locally.
 | [Webhook Setup](./webhook_setup.md) | Configure Clerk webhooks for user sync | When you need user/org data locally |
 | [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features (superseded by `staging-sync.md` on staging hosts) |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
-| [Demo Stacks](./rosetta_demo.md) | **Disposable, isolated demo stacks (`demo-N`) alongside the dev stack — Clerkenstein-wired, offset ports, killable cleanly, zero platform-repo change. Skills `/demo-up`, `/demo-down`, `/demo-status`.** (v1.1/M3) | Spinning up a throwaway demo environment to seed (M4) + show |
-| [Seeding Spec](./seeding-spec.md) | Declaratively backfill a stack with structural data (blueprint + DAG + the 3-layer write isolation guard). Skill `/demo-seed`. (v1.1/M7) | Populating a demo/dev stack with an org + users + activity |
+| [Demo Stacks](./rosetta_demo.md) | **Disposable, isolated demo stacks (`demo-N`) alongside the dev stack — Clerkenstein-wired, offset ports, killable cleanly, zero platform-repo change. Skills `/demo-up`, `/demo-down`; list via `/stack-list`.** (v1.1/M3) | Spinning up a throwaway demo environment to seed (M4) + show |
+| [Seeding Spec](./seeding-spec.md) | Declaratively backfill a stack with structural data (blueprint + DAG + the 3-layer write isolation guard). Skill `/stack-seed` (`dev-N` or `demo-N`). (v1.1/M7) | Populating a demo/dev stack with an org + users + activity |
 | [DB Access](./db-access.md) | Read-only prod DB access (the wired `postgres` MCP tool **or** Tailscale + `~/.pgpass`) + the public-vs-customer boundary. Skill `/db-query`. (v1.2/M9a) | Investigating data, sizing a surface, or telling public reference data from customer data |
 | [Snapshot Spec](./snapshot-spec.md) | Capture a **public** reference surface once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack — tenant-data firewall + snapshot-fidelity. `stacksnap` CLI. (v1.2/M9a) | Filling a stack with the real public taxonomy/content library |
-| [Demo Recipes](./demo/README.md) | The end-to-end demo-env recipe family (up → **snapshot** → seed → use → down) + presets; the `/demo-snapshot` skill *set-dresses* a stack with the real public taxonomy + Directus content (100% catalog). (v1.2/M11) | Running a believable, full-fidelity demo world |
+| [Demo Recipes](./demo/README.md) | The end-to-end demo-env recipe family (up → **snapshot** → seed → use → down) + presets; the `/stack-snapshot` skill *set-dresses* a stack (`dev-N` or `demo-N`) with the real public taxonomy + Directus content (100% catalog). (v1.2/M11) | Running a believable, full-fidelity demo world |
 
 ## Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     First Time Setup                             │
-│  /setup-platform  or  corpus/ops/setup_guide.md                  │
-│  Install tools, clone repos, configure environment               │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Daily Development                           │
-│  /start-platform  or  corpus/ops/run_guide.md                    │
-│  Start Docker, backend services, frontend                        │
+│                  First Time Setup + Daily Run                    │
+│  /dev-up  or  corpus/ops/setup_guide.md + run_guide.md           │
+│  Install tools, clone repos, configure env, start the stack      │
+│  (one skill — consolidates the former setup + start)             │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Periodic Updates                              │
-│  /update-platform  or  corpus/ops/update_guide.md                │
+│  /stack-update  or  corpus/ops/update_guide.md                   │
 │  Pull latest code, install deps, run migrations                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -53,7 +47,7 @@ All operations use Claude's **TodoWrite** tool for real-time progress tracking.
 
 ## Ops Reports
 
-When `/setup-platform`, `/start-platform`, or `/update-platform` encounter errors or discover improvements, they create **ops reports** in `stack-dev/ops-reports/`:
+When `/dev-up` or `/stack-update` encounter errors or discover improvements, they create **ops reports** in `stack-dev/ops-reports/`:
 
 ```
 stack-dev/ops-reports/
@@ -68,7 +62,7 @@ stack-dev/ops-reports/
 # Ops Report: [Brief Title]
 
 **Date**: YYYY-MM-DD HH:MM
-**Skill**: /setup-platform | /start-platform | /update-platform
+**Skill**: /dev-up | /stack-update
 **OS**: [macOS 14.x / Ubuntu 22.04 / etc.]
 **Phase**: [Which operation phase]
 
