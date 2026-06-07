@@ -174,10 +174,10 @@ Schemas: **public** (app), **skiller**, **jobsimulation**, **skillpath**, **cms*
 ### CMS (the app-Postgres cms schema — NOT the public Directus template library)
 - **studio_documents**, **studio_tasks** — studio-room generated, **100% org-scoped customer data** (excluded from snapshots)
 - **similarities** (+ similarity_skills/categories/features join tables)
-- The **public** simulation/skill-path **template library** lives in a **separate self-hosted Directus store**
-  (`content.anthropos.work`, its own Postgres) — the v1.2 M10 content-snapshot source. It is **not** in this `cms`
-  schema.
+- The **public** simulation/skill-path **template library** is **not** in this app-Postgres `cms` schema — it
+  lives in the **`directus` schema of the same `postgres` database** (served at `content.anthropos.work`, but
+  reachable read-only over the same DSN / `marco_read`). Its public subset
+  (`private = false AND tenant_id IS NULL AND status = 'published'`) is the v1.2 M10 content-snapshot source.
 
 ### SENTINEL (authorization)
 Casbin RBAC/ABAC policies (`casbin_rules` / `casbin_rule`). Rarely queried directly — use the sentinel RPC API.
-</content>

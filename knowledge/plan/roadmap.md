@@ -93,8 +93,9 @@ worlds become *set-dressed*: the stage (v1.1 "show floor") gets its believable p
   replay**. The *cleaner* surface — it proves the framework (M9b). (`data-dna.json`: `taxonomy` status `waived-m7c`.)
 - **`content`** — the **public** simulation / skill-path **template library**. Prod correction: it is **not** the
   app-Postgres `cms` schema — `cms.studio_documents` + `cms.studio_tasks` are **100% org-scoped customer data (0
-  public rows)** → **excluded** by the firewall. The public library lives in the **separate self-hosted Directus
-  store** (`content.anthropos.work`, its own Postgres); the isolation guard hard-blocks writes to shared Directus,
+  public rows)** → **excluded** by the firewall. The public library lives in the **shared self-hosted Directus
+  store** (`content.anthropos.work`) — *(M10 build later found this is the `directus` schema of the **same** prod
+  Postgres, read-only via `marco_read`, not separate infra — see the M10 close note)*; the isolation guard hard-blocks writes to shared Directus,
   so replay needs a **per-stack content store**. The defining M10 decision (resolve early): per-stack Directus
   container fed from the captured snapshot vs replay straight into the per-stack Directus Postgres DB (Directus's
   own backing store is Postgres → stays in the per-stack-isolated class). The *highest-risk* surface in v1.2.

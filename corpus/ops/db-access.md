@@ -83,4 +83,3 @@ Prod headline (2026-06-06): `skiller` ≈ **2.1 GB** (the v1.2 taxonomy snapshot
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary (the read side is here).
 - [`staging_from_dump.md`](staging_from_dump.md) — the full-clone (all-customer-data) precedent; the snapshot
   mechanism is its public-only, low-impact inverse.
-</content>

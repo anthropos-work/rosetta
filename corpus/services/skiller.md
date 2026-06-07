@@ -8,6 +8,8 @@ This is the AI-heaviest pure-Go service: every other AI surface (jobsimulation, 
 
 The 60K-skill / 18K-role taxonomy **data** is loaded into the skiller DB by the `importskills` and `importjobroles` cobra subcommands (`cmd/importSkills`, `cmd/importJobRole`), which read the CSVs and call `TaxonomyManager.CreateSkill` / `JobRoleManager.CreateJobRole`. The `anthropos-work/taxonomy` library only supplies NodeID generation helpers, not the data.
 
+> **Demo/dev set-dressing (v1.2):** for disposable stacks, the **public** taxonomy (`organization_id IS NULL` — skills/roles/specializations/categories + embeddings + translations) is captured read-only from prod and replayed per-stack by the snapshot mechanism — see [`corpus/ops/snapshot-spec.md`](../ops/snapshot-spec.md) (the M9b taxonomy surface). Customer-private taxonomy is never captured (the tenant firewall).
+
 ## Architecture & Code Map
 
 * **Codebase**: `skiller` (Local directory; repo `git@github.com:anthropos-work/skiller`)

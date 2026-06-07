@@ -2,14 +2,15 @@
 
 **The documentation corpus for the Anthropos platform.**
 
-> **v1.0 "body double" — shipped.** Beyond documentation, Rosetta now hosts an **alignment-testing
-> framework** (`rosetta-extensions/alignment/`) — a measurement discipline that scores how faithfully a
-> *mirror* engine reproduces a *source* library as a 0–100% number. Its first product is **Clerkenstein**, a
-> measured drop-in mock of Clerk that lets the platform run demos Clerk-free with zero platform-code change
-> (100% on all three measured surfaces: Go, JS/FAPI, `@clerk/express`). See
-> [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md) and
-> [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md). v1.1 "show floor" (disposable demo
-> stacks) is staged next.
+> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" — shipped.** Beyond documentation, Rosetta drives
+> the executable demo-environment tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
+> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run demos Clerk-free
+> with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
+> demo stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
+> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. See
+> [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
+> [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
+> [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
 
 ## What Is This?
 
@@ -59,6 +60,7 @@ Automate the setup process:
 /setup-platform      # First time: build the dev environment
 /start-platform      # Daily: start the platform locally
 /demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
+/demo-snapshot N     # Set-dress it: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
 /demo-seed N         # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
 /demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data)
 /demo-status         # Check: list running demo stacks, their offset ports, and health

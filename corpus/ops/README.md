@@ -21,6 +21,7 @@ This directory contains guides for operating the Anthropos platform locally.
 | [Seeding Spec](./seeding-spec.md) | Declaratively backfill a stack with structural data (blueprint + DAG + the 3-layer write isolation guard). Skill `/demo-seed`. (v1.1/M7) | Populating a demo/dev stack with an org + users + activity |
 | [DB Access](./db-access.md) | Read-only prod DB access (the wired `postgres` MCP tool **or** Tailscale + `~/.pgpass`) + the public-vs-customer boundary. Skill `/db-query`. (v1.2/M9a) | Investigating data, sizing a surface, or telling public reference data from customer data |
 | [Snapshot Spec](./snapshot-spec.md) | Capture a **public** reference surface once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack — tenant-data firewall + snapshot-fidelity. `stacksnap` CLI. (v1.2/M9a) | Filling a stack with the real public taxonomy/content library |
+| [Demo Recipes](./demo/README.md) | The end-to-end demo-env recipe family (up → **snapshot** → seed → use → down) + presets; the `/demo-snapshot` skill *set-dresses* a stack with the real public taxonomy + Directus content (100% catalog). (v1.2/M11) | Running a believable, full-fidelity demo world |
 
 ## Workflow
 

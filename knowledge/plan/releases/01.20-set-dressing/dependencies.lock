@@ -1,0 +1,41 @@
+# v1.2 "set dressing" — dependency lockfile (supply-chain record, 2026-06-07)
+# What was actually in this release, for future supply-chain incident response.
+# All deps are Go modules (resolved + integrity-hashed in each module's go.sum).
+# Licenses: MIT / BSD-3 / Apache-2.0 / ISC — all permissive, NO GPL/AGPL/LGPL.
+# Vuln audit (govulncheck v1.3.0): the ONLY called vulns are Go-stdlib (go1.25.3),
+#   all fixed in go1.25.6..go1.25.11 — a toolchain bump, not a dependency change.
+#   ZERO called vulnerabilities originate from any third-party module.
+#   ACTION: build/release with the go1.25.11+ toolchain to clear all 12.
+# New this release: rosetta-extensions/stack-snapshot (the M9a snapshot framework).
+
+## rosetta-extensions/alignment (the alignment framework)
+stdlib-only — no third-party modules.
+
+## rosetta-extensions/stack-snapshot (NEW in v1.2 — the snapshot framework — direct deps)
+github.com/jackc/pgx/v5        v5.9.2     # MIT — Postgres driver (COPY in/out); the platform's own driver
+# indirect: jackc/pgpassfile v1.0.0, jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761,
+#           jackc/puddle/v2 v2.2.2, golang.org/x/sync v0.17.0, golang.org/x/text v0.29.0  (all permissive)
+# test-only: stretchr/testify v1.11.1 (MIT), davecgh/go-spew v1.1.1 (ISC),
+#            pmezard/go-difflib v1.0.0 (BSD-3), gopkg.in/yaml.v3 v3.0.1 (MIT)
+
+## rosetta-extensions/stack-seeding (the v1.1 seeding stack, extended in v1.2 — direct deps)
+github.com/jackc/pgx/v5        v5.9.2     # MIT — Postgres driver (COPY); the platform's own driver
+gopkg.in/yaml.v3               v3.0.1     # MIT — blueprint / preset parsing
+# indirect: jackc/pgpassfile v1.0.0, jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761,
+#           jackc/puddle/v2 v2.2.2, kr/text v0.2.0, rogpeppe/go-internal v1.15.0,
+#           golang.org/x/sync v0.17.0, golang.org/x/text v0.29.0  (all permissive)
+
+## rosetta-extensions/clerkenstein (the Clerk mock — direct deps; unchanged vs v1.1)
+github.com/anthropos-work/colony      v0.34.3    # private (platform) — the disarmed-authn deploy target
+github.com/clerk/clerk-sdk-go/v2      v2.6.0     # MIT — the source SDK the Go gate measures against
+github.com/google/uuid                v1.6.0     # BSD-3
+github.com/svix/svix-webhooks         v1.93.0    # MIT — svix (webhook signing) the mock mirrors
+# indirect: go-jose/go-jose/v3 v3.0.5 (Apache-2.0), golang.org/x/crypto v0.51.0 (BSD-3)
+# @clerk/express ^1.3.47 (MIT) — npm-installed at CI/gate time, NOT shipped in the repo
+
+# CVE audit: no high/critical CVEs in any third-party dependency at release time.
+#   The 12 called issues are Go-stdlib only (crypto/tls, crypto/x509, net, net/http,
+#   net/url, net/textproto) — DoS/parsing class, cleared by the go1.25.11+ toolchain.
+# Integrity hashes: see each module's go.sum
+#   (rosetta-extensions/{stack-snapshot,stack-seeding,clerkenstein}/go.sum; alignment has none — stdlib-only).
+</content>

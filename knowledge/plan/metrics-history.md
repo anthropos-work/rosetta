@@ -4,6 +4,8 @@ One row per shipped release (newest first). Aggregated at `/developer-kit:close-
 
 | Release | Codename | Shipped | Framework tests | Mirror tests | Gates | Flakes | Supply-chain |
 |---|---|---|---|---|---|---|---|
+| v1.2 | set dressing | 2026-06-07 | 46 (alignment, unchanged) | 218 (clerkenstein, unchanged) | **snapshot mechanism → 100% data-DNA coverage** (taxonomy M9b + Directus content M10); stack-snapshot 212 + stack-seeding 232 → **708 Go total (+73% vs v1.1)**; Clerkenstein gates held 100/100; triple-clean 3/3 | 0 | GREEN (0 third-party CVEs; 12 stdlib → go1.25.11+ toolchain; all-permissive licenses) |
+| v1.1 | show floor | 2026-06-05 | 46 (alignment) | 218 (clerkenstein) | seeding stack 145 + demo tooling 87 → **409 Go total**; 3-layer prod-isolation guard (audit-proven) + data-DNA 100%/critical over 8 reachable surfaces; Clerkenstein gates held 100/100 | 0 | GREEN |
 | v1.0 | body double | 2026-06-03 | 43 test + 3 fuzz (stdlib-only) | 123 test + 6 fuzz / 8 pkg / 3 DNAs | Go 22/22 · JS 9/9 · express 9/9 · drift 9/9 (all 100/100; triple-clean 3/3) | 0 | GREEN (zero external modules) |
 
 _Baseline release — no prior to regress against._
