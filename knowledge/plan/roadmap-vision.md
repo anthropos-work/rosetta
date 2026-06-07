@@ -7,10 +7,11 @@ and a `release/{version}` branch is cut.
 > **Promotion history:** **v1.0 "body double"** → 2026-06-02 (shipped 2026-06-03, tag `v1.0`).
 > **v1.1 "show floor"** → 2026-06-03 (shipped 2026-06-05, tag `v1.1`).
 > **v1.2 "set dressing"** → 2026-06-05 (shipped 2026-06-07, tag `v1.2`).
-> **v1.3 "stack party"** → `roadmap.md` 2026-06-07 (in development on `release/01.30-stack-party`; the **dev/demo
-> convergence** — dev stacks as first-class peers, a unified first-available-N stack registry, generic `stack-*`
-> skills, a safety & security doc). **v1.4 is staged below** — the former v1.3 seeds (cloud store / S3 blobs, AI
-> content, shareability, more mirrors) moved here when the user scoped v1.3 = stack party (2026-06-07).
+> **v1.3 "stack party"** → 2026-06-07 (shipped 2026-06-07, tag `v1.3`; the **dev/demo convergence** — dev stacks as
+> first-class peers, a unified first-available-N stack registry, generic `stack-*` skills, a code-cited safety doc).
+> **v1.4 is staged below** — the former v1.3 seeds (cloud store / S3 blobs, AI content, shareability, more mirrors)
+> moved here when the user scoped v1.3 = stack party (2026-06-07); now the next version to draft via
+> `/developer-kit:design-roadmap`.
 
 ---
 
