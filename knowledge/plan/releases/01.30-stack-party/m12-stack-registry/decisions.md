@@ -13,3 +13,28 @@ _Implementation decisions with rationale. ID scheme: M12-D1, M12-D2, …_
 - ~~M12-Q1: registry-of-record vs docker-ps-derived~~ → **M12-D2**: registry is the record; docker-ps reconciles (adds-only).
 - ~~M12-Q2: lock mechanism for concurrent up's~~ → **M12-D3**: fcntl.flock on a sidecar + atomic write.
 - ~~M12-Q3: reconciling manually-started stacks~~ → **M12-D2**: live containers with no registry row are adopted (reserve their N).
+
+## Adversarial review (close — Phase 2c)
+
+Scenarios considered against the just-shipped allocator (the *scenario*, not just the fix — so future reviewers
+see what was probed). Each was either already covered or pinned with a new regression test at close.
+
+1. **Concurrent *explicit-N* collision.** The cross-process race test covered concurrent *auto*-allocation
+   ({1..12} distinct), but every contender claiming the **same explicit `--n`** was only ever probed
+   single-threaded (`test_explicit_n_rejected_when_taken_by_other_type`). Under load, the validate-then-reserve
+   must run inside the same flock as the write or two `up <N>`s with identical N could both pass the "is N free"
+   check. **Verified handled** — 6 OS processes all claiming `--n 5` → exactly one exits 0 (prints 5), five exit 2
+   ("N taken"), one `dev-5` row persisted, no `.tmp` leak. Pinned: `test_concurrent_explicit_N_collision_exactly_one_wins`.
+2. **Stale `.lock` file from a crashed holder.** A process that dies mid-allocate leaves the sidecar `.lock` file
+   on disk. If the lock were a presence-check (file-exists = locked), this would wedge every future allocate.
+   **Verified handled** — `fcntl.flock` is advisory and auto-released on fd-close / process death, so a fresh
+   `allocate()` with a stale `.lock` file present succeeds (returns N=1, no block). Probed at close; the design
+   (flock, not a lockfile-presence check) is correct — no new test needed (the lock semantics are OS-guaranteed).
+3. **Empty / port-less override → `set_ports([])`.** `ports_from_override` returns empty when an override
+   publishes no host ports; the CLI then calls `set-ports … --ports ""`. **Verified handled** — `set_ports("demo",
+   1, [])` records `"ports": []` without crash or record fabrication (already covered by the existing
+   `set_ports`-on-missing/malformed no-op tests + the `--ports ""` parse path). No corruption, no exception.
+4. **Corrupt / truncated registry mid-allocate.** A crash during a non-atomic write could leave invalid JSON.
+   **Verified handled** — `_load` recovers a corrupt/truncated registry to `{}` (the `docker ps` reconcile still
+   protects live N from re-allocation), and writes are atomic (temp + `os.replace`) so no partial file is ever
+   the committed registry. Already covered: `test_corrupt_registry_does_not_wedge_allocation` + `test_write_leaves_no_tmp_file`.

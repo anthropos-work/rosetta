@@ -1,6 +1,6 @@
 # M12 — Progress
 
-**Shape:** section · **Status:** planned
+**Shape:** section · **Status:** archived (completed 2026-06-07)
 
 ## Section checklist (from overview Scope.In)
 - [x] Unified stack registry (dev+demo, type/N/ports/status) in stack-core — `stack-core/stack_registry.py` (§1)
@@ -56,5 +56,38 @@
 ### Stop condition
 Loop stopped after Pass 3: full six-dimension scan found nothing new worth adding, coverage delta < 2% (98% steady; the 2 residual misses are structurally unreachable), and zero flakes (3 consecutive clean runs of the new tests). 0 bugs surfaced — the implementation held under every stress probe. Test funcs on touched files: `test_stack_registry.py` 28 → **49** (+21), `test_dev_stack.py` 21 → **22**, `test_tooling.py` 12 → **13**.
 
-## Final review
-_(filled at close)_
+## M12: Final Review
+
+Close review (2026-06-07). **3 findings total** · 0 scope · 0 code-quality must-fix · 0 docs · 1 test ·
+2 decision-triage. Deferral re-audit **GREEN** (`audit-deferrals/deferral-audit-2026-06-07-m12-close.md` —
+1 inherited DEF-M10-01 → v1.4 signed/unchanged, 0 repeat, 0 aged, 0 new; M12 added zero deferrals).
+
+### Scope
+- [x] All 5 section checkboxes delivered Fate-1; `overview.md` `Out:` items (skill renames → M14, dev
+      peers → M13) confirmed-covered, no silent drops. No TODO/FIXME/HACK in any M12-touched file.
+
+### Code Quality
+- [x] Both shell CLIs shellcheck-CLEAN; `stack_registry.py` py_compile-CLEAN. Consistent patterns across
+      dev-stack + demo-stack (allocate→trap→reguard→up→untrap→set-ports; `auto` keyword; `$STACK_REGISTRY`
+      override; dual-view status). No dead code, no cross-module reach-in, no resource leaks. **0 must-fix.**
+
+### Documentation
+- [x] Per-unit handbook contract satisfied: `stack-core/README.md` documents `stack_registry.py`; indexed
+      in both `README.md` + `knowledge/README.md` with M12 provenance. KB-1 resolved (GUIDE.md "registry
+      assigns N" rewritten to the true unified-allocator prose). `corpus/ops/rosetta_demo.md` delivery
+      accurate; all relative links resolve. No numeric test-count in any handbook → nothing to reconcile.
+
+### Tests & Benchmarks
+- [x] [Phase 2c] Added `test_concurrent_explicit_N_collision_exactly_one_wins` — the explicit-N analogue of
+      the cross-process auto-allocation race (6 procs claim `--n 5` → exactly 1 wins, 5 exit-2). Pins the
+      flock'd validate-then-reserve under contention (previously only single-threaded). stack-core 53→**54**.
+
+### Decision Triage
+- [x] M12-D1/D2/D3 → **archive** (maintainer rationale; the user-facing "why" of the unified registry +
+      first-available-N + adds-only reconcile already lives in `corpus/ops/rosetta_demo.md` + `stack-core/README.md`).
+- [x] KB-1 → already resolved + documented (the §3 GUIDE.md rewrite); no further blend needed.
+
+### Adversarial review (Phase 2c)
+- [x] 4 scenarios recorded in `decisions.md` (concurrent explicit-N collision · stale `.lock` no-wedge ·
+      empty-override `set_ports([])` · corrupt-registry recovery) — each verified handled; 1 pinned with a
+      new regression test, 3 already covered. **0 bugs surfaced.**

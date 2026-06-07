@@ -3,8 +3,9 @@ milestone: M12
 slug: stack-registry
 version: v1.3 "stack party"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-07
+last_updated: 2026-06-07
 complexity: medium
 delivers: updates corpus/ops/rosetta_demo.md (the unified registry + first-available-N model)
 ---

@@ -1,0 +1,77 @@
+{
+  "milestone": "M12",
+  "title": "Unified stack registry + first-available-N allocation: one shared N-pool across dev+demo (stack-core/stack_registry.py) + the first-available-N allocator (flock'd, docker-ps reconcile, atomic write) + both up-paths wired (explicit-N or auto, teardown frees the slot) + the corpus/ops/rosetta_demo.md delivery",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-07",
+  "is_last_milestone": false,
+  "kind": "the v1.3 foundation milestone — a NEW Python module (stack_registry.py) + shell-CLI wiring in dev-stack + demo-stack; no Go touched (M12 is the registry/port layer, not the snapshot/seeding Go modules). Tests are pytest + shellcheck.",
+  "tests": {
+    "language": "python (pytest) + shellcheck",
+    "go_total": 708,
+    "go_delta_vs_m11": 0,
+    "go_note": "M12 touched ZERO Go — the unified registry is Python (stack_registry.py) + bash CLI wiring. The 708 Go total (alignment 46 / clerkenstein 218 / stack-seeding 232 / stack-snapshot 212) is carried unchanged from v1.2.",
+    "python_m12_touched": {
+      "stack-core/tests (registry + gen_override)": 54,
+      "of_which_test_stack_registry.py": 50,
+      "dev-stack/tests": 22,
+      "demo-stack/tests": 13,
+      "total_python_m12_touched": 89
+    },
+    "python_delta": "test_stack_registry.py 0 -> 50 NEW (28 at build, 49 after 3 harden passes, +1 at close); dev-stack/tests +1 (21 -> 22, the real ERR-trap-frees path); demo-stack/tests +1 (12 -> 13, same trap path). +52 net new Python test funcs across M12.",
+    "close_added_test": "test_concurrent_explicit_N_collision_exactly_one_wins (stack-core) — the Phase 2c adversarial regression: 6 OS processes claim --n 5, exactly 1 wins / 5 exit-2.",
+    "shellcheck": "dev-stack/dev-stack + demo-stack/rosetta-demo both CLEAN",
+    "py_compile": "stack_registry.py + test_stack_registry.py CLEAN",
+    "race": "n/a (no Go in M12); the cross-process race is exercised by 12 OS-process contention on the real fcntl.flock (test_cross_process_allocations_are_all_distinct) + the new explicit-N collision test",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean — sequential runs of all 3 M12-touched pytest suites (89 passed each run; stdlib unittest = deterministic intra-suite order, the realistic CI condition; pytest-randomly not installed)"
+  },
+  "coverage": {
+    "note": "harden ran 3 passes (recorded in progress.md). stack_registry.py statement coverage 92% -> 98% (2 residual misses are structurally unreachable: the main() argparse-guaranteed fallthrough + the __main__ guard). The bash CLIs are I/O-bound (offline-uncoverable) — guarded by shellcheck + the allocation contract per the milestone's test policy.",
+    "stack_registry_py": "98% statements (2 miss: lines 313, 317 — both structurally unreachable)"
+  },
+  "delivered": {
+    "unified_registry": "stack-core/stack_registry.py — one record per live stack keyed by docker project '<type>-<N>', {type,n,ports,status,created}, one shared N-pool across dev+demo (dev-1 and demo-1 can never coexist). Runtime file stack-core/.stacks/registry.json (gitignored), flock-guarded, atomic temp+os.replace writes, corrupt-JSON recovery (M12-D1).",
+    "first_available_n": "allocate(type, n=None) — n=None auto-allocates the lowest free N across BOTH types; n=<int> validates it's free. Whole read-reconcile-pick-write under one fcntl.flock(LOCK_EX) on a sidecar .lock (portable macOS+Linux). Registry-of-record + docker-ps reconcile that only ADDS used-N (adopts unmanaged live stacks), never subtracts — release() is the only free path (M12-D2, M12-D3).",
+    "cli_wiring": "dev-stack/dev-stack + demo-stack/rosetta-demo both: up [N] (explicit or 'auto'/omit), ERR-trap frees the slot on a failed bring-up (installed BEFORE the post-allocation re-guard), set-ports records resolved host ports, down releases. status leads with the unified dev+demo view (rosetta-demo also keeps the per-demo provenance registry).",
+    "corpus_delivery": "corpus/ops/rosetta_demo.md — new 'Unified stack registry + first-available-N allocation (v1.3 M12)' section: the collision problem, the unified record, the allocator + adds-only reconcile + race guard, the dev,demo,dev,demo,demo -> dev-1,demo-2,dev-3,demo-4,demo-5 guarantee, pointers to stack-core/README.md + both CLI guides + the M14 forward-ref.",
+    "handbook": "stack-core/README.md gained the stack_registry.py row + the full registry/allocator model; indexed in README.md + knowledge/README.md with M12 provenance. KB-1 resolved (demo-stack/GUIDE.md 'registry assigns N' rewritten to the true unified-allocator prose)."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/stack-core/ (NEW stack_registry.py + README + .gitignore + tests), dev-stack/ + demo-stack/ (CLI wiring + tests + doc updates)",
+    "head": "be1c979",
+    "tag": "stack-party-m12",
+    "tag_note": "v1.3 tag naming is release-and-milestone (stack-party-mN), NOT the v1.2 stack-snapshot-mN form. Set at the final extensions HEAD after the close fix-commit.",
+    "build_commits": [
+      "2b37f96 (M12 §1: unified dev+demo stack registry + first-available-N allocator)",
+      "35e33a6 (M12 §1 review fixes: reserved-on-allocate + atomic registry write)",
+      "e4dd4ff (M12 §2: wire dev-stack + rosetta-demo to the unified first-available-N allocator)",
+      "aff69e7 (M12 §2 review fix: install the release-trap BEFORE the post-allocation re-guard)",
+      "18cdb64 (M12 §3 (extensions docs): document the unified registry + first-available-N)"
+    ],
+    "harden_commits": [
+      "6d86e65 (harden: deepen stack_registry tests — cross-process race, helper edge cases, error paths)",
+      "4441885 (harden: pin the real ERR-trap-frees path on both CLIs)",
+      "4ac195e (harden: pin the docker-ps adds-only contract from the explicit-N + release angles)"
+    ],
+    "close_commit": "be1c979 (close(M12): pin the concurrent explicit-N collision — adversarial review)"
+  },
+  "review": {
+    "findings": 3,
+    "scope": "GREEN — all 5 sections checked; every overview Scope.In item maps to a delivered artifact; Out: items (skill renames -> M14, dev peers -> M13) confirmed-covered; 0 code TODO/FIXME/HACK in M12-touched source; M12-D1..D3 + KB-1 recorded; M12-Q1/Q2/Q3 resolved to D-numbers",
+    "code_quality": "GREEN — both shell CLIs shellcheck-CLEAN, stack_registry.py py_compile-CLEAN; consistent allocate->trap->reguard->up->untrap->set-ports flow across both CLIs, 'auto' keyword, $STACK_REGISTRY override, dual-view status; no dead code, no cross-module reach-in, no resource leaks; 0 must-fix",
+    "docs": "GREEN — per-unit handbook contract met (stack_registry.py documented in stack-core/README.md + indexed in both component indexes with M12 provenance); KB-1 resolved; corpus/ops/rosetta_demo.md delivery accurate; all relative links resolve; no numeric handbook test-count to reconcile",
+    "tests": "GREEN — 89 Python test funcs across the 3 M12-touched suites (stack-core 54 / dev-stack 22 / demo-stack 13); +1 at close (the concurrent explicit-N collision); flake gate 5/5; shellcheck + py_compile clean; stack_registry.py 98% (2 structurally-unreachable misses)",
+    "decision_triage": "0 net-new knowledge edits — M12-D1/D2/D3's user-facing 'why' (unified registry + first-available-N + adds-only reconcile) already blended into corpus/ops/rosetta_demo.md + stack-core/README.md during build (verified accurate); all stay archive; KB-1 already resolved + documented",
+    "adversarial": "4 scenarios recorded (Phase 2c): concurrent explicit-N collision (pinned by a new regression test), stale .lock no-wedge (flock auto-releases on death), empty-override set_ports([]) (already covered), corrupt-registry recovery + atomic write (already covered) — 0 bugs surfaced; no documented-risk acceptance needed",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.30-stack-party/m12-stack-registry/audit-deferrals/deferral-audit-2026-06-07-m12-close.md — 1 inherited (DEF-M10-01 S3 blob bytes, re-scoped v1.3->v1.4 by user 2026-06-07, signed in roadmap-vision), 0 repeat, 0 aged-out, 0 new; M12 added zero deferrals (all Fate-1)"
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 5 sections (unified registry; first-available-N allocator race-safe; up explicit-N-or-auto + teardown frees slot; both CLIs consume the registry; the corpus/ops/rosetta_demo.md delivery + stack-core/README.md handbook)",
+    "confirmed_covered_fate2": "the generic stack-* skill renames -> M14 (roadmap M14 In: list); dev local-Directus/snapshot/seed -> M13; DEF-M10-01 (S3 blob bytes) -> v1.4 (inherited, signed)",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none"
+  },
+  "notes": "M12 is the first milestone of v1.3 'stack party' and the only NON-Go milestone surface to date — the unified registry is Python + bash. The implementation held under every harden + adversarial probe (0 bugs across 3 harden passes + 4 close scenarios). The headline race guarantee (no two concurrent up's pick the same N) is verified at the OS-process level (12-process auto-allocation + 6-process explicit-N collision), not just threads. Next: M13 (dev peers)."
+}
