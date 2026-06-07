@@ -13,12 +13,15 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > content surface](#the-directus-content-surface-m10--the-second-real-surface)). With M10 the **last `waived` surface
 > is promoted to `snapshot-seeded` → 100% data-DNA coverage** (the v1.2 thesis complete). **M11** curates this into
 > the usable product layer — the refreshed presets + the set-dressed `corpus/ops/demo/` recipe family + the
-> `/demo-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)).
+> `/demo-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)). **v1.3 M13** extends the
+> mechanism from demo-only to **dev**: a `dev-stack up` bring-up now replays the cached surfaces + stands up a
+> per-stack Directus + light-seeds itself by default — see [Dev as a full-fidelity
+> peer](#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed).
 > The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
 > snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
 > production-isolation boundary is [`seeding-spec.md`](seeding-spec.md). The cloud/S3 store + AI-generated content +
-> shareability are **v1.3**.
+> shareability are **v1.4** (was v1.3).
 
 ## For PMs — what it does
 
@@ -165,8 +168,9 @@ stale→refresh** decision (`store.Resolve`):
 - **stale** — the schema moved (or the format version is unknown) → a refresh is required.
 - **miss** — no snapshot for the surface → capture it first.
 
-`store.SnapshotStore` is an **interface** with a `localfs` backend now; the **cloud/S3 backend is the named v1.3
-swap** — the manifest already addresses payloads by location, so a remote backend re-implements the same
+`store.SnapshotStore` is an **interface** with a `localfs` backend now; the **cloud/S3 backend is the named v1.4
+swap** (moved from v1.3 with the rest of the cloud/S3/AI-content seeds) — the manifest already addresses payloads
+by location, so a remote backend re-implements the same
 `PutManifest` / `PutPayload` / `GetManifest` / `GetPayload` / `List` surface with no contract change.
 
 ## Embedding capture (M9a-Q3)
@@ -193,7 +197,9 @@ stacksnap status  [--store <root>]
   **`--dry-run`** sizes the surface (catalog-only) and asserts the firewall plan **without reading data** — the
   cheap pre-flight before a real read.
 - **`replay`** resolves cache-hit vs stale against the stack's live schema, then loads the cached snapshot via bulk
-  COPY + rebuilds any pgvector index.
+  COPY + rebuilds any pgvector index. The target is **any stack** — `--stack demo-N` *or* `--stack dev-N`; a dev
+  stack is a first-class replay target (the dev set-dressing pass, M13, drives this for `dev-N` cache-first — see
+  [Dev as a full-fidelity peer](#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed)).
 - **`status`** lists cached snapshots (surface, schema version, rows, source, capture time).
 
 Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage error.
@@ -375,6 +381,56 @@ behind**: with content present, the v1.1 seeders' `sim_id` / `skill_path_id` / `
 `deterministicUUID` values with no FK** — resolve against the **real replayed public template ids** (the M10 linkage,
 `stack-seeding/seeders/contentref.go`). When no content snapshot is replayed (a structural-only run), the resolver
 falls back to the free values (graceful degradation; the snapshot is a prerequisite, not a hard requirement).
+
+## Dev as a full-fidelity peer (M13 — local Directus + auto-snapshot + light seed)
+
+Through v1.2 the snapshot mechanism was demo-facing: `/demo-snapshot replay N` set-dressed a **demo** stack.
+Replay was always **dev-aware in the contract** (`stacksnap replay --stack <demo-N|dev-N>`; `pg.ParseStackN`
+parses `dev-3 => 3`), but a **dev** bring-up did none of it — a fresh dev stack had no per-stack Directus (it
+pointed at shared prod Directus) and no seeded data. **M13 makes a freshly-built dev stack a full-fidelity peer
+of a demo stack**: the `dev-stack up` bring-up runs a **set-dressing pass** (`rosetta-extensions/dev-stack/dev-setdress.sh`),
+**default-on**, that gives dev the same world demo gets.
+
+### What the dev set-dressing pass does
+
+After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps against `dev-N` (offset Postgres,
+`5432 + N·10000`):
+
+1. **The per-stack Directus (local Directus on dev).** It emits the M10 store-fork recipe (bootstrap → replay →
+   boot) and **firewall-checks the per-stack Directus env** — the dev CMS points its `DIRECTUS_BASE_ADDR` at the
+   **per-stack** offset-port Directus, **never** the shared `content.anthropos.work`. Both the recipe and the
+   firewall come from one source of truth: the **`stack-snapshot/cmd/provision-plan`** runner, which makes the M10
+   `directus.ProvisionPlan` / `EnvContract` / `Validate` contract *executable* (it was library-only through v1.2 —
+   #M13-D2).
+   `provision-plan --check-env --base-addr … --dsn …` exits non-zero — **hard-aborting the pass before any
+   replay** — if the per-stack Directus env ever resolves to the prod Directus. The **live container boot remains a
+   documented operational step** (the M9b/M10 discipline): the recipe is printed + the env validated; the operator
+   boots the container.
+2. **Cache-first auto-snapshot.** It replays the cached **public** surfaces (`taxonomy` then `directus`) into
+   `dev-N` via `stacksnap replay` — **cache-first by construction** (replay resolves the cache and **never**
+   captures; capture is a separate, privileged release-time prod read). A **stale/missing cache is a warning, not
+   a failure**: the dev stack degrades to a structural-only world but **still seeds**; only a real replay/firewall
+   error aborts.
+3. **The dev-min light seed.** It applies the `dev-min` preset (~1 org + ~10 users) so the stack is **never
+   empty** — see [`seeding-spec.md`](seeding-spec.md#the-shipped-presets-stack-seedingpresets).
+
+### Escapes + safety
+
+- **`--no-snapshot`** keeps the seed but skips the heavier per-stack Directus + replay (lean bring-up).
+- **`--no-setdress`** skips the whole pass (a bare bring-up — the pre-M13 behaviour).
+- **Non-fatal.** The pass is non-fatal on `dev-stack up`: a not-yet-migrated stack still comes **UP**; re-run
+  `dev-setdress.sh <N>` by hand after migration (cache-first + idempotent). (default-on-but-non-fatal: #M13-D3)
+- **The n=0-dev guard.** The pass **hard-refuses N=0** (the main `anthropos` dev stack) without `--force`, so an
+  auto-set-dress can never touch the developer's primary stack (a second layer above `stackseed --reset`'s own
+  n=0 refusal — see [`seeding-spec.md`](seeding-spec.md#the-cli)).
+- **Prod-safety holds unchanged.** Capture is never run by the dev pass (replay only — a per-stack WRITE to the
+  isolated offset-port Postgres + the per-stack Directus schema); the shared prod Directus / prod S3 are never
+  written; media stays **refs-only** (blob bytes are v1.4). The read-side `AssertPublicOnly` firewall + the
+  write-side isolation guard both still hold.
+
+The net effect: **dev and demo are now the same world built two ways** — the same `stack-snapshot` +
+`stack-seeding` machinery, the same per-stack Directus store fork, behind the same firewalls. M12 made dev a peer
+for **N-allocation** (the unified registry); M13 makes it a peer for **data**.
 
 ## See also
 - [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/demo-snapshot`) sits in the up→snapshot→seed→use→down flow.
