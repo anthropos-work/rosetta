@@ -63,7 +63,7 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
   free (unlinked) content refs.
 - **The hard line (still true).** This recipe seeds *structural* activity (sessions/events with real shapes). It
   does **not** fabricate AI transcripts, AI-scored narratives, or fresh embeddings — those (plus external
-  shareability) are the **v1.3** "richer demo worlds" theme. The taxonomy + content *libraries* are real (the
+  shareability) are the **v1.4** "richer demo worlds" theme. The taxonomy + content *libraries* are real (the
   snapshot); the *per-session AI narrative* is not.
 - **Tuning.** `activity.months` widens the timeline; `activity.pass_rate` shifts the pass/fail balance; `size`
   scales the population. Schema reference: [`../seeding-spec.md`](../seeding-spec.md).

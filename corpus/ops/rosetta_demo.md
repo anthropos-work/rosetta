@@ -38,4 +38,4 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 
 > **Where it lives / the full model:** `rosetta-extensions/stack-core/README.md` (the registry schema +
 > allocator contract), with the demo + dev CLIs documented in `demo-stack/GUIDE.md` and `dev-stack/README.md`.
-> The generic `stack-*` skill set that surfaces this (renamed `/demo-*` → `/stack-*`) lands in M14.
+> The generic `stack-*` skill set that surfaces this (renamed `/demo-*` → `/stack-*`) shipped in M14.

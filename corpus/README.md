@@ -36,11 +36,14 @@ Individual service documentation and developer maps.
 ### [Ops](./ops/)
 Operations guides for setting up, running, and updating the platform.
 
-*   **Demo environments (disposable, Clerk-free, seeded stacks — v1.1 "show floor"):**
-    *   [Demo Environments — family index](./ops/demo/README.md): **Start here.** The 4-step flow (`/demo-up` → `/stack-seed` → use → `/demo-down`) + the index of guides, recipes, and presets.
-    *   [Rosetta Demo](./ops/rosetta_demo.md): The lifecycle mechanism — bring-up, port-offset, Clerkenstein injection, per-stack isolation, teardown.
-    *   [Seeding Spec](./ops/seeding-spec.md): The `stack.seed.yaml` blueprint, the dependency-DAG, the **production-isolation boundary**, the data-DNA.
-    *   Recipes: [enterprise onboarding](./ops/demo/recipe-enterprise-onboarding.md) · [skill progression](./ops/demo/recipe-skill-progression.md) · [browser login](./ops/demo/recipe-browser-login.md).
+*   **Disposable stacks (Clerk-free, snapshot-set-dressed, seeded — dev *and* demo, converged in v1.3 "stack party"):**
+    *   [Demo Environments — family index](./ops/demo/README.md): **Start here.** The flow (`/dev-up` or `/demo-up` → `/stack-snapshot` → `/stack-seed` → use → `/dev-down` or `/demo-down`) + the index of guides, recipes, and presets.
+    *   [Rosetta Demo](./ops/rosetta_demo.md): The lifecycle mechanism — bring-up, the unified first-available-N registry (v1.3/M12), port-offset, Clerkenstein injection, per-stack isolation, teardown.
+    *   [Seeding Spec](./ops/seeding-spec.md): The `stack.seed.yaml` blueprint, the dependency-DAG, the **production-isolation boundary**, the data-DNA, the shipped presets (incl. the `dev-min` dev auto-seed).
+    *   [Snapshot Spec](./ops/snapshot-spec.md): Capture a **public** reference surface once from a safe prod source, manifest-cache it, replay per-stack — tenant-data firewall + snapshot-fidelity (v1.2). Dev is a full-fidelity peer (v1.3/M13).
+    *   [DB Access](./ops/db-access.md): Read-only prod DB access + the public-vs-customer boundary (v1.2/M9a).
+    *   [Safety & Security](./ops/safety.md): The code-cited safety contract — never reads private data, never touches prod (v1.3/M15).
+    *   Recipes: [snapshot world](./ops/demo/recipe-snapshot-world.md) · [enterprise onboarding](./ops/demo/recipe-enterprise-onboarding.md) · [skill progression](./ops/demo/recipe-skill-progression.md) · [browser login](./ops/demo/recipe-browser-login.md).
 *   **Personal staging (full onboarding for new engineers + AI agents):**
     *   [Staging Bringup](./ops/staging-bringup.md): The spine doc — fresh VM → Tailscale-attached staging with live prod data + dev Clerk login + daily sync. **Start here if you're new.**
     *   [Staging Sync](./ops/staging-sync.md): Daily force-reset to `origin/main`, skip-worktree mechanics, recovery from clobbered WIP.

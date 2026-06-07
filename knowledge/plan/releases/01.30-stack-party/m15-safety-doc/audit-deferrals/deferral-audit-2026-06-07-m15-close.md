@@ -35,8 +35,9 @@ invoked-by: close-milestone
   item: "Cloud snapshot store + S3 media blob bytes (swap the SnapshotStore backend for S3 behind the
          existing interface + capture actual Directus-media blob bytes, gated on S3-read access)"
   origin_milestone: M10 (v1.2 'set dressing')
-  first_deferred_on: 2026-06-07   # v1.2 close, signed escape-hatch (DEF-M10-01 + M9a-D4)
+  first_deferred_on: 2026-06-06   # M10 close (v1.2). Destination DRIFTED forward: Fate-2 → v1.3 at v1.2 close, then → v1.4 at v1.3 design (2026-06-07). 2nd release carried. Formalized as RELEASE-SCOPE-DEFER in m15-safety-doc/decisions.md at v1.3 close-release (2026-06-07).
   last_seen_in: knowledge/plan/roadmap-vision.md:23 ("v1.4 seeds")
+  classification: DRIFT_DEFER   # destination updated forward without resolution — not CHRONIC (reason is a real, consistent credential gap; the forward move was a single dated user re-scoping)
   destination: "v1.4 (staged in roadmap-vision.md; not yet cut)"
   reason_recorded: "Needs eu-west-1 S3-read access not wired today; the local .agentspace/snapshots/
                     store + refs-only media is the current sanctioned posture. Cloud backend swaps in

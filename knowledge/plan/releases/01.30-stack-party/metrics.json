@@ -1,0 +1,68 @@
+{
+  "release": "v1.3",
+  "codename": "stack party",
+  "shipped": "2026-06-07",
+  "milestones": ["M12", "M13", "M14", "M15"],
+  "theme": "the dev/demo convergence — dev stacks become first-class peers (a unified first-available-N stack registry, a local per-stack Directus + auto-snapshot + light dev-min seed on build), one generic stack-* skill set (hard-renamed, no aliases), and a code-cited safety & security doc + a dual-repo KB refresh",
+  "aggregate": {
+    "go_test_matcher": "^func Test (test funcs only, excludes Fuzz*) — consistent across all 4 modules; this is the apples-to-apples baseline vs v1.2's test-only 693",
+    "alignment_framework": {"module": "anthropos.dev/alignment", "test_funcs": 43, "go_total_with_fuzz": 46, "external_deps": 0, "note": "stdlib-only; unchanged in v1.3"},
+    "clerkenstein_mirror": {"test_funcs": 210, "go_total_with_fuzz": 218, "note": "unchanged vs v1.2 (the mock surface — v1.3 touched no clerkenstein)"},
+    "stack_snapshot": {"test_funcs": 224, "note": "212(test-only 209) -> 224 (+15 test funcs across v1.3: M13 cmd/provision-plan runner +11, M14 rename guard +1, M15 safety.md<->code drift guards +3)"},
+    "stack_seeding": {"test_funcs": 236, "note": "232(test-only 231) -> 236 (+5 test funcs across v1.3: M13 dev-min preset pin +1, M15 write-side safety.md<->code drift guards +4)"},
+    "total_go_test_funcs": 713,
+    "baseline_v1_2_test_only": 693,
+    "delta_go": "+20 test funcs (stack-snapshot +15, stack-seeding +5; alignment + clerkenstein unchanged). No regression. (v1.2's headline 708 included 15 Fuzz funcs; the apples-to-apples test-only baseline is 693.)",
+    "python_test_funcs": 174,
+    "python_breakdown": {"stack-core": 54, "dev-stack": 38, "demo-stack": 13, "stack-injection": 69},
+    "python_note": "M12 NET-NEW the unified-registry suite — test_stack_registry.py 0 -> 50, +52 net new Python test funcs across M12 (stack-core 54 incl gen_override; dev-stack/demo-stack +1 each for the ERR-trap-frees path). M13 grew dev-stack to 38. M14/M15 touched no Python production surface.",
+    "stack_verify_python": "stack-injection 69 counted; stack-verify present (not separately counted here)"
+  },
+  "test_health": {
+    "race": "all 4 Go modules pass go test ./... -race -count=1 (exit 0)",
+    "flake_count": 0,
+    "flake_gate": "0 flakes across every v1.3 milestone (M12 5/5 pytest; M13 5/5 Go -shuffle + 5x pytest; M14 5/5; M15 5/5 on both touched packages). Release-level: full -race suite clean.",
+    "gofmt": "clean (all 4 modules)",
+    "go_vet": "clean (all 4 modules)",
+    "shellcheck": "dev-stack/dev-stack + dev-stack/dev-setdress.sh + demo-stack/rosetta-demo CLEAN",
+    "py_compile": "CLEAN (stack_registry.py + all extension Python sources)"
+  },
+  "coverage_snapshot": {
+    "stack_registry_py": "98% statements (M12 — 2 structurally-unreachable misses)",
+    "cmd_provision_plan": "93% statements (M13 — run() + checkEnvContract 100%; residual = os.Exit shim + an invariant-pinned defensive branch)",
+    "directus_provision": "100% (M13 reuse of the M10 surface)",
+    "blueprint_dev_min": "100% (M13 preset loader)",
+    "drift_guards": "M15 — every load-bearing safety.md claim (read-side predicates + AssertPlan/AssertCaptured + bounded read-only SQL; write-side rejection-lists + CheckWrite/PreflightEnv/AssertClean + forced bucket override) pinned by a fail-closed test, mutation-proven at close",
+    "regression_vs_v1_2": "no logic-coverage regression — v1.3 added new pinned surfaces (registry, runner, drift guards); the unchanged Go modules (alignment, clerkenstein) are byte-identical"
+  },
+  "release_gates": {
+    "unified_registry": "one shared N-pool across dev+demo; first-available-N allocator (fcntl.flock + atomic write + docker-ps adds-only reconcile); OS-process race verified (12-process auto + 6-process explicit-N collision)",
+    "dev_as_peer": "dev-stack up gets the demo treatment by default — per-stack Directus (provision-plan runner) + cache-first stacksnap replay of public taxonomy+directus + dev-min light seed; capture NEVER run on dev (replay only); media refs-only; n=0-dev guard doubled",
+    "unified_skills": "dev-up/dev-down + stack-list/stack-seed/stack-snapshot/stack-update (hard rename, no aliases); 6 old dirs removed; CLAUDE.md 14-skill bijection; rename invariant 0 live stragglers (guarded by TestDocSourceSkillRename_M14)",
+    "safety_contract": "corpus/ops/safety.md (code-cited) — read-side (never reads private data) + write-side (never touches prod); every load-bearing claim pinned to firewall.go/isolation.go/audit.go/source.go by a fail-closed drift guard (mutation-proven)",
+    "prod_isolation": "the 3-layer guard (CheckWrite/PreflightEnv/AssertClean) + tenant firewall (AssertPlan/AssertCaptured) + public predicates intact across the converged dev+demo path; audit-proven zero pollution",
+    "data_dna_coverage": "100% over the full catalog (inherited from v1.2; unchanged)",
+    "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces (Go 22/22 · JS 9/9 · express 9/9 · deploy 7/7) — held green, v1.3 touched no clerkenstein"
+  },
+  "supply_chain": {
+    "audit": "govulncheck (installed for this phase) + go vet (clean) + license scan",
+    "third_party_called_vulns": 0,
+    "stdlib_called_vulns": "alignment 0; clerkenstein/stack-snapshot/stack-seeding 12/12/12 — ALL Go stdlib at @go1.25.3 (local dev toolchain: crypto/x509, crypto/tls, net, net/url, net/http, net/textproto, os), cleared by building with the go1.25.11+ toolchain (highest fixed-in: crypto/x509@go1.25.11). Same class + remediation as v1.2.",
+    "high_critical_dependency_cves": 0,
+    "non_called_third_party_vulns": "found in imported/required modules but not reachable from called code (govulncheck symbol analysis): not a shipped risk",
+    "licenses": "all permissive — MIT / BSD-3 / ISC / Apache-2.0 (pgx, testify, yaml.v3, go-jose, clerk-sdk-go, svix-webhooks, google/uuid, golang.org/x/*); NO GPL/AGPL/LGPL",
+    "lockfile": "dependencies.lock (20 external modules across 4 Go modules)"
+  },
+  "repos": {
+    "rosetta": "the corpus + plan + Claude skills (public). v1.3 diff: the skill hard-rename (.claude/skills/), the new corpus/ops/safety.md + corpus doc refresh, CLAUDE.md/README, plan records. ZERO tracked .go files.",
+    "rosetta_extensions": "the private monorepo — 4 Go modules (clerkenstein, alignment, stack-snapshot, stack-seeding) + the Python/bash stack tooling (stack-core registry, dev-stack/demo-stack CLIs). v1.3 delta: stack-snapshot-m11..HEAD = 22 files, +2386/-52, 23 commits. Tags stack-party-m12..m15."
+  },
+  "deferrals": {
+    "inherited_to_v1_4": ["DEF-M10-01 — Directus S3 media blob bytes + cloud SnapshotStore backend (built + unit-tested, unreachable from any entrypoint, gated on S3-read access; signed v1.2 escape-hatch, re-scoped v1.3->v1.4 by user 2026-06-07; NOT aged out — all 4 aging triggers negative)"],
+    "escape_hatch_count": 0,
+    "fate_3_undelivered": 0,
+    "new_deferrals_this_release": 0,
+    "note": "every v1.3 milestone (M12->M15) added ZERO deferrals — all scope landed Fate-1. The only carried item is the inherited, signed DEF-M10-01 -> v1.4."
+  },
+  "verdict": "GREEN — Go test funcs +20 (no decrease; 693->713 test-only matcher) + 52 net-new Python (the unified registry); coverage flat/up on continuing logic packages; flake 0; -race/gofmt/vet/shellcheck/py_compile clean; 0 called third-party CVEs (the 12 called vulns are Go stdlib @go1.25.3, cleared by go1.25.11+ toolchain — same as v1.2); all-permissive licenses; 0 new deferrals (only the inherited signed DEF-M10-01 -> v1.4)."
+}

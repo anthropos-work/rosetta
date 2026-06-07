@@ -9,8 +9,8 @@ structural data from one declarative blueprint, the dependency order, and (most 
 > content, sessions, backdated activity at scale) is M7c; the **data-DNA** schema-conformance/drift gate is
 > M7b; the shipped **presets** + the **`dev-min` dev auto-seed** (v1.3 M13 — applied on a `dev-stack up` build
 > so a fresh dev stack is never empty) are in [The shipped presets](#the-shipped-presets-stack-seedingpresets).
-> The seeding code lives in the gitignored `rosetta-extensions` monorepo (its own git), consumed by the
-> `/demo-*` skills + the dev-stack bring-up — **no platform repo is modified.** It is also **not** scattered in
+> The seeding code lives in the gitignored `rosetta-extensions` monorepo (its own git), consumed by the unified
+> `stack-*` skills (`stack-seed` / `stack-snapshot`) + the dev-stack bring-up — **no platform repo is modified.** It is also **not** scattered in
 > the rosetta corpus: it's authored and tagged in the authoring copy at `.agentspace/rosetta-extensions/`, then
 > consumed per-stack at a pinned tag (`stack-<role>/rosetta-extensions @ <tag>`).
 

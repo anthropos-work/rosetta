@@ -2,12 +2,14 @@
 
 **The documentation corpus for the Anthropos platform.**
 
-> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" — shipped.** Beyond documentation, Rosetta drives
-> the executable demo-environment tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
-> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run demos Clerk-free
+> **v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" — shipped.** Beyond documentation, Rosetta drives
+> the executable stack tooling (in the private `rosetta-extensions` monorepo): an **alignment-testing
+> framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run stacks Clerk-free
 > with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
-> demo stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
-> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. The
+> stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
+> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. In v1.3
+> **dev and demo stacks converged** — a unified first-available-N registry, dev as a full-fidelity peer (local
+> Directus + auto-snapshot + light seed), and one generic `/dev-up` + `/stack-*` skill set. The
 > tooling's two safety guarantees — **never reads private/customer data, never touches prod** — are stated
 > authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). See also
 > [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),

@@ -128,7 +128,7 @@ corpus stays clean. (Setup/run/update progress is tracked in
 `rosetta-extensions` (private: `anthropos-work/rosetta-extensions`) is the
 executable-tooling monorepo that **operates** stacks — sections: `clerkenstein`
 (the Clerk mock), `demo-stack`, `dev-stack`, `stack-injection`, `stack-core`,
-`stack-seeding`, `alignment`. `rosetta` documents *how the platform works*;
+`stack-seeding`, `stack-snapshot`, `stack-verify`, `alignment`. `rosetta` documents *how the platform works*;
 `rosetta-extensions` is *the tooling that spins up, injects, and seeds copies of
 it*. It has **two clone roles**:
 
@@ -137,7 +137,7 @@ it*. It has **two clone roles**:
   **tag**. New tools are developed here.
 - **Per-stack consumption copies → `stack-<role>/rosetta-extensions @ <tag>`** —
   each stack consumes the tooling at a **pinned tag** (reproducible). The
-  `/demo-*` and `/align-*` skills drive a stack's own clone.
+  `/dev-*`, `/demo-*`, `/stack-*`, and `/align-*` skills drive a stack's own clone.
 
 **Policy:** all code/scripts that operate the corpus/platform on a spawned stack
 live in `rosetta-extensions` — never scattered in the `rosetta` corpus, never

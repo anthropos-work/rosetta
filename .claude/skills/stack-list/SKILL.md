@@ -1,15 +1,15 @@
 ---
 name: stack-list
-description: List the live stacks — every dev-N and demo-N that's up, their offset ports, profile, health, and resolved per-repo refs — from the one unified registry. Use when asked which stacks / environments are running.
+description: List the live stacks — every dev-N and demo-N that's up, their type, N, status, and offset ports — from the one unified registry. Use when asked which stacks / environments are running.
 argument-hint: (no args)
 ---
 
 # Stack List — list the live dev + demo stacks
 
-Reports the **unified stack registry** (M12) — which `dev-N` **and** `demo-N` exist, their offset, profile,
-status, ports, and resolved per-repo clone refs — plus a live `ps` per project. One N-pool spans both kinds,
-so this is the single source of truth for "what's running and which N is free". (Formerly `/demo-status`,
-now generalized to both stack types.)
+Reports the **unified stack registry** (M12) — which `dev-N` **and** `demo-N` exist, with the fields the
+registry actually carries per stack: `type`, `n`, `status`, resolved host `ports` (the offset is `base + N·10000`),
+and `created` — plus a live `ps` per project. One N-pool spans both kinds, so this is the single source of
+truth for "what's running and which N is free". (Formerly `/demo-status`, now generalized to both stack types.)
 
 ## Mission
 
@@ -25,9 +25,11 @@ The `stack-<role>/` prefix is the stack's per-stack consumption clone of rosetta
 tag), distinct from the authoring copy at `.agentspace/rosetta-extensions/` where this tooling is built,
 tested, and tagged. The `demo-stack` / `dev-stack` section names inside the repo stay as-is.
 
-Then summarize for the user: which stacks are live (dev + demo), on which offset ports, their health, which
-N values are **free** (re-allocatable), and — useful for reproduction — the release tag each repo was cloned
-at (from the registry's `clones` field, when present).
+Then summarize for the user: which stacks are live (dev + demo), on which offset ports, and which N values are
+**free** (re-allocatable). For a `demo-N`, `rosetta-demo status` *additionally* surfaces per-demo provenance
+(the profile + the release tags each repo was cloned at) from demo-stack's **own** separate provenance registry
+(`demo-stack/stacks/registry.json`) — that detail is demo-only; the unified registry itself does not store it, and
+`dev-N` stacks have no equivalent provenance record.
 
 To inspect one stack's containers directly: `docker compose -p dev-N ps` or `docker compose -p demo-N ps`.
 The main `anthropos` dev stack (N=0) is a separate project; `docker ps | grep '^anthropos-'` shows it
