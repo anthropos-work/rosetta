@@ -7,8 +7,14 @@ indexes are the depth.
 
 **When to use.** You want a demo world a stakeholder can log into and click around (a populated org with months
 of activity), reproducibly, on offset ports, killable cleanly — and you must never pollute production or the
-dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `../run_guide.md`. If you need
-*staging*, see the `../staging-*` family.
+dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `../run_guide.md` (driven by
+`/dev-up`). If you need *staging*, see the `../staging-*` family.
+
+> **Dev is a peer (v1.3).** Every set-dressing + seeding recipe below works on a **`dev-N`** stack exactly as it
+> does on a `demo-N` — the `/stack-snapshot` / `/stack-seed` ops take `dev-N|demo-N` interchangeably, and a
+> `/dev-up N` bring-up already set-dresses + light-seeds itself by default. Where a recipe says `demo-N`, read
+> `dev-N|demo-N`. The one exception is the **`N=0` main dev stack**, which the auto-set-dress + `--reset`
+> guards protect (see [`../safety.md`](../safety.md) §2.5).
 
 ## The end-to-end flow (~minutes)
 
@@ -31,6 +37,9 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 ## Index
 
 **Mechanism guides (the "how it works"):**
+- [`../safety.md`](../safety.md) — the **safety contract**: the consolidated read-side (tenant-data firewall,
+  public predicates, read-only capture) + write-side (3-layer isolation guard, never-write-prod, n=0 guards,
+  audit-proven zero pollution) statement. **Read this first** if you care *why* it's safe. (v1.3 M15)
 - [`../rosetta_demo.md`](../rosetta_demo.md) — the **lifecycle**: bring-up, the port-offset scheme, the
   Clerkenstein injection, the per-stack project/data isolation, the resource budget, teardown. (M3)
 - [`../seeding-spec.md`](../seeding-spec.md) — the **seeding** reference: the `stack.seed.yaml` blueprint, the
@@ -70,5 +79,7 @@ content refs).
   consumed as-is.
 - **Production-safe.** The seeder's isolation guard makes it *structurally impossible* for a non-prod stack to
   write a shared/prod store (Directus, the prod S3-public bucket, live Clerk, Customer.io/Brevo, AI APIs); it
-  seeds only the per-stack Postgres/Redis, and proves it with an audit log. See `../seeding-spec.md`.
+  seeds only the per-stack Postgres/Redis, and proves it with an audit log. Snapshot **capture** is read-only +
+  public-only (the tenant-data firewall). The full contract — both halves — is [`../safety.md`](../safety.md)
+  (write-side detail in `../seeding-spec.md`, read-side in `../snapshot-spec.md`).
 - **Isolated.** Every op is `-p demo-N`-scoped on offset ports with its own data; the dev stack is never touched.
