@@ -163,6 +163,14 @@ stackseed --stack dev-1  --seed presets/dev-min.seed.yaml        # the dev auto-
 stackseed --stack demo-1 --reset                                 # per-stack reset (refuses n=0 dev unless --force)
 ```
 
+**Re-run safe (v1.3b M17).** A re-seed is now idempotent: every deterministic-id surface writes via an
+`ON CONFLICT (id) DO NOTHING` COPY merge, and the casbin `g2` grant via `WHERE NOT EXISTS` — so a 2nd seed
+inserts 0 rows instead of unique-violating or duplicating the grant. `--reset` truncates the **full**
+seeded fleet (child-first FK-safe: `activity_events → sessions → skill_path_sessions → assignments →
+memberships → users → organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2'`,
+never a TRUNCATE — it shares the sentinel schema with `init_policy.sql`'s global policy). Full per-component
+re-run contract: [`idempotency.md`](idempotency.md).
+
 **The n=0-dev guard, two layers (M13).** `--reset` already refuses N=0 (the main `anthropos` dev stack) unless
 `--force`. M13's **auto-seed on dev build** adds a second, earlier guard in the bring-up's set-dressing pass
 (`dev-setdress.sh`): it **refuses to auto-set-dress N=0 without `--force`**, so an automatic dev seed can never

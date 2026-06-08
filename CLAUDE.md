@@ -274,6 +274,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)
 - `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
 - `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/stack-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
+- `corpus/ops/idempotency.md`: **The bring-up re-run safety contract** (v1.3b M17) — what happens when you re-run migrate / snapshot-replay / seed: each is safe-and-idempotent or fails loudly with a guard (replay TRUNCATE-then-reload, idempotent seed COPY + casbin `WHERE NOT EXISTS`, the fixed `--reset`, the `set -e` first-run-race hardening). The *run-it-twice* companion to snapshot/seeding-spec
 - `corpus/ops/demo/recipe-snapshot-world.md`: The **set-dressing recipe** — capture→replay the real public library so a demo world's catalog + content templates are real
 
 ### Updating the Platform

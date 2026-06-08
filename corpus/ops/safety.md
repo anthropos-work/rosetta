@@ -244,5 +244,9 @@ pointer only; everything else in this doc describes what ships today.
 - [`db-access.md`](db-access.md) — the production read foundation + the public-vs-customer boundary (read-side).
 - [`snapshot-spec.md`](snapshot-spec.md) — the capture/replay mechanism + the firewall + the capture-source policy.
 - [`seeding-spec.md`](seeding-spec.md) — the seeding framework + the 3-layer write-isolation boundary.
+- [`idempotency.md`](idempotency.md) — the bring-up **re-run** contract (v1.3b M17). It adds the only new
+  destructive ops since this contract was written — the replay re-run `TRUNCATE` and the `stackseed --reset`
+  truncates — and they obey it byte-for-byte: every `TRUNCATE` targets a **per-stack-isolated offset** store
+  only (pinned by a target-class test), never prod, never a shared store.
 - [`../architecture/security_compliance.md`](../architecture/security_compliance.md) — the platform's own
   security/compliance posture (the layer below the tooling).
