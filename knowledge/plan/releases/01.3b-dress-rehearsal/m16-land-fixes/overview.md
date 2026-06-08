@@ -3,7 +3,7 @@ milestone: M16
 slug: land-fixes
 version: v1.3b "dress rehearsal"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-08
 last_updated: 2026-06-08
 complexity: small-medium

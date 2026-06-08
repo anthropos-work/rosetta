@@ -58,3 +58,27 @@ _Section checklist. Closure = all boxes land + `/developer-kit:close-milestone` 
 - demo-stack suite: **13 → 21** (+8 guard tests across 3 new classes); full extensions suite **174 → 182**, all green.
 - Extensions harden commits (on `main`, pushed to `origin`): `74b53eb` (rename-drift + doc-truth guards), `aabbf74` (migrate-race fence). Tag `dress-rehearsal-m16` deliberately left at `44edc09` — `/developer-kit:close-milestone` reconciles it to final HEAD; per-stack clone (`stack-demo/rosetta-extensions`) fetched the new objects, checkout stays pinned at the tag until reconcile.
 - rosetta `m16/land-fixes` branch: only this `progress.md` update (no testable rosetta code).
+
+## M16: Final Review
+
+_close-milestone review (2026-06-08). 7 phases of cross-cutting review; near-clean — 1 Fate-1 doc fix landed._
+
+### Scope
+- [x] All 7 deliverables checked off in `## Deliverables`; `overview.md` In: list fully mapped to Done (Fate 1) except the one Fate-2 (live docker race test → M17, M16-D7). 0 silent drops.
+
+### Code Quality
+- [x] [verify] The 5 workspace-resolvers uniform (stack-dev-preferred + `[ -d ] ||` legacy fallback, each legacy-marked); migrate-race `|| echo 0` correct under `set -e -o pipefail`; 0 dead code; `bash -n` + `py_compile` clean. No must-fix / should-fix / nice-to-have.
+
+### Documentation
+- [x] [Fate-1] `clerkenstein/knowledge/glossary.md` `anthropos-demo/` → `stack-demo/` (legacy-marked) — the LAST stale workspace name in the repo (M16-D8, ext `e6161b0`, pushed).
+- [x] [verify] GUIDE header (v1.3 / remote-exists / `/stack-list` / 21 tests / `pytest tests/ -v` + 3.11/3.12 note) all accurate vs live; corpus `rosetta_demo.md` note self-consistent + cross-links CLAUDE.md; corpus `anthropos-dev` mentions are only the intentional in-note explanatory ones.
+
+### Tests & Benchmarks
+- [x] [verify] Full extensions Python 182/182; all 4 Go modules pass. M16's two functional changes (rename, migrate-race) + the GUIDE truth-up are each fenced (`TestRenameDrift`, `TestMigrateRaceGuard`, `TestGuideDocTruth`). 0 unit/integration/regression gaps. No benchmarks (docs/rename milestone).
+
+### Decision Triage
+- [x] M16-D2 (back-compat fallback) → already blended into `corpus/ops/rosetta_demo.md` (the M16 layout note + code snippet + cross-link). Verified accurate.
+- [x] M16-D1/D3/D4/D5/D6/D7/D8 → archive (maintainer/process-only: tag-version scheme, re-tag mechanics, consumption inventory, deferral routing, the clerkenstein boundary trail). No knowledge home warranted.
+
+### Adversarial (Phase 2c)
+- [x] 2 scenarios recorded in `decisions.md` (both-roots-exist resolves deterministically to stack-dev; the migrate race is fenced) — both handled, no fix needed.
