@@ -9,9 +9,13 @@ and a `release/{version}` branch is cut.
 > **v1.2 "set dressing"** → 2026-06-05 (shipped 2026-06-07, tag `v1.2`).
 > **v1.3 "stack party"** → 2026-06-07 (shipped 2026-06-07, tag `v1.3`; the **dev/demo convergence** — dev stacks as
 > first-class peers, a unified first-available-N stack registry, generic `stack-*` skills, a code-cited safety doc).
+> **v1.3b "dress rehearsal"** → 2026-06-08 (IN DEVELOPMENT; branch `release/01.3b-dress-rehearsal`; the
+> **field-hardening release** for the 14 issues the first real `/demo-up` run surfaced — full/populated/verified/
+> demoable demo stacks, M16→M20). Inserted between shipped v1.3 and the still-future v1.4; it is **orthogonal** to
+> the v1.4 seeds below (tooling/docs hardening, not cloud/AI/shareability). Active detail in [`roadmap.md`](roadmap.md).
 > **v1.4 is staged below** — the former v1.3 seeds (cloud store / S3 blobs, AI content, shareability, more mirrors)
-> moved here when the user scoped v1.3 = stack party (2026-06-07); now the next version to draft via
-> `/developer-kit:design-roadmap`.
+> moved here when the user scoped v1.3 = stack party (2026-06-07); it remains the **next feature version** to draft
+> via `/developer-kit:design-roadmap` **after v1.3b ships**.
 
 ---
 
@@ -45,10 +49,12 @@ underway. The leading v1.4 candidates:
   org-secret access could wire it into CI (small tooling item — fold into a v1.4 B-milestone or leave local).
 
 ## Codename notes
-- **v1.3 "stack party"** (in development — user-named; codename still changeable until ship). Note: it breaks the
-  prior stage-metaphor lineage (body double → show floor → set dressing) in favor of the convergence feeling;
-  stage-metaphor alternatives if wanted: "full ensemble" · "house lights" · "company call".
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" shipped — their codenames are now permanent.)_
+- **v1.3b "dress rehearsal"** (in development — user-chosen 2026-06-08; changeable until ship). Re-opens the
+  stage-metaphor lineage (body double → show floor → set dressing → stack party → **dress rehearsal**): a demo *is*
+  a show, and this release is the run-through that makes it actually perform. Alternatives offered: "house lights" ·
+  "shake down" · "sound check".
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" shipped — their codenames are now permanent.)_
 
-_Last updated: 2026-06-07 (**v1.3 "stack party" promoted** to roadmap.md — the dev/demo convergence; the former v1.3
-seeds (cloud store / S3 blobs, AI content, shareability, more mirrors) moved to **v1.4 seeds** above)._
+_Last updated: 2026-06-08 (**v1.3b "dress rehearsal" promoted** to roadmap.md — the field-hardening release for the
+14 `/demo-up` issues, M16→M20; branch `release/01.3b-dress-rehearsal` cut. v1.4 seeds below unchanged — still the
+next *feature* version, to draft after v1.3b ships.)_

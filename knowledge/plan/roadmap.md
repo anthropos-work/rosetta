@@ -28,6 +28,18 @@ builder skills).
 > (`stack-list`/`seed`/`snapshot`/`update` + `dev-up`/`dev-down`), and a code-cited **safety & security doc** (how
 > the tooling never reads private data + never touches prod). Full detail in `## Done — v1.3` below. (The former
 > v1.3 seeds — cloud store, S3 blobs, AI content, shareability — moved to **v1.4**.)
+>
+> **v1.3b "dress rehearsal" — IN DEVELOPMENT** (designed 2026-06-08; branch `release/01.3b-dress-rehearsal`). A
+> **field-hardening release** between shipped v1.3 and future v1.4: v1.3 converged the dev/demo *model*, but the
+> first real run of `/demo-up` surfaced 14 issues — a demo stack comes up **backend-only, unseeded, unverified**, and
+> announces "UP" even when authz silently failed. v1.3b makes `/demo-up` produce a **full, populated, verified,
+> demoable** stack and makes the repo honest about it: 5 milestones M16→M20 — land the applied fixes + restore doc
+> truth, add re-run safety (idempotency + the first-run race), a post-bring-up verification net (`stack-verify` made
+> offset-/scope-aware + auto-wired non-fatal), the **frontend tier** (next-web + studio-desk + ant-academy, tooling-only),
+> and **lifecycle convergence** (demo-up auto set-dresses like dev-up + a cold-start capture path). All **tooling +
+> docs only — zero platform-repo edits** (verified constraint). v1.4 (cloud store / S3 / AI content / shareability)
+> is untouched. Brief: [`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md) +
+> [`.agentspace/demo-up-frontend-plan.md`](../../.agentspace/demo-up-frontend-plan.md).
 
 ## Version plan
 
@@ -37,6 +49,7 @@ builder skills).
 | **v1.1** | **show floor** | The platform-operations extension framework (demo + dev, in 2 repos) | M3 ✅ → M4 ✅ → M5 ✅ → M6 ✅ → M7a ✅ → M7b ✅ → M7c ✅ → M8 ✅ | ✅ **SHIPPED 2026-06-05** (tag `v1.1`) |
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — local Directus, auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
+| **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 → M17 → M18 → M19 → M20 | 🚧 **IN DEVELOPMENT** (designed 2026-06-08) |
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -49,6 +62,239 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.3b "dress rehearsal" (designed 2026-06-08)
+
+**Theme:** v1.3 "stack party" converged the dev/demo **model**; running `/demo-up` for real revealed it didn't yet
+converge the **experience**. A demo stack comes up **backend-only** (no UI), **unseeded** (no org/users → every
+authorized route 403s), and **unverified** — `up-injected.sh` prints "UP. Clerk-free demo-N is live" with **zero
+automated checks**, and in this very session it announced "UP" while the Sentinel authz policy had silently failed
+to load (`casbin_rules` = 0). v1.3b is the **dress rehearsal**: the full run-through that makes `/demo-up` produce a
+**full, populated, verified, demoable** stack — and makes the tooling honest about what it does. It addresses the 14
+issues logged in [`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md).
+
+> **Designed 2026-06-08** from the user's `/demo-up` field log (14 issues, several already analyzed/fixed by the
+> prior session). **Phase 0a deferral audit GREEN** — the only open deferral (DEF-M10-01, S3 blob bytes + cloud
+> store) is orthogonal and stays → **v1.4**; v1.3b adds zero new deferrals at design. **Phase 0b KB blind-areas:**
+> the **frontend tier** and **post-bring-up verification** have no corpus anchor (→ M19/M18 each `Deliver →` one);
+> idempotency/cold-start/auto-set-dress are anchored but need a contract section (→ M17/M20). Research +
+> verification (3 agents, every issue claim re-checked against live code in `.agentspace/rosetta-extensions/`):
+> [`.agentspace/scratch/roadmap-research-2026-06-08.md`](../../.agentspace/scratch/roadmap-research-2026-06-08.md).
+>
+> **Scope decided (user, 2026-06-08):** the **5-milestone spine** (M16→M20, one per issue cluster); the heavy
+> features (frontend UI in M19, auto snapshot+seed in M20) are **default-on + skippable** (full parity with
+> `dev-up`: one command = a real demo; `--no-ui` / `--no-setdress` to opt out). Codename **"dress rehearsal"** —
+> a demo *is* a show; this is the run-through that makes it actually perform.
+
+> **The two-repo split (the load-bearing distinction for this release).** Every milestone names which repo owns
+> what, because v1.3b touches **both**:
+> - **`rosetta-extensions`** (the executable tooling) holds all **scripts / Go / Python / per-section README+GUIDE /
+>   its own `knowledge/` KB**. Built + tested in the **authoring copy** `.agentspace/rosetta-extensions/`, **tagged**
+>   (`dress-rehearsal-mNN`), then **consumed per-stack** at the pinned tag — never authored ad-hoc inside a `stack-*/`.
+> - **`rosetta`** (this corpus) holds the **`.claude/skills/*`, `corpus/*`, `CLAUDE.md`, READMEs** — the docs and the
+>   skills that *drive* the CLIs.
+>
+> So a typical milestone = a code change in `rosetta-extensions` (authoring → tag → consume) **+** the skill/corpus
+> doc in `rosetta` that describes it. The `Delivers →` lines below split accordingly.
+
+### M16: Land the field fixes + restore doc truth
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** Make the two already-applied fixes durable and public, finish the `anthropos-dev → stack-dev` rename as
+the *documented default*, and clear the stale tooling docs — so the repo tells the truth before more work lands on it.
+**Scope:**
+  - In:
+    - **`rosetta-extensions`:** **push** the local fixes (`547de17` devpath + `ed72e94` migrate-race — currently 2
+      commits ahead of `origin`, on a local-only `stack-party-devpath-fix` tag) to `origin` under a proper
+      `dress-rehearsal-m16` tag, then re-consume per-stack (ISSUE-1①/ISSUE-7 push); the **stack-core rename
+      migration** making `stack-dev` the documented default + demoting `anthropos-dev` to a single intentional
+      "legacy alias" mention (ISSUE-1②); the **prose sweep** (`demo-stack/README.md:12`, `GUIDE.md:17`,
+      `dev-stack/README.md:73`, `stack-core/gen_override.py:4` docstring — ISSUE-2); **GUIDE.md header truth** (remote
+      exists; **13** tests not 78; `/stack-list` not `/demo-status`; **v1.3** not v1.1/M3 — ISSUE-3); the **pytest
+      doc fix** (`pytest tests/` + a 3.11/3.12 note — ISSUE-4); refresh the repo's own `knowledge/` KB where it
+      repeats any of these.
+    - **`rosetta`:** sweep any residual `anthropos-dev` in `corpus/`; note the expected consumption version-jump (ISSUE-5).
+  - Out: the race/idempotency *behavior* work (M17); anything frontend/verify/set-dress.
+**Depends on:** none. **Parallel with:** none (the honest baseline every other milestone builds on).
+**Estimated complexity:** small–medium
+**Open questions:** the re-tag/version scheme (lean: per-milestone `dress-rehearsal-mNN` tags + a final `v1.3.1`
+release tag at close, matching the established convention); whether to keep `anthropos-dev` back-compat in the
+scripts forever or sunset it (lean: keep — it's a one-line fallback that costs nothing).
+**KB dependencies:** `corpus/ops/rosetta_demo.md`, the `rosetta-extensions` GUIDE/README set + its `knowledge/` KB.
+**Delivers → updates the `rosetta-extensions/knowledge/` KB + GUIDE/README truth-up** (rosetta-extensions) **+ a
+consolidated `corpus/ops/` note on the `stack-dev` layout + the back-compat fallback** (rosetta).
+
+### M17: Bring-up re-run safety — idempotency + first-run race
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** A re-run of migrate / snapshot-replay / seed is either safe-and-idempotent or fails loudly with a guard —
+never silently doubles data or aborts mid-surface.
+**Scope:**
+  - In (all **`rosetta-extensions`** code; one **`rosetta`** doc):
+    - the **`set -e` first-run-race audit** across the bring-up scripts (the same class as the fixed ISSUE-7
+      migrate race — sweep `up-injected.sh`/`rosetta-demo`/`dev-stack`/`dev-setdress.sh`) + an optional
+      **"wait-for-sentinel-ready"** defense-in-depth (ISSUE-7 residual);
+    - **`stacksnap replay`** re-run protection — a per-stack-isolated `TRUNCATE`/skip/`ON CONFLICT` before the bare
+      `COPY` so a second replay doesn't duplicate-key-abort mid-surface or silently double (`stack-snapshot/pg/pg.go`,
+      `replay/replay.go` — ISSUE-11);
+    - **`stackseed`** re-run protection — `ON CONFLICT` for the casbin g2 grant + the deterministic-UUID rows; **fix
+      the stale `--reset` truncate list** to include the session/activity tables it currently skips
+      (`stack-seeding/seeders/identity.go`, `cmd/stackseed/main.go` — ISSUE-11);
+    - an explicit, **tested** idempotency contract for each component.
+  - Out: the verify net (M18); the auto-chaining of snapshot/seed (M20 — M17 only makes the *primitives* re-run-safe).
+**Depends on:** M16 (clean pushed baseline). **Parallel with:** **M18 (yes-with-caveats** — different surfaces;
+both touch `up-injected.sh` only in different regions).
+**Estimated complexity:** medium
+**Open questions:** `TRUNCATE`-and-reload vs `ON CONFLICT DO NOTHING` for replay (lean: TRUNCATE the per-stack
+target surface then reload — simplest correct semantics, and the target is always per-stack-isolated); whether to
+make re-run safety automatic or behind an explicit `--idempotent`/`--force` (lean: safe-by-default with a loud guard).
+**KB dependencies:** `corpus/ops/snapshot-spec.md`, `corpus/ops/seeding-spec.md`, the `stack-seeding`/`stack-snapshot` sections.
+**Delivers → `corpus/ops/idempotency.md`** (rosetta — net-new: the per-component re-run verdicts + the
+teardown-then-redo model + the new guards) **+ the new guards in `stack-seeding`/`stack-snapshot`** (rosetta-extensions).
+**Risk (data-safety):** a `TRUNCATE` must *only* ever hit a per-stack-isolated offset target — the n=0 + prod-isolation
+guards stay inviolate; tests pin the target class.
+
+### M18: The verification safety net
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** Teach `stack-verify` to target an *offset* stack and scope to the services actually brought up, then
+auto-run it (non-fatal) at the tail of every bring-up — so "UP" means **verified-working**, not just *containers-started*.
+**Scope:**
+  - In (**`rosetta-extensions`** code; one **`rosetta`** doc):
+    - **project/offset awareness** — derive the `demo-N`/`dev-N` prefix + the N×10000 port offset from
+      `STACK_ROOT`/the unified registry (today `lib/services.sh:25-39` hardcodes 12 `anthropos-*-1` names at **base**
+      ports, so it reports an offset stack entirely `down` — ISSUE-12b);
+    - a **service/profile filter** intersecting the checked set with what was requested (so a reduced bring-up isn't
+      a wall of false `down`s);
+    - **fix the undefined `$DEVDIR` → `$STACK_ROOT` bug** (`repos/run.sh:108`, `census/inventory.sh:75` — ISSUE-12);
+    - the **cheap-win asserts available today** (`curl -fsS .../api/health` + `SELECT count(*) FROM
+      sentinel.casbin_rules > 0` on the stack's offset ports at the bring-up tail — the exact ISSUE-7 silent-failure
+      catcher — ISSUE-14);
+    - the **auto-wired scoped `verify live`** at the bring-up tail, **default-on + non-fatal** (mirroring
+      `dev-setdress`'s proven pattern — ISSUE-12c/ISSUE-14).
+  - Out: verifying the *frontend* ports (added in M19, where the frontends first exist); deep behavioural/e2e probes
+    (that's the `/test-platform` skill's job — M18 is the always-on smoke net).
+**Depends on:** M16. **Parallel with:** M17 (yes-with-caveats).
+**Estimated complexity:** medium–large
+**Open questions:** derive the offset from `STACK_ROOT` parsing vs reading the registry's recorded host ports (lean:
+read the registry — it already records resolved ports per M12); how loud "non-fatal but failed" should be (lean: a
+clear ⚠️ block + a one-line "run `/test-platform N` to dig in").
+**KB dependencies:** `corpus/ops/run_guide.md`, `corpus/ops/rosetta_demo.md`, the `stack-verify` section, the `/test-platform` skill.
+**Delivers → `corpus/ops/verification.md`** (rosetta — net-new: the auto-verify contract + the offset/scope model)
+**+ the offset-/scope-aware `stack-verify` + bring-up wiring** (rosetta-extensions).
+**Risk (correctness):** a mis-derived offset would false-positive "down" — the very bug it fixes. Mitigate: derive
+from the registry's recorded ports; non-fatal so a verify bug never blocks a genuinely good stack.
+
+### M19: The demo-up frontend tier
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** `/demo-up` brings up the full UI — next-web + studio-desk at offset ports (per-demo **cached** image from
+the **unmodified** platform Dockerfile) + ant-academy natively — so a demo is actually demoable, on a 16 GB Mac.
+**Scope:**
+  - In:
+    - **`rosetta-extensions`:** extend `stack-injection/gen_injected_override.py` to **emit `next-web-app` +
+      `studio-desk`** (offset ports via `ports:!override`, `image: demo-N-*` + `mem_limit:1g`, additive override —
+      today it emits backend-only, ISSUE-8); `up-injected.sh` **builds the two frontends serially, before compose
+      up**, from the unmodified Dockerfiles with **offset-URL build-args + the minted Clerk pk** via a gitignored
+      `.env.local`/BuildKit overlay, **tag-guarded for cache reuse**; ship a sibling `.dockerignore` (5.6 GB context
+      → <100 MB); **launch (or document) ant-academy natively** (port 3077, its own `.env`,
+      `REQUIRE_ORGANIZATION_MEMBERSHIP=0`); a **12 GB Docker-VM pre-flight assert** (ISSUE-6/ISSUE-9); **register the
+      frontend ports** so M18's verify net covers them. **Default-on + skippable** (`--no-ui`).
+    - **`rosetta`:** update the `demo-up` SKILL.md (the UI is now in scope) + author the frontend-tier corpus doc.
+  - Out: the **optional upstream platform PR** for *true* zero-rebrebuild (runtime-rewrites + `__env.js` +
+    `output:standalone`) — it edits platform repos → **forbidden / user-owned**, documented as a follow-up (like
+    v1.4's deploy-CI item), not built here.
+**Depends on:** **M18** (so the verify net can cover the new frontend services). **Parallel with:** none.
+**Estimated complexity:** large (the meatiest milestone of v1.3b)
+**Open questions:** ant-academy native-launch *by* the tool vs documented-manual (lean: launch it, fall back to a
+documented step if the native run proves fiddly); whether to pre-warm the frontend image cache as part of `dev-up`
+too (defer — demo-first).
+**KB dependencies:** [`.agentspace/demo-up-frontend-plan.md`](../../.agentspace/demo-up-frontend-plan.md) (the
+verified tooling-only plan), `corpus/services/next-web-app.md`, `corpus/services/ant-academy.md`,
+`corpus/services/studio-desk.md` *(if present)*, `corpus/ops/rosetta_demo.md`.
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (rosetta — net-new: ports, per-demo build, Clerk-pk baking, the
+12 GB VM prereq, the honest "one ~3-min cached build per new demo-N" residual) **+ updated `demo-up` skill** (rosetta)
+**+ the frontend-emitting override generator + per-demo build in `up-injected.sh`** (rosetta-extensions).
+**Risk (scope+resource):** the ~3.7 GB / ~3 min per-frontend build swap-thrashes on an undersized VM (the original
+"hour"). Mitigate: 12 GB preflight assert, serial cached builds, `mem_limit`, the sibling `.dockerignore`. **Hard
+line: zero platform-repo edits — the repo is a build *context* only, the Dockerfile is unmodified (verified achievable).**
+
+### M20: Lifecycle convergence — demo-up auto set-dress + cold-start capture
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** Close the dev↔demo asymmetry — `/demo-up` auto set-dresses (snapshot → seed, default-on + non-fatal) like
+`dev-up` already does — and unblock the *real* catalog on a fresh box that has no safe `--dsn`.
+**Scope:**
+  - In:
+    - **`rosetta-extensions`:** **chain** `stacksnap replay` → `stackseed` into `up-injected.sh` after migrate
+      (reuse M13's proven `dev-setdress` pass; **default-on + non-fatal**, `--no-setdress` escape — ISSUE-10);
+      enforce the **atomicity contract** (a partial snapshot with no seed = 403s, so it's both-or-neither, and the
+      M17 re-run guards make a retry safe); the **cold-start capture** path (ISSUE-13) — a documented, prod-safe
+      **DSN-export / restore-a-`pg_dump`-then-`--dsn`** workflow (the sanctioned route), **plus a spike** on whether
+      a thin MCP-paging capture adapter (read via the wired `postgres` MCP) is cheap enough to build vs document.
+    - **`rosetta`:** update the `demo-up`/`demo-down` skills + the `corpus/ops/demo/` recipe family for auto set-dress.
+  - Out: **S3 media blob bytes + the cloud `SnapshotStore` backend** (DEF-M10-01 → **v1.4**, signed — untouched);
+    AI-generated content (v1.4).
+**Depends on:** **M18** (the post-set-dress verify) **+ M19** (the full experience) **+ M17** (re-run-safe primitives
+make auto-chaining safe to retry). **Parallel with:** none (the closing milestone).
+**Estimated complexity:** medium–large
+**Open questions:** ISSUE-13 — build the MCP-paging capture adapter vs document the DSN-export step only (lean:
+**document the sanctioned DSN-export/restore path now**, spike the MCP adapter only if cheap — the MCP is a query
+tool, not a `--dsn` `stacksnap` can `COPY` through); whether auto-set-dress on `demo-up` should default to the
+`dev-min`-style light seed or a demo preset (lean: a demo preset like `small-200`, since demos want a fuller world
+than dev — confirm at build).
+**KB dependencies:** `corpus/ops/snapshot-spec.md`, `corpus/ops/seeding-spec.md`, `corpus/ops/db-access.md`, the
+`dev-setdress` mechanism (M13), `corpus/ops/demo/README.md` + the recipe family.
+**Delivers → `corpus/ops/snapshot-cold-start.md`** (rosetta — net-new: the fresh-box capture workflow + the MCP
+limitation + the sanctioned paths) **+ updated demo recipes/skills for auto set-dress** (rosetta) **+ the set-dress
+chaining in `up-injected.sh` + the cold-start capture path** (rosetta-extensions).
+**Risk (prod-safety):** auto set-dress + cold-start capture must preserve M13/M15's guarantees — **read-only bounded
+capture, the tenant firewall, per-stack isolation, and a confirmation before any prod-touching read**. Mitigate:
+reuse M13's proven set-dress pass verbatim; capture stays behind M9a's capture-source policy + `AssertPublicOnly`.
+
+### Execution graph (v1.3b)
+```
+v1.3b "dress rehearsal" — make /demo-up produce a full, populated, verified, demoable stack
+  M16 (land fixes + doc truth)
+   └─→ M17 (re-run safety) ──┐
+       M18 (verify net) ─────┴─→ M19 (frontend tier) ─→ M20 (auto set-dress + cold-start)
+            (M17 ∥ M18 feasible — different surfaces / different up-injected.sh regions; lean sequential per the spine discipline)
+```
+**Mostly sequential.** M16 lands the honest baseline (pushes the stranded fixes). M17 + M18 harden the *primitives*
+(re-run safety) and add the *net* (verification) — the one feasible parallel pair (different surfaces; both touch
+`up-injected.sh` only in different regions), but the spine discipline leans sequential. M19 builds the **frontend
+tier** (the meatiest; depends on M18 so the verify net covers the new services). M20 **converges the lifecycle**
+(auto set-dress + cold-start) on top of the full experience — the closing milestone. **No B-milestones — the whole
+release *is* the tooling layer** (the v1.3/M14 precedent).
+
+### Parallelism matrix (v1.3b)
+| Pair | Can parallelize | Shared surface | Merge risk | Strategy |
+|------|-----------------|----------------|-----------|----------|
+| **M17 ∥ M18** | yes-with-caveats | `up-injected.sh` (M17: migrate region · M18: tail) | low | land M17 first (smaller), then M18's tail-append; lean sequential per spine discipline |
+| M16 ∥ * | no | the honest baseline | — | M16 goes first |
+| M19 ∥ M18 | no | M19 needs M18's verify to cover its new frontend services | — | sequential |
+| M20 ∥ M19 | no | M20 = full experience on top of M19 | — | M20 closes |
+
+### Risks (v1.3b)
+- **(M19, scope+resource — blocks-quality)** the per-frontend build (~3.7 GB / ~3 min) swap-thrashes on an
+  undersized VM. Mitigate: 12 GB Docker-VM preflight assert, serial cached builds, `mem_limit`, the sibling `.dockerignore`.
+- **(M18, correctness — degrades-quality)** a mis-derived offset false-positives "down" — the bug it fixes.
+  Mitigate: derive from the registry's recorded ports; non-fatal so it never blocks a good stack.
+- **(M17, data-safety — blocks-prod-safety)** a `TRUNCATE` on the wrong target = data loss. Mitigate: TRUNCATE only
+  per-stack-isolated offset targets; the n=0 + isolation guards hold; tests pin the target class.
+- **(M20, prod-safety — blocks-prod-safety)** auto set-dress + cold-start capture must keep M13/M15's read-only
+  bounded capture + tenant firewall + per-stack isolation + the confirm-before-prod-read. Mitigate: reuse M13's pass; capture stays behind the M9a policy.
+- **(M16, blast-radius — nice-to-resolve)** the **push** is v1.3b's first outward-facing action (the local fixes go
+  public). Mitigate: re-tag cleanly (retire the local `stack-party-devpath-fix`), push, re-consume per-stack.
+- **(cross-cut)** **zero platform-repo edits** — the verified hard line. Every frontend/build change uses the repo
+  as a build *context* only; the *true zero-rebuild* path is an explicitly-OUT, user-owned upstream PR.
+
+### Open decisions (resolve during build)
+Re-tag/version scheme — M16 (lean `dress-rehearsal-mNN` + final `v1.3.1`); replay re-run = TRUNCATE-reload vs
+ON CONFLICT — M17 (lean TRUNCATE per-stack target); offset from STACK_ROOT-parse vs registry-recorded-ports — M18
+(lean registry); ant-academy native-launch by-tool vs documented — M19 (lean launch); ISSUE-13 MCP-adapter vs
+documented-DSN-export — M20 (lean document now, spike adapter if cheap); demo auto-set-dress preset — M20 (lean a
+demo preset over `dev-min`).
 
 ## Done — v1.3 "stack party" (SHIPPED 2026-06-07 · tag `v1.3`)
 
