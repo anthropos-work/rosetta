@@ -1,10 +1,10 @@
 # State
 
 **Active version:** **v1.3b "dress rehearsal"** — **IN DEVELOPMENT** (designed 2026-06-08; branch `release/01.3b-dress-rehearsal` cut from `main`). A **field-hardening release** between shipped v1.3 and future v1.4: it makes `/demo-up` produce a **full, populated, verified, demoable** stack — addressing the 14 issues the first real `/demo-up` run surfaced ([`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md)). 5 milestones M16→M20: land the applied fixes + doc truth → re-run safety (idempotency) → verification net → frontend tier → lifecycle convergence (auto set-dress + cold-start). **Tooling + docs only — zero platform-repo edits.** v1.4 (cloud store / S3 / AI content / shareability — incl. the signed DEF-M10-01) stays in [`roadmap-vision.md`](roadmap-vision.md), untouched.
-**Active branch:** `release/01.3b-dress-rehearsal` (cut from `main` 2026-06-08; no milestone branch yet).
-**Active milestone:** **M16 — Land the field fixes + restore doc truth** (`planned`; not yet started). Push the local devpath + migrate-race fixes (authoring copy is 2 commits ahead of `origin`), finish the `anthropos-dev → stack-dev` rename as the documented default, clear the stale GUIDE/README facts.
-**Next up:** **`/developer-kit:build-milestone`** (M16) — creates `m16/<slug>` from the release branch.
-**Phase:** **v1.3b designed + scaffolded; M16 ready to build.**
+**Active branch:** `m16/land-fixes` (from `release/01.3b-dress-rehearsal`).
+**Active milestone:** **M16 — Land the field fixes + restore doc truth** (`built`; all sections checked off, not yet closed). Published the devpath + migrate-race fixes to `origin` (extensions tag `dress-rehearsal-m16`), finished the `anthropos-dev → stack-dev` rename as the documented default, cleared the stale GUIDE/README facts, added the corpus `stack-dev` layout note. Extensions `main` `a31d70b..44edc09` pushed + re-consumed; rosetta `m16/land-fixes` carries the corpus note + tracking docs.
+**Next up:** **`/developer-kit:harden-milestone`** (optional) then **`/developer-kit:close-milestone`** (M16) — merges `m16/land-fixes` into the release branch.
+**Phase:** **v1.3b in development; M16 built (GREEN audit, 13/13 tests), ready to close.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
