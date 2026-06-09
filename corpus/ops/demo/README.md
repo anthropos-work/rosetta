@@ -19,20 +19,32 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ## The end-to-end flow (~minutes)
 
 ```
-/demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data)   [corpus/ops/rosetta_demo.md]
-/stack-snapshot N  →  replay the real public catalog + content into the stack (set-dressing) [corpus/ops/snapshot-spec.md]
-/stack-seed N      →  backfill it with a believable data world (a preset or stack.seed.yaml) [corpus/ops/seeding-spec.md]
+/demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data) +     [corpus/ops/rosetta_demo.md]
+                     AUTO set-dress (cache-first snapshot replay → small-200 seed, default-on, non-fatal) [v1.3b M20]
   …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
 /demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
 ```
 
-**The snapshot step is what makes the world *set-dressed* (v1.2).** `/stack-snapshot replay N` stamps the real
-**public** reference library — the ~60K-skill taxonomy + the global simulation / skill-path content templates —
-into the stack BEFORE you seed, so the catalog view shows real skills and the seeded sessions link to real
-templates (not free placeholder ids). It's a **stack-global reference replay**, independent of which org you then
-seed; it's **optional** (skip it for a quick structural-only world — the seeder degrades gracefully), and almost
-always a **cache-hit** (zero prod read — the snapshot is captured once per release, then replayed by every stack).
+**`/demo-up` now auto-set-dresses by default (v1.3b M20) — the dev↔demo convergence.** Just like `/dev-up` since
+v1.3, a `/demo-up` bring-up chains the **same** set-dress pass at its tail: a cache-first **snapshot replay**
+(real catalog + content) → a **`small-200` light seed** (a populated org you can log into). So a bare `/demo-up N`
+already lands you in a real-catalog, log-in-able world — no separate skill calls required. The pass is
+**default-on + non-fatal** (a cold cache warns and still seeds; `DEMO_NO_SETDRESS=1` skips it for a bare
+structural bring-up). You can still drive the steps **manually** for finer control — `/stack-snapshot N` (replay)
++ `/stack-seed N` (a different preset / a custom `stack.seed.yaml`) — they accept `demo-N` or `dev-N` interchangeably.
+
+**The snapshot step is what makes the world *set-dressed* (v1.2).** A replay stamps the real **public** reference
+library — the ~60K-skill taxonomy + the global simulation / skill-path content templates — into the stack BEFORE
+the seed, so the catalog view shows real skills and the seeded sessions link to real templates (not free
+placeholder ids). It's a **stack-global reference replay**, independent of which org you then seed; it's
+**optional** (a structural-only world still logs in — the seeder degrades gracefully), and almost always a
+**cache-hit** (zero prod read — the snapshot is captured once per release, then replayed by every stack).
 See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture→replay→set-dressed walk-through.
+
+> **Fresh box, empty cache?** The replay is a cache-hit only once the cache has been filled by a one-time
+> `capture` — and a fresh machine with no safe `--dsn` can't replay the *real* catalog yet (the auto-set-dress
+> warns + degrades to an empty catalog, then seeds). The sanctioned way to fill the cache once per release —
+> and why the wired `postgres` MCP is **not** a capture source — is [`../snapshot-cold-start.md`](../snapshot-cold-start.md).
 
 ## Index
 
@@ -47,6 +59,9 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 - [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
   Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
   outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)
+- [`../snapshot-cold-start.md`](../snapshot-cold-start.md) — the **cold-start** runbook: filling the snapshot
+  cache once per release on a fresh box (the sanctioned DSN-export / dump-restore path), why the wired `postgres`
+  MCP is **not** a capture source, and how it slots into the auto-set-dress bring-up. (v1.3b M20)
 - [`../idempotency.md`](../idempotency.md) — the **re-run safety** contract: what happens when you run
   migrate / snapshot-replay / seed a *second* time — each is now safe-and-idempotent or fails loudly, never
   silently doubles or aborts mid-surface (the replay TRUNCATE-then-reload, the idempotent seed COPY + casbin
@@ -70,10 +85,12 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   orgclient cert-redirect + the browser-login walk-through, log in → land in a seeded org.
 
 **Curated seed presets** (instances of `stack.seed.yaml`, validated to seed):
-`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick) · `mid-500` (the default "looks real") ·
-`large-1k` (scale). Run via `/stack-seed N --preset mid-500`. The presets are **purely structural** (they describe
-an org, not the platform's reference library); for a **set-dressed** world `/stack-snapshot replay N` first (each
-preset's header documents the prerequisite). Without a replay the seeder degrades gracefully (empty catalog, free
+`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick — **the `/demo-up` auto-set-dress default**, M20)
+· `mid-500` (the default "looks real") · `large-1k` (scale). The auto-set-dress pass uses `small-200` (a fuller
+world than dev's `dev-min`); override it with a manual `/stack-seed N --preset mid-500` (or skip the auto pass
+with `DEMO_NO_SETDRESS=1` and seed by hand). The presets are **purely structural** (they describe an org, not the
+platform's reference library); for a **set-dressed** world the catalog replay runs first (the auto pass does this;
+manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
 
 **Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
