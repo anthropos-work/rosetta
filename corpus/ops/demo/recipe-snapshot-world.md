@@ -26,10 +26,12 @@ almost always just replays an existing snapshot. Capture is the rare refresh op.
 ## A — replay into a stack (the common path)
 
 **Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`
-alike) and migrated (so the `skiller` + `directus` schemas exist as replay targets). Note a `/dev-up N` of a
-non-primary dev stack already runs this replay by default; you only call `/stack-snapshot replay` explicitly to
-re-run or to set-dress a `demo-N`. The snapshot is **stack-global** public reference data — replay it once per
-stack, independent of which org you then `/stack-seed`.
+alike) and migrated (so the `skiller` + `directus` schemas exist as replay targets). Note **both** `/dev-up N`
+(M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the auto-set-dress
+pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a cold cache —
+[`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
+auto-pass skipped. The snapshot is **stack-global** public reference data — replay it once per stack,
+independent of which org you then `/stack-seed`.
 
 ```bash
 /stack-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call

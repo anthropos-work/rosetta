@@ -82,6 +82,8 @@ Prod headline (2026-06-06): `skiller` ≈ **2.1 GB** (the v1.2 taxonomy snapshot
   boundary is the read-side foundation it builds on).
 - [`/db-query`](../../.claude/skills/db-query/SKILL.md) — the full schema reference + cross-service relationships.
 - [`snapshot-spec.md`](snapshot-spec.md) — the snapshot capture-source policy + tenant firewall (M9a).
+- [`snapshot-cold-start.md`](snapshot-cold-start.md) — the cold-start runbook (M20): using this read foundation
+  (a safe `--dsn`) to fill the snapshot cache once on a fresh box, and why the MCP is a query tool, not a capture source.
 - [`seeding-spec.md`](seeding-spec.md) — the write-side production-isolation boundary (the read side is here).
 - [`staging_from_dump.md`](staging_from_dump.md) — the full-clone (all-customer-data) precedent; the snapshot
   mechanism is its public-only, low-impact inverse.

@@ -442,6 +442,7 @@ The net effect: **dev and demo are now the same world built two ways** — the s
 for **N-allocation** (the unified registry); M13 makes it a peer for **data**.
 
 ## See also
+- [`snapshot-cold-start.md`](snapshot-cold-start.md) — the **cold-start runbook** (v1.3b M20): filling the cache once per release on a fresh box (the sanctioned DSN-export / dump-restore path over `--dsn`), why the wired `postgres` MCP is **not** a capture source, and how it slots into the auto-set-dress bring-up.
 - [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/stack-snapshot`) sits in the up→snapshot→seed→use→down flow.
 - [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md) — the **set-dressing recipe**: the operator walk-through of capture→replay→a real-catalog/real-content world (this spec is its source of truth).
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.
