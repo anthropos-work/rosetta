@@ -78,7 +78,8 @@ leaving an empty `casbin_rules` and a blanket-403 stack (ISSUE-7). M17 closes th
 The same `set -e` race class was swept across the other bring-up scripts: `up-injected.sh`'s `GH_PAT`
 extraction now **fails loud** (a clear "GH_PAT not set" error, not a silent pipefail abort), and the
 `DEV_PROJECT` extraction in `rosetta-demo` + `dev-stack` carries `|| true` so its documented
-`${DEV_PROJECT:-anthropos}` fallback can actually run.
+`${DEV_PROJECT:-anthropos}` fallback can actually run. (race-audit verdicts: #M17-D1; the bounded
+non-fatal wait-for-ready: #M17-D2; the schema-create `|| log` latent-site fix: #M17-D9.)
 
 > **Tested:** the static fence (`demo-stack/tests/test_tooling.py::TestMigrateRaceGuard` +
 > `TestSetEraceGuards`) pins the guards; the **live** harness (`tests/test_migrate_race_live.py`) runs the
@@ -98,13 +99,13 @@ not-yet-cleared child — **no `CASCADE` needed**, keeping the blast radius to e
 tables. Then the load runs **parent-first** (dependency order), FK-safe. On a first run the `TRUNCATE`s are
 no-ops (empty tables); on a re-run they make the result identical, not doubled.
 
-**Safe-by-default, not flagged.** There is no `--idempotent`/`--force` flag — the operation is harmless on a
-first run and is the intended behavior on a re-run.
+**Safe-by-default, not flagged (#M17-D3).** There is no `--idempotent`/`--force` flag — the operation is
+harmless on a first run and is the intended behavior on a re-run.
 
-**The destructive op is fenced (load-bearing — see [`safety.md`](safety.md)).** The clear SQL is built by a
-single pure function, `truncateForReplaySQL` (`stack-snapshot/cmd/stacksnap/adapters.go`), pinned by a
-**target-class test** to ALWAYS be a single-table `TRUNCATE TABLE "schema"."table" RESTART IDENTITY` — never
-a `DROP`, `DELETE`, `CASCADE`, or cross-schema op, identifiers double-quote-escaped (injection-safe). And
+**The destructive op is fenced (load-bearing — see [`safety.md`](safety.md); #M17-D4).** The clear SQL is
+built by a single pure function, `truncateForReplaySQL` (`stack-snapshot/cmd/stacksnap/adapters.go`), pinned
+by a **target-class test** to ALWAYS be a single-table `TRUNCATE TABLE "schema"."table" RESTART IDENTITY` —
+never a `DROP`, `DELETE`, `CASCADE`, or cross-schema op, identifiers double-quote-escaped (injection-safe). And
 the connection it runs on is built by `pg.DSNForOffset(baseDSN, n)` — the **per-stack offset** every replay
 write uses — so the `TRUNCATE` can only ever land on the per-stack-isolated Postgres (for `N>0` a different
 host port from prod's `:5432`; for `N=0` the dev stack's own isolated container). A wrong-target `TRUNCATE`
@@ -115,18 +116,18 @@ would be data loss; the shape-pin + the structural offset are the two independen
 The seeders generate **deterministic ids**, so a 2nd run produces the *same* primary keys. Three guards
 make a re-seed safe:
 
-1. **The idempotent COPY (every deterministic-id surface).** A new `Conn.CopyRowsIdempotent(…, conflictCol)`
+1. **The idempotent COPY (every deterministic-id surface) (#M17-D5).** A new `Conn.CopyRowsIdempotent(…, conflictCol)`
    (`stack-seeding/pg/pg.go`) keeps the bulk-COPY speed but makes a re-run a no-op for existing rows: it
    COPYs into a session-local `TEMP TABLE (LIKE … INCLUDING DEFAULTS) ON COMMIT DROP`, then
    `INSERT … SELECT … ON CONFLICT (<id>) DO NOTHING` into the real table, all in **one transaction**. (COPY
    itself has no `ON CONFLICT` form; per-row `INSERT … ON CONFLICT` would kill the bulk path the seeder
    exists to preserve — the temp-then-merge gets both.) All seven seeders use it (every seeded table keys on
    `id`).
-2. **The casbin g2 grant.** It uses `INSERT … SELECT … WHERE NOT EXISTS (the same tuple)`, **not**
+2. **The casbin g2 grant (#M17-D6).** It uses `INSERT … SELECT … WHERE NOT EXISTS (the same tuple)`, **not**
    `ON CONFLICT` — the casbin tables have no unique constraint on the policy tuple, so `ON CONFLICT` has no
    target. `WHERE NOT EXISTS` is idempotent regardless of constraints; a 2nd seed inserts 0 grants (before
    M17 it genuinely duplicated the grant every run).
-3. **`stackseed --reset`.** The truncate list was stale — `{memberships, users, organizations}` only, which
+3. **`stackseed --reset` (#M17-D7).** The truncate list was stale — `{memberships, users, organizations}` only, which
    skipped every M7c activity/session/assignment surface, so even a reset-then-seed collided on the leftover
    rows. M17 extends it to the **full deterministic-id fleet, child-first FK-safe**
    (`activity_events → jobsim sessions → skill_path_sessions → assignments → memberships → users →

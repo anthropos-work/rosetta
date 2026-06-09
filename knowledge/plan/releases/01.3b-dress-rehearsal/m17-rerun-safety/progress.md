@@ -22,6 +22,32 @@ _Section checklist. Closure = all boxes land + `/developer-kit:close-milestone` 
 - Python: demo-stack 27 (test_tooling, +6 over M16's 21) + 3 live docker (test_migrate_race_live, Docker-gated).
 - The live harness surfaced + fixed a 4th latent ISSUE-7-class site (schema-create `docker exec` under set -e).
 
+## M17: Final Review
+
+_Close review (`/developer-kit:close-milestone`), 2026-06-09. Section milestone._
+
+### Scope
+- [x] All 6 deliverables + 4 verification items checked; every overview Scope.In item delivered Fate-1; Out items (verify net → M18, auto-chaining → M20) stay out. 0 orphan TODO/FIXME in either repo.
+
+### Code Quality
+- [x] GREEN — replay TRUNCATE child-first (no CASCADE, blast radius = manifest tables) + offset-only conn; idempotent COPY temp-merge `ON CONFLICT (id)`; casbin `WHERE NOT EXISTS`; reset list FK-ordered child-first; casbin table from a fixed 2-elem allow-list; all SQL builders QuoteIdent-escaped. gofmt + go vet + shellcheck + py_compile all clean. 0 must-fix.
+
+### Documentation
+- [x] [should-fix] Decision-triage ref-tags: idempotency.md blends the D3–D7 mechanism rationale but lacks the `(#M17-DK)` back-ref tags the v1.3 corpus precedent uses (M10-Dx/M13-Dx). Add tags so each mechanism traces to its decision record. → fixed in Phase 7.
+- [x] idempotency.md otherwise GREEN — accurate, code-cited, dual-level, wired bidirectionally into 5 parents; all outbound links resolve; GUIDE test-count reconciled 21→27 (TestGuideDocTruth green); no new top-level unit (handbook contract n/a).
+
+### Tests & Benchmarks
+- [x] GREEN — both Go modules pass `-race -count=1` (full suite); demo-stack pytest 30/30 (live harness skips cleanly without Docker). Go 713→736 (+23: seeding +16, snapshot +7); Python 182→191 collected (+9 demo-stack). Counts reconciled (state.md Python convention = pytest-collected, not func-def — the apparent 33/38 gap was a measurement artifact, no drift). Every guard mutation-pinned.
+
+### Decision Triage
+- [x] D3 (TRUNCATE-reload safe-by-default) → blended into idempotency.md §snapshot-replay; add `(#M17-D3)`.
+- [x] D4 (target-class TRUNCATE pin) → blended into idempotency.md §snapshot-replay (the "fenced" para); add `(#M17-D4)`.
+- [x] D5 (idempotent COPY temp-merge) → blended into idempotency.md §seed item 1; add `(#M17-D5)`.
+- [x] D6 (casbin WHERE-NOT-EXISTS) → blended into idempotency.md §seed item 2; add `(#M17-D6)`.
+- [x] D7 (full --reset fleet) → blended into idempotency.md §seed item 3; add `(#M17-D7)`.
+- [x] D1/D2 (set-e race audit + wait-for-ready) → blended into idempotency.md §migrate; add `(#M17-D1)`/`(#M17-D2)`.
+- [x] D8 (live docker harness) + D9 (latent schema-create fix) → archive (maintainer/testing decisions); D8/D9 already noted in idempotency.md §migrate "Tested" callout — no further blend.
+
 ## M17: Hardening
 
 ### Pass 1 — 2026-06-09
