@@ -105,7 +105,10 @@ A failed assert increments the warning count and prints a `⚠` line; it never a
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
   `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
   Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`) — each resolving
-  the offset port + project container via the same `target.sh` helpers.
+  the offset port + project container via the same `target.sh` helpers. **Both** phases honour the
+  `STACK_SERVICES` scope filter: the readiness phase skips a deep probe whose backing service isn't in
+  scope (the same `target_service_selected` gate as liveness), so a reduced bring-up never produces a
+  wall of false `down`s in *either* phase.
 
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,
