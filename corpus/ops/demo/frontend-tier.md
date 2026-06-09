@@ -56,6 +56,8 @@ image. The tooling makes this cheap-where-it-can:
 > **Set the Docker Desktop VM to 12 GB / swap 3 GB** (Settings → Resources). `/demo-up` runs a **non-fatal
 > pre-flight assert**: below 12 GB it prints a clear warning (raise the VM, or run `DEMO_NO_UI=1`) but continues
 > — a smaller VM may still build fine if no other stack is up. Override the floor with `DEMO_VM_MIN_GIB=N`.
+> (The assert + a frontend-build failure are deliberately non-fatal — a soft RAM heuristic must never block an
+> otherwise-good bring-up. #M19-D5)
 
 ## How the pk + URLs are baked (zero platform edit)
 
@@ -63,6 +65,11 @@ image. The tooling makes this cheap-where-it-can:
 |-----|------|----------|--------------|
 | **next-web** | `--build-arg NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `_BACKEND_API_URL` / `_HOSTING_URL` (offset) — ARGs the Dockerfile already declares | **no pk ARG exists** → dropped into a **gitignored `apps/web/.env.local`** in the build context, read by `next build`, removed by a trap after | the repo ships **no** `.dockerignore`, so a **tooling-owned** one (`rosetta-extensions/demo-stack/frontend/next-web.dockerignore`) is applied **transiently** (never clobbers a repo one; trap-removed) to trim the 2.8 GB context (2.5 GB `node_modules`) to <100 MB |
 | **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` (offset) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → passed straight as a build-arg | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
+
+The split — next-web's pk via the gitignored `.env.local` (its Dockerfile declares no pk ARG) vs studio-desk's
+pk straight as a build-arg (its Dockerfile *does*) — is dictated by the real, unmodified Dockerfiles (#M19-D3).
+The transient tooling-owned `.dockerignore` (non-clobber, trap-removed) keeps next-web's repo byte-clean while
+trimming the 2.8 GB context; studio-desk's own `.dockerignore` is sufficient and left untouched (#M19-D4).
 
 The minted pk comes from the demo's Clerkenstein injection (`inject.py` mints `pk_test_<base64(fapi-host$)>` and
 prints it); the build bakes that exact value, so the browser SDK talks to the demo's fake FAPI, never real Clerk.
@@ -82,7 +89,9 @@ ant-academy is **Vercel-native** (not in docker-compose) and depends only on Cle
 launches it natively on `:3077+offset` **Clerk-free** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
 `NODE_ENV=development` flag that opens `/` and `/chapters/*` to anonymous traffic), paired with
 `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip the org gate. The per-demo env is a **gitignored `code/.env.local`**
-overlay (zero academy-repo edits).
+overlay (zero academy-repo edits). Launching it natively (vs only documenting the step) resolved the overview's
+open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
+and Clerk-only, so the bypass gives anonymous Clerk-free browse with no academy-repo edits (#M19-D6).
 
 **Default-on + non-fatal + degrades to a documented step.** If the academy clone isn't present, its deps aren't
 installed (`npm install` needs the team-issued **Font Awesome Pro** token), or Node < 22, the tool prints the
@@ -105,7 +114,7 @@ The M18 [verification net](../verification.md) now covers the frontends: `stack-
 includes **next-web-app (:3000)** + **studio-desk (:9100)**, which offset + project-rewrite like every other
 service. The bring-up-tail auto-verify is **scoped to the services it started** — so a UI-on demo verifies the
 frontends (an HTTP probe; a Clerk-free login redirect is a healthy 2xx/3xx/4xx), and a `--no-ui` demo scopes
-them out and never false-`down`s an absent frontend.
+them out and never false-`down`s an absent frontend (#M19-D7).
 
 ## Where the tooling lives
 

@@ -54,3 +54,27 @@ _(build notes appended here)_
 
 ### Stop condition
 Single pass. The full Step-2b scan surfaced nothing further worth adding: the pure-Python is coverage-saturated (98%, only the `__main__` guard), the bash invariants + error/abort paths are now mutation-pinned, and the one residual observation (a stale academy pidfile on a failed launch) is **harmless by design** — `--stop` and a re-launch both handle a dead pid gracefully, so no inline fix was warranted (fixing it would be gold-plating). Coverage delta on the measurable file is 0% (already saturated) and no flakes remain → stop conditions met.
+
+## M19: Final Review
+
+_close-milestone review (2026-06-09). 6 findings, all decision-triage; 0 scope / 0 code-quality / 0 docs / 0 tests._
+
+### Scope
+- [x] No scope gaps. 8/8 deliverables + 4/4 verification all Fate 1; 0 TODO/FIXME/HACK in touched code; the true-zero-rebuild upstream PR is a documented OUT boundary (forbidden — edits platform repos), not a deferral. Deferral re-audit GREEN (0 v1.3b-internal; DEF-M10-01 → v1.4 untouched, not aged). → `audit-deferrals/deferral-audit-2026-06-09-m19-close.md`
+
+### Code Quality
+- [x] No findings. `gen_injected_override.py` / `up-injected.sh` / `ant-academy.sh` / `services.sh` consistent with M16/M17/M18 conventions (`BASH_SOURCE` resolution, `stack-dev`+legacy fallback, non-fatal-helper pattern, documented manual fallback). Zero-platform-edit invariant clearly enforced (gitignored `.env.local`, transient trap-cleaned `.dockerignore`, unmodified Dockerfiles). py_compile OK; shellcheck CLEAN (warning). (The `probe_service` 5xx-regex nuance in `services.sh` L131 is pre-existing `c95bce4`, not M19-touched.)
+
+### Documentation
+- [x] No findings. `frontend-tier.md` accurate + dual-level; all 7 cross-refs resolve (studio-desk.md present); SKILL.md / demo README / CLAUDE.md edits coherent; per-unit handbook + index contract met (the net-new unit is a doc, indexed in CLAUDE.md + README + SKILL).
+
+### Tests & Benchmarks
+- [x] No gaps. 4 M19-touched suites = 193 passed; FULL extensions suite = 338 passed (0 latent upstream failures); `gen_injected_override.py` 98% (only `__main__` miss — saturated). No benchmarks (no perf-sensitive code).
+
+### Decision Triage
+- [x] M19-D3 → blend-confirm + ref-tag in `frontend-tier.md` §"How the pk + URLs are baked" (pk path next-web/.env.local vs studio-desk build-arg)
+- [x] M19-D4 → blend-confirm + ref-tag in `frontend-tier.md` §"How the pk + URLs are baked" (transient non-clobber `.dockerignore`)
+- [x] M19-D5 → blend-confirm + ref-tag in `frontend-tier.md` §"The 12 GB Docker-VM prerequisite" (non-fatal preflight)
+- [x] M19-D6 → blend-confirm + ref-tag in `frontend-tier.md` §"ant-academy" (native, BENCHMARK_VISUAL_BYPASS, documented fallback)
+- [x] M19-D7 → blend-confirm + ref-tag in `frontend-tier.md` §"Verification covers the UI tier" (scoped iff UI on)
+- [x] M19-D1 / M19-D2 / M19-D8 / M19-D9 → archive (maintainer-only: cfg-append mechanics, stale-entry hygiene, BASH_SOURCE/test seam, stdio-detach pipe-hash fix — code comments cover them for maintainers).
