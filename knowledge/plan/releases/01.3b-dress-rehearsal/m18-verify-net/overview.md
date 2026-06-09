@@ -3,9 +3,9 @@ milestone: M18
 slug: verify-net
 version: v1.3b "dress rehearsal"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-08
-last_updated: 2026-06-08
+last_updated: 2026-06-09
 complexity: medium-large
 delivers: corpus/ops/verification.md (net-new) + offset-/scope-aware stack-verify + bring-up wiring
 issues: ISSUE-12, ISSUE-14

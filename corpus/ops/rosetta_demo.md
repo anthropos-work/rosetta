@@ -40,6 +40,20 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 > allocator contract), with the demo + dev CLIs documented in `demo-stack/GUIDE.md` and `dev-stack/README.md`.
 > The generic `stack-*` skill set that surfaces this (renamed `/demo-*` → `/stack-*`) shipped in M14.
 
+> **The registry's recorded ports back the verify cross-check (v1.3b/M18).** Each record's resolved host
+> ports are the **source of truth** the auto-verify (`stack-verify`) reads to confirm it's targeting the
+> right offset — never a bare re-computed formula. See [`verification.md`](verification.md) (the auto-verify
+> safety net: a scoped, non-fatal `verify live` at every bring-up tail, offset/scope-aware).
+
+## Auto-verify at the bring-up tail (v1.3b "dress rehearsal", M18)
+
+Every bring-up now ends with an automatic, **non-fatal** verification pass on the stack's own **offset
+ports**: the cheap-win `/api/health` + `sentinel.casbin_rules > 0` asserts (the silent-403 catcher), then
+the full offset/project/scope-aware `verify live`. So "UP" means *verified-working*, not just
+*containers-started*. Default-on (opt out: `DEMO_NO_VERIFY=1` / `DEV_NO_VERIFY=1`); a failing check warns
+loudly + points at `/test-platform N` but never aborts a good bring-up. Full contract:
+[`verification.md`](verification.md).
+
 ## Stack workspace layout + the `anthropos-dev` → `stack-dev` back-compat fallback (v1.3b "dress rehearsal", M16)
 
 The tooling resolves the **local dev workspace** to find the platform repos a stack builds from (`<dev>/platform/.env`
