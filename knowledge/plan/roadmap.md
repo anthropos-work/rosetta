@@ -186,7 +186,7 @@ clear ⚠️ block + a one-line "run `/test-platform N` to dig in").
 from the registry's recorded ports; non-fatal so a verify bug never blocks a genuinely good stack.
 
 ### M19: The demo-up frontend tier
-**Status:** `planned`
+**Status:** `done` (completed 2026-06-09) · **Dir:** [m19-frontend-tier/](releases/01.3b-dress-rehearsal/m19-frontend-tier/)
 **Shape:** `section`
 **Goal:** `/demo-up` brings up the full UI — next-web + studio-desk at offset ports (per-demo **cached** image from
 the **unmodified** platform Dockerfile) + ant-academy natively — so a demo is actually demoable, on a 16 GB Mac.
@@ -218,6 +218,26 @@ verified tooling-only plan), `corpus/services/next-web-app.md`, `corpus/services
 **Risk (scope+resource):** the ~3.7 GB / ~3 min per-frontend build swap-thrashes on an undersized VM (the original
 "hour"). Mitigate: 12 GB preflight assert, serial cached builds, `mem_limit`, the sibling `.dockerignore`. **Hard
 line: zero platform-repo edits — the repo is a build *context* only, the Dockerfile is unmodified (verified achievable).**
+**Closure (2026-06-09):** Delivered all 8 deliverables + 4/4 verification. `gen_injected_override.py` appends the UI
+tier (`next-web-app` + `studio-desk`) as `profiles:!override [graphql]` services with per-demo built images
+(`demo-N-*`, `build:!reset null`, `pull_policy:never`, `mem_limit:1g`, offset ports), `--no-ui` clears it, and the
+stale `next-web-app` `REUSE_DEV` entry was removed (#M19-D1/D2). `up-injected.sh` builds the two frontends **serially,
+before compose up**, from the **unmodified** Dockerfiles with offset-URL build-args + the minted Clerk pk
+(next-web via a gitignored `apps/web/.env.local`; studio-desk as a direct build-arg — #M19-D3), **tag-guarded** for
+cache reuse, **non-fatal**, fronted by a **non-fatal 12 GB VM pre-flight** (`DEMO_VM_MIN_GIB` override — #M19-D5), with
+a tooling-owned **transient non-clobber `.dockerignore`** (`RETURN`-scoped-trap-removed, so a failed build leaves the
+repo byte-clean — #M19-D4). `ant-academy.sh` launches the academy **natively** on `:3077+offset` Clerk-free
+(`BENCHMARK_VISUAL_BYPASS`), default-on + non-fatal + degrades to a documented step (#M19-D6/D9), wired into
+up/down. `stack-verify`'s registry gained the frontend rows, **scoped iff UI on** (#M19-D7). Net-new
+`corpus/ops/demo/frontend-tier.md` + the updated `demo-up` SKILL. **The load-bearing zero-platform-edit invariant
+held** — harden pinned it with `TestZeroPlatformRepoEdit` (a real-git-repo `git status`-clean guard on both the
+success and the failed/aborted-build path + a `git check-ignore` fence), mutation-verified. Close: 6 findings, **all
+decision-triage** (0 scope / 0 code / 0 docs / 0 tests — the cleanest shape); Phase-7 added the 5 `(#M19-D3..D7)`
+ref-tags + recorded 3 re-examined adversarial scenarios (all already handled). Tag `dress-rehearsal-m19` reconciled
+`32b1ae8 → 4f96ddd` + re-consumed (3-way agreement). Deferral re-audit **GREEN** (0 v1.3b-internal; DEF-M10-01 → v1.4
+untouched/not-aged; the true-zero-rebuild upstream PR is a documented **OUT** boundary, not a deferral). Go **736**
+(unchanged — no Go touched); Python 273→**338** collected (+65, the UI-tier suites); `gen_injected_override.py` 98%;
+flake **0** (5/5). Merged `--no-ff` → `release/01.3b-dress-rehearsal`; `m19/frontend-tier` deleted.
 
 ### M20: Lifecycle convergence — demo-up auto set-dress + cold-start capture
 **Status:** `planned`
