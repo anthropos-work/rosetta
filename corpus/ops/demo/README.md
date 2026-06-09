@@ -66,6 +66,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   migrate / snapshot-replay / seed a *second* time — each is now safe-and-idempotent or fails loudly, never
   silently doubles or aborts mid-surface (the replay TRUNCATE-then-reload, the idempotent seed COPY + casbin
   guard, the `--reset` fix, the `set -e` first-run-race hardening). (v1.3b M17)
+- [`../verification.md`](../verification.md) — the **verification** net: every bring-up ends with a scoped,
+  NON-FATAL verify on the stack's OWN offset ports (the cheap-win `/api/health` + `casbin_rules > 0` silent-403
+  catcher, then the full probe set), so "UP" means *verified-working* — offset/scope-aware, never blocks a good
+  stack. (v1.3b M18)
 - [`frontend-tier.md`](frontend-tier.md) — the **UI tier**: how `/demo-up` brings up next-web-app +
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
