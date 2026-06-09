@@ -1,10 +1,10 @@
 # State
 
 **Active version:** **v1.3b "dress rehearsal"** — **IN DEVELOPMENT** (designed 2026-06-08; branch `release/01.3b-dress-rehearsal` cut from `main`). A **field-hardening release** between shipped v1.3 and future v1.4: it makes `/demo-up` produce a **full, populated, verified, demoable** stack — addressing the 14 issues the first real `/demo-up` run surfaced ([`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md)). 5 milestones M16→M20: land the applied fixes + doc truth → re-run safety (idempotency) → verification net → frontend tier → lifecycle convergence (auto set-dress + cold-start). **Tooling + docs only — zero platform-repo edits.** v1.4 (cloud store / S3 / AI content / shareability — incl. the signed DEF-M10-01) stays in [`roadmap-vision.md`](roadmap-vision.md), untouched.
-**Active branch:** `release/01.3b-dress-rehearsal` (M16+M17+M18+M19 merged; the next milestone branch `m20/…` is cut from it when M20 starts).
-**Active milestone:** _(between milestones — see Next up)_ — **M19 CLOSED 2026-06-09** (merged `--no-ff` → `release/01.3b-dress-rehearsal`; `m19/frontend-tier` deleted). M20 (the next + **final** milestone of v1.3b) not yet started.
-**Next up:** **`/developer-kit:build-milestone` M20 — Lifecycle convergence** (demo-up auto set-dress + cold-start capture), the last v1.3b milestone. Then `/developer-kit:close-release` v1.3b.
-**Phase:** **v1.3b in development; M16+M17+M18+M19 closed (4/5 done); M20 next + final.**
+**Active branch:** `release/01.3b-dress-rehearsal` (M16+M17+M18+M19 merged; **M20 BUILT on branch `m20/lifecycle-convergence`, awaiting close**).
+**Active milestone:** **M20 — Lifecycle convergence** (demo-up auto set-dress + cold-start capture) — **BUILT 2026-06-09** (`/developer-kit:build-milestone` done; all progress.md boxes checked; ext tag `dress-rehearsal-m20` @ `e4d2f9b` pushed + re-consumed). NOT yet closed/merged.
+**Next up:** **`/developer-kit:close-milestone` M20** (the last v1.3b milestone) → then **`/developer-kit:close-release` v1.3b**.
+**Phase:** **v1.3b in development; M16+M17+M18+M19 closed (4/5); M20 BUILT, awaiting close — the FINAL milestone.**
 **Paused:** _(none)_
 
 ## Recently closed milestones
