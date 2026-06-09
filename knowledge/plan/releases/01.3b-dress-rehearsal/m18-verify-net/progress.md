@@ -59,3 +59,24 @@ _Section checklist. Closure = all boxes land + `/developer-kit:close-milestone` 
 
 ### Stop condition
 Loop stopped after Pass 3: the full Step 2b re-scan found nothing new worth adding (every milestone-touched seam — offset matrix, both-phase scope filter, cross-check edges, target boundaries, autoverify failure modes, probe_service, container resolution, run.sh + inventory.sh resolution, bring-up wiring — is pinned), coverage deltas negligible, and the flake gate was clean (79 passed × 3 consecutive sequential runs, deterministic). One real bug found + fixed inline (readiness scope filter). Final: `stack-verify/tests/test_verify.py` **32 → 79 (+47)**.
+
+## M18: Final Review
+
+_close-milestone review pass — 2026-06-09._
+
+### Scope
+- [x] All 6 deliverables + 4 verification boxes checked; 0 TODO/FIXME/HACK in touched code; all touched files present. No scope gaps. (Fate 1 — nothing routed/dropped/escape-hatched.)
+
+### Code Quality
+- [x] [must-fix] **FINDING-A1 (correctness/robustness):** a non-numeric `STACK_OFFSET` (e.g. an operator/`/test-platform` run passing a garbage `--offset`) was echoed verbatim by `target_resolve_offset`, then fed to three `$(( base + offset ))` sites (`autoverify.sh:78`, `services.sh:79`, `readiness.sh:19`). Under `set -u`, bash arithmetic treats the non-numeric token as an unbound variable → "unbound variable" error, silently skipping the cheap-win asserts. **Non-fatal held** (autoverify still exits 0), but the asserts vanish with a confusing message. Fix at the single resolution boundary: `target_resolve_offset` validates `STACK_OFFSET` is `^[0-9]+$`, else WARNS (non-fatal) + falls back to deriving from the project's N (or 0).
+- [x] shellcheck (9 scripts) + py_compile clean; consistent `target.sh` resolution; `$DEVDIR → $STACK_ROOT` fix held; all 4 Go modules build + test green (unchanged from M17).
+
+### Documentation
+- [x] `verification.md` cross-refs all resolve; indexed in ops README + CLAUDE.md; per-unit handbook contract satisfied. No doc edits needed (the doc's described behavior is accurate for real callers — production bring-up tails always pass numeric offsets; A1 fix makes the malformed-input path warn cleanly instead of crashing).
+
+### Tests & Benchmarks
+- [x] **A1 regression** — `TestAutoVerifyEdges::test_nonnumeric_offset_is_sanitized_non_fatally`: a non-numeric `--offset` must NOT crash, must WARN, must still run the asserts on the derived offset, exit 0. (Plus a `target.sh`-level unit pin in `TestTargetHelperBoundaries`.)
+- [x] No benchmark targets for bash tooling (matches M16/M17 practice). README quotes no test count → no count-drift to reconcile.
+
+### Decision Triage
+- [x] D1 (derive + registry cross-check), D3 (non-fatal contract), D5 (base-port band) → add `(#M18-DK)` reference tags to the matching prose in `verification.md` (substance already present; tags trace doc → decision). D2/D4/D6 → archive (implementation-mechanism, maintainer-only).

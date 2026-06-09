@@ -46,7 +46,7 @@ At the tail of `demo-stack/up-injected.sh` (demo) and `dev-stack`'s `cmd_up` (de
 **cheap-win asserts** on the stack's own offset ports, then (2) runs the full **offset/project/scope-aware
 `verify live`**. It is **default-on** (opt out with `DEMO_NO_VERIFY=1` / `DEV_NO_VERIFY=1`) and **always
 exits 0** — a failing check produces a loud `⚠` block and a "run `/test-platform N` to dig in" hint, never
-an abort. This mirrors the proven default-on + non-fatal pattern of `dev-setdress.sh`.
+an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `dev-setdress.sh`.
 
 ## The offset/scope model (why it targets the *right* ports)
 
@@ -72,11 +72,14 @@ by `lib/services.sh` + `lib/readiness.sh`):
 A **mis-derived offset** would report a healthy offset stack as `down` — the *exact* false-positive bug
 M18 exists to fix. Two guards prevent that:
 
-1. **Derive from what's known, cross-check against what's recorded.** The bring-up passes `--project` +
-   `--offset` explicitly (it allocated `N`, so it *knows* them — no drift). For operator-driven runs,
-   `target_cross_check()` reads the unified registry's **recorded** host ports (M12 records resolved ports
-   per stack) and **warns** (non-fatal) if the derived offset doesn't land in the project's `N×10000`
-   lane. The registry record — not a bare re-computed formula — is the source of truth.
+1. **Derive from what's known, cross-check against what's recorded** (#M18-D1). The bring-up passes
+   `--project` + `--offset` explicitly (it allocated `N`, so it *knows* them — no drift). For
+   operator-driven runs, `target_cross_check()` reads the unified registry's **recorded** host ports (M12
+   records resolved ports per stack) and **warns** (non-fatal) if the derived offset doesn't land in the
+   platform's base-port band — `(port − offset) ∈ [3000, 11000]`, which covers all 12 bases without a
+   hardcoded table and without the broken `port // 10000 == n` decade assumption that would false-warn on
+   roadrunner's high base (#M18-D5). The registry record — not a bare re-computed formula — is the source
+   of truth.
 2. **Non-fatal, always.** Because `autoverify.sh` always exits 0, even a verify/offset *bug* can never
    block a genuinely-good bring-up. The worst case of a wrong offset is a spurious warning, never a
    refused stack.
