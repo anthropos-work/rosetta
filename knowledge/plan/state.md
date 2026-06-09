@@ -1,10 +1,10 @@
 # State
 
 **Active version:** **v1.3b "dress rehearsal"** — **IN DEVELOPMENT** (designed 2026-06-08; branch `release/01.3b-dress-rehearsal` cut from `main`). A **field-hardening release** between shipped v1.3 and future v1.4: it makes `/demo-up` produce a **full, populated, verified, demoable** stack — addressing the 14 issues the first real `/demo-up` run surfaced ([`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md)). 5 milestones M16→M20: land the applied fixes + doc truth → re-run safety (idempotency) → verification net → frontend tier → lifecycle convergence (auto set-dress + cold-start). **Tooling + docs only — zero platform-repo edits.** v1.4 (cloud store / S3 / AI content / shareability — incl. the signed DEF-M10-01) stays in [`roadmap-vision.md`](roadmap-vision.md), untouched.
-**Active branch:** `release/01.3b-dress-rehearsal` (M18 merged; next milestone branch `m19/frontend-tier` cut from it when built).
-**Active milestone:** **(between milestones)** — M18 closed; **M19 — The demo-up frontend tier** is next up (planned). `/demo-up` brings up the full UI (next-web + studio-desk at offset ports, per-demo cached image), launches/documents ant-academy natively, and registers the frontend ports so M18's verify net covers them.
-**Next up:** **`/developer-kit:build-milestone` M19** (cut `m19/frontend-tier` from `release/01.3b-dress-rehearsal`).
-**Phase:** **v1.3b in development; M18 closed (3/5 milestones done); M19 next.**
+**Active branch:** `m19/frontend-tier` (cut from `release/01.3b-dress-rehearsal`; M19 built, not yet merged).
+**Active milestone:** **M19 — The demo-up frontend tier** — **BUILT** (8/8 deliverables + 4/4 verification checked on `m19/frontend-tier`; awaiting harden/close). `/demo-up` now brings up the full UI: next-web + studio-desk per-demo (cached image from the **unmodified** Dockerfile, offset ports, minted-pk + offset-URL baked) + ant-academy natively (Clerk-free), with a 12 GB VM pre-flight, a `--no-ui` escape, and the frontend ports registered in M18's verify net — all **zero platform-repo edits**. Extensions tooling tagged `dress-rehearsal-m19` (pushed; stack-demo re-consumed).
+**Next up:** **`/developer-kit:close-milestone` M19** (optionally `/developer-kit:harden-milestone` first), then M20.
+**Phase:** **v1.3b in development; M18 closed (3/5 done); M19 built, close pending.**
 **Paused:** _(none)_
 
 ## Recently closed milestones

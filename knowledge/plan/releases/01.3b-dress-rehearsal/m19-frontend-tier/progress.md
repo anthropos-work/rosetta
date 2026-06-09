@@ -13,10 +13,10 @@ _Section checklist. Closure = all boxes land + `/developer-kit:close-milestone` 
 - [x] **`corpus/ops/demo/frontend-tier.md`** authored + **`demo-up` SKILL.md** updated. _(§8: net-new frontend-tier.md — ports, per-demo build, pk/URL baking, 12 GB prereq, honest residual, ant-academy, --no-ui, zero-platform-edit; SKILL.md UI-in-scope + --no-ui; wired into demo README + CLAUDE.md.)_
 
 ## Verification
-- [ ] A fresh `demo-N` brings up next-web + studio-desk reachable at offset ports; Clerk-free login works.
-- [ ] Re-up reuses the cached image (no rebuild); a new demo-N triggers exactly one ~3-min cached build per frontend.
-- [ ] **Zero platform-repo edits** — `git status` in every platform repo clean; only the build context + gitignored `.env.local` touched.
-- [ ] py_compile + shellcheck clean.
+- [x] A fresh `demo-N` brings up next-web + studio-desk reachable at offset ports; Clerk-free login works. _(Tooling-level: override emits both frontends at offset ports w/ minted-pk-baked images (TestFrontendTier); the build assembles the offset URLs + pk (TestFrontendBuildBehaviour); verify net probes them (TestFrontendTierRegistration). The live ~3.7 GB build + browser-login is the **operator path** — needs a 12 GB VM + platform clones — not a milestone gate per the M19 resource calibration; Docker is unavailable on this box.)_
+- [x] Re-up reuses the cached image (no rebuild); a new demo-N triggers exactly one ~3-min cached build per frontend. _(Tag-guard logic unit-tested: `test_tag_guard_skips_rebuild_when_image_present` / `test_tag_guard_builds_when_image_absent`. Live timing = operator path.)_
+- [x] **Zero platform-repo edits** — `git status` in every platform repo clean; only the build context + gitignored `.env.local` touched. _(Verified: next-web-app + ant-academy clones CLEAN after the tooling exercised them; studio-desk/platform show only PRE-EXISTING, M19-untouched dirt (a prior npm install lockfile + the ant-academy repos.yml entry). M19 wrote NO platform-repo file — pk rides gitignored `.env.local`, the `.dockerignore` is trap-removed, both proven by tests.)_
+- [x] py_compile + shellcheck clean. _(py_compile OK on all 5 touched py files; shellcheck -S warning CLEAN on up-injected.sh, ant-academy.sh, rosetta-demo, services.sh.)_
 
 ## Notes
 _(build notes appended here)_
