@@ -67,6 +67,15 @@ image. The tooling makes this cheap-where-it-can:
 The minted pk comes from the demo's Clerkenstein injection (`inject.py` mints `pk_test_<base64(fapi-host$)>` and
 prints it); the build bakes that exact value, so the browser SDK talks to the demo's fake FAPI, never real Clerk.
 
+> **The cleanup is `RETURN`-scoped, so it fires on the failure/abort path too.** The trap that removes the pk
+> `.env.local` overlay and the transient `.dockerignore` is bound to the build function's `RETURN`, not its
+> success — so a **failed** (or aborted) `docker build` leaves the repo just as byte-clean as a successful one.
+> The load-bearing proof is a guard test that stands up a real git repo as the build context and asserts
+> `git status` stays empty after the (stubbed) build, plus a `git check-ignore` fence that the pk overlay path
+> is covered by a `.gitignore` rule (so it can never be tracked even mid-build). _(M19 harden — surfaced when
+> the failed-build and real-git-status invariants were pinned: `test_next_web_failed_build_still_removes_*`,
+> `TestZeroPlatformRepoEdit` in `demo-stack/tests/test_frontend_build.py`.)_
+
 ## ant-academy — native, Clerk-free, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
