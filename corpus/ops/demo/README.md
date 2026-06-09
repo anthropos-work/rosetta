@@ -51,6 +51,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   migrate / snapshot-replay / seed a *second* time — each is now safe-and-idempotent or fails loudly, never
   silently doubles or aborts mid-surface (the replay TRUNCATE-then-reload, the idempotent seed COPY + casbin
   guard, the `--reset` fix, the `set -e` first-run-race hardening). (v1.3b M17)
+- [`frontend-tier.md`](frontend-tier.md) — the **UI tier**: how `/demo-up` brings up next-web-app +
+  studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
+  offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
+  the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
   With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).

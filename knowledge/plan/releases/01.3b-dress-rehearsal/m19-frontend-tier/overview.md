@@ -3,9 +3,9 @@ milestone: M19
 slug: frontend-tier
 version: v1.3b "dress rehearsal"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-08
-last_updated: 2026-06-08
+last_updated: 2026-06-09
 complexity: large
 delivers: corpus/ops/demo/frontend-tier.md (net-new) + updated demo-up skill + frontend-emitting override generator + per-demo build in up-injected.sh
 issues: ISSUE-6, ISSUE-8, ISSUE-9
