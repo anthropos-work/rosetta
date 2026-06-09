@@ -1,10 +1,10 @@
 # State
 
 **Active version:** **v1.3b "dress rehearsal"** — **IN DEVELOPMENT** (designed 2026-06-08; branch `release/01.3b-dress-rehearsal` cut from `main`). A **field-hardening release** between shipped v1.3 and future v1.4: it makes `/demo-up` produce a **full, populated, verified, demoable** stack — addressing the 14 issues the first real `/demo-up` run surfaced ([`.agentspace/demo-up-issue.md`](../../.agentspace/demo-up-issue.md)). 5 milestones M16→M20: land the applied fixes + doc truth → re-run safety (idempotency) → verification net → frontend tier → lifecycle convergence (auto set-dress + cold-start). **Tooling + docs only — zero platform-repo edits.** v1.4 (cloud store / S3 / AI content / shareability — incl. the signed DEF-M10-01) stays in [`roadmap-vision.md`](roadmap-vision.md), untouched.
-**Active branch:** `release/01.3b-dress-rehearsal` (between milestones — M17 merged + branch deleted; M18 not yet cut).
-**Active milestone:** **M18 — The verification safety net** (`planned`, not yet started). Teach `stack-verify` to target an *offset* stack + scope to the services actually brought up, then auto-run it (non-fatal) at the bring-up tail — so "UP" means *verified-working*, not just *containers-started*. Owns the offset/scope awareness, the `$DEVDIR → $STACK_ROOT` bugfix, the cheap-win health + `casbin_rules > 0` asserts (the ISSUE-7 silent-failure catcher), and a net-new `corpus/ops/verification.md`.
-**Next up:** **`/developer-kit:build-milestone` M18** (cut `m18/verify-net` from `release/01.3b-dress-rehearsal`).
-**Phase:** **v1.3b in development; M17 closed (2/5 milestones done) — merged to the release branch; M18 next.**
+**Active branch:** `m18/verify-net` (cut from `release/01.3b-dress-rehearsal`).
+**Active milestone:** **M18 — The verification safety net** (`built`, awaiting close). Taught `stack-verify` to target an *offset* stack + scope to the services actually brought up, then auto-run it (non-fatal) at the bring-up tail — so "UP" means *verified-working*, not just *containers-started*. Landed the offset/scope awareness (`lib/target.sh` + offset cross-check vs the registry's recorded ports), the `$DEVDIR → $STACK_ROOT` bugfix, the cheap-win health + `casbin_rules > 0` asserts (the ISSUE-7 silent-failure catcher, in `live/autoverify.sh`), the default-on + non-fatal auto-wire at both bring-up tails, and the net-new `corpus/ops/verification.md`.
+**Next up:** **`/developer-kit:close-milestone` M18** (optionally `/developer-kit:harden-milestone` first).
+**Phase:** **v1.3b in development; M17 closed (2/5 milestones done); M18 built — awaiting close.**
 **Paused:** _(none)_
 
 ## Recently closed milestones
