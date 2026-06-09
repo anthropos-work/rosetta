@@ -17,4 +17,34 @@ _Section checklist. Closure = all boxes land + `/developer-kit:close-milestone` 
 
 ## Notes
 - The "code" is in `rosetta-extensions` (extensions commit `e4d2f9b`, tagged `dress-rehearsal-m20`); the rosetta side is documentation (the cold-start runbook + safety §2.7 + skill/recipe updates). Both committed.
-- Tests added: +7 dev-setdress (stack-type/atomicity) + +9 demo chain (7 static fence + 2 behavioral) = +16.
+- Tests added: +7 dev-setdress (stack-type/atomicity) + +9 demo chain (7 static fence + 2 behavioral) = +16 (build), then +6 (harden, below) = **+22**.
+
+## M20: Hardening
+
+### Pass 1 — 2026-06-09
+**Scope manifest (milestone-touched code, ext commit `e4d2f9b`):**
+- `dev-stack/dev-setdress.sh` ← `dev-stack/tests/test_dev_stack.py` (class `DevSetdress` + `DevStackSetdressWiring`)
+- `demo-stack/up-injected.sh` (the M20 chain) ← `demo-stack/tests/test_frontend_build.py` (class `TestSetdressChainContract`)
+- rosetta branch = docs only (no testable code); the `safety.md` §2.7 edit is pinned by the Go drift guards in `stack-seeding/isolation/safety_doc_drift_test.go` (re-confirmed GREEN).
+
+**Coverage delta (behavioral branch coverage — bash has no native line tool; measured as die/branch-vs-test closure on touched files):**
+- `dev-setdress.sh`: every `die`/branch mapped to a test EXCEPT the env-guarded `need go` (L50) — was ~8/11 die-branches pinned → **11/11 meaningful** (the L50 `missing dependency: go` is environment-guarded scaffolding, not Fate-1; shellcheck covers its syntax).
+- `up-injected.sh` chain: the SUCCESS path + the resolved-offset-DSN threading went from **static-fence-only → behaviourally pinned**.
+
+**Tests added (+6, all Fate-1 deepening; no production code changed):**
+- `dev-stack/tests/test_dev_stack.py` (+5 in `DevSetdress`): `test_non_integer_n_is_rejected_before_any_cli`, `test_missing_n_prints_usage`, `test_trailing_stack_type_flag_dies_with_a_clear_message`, `test_provision_recipe_failure_aborts_before_replay` (the plain-recipe `die`, distinct from the `--check-env` firewall abort), `test_capture_never_runs_even_on_the_cache_miss_degraded_path` (extends the build's happy-path capture-never pin to the degraded branch).
+- `demo-stack/tests/test_frontend_build.py` (+1 in `TestSetdressChainContract`): `test_chain_success_passes_clean_and_threads_the_offset_dsn` — behavioural SUCCESS path (no warning + the engine invoked + the resolved `5432+OFFSET` DSN reaches the engine env).
+
+**Bugs fixed inline:** none — the build's logic was correct on every probed path. The harden surfaced no defects, only test-coverage gaps in error/degraded/success branches.
+
+**Mutation pins (proof the new safety tests are meaningful, not line-ticking):**
+- Offset-DSN test: mutating the chain's DSN to the base port `5432` (the prod-safety regression) **fails** the new behavioural test while the existing static body fence still **passes** — proof the behavioural test catches what the fence can't.
+- Capture-never-degraded test: adding a `stacksnap capture` fallback to the cache-miss branch **fails** the new test. Both scripts restored byte-identical after each mutation.
+
+**Knowledge backfill:** no KB-worthy *new* findings — every invariant the new tests pin (capture-never, offset-isolated DSN, the atomicity seed-floor, the firewall abort) is already documented in `corpus/ops/safety.md` §2.7 + `corpus/ops/snapshot-cold-start.md`. The harden reinforced existing documented invariants as tests; it did not surface undocumented behavior. (Question asked, answer recorded.)
+
+### Pass 2 — 2026-06-09 (confirmation scan, no tests added)
+Full six-dimension re-scan over both scripts: test depth, edge cases, and error paths are fully covered after Pass 1; no build-phase `fix`/`bug` commits to regression-pin (the M20 scripts had none); boundary fuzzing and perf benchmarks would be bloat for this small, fully-enumerated integer/enum input surface with no parser/deserializer and no documented latency SLA. No new gap worth a test.
+
+### Stop condition
+Scan clean + coverage delta < 2% residual (only the env-guarded `need go`) + 0 flakes. Stopped after 1 deepening pass + 1 confirmation scan — adding more would be test bloat. dev-stack 45→**50**, demo chain 38→**39** (whole-suite collected count rises with the build's already-counted M20 tests; harden net +6). shellcheck clean on both scripts; Go drift guards GREEN.
