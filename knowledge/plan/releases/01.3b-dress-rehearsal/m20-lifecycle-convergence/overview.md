@@ -3,9 +3,9 @@ milestone: M20
 slug: lifecycle-convergence
 version: v1.3b "dress rehearsal"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-08
-last_updated: 2026-06-08
+last_updated: 2026-06-09
 complexity: medium-large
 delivers: corpus/ops/snapshot-cold-start.md (net-new) + updated demo recipes/skills for auto set-dress + set-dress chaining + cold-start capture in the tooling
 issues: ISSUE-10, ISSUE-13
