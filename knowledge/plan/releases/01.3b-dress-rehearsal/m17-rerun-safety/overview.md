@@ -3,9 +3,9 @@ milestone: M17
 slug: rerun-safety
 version: v1.3b "dress rehearsal"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-08
-last_updated: 2026-06-08
+last_updated: 2026-06-09
 complexity: medium
 delivers: corpus/ops/idempotency.md (net-new) + re-run guards in stack-seeding/stack-snapshot
 issues: ISSUE-7 (residual), ISSUE-11

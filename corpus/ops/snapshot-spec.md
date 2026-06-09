@@ -204,6 +204,10 @@ stacksnap status  [--store <root>]
   COPY + rebuilds any pgvector index. The target is **any stack** — `--stack demo-N` *or* `--stack dev-N`; a dev
   stack is a first-class replay target (the dev set-dressing pass, M13, drives this for `dev-N` cache-first — see
   [Dev as a full-fidelity peer](#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed)).
+  **Re-run safe (v1.3b M17):** replay **clears every target table** (a per-stack-isolated `TRUNCATE`, child-first)
+  before reloading, so a 2nd replay **REPLACES, never appends** — no duplicate-key abort, no silent double. The
+  destructive op is fenced to a single-table TRUNCATE on the per-stack offset Postgres only; full contract in
+  [`idempotency.md`](idempotency.md).
 - **`status`** lists cached snapshots (surface, schema version, rows, source, capture time).
 
 Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage error.

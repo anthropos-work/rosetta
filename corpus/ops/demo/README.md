@@ -47,6 +47,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 - [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
   Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
   outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)
+- [`../idempotency.md`](../idempotency.md) — the **re-run safety** contract: what happens when you run
+  migrate / snapshot-replay / seed a *second* time — each is now safe-and-idempotent or fails loudly, never
+  silently doubles or aborts mid-surface (the replay TRUNCATE-then-reload, the idempotent seed COPY + casbin
+  guard, the `--reset` fix, the `set -e` first-run-race hardening). (v1.3b M17)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
   With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).
