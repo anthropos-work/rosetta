@@ -4,16 +4,15 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-07):** **v1.0 "body double"** + **v1.1 "show floor"** + **v1.2 "set dressing"** + **v1.3 "stack party"** SHIPPED (tagged
-`v1.0` / `v1.1` / `v1.2` / `v1.3`; records archived under [`releases/archive/`](releases/archive/)). **v1.3 "stack party"**
-delivered the **dev/demo convergence**: M12 (unified first-available-N stack registry) → M13 (dev stacks as first-class
-peers: local Directus + auto-snapshot + light `dev-min` seed) → M14 (generic `stack-*` skills + `dev-up`/`dev-down`,
-hard-renamed) → M15 (code-cited `corpus/ops/safety.md` + dual-repo KB), all section-shaped — dev and demo are now one
-operating model. **The project is now between releases** — run **`/developer-kit:design-roadmap`** to scope **v1.4**
-(seeds in [`roadmap-vision.md`](roadmap-vision.md): cloud store / S3 media blob bytes [the signed escape-hatch
-DEF-M10-01], AI-generated content, external stack shareability, more mirror engines). Live
-state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.3
-is the same major.)
+**Status (2026-06-09):** **v1.0 "body double"** + **v1.1 "show floor"** + **v1.2 "set dressing"** + **v1.3 "stack party"** + **v1.3b "dress rehearsal"** SHIPPED
+(tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1`; records archived under [`releases/archive/`](releases/archive/)). **v1.3b "dress rehearsal"**
+(SHIPPED 2026-06-09, tag `v1.3.1`) was a **field-hardening release** for the 14 issues the first real `/demo-up` run surfaced:
+`/demo-up` now produces a **full, populated, verified, demoable** stack. 5 section milestones M16→M20 (land the applied fixes +
+doc truth → re-run safety/idempotency → verification net → frontend tier → lifecycle convergence: auto set-dress + cold-start).
+**Tooling + docs only — zero platform-repo edits.** **The project is now between releases** — run **`/developer-kit:design-roadmap`**
+to scope **v1.4** (cloud store / S3 blobs [the signed DEF-M10-01] / AI content / shareability / more mirrors — seeded in
+[`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a
+whole *major* version retires; v1.3/v1.3b are the same major.)
 
 ## Files
 
@@ -45,12 +44,13 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **(none — between releases).** v1.0 / v1.1 / v1.2 / v1.3 shipped (tags `v1.0` / `v1.1` / `v1.2` / `v1.3`).
-**v1.3 "stack party"** delivered the **dev/demo convergence**: M12 (unified stack registry + first-available-N) → M13
-(dev peers: local Directus + auto-snapshot + light seed) → M14 (generic `stack-*` skills + `dev-up`/`dev-down`,
-hard-renamed) → M15 (code-cited safety doc + dual-repo KB), strictly sequential. Next: **`/developer-kit:design-roadmap`**
-to scope **v1.4** (the former v1.3 seeds — cloud store, S3 blobs, AI content, shareability, more mirrors). _(Live
-milestone/branch state: [`state.md`](state.md). v1.4 proposals: [`roadmap-vision.md`](roadmap-vision.md).)_
+**Active:** **(none — between releases).** **v1.3b "dress rehearsal" SHIPPED** 2026-06-09 (tag `v1.3.1`, merged
+`--no-ff` → `main`; release branch deleted). It ran 5 strictly-sequential section milestones M16→M20 (land the
+applied devpath/migrate-race fixes + doc truth → re-run safety/idempotency → the verification net → the frontend
+tier → lifecycle convergence: demo-up auto set-dress + cold-start), all closed via `/developer-kit:work-milestone`
+then `/developer-kit:close-release`. Next: **`/developer-kit:design-roadmap`** to scope **v1.4** (cloud store, S3
+blobs, AI content, shareability, more mirrors). _(Live state: [`state.md`](state.md). v1.4 proposals:
+[`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

@@ -2,6 +2,32 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.3.1] "dress rehearsal" — 2026-06-09
+
+Field-hardening of the demo/dev tooling: `/demo-up` now produces a **full, populated, verified, demoable** stack — closing the gaps the first real `/demo-up` run surfaced (14 field issues). **Tooling + docs only — zero platform-repo edits.**
+
+### Added
+- `/demo-up` brings up the **full UI tier** — next-web-app + studio-desk (per-demo *cached* image built from the **unmodified** platform Dockerfile, offset ports, minted Clerk pk + offset URLs baked) + ant-academy natively (Clerk-free); `--no-ui` to skip; a non-fatal 12 GB Docker-VM pre-flight. (M19)
+- `/demo-up` now **auto-set-dresses by default** (cache-first snapshot replay → a `small-200` seed), exactly like `/dev-up` — reusing one shared set-dress engine; `--no-setdress` to skip. (M20)
+- A **post-bring-up verification net**: every bring-up ends with a scoped, **non-fatal** check on the stack's own offset ports (`/api/health` + a Sentinel-policy-loaded assert) then the full probe set — so "UP" means *verified-working*, not just *containers-started*. (M18)
+- New operator docs: `corpus/ops/idempotency.md`, `corpus/ops/verification.md`, `corpus/ops/demo/frontend-tier.md`, `corpus/ops/snapshot-cold-start.md` (the fresh-box capture runbook).
+
+### Changed
+- `stack-verify` is now **offset-/scope-aware** — it targets an individual `demo-N`/`dev-N` on its shifted ports + containers and checks only the services actually brought up (no more wall-of-false-"down"). (M18)
+- The dev workspace rename **`anthropos-dev → stack-dev`** is now the documented default everywhere (legacy `anthropos-dev` retained as a single back-compat fallback). (M16)
+
+### Fixed
+- **Re-running a bring-up is now safe.** Snapshot-replay and seed are idempotent (a 2nd run replaces, never silently doubles or aborts mid-surface); `--reset` now clears the full data set; the `set -e` first-run race that could silently ship a 403-ing stack is fenced + regression-tested. (M17)
+- The migrate-time **Sentinel-policy race** (a demo could report "UP" while authz silently failed to load → every authorized route 403'd) is fixed. (M16/M17)
+- Stale `demo-stack` GUIDE/README facts corrected (test counts, "no remote", renamed skill names, version label). (M16)
+
+### Supply chain
+- No dependency changes. 0 called third-party CVEs; all-permissive licenses; lockfile recorded (`releases/archive/01.3b-dress-rehearsal/dependencies.lock`). The Go stdlib advisories clear with a go1.25.11+ toolchain.
+
+### Known limitations
+- A **new** `demo-N` pays one ~3-min *cached* frontend build per frontend (re-ups reuse the image). True zero-rebuild would need an optional, **user-owned upstream platform PR** — out of scope (the tooling never edits platform repos).
+- Snapshot **media blob bytes + a cloud snapshot store** remain deferred to **v1.4** (DEF-M10-01, signed).
+
 ## [v1.3] "stack party" — 2026-06-07
 
 dev + demo stacks become **first-class peers**: a dev stack gets the demo treatment (its own local Directus,

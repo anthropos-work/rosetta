@@ -200,7 +200,8 @@ operations could surprise a developer by mutating it, so each **independently re
 
 - **Auto-set-dressing** (`dev-stack/dev-setdress.sh`) — a `dev-stack up` build auto-replays the snapshot +
   light-seeds a *non-primary* `dev-N`, but **hard-refuses `N=0`** so the developer's own stack is never
-  auto-modified.
+  auto-modified. (v1.3b M20: this same engine now also set-dresses **demo** stacks via `--stack-type demo`; the
+  `N=0` refusal is stack-type-agnostic, so it never weakens — see §2.7.)
 - **Destructive `--reset`** (`stackseed`, `stack-seeding/cmd/stackseed/main.go`) — refuses to `--reset` the main
   dev stack (`N=0`) without `--force`.
 
@@ -219,6 +220,36 @@ and asserts the guard *blocks* a deliberately-attempted shared write. The 3-laye
 (`isolation_test.go`) cover: `CheckWrite` blocks shared + external on non-prod; `PreflightEnv` forces the S3
 override, rejects real-Clerk and live-Directus tokens, accepts Clerkenstein; `AssertClean` passes on a clean run
 and catches a shared/external write. The guarantee is therefore **reproducible**, not asserted.
+
+### 2.7 The demo auto-set-dress chain reuses the dev pass — the guarantees carry over (v1.3b M20)
+
+`/demo-up` now auto-set-dresses by default — a cache-first snapshot **replay** + a light seed at the bring-up
+tail — exactly as `/dev-up` has since M13. The load-bearing safety fact is that it is **not a second
+implementation**: `demo-stack/up-injected.sh` chains the **same** `dev-stack/dev-setdress.sh` engine via
+`--stack-type demo`, so every read- and write-side guarantee in this doc applies to the demo chain **by
+construction, byte-for-byte** — there is no demo-specific set-dress code path that could drift from the dev one.
+(#M20-D1)
+
+- **Replay-only, never capture.** The bring-up chain does **cache-first REPLAY** (a per-stack WRITE of public
+  reference data into the stack's own isolated offset-port Postgres + per-stack Directus). It **never runs
+  `stacksnap capture`** — capture is a privileged, separate, operator-confirmed prod READ
+  ([cold-start runbook](snapshot-cold-start.md)). A grep of `up-injected.sh` for `stacksnap capture` is empty,
+  pinned by a test.
+- **The per-stack Directus firewall still gates first.** The chain firewall-checks the per-stack Directus env
+  (the M10 `EnvContract`) *before* any replay; a per-stack env that resolves to the shared prod Directus hard-aborts
+  the pass before a single row is written. The shared `content.anthropos.work` / prod S3 are never written
+  (§2.1–2.3 hold unchanged).
+- **The seeder's isolation guard + `AssertClean` still prove it.** The seed step runs the same `stack-seeding`
+  fleet behind the same 3-layer guard, so a demo set-dress produces the same machine-checked zero-pollution
+  certificate (§2.6) as a dev one.
+- **The n=0 guard holds across types.** `dev-setdress.sh`'s `N=0`-without-`--force` refusal fires regardless of
+  `--stack-type` (§2.5). Demos start at `N ≥ 1` in practice, so it never blocks a real demo — it remains a dev
+  safety net, not weakened by demo mode.
+- **Atomicity (both-or-neither).** The chain always **seeds after the (cache-first, possibly-skipped) replay**, so
+  a stack is never catalog-replayed-but-unseeded (which would 403 on every authorized route). A replay cache-miss
+  degrades to a structural-only world that still logs in (the seed is the floor); the M17 re-run guards make a
+  partial set-dress repairable by re-running (idempotent TRUNCATE-then-reload replay + idempotent seed COPY).
+  (#M20-D3)
 
 ---
 
@@ -244,5 +275,9 @@ pointer only; everything else in this doc describes what ships today.
 - [`db-access.md`](db-access.md) — the production read foundation + the public-vs-customer boundary (read-side).
 - [`snapshot-spec.md`](snapshot-spec.md) — the capture/replay mechanism + the firewall + the capture-source policy.
 - [`seeding-spec.md`](seeding-spec.md) — the seeding framework + the 3-layer write-isolation boundary.
+- [`idempotency.md`](idempotency.md) — the bring-up **re-run** contract (v1.3b M17). It adds the only new
+  destructive ops since this contract was written — the replay re-run `TRUNCATE` and the `stackseed --reset`
+  truncates — and they obey it byte-for-byte: every `TRUNCATE` targets a **per-stack-isolated offset** store
+  only (pinned by a target-class test), never prod, never a shared store.
 - [`../architecture/security_compliance.md`](../architecture/security_compliance.md) — the platform's own
   security/compliance posture (the layer below the tooling).

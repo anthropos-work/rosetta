@@ -1,0 +1,84 @@
+{
+  "milestone": "M17",
+  "title": "Bring-up re-run safety — idempotency + first-run race. A re-run of migrate / snapshot-replay / seed is either safe-and-idempotent (a 2nd run converges to the same state) or fails loudly with a guard — never silently doubles data, never aborts mid-surface. Owns the set -e first-run-race audit across the bring-up scripts (incl. the live docker-harness migrate-race behavior test inherited from M16 as Fate-2), the stacksnap replay re-run protection (per-stack-isolated TRUNCATE-then-reload), the stackseed re-run protection (idempotent COPY + casbin WHERE-NOT-EXISTS + the fixed --reset fleet), and the net-new corpus/ops/idempotency.md contract.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-09",
+  "is_first_milestone": false,
+  "position_note": "M17 is the 2nd of v1.3b 'dress rehearsal' (M16->M20). It hardens the bring-up PRIMITIVES (re-run safety) so the later milestones' auto-chaining (M20) is safe to retry. Depends on M16's clean pushed baseline.",
+  "kind": "a code milestone (re-run guards + the first-run-race sweep) + one net-new corpus doc. The testable logic lives in the SEPARATE nested .agentspace/rosetta-extensions repo (Go: stack-seeding idempotent COPY + casbin guard + --reset fleet, stack-snapshot replay TRUNCATE-reload + target-class fence; Python: demo-stack set-e race fences + the live docker harness; shell: the 4 bring-up scripts). The rosetta m17/rerun-safety branch carries only corpus/ops/idempotency.md (net-new) + 5 wired-parent cross-links + the milestone tracking docs.",
+  "tests": {
+    "language": "go (the re-run guards — stack-seeding + stack-snapshot) + python (demo-stack set-e fences + the live docker migrate-race harness) + shellcheck/py_compile on the touched scripts + markdown (the net-new idempotency.md = the rosetta deliverable)",
+    "go_total": 736,
+    "go_delta_vs_m16": 23,
+    "go_breakdown": { "alignment": 43, "clerkenstein": 210, "stack-seeding": 252, "stack-snapshot": 231 },
+    "go_note": "+23 Go test funcs in M17. stack-seeding 236->252 (+16): pg/pg_test.go — the CopyRowsIdempotent temp-merge SQL builders (createTempLikeSQL, mergeFromTempSQL ON CONFLICT shape, single-column merge edge, the injection sweep over schema/table/tmp/cols/conflictCol), the validation/conflict-check error paths; seeders/seeders_test.go — the casbin g2 dedup predicate must compare ALL 7 columns (p_type+v0..v5); cmd/stackseed/main_test.go — every resetTables entry is exactly schema.table + no-duplicates (the destructive --reset surface). stack-snapshot 224->231 (+7): replay/replay_test.go — the ClearForReplay child-first clear + replace-not-append e2e; cmd/stacksnap/adapters_test.go — truncateForReplaySQL is ALWAYS a single-table TRUNCATE RESTART IDENTITY, never DROP/DELETE/CASCADE/cross-schema, degenerate identifiers stay a single-relation TRUNCATE, injection-quoted; reference/reference_test.go — the replay-twice-same-counts proof.",
+    "python_total_collected": 191,
+    "python_delta_vs_m16": 9,
+    "python_breakdown_collected": { "stack-core": 54, "dev-stack": 38, "demo-stack": 30, "stack-injection": 69 },
+    "python_note": "+9 demo-stack (21->30 collected). test_tooling.py 21->27: TestSetEraceGuards — the set -e first-run-race fences (up-injected.sh GH_PAT loud-guard, the rosetta-demo/dev-stack DEV_PROJECT || true fallback, the migrate-demo.sh wait_pg/wait_sentinel_running defense-in-depth, the schema-create || log latent-site fix) can't regress. test_migrate_race_live.py (net-new, 3 tests): the LIVE docker harness (M16 Fate-2) runs the real migrate-demo.sh against a throwaway pgvector Postgres container IN the ISSUE-7 race state and asserts the script survives + seeds the policy + re-runs idempotently; skips cleanly without Docker (so the unit count stays static at 27). Python counts are pytest-collected (parametrized cases count individually); dev-stack = 33 test funcs / 38 collected.",
+    "go_race": "all 4 Go modules pass -race -count=1; gofmt + go vet clean.",
+    "shellcheck": "the 4 M17-touched shell scripts (migrate-demo.sh, up-injected.sh, rosetta-demo, dev-stack/dev-stack) shellcheck-CLEAN.",
+    "py_compile": "test_migrate_race_live.py + test_tooling.py py_compile CLEAN.",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean, sequential, on all 3 milestone-touched suites: stack-seeding (-race -shuffle), stack-snapshot (-race -shuffle), demo-stack (pytest, default order — pytest-randomly absent, matching M16). 0 flakes."
+  },
+  "coverage": {
+    "note": "Harden ran 2 passes (recorded in progress.md). The pure SQL builders were already 100% covered; the harden deepened ENFORCEMENT (mutation-pins) on already-covered lines rather than chasing new statements.",
+    "stack-seeding_pg": "52.0% -> 55.3% statements (+3.3 — the CopyRowsIdempotent validation/conflict-check branch now exercised hermetically). Remaining uncovered = DB-touching (Connect/Exec/CopyIn/live merge), proven by the live docker harness.",
+    "stack-snapshot_replay": "100% (unchanged); cmd/stacksnap 77.0% (unchanged — remainder is live-DB adapter wiring).",
+    "seeders": "95.2% (unchanged — at the hermetic ceiling).",
+    "cmd_stackseed": "47.0% (unchanged — the --reset pins are over the package-level resetTables const, zero executable statements; the rest is live-DB code covered by the docker harness).",
+    "mutation_proven": "every M17 guard is mutation-pinned: removing the replay clear, the casbin WHERE-NOT-EXISTS, or the idempotent-COPY ON CONFLICT each fails its test, showing the exact doubling/abort. The truncateForReplaySQL target-class test fails if the SQL ever becomes a DROP/DELETE/CASCADE/cross-schema op."
+  },
+  "prod_safety_verification": {
+    "verdict": "GREEN — the new TRUNCATE/idempotent-write logic is provably confined to per-stack-isolated offset targets.",
+    "truncate_target_class": "truncateForReplaySQL pinned by 4 tests: ExactShape (single-table TRUNCATE RESTART IDENTITY), IsAlwaysTruncateNeverDropOrDelete (never DROP/DELETE/CASCADE/cross-schema), DegenerateIdentifiers (degenerate/empty input stays a single-relation TRUNCATE, never a destructive class), QuotesAgainstInjection (QuoteIdent-escaped). The connection it runs on is pg.DSNForOffset(baseDSN, n) — the per-stack offset — so the TRUNCATE can structurally only ever land on the per-stack-isolated Postgres, never prod, never a shared store.",
+    "reset_destructive_surface": "doReset's TRUNCATE … CASCADE runs only over the resetTables package const (pinned: every entry exactly schema.table, no duplicates); the casbin g2 grant is NOT truncated (it shares the sentinel schema with init_policy.sql's global policy) — a targeted DELETE … WHERE p_type='g2' (resetCasbin) preserves bootstrap.",
+    "m15_drift_guards": "all GREEN after the safety.md 'See also' addition (the idempotency.md cross-link): read-side stack-seeding/isolation/safety_doc_drift_test.go (TestSafetyDocClerkHostsMatchCode, …DirectusTokenKeys, …ForcedBucketOverride, …NamesRealGuardSymbols) + write-side stack-snapshot/cmd/stacksnap/main_drift_test.go (TestSafetyDocPredicatesMatchCode, …NamesRealFirewallGates, …BoundedReadSessionMatchesCode). No way the new logic could TRUNCATE a non-per-stack target — no blocker."
+  },
+  "delivered": {
+    "idempotency_md": "corpus/ops/idempotency.md (net-new, ~150 lines, dual-level + code-cited): the per-component re-run verdict table (migrate SAFE / replay SAFE-with-the-TRUNCATE-guard / seed SAFE-with-the-idempotent-guards), the two re-run models (re-run-in-place vs teardown-then-redo), and the engineer detail per guard. Wired bidirectionally into demo/README.md, root CLAUDE.md, snapshot-spec.md, seeding-spec.md, safety.md.",
+    "replay_guard": "stack-snapshot/replay/replay.go: Replayer.ClearForReplay — per-stack-isolated TRUNCATE-then-reload, child-first (reverse dependency order, no CASCADE), before the parent-first COPY. A 2nd replay REPLACES, never appends. Safe-by-default, no flag (#M17-D3). The SQL is the pure truncateForReplaySQL (adapters.go), target-class pinned (#M17-D4).",
+    "seed_guards": "stack-seeding: Conn.CopyRowsIdempotent (pg/pg.go) — COPY-to-session-local-TEMP-then-INSERT…SELECT…ON CONFLICT (id) DO NOTHING in one tx, preserving the bulk path; all 7 seeders rewired (#M17-D5). The casbin g2 grant uses INSERT…SELECT…WHERE NOT EXISTS (the casbin tables have no unique tuple constraint) (#M17-D6). --reset extended to the full FK-ordered fleet (activity_events->jobsim sessions->skill_path_sessions->assignments->memberships->users->organizations) + a targeted casbin g2 DELETE, not TRUNCATE (#M17-D7).",
+    "race_audit": "the set -e first-run-race audit across the 4 bring-up scripts: up-injected.sh GH_PAT fails loud (#M17-D1); rosetta-demo + dev-stack DEV_PROJECT || true so the documented fallback runs (#M17-D1); migrate-demo.sh wait_pg + wait_sentinel_running defense-in-depth, both bounded + non-fatal (#M17-D2); the schema-create || log latent-site fix surfaced by the live harness (#M17-D9).",
+    "live_harness": "demo-stack/tests/test_migrate_race_live.py — the M16 Fate-2 item LANDED (#M17-D8): the real migrate-demo.sh run against a throwaway pgvector container in the race state, proving survival + idempotency. Skips without Docker."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — all M17 testable logic (Go re-run guards + Python race fences + the live harness + the 4 bring-up scripts).",
+    "head": "0d36251",
+    "tag": "dress-rehearsal-m17",
+    "tag_note": "v1.3b per-milestone naming dress-rehearsal-mNN. The tag was set at the build HEAD dcef026 during build, trailed the 2 harden commits (ea32daf, 0d36251), and was RECONCILED at close to the final HEAD 0d36251 (== origin/main) — a sanctioned forced tag re-point, force-pushed to origin (NOT a branch force-push). Three-way agreement at close: origin tag = authoring HEAD = consumed HEAD = 0d36251.",
+    "build_commits": [
+      "d539277 (fix(M17): set -e first-run-race audit — loud GH_PAT guard + DEV_PROJECT fallback + migrate wait-for-ready)",
+      "9ecfe6a (feat(M17): stacksnap replay re-run guard — per-stack TRUNCATE-then-reload (idempotent))",
+      "9234caa (feat(M17): stackseed re-run safety — idempotent COPY + casbin guard + fixed --reset list)",
+      "dcef026 (test(M17): live docker-harness migrate-race test (M16 Fate-2) + safety-chain pin + latent fix)"
+    ],
+    "harden_commits": [
+      "ea32daf (harden(v1.3b/M17): deepen re-run-guard edge/error/injection coverage)",
+      "0d36251 (harden(v1.3b/M17): pin the --reset destructive-surface invariants)"
+    ],
+    "close_commit": "none in extensions — the close Fate-1 fix (decision ref-tags) was docs-only in rosetta (corpus/ops/idempotency.md), so the extensions HEAD stays at the harden HEAD 0d36251.",
+    "per_stack_reconsume": "stack-demo/rosetta-extensions re-consumed to dress-rehearsal-m17 @ 0d36251 (the reconciled tag). stack-dev/ has no rosetta-extensions clone (it uses the platform compose directly), so stack-demo is the only per-stack consumption copy on this box."
+  },
+  "review": {
+    "findings": 1,
+    "findings_note": "1 finding — the decision-triage review surfaced that idempotency.md blends the D1-D7 mechanism rationale but lacked the (#M17-DK) back-ref tags the v1.3 corpus precedent uses (M10-Dx/M13-Dx). Added the tags so each mechanism (replay TRUNCATE-reload, idempotent COPY, casbin guard, --reset, the race sweep) traces to its decision record. No code/test/scope finding (the build+harden logic held under every probe).",
+    "scope": "GREEN — all 6 deliverables + 4 verification items checked; every overview Scope.In item delivered Fate-1; the Out items (verify net -> M18, auto-chaining -> M20) stay out. 0 orphan TODO/FIXME in either repo.",
+    "code_quality": "GREEN — replay TRUNCATE child-first (no CASCADE, blast radius = manifest's own tables) + offset-only connection; idempotent COPY temp-then-merge; casbin WHERE-NOT-EXISTS (correct — no unique tuple constraint); reset list FK-ordered child-first; casbin table resolved from a fixed 2-elem allow-list (no injection surface); all SQL builders QuoteIdent-escaped. gofmt + go vet + shellcheck + py_compile clean. 0 must-fix.",
+    "docs": "GREEN after the Fate-1 ref-tag fix — idempotency.md accurate vs code (verified the replay clear, the CopyRowsIdempotent temp-merge, the casbin WHERE-NOT-EXISTS, the reset list against source), dual-level, wired bidirectionally into 5 parents; all outbound links resolve; GUIDE.md test-count reconciled 21->27 (TestGuideDocTruth green). Per-unit handbook contract: no new top-level unit (only new files within existing packages).",
+    "tests": "GREEN — both Go modules pass -race -count=1 (full suite, not a touched-subset); demo-stack pytest 30/30 (the 3 live-harness tests skip cleanly without Docker). Go 713->736 (+23), Python 182->191 collected (+9 demo-stack). Counts reconciled: the state.md Python convention is pytest-collected (parametrized cases count individually), so the apparent 33-vs-38 dev-stack gap was a measurement artifact (func-def vs collected), NOT drift. Every guard mutation-pinned.",
+    "decision_triage": "M17-D1..D7 + D9 blended into idempotency.md (the mechanism rationale was already prose; the close ADDED the (#M17-DK) back-ref tags). D8 (live harness) referenced via the §migrate 'Tested' callout. D8/D9 are also maintainer/testing decisions -> archived in decisions.md.",
+    "adversarial": "Phase 2c — the scenarios are captured as LIVE mutation-pinned tests (the harden Pass-1 work): the truncateForReplaySQL degenerate/empty-identifier sweep (stays a single-relation TRUNCATE, never a destructive class), the injection sweep over every seed-side SQL builder, the single-column merge edge, the casbin 7-column dedup correctness. The Phase 2c risk (a TRUNCATE escaping per-stack isolation) is pinned by both the shape-test and the structural offset DSN. 0 bugs surfaced; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.3b-dress-rehearsal/m17-rerun-safety/audit-deferrals/deferral-audit-2026-06-09-m17-close.md. M17 added 0 new deferrals (every decision D1-D9 is a Fate-1 landing). The M16 Fate-2 (live docker migrate-race behavior test) LANDED in M17 (M17-D8), reaching its destination. The only open item is the inherited cross-release DEF-M10-01 (S3 blobs + cloud store -> v1.4, signed) — untouched by M17, all 4 aging triggers negative, authority intact. 0 repeat, 0 chronic, 0 aged-out."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 6 deliverables: the set -e first-run-race audit (4 scripts), the wait-for-sentinel-ready defense-in-depth, the stacksnap replay TRUNCATE-then-reload guard, the stackseed idempotent COPY + casbin WHERE-NOT-EXISTS, the fixed --reset fleet, and the tested idempotency contract per component. Plus the net-new corpus/ops/idempotency.md + the harden mutation-pins + the close Fate-1 (decision ref-tags).",
+    "confirmed_covered_fate2": "none open — the M16 Fate-2 (live docker migrate-race behavior test) LANDED here as M17-D8, so it is now Done, not forward-routed.",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none introduced by M17. DEF-M10-01 (cloud snapshot store + S3 media blob bytes) is INHERITED from v1.2, signed -> v1.4, orthogonal to M17 (M17 touched the re-run-guard surfaces, NOT the snapshot-store/S3 area), not aged out. Unchanged."
+  },
+  "notes": "M17 is the 2nd milestone of v1.3b 'dress rehearsal' — it makes the bring-up PRIMITIVES re-run-safe so M20's auto-chaining is safe to retry. The defining risk was data-safety: the new TRUNCATE/idempotent-write logic must only ever hit a per-stack-isolated offset target. The close verified this holds (the truncateForReplaySQL target-class is pinned to a single-table TRUNCATE RESTART IDENTITY, never DROP/DELETE/CASCADE/cross-schema, and the connection is structurally the per-stack offset DSN; the M15 read-side+write-side safety drift guards stay GREEN; the --reset destructive surface is pinned to schema.table-only entries and the casbin policy is preserved via a targeted g2 DELETE). The close also ABSORBED M16's one Fate-2 item (the live docker migrate-race behavior test landed as M17-D8) and reconciled the dress-rehearsal-m17 tag from the build HEAD dcef026 to the final HEAD 0d36251 (the tag trailed the 2 harden commits), re-consuming stack-demo to it. Review found 1 docs Fate-1 (the decision ref-tags). Deferral re-audit GREEN. Go 713->736 (+23), Python 182->191 collected (+9), flake 0 (5/5 all 3 touched suites). Next: M18 (the verification safety net)."
+}

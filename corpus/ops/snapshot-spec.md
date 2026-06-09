@@ -204,6 +204,10 @@ stacksnap status  [--store <root>]
   COPY + rebuilds any pgvector index. The target is **any stack** — `--stack demo-N` *or* `--stack dev-N`; a dev
   stack is a first-class replay target (the dev set-dressing pass, M13, drives this for `dev-N` cache-first — see
   [Dev as a full-fidelity peer](#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed)).
+  **Re-run safe (v1.3b M17):** replay **clears every target table** (a per-stack-isolated `TRUNCATE`, child-first)
+  before reloading, so a 2nd replay **REPLACES, never appends** — no duplicate-key abort, no silent double. The
+  destructive op is fenced to a single-table TRUNCATE on the per-stack offset Postgres only; full contract in
+  [`idempotency.md`](idempotency.md).
 - **`status`** lists cached snapshots (surface, schema version, rows, source, capture time).
 
 Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage error.
@@ -438,6 +442,7 @@ The net effect: **dev and demo are now the same world built two ways** — the s
 for **N-allocation** (the unified registry); M13 makes it a peer for **data**.
 
 ## See also
+- [`snapshot-cold-start.md`](snapshot-cold-start.md) — the **cold-start runbook** (v1.3b M20): filling the cache once per release on a fresh box (the sanctioned DSN-export / dump-restore path over `--dsn`), why the wired `postgres` MCP is **not** a capture source, and how it slots into the auto-set-dress bring-up.
 - [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/stack-snapshot`) sits in the up→snapshot→seed→use→down flow.
 - [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md) — the **set-dressing recipe**: the operator walk-through of capture→replay→a real-catalog/real-content world (this spec is its source of truth).
 - [`db-access.md`](db-access.md) — the read foundation + the public/customer boundary + the `/db-query` skill.

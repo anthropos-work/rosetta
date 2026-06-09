@@ -9,9 +9,12 @@ and a `release/{version}` branch is cut.
 > **v1.2 "set dressing"** → 2026-06-05 (shipped 2026-06-07, tag `v1.2`).
 > **v1.3 "stack party"** → 2026-06-07 (shipped 2026-06-07, tag `v1.3`; the **dev/demo convergence** — dev stacks as
 > first-class peers, a unified first-available-N stack registry, generic `stack-*` skills, a code-cited safety doc).
+> **v1.3b "dress rehearsal"** → 2026-06-08 (shipped 2026-06-09, tag `v1.3.1`; the **field-hardening release** for
+> the 14 issues the first real `/demo-up` run surfaced — `/demo-up` now produces a full/populated/verified/demoable
+> stack, M16→M20; tooling + docs only, zero platform-repo edits). Orthogonal to the v1.4 seeds below.
 > **v1.4 is staged below** — the former v1.3 seeds (cloud store / S3 blobs, AI content, shareability, more mirrors)
-> moved here when the user scoped v1.3 = stack party (2026-06-07); now the next version to draft via
-> `/developer-kit:design-roadmap`.
+> moved here when the user scoped v1.3 = stack party (2026-06-07); it is now the **next version to draft** via
+> `/developer-kit:design-roadmap` (v1.3b having shipped).
 
 ---
 
@@ -45,10 +48,8 @@ underway. The leading v1.4 candidates:
   org-secret access could wire it into CI (small tooling item — fold into a v1.4 B-milestone or leave local).
 
 ## Codename notes
-- **v1.3 "stack party"** (in development — user-named; codename still changeable until ship). Note: it breaks the
-  prior stage-metaphor lineage (body double → show floor → set dressing) in favor of the convergence feeling;
-  stage-metaphor alternatives if wanted: "full ensemble" · "house lights" · "company call".
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" shipped — their codenames are now permanent.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" shipped — their codenames are now permanent. "dress rehearsal" re-opened the stage-metaphor lineage: a demo *is* a show, and v1.3b was the run-through that made it actually perform.)_
 
-_Last updated: 2026-06-07 (**v1.3 "stack party" promoted** to roadmap.md — the dev/demo convergence; the former v1.3
-seeds (cloud store / S3 blobs, AI content, shareability, more mirrors) moved to **v1.4 seeds** above)._
+_Last updated: 2026-06-09 (**v1.3b "dress rehearsal" SHIPPED**, tag `v1.3.1` — the field-hardening release for the
+14 `/demo-up` issues, M16→M20. v1.4 seeds below unchanged — now the **next version to draft** via
+`/developer-kit:design-roadmap`.)_

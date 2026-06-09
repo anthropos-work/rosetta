@@ -1,0 +1,34 @@
+{
+  "release": "v1.3b",
+  "codename": "dress rehearsal",
+  "shipped": "2026-06-09",
+  "milestones": ["M16", "M17", "M18", "M19", "M20"],
+  "theme": "field-hardening — make /demo-up produce a full, populated, verified, demoable stack (the 14 issues the first real /demo-up run surfaced). Tooling + docs only; zero platform-repo edits.",
+  "aggregate": {
+    "go_test_matcher": "^func Test (test funcs only) — apples-to-apples vs v1.3's 713",
+    "go_test_funcs": 736,
+    "go_delta_vs_v1_3": 23,
+    "go_breakdown": { "alignment": 43, "clerkenstein": 210, "stack-seeding": 252, "stack-snapshot": 231 },
+    "go_note": "+23 all in M17 (re-run guards: stack-seeding 236->252, stack-snapshot 224->231). M18/M19/M20 touched no Go. All 4 modules pass -race -count=1; gofmt + go vet clean.",
+    "python_test_collected": 360,
+    "python_baseline_v1_3": 174,
+    "python_breakdown_collected": { "stack-core": 54, "dev-stack": 50, "demo-stack": 84, "stack-injection": 85, "stack-verify": 87 },
+    "python_note": "MATCHER NUANCE: v1.3 reported Python as test-funcs (174); v1.3b milestones reported pytest-collected (parametrized cases count individually). By collected, v1.3b = 360. The growth is real either way: net-new stack-verify suite 0->87 (M18 test_verify.py), demo-stack 13->84 (M16/M17/M19/M20 guards), dev-stack 38->50 (M20), stack-injection 69->85 (M19 frontend emission). No section regressed.",
+    "total_tests_executed": 1096,
+    "flake": 0,
+    "triple_clean": "pending Phase 8b (suites ran clean once in the review sweep; 3x to follow)",
+    "coverage": "100% of the full data-DNA catalog (inherited from v1.2; unchanged — nothing waived)",
+    "alignment_gates": "100%/100% all 4 Clerkenstein surfaces (untouched by v1.3b)",
+    "supply_chain": "GREEN — 0 called third-party CVEs; 12 stdlib advisories/module (go1.25.11+ clears, accepted, = v1.3 baseline); all-permissive licenses; Python stdlib-only. Lockfile: dependencies.lock.",
+    "new_corpus_docs": ["corpus/ops/idempotency.md (M17)", "corpus/ops/verification.md (M18)", "corpus/ops/demo/frontend-tier.md (M19)", "corpus/ops/snapshot-cold-start.md (M20)"],
+    "deferrals": "0 new across v1.3b; 1 inherited carrier DEF-M10-01 (S3 blobs + cloud SnapshotStore) -> v1.4, signed, untouched, not aged.",
+    "extensions_tags": ["dress-rehearsal-m16", "dress-rehearsal-m17", "dress-rehearsal-m18", "dress-rehearsal-m19", "dress-rehearsal-m20 @ 51a07cb"]
+  },
+  "regression_gate": {
+    "verdict": "GREEN",
+    "test_count": "increase (Go +23; Python up materially) — no decrease",
+    "coverage": "no drop (>2pp gate clear)",
+    "benchmarks": "n/a (no perf-sensitive surface changed)",
+    "flake": 0
+  }
+}

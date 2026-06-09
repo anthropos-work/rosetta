@@ -1,0 +1,82 @@
+{
+  "milestone": "M16",
+  "title": "Land the field fixes + restore doc truth. Make the two already-applied fixes (ISSUE-1 devpath rename-resolution + ISSUE-7 migrate-race set-e resilience) durable and public, finish the anthropos-dev -> stack-dev rename as the documented default (demoting anthropos-dev to a single intentional legacy-alias fallback), clear the stale demo-stack GUIDE/README facts (78->13/21 tests, no-remote->remote-exists, /demo-status->/stack-list, v1.1/M3->v1.3), fix the pytest invocation doc, refresh the extensions knowledge/ KB, and add a consolidated stack-dev layout + back-compat note to corpus/ops/rosetta_demo.md.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-08",
+  "is_first_milestone": true,
+  "is_first_milestone_note": "M16 is the FIRST milestone of v1.3b 'dress rehearsal' (M16->M20). It lands the honest baseline (publishes the stranded fixes + restores doc truth) that every other milestone in the release builds on. M17->M20 follow.",
+  "kind": "a docs/publish/rename milestone (the M14 shape). The two functional changes (the rename-resolution lines + the migrate-race || echo 0) were pre-applied in a prior session; M16's job is to PUBLISH them (push extensions main + tag dress-rehearsal-m16 + re-consume per-stack), DOCUMENT them (the rename as the documented default + the corpus layout note), and FENCE them (the harden drift/regression guards). No new runtime logic. The value is doc accuracy + reference integrity + the publish reproducibility + fail-closed contract guards.",
+  "tests": {
+    "language": "python (demo-stack pytest guards — the M16-touched surface) + go (the other 3 modules unchanged) + shellcheck/py_compile on the touched scripts + markdown (the corpus note + GUIDE/README truth-up = the deliverable)",
+    "python_total": 182,
+    "python_delta_vs_m15": 8,
+    "python_breakdown": {
+      "stack-core": 54,
+      "dev-stack": 38,
+      "demo-stack": 21,
+      "stack-injection": 69
+    },
+    "python_note": "M16 added +8 Python test funcs, all in demo-stack/tests/test_tooling.py (13 -> 21), across 3 new guard classes: TestRenameDrift (3 — every workspace-resolving functional script scanned repo-wide; no UNMARKED anthropos-dev, stack-dev must lead anthropos-dev in every resolver, guarded-file-list exists), TestGuideDocTruth (2 — the GUIDE's advertised test count pinned to the suite's live collection + the documented pytest tests/ -v entrypoint), TestMigrateRaceGuard (3 — the ISSUE-7 fence: set -euo pipefail precondition, the casbin_rules COUNT || echo 0 resilience, the casbin_rules-empty guard around the one-shot init_policy.sql). The count guard caught its own +5 then +3 drift live (13->18->21) and the GUIDE was updated each time to match.",
+    "go_unchanged": {
+      "total": 713,
+      "breakdown": { "alignment": 43, "clerkenstein": 210, "stack-seeding": 236, "stack-snapshot": 224 },
+      "note": "M16 touched no Go source. The close Fate-1 fix edited clerkenstein/knowledge/glossary.md (a markdown doc, not Go). All 4 modules green (alignment, clerkenstein, stack-seeding, stack-snapshot)."
+    },
+    "shellcheck": "the 4 M16-touched shell scripts (up-injected.sh, migrate-demo.sh, rosetta-demo, dev-stack) shellcheck-CLEAN (exit 0).",
+    "py_compile": "gen_override.py + clone_repos.py py_compile CLEAN.",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean on the demo-stack suite (the M16-touched surface), sequential, all 21 passed each run. 0 flakes."
+  },
+  "coverage": {
+    "note": "M16 is a docs/publish/rename milestone — coverage in the line/branch sense is N/A (the functional changes are shell-script path edits + one defensive || echo 0, no new runtime logic). The meaningful metric is drift/regression-fence coverage of M16's two functional changes + the corrected doc facts. harden ran 2 passes (recorded in progress.md): Pass 1 the rename-drift + doc-truth guards, Pass 2 the migrate-race regression fence. Both fix-commits (547de17 rename, ed72e94 migrate-race) and the GUIDE truth-up are now fenced (0 fences -> 8 guard tests).",
+    "fence_completeness": "the rename contract (stack-dev must lead anthropos-dev; no unmarked anthropos-dev) + the migrate-race fix (|| echo 0 under set -e, the casbin-empty guard) + the GUIDE doc-truth (test count + pytest entrypoint) are each pinned by a fail-closed test. The live docker-harness migrate-race BEHAVIOR test is Fate-2 -> M17 (M16-D7).",
+    "mutation_proven": "the count guard demonstrated live (13->18->21 drift each caught + the GUIDE corrected); TestMigrateRaceGuard negative-tested (removing || echo 0 fails the guard)."
+  },
+  "delivered": {
+    "publish": "extensions main pushed to origin (a31d70b..44edc09 build, then ..aabbf74 harden, then ..e6161b0 the close Fate-1). The 2 stranded fixes (547de17 devpath + ed72e94 migrate-race) are now public. The local-only stack-party-devpath-fix tag is superseded (not deleted, never pushed). Milestone tag dress-rehearsal-m16 reconciled at close to e6161b0 (the final HEAD) + force-pushed (sanctioned tag re-point, user-approved publish).",
+    "rename_migration": "stack-dev is the documented default in all 5 workspace-resolvers (up-injected.sh, migrate-demo.sh, rosetta-demo x2, dev-stack) + the gen_override.py docstring + the clone_repos.py --dev-root help; anthropos-dev demoted to the single intentional legacy-alias fallback ([ -d ] || ...anthropos-dev), each line legacy-marked.",
+    "prose_sweep": "demo-stack/README.md, demo-stack/GUIDE.md, dev-stack/README.md, stack-core/gen_override.py docstring -> stack-dev/platform.",
+    "guide_header_truth": "demo-stack/GUIDE.md: remote-exists, 21 unit tests (not 78), /stack-list (not /demo-status), v1.3 (not v1.1/M3); the pytest tests/ -v entrypoint + the 3.11/3.12 note.",
+    "extensions_kb": "knowledge/README.md: the consumption version-jump expectation + the per-milestone dress-rehearsal-mNN tag scheme.",
+    "corpus_note": "corpus/ops/rosetta_demo.md: the consolidated 'Stack workspace layout + the anthropos-dev -> stack-dev back-compat fallback' note (the code snippet + the cross-link to CLAUDE.md + the don't-reintroduce-bare-anthropos-dev guidance).",
+    "close_fate1": "clerkenstein/knowledge/glossary.md anthropos-demo -> stack-demo (the LAST stale workspace name in the repo) — M16-D8, reversing build-time M16-D5's boundary deferral. ext e6161b0."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — the rename migration + prose sweep + GUIDE/README truth-up + knowledge/ KB refresh + the harden guard tests + the close Fate-1 glossary fix. The functional code changes are shell path edits + one defensive || echo 0 (the pre-applied fixes); no CLI behavior change beyond resilience.",
+    "head": "e6161b0",
+    "tag": "dress-rehearsal-m16",
+    "tag_note": "v1.3b tag naming is per-milestone dress-rehearsal-mNN (resolves M16-D1; matches the v1.3 stack-party-mN + v1.2 stack-snapshot-mN convention). The tag was set at 44edc09 (build HEAD) during build, trailed the 2 harden commits + the 1 close commit, and was RECONCILED at close to the final HEAD e6161b0 (forced tag re-point, force-pushed to origin — sanctioned, user-approved; NOT a branch force-push). A final v1.3.1 release tag lands at close-release.",
+    "build_commits": [
+      "547de17 (fix(devpath): stack-dev-preferred workspace resolution — pre-applied)",
+      "ed72e94 (fix(migrate-demo): casbin_rules count resilient under set -e — pre-applied)",
+      "f1ee81a (docs(v1.3b/M16): restore doc truth — stack-dev default + GUIDE header facts + pytest invocation)",
+      "44edc09 (docs(v1.3b/M16): PR-review sweep — demo-stack/README.md stale facts)"
+    ],
+    "harden_commits": [
+      "74b53eb (harden(v1.3b/M16): rename-drift + doc-truth contract guards — TestRenameDrift, TestGuideDocTruth)",
+      "aabbf74 (harden(v1.3b/M16): ISSUE-7 migrate-race regression fence — TestMigrateRaceGuard)"
+    ],
+    "close_commit": "e6161b0 (docs(v1.3b/M16): close-review Fate-1 — last stale workspace name, clerkenstein glossary anthropos-demo -> stack-demo)",
+    "per_stack_reconsume": "stack-demo/rosetta-extensions re-consumed to dress-rehearsal-m16 @ e6161b0 (the reconciled tag). stack-dev/ has no rosetta-extensions clone (M16-D6 — it uses the platform compose directly), so it is the only per-stack consumption copy on this box."
+  },
+  "review": {
+    "findings": 1,
+    "findings_note": "1 finding — the docs review surfaced clerkenstein/knowledge/glossary.md still naming the old anthropos-demo/ workspace (the last non-fallback stale workspace name in the entire repo, verified by a repo-wide grep). Landed Fate-1 (M16-D8), reversing build-time M16-D5's boundary deferral. No code/test/scope finding.",
+    "scope": "GREEN — all 7 deliverables checked; every overview Scope.In item delivered Fate 1; the one Out: item (race/idempotency BEHAVIOR work) stays in M17. The live docker-harness migrate-race behavior test is Fate-2 confirm -> M17 (M16-D7). 0 orphan TODO/FIXME/HACK in M16-touched files.",
+    "code_quality": "GREEN — the 5 workspace-resolvers uniform (stack-dev-preferred + [ -d ] || legacy fallback, each legacy-marked); the migrate-race || echo 0 correct under set -e -o pipefail; 0 dead code; bash -n + py_compile + shellcheck clean. 0 must-fix.",
+    "docs": "GREEN after the Fate-1 fix — GUIDE header (v1.3/remote-exists/stack-list/21-tests/pytest-entrypoint) accurate vs live; the corpus rosetta_demo.md note self-consistent + cross-links CLAUDE.md's 'Working in stack workspaces' section (verified present); corpus anthropos-dev mentions are only the intentional in-note explanatory ones. Per-unit handbook contract: no new top-level unit (rename + doc truth-up only).",
+    "tests": "GREEN — full extensions Python 182/182 (not a touched-subset); all 4 Go modules pass. The two functional changes (rename, migrate-race) + the GUIDE truth-up each fenced (TestRenameDrift, TestMigrateRaceGuard, TestGuideDocTruth). 0 unit/integration/regression gaps. Handbook test-count reconciled: GUIDE quotes 21, suite collects 21 (and TestGuideDocTruth pins it).",
+    "decision_triage": "M16-D2 (the back-compat fallback) already blended into corpus/ops/rosetta_demo.md (the layout note + code snippet + cross-link) — verified accurate. M16-D1/D3/D4/D5/D6/D7/D8 are maintainer/process decisions (tag-version scheme, re-tag mechanics, consumption inventory, deferral routing, the clerkenstein boundary trail) -> archive in decisions.md; no further knowledge-doc blend.",
+    "adversarial": "Phase 2c (recorded in decisions.md): (1) both stack-dev/ and anthropos-dev/ exist on one box — the [ -d ] || resolver short-circuits to stack-dev (the new name always wins), pinned by TestRenameDrift; deterministic + correct, no silent-wrong-root mode, no fix needed. (2) the migrate-race under set -e -o pipefail — fenced by || echo 0 + TestMigrateRaceGuard (negative-tested). 0 bugs surfaced; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — knowledge/plan/releases/01.3b-dress-rehearsal/m16-land-fixes/audit-deferrals/deferral-audit-2026-06-08-m16-close.md — 1 in-release single (the live docker-migrate-race BEHAVIOR test -> Fate-2 -> M17, already owned by M17's In: scope, no overview edit), 1 inherited cross-release (DEF-M10-01 S3/cloud store -> v1.4, signed, NOT aged out — all triggers negative: release just opened, M16 didn't touch the snapshot-store area), 0 repeat, 0 chronic, 0 aged-out. M16 is the release's first milestone — nothing inherited within v1.3b."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 7 deliverables: the publish (push + tag + re-consume), the stack-core rename migration, the prose sweep, the GUIDE header truth, the pytest doc fix, the extensions knowledge/ KB refresh, the corpus stack-dev layout note. Plus the harden fences (8 guard tests) and the close Fate-1 (the clerkenstein glossary, M16-D8).",
+    "confirmed_covered_fate2": "the LIVE docker-harness migrate-race BEHAVIOR test -> M17 (M16-D7) — confirmed covered by M17's In: scope (the set -e first-run-race audit + the per-component tested idempotency contract that 'trips on a real 2nd run'); no M17 overview edit needed.",
+    "annotated_fate3": "none",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none introduced by M16. DEF-M10-01 (cloud snapshot store + S3 media blob bytes) is INHERITED from v1.2, signed to v1.4, orthogonal to M16, not aged out. Unchanged."
+  },
+  "notes": "M16 is the FIRST milestone of v1.3b 'dress rehearsal' — it lands the honest baseline. The two functional fixes were pre-applied; M16 made them durable + public + fenced. The defining close action was the dual-repo discipline: the testable surface + all functional/doc changes live in the SEPARATE nested .agentspace/rosetta-extensions repo (gitignored from rosetta), which is pushed + tag-reconciled + re-consumed per-stack; the rosetta m16/land-fixes branch carries only the corpus layout note + the tracking docs. The close added 1 Fate-1 doc fix (the last stale workspace name, reversing a build-time boundary deferral) and reconciled the dress-rehearsal-m16 tag from the build HEAD (44edc09) to the final HEAD (e6161b0) since the tag trailed the harden + close commits — the documented tag-reconcile close step (cf. v1.3 M9a). Deferral re-audit GREEN. Next: M17 (bring-up re-run safety — idempotency + first-run race)."
+}

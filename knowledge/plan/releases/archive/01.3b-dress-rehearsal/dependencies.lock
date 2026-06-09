@@ -1,0 +1,46 @@
+# Dependency lockfile — v1.3b "dress rehearsal" (tag range v1.3.0..dress-rehearsal-m20 @ 51a07cb)
+# Captured at release close 2026-06-09. Source: govulncheck + go.mod/go.sum across the 4 rosetta-extensions Go
+# modules + a Python stdlib scan. This is the "what was actually in this release" record for incident response.
+# Verdict: GREEN — 0 called third-party CVEs; all-permissive licenses; Python stdlib-only (pytest dev-only).
+
+## Go modules (anthropos-work/rosetta-extensions)
+
+### clerkenstein  (go 1.25.0)
+direct:
+  github.com/anthropos-work/colony        v0.34.3   Apache-2.0
+  github.com/clerk/clerk-sdk-go/v2         v2.6.0    Apache-2.0
+  github.com/google/uuid                   v1.6.0    BSD-3-Clause
+  github.com/svix/svix-webhooks            v1.93.0   MIT
+  (indirect: go-jose/v3 v3.0.5, golang.org/x/{crypto v0.51.0,sync,text}, stretchr/testify v1.7.0)
+
+### alignment  (go 1.25)
+direct: (none — stdlib only)
+
+### stack-snapshot  (go 1.25.0)
+direct:
+  github.com/jackc/pgx/v5                  v5.9.2    MIT
+  (indirect: jackc/pgpassfile v1.0.0, jackc/pgservicefile, jackc/puddle/v2 v2.2.2,
+             golang.org/x/{sync v0.17.0,text v0.29.0}, stretchr/testify v1.11.1)
+
+### stack-seeding  (go 1.25.0)
+direct:
+  github.com/jackc/pgx/v5                  v5.9.2    MIT
+  gopkg.in/yaml.v3                         v3.0.1    MIT/Apache-2.0
+  (indirect: jackc/pg* as above, stretchr/testify, golang.org/x/*)
+
+## Vulnerability status (govulncheck ./... per module)
+  alignment       : exit 0  — no called advisories
+  clerkenstein    : exit 3  — 12 CALLED advisories, ALL Go stdlib (GO-2026-5039/5037/4971/4947/4946/4918/4870/
+                              4601/4340/4337, GO-2025-4175/4155); 0 third-party called. Cleared by go1.25.11+.
+  stack-snapshot  : exit 3  — 12 CALLED advisories, ALL stdlib (same class). 0 third-party. Cleared by go1.25.11+.
+  stack-seeding   : exit 3  — same stdlib class. 0 third-party called.
+  DISPOSITION: ACCEPTED (environment/toolchain item, not code) — identical to the v1.3.0 baseline. Bump the
+  installed Go toolchain to go1.25.11+ to clear; no code/dependency change required. 0 called third-party CVEs.
+
+## Python (rosetta-extensions stack-core/dev-stack/demo-stack/stack-injection/stack-verify)
+  runtime: stdlib only (argparse, json, os, subprocess, sys, base64, datetime, fcntl, re, io, shutil,
+           tempfile, textwrap, time, uuid)  — 0 third-party runtime deps
+  dev    : pytest (test-only)
+
+## Vendored third-party source: none.
+## License audit: GREEN — no GPL/AGPL; all deps Apache-2.0 / MIT / BSD-3-Clause.
