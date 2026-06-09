@@ -48,3 +48,28 @@ Full six-dimension re-scan over both scripts: test depth, edge cases, and error 
 
 ### Stop condition
 Scan clean + coverage delta < 2% residual (only the env-guarded `need go`) + 0 flakes. Stopped after 1 deepening pass + 1 confirmation scan — adding more would be test bloat. dev-stack 45→**50**, demo chain 38→**39** (whole-suite collected count rises with the build's already-counted M20 tests; harden net +6). shellcheck clean on both scripts; Go drift guards GREEN.
+
+## M20: Final Review
+
+_Close review 2026-06-09. The cleanest-but-one shape: 0 scope · 0 code · 0 adversarial · 1 docs · 0 tests · 4 decision-triage. Prod-safety invariant verified intact._
+
+### Scope
+- [x] All 4 overview In-items → delivered Fate-1 (chaining/atomicity/cold-start/preset); all progress boxes [x]; 0 TODO/FIXME in touched code; 0 gaps.
+
+### Code Quality
+- [x] shellcheck + py_compile + bash -n CLEAN on both touched scripts; one-engine-two-lifecycles (no demo fork); `rc=$?` cache-miss logic verified correct. 0 findings.
+
+### Adversarial (Phase 2c)
+- [x] 5 scenarios (non-numeric N, trailing-flag under set -u, demo-N=0+force, demo-engine-fork, capture-sneak) — ALL already test-pinned. Record the subsection in `decisions.md`.
+
+### Documentation
+- [x] [DOC-1] root `CLAUDE.md` `/demo-up` skill-table row omits the M20 auto-set-dress that the `/dev-up` row advertises — add it (consistency with the convergence narrative). All other docs accurate; 0 broken xrefs.
+
+### Tests & Benchmarks
+- [x] Py dev-stack 50 + demo-stack 84 PASS; all 4 Go modules PASS; M15 safety.md drift guards GREEN after §2.7; counts reconciled (Go 736 unchanged, Py 338→360 +22). 0 gaps.
+
+### Decision Triage
+- [x] M20-D1 → blend present in `safety.md` §2.7 (one-engine reuse); add `(#M20-D1)` ref-tag.
+- [x] M20-D2 → blend present in `demo/README.md` (small-200 default); add `(#M20-D2)` ref-tag.
+- [x] M20-D3 → blend present in `safety.md` §2.7 (atomicity floor); add `(#M20-D3)` ref-tag.
+- [x] M20-D4 → blend present + already tagged in `snapshot-cold-start.md` (MCP-not-a-capture-source). No action.

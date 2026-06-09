@@ -228,6 +228,7 @@ tail — exactly as `/dev-up` has since M13. The load-bearing safety fact is tha
 implementation**: `demo-stack/up-injected.sh` chains the **same** `dev-stack/dev-setdress.sh` engine via
 `--stack-type demo`, so every read- and write-side guarantee in this doc applies to the demo chain **by
 construction, byte-for-byte** — there is no demo-specific set-dress code path that could drift from the dev one.
+(#M20-D1)
 
 - **Replay-only, never capture.** The bring-up chain does **cache-first REPLAY** (a per-stack WRITE of public
   reference data into the stack's own isolated offset-port Postgres + per-stack Directus). It **never runs
@@ -248,6 +249,7 @@ construction, byte-for-byte** — there is no demo-specific set-dress code path 
   a stack is never catalog-replayed-but-unseeded (which would 403 on every authorized route). A replay cache-miss
   degrades to a structural-only world that still logs in (the seed is the floor); the M17 re-run guards make a
   partial set-dress repairable by re-running (idempotent TRUNCATE-then-reload replay + idempotent seed COPY).
+  (#M20-D3)
 
 ---
 

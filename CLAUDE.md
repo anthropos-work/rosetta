@@ -23,7 +23,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/update-knowledge` | Document new evidence across the corpus | N/A (meta-skill) |
 | `/test-platform` | Verify a running platform (probes, repo suites, census) | `.claude/skills/test-platform/SKILL.md` |
 | `/db-query` | Query the prod Postgres read-only (investigate data, size/inspect surfaces) | `corpus/ops/db-access.md` |
-| `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports) | `corpus/ops/rosetta_demo.md` |
+| `/demo-up` | Spin up an isolated demo stack (Clerkenstein-wired, offset ports, full UI tier + auto-set-dressed — the M20 demo set-dress flow, mirroring `/dev-up`) | `corpus/ops/rosetta_demo.md` + `corpus/ops/demo/README.md` |
 | `/demo-down` | Tear down a demo stack cleanly | `corpus/ops/rosetta_demo.md` |
 | `/stack-list` | List the live stacks — every `dev-N` and `demo-N` — from the unified registry | `corpus/ops/rosetta_demo.md` |
 | `/stack-seed` | Seed a stack (`dev-N` or `demo-N`) with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |

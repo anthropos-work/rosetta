@@ -85,10 +85,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   orgclient cert-redirect + the browser-login walk-through, log in → land in a seeded org.
 
 **Curated seed presets** (instances of `stack.seed.yaml`, validated to seed):
-`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick — **the `/demo-up` auto-set-dress default**, M20)
-· `mid-500` (the default "looks real") · `large-1k` (scale). The auto-set-dress pass uses `small-200` (a fuller
-world than dev's `dev-min`); override it with a manual `/stack-seed N --preset mid-500` (or skip the auto pass
-with `DEMO_NO_SETDRESS=1` and seed by hand). The presets are **purely structural** (they describe an org, not the
+`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick — **the `/demo-up` auto-set-dress default**,
+M20 #M20-D2) · `mid-500` (the default "looks real") · `large-1k` (scale). The auto-set-dress pass uses
+`small-200` (a fuller world than dev's `dev-min`); override it with a manual `/stack-seed N --preset mid-500`
+(or skip the auto pass with `DEMO_NO_SETDRESS=1` and seed by hand). The presets are **purely structural** (they describe an org, not the
 platform's reference library); for a **set-dressed** world the catalog replay runs first (the auto pass does this;
 manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
