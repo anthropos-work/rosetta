@@ -32,3 +32,56 @@ complete; only the structure half is missing.
 Directus), confirm the live baseline (replay exits 4), resolve the structure-source question (lean: option (c) — a
 self-contained reference Directus whose schema is exported via Directus `schema snapshot`, no prod access, doubles
 as the test fixture), and produce the first structure artifact for the 9 collections. Target: stage 2 → 3.
+
+---
+
+## Cross-iter implementation decisions
+
+### M21-D1 — admin email: `.local` TLD rejected by Directus 11.6.1 → `.example.com` (iter-02)
+**Context:** the per-stack Directus bootstrap (`provision.go` `DefaultEnvContract.AdminEmail`) minted
+`admin@<stack>.local`. **Live finding (iter-02, fresh `directus/directus:11.6.1` bootstrap):** the 11.6.1 email
+validator rejects the **`.local` TLD** outright — `admin@dev-5.local` AND `admin@dev.local` both die
+`FAILED_VALIDATION` in `createDefaultAdmin`, crashing bootstrap. Hyphens/digits in the label are fine
+(`admin@dev-5.example.com` passes); the prior fix16 hyphen-vs-underscore framing was incomplete. **Decision:** mint
+`admin@<stack>.example.com` (RFC-2606 reserved — never a real address, always format-valid), keeping the stack name
+as the subdomain for provenance. Code + comment + tests updated (a `.local` guard pins it gone). The old value was
+never executed (print-only recipe); M21 is its first live run. Committed: rosetta-extensions `98e51b4`.
+
+### M21-D2 — structure-apply mechanism = Directus `schema apply` of a snapshot YAML (iter-02)
+**Decision (mechanism validated live):** stage 3 (structure-apply) is implemented by Directus's own
+`node cli.js schema apply <snapshot.yaml>`. A schema snapshot is a clean YAML
+(`version / directus / vendor / collections / fields / relations`); applying it creates BOTH the user-collection
+table AND its `directus_collections`/`directus_fields`/`directus_relations` registry rows in one step (proven on a
+1-collection snapshot: table + registry rows appeared). This is the structure-artifact CARRIER — it supersedes a
+hand-rolled DDL + raw registry-row COPY, and it's Directus-native (so the registry is internally consistent). The
+M21 structure artifact = a Directus schema snapshot YAML scoped to the 9 public content collections.
+
+### M21-D3 — live baseline is exit **5** (digest miss), not exit 4 (iter-02)
+**Correction to the static baseline (spec-notes iter-01):** the real provision pipeline bootstraps the directus
+schema BEFORE replay, so `stacksnap replay --surface directus` runs against a **bootstrapped** schema (27 system
+tables) → `pg.SchemaVersion` returns a non-nil digest → it is NOT `ErrEmptySchema` → replay reaches the cache
+lookup and **exits 5** (cache miss at the bootstrapped digest `b4cb55bc…` ≠ prod key `6cd35278…`). Exit **4**
+(`ErrEmptySchema`) occurs ONLY against a never-bootstrapped (empty) directus schema. Both confirmed live. The
+stage-table in spec-notes is updated accordingly.
+
+### M21-D4 — structure-source: pure option (c) can't provide prod types; resolve in iter-03 (iter-02)
+**Finding:** TOK-01 leaned toward option (c) (a self-contained reference Directus) for the build/test loop. iter-02
+validated that (c) proves the *format + mechanism*, but it **cannot invent prod-faithful column types** — and the
+real artifact needs them, because stage 4 COPYs the cached **real** rows into the typed columns (a type mismatch
+fails the COPY). **Decision:** the real structure artifact must be sourced from something carrying prod's actual
+types + registry. iter-03 resolves the source — FIRST checking the platform repos (cms / migrations) for a committed
+Directus schema snapshot or collection definitions (self-contained, prod-faithful, zero prod access); else weighing
+(a) prod read / (b) restored dump / an MCP **structural** read (information_schema + directus_collections/fields/
+relations as JSON — distinct from the cold-start row-capture ban, which is about COPY bytes). All options stay behind
+the M9a capture-source policy + `AssertPublicOnly`.
+
+### M21-D5 — the digest trap is full-schema-keyed; convergence is deeper than "apply before replay" (iter-02)
+**Characterization:** `pg.SchemaVersionSQL()` digests every column of every table in the `directus` schema. The prod
+cache key `6cd35278…` therefore encodes the WHOLE prod directus schema (system tables AT prod's Directus version +
+ALL prod content collections + their exact types). A per-stack bootstrap converges that digest only if its entire
+schema matches — which is fragile against (i) Directus version skew (system-table columns differ), and (ii) prod
+having content collections beyond our 9. So "apply the 9-collection structure before row replay" (TOK-01) is
+necessary but may be **insufficient** for a cache-HIT. The stage-4 resolution (a future M21-D or a tok) likely
+chooses between: **(A)** capture/define the FULL prod content-model + pin the Directus version so the digest
+converges exactly, or **(B)** re-key the cache per-surface over only the captured content tables (a surgical change
+to the staleness key, shared with taxonomy — handle with care). Tracked as `STRUCT-M21-digest-keying`.

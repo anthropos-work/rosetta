@@ -32,14 +32,31 @@ per-tik progress toward a binary gate.
 | # | Stage | State today | Evidence |
 |---|-------|-------------|----------|
 | 1 | **build** — stack-snapshot compiles | PASS (existing) — must stay green as the extension lands | `go build ./...` exit 0 |
-| 2 | **bootstrap** — `node cli.js bootstrap` creates 27 `directus_*` system tables in a fresh `directus` schema | implemented (print-only recipe) + empirically pinned at fix16; image `directus/directus:11.6.1` cached locally | `directus/provision.go:86-100`; `docker images directus/directus:11.6.1` present |
-| 3 | **structure-apply** — create the 9 user-collection tables + register them in `directus_collections`/`fields`/`relations` | **THE GAP — unbuilt** | `provision.go:102-108` literal placeholder `"# NOT YET AUTOMATED"` |
-| 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the 9 tables in | exits **4** today (target `directus` schema empty → `ErrEmptySchema`) | `cmd/stacksnap/main.go:283-284`, `pg/pg.go:41,244` |
+| 2 | **bootstrap** — `node cli.js bootstrap` creates 27 `directus_*` system tables in a fresh `directus` schema | implemented; **LIVE-confirmed iter-02** (27 tables created). Needed a fix: the minted admin email was `.local`, which 11.6.1 rejects → fixed to `.example.com` (M21-D1). image `directus/directus:11.6.1` cached | `directus/provision.go:86-100`; iter-02 live run |
+| 3 | **structure-apply** — create the 9 user-collection tables + register them in `directus_collections`/`fields`/`relations` | **THE GAP — mechanism now known (M21-D2): Directus `schema apply` of a snapshot YAML; the real 9-collection artifact is iter-03 (needs prod-faithful types, M21-D4)** | `provision.go:102-108` placeholder; iter-02 1-collection apply proof |
+| 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the 9 tables in | **exits 5** in the real pipeline (bootstrapped schema → cache miss at digest `b4cb55bc…` ≠ prod `6cd35278…`); exit **4** only for a never-bootstrapped (empty) schema (M21-D3). Blocked on stage 3 + the digest-keying decision (M21-D5) | `cmd/stacksnap/main.go:283-284,359-363`, `pg/pg.go:41,238-247` |
 | 5 | **boot** — boot Directus on the schema, reachable over HTTP | recipe print-only (step 4) | `provision.go:115-123` |
 | 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | blocked behind 3–5 | the gate |
 
-**Furthest stage passing today (static): 2.** The pipeline dies at stage 3 (structure-apply). iter-02 establishes
-the *live* baseline (stand up a throwaway Postgres, bootstrap a real Directus, confirm replay exits 4).
+**Furthest stage passing: 2** — LIVE-confirmed + secured as of iter-02 (was static in iter-01). The pipeline dies at
+stage 3 (structure-apply). iter-02 stood up the live harness, fixed the stage-2 email blocker, refined the baseline
+(exit 5 not 4), validated the stage-3 mechanism, and routed the real artifact + structure-source decision to iter-03.
+
+## iter-02 live findings (Docker, directus/directus:11.6.1)
+
+- **Admin-email validator (M21-D1):** 11.6.1 rejects the `.local` TLD outright — `admin@dev-5.local` AND
+  `admin@dev.local` both `FAILED_VALIDATION`; `admin@example.com` / `admin@dev-5.example.com` pass. Hyphens/digits in
+  the label are fine. Fix: `admin@<stack>.example.com`. (Supersedes the fix16 hyphen-vs-underscore comment.)
+- **Exit-5 vs exit-4 (M21-D3):** bootstrapped directus schema digest = `b4cb55bcee08c76f2c37980da460a683`; prod cache
+  key = `6cd35278edbc8a7962053a9d7ebfc480`. Real pipeline (bootstrap-then-replay) → exit **5**; empty schema → exit 4.
+- **Structure-apply mechanism (M21-D2):** a Directus schema snapshot is YAML
+  `version / directus / vendor / collections / fields / relations`. `node cli.js schema apply <yaml>` creates the
+  user table AND the `directus_collections`/`directus_fields` registry rows together (1-collection proof). An empty
+  model snapshots as `collections: [] / fields: [] / relations: []`.
+- **Digest trap is full-schema-keyed (M21-D5):** `pg.SchemaVersionSQL()` digests every column of every table in the
+  `directus` schema → convergence needs the whole schema (system tables at prod's Directus version + all prod content
+  collections + exact types) to match. The stage-4 resolution chooses (A) full content-model + version pin, or (B)
+  re-key per-surface over only the captured content tables. Tracked `STRUCT-M21-digest-keying`.
 
 **The cache (the row half) is real and complete:** `.agentspace/snapshots/directus/6cd35278…/` — 9 content tables,
 ~25 MB COPY payloads, `format_version 1`, `public_only`, `predicate=directus-public-published`, every column
