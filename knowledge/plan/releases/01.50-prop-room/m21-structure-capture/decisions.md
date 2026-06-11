@@ -182,3 +182,16 @@ constraints (at least PKs), not just columns.**
 (`structure.sql` + `iter-05/pks.sql` + `iter-05/serve.sql`). The exit_gate says "**stacksnap** applies the captured
 structure", so the remaining deliverable is `STRUCT-M21-codeify`: make stacksnap capture (DDL+PKs+registration+
 permissions over `--dsn`) and apply it in provision. That flips the gate from demonstrated → met.
+
+### M21-D10 — privilege-visibility alignment: capture must match the digest's information_schema view (iter-06)
+**Finding (capture-side code-ification):** the snapshot staleness digest (`pg.SchemaVersionSQL`) is computed over
+`information_schema.columns`, which is **privilege-filtered** — it shows only relations the connecting role can see.
+The structure capture must scope to the SAME view, else it captures tables that `pg_class` exposes but the read role
+cannot, leaving the applied schema "ahead" of the digest so it never converges. **Verified on prod:**
+`sim_tasks_criterion` + `sim_tasks_criterion_check` are `pg_class`-visible to the read user (`marco_read`) but absent
+from its `information_schema` — so the cached digest `6cd35278…` counts **26** user collections, while a naive
+`pg_class` capture finds **28**. **Decision:** every structure-capture catalog query intersects `pg_catalog` (for exact
+types/PKs) with `information_schema.columns WHERE table_schema=$1` (for the digest's exact table set). This also means
+a capture run as a DIFFERENT (more-privileged) role would see a different table set → a different digest/cache key —
+consistent by construction as long as capture + the eventual replay-probe read the schema the same way. Generalizes to
+any digest-keyed capture against a least-privilege read role.

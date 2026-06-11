@@ -1,12 +1,12 @@
 # M21 — Progress
 
-**Status:** in-progress (iter-05 closed). **Shape:** iterative (exit gate in `overview.md`).
+**Status:** in-progress (iter-06 closed). **Shape:** iterative (exit gate in `overview.md`).
 **Build with:** `/developer-kit:build-mstone-iters`.
 **Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)**.
-**Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05): a booted per-stack Directus serves
-a captured public simulation anonymously (`GET /items/simulations?limit=1` → 200, real published row). **Gate NOT yet
-met-by-tooling:** the structure was hand-applied; the exit_gate's "stacksnap applies the captured structure" clause
-needs the code-ification (`STRUCT-M21-codeify`) — the remaining critical-path deliverable.
+**Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05). **Code-ification underway:** iter-06
+shipped the capture-side structure extension core (additive manifest artifact + the dynamic, digest-aligned directus
+DDL+PK generator + tests, rosetta-extensions `2c42ed5`). **Gate met-by-tooling pending** the apply + serve-row wiring
+(iter-07/08) — then "stacksnap applies the captured structure" is satisfied.
 
 ## Running ledger
 _Appended after each iter (tik = a standard iter toward the gate; tok = a strategy/retro iter)._
@@ -41,12 +41,17 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   → register (directus_collections) → public read permission on Directus's hardcoded policy `abf8a154`; directus_fields
   NOT needed (M21-D9). Gate demonstrated, not yet automated. See iter-05/progress.md.
 
-## Next-iter queue (Fate-3, → iter-06 under TOK-01)
-- `STRUCT-M21-codeify` — **THE critical path to the gate:** make `stacksnap` capture the structure (26-collection DDL
-  **including PKs** + the directus_collections registration rows + the public read permissions) over `--dsn` into the
-  snapshot, and APPLY it before the row replay in provision. Flips the gate demonstrated → met. (Proven recipe:
-  `iter-04/structure.sql` + `iter-05/pks.sql` + `iter-05/serve.sql`.)
-- Carried: `directus_files` ref capture (wire the dead `media.go`) + M23 referential closure (not needed for the basic
-  gate, confirmed).
+- iter-06 (tik, closed-fixed): **code-ification capture core shipped.** manifest additive `Structure` artifact + a
+  dynamic, digest-aligned directus DDL+PK structure generator (`CaptureStructure`) + `pg.QueryRowString`, unit-tested
+  + live-validated on prod (26 tables/8 seqs/26 PKs). Found+fixed the privilege-visibility alignment (M21-D10:
+  capture must scope to the digest's information_schema view, not pg_class). rosetta-extensions `2c42ed5`.
+
+## Next-iter queue (Fate-3, → iter-07/08 under TOK-01)
+- `STRUCT-M21-iter07-apply` — wire `CaptureStructure` into the directus capture (store as a payload + set
+  `manifest.Structure`) + APPLY it in provision/replay before the row replay + redefine the exit-4/5 semantics; live
+  integration test (capture → fresh bootstrap → apply → digest converges → replay exit 0).
+- `STRUCT-M21-iter08-serve` — capture + apply the directus_collections registration + public read permissions (the
+  serve half, M21-D9) so a stacksnap-provisioned stack serves anonymously with no hand SQL → flips the gate met.
+- Carried: firewall structural-metadata admissibility class; `directus_files` ref capture; M23 referential closure.
 - `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
   closure of the 20 dangling relations.
