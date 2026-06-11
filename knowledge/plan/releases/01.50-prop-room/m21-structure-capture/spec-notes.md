@@ -81,3 +81,22 @@ schema. The row cache was captured from a privileged `primary-read --dsn` (not s
 Lean: **(c)** for the build/test loop (self-contained, prod-untouched — honors the user's never-touch-prod
 constraint), with the artifact format designed so a future release-time **(b)** capture produces the byte-identical
 structure for the real cache.
+
+## iter-03 prod structural read (sanctioned) — the real structure source
+
+Operator sanctioned a bounded read-only structural read of the prod `directus` schema via the wired `postgres` MCP
+(the directus content lives in the same prod Postgres). Findings:
+
+- **Full schema = 53 tables:** 27 `directus_*` system + **26 user collections**. The surface captures **9** of the 26.
+  The prod schema digest over all 53 tables = `6cd35278edbc8a7962053a9d7ebfc480` (= the row-cache key, confirmed).
+- **Real DDL captured for the 9 collections** (exact `pg_catalog` types; column sets match the manifest):
+  simulations(37) skill_paths(28) sequences(34) resource(19) roles(17) sim_tasks(11) task_checks(8)
+  task_sub_checks(10) sequences_roles(10). Types seen: uuid, json, text, character varying(N), integer, boolean,
+  timestamp with/without time zone. Note `sequences_roles.id` is `integer DEFAULT nextval('directus.sequences_roles_id_seq')`
+  (a serial — the only non-uuid PK), so the artifact must carry the sequence too.
+- **Registry inventory for the 9 collections:** 9 `directus_collections` rows, **217** `directus_fields` rows, **43**
+  `directus_relations` rows — **20** of the relations point to collections OUTSIDE the 9 (the M23 referential-closure
+  surface; a booted Directus will have dangling relation defs until M23 closes them or they're pruned).
+- **Digest-keying (M21-D5 → option B):** a bootstrap (27 system) + 9-collection structure can never equal the
+  53-table `6cd35278…` digest → the cache must be re-keyed per-surface over only the captured content tables. Shared
+  `pg.SchemaVersionSQL` (taxonomy too) → operator-surfaced architectural fork. See decisions M21-D5/D6.

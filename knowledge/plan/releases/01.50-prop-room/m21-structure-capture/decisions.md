@@ -86,6 +86,17 @@ chooses between: **(A)** capture/define the FULL prod content-model + pin the Di
 converges exactly, or **(B)** re-key the cache per-surface over only the captured content tables (a surgical change
 to the staleness key, shared with taxonomy — handle with care). Tracked as `STRUCT-M21-digest-keying`.
 
+**iter-03 evidence — resolves toward option B.** A sanctioned prod structural read showed the prod `directus` schema
+digest `6cd35278…` is computed over the **FULL 53-table schema**: 27 `directus_*` system tables + **26 user
+collections**. The directus surface captures **9** of those 26. So a per-stack bootstrapped Directus (27 system
+tables) + the 9-collection structure can **never** converge the `6cd35278…` digest — it is short 17 collections (and
+would also need the system tables at prod's exact Directus version). Option A would require capturing/applying ALL 26
+collections + pinning the version (heavy, drags in 17 unwanted collections). **Option B** (re-key the cache by a
+digest over only the surface's captured content tables) is the surgical fix that makes the bootstrap+structure model
+cache-hittable and generalizes to taxonomy. **Caveat (why operator-surfaced, not auto-decided):** `pg.SchemaVersionSQL`
++ the staleness key are SHARED with taxonomy and are load-bearing + well-tested; re-keying must not silently change
+taxonomy's cache behavior. A vs B (and B's exact scoping) is the iter-04 architectural fork.
+
 ### M21-D6 — structure-source is operator-gated; self-contained options exhausted (iter-03 planning)
 **Investigation (iter-03 Phase 1):** searched the stack workspaces for a self-contained, prod-faithful Directus
 structure source. Found `stack-dev/cms/internal/directus/collections/*.go` — but these are the cms service's

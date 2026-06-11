@@ -1,6 +1,6 @@
 # M21 — Progress
 
-**Status:** in-progress (iter-02 closed). **Shape:** iterative (exit gate in `overview.md`).
+**Status:** in-progress (iter-03 closed). **Shape:** iterative (exit gate in `overview.md`).
 **Build with:** `/developer-kit:build-mstone-iters`.
 **Active strategy:** TOK-01 (staged-pipeline build toward the binary serve-anonymously gate — see `decisions.md`).
 **Furthest pipeline stage passing:** 2 of 6 — now **LIVE-confirmed + secured** (iter-02: stage-2 `.local` email bug
@@ -19,10 +19,18 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   artifact + source decision routed to iter-03 (M21-D4). furthest-stage stays 2 (live-confirmed). Routes carried
   forward: STRUCT-M21-iter03-source, -iter03-artifact, -digest-keying, + directus_files wiring — see iter-02/progress.md
 
-## Next-iter queue (Fate-3, → iter-03 under TOK-01)
-- `STRUCT-M21-iter03-source` — resolve the structure source (check platform cms repo for a committed Directus schema
-  first; else a/b/MCP-structural-read), behind the M9a capture-source policy.
-- `STRUCT-M21-iter03-artifact` — produce + apply the real 9-collection structure snapshot (prod-faithful types);
-  advance stage 2 → 3 (→ 4 if the cached-row replay then succeeds).
-- `STRUCT-M21-digest-keying` — the stage-4 convergence decision (full-schema digest vs per-surface content-table key).
-- `directus_files` ref capture — wire the dead `media.go` file-ref code (stage-3/4 sub-task).
+- iter-03 (tik, closed-fixed-partial): **structure-source blocker RESOLVED** — operator sanctioned a bounded read-only
+  prod structural read via the wired `postgres` MCP (M21-D6). Captured the **real faithful structure** for all 9
+  collections (exact `pg_catalog` DDL + registry inventory: 9 collections / 217 fields / 43 relations, 20 dangling →
+  M23). **Decisive digest finding** (M21-D5 → option B): prod digest `6cd35278…` is over the full 53-table schema
+  (27 system + 26 collections); surface captures 9 of 26 → whole-schema digest can never converge → re-key per-surface.
+  furthest-stage stays 2 (structure not yet applied). EXIT_REASON user-blocker: the digest-keying fork (A vs B, touches
+  shared taxonomy keying) surfaced to the operator. See iter-03/progress.md.
+
+## Next-iter queue (Fate-3, → iter-04 under TOK-01)
+- `STRUCT-M21-iter04-apply` — produce the real structure artifact (DDL + registry rows captured over the sanctioned
+  source) + apply to a fresh bootstrapped harness; confirm 9 tables + registry → stage 3 (→ 4 with row replay).
+- `STRUCT-M21-digest-keying` — implement option B (per-surface re-key) pending the operator's A-vs-B steer; shared with
+  taxonomy → guard taxonomy's cache behavior.
+- `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
+  closure of the 20 dangling relations.
