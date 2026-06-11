@@ -160,3 +160,25 @@ produced+applied by `stacksnap` itself. The exit GATE says "stacksnap applies th
 remaining stage-3 work is the **code-ification** (`STRUCT-M21-codeify`): a stacksnap capture-side structure extension
 that captures the 26-collection DDL + registry over `--dsn` into the snapshot and applies it before the row replay in
 provision. iter-04 proves the target is reachable; the tooling that automates it is the next build.
+
+### M21-D9 — the anonymous-serve recipe + the PRIMARY-KEY finding (iter-05)
+**Result:** the milestone's flagged live-only risk is cracked — a booted per-stack Directus serves a captured public
+simulation anonymously (`GET /items/simulations?limit=1` → 200 with a real published row). The full 6-stage path is
+demonstrated end-to-end with the real captured structure.
+**The load-bearing finding — PRIMARY KEY constraints:** the iter-04 `structure.sql` (column-only `pg_catalog` DDL)
+created tables WITHOUT primary keys. The digest still converged (it's over column *types*, not constraints) and the
+row COPY worked — but **Directus refuses to serve a collection with no detectable PK** (`"doesn't have a primary key
+column and will be ignored"` → 403, even for admin). Adding the real PKs (`id` for all 26, `code` for `languages`)
+fixed it; the digest stayed `6cd35278…` (PKs don't change column data_type). **So the structure artifact MUST capture
+constraints (at least PKs), not just columns.**
+**The serve recipe (what stages 5–6 need beyond stage 4):**
+1. The tables exist with prod-faithful columns **+ PRIMARY KEYs** (the structure artifact).
+2. A `directus_collections` registration row per served collection.
+3. A `directus_permissions` `read` row on Directus's **hardcoded public policy** `abf8a154-5b1c-4a46-ac9c-7300570f4f17`
+   (bootstrap creates the policy + its `(role=NULL,user=NULL)` access link), `fields='*'`, `status=published` filter
+   for simulations/skill_paths.
+   `directus_fields` rows are **NOT required** — Directus introspects DB columns once a collection is registered + has a PK.
+**Gate status — demonstrated, not yet automated:** the structure + registry + permissions were applied BY HAND
+(`structure.sql` + `iter-05/pks.sql` + `iter-05/serve.sql`). The exit_gate says "**stacksnap** applies the captured
+structure", so the remaining deliverable is `STRUCT-M21-codeify`: make stacksnap capture (DDL+PKs+registration+
+permissions over `--dsn`) and apply it in provision. That flips the gate from demonstrated → met.

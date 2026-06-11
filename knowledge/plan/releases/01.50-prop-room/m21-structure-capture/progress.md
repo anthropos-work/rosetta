@@ -1,12 +1,12 @@
 # M21 — Progress
 
-**Status:** in-progress (iter-04 closed). **Shape:** iterative (exit gate in `overview.md`).
+**Status:** in-progress (iter-05 closed). **Shape:** iterative (exit gate in `overview.md`).
 **Build with:** `/developer-kit:build-mstone-iters`.
-**Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)** — converge the digest by matching prod's
-schema (all 26 collections + pinned 11.6.1).
-**Furthest pipeline stage passing:** **4 of 6** — Option A validated end-to-end (iter-04): 26-collection structure
-apply converges the digest to `6cd35278…` and `stacksnap replay` exits 0 (10128 real rows, simulations=304). Remaining:
-stages 5–6 (serve anonymously) + code-ifying the structure apply into stacksnap.
+**Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)**.
+**Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05): a booted per-stack Directus serves
+a captured public simulation anonymously (`GET /items/simulations?limit=1` → 200, real published row). **Gate NOT yet
+met-by-tooling:** the structure was hand-applied; the exit_gate's "stacksnap applies the captured structure" clause
+needs the code-ification (`STRUCT-M21-codeify`) — the remaining critical-path deliverable.
 
 ## Running ledger
 _Appended after each iter (tik = a standard iter toward the gate; tok = a strategy/retro iter)._
@@ -35,13 +35,18 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   structure not registry rows, so stage 4 decoupled from serve. Caveat: apply was hand-applied DDL; stacksnap
   code-ification pending (M21-D8). See iter-04/progress.md.
 
-## Next-iter queue (Fate-3, → iter-05 under TOK-01)
-- `STRUCT-M21-iter05-serve` — stages 5–6: load the registry rows (directus_collections/fields/relations) + an
-  anonymous public read permission + boot Directus + `GET /items/simulations?limit=1` → 200 (the gate; Directus
-  permission model is the flagged live-only risk).
-- `STRUCT-M21-codeify` — build the stacksnap capture-side structure extension (capture the 26-collection DDL +
-  registry over `--dsn`; apply before row replay in provision) so the GATE's "stacksnap applies the captured
-  structure" is met by tooling, not a hand-applied artifact.
-- Carried: `directus_files` ref capture (wire the dead `media.go`) + M23 referential closure.
+- iter-05 (tik, closed-fixed): **stages 5–6 DEMONSTRATED → furthest-stage 4 → 6.** Booted Directus + served a captured
+  sim anonymously (200, real published row). Root-caused the milestone's live-only risk: the structure artifact needs
+  **PRIMARY KEY constraints** (Directus ignores PK-less collections; digest doesn't see PKs). Serve recipe = struct(+PK)
+  → register (directus_collections) → public read permission on Directus's hardcoded policy `abf8a154`; directus_fields
+  NOT needed (M21-D9). Gate demonstrated, not yet automated. See iter-05/progress.md.
+
+## Next-iter queue (Fate-3, → iter-06 under TOK-01)
+- `STRUCT-M21-codeify` — **THE critical path to the gate:** make `stacksnap` capture the structure (26-collection DDL
+  **including PKs** + the directus_collections registration rows + the public read permissions) over `--dsn` into the
+  snapshot, and APPLY it before the row replay in provision. Flips the gate demonstrated → met. (Proven recipe:
+  `iter-04/structure.sql` + `iter-05/pks.sql` + `iter-05/serve.sql`.)
+- Carried: `directus_files` ref capture (wire the dead `media.go`) + M23 referential closure (not needed for the basic
+  gate, confirmed).
 - `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
   closure of the 20 dangling relations.

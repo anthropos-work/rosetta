@@ -35,13 +35,27 @@ per-tik progress toward a binary gate.
 | 2 | **bootstrap** — `node cli.js bootstrap` creates 27 `directus_*` system tables in a fresh `directus` schema | implemented; **LIVE-confirmed iter-02** (27 tables created). Needed a fix: the minted admin email was `.local`, which 11.6.1 rejects → fixed to `.example.com` (M21-D1). image `directus/directus:11.6.1` cached | `directus/provision.go:86-100`; iter-02 live run |
 | 3 | **structure-apply** — create the user-collection tables so the schema digest converges | **PASSES (iter-04, option A):** applying ALL **26** collections' real DDL on a bootstrapped 11.6.1 → digest = `6cd35278…` exactly. (Caveat: hand-applied `iter-04/structure.sql`; stacksnap code-ification pending, M21-D8.) | iter-04 live run; `iter-04/structure.sql` |
 | 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the captured content tables in | **PASSES (iter-04):** exit 0, 9 tables / 10128 rows (simulations=304). Earlier baseline: bootstrapped-but-gap schema → exit 5; empty → exit 4 (M21-D3) | iter-04 live run; `cmd/stacksnap/main.go:359-378` |
-| 5 | **boot** — boot Directus on the schema, reachable over HTTP | recipe print-only (step 4); needs the registry rows loaded | `provision.go:115-123` |
-| 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | blocked behind 5 (+ anonymous public read permission — the flagged live-only risk) | the gate |
+| 5 | **boot** — boot Directus on the schema, reachable over HTTP | **PASSES (iter-05):** booted on the harness, `/server/health` 200 | iter-05 live run |
+| 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | **PASSES (iter-05, DEMONSTRATED):** 200 + real published sim, anonymous. Needs the table PKs + directus_collections registration + a public read permission on Directus's hardcoded policy `abf8a154` (M21-D9) | iter-05 live run |
+| — | **GATE automation clause** — *stacksnap* applies the captured structure | **PENDING:** the structure was hand-applied; `STRUCT-M21-codeify` makes stacksnap do it | the gate's "stacksnap applies" wording |
 
-**Furthest stage passing: 4** — Option A validated end-to-end (iter-04). Stages 1–4 pass (build → bootstrap →
-26-collection structure apply → digest converge → replay exit 0 with the real 10128 public rows). Remaining: stage 3
-**code-ification** (`STRUCT-M21-codeify` — make stacksnap itself capture+apply the structure) + stages 5–6 (serve
-anonymously: registry rows + anonymous permission + boot + GET).
+**Furthest stage passing: 6 — DEMONSTRATED end-to-end (iter-05).** All 6 stages pass with the real captured structure:
+build → bootstrap → 26-collection structure apply (digest `6cd35278…`) → replay exit 0 (10128 rows) → boot →
+anonymous serve (200 + real published sim). **Gate not yet met-by-tooling:** the exit_gate says "stacksnap applies the
+captured structure" — the structure/PK/registry/permissions were hand-applied (`iter-04/structure.sql` +
+`iter-05/pks.sql` + `iter-05/serve.sql`); `STRUCT-M21-codeify` wires this into stacksnap to flip the gate met.
+
+## iter-05 serve findings (the flagged live-only risk, cracked)
+
+- **PRIMARY KEY is load-bearing (M21-D9):** Directus ignores PK-less collections (`"doesn't have a primary key column
+  and will be ignored"` → 403, even admin). The column-only `pg_catalog` DDL omitted PKs; the digest still converged
+  (PKs aren't in the column-type digest) and COPY worked, but serving failed. Fix: capture + apply the real PKs
+  (`id` ×25, `code` for `languages`). The structure artifact MUST carry constraints, not just columns.
+- **Public access:** Directus's hardcoded public policy is `abf8a154-5b1c-4a46-ac9c-7300570f4f17`; bootstrap creates it
+  + its `(role=NULL,user=NULL)` directus_access link. Anonymous read = a `directus_permissions` `read` row on that
+  policy (fields='*', `status=published` filter for simulations/skill_paths).
+- **directus_fields NOT required** for the basic gate — Directus introspects DB columns once a collection is in
+  `directus_collections` + has a PK. (The 217 fields add casting/UI metadata, not raw GET capability.)
 
 ## iter-02 live findings (Docker, directus/directus:11.6.1)
 
