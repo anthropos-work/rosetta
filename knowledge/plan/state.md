@@ -1,12 +1,22 @@
 # State
 
-**Active version:** **(none — between releases).** **v1.3b "dress rehearsal" SHIPPED 2026-06-09** (tag `v1.3.1`, merged `--no-ff` → `main`). The field-hardening release for the 14 issues the first real `/demo-up` run surfaced — `/demo-up` now produces a **full, populated, verified, demoable** stack (tooling + docs only, zero platform-repo edits). **No next version is currently staged** (v1.4 was removed 2026-06-11). When one is chosen, run **`/developer-kit:design-roadmap`** to draft it. Genuinely-deferred work is **unscheduled backlog** (not a planned release): chiefly DEF-M10-01 (cloud `SnapshotStore` / S3 media blob bytes) and the per-stack-Directus **content** replay (the M10 collection-schema gap) — see [`roadmap-vision.md`](roadmap-vision.md).
-**Active milestone:** **(between releases)** — none until `/developer-kit:design-roadmap` cuts the next release.
-**Next up:** **(no version staged)** — `/developer-kit:design-roadmap` when a next version is chosen.
-**Phase:** **between releases — awaiting `/developer-kit:design-roadmap`.**
+**Active version:** **v1.5 "prop room"** (designed 2026-06-11; branch `release/01.50-prop-room`). The
+**local-Directus release** — every stack today reads public content **live from prod**; v1.5 stands up a **local
+Directus per stack** serving the **captured public library**, so content is self-contained. **Real images are
+preserved** by keeping the asset plane on prod public links (data plane local, asset plane prod). Coverage: **every
+demo** stack (default), **any dev-N≥1** (opt-in `--local-content`), **N=0** manual (documented recipe + n=0 guard).
+5 milestones M21→M25 (structure capture → executed provisioning + lifecycle → content cutover + referential closure
+→ docs + hygiene → field bake). **Tooling + docs only — zero platform-repo edits; capture stays read-only / public-
+only / prod-untouched.** Full plan: [`roadmap.md`](roadmap.md) § In Development.
+**Active milestone:** **M21 — Structure capture** (`iterative`; not yet started). Exit gate: `stacksnap` directus
+replay **exits 0** on a fresh bootstrapped stack and a booted Directus **serves a captured sim anonymously over
+HTTP**. Build with **`/developer-kit:build-mstone-iters`** (iterative shape).
+**Next up:** start **M21** (`/developer-kit:build-mstone-iters`), then M22→M25 strictly sequential.
+**Phase:** **v1.5 designed — release branch cut + milestone dirs scaffolded; ready to build M21.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
+_(v1.5 "prop room" is the active release-in-development — see above; the list below is the shipped baseline it builds on.)_
 - **v1.3b "dress rehearsal"** — **2026-06-09**, tag `v1.3.1`. The **field-hardening release** for the 14 `/demo-up` field issues: M16 land-fixes + doc-truth (published the devpath + migrate-race fixes, finished `anthropos-dev → stack-dev`) → M17 re-run safety (replay/seed idempotency + the `set -e` first-run-race) → M18 the verification net (`stack-verify` offset/scope-aware + auto-wired NON-FATAL; "UP" = verified) → M19 the frontend tier (next-web + studio-desk + ant-academy, per-demo cached builds, `--no-ui`, **zero platform-repo edits**) → M20 lifecycle convergence (`/demo-up` auto-set-dresses like `/dev-up` via one shared engine + the cold-start runbook). 4 net-new corpus docs (`idempotency`/`verification`/`demo/frontend-tier`/`snapshot-cold-start`). Go 713→**736** (+23, all M17); Python 174→**360 collected** (net-new stack-verify suite 0→87 + demo-stack/dev-stack/stack-injection growth); flake 0; triple-clean 3/3; supply-chain GREEN (0 called third-party CVEs; all-permissive). close-release GREEN (0 must-fix beyond 2 doc-index rows; deferral re-audit GREEN — DEF-M10-01 → backlog (unscheduled) untouched/not-aged). Records: [releases/archive/01.3b-dress-rehearsal/](releases/archive/01.3b-dress-rehearsal/) (review · retro · metrics · lockfile).
 - **v1.3 "stack party"** — **2026-06-07**, tag `v1.3`. The **dev/demo convergence**: a unified first-available-N stack registry [M12], dev-as-peer (the per-stack-Directus recipe + firewall check [print-only — not a working local Directus; see roadmap.md Correction] + auto-snapshot + light seed) [M13], one generic `stack-*` skill set [M14], and a code-cited `corpus/ops/safety.md` with fail-closed drift guards [M15]. 1 signed escape-hatch (DEF-M10-01 → backlog/unscheduled). Records: [releases/archive/01.30-stack-party/](releases/archive/01.30-stack-party/).
 - **v1.2 "set dressing"** — **2026-06-07**, tag `v1.2`. The **snapshot mechanism**: a dedicated `stack-snapshot` extension that captures the public reference library read-only from prod, manifest-caches it in `.agentspace`, replays it per-stack behind a tested tenant-data firewall — 100% data-DNA. Records: [releases/archive/01.20-set-dressing/](releases/archive/01.20-set-dressing/).
@@ -20,7 +30,18 @@
 - **Test health:** flake **0**; triple-clean **3/3** (4 Go `-race -shuffle` + 5 Python suites); supply-chain GREEN (0 called third-party CVEs; 12 stdlib advisories @go1.25.3 → cleared by go1.25.11+; all-permissive licenses).
 
 ## Branch model
+**v1.5 IN DEVELOPMENT:** `release/01.50-prop-room` cut from `main` (2026-06-11) at design time, per the canonical
+flow (release branch exists from M21 onward so milestone branches have a parent). Milestone branches `m21/…` … `m25/…`
+are created from it by `/developer-kit:build-mstone-iters` (M21, iterative) / `/developer-kit:build-milestone` (M22–M25,
+section) as each starts. v1.5 extensions tooling will be authored in `.agentspace/rosetta-extensions/` and tagged
+`prop-room-mNN`, consumed per-stack at the pinned tag (inheriting the v1.3b head `51a07cb`).
 **v1.3b SHIPPED:** `release/01.3b-dress-rehearsal` merged `--no-ff` → `main`, tagged **`v1.3.1`** (2026-06-09); release branch deleted; all 5 milestone branches (`m16/land-fixes` … `m20/lifecycle-convergence`) merged + deleted. The stack tooling lives in the **private** `anthropos-work/rosetta-extensions` monorepo — authored + tagged in the authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag. v1.3b extensions markers: **`dress-rehearsal-m16`** @ `e6161b0` · **`m17`** @ `0d36251` · **`m18`** @ `777723a` · **`m19`** @ `4f96ddd` · **`m20`** @ `51a07cb`; extensions `main` at `51a07cb` on `origin`; `stack-demo/rosetta-extensions` consumed @ `dress-rehearsal-m20`. Snapshot payloads live in a gitignored `.agentspace/snapshots/` cache (cloud/S3 store = backlog/unscheduled, DEF-M10-01).
 **v1.3 SHIPPED:** tagged **`v1.3`** (2026-06-07). **v1.2 SHIPPED + pushed:** **`v1.2`**. **v1.1 SHIPPED + pushed:** **`v1.1`**. **v1.0 SHIPPED:** `v1.0` (2026-06-03).
 
-_Last updated: 2026-06-09 (**v1.3b "dress rehearsal" SHIPPED** via `/developer-kit:close-release` — merged `--no-ff` → `main`, tagged `v1.3.1`. The field-hardening release: M16 land-fixes → M17 re-run safety → M18 verification net → M19 frontend tier → M20 lifecycle convergence. close-release GREEN: Phase 0 supply-chain GREEN [0 called third-party CVEs, stdlib-only go1.25.11+ item, all-permissive, lockfile]; Phase 1/1b scope+deferrals GREEN [all 14 issues Fate-1, DEF-M10-01 → backlog/unscheduled signed/untouched/not-aged]; Phase 2 code GREEN; Phase 3 docs YELLOW→fixed [2 ops-README index rows + 1 demo-README entry]; Phase 4/4b GREEN [Go +23, Python up, no regression]; triple-clean 3/3; stats snapshot + release-retro. Release dir archived → `releases/archive/01.3b-dress-rehearsal/`. **Next: (no version staged — v1.4 removed 2026-06-11);** deferred work is unscheduled backlog — see `roadmap-vision.md`.)_
+_Last updated: 2026-06-11 (**v1.5 "prop room" designed + staged** via `/developer-kit:design-roadmap` — the
+local-Directus release; 5 milestones M21→M25 promoted to roadmap.md, branch `release/01.50-prop-room` cut, milestone
+dirs scaffolded. Phase 0a deferral audit GREEN after per-item user fates [NEW-1/2/3 → M21–M23 core; 4 hygiene items →
+M24; DEF-M10-01 re-signed → backlog with the real-images-via-prod-links posture; ex-v1.4 seeds + deploy-CI gate +
+dev-up pre-warm DROPPED]. Phase 0b KB blind-areas → directus-local.md + verify/idempotency rows planned. Headline
+numbers below are the inherited v1.3b-close baseline, unchanged until v1.5 milestones land. Prior: 2026-06-09 v1.3b
+SHIPPED, tag `v1.3.1`.)_

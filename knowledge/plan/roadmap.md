@@ -51,6 +51,11 @@ builder skills).
 >    No stack type stands a per-stack Directus up; the `directus` content replay skips (`stacksnap` exit 4 — the
 >    M10 collection-schema gap), and every stack reads public content **live from prod**. Detail:
 >    [`../../corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md) § the per-stack Directus store fork.
+>
+> **→ Update (2026-06-11): this is now the v1.5 "prop room" thesis.** Fix-2's gap (no working local Directus; content
+> read live from prod) is exactly what **v1.5 "prop room"** closes — see the **In Development** section below. Fix-1's
+> DEF-M10-01 stays backlog, **re-signed fresh** at v1.5 design with its user-facing sting removed: v1.5 keeps the
+> *asset plane* on prod public links so demos show **real images** without the S3 blob-byte work.
 
 ## Version plan
 
@@ -61,6 +66,10 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 → M22 → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11) |
+
+> **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
+> numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
 
 The whole initiative layers a **second corpus + skill set on top of** the existing dev-environment
 tooling, to build disposable demo environments. Hard constraints: **no modification to any platform
@@ -73,6 +82,267 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.5 "prop room" (designed 2026-06-11)
+
+**Theme:** every stack today reads its public content **live from prod** (`DIRECTUS_BASE_ADDR=content.anthropos.work`)
+— v1.3/M13 shipped only a **print-only** per-stack-Directus recipe, never a running one (corrected corpus-wide
+2026-06-11). v1.5 "prop room" makes the prop room real: it stands up a **local Directus per stack**, serving the
+**captured public library** (the same snapshot the taxonomy already replays from), so a stack's content is
+**self-contained** — no live prod dependency at runtime. **Real images are preserved** by keeping the *asset plane*
+on prod's public links (cms already mints token-less `<DIRECTUS_PUBLIC_BASE_ADDR>/assets/<uuid>` URLs that browsers
+fetch anonymously — verified `cms/internal/directus/directus.go:87`); only the *data plane* (catalog rows, served
+via the local Directus) goes local. **Coverage:** **every demo** stack gets it by default; **any additional dev
+stack** (`dev-N≥1`) gets it **opt-in** via a flag; the main dev stack (**N=0**) stays manual (documented opt-in
+recipe) — its Directus address is baked in the platform compose and the n=0 guard keeps automation off the
+developer's primary box.
+
+> **Designed 2026-06-11** via `/developer-kit:design-roadmap` (the first version staged after the v1.4 removal).
+> 4 research agents (deferral sweep · code & gap · knowledge audit · git history) over the corpus @ `a4681cb` + the
+> `rosetta-extensions` authoring copy, every claim re-checked against live code. Gap analysis + KB blind-area map:
+> [`.agentspace/scratch/roadmap-research-2026-06-11.md`](../../.agentspace/scratch/roadmap-research-2026-06-11.md).
+> **Phase 0a deferral audit GREEN** (after per-item user fates 2026-06-11 —
+> [`.agentspace/scratch/deferral-audit-2026-06-11.md`](../../.agentspace/scratch/deferral-audit-2026-06-11.md)):
+> NEW-1/NEW-2/NEW-3 → v1.5 core (M21–M23); 4 small hygiene items → M24; DEF-M10-01 (S3 blob bytes + cloud store)
+> **re-signed → backlog**, its user-facing sting removed by the real-images-via-prod-links posture; the ex-v1.4 seeds
+> (AI content, shareability, more mirrors) + the deploy/injection CI gate + the dev-up pre-warm question **DROPPED
+> from tracking** at user instruction. **Phase 0b KB blind-areas:** structure-capture design, per-stack Directus
+> container lifecycle, and Directus verify probes have **no** corpus anchor → M21/M22 each `Deliver →` the missing
+> doc (chiefly the net-new `corpus/ops/directus-local.md`).
+>
+> **The corpus already names this end-state verbatim** (`snapshot-spec.md:402-406`): *"automate the recipe (execute
+> bootstrap, close the M10 collection-schema gap with a capture-side structure extension — the DDL + the
+> `directus_collections`/`fields`/`relations` registry rows — then replay + boot + re-point `DIRECTUS_BASE_ADDR`
+> per-stack) so content + taxonomy become a **referentially-closed captured pair** for both stack types."* v1.5
+> versions that close.
+
+> **Two user constraints, baked into every milestone** (2026-06-11): **(1) never touch production data or platform
+> repos** — v1.5 is tooling + docs only, the platform repo is a build *context* at most, capture stays read-only /
+> bounded / public-only behind `AssertPublicOnly`, and writes only ever hit per-stack-isolated offset targets;
+> **(2) keep the code simple and maintainable** — prefer the existing mechanisms (the generic `CopyIn`/replay path,
+> the injected-override generator, the one shared `dev-setdress` engine) over new subsystems; **make the per-stack
+> Directus a compose service in the stack's override**, not a hand-managed `docker run` (so existing teardown,
+> port-registry, and verify conventions cover it for free — no bespoke lifecycle code).
+
+> **The two-repo split holds** (as in v1.3b): **`rosetta-extensions`** owns all scripts / Go / Python / its own KB
+> (authored in `.agentspace/rosetta-extensions/`, tagged `prop-room-mNN`, consumed per-stack at the pinned tag);
+> **`rosetta`** owns `.claude/skills/*`, `corpus/*`, `CLAUDE.md`. Each milestone's `Delivers →` line splits accordingly.
+
+### M21: Structure capture — close the collection-schema gap
+**Status:** `planned` · **Shape:** `iterative`
+**Goal:** Make the snapshot carry the content-model **structure** (the user-collection table DDL + Directus's
+`directus_collections`/`directus_fields`/`directus_relations` registry rows) alongside the rows, captured atomically
+from the same sanctioned source — so the `directus` replay stops failing with exit 4 and a freshly-bootstrapped
+Directus can actually serve the captured catalog.
+**Exit gate (observable, machine-verifiable):** on a scratch offset-port Postgres + a bootstrapped `directus/directus:11.6.1`:
+`stacksnap` applies the captured structure → `stacksnap replay --surface directus` **exits 0** → a booted Directus
+**serves a captured public simulation over HTTP to an anonymous reader** (`GET /items/simulations?limit=1` → 200 with
+a real row). Today this whole chain dead-ends at the print-only `provision.go:108` placeholder.
+**Why iterative (not section):** the implementation path is genuinely uncertain — Directus's anonymous-read
+permissions + the registry-row carve-out + the cache-digest convergence are undesigned territory that only breaks
+live (the analogous fix16 cost +479 lines of empirical correction). A fixed `In:` checklist would be speculative;
+the gate is the commitment, the path emerges from each tik's evidence.
+**Scope (the known shape; refined per-iter):**
+  - In (**`rosetta-extensions`**): the **capture-side structure extension** — capture user-collection DDL (via a
+    `pg_dump --schema-only`-equivalent over the `directus` schema from the sanctioned `--dsn`; zero DDL-capture code
+    exists today) + the three registry tables filtered to the **public content model** (a collection-name allow-list);
+    a **structural-metadata admissibility class** in the firewall (registry rows are `directus_*` system tables —
+    today excluded by the letter of `AssertPublicOnly`; they carry no tenant/private columns, so they need an
+    explicit "structure, not tenant data" classification, not a blanket pass); the **cache-keying fix** so a
+    structure-less stack can converge to the source digest (apply structure **before** the row replay — the row cache
+    is keyed by the *target* schema digest, so a bootstrap-only stack can never cache-hit by construction today);
+    **redefined `stacksnap` exit-4 semantics** (today "schema missing → a capture can't help"; now the structure
+    artifact IS what provisions the schema); and **wire the `directus_files` ref capture** (the docs claim it ships,
+    `snapshot-spec.md:414`, but `media.go`'s filter/columns are dead code — no `directus_files` TableSpec; needed for
+    the real-image asset refs).
+  - Out: executing the recipe at bring-up (M22); the env re-point + referential closure (M23); **S3 blob bytes**
+    (stays backlog, DEF-M10-01 — refs + prod-link assets are the floor).
+**Depends on:** none (first milestone). **Parallel with:** none (the foundation the rest builds on).
+**Estimated complexity:** large (the empirical long pole; expect an M9-style capture-source design loop).
+**Open questions:** DDL source — `pg_dump -s` shell-out vs `information_schema` catalog reconstruction (lean:
+`pg_dump --schema-only -n directus`, already available on the sanctioned restore-a-dump `--dsn` path, simplest
+correct); manifest carries structure as an **additive field** (the `Predicate` precedent, no format bump) vs a
+sibling artifact keyed by source digest (lean: decide in iter-01 against the digest-convergence constraint); the
+prod-Directus-version vs local-11.6.1 **skew** policy (lean: record the source version in the manifest, pin the
+local image, warn on mismatch).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (the store-fork + capture-source + manifest sections),
+`corpus/ops/snapshot-cold-start.md` (the `--dsn` source the structure capture rides), `corpus/ops/safety.md`
+(the firewall admissibility classes).
+**Delivers → `corpus/ops/directus-local.md`** (rosetta — **net-new**: the per-stack Directus spec — the
+empirically-pinned bootstrap facts, the structure-capture model, the version-skew rule) **+ the structure-capture
+extension + `directus_files` capture + the redefined exit codes** (rosetta-extensions).
+**Risk (prod-safety — blocks-prod-safety):** structure capture is still a **prod read** — it must stay behind the
+M9a capture-source policy (read-only, bounded, operator-confirmed, public-only) and the `AssertPublicOnly` firewall,
+now extended (not loosened) to admit structural metadata. The dropped pg_dump-file-reader (M9b-D9) must **not**
+resurrect — `TestDroppedDumpFlagStaysGone` pins it gone.
+
+### M22: Executed provisioning + per-stack Directus lifecycle
+**Status:** `planned` · **Shape:** `section`
+**Goal:** Turn the print-only 4-step recipe into an **executed** bring-up step that boots a per-stack Directus as a
+**compose service** in the stack's override — idempotent, verified, torn down with the stack — so demo (default) and
+opt-in dev stacks come up with a live local Directus.
+**Scope:**
+  - In (**`rosetta-extensions`**): **execute** bootstrap → apply-structure → replay → boot inside the shared
+    `dev-setdress.sh` engine (replacing the print-only block), **demo default-on / dev opt-in** (`--local-content`;
+    `dev-N≥1` direct, `N=0` additionally behind the existing `--force` n=0 guard); **emit the Directus container into
+    the per-stack override as a compose service** (offset port `8055+N·10000`, joins the stack's app-network, gets
+    the `<project>-directus-1` name) — **not** a bespoke `docker run` (so `demo-down`/`dev-down`, the port registry,
+    and `stack-verify`'s naming convention all cover it with no new lifecycle code, per the maintainability
+    constraint); **idempotent re-provision** (bootstrap-on-non-empty + container-name-conflict guards, matching the
+    M17 re-run contract); **register the Directus offset port**; **Directus verify probes** in `stack-verify` (a
+    SERVICES row + `/server/health`, `directus` added to the expected-schemas list, a **"registered collections > 0"
+    cheap-win** — the silent-failure analog of the casbin assert — and a **no-prod-read env assert**); the **12 GB-VM
+    preflight** accounting extended to include the Directus container; **non-fatal** (a failed boot degrades to the
+    prod-read path with an honest status line — never blocks a good stack).
+  - In (**`rosetta`**): update `corpus/ops/verification.md` + `corpus/ops/idempotency.md` (new rows) + `corpus/ops/rosetta_demo.md` (registry/teardown).
+  - Out: the env re-point (M23 — M22 boots + verifies the instance; M23 points services at it); referential closure (M23).
+**Depends on:** M21 (a replay that exits 0 is the prerequisite for a Directus that serves content). **Parallel with:** none.
+**Estimated complexity:** medium.
+**Open questions:** compose-service vs sidecar override file (lean: a service block in the existing injected/dev
+override — reuses the proven generator, nothing bespoke); how loud a degraded "boot failed → still reading prod"
+status should be (lean: a clear ⚠ line in the set-dress status, consistent with the M18 verify block).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (the store-fork recipe), `corpus/ops/verification.md`,
+`corpus/ops/idempotency.md`, `corpus/ops/rosetta_demo.md`, the `dev-setdress`/`stack-verify` sections.
+**Delivers → `corpus/ops/directus-local.md`** (rosetta — the lifecycle half: container/compose/port/teardown +
+idempotent re-provision + verify probes) **+ verification.md/idempotency.md rows** (rosetta) **+ the executed
+provisioning + compose-service emission + verify probes** (rosetta-extensions).
+**Risk (data-safety — blocks-prod-safety):** an executed provision must only ever write the per-stack-isolated offset
+Directus/Postgres — the `EnvContract.Validate` firewall moves from a print-time check to a **load-bearing executed
+gate** (hard-abort before any write if the env resolves to prod); tests pin the target class, as M17 did for TRUNCATE.
+
+### M23: Content cutover + referential closure
+**Status:** `planned` · **Shape:** `section`
+**Goal:** Point the stack's services at their **own** Directus and guarantee the served catalog is
+**referentially closed** — so the content a stack serves never references a taxonomy node-id its captured subset
+lacks (the empty Assign-AI-Simulation-picker class disappears).
+**Scope:**
+  - In (**`rosetta-extensions`**): **re-point `DIRECTUS_BASE_ADDR`** to the local instance — demo via the ready
+    `gen_injected_override.py` env mechanism (one-line per service); **dev via growing `stack-core/gen_override.py`
+    to emit `environment:` blocks** (it can only emit ports today — the single genuinely-new bit of plumbing, kept
+    minimal); **keep the asset plane on prod** (`DIRECTUS_PUBLIC_BASE_ADDR` stays `content.anthropos.work` so
+    browser images stay real — the user's explicit call — sidestepping the baked next/image host whitelist with no
+    UI rebuild); **studio-desk** gets the local instance (`DIRECTUS_BASE_URL`) + a **locally-minted admin token** so
+    its skill-path writes target the per-stack Directus (never prod); **extend the prod-token strip to opted-in dev
+    stacks** (today demo-only); **referential closure** — make the taxonomy capture include every node-id the
+    captured content references (closure-at-capture; **full-taxonomy capture** as the simple fallback the corpus
+    already names) + a **cross-surface fidelity gene** so closure is *measured*, not assumed.
+  - In (**`rosetta`**): update `corpus/services/{cms,studio-desk,jobsimulation,next-web-app}.md` (the env/dependency
+    truth) + `corpus/ops/safety.md` (retire the live-prod-read notes; the token-strip stays as the write-disarm).
+  - Out: M21/M22 mechanics; the cms `PostMultipart` hardcoded-prod-upload-URL **platform bug** (can't fix without a
+    platform edit — disarmed by the token strip + documented as a user-owned upstream PR + a verify warning).
+**Depends on:** M22 (a booted, verified local Directus to point at). **Parallel with:** none.
+**Estimated complexity:** medium (data-design risk, not code volume — give it the decisions budget M9b had).
+**Open questions:** closure-at-capture (compute the referenced node-id set, capture exactly those) vs
+**full-taxonomy capture** (no subset — removes the dangling problem wholesale, simpler, slightly bigger snapshot)
+(lean: full-taxonomy capture for simplicity per the maintainability constraint, unless the size is prohibitive);
+whether N=0 dev re-point gets any tooling or stays a pure documented manual recipe (lean: documented recipe only —
+honor the n=0 guard + zero-platform-edit line).
+**KB dependencies:** `corpus/ops/snapshot-spec.md` (the referential-closure boundary + the fidelity genes),
+`corpus/ops/safety.md`, `corpus/services/*` (the Directus consumers), `corpus/ops/seeding-spec.md` (the content↔seed linkage).
+**Delivers → updated `corpus/ops/safety.md` (the self-contained-content deltas) + `corpus/services/*` (env truth) +
+`snapshot-spec.md` (the cross-surface closure gene)** (rosetta) **+ the env re-point (demo + dev) + closure capture
++ the closure gene** (rosetta-extensions).
+**Risk (correctness — degrades-quality):** a wrong re-point silently sends a stack back to prod (or to a dead local
+instance). Mitigate: the M22 no-prod-read verify assert + the `EnvContract` gate catch both; non-fatal degrade keeps
+a good stack up.
+
+### M24: Docs convergence + hygiene strand
+**Status:** `planned` · **Shape:** `section` · **Complexity:** small
+**Goal:** Make the whole corpus tell the new truth (stacks are content-self-contained), and absorb the four small
+aged-out hygiene items the deferral audit surfaced — so v1.5 leaves the repo honest and the backlog cleaner.
+**Scope:**
+  - In (**`rosetta`** docs): rewrite the `snapshot-spec.md` known-state block (the per-stack Directus is now real;
+    exit-4 semantics redefined), the `safety.md` §2 deltas, finish `corpus/ops/directus-local.md`; **correct the
+    stale local-Directus claims** in `corpus/architecture/external_services.md` (image 10.10.1 + admin/password +
+    a compose snippet — all **false**; the platform compose has no directus service — verified),
+    `service_taxonomy.md:242-260`, `quick_ops.md:162`; sweep the "print-only / exit-4 / reads live from prod"
+    language across the skills + `CLAUDE.md` (via `/update-knowledge`).
+  - In (**`rosetta-extensions`** — the hygiene strand, each small + independently landable):
+    **(a)** bump the Go toolchain pin to **go1.25.11+** (clears the 12 called-stdlib advisories; **lazy rebuild** —
+    no dedicated rebuild session, per the user); **(b)** a **corpus README index-row guard** (a lint that fails when
+    a new doc lacks its directory-README index row — the recurring miss in 3 straight releases; v1.5 ships new docs,
+    its exact protected class); **(c)** the **alignment zero-critical-genes guard** (`dna.Validate`/`compare.pct`
+    treat a zero-critical DNA as 100% — verified still absent; reject/flag it); **(d)** the **`/project-stats`
+    scope fix** (stop scanning the gitignored `stack-*/` platform clones that inflate the absolutes).
+  - Out: anything in M21–M23; the DROPPED items (AI content, shareability, more mirrors, deploy-CI gate, dev-up pre-warm).
+**Depends on:** M23 (the docs describe the finished cutover). **Parallel with:** none (but the four hygiene items are
+internally independent — land in any order).
+**Estimated complexity:** small.
+**Open questions:** none material (the four hygiene items are self-contained).
+**KB dependencies:** the full `corpus/ops/` + `corpus/architecture/` + `corpus/services/` set touched by the cutover;
+the `alignment` + stats tooling for the hygiene items.
+**Delivers → the corpus-wide truth-up + the 3 stale-doc corrections** (rosetta) **+ the README-index-row guard +
+the zero-critical-genes guard + the stats-scope fix + the Go pin bump** (rosetta-extensions).
+**Risk (low):** the stale-doc corrections must be verified against the *actual* platform compose, not assumed
+(already verified once: no directus service exists).
+
+### M25: Field bake — the observable-behavior gate
+**Status:** `planned` · **Shape:** `section`
+**Goal:** Prove the whole release on the **actual 16 GB box** with **observable behaviors** as the done-bars — so
+v1.5 pre-pays the field-fix tail that every prior release shipped after the fact (v1.3 → all of v1.3b; v1.3b →
+fix1–17).
+**Scope:**
+  - In (live runs on the user's machine, fixes folded back into the owning module):
+    - fresh **`/demo-up`** → the browser shows content **served by the local Directus** (data plane local) with
+      **real images** (asset plane prod) + the verify net GREEN incl. the new Directus probes;
+    - **`/dev-up 2 --local-content`** → same, on an opt-in dev stack; confirm **N=0 stays on the prod-read path**
+      untouched (the documented manual opt-in recipe exercised once);
+    - **re-run everything twice** (idempotency live — re-provision + replay + seed);
+    - the **cold-start capture** path exercised once (structure + rows captured together from a restored dump);
+    - clean **teardown** (`/demo-down`, `/dev-down 2`) reclaims the Directus container + its port; the registry is honest.
+  - Out: new features (this is a hardening gate — bugs surfaced get fixed in their owning module, no new scope).
+**Depends on:** M24 (the full release in place). **Parallel with:** none (the closing gate).
+**Estimated complexity:** medium (history's loudest lesson: doc-green ≠ field-working — budget the tail *inside* the release).
+**Open questions:** none — the done-bars are the observable behaviors above.
+**KB dependencies:** every v1.5 doc; the `/demo-up`, `/dev-up`, `/demo-down`, `/dev-down`, `/test-platform` skills.
+**Delivers → a short `releases/01.50-prop-room/m25-field-bake/` field-bake log + any folded-back fixes** (both repos as needed).
+**Risk (resource — degrades-quality):** a Directus container per stack adds to the Docker-VM budget. Mitigate:
+runtime is cheap (measured ~0.9 GB/stack, ~0.66 GiB both frontends — boots/builds spike, not steady-state), keep the
+**max-2-co-resident-stacks** line, add Directus to the 12 GB preflight, watch Docker-VM **disk** (the M3 disk-full precedent).
+
+### Execution graph (v1.5)
+```
+v1.5 "prop room" — a real local Directus serving the captured public content, per stack
+  M21 (structure capture, iterative) ──→ M22 (executed provisioning + lifecycle)
+   └─→ M23 (content cutover + referential closure) ──→ M24 (docs + hygiene) ──→ M25 (field bake)
+```
+**Strictly sequential** — every release in project history merged milestones serially, and this chain is a genuine
+dependency spine: M21 makes the replay succeed, M22 boots the instance, M23 points services at it + closes the
+referential gap, M24 tells the truth, M25 proves it live. Parallelize **within** a milestone via agents (recon
+spikes, harden passes), not across the chain. **No B-milestones** — the whole release *is* the tooling layer (the
+v1.3/M14 + v1.3b precedent); M24 carries the doc convergence inline.
+
+### Parallelism matrix (v1.5)
+| Pair | Can parallelize | Shared surface | Merge risk | Strategy |
+|------|-----------------|----------------|-----------|----------|
+| M21 ∥ M22 | no | M22 executes what M21 makes replayable | — | M21 first (its exit gate is M22's precondition) |
+| M22 ∥ M23 | no | M23 points services at M22's booted instance | — | sequential |
+| M23 ∥ M24 | no | M24 documents M23's finished cutover | — | sequential |
+| M24 ∥ M25 | no | M25 proves the whole release | — | M25 closes |
+
+### Risks (v1.5)
+- **(M21, prod-safety — blocks-prod-safety)** structure capture is a prod read — must stay read-only/bounded/
+  public-only behind `AssertPublicOnly` (now extended to admit structural metadata, not loosened) + the capture-source
+  policy + operator confirm. Mitigate: reuse the M9a capture path; the dropped file-reader stays dropped.
+- **(M21, empirical — degrades-quality)** Directus anonymous-read permissions + the registry-row carve-out only break
+  live (fix16's whole existence). Mitigate: the iterative shape with live tiks; the gate is "serves anonymously", not doc state.
+- **(M22, data-safety — blocks-prod-safety)** an executed provision must only write the per-stack-isolated offset
+  target — `EnvContract.Validate` becomes a load-bearing executed gate. Mitigate: hard-abort before any write; tests pin the target class.
+- **(M23, correctness — degrades-quality)** a wrong re-point sends a stack to prod or a dead instance. Mitigate: the
+  M22 no-prod-read verify assert + the env gate; non-fatal degrade.
+- **(M25, resource — degrades-quality)** a Directus container per stack grows the VM/disk budget. Mitigate: max-2
+  co-resident, the 12 GB preflight, watch disk.
+- **(cross-cut — the two user constraints)** **never touch prod data/platform repos** (tooling + docs only; platform
+  repo = build context at most; the cms upload-to-prod hardcode is a documented platform bug, not ours to fix) **+
+  keep it simple/maintainable** (compose-service over bespoke `docker run`; reuse the one shared engine + the existing
+  override generators + the generic replay path; one genuinely-new bit of plumbing — dev env-emission — kept minimal).
+
+### Open decisions (resolve during build)
+DDL source — `pg_dump -s` vs catalog reconstruction — M21 (lean `pg_dump --schema-only -n directus`);
+structure as additive manifest field vs sibling artifact — M21 (lean decide in iter-01 against digest convergence);
+Directus version-skew policy — M21 (lean record source version + pin local image + warn); compose-service vs sidecar —
+M22 (lean a service in the existing override); referential closure — closure-at-capture vs full-taxonomy capture —
+M23 (lean full-taxonomy for simplicity); N=0 dev re-point — tooling vs documented recipe — M23 (lean documented recipe).
 
 ## Done — v1.3b "dress rehearsal" (SHIPPED 2026-06-09 · tag `v1.3.1`)
 
