@@ -33,14 +33,15 @@ per-tik progress toward a binary gate.
 |---|-------|-------------|----------|
 | 1 | **build** — stack-snapshot compiles | PASS (existing) — must stay green as the extension lands | `go build ./...` exit 0 |
 | 2 | **bootstrap** — `node cli.js bootstrap` creates 27 `directus_*` system tables in a fresh `directus` schema | implemented; **LIVE-confirmed iter-02** (27 tables created). Needed a fix: the minted admin email was `.local`, which 11.6.1 rejects → fixed to `.example.com` (M21-D1). image `directus/directus:11.6.1` cached | `directus/provision.go:86-100`; iter-02 live run |
-| 3 | **structure-apply** — create the 9 user-collection tables + register them in `directus_collections`/`fields`/`relations` | **THE GAP — mechanism now known (M21-D2): Directus `schema apply` of a snapshot YAML; the real 9-collection artifact is iter-03 (needs prod-faithful types, M21-D4)** | `provision.go:102-108` placeholder; iter-02 1-collection apply proof |
-| 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the 9 tables in | **exits 5** in the real pipeline (bootstrapped schema → cache miss at digest `b4cb55bc…` ≠ prod `6cd35278…`); exit **4** only for a never-bootstrapped (empty) schema (M21-D3). Blocked on stage 3 + the digest-keying decision (M21-D5) | `cmd/stacksnap/main.go:283-284,359-363`, `pg/pg.go:41,238-247` |
-| 5 | **boot** — boot Directus on the schema, reachable over HTTP | recipe print-only (step 4) | `provision.go:115-123` |
-| 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | blocked behind 3–5 | the gate |
+| 3 | **structure-apply** — create the user-collection tables so the schema digest converges | **PASSES (iter-04, option A):** applying ALL **26** collections' real DDL on a bootstrapped 11.6.1 → digest = `6cd35278…` exactly. (Caveat: hand-applied `iter-04/structure.sql`; stacksnap code-ification pending, M21-D8.) | iter-04 live run; `iter-04/structure.sql` |
+| 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the captured content tables in | **PASSES (iter-04):** exit 0, 9 tables / 10128 rows (simulations=304). Earlier baseline: bootstrapped-but-gap schema → exit 5; empty → exit 4 (M21-D3) | iter-04 live run; `cmd/stacksnap/main.go:359-378` |
+| 5 | **boot** — boot Directus on the schema, reachable over HTTP | recipe print-only (step 4); needs the registry rows loaded | `provision.go:115-123` |
+| 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | blocked behind 5 (+ anonymous public read permission — the flagged live-only risk) | the gate |
 
-**Furthest stage passing: 2** — LIVE-confirmed + secured as of iter-02 (was static in iter-01). The pipeline dies at
-stage 3 (structure-apply). iter-02 stood up the live harness, fixed the stage-2 email blocker, refined the baseline
-(exit 5 not 4), validated the stage-3 mechanism, and routed the real artifact + structure-source decision to iter-03.
+**Furthest stage passing: 4** — Option A validated end-to-end (iter-04). Stages 1–4 pass (build → bootstrap →
+26-collection structure apply → digest converge → replay exit 0 with the real 10128 public rows). Remaining: stage 3
+**code-ification** (`STRUCT-M21-codeify` — make stacksnap itself capture+apply the structure) + stages 5–6 (serve
+anonymously: registry rows + anonymous permission + boot + GET).
 
 ## iter-02 live findings (Docker, directus/directus:11.6.1)
 

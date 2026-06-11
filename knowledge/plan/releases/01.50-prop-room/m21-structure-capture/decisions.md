@@ -143,3 +143,20 @@ the more honest target.
 - Referential closure of relations among the 26 (vs the 20-dangling-from-9 count) is largely subsumed — with all 26
   collections present, most intra-directus relations resolve; M23 still owns any remaining external refs.
 `STRUCT-M21-digest-keying` is now "implement option A" (was "decide A/B").
+
+### M21-D8 — Option A validated end-to-end through stage 4 (iter-04)
+**Result:** the M21-D7 option-A path is proven on a live harness. On a fresh bootstrapped `directus/directus:11.6.1`
+(27 system tables, digest `b4cb55bc…` = prod's system-only digest → no version skew), applying the **26-collection
+structure** (real prod DDL + 8 junction sequences, `iter-04/structure.sql`) makes the directus-schema digest
+`6cd35278…` — **exactly the prod cache key**. `stacksnap replay --surface directus --stack dev-5` then **exits 0**,
+loading the 9 captured content tables (10128 rows; simulations=304). So **stages 3 (structure-apply + digest
+converge) and 4 (replay exit 0) both pass**.
+**Key structural insight:** the cache's staleness digest (`pg.SchemaVersionSQL`) is over **column structure**
+(information_schema.columns), NOT registry rows. So digest convergence + replay (stage 4) need only the 26 collection
+**tables** to exist with prod-faithful columns — the `directus_collections`/`fields`/`relations` registry ROWS are
+needed only for SERVING (stages 5–6). This decouples stage 4 from the harder serve/permissions work.
+**Caveat (what's NOT yet done):** the structure-apply here was a **hand-applied** real-DDL artifact (psql -f), not yet
+produced+applied by `stacksnap` itself. The exit GATE says "stacksnap applies the captured structure", so the
+remaining stage-3 work is the **code-ification** (`STRUCT-M21-codeify`): a stacksnap capture-side structure extension
+that captures the 26-collection DDL + registry over `--dsn` into the snapshot and applies it before the row replay in
+provision. iter-04 proves the target is reachable; the tooling that automates it is the next build.

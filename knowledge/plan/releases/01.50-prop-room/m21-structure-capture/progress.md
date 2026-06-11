@@ -1,10 +1,12 @@
 # M21 — Progress
 
-**Status:** in-progress (iter-03 closed). **Shape:** iterative (exit gate in `overview.md`).
+**Status:** in-progress (iter-04 closed). **Shape:** iterative (exit gate in `overview.md`).
 **Build with:** `/developer-kit:build-mstone-iters`.
-**Active strategy:** TOK-01 (staged-pipeline build toward the binary serve-anonymously gate — see `decisions.md`).
-**Furthest pipeline stage passing:** 2 of 6 — now **LIVE-confirmed + secured** (iter-02: stage-2 `.local` email bug
-fixed; structure-apply mechanism validated; the real 9-collection artifact + structure-source decision routed to iter-03).
+**Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)** — converge the digest by matching prod's
+schema (all 26 collections + pinned 11.6.1).
+**Furthest pipeline stage passing:** **4 of 6** — Option A validated end-to-end (iter-04): 26-collection structure
+apply converges the digest to `6cd35278…` and `stacksnap replay` exits 0 (10128 real rows, simulations=304). Remaining:
+stages 5–6 (serve anonymously) + code-ifying the structure apply into stacksnap.
 
 ## Running ledger
 _Appended after each iter (tik = a standard iter toward the gate; tok = a strategy/retro iter)._
@@ -27,11 +29,19 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   furthest-stage stays 2 (structure not yet applied). EXIT_REASON user-blocker: the digest-keying fork (A vs B, touches
   shared taxonomy keying) surfaced to the operator. See iter-03/progress.md.
 
-## Next-iter queue (Fate-3, → iter-04 under TOK-01)
-- `STRUCT-M21-iter04-apply` — **operator chose option A (M21-D7):** the structure artifact must cover **all 26 user
-  collections'** DDL + registry rows (row cache stays at the 9 public-content collections; the other 17 tables exist
-  but empty). Apply to a fresh bootstrapped harness; confirm tables + registry → stage 3 (→ 4 with row replay).
-- `STRUCT-M21-digest-keying` — **implement option A (M21-D7):** keep the whole-schema keying; converge by matching
-  prod's schema (all 26 collections) + **pin/verify the Directus version** so the 27 system tables also match.
+- iter-04 (tik, closed-fixed): **Option A validated end-to-end → stage 2 → 4.** prod's system digest = bootstrapped
+  11.6.1 (no version skew); applied the **26-collection** structure (`iter-04/structure.sql`) → digest converged to
+  `6cd35278…` (stage 3) → `stacksnap replay` exit 0, 10128 rows, simulations=304 (stage 4). The digest is over column
+  structure not registry rows, so stage 4 decoupled from serve. Caveat: apply was hand-applied DDL; stacksnap
+  code-ification pending (M21-D8). See iter-04/progress.md.
+
+## Next-iter queue (Fate-3, → iter-05 under TOK-01)
+- `STRUCT-M21-iter05-serve` — stages 5–6: load the registry rows (directus_collections/fields/relations) + an
+  anonymous public read permission + boot Directus + `GET /items/simulations?limit=1` → 200 (the gate; Directus
+  permission model is the flagged live-only risk).
+- `STRUCT-M21-codeify` — build the stacksnap capture-side structure extension (capture the 26-collection DDL +
+  registry over `--dsn`; apply before row replay in provision) so the GATE's "stacksnap applies the captured
+  structure" is met by tooling, not a hand-applied artifact.
+- Carried: `directus_files` ref capture (wire the dead `media.go`) + M23 referential closure.
 - `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
   closure of the 20 dangling relations.
