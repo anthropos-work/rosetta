@@ -28,9 +28,10 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   shared taxonomy keying) surfaced to the operator. See iter-03/progress.md.
 
 ## Next-iter queue (Fate-3, → iter-04 under TOK-01)
-- `STRUCT-M21-iter04-apply` — produce the real structure artifact (DDL + registry rows captured over the sanctioned
-  source) + apply to a fresh bootstrapped harness; confirm 9 tables + registry → stage 3 (→ 4 with row replay).
-- `STRUCT-M21-digest-keying` — implement option B (per-surface re-key) pending the operator's A-vs-B steer; shared with
-  taxonomy → guard taxonomy's cache behavior.
+- `STRUCT-M21-iter04-apply` — **operator chose option A (M21-D7):** the structure artifact must cover **all 26 user
+  collections'** DDL + registry rows (row cache stays at the 9 public-content collections; the other 17 tables exist
+  but empty). Apply to a fresh bootstrapped harness; confirm tables + registry → stage 3 (→ 4 with row replay).
+- `STRUCT-M21-digest-keying` — **implement option A (M21-D7):** keep the whole-schema keying; converge by matching
+  prod's schema (all 26 collections) + **pin/verify the Directus version** so the 27 system tables also match.
 - `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
   closure of the 20 dangling relations.

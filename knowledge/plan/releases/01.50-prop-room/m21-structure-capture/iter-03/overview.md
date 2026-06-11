@@ -42,6 +42,6 @@ the per-surface re-key implementation is iter-04). closed-fixed-partial.
 ## Routes carried forward (-> iter-04, Fate-3 under TOK-01)
 - `STRUCT-M21-iter04-apply` — build the structure artifact (DDL + registry rows captured over the sanctioned source)
   and apply it to a fresh bootstrapped harness; confirm the 9 tables + registry -> stage 3.
-- `STRUCT-M21-digest-keying` — implement the per-surface re-key (option B) so a bootstrap+structure stack cache-hits;
-  shared with taxonomy -> handle with care (the architectural decision surfaced to the operator this iter).
+- `STRUCT-M21-digest-keying` — **operator chose option A (M21-D7):** keep whole-schema keying; converge by applying
+  ALL 26 collections + pinning the Directus version (NOT the per-surface re-key). Surfaced + decided this iter.
 - `STRUCT-M21-iter03-artifact` (carried) + `directus_files` wiring + M23 referential-closure of the 20 dangling relations.

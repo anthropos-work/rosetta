@@ -86,7 +86,9 @@ chooses between: **(A)** capture/define the FULL prod content-model + pin the Di
 converges exactly, or **(B)** re-key the cache per-surface over only the captured content tables (a surgical change
 to the staleness key, shared with taxonomy — handle with care). Tracked as `STRUCT-M21-digest-keying`.
 
-**iter-03 evidence — resolves toward option B.** A sanctioned prod structural read showed the prod `directus` schema
+**iter-03 evidence — surfaced the fork (operator chose A — see M21-D7).** _(The analysis below recommended B; the
+operator decided **option A**. M21-D7 is the decision of record; this paragraph is kept for the reasoning trail.)_
+A sanctioned prod structural read showed the prod `directus` schema
 digest `6cd35278…` is computed over the **FULL 53-table schema**: 27 `directus_*` system tables + **26 user
 collections**. The directus surface captures **9** of those 26. So a per-stack bootstrapped Directus (27 system
 tables) + the 9-collection structure can **never** converge the `6cd35278…` digest — it is short 17 collections (and
@@ -120,3 +122,24 @@ locally, and a live prod read needs operator sign-off. **This is a user/operator
 (3) proceed self-contained with best-effort inferred types (lower fidelity — may not COPY the real rows; defers exact
 prod-fidelity to a release-time (b) capture). Until chosen, the real 9-collection structure artifact
 (`STRUCT-M21-iter03-artifact`) is blocked.
+
+### M21-D7 — digest-keying RESOLVED: option A (capture all 26 collections + pin the Directus version) (operator decision, 2026-06-11)
+**Decision (operator):** resolve the digest-convergence fork (M21-D5) with **option A**, not the per-surface re-key
+(B). The cache stays keyed by the whole-`directus`-schema digest; convergence is achieved by making the per-stack
+schema MATCH prod's: apply the structure for **all 26 user collections** (not just the 9 the row-surface captures) and
+**pin the Directus version** so the 27 system tables also match. Rationale (operator): keep the keying untouched
+(zero blast-radius on taxonomy's shared `pg.SchemaVersionSQL`), and a fully prod-faithful per-stack directus schema is
+the more honest target.
+**Implications for iter-04+ (reframes the structure scope):**
+- The structure artifact must cover **all 26 user collections'** DDL + their `directus_collections`/`fields`/
+  `relations` registry rows (the read is sanctioned, M21-D6) — superseding the 9-collection framing in TOK-01 / the
+  earlier routes. The **row** cache stays at the 9 public-content collections (the other 17 tables exist but are
+  empty — fine for the digest, which is over column structure, not rows; and the firewall/public-only predicate still
+  governs which ROWS are captured).
+- **Pin + verify the Directus version:** confirm prod's Directus version and that bootstrapping that exact image
+  produces system tables whose columns match prod's (the bootstrapped-11.6.1 system digest was `b4cb55bc`; iter-04
+  must verify prod's 27 system tables match the pinned image, else the system-table half of the digest won't
+  converge). Record the source version in the manifest + pin the local image (the overview's version-skew lean).
+- Referential closure of relations among the 26 (vs the 20-dangling-from-9 count) is largely subsumed — with all 26
+  collections present, most intra-directus relations resolve; M23 still owns any remaining external refs.
+`STRUCT-M21-digest-keying` is now "implement option A" (was "decide A/B").
