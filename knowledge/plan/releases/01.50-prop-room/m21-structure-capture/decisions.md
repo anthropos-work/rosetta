@@ -85,3 +85,27 @@ necessary but may be **insufficient** for a cache-HIT. The stage-4 resolution (a
 chooses between: **(A)** capture/define the FULL prod content-model + pin the Directus version so the digest
 converges exactly, or **(B)** re-key the cache per-surface over only the captured content tables (a surgical change
 to the staleness key, shared with taxonomy — handle with care). Tracked as `STRUCT-M21-digest-keying`.
+
+### M21-D6 — structure-source is operator-gated; self-contained options exhausted (iter-03 planning)
+**Investigation (iter-03 Phase 1):** searched the stack workspaces for a self-contained, prod-faithful Directus
+structure source. Found `stack-dev/cms/internal/directus/collections/*.go` — but these are the cms service's
+**read-side application view**: JSON-tagged Go structs (uuid.UUID / *int / time.Time / json.RawMessage) mapping
+Directus API responses to domain types, including **relational alias fields** (`roles.*`, `sequences.*`,
+`library_categories.library_categories_id.*`) that are not real columns on the base table. They carry field *names*
+but **not** authoritative Postgres column types nor the Directus field-registry metadata (interface/special/relation
+defs). Reconstructing a faithful `schema apply` snapshot from them is lossy and would not guarantee the real cached
+rows COPY in (stage 4).
+**Conclusion:** the self-contained structure-source options are **exhausted** — TOK-01's option (c) (a hand-built
+reference Directus) can't invent prod-faithful types (M21-D4), and the cms structs are a lossy app-view. The faithful
+structure (real column types + the `directus_collections`/`fields`/`relations` registry rows for the 9 public
+collections) exists only in the **prod directus schema**. Reading it is a **prod read**, which the milestone Risk
+section mandates be **operator-confirmed** (read-only / bounded / public-only / behind the M9a capture-source policy +
+`AssertPublicOnly`, extended to structural metadata). The milestone `overview.md` "Open questions" already leans
+toward `pg_dump --schema-only -n directus` over the sanctioned `--dsn` path (option b) — but no such dump exists
+locally, and a live prod read needs operator sign-off. **This is a user/operator decision; surfaced via
+`build-mstone-iters` Phase 5 §4 (user-blocker).** Options put to the operator: (1) sanction a bounded read-only prod
+**structural** read (information_schema types + the registry rows for the 9 public collections) via the wired
+`postgres` MCP or a `--dsn`; (2) provide / point at a restored prod `pg_dump -n directus` (the cold-start (b) path);
+(3) proceed self-contained with best-effort inferred types (lower fidelity — may not COPY the real rows; defers exact
+prod-fidelity to a release-time (b) capture). Until chosen, the real 9-collection structure artifact
+(`STRUCT-M21-iter03-artifact`) is blocked.
