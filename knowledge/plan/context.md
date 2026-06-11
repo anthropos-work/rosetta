@@ -10,7 +10,7 @@ truth** — this file is the stable orientation/conventions doc; when the two di
 `/demo-up` now produces a **full, populated, verified, demoable** stack. 5 section milestones M16→M20 (land the applied fixes +
 doc truth → re-run safety/idempotency → verification net → frontend tier → lifecycle convergence: auto set-dress + cold-start).
 **Tooling + docs only — zero platform-repo edits.** **The project is now between releases** — run **`/developer-kit:design-roadmap`**
-to scope **v1.4** (cloud store / S3 blobs [the signed DEF-M10-01] / AI content / shareability / more mirrors — seeded in
+when a next version is chosen (the former v1.4 candidates — cloud store / S3 blobs [the signed DEF-M10-01] / AI content / shareability / more mirrors — are now unscheduled backlog, seeded in
 [`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a
 whole *major* version retires; v1.3/v1.3b are the same major.)
 
@@ -48,8 +48,8 @@ The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design
 `--no-ff` → `main`; release branch deleted). It ran 5 strictly-sequential section milestones M16→M20 (land the
 applied devpath/migrate-race fixes + doc truth → re-run safety/idempotency → the verification net → the frontend
 tier → lifecycle convergence: demo-up auto set-dress + cold-start), all closed via `/developer-kit:work-milestone`
-then `/developer-kit:close-release`. Next: **`/developer-kit:design-roadmap`** to scope **v1.4** (cloud store, S3
-blobs, AI content, shareability, more mirrors). _(Live state: [`state.md`](state.md). v1.4 proposals:
+then `/developer-kit:close-release`. Next: **`/developer-kit:design-roadmap`** when a next version is chosen (the former v1.4 candidates — now unscheduled backlog — are cloud store, S3
+blobs, AI content, shareability, more mirrors). _(Live state: [`state.md`](state.md). Backlog / former v1.4 seeds:
 [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note

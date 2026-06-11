@@ -198,7 +198,7 @@ fenced twice over:
 - **Prod S3 public bucket.** `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the prod bucket in the platform compose;
   `PreflightEnv` **unconditionally** overrides it to `""`, so storage writes fall back to the per-stack local
   store. (Snapshot media is carried as **refs only** today — the byte payloads + a cloud snapshot store are
-  v1.4, see "Future" below.)
+  **deferred (unscheduled backlog)**, see "Future" below.)
 
 ### 2.4 The capture-source policy is the write-side's read-half complement
 
@@ -277,13 +277,14 @@ That protects **customers from each other inside the running product**. *This* d
 of that multi-tenant database, and the write-side guard ensures the tooling never writes back into it. They are
 complementary layers, not the same mechanism.
 
-## Future (v1.4 — clearly not the current posture)
+## Future (deferred / unscheduled — clearly not the current posture)
 
 The **current** posture is: snapshot media carried as **refs only** (no blob bytes), snapshots stored in the
-**local** `.agentspace/snapshots/` workspace cache. The v1.4 release adds the **S3 media blob bytes** + a
-**cloud snapshot store** (DEF-M10-01). Those change *what is transported and where it is cached*, not the safety
-contract — the firewall, the predicates, and the write guard apply identically. This section is a forward
-pointer only; everything else in this doc describes what ships today.
+**local** `.agentspace/snapshots/` workspace cache. The **deferred** (unscheduled-backlog) work — **S3 media
+blob bytes** + a **cloud snapshot store** (DEF-M10-01) — would change *what is transported and where it is
+cached*, not the safety contract — the firewall, the predicates, and the write guard apply identically. This
+section is a forward pointer only; everything else in this doc describes what ships today. (There is no version
+currently staged for it — see the roadmap.)
 
 ## See also
 - [`db-access.md`](db-access.md) — the production read foundation + the public-vs-customer boundary (read-side).

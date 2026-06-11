@@ -22,7 +22,7 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
 > snapshot **payloads never enter git**. The read foundation is [`db-access.md`](db-access.md); the write-side
 > production-isolation boundary is [`seeding-spec.md`](seeding-spec.md). The cloud/S3 store + AI-generated content +
-> shareability are **v1.4** (was v1.3).
+> shareability are **deferred (unscheduled backlog)** (formerly slated v1.3, then v1.4 — now no staged version).
 
 ## For PMs — what it does
 
@@ -173,8 +173,8 @@ stale→refresh** decision (`store.Resolve`):
 - **stale** — the schema moved (or the format version is unknown) → a refresh is required.
 - **miss** — no snapshot for the surface → capture it first.
 
-`store.SnapshotStore` is an **interface** with a `localfs` backend now; the **cloud/S3 backend is the named v1.4
-swap** (moved from v1.3 with the rest of the cloud/S3/AI-content seeds) — the manifest already addresses payloads
+`store.SnapshotStore` is an **interface** with a `localfs` backend now; the **cloud/S3 backend is a deferred
+(unscheduled-backlog) swap** (DEF-M10-01 — no staged version; deferred with the rest of the cloud/S3/AI-content seeds) — the manifest already addresses payloads
 by location, so a remote backend re-implements the same
 `PutManifest` / `PutPayload` / `GetManifest` / `GetPayload` / `List` surface with no contract change.
 
@@ -483,7 +483,7 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
   n=0 refusal — see [`seeding-spec.md`](seeding-spec.md#the-cli)).
 - **Prod-safety holds unchanged.** Capture is never run by the dev pass (replay only — a per-stack WRITE to the
   isolated offset-port Postgres + the per-stack Directus schema); the shared prod Directus / prod S3 are never
-  written; media stays **refs-only** (blob bytes are v1.4). The read-side `AssertPublicOnly` firewall + the
+  written; media stays **refs-only** (blob bytes are deferred — unscheduled backlog, DEF-M10-01). The read-side `AssertPublicOnly` firewall + the
   write-side isolation guard both still hold.
 
 The net effect: **dev and demo are now the same world built two ways** — the same `stack-snapshot` +

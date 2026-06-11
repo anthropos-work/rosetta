@@ -110,7 +110,7 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
 
 ## Defaults
 - Store root: `--store` → `STACKSNAP_STORE` env → `<workspace>/.agentspace/snapshots` (gitignored; GB blobs never
-  enter git). The cloud/S3 store is the named **v1.4** swap.
+  enter git). The cloud/S3 store is a **deferred (unscheduled-backlog)** swap (DEF-M10-01).
 - Base DSN (replay): `postgres://postgres@localhost:5432/postgres` with the port replaced by the stack offset.
 - Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage ·
   `4` (replay) target stack schema missing/empty → provision the STACK (not a cache problem) · `5` (replay) no

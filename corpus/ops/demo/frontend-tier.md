@@ -167,7 +167,7 @@ at the **current pinned tag** (`stack-demo/rosetta-extensions @ <tag>` — the M
 would require **platform-source changes** (runtime rewrites in `next.config.mjs`, an absolute internal origin for
 SSR `fetch` in `server.graphql.ts`, a `window.__ENV` shim + explicit `publishableKey` on `<ClerkProvider>`,
 optionally `output:'standalone'`). Those are real platform edits with PR/review/prod risk — **forbidden** for the
-demo tooling to make locally. It's documented here as an **optional upstream PR you own** (the v1.4 deploy-CI
+demo tooling to make locally. It's documented here as an **optional upstream PR you own** (a deferred/unscheduled deploy-CI
 precedent), **not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted
 cost of staying tooling-only.
 
