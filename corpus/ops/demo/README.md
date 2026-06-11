@@ -27,8 +27,10 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 
 **`/demo-up` now auto-set-dresses by default (v1.3b M20) — the dev↔demo convergence.** Just like `/dev-up` since
 v1.3, a `/demo-up` bring-up chains the **same** set-dress pass at its tail: a cache-first **snapshot replay**
-(real catalog + content) → a **`small-200` light seed** (a populated org you can log into). So a bare `/demo-up N`
-already lands you in a real-catalog, log-in-able world — no separate skill calls required. The pass is
+(the real **taxonomy** catalog; the Directus **content** surface currently skips — the M10 collection-schema gap,
+see the known-state note below — and content is read live from prod meanwhile) → a **`small-200` light seed**
+(a populated org you can log into). So a bare `/demo-up N` already lands you in a real-catalog, log-in-able world
+— no separate skill calls required. The pass is
 **default-on + non-fatal** (a cold cache warns and still seeds; `DEMO_NO_SETDRESS=1` skips it for a bare
 structural bring-up). You can still drive the steps **manually** for finer control — `/stack-snapshot N` (replay)
 + `/stack-seed N` (a different preset / a custom `stack.seed.yaml`) — they accept `demo-N` or `dev-N` interchangeably.
@@ -96,6 +98,20 @@ M20 #M20-D2) · `mid-500` (the default "looks real") · `large-1k` (scale). The 
 platform's reference library); for a **set-dressed** world the catalog replay runs first (the auto pass does this;
 manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
+
+> **Known state — every stack reads the public catalog live from prod (not fully self-contained yet).** The auto
+> set-dress replays the **taxonomy** locally, but the public Directus content needs a per-stack Directus that
+> **no stack type has yet** (the M10 collection-schema gap — the recipe is printed, not executed; this holds for
+> dev exactly as for demo, corrected in fix16). So `cms`/`jobsimulation` read the public sims/skill-paths **live
+> from prod** (`content.anthropos.work`) — a **demo does so ANONYMOUSLY** since fix16/fix17: the injected override
+> strips the inherited prod `DIRECTUS_TOKEN` from every demo container (prod Directus serves the public predicate
+> tokenless — verified 2026-06-11; live demo-1 audit: 0/16 carriers), so no prod credential rides in a demo. The
+> read is public-only + safe, but it means (a) a stack isn't fully self-contained, and (b) live-prod content
+> paired with a captured-**subset** taxonomy can leave a public sim referencing a skill the local catalog lacks —
+> which empties the **Assign-AI-Simulation** picker (`/enterprise/assignments/ai-simulations`) until the per-stack
+> Directus provision is automated (for both
+> stack types). Detail + resolution direction: [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack
+> Directus store fork.
 
 **Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
 `CLAUDE.md` skills table).

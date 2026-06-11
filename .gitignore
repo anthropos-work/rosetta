@@ -118,6 +118,7 @@ public/
 # -----------------------------------------------------------------------------
 # Claude Code may create local settings that shouldn't be shared
 .claude/settings.local.json
+.claude/projects
 
 # -----------------------------------------------------------------------------
 # AGENTSPACE

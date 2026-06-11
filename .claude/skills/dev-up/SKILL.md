@@ -1,6 +1,6 @@
 ---
 name: dev-up
-description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with a local Directus + auto-snapshot + a light dev-min seed. Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
+description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with the per-stack-Directus recipe + firewall check (print-only — the boot isn't yet automated), a cache-first snapshot replay, and a light dev-min seed. Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
 argument-hint: [N | 'main'] [--no-setdress] [--no-snapshot] [--profile P] [scenario|step]
 ---
 
@@ -12,7 +12,8 @@ Brings a DEV stack to a running, set-dressed state. One skill for the whole dev 
   environment build (or a resume) **and** the start, following the official guides with verification.
   This is the consolidation of the former `/setup-platform` + `/start-platform`.
 - **`dev-up N`** (N ≥ 1) — spin up an **additional, isolated** `dev-N` stack alongside the main one,
-  on offset ports, and give it the **demo treatment by default** (M13): a per-stack local Directus,
+  on offset ports, and give it the **demo treatment by default** (M13): the per-stack-Directus recipe +
+  firewall check (print-only — the boot itself is not yet automated, the M10 collection-schema gap),
   a cache-first snapshot replay of the real public reference data, and a light `dev-min` seed.
 
 It mirrors `/demo-up` for the dev side — same registry, same offset-port model, same safety guards —
@@ -22,7 +23,8 @@ Sources of truth: [`corpus/ops/setup_guide.md`](../../../corpus/ops/setup_guide.
 [`corpus/ops/run_guide.md`](../../../corpus/ops/run_guide.md) (start + health),
 [`corpus/ops/rosetta_demo.md`](../../../corpus/ops/rosetta_demo.md) (the registry + offset ports),
 [`corpus/ops/seeding-spec.md`](../../../corpus/ops/seeding-spec.md) (the `dev-min` seed) and
-[`corpus/ops/snapshot-spec.md`](../../../corpus/ops/snapshot-spec.md) (the auto-snapshot + local Directus).
+[`corpus/ops/snapshot-spec.md`](../../../corpus/ops/snapshot-spec.md) (the auto-snapshot + the per-stack
+Directus recipe/known-state).
 
 ## Two modes (pick from the target)
 
@@ -69,8 +71,8 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
    ```bash
    DEV=stack-dev/rosetta-extensions/dev-stack
    "$DEV/dev-stack" up N                 # allocate N via the unified registry, bring up dev-N on offset ports,
-                                         # then run the default set-dress pass: per-stack Directus +
-                                         # cache-first snapshot replay + the dev-min light seed (M13).
+                                         # then run the default set-dress pass: the per-stack Directus
+                                         # recipe + firewall, cache-first snapshot replay, dev-min seed (M13).
    "$DEV/dev-stack" up N --no-snapshot   # seed only (skip the snapshot replay)
    "$DEV/dev-stack" up N --no-setdress   # bare bring-up (no snapshot, no seed)
    "$DEV/dev-stack" up N --inject        # optional: Clerkenstein-inject (offline/clean-room dev)
@@ -95,8 +97,10 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
 - **Every op is `-p dev-N`-scoped** and **hard-refuses any N that resolves to the main dev project** — it
   can never touch the main dev stack.
 - **The set-dress pass is per-stack-isolated** — snapshot **replay** is a per-stack WRITE (never a prod
-  read; capture is never run here), the per-stack Directus is booted against the stack's own `directus`
-  schema (`EnvContract.Validate()` hard-rejects `content.anthropos.work`), media stays refs-only, and the
+  read; capture is never run here), the per-stack Directus env contract targets the stack's own `directus`
+  schema (`EnvContract.Validate()` hard-rejects `content.anthropos.work`; the boot itself is the printed,
+  not-yet-automated recipe — the directus replay skips with stacksnap exit 4 until the M10 collection-schema
+  gap closes), media stays refs-only, and the
   `dev-min` seeder's isolation guard blocks every shared/prod store. The **n=0 set-dress guard is doubled**
   — the pass refuses N=0 without `--force` (a second layer above `stackseed --reset`'s own refusal).
 - **All stack-operating tooling lives in `rosetta-extensions`** — consumed per-stack at a pinned tag, never

@@ -10,7 +10,7 @@ The CMS service is the **content layer of the platform**. It does three things:
 
 This last point is the structural shift: **studio-room is no longer a standalone deployable**. It lives inside the cms container and runs as a subprocess invoked by the Go service.
 
-> **Demo/dev set-dressing (v1.2):** the **public** content templates (the `directus` schema of the prod app DB — `private = false AND tenant_id IS NULL AND status = 'published'`) are captured read-only and replayed into a per-stack Directus by the snapshot mechanism — see [`corpus/ops/snapshot-spec.md`](../ops/snapshot-spec.md) (the M10 content surface). The app-Postgres `cms.studio_*` tables (`StudioDocument` / `StudioTask`) are **100% customer data** and are never captured (the tenant firewall).
+> **Demo/dev set-dressing (v1.2):** the **public** content templates (the `directus` schema of the prod app DB — `private = false AND tenant_id IS NULL AND status = 'published'`) are captured read-only by the snapshot mechanism. The replay *into a per-stack Directus* is the **planned** target but **not yet automated** (the M10 collection-schema gap — the `directus` replay currently skips with `stacksnap` exit 4); until it lands, a demo/dev stack's `cms` reads this public content **live from prod** (a demo does so **anonymously**, the prod token stripped) — see [`corpus/ops/snapshot-spec.md`](../ops/snapshot-spec.md) (the M10 content surface + known-state). The app-Postgres `cms.studio_*` tables (`StudioDocument` / `StudioTask`) are **100% customer data** and are never captured (the tenant firewall).
 
 ## Architecture & Code Map
 

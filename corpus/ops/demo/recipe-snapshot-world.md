@@ -26,26 +26,32 @@ almost always just replays an existing snapshot. Capture is the rare refresh op.
 ## A — replay into a stack (the common path)
 
 **Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`
-alike) and migrated (so the `skiller` + `directus` schemas exist as replay targets). Note **both** `/dev-up N`
-(M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the auto-set-dress
-pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a cold cache —
-[`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
+alike) and migrated (so the `skiller` schema exists as the **taxonomy** replay target). The **`directus` replay
+target does not exist after migration** — its schema is created by the per-stack-Directus bootstrap, which isn't
+automated yet (the M10 collection-schema gap), so the `directus` replay currently **skips with `stacksnap` exit 4**
+on every stack (the taxonomy surface lands as normal; content is read live from prod meanwhile — see the
+[known-state](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16)). Note
+**both** `/dev-up N` (M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the
+auto-set-dress pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a
+cold cache — [`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
 auto-pass skipped. The snapshot is **stack-global** public reference data — replay it once per stack,
 independent of which org you then `/stack-seed`.
 
 ```bash
-/stack-snapshot replay 1                         # both surfaces (taxonomy + directus) — the usual call
+/stack-snapshot replay 1                         # taxonomy (lands) + directus (skips: exit 4 until the gap closes)
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
 /tmp/stacksnap replay --surface taxonomy --stack demo-1
-/tmp/stacksnap replay --surface directus --stack demo-1
+/tmp/stacksnap replay --surface directus --stack demo-1   # exit 4 today (no per-stack directus schema yet)
 ```
 
 Replay **resolves cache-hit vs stale** against the stack's live schema, **verifies every payload checksum before
 writing a row**, bulk-`COPY`s each table in dependency order, and **rebuilds any pgvector index** that wasn't
-transported (the ~689 MB `skill_embeddings` IVFFLAT index is rebuilt via `REINDEX`, not carried). If the cache is
-**stale or missing**, replay tells you to capture first (path B).
+transported (the ~689 MB `skill_embeddings` IVFFLAT index is rebuilt via `REINDEX`, not carried). The exit code
+distinguishes the failure: **`4`** = the target schema is missing/empty (provision the stack — the `directus`
+case today); **`5`** = no cached snapshot at the stack's digest (capture an empty/outdated cache — path B — or fix
+a diverged stack schema).
 
 **Then seed + log in.** With the library in place, seed an org and the seeded sessions link to the real templates:
 ```bash
@@ -56,9 +62,12 @@ transported (the ~689 MB `skill_embeddings` IVFFLAT index is rebuilt via `REINDE
 ### The per-stack Directus boot (content surface)
 The taxonomy replays straight into the stack's `skiller` Postgres schema and is immediately visible. The Directus
 content surface needs its per-stack Directus **booted against the stack's own `directus` schema** (bootstrap →
-replay → boot), pointed at the offset-port container — **never** `content.anthropos.work`. The
-`EnvContract.Validate()` guard hard-rejects any per-stack env that resolves to the shared prod Directus. See
-[`../snapshot-spec.md`](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2) for the boot steps. Until S3
+content-schema → replay → boot — 4 steps since fix16; the content-schema step is the not-yet-automated M10
+collection-schema gap, so today this remains an operator recipe and the replay exits 4 until it closes), pointed
+at the offset-port container — **never** `content.anthropos.work`. The `EnvContract.Validate()` guard hard-rejects
+any per-stack env that resolves to the shared prod Directus. See
+[`../snapshot-spec.md`](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16)
+for the steps. Until S3
 blob-byte mirroring is wired (v1.4 — DEF-M10-01), the per-stack Directus serves media **refs** with a local-storage adapter +
 placeholder assets — a believable structural demo.
 

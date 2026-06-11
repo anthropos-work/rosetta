@@ -41,17 +41,46 @@ the SDK sub-clients and the three raw-HTTP methods.
 
 ## B — the browser-login walk-through (frontend → fake FAPI)
 
-1. **Mint the publishable key** for the demo's fake FAPI host (`localhost:5400+N·10000`). The key is
-   `pk_test_<base64(host$)>`, byte-identical to Clerkenstein's authoritative `MintPublishableKey`; the demo
-   tooling's `inject.py` (`mint_pk`) emits it.
-2. **Rebuild the frontend with it.** Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (next-web-app) /
-   `VITE_CLERK_PUBLISHABLE_KEY` (studio-desk) to the minted key and bring up the frontend. `@clerk/clerk-js`
-   decodes the host from the key and talks to the fake FAPI — **no real Clerk, no SDK fork**.
-3. **Log in.** Open the frontend; the fake FAPI serves the `DefaultDemoUser` session — `user_clerkenstein` /
-   `demo@anthropos.test`, **admin** of `org_clerkenstein`. The browser is now authenticated.
-4. **Land in the seeded org.** Because `/stack-seed` created `user_clerkenstein` as a seeded admin member (+ the
-   casbin grant + the global Sentinel policy), authorized routes return **200** — the populated workforce, not
-   a 403 wall.
+`/demo-up` bakes this end-to-end; you just open the browser. What it does, and *why* each piece is needed (the
+fake FAPI must satisfy the **full Clerk dev-instance handshake**, not just serve a session — that's the part the
+early "mint a pk and log in" sketch missed):
+
+1. **Mint the publishable key** for the demo's fake FAPI host. The key is `pk_test_<base64(host$)>`, byte-identical
+   to Clerkenstein's `MintPublishableKey` (`inject.py`'s `mint_pk` emits it). **The host is `127.0.0.1:5400+N·10000`,
+   not `localhost`** — `@clerk/backend`'s pk validator requires a **dot** in the decoded host, so a dotless
+   `localhost` pk is rejected as invalid (a 500 on every request).
+2. **The fake FAPI serves HTTPS.** `@clerk/clerk-js` + `clerkMiddleware` **always** reach the FAPI over `https://`
+   (the host comes from the pk, prefixed `https://`), so the fake FAPI **terminates TLS** with a cert for the FAPI
+   host. `up-injected.sh` generates the cert into `<stack>/certs`; the override mounts it (`FAKE_FAPI_TLS_CERT/KEY`).
+   The openssl-generated cert is **self-signed**, so the browser won't trust it out of the box. **One-time operator
+   step (pick one):** run `mkcert -install` *and* mint a cert for `127.0.0.1` into `<stack>/certs` (the bring-up
+   keeps a pre-existing cert, so a mkcert-issued one survives re-ups) — `mkcert -install` needs your machine
+   password to add its local CA to the OS/Firefox trust stores; **or** import/trust the generated self-signed cert
+   directly. Without a trusted cert the browser blocks clerk-js's cross-origin FAPI calls and the app bounces back
+   to `/login`. (`mkcert -install` *alone* does not help — its CA never signed the openssl cert.)
+3. **The dev-instance handshake.** An unauthenticated load hits `clerkMiddleware`, which **307-redirects** to
+   `https://<fapi>/v1/client/handshake?…&format=nonce`. The fake FAPI signs the demo user in and **303-bounces** back
+   to the app with `?__clerk_handshake=<token>` carrying the `Set-Cookie` directives (`__session` + `__client_uat` +
+   `__clerk_db_jwt` — the dev-browser cookie is what breaks the `dev-browser-missing` redirect loop). The fake FAPI
+   also **proxies `clerk-js`** (`/npm/...`) and serves `/v1/environment` + `/v1/client`.
+4. **`__session` is RS256, verified networklessly.** The Node SDKs (`@clerk/nextjs`, `@clerk/express`) **reject
+   HS256** and verify the session as RS256 via `CLERK_JWT_KEY` (the fixed demo public key, supplied as **runtime
+   container env** — filled per-demo into `.env.demo-N` by `up-injected.sh`, not build-baked) or the
+   **BAPI `/v1/jwks`** (reachable from the app *container* via the `api.clerk.com` alias — sidesteps the
+   localhost split-horizon). The disarmed Go `authn` accepts **both** algs (`shared.ParseAny`), so the same RS256
+   browser token also works as the backend API bearer. The minted token carries a **`sid`** (session id) claim —
+   without it `@clerk/nextjs`'s client `useDerivedAuth` sees a user with no session and throws *"Invalid state"* on
+   the first render.
+5. **Log in + land in the seeded org.** Open the frontend (`http://localhost:3000+N·10000`); it auto-signs-in as
+   `DefaultDemoUser` — `user_clerkenstein` / `demo@anthropos.test`, **admin** of `org_clerkenstein`. Because the
+   auto-set-dress seeded that identity as an admin member (+ its casbin grant + the global Sentinel policy),
+   authorized routes return **200** — the populated workforce, not a 403 wall.
+
+> **Why this is more than "mint a pk."** A pk alone points clerk-js at the fake FAPI, but a real dev-instance login
+> needs the FAPI to be **browser-trusted HTTPS**, complete the **handshake** (nonce + dev-browser cookie), mint an
+> **RS256** session the Node SDKs accept, and include the **`sid`** claim the client derives state from. All four
+> are wired by Clerkenstein + the demo injection; the full JWT/handshake flow is the clerkenstein knowledge base
+> (`knowledge/architecture.md` § Universal-key JWT / `knowledge/injection.md`).
 
 ## Verifying without a browser
 The same identity can be exercised headlessly: mint a session token with the universal key

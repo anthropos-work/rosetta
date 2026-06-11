@@ -83,6 +83,33 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > the failed-build and real-git-status invariants were pinned: `test_next_web_failed_build_still_removes_*`,
 > `TestZeroPlatformRepoEdit` in `demo-stack/tests/test_frontend_build.py`.)_
 
+## Offset-origin CORS (the backend must allow the offset frontends)
+
+The frontends run on **offset origins** (next-web `:13000` for `demo-1`, etc.), but the backend's dev CORS
+allowlist (`app/internal/cors/cors.go`) hardcodes the **un-offset** frontend origins
+(`localhost:3000/3001/9000/9100`). So out of the box, every **browser → backend** REST call from the offset
+origin — `/api/workforce/*` (the Workforce Intelligence dashboards), and any other direct `/api/*` consumer —
+is **CORS-blocked**: the pre-flight `OPTIONS` 204s but the actual `GET` carries no `Access-Control-Allow-Origin`,
+so the browser drops the response and the data panels render empty (chrome loads, charts don't).
+
+**Decision (zero platform edit).** `cors.go` honors a **`CORS_EXTRA_ORIGINS`** env var in non-production (a
+documented runtime hook — *not* a code path the demo adds). The injected override therefore sets it on the
+**backend** service to this stack's offset frontend origins:
+
+```
+# each entry carries its own scheme+host (e.g. demo-1):
+CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhost:19000,http://localhost:19100
+```
+
+This is emitted by `gen_injected_override.py` (the `backend` service gets an additive `environment:` block), so it
+applies to a stack brought up **through the demo injected override** (`/demo-up`). The **dev** override
+(`stack-core/gen_override.py`) does **not** emit it today and the dev bring-up runs no UI tier — so a `dev-N`'s
+offset frontends would still be CORS-blocked if you ran them (a known gap, not yet wired on the dev side). It is
+**not** the same as next-web's *server-side* SSR `fetch` origin
+(that's the build-time `NEXT_PUBLIC_*` URLs above + the absolute-internal-origin item in §"What's out of scope");
+CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
+and the REST-backed dashboards load.
+
 ## ant-academy — native, Clerk-free, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
@@ -119,11 +146,16 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the pinned tag (`stack-demo/rosetta-extensions @ dress-rehearsal-m19`):
+at the **current pinned tag** (`stack-demo/rosetta-extensions @ <tag>` — the M19 UI tier first shipped at
+`dress-rehearsal-m19`; the CORS + token-strip items below are later, ≥ `dress-rehearsal-m20-fix15`/`fix17`):
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
-  `profiles:!override [graphql]`); `--no-ui` clears the tier.
+  `profiles:!override [graphql]`); `--no-ui` clears the tier. Also sets `CORS_EXTRA_ORIGINS` on the **backend**
+  service to the offset frontend origins (see §"Offset-origin CORS"), and **strips the inherited prod
+  `DIRECTUS_TOKEN`** (`DIRECTUS_TOKEN=`) on **every** emitted service + both frontends — no prod credential rides
+  in a demo container, and studio-desk's prod-Directus *write* path is disarmed (fix16/fix17; see
+  [`../safety.md`](../safety.md) §2.3 + §2.2).
 - `demo-stack/up-injected.sh` — the per-demo serial-before-up frontend build (offset URLs + minted pk +
   tag-guard), the 12 GB VM pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, the scoped verify.
 - `demo-stack/frontend/next-web.dockerignore` — the tooling-owned context trim for next-web.

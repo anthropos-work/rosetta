@@ -138,7 +138,7 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 
 | Store(s) | Class | Why / guard action |
 |---|---|---|
-| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; content arrives via snapshot-replay into the **per-stack** Directus, never the shared one |
+| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: until the per-stack Directus is automated — the M10 collection-schema gap — every stack reads the **public** content **live** from this instance; a demo does so **anonymously**, the prod token stripped. The per-stack-Directus *replay* path is the planned target, not today's state.) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
@@ -162,6 +162,17 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
    - on non-prod, **rejects a live Directus write token** (`DIRECTUS_TOKEN` / `DIRECTUS_STATIC_TOKEN` /
      `DIRECTUS_ADMIN_TOKEN`) — content is snapshot-replayed into the per-stack Directus, never written to the
      shared one.
+
+   > **Scope note + the compose-side closure (`rosetta-extensions @ dress-rehearsal-m20-fix16/fix17`).**
+   > `PreflightEnv` guards the *seeding tool's* env — it never saw the **compose-inherited** token. **Before the
+   > strip**, the platform's shared `env_file: .env` sprayed the prod `DIRECTUS_TOKEN` into the demo's containers
+   > (the `env_file` reaches 11 of demo-1's services; fix16 had already cleared 2, so the **pre-fix17 audit**
+   > found it in **9**) — including studio-desk, whose skill-path builder *could have written* prod Directus.
+   > That hole is now closed at the source: the injected override (`gen_injected_override.py`, fix17) strips
+   > `DIRECTUS_TOKEN=` on **every** emitted service + both frontends. The demo's live-prod public-content read
+   > still works — **anonymously** (cms omits the `Authorization` header when the token is empty; prod Directus
+   > serves the public predicate tokenless). **After the strip**, the audit shows **0 of 16** demo-1 containers
+   > carry a token, and auto-verify is green (all verified live, 2026-06-11).
 3. **`AuditLog.AssertClean(target)`** — *after* the run, the **proof** of zero pollution: it errors if **any**
    *allowed* write to a non-per-stack-isolated store actually landed on a non-prod target. On a prod target it is
    a no-op (prod is allowed to write shared stores). Every attempted write is `Record`ed during the run (the audit
@@ -177,10 +188,13 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
 The two stores most likely to be hit by accident — because the platform's own compose file points at them — are
 fenced twice over:
 
-- **Shared Directus.** `PreflightEnv` strips any Directus write token on non-prod, and `CheckWrite` blocks the
-  store by class. Public content reaches a stack **only** via snapshot-replay into that stack's **own** per-stack
-  Directus Postgres (v1.3 M13 stands a local Directus up per dev stack) — the shared `content.anthropos.work`
-  instance is never written.
+- **Shared Directus.** `PreflightEnv` strips any Directus write token on non-prod, `CheckWrite` blocks the
+  store by class, and the injected override empties `DIRECTUS_TOKEN` on every demo container (fix17) — so the
+  shared `content.anthropos.work` instance is **never written** from any non-prod stack. Public content is **read**
+  from it **live** today (every stack keeps `DIRECTUS_BASE_ADDR=content.anthropos.work` until the per-stack
+  Directus is automated — the M10 collection-schema gap; the snapshot-replay-into-a-per-stack-Directus path is the
+  planned target, not the current mechanism). On a demo that read is **anonymous** (no token → cms omits the
+  `Authorization` header; prod serves only the public predicate).
 - **Prod S3 public bucket.** `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the prod bucket in the platform compose;
   `PreflightEnv` **unconditionally** overrides it to `""`, so storage writes fall back to the per-stack local
   store. (Snapshot media is carried as **refs only** today — the byte payloads + a cloud snapshot store are

@@ -144,11 +144,15 @@ stacksnap replay --surface directus  --stack demo-1
 ### The Directus replay needs a per-stack Directus (the M10/M13 mechanism)
 
 The `directus` surface is content rows that need a **per-stack Directus on an offset port**, stood up
-**bootstrap → replay → boot** (the system schema is created by Directus, the content rows are replayed in, then
-the container boots pointed at the stack's own `directus` schema — never the shared `content.anthropos.work`). The
-auto-set-dress pass emits this recipe and firewall-checks the per-stack env before any replay; the live container
-boot is the operator's step. Full mechanism:
-[`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2).
+**bootstrap → content-schema → replay → boot** (4 steps since fix16: Directus's `node cli.js bootstrap` creates
+ONLY the `directus_*` system tables into the stack's `directus` schema [`CREATE SCHEMA` + `DB_SEARCH_PATH=directus`
+required]; the user-collection STRUCTURE is the **not-yet-automated M10 collection-schema gap**; the content rows
+replay in; then the container boots pointed at the stack's own `directus` schema — never the shared
+`content.anthropos.work`). The auto-set-dress pass emits this recipe and firewall-checks the per-stack env before
+any replay; **no recipe step is executed by any bring-up** (dev or demo), so until the gap closes the directus
+replay skips with `stacksnap` exit 4 — a STACK-side precondition, **not** a cache problem this runbook's capture
+can fix. Full mechanism:
+[`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).
 
 ## How this fits the auto-set-dress bring-up
 

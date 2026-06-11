@@ -50,8 +50,9 @@ For building, starting, or set-dressing the Anthropos development environment:
 `corpus/ops/setup_guide.md` (first-time build) + `corpus/ops/run_guide.md` (start + health) with:
 - Verification before/after each step + user confirmation before destructive operations
 - Progress tracking via TodoWrite
-- For an additional `dev-N`: the M13 set-dress pass (per-stack Directus + cache-first snapshot replay
-  + a light `dev-min` seed), default-on + non-fatal
+- For an additional `dev-N`: the M13 set-dress pass (the per-stack-Directus recipe + firewall check —
+  print-only, the boot isn't yet automated — + cache-first snapshot replay + a light `dev-min` seed),
+  default-on + non-fatal
 - Auto-improvement of documentation when issues are found (ops-reports → `/update-knowledge`)
 
 Tear an additional dev stack down with `/dev-down N` (mirrors `/demo-down`).

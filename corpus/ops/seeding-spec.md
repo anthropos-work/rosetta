@@ -91,7 +91,7 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 
 | Store | Class | Why / guard action |
 |---|---|---|
-| **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**; content arrives via snapshot-replay into the **per-stack** Directus Postgres (M10), never the shared one |
+| **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**, the shared instance **never written**. (Reads today: the per-stack Directus replay (M10) is the planned target but **not yet automated** — the collection-schema gap; every stack reads public content **live** from prod, a demo **anonymously** with the token stripped — see [`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).) |
 | **S3 public bucket** | shared-pollution-risk | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
@@ -128,6 +128,16 @@ browser login mints exactly that identity, so an authorized route returns **200,
   the **singular** `casbin_rule`. A running stack uses one of them. The seeder **introspects** which exists in the
   `sentinel` schema and targets that.
 
+**Every member, not just the admin (a membership and its `g2` grant are two halves).** The bulk `users` seeder
+writes a `public.memberships` row **and** its Sentinel `g2 (org, user, role)` grant for **each** of the N members
+— not only the `identity` admin. The reason is the same `g2` resolution: a *per-member* authz check resolves the
+**object** member's role via `g2`. The clearest case is the **Members list** (`/enterprise/members`) — resolving
+each row's `targetRole` makes Sentinel evaluate the admin's `org:action:assignments:write` **on that member**, and
+the `p2` policy is keyed on the member's role. A member with a `memberships` row but **no `g2` grant** has an
+*unresolvable* role, so the check returns `false` → the resolver errors → the whole `organizationMembers` query
+fails ("Failed to fetch from Subgraph 'backend'") → an **empty Members page**, even though the rows exist. Seeding
+the membership without its grant passes basic browsing but 403s any per-member path; the two are seeded together.
+
 **The global policy prerequisite.** Authorization also needs the platform's **global** policy (`init_policy.sql`'s
 ~47 role→feature `p`/`p2`/`p3` rows — identical across all stacks). That is *platform bootstrap*, not demo data, so
 it is applied by the **demo-stack bring-up** (`migrate-demo.sh`), not the seeder. The seeder supplies the demo
@@ -151,7 +161,7 @@ spine to click through — without paying a demo-scale seed (it still seeds in w
 the floor that still exercises the role mix (~1 admin + ~6 members + ~3 candidates) so authz / memberships /
 activity all render; its fixed admin is **`dev@anthropos.test`** (the local dev login identity → a browser login
 to the fresh dev stack returns **200**, not 403). It targets `dev-N` (vs the demo presets' `demo-1`). The
-dev-stack bring-up applies it via the set-dressing pass — see [`snapshot-spec.md`](snapshot-spec.md#dev-as-a-full-fidelity-peer-m13--local-directus--auto-snapshot--light-seed). (size rationale: #M13-D1)
+dev-stack bring-up applies it via the set-dressing pass — see [`snapshot-spec.md`](snapshot-spec.md#dev-as-a-full-fidelity-peer-m13--the-set-dress-pass-recipe--auto-snapshot--light-seed). (size rationale: #M13-D1)
 
 ### The CLI
 

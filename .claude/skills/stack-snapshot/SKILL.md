@@ -1,6 +1,6 @@
 ---
 name: stack-snapshot
-description: Set-dress a stack (dev-N or demo-N) with the real PUBLIC reference library — replay the captured taxonomy + Directus content snapshots into the stack so the catalog + content templates are real (not placeholder). Drives the stacksnap CLI (replay / capture / status). Use after the stack is up and before seeding for a full-fidelity world, or when asked to snapshot / set-dress / replay the catalog.
+description: Set-dress a stack (dev-N or demo-N) with the real PUBLIC reference library — replay the captured taxonomy catalog into the stack so it's real (not placeholder). The Directus content surface needs a per-stack Directus that isn't automated yet (the M10 collection-schema gap — its replay exits 4 today); content is read live from prod meanwhile. Drives the stacksnap CLI (replay / capture / status). Use after the stack is up and before seeding for a full-fidelity catalog, or when asked to snapshot / set-dress / replay.
 argument-hint: [dev-N|demo-N] [replay|capture|status] [--surface taxonomy|directus] [--dsn DSN] [--dry-run]
 ---
 
@@ -53,10 +53,18 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
    ```
    Replay resolves **cache-hit vs stale** against the stack's live schema, **verifies every payload checksum**
    before writing, bulk-`COPY`s in dependency order, and **rebuilds any pgvector index** (the ~689 MB
-   `skill_embeddings` IVFFLAT is reindexed, not transported). If the cache is **stale/missing**, replay tells you
-   to capture first → do path B. The `directus` content surface additionally needs its **per-stack Directus
-   booted** against the stack's own `directus` schema (bootstrap → replay → boot, offset-port container, **never**
-   `content.anthropos.work`) — see the recipe.
+   `skill_embeddings` IVFFLAT is reindexed, not transported). **Read the exit code (fix16):** `4` = the stack's
+   target schema is **missing/empty** — provision the STACK (a capture will NOT help); `5` = **no cached snapshot
+   at the stack's schema digest** — either the cache is empty/outdated (run a `capture` — see below), or the
+   stack's schema **diverged** from the captured source (`stacksnap status` compares digests). The `taxonomy`
+   surface replays straight away (its `skiller` schema exists from migration). The `directus` content surface
+   additionally needs its **per-stack Directus** against the stack's own `directus` schema (**bootstrap →
+   content-schema → replay → boot**, 4 steps — the **content-schema** step is the not-yet-automated M10
+   collection-schema gap). **So today the directus replay exits 4** on every stack: the auto-set-dress is
+   print-only (it never runs the recipe's bootstrap, so the schema stays empty). Running the bootstrap by hand
+   advances you past exit 4 to the content-schema gap (then exit 5) — it's an operator recipe, not yet automated;
+   offset-port container, **never**
+   `content.anthropos.work`) — see the printed recipe.
 
    **`capture`** (rare maintenance) — only when `status` shows the surface is **missing or stale** (the platform
    schema moved). Reads the public surface **once** over `--dsn` from a safe source, firewalls it, caches it:
@@ -104,7 +112,9 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
 - Store root: `--store` → `STACKSNAP_STORE` env → `<workspace>/.agentspace/snapshots` (gitignored; GB blobs never
   enter git). The cloud/S3 store is the named **v1.4** swap.
 - Base DSN (replay): `postgres://postgres@localhost:5432/postgres` with the port replaced by the stack offset.
-- Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage.
+- Exit codes: `0` ok · `1` firewall/capture/replay error (e.g. a tenant-data leak aborted capture) · `3` usage ·
+  `4` (replay) target stack schema missing/empty → provision the STACK (not a cache problem) · `5` (replay) no
+  cached snapshot at the stack's schema digest → run a capture (empty/outdated cache) or fix a diverged stack schema.
 
 ## Related skills
 

@@ -16,12 +16,14 @@ org looks like in Anthropos" demo.
    untouched. `migrate-demo.sh` runs automatically and bootstraps the global Sentinel policy (required for
    authorized routes to return 200). See [`../rosetta_demo.md`](../rosetta_demo.md).
 
-2. **Set-dress the stack** — replay the real public library so the catalog + content templates are real:
+2. **Set-dress the stack** — replay the real public library so the catalog is real:
    ```bash
-   /stack-snapshot replay 1            # taxonomy + directus — the real 60K-skill catalog + content templates
+   /stack-snapshot replay 1            # taxonomy → the real 60K-skill catalog (directus content currently skips: exit 4)
    ```
-   This stamps the real **public** taxonomy + Directus content into the stack (almost always a cache-hit → zero
-   prod read). It's **optional** (skip for a quick structural-only world — the seeder degrades gracefully), but
+   This stamps the real **public** taxonomy into the stack (almost always a cache-hit → zero prod read). The
+   **Directus content** surface isn't replayed yet — the per-stack Directus isn't automated (the M10
+   collection-schema gap), so content is read live from prod meanwhile. It's **optional** (skip for a quick
+   structural-only world — the seeder degrades gracefully), but
    it's what turns "an org with users" into "an org with users browsing the real product catalog". See
    [`recipe-snapshot-world.md`](recipe-snapshot-world.md).
 

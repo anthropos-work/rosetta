@@ -75,8 +75,9 @@ DEV=stack-dev/rosetta-extensions/dev-stack
 ```
 
 `dev-N` maps host port `P → P + N*OFFSET` (default offset 10000, shared with demo-stack). The set-dress
-pass (`dev-setdress.sh`) is default-on + non-fatal: per-stack Directus → cache-first snapshot replay
-(`taxonomy` + `directus`) → `dev-min` seed (~1 org, ~10 users, fixed admin `dev@anthropos.test`).
+pass (`dev-setdress.sh`) is default-on + non-fatal: the per-stack-Directus recipe + firewall check
+(print-only — the boot isn't automated, so the `directus` replay skips with exit 4) → cache-first snapshot
+replay (`taxonomy` lands; `directus` skips) → `dev-min` seed (~1 org, ~10 users, fixed admin `dev@anthropos.test`).
 
 ## Quick health checks
 
