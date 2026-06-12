@@ -37,7 +37,7 @@ per-tik progress toward a binary gate.
 | 4 | **replay-exit-0** — `stacksnap replay --surface directus` COPYs the captured content tables in | **PASSES (iter-04):** exit 0, 9 tables / 10128 rows (simulations=304). Earlier baseline: bootstrapped-but-gap schema → exit 5; empty → exit 4 (M21-D3) | iter-04 live run; `cmd/stacksnap/main.go:359-378` |
 | 5 | **boot** — boot Directus on the schema, reachable over HTTP | **PASSES (iter-05):** booted on the harness, `/server/health` 200 | iter-05 live run |
 | 6 | **serve-anonymously** — `GET /items/simulations?limit=1` → 200 with a real row | **PASSES (iter-05, DEMONSTRATED):** 200 + real published sim, anonymous. Needs the table PKs + directus_collections registration + a public read permission on Directus's hardcoded policy `abf8a154` (M21-D9) | iter-05 live run |
-| — | **GATE automation clause** — *stacksnap* applies the captured structure | **PENDING:** the structure was hand-applied; `STRUCT-M21-codeify` makes stacksnap do it | the gate's "stacksnap applies" wording |
+| — | **GATE automation clause** — *stacksnap* applies the captured structure | **SCHEMA HALF DONE (iter-07):** `stacksnap` captures the structure + auto-provisions a bootstrapped-gap stack before the row replay (stages 3-4 by tooling). The SERVE rows (registration + permissions) are iter-08 → full gate met | the gate's "stacksnap applies" wording |
 
 **Furthest stage passing: 6 — DEMONSTRATED end-to-end (iter-05).** All 6 stages pass with the real captured structure:
 build → bootstrap → 26-collection structure apply (digest `6cd35278…`) → replay exit 0 (10128 rows) → boot →

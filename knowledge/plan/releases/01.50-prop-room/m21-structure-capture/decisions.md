@@ -195,3 +195,30 @@ types/PKs) with `information_schema.columns WHERE table_schema=$1` (for the dige
 a capture run as a DIFFERENT (more-privileged) role would see a different table set → a different digest/cache key —
 consistent by construction as long as capture + the eventual replay-probe read the schema the same way. Generalizes to
 any digest-keyed capture against a least-privilege read role.
+
+### M21-D11 — capture sequences by DEFAULT-reference, not ownership (iter-07)
+**Finding (the integration test surfaced it):** the first `structureSeqSQL` keyed `CREATE SEQUENCE` on the OWNERSHIP
+dependency (`pg_depend`: sequence→table, the `OWNED BY` edge). Prod's junction-table sequences ARE owned (8 found), so
+a prod capture worked — but a source whose sequences are NOT owned (a hand-built fixture, or in principle any source
+where ownership was dropped) records only the `DEFAULT nextval(...)` reference, not ownership. Such sequences were
+MISSED → the captured `CREATE TABLE`s referenced non-existent sequences → the apply would fail. **Decision:** key the
+sequence capture on the **default-reference** dependency (`pg_attrdef` → sequence `pg_depend` edge), which a
+`DEFAULT nextval('seq')` ALWAYS records regardless of ownership. This is the correct semantic (capture exactly the
+sequences the table DDL references) and is robust to source setup. Live-validated: 8 on prod (owned) AND 8 on the
+standalone-sequence integration source. A restored `pg_dump` preserves ownership too, so prod + cold-start paths are
+unaffected; the change only ADDS robustness.
+
+### M21-D12 — auto-provision is gated on the bootstrapped-GAP precondition (iter-07, review-driven)
+**Context:** iter-07 wired `stacksnap replay` to AUTO-PROVISION a directus stack's schema (apply the captured
+structure) on a cache miss. An adversarial review (the `m21-iter07-review` workflow) caught a regression: the apply
+fired on ANY cache miss, not just a bootstrapped GAP. A diverged/schema-skewed target (already has user collections,
+digest ≠ captured — e.g. a stack provisioned at release N then the cache re-captured at N+1) would hit the captured
+`CREATE TABLE` (intentionally non-idempotent) → collide → raw **exit 1**, REGRESSING the pre-M21 clean **exit 5**
+divergence path ("bring the stack to the captured shape first"). The apply itself stays atomic (simple-protocol
+implicit transaction → no half-provision), so it's a UX/contract regression, not data corruption. **Decision:**
+`tryAutoProvision` probes the target for any user collection (`information_schema` base tables minus the `directus_*`
+system set) and ONLY provisions when that count is 0 (a true gap); a diverged target returns a no-op so the caller
+falls through to the existing exit-5 message. This makes auto-provision strictly the gap→fill case its comments
+already claimed. Live-confirmed: a diverged target (2 user tables) now → exit 5 (not exit 1). **General lesson:** any
+auto-provision/auto-heal-on-cache-miss must gate the mutation on the precondition it assumes, or a skewed input
+silently degrades a clean error into a raw failure.
