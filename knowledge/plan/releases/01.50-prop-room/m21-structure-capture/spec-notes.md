@@ -115,3 +115,26 @@ Operator sanctioned a bounded read-only structural read of the prod `directus` s
 - **Digest-keying (M21-D5 → option B):** a bootstrap (27 system) + 9-collection structure can never equal the
   53-table `6cd35278…` digest → the cache must be re-keyed per-surface over only the captured content tables. Shared
   `pg.SchemaVersionSQL` (taxonomy too) → operator-surfaced architectural fork. See decisions M21-D5/D6.
+
+## iter-08 design (serve rows + firewall admissibility) — de-risked, ready to build
+
+The gate-completing iter. Confirmed against prod (sanctioned structural read):
+- **Firewall structural-metadata admissibility (the In-scope class):** the serve rows live in `directus_*` SYSTEM
+  tables, today outside `AssertPublicOnly`. Capture only **`directus_collections`** (registration) + the public-policy
+  **`directus_permissions`** read rows — both carry **0 tenant-scope columns** (verified: no organization_id/tenant_id/
+  private/user/owner), so they are admissible as "structure, not tenant data" (extend, never loosen). The admissibility
+  check = assert the captured registry table carries none of those columns; reject otherwise.
+- **EXCLUDE `directus_access`** — it has a **`user` uuid column** (user-specific grants). Not captured: bootstrap
+  creates Directus's hardcoded public policy `abf8a154` + its `(role=NULL,user=NULL)` access link, so the public
+  access chain already exists on a bootstrapped target. Likewise `directus_policies` not captured (bootstrap-provided).
+- **Apply mechanism = additive INSERTs appended to the structure artifact** (NOT the TRUNCATE-COPY replay, which would
+  wipe bootstrap's system rows). `directus_collections`: include all cols, `ON CONFLICT (collection) DO NOTHING`.
+  `directus_permissions`: **omit the serial `id`** (let it auto-gen; prod ids would collide with bootstrap's system
+  perms → DO NOTHING would wrongly skip them), plain INSERT. Generate faithfully via Postgres `quote_nullable(col::text)`
+  per column (works for text/uuid/bool/int/json on insert into same-typed columns).
+- **Gate proof:** capture (structure + serve rows) → fresh bootstrap → `stacksnap replay` auto-provisions
+  (schema + registration + permissions) → boot Directus → `GET /items/simulations?limit=1` anonymous → 200 + real
+  published row, with NO hand SQL. That flips the M21 exit_gate **met by tooling**.
+- Columns (11.6.1): `directus_collections`(20: collection,icon,note,display_template,hidden,singleton,translations,
+  archive_*,sort_field,accountability,color,item_duplication_fields,sort,group,collapse,preview_url,versioning);
+  `directus_permissions`(8: id,collection,action,permissions,validation,presets,fields,policy).
