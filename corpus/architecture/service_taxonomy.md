@@ -240,26 +240,36 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 - Studio-Desk
 - Backend services (authenticate via the `authn` library; authorization is Sentinel's job)
 
-#### Directus (Dockerized - Headless CMS)
+#### Directus (Headless CMS — read live from prod by default)
 
 | Property | Value |
 |:---------|:------|
-| **Type** | Third-party Docker Image |
-| **Image** | `directus/directus:10.10.1` |
-| **Port** | 8055 |
-| **Purpose** | Content storage and management |
+| **Type** | Third-party Headless CMS (self-hosted, **production**) |
+| **Address** | `https://content.anthropos.work` (the prod public instance) |
+| **Purpose** | Content storage and management (the public catalog + content library) |
 | **Database** | PostgreSQL (dedicated `directus` schema) |
+
+> **The platform `docker-compose.yml` has NO directus service.** `cms` reaches Directus over the network via
+> `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR` env vars (the only service the compose gives these) — which
+> point at the **production** instance `https://content.anthropos.work` in the stock compose. A freshly-built
+> local stack
+> reads its public content **live from prod**; there is no local Directus container, image pin, port, or
+> admin/password in the platform compose. (Earlier revisions of this doc wrongly described a
+> `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` login — that
+> service has never existed in the platform compose.)
 
 **Integration Pattern**:
 ```
-Frontend → CMS Service → Directus API → PostgreSQL
+Frontend → CMS Service → Directus API (content.anthropos.work) → PostgreSQL
 ```
 
 The **CMS Service** acts as a smart proxy/adapter, adding business logic on top of Directus.
 
-**Storage**:
-- Local: `./data/directus/uploads`
-- Cloud: S3 (via AWS credentials)
+> **A *local* Directus is a tooling feature, not a platform-compose service.** The Rosetta v1.5 "prop room"
+> tooling (`rosetta-extensions`, not the platform repo) can stand up a **per-stack local Directus** —
+> `directus/directus:11.6.1`, on an **offset port**, serving the captured public library so a stack is
+> content-self-contained. It's **demo-default / dev-opt-in (`--local-content`)** and lives entirely in the
+> stack-ops tooling. See [`corpus/ops/directus-local.md`](../ops/directus-local.md).
 
 #### GraphQL/Cosmo Router (Dockerized - API Gateway)
 

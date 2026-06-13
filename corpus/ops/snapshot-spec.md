@@ -384,8 +384,9 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    Directus serves the captured catalog **anonymously**. See [`directus-local.md`](./directus-local.md) for the
    structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
    *execution at bring-up* — booting the Directus as a per-stack compose service — landed in **M22**
-   (`prop-room-m22`): a `--local-content` stack now executes bootstrap → apply-structure → replay → boot. The
-   remaining *cutover* — re-pointing `cms`/`jobsimulation`'s `DIRECTUS_BASE_ADDR` at it — is **M23**. See the
+   (`prop-room-m22`): a `--local-content` stack executes bootstrap → apply-structure → replay → boot. The
+   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at it — **landed in M23** (`prop-room-m23`): a
+   `--local-content` stack now serves its catalog from its OWN Directus, content-self-contained. See the
    known-state note below.)
 3. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
    user-collection tables (the framework's generic `CopyIn(schema, table)` → the `directus` schema,
@@ -405,12 +406,17 @@ keeps the **print-only** behaviour — `dev-setdress.sh` prints the recipe + fir
 executes no step — and reads public content live from prod. See [`directus-local.md`](./directus-local.md)
 § "Container lifecycle (M22)" for the executed lifecycle.
 
-**Known state — the prod-read path (a non-`--local-content` stack) + the taxonomy↔content consistency
-boundary.** A stack without local content has **no local Directus**: the set-dress engine attempts the replay
-of **both** surfaces, but with the recipe unexecuted the directus replay is skipped with the honest `stacksnap`
-exit 4 ("the stack's directus schema is missing/empty — provision the STACK first; not a snapshot-cache
-problem"), status `snapshot:taxonomy=replayed directus=skipped(stack-unprovisioned)`. So `cms` + `jobsimulation`
-keep `DIRECTUS_BASE_ADDR=content.anthropos.work` and read the **public catalog live from prod**. Since
+**Known state (post-M23) — two paths: the self-contained `--local-content` path (the converged end-state) and
+the prod-read fallback.** Since M23 a **`--local-content` stack is content-self-contained**: it boots its own
+per-stack Directus, the directus replay **exits 0**, and `cms`'s `DIRECTUS_BASE_ADDR` is cut over to the
+in-network instance (asset plane stays on prod). This is the **default for every demo** and **opt-in for any
+dev-N≥1**. The **prod-read path is now the documented *fallback*** — taken by a stack **without** local content
+(a plain dev bring-up, or `DEMO_NO_LOCAL_CONTENT=1`). On that fallback path the stack has **no local Directus**:
+the set-dress engine attempts the replay of **both** surfaces, but with the recipe unexecuted the directus
+replay is skipped with the honest `stacksnap` exit 4 ("the stack's directus schema is missing/empty — provision
+the STACK first; not a snapshot-cache problem"), status
+`snapshot:taxonomy=replayed directus=skipped(stack-unprovisioned)`. So `cms` keeps
+`DIRECTUS_BASE_ADDR=content.anthropos.work` and reads the **public catalog live from prod**. Since
 fix16/fix17 a **demo does this ANONYMOUSLY**: the injected override strips the inherited prod `DIRECTUS_TOKEN`
 from **every** demo service (cms omits the `Authorization` header when the token is empty — `if c.token != ""`
 in `cms/internal/directus/directus.go`, verified @ v0.251.2; prod Directus serves the public predicate to

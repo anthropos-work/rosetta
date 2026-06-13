@@ -118,11 +118,26 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 
 | Property | Value |
 |:---------|:------|
-| **Type** | Self-hosted via Docker |
-| **Image** | `directus/directus:10.10.1` |
+| **Type** | Self-hosted Headless CMS (lives in **production**) |
+| **Address** | `https://content.anthropos.work` (the prod public instance) |
 | **Purpose** | Content storage, media management, CMS |
-| **Port** | 8055 |
 | **Website** | [directus.io](https://directus.io) |
+
+> **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — `cms`
+> reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR` (the only service the
+> compose gives these env vars), which point at the **production** instance `https://content.anthropos.work` in
+> the stock compose. A freshly-
+> built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
+> `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` admin login
+> and an inline `docker-compose.yml` snippet — **all of that is false**; that service has never existed in the
+> platform compose, verified against `stack-dev/platform/docker-compose.yml`.)
+>
+> **A *local* Directus is a Rosetta tooling feature, not a platform-compose service.** The v1.5 "prop room"
+> tooling (`rosetta-extensions`) can stand up a **per-stack** local Directus — `directus/directus:11.6.1`, on an
+> **offset port** — serving the captured public library so a stack is content-self-contained (demo-default /
+> dev-opt-in `--local-content`). The bootstrap empirics, image pin, and locally-minted admin all live there. See
+> [`corpus/ops/directus-local.md`](../ops/directus-local.md). Everything below describes the **production**
+> Directus the platform reads from, except where it explicitly says "local tooling".
 
 ### What Directus Provides
 
@@ -135,26 +150,32 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 
 ### Architecture
 
-Directus runs as a **Docker container** alongside core services:
+In the **default local posture**, Directus is **not** part of the local stack — `cms` reaches the **production**
+Directus over the network. Only the local Postgres + `cms` run in Docker Compose:
 
 ```mermaid
 graph TB
-    subgraph Docker[Docker Compose]
-        Directus[Directus :8055]
+    subgraph Docker[Docker Compose (local stack)]
         CMS[CMS Service :8090-8091]
         Postgres[(PostgreSQL)]
     end
-    
+
+    subgraph Prod[Production]
+        Directus[Directus — content.anthropos.work]
+    end
+
     Frontend[Frontend Apps]
     StudioDesk[Studio-Desk]
-    
+
     Frontend --> CMS
     StudioDesk --> CMS
-    CMS --> Directus
-    Directus --> Postgres
-    
-    Postgres -.->|directus schema| DirectusDB[(Directus Tables)]
+    CMS -->|DIRECTUS_BASE_ADDR| Directus
+    Directus --> ProdPG[(Prod PostgreSQL · directus schema)]
 ```
+
+> With the v1.5 "prop room" **local tooling** (`--local-content` / demo-default), a per-stack `directus`
+> container is added to the stack's compose (offset port) and `cms`'s `DIRECTUS_BASE_ADDR` is re-pointed at it,
+> so the whole content path stays in-stack. See [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
 
@@ -172,39 +193,25 @@ graph TB
 - Abstract Directus implementation details
 - Easier to migrate CMS in the future
 
-### Docker Configuration
+### Compose configuration
 
-From `platform/docker-compose.yml`:
+There is **no `directus` service in `platform/docker-compose.yml`** — `cms` reaches the production Directus via
+the env vars below; the platform compose never defines, builds, or runs a Directus container. (A previous
+revision of this doc reproduced a `directus:` compose block — image `10.10.1`, `ADMIN_PASSWORD=password`, a
+mounted uploads volume — and attributed it to `platform/docker-compose.yml`. That block is fictional; the
+platform compose has no such service.)
 
-```yaml
-directus:
-  image: directus/directus:10.10.1
-  ports:
-    - 8055:8055
-  volumes:
-    - ./data/directus/uploads:/directus/uploads
-    - $HOME/.aws/credentials:/home/node/.aws/credentials:ro
-  environment:
-    # Database
-    - DB_CLIENT=pg
-    - DB_CONNECTION_STRING=postgresql://postgres@postgresql:5432/postgres?sslmode=disable
-    - DB_SEARCH_PATH=directus
-    
-    # Caching
-    - REDIS=redis://redis/4
-    - CACHE_STORE=redis
-    - CACHE_AUTO_PURGE=true
-    - CACHE_ENABLED=true
-    
-    # Storage
-    - STORAGE_LOCATIONS=local
-    - STORAGE_LOCAL_ROOT=/directus/uploads
-    
-    # Admin
-    - PUBLIC_URL=https://localhost:8055
-    - ADMIN_PASSWORD=password
-    - TELEMETRY=false
+The only Directus-related platform config is the address `cms` points at:
+
+```bash
+# platform/.env (and the cms service environment)
+DIRECTUS_BASE_ADDR=https://content.anthropos.work
+DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ```
+
+> The **per-stack local Directus** that the v1.5 "prop room" tooling stands up (`directus/directus:11.6.1`, on an
+> offset port, with a **locally-minted** admin) is defined in the **tooling's** compose overlay, not the platform
+> repo. Its real, empirically-pinned config lives in [`directus-local.md`](../ops/directus-local.md).
 
 ### Data Storage
 
@@ -224,13 +231,11 @@ Directus uses a **dedicated PostgreSQL schema**:
 
 #### File Storage
 
-**Local Development**:
-```
-platform/data/directus/uploads/
-├── images/
-├── documents/
-└── media/
-```
+**Local Development**: there is no local Directus and no local uploads directory in the default posture. Image
+bytes are served from the **asset plane** — prod's anonymous public `<DIRECTUS_PUBLIC_BASE_ADDR>/assets/<uuid>`
+links, which browsers fetch token-less (`cms/internal/directus/directus.go`). Even when the v1.5 local tooling
+serves the *data plane* (catalog rows) from a per-stack Directus, the *asset plane* stays on prod's public links
+so images stay real — no blob bytes are copied locally.
 
 **Production**:
 - Files stored in **S3** (AWS credentials mounted)
@@ -265,14 +270,16 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 
 ### Development Access
 
-**Admin Interface**:
-- **URL**: `http://localhost:8055`
-- **Default User**: `admin@example.com`
-- **Default Password**: `password` (from docker-compose)
+In the **default posture there is no local Directus to log into** — content comes from the production instance,
+which developers don't administer locally. There is no `localhost:8055` admin and **no `admin@example.com` /
+`password` login** (that earlier claim was tied to the fictional compose service above).
 
-**API Endpoints**:
-- **REST**: `http://localhost:8055/items/{collection}`
-- **GraphQL**: `http://localhost:8055/graphql`
+**When the v1.5 local tooling stands a per-stack Directus up** (`--local-content` / demo-default), it listens on
+an **offset port** (8055 on the first stack, offset thereafter) with a **locally-minted** admin
+(`admin@<stack>.example.com`, an RFC-2606 reserved address — never a real mailbox; see
+[`directus-local.md`](../ops/directus-local.md)). Against **that** local instance:
+
+- **Admin UI / REST / GraphQL**: `http://localhost:<offset-8055>/` , `…/items/{collection}` , `…/graphql`
 
 ### Webhooks
 
@@ -549,8 +556,11 @@ AWS Chime SDK captures the full simulation session (camera, screensharing, micro
 ### Required Services (via Docker)
 ```bash
 cd platform
-docker compose up -d directus graphql
+docker compose up -d graphql   # Directus is NOT a local service — cms reads it live from prod
 ```
+> The platform compose has no `directus` service to start; `cms` points `DIRECTUS_BASE_ADDR` at
+> `content.anthropos.work`. To run content locally instead, use the v1.5 "prop room" tooling
+> ([`directus-local.md`](../ops/directus-local.md)), not `docker compose up directus`.
 
 ### Environment Variables Checklist
 
@@ -611,19 +621,22 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 
 ### Directus Issues
 
-**"Cannot connect to Directus"**:
+**"Cannot connect to Directus"** (default posture — reading prod):
+- `cms` reads Directus **live from prod**; there is no local `directus` container to `ps`. Check the address
+  `cms` resolves: `DIRECTUS_BASE_ADDR` must be `https://content.anthropos.work` and reachable from the box.
+- `docker compose logs cms` (not `directus`) surfaces the content-fetch errors.
+
+**"Cannot connect to Directus"** (when running the local tooling, `--local-content` / demo):
 ```bash
-# Ensure Directus container is running
-docker compose ps directus
-
-# Check logs
-docker compose logs directus
+# The per-stack Directus runs under the stack's OWN tooling compose, on an OFFSET port:
+docker compose -p <stack> ps directus
+docker compose -p <stack> logs directus
 ```
+See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle + verify probes.
 
-**File uploads failing**:
-- Verify `./data/directus/uploads` directory exists
-- Check AWS credentials are mounted (production)
-- Ensure storage permissions are correct
+**File uploads / asset bytes**:
+- Image bytes are served from the **asset plane** — prod's anonymous public `…/assets/<uuid>` links — even when
+  the data plane is local. There is no local uploads volume in the default posture.
 
 ### GraphQL Issues
 

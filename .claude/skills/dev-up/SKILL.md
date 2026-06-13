@@ -1,6 +1,6 @@
 ---
 name: dev-up
-description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with the per-stack-Directus recipe + firewall check (print-only — the boot isn't yet automated), a cache-first snapshot replay, and a light dev-min seed. Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
+description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with a cache-first snapshot replay + a light dev-min seed, plus (opt-in via --local-content) an EXECUTED per-stack Directus so the stack's content is self-contained (otherwise it reads content live from prod). Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
 argument-hint: [N | 'main'] [--no-setdress] [--no-snapshot] [--profile P] [scenario|step]
 ---
 
@@ -12,9 +12,13 @@ Brings a DEV stack to a running, set-dressed state. One skill for the whole dev 
   environment build (or a resume) **and** the start, following the official guides with verification.
   This is the consolidation of the former `/setup-platform` + `/start-platform`.
 - **`dev-up N`** (N ≥ 1) — spin up an **additional, isolated** `dev-N` stack alongside the main one,
-  on offset ports, and give it the **demo treatment by default** (M13): the per-stack-Directus recipe +
-  firewall check (print-only — the boot itself is not yet automated, the M10 collection-schema gap),
-  a cache-first snapshot replay of the real public reference data, and a light `dev-min` seed.
+  on offset ports, and give it the **demo treatment by default** (M13): a cache-first snapshot replay of
+  the real public reference data, a light `dev-min` seed, and the per-stack-Directus firewall check.
+  The per-stack Directus itself is **opt-in for dev** via `--local-content` (v1.5 M22/M23): with the flag,
+  the recipe is **EXECUTED** (bootstrap → apply-structure → replay → boot a per-stack Directus on an offset
+  port) and `cms`'s `DIRECTUS_BASE_ADDR` is **cut over** to it, so the stack's content is **self-contained**;
+  without the flag (the dev default), the recipe is print-only and the stack reads content **live from prod**
+  (the documented fallback). See [`corpus/ops/directus-local.md`](../../../corpus/ops/directus-local.md).
 
 It mirrors `/demo-up` for the dev side — same registry, same offset-port model, same safety guards —
 so `dev-N` and `demo-N` are first-class peers and never collide on ports (the M12 unified registry).
@@ -98,9 +102,10 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
   can never touch the main dev stack.
 - **The set-dress pass is per-stack-isolated** — snapshot **replay** is a per-stack WRITE (never a prod
   read; capture is never run here), the per-stack Directus env contract targets the stack's own `directus`
-  schema (`EnvContract.Validate()` hard-rejects `content.anthropos.work`; the boot itself is the printed,
-  not-yet-automated recipe — the directus replay skips with stacksnap exit 4 until the M10 collection-schema
-  gap closes), media stays refs-only, and the
+  schema (`EnvContract.Validate()` hard-rejects `content.anthropos.work`). With **`--local-content`** the
+  recipe is **EXECUTED** behind that now-load-bearing firewall gate (a prod-resolving env hard-aborts before
+  any write) and the directus replay **exits 0**; without it the boot is print-only and the directus replay
+  skips with stacksnap exit 4 — the documented prod-read fallback. Media stays refs-only, and the
   `dev-min` seeder's isolation guard blocks every shared/prod store. The **n=0 set-dress guard is doubled**
   — the pass refuses N=0 without `--force` (a second layer above `stackseed --reset`'s own refusal).
 - **All stack-operating tooling lives in `rosetta-extensions`** — consumed per-stack at a pinned tag, never

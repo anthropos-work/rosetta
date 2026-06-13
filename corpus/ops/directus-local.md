@@ -1,25 +1,32 @@
 # The Per-Stack Local Directus
 
-**What this is.** Every Anthropos stack today reads its public content (the simulation catalog, skill-path
-library, etc.) **live from production** — `cms` and `jobsimulation` point `DIRECTUS_BASE_ADDR` at
-`content.anthropos.work`. The **"prop room"** release (v1.5) makes each stack stand up its **own local
-Directus** that serves the **captured public library**, so a stack's content is self-contained with no live
-prod dependency at runtime. Real images stay real: only the *data plane* (catalog rows) goes local; the
-*asset plane* (image bytes) stays on prod's anonymous public links.
+**What this is.** By default a stack reads its public content (the simulation catalog, skill-path library, etc.)
+**live from production** — `cms` (the only platform service that talks to Directus directly) points
+`DIRECTUS_BASE_ADDR` at `content.anthropos.work`. The **"prop room"** release (v1.5) makes each stack able to
+stand up its **own local Directus** that serves the **captured public library**, so a stack's content is
+self-contained with no live prod dependency at runtime. **Since M23 this is the realized end-state for a
+`--local-content` stack** (demo default; dev opt-in): its `cms` reads the catalog from the per-stack instance,
+not prod. Real images stay real: only the *data plane* (catalog rows) goes local; the *asset plane* (image bytes)
+stays on prod's anonymous public links. A stack **without** `--local-content` keeps the live-prod read (the
+documented fallback).
 
 This doc is the spec for that local Directus — the empirically-pinned bootstrap facts, the structure-capture
 model that makes the catalog serveable, and the version-skew rule. It is the companion to
 [`snapshot-spec.md`](./snapshot-spec.md) (which captures the rows) and
 [`snapshot-cold-start.md`](./snapshot-cold-start.md) (the `--dsn` source the structure capture rides).
 
-> **Status (2026-06-13, after M22 "Executed provisioning + lifecycle"):** the **structure-capture half**
-> (`stack-snapshot`, tag `prop-room-m21`) and the **lifecycle half** (`dev-stack` + `stack-injection` +
-> `stack-verify`, tag `prop-room-m22`) are both **built**. M22 turned the print-only recipe into an
-> **executed** bring-up step: a per-stack Directus boots as a **compose service** (offset port, torn down with
-> the stack), provisioned idempotently, with verify probes — **demo default-on / dev opt-in (`--local-content`)**.
-> The firewall is now a **load-bearing executed gate** (a prod-resolving env hard-aborts before any write).
-> See § "Container lifecycle (M22)" below. The remaining **M23** work is the *cutover*: re-pointing
-> `DIRECTUS_BASE_ADDR` at the local instance + referential closure (this doc grows its "Cutover" section then).
+> **Status (2026-06-13, after M23 "Content cutover + referential closure"):** the **structure-capture half**
+> (`stack-snapshot`, tag `prop-room-m21`), the **lifecycle half** (`dev-stack` + `stack-injection` +
+> `stack-verify`, tag `prop-room-m22`), and the **cutover** (tag `prop-room-m23`) are all **built**. M22 turned
+> the print-only recipe into an **executed** bring-up step: a per-stack Directus boots as a **compose service**
+> (offset port, torn down with the stack), provisioned idempotently, with verify probes — **demo default-on / dev
+> opt-in (`--local-content`)**. M23 cut the **data plane** over: `cms`'s `DIRECTUS_BASE_ADDR` now points at the
+> in-network local instance (`http://directus:8055`), studio-desk is wired to it with a locally-minted token, and
+> `directus_files` refs are captured so the asset plane resolves — so a `--local-content` stack is
+> **content-self-contained** (asset plane stays on prod public links → images stay real). The firewall is a
+> **load-bearing executed gate** (a prod-resolving env hard-aborts before any write). See § "Container lifecycle
+> (M22)" and § "The data-plane cutover (M23)" below. A stack **without** `--local-content` still reads content
+> live from prod — the documented fallback.
 
 ---
 
@@ -183,8 +190,8 @@ itself are the two steps compose can't express — the one-shot **bootstrap** an
   (a cached image is reused; a fresh box pulls once).
 - **port** `8055 + N·10000` published to the host (`!override` so it replaces, not merges) — the same offset
   arithmetic as every other service; `<project>-directus-1` is the container name.
-- **network** `app-network` — the same in-network seam the fake BAPI alias uses, so `cms`/`studio-desk` will
-  reach it by name in M23.
+- **network** `app-network` — the same in-network seam the fake BAPI alias uses, so `cms`/`studio-desk` reach it
+  by name (`http://directus:8055`) after the M23 cutover (see § "The data-plane cutover (M23)").
 - **backing store** the stack's **own** `postgresql` compose service (`DB_CONNECTION_STRING=…@postgresql:5432`,
   `DB_SEARCH_PATH=directus`) — the per-stack-isolated offset Postgres, **never prod**. `SECRET` is a throwaway
   per-stack value. `mem_limit: 1g` keeps two stacks co-resident on a 16 GB box.
@@ -251,11 +258,58 @@ a `--no-ui` demo).
 
 ---
 
+## The data-plane cutover (M23)
+
+M22 booted + served the per-stack Directus; M23 (`prop-room-m23`) **cut the platform over to it** so a
+`--local-content` stack reads its catalog **locally**, not live from prod. Four moves:
+
+- **`cms`-only re-point (`#M23-D1`).** `cms` is the **only** platform service that talks to Directus directly
+  (HTTP API); `jobsimulation` reads it *through* `cms` over RPC, and next-web through `cms`/the router. So
+  re-pointing **one** env — `cms`'s `DIRECTUS_BASE_ADDR` → the in-network `http://directus:8055` (the compose
+  service name on `app-network`, **not** the host-side `localhost:<offset>`) — cuts the **whole data plane** over
+  with no per-service env sprawl. The injected override does the re-point and strips the inherited prod token.
+- **studio-desk's static token (`#M23-D2`).** studio-desk Bearer-auths Directus with a **static** token. Directus
+  11.6.1 `bootstrap` reads `ADMIN_TOKEN` and stamps it on the admin user's `token` field, so the per-stack
+  `EnvContract.AdminToken` (a deterministic `local-directus-token-<stack>`) is stamped at bootstrap and handed to
+  studio-desk as `DIRECTUS_TOKEN` — no runtime token fetch. A new `ValidateProvisionable` adds the
+  present-token gate for the full provision recipe (the plain `Validate` stays the `--check-env` firewall).
+- **`directus_files` ref capture (`#M23-D3`, `#M23-D4`).** Content references images by `directus_files` uuid.
+  `directus_files` has no scope column and is referenced *by* many public rows, so it's captured as a new
+  **referenced-subset** admissibility kind (`TableSpec.ReferencedSubsetFilter` — an OR-of-INs over the public
+  file-ref columns; the firewall admits it iff the filter is exactly that closure predicate; the post-capture
+  probe counts any captured file *outside* the closure = 0). Replay clears it with **`DELETE FROM` before** the
+  bulk `TRUNCATE` (a `ClearByDelete` flag) because `directus_settings` (a system table outside the surface)
+  FK-references it and a `TRUNCATE` of an FK-referenced table fails structurally. **Refs only** — blob bytes stay
+  backlog; the asset plane serves the real image from prod's public link.
+
+### Referential closure — measured, not assumed (`#M23-D5`)
+
+The served catalog must be **referentially closed**: no content row may reference a taxonomy node-id the stack's
+skiller lacks (the empty Assign-AI-Simulation-picker class). The load-bearing cross-surface reference is the
+per-sequence `directus.sequences.skills` JSON array of `{node_id, …}` resolving against `skiller.skills.node_id`
+(what `publicJobSimulations.skills` resolves; the non-nullable federated field whose failure empties the picker).
+
+- **Closure is maximal by construction.** The taxonomy surface captures `organization_id IS NULL` — **every**
+  public node, not a content-referenced subset — so the only way a content ref can dangle is if it points at a
+  node that **isn't public** (a customer-scoped skill the firewall must not capture). No subsetting change needed.
+- **A measured gene, not an assumption.** `OpSnapshotCrossSurfaceClosure` / `FidelityProbe.CrossSurfaceDangling`
+  check, against the **replayed** directus↔skiller pair, that every content-referenced node-id resolves; a
+  non-zero dangling count fails the gene and names a sample node. Criticality `standard` (it surfaces in the
+  overall score but does not block the *critical* gate, and `measure-snapshot` isn't run at bring-up, so it never
+  blocks UP).
+- **The 1 genuine prod residual.** Prod has exactly **one** dangling node — `K-AIFUNX-E658`, referenced by 2
+  public published sims but existing only as a **customer-scoped** skill. It is **uncloseable by tooling**:
+  capturing the customer node would breach the tenant firewall, and editing prod is forbidden (zero platform/prod
+  edits). So it is a **measured, named** residual — a prod data-quality inconsistency the gene reports — not a
+  silent empty picker. The fix (re-tagging or removing that ref) is a prod data correction the **operator owns**,
+  outside tooling scope.
+
+---
+
 ## What's still future work
 
-- **Content cutover + referential closure (M23)** — re-point `DIRECTUS_BASE_ADDR` at the local instance (asset
-  plane stays on prod), and guarantee the served catalog is referentially closed (no content row references a
-  taxonomy node-id the captured subset lacks — the empty Assign-AI-Simulation-picker class). M23 also wires the
-  `directus_files` ref capture (the asset-ref plumbing) and closes the 20 dangling relations.
 - **Blob bytes** stay backlog (DEF-M10-01) — the asset plane uses prod's anonymous public links so images stay
-  real without mirroring the bytes.
+  real without mirroring the bytes. Mirroring them to a per-stack-isolated private bucket would only matter if the
+  asset plane ever moved off prod.
+- **Field bake (M25)** — a real-world field run of an end-to-end `--local-content` bring-up to shake out the
+  last empirical surprises (the v1.5 closing milestone).

@@ -159,4 +159,8 @@ done
 | Studio-Desk | 3100 |
 | PostgreSQL | 5432 |
 | Redis | 6379 |
-| Directus | 8055 |
+
+> **No local Directus by default.** The platform compose has no directus service — content is read **live from
+> prod** (`content.anthropos.work`). A local Directus (port 8055, offset on additional stacks) exists only when
+> the v1.5 "prop room" tooling stands one up: demo-default / dev-opt-in (`--local-content`). See
+> [`directus-local.md`](./directus-local.md).

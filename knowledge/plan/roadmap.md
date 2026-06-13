@@ -66,7 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M23 closed 2026-06-13) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M24 closed 2026-06-13) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -312,7 +312,27 @@ instance). Mitigate: the M22 no-prod-read verify assert + the `EnvContract` gate
 a good stack up.
 
 ### M24: Docs convergence + hygiene strand
-**Status:** `planned` · **Shape:** `section` · **Complexity:** small
+**Status:** `done` (2026-06-13) · **Shape:** `section` · **Complexity:** small
+**Closed:** all 7 sections Fate-1. The corpus now tells the new truth: the fictional local-Directus docker service
+(image `directus/directus:10.10.1` + admin/password + a compose snippet) — which **never existed** in the platform
+compose (verified against `stack-dev/platform/docker-compose.yml`) — is corrected across `external_services.md` /
+`service_taxonomy.md` / `quick_ops.md`, the known-state + `directus-local.md` + `snapshot-spec.md` rewritten on the
+M23 cutover, and the print-only/exit-4/reads-live-from-prod framing swept across 5 skills + `CLAUDE.md` + 5 demo
+docs (the real two-path posture: prod-read default; per-stack local Directus on `--local-content`). The 4 aged-out
+hygiene items the deferral audit surfaced all landed Fate-1: **(a)** an explicit `toolchain go1.25.11` pin on all 4
+go.mod + the clerkenstein CI (clears the 12 called-stdlib advisories, lazy); **(b)** a corpus README-index-row guard
+(`stack-core/corpus_index_guard.py`, a token-bounded per-dir lint — it dog-fooded itself, surfacing + backfilling 7
+pre-existing gaps; harden surfaced the milestone's 1 real bug, a prefix-collision false-negative, fixed `191d650`);
+**(c)** the alignment zero-critical-genes guard (`dna.Validate` rejects + `compare.GateMet` refuses a vacuous-100%
+critical gate, defence-in-depth, #M24-D2); **(d)** the `/project-stats` scope fix landed cross-repo in the
+developer-kit `stats.sh` (where the script lives — `825cdce`): `*/stack-*/*` in PRUNE_PATHS + a `drop_gitignored`
+filter, so the gitignored `stack-*/` platform clones (~2M foreign lines) stop inflating the count. **Close:** 5
+findings (0 scope · 2 code-quality [0 must-fix] · 0 docs · 0 tests · 1 adversarial-record · 3 decision-triage),
+all Fate-1; deferral audit **GREEN** (0 new deferrals, the 4 chartered hygiene items cleared, 3 standing inherited
+items unchanged + not aged). Go 844→**850** (+6, all alignment — the zero-critical guard); python stack-core
+77→**85** (+8, the README-index guard); flake **0** (5/5). ext tag `prop-room-m24` @ `6a4749d` (set by the
+orchestrator post-close); the §7 `/project-stats` fix is the cross-repo developer-kit `825cdce`, outside the ext tag.
+Records: [m24-docs-hygiene/](releases/01.50-prop-room/m24-docs-hygiene/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Make the whole corpus tell the new truth (stacks are content-self-contained), and absorb the four small
 aged-out hygiene items the deferral audit surfaced — so v1.5 leaves the repo honest and the backlog cleaner.
 **Scope:**
