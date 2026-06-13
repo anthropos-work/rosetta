@@ -58,3 +58,62 @@ cross-iter finding above + the AP-2 test's doc comment; no subsystem doc claimed
 **Stop condition:** continue-to-next-pass — directus hit 100%; cmd/stacksnap/pg residual is
 live-DB-only (route-forward AP-1) — need a second pass to measure the cross-pass coverage delta
 and re-scan the firewall/manifest/capture dimensions.
+
+## Pass 2 — 2026-06-13 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative — re-scan of firewall/manifest/capture dimensions)
+**Tiks covered since prior pass:** continuation of the single final sweep (pass 1 + pass 2 = one session)
+**Coverage delta on touched files:**
+- manifest/manifest.go: 95.2% -> 98.4% stmts (the M21 Structure-artifact Validate branches)
+- firewall/firewall.go: 100.0% -> 100.0% (deepened MEANING, not the number — identity/ordering guards)
+- capture/capture.go: 98.9% -> 98.9% (the CapturesStructure capability-mismatch branch now exercised;
+  its 3 stmts round below the 0.1% display threshold but the branch is now covered)
+- directus 100%, cmd/stacksnap 80.1%, pg 47.0% (unchanged — reachable surface saturated; residual is route-forward/live-DB)
+**Tests added:**
+- iter-06/07 (manifest Structure artifact) -> manifest/manifest_harden_test.go: 3 rejection cases
+  (empty checksum, negative statements, + the empty-payload table case), zero-statements-OK edge,
+  structure-bearing round-trip-revalidates
+- iter-08 (firewall structural-metadata) -> firewall/structural_metadata_harden_test.go: identity-column
+  guards (user_created/user_updated/owner/user each rejected + named), real serve-table column sets
+  admitted (positive guard), extend-never-loosen ordering (the carve-out can't launder a row-side
+  AssertPlan violation — predicate-agnostic), whole-column-not-substring match semantics
+- iter-06 (capture orchestration) -> capture/capture_structure_harden_test.go: the CapturesStructure
+  capability-mismatch branch (surface declares structure but capturer can't produce one -> fail loud)
+**Bugs surfaced + fixed inline:** none. The firewall carve-out, the manifest validation, and the
+capture capability dispatch all held. One DUPLICATE test I drafted (a structure-capture-error
+re-assertion) was removed pre-commit — the branch was already pinned by
+capture_structure_test.go:TestRun_StructureCaptureError_NothingWritten (no double-assertion landed).
+**Flakes stabilized:** none. Flake gate: 3 consecutive clean runs of all 21 new tests — green.
+**Cross-iter integration findings:**
+- The structural-metadata carve-out (iter-08) is now PROVEN independent of the row-side gates
+  (iter-02..05 AssertPlan/AssertCaptured): admitting the directus_* registry tables as structure does
+  NOT widen or narrow the user-collection ROW firewall — the two gates compose without interference,
+  so the M21 "extend, never loosen" claim is regression-pinned at the firewall level (not just the
+  directus-adapter level it was pinned at before).
+- The manifest Structure artifact (iter-06's additive field) survives Marshal -> Parse -> re-Validate
+  intact, integrating the M21 field with the pre-M21 serialization + the Validate gate in one path.
+**Knowledge backfill:** none required — the carve-out's extend-never-loosen + predicate-agnostic
+properties are documented in firewall.go's package/type doc comments already; the new tests pin them
+rather than revealing an undocumented truth.
+**Stop condition:** stabilized — every inline-reachable statement across the 6 M21 packages is
+covered (directus/firewall 100%, manifest 98.4% [only the unreachable json.MarshalIndent-error
+defensive branch left], capture 98.9% [remaining branches are non-M21], cmd/stacksnap 80.1% + pg 47%
+[residual is exclusively the live-DB connection wrappers + the replayCmd/replayAdapter real-conn
+pass-throughs = the route-forward AP-1 conn-seam item]). The Phase-2 dimension scan found nothing
+new fixable inline; the cross-pass delta on the reachable surface is < 2% (saturated). A pass-3 has
+no inline-reachable target. Final harden CLOSED for M21.
+
+## Routed forward (Fate 3) — exceed the harden inline-fix boundary
+- **HARDEN-M21-AP1-replaycmd-conn-seam**: a hermetic `replayCmd` wiring test needs `replayCmd`
+  refactored to accept an injectable connector (changes its signature + the `main` dispatch + touches
+  the load-bearing replay path) — architectural, >50 lines. The same seam unlocks the `replayAdapter`
+  (ClearForReplay/CopyIn/ReindexVector) + `adapters.go` real-conn pass-throughs (all 0% — live-DB only).
+  Route to a follow-up iter (a `replayCmd`-seam build iter), NOT bundled in this harden pass.
+- **HARDEN-M21-serve-live-integration**: an automated integration harness for the serve-row render
+  SQL needs a live directus Postgres (stand the container up). The render is hermetically unit-tested
+  (serve_test.go + structure_harden_test.go) + hand-validated live per iter-08. Route to the
+  live-integration backlog.
+
+These are recorded here (not in decisions.md as HARDEN-CAP-ACCEPTED) because the pass STABILIZED — the
+route-forwards are scope-boundary routing of two integration/architectural items, not an accepted
+coverage cap. close-milestone's deferral audit picks them up from this ledger.
