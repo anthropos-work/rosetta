@@ -58,3 +58,43 @@ _(append per build session)_
 
 - **2026-06-13 (attempt 1, crashed mid-§4):** §1 `0c61003`, §2 `06d5064`, §3 `9b4390b` landed in ext. Phase 0b KB-fidelity GREEN. Network crash (`FailedToOpenSocket`) mid-§4.
 - **2026-06-13 (attempt 2, resume-in-place):** reconciled §1–3 checkboxes to the committed ext code; committed the scaffold; finished §4 (verify probes, `7235181`), §5 (preflight, `94399e9`), §6 (docs, `0ab823a`). **All sections done.** Collateral Fate-1 fixes: studio-desk verify-port test (M22-D2), 3 stale print-only doc claims (M22-D1). Tests at exit: 102 stack-verify / 66 dev-stack / 87 demo-stack green; shellcheck clean.
+
+## M22: Hardening
+
+### Pass 1–4 — 2026-06-13
+
+**Scope manifest (Phase 1 — milestone-touched code, ext repo `58b810a..94399e9`):**
+M22's production code is entirely in the gitignored ext repo (`.agentspace/rosetta-extensions/`); the rosetta worktree holds docs only (`corpus/ops/*`, no executable surface). Two stacks of concern: shell engines (subprocess-tested) + Python generators (directly coverable). Every touched source file has a co-located test.
+
+| Source (ext) | Stack | Co-located tests | M22 surface |
+|---|---|---|---|
+| `dev-stack/dev-setdress.sh` | shell | `dev-stack/tests/test_dev_stack.py` | executed provision (bootstrap→replay→boot), firewall gate, non-fatal degrade |
+| `dev-stack/dev-stack` | shell | same | `--local-content` threading (override + setdress + verify scope) |
+| `stack-core/gen_override.py` | python | `stack-core/tests/test_gen_override.py` | `directus_lines` + `to_yaml(with_directus)` + `main()` summary |
+| `stack-injection/gen_injected_override.py` | python | `stack-injection/tests/test_injection.py` | demo directus compose-service block |
+| `stack-verify/lib/{services,readiness}.sh`, `live/{autoverify,verify}.sh` | shell | `stack-verify/tests/test_verify.py` | SERVICES row, schema-gate, collections probe, cheap-wins, env-assert |
+| `demo-stack/up-injected.sh` | shell | `demo-stack/tests/test_frontend_build.py` | 12 GB preflight directus runtime note |
+
+**Coverage (directly-coverable Python generators):**
+- `stack-core/gen_override.py`: statements 62% -> **85%** (+23) — `main()` + `--with-directus` summary now covered; residual is the docker subprocess (`resolved_config`) + pre-M22 `build_override` edges.
+- `stack-injection/gen_injected_override.py`: **99%** at entry (only the `__main__` guard uncovered) — no change needed.
+- Shell engines (dev-setdress, autoverify, readiness, up-injected) are not Python-coverable; deepened behaviorally via subprocess harnesses (stubbed docker/CLIs recording argv).
+
+**Tests added (+11 total; 0 production bugs surfaced):**
+- `test_dev_stack.py` (+8): restart-failure non-fatal warn; N=0+`--force` executed provision (base band) + N=0 refusal-before-provision; `--no-snapshot`+`--local-content` `set -u` guard; directus-replay-skip restart-gating; verify `--services` directus-conditional scope (body-grep); `--local-content`/`--no-local-content` last-wins ordering.
+- `test_verify.py` (+2): DB_CONNECTION_STRING-unreadable env-assert skip (not a false prod-leak); non-numeric collections count hits the numeric guard (warn, not crash).
+- `test_gen_override.py` (+2): `main()` end-to-end via `resolved_config` monkeypatch — with/without `--with-directus`, the summary accounting.
+- + coverage instrumentation: gitignore for `.coverage*`/`coverage.xml`/`htmlcov/`/`.pytest_cache/` (pytest-cov 7.1.0 already on the interpreter).
+
+**Bugs fixed inline:** none — the build phase's tests were sound; this pass deepened error/edge/`main()` coverage the build-minimum didn't reach.
+
+**Flakes stabilized:** none observed (3 consecutive clean runs of the new tests; shell subprocess harnesses are deterministic — stubbed docker/CLIs, no timing/random/shared-port surface).
+
+**Knowledge backfill:** no KB-worthy findings — every behavior the new tests pin (the executed-provision flow, the firewall gate, the non-fatal degrade, the verify cheap-wins, the last-wins flag contract) is already documented in `corpus/ops/directus-local.md` / `verification.md` / `idempotency.md` from the §6 docs commit. No new invariant, edge semantic, or threshold was discovered — the tests confirm documented behavior rather than surfacing undocumented behavior.
+
+**Commits (ext):** `08fc875` (gitignore instrument), `e782458` (Pass 1 dev-stack), `fa11c52` (Pass 2 stack-verify), `d62c685` (Pass 3 stack-core), `93ad686` (Pass 4 dev-stack last-wins).
+
+**Suite totals at exit:** stack-verify 104 (+2), dev-stack 73 (+7), demo-stack 87, stack-core 61 (+2), stack-injection 93 (+8 skipped, env-gated). All green; shellcheck clean.
+
+### Stop condition
+Scan clean at Pass 4 — the full six-dimension sweep (test depth / edge / error paths / regression / fuzz / perf) found only one thin arg-parse edge in Pass 4, coverage deltas on the directly-coverable surface stabilized (85%/99%, residual all out-of-M22-scope), the shell engines are exhaustively exercised behaviorally, and zero flakes across runs. Stopped at 4 of 5 passes.
