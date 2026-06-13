@@ -1,6 +1,6 @@
 # M22 — Progress
 
-**Status:** building. **Shape:** section.
+**Status:** `archived` (completed 2026-06-13). **Shape:** section.
 
 ## Section checklist
 _Derived from `overview.md` § Scope at build start. One section per cohesive unit of work; ticked as it lands._

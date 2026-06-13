@@ -3,9 +3,9 @@ milestone: M22
 slug: provision-lifecycle
 version: v1.5 "prop room"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-11
-last_updated: 2026-06-11
+last_updated: 2026-06-13
 complexity: medium
 delivers: corpus/ops/directus-local.md (lifecycle half) + verification.md/idempotency.md rows + executed provisioning + compose-service emission + Directus verify probes
 backlog_refs: NEW-2 (per-stack-Directus recipe execution/boot automation)
