@@ -43,7 +43,7 @@ internal/
 ### Direct dependencies (from compose `depends_on` + env)
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities
+* **CMS** — simulation definitions, content, studio entities. **Jobsimulation reads Directus content *through* CMS over RPC — it does NOT hold a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own.** So the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) carries jobsimulation's content reads to local automatically; no jobsimulation env change is needed.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller** — skill metadata

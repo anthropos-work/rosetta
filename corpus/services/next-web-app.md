@@ -11,7 +11,7 @@
   Next.js apps that consume the federated GraphQL gateway and authenticate with Clerk.
 * **Key Functions**:
   * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`).
-  * Talk to the backend **only** through the GraphQL gateway (`:5050/graphql`) — no direct microservice calls.
+  * Talk to the backend **only** through the GraphQL gateway (`:5050/graphql`) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through the gateway → the CMS subgraph → Directus, so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
   * Enforce auth at the edge via Clerk middleware (all routes protected by default, explicit public allowlist).
   * Deploy per-app to **Vercel**; only `apps/web` is also containerizable for local Docker.
 
