@@ -162,9 +162,12 @@ orchestration; don't treat it as live).
 
 > **Local/stack DBs differ slightly.** A `dev-N` / `demo-N` stack built from the default `graphql` profile carries
 > the same app schemas but **adds** an `auth` schema (a Supabase/GoTrue-style `auth.users` — a local auth artifact,
-> NOT platform app data) and **omits** the prod-only `simulator_*` / `skillsgateway` / `chronos` schemas and the
-> `directus` library (content is read live from prod). Verify with `SELECT current_database(), inet_server_addr()`
-> before trusting which world you're in.
+> NOT platform app data) and **omits** the prod-only `simulator_*` / `skillsgateway` / `chronos` schemas. Whether
+> it has a local `directus` content schema depends on the stack's content posture (v1.5 M22/M23): a
+> **`--local-content`** stack (demo default-on; dev opt-in) provisions its **own** `directus` schema + serves the
+> captured catalog locally, so the schema **is present**; a stack **without** `--local-content` has **no** local
+> `directus` schema and reads content **live from prod** (the fallback). Verify with
+> `SELECT current_database(), inet_server_addr()` before trusting which world you're in.
 
 ### PUBLIC (app — users, orgs, profiles, subscriptions)
 - **users**: id (uuid), clerk_id, email, firstname, lastname, picture, created_at, updated_at, deleted_at

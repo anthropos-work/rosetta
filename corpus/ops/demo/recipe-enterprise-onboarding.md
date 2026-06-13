@@ -18,12 +18,13 @@ org looks like in Anthropos" demo.
 
 2. **Set-dress the stack** — replay the real public library so the catalog is real:
    ```bash
-   /stack-snapshot replay 1            # taxonomy → the real 60K-skill catalog (directus content currently skips: exit 4)
+   /stack-snapshot replay 1            # taxonomy → the real 60K-skill catalog (+ directus content on a --local-content stack)
    ```
    This stamps the real **public** taxonomy into the stack (almost always a cache-hit → zero prod read). The
-   **Directus content** surface isn't replayed yet — the per-stack Directus isn't automated (the M10
-   collection-schema gap), so content is read live from prod meanwhile. It's **optional** (skip for a quick
-   structural-only world — the seeder degrades gracefully), but
+   **Directus content** surface replays too **on a `--local-content` stack** (demo default-on; dev opt-in) —
+   v1.5 M21–M23 auto-provision + boot a per-stack Directus and cut `cms` over, so the directus replay **exits 0**
+   and content is self-contained. Without `--local-content` (the fallback) content is read live from prod. It's
+   **optional** (skip for a quick structural-only world — the seeder degrades gracefully), but
    it's what turns "an org with users" into "an org with users browsing the real product catalog". See
    [`recipe-snapshot-world.md`](recipe-snapshot-world.md).
 

@@ -69,15 +69,19 @@ Not in this profile (don't expect running): `messenger`, `customerio-sync` (expl
 ```bash
 DEV=stack-dev/rosetta-extensions/dev-stack
 "$DEV/dev-stack" up N                 # allocate N (unified registry) + offset-port bring-up + set-dress
-"$DEV/dev-stack" up N --no-snapshot   # seed only
-"$DEV/dev-stack" up N --no-setdress   # bare bring-up
-"$DEV/dev-stack" status               # list live dev-N (or /stack-list for dev + demo)
+"$DEV/dev-stack" up N --no-snapshot      # seed only
+"$DEV/dev-stack" up N --no-setdress      # bare bring-up
+"$DEV/dev-stack" up N --local-content    # EXECUTE a per-stack Directus (dev opt-in; content self-contained)
+"$DEV/dev-stack" status                  # list live dev-N (or /stack-list for dev + demo)
 ```
 
 `dev-N` maps host port `P → P + N*OFFSET` (default offset 10000, shared with demo-stack). The set-dress
-pass (`dev-setdress.sh`) is default-on + non-fatal: the per-stack-Directus recipe + firewall check
-(print-only — the boot isn't automated, so the `directus` replay skips with exit 4) → cache-first snapshot
-replay (`taxonomy` lands; `directus` skips) → `dev-min` seed (~1 org, ~10 users, fixed admin `dev@anthropos.test`).
+pass (`dev-setdress.sh`) is default-on + non-fatal: cache-first snapshot replay (`taxonomy` lands) →
+`dev-min` seed (~1 org, ~10 users, fixed admin `dev@anthropos.test`), plus the per-stack-Directus firewall
+check. The per-stack Directus is **opt-in for dev** via `--local-content` (v1.5 M22/M23): **with** it the
+recipe is EXECUTED (bootstrap → apply-structure → replay → boot the offset-port Directus, `directus` replay
+**exits 0**) and `cms` is cut over so content is self-contained; **without** it the recipe is print-only and
+the `directus` replay skips with exit 4 — the stack reads content live from prod (the documented fallback).
 
 ## Quick health checks
 

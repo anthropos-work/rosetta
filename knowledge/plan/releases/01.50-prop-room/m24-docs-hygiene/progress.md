@@ -18,8 +18,12 @@ sections 4–7 land in the `rosetta-extensions` authoring copy (hygiene strand).
   M22→M23, the promised "data-plane cutover (M23)" + referential-closure sections added, M23 moved out of
   future-work, `cms`-only over-claims fixed). `safety.md` §2 verified **already M23-accurate** (landed in M23's
   own close) — investigated, nothing to change (Fate-1: work genuinely complete, not deferred).
-- [ ] **§3 — Corpus-wide language sweep** (via `/update-knowledge`): sweep the "print-only / exit-4 / reads-live-
-  from-prod" language across the skills + `CLAUDE.md` so the whole corpus tells the new truth.
+- [x] **§3 — Corpus-wide language sweep** (via `/update-knowledge`): swept the "print-only / exit-4 / reads-live-
+  from-prod / not-yet-automated" framing across the skills (dev-up SKILL+reference, demo-up, stack-snapshot,
+  db-query) + `CLAUDE.md` AND the demo-facing corpus docs the sweep surfaced (demo/README.md, the 3 demo recipes,
+  seeding-spec.md) — each now presents `--local-content`-executed (demo default-on / dev opt-in) as the converged
+  self-contained state and prod-read/exit-4 as the documented fallback. Surfaced + threaded the real
+  `--local-content` flag / `DEMO_NO_LOCAL_CONTENT` env into the skill descriptions (flag↔docs consistency).
 
 ### Rosetta-extensions hygiene strand (each small + independently landable)
 - [ ] **§4 — (a) Go toolchain pin bump** to go1.25.11+ (lazy rebuild — bump the pin only, no dedicated rebuild).

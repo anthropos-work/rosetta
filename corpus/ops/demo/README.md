@@ -27,8 +27,10 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 
 **`/demo-up` now auto-set-dresses by default (v1.3b M20) — the dev↔demo convergence.** Just like `/dev-up` since
 v1.3, a `/demo-up` bring-up chains the **same** set-dress pass at its tail: a cache-first **snapshot replay**
-(the real **taxonomy** catalog; the Directus **content** surface currently skips — the M10 collection-schema gap,
-see the known-state note below — and content is read live from prod meanwhile) → a **`small-200` light seed**
+(the real **taxonomy** catalog; and — **for a demo, local content is default-on** since v1.5 M22/M23 — a
+per-stack **Directus** booted + cut over so the **content** surface serves locally too, the stack
+content-self-contained; a demo opted out with `DEMO_NO_LOCAL_CONTENT=1` falls back to reading content live from
+prod — see the known-state note below) → a **`small-200` light seed**
 (a populated org you can log into). So a bare `/demo-up N` already lands you in a real-catalog, log-in-able world
 — no separate skill calls required. The pass is
 **default-on + non-fatal** (a cold cache warns and still seeds; `DEMO_NO_SETDRESS=1` skips it for a bare
@@ -99,22 +101,25 @@ platform's reference library); for a **set-dressed** world the catalog replay ru
 manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
 
-> **Known state — a prod-read stack reads the public catalog live from prod; a `--local-content` stack boots a
-> local Directus (M22).** The auto set-dress replays the **taxonomy** locally. For the public Directus content:
-> since **M22** a stack brought up with **local content** (demo **default**; dev `--local-content`) **boots its
-> own per-stack Directus** (a compose service serving the captured catalog — the M10 collection-schema gap was
-> closed by M21 + executed by M22). A **prod-read** stack (`DEMO_NO_LOCAL_CONTENT=1`, or a plain dev bring-up)
-> still has **no local Directus**: `cms`/`jobsimulation` read the public sims/skill-paths **live from prod**
+> **Known state — a `--local-content` stack is content-self-contained (M22 boot + M23 cutover); a prod-read
+> stack reads the public catalog live from prod.** The auto set-dress replays the **taxonomy** locally. For the
+> public Directus content: since **M22** a stack brought up with **local content** (demo **default**; dev
+> `--local-content`) **boots its own per-stack Directus** (a compose service serving the captured catalog — the
+> M10 collection-schema gap was closed by M21 + executed by M22), and since **M23** the bring-up **cuts `cms`
+> over** to it (`DIRECTUS_BASE_ADDR` → in-network `http://directus:8055`) so content is served locally (asset
+> plane stays on prod public links → real images). A **prod-read** stack (`DEMO_NO_LOCAL_CONTENT=1`, or a plain
+> dev bring-up) still has **no local Directus**: `cms` reads the public sims/skill-paths **live from prod**
 > (`content.anthropos.work`) — a **demo does so ANONYMOUSLY** since fix16/fix17: the injected override strips the
 > inherited prod `DIRECTUS_TOKEN` from every demo container (prod Directus serves the public predicate tokenless
 > — verified 2026-06-11; live demo-1 audit: 0/16 carriers), so no prod credential rides in a demo. The read is
-> public-only + safe, but on the prod-read path it means (a) a stack isn't fully self-contained, and (b)
-> live-prod content paired with a captured-**subset** taxonomy can leave a public sim referencing a skill the
-> local catalog lacks — which empties the **Assign-AI-Simulation** picker
-> (`/enterprise/assignments/ai-simulations`). M22 boots + verifies the local Directus; the **M23** *cutover*
-> (re-pointing `DIRECTUS_BASE_ADDR` at it + referential closure) completes the self-contained story. Detail +
-> resolution direction: [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack Directus store fork +
-> [`../directus-local.md`](../directus-local.md) § "Container lifecycle (M22)".
+> public-only + safe, but on the prod-read path it means a stack isn't fully self-contained. **The
+> `--local-content` path (the demo default) closes this:** M22 boots + verifies the local Directus and M23 cuts
+> `cms` over + guarantees **referential closure** — the taxonomy capture is **full-public** (`organization_id IS
+> NULL` — every public node), so a content ref can only dangle if it points at a *non-public* node. A measured
+> cross-surface gene reports any such dangle; prod has exactly **one** (`K-AIFUNX-E658`, a public sim referencing
+> a customer-scoped skill) — an operator-owned prod data fix, not a tooling gap. Detail:
+> [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack Directus store fork +
+> [`../directus-local.md`](../directus-local.md) § "The data-plane cutover (M23)".
 
 **Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
 `CLAUDE.md` skills table).

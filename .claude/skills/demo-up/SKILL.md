@@ -42,11 +42,17 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    ```
 4. **Auto set-dress (default-on, non-fatal, M20)** — after migrate the bring-up runs a cache-first snapshot
    **replay → a `small-200` seed** (a populated org you can log into), reusing the same proven pass `/dev-up` uses.
-   The replay stamps in the **real taxonomy catalog**; the **Directus content surface currently skips** (stacksnap
-   exit 4) — the per-stack Directus isn't provisioned on any stack type yet (the M10 collection-schema gap), so
-   public content is read live from prod **anonymously** (the prod `DIRECTUS_TOKEN` is stripped from every demo
-   container — `rosetta-extensions @ dress-rehearsal-m20-fix16/fix17`). A **cold/empty cache** warns (exit 5) + still seeds (an empty-catalog structural world);
-   `DEMO_NO_SETDRESS=1` skips the pass. To get the **real** catalog on a fresh box (fill the cache once), see
+   The replay stamps in the **real taxonomy catalog**, and — **for a demo, local content is default-on** (v1.5
+   M22/M23) — the bring-up also **EXECUTES** the per-stack Directus (bootstrap → apply-structure → replay → boot
+   a `directus` compose service on the demo's offset port), then **cuts `cms` over** to it (`DIRECTUS_BASE_ADDR`
+   → in-network `http://directus:8055`), so the demo's content is **self-contained** (the directus replay
+   **exits 0**). Only the **asset plane** stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing at
+   `content.anthropos.work` so browser images load real assets. `DEMO_NO_LOCAL_CONTENT=1` opts a demo **out**,
+   back onto the **prod-read fallback** (directus replay skips with stacksnap exit 4; public content read live
+   from prod **anonymously** — the prod `DIRECTUS_TOKEN` is stripped from every demo container,
+   `rosetta-extensions @ dress-rehearsal-m20-fix16/fix17`). A **cold/empty cache** warns (exit 5) + still seeds
+   (an empty-catalog structural world); `DEMO_NO_SETDRESS=1` skips the whole pass. To get the **real** catalog on
+   a fresh box (fill the cache once), see
    [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures (replay
    only — capture is a separate, operator-confirmed prod read).
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
