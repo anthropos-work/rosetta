@@ -53,3 +53,59 @@ sections 4–7 land in the `rosetta-extensions` authoring copy (hygiene strand).
   guard (ext), the README-index-row guard + 7-gap backfill (ext + corpus), the `/project-stats` gitignored-clone
   scope fix (developer-kit). Commits split: rosetta `m24/docs-hygiene`, ext `main` (4 commits), developer-kit
   `main` (1 commit). All 4 hygiene items Fate-1.
+
+## M24: Hardening
+
+### Pass 1 — 2026-06-13 (py corpus-index guard)
+**Scope manifest (milestone-touched, hardenable code — ext repo `7e9343a..d6dd8fc`):**
+- `stack-core/corpus_index_guard.py` ← `stack-core/tests/test_corpus_index_guard.py` (8 tests)
+- `alignment/internal/dna/dna.go` (Validate zero-critical branch) ← `internal/dna/validate_test.go`
+- `alignment/internal/compare/compare.go` (GateMet vacuous-critical + `CriticalGenes`) ← `internal/compare/compare_test.go`
+- Config-only (no test surface): the 4 `go.mod` `toolchain go1.25.11` pins + `clerkenstein/alignment.yml` CI version (§4); the
+  `/project-stats` scope fix (§7) lives in the developer-kit plugin, a separate repo — a small shell script, left as-is per scope.
+
+**Coverage delta (milestone-touched files):** Python — statement coverage already ~100% via stdlib `trace` (no
+`coverage`/`pytest` in the py3.14 homebrew env: pip-install of `coverage` fails on a broken `pyexpat` ABI; stdlib
+`trace` was the finder). The gaps here were **behavioural, not line-based** — line coverage was green while real
+correctness properties went untested.
+
+**Bug fixed inline:** the guard's `name not in readme_text` raw-substring reference test had a **prefix-collision
+false-negative** — an unindexed `setup.md` slipped through whenever a different, indexed `dev-setup.md` was present
+(`setup.md` is a substring of `dev-setup.md`), i.e. exactly the failure class the guard exists to catch. Fixed with a
+**token-bounded** match: the basename must be preceded by a non-(filename-continuation) char, regex-escaped so the
+filename's dots are literal. Live corpus still passes clean (exit 0). Commit `191d650 (ext)`.
+
+**Tests added (8 → 16):** prefix-collision regression (fails on pre-fix code, verified), all five legitimate
+reference forms still accepted, dot-literal-not-wildcard, `CORPUS_ROOT` env fallback, non-UTF8 README doesn't crash,
+deterministic multi-orphan ordering, subdir-without-README scope, empty-README worst case.
+
+### Pass 2 — 2026-06-13 (go zero-critical-genes guard)
+**Coverage delta (milestone-touched files):** Go `dna` 98.5% → **100.0%** statements; `compare` 91.1% (steady — its
+residual uncovered lines are pre-existing non-M24 paths: `eqValue`/`eqShape` invalid-JSON branches + `truncate`
+multibyte, all outside the M24 diff → out of scope per the milestone-touched-only rule). The M24-touched compare code
+(`GateMet`, `CriticalGenes`) is fully exercised. gofmt + vet clean; full alignment suite green.
+
+**Bugs fixed inline:** none — pure deepening.
+
+**Tests added (3 dedicated guard tests → +3):** `criticalGenes` counts VARIANTS not capabilities (a critical
+capability with zero variants contributes zero critical genes and is doubly malformed — a refactor counting
+critical *capabilities* would silently regress); `Load`→`Validate` end-to-end (a syntactically valid zero-critical
+DNA file loads but Validate rejects it — the guard isn't bypassed via the JSON path); `GateMet` still gates for real
+when critical genes ARE present (below/at/zero-threshold boundaries — the `CriticalGenes==0` escape hatch only fires
+with nothing to gate).
+
+**Flakes stabilized:** none observed (3 consecutive clean sequential runs per stack).
+
+**Knowledge backfill:** none warranted. The README-index guard is ext tooling — its prefix-collision rationale lives
+in its own docstring (the right home, updated in `191d650`); the corpus does not describe the guard's matching
+behaviour, so nothing to correct there. The alignment zero-critical-genes guard IS documented
+(`corpus/architecture/alignment_testing.md` §160-166) and that text was already accurate — Pass 2 deepened *tests* of
+the documented behaviour and surfaced no reader-facing truth that changes the doc (the variant-vs-capability counting
+is an implementation detail). Question asked, answer recorded.
+
+### Stop condition
+Loop stopped at **2 passes**: the full Step 2b scan across both guards is exhausted (Pass 1 closed the Python guard's
+behavioural gaps + fixed the one real bug; Pass 2 closed the Go guard's edge interactions, dna → 100%), no new
+meaningful gaps remain, and zero flakes across 3 sequential runs per stack. Coverage delta on further passes would be
+negligible. The Go pin (§4) is config (nothing to test); the `/project-stats` fix (§7) is a small cross-repo shell
+script left as-is. Legitimately a light harden, as expected for a mostly-docs milestone.
