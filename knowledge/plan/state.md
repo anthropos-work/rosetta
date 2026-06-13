@@ -8,15 +8,15 @@ demo** stack (default), **any dev-N≥1** (opt-in `--local-content`), **N=0** ma
 5 milestones M21→M25 (structure capture → executed provisioning + lifecycle → content cutover + referential closure
 → docs + hygiene → field bake). **Tooling + docs only — zero platform-repo edits; capture stays read-only / public-
 only / prod-untouched.** Full plan: [`roadmap.md`](roadmap.md) § In Development.
-**Active milestone:** **M22 — Executed provisioning + per-stack Directus lifecycle** (`section`; not yet started).
-Turn M21's print-only recipe into an **executed** bring-up step that boots a per-stack Directus as a **compose
-service** (offset port, torn down with the stack), idempotent + verified — demo default-on / dev opt-in. Build with
-**`/developer-kit:build-milestone`** (section shape).
+**Active milestone:** **M22 — Executed provisioning + per-stack Directus lifecycle** (`section`; **built — all 6
+sections done, ready to close**). Turned M21's print-only recipe into an **executed** bring-up step that boots a
+per-stack Directus as a **compose service** (offset port, torn down with the stack), idempotent + verified —
+demo default-on / dev opt-in. Close with **`/developer-kit:close-milestone`**.
 **Last closed:** **M21 — Structure capture — 2026-06-13** (closed-on-gate; gate MET by tooling — `stacksnap`
 captures the content-model structure + auto-provisions a bootstrapped stack so the directus replay exits 0 and a
 booted Directus serves the captured catalog anonymously; the structure half of the local-Directus story).
-**Next up:** start **M22** (`/developer-kit:build-milestone`), then M23→M25 strictly sequential.
-**Phase:** **v1.5 building — M21 closed (gate met); ready to build M22 (executed provisioning + lifecycle).**
+**Next up:** close **M22** (`/developer-kit:close-milestone`), then start **M23** (content cutover + referential closure), then M24→M25 strictly sequential.
+**Phase:** **v1.5 building — M22 built (all 6 sections done); ready to close M22, then build M23 (content cutover).**
 **Paused:** _(none)_
 
 ## Recently shipped releases

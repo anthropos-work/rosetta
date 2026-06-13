@@ -30,27 +30,31 @@ Bootstrap-on-non-empty + container-name-conflict guards, matching the M17 re-run
 - [x] tests (re-run converges; the guards fire on the precondition)
 _Landed `9b4390b` (ext) — attempt 1._
 
-### §4 — Directus verify probes (ext)
+### §4 — Directus verify probes (ext) ✓
 A SERVICES row + `/server/health`, `directus` added to the expected-schemas list, a **"registered collections > 0"** cheap-win (the silent-failure analog of the casbin assert), and a **no-prod-read env assert**.
-- [ ] `directus` SERVICES row + `/server/health` probe (offset/scope-aware)
-- [ ] `directus` in the readiness expected-schemas list
-- [ ] "registered collections > 0" cheap-win assert in `autoverify.sh`
-- [ ] no-prod-read env assert (the served DIRECTUS_BASE_ADDR is the offset instance, not prod)
-- [ ] tests (probe rows; cheap-win pass/fail; the env assert)
+- [x] `directus` SERVICES row + `/server/health` probe (offset/scope-aware)
+- [x] `directus` in the readiness expected-schemas list (container-presence-gated — prod-read stays clean)
+- [x] "registered collections > 0" cheap-win assert in `autoverify.sh` (+ a readiness `directus-collections` probe)
+- [x] no-prod-read env assert (the served Directus DB resolves to the offset instance, not prod)
+- [x] tests (probe rows; cheap-win pass/fail; the env assert; readiness schema-gate; +2 demo-stack chain fixes)
+_Landed `7235181` (ext) — attempt 2._
 
-### §5 — 12 GB-VM preflight accounting (ext)
+### §5 — 12 GB-VM preflight accounting (ext) ✓
 Extend the preflight accounting to include the Directus container (a non-fatal headroom note).
-- [ ] preflight accounting includes the directus container
-- [ ] tests (the preflight note covers directus)
+- [x] preflight accounting includes the directus container (UI-independent runtime note; +1 GiB)
+- [x] tests (the preflight note covers directus; on/off; fires-under-no-ui; dropped-on-no-local-content)
+_Landed `94399e9` (ext) — attempt 2._
 
-### §6 — Docs (rosetta)
-- [ ] `corpus/ops/directus-local.md` — the lifecycle half (container/compose/port/teardown + idempotent re-provision + verify probes); fix KB-1 (the `provision.go:108` anchor)
-- [ ] `corpus/ops/verification.md` — the directus probe rows
-- [ ] `corpus/ops/idempotency.md` — the re-provision re-run rows
-- [ ] `corpus/ops/rosetta_demo.md` — registry/teardown note for the directus container
+### §6 — Docs (rosetta) ✓
+- [x] `corpus/ops/directus-local.md` — the lifecycle half (container/compose/port/teardown + idempotent re-provision + verify probes); fix KB-1 (the `provision.go:108` anchor → prose/symbol ref)
+- [x] `corpus/ops/verification.md` — the directus probe rows (cheap-wins + readiness liveness/serve rows)
+- [x] `corpus/ops/idempotency.md` — the re-provision re-run rows (verdict table + engineers subsection)
+- [x] `corpus/ops/rosetta_demo.md` — registry/teardown note for the directus compose service
+- [x] (collateral, Fate-1) retired the now-stale print-only claims in `snapshot-spec.md`, `safety.md`, `demo/README.md`
+_Landed `0ab823a` (rosetta) — attempt 2._
 
 ## Build log
 _(append per build session)_
 
 - **2026-06-13 (attempt 1, crashed mid-§4):** §1 `0c61003`, §2 `06d5064`, §3 `9b4390b` landed in ext. Phase 0b KB-fidelity GREEN. Network crash (`FailedToOpenSocket`) mid-§4.
-- **2026-06-13 (attempt 2, resume-in-place):** reconciled §1–3 checkboxes to the committed ext code; committed the scaffold; finishing §4→§6.
+- **2026-06-13 (attempt 2, resume-in-place):** reconciled §1–3 checkboxes to the committed ext code; committed the scaffold; finished §4 (verify probes, `7235181`), §5 (preflight, `94399e9`), §6 (docs, `0ab823a`). **All sections done.** Collateral Fate-1 fixes: studio-desk verify-port test (M22-D2), 3 stale print-only doc claims (M22-D1). Tests at exit: 102 stack-verify / 66 dev-stack / 87 demo-stack green; shellcheck clean.
