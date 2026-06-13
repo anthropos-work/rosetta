@@ -27,12 +27,27 @@ sections 4–7 land in the `rosetta-extensions` authoring copy (hygiene strand).
 
 ### Rosetta-extensions hygiene strand (each small + independently landable)
 - [ ] **§4 — (a) Go toolchain pin bump** to go1.25.11+ (lazy rebuild — bump the pin only, no dedicated rebuild).
-- [ ] **§5 — (b) README index-row guard**: a lint that fails when a new corpus doc lacks its directory-README
-  index row.
-- [ ] **§6 — (c) Zero-critical-genes guard**: `dna.Validate` / `compare.pct` must reject/flag a zero-critical DNA
-  scoring 100% (verified still absent at `compare.go:247-252` / `dna.go:168-183`).
-- [ ] **§7 — (d) `/project-stats` scope fix**: stop scanning the gitignored `stack-*/` platform clones that inflate
-  the absolutes.
+- [x] **§5 — (b) README index-row guard** (ext `d6dd8fc`): `stack-core/corpus_index_guard.py` — for every
+  README-bearing corpus dir, every other `*.md` must be referenced (by filename) in that README, else exit 1.
+  8 unittest tests (full stack-core suite green, 77 tests). **Dog-food:** the guard surfaced 7 pre-existing gaps
+  (5 architecture + 2 ops docs) — all backfilled rosetta-side so the guard passes clean on the live corpus
+  (exit 0). Every M24-touched/created doc (directus-local.md etc.) is indexed.
+- [x] **§6 — (c) Zero-critical-genes guard** (ext `04de89e`): `dna.Validate` now rejects a DNA with no critical
+  gene (the vacuous-100% `pct(0,0)` hole); `compare.Report` gained a `CriticalGenes` count + `GateMet` refuses a
+  non-zero critical gate when it's 0 (defence-in-depth). Tested; full alignment suite + vet + gofmt clean; the 5
+  shipped DNAs all have a critical gene (live gate unaffected). Corpus: documented in `alignment_testing.md`.
+- [x] **§7 — (d) `/project-stats` scope fix** (developer-kit `825cdce`): the `/project-stats` skill is the shared
+  developer-kit `stats.sh` (no stats tooling exists in rosetta-extensions). Added `*/stack-*/*` to `PRUNE_PATHS`
+  + a general `drop_gitignored` filter on the code-size scan, so the gitignored `stack-*/` platform clones (which
+  inflated rosetta's count by ~2M lines / 9,235 files) are no longer scanned. Verified the collapse to the
+  gitignore-respecting truth. Landed at the script's real source (the plugin — not a platform repo / not the
+  corpus); rationale + a surfaced pre-existing doc-counter limitation in `decisions.md` M24-D3.
 
 ## Build log
-_(append per build session)_
+- **2026-06-13** — full M24 build in one session. Phase 0b GREEN. §1–§3 (rosetta docs): corrected the false
+  local-Directus claims (no directus service in the platform compose), converged the known-state + finished
+  `directus-local.md` on the M23 cutover, swept the print-only/exit-4/live-from-prod framing across 5 skills +
+  CLAUDE.md + 5 demo-corpus docs. §4–§7 (hygiene): Go toolchain pin → go1.25.11 (ext), the zero-critical-genes
+  guard (ext), the README-index-row guard + 7-gap backfill (ext + corpus), the `/project-stats` gitignored-clone
+  scope fix (developer-kit). Commits split: rosetta `m24/docs-hygiene`, ext `main` (4 commits), developer-kit
+  `main` (1 commit). All 4 hygiene items Fate-1.

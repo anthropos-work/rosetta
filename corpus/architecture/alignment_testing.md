@@ -157,6 +157,15 @@ So the framework **records once and replays forever**:
   capability may diverge" independently of the overall number.
 - **gate** = `--gate-overall` / `--gate-critical`; `alignctl run` exits non-zero when unmet.
 
+> **The zero-critical-genes guard.** A DNA with capabilities but **no `critical` capability** has a
+> *total critical genes* of 0 — and `aligned/total = 0/0` would score a vacuous **100%**, so an
+> all-`standard` mirror would clear any `--gate-critical` for free. Two guards close this: `dna.Validate`
+> **rejects** a DNA that declares no critical gene (the authoritative load/lint-time gate — every honest DNA
+> must name at least one critical capability), and `GateMet` refuses to clear a non-zero critical threshold
+> when the report's `critical_genes` count is 0 (the scoring-time defence). The report carries
+> `critical_genes` explicitly so a 100% with zero critical genes is self-evidently vacuous rather than
+> mistaken for real coverage.
+
 > **Honesty caveat:** the score is only as complete as the DNA. 100% on a thin DNA is hollow — it
 > just means "matches across the genes we bothered to enumerate." Two things keep the DNA honest:
 > `/align-dna`'s capability-coverage check (every consumed endpoint is present) and the
