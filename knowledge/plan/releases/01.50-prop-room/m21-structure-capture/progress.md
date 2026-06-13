@@ -1,13 +1,16 @@
 # M21 — Progress
 
-**Status:** in-progress (iter-07 closed). **Shape:** iterative (exit gate in `overview.md`).
-**Build with:** `/developer-kit:build-mstone-iters`.
-**Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)**.
-**Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05). **Code-ification: stages 3-4
-AUTOMATED** (iter-07 — `stacksnap` captures the structure + auto-provisions a bootstrapped-gap stack before the row
-replay; rosetta-extensions `fe01d64`, adversarially reviewed). **Gate met-by-tooling pending the SERVE rows** (iter-08:
-directus_collections registration + public permissions) — then "stacksnap applies the captured structure → serves
-anonymously" is satisfied by tooling.
+**Status:** GATE MET (iter-08 closed). **Shape:** iterative (exit gate in `overview.md`).
+**Build with:** `/developer-kit:build-mstone-iters` → next: `/developer-kit:harden-mstone-iters` (final) then
+`/developer-kit:close-milestone`.
+**Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)** + **M21-D9 (serve recipe)**.
+**Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05). **Code-ification: ALL stages
+AUTOMATED.** iter-07 automated the SCHEMA (stages 3-4 — `stacksnap` captures structure + auto-provisions a
+bootstrapped-gap stack); **iter-08 automated the SERVE rows** (directus_collections registration + public-policy
+permissions, behind the new firewall structural-metadata admissibility class — M21-D13; rosetta-extensions). The
+exit_gate "stacksnap applies the captured structure → serves a captured sim anonymously over HTTP" is now **MET by
+tooling** — no hand SQL. Full capture→apply Go path live-validated; the serve rows are byte-equivalent to iter-05's
+demonstrated `serve.sql`.
 
 ## Running ledger
 _Appended after each iter (tik = a standard iter toward the gate; tok = a strategy/retro iter)._
@@ -54,13 +57,18 @@ _Appended after each iter (tik = a standard iter toward the gate; tok = a strate
   gap-guard regression (M21-D12). Validated live (capture→bootstrap→auto-provision→10128 rows). rosetta-extensions
   `fe01d64`. See iter-07/progress.md.
 
-## Next-iter queue (Fate-3, → iter-08 under TOK-01)
-- `STRUCT-M21-iter08-serve` — capture + apply the directus_collections registration + public read permissions (the
-  serve half, M21-D9) + the firewall structural-metadata admissibility class so a stacksnap-provisioned stack serves
-  anonymously with no hand SQL → **flips the gate met**.
-- To `/developer-kit:harden-mstone-iters`: AP-1 (replayCmd-wiring hermetic test + conn seam), AP-2 (multi-snapshot
-  tie-break determinism), AP-3 (exit-4-boundary regression guard), user-defined-type/identity guards, firewall-ordering
-  direct test.
-- Carried: `directus_files` ref capture; M23 referential closure.
-- `STRUCT-M21-iter03-artifact` (carried) + `directus_files` ref capture (wire the dead `media.go`) + M23 referential
-  closure of the 20 dangling relations.
+- iter-08 (tik, closed-fixed): **GATE MET — serve half automated.** `stacksnap` now captures the
+  `directus_collections` registration + public-policy `directus_permissions` read rows (faithful dynamic render) +
+  the new firewall **structural-metadata admissibility class** (admit `directus_*` system tables as "structure, not
+  tenant data" iff zero tenant-scope columns — extend, never loosen; M21-D13), applied on auto-provision via the
+  existing path. A bootstrapped + stacksnap-provisioned stack serves the captured catalog anonymously with NO hand
+  SQL. Full capture→apply Go path live-validated (render faithfulness + idempotent no-collision apply + the 6-stmt
+  CaptureStructure→ExecScript chain). Serve rows byte-equivalent to iter-05's `serve.sql`. See iter-08/progress.md.
+
+## Next-iter queue (Fate-3) — GATE MET; routed to harden + future milestones
+- To `/developer-kit:harden-mstone-iters` (final pass): AP-1 (replayCmd-wiring hermetic test + conn seam), AP-2
+  (multi-snapshot tie-break determinism), AP-3 (exit-4-boundary regression guard), user-defined-type/identity guards,
+  firewall-ordering direct test, PLUS iter-08: a live-integration harness for the serve-row render SQL (hermetically
+  unit-tested + hand-validated live, no automated integration test yet) + a direct assert-then-read ordering test.
+- Carried (future milestones): `STRUCT-M21-iter03-artifact`; `directus_files` ref capture (wire the dead `media.go`);
+  M23 referential closure of the 20 dangling relations.

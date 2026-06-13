@@ -222,3 +222,36 @@ falls through to the existing exit-5 message. This makes auto-provision strictly
 already claimed. Live-confirmed: a diverged target (2 user tables) now → exit 5 (not exit 1). **General lesson:** any
 auto-provision/auto-heal-on-cache-miss must gate the mutation on the precondition it assumes, or a skewed input
 silently degrades a clean error into a raw failure.
+
+### M21-D13 — the SERVE half: firewall structural-metadata admissibility + serve-row capture/apply (iter-08, GATE-COMPLETING)
+**Result:** the M21 exit_gate is MET by tooling. `stacksnap` now captures the two serve-row system tables —
+`directus_collections` (registration) + `directus_permissions` (public-policy read grant) — and applies them on
+auto-provision, so a freshly bootstrapped + stacksnap-provisioned stack serves the captured public catalog to an
+ANONYMOUS reader with NO hand SQL. The serve rows are byte-equivalent to iter-05's DEMONSTRATED hand-applied
+`serve.sql`; iter-08 produces them BY TOOLING from the same source.
+**The firewall structural-metadata admissibility class (the In-scope safety carve-out):** the serve rows live in
+`directus_*` SYSTEM tables, outside `AssertPublicOnly`/`AssertPlan` (which govern user-collection ROW captures). A
+new gate `firewall.AssertStructuralMetadata` admits a system table as "structure, not tenant data" ONLY if it
+carries NONE of `firewall.TenantScopeColumns` (organization_id/tenant_id/private/user/owner/user_created/
+user_updated). This EXTENDS the firewall (admits a previously-inadmissible class under a strict, explicit predicate)
+without LOOSENING it (any tenant-scope column → reject; `AssertPlan`/`AssertCaptured` unchanged). Confirmed (sanctioned
+prod read + the live fixture): `directus_collections`/`directus_permissions` carry zero tenant-scope columns →
+admissible. `directus_access` is EXCLUDED (it has a `user` uuid column) and `directus_policies` is not captured —
+both are bootstrap-provided (the hardcoded public policy `abf8a154` + its `(role=NULL,user=NULL)` access link exist
+on any fresh bootstrap), so the anonymous access chain is already present on the target.
+**Apply mechanism = additive INSERTs appended to the structure artifact** (NOT the TRUNCATE-COPY row replay, which
+would wipe bootstrap's system rows). `directus_collections`: all columns, `ON CONFLICT (collection) DO NOTHING`
+(idempotent + skips any bootstrap-provided registration). `directus_permissions`: OMIT the serial `id` (let it
+auto-gen — a captured prod id would collide with bootstrap's own system-permission serials), plain INSERT. Both
+rendered faithfully from the source via ONE server-side query each (`jsonb_each_text(to_jsonb(t))` joined to the
+ordered column list + `quote_nullable`) so the column set is discovered dynamically (version-robust) and every value
+round-trips. The serve rows ride the existing `Surface.CapturesStructure` capture path + the iter-07 `tryAutoProvision`
+`ExecScript` apply path with ZERO apply-side code change (they ARE part of the structure SQL).
+**Validation (iter-08, live):** the render SQL produces valid faithful INSERTs (apostrophe-escaped, served-only,
+public-policy-only, id-omitted); applying them into a bootstrapped-shape target is idempotent + does not collide with
+bootstrap's system rows; the full Go path `CaptureStructure(*pg.Conn)` → `ExecScript` into a fresh GAP target applies
+cleanly (6 statements: 2 tables + 2 PKs + 2 serve INSERTs; collections created with PKs, registered, public-read
+granted). The literal HTTP boot+serve against the REAL 26-collection prod structure was DEMONSTRATED in iter-05 with
+these same rows; iter-08 rides that proven path. **General lesson:** a firewall carve-out for a new admissible class
+should run ASSERT-THEN-READ (admissibility on the introspected column set BEFORE the capture read) so an unexpected
+tenant column aborts before any row is materialized.
