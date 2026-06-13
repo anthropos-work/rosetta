@@ -56,3 +56,52 @@ _The 5 live done-bars from `overview.md` § Scope — each a real stack run on t
   That capture surfaced + closed a real safety bug (M25-D5, the `directus_files` tenant-leak the firewall
   caught fail-closed) and two dangling-FK bugs (M25-D6/D7), then **passed the firewall** and made the local
   Directus serve. All 5 done-bars are GREEN.
+
+## M25: Hardening
+
+### Pass 1 — 2026-06-13
+Pure test-deepening on the committed fix code (ext repo `stack-snapshot`); no production code
+changed. The build's regression tests already covered the central paths (over-capture set-algebra,
+require-tenant-filter / closure-must-exclude gates, probe shape, single-col NullColumns render);
+this pass deepened the edge/error paths around them without duplication.
+
+**Coverage delta (M25-touched ext packages):**
+- `firewall`: 98.0% → **100.0%** statements (the two previously-untested `AssertPlan` reject branches).
+- `directus`: **100.0%** (held; the deepening is behavioral — string-level closure composition + tenant-set symmetry).
+- `cmd/stacksnap`: 81.6% module total unchanged, but **all M25 fix functions** (`buildPublicSelect`,
+  `CopyPublic`, `CountTenantRows`, `buildParentLeakProbe`) are at **100%**; the residual is the CLI
+  `main.go` command-wiring, out of M25 scope.
+- `capture`: 97.8% unchanged (the residual is non-M25 BuildPlan/Run branches already covered).
+
+**Tests added (ext, commit `1a2fd91`):**
+- `firewall/firewall_test.go`: 2 reject-branch tests — a scope-bearing table that also declares a
+  referenced-subset tenant filter (rejected via the scope-column branch); a column-less table with a
+  tenant filter but NO closure (the tenant filter is meaningless without a closure). Distinct
+  diagnostics pinned so the operator fixes the right half.
+- `directus/directus_test.go`: 2 behavioral tests — the closure's **string-level** composition (public
+  OR-of-INs incl. both resource clauses + the public-sims cover, then `AND NOT (<full tenant predicate>)`,
+  so a shared pub+tenant file arrives in the public half then is **subtracted**); tenant-set **symmetry**
+  (every public file-ref root has a TENANT-side mirror chased to NOT-public sims; resource the deliberate
+  exception). These pin at the real-SQL level what the synthetic set-algebra regression proves abstractly.
+- `cmd/stacksnap/adapters_test.go`: 3 unit + 1 fuzz on the `NullColumns` render — the production
+  multi-null interleaved case (folder + uploaded_by + modified_by), the **PK-stays-real** contract
+  (`id` is never in the null set — a null PK is an unloadable row), nullCols **order-independence**
+  (projection follows `cols`), and `FuzzBuildPublicSelect_NullColumns` proving the **COPY load shape**
+  (projected-item count == len(cols)) is preserved for arbitrary cols + null-col subsets.
+
+**Bugs fixed inline:** none — the committed fix code held under deepening (the build tested well).
+
+**Flakes stabilized:** none — 3 consecutive clean sequential runs of the 8 new tests; the fuzz
+explored ~960k execs with zero crashers written to testdata (the `-fuzztime` `context deadline
+exceeded` is the benign worker-shutdown overrun; the seed corpus passes in CI/non-fuzz mode).
+
+**Knowledge backfill:** no KB-worthy findings — the deepened invariants (the closure's
+`AND NOT (...)` shape, the PK-never-nulled contract, the complete `NullColumns` set) are already
+documented in `decisions.md` M25-D5/D6/D7 and `spec-notes.md`; the tests pin them, they don't reveal
+new system truths.
+
+### Stop condition
+Stopped after Pass 1: the M25 fix surface is at the coverage ceiling (firewall + all fix funcs 100%),
+the Step 2b scan found nothing further worth a non-shallow test, and the flake gate is clean. A second
+pass would only add shallow tests. (The brief sanctioned a light harden since the build tested well.)
+The tag `prop-room-m25` was moved to the new ext HEAD `1a2fd91`.
