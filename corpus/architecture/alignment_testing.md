@@ -164,7 +164,7 @@ So the framework **records once and replays forever**:
 > must name at least one critical capability), and `GateMet` refuses to clear a non-zero critical threshold
 > when the report's `critical_genes` count is 0 (the scoring-time defence). The report carries
 > `critical_genes` explicitly so a 100% with zero critical genes is self-evidently vacuous rather than
-> mistaken for real coverage.
+> mistaken for real coverage. (#M24-D2)
 
 > **Honesty caveat:** the score is only as complete as the DNA. 100% on a thin DNA is hollow — it
 > just means "matches across the genes we bothered to enumerate." Two things keep the DNA honest:

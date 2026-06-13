@@ -109,3 +109,48 @@ behavioural gaps + fixed the one real bug; Pass 2 closed the Go guard's edge int
 meaningful gaps remain, and zero flakes across 3 sequential runs per stack. Coverage delta on further passes would be
 negligible. The Go pin (§4) is config (nothing to test); the `/project-stats` fix (§7) is a small cross-repo shell
 script left as-is. Legitimately a light harden, as expected for a mostly-docs milestone.
+
+## M24: Final Review
+
+_close-milestone consolidation (2026-06-13). Phase 1b deferral re-audit GREEN (0 new deferrals, 3 standing
+unchanged, 0 repeat/aged — `audit-deferrals/deferral-audit-2026-06-13-m24-close.md`). Phases 1–5 below._
+
+### Scope
+- [x] All 7 sections checked off; overview `In:` list fully delivered Fate-1 (3 rosetta doc sections + 4 ext/dk
+  hygiene items). No silently-dropped scope, no unaccounted TODO/FIXME. Cross-repo §7 landed at its real source
+  (developer-kit `825cdce`), already committed; not part of the rosetta merge.
+
+### Code Quality
+- [x] [should-fix] `corpus_index_guard.py` silently `errors="replace"`s a non-UTF8 README — correct (no crash,
+  doc still flagged) but unobservable. Emit a one-line stderr warning so an operator knows a README has an
+  encoding issue worth fixing. (ext)
+- [x] [nice-to-have] `compare.go` `GateMet` + `dna.go` `Validate` defence-in-depth comments could state the
+  load-time-vs-scoring-time split explicitly (a reader currently cross-references two files). (ext)
+- [x] [confirmed-clean] No must-fix. Go vet/gofmt clean; Python py_compile clean; both modules follow their
+  package conventions; regex escaping (`re.escape`) + token-boundary correct; no dead code / leaked handles.
+
+### Adversarial review
+- [x] Recorded (no fix): the guard treats a filename mentioned ANYWHERE in the README (even inside a URL or code
+  fence) as "referenced" — a deliberate lenient-by-filename contract. Probed live: an incidental URL mention of
+  `config.md` yields exit 0. This is the intended scope (catch the real recurring miss — a doc with NO mention —
+  without over-policing where the mention sits, robust across the corpus's varied README styles). Not a gap.
+  See decisions.md `Adversarial review`.
+
+### Documentation
+- [x] [confirmed-clean] Corpus truth-up verified: zero remaining stale local-Directus claims (image tag / fake
+  creds / fictional compose snippet all gone + marked false), `--local-content` flag + `DEMO_NO_LOCAL_CONTENT`
+  env consistent across skills↔docs, M21–M23 in past tense, all relative md cross-refs resolve, live README-index
+  guard exit 0.
+
+### Tests & Benchmarks
+- [x] [confirmed-clean] Go alignment full suite OK (vet+gofmt clean); py stack-core 85 OK; corpus-index-guard 16
+  tests (matches harden claim); live-corpus guard exit 0; flake gate 5/5 both touched suites; no handbook
+  test-count drift. No new test gaps — harden's 2 passes already deepened both guards.
+
+### Decision Triage
+- [x] M24-D2 (zero-critical guard) → blend tag: the mechanism is already in `alignment_testing.md` §160-167
+  (accurate); add the `(#M24-D2)` reference tag so readers can trace back.
+- [x] M24-D1 (Go `toolchain` directive) → archive (maintainer-only — internal tooling-build detail; the
+  release-level advisory status lives in state.md's Test-health line, not the platform corpus).
+- [x] M24-D3 (`/project-stats` scope fix + the surfaced stats.sh doc-counter limitation) → archive (cross-repo
+  tooling detail; the observation IS its own audit trail in decisions.md).

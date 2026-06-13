@@ -41,3 +41,20 @@ Knowledge/Plan/Journal doc-counter) report 0 for rosetta because rosetta's docs 
 only looks at `knowledge/`), and the `eval find … $PRUNE` is fragile under some shells. This is a **pre-existing**
 developer-kit doc-counter limitation, independent of the `stack-*/` scanning bug §7 names, and not a v1.5
 deliverable — noted here so it isn't silently lost.
+
+## Adversarial review (close-milestone Phase 2c)
+
+**Scenario — incidental-mention false-negative (the README-index guard, §5/b).** The guard's contract is "a
+doc's filename appears (token-bounded) anywhere in its directory's README". Adversarial question: does an
+*incidental* mention — the filename inside an unrelated URL, a code fence, or prose that isn't an index row —
+make the guard treat an otherwise-unindexed doc as "referenced", a false negative? **Probed live:** a README that
+mentions `config.md` only inside `https://example.com/docs/config.md` yields exit 0 for a sibling `config.md`.
+
+**Response — by design, no fix.** This is the guard's deliberate lenient-by-filename scope (documented in its
+module docstring, §"SCOPE"): it catches the *recurring real miss* (a doc with NO mention at all — the failure
+class that bit v1.3/v1.3b/v1.5) without policing *where* the mention sits, which would make it brittle across the
+corpus's heterogeneous README styles (tables / bullet lists / prose). Tightening to "must be an index row" would
+trade a rare, low-harm false-negative for frequent false-positives and editorial coupling. The complementary
+risk — a LONGER filename's tail masquerading as a shorter one (`setup.md` inside `dev-setup.md`) — IS guarded
+(the token-bounded match, the real bug fixed in harden Pass 1, ext `191d650`). Recorded so a future reviewer sees
+the incidental-mention case was considered, not missed.
