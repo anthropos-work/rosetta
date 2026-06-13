@@ -255,3 +255,23 @@ granted). The literal HTTP boot+serve against the REAL 26-collection prod struct
 these same rows; iter-08 rides that proven path. **General lesson:** a firewall carve-out for a new admissible class
 should run ASSERT-THEN-READ (admissibility on the introspected column set BEFORE the capture read) so an unexpected
 tenant column aborts before any row is materialized.
+
+### M21-D14 — close-milestone deferral re-audit fates (close, 2026-06-13)
+**Context:** close-milestone Phase 1b ran `/developer-kit:audit-deferrals --scope=milestone`. M21 is the first
+milestone of v1.5, so nothing is inherited; the audit fated M21's own carry-forwards. Full report:
+[`audit-deferrals/deferral-audit-2026-06-13-m21-close.md`](audit-deferrals/deferral-audit-2026-06-13-m21-close.md).
+**Verdict: GREEN** — 5 items in scope, all single (0 repeat, 0 aged-out), zero blockers.
+- **DEF-M21-01 `HARDEN-M21-AP1-replaycmd-conn-seam`** → LAND-NEXT (tracked follow-up iter; route recorded in
+  `hardening-ledger.md`). Architectural >50-line conn-seam refactor on the load-bearing replay path — exceeds a
+  close-pass's inline boundary. No single milestone is the hard owner; tracked as tooling-debt, not annotated.
+- **DEF-M21-02 `HARDEN-M21-serve-live-integration`** → LAND-NEXT (live-integration backlog). The render is
+  hermetically unit-tested + hand-validated live (iter-05/08); only the *automated* live harness is routed — becomes
+  near-free once M22 boots a live Directus.
+- **DEF-M21-03 `directus_files` ref capture** → LAND-NEXT, **Fate 3 → annotated to M23** (the asset-plane milestone).
+  It was in M21's overview `In:`, but per-iter evidence showed it is orthogonal to the structure-serve gate (which
+  fired without it) — it is content-asset-ref plumbing that belongs with M23's "keep the asset plane on prod" work.
+  Applied: added to M23's `overview.md` `In:` list + delivers line.
+- **DEF-M21-04 M23 referential closure (20 dangling relations)** → LAND-NEXT, **Fate 2 → already owned by M23**
+  (its `In:` "Referential closure" item). Confirm-covered; no plan edit.
+- **DEF-M10-01 (S3 blob bytes + cloud store)** → KEEP-DEFERRED. Release-level backlog item, re-signed fresh at v1.5
+  design (2026-06-11) with its sting removed by the real-images-via-prod-links posture; orthogonal to M21, not aged.

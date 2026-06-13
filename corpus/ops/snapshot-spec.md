@@ -365,11 +365,16 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    entrypoint runs `node <arg>`, so a bare `bootstrap` argument dies `MODULE_NOT_FOUND`; and `ADMIN_EMAIL` needs a
    hostname-safe (hyphen) domain — `admin@demo_1.local` fails Directus's email validation. The psql and docker legs
    use **split host/container DSNs** (one value cannot reach the same Postgres from both sides).
-2. **content-schema** — create the user-collection table STRUCTURE (`simulations`, `skill_paths`, …) in the
-   `directus` schema AND register the collections in `directus_collections`/`directus_fields`/`directus_relations`
-   (a booted Directus only serves *registered* collections). **NOT YET AUTOMATED — this is the M10
-   "collection-schema gap"**: the snapshot carries rows, not DDL; the structure must come from the capture source
-   (the planned capture-side extension). Until it ships, the next step fails loud (`stacksnap` exit 4/5).
+2. **apply-structure** — create the user-collection table STRUCTURE (`simulations`, `skill_paths`, … — all 26,
+   **with primary keys**) in the `directus` schema AND register them in `directus_collections` + grant the
+   public-read `directus_permissions` rows (a booted Directus only serves *registered, PK-bearing* collections).
+   This was the M10 **"collection-schema gap"**. **Closed at the tooling level by M21** (`prop-room-m21`):
+   `stacksnap` now captures the structure (DDL + PKs + sequences + serve rows) from the sanctioned `--dsn` and
+   **auto-provisions** a bootstrapped-gap stack before the row replay, so the replay **exits 0** and a booted
+   Directus serves the captured catalog **anonymously**. See [`directus-local.md`](./directus-local.md) for the
+   structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
+   *execution at bring-up* — booting the Directus as a per-stack compose service and re-pointing services at it —
+   is M22/M23; the recipe is still print-only at bring-up today, see the known-state note below.)
 3. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
    user-collection tables (the framework's generic `CopyIn(schema, table)` → the `directus` schema,
    class `postgres` = `PerStackIsolated` = always allowed; the shared prod Directus is never written).
