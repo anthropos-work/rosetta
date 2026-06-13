@@ -5,9 +5,9 @@ version: v1.5 "prop room"
 milestone_shape: section
 status: planned
 created: 2026-06-11
-last_updated: 2026-06-11
+last_updated: 2026-06-13
 complexity: medium
-delivers: updated safety.md (self-contained-content deltas) + corpus/services/* (env truth) + snapshot-spec.md (cross-surface closure gene) + the env re-point (demo + dev) + closure capture + the closure gene
+delivers: updated safety.md (self-contained-content deltas) + corpus/services/* (env truth) + snapshot-spec.md (cross-surface closure gene) + the env re-point (demo + dev) + closure capture + the closure gene + the directus_files ref capture (Fate-3 from M21)
 backlog_refs: NEW-3 (referential-consistency interim options / the close)
 ---
 
@@ -42,6 +42,11 @@ data-design care, not path-finding. Build with `/developer-kit:build-milestone`.
   - **Referential closure** — make the taxonomy capture include every node-id the captured content references
     (closure-at-capture; **full-taxonomy capture** as the simple fallback the corpus already names) + a
     **cross-surface fidelity gene** so closure is *measured*, not assumed.
+  - **Wire the `directus_files` ref capture** (Fate-3 from M21 — see `m21-structure-capture/audit-deferrals/deferral-audit-2026-06-13-m21-close.md`):
+    the dead `media.go` filter/columns need a `directus_files` TableSpec in `directus.Surface()` so captured content
+    rows resolve their image-asset UUIDs to the prod-public `<DIRECTUS_PUBLIC_BASE_ADDR>/assets/<uuid>` URLs the asset
+    plane serves. Orthogonal to M21's structure-serve gate (which fired without it); it belongs with this milestone's
+    asset-plane work (refs only — blob BYTES stay backlog, DEF-M10-01).
 - **In (`rosetta`):** update `corpus/services/{cms,studio-desk,jobsimulation,next-web-app}.md` (the env/dependency
   truth — jobsimulation reads Directus via cms RPC, not directly; next-web via cms/router only) + `corpus/ops/safety.md`
   (retire the live-prod-read notes; the token-strip stays as the write-disarm).

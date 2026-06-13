@@ -3,9 +3,9 @@ milestone: M21
 slug: structure-capture
 version: v1.5 "prop room"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-06-11
-last_updated: 2026-06-11
+last_updated: 2026-06-13
 complexity: large
 exit_gate: "on a scratch offset Postgres + a bootstrapped directus/directus:11.6.1: stacksnap applies the captured structure -> `stacksnap replay --surface directus` exits 0 -> a booted Directus serves a captured public simulation over HTTP to an ANONYMOUS reader (GET /items/simulations?limit=1 -> 200 with a real row)"
 iteration_protocol_ref: corpus/architecture/alignment_testing.md
