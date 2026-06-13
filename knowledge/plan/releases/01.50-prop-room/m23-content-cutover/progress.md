@@ -46,3 +46,68 @@ authoring copy (tag `prop-room-m23` at close); docs land in the `rosetta` worktr
 
 ## Build log
 _(append per build session)_
+
+## M23: Hardening
+
+### Pass 1 — 2026-06-13
+
+**Scope manifest (M23-touched, diff `e989982..4cb8786`):** 14 source files across 4 stacks —
+Python (`stack-core/gen_override.py`, `stack-injection/gen_injected_override.py`), Go
+`stack-seeding/dna` (`snapshot.go`, `fidelity_probe.go`), Go `stack-snapshot`
+(`directus/{directus,media,provision}.go`, `firewall/firewall.go`, `manifest/manifest.go`,
+`replay/replay.go`, `capture/capture.go`, `cmd/stacksnap/adapters.go`,
+`cmd/provision-plan/main.go`, `dev-stack/dev-setdress.sh`). Every package ships co-located
+tests. Highest-priority gap from the func-level coverage sweep: **`PgFidelityProbe.CrossSurfaceDangling`
+shipped at 0%** (the existing `fakeScanner` rejected its TWO-dest `(count, sample)` `QueryRow`
+and didn't classify the cross-surface CTE SQL).
+
+**Coverage delta (milestone-touched files):**
+- `stack-seeding/dna`: 86.5% → 87.5% (statements); **`CrossSurfaceDangling` 0% → 100%**.
+- `stack-snapshot/cmd/stacksnap`: 80.3% → 80.9%; **`CountTenantRows` 93.1% → 100%**.
+- `stack-snapshot/firewall`: 100% → 100% (added behavioral pins, not coverage).
+- `stack-snapshot/manifest` 98.4%, `replay` 100% (ClearByDelete round-trip + propagation pinned).
+- Python: `gen_override.py` 87%, `gen_injected_override.py` 99% — M23 surface already fully covered.
+
+**Tests added:**
+- `dna/fidelity_probe_test.go`: +3 (cross-surface closure probe — closed / open+sample / wrapped-error).
+- `cmd/stacksnap/adapters_harden_test.go`: +4 (referenced-subset leak surfacing, else-branch
+  hascol error, closure-probe count error, the closure-vs-scope-bearing discriminator).
+- `firewall/firewall_test.go`: +2 (scope-column+referenced-subset diagnosed via the scope branch;
+  whitespace closure filter treated as absent).
+- `manifest/manifest_test.go`: +1 (ClearByDelete Marshal→Parse round-trip + omitempty).
+- `replay/replay_{test,harden_test}.go`: +1 (ClearByDelete flag propagates manifest.Table → TableRef).
+
+**Bugs fixed inline:** none — every gap was a test gap (no production bug surfaced).
+
+**Flakes stabilized:** none observed.
+
+**Knowledge backfill:** no KB-worthy findings beyond what the build phase already documented —
+the cross-surface closure semantics + K-AIFUNX-E658 residual live in `decisions.md` M23-D5 and
+`snapshot-spec.md`; the DELETE-before-TRUNCATE ordering in M23-D4 + the `replay.go`/`adapters.go`
+docstrings. Hardening confirmed those invariants by test; it surfaced no new behavior to backfill.
+
+### Pass 2 — 2026-06-13
+
+Swept the demo-side §2/§3 surface (`gen_injected_override.py` cms re-point + studio-desk minted
+token) — found it already comprehensively covered (token-strip on every service, studio-desk local
+token byte-for-byte vs `directus_static_token`, asset-plane-untouched, the no-local-content
+prod-disarm path). Closed the one remaining real Go gap:
+
+**Coverage delta:** `stack-snapshot/directus` 99.1% → 100%; **`ValidateProvisionable` 80% → 100%**.
+
+**Tests added:**
+- `directus/provision_test.go`: +1 (`ValidateProvisionable` propagates the inner prod-safety
+  `Validate` failure BEFORE the present-token gate — a valid local token must not mask a prod BaseAddr).
+
+**Bugs fixed inline:** none. **Flakes:** none. **Knowledge backfill:** none warranted.
+
+### Stop condition
+Stopped after Pass 2. All three stop criteria met: (1) the full six-dimension scan found nothing
+new worth adding — every M23-touched function is at 100% except the DB-only concrete-conn executors
+(`ClearForReplay`, `CopyIn`, provision DDL), which are structurally unit-untestable and whose pure
+SQL-builder seams (`clearForReplaySQL`/`truncateForReplaySQL`) ARE 100%; (2) coverage delta on the
+remaining unitable surface is <2%; (3) zero flakes across 3 consecutive sequential runs of every
+touched suite (171 passed + 8 skipped Python; all Go packages ok ×3).
+
+**Total: +11 tests across 2 passes, 0 inline bugs, 0 flakes.** Ext commits: `ceed313` (cross-surface
+probe), `23767da` (directus_files referenced-subset + ClearByDelete), `7e9343a` (ValidateProvisionable).
