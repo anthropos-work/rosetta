@@ -1,0 +1,15 @@
+# DB-2 evidence — dev-2 --local-content local Directus SERVES (offset 28055), Sat Jun 13 23:10:05 CEST 2026
+
+## dev-2 cms wiring
+DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
+DIRECTUS_BASE_ADDR=http://directus:8055
+
+## dev-2 local Directus /server/health (offset 28055)
+HTTP 200
+## GET /items/simulations?limit=3 (offset 28055) — anonymous serve
+{"data":[{"id":"cab2339b-ac61-465e-99d8-ba2716de3f93","title":"Business Transformation Consultant: Improve Client's Process","slug":"business-transformation-consultant-improve-clients-process-612","status":"published"},{"id":"bcd1b131-e65a-4ed0-ae91-5763c472c838","title":"Building Blocks Mastery: Create a Proposal for the CFO using AI","slug":"building-blocks-mastery-create-a-proposal-for-the-cfo-using-ai","status":"published"},{"id":"c421cccc-d277-4b52-835c-11aafc400af5","title":"Senior Frontend Developer (REACT): Scalable Checkout, Performance Optimization at BrightTicket","slug":"senior-frontend-developer-in-react-scalable-checkout-performance-optimization-at-brightticket-356","status":"published"}]}
+HTTP 200
+
+## directus replay: 'replayed "directus" into dev-2: 10 table(s), 11480 row(s) loaded' (exit 0)
+## N=0 (anthropos) stays prod-read: not set-dressed (dev default LOCAL_CONTENT=0 + hard N=0 guard, M25-D4); 0 anthropos containers this session
+## (taxonomy replay rc=4 on dev-2 — target schema empty, a dev migrate-ordering nuance unrelated to the directus content-serve path; non-fatal)

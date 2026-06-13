@@ -1,24 +1,36 @@
 # M25 — Progress
 
-**Status:** building — **3 done-bars resolved (DB-3, DB-5 GREEN; DB-1/DB-2 partial), 1 hard blocker
-(DB-3-cache → DB-1/DB-2/DB-4)**. **Shape:** section.
+**Status:** **ALL 5 DONE-BARS GREEN** (resume attempt 2). The operator sanctioned the prod-read DSN; the
+first real capture surfaced + **fixed a real safety bug** (M25-D5: the `directus_files` closure over-captured
+158 tenant-referenced files; firewall caught it fail-closed) plus two dangling-FK bugs (M25-D6 group / M25-D7
+folder+uploaded_by+modified_by). With the fixes the structure-bearing capture **passes the firewall**, the
+local Directus **serves** (DB-1 + DB-2 proven by curl on the offset ports), the cold-start capture was
+exercised (DB-4), and re-run idempotency + teardown stay GREEN (DB-3, DB-5). **Shape:** section.
 
 ## Section checklist
 _The 5 live done-bars from `overview.md` § Scope — each a real stack run on this box, binary pass/fail._
 
-- [~] **DB-1 — Fresh `/demo-up`**: stack UP, taxonomy real (329,859 rows), data plane wired LOCAL
-  (`DIRECTUS_BASE_ADDR=http://directus:8055`) + asset plane PROD (`content.anthropos.work`), local Directus
-  **boots + healthy on offset 18055**. **BLOCKED on content-serve** (0 collections) — rows-only cache predates
-  M21 structure; needs the structure-bearing re-capture (M25-D3). The new Directus probes fire correctly; the
-  serve probe is RED *because* of the cache gap, not a probe bug.
-- [~] **DB-2 — `/dev-up 2 --local-content`**: content-serve half blocked by the same cache gap + VM budget.
-  **N=0-stays-prod-read half VERIFIED** in code (M25-D4): dev defaults `LOCAL_CONTENT=0` + the hard N=0
-  set-dress guard.
+- [x] **DB-1 — Fresh `/demo-up`**: **GREEN** — stack UP (`--no-ui`, ~10 GiB VM), taxonomy real (329,859),
+  data plane LOCAL (`DIRECTUS_BASE_ADDR=http://directus:8055`) + asset plane PROD (`content.anthropos.work`).
+  With the structure-bearing, firewall-clean re-capture (M25-D5) and the three dangling-FK nulls (M25-D6
+  group / M25-D7 folder+uploaded_by+modified_by), the directus replay now **exits 0**: structure
+  auto-provisions, digest converges, rows load, the per-stack Directus **boots + SERVES** on offset 18055.
+  Evidence: `curl` the local Directus REST API → 200 + a real published row; image URL resolves to
+  `content.anthropos.work` (asset plane prod). (3 real field bugs found + fixed inline en route.)
+- [x] **DB-2 — `/dev-up 2 --local-content`**: **GREEN** — dev-2 (offset 20000, per-stack Directus on 28055)
+  brought up with `--local-content`; the **same `dev-setdress.sh` engine** proven on demo-1 EXECUTES the
+  per-stack Directus → directus replay exits 0 → it SERVES (curl `/items/simulations` → 200 + real published
+  rows on the dev offset port). **N=0 stays prod-read** (verified, M25-D4): dev defaults `LOCAL_CONTENT=0`
+  + the hard N=0 set-dress guard — N=0 (`anthropos`) structurally never gets a local Directus from the auto
+  flow. (Held the max-2-co-resident line: demo-1 torn down before dev-2.)
 - [x] **DB-3 — Re-run idempotency**: **GREEN** — full re-run convergent; migrate no-op ×5, casbin
   "already 248 — skipping", directus bootstrap "already bootstrapped — skipping", taxonomy TRUNCATE-reload →
   329,859 (same), seed idempotent. The directus cache-miss reproduces deterministically (correct idempotency).
-- [ ] **DB-4 — Cold-start capture**: **BLOCKED** (M25-D3) — needs an operator-sanctioned prod read or a
-  staging dump; neither available autonomously, policy mandates operator confirmation.
+- [ ] **DB-4 — Cold-start capture**: **EXERCISED + GREEN** (M25-D5) — the sanctioned cold-start fill
+  (`stacksnap capture --surface directus --source primary-read --dsn <marco_read>`) ran end-to-end: it
+  surfaced the firewall over-capture, the fix closed it, and the **re-run PASSED the firewall**
+  (`public-only=true`, `directus_files=1257`, `_structure.sql` present) — the rows-only cache upgraded
+  in-place to structure-bearing. This capture IS the DB-4 cold-start path.
 - [x] **DB-5 — Clean teardown**: **GREEN** — `/demo-down 1 --purge` reclaims the directus container + frees
   offset port 18055 + releases the registry slot (no stacks registered; 0 demo-1 containers remain).
 
@@ -39,8 +51,8 @@ _The 5 live done-bars from `overview.md` § Scope — each a real stack run on t
   gated on a **structure-bearing directus capture** that needs an operator-confirmed prod read / staging dump
   — the cache on this box is rows-only (pre-M21). Surfaced to the user. See `decisions.md` M25-D3.
 
-## Open questions (blocker — needs user input)
-- **The directus snapshot cache is rows-only (pre-M21 structure).** To finish DB-1/DB-2/DB-4 the operator must
-  run one sanctioned structure-bearing capture (`stacksnap capture --surface directus --dsn <restored-staging-
-  dump | prod-read-DSN>`) — a privileged prod read this agent cannot self-authorize. Once the cache is
-  structure-bearing, re-running `/demo-up` should make the local Directus serve (no code change expected).
+## Open questions
+- **RESOLVED.** The blocker (rows-only cache) was cleared by the operator-sanctioned `primary-read` capture.
+  That capture surfaced + closed a real safety bug (M25-D5, the `directus_files` tenant-leak the firewall
+  caught fail-closed) and two dangling-FK bugs (M25-D6/D7), then **passed the firewall** and made the local
+  Directus serve. All 5 done-bars are GREEN.

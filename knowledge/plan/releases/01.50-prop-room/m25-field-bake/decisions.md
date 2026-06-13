@@ -22,6 +22,113 @@ re-pinned the `stack-demo` consumption clone. This is precisely the field-fix-ta
 — a clean-room M24 unit pass couldn't see it because the toolchain-switch only triggers in the offline
 cross-compile path the live bring-up exercises.
 
+## M25-D5 — The directus_files closure must EXCLUDE the tenant-referenced file set (firewall fix; the field-bake's central safety find)
+
+**Surfaced (the resume run):** with the operator-sanctioned prod-read DSN, the FIRST real
+structure-bearing directus capture **FAILED the firewall** — correctly, fail-closed, **zero data
+written**: `firewall: PUBLIC-ONLY VIOLATION — directus.directus_files captured 9065 tenant-scoped
+rows — TENANT DATA LEAK`. This is exactly the field-fix tail M25 exists to pre-pay: a real safety
+bug in the M23 directus_files capture that only the live capture against real prod data could
+surface (the clean-room M23 unit tests used synthetic fixtures that never exercised the
+resource→file / shared-file shape).
+
+**Root cause (two compounding defects, both in the M23 `directus_files` referenced-subset capture):**
+1. **The closure OVER-captured.** `directus_files` has **no tenancy column** — a file's tenancy is
+   *inferred* from what references it. The M23 closure (`ReferencedFilesFilter`) was
+   `(public sims/paths/roles/sequences refs) OR (ALL resource.image/file)`. But `resource` is a
+   **pure-reference** table with **no tenancy column**, so its clause pulled in **every** resource
+   file — including ones a **tenant** simulation also references (8 in prod). And **150** files are
+   referenced by **both** a public published sim **and** a tenant sim; the public-only half kept all
+   of them. Net: the closure captured **1417** files, **158** of them tenant-referenced.
+2. **The leak probe used a false premise.** For a referenced-subset (strict-subset) table the M23
+   post-capture probe counted rows **OUTSIDE** the closure (`WHERE NOT (closure)`) and called them
+   leaks. But the uncaptured remainder of a 1.3k-of-10.5k subset is **not** a leak — that probe
+   reported the **entire 9065-file remainder** as the "tenant leak" (the comment claimed "0 by
+   construction", which only holds if the closure captures the whole table).
+
+**Fix (Fate-1, in the owning module `rosetta-extensions/stack-snapshot`, tag `prop-room-m25` moved to
+include it):** align the closure with the firewall's public-only *definition* — capture a file only
+if public-referenced **AND NOT** tenant-referenced.
+- `ReferencedFilesFilter` now appends `AND NOT (<TenantReferencedFilesFilter>)`. The new
+  `TenantReferencedFilesFilter()` is the boolean tenant-reference predicate (negated public roots +
+  tenant-parented roles/sequences; `resource` contributes nothing — no tenancy column, so a resource
+  file is tenant *only* by being referenced by a tenant sim, caught via the sims/roles/sequences
+  clauses). Captured `directus_files` drops **1417 → 1257** (the 158 excluded). **Safety-first:**
+  under-capturing a shared public image is fine (its content still serves, sans that one asset);
+  leaking a tenant-referenced file is not.
+- The referenced-subset **leak probe** now counts **captured** rows that **are** tenant-referenced
+  (`WHERE (closure) AND (tenantFilter)`) — 0 by construction, and a genuine defense-in-depth catch if
+  the closure's exclusion ever stops constraining.
+- The firewall **`AssertPlan`** gate now **requires** a referenced-subset table to declare its
+  tenant-reference filter **and** requires the closure to embed the exclusion — so no future
+  referenced-subset table can ship without a tenant-leak definition. The filter is **never weakened**;
+  the fix is in the FILTER, exactly as the safety contract demands.
+
+**Proof the fix is correct:** the **REAL prod capture now PASSES the firewall** — `captured "directus"
+@ 6cd35278: 10 tables, 11480 rows, public-only=true, source=primary-read`, `directus_files=1257`, plus
+the M21 `_structure.sql` artifact (62 statements). The rows-only cache is **upgraded in-place to
+structure-bearing**, unblocking DB-1/DB-2/DB-4. Regression tests added (the resource→tenant
+over-capture reproduced + proven excluded; the require-tenant-filter / closure-must-exclude firewall
+gates; the new probe shape). `go test ./...` green. (This **supersedes the M25-D3 blocker** below: the
+blocker was "needs a sanctioned prod read"; the operator sanctioned it, the read surfaced the real bug
+M25-D5, and the fix + capture cleared it.)
+
+## M25-D6 — NULL the `directus_collections` self-FK `group` in the serve-row registration (2nd field bug)
+
+**Surfaced (the live DB-1 set-dress, only by the structure APPLY):** with the firewall-clean
+structure-bearing snapshot in the cache, `/demo-up` got all the way to the per-stack Directus provision —
+then the structure apply **failed**:
+`apply structure (62 statements): ERROR: insert or update on table "directus_collections" violates foreign
+key constraint "directus_collections_group_foreign" (SQLSTATE 23503)` → directus replay **rc=1**, the
+local Directus came up serving **nothing** (0 collections, 0 content tables — the script is one
+transaction, so it rolled back). Taxonomy replayed fine (329,859). This is a **second** real field bug the
+clean-room M21 unit tests (fake `RowStringQuerier`, no live apply) couldn't see.
+
+**Root cause (M21 serve-rows):** `directus_collections` carries a **self-referential FK**
+(`directus_collections_group_foreign`): a collection's `group` references a **parent group collection** —
+in Directus an **admin-UI data-model FOLDER** (`simulations`, `job_simulations`, `paths`,
+`learning_resources`). Those group collections have **no table** and are **not** in `servedCollections`, so
+the serve-row registration faithfully emitting each content collection's captured `group` value dangles the
+self-FK.
+
+**Fix (Fate-1, `stack-snapshot/directus/structure.go`):** the collection-registration render
+(`serveCollectionsRowsSQL`) now **NULLs the `group` column**
+(`CASE WHEN j.key = 'group' THEN 'NULL' ELSE quote_nullable(j.value) END`). The `group` is **admin-UI
+organization only** — it nests collections in the data-model sidebar and has **zero** effect on serving
+content over REST/GraphQL. Nulling it removes the dangling self-FK while the collections register + serve
+identically. +regression test (`TestServeCollectionsRowsSQL_NullsGroupColumn`) + a guard that no served
+collection is itself a group collection; render validated vs prod (20/20 columns intact, group → NULL).
+Re-capture regenerates the structure artifact with `', NULL, 'open'` and still passes the firewall.
+
+## M25-D7 — NULL `directus_files.folder` (dangling FK to uncaptured `directus_folders`) — 3rd field bug
+
+**Surfaced (the live DB-1, ONLY after M25-D6 let the structure apply succeed and the directus ROW replay
+run):** the `directus_files` COPY-load failed:
+`copy into directus.directus_files: ERROR: insert or update on table "directus_files" violates foreign key
+constraint "directus_files_folder_foreign" (SQLSTATE 23503)` → directus replay **rc=1**.
+
+**Root cause:** `directus_files.folder` is an FK to `directus_folders` (the file-library admin-UI folder a
+file lives in). `directus_folders` (11 rows, with its **own** self-FK `parent`) is **not** in the captured
+surface, so the captured `folder` uuids (10,031 of 10,480 files carry one) **dangle** on replay. Same class
+as the M25-D6 `directus_collections.group` self-FK: a dangling FK to an **admin-UI organizational table
+outside the surface**.
+
+**Fix (Fate-1, `stack-snapshot`):** a **general** `TableSpec.NullColumns` mechanism — columns rendered as
+`NULL AS <col>` in the capture COPY SELECT instead of the source value (the column **stays** in position,
+so the manifest/load shape is unchanged; only the captured VALUE is NULL). `directus_files` declares
+`NullColumns: ["folder"]`. The folder is **admin-UI organization only** — zero effect on serving the asset
+(which resolves by `id → storage/filename_disk`). Capturing `directus_folders` instead was rejected (it
+carries a self-FK + would need its own structural-metadata admissibility; nulling loses nothing for
+serving). Threaded through `CopyPublic` (signature gains `nullCols`; `buildPublicSelect` renders `NULL AS`
++ validates the null-col is in the column list); +tests. Re-capture: `folder` is **all NULL** (0 non-null
+in the .copy), firewall still passes.
+
+**The three FK fixes together (M25-D5/D6/D7)** are one theme the live runs taught: a real prod capture +
+replay exercises **referential integrity** that synthetic unit fixtures never do — a tenant-leak via an
+inferred-tenancy file, and two dangling FKs to admin-UI tables outside the surface. All three are fixed in
+the FILTER / render (never by weakening the firewall), and the structure-bearing capture now **passes the
+firewall and replays cleanly**.
+
 ## M25-D3 — BLOCKER: the local-Directus content serve needs a structure-bearing capture (operator prod read)
 
 **This is the milestone's central field finding** — and a genuine **operator-decision blocker**.
