@@ -66,7 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 → M22 → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M21 closed 2026-06-13) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -129,7 +129,27 @@ developer's primary box.
 > **`rosetta`** owns `.claude/skills/*`, `corpus/*`, `CLAUDE.md`. Each milestone's `Delivers →` line splits accordingly.
 
 ### M21: Structure capture — close the collection-schema gap
-**Status:** `planned` · **Shape:** `iterative`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `iterative`
+**Closure (closed-on-gate):** the exit gate is **MET by tooling** at iter-08 — `stacksnap` captures the content-model
+structure (all-26-collection DDL + **PRIMARY KEYs** + sequences + the `directus_collections` registration + the
+public-policy `directus_permissions` read grant) behind a new firewall **structural-metadata admissibility class**
+(`AssertStructuralMetadata`: admit `directus_*` system tables as "structure, not tenant data" iff zero tenant-scope
+columns — extend, never loosen), **auto-provisions** a bootstrapped-gap stack before the row replay, and a
+booted+provisioned stack **serves the captured catalog anonymously over HTTP** with no hand SQL. **8 iters** (1
+bootstrap tok + 7 tiks, 0 triggered toks — every tik advanced the 6-stage pipeline: static 2 → live 2 → 4 → 6
+demonstrated → code-ified met). The load-bearing empirical finding was the **PRIMARY-KEY rule** (Directus silently
+403s a PK-less collection even for admin while the digest still converges — exactly why this was iterative). Digest
+convergence resolved via **option A** (capture all 26 collections + pin 11.6.1, whose system digest `b4cb55bc…`
+equals prod's — no skew; operator decision #M21-D7). Redefined `stacksnap` exit codes (empty→4 / gap+structure→0 /
+gap-no-structure & diverged→5). **Delivered:** `corpus/ops/directus-local.md` (net-new — the structure half: bootstrap
+empirics + structure-capture model + version-skew rule + the firewall carve-out; M22 adds the lifecycle half) +
+the `snapshot-spec.md` store-fork honesty update + the structure-capture extension (ext tag `prop-room-m21` @
+`835d940`). **Close:** 1 scope (the unwritten committed doc → Fate-1 authored) · 1 should-fix code (an error-label
+nit) · 1 docs · 0 adversarial-new (5 scenarios all already test-pinned). Deferral audit **GREEN** (0 repeat / 0 aged;
+`directus_files` ref capture → **Fate-3 annotated to M23**, the 20 dangling relations → **Fate-2 already owned by
+M23**; the harden conn-seam + serve-live-integration → tracked follow-ups). Go `stack-snapshot` 231→**290** (+59);
+coverage directus/firewall **100%**, manifest 98.4%, capture 98.9%; flake **0** (5/5 shuffled). Records:
+[m21-structure-capture/](releases/01.50-prop-room/m21-structure-capture/) (decisions · hardening-ledger · metrics · retro · audit-deferrals).
 **Goal:** Make the snapshot carry the content-model **structure** (the user-collection table DDL + Directus's
 `directus_collections`/`directus_fields`/`directus_relations` registry rows) alongside the rows, captured atomically
 from the same sanctioned source — so the `directus` replay stops failing with exit 4 and a freshly-bootstrapped

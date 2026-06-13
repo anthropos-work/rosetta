@@ -1,8 +1,7 @@
 # M21 — Progress
 
-**Status:** GATE MET (iter-08 closed). **Shape:** iterative (exit gate in `overview.md`).
-**Build with:** `/developer-kit:build-mstone-iters` → next: `/developer-kit:harden-mstone-iters` (final) then
-`/developer-kit:close-milestone`.
+**Status:** `archived` (completed 2026-06-13 — closed-on-gate, gate MET at iter-08). **Shape:** iterative (exit gate in `overview.md`).
+**Closed by:** `/developer-kit:close-milestone` → merged to `release/01.50-prop-room`.
 **Active strategy:** TOK-01 (staged-pipeline) refined by **M21-D7 (option A)** + **M21-D9 (serve recipe)**.
 **Furthest pipeline stage passing:** **6 of 6 — DEMONSTRATED end-to-end** (iter-05). **Code-ification: ALL stages
 AUTOMATED.** iter-07 automated the SCHEMA (stages 3-4 — `stacksnap` captures structure + auto-provisions a
