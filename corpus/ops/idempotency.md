@@ -1,18 +1,20 @@
 # Bring-up Re-run Safety — the idempotency contract
 
 **The authoritative statement of what happens when you re-run a bring-up step.** A re-run of
-**migrate**, **snapshot-replay**, or **seed** is now either **safe-and-idempotent** (a 2nd run
-converges to the same state) or **fails loudly with a guard** — never silently doubles data and never
-aborts half-way through a surface.
+**migrate**, **snapshot-replay**, **directus-provision**, or **seed** is now either **safe-and-idempotent**
+(a 2nd run converges to the same state) or **fails loudly with a guard** — never silently doubles data and
+never aborts half-way through a surface.
 
 > **Scope.** This doc covers the **v1.3b "dress rehearsal" / M17** re-run guards across the
 > `rosetta-extensions` stack tooling: the `migrate-demo.sh` first-run-race fixes, the `stacksnap replay`
 > re-run guard, and the `stackseed` re-run guards (the idempotent COPY + the casbin grant + the fixed
-> `--reset`). It is the *what-happens-when-you-run-it-twice* companion to the three mechanism specs it
-> cross-links — [`snapshot-spec.md`](snapshot-spec.md) (replay), [`seeding-spec.md`](seeding-spec.md)
-> (seed), and the demo lifecycle [`rosetta_demo.md`](rosetta_demo.md) (migrate). The **safety** of every
-> destructive op here (the `TRUNCATE`s) is governed by [`safety.md`](safety.md) — they only ever touch a
-> **per-stack-isolated offset** store.
+> `--reset`) — plus the **v1.5 "prop room" / M22** per-stack **directus-provision** re-run guards
+> (bootstrap-on-non-empty + container-name). It is the *what-happens-when-you-run-it-twice* companion to the
+> mechanism specs it cross-links — [`snapshot-spec.md`](snapshot-spec.md) (replay),
+> [`seeding-spec.md`](seeding-spec.md) (seed), [`directus-local.md`](directus-local.md) (the per-stack
+> Directus lifecycle), and the demo lifecycle [`rosetta_demo.md`](rosetta_demo.md) (migrate). The **safety**
+> of every destructive op here (the `TRUNCATE`s) is governed by [`safety.md`](safety.md) — they only ever
+> touch a **per-stack-isolated offset** store.
 >
 > All the code cited lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the
 > authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform
@@ -35,6 +37,7 @@ become **safe to retry**, which is the foundation the later milestones build aut
 |---|---|---|---|
 | **migrate** | `demo-stack/migrate-demo.sh` | **SAFE** (idempotent) | Schemas `IF NOT EXISTS`; atlas is declarative/revision-tracked; `init_policy.sql` applied only when `casbin_rules` is empty. **+ the first-run-race hardening** (below). |
 | **snapshot-replay** | `stacksnap replay` (`stack-snapshot/replay/`) | **SAFE** (idempotent) | **Per-stack-isolated `TRUNCATE`-then-reload** before COPY — a 2nd replay REPLACES, never appends. |
+| **directus-provision** | `dev-setdress.sh::provision_directus_step` / `boot_directus_step` (M22) | **SAFE** (converges) | `CREATE SCHEMA IF NOT EXISTS`; **bootstrap guarded on the `directus_collections` sentinel** (a half-bootstrap re-bootstraps); the structure/serve-row apply rides the replay's gap-gated auto-provision (no-op once provisioned); the serving container is the **compose service** (re-up reuses the name; the bootstrap `docker run` is `--rm`, no name clash); restart is idempotent. |
 | **seed** | `stackseed` (`stack-seeding/`) | **SAFE** (idempotent) | **Idempotent COPY** (`ON CONFLICT (id) DO NOTHING`) for every deterministic-id surface + a **`WHERE NOT EXISTS`** casbin grant. `--reset` clears the **full** fleet. |
 
 Before M17 the latter two were **NOT idempotent** (a 2nd replay doubled / duplicate-key-aborted; a 2nd
@@ -110,6 +113,30 @@ the connection it runs on is built by `pg.DSNForOffset(baseDSN, n)` — the **pe
 write uses — so the `TRUNCATE` can only ever land on the per-stack-isolated Postgres (for `N>0` a different
 host port from prod's `:5432`; for `N=0` the dev stack's own isolated container). A wrong-target `TRUNCATE`
 would be data loss; the shape-pin + the structural offset are the two independent fences against it.
+
+### directus-provision — bootstrap-on-non-empty + container-name guards (M22)
+
+The per-stack Directus provision (`dev-setdress.sh`, run on a `--local-content` bring-up) **converges** on a
+re-run — the M17 re-run contract, applied to the executed bootstrap → apply-structure → replay → boot recipe:
+
+1. **`CREATE SCHEMA IF NOT EXISTS directus`** — a no-op on a re-run.
+2. **bootstrap-on-non-empty guard.** `node cli.js bootstrap` is skipped when the `directus` schema already
+   holds the **`directus_collections` sentinel** — a table present only after a *complete* bootstrap. Probing
+   the sentinel rather than a blanket `directus_*` count is the load-bearing nuance: a **half-bootstrap** (a
+   crash that left some system tables but no registry) is detected as incomplete and **re-bootstraps to
+   converge**, instead of skipping onto a broken schema. `bootstrap` is itself idempotent (it runs pending
+   migrations only), so the guard is an optimisation + a clean log, not a correctness crutch.
+3. **structure / serve-row apply** rides `stacksnap replay`'s own gap-gated `tryAutoProvision` (M21) — a no-op
+   once the schema is provisioned (the `nUser==0` gate), so the apply leg is idempotent unchanged.
+4. **container-name-conflict guard.** The serving container is the **compose service** (a re-up reuses the
+   name — no clash), and the one-shot bootstrap runs as a `docker run --rm` (no `--name`, so nothing to
+   collide). The post-replay `docker restart` is idempotent.
+
+So a 2nd `--local-content` pass: bootstrap skipped, the M21 replay auto-provision a no-op, the rows
+`TRUNCATE`-reloaded (the replay guard above), the restart idempotent — the result converges, never
+half-applies. The provision is **non-fatal**: any step failing degrades the stack to the prod-read path with
+an honest `⚠` status line (it never blocks a re-run). See
+[`directus-local.md`](directus-local.md) § "Container lifecycle (M22)".
 
 ### seed — idempotent COPY + the casbin grant + the fixed `--reset`
 

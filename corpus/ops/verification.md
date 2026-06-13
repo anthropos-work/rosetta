@@ -98,6 +98,20 @@ offset ports — the precise failure class that shipped a "live" but blanket-403
 
 A failed assert increments the warning count and prints a `⚠` line; it never aborts.
 
+### The per-stack Directus cheap-wins (M22 — the same class)
+
+On a stack brought up with **local content** (demo default; dev `--local-content`), `autoverify.sh` runs two
+more cheap-wins — gated on the directus **container actually existing**, so a prod-read stack (no local
+Directus) never false-warns even on an unscoped run:
+
+3. **Directus serves the catalog** — `SELECT count(*) FROM directus.directus_collections` via `docker exec
+   <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin assert: a Directus
+   can be UP (`/server/health` 200) but serve **nothing** if the content-model never registered. (Also runs as
+   the `directus-collections` readiness probe.)
+4. **No prod read** — the per-stack Directus's `DB_CONNECTION_STRING` (read from the container's env) must
+   resolve to the stack's **own** Postgres, never a prod host. The runtime mirror of the executed-provision
+   firewall gate; warns (non-fatal) if a mis-wired override pointed the local Directus at prod.
+
 ## What runs, and on which ports
 
 `verify live` runs two phases over the **selected, offset-resolved** services
@@ -107,11 +121,13 @@ A failed assert increments the warning count and prints a `⚠` line; it never a
   TCP-connect / HTTP-code, at `base+offset`, against `<project>-<svc>-1`.
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
   `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
-  Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`) — each resolving
-  the offset port + project container via the same `target.sh` helpers. **Both** phases honour the
-  `STACK_SERVICES` scope filter: the readiness phase skips a deep probe whose backing service isn't in
-  scope (the same `target_service_selected` gate as liveness), so a reduced bring-up never produces a
-  wall of false `down`s in *either* phase.
+  Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
+  local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
+  `directus-collections` serve-check — each resolving the offset port + project container via the same
+  `target.sh` helpers. **Both** phases honour the `STACK_SERVICES` scope filter: the readiness phase skips a
+  deep probe whose backing service isn't in scope (the same `target_service_selected` gate as liveness), so a
+  reduced bring-up never produces a wall of false `down`s in *either* phase. (The directus row is scoped in
+  only on a `--local-content` bring-up and gated on the container existing — a prod-read stack stays clean.)
 
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,

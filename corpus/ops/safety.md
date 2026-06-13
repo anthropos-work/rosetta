@@ -138,7 +138,7 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 
 | Store(s) | Class | Why / guard action |
 |---|---|---|
-| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: until the per-stack Directus is automated — the M10 collection-schema gap — every stack reads the **public** content **live** from this instance; a demo does so **anonymously**, the prod token stripped. The per-stack-Directus *replay* path is the planned target, not today's state.) |
+| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: a `--local-content` stack (demo default; dev opt-in) boots its **own per-stack Directus** since M22 and serves the captured catalog locally — the prod instance is read only at **capture** time (read-only, public-only, operator-confirmed). A **prod-read** stack (no `--local-content`) still reads the **public** content **live** from this instance; a demo does so **anonymously**, the prod token stripped. The per-stack-Directus boot is M22; the runtime *cutover* re-point is M23.) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
