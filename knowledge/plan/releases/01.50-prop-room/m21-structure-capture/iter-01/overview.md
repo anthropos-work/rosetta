@@ -3,7 +3,7 @@ iter: 01
 milestone: M21
 iteration_type: tok
 tok_flavor: bootstrap
-status: planned
+status: closed-fixed
 created: 2026-06-11
 ---
 
