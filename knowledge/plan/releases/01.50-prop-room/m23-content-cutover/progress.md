@@ -111,3 +111,49 @@ touched suite (171 passed + 8 skipped Python; all Go packages ok ×3).
 
 **Total: +11 tests across 2 passes, 0 inline bugs, 0 flakes.** Ext commits: `ceed313` (cross-surface
 probe), `23767da` (directus_files referenced-subset + ClearByDelete), `7e9343a` (ValidateProvisionable).
+
+## M23: Final Review
+
+_Close pass 2026-06-13. Parallel scope/code/adversarial/docs/test scans + the blocking deferral re-audit.
+Findings consolidated below; all addressed fully (no partial fixes)._
+
+**Summary: 6 findings — 0 scope · 0 code-quality · 1 docs · 0 tests · 5 decision-triage.** Deferral re-audit
+**GREEN** (2 inherited M21 items RESOLVED in-milestone; 1 prod-data residual fated KNOWN-ISSUE). All 4 test
+suites green; vet + shellcheck + py_compile CLEAN; flake 0 (5/5).
+
+### Scope
+- [x] All 6 sections landed Fate-1; nothing dropped/routed. DEF-M21-03 (directus_files) + DEF-M21-04
+  (referential closure) **RESOLVED** here — drop off the ledger. No new scope gaps.
+
+### Code Quality
+- [x] Cross-cutting scan (30 ext files, 4 stacks) — **CLEAN, 0 findings.** The two override emitters are
+  consistent (shared `http://directus:8055` + `DIRECTUS_DATA_CONSUMERS=("cms",)`); the firewall
+  referenced-subset admit-iff branch validates input + is mutually exclusive; the CrossSurfaceDangling probe
+  handles nil/empty/error; media.go fully wired (no dead code); ClearByDelete cleanly threaded
+  TableSpec→manifest→TableRef; DELETE-before-TRUNCATE correct + scoped. No new TODO/FIXME/HACK.
+
+### Adversarial
+- [x] No new fail-mode found — every scenario the adversarial pass probed (filter slipping the admit-iff gate,
+  a valid token masking a prod BaseAddr, a two-dest scan on an empty/error result, the directus_settings FK on
+  TRUNCATE) is already test-pinned (firewall_test, provision_test, fidelity_probe_test, replay_harden_test). See
+  decisions.md § Adversarial review.
+
+### Documentation
+- [x] [fix] `snapshot-spec.md` (M13 section, ~L499-501) had a stale future-tense claim — "The M23 *cutover* …
+  remains future." M23 landed it. Rewritten: the `--local-content` pass now performs the cutover (re-point cms +
+  token strip, asset plane unchanged); the non-`--local-content` prod-read path is the documented fallback.
+
+### Tests & Benchmarks
+- [x] Full suites green: stack-core 69 · stack-injection 110 (8 env-gated skip) · stack-snapshot all-pkg ok ·
+  stack-seeding all-pkg ok. No test gaps (the harden pass already closed the CrossSurfaceDangling 0% gap +
+  ValidateProvisionable). Pre-existing ResourceWarnings (unclosed files) live in test lines M23 did NOT touch
+  (`test_stack_registry.py`, pre-M23 `test_injection.py` idioms) — carried as a known pre-existing hygiene smell,
+  not an M23 fix (warnings, not failures).
+
+### Decision Triage
+- [x] M23-D1 (cms-only cutover) → blended in cms.md + snapshot-spec.md; backref tag `(#M23-D1)` added.
+- [x] M23-D2 (studio-desk minted token) → blended in studio-desk.md; backref tag `(#M23-D2)` added.
+- [x] M23-D3 (directus_files referenced-subset) → blended in snapshot-spec.md § Media/blobs; tag `(#M23-D3)`.
+- [x] M23-D4 (replay-clear DELETE/TRUNCATE split) → blended in snapshot-spec.md; tag `(#M23-D4)`.
+- [x] M23-D5 (cross-surface closure gene + K-AIFUNX-E658 residual) → blended in snapshot-spec.md; tag `(#M23-D5)`.
+- [x] KB-1/KB-2 → already resolved in §6 build (directus_files wired+documented; cms.md M10-gap retired). Archive.

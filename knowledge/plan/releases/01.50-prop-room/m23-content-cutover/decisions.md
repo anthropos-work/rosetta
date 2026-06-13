@@ -77,3 +77,23 @@ closed: capturing the customer node would breach the tenant firewall; editing pr
 edits). This is a prod DATA-QUALITY inconsistency (a public sim mis-referencing a customer skill), now MEASURED +
 named by the gene rather than silently producing an empty picker. The honest resolution is the gene's report; the
 fix (re-tagging or removing that skill ref) is a prod data correction the operator owns, outside tooling scope.
+
+## Adversarial review (close pass, 2026-06-13)
+
+The close adversarial pass probed each non-trivial M23 module for a non-obvious fail mode. Every scenario was
+already pinned by a test — no new fix was needed. The scenarios (recorded so future reviewers see what was
+considered):
+
+- **An unintended filter slips through the firewall's referenced-subset admit gate.** The `ReferencedSubsetFilter`
+  admit-iff requires `Filter == p.ReferencedSubsetFilter` exactly, mutually exclusive with the scope/parent/pure
+  kinds, with whitespace-only treated as absent. Pinned: `firewall_test.go` (mismatch rejected, scope-column +
+  referenced-subset diagnosed via the scope branch, whitespace filter treated as absent).
+- **A valid studio-desk local token masks a prod BaseAddr.** `ValidateProvisionable` calls the prod-safety
+  `Validate` FIRST, before the present-token gate — a non-prod token never lets a prod BaseAddr through. Pinned:
+  `provision_test.go` (prod-safety failure propagates before the token gate).
+- **The cross-surface closure probe mis-handles an empty/error scan.** The two-dest `(count, sample)` QueryRow
+  wraps query errors with context (not silently "closed"); the CTE guards null/empty node-ids; the sample
+  coalesces to `''`. Pinned: `fidelity_probe_test.go` (closed / open+sample / wrapped-error).
+- **The directus_settings FK breaks the bulk TRUNCATE.** `ClearByDelete` makes replay DELETE `directus_files`
+  before the bulk TRUNCATE; the flag propagates TableSpec→manifest→TableRef intact. Pinned: `replay_harden_test.go`
+  (propagation), `adapters_test.go` (DELETE-then-TRUNCATE order), `manifest_test.go` (round-trip + omitempty).

@@ -423,8 +423,8 @@ and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved 
 query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
 **collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
 **executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
-own Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`) + added the **cross-surface closure gene** (below) so
-closure is **measured, not assumed**. The taxonomy capture is **full-public** (`organization_id IS NULL` — every
+own Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
+#M23-D5) so closure is **measured, not assumed**. The taxonomy capture is **full-public** (`organization_id IS NULL` — every
 public node), so closure is maximal by construction; the only residual is a content ref pointing at a *non-public*
 node, which is a **prod data inconsistency** the gene surfaces (prod has exactly **1**: `K-AIFUNX-E658`,
 referenced by 2 public sims but existing only as a customer-scoped skill — uncloseable without breaching the
@@ -436,13 +436,13 @@ stack stays on the prod-read path (the documented fallback).
 Content references media (`simulations.cover`, `skill_paths.{cover,image,video}`, `roles.avatar`,
 `sequences.scenario_video`, `resource.{image,file}` — all uuid `directus_files` ids; `sequences.intro_video` is a
 varchar embed, NOT a file ref). The **file refs** — the `directus_files` rows the public content references (of
-10,340) — are the **floor**: captured + replayed. **Since M23 this is WIRED**: `directus_files` is a table in
+10,340) — are the **floor**: captured + replayed. **Since M23 this is WIRED** (#M23-D3): `directus_files` is a table in
 `directus.Surface()`, captured as a **referenced-subset** (a reverse-reference closure — it carries no scope column
 and is referenced *by* many public content rows, so its capture filter is `directus.ReferencedFilesFilter()`, an
 OR-of-INs over the public file-ref columns; the firewall admits it via the referenced-subset branch, and the
 post-capture probe counts any captured file *outside* the referenced set = 0). The 26-column `directus_files`
 schema is `directus.ReferencedFilesColumns()` (verified vs a fresh `directus/directus:11.6.1` bootstrap). Replay
-clears it with `DELETE FROM` (not the bulk `TRUNCATE`) because `directus_settings` FK-references it — a
+clears it with `DELETE FROM` (not the bulk `TRUNCATE`, #M23-D4) because `directus_settings` FK-references it — a
 TRUNCATE of an FK-referenced table fails structurally even when the referrer is NULL, and the referrer is outside
 the surface (so it can't be co-TRUNCATEd and CASCADE would over-clear). With the refs present, a captured content
 row's image uuid resolves and the **asset plane** (prod, `DIRECTUS_PUBLIC_BASE_ADDR`) serves the real
@@ -495,10 +495,12 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
    provision/replay write** — if the per-stack Directus env ever resolves to the prod Directus. Since **M22**,
    when the bring-up passes **`--local-content`** (dev opt-in; demo default), the pass **executes** the recipe
    (bootstrap → apply-structure → replay → boot the per-stack Directus compose service) behind that
-   now-**load-bearing executed** firewall gate; **without** `--local-content` the recipe is printed + the env
-   validated but no step runs (the M9b/M10 "operator's step" discipline) and the dev CMS still points at prod
-   content (the same live-prod read — known-state above). The M23 *cutover* (re-pointing `DIRECTUS_BASE_ADDR`)
-   remains future.
+   now-**load-bearing executed** firewall gate, and since **M23** the same `--local-content` pass also performs the
+   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
+   and stripping its prod token, so a `--local-content` dev stack reads its catalog from its OWN Directus (asset
+   plane stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` unchanged). **Without** `--local-content` the recipe is
+   printed + the env validated but no step runs (the M9b/M10 "operator's step" discipline) and the dev CMS still
+   points at prod content (the same live-prod read — known-state above).
 2. **Cache-first auto-snapshot.** It replays the cached **public** surfaces (`taxonomy` then `directus`) into
    `dev-N` via `stacksnap replay` — **cache-first by construction** (replay resolves the cache and **never**
    captures; capture is a separate, privileged release-time prod read). **Every replay skip is a warning, not a
