@@ -98,3 +98,37 @@ M22's production code is entirely in the gitignored ext repo (`.agentspace/roset
 
 ### Stop condition
 Scan clean at Pass 4 — the full six-dimension sweep (test depth / edge / error paths / regression / fuzz / perf) found only one thin arg-parse edge in Pass 4, coverage deltas on the directly-coverable surface stabilized (85%/99%, residual all out-of-M22-scope), the shell engines are exhaustively exercised behaviorally, and zero flakes across runs. Stopped at 4 of 5 passes.
+
+## M22: Final Review
+
+_Close-milestone consolidated findings (2026-06-13). Default: every finding addressed fully (no partial fixes)._
+
+### Scope
+- [x] No scope gaps — all 6 sections checked; no silently-dropped `overview.md` In: items; KB-1 resolved in §6.
+- [x] Deferral re-audit GREEN (`audit-deferrals/deferral-audit-2026-06-13-m22-close.md`) — 0 repeat, 0 aged, 0 M22-originated; inherited M21 items confirmed owned by M23.
+
+### Code Quality
+_(0 must-fix. The 3 should-fix items below are comment-clarity + edge-hardening on already-safe non-fatal paths; landed as a single scoped ext commit. The 3 nice-to-have refactor suggestions — shared `DIRECTUS_BASE_PORT` const, shared verify-svc helper, a docker-availability comment — are deferred as Fate-2 to M24's hygiene strand, which already owns cross-module tidy; recorded below.)_
+- [x] [should-fix] `dev-setdress.sh` (CREATE-SCHEMA / minted-address region) — add a clarifying comment on the two-layer fallback (command-failure `|| echo 0` + whitespace-only `${x:-0}`) and on the safety of the `$STACK`-derived minted address (N regex-validated, STACK_TYPE enum-validated).
+- [x] [should-fix] `stack-verify/live/autoverify.sh` (no-prod-read env extraction) — note that the `docker inspect | grep | cut` DSN extraction is non-fatal-by-design (a malformed value warns, never aborts) so a future reader doesn't "harden" it into a blocker.
+- [x] [should-fix] `dev-setdress.sh` minted email/password — comment that `$STACK` is safe-to-interpolate (validated upstream).
+- [ ] [nice-to-have → Fate-2 M24] shared `DIRECTUS_BASE_PORT = 8055` const across `gen_override.py` + `gen_injected_override.py` (the offset-convention clarity item) — M24 hygiene strand.
+- [ ] [nice-to-have → Fate-2 M24] a shared verify-svc-list helper (dev/demo both append `directus` by hand) — M24 hygiene strand.
+- [ ] [nice-to-have → Fate-2 M24] `readiness.sh` docker-availability comment (container-absence gates the probe — intentional) — M24 hygiene strand.
+
+### Adversarial Review
+- [x] 7 scenarios examined (write-before-gate, `set -u`, prod-write-on-degrade, false-safe gate, half-bootstrap, serve-nothing, N=0) — ALL already test-pinned; 0 new findings; recorded in `decisions.md` § Adversarial review.
+
+### Documentation
+- [x] [DOC-1, Fate-1] `corpus/ops/README.md` line 30 — the `directus-local.md` index row's "(v1.5/M21 — structure half; **lifecycle half lands in M22/M23**)" is a stale future-claim M22 invalidates; update to reflect the lifecycle half now LANDED in M22.
+- [x] [DOC-2, Fate-2 M24] `CLAUDE.md` "Demo Environments" prose doc-list omits `directus-local.md` (it IS indexed in `corpus/ops/README.md`, satisfying the per-unit handbook contract). M24 explicitly owns the corpus-wide CLAUDE.md sweep — confirmed-covered, no edit here.
+- [x] `directus-local.md` / `verification.md` / `idempotency.md` / `rosetta_demo.md` / collateral retirements — verified accurate to the shipped ext code; all cross-references resolve.
+
+### Tests & Benchmarks
+- [x] No gaps — 395 passed / 8 env-gated-skip across the 5 touched suites; coverage adequate (gen_override 85%, gen_injected 99%; shell engines exhaustively subprocess-tested). The "automated live-integration harness" notes are appropriate-for-authoring-phase and land at M25 field-bake (DEF-M21-02, already routed). No handbook test-count drift (the touched-module READMEs quote no counts).
+
+### Decision Triage
+- [x] M22-D1 (stale-claim retirement) → archive (maintainer-only; the user-facing reframing already lives in the docs it edited).
+- [x] M22-D2 (studio-desk verify-port repair) → archive (maintainer-only test-fix detail).
+- [x] KB-1 (provision.go anchor) → archive (resolved in `directus-local.md` itself).
+- [x] Adversarial review → archive (recorded in decisions.md; the behaviors are already documented in directus-local/verification/idempotency).
