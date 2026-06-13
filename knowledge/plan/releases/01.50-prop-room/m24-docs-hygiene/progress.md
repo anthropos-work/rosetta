@@ -26,7 +26,9 @@ sections 4–7 land in the `rosetta-extensions` authoring copy (hygiene strand).
   `--local-content` flag / `DEMO_NO_LOCAL_CONTENT` env into the skill descriptions (flag↔docs consistency).
 
 ### Rosetta-extensions hygiene strand (each small + independently landable)
-- [ ] **§4 — (a) Go toolchain pin bump** to go1.25.11+ (lazy rebuild — bump the pin only, no dedicated rebuild).
+- [x] **§4 — (a) Go toolchain pin bump** (ext `423bac7`): added an explicit `toolchain go1.25.11` directive to
+  all 4 go.mod (alignment, clerkenstein, stack-snapshot, stack-seeding) + tightened the clerkenstein CI workflow
+  `setup-go` from floating `"1.25"` to `"1.25.11"`. Lazy — pin only, no rebuild (parse-verified GOTOOLCHAIN=local).
 - [x] **§5 — (b) README index-row guard** (ext `d6dd8fc`): `stack-core/corpus_index_guard.py` — for every
   README-bearing corpus dir, every other `*.md` must be referenced (by filename) in that README, else exit 1.
   8 unittest tests (full stack-core suite green, 77 tests). **Dog-food:** the guard surfaced 7 pre-existing gaps
