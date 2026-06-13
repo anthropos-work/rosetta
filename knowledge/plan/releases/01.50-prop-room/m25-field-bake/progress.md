@@ -26,7 +26,7 @@ _The 5 live done-bars from `overview.md` § Scope — each a real stack run on t
 - [x] **DB-3 — Re-run idempotency**: **GREEN** — full re-run convergent; migrate no-op ×5, casbin
   "already 248 — skipping", directus bootstrap "already bootstrapped — skipping", taxonomy TRUNCATE-reload →
   329,859 (same), seed idempotent. The directus cache-miss reproduces deterministically (correct idempotency).
-- [ ] **DB-4 — Cold-start capture**: **EXERCISED + GREEN** (M25-D5) — the sanctioned cold-start fill
+- [x] **DB-4 — Cold-start capture**: **EXERCISED + GREEN** (M25-D5) — the sanctioned cold-start fill
   (`stacksnap capture --surface directus --source primary-read --dsn <marco_read>`) ran end-to-end: it
   surfaced the firewall over-capture, the fix closed it, and the **re-run PASSED the firewall**
   (`public-only=true`, `directus_files=1257`, `_structure.sql` present) — the rows-only cache upgraded
@@ -105,3 +105,46 @@ Stopped after Pass 1: the M25 fix surface is at the coverage ceiling (firewall +
 the Step 2b scan found nothing further worth a non-shallow test, and the flake gate is clean. A second
 pass would only add shallow tests. (The brief sanctioned a light harden since the build tested well.)
 The tag `prop-room-m25` was moved to the new ext HEAD `1a2fd91`.
+
+## M25: Final Review
+
+_close-milestone consolidation (2026-06-13). Phase 1b deferral re-audit GREEN
+(`audit-deferrals/deferral-audit-2026-06-13-m25-close.md`). The rosetta-side M25 surface is 100%
+markdown/text (2 skill arg-hint one-liners + milestone-dir artifacts) — the field-bake's CODE fixes
+live in the ext repo (`stack-snapshot`/`demo-stack`), already hardened (+8 tests, firewall 98→100%,
+0 flakes) and tagged `prop-room-m25 @ 1a2fd91`, so Phases 2/2c/4/8 have no rosetta code/test/lint/bench
+surface — the merge is rosetta-side only. Phases 3 (docs) + 5 (decision triage) are the live phases._
+
+**Summary: 3 findings — 1 scope · 0 code-quality · 1 docs · 0 tests · 1-blend+5-archive decision-triage.**
+Deferral re-audit GREEN (DEF-M21-02 RESOLVED Fate-1 in its destination milestone; 2 M25 env items fated
+fresh).
+
+### Scope
+- [x] DB-4 checkbox was `[ ]` while its text read **EXERCISED + GREEN** — checkbox-state nit (the body
+  already confirmed done). Flipped to `[x]`. All 5 done-bars now visibly GREEN.
+
+### Code Quality
+- [x] No rosetta code surface (the diff is markdown/text only). The ext code fixes were reviewed +
+  hardened in their own pass (firewall AssertPlan reject branches, NullColumns render, closure
+  composition — all at the coverage ceiling). Nothing to review rosetta-side.
+
+### Documentation
+- [x] `corpus/ops/demo/frontend-tier.md` § "The 12 GB Docker-VM prerequisite" lacked the M25 field truth
+  that **12 GB fails to boot on a 16 GB host** (~10 GB is the practical ceiling; the full UI tier can't be
+  co-resident). Added a field-note callout (#M25-D2). Operator-facing accuracy fix + the Phase-5 blend of M25-D2.
+- [x] The 2 skill arg-hint fixes (KB-1/KB-2) verified internally consistent with their SKILL bodies
+  (dev-up `--local-content` ×4; demo-up `DEMO_NO_*` env vars ×6). All M25 milestone-doc cross-references resolve.
+
+### Tests & Benchmarks
+- [x] No rosetta test/benchmark surface. The ext harden pass (+8 tests, 0 flakes, 3 clean sequential runs,
+  ~960k fuzz execs) covers the M25 fix code; out of this merge's scope (separate repo, already tagged).
+
+### Decision Triage
+- [x] M25-D2 (16 GB-host VM ceiling) → **BLEND** into `corpus/ops/demo/frontend-tier.md` (the 12 GB-prereq
+  section) — done above. A real operator-facing truth.
+- [x] M25-D8 / M25-D9 (close re-fates of the full-UI render + dev-2 taxonomy rc=4) → **archive**
+  (maintainer-only fate records; the report carries the rationale).
+- [x] M25-D1/D3/D4/D5/D6/D7 → **archive** — ext-code / implementation specifics; their *behavioral
+  contracts* are already documented in corpus (firewall fail-closed + public-only in `safety.md`;
+  structure-bearing capture in `snapshot-spec.md` / `snapshot-cold-start.md`; the exit-0/4 split in
+  `directus-local.md`), confirmed ALIGNED by the Phase-0b kb-fidelity audit. No further blend needed.

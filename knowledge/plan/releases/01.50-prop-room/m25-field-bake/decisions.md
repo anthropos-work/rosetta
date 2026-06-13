@@ -184,3 +184,32 @@ no `--local-content` UI), with the browser-observable behavior proven by HTTP/SQ
 own cms + per-stack Directus (the data plane) — exactly the surface a browser calls. The local-Directus data
 plane + asset-plane-stays-prod + verify net are all exercised; only the heavyweight next-web/studio-desk
 **rendering** tier is out of budget on this box. See journal for the doc/preflight follow-up.
+
+## M25-D8 — Full-UI Playwright render: environmental backlog, NOT a v1.5 deliverable (close re-fate)
+
+**Context (close Phase 1b deferral re-audit, `audit-deferrals/deferral-audit-2026-06-13-m25-close.md`):** the
+field-bake proved the core observable behavior — the local Directus **serves** the catalog (data plane local,
+asset plane prod) — by curl against cms + the per-stack Directus (the exact surface a browser calls), on
+`--no-ui` stacks. The full-UI **rendered-page** Playwright screenshot didn't run: the ~10 GiB practical VM
+ceiling on this 16 GB host (M25-D2) can't co-host the full UI tier (next-web build spikes ~3.7 GB) with a
+backend stack.
+
+**Fate (re-audit):** **DROP as a v1.5 tooling deliverable / KEEP as environmental backlog.** This is a
+**host-budget** constraint, not a tooling defect — landing it requires a bigger box, not a v1.5 code change.
+The done-bar "the browser shows content served by the local Directus" is satisfied at the **behavior** level by
+the data-plane curl proof (DB-1/DB-2 evidence); the screenshot would add presentation confirmation, not
+behavioral confirmation. No cross-release tooling work is owed. Single deferral (first appearance), not a
+repeat, not aged. Recorded so it isn't silently lost; no roadmap mutation needed (no milestone owes UI-render
+code).
+
+## M25-D9 — dev-2 taxonomy replay `rc=4`: tracked dev migrate-ordering follow-up (close re-fate)
+
+**Context (same re-audit):** on DB-2 (`/dev-up 2 --local-content`) the **taxonomy** replay returned `rc=4`
+(target schema empty) — a pre-existing **dev-stack migrate-ordering** nuance on the opt-in dev-2 stack. It is
+**non-fatal and unrelated to the content-serve path**: DB-2's directus content-serve (the core done-bar) is
+GREEN — the directus replay exits 0 and serves real published rows on the dev offset port (`db2-serve-evidence.txt`).
+
+**Fate (re-audit):** **KEEP (tracked tooling-debt follow-up — dev migrate-ordering).** Outside the field-bake's
+content-serve charter; diagnosing the taxonomy-surface migrate-ordering on dev-N is dev-stack tooling debt, not
+a v1.5 content-release deliverable, and the stack comes up and serves regardless. Single deferral (first
+appearance), not a repeat, not aged. Surfaced so it isn't lost.
