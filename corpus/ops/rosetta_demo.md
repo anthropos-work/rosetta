@@ -45,6 +45,16 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 > right offset — never a bare re-computed formula. See [`verification.md`](verification.md) (the auto-verify
 > safety net: a scoped, non-fatal `verify live` at every bring-up tail, offset/scope-aware).
 
+> **The per-stack Directus rides the same lifecycle for free (v1.5 "prop room", M22).** A `--local-content`
+> stack (demo default; dev opt-in) emits a `directus` **compose service** into its override — offset port
+> `8055 + N·10000`, container `<project>-directus-1`, on the stack's `app-network`. Because it's a compose
+> service (not a bespoke `docker run`), the existing plumbing covers it with **no new lifecycle code**:
+> `demo-down`/`dev-down` (incl. `--purge`) tear it down with the rest of the stack, the unified registry
+> records its offset port (`ports_from_override` picks it up), and the auto-verify probes it by the
+> `<project>-directus-1` name. A prod-read stack (`DEMO_NO_LOCAL_CONTENT=1` / no `--local-content`) has no
+> directus service, so teardown / registry / verify all correctly see nothing. Full lifecycle:
+> [`directus-local.md`](directus-local.md) § "Container lifecycle (M22)".
+
 ## Auto-verify at the bring-up tail (v1.3b "dress rehearsal", M18)
 
 Every bring-up now ends with an automatic, **non-fatal** verification pass on the stack's own **offset

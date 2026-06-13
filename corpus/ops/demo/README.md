@@ -99,19 +99,22 @@ platform's reference library); for a **set-dressed** world the catalog replay ru
 manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
 
-> **Known state — every stack reads the public catalog live from prod (not fully self-contained yet).** The auto
-> set-dress replays the **taxonomy** locally, but the public Directus content needs a per-stack Directus that
-> **no stack type has yet** (the M10 collection-schema gap — the recipe is printed, not executed; this holds for
-> dev exactly as for demo, corrected in fix16). So `cms`/`jobsimulation` read the public sims/skill-paths **live
-> from prod** (`content.anthropos.work`) — a **demo does so ANONYMOUSLY** since fix16/fix17: the injected override
-> strips the inherited prod `DIRECTUS_TOKEN` from every demo container (prod Directus serves the public predicate
-> tokenless — verified 2026-06-11; live demo-1 audit: 0/16 carriers), so no prod credential rides in a demo. The
-> read is public-only + safe, but it means (a) a stack isn't fully self-contained, and (b) live-prod content
-> paired with a captured-**subset** taxonomy can leave a public sim referencing a skill the local catalog lacks —
-> which empties the **Assign-AI-Simulation** picker (`/enterprise/assignments/ai-simulations`) until the per-stack
-> Directus provision is automated (for both
-> stack types). Detail + resolution direction: [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack
-> Directus store fork.
+> **Known state — a prod-read stack reads the public catalog live from prod; a `--local-content` stack boots a
+> local Directus (M22).** The auto set-dress replays the **taxonomy** locally. For the public Directus content:
+> since **M22** a stack brought up with **local content** (demo **default**; dev `--local-content`) **boots its
+> own per-stack Directus** (a compose service serving the captured catalog — the M10 collection-schema gap was
+> closed by M21 + executed by M22). A **prod-read** stack (`DEMO_NO_LOCAL_CONTENT=1`, or a plain dev bring-up)
+> still has **no local Directus**: `cms`/`jobsimulation` read the public sims/skill-paths **live from prod**
+> (`content.anthropos.work`) — a **demo does so ANONYMOUSLY** since fix16/fix17: the injected override strips the
+> inherited prod `DIRECTUS_TOKEN` from every demo container (prod Directus serves the public predicate tokenless
+> — verified 2026-06-11; live demo-1 audit: 0/16 carriers), so no prod credential rides in a demo. The read is
+> public-only + safe, but on the prod-read path it means (a) a stack isn't fully self-contained, and (b)
+> live-prod content paired with a captured-**subset** taxonomy can leave a public sim referencing a skill the
+> local catalog lacks — which empties the **Assign-AI-Simulation** picker
+> (`/enterprise/assignments/ai-simulations`). M22 boots + verifies the local Directus; the **M23** *cutover*
+> (re-pointing `DIRECTUS_BASE_ADDR` at it + referential closure) completes the self-contained story. Detail +
+> resolution direction: [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack Directus store fork +
+> [`../directus-local.md`](../directus-local.md) § "Container lifecycle (M22)".
 
 **Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
 `CLAUDE.md` skills table).

@@ -12,13 +12,14 @@ model that makes the catalog serveable, and the version-skew rule. It is the com
 [`snapshot-spec.md`](./snapshot-spec.md) (which captures the rows) and
 [`snapshot-cold-start.md`](./snapshot-cold-start.md) (the `--dsn` source the structure capture rides).
 
-> **Status (2026-06-13, after M21 "Structure capture"):** the **structure-capture half** documented below is
-> **built and gate-proven** in `rosetta-extensions` (`stack-snapshot`, tag `prop-room-m21`): `stacksnap`
-> captures the content-model structure, auto-provisions a bootstrapped stack, and a booted Directus serves a
-> captured simulation **anonymously over HTTP**. The **lifecycle half** — booting the Directus as a per-stack
-> compose service, re-pointing services at it, idempotent re-provision, and verify probes — is **M22/M23**
-> work; this doc grows its "Container lifecycle" and "Cutover" sections then. Until M22 executes the recipe at
-> bring-up, the recipe is still **print-only** (see `snapshot-spec.md` § the per-stack Directus store fork).
+> **Status (2026-06-13, after M22 "Executed provisioning + lifecycle"):** the **structure-capture half**
+> (`stack-snapshot`, tag `prop-room-m21`) and the **lifecycle half** (`dev-stack` + `stack-injection` +
+> `stack-verify`, tag `prop-room-m22`) are both **built**. M22 turned the print-only recipe into an
+> **executed** bring-up step: a per-stack Directus boots as a **compose service** (offset port, torn down with
+> the stack), provisioned idempotently, with verify probes — **demo default-on / dev opt-in (`--local-content`)**.
+> The firewall is now a **load-bearing executed gate** (a prod-resolving env hard-aborts before any write).
+> See § "Container lifecycle (M22)" below. The remaining **M23** work is the *cutover*: re-pointing
+> `DIRECTUS_BASE_ADDR` at the local instance + referential closure (this doc grows its "Cutover" section then).
 
 ---
 
@@ -36,8 +37,9 @@ Booting a per-stack Directus needs three layers, in order:
    existing `stacksnap replay --surface directus` path.
 
 The recipe is **bootstrap → apply-structure → replay → boot**. M21 closed the apply-structure step (step 2),
-which previously dead-ended at the print-only `provision.go:108` placeholder and made the replay fail loud with
-`stacksnap` exit 4/5.
+which previously dead-ended at the print-only placeholder in `provision.go`'s `ProvisionPlan` (the recipe was
+*described* but never *applied*) and made the replay fail loud with `stacksnap` exit 4/5. M22 then made
+**bootstrap** and **boot** executed too (see § "Container lifecycle (M22)").
 
 ---
 
@@ -164,11 +166,93 @@ See [`safety.md`](./safety.md) for the full read-side / write-side contract.
 
 ---
 
+## Container lifecycle (M22)
+
+M22 turned the print-only recipe into an **executed**, idempotent, prod-safe bring-up step. The serving
+Directus is a **compose service** — not a bespoke `docker run` — so the stack's existing lifecycle plumbing
+(`demo-down`/`dev-down` teardown, the port registry, `stack-verify`'s naming convention) covers it with no
+new lifecycle code. That is the v1.5 **maintainability constraint**: the only things the recipe executes
+itself are the two steps compose can't express — the one-shot **bootstrap** and the post-replay **restart**.
+
+### The compose service
+
+`gen_injected_override.py::directus_lines` (demo) and `gen_override.py` (dev, `--with-directus`) append a
+`directus` service block to the stack's override:
+
+- **image** `directus/directus:11.6.1` (the pinned version — see § the version-skew rule), `pull_policy: missing`
+  (a cached image is reused; a fresh box pulls once).
+- **port** `8055 + N·10000` published to the host (`!override` so it replaces, not merges) — the same offset
+  arithmetic as every other service; `<project>-directus-1` is the container name.
+- **network** `app-network` — the same in-network seam the fake BAPI alias uses, so `cms`/`studio-desk` will
+  reach it by name in M23.
+- **backing store** the stack's **own** `postgresql` compose service (`DB_CONNECTION_STRING=…@postgresql:5432`,
+  `DB_SEARCH_PATH=directus`) — the per-stack-isolated offset Postgres, **never prod**. `SECRET` is a throwaway
+  per-stack value. `mem_limit: 1g` keeps two stacks co-resident on a 16 GB box.
+
+It is emitted **only when local content is on** — demo default; dev opt-in via `--local-content`;
+`DEMO_NO_LOCAL_CONTENT=1` clears it on demo. A prod-read stack has no `directus` service at all (so teardown,
+the registry, and verify all correctly see nothing).
+
+### The executed steps (`dev-setdress.sh`)
+
+`provision_directus_step` + `boot_directus_step` run inside the shared set-dress engine when `--local-content`
+is set (demo default-on; dev opt-in; `N=0` additionally behind `--force`):
+
+1. **`CREATE SCHEMA IF NOT EXISTS directus`** on the offset Postgres (idempotent).
+2. **bootstrap** the `directus_*` system tables (`node cli.js bootstrap`), **guarded** on the
+   `directus_collections` **sentinel** — see § "Idempotent re-provision" below.
+3. **apply-structure + replay** — `stacksnap replay --surface directus` auto-provisions the captured
+   structure + serve rows onto the fresh bootstrap gap (the M21 path) then bulk-`COPY`s the rows.
+4. **boot/restart** the compose service so Directus re-introspects the now-registered collections (it caches
+   the registry at boot; a container that started before the serve rows landed won't serve them until
+   restarted). Only `docker restart` — never a bespoke `docker run`.
+
+**The firewall is a load-bearing executed gate.** Before any provision write, `provision-plan --check-env`
+validates the per-stack env contract (the offset Directus addr + the offset Postgres DSN); a prod-resolving
+env **hard-aborts** before bootstrap/replay — the M17-for-TRUNCATE discipline, now for the executed provision.
+
+**Non-fatal degrade.** Any step failing degrades the stack to the **prod-read path** (the directus replay
+surface skips, the seed floor still runs) with an honest `⚠ … content:prod-read` status line — a Directus
+hiccup never blocks a good stack.
+
+### Idempotent re-provision
+
+A second `--local-content` pass **converges** (the M17 re-run contract):
+
+- **bootstrap-on-non-empty guard** — bootstrap is skipped if the `directus` schema already holds the
+  **`directus_collections` sentinel** (a *complete*-bootstrap marker). Probing the sentinel — not a blanket
+  `directus_*` count — makes the guard robust to a **half-bootstrap**: a crash that left some system tables but
+  no registry **re-bootstraps to converge** instead of skipping onto an incomplete schema. `node cli.js
+  bootstrap` is itself idempotent (pending migrations only), so the guard is an optimisation + a clean log, not
+  a correctness crutch.
+- **container-name-conflict guard** — the serving container is the compose service (re-up reuses the name, no
+  clash); the bootstrap `docker run` is `--rm` ephemeral (no name → no conflict). The M21 replay
+  auto-provision is a no-op once provisioned (`nUser==0` gate), and the restart is idempotent.
+
+### Verify probes
+
+`stack-verify` gained a `directus` row + cheap-wins, scoped IN only on a `--local-content` stack and gated on
+the directus **container actually existing** (a prod-read stack never false-warns):
+
+- a **SERVICES row** — liveness via `/server/health` (HTTP 200), offset/project-rewritten like every service.
+- the per-stack **`directus` schema** is added to the readiness expected-schemas list **when the container is
+  present** (a prod-read stack has neither, so it isn't expected).
+- a **`directus-collections` readiness probe** + an autoverify **"registered collections > 0" cheap-win** — the
+  silent-failure analog of the casbin assert: a Directus can be UP (health 200) but serve **nothing** if the
+  content-model never registered.
+- a **no-prod-read env assert** — the runtime mirror of the EnvContract gate: warns (non-fatal) if the local
+  Directus's DB connection string resolves to a prod host.
+
+### Headroom
+
+The **12 GB-VM preflight** notes the per-stack Directus runtime container (~1 GiB, `mem_limit 1g`) in its
+budget when local content is on — a non-fatal note, independent of the UI build spike (Directus boots even on
+a `--no-ui` demo).
+
+---
+
 ## What's still future work
 
-- **Container lifecycle (M22)** — boot the per-stack Directus as a **compose service** in the stack's override
-  (offset port, joins the stack's network, torn down with the stack), idempotent re-provision, and Directus
-  verify probes. This doc grows that section when M22 lands.
 - **Content cutover + referential closure (M23)** — re-point `DIRECTUS_BASE_ADDR` at the local instance (asset
   plane stays on prod), and guarantee the served catalog is referentially closed (no content row references a
   taxonomy node-id the captured subset lacks — the empty Assign-AI-Simulation-picker class). M23 also wires the

@@ -66,7 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M21 closed 2026-06-13) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M22 closed 2026-06-13) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -197,7 +197,26 @@ now extended (not loosened) to admit structural metadata. The dropped pg_dump-fi
 resurrect — `TestDroppedDumpFlagStaysGone` pins it gone.
 
 ### M22: Executed provisioning + per-stack Directus lifecycle
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `section`
+**Closure:** all 6 sections landed Fate-1 — the print-only recipe is now an **executed**, idempotent, prod-safe
+bring-up step: a per-stack Directus boots as a **compose service** in the stack's override (offset port
+`8055+N·10000`, joins `app-network`, named `<project>-directus-1`, torn down with the stack), provisioned
+**bootstrap → apply-structure → replay → boot**, verified (`/server/health` SERVICES row + a `directus` expected-schema
++ a **"registered collections > 0"** cheap-win + a **no-prod-read env assert**), demo **default-on** / dev **opt-in**
+(`--local-content`; `N=0` behind `--force`). The load-bearing finding: the **`EnvContract.Validate` firewall became
+a load-bearing executed gate** — a prod-resolving env **hard-aborts before any write** (the M17-for-TRUNCATE
+discipline, now for the executed provision), with a runtime **no-prod-read backstop** in `autoverify`. Non-fatal
+throughout: any provision failure **degrades to the prod-read path** with an honest `⚠` status line.
+**Idempotent re-provision** converges (bootstrap-on-non-empty **sentinel** guard — a half-bootstrap re-bootstraps —
++ compose-name reuse). **Delivered:** `corpus/ops/directus-local.md` § "Container lifecycle (M22)" (the lifecycle
+half) + the `verification.md`/`idempotency.md` rows + the `rosetta_demo.md` registry/teardown note + 3 collateral
+print-only retirements (`snapshot-spec.md`/`safety.md`/`demo/README.md`); ext tag `prop-room-m22`. **Close:** 8
+findings — 0 scope · 0 must-fix code (3 should-fix comments landed ext `e989982`; 3 nice-to-have refactors → Fate-2
+M24) · 2 docs (DOC-1 the ops-README stale "lands in M22/M23" claim → Fate-1 fixed; DOC-2 the CLAUDE.md doc-list →
+Fate-2 M24's sweep) · 0 tests · 0 adversarial-new (**7 scenarios all already test-pinned**). Deferral audit **GREEN**
+(0 repeat / 0 aged / **0 M22-originated**; inherited M21 items confirmed owned by M23). Go **795** unchanged (M22
+touches no Go); Python **360 → 418** collected (+58, +8 env-gated skip); flake **0** (5/5 sequential). Records:
+[m22-provision-lifecycle/](releases/01.50-prop-room/m22-provision-lifecycle/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Turn the print-only 4-step recipe into an **executed** bring-up step that boots a per-stack Directus as a
 **compose service** in the stack's override — idempotent, verified, torn down with the stack — so demo (default) and
 opt-in dev stacks come up with a live local Directus.
