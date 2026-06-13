@@ -8,7 +8,7 @@ demo** stack (default), **any dev-N≥1** (opt-in `--local-content`), **N=0** ma
 5 milestones M21→M25 (structure capture → executed provisioning + lifecycle → content cutover + referential closure
 → docs + hygiene → field bake). **Tooling + docs only — zero platform-repo edits; capture stays read-only / public-
 only / prod-untouched.** Full plan: [`roadmap.md`](roadmap.md) § In Development.
-**Active milestone:** _(between milestones — M23 closed; M24 next — see Next up)_
+**Active milestone:** **M24 — Docs convergence + hygiene strand** (`section`; **building**). Make the whole corpus tell the new truth (stacks are content-self-contained) + absorb the 4 small hygiene items (README-index-row guard, zero-critical-genes guard, `/project-stats` scope fix, lazy Go pin bump).
 **Last closed:** **M23 — Content cutover + referential closure — 2026-06-13** (`section`; all 6 sections Fate-1).
 Cut the **data plane** over to the per-stack Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR` → in-network
 `http://directus:8055`; asset plane stays on prod so images stay real) + wired studio-desk's local instance + a
