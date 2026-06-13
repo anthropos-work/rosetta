@@ -12,9 +12,12 @@ sections 4–7 land in the `rosetta-extensions` authoring copy (hygiene strand).
   snippet + local-container troubleshooting + local-uploads dir — all false; platform compose has no directus
   service, only `cms`'s `DIRECTUS_BASE_ADDR`→prod), `corpus/architecture/service_taxonomy.md` Directus table,
   `corpus/ops/quick_ops.md` ports table. Each now states the prod-read default + points at the v1.5 local tooling.
-- [ ] **§2 — Known-state / safety / directus-local rewrites**: rewrite the `snapshot-spec.md` known-state block
-  (per-stack Directus now real; exit-4 semantics redefined), the `safety.md` §2 deltas, finish
-  `corpus/ops/directus-local.md`.
+- [x] **§2 — Known-state / safety / directus-local rewrites**: rewrote the `snapshot-spec.md` known-state block
+  (the `--local-content` self-contained path now leads as the converged end-state; the prod-read/exit-4 path is
+  the documented fallback; M23 retired from future-tense), finished `corpus/ops/directus-local.md` (status note
+  M22→M23, the promised "data-plane cutover (M23)" + referential-closure sections added, M23 moved out of
+  future-work, `cms`-only over-claims fixed). `safety.md` §2 verified **already M23-accurate** (landed in M23's
+  own close) — investigated, nothing to change (Fate-1: work genuinely complete, not deferred).
 - [ ] **§3 — Corpus-wide language sweep** (via `/update-knowledge`): sweep the "print-only / exit-4 / reads-live-
   from-prod" language across the skills + `CLAUDE.md` so the whole corpus tells the new truth.
 
