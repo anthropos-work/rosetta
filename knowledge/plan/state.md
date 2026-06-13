@@ -8,18 +8,20 @@ demo** stack (default), **any dev-N≥1** (opt-in `--local-content`), **N=0** ma
 5 milestones M21→M25 (structure capture → executed provisioning + lifecycle → content cutover + referential closure
 → docs + hygiene → field bake). **Tooling + docs only — zero platform-repo edits; capture stays read-only / public-
 only / prod-untouched.** Full plan: [`roadmap.md`](roadmap.md) § In Development.
-**Active milestone:** **M23 — Content cutover + referential closure** (`section`; **next up — not started**). Point
-the stack's services at their **own** Directus (re-point `DIRECTUS_BASE_ADDR`; asset plane stays on prod) and
-guarantee the served catalog is **referentially closed** (no content row references a taxonomy node-id the captured
-subset lacks). Also wires the `directus_files` ref capture (Fate-3 from M21) + closes the 20 dangling relations.
-Build with **`/developer-kit:build-milestone`** (M22 is closed — a booted, verified local Directus to point at).
+**Active milestone:** **M23 — Content cutover + referential closure** (`section`; **BUILT — all 6 sections landed,
+not yet closed**). Points the stack's services at their **own** Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`;
+asset plane stays on prod) and guarantees the served catalog is **referentially closed** (a measured cross-surface
+gene — no content row references a taxonomy node-id the captured taxonomy lacks; surfaced the 1 real prod residual).
+Wired the `directus_files` ref capture (Fate-3 from M21, as a referenced-subset) + studio-desk's local-instance +
+minted token; the 20 dangling relations were subsumed by M21's 26-collection structure capture. Next:
+**`/developer-kit:close-milestone`** (harden optional first).
 **Last closed:** **M22 — Executed provisioning + per-stack Directus lifecycle — 2026-06-13** (`section`; all 6
 sections Fate-1). Turned M21's print-only recipe into an **executed** bring-up step that boots a per-stack Directus as
 a **compose service** (offset port, app-network, torn down with the stack), idempotent + verified — demo default-on /
 dev opt-in (`--local-content`); the `EnvContract` firewall became a **load-bearing executed gate** (prod env
 hard-aborts before any write), non-fatal degrade to the prod-read path.
 **Next up:** build **M23** (`/developer-kit:build-milestone` — content cutover + referential closure), then M24→M25 strictly sequential.
-**Phase:** **v1.5 building — M22 CLOSED (merged to `release/01.50-prop-room`); next build M23 (content cutover + referential closure).**
+**Phase:** **v1.5 building — M23 BUILT (all 6 sections on `m23/content-cutover`, not yet closed); next close M23, then M24→M25.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
