@@ -3,11 +3,14 @@ milestone: M25
 slug: field-bake
 version: v1.5 "prop room"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-11
-last_updated: 2026-06-11
+last_updated: 2026-06-13
 complexity: medium
 delivers: a short m25-field-bake/ field-bake log + any folded-back fixes (both repos as needed)
+status_note: DONE — all 5 done-bars GREEN. The field-bake earned its keep: the operator-sanctioned prod read
+  surfaced a real tenant-data-leak the firewall caught fail-closed (M25-D5) + two dangling-FK bugs (M25-D6/D7),
+  all fixed in stack-snapshot; the local Directus now serves on demo + dev stacks (curl-proven).
 ---
 
 # M25 — Field bake: the observable-behavior gate

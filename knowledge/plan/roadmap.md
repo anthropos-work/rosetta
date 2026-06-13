@@ -66,7 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M24 closed 2026-06-13) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | 🚧 **IN DEVELOPMENT** (all 5 milestones closed 2026-06-13; awaiting `/developer-kit:close-release`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -362,7 +362,7 @@ the zero-critical-genes guard + the stats-scope fix + the Go pin bump** (rosetta
 (already verified once: no directus service exists).
 
 ### M25: Field bake — the observable-behavior gate
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (completed 2026-06-13) · **Shape:** `section`
 **Goal:** Prove the whole release on the **actual 16 GB box** with **observable behaviors** as the done-bars — so
 v1.5 pre-pays the field-fix tail that every prior release shipped after the fact (v1.3 → all of v1.3b; v1.3b →
 fix1–17).
@@ -384,6 +384,29 @@ fix1–17).
 **Risk (resource — degrades-quality):** a Directus container per stack adds to the Docker-VM budget. Mitigate:
 runtime is cheap (measured ~0.9 GB/stack, ~0.66 GiB both frontends — boots/builds spike, not steady-state), keep the
 **max-2-co-resident-stacks** line, add Directus to the 12 GB preflight, watch Docker-VM **disk** (the M3 disk-full precedent).
+**Closure (2026-06-13):** all **5 live done-bars GREEN** — the field-bake earned its keep. The operator-sanctioned
+prod read (the `postgres` MCP `marco_read` primary-read DSN) filled the cache **structure-bearing**, so the local
+Directus observably **SERVES** the captured public catalog (curl-proven: DB-1 demo-1 offset 18055 + DB-2 dev-2
+offset 28055 — `/server/health` 200, `/items/simulations` real published rows, asset URL → `content.anthropos.work`;
+data plane local + asset plane prod). N=0 stays prod-read (code-verified, M25-D4); re-runs converge (DB-3);
+the cold-start capture was exercised (DB-4); teardown reclaims the container + port (DB-5). The live runs surfaced
++ fixed **4 real release bugs** clean-room unit passes couldn't see, all Fate-1 in their owning ext module
+(`stack-snapshot`/`demo-stack`): **(1)** the `directus_files` referenced-subset capture **over-captured 158
+tenant-referenced files** (M25-D5) — the **tenant-data firewall caught it FAIL-CLOSED** (zero data written); the
+closure now appends `AND NOT (TenantReferencedFilesFilter)` + the firewall `AssertPlan` now **requires** every
+referenced-subset table to declare + embed its tenant-exclusion (**firewall never weakened**); **(2)** the
+`directus_collections.group` self-FK to an admin-UI folder collection (M25-D6) → the serve-row render NULLs it;
+**(3)** the `directus_files.folder`/`uploaded_by`/`modified_by` FKs to uncaptured admin/library/users tables
+(M25-D7) → a general `TableSpec.NullColumns` mechanism (the complete enumeration proven — content tables ship
+PRIMARY KEYS only, 0 content-table FKs); **(4)** the offline-build `GOTOOLCHAIN=local` regression from M24's Go
+pin (M25-D1) that aborted `/demo-up`. ext harden +8 tests (firewall `AssertPlan` → 100%); ext HEAD `1a2fd91`,
+tag `prop-room-m25`. **Close:** 3 findings (1 scope checkbox nit · 0 code-quality · 1 docs the M25-D2 16 GB-host
+VM ceiling field note · 0 tests · 1 decision-blend + 5 archive), **deferral audit GREEN** with the strongest
+outcome — **DEF-M21-02** (serve-live-integration harness) RESOLVED Fate-1 in its destination milestone (the live
+serve-proof IS the integration it needed); 2 M25-originated env items fated fresh (M25-D8 full-UI Playwright render
+→ DROP-as-deliverable/host-budget; M25-D9 dev-2 taxonomy `rc=4` → tracked dev migrate-ordering follow-up);
+**0 escape-hatch**. The rosetta merge is markdown/text only (the code fixes are in ext). **v1.5 is complete — next:
+`/developer-kit:close-release`.**
 
 ### Execution graph (v1.5)
 ```

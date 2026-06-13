@@ -1,0 +1,26 @@
+# DB-1 evidence — local Directus SERVES content (demo-1, offset 18055), Sat Jun 13 23:05:00 CEST 2026
+
+## cms data-plane / asset-plane wiring
+DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
+DIRECTUS_BASE_ADDR=http://directus:8055
+
+## /server/health (local Directus, offset 18055)
+HTTP 200
+
+## GET /items/simulations?limit=3 — anonymous serve, real published rows
+{"data":[{"id":"cab2339b-ac61-465e-99d8-ba2716de3f93","title":"Business Transformation Consultant: Improve Client's Process","slug":"business-transformation-consultant-improve-clients-process-612","status":"published"},{"id":"bcd1b131-e65a-4ed0-ae91-5763c472c838","title":"Building Blocks Mastery: Create a Proposal for the CFO using AI","slug":"building-blocks-mastery-create-a-proposal-for-the-cfo-using-ai","status":"published"},{"id":"c421cccc-d277-4b52-835c-11aafc400af5","title":"Senior Frontend Developer (REACT): Scalable Checkout, Performance Optimization at BrightTicket","slug":"senior-frontend-developer-in-react-scalable-checkout-performance-optimization-at-brightticket-356","status":"published"}]}
+HTTP 200
+
+## GET /items/skill_paths?limit=2 — second served collection
+{"data":[{"id":"66c6f04d-de5f-4099-a11b-55d8873cb149","title":"Java Spring Boot - skill path intermediate","slug":"java-spring-boot-skill-path-intermediate","status":"published"},{"id":"7b4aedda-dac8-4b2b-82b4-9f65eb8464df","title":"How to Give Feedback for Managers - Fundamentals and Practice","slug":"how-to-give-feedback-for-managers-fundamentals-and-practice","status":"published"}]}
+HTTP 200
+
+## local DB facts
+published simulations served: 304
+content collections registered: 9
+directus_files loaded (folder/uploaded_by/modified_by all NULL): 1257 (nonnull folder=0 uploaded_by=0 modified_by=0)
+
+## asset plane = PROD (a served sim's cover, metadata local, bytes from content.anthropos.work)
+sim aws-cost-management-barilla cover aa8554b1-14c5-43e6-a15c-b82a716d903d:
+  local directus_files: storage=s3 type=image/jpeg folder=NULL
+  https://content.anthropos.work/assets/aa8554b1-14c5-43e6-a15c-b82a716d903d -> HTTP 200 image/jpeg 32724b
