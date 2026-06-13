@@ -3,7 +3,7 @@ milestone: M23
 slug: content-cutover
 version: v1.5 "prop room"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-11
 last_updated: 2026-06-13
 complexity: medium

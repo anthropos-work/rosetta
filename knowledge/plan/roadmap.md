@@ -66,7 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M22 closed 2026-06-13) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11; M23 closed 2026-06-13) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -250,7 +250,33 @@ Directus/Postgres — the `EnvContract.Validate` firewall moves from a print-tim
 gate** (hard-abort before any write if the env resolves to prod); tests pin the target class, as M17 did for TRUNCATE.
 
 ### M23: Content cutover + referential closure
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `section`
+**Closure:** all 6 sections landed Fate-1 — the data plane is now **cut over** to the per-stack Directus: §1 grew
+`stack-core/gen_override.py` to emit per-service `environment:` blocks (the single genuinely-new bit of plumbing) +
+re-point `cms`'s `DIRECTUS_BASE_ADDR` → in-network `http://directus:8055` on dev `--with-directus`; §2 the demo
+side via `gen_injected_override.py`; §3 **studio-desk** gets the per-stack instance + a **locally-minted static
+admin token** (deterministic `EnvContract.AdminToken` stamped via Directus's `ADMIN_TOKEN` bootstrap env, a
+new `ValidateProvisionable` present-token gate layered on the prod-safety `Validate`); §4 **wired the
+`directus_files` ref capture** (DEF-M21-03/Fate-3 from M21) as a new **REFERENCED-SUBSET** firewall admissibility
+kind (reverse-reference closure, admit-iff `Filter==ReferencedFilesFilter`) + a `ClearByDelete` **DELETE-before-
+TRUNCATE** for the external `directus_settings` FK; §5 **referential closure** — full-taxonomy capture
+(`organization_id IS NULL`) was already the state (closure maximal by construction) + a **measured cross-surface
+closure gene** (`OpSnapshotCrossSurfaceClosure`/`CrossSurfaceDangling`, criticality `standard`, non-blocking) that
+surfaces the **1 genuine prod residual** — `K-AIFUNX-E658`, a node referenced by 2 public sims but existing only as
+a customer-scoped skill, **uncloseable by tooling** (capturing it = firewall breach; editing prod = forbidden), now
+MEASURED + named rather than a silent empty picker (an operator-owned prod data-quality fix). The **asset plane
+stays on prod** (`DIRECTUS_PUBLIC_BASE_ADDR` unchanged) so images stay real; the data plane goes local. **2
+inherited M21 deferrals RESOLVED in-milestone** (DEF-M21-03 directus_files §4, DEF-M21-04 referential closure §5 —
+the 20 dangling relations were subsumed by M21's 26-collection structure capture, M21-D7). **Delivered:** the 6
+corpus docs (`cms`/`studio-desk`/`jobsimulation`/`next-web-app` env truth + `safety.md` retire-live-read +
+`snapshot-spec.md` the closure gene + `directus_files`-wired) — resolves KB-1 + KB-2; ext tag `prop-room-m23` @
+`7e9343a`. **Close:** 6 findings — 0 scope · 0 code-quality · 0 adversarial-new (4 scenarios all already
+test-pinned) · 1 docs (the `snapshot-spec.md` M13-section stale "M23 cutover remains future" → Fate-1 fixed) · 0
+tests · 5 decision-triage backref-tags. Deferral audit **GREEN** (2 inherited RESOLVED, 0 repeat / 0 aged;
+K-AIFUNX-E658 fated operator-owned KNOWN-ISSUE). Go **795 → 844** (M23-own +33 across `stack-snapshot`+`stack-seeding`;
+the rest a counting-method reconciliation on untouched modules); python touched suites `stack-core` 61→**69** +
+`stack-injection` **110** (8 env-gated skip); flake **0** (5/5). Records:
+[m23-content-cutover/](releases/01.50-prop-room/m23-content-cutover/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Point the stack's services at their **own** Directus and guarantee the served catalog is
 **referentially closed** — so the content a stack serves never references a taxonomy node-id its captured subset
 lacks (the empty Assign-AI-Simulation-picker class disappears).

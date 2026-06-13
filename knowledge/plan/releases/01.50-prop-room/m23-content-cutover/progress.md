@@ -1,6 +1,6 @@
 # M23 — Progress
 
-**Status:** in progress. **Shape:** section.
+**Status:** `archived` (completed 2026-06-13). **Shape:** section.
 
 ## Section checklist
 _One checkbox per concrete deliverable from `overview.md` § Scope. Code lands in the `rosetta-extensions`
