@@ -1,6 +1,6 @@
 # M24 — Progress
 
-**Status:** building. **Shape:** section.
+**Status:** archived (completed 2026-06-13). **Shape:** section.
 
 ## Section checklist
 _One checkbox per concrete deliverable, ticked as it lands. Sections 1–3 land in `rosetta` (docs);

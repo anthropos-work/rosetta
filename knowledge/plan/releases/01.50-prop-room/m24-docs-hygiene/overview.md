@@ -3,9 +3,9 @@ milestone: M24
 slug: docs-hygiene
 version: v1.5 "prop room"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-11
-last_updated: 2026-06-11
+last_updated: 2026-06-13
 complexity: small
 delivers: corpus-wide truth-up + 3 stale-doc corrections (rosetta) + README-index-row guard + zero-critical-genes guard + stats-scope fix + Go pin bump (rosetta-extensions)
 backlog_refs: NEW-5 (Go toolchain bump), NEW-6 (README index-row guard), NEW-11 (zero-critical-genes guard), NEW-14 (stats-script scope fix)
