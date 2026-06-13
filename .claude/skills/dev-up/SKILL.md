@@ -1,7 +1,7 @@
 ---
 name: dev-up
 description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with a cache-first snapshot replay + a light dev-min seed, plus (opt-in via --local-content) an EXECUTED per-stack Directus so the stack's content is self-contained (otherwise it reads content live from prod). Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
-argument-hint: [N | 'main'] [--no-setdress] [--no-snapshot] [--profile P] [scenario|step]
+argument-hint: [N | 'main'] [--local-content] [--no-setdress] [--no-snapshot] [--profile P] [scenario|step]
 ---
 
 # Dev Up — build, start, and set-dress a local dev stack

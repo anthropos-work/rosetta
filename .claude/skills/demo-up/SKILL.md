@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--profile P] [--services "a b"] [--full] [--no-ui] [--no-setdress]
+argument-hint: [N] [--profile P] [--services "a b"] (UI/set-dress/local-content toggled by env vars on up-injected.sh: DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1)
 ---
 
 # Demo Up — spin up an isolated demo stack
