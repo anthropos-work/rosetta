@@ -15,27 +15,28 @@ and a `release/{version}` branch is cut.
 > **v1.5 "prop room"** → 2026-06-11 (shipped 2026-06-14, tag `v1.5`; the **local-Directus release** — a real per-stack
 > Directus serving the captured public content, demo-default + dev-opt-in, M21→M25). The first version staged after the
 > v1.4 removal.
-> **v1.6 "stage door"** → 2026-06-14 (**in development**; the **secret-provisioning release** — one mechanism that
-> ingests a secret source [dir/zip, default `.agentspace/secrets`] and provisions every repo of a stack, with a
-> secret-coverage DNA that lists + keeps-listed the required secrets per repo, M27→M30; promoted to
-> [`roadmap.md`](roadmap.md), branch `release/01.60-stage-door` cut). Requested directly by the user, not from prior backlog.
+> **v1.6 "stage door"** → 2026-06-14 (shipped 2026-06-14, tag `v1.6`; the **secret-provisioning release** — one
+> mechanism that ingests a secret source [dir/zip, default `.agentspace/secrets`] and provisions every repo of a stack,
+> with a secret-coverage DNA that lists + keeps-listed the required secrets per repo, M27→M30). Requested directly by
+> the user, not from prior backlog.
 
 ---
 
-## Staged: v1.6 "stage door" (in development — full detail in [`roadmap.md`](roadmap.md))
-
-The **secret-provisioning release** is staged and in development. It closes the one stack-lifecycle concern with **no
-owning section / tool / skill / doc**: secrets (today = manual prose + one `cp` in `ensure-clones.sh`; the TODO is at
-`setup_guide.md:447`). A new `stack-secrets` extension ingests a secret source (directory or zip) and provisions every
-repo of a stack from it (values-blind); a **secret-coverage DNA** — a one-sided harness in the proven `datadna` mold —
-lists and *keeps listed* the required secrets per repo (`introspect` + `diff`); a coverage gate wires into `/dev-up` +
-`/demo-up` pre-flight; and a closing field-bake proves it by building a compliant secret dir inferred from current
-stack-dev. **Tooling + docs only; never commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
+> **No version is currently staged.** v1.6 "stage door" shipped 2026-06-14 (tag `v1.6`; full detail in the
+> `## Done — v1.6` section of [`roadmap.md`](roadmap.md)). The next version is **unplanned** — run
+> `/developer-kit:design-roadmap` to scope it.
 
 ## Unscheduled backlog (not a planned release)
 
 Genuinely-deferred work, no target version, not scheduled:
 
+- **M26 — self-contained demo stacks.** An orphaned `rosetta-extensions` effort: branch `m26/self-contained-demo`
+  @ `25ab855`, tag `prop-room-m26` (ext, local-only, **unmerged + unpushed**), "make demo stacks self-contained
+  (their own GitHub clone set, like stack-dev)" (+521/−141 in `demo-stack/` + `stack-injection/`, authored
+  2026-06-14). It consumed the flat milestone counter's **M26** slot before v1.6 "stage door" was designed; on
+  discovering the collision the user kept self-contained-demo as M26 and renumbered the secret-provisioning release
+  to M27→M30 (see [`context.md`](context.md) + [`roadmap.md`](roadmap.md) "Why v1.6 starts at M27"). **Awaits its
+  own `/developer-kit:design-roadmap` pass for a version + scope** — not yet placed in any release.
 - **DEF-M10-01 — cloud `SnapshotStore` backend + S3 media blob bytes.** Today the cache is the local
   `.agentspace/snapshots/` store and media replays **refs-only**. **Re-signed → backlog at v1.5 design (2026-06-11)**
   after its v1.4 destination was removed; its **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane
@@ -56,8 +57,9 @@ mirror engines**; the **deployment/injection CI gate** (a local-only alignment s
 demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
 
 ## Codename notes
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" shipped — their codenames are now permanent. "stage door" (v1.6, in dev) continues the stage-metaphor lineage: the stage door is the keyed backstage entrance — you need a pass/key to get in. v1.6 hands every stack its keys [its secrets] so it can open all its doors.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" shipped — their codenames are now permanent. "stage door" (v1.6) continued the stage-metaphor lineage: the stage door is the keyed backstage entrance — you need a pass/key to get in; v1.6 hands every stack its keys [its secrets] so it can open all its doors. The next codename is unchosen — `/developer-kit:design-roadmap` picks it when the next version is scoped.)_
 
-_Last updated: 2026-06-14 (**v1.6 "stage door" staged + in development** — the secret-provisioning release, M27→M30,
-promoted to roadmap.md; branch `release/01.60-stage-door` cut. v1.5 "prop room" flipped to SHIPPED. Backlog unchanged:
-DEF-M10-01, DEF-M21-01, M25-D9 all orthogonal to v1.6. Prior: 2026-06-11 v1.5 staged.)_
+_Last updated: 2026-06-14 (**v1.6 "stage door" SHIPPED** — the secret-provisioning release, M27→M30, tag `v1.6`,
+merged → main; its staged section collapsed [no version is currently staged — the next is unplanned]. Backlog: added
+**M26 self-contained-demo** [orphaned ext effort, awaits its own design-roadmap pass]; the 3 prior items — DEF-M10-01,
+DEF-M21-01, M25-D9 — unchanged. Prior: 2026-06-14 v1.6 staged + in development; 2026-06-11 v1.5 staged.)_

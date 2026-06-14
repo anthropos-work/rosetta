@@ -4,18 +4,18 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-14):** **v1.0 … v1.5 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5`; records
-archived under [`releases/archive/`](releases/archive/)). **v1.6 "stage door" is now IN DEVELOPMENT** (designed
-2026-06-14; branch `release/01.60-stage-door`) — the **secret-provisioning release**: secrets are the one stack-lifecycle
-concern with **no owning section / tool / skill / doc** (today = manual prose + one `cp` in `ensure-clones.sh`; the TODO
-is at `setup_guide.md:447`). v1.6 builds a new `stack-secrets` extension that ingests a secret source (directory or zip,
-default `.agentspace/secrets`) and **provisions every repo of a stack** from it (values-blind), plus a **secret-coverage
-DNA** (a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per repo. 4 milestones
-M27→M30 (DNA+ingest → engine+gate → docs+skill → field-bake), all `section`-shaped, strictly sequential. **Tooling + docs
-only — zero platform-repo edits; never commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
-Genuinely-deferred work stays **unscheduled backlog** — DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd
-hermetic test), M25-D9 (dev taxonomy rc=4), all orthogonal to v1.6 ([`roadmap-vision.md`](roadmap-vision.md)). Live
-state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires;
+**Status (2026-06-14):** **v1.0 … v1.6 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5` / `v1.6`;
+records archived under [`releases/archive/`](releases/archive/)). **Rosetta is now between releases** — v1.6 "stage door"
+(the **secret-provisioning release**) shipped 2026-06-14 (tag `v1.6`, merged → main); the **next version is unplanned**
+(run `/developer-kit:design-roadmap` to scope it). v1.6 built a new `stack-secrets` extension that ingests a secret source
+(directory or zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from it (values-blind), plus a
+**secret-coverage DNA** (a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per
+repo — retiring the manual `.env` hand-copy + the `setup_guide.md:447` TODO. 4 milestones M27→M30 (DNA+ingest → engine+gate
+→ docs+skill → field-bake), all `section`-shaped, strictly sequential; **tooling + docs only — zero platform-repo edits;
+never commit `.env`; never write prod; no verb ever reads or echoes a secret value.** Genuinely-deferred work stays
+**unscheduled backlog** — M26 (self-contained demo, orphaned ext effort awaiting its own roadmap home), DEF-M10-01 (cloud
+store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4) ([`roadmap-vision.md`](roadmap-vision.md)).
+Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet — that appears when a whole *major* version retires;
 v1.3…v1.6 are the same major.)
 
 ## Files
@@ -48,15 +48,16 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.6 "stage door" IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door` cut from `main`).
-The **secret-provisioning release** — 4 strictly-sequential `section` milestones M27→M30: **M27** secret-coverage DNA +
-source ingestion (the new `stack-secrets` section; ingest dir/zip; the secret-DNA `introspect`+`diff` "keep-listed" gate)
-→ **M28** provisioning engine + coverage/verify gate (`provision` writes per-repo `.env`, idempotent + N=0-guarded,
-composes-with-the-injection-override; `check`/`measure` wired non-fatally into `/dev-up`+`/demo-up` pre-flight) → **M29**
-docs + `/stack-secrets` skill + corpus wiring (author `corpus/ops/secrets-spec.md`; retire the manual-copy prose) → **M30**
-field-bake (build a compliant `.agentspace/secrets` dir from current stack-dev + prove a full bring-up, the observable-
-behavior gate). Build all four with **`/developer-kit:build-milestone`** (all section). v1.5 "prop room" SHIPPED
-2026-06-14 (tag `v1.5`) was the prior release. _(Live state: [`state.md`](state.md). Backlog: [`roadmap-vision.md`](roadmap-vision.md).)_
+**Active:** **between releases — v1.6 "stage door" SHIPPED 2026-06-14** (tag `v1.6`, `release/01.60-stage-door` merged
+`--no-ff` → `main`). The **secret-provisioning release** delivered 4 strictly-sequential `section` milestones M27→M30:
+**M27** secret-coverage DNA + source ingestion (the new `stack-secrets` section; ingest dir/zip; the secret-DNA
+`introspect`+`diff` "keep-listed" gate) → **M28** provisioning engine + coverage/verify gate (`provision` writes per-repo
+`.env`, idempotent + N=0-guarded, composes-with-the-injection-override; `check`/`measure` wired non-fatally into
+`/dev-up`+`/demo-up` pre-flight) → **M29** docs + `/stack-secrets` skill + corpus wiring (`corpus/ops/secrets-spec.md`;
+retired the manual-copy prose + the `setup_guide.md:447` TODO) → **M30** field-bake (proved a full bring-up live on a
+fresh demo-3 from a stack-dev-assembled secret dir — the observable-behavior gate, Critical 100%). **Next:**
+**`/developer-kit:design-roadmap`** to scope the next (unplanned) version. v1.5 "prop room" SHIPPED 2026-06-14 (tag `v1.5`)
+was the prior release. _(Live state: [`state.md`](state.md). Backlog: [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

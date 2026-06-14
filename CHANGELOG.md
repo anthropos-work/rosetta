@@ -2,6 +2,30 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.6] "stage door" — 2026-06-14
+
+The **secret-provisioning release**: one mechanism that ingests a secret source (a directory **or** zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from it — **values-blind** (no verb ever reads, echoes, or logs a secret value) — verified by a **secret-coverage DNA** that *lists and keeps listed* the required secrets per repo. Retires the manual `.env` hand-copy. **Tooling + docs only — zero platform-repo edits; `.env` never committed; never writes prod.**
+
+### Added
+- **`/stack-secrets`** — provision a stack's secrets (`dev-N` / `demo-N`): write every repo's target `.env` from one secret source and verify coverage, values-blind. Drives the `stacksecrets` CLI (`check` / `provision` / `status`). Mirrors `/stack-seed`. (M29)
+- A **secret-coverage DNA** — gene = repo × KEY (**6 repos / 55 genes**); `introspect` rebuilds the required set from a hybrid source, `diff` is a two-tier keep-listed gate (fatal only on an already-tracked secret omitted for a repo → catches vacuously-green coverage). (M27)
+- **Directory + zip source provisioning** — one source value → each repo's correct per-file key (alias-mapped, e.g. the `gh-token` family across 3 files; distinct-similar pairs never auto-copied), with an explicit source-dir **layout contract** so a `zEnvs/` backup mirror or a stray `.env` can never be silently ingested. Per-repo target-file map pinned (`ant-academy → code/.env.local`, `next-web-app → apps/web/.env`). (M27/M28)
+- A **demo-aware secret pre-flight** wired non-fatally into `/dev-up` + `/demo-up` (warn on standard-missing, fail on critical-missing; Clerk keys satisfiable by Clerkenstein minting on demo stacks; `DEV_/DEMO_NO_SECRET_PREFLIGHT=1` opt-outs). `provision` is idempotent (copy-if-absent, `--force` to overwrite) and **N=0 main-dev-stack-guarded** so it can't clobber the operator's working `.env`. (M28)
+- **`corpus/ops/secrets-spec.md`** (net-new) — the secret-provisioning source-of-truth: the source-dir/zip layout contract, the 6-repo/55-gene DNA, the per-repo target-file map, the values-blind safety statement, the alias-family vs distinct-similar rules, the waived class, and the `0/1/3` exit contract. Plus the `/stack-secrets` skill, the CLAUDE.md skill-table + doc-index rows, and a `safety.md` clause. (M29)
+
+### Changed
+- **The manual `.env` hand-copy is retired** in favor of `/stack-secrets` — `setup_guide.md`'s hand-copy prose for studio-desk / ant-academy / next-web-app now points to the skill, and the in-tree **`setup_guide.md:447` TODO is deleted** (the per-repo key lists stay as reference). (M29)
+
+### Fixed
+- The **field-bake** (M30) proved the whole mechanism live on a fresh **demo-3** (17 containers UP, coverage Critical **100%**, prod `DIRECTUS_TOKEN` armed in **ZERO** containers) and caught + fixed **2 real release bugs**: (1) the demo secret pre-flight **silently skipped** — its source path resolved one level too shallow (doubled `.agentspace/.agentspace/secrets`), so the gate exited 2 instead of scoring; (2) the demo bring-up only *checked* coverage but **never provisioned** — added a non-fatal provision step (`DEMO_NO_PROVISION=1` opt-out). (M30)
+
+### Supply chain
+- The new `stack-secrets` Go module is **stdlib-only** — no `require` block, no `go.sum`, **0 new third-party deps** → a minimal values-blind audit surface. The 4 prior ext modules untouched; all-permissive licenses; `govulncheck` clean. Lockfile: `knowledge/plan/releases/archive/01.60-stage-door/dependencies.lock`.
+
+### Known limitations
+- The ~10–15% of keys that don't pass coverage are **entirely waived-class, by design — zero critical short**: AWS credentials supplied via the `~/.aws` mount, profile-gated keys (BREVO/messenger, customerio-sync), and optional Bunny/GCloud. (M30)
+- **Encrypted-zip source** (age/gpg) was dropped as a deliberate v1 boundary — plain dir + plain zip cover the need; re-proposal requires a fresh design-roadmap pass.
+
 ## [v1.5] "prop room" — 2026-06-14
 
 The **local-Directus release**: every stack now serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real images) on `--local-content` (demo default-on, dev opt-in). Prod-read remains the documented fallback. **Tooling + docs only — zero platform-repo edits.**

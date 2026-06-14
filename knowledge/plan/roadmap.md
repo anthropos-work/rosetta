@@ -57,8 +57,9 @@ builder skills).
 > DEF-M10-01 stays backlog, **re-signed fresh** at v1.5 design with its user-facing sting removed: v1.5 keeps the
 > *asset plane* on prod public links so demos show **real images** without the S3 blob-byte work.
 
-> **v1.6 "stage door" — IN DEVELOPMENT** (designed 2026-06-14 via `/developer-kit:design-roadmap`; branch
-> `release/01.60-stage-door` cut from `main`). The **secret-provisioning release** — closes the one stack-lifecycle
+> **v1.6 "stage door" — SHIPPED 2026-06-14** (tag `v1.6`; designed 2026-06-14 via `/developer-kit:design-roadmap`;
+> branch `release/01.60-stage-door` merged `--no-ff` → `main`; full detail in `## Done — v1.6` below). The
+> **secret-provisioning release** — closes the one stack-lifecycle
 > concern with **no owning section / tool / skill / doc**: secrets. Today the whole "make secrets land in the right
 > files" job is **one line of shell** (`cp platform/.env → peer` in `ensure-clones.sh`) + manual prose, with the TODO
 > written in-tree at `setup_guide.md:447`. v1.6 builds a real mechanism: a new `stack-secrets` extension that ingests
@@ -90,7 +91,7 @@ builder skills).
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
-| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`; **all 4 milestones M27–M30 closed 2026-06-14** — ready for `/developer-kit:close-release`) |
+| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -107,7 +108,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.6 "stage door" (designed 2026-06-14 · branch `release/01.60-stage-door`)
+## Done — v1.6 "stage door" (SHIPPED 2026-06-14 · tag `v1.6`)
 
 **Theme:** the **secret-provisioning release.** Every other stack-lifecycle concern in Rosetta has an owning
 `rosetta-extensions` section + a tool + a skill + a corpus doc (snapshot→`stacksnap`/`/stack-snapshot`/`snapshot-spec.md`;
@@ -147,7 +148,7 @@ pre-flight → a field-bake that proves it from current stack-dev.
 
 ### M27: Secret-coverage DNA + source ingestion
 **Status:** `done` (closed 2026-06-14) · **Shape:** `section`
-**Dir:** [m27-secret-coverage-dna/](releases/01.60-stage-door/m27-secret-coverage-dna/) (overview · progress · decisions · spec-notes · metrics · retro · audit-deferrals)
+**Dir:** [m27-secret-coverage-dna/](releases/archive/01.60-stage-door/m27-secret-coverage-dna/) (overview · progress · decisions · spec-notes · metrics · retro · audit-deferrals)
 **Closure:** all 12 deliverable sections landed Fate-1 — the new `stack-secrets` extension ships a **values-blind
 secret-coverage DNA** (55 genes / 6 repos: platform, app, sentinel, studio-desk, next-web-app, ant-academy), a
 **DNA-driven** dir+zip source reader that **structurally cannot** ingest a `zEnvs/` backup mirror or a stray
@@ -237,7 +238,7 @@ static positional regression (ext `9742126`). Deferral audit GREEN (0 new; DEF-M
 ### M29: Docs + `/stack-secrets` skill + corpus wiring
 **Status:** `done` (closed 2026-06-14)
 **Shape:** `section`
-**Dir:** [m29-secrets-docs-skill/](releases/01.60-stage-door/m29-secrets-docs-skill/) (overview · progress · decisions · spec-notes · kb-fidelity-audit · metrics · retro · audit-deferrals)
+**Dir:** [m29-secrets-docs-skill/](releases/archive/01.60-stage-door/m29-secrets-docs-skill/) (overview · progress · decisions · spec-notes · kb-fidelity-audit · metrics · retro · audit-deferrals)
 **Closure (2026-06-14):** Delivered all 8 boxes, rosetta-only. Authored **`corpus/ops/secrets-spec.md`** (net-new, 290 lines — the secret-provisioning source-of-truth: the source-dir/zip layout contract [the zEnvs defence], the 6-repo/55-gene secret-DNA [40 required · 8 optional · 7 waived · 13 critical, profile `graphql`], the per-repo target-file map [`ant-academy → code/.env.local`, `next-web-app → apps/web/.env` pinned], the values-blind safety statement, alias-family [`gh-token` × 3] vs distinct-similar rules [LiveKit pair, OPENAI_KEY/OPENAI_API_KEY], the waived class, the `DIRECTUS_TOKEN` non-rearm safety, the `0/1/3` exit contract); the **`/stack-secrets`** skill (mirrors `/stack-seed`: read spec → confirm non-prod target → build the pinned-tag `stage-door-m28` binary → run the verb → report values-blind); the **CLAUDE.md** skill-table row + Key-Documentation-Locations entry + Interconnected-Documentation rows 10/11 + both corpus index rows; **`safety.md` §2.9** (the values-blind / `PreflightEnv`-emitting / `DIRECTUS_TOKEN`-non-rearm clause); and the **`setup_guide.md`** retire-prose (the `/stack-secrets` fast-path callout + retired hand-copy for studio-desk/ant-academy/next-web + the **line-447 TODO deleted**, keeping the per-repo key lists as reference per M29-D4, keeping the root `platform/.env_example → .env` copy). **Decisions:** M29-D1 (build from pinned tag `stage-door-m28`, not clone HEAD), M29-D2 (skill `--check|--provision|--status` shorthand → real CLI subcommands), M29-D3 (README-index guard checks the same-dir README → indexed in `corpus/ops/README.md`), M29-D4 (setup_guide keeps the per-repo key lists, retires only the `cp` mechanics; ant-academy target corrected to `code/.env.local`). **Close review GREEN — 0 findings** across scope/code-quality/docs/tests/decision-triage. Every load-bearing doc claim re-verified against the ext engine at tag `stage-door-m28` (`9742126`): the 55/6/40-8-7/13-crit DNA, the `gh-token` 3-member alias family, `StripOnNonProdKeys` (3 keys), `MintedKeys` (6 keys), `ClassifyShape` + the `provision/io.go` value boundary + `provision_safety_test.go`, every `stacksecrets` CLI flag/subcommand. README-index guard exit 0; cross-refs resolve (16/0). 4 adversarial doc-consumer scenarios recorded (all clean). Deferral audit **GREEN** (0 new · 0 repeat · 0 aged-out; DEF-M27-01 dropped + DEF-M27-02 discharged from prior closes; 3 inherited backlog [DEF-M10-01/DEF-M21-01/M25-D9] re-signed at v1.5 close, carry). **Zero ext code** — the ext stayed on `main` @ `9742126` (= tag `stage-door-m28`), untouched; no new ext tag. **Tests:** Go **1027** / Python **459** unchanged (M29 touches no code); flake **0**. **Code:** none (rosetta markdown/text only).
 **Goal:** Make the feature discoverable + own a corpus doc: author `corpus/ops/secrets-spec.md`, add the `/stack-secrets` skill + CLAUDE.md skill-table row, retire the manual-copy prose + the `setup_guide.md:447` TODO, extend `safety.md`.
 **Scope:**
