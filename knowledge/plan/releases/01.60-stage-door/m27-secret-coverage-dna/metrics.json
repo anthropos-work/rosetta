@@ -1,0 +1,83 @@
+{
+  "milestone": "M27",
+  "title": "Secret-coverage DNA + source ingestion. A new stack-secrets extension that ingests a secret source (directory OR zip, default .agentspace/secrets) and a secret-coverage DNA that lists + keeps-listed the required secret KEY each repo of a stack needs — values-blind throughout. Folds in the check/measure scorer (the natural pairing with the DNA, M27-D3.2 Fate-1); provision + pre-flight wiring + demo-aware scoring stay M28.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-14",
+  "is_first_milestone": true,
+  "is_final_milestone": false,
+  "position_note": "M27 is the 1st of 4 milestones of v1.6 'stage door' (M27->M30, strictly sequential). M27 = the DNA + the ingestion reader + the scorer/diff verbs; M28 = the provision engine + the coverage/verify gate + bring-up wiring; M29 = the corpus doc (secrets-spec.md) + the /stack-secrets skill + CLAUDE.md wiring + setup_guide.md TODO retirement; M30 = the build-from-stack-dev field-bake. After this close: build M28.",
+  "kind": "an ext-code-bearing section milestone. The new stack-secrets section (~5180 lines: 11 source + 11 test files + the committed 55-gene secret-dna.json + the section README) lives ENTIRELY in the rosetta-extensions authoring copy, on branch m27/secret-coverage-dna, tagged stage-door-m27 @ 195ef93. The rosetta m27/secret-coverage-dna branch is markdown/text only (the milestone planning docs: overview/progress/decisions/spec-notes/kb-fidelity-audit + the close records). close-milestone's merge is entirely rosetta-side; the ext side (main merge / tag) is finalized by the orchestrator.",
+  "sections": {
+    "total": 12,
+    "all_checked": true,
+    "list": "stack-secrets scaffold (go.mod + cmd/stacksecrets) · source reader dir mode (values-blind) · source reader zip mode · source-dir layout contract (zEnvs/per-repo .env never silently ingested) · secret-DNA schema + secret-dna.json (gene = repo x KEY; strict load + Validate) · introspect from the hybrid source · list verb · diff verb (keep-listed gate exit 1 + undeclared-runtime-required guard) · waived classes modeled (AWS-mount, profile-gated, optional Bunny/GCloud) · alias families encoded (GH_PAT family) vs distinct-similar (OPENAI_KEY/OPENAI_API_KEY not auto-aliased) · hermetic unit tests (no values) · ext tag stage-door-m27"
+  },
+  "field_bugs_surfaced": {
+    "count": 0,
+    "note": "No live-field bugs at M27 (the field-bake is M30). The build's diff-vs-stack-dev DID catch 10 real cross-repo DNA omissions in the hand-curated map (tracked secrets declared for a repo with no gene there) — all fixed Fate-1 during build by adding the genuinely-needed genes (the keep-listed gate earning its keep against the real stack-dev). The harden pass surfaced 0 bugs (the build code held under deepening). The close review surfaced 0 code bugs — 2 ext doc-hygiene findings only."
+  },
+  "tests": {
+    "language": "Go (stdlib-only — the secret-DNA is JSON, the readers are archive/zip + bufio; no go.sum). All three packages co-locate tests with source; no source file lacks a test.",
+    "go_test_funcs_stack_secrets": 113,
+    "go_total": 980,
+    "go_total_baseline_v1.5": 867,
+    "go_total_delta": "+113",
+    "go_by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 113},
+    "go_total_note": "The v1.5-baseline 867 (alignment 52 + clerkenstein 223 + stack-seeding 259 + stack-snapshot 333) is unchanged — M27 touches no prior section. The +113 is entirely the new stack-secrets section (build + a two-pass harden that added 40: 27 Pass 1 + 13 Pass 2). Measured at ext m27 head (Test+Fuzz func-decls, full --count=1).",
+    "python_total_unchanged": 459,
+    "python_note": "Python total (459 collected: 451 active + 8 env-gated skip) unchanged — M27 touches no Python (stack-secrets is Go-only; the rosetta branch is markdown-only).",
+    "flake_count": 0,
+    "flake_gate": "5/5 sequential -shuffle clean runs of the full stack-secrets suite at close (post-fix). -race + gofmt + go vet all clean.",
+    "rosetta_test_surface": false,
+    "rosetta_test_note": "The rosetta m27 branch carries no executable code (planning + close-record markdown only). The executable test surface is the ext stack-secrets section, counted at the ext-repo level."
+  },
+  "coverage": {
+    "note": "From the harden pass (recorded in progress.md § M27: Hardening). Statements total 93.6% -> 98.3% (+4.7). By package: cmd/stacksecrets 87.4% -> 97.9% (+10.5); secretdna 96.9% -> 99.2% (+2.3); source 91.0% -> 96.2% (+5.2). The remaining uncovered lines are near-impossible defensive branches (main()'s os.Exit wrapper, post-successful-read f.Close() error returns, a json.MarshalIndent failure on a valid struct) — deliberately not chased with contrived harnesses (coverage-is-a-finder).",
+    "harden_bugs_surfaced": 0,
+    "harden_bugs_note": "0 bugs in the harden pass — the build-phase code was solid; every new test passed against the shipped implementation (the layout contract, values-blind extraction, the two-tier diff gate, the fail-loud error paths all held under adversarial input)."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M27 (a values-blind DNA harness over .env-shaped files: JSON load + bufio scans + map lookups; no hot path, no perf surface). No threshold tests warranted."
+  },
+  "review": {
+    "findings": 2,
+    "findings_note": "2 findings, both Fate-1 ext doc-hygiene: 0 scope · 0 code-quality · 1 docs (DOC-1: stack-secrets missing from the ext top-level README Sections table) · 1 tests (TEST-1: the section README quoted a stale '94 tests'; ground truth 113) · 0 decision-blend (M27 corpus doc is M29 scope per the repo-split). Both fixed in the ext commit 537aeff. 0 escape-hatch.",
+    "scope": "GREEN — all 12 deliverable boxes checked; the overview In: list fully delivered; the Out items (provision/gate/wiring -> M28, skill+doc -> M29, field-bake -> M30) correctly belong elsewhere. The check/measure fold is the documented Fate-1 (M27-D3.2), not creep — withholding the scorer would have been a partial landing (the DNA would have no way to be exercised). No silent drops; no code TODO/FIXME/HACK in the diff.",
+    "code_quality": "GREEN — consistent patterns across all 11 source files (uniform error handling, naming, values-blind discipline); go vet + gofmt clean; no dead code (sortedKeys is a test-consumed Source-impl helper). The values-blind invariant verified end-to-end: only ClassifyShape reads a value (as a discarded local), the committed secret-dna.json carries zero secret-shaped tokens, and the single value-reading call site (source.go:310) immediately discards into ClassifyShape.",
+    "adversarial": "GREEN — 4 scenarios recorded in decisions.md § Adversarial review (value leak through a shape probe / error message; zEnvs-or-stray-.env silent ingestion; malformed/oversized line crash-or-false-clean; vacuously-green gate). Each was already turned into a regression test by the harden pass; close confirmed the coverage, no new code fix.",
+    "docs": "GREEN after fix — DOC-1 (the stack-secrets section row was absent from the ext README Sections table) added; the section README is otherwise accurate (layout contract, hybrid introspect, the two-tier gate, the gene schema, alias/waived classes all match the code). No rosetta corpus doc is due at M27 (confirmed by grep: 0 stack-secrets references in corpus/CLAUDE.md/.claude — the user-facing doc lands M29 per the repo-split).",
+    "tests": "GREEN after fix — TEST-1 (handbook count drift 94 -> 113) reconciled to runner truth. Full suite -race green (113 funcs), flake gate 5/5. No test gaps (the harden pass already covered the risk surface: layout contract, values-blind extraction, the two-tier gate, alias vs distinct-similar, fail-loud error paths).",
+    "decision_triage": "M27-D1 (the M26->M27 renumber) / M27-D2 (the DNA-scoped two-tier gate) / M27-D3 (stdlib-only + check/measure fold + introspect read-only + profile scoping + encrypted-zip boundary) -> ARCHIVE (maintainer-only). The M28/M29 handoffs (provision must defer to the DIRECTUS_TOKEN strip; the conditional per-gene-profile residual; the encrypted-zip boundary) are already captured in the decision text and the spec-notes; the user/developer-facing corpus doc for the feature is M29 scope per the repo-split. No M27 KB blend.",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-14-m27-close.md. M27 is the first milestone of v1.6, so there is no within-release item to repeat. 2 milestone-scoped items fated: DEF-M27-01 (encrypted-zip age/gpg) -> DROP (a documented v1 scope boundary in M27-D3.5, not a pending deferral — a complete landing pulls in a crypto + key-management surface contradicting the deliberate stdlib-only values-blind design); DEF-M27-02 (per-gene profile tag) -> LAND-NEXT Fate-2 (M28-owned-if-it-wires-non-default-profile-bring-ups; already captured in M27-D3.4, no M28 overview.md edit required). 3 inherited release-level backlog items (DEF-M10-01 S3 blob bytes, DEF-M21-01, M25-D9) -> KEEP-DEFERRED, re-signed <1 day ago at the v1.5 close, all orthogonal to secret provisioning. 0 repeat, 0 chronic, 0 aged-out, 0 blockers."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 12 deliverable sections (scaffold + dir reader + zip reader + layout contract + secret-DNA schema/secret-dna.json + hybrid introspect + list + diff keep-listed gate + waived classes + alias families/distinct-similar + hermetic tests + ext tag) + the check/measure scorer folded in Fate-1 (M27-D3.2) + the 10 build-time DNA-omission fixes + the close fixes (DOC-1 README index row, TEST-1 count reconcile, the 4 adversarial scenario records).",
+    "confirmed_covered_fate2": "DEF-M27-02 (per-gene profile tag) — the conditional residual is naturally owned by M28 (the milestone that wires bring-ups); M27-D3.4 records the handoff, so no M28 overview.md edit is required.",
+    "annotated_fate3": "none — no new Fate-3 roadmap mutation at M27 close. M28's overview.md already names the provision/gate/wiring scope that M27 routed forward (the standard sequential handoff, not an annotate-attach).",
+    "dropped": "DEF-M27-01 (encrypted-zip age/gpg source ingestion) DROPPED from the deferral ledger as a documented v1 scope boundary (M27-D3.5) — not a tooling defect, a deliberate stdlib-only design choice (a crypto + key-management surface no consumer needs; plain dir/zip covers the M30 field-bake). Stays recorded as a known boundary for any future need.",
+    "escape_hatch_release_scope_breaking": "none. M27 introduced zero release-scope-breaking deferrals. The 3 inherited cross-release backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) are untouched by M27 (orthogonal to secret provisioning) — not new escape-hatch.",
+    "kept_followup": "none M27-originated beyond the two fated above. The inherited 3 (DEF-M10-01 / DEF-M21-01 / M25-D9) are kept on the release-level backlog, re-signed at the v1.5 close."
+  },
+  "delivered": {
+    "rosetta": "the m27/secret-coverage-dna planning + close records: overview/progress/decisions/spec-notes/kb-fidelity-audit + the audit-deferrals report (deferral-audit-2026-06-14-m27-close.md) + the Final Review section in progress.md + the Adversarial review subsection + the metrics.json + the retro. No executable code (markdown/text only). state.md headline Go-count bumped 867 -> 980; roadmap M27 status -> done.",
+    "ext": "rosetta-extensions (tag stage-door-m27 @ 195ef93): the entire stack-secrets section — go.mod + cmd/stacksecrets (the list/check(=measure)/introspect/diff CLI) + the secretdna package (dna/source/operators/measure/introspect/diff/catalog + the committed 55-gene secret-dna.json) + the source package (dir+zip ingestion, the DNA-driven layout contract) + the section README + 113 hermetic tests. PLUS the close doc-hygiene commit 537aeff (README index row + count reconcile) on the m27 branch (NOT folded into the tag — the tag pins the release-baked code; the orchestrator finalizes the ext side)."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — stack-secrets (the whole new section, M27).",
+    "head_at_tag": "195ef93",
+    "tag": "stage-door-m27",
+    "close_commit": "537aeff (close doc-hygiene: README index row + 94->113 count reconcile)",
+    "tag_note": "v1.6 per-milestone naming stage-door-mNN. The tag stage-door-m27 @ 195ef93 pins the release-baked code (build + harden). The close review's doc-hygiene fix (537aeff) lands on the m27 branch AFTER the tag — the orchestrator decides ext-side finalization (main merge / tag). close-milestone's merge is entirely rosetta-side m27/secret-coverage-dna -> release/01.60-stage-door.",
+    "code_commits_at_tag": [
+      "02158e9 (hybrid introspect + diff keep-listed gate + the real secret-dna.json)",
+      "39e817d (the stacksecrets CLI + the DNA-scoped two-tier keep-listed gate)",
+      "195ef93 (section README — safety invariant, layout contract, the gate, the CLI; TAG here)",
+      "ef63d1a (harden Pass 1 — zip suffix decoy, values-blind adversarial extraction, diff ordering, alias distinct-similar, CLI error paths)",
+      "7f3b813 (harden Pass 2 — error-path completeness, fail-loud not silent)",
+      "537aeff (close — README index row + test-count reconcile)"
+    ]
+  },
+  "notes": "M27 is the 1st of 4 milestones of v1.6 'stage door' — the secret-provisioning release's foundation: a values-blind secret-coverage DNA (55 genes / 6 repos) + a DNA-driven dir/zip source reader that structurally can't ingest a zEnvs backup mirror or a stray .env, plus the check/measure scorer and the DNA-scoped two-tier keep-listed diff gate folded in. The whole section is stdlib-only (no go.sum) so the values-blind audit surface is trivially small. Verified live against the real stack-dev: diff exits 0 (0 gate-fatal), check reports real coverage + per-repo shortfalls with NO secret value printed. Close was clean: 2 findings (0 scope / 0 code / 1 docs / 1 tests / 0 blend), both Fate-1 ext doc-hygiene fixed in 537aeff; 4 adversarial scenarios recorded (all already test-pinned); the deferral audit GREEN (DEF-M27-01 DROP as a v1 boundary, DEF-M27-02 Fate-2 M28-owned, inherited 3 KEEP); 0 escape-hatch. Go 867 -> 980 (+113); Python 459 unchanged; flake 0; 5/5 -shuffle clean; -race + gofmt + go vet clean. The rosetta merge is markdown/text only (the code is in ext, tagged stage-door-m27 @ 195ef93). Next: build M28 (the provision engine + the coverage/verify gate)."
+}

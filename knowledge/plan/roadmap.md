@@ -90,7 +90,7 @@ builder skills).
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
-| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 → M28 → M29 → M30 | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`) |
+| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 → M29 → M30 | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`; M27 closed 2026-06-14) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -146,8 +146,31 @@ pre-flight → a field-bake that proves it from current stack-dev.
 > `stage-door-mNN`, consumed per-stack at the pinned tag); `rosetta` owns `.claude/skills/*`, `corpus/*`, `CLAUDE.md`.
 
 ### M27: Secret-coverage DNA + source ingestion
-**Status:** `planned`
-**Shape:** `section`
+**Status:** `done` (closed 2026-06-14) · **Shape:** `section`
+**Dir:** [m27-secret-coverage-dna/](releases/01.60-stage-door/m27-secret-coverage-dna/) (overview · progress · decisions · spec-notes · metrics · retro · audit-deferrals)
+**Closure:** all 12 deliverable sections landed Fate-1 — the new `stack-secrets` extension ships a **values-blind
+secret-coverage DNA** (55 genes / 6 repos: platform, app, sentinel, studio-desk, next-web-app, ant-academy), a
+**DNA-driven** dir+zip source reader that **structurally cannot** ingest a `zEnvs/` backup mirror or a stray
+`.env` (it opens exactly `<root>/<repo>/<target_file>`, never enumerates the tree — the layout-contract defence),
+the hybrid `introspect` (`platform/.env_example` + sentinel + each frontend's `.env.example` + a curated
+compose/build-arg set — verified 8 of 9 Go repos ship no `.env.example`), the DNA-scoped **two-tier keep-listed
+`diff` gate** (M27-D2: gate-fatal only on an already-tracked secret omitted for a repo → vacuously-green coverage;
+never-tracked keys → informational triage), and the `stacksecrets` CLI (`list`/`check`(=`measure`)/`introspect`/
+`diff`). The **`check`/`measure` scorer was folded in Fate-1** (M27-D3.2 — the natural pairing with the DNA;
+`provision` + pre-flight wiring + demo-aware scoring stay M28). **HARD SAFETY held throughout:** no verb reads,
+echoes, logs, or persists a secret VALUE — only `ClassifyShape` touches a value (as a discarded local), the
+committed `secret-dna.json` carries zero secret-shaped tokens; verified end-to-end against the real stack-dev
+(`diff` exits 0, `check` reports coverage with no value printed). The build's diff-vs-stack-dev caught **10 real
+cross-repo DNA omissions** → fixed Fate-1. **Stdlib-only** module (no `go.sum`) so the values-blind audit surface
+is trivially small. **Close:** 2 findings — 0 scope · 0 code-quality · 1 docs (DOC-1 the ext README Sections table
+missed the `stack-secrets` row → Fate-1 fixed) · 1 tests (TEST-1 the section README quoted a stale "94 tests" →
+reconciled to 113) · 0 decision-blend (the feature's corpus doc is M29 scope per the repo-split). 4 adversarial
+scenarios recorded (all already test-pinned). Deferral audit **GREEN** (M27 is the first v1.6 milestone — no repeat
+possible; DEF-M27-01 encrypted-zip → **DROP** as a documented v1 boundary, DEF-M27-02 per-gene-profile-tag →
+**Fate-2** M28-owned-if-needed, inherited DEF-M10-01/DEF-M21-01/M25-D9 → **KEEP** re-signed at v1.5 close). Go
+867→**980** (+113, entirely the new section; build + 2-pass harden); Python **459** unchanged; flake **0**; 5/5
+`-shuffle` clean; `-race` + `gofmt` + `go vet` clean. **Code:** `rosetta-extensions` @ tag `stage-door-m27`
+(ext head `195ef93`; close doc-hygiene commit `537aeff` on the `m27` branch, orchestrator-finalized).
 **Goal:** A new `stack-secrets` extension that ingests a secret source (directory or zip) and a secret-coverage DNA that *lists and keeps listed* the required secrets per repo — values-blind throughout.
 **Scope:**
   - In: new `rosetta-extensions/stack-secrets/` section + `go.mod` + `cmd/stacksecrets`, authored in the `.agentspace` copy, tagged.
