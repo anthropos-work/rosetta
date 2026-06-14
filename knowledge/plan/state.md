@@ -1,58 +1,71 @@
 # State
 
-**Active version:** **v1.5 "prop room"** (designed 2026-06-11; branch `release/01.50-prop-room`). The
-**local-Directus release** — every stack today reads public content **live from prod**; v1.5 stands up a **local
-Directus per stack** serving the **captured public library**, so content is self-contained. **Real images are
-preserved** by keeping the asset plane on prod public links (data plane local, asset plane prod). Coverage: **every
-demo** stack (default), **any dev-N≥1** (opt-in `--local-content`), **N=0** manual (documented recipe + n=0 guard).
-5 milestones M21→M25 (structure capture → executed provisioning + lifecycle → content cutover + referential closure
-→ docs + hygiene → field bake). **Tooling + docs only — zero platform-repo edits; capture stays read-only / public-
-only / prod-untouched.** Full plan: [`roadmap.md`](roadmap.md) § In Development.
-**Active milestone:** _(between milestones — v1.5 "prop room" is feature-complete; all 5 milestones M21→M25 closed. Next step is **release closure**, not a new milestone — see Next up.)_
-**Last closed:** **M25 — Field bake: the observable-behavior gate — 2026-06-13** (`section`; all 5 live done-bars GREEN). The live field-bake earned its keep: the operator-sanctioned prod read filled the cache **structure-bearing** so the local Directus observably **SERVES** the captured catalog (curl-proven, data plane local + asset plane prod). Surfaced + fixed **4 real release bugs** Fate-1 in ext — the headline being the `directus_files` **tenant-data leak the firewall caught FAIL-CLOSED** (M25-D5, fixed in the FILTER, firewall never weakened) + two dangling-FK-to-admin-UI classes (M25-D6/D7) + the offline `GOTOOLCHAIN` regression (M25-D1). Deferral audit GREEN (DEF-M21-02 RESOLVED in its destination milestone); 0 escape-hatch. ext tag `prop-room-m25`. Full narrative: `roadmap.md` § M25.
-**Next up:** **`/developer-kit:close-release`** — the release-level review + the `release/01.50-prop-room` → `main` merge + tag. v1.5 is the local-Directus release; all milestones are closed and merged to the release branch.
-**Phase:** **v1.5 FEATURE-COMPLETE — M25 CLOSED + merged to `release/01.50-prop-room` (the final milestone); awaiting `/developer-kit:close-release`.**
+**Active version:** _(between releases — **v1.5 "prop room" SHIPPED 2026-06-14**, tag `v1.5`. The next version is
+unplanned; run [`/developer-kit:design-roadmap`](roadmap.md) to scope it.)_
+**Active milestone:** _(between releases)_
+**Last closed:** **v1.5 "prop room" — 2026-06-14**, tag `v1.5`. The **local-Directus release**: every stack now
+serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real
+images) on `--local-content` (demo default-on, dev opt-in); prod-read is the documented fallback. M21 structure
+capture → M22 executed provisioning + per-stack Directus lifecycle → M23 content cutover + referential closure →
+M24 docs convergence + hygiene → M25 field-bake. The closing field-bake proved it live on a 16 GB box (curl-served
+catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bugs** Fate-1, headline being the
+`directus_files` **tenant-data leak the firewall caught FAIL-CLOSED** (fixed in the FILTER, firewall never weakened).
+**Tooling + docs only — zero platform-repo edits.**
+**Next up:** **`/developer-kit:design-roadmap`** to scope the next version. (Outward-facing: push the 5 ext tags
+`prop-room-m21..m25` to `origin`; the M24 `/project-stats` fix is a separate commit in the `ant-singularity` node repo.)
+**Phase:** **between releases — awaiting `/developer-kit:design-roadmap`.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
-_(v1.5 "prop room" is the active release-in-development — see above; the list below is the shipped baseline it builds on.)_
-- **v1.3b "dress rehearsal"** — **2026-06-09**, tag `v1.3.1`. The **field-hardening release** for the 14 `/demo-up` field issues: M16 land-fixes + doc-truth (published the devpath + migrate-race fixes, finished `anthropos-dev → stack-dev`) → M17 re-run safety (replay/seed idempotency + the `set -e` first-run-race) → M18 the verification net (`stack-verify` offset/scope-aware + auto-wired NON-FATAL; "UP" = verified) → M19 the frontend tier (next-web + studio-desk + ant-academy, per-demo cached builds, `--no-ui`, **zero platform-repo edits**) → M20 lifecycle convergence (`/demo-up` auto-set-dresses like `/dev-up` via one shared engine + the cold-start runbook). 4 net-new corpus docs (`idempotency`/`verification`/`demo/frontend-tier`/`snapshot-cold-start`). Go 713→**736** (+23, all M17); Python 174→**360 collected** (net-new stack-verify suite 0→87 + demo-stack/dev-stack/stack-injection growth); flake 0; triple-clean 3/3; supply-chain GREEN (0 called third-party CVEs; all-permissive). close-release GREEN (0 must-fix beyond 2 doc-index rows; deferral re-audit GREEN — DEF-M10-01 → backlog (unscheduled) untouched/not-aged). Records: [releases/archive/01.3b-dress-rehearsal/](releases/archive/01.3b-dress-rehearsal/) (review · retro · metrics · lockfile).
-- **v1.3 "stack party"** — **2026-06-07**, tag `v1.3`. The **dev/demo convergence**: a unified first-available-N stack registry [M12], dev-as-peer (the per-stack-Directus recipe + firewall check [print-only — not a working local Directus; see roadmap.md Correction] + auto-snapshot + light seed) [M13], one generic `stack-*` skill set [M14], and a code-cited `corpus/ops/safety.md` with fail-closed drift guards [M15]. 1 signed escape-hatch (DEF-M10-01 → backlog/unscheduled). Records: [releases/archive/01.30-stack-party/](releases/archive/01.30-stack-party/).
-- **v1.2 "set dressing"** — **2026-06-07**, tag `v1.2`. The **snapshot mechanism**: a dedicated `stack-snapshot` extension that captures the public reference library read-only from prod, manifest-caches it in `.agentspace`, replays it per-stack behind a tested tenant-data firewall — 100% data-DNA. Records: [releases/archive/01.20-set-dressing/](releases/archive/01.20-set-dressing/).
+- **v1.5 "prop room"** — **2026-06-14**, tag `v1.5`. The **local-Directus release**: stacks serve their own captured
+  public catalog locally (data plane local, asset plane prod) on `--local-content`. M21 structure capture (capture
+  the content-model DDL+PKs+serve-rows atomically with rows; firewall structural-metadata admissibility class;
+  redefined `stacksnap` exit codes) → M22 executed provisioning (per-stack Directus as a compose service, offset
+  port, idempotent, verified; the `EnvContract` firewall a load-bearing executed gate) → M23 content cutover
+  (`DIRECTUS_BASE_ADDR` re-point demo+dev; studio-desk minted token; `directus_files` ref capture; cross-surface
+  closure gene) → M24 docs convergence + 4 hygiene items (go1.25.11 pin, README-index guard, zero-critical-genes
+  guard, `/project-stats` scope fix) → M25 field-bake (5/5 live done-bars GREEN on the real box; 4 field bugs fixed).
+  Go 736→**867** (+131); Python 360→**459** (+99); flake **0**; triple-clean 3/3; supply-chain GREEN (0 called CVEs,
+  go1.25.11 clears the 12 stdlib advisories; all-permissive licenses). close-release GREEN (1 must-fix doc + 2
+  should-fix, all Fate-1 land-now; deferral re-audit GREEN, DEF-M21-01 + M25-D9 → roadmap-vision backlog).
+  Code: `rosetta-extensions` @ tags `prop-room-m21..m25` (ext head `fbb8783`). Records:
+  [releases/archive/01.50-prop-room/](releases/archive/01.50-prop-room/) (review · retro · metrics · lockfile).
+- **v1.3b "dress rehearsal"** — **2026-06-09**, tag `v1.3.1`. The **field-hardening release** for the 14 `/demo-up`
+  field issues: M16 land-fixes → M17 re-run safety → M18 the verification net → M19 the frontend tier → M20 lifecycle
+  convergence. Go 713→736; Python 174→360 collected; flake 0; triple-clean 3/3; supply-chain GREEN. Records:
+  [releases/archive/01.3b-dress-rehearsal/](releases/archive/01.3b-dress-rehearsal/).
+- **v1.3 "stack party"** — **2026-06-07**, tag `v1.3`. The **dev/demo convergence**: unified stack registry [M12],
+  dev-as-peer [M13], one generic `stack-*` skill set [M14], code-cited `safety.md` [M15]. Records:
+  [releases/archive/01.30-stack-party/](releases/archive/01.30-stack-party/).
 
-## Headline numbers (v1.5/M25 close — 2026-06-13; baseline v1.3b 2026-06-09)
-- **M25 (the field-bake) is markdown/text only rosetta-side — no rosetta test delta.** Its CODE fixes (4 live field bugs) land in `rosetta-extensions` (`stack-snapshot`/`demo-stack`), tag `prop-room-m25` @ `1a2fd91`; the ext harden added **+8 tests** (firewall `AssertPlan` **98→100%**, NullColumns/closure deepening, 0 flakes) on the M25 fix surface. The rosetta-extensions module totals below are unchanged by the rosetta merge.
-- **Go test funcs:** **850** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` **52** · clerkenstein 223 · stack-seeding 259 · stack-snapshot 316 (the M25 fixes deepen existing stack-snapshot fix functions; the +8 harden tests extend coverage in-place). `go vet` + `gofmt` clean; flake **0**.
-- **Python tests (M24-touched suite):** **stack-core 77→85** (+8, the new `corpus_index_guard.py` README-index-row lint — 8 build + 8 harden incl. the prefix-collision regression). The other 4 suites (dev-stack · demo-stack · stack-injection 110 · stack-verify) are **untouched by M24**. The live corpus README-index guard runs **exit 0** (every doc indexed, incl. the M24 docs + the 7 backfilled gaps). Flake **0** (5/5 sequential). py_compile CLEAN. (Counts via `python3 -m unittest discover` — stdlib unittest.)
-- **The v1.3b thesis:** `/demo-up` now produces a **full, populated, verified, demoable** stack — full UI tier (M19) + self-verifying bring-up (M18) + re-run-safe primitives (M17) + auto-set-dress (M20) reusing the dev pass byte-for-byte, all on a 16 GB Mac, **zero platform-repo edits**.
-- **Coverage:** **100% of the full data-DNA catalog** (inherited from v1.2; unchanged — nothing waived).
-- **Alignment gates (held green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces (Go 22/22, JS/FAPI 9/9, `@clerk/express` 9/9, deployment/injection 7/7). v1.3b touched no clerkenstein.
-- **Test health:** flake **0**; triple-clean **3/3** (4 Go `-race -shuffle` + 5 Python suites); supply-chain GREEN (0 called third-party CVEs; the 12 stdlib advisories @go1.25.3 now **pinned out** by M24's explicit `toolchain go1.25.11` on all 4 go.mod + the clerkenstein CI; all-permissive licenses).
+## Headline numbers (v1.5 close — 2026-06-14; baseline v1.3b 2026-06-09)
+- **Go test funcs:** **867** total (`Test`+`Fuzz`, measured at final ext HEAD `fbb8783`). Per-module:
+  `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333**.
+  Baseline v1.3b 736 → **+131**. `go vet` + `gofmt` clean; flake **0**.
+- **Python tests:** **459** collected (451 active + 8 env-gated skip). Per-suite: stack-core **85** · dev-stack **73**
+  · demo-stack **87** · stack-injection **110** · stack-verify **104**. Baseline v1.3b 360 → **+99**. py_compile CLEAN;
+  the corpus README-index guard runs **exit 0** (every doc indexed).
+- **The v1.5 thesis:** a freshly-bootstrapped, stacksnap-provisioned per-stack Directus **serves the captured public
+  catalog locally** (data plane local, asset plane prod) with **zero hand SQL** — proven live on a 16 GB box (M25
+  curl-served, DB-1/DB-2 GREEN). Demo default-on / dev opt-in (`--local-content`); prod-read the documented fallback.
+- **Safety:** the tenant-data firewall held **fail-closed** under live prod capture (M25 caught a real 158-tenant-file
+  over-capture, refused to persist, zero leak); fixed in the FILTER, never weakened. 100% data-DNA catalog (unchanged).
+- **Alignment gates (held green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces. v1.5 touched no clerkenstein behavior.
+- **Test health:** flake **0**; triple-clean **3/3** (stack-snapshot `-race -shuffle` + the full suites); supply-chain
+  GREEN (0 called CVEs; go1.25.11 pinned out the 12 stdlib advisories on all 4 go.mod + clerkenstein CI; all-permissive).
 
 ## Branch model
-**v1.5 IN DEVELOPMENT:** `release/01.50-prop-room` cut from `main` (2026-06-11) at design time, per the canonical
-flow (release branch exists from M21 onward so milestone branches have a parent). Milestone branches `m21/…` … `m25/…`
-are created from it by `/developer-kit:build-mstone-iters` (M21, iterative) / `/developer-kit:build-milestone` (M22–M25,
-section) as each starts. v1.5 extensions tooling is authored in `.agentspace/rosetta-extensions/` and tagged
-`prop-room-mNN`, consumed per-stack at the pinned tag (inheriting the v1.3b head `51a07cb`). v1.5 ext markers so
-far: **`prop-room-m21`** · **`m22`** · **`m23`** · **`m24`** @ `6a4749d` (M24-close head; M24's §7 `/project-stats`
-fix is the cross-repo developer-kit `825cdce`, outside the ext tag).
-**v1.3b SHIPPED:** `release/01.3b-dress-rehearsal` merged `--no-ff` → `main`, tagged **`v1.3.1`** (2026-06-09); release branch deleted; all 5 milestone branches (`m16/land-fixes` … `m20/lifecycle-convergence`) merged + deleted. The stack tooling lives in the **private** `anthropos-work/rosetta-extensions` monorepo — authored + tagged in the authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag. v1.3b extensions markers: **`dress-rehearsal-m16`** @ `e6161b0` · **`m17`** @ `0d36251` · **`m18`** @ `777723a` · **`m19`** @ `4f96ddd` · **`m20`** @ `51a07cb`; extensions `main` at `51a07cb` on `origin`; `stack-demo/rosetta-extensions` consumed @ `dress-rehearsal-m20`. Snapshot payloads live in a gitignored `.agentspace/snapshots/` cache (cloud/S3 store = backlog/unscheduled, DEF-M10-01).
-**v1.3 SHIPPED:** tagged **`v1.3`** (2026-06-07). **v1.2 SHIPPED + pushed:** **`v1.2`**. **v1.1 SHIPPED + pushed:** **`v1.1`**. **v1.0 SHIPPED:** `v1.0` (2026-06-03).
+**v1.5 SHIPPED:** `release/01.50-prop-room` merged `--no-ff` → `main`, tagged **`v1.5`** (2026-06-14); release branch
+deleted; all 5 milestone branches (`m21/structure-capture` … `m25/field-bake`) merged + deleted. The stack tooling
+lives in the **private** `anthropos-work/rosetta-extensions` monorepo — authored + tagged in `.agentspace/rosetta-
+extensions/`, consumed per-stack at a pinned tag. v1.5 ext markers: **`prop-room-m21`** · **`m22`** · **`m23`** ·
+**`m24`** · **`m25`** @ `fbb8783` (final, includes the close-release ext fixes); the M24 `/project-stats` fix is the
+cross-repo developer-kit `825cdce` in the `ant-singularity` node repo (outside the ext tags). Snapshot payloads live
+in a gitignored `.agentspace/snapshots/` cache (cloud/S3 store = backlog/unscheduled, DEF-M10-01).
+**Prior:** **v1.3b** tag `v1.3.1` (2026-06-09) · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0` (2026-06-03).
 
-_Last updated: 2026-06-13 (**M24 "Docs convergence + hygiene strand" CLOSED** — section, all 7 sections Fate-1,
-merged to `release/01.50-prop-room`. The corpus now tells the new truth: the **fictional local-Directus** docker
-service (image `directus/directus:10.10.1` + admin/password + a compose snippet — it **never existed** in the
-platform compose, verified) is corrected across `external_services.md`/`service_taxonomy.md`/`quick_ops.md`; the
-known-state + `directus-local.md` + `snapshot-spec.md` rewritten on the M23 cutover; the print-only/exit-4/live-
-from-prod framing swept across 5 skills + `CLAUDE.md` + 5 demo docs (the real two-path posture: prod-read default,
-per-stack local Directus on `--local-content`). The 4 aged-out hygiene items all Fate-1: the `toolchain go1.25.11`
-pin (clears the 12 called-stdlib advisories), the corpus README-index-row guard (token-bounded; dog-fooded → 7 gaps
-backfilled; harden fixed a prefix-collision false-negative), the alignment zero-critical-genes guard (Validate +
-GateMet defence-in-depth), and the `/project-stats` scope fix (cross-repo developer-kit `825cdce`). Close clean:
-5 findings (0 scope / 0 must-fix code-quality / 0 docs / 0 tests / 1 adversarial-record / 3 decision-triage),
-deferral audit GREEN (0 new deferrals, 4 chartered hygiene items cleared, 3 standing inherited unchanged + not
-aged). Go 844→850 (+6, all alignment); python stack-core 77→85 (+8). Ext tag `prop-room-m24` @ `6a4749d` set by
-the orchestrator post-close. Next + last: build M25 (field bake), then close-release. Prior: 2026-06-13 M23 CLOSED
-(content cutover); 2026-06-13 M22 CLOSED (lifecycle half); 2026-06-13 M21 CLOSED (structure half); 2026-06-11 v1.5
-designed.)_
+_Last updated: 2026-06-14 (**v1.5 "prop room" SHIPPED** via `/developer-kit:close-release` — 5-dimension review:
+supply-chain GREEN, scope/fate YELLOW→resolved, code-quality + docs fixes landed Fate-1 [the M24 sweep had missed
+`snapshot-cold-start.md`; a stale "exit-4 / not-yet-automated" claim was the 1 must-fix], tests GREEN [Go +131 /
+Python +99 / flake 0], deferral re-audit GREEN [DEF-M21-01 + M25-D9 → roadmap-vision backlog]. Merged → main, tagged
+`v1.5`. Prior: 2026-06-13 M25 CLOSED (field-bake — v1.5 feature-complete).)_

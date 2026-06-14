@@ -1,0 +1,27 @@
+{
+  "release": "v1.5 \"prop room\"",
+  "branch": "release/01.50-prop-room",
+  "closed": "2026-06-14",
+  "milestones": ["M21","M22","M23","M24","M25"],
+  "code_location": "rosetta-extensions @ tags prop-room-m21..prop-room-m25 (final ext HEAD fbb8783)",
+  "go_test_funcs": {
+    "total": 867,
+    "by_module": {"alignment": 52, "clerkenstein": 223, "stack-snapshot": 333, "stack-seeding": 259},
+    "baseline_v1.3b": 736,
+    "delta": "+131",
+    "note": "measured at final ext HEAD (Test+Fuzz func-decls). The M24-frozen aggregate (850) undercounts stack-snapshot's M25 fix+harden tests (316->333) by 17; true final = 867."
+  },
+  "python_tests": {
+    "total_collected": 459,
+    "active": 451,
+    "skipped": 8,
+    "by_suite": {"stack-core": 85, "dev-stack": 73, "demo-stack": 87, "stack-injection": 110, "stack-verify": 104},
+    "baseline_v1.3b": 360,
+    "delta": "+99"
+  },
+  "flake": 0,
+  "triple_clean": "stack-snapshot 3x -race -shuffle CLEAN (local fallback; no CI wired — carry-forward)",
+  "coverage_snapshot": "stack-snapshot directus/firewall 100% (AssertPlan 98->100 at M25), manifest 98.4%, capture ~98%, cmd/stacksnap ~80%, pg 47% (live-DB seam); alignment dna 100%/compare 91.1%; python gen_override 85-87%, gen_injected_override 99%. No >2pp drop.",
+  "supply_chain": "GREEN — govulncheck 0 called CVEs (all 4 modules, vs pinned go1.25.11 stdlib); licenses all permissive (1 transitive-only MPL-2.0); toolchain pin 5/5. See dependencies.lock.",
+  "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces (untouched by v1.5)"
+}

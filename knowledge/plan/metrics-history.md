@@ -11,3 +11,4 @@ One row per shipped release (newest first). Aggregated at `/developer-kit:close-
 | v1.0 | body double | 2026-06-03 | 43 test + 3 fuzz (stdlib-only) | 123 test + 6 fuzz / 8 pkg / 3 DNAs | Go 22/22 · JS 9/9 · express 9/9 · drift 9/9 (all 100/100; triple-clean 3/3) | 0 | GREEN (zero external modules) |
 
 _Baseline release — no prior to regress against._
+| v1.5 "prop room" | 2026-06-14 | 867 (+131) | 459 (+99) | 0 | GREEN (0 called CVEs) |
