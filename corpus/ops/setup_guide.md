@@ -269,6 +269,15 @@ git clone git@github.com:anthropos-work/experiments.git
 
 ## 5. Environment Configuration
 
+> **The fast path — `/stack-secrets`.** Once you have a secret source folder (your keys laid out by repo — see
+> [`secrets-spec.md`](secrets-spec.md) for the exact layout), you can **provision every repo's `.env` in one
+> command** instead of hand-copying: `/stack-secrets <stack> --provision`. It writes each repo's target file
+> (`platform/.env`, `app/.env`, `studio-desk/.env`, `next-web-app/apps/web/.env`, `ant-academy/code/.env.local`,
+> `sentinel/.env`) from the source, **values-blind** (no value is ever read, echoed, or logged), and verifies
+> coverage against the secret-coverage DNA. The manual steps below remain as the reference for *what each key is
+> and where it comes from* — the skill automates the *copying*. See the [Secrets Spec](secrets-spec.md) +
+> [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md).
+
 ### The `.env` File
 All services share a **single centralized `.env` file** located in the `platform` directory.
 
@@ -304,34 +313,32 @@ All services share a **single centralized `.env` file** located in the `platform
 
 ### Studio-Desk Environment (Only for Native Development)
 
-If running Studio-Desk **outside Docker** (natively), it requires its own `.env` file:
-
-```bash
-cd ../studio-desk
-cp .env.example .env
-# Copy CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY, OPENAI_KEY from platform/.env
-```
+If running Studio-Desk **outside Docker** (natively), it requires its own `studio-desk/.env`. **Provision it with
+`/stack-secrets`** (`--provision` writes `studio-desk/.env` from your source) rather than hand-copying. The keys
+it needs: `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, the `AI_*` provider keys, `DIRECTUS_TOKEN` (written
+blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
 
 **Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
 
 ### Ant Academy Environment (Native Only — Not in Docker)
 
-Ant Academy is the internal learning portal and **always** runs natively (no docker-compose profile). The Next.js app reads from `code/.env`, **not** the repo root:
+Ant Academy is the internal learning portal and **always** runs natively (no docker-compose profile). The Next.js
+app reads from `code/.env.local` (Next.js precedence makes `.env.local` win; the live repo ships no `code/.env`),
+**not** the repo root. **Provision it with `/stack-secrets`** — it writes `ant-academy/code/.env.local` (the exact
+pinned target) from your source. The keys it needs:
 
-```bash
-cd ../ant-academy/code
-cp .env.example .env
-# Fill from platform/.env where possible:
-#   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY  (same as VITE_CLERK_PUBLISHABLE_KEY)
-#   CLERK_SECRET_KEY
-#   OPENAI_API_KEY            (server-side; for /api/ai/chat)
-#   ANTHROPIC_API_KEY         (server-side; for /api/ai/chat)
-#   FONTAWESOME_NPM_AUTH_TOKEN  (issued by the team; required for npm install)
-# Optional:
-#   REQUIRE_ORGANIZATION_MEMBERSHIP=0  # disable org-gate for solo local dev
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY   (the Clerk publishable key)
+CLERK_SECRET_KEY
+OPENAI_API_KEY            (server-side; for /api/ai/chat)
+ANTHROPIC_API_KEY         (server-side; for /api/ai/chat)
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT    (the Cosmo/Wundergraph gateway URL)
+FONTAWESOME_NPM_AUTH_TOKEN          (optional; only for FontAwesome Pro icons at npm install)
 ```
 
-See [Ant Academy service doc](../services/ant-academy.md) for details. Ant Academy is deployed to Vercel; nothing platform-side needs to change to run it.
+For solo local dev, set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to disable the org-gate. See the
+[Ant Academy service doc](../services/ant-academy.md) for details. Ant Academy is deployed to Vercel; nothing
+platform-side needs to change to run it.
 
 ### Clerk Webhook Setup (Optional)
 
@@ -436,23 +443,16 @@ The Next.js frontend is a monorepo with multiple apps. Each app needs its own `.
 
 ### Configure Environment Files
 
-<!-- TODO: Improve keys management — currently each app needs manual .env setup with keys copied from platform/.env. Consider a shared env solution or a script to automate this. -->
+The Next.js web app reads its env from **`apps/web/.env`** (not the repo root). **Provision it with
+`/stack-secrets`** — `--provision` writes `next-web-app/apps/web/.env` from your secret source, values-blind,
+instead of the manual hand-copy. The keys it needs: `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`,
+`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, and the Azure-OpenAI pair (see [`secrets-spec.md`](secrets-spec.md) for the
+full per-repo gene list).
 
-1.  Navigate to the frontend repo:
-    ```bash
-    cd ../next-web-app
-    ```
+*Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082`, which are correct
+for local development.
 
-2.  **Create the web app `.env`**:
-    ```bash
-    cp apps/web/.env.example apps/web/.env
-    ```
-
-3.  **Populate keys** in `apps/web/.env`: Copy `CLERK_SECRET_KEY` from `platform/.env` and set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` to the Clerk publishable key from 1Password or the Engineering Manager.
-
-    *Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082` which are correct for local development.
-
-    *Verification*: `ls apps/web/.env` should show the file exists.
+*Verification*: `ls apps/web/.env` should show the file exists.
 
 ### Install and Run
 

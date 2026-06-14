@@ -289,6 +289,44 @@ bash-5 author's local test and fails on a colleague's stock-macOS box.
 invokes the wrapper through `/bin/bash` 3.x specifically and asserts no "unbound variable" abort, pinning the
 fix; `shellcheck` does **not** catch this (it's a runtime-only, version-specific behavior). (#M28-harden)
 
+### 2.9 Secret provisioning is values-blind and never re-arms the prod-write path (v1.6 M27/M28)
+
+The secret-provisioning tooling (`stack-secrets/`, driven by [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md)
+— full mechanism in [`secrets-spec.md`](secrets-spec.md)) **moves secret bytes** (it writes each repo's `.env`).
+That makes it the one new write-side actor since this contract was written, so it carries its own clause. Two
+inviolable guarantees, each pinned by a test:
+
+1. **Values-blind — no verb ever reads, echoes, logs, or persists a secret VALUE.** Every command (`list`,
+   `check`/`measure`, `introspect`, `diff`, `provision`) emits key NAMES + presence only — at most a value's
+   *shape* (a `url`/`jwt`/`pk_`/`sk_` structural prefix via the single permitted `ClassifyShape`, which returns a
+   shape token, never the value). Coverage extraction is name-only (cut on the first `=`); the value half is
+   discarded the instant a line is parsed. **`provision` necessarily copies secret bytes** source→target — but
+   they live ONLY inside the value-carrying boundary (`provision/io.go`'s `sourceValues` → `writeTargetFile`)
+   and never surface in stdout, stderr, an error, a return value, or any committed file; the only destination is
+   the (gitignored) target `.env`. A hard test (`provision_safety_test.go`) asserts no value ever escapes. The
+   `secret-dna.json` manifest is NAMES-only and committable; a `.env` never enters git. This is the same
+   values-blind discipline `Guard.PreflightEnv` (§2.2) embodies — **and the provisioner emits
+   `PreflightEnv`-passing env**: it writes exactly the env state the seeding guard would accept (the S3-public
+   override is left to the override; live-Clerk/live-Directus tokens are never written into a non-prod stack).
+
+2. **Never re-arms the prod-write path (the `DIRECTUS_TOKEN` non-rearm — the blocks-release class).** `provision`
+   runs **before** the demo/dev injection override (`gen_injected_override.py`, fix16/fix17) that strips the prod
+   `DIRECTUS_TOKEN` to `""` on a non-prod / `--local-content` stack (§2.3). It **must defer to that strip** —
+   writing a non-empty prod token into a non-prod stack's base `.env` would re-arm the closed tenant-data-leak
+   path. The mechanism (`provision.StripOnNonProdKeys`): the Directus write-token family (`DIRECTUS_TOKEN` /
+   `DIRECTUS_STATIC_TOKEN` / `DIRECTUS_ADMIN_TOKEN` — the exact set `PreflightEnv` rejects in §2.2) is **never
+   provisioned with a value on a non-prod target**; it is written **blank** (`KEY=`), exactly the state the
+   override forces, so the base `.env` and the override agree and the prod-write path is never re-armed. (The DNA
+   marks `DIRECTUS_TOKEN` `key-present`-only, no `nonempty`, so a deliberately-blanked non-prod value still passes
+   coverage.) A **prod** target is reachable only via the N=0 `--force` path, so the prod token is never
+   auto-touched either.
+
+The **N=0 guard** carries over from §2.5: `provision` refuses the main dev stack (N=0, `anthropos`) without
+`--force`, because N=0 holds the operator's real source `.env` — a mirror of `stackseed --reset`'s N=0 refusal.
+And the **demo-aware coverage check** never weakens the safety posture: on a demo it counts the Clerkenstein-minted
+Clerk keys as satisfied (they are minted at bring-up, not sourced), values-blind, by NAME only — a dev stack still
+requires the real keys. (#M27 #M28)
+
 ---
 
 ## How this relates to the platform's own isolation
@@ -314,6 +352,8 @@ currently staged for it — see the roadmap.)
 - [`db-access.md`](db-access.md) — the production read foundation + the public-vs-customer boundary (read-side).
 - [`snapshot-spec.md`](snapshot-spec.md) — the capture/replay mechanism + the firewall + the capture-source policy.
 - [`seeding-spec.md`](seeding-spec.md) — the seeding framework + the 3-layer write-isolation boundary.
+- [`secrets-spec.md`](secrets-spec.md) — the secret-provisioning mechanism + the values-blind / `DIRECTUS_TOKEN`-non-rearm
+  contract (§2.9 here is the safety statement for it).
 - [`idempotency.md`](idempotency.md) — the bring-up **re-run** contract (v1.3b M17). It adds the only new
   destructive ops since this contract was written — the replay re-run `TRUNCATE` and the `stackseed --reset`
   truncates — and they obey it byte-for-byte: every `TRUNCATE` targets a **per-stack-isolated offset** store
