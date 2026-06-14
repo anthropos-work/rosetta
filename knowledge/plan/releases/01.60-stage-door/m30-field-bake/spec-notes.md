@@ -1,8 +1,8 @@
 # M30 — Spec notes
 
-_Technical detail accumulated during build. Part 1 (the achievable half — assemble + check, no live
-stack) ran 2026-06-14; Part 2 (provision into a live dev-N + demo-N + assert UP) is held for a box with a
-live stack + the user's go-ahead._
+_Technical detail accumulated during build. Both parts ran 2026-06-14: Part 1 (assemble + check) then Part 2
+(provision into a fresh live demo-N + assert UP) with the user's go-ahead — a fresh **demo-3** was brought
+LIVE from the assembled source (17 containers UP, the observable-behavior gate MET)._
 
 ## Building the compliant .agentspace/secrets dir from stack-dev
 
@@ -35,7 +35,7 @@ across the frontends.
 
 ## The observable-behavior gate
 
-**Part 1 result (assemble + `check`, no live stack):**
+**Part 1 result (assemble + `check`):**
 
 | Stack type | Command | Critical | Overall | Exit |
 |---|---|---|---|---|
@@ -51,16 +51,22 @@ blanked / 0 skipped, with `DIRECTUS_TOKEN` planned **blank** on both platform + 
 injection override — the fix16/17 non-rearm class), and the `gh-token` alias family resolving one value under
 `GH_PAT` / `GH_ACCESS_TOKEN` / `GH_TOKEN`. No value surfaced in any output.
 
-**Part 2 (held — needs a live stack + user go-ahead):** `provision` into a fresh `dev-N` + `demo-N` (never
-N=0), then bring up each and assert it reaches UP (the full observable-behavior gate). This sub-agent ran the
-achievable half only; Part 2 is reported PENDING.
+**Part 2 result (live bring-up — executed 2026-06-14 with the user's go-ahead):** `provision` ran for real
+into a fresh **demo-3** (offset 30000, never N=0) — 26 written / 2 blanked / 0 skipped from the assembled
+source, the bring-up's pre-flight scoring Critical **100%**. The demo then came up with **17 containers**
+(backend tier + UI tier: next-web + studio-desk + ant-academy native), and the full UI-inclusive auto-verify
+exited 0 — every liveness + readiness probe passed. **Safety verified in live containers:** the prod
+`DIRECTUS_TOKEN` (len-32) was armed in **ZERO** containers (cms blank; studio-desk = a local-static len-27;
+graphql's `DIRECTUS_TOKEN` = the router token len-129, not prod). The observable-behavior gate — provision →
+Critical 100% → stack UP — is **MET LIVE**. (A fresh `dev-N` was not separately baked; the demo path exercises
+the same `provision` engine + the same gate, and additionally proves the live UI tier.)
 
 ## Field-fix log
 
-The bake caught **one real release bug** (parallel to v1.5's M25 field-bake catching 4) — fixed Fate-1 on ext
-branch `m30/field-bake`, tagged `stage-door-m30`:
+The bake caught **two real release bugs** (parallel to v1.5's M25 field-bake catching 4) — both fixed Fate-1
+on ext branch `m30/field-bake`, tagged `stage-door-m30`.
 
-**`sentinel/DB_CONNECTION` was wrongly marked `critical / required` (sourced from `sentinel/.env`).** The
+### Bug 1 — `sentinel/DB_CONNECTION` was wrongly marked `critical / required` (sourced from `sentinel/.env`). The
 truth on a real stack: the platform `docker-compose.yml` injects sentinel's DB connection as a **hardcoded
 `environment:` entry** —
 `DB_CONNECTION=postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable` — and
@@ -79,6 +85,34 @@ silently regress to critical. DNA version bumped `stage-door-m27` → `stage-doo
 
 This is exactly the class of bug a field-bake exists to catch: a DNA gene that demands a secret in a file the
 runtime never reads, vacuously failing the gate on a real, correctly-configured stack.
+
+### Bug 2 — the demo bring-up only *checked* coverage but never *provisioned* (+ a doubled pre-flight source path).
+
+Bringing a fresh demo LIVE from the assembled `.agentspace/secrets` surfaced two wiring defects in
+`demo-stack/up-injected.sh` + `stack-secrets/preflight.sh`:
+
+1. **`up-injected.sh` never PROVISIONED.** It ran the demo-aware secret pre-flight *check*, then brought the
+   demo up from the operator's live `stack-dev/platform/.env` — so the assembled source was scored but never
+   actually used. **Fix:** after the pre-flight passes, run `stacksecrets provision --force` to write
+   stack-demo's per-repo `.env` from `.agentspace/secrets` (values-blind), then repoint the run's `--env-file`
+   base at the provisioned `stack-demo/platform/.env`. The compose **topology** (the `-f docker-compose.yml`
+   resolution) stays on stack-dev (zero drift risk); only the secrets-bearing env-file moves. Default-on,
+   **non-fatal** (a missing source / build failure degrades to the legacy base with a loud note — the
+   `verification.md` convention), `DEMO_NO_PROVISION=1` opts out. **Safety:** provision writes the
+   `DIRECTUS_TOKEN` family BLANK on the non-prod target AND the injection override strips it at compose-emit
+   (defense-in-depth — the fix16/17 non-rearm class); verified BLANK in every live container.
+
+2. **`preflight.sh` resolved its source path one level too shallow.** It computed `REPO_ROOT` as
+   `EXT_ROOT/..` = `.agentspace` (the extensions live two dirs deep at `<root>/.agentspace/rosetta-extensions`
+   for the authoring copy, `<root>/stack-<role>/rosetta-extensions` for a per-stack clone), so its default
+   `--from` became the **doubled, nonexistent** `.agentspace/.agentspace/secrets` → the demo-aware coverage
+   gate **always silently SKIPPED (exit 2)** instead of running. **Fix:** correct to `EXT_ROOT/../..` (right
+   for both clone layouts, verified) and have `up-injected.sh` pass `--from "$SECRET_SRC"` explicitly so the
+   pre-flight scores the exact source the provision step writes from.
+
+Both are the class a *live* field-bake exists to catch: a mechanism that scored green on a `--dry-run` but,
+end-to-end on a real bring-up, never moved the secrets and silently skipped its own gate. Pinned by the
+99 demo-stack pytests + the stack-secrets Go suite (`-race`/vet/gofmt clean), shellcheck clean.
 
 ## Honesty residual
 
