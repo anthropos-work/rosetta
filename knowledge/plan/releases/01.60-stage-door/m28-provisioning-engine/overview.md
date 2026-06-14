@@ -7,7 +7,8 @@ status: planned
 created: 2026-06-14
 last_updated: 2026-06-14
 complexity: large
-delivers: rosetta-extensions/stack-secrets/ (the provision engine + check/measure gate) + the non-fatal pre-flight wiring into /dev-up + /demo-up; ext tag stage-door-m28
+delivers: rosetta-extensions/stack-secrets/ (the provision engine + the demo-aware extension of check/measure + the non-fatal pre-flight wiring into /dev-up + /demo-up); ext tag stage-door-m28
+scope_note: "The base check/measure SCORER (Overall/Critical/per-repo-rollup + exit-1-if-critical) shipped early in M27 (see M27-D3.2). M28 owns only the DEMO-AWARE extension (Clerkenstein-minted Clerk keys satisfy coverage) + the pre-flight WIRING into /dev-up + /demo-up + the whole provision engine."
 backlog_refs: (none)
 ---
 
@@ -15,8 +16,13 @@ backlog_refs: (none)
 
 ## Goal
 `stacksecrets provision` writes each repo's target `.env` from the source (correct exact key per repo,
-alias-mapped per file), values-blind; `check`/`measure` computes coverage and is wired non-fatally into
-`/dev-up` + `/demo-up` pre-flight.
+alias-mapped per file), values-blind; the M27 `check`/`measure` scorer is extended to be **demo-aware** and
+wired non-fatally into `/dev-up` + `/demo-up` pre-flight.
+
+> **Scope adjusted 2026-06-14** (M27-D3.2): the base `check`/`measure` scorer (Overall/Critical/per-repo rollup +
+> exit-1-if-critical-missing) already **shipped in M27** alongside the DNA. M28 no longer builds it from scratch —
+> it adds the **demo-aware** variant (Clerkenstein-minted Clerk keys count as satisfied) and the **pre-flight
+> wiring**, on top of the whole `provision` engine.
 
 ## Why section
 Both halves (write the env, then prove it's complete) share the M27 DNA + a per-repo target-file map that is
@@ -44,9 +50,9 @@ known mechanisms (the injection override, the `stackseed --reset` guard, `idempo
     must NOT re-arm the stripped prod `DIRECTUS_TOKEN` on non-prod / `--local-content` stacks (the fix16/17 safety
     class). **[blocks-release safety — regression test required]**
   - Emit `PreflightEnv`-passing env (reuse the seeder's values-blind env-guard discipline, `safety.md:156-205`).
-  - `check`/`measure` — Overall (weighted) + Critical (gate == 100%, unweighted) + **per-repo rollup** ("repo X is
-    short key Y"); **demo-aware** (Clerk keys satisfiable by Clerkenstein minting, not the source dir); exit 1 if a
-    critical key is missing.
+  - **Demo-aware `check`/`measure`** — the base scorer (Overall weighted + Critical gate==100% + per-repo rollup +
+    exit-1-if-critical-missing) **already landed in M27**; M28 adds the **demo-aware** variant only: on a demo stack,
+    Clerk keys (and any Clerkenstein-minted credential) count as satisfied without being in the source dir.
   - Non-fatal pre-flight wiring into `/dev-up` + `/demo-up` (warn on standard-missing, fail on critical-missing —
     the `verification.md` convention).
   - Profile-scoping decision settled (v1 scopes the denominator to the default `graphql` profile, or a per-gene
