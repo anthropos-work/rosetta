@@ -271,6 +271,24 @@ construction, byte-for-byte** — there is no demo-specific set-dress code path 
   partial set-dress repairable by re-running (idempotent TRUNCATE-then-reload replay + idempotent seed COPY).
   (#M20-D3)
 
+### 2.8 Bring-up scripts must survive bash 3.2 under `set -u` (the non-fatal-means-non-crashing invariant)
+
+The bring-up wrappers (`preflight.sh`, `up-injected.sh`, `dev-stack`, `dev-setdress.sh`, …) shebang
+`#!/usr/bin/env bash`, which on a macOS dev box resolves to the **system bash 3.2** (`/bin/bash`), not a
+Homebrew bash 5. The non-fatal-verification contract (warn standard / fail critical / skip otherwise — see
+[`verification.md`](verification.md)) is only honored if the wrapper actually **runs to its verdict** — a script
+that *crashes mid-run* has silently turned a non-fatal check into a fatal one. The bash-3.2-specific trap that
+breaks this: under `set -u`, expanding an **empty array** as `"${arr[@]}"` raises an "unbound variable" error and
+aborts the script (bash 5 tolerates it). A flag-array conditionally populated (`flag=(); [ cond ] && flag=(--x)`)
+and then expanded bare is the canonical offender — it crashes on the *un-set* branch only, so it passes a
+bash-5 author's local test and fails on a colleague's stock-macOS box.
+
+**Rule for every on-every-bring-up script:** expand a possibly-empty array with the conditional-expansion guard
+`${arr[@]+"${arr[@]}"}` (empty → nothing, populated → the elements), never bare `"${arr[@]}"`, when running under
+`set -u`. The M28 `preflight.sh` regression (`PreflightBehavior.test_non_demo_path_survives_set_u_on_bash32`)
+invokes the wrapper through `/bin/bash` 3.x specifically and asserts no "unbound variable" abort, pinning the
+fix; `shellcheck` does **not** catch this (it's a runtime-only, version-specific behavior). (#M28-harden)
+
 ---
 
 ## How this relates to the platform's own isolation
