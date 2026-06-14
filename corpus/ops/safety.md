@@ -138,7 +138,7 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 
 | Store(s) | Class | Why / guard action |
 |---|---|---|
-| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: until the per-stack Directus is automated — the M10 collection-schema gap — every stack reads the **public** content **live** from this instance; a demo does so **anonymously**, the prod token stripped. The per-stack-Directus *replay* path is the planned target, not today's state.) |
+| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points `cms`'s `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
@@ -190,11 +190,17 @@ fenced twice over:
 
 - **Shared Directus.** `PreflightEnv` strips any Directus write token on non-prod, `CheckWrite` blocks the
   store by class, and the injected override empties `DIRECTUS_TOKEN` on every demo container (fix17) — so the
-  shared `content.anthropos.work` instance is **never written** from any non-prod stack. Public content is **read**
-  from it **live** today (every stack keeps `DIRECTUS_BASE_ADDR=content.anthropos.work` until the per-stack
-  Directus is automated — the M10 collection-schema gap; the snapshot-replay-into-a-per-stack-Directus path is the
-  planned target, not the current mechanism). On a demo that read is **anonymous** (no token → cms omits the
-  `Authorization` header; prod serves only the public predicate).
+  shared `content.anthropos.work` instance is **never written** from any non-prod stack. **Reads (M23 cutover):**
+  a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — the override
+  re-points `cms`'s `DIRECTUS_BASE_ADDR` at the in-network instance (`http://directus:8055`) and studio-desk's
+  `DIRECTUS_BASE_URL` + a locally-minted token at it — so the **data plane is local, not a live-prod read**.
+  Only the **asset plane** still touches prod: `DIRECTUS_PUBLIC_BASE_ADDR` stays `content.anthropos.work` so
+  browser images load real assets (a public, anonymous, read-only GET — within the read-side boundary). A
+  **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from prod —
+  the documented fallback — and on a demo that read is **anonymous** (no token → cms omits the `Authorization`
+  header; prod serves only the public predicate). The earlier "every stack keeps
+  `DIRECTUS_BASE_ADDR=content.anthropos.work`" state (the M10 collection-schema gap) is **retired** — the gap
+  is closed (M21 structure capture + auto-provision) and the per-stack Directus is booted (M22) + cut over (M23).
 - **Prod S3 public bucket.** `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the prod bucket in the platform compose;
   `PreflightEnv` **unconditionally** overrides it to `""`, so storage writes fall back to the per-stack local
   store. (Snapshot media is carried as **refs only** today — the byte payloads + a cloud snapshot store are

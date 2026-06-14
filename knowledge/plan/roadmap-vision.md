@@ -35,6 +35,13 @@ Genuinely-deferred work, no target version, not scheduled:
   on prod public links so demos show **real images** without the blob-byte work. Real blob mirroring + the cloud
   store stay gated on **eu-west-1 S3 read access actually landing** (verified not wired). Replay-only to a per-stack
   isolated bucket, never the shared prod S3.
+- **DEF-M21-01 — `replayCmd` conn-seam hermetic test.** A hermetic `replayCmd`-wiring test needs an injectable
+  connector seam (>50 lines, touches the load-bearing replay path). Tracked KEEP across the M21→M25 close-audits;
+  **landed here at v1.5 close-release (2026-06-14)** so it survives the release-branch merge. Pick up in a future
+  `stack-snapshot` build iter when the replay path is next opened.
+- **M25-D9 — dev-`N` taxonomy replay `rc=4` ("target schema empty").** A pre-existing dev-stack migrate-ordering
+  nuance on opt-in `dev-N≥1 --local-content` stacks (non-fatal, orthogonal to the content-serve path — the directus
+  content-serve done-bar DB-2 is GREEN). Surfaced by the M25 field-bake; tracked dev migrate-ordering follow-up.
 
 **Dropped from tracking (2026-06-11, user instruction — re-proposal requires a fresh `/developer-kit:design-roadmap` run):**
 the former v1.4 seeds **AI-generated content**, **external stack shareability** (Tailscale/ingress), and **more

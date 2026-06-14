@@ -1,0 +1,89 @@
+{
+  "milestone": "M22",
+  "title": "Executed provisioning + per-stack Directus lifecycle. Turns M21's print-only recipe into an EXECUTED bring-up step: a per-stack Directus boots as a COMPOSE SERVICE in the stack's override (offset port 8055+N*10000, joins app-network, named <project>-directus-1, torn down with the stack), provisioned idempotently (bootstrap -> apply-structure -> replay -> boot), verified (a SERVICES row + /server/health + a 'registered collections > 0' cheap-win + a no-prod-read env assert) — demo default-on / dev opt-in (--local-content). The EnvContract.Validate firewall becomes a LOAD-BEARING EXECUTED GATE (hard-abort before any write if the env resolves to prod). Non-fatal: a failed boot degrades to the prod-read path with an honest status line.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-13",
+  "is_first_milestone": false,
+  "position_note": "M22 is the 2nd milestone of v1.5 'prop room' (M21->M25). M21 made the directus replay exit 0 + serve anonymously; M22 boots + verifies the per-stack instance as a compose service; M23 points services at it (re-point DIRECTUS_BASE_ADDR) + closes referential gaps; M24 tells the corpus-wide truth + the hygiene strand; M25 proves it live. Strictly sequential. After this close: M23 (/developer-kit:build-milestone, section shape — content cutover + referential closure).",
+  "kind": "a section milestone — production code in the SEPARATE gitignored rosetta-extensions authoring copy (shell engines: dev-stack/dev-setdress.sh + dev-stack/dev-stack + demo-stack/up-injected.sh + stack-verify/lib+live; python generators: stack-core/gen_override.py + stack-injection/gen_injected_override.py). The rosetta m22/provision-lifecycle branch carries ONLY plan/doc records + the corpus/ops docs (directus-local.md lifecycle half + verification.md/idempotency.md/rosetta_demo.md rows + the collateral print-only retirements). ALL executable code is ext-repo-side (tag prop-room-m22, set by the orchestrator post-close).",
+  "sections": {
+    "total": 6,
+    "all_checked": true,
+    "list": "§1 executed provisioning in the shared engine (0c61003 ext) · §2 compose-service emission into the per-stack override (06d5064 ext) · §3 idempotent re-provision guards (9b4390b ext) · §4 Directus verify probes (7235181 ext) · §5 12 GB-VM preflight accounting (94399e9 ext) · §6 docs (0ab823a rosetta)",
+    "build_note": "Attempt-1 crash (FailedToOpenSocket) mid-§4 recovered by a resume-in-place: §1-3 committed in attempt 1, §4-6 + the §1-3 checkbox reconcile in attempt 2. All 6 sections done."
+  },
+  "tests": {
+    "language": "shell (subprocess-tested via stubbed docker/CLIs recording argv) + python (pytest, the directly-coverable override generators). The rosetta-side milestone branch carries no executable code; its deliverables are docs.",
+    "go_total": 795,
+    "go_delta_vs_m21_close": 0,
+    "go_delta_note": "M22 added ZERO Go tests — it touches no Go module (all M22 code is shell + python). Go total unchanged at 795 (alignment 43 + clerkenstein 210 + stack-seeding 252 + stack-snapshot 290).",
+    "python_total_collected": 418,
+    "python_total_skipped": 8,
+    "python_delta_vs_m21_close": 58,
+    "python_delta_note": "+58 collected vs the M21-close baseline of 360 (stack-core 54->61 +7 · dev-stack 50->73 +23 · demo-stack 84->87 +3 · stack-injection 85->93 +8 [+8 env-gated skip] · stack-verify 87->104 +17). The growth = the M22 build tests (executed provision, compose-service emission, idempotent guards, verify probes, preflight) + the hardening pass (+11: dev-stack +8, stack-verify +2, stack-core +2 — the gen_override main()/summary coverage, the env-assert skip + non-numeric guards, the last-wins arg-parse pin). No section regressed.",
+    "python_per_module_collected": {
+      "stack-core": 61,
+      "dev-stack": 73,
+      "demo-stack": 87,
+      "stack-injection": 93,
+      "stack-verify": 104
+    },
+    "test_count_method": "python3.12 -m pytest -q per module dir (the bash-tool default python3.14 has no pytest; python3.12 is the suite interpreter). 0 failures across all 5 modules. stack-injection's 8 skips are env-gated (require a docker/compose env absent in the authoring harness) — expected, not failures.",
+    "lint": "shellcheck CLEAN on all 7 touched .sh (only SC1091 source-include info, suppressed); py_compile CLEAN on both touched .py.",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean, sequential, on the two close-touched suites (dev-stack 73 + stack-verify 104) — 0 failures across all 5 runs. The shell subprocess harnesses are deterministic (stubbed docker/CLIs, no timing/random/shared-port surface), matching the build's flake=0 finding."
+  },
+  "coverage": {
+    "note": "M22 ran a 4-pass hardening sweep (no /developer-kit:harden-milestone separate ledger — recorded inline in progress.md § Hardening). The directly-coverable python generators: stack-core/gen_override.py 62% -> 85% (+23 — main() + the --with-directus summary now covered; residual is the docker subprocess resolved_config + pre-M22 build_override edges); stack-injection/gen_injected_override.py 99% (only the __main__ guard uncovered). The shell engines (dev-setdress, autoverify, readiness, up-injected) are not python-coverable — deepened behaviorally via subprocess harnesses (stubbed docker/CLIs recording argv). Stop condition: scan clean at Pass 4 (the six-dimension sweep found one thin arg-parse edge in Pass 4); coverage deltas stabilized; 0 flakes.",
+    "harden_bugs_surfaced": 0,
+    "harden_bugs_note": "0 production bugs surfaced across the 4 hardening passes + the close review — the build-phase tests were sound; hardening deepened error/edge/main() coverage the build-minimum didn't reach. The close adversarial pass (7 scenarios) also found 0 new findings — all already test-pinned."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M22 (shell provisioning glue + override-emission generators). The one resource concern — a Directus container per stack — is handled by the 12 GB-VM preflight note (~1 GiB runtime, mem_limit 1g, max-2-co-resident), not a threshold test."
+  },
+  "review": {
+    "findings": 8,
+    "findings_note": "8 findings: 0 scope · 3 code-quality (0 must-fix, 3 should-fix — comment clarity on the bootstrap-guard 2-layer fallback + $STACK-interp safety + the non-fatal no-prod-read env assert), 3 nice-to-have (shared DIRECTUS_BASE_PORT const, a shared verify-svc helper, a docker-availability comment — Fate-2 to M24's hygiene strand) · 2 docs (DOC-1 the ops-README stale 'lands in M22/M23' claim -> Fate-1 fixed; DOC-2 the CLAUDE.md doc-list omits directus-local.md -> Fate-2 confirmed owned by M24's CLAUDE.md sweep) · 0 tests · 0 decision-triage-blend (D1/D2/KB-1/adversarial all maintainer-only archive).",
+    "scope": "GREEN — all 6 sections checked; no silently-dropped overview In: items; KB-1 resolved in §6 (the provision.go anchor now reads prose/symbol). Out items (the M23 env re-point + referential closure) confirmed out.",
+    "code_quality": "GREEN — 0 must-fix. The cross-cutting Explore review found consistent patterns: the dev (gen_override) + demo (gen_injected_override) directus emission blocks AGREE on port offset / network / container name / image pin / mem_limit / env; no dead code; the firewall gate hard-aborts BEFORE any write; compose-owned lifecycle (no leaked containers). 3 should-fix comment-clarity items landed in ext e989982 (0 behavior change). shellcheck + py_compile CLEAN.",
+    "adversarial": "Phase 2c — 7 scenarios (write-before-firewall ordering; set -u trip on DIRECTUS_PROVISIONED; degrade-path writing to prod; false-safe static gate vs the runtime no-prod-read backstop; half-bootstrap re-provision; silent serve-nothing; N=0 base-port write) — ALL already test-pinned (named tests in decisions.md § Adversarial review). 0 new findings, 0 code change.",
+    "docs": "the directus-local.md lifecycle half + verification.md/idempotency.md rows + the rosetta_demo.md registry-teardown note + the 3 collateral print-only retirements (safety.md / snapshot-spec.md / demo/README.md) — all verified accurate to the shipped ext code; all cross-references resolve. DOC-1 (the ops-README index row's stale future-claim) fixed Fate-1 at close.",
+    "tests": "GREEN — 418 collected / 8 env-gated-skip across the 5 touched suites, 0 failures; gen_override 85% / gen_injected 99% coverage; the shell engines exhaustively subprocess-tested. Post-fix re-run + flake gate 5/5 GREEN. The 'automated live-integration harness' notes are appropriate-for-authoring-phase and land at M25 field-bake (DEF-M21-02, already routed). No handbook test-count drift (the touched-module READMEs quote no counts).",
+    "decision_triage": "M22-D1 (collateral stale-claim retirement) + M22-D2 (studio-desk verify-port repair) + KB-1 (provision.go anchor) + the adversarial-review subsection all stay in decisions.md as ARCHIVE (maintainer-only). 0 blend-into-knowledge — every user-facing mechanism the decisions touch is already documented in directus-local.md / verification.md / idempotency.md (the build's knowledge-backfill finding, re-confirmed at close).",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-13-m22-close.md. M22 originated 0 deferrals; 5 items in scope (4 inherited from M21 + DEF-M10-01 backlog), all single (0 repeat, 0 chronic, 0 aged-out). DEF-M21-01 (replayCmd conn-seam) NOT touched by M22, unchanged; DEF-M21-02 (serve-live-integration harness) -> M25 field-bake (M22 furthered the precondition by booting a live Directus); DEF-M21-03 (directus_files) + DEF-M21-04 (referential closure) confirmed owned by M23 (overview In: verified, status=planned, window open); DEF-M10-01 keep-deferred backlog (orthogonal). 0 blockers."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 6 sections (executed provisioning + compose-service emission + idempotent re-provision guards + Directus verify probes + 12 GB preflight + docs) + the 3 should-fix code comments + DOC-1 ops-README fix.",
+    "confirmed_covered_fate2": "DOC-2 (CLAUDE.md doc-list adds directus-local.md) -> M24's corpus-wide CLAUDE.md sweep (overview names it). The 3 nice-to-have refactor-tidy items (shared DIRECTUS_BASE_PORT const, shared verify-svc helper, docker-availability comment) -> M24's hygiene strand (cross-module tidy). DEF-M21-03 + DEF-M21-04 -> M23 (referential closure / asset plane).",
+    "annotated_fate3": "none — no new Fate-3 roadmap mutation introduced at M22 close (the M21 close already annotated M23 for directus_files).",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none introduced by M22. DEF-M10-01 (cloud snapshot store + S3 media blob bytes) is the one INHERITED cross-release backlog item — re-signed fresh at v1.5 design (2026-06-11), orthogonal to M22, not aged."
+  },
+  "delivered": {
+    "directus_local_md_lifecycle": "corpus/ops/directus-local.md § 'Container lifecycle (M22)' (the lifecycle half added to the M21 net-new doc): the compose service (image/port/network/backing-store/mem_limit, emitted only when local content is on), the executed steps (CREATE SCHEMA -> guarded bootstrap -> apply-structure+replay -> boot/restart), the load-bearing executed firewall gate, the non-fatal degrade, the idempotent re-provision (bootstrap-on-non-empty sentinel guard + container-name guard), the verify probes, and the 12 GB-VM headroom note. KB-1 fixed (the provision.go anchor -> prose/symbol ref). § 'What's still future work' scopes the M23 cutover + DEF-M10-01 blob bytes.",
+    "verification_md_rows": "corpus/ops/verification.md — the per-stack Directus cheap-wins (registered collections > 0 + no-prod-read env assert, gated on the container existing) + the readiness liveness/serve rows (/server/health + directus-collections), scoped IN only on a --local-content bring-up.",
+    "idempotency_md_rows": "corpus/ops/idempotency.md — the directus-provision verdict-table row (SAFE/converges) + the engineers subsection (CREATE SCHEMA IF NOT EXISTS + the bootstrap-on-non-empty sentinel guard [half-bootstrap re-bootstraps to converge] + the replay auto-provision no-op + the container-name guard + the non-fatal degrade).",
+    "rosetta_demo_md_note": "corpus/ops/rosetta_demo.md — the registry/teardown note for the directus compose service (demo-down/dev-down tear it down, the unified registry records its offset port, auto-verify probes it by name; a prod-read stack has no directus service so teardown/registry/verify correctly see nothing).",
+    "collateral_print_only_retirements": "the 3 stale 'print-only for BOTH stack types' / 'no stack type has an automated per-stack Directus' claims retired (M22-D1, Fate-1): corpus/ops/snapshot-spec.md, corpus/ops/safety.md (the Directus SharedPollutionRisk row), corpus/ops/demo/README.md (the Known-state block) — reframed as executed on a --local-content stack / print-only prod-read otherwise / the M23 cutover stays honestly future.",
+    "ops_readme_index_row": "corpus/ops/README.md — the directus-local.md index row updated (DOC-1, Fate-1) to reflect the lifecycle half LANDED in M22 (compose service + offset port + idempotent re-provision + verify probes), not 'lands in M22/M23'; the cutover re-point stays scoped to M23.",
+    "executed_provisioning_extension": "rosetta-extensions (tag prop-room-m22): dev-stack/dev-setdress.sh (provision_directus_step + boot_directus_step + the load-bearing executed firewall gate + the non-fatal degrade) + dev-stack/dev-stack (--local-content threading) + the compose-service emission (stack-injection/gen_injected_override.py demo path + stack-core/gen_override.py dev --with-directus path) + the Directus verify probes (stack-verify/lib/services.sh+readiness.sh + live/autoverify.sh+verify.sh) + the 12 GB preflight note (demo-stack/up-injected.sh)."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — all M22 production code (shell engines + python override generators across dev-stack, stack-core, stack-injection, stack-verify, demo-stack).",
+    "head": "e989982",
+    "tag": "prop-room-m22",
+    "tag_note": "v1.5 per-milestone naming prop-room-mNN. The ext-repo tag is set by the ORCHESTRATOR after close returns (the milestone branch + all plan/doc records are rosetta-side; close-milestone's merge is entirely rosetta-side m22/provision-lifecycle -> release/01.50-prop-room). The ext repo carries ONE pre-existing UNRELATED dirty file clerkenstein/knowledge/architecture.md (NOT M22 — untouched at close).",
+    "code_commits": [
+      "0c61003 (§1 executed provisioning in the shared engine)",
+      "06d5064 (§2 compose-service emission into the per-stack override)",
+      "9b4390b (§3 idempotent re-provision guards)",
+      "7235181 (§4 Directus verify probes)",
+      "94399e9 (§5 12 GB-VM preflight accounting)",
+      "08fc875 + e782458 + fa11c52 + d62c685 + 93ad686 (the 4-pass hardening sweep: gitignore instrument + dev-stack + stack-verify + stack-core + dev-stack last-wins)"
+    ],
+    "close_change": "ONE ext-repo close fix (e989982): 3 should-fix comment clarifications (0 behavior change) — dev-setdress.sh the 2-layer sys_tables fallback + the $STACK-interp safety; autoverify.sh the non-fatal-by-design no-prod-read assert. Scoped to exactly 2 files; the pre-existing clerkenstein/knowledge/architecture.md left untouched. Retested green (dev-stack 73 + stack-verify 104) + flake-gate 5/5."
+  },
+  "notes": "M22 is the 2nd + lifecycle milestone of v1.5 'prop room' — it turns M21's print-only recipe into an EXECUTED, idempotent, prod-safe bring-up step that boots a per-stack Directus as a COMPOSE SERVICE (the v1.5 maintainability constraint: existing teardown/registry/verify cover it for free; the only executed steps are the one-shot bootstrap + the post-replay restart compose can't express). demo default-on / dev opt-in (--local-content); N=0 behind --force. The load-bearing finding for this milestone is the firewall-as-executed-gate: EnvContract.Validate moves from a print-time check to a hard-abort-before-any-write gate (the M17-for-TRUNCATE discipline, now for the executed provision), with a runtime no-prod-read backstop in autoverify. Non-fatal throughout: any provision failure degrades to the prod-read path with an honest status line. Close was clean: 8 findings (0 scope / 0 must-fix / 3 should-fix code comments landed ext e989982 / 2 docs — DOC-1 ops-README Fate-1 fixed, DOC-2 CLAUDE.md Fate-2 to M24 / 0 tests / 0 blend), 0 adversarial-new (7 scenarios all already test-pinned), the deferral audit GREEN (0 repeat / 0 aged / 0 M22-originated). Go unchanged at 795 (M22 touches no Go); Python 360 -> 418 collected (+58, +8 env-gated skip); flake 0 (5/5 sequential). Next: M23 (/developer-kit:build-milestone — content cutover + referential closure: re-point DIRECTUS_BASE_ADDR at the local instance + close the referential gap)."
+}

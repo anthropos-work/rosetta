@@ -2,6 +2,35 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.5] "prop room" — 2026-06-14
+
+The **local-Directus release**: every stack now serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real images) on `--local-content` (demo default-on, dev opt-in). Prod-read remains the documented fallback. **Tooling + docs only — zero platform-repo edits.**
+
+### Added
+- A **per-stack local Directus** serving the captured public catalog locally, content-self-contained (M21–M23). `/demo-up` default-on; `/dev-up N --local-content` opt-in; `N=0` manual recipe.
+- **Structure-bearing snapshot capture** — `stacksnap` captures the content-model DDL + primary keys + serve-row registration atomically with the rows, so a bootstrapped Directus auto-provisions and serves with **zero hand SQL** (M21).
+- **Per-stack Directus as a compose service** — offset port, idempotent re-provision, torn down with the stack, verify-net probes (M22).
+- A **cross-surface referential-closure gene** + the `directus_files` referenced-subset capture (M23).
+- Corpus hygiene guards: a **README-index-row lint**, an **alignment zero-critical-genes guard**, and a **`/project-stats` scope fix** (M24).
+
+### Changed
+- The data plane (`DIRECTUS_BASE_ADDR`) re-points to the per-stack Directus on `--local-content`; the **asset plane stays on prod** (`content.anthropos.work`) so browser images stay real (M23).
+- Go toolchain pinned to **go1.25.11** (clears the 12 stdlib advisories) (M24).
+- The corpus tells the self-contained-content truth — retired the print-only / exit-4 / live-from-prod framing and a fictional local-Directus docker-service that never existed (M24 + close-release docs fix).
+
+### Fixed
+- A **`directus_files` tenant-data over-capture** that the firewall caught **fail-closed** under live prod capture — fixed in the capture filter; the firewall was never weakened (M25).
+- A **dangling-FK class** — captured public content referencing uncaptured admin/library UI tables (M25).
+- The **offline `GOTOOLCHAIN`** regression that aborted `/demo-up`'s clerkenstein build under the new Go pin (M25).
+
+### Supply chain
+- go1.25.11 toolchain pin on all 4 ext modules + the clerkenstein CI; `govulncheck`: **0 called CVEs**; all licenses permissive.
+
+### Known limitations
+- Media is served by **prod asset links**, not local blob bytes (DEF-M10-01, backlog).
+- The local-content path is **opt-in for dev** (`--local-content`); `N=0` stays prod-read.
+- 1 prod data-quality residual (a public sim referencing a customer-only skill, K-AIFUNX-E658) is operator-owned, uncloseable by tooling.
+
 ## [v1.3.1] "dress rehearsal" — 2026-06-09
 
 Field-hardening of the demo/dev tooling: `/demo-up` now produces a **full, populated, verified, demoable** stack — closing the gaps the first real `/demo-up` run surfaced (14 field issues). **Tooling + docs only — zero platform-repo edits.**

@@ -59,6 +59,15 @@ image. The tooling makes this cheap-where-it-can:
 > (The assert + a frontend-build failure are deliberately non-fatal — a soft RAM heuristic must never block an
 > otherwise-good bring-up. #M19-D5)
 
+> **Field note — the 12 GB VM does NOT fit on a 16 GB host** (v1.5/M25 field-bake, #M25-D2). Allocating the
+> full 12 GB to the Docker Desktop VM on a **16 GB Mac** *fails to boot* the VM (`no route to host
+> 192.168.65.7:2376`; `context deadline exceeded`) — macOS + Docker Desktop overhead leaves no room. The
+> practical ceiling on a 16 GB box is **~10 GB VM / 2 GB swap** (~9.7 GiB usable), which boots reliably but
+> **cannot co-host the full UI tier** (the ~3.7 GB next-web build spike) alongside a backend stack. On a 16 GB
+> host, run the UI tier with **only one stack resident**, or use `DEMO_NO_UI=1` and verify the local-Directus
+> serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
+> A 12 GB VM needs a **≥24 GB host** to be comfortable.
+
 ## How the pk + URLs are baked (zero platform edit)
 
 | App | URLs | Clerk pk | Context trim |

@@ -25,7 +25,7 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
    instead of placeholder ids. Use the `large-1k` preset (9 months) or author your own:
    ```bash
    /demo-up 1
-   /stack-snapshot replay 1            # taxonomy → the real catalog (directus content skips: exit 4, the M10 gap; read live from prod meanwhile)
+   /stack-snapshot replay 1            # taxonomy → the real catalog (+ directus content self-contained on a --local-content stack, demo default; else read live from prod)
    cat > /tmp/progression.seed.yaml <<'YAML'
    stack: demo-1
    org: { name: Stark Industries, slug: stark }

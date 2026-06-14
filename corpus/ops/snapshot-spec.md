@@ -15,8 +15,7 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > the usable product layer — the refreshed presets + the set-dressed `corpus/ops/demo/` recipe family + the
 > `/stack-snapshot` skill (the [set-dressing recipe](demo/recipe-snapshot-world.md)). **v1.3 M13** extends the
 > mechanism from demo-only to **dev**: a `dev-stack up` bring-up now replays the cached surfaces, emits +
-> firewall-checks the per-stack-Directus recipe (print-only — the boot is not yet automated, see the known-state
-> below), and light-seeds itself by default — see [Dev as a full-fidelity
+> firewall-checks the per-stack-Directus recipe, and light-seeds itself by default — see [Dev as a full-fidelity
 > peer](#dev-as-a-full-fidelity-peer-m13--the-set-dress-pass-recipe--auto-snapshot--light-seed).
 > The snapshot code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the authoring copy
 > at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified**, and
@@ -226,8 +225,19 @@ The snapshot dimension extends the M7b data-DNA harness (`stack-seeding/dna/`, t
   waived (taxonomy + content, the snapshot/shared-store hard line) becomes `snapshot-seeded` once a snapshot fills
   it — **lifting the two waived surfaces to real, measured coverage**, the v1.2 thesis;
 - a **snapshot-fidelity gene class** (two-sided: captured source vs replayed stack) — **row-count parity**,
-  **structural conformance**, **referential closure**, **embedding-dimension integrity**, and the **public-only /
-  provenance** gene (the firewall's measured counterpart: zero tenant rows after replay).
+  **structural conformance**, **referential closure** (within-surface: every recorded FK's referenced table is in
+  the captured set), **embedding-dimension integrity**, the **public-only / provenance** gene (the firewall's
+  measured counterpart: zero tenant rows after replay), and (M23) the **cross-surface closure** gene.
+- **Cross-surface closure (M23, `snapshot-cross-surface-closure`).** Closure that spans the directus content
+  surface → the skiller taxonomy surface, distinct from the within-surface referential gene. Content references
+  taxonomy through `directus.sequences.skills` — a JSON array of `{node_id}` targeting `skiller.skills.node_id`
+  (prod-verified; `simulations.job_roles` is a JSON array of role *names*, not node-ids). The gene
+  (`FidelityProbe.CrossSurfaceDangling`) counts, against the **replayed** directus↔skiller pair, every
+  content-referenced node-id that does NOT resolve in the replayed taxonomy; a non-zero count fails the gene and
+  names a sample node. It is on the **`content`** gene at **`standard`** criticality — so a residual surfaces in
+  the overall score but does **not** block the critical gate (and `measure-snapshot` is not run in the bring-up,
+  so it never blocks `UP`). This is what turns the empty-Assign-AI-Simulation-picker class from a silent failure
+  into a **measured, named** finding.
 
 ## Proven end-to-end (M9a)
 
@@ -365,11 +375,19 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    entrypoint runs `node <arg>`, so a bare `bootstrap` argument dies `MODULE_NOT_FOUND`; and `ADMIN_EMAIL` needs a
    hostname-safe (hyphen) domain — `admin@demo_1.local` fails Directus's email validation. The psql and docker legs
    use **split host/container DSNs** (one value cannot reach the same Postgres from both sides).
-2. **content-schema** — create the user-collection table STRUCTURE (`simulations`, `skill_paths`, …) in the
-   `directus` schema AND register the collections in `directus_collections`/`directus_fields`/`directus_relations`
-   (a booted Directus only serves *registered* collections). **NOT YET AUTOMATED — this is the M10
-   "collection-schema gap"**: the snapshot carries rows, not DDL; the structure must come from the capture source
-   (the planned capture-side extension). Until it ships, the next step fails loud (`stacksnap` exit 4/5).
+2. **apply-structure** — create the user-collection table STRUCTURE (`simulations`, `skill_paths`, … — all 26,
+   **with primary keys**) in the `directus` schema AND register them in `directus_collections` + grant the
+   public-read `directus_permissions` rows (a booted Directus only serves *registered, PK-bearing* collections).
+   This was the M10 **"collection-schema gap"**. **Closed at the tooling level by M21** (`prop-room-m21`):
+   `stacksnap` now captures the structure (DDL + PKs + sequences + serve rows) from the sanctioned `--dsn` and
+   **auto-provisions** a bootstrapped-gap stack before the row replay, so the replay **exits 0** and a booted
+   Directus serves the captured catalog **anonymously**. See [`directus-local.md`](./directus-local.md) for the
+   structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
+   *execution at bring-up* — booting the Directus as a per-stack compose service — landed in **M22**
+   (`prop-room-m22`): a `--local-content` stack executes bootstrap → apply-structure → replay → boot. The
+   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at it — **landed in M23** (`prop-room-m23`): a
+   `--local-content` stack now serves its catalog from its OWN Directus, content-self-contained. See the
+   known-state note below.)
 3. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
    user-collection tables (the framework's generic `CopyIn(schema, table)` → the `directus` schema,
    class `postgres` = `PerStackIsolated` = always allowed; the shared prod Directus is never written).
@@ -378,54 +396,77 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    `content.anthropos.work`. `EnvContract.Validate()` hard-rejects any per-stack env that resolves to the prod
    Directus.
 
-The recipe is **print-only for BOTH stack types** — `dev-setdress.sh` prints it (via the `provision-plan` runner)
-and firewall-validates the env contract, but no step of it is executed by any bring-up, dev or demo (the
-"operator's step" discipline). A fresh `dev-N` therefore hits the identical directus-replay skip a demo does.
+**The recipe is EXECUTED on a `--local-content` stack (M22), print-only otherwise.** Since **M22**
+(`prop-room-m22`), a stack brought up with **local content** (demo **default-on**; dev **opt-in** via
+`--local-content`; `N=0` behind `--force`) **executes** the recipe — `dev-setdress.sh` runs bootstrap →
+apply-structure → replay → boot, emitting the Directus as a **compose service** (offset port, torn down with
+the stack), idempotently, behind a **load-bearing executed firewall gate** (a prod-resolving env hard-aborts
+before any write). A stack **without** local content (`DEMO_NO_LOCAL_CONTENT=1`, or a plain dev bring-up)
+keeps the **print-only** behaviour — `dev-setdress.sh` prints the recipe + firewall-validates the env, but
+executes no step — and reads public content live from prod. See [`directus-local.md`](./directus-local.md)
+§ "Container lifecycle (M22)" for the executed lifecycle.
 
-**Known state for EVERY stack (corrected in fix16 — the old claim that this was "wired for dev" was false) —
-live-prod content read + the taxonomy↔content consistency boundary.** **No stack type has an automated per-stack
-Directus**: the set-dress engine (one engine for dev AND demo) attempts the replay of **both** surfaces for both
-kinds, but the recipe's bootstrap/content-schema/boot steps are print-only, so the directus replay is skipped with
-the honest `stacksnap` exit 4 ("the stack's directus schema is missing/empty — provision the STACK first; not a
-snapshot-cache problem") and the status line reads `snapshot:taxonomy=replayed directus=skipped(stack-unprovisioned)`.
-So dev and demo alike have **no local Directus**: `cms` + `jobsimulation` keep
-`DIRECTUS_BASE_ADDR=content.anthropos.work` and read the **public catalog live from prod**. Since fix16/fix17 a
-**demo does this ANONYMOUSLY**: the injected override strips the inherited prod `DIRECTUS_TOKEN` from **every**
-demo service (cms omits the `Authorization` header when the token is empty — `if c.token != ""` in
-`cms/internal/directus/directus.go`, verified @ v0.251.2; prod Directus serves the public predicate to anonymous
-reads — verified 2026-06-11, incl. `publicJobSimulations` through a demo's router post-strip; live demo-1 audit:
-0/16 containers carry the token). The read is **within the read-side public boundary** — but it is a
-**non-self-contained runtime dependency**, and it pairs **full-prod-live content** with a **captured-subset
-taxonomy** in skiller. The consequence is a **referential-consistency boundary**: a public sim served live can
-reference a taxonomy node-id the captured subset doesn't hold, and a **non-nullable federated field**
-(`publicJobSimulations.skills`, resolved by skiller) then fails the whole query — surfacing as an empty
-Assign-AI-Simulation picker. **Resolution direction (the close):** automate the recipe (execute bootstrap, close
-the M10 **collection-schema gap** with a capture-side structure extension — the DDL + the
-`directus_collections`/`fields`/`relations` registry rows — then replay + boot + re-point `DIRECTUS_BASE_ADDR`
-per-stack) so content + taxonomy become a **referentially-closed captured pair** for both stack types. Interim,
-lighter options: a post-replay **auto-heal** that backfills placeholder skills for any dangling content→skill
-node-id, or a **full-taxonomy** capture (no subset). Until one lands, every stack reads public content live and
-may carry dangling refs.
+**Known state (post-M23) — two paths: the self-contained `--local-content` path (the converged end-state) and
+the prod-read fallback.** Since M23 a **`--local-content` stack is content-self-contained**: it boots its own
+per-stack Directus, the directus replay **exits 0**, and `cms`'s `DIRECTUS_BASE_ADDR` is cut over to the
+in-network instance (asset plane stays on prod). This is the **default for every demo** and **opt-in for any
+dev-N≥1**. The **prod-read path is now the documented *fallback*** — taken by a stack **without** local content
+(a plain dev bring-up, or `DEMO_NO_LOCAL_CONTENT=1`). On that fallback path the stack has **no local Directus**:
+the set-dress engine attempts the replay of **both** surfaces, but with the recipe unexecuted the directus
+replay is skipped with the honest `stacksnap` exit 4 ("the stack's directus schema is missing/empty — provision
+the STACK first; not a snapshot-cache problem"), status
+`snapshot:taxonomy=replayed directus=skipped(stack-unprovisioned)`. So `cms` keeps
+`DIRECTUS_BASE_ADDR=content.anthropos.work` and reads the **public catalog live from prod**. Since
+fix16/fix17 a **demo does this ANONYMOUSLY**: the injected override strips the inherited prod `DIRECTUS_TOKEN`
+from **every** demo service (cms omits the `Authorization` header when the token is empty — `if c.token != ""`
+in `cms/internal/directus/directus.go`, verified @ v0.251.2; prod Directus serves the public predicate to
+anonymous reads — verified 2026-06-11, incl. `publicJobSimulations` through a demo's router post-strip; live
+demo-1 audit: 0/16 containers carry the token). The read is **within the read-side public boundary** — but it
+is a **non-self-contained runtime dependency**, and it pairs **full-prod-live content** with a
+**full public taxonomy** in skiller. The consequence is a **referential-consistency boundary**: a public
+sim can reference a taxonomy node-id that is NOT public (a customer-scoped skill the firewall must not capture),
+and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved by skiller) then fails the whole
+query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
+**collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
+**executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
+own Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
+#M23-D5) so closure is **measured, not assumed**. The taxonomy capture is **full-public** (`organization_id IS NULL` — every
+public node), so closure is maximal by construction; the only residual is a content ref pointing at a *non-public*
+node, which is a **prod data inconsistency** the gene surfaces (prod has exactly **1**: `K-AIFUNX-E658`,
+referenced by 2 public sims but existing only as a customer-scoped skill — uncloseable without breaching the
+firewall or editing prod, so it is a measured, named residual, not a silent empty picker). A **non-`--local-content`**
+stack stays on the prod-read path (the documented fallback).
 
 ### Media / blobs (M10-D4) — refs are the floor, blob bytes are S3-gated
 
 Content references media (`simulations.cover`, `skill_paths.{cover,image,video}`, `roles.avatar`,
 `sequences.scenario_video`, `resource.{image,file}` — all uuid `directus_files` ids; `sequences.intro_video` is a
-varchar embed, NOT a file ref). The **file refs** — the **1,311** `directus_files` rows the public content references
-(of 10,340) — are the **floor**: always captured + replayed. The **blob bytes** live in Directus's OWN S3 bucket;
-mirroring them needs **S3 read access to that bucket, not confirmed wired here** (`BlobBytesAvailable() == false`).
-Until then the per-stack Directus serves refs with a local-storage adapter + placeholder assets (a believable
-structural demo); blob-byte mirroring is the operational add (replay ONLY to the per-stack-isolated private bucket,
-never the shared prod S3).
+varchar embed, NOT a file ref). The **file refs** — the `directus_files` rows the public content references (of
+10,340) — are the **floor**: captured + replayed. **Since M23 this is WIRED** (#M23-D3): `directus_files` is a table in
+`directus.Surface()`, captured as a **referenced-subset** (a reverse-reference closure — it carries no scope column
+and is referenced *by* many public content rows, so its capture filter is `directus.ReferencedFilesFilter()`, an
+OR-of-INs over the public file-ref columns; the firewall admits it via the referenced-subset branch, and the
+post-capture probe counts any captured file *outside* the referenced set = 0). The 26-column `directus_files`
+schema is `directus.ReferencedFilesColumns()` (verified vs a fresh `directus/directus:11.6.1` bootstrap). Replay
+clears it with `DELETE FROM` (not the bulk `TRUNCATE`, #M23-D4) because `directus_settings` FK-references it — a
+TRUNCATE of an FK-referenced table fails structurally even when the referrer is NULL, and the referrer is outside
+the surface (so it can't be co-TRUNCATEd and CASCADE would over-clear). With the refs present, a captured content
+row's image uuid resolves and the **asset plane** (prod, `DIRECTUS_PUBLIC_BASE_ADDR`) serves the real
+`<...>/assets/<uuid>` image. The **blob bytes** themselves live in Directus's OWN S3 bucket; mirroring them needs
+**S3 read access to that bucket, not confirmed wired here** (`BlobBytesAvailable() == false`) — but with the asset
+plane on prod the images are real without it (blob-byte mirroring to a per-stack-isolated private bucket stays
+**deferred (unscheduled backlog, DEF-M10-01)**; it would only matter if the asset plane ever moved off prod).
 
 ### The content fidelity gene + the `sim_id`/`skill_path_id` linkage
 
 The content surface is the data-DNA `content` gene, **promoted `waived-m7c` → `snapshot-seeded-m10`** — the last
 waived surface lifted to real coverage. It names `snapshot-row-count` / `-structural` / `-referential` /
-`-public-only` (no `-embedding-dim` — content has no vectors). The **public-only gene is measured against the
-directus predicate** (not `organization_id`): a `CapturedTable.PublicFilter` carries the per-surface predicate on the
-scope-bearing tables, and `PgFidelityProbe.ReplayedNonPublicRows` counts replayed rows `WHERE NOT (<predicate>)` — 0
-or it fails. `datadna measure-snapshot … --manifest <directus.json>` runs it.
+`-public-only` / `-cross-surface-closure` (M23; no `-embedding-dim` — content has no vectors). The **public-only
+gene is measured against the directus predicate** (not `organization_id`): a `CapturedTable.PublicFilter` carries
+the per-surface predicate on the scope-bearing tables, and `PgFidelityProbe.ReplayedNonPublicRows` counts replayed
+rows `WHERE NOT (<predicate>)` — 0 or it fails. The **cross-surface-closure** gene (M23) adds the content→taxonomy
+check described under [The fidelity gate](#the-fidelity-gate-extends-the-data-dna).
+`datadna measure-snapshot … --manifest <directus.json>` runs them.
 
 The **`ContentSnapshotSeeder`** DAG node (sibling of `TaxonomySnapshotSeeder`) verifies the content snapshot was
 replayed (counts public `directus.simulations`) and is the ordering anchor the **session/assignment seeders sit
@@ -449,17 +490,23 @@ of a demo stack**: the `dev-stack up` bring-up runs a **set-dressing pass** (`ro
 After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps against `dev-N` (offset Postgres,
 `5432 + N·10000`):
 
-1. **The per-stack Directus recipe + firewall (print-only — see the corrected known-state above).** It emits the
-   M10 store-fork recipe (bootstrap → content-schema → replay → boot, 4 steps since fix16) and **firewall-checks
-   the per-stack Directus env CONTRACT** — the contract demands `DIRECTUS_BASE_ADDR` point at the **per-stack**
-   offset-port Directus, **never** the shared `content.anthropos.work`. Both the recipe and the firewall come from
-   one source of truth: the **`stack-snapshot/cmd/provision-plan`** runner, which makes the M10
-   `directus.ProvisionPlan` / `EnvContract` / `Validate` contract *executable* (it was library-only through v1.2 —
-   #M13-D2).
+1. **The per-stack Directus recipe + firewall (executed on `--local-content`, else print-only — see the
+   known-state above).** It emits the M10 store-fork recipe (bootstrap → content-schema → replay → boot, 4 steps
+   since fix16) and **firewall-checks the per-stack Directus env CONTRACT** — the contract demands
+   `DIRECTUS_BASE_ADDR` point at the **per-stack** offset-port Directus, **never** the shared
+   `content.anthropos.work`. Both the recipe and the firewall come from one source of truth: the
+   **`stack-snapshot/cmd/provision-plan`** runner, which makes the M10 `directus.ProvisionPlan` / `EnvContract` /
+   `Validate` contract *executable* (it was library-only through v1.2 — #M13-D2).
    `provision-plan --check-env --base-addr … --dsn …` exits non-zero — **hard-aborting the pass before any
-   replay** — if the per-stack Directus env ever resolves to the prod Directus. **No recipe step is executed by
-   the pass** (the M9b/M10 "operator's step" discipline): the recipe is printed + the env validated; the actual
-   dev CMS today still points at prod content (the same live-prod read every stack has — known-state above).
+   provision/replay write** — if the per-stack Directus env ever resolves to the prod Directus. Since **M22**,
+   when the bring-up passes **`--local-content`** (dev opt-in; demo default), the pass **executes** the recipe
+   (bootstrap → apply-structure → replay → boot the per-stack Directus compose service) behind that
+   now-**load-bearing executed** firewall gate, and since **M23** the same `--local-content` pass also performs the
+   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
+   and stripping its prod token, so a `--local-content` dev stack reads its catalog from its OWN Directus (asset
+   plane stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` unchanged). **Without** `--local-content` the recipe is
+   printed + the env validated but no step runs (the M9b/M10 "operator's step" discipline) and the dev CMS still
+   points at prod content (the same live-prod read — known-state above).
 2. **Cache-first auto-snapshot.** It replays the cached **public** surfaces (`taxonomy` then `directus`) into
    `dev-N` via `stacksnap replay` — **cache-first by construction** (replay resolves the cache and **never**
    captures; capture is a separate, privileged release-time prod read). **Every replay skip is a warning, not a

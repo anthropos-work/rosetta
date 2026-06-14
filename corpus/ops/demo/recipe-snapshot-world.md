@@ -27,10 +27,13 @@ almost always just replays an existing snapshot. Capture is the rare refresh op.
 
 **Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`
 alike) and migrated (so the `skiller` schema exists as the **taxonomy** replay target). The **`directus` replay
-target does not exist after migration** — its schema is created by the per-stack-Directus bootstrap, which isn't
-automated yet (the M10 collection-schema gap), so the `directus` replay currently **skips with `stacksnap` exit 4**
-on every stack (the taxonomy surface lands as normal; content is read live from prod meanwhile — see the
-[known-state](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16)). Note
+target** is created by the per-stack-Directus bootstrap, which **v1.5 M21–M23 automate on a `--local-content`
+stack** (demo default-on; dev opt-in): the set-dress pass bootstraps + auto-provisions the structure + boots the
+per-stack Directus + cuts `cms` over, so the `directus` replay **exits 0** and content is self-contained. On a
+stack **without** `--local-content` (the fallback) there is no per-stack `directus` schema, so the `directus`
+replay **skips with `stacksnap` exit 4** and the taxonomy surface lands as normal while content is read live from
+prod — see the
+[known-state](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16). Note
 **both** `/dev-up N` (M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the
 auto-set-dress pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a
 cold cache — [`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
@@ -38,12 +41,12 @@ auto-pass skipped. The snapshot is **stack-global** public reference data — re
 independent of which org you then `/stack-seed`.
 
 ```bash
-/stack-snapshot replay 1                         # taxonomy (lands) + directus (skips: exit 4 until the gap closes)
+/stack-snapshot replay 1                         # taxonomy (lands) + directus (exits 0 on --local-content; else skips exit 4)
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
 /tmp/stacksnap replay --surface taxonomy --stack demo-1
-/tmp/stacksnap replay --surface directus --stack demo-1   # exit 4 today (no per-stack directus schema yet)
+/tmp/stacksnap replay --surface directus --stack demo-1   # exits 0 on a --local-content stack; exit 4 on the prod-read fallback
 ```
 
 Replay **resolves cache-hit vs stale** against the stack's live schema, **verifies every payload checksum before

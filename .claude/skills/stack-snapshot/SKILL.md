@@ -1,6 +1,6 @@
 ---
 name: stack-snapshot
-description: Set-dress a stack (dev-N or demo-N) with the real PUBLIC reference library — replay the captured taxonomy catalog into the stack so it's real (not placeholder). The Directus content surface needs a per-stack Directus that isn't automated yet (the M10 collection-schema gap — its replay exits 4 today); content is read live from prod meanwhile. Drives the stacksnap CLI (replay / capture / status). Use after the stack is up and before seeding for a full-fidelity catalog, or when asked to snapshot / set-dress / replay.
+description: Set-dress a stack (dev-N or demo-N) with the real PUBLIC reference library — replay the captured taxonomy catalog into the stack so it's real (not placeholder). The Directus content surface replays into a per-stack Directus that v1.5 M21–M23 now EXECUTES on a --local-content stack (demo default-on; dev opt-in) so content is self-contained (replay exits 0); a stack without --local-content reads content live from prod (the fallback, directus replay exits 4). Drives the stacksnap CLI (replay / capture / status). Use after the stack is up and before seeding for a full-fidelity catalog, or when asked to snapshot / set-dress / replay.
 argument-hint: [dev-N|demo-N] [replay|capture|status] [--surface taxonomy|directus] [--dsn DSN] [--dry-run]
 ---
 
@@ -59,12 +59,16 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
    stack's schema **diverged** from the captured source (`stacksnap status` compares digests). The `taxonomy`
    surface replays straight away (its `skiller` schema exists from migration). The `directus` content surface
    additionally needs its **per-stack Directus** against the stack's own `directus` schema (**bootstrap →
-   content-schema → replay → boot**, 4 steps — the **content-schema** step is the not-yet-automated M10
-   collection-schema gap). **So today the directus replay exits 4** on every stack: the auto-set-dress is
-   print-only (it never runs the recipe's bootstrap, so the schema stays empty). Running the bootstrap by hand
-   advances you past exit 4 to the content-schema gap (then exit 5) — it's an operator recipe, not yet automated;
-   offset-port container, **never**
-   `content.anthropos.work`) — see the printed recipe.
+   apply-structure → replay → boot**, 4 steps). Since **v1.5 M21–M23 this is automated** on a
+   **`--local-content` stack** (demo **default-on**; dev **opt-in** via `--local-content`; `N=0` behind
+   `--force`): the bring-up's set-dress pass EXECUTES the recipe — M21 captures the content-model structure and
+   **auto-provisions** the bootstrap gap (the content-schema step is no longer a manual gap), M22 boots the
+   per-stack Directus compose service, and M23 cuts `cms`'s `DIRECTUS_BASE_ADDR` over to it — so the **directus
+   replay exits 0** and the stack is content-self-contained (asset plane stays on prod). On a stack **without**
+   `--local-content` (the **fallback**), there is no per-stack Directus: the directus replay skips with
+   **exit 4** and the stack reads public content **live from prod**. Either way the per-stack Directus env
+   contract targets the stack's **own** offset-port `directus` schema, **never** `content.anthropos.work`
+   (`EnvContract.Validate()` hard-rejects it).
 
    **`capture`** (rare maintenance) — only when `status` shows the surface is **missing or stale** (the platform
    schema moved). Reads the public surface **once** over `--dsn` from a safe source, firewalls it, caches it:

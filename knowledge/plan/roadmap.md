@@ -53,7 +53,7 @@ builder skills).
 >    [`../../corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md) § the per-stack Directus store fork.
 >
 > **→ Update (2026-06-11): this is now the v1.5 "prop room" thesis.** Fix-2's gap (no working local Directus; content
-> read live from prod) is exactly what **v1.5 "prop room"** closes — see the **In Development** section below. Fix-1's
+> read live from prod) is exactly what **v1.5 "prop room"** closes — see the v1.5 section (now **Done**). Fix-1's
 > DEF-M10-01 stays backlog, **re-signed fresh** at v1.5 design with its user-facing sting removed: v1.5 keeps the
 > *asset plane* on prod public links so demos show **real images** without the S3 blob-byte work.
 
@@ -66,7 +66,8 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 → M22 → M23 → M24 → M25 | 🚧 **IN DEVELOPMENT** (designed 2026-06-11) |
+| **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
+| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | 🚧 **IN DEVELOPMENT** (all 5 milestones closed 2026-06-13; awaiting `/developer-kit:close-release`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -83,7 +84,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.5 "prop room" (designed 2026-06-11)
+## Done — v1.5 "prop room" (SHIPPED 2026-06-14 · tag `v1.5`)
 
 **Theme:** every stack today reads its public content **live from prod** (`DIRECTUS_BASE_ADDR=content.anthropos.work`)
 — v1.3/M13 shipped only a **print-only** per-stack-Directus recipe, never a running one (corrected corpus-wide
@@ -129,7 +130,27 @@ developer's primary box.
 > **`rosetta`** owns `.claude/skills/*`, `corpus/*`, `CLAUDE.md`. Each milestone's `Delivers →` line splits accordingly.
 
 ### M21: Structure capture — close the collection-schema gap
-**Status:** `planned` · **Shape:** `iterative`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `iterative`
+**Closure (closed-on-gate):** the exit gate is **MET by tooling** at iter-08 — `stacksnap` captures the content-model
+structure (all-26-collection DDL + **PRIMARY KEYs** + sequences + the `directus_collections` registration + the
+public-policy `directus_permissions` read grant) behind a new firewall **structural-metadata admissibility class**
+(`AssertStructuralMetadata`: admit `directus_*` system tables as "structure, not tenant data" iff zero tenant-scope
+columns — extend, never loosen), **auto-provisions** a bootstrapped-gap stack before the row replay, and a
+booted+provisioned stack **serves the captured catalog anonymously over HTTP** with no hand SQL. **8 iters** (1
+bootstrap tok + 7 tiks, 0 triggered toks — every tik advanced the 6-stage pipeline: static 2 → live 2 → 4 → 6
+demonstrated → code-ified met). The load-bearing empirical finding was the **PRIMARY-KEY rule** (Directus silently
+403s a PK-less collection even for admin while the digest still converges — exactly why this was iterative). Digest
+convergence resolved via **option A** (capture all 26 collections + pin 11.6.1, whose system digest `b4cb55bc…`
+equals prod's — no skew; operator decision #M21-D7). Redefined `stacksnap` exit codes (empty→4 / gap+structure→0 /
+gap-no-structure & diverged→5). **Delivered:** `corpus/ops/directus-local.md` (net-new — the structure half: bootstrap
+empirics + structure-capture model + version-skew rule + the firewall carve-out; M22 adds the lifecycle half) +
+the `snapshot-spec.md` store-fork honesty update + the structure-capture extension (ext tag `prop-room-m21` @
+`835d940`). **Close:** 1 scope (the unwritten committed doc → Fate-1 authored) · 1 should-fix code (an error-label
+nit) · 1 docs · 0 adversarial-new (5 scenarios all already test-pinned). Deferral audit **GREEN** (0 repeat / 0 aged;
+`directus_files` ref capture → **Fate-3 annotated to M23**, the 20 dangling relations → **Fate-2 already owned by
+M23**; the harden conn-seam + serve-live-integration → tracked follow-ups). Go `stack-snapshot` 231→**290** (+59);
+coverage directus/firewall **100%**, manifest 98.4%, capture 98.9%; flake **0** (5/5 shuffled). Records:
+[m21-structure-capture/](releases/archive/01.50-prop-room/m21-structure-capture/) (decisions · hardening-ledger · metrics · retro · audit-deferrals).
 **Goal:** Make the snapshot carry the content-model **structure** (the user-collection table DDL + Directus's
 `directus_collections`/`directus_fields`/`directus_relations` registry rows) alongside the rows, captured atomically
 from the same sanctioned source — so the `directus` replay stops failing with exit 4 and a freshly-bootstrapped
@@ -177,7 +198,26 @@ now extended (not loosened) to admit structural metadata. The dropped pg_dump-fi
 resurrect — `TestDroppedDumpFlagStaysGone` pins it gone.
 
 ### M22: Executed provisioning + per-stack Directus lifecycle
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `section`
+**Closure:** all 6 sections landed Fate-1 — the print-only recipe is now an **executed**, idempotent, prod-safe
+bring-up step: a per-stack Directus boots as a **compose service** in the stack's override (offset port
+`8055+N·10000`, joins `app-network`, named `<project>-directus-1`, torn down with the stack), provisioned
+**bootstrap → apply-structure → replay → boot**, verified (`/server/health` SERVICES row + a `directus` expected-schema
++ a **"registered collections > 0"** cheap-win + a **no-prod-read env assert**), demo **default-on** / dev **opt-in**
+(`--local-content`; `N=0` behind `--force`). The load-bearing finding: the **`EnvContract.Validate` firewall became
+a load-bearing executed gate** — a prod-resolving env **hard-aborts before any write** (the M17-for-TRUNCATE
+discipline, now for the executed provision), with a runtime **no-prod-read backstop** in `autoverify`. Non-fatal
+throughout: any provision failure **degrades to the prod-read path** with an honest `⚠` status line.
+**Idempotent re-provision** converges (bootstrap-on-non-empty **sentinel** guard — a half-bootstrap re-bootstraps —
++ compose-name reuse). **Delivered:** `corpus/ops/directus-local.md` § "Container lifecycle (M22)" (the lifecycle
+half) + the `verification.md`/`idempotency.md` rows + the `rosetta_demo.md` registry/teardown note + 3 collateral
+print-only retirements (`snapshot-spec.md`/`safety.md`/`demo/README.md`); ext tag `prop-room-m22`. **Close:** 8
+findings — 0 scope · 0 must-fix code (3 should-fix comments landed ext `e989982`; 3 nice-to-have refactors → Fate-2
+M24) · 2 docs (DOC-1 the ops-README stale "lands in M22/M23" claim → Fate-1 fixed; DOC-2 the CLAUDE.md doc-list →
+Fate-2 M24's sweep) · 0 tests · 0 adversarial-new (**7 scenarios all already test-pinned**). Deferral audit **GREEN**
+(0 repeat / 0 aged / **0 M22-originated**; inherited M21 items confirmed owned by M23). Go **795** unchanged (M22
+touches no Go); Python **360 → 418** collected (+58, +8 env-gated skip); flake **0** (5/5 sequential). Records:
+[m22-provision-lifecycle/](releases/archive/01.50-prop-room/m22-provision-lifecycle/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Turn the print-only 4-step recipe into an **executed** bring-up step that boots a per-stack Directus as a
 **compose service** in the stack's override — idempotent, verified, torn down with the stack — so demo (default) and
 opt-in dev stacks come up with a live local Directus.
@@ -211,7 +251,33 @@ Directus/Postgres — the `EnvContract.Validate` firewall moves from a print-tim
 gate** (hard-abort before any write if the env resolves to prod); tests pin the target class, as M17 did for TRUNCATE.
 
 ### M23: Content cutover + referential closure
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (closed 2026-06-13) · **Shape:** `section`
+**Closure:** all 6 sections landed Fate-1 — the data plane is now **cut over** to the per-stack Directus: §1 grew
+`stack-core/gen_override.py` to emit per-service `environment:` blocks (the single genuinely-new bit of plumbing) +
+re-point `cms`'s `DIRECTUS_BASE_ADDR` → in-network `http://directus:8055` on dev `--with-directus`; §2 the demo
+side via `gen_injected_override.py`; §3 **studio-desk** gets the per-stack instance + a **locally-minted static
+admin token** (deterministic `EnvContract.AdminToken` stamped via Directus's `ADMIN_TOKEN` bootstrap env, a
+new `ValidateProvisionable` present-token gate layered on the prod-safety `Validate`); §4 **wired the
+`directus_files` ref capture** (DEF-M21-03/Fate-3 from M21) as a new **REFERENCED-SUBSET** firewall admissibility
+kind (reverse-reference closure, admit-iff `Filter==ReferencedFilesFilter`) + a `ClearByDelete` **DELETE-before-
+TRUNCATE** for the external `directus_settings` FK; §5 **referential closure** — full-taxonomy capture
+(`organization_id IS NULL`) was already the state (closure maximal by construction) + a **measured cross-surface
+closure gene** (`OpSnapshotCrossSurfaceClosure`/`CrossSurfaceDangling`, criticality `standard`, non-blocking) that
+surfaces the **1 genuine prod residual** — `K-AIFUNX-E658`, a node referenced by 2 public sims but existing only as
+a customer-scoped skill, **uncloseable by tooling** (capturing it = firewall breach; editing prod = forbidden), now
+MEASURED + named rather than a silent empty picker (an operator-owned prod data-quality fix). The **asset plane
+stays on prod** (`DIRECTUS_PUBLIC_BASE_ADDR` unchanged) so images stay real; the data plane goes local. **2
+inherited M21 deferrals RESOLVED in-milestone** (DEF-M21-03 directus_files §4, DEF-M21-04 referential closure §5 —
+the 20 dangling relations were subsumed by M21's 26-collection structure capture, M21-D7). **Delivered:** the 6
+corpus docs (`cms`/`studio-desk`/`jobsimulation`/`next-web-app` env truth + `safety.md` retire-live-read +
+`snapshot-spec.md` the closure gene + `directus_files`-wired) — resolves KB-1 + KB-2; ext tag `prop-room-m23` @
+`7e9343a`. **Close:** 6 findings — 0 scope · 0 code-quality · 0 adversarial-new (4 scenarios all already
+test-pinned) · 1 docs (the `snapshot-spec.md` M13-section stale "M23 cutover remains future" → Fate-1 fixed) · 0
+tests · 5 decision-triage backref-tags. Deferral audit **GREEN** (2 inherited RESOLVED, 0 repeat / 0 aged;
+K-AIFUNX-E658 fated operator-owned KNOWN-ISSUE). Go **795 → 844** (M23-own +33 across `stack-snapshot`+`stack-seeding`;
+the rest a counting-method reconciliation on untouched modules); python touched suites `stack-core` 61→**69** +
+`stack-injection` **110** (8 env-gated skip); flake **0** (5/5). Records:
+[m23-content-cutover/](releases/archive/01.50-prop-room/m23-content-cutover/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Point the stack's services at their **own** Directus and guarantee the served catalog is
 **referentially closed** — so the content a stack serves never references a taxonomy node-id its captured subset
 lacks (the empty Assign-AI-Simulation-picker class disappears).
@@ -247,7 +313,27 @@ instance). Mitigate: the M22 no-prod-read verify assert + the `EnvContract` gate
 a good stack up.
 
 ### M24: Docs convergence + hygiene strand
-**Status:** `planned` · **Shape:** `section` · **Complexity:** small
+**Status:** `done` (2026-06-13) · **Shape:** `section` · **Complexity:** small
+**Closed:** all 7 sections Fate-1. The corpus now tells the new truth: the fictional local-Directus docker service
+(image `directus/directus:10.10.1` + admin/password + a compose snippet) — which **never existed** in the platform
+compose (verified against `stack-dev/platform/docker-compose.yml`) — is corrected across `external_services.md` /
+`service_taxonomy.md` / `quick_ops.md`, the known-state + `directus-local.md` + `snapshot-spec.md` rewritten on the
+M23 cutover, and the print-only/exit-4/reads-live-from-prod framing swept across 5 skills + `CLAUDE.md` + 5 demo
+docs (the real two-path posture: prod-read default; per-stack local Directus on `--local-content`). The 4 aged-out
+hygiene items the deferral audit surfaced all landed Fate-1: **(a)** an explicit `toolchain go1.25.11` pin on all 4
+go.mod + the clerkenstein CI (clears the 12 called-stdlib advisories, lazy); **(b)** a corpus README-index-row guard
+(`stack-core/corpus_index_guard.py`, a token-bounded per-dir lint — it dog-fooded itself, surfacing + backfilling 7
+pre-existing gaps; harden surfaced the milestone's 1 real bug, a prefix-collision false-negative, fixed `191d650`);
+**(c)** the alignment zero-critical-genes guard (`dna.Validate` rejects + `compare.GateMet` refuses a vacuous-100%
+critical gate, defence-in-depth, #M24-D2); **(d)** the `/project-stats` scope fix landed cross-repo in the
+developer-kit `stats.sh` (where the script lives — `825cdce`): `*/stack-*/*` in PRUNE_PATHS + a `drop_gitignored`
+filter, so the gitignored `stack-*/` platform clones (~2M foreign lines) stop inflating the count. **Close:** 5
+findings (0 scope · 2 code-quality [0 must-fix] · 0 docs · 0 tests · 1 adversarial-record · 3 decision-triage),
+all Fate-1; deferral audit **GREEN** (0 new deferrals, the 4 chartered hygiene items cleared, 3 standing inherited
+items unchanged + not aged). Go 844→**850** (+6, all alignment — the zero-critical guard); python stack-core
+77→**85** (+8, the README-index guard); flake **0** (5/5). ext tag `prop-room-m24` @ `6a4749d` (set by the
+orchestrator post-close); the §7 `/project-stats` fix is the cross-repo developer-kit `825cdce`, outside the ext tag.
+Records: [m24-docs-hygiene/](releases/archive/01.50-prop-room/m24-docs-hygiene/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Make the whole corpus tell the new truth (stacks are content-self-contained), and absorb the four small
 aged-out hygiene items the deferral audit surfaced — so v1.5 leaves the repo honest and the backlog cleaner.
 **Scope:**
@@ -277,7 +363,7 @@ the zero-critical-genes guard + the stats-scope fix + the Go pin bump** (rosetta
 (already verified once: no directus service exists).
 
 ### M25: Field bake — the observable-behavior gate
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (completed 2026-06-13) · **Shape:** `section`
 **Goal:** Prove the whole release on the **actual 16 GB box** with **observable behaviors** as the done-bars — so
 v1.5 pre-pays the field-fix tail that every prior release shipped after the fact (v1.3 → all of v1.3b; v1.3b →
 fix1–17).
@@ -295,10 +381,33 @@ fix1–17).
 **Estimated complexity:** medium (history's loudest lesson: doc-green ≠ field-working — budget the tail *inside* the release).
 **Open questions:** none — the done-bars are the observable behaviors above.
 **KB dependencies:** every v1.5 doc; the `/demo-up`, `/dev-up`, `/demo-down`, `/dev-down`, `/test-platform` skills.
-**Delivers → a short `releases/01.50-prop-room/m25-field-bake/` field-bake log + any folded-back fixes** (both repos as needed).
+**Delivers → a short `releases/archive/01.50-prop-room/m25-field-bake/` field-bake log + any folded-back fixes** (both repos as needed).
 **Risk (resource — degrades-quality):** a Directus container per stack adds to the Docker-VM budget. Mitigate:
 runtime is cheap (measured ~0.9 GB/stack, ~0.66 GiB both frontends — boots/builds spike, not steady-state), keep the
 **max-2-co-resident-stacks** line, add Directus to the 12 GB preflight, watch Docker-VM **disk** (the M3 disk-full precedent).
+**Closure (2026-06-13):** all **5 live done-bars GREEN** — the field-bake earned its keep. The operator-sanctioned
+prod read (the `postgres` MCP `marco_read` primary-read DSN) filled the cache **structure-bearing**, so the local
+Directus observably **SERVES** the captured public catalog (curl-proven: DB-1 demo-1 offset 18055 + DB-2 dev-2
+offset 28055 — `/server/health` 200, `/items/simulations` real published rows, asset URL → `content.anthropos.work`;
+data plane local + asset plane prod). N=0 stays prod-read (code-verified, M25-D4); re-runs converge (DB-3);
+the cold-start capture was exercised (DB-4); teardown reclaims the container + port (DB-5). The live runs surfaced
++ fixed **4 real release bugs** clean-room unit passes couldn't see, all Fate-1 in their owning ext module
+(`stack-snapshot`/`demo-stack`): **(1)** the `directus_files` referenced-subset capture **over-captured 158
+tenant-referenced files** (M25-D5) — the **tenant-data firewall caught it FAIL-CLOSED** (zero data written); the
+closure now appends `AND NOT (TenantReferencedFilesFilter)` + the firewall `AssertPlan` now **requires** every
+referenced-subset table to declare + embed its tenant-exclusion (**firewall never weakened**); **(2)** the
+`directus_collections.group` self-FK to an admin-UI folder collection (M25-D6) → the serve-row render NULLs it;
+**(3)** the `directus_files.folder`/`uploaded_by`/`modified_by` FKs to uncaptured admin/library/users tables
+(M25-D7) → a general `TableSpec.NullColumns` mechanism (the complete enumeration proven — content tables ship
+PRIMARY KEYS only, 0 content-table FKs); **(4)** the offline-build `GOTOOLCHAIN=local` regression from M24's Go
+pin (M25-D1) that aborted `/demo-up`. ext harden +8 tests (firewall `AssertPlan` → 100%); ext HEAD `1a2fd91`,
+tag `prop-room-m25`. **Close:** 3 findings (1 scope checkbox nit · 0 code-quality · 1 docs the M25-D2 16 GB-host
+VM ceiling field note · 0 tests · 1 decision-blend + 5 archive), **deferral audit GREEN** with the strongest
+outcome — **DEF-M21-02** (serve-live-integration harness) RESOLVED Fate-1 in its destination milestone (the live
+serve-proof IS the integration it needed); 2 M25-originated env items fated fresh (M25-D8 full-UI Playwright render
+→ DROP-as-deliverable/host-budget; M25-D9 dev-2 taxonomy `rc=4` → tracked dev migrate-ordering follow-up);
+**0 escape-hatch**. The rosetta merge is markdown/text only (the code fixes are in ext). **v1.5 is complete — next:
+`/developer-kit:close-release`.**
 
 ### Execution graph (v1.5)
 ```
