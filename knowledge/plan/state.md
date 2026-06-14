@@ -6,10 +6,12 @@ The **secret-provisioning release**: one mechanism that ingests a secret source 
 (a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per repo. 4 milestones
 M27→M30 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero platform-repo edits; never
 commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
-**Active milestone:** **M29 — Docs + `/stack-secrets` skill + corpus wiring** (`planned` — next to build). Author
-`corpus/ops/secrets-spec.md` (the blueprint the skill reads), add the `/stack-secrets` skill + CLAUDE.md skill-table
-row, retire the manual-copy prose + the `setup_guide.md:447` TODO, extend `safety.md`. Makes the M28 engine
-discoverable + corpus-owned. Consumes M28's provision engine + gate. Strictly sequential after: M30 field-bake.
+**Active milestone:** **M29 — Docs + `/stack-secrets` skill + corpus wiring** (`built` — awaiting close). Authored
+`corpus/ops/secrets-spec.md` (the blueprint the skill reads, closing the Phase-0b KB blind area), added the
+`/stack-secrets` skill + CLAUDE.md skill-table/doc-index/interconnected rows, retired the manual-copy prose + the
+`setup_guide.md` line-447 TODO (→ `/stack-secrets`), extended `safety.md` (§2.9 values-blind / `DIRECTUS_TOKEN`-non-rearm
+clause). README-index guard exit 0. Zero ext code (rosetta-only; ext on `main` @ `9742126` = tag `stage-door-m28`).
+Makes the M28 engine discoverable + corpus-owned. Strictly sequential after: M30 field-bake.
 **Last closed:** **v1.5 "prop room" — 2026-06-14**, tag `v1.5`. The **local-Directus release**: every stack now
 serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real
 images) on `--local-content` (demo default-on, dev opt-in); prod-read is the documented fallback. M21 structure
@@ -29,7 +31,7 @@ sourced frontend-build tests, moved below the seam + pinned; deferral audit GREE
 **Next up:** **build M29** (docs + `/stack-secrets` skill + corpus wiring) via `/developer-kit:build-milestone`.
 Research + risk register: [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
 (Outward-facing carry-over from v1.5: push the 5 ext tags `prop-room-m21..m25` to `origin`; + the new `stage-door-m27`/`stage-door-m28`.)
-**Phase:** **v1.6 in development — M28 closed (merged to `release/01.60-stage-door`); M29 next to build.**
+**Phase:** **v1.6 in development — M29 BUILT on `m29/secrets-docs-skill` (awaiting `/developer-kit:close-milestone`); M30 field-bake to follow.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
