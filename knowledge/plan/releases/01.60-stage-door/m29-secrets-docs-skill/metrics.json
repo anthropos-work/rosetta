@@ -1,0 +1,73 @@
+{
+  "milestone": "M29",
+  "title": "Docs + /stack-secrets skill + corpus wiring. Authored corpus/ops/secrets-spec.md (the net-new blueprint the skill reads — source-dir/zip layout, the 6-repo/55-gene secret-DNA, the per-repo target-file map, the values-blind safety statement, alias-family vs distinct-similar rules, the waived class, the DIRECTUS_TOKEN non-rearm safety, the CLI + exit contract). Added the /stack-secrets skill (mirrors /stack-seed: read spec -> confirm non-prod target -> build the pinned-tag binary -> run the verb -> report values-blind). Wired CLAUDE.md (skill-table row + Key-Documentation-Locations entry + Interconnected-Documentation rows) + corpus/README.md + corpus/ops/README.md. Retired the manual .env hand-copy prose + the setup_guide.md:447 TODO (-> /stack-secrets), keeping the per-repo key lists as reference (M29-D4). Extended safety.md (§2.9 values-blind / DIRECTUS_TOKEN-non-rearm clause).",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-14",
+  "is_first_milestone": false,
+  "is_final_milestone": false,
+  "position_note": "M29 is the 3rd of 4 milestones of v1.6 'stage door' (M27->M30, strictly sequential). M27 = the DNA + ingestion reader + scorer/diff verbs; M28 = the provision engine + the coverage/verify gate + bring-up wiring + demo-aware scoring; M29 = the corpus doc (secrets-spec.md) + the /stack-secrets skill + CLAUDE.md/setup_guide.md/safety.md wiring; M30 = the build-from-stack-dev field-bake (the next + FINAL milestone). After this close: build M30 — do NOT close-release yet.",
+  "kind": "a rosetta-only docs + skill milestone. ZERO ext code — the ext stayed on main @ 9742126 (= tag stage-door-m28), untouched. The m29/secrets-docs-skill branch is markdown/text only: 2 net-new docs (corpus/ops/secrets-spec.md 290 lines + .claude/skills/stack-secrets/SKILL.md 135 lines) + 5 edits (CLAUDE.md, corpus/README.md, corpus/ops/README.md, corpus/ops/safety.md §2.9, corpus/ops/setup_guide.md) + the planning/close records. close-milestone's merge is entirely rosetta-side m29/secrets-docs-skill -> release/01.60-stage-door; no ext finalization.",
+  "sections": {
+    "total": 8,
+    "all_checked": true,
+    "list": "secrets-spec.md authored (net-new) · /stack-secrets SKILL.md (mirrors /stack-seed) · CLAUDE.md skill-table row · CLAUDE.md Key-Documentation-Locations entry · CLAUDE.md Interconnected-Documentation list update · setup_guide.md manual-copy retired + line-447 TODO deleted (points to the skill) · safety.md §2.9 values-blind / PreflightEnv-emitting clause · README-index guard passes exit 0 (indexed in corpus/ops/README.md + corpus/README.md)"
+  },
+  "field_bugs_surfaced": {
+    "count": 0,
+    "note": "No live-field bugs at M29 (the field-bake is M30). M29 ships no executable code; the build-time check is fidelity-vs-ext-code (all claims verified) + the README-index guard (exit 0)."
+  },
+  "tests": {
+    "language": "None added by M29 — it is a rosetta docs + skill milestone with no executable code. The rosetta-side gate is the corpus README-index guard (developer-kit, exit 0). The ext stack-secrets test surface (160 Go) is M27/M28's deliverable and was untouched (ext @ 9742126).",
+    "go_total": 1027,
+    "go_total_baseline_m28": 1027,
+    "go_total_delta": "+0",
+    "go_by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "go_total_note": "Unchanged from M28 close (1027) — M29 touches no Go. stack-secrets stays 160 @ tag stage-door-m28 / ext 9742126.",
+    "python_total": 459,
+    "python_note": "Unchanged from M28 close (459 collected) — M29 touches no Python.",
+    "flake_count": 0,
+    "flake_gate": "N/A for executable tests (none added). The README-index guard is deterministic (re-run exit 0); py_compile of the guard OK.",
+    "rosetta_test_surface": false,
+    "rosetta_test_note": "The rosetta m29 branch carries no executable code — only corpus docs, a SKILL.md, CLAUDE.md/index wiring, and the close-record markdown. The only programmatic gate is the corpus_index_guard.py (exit 0)."
+  },
+  "coverage": {
+    "applicable": false,
+    "note": "No executable code in M29; no coverage to measure. Doc fidelity was verified against the ext engine at tag stage-door-m28 (9742126): DNA counts (55/6/40-8-7/13-crit), gh-token alias family (3 members), StripOnNonProdKeys (3 keys), MintedKeys (6 keys), ClassifyShape, the provision/io.go value boundary + provision_safety_test.go, and every stacksecrets CLI flag/subcommand/exit-code."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M29 (docs + skill only)."
+  },
+  "review": {
+    "findings": 0,
+    "findings_note": "0 findings across all categories: 0 scope · 0 code-quality · 0 docs · 0 tests · 0 decision-blend. Clean close — Phase 7 had nothing to fix. Every load-bearing doc claim re-verified against the ext code at tag stage-door-m28.",
+    "scope": "GREEN — all 8 deliverable boxes checked; overview In-list fully delivered. The one Out item (build-from-stack-dev observable-behavior validation) is Fate-2 already-owned by M30. No silent drops; zero code TODO/FIXME/HACK in any M29-touched file (the line-447 setup_guide TODO is the one M29 deletes).",
+    "code_quality": "GREEN (N/A — no executable rosetta code). All stacksecrets CLI invocations in SKILL.md + secrets-spec.md verified against the real parser (cmd/stacksecrets/main.go): subcommands list/check(measure)/introspect/diff/provision; provision flags --dna/--from/--stack-root/--stack/--force/--prod/--dry-run; check --dna/--from/--demo; introspect/diff --stack-root. The operator-facing --check|--provision|--status shorthand maps to real subcommands in the skill body (--status -> list). No doc uses a flag the binary lacks. Cross-references resolve (16 OK / 0 missing); corpus-index guard exit 0.",
+    "adversarial": "GREEN — 4 doc-consumer scenarios (Phase 2c), all verified clean against ext code @ stage-door-m28 and recorded in decisions.md: (1) LLM synthesizes a non-existent CLI flag -> every doc invocation maps to a real parser flag; (2) consumer reads a secret value because the docs imply it -> SKILL.md states the values-blind invariant + 'never cat/echo a .env', ClassifyShape + the provision/io.go boundary + provision_safety_test.go all exist as claimed; (3) consumer provisions the prod Directus token onto a non-prod stack -> StripOnNonProdKeys (3 keys) matches both docs, both steer to blank-on-non-prod; (4) stale counts -> the 55/6/40-8-7/13-crit DNA, the 3-member gh-token alias, the 6 MintedKeys all match the docs.",
+    "docs": "GREEN — the milestone IS docs; 0 inaccuracies. DNA counts verified; safety.md §2.9 anchors resolve; setup_guide.md line-447 TODO gone + hand-copy retired (per-repo key-lists kept per M29-D4, the root platform/.env_example->.env copy kept); CLAUDE.md skill-table/doc-index/interconnected rows + both corpus indexes added. Handbook counts in secrets-spec.md Status (113 @ M27 / 160 @ M28) reconcile against state.md.",
+    "tests": "GREEN (N/A — docs milestone, no rosetta test stack). The README-index guard (the rosetta gate) re-runs exit 0; the ext 160 Go tests are M27/M28 deliverables, untouched.",
+    "decision_triage": "M29-D1 (pinned-tag build) -> already blended into SKILL.md + secrets-spec.md. M29-D2 (skill shorthand -> CLI mapping) -> already in the SKILL.md body. M29-D4 (setup_guide keeps the per-repo key lists, retires only the cp mechanics) -> already in setup_guide.md. M29-D3 (README-index guard checks the same-directory README) -> ARCHIVE (maintainer-only mechanics, stays in decisions.md). No further M29 KB blend owed.",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-14-m29-close.md. M29 introduced 0 new deferrals. The within-release items are already resolved (DEF-M27-01 dropped at M27 close as a documented v1 boundary; DEF-M27-02 Fate-2 discharged at M28 close). 3 inherited release-level backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) -> KEEP-DEFERRED, re-signed 2026-06-14 at the v1.5 close, all orthogonal to secret provisioning (and to M29's docs-only scope). M30 field-bake = Fate-2 already-owned, not a deferral. 0 repeat, 0 chronic, 0 aged-out, 0 blockers."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 8 deliverable sections (secrets-spec.md net-new + /stack-secrets SKILL.md + the 3 CLAUDE.md wiring rows + setup_guide.md retire-prose/TODO-delete + safety.md §2.9 clause + README-index guard exit 0) + the close records (deferral audit, adversarial scenarios in decisions.md, the Final Review section, this metrics.json, the retro).",
+    "confirmed_covered_fate2": "M30 field-bake (the build-from-stack-dev observable-behavior validation — assemble a compliant .agentspace/secrets from stack-dev, prove provision lands cleanly with Critical == 100% + the stack reaches UP) — already owned by M30 (its overview.md In: list names it); M29 delivers the docs + skill the bake exercises. No plan edit.",
+    "annotated_fate3": "none — no Fate-3 roadmap mutation at M29 close.",
+    "dropped": "none at M29.",
+    "escape_hatch_release_scope_breaking": "none. M29 introduced zero release-scope-breaking deferrals. The 3 inherited cross-release backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) are untouched by M29 (orthogonal) — not new escape-hatch.",
+    "kept_followup": "none M29-originated. The inherited 3 (DEF-M10-01 / DEF-M21-01 / M25-D9) are kept on the release-level backlog, re-signed at the v1.5 close."
+  },
+  "delivered": {
+    "rosetta": "corpus/ops/secrets-spec.md (net-new, 290 lines — the secret-provisioning source-of-truth) + .claude/skills/stack-secrets/SKILL.md (net-new, 135 lines — mirrors /stack-seed) + CLAUDE.md (skill-table row + Key-Documentation-Locations entry + Interconnected-Documentation rows 10/11) + corpus/README.md + corpus/ops/README.md index rows + corpus/ops/safety.md §2.9 (the values-blind / DIRECTUS_TOKEN-non-rearm clause + a cross-link) + corpus/ops/setup_guide.md (the fast-path callout + retired hand-copy for studio-desk/ant-academy/next-web + the line-447 TODO deleted, key-lists kept per M29-D4). Plus the m29 close records: the Final Review section in progress.md, the adversarial section in decisions.md, the audit-deferrals report, this metrics.json, the retro. state.md headline Go/Python counts unchanged (M29 touches no code); roadmap M29 status -> done; the M29 dir flipped to status: archived.",
+    "ext": "none. M29 is rosetta-only; the rosetta-extensions repo stayed on main @ 9742126 (= tag stage-door-m28), untouched — no branch, no tag, no commit on the ext side."
+  },
+  "extensions": {
+    "module": "none (rosetta-only milestone — no ext code).",
+    "head_at_close": "9742126 (unchanged — ext untouched; = tag stage-door-m28)",
+    "build_tip_tag": "stage-door-m28 (the M28 tag the /stack-secrets skill pins; M29 adds no new ext tag)",
+    "tag_note": "M29 adds NO ext tag — it is docs + a skill committed entirely in rosetta. The /stack-secrets skill builds from the existing tag stage-door-m28 (which carries provision + the demo-aware check). The orchestrator leaves the ext on main @ 9742126.",
+    "code_commits": []
+  },
+  "notes": "M29 is the 3rd of 4 milestones of v1.6 'stage door' — it makes the M27/M28 secret-provisioning engine DISCOVERABLE and gives it a corpus home. It authored corpus/ops/secrets-spec.md (the net-new blueprint, closing the Phase-0b KB blind area), added the /stack-secrets skill (mirroring /stack-seed: read spec -> confirm non-prod target -> build the pinned-tag binary -> run the verb -> report values-blind), wired the skill + spec into CLAUDE.md + both corpus indexes, retired the manual .env hand-copy prose + the setup_guide.md:447 TODO (-> /stack-secrets, keeping the per-repo key lists as reference per M29-D4), and extended safety.md (§2.9 values-blind / DIRECTUS_TOKEN-non-rearm clause). The close was CLEAN: 0 findings across all categories; every load-bearing doc claim re-verified against the ext code at tag stage-door-m28 / 9742126 (55-gene/6-repo DNA at 40-8-7 / 13-critical, the gh-token 3-member alias family, StripOnNonProdKeys [3 keys], MintedKeys [6 keys], every stacksecrets CLI flag/subcommand, exit codes 0/1/3); README-index guard exit 0; cross-refs resolve (16/0); deferral audit GREEN (0 new, 0 repeat, 0 blocking). ZERO ext code (the ext stayed on main @ 9742126, untouched). Go 1027 / Python 459 unchanged (M29 touches no code); flake 0 (N/A). The rosetta merge is markdown/text only. Next: build M30 (the build-from-stack-dev field-bake — the next + FINAL v1.6 milestone). Do NOT close-release yet."
+}
