@@ -53,7 +53,7 @@ builder skills).
 >    [`../../corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md) § the per-stack Directus store fork.
 >
 > **→ Update (2026-06-11): this is now the v1.5 "prop room" thesis.** Fix-2's gap (no working local Directus; content
-> read live from prod) is exactly what **v1.5 "prop room"** closes — see the **In Development** section below. Fix-1's
+> read live from prod) is exactly what **v1.5 "prop room"** closes — see the v1.5 section (now **Done**). Fix-1's
 > DEF-M10-01 stays backlog, **re-signed fresh** at v1.5 design with its user-facing sting removed: v1.5 keeps the
 > *asset plane* on prod public links so demos show **real images** without the S3 blob-byte work.
 
@@ -66,6 +66,7 @@ builder skills).
 | **v1.2** | **set dressing** | Richer demo worlds — the real *public* taxonomy + content library, measured-faithful, to 100% data-DNA coverage | M9a ✅ → M9b ✅ → M10 ✅ → M11 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.2`) |
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
+| **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | 🚧 **IN DEVELOPMENT** (all 5 milestones closed 2026-06-13; awaiting `/developer-kit:close-release`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
@@ -83,7 +84,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.5 "prop room" (designed 2026-06-11)
+## Done — v1.5 "prop room" (SHIPPED 2026-06-14 · tag `v1.5`)
 
 **Theme:** every stack today reads its public content **live from prod** (`DIRECTUS_BASE_ADDR=content.anthropos.work`)
 — v1.3/M13 shipped only a **print-only** per-stack-Directus recipe, never a running one (corrected corpus-wide
@@ -149,7 +150,7 @@ nit) · 1 docs · 0 adversarial-new (5 scenarios all already test-pinned). Defer
 `directus_files` ref capture → **Fate-3 annotated to M23**, the 20 dangling relations → **Fate-2 already owned by
 M23**; the harden conn-seam + serve-live-integration → tracked follow-ups). Go `stack-snapshot` 231→**290** (+59);
 coverage directus/firewall **100%**, manifest 98.4%, capture 98.9%; flake **0** (5/5 shuffled). Records:
-[m21-structure-capture/](releases/01.50-prop-room/m21-structure-capture/) (decisions · hardening-ledger · metrics · retro · audit-deferrals).
+[m21-structure-capture/](releases/archive/01.50-prop-room/m21-structure-capture/) (decisions · hardening-ledger · metrics · retro · audit-deferrals).
 **Goal:** Make the snapshot carry the content-model **structure** (the user-collection table DDL + Directus's
 `directus_collections`/`directus_fields`/`directus_relations` registry rows) alongside the rows, captured atomically
 from the same sanctioned source — so the `directus` replay stops failing with exit 4 and a freshly-bootstrapped
@@ -216,7 +217,7 @@ M24) · 2 docs (DOC-1 the ops-README stale "lands in M22/M23" claim → Fate-1 f
 Fate-2 M24's sweep) · 0 tests · 0 adversarial-new (**7 scenarios all already test-pinned**). Deferral audit **GREEN**
 (0 repeat / 0 aged / **0 M22-originated**; inherited M21 items confirmed owned by M23). Go **795** unchanged (M22
 touches no Go); Python **360 → 418** collected (+58, +8 env-gated skip); flake **0** (5/5 sequential). Records:
-[m22-provision-lifecycle/](releases/01.50-prop-room/m22-provision-lifecycle/) (decisions · metrics · retro · audit-deferrals).
+[m22-provision-lifecycle/](releases/archive/01.50-prop-room/m22-provision-lifecycle/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Turn the print-only 4-step recipe into an **executed** bring-up step that boots a per-stack Directus as a
 **compose service** in the stack's override — idempotent, verified, torn down with the stack — so demo (default) and
 opt-in dev stacks come up with a live local Directus.
@@ -276,7 +277,7 @@ tests · 5 decision-triage backref-tags. Deferral audit **GREEN** (2 inherited R
 K-AIFUNX-E658 fated operator-owned KNOWN-ISSUE). Go **795 → 844** (M23-own +33 across `stack-snapshot`+`stack-seeding`;
 the rest a counting-method reconciliation on untouched modules); python touched suites `stack-core` 61→**69** +
 `stack-injection` **110** (8 env-gated skip); flake **0** (5/5). Records:
-[m23-content-cutover/](releases/01.50-prop-room/m23-content-cutover/) (decisions · metrics · retro · audit-deferrals).
+[m23-content-cutover/](releases/archive/01.50-prop-room/m23-content-cutover/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Point the stack's services at their **own** Directus and guarantee the served catalog is
 **referentially closed** — so the content a stack serves never references a taxonomy node-id its captured subset
 lacks (the empty Assign-AI-Simulation-picker class disappears).
@@ -332,7 +333,7 @@ all Fate-1; deferral audit **GREEN** (0 new deferrals, the 4 chartered hygiene i
 items unchanged + not aged). Go 844→**850** (+6, all alignment — the zero-critical guard); python stack-core
 77→**85** (+8, the README-index guard); flake **0** (5/5). ext tag `prop-room-m24` @ `6a4749d` (set by the
 orchestrator post-close); the §7 `/project-stats` fix is the cross-repo developer-kit `825cdce`, outside the ext tag.
-Records: [m24-docs-hygiene/](releases/01.50-prop-room/m24-docs-hygiene/) (decisions · metrics · retro · audit-deferrals).
+Records: [m24-docs-hygiene/](releases/archive/01.50-prop-room/m24-docs-hygiene/) (decisions · metrics · retro · audit-deferrals).
 **Goal:** Make the whole corpus tell the new truth (stacks are content-self-contained), and absorb the four small
 aged-out hygiene items the deferral audit surfaced — so v1.5 leaves the repo honest and the backlog cleaner.
 **Scope:**
@@ -380,7 +381,7 @@ fix1–17).
 **Estimated complexity:** medium (history's loudest lesson: doc-green ≠ field-working — budget the tail *inside* the release).
 **Open questions:** none — the done-bars are the observable behaviors above.
 **KB dependencies:** every v1.5 doc; the `/demo-up`, `/dev-up`, `/demo-down`, `/dev-down`, `/test-platform` skills.
-**Delivers → a short `releases/01.50-prop-room/m25-field-bake/` field-bake log + any folded-back fixes** (both repos as needed).
+**Delivers → a short `releases/archive/01.50-prop-room/m25-field-bake/` field-bake log + any folded-back fixes** (both repos as needed).
 **Risk (resource — degrades-quality):** a Directus container per stack adds to the Docker-VM budget. Mitigate:
 runtime is cheap (measured ~0.9 GB/stack, ~0.66 GiB both frontends — boots/builds spike, not steady-state), keep the
 **max-2-co-resident-stacks** line, add Directus to the 12 GB preflight, watch Docker-VM **disk** (the M3 disk-full precedent).
