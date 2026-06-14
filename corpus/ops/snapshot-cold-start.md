@@ -141,17 +141,22 @@ stacksnap replay --surface taxonomy  --stack demo-1     # or /stack-snapshot N
 stacksnap replay --surface directus  --stack demo-1
 ```
 
-### The Directus replay needs a per-stack Directus (the M10/M13 mechanism)
+### The Directus replay needs a per-stack Directus (executed on `--local-content`; v1.5)
 
 The `directus` surface is content rows that need a **per-stack Directus on an offset port**, stood up
-**bootstrap → content-schema → replay → boot** (4 steps since fix16: Directus's `node cli.js bootstrap` creates
-ONLY the `directus_*` system tables into the stack's `directus` schema [`CREATE SCHEMA` + `DB_SEARCH_PATH=directus`
-required]; the user-collection STRUCTURE is the **not-yet-automated M10 collection-schema gap**; the content rows
-replay in; then the container boots pointed at the stack's own `directus` schema — never the shared
-`content.anthropos.work`). The auto-set-dress pass emits this recipe and firewall-checks the per-stack env before
-any replay; **no recipe step is executed by any bring-up** (dev or demo), so until the gap closes the directus
-replay skips with `stacksnap` exit 4 — a STACK-side precondition, **not** a cache problem this runbook's capture
-can fix. Full mechanism:
+**bootstrap → apply captured structure → replay rows → boot**. On a **`--local-content` stack** (demo default-on,
+dev opt-in) this recipe is **EXECUTED** by the bring-up (v1.5 M22): Directus's `node cli.js bootstrap` creates the
+`directus_*` system tables into the stack's `directus` schema [`CREATE SCHEMA` + `DB_SEARCH_PATH=directus`]; then
+`stacksnap` **applies the captured user-collection STRUCTURE** (the DDL + primary keys + the `directus_collections`
+serve-row registration + public-read permissions — captured atomically with the rows, v1.5 M21) so the schema digest
+converges and the cached rows replay in (**`stacksnap` exit 0**); then the container boots pointed at the stack's own
+`directus` schema, and `cms` is cut over to it (M23) — never the shared `content.anthropos.work` for the data plane
+(the asset plane stays on prod so images stay real). **Without `--local-content`** (or on an `N=0` dev stack) no
+per-stack Directus is stood up: the stack reads content **live from prod** and the directus replay is a no-op with
+**`stacksnap` exit 4** — the documented prod-read fallback, **not** a cache problem this runbook's capture can fix.
+The cold-start case this runbook covers is the prerequisite for the executed path: the cache must be
+**structure-bearing** (a capture made with the M21+ tooling) — a rows-only cache makes the local Directus boot
+healthy but serve **0** content (the M25 field-bake's headline finding). Full mechanism:
 [`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).
 
 ## How this fits the auto-set-dress bring-up
