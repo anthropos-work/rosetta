@@ -3,7 +3,7 @@ milestone: M28
 slug: provisioning-engine
 version: v1.6 "stage door"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-14
 last_updated: 2026-06-14
 complexity: large

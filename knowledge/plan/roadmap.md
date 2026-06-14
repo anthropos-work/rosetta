@@ -188,7 +188,7 @@ possible; DEF-M27-01 encrypted-zip → **DROP** as a documented v1 boundary, DEF
 **Delivers →** `rosetta-extensions/stack-secrets/` (the section; ext tag `stage-door-m27`).
 
 ### M28: Provisioning engine + coverage/verify gate
-**Status:** `planned`
+**Status:** `done` (closed 2026-06-14)
 **Shape:** `section`
 **Goal:** `stacksecrets provision` writes each repo's target `.env` from the source (correct exact key per repo, alias-mapped per file), values-blind; `check`/`measure` computes coverage and is wired non-fatally into `/dev-up` + `/demo-up` pre-flight.
 **Scope:**
@@ -206,6 +206,33 @@ possible; DEF-M27-01 encrypted-zip → **DROP** as a documented v1 boundary, DEF
 **Open questions:** `check` measure source — static `.env` files (safe, names-by-grep) vs live container env (catches runtime-injected keys but risks touching values) → default static, values-blind.
 **KB dependencies:** `corpus/ops/safety.md` (`PreflightEnv`, never-write-prod); `corpus/ops/idempotency.md` (the run-it-twice contract); `corpus/ops/verification.md` (non-fatal pre-flight); `corpus/services/clerkenstein.md` (the demo minting path); `corpus/ops/rosetta_demo.md` (the injection override / `DIRECTUS_TOKEN` strip).
 **Delivers →** `rosetta-extensions/stack-secrets/` (the engine + gate; ext tag `stage-door-m28`).
+**Closure (2026-06-14):** Delivered all 12 boxes. `stacksecrets provision` writes each repo's target `.env` from the
+source values-blind — grouped by `(repo, target_file)` from the DNA, alias-mapped per file (gh-token family incl.
+cross-repo `app/GH_TOKEN`; distinct-similar pairs never auto-copied), append-only copy-if-absent (M28-D2), `--force`
+to overwrite, N=0 main-dev-stack refusal mirroring `stackseed --reset`. The headline blocks-release safety landed +
+test-pinned: provision runs BEFORE the injection override and NEVER re-arms the stripped prod `DIRECTUS_TOKEN` on a
+non-prod stack — it writes the `StripOnNonProdKeys` family BLANK, the exact state the override forces, so the base
+`.env` + override agree and a blank value still passes the key-present-only gene (M28-D3; `TestProvision_NeverReArms‑
+DirectusTokenOnNonProd` + the `--force` / pre-existing-token edges). The single value-carrying boundary is
+`provision/io.go::sourceValues`; a reflection-walk safety test (incl. unexported fields + map keys) proves no value
+surfaces in the Report / dry-run plan / errors. `check`/`measure` became demo-aware (`MeasureForStack` + a `mintedSource`
+overlay so Clerkenstein-minted Clerk keys count without the source carrying them) and wired non-fatally into `/dev-up`
+(`dev-stack` cmd_up) + `/demo-up` (`up-injected.sh`) pre-flight via the shared `stack-secrets/preflight.sh` (warn
+standard / fail critical / skip otherwise; `DEV_/DEMO_NO_SECRET_PREFLIGHT=1` opt-outs). M28-D1: the LiveKit key/secret
+were de-aliased (a credential pair = two distinct values, not one). The base scorer + profile-scoping were M27
+(M27-D3.2) — reused unchanged. **Decisions:** M28-D1 (LiveKit de-alias), M28-D2 (append-only values-blind write),
+M28-D3 (DIRECTUS_TOKEN non-rearm = write blank). **Hardening:** 3 passes; provision 87.3%→94.8%, secretdna 99.2%; +1
+real bug fixed inline (the `preflight.sh` empty-array crash under `set -u` on bash 3.2 — the macOS system bash — fixed
+with the `${arr[@]+"${arr[@]}"}` conditional-expansion guard + a `/bin/bash`-3.x regression; the shell-portability
+invariant backfilled into `safety.md §2.8`). **Close review GREEN:** 1 finding, Fate-1 ext code-quality — the demo
+secret pre-flight block sat ABOVE the `UP_INJECTED_LIB_ONLY` lib-only seam in `up-injected.sh`, so sourcing the script
+lib-only (the `test_frontend_build.py` unit tests, in a sandbox without the sibling `preflight.sh`) fired the bring-up
+pre-flight at source time and crashed 20 tests; moved below the seam alongside the M19 VM pre-flight + pinned with a
+static positional regression (ext `9742126`). Deferral audit GREEN (0 new; DEF-M27-02 per-gene-profile-tag Fate-2
+**discharged** — M28 used the default `graphql` profile, the conditional never triggered; inherited backlog re-signed).
+**Tests:** Go 980→**1027** (+47, all stack-secrets); demo-stack 99 pass / dev-stack 74 pass; flake **0** (Go 5/5 `-race
+-shuffle`, Python 5/5 sequential); gofmt/go vet/shellcheck clean. Code: `rosetta-extensions` @ build tip tag
+`stage-door-m28` (ext head `9742126`; 3 harden + 1 review-fix ahead of the tag — orchestrator finalizes ext-side).
 
 ### M29: Docs + `/stack-secrets` skill + corpus wiring
 **Status:** `planned`
