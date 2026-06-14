@@ -83,6 +83,13 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
    ```
    The set-dress pass is **default-on + non-fatal**: a stale/missing snapshot cache is a warning, the seed
    still runs; the whole pass can be skipped with `--no-setdress`. (`dev-setdress.sh`, M13.)
+
+   **Secret-coverage pre-flight (default-on, non-fatal, M28).** Before it spends time building, `dev-stack up`
+   runs the **same** secret-coverage pre-flight `/demo-up` uses (`stack-secrets/preflight.sh`): it checks the
+   secret source carries every key this dev stack needs — **WARN** on a standard-missing key (the stack can
+   come up degraded), **FAIL** (clear message, abort) on a CRITICAL-missing key (silent 403s / auth dead). A
+   pre-flight bug never blocks a good bring-up. Skip it with `DEV_NO_SECRET_PREFLIGHT=1`. Mechanism +
+   provisioning: [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
 4. **Verify** — `"$DEV/dev-stack" status` (or `/stack-list`); confirm `dev-N` is on offset ports, the
    **main dev stack is untouched**, the catalog shows real skills (snapshot), and a `dev@anthropos.test`
    login lands in a populated org (the `dev-min` seed → 200).

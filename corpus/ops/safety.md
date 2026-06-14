@@ -34,6 +34,11 @@ the tooling **blocks every write to those from a non-production stack**, repairs
 starts, and produces an **audit log that proves** nothing leaked. Neither promise depends on the operator
 remembering a flag — both are structural.
 
+A third write surface joined the family in v1.6: the **secret provisioner** moves secret *bytes*
+source→gitignored-target to fill each stack's `.env`. It is fenced the same way — **values-blind** (no verb
+ever reads, echoes, or logs a secret value), it never re-arms the prod-write path (the prod
+`DIRECTUS_TOKEN` is written blank on a non-prod target), and a secret never enters git. See **§2.9** below.
+
 ---
 
 ## Part 1 — The read side: never reads private/customer data
@@ -289,7 +294,7 @@ bash-5 author's local test and fails on a colleague's stock-macOS box.
 invokes the wrapper through `/bin/bash` 3.x specifically and asserts no "unbound variable" abort, pinning the
 fix; `shellcheck` does **not** catch this (it's a runtime-only, version-specific behavior). (#M28-harden)
 
-### 2.9 Secret provisioning is values-blind and never re-arms the prod-write path (v1.6 M27/M28)
+### 2.9 Secret provisioning is values-blind and never re-arms the prod-write path (v1.6 M27–M30)
 
 The secret-provisioning tooling (`stack-secrets/`, driven by [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md)
 — full mechanism in [`secrets-spec.md`](secrets-spec.md)) **moves secret bytes** (it writes each repo's `.env`).

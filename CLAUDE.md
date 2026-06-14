@@ -217,7 +217,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 
 **Studio-Desk** requires its own `.env` file (`studio-desk/.env`) with Clerk and OpenAI credentials copied from `platform/.env`.
 
-**Ant Academy** requires its own `.env` file at `ant-academy/code/.env` (not the repo root — the React app reads only from `code/.env`). Reuse `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` from `platform/.env`, and add `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` for the `/api/ai/chat` route. Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` for solo local dev to skip the org-membership gate.
+**Ant Academy** requires its own `.env` file at `ant-academy/code/.env.local` (not the repo root — the React app reads only from `code/.env.local`). Reuse `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` from `platform/.env`, and add `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` for the `/api/ai/chat` route. Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` for solo local dev to skip the org-membership gate.
 
 Critical environment variables:
 - `GH_PAT` (GitHub Personal Access Token — required for Docker builds to pull private Go modules)
@@ -276,7 +276,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/ops/demo/README.md`: **The demo-env family index** — the up→snapshot→seed→use→down flow + recipes + presets
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)
-- `corpus/ops/secrets-spec.md`: **The secret-provisioning spec** (v1.6 "stage door" M27/M28) — provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip, default `.agentspace/secrets`), **values-blind** (no verb reads/echoes a value), verified by the 6-repo/55-gene **secret-coverage DNA** + the two-tier keep-listed gate. The source-dir/zip layout contract (zEnvs defence), the per-repo target-file map, alias-family vs distinct-similar rules, the waived class, N=0 guard + idempotency, the demo-aware check, and the `DIRECTUS_TOKEN` non-rearm safety (the fix16/17 class). Driven by `/stack-secrets`
+- `corpus/ops/secrets-spec.md`: **The secret-provisioning spec** (v1.6 "stage door" M27–M30) — provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip, default `.agentspace/secrets`), **values-blind** (no verb reads/echoes a value), verified by the 6-repo/55-gene **secret-coverage DNA** + the two-tier keep-listed gate. The source-dir/zip layout contract (zEnvs defence), the per-repo target-file map, alias-family vs distinct-similar rules, the waived class, N=0 guard + idempotency, the demo-aware check, and the `DIRECTUS_TOKEN` non-rearm safety (the fix16/17 class). Driven by `/stack-secrets`
 - `corpus/ops/db-access.md`: **Production DB read access** (read-side) — the `/db-query` skill + the public-vs-customer boundary + the snapshot read foundation (v1.2)
 - `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/stack-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
 - `corpus/ops/snapshot-cold-start.md`: **The cold-start capture runbook** (v1.3b M20) — the one case the cache can't shortcut: a fresh box with an empty cache + no safe `--dsn`. The sanctioned DSN-export / restore-a-`pg_dump`-then-`--dsn` path to fill the cache once per release (behind the capture-source policy + `AssertPublicOnly`), **why the wired `postgres` MCP is NOT a capture source** (it returns JSON rows, not COPY bytes), and how it slots into the auto-set-dress bring-up (replay-only, never capture)
@@ -373,7 +373,7 @@ python3 gen.py --media simulation --template default
 ```bash
 # Web app
 cd ant-academy/code
-cp .env.example .env   # fill Clerk + AI keys (see corpus/ops/setup_guide.md)
+cp .env.example .env.local   # fill Clerk + AI keys (the app reads code/.env.local; see corpus/ops/setup_guide.md)
 npm install
 npm run dev            # next dev — port 3077
 
