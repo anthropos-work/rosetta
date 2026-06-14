@@ -90,3 +90,27 @@ Go packages. **Final: provision 94.8%, secretdna 99.2%, cmd 96.4%; +20 Go test f
 funcs; 1 real bug fixed inline.** Note: harden does NOT move the `stage-door-m28` tag — the tag still marks the
 build tip (`32f258b`); the harden commits (`9541220`/`4a30ad4`/`5f1dfc8`) live on the `m28/provisioning-engine`
 branch ahead of it, to be tagged at close.
+
+## M28: Final Review
+
+🔍 1 finding total: 0 scope · 1 code-quality (must-fix: 1) · 0 docs · 0 tests · 0 decision-triage.
+Deferral re-audit GREEN (`audit-deferrals/deferral-audit-2026-06-14-m28-close.md`). KB-fidelity GREEN.
+
+### Code Quality
+- [x] [must-fix] **Misplaced demo secret pre-flight block in `up-injected.sh`** — the M28 secret-coverage
+  pre-flight (shells out to the sibling `stack-secrets/preflight.sh`) sat in the script BODY, ABOVE the
+  `UP_INJECTED_LIB_ONLY` early-return seam. `tests/test_frontend_build.py` sources the script lib-only (to
+  unit-test `build_frontend_*` / `preflight_vm_ram` with a stubbed docker, in a sandbox without the sibling
+  `preflight.sh`), so the block fired at source time and crashed — **20 frontend-build tests failed**. Fix
+  (ext `9742126`): moved the block below the lib-only seam, alongside the M19 VM pre-flight (both are
+  real-execution-only pre-build gates) + added static positional regression
+  `UpInjectedSecretPreflight.test_secret_preflight_runs_after_the_lib_only_seam`. demo-stack 99 pass (was
+  78/20-fail), dev-stack 74 pass, shellcheck/go/vet/fmt clean.
+
+### Verification
+- Go: 4 packages green (`provision`/`secretdna`/`cmd`/`source`); vet + gofmt clean.
+- Python: dev-stack 74 pass; demo-stack 99 pass (78 → 99: +20 frontend-build tests un-broken + 1 new regression).
+- Headline safety re-verified: `TestProvision_NeverReArmsDirectusTokenOnNonProd` (+ `--force` / pre-existing-token
+  edges) green; values-blind reflection-walk green; bash-3.2 `set -u` empty-array regression green.
+- Test funcs at close: **Go 161** (160 + 1 review-fix regression in Python; Go count unchanged at 160) ·
+  demo-stack/dev-stack Python suites all green.

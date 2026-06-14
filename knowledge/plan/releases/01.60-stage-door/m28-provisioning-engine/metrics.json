@@ -1,0 +1,83 @@
+{
+  "milestone": "M28",
+  "title": "Provisioning engine + coverage/verify gate. The stacksecrets `provision` verb writes each repo's target .env from the source (values-blind, alias-mapped per (repo,target_file), idempotent copy-if-absent, --force, N=0-guarded), composing with + deferring to the demo/dev injection override (NEVER re-arms the stripped prod DIRECTUS_TOKEN on a non-prod stack — the blocks-release safety class; writes it BLANK). check/measure becomes demo-aware (Clerkenstein-minted Clerk keys count as satisfied without the source) and wires non-fatally into /dev-up + /demo-up pre-flight (warn standard / fail critical / skip otherwise). The base check/measure scorer + profile-scoping were M27 (M27-D3.2) — reused, not rebuilt.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-14",
+  "is_first_milestone": false,
+  "is_final_milestone": false,
+  "position_note": "M28 is the 2nd of 4 milestones of v1.6 'stage door' (M27->M30, strictly sequential). M27 = the DNA + ingestion reader + scorer/diff verbs; M28 = the provision engine + the coverage/verify gate + bring-up wiring + demo-aware scoring; M29 = the corpus doc (secrets-spec.md) + the /stack-secrets skill + CLAUDE.md wiring + setup_guide.md TODO retirement; M30 = the build-from-stack-dev field-bake. After this close: build M29.",
+  "kind": "an ext-code-bearing section milestone. The new provision engine + demo overlay + preflight wiring (~2600 ext-diff lines: provision/ package [provision.go + io.go] + secretdna/demo.go + cmd provision verb + stack-secrets/preflight.sh + the dev-stack/demo-stack wiring + their tests) lives ENTIRELY in the rosetta-extensions authoring copy, on branch m28/provisioning-engine, build tip tagged stage-door-m28 @ 32f258b (3 harden commits 9541220/4a30ad4/5f1dfc8 + 1 close review-fix 9742126 ahead of the tag). The rosetta m28/provisioning-engine branch is markdown/text only (the planning docs + the safety.md §2.8 bash-3.2 backfill + the close records). close-milestone's merge is entirely rosetta-side; the ext side (main ff + tag re-point + branch delete) is finalized by the orchestrator.",
+  "sections": {
+    "total": 12,
+    "all_checked": true,
+    "list": "provision verb + per-repo target-file map (ant-academy -> code/.env.local pinned) · alias-mapping per target file (gh-token family incl cross-repo app/GH_TOKEN; distinct-similar never auto-copied) · idempotency + overwrite (copy-if-absent default, --force) · N=0 main-dev-stack guard (mirrors stackseed --reset) · compose-with-injection-override: never re-arm prod DIRECTUS_TOKEN on non-prod + regression test · PreflightEnv-passing env emission (strip-on-non-prod blanks the Directus write tokens) · check/measure Overall+Critical+per-repo rollup (shipped M27, reused) · demo-aware coverage (Clerk keys minted-OK) · non-fatal pre-flight wiring into /dev-up + /demo-up · profile-scoping settled+implemented (M27, reused) · hard safety verified (no verb reads/echoes/logs a value) · ext tag stage-door-m28"
+  },
+  "field_bugs_surfaced": {
+    "count": 0,
+    "note": "No live-field bugs at M28 (the field-bake is M30). The build's diff-vs-stack-dev exercised the engine; the harden Pass 2 caught 1 real bug inline (the preflight.sh empty-array crash under set -u on bash 3.2). The close review caught 1 real code bug (the misplaced demo secret pre-flight block — see review.findings)."
+  },
+  "tests": {
+    "language": "Go (stdlib-only — the provision engine is bufio + os file IO; no go.sum) + Python (the demo-stack/dev-stack bring-up-wiring guards + the preflight.sh behavior suite).",
+    "go_test_funcs_stack_secrets": 160,
+    "go_total": 1027,
+    "go_total_baseline_m27": 980,
+    "go_total_delta": "+47",
+    "go_by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "go_total_note": "The M27-baseline 980 (alignment 52 + clerkenstein 223 + stack-seeding 259 + stack-snapshot 333 + stack-secrets 113) -> 1027. The +47 is entirely the new M28 stack-secrets Go (113 -> 160: build + 3-pass harden, 140->160 in harden's own framing + the build delta). Measured at ext m28 head 9742126 (Test+Fuzz func-decls).",
+    "python_m28_added": "8 preflight PreflightBehavior funcs (harden Pass 2) + 1 close review-fix positional regression (UpInjectedSecretPreflight.test_secret_preflight_runs_after_the_lib_only_seam).",
+    "python_note": "M28 adds Python in the ext demo-stack suite (the preflight.sh behavior + the wiring guards). demo-stack 99 pass (full dir incl test_frontend_build), dev-stack 74 pass at close.",
+    "flake_count": 0,
+    "flake_gate": "Go 5/5 -race -shuffle clean (cmd/provision/secretdna/source); Python 5/5 sequential clean (demo-stack test_tooling.py + dev-stack, 113 each) + full demo-stack dir 99 pass re-confirmed. gofmt + go vet clean; shellcheck clean (up-injected.sh + preflight.sh).",
+    "rosetta_test_surface": false,
+    "rosetta_test_note": "The rosetta m28 branch carries no executable code (planning + the safety.md §2.8 markdown backfill + close-record markdown only). The executable test surface is the ext stack-secrets/demo-stack/dev-stack, counted at the ext-repo level."
+  },
+  "coverage": {
+    "note": "From the harden pass (recorded in progress.md § M28: Hardening) + re-measured at close: provision 94.8%, secretdna 99.2%, cmd 96.4%, source 96.2%. provision 87.3% -> 94.8% across 3 harden passes (+7.5). The residual provision ~5% is confirmed-defensive — bufio scanner-error branches (>1MiB unterminated line), the TOCTOU value-vanished no-corrupt-line guard, WriteString/Close mid-write failures — reachable only via fault-injection / a concurrency race; deliberately not chased (coverage-is-a-finder).",
+    "harden_bugs_surfaced": 1,
+    "harden_bugs_note": "1 real bug in harden Pass 2: preflight.sh crashed mid-run under set -u on bash 3.2 (the macOS system bash) — the non-demo path expanded an empty demo_flag array bare; fixed with the conditional-expansion guard ${arr[@]+\"${arr[@]}\"} + a regression invoking through /bin/bash 3.x. Passes 1 + 3 surfaced 0 bugs."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M28 (the provision engine is bufio scans + map lookups + a single append-write per file; no hot path). No threshold tests warranted."
+  },
+  "review": {
+    "findings": 1,
+    "findings_note": "1 finding, Fate-1 ext code-quality: 0 scope · 1 code-quality (must-fix) · 0 docs · 0 tests · 0 decision-blend. CODE-1: the M28 demo secret pre-flight block in up-injected.sh sat ABOVE the UP_INJECTED_LIB_ONLY lib-only seam, so sourcing the script lib-only (tests/test_frontend_build.py exercises build_frontend_* / preflight_vm_ram with a stubbed docker in a sandbox lacking the sibling preflight.sh) fired the bring-up pre-flight at source time and crashed — 20 frontend-build tests failed. Fixed ext 9742126: moved the block below the seam (alongside the M19 VM pre-flight, both real-execution-only pre-build gates) + added a static positional regression. 0 escape-hatch.",
+    "scope": "GREEN — all 12 deliverable boxes checked; the overview In: list fully delivered. The scope trim (the base check/measure scorer landed early in M27, M27-D3.2) is reconciled in the overview's 'Scope adjusted 2026-06-14' note — no sibling-overview edit needed. The Out items (/stack-secrets skill + corpus doc -> M29, build-from-stack-dev validation -> M30) correctly belong elsewhere. No silent drops; no code TODO/FIXME/HACK in the diff.",
+    "code_quality": "GREEN after fix — the provision engine is consistent + values-blind throughout (the single value-carrying boundary is provision/io.go::sourceValues, whose values flow only into the WriteString to the gitignored target). go vet + gofmt clean; shellcheck clean. The one finding (CODE-1, the misplaced pre-flight block) was a wiring-position bug, not an engine defect; fixed + pinned.",
+    "adversarial": "GREEN — the values-blind invariant is asserted by a reflection-walk (provision_safety_test.go) that covers unexported fields + map keys; the headline DIRECTUS_TOKEN non-rearm guard holds vs --force AND a pre-existing armed token (it blanks, never copies the source prod value); the bash-3.2 empty-array-under-set-u trap is pinned by a /bin/bash-3.x regression. No new code fix needed beyond CODE-1.",
+    "docs": "GREEN — GUIDE.md's advertised '28 unit tests in tests/test_tooling.py' is accurate + self-pinned by TestGuideDocTruth (counts the 8 named classes; the new UpInjectedSecretPreflight + PreflightBehavior are not in that count, and test_frontend_build.py is a separate file). The safety.md §2.8 bash-3.2 set-u invariant backfill (rosetta) correctly documents the on-every-bring-up shell-portability rule. No corpus doc due at M28 (secrets-spec.md is M29).",
+    "tests": "GREEN — full suites green at close (Go 4 packages; Python demo-stack 99 + dev-stack 74); flake gate clean (Go 5/5 -race -shuffle, Python 5/5 sequential). The CODE-1 fix added a static positional regression. No test gaps (the 3-pass harden covered the risk surface: provision error paths, value-blind edges, the demo overlay, the preflight warn/fail/skip split).",
+    "decision_triage": "M28-D1 (LiveKit de-alias) / M28-D2 (append-only values-blind write) / M28-D3 (DIRECTUS_TOKEN non-rearm = write blank) -> the safety-load-bearing ones are ALREADY blended into knowledge: D3's non-rearm + the strip-on-non-prod class is in safety.md §2.3 (+ the kb-fidelity audit cites gen_injected_override.py:273 / gen_override.py:84); the bash-3.2 shell-portability invariant is in safety.md §2.8 (#M28-harden). D1/D2 stay ARCHIVE (maintainer-only) — implementation detail of the alias mechanism + the write strategy. No further M28 KB blend.",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-14-m28-close.md. M28 introduced 0 new deferrals. The one within-release inherited item DEF-M27-02 (per-gene profile tag, Fate-2 M28-owned-if-needed) is DISCHARGED — M28 wired the default graphql profile, never a non-default-profile bring-up, so the conditional never triggered (no residual work, no plan edit). 3 inherited release-level backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) -> KEEP-DEFERRED, re-signed 2026-06-14 at the v1.5 close, all orthogonal to secret provisioning. 0 repeat, 0 chronic, 0 aged-out, 0 blockers."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 12 deliverable sections (provision verb + target-file map + alias-mapping + idempotency/overwrite + N=0 guard + DIRECTUS_TOKEN non-rearm + regression test + PreflightEnv-passing emission + demo-aware coverage + non-fatal pre-flight wiring + hard-safety verification + ext tag) + the harden Pass-2 bash-3.2 fix + the close review-fix (CODE-1, the misplaced pre-flight block) + the safety.md §2.8 backfill.",
+    "confirmed_covered_fate2": "DEF-M27-02 (per-gene profile tag) — discharged this milestone: M28 used the default graphql profile, so the conditional ('revisit IFF M28 wires non-default-profile bring-ups') never triggered. No residual, no edit. The per-gene-tag variant remains a documented v1 option (M27-D3.4) for any future non-default-profile milestone.",
+    "annotated_fate3": "none — no new Fate-3 roadmap mutation at M28 close. M29's overview.md already names the docs+skill scope that M28 routes forward (the standard sequential handoff).",
+    "dropped": "none at M28.",
+    "escape_hatch_release_scope_breaking": "none. M28 introduced zero release-scope-breaking deferrals. The 3 inherited cross-release backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) are untouched by M28 (orthogonal) — not new escape-hatch.",
+    "kept_followup": "none M28-originated. The inherited 3 (DEF-M10-01 / DEF-M21-01 / M25-D9) are kept on the release-level backlog, re-signed at the v1.5 close."
+  },
+  "delivered": {
+    "rosetta": "the m28/provisioning-engine planning + close records: overview/progress/decisions/spec-notes/kb-fidelity-audit + the safety.md §2.8 bash-3.2 set-u backfill + the audit-deferrals report (deferral-audit-2026-06-14-m28-close.md) + the Final Review section in progress.md + the metrics.json + the retro. state.md headline Go-count bumped 980 -> 1027; roadmap M28 status -> done; the M28 dir flipped to status: archived.",
+    "ext": "rosetta-extensions (build tip tag stage-door-m28 @ 32f258b; branch m28/provisioning-engine tip 9742126): the provision engine (provision/provision.go + provision/io.go) + the demo overlay (secretdna/demo.go) + the provision verb (cmd/stacksecrets/main.go) + the shared stack-secrets/preflight.sh + the dev-stack/demo-stack non-fatal pre-flight wiring + the LiveKit de-alias in secret-dna.json + the full test surface (provision_test/_safety_test/_harden_test + demo_test/_harden_test + main_test + the demo-stack PreflightBehavior + the wiring guards). 3 harden commits (9541220/4a30ad4/5f1dfc8) + 1 close review-fix (9742126) on the branch AHEAD of the tag — the orchestrator finalizes ext-side (ff main / re-point tag / delete branch)."
+  },
+  "extensions": {
+    "module": "rosetta-extensions — stack-secrets (provision engine + demo overlay) + demo-stack/dev-stack (pre-flight wiring), M28.",
+    "head_at_close": "9742126",
+    "build_tip_tag": "stage-door-m28 @ 32f258b",
+    "tag_note": "v1.6 per-milestone naming stage-door-mNN. stage-door-m28 @ 32f258b pins the BUILD tip; the 3 harden commits (9541220/4a30ad4/5f1dfc8) + the 1 close review-fix (9742126) live on the m28/provisioning-engine branch AHEAD of the tag. The orchestrator finalizes ext-side (ff main, re-point the tag to the branch tip, delete the branch). close-milestone's merge is entirely rosetta-side m28/provisioning-engine -> release/01.60-stage-door.",
+    "code_commits": [
+      "a40163d (stacksecrets provision engine + demo-aware check, values-blind)",
+      "9d24b80 (wire non-fatal demo-aware secret pre-flight into /dev-up + /demo-up)",
+      "32f258b (PR-review fixes — remove dead code + harden the armed-token edge; BUILD-TIP TAG here)",
+      "9541220 (harden Pass 1 — provision error paths + value-blind edges + demo overlay)",
+      "4a30ad4 (harden Pass 2 — preflight.sh set -u bash 3.2 crash fix + regression + warn-path tests)",
+      "5f1dfc8 (harden Pass 3 — cross-repo alias routing + source-file-absent contract)",
+      "9742126 (close review-fix — move secret pre-flight below the lib-only seam + positional regression)"
+    ]
+  },
+  "notes": "M28 is the 2nd of 4 milestones of v1.6 'stage door' — the provision engine that WRITES each repo's target .env from the secret source (values-blind), composing with + deferring to the demo/dev injection override so it NEVER re-arms the stripped prod DIRECTUS_TOKEN on a non-prod stack (the headline blocks-release safety class — it writes the token BLANK, exactly the state the override forces). check/measure became demo-aware (Clerkenstein-minted Clerk keys count as satisfied) and wired non-fatally into /dev-up + /demo-up pre-flight (warn standard / fail critical / skip otherwise). The base scorer + profile-scoping were M27 (M27-D3.2) — reused, not rebuilt. Close was clean: 1 finding (the misplaced demo pre-flight block crashing 20 frontend-build tests when the script is sourced lib-only — moved below the UP_INJECTED_LIB_ONLY seam + pinned with a positional regression, ext 9742126); the deferral audit GREEN (DEF-M27-02 discharged, no new deferrals); the values-blind + DIRECTUS_TOKEN-non-rearm + bash-3.2 safety invariants all re-verified green. Go 980 -> 1027 (+47, all the new stack-secrets); Python demo-stack 99 + dev-stack 74; flake 0; Go 5/5 -race -shuffle + Python 5/5 sequential clean; gofmt/go vet/shellcheck clean. The rosetta merge is markdown/text only (the code is in ext; build tip tagged stage-door-m28 @ 32f258b). Next: build M29 (the corpus doc + the /stack-secrets skill + CLAUDE.md wiring)."
+}
