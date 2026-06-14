@@ -92,3 +92,27 @@ gene → vacuously-green coverage) without policing the config noise that legiti
    support is genuinely out of M27 scope (a new crypto dependency + key-management surface) and no consumer
    needs it yet — recorded here as a known v1 boundary, not a silent gap. If a future need arises it attaches to
    a later milestone; for now the plain dir/zip covers the stack-dev field-bake (M30).
+
+## Adversarial review (close-milestone Phase 2c)
+
+Scenarios considered against the shipped `stack-secrets/` section — the *scenario*, not the fix (the harden
+pass had already turned each into a regression test; close confirmed the coverage, no new code fix needed):
+
+- **A leaky value escapes through a "shape" probe or an error message.** The one function that touches a value
+  (`ClassifyShape`) is structurally constrained to return a `ValueShape` token; `parseEnv`/`readKeyNames` discard
+  `line[eq+1:]` as a local. The harden pass pins this with a 200 KB value + `=`-in-value + quote-only adversarial
+  extraction test and an end-to-end `check`/`diff` regression that asserts zero leakage to stdout/stderr against
+  the real 55-gene DNA. Re-verified at close by grep (no secret-shaped token in `secret-dna.json`; only one
+  value-reading call site, immediately discarded). **Handled.**
+- **A stale-backup mirror (`zEnvs/`) or a stray top-level `.env` is silently ingested as "the source".** Ingestion
+  is DNA-driven, never glob-driven — the reader opens exactly `<root>/<repo>/<target_file>`, so a non-DNA path is
+  structurally invisible. The zip path's suffix-match is `/`-bounded (`matchTarget`), pinned by the
+  "evil-app/myapp/notstudio-desk must NOT resolve" decoy test. **Handled by construction.**
+- **A malformed/oversized line crashes or silently false-cleans the scan.** `bufio.Scanner` carries a 1 MiB cap;
+  an oversized line surfaces `sc.Err()` and is propagated as a fail-loud parse error (FromDir/FromZip and
+  ReadDeclaredKeys), pinned by oversized-line tests — never a silent skip. A `ReadDeclaredKeys` read-error in
+  `diff`/`introspect` returns `exitFail`, not a false-clean exit 0. **Handled.**
+- **The gate goes vacuously green** (DNA under-lists a tracked secret → `measure` reports 100% on a short stack).
+  Two defences: `Validate`'s anti-vacuous-100 guard (≥1 required+critical gene) rejects an empty-critical DNA at
+  load; the two-tier `diff` keep-listed gate (M27-D2) exits 1 when an already-tracked secret is declared for a
+  repo with no gene there. Both pinned. **Handled.**

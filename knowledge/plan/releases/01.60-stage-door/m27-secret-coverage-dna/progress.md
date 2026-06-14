@@ -62,3 +62,28 @@ co-located test). Touched source → existing test:
 
 ### Stop condition
 Stopped after Pass 2 (2 of the 5-pass cap). The full six-dimension re-scan found nothing new worth adding: the milestone's risk surface (layout contract / zEnvs-stray defence, values-blind extraction, the DNA-scoped two-tier diff gate, alias-family vs distinct-similar, the fail-loud error paths) is now thoroughly covered. The Pass-2 statements delta was +1.0%, and the only remaining uncovered lines are near-impossible defensive branches with no behavioral value — `main()`'s `os.Exit(run(...))` wrapper, post-successful-read `f.Close()` error returns, and a `json.MarshalIndent` failure on a valid struct — which the skill's "coverage is a finder, not a goal / no shallow tests" guidance explicitly says not to chase with contrived harnesses.
+
+## M27: Final Review
+
+_close-milestone, 2026-06-14. Cross-cutting review of the whole `stack-secrets/` section (ext) + the rosetta
+doc deltas. Scope/code-quality/adversarial/tests all clean; two ext doc-hygiene findings, both Fate-1._
+
+### Scope
+- [x] All 12 deliverable boxes checked; overview "In" fully delivered; "Out" items correctly belong to M28/M29/M30. `check`/`measure` fold is the documented Fate-1 (M27-D3.2), not creep. No silent drops, no code TODO/FIXME/HACK. **Clean — no fix.**
+
+### Code Quality
+- [x] Consistent patterns across all 11 source files (same error handling, naming, values-blind discipline); `go vet` + `gofmt` clean; no dead code (`sortedKeys` is a test-consumed Source-impl helper). **Clean — no fix.**
+- [x] Values-blind invariant verified end-to-end: only `ClassifyShape` reads a value (as a discarded local); committed `secret-dna.json` carries zero secret-shaped tokens. **Clean — no fix.**
+
+### Documentation
+- [x] [must-fix] DOC-1 — `stack-secrets/` section missing from the ext top-level `README.md` Sections table → add the index row (per-unit-handbook index contract).
+
+### Tests & Benchmarks
+- [x] [must-fix] TEST-1 — `stack-secrets/README.md` § Tests quotes a stale **"94 tests"**; ground truth is **113** (harden added 40: 27 Pass 1 + 13 Pass 2) → reconcile the handbook count to runner truth.
+- [x] Full suite `-race` green (113 funcs), flake gate 5/5 sequential `-shuffle`. No new test gaps (harden pass already covered the risk surface). **Clean.**
+
+### Adversarial review
+- [x] Scenarios recorded in `decisions.md` § Adversarial review (all already test-pinned; no new code fix). **Clean.**
+
+### Decision Triage
+- [x] M27-D1/D2/D3 → archive (maintainer-only) + the M28/M29 handoffs already captured in the decision text; the user/developer-facing corpus doc for the feature is M29 scope per the repo-split. **No M27 KB blend.**
