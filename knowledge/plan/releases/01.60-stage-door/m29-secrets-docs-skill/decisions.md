@@ -36,3 +36,24 @@ Corrected ant-academy's target to `code/.env.local` (the verified live truth; `.
   delivers the docs + skill the field-bake will exercise.
 - No items required Fate 3 or the escape hatch. Zero ext code needed (M29 is rosetta-only); the ext stayed on
   `main` @ `9742126`, untouched.
+
+## Adversarial review (close Phase 2c — scenarios considered)
+M29 ships no executable rosetta code; the adversarial frame is "how could a doc/skill consumer be led into a
+wrong or unsafe action?" Each scenario was checked against the ext code at tag `stage-door-m28` (`9742126`).
+- **LLM synthesizes a non-existent CLI flag from the skill body** (M29-D2 risk). Verified every invocation in
+  both `SKILL.md` and `secrets-spec.md` against the real parser (`cmd/stacksecrets/main.go`): subcommands
+  `list`/`check`(`measure`)/`introspect`/`diff`/`provision`; `provision` flags `--dna --from --stack-root
+  --stack --force --prod --dry-run`; `check` `--dna --from --demo`; `introspect`/`diff` `--stack-root`. The
+  operator-facing `--check|--provision|--status` shorthand is mapped to real subcommands in the body (`--status`
+  → `list`). No doc invocation uses a flag the binary lacks. Handled — no fix.
+- **A consumer reads a secret value because the docs imply it.** The SKILL.md states the values-blind invariant
+  three times incl. "**The skill itself NEVER prints a secret value** — do not cat/echo a `.env`". `ClassifyShape`
+  (the single value-touching fn, `secretdna/source.go:57`) returns a shape token; the value boundary
+  `provision/io.go::sourceValues`→`writeTargetFile` and the `provision_safety_test.go` no-escape test both exist
+  as the doc claims. Handled — no fix.
+- **A consumer provisions the prod Directus token onto a non-prod stack.** `StripOnNonProdKeys` =
+  `{DIRECTUS_TOKEN, DIRECTUS_STATIC_TOKEN, DIRECTUS_ADMIN_TOKEN}` (verified) matches secrets-spec.md §"non-rearm"
+  and safety.md §2.9 exactly; both docs consistently steer to the blank-on-non-prod behavior. Handled — no fix.
+- **Stale counts.** DNA ground-truth re-verified: 55 genes / 6 repos (28·5·2·7·7·6) / 40 required · 8 optional
+  · 7 waived / 13 critical-required / profile `graphql`; `gh-token` alias family = exactly 3 members; `MintedKeys`
+  = the 6 Clerk keys. Every count in the docs matches. Handled — no fix.
