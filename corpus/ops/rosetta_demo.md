@@ -14,6 +14,10 @@
   tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
   and the generic `/stack-list` drive that tooling (the dev peer is `/dev-up` / `/dev-down`).
+- **The secrets:** [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md) provisions the stack's
+  per-repo `.env` from one secret source — **values-blind** — and verifies coverage; `/demo-up` runs it as an
+  auto-provision step (v1.6 M30) so a demo is self-sourced from the curated secret dir and the prod-write path
+  is never re-armed (`DIRECTUS_TOKEN` blank on the non-prod target). Mechanism: [`secrets-spec.md`](secrets-spec.md).
 - **The mock it injects:** `rosetta-extensions/clerkenstein/` — see [clerkenstein.md](../services/clerkenstein.md).
 
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)

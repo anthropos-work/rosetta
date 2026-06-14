@@ -1,0 +1,42 @@
+{
+  "release": "v1.6 \"stage door\"",
+  "branch": "release/01.60-stage-door",
+  "closed": "2026-06-14",
+  "milestones": ["M27", "M28", "M29", "M30"],
+  "theme": "the secret-provisioning release — ingest a secret source (dir/zip, default .agentspace/secrets) -> provision every repo's .env -> a secret-coverage DNA (gene = repo x KEY, 6 repos, introspect+diff keep-listed gate) -> demo-aware check wired non-fatally into /dev-up + /demo-up pre-flight -> field-baked LIVE (demo-3, 17 containers, Critical 100%, prod DIRECTUS_TOKEN armed in ZERO containers). Values-blind throughout.",
+  "code_location": "rosetta-extensions @ tags stage-door-m27/m28/m30 (final ext HEAD 29c922b = tag stage-door-m30). The new stack-secrets section is stdlib-only (no go.sum). M29 is rosetta-only (docs + skill, zero ext code).",
+  "code_diff": "git -C .agentspace/rosetta-extensions diff fbb8783..29c922b — the new stack-secrets/ Go section (~3700 LOC src + ~4200 LOC tests across provision/ secretdna/ source/ cmd/) + the demo-stack/dev-stack pre-flight wiring",
+  "go_test_funcs": {
+    "total": 1027,
+    "by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "baseline_v1.5": 867,
+    "delta": "+160",
+    "note": "Cumulative end value measured at final ext HEAD 29c922b (tag stage-door-m30) via Test+Fuzz func-decls. The +160 is entirely the net-new stack-secrets section (113 @ M27 build+harden -> 160 @ M28 provision engine + harden; M29 docs-only +0; M30 field-bake +0 top-level, its sentinel-waive regression is a sub-assertion inside an existing test func). The four prior modules (alignment 52 + clerkenstein 223 + stack-seeding 259 + stack-snapshot 333 = 867) are unchanged — v1.6 touches no prior section's Go. Verified by direct grep at 29c922b: 52+223+259+333+160 = 1027."
+  },
+  "python_tests": {
+    "total_collected": 459,
+    "baseline_v1.5": 459,
+    "delta": "+0",
+    "note": "Unchanged collected total from v1.5 (459). M27 added no Python; M28 added Python to the ext demo-stack/dev-stack pre-flight suites (the preflight.sh PreflightBehavior + the wiring guards + the UpInjectedSecretPreflight positional regression) and the per-suite breakdown shifted (demo-stack 87 -> 99, dev-stack 73 -> 69-74) while the pytest-collected aggregate held at 459 per each milestone metrics.json; M29/M30 added no Python. The Python suite was not the v1.6 growth surface — the release's test growth is the Go stack-secrets section.",
+    "by_suite_note": "demo-stack's own test dir = 99 at close (gitignored live stacks/ clones excluded)."
+  },
+  "flake": 0,
+  "flake_gate": "Go stack-secrets 5/5 -race -shuffle CLEAN (cmd/provision/secretdna/source) at every milestone close; Python demo-stack/dev-stack 5/5 sequential CLEAN (M28). gofmt + go vet + shellcheck clean across the release. No CI wired (local fallback — same carry-forward as v1.5).",
+  "coverage_snapshot": "stack-secrets statements: cmd/stacksecrets 97.9%, secretdna 99.2%, source 96.2% (M27 harden); provision 94.8% (M28 3-pass harden, 87.3% -> 94.8%). Residuals are confirmed-defensive (bufio scanner-error/>1MiB-line branches, TOCTOU value-vanished guard, mid-write WriteString/Close failures) — fault-injection-only, deliberately not chased (coverage-is-a-finder). The four prior modules' coverage is unchanged from v1.5 (no prior-section code touched). No >2pp drop on any measured surface.",
+  "field_bake": "MET LIVE (M30) — assembled a compliant .agentspace/secrets from stack-dev (values-blind), check scored Critical == 100% on both dev and demo, then brought a fresh demo-3 LIVE: provision wrote 26 / blanked 2 / skipped 0 -> 17 containers UP (backend + UI tier: next-web + studio-desk + ant-academy), full UI-inclusive auto-verify exit 0. The observable-behavior gate (provision -> Critical 100% -> stack UP) MET. SAFETY verified live: prod DIRECTUS_TOKEN (len-32) armed in ZERO containers (provision blanks the family + the injection override strips it — defense-in-depth, the fix16/17 non-rearm class).",
+  "field_bugs_fixed": {
+    "count": 2,
+    "note": "Both fixed Fate-1 at M30 (tag stage-door-m30 @ 29c922b). Bug 1: sentinel/DB_CONNECTION was critical/required but is compose-injected config (never read from a .env) -> reclassified waived-config + regression pin (was falsely failing the gate at Critical 84.6%). Bug 2: the demo bring-up only CHECKED coverage but never PROVISIONED, and preflight.sh resolved REPO_ROOT one level too shallow (doubled --from path -> demo-aware coverage gate always silently SKIPPED) -> added a non-fatal default-on provision step (DEMO_NO_PROVISION=1 opt-out) + corrected the path. Parallels v1.5 M25's 4 field catches."
+  },
+  "supply_chain": "stack-secrets is stdlib-only (go.mod has no require block, no go.sum) — the values-blind audit surface is trivially small and adds zero new third-party dependency. The four prior modules' dependency posture is unchanged from v1.5 (GREEN: 0 called third-party CVEs, all-permissive licenses, toolchain pin). See dependencies.lock (Phase 4a).",
+  "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces (untouched by v1.6 — the release adds a secret-provisioning section, no mirror-engine change).",
+  "review_summary": "Per-milestone closes all GREEN: M27 2 findings (ext doc-hygiene, Fate-1), M28 1 finding (misplaced pre-flight block crashing 20 frontend-build tests, Fate-1), M29 0 findings (clean), M30 4 findings (3 docs + 1 decision-triage, all Fate-1 reconciling docs to the executed live bake). Deferral audit GREEN at every milestone (0 new release-originated deferrals; the 3 inherited cross-release backlog items DEF-M10-01 / DEF-M21-01 / M25-D9 KEEP-DEFERRED, orthogonal to secret provisioning, carried to v1.6 close-release re-audit).",
+  "regression_vs_v1.5": {
+    "verdict": "GREEN",
+    "go_delta": "+160 (867 -> 1027) — increase, no decrease",
+    "python_delta": "+0 (459 -> 459) — flat, no decrease",
+    "coverage": "no >2pp drop on any measured surface (prior modules untouched; new stack-secrets surfaces well above threshold)",
+    "flake": "0 (no regression)",
+    "rules_applied": "test-count decrease -> blocker (NOT triggered: both Go and Python held or grew); coverage drop >2pp -> blocker (NOT triggered); flake>0 -> blocker (NOT triggered, flake=0). All three regression gates PASS."
+  }
+}

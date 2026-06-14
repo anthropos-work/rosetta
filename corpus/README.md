@@ -41,6 +41,7 @@ Operations guides for setting up, running, and updating the platform.
     *   [Rosetta Demo](./ops/rosetta_demo.md): The lifecycle mechanism — bring-up, the unified first-available-N registry (v1.3/M12), port-offset, Clerkenstein injection, per-stack isolation, teardown.
     *   [Seeding Spec](./ops/seeding-spec.md): The `stack.seed.yaml` blueprint, the dependency-DAG, the **production-isolation boundary**, the data-DNA, the shipped presets (incl. the `dev-min` dev auto-seed).
     *   [Snapshot Spec](./ops/snapshot-spec.md): Capture a **public** reference surface once from a safe prod source, manifest-cache it, replay per-stack — tenant-data firewall + snapshot-fidelity (v1.2). Dev is a full-fidelity peer (v1.3/M13).
+    *   [Secrets Spec](./ops/secrets-spec.md): Provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip) — **values-blind** — verified by the 6-repo/55-gene secret-coverage DNA + the keep-listed gate; the `DIRECTUS_TOKEN` non-rearm safety (v1.6/M27–M30). Driven by `/stack-secrets`.
     *   [DB Access](./ops/db-access.md): Read-only prod DB access + the public-vs-customer boundary (v1.2/M9a).
     *   [Safety & Security](./ops/safety.md): The code-cited safety contract — never reads private data, never touches prod (v1.3/M15).
     *   Recipes: [snapshot world](./ops/demo/recipe-snapshot-world.md) · [enterprise onboarding](./ops/demo/recipe-enterprise-onboarding.md) · [skill progression](./ops/demo/recipe-skill-progression.md) · [browser login](./ops/demo/recipe-browser-login.md).

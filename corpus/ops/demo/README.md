@@ -20,6 +20,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 
 ```
 /demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data) +     [corpus/ops/rosetta_demo.md]
+                     AUTO secret-provision (values-blind, per-repo .env from .agentspace/secrets) [v1.6 M30 → secrets-spec.md]
                      AUTO set-dress (cache-first snapshot replay → small-200 seed, default-on, non-fatal) [v1.3b M20]
   …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
 /demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
@@ -121,8 +122,10 @@ content refs).
 > [`../snapshot-spec.md`](../snapshot-spec.md) § the per-stack Directus store fork +
 > [`../directus-local.md`](../directus-local.md) § "The data-plane cutover (M23)".
 
-**Skills:** `/demo-up` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down` (see the root
-`CLAUDE.md` skills table).
+**Skills:** `/demo-up` · `/stack-secrets` · `/stack-snapshot` · `/stack-seed` · `/stack-list` · `/demo-down`
+(see the root `CLAUDE.md` skills table). `/stack-secrets` provisions the stack's per-repo `.env` from one secret
+source — **values-blind** — and verifies coverage; `/demo-up` runs it as an auto-provision step (M30) so a fresh
+demo is self-sourced from the curated secret dir. Mechanism: [`../secrets-spec.md`](../secrets-spec.md).
 
 ## Hard constraints (always true)
 - **Zero platform-repo change.** All demo tooling lives in `rosetta-extensions` (the demo-stack overlay + the

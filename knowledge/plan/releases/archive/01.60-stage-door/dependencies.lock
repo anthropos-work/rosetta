@@ -1,0 +1,53 @@
+# dependencies.lock — release v1.6 "stage door"
+# Supply-chain snapshot. Phase 0 audit, 2026-06-14. Verdict: GREEN.
+#
+# This release ships ONE new code module: the rosetta-extensions `stack-secrets`
+# Go section. Everything else in the release is docs/skills/planning (no code).
+
+## NEW MODULE — stack-secrets (rosetta-extensions)
+module:        github.com/anthropos-work/rosetta-extensions/stack-secrets
+first-party:   yes (anthropos-work org); no third-party license surface
+deps:          stdlib-only — NO third-party dependencies
+               - go.mod has NO require block (verified)
+               - NO go.sum present (verified; none materializes after `go build ./...`)
+               - `go list -m all`  => only the module itself
+               - `go list -deps`   => only stdlib + the 4 internal packages
+                                      (cmd/stacksecrets, provision, secretdna, source)
+               - `go mod graph`    => only self + Go toolchain edges (no third-party)
+stdlib imports (full set, from source scan):
+               archive/zip, bufio, bytes, diff (testing/internal n/a),
+               encoding/json, flag, fmt, io, os, path, path/filepath,
+               reflect, regexp, runtime, sort, strconv, strings, testing
+build:         `go build ./...` => OK (no go.sum created → confirms stdlib-only)
+size:          ~3700 LOC src + ~4200 LOC tests across provision/ secretdna/ source/ cmd/
+
+## GO TOOLCHAIN (from stack-secrets/go.mod)
+go directive:  go 1.25.0
+toolchain:     go1.25.11   (declared)
+installed:     go1.25.3 (darwin/arm64, audit box)
+note:          declared toolchain (1.25.11) is a newer patch than the audit box's
+               installed Go (1.25.3); both are 1.25.x. Stated go.mod requirement,
+               not a vuln. Build succeeds on the installed toolchain.
+
+## OTHER EXT GO MODULES — UNCHANGED THIS RELEASE
+# Code diff range: ext fbb8783..29c922b. These modules were NOT touched
+# (verified: `git diff --stat <range> -- <module>` empty for each):
+alignment:       unchanged
+clerkenstein:    unchanged
+stack-seeding:   unchanged
+stack-snapshot:  unchanged
+# No go.mod/go.sum changed in the code diff EXCEPT stack-secrets/go.mod
+# (the +5 lines that created the new module file). No dependency bumps anywhere.
+
+## ROSETTA REPO (this repo) — NO CODE DEPS
+# The v1.6 release diff (main...release/01.60-stage-door) is docs/skills/planning ONLY.
+# Verified: zero .go/.ts/.py/.sh code files in the release diff.
+# rosetta has no committed dependency manifests of its own (the go.mod/package.json/
+# requirements.txt files on disk all live under git-ignored stack-*/ workspaces and
+# .agentspace/ clones — not rosetta's own code, not part of this release).
+
+## EXT REPO STATE
+ext HEAD:  29c922b (main)
+ext tags:  stage-door-m27, stage-door-m28, stage-door-m30
+
+## VERDICT: GREEN — stdlib-only first-party module, no third-party CVE/license surface.
