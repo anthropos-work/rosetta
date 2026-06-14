@@ -1,4 +1,4 @@
-# M29 — Progress
+# M30 — Progress
 
 _Section checklist. Closure when all boxes land. Stub at scaffold._
 
@@ -9,7 +9,7 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 - [ ] Each stack reaches UP after provisioning (the observable-behavior gate)
 - [ ] Field bugs surfaced + fixed Fate-1
 - [ ] Honesty residual documented (the ~10–15% waived set + why)
-- [ ] Ext tag `stage-door-m29`
+- [ ] Ext tag `stage-door-m30`
 
 ## Notes
 _(append build notes here)_

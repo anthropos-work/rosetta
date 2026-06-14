@@ -1,4 +1,4 @@
-# M26 — Spec notes
+# M27 — Spec notes
 
 _Technical detail accumulated during build. Stub at scaffold; sections seeded from the overview scope._
 

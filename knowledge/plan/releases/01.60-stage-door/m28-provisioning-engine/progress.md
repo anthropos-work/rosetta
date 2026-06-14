@@ -1,4 +1,4 @@
-# M27 — Progress
+# M28 — Progress
 
 _Section checklist. Closure when all boxes land. Stub at scaffold._
 
@@ -14,7 +14,7 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 - [ ] Non-fatal pre-flight wiring into `/dev-up` + `/demo-up` (warn standard, fail critical)
 - [ ] Profile-scoping decision settled + implemented
 - [ ] Hard safety verified: no verb reads/echoes/logs a value
-- [ ] Ext tag `stage-door-m27`
+- [ ] Ext tag `stage-door-m28`
 
 ## Notes
 _(append build notes here)_

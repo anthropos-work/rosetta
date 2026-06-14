@@ -1,4 +1,4 @@
-# M26 — Progress
+# M27 — Progress
 
 _Section checklist. Closure when all boxes land. Stub at scaffold._
 
@@ -14,7 +14,7 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 - [ ] Waived classes modeled (AWS-mount, profile-gated, optional Bunny/GCloud)
 - [ ] Alias families encoded (GH_PAT family) vs distinct-similar pairs (OPENAI_KEY/OPENAI_API_KEY — not auto-aliased)
 - [ ] Hermetic unit tests (no values)
-- [ ] Ext tag `stage-door-m26`
+- [ ] Ext tag `stage-door-m27`
 
 ## Notes
 _(append build notes here)_

@@ -17,7 +17,7 @@ and a `release/{version}` branch is cut.
 > v1.4 removal.
 > **v1.6 "stage door"** → 2026-06-14 (**in development**; the **secret-provisioning release** — one mechanism that
 > ingests a secret source [dir/zip, default `.agentspace/secrets`] and provisions every repo of a stack, with a
-> secret-coverage DNA that lists + keeps-listed the required secrets per repo, M26→M29; promoted to
+> secret-coverage DNA that lists + keeps-listed the required secrets per repo, M27→M30; promoted to
 > [`roadmap.md`](roadmap.md), branch `release/01.60-stage-door` cut). Requested directly by the user, not from prior backlog.
 
 ---
@@ -58,6 +58,6 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" shipped — their codenames are now permanent. "stage door" (v1.6, in dev) continues the stage-metaphor lineage: the stage door is the keyed backstage entrance — you need a pass/key to get in. v1.6 hands every stack its keys [its secrets] so it can open all its doors.)_
 
-_Last updated: 2026-06-14 (**v1.6 "stage door" staged + in development** — the secret-provisioning release, M26→M29,
+_Last updated: 2026-06-14 (**v1.6 "stage door" staged + in development** — the secret-provisioning release, M27→M30,
 promoted to roadmap.md; branch `release/01.60-stage-door` cut. v1.5 "prop room" flipped to SHIPPED. Backlog unchanged:
 DEF-M10-01, DEF-M21-01, M25-D9 all orthogonal to v1.6. Prior: 2026-06-11 v1.5 staged.)_

@@ -1,5 +1,5 @@
 ---
-milestone: M28
+milestone: M29
 slug: secrets-docs-skill
 version: v1.6 "stage door"
 milestone_shape: section
@@ -11,7 +11,7 @@ delivers: corpus/ops/secrets-spec.md (net-new) + .claude/skills/stack-secrets/ +
 backlog_refs: (none — closes the Phase 0b KB blind area)
 ---
 
-# M28 — Docs + `/stack-secrets` skill + corpus wiring
+# M29 — Docs + `/stack-secrets` skill + corpus wiring
 
 ## Goal
 Make the feature discoverable and give it a corpus home: author `corpus/ops/secrets-spec.md`, add the
@@ -19,14 +19,14 @@ Make the feature discoverable and give it a corpus home: author `corpus/ops/secr
 TODO, extend `safety.md`.
 
 ## Why section
-Pure authoring + wiring against a finished engine (M27). The doc/skill patterns to mirror already exist
+Pure authoring + wiring against a finished engine (M28). The doc/skill patterns to mirror already exist
 (`seeding-spec.md` + `/stack-seed`, `snapshot-spec.md` + `/stack-snapshot`). Build with
 `/developer-kit:build-milestone`.
 
 ## Repo split
 - **`rosetta`**: `corpus/ops/secrets-spec.md` (net-new), `.claude/skills/stack-secrets/SKILL.md`, the CLAUDE.md
   skill-table + doc-index + interconnected-docs rows, the `setup_guide.md` + `safety.md` edits.
-- **`rosetta-extensions`**: none new (the skill drives the M26/M27 binary at its pinned tag).
+- **`rosetta-extensions`**: none new (the skill drives the M27/M28 binary at its pinned tag).
 
 ## Scope
 - **In:**
@@ -39,10 +39,10 @@ Pure authoring + wiring against a finished engine (M27). The doc/skill patterns 
   - **CLAUDE.md** skill-table row + Key-Documentation-Locations entry + Interconnected-Documentation list update.
   - **Extend** `setup_guide.md` (delete the manual-copy prose + the line-447 TODO, point to the skill) and
     `safety.md` (add the never-echo / `PreflightEnv`-emitting clause to the safety contract).
-- **Out:** the build-from-stack-dev observable-behavior validation (M29).
+- **Out:** the build-from-stack-dev observable-behavior validation (M30).
 
 ## Depends on
-M27 (the engine + gate the docs/skill describe).
+M28 (the engine + gate the docs/skill describe).
 
 ## Parallel with
 None.

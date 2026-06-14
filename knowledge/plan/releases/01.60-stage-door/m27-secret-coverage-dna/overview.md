@@ -1,5 +1,5 @@
 ---
-milestone: M26
+milestone: M27
 slug: secret-coverage-dna
 version: v1.6 "stage door"
 milestone_shape: section
@@ -7,11 +7,11 @@ status: planned
 created: 2026-06-14
 last_updated: 2026-06-14
 complexity: medium-large
-delivers: rosetta-extensions/stack-secrets/ (new section — cmd/stacksecrets + the secret-DNA sub-package); ext tag stage-door-m26
+delivers: rosetta-extensions/stack-secrets/ (new section — cmd/stacksecrets + the secret-DNA sub-package); ext tag stage-door-m27
 backlog_refs: (none — new feature requested directly by the user 2026-06-14, not from prior backlog)
 ---
 
-# M26 — Secret-coverage DNA + source ingestion
+# M27 — Secret-coverage DNA + source ingestion
 
 ## Goal
 A new `stack-secrets` extension that ingests a secret source (directory **or** zip) and a **secret-coverage
@@ -24,10 +24,10 @@ sentinel `.env.example`, docker-compose), and the DNA/score/diff machinery is a 
 `/developer-kit:build-milestone`.
 
 ## Repo split
-- **`rosetta-extensions`** (authoring → tag `stage-door-m26` → consume): the new `stack-secrets/` section —
+- **`rosetta-extensions`** (authoring → tag `stage-door-m27` → consume): the new `stack-secrets/` section —
   `go.mod`, `cmd/stacksecrets`, the source-ingestion reader (dir + zip), the secret-DNA sub-package
   (`dna.go`/`measure.go`/`introspect.go`/`diff.go`/`operators.go` + `secret-dna.json`), hermetic tests.
-- **`rosetta`**: none in this milestone (docs land in M28).
+- **`rosetta`**: none in this milestone (docs land in M29).
 
 ## Scope
 - **In:**
@@ -48,14 +48,14 @@ sentinel `.env.example`, docker-compose), and the DNA/score/diff machinery is a 
     optional Bunny/GCloud. Encode **alias families** (`GH_PAT`≡`GH_TOKEN`≡`GH_ACCESS_TOKEN`) vs distinct-similar
     values (`OPENAI_KEY` vs `OPENAI_API_KEY` — list exact per-repo, do NOT auto-alias).
   - Hermetic unit tests (no values); the DNA file stores NAMES only and is committable.
-- **Out:** writing target `.env` files (M27); the coverage gate + bring-up wiring (M27); the `/stack-secrets`
-  skill + corpus doc (M28); the build-from-stack-dev validation (M29).
+- **Out:** writing target `.env` files (M28); the coverage gate + bring-up wiring (M28); the `/stack-secrets`
+  skill + corpus doc (M29); the build-from-stack-dev validation (M30).
 
 ## Depends on
 None (first milestone of v1.6).
 
 ## Parallel with
-None (M27 consumes this milestone's DNA + ingestion reader).
+None (M28 consumes this milestone's DNA + ingestion reader).
 
 ## Estimated complexity
 medium-large.
@@ -63,7 +63,7 @@ medium-large.
 ## Open questions
 - Zip ingestion mode: extract-to-temp vs in-memory; encrypted-zip (age/gpg) support. **Default:** plain zip + dir
   in v1; encrypted-zip deferred unless requested.
-- Profile-tagging on genes vs default-`graphql`-profile scoping — settle here or in M27.
+- Profile-tagging on genes vs default-`graphql`-profile scoping — settle here or in M28.
 - The canonical declared-required source per repo for keys absent from every `.env.example` but required at runtime
   (curated platform-env list addition + a `diff`-flaggable "undeclared runtime-required" case).
 
@@ -73,4 +73,4 @@ medium-large.
 - `corpus/ops/safety.md` — the values-blind / `PreflightEnv` discipline.
 
 ## Delivers →
-`rosetta-extensions/stack-secrets/` (the section + the secret-DNA; ext tag `stage-door-m26`).
+`rosetta-extensions/stack-secrets/` (the section + the secret-DNA; ext tag `stage-door-m27`).

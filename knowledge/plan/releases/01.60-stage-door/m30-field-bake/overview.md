@@ -1,5 +1,5 @@
 ---
-milestone: M29
+milestone: M30
 slug: field-bake
 version: v1.6 "stage door"
 milestone_shape: section
@@ -7,11 +7,11 @@ status: planned
 created: 2026-06-14
 last_updated: 2026-06-14
 complexity: medium
-delivers: the proven .agentspace/secrets reference dir (built from stack-dev) + the field-bake record; ext tag stage-door-m29
+delivers: the proven .agentspace/secrets reference dir (built from stack-dev) + the field-bake record; ext tag stage-door-m30
 backlog_refs: (none)
 ---
 
-# M29 — Field-bake: build a compliant secret dir from stack-dev + prove it
+# M30 — Field-bake: build a compliant secret dir from stack-dev + prove it
 
 ## Goal
 Prove the whole mechanism on a real stack: assemble a compliant `.agentspace/secrets` dir inferred/pulled from
@@ -25,7 +25,7 @@ Critical == 100% → stack UP). Mirrors v1.5's M25 field-bake (an observable-beh
 fuzzy-bar). Build with `/developer-kit:build-milestone`.
 
 ## Repo split
-- **`rosetta-extensions`**: any field-fix code the bake surfaces (Fate-1), tagged `stage-door-m29`.
+- **`rosetta-extensions`**: any field-fix code the bake surfaces (Fate-1), tagged `stage-door-m30`.
 - **`rosetta`**: the field-bake record + the honesty-residual note (in `secrets-spec.md` or the milestone record);
   the proven `.agentspace/secrets` reference dir is gitignored (lives in `.agentspace`, never committed).
 
@@ -41,7 +41,7 @@ fuzzy-bar). Build with `/developer-kit:build-milestone`.
 - **Out:** new features (the bake is a proving + fix milestone, not a feature milestone).
 
 ## Depends on
-M28 (the skill + doc the bake exercises).
+M29 (the skill + doc the bake exercises).
 
 ## Parallel with
 None (final milestone of v1.6).
@@ -58,4 +58,4 @@ medium.
 - `corpus/ops/verification.md` — the gate.
 
 ## Delivers →
-The proven (gitignored) `.agentspace/secrets` reference dir + the field-bake record; ext tag `stage-door-m29`.
+The proven (gitignored) `.agentspace/secrets` reference dir + the field-bake record; ext tag `stage-door-m30`.

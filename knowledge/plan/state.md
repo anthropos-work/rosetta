@@ -4,10 +4,10 @@
 The **secret-provisioning release**: one mechanism that ingests a secret source (directory/zip, default
 `.agentspace/secrets`) and **provisions every repo of a stack** from it (values-blind), with a **secret-coverage DNA**
 (a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per repo. 4 milestones
-M26→M29 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero platform-repo edits; never
+M27→M30 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero platform-repo edits; never
 commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
-**Active milestone:** **M26 — Secret-coverage DNA + source ingestion** (`planned`, not started). Build with
-[`/developer-kit:build-milestone`](roadmap.md). Strictly sequential after: M27 engine+gate → M28 docs+skill → M29 field-bake.
+**Active milestone:** **M27 — Secret-coverage DNA + source ingestion** (`planned`, not started). Build with
+[`/developer-kit:build-milestone`](roadmap.md). Strictly sequential after: M28 engine+gate → M29 docs+skill → M30 field-bake.
 **Last closed:** **v1.5 "prop room" — 2026-06-14**, tag `v1.5`. The **local-Directus release**: every stack now
 serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real
 images) on `--local-content` (demo default-on, dev opt-in); prod-read is the documented fallback. M21 structure
@@ -16,10 +16,10 @@ M24 docs convergence + hygiene → M25 field-bake. The closing field-bake proved
 catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bugs** Fate-1, headline being the
 `directus_files` **tenant-data leak the firewall caught FAIL-CLOSED** (fixed in the FILTER, firewall never weakened).
 **Tooling + docs only — zero platform-repo edits.**
-**Next up:** **build M26** via `/developer-kit:build-milestone` (creates `m26/secret-coverage-dna` from the release
+**Next up:** **build M27** via `/developer-kit:build-milestone` (creates `m27/secret-coverage-dna` from the release
 branch). Research + risk register: [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
 (Outward-facing carry-over from v1.5: push the 5 ext tags `prop-room-m21..m25` to `origin`.)
-**Phase:** **v1.6 in development — M26 designed, not yet started.**
+**Phase:** **v1.6 in development — M27 designed, not yet started.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -62,7 +62,7 @@ branch). Research + risk register: [`.agentspace/scratch/roadmap-research-2026-0
 
 ## Branch model
 **v1.6 IN DEVELOPMENT:** `release/01.60-stage-door` cut from `main` 2026-06-14; milestone branches
-`m26/secret-coverage-dna` → `m27/provisioning-engine` → `m28/secrets-docs-skill` → `m29/field-bake` to follow. The new
+`m27/secret-coverage-dna` → `m28/provisioning-engine` → `m29/secrets-docs-skill` → `m30/field-bake` to follow. The new
 `stack-secrets` extension is authored in `.agentspace/rosetta-extensions/stack-secrets/`, tagged `stage-door-mNN`,
 consumed per-stack at the pinned tag (the standard two-clone policy).
 **v1.5 SHIPPED:** `release/01.50-prop-room` merged `--no-ff` → `main`, tagged **`v1.5`** (2026-06-14); release branch
@@ -75,8 +75,10 @@ in a gitignored `.agentspace/snapshots/` cache (cloud/S3 store = backlog/unsched
 **Prior:** **v1.3b** tag `v1.3.1` (2026-06-09) · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0` (2026-06-03).
 
 _Last updated: 2026-06-14 (**v1.6 "stage door" DESIGNED + IN DEVELOPMENT** via `/developer-kit:design-roadmap` — the
-secret-provisioning release, 4 milestones M26→M29; branch `release/01.60-stage-door` cut; Phase 0a GREEN-by-inheritance,
-Phase 0b KB blind-area confirmed → M28 delivers `secrets-spec.md`. Phase-1 research was a dynamic workflow [5 investigators
+secret-provisioning release, 4 milestones M27→M30 [renumbered from M26→M29 same day — the M26 slot was already taken by
+the orphaned `self-contained-demo` ext work, tag `prop-room-m26`; user chose keep-M26 + renumber-secrets, see M27-D1];
+branch `release/01.60-stage-door` cut; Phase 0a GREEN-by-inheritance,
+Phase 0b KB blind-area confirmed → M29 delivers `secrets-spec.md`. Phase-1 research was a dynamic workflow [5 investigators
 + synthesis/critic]. Prior: 2026-06-14 **v1.5 "prop room" SHIPPED** via `/developer-kit:close-release` — 5-dimension review:
 supply-chain GREEN, scope/fate YELLOW→resolved, code-quality + docs fixes landed Fate-1 [the M24 sweep had missed
 `snapshot-cold-start.md`; a stale "exit-4 / not-yet-automated" claim was the 1 must-fix], tests GREEN [Go +131 /
