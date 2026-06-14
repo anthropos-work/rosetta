@@ -1,8 +1,13 @@
 # State
 
-**Active version:** _(between releases — **v1.5 "prop room" SHIPPED 2026-06-14**, tag `v1.5`. The next version is
-unplanned; run [`/developer-kit:design-roadmap`](roadmap.md) to scope it.)_
-**Active milestone:** _(between releases)_
+**Active version:** **v1.6 "stage door" — IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`).
+The **secret-provisioning release**: one mechanism that ingests a secret source (directory/zip, default
+`.agentspace/secrets`) and **provisions every repo of a stack** from it (values-blind), with a **secret-coverage DNA**
+(a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per repo. 4 milestones
+M26→M29 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero platform-repo edits; never
+commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
+**Active milestone:** **M26 — Secret-coverage DNA + source ingestion** (`planned`, not started). Build with
+[`/developer-kit:build-milestone`](roadmap.md). Strictly sequential after: M27 engine+gate → M28 docs+skill → M29 field-bake.
 **Last closed:** **v1.5 "prop room" — 2026-06-14**, tag `v1.5`. The **local-Directus release**: every stack now
 serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real
 images) on `--local-content` (demo default-on, dev opt-in); prod-read is the documented fallback. M21 structure
@@ -11,9 +16,10 @@ M24 docs convergence + hygiene → M25 field-bake. The closing field-bake proved
 catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bugs** Fate-1, headline being the
 `directus_files` **tenant-data leak the firewall caught FAIL-CLOSED** (fixed in the FILTER, firewall never weakened).
 **Tooling + docs only — zero platform-repo edits.**
-**Next up:** **`/developer-kit:design-roadmap`** to scope the next version. (Outward-facing: push the 5 ext tags
-`prop-room-m21..m25` to `origin`; the M24 `/project-stats` fix is a separate commit in the `ant-singularity` node repo.)
-**Phase:** **between releases — awaiting `/developer-kit:design-roadmap`.**
+**Next up:** **build M26** via `/developer-kit:build-milestone` (creates `m26/secret-coverage-dna` from the release
+branch). Research + risk register: [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
+(Outward-facing carry-over from v1.5: push the 5 ext tags `prop-room-m21..m25` to `origin`.)
+**Phase:** **v1.6 in development — M26 designed, not yet started.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -38,7 +44,7 @@ catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bug
   dev-as-peer [M13], one generic `stack-*` skill set [M14], code-cited `safety.md` [M15]. Records:
   [releases/archive/01.30-stack-party/](releases/archive/01.30-stack-party/).
 
-## Headline numbers (v1.5 close — 2026-06-14; baseline v1.3b 2026-06-09)
+## Headline numbers (inherited baseline for v1.6 — these are the v1.5 close numbers, 2026-06-14)
 - **Go test funcs:** **867** total (`Test`+`Fuzz`, measured at final ext HEAD `fbb8783`). Per-module:
   `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333**.
   Baseline v1.3b 736 → **+131**. `go vet` + `gofmt` clean; flake **0**.
@@ -55,6 +61,10 @@ catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bug
   GREEN (0 called CVEs; go1.25.11 pinned out the 12 stdlib advisories on all 4 go.mod + clerkenstein CI; all-permissive).
 
 ## Branch model
+**v1.6 IN DEVELOPMENT:** `release/01.60-stage-door` cut from `main` 2026-06-14; milestone branches
+`m26/secret-coverage-dna` → `m27/provisioning-engine` → `m28/secrets-docs-skill` → `m29/field-bake` to follow. The new
+`stack-secrets` extension is authored in `.agentspace/rosetta-extensions/stack-secrets/`, tagged `stage-door-mNN`,
+consumed per-stack at the pinned tag (the standard two-clone policy).
 **v1.5 SHIPPED:** `release/01.50-prop-room` merged `--no-ff` → `main`, tagged **`v1.5`** (2026-06-14); release branch
 deleted; all 5 milestone branches (`m21/structure-capture` … `m25/field-bake`) merged + deleted. The stack tooling
 lives in the **private** `anthropos-work/rosetta-extensions` monorepo — authored + tagged in `.agentspace/rosetta-
@@ -64,7 +74,10 @@ cross-repo developer-kit `825cdce` in the `ant-singularity` node repo (outside t
 in a gitignored `.agentspace/snapshots/` cache (cloud/S3 store = backlog/unscheduled, DEF-M10-01).
 **Prior:** **v1.3b** tag `v1.3.1` (2026-06-09) · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0` (2026-06-03).
 
-_Last updated: 2026-06-14 (**v1.5 "prop room" SHIPPED** via `/developer-kit:close-release` — 5-dimension review:
+_Last updated: 2026-06-14 (**v1.6 "stage door" DESIGNED + IN DEVELOPMENT** via `/developer-kit:design-roadmap` — the
+secret-provisioning release, 4 milestones M26→M29; branch `release/01.60-stage-door` cut; Phase 0a GREEN-by-inheritance,
+Phase 0b KB blind-area confirmed → M28 delivers `secrets-spec.md`. Phase-1 research was a dynamic workflow [5 investigators
++ synthesis/critic]. Prior: 2026-06-14 **v1.5 "prop room" SHIPPED** via `/developer-kit:close-release` — 5-dimension review:
 supply-chain GREEN, scope/fate YELLOW→resolved, code-quality + docs fixes landed Fate-1 [the M24 sweep had missed
 `snapshot-cold-start.md`; a stale "exit-4 / not-yet-automated" claim was the 1 must-fix], tests GREEN [Go +131 /
 Python +99 / flake 0], deferral re-audit GREEN [DEF-M21-01 + M25-D9 → roadmap-vision backlog]. Merged → main, tagged

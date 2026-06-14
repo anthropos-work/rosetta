@@ -12,18 +12,25 @@ and a `release/{version}` branch is cut.
 > **v1.3b "dress rehearsal"** → 2026-06-08 (shipped 2026-06-09, tag `v1.3.1`; the **field-hardening release** for
 > the 14 issues the first real `/demo-up` run surfaced — `/demo-up` now produces a full/populated/verified/demoable
 > stack, M16→M20; tooling + docs only, zero platform-repo edits).
-> **v1.5 "prop room"** → 2026-06-11 (**in development**; the **local-Directus release** — a real per-stack Directus
-> serving the captured public content, demo-default + dev-opt-in, M21→M25; promoted to [`roadmap.md`](roadmap.md),
-> branch `release/01.50-prop-room` cut). The first version staged after the v1.4 removal.
+> **v1.5 "prop room"** → 2026-06-11 (shipped 2026-06-14, tag `v1.5`; the **local-Directus release** — a real per-stack
+> Directus serving the captured public content, demo-default + dev-opt-in, M21→M25). The first version staged after the
+> v1.4 removal.
+> **v1.6 "stage door"** → 2026-06-14 (**in development**; the **secret-provisioning release** — one mechanism that
+> ingests a secret source [dir/zip, default `.agentspace/secrets`] and provisions every repo of a stack, with a
+> secret-coverage DNA that lists + keeps-listed the required secrets per repo, M26→M29; promoted to
+> [`roadmap.md`](roadmap.md), branch `release/01.60-stage-door` cut). Requested directly by the user, not from prior backlog.
 
 ---
 
-## Staged: v1.5 "prop room" (in development — full detail in [`roadmap.md`](roadmap.md))
+## Staged: v1.6 "stage door" (in development — full detail in [`roadmap.md`](roadmap.md))
 
-The **local-Directus release** is staged and in development. It closes the M10 collection-schema gap (NEW-1),
-executes the per-stack-Directus recipe (NEW-2), and makes content↔taxonomy a referentially-closed captured pair
-(NEW-3) — so every demo stack (default) and any opt-in dev stack serves the captured public content from its **own**
-Directus instead of reading live from prod. Real images are preserved via prod public asset links.
+The **secret-provisioning release** is staged and in development. It closes the one stack-lifecycle concern with **no
+owning section / tool / skill / doc**: secrets (today = manual prose + one `cp` in `ensure-clones.sh`; the TODO is at
+`setup_guide.md:447`). A new `stack-secrets` extension ingests a secret source (directory or zip) and provisions every
+repo of a stack from it (values-blind); a **secret-coverage DNA** — a one-sided harness in the proven `datadna` mold —
+lists and *keeps listed* the required secrets per repo (`introspect` + `diff`); a coverage gate wires into `/dev-up` +
+`/demo-up` pre-flight; and a closing field-bake proves it by building a compliant secret dir inferred from current
+stack-dev. **Tooling + docs only; never commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
 
 ## Unscheduled backlog (not a planned release)
 
@@ -49,8 +56,8 @@ mirror engines**; the **deployment/injection CI gate** (a local-only alignment s
 demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
 
 ## Codename notes
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" shipped — their codenames are now permanent. "prop room" (v1.5, in dev) continues the stage-metaphor lineage: the prop room is where a show's real objects live — v1.5 gives each stack its own real content instead of borrowing prod's.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" shipped — their codenames are now permanent. "stage door" (v1.6, in dev) continues the stage-metaphor lineage: the stage door is the keyed backstage entrance — you need a pass/key to get in. v1.6 hands every stack its keys [its secrets] so it can open all its doors.)_
 
-_Last updated: 2026-06-11 (**v1.5 "prop room" staged + in development** — the local-Directus release, M21→M25,
-promoted to roadmap.md; branch `release/01.50-prop-room` cut. DEF-M10-01 re-signed → backlog; the ex-v1.4 seeds +
-deploy-CI gate + dev-up pre-warm DROPPED from tracking. Prior: 2026-06-11 v1.4 removed.)_
+_Last updated: 2026-06-14 (**v1.6 "stage door" staged + in development** — the secret-provisioning release, M26→M29,
+promoted to roadmap.md; branch `release/01.60-stage-door` cut. v1.5 "prop room" flipped to SHIPPED. Backlog unchanged:
+DEF-M10-01, DEF-M21-01, M25-D9 all orthogonal to v1.6. Prior: 2026-06-11 v1.5 staged.)_

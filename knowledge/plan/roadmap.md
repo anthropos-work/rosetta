@@ -57,6 +57,20 @@ builder skills).
 > DEF-M10-01 stays backlog, **re-signed fresh** at v1.5 design with its user-facing sting removed: v1.5 keeps the
 > *asset plane* on prod public links so demos show **real images** without the S3 blob-byte work.
 
+> **v1.6 "stage door" — IN DEVELOPMENT** (designed 2026-06-14 via `/developer-kit:design-roadmap`; branch
+> `release/01.60-stage-door` cut from `main`). The **secret-provisioning release** — closes the one stack-lifecycle
+> concern with **no owning section / tool / skill / doc**: secrets. Today the whole "make secrets land in the right
+> files" job is **one line of shell** (`cp platform/.env → peer` in `ensure-clones.sh`) + manual prose, with the TODO
+> written in-tree at `setup_guide.md:447`. v1.6 builds a real mechanism: a new `stack-secrets` extension that ingests
+> a secret source (directory **or** zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from
+> it, values-blind; a **secret-coverage DNA** (a one-sided harness in the proven `datadna` mold) that *lists and keeps
+> listed* the required secrets per repo (`introspect` + `diff`); a coverage gate wired into `/dev-up` + `/demo-up`
+> pre-flight; and a closing **field-bake** that proves it by building a compliant secret dir inferred from current
+> stack-dev. 4 milestones M26→M29 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero
+> platform-repo edits; never commit `.env`; never write prod; no verb ever reads or echoes a secret value.** Gap
+> analysis + KB blind-area map + risk register:
+> [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
+
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
@@ -67,7 +81,7 @@ builder skills).
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
-| **v1.5** | **prop room** | The stack stops phoning home for content — a real **local Directus** serving the captured public library (real images via prod links), for **every demo** (always) and **any dev stack** (opt-in) | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | 🚧 **IN DEVELOPMENT** (all 5 milestones closed 2026-06-13; awaiting `/developer-kit:close-release`) |
+| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M26 → M27 → M28 → M29 | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -83,6 +97,138 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.6 "stage door" (designed 2026-06-14 · branch `release/01.60-stage-door`)
+
+**Theme:** the **secret-provisioning release.** Every other stack-lifecycle concern in Rosetta has an owning
+`rosetta-extensions` section + a tool + a skill + a corpus doc (snapshot→`stacksnap`/`/stack-snapshot`/`snapshot-spec.md`;
+seeding→`stackseed`/`datadna`/`/stack-seed`/`seeding-spec.md`; verify→`/test-platform`/`verification.md`). **Secrets have
+none of these.** The whole "make secrets land in the right files" job is split between manual prose in `setup_guide.md`
+(hand-copy `.env.example`→`.env` and fill Clerk/AI keys for studio-desk, ant-academy, next-web-app) and **one line of
+shell** — the copy-if-absent `cp stack-dev/platform/.env → peer/platform/.env` in `demo-stack/ensure-clones.sh:48-57`.
+The TODO is even written in-tree: `corpus/ops/setup_guide.md:447`. v1.6 builds the missing mechanism: ingest a secret
+source (**directory or zip**, default `.agentspace/secrets`) → **provision every repo of a stack** from it (values-blind)
+→ a **secret-coverage DNA** that *lists and keeps listed* the required secrets per repo → a coverage gate in bring-up
+pre-flight → a field-bake that proves it from current stack-dev.
+
+> **Designed 2026-06-14** via `/developer-kit:design-roadmap`. Phase-1 research was a **dynamic workflow**: 5 parallel
+> read-only investigators (secret landscape · current provisioning flow · alignment/DNA framework · extension placement +
+> KB blind-area · stack-dev inventory) + a synthesis/completeness-critic stage. Gap analysis + risk register:
+> [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
+> **Phase 0a deferral audit GREEN** by inheritance (the v1.5 `/close-release` deferral re-audit ran 2026-06-14; the 3
+> live backlog items — DEF-M10-01, DEF-M21-01, M25-D9 — are all orthogonal to secret provisioning). **Phase 0b KB
+> blind-area: CONFIRMED** — no corpus doc owns secret provisioning → M28 `Delivers →` the net-new `corpus/ops/secrets-spec.md`.
+
+> **Load-bearing facts** (the critic caught + corrected the investigators' own errors; re-verified on disk 2026-06-14):
+> there is **no single 57-key platform/.env** — live truth is `platform/.env` (15 keys) + a *separate* `app/.env`
+> (46 keys) + per-frontend envs (`studio-desk/.env` 23, `next-web-app/apps/web/.env` 32), with `platform/.env_example`
+> the 59-key wishlist. **8 of 12 Go-service repos ship NO `.env.example`** (only sentinel does) → the required-set must
+> be a **hybrid** source, not a uniform per-repo file. **ant-academy's live env is `code/.env.local`** (not `code/.env`)
+> → target filenames must be pinned. **~9–12 distinct secret VALUES** stand up a working stack.
+
+> **Design constraints, baked into every milestone:** **(1) values-blind** — no verb ever reads, copies into a report,
+> echoes, or logs a secret *value*; the secret-DNA stores key NAMES only and is committable; extraction is
+> `grep -oE '^[A-Z_][A-Z0-9_]*'` / cut-on-`=`. **(2) Never commit `.env`; never write prod; zero platform-repo edits.**
+> **(3) Reuse the proven patterns** — the secret-DNA is a *sibling* harness in the `stack-seeding/dna` (`datadna`) mold
+> (Criticality 3/2/1 → weight, Overall-weighted + Critical-unweighted score with the `ratio()` empty-denominator +
+> anti-vacuous-100 guards, the 0/1/3 exit-code contract), and `provision` **composes with and defers to** the existing
+> injection override + emits `PreflightEnv`-passing env (`safety.md:156-205`). **(4) The two-repo split holds:**
+> `rosetta-extensions` owns the `stack-secrets` section (authored in `.agentspace/rosetta-extensions/`, tagged
+> `stage-door-mNN`, consumed per-stack at the pinned tag); `rosetta` owns `.claude/skills/*`, `corpus/*`, `CLAUDE.md`.
+
+### M26: Secret-coverage DNA + source ingestion
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** A new `stack-secrets` extension that ingests a secret source (directory or zip) and a secret-coverage DNA that *lists and keeps listed* the required secrets per repo — values-blind throughout.
+**Scope:**
+  - In: new `rosetta-extensions/stack-secrets/` section + `go.mod` + `cmd/stacksecrets`, authored in the `.agentspace` copy, tagged.
+  - In: **source ingestion** — directory **and** zip (default `.agentspace/secrets`); values-blind extraction; an explicit source-dir **layout contract** so `stack-dev/zEnvs/` and per-repo `.env` files are never silently ingested as "the source".
+  - In: the **secret-DNA** sub-package (mirrors `stack-seeding/dna` layout): gene = `repo × KEY`, gene id `<repo>/<KEY>`; per gene `{repo, key, scope (shared|service|frontend|config), criticality (critical|standard|optional → weight 3/2/1), operators [key-present (+optional nonempty, format:url|jwt|pk_*|sk_*)], status (required|optional|waived-<reason>), source_hint, note}`.
+  - In: `introspect` rebuilds the required set from the **hybrid** source (`platform/.env_example` baseline + each frontend's + `sentinel`'s `.env.example` + the keys docker-compose injects/references) — NOT pure per-repo `.env.example`.
+  - In: `list` + `diff` verbs; `diff` exits 1 on required-key drift (the **"keep-listed" gate**) and on a runtime-required-but-undeclared key (the anti-vacuous-green guard).
+  - In: model the knowns as `waived` — AWS-via-`~/.aws` mount, profile-gated keys (BREVO/messenger, customerio-sync), optional Bunny/GCloud; encode **alias families** (`GH_PAT`≡`GH_TOKEN`≡`GH_ACCESS_TOKEN`) vs distinct-similar values (`OPENAI_KEY` vs `OPENAI_API_KEY` — list exact per-repo, do NOT auto-alias).
+  - Out: writing target `.env` files (M27); the coverage gate + bring-up wiring (M27); the skill + corpus doc (M28).
+**Depends on:** none (first milestone of the version).
+**Parallel with:** none.
+**Estimated complexity:** medium-large.
+**Open questions:** zip ingestion mode (extract-to-temp vs in-memory; encrypted-zip via age/gpg — default: plain zip + dir in v1, encrypted deferred); profile-tagging on genes vs default-`graphql`-profile scoping (settle here or in M27).
+**KB dependencies:** `corpus/architecture/alignment_testing.md` (the DNA framework + the data-DNA precedent); `corpus/ops/seeding-spec.md` (the `datadna`/`stackseed` patterns); `corpus/ops/safety.md` (`PreflightEnv` discipline).
+**Delivers →** `rosetta-extensions/stack-secrets/` (the section; ext tag `stage-door-m26`).
+
+### M27: Provisioning engine + coverage/verify gate
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** `stacksecrets provision` writes each repo's target `.env` from the source (correct exact key per repo, alias-mapped per file), values-blind; `check`/`measure` computes coverage and is wired non-fatally into `/dev-up` + `/demo-up` pre-flight.
+**Scope:**
+  - In: `provision` verb — per-repo **target-file map** (`platform/.env`, `app/.env`, `studio-desk/.env`, `ant-academy/code/.env.local` [exact filename pinned], `next-web-app/apps/web/.env`, `sentinel/.env`), one source value → all its per-file aliases.
+  - In: **idempotency + overwrite policy** — copy-if-absent default, `--force` to overwrite, never silently clobber; **N=0 main-dev-stack guard** (refuse without `--force`, mirroring `stackseed --reset`) so it can't clobber the operator's working `.env`.
+  - In: **composes with + defers to the injection override** — `provision` runs BEFORE `gen_injected_override.py` and must NOT re-arm the stripped prod `DIRECTUS_TOKEN` on non-prod / `--local-content` stacks (the fix16/17 safety class) **[blocks-release safety — regression test required]**.
+  - In: emit `PreflightEnv`-passing env (reuse the seeder's values-blind env-guard discipline).
+  - In: `check`/`measure` — Overall (weighted) + Critical (gate == 100%, unweighted) + **per-repo rollup** ("repo X is short key Y"); **demo-aware** (Clerk keys satisfiable by Clerkenstein minting, not the source dir); exit 1 if a critical key is missing.
+  - In: non-fatal pre-flight wiring into `/dev-up` + `/demo-up` (warn on standard-missing, fail on critical-missing — the `verification.md` convention).
+  - In: profile-scoping decision settled (v1 scopes the denominator to the default `graphql` profile, or a per-gene profile tag).
+  - Out: the `/stack-secrets` skill + corpus doc (M28); the end-to-end build-from-stack-dev validation (M29).
+**Depends on:** M26 (the DNA + the ingestion reader).
+**Parallel with:** none.
+**Estimated complexity:** large.
+**Open questions:** `check` measure source — static `.env` files (safe, names-by-grep) vs live container env (catches runtime-injected keys but risks touching values) → default static, values-blind.
+**KB dependencies:** `corpus/ops/safety.md` (`PreflightEnv`, never-write-prod); `corpus/ops/idempotency.md` (the run-it-twice contract); `corpus/ops/verification.md` (non-fatal pre-flight); `corpus/services/clerkenstein.md` (the demo minting path); `corpus/ops/rosetta_demo.md` (the injection override / `DIRECTUS_TOKEN` strip).
+**Delivers →** `rosetta-extensions/stack-secrets/` (the engine + gate; ext tag `stage-door-m27`).
+
+### M28: Docs + `/stack-secrets` skill + corpus wiring
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** Make the feature discoverable + own a corpus doc: author `corpus/ops/secrets-spec.md`, add the `/stack-secrets` skill + CLAUDE.md skill-table row, retire the manual-copy prose + the `setup_guide.md:447` TODO, extend `safety.md`.
+**Scope:**
+  - In: author **`corpus/ops/secrets-spec.md`** (the blueprint the skill reads — source-dir/zip layout, the secret-DNA, the per-repo target-file map, the values-blind safety statement, the alias/collision rules, the `waived`-class rationale).
+  - In: new **`/stack-secrets`** skill (`argument-hint [dev-N|demo-N] [--from DIR|ZIP] [--check|--provision|--status]`, default source `.agentspace/secrets`), mirroring `/stack-seed` (read spec → confirm non-prod target → build the tagged-clone binary → run the verb → report values-blind).
+  - In: **CLAUDE.md** skill-table row + Key-Documentation-Locations entry + Interconnected-Documentation list update.
+  - In: **extend** `setup_guide.md` (delete the manual-copy prose + the line-447 TODO, point to the skill) and `safety.md` (add the never-echo / `PreflightEnv`-emitting clause to the safety contract).
+  - Out: the build-from-stack-dev observable-behavior validation (M29).
+**Depends on:** M27 (the engine + gate the docs/skill describe).
+**Parallel with:** none.
+**Estimated complexity:** medium.
+**Open questions:** one skill (author + measure) vs an `/align`-style pair — default one skill, pre-flight `check` rides inside `/dev-up`+`/demo-up`.
+**KB dependencies:** `corpus/ops/seeding-spec.md` + `corpus/ops/snapshot-spec.md` (the spec-doc + skill pattern to mirror); `CLAUDE.md` (skill-table + doc-index conventions).
+**Delivers →** `corpus/ops/secrets-spec.md` (net-new) + `.claude/skills/stack-secrets/` + CLAUDE.md/setup_guide.md/safety.md edits.
+
+### M29: Field-bake — build a compliant secret dir from stack-dev + prove it
+**Status:** `planned`
+**Shape:** `section`
+**Goal:** Prove the whole mechanism on a real stack: assemble a compliant `.agentspace/secrets` dir inferred/pulled from current stack-dev, run `provision` into a fresh stack, and assert the observable behavior (coverage Critical == 100%, the stack comes up).
+**Scope:**
+  - In: **assemble a compliant `.agentspace/secrets` dir** from current stack-dev (names-correct, alias-mapped, the knowns `waived`) — the user's explicit "build a secret dir compliant with what's requested, inferring/pulling from stack-dev to double-check it works".
+  - In: run `provision` into a fresh `dev-N` and a fresh `demo-N`; assert `measure` Critical == 100% and the stack reaches UP (the **observable-behavior gate**, mirroring v1.5's M25 field-bake).
+  - In: fix any real bugs the bake surfaces, Fate-1 (the v1.5 field-bake caught + fixed 4).
+  - In: document the **honesty residual** — which ~10–15% is `waived` (AWS-mount, optional Bunny/GCloud, profile-gated) and why that's correct, not a hole.
+  - Out: new features (bake is a proving + fix milestone, not a feature milestone).
+**Depends on:** M28 (the skill + doc the bake exercises).
+**Parallel with:** none.
+**Estimated complexity:** medium.
+**Open questions:** which N to bake on (a throwaway `dev-N≥1` + a `demo-N`, never N=0) — settle at bake time per box capacity.
+**KB dependencies:** `corpus/ops/secrets-spec.md` (the contract being proven); `corpus/ops/rosetta_demo.md` + `corpus/ops/setup_guide.md` (bring-up); `corpus/ops/verification.md` (the gate).
+**Delivers →** the proven `.agentspace/secrets` reference dir + the field-bake record; ext tag `stage-door-m29`.
+
+### Execution graph — v1.6 "stage door"
+```
+v1.6 "stage door"   (strictly sequential — no parallelism; each milestone consumes the prior's output)
+  M26 ─────────→ M27 ─────────→ M28 ─────────→ M29
+  DNA + ingest   engine + gate  docs + skill   field-bake (build-from-stack-dev)
+```
+**Parallelism:** none. M27 consumes M26's DNA + ingestion; M28 documents M27's engine; M29 proves M28's skill end-to-end.
+This mirrors v1.5's strictly-sequential M21→M25. **No B-milestone** — the inspection tooling (`check`/`status`/`diff` +
+the per-repo rollup) is folded into the core verbs, not a separate subsystem.
+
+### Risk map — v1.6 "stage door"
+| Risk | Severity | Mitigation | Owner milestone |
+|---|---|---|---|
+| Provisioner **re-arms the prod `DIRECTUS_TOKEN`** that fix16/17 disarmed → reopens a closed tenant-data-leak class | **blocks-release** | `provision` runs before + defers to the injection override; never writes the prod token on non-prod / `--local-content`; regression test | M27 |
+| `OPENAI_KEY` vs `OPENAI_API_KEY` (and Azure variants) **may hold different tokens** → naive aliasing provisions the wrong key | degrades-quality | DNA lists the exact per-repo key; distinguish alias-families from distinct-similar values; never auto-alias the ambiguous pairs | M26/M27 |
+| **N=0 clobber** — provisioning into the main dev stack overwrites the operator's working `.env` (the secret source) | degrades-quality | copy-if-absent default + `--force` + N=0 guard (mirror `stackseed --reset`) | M27 |
+| **Vacuously-green coverage** — if the DNA under-lists a required key, `measure` reports 100% on a short stack | degrades-quality | `introspect`+`diff` exhaustiveness; make "runtime-required but undeclared" an explicit `diff`-flaggable case | M26 |
+| **Demo minting vs coverage** — demos satisfy Clerk keys by Clerkenstein minting, not the source dir | degrades-quality | stack-type-aware `measure` (real for dev, minted-OK for demo) | M27 |
+| **zEnvs / stray `.env` ingested** as the source by accident (stale backup mirror) | degrades-quality | explicit source-dir layout contract; never auto-discover `zEnvs`/per-repo `.env` | M26 |
+| **Profile-awareness** changes the denominator (messenger/customerio/frontend profiles) | nice-to-resolve | v1 scopes to default `graphql` profile (or per-gene profile tag) | M26/M27 |
 
 ## Done — v1.5 "prop room" (SHIPPED 2026-06-14 · tag `v1.5`)
 
