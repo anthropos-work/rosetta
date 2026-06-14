@@ -90,7 +90,7 @@ builder skills).
 | **v1.3** | **stack party** | dev + demo stacks as first-class peers — the per-stack-Directus recipe + firewall check (print-only — see the Correction above), auto-snapshot + light seed, smart shared ports, one unified `stack-*` skill set | M12 ✅ → M13 ✅ → M14 ✅ → M15 ✅ | ✅ **SHIPPED 2026-06-07** (tag `v1.3`) |
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
-| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`; M27–M29 closed 2026-06-14; M30 field-bake to follow) |
+| **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | 🚧 **IN DEVELOPMENT** (designed 2026-06-14; branch `release/01.60-stage-door`; **all 4 milestones M27–M30 closed 2026-06-14** — ready for `/developer-kit:close-release`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -254,8 +254,39 @@ static positional regression (ext `9742126`). Deferral audit GREEN (0 new; DEF-M
 **Delivers →** `corpus/ops/secrets-spec.md` (net-new) + `.claude/skills/stack-secrets/` + CLAUDE.md/setup_guide.md/safety.md edits.
 
 ### M30: Field-bake — build a compliant secret dir from stack-dev + prove it
-**Status:** `planned`
+**Status:** `done` (closed 2026-06-14)
 **Shape:** `section`
+**Closure (2026-06-14):** Delivered all 7 boxes; the bake ran end-to-end. **Part 1:** assembled a compliant,
+gitignored `.agentspace/secrets` dir from current stack-dev (5 repo `.env` files cp'd into the DNA-driven
+reader layout, values-blind; ant-academy source filled with the shared Clerk publishable key via a
+values-blind line-append), and `check` scored **Critical == 100%** on both dev (`check`) and demo
+(`check --demo`) — exit 0. **Part 2 (live):** a fresh **demo-3** was brought LIVE from that assembled source
+with the user's go-ahead — provision wrote 26 / blanked 2 / skipped 0, the bring-up's pre-flight scored
+Critical **100%**, and the demo came up with **17 containers** (backend tier + UI tier: next-web + studio-desk
++ ant-academy native), the full UI-inclusive auto-verify exit 0. The **observable-behavior gate**
+(provision → Critical 100% → stack UP) is **MET LIVE**. **SAFETY verified live:** the prod `DIRECTUS_TOKEN`
+(len-32) armed in **ZERO** containers (cms blank; provision blanks the family + the injection override strips
+it — defense-in-depth, the fix16/17 non-rearm class). The bake caught + fixed **2 real release bugs** Fate-1
+(parallels v1.5 M25's 4): (1) `sentinel/DB_CONNECTION` was critical/required but is compose-injected config
+(hardcoded `environment:` entry, never read from a `.env`; no `sentinel/.env` exists) → reclassified
+`waived-config` + a regression assertion (was falsely failing the gate at Critical 84.6%); (2) the demo
+bring-up only *checked* coverage but never *provisioned*, and `preflight.sh` resolved its source path one level
+too shallow (doubled `.agentspace/.agentspace/secrets` → the demo gate silently skipped, exit 2) → added a
+non-fatal provision step (`DEMO_NO_PROVISION=1` opt-out) + corrected the path to `EXT_ROOT/../..`.
+**Decisions:** M30-D1 (sentinel waive), M30-D2 (provision-then-move-only-the-env-file design), M30-D3
+(preflight two-levels-up path). **Honesty residual** documented (`spec-notes.md`): the ~10–15% non-passing
+is entirely waived-class (`waived-config`, `waived-aws-mount`, `waived-profile-gated`, `waived-optional`) +
+standard/optional lean-env/compose-injected/repo-local shorts — zero critical short. **Close review:** 4
+findings — 0 scope · 0 code-quality (the ext fixes correct + green) · 3 docs (the milestone record +
+`secrets-spec.md` were stale vs the executed live bake + the M30 DNA fix → reconciled: version
+`stage-door-m27`→`m30`, sentinel `waived-config`, status split `40/8/7`+13-crit → `39/8/8`+12-crit) · 1
+decision-triage (empty `decisions.md` → authored) — all Fate-1. 5 adversarial scenarios recorded. Deferral
+audit **GREEN** (0 new/repeat/aged; the 2 bugs landed Fate-1; waived-not-deferred; 3 inherited backlog
+re-signed at v1.5 close). **Tests:** Go **1027** / Python **459** unchanged (the M30 ext regression is a
+sub-assertion inside an existing test func; +0 top-level); demo-stack 99 pytests pass; flake **0** (Go 5/5
+`-race -shuffle`); gofmt/vet/shellcheck clean; corpus index guard exit 0. **Code:** `rosetta-extensions` @
+tag **`stage-door-m30`** (ext head `29c922b`; 2 field-fix commits on `m30/field-bake` — orchestrator finalizes
+the ext side). **v1.6 is now ready for `/developer-kit:close-release`.**
 **Goal:** Prove the whole mechanism on a real stack: assemble a compliant `.agentspace/secrets` dir inferred/pulled from current stack-dev, run `provision` into a fresh stack, and assert the observable behavior (coverage Critical == 100%, the stack comes up).
 **Scope:**
   - In: **assemble a compliant `.agentspace/secrets` dir** from current stack-dev (names-correct, alias-mapped, the knowns `waived`) — the user's explicit "build a secret dir compliant with what's requested, inferring/pulling from stack-dev to double-check it works".

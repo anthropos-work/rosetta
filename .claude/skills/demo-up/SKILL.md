@@ -37,9 +37,18 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    DEMO_NO_UI=1 "$DEMO/up-injected.sh" N
    # bare structural bring-up (skip the auto-set-dress — no replay/seed; set-dress later by hand):
    DEMO_NO_SETDRESS=1 "$DEMO/up-injected.sh" N
+   # skip the M30 secret auto-provision (run from the legacy stack-dev/platform/.env base instead):
+   DEMO_NO_PROVISION=1 "$DEMO/up-injected.sh" N
    # minimal stack (infra only — proves isolation, fits a tight box, fast):
    "$DEMO/rosetta-demo" up N --services "postgresql redis"
    ```
+   **M30 secret auto-provision (default-on, non-fatal):** after the demo-aware secret pre-flight `check`, the
+   bring-up PROVISIONS the demo's per-repo `.env` from `.agentspace/secrets` (values-blind; `stacksecrets
+   provision --force`) and runs the demo from that **assembled-source** base env (`stack-demo/platform/.env`) —
+   so a demo is self-sourced from the curated secret dir, not the operator's live dev env. Safety: the
+   `DIRECTUS_TOKEN` family is written BLANK on the non-prod target AND the injection override strips it at
+   compose-emit (defense-in-depth — the fix16/17 non-rearm class). `DEMO_NO_PROVISION=1` opts out (the legacy
+   base env). See [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
 4. **Auto set-dress (default-on, non-fatal, M20)** — after migrate the bring-up runs a cache-first snapshot
    **replay → a `small-200` seed** (a populated org you can log into), reusing the same proven pass `/dev-up` uses.
    The replay stamps in the **real taxonomy catalog**, and — **for a demo, local content is default-on** (v1.5

@@ -91,21 +91,24 @@ alias (a family id — genes sharing ONE underlying value), source_hint, note
 
 The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are unique across the DNA.
 
-**The 6-repo / 55-gene map** (the committed `secret-dna.json`, version `stage-door-m27`, profile `graphql`):
+**The 6-repo / 55-gene map** (the committed `secret-dna.json`, version `stage-door-m30`, profile `graphql`):
 
 | Repo | Target file | Genes | Notable keys |
 |---|---|---|---|
 | **platform** | `.env` | 28 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants, `DIRECTUS_TOKEN`, the LiveKit pair, `ENVIRONMENT`, `PUBLIC_HOST` |
 | **app** | `.env` | 5 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) |
-| **sentinel** | `.env` | 2 | `DB_CONNECTION` — the **only** Go repo that ships a `.env.example` |
+| **sentinel** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example` |
 | **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
 
-Status split: **40 required · 8 optional · 7 waived**. Of the required genes, **13 are `critical`** (the
+Status split: **39 required · 8 optional · 8 waived**. Of the required genes, **12 are `critical`** (the
 gate denominator) and 27 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
 no required+critical gene is rejected at load (else `Critical` would score a hollow 100% over zero genes),
-the same defence the data-DNA + alignment frameworks carry.
+the same defence the data-DNA + alignment frameworks carry. (The M30 field-bake reclassified
+`sentinel/DB_CONNECTION` from critical/required to `waived-config` — it is compose-injected, never read from
+a `.env`; this shifted the split from 40/8/7 + 13-critical to 39/8/8 + 12-critical without weakening the
+guard, which still holds with 12 required+critical genes.)
 
 ### The per-repo target-file map (where `provision` writes)
 
@@ -167,11 +170,12 @@ their keys):
 
 ### The waived class (a conscious decision, not a hole)
 
-Seven genes are **waived** — excluded from the coverage denominator with a per-gene rationale in `note`, so
+Eight genes are **waived** — excluded from the coverage denominator with a per-gene rationale in `note`, so
 local-vs-prod realities never poison the score:
 
 | Waived class | Genes | Why |
 |---|---|---|
+| `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification |
 | `waived-aws-mount` | `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID` | AWS recording creds are mounted from `~/.aws/credentials`, never a `.env` secret |
 | `waived-profile-gated` | `platform/BREVO_KEY` | only needed under the `messenger` docker-compose profile, not the default `graphql` profile |
 | `waived-optional` | `platform/BUNNY_STREAM_API_KEY`, `app/TAILSCALE_AUTH_KEY`, `studio-desk/GCLOUD_SERVICE_ACCOUNT`, `studio-desk/YOUTUBE_API_KEY`, `next-web-app/BUNNY_CDN_TOKEN_KEY` | example-only / absent from live / convenience — a local stack comes up without them |
@@ -283,8 +287,13 @@ M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage D
 + the two-tier keep-listed `diff` gate, **113 Go tests** (hermetic, `-race` clean). M28 adds the `provision`
 engine (alias-mapped per-file writes, copy-if-absent + `--force`, N=0-guarded, the `DIRECTUS_TOKEN`
 non-rearm regression pinned) + the demo-aware `check`, wired non-fatally into `/dev-up` + `/demo-up`
-pre-flight (**160 Go tests** total at tag `stage-door-m28`). M29 (this milestone) authors this spec + the
-`/stack-secrets` skill + the corpus wiring; the build-from-stack-dev field-bake (assemble a compliant
-`.agentspace/secrets` from stack-dev, prove a full bring-up provisions cleanly with `Critical == 100%`) is
-M30. The tooling is **values-blind**, **never commits `.env`**, **never writes prod**, and **zero
-platform-repo edits**.
+pre-flight (**160 Go tests**). M29 authors this spec + the `/stack-secrets` skill + the corpus wiring.
+**M30 — the field-bake — closes the version:** it assembled a compliant `.agentspace/secrets` dir from
+stack-dev (values-blind, the knowns waived), proved `check` scores **Critical == 100%** on both dev and demo
+(exit 0), then brought a fresh **demo-3 LIVE from that assembled source** (provision → 17 containers UP,
+all liveness+readiness probes pass) — the observable-behavior gate, met. The bake caught + fixed **2 real
+release bugs** Fate-1: (1) `sentinel/DB_CONNECTION` was critical/required but is compose-injected config →
+reclassified `waived-config` (above) + regression test; (2) the demo bring-up only *checked* coverage but
+never *provisioned* (and `preflight.sh` resolved its source path one level too shallow, silently skipping
+the demo gate) → added the provision step + fixed the path. Tag `stage-door-m30`. The tooling is
+**values-blind**, **never commits `.env`**, **never writes prod**, and **zero platform-repo edits**.

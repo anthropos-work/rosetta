@@ -1,0 +1,73 @@
+{
+  "milestone": "M30",
+  "title": "Field-bake — build a compliant secret dir from stack-dev + prove it. Assembled a compliant, gitignored .agentspace/secrets dir from current stack-dev (5 repo .env files cp'd into the DNA-driven reader layout, values-blind; ant-academy source filled with the shared Clerk publishable key via a values-blind line-append). Proved check scores Critical == 100% on both dev and demo (exit 0), then brought a fresh demo-3 LIVE from that assembled source (provision 26 written / 2 blanked / 0 skipped -> 17 containers UP, all liveness+readiness probes pass) — the observable-behavior gate, MET. The bake caught + fixed 2 real release bugs Fate-1. Documented the honesty residual (the ~10-15% waived set + why) in spec-notes.md.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-14",
+  "is_first_milestone": false,
+  "is_final_milestone": true,
+  "position_note": "M30 is the 4th + FINAL milestone of v1.6 'stage door' (M27->M30, strictly sequential). M27 = the DNA + ingestion reader + scorer/diff verbs; M28 = the provision engine + the coverage/verify gate + bring-up wiring + demo-aware scoring; M29 = the corpus doc (secrets-spec.md) + the /stack-secrets skill; M30 = the build-from-stack-dev field-bake (this milestone — proven LIVE). After this close: v1.6 is ready for /developer-kit:close-release (the user invokes it).",
+  "kind": "a two-repo field-bake (prove + fix). The bake itself ran live (Part 1 assemble+check, Part 2 provision-into-a-live-demo-3 + assert UP). The ext side carries the 2 Fate-1 field fixes (tag stage-door-m30 @ 29c922b); the rosetta side carries the field-bake record + the skill-doc tag bump + the close reconciliation of the milestone record + corpus to the executed live bake. close-milestone's Phase 11 merge is rosetta-only (m30/field-bake -> release/01.60-stage-door); the ORCHESTRATOR finalizes the ext side (ff main + re-point tag + delete branch).",
+  "sections": {
+    "total": 7,
+    "all_checked": true,
+    "list": "compliant .agentspace/secrets assembled from stack-dev (values-blind) · provision -> Critical 100% (dev check + live demo-3) · demo-aware provision -> Critical 100% · each stack reaches UP (observable-behavior gate MET LIVE: demo-3, 17 containers) · 2 field bugs surfaced + fixed Fate-1 · honesty residual documented (waived classes + lean-env standards) · ext tag stage-door-m30"
+  },
+  "field_bugs_surfaced": {
+    "count": 2,
+    "note": "Bug 1: sentinel/DB_CONNECTION was critical/required but is compose-injected config (hardcoded environment: entry, always overrides env_file; sentinel never reads it from a .env, no sentinel/.env exists on stack-dev) -> reclassified waived-config + regression test pinning it. Was falsely failing the gate at Critical 84.6%. Bug 2: the demo bring-up (up-injected.sh) only CHECKED coverage but never PROVISIONED -> the demo ran from the operator's live dev env, not the assembled source; AND preflight.sh resolved REPO_ROOT one level too shallow (EXT_ROOT/.. = .agentspace) so its default --from doubled to a nonexistent .agentspace/.agentspace/secrets and the demo-aware coverage gate ALWAYS silently SKIPPED (exit 2). Fixed: added a non-fatal provision step (default-on, DEMO_NO_PROVISION=1 opt-out) that writes stack-demo's per-repo .env from the source + repoints the run's base env; corrected the path to EXT_ROOT/../.. + had the caller pass --from explicitly. Both fixed Fate-1 on ext m30/field-bake @ tag stage-door-m30 (29c922b). Parallels v1.5 M25's 4 catches."
+  },
+  "tests": {
+    "language": "Go (ext stack-secrets) + Python (ext demo-stack). The M30 ext regression is a sub-assertion added inside the existing TestSecretDNAJSONStructure func (not a new top-level Test func), so the top-level Go test-func count is unchanged. No rosetta executable code (docs + skill-text + the field-bake record only); the rosetta gate is the corpus README-index guard (exit 0).",
+    "go_total": 1027,
+    "go_total_baseline_m29": 1027,
+    "go_total_delta": "+0 (the M30 regression is a sub-assertion inside an existing test func)",
+    "go_by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "go_total_note": "Unchanged from M28/M29 close (1027). stack-secrets stays 160 top-level Test/Fuzz funcs; the M30 sentinel-waive regression is a new assertion block inside secret_dna_json_test.go::TestSecretDNAJSONStructure, so the func count holds at 160.",
+    "python_total": 459,
+    "python_note": "Unchanged from M28/M29 close (459 collected). demo-stack's own test dir (demo-stack/tests/) = 99 tests, all pass (the gitignored stacks/ live-runtime clones are excluded — they carry the demo-3 platform clones, not the extension's tests).",
+    "flake_count": 0,
+    "flake_gate": "stack-secrets Go: 5/5 -race -shuffle PASS. demo-stack/tests: 99 pass (single run; the suite is the same one M28 ran 5/5 sequential). The corpus index guard is deterministic (re-run exit 0).",
+    "rosetta_test_surface": false,
+    "rosetta_test_note": "The rosetta m30 branch carries no executable code — only the skill-doc tag bump + the field-bake record + the close reconciliation. The only programmatic gate is corpus_index_guard.py (exit 0)."
+  },
+  "coverage": {
+    "applicable": false,
+    "note": "No /harden-milestone pass on M30 (it's a prove+fix field-bake, not a feature milestone). The ext fixes are pinned by the sentinel-waive regression assertion + the 99 demo-stack pytests + the M28 provision_safety_test.go reflection-walk + shellcheck. Doc fidelity reconciled against the committed secret-dna.json (39/8/8 status split, 12 critical, 55 genes, version stage-door-m30)."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M30."
+  },
+  "review": {
+    "findings": 4,
+    "findings_note": "4 findings: 0 scope-gap (every In-list item delivered Fate-1) · 0 code-quality (the ext fixes are correct + tested green) · 3 docs · 1 decision-triage. All landed Fate-1.",
+    "scope": "GREEN — all 7 deliverable boxes checked. The bake ran end-to-end (Part 1 assemble+check + Part 2 live provision-into-demo-3 + assert UP). The one scope nuance: a fresh dev-N was not separately baked; the live demo-3 exercises the same provision engine + the same Critical-100% gate AND additionally proves the live UI tier — recorded honestly in spec-notes.md. No silent drops; zero code TODO/FIXME/HACK in any M30-touched file.",
+    "code_quality": "GREEN — 0 findings. The 2 ext field fixes reviewed for correctness: (1) the sentinel waive is well-pinned with a regression assertion (waived + no operators); the anti-vacuous-100 guard still holds (12 required+critical genes). (2) the provision-wiring is non-fatal (degrades to legacy base on any failure), values-blind (stdout = key NAMES + counts), DIRECTUS_TOKEN blanked + override-stripped (defense-in-depth); the BASE_ENV repoint is GH_PAT-presence-guarded; the preflight EXT_ROOT/../.. path verified correct for both clone layouts. Go -race/vet/gofmt clean; shellcheck clean on both scripts.",
+    "adversarial": "GREEN — 5 scenarios (Phase 2c) recorded in decisions.md, all handled: (1) provision succeeds but provisioned env has empty GH_PAT -> repoint guard checks non-empty GH_PAT, stays on legacy base; (2) secret source dir absent -> gated on [ -d ], loud non-fatal note + legacy base; (3) go/DNA missing -> guarded, non-fatal degrade; (4) regression re-promotes sentinel/DB_CONNECTION to critical -> pinned by the test assertion; (5) provision leaks a value -> stdout is NAMES+counts only, provision_safety_test.go reflection-walk, verified live (no len-32 prod token in any container/commit).",
+    "docs": "GREEN after Phase 7 — 3 must-fix docs reconciled: corpus/ops/secrets-spec.md (version m27->m30, sentinel/DB_CONNECTION -> waived-config, status split 40/8/7+13-crit -> 39/8/8+12-crit verified against secret-dna.json, the waived-config class row, the Status section rewritten to the executed live bake); progress.md + spec-notes.md (Part 2 held/PENDING + 1 bug -> executed-live + 2 bugs). Corpus index guard exit 0; secrets-spec cross-refs resolve.",
+    "tests": "GREEN — ext tests green (Go stack-secrets -race/vet/gofmt clean, 5/5 -race -shuffle; 99 demo-stack pytests; shellcheck clean). The M30 sentinel-waive regression assertion was already present in the m30/field-bake commits.",
+    "decision_triage": "M30-D1 (sentinel waive) -> blended into secrets-spec.md waived-class table + Status. M30-D2 (provision-then-move-only-the-env-file design) -> blended into spec-notes.md field-fix log bug 2 + the /demo-up + /stack-secrets skill docs. M30-D3 (preflight two-levels-up path) -> blended into spec-notes.md field-fix log bug 2. The full decision records + the Phase-2c adversarial subsection authored in decisions.md (was an empty scaffold).",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-14-m30-close.md. M30 introduced 0 new deferrals; the 2 surfaced bugs landed Fate-1; the honesty-residual waived classes are waived-not-deferred (gate denominator excludes them by design). 3 inherited release-level backlog items (DEF-M10-01 / DEF-M21-01 / M25-D9) -> KEEP-DEFERRED, re-signed 2026-06-14 at the v1.5 close, orthogonal to secret provisioning (they will surface again at v1.6 close-release). 0 repeat, 0 chronic, 0 aged-out, 0 blockers."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 7 deliverable sections (compliant .agentspace/secrets assembled + check Critical 100% dev/demo + the live provision-into-demo-3 + the stack-UP observable-behavior gate MET + the 2 field bugs fixed + the honesty residual documented + ext tag stage-door-m30) + the close records (the Phase-7 doc reconciliation, decisions.md D1-D3 + adversarial, the deferral audit, the Final Review section, this metrics.json, the retro).",
+    "confirmed_covered_fate2": "none — M30 is the final milestone; nothing routed forward in-release. The build-from-stack-dev validation was M30's own scope and it landed.",
+    "annotated_fate3": "none — no Fate-3 roadmap mutation at M30 close.",
+    "dropped": "none at M30.",
+    "escape_hatch_release_scope_breaking": "none. M30 introduced zero release-scope-breaking deferrals.",
+    "kept_followup": "none M30-originated. The inherited 3 (DEF-M10-01 / DEF-M21-01 / M25-D9) carry to the v1.6 close-release re-audit, re-signed at the v1.5 close."
+  },
+  "delivered": {
+    "rosetta": "The field-bake record: progress.md (Part 2 executed-live, both field bugs, the Final Review section) + spec-notes.md (the observable-behavior gate Part-1+Part-2-live results, the 2-bug field-fix log, the honesty residual) + decisions.md (M30-D1..D3 + adversarial) + the audit-deferrals report + this metrics.json + the retro. The skill-doc tag bump: .claude/skills/stack-secrets/SKILL.md + .claude/skills/demo-up/SKILL.md (stage-door-m28 -> m30 + the M30 /demo-up auto-provision note + DEMO_NO_PROVISION=1). The corpus reconciliation: corpus/ops/secrets-spec.md (version m30, sentinel waived-config, 39/8/8+12-crit, the waived-config class row, the Status-section live-bake record). The proven .agentspace/secrets reference dir is GITIGNORED (never committed). state.md headline Go/Python counts unchanged (M30 adds no top-level test funcs); roadmap M30 status -> done; the M30 dir flipped to status: archived.",
+    "ext": "rosetta-extensions @ tag stage-door-m30 (@ 29c922b): 2 commits on m30/field-bake — 17e6c29 (sentinel/DB_CONNECTION -> waived-config + the regression assertion + DNA version bump) + 29c922b (the provision-wiring into up-injected.sh + the preflight two-levels-up path fix). The ORCHESTRATOR finalizes the ext side (ff main + re-point the tag + delete the branch) after the close returns."
+  },
+  "extensions": {
+    "module": "stack-secrets (the DNA reclassification) + demo-stack (the bring-up provision wiring).",
+    "head_at_close": "29c922b (= tag stage-door-m30)",
+    "build_tip_tag": "stage-door-m30 (the M30 tag the /stack-secrets + /demo-up skills now pin; carries provision + demo-aware check + the M30 DNA fix + the field-bake demo bring-up wiring)",
+    "tag_note": "stage-door-m30 @ 29c922b. The ext m30/field-bake branch stays live at close-return; the orchestrator ff-merges main + re-points the tag + deletes the branch. close-milestone does NOT touch the ext main/tag/branch.",
+    "code_commits": ["17e6c29 fix(M30 field-bake): waive sentinel/DB_CONNECTION — compose-injected config, not a .env secret", "29c922b fix(M30 field-bake): wire secret provisioning into the demo bring-up + fix the pre-flight source path"]
+  },
+  "notes": "M30 is the 4th + FINAL milestone of v1.6 'stage door' — the field-bake that proves the whole secret-provisioning mechanism on a real stack. It assembled a compliant .agentspace/secrets dir from current stack-dev (values-blind), proved check scores Critical == 100% on both dev and demo (exit 0), then brought a fresh demo-3 LIVE from that assembled source: provision wrote 26 / blanked 2 / skipped 0, the demo came up with 17 containers (backend + UI tier: next-web + studio-desk + ant-academy), and the full UI-inclusive auto-verify exited 0. The observable-behavior gate — provision -> Critical 100% -> stack UP — is MET LIVE. The bake caught + fixed 2 real release bugs Fate-1 (the sentinel/DB_CONNECTION mis-classification + the demo bring-up's never-provision/doubled-preflight-path), tagged stage-door-m30. SAFETY verified live: prod DIRECTUS_TOKEN (len-32) armed in ZERO containers (cms blank; provision blanks the family + the injection override strips it — defense-in-depth, the fix16/17 non-rearm class). The close reconciled the rosetta milestone record + corpus/ops/secrets-spec.md to the executed live bake (Phase 7: 3 docs + 1 decision-triage, all Fate-1). Deferral audit GREEN. Go 1027 / Python 459 unchanged; flake 0. After this close: v1.6 'stage door' is ready for /developer-kit:close-release (the user invokes it)."
+}
