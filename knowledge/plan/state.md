@@ -6,12 +6,12 @@ The **secret-provisioning release**: one mechanism that ingests a secret source 
 (a one-sided harness in the `datadna` mold) that *lists and keeps listed* the required secrets per repo. 4 milestones
 M27→M30 (DNA+ingest → engine+gate → docs+skill → field-bake). **Tooling + docs only — zero platform-repo edits; never
 commit `.env`; never write prod; no verb ever reads or echoes a secret value.**
-**Active milestone:** **M27 — Secret-coverage DNA + source ingestion** (`built`, all sections checked — awaiting
-`/developer-kit:close-milestone`). The `stack-secrets` section is authored + tagged `stage-door-m27` (ext head
-`195ef93`): the values-blind secret-coverage DNA (55 genes / 6 repos), dir+zip source ingestion with the
-zEnvs/stray layout contract, the hybrid `introspect`, the DNA-scoped two-tier `diff` keep-listed gate, and the
-`stacksecrets` CLI (`list`/`check`/`introspect`/`diff`) — verified live against stack-dev (diff exits 0). Strictly
-sequential after: M28 engine+gate → M29 docs+skill → M30 field-bake.
+**Active milestone:** **M28 — Provisioning engine + coverage/verify gate** (`planned` — next to build). `stacksecrets
+provision` writes each repo's target `.env` from the source (values-blind, alias-mapped per file, N=0-guarded,
+`--force` to overwrite), composing with + deferring to the injection override (must NOT re-arm the stripped prod
+`DIRECTUS_TOKEN` — the blocks-release safety class, regression test required); `check`/`measure` becomes demo-aware
+(Clerk keys minted by Clerkenstein) and wires non-fatally into `/dev-up` + `/demo-up` pre-flight. Consumes M27's
+DNA + ingestion reader + scorer. Strictly sequential after: M29 docs+skill → M30 field-bake.
 **Last closed:** **v1.5 "prop room" — 2026-06-14**, tag `v1.5`. The **local-Directus release**: every stack now
 serves its **own captured public catalog** from a per-stack Directus (data plane local, asset plane prod → real
 images) on `--local-content` (demo default-on, dev opt-in); prod-read is the documented fallback. M21 structure
@@ -20,10 +20,16 @@ M24 docs convergence + hygiene → M25 field-bake. The closing field-bake proved
 catalog) and pre-paid the field-fix tail: it caught + fixed **4 real release bugs** Fate-1, headline being the
 `directus_files` **tenant-data leak the firewall caught FAIL-CLOSED** (fixed in the FILTER, firewall never weakened).
 **Tooling + docs only — zero platform-repo edits.**
-**Next up:** **close M27** via `/developer-kit:close-milestone` (merge `m27/secret-coverage-dna` → release branch),
-then build M28. Research + risk register: [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
+**Last milestone closed:** **M27 — 2026-06-14** (merged `m27/secret-coverage-dna` → `release/01.60-stage-door`).
+The `stack-secrets` section: a values-blind secret-coverage DNA (55 genes / 6 repos) + DNA-driven dir/zip ingestion
+(layout-contract zEnvs/stray-`.env` defence) + the hybrid `introspect` + the two-tier keep-listed `diff` gate + the
+`stacksecrets` CLI (`list`/`check`/`introspect`/`diff`); verified live vs stack-dev (diff exits 0, no value printed).
+Code: `rosetta-extensions` @ tag `stage-door-m27` (ext head `195ef93`). Close GREEN (2 ext doc-hygiene fixes Fate-1;
+deferral audit GREEN). Go 867→**980** (+113); flake **0**.
+**Next up:** **build M28** (provisioning engine + coverage/verify gate) via `/developer-kit:build-milestone`.
+Research + risk register: [`.agentspace/scratch/roadmap-research-2026-06-14.md`](../../.agentspace/scratch/roadmap-research-2026-06-14.md).
 (Outward-facing carry-over from v1.5: push the 5 ext tags `prop-room-m21..m25` to `origin`; + the new `stage-door-m27`.)
-**Phase:** **v1.6 in development — M27 built (section-complete), awaiting close.**
+**Phase:** **v1.6 in development — M27 closed (merged to `release/01.60-stage-door`); M28 next to build.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -48,10 +54,11 @@ then build M28. Research + risk register: [`.agentspace/scratch/roadmap-research
   dev-as-peer [M13], one generic `stack-*` skill set [M14], code-cited `safety.md` [M15]. Records:
   [releases/archive/01.30-stack-party/](releases/archive/01.30-stack-party/).
 
-## Headline numbers (inherited baseline for v1.6 — these are the v1.5 close numbers, 2026-06-14)
-- **Go test funcs:** **867** total (`Test`+`Fuzz`, measured at final ext HEAD `fbb8783`). Per-module:
-  `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333**.
-  Baseline v1.3b 736 → **+131**. `go vet` + `gofmt` clean; flake **0**.
+## Headline numbers (v1.6 in development — updated at M27 close 2026-06-14)
+- **Go test funcs:** **980** total (`Test`+`Fuzz`, measured at ext `m27` head). Per-module:
+  `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333** ·
+  **stack-secrets 113** (new at M27). v1.5 baseline 867 → **+113** (entirely the new section; build + 2-pass harden).
+  `go vet` + `gofmt` clean; flake **0**; 5/5 `-shuffle` clean.
 - **Python tests:** **459** collected (451 active + 8 env-gated skip). Per-suite: stack-core **85** · dev-stack **73**
   · demo-stack **87** · stack-injection **110** · stack-verify **104**. Baseline v1.3b 360 → **+99**. py_compile CLEAN;
   the corpus README-index guard runs **exit 0** (every doc indexed).
