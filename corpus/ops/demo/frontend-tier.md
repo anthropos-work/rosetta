@@ -23,6 +23,12 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29100`/`:29000`, ant-academy on `:23077`.
 
+> **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
+> **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
+> for `127.0.0.1 localhost ::1`), so a fresh browser renders the signed-in app with **no proceed-anyway**. It
+> degrades to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`. Full
+> story + the security/remote-VM/Firefox/expiry caveats: [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).
+
 **Default-on, skippable.** The UI tier is built + brought up by default. `DEMO_NO_UI=1 /demo-up N` (or the
 `--no-ui` equivalent) brings up a **backend-only** demo — no frontend build, no academy, and the verify net is
 scoped so it never warns about the absent UI. Use it for a fast API-only stack or a RAM-tight box.
