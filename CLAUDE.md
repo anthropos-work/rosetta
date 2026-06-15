@@ -119,13 +119,20 @@ tooling monorepo**:
 | Workspace | Stack |
 |-----------|-------|
 | `stack-dev/` | the local **dev** stack (platform repos + its dev tooling clone) |
-| `stack-demo/` | disposable **demo** stacks (Clerkenstein-wired, offset ports) |
+| `stack-demo/` | disposable **demo** stacks (Clerkenstein-wired, offset ports) — a **true peer of `stack-dev`** with its **own** platform clone set (v1.8 "understudy" M26) |
 | `stack-dev-2/` | a secondary dev stack |
 | `stack-stage/`, `stack-tests/`, … | future stacks, same pattern |
 
 All hands-on platform work happens inside a `stack-*/` dir; the documentation
 corpus stays clean. (Setup/run/update progress is tracked in
 `stack-dev/setup_progress.md`.)
+
+> **`stack-demo` is self-contained (v1.8 "understudy" M26).** A demo now builds **entirely from its own
+> `stack-demo/` clone set** — `/demo-up`'s `ensure-clones.sh` bootstrap-clones `stack-demo/platform` from
+> GitHub + `make init`s the peer repos, so a box with **only** `stack-demo/` (no `stack-dev/`) can bring a
+> demo up end-to-end. The sole sanctioned `stack-dev` read is `ensure-clones.sh` seeding the shared
+> `platform/.env` copy-if-present (same Clerk app + GH_PAT; non-fatal if absent — `/stack-secrets` provisions
+> the real one). It never borrows `stack-dev`'s repos or built images for the build SOURCE.
 
 ### `rosetta-extensions` — where stack tooling lives
 

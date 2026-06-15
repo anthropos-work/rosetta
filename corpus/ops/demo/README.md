@@ -19,12 +19,21 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ## The end-to-end flow (~minutes)
 
 ```
-/demo-up N        →  bring up demo-N (Clerkenstein-wired, offset ports, isolated data) +     [corpus/ops/rosetta_demo.md]
+/demo-up N        →  AUTO ensure-clones (bootstrap stack-demo's OWN clone set: clone platform from GitHub  [v1.8 M26 → rosetta_demo.md]
+                     + make init the peer repos; seed the shared .env copy-if-present) — self-contained
+                     bring up demo-N (Clerkenstein-wired, offset ports, isolated data, built from stack-demo) [corpus/ops/rosetta_demo.md]
                      AUTO secret-provision (values-blind, per-repo .env from .agentspace/secrets) [v1.6 M30 → secrets-spec.md]
                      AUTO set-dress (cache-first snapshot replay → small-200 seed, default-on, non-fatal) [v1.3b M20]
   …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
 /demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
 ```
+
+> **A demo builds from its OWN clone set (v1.8 "understudy" M26).** `/demo-up` first runs `ensure-clones.sh`:
+> it bootstrap-clones `stack-demo/platform` from GitHub over SSH + `make init`s every `repos.yml` repo as a
+> sibling into `stack-demo/`, so **all** images build from `stack-demo` (a box with only `stack-demo/` — no
+> `stack-dev/` — can bring a demo up end-to-end). The sole sanctioned `stack-dev` read is seeding the shared
+> `platform/.env` copy-if-present (non-fatal if absent — M30 provisions the real one); the build SOURCE never
+> falls back to `stack-dev`. Dev-image reuse is OFF by default (`DEMO_REUSE_DEV_IMAGES=1` opts back in).
 
 **`/demo-up` now auto-set-dresses by default (v1.3b M20) — the dev↔demo convergence.** Just like `/dev-up` since
 v1.3, a `/demo-up` bring-up chains the **same** set-dress pass at its tail: a cache-first **snapshot replay**

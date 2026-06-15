@@ -20,6 +20,35 @@
   is never re-armed (`DIRECTUS_TOKEN` blank on the non-prod target). Mechanism: [`secrets-spec.md`](secrets-spec.md).
 - **The mock it injects:** `rosetta-extensions/clerkenstein/` — see [clerkenstein.md](../services/clerkenstein.md).
 
+## A demo builds from its OWN clone set — self-contained (v1.8 "understudy", M26)
+
+`stack-demo` is a **true peer of `stack-dev`**: it has its **own** platform clone set, and a demo builds
+**entirely** from it. A box with **only** `stack-demo/` (no `stack-dev/`) can bring a demo up end-to-end.
+
+**The from-scratch bring-up (what `/demo-up N` does, in order):**
+1. **`ensure-clones.sh`** (the first action, before any build) bootstraps `stack-demo`'s peer clone set:
+   - bootstrap-clone `stack-demo/platform` from `git@github.com:anthropos-work/platform.git` over SSH if
+     absent (fail-loud on a clone failure — **never** falls back to `stack-dev` for the build SOURCE);
+   - **seed** the shared secrets: copy `stack-dev/platform/.env` → `stack-demo/platform/.env`
+     **copy-if-present** (same Clerk app + same `GH_PAT`, shared by nature; never committed). A box with no
+     `stack-dev` **skips this non-fatally** — `/stack-secrets` (M30) provisions the real `.env` from
+     `.agentspace/secrets`. This `.env` copy is the **sole** sanctioned `stack-dev` read;
+   - `make -C stack-demo/platform init` clones every `repos.yml` repo as a sibling into `stack-demo/`
+     (skip-if-present — the platform's own idempotent clone loop), plus `make init-studio` for `cms`;
+   - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json`.
+2. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
+   `stack-demo/<svc>`; the two frontends build from `stack-demo/next-web-app` + `stack-demo/studio-desk`;
+   the non-Clerk services (sentinel/storage/roadrunner/graphql) build from `stack-demo`'s clones via the
+   compose `build.context` (the compose dir `PLAT` is `stack-demo/platform`, so the relative contexts
+   resolve against `stack-demo`). **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
+   built images (which could carry dev WIP), even when dev is up; opt back in with `DEMO_REUSE_DEV_IMAGES=1`.
+3. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
+   the shared `stack-demo/<svc>` clone is the COPY's SOURCE and stays git-clean.
+
+> **The manual `rosetta-demo up` verb** is the minimal/infra-only path — it does **not** call
+> `ensure-clones.sh` (the auto `/demo-up` path does). It presupposes a populated `stack-demo` (run
+> `up-injected.sh` / a prior `ensure-clones.sh` to bootstrap the peer clone set + seed the shared `.env`).
+
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)
 
 Every isolated stack — **dev** *or* **demo** — maps host port `P → P + N·10000`, so its `N` is what keeps

@@ -117,7 +117,7 @@ builder skills).
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
-| **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 | 🔨 **IN DEVELOPMENT** (designed 2026-06-15) |
+| **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | 🔨 **IN DEVELOPMENT** — M26 `done` 2026-06-15; awaiting `/developer-kit:close-release` |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -161,7 +161,7 @@ edited).
 > `/demo-up ensure-clones` that doesn't exist on `main` yet → M26 makes it real.
 
 ### M26: Self-contained demo stacks
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (completed 2026-06-15) · **Shape:** `section`
 **Dir:** [m26-self-contained-demo/](releases/01.80-understudy/m26-self-contained-demo/) (overview)
 **Goal:** A demo stack builds **entirely from its own clone set** in `stack-demo/` — so a box with only `stack-demo/`
 (no `stack-dev/`) can bring a demo up end-to-end, closing the doc-vs-code gap (CLAUDE.md's "true peer" claim becomes
@@ -202,6 +202,27 @@ orphan's stale 40.
 `corpus/ops/secrets-spec.md` + `.claude/skills/stack-secrets/SKILL.md` (the M30 provision the `.env` seed layers under);
 `corpus/ops/safety.md` (the sanctioned stack-dev read is `.env`-copy-only, never SOURCE).
 **Delivers →** `rosetta-extensions/demo-stack` + `stack-injection` (ext tag `understudy-m26`) + the rosetta corpus doc-half.
+
+**Closure (2026-06-15):** All 7 sections + 2 harden passes landed. The 12-file ext port (`ensure-clones.sh` NEW +
+the `$DEV`→`stack-demo` build-source repoints across `up-injected.sh`/`migrate-demo.sh`/`ant-academy.sh`/`rosetta-demo`
++ the `reuse_dev_images` gate in `gen_injected_override.py` + ported/retargeted tests + `GUIDE.md`) on ext
+`m26/self-contained-demo-reimpl`; the rosetta doc-half on `m26/self-contained-demo`. **D-MAIN** (PLAT moves to
+`stack-demo/platform`) is the load-bearing decision — `docker compose -f stack-demo/platform/docker-compose.yml`
+resolves the non-Clerk services' relative `build.context` against `stack-demo`, so the WHOLE stack (not just the
+injected copies) builds from `stack-demo`. **Close GREEN:** review found **2 findings, both Fate-1 documentation/
+comment-accuracy** — (1) two stale "legacy stack-dev/.env base" comments in `up-injected.sh` re-worded post-D-MAIN
+(ext fix-commit `773184f`); (2) the M26 sanctioned-cross-stack-read invariant (the sole `stack-dev` read is
+ensure-clones' `.env` *seed*, never the build SOURCE) blended into `safety.md` §2.7 (#M26-D4). Cross-cutting code
+review CLEAN — all 4 must-preserve invariants intact (M30 BASE_ENV values-blind+non-fatal [paths repointed to
+stack-demo, behavior preserved], M31 mkcert, M32 studio-desk `NODE_ENV=production`+`:9000`+dropped-`:9100`,
+injection-COPY-only). **Tests:** demo-stack **138/138** (110→138, +28) + stack-injection **113/113** (111→113, +2),
+py3.11/PyYAML JUnit-authoritative; flake gate **5/5** each (0 flakes); Go **1027** unchanged (no Go touched);
+`gen_injected_override.py` 99%. Field-bake (the close-time observable gate) satisfied **by composition** (the M31-D7/
+M32-D5 pattern: static self-containment assertions + the functional ensure-clones harness + green suites + flake
+gate) — the FULL LIVE field-bake on a freshly-emptied `stack-demo/` is a **user-authorized post-close follow-up**.
+Deferral re-audit GREEN (0 deferrals). Supply-chain GREEN (0 new deps). Alignment 100%/100% (untouched). The ext
+`understudy-m26` tag sits at the reimpl commit (17971c1); the **orchestrator** re-points it forward + ffs ext→main +
+deletes the orphan tag `prop-room-m26` / orphan branch `m26/self-contained-demo` (superseded) post-close.
 
 ### Execution graph — v1.8 "understudy"
 ```
