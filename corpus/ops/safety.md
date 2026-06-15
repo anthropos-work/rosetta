@@ -293,6 +293,13 @@ bash-5 author's local test and fails on a colleague's stock-macOS box.
 `set -u`. The M28 `preflight.sh` regression (`PreflightBehavior.test_non_demo_path_survives_set_u_on_bash32`)
 invokes the wrapper through `/bin/bash` 3.x specifically and asserts no "unbound variable" abort, pinning the
 fix; `shellcheck` does **not** catch this (it's a runtime-only, version-specific behavior). (#M28-harden)
+The v1.8/M26 `--reuse-dev-images` seam is a second instance of the canonical offender — `up-injected.sh`
+assembles `rd_flag=(); [ "${DEMO_REUSE_DEV_IMAGES:-0}" = 1 ] && rd_flag=(--reuse-dev-images)` alongside
+`ui_flag`/`lc_flag` and passes all three to `gen_injected_override.py` via `${rd_flag[@]+"${rd_flag[@]}"}`.
+`TestReuseFlagArrayExpansion` (in `demo-stack/tests/test_frontend_build.py`) extracts the real assembly+call
+block and runs it under `set -euo pipefail` on bash 3.2 across all 8 (ui, lc, reuse) flag combinations,
+asserting the empty (default-reuse-OFF) path never trips `set -u` — a second pin of the same rule on the most
+common bring-up arrangement (a generator call with several conditional flags). (#M26-harden)
 
 ### 2.9 Secret provisioning is values-blind and never re-arms the prod-write path (v1.6 M27–M30)
 
