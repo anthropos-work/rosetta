@@ -18,17 +18,22 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 | App | How it runs | Port (base + offset) | Auth in the demo |
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
-| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
+| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Clerk-free via `BENCHMARK_VISUAL_BYPASS` (anonymous browse) |
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
 
-> **studio-desk is single-port (M32).** The **production** container (`npm start`) runs one node process that
-> serves the built SPA *and* the API on **9000** — the `9100` Vite dev port exists only under `npm run dev` and
-> is never in the container, so the demo publishes **9000+offset only** (no dead `9100`). The override pins
-> `NODE_ENV=production` so the container takes its production `sendFile` code path; without it the base compose's
-> `NODE_ENV=development` would survive the additive env merge and the dev path would 302 the browser to the dead
-> `9100`. Full root-cause + the production-route-coverage proof: the v1.7 M32 milestone record.
+> **studio-desk is single-port (M32).** The studio-desk image (`Dockerfile.dev`) is a **production build**
+> (`npm run build:server && build:frontend`, `CMD npm start`, and it even bakes `ENV NODE_ENV=production`): one
+> node process serves the built SPA *and* the API on **9000** — the `9100` Vite dev port exists only under
+> `npm run dev` and is never in the container, so the demo publishes **9000+offset only** (no dead `9100`).
+> **But** the base platform `docker-compose.yml` studio-desk service sets `NODE_ENV=development` +
+> `FRONTEND_PORT=9100` in its `environment:` block — and a compose `environment:` value **overrides the image's
+> baked `ENV`**. Because the demo override's per-frontend env block is **additive** (deliberately not
+> `!override`, so inherited `PORT`/`VITE_*` survive), that `development` would survive into the demo →
+> `src/index.ts` `isProduction=false` → the dev path 302s the browser to the dead `9100`. So the override
+> **pins `NODE_ENV=production` (+ `FRONTEND_PORT=9000`)** to win that additive merge back to the production
+> `sendFile` path. Full root-cause + the production-route-coverage proof: the v1.7 M32 milestone record.
 
 > **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
 > **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf

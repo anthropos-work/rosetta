@@ -32,6 +32,26 @@ only under `npm run dev`, never in the container). Dropping it to `(3000, 3001, 
 no behavior change, just truth. The regression test (`test_backend_gets_cors_extra_origins_at_offset`) loses its `19100`
 assertion accordingly.
 
+## M32-D4 — Verified the root-cause precedence: image bakes production, base compose `environment:` overrides it
+Verified against the real (byte-pristine) platform tree before trusting the fix — a non-obvious mechanism worth
+recording:
+
+- **The studio-desk image is already a production build.** `stack-demo/studio-desk/Dockerfile.dev` (the file the
+  demo build uses — `up-injected.sh:148` `docker build -f "$ctx/Dockerfile.dev"`, NOT plain `Dockerfile`) runs
+  `npm run build:server && npm run build:frontend`, `CMD ["npm","start"]`, and even bakes `ENV NODE_ENV=production`
+  / `PORT=80`. So in isolation the image WOULD take the production path.
+- **The base compose overrides it.** `stack-demo/platform/docker-compose.yml` studio-desk service (lines 445-451)
+  sets `environment:` `NODE_ENV=development`, `FRONTEND_PORT=9100`, `PORT=9000` — and a compose `environment:`
+  value **overrides the image's baked `ENV`** (Docker precedence). It also publishes BOTH `9000:9000` + `9100:9100`
+  in the base (lines 440-442); the demo override `ports: !override`s to single-port `9000`.
+- **Why the override fix is needed AND why `FRONTEND_PORT=9000` is load-bearing (not just belt-and-suspenders):**
+  the demo override's per-frontend env block is additive (not `!override`), so the base `NODE_ENV=development` +
+  `FRONTEND_PORT=9100` survive into the demo without an explicit pin. Pinning both in the override wins the
+  additive merge → production `sendFile` path on the single `9000` port.
+- **next-web needs no such pin:** the base compose next-web service (line 479) already sets `NODE_ENV=production`,
+  so its override carries no NODE_ENV — which is exactly what the regression test's "studio-desk-only" assertion
+  enforces.
+
 ## M32-D3 — Fold the env-masked stale test assertion into the sweep
 `test_injection.py:925` (`test_frontend_blocks_parse_to_valid_compose`) asserted studio-desk ports
 `["29000:9000", "29100:9100"]` while the generator emits single-port `["29000:9000"]` only. The test is **skipped** when
