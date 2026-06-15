@@ -79,3 +79,84 @@ All 7 sections landed. **Two-repo split:**
   across parser / caller / docs.
 - **Remaining for close:** field-bake on a freshly-emptied `stack-demo/`; the orchestrator's ff-to-main +
   `understudy-m26` tag-repoint + orphan-tag (`prop-room-m26`) / orphan-branch deletion.
+
+## M26: Hardening
+
+### Pass 1 — 2026-06-15
+
+**Scope manifest (M26-touched, ext-repo `7b17c39..17971c1`, 12 files):**
+| File | Stack | Existing tests | Coverage / gap |
+|---|---|---|---|
+| `demo-stack/ensure-clones.sh` (NEW) | shell | `TestEnsureClones` (8 STATIC text-pins only) | **the gap** — 116-line script, fail-loud + .env-seed (D4) + provenance + idempotency, ZERO functional execution coverage |
+| `demo-stack/up-injected.sh` | shell | `TestSelfContainedSource` + `UpInjectedSecretPreflight` + `FapiCertStep` (static + functional cert block) | source-repoint static-fenced; M30/M31/M32 preserved |
+| `stack-injection/gen_injected_override.py` | python | `TestGenInjectedOverride` + `TestFrontendTier` + reuse-flag tests | **99%** (only the `if __name__` guard line 393 missed — `main()` IS covered); reuse_dev_images gate fully tested |
+| `demo-stack/migrate-demo.sh` | shell | `TestMigrateRaceGuard` + `TestSetEraceGuards` | repoint only (DEV=DEMO alias); race guards intact |
+| `demo-stack/ant-academy.sh` | shell | `test_ant_academy.py` | repoint only |
+| `demo-stack/rosetta-demo` | shell | `RosettaDemoRegistry` (functional) | repoint only |
+| `demo-stack/GUIDE.md` | doc | `TestGuideDocTruth` (live-recomputed) | count pinned dynamically |
+| 4 test files | python | self | retargeted/ported per D3/D4 |
+
+**Coverage measure:** `gen_injected_override.py` **99%** (1 miss = the unreachable `if __name__` guard). Shell
+scripts are exercised via subprocess (coverage.py can't instrument them — the in-house pattern is functional
+extract-and-run harnesses, as `FapiCertStep` does for the cert block).
+
+**Identified deepening target (Fate 1 — LAND NOW):** `ensure-clones.sh` is the milestone's one NEW unit and is
+covered only by static body-pins. Build a functional harness (stub `git`/`make`/`python3` on PATH, the
+`RosettaDemoRegistry`/`FapiCertStep` pattern) exercising: the broken-partial-clone exit-1 guard; the D4 .env seed
+(copy-if-present + non-fatal-skip-if-absent + never-clobber — the riskiest behavior, the orphan's divergence);
+the provenance lockfile (valid sorted JSON); `make init-studio` non-fatal; idempotency (re-run reuses, never
+re-clones); the fail-loud-on-source-clone-failure path. All reachable without a real network clone.
+
+**Tests added (Pass 1, ext `2bcaf49`): `TestEnsureClonesFunctional` (+12, `demo-stack/tests/test_tooling.py`)**
+— a sandboxed functional harness that copies `ensure-clones.sh` into a depth-matched temp tree (so its
+`REPO_ROOT=$HERE/../../..` resolves into the sandbox), stubs `git`/`make` on a constrained PATH (no live network —
+a successful stub clone materialises `$PLAT/.git`+`repos.yml` so re-runs are idempotent + phase (e)'s `awk` runs),
+and uses the REAL `python3` for the provenance heredoc:
+- (a) broken-partial-clone → exit 1; clone-failure → exit 1 + SSH hint + no-stackdev-fallback + no make/lockfile;
+  fresh bootstrap clones-then-make-init; present-platform reused (idempotent, no re-clone).
+- (b) [D4] .env seed copies byte-for-byte from stack-dev when present+target-absent; **non-fatal skip (exit 0,
+  not the orphan's exit 1) when stack-dev absent**; **never-clobbers** a pre-existing/provisioned stack-demo .env.
+- (d) `make init-studio` failure non-fatal (exit 0 + warn); skipped when `cms/studio` already present.
+- (e) provenance lockfile is valid **sorted** JSON `{repo:{ref,sha}}`; skips `.git`-less repos; full re-run
+  idempotent (no re-clone, stable lockfile + .env).
+- **Mutation-verified:** re-introducing the orphan's fail-loud .env (exit 1), defeating the never-clobber guard,
+  and deleting the broken-partial-clone abort each fail the corresponding test (not shallow box-tickers).
+
+**Bugs fixed inline:** none (no production bug surfaced — the script's behavior matched the D-decisions; the two
+harness iterations were test-fixture bugs: the macOS `/var`→`/private/var` realpath + the `$HERE/../../..`
+depth, both fixed in the harness, not the script).
+
+### Pass 2 — 2026-06-15
+
+**Coverage:** `gen_injected_override.py` unchanged at **99%** (no Python touched; the deepening is shell-side,
+which coverage.py cannot instrument — covered functionally + mutation-verified instead).
+
+**Tests added (ext `0eac424`): `TestReuseFlagArrayExpansion` (+3, `demo-stack/tests/test_frontend_build.py`)**
+— the `--reuse-dev-images` SHELL seam (the Python `reuse_dev_images` arg was already saturated in
+`test_injection.py`; this covers the OTHER half — up-injected.sh's `rd_flag` assembly + the
+`"${rd_flag[@]+"${rd_flag[@]}"}"` expansion passed to the generator). The hazard: up-injected.sh runs
+`set -euo pipefail`, and on **bash 3.2** (the macOS system bash) a BARE `"${rd_flag[@]}"` on an EMPTY array trips
+`set -u` 'unbound variable' and aborts the whole bring-up at override-generation — the same empty-array class that
+crashed the M28 pre-flight. The tests extract the real flag-assembly + call block, stub `python3` to record argv,
+and run it under `set -euo pipefail` on bash 3.2:
+- empty-default (reuse OFF, all 3 flag arrays empty) → exit 0, no 'unbound variable', no opt-in flags in argv,
+  but the always-present generator args DID reach it;
+- `DEMO_REUSE_DEV_IMAGES=1` → `--reuse-dev-images` in argv; unset → absent (the D5 opt-in seam, shell→argv);
+- all 8 (ui, lc, reuse) combinations: each exit 0 + carries exactly the flags whose env var is set.
+- **Mutation-verified:** regressing the `+`-guard to the bare `"${rd_flag[@]}"` makes the empty-default case fail
+  with the genuine **runtime** `ui_flag[@]: unbound variable` crash (the `_block()` extractor re-anchored on
+  `rd_flag[@]` in any form so the RUNTIME crash — not a missing literal — is the signal).
+
+**Bugs fixed inline:** none (the production guard is correct; the one harness fix was symlinking `bash` into the
+clean stub PATH so the stub python3's `#!/usr/bin/env bash` shebang resolves — a fixture artifact).
+
+### Stop condition
+Stopped after Pass 2 (re-measure as Pass 3). The full Step 2b scan found nothing new worth adding: the two
+highest-risk M26 surfaces (the NEW `ensure-clones.sh` + the M26-new `--reuse-dev-images` shell seam) now have
+mutation-verified functional coverage; `gen_injected_override.py` is at 99% (the 1 miss is the unreachable
+`if __name__` guard — `main()` IS covered); the repoint-only scripts (`migrate-demo.sh`, `ant-academy.sh`,
+`rosetta-demo`) are covered by the live docker migrate-race harness (retargeted to stack-demo), the
+`TestRenameDrift` no-stack-dev-source static fence (verified: every code-level `stack-dev` is confined to
+ensure-clones.sh's `DEV_ENV` .env-seed), and the existing behavioral `test_ant_academy.py`/`RosettaDemoRegistry`
+suites. Python coverage delta 0 (saturated); no flakes (3 clean runs below). demo-stack **123 → 138** (+15
+functional); stack-injection 113 (unchanged — its M26 surface was already saturated).
