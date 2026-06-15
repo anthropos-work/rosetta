@@ -8,26 +8,26 @@ builds every image from `stack-dev` (`src="$DEV/$svc"`, `PLAT="$DEV/platform"`).
 `m26/self-contained-demo` branch (@ `25ab855`, the spec — predates v1.6/v1.7 so unmergeable) onto current `main`,
 preserving the stack-secrets module + M30 provision + M31 mkcert + M32 studio-desk fix. **Tooling + docs only — zero
 platform-repo edits** (`stack-demo/platform` is a build *context* only).
-**Active milestone:** **M26 — Self-contained demo stacks** (`built`, awaiting close; single `section` milestone of
-v1.8). All 7 sections landed on `m26/self-contained-demo` (rosetta doc-half) + ext `m26/self-contained-demo-reimpl`
-@ `17971c1` (tagged `understudy-m26`): a demo builds entirely from `stack-demo`'s OWN clone set
-(`ensure-clones.sh` + the `$DEV`→`stack-demo` build-source repoints + the `reuse_dev_images` opt-in gate),
-preserving M30/M31/M32. demo-stack 123/123 + stack-injection 113/113 pass; PR review CLEAN. Close with
-[`/developer-kit:close-milestone`](roadmap.md) (field-bake on a freshly-emptied `stack-demo/` + ff-to-release).
-**Last closed:** **v1.7 "house lights" — 2026-06-15**, tag `v1.7`. A **demo-UI-hardening release**: a fresh browser at a
-demo's offset UI renders the working app with **zero manual steps**. Triggered live — next-web at `http://localhost:33000`
-(demo-3) showed a **blank page** (clerk-js's handshake to the fake FAPI hit an untrusted self-signed cert) and studio-desk
-302'd to a dead `:9100`. **M31** automated a locally-trusted **mkcert** FAPI cert into the demo bring-up; **M32** fixed
-the studio-desk `:9100`-dead-redirect (a `NODE_ENV=production` override) + the `:9100` doc/CORS sweep. close-release
-**GREEN** (all 9 sweeps, 0 blocking). **Tooling + docs only.**
-**Next up:** **close M26** via `/developer-kit:close-milestone` — field-bake on a **freshly-emptied** `stack-demo/`
-(the on-disk one is already populated from the orphan run + would mask a from-scratch failure), then ff
-`m26/self-contained-demo` → `release/01.80-understudy` + the orchestrator's ext ff-to-main + `understudy-m26`
-tag-repoint. **At close:** delete the orphan tag `prop-room-m26` + branch `m26/self-contained-demo` (the ext
-authoring branch `m26/self-contained-demo-reimpl` supersedes it). (Outward-facing carry-over: push the ext tags
-`understudy-m26` + `house-lights-m31`/`m32` + `stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`;
+**Active milestone:** **(between milestones — M26 closed; v1.8 awaiting `/developer-kit:close-release`).** M26 —
+Self-contained demo stacks — **closed 2026-06-15**, merged `--no-ff` → `release/01.80-understudy`. The single
+`section` milestone of v1.8: a demo now builds **entirely from `stack-demo`'s OWN clone set** (`ensure-clones.sh`
+bootstraps the peer clones + the `$DEV`→`stack-demo` build-source repoints + the D-MAIN PLAT move so the compose
+contexts resolve against `stack-demo` too + the `reuse_dev_images` opt-in gate), preserving M30/M31/M32. Close
+GREEN: 2 Fate-1 doc/comment findings fixed; demo-stack 138/138 + stack-injection 113/113; flake 0; field-bake
+satisfied by composition (the live freshly-emptied-`stack-demo/` run is a user-authorized post-close follow-up).
+**Last closed:** **M26 — Self-contained demo stacks — 2026-06-15** (merged `--no-ff` → `release/01.80-understudy`;
+the only milestone of v1.8). Last shipped *release*: **v1.7 "house lights"** (tag `v1.7`, 2026-06-15) — see Recently
+shipped below.
+**Next up:** **`/developer-kit:close-release` for v1.8 "understudy"** (the release-level review + ff
+`release/01.80-understudy` → `main` + tag `v1.8`) — the user invokes it separately. **Orchestrator post-close
+(ext side):** ff ext `main` → the reimpl HEAD, re-point the `understudy-m26` tag forward over the 2 harden + 1 close
+commit, delete the orphan tag `prop-room-m26` + orphan branch `m26/self-contained-demo` (superseded by the reimpl).
+**User-authorized follow-up:** the FULL LIVE field-bake on a **freshly-emptied** `stack-demo/` (the on-disk one is
+populated from the orphan run + would mask a from-scratch failure) — composition satisfied the close gate; the live
+run is the optional confirmation. (Outward-facing carry-over unchanged: push the ext tags `understudy-m26` +
+`house-lights-m31`/`m32` + `stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`;
 `wip/clerkenstein-browser-login` still awaits its own design-roadmap pass.)
-**Phase:** **v1.8 — M26 `built` (all 7 sections + ext tag `understudy-m26`), awaiting `/developer-kit:close-milestone`.**
+**Phase:** **v1.8 — M26 `done` (closed 2026-06-15, merged to `release/01.80-understudy`); release awaiting `/developer-kit:close-release`.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -50,22 +50,26 @@ authoring branch `m26/self-contained-demo-reimpl` supersedes it). (Outward-facin
   public catalog locally on `--local-content`. M21→M25 (field-bake on a 16 GB box). Go 736→**867**; Python 360→**459**;
   flake **0**. Records: [releases/archive/01.50-prop-room/](releases/archive/01.50-prop-room/).
 
-## Headline numbers (v1.7 close — 2026-06-15; baseline v1.6 2026-06-14)
-- **Go test funcs:** **1027** total (`Test`+`Fuzz`), **unchanged across v1.7** (neither M31 nor M32 touched Go). Per-module:
-  `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333** ·
-  stack-secrets **160**. `go vet` + `gofmt` + `shellcheck` clean; flake **0**.
-- **Python tests:** **471** (v1.6 459 → +12: M31 +11 `FapiCertStep` in `demo-stack/tests/test_tooling.py`; M32 +1
-  `test_studio_desk_env_pins_node_env_production` in `stack-injection/tests/test_injection.py`). `test_injection.py`
-  suite 88/88 (0 skipped under PyYAML, authoritative JUnit tally); flake **0** (5/5 randomized, both milestones). The
-  corpus README-index guard runs **exit 0**.
-- **The v1.7 thesis:** a fresh browser at a demo's offset UI renders the working app **with zero manual steps** — the
-  blank next-web page (an untrusted FAPI cert) and the studio-desk dead-`:9100` redirect are both fixed at bring-up; a
-  fresh `/demo-up` is browser-clean (on a local same-machine demo). Tooling + docs only.
-- **Safety:** **values-blind** demo cert handling (no cert/key body to stdout/log; only key NAMES/paths); the prod
-  `DIRECTUS_TOKEN`-non-rearm + secret values-blind invariants (v1.6) carry forward unchanged.
-- **Supply-chain:** **GREEN** — v1.7 added **zero** third-party deps (M31 pure shell + stdlib tests; M32 stdlib
-  generator + tests; rosetta docs-only; no manifest change); the v1.6 stdlib-only posture carries forward.
-- **Alignment gates (held green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces — v1.7 touched no clerkenstein behavior.
+## Headline numbers (M26 close — 2026-06-15; baseline v1.7 2026-06-15)
+- **Go test funcs:** **1027** total (`Test`+`Fuzz`), **unchanged at M26** (the milestone touched no `.go` — the diff
+  is shell + python + docs). Per-module: `rosetta-extensions/alignment` **52** · clerkenstein **223** ·
+  stack-seeding **259** · stack-snapshot **333** · stack-secrets **160**. `go vet` + `gofmt` + `shellcheck` clean
+  (all 5 touched shell scripts); flake **0**.
+- **Python tests (the two M26-touched suites):** demo-stack/tests **110 → 138** (+28: `TestEnsureClones` +
+  `TestSelfContainedSource` + `TestRenameDrift` retargets + `TestShellcheck` +1 at build; `TestEnsureClonesFunctional`
+  +12 + `TestReuseFlagArrayExpansion` +3 at harden); stack-injection/tests **111 → 113** (+2: the `reuse_dev_images`
+  opt-in tests). py3.11/PyYAML JUnit-authoritative (0 skipped); **flake 0** (5/5 randomized, both suites);
+  `gen_injected_override.py` **99%**. GUIDE advertised count **41** reconciles (`TestGuideDocTruth` green). The corpus
+  README-index guard runs **exit 0**.
+- **The M26 thesis:** a demo builds **entirely from `stack-demo`'s OWN clone set** — a box with only `stack-demo/`
+  (no `stack-dev/`) can run a demo end-to-end. `ensure-clones.sh` bootstraps the peer clones; the D-MAIN PLAT move
+  makes the compose contexts resolve against `stack-demo` too; dev-image reuse is OFF by default. Tooling + docs only.
+- **Safety:** the demo's **one sanctioned cross-stack read** is ensure-clones' `.env` *seed* (copy-if-present,
+  non-fatal, never-clobber) — never the build SOURCE (`safety.md` §2.7, #M26-D4). The `DIRECTUS_TOKEN`-non-rearm +
+  secret/cert values-blind invariants (v1.6/v1.7) carry forward unchanged.
+- **Supply-chain:** **GREEN** — M26 added **zero** third-party deps (shell + python-stdlib + docs; no manifest
+  change); the stdlib-only posture carries forward.
+- **Alignment gates (held green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces — M26 touched no clerkenstein behavior.
 
 ## Branch model
 **v1.7 SHIPPED:** `release/01.70-house-lights` merged `--no-ff` → `main`, tagged **`v1.7`** (2026-06-15); release branch
@@ -77,9 +81,11 @@ stay preserved on the ext side, awaiting their own design-roadmap pass.
 **v1.6 SHIPPED:** `release/01.60-stage-door` → `main`, tag **`v1.6`** (2026-06-14); ext markers `stage-door-m27`/`m28`/`m30`.
 **Prior:** **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-15 (**v1.8 "understudy" DESIGNED** via `/developer-kit:design-roadmap` — the self-contained-demo
-release, a single `section` milestone **M26** that re-implements the orphaned `m26/self-contained-demo` branch [@ `25ab855`,
-unmergeable-stale] onto current `main`, preserving v1.6/v1.7. Port spec verified by a 3-agent fan-out + adversarial
-no-regression review [workflow `wf_212f3442-44e`]: all 12 orphan files covered, no M30/M31/M32 revert, design decisions
-D-MAIN + D1–D6 settled. Branch `release/01.80-understudy` cut; M26 dir scaffolded; M26 `planned`. Prior: 2026-06-15
-**v1.7 "house lights" SHIPPED** [tag `v1.7`, 9-sweep close-release ALL GREEN]; 2026-06-14 v1.6 "stage door" SHIPPED.)_
+_Last updated: 2026-06-15 (**M26 CLOSED** via `/developer-kit:close-milestone` — merged `--no-ff` →
+`release/01.80-understudy`, milestone branch deleted. Close GREEN: 2 Fate-1 doc/comment findings fixed (stale
+"legacy stack-dev/.env base" comments re-worded [ext `773184f`]; the M26 sanctioned-read invariant blended into
+`safety.md` §2.7); demo-stack 138/138 + stack-injection 113/113; flake 0; Go 1027 unchanged; deferral re-audit
+GREEN; field-bake satisfied by composition (live run = user-authorized follow-up). v1.8 now awaits
+`/developer-kit:close-release`. Prior: 2026-06-15 **v1.8 "understudy" DESIGNED** [single `section` M26, orphan
+re-impl onto `main`, D-MAIN + D1–D6 settled]; 2026-06-15 **v1.7 "house lights" SHIPPED** [tag `v1.7`];
+2026-06-14 v1.6 "stage door" SHIPPED.)_

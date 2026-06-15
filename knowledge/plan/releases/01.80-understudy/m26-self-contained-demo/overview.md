@@ -3,7 +3,7 @@ milestone: M26
 slug: self-contained-demo
 version: v1.8 "understudy"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-15
 last_updated: 2026-06-15
 complexity: medium

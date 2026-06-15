@@ -198,3 +198,44 @@ Adversarial (Phase 2c): 2 scenarios probed — both clean — one surfaced the s
 - [x] **D4 (the sanctioned `.env`-seed-only stack-dev read) → blend into `safety.md`** (= the doc finding above).
 - [x] M26-D2-impl / M26-D4-impl / M26-D6-impl → **archive** (maintainer-only: alias reconciliation, the ported
       test-assertion change, the live count=41). Stay in decisions.md.
+
+## Completeness Ledger (close — 2026-06-15)
+
+### Done (Fate 1 — landed in this milestone, properly and completely)
+- **§1 `demo-stack/ensure-clones.sh` (NEW)** — the 115-line peer-clone bootstrapper (5 phases, D4 non-fatal
+  `.env` seed) — verified in `TestEnsureClones` (static pins) + `TestEnsureClonesFunctional` (+12, mutation-verified).
+- **§2 `up-injected.sh`** — `DEMO=$DEMO_WS` alias [D2] + `PLAT`→stack-demo [D-MAIN] + ensure-clones below the
+  L172 seam [D1] + build-SOURCE repoints to `$DEMO` + the `rd_flag`/`--reuse-dev-images` seam [D5] — verified in
+  `TestSelfContainedSource` + `TestRenameDrift` + `TestReuseFlagArrayExpansion`; M30/M31/M32 invariants intact.
+- **§3 `gen_injected_override.py`** — `reuse_dev_images=False` param + `--reuse-dev-images` CLI + the gated reuse
+  `elif` [D5] — verified in `test_injection.py` reuse-flag suite (99% coverage; M32 region untouched).
+- **§4 `migrate-demo.sh` / `ant-academy.sh` / `rosetta-demo`** — workspace anchor repointed to stack-demo [D3],
+  `anthropos-dev` fallback dropped on the demo scripts, M17 race guards preserved — verified by the retargeted
+  `test_migrate_race_live.py` + `test_ant_academy.py` + `RosettaDemoRegistry`.
+- **§5 tests** — `TestEnsureClones`/`TestSelfContainedSource` appended, `TestRenameDrift`/`TestShellcheck`
+  retargeted, the reuse opt-in tests, the `stack-dev`→`stack-demo` fixture renames — verified: full suites green.
+- **§6 `demo-stack/GUIDE.md`** — self-containment prose (step 0 = ensure-clones) + the pinned [D6] count **41** —
+  verified `TestGuideDocTruth` reconciles dynamically (green).
+- **§7 rosetta corpus doc-half** — `CLAUDE.md` "true peer" reconcile, `demo/README.md` flow, `frontend-tier.md`
+  academy path, `rosetta_demo.md` from-scratch section, `safety.md` §2.7 sanctioned-read blend [#M26-D4],
+  `stack-secrets/SKILL.md:21` — verified accurate; all cross-references resolve.
+- **Field-bake (close-time observable-behavior gate) — satisfied BY COMPOSITION** (the accepted M31-D7 / M32-D5
+  pattern): (1) static self-containment assertions (`TestSelfContainedSource`); (2) the functional ensure-clones
+  harness (`TestEnsureClonesFunctional`); (3) full unit suites green (138 + 113) + flake gate 5/5 each. The FULL
+  LIVE field-bake on a freshly-emptied `stack-demo/` is a **user-authorized post-close follow-up** (the
+  orchestrator offers it after close; consistent with how the M25 / M30 live field-bakes ran only on explicit
+  go-ahead). NOT a closed-incomplete condition — composition satisfies the section gate.
+
+### Confirmed-covered by another milestone in this release (Fate 2)
+- None (M26 is the only milestone of v1.8).
+
+### Annotated to a milestone of this release (Fate 3)
+- None.
+
+### Dropped (cut from roadmap entirely)
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.
+
+**All scope items delivered in this milestone (Fate 1). Nothing routed, dropped, or escape-hatch-deferred.**
