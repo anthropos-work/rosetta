@@ -2,6 +2,24 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.7] "house lights" — 2026-06-15
+
+The **demo-UI-hardening release**: when the house lights come up, the audience can see the show — a fresh browser at a demo's offset UI renders the working app with **zero manual steps**. Two browser-facing demo defects fixed (next-web blank page · studio-desk dead redirect). **Tooling + docs only — zero platform-repo edits.**
+
+### Fixed
+- **The demo next-web blank page is gone.** A fresh browser at a demo's offset next-web (e.g. `http://localhost:33000`) previously rendered **blank** because clerk-js's handshake to the fake FAPI (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert** (`net::ERR_CERT_AUTHORITY_INVALID`) → clerk-js aborted. The demo bring-up now mints a **locally-trusted (mkcert) FAPI cert**, so clerk-js completes the handshake and the app renders with no manual cert-trust / proceed-anyway. (M31)
+- **The demo studio-desk dead redirect is gone.** A fresh browser at a demo's offset studio-desk previously hit a **302 to a dead `:9100`** (the container ran its `NODE_ENV=development` redirect path). It now serves the **production single-port path** on `9000`+offset, landing on a live page. (M32)
+
+### Changed
+- **Demo bring-up auto-mints a locally-trusted mkcert FAPI cert.** Idempotent `mkcert -install` + cert mint for `127.0.0.1 localhost ::1`, with an **openssl self-signed fallback** (byte-compatible, when mkcert is absent or minting fails) and a **`DEMO_NO_MKCERT=1` opt-out** (forces openssl for operators who won't add a dev CA to their trust store). Non-fatal throughout — a cert step never aborts a good bring-up. (M31)
+- **studio-desk now runs single-port `9000`+offset** in demos — the injection override pins `NODE_ENV=production` (+ `FRONTEND_PORT=9000`), so the production `sendFile` path wins and the cross-port `:9100` redirect never fires. The dead un-offset `:9100` CORS origin is dropped; the `:9100`→`9000` story is swept through the docs (`frontend-tier.md`, the demo-up SKILL). (M32)
+
+### Supply chain
+- **No new dependencies.** Both fixes are bring-up-script + injection-override changes (`demo-stack/up-injected.sh`, `stack-injection/gen_injected_override.py`) in `rosetta-extensions`; no new Go/Python/JS deps. Lockfile: `knowledge/plan/releases/archive/01.70-house-lights/dependencies.lock`.
+
+### Known limitations
+- **mkcert auto-trust is per the bring-up machine.** On a fresh machine, the first `mkcert -install` may **prompt once for the OS password** (to write the dev CA into the system trust store). **Remote/VM demos** still need the proceed-anyway fallback — `-install` trusts the bring-up machine, not the browsing machine. **Firefox** needs `certutil` for the dev CA to be trusted. (M31)
+
 ## [v1.6] "stage door" — 2026-06-14
 
 The **secret-provisioning release**: one mechanism that ingests a secret source (a directory **or** zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from it — **values-blind** (no verb ever reads, echoes, or logs a secret value) — verified by a **secret-coverage DNA** that *lists and keeps listed* the required secrets per repo. Retires the manual `.env` hand-copy. **Tooling + docs only — zero platform-repo edits; `.env` never committed; never writes prod.**

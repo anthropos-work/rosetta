@@ -81,15 +81,16 @@ builder skills).
 > M27→M30**. M26 is intentionally not detailed here — it awaits a separate `/developer-kit:design-roadmap` pass to give
 > it a version + scope.
 
-> **v1.7 "house lights" — IN DEVELOPMENT** (designed 2026-06-15 via `/developer-kit:design-roadmap`; branch
-> `release/01.70-house-lights` cut from `main`). A **demo-UI-hardening release** — make a fresh browser at a demo's
-> offset UI render the working app with **zero manual steps**. Triggered by a live defect: next-web at
-> `http://localhost:33000` (demo-3) showed a **blank page** because clerk-js's handshake to the fake FAPI
-> (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert** → clerk-js aborted → blank. **M31** automates a
-> locally-trusted **mkcert** FAPI cert into the demo bring-up (openssl fallback + a `DEMO_NO_MKCERT` opt-out; the fake
-> BAPI is plain HTTP → out of scope). **M32** fixes the sibling studio-desk `:9100`-dead-redirect (a 1-line
-> `NODE_ENV=production` override root-cause fix + the `:9100` doc/CORS sweep). ant-academy demo liveness → **backlog**
-> (repro-first). **Tooling + docs only — zero platform-repo edits.** Gap analysis + fix design + risk register:
+> **v1.7 "house lights" — SHIPPED 2026-06-15** (tag `v1.7`; designed 2026-06-15 via `/developer-kit:design-roadmap`;
+> branch `release/01.70-house-lights` merged `--no-ff` → `main`; full detail in `## Done — v1.7` below). A
+> **demo-UI-hardening release** — make a fresh browser at a demo's offset UI render the working app with **zero manual
+> steps**. Triggered by a live defect: next-web at `http://localhost:33000` (demo-3) showed a **blank page** because
+> clerk-js's handshake to the fake FAPI (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert** → clerk-js
+> aborted → blank. **M31** automates a locally-trusted **mkcert** FAPI cert into the demo bring-up (openssl fallback +
+> a `DEMO_NO_MKCERT` opt-out; the fake BAPI is plain HTTP → out of scope). **M32** fixes the sibling studio-desk
+> `:9100`-dead-redirect (a 1-line `NODE_ENV=production` override root-cause fix + the `:9100` doc/CORS sweep).
+> ant-academy demo liveness → **backlog** (repro-first). **Tooling + docs only — zero platform-repo edits.** Gap
+> analysis + fix design + risk register:
 > [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 
 ## Version plan
@@ -103,7 +104,7 @@ builder skills).
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
-| **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | 🚧 **ALL MILESTONES CLOSED — READY FOR `/developer-kit:close-release`** (designed 2026-06-15; branch `release/01.70-house-lights`; M31 + M32 both closed 2026-06-15) |
+| **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -120,7 +121,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.7 "house lights" (designed 2026-06-15 · branch `release/01.70-house-lights`)
+## Done — v1.7 "house lights" (SHIPPED 2026-06-15 · tag `v1.7`)
 
 **Theme:** a **demo-UI-hardening release** — when the house lights come up, the audience can see the show: a fresh
 browser at a demo's offset UI renders the working app with **zero manual steps**. Triggered by a live defect — next-web

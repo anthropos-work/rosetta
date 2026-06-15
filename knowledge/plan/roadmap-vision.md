@@ -19,21 +19,16 @@ and a `release/{version}` branch is cut.
 > mechanism that ingests a secret source [dir/zip, default `.agentspace/secrets`] and provisions every repo of a stack,
 > with a secret-coverage DNA that lists + keeps-listed the required secrets per repo, M27→M30). Requested directly by
 > the user, not from prior backlog.
-> **v1.7 "house lights"** → 2026-06-15 (**in development**; a **demo-UI-hardening release** — make a fresh browser at a
-> demo's offset UI render with zero manual steps: M31 a locally-trusted **mkcert** FAPI cert [so next-web stops blanking]
-> + M32 the studio-desk single-port/production fix; promoted to [`roadmap.md`](roadmap.md), branch
-> `release/01.70-house-lights` cut). Triggered by a live next-web blank-page defect, not from prior backlog.
+> **v1.7 "house lights"** → 2026-06-15 (shipped 2026-06-15, tag `v1.7`; the **demo-UI-hardening release** — a fresh
+> browser at a demo's offset UI renders with zero manual steps: M31 a locally-trusted **mkcert** FAPI cert [so next-web
+> stops blanking] + M32 the studio-desk single-port/production fix, M31→M32; tooling + docs only, zero platform-repo
+> edits). Triggered by a live next-web blank-page defect, not from prior backlog.
 
 ---
 
-## Staged: v1.7 "house lights" (in development — full detail in [`roadmap.md`](roadmap.md))
-
-The **demo-UI-hardening release** is staged and in development. A fresh browser at a demo's offset UI must render the
-working app with **zero manual steps**. **M31** automates a locally-trusted **mkcert** FAPI cert into the demo bring-up
-(the fake FAPI's untrusted self-signed cert was blanking next-web via a failed clerk-js handshake; openssl fallback +
-`DEMO_NO_MKCERT` opt-out; the fake BAPI is plain HTTP → out of scope). **M32** fixes the sibling studio-desk
-`:9100`-dead-redirect (a 1-line `NODE_ENV=production` override root-cause fix + the `:9100` doc/CORS sweep). **Tooling +
-docs only — zero platform-repo edits.**
+> **No version is currently staged.** v1.7 "house lights" shipped 2026-06-15 (tag `v1.7`; full detail in the
+> `## Done — v1.7` section of [`roadmap.md`](roadmap.md)). The next version is **unplanned** — run
+> `/developer-kit:design-roadmap` to scope it.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -73,9 +68,9 @@ mirror engines**; the **deployment/injection CI gate** (a local-only alignment s
 demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
 
 ## Codename notes
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" shipped — their codenames are now permanent. "house lights" (v1.7, in dev) continues the theatre lineage: when the house lights come up, the audience can see the show — v1.7 makes the demo's browser UI actually render [the blank page goes away] instead of staying dark.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" shipped — their codenames are now permanent. "house lights" continued the theatre lineage: when the house lights come up, the audience can see the show — v1.7 made the demo's browser UI actually render [the blank page goes away] instead of staying dark. No version is currently staged; the next codename will be chosen at the next `/developer-kit:design-roadmap` run.)_
 
-_Last updated: 2026-06-15 (**v1.7 "house lights" staged + in development** — the demo-UI-hardening release, M31→M32,
-promoted to roadmap.md; branch `release/01.70-house-lights` cut. Triggered by the live next-web blank-page defect.
-Backlog: added **M33 ant-academy liveness** [repro-first]; M26 self-contained-demo + DEF-M10-01 + DEF-M21-01 + M25-D9
-unchanged. Prior: 2026-06-14 v1.6 "stage door" SHIPPED.)_
+_Last updated: 2026-06-15 (**v1.7 "house lights" SHIPPED** — the demo-UI-hardening release, M31→M32, merged
+`--no-ff` → `main`, tag `v1.7`; full detail in the `## Done — v1.7` section of roadmap.md. No version currently
+staged — next unplanned. Backlog unchanged: M33 ant-academy liveness [repro-first], M26 self-contained-demo,
+DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 staged + in development.)_
