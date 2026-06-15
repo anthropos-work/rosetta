@@ -55,3 +55,44 @@ Fate-1, and a re-scan surfaced nothing further worth adding on this two-file sur
 delta against (behavior-pinned `unittest` suite); the mutation checks ARE the coverage evidence. The close-time
 live Playwright smoke remains OPEN by its discipline (needs a live studio-desk; route coverage already
 code-read-verified at #M32-D1) — not a harden-pass item.
+
+## M32: Final Review
+
+_close-milestone review of the whole milestone (both repos). Deferral re-audit GREEN
+([audit-deferrals/deferral-audit-2026-06-15-m32-close.md](audit-deferrals/deferral-audit-2026-06-15-m32-close.md))._
+
+### Scope
+- [x] All `overview.md` `In:` items delivered (override pin + regression test + `:9100` doc/CORS sweep); close-time
+      smoke satisfied-by-composition (M32-D5). No silent drops; no orphan TODO/FIXME on the touched surface.
+
+### Code Quality
+- [x] [verified] studio-desk env is a Python dict (unique keys by construction — no duplicate-key hazard), same
+      shape as the next-web entry; the `9100` CORS removal eliminates a dead allowlist entry; `FRONTEND_PORT=9000`
+      is a documented defensive pin (not dead). No cross-module reach-in, no resource concerns. `py_compile` clean
+      on 3.11 + 3.14. No findings.
+
+### Adversarial Review
+- [x] [verified] Scenario "the additive env-merge silently keeps the base `development`" — defended LIVE via a
+      merge-probe (built the demo override, parsed via the repo's `!override`-aware loader, simulated Docker's
+      additive list-merge against base `development`/`9100`): the override's `production`/`9000` pins WIN
+      (last-`VAR=`-wins), exactly one `environment:` key, no `9100` anywhere. Recorded in `decisions.md`
+      §Adversarial review (M32). Standing guard = the mutation-checked regression test.
+
+### Documentation
+- [x] `frontend-tier.md` + demo-up SKILL `:9100`→`:9000` sweep complete; 0 stale demo/offset `9100` claims
+      (remaining `9100` mentions = removal-narrative + base-compose mechanism + the `cors.go`-hardcode fact).
+      `studio-desk.md`'s `9100` refs are native-dev / base-compose (correctly out of demo scope). All
+      cross-references resolve. No new top-level unit (per-unit handbook contract N/A).
+
+### Tests & Benchmarks
+- [x] Full suite 88/88 (PyYAML, authoritative JUnit tally), 0 skipped/failures/errors. Regression coverage:
+      `test_studio_desk_env_pins_node_env_production` (mutation-checked 4 ways, both content paths) + block-shape +
+      CORS exact-set (harden `7b17c39`) + YAML-parse tier. README-index guard exit 0. No regression-test gaps.
+
+### Decision Triage
+- [x] D1 (route coverage) → blended + tagged `(#M32-D1)` into `frontend-tier.md` (M32 single-port note).
+- [x] D2 (CORS `9100` removal) → tagged `(#M32-D2)` on the "No offset 9100 origin" note in `frontend-tier.md`.
+- [x] D4 (image-vs-compose env precedence) → tagged `(#M32-D4)` into `frontend-tier.md` (M32 single-port note).
+- [x] D3 (env-masked stale test assertion) → archive (maintainer-only test fix).
+- [x] D5 (close-time smoke by composition) → archive (close-rationale).
+- [x] Adversarial review (M32) → archive (scenario record).

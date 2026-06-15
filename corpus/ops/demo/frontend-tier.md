@@ -29,11 +29,13 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > `npm run dev` and is never in the container, so the demo publishes **9000+offset only** (no dead `9100`).
 > **But** the base platform `docker-compose.yml` studio-desk service sets `NODE_ENV=development` +
 > `FRONTEND_PORT=9100` in its `environment:` block — and a compose `environment:` value **overrides the image's
-> baked `ENV`**. Because the demo override's per-frontend env block is **additive** (deliberately not
+> baked `ENV`** (#M32-D4). Because the demo override's per-frontend env block is **additive** (deliberately not
 > `!override`, so inherited `PORT`/`VITE_*` survive), that `development` would survive into the demo →
 > `src/index.ts` `isProduction=false` → the dev path 302s the browser to the dead `9100`. So the override
 > **pins `NODE_ENV=production` (+ `FRONTEND_PORT=9000`)** to win that additive merge back to the production
-> `sendFile` path. Full root-cause + the production-route-coverage proof: the v1.7 M32 milestone record.
+> `sendFile` path — which serves every dev-block route via `sendFile` + an `express.static(dist/public)` mount +
+> an `index.html` SPA fallback, with no route gap (verified by code-read; #M32-D1). Full root-cause: the v1.7 M32
+> milestone record.
 
 > **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
 > **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
@@ -131,7 +133,7 @@ CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhos
 > **No offset `9100` origin (M32).** The override emits the offset origins for next-web (`3000`/`3001`) +
 > studio-desk's **single-port** `9000` — not the dead `9100`. studio-desk is single-port production (the browser
 > only ever talks to `9000+offset`), so the un-offset `9100` that `cors.go` still hardcodes is a dead entry the
-> override no longer mirrors.
+> override no longer mirrors (#M32-D2).
 
 This is emitted by `gen_injected_override.py` (the `backend` service gets an additive `environment:` block), so it
 applies to a stack brought up **through the demo injected override** (`/demo-up`). The **dev** override

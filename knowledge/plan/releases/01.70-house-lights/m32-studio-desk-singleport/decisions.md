@@ -70,3 +70,20 @@ disproportionate. Proven by composition (necessary + sufficient):
 Chain: override sets production → the production code path serves on the single `9000` port, no dead-`:9100` redirect, no
 404. A fresh `/demo-up` (which consumes the `house-lights-m31`+`m32` tooling) re-demonstrates BOTH v1.7 fixes live on
 demand — operator action, not needed for the proof.
+
+## Adversarial review (close, M32)
+
+The two-file surface's one non-obvious failure mode, surfaced + defended at close:
+
+- **Scenario — the additive env-merge silently keeps the base `development`.** The override's per-frontend `env`
+  block is deliberately additive (not `!override`, so inherited `PORT`/`VITE_*` survive). The non-obvious risk: if
+  the override did NOT emit `NODE_ENV`, the base compose's `NODE_ENV=development` (which itself overrides the image's
+  baked `ENV NODE_ENV=production`) would survive the merge → the dev path → the dead-`:9100` 302. The mechanism is
+  invisible from the override alone (you have to read three layers: image ENV → base compose env → override env).
+- **Defense — verified live at close, not just code-read.** A merge-probe built the demo override, parsed the emitted
+  compose via the repo's `!override`-aware loader, then simulated Docker's additive list-merge against the base
+  `[NODE_ENV=development, FRONTEND_PORT=9100, PORT=9000]`: the override's `NODE_ENV=production` + `FRONTEND_PORT=9000`
+  **win** (last-`VAR=`-wins), and the emitted block carries exactly one `environment:` key + no `9100` anywhere. This
+  confirms the #M32-D4 precedence chain on the real generated artifact. The regression test
+  `test_studio_desk_env_pins_node_env_production` (mutation-checked 4 ways, both content paths) is the standing guard
+  against the pin regressing back into this scenario.
