@@ -8,22 +8,26 @@ builds every image from `stack-dev` (`src="$DEV/$svc"`, `PLAT="$DEV/platform"`).
 `m26/self-contained-demo` branch (@ `25ab855`, the spec — predates v1.6/v1.7 so unmergeable) onto current `main`,
 preserving the stack-secrets module + M30 provision + M31 mkcert + M32 studio-desk fix. **Tooling + docs only — zero
 platform-repo edits** (`stack-demo/platform` is a build *context* only).
-**Active milestone:** **M26 — Self-contained demo stacks** (`planned`, not started; single `section` milestone of
-v1.8). Build with [`/developer-kit:build-milestone`](roadmap.md) (creates `m26/self-contained-demo` from the release
-branch) — or drive the whole lifecycle with `/developer-kit:work-milestone m26`.
+**Active milestone:** **M26 — Self-contained demo stacks** (`built`, awaiting close; single `section` milestone of
+v1.8). All 7 sections landed on `m26/self-contained-demo` (rosetta doc-half) + ext `m26/self-contained-demo-reimpl`
+@ `17971c1` (tagged `understudy-m26`): a demo builds entirely from `stack-demo`'s OWN clone set
+(`ensure-clones.sh` + the `$DEV`→`stack-demo` build-source repoints + the `reuse_dev_images` opt-in gate),
+preserving M30/M31/M32. demo-stack 123/123 + stack-injection 113/113 pass; PR review CLEAN. Close with
+[`/developer-kit:close-milestone`](roadmap.md) (field-bake on a freshly-emptied `stack-demo/` + ff-to-release).
 **Last closed:** **v1.7 "house lights" — 2026-06-15**, tag `v1.7`. A **demo-UI-hardening release**: a fresh browser at a
 demo's offset UI renders the working app with **zero manual steps**. Triggered live — next-web at `http://localhost:33000`
 (demo-3) showed a **blank page** (clerk-js's handshake to the fake FAPI hit an untrusted self-signed cert) and studio-desk
 302'd to a dead `:9100`. **M31** automated a locally-trusted **mkcert** FAPI cert into the demo bring-up; **M32** fixed
 the studio-desk `:9100`-dead-redirect (a `NODE_ENV=production` override) + the `:9100` doc/CORS sweep. close-release
 **GREEN** (all 9 sweeps, 0 blocking). **Tooling + docs only.**
-**Next up:** **build M26** via `/developer-kit:build-milestone` (or `/developer-kit:work-milestone m26`). The verified
-port spec lives in [the M26 overview](releases/01.80-understudy/m26-self-contained-demo/overview.md) (design decisions
-D-MAIN + D1–D6). **After M26 ships:** delete the orphan tag `prop-room-m26` + branch `m26/self-contained-demo`
-(superseded by the re-implementation). (Outward-facing carry-over: push the ext tags `house-lights-m31`/`m32` +
-`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`; `wip/clerkenstein-browser-login` still awaits its own
-design-roadmap pass.)
-**Phase:** **v1.8 designed — M26 `planned`, awaiting `/developer-kit:build-milestone`.**
+**Next up:** **close M26** via `/developer-kit:close-milestone` — field-bake on a **freshly-emptied** `stack-demo/`
+(the on-disk one is already populated from the orphan run + would mask a from-scratch failure), then ff
+`m26/self-contained-demo` → `release/01.80-understudy` + the orchestrator's ext ff-to-main + `understudy-m26`
+tag-repoint. **At close:** delete the orphan tag `prop-room-m26` + branch `m26/self-contained-demo` (the ext
+authoring branch `m26/self-contained-demo-reimpl` supersedes it). (Outward-facing carry-over: push the ext tags
+`understudy-m26` + `house-lights-m31`/`m32` + `stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`;
+`wip/clerkenstein-browser-login` still awaits its own design-roadmap pass.)
+**Phase:** **v1.8 — M26 `built` (all 7 sections + ext tag `understudy-m26`), awaiting `/developer-kit:close-milestone`.**
 **Paused:** _(none)_
 
 ## Recently shipped releases

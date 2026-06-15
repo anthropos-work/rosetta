@@ -5,60 +5,77 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 ## Sections (ext code → rosetta docs; ext tag `understudy-m26`)
 
 ### §1 — `ensure-clones.sh` (NEW) — the peer-clone bootstrapper
-- [ ] port the orphan's `demo-stack/ensure-clones.sh` (~106 lines) with the D4 phase-(b) refinement
+- [x] port the orphan's `demo-stack/ensure-clones.sh` (~106 lines) with the D4 phase-(b) refinement
       (`.env` seed is copy-if-present, **skip non-fatally** if `stack-dev/.env` absent — defers to M30)
-- [ ] phases (a) bootstrap-clone `stack-demo/platform` over SSH fail-loud · (b) [D4] non-fatal `.env` seed ·
+- [x] phases (a) bootstrap-clone `stack-demo/platform` over SSH fail-loud · (b) [D4] non-fatal `.env` seed ·
       (c) `make -C $PLAT init` (no `|| true`) · (d) `make init-studio` (non-fatal) · (e) `clones.lock.json` provenance
-- [ ] `set -euo pipefail`, `chmod +x`, shellcheck-clean (if-then-else, no `A && B || C`)
+- [x] `set -euo pipefail`, `chmod +x`, shellcheck-clean (if-then-else, no `A && B || C`)
 
 ### §2 — `up-injected.sh` — DEMO alias + PLAT move + ensure-clones sequencing + build-ctx repoints + reuse flag
-- [ ] [D2] add `DEMO="$DEMO_WS"` alias (keep `DEMO_WS`); [D-MAIN] move `PLAT="$DEMO_WS/platform"`
-- [ ] [D-MAIN] re-word the M30 BASE_ENV "legacy stack-dev/platform/.env base" comments (base is now stack-demo)
-- [ ] [D1] sequence `"$HERE/ensure-clones.sh"` (bare, no `|| true`) BELOW the L172 `UP_INJECTED_LIB_ONLY` seam,
+- [x] [D2] add `DEMO="$DEMO_WS"` alias (keep `DEMO_WS`); [D-MAIN] move `PLAT="$DEMO_WS/platform"`
+- [x] [D-MAIN] re-word the M30 BASE_ENV "legacy stack-dev/platform/.env base" comments (base is now stack-demo)
+- [x] [D1] sequence `"$HERE/ensure-clones.sh"` (bare, no `|| true`) BELOW the L172 `UP_INJECTED_LIB_ONLY` seam,
       ABOVE the M28 pre-flight
-- [ ] [D2] repoint build SOURCE: `build_frontend_next_web` ctx, `build_frontend_studio_desk` ctx, `src="$DEMO/$svc"`,
+- [x] [D2] repoint build SOURCE: `build_frontend_next_web` ctx, `build_frontend_studio_desk` ctx, `src="$DEMO/$svc"`,
       cms-studio copy log → `$DEMO`
-- [ ] [D5] add `rd_flag=(); [ "${DEMO_REUSE_DEV_IMAGES:-0}" = 1 ] && rd_flag=(--reuse-dev-images)` + append to the
+- [x] [D5] add `rd_flag=(); [ "${DEMO_REUSE_DEV_IMAGES:-0}" = 1 ] && rd_flag=(--reuse-dev-images)` + append to the
       `gen_injected_override.py` call
-- [ ] MUST-PRESERVE: M30 provision block (values-blind, non-fatal fallback), M31 mkcert branch, the seam, the
+- [x] MUST-PRESERVE: M30 provision block (values-blind, non-fatal fallback), M31 mkcert branch, the seam, the
       injection-targets-COPY-only invariant
 
 ### §3 — `gen_injected_override.py` — `reuse_dev_images` gate [D5]
-- [ ] `build_lines(... reuse_dev_images=False)` param + gate the dev-image-reuse `elif` behind it
-- [ ] `--reuse-dev-images` CLI arg (default False) + `main()` wiring
-- [ ] MUST-PRESERVE M32 (studio-desk `NODE_ENV=production` + `FRONTEND_PORT=9000` + dropped `:9100` CORS — disjoint)
+- [x] `build_lines(... reuse_dev_images=False)` param + gate the dev-image-reuse `elif` behind it
+- [x] `--reuse-dev-images` CLI arg (default False) + `main()` wiring
+- [x] MUST-PRESERVE M32 (studio-desk `NODE_ENV=production` + `FRONTEND_PORT=9000` + dropped `:9100` CORS — disjoint)
 
 ### §4 — `migrate-demo.sh` / `ant-academy.sh` / `rosetta-demo` repoint [D3]
-- [ ] migrate-demo.sh: `DEMO="$REPO_ROOT/stack-demo"; DEV="$DEMO"` (keep DEV alias, zero-churn); drop `anthropos-dev`
+- [x] migrate-demo.sh: `DEMO="$REPO_ROOT/stack-demo"; DEV="$DEMO"` (keep DEV alias, zero-churn); drop `anthropos-dev`
       fallback; port the atlas.hcl CAVEAT comment
-- [ ] ant-academy.sh: same anchor repoint; re-word the clone-not-found log
-- [ ] rosetta-demo: `PLATFORM_DIR` default → `stack-demo/platform` (env-overridable); `cmd_clone` dev_root → stack-demo;
+- [x] ant-academy.sh: same anchor repoint; re-word the clone-not-found log
+- [x] rosetta-demo: `PLATFORM_DIR` default → `stack-demo/platform` (env-overridable); `cmd_clone` dev_root → stack-demo;
       drop `anthropos-dev` fallbacks; the manual-`up`-presupposes-populated-stack-demo note. Preserve M17 race guards
 
 ### §5 — tests (ext) — port + retarget + fixture renames [D3, D4]
-- [ ] `test_tooling.py`: append `TestEnsureClones` (with the **D4** non-fatal-`.env` adaptation, NOT the orphan's
+- [x] `test_tooling.py`: append `TestEnsureClones` (with the **D4** non-fatal-`.env` adaptation, NOT the orphan's
       fail-loud) + `TestSelfContainedSource`; retarget `TestRenameDrift` (add ensure-clones.sh; split the
       dev-prefers-stack-dev test); `TestShellcheck` + ensure-clones; extend the GuideDocTruth formula class list.
       Do NOT touch `UpInjectedSecretPreflight`/`FapiCertStep`/`PreflightBehavior`
-- [ ] `test_injection.py`: the `reuse_dev_images` opt-in tests (default-off builds-from-clones + probe-not-consulted +
+- [x] `test_injection.py`: the `reuse_dev_images` opt-in tests (default-off builds-from-clones + probe-not-consulted +
       retarget the existing reuse tests to `reuse_dev_images=True`)
-- [ ] `test_frontend_build.py` / `test_ant_academy.py` / `test_migrate_race_live.py`: `stack-dev`→`stack-demo` fixture
+- [x] `test_frontend_build.py` / `test_ant_academy.py` / `test_migrate_race_live.py`: `stack-dev`→`stack-demo` fixture
       renames (no strictness regression — `test_frontend_build.py`'s `set -uo` lib-only driver stays byte-identical)
 
 ### §6 — `demo-stack/GUIDE.md` — self-containment prose + the pinned [D6] count
-- [ ] self-containment prose (step 0 = ensure-clones; build from stack-demo; injection on the per-demo COPY only)
-- [ ] [D6] pin the advertised test count to the **live-recomputed** GuideDocTruth-formula sum (projected **41**),
+- [x] self-containment prose (step 0 = ensure-clones; build from stack-demo; injection on the per-demo COPY only)
+- [x] [D6] pin the advertised test count to the **live-recomputed** GuideDocTruth-formula sum (projected **41**),
       NOT the orphan's stale 40
 
 ### §7 — rosetta corpus doc-half (THIS worktree)
-- [ ] `CLAUDE.md` — the "true peer (own clone set)" claim is now TRUE in code; reconcile any stale "borrows stack-dev"
+- [x] `CLAUDE.md` — the "true peer (own clone set)" claim is now TRUE in code; reconcile any stale "borrows stack-dev"
       framing
-- [ ] `corpus/ops/demo/README.md` — the up→… flow gains the ensure-clones step-0
-- [ ] `corpus/ops/demo/frontend-tier.md` — build source is stack-demo's own clones
-- [ ] `corpus/ops/rosetta_demo.md` — the from-scratch self-contained bring-up flow
-- [ ] `.claude/skills/stack-secrets/SKILL.md:21` — the `/demo-up ensure-clones` reference is now real
+- [x] `corpus/ops/demo/README.md` — the up→… flow gains the ensure-clones step-0
+- [x] `corpus/ops/demo/frontend-tier.md` — build source is stack-demo's own clones
+- [x] `corpus/ops/rosetta_demo.md` — the from-scratch self-contained bring-up flow
+- [x] `.claude/skills/stack-secrets/SKILL.md:21` — the `/demo-up ensure-clones` reference is now real
 
 ## Notes
 - ext authoring branch: `m26/self-contained-demo-reimpl` (the orphan branch name `m26/self-contained-demo` is
   taken by the orphan @ `25ab855`/`prop-room-m26`; the orchestrator finalizes ff-to-main + tag-repoint at close).
 - Field-bake (a truly-empty `stack-demo/`) is **close-time**, not this build — build is static-verifiable only.
+
+## Build outcome (2026-06-15)
+All 7 sections landed. **Two-repo split:**
+- **ext** (`m26/self-contained-demo-reimpl` @ `17971c1`, tagged **`understudy-m26`**): the 12-file port —
+  `ensure-clones.sh` (new) + `up-injected.sh` / `gen_injected_override.py` / `migrate-demo.sh` / `ant-academy.sh`
+  / `rosetta-demo` repoints + the ported/retargeted tests + `GUIDE.md`. Phase 0b GREEN; **demo-stack 123/123 +
+  stack-injection 113/113** pass (python3.11/PyYAML); all 5 touched scripts shellcheck-clean. D6 GUIDE count =
+  live-recomputed **41** (not the orphan's stale 40).
+- **rosetta** (this worktree, commit on `m26/self-contained-demo`): the doc-half — `CLAUDE.md` /
+  `corpus/ops/demo/README.md` / `corpus/ops/demo/frontend-tier.md` / `corpus/ops/rosetta_demo.md` +
+  `.claude/skills/stack-secrets/SKILL.md` + the milestone planning files.
+- **Must-preserve verified intact:** M30 BASE_ENV provision (values-blind, non-fatal fallback — paths repointed
+  to stack-demo per D-MAIN, behavior preserved), M31 mkcert FAPI branch, M32 studio-desk single-port override.
+- **PR review:** CLEAN — 0 issues; D1–D6 + D-MAIN all faithfully applied; the `--reuse-dev-images` flag agrees
+  across parser / caller / docs.
+- **Remaining for close:** field-bake on a freshly-emptied `stack-demo/`; the orchestrator's ff-to-main +
+  `understudy-m26` tag-repoint + orphan-tag (`prop-room-m26`) / orphan-branch deletion.
