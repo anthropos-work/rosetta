@@ -131,50 +131,39 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 
 ## 4. Start Frontend (Next.js Web App)
 
-The frontend runs outside Docker for faster development iteration.
+**Required** — the frontend always runs natively (not in Docker for the `graphql` profile). It must be
+started in a **tmux session** so it survives Claude Code session closure.
 
 ### Verify Node.js Version
 
-The frontend requires **Node.js v20 LTS or v22+**.
+The frontend requires **Node.js v24+**.
 
 ```bash
 node --version
 ```
 
-*Expected*: `v20.x.x` or `v22.x.x`
-
-### Navigate to Frontend Directory
-
-```bash
-cd stack-dev/next-web-app
-```
+*Expected*: `v24.x.x`
 
 ### Install Dependencies (if needed)
 
-Check if `node_modules` exists:
 ```bash
-ls node_modules > /dev/null 2>&1 && echo "Dependencies installed" || echo "Run: pnpm install"
+ls stack-dev/next-web-app/node_modules > /dev/null 2>&1 && echo "Dependencies installed" || (cd stack-dev/next-web-app && pnpm install)
 ```
 
-If dependencies are missing:
+### Start in tmux
+
 ```bash
-pnpm install
+# Idempotent — skips if the session already exists
+tmux has-session -t anthropos-web 2>/dev/null || \
+  tmux new-session -d -s anthropos-web -c "$(pwd)/stack-dev/next-web-app" 'pnpm dev:web'
 ```
 
-### Option A: Development Mode (Recommended)
+*Expected*: tmux session `anthropos-web` starts; Next.js serves on http://localhost:3000
 
-Hot-reloading enabled, faster iteration:
+### Attach to view logs
+
 ```bash
-pnpm dev:web
-```
-
-*Expected*: Server starts on http://localhost:3000
-
-### Option B: Production Mode
-
-Build first, then serve (faster runtime, no hot-reload):
-```bash
-pnpm build:web && pnpm start:web
+tmux attach -t anthropos-web   # detach with Ctrl+B D
 ```
 
 ### Verify Frontend
@@ -186,13 +175,12 @@ Open http://localhost:3000 in your browser.
 ### Troubleshooting: Port Already in Use
 
 ```bash
-# Find what's using port 3000
 lsof -i :3000
 ```
 
 Options:
 1. Stop the conflicting process
-2. Use a different port: `PORT=3001 pnpm dev:web`
+2. Kill the existing tmux session and restart: `tmux kill-session -t anthropos-web`
 
 ---
 
@@ -269,13 +257,21 @@ npm install
 
 > **Font Awesome Pro**: the install needs `FONTAWESOME_NPM_AUTH_TOKEN` in env or `~/.npmrc`. Ask the team if you don't have one yet.
 
-### Start
+### Start in tmux
 
 ```bash
-npm run dev
+# Idempotent — skips if the session already exists
+tmux has-session -t anthropos-academy 2>/dev/null || \
+  tmux new-session -d -s anthropos-academy -c "$(pwd)" 'npm run dev'
 ```
 
-*Expected*: dev server on **http://localhost:3077** (not 3000 — that port is reserved for `next-web-app`).
+*Expected*: tmux session `anthropos-academy` starts; dev server on **http://localhost:3077** (not 3000 — that port is reserved for `next-web-app`).
+
+### Attach to view logs
+
+```bash
+tmux attach -t anthropos-academy   # detach with Ctrl+B D
+```
 
 ### Verify
 
@@ -352,11 +348,13 @@ python3 gen.py --media simulation --template default
 
 ## 7. Stopping Services
 
-### Stop Frontend
-Press `Ctrl+C` in the terminal running `pnpm dev:web`.
+### Stop native processes (tmux sessions)
 
-### Stop Studio-Desk (Native)
-Press `Ctrl+C` in the terminal running `npm run dev`.
+```bash
+tmux kill-session -t anthropos-web      # next-web-app
+tmux kill-session -t anthropos-academy  # ant-academy (if running)
+tmux kill-session -t anthropos-backend  # native backend (if developed locally)
+```
 
 ### Stop Docker Services
 
@@ -370,10 +368,11 @@ make down
 ### Check All Services Stopped
 
 ```bash
-make ps
+make ps                   # Docker containers
+tmux list-sessions        # tmux sessions (should be empty)
 ```
 
-*Expected*: No containers listed.
+*Expected*: No containers listed, no tmux sessions.
 
 ---
 
@@ -382,9 +381,12 @@ make ps
 ### Scenario: Resume After Computer Restart
 
 1. Start Docker Desktop
-2. Start backend: `cd stack-dev/platform && make up`
-3. Start frontend: `cd stack-dev/next-web-app && pnpm dev:web`
-4. (Optional) Start Studio-Desk: `cd stack-dev/studio-desk && npm run dev`
+2. Start Docker services: `cd stack-dev/platform && make up`
+3. Start frontend in tmux:
+   ```bash
+   tmux new-session -d -s anthropos-web -c "$(pwd)/stack-dev/next-web-app" 'pnpm dev:web'
+   ```
+4. (Optional) Start Studio-Desk in Docker: `make up PROFILE=studio-desk`
 
 > **Note**: PostgreSQL schemas (extensions, sentinel) persist across restarts. You do NOT need to re-create them unless you run `make reset-db`.
 
@@ -396,19 +398,22 @@ If you only need to work on the frontend and backend is already running:
 # Verify backend is up
 cd stack-dev/platform && make ps
 
-# Start frontend
-cd ../next-web-app && pnpm dev:web
+# Start frontend in tmux (idempotent)
+tmux has-session -t anthropos-web 2>/dev/null || \
+  tmux new-session -d -s anthropos-web -c "$(pwd)/stack-dev/next-web-app" 'pnpm dev:web'
 ```
 
 ### Scenario: Develop a Single Service Natively
 
-To stop a service's Docker container and run it locally:
+To stop a service's Docker container and run it locally in a tmux session:
 
 ```bash
 cd stack-dev/platform
-make dev S=cms           # Stops the Docker container for CMS
-cd ../cms
-go run .                 # Run natively with hot-reload
+make dev S=backend       # Stops the Docker container for backend/app
+
+# Start natively in tmux so it survives Claude session closure
+tmux new-session -d -s anthropos-backend -c "$(pwd)/../app" 'go run .'
+tmux attach -t anthropos-backend   # tail logs; Ctrl+B D to detach
 ```
 
 ### Scenario: Database Reset

@@ -50,13 +50,29 @@ before/after each step, request confirmation before installs or destructive ops,
    | Report Issues | Write an ops-report when an error or improvement is found |
 
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
-   pnpm, Python, Atlas) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo cloned →
-   all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make init-studio`) →
-   `platform/.env` configured → services up (`make up` — expect **12 containers** in `graphql`) → PostgreSQL
-   schemas (`extensions`, `sentinel`) → migrations (`make migrate`) → frontend + Studio-Desk deps → health.
+   pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
+   cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
+   init-studio`) → `platform/.env` configured → services up (`make up` — expect **12 containers** in
+   `graphql`) → PostgreSQL schemas (`extensions`, `sentinel`) → migrations (`make migrate`) → frontend +
+   Studio-Desk deps → health.
 4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 12 healthy containers
-   (`make ps`), GraphQL gateway on `localhost:5050`, frontend (Node v24+), Studio-Desk. Ask before stopping/
-   restarting, killing port-conflict processes, or `make reset-db`.
+   (`make ps`), GraphQL gateway on `localhost:5050`. Then **start native processes in tmux** (required —
+   these are not in the `graphql` Docker profile and must outlive the Claude session):
+   ```bash
+   # next-web-app (always native — required)
+   tmux has-session -t anthropos-web 2>/dev/null || \
+     tmux new-session -d -s anthropos-web -c "$(pwd)/stack-dev/next-web-app" 'pnpm dev:web'
+
+   # backend/app (only when developing it natively via make dev S=backend)
+   tmux has-session -t anthropos-backend 2>/dev/null || \
+     tmux new-session -d -s anthropos-backend -c "$(pwd)/stack-dev/app" 'go run .'
+
+   # ant-academy (optional — only when explicitly requested)
+   tmux has-session -t anthropos-academy 2>/dev/null || \
+     tmux new-session -d -s anthropos-academy -c "$(pwd)/stack-dev/ant-academy/code" 'npm run dev'
+   ```
+   Verify with `tmux list-sessions`. Attach with `tmux attach -t <session>` (Ctrl+B D to detach).
+   Ask before stopping/restarting, killing port-conflict processes, or `make reset-db`.
 
 The main dev stack uses **real Clerk** by default — it is not a snapshot/seed target unless you explicitly
 ask. (Set-dressing the main stack would reset its data; the `dev-min` seed + snapshot are for `dev-N`.)

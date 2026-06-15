@@ -58,6 +58,11 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 8.  **Atlas** (Database Schema Manager):
     *   `curl -sSf https://atlasgo.sh | sh`
     *   *Verification*: `atlas version`
+9.  **tmux** (terminal multiplexer — required for native processes):
+    *   `brew install tmux`
+    *   *Verification*: `tmux -V`
+    *   Native processes (`next-web-app`, backend when developed locally, ant-academy) run in named tmux
+        sessions so they survive Claude Code session closure.
 
 </details>
 
@@ -94,6 +99,11 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 6.  **Python** (v3.8+ for Studio-Room):
     *   `sudo apt-get install python3 python3-pip python3-venv`
     *   *Verification*: `python3 --version`
+7.  **tmux** (terminal multiplexer — required for native processes):
+    *   `sudo apt-get install tmux`
+    *   *Verification*: `tmux -V`
+    *   Native processes (`next-web-app`, backend when developed locally, ant-academy) run in named tmux
+        sessions so they survive Claude Code session closure.
 
 </details>
 
