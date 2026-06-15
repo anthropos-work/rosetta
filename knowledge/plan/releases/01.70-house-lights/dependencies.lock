@@ -1,0 +1,78 @@
+# dependencies.lock — release v1.7 "house lights"
+# Supply-chain snapshot. Phase 0 audit, 2026-06-15. Verdict: GREEN.
+#
+# v1.7 is a demo-UI-hardening release (M31 mkcert FAPI cert + M32 studio-desk
+# single-port override). It ships NO new code modules and NO dependency-manifest
+# changes — pure shell + python-stdlib + docs. Zero new third-party surface.
+
+## NO NEW THIRD-PARTY DEPENDENCIES
+# v1.7 added no third-party deps anywhere.
+#  - M31 = shell (demo-stack/up-injected.sh): adds the mkcert FAPI-cert branch.
+#  - M32 = python-stdlib + a shell override (stack-injection/gen_injected_override.py):
+#          NODE_ENV=production override + :9100 CORS removal.
+#  - Everything else in the release diff is docs/skills (rosetta repo).
+
+## DEPENDENCY-MANIFEST DIFF — EMPTY (ext code diff 868a68a..7b17c39)
+# Verified empty:
+#   git -C .../rosetta-extensions diff --stat 868a68a..7b17c39 \
+#       -- '**/go.mod' '**/go.sum' '**/package.json' '**/requirements*.txt'   => empty
+# Broad sweep over the full diff --stat also clean (no hits for any of):
+#   go.mod go.sum go.work package.json package-lock pnpm-lock yarn.lock
+#   requirements* Pipfile pyproject.toml poetry.lock setup.py setup.cfg Cargo Gemfile
+# Full v1.7 ext diff = exactly 5 files (356 +/- 26):
+#   demo-stack/README.md                     (test count)
+#   demo-stack/tests/test_tooling.py         (+FapiCertStep test class)   stdlib-only
+#   demo-stack/up-injected.sh                (M31 mkcert branch)          shell
+#   stack-injection/gen_injected_override.py (M32 prod override)          python-stdlib
+#   stack-injection/tests/test_injection.py  (M32 regression)             stdlib + pre-existing PyYAML
+
+## PYTHON IMPORTS — STDLIB-ONLY (one PRE-EXISTING optional test import)
+# gen_injected_override.py:  argparse, json, os, subprocess, sys           — stdlib only
+# test_tooling.py:           json, os, re, shutil, subprocess, sys,
+#                            tempfile, unittest                            — stdlib only
+#                            + first-party: clone_repos, stack_registry
+# test_injection.py:         io, os, random, shutil, subprocess, sys,
+#                            tempfile, unittest, contextlib                — stdlib
+#                            + first-party: inject, gen_injected_override
+#                            + PyYAML (`import yaml`) — PRE-EXISTING, NOT introduced by v1.7:
+#                              * present at the v1.7 base (868a68a) — verified via git show
+#                              * the diff added/removed NO yaml lines
+#                              * guarded skip-if-absent (structural-parse tests skip cleanly)
+#                              * unpinned — ext tracks NO python manifest at all
+#                                (no requirements.txt / pyproject.toml / Pipfile / setup.py)
+#                              => no new third-party surface from this.
+
+## SHELL — HOST SYSTEM TOOLS, NOT BUNDLED/FETCHED
+# The M31 up-injected.sh branch invokes `mkcert` and `openssl` as HOST binaries,
+# PATH-detected via `command -v mkcert` with a graceful openssl self-signed fallback
+# (and DEMO_NO_MKCERT opt-out). Neither is fetched, vendored, installed, or pinned
+# by the bring-up. Verified: the M31 shell diff introduces NONE of the fetch/install
+# patterns (brew/npm/pip/go install, curl, wget, docker pull, git clone).
+# => mkcert is an optional operator-provided runtime tool, not a dependency of the release.
+
+## EXT GO MODULES — ALL UNCHANGED THIS RELEASE
+# No Go change in v1.7 → all 4 prior ext Go modules + stack-secrets are byte-identical
+# to v1.6 "stage door". Go test func count = 1027, unchanged from v1.6.
+# (ref: archive/01.60-stage-door/dependencies.lock — the stdlib-only stack-secrets
+#  module + alignment / clerkenstein / stack-seeding / stack-snapshot, all first-party,
+#  no third-party CVE/license surface.)
+alignment:       unchanged from v1.6
+clerkenstein:    unchanged from v1.6
+stack-seeding:   unchanged from v1.6
+stack-snapshot:  unchanged from v1.6
+stack-secrets:   unchanged from v1.6 (stdlib-only, no go.sum)
+
+## ROSETTA REPO (this repo) — NO CODE DEPS
+# The v1.7 release diff (main...release/01.70-house-lights) on the rosetta side is
+# docs/skills/planning ONLY (recipe-browser-login.md, frontend-tier.md, demo-up SKILL.md,
+# knowledge/plan/*). No code, no committed dependency manifests. The go.mod/package.json/
+# requirements.txt files on disk live under git-ignored stack-*/ + .agentspace/ — not
+# rosetta's own code, not part of this release.
+
+## EXT REPO STATE
+ext HEAD:  7b17c39 (main)
+ext tags:  house-lights-m31 (@5022e72), house-lights-m32 (@7b17c39)
+v1.7 code diff range:  868a68a..7b17c39
+
+## VERDICT: GREEN — no new third-party deps; shell + python-stdlib + docs only.
+#  Stdlib-only posture and the prior ext Go modules are unchanged from v1.6.
