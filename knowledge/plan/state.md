@@ -7,8 +7,10 @@ fake FAPI (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert**. **M
 FAPI cert into the demo bring-up (openssl fallback + `DEMO_NO_MKCERT` opt-out; fake BAPI is plain HTTP → out of scope);
 **M32** fixes the sibling studio-desk `:9100`-dead-redirect (a 1-line `NODE_ENV=production` override fix + the `:9100`
 doc/CORS sweep). ant-academy demo liveness → backlog (repro-first). **Tooling + docs only — zero platform-repo edits.**
-**Active milestone:** **M31 — mkcert-trusted FAPI cert** (`planned`, not started). Build with
-[`/developer-kit:build-milestone`](roadmap.md). Sequential after: M32 studio-desk single-port/production.
+**Active milestone:** **M32 — studio-desk single-port / production alignment + the `:9100` sweep** (`planned`, not
+started). A fresh browser at demo-N's studio-desk lands on a live page instead of a 302 to the dead `:9100`, by
+running the container's production code path (a 1-line `NODE_ENV=production` override fix + a regression assertion +
+a Playwright smoke + the `:9100` doc/CORS sweep). Build with `/developer-kit:build-milestone`. Sequence: last of v1.7.
 **Last closed:** **v1.6 "stage door" — 2026-06-14**, tag `v1.6`. The **secret-provisioning release**: one mechanism that
 ingests a secret source (directory/zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from it
 (values-blind), with a **secret-coverage DNA** (gene = repo×KEY, **6 repos / 55 genes**; `introspect`+`diff` keep-listed
@@ -19,12 +21,20 @@ wiring → M30 field-bake. The closing **field-bake proved it LIVE** on a fresh 
 Critical **100%**, prod `DIRECTUS_TOKEN` armed in **ZERO** containers) built from a stack-dev-assembled
 `.agentspace/secrets`, and caught + fixed **2 real bugs** Fate-1 (the silently-skipping demo pre-flight gate + the
 never-provisioned demo). **Tooling + docs only — zero platform-repo edits; values-blind; never write prod.**
-**Next up:** **build M31** via `/developer-kit:build-milestone` (creates `m31/mkcert-fapi-cert` from the release branch).
+**Next up:** **build M32** via `/developer-kit:build-milestone` (the studio-desk `NODE_ENV=production` override fix +
+the `:9100` sweep), then **close M32** + **close-release v1.7**.
 Research + fix design + risk register: [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 (Outward-facing carry-over: push the v1.6 ext tags `stage-door-m27`/`m28`/`m30` + the still-unpushed `prop-room-m21..m25` to
 `origin`. The orphaned **`m26/self-contained-demo`** branch [tag `prop-room-m26`] still awaits its own design-roadmap pass.)
-**Phase:** **v1.7 in development — M31 designed, not yet started.**
+**Phase:** **v1.7 in development — M31 CLOSED (merged → `release/01.70-house-lights` 2026-06-15); M32 next.**
 **Paused:** _(none)_
+
+## Recently closed
+- **M31 — mkcert-trusted FAPI cert** — **2026-06-15**. Automated a locally-trusted mkcert FAPI cert into the demo
+  bring-up (one branch in `up-injected.sh` 3a-bis; openssl fallback factored + byte-compatible; `DEMO_NO_MKCERT`
+  opt-out; non-fatal; ZERO change to the 3 path-only cert-consumers). Verified by composition (chromium trusts the
+  mkcert cert vs rejects the openssl self-signed). Python +11 (`FapiCertStep`); Go 1027 unchanged; flake 0; deferral
+  audit GREEN. Ext tag `house-lights-m31` @ `6565ef8`. Full record: roadmap.md `### M31`.
 
 ## Recently shipped releases
 - **v1.6 "stage door"** — **2026-06-14**, tag `v1.6`. The **secret-provisioning release**: ingest a secret source
@@ -46,13 +56,13 @@ Research + fix design + risk register: [`.agentspace/scratch/roadmap-research-20
   field issues: M16→M20. Go 713→736; Python 174→360; flake 0; supply-chain GREEN. Records:
   [releases/archive/01.3b-dress-rehearsal/](releases/archive/01.3b-dress-rehearsal/).
 
-## Headline numbers (inherited baseline for v1.7 — these are the v1.6 close numbers, 2026-06-14)
-- **Go test funcs:** **1027** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` **52** · clerkenstein
-  **223** · stack-seeding **259** · stack-snapshot **333** · **stack-secrets 160** (the net-new v1.6 section: 113 @ M27
-  → 160 @ M28; M29 docs-only +0; M30 +0-func). v1.5 baseline 867 → **+160** (all in `stack-secrets`). `go vet` +
-  `gofmt` + `shellcheck` clean; flake **0**; triple-clean (Go `-race -shuffle` + Python sequential) clean.
-- **Python tests:** **459** collected (451 active + 8 env-gated skip), unchanged from v1.5 (the v1.6 growth surface is
-  Go, not Python). The corpus README-index guard runs **exit 0** (every doc indexed, incl. the net-new `secrets-spec.md`).
+## Headline numbers (v1.7 in development — v1.6 close baseline + the M31 delta)
+- **Go test funcs:** **1027** total (`Test`+`Fuzz`), **unchanged at M31** (M31 touched no Go). Per-module:
+  `rosetta-extensions/alignment` **52** · clerkenstein **223** · stack-seeding **259** · stack-snapshot **333** ·
+  stack-secrets **160**. `go vet` + `gofmt` + `shellcheck` clean; flake **0**.
+- **Python tests:** **+11 at M31** (the `FapiCertStep` class in `demo-stack/tests/test_tooling.py`: 47→**50**; the
+  full demo-stack suite 99→110; the v1.6 headline 459 → **470**). All pass; flake **0** (5/5 randomized sequential).
+  The corpus README-index guard runs **exit 0**. (`demo-stack/README.md`'s test count reconciled 13→50 at M31 close.)
 - **The v1.6 thesis:** a stack's per-repo `.env` is **provisioned from one secret source** (dir/zip, default
   `.agentspace/secrets`), **values-blind**, verified by a **6-repo / 55-gene secret-coverage DNA** + a two-tier
   keep-listed gate — **proven live** (M30: a fresh demo-3 came up entirely from a stack-dev-assembled secret dir,
@@ -78,12 +88,12 @@ fixes). The orphaned **`m26/self-contained-demo`** branch (tag `prop-room-m26`) 
 preserved on the ext side, awaiting their own roadmap home.
 **Prior:** **v1.5** tag `v1.5` (2026-06-14) · **v1.3b** `v1.3.1` (2026-06-09) · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-15 (**v1.7 "house lights" DESIGNED + IN DEVELOPMENT** via `/developer-kit:design-roadmap` — a
-demo-UI-hardening release [M31 mkcert-trusted FAPI cert → M32 studio-desk single-port/production], triggered by the live
-next-web blank-page defect; branch `release/01.70-house-lights` cut; Phase 0a GREEN-by-inheritance, Phase 0b cert story
-owned by recipe-browser-login.md. Phase-1 research was a 3-investigator workflow. ant-academy liveness → backlog. Prior:
-2026-06-14 (**v1.6 "stage door" SHIPPED** via `/developer-kit:close-release` — 9-sweep release review:
-supply-chain GREEN [stdlib-only], scope GREEN [M27–M30 all Fate-1, 0 unaccounted], deferral re-audit GREEN, code-quality
-GREEN, docs/KB YELLOW→resolved [should-fix polish landed Fate-1], tests GREEN [Go +160 / Python +0 / flake 0], metrics
-GREEN. Merged → main, tagged `v1.6`. Prior: 2026-06-14 M30 CLOSED [the field-bake, proven LIVE on demo-3]; M27–M29 closed;
+_Last updated: 2026-06-15 (**M31 CLOSED** via `/developer-kit:close-milestone` — the mkcert-trusted FAPI cert merged
+`--no-ff` → `release/01.70-house-lights`, milestone branch deleted. Review found 2 findings, both Fate-1: the
+`demo-stack/README.md` test-count drift [13→50] + a recorded adversarial scenario [zero-byte cert / existence-only
+guard = pre-existing, documented]. Scope GREEN [all 11 boxes Fate-1], code-quality GREEN, docs GREEN, tests GREEN
+[Python +11 / Go +0 / flake 0], deferral re-audit GREEN [v1.7's first milestone — 0 inherited/repeat]. Ext tag
+`house-lights-m31` @ `6565ef8` [orchestrator finalizes the ext side]. M32 studio-desk single-port/production is next.
+Prior: 2026-06-15 **v1.7 "house lights" DESIGNED + IN DEVELOPMENT** [M31 → M32; branch `release/01.70-house-lights`
+cut]. Prior: 2026-06-14 **v1.6 "stage door" SHIPPED** [tag `v1.6`]; M30 field-bake CLOSED [proven LIVE on demo-3];
 v1.5 "prop room" SHIPPED [tag `v1.5`].)_

@@ -40,3 +40,18 @@ caveats, the DEMO_NO_MKCERT opt-out, the cert-expiry/`rm <stack>/certs/fapi.crt`
 ## Risks (see overview's risk map in roadmap.md)
 fresh-machine `-install` OS-password prompt; remote/VM trust-store-is-on-the-wrong-machine; dev-CA security; ~3y cert
 expiry with no guard-check; the shared-helper forward-note for a future dev-N --local-content UI path.
+
+## Pre-flight audits — the cert step (mkcert branch)
+- **Phase 0b KB-fidelity: GREEN** (2026-06-15, report `kb-fidelity-audit.md`). Verified the load-bearing
+  no-touch guarantee: `fake-fapi/main.go:28-31` reads `FAKE_FAPI_TLS_CERT/KEY` and serves `ListenAndServeTLS`;
+  `gen_injected_override.py:298,304-307` sets those env to `/certs/fapi.crt|key` + mounts `<stack>/certs:/certs:ro`;
+  `inject.py` has no cert refs. The cert is referenced by **path only** → a browser-trusted cert at the same
+  path serves identically (ZERO change to all three). Stale doc-framing (recipe §B step 2, the two code comments)
+  + frontend-tier cert silence are the milestone's own deliverables, not pre-existing blockers.
+- **Test seam:** the cert step (3a-bis, ~line 337) sits BELOW the `UP_INJECTED_LIB_ONLY=1` early-return (`up-injected.sh:166`),
+  so it is NOT sourceable as a lib-only function today. No existing test covers it. M31's test follows the
+  `self.BODY`-grep pattern (`test_tooling.py:179` precedent) — values-blind, no live docker — asserting the
+  mkcert branch + openssl fallback + `DEMO_NO_MKCERT` path on the script text.
+- **Triples:** recipe-browser-login.md §B ↔ up-injected.sh 3a-bis; frontend-tier.md (cert one-liner to add) ↔
+  gen_injected_override.py:295-307 / fake-fapi/main.go:25-31; README-index guard = `stack-core/corpus_index_guard.py`
+  (baseline exit 0 confirmed).
