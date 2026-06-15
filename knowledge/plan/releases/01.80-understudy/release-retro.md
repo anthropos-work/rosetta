@@ -48,6 +48,12 @@ fixture bugs (macOS realpath depth + shebang PATH), fixed in the test.
 - **Alignment:** 100%/100% on all 4 Clerkenstein surfaces (untouched).
 
 ## Stats delta
-See the Phase 8c project-stats snapshot for this release vs the v1.7 snapshot (code size, test growth, velocity).
-Net code added: ext +985/−161 (one new 115-line shell unit + repoints + the +30 tests); rosetta +1117/−79
-(doc-half + planning + records). Tooling + docs only — zero platform-repo edits.
+Phase 8c snapshot: `knowledge/journal/stats/2026-06-15.json` (5th snapshot; prior was v1.5-close — the v1.6/v1.7
+closes didn't snapshot). Valid metrics: **399 commits** (51 merges, 332 co-authored), **+65 since v1.5-close**, 148
+in the last 7 days, churn 25%, **39/39 milestones done**, project age 144 days. **Known limitation:** the script's
+code/doc **line** auto-detect reports 0 for this repo — the executable code lives in the gitignored
+`.agentspace/rosetta-extensions/` (so it's invisible to a repo-root scan) and the corpus/`knowledge/` markdown tree
+isn't matched by the script's doc-layout heuristic. The real net change this release (from `git diff`): ext
+**+985/−161** (one new 115-line shell unit + repoints + the +30 tests); rosetta **+1117/−79** (doc-half + planning +
+records). Tooling + docs only — zero platform-repo edits. (The 0-line auto-detect is a pre-existing script-vs-layout
+gap, not a v1.8 regression — same 0s in the prior snapshots.)
