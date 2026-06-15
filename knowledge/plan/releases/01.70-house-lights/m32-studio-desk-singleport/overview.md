@@ -3,7 +3,7 @@ milestone: M32
 slug: studio-desk-singleport
 version: v1.7 "house lights"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-15
 last_updated: 2026-06-15
 complexity: small

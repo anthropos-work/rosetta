@@ -18,10 +18,24 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 | App | How it runs | Port (base + offset) | Auth in the demo |
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
-| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **9100** (frontend) + **9000** (backend), each + N×10000 | Clerk-free (minted pk as a build-arg) |
+| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Clerk-free via `BENCHMARK_VISUAL_BYPASS` (anonymous browse) |
 
-Example: `demo-2` → next-web on `:23000`, studio-desk on `:29100`/`:29000`, ant-academy on `:23077`.
+Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
+
+> **studio-desk is single-port (M32).** The studio-desk image (`Dockerfile.dev`) is a **production build**
+> (`npm run build:server && build:frontend`, `CMD npm start`, and it even bakes `ENV NODE_ENV=production`): one
+> node process serves the built SPA *and* the API on **9000** — the `9100` Vite dev port exists only under
+> `npm run dev` and is never in the container, so the demo publishes **9000+offset only** (no dead `9100`).
+> **But** the base platform `docker-compose.yml` studio-desk service sets `NODE_ENV=development` +
+> `FRONTEND_PORT=9100` in its `environment:` block — and a compose `environment:` value **overrides the image's
+> baked `ENV`** (#M32-D4). Because the demo override's per-frontend env block is **additive** (deliberately not
+> `!override`, so inherited `PORT`/`VITE_*` survive), that `development` would survive into the demo →
+> `src/index.ts` `isProduction=false` → the dev path 302s the browser to the dead `9100`. So the override
+> **pins `NODE_ENV=production` (+ `FRONTEND_PORT=9000`)** to win that additive merge back to the production
+> `sendFile` path — which serves every dev-block route via `sendFile` + an `express.static(dist/public)` mount +
+> an `index.html` SPA fallback, with no route gap (verified by code-read; #M32-D1). Full root-cause: the v1.7 M32
+> milestone record.
 
 > **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
 > **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
@@ -113,8 +127,13 @@ documented runtime hook — *not* a code path the demo adds). The injected overr
 
 ```
 # each entry carries its own scheme+host (e.g. demo-1):
-CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhost:19000,http://localhost:19100
+CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhost:19000
 ```
+
+> **No offset `9100` origin (M32).** The override emits the offset origins for next-web (`3000`/`3001`) +
+> studio-desk's **single-port** `9000` — not the dead `9100`. studio-desk is single-port production (the browser
+> only ever talks to `9000+offset`), so the un-offset `9100` that `cors.go` still hardcodes is a dead entry the
+> override no longer mirrors (#M32-D2).
 
 This is emitted by `gen_injected_override.py` (the `backend` service gets an additive `environment:` block), so it
 applies to a stack brought up **through the demo injected override** (`/demo-up`). The **dev** override
@@ -153,7 +172,7 @@ it). See [`../../services/ant-academy.md`](../../services/ant-academy.md) for th
 ## Verification covers the UI tier
 
 The M18 [verification net](../verification.md) now covers the frontends: `stack-verify`'s service registry
-includes **next-web-app (:3000)** + **studio-desk (:9100)**, which offset + project-rewrite like every other
+includes **next-web-app (:3000)** + **studio-desk (:9000)** (single-port; M32), which offset + project-rewrite like every other
 service. The bring-up-tail auto-verify is **scoped to the services it started** — so a UI-on demo verifies the
 frontends (an HTTP probe; a Clerk-free login redirect is a healthy 2xx/3xx/4xx), and a `--no-ui` demo scopes
 them out and never false-`down`s an absent frontend (#M19-D7).
