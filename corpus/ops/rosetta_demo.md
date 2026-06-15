@@ -106,16 +106,19 @@ renamed that workspace `anthropos-dev/` → **`stack-dev/`** (one of the `stack-
 (`stack-dev/`, `stack-demo/`, `stack-dev-2/`, …); each holds its cloned platform service repos plus its own
 pinned-tag clone of `rosetta-extensions`.
 
-The dev/demo CLIs resolve the workspace with a **single intentional back-compat fallback** — they prefer
-`stack-dev/`, and fall back to the legacy `anthropos-dev/` only if `stack-dev/` is absent:
+The **dev** CLI resolves the dev workspace with a **single intentional back-compat fallback** — it prefers
+`stack-dev/`, and falls back to the legacy `anthropos-dev/` only if `stack-dev/` is absent:
 
 ```bash
 DEV="$REPO_ROOT/stack-dev"; [ -d "$DEV" ] || DEV="$REPO_ROOT/anthropos-dev"   # prefer stack-dev; legacy fallback
 ```
 
-This is the **one** place `anthropos-dev` survives — a one-line auto-detect (in `up-injected.sh`, `migrate-demo.sh`,
-`rosetta-demo`, `dev-stack`, and the `clone_repos.py` `--dev-root` help) that costs nothing and protects an older
-on-disk layout. Everywhere else `stack-dev/` is the documented default. The fallback was the M16 field fix
+This back-compat fallback now lives **dev-side only** — `dev-stack` (the dev CLI) + the `clone_repos.py` `--dev-root`
+help string. **v1.8 "understudy" (M26) removed it from the demo scripts** (`up-injected.sh`, `migrate-demo.sh`,
+`rosetta-demo`, `ant-academy.sh`): a demo now resolves its **own** `stack-demo/` peer clone set (see *"Self-contained
+demo stacks"* above) — there is no `stack-dev`/`anthropos-dev` to fall back to on the demo build path. It costs
+nothing on the dev side and protects an older on-disk layout. Everywhere else `stack-dev/` is the documented default.
+The fallback was the M16 field fix
 (shipped in `rosetta-extensions @ dress-rehearsal-m16`): a fresh box that already used `stack-dev/` would otherwise
 die at bring-up resolving a non-existent `anthropos-dev/`. **Don't reintroduce bare `anthropos-dev/` references** in
 prose or scripts — keep it confined to the fallback line.
