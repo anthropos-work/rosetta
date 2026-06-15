@@ -7,8 +7,9 @@ fake FAPI (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert**. **M
 FAPI cert into the demo bring-up (openssl fallback + `DEMO_NO_MKCERT` opt-out; fake BAPI is plain HTTP → out of scope);
 **M32** fixes the sibling studio-desk `:9100`-dead-redirect (a 1-line `NODE_ENV=production` override fix + the `:9100`
 doc/CORS sweep). ant-academy demo liveness → backlog (repro-first). **Tooling + docs only — zero platform-repo edits.**
-**Active milestone:** **M32 — studio-desk single-port / production alignment + the `:9100` sweep** (`planned`, not
-started). A fresh browser at demo-N's studio-desk lands on a live page instead of a 302 to the dead `:9100`, by
+**Active milestone:** **M32 — studio-desk single-port / production alignment + the `:9100` sweep** (`built` — branch
+`m32/studio-desk-singleport`; ext tag `house-lights-m32`; only the close-time live Playwright smoke remains).
+A fresh browser at demo-N's studio-desk lands on a live page instead of a 302 to the dead `:9100`, by
 running the container's production code path (a 1-line `NODE_ENV=production` override fix + a regression assertion +
 a Playwright smoke + the `:9100` doc/CORS sweep). Build with `/developer-kit:build-milestone`. Sequence: last of v1.7.
 **Last closed:** **v1.6 "stage door" — 2026-06-14**, tag `v1.6`. The **secret-provisioning release**: one mechanism that
@@ -26,7 +27,7 @@ the `:9100` sweep), then **close M32** + **close-release v1.7**.
 Research + fix design + risk register: [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 (Outward-facing carry-over: push the v1.6 ext tags `stage-door-m27`/`m28`/`m30` + the still-unpushed `prop-room-m21..m25` to
 `origin`. The orphaned **`m26/self-contained-demo`** branch [tag `prop-room-m26`] still awaits its own design-roadmap pass.)
-**Phase:** **v1.7 in development — M31 CLOSED (merged → `release/01.70-house-lights` 2026-06-15); M32 next.**
+**Phase:** **v1.7 in development — M31 CLOSED (merged → `release/01.70-house-lights` 2026-06-15); M32 BUILT (ext tag `house-lights-m32`), close next.**
 **Paused:** _(none)_
 
 ## Recently closed

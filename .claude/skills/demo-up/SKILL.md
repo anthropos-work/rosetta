@@ -65,8 +65,8 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures (replay
    only — capture is a separate, operator-confirmed prod read).
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
-   `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9100+`,
-   ant-academy `:3077+`) and the **dev stack is untouched**.
+   `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9000+`
+   single-port — M32, ant-academy `:3077+`) and the **dev stack is untouched**.
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.

@@ -25,3 +25,14 @@ confirm the production `sendFile` path serves them, or some pages 404.
 ## Regression test
 `stack-injection/tests/test_injection.py` near the single-port assertions (~820-857): assert `NODE_ENV=production` in the
 studio-desk env block.
+
+## Pre-flight audits — studio-desk single-port + the :9100 sweep
+Phase 0b KB-fidelity: **GREEN** (2026-06-15). Report:
+[`kb-fidelity-audit.md`](kb-fidelity-audit.md). Topic→doc→code triples:
+- studio-desk override env → `corpus/ops/demo/frontend-tier.md` §brings-up / demo-up SKILL → `gen_injected_override.py` FRONTENDS + `frontend_lines`.
+- prod vs dev route serving → (platform repo, byte-pristine) → `stack-demo/studio-desk/src/index.ts` 148-272.
+- offset CORS allowlist → `frontend-tier.md` §Offset-origin CORS → `gen_injected_override.py:248-250`.
+- single-port regression → `frontend-tier.md` port story → `test_injection.py` ~819-857 (+ the latent :9100 assertion at ~925).
+
+Findings (all are the planned M32 deliverables — code is already single-port; docs/CORS/the env-skipped test lag):
+frontend-tier.md:21 stale port story; demo-up SKILL :9100 refs; CORS un-offset 9100 origin; test_injection.py:925 stale `29100:9100` assertion (env-masked, PyYAML-skipped).
