@@ -43,3 +43,17 @@ mkcert wiring. Not landed here (no dev-N UI path exists today — it'd be net-ne
 **forward-note in the code comment** (candidate to extract the cert-mint logic into a shared helper, e.g.
 stack-core, rather than re-inline) so whoever builds that path finds the pointer. No new backlog entry — the note
 lives at the exact code site that would consume it.
+
+## M31-D6 — (harden) The extracted-block test harness must run under production `set -euo pipefail`
+The cert step is tested by `awk`-extracting `gen_openssl_fapi_cert()` + the cert if-block into a tmp script and
+sourcing it (M31-D2). The build's harness sourced it under `set -uo pipefail` — but the real bring-up runs
+`set -euo pipefail` (`up-injected.sh:13`). That `-e` is exactly what makes the cert step's
+`mkcert -install >/dev/null 2>&1 || true` swallow **matter**: under `-e`, a failing `-install` would abort the
+script before the mint unless the `|| true` catches it; without `-e` the swallow is inert. So a harden test for the
+install-failure case (`-install` fails, mint succeeds) would **false-green** under the weaker harness — it passes
+even with `|| true` deleted. Fix: switch all three `FapiCertStep` harnesses to `set -euo pipefail` (matching
+production). Verified all four real branches still survive under `-e` (rc=0 each), and **mutation-proved** the
+install-failure test now discriminates (removing `|| true` → the test FAILS with a `CalledProcessError`).
+**General lesson:** when a test extracts-and-runs a bring-up code block, the harness's `set` flags must mirror the
+real script's, or strict-mode-dependent guards (`|| true`, `|| pf_rc=$?`, the cmd-sub `|| true` patterns) go
+untested. No change to `up-injected.sh` (the production code was already correct; only the test harness needed it).
