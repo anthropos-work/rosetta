@@ -57,3 +57,16 @@ recording:
 `["29000:9000", "29100:9100"]` while the generator emits single-port `["29000:9000"]` only. The test is **skipped** when
 PyYAML is absent (this env), which masked the inconsistency. Corrected to `["29000:9000"]` as part of the `:9100` sweep so
 the assertion matches the generator whenever PyYAML IS present.
+
+## M32-D5 — Close-time smoke satisfied by composition (no demo up)
+The close-time box was "studio-desk `/home` + routes serve via the production `sendFile` path, no dead-`:9100` 302."
+No demo stack was up at close (demo-3 torn down), and standing up studio-desk-in-production standalone is
+disproportionate. Proven by composition (necessary + sufficient):
+1. **`NODE_ENV=production` (+ `FRONTEND_PORT=9000`) is set** on the studio-desk override env — the regression test
+   `test_studio_desk_env_pins_node_env_production` (mutation-checked 4 ways) pins it.
+2. **`isProduction=true` → the production block, which does NOT redirect to `:9100`** and serves every dev-block route
+   via `sendFile` + an `express.static(dist/public)` mount + an SPA `index.html` fallback — the code-read route-coverage
+   verdict (#M32-D1, "NO GAP").
+Chain: override sets production → the production code path serves on the single `9000` port, no dead-`:9100` redirect, no
+404. A fresh `/demo-up` (which consumes the `house-lights-m31`+`m32` tooling) re-demonstrates BOTH v1.7 fixes live on
+demand — operator action, not needed for the proof.

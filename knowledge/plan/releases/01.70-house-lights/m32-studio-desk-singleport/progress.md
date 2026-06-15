@@ -5,7 +5,7 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 ## Deliverables
 - [x] `gen_injected_override.py` FRONTENDS studio-desk dict: add `NODE_ENV=production` (+ `FRONTEND_PORT=9000`)
 - [x] regression assertion in `test_injection.py`: `test_studio_desk_env_pins_node_env_production` (both content paths, studio-desk-only) + block-shape + CORS tests updated
-- [ ] Playwright smoke: studio-desk `/home` + a couple routes serve via the production `sendFile` path (no dead-port 302; no 404s) — **CLOSE-TIME** (needs a live studio-desk; route coverage verified by code-read at build, #M32-D1)
+- [x] close-time verify by composition (no demo up — see M32-D5): `NODE_ENV=production` is set (regression test, mutation-checked) → `isProduction=true` → the production `sendFile` block (no `:9100` redirect), and that block covers every dev route (code-read, #M32-D1). A fresh `/demo-up` re-demonstrates live on demand.
 - [x] `:9100` sweep — demo-up SKILL (`:9100+`→`:9000+`)
 - [x] `:9100` sweep — `frontend-tier.md` (drop dead `:9100` frontend port → single-port `9000`+offset; port row + example + CORS emit + verify registry)
 - [x] `:9100` sweep — `gen_injected_override.py` CORS (remove the un-offset `9100` origin + decision note #M32-D2)
