@@ -38,6 +38,29 @@ On current `main` that formula = **28** (GUIDE advertises 28). M26's deltas to t
 GUIDE advertises 41; the GuideDocTruth test recomputes dynamically (trust the formula). Re-verify at the
 test-section commit (the actual collected sum is authoritative if any count shifts during the port).
 
+## Adversarial review (close — Phase 2c, 2026-06-15)
+Two non-obvious failure scenarios were probed against the milestone's riskiest surfaces (the NEW
+`ensure-clones.sh` + the D-MAIN `PLAT` move). Both came back clean; one surfaced the stale-comment fix.
+
+- **Scenario A — `ensure-clones.sh` re-run idempotency after a partial `make init` (phase c) failure.**
+  If `make init` (phase c) aborts mid-loop (e.g. network drop after N of M sibling repos), `set -e` leaves
+  `stack-demo/` with `platform` + a partial repo set. **Verified safe on re-run:** phase (a) sees `$PLAT/.git`
+  → "present, reusing"; phase (c) re-runs the platform's own *skip-if-present* clone loop → clones only the
+  missing siblings; phase (e)'s provenance loop `continue`s past any `.git`-less dir (`ensure-clones.sh:94`),
+  so the lockfile stays valid even with a partial set. The one residual — a *sibling* repo interrupted
+  mid-clone (dir, no `.git`) — is the platform Makefile's `make init` contract, explicitly **out of M26 scope**
+  (zero platform-repo edits); ensure-clones only broken-partial-guards `$PLAT` (platform) itself. No M26 bug.
+
+- **Scenario B — D-MAIN PLAT-move: does any non-build `$PLAT` consumer now wrongly read `stack-demo`?**
+  The risk: moving `PLAT="$DEMO_WS/platform"` re-points more than the build context. **Verified:** every
+  `$PLAT` consumer in `up-injected.sh` (BASE_ENV `:34`, the `.env`-presence guard `:189`, the seeded-base
+  fallback `:252`, `gen_injected_override.py --platform-dir :328`, `docker compose -f $PLAT/docker-compose.yml
+  :419`) correctly belongs on `stack-demo` post-D-MAIN — the compose `-f` is the load-bearing line that makes
+  the relative `../sentinel` contexts resolve against `stack-demo`. The `$DEV` var is **gone entirely** from
+  `up-injected.sh` (no orphaned read). This scan **surfaced the close finding**: comments at `up-injected.sh`
+  L36-37 + L417 still called the BASE_ENV fallback "the legacy stack-dev/platform/.env base" — code correct,
+  comments stale. Fixed at close (ext `773184f`); recorded so future reviewers see the scenario that caught it.
+
 ## M26-D2-impl — `DEMO` alias vs `DEMO_WS` (the two-subsystem reconciliation)
 Current `main` (M30) introduced `DEMO_WS="$REPO_ROOT/stack-demo"` as the **provision-target** var (referenced at
 `up-injected.sh:215/228/230`). The orphan used `DEMO` as the **build-source** var. D2 keeps BOTH: `DEMO_WS` stays

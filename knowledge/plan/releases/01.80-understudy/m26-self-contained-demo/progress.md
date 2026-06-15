@@ -160,3 +160,41 @@ mutation-verified functional coverage; `gen_injected_override.py` is at 99% (the
 ensure-clones.sh's `DEV_ENV` .env-seed), and the existing behavioral `test_ant_academy.py`/`RosettaDemoRegistry`
 suites. Python coverage delta 0 (saturated); no flakes (3 clean runs below). demo-stack **123 → 138** (+15
 functional); stack-injection 113 (unchanged — its M26 surface was already saturated).
+
+## M26: Final Review (close — 2026-06-15)
+
+Review fan-out (Phases 1–5): scope CLEAN (all 7 sections + the 2 harden passes); deferral re-audit **GREEN**
+(0 deferrals — M26 is the only milestone of v1.8, nothing inherited); code-quality CLEAN (the Explore cross-cut
+verified all 4 must-preserve invariants — M30 BASE_ENV / M31 mkcert / M32 studio-desk / injection-COPY-only —
+intact; no dead code; reuse flag agrees parser↔caller↔docs; lib-only seam returns before ensure-clones);
+shellcheck 5/5; demo-stack **138/138** + stack-injection **113/113** (python3.11, JUnit-authoritative).
+Adversarial (Phase 2c): 2 scenarios probed — both clean — one surfaced the stale-comment finding below.
+
+### Scope
+- [x] No gaps — overview `In:` list fully delivered; no silent drops; 0 TODO/FIXME in any touched file.
+
+### Code Quality
+- [x] [must-fix] none — review CLEAN, 4 must-preserve invariants verified intact.
+
+### Documentation
+- [x] [should-fix] up-injected.sh L36-37 + L417 still call the BASE_ENV fallback "the legacy
+      stack-dev/platform/.env base"/"otherwise" — but post-D-MAIN the actual fallback base is the
+      ensure-clones-seeded **stack-demo**/platform/.env (`BASE_ENV="$PLAT/.env"`, `PLAT="$DEMO_WS/platform"`).
+      Code correct; comments stale. Re-word per D-MAIN. (ext fix)
+- [x] [should-fix] `corpus/ops/safety.md` does not document the M26 **sanctioned cross-stack read** invariant
+      (the sole sanctioned `stack-dev` read by the demo tooling is ensure-clones' `.env` *seed* — copy-if-present,
+      never the build SOURCE). It's a new read-side boundary + a user-facing safety claim (spec-notes flagged
+      safety.md as a KB dependency for exactly this). Blend into Part 1 / §2.7. (= Decision-triage D4 blend below.)
+
+### Tests & Benchmarks
+- [x] No gaps — the milestone's one NEW unit (`ensure-clones.sh`) has mutation-verified functional coverage
+      (`TestEnsureClonesFunctional` +12); the M26-new `--reuse-dev-images` shell seam (`TestReuseFlagArrayExpansion`
+      +3, bash-3.2 mutation-verified); GUIDE advertised count **41** reconciles (`TestGuideDocTruth` green).
+
+### Decision Triage
+- [x] D-MAIN, D1, D2, D3, D5, D6 → already blended into knowledge during build (rosetta_demo.md self-contained
+      section + CLAUDE.md "true peer" + README flow + safety.md §2.8 #M26-harden). Verified accurate; reference
+      tags present. No new blend.
+- [x] **D4 (the sanctioned `.env`-seed-only stack-dev read) → blend into `safety.md`** (= the doc finding above).
+- [x] M26-D2-impl / M26-D4-impl / M26-D6-impl → **archive** (maintainer-only: alias reconciliation, the ported
+      test-assertion change, the live count=41). Stay in decisions.md.

@@ -275,6 +275,18 @@ construction, byte-for-byte** — there is no demo-specific set-dress code path 
   degrades to a structural-only world that still logs in (the seed is the floor); the M17 re-run guards make a
   partial set-dress repairable by re-running (idempotent TRUNCATE-then-reload replay + idempotent seed COPY).
   (#M20-D3)
+- **The demo's ONE sanctioned cross-stack read is the shared-secret `.env` seed — never the build SOURCE
+  (v1.8 "understudy" M26).** A self-contained demo builds entirely from `stack-demo`'s **own** clone set
+  (`ensure-clones.sh` bootstrap-clones `stack-demo/platform` + `make init`s the peer repos; the per-demo
+  injection COPY is cut from `stack-demo/<svc>`, never `stack-dev`). The **sole** sanctioned read of `stack-dev`
+  by the demo tooling is ensure-clones' phase-(b) `.env` *seed*: `cp stack-dev/platform/.env →
+  stack-demo/platform/.env` **copy-if-present + target-absent + never-clobber** — only the shared-secret file
+  (same Clerk app + same `GH_PAT`, shared by nature; never committed), and **non-fatal if `stack-dev` is absent**
+  (M30's provisioner then writes the real `.env` from `.agentspace/secrets`, so a box with only `stack-demo/` is
+  fully supported). The build SOURCE **never** falls back to `stack-dev` — a required platform clone failure
+  aborts loud rather than borrow dev's repos, and dev-image reuse is OFF by default (`DEMO_REUSE_DEV_IMAGES=1`
+  opts back in). `TestRenameDrift` fences that every code-level `stack-dev` reference in the demo tooling is
+  confined to that `.env`-seed read. (#M26-D4)
 
 ### 2.8 Bring-up scripts must survive bash 3.2 under `set -u` (the non-fatal-means-non-crashing invariant)
 
