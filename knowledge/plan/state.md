@@ -7,8 +7,8 @@ fake FAPI (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert**. **M
 FAPI cert into the demo bring-up (openssl fallback + `DEMO_NO_MKCERT` opt-out; fake BAPI is plain HTTP → out of scope);
 **M32** fixes the sibling studio-desk `:9100`-dead-redirect (a 1-line `NODE_ENV=production` override fix + the `:9100`
 doc/CORS sweep). ant-academy demo liveness → backlog (repro-first). **Tooling + docs only — zero platform-repo edits.**
-**Active milestone:** **M31 — mkcert-trusted FAPI cert** (`planned`, not started). Build with
-[`/developer-kit:build-milestone`](roadmap.md). Sequential after: M32 studio-desk single-port/production.
+**Active milestone:** **M31 — mkcert-trusted FAPI cert** (`built`, on branch `m31/mkcert-fapi-cert`, not merged;
+ext tag `house-lights-m31`). Close with `/developer-kit:close-milestone`. Sequential after: M32 studio-desk single-port/production.
 **Last closed:** **v1.6 "stage door" — 2026-06-14**, tag `v1.6`. The **secret-provisioning release**: one mechanism that
 ingests a secret source (directory/zip, default `.agentspace/secrets`) and **provisions every repo of a stack** from it
 (values-blind), with a **secret-coverage DNA** (gene = repo×KEY, **6 repos / 55 genes**; `introspect`+`diff` keep-listed
@@ -19,11 +19,12 @@ wiring → M30 field-bake. The closing **field-bake proved it LIVE** on a fresh 
 Critical **100%**, prod `DIRECTUS_TOKEN` armed in **ZERO** containers) built from a stack-dev-assembled
 `.agentspace/secrets`, and caught + fixed **2 real bugs** Fate-1 (the silently-skipping demo pre-flight gate + the
 never-provisioned demo). **Tooling + docs only — zero platform-repo edits; values-blind; never write prod.**
-**Next up:** **build M31** via `/developer-kit:build-milestone` (creates `m31/mkcert-fapi-cert` from the release branch).
+**Next up:** **close M31** via `/developer-kit:close-milestone` (the close-time live-render verify: a fresh real browser
+at a demo's next-web `/home` signed-in, no proceed-anyway), then **M32 studio-desk single-port/production**.
 Research + fix design + risk register: [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 (Outward-facing carry-over: push the v1.6 ext tags `stage-door-m27`/`m28`/`m30` + the still-unpushed `prop-room-m21..m25` to
 `origin`. The orphaned **`m26/self-contained-demo`** branch [tag `prop-room-m26`] still awaits its own design-roadmap pass.)
-**Phase:** **v1.7 in development — M31 designed, not yet started.**
+**Phase:** **v1.7 in development — M31 built (on branch, not merged); M32 next.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
