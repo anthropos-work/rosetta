@@ -49,15 +49,37 @@ early "mint a pk and log in" sketch missed):
    to Clerkenstein's `MintPublishableKey` (`inject.py`'s `mint_pk` emits it). **The host is `127.0.0.1:5400+N·10000`,
    not `localhost`** — `@clerk/backend`'s pk validator requires a **dot** in the decoded host, so a dotless
    `localhost` pk is rejected as invalid (a 500 on every request).
-2. **The fake FAPI serves HTTPS.** `@clerk/clerk-js` + `clerkMiddleware` **always** reach the FAPI over `https://`
-   (the host comes from the pk, prefixed `https://`), so the fake FAPI **terminates TLS** with a cert for the FAPI
-   host. `up-injected.sh` generates the cert into `<stack>/certs`; the override mounts it (`FAKE_FAPI_TLS_CERT/KEY`).
-   The openssl-generated cert is **self-signed**, so the browser won't trust it out of the box. **One-time operator
-   step (pick one):** run `mkcert -install` *and* mint a cert for `127.0.0.1` into `<stack>/certs` (the bring-up
-   keeps a pre-existing cert, so a mkcert-issued one survives re-ups) — `mkcert -install` needs your machine
-   password to add its local CA to the OS/Firefox trust stores; **or** import/trust the generated self-signed cert
-   directly. Without a trusted cert the browser blocks clerk-js's cross-origin FAPI calls and the app bounces back
-   to `/login`. (`mkcert -install` *alone* does not help — its CA never signed the openssl cert.)
+2. **The fake FAPI serves browser-trusted HTTPS — automatically.** `@clerk/clerk-js` + `clerkMiddleware` **always**
+   reach the FAPI over `https://` (the host comes from the pk, prefixed `https://`), so the fake FAPI **terminates
+   TLS** with a cert for the FAPI host. `up-injected.sh` (step 3a-bis) mints the cert into `<stack>/certs`; the
+   override mounts it (`FAKE_FAPI_TLS_CERT/KEY`). **The bring-up makes the cert browser-trusted for you (M31):** when
+   [`mkcert`](https://github.com/FiloSottile/mkcert) is on `PATH` it runs `mkcert -install` (idempotent) + mints a
+   leaf for `127.0.0.1 localhost ::1`, so a fresh browser renders the signed-in app with **no proceed-anyway**. The
+   bring-up keeps a pre-existing cert, so the trusted one survives re-ups. **No manual cert step is needed** — with
+   the historical caveats below.
+   - **First-ever `mkcert -install` on a fresh machine may prompt once for your OS password** (a GUI keychain write
+     to add mkcert's local CA to the trust store). It's a one-time, machine-wide prompt; thereafter `-install` is a
+     silent no-op. This is the only residual manual touch, and only on a brand-new box.
+   - **openssl fallback (proceed-anyway).** If mkcert is **not installed** (or you set `DEMO_NO_MKCERT=1`, or a
+     mkcert mint fails), the bring-up degrades to the **openssl self-signed** cert — byte-compatible, valid TLS, but
+     **untrusted**, so the browser shows a warning and you click **"proceed anyway"** once (or import/trust the
+     `<stack>/certs/fapi.crt` directly). This still works for automated (Playwright `ignoreHTTPSErrors`) verify.
+     Install mkcert (`brew install mkcert`) to get the zero-touch path.
+   - **Security note — a dev CA in your trust store.** `mkcert -install` adds mkcert's **local CA private key** to
+     your OS (and, if `certutil` is present, Firefox) trust store. That is a real, if small, **trust expansion** —
+     anything signed by that CA is trusted on your machine until you `mkcert -uninstall`. If you'd rather not, set
+     **`DEMO_NO_MKCERT=1`** to force the openssl/proceed-anyway path; nothing else changes.
+   - **Remote / VM demos.** `mkcert -install` trusts the **machine the bring-up runs on**. If you bring the demo up
+     on a VM/remote box but **browse from a different machine**, that machine's browser still hits the untrusted
+     cert → you need the proceed-anyway path (or to import the CA / cert on the browsing machine). The zero-touch
+     promise is for a **local, same-machine** demo.
+   - **Firefox needs `certutil`.** mkcert wires Chrome/Safari via the OS keychain automatically; **Firefox** has its
+     own trust store and only picks up the CA when `certutil` is installed at `-install` time
+     (`brew install nss`). Without it, Firefox falls back to proceed-anyway.
+   - **Cert expiry.** The keep-existing guard never re-mints, and it has **no expiry check** — a long-lived stack
+     could outlive its cert (openssl: 825 days; mkcert leaf: ~2.25 years) and silently re-blank. If a previously
+     working demo suddenly bounces to `/login`, **`rm <stack>/certs/fapi.crt`** and re-up — the bring-up regenerates
+     a fresh cert.
 3. **The dev-instance handshake.** An unauthenticated load hits `clerkMiddleware`, which **307-redirects** to
    `https://<fapi>/v1/client/handshake?…&format=nonce`. The fake FAPI signs the demo user in and **303-bounces** back
    to the app with `?__clerk_handshake=<token>` carrying the `Set-Cookie` directives (`__session` + `__client_uat` +
@@ -77,10 +99,11 @@ early "mint a pk and log in" sketch missed):
    authorized routes return **200** — the populated workforce, not a 403 wall.
 
 > **Why this is more than "mint a pk."** A pk alone points clerk-js at the fake FAPI, but a real dev-instance login
-> needs the FAPI to be **browser-trusted HTTPS**, complete the **handshake** (nonce + dev-browser cookie), mint an
-> **RS256** session the Node SDKs accept, and include the **`sid`** claim the client derives state from. All four
-> are wired by Clerkenstein + the demo injection; the full JWT/handshake flow is the clerkenstein knowledge base
-> (`knowledge/architecture.md` § Universal-key JWT / `knowledge/injection.md`).
+> needs the FAPI to be **browser-trusted HTTPS** (M31: minted via mkcert at bring-up — see step 2), complete the
+> **handshake** (nonce + dev-browser cookie), mint an **RS256** session the Node SDKs accept, and include the
+> **`sid`** claim the client derives state from. All four are wired by Clerkenstein + the demo injection; the full
+> JWT/handshake flow is the clerkenstein knowledge base (`knowledge/architecture.md` § Universal-key JWT /
+> `knowledge/injection.md`).
 
 ## Verifying without a browser
 The same identity can be exercised headlessly: mint a session token with the universal key

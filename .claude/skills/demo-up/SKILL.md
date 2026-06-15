@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--profile P] [--services "a b"] (UI/set-dress/local-content toggled by env vars on up-injected.sh: DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1)
+argument-hint: [N] [--profile P] [--services "a b"] (UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
 ---
 
 # Demo Up — spin up an isolated demo stack
@@ -65,8 +65,8 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures (replay
    only — capture is a separate, operator-confirmed prod read).
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
-   `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9100+`,
-   ant-academy `:3077+`) and the **dev stack is untouched**.
+   `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9000+`
+   single-port (M32), ant-academy `:3077+`) and the **dev stack is untouched**.
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.
@@ -79,7 +79,10 @@ proves zero shared/prod pollution. Full contract: [`corpus/ops/safety.md`](../..
 ## After bring-up
 
 A bare `/demo-up N` already auto-set-dressed the stack (real catalog + a `small-200` org) — so just **log in**
-(browser-login as `user_clerkenstein` → land in the populated org). To customize: re-run the generic stack-ops
+(browser-login as `user_clerkenstein` → land in the populated org). The fake-FAPI TLS cert is **auto-trusted**
+(M31: minted via `mkcert` at bring-up), so a fresh browser renders the signed-in app with **no proceed-anyway**
+— it falls back to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`
+(see [`corpus/ops/demo/recipe-browser-login.md`](../../../corpus/ops/demo/recipe-browser-login.md) §B). To customize: re-run the generic stack-ops
 (they accept `demo-N` or `dev-N`) — `/stack-snapshot N` (re-replay), `/stack-seed N --preset mid-500` (a fuller
 org / a custom `stack.seed.yaml`). List live stacks with `/stack-list`. If the catalog came up empty (a cold
 snapshot cache), fill it once per [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md),
