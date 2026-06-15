@@ -1,21 +1,29 @@
 # State
 
-**Active version:** _(between releases — **v1.7 "house lights" SHIPPED 2026-06-15**, tag `v1.7`. The next version is
-unplanned; run [`/developer-kit:design-roadmap`](roadmap.md) to scope it.)_
-**Active milestone:** _(between releases)_
+**Active version:** **v1.8 "understudy" — IN DEVELOPMENT** (designed 2026-06-15; branch `release/01.80-understudy`).
+The **self-contained-demo release**: give `stack-demo/` its **own platform clone set** so a box with only `stack-demo/`
+(no `stack-dev/`) can run a demo end-to-end. Closes a live doc-vs-code gap — `CLAUDE.md` already calls `stack-demo` *"a
+true peer with its own clone set,"* and M30 already provisions `stack-demo/platform/.env`, but `up-injected.sh` still
+builds every image from `stack-dev` (`src="$DEV/$svc"`, `PLAT="$DEV/platform"`). **Re-implements** the orphaned
+`m26/self-contained-demo` branch (@ `25ab855`, the spec — predates v1.6/v1.7 so unmergeable) onto current `main`,
+preserving the stack-secrets module + M30 provision + M31 mkcert + M32 studio-desk fix. **Tooling + docs only — zero
+platform-repo edits** (`stack-demo/platform` is a build *context* only).
+**Active milestone:** **M26 — Self-contained demo stacks** (`planned`, not started; single `section` milestone of
+v1.8). Build with [`/developer-kit:build-milestone`](roadmap.md) (creates `m26/self-contained-demo` from the release
+branch) — or drive the whole lifecycle with `/developer-kit:work-milestone m26`.
 **Last closed:** **v1.7 "house lights" — 2026-06-15**, tag `v1.7`. A **demo-UI-hardening release**: a fresh browser at a
 demo's offset UI renders the working app with **zero manual steps**. Triggered live — next-web at `http://localhost:33000`
 (demo-3) showed a **blank page** (clerk-js's handshake to the fake FAPI hit an untrusted self-signed cert) and studio-desk
-302'd to a dead `:9100`. **M31** automated a locally-trusted **mkcert** FAPI cert into the demo bring-up (one branch in
-`up-injected.sh`; openssl fallback + `DEMO_NO_MKCERT` opt-out; fake BAPI plain HTTP → out of scope) so next-web renders;
-**M32** fixed the studio-desk `:9100`-dead-redirect (a `NODE_ENV=production` override winning the additive env-merge →
-the single-port production `sendFile` path) + the `:9100` doc/CORS sweep. Verified: M31 browser-trust by composition
-(chromium trusts the mkcert cert, rejects the old self-signed); M32 route-coverage code-read (no gap) + a live merge-probe.
-close-release **GREEN** (all 9 sweeps GREEN, 0 blocking). **Tooling + docs only — zero platform-repo edits.**
-**Next up:** **`/developer-kit:design-roadmap`** to scope the next version. (Outward-facing: push the ext tags
-`house-lights-m31`/`m32` + the still-unpushed `stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`. The orphaned
-**`m26/self-contained-demo`** branch [tag `prop-room-m26`] + `wip/clerkenstein-browser-login` still await their own design-roadmap pass.)
-**Phase:** **between releases — awaiting `/developer-kit:design-roadmap`.**
+302'd to a dead `:9100`. **M31** automated a locally-trusted **mkcert** FAPI cert into the demo bring-up; **M32** fixed
+the studio-desk `:9100`-dead-redirect (a `NODE_ENV=production` override) + the `:9100` doc/CORS sweep. close-release
+**GREEN** (all 9 sweeps, 0 blocking). **Tooling + docs only.**
+**Next up:** **build M26** via `/developer-kit:build-milestone` (or `/developer-kit:work-milestone m26`). The verified
+port spec lives in [the M26 overview](releases/01.80-understudy/m26-self-contained-demo/overview.md) (design decisions
+D-MAIN + D1–D6). **After M26 ships:** delete the orphan tag `prop-room-m26` + branch `m26/self-contained-demo`
+(superseded by the re-implementation). (Outward-facing carry-over: push the ext tags `house-lights-m31`/`m32` +
+`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` to `origin`; `wip/clerkenstein-browser-login` still awaits its own
+design-roadmap pass.)
+**Phase:** **v1.8 designed — M26 `planned`, awaiting `/developer-kit:build-milestone`.**
 **Paused:** _(none)_
 
 ## Recently shipped releases
@@ -65,8 +73,9 @@ stay preserved on the ext side, awaiting their own design-roadmap pass.
 **v1.6 SHIPPED:** `release/01.60-stage-door` → `main`, tag **`v1.6`** (2026-06-14); ext markers `stage-door-m27`/`m28`/`m30`.
 **Prior:** **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-15 (**v1.7 "house lights" SHIPPED** via `/developer-kit:close-release` — 9-sweep release review, ALL
-GREEN [supply-chain 0-new-deps, scope M31+M32 100%-delivered/0-unaccounted, deferral GREEN, code-quality shellcheck+
-py_compile clean, docs/KB coherent, tests Go 1027/Python 471/flake 0, metrics GREEN, decisions blended]; 0 blocking.
-Merged → main, tagged `v1.7`; ext tag SHAs reconciled (house-lights-m31→5022e72, m32→7b17c39). Prior: 2026-06-15 M31 + M32
-CLOSED; v1.7 designed; 2026-06-14 v1.6 "stage door" SHIPPED [tag `v1.6`].)_
+_Last updated: 2026-06-15 (**v1.8 "understudy" DESIGNED** via `/developer-kit:design-roadmap` — the self-contained-demo
+release, a single `section` milestone **M26** that re-implements the orphaned `m26/self-contained-demo` branch [@ `25ab855`,
+unmergeable-stale] onto current `main`, preserving v1.6/v1.7. Port spec verified by a 3-agent fan-out + adversarial
+no-regression review [workflow `wf_212f3442-44e`]: all 12 orphan files covered, no M30/M31/M32 revert, design decisions
+D-MAIN + D1–D6 settled. Branch `release/01.80-understudy` cut; M26 dir scaffolded; M26 `planned`. Prior: 2026-06-15
+**v1.7 "house lights" SHIPPED** [tag `v1.7`, 9-sweep close-release ALL GREEN]; 2026-06-14 v1.6 "stage door" SHIPPED.)_
