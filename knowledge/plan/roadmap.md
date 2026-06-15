@@ -81,6 +81,17 @@ builder skills).
 > M27→M30**. M26 is intentionally not detailed here — it awaits a separate `/developer-kit:design-roadmap` pass to give
 > it a version + scope.
 
+> **v1.7 "house lights" — IN DEVELOPMENT** (designed 2026-06-15 via `/developer-kit:design-roadmap`; branch
+> `release/01.70-house-lights` cut from `main`). A **demo-UI-hardening release** — make a fresh browser at a demo's
+> offset UI render the working app with **zero manual steps**. Triggered by a live defect: next-web at
+> `http://localhost:33000` (demo-3) showed a **blank page** because clerk-js's handshake to the fake FAPI
+> (`https://127.0.0.1:35400`) hit an **untrusted self-signed cert** → clerk-js aborted → blank. **M31** automates a
+> locally-trusted **mkcert** FAPI cert into the demo bring-up (openssl fallback + a `DEMO_NO_MKCERT` opt-out; the fake
+> BAPI is plain HTTP → out of scope). **M32** fixes the sibling studio-desk `:9100`-dead-redirect (a 1-line
+> `NODE_ENV=production` override root-cause fix + the `:9100` doc/CORS sweep). ant-academy demo liveness → **backlog**
+> (repro-first). **Tooling + docs only — zero platform-repo edits.** Gap analysis + fix design + risk register:
+> [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
+
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
@@ -92,6 +103,7 @@ builder skills).
 | **v1.3b** | **dress rehearsal** | Field-hardening — make `/demo-up` produce a full, populated, verified, demoable stack (the gaps the first real run surfaced) | M16 ✅ → M17 ✅ → M18 ✅ → M19 ✅ → M20 ✅ | ✅ **SHIPPED 2026-06-09** (tag `v1.3.1`) |
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
+| **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 → M32 | 🚧 **IN DEVELOPMENT** (designed 2026-06-15; branch `release/01.70-house-lights`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -107,6 +119,75 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.7 "house lights" (designed 2026-06-15 · branch `release/01.70-house-lights`)
+
+**Theme:** a **demo-UI-hardening release** — when the house lights come up, the audience can see the show: a fresh
+browser at a demo's offset UI renders the working app with **zero manual steps**. Triggered by a live defect — next-web
+at `http://localhost:33000` (demo-3) rendered a **blank page** because clerk-js's dev-browser handshake to the fake FAPI
+(`https://127.0.0.1:35400`) hit an **untrusted openssl self-signed cert** (`net::ERR_CERT_AUTHORITY_INVALID`) → clerk-js
+aborted → blank. The investigation (3-investigator workflow + synthesis) found it's a **single-endpoint** trust failure
+(the fake BAPI is plain HTTP, server-side only → out of scope) and surfaced a sibling demo-UI rough edge (studio-desk
+302s to a dead `:9100`). 2 milestones M31→M32; ant-academy liveness → backlog (repro-first). **Tooling + docs only —
+zero platform-repo edits.**
+
+> **Designed 2026-06-15** via `/developer-kit:design-roadmap`. Gap analysis + fix design + risk register:
+> [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
+> **Phase 0a deferral audit GREEN** (by inheritance — the v1.6 `/close-release` re-audit ran 2026-06-14; the backlog
+> items DEF-M10-01 / DEF-M21-01 / M25-D9 / M26-self-contained-demo are all orthogonal). **Phase 0b KB blind-area:**
+> `corpus/ops/demo/recipe-browser-login.md §B` already OWNS the cert story (documents the *manual* mkcert workaround
+> today — M31 rewrites it manual→automated); only blind area is `frontend-tier.md` (silent on the cert — add a one-liner).
+
+### M31: mkcert-trusted FAPI cert — the browser-login render fix
+**Status:** `planned` · **Shape:** `section`
+**Goal:** A fresh browser at demo-N's next-web renders the signed-in app with **zero manual cert-trust / proceed-anyway**, by minting a locally-trusted (mkcert) FAPI TLS cert at bring-up — degrading cleanly to the current openssl self-signed path when mkcert is absent.
+**Scope:**
+  - In: `demo-stack/up-injected.sh` step 3a-bis (~lines 344-353), inside the existing keep-existing-cert guard — branch on `command -v mkcert` (and a new `DEMO_NO_MKCERT` opt-out): mkcert branch runs idempotent `mkcert -install` (`|| true`) then `mkcert -cert-file/-key-file 127.0.0.1 localhost ::1`; else / on-mint-failure keeps the openssl gen **verbatim**. Non-fatal throughout (the never-abort-a-good-bring-up contract).
+  - In: `DEMO_NO_MKCERT=1` escape hatch (parsed in `up-injected.sh`, mirrors `DEMO_NO_UI`/`DEMO_NO_SETDRESS`/`DEMO_NO_LOCAL_CONTENT`) — forces openssl even when mkcert is present, for operators who won't put a dev CA in their trust store.
+  - In: **zero change** to `gen_injected_override.py` / `inject.py` / `fake-fapi/main.go` (a trusted cert at the same `<stack>/certs/fapi.{crt,key}` paths "just works" — mount + `FAKE_FAPI_TLS_CERT/KEY` + `ListenAndServeTLS` unchanged).
+  - In: docs — rewrite `corpus/ops/demo/recipe-browser-login.md §B` (manual mkcert workaround → automatic; add the dev-CA-in-trust-store security note, the remote/VM + Firefox/`certutil` caveats, the `DEMO_NO_MKCERT` opt-out); a `frontend-tier.md` cert one-liner; the demo-up SKILL browser-login note; the `up-injected.sh:337-342` + `gen_injected_override.py:295` code comments (retire the "operator runs mkcert once" framing).
+  - In: a one-line **forward-note** in the code comment that a future dev-N `--local-content` UI path would want the same mkcert wiring (candidate to extract as a shared helper rather than re-inline).
+  - Out: the fake BAPI (plain HTTP, server-side only — no browser TLS handshake); the studio-desk redirect (M32); ant-academy liveness (backlog).
+**Depends on:** none (first milestone of the version).
+**Parallel with:** M32 in principle (different root files), but **sequence M31→M32** — both touch `up-injected.sh` + the same demo doc cluster, so serial avoids a merge overlap.
+**Estimated complexity:** small.
+**Open questions:** none blocking (fallback = openssl not fail-loud, decided; BAPI out of scope, decided; SANs `127.0.0.1 localhost ::1`, decided).
+**KB dependencies:** `corpus/ops/demo/recipe-browser-login.md` (the cert story it owns); `corpus/services/clerkenstein.md` (the browser-login→FAPI handshake); `corpus/ops/demo/frontend-tier.md`.
+**Delivers →** `rosetta-extensions/demo-stack` (the mkcert bring-up step; ext tag `house-lights-m31`) + the `recipe-browser-login.md` rewrite.
+
+### M32: studio-desk single-port / production alignment + the `:9100` sweep
+**Status:** `planned` · **Shape:** `section`
+**Goal:** A fresh browser at demo-N's studio-desk (e.g. `http://localhost:39000`) lands on a live page instead of a 302 to the dead `:9100`, by running the container's production code path; and the docs/CORS all agree on single-port `9000`+offset.
+**Scope:**
+  - In: `gen_injected_override.py` `FRONTENDS` studio-desk dict (~lines 90-96) — add `NODE_ENV=production` (+ `FRONTEND_PORT=9000` belt-and-suspenders). Root cause: the base compose ships `NODE_ENV=development` and the override's per-frontend env block is **additive** (deliberately not `!override`), so `development` survives → `src/index.ts` `isProduction=false` → the dev block `res.redirect('http://localhost:9100/home')` fires (a dead port). Production → `sendFile`, no cross-port redirect.
+  - In: a regression assertion in `stack-injection/tests/test_injection.py` near the single-port tests (~820-857) — assert `NODE_ENV=production` in the studio-desk env block.
+  - In: a Playwright smoke on `/home` + a couple of studio-desk routes confirming the production `sendFile` path serves them (verify the dev block's `.html`-extension redirects aren't load-bearing).
+  - In: the **`:9100` sweep** — `demo-up SKILL` (`:9100+`→`:9000+`), `frontend-tier.md:21` (drop the dead `:9100` frontend port → single-port `9000`+offset), `gen_injected_override.py:249` CORS (remove the un-offset `9100` origin — explicit decision note; dead now that studio-desk is single-port production).
+  - Out: the cert (M31); ant-academy (backlog).
+**Depends on:** none functionally; **sequence after M31** (shared `up-injected.sh`/doc-cluster surface).
+**Parallel with:** none (sequence after M31).
+**Estimated complexity:** small.
+**Open questions:** confirm the production `sendFile` path covers ALL routes the dev block handled (the Playwright smoke proves it).
+**KB dependencies:** `corpus/ops/demo/frontend-tier.md` (the studio-desk port story); demo-up SKILL.
+**Delivers →** `rosetta-extensions/demo-stack` + `stack-injection` (the override fix + test; ext tag `house-lights-m32`) + the `:9100` doc/CORS sweep.
+
+### Execution graph — v1.7 "house lights"
+```
+v1.7 "house lights"   (sequential — shared up-injected.sh + demo doc cluster)
+  M31 ─────────→ M32
+  mkcert cert    studio-desk single-port/production + :9100 sweep
+```
+**Parallelism:** none. Both are small `section` fixes that touch `up-injected.sh` + the same demo doc cluster, so they
+run serially to keep the merge surface clean. **ant-academy liveness → backlog** (repro-first; not in v1.7 scope).
+
+### Risk map — v1.7 "house lights"
+| Risk | Severity | Mitigation | Owner |
+|---|---|---|---|
+| Fresh-machine `mkcert -install` **prompts for the OS password** (GUI keychain write) → blocks an autonomous/CI bring-up | degrades-quality | `\|\| true` + the whole step non-fatal + openssl fallback; document "zero manual steps **on a local same-machine demo**", not universally | M31 |
+| **Remote/VM demos:** `-install` trusts the bring-up machine, not the browsing machine → still blanks | degrades-quality | keep the self-signed/proceed-anyway fallback documented for remote demos; don't claim universal zero-touch | M31 |
+| A **dev CA in the trust store** is a real trust expansion (Firefox needs `certutil`) | nice-to-resolve | the `DEMO_NO_MKCERT` opt-out + a security note in `recipe-browser-login.md` | M31 |
+| **Cert expiry:** the keep-existing guard has no expiry check → a ~3y mkcert leaf could silently re-blank | nice-to-resolve | document `rm <stack>/certs/fapi.crt` regenerates; note in the spec | M31 |
+| **M32 `NODE_ENV=production`** turns off the dev redirect block → some studio-desk routes could 404 if the production `sendFile` path doesn't cover them | degrades-quality | the in-scope Playwright smoke proves all routes serve before close | M32 |
 
 ## Done — v1.6 "stage door" (SHIPPED 2026-06-14 · tag `v1.6`)
 
