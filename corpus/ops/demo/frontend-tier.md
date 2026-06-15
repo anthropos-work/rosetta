@@ -159,7 +159,7 @@ installed (`npm install` needs the team-issued **Font Awesome Pro** token), or N
 exact manual commands and continues — it never aborts a good demo bring-up:
 
 ```bash
-cd stack-dev/ant-academy/code
+cd stack-demo/ant-academy/code            # M26: the academy clone lives in the demo's OWN peer set (stack-demo)
 cp .env.example .env.local                 # gitignored; keeps the repo clean
 #   set REQUIRE_ORGANIZATION_MEMBERSHIP=0, reuse platform/.env's Clerk keys, add FONTAWESOME_NPM_AUTH_TOKEN
 npm install
