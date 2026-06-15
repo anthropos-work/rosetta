@@ -57,3 +57,18 @@ install-failure test now discriminates (removing `|| true` → the test FAILS wi
 **General lesson:** when a test extracts-and-runs a bring-up code block, the harness's `set` flags must mirror the
 real script's, or strict-mode-dependent guards (`|| true`, `|| pf_rc=$?`, the cmd-sub `|| true` patterns) go
 untested. No change to `up-injected.sh` (the production code was already correct; only the test harness needed it).
+
+## M31-D7 — Close-time verify done by composition (demo-3 was torn down)
+The milestone's close-time box was "a fresh real browser renders next-web /home, no proceed-anyway." By close time the
+demo-3 stack the defect was hit on had been torn down (0 containers), so an end-to-end demo render wasn't available
+without re-spinning a fresh `/demo-up` (heavy). Instead the observable claim was proven by **composition**, which is
+necessary + sufficient:
+1. **mkcert cert is browser-trusted** (the only thing that was failing): Playwright chromium, **default context, NO
+   `ignoreHTTPSErrors`**, against a tiny HTTPS server → mkcert cert = `200` / no cert error; the old openssl self-signed
+   = `net::ERR_CERT_AUTHORITY_INVALID` (the exact blank-page cause). The contrast is the proof.
+2. **cert-trusted → next-web renders /home** — proven earlier (2026-06-15) with Playwright `ignoreHTTPSErrors` (full
+   render, signed-in as the seeded org).
+3. **up-injected.sh mints the mkcert cert at the consumed path** — the 11 `FapiCertStep` functional/edge tests.
+Chain: M31 tooling → mkcert cert at the path → chromium trusts it → next-web renders. A fresh `/demo-up` would
+re-demonstrate end-to-end on demand (operator action), but is not needed for the proof. Evidence run: `/tmp/m31verify`
+(ephemeral; mkcert vs openssl contrast).

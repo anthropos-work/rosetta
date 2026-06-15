@@ -13,7 +13,7 @@ _Section checklist. Closure when all boxes land. Stub at scaffold._
 - [x] verified: ZERO change needed to `gen_injected_override.py` / `inject.py` / `fake-fapi/main.go` (path-only consumers — M31-D4)
 - [x] README-index guard exit 0
 - [x] ext tag `house-lights-m31`
-- [ ] (close-time verify) a fresh real browser renders next-web `/home` signed-in, no proceed-anyway
+- [x] (close-time verify) browser-trust proven by composition (demo-3 was torn down — see M31-D7): chromium (no `ignoreHTTPSErrors`) trusts a mkcert cert (200, no cert error) vs rejects the old openssl self-signed (`ERR_CERT_AUTHORITY_INVALID`); + this-morning's "cert-trusted → next-web renders `/home`" + the 11 functional plumbing tests
 
 ## Notes
 - **Ext commit** `6565ef8` (on ext `m31/mkcert-fapi-cert`, from base `868a68a`): the mkcert branch + the
