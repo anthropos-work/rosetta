@@ -79,3 +79,40 @@ guard exit 0. Ext harden commit `815993f` on `m31/mkcert-fapi-cert` (tag `house-
 Scan clean — all four main branches + the `|| true` swallow + partial-state + whitespace + idempotency now covered;
 the remaining theoretical cases (`DEMO_NO_MKCERT` AND mkcert-absent) are logically subsumed and would be shallow.
 Single-pass stop (small bash surface; the rule forbids padding).
+
+## M31: Final Review
+
+_close-milestone review of the whole milestone (both repos). Deferral re-audit GREEN
+([audit-deferrals/deferral-audit-2026-06-15-m31-close.md](audit-deferrals/deferral-audit-2026-06-15-m31-close.md))._
+
+### Scope
+- [x] All `overview.md` In-list items delivered Fate-1 (mkcert branch + openssl fallback factored + `DEMO_NO_MKCERT`
+      + comments retired + forward-note + recipe §B rewrite + frontend-tier one-liner + SKILL note + zero-touch on
+      the 3 cert-consumers). 0 silent drops; the 4 deferral candidates all correctly fated (audit GREEN).
+
+### Code Quality
+- [x] [verify] ext branch well-factored — `gen_openssl_fapi_cert()` removes the two-copy openssl drift risk;
+      if-then-else (no SC2015); non-fatal throughout; PATH-based `command -v mkcert` detection. No issues.
+- [x] [verify] shellcheck 0.11.0 clean on `up-injected.sh`; `py_compile` clean on `gen_injected_override.py`.
+
+### Documentation
+- [x] [must-fix] `demo-stack/README.md` quoted "13 unit tests" (×2) — stale (actual 50). Reconciled to 50 + a
+      note distinguishing it from GUIDE's guarded "28" curated-subset count (M31-D8). Pre-existing drift, Fate-1.
+- [x] [verify] all 4 rosetta doc diffs match the shipped shell branch; cross-refs resolve; README-index guard exit 0.
+- [x] [verify] GUIDE.md "28 unit tests" correct-by-guard (`TestGuideDocTruth`; curated-subset = 28) — no change.
+
+### Tests & Benchmarks
+- [x] [verify] `test_tooling.py` 50/50 + `test_frontend_build.py` 42/42 pass; flake gate clean (Phase 8). No new
+      test gaps — `FapiCertStep` covers all 4 branches + idempotency + install-failure + whitespace + partial-state.
+
+### Adversarial review (Phase 2c)
+- [x] Zero-byte/truncated-cert + existence-only keep-guard scenario examined → NOT a regression (identical to pre-M31
+      openssl-only behavior); documented repair path exists (`rm fapi.crt` + re-up). Recorded in `decisions.md`.
+
+### Decision Triage
+- [x] M31-D1..D8 reviewed. The cert-step BEHAVIORS (4 branches, `||true` swallow, SANs, fallback, security/remote/
+      Firefox/expiry caveats) are already blended into `recipe-browser-login.md §B` + `frontend-tier.md` + the SKILL
+      during build/harden. D1/D2/D3/D6 (factoring, test-harness mechanics, strict-mode) are maintainer-only → archive
+      in `decisions.md`. D4 (no-touch consumers) already in recipe §B + the code comment. D5 (forward-note) lives at
+      the code site. D7 (compose verify) + D8 (count reconciliation) maintainer-only → archive. No further knowledge
+      blend needed — the user/developer-facing surface is the recipe, which is current.

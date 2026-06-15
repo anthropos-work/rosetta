@@ -1,0 +1,77 @@
+{
+  "milestone": "M31",
+  "title": "mkcert-trusted FAPI cert (the browser-login render fix). A fresh browser at a demo's next-web renders the signed-in app with ZERO manual cert-trust, by minting a locally-trusted (mkcert) FAPI TLS cert at bring-up, degrading cleanly to the openssl self-signed path when mkcert is absent / DEMO_NO_MKCERT=1 / a mint fails. ONE branch in up-injected.sh step 3a-bis (inside the keep-existing-cert guard), the openssl fallback factored into gen_openssl_fapi_cert(), non-fatal throughout. ZERO change to the cert-CONSUMING side (fake-fapi/main.go, gen_injected_override.py mount, inject.py) — all path-only.",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-06-15",
+  "is_first_milestone": true,
+  "is_final_milestone": false,
+  "position_note": "M31 is the 1st of 2 milestones of v1.7 'house lights' (M31 -> M32, strictly sequential — both touch up-injected.sh + the same demo doc cluster). M32 = studio-desk single-port/production + the :9100 sweep. After this close: M32 is the active milestone; v1.7 is NOT yet ready for close-release.",
+  "kind": "a two-repo milestone. The CODE is in the ext authoring copy (rosetta-extensions @ tag house-lights-m31 @ 6565ef8; harden @ 815993f; close review-fix @ 5022e72): the mkcert branch + gen_openssl_fapi_cert fallback + DEMO_NO_MKCERT parse + the FapiCertStep test class (11 tests) + the gen_injected_override.py comment touch-up + the close README count reconciliation. The rosetta side carries the recipe-browser-login.md §B rewrite + frontend-tier.md one-liner + the demo-up SKILL note + the planning artifacts. close-milestone's Phase 11 merge is rosetta-only (m31/mkcert-fapi-cert -> release/01.70-house-lights); the ORCHESTRATOR finalizes the ext side (ff main + re-point tag + delete branch).",
+  "sections": {
+    "total": 11,
+    "all_checked": true,
+    "list": "mkcert branch (idempotent -install + mint 127.0.0.1 localhost ::1) inside keep-existing guard · openssl fallback kept verbatim (absent AND mint-fail), non-fatal · DEMO_NO_MKCERT=1 opt-out · code comments retired + dev-N shared-helper forward-note · recipe-browser-login.md §B manual->automatic (+ security/remote/Firefox/expiry notes) · frontend-tier.md cert one-liner · demo-up SKILL note (+ DEMO_NO_MKCERT in argument-hint) · ZERO change to the 3 cert-consumers verified (M31-D4) · README-index guard exit 0 · ext tag house-lights-m31 · close-time browser-trust verify by composition (M31-D7)"
+  },
+  "field_bugs_surfaced": {
+    "count": 0,
+    "note": "M31 is a tooling-change milestone (not a field-bake). The harden pass surfaced ONE test-harness fidelity issue (M31-D6: the extracted-block harnesses sourced under `set -uo pipefail` but production runs `set -euo pipefail`, so the install-failure test would false-green) — a test-harness fix, not a production bug; up-injected.sh was byte-identical before and after. No production code defects found at build, harden, or close."
+  },
+  "tests": {
+    "language": "Python (ext demo-stack). M31 touched NO Go (Go test-func count unchanged at 1027). No rosetta executable code (docs + planning artifacts only); the rosetta gate is the corpus README-index guard (exit 0).",
+    "go_total": 1027,
+    "go_total_baseline_v16": 1027,
+    "go_total_delta": "+0 (M31 touched zero .go files — verified: git diff 868a68a...HEAD has no .go path)",
+    "go_by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "python_delta": "+11 (all in demo-stack/tests/test_tooling.py FapiCertStep: 8 at build + 3 at harden)",
+    "python_demo_stack_test_tooling": 50,
+    "python_demo_stack_test_tooling_baseline_v16": 47,
+    "python_demo_stack_tests_total": 110,
+    "python_demo_stack_tests_total_baseline_v16": 99,
+    "python_note": "demo-stack/tests/test_tooling.py 47 -> 50 (+3 harden; build had already taken it 39 -> 47, +8). demo-stack/tests total 99 -> 110 (+11). The v1.6 close headline 'Python 459' moves by the same +11 -> 470 (the v1.7 growth surface is the FapiCertStep test class). GUIDE.md's '28 unit tests' is the narrower TestGuideDocTruth-guarded curated-subset count (8 doc-pinned classes, FapiCertStep deliberately excluded) — verified collection = 28, unchanged, guard green. demo-stack/README.md was reconciled 13 -> 50 (the full test_tooling.py count) at close (M31-D8).",
+    "test_frontend_build": 42,
+    "flake_count": 0,
+    "flake_gate": "FapiCertStep + the full test_tooling.py (50): 5/5 randomized sequential runs (per-test tempfile.mkdtemp dirs, no shared state/ports) all 50/50 PASS, 0 fail/err. test_frontend_build 42/42. shellcheck 0.11.0 clean on up-injected.sh; py_compile clean on gen_injected_override.py. The corpus index guard is deterministic (exit 0).",
+    "rosetta_test_surface": false,
+    "rosetta_test_note": "The rosetta m31 branch carries no executable code — only the doc rewrite + the planning artifacts. The only programmatic gate is corpus_index_guard.py (exit 0)."
+  },
+  "coverage": {
+    "applicable": true,
+    "note": "/harden-milestone ran (1 pass, 2026-06-15). The milestone surface is one bash branch (no line-coverage tool applies to bash); 'coverage' = branch enumeration. The 8 build FapiCertStep tests covered the 4 main branches (mkcert-ok / mint-fail / DEMO_NO_MKCERT / mkcert-absent) + the keep-existing idempotency guard; the +3 harden tests closed the genuine remaining edges (install-failure-via-||true mutation-proven, $CERTS-whitespace-quoting across both branches, crt-only partial-state guard). Values-blind throughout (tests read only fapi.crt's first line to discriminate which branch fired; never assert on fapi.key body)."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "note": "No performance-sensitive code in M31 (a cert-mint branch at bring-up)."
+  },
+  "review": {
+    "findings": 2,
+    "findings_note": "2 findings: 0 scope-gap (every In-list item delivered Fate-1) · 0 code-quality (the ext branch is well-factored + tested green) · 1 docs (README.md count drift) · 0 tests · 0 decision-triage-blend (the cert behaviors were already blended at build/harden) · 1 adversarial-scenario record. Both landed Fate-1.",
+    "scope": "GREEN — all 11 deliverable boxes checked. Every overview In-list item delivered. The close-time live-render verify was satisfied by composition (M31-D7: chromium default-context trusts the mkcert cert / 200 vs rejects the openssl self-signed / ERR_CERT_AUTHORITY_INVALID + the earlier cert-trusted->renders proof + the 11 FapiCertStep tests). No silent drops; zero code TODO/FIXME/HACK in any M31-touched file.",
+    "code_quality": "GREEN — 0 findings. The ext branch reviewed cross-cuttingly: gen_openssl_fapi_cert() factors the openssl fallback into ONE definition called from both fallback branches (no two-copy drift risk); if-then-else (no SC2015 hazard); PATH-based `command -v mkcert` detection (not a hard-coded /opt/homebrew path, M31-D3); non-fatal throughout (the never-abort-a-good-bring-up contract); the outer keep-existing guard intact (idempotent re-ups). shellcheck 0.11.0 clean; py_compile clean.",
+    "adversarial": "GREEN — 1 scenario (Phase 2c) recorded in decisions.md: a successful-exit-code cert mint that writes a zero-byte/truncated fapi.crt -> the existence-only keep-guard ([ ! -f ]) would keep the corrupt cert on re-up. Verdict: NOT a regression (identical to the pre-M31 openssl-only existence guard; M31 changed which tool mints, not the guard) + already-documented repair path (recipe §B 'Cert expiry': rm fapi.crt + re-up). No code change; the existence-guard semantics are pinned by test_func_keep_existing_cert_is_idempotent + test_func_keep_existing_guard_keys_on_crt_only_partial_state.",
+    "docs": "GREEN after Phase 7 — 1 must-fix reconciled: demo-stack/README.md quoted '13 unit tests' (x2, stale since ~M16/M28; actual 50) -> reconciled to 50 + a one-line note distinguishing it from GUIDE's guarded '28' curated-subset (M31-D8). The 4 rosetta doc diffs (recipe-browser-login.md §B, frontend-tier.md, demo-up SKILL) match the shipped shell branch; cross-refs resolve; README-index guard exit 0.",
+    "tests": "GREEN — test_tooling.py 50/50 + test_frontend_build.py 42/42; flake gate 5/5 randomized sequential. No new test gaps (FapiCertStep covers all 4 branches + idempotency + install-failure + whitespace + partial-state). The README count fix touched no test.",
+    "decision_triage": "M31-D1..D8 reviewed. The cert-step user/developer-facing BEHAVIORS (4 branches, ||true swallow, SANs, fallback, security/remote/Firefox/expiry caveats) were already blended into recipe-browser-login.md §B + frontend-tier.md + the demo-up SKILL during build/harden — verified current, no re-blend needed. D1/D2/D3/D6 (factoring, test-harness mechanics, strict-mode lesson) maintainer-only -> archive in decisions.md. D4 (no-touch consumers) already in recipe §B + the code comment. D5 (forward-note) lives at the code site. D7 (compose verify) + D8 (count reconciliation) maintainer-only -> archive.",
+    "deferral_audit": "GREEN — audit-deferrals/deferral-audit-2026-06-15-m31-close.md. M31 is v1.7's FIRST milestone -> 0 inherited in-release deferrals, 0 repeat, 0 chronic, 0 aged-out, 0 blockers. 4 candidate items examined, all correctly fated: BAPI (design boundary — plain HTTP, no browser TLS) · ant-academy liveness (release-level routing to M33/roadmap-vision, decided at design) · close-time e2e render (LANDED by composition, M31-D7) · dev-N --local-content shared-helper (Fate-2 forward-note at the code site, M31-D5). The outward-facing release-level git carry-over (push v1.5/v1.6 ext tags; the orphaned m26 branch) is release/roadmap-vision hygiene, NOT an M31 milestone deferral — flagged for a future close-release."
+  },
+  "completeness_ledger_section": {
+    "done_fate1": "all 11 deliverable sections (mkcert branch + factored openssl fallback + DEMO_NO_MKCERT opt-out + retired comments + forward-note + recipe §B rewrite + frontend-tier one-liner + SKILL note + the 3 cert-consumers no-touch verified + README-index guard + ext tag house-lights-m31 + the close-time composition verify) + the close records (the README count reconciliation Fate-1, M31-D8 + the Phase-2c adversarial subsection, the deferral audit, the Final Review section, this metrics.json, the retro).",
+    "confirmed_covered_fate2": "the dev-N --local-content UI path's identical mkcert need (M31-D5) — no dev-N UI path exists today (net-new scope); captured as a code-site forward-note (candidate to extract a shared helper). Not landed here by design.",
+    "annotated_fate3": "none — no Fate-3 roadmap mutation at M31 close.",
+    "dropped": "none at M31.",
+    "escape_hatch_release_scope_breaking": "none. M31 introduced zero release-scope-breaking deferrals.",
+    "kept_followup": "none M31-originated. ant-academy liveness (-> M33/roadmap-vision) was routed at v1.7 design-roadmap, not deferred at M31. The release-level git carry-over (ext tag pushes, the orphaned m26 branch) is tracked in state.md, orthogonal to M31."
+  },
+  "delivered": {
+    "rosetta": "The doc rewrite: corpus/ops/demo/recipe-browser-login.md §B (manual mkcert workaround -> automatic + the security/remote-VM/Firefox-certutil/cert-expiry/DEMO_NO_MKCERT caveats) + corpus/ops/demo/frontend-tier.md (the browser-trusted-cert one-liner) + .claude/skills/demo-up/SKILL.md (the auto-trusted note + DEMO_NO_MKCERT in the argument-hint). The planning artifacts: overview/progress/spec-notes/decisions/kb-fidelity-audit + the audit-deferrals report + this metrics.json + the retro. state.md headline Go count unchanged (M31 adds no Go); Python +11; roadmap M31 status -> done; the M31 dir flipped to status: archived.",
+    "ext": "rosetta-extensions @ tag house-lights-m31 (@ 6565ef8): the mkcert branch + gen_openssl_fapi_cert + DEMO_NO_MKCERT + comment retire/forward-note + the gen_injected_override.py:295 comment touch-up + the FapiCertStep test class (8 tests). Harden @ 815993f (+3 FapiCertStep edge tests + the harness strict-mode fidelity fix). Close review-fix @ 5022e72 (the demo-stack/README.md test-count reconciliation 13 -> 50). The ORCHESTRATOR finalizes the ext side (ff main + re-point the tag + delete the branch) after the close returns."
+  },
+  "extensions": {
+    "module": "demo-stack (the cert-mint branch + the FapiCertStep tests + the README reconciliation) + stack-injection (the gen_injected_override.py comment touch-up only).",
+    "head_at_close": "5022e72 (on m31/mkcert-fapi-cert — the close README review-fix; tag house-lights-m31 unmoved @ 6565ef8)",
+    "build_tip_tag": "house-lights-m31 (the tag the /demo-up skill pins; @ 6565ef8 — the mkcert cert step). The harden + close commits sit on the branch above the tag; the orchestrator re-points the tag at branch tip after ff-merging main.",
+    "tag_note": "house-lights-m31 @ 6565ef8 (build tip). The ext m31/mkcert-fapi-cert branch stays live at close-return (HEAD 5022e72); the orchestrator ff-merges main + re-points the tag + deletes the branch. close-milestone does NOT touch the ext main/tag/branch.",
+    "code_commits": ["6565ef8 M31 (house-lights): mkcert-trusted FAPI TLS cert in the demo bring-up", "815993f harden(M31): +3 FapiCertStep edge tests + harness set -euo pipefail fidelity fix", "5022e72 close(M31): reconcile demo-stack/README.md test count 13 -> 50"]
+  },
+  "notes": "M31 is the 1st of 2 milestones of v1.7 'house lights' — the demo-UI-hardening release triggered by a live next-web blank page (clerk-js's handshake to the fake FAPI hit an untrusted self-signed cert). M31 automates a locally-trusted mkcert FAPI cert into the demo bring-up: ONE branch in up-injected.sh step 3a-bis (inside the keep-existing-cert guard), the openssl fallback factored into gen_openssl_fapi_cert() and kept byte-compatible, DEMO_NO_MKCERT=1 opt-out, non-fatal throughout, with ZERO change to the 3 cert-consuming files (path-only). The close-time observable verify was proven by composition (M31-D7: chromium trusts the mkcert cert / 200 vs rejects the openssl self-signed / ERR_CERT_AUTHORITY_INVALID — the exact blank-page cause — + the earlier cert-trusted->renders proof + the 11 FapiCertStep functional/edge tests; demo-3 had been torn down so an end-to-end demo render wasn't re-spun, which is necessary+sufficient by composition). The close review found 2 findings, both Fate-1: the demo-stack/README.md '13 tests' count drift (reconciled to 50) + a recorded adversarial scenario (zero-byte cert / existence-only guard = pre-existing, documented repair path). Go 1027 unchanged (M31 touched no Go); Python +11 (the FapiCertStep class); flake 0; deferral audit GREEN. After this close: M32 studio-desk single-port/production is the active milestone."
+}

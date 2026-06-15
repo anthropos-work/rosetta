@@ -72,3 +72,26 @@ necessary + sufficient:
 Chain: M31 tooling → mkcert cert at the path → chromium trusts it → next-web renders. A fresh `/demo-up` would
 re-demonstrate end-to-end on demand (operator action), but is not needed for the proof. Evidence run: `/tmp/m31verify`
 (ephemeral; mkcert vs openssl contrast).
+
+## Adversarial review (close, Phase 2c)
+- **Scenario: a successful-exit-code mkcert/openssl run that writes a zero-byte or truncated `fapi.crt`** (disk
+  full mid-write, an OS-level interrupt). The outer keep-existing guard is `[ ! -f "$CERTS/fapi.crt" ]` — it keys
+  on *existence*, not *validity* — so a subsequent re-up would KEEP the corrupt cert and fake-fapi's
+  `ListenAndServeTLS` would fail to load it (blank page returns). **Response: NOT a regression — identical to the
+  pre-M31 behavior** (the historical openssl-only step had the exact same existence-only guard; M31 changed which
+  tool mints, not the guard). It is a known, *documented* limitation: the `recipe-browser-login.md §B` "Cert expiry"
+  bullet already prescribes `rm <stack>/certs/fapi.crt` + re-up as the regenerate path, which equally repairs a
+  corrupt cert. Adding a validity check (e.g. `openssl x509 -checkend`) to the guard would be net-new scope touching
+  the shared cert-existence contract used by every re-up; out of M31's tool-swap scope. Recorded so a future
+  "validate-not-just-exist" guard change is a deliberate, traceable decision rather than an accidental omission.
+  (No code change; the existing tests pin the existence-guard semantics — `test_func_keep_existing_cert_is_idempotent`
+  + `test_func_keep_existing_guard_keys_on_crt_only_partial_state`.)
+
+## M31-D8 — README.md test-count reconciliation (Phase 4 handbook-count discipline)
+The demo-stack section's `README.md` quoted "**13 unit tests**" (lines 56 + 66) for `tests/test_tooling.py` — stale
+since well before M31 (the suite grew through M16/M28/etc. to **50**, while the README count never followed). The
+close-milestone Phase 4 step-6 reconciliation discipline ("handbook-quoted counts must match the test-runner's
+authoritative output; any drift is a Phase 7 fix") caught it at this milestone boundary. Fixed in-place to **50** +
+a one-line note distinguishing it from the GUIDE's narrower "28" (the `TestGuideDocTruth`-guarded curated-subset
+count). Pre-existing drift, but Fate-1 (a complete one-edit doc correction). The GUIDE "28" is correct-by-guard and
+needed no change (verified: curated-subset collection = 28, total suite = 50).
