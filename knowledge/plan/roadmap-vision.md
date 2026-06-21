@@ -23,7 +23,7 @@ and a `release/{version}` branch is cut.
 > browser at a demo's offset UI renders with zero manual steps: M31 a locally-trusted **mkcert** FAPI cert [so next-web
 > stops blanking] + M32 the studio-desk single-port/production fix, M31→M32; tooling + docs only, zero platform-repo
 > edits). Triggered by a live next-web blank-page defect, not from prior backlog.
-> **v1.8 "understudy"** → 2026-06-15 (IN DEVELOPMENT, branch `release/01.80-understudy`; the **self-contained-demo
+> **v1.8 "understudy"** → 2026-06-15 (shipped 2026-06-15, tag `v1.8`; the **self-contained-demo
 > release** — give `stack-demo/` its own platform clone set so a box with only `stack-demo/` runs a demo end-to-end:
 > a single `section` milestone **M26** that re-implements the orphaned `m26/self-contained-demo` branch onto current
 > `main`, preserving v1.6/v1.7; tooling + docs only, zero platform-repo edits). **Graduated from the unscheduled
@@ -31,9 +31,9 @@ and a `release/{version}` branch is cut.
 
 ---
 
-> **v1.8 "understudy" is IN DEVELOPMENT** (designed 2026-06-15; branch `release/01.80-understudy`; full detail in the
-> `## v1.8 "understudy" — IN DEVELOPMENT` section of [`roadmap.md`](roadmap.md)). It is the active version — no further
-> version is staged behind it.
+> **Between releases.** v1.8 "understudy" SHIPPED 2026-06-15 (tag `v1.8`; full detail in the `## Done — v1.8 "understudy"`
+> section of [`roadmap.md`](roadmap.md)). No version is currently in development or staged behind it — the next version
+> awaits a `/developer-kit:design-roadmap` run.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -66,10 +66,10 @@ mirror engines**; the **deployment/injection CI gate** (a local-only alignment s
 demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
 
 ## Codename notes
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" shipped — their codenames are now permanent. **v1.8 "understudy"** continues the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 
-_Last updated: 2026-06-15 (**v1.8 "understudy" DESIGNED + IN DEVELOPMENT** — the self-contained-demo release, a single
-`section` milestone M26 that re-implements the orphaned `m26/self-contained-demo` branch onto current `main` [verified
-port spec, no v1.6/v1.7 regression]; branch `release/01.80-understudy` cut. **M26 graduated from the backlog into v1.8.**
-Backlog now: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 "house
+_Last updated: 2026-06-15 (**v1.8 "understudy" SHIPPED** [tag `v1.8`] — the self-contained-demo release, a single
+`section` milestone M26 that re-implemented the orphaned `m26/self-contained-demo` branch onto current `main` [verified
+port spec, no v1.6/v1.7 regression]; `release/01.80-understudy` merged `--no-ff` → `main`. **M26 graduated from the backlog into v1.8.**
+Now between releases — backlog: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 "house
 lights" SHIPPED [tag `v1.7`], the demo-UI-hardening release M31→M32.)_

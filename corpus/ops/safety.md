@@ -285,8 +285,8 @@ construction, byte-for-byte** — there is no demo-specific set-dress code path 
   (M30's provisioner then writes the real `.env` from `.agentspace/secrets`, so a box with only `stack-demo/` is
   fully supported). The build SOURCE **never** falls back to `stack-dev` — a required platform clone failure
   aborts loud rather than borrow dev's repos, and dev-image reuse is OFF by default (`DEMO_REUSE_DEV_IMAGES=1`
-  opts back in). `TestRenameDrift` fences that every code-level `stack-dev` reference in the demo tooling is
-  confined to that `.env`-seed read. (#M26-D4)
+  opts back in). The `TestRenameDrift` suite (esp. `test_ensure_clones_reads_stack_dev_only_for_secrets`) fences
+  that every code-level `stack-dev` reference in the demo tooling is confined to that `.env`-seed read. (#M26-D4)
 
 ### 2.8 Bring-up scripts must survive bash 3.2 under `set -u` (the non-fatal-means-non-crashing invariant)
 

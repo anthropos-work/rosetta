@@ -80,8 +80,8 @@ builder skills).
 > self-contained-demo as M26** (pending its own roadmap home) and **renumber the secret-provisioning release to
 > M27→M30**. **M26 now has its home: v1.8 "understudy" (below)** — re-implemented onto current `main`, not merged.
 
-> **v1.8 "understudy" — IN DEVELOPMENT** (designed 2026-06-15 via `/developer-kit:design-roadmap`; branch
-> `release/01.80-understudy`; full detail in `## v1.8 "understudy" — IN DEVELOPMENT` below). The **self-contained-demo
+> **v1.8 "understudy" — SHIPPED 2026-06-15** (tag `v1.8`; designed 2026-06-15 via `/developer-kit:design-roadmap`;
+> branch `release/01.80-understudy` merged `--no-ff` → `main`; full detail in `## Done — v1.8 "understudy"` below). The **self-contained-demo
 > release** — give `stack-demo/` its **own platform clone set** so a box with only `stack-demo/` (no `stack-dev/`) can
 > run a demo end-to-end. Closes a live doc-vs-code gap: `CLAUDE.md` already calls `stack-demo` *"a true peer with its
 > own clone set,"* and M30 already provisions `stack-demo/platform/.env`, but `up-injected.sh` still builds every image
@@ -117,7 +117,7 @@ builder skills).
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
-| **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | 🔨 **IN DEVELOPMENT** — M26 `done` 2026-06-15; awaiting `/developer-kit:close-release` |
+| **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -134,7 +134,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## v1.8 "understudy" — IN DEVELOPMENT (designed 2026-06-15 · branch `release/01.80-understudy`)
+## Done — v1.8 "understudy" (SHIPPED 2026-06-15 · tag `v1.8`)
 
 **Theme:** the **self-contained-demo release.** An understudy is a fully self-contained substitute, ready to perform on
 its own without the lead — `stack-demo/` becomes exactly that. Today `dev-up` builds from `stack-dev/`'s own clones
