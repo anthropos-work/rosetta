@@ -78,8 +78,20 @@ builder skills).
 > 2026-06-14 in the `rosetta-extensions` authoring copy but **never merged, never pushed, never tracked in this
 > roadmap**. v1.6 "stage door" was first designed as M26→M29; on discovering the collision the user chose to **keep
 > self-contained-demo as M26** (pending its own roadmap home) and **renumber the secret-provisioning release to
-> M27→M30**. M26 is intentionally not detailed here — it awaits a separate `/developer-kit:design-roadmap` pass to give
-> it a version + scope.
+> M27→M30**. **M26 now has its home: v1.8 "understudy" (below)** — re-implemented onto current `main`, not merged.
+
+> **v1.8 "understudy" — SHIPPED 2026-06-15** (tag `v1.8`; designed 2026-06-15 via `/developer-kit:design-roadmap`;
+> branch `release/01.80-understudy` merged `--no-ff` → `main`; full detail in `## Done — v1.8 "understudy"` below). The **self-contained-demo
+> release** — give `stack-demo/` its **own platform clone set** so a box with only `stack-demo/` (no `stack-dev/`) can
+> run a demo end-to-end. Closes a live doc-vs-code gap: `CLAUDE.md` already calls `stack-demo` *"a true peer with its
+> own clone set,"* and M30 already provisions `stack-demo/platform/.env`, but `up-injected.sh` still builds every image
+> from `stack-dev` and resolves the compose topology from `stack-dev/platform`. A **single `section` milestone — M26**
+> (the slot reserved 2026-06-14) — that **re-implements** the orphaned `m26/self-contained-demo` branch (@ `25ab855`,
+> the spec) onto current `main`, preserving v1.6/v1.7: port `ensure-clones.sh`, move the build source + compose dir to
+> `stack-demo`, gate dev-image reuse behind an opt-in flag, port the tests, re-author the dropped corpus doc-half.
+> **Tooling + docs only — zero platform-repo edits** (`stack-demo/platform` is a build *context* only). Verified port
+> spec — 3-agent fan-out + adversarial no-regression review (`.agentspace` workflow `wf_212f3442-44e`, 2026-06-15):
+> all 12 orphan files covered, no M30/M31/M32 revert, 4 internal contradictions reconciled into design decisions D1–D4.
 
 > **v1.7 "house lights" — SHIPPED 2026-06-15** (tag `v1.7`; designed 2026-06-15 via `/developer-kit:design-roadmap`;
 > branch `release/01.70-house-lights` merged `--no-ff` → `main`; full detail in `## Done — v1.7` below). A
@@ -105,6 +117,7 @@ builder skills).
 | **v1.5** | **prop room** | The **local-Directus release** — every stack serves its own captured public catalog locally (data plane local, asset plane prod → real images), content-self-contained on `--local-content` | M21 ✅ → M22 ✅ → M23 ✅ → M24 ✅ → M25 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.5`) |
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
+| **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -120,6 +133,113 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## Done — v1.8 "understudy" (SHIPPED 2026-06-15 · tag `v1.8`)
+
+**Theme:** the **self-contained-demo release.** An understudy is a fully self-contained substitute, ready to perform on
+its own without the lead — `stack-demo/` becomes exactly that. Today `dev-up` builds from `stack-dev/`'s own clones
+(self-contained ✅), but `demo-up` **borrows `stack-dev/`'s code** to build its images (`up-injected.sh` reads
+`src="$DEV/$svc"`, `PLAT="$DEV/platform"`) — so a box without `stack-dev/` cannot run a demo. Yet `CLAUDE.md` already
+documents `stack-demo` as *"a true peer of stack-dev (its own clone set)… not a borrower,"* and M30's secret
+provisioner already writes to `stack-demo/platform/.env` assuming the clones exist there. v1.8 **makes the
+implementation match the documented model**: give `stack-demo/` its own GitHub clone set and build every demo image
+from it. **Tooling + docs only — zero platform-repo edits** (`stack-demo/platform` is a build *context* only, never
+edited).
+
+> **Designed 2026-06-15** via `/developer-kit:design-roadmap`. Triggered by the user ("fill just that gap" after the
+> blank-page debugging surfaced that demo borrows dev's code). **This is a re-implementation, not a merge:** the
+> orphaned ext branch `m26/self-contained-demo` (@ `25ab855`, tag `prop-room-m26`, +521/−141 across 12 files, authored
+> 2026-06-14) predates v1.6 "stage door" + v1.7 "house lights", which rewrote the same files — a merge would silently
+> revert the `stack-secrets` module + the M30 BASE_ENV provision + the M31 mkcert cert + the M32 studio-desk fix. M26
+> ports the orphan's **intent** onto current `main`. **Verified port spec** — a 3-agent fan-out + adversarial
+> completeness/no-regression review (`.agentspace` workflow `wf_212f3442-44e`): all 12 orphan-touched files accounted
+> for, NO spec step reverts M30/M31/M32, and 4 internal contradictions reconciled into the design decisions below.
+> **Phase 0a deferral audit GREEN** by inheritance (v1.7's `/close-release` re-audit ran 2026-06-15; the live backlog
+> items DEF-M10-01 / DEF-M21-01 / M25-D9 are all orthogonal to demo self-containment). **Phase 0b KB blind-area:**
+> the corpus doc-half (CLAUDE.md / demo/README.md / frontend-tier.md / rosetta_demo.md) currently describes the
+> unshipped model — M26 re-authors it to match the code; `.claude/skills/stack-secrets/SKILL.md:21` references a
+> `/demo-up ensure-clones` that doesn't exist on `main` yet → M26 makes it real.
+
+### M26: Self-contained demo stacks
+**Status:** `done` (completed 2026-06-15) · **Shape:** `section`
+**Dir:** [m26-self-contained-demo/](releases/01.80-understudy/m26-self-contained-demo/) (overview)
+**Goal:** A demo stack builds **entirely from its own clone set** in `stack-demo/` — so a box with only `stack-demo/`
+(no `stack-dev/`) can bring a demo up end-to-end, closing the doc-vs-code gap (CLAUDE.md's "true peer" claim becomes
+true; M30's `stack-demo/platform/.env` provision finally has clones to land beside).
+**Scope:**
+  - In: **`demo-stack/ensure-clones.sh` (NEW)** — port the orphan's 106-line fail-loud idempotent bootstrapper (clone
+    `stack-demo/platform` from GitHub over SSH if absent → seed `.env` from `stack-dev` *if present, non-fatally* [D4]
+    → `make init` → `make init-studio` non-fatal → `clones.lock.json` provenance).
+  - In: **`up-injected.sh`** — `DEMO="$DEMO_WS"` alias [D2]; **`PLAT="$DEMO_WS/platform"`** [D-MAIN — full
+    self-containment: the compose dir + relative `build.context` resolve against `stack-demo`, so the non-Clerk
+    services build from `stack-demo` too]; sequence `ensure-clones.sh` below the L172 lib-only seam, above the M28
+    pre-flight [D1]; repoint the frontend ctx (L113/L140) + INJECT_SVCS src (L254) + cms-studio log to `$DEMO`; add
+    the `DEMO_REUSE_DEV_IMAGES`→`--reuse-dev-images` flag [D5]. Injection still mutates only the per-demo copy.
+  - In: **`gen_injected_override.py`** — `reuse_dev_images=False` param + `--reuse-dev-images` arg; gate the
+    currently-unconditional dev-image reuse (L252) behind it [D5]. Preserve M32 (NODE_ENV=production / CORS).
+  - In: **`migrate-demo.sh` / `ant-academy.sh` / `rosetta-demo`** — `$DEV`→`stack-demo` anchor repoint (all-4-script
+    [D3]); drop the `anthropos-dev` legacy fallback on the demo scripts.
+  - In: **tests** — `TestEnsureClones` + `TestSelfContainedSource` (append-only, preserving M28/M31 classes);
+    retarget `TestRenameDrift`; `TestShellcheck`+ensure-clones; the `reuse_dev_images` opt-in tests; the
+    `stack-dev`→`stack-demo` fixture renames (`test_frontend_build.py` / `test_ant_academy.py` /
+    `test_migrate_race_live.py`); pin the `GUIDE.md` count to the recomputed sum [D6].
+  - In: **rosetta corpus doc-half** — re-author `CLAUDE.md` (the now-true "true peer" claim) + `corpus/ops/demo/README.md`
+    + `frontend-tier.md` + `rosetta_demo.md` (the from-scratch self-contained bring-up) + fix `stack-secrets/SKILL.md:21`.
+  - Out: `stack-dev` (already self-contained — unchanged); any platform-repo edit; new third-party deps.
+**Design decisions (settled at design):** **D-MAIN** PLAT moves to `stack-demo/platform` (full self-containment — the
+"minimal/keep-PLAT-on-stack-dev" variant would NOT fill the gap; M30 reconciliation: provision target == compose dir,
+behavior preserved). **D1** ensure-clones below the lib-only seam (not the head — avoids the M28 "above-seam crashed
+20 tests" class). **D2** `DEMO="$DEMO_WS"` alias (keep both names). **D3** all-4-script repoint, no test drops. **D4**
+phase-(b) `.env` copy non-fatal/copy-if-present, deferring to M30 — supports a no-`stack-dev` box (the one refinement
+of the orphan). **D5** `reuse_dev_images` OFF by default. **D6** GUIDE count pinned to the live formula (~41), not the
+orphan's stale 40.
+**After ship:** delete the orphan tag `prop-room-m26` + branch `m26/self-contained-demo` (superseded).
+**Depends on:** none.
+**Parallel with:** none (single milestone).
+**Estimated complexity:** medium.
+**Open questions:** none blocking (D-MAIN + D1–D6 all settled).
+**KB dependencies:** `corpus/ops/rosetta_demo.md`; `corpus/ops/demo/README.md` + `frontend-tier.md`;
+`corpus/ops/secrets-spec.md` + `.claude/skills/stack-secrets/SKILL.md` (the M30 provision the `.env` seed layers under);
+`corpus/ops/safety.md` (the sanctioned stack-dev read is `.env`-copy-only, never SOURCE).
+**Delivers →** `rosetta-extensions/demo-stack` + `stack-injection` (ext tag `understudy-m26`) + the rosetta corpus doc-half.
+
+**Closure (2026-06-15):** All 7 sections + 2 harden passes landed. The 12-file ext port (`ensure-clones.sh` NEW +
+the `$DEV`→`stack-demo` build-source repoints across `up-injected.sh`/`migrate-demo.sh`/`ant-academy.sh`/`rosetta-demo`
++ the `reuse_dev_images` gate in `gen_injected_override.py` + ported/retargeted tests + `GUIDE.md`) on ext
+`m26/self-contained-demo-reimpl`; the rosetta doc-half on `m26/self-contained-demo`. **D-MAIN** (PLAT moves to
+`stack-demo/platform`) is the load-bearing decision — `docker compose -f stack-demo/platform/docker-compose.yml`
+resolves the non-Clerk services' relative `build.context` against `stack-demo`, so the WHOLE stack (not just the
+injected copies) builds from `stack-demo`. **Close GREEN:** review found **2 findings, both Fate-1 documentation/
+comment-accuracy** — (1) two stale "legacy stack-dev/.env base" comments in `up-injected.sh` re-worded post-D-MAIN
+(ext fix-commit `773184f`); (2) the M26 sanctioned-cross-stack-read invariant (the sole `stack-dev` read is
+ensure-clones' `.env` *seed*, never the build SOURCE) blended into `safety.md` §2.7 (#M26-D4). Cross-cutting code
+review CLEAN — all 4 must-preserve invariants intact (M30 BASE_ENV values-blind+non-fatal [paths repointed to
+stack-demo, behavior preserved], M31 mkcert, M32 studio-desk `NODE_ENV=production`+`:9000`+dropped-`:9100`,
+injection-COPY-only). **Tests:** demo-stack **138/138** (110→138, +28) + stack-injection **113/113** (111→113, +2),
+py3.11/PyYAML JUnit-authoritative; flake gate **5/5** each (0 flakes); Go **1027** unchanged (no Go touched);
+`gen_injected_override.py` 99%. Field-bake (the close-time observable gate) satisfied **by composition** (the M31-D7/
+M32-D5 pattern: static self-containment assertions + the functional ensure-clones harness + green suites + flake
+gate) — the FULL LIVE field-bake on a freshly-emptied `stack-demo/` is a **user-authorized post-close follow-up**.
+Deferral re-audit GREEN (0 deferrals). Supply-chain GREEN (0 new deps). Alignment 100%/100% (untouched). The ext
+`understudy-m26` tag sits at the reimpl commit (17971c1); the **orchestrator** re-points it forward + ffs ext→main +
+deletes the orphan tag `prop-room-m26` / orphan branch `m26/self-contained-demo` (superseded) post-close.
+
+### Execution graph — v1.8 "understudy"
+```
+v1.8 "understudy"   (single milestone)
+  M26
+  self-contained demo (ensure-clones + build-source/compose → stack-demo + reuse-flag + tests + doc-half)
+```
+**Parallelism:** none — one `section` milestone.
+
+### Risk map — v1.8 "understudy"
+| Risk | Severity | Mitigation | Owner |
+|---|---|---|---|
+| PLAT-move [D-MAIN] touches M30's path wiring → M28/M30 pre-flight tests may assert `stack-dev/platform/.env` as BASE_ENV default | degrades-quality | re-point those test expectations; M30 *behavior* preserved (only paths move) | M26 |
+| ensure-clones runs a real `git clone` + `make init` (network/SSH) → must never fire in static unit tests | breaks-tests | placement BELOW the L172 lib-only seam [D1] + `TestEnsureClones` static-only fences | M26 |
+| on-disk `stack-demo/` already populated (orphan's `clones.lock.json`) masks a from-scratch failure | gives-false-green | field-bake on a freshly-emptied `stack-demo/` | M26 |
+| ensure-clones `.env` seed vs M30 provision both write `stack-demo/platform/.env` | nice-to-resolve | D4 (copy-if-present, non-fatal) + sequencing before M30 provision — they layer | M26 |
+| manual `rosetta-demo up` now presupposes a populated `stack-demo` | behavior-change (accepted) | documented; the auto `/demo-up` path handles it | M26 |
 
 ## Done — v1.7 "house lights" (SHIPPED 2026-06-15 · tag `v1.7`)
 

@@ -1,0 +1,18 @@
+# Dependency lockfile — v1.8 "understudy" (2026-06-15)
+# v1.8 inherits v1.7's supply-chain surface UNCHANGED. M26 added ZERO new third-party deps.
+# Ext code range: rosetta-extensions 7b17c39 (tag house-lights-m32, v1.8 base) .. 773184f (tag understudy-m26).
+# Go module diff 7b17c39..773184f over '*/go.mod' '*/go.sum' = EMPTY (M26 touched only .sh/.py/.md).
+# Go test-func count = 1027 (unchanged from v1.7).
+#
+# Go modules (5, all go 1.25.0, unchanged from v1.7):
+alignment        module=anthropos.dev/alignment                                         third-party=(none; stdlib+first-party)
+clerkenstein     module=clerkenstein                                                    third-party=github.com/anthropos-work/colony@v0.34.3, github.com/clerk/clerk-sdk-go/v2@v2.6.0, github.com/google/uuid@v1.6.0, github.com/svix/svix-webhooks@v1.93.0
+stack-secrets    module=github.com/anthropos-work/rosetta-extensions/stack-secrets      third-party=(none; stdlib-only)
+stack-seeding    module=github.com/anthropos-work/rosetta-extensions/stack-seeding      third-party=github.com/jackc/pgx/v5@v5.9.2, gopkg.in/yaml.v3@v3.0.1
+stack-snapshot   module=github.com/anthropos-work/rosetta-extensions/stack-snapshot     third-party=(none)
+#
+# Python: stdlib-only across all touched files + one PRE-EXISTING optional test dep:
+PyYAML           scope=test-only (stack-injection/tests, guarded skip-if-absent)        added=M5 (2026-06-04), unpinned, no manifest
+#
+# Shell: ensure-clones.sh (NEW, M26) uses host git/ssh to GitHub for repo bootstrap — host tools, nothing vendored/pinned.
+# CVE surface: NO CHANGE vs v1.7 (prior baseline: releases/archive/01.70-house-lights/dependencies.lock).

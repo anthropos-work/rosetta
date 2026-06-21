@@ -23,12 +23,17 @@ and a `release/{version}` branch is cut.
 > browser at a demo's offset UI renders with zero manual steps: M31 a locally-trusted **mkcert** FAPI cert [so next-web
 > stops blanking] + M32 the studio-desk single-port/production fix, M31→M32; tooling + docs only, zero platform-repo
 > edits). Triggered by a live next-web blank-page defect, not from prior backlog.
+> **v1.8 "understudy"** → 2026-06-15 (shipped 2026-06-15, tag `v1.8`; the **self-contained-demo
+> release** — give `stack-demo/` its own platform clone set so a box with only `stack-demo/` runs a demo end-to-end:
+> a single `section` milestone **M26** that re-implements the orphaned `m26/self-contained-demo` branch onto current
+> `main`, preserving v1.6/v1.7; tooling + docs only, zero platform-repo edits). **Graduated from the unscheduled
+> backlog** (the orphaned ext effort) on the user's "fill just that gap" go-ahead.
 
 ---
 
-> **No version is currently staged.** v1.7 "house lights" shipped 2026-06-15 (tag `v1.7`; full detail in the
-> `## Done — v1.7` section of [`roadmap.md`](roadmap.md)). The next version is **unplanned** — run
-> `/developer-kit:design-roadmap` to scope it.
+> **Between releases.** v1.8 "understudy" SHIPPED 2026-06-15 (tag `v1.8`; full detail in the `## Done — v1.8 "understudy"`
+> section of [`roadmap.md`](roadmap.md)). No version is currently in development or staged behind it — the next version
+> awaits a `/developer-kit:design-roadmap` run.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -41,13 +46,6 @@ Genuinely-deferred work, no target version, not scheduled:
   only after reproducing the exact "dead on later visit" scenario**; likely doc-only (document the "native — re-run
   `/demo-up` to relaunch" reality in `frontend-tier.md`) or a minimal liveness loop if repro proves a real gap. Smaller
   payoff (academy is the least-central, Vercel-native, Clerk-only demo surface) — deliberately left out of v1.7's firm scope.
-- **M26 — self-contained demo stacks.** An orphaned `rosetta-extensions` effort: branch `m26/self-contained-demo`
-  @ `25ab855`, tag `prop-room-m26` (ext, local-only, **unmerged + unpushed**), "make demo stacks self-contained
-  (their own GitHub clone set, like stack-dev)" (+521/−141 in `demo-stack/` + `stack-injection/`, authored
-  2026-06-14). It consumed the flat milestone counter's **M26** slot before v1.6 "stage door" was designed; on
-  discovering the collision the user kept self-contained-demo as M26 and renumbered the secret-provisioning release
-  to M27→M30 (see [`context.md`](context.md) + [`roadmap.md`](roadmap.md) "Why v1.6 starts at M27"). **Awaits its
-  own `/developer-kit:design-roadmap` pass for a version + scope** — not yet placed in any release.
 - **DEF-M10-01 — cloud `SnapshotStore` backend + S3 media blob bytes.** Today the cache is the local
   `.agentspace/snapshots/` store and media replays **refs-only**. **Re-signed → backlog at v1.5 design (2026-06-11)**
   after its v1.4 destination was removed; its **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane
@@ -68,9 +66,10 @@ mirror engines**; the **deployment/injection CI gate** (a local-only alignment s
 demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
 
 ## Codename notes
-- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" shipped — their codenames are now permanent. "house lights" continued the theatre lineage: when the house lights come up, the audience can see the show — v1.7 made the demo's browser UI actually render [the blank page goes away] instead of staying dark. No version is currently staged; the next codename will be chosen at the next `/developer-kit:design-roadmap` run.)_
+- _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 
-_Last updated: 2026-06-15 (**v1.7 "house lights" SHIPPED** — the demo-UI-hardening release, M31→M32, merged
-`--no-ff` → `main`, tag `v1.7`; full detail in the `## Done — v1.7` section of roadmap.md. No version currently
-staged — next unplanned. Backlog unchanged: M33 ant-academy liveness [repro-first], M26 self-contained-demo,
-DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 staged + in development.)_
+_Last updated: 2026-06-15 (**v1.8 "understudy" SHIPPED** [tag `v1.8`] — the self-contained-demo release, a single
+`section` milestone M26 that re-implemented the orphaned `m26/self-contained-demo` branch onto current `main` [verified
+port spec, no v1.6/v1.7 regression]; `release/01.80-understudy` merged `--no-ff` → `main`. **M26 graduated from the backlog into v1.8.**
+Now between releases — backlog: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 "house
+lights" SHIPPED [tag `v1.7`], the demo-UI-hardening release M31→M32.)_

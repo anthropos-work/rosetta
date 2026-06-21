@@ -1,0 +1,42 @@
+{
+  "release": "v1.8 \"understudy\"",
+  "branch": "release/01.80-understudy",
+  "closed": "2026-06-15",
+  "milestones": ["M26"],
+  "theme": "the self-contained-demo release — give stack-demo/ its OWN platform clone set so a box with only stack-demo/ (no stack-dev/) can run a demo end-to-end. A single section milestone M26 that re-implements the orphaned m26/self-contained-demo branch (@25ab855, predates v1.6/v1.7 — unmergeable) onto current main, preserving the stack-secrets module + M30 BASE_ENV provision + M31 mkcert + M32 studio-desk fix. A NEW demo-stack/ensure-clones.sh bootstraps stack-demo's peer clones; up-injected.sh moves the build SOURCE + the compose dir (PLAT, D-MAIN) to stack-demo so ALL services build from it; dev-image reuse is gated behind --reuse-dev-images (OFF by default). Tooling + docs only — zero platform-repo edits.",
+  "code_location": "ext: rosetta-extensions main @ 773184f, tag understudy-m26 @ 773184f (orchestrator re-pointed forward at close over the 2 harden + 1 close-fix commits; ff-to-main done; orphan branch m26/self-contained-demo + tag prop-room-m26 @25ab855 DELETED — superseded). rosetta: release/01.80-understudy @ 4d8b498 (merged --no-ff at milestone close) + the close-release Phase-7 doc-coherence fixes.",
+  "code_diff": "ext: git -C .agentspace/rosetta-extensions diff 7b17c39..773184f (= house-lights-m32 .. understudy-m26) — 12 files (+985/-161): demo-stack/{ensure-clones.sh NEW 115L, up-injected.sh, migrate-demo.sh, ant-academy.sh, rosetta-demo, GUIDE.md, tests/{test_tooling.py, test_frontend_build.py, test_ant_academy.py, test_migrate_race_live.py}}, stack-injection/{gen_injected_override.py, tests/test_injection.py}. rosetta: git diff main...release/01.80-understudy — 18 files (+1117/-79) doc-half + planning + the M26 records, plus the close-release Phase-7 doc-coherence cleanups (rosetta_demo.md M16 narrowing, demo-up SKILL ensure-clones note + base-env reword, stack-secrets SKILL base-env reword).",
+  "reconciliation_note": "The M26 milestone metrics.json recorded the MID-CLOSE ext snapshot (+979/-157, understudy-m26 @ reimpl commit 17971c1). The FINAL release state after the documented post-close orchestrator finalize is +985/-161 (adds the 773184f comment-fix commit) with understudy-m26 re-pointed to 773184f. Not a discrepancy — the repoint was documented in the milestone record; these are the final reconciled numbers.",
+  "go_test_funcs": {
+    "total": 1027,
+    "by_module": {"alignment": 52, "clerkenstein": 223, "stack-seeding": 259, "stack-snapshot": 333, "stack-secrets": 160},
+    "baseline_v1.7": 1027,
+    "delta": "+0",
+    "note": "UNCHANGED from v1.7 (1027). M26 touched ZERO .go files (the diff is shell + python + docs)."
+  },
+  "python_tests": {
+    "total_collected": 501,
+    "baseline_v1.7": 471,
+    "delta": "+30",
+    "note": "471 (v1.7 close) + 30 (M26) = 501. M26 grew the two touched suites only: demo-stack/tests 110->138 (+28: TestEnsureClones, TestSelfContainedSource, TestRenameDrift retargets, TestShellcheck +1, then harden TestEnsureClonesFunctional +12 + TestReuseFlagArrayExpansion +3) and stack-injection/tests 111->113 (+2: the reuse_dev_images opt-in tests). Every other python suite unchanged. The GUIDE.md curated count (TestGuideDocTruth-formula subset) advertises 41 [D6], reconciled dynamically — green.",
+    "touched_suites": {
+      "demo-stack/tests": {"baseline_v1.7": 110, "v1.8": 138, "delta": "+28"},
+      "stack-injection/tests": {"baseline_v1.7": 111, "v1.8": 113, "delta": "+2"}
+    }
+  },
+  "flake": 0,
+  "flake_gate": "PASS. Triple-clean release gate (close-release Phase 8b, py3.11): 3/3 consecutive clean runs, demo-stack 138/138 + stack-injection 113/113 each (Docker up this run, so the live TestMigrateRaceLive class passed too), zero flakes. Plus the milestone flake gate: demo-stack 5/5 + stack-injection 5/5 randomized-sequential. shellcheck clean on all 5 touched shell scripts. README-index guard exit 0. No CI wired (local fallback — same carry-forward as v1.5/v1.6/v1.7).",
+  "coverage_snapshot": "gen_injected_override.py 99% (1 miss = unreachable `if __name__` guard). ensure-clones.sh (NEW): TestEnsureClonesFunctional (+12) — sandboxed harness stubbing git/make on a constrained PATH (no live network) + real python3 heredoc, covering broken-partial-clone exit-1, the D4 non-fatal copy-if-present .env seed, make-init-studio non-fatal, the provenance lockfile, full re-run idempotency — mutation-verified. The --reuse-dev-images shell seam: TestReuseFlagArrayExpansion (+3) runs the real flag-assembly+call block under set -euo pipefail on bash 3.2 across all 8 combos (the M28 empty-array class). No >2pp drop on any measured surface.",
+  "supply_chain": "GREEN — UNCHANGED from v1.7, zero new deps. Ext Go module diff 7b17c39..773184f over '*/go.mod' '*/go.sum' = EMPTY. Python: stdlib-only + the pre-existing optional PyYAML test dep (added M5). Rosetta: docs only. CVE surface unchanged. Lockfile: releases/01.80-understudy/dependencies.lock.",
+  "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces (untouched by M26 — the milestone changes the demo build SOURCE / bring-up, no mirror-engine change).",
+  "review_summary": "close-release GREEN — 0 blocking. 6 parallel review sweeps (supply-chain/scope/code-quality/docs/tests/decisions) + adversarial completeness critic. 5 GREEN; docs YELLOW with 3 should-fix doc-coherence cleanups (rosetta_demo.md M16 stale anthropos-dev list, demo-up SKILL missing the ensure-clones headline, the stale 'legacy stack-dev/.env base' claim in two skill docs) — all landed Fate-1 in Phase 7. Adversarial critic: complete, coherent, must-preserve (M30/M31/M32) verified intact by diff-grep, zero blockers.",
+  "regression_vs_v1.7": {
+    "verdict": "GREEN",
+    "go_delta": "+0 (1027 -> 1027) — flat, no decrease (zero .go files touched)",
+    "python_delta": "+30 (471 -> 501) — increase, no decrease",
+    "coverage": "no >2pp drop on any measured surface",
+    "flake": "0 (no regression)",
+    "rules_applied": "test-count decrease -> blocker (NOT triggered: Go 1027 held, Python grew +30); flake>0 -> blocker (NOT triggered, flake=0); coverage drop>2pp -> blocker (NOT triggered). All BLOCKING regression gates PASS. Supply-chain unchanged."
+  },
+  "notes": "Single-milestone release (M26 is the only milestone of v1.8). The live field-bake on a freshly-emptied stack-demo/ is a USER-AUTHORIZED post-close follow-up — the user chose 'straight to close-release'; M26 satisfied the observable-behavior gate by composition (M31/M32 precedent)."
+}

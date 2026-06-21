@@ -275,6 +275,18 @@ construction, byte-for-byte** — there is no demo-specific set-dress code path 
   degrades to a structural-only world that still logs in (the seed is the floor); the M17 re-run guards make a
   partial set-dress repairable by re-running (idempotent TRUNCATE-then-reload replay + idempotent seed COPY).
   (#M20-D3)
+- **The demo's ONE sanctioned cross-stack read is the shared-secret `.env` seed — never the build SOURCE
+  (v1.8 "understudy" M26).** A self-contained demo builds entirely from `stack-demo`'s **own** clone set
+  (`ensure-clones.sh` bootstrap-clones `stack-demo/platform` + `make init`s the peer repos; the per-demo
+  injection COPY is cut from `stack-demo/<svc>`, never `stack-dev`). The **sole** sanctioned read of `stack-dev`
+  by the demo tooling is ensure-clones' phase-(b) `.env` *seed*: `cp stack-dev/platform/.env →
+  stack-demo/platform/.env` **copy-if-present + target-absent + never-clobber** — only the shared-secret file
+  (same Clerk app + same `GH_PAT`, shared by nature; never committed), and **non-fatal if `stack-dev` is absent**
+  (M30's provisioner then writes the real `.env` from `.agentspace/secrets`, so a box with only `stack-demo/` is
+  fully supported). The build SOURCE **never** falls back to `stack-dev` — a required platform clone failure
+  aborts loud rather than borrow dev's repos, and dev-image reuse is OFF by default (`DEMO_REUSE_DEV_IMAGES=1`
+  opts back in). The `TestRenameDrift` suite (esp. `test_ensure_clones_reads_stack_dev_only_for_secrets`) fences
+  that every code-level `stack-dev` reference in the demo tooling is confined to that `.env`-seed read. (#M26-D4)
 
 ### 2.8 Bring-up scripts must survive bash 3.2 under `set -u` (the non-fatal-means-non-crashing invariant)
 
@@ -293,6 +305,13 @@ bash-5 author's local test and fails on a colleague's stock-macOS box.
 `set -u`. The M28 `preflight.sh` regression (`PreflightBehavior.test_non_demo_path_survives_set_u_on_bash32`)
 invokes the wrapper through `/bin/bash` 3.x specifically and asserts no "unbound variable" abort, pinning the
 fix; `shellcheck` does **not** catch this (it's a runtime-only, version-specific behavior). (#M28-harden)
+The v1.8/M26 `--reuse-dev-images` seam is a second instance of the canonical offender — `up-injected.sh`
+assembles `rd_flag=(); [ "${DEMO_REUSE_DEV_IMAGES:-0}" = 1 ] && rd_flag=(--reuse-dev-images)` alongside
+`ui_flag`/`lc_flag` and passes all three to `gen_injected_override.py` via `${rd_flag[@]+"${rd_flag[@]}"}`.
+`TestReuseFlagArrayExpansion` (in `demo-stack/tests/test_frontend_build.py`) extracts the real assembly+call
+block and runs it under `set -euo pipefail` on bash 3.2 across all 8 (ui, lc, reuse) flag combinations,
+asserting the empty (default-reuse-OFF) path never trips `set -u` — a second pin of the same rule on the most
+common bring-up arrangement (a generator call with several conditional flags). (#M26-harden)
 
 ### 2.9 Secret provisioning is values-blind and never re-arms the prod-write path (v1.6 M27–M30)
 
