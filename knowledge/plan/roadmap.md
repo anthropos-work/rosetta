@@ -105,6 +105,17 @@ builder skills).
 > analysis + fix design + risk register:
 > [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 
+> **v1.9 "storytelling" — IN DEVELOPMENT** (designed 2026-06-22 via `/developer-kit:design-roadmap`; branch
+> `release/01.90-storytelling`; full detail in `## In Development — v1.9` below). The **believable-demo-narrative
+> release** — turn the placeholder seeder into a declarative **Stories & Heroes** engine: each *story* is one org
+> with a thriving/struggling/manager **hero** trio, seeded via the real **verified-skill chain** (the 7-table
+> jobsim→user_skills→evidences fan-out) so the **skill profile** + the org **Workforce dashboard** tell one
+> coherent story — plus a standalone **presenter cockpit** (log in as a hero + jump to the right screen). 5
+> `section` milestones **M34→M38** across `rosetta-extensions` (`stack-seeding`/`clerkenstein`/`demo-stack`) +
+> the rosetta corpus doc-half. Grounded by an adversarially-verified spec
+> ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md) — 6-agent recon + 3-agent code review,
+> 2026-06-22, no Phase-1 blockers). **Tooling + docs only — zero platform-repo edits.**
+
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
@@ -118,6 +129,7 @@ builder skills).
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
+| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 → M35 → M36 → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -133,6 +145,140 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.9 "storytelling" (designed 2026-06-22 · branch `release/01.90-storytelling`)
+
+**Theme:** the **believable-demo-narrative release.** Through v1.8 the seeder produced a *structurally-correct
+spine* (valid FKs, correct authz, idempotent, prod-isolated) but **placeholder-grade content**: every user is
+"User N", scores are binary 85/35, and **zero verified skills** exist — the core product surface renders empty,
+and (recon finding **G14**) the session seeder even writes invalid enum/result values, so today's sessions are
+*inserted-but-invisible* dead rows. v1.9 turns the seeder into a declarative **Stories & Heroes** engine: each
+**story** is one org with a **thriving / struggling / manager** hero trio, seeded via the real **verified-skill
+chain** so the two product Musts — the individual **skill profile** and the org **Workforce dashboard** — tell
+one coherent story, and a standalone **presenter cockpit** lets a demo-giver *log in as* a hero and *jump to*
+the right screen. The narrative "aha" is the **claimed-vs-verified gap** (`user_level` vs `anthropos_level`).
+
+**Grounding.** Designed from the adversarially-verified spec
+[`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md) (6-agent code/schema recon + a 3-agent
+code review, 2026-06-22; corrections applied; **no Phase-1 blockers**). The proven reference for the chain is
+the `/seed-verified-skill` skill's `seed.sql` — **port, don't reinvent**. **Phase-0 verdicts:** deferral audit
+**GREEN** (the 4 backlog items — M33, DEF-M10-01, DEF-M21-01, M25-D9 — are all orthogonal to seeding; no
+repeat-deferral dodged); KB blind areas (Stories & Heroes, the verified-skill chain, the cockpit, Clerkenstein
+multi-identity) are closed by the `Delivers →` lines below — a new **`corpus/ops/demo/stories-spec.md`**
+graduates the gitignored spec (spec-decision D12). **Tooling + docs only — zero platform-repo edits.**
+
+**Repo split (every milestone touches both repos).** Code in `rosetta-extensions` (authoring copy → tag →
+consume per-stack): `stack-seeding` (M34–M36), `clerkenstein` (M37), `demo-stack` (M38). Docs in the `rosetta`
+corpus: the new `demo/stories-spec.md` + updates to `seeding-spec.md` / `snapshot-spec.md` / `safety.md` /
+`demo/README.md` + the `/stack-seed` skill.
+
+### Execution graph
+```
+M34 ──→ M35 ──→ M36                      (the data — sequential; all in stack-seeding)
+          └───────────→ M37 ──→ M38      (the cockpit — M37 may start once M35 lands, ∥ M36)
+```
+**Parallelism:** v1.9's data milestones are a sequential chain (all touch `stack-seeding`, each consumes the
+prior). The one parallel opportunity is **M37 ∥ M36** — `clerkenstein` is a different ext section with no shared
+files; M37 needs only M35's hero-identity list.
+
+### M34 — Verified-skill chain (vertical slice)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** none
+**Goal:** one seeded hero's **skill profile + Skill Spotlight chart** render end-to-end on a `--local-content`
+demo stack — prove the spine before scaling.
+**Scope — In:**
+- Fix `jobsim_sessions.go` (**G14**): valid `status='ended'` / `completion_status∈{passed,failed}` /
+  `result_status='completed'` / `[a-z0-9]{5,10}` token / full `SIMULATION_TYPE_*` strings; continuous mid-skewed
+  score + per-user growth arc; ASSESSMENT/HIRING share.
+- `TaxonomyRefs` resolver — mirror `contentref.go`: real `skiller.skills.node_id` + `skillsByRole`, empty-pool
+  fallback, **never fabricate** a node_id.
+- `PersonaSeeder` — the **7-table chain** per (hero × skill), incl. the two fields the reference `seed.sql`
+  omits (`user_skill_evidences.user_level` per `self_eval_bias`; `result_status`).
+- Patch `users.go` — real names / avatars / org-domain emails.
+- The **closure assertion gene** (data-DNA: 0 dangling node_ids; mirror the M23 cross-surface gene).
+- **Prove on Maya** — profile + chart render + closure green.
+**Scope — Out:** multi-org, the `stories.yaml` model, the trio, the org-aggregate dashboard surfaces.
+**KB deps:** `seeding-spec.md`, `snapshot-spec.md` (closure), `safety.md`.
+**Delivers → `corpus/ops/demo/stories-spec.md`** (new — the verified-skill-chain reference; graduates the spec)
++ updates `seeding-spec.md` / `safety.md`.
+**Open questions:** O4 (live storage-key names — one `\d` pass via `/db-query`).
+
+### M35 — Stories & Heroes model + multi-org
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** M34
+**Goal:** one `stack.stories.yaml` seeds **multiple orgs**, each with its thriving/struggling/manager trio at
+vantage-appropriate fidelity.
+**Scope — In:**
+- The `stories[]` blueprint (per-hero `vantage`/`trajectory`/`skills`, per-story `narrative`; supersedes the
+  org-centric `stack.seed.yaml` for demo stacks).
+- **Multi-org** `OrgID`+`orgClerkID` parameterization threaded through the **4** consuming seeders
+  (org/users/identity/jobsim-sessions/assignments) + Clerkenstein org-claim alignment.
+- Scale `PersonaSeeder` to the full roster; the **trajectory** logic (thriving = dense/rising/under-claim;
+  struggling = sparse/low/over-claim).
+- Supporting-population fidelity (`job_role`, `joined_at`, names on the non-hero members so the trio sits in a
+  real org).
+**Scope — Out:** the dashboard org-aggregate surfaces (M36); the cockpit (M37/M38).
+**Parallel with:** none (sequential after M34).
+**KB deps + Delivers →** extend `stories-spec.md` (the model); update `seeding-spec.md` (blueprint) +
+`/stack-seed` SKILL.md.
+**Open questions:** O6 (the usable real `job_roles` that have `job_role_skills`).
+**Risk:** the multi-org refactor touches 4 seeders + Clerkenstein claims — keep single-story as the default to
+contain regression on the existing single-org path.
+
+### M36 — Dashboard surfaces (Must #2)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** M35
+**Goal:** the org **Workforce-Intelligence dashboard** renders believably for a seeded story (claimed-vs-verified
+gap, role-readiness, growth, assignments — all non-empty, all distributed).
+**Scope — In:**
+- `membership_skills` (mapped; **outnumber** verified per skill → a believable verification funnel).
+- `tags`+`membership_tags` (teams; incl. a `mentor` tag).
+- `organization_target_roles`+`user_target_roles` (gap + two-way mobility math).
+- Succession feeders (`validation_*` + `interview_extraction_results`, sized to clear the coverage gate).
+- `job_simulation_feedbacks` (~2:1 positive); assignments fix (status mix + due_dates +
+  `organization_assignment_sessions`); verify `skillpath_sessions` writes a `completed` share.
+- The org-scale distributions: the claimed-vs-verified **gap** + AI-readiness skills + the growth arc.
+**Scope — Out:** the cockpit (M37/M38).
+**Parallel with:** M37 may run alongside (different ext section).
+**KB deps + Delivers →** extend `stories-spec.md` (dashboard surfaces); update `seeding-spec.md`.
+**Open questions:** O5 (resolved — self-eval diffs `user_level` vs `anthropos_level`).
+**Risk (scope):** most likely to grow (many widgets) — hard line: seed the **spine** for the seeded story, don't
+chase every widget.
+
+### M37 — Clerkenstein multi-identity
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium-large · **Depends on:** M35
+**Goal:** a demo stack can **switch the active browser identity** among the seeded heroes/orgs — the seat-switch
+the cockpit's "login as" needs.
+**Scope — In:**
+- A **users/orgs registry** in `clerk-frontend` (replacing the single `DefaultDemoUser`).
+- An **active-user selection** mechanism (token-injection vs a parameterized FAPI handshake — **O11**, spike
+  both early).
+- An **Alignment DNA** for the new multi-identity surface (must hold the 100%/100% Clerkenstein gates).
+- **Build on the existing `wip/clerkenstein-browser-login` branch.**
+**Scope — Out:** the cockpit panel itself (M38).
+**Parallel with:** **M36** (different ext section, no shared files; needs only M35's identity list).
+**KB deps + Delivers →** clerkenstein `knowledge/` + a corpus pointer (`rosetta_demo.md` / `clerk-integration.md`).
+**Risk:** a new alignment-measured surface; the seat-switch mechanism is unproven — de-risk with an early spike.
+
+### M38 — Presenter cockpit (B-milestone for M37)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Depends on:** M37
+**Closes the gap after M37:** turns the multi-identity capability into a usable demo-driving surface.
+**Goal:** a **standalone served panel** (rext `demo-stack`, offset port — not an in-app overlay, preserving the
+zero-platform-repo-edit line) that lists stories→heroes with **[Login as]** + **[Jump to section]**, reading the
+**same** `stack.stories.yaml`.
+**Scope — In:** the panel; the **deep-link catalog** (enumerated next-web routes per vantage — **O9**); login-as
+wired to M37; jump-to.
+**Scope — Out:** any change to platform repos (build/serve context only).
+**Acceleration effect:** makes every future demo a click-driven, persona-anchored walkthrough.
+**KB deps + Delivers →** the cockpit section of `stories-spec.md` + `demo/README.md`.
+
+### Risk register
+| Risk | Severity | Mitigation |
+|---|---|---|
+| M34 chart renders on a live `--local-content` demo stack | degrades-quality | vertical-slice-first; schema already code-verified |
+| M35 multi-org refactor regresses the single-org path | degrades-quality | single-story default; existing presets keep working |
+| M36 dashboard scope creep (many widgets) | scope | seed the spine for the seeded story only; hard line |
+| M37 alignment regression / unproven seat-switch | blocks-release (M37) | early token-injection-vs-handshake spike; DNA gate held green |
+| Whole release assumes `--local-content` demo stacks | nice-to-resolve | satisfied by default (O7) — stories target demo stacks |
+
+---
 
 ## Done — v1.8 "understudy" (SHIPPED 2026-06-15 · tag `v1.8`)
 
