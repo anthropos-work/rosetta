@@ -3,9 +3,9 @@ milestone: M34
 slug: verified-skill-chain
 version: v1.9 "storytelling"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-22
-last_updated: 2026-06-22
+last_updated: 2026-06-23
 complexity: large
 delivers: rosetta-extensions/stack-seeding (jobsim_sessions.go G14 fix + TaxonomyRefs resolver + PersonaSeeder 7-table chain + users.go names/avatars + the closure data-DNA gene) + the rosetta corpus doc-half (NEW corpus/ops/demo/stories-spec.md — the verified-skill-chain reference, graduating .agentspace/seeding_gaps.md per spec-D12 — plus seeding-spec.md / safety.md updates)
 depends_on: none

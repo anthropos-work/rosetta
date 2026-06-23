@@ -8,23 +8,23 @@ engine: each *story* is one org with a thriving/struggling/manager **hero** trio
 profile** + the org **Workforce dashboard** tell one coherent story — plus a standalone **presenter cockpit**
 (log in as a hero + jump to the right screen). 5 `section` milestones **M34→M38** across `rosetta-extensions`
 (`stack-seeding`/`clerkenstein`/`demo-stack`) + the rosetta corpus doc-half. **Tooling + docs only — zero
-platform-repo edits.**
+platform-repo edits.** **M34 ✅ shipped 2026-06-23** (the verified-skill spine); M35 next.
 
-**Active milestone:** **M34 — Verified-skill chain (vertical slice)** — **BUILT, awaiting close.** The G14
-session-seeder fix, the `TaxonomyRefs` resolver, the `PersonaSeeder` 7-table chain, the `users.go`
-name/avatar/email patch, and the seed-side closure gene (`datadna measure-closure`) all landed in
-`rosetta-extensions` (tag `storytelling-m34`); the corpus doc-half (NEW `corpus/ops/demo/stories-spec.md` +
-`seeding-spec.md`/`safety.md` updates) landed on `m34/verified-skill-chain`. **Maya proven** via the
-integration test against demo-3 (profile 18 verified skills + Spotlight 18 datapoints + the claimed-vs-verified
-gap render + closure green). The live browser render is the orchestrator's post-build acceptance step.
-**Next up:** **close M34** via `/developer-kit:close-milestone` (merge `m34/verified-skill-chain` →
-`release/01.90-storytelling`), then build M35. The verified spec
+**Active milestone:** **M35 — Stories & Heroes model + multi-org** — **NEXT (not started).** One declarative
+`stack.stories.yaml` seeds **multiple orgs**, each with its thriving/struggling/manager **hero trio** at
+vantage-appropriate fidelity: the `stories[]` blueprint (supersedes the org-centric `stack.seed.yaml` for demo
+stacks), multi-org `OrgID`/`orgClerkID` threaded through the 4 consuming seeders + Clerkenstein org-claim
+alignment, `PersonaSeeder` scaled from M34's one hero to the locked 2-story × 3-hero roster, the trajectory
+logic, and supporting-population fidelity. Depends on M34 (the verified-skill spine, now shipped). M35 also
+picks up the two M34-routed roster guards (#M34-D7: the `len(Personas) <= Size` validation + index-collision
+warning, and the short-role-pool top-up product call). The verified spec
 ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design for
 M35–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Last closed:** **v1.8 "understudy" — 2026-06-15**, tag `v1.8` (the self-contained-demo release; single
-`section` milestone M26; tooling + docs only). Detail in the `## Done — v1.8` section of
-[`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 M34 built — awaiting M34 close.**
+**Next up:** build M35 via `/developer-kit:build-milestone`.
+**Last closed:** **M34 — Verified-skill chain (vertical slice) — 2026-06-23** (v1.9 "storytelling"; the
+verified-skill 7-table chain + G14 fix + closure gene; merged into `release/01.90-storytelling`). Detail in the
+`### M34` block of [`roadmap.md`](roadmap.md).
+**Phase:** **v1.9 in development — M34 closed; M35 next.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a
@@ -63,8 +63,8 @@ Code lands in the `rosetta-extensions` `stack-seeding` / `clerkenstein` / `demo-
 **Shipped:** **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` ·
 **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-22 (**v1.9 "storytelling" DESIGNED** via `/developer-kit:design-roadmap` — converted the
-adversarially-verified seeding spec [`.agentspace/seeding_gaps.md`] into 5 `section` milestones M34→M38;
-Phase-0 deferral audit GREEN, KB blind areas closed by `Delivers →` lines [new `corpus/ops/demo/stories-spec.md`];
-release branch `release/01.90-storytelling` cut from `main`; M34–M38 scaffolded. Next: build M34. Prior:
-2026-06-15 v1.8 "understudy" SHIPPED [tag `v1.8`].)_
+_Last updated: 2026-06-23 (**v1.9 M34 CLOSED** via `/developer-kit:close-milestone` — the verified-skill chain
+[PersonaSeeder 7-table fan-out + G14 fix + TaxonomyRefs + closure gene], merged `m34/verified-skill-chain` →
+`release/01.90-storytelling`; close GREEN [5 findings, 0 blocking], deferral re-audit GREEN, stack-seeding
+381 tests / 96.6%, flake 0. ext tag `storytelling-m34` @ `8eb603b`. Next: build M35. Prior: 2026-06-22 v1.9
+DESIGNED.)_
