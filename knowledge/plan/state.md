@@ -8,31 +8,33 @@ engine: each *story* is one org with a thriving/struggling/manager **hero** trio
 profile** + the org **Workforce dashboard** tell one coherent story — plus a standalone **presenter cockpit**
 (log in as a hero + jump to the right screen). 5 `section` milestones **M34→M38** across `rosetta-extensions`
 (`stack-seeding`/`clerkenstein`/`demo-stack`) + the rosetta corpus doc-half. **Tooling + docs only — zero
-platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ shipped 2026-06-23** (the verified-skill spine + the multi-org
-Stories engine + the Workforce-dashboard surfaces — both product Musts now done); M37 next.
+platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ + M37 ✅ shipped 2026-06-23** (the verified-skill spine + the
+multi-org Stories engine + the Workforce-dashboard surfaces + Clerkenstein multi-identity); **M38 (the
+presenter cockpit) is the one remaining milestone.**
 
-**Active milestone:** **M37 — Clerkenstein multi-identity** — **PLANNED (not started).** A demo stack can
-**switch the active browser identity** among the seeded heroes/orgs — the seat-switch the cockpit's "login as"
-needs: a users/orgs registry in `clerk-frontend` (replacing the single `DefaultDemoUser`), an active-user
-selection mechanism (token-injection vs a parameterized FAPI handshake — O11, spike both early), and an
-**Alignment DNA** for the new multi-identity surface (must hold the 100%/100% Clerkenstein gates). Builds on the
-existing `wip/clerkenstein-browser-login` branch. Code lands in the `clerkenstein` ext section (a different
-section from M34–M36's `stack-seeding`). Depends on M35 (shipped — needs only the hero-identity list). The
-verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative
-design for M37–M38. The overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Next up:** build M37 via `/developer-kit:build-milestone`.
-**Last closed:** **M36 — Dashboard surfaces (Must #2) — 2026-06-23** (v1.9 "storytelling"; the 6
-Workforce-dashboard seeders [`membership_skills` funnel + `tags`/teams + `target_roles` gap/mobility +
-`succession` + `feedback` + `population_evidence` org-scale gap] + the assignments status-mix fix + the
-closure-gene 4th surface; merged into `release/01.90-storytelling`). Detail in the `### M36` block of
+**Active milestone:** **M38 — Presenter cockpit (the LAST of v1.9).** A **standalone served panel** (rext
+`demo-stack`, offset port — not an in-app overlay, preserving the zero-platform-repo-edit line) that lists
+stories→heroes with **[Login as]** + **[Jump to section]**, reading the **same** `stack.stories.yaml`: it
+wires M37's multi-identity seat-switch + the seeder roster into a clickable login-as-a-hero cockpit. **In:**
+the panel; the deep-link catalog (enumerated next-web routes per vantage — **O9**); login-as wired to M37;
+jump-to. Depends on M37 (shipped). The verified spec
+([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design. The
+overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
+**Next up:** build M38 via `/developer-kit:build-milestone` (the last milestone — then `/developer-kit:close-release`).
+**Last closed:** **M37 — Clerkenstein multi-identity — 2026-06-23** (v1.9 "storytelling"; the users/orgs
+registry replacing `DefaultDemoUser` + the server-authoritative active-seat selection [O11 → parameterized
+FAPI handshake] + the 5th Alignment DNA `clerk-multi-1` [9 genes, 100%/100%] + the `wip/clerkenstein-browser-login`
+reconcile/retire; merged into `release/01.90-storytelling`). Detail in the `### M37` block of
 [`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 in development — M34 + M35 + M36 closed (both product Musts done); M37 next, M38 after.**
+**Phase:** **v1.9 in development — M34–M37 closed (both product Musts + the seat-switch capability done); M38
+(the presenter cockpit, the LAST milestone) remains.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a
 freshly-emptied `stack-demo/`; pushing the ext tags (`understudy-m26` + `house-lights-m31`/`m32` +
-`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25`) to `origin`. The **`wip/clerkenstein-browser-login`**
-branch now has its design home — **v1.9 M37** builds on it.
+`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` + the v1.9 `storytelling-m34..m37`) to `origin`. The
+**`wip/clerkenstein-browser-login`** branch was reconciled (note folded into `architecture.md`) + **retired**
+at M37 close — no longer open.
 
 ## Recently shipped releases
 - **v1.8 "understudy"** — **2026-06-15**, tag `v1.8`. Self-contained-demo release: a demo builds **entirely from
@@ -45,16 +47,19 @@ branch now has its design home — **v1.9 M37** builds on it.
   every repo's `.env` (values-blind) + a 6-repo/55-gene secret-coverage DNA + the `/stack-secrets` skill. M27→M30.
 
 ## Headline numbers (v1.9 baseline — inherited from the v1.8 close 2026-06-15; reset at each v1.9 milestone close)
-- **Go test funcs:** **1174** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
-  223 · stack-seeding **406** (+59, M36: the 6 Workforce-dashboard seeders + the assignments status-mix fix +
-  the named-skill resolver + 3 harden passes; 484 incl. subtests; integration tests opt-in behind
-  `//go:build integration`) · stack-snapshot 333 · stack-secrets 160. (v1.9 grows stack-seeding [M34–M36 ✅]
-  + clerkenstein [M37] + a new demo-stack cockpit surface [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0
-  (M36 flake gate 5/5). stack-seeding coverage: blueprint 100% · seeders 95.5% · dna 87.7%.
+- **Go test funcs:** **1201** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
+  **259** (+36, M37: the registry/selection/`multirun` build tests + 11 harden [10 edge/error + the
+  `FuzzLoadRoster` roster-parse fuzz]; 250 `Test` + 9 `Fuzz`) · stack-seeding **406** (M36: 484 incl. subtests;
+  integration tests opt-in behind `//go:build integration`) · stack-snapshot 333 · stack-secrets 160. (v1.9
+  grows the new demo-stack cockpit surface next [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0 (M37 flake
+  gate 5/5). clerkenstein M37 coverage: `registry.go` 100% · every M37-new function 100% · `clerk-frontend` pkg
+  86.0% (residual is pre-M37 unreachable crypto-mint paths).
 - **Python tests:** **501** (demo-stack/tests 138 · stack-injection/tests 113 · …). Triple-clean 3/3.
-- **Supply-chain:** **GREEN** (stdlib-only posture; 0 third-party deps added through v1.8).
-- **Alignment gates (green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces — **M37 must hold these**
-  while adding the multi-identity surface (a new measured surface, not a regression of the existing ones).
+- **Supply-chain:** **GREEN** (stdlib-only posture; 0 third-party deps added through v1.9 M37).
+- **Alignment gates (green since v1.0):** **100%/100%** on **all 5** Clerkenstein surfaces — M37 added the
+  multi-identity `clerk-multi-1` (9 genes) and held the 4 existing ones (Go 22/22, JS 9/9, deploy 7/7) green
+  (the `clerk-express-1` node-CI gate drives the genuine `@clerk/express` SDK — runs where npm deps are
+  installed; an env prereq, not a regression).
 
 ## Branch model
 **v1.9 IN DEVELOPMENT:** `release/01.90-storytelling` cut from `main` at design time (2026-06-22) so milestone
@@ -65,10 +70,11 @@ Code lands in the `rosetta-extensions` `stack-seeding` / `clerkenstein` / `demo-
 **Shipped:** **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` ·
 **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-23 (**v1.9 M36 CLOSED** via `/developer-kit:close-milestone` — the org Workforce-dashboard
-surfaces [6 seeders: `membership_skills` funnel + `tags`/teams + `target_roles` gap/mobility + `succession` +
-`feedback` + `population_evidence` org-scale gap; + the assignments status-mix fix + the skillpath completed-share
-+ the closure-gene 4th surface], merged `m36/dashboard-surfaces` → `release/01.90-storytelling`; close GREEN [4
-findings, 0 blocking], deferral re-audit GREEN, stack-seeding 406 tests / blueprint 100% · seeders 95.5% · dna
-87.7%, flake 0 [5/5]. ext tag `storytelling-m36` @ `11e15e3`. Both product Musts done. Next: build M37
-[Clerkenstein multi-identity]. Prior: M35 closed 2026-06-23.)_
+_Last updated: 2026-06-23 (**v1.9 M37 CLOSED** via `/developer-kit:close-milestone` — Clerkenstein multi-identity:
+the users/orgs registry replacing `DefaultDemoUser` + the server-authoritative active-seat selection [O11 →
+parameterized FAPI handshake] + the 5th Alignment DNA `clerk-multi-1` [9 genes, 100%/100%] + the
+`wip/clerkenstein-browser-login` reconcile/retire; merged `m37/clerkenstein-multi-identity` →
+`release/01.90-storytelling`; close GREEN [1 finding, 0 blocking — a stale "four DNAs" corpus claim fixed],
+deferral re-audit GREEN, clerkenstein 250 tests + 9 fuzz `-race` / `registry.go` 100%, flake 0 [5/5], all 5
+alignment gates 100%/100%. ext tag `storytelling-m37` @ `52c1be0`. Next: build M38 [the presenter cockpit, the
+LAST milestone]. Prior: M36 closed 2026-06-23.)_

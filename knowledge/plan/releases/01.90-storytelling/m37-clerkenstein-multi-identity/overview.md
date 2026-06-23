@@ -3,9 +3,9 @@ milestone: M37
 slug: clerkenstein-multi-identity
 version: v1.9 "storytelling"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-22
-last_updated: 2026-06-22
+last_updated: 2026-06-23
 complexity: medium-large
 delivers: rosetta-extensions/clerkenstein (a users/orgs registry replacing the single DefaultDemoUser + an active-user selection mechanism + an Alignment DNA for the multi-identity surface) + corpus pointer (rosetta_demo.md / clerk-integration.md)
 depends_on: M35

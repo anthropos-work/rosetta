@@ -251,13 +251,20 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
 - **Deployment / injection (`clerk-deploy-1`, added after M3)** measures a *different kind* of fidelity — see
   the next section. Its runner (`deployrun`) drives the **real platform consumer** (colony) the way `expressrun`
   drives the real `@clerk/express`.
+- **Multi-identity seat-switch (`clerk-multi-1`, v1.9 "storytelling" M37)** authors a *fifth* DNA (9 genes,
+  runner `multirun`, goldens `golden-multi`) for the multi-session FAPI surface real clerk-js exhibits with
+  `single_session_mode=false`: a registry of seeded heroes/orgs + server-authoritative active-seat selection,
+  so a demo can present as any seeded hero. Scored by the same `alignctl` to the same gate (100%/100%) — and
+  the four existing surfaces stay green through the registry refactor (the single-identity path is
+  byte-identical, a one-member registry). See [Clerkenstein](../services/clerkenstein.md) § Multi-identity.
 
-Clerkenstein now drives **four DNAs via four runners** (`clerkrun`, `jsfapirun`, `expressrun`, `deployrun`)
-through the one `alignctl` — the clearest evidence the framework is surface-generic.
+Clerkenstein now drives **five DNAs via five runners** (`clerkrun`, `jsfapirun`, `expressrun`, `deployrun`,
+`multirun`) through the one `alignctl` — the clearest evidence the framework is surface-generic.
 
 ## What alignment proves — and what it doesn't (the M3 lesson)
 
-The behavioural DNAs (`clerk@2.6.0`, `clerk-js-5`, `clerk-express-1`) measure **behavioural fidelity**: given
+The behavioural DNAs (`clerk@2.6.0`, `clerk-js-5`, `clerk-express-1`, `clerk-multi-1`) measure **behavioural
+fidelity**: given
 an input, the mirror produces the same *outcome* as the source. That is necessary but **not** the same as
 **deployability** — that the mock can be *injected into the running platform's exact consumption shape*. v1.0
 proved the first and the v1.0 narrative ("a stand-in the platform can't tell apart") implied the second;

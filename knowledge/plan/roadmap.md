@@ -129,7 +129,7 @@ builder skills).
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
-| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ + M35 ✅ + M36 ✅ 2026-06-23) |
+| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ + M35 ✅ + M36 ✅ + M37 ✅ 2026-06-23; M38 remains) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -325,7 +325,7 @@ new deps). Alignment 100%/100% (untouched — M36 is stack-seeding only). **The 
 release-branch merge post-close per its protocol.**
 
 ### M37 — Clerkenstein multi-identity
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium-large · **Depends on:** M35
+**Status:** `done` (completed 2026-06-23) · **Shape:** `section` · **Complexity:** medium-large · **Depends on:** M35
 **Goal:** a demo stack can **switch the active browser identity** among the seeded heroes/orgs — the seat-switch
 the cockpit's "login as" needs.
 **Scope — In:**
@@ -338,6 +338,48 @@ the cockpit's "login as" needs.
 **Parallel with:** **M36** (different ext section, no shared files; needs only M35's identity list).
 **KB deps + Delivers →** clerkenstein `knowledge/` + a corpus pointer (`rosetta_demo.md` / `clerk-integration.md`).
 **Risk:** a new alignment-measured surface; the seat-switch mechanism is unproven — de-risk with an early spike.
+
+**Closure (2026-06-23):** All 7 sections + 2 harden passes landed. The 6-commit ext build on the
+`clerkenstein` module (registry + active-seat selection [`92b6070`] → the `clerk-multi-1` Alignment DNA
+[`9e56e55`] → the wip handshake-note fold-in [`cbf387c`] → 2 harden passes [edge/error `4e82922` + the
+`FuzzLoadRoster` roster-parse fuzz `7b8a986`] → the harden boundary-contract docs [`52c1be0`]) on
+`rosetta-extensions` (tag `storytelling-m37` @ `52c1be0`); the corpus doc-half (`rosetta_demo.md` § the
+Multi-identity seat-switch bullet + `clerkenstein.md` four→five surfaces + the NEW § Multi-identity section)
+on `m37/clerkenstein-multi-identity`. **O11 RESOLVED** — both options spiked; the **parameterized FAPI
+handshake (server-authoritative)** won over pure token-injection (which desyncs the FAPI's server-held active
+identity from an injected cookie): `?__clerk_identity=<key>` on the handshake (the cockpit's [Login as]
+deep-link) + the `/v1/demo/{identities,select}` control plane, so every surface (client view, `/v1/me`, the
+token mint, the handshake cookies) resolves the same hero. The registry is fed a **roster JSON**
+(`FAKE_FAPI_ROSTER`) the demo tooling exports from the seeder's own derivation (single-sourced ids; ARCH
+decision) — M37 ships the Clerkenstein **consumer** + a golden roster fixture; the seeder-side producer is the
+M38 integration seam. The single-identity path is **byte-identical** (a one-member registry), keeping the 4
+existing gates green. The `wip/clerkenstein-browser-login` branch was **reconciled** (its 32-line handshake
+note folded into `architecture.md`, improved to reference the implemented symbols) + **retired**. **Done-bar
+MET** — orchestrator-verified independently (the Go SDK 22/22 + multi-identity 9/9 gates re-run, "no
+divergences"; the wip branch reconciled + deleted): a demo can present as any seeded hero (correct org claims
++ role); `clerk-multi-1` scores **100%/100%** (9 genes) as a 5th measured surface alongside the existing 4.
+The **literal live browser seat-switch** (logging into demo-N AS a hero in a real browser) is correctly the
+**M38 integration seam** (the seeder→Clerkenstein roster-export producer + the cockpit that drives the
+handshake), Fate-2, NOT a M37 gap. **Close GREEN:** review found **1 finding, 0 blocking** — 1 docs
+(`corpus/architecture/alignment_testing.md` said Clerkenstein drives "four DNAs via four runners" + listed
+only the 4 behavioural DNAs — stale after the 5th; fixed to five + a `clerk-multi-1` bullet + the
+behavioural-DNA enumeration). The in-repo clerkenstein handbook (`alignment.md` five-DNA table + `architecture.md`
+§ Multi-identity incl the harden boundary contract) was already reconciled at build/harden. Phase 2c
+adversarial: the build/harden passes traced the seat-switch surface (roster dup/empty-key through both
+`RegistryFromRoster` AND `LoadRoster`, blank handshake identity, malformed/blank `/v1/demo/select`,
+mid-session residue, single-server inert-switch) + fuzzed the roster-parse boundary (`FuzzLoadRoster`, 360K
+execs, 0 panics, 0 contract violations) — all handled (fail-loud at load; 400 leaving the seat unchanged; no
+half-formed seat leak). Decision triage: O11 + ARCH (roster-JSON contract / byte-identical fallback) + KB-1
+(wip fold-in) already blended into corpus `clerkenstein.md` § Multi-identity + the in-repo `architecture.md`.
+**Tests:** clerkenstein **250** test funcs + **9** fuzz across 14 packages, `-race` green; every M37-new
+function at **100%** coverage (`registry.go` 100%, the selection handlers 0→100%); flake gate **5/5** (0
+flakes). **Alignment 100%/100% on all 5 surfaces** (the new `clerk-multi-1` + the 4 existing — Go 22/22, JS
+9/9, deploy 7/7 — re-run at close; the `clerk-express-1` node-CI gate driving the genuine `@clerk/express`
+SDK is unrunnable in the authoring copy for lack of installed npm modules, an **environment prerequisite, NOT
+an M37 regression** — M37 never touched the express runner/DNA). Deferral re-audit **GREEN** (0 deferrals, 0
+repeats, 0 aged-out; M37's Out: scope is Fate-2 owned by M38). Supply-chain GREEN (0 new deps). **The ext tag
+`storytelling-m37` @ `52c1be0` is the orchestrator's reference for the code; the orchestrator pushes ext→origin
++ the rosetta release-branch merge post-close per its protocol.**
 
 ### M38 — Presenter cockpit (B-milestone for M37)
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Depends on:** M37
