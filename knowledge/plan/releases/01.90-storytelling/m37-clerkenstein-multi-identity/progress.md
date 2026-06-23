@@ -75,3 +75,42 @@ flaky tests across the gate re-runs + the flake gate. Both alignment gates held 
 divergences") after every commit; the `-race` suite stayed clean.
 
 _Hardening last updated: 2026-06-23 (2 passes; +11 tests [10 unit/integration + 1 fuzz]; 0 bugs; gates held)._
+
+## M37: Final Review
+
+Review found **1 finding, 0 blocking** — 0 scope · 0 code-quality · 1 docs · 0 tests · 0 decision-triage.
+Addressed fully. Gates re-verified at close: multi-identity 9/9 (100%/100% "No divergences") + Go 22/22 +
+JS 9/9 + deploy 7/7 all hold; 250 tests + 9 fuzz `-race` green; flake gate 5/5. The express gate is a
+node-CI gate (genuine `@clerk/express` SDK) unrunnable in the authoring copy for lack of installed npm
+modules — an environment prerequisite, **not** an M37 regression (M37 never touched the express runner/DNA).
+
+### Scope
+- All 7 build sections checked; both open questions resolved (O11 → handshake; KB-1 → wip fold-in landed);
+  the `wip/clerkenstein-browser-login` branch reconciled + retired. Done-bar **MET** (orchestrator-verified:
+  Go 22/22 + multi-identity 9/9, "no divergences"). M37's Out: scope (the cockpit panel + [Login as]/[Jump to]
+  UI + the literal live browser seat-switch render + the seeder-side roster-export producer) is **Fate-2
+  already-owned by M38** — confirmed-covered, no plan edit.
+
+### Code Quality
+- Clean — rext code reviewed at build/harden + re-verified at close (all gates green, 250+9 tests `-race`,
+  flake 5/5); 0 TODO/FIXME/HACK in the M37 product files; the rosetta side is doc-only.
+
+### Documentation
+- [x] [should-fix] `corpus/architecture/alignment_testing.md` said Clerkenstein drives "four DNAs via four
+  runners" + enumerated only the 4 behavioural DNAs — stale after M37's 5th (`clerk-multi-1`). Fixed:
+  four→five DNAs/runners + a `clerk-multi-1` bullet (the multi-session FAPI surface) + `clerk-multi-1` added
+  to the behavioural-DNA list. (The in-repo clerkenstein handbook — `alignment.md` five-DNA table +
+  `architecture.md` § Multi-identity — was already reconciled at build/harden.)
+
+### Tests & Benchmarks
+- Clean — every M37-new function at 100% coverage; the 9-gene multirun gate drives the selection surface
+  end-to-end; flake gate 5/5; no benchmark target (in-memory map + a session reset, no hot path).
+
+### Decision Triage
+- O11 (server-authoritative selection) → already blended into corpus `clerkenstein.md` § Multi-identity +
+  in-repo `architecture.md`. ARCH (roster-JSON contract / byte-identical single-identity fallback) → same.
+  KB-1 (wip handshake-note fold-in) → landed as the milestone's reconcile deliverable. All accurate; archived
+  alternatives stay in `decisions.md`.
+
+_Final Review: 2026-06-23 (close-milestone). 1 docs finding fixed; 0 blocking; gates 100%/100% on all 5
+surfaces (express = node-env prereq, not a regression)._
