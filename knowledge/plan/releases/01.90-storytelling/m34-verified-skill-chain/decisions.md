@@ -56,3 +56,19 @@ but the **integration test against the real schema rejected the insert** — the
 against-real-schema test. Fixed the column + row append; the unit test now asserts the FK is non-empty so the
 unit suite alone catches a regression. Lesson: a fake-conn unit test can't substitute for one against-real-DB
 pass per schema-touching seeder.
+
+## D-M34-6 — Two clamp branches are unreachable-by-construction (harden-recorded, not tested)
+
+Hardening drove the seeders package to 96.6% statements. Two residual uncovered blocks are
+**defensive dead-code**, not gaps:
+- `seedVerifiedSkill`'s per-session `score > 100` / `comp < 1` / `comp > 100` clamps (`persona.go`
+  143/149/152): with `anthropos ∈ [62,85]` and the fixed `verifiedSessionsPerSkill = 3`, the max
+  per-session score is `85 + 8 = 93` and max comp is `85 + 6 - 2 = 89` — neither clamp can fire
+  without fabricating impossible inputs. They guard a future where the constants change; a test
+  that forced them would be a disguised line-bump (a shallow test), explicitly disallowed by the
+  three-fate rule's "no shallow tests as a Fate-1 shortcut".
+- `users.go` 116 — the casbin-grant error wrapper — is a one-line `return …, fmt.Errorf(…, err)`
+  delegating to `seedCasbinGrants`, whose own error returns are covered by its dedicated tests.
+
+Both kept as defensive guards; no compensating test owed (the behavior they'd guard is unreachable
+or already tested upstream). Recorded so a future audit doesn't re-flag them as missing coverage.
