@@ -150,6 +150,14 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 | **coresignal** | `External` | enrichment source — safe to read, **never write** on non-prod |
 | **Postgres / Redis / S3-private / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack) |
 
+> **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
+> `jobsimulation.{sessions, validation_attempt_results, validation_attempt_skill_results,
+> validation_criterion_results}`, `public.local_jobsimulation_sessions`, `public.user_skills`,
+> `public.user_skill_evidences` — are all the stack's own offset-port Postgres, declared `PerStackIsolated`,
+> so the chain cannot touch prod or another stack and the seeding-run audit log proves zero pollution
+> (`AssertClean`). The taxonomy it reads to draw skill node-ids is the **public** reference data the snapshot
+> firewall already guaranteed public-only at capture. See [`demo/stories-spec.md`](demo/stories-spec.md) § Safety.
+
 ### 2.2 The 3-layer isolation guard
 
 The guard (`stack-seeding/isolation/`) is three independent enforcement points:

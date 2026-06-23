@@ -176,10 +176,12 @@ stackseed --stack demo-1 --reset                                 # per-stack res
 **Re-run safe (v1.3b M17).** A re-seed is now idempotent: every deterministic-id surface writes via an
 `ON CONFLICT (id) DO NOTHING` COPY merge, and the casbin `g2` grant via `WHERE NOT EXISTS` — so a 2nd seed
 inserts 0 rows instead of unique-violating or duplicating the grant. `--reset` truncates the **full**
-seeded fleet (child-first FK-safe: `activity_events → sessions → skill_path_sessions → assignments →
-memberships → users → organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2'`,
-never a TRUNCATE — it shares the sentinel schema with `init_policy.sql`'s global policy). Full per-component
-re-run contract: [`idempotency.md`](idempotency.md).
+seeded fleet child-first FK-safe (`activity_events →` the M34 verified-skill chain `validation_criterion_results
+→ validation_attempt_skill_results → validation_attempt_results → user_skill_evidences → user_skills →
+local_jobsimulation_sessions → sessions → skill_path_sessions → assignments → memberships → users →
+organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2'`, never a TRUNCATE — it shares
+the sentinel schema with `init_policy.sql`'s global policy). Full per-component re-run contract:
+[`idempotency.md`](idempotency.md).
 
 **The n=0-dev guard, two layers (M13).** `--reset` already refuses N=0 (the main `anthropos` dev stack) unless
 `--force`. M13's **auto-seed on dev build** adds a second, earlier guard in the bring-up's set-dressing pass
@@ -198,6 +200,7 @@ datadna catalog   --dna <dna.json>                       # the seedable-surface 
 datadna introspect --stack demo-1 --dna <dna.json>       # capture each seeded surface's live shape (the contract)
 datadna measure   --stack demo-1 --dna <dna.json>        # conformance score; exit 1 if critical < 100%
 datadna measure-snapshot --stack demo-1 --dna <dna.json> --manifest <taxonomy.json> --manifest <directus.json>  # snapshot-fidelity gate (M9b taxonomy + M10 content)
+datadna measure-closure  --stack demo-1                  # v1.9 M34: seed-side verified-skill closure; exit 1 on a dangling skill ref
 datadna diff      --stack demo-1 --dna <dna.json>        # recorded shapes vs the live schema; exit 1 on drift
 ```
 
@@ -218,6 +221,24 @@ behind it so their content refs resolve against the replayed public templates. T
 recipe: [`snapshot-spec.md`](snapshot-spec.md) + [`demo/recipe-snapshot-world.md`](demo/recipe-snapshot-world.md).
 A preset seeds a believable world **without** a snapshot (graceful degradation: empty catalog, free content refs);
 replay first for the set-dressed world.
+
+### The verified-skill chain — the believability spine (v1.9 M34)
+
+The seeded surfaces above make a stack *not-empty*; the **verified-skill chain** makes it *tell a story*. A
+blueprint **`personas`** list lifts named **heroes** on top of the generic population, and the **`PersonaSeeder`**
+writes the **7-table fan-out** a real passed-simulation pipeline would have produced — so a hero's **skill
+profile** + Skill Spotlight chart render, with the **claimed-vs-verified gap** the demo turns on. It also fixes
+the **G14** session bug (the pre-M34 `jobsim_sessions.go` wrote invalid free-text enum/result/sim_type values +
+an over-long token, so its sessions INSERTed but were filtered out of every dashboard query — dead rows) and
+patches `users.go` to real names/avatars/org-domain emails (no more "User N"). The skill node-ids are drawn
+from the **real replayed public `skiller` taxonomy** (role-coherent via `TaxonomyRefs`, never fabricated), and a
+**seed-side closure gene** (`datadna measure-closure`) proves zero dangling skill refs after seeding. Every
+chain table is `PerStackIsolated`, so the same zero-pollution posture holds.
+
+**Full reference: [`demo/stories-spec.md`](demo/stories-spec.md)** — the 7-table chain, the DB-enforced vs
+inserted-but-invisible constraint landmines, the `user_level` (claimed side) requirement, and the
+declare-a-hero blueprint shape. The vertical-slice preset is `presets/stories-maya.seed.yaml`. M35–M38
+graduate this to the full multi-org Stories & Heroes model + the presenter cockpit.
 
 ## Status
 
