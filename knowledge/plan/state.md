@@ -10,18 +10,21 @@ profile** + the org **Workforce dashboard** tell one coherent story — plus a s
 (`stack-seeding`/`clerkenstein`/`demo-stack`) + the rosetta corpus doc-half. **Tooling + docs only — zero
 platform-repo edits.**
 
-**Active milestone:** **M34 — Verified-skill chain (vertical slice)** — `planned`, not yet started. Fix the
-session seeder (G14: valid enums/token), the `TaxonomyRefs` resolver, the `PersonaSeeder` 7-table chain + the
-closure gene, and prove **one hero (Maya)** renders profile + Skill-Spotlight-chart end-to-end on a
-`--local-content` demo stack before scaling.
-**Next up:** **build M34** via [`/developer-kit:build-milestone`](roadmap.md) (or `/developer-kit:work-milestone M34`).
-The verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) is the authoritative
-design; the reference impl to port is the `/seed-verified-skill` skill's `seed.sql`. The M34–M38 overviews live
-under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
+**Active milestone:** **M34 — Verified-skill chain (vertical slice)** — **BUILT, awaiting close.** The G14
+session-seeder fix, the `TaxonomyRefs` resolver, the `PersonaSeeder` 7-table chain, the `users.go`
+name/avatar/email patch, and the seed-side closure gene (`datadna measure-closure`) all landed in
+`rosetta-extensions` (tag `storytelling-m34`); the corpus doc-half (NEW `corpus/ops/demo/stories-spec.md` +
+`seeding-spec.md`/`safety.md` updates) landed on `m34/verified-skill-chain`. **Maya proven** via the
+integration test against demo-3 (profile 18 verified skills + Spotlight 18 datapoints + the claimed-vs-verified
+gap render + closure green). The live browser render is the orchestrator's post-build acceptance step.
+**Next up:** **close M34** via `/developer-kit:close-milestone` (merge `m34/verified-skill-chain` →
+`release/01.90-storytelling`), then build M35. The verified spec
+([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design for
+M35–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
 **Last closed:** **v1.8 "understudy" — 2026-06-15**, tag `v1.8` (the self-contained-demo release; single
 `section` milestone M26; tooling + docs only). Detail in the `## Done — v1.8` section of
 [`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 designed — awaiting M34 build.**
+**Phase:** **v1.9 M34 built — awaiting M34 close.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a
