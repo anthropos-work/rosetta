@@ -68,3 +68,43 @@ the milestone-touched code reached ~100% (only the effectively-unreachable CLI `
 + the trace-thread-artifact handler body remain, neither a real gap), and no flaky tests remain (3 clean runs).
 All regression suites green: stack-seeding `-race`, Clerkenstein 5 alignment gates `-race`, demo-stack
 (163 tests), stack-injection (117 tests). Zero platform-repo edits.
+
+## M38: Final Review
+
+Consolidated from the close review (deferral re-audit + parallel code-quality / adversarial / docs / test scans).
+
+### Scope
+- [x] M38-D7 → **LAND-NOW (Fate 1)**: vantage-faithful hero `org_role` at the M35 seam (`roleForHero` single
+  source + both call-sites in lockstep + regression test). Recorded as M38-D8. (deferral-audit GREEN)
+
+### Code Quality
+- [x] [must-fix] `roster.go:93` `BuildRoster` calls the OLD `roleForIndex` directly while `users.go` now uses
+  `roleForHero` → the three-write lockstep is broken (a manager hero would export `org_role=member` but seed as
+  `admin`). Switch to `roleForHero(idx, st.Size, st.RoleMix, &h)`. (the core of M38-D8)
+- [x] [must-fix] `roster_test.go:74` asserts `wantRole := roleForIndex(...)` → masks the regression. Switch the
+  reconstruction to `roleForHero(idx, st.Size, st.RoleMix, &h)`.
+- [x] [should-fix] `gofmt` flags `seeders/cockpit_test.go` (multibyte `⇒` comment alignment). Run `gofmt -w`.
+- [x] [nice-to-have] `cockpit.py` render: defensive skip of a hero with an empty `key` (the Go projection
+  already guarantees non-empty keys, but a hand-tampered manifest shouldn't emit a no-op `__clerk_identity=`
+  handshake link). Add the skip + a test.
+
+### Documentation
+- [x] `corpus/ops/demo/stories-spec.md` — document the FAPI port offset (`5400 + N·10000`) in the handshake-URL
+  example so `<fapi-host>` is concrete, and cross-reference the `DEMO_NO_COCKPIT` escape hatch from the cockpit
+  section. Note the vantage-faithful `org_role` (M38-D8) in the roster id-contract.
+- [x] `corpus/ops/demo/README.md` — note the cockpit-serve is non-fatal (D6) + cross-ref `DEMO_NO_COCKPIT`.
+- [x] `CLAUDE.md` — N/A re-check: CLAUDE.md doesn't enumerate the cockpit at a line that's now wrong (the M38
+  description in roadmap/state owns it); no edit needed beyond the existing demo-family pointers. (verified)
+
+### Tests & Benchmarks
+- [x] Regression test: the three writes agree per hero (membership-row role == casbin-grant role == roster
+  `org_role`) AND a manager hero → `admin`, an end-user hero → `member`. (new test in `roster_test.go` /
+  `users` seam)
+- [x] Full per-stack suites re-run post-fix (Go `-race`, demo-stack, stack-injection) + flake gate 5×.
+
+### Decision Triage
+- [x] M38-D8 (vantage-faithful `org_role` / `roleForHero` single source) → blend into
+  `corpus/ops/demo/stories-spec.md` § the roster id-contract (a sentence; full record stays in `decisions.md`).
+- [x] M38-D1..D6 → already blended into `stories-spec.md` during build (verified, tags present); archive the
+  options-considered detail in `decisions.md`.
+- [x] M38-D7 → archive (superseded by M38-D8's LAND-NOW; the route-to-close-review record stays for the trail).

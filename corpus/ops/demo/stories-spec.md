@@ -338,19 +338,26 @@ multi-identity fake FAPI's handshake with the hero's seat-switch key:
 https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=<jump_to>
 ```
 
-The FAPI selects the chosen hero's seat from `__clerk_identity` **then** establishes the session and redirects
-to `redirect_url` — so the hero is the active identity *everywhere* (the client view, `/v1/me`, the minted
-token, the cookies) AND the browser lands on her screen, in one move. **[Login as]** lands on the app root;
-**[Jump to section]** lands on the hero's `jump_to` deep-link. The key is the hero's `stories.yaml` id — the
-**same** key the roster export gave Clerkenstein's registry, so the seat always resolves. (The handshake +
-multi-identity selection are M37; see [`clerkenstein/knowledge/architecture.md` § Multi-identity].)
+`<fapi-host>` is the per-stack fake-FAPI on its own **offset port** `127.0.0.1:<5400 + N·10000>` (e.g.
+`127.0.0.1:35400` for `demo-3`), served over HTTPS (clerk-js requires it); `redirect_url` is an absolute
+next-web URL on the app's offset port `<3000 + N·10000>`. The FAPI selects the chosen hero's seat from
+`__clerk_identity` **then** establishes the session and redirects to `redirect_url` — so the hero is the
+active identity *everywhere* (the client view, `/v1/me`, the minted token, the cookies) AND the browser lands
+on her screen, in one move. **[Login as]** lands on the app root; **[Jump to section]** lands on the hero's
+`jump_to` deep-link. The key is the hero's `stories.yaml` id — the **same** key the roster export gave
+Clerkenstein's registry, so the seat always resolves. (The handshake + multi-identity selection are M37; see
+[`clerkenstein/knowledge/architecture.md` § Multi-identity].)
 
 **The roster-export producer — the M37 integration seam.** M37 shipped the *consumer* (the fake FAPI loads a
 `[]DemoUser` roster from `FAKE_FAPI_ROSTER`); M38 ships the *producer*. `stackseed --roster-export` derives the
 roster JSON — each hero's **exact** clerk claims (`auth_id`/`eid`/`email`/`org_*`/`org_role`) — **single-sourced
 from the seeder's own id-derivation** (so "login as Maya" authenticates the real seeded user). Clerkenstein is a
 separate Go module and never imports the seeder; the seeder/demo-tooling exports, Clerkenstein consumes. The
-demo bring-up sets `FAKE_FAPI_ROSTER` on the `demo-N-fake-fapi` container so its FAPI is multi-identity.
+demo bring-up sets `FAKE_FAPI_ROSTER` on the `demo-N-fake-fapi` container so its FAPI is multi-identity. The
+`org_role` claim is **vantage-faithful** — a hero's exported role follows her seat (manager → `admin`,
+end-user → `member`), single-sourced through one `roleForHero` helper that the seeder also writes the
+`membership` row + the casbin `g2` grant with, so the three writes agree per hero (an "employee" demo seat
+reads as `member` in her JWT, not org-admin) (#M38-D8).
 
 **The deep-link catalog (O9).** The cockpit ships an enumerated, stable set of next-web routes per vantage — the
 *individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, my-growth, take-a-sim) and the

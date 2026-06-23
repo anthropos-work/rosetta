@@ -47,14 +47,14 @@ at M37 close — no longer open.
   every repo's `.env` (values-blind) + a 6-repo/55-gene secret-coverage DNA + the `/stack-secrets` skill. M27→M30.
 
 ## Headline numbers (v1.9 baseline — inherited from the v1.8 close 2026-06-15; reset at each v1.9 milestone close)
-- **Go test funcs:** **1201** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
-  **259** (+36, M37: the registry/selection/`multirun` build tests + 11 harden [10 edge/error + the
-  `FuzzLoadRoster` roster-parse fuzz]; 250 `Test` + 9 `Fuzz`) · stack-seeding **406** (M36: 484 incl. subtests;
-  integration tests opt-in behind `//go:build integration`) · stack-snapshot 333 · stack-secrets 160. (v1.9
-  grows the new demo-stack cockpit surface next [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0 (M37 flake
-  gate 5/5). clerkenstein M37 coverage: `registry.go` 100% · every M37-new function 100% · `clerk-frontend` pkg
-  86.0% (residual is pre-M37 unreachable crypto-mint paths).
-- **Python tests:** **501** (demo-stack/tests 138 · stack-injection/tests 113 · …). Triple-clean 3/3.
+- **Go test funcs:** **1248** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
+  **259** (250 `Test` + 9 `Fuzz`) · stack-seeding **444** (M38: +2 close — the `roleForHero` vantage-faithful
+  `org_role` + the three-write-lockstep regression [`TestBuildRoster_OrgRoleVantageFaithfulAndLockstep`,
+  `TestRoleForHero`]; the M38 roster/cockpit producers + the O9 catalog land here) · stack-snapshot 333 ·
+  stack-secrets 160. `go vet`+`gofmt`+`shellcheck` clean; flake 0 (M38 flake gate 5/5 Go + Python). M38 coverage:
+  the milestone-touched producers ~100% (`roster.go`/`cockpit.go`/`cmd/stackseed`); `roleForHero` all branches.
+- **Python tests:** **283** counted across the M38-touched surfaces (demo-stack/tests **166** [M38: +1 close —
+  the cockpit empty-key defensive-skip test] · stack-injection/tests **117** [8 opt-in skipped]). All green.
 - **Supply-chain:** **GREEN** (stdlib-only posture; 0 third-party deps added through v1.9 M37).
 - **Alignment gates (green since v1.0):** **100%/100%** on **all 5** Clerkenstein surfaces — M37 added the
   multi-identity `clerk-multi-1` (9 genes) and held the 4 existing ones (Go 22/22, JS 9/9, deploy 7/7) green

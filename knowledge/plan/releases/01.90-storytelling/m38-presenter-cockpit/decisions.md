@@ -74,6 +74,35 @@ touched code (M38 is the producer + cockpit, not the seeded role model), and the
 the close-review owns the M35-seam triage. Harden stayed on its mandate (deepen M38's own coverage). The
 behavior is currently consistent (claim ≡ DB), just vantage-imprecise — not a correctness bug, a fidelity nuance.
 
+## M38-D8 (close) — the employee-hero `org_role`: LANDED vantage-faithful (Fate 1, supersedes D7's route)
+At close, the deferral re-audit re-fated M38-D7 from Fate-3 (route-to-close-review) to **Fate 1 (LAND-NOW)**:
+the fix is bounded, safe, zero-platform-repo-edit, and v1.9 IS the Stories & Heroes release where the
+employee-vs-manager vantage is the whole point — and this is the LAST milestone, so there is no later
+release-milestone to route to. The orchestrator's "prefer Fate 1 if bounded+safe" guidance + the audit's
+Fate-1 investigation both landed here.
+
+**What landed.** A single `roleForHero(i, n, mix, hero)` helper in `seeders/users.go` is now the SINGLE SOURCE
+of a population slot's membership role: for a **hero** slot it is **vantage-faithful** —
+`hero.IsManager()` (vantage == "manager") → `admin`, else `member` — and for a non-hero slot it falls back to
+`roleForIndex` (the RoleMix-ratio distribution, unchanged). Both writers call it:
+- `users.go` (the `UsersSeeder`): the `membership` row role AND the casbin `g2` grant role.
+- `roster.go` (`BuildRoster`): the exported `org_role` claim (every roster entry IS a hero, so the persona
+  pointer is never nil → vantage-faithful).
+
+So the **three writes agree per hero** — the single-source invariant `roster.go` depends on holds, and an
+"employee" demo seat now reads as `member` in her JWT `org_role` claim (not org-admin), faithful to her
+vantage. `cockpit.go` does NOT emit `org_role` (it's a vantage-keyed menu projection), so it is not part of
+the role triple.
+
+**Why the lockstep mattered.** The crashed prior close had edited `users.go` only; `roster.go:93` still called
+the OLD `roleForIndex` directly, which would have exported a manager hero as `org_role=member` (an early slot,
+below the admin band would mis-resolve) while the seeder wrote `admin` — re-introducing the exact divergence
+the fix exists to prevent. The close-review's code-quality + adversarial scans both caught this; both call-sites
+are now on `roleForHero`. A regression test (`TestBuildRoster_OrgRoleVantageFaithfulAndLockstep` +
+`TestRoleForHero`) pins the vantage mapping AND that the roster claim equals the seeder's own derivation per
+hero. Supersedes M38-D7 (the route-to-close-review record stays for the trail). Blended into
+`corpus/ops/demo/stories-spec.md` § the roster-export producer (#M38-D8).
+
 ## O9 — RESOLVED: the deep-link catalog
 Enumerated in `seeders/cockpit.go::DeepLinkCatalog()`. End-user (individual) routes: `/profile`,
 `/profile?view=spotlight` (Skill Spotlight), `/growth` (My Growth), `/simulations` (Take a Sim). Manager

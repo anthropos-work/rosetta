@@ -36,8 +36,11 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line holds) listing each
 > story → its hero trio with **[Login as]** and **[Jump to section]**, so a demo-giver picks a hero, lands
 > logged-in as her on the right screen, and presents that flow live. Default-off keeps every existing demo
-> byte-identical. The full picture (the single-source manifest, the one-handshake login-as-+-jump, the
-> roster-export producer, the O9 deep-link catalog) is in [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
+> byte-identical. The cockpit serve is **non-fatal** (a stories demo fails loud on a broken roster — the
+> login-as contract — but a cockpit failure leaves a fully-working seeded multi-identity demo you can still
+> drive by hand); pass `DEMO_NO_COCKPIT=1` to bring the stories demo up without the panel (an API-only run).
+> The full picture (the single-source manifest, the one-handshake login-as-+-jump, the roster-export producer,
+> the O9 deep-link catalog) is in [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
 > DEMO_STORIES=1 /demo-up 3   →  + seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
