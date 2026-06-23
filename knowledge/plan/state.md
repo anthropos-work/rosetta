@@ -11,16 +11,17 @@ profile** + the org **Workforce dashboard** tell one coherent story — plus a s
 platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ shipped 2026-06-23** (the verified-skill spine + the multi-org
 Stories engine + the Workforce-dashboard surfaces — both product Musts now done); M37 next.
 
-**Active milestone:** **M37 — Clerkenstein multi-identity** — **PLANNED (not started).** A demo stack can
+**Active milestone:** **M37 — Clerkenstein multi-identity** — **BUILT (not closed).** A demo stack can now
 **switch the active browser identity** among the seeded heroes/orgs — the seat-switch the cockpit's "login as"
 needs: a users/orgs registry in `clerk-frontend` (replacing the single `DefaultDemoUser`), an active-user
-selection mechanism (token-injection vs a parameterized FAPI handshake — O11, spike both early), and an
-**Alignment DNA** for the new multi-identity surface (must hold the 100%/100% Clerkenstein gates). Builds on the
-existing `wip/clerkenstein-browser-login` branch. Code lands in the `clerkenstein` ext section (a different
-section from M34–M36's `stack-seeding`). Depends on M35 (shipped — needs only the hero-identity list). The
-verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative
-design for M37–M38. The overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Next up:** build M37 via `/developer-kit:build-milestone`.
+selection mechanism (**O11 resolved: the parameterized FAPI handshake — server-authoritative**, not pure
+token-injection), and a 5th **Alignment DNA** (`clerk-multi-1`, 9 genes, 100%/100%) holding while the existing
+4 Clerkenstein surfaces stay green. The `wip/clerkenstein-browser-login` branch was reconciled (note folded
+into `architecture.md`) + retired. Code landed in the `clerkenstein` ext section (rext `main`, to be tagged
+`storytelling-m37`); the docs + corpus pointers on `m37/clerkenstein-multi-identity`. Depends on M35 (shipped).
+The verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the
+authoritative design for M37–M38. The overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
+**Next up:** close M37 via `/developer-kit:close-milestone`, then build M38.
 **Last closed:** **M36 — Dashboard surfaces (Must #2) — 2026-06-23** (v1.9 "storytelling"; the 6
 Workforce-dashboard seeders [`membership_skills` funnel + `tags`/teams + `target_roles` gap/mobility +
 `succession` + `feedback` + `population_evidence` org-scale gap] + the assignments status-mix fix + the

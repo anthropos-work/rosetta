@@ -19,6 +19,13 @@
   auto-provision step (v1.6 M30) so a demo is self-sourced from the curated secret dir and the prod-write path
   is never re-armed (`DIRECTUS_TOKEN` blank on the non-prod target). Mechanism: [`secrets-spec.md`](secrets-spec.md).
 - **The mock it injects:** `rosetta-extensions/clerkenstein/` — see [clerkenstein.md](../services/clerkenstein.md).
+- **Multi-identity seat-switch (v1.9 "storytelling" M37):** Clerkenstein's fake FAPI is now **multi-identity** —
+  a demo can **switch the active browser identity** among the seeded heroes/orgs (the M35 stories roster), the
+  seat-switch the presenter cockpit's "login as" drives. The demo tooling exports a **roster** (`FAKE_FAPI_ROSTER`,
+  the seeder-derived clerk claims per hero) the `fake-fapi` loads; the browser selects a seat via
+  `?__clerk_identity=<key>` on the handshake (the [Login as] deep-link) or the `/v1/demo/{identities,select}`
+  control plane. Server-authoritative, so every surface resolves the same hero. Measured by the `clerk-multi-1`
+  Alignment DNA (9 genes, 100%/100%) — see [clerkenstein.md](../services/clerkenstein.md) § Multi-identity.
 
 ## A demo builds from its OWN clone set — self-contained (v1.8 "understudy", M26)
 
