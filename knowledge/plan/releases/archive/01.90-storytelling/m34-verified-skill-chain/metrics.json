@@ -1,0 +1,36 @@
+{
+  "milestone": "M34",
+  "slug": "verified-skill-chain",
+  "release": "v1.9 \"storytelling\"",
+  "shape": "section",
+  "branch": "m34/verified-skill-chain",
+  "closed": "2026-06-23",
+  "theme": "the verified-skill chain (vertical slice) — turn the placeholder seeder's hollow world into one real hero (Maya). The PersonaSeeder writes the verified-skill 7-table fan-out (jobsimulation.sessions -> validation_attempt_results -> validation_attempt_skill_results -> validation_criterion_results -> public.local_jobsimulation_sessions -> user_skills -> user_skill_evidences UPSERT) per (hero x skill); the TaxonomyRefs resolver draws real public skiller node-ids (role-coherent, empty-pool skip-don't-fabricate); the G14 jobsim_sessions fix writes valid free-text enum/result/token + a continuous growth-arc score; users.go gives real names/avatars/org-domain emails; the seed-side closure gene (datadna measure-closure) proves 0 dangling node-ids. Tooling + docs only — zero platform-repo edits.",
+  "code_location": "ext: rosetta-extensions main @ 7c704cc, tag storytelling-m34 (annotated tag 307b0cb -> 7c704cc, the full 2-pass harden HEAD). rosetta: m34/verified-skill-chain merged --no-ff into release/01.90-storytelling at close.",
+  "code_diff": "ext: git -C .agentspace/rosetta-extensions diff c0872be~1..storytelling-m34 — 14 source files in one Go stack (stack-seeding), all under seeders/ + dna/: jobsim_sessions.go (G14), taxonomyref.go (NEW resolver), persona.go + persona_write.go (NEW PersonaSeeder), users.go + userprofile.go (names/avatars/emails), helpers.go, dna/seed_closure.go (NEW closure gene) + dna/fidelity_probe.go (SeededSkillRefDangling) + the _test.go files + presets/stories-maya.seed.yaml. rosetta: git diff release/01.90-storytelling...m34/verified-skill-chain — doc-half: NEW corpus/ops/demo/stories-spec.md (176L) + seeding-spec.md/safety.md/demo/README.md/CLAUDE.md updates + the plan files.",
+  "go_test_funcs": {
+    "total_module": 302,
+    "total_module_incl_subtests": 381,
+    "by_package": {"blueprint": 13, "cmd/datadna": 19, "cmd/stackseed": 9, "dna": 117, "isolation": 22, "pg": 26, "seeder": 16, "seeders": 81},
+    "baseline_v1.8_stack_seeding": 259,
+    "delta": "+43 (259 -> 302 test funcs)",
+    "counting_method": "302 = top-level '=== RUN Test...' (no slash); 381 = '--- PASS' leaf lines (incl t.Run subtests). go test -count=1 ./... -v, parsed.",
+    "note": "M34 added the PersonaSeeder + TaxonomyRefs + G14 + closure-gene tests + 2 harden passes (persona_harden_test.go, seeders_harden_test.go, the column-count + FK-non-empty invariant tests). Integration test (TestIntegration_VerifiedSkillChain) is opt-in behind //go:build integration + STACKSEED_IT_DSN — excluded from the default count."
+  },
+  "coverage": {
+    "seeders": "96.6%",
+    "dna_seed_closure_go": "100%",
+    "dna_package_overall": "87.7%",
+    "delta_seeders": "93.7% -> 96.6% (+2.9 across 2 harden passes)",
+    "note": "Two sub-100% seeders blocks are the D-M34-6 documented defensive dead-code (seedVerifiedSkill score/comp clamps unreachable given anthropos in [62,85] + verifiedSessionsPerSkill=3; the users.go casbin-grant error wrapper tested upstream) — not gaps."
+  },
+  "benchmarks": "n/a — no performance-sensitive hot path; the seeder is DB-IO-bound bulk COPY, no benchmark target.",
+  "flake_count": 0,
+  "flake_gate": "PASS — 5/5 sequential shuffled (-race -shuffle=on) runs of the full stack-seeding suite, 0 flakes. Suite is deterministic by construction (seeded hashes, no time/random). Confirmed across the harden-phase 3 runs + the close-phase 5 runs.",
+  "supply_chain": "GREEN — stdlib-only posture preserved; 0 third-party Go deps added by M34 (pgx + the pre-existing module deps unchanged).",
+  "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces — UNTOUCHED by M34 (no clerkenstein/mirror-engine change; M34 is stack-seeding only).",
+  "review_summary": "close GREEN — 0 blocking, 0 must-fix. 5 findings: 1 should-fix code-quality (taxonomyref take()/flat comment-vs-behavior mismatch — corrected to match deliberate role-coherence-over-count behavior), 2 nice-to-have recorded as D-M34-7 + Fate-3-annotated to M35 (multi-hero index-collision guard + short-role-pool top-up — both M34-benign at 1-hero, reachable at M35's roster), 2 docs (handbook test-count reconciliation: stack-seeding README 62->381 / dna README dna 49->117 + datadna 10->19). Decision triage: D-M34-1..6 archive (maintainer-only); load-bearing insights already in stories-spec.md, +#M34-D2/D3 trace tags added. Phase 2c adversarial: 2 scenarios traced, both degrade safely (no crash, no corruption, closure stays green). go vet + go build clean.",
+  "deferral_audit": "GREEN — 0 deferrals (M34 introduced none; the 3 surfaced items were 2x Fate-2 already-owned + 1x Fate-1 landed). 4 inherited v1.9 backlog items (M33, DEF-M10-01, DEF-M21-01, M25-D9) re-checked — all orthogonal to seeding, none aged into M34. Report: audit-deferrals/deferral-audit-2026-06-23-m34-close.md.",
+  "done_bar": "MET (orchestrator-verified on the live --local-content demo-3 stack): Maya has 8 distinct verified skills, 24 Spotlight chart datapoints (passing ASSESSMENT/HIRING, competency>0), 8 claimed-vs-verified gap rows (under-claimer), closure gene 0 dangling node-ids — through the exact UI query predicates; the integration test confirms every UI resolver returns Maya's data. The literal browser-pixels render of Maya's INDIVIDUAL profile needs login-AS-Maya, a M37 (Clerkenstein multi-identity) capability — Fate-2, owned by M37/M38's 'login as a hero' cockpit, NOT an M34 gap.",
+  "notes": "First milestone of v1.9 (M34->M38). M34 is the verified-skill SPINE the rest build on: M35 scales to multi-org + the hero trio, M36 the dashboard surfaces, M37/M38 the Clerkenstein multi-identity + presenter cockpit. The personas blueprint field is the additive foundation (an empty personas list seeds exactly as before)."
+}

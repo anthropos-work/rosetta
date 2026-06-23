@@ -4,20 +4,20 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-15):** **v1.0 … v1.7 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5` / `v1.6` /
-`v1.7`; records archived under [`releases/archive/`](releases/archive/)), and **v1.8 "understudy" is now IN DEVELOPMENT**
-(designed 2026-06-15; branch `release/01.80-understudy`). v1.8 is the **self-contained-demo release** — give `stack-demo/`
-its **own platform clone set** so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end; it **closes a
-live doc-vs-code gap** (CLAUDE.md already calls `stack-demo` a "true peer with its own clone set" + M30 already provisions
-`stack-demo/platform/.env`, but `up-injected.sh` still builds from `stack-dev`). A single `section` milestone **M26** that
-**re-implements** the orphaned `m26/self-contained-demo` ext branch (@ `25ab855` — unmergeable-stale, predates v1.6/v1.7)
-onto current `main`, preserving the stack-secrets module + M30/M31/M32; port spec verified by a 3-agent fan-out +
-adversarial no-regression review. **Tooling + docs only — zero platform-repo edits.** Prior: v1.7 "house lights" (the
-demo-UI-hardening release, M31→M32) shipped 2026-06-15; v1.6 "stage door" (the secret-provisioning release, M27→M30)
-shipped 2026-06-14. Genuinely-deferred work stays **unscheduled backlog** — M33 (ant-academy demo liveness, repro-first),
+**Status (2026-06-23):** **v1.0 … v1.9 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5` /
+`v1.6` / `v1.7` / `v1.8` / `v1.9`; records archived under [`releases/archive/`](releases/archive/)), and **no
+version is currently in development** — the next awaits a `/developer-kit:design-roadmap` run. v1.9 "storytelling"
+(SHIPPED 2026-06-23, tag `v1.9`) was the **believable-demo-narrative release** — it converted the placeholder
+seeder into a declarative **Stories & Heroes** engine: each *story* is one org with a thriving/struggling/manager
+**hero** trio, seeded via the real **verified-skill chain** (the 7-table jobsim→`user_skills`→`user_skill_evidences`
+fan-out) so the two product Musts — the individual **skill profile** and the org **Workforce dashboard** — tell one
+coherent story, plus a standalone **presenter cockpit** (log in as a hero + jump to the right screen). 5 `section`
+milestones **M34→M38**, designed from the adversarially-verified spec [`.agentspace/seeding_gaps.md`]. **Tooling +
+docs only — zero platform-repo edits.** Prior: v1.8 "understudy" (the self-contained-demo release, M26) shipped
+2026-06-15. Genuinely-deferred work stays **unscheduled backlog** — M33 (ant-academy demo liveness, repro-first),
 DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4)
-([`roadmap-vision.md`](roadmap-vision.md)) — **M26 graduated from backlog into v1.8**. Live state: [`state.md`](state.md).
-(No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.3…v1.8 are the same major.)
+([`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet —
+that appears when a whole *major* version retires; v1.3…v1.9 are the same major.)
 
 ## Files
 
@@ -31,7 +31,7 @@ DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), 
 - One directory per milestone, named `m{N}-{slug}/`
 - Each milestone dir has at minimum an `overview.md`. As the milestone progresses, optional companion files: `progress.md` (deliverable checklist), `decisions.md` (implementation choices with rationale), `spec-notes.md` (technical details).
 - Status values: `planned` → `in-progress` → `done` → `archived` (terminal, set at release close).
-- Milestone numbering (this is rosetta's first major version — v1.x): **flat sequential** — M0, M1, …, M20, v1.5 = **M21→M25**; **M26** = self-contained-demo, now **v1.8 "understudy"** (re-implemented onto current `main` from the orphaned `m26/self-contained-demo` ext branch @ `25ab855` / tag `prop-room-m26`, authored 2026-06-14 — that orphan is the spec, NOT merged: it predates v1.6/v1.7 which rewrote the same files); v1.6 "stage door" = **M27→M30**; v1.7 "house lights" = **M31→M32** (M33 ant-academy liveness → backlog); v1.8 "understudy" = **M26** (the reserved slot) (the milestone counter never resets — M26 was reserved for the self-contained-demo effort at v1.6 design, so stage-door begins at M27 even though M26 ships LATER, in v1.8; the version *number* jumps 1.3b→1.5 after the v1.4 removal; there is no `M5xx` scheme — that two-digit `Mxyy` scheme only begins at a future *major* v2+). A letter suffix has two uses: (1) a milestone **inserted after** the fact (M1b drift CI, M2b consolidation, M2c the iterative `@clerk/express` feature); and (2) a **split** of one planned milestone into a sequential mini-arc (**M7a → M7b → M7c** = the former M7 "seeding" split into framework+safety / data-DNA / fleet, 2026-06-04). Context disambiguates which.
+- Milestone numbering (this is rosetta's first major version — v1.x): **flat sequential** — M0, M1, …, M20, v1.5 = **M21→M25**; **M26** = self-contained-demo, now **v1.8 "understudy"** (re-implemented onto current `main` from the orphaned `m26/self-contained-demo` ext branch @ `25ab855` / tag `prop-room-m26`, authored 2026-06-14 — that orphan is the spec, NOT merged: it predates v1.6/v1.7 which rewrote the same files); v1.6 "stage door" = **M27→M30**; v1.7 "house lights" = **M31→M32** (M33 ant-academy liveness → backlog); v1.8 "understudy" = **M26** (the reserved slot); v1.9 "storytelling" = **M34→M38** (the seeding/Stories-&-Heroes release — the counter resumes at M34, the next free number after the M33 backlog slot) (the milestone counter never resets — M26 was reserved for the self-contained-demo effort at v1.6 design, so stage-door begins at M27 even though M26 ships LATER, in v1.8; the version *number* jumps 1.3b→1.5 after the v1.4 removal; there is no `M5xx` scheme — that two-digit `Mxyy` scheme only begins at a future *major* v2+). A letter suffix has two uses: (1) a milestone **inserted after** the fact (M1b drift CI, M2b consolidation, M2c the iterative `@clerk/express` feature); and (2) a **split** of one planned milestone into a sequential mini-arc (**M7a → M7b → M7c** = the former M7 "seeding" split into framework+safety / data-DNA / fleet, 2026-06-04). Context disambiguates which.
 - Milestone **shapes** can be mixed within a version: `section` (fixed checklist) or `iterative` (measurable exit gate, uncertain path). v1.0 has both — **M0/M1b/M2/M2b are section; M1 and M2c are iterative** (alignment-score gates).
 - Date format throughout: ISO `YYYY-MM-DD`
 - **Stack workspaces & extension tooling (v1.2):** each gitignored `stack-*/` dir spans one full local stack — its platform service repos **plus** its own clone of rosetta-extensions. The scratchpad rename convention: `anthropos-dev/` → `stack-dev/` (dev), `anthropos-demo/` → `stack-demo/` (demo), `anthropos-dev-2/` → `stack-dev-2/` (secondary dev), with future `stack-stage/` and `stack-tests/`. rosetta-extensions has **two clone roles**: (a) an **authoring** copy at `.agentspace/rosetta-extensions/` — spawned on demand to read/build/**test** tooling, then committed + **tagged**; and (b) **per-stack consumption** copies `stack-<role>/rosetta-extensions @ <tag>` — each stack consumes the tooling at a pinned tag. **Policy:** v1.2 extension code is built+tested in the authoring copy, tagged, then consumed per-stack — never scattered in the rosetta corpus, never authored ad-hoc inside a stack dir. rosetta = read-only doc corpus + dev-env skills; rosetta-extensions = the executable stack tooling.
@@ -49,15 +49,18 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.8 "understudy" — IN DEVELOPMENT** (designed 2026-06-15; branch `release/01.80-understudy`). The
-**self-contained-demo release** — a single `section` milestone **M26** that gives `stack-demo/` its own platform clone
-set so a box with only `stack-demo/` runs a demo end-to-end (closes the doc-vs-code gap where `up-injected.sh` still
-builds from `stack-dev` despite CLAUDE.md calling `stack-demo` a "true peer"). It **re-implements** the orphaned
-`m26/self-contained-demo` ext branch (@ `25ab855` — the spec, unmergeable since it predates v1.6/v1.7) onto current
-`main`, preserving the stack-secrets module + M30/M31/M32. **Next:** build M26 via **`/developer-kit:build-milestone`**
-(or `/developer-kit:work-milestone m26`); the verified port spec + design decisions D-MAIN/D1–D6 live in the
-[M26 overview](releases/01.80-understudy/m26-self-contained-demo/overview.md). v1.7 "house lights" SHIPPED 2026-06-15
-(tag `v1.7`) was the prior release. _(Live state: [`state.md`](state.md). Backlog: [`roadmap-vision.md`](roadmap-vision.md).)_
+**Active:** **(between releases)** — **v1.9 "storytelling" SHIPPED 2026-06-23** (tag `v1.9`; branch
+`release/01.90-storytelling` merged `--no-ff` → `main`). The **believable-demo-narrative release** — 5 `section`
+milestones **M34→M38** that converted the placeholder seeder into a declarative **Stories & Heroes** engine (per-story
+org + a thriving/struggling/manager hero trio), seeded via the real **verified-skill chain** so the **skill profile** +
+the **Workforce dashboard** tell a story, plus a standalone **presenter cockpit** (login-as a hero + jump-to the right
+screen). M34 (chain vertical slice) → M35 (stories model + multi-org) → M36 (dashboard surfaces) → M37 (Clerkenstein
+multi-identity) → M38 (cockpit). close-release GREEN (0 blocking); 5 Clerkenstein alignment gates 100%/100%; zero
+platform-repo edits. The verified spec lived at [`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md); the
+milestone records are archived under
+[`releases/archive/01.90-storytelling/`](releases/archive/01.90-storytelling/). **Next:** design the next version via
+**`/developer-kit:design-roadmap`** (none staged behind v1.9). _(Live state: [`state.md`](state.md). Backlog:
+[`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

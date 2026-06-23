@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection) · **Last updated:** 2026-06-04
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch) · **Last updated:** 2026-06-23
 **Repo:** `stack-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
@@ -25,13 +25,15 @@ repos keep "thinking" they use Clerk with **zero source changes**.
 
 It is the **first mirror produced by the M0 alignment process** (not a hand-built mock): its fidelity is
 *measured* as a 0–100% alignment score against a Clerk **Alignment DNA**, driven to the gate — **100%
-critical / 100% overall** on **all four** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
+critical / 100% overall** on **all five** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
 @ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
-**`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express` ^1.3.47, M2c — RS256/JWKS, the
-genuine SDK *satisfied*, not reimplemented), and the **deployment/injection** surface (7/7 genes,
-`clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against the platform's real
-`colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural* alignment ≠
-*deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
+**multi-identity seat-switch** surface (9/9 genes, `clerk-multi-1` — the v1.9 M37 registry + active-seat
+selection, so a demo can present as any seeded hero; the multi-session FAPI semantics real clerk-js exhibits
+with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express`
+^1.3.47, M2c — RS256/JWKS, the genuine SDK *satisfied*, not reimplemented), and the **deployment/injection**
+surface (7/7 genes, `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against
+the platform's real `colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural*
+alignment ≠ *deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
 The DNAs + mirror + goldens + runners live in the clerkenstein repo; the `/align-dna` + `/align-run`
 skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc live in rosetta, while the
 `alignctl` harness is the `rosetta-extensions/alignment/` section (a sibling of `clerkenstein/`).
@@ -56,12 +58,23 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 | `clerk-webhook/` | `svix` | the signed-webhook injector |
 | `shared/` | — | universal-key HS256 JWT (the mint side + verify side agree here) |
 | `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony @ v0.34.3`) |
-| `cmd/` | — | standalone binaries: `mintpk` (authoritative publishable-key minter) · `fake-fapi` / `fake-bapi` (standalone fake servers for demos) |
-| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,expressrun,deployrun}` + `dna/` (four) + `golden{,-js,-express,-deploy}/` + `scripts/` |
+| `cmd/` | — | standalone binaries: `mintpk` (authoritative publishable-key minter) · `fake-fapi` / `fake-bapi` (standalone fake servers for demos; `fake-fapi` loads `FAKE_FAPI_ROSTER` for M37 multi-identity) |
+| `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,multirun,expressrun,deployrun}` + `dna/` (five) + `golden{,-js,-multi,-express,-deploy}/` + `scripts/` |
 
 The browser-login → backend-verify coherence chain runs through `shared`: `clerk-frontend` mints the
 HS256 universal-key JWT, `authn` verifies that exact token — pinned by the JS DNA's
 `SessionToken/decoded-identity` gene (operator `exact`).
+
+### Multi-identity
+
+**(v1.9 M37)** — `clerk-frontend` now holds a **users/orgs registry** (replacing the single
+`DefaultDemoUser`) + an **active-seat selection** so a demo can **switch the active browser identity** among
+the seeded heroes/orgs (the M35 stories roster) — the seat-switch the presenter cockpit's "login as" needs.
+Selection is **server-authoritative** (the FAPI holds the active key, so the client view, `/v1/me`, the
+token mint, and the handshake cookies all resolve the same hero): `?__clerk_identity=<key>` on the handshake
+(the cockpit's [Login as] deep-link) + the `/v1/demo/{identities,select}` control plane. The single-identity
+path is byte-identical (a one-member registry). Measured by the `clerk-multi-1` DNA (`alignment/cmd/multirun`,
+9 genes, 100%/100%) — a *new measured surface* that holds while the existing four stay green.
 
 **`@clerk/express` (M2c) added no new dir** — it's a *consumer* (a Node backend verifier we satisfy), so
 its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real JWKS from `clerk-frontend/`

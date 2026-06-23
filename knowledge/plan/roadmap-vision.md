@@ -28,12 +28,18 @@ and a `release/{version}` branch is cut.
 > a single `section` milestone **M26** that re-implements the orphaned `m26/self-contained-demo` branch onto current
 > `main`, preserving v1.6/v1.7; tooling + docs only, zero platform-repo edits). **Graduated from the unscheduled
 > backlog** (the orphaned ext effort) on the user's "fill just that gap" go-ahead.
+> **v1.9 "storytelling"** → 2026-06-22 (shipped 2026-06-23, tag `v1.9`; the **believable-demo-narrative release** —
+> convert the placeholder seeder into a declarative **Stories & Heroes** engine: per-story org + a thriving/struggling/manager
+> hero trio seeded via the real **verified-skill chain**, so the **skill profile** + the **Workforce dashboard**
+> tell a story, plus a **presenter cockpit**; 5 `section` milestones M34→M38; tooling + docs only). Designed from
+> the adversarially-verified spec [`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md). The first
+> version since v1.5 to come from a substantive backlog/spec rather than a live defect.
 
 ---
 
-> **Between releases.** v1.8 "understudy" SHIPPED 2026-06-15 (tag `v1.8`; full detail in the `## Done — v1.8 "understudy"`
-> section of [`roadmap.md`](roadmap.md)). No version is currently in development or staged behind it — the next version
-> awaits a `/developer-kit:design-roadmap` run.
+> **No version currently staged.** v1.9 "storytelling" shipped 2026-06-23 (tag `v1.9`; full detail in the
+> `## Done — v1.9 "storytelling"` section of [`roadmap.md`](roadmap.md)). The next version awaits a
+> `/developer-kit:design-roadmap` run — the unscheduled backlog below is candidate input.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -67,9 +73,10 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
+- **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
 
-_Last updated: 2026-06-15 (**v1.8 "understudy" SHIPPED** [tag `v1.8`] — the self-contained-demo release, a single
-`section` milestone M26 that re-implemented the orphaned `m26/self-contained-demo` branch onto current `main` [verified
-port spec, no v1.6/v1.7 regression]; `release/01.80-understudy` merged `--no-ff` → `main`. **M26 graduated from the backlog into v1.8.**
-Now between releases — backlog: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-15 v1.7 "house
-lights" SHIPPED [tag `v1.7`], the demo-UI-hardening release M31→M32.)_
+_Last updated: 2026-06-23 (**v1.9 "storytelling" SHIPPED** [tag `v1.9`] via `/developer-kit:close-release` —
+reviewed M34→M38 as one PR, GREEN/0 blocking, deferral re-audit GREEN [0 escape-hatch], merged
+`release/01.90-storytelling` → `main`. No version staged behind it — next awaits `/developer-kit:design-roadmap`.
+Backlog unchanged: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-22
+v1.9 DESIGNED + PROMOTED [5 `section` milestones M34→M38]; 2026-06-15 v1.8 "understudy" SHIPPED [tag `v1.8`].)_

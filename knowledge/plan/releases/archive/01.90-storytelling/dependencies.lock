@@ -1,0 +1,24 @@
+# Dependency lockfile — v1.9 "storytelling" (2026-06-23)
+# v1.9 inherits v1.8's supply-chain surface UNCHANGED. M34-M38 added ZERO new third-party deps.
+# Ext code range: rosetta-extensions storytelling-m34 (8eb603b) .. storytelling-m38 (237bede).
+# Go module diff storytelling-m34~1..storytelling-m38 over '*/go.mod' '*/go.sum' = EMPTY (the dep
+#   surface is byte-identical to v1.8; v1.9 touched only seeders/cockpit/clerkenstein .go + .py + .md).
+# Go test-func count (rext total) = 1248 (1027 v1.8 + 185 stack-seeding + 36 clerkenstein).
+#
+# Go modules (5, all go 1.25.x, third-party set unchanged from v1.8/v1.7):
+alignment        module=anthropos.dev/alignment                                         third-party=(none; stdlib+first-party)
+clerkenstein     module=clerkenstein                                                    third-party=github.com/anthropos-work/colony@v0.34.3, github.com/clerk/clerk-sdk-go/v2@v2.6.0, github.com/google/uuid@v1.6.0, github.com/svix/svix-webhooks@v1.93.0
+stack-secrets    module=github.com/anthropos-work/rosetta-extensions/stack-secrets      third-party=(none; stdlib-only)
+stack-seeding    module=github.com/anthropos-work/rosetta-extensions/stack-seeding      third-party=github.com/jackc/pgx/v5@v5.9.2, gopkg.in/yaml.v3@v3.0.1
+stack-snapshot   module=github.com/anthropos-work/rosetta-extensions/stack-snapshot     third-party=(none)
+#
+# License posture: every third-party dep is MIT / BSD / Apache-2.0 — no GPL/AGPL in any distribution surface.
+#   pgx (MIT), yaml.v3 (MIT+Apache), colony (first-party/private), clerk-sdk-go (MIT), uuid (BSD-3),
+#   svix-webhooks (MIT). Compatible with the private-tooling distribution plan.
+#
+# Python: stdlib-only across all touched files (the cockpit panel cockpit.py is dependency-free) + one
+#   PRE-EXISTING optional test dep:
+PyYAML           scope=test-only (stack-injection/tests, guarded skip-if-absent)        added=M5 (2026-06-04), unpinned, no manifest
+#
+# Shell: demo-stack/up-injected.sh + ensure-clones.sh use host git/ssh — host tools, nothing vendored/pinned.
+# CVE surface: NO CHANGE vs v1.8 (prior baseline: releases/01.80-understudy/dependencies.lock).
