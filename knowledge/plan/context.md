@@ -4,22 +4,20 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-22):** **v1.0 … v1.8 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5` /
-`v1.6` / `v1.7` / `v1.8`; records archived under [`releases/archive/`](releases/archive/)), and **v1.9
-"storytelling" is now IN DEVELOPMENT** (designed 2026-06-22; branch `release/01.90-storytelling`). v1.9 is the
-**believable-demo-narrative release** — convert the placeholder seeder into a declarative **Stories & Heroes**
-engine: each *story* is one org with a thriving/struggling/manager **hero** trio, seeded via the real
-**verified-skill chain** (the 7-table jobsim→`user_skills`→`user_skill_evidences` fan-out) so the two product
-Musts — the individual **skill profile** and the org **Workforce dashboard** — tell one coherent story, plus a
-standalone **presenter cockpit** (log in as a hero + jump to the right screen). 5 `section` milestones
-**M34→M38**, designed from the adversarially-verified spec [`.agentspace/seeding_gaps.md`] (the first version
-since v1.5 to come from a substantive spec rather than a live defect). **Tooling + docs only — zero platform-repo
-edits.** Prior: v1.8 "understudy" (the self-contained-demo release, M26) shipped 2026-06-15; v1.7 "house lights"
-(M31→M32) shipped 2026-06-15. Genuinely-deferred work stays **unscheduled backlog** — M33 (ant-academy demo
-liveness, repro-first), DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9
-(dev taxonomy rc=4) ([`roadmap-vision.md`](roadmap-vision.md)) — all orthogonal to v1.9; the
-`wip/clerkenstein-browser-login` branch is now homed in **v1.9 M37**. Live state: [`state.md`](state.md).
-(No `roadmap-legacy.md` yet — that appears when a whole *major* version retires; v1.3…v1.9 are the same major.)
+**Status (2026-06-23):** **v1.0 … v1.9 SHIPPED** (tagged `v1.0` / `v1.1` / `v1.2` / `v1.3` / `v1.3.1` / `v1.5` /
+`v1.6` / `v1.7` / `v1.8` / `v1.9`; records archived under [`releases/archive/`](releases/archive/)), and **no
+version is currently in development** — the next awaits a `/developer-kit:design-roadmap` run. v1.9 "storytelling"
+(SHIPPED 2026-06-23, tag `v1.9`) was the **believable-demo-narrative release** — it converted the placeholder
+seeder into a declarative **Stories & Heroes** engine: each *story* is one org with a thriving/struggling/manager
+**hero** trio, seeded via the real **verified-skill chain** (the 7-table jobsim→`user_skills`→`user_skill_evidences`
+fan-out) so the two product Musts — the individual **skill profile** and the org **Workforce dashboard** — tell one
+coherent story, plus a standalone **presenter cockpit** (log in as a hero + jump to the right screen). 5 `section`
+milestones **M34→M38**, designed from the adversarially-verified spec [`.agentspace/seeding_gaps.md`]. **Tooling +
+docs only — zero platform-repo edits.** Prior: v1.8 "understudy" (the self-contained-demo release, M26) shipped
+2026-06-15. Genuinely-deferred work stays **unscheduled backlog** — M33 (ant-academy demo liveness, repro-first),
+DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4)
+([`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet —
+that appears when a whole *major* version retires; v1.3…v1.9 are the same major.)
 
 ## Files
 
@@ -51,16 +49,18 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.9 "storytelling" — IN DEVELOPMENT** (designed 2026-06-22; branch `release/01.90-storytelling`). The
-**believable-demo-narrative release** — 5 `section` milestones **M34→M38** that convert the placeholder seeder into a
-declarative **Stories & Heroes** engine (per-story org + a thriving/struggling/manager hero trio), seeded via the real
-**verified-skill chain** so the **skill profile** + the **Workforce dashboard** tell a story, plus a standalone
-**presenter cockpit** (login-as a hero + jump-to the right screen). M34 (chain vertical slice) → M35 (stories model +
-multi-org) → M36 (dashboard surfaces) → M37 (Clerkenstein multi-identity) → M38 (cockpit). **Next:** build **M34** via
-**`/developer-kit:build-milestone`** (or `/developer-kit:work-milestone M34`); the verified spec lives at
-[`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md), the milestone overviews under
-[`releases/01.90-storytelling/`](releases/01.90-storytelling/). v1.8 "understudy" SHIPPED 2026-06-15 (tag `v1.8`) was
-the prior release. _(Live state: [`state.md`](state.md). Backlog: [`roadmap-vision.md`](roadmap-vision.md).)_
+**Active:** **(between releases)** — **v1.9 "storytelling" SHIPPED 2026-06-23** (tag `v1.9`; branch
+`release/01.90-storytelling` merged `--no-ff` → `main`). The **believable-demo-narrative release** — 5 `section`
+milestones **M34→M38** that converted the placeholder seeder into a declarative **Stories & Heroes** engine (per-story
+org + a thriving/struggling/manager hero trio), seeded via the real **verified-skill chain** so the **skill profile** +
+the **Workforce dashboard** tell a story, plus a standalone **presenter cockpit** (login-as a hero + jump-to the right
+screen). M34 (chain vertical slice) → M35 (stories model + multi-org) → M36 (dashboard surfaces) → M37 (Clerkenstein
+multi-identity) → M38 (cockpit). close-release GREEN (0 blocking); 5 Clerkenstein alignment gates 100%/100%; zero
+platform-repo edits. The verified spec lived at [`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md); the
+milestone records are archived under
+[`releases/archive/01.90-storytelling/`](releases/archive/01.90-storytelling/). **Next:** design the next version via
+**`/developer-kit:design-roadmap`** (none staged behind v1.9). _(Live state: [`state.md`](state.md). Backlog:
+[`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
 

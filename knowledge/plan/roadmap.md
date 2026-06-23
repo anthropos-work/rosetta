@@ -105,8 +105,9 @@ builder skills).
 > analysis + fix design + risk register:
 > [`.agentspace/scratch/roadmap-research-2026-06-15.md`](../../.agentspace/scratch/roadmap-research-2026-06-15.md).
 
-> **v1.9 "storytelling" — IN DEVELOPMENT** (designed 2026-06-22 via `/developer-kit:design-roadmap`; branch
-> `release/01.90-storytelling`; full detail in `## In Development — v1.9` below). The **believable-demo-narrative
+> **v1.9 "storytelling" — SHIPPED 2026-06-23** (tag `v1.9`; designed 2026-06-22 via `/developer-kit:design-roadmap`;
+> branch `release/01.90-storytelling` merged `--no-ff` → `main`; full detail in `## Done — v1.9 "storytelling"`
+> below). The **believable-demo-narrative
 > release** — turn the placeholder seeder into a declarative **Stories & Heroes** engine: each *story* is one org
 > with a thriving/struggling/manager **hero** trio, seeded via the real **verified-skill chain** (the 7-table
 > jobsim→user_skills→evidences fan-out) so the **skill profile** + the org **Workforce dashboard** tell one
@@ -129,7 +130,7 @@ builder skills).
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
-| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ + M35 ✅ + M36 ✅ + M37 ✅ 2026-06-23; M38 remains) |
+| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -146,7 +147,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.9 "storytelling" (designed 2026-06-22 · branch `release/01.90-storytelling`)
+## Done — v1.9 "storytelling" (SHIPPED 2026-06-23 · tag `v1.9`)
 
 **Theme:** the **believable-demo-narrative release.** Through v1.8 the seeder produced a *structurally-correct
 spine* (valid FKs, correct authz, idempotent, prod-isolated) but **placeholder-grade content**: every user is
@@ -384,7 +385,7 @@ repeats, 0 aged-out; M37's Out: scope is Fate-2 owned by M38). Supply-chain GREE
 ### M38 — Presenter cockpit (B-milestone for M37)
 **Status:** `done` (completed 2026-06-23) · **Shape:** `section` · **Complexity:** medium · **Depends on:** M37
 **Closes the gap after M37:** turns the multi-identity capability into a usable demo-driving surface.
-**Shipped 2026-06-23** (the LAST milestone of v1.9 — release now COMPLETE pending `/developer-kit:close-release`).
+**Shipped 2026-06-23** (the LAST milestone of v1.9 — the release shipped via `/developer-kit:close-release`, tag `v1.9`).
 A **standalone served panel** (rext `demo-stack`, offset port `7700 + N·10000`, host-native process reaped by
 `rosetta-demo down`) that reads the cockpit manifest the seeder projects from the same `stack.stories.yaml`
 (`stackseed --cockpit-export` — D9 single-source without PyYAML, D2) and lists each story → its hero trio with

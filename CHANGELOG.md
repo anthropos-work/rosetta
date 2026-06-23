@@ -2,6 +2,45 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.9] "storytelling" — 2026-06-23
+
+The **believable-demo-narrative release**: the placeholder seeder becomes a declarative **Stories & Heroes** engine. Each *story* is one org with a thriving/struggling/manager **hero** trio, seeded via the real **verified-skill chain**, so the individual **skill profile** and the org **Workforce dashboard** tell one coherent story (the claimed-vs-verified gap is the "aha"). A standalone **presenter cockpit** lets a demo-giver *log in as* a hero and *jump to* the right screen, wired on **Clerkenstein multi-identity**. **Tooling + docs only — zero platform-repo edits.**
+
+### Added
+- **Stories & Heroes seeding model.** One `stack.stories.yaml` seeds **multiple orgs**, each with a thriving/struggling/manager **hero trio** at vantage-appropriate fidelity (thriving = dense verified, under-claim; struggling = sparse, over-claim; manager = rides aggregates). Drives `/stack-seed`. The legacy single-org preset/`dev-min` path stays byte-identical. (M35)
+- **The verified-skill chain.** The seeder writes the real **7-table fan-out** per (hero × skill) (`jobsimulation.sessions` → validation results → `public.user_skills` → `user_skill_evidences`), drawing real replayed skiller node-ids (role-coherent; **never fabricated** — empty-pool skips), so a hero's **skill profile + Skill Spotlight chart** render with real, closure-verified data (0 dangling node-ids). (M34)
+- **Org Workforce-Intelligence dashboard data.** Six seeders make every dashboard aggregate render believably for a seeded story: the mapped→verified verification funnel, business-unit teams + a mentor tag, role-gap + internal-mobility target-roles, succession interview coverage, ~2:1 positive feedback, and the org-scale claimed-vs-verified gap + AI-readiness. (M36)
+- **Clerkenstein multi-identity (seat-switch).** A demo can present as any seeded hero — a users/orgs Registry fed a roster JSON + a server-authoritative FAPI handshake selection (`?__clerk_identity=<key>`). A **5th Alignment DNA** (`clerk-multi-1`, 9 genes) measures the multi-session FAPI surface, scoring 100%/100% alongside the existing four. (M37)
+- **The presenter cockpit.** A standalone served panel (offset port, gated on `DEMO_STORIES=1`) that reads the same `stack.stories.yaml` that seeded the data and lists each story → its hero trio with **[Login as]** + **[Jump to section]** — the two collapse into one FAPI handshake redirect, so a demo-giver picks a hero and lands logged-in on her screen in one move. Ships the roster-export + cockpit-manifest producers + the deep-link catalog. (M38)
+- **`corpus/ops/demo/stories-spec.md`** (net-new) — the Stories & Heroes + verified-skill-chain + dashboard + cockpit reference; plus updates to `seeding-spec.md`, `safety.md`, `demo/README.md`, `clerkenstein.md`, `alignment_testing.md`, `rosetta_demo.md`, and the `/stack-seed` skill.
+
+### Changed
+- **A demo seat's `org_role` is now vantage-faithful.** A hero's JWT `org_role` follows her vantage (end-user → `member`, manager → `admin`), single-sourced so the membership row + the casbin grant + the roster/JWT claim agree per hero — an "employee" demo seat reads as `member`, not org-admin. (M38, close-fix M38-D8)
+- The `clerkenstein.md` / `alignment_testing.md` narrative now reflects **five** measured Clerkenstein surfaces (was four).
+
+### Supply chain
+- **No new dependencies.** The `go.mod`/`go.sum` surface is **byte-identical to v1.8** across all of v1.9 (the work is seeder/cockpit/clerkenstein `.go` + stdlib Python + docs). All deps remain MIT/BSD/Apache. Lockfile: `knowledge/plan/releases/archive/01.90-storytelling/dependencies.lock`.
+
+### Known limitations
+- The cockpit + Stories layer is **opt-in** (`DEMO_STORIES=1`); default-off keeps every existing demo byte-identical. The literal browser-pixels end-to-end needs a `DEMO_STORIES=1` re-deploy — a deliberate demo step.
+- The `clerk-express-1` alignment gate drives the genuine `@clerk/express` SDK and so needs installed npm modules (a node-CI env prerequisite) — unrunnable in the authoring copy; not a regression.
+
+## [v1.8] "understudy" — 2026-06-15
+
+The **self-contained-demo release**: `stack-demo/` gets its **own platform clone set** so a box with **only** `stack-demo/` (no `stack-dev/`) can run a demo end-to-end. A single `section` milestone (M26) re-implements the orphaned `m26/self-contained-demo` effort onto current `main`, preserving v1.6/v1.7. **Tooling + docs only — zero platform-repo edits** (`stack-demo/platform` is a build *context* only).
+
+### Added
+- **`demo-stack/ensure-clones.sh`** (net-new) — bootstrap-clones `stack-demo/platform` from GitHub + `make init`s the peer repos, so a box with only `stack-demo/` brings a demo up end-to-end. Seeds the shared `platform/.env` copy-if-present from `stack-dev` (same Clerk app + GH_PAT; non-fatal if absent — `/stack-secrets` provisions the real one). (M26)
+
+### Changed
+- **A demo now builds entirely from its own `stack-demo/` clone set.** `up-injected.sh` moves the build **source** + the compose dir (`PLAT`, `D-MAIN`) to `stack-demo`, so every service builds from `stack-demo` — it no longer borrows `stack-dev`'s repos or built images for the build source. Dev-image reuse is gated behind an opt-in `--reuse-dev-images` flag (OFF by default). (M26)
+
+### Supply chain
+- **No new dependencies.** The ext Go `go.mod`/`go.sum` diff is EMPTY (M26 is shell + Python + docs); Python stdlib-only + the pre-existing optional PyYAML test dep. Lockfile: `knowledge/plan/releases/archive/01.80-understudy/dependencies.lock`.
+
+### Known limitations
+- The live field-bake on a freshly-emptied `stack-demo/` is a user-authorized post-close follow-up (M26 satisfied the observable-behavior gate by composition, the M31/M32 precedent).
+
 ## [v1.7] "house lights" — 2026-06-15
 
 The **demo-UI-hardening release**: when the house lights come up, the audience can see the show — a fresh browser at a demo's offset UI renders the working app with **zero manual steps**. Two browser-facing demo defects fixed (next-web blank page · studio-desk dead redirect). **Tooling + docs only — zero platform-repo edits.**
