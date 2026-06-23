@@ -11,21 +11,22 @@ profile** + the org **Workforce dashboard** tell one coherent story — plus a s
 platform-repo edits.** **M34 ✅ + M35 ✅ shipped 2026-06-23** (the verified-skill spine + the multi-org Stories
 engine); M36 next.
 
-**Active milestone:** **M36 — Dashboard surfaces (Must #2)** — **NEXT (not started).** The org
+**Active milestone:** **M36 — Dashboard surfaces (Must #2)** — **BUILT (not yet closed).** The org
 **Workforce-Intelligence dashboard** renders believably for a seeded story: `membership_skills` (a believable
 verification funnel), tags/teams, `organization_target_roles`+`user_target_roles` (gap + two-way mobility),
 succession feeders sized to clear the coverage gate, feedback (~2:1 positive), the assignments status-mix fix,
-and the org-scale claimed-vs-verified gap + growth-arc distributions. Depends on M35 (the multi-org Stories
-engine, now shipped). **Parallel opportunity:** M37 (Clerkenstein multi-identity) may start alongside M36 — it
-needs only M35's hero-identity list. The verified spec
-([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design for
-M36–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Next up:** build M36 via `/developer-kit:build-milestone`.
+and the org-scale claimed-vs-verified gap + growth-arc distributions. All built on the `m36/dashboard-surfaces`
+branch (6 seeders + 2 fixes + the closure-gene extension; ext code on rext `main`, tag `storytelling-m36` @
+`efe5842`), proven by a live integration test against demo-3. Depends on M35 (shipped). **Parallel
+opportunity:** M37 (Clerkenstein multi-identity) may start alongside — it needs only M35's hero-identity list.
+The verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative
+design for M36–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
+**Next up:** close M36 via `/developer-kit:close-milestone`.
 **Last closed:** **M35 — Stories & Heroes model + multi-org — 2026-06-23** (v1.9 "storytelling"; the `stories[]`
 blueprint + `EffectiveStories()` multi-org normalization + the thriving/struggling/manager hero trio +
 trajectory logic + the `jobroleref` resolver; merged into `release/01.90-storytelling`). Detail in the `### M35`
 block of [`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 in development — M34 + M35 closed; M36 next (M37 may run ∥ M36).**
+**Phase:** **v1.9 in development — M34 + M35 closed; M36 BUILT (awaiting close); M37 may run ∥ M36.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a

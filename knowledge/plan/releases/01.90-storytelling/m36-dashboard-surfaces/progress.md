@@ -2,13 +2,13 @@
 
 Section checklist (built by `/developer-kit:build-milestone`). Scope detail in `overview.md`.
 
-- [ ] **`membership_skills`** (mapped) — outnumber verified per skill; `skill_name` set (NOT NULL)
-- [ ] **`tags` + `membership_tags`** — teams/business-units incl. a `mentor` tag
-- [ ] **`organization_target_roles` + `user_target_roles`** — gap + two-way mobility
-- [ ] **Succession feeders** — `validation_attempt_*` + `interview_extraction_results`, sized to clear the coverage gate
-- [ ] **`job_simulation_feedbacks`** (~2:1) + **assignments fix** (status mix + due_dates + `organization_assignment_sessions`) + skillpath `completed` share
-- [ ] **Org-scale distributions** — claimed-vs-verified gap (`user_level` vs `anthropos_level`) + AI-readiness skills + growth arc; the two employee heroes as the standout high/low rows
-- [ ] **Docs** — extend `stories-spec.md` (dashboard surfaces) + `seeding-spec.md`
-- [ ] **Tests** — `stack-seeding` suite green; the Workforce dashboard renders the seeded story
+- [x] **`membership_skills`** (mapped) — outnumber verified per skill; `skill_name` set (NOT NULL). _Done: `MembershipSkillsSeeder` + the name-bearing `skillref_named.go` resolver + `EffectiveMapped()`; funnel-believability + AI-narrative + idempotency tests. Funnel matches mapped↔verified by skill NAME (D-M36-1)._
+- [x] **`tags` + `membership_tags`** — teams/business-units incl. a `mentor` tag. _Done: `TagsSeeder` — a dozen front-loaded business units (one per member) + the cross-cutting `mentor` tag (the Growth-tab Mentors KPI)._
+- [x] **`organization_target_roles` + `user_target_roles`** — gap + two-way mobility. _Done: `TargetRolesSeeder` — role-coherent J- target chosen ≠ the member's current role; both sides a believable subset._
+- [x] **Succession feeders** — `validation_attempt_*` (already M34) + `interview_extraction_results`, sized to clear the coverage gate. _Done: `SuccessionSeeder` — interview for >20% of members (+ every hero), trajectory-aware summary (struggling = at-risk); clears `too_sparse`→`full`._
+- [x] **`job_simulation_feedbacks`** (~2:1) + **assignments fix** (status mix + due_dates + `organization_assignment_sessions`) + skillpath `completed` share. _Done: `FeedbackSeeder` (2:1, polarity-matched) + the assignments status-mix fix (completed/overdue/in-progress/not-started via status + due_date + sessions; the FK takes the skill-path arm, D-M36-2/3) + skillpath completed ~30% (was ~1%)._
+- [x] **Org-scale distributions** — claimed-vs-verified gap (`user_level` vs `anthropos_level`) + AI-readiness skills + growth arc; the two employee heroes as the standout high/low rows. _Done: `PopulationEvidenceSeeder` (population over/under-claimer mix); AI-readiness via the membership-skills AI top-up; growth arc already by jobsim-sessions (M34). Coherence: heroes are the standout rows._
+- [x] **Docs** — extend `stories-spec.md` (dashboard surfaces) + `seeding-spec.md`. _Done: stories-spec.md § The Workforce dashboard surfaces (M36) + the scope note; seeding-spec.md M36 paragraph + Status; safety.md PerStackIsolated confirming note._
+- [x] **Tests** — `stack-seeding` suite green; the Workforce dashboard renders the seeded story. _Done: full unit suite green `-race` (vet+gofmt clean); the opt-in live integration test (`-tags integration`) seeds the full fleet against demo-3 + asserts every dashboard aggregate (funnel/self-eval/teams/targets/succession/feedback/assignments) resolves, leaving the stack clean. The live browser render is the orchestrator's post-build acceptance (the admin view)._
 
-_Last updated: 2026-06-22 (scaffolded; not started)._
+_Last updated: 2026-06-23 (M36 build complete — 6 seeders + 2 fixes + closure-gene extension + live integration test; ext code on rext `main`, tagged `storytelling-m36`)._

@@ -13,8 +13,12 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > name/avatar/email patch, and the **seed-side closure gene** — plus the **Stories & Heroes model + multi-org**
 > delivered in **M35** (the `stack.stories.yaml` blueprint, per-story `OrgID`, the
 > thriving/struggling/manager hero **trio**, the vantage/trajectory axes, supporting-population fidelity — see
-> [§ The Stories & Heroes model (M35)](#the-stories--heroes-model-m35) below). The presenter cockpit + the
-> Clerkenstein multi-identity seat-switch are M37–M38; this doc is the foundation those build on. It graduates
+> [§ The Stories & Heroes model (M35)](#the-stories--heroes-model-m35) below) — plus the **Workforce dashboard
+> surfaces** delivered in **M36** (the mapped→verified funnel, teams/tags + the mentor tag, target-roles
+> gap+mobility, the succession interview feeders, ~2:1 feedback, the assignment status-mix fix, and the
+> org-scale claimed-vs-verified distribution — see
+> [§ The Workforce dashboard surfaces (M36)](#the-workforce-dashboard-surfaces-m36) below). The presenter cockpit
+> + the Clerkenstein multi-identity seat-switch are M37–M38; this doc is the foundation those build on. It graduates
 > the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
 > lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
 > `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
@@ -234,7 +238,47 @@ span, so the org reads as one that grew over time). The trio sits in a believabl
 
 The seed-side closure gene is **org-agnostic** (it counts every dangling seeded skill ref vs the replayed
 taxonomy, with no org filter), so `datadna measure-closure` proves **0 dangling refs across all orgs** — the
-multi-org world is as closed as the single-org one.
+multi-org world is as closed as the single-org one. As of M36 the gene spans **four** seeded skill-ref surfaces
+(it now also covers `public.membership_skills.skill_id`, the dashboard mapped surface — see below).
+
+## The Workforce dashboard surfaces (M36)
+
+M34/M35 made the **individual** profile believable (Must #1). M36 makes the **org Workforce-Intelligence
+dashboard** (REST `/api/workforce/*`, the org-admin view) believable for the seeded story (Must #2): every
+aggregate renders **non-empty and distributed**, not binary-or-zero. A manager hero (e.g. Dan Rossi) logs in and
+sees her two employee heroes as the standout high/low rows of an org that reads real around them. Six new
+seeders + two fixes land the **spine** (not every widget — the hard scope line):
+
+| Surface | Seeder (`stack-seeding/seeders/`) | What it feeds on the dashboard |
+|---|---|---|
+| **Mapped skills** | `membership_skills.go` | The mapped→verified **verification funnel**. Every member is mapped to a role-coherent set of real public skills (the `skill_name` is set — every dashboard query filters it NOT NULL); since mapped covers ~all members but only a subset verify, **mapped outnumbers verified per skill** → the believable drop-off. Also feeds the **AI-readiness** scan (an AI-narrative org biases a share of members toward AI-named skills). |
+| **Teams / tags** | `tags.go` | The universal **slice dimension**: a dozen business-unit tags (front-loaded so the Teams tab is non-uniform) + a cross-cutting **`mentor`** tag (the Growth-tab Mentors KPI counts members tagged `mentor`). Each member is on exactly one business unit. |
+| **Target roles** | `target_roles.go` | The **gap + two-way internal mobility**: `organization_target_roles` (an admin-set development target = the gap) + `user_target_roles` (a self-set aspiration = mobility-ready), each a real public role node-id chosen different from the member's current role. |
+| **Succession feeders** | `succession.go` | `interview_extraction_results` for >20% of members (with the `summary` jsonb the succession query reads) to lift the **Succession tab** past the coverage gate (`too_sparse` → `full`). Trajectory-aware: a struggling hero reads at-risk (low wellbeing + negative sentiment), a thriving one reads positive. (The other feeder, `validation_attempt_*`, already lands via the M34 chain.) |
+| **Feedback** | `feedback.go` | `job_simulation_feedbacks` at **~2:1 positive** (the Italgas anchor), `is_positive` matched to the option's polarity — the "people liked it" signal. |
+| **Org-scale gap** | `population_evidence.go` | The **claimed-vs-verified gap at org scale** (the headline "aha", §3c): a ~55% share of the *supporting* population (not just heroes) gets verified-skill evidence rows with both `user_level` (claim) and `anthropos_level` (verified) set and **diverging** — a population mix of over- and under-claimers. (`user_skill_evidences` has no FK on `jobsimulation_session_id`, so a population evidence row is a clean write without the full hero chain; the heroes' full 7-table chain is the PersonaSeeder's.) |
+
+Two **fixes** (not new seeders) round out the spine:
+
+- **Assignments status mix** (`assignments.go`) — the pre-M36 seeder wrote every assignment as bare
+  `active` / no `due_date` / no session, so the dashboard bucketed **all** of them as `not_started`. M36 gives
+  each a deterministic lifecycle bucket (~35% completed / ~15% overdue / ~35% in-progress / ~15% not-started)
+  realized via `status` + a past/future `due_date` + (for completed/in-progress) an
+  `organization_assignment_sessions` row carrying progress. That session FKs a `local_skill_path_sessions` row
+  the seeder also writes — the dashboard reads the **app mirror** `local_skill_path_sessions`, NOT
+  `skillpath.skill_path_sessions`, and the population has no `local_jobsimulation_sessions` mirror, so the
+  session takes the skill-path arm of the table's check constraint.
+- **Skillpath completed share** (`skillpath_sessions.go`) — the learning-session seeder marked `completed`
+  only on an exact `progress=100` (~1%), starving the learning/my-growth surfaces. M36 makes ~30% complete.
+
+**Distribution coherence.** The growth arc (Growth/Biggest-Improvers) and the over/under-claimer split are
+*correlated with the heroes*: the thriving employee is the dashboard's top-performer / succession candidate; the
+struggling employee is the at-risk / needs-attention row — the **same** coherence property M35 established,
+surfaced now at org scale.
+
+**Closure stays measured.** Every new skill-ref surface draws its node-ids from the **same** taxonomy resolver
+the chain uses, so the seed-side closure gene (extended to `membership_skills`) still proves **0 dangling refs**
+— the mapped funnel is as closed as the verified chain.
 
 ## Running it
 
