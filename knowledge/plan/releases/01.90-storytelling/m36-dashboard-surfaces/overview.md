@@ -3,9 +3,9 @@ milestone: M36
 slug: dashboard-surfaces
 version: v1.9 "storytelling"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-22
-last_updated: 2026-06-22
+last_updated: 2026-06-23
 complexity: large
 delivers: rosetta-extensions/stack-seeding (membership_skills + tags/membership_tags + org/user target_roles + succession feeders + job_simulation_feedbacks + the assignments fix + the org-scale distributions) + corpus (extend stories-spec.md with the dashboard surfaces + seeding-spec.md)
 depends_on: M35

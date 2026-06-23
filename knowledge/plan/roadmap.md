@@ -129,7 +129,7 @@ builder skills).
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
-| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ + M35 ✅ 2026-06-23) |
+| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ + M35 ✅ + M36 ✅ 2026-06-23) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -273,7 +273,7 @@ orchestrator's reference for the code; the orchestrator pushes ext→origin + th
 post-close per its protocol.**
 
 ### M36 — Dashboard surfaces (Must #2)
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** M35
+**Status:** `done` (completed 2026-06-23) · **Shape:** `section` · **Complexity:** large · **Depends on:** M35
 **Goal:** the org **Workforce-Intelligence dashboard** renders believably for a seeded story (claimed-vs-verified
 gap, role-readiness, growth, assignments — all non-empty, all distributed).
 **Scope — In:**
@@ -290,6 +290,39 @@ gap, role-readiness, growth, assignments — all non-empty, all distributed).
 **Open questions:** O5 (resolved — self-eval diffs `user_level` vs `anthropos_level`).
 **Risk (scope):** most likely to grow (many widgets) — hard line: seed the **spine** for the seeded story, don't
 chase every widget.
+
+**Closure (2026-06-23):** All 8 sections + 3 harden passes landed. The 28-file ext diff on `stack-seeding`
+(+3706/−53) — **six new dashboard seeders** (`membership_skills` the mapped→verified funnel joined on skill
+_name_ via the new `skillref_named.go` resolver [D-M36-1]; `tags`/`membership_tags` teams + a `mentor` tag;
+`organization_target_roles`+`user_target_roles` gap + mobility [D-M36-4]; `succession` `interview_extraction_results`
+>20% to clear the coverage gate `too_sparse`→`full`; `feedback` ~2:1 positive; `population_evidence` the
+org-scale claimed-vs-verified gap + AI-readiness) + **two fixes** (the assignments **status-mix** writing the
+3-table FK chain on the skill-path arm [D-M36-2/3]; the `skillpath_sessions` completed-share ~1%→~30%) + the
+closure gene extended to a fourth skill-ref surface (`membership_skills.skill_id`) — on `rosetta-extensions`
+(tag `storytelling-m36` @ `11e15e3`, moved forward over the harden HEAD `9ad66a8` to the close README fix); the
+corpus doc-half (`stories-spec.md` the Workforce-dashboard-surfaces section + the #M36-D1/D2/D3 blends,
+`seeding-spec.md`, `safety.md`, the stack-seeding README, CLAUDE.md index) on `m36/dashboard-surfaces`.
+**Done-bar MET** — orchestrator-verified LIVE on the `--local-content` demo-3 stack (Cervato org): every
+dashboard aggregate is populated + distributed — verification funnel (220 mapped members / 484 mapped skills →
+believable drop-off), claimed-vs-verified self-eval gap (172 over / 137 under-claimers), 13 teams (incl.
+mentor), 70 org target roles, succession **29% interviewed** (clears >20% → "full"), feedback **2.3:1**
+positive, assignments **70 active / 40 completed**. Unlike M34/M35, M36's dashboard is the **admin view** —
+viewable by the demo login user (a Cervato admin) WITHOUT M37, so the browser render is achievable now; the
+build's integration test (`TestIntegration_DashboardSurfaces`, opt-in) independently confirms every aggregate
+function resolves. **Close GREEN:** review found **4 findings, 0 blocking** — 1 code-quality should-fix
+(seeder error-prefix dash style) INVESTIGATED to a non-defect (uniform convention + tested error-contract — no
+churn), 2 docs (stack-seeding README M36 entry + test-count reconciliation 347→406 / 425→484; CLAUDE.md index
+line), 1 test (the same README count reconciliation). Phase 2c adversarial: 3 scenarios traced (tiny-story
+succession `too_sparse` floor; feedback 2:1 at tiny-N; roles-only/empty-flat replayed taxonomy) — all degrade
+safely. Decision triage: D-M36-1/2/3 blended into `stories-spec.md` (#M36-D tags); D-M36-4 archived
+(maintainer-only). **Tests:** stack-seeding **406** non-integration funcs (+59 from M35's 347; 484 incl.
+subtests), blueprint **100%** / seeders **95.5%** (the 6 new seeders' load-bearing helpers + the named resolver
++ `assignments.go` all at 100%) / dna 87.7%, `-race` green, flake gate **5/5** (0 flakes), integration tests
+opt-in (`//go:build integration` + `STACKSEED_IT_DSN`). Deferral re-audit **GREEN** (0 new, 0 repeat, 0 aged;
+the inherited #M34-D7 already landed as D-M35-4; the 4 v1.9 backlog items orthogonal). Supply-chain GREEN (0
+new deps). Alignment 100%/100% (untouched — M36 is stack-seeding only). **The ext tag `storytelling-m36` @
+`11e15e3` is the orchestrator's reference for the code; the orchestrator pushes ext→origin + the rosetta
+release-branch merge post-close per its protocol.**
 
 ### M37 — Clerkenstein multi-identity
 **Status:** `planned` · **Shape:** `section` · **Complexity:** medium-large · **Depends on:** M35

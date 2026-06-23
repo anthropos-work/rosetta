@@ -8,24 +8,25 @@ engine: each *story* is one org with a thriving/struggling/manager **hero** trio
 profile** + the org **Workforce dashboard** tell one coherent story — plus a standalone **presenter cockpit**
 (log in as a hero + jump to the right screen). 5 `section` milestones **M34→M38** across `rosetta-extensions`
 (`stack-seeding`/`clerkenstein`/`demo-stack`) + the rosetta corpus doc-half. **Tooling + docs only — zero
-platform-repo edits.** **M34 ✅ + M35 ✅ shipped 2026-06-23** (the verified-skill spine + the multi-org Stories
-engine); M36 next.
+platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ shipped 2026-06-23** (the verified-skill spine + the multi-org
+Stories engine + the Workforce-dashboard surfaces — both product Musts now done); M37 next.
 
-**Active milestone:** **M36 — Dashboard surfaces (Must #2)** — **NEXT (not started).** The org
-**Workforce-Intelligence dashboard** renders believably for a seeded story: `membership_skills` (a believable
-verification funnel), tags/teams, `organization_target_roles`+`user_target_roles` (gap + two-way mobility),
-succession feeders sized to clear the coverage gate, feedback (~2:1 positive), the assignments status-mix fix,
-and the org-scale claimed-vs-verified gap + growth-arc distributions. Depends on M35 (the multi-org Stories
-engine, now shipped). **Parallel opportunity:** M37 (Clerkenstein multi-identity) may start alongside M36 — it
-needs only M35's hero-identity list. The verified spec
-([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design for
-M36–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Next up:** build M36 via `/developer-kit:build-milestone`.
-**Last closed:** **M35 — Stories & Heroes model + multi-org — 2026-06-23** (v1.9 "storytelling"; the `stories[]`
-blueprint + `EffectiveStories()` multi-org normalization + the thriving/struggling/manager hero trio +
-trajectory logic + the `jobroleref` resolver; merged into `release/01.90-storytelling`). Detail in the `### M35`
-block of [`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 in development — M34 + M35 closed; M36 next (M37 may run ∥ M36).**
+**Active milestone:** **M37 — Clerkenstein multi-identity** — **PLANNED (not started).** A demo stack can
+**switch the active browser identity** among the seeded heroes/orgs — the seat-switch the cockpit's "login as"
+needs: a users/orgs registry in `clerk-frontend` (replacing the single `DefaultDemoUser`), an active-user
+selection mechanism (token-injection vs a parameterized FAPI handshake — O11, spike both early), and an
+**Alignment DNA** for the new multi-identity surface (must hold the 100%/100% Clerkenstein gates). Builds on the
+existing `wip/clerkenstein-browser-login` branch. Code lands in the `clerkenstein` ext section (a different
+section from M34–M36's `stack-seeding`). Depends on M35 (shipped — needs only the hero-identity list). The
+verified spec ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative
+design for M37–M38. The overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
+**Next up:** build M37 via `/developer-kit:build-milestone`.
+**Last closed:** **M36 — Dashboard surfaces (Must #2) — 2026-06-23** (v1.9 "storytelling"; the 6
+Workforce-dashboard seeders [`membership_skills` funnel + `tags`/teams + `target_roles` gap/mobility +
+`succession` + `feedback` + `population_evidence` org-scale gap] + the assignments status-mix fix + the
+closure-gene 4th surface; merged into `release/01.90-storytelling`). Detail in the `### M36` block of
+[`roadmap.md`](roadmap.md).
+**Phase:** **v1.9 in development — M34 + M35 + M36 closed (both product Musts done); M37 next, M38 after.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a
@@ -44,12 +45,12 @@ branch now has its design home — **v1.9 M37** builds on it.
   every repo's `.env` (values-blind) + a 6-repo/55-gene secret-coverage DNA + the `/stack-secrets` skill. M27→M30.
 
 ## Headline numbers (v1.9 baseline — inherited from the v1.8 close 2026-06-15; reset at each v1.9 milestone close)
-- **Go test funcs:** **1115** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
-  223 · stack-seeding **347** (+45, M35: the multi-org Stories engine — `stories[]` blueprint + the hero trio +
-  trajectory helpers + the `jobroleref` resolver + 3 harden passes; 425 incl. subtests; integration tests opt-in
-  behind `//go:build integration`) · stack-snapshot 333 · stack-secrets 160. (v1.9 grows stack-seeding [M34–M36]
+- **Go test funcs:** **1174** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
+  223 · stack-seeding **406** (+59, M36: the 6 Workforce-dashboard seeders + the assignments status-mix fix +
+  the named-skill resolver + 3 harden passes; 484 incl. subtests; integration tests opt-in behind
+  `//go:build integration`) · stack-snapshot 333 · stack-secrets 160. (v1.9 grows stack-seeding [M34–M36 ✅]
   + clerkenstein [M37] + a new demo-stack cockpit surface [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0
-  (M35 flake gate 5/5). stack-seeding coverage: blueprint 100% · seeders 98.0%.
+  (M36 flake gate 5/5). stack-seeding coverage: blueprint 100% · seeders 95.5% · dna 87.7%.
 - **Python tests:** **501** (demo-stack/tests 138 · stack-injection/tests 113 · …). Triple-clean 3/3.
 - **Supply-chain:** **GREEN** (stdlib-only posture; 0 third-party deps added through v1.8).
 - **Alignment gates (green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces — **M37 must hold these**
@@ -64,9 +65,10 @@ Code lands in the `rosetta-extensions` `stack-seeding` / `clerkenstein` / `demo-
 **Shipped:** **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` ·
 **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-23 (**v1.9 M35 CLOSED** via `/developer-kit:close-milestone` — the multi-org Stories &
-Heroes engine [`stories[]` blueprint + `EffectiveStories()` normalization + the thriving/struggling/manager hero
-trio + trajectory logic + the `jobroleref` resolver; #M34-D7 landed in full as D-M35-4], merged
-`m35/stories-multi-org` → `release/01.90-storytelling`; close GREEN [2 findings, 0 blocking], deferral re-audit
-GREEN, stack-seeding 347 tests / blueprint 100% · seeders 98.0%, flake 0. ext tag `storytelling-m35` @ `06d872c`.
-Next: build M36 [M37 may run ∥ M36]. Prior: M34 closed 2026-06-23.)_
+_Last updated: 2026-06-23 (**v1.9 M36 CLOSED** via `/developer-kit:close-milestone` — the org Workforce-dashboard
+surfaces [6 seeders: `membership_skills` funnel + `tags`/teams + `target_roles` gap/mobility + `succession` +
+`feedback` + `population_evidence` org-scale gap; + the assignments status-mix fix + the skillpath completed-share
++ the closure-gene 4th surface], merged `m36/dashboard-surfaces` → `release/01.90-storytelling`; close GREEN [4
+findings, 0 blocking], deferral re-audit GREEN, stack-seeding 406 tests / blueprint 100% · seeders 95.5% · dna
+87.7%, flake 0 [5/5]. ext tag `storytelling-m36` @ `11e15e3`. Both product Musts done. Next: build M37
+[Clerkenstein multi-identity]. Prior: M35 closed 2026-06-23.)_

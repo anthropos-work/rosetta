@@ -157,6 +157,13 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 > so the chain cannot touch prod or another stack and the seeding-run audit log proves zero pollution
 > (`AssertClean`). The taxonomy it reads to draw skill node-ids is the **public** reference data the snapshot
 > firewall already guaranteed public-only at capture. See [`demo/stories-spec.md`](demo/stories-spec.md) § Safety.
+>
+> **The v1.9 M36 dashboard surfaces inherit it too.** The six new dashboard seeders' write surfaces —
+> `public.{membership_skills, tags, membership_tags, organization_target_roles, user_target_roles,
+> organization_assignment_sessions, local_skill_path_sessions, job_simulation_feedbacks}` and
+> `jobsimulation.interview_extraction_results` — are likewise the stack's own offset-port Postgres, all
+> `organization_id`-scoped per story and declared `PerStackIsolated` + audited. No new shared store is touched,
+> so the zero-pollution posture is unchanged.
 
 ### 2.2 The 3-layer isolation guard
 

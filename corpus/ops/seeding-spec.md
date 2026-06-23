@@ -257,6 +257,25 @@ is org-agnostic, so `datadna measure-closure` proves 0 dangling refs **across al
 preset is still `presets/stories-maya.seed.yaml` (one hero); the presenter cockpit + the Clerkenstein
 multi-identity seat-switch are M37–M38.
 
+**The Workforce dashboard surfaces (v1.9 M36).** M34/M35 made the *individual* profile believable; M36 makes
+the org **Workforce-Intelligence dashboard** (REST `/api/workforce/*`, the org-admin view) believable. Six new
+seeders + two fixes land the **spine** so every aggregate renders non-empty and distributed: **`membership_skills`**
+(the mapped→verified funnel — mapped outnumbers verified per skill, by skill *name*), **`tags`+`membership_tags`**
+(teams/business-units + a `mentor` tag, the slice dimension), **`organization_target_roles`+`user_target_roles`**
+(the gap + two-way mobility), **`interview_extraction_results`** (the succession feeder, sized >20% to clear the
+coverage gate), **`job_simulation_feedbacks`** (~2:1 positive), and **population `user_skill_evidences`** (the
+org-scale claimed-vs-verified gap — a population mix of over/under-claimers). The two fixes: the **assignments
+status-mix** (`due_date`s + `organization_assignment_sessions` so assignments bucket as
+completed/overdue/in-progress, not all `not_started`) and the **skillpath completed share** (~30%, was ~1%). The
+seed-side closure gene now also covers `membership_skills.skill_id` (four surfaces). Every dashboard seeder is
+**no-fabrication and degrades, not crashes** (v1.9 M36 harden): the share predicates short-circuit cleanly at the
+0/1 bounds (an empty or saturated cohort), the named-skill resolver yields empty pools on a missing taxonomy
+(writing nothing rather than inventing a skill) and pairs a malformed read (mismatched parallel array_agg columns)
+to empty lineage rather than panicking, and each multi-table seeder (`tags`, `target_roles`, `assignments`)
+returns the **partial total** of rows already written when a later FK-ordered COPY fails, wrapping the error with
+the failing table so an operator sees *which* surface broke. Full reference:
+[`demo/stories-spec.md` § The Workforce dashboard surfaces (M36)](demo/stories-spec.md#the-workforce-dashboard-surfaces-m36).
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
@@ -264,3 +283,8 @@ M7a delivers the framework + the isolation guard + the reference seeders (`org`,
 schema-conformance/drift gate; M7c the full seeder fleet + backdated activity + presets. **v1.3 M13** adds the
 **`dev-min` preset** + wires it as the **dev auto-seed on `dev-stack up`** (the second n=0-dev guard lives in the
 bring-up's set-dressing pass) — see [The shipped presets](#the-shipped-presets-stack-seedingpresets).
+**v1.9 M34** adds the verified-skill chain (the `PersonaSeeder` + `TaxonomyRefs` + the G14 session fix + the
+seed-side closure gene); **M35** the multi-org Stories & Heroes model; **M36** the six Workforce-dashboard
+surfaces + the two fixes above (the funnel/teams/target-roles/succession/feedback/org-scale-gap spine),
+proven end-to-end by an opt-in live-stack integration test (`-tags integration`) that seeds the full fleet and
+asserts every dashboard aggregate resolves. The closure gene spans four skill-ref surfaces.
