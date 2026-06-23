@@ -248,7 +248,11 @@ the Clerkenstein default org so a single-identity demo login lands in it (multi-
 Heroes carry a `vantage` (`end-user | manager` — a manager seeds no chain of her own, she reads the org
 aggregates her employees populate) and a `trajectory` (`thriving` = dense/high/rising/under-claim vs
 `struggling` = sparse/low/flat/over-claim — the stark gap). Every member also gets a **real replayed job role**
-(`memberships.job_role_id`) + a **ramped `joined_at`**, so the trio sits in a believable org. The closure gene
+(`memberships.job_role_id`) + a **ramped `joined_at`**, so the trio sits in a believable org. Supporting-member
+**names are deterministically deduplicated** (v1.9 M35 harden): each name is unique within its org and the
+**hero names are reserved**, so the name bank never hands a supporting member a hero's name or repeats a name
+in the same population (a hero-free legacy/dev-min population is byte-identical — the dedup only re-rolls on an
+actual collision). The closure gene
 is org-agnostic, so `datadna measure-closure` proves 0 dangling refs **across all orgs**. The vertical-slice
 preset is still `presets/stories-maya.seed.yaml` (one hero); the presenter cockpit + the Clerkenstein
 multi-identity seat-switch are M37–M38.
