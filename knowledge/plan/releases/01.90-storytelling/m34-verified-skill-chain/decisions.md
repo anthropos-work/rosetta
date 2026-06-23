@@ -72,3 +72,27 @@ Hardening drove the seeders package to 96.6% statements. Two residual uncovered 
 
 Both kept as defensive guards; no compensating test owed (the behavior they'd guard is unreachable
 or already tested upstream). Recorded so a future audit doesn't re-flag them as missing coverage.
+
+## D-M34-7 — Multi-hero index-collision guard + short-role-pool top-up are M35 roster work (Fate-3)
+
+Close-time adversarial review surfaced two edges that are benign-by-construction for M34's **one-hero**
+vertical slice but become real once M35 scales to the thriving/struggling/manager **trio** across stories:
+
+- **`len(Personas) > Size` / index collision has no guard or warning.** `personaUserIndex` hashes each
+  hero into `[1, Size]`; with more heroes than population slots (or a hash collision), two heroes can map
+  to the same index. `personaIndexMap` resolves the name collision deterministically (first-declared wins)
+  and the chains still write safely (the UPSERT is idempotent, `user_skills` stays unique via distinct
+  sim-ids), so M34 degrades correctly — but silently. The small M34 roster (`Size: 50`, 1 hero) avoids it
+  entirely. **Routed to M35** (the roster milestone): add a `len(Personas) <= Size` blueprint validation +
+  a collision warning, where the multi-hero roster makes it reachable.
+- **A short-but-nonempty role pool yields fewer verified skills than declared** (`verified: N`), with no
+  top-up from the flat pool — `skillsForRole → take` keeps the short role pool (role-coherence over count).
+  M34 corrected the misleading in-code comment to state this is deliberate (closure stays green; a thinner
+  but role-coherent profile is more believable than padding). **Whether to top up from flat to hit the
+  declared count is an M35 roster-fidelity product choice**, not an M34 bug — routed to M35.
+- (Non-action note: `splitCSV` in `dna/fidelity_probe.go` is a hand-rolled splitter equivalent to
+  `strings.Split` on SQL-identifier CSV — pre-existing, cosmetic, no change warranted.)
+
+**Fate 3** — annotate M35 to pick these up (M35's `overview.md` already owns the multi-org/trio roster +
+the trajectory logic, the exact place these guards belong). No new deferral against M34; M34's slice is
+complete as-is. The M35 `overview.md` In: list is annotated with the guard + the top-up decision.

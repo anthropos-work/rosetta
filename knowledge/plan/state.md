@@ -43,9 +43,12 @@ branch now has its design home — **v1.9 M37** builds on it.
   every repo's `.env` (values-blind) + a 6-repo/55-gene secret-coverage DNA + the `/stack-secrets` skill. M27→M30.
 
 ## Headline numbers (v1.9 baseline — inherited from the v1.8 close 2026-06-15; reset at each v1.9 milestone close)
-- **Go test funcs:** **1027** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
-  223 · stack-seeding **259** · stack-snapshot 333 · stack-secrets 160. (v1.9 grows stack-seeding [M34–M36] +
-  clerkenstein [M37] + a new demo-stack cockpit surface [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0.
+- **Go test funcs:** **1070** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 · clerkenstein
+  223 · stack-seeding **302** (+43, M34: PersonaSeeder + TaxonomyRefs + G14 + closure gene + 2 harden passes;
+  381 incl. subtests; integration tests opt-in behind `//go:build integration`) · stack-snapshot 333 ·
+  stack-secrets 160. (v1.9 grows stack-seeding [M34–M36] + clerkenstein [M37] + a new demo-stack cockpit surface
+  [M38].) `go vet`+`gofmt`+`shellcheck` clean; flake 0 (M34 flake gate 5/5). stack-seeding coverage: seeders
+  96.6% · `dna/seed_closure.go` 100%.
 - **Python tests:** **501** (demo-stack/tests 138 · stack-injection/tests 113 · …). Triple-clean 3/3.
 - **Supply-chain:** **GREEN** (stdlib-only posture; 0 third-party deps added through v1.8).
 - **Alignment gates (green since v1.0):** **100%/100%** on all 4 Clerkenstein surfaces — **M37 must hold these**

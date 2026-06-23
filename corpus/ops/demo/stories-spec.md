@@ -67,7 +67,8 @@ constraint the app layer normally enforces. Two classes:
 - `user_skills` partial UNIQUE `idx_unique_job_simulation (skill_id, job_simulation_id, user_skill_user)` ⇒ a
   **distinct real sim template per verified row** (the seeder draws a distinct sim per session).
 - `user_skill_evidences` UNIQUE `(skill_id, user_id)` ⇒ the evidence is an **UPSERT** (`INSERT … ON CONFLICT
-  (skill_id, user_id) DO UPDATE`), never a blind insert.
+  (skill_id, user_id) DO UPDATE`), never a blind insert — the fleet's `id`-keyed `CopyRowsIdempotent` can't
+  dedup a composite UNIQUE, so this one is a per-row `Exec` (#M34-D3).
 - `validation_attempt_skill_results.validation_attempt_result_id` is **NOT NULL** ⇒ the FK to its attempt
   result must be set. *(This one bit during M34 build — the seeder omitted it and the chain failed to insert;
   the integration test caught it. The unit test now asserts it.)*
@@ -127,7 +128,8 @@ Two pieces guarantee closure:
 - **`users.go`** — real first/last names from an in-code name bank, a deterministic avatar URL, and a
   `first.last@<org-domain>` email (no more "User N" / no picture / `@{stack}.local`). A blueprint **hero**'s
   real name + email land at the population index the `PersonaSeeder` verifies her chain against, so the named
-  row and the verified skills are one user.
+  row and the verified skills are one user — both seeders derive that index from the same shared bridge
+  (`personaUserIndex` / `personaIndexMap`), so they cannot drift (#M34-D2).
 
 ## The blueprint — declaring a hero
 
