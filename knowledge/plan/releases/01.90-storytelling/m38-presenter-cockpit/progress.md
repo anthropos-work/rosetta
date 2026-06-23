@@ -14,3 +14,57 @@ Section checklist (built by `/developer-kit:build-milestone`). Scope detail in `
 _Last updated: 2026-06-23 (all sections shipped). rext tag `storytelling-m38` to be cut at close. Code:
 `rosetta-extensions` @ `ce2b829` (stack-seeding roster/cockpit producers + demo-stack cockpit panel + launch
 wiring). Docs on rosetta `m38/presenter-cockpit` @ `007378b`._
+
+## M38: Hardening
+
+### Pass 1 — 2026-06-23
+**Scope manifest (milestone-touched code, rext `52c1be0..ce2b829`):**
+- `stack-seeding/seeders/roster.go` (+ `roster_test.go`) — the roster-export producer
+- `stack-seeding/seeders/cockpit.go` (+ `cockpit_test.go`) — the cockpit-manifest exporter + O9 catalog
+- `stack-seeding/cmd/stackseed/main.go` (+ `main_test.go`) — the `--roster-export` / `--cockpit-export` CLI
+- `demo-stack/cockpit.py` (+ `tests/test_cockpit.py`) — the stdlib served panel
+- `demo-stack/up-injected.sh` (+ `tests/test_tooling.py::StorytellingCockpitWiring`) — launch wiring
+- `stack-injection/gen_injected_override.py` (+ `tests/test_injection.py`) — the `--roster` fake-fapi mount
+
+**Coverage delta (milestone-touched Go funcs):**
+- `roster.go`: BuildRoster 92.3% → 100% · WriteRoster 83.3% → 100%
+- `cockpit.go`: storyAnnotation 66.7% → 100% · WriteCockpitManifest 88.9% → 100% · BuildCockpitManifest 93.8% → 100% (Pass 2)
+- `cmd/stackseed`: doRosterExport 75% → 95.8% · doCockpitExport 75% → 95.8% (Pass 2)
+- `cockpit.py`: every genuine branch covered (the trace-tool "uncovered" handler body + `main` serve
+  loop run in the `ThreadingHTTPServer` worker thread, which stdlib `trace` can't instrument — proven
+  exercised end-to-end by `TestServedPanel` + the new `TestMainServes` over a real socket).
+
+**Tests added:**
+- `roster_test.go`: 2 (legacy Size<=0 story-skip; WriteRoster encode-error propagation)
+- `cockpit_test.go`: 4 (unknown-jump_to generic label; storyAnnotation legacy + no-match; WriteCockpitManifest
+  encode-error; manifest nameless-hero skip + roster-lockstep)
+- `main_test.go`: 9 (unwritable --roster-out / --cockpit-out create-error; roster + cockpit n==0 warn;
+  --stack override re-namespaces ids ×2; load-fail; validate-fail ×2)
+- `test_cockpit.py`: 8 (STRUGGLING + empty-vantage _badges branches; struggling-hero render; main() real
+  serve path bind→probe→shutdown→0; malformed-JSON manifest; redirect_url full percent-encoding invariant;
+  non-ascii key escape)
+- `test_injection.py`: 2 (D4 byte-identical default fake-fapi block; --roster main() flag threading)
+
+**Bugs fixed inline:** none — the producers/cockpit/wiring were correct; every gap was a missing test, not a
+missing fix. (No shallow tests: each probes real behavior — encode/create error propagation, escaping
+correctness, the keys-match-roster invariant, the D4 byte-identical baseline.)
+
+**Flakes stabilized:** none observed (3 clean sequential runs of the new tests; the `TestMainServes` thread
+test joins on a clean shutdown, no port/temp leak).
+
+**Knowledge backfill:** none warranted — every invariant the new tests pin (the roster single-source, the
+keys-match-roster lockstep, the D4 byte-identical-off fallback, the fail-loud-roster vs non-fatal-cockpit
+split, the O9 raw-path fallback) is already documented in `decisions.md` (D1–D7, O9) +
+`corpus/ops/demo/stories-spec.md`. The harden pass deepened the *tests* of already-documented behavior, not
+the behavior itself. (Question asked, answer recorded — no doc edit needed.)
+
+**Decision recorded:** M38-D7 — the employee-hero `org_role=admin` finding routed to v1.9 close-review
+(Fate 3): it's an M35 role-assignment-seam change (the claim is single-sourced from the seeded membership, so
+a fix must move all three writes in lockstep), not M38-touched code; bounded but out-of-scope-for-harden.
+
+### Stop condition
+Loop stopped after 3 passes: the full 6-dimension scan found nothing new worth adding, the coverage deltas on
+the milestone-touched code reached ~100% (only the effectively-unreachable CLI `WriteRoster`-returns-error line
++ the trace-thread-artifact handler body remain, neither a real gap), and no flaky tests remain (3 clean runs).
+All regression suites green: stack-seeding `-race`, Clerkenstein 5 alignment gates `-race`, demo-stack
+(163 tests), stack-injection (117 tests). Zero platform-repo edits.

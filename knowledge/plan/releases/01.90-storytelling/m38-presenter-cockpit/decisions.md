@@ -51,6 +51,29 @@ The cockpit SERVE, by contrast, is non-fatal (`|| log warning`): a cockpit failu
 seeded multi-identity demo (you can still hit the handshake URLs by hand), so it follows the M18/M19
 never-abort-a-good-bring-up convention.
 
+## M38-D7 (harden) — the employee-hero `org_role=admin` finding: routed to close-review (Fate 3)
+The harden pass confirmed the orchestrator-surfaced finding: **all 6 heroes export `org_role=admin`**. Why:
+heroes occupy the FIRST `len(heroes)` population slots (declaration order, `personaUserIndexFor`), and
+`roleForIndex(i, n, mix)` assigns admins to the first `floor(n·mix.Admin)` slots — so with any non-zero admin
+ratio the early slots (all heroes, ≤6) resolve to `admin`. For the *manager* heroes (Dan/Leah) that's correct;
+for the *employee* heroes (Maya/Tom/Sara/Nick) it slightly undercuts the employee-vs-manager vantage (an
+"employee" demo seat reads as an org-admin in her JWT `org_role` claim).
+
+**Decision: do NOT land the fix in M38 hardening — annotate-attach to the v1.9 close-review (Fate 3).**
+Rationale: the `org_role` is **single-sourced from `roleForIndex`**, the SAME function `users.go:108` uses to
+write the seeded membership row + the casbin g2 grant. So the JWT claim and the seeded DB membership **agree
+by construction** (both say admin). A correct fix ("a hero's `org_role` follows her `vantage`:
+end-user→member, manager→admin") must change the role at the **seeder seam** so all three writes stay in
+lockstep — membership row + casbin grant + roster claim — NOT the roster alone (changing only the roster would
+break the single-source invariant: the JWT would claim `member` while the seeded membership says `admin`). That
+is a behavioral change to the **M35 role-assignment seam** (a hero-aware override in `UsersSeeder` + a matching
+override in `roster.go`/`cockpit.go`, all single-sourced through one new helper, plus a regression test that
+the seeded membership / casbin grant / roster `org_role` agree per hero). It is bounded but it is NOT M38's
+touched code (M38 is the producer + cockpit, not the seeded role model), and the orchestrator flagged it as a
+"weigh here vs close-review" call with "do NOT force a large change." Per the three-fate rule this is Fate 3:
+the close-review owns the M35-seam triage. Harden stayed on its mandate (deepen M38's own coverage). The
+behavior is currently consistent (claim ≡ DB), just vantage-imprecise — not a correctness bug, a fidelity nuance.
+
 ## O9 — RESOLVED: the deep-link catalog
 Enumerated in `seeders/cockpit.go::DeepLinkCatalog()`. End-user (individual) routes: `/profile`,
 `/profile?view=spotlight` (Skill Spotlight), `/growth` (My Growth), `/simulations` (Take a Sim). Manager
