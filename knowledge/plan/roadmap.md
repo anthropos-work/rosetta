@@ -382,8 +382,31 @@ repeats, 0 aged-out; M37's Out: scope is Fate-2 owned by M38). Supply-chain GREE
 + the rosetta release-branch merge post-close per its protocol.**
 
 ### M38 — Presenter cockpit (B-milestone for M37)
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Depends on:** M37
+**Status:** `done` (completed 2026-06-23) · **Shape:** `section` · **Complexity:** medium · **Depends on:** M37
 **Closes the gap after M37:** turns the multi-identity capability into a usable demo-driving surface.
+**Shipped 2026-06-23** (the LAST milestone of v1.9 — release now COMPLETE pending `/developer-kit:close-release`).
+A **standalone served panel** (rext `demo-stack`, offset port `7700 + N·10000`, host-native process reaped by
+`rosetta-demo down`) that reads the cockpit manifest the seeder projects from the same `stack.stories.yaml`
+(`stackseed --cockpit-export` — D9 single-source without PyYAML, D2) and lists each story → its hero trio with
+**[Login as]** + **[Jump to section]**. The two actions collapse into **one FAPI handshake redirect**
+(`?__clerk_identity=<key>&redirect_url=<jump_to>`, M37's seat-switch seam, D3): the hero becomes active
+everywhere AND the browser lands on her screen in one move. Ships the **roster-export producer**
+(`stackseed --roster-export` → `FAKE_FAPI_ROSTER`, single-sourced from the seeder's own id-derivation so
+"login as Maya" authenticates the real seeded user, D1) + the **O9 deep-link catalog** (`DeepLinkCatalog()` —
+next-web routes per vantage). Gated on `DEMO_STORIES=1`; default-off keeps every existing demo byte-identical
+(D4). Fails loud on a broken roster, non-fatal on the cockpit serve (D6).
+**Close decision — M38-D8 (vantage-faithful `org_role`, Fate 1):** the close-review re-fated M38-D7 (all 6
+heroes exported `org_role=admin`) from route-to-close to **LAND-NOW**. A single `roleForHero` helper at the
+M35 role-assignment seam makes a hero's `org_role` follow her vantage (manager→`admin`, end-user→`member`),
+single-sourced so the `membership` row + the casbin `g2` grant + the roster claim agree per hero — an
+"employee" demo seat now reads as `member` in her JWT, faithful to her vantage (the whole point of the Stories
+& Heroes release). The close-review's code-quality + adversarial scans caught that the crashed prior attempt
+had left `roster.go` on the OLD `roleForIndex` (a lockstep gap) — both call-sites are now on `roleForHero`,
+pinned by `TestBuildRoster_OrgRoleVantageFaithfulAndLockstep` + `TestRoleForHero`.
+**Tests:** stack-seeding `-race` (+2 close tests) · clerkenstein 5 alignment gates 100%/100% · demo-stack 166
+(+1) · stack-injection 117 — all green; flake gate 5/5; zero platform-repo edits.
+**Code:** rext `rosetta-extensions` @ tag `storytelling-m38` (`237bede`). Doc-half: `corpus/ops/demo/stories-spec.md`
+§ The presenter cockpit + `corpus/ops/demo/README.md`. Close GREEN — 8 findings, 0 blocking; deferral re-audit GREEN.
 **Goal:** a **standalone served panel** (rext `demo-stack`, offset port — not an in-app overlay, preserving the
 zero-platform-repo-edit line) that lists stories→heroes with **[Login as]** + **[Jump to section]**, reading the
 **same** `stack.stories.yaml`.

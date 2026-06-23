@@ -28,6 +28,26 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 /demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
 ```
 
+> **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38).** Pass `DEMO_STORIES=1` to
+> turn a bare demo into a **narrative** one: the set-dress seeds the locked **2-orgs × 3-heroes** Stories &
+> Heroes world (each org a thriving/struggling/manager trio) instead of the structural `small-200`, the
+> fake-fapi becomes **multi-identity** (a `FAKE_FAPI_ROSTER` of the seeded heroes' exact ids), and a
+> **presenter cockpit** is served on an offset port (`7700 + N·10000`). The cockpit is the demo's remote
+> control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line holds) listing each
+> story → its hero trio with **[Login as]** and **[Jump to section]**, so a demo-giver picks a hero, lands
+> logged-in as her on the right screen, and presents that flow live. Default-off keeps every existing demo
+> byte-identical. The cockpit serve is **non-fatal** (a stories demo fails loud on a broken roster — the
+> login-as contract — but a cockpit failure leaves a fully-working seeded multi-identity demo you can still
+> drive by hand); pass `DEMO_NO_COCKPIT=1` to bring the stories demo up without the panel (an API-only run).
+> The full picture (the single-source manifest, the one-handshake login-as-+-jump, the roster-export producer,
+> the O9 deep-link catalog) is in [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
+>
+> ```
+> DEMO_STORIES=1 /demo-up 3   →  + seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
+>   …present it…              →  open http://localhost:37700 → pick a hero → [Login as] → [Jump to section]
+> /demo-down 3                →  tears down the stack AND reaps the native cockpit process
+> ```
+
 > **A demo builds from its OWN clone set (v1.8 "understudy" M26).** `/demo-up` first runs `ensure-clones.sh`:
 > it bootstrap-clones `stack-demo/platform` from GitHub over SSH + `make init`s every `repos.yml` repo as a
 > sibling into `stack-demo/`, so **all** images build from `stack-demo` (a box with only `stack-demo/` — no
@@ -70,10 +90,13 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   Clerkenstein injection, the per-stack project/data isolation, the resource budget, teardown. (M3)
 - [`../seeding-spec.md`](../seeding-spec.md) — the **seeding** reference: the `stack.seed.yaml` blueprint, the
   dependency-DAG, the **production-isolation boundary**, the casbin subtleties, the data-DNA. (M7a/b)
-- [`stories-spec.md`](stories-spec.md) — the **verified-skill chain** reference: how a seeded *verified skill*
-  (a hero's passed-simulation profile + Skill Spotlight chart + the claimed-vs-verified gap) is materialized as
-  the **7-table fan-out** the `PersonaSeeder` writes, the constraint landmines, the G14 session fix, and the
-  seed-side closure gene. The believability spine of a demo world. (v1.9 M34)
+- [`stories-spec.md`](stories-spec.md) — the **verified-skill chain** + **Stories & Heroes** reference: how a
+  seeded *verified skill* (a hero's passed-simulation profile + Skill Spotlight chart + the claimed-vs-verified
+  gap) is materialized as the **7-table fan-out** the `PersonaSeeder` writes, the constraint landmines, the G14
+  session fix, the seed-side closure gene — plus the multi-org **thriving/struggling/manager trio** model (M35),
+  the **Workforce-dashboard surfaces** (M36), and the **presenter cockpit** (M38 — a standalone served panel that
+  lists each story → its hero trio with **[Login as]** + **[Jump to section]**, riding the Clerkenstein
+  multi-identity seat-switch). The believability spine of a demo world + its demo-driving surface. (v1.9 M34–M38)
 - [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
   Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
   outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)
