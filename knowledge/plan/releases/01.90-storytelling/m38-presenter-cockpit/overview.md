@@ -3,9 +3,9 @@ milestone: M38
 slug: presenter-cockpit
 version: v1.9 "storytelling"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-22
-last_updated: 2026-06-22
+last_updated: 2026-06-23
 complexity: medium
 delivers: rosetta-extensions/demo-stack (a standalone served presenter panel reading stack.stories.yaml — [Login as] wired to M37 + [Jump to section] via a deep-link catalog) + corpus (the cockpit section of stories-spec.md + demo/README.md)
 depends_on: M37

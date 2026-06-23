@@ -1,38 +1,33 @@
 # State
 
-**Active version:** **v1.9 "storytelling" — IN DEVELOPMENT** (designed 2026-06-22 via
-[`/developer-kit:design-roadmap`](roadmap.md); branch `release/01.90-storytelling`). The
+**Active version:** **v1.9 "storytelling" — ALL MILESTONES CLOSED, release ready to close** (designed
+2026-06-22 via [`/developer-kit:design-roadmap`](roadmap.md); branch `release/01.90-storytelling`). The
 **believable-demo-narrative release** — turn the placeholder seeder into a declarative **Stories & Heroes**
 engine: each *story* is one org with a thriving/struggling/manager **hero** trio, seeded via the real
 **verified-skill chain** (the 7-table jobsim→`user_skills`→`user_skill_evidences` fan-out) so the **skill
 profile** + the org **Workforce dashboard** tell one coherent story — plus a standalone **presenter cockpit**
 (log in as a hero + jump to the right screen). 5 `section` milestones **M34→M38** across `rosetta-extensions`
 (`stack-seeding`/`clerkenstein`/`demo-stack`) + the rosetta corpus doc-half. **Tooling + docs only — zero
-platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ + M37 ✅ shipped 2026-06-23** (the verified-skill spine + the
-multi-org Stories engine + the Workforce-dashboard surfaces + Clerkenstein multi-identity); **M38 (the
-presenter cockpit) is the one remaining milestone.**
+platform-repo edits.** **M34 ✅ + M35 ✅ + M36 ✅ + M37 ✅ + M38 ✅ all shipped 2026-06-23** (the verified-skill
+spine + the multi-org Stories engine + the Workforce-dashboard surfaces + Clerkenstein multi-identity + the
+presenter cockpit). **The release is COMPLETE — run `/developer-kit:close-release` to review + merge it into
+`main` + tag `v1.9`.**
 
-**Active milestone:** **M38 — Presenter cockpit (the LAST of v1.9).** A **standalone served panel** (rext
-`demo-stack`, offset port — not an in-app overlay, preserving the zero-platform-repo-edit line) that lists
-stories→heroes with **[Login as]** + **[Jump to section]**, reading the **same** `stack.stories.yaml`: it
-wires M37's multi-identity seat-switch + the seeder roster into a clickable login-as-a-hero cockpit. **In:**
-the panel; the deep-link catalog (enumerated next-web routes per vantage — **O9**); login-as wired to M37;
-jump-to. Depends on M37 (shipped). The verified spec
-([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md)) remains the authoritative design. The
-overviews live under [`releases/01.90-storytelling/`](releases/01.90-storytelling/).
-**Next up:** build M38 via `/developer-kit:build-milestone` (the last milestone — then `/developer-kit:close-release`).
-**Last closed:** **M37 — Clerkenstein multi-identity — 2026-06-23** (v1.9 "storytelling"; the users/orgs
-registry replacing `DefaultDemoUser` + the server-authoritative active-seat selection [O11 → parameterized
-FAPI handshake] + the 5th Alignment DNA `clerk-multi-1` [9 genes, 100%/100%] + the `wip/clerkenstein-browser-login`
-reconcile/retire; merged into `release/01.90-storytelling`). Detail in the `### M37` block of
-[`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 in development — M34–M37 closed (both product Musts + the seat-switch capability done); M38
-(the presenter cockpit, the LAST milestone) remains.**
+**Active milestone:** **(between milestones — see Next up.)** All 5 of v1.9's milestones are closed; no
+milestone is in progress. The next step is the release-level close, not another milestone.
+**Next up:** **`/developer-kit:close-release`** — the release-level review of all 5 milestones as one PR, the
+release deferral re-audit, then merge `release/01.90-storytelling` → `main` + tag `v1.9`.
+**Last closed:** **M38 — Presenter cockpit — 2026-06-23** (v1.9 "storytelling"; the LAST milestone — a
+standalone served cockpit reading the same `stack.stories.yaml`, [Login as]+[Jump] = one M37 handshake
+redirect, the roster-export producer + O9 deep-link catalog; the close LANDED M38-D8 — vantage-faithful hero
+`org_role` at the M35 seam so the membership row + casbin grant + roster claim agree per hero; merged into
+`release/01.90-storytelling`). Detail in the `### M38` block of [`roadmap.md`](roadmap.md).
+**Phase:** **v1.9 ALL milestones closed (M34–M38) — release complete, awaiting `/developer-kit:close-release`.**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a
 freshly-emptied `stack-demo/`; pushing the ext tags (`understudy-m26` + `house-lights-m31`/`m32` +
-`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` + the v1.9 `storytelling-m34..m37`) to `origin`. The
+`stage-door-m27`/`m28`/`m30` + `prop-room-m21..m25` + the v1.9 `storytelling-m34..m38`) to `origin`. The
 **`wip/clerkenstein-browser-login`** branch was reconciled (note folded into `architecture.md`) + **retired**
 at M37 close — no longer open.
 
@@ -70,11 +65,14 @@ Code lands in the `rosetta-extensions` `stack-seeding` / `clerkenstein` / `demo-
 **Shipped:** **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` ·
 **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-23 (**v1.9 M37 CLOSED** via `/developer-kit:close-milestone` — Clerkenstein multi-identity:
-the users/orgs registry replacing `DefaultDemoUser` + the server-authoritative active-seat selection [O11 →
-parameterized FAPI handshake] + the 5th Alignment DNA `clerk-multi-1` [9 genes, 100%/100%] + the
-`wip/clerkenstein-browser-login` reconcile/retire; merged `m37/clerkenstein-multi-identity` →
-`release/01.90-storytelling`; close GREEN [1 finding, 0 blocking — a stale "four DNAs" corpus claim fixed],
-deferral re-audit GREEN, clerkenstein 250 tests + 9 fuzz `-race` / `registry.go` 100%, flake 0 [5/5], all 5
-alignment gates 100%/100%. ext tag `storytelling-m37` @ `52c1be0`. Next: build M38 [the presenter cockpit, the
-LAST milestone]. Prior: M36 closed 2026-06-23.)_
+_Last updated: 2026-06-23 (**v1.9 M38 CLOSED — the LAST milestone; release COMPLETE** via
+`/developer-kit:close-milestone` — Presenter cockpit: a standalone served panel reading the same
+`stack.stories.yaml`, [Login as]+[Jump] = one M37 handshake redirect, the roster-export producer + O9
+deep-link catalog. The close LANDED **M38-D8** [re-fated M38-D7 Fate-3→Fate-1]: a single `roleForHero` helper
+at the M35 seam makes a hero's `org_role` vantage-faithful [manager→admin, end-user→member], single-sourced so
+the membership row + casbin g2 grant + roster claim agree per hero. Merged `m38/presenter-cockpit` →
+`release/01.90-storytelling`; close GREEN [8 findings, 0 blocking — incl the must-fix lockstep gap a crashed
+prior attempt left in `roster.go`], deferral re-audit GREEN, stack-seeding `-race` [+2 close tests] + 5
+clerkenstein alignment gates 100%/100% + demo-stack 166 + stack-injection 117, flake 0 [5/5]. ext tag
+`storytelling-m38` @ `237bede`. **Next: `/developer-kit:close-release` [review + merge v1.9 → main + tag].**
+Prior: M37 closed 2026-06-23.)_
