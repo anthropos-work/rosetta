@@ -17,8 +17,12 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > surfaces** delivered in **M36** (the mapped→verified funnel, teams/tags + the mentor tag, target-roles
 > gap+mobility, the succession interview feeders, ~2:1 feedback, the assignment status-mix fix, and the
 > org-scale claimed-vs-verified distribution — see
-> [§ The Workforce dashboard surfaces (M36)](#the-workforce-dashboard-surfaces-m36) below). The presenter cockpit
-> + the Clerkenstein multi-identity seat-switch are M37–M38; this doc is the foundation those build on. It graduates
+> [§ The Workforce dashboard surfaces (M36)](#the-workforce-dashboard-surfaces-m36) below) — plus the
+> **Clerkenstein multi-identity seat-switch** delivered in **M37** (a demo can present as any seeded hero; see
+> [`clerkenstein/knowledge/architecture.md` § Multi-identity]) — plus the **presenter cockpit** delivered in
+> **M38** (a standalone served panel that lists each story → its hero trio with **[Login as]** + **[Jump to
+> section]**, so a demo-giver picks a hero and lands on the right screen to present a flow live — see
+> [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below). It graduates
 > the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
 > lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
 > `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
@@ -279,6 +283,93 @@ surfaced now at org scale.
 **Closure stays measured.** Every new skill-ref surface draws its node-ids from the **same** taxonomy resolver
 the chain uses, so the seed-side closure gene (extended to `membership_skills`) still proves **0 dangling refs**
 — the mapped funnel is as closed as the verified chain.
+
+## The presenter cockpit (M38)
+
+The seeded world (M34–M36) + the Clerkenstein multi-identity seat-switch (M37) make the *individual* surfaces
+real; **M38** makes the whole Stories & Heroes engine **clickable**. The **presenter cockpit** is a standalone
+served panel that lists each story → its hero trio and, per hero, two actions — **[Login as]** and **[Jump to
+section]** — so a demo-giver picks a hero, lands logged-in as her on the right screen, and presents that part of
+the story live.
+
+### For PMs — the demo-driving surface
+
+A demo flows: *show Maya's verified-skill profile → show Tom's stark claimed-vs-verified gap → log in as their
+manager Dan and watch the same two people become the standout high/low rows of his Workforce dashboard.* The
+cockpit is the remote control for that flow: one click logs in as the chosen hero and jumps to her screen. No
+typing a login, no hunting for the right URL — the story is a menu.
+
+### The shape
+
+```
+Presenter Cockpit — demo-3
+  Story: AI Transformation & Reskilling   (Cervato Systems · 220 people)
+    ▸ Maya Chen — Backend Developer · EMPLOYEE · THRIVING
+        "8 verified skills, rising growth arc, mobility-ready"        [Login as] [▶ Profile]
+    ▸ Tom Becker — Backend Developer · EMPLOYEE · STRUGGLING
+        "Few/low verified skills, OVER-rates himself (stark gap)"     [Login as] [▶ Profile]
+    ▸ Dan Rossi — Engineering Manager · MANAGER
+        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [Login as] [▶ Workforce · Skills Verification]
+  Story: SDR Onboarding & Ramp   (Solvantis · 120 people)
+    ▸ Sara Whitfield · EMPLOYEE·THRIVING  /  Nick Alvarez · EMPLOYEE·STRUGGLING  /  Leah Donovan · MANAGER
+```
+
+(Display-label note: `vantage: end-user` renders as **EMPLOYEE**, `manager` as **MANAGER** — the YAML attribute
+value stays `end-user | manager`; "employee" is a label, not an enum value.)
+
+### For engineers — how it works
+
+**Standalone served panel, never an in-app overlay (D15).** The cockpit is a host-native HTTP server
+(`rosetta-extensions/demo-stack/cockpit.py`, stdlib only) on an **offset port** (`7700 + N·10000`), brought up
+with the stack and torn down with it — it is **never** an edit to next-web. This preserves the hard
+zero-platform-repo-edit line: the cockpit reaches the platform only as a browser would (over the FAPI
+handshake), never by modifying it.
+
+**Single source — it reads the same `stack.stories.yaml` that seeded the data (D9).** The cockpit menu is a
+**manifest** the seeder projects from the very file that seeded the heroes (`stackseed --cockpit-export`), so
+the annotations describing a hero in the cockpit are the same ones that scoped her seed — the menu can never
+drift from the data. (The demo tooling is stdlib-only Python, so the YAML is parsed once on the Go side and the
+panel reads the derived JSON — single-source preserved.)
+
+**[Login as] + [Jump to section] = one FAPI handshake redirect.** Both actions point the browser at the
+multi-identity fake FAPI's handshake with the hero's seat-switch key:
+
+```
+https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=<jump_to>
+```
+
+The FAPI selects the chosen hero's seat from `__clerk_identity` **then** establishes the session and redirects
+to `redirect_url` — so the hero is the active identity *everywhere* (the client view, `/v1/me`, the minted
+token, the cookies) AND the browser lands on her screen, in one move. **[Login as]** lands on the app root;
+**[Jump to section]** lands on the hero's `jump_to` deep-link. The key is the hero's `stories.yaml` id — the
+**same** key the roster export gave Clerkenstein's registry, so the seat always resolves. (The handshake +
+multi-identity selection are M37; see [`clerkenstein/knowledge/architecture.md` § Multi-identity].)
+
+**The roster-export producer — the M37 integration seam.** M37 shipped the *consumer* (the fake FAPI loads a
+`[]DemoUser` roster from `FAKE_FAPI_ROSTER`); M38 ships the *producer*. `stackseed --roster-export` derives the
+roster JSON — each hero's **exact** clerk claims (`auth_id`/`eid`/`email`/`org_*`/`org_role`) — **single-sourced
+from the seeder's own id-derivation** (so "login as Maya" authenticates the real seeded user). Clerkenstein is a
+separate Go module and never imports the seeder; the seeder/demo-tooling exports, Clerkenstein consumes. The
+demo bring-up sets `FAKE_FAPI_ROSTER` on the `demo-N-fake-fapi` container so its FAPI is multi-identity.
+
+**The deep-link catalog (O9).** The cockpit ships an enumerated, stable set of next-web routes per vantage — the
+*individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, my-growth, take-a-sim) and the
+*org-intelligence* surfaces a manager hero demos (the Workforce dashboard tabs — verification / role-readiness /
+succession / mobility — plus the talent pool). A hero's `jump_to` is matched against this catalog for its button
+label; an unrecognized `jump_to` still works (it's a raw path) with a generic label.
+
+### Bring it up
+
+```bash
+# A storytelling demo: DEMO_STORIES=1 seeds the 2-org hero trio, wires the multi-identity fake-fapi, and
+# serves the cockpit. Default-off keeps every existing demo byte-identical (structural seed, single-identity).
+DEMO_STORIES=1 /demo-up 3
+# → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Login as] → [Jump].
+```
+
+`DEMO_NO_COCKPIT=1` brings up the stories demo without the panel (e.g. an API-only run); `DEMO_STORIES_PRESET`
+overrides the preset (default `presets/stories.seed.yaml`). The cockpit + roster + seed all pin `--stack demo-N`,
+so the exported ids and the seeded rows are guaranteed to match.
 
 ## Running it
 
