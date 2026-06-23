@@ -129,7 +129,7 @@ builder skills).
 | **v1.6** | **stage door** | The **secret-provisioning release** — one mechanism that ingests a secret source (dir/zip, default `.agentspace/secrets`) and provisions every repo of a stack, with a secret-coverage DNA that lists + keeps-listed the required secrets per repo | M27 ✅ → M28 ✅ → M29 ✅ → M30 ✅ | ✅ **SHIPPED 2026-06-14** (tag `v1.6`) |
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
-| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 → M35 → M36 → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22) |
+| **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 → M36 → { M37 → M38 } | 🚧 **IN DEVELOPMENT** (designed 2026-06-22; M34 ✅ 2026-06-23) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -182,7 +182,7 @@ prior). The one parallel opportunity is **M37 ∥ M36** — `clerkenstein` is a 
 files; M37 needs only M35's hero-identity list.
 
 ### M34 — Verified-skill chain (vertical slice)
-**Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** none
+**Status:** `done` (completed 2026-06-23) · **Shape:** `section` · **Complexity:** large · **Depends on:** none
 **Goal:** one seeded hero's **skill profile + Skill Spotlight chart** render end-to-end on a `--local-content`
 demo stack — prove the spine before scaling.
 **Scope — In:**
@@ -201,6 +201,27 @@ demo stack — prove the spine before scaling.
 **Delivers → `corpus/ops/demo/stories-spec.md`** (new — the verified-skill-chain reference; graduates the spec)
 + updates `seeding-spec.md` / `safety.md`.
 **Open questions:** O4 (live storage-key names — one `\d` pass via `/db-query`).
+
+**Closure (2026-06-23):** All 8 sections + 2 harden passes landed. The 9-commit ext port (G14
+`jobsim_sessions` fix → `TaxonomyRefs` resolver → `PersonaSeeder` 7-table chain → `users.go` names/avatars
+→ seed-side closure gene → Maya integration test + the `validation_attempt_result_id` FK fix → harden ×2)
+on `rosetta-extensions` (tag `storytelling-m34` @ `8eb603b`); the corpus doc-half (NEW `stories-spec.md` +
+`seeding-spec.md`/`safety.md`/`README.md`/`CLAUDE.md`) on `m34/verified-skill-chain`. **Maya proven** via the
+integration test (the full UI query paths return her data: profile verified skills + Spotlight datapoints +
+the claimed-vs-verified gap + closure 0-dangling) and orchestrator-verified on the live `--local-content`
+demo-3 stack. **Close GREEN:** review found **5 findings, 0 blocking** — 1 should-fix (the `taxonomyref`
+`take()`/`flat` comment corrected to match the deliberate role-coherence-over-count behavior), 2 nice-to-have
+recorded as **D-M34-7** + Fate-3-annotated to M35 (the multi-hero index-collision guard + the short-role-pool
+top-up — both M34-benign at one hero, reachable at M35's roster), 2 docs (handbook test-count reconciliation:
+`stack-seeding` README 62→381 / `dna` README 49→117). Phase 2c adversarial: 2 scenarios traced, both degrade
+safely (no crash/corruption, closure stays green). **Tests:** stack-seeding **381** (incl. subtests; 302
+funcs, +43), seeders **96.6%** / `dna/seed_closure.go` **100%**, `-race` green, flake gate **5/5** (0 flakes),
+integration test opt-in (`//go:build integration` + `STACKSEED_IT_DSN`). Deferral re-audit **GREEN** (0
+deferrals; the 3 surfaced items were 2× Fate-2 already-owned [M35/M36] + 1× Fate-1 landed). Supply-chain
+GREEN (0 new deps). Alignment 100%/100% (untouched). The done-bar is met; the literal browser-pixels render
+of Maya's *individual* profile (login-AS-Maya) is correctly **M37/M38-owned** (the cockpit's "login as a
+hero"), Fate-2, not an M34 gap. **The ext tag `storytelling-m34` is the orchestrator's reference for the
+code; the orchestrator pushes ext→origin + the rosetta release-branch merge post-close per its protocol.**
 
 ### M35 — Stories & Heroes model + multi-org
 **Status:** `planned` · **Shape:** `section` · **Complexity:** large · **Depends on:** M34

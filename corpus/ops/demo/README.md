@@ -70,6 +70,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   Clerkenstein injection, the per-stack project/data isolation, the resource budget, teardown. (M3)
 - [`../seeding-spec.md`](../seeding-spec.md) — the **seeding** reference: the `stack.seed.yaml` blueprint, the
   dependency-DAG, the **production-isolation boundary**, the casbin subtleties, the data-DNA. (M7a/b)
+- [`stories-spec.md`](stories-spec.md) — the **verified-skill chain** reference: how a seeded *verified skill*
+  (a hero's passed-simulation profile + Skill Spotlight chart + the claimed-vs-verified gap) is materialized as
+  the **7-table fan-out** the `PersonaSeeder` writes, the constraint landmines, the G14 session fix, and the
+  seed-side closure gene. The believability spine of a demo world. (v1.9 M34)
 - [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
   Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
   outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)
