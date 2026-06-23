@@ -11,7 +11,8 @@
 - **The tooling (gitignored locally):** `stack-demo/rosetta-extensions/demo-stack/` — the `rosetta-demo` CLI,
   `up-injected.sh`, `migrate-demo.sh`, `inject/`.
 - **The clone-role/tag model:** the authoring copy lives at `.agentspace/rosetta-extensions/` (build/test/tag the
-  tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`.
+  tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`
+  (current post-v1.9 demo-stack/set-dress tag: **`storytelling-postfix-1`**).
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
   and the generic `/stack-list` drive that tooling (the dev peer is `/dev-up` / `/dev-down`).
 - **The secrets:** [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md) provisions the stack's
@@ -26,6 +27,12 @@
   `?__clerk_identity=<key>` on the handshake (the [Login as] deep-link) or the `/v1/demo/{identities,select}`
   control plane. Server-authoritative, so every surface resolves the same hero. Measured by the `clerk-multi-1`
   Alignment DNA (9 genes, 100%/100%) — see [clerkenstein.md](../services/clerkenstein.md) § Multi-identity.
+- **Stories & cockpit are the DEFAULT (post-v1.9 demo-hardening):** a bare `/demo-up N` now seeds the
+  multi-org **Stories & Heroes** world (2 orgs × a thriving/struggling/manager hero trio) **and** serves the
+  presenter cockpit **by default** — the M38-D4 opt-in flipped to opt-**out**. `DEMO_NO_STORIES=1` (or the
+  explicit `DEMO_STORIES=0`) restores the legacy structural **small-200** + single-identity fake-fapi +
+  no-cockpit demo (mirroring the `DEMO_NO_*` family). So: stories = default; small-200 = the
+  `DEMO_NO_STORIES` fallback. Full stories model: [`demo/stories-spec.md`](demo/stories-spec.md).
 
 ## A demo builds from its OWN clone set — self-contained (v1.8 "understudy", M26)
 
@@ -103,6 +110,11 @@ the full offset/project/scope-aware `verify live`. So "UP" means *verified-worki
 *containers-started*. Default-on (opt out: `DEMO_NO_VERIFY=1` / `DEV_NO_VERIFY=1`); a failing check warns
 loudly + points at `/test-platform N` but never aborts a good bring-up. Full contract:
 [`verification.md`](verification.md).
+
+> **The per-stack-Directus boot now health-gates so auto-verify can't race it (post-v1.9 demo-hardening).**
+> The bring-up's Directus boot step now **waits** for the stack's own offset `/server/health` to answer 200
+> (bounded, non-fatal on timeout) before returning, so the verify pass no longer false-reports Directus
+> "down" while it re-introspects across its restart. See [`verification.md`](verification.md).
 
 ## Stack workspace layout + the `anthropos-dev` → `stack-dev` back-compat fallback (v1.3b "dress rehearsal", M16)
 

@@ -11,8 +11,8 @@ platform-repo edits**.
 
 **Active milestone:** **(between releases)** — no milestone in progress.
 **Next up:** **`/developer-kit:design-roadmap`** — design the next version (none staged behind v1.9 in
-`roadmap-vision.md`). The unscheduled backlog (M33 ant-academy liveness, DEF-M10-01, DEF-M21-01..04, M25-D9)
-is candidate input.
+`roadmap-vision.md`). The unscheduled backlog (DEF-M10-01, DEF-M21-01..04, M25-D9) is candidate input. (M33
+ant-academy liveness was resolved by the post-v1.9 demo-hardening patch — see below.)
 **Last closed:** **v1.9 "storytelling" (release) — 2026-06-23** via `/developer-kit:close-release` — reviewed
 all 5 milestones (M34–M38) as one PR: **GREEN, 0 blocking findings**. 9 review sweeps clean (supply-chain /
 scope / deferral-re-audit / code-quality / docs / KB-consolidation / tests / metrics-regression / decisions);
@@ -23,10 +23,24 @@ M38-D8). Triple-clean gate 3/3 (local). Merged `release/01.90-storytelling` → 
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (still open):** the live field-bake on a freshly-emptied
-`stack-demo/`; the literal browser-pixels `DEMO_STORIES=1` cockpit end-to-end (a deliberate demo step);
+`stack-demo/`; the literal browser-pixels Stories & Heroes cockpit end-to-end (now the default `/demo-up`,
+a deliberate demo step);
 **pushing the ext tags + `main` + the `v1.9` tag to `origin`** (the orchestrator's separate post-close step —
 the close merged + tagged LOCALLY only). Ext tags pending push: `storytelling-m34..m38` + the prior
 `understudy-m26` / `house-lights-m31`/`m32` / `stage-door-m27`/`m28`/`m30` / `prop-room-m21..m25`.
+
+**Post-v1.9 tooling-hardening pass (between releases) — SHIPPED.** A demo-hardening patch landed on the
+demo-stack / dev-setdress tooling (`rosetta-extensions` @ tag `storytelling-postfix-1`): **`DEMO_STORIES` is
+now default-on** (a bare `/demo-up N` seeds the multi-org Stories & Heroes world + serves the presenter
+cockpit; `DEMO_NO_STORIES=1` opts back out to the legacy structural small-200 + single-identity fake-fapi +
+no-cockpit demo); the **M33** ant-academy + cockpit "dead on a later visit" bug is **resolved** (both
+host-native daemons now launch session-detached via `demo-stack/detach.sh::launch_detached` instead of bare
+`nohup`, so they survive the launching session/task ending — ant-academy is otherwise a non-fatal skip when
+its Font Awesome Pro deps aren't installed); the per-stack **Directus boot now health-gates** on the stack's
+own offset `/server/health` before returning so the bring-up-tail autoverify can't race its ~30s
+re-introspect; and the **prod-Directus content note is guarded** (printed only on `DEMO_NO_LOCAL_CONTENT=1`,
+since the default demo boots a per-stack Directus serving the captured catalog locally). **Tooling + docs
+only — zero platform-repo edits; all 5 Clerkenstein alignment gates still 100%/100%.**
 
 ## Recently shipped releases
 - **v1.9 "storytelling"** — **2026-06-23**, tag `v1.9`. Believable-demo-narrative release: the placeholder
@@ -71,4 +85,8 @@ _Last updated: 2026-06-23 (**v1.9 "storytelling" SHIPPED** via `/developer-kit:c
 M34–M38 as one PR, **GREEN/0 blocking**; release-level docs coherence 0 findings; deferral re-audit GREEN [0
 open, 0 escape-hatch]; supply-chain GREEN [0 new deps]; all 5 Clerkenstein alignment gates 100%/100%; Go
 1027→1248. Merged `release/01.90-storytelling` → `main`, tagged `v1.9`, branch deleted — origin push pending
-[orchestrator's step]. **Next: `/developer-kit:design-roadmap`.** Prior: v1.8 "understudy" SHIPPED 2026-06-15.)_
+[orchestrator's step]. **Next: `/developer-kit:design-roadmap`.** Prior: v1.8 "understudy" SHIPPED 2026-06-15.
+**Post-v1.9 (between releases): demo-hardening patch SHIPPED** (`rosetta-extensions` @ `storytelling-postfix-1`)
+— `DEMO_STORIES` default-on + `DEMO_NO_STORIES` opt-out; M33 ant-academy/cockpit session-detach fix; Directus
+boot health-gate; guarded prod-Directus note. Tooling + docs only, zero platform-repo edits, 5 alignment gates
+still 100%. M33 dropped from the backlog.)_

@@ -45,13 +45,6 @@ and a `release/{version}` branch is cut.
 
 Genuinely-deferred work, no target version, not scheduled:
 
-- **M33 — ant-academy demo liveness** (deferred from v1.7 design, 2026-06-15, repro-first). The ant-academy demo
-  surface runs **native** (nohup + pidfile + a kill-0 relaunch guard in `ant-academy.sh`), not a container — so on a
-  later visit `:33077+offset` can be dead. Root cause is **unconfirmed** (most likely the launching `/demo-up` session
-  reaping the nohup'd process tree on session-end, NOT a tooling bug — re-running `/demo-up` relaunches it). **Scope
-  only after reproducing the exact "dead on later visit" scenario**; likely doc-only (document the "native — re-run
-  `/demo-up` to relaunch" reality in `frontend-tier.md`) or a minimal liveness loop if repro proves a real gap. Smaller
-  payoff (academy is the least-central, Vercel-native, Clerk-only demo surface) — deliberately left out of v1.7's firm scope.
 - **DEF-M10-01 — cloud `SnapshotStore` backend + S3 media blob bytes.** Today the cache is the local
   `.agentspace/snapshots/` store and media replays **refs-only**. **Re-signed → backlog at v1.5 design (2026-06-11)**
   after its v1.4 destination was removed; its **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane
@@ -66,6 +59,25 @@ Genuinely-deferred work, no target version, not scheduled:
   nuance on opt-in `dev-N≥1 --local-content` stacks (non-fatal, orthogonal to the content-serve path — the directus
   content-serve done-bar DB-2 is GREEN). Surfaced by the M25 field-bake; tracked dev migrate-ordering follow-up.
 
+**Resolved (no longer backlog):**
+
+- **M33 — ant-academy demo liveness** (deferred from v1.7 design, 2026-06-15, repro-first) → **RESOLVED post-v1.9** at
+  rext tag `storytelling-postfix-1` (a tooling-only post-v1.9 demo-hardening pass). The "dead on a later visit"
+  reaping was **REPRODUCED + FIXED**: the host-native daemons were launched via `nohup` alone, which does **not**
+  detach from the launcher's process group — so when a backgrounded `/demo-up` task's process tree was reaped on
+  completion (or the launching session ended), the daemon died with it (the exact M33 hypothesis). Both ant-academy
+  and the presenter cockpit now launch **session-detached** via a shared `demo-stack/detach.sh::launch_detached`
+  (`setsid` where present; a portable `python3 os.setsid` double-fork on macOS, which has no `setsid`), so they
+  survive the launching session/task ending. The same `storytelling-postfix-1` pass also made **`DEMO_STORIES` the
+  default** (a bare `/demo-up N` now seeds the multi-org Stories & Heroes world + serves the cockpit; `DEMO_NO_STORIES=1`
+  restores the legacy small-200 structural demo), added the **per-stack Directus boot health-gate** (the bring-up tail
+  waits for the stack's own offset `/server/health` before returning, so autoverify can't race the ~30s re-introspect),
+  and **guarded the prod-Directus content note** (it now prints only on the genuine `DEMO_NO_LOCAL_CONTENT=1` opt-out).
+  **Residual ant-academy reality:** academy still needs the team Font Awesome Pro token (`FONTAWESOME_NPM_AUTH_TOKEN`)
+  + a one-time `npm install` in `stack-demo/ant-academy/code` to actually run; without the token it's an intentional
+  **non-fatal skip** (it's a Vercel-deployed, Clerk-only peripheral surface — the cockpit / next-web / studio-desk carry
+  the demo). Provision the token (e.g. via `/stack-secrets`) then `npm install` once to enable it.
+
 **Dropped from tracking (2026-06-11, user instruction — re-proposal requires a fresh `/developer-kit:design-roadmap` run):**
 the former v1.4 seeds **AI-generated content**, **external stack shareability** (Tailscale/ingress), and **more
 mirror engines**; the **deployment/injection CI gate** (a local-only alignment surface; gates nothing in the
@@ -75,8 +87,11 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
 
-_Last updated: 2026-06-23 (**v1.9 "storytelling" SHIPPED** [tag `v1.9`] via `/developer-kit:close-release` —
-reviewed M34→M38 as one PR, GREEN/0 blocking, deferral re-audit GREEN [0 escape-hatch], merged
-`release/01.90-storytelling` → `main`. No version staged behind it — next awaits `/developer-kit:design-roadmap`.
-Backlog unchanged: M33 ant-academy liveness [repro-first], DEF-M10-01, DEF-M21-01, M25-D9. Prior: 2026-06-22
-v1.9 DESIGNED + PROMOTED [5 `section` milestones M34→M38]; 2026-06-15 v1.8 "understudy" SHIPPED [tag `v1.8`].)_
+_Last updated: 2026-06-23 (**M33 ant-academy demo liveness RESOLVED post-v1.9** at rext tag `storytelling-postfix-1`
+— the session-reaping was reproduced + fixed via session-detach [`launch_detached`]; the same tooling-only
+post-v1.9 demo-hardening pass also made `DEMO_STORIES` the default, added the Directus boot health-gate, and
+guarded the prod-Directus note. Moved M33 out of backlog → resolved. Backlog now: DEF-M10-01, DEF-M21-01, M25-D9.
+Prior: 2026-06-23 **v1.9 "storytelling" SHIPPED** [tag `v1.9`] via `/developer-kit:close-release` — reviewed
+M34→M38 as one PR, GREEN/0 blocking, deferral re-audit GREEN [0 escape-hatch], merged `release/01.90-storytelling`
+→ `main`; 2026-06-22 v1.9 DESIGNED + PROMOTED [5 `section` milestones M34→M38]; 2026-06-15 v1.8 "understudy"
+SHIPPED [tag `v1.8`].)_

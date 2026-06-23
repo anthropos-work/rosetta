@@ -1,15 +1,17 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--profile P] [--services "a b"] (UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
+argument-hint: [N] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
 ---
 
 # Demo Up — spin up an isolated demo stack
 
 Brings up `demo-N` as a disposable Anthropos stack **alongside** the dev `anthropos` stack (or other
 demos), on offset ports, with its own data, the **full UI tier by default** (next-web + studio-desk + ant-academy),
-**Clerkenstein-wired**, and **auto-set-dressed** (cache-first snapshot replay → a `small-200` seed, so you land in
-a real-catalog, log-in-able world) — **without touching any read-only platform repo**. Source of truth:
+**Clerkenstein-wired**, and **auto-set-dressed** (cache-first snapshot replay → the multi-org **Stories & Heroes**
+world + presenter cockpit **by default**, so you land in a real-catalog, log-in-able, narratable world) —
+**without touching any read-only platform repo**. (Add `DEMO_NO_STORIES=1` for the legacy `small-200`
+single-identity demo — see the toggle list below.) Source of truth:
 [`corpus/ops/rosetta_demo.md`](../../../corpus/ops/rosetta_demo.md) (lifecycle) +
 [`corpus/ops/demo/frontend-tier.md`](../../../corpus/ops/demo/frontend-tier.md) (the UI tier) +
 [`corpus/ops/demo/README.md`](../../../corpus/ops/demo/README.md) (the auto-set-dress flow).
@@ -37,8 +39,11 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    DEMO=stack-demo/rosetta-extensions/demo-stack
    # FULL Clerk-free demo WITH the UI tier (default): the 5 injected Clerk services + fake FAPI/BAPI +
    # per-demo next-web + studio-desk (offset ports, minted-pk-baked, cached) + ant-academy native +
-   # AUTO set-dress (cache-first snapshot replay -> small-200 seed; default-on, non-fatal).
+   # AUTO set-dress (cache-first snapshot replay -> Stories & Heroes world + presenter cockpit BY DEFAULT;
+   # default-on, non-fatal).
    "$DEMO/up-injected.sh" N        # ~15-25 min first build; +~3 min/frontend on a NEW demo-N, cached after.
+   # legacy small-200 single-identity demo (skip stories + cockpit — the opt-OUT fallback):
+   DEMO_NO_STORIES=1 "$DEMO/up-injected.sh" N
    # backend-only (skip the UI tier — fast, RAM-light, API/QA):
    DEMO_NO_UI=1 "$DEMO/up-injected.sh" N
    # bare structural bring-up (skip the auto-set-dress — no replay/seed; set-dress later by hand):
@@ -56,24 +61,34 @@ a real-catalog, log-in-able world) — **without touching any read-only platform
    compose-emit (defense-in-depth — the fix16/17 non-rearm class). `DEMO_NO_PROVISION=1` opts out (runs from the
    ensure-clones-seeded `stack-demo/platform/.env` base instead — M26). See
    [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
-4. **Auto set-dress (default-on, non-fatal, M20)** — after migrate the bring-up runs a cache-first snapshot
-   **replay → a `small-200` seed** (a populated org you can log into), reusing the same proven pass `/dev-up` uses.
+4. **Auto set-dress (default-on, non-fatal)** — after migrate the bring-up runs a cache-first snapshot
+   **replay → the multi-org Stories & Heroes seed** (2 orgs × a thriving/struggling/manager hero trio) **and
+   serves the presenter cockpit — both BY DEFAULT** (the M38-D4 opt-in became opt-OUT), reusing the same proven
+   pass `/dev-up` uses. `DEMO_NO_STORIES=1` (or `DEMO_STORIES=0`) restores the **legacy `small-200`** structural
+   seed + single-identity fake-FAPI + no-cockpit demo (so `small-200` is the fallback, **not** the default).
    The replay stamps in the **real taxonomy catalog**, and — **for a demo, local content is default-on** (v1.5
    M22/M23) — the bring-up also **EXECUTES** the per-stack Directus (bootstrap → apply-structure → replay → boot
-   a `directus` compose service on the demo's offset port), then **cuts `cms` over** to it (`DIRECTUS_BASE_ADDR`
-   → in-network `http://directus:8055`), so the demo's content is **self-contained** (the directus replay
-   **exits 0**). Only the **asset plane** stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing at
-   `content.anthropos.work` so browser images load real assets. `DEMO_NO_LOCAL_CONTENT=1` opts a demo **out**,
-   back onto the **prod-read fallback** (directus replay skips with stacksnap exit 4; public content read live
-   from prod **anonymously** — the prod `DIRECTUS_TOKEN` is stripped from every demo container,
-   `rosetta-extensions @ dress-rehearsal-m20-fix16/fix17`). A **cold/empty cache** warns (exit 5) + still seeds
-   (an empty-catalog structural world); `DEMO_NO_SETDRESS=1` skips the whole pass. To get the **real** catalog on
-   a fresh box (fill the cache once), see
-   [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures (replay
-   only — capture is a separate, operator-confirmed prod read).
+   a `directus` compose service on the demo's offset port, **health-gated** — it now waits for the stack's own
+   offset `/server/health` to answer 200 before returning, bounded by `DEV_SETDRESS_DIRECTUS_BOOT_TIMEOUT`
+   (default 90s, non-fatal on timeout), so the bring-up-tail autoverify can't race the ~30s re-introspect), then
+   **cuts `cms` over** to it (`DIRECTUS_BASE_ADDR` → in-network `http://directus:8055`), so the demo's content is
+   **self-contained** (the directus replay **exits 0**). Only the **asset plane** stays on prod —
+   `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing at `content.anthropos.work` so browser images load real assets.
+   `DEMO_NO_LOCAL_CONTENT=1` opts a demo **out**, back onto the **prod-read fallback** (directus replay skips
+   with stacksnap exit 4; public content read live from prod **anonymously** — the prod `DIRECTUS_TOKEN` is
+   stripped from every demo container, and the "reads PUBLIC content LIVE from prod" note now prints **only** in
+   this opt-out case). A **cold/empty cache** warns (exit 5) + still seeds (an empty-catalog structural world);
+   `DEMO_NO_SETDRESS=1` skips the whole pass. To get the **real** catalog on a fresh box (fill the cache once),
+   see [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures
+   (replay only — capture is a separate, operator-confirmed prod read).
+   (`rosetta-extensions @ storytelling-postfix-1`.)
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
    `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9000+`
-   single-port (M32), ant-academy `:3077+`) and the **dev stack is untouched**.
+   single-port (M32), ant-academy `:3077+`, presenter cockpit `:7700+`) and the **dev stack is untouched**. The
+   host-native daemons (cockpit + ant-academy) now launch **session-detached** (via `detach.sh::launch_detached`)
+   so they survive the launching session/task ending — no more "dead on a later visit". (ant-academy is a
+   non-fatal skip when its Font Awesome Pro deps aren't installed — a Clerk-only Vercel-deployed peripheral; the
+   cockpit/next-web/studio-desk carry the demo.)
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.
@@ -85,8 +100,11 @@ proves zero shared/prod pollution. Full contract: [`corpus/ops/safety.md`](../..
 
 ## After bring-up
 
-A bare `/demo-up N` already auto-set-dressed the stack (real catalog + a `small-200` org) — so just **log in**
-(browser-login as `user_clerkenstein` → land in the populated org). The fake-FAPI TLS cert is **auto-trusted**
+A bare `/demo-up N` already auto-set-dressed the stack with the **Stories & Heroes** world + the presenter
+cockpit **by default** (real catalog + 2 orgs × a thriving/struggling/manager hero trio) — so just **log in**
+(browser-login as `user_clerkenstein` → land in a narratable, populated org), and **open the presenter cockpit**
+on the demo's offset **`:7700+`** port to walk the seeded stories. (`DEMO_NO_STORIES=1` instead lands the legacy
+`small-200` single-identity org with no cockpit.) The fake-FAPI TLS cert is **auto-trusted**
 (M31: minted via `mkcert` at bring-up), so a fresh browser renders the signed-in app with **no proceed-anyway**
 — it falls back to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`
 (see [`corpus/ops/demo/recipe-browser-login.md`](../../../corpus/ops/demo/recipe-browser-login.md) §B). To customize: re-run the generic stack-ops

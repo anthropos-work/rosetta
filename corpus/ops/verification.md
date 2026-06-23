@@ -48,6 +48,13 @@ At the tail of `demo-stack/up-injected.sh` (demo) and `dev-stack`'s `cmd_up` (de
 exits 0** — a failing check produces a loud `⚠` block and a "run `/test-platform N` to dig in" hint, never
 an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `dev-setdress.sh`.
 
+> **Host-native daemons outlive the bring-up task (FIX B).** The two host-native surfaces a demo brings up
+> (ant-academy + the presenter cockpit) are now launched **session-detached** via
+> `demo-stack/detach.sh::launch_detached` (`setsid` where present; a portable `python3 os.setsid`
+> double-fork on macOS, which has no `setsid`), so they survive the launching session/task ending and a
+> later visit still finds them alive. Previously a bare `nohup` left them in the launcher's process group,
+> so a backgrounded `/demo-up` task's reaping took them down with it.
+
 ## The offset/scope model (why it targets the *right* ports)
 
 A `demo-N`/`dev-N` stack publishes its host ports at **base + N×10000** (the offset engine in
@@ -111,6 +118,16 @@ Directus) never false-warns even on an unscoped run:
 4. **No prod read** — the per-stack Directus's `DB_CONNECTION_STRING` (read from the container's env) must
    resolve to the stack's **own** Postgres, never a prod host. The runtime mirror of the executed-provision
    firewall gate; warns (non-fatal) if a mis-wired override pointed the local Directus at prod.
+
+> **The boot health-gate (FIX A) — why these probes no longer race.** The set-dress step that restarts the
+> per-stack Directus (`dev-setdress.sh::boot_directus_step`) used to `docker restart` the container and
+> return **immediately** — so the bring-up-tail autoverify fired while Directus was still ~30s into its
+> re-introspect, and the directus liveness (`/server/health`) + `directus-collections` probes raced that
+> window and **false-reported "down"** (a transient verify `⚠` on a stack that was actually fine).
+> `boot_directus_step` now **waits** for the stack's own offset `/server/health` to answer `200` before
+> returning (bounded by `DEV_SETDRESS_DIRECTUS_BOOT_TIMEOUT`, default `90s`; **non-fatal** on timeout or a
+> missing `curl`), so autoverify can't run ahead of it. The probes themselves are **unchanged** — the fix
+> lives at the restart, not at the probe. (Consumed at `rosetta-extensions @ storytelling-postfix-1`.)
 
 ## What runs, and on which ports
 

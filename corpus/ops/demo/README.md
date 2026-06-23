@@ -23,28 +23,32 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
                      + make init the peer repos; seed the shared .env copy-if-present) — self-contained
                      bring up demo-N (Clerkenstein-wired, offset ports, isolated data, built from stack-demo) [corpus/ops/rosetta_demo.md]
                      AUTO secret-provision (values-blind, per-repo .env from .agentspace/secrets) [v1.6 M30 → secrets-spec.md]
-                     AUTO set-dress (cache-first snapshot replay → small-200 seed, default-on, non-fatal) [v1.3b M20]
-  …use it…        →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
-/demo-down N      →  tear it all down, dev stack untouched                                 [corpus/ops/rosetta_demo.md]
+                     AUTO set-dress (cache-first snapshot replay → Stories & Heroes seed + cockpit, default-on, non-fatal) [v1.9 M38]
+                       (DEMO_NO_STORIES=1 → structural small-200 seed + single-identity fake-fapi, no cockpit — the fallback)
+  …present it…     →  open the presenter cockpit → pick a hero → [Login as] → [Jump to section]    [stories-spec.md]
+  …or use it…      →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
+/demo-down N      →  tear it all down (AND reap the native cockpit process), dev stack untouched [corpus/ops/rosetta_demo.md]
 ```
 
-> **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38).** Pass `DEMO_STORIES=1` to
-> turn a bare demo into a **narrative** one: the set-dress seeds the locked **2-orgs × 3-heroes** Stories &
-> Heroes world (each org a thriving/struggling/manager trio) instead of the structural `small-200`, the
-> fake-fapi becomes **multi-identity** (a `FAKE_FAPI_ROSTER` of the seeded heroes' exact ids), and a
-> **presenter cockpit** is served on an offset port (`7700 + N·10000`). The cockpit is the demo's remote
-> control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line holds) listing each
-> story → its hero trio with **[Login as]** and **[Jump to section]**, so a demo-giver picks a hero, lands
-> logged-in as her on the right screen, and presents that flow live. Default-off keeps every existing demo
-> byte-identical. The cockpit serve is **non-fatal** (a stories demo fails loud on a broken roster — the
-> login-as contract — but a cockpit failure leaves a fully-working seeded multi-identity demo you can still
-> drive by hand); pass `DEMO_NO_COCKPIT=1` to bring the stories demo up without the panel (an API-only run).
-> The full picture (the single-source manifest, the one-handshake login-as-+-jump, the roster-export producer,
-> the O9 deep-link catalog) is in [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
+> **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38) — now the DEFAULT.** A bare
+> `/demo-up N` set-dress seeds the locked **2-orgs × 3-heroes** Stories & Heroes world (each org a
+> thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
+> heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
+> the demo's remote control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line
+> holds) listing each story → its hero trio with **[Login as]** and **[Jump to section]**, so a demo-giver
+> picks a hero, lands logged-in as her on the right screen, and presents that flow live. `DEMO_NO_STORIES=1`
+> (or the explicit `DEMO_STORIES=0`) restores the legacy structural `small-200` + single-identity fake-fapi +
+> no-cockpit demo (the `DEMO_NO_*` family fallback). The cockpit serve is **non-fatal** (a stories demo fails
+> loud on a broken roster — the login-as contract — but a cockpit failure leaves a fully-working seeded
+> multi-identity demo you can still drive by hand); pass `DEMO_NO_COCKPIT=1` to bring the stories demo up
+> without the panel (an API-only run). The full picture (the single-source manifest, the one-handshake
+> login-as-+-jump, the roster-export producer, the O9 deep-link catalog) is in
+> [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
-> DEMO_STORIES=1 /demo-up 3   →  + seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
+> /demo-up 3                   →  default: seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
 >   …present it…              →  open http://localhost:37700 → pick a hero → [Login as] → [Jump to section]
+> DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
 > ```
 
@@ -60,8 +64,9 @@ v1.3, a `/demo-up` bring-up chains the **same** set-dress pass at its tail: a ca
 (the real **taxonomy** catalog; and — **for a demo, local content is default-on** since v1.5 M22/M23 — a
 per-stack **Directus** booted + cut over so the **content** surface serves locally too, the stack
 content-self-contained; a demo opted out with `DEMO_NO_LOCAL_CONTENT=1` falls back to reading content live from
-prod — see the known-state note below) → a **`small-200` light seed**
-(a populated org you can log into). So a bare `/demo-up N` already lands you in a real-catalog, log-in-able world
+prod — see the known-state note below) → the **Stories & Heroes seed + cockpit** (the v1.9 M38 default — a
+narrative multi-org world you can log into and present; `DEMO_NO_STORIES=1` falls back to the structural
+`small-200` light seed). So a bare `/demo-up N` already lands you in a real-catalog, log-in-able world
 — no separate skill calls required. The pass is
 **default-on + non-fatal** (a cold cache warns and still seeds; `DEMO_NO_SETDRESS=1` skips it for a bare
 structural bring-up). You can still drive the steps **manually** for finer control — `/stack-snapshot N` (replay)
@@ -130,9 +135,11 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   orgclient cert-redirect + the browser-login walk-through, log in → land in a seeded org.
 
 **Curated seed presets** (instances of `stack.seed.yaml`, validated to seed):
-`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick — **the `/demo-up` auto-set-dress default**,
-M20 #M20-D2) · `mid-500` (the default "looks real") · `large-1k` (scale). The auto-set-dress pass uses
-`small-200` (a fuller world than dev's `dev-min`); override it with a manual `/stack-seed N --preset mid-500`
+`rosetta-extensions/stack-seeding/presets/` — `small-200` (quick — **the `DEMO_NO_STORIES=1` fallback seed**,
+M20 #M20-D2) · `mid-500` (the default "looks real") · `large-1k` (scale). The `/demo-up` auto-set-dress now
+defaults to the **Stories & Heroes** seed (v1.9 M38); `small-200` is the structural fallback the
+`DEMO_NO_STORIES=1` opt-out seeds (a fuller world than dev's `dev-min`). Override either with a manual
+`/stack-seed N --preset mid-500`
 (or skip the auto pass with `DEMO_NO_SETDRESS=1` and seed by hand). The presets are **purely structural** (they describe an org, not the
 platform's reference library); for a **set-dressed** world the catalog replay runs first (the auto pass does this;
 manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free

@@ -14,9 +14,11 @@ fan-out) so the two product Musts — the individual **skill profile** and the o
 coherent story, plus a standalone **presenter cockpit** (log in as a hero + jump to the right screen). 5 `section`
 milestones **M34→M38**, designed from the adversarially-verified spec [`.agentspace/seeding_gaps.md`]. **Tooling +
 docs only — zero platform-repo edits.** Prior: v1.8 "understudy" (the self-contained-demo release, M26) shipped
-2026-06-15. Genuinely-deferred work stays **unscheduled backlog** — M33 (ant-academy demo liveness, repro-first),
-DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4)
-([`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet —
+2026-06-15. Genuinely-deferred work stays **unscheduled backlog** — DEF-M10-01 (cloud store / S3 blob bytes),
+DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4) ([`roadmap-vision.md`](roadmap-vision.md)).
+A post-v1.9 **demo-hardening pass** shipped at rext tag `storytelling-postfix-1` (tooling + docs only) — it
+**resolved M33** (ant-academy/cockpit demo liveness, the session-detach fix) and made DEMO_STORIES the demo
+default. Live state: [`state.md`](state.md). (No `roadmap-legacy.md` yet —
 that appears when a whole *major* version retires; v1.3…v1.9 are the same major.)
 
 ## Files

@@ -2,6 +2,18 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [post-v1.9] demo-hardening — `storytelling-postfix-1` — 2026-06-23
+
+The **post-v1.9 demo-hardening patch**: the Stories & Heroes world becomes the **default** demo, and the M33-class "dead on a later visit" failures are run down and fixed. A bare `/demo-up` now seeds the narrative + serves the cockpit out of the box, the host-native daemons survive their launching session, and two transient false-down warnings on a healthy stack are closed. **Tooling + docs only — zero platform-repo edits.** (ext tag `storytelling-postfix-1`)
+
+### Changed
+- **`DEMO_STORIES` is now default-ON.** A bare `/demo-up N` now seeds the multi-org **Stories & Heroes** world (2 orgs × a thriving/struggling/manager hero trio) **and** serves the **presenter cockpit** by default — the M38 opt-in became opt-out. `DEMO_NO_STORIES=1` (or the explicit `DEMO_STORIES=0`) restores the legacy structural **small-200** single-identity demo (no cockpit), mirroring the `DEMO_NO_*` family.
+
+### Fixed
+- **M33 ant-academy + presenter cockpit "dead on a later visit" is resolved.** Both host-native daemons were launched via `nohup` alone, which does **not** detach from the launcher's process group — so when a backgrounded `/demo-up` task's process tree was reaped (or its launching session ended), the daemon died with it. They now launch **session-detached** via a shared `demo-stack/detach.sh::launch_detached` (`setsid` where present; a portable `python3 os.setsid` double-fork on macOS, which has no `setsid`), so they survive the launching session/task ending. (Separately, ant-academy can still be an intentional non-fatal skip when its Font Awesome Pro `npm install` token is absent on the box.)
+- **The per-stack Directus boot now health-gates before autoverify.** `boot_directus_step` used to `docker restart` the Directus container and return immediately, so the bring-up-tail autoverify raced Directus's ~30s re-introspect and **false-reported it "down"** on a stack that was actually fine. It now waits (bounded by `DEV_SETDRESS_DIRECTUS_BOOT_TIMEOUT`, default 90s; non-fatal on timeout/curl-absent) for the stack's own offset `/server/health` to answer `200` before returning.
+- **The prod-Directus content note is now guarded.** `up-injected.sh` used to print "reads PUBLIC content LIVE from prod Directus (no per-stack Directus yet)" **unconditionally**, but since v1.5 "prop room" the default demo boots a per-stack Directus serving the captured catalog locally. The note now prints **only** on `DEMO_NO_LOCAL_CONTENT=1` (the genuine prod-read opt-out), reworded to that reality; the default local-served case says nothing.
+
 ## [v1.9] "storytelling" — 2026-06-23
 
 The **believable-demo-narrative release**: the placeholder seeder becomes a declarative **Stories & Heroes** engine. Each *story* is one org with a thriving/struggling/manager **hero** trio, seeded via the real **verified-skill chain**, so the individual **skill profile** and the org **Workforce dashboard** tell one coherent story (the claimed-vs-verified gap is the "aha"). A standalone **presenter cockpit** lets a demo-giver *log in as* a hero and *jump to* the right screen, wired on **Clerkenstein multi-identity**. **Tooling + docs only — zero platform-repo edits.**

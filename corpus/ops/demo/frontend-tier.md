@@ -144,7 +144,7 @@ offset frontends would still be CORS-blocked if you ran them (a known gap, not y
 CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
 and the REST-backed dashboards load.
 
-## ant-academy — native, Clerk-free, with a documented fallback
+## ant-academy — native, Clerk-free, session-detached, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
 launches it natively on `:3077+offset` **Clerk-free** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
@@ -154,9 +154,25 @@ overlay (zero academy-repo edits). Launching it natively (vs only documenting th
 open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
 and Clerk-only, so the bypass gives anonymous Clerk-free browse with no academy-repo edits (#M19-D6).
 
+> **The native daemon is SESSION-DETACHED (the M33 "dead on a later visit" fix).** ant-academy was previously
+> launched with `nohup` alone — which does **not** detach from the launcher's process group. So when a
+> backgrounded `/demo-up` task's process tree was reaped on completion (or the launching session ended), the
+> academy daemon died with it: the stack looked healthy at bring-up but was **dead on a later visit** (the exact
+> M33 hypothesis — now **reproduced and fixed**). The launcher now starts it **session-detached** via a shared
+> `demo-stack/detach.sh::launch_detached` (`setsid` where present; a portable `python3 os.setsid` double-fork on
+> **macOS**, which has no `setsid`), so the daemon **survives the launching session/task ending**. _(The
+> **presenter cockpit** host-native daemon had the identical bug and got the **same** `launch_detached` fix.)_
+
+> **Without the Font Awesome Pro token, ant-academy is an intentional non-fatal SKIP.** Its `npm install`
+> needs the team-issued **Font Awesome Pro** token (`FONTAWESOME_NPM_AUTH_TOKEN`), which isn't on every box —
+> without it the deps can't install, so `/demo-up` **skips** ant-academy (non-fatal, prints the manual commands)
+> and the demo proceeds. That's by design: ant-academy is a **Vercel-deployed, Clerk-only peripheral** surface —
+> the **presenter cockpit + next-web + studio-desk carry the demo**. To enable it, provision the token (e.g. via
+> [`/stack-secrets`](../secrets-spec.md)) then run `npm install` **once** in `stack-demo/ant-academy/code`.
+
 **Default-on + non-fatal + degrades to a documented step.** If the academy clone isn't present, its deps aren't
-installed (`npm install` needs the team-issued **Font Awesome Pro** token), or Node < 22, the tool prints the
-exact manual commands and continues — it never aborts a good demo bring-up:
+installed (`npm install` needs the team-issued **Font Awesome Pro** token — see above), or Node < 22, the tool
+prints the exact manual commands and continues — it never aborts a good demo bring-up:
 
 ```bash
 cd stack-demo/ant-academy/code            # M26: the academy clone lives in the demo's OWN peer set (stack-demo)
@@ -180,8 +196,9 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the **current pinned tag** (`stack-demo/rosetta-extensions @ <tag>` — the M19 UI tier first shipped at
-`dress-rehearsal-m19`; the CORS + token-strip items below are later, ≥ `dress-rehearsal-m20-fix15`/`fix17`):
+at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-1` — the M19 UI tier first
+shipped at `dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`;
+the session-detach fix below lands at `storytelling-postfix-1`):
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
@@ -193,7 +210,12 @@ at the **current pinned tag** (`stack-demo/rosetta-extensions @ <tag>` — the M
 - `demo-stack/up-injected.sh` — the per-demo serial-before-up frontend build (offset URLs + minted pk +
   tag-guard), the 12 GB VM pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, the scoped verify.
 - `demo-stack/frontend/next-web.dockerignore` — the tooling-owned context trim for next-web.
-- `demo-stack/ant-academy.sh` — the native academy launcher / stopper / documented fallback.
+- `demo-stack/ant-academy.sh` — the native academy launcher / stopper / documented fallback; launches the
+  daemon **session-detached** (via `detach.sh::launch_detached`) and **non-fatally skips** when the Font Awesome
+  Pro token / deps are absent.
+- `demo-stack/detach.sh` — the shared `launch_detached` helper (`setsid`, or a `python3 os.setsid` double-fork on
+  macOS) that session-detaches the host-native daemons (ant-academy **and** the presenter cockpit) so they
+  survive the launching `/demo-up` session/task being reaped.
 
 ## What's out of scope (the user-owned follow-up)
 
