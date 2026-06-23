@@ -267,7 +267,13 @@ coverage gate), **`job_simulation_feedbacks`** (~2:1 positive), and **population
 org-scale claimed-vs-verified gap — a population mix of over/under-claimers). The two fixes: the **assignments
 status-mix** (`due_date`s + `organization_assignment_sessions` so assignments bucket as
 completed/overdue/in-progress, not all `not_started`) and the **skillpath completed share** (~30%, was ~1%). The
-seed-side closure gene now also covers `membership_skills.skill_id` (four surfaces). Full reference:
+seed-side closure gene now also covers `membership_skills.skill_id` (four surfaces). Every dashboard seeder is
+**no-fabrication and degrades, not crashes** (v1.9 M36 harden): the share predicates short-circuit cleanly at the
+0/1 bounds (an empty or saturated cohort), the named-skill resolver yields empty pools on a missing taxonomy
+(writing nothing rather than inventing a skill) and pairs a malformed read (mismatched parallel array_agg columns)
+to empty lineage rather than panicking, and each multi-table seeder (`tags`, `target_roles`, `assignments`)
+returns the **partial total** of rows already written when a later FK-ordered COPY fails, wrapping the error with
+the failing table so an operator sees *which* surface broke. Full reference:
 [`demo/stories-spec.md` § The Workforce dashboard surfaces (M36)](demo/stories-spec.md#the-workforce-dashboard-surfaces-m36).
 
 ## Status
