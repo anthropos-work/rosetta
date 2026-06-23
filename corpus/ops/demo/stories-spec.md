@@ -251,7 +251,7 @@ seeders + two fixes land the **spine** (not every widget — the hard scope line
 
 | Surface | Seeder (`stack-seeding/seeders/`) | What it feeds on the dashboard |
 |---|---|---|
-| **Mapped skills** | `membership_skills.go` | The mapped→verified **verification funnel**. Every member is mapped to a role-coherent set of real public skills (the `skill_name` is set — every dashboard query filters it NOT NULL); since mapped covers ~all members but only a subset verify, **mapped outnumbers verified per skill** → the believable drop-off. Also feeds the **AI-readiness** scan (an AI-narrative org biases a share of members toward AI-named skills). |
+| **Mapped skills** | `membership_skills.go` | The mapped→verified **verification funnel**. Every member is mapped to a role-coherent set of real public skills (the `skill_name` is set — every dashboard query filters it NOT NULL); since mapped covers ~all members but only a subset verify, **mapped outnumbers verified per skill** → the believable drop-off. The funnel joins the mapped side to the verified side **on the skill _name_, not the node-id** — so `membership_skills.skill_name` must equal the verified skills' `skiller.skills.name`; the seeder's `skillref_named.go` resolver draws names from the same replayed taxonomy the verified chain uses, so they line up by construction (#M36-D1). Also feeds the **AI-readiness** scan (an AI-narrative org biases a share of members toward AI-named skills). |
 | **Teams / tags** | `tags.go` | The universal **slice dimension**: a dozen business-unit tags (front-loaded so the Teams tab is non-uniform) + a cross-cutting **`mentor`** tag (the Growth-tab Mentors KPI counts members tagged `mentor`). Each member is on exactly one business unit. |
 | **Target roles** | `target_roles.go` | The **gap + two-way internal mobility**: `organization_target_roles` (an admin-set development target = the gap) + `user_target_roles` (a self-set aspiration = mobility-ready), each a real public role node-id chosen different from the member's current role. |
 | **Succession feeders** | `succession.go` | `interview_extraction_results` for >20% of members (with the `summary` jsonb the succession query reads) to lift the **Succession tab** past the coverage gate (`too_sparse` → `full`). Trajectory-aware: a struggling hero reads at-risk (low wellbeing + negative sentiment), a thriving one reads positive. (The other feeder, `validation_attempt_*`, already lands via the M34 chain.) |
@@ -266,8 +266,8 @@ Two **fixes** (not new seeders) round out the spine:
   realized via `status` + a past/future `due_date` + (for completed/in-progress) an
   `organization_assignment_sessions` row carrying progress. That session FKs a `local_skill_path_sessions` row
   the seeder also writes — the dashboard reads the **app mirror** `local_skill_path_sessions`, NOT
-  `skillpath.skill_path_sessions`, and the population has no `local_jobsimulation_sessions` mirror, so the
-  session takes the skill-path arm of the table's check constraint.
+  `skillpath.skill_path_sessions` (#M36-D2), and the population has no `local_jobsimulation_sessions` mirror, so
+  the session takes the skill-path arm of the table's check constraint (#M36-D3).
 - **Skillpath completed share** (`skillpath_sessions.go`) — the learning-session seeder marked `completed`
   only on an exact `progress=100` (~1%), starving the learning/my-growth surfaces. M36 makes ~30% complete.
 

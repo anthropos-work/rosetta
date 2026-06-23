@@ -39,3 +39,28 @@ The REST role-readiness query (`members.go::GetRoleReadiness`) reads `membership
 `user_target_roles` tables feed the org's **role-targeting / two-way mobility** surface (the GraphQL
 role-management resolvers + the gap visualization). Both are seeded (overview-scoped) so the mobility/gap surface
 is non-empty; role-readiness itself is fed by the mapped+verified skills the other M36 seeders land.
+
+## Adversarial review (close, 2026-06-23)
+
+Three non-obvious failure scenarios probed at close. All degrade safely or are story-authoring contracts —
+no crash, no corruption, no closure-gene break. Recorded as *scenarios* (not fixes) per the close-milestone
+Phase 2c contract.
+
+- **AR-1 — Tiny-story succession gate.** `succession.go::SuccessionSeeder` clears the >20% interview-share
+  gate (heroes always interviewed + `interviewShare=0.30` of the population), but `succession.go::buildCoverage`
+  reports `too_sparse` whenever the org has `total < 15` members — independent of interview coverage. So a
+  story sized below 15 would render a Succession CTA even with interviews seeded. **Disposition:** not a seeder
+  bug — the spec mandates each story org be sized ≥120 (spec-notes.md §"Succession coverage gate"), so the
+  `too_sparse` floor is never the binding constraint for a real story. The seeder degrades to a believable CTA
+  (not a crash) if mis-sized. No fix.
+- **AR-2 — Feedback 2:1 ratio on a near-empty session population.** `feedback.go` realizes the 2:1 mix via a
+  per-member `hash(...)%3 != 2` — a *statistical* 2:1 that only reads as ~2:1 at population scale; on a 1–2
+  member story it could be all-positive or all-negative. **Disposition:** safe — the `len(rows)==0` guard
+  prevents an empty COPY, the ratio is documented as believable-at-scale, and real stories are sized ≥120.
+  No fix.
+- **AR-3 — membership_skills with a roles-only / empty-flat replayed taxonomy.** The mapped-funnel seeder
+  guards `!refs.flat.available() && len(refs.byRole)==0 → return 0, nil`. If the replay yields role-keyed
+  skills but an empty flat pool, the AI-readiness top-up (which draws from `filterAISkills(refs.flat)`) is
+  skipped via the `aiPool.available()` check — the funnel still seeds from `byRole`, the AI-readiness surface
+  simply shows fewer rows. **Disposition:** safe degrade (the no-fabrication invariant holds — never invents a
+  node-id). Confirmed by the empty-pool branch tests in `distribution_helpers_harden_test.go`. No fix.
