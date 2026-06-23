@@ -24,7 +24,7 @@ M35–M38. The M34–M38 overviews live under [`releases/01.90-storytelling/`](r
 **Last closed:** **M34 — Verified-skill chain (vertical slice) — 2026-06-23** (v1.9 "storytelling"; the
 verified-skill 7-table chain + G14 fix + closure gene; merged into `release/01.90-storytelling`). Detail in the
 `### M34` block of [`roadmap.md`](roadmap.md).
-**Phase:** **v1.9 in development — M34 closed; M35 next.**
+**Phase:** **v1.9 in development — M34 closed; M35 BUILT (awaiting close).**
 **Paused:** _(none)_
 
 **Carry-forward / user-authorized follow-ups (from v1.8 close, still open):** the live field-bake on a

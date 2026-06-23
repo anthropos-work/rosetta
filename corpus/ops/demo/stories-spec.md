@@ -5,18 +5,21 @@ stack's headline surfaces (a person's **skill profile** + Skill Spotlight chart,
 dashboard**) are driven by *verified* skills: skills a person proved by passing AI simulations. This doc is the
 canonical description of how `rosetta-extensions/stack-seeding` materializes one — the **7-table chain** the
 `PersonaSeeder` writes — plus the constraints that make a seeded verified skill actually *render* (and the ones
-that silently hide it if you get them wrong).
+that silently hide it if you get them wrong) — **and** (v1.9 M35) the declarative **Stories & Heroes** model
+that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 
 > **Scope (v1.9 "storytelling").** This doc covers the **verified-skill chain** delivered in **M34** — the
 > `PersonaSeeder`, the `TaxonomyRefs` resolver, the `jobsim_sessions.go` G14 fix, the `users.go`
-> name/avatar/email patch, and the **seed-side closure gene**. The full declarative **Stories & Heroes** model
-> (`stack.stories.yaml`, multi-org, the thriving/struggling/manager hero **trio**, the presenter cockpit) is
-> M35–M38; this doc is the foundation those build on. It graduates the adversarially-verified analysis (the
-> gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code lives in the gitignored
-> `rosetta-extensions` monorepo (its own git; authored + tagged in `.agentspace/rosetta-extensions/`, consumed
-> per-stack at a pinned tag) — **no platform repo is modified.** Pairs with
-> [`seeding-spec.md`](../seeding-spec.md) (the framework) + [`safety.md`](../safety.md) (the isolation
-> boundary).
+> name/avatar/email patch, and the **seed-side closure gene** — plus the **Stories & Heroes model + multi-org**
+> delivered in **M35** (the `stack.stories.yaml` blueprint, per-story `OrgID`, the
+> thriving/struggling/manager hero **trio**, the vantage/trajectory axes, supporting-population fidelity — see
+> [§ The Stories & Heroes model (M35)](#the-stories--heroes-model-m35) below). The presenter cockpit + the
+> Clerkenstein multi-identity seat-switch are M37–M38; this doc is the foundation those build on. It graduates
+> the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
+> lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
+> `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
+> Pairs with [`seeding-spec.md`](../seeding-spec.md) (the framework) + [`safety.md`](../safety.md) (the
+> isolation boundary).
 
 ## For PMs — what it does and why it matters
 
@@ -146,8 +149,92 @@ personas:
 
 The shipped `presets/stories-maya.seed.yaml` is the runnable vertical-slice world (Cervato Systems + Maya).
 The `personas` list is **optional** and **additive** — heroes ride on top of the generic population, so a
-blueprint without personas seeds exactly as before. M35 graduates this to the full `stack.stories.yaml`
-(multi-org, the hero trio, vantage/trajectory, the cockpit).
+blueprint without personas seeds exactly as before. The full multi-org model is below.
+
+## The Stories & Heroes model (M35)
+
+M35 graduates the single-hero `personas` shape into a declarative **`stories[]`** model: **one
+`stack.stories.yaml` seeds multiple orgs**, each with a **thriving / struggling / manager hero trio** at
+vantage-appropriate fidelity. It **supersedes** the org-centric single-org blueprint for a believable demo
+world; the size-tier presets (`dev-min`, `small-200`, …) stay for light structural dev seeds.
+
+### The shape
+
+```yaml
+stack: demo-1
+stories:
+  - id: ai-transformation               # seeds this story's deterministic OrgID
+    name: "AI Transformation & Reskilling"
+    org: { name: Cervato Systems, slug: cervato-systems, industry: software, narrative: ai-transformation, size: 220, activity: { months: 6, pass_rate: 0.7 } }
+    heroes:
+      - id: maya-thriving
+        name: Maya Chen
+        role: Backend Developer          # a public job_role WITH role-skills (role-coherent — see O6)
+        vantage: end-user                # the SEAT: end-user (individual surfaces) | manager (org dashboard)
+        trajectory: thriving             # the ARC: thriving | struggling (end-users only)
+        skills: { verified: 8, mapped: 22, category_breadth: 4, self_eval_bias: under, arc: rising }
+      - { id: tom-struggling, name: Tom Becker, role: Backend Developer, vantage: end-user, trajectory: struggling, skills: { verified: 2, self_eval_bias: over, arc: flat } }
+      - { id: dan-manager,    name: Dan Rossi,  role: Engineering Manager, vantage: manager }   # rides the aggregates
+  - id: sales-ramp
+    org: { name: Solvantis, slug: solvantis, industry: saas-sales, narrative: onboarding-ramp, size: 120 }
+    heroes: [ … Sara·thriving / Nick·struggling / Leah·manager … ]
+```
+
+The shipped `presets/stories.seed.yaml` is the runnable locked **2-stories × 3-heroes** roster.
+
+### Vantage & trajectory (the two hero axes)
+
+- **`vantage`** (`end-user | manager`) — the **seat** into the product. An end-user hero demos the *individual*
+  surfaces (profile, Spotlight, my-growth); a manager hero demos the *org-intelligence* surfaces (Workforce
+  dashboard, team gaps, succession). **A manager seeds NO verified-skill chain of her own** — she reads the org
+  aggregates her employee heroes populate (the coherence property: the two employees ARE her standout high/low
+  rows). `""` defaults to end-user.
+- **`trajectory`** (`thriving | struggling`) — the **arc** of an end-user. It drives the verified-skill
+  fidelity AND (when `self_eval_bias` is unset) the claimed-vs-verified bias:
+  - **thriving** → dense (more verified skills) · high level band (~L4) · rising growth arc · **under-claims**.
+  - **struggling** → sparse (few) · low band (~L1–L2) · flat arc · **over-claims** (the stark gap the demo
+    turns on).
+
+Each hero's `skills:` block (`verified` / `mapped` / `category_breadth` / `self_eval_bias` / `arc`) **overrides**
+the trajectory-derived defaults when present; absent, the trajectory drives everything.
+
+### Multi-org — per-story `OrgID`, the platform's real multi-tenancy
+
+Each story is **one org**. The seeder derives a **deterministic per-story `OrgID`** and threads it through
+**every** seeder (`org` / `users` / `identity` / `jobsim-sessions` / `skillpath-sessions` / `assignments` /
+`activity` / `personas`), so all orgs live in one stack's per-stack Postgres scoped by `organization_id` —
+mirroring the platform's real multi-tenancy (so it's *more* realistic, not a hack). Two key rules:
+
+- **The FIRST story keeps the Clerkenstein default org** (`22222222-…` = `DefaultDemoUser().OrgEid`, clerk id
+  `org_clerkenstein`) so a **single-identity demo login** (the only mode until M37) lands in it. Every later
+  story gets its own deterministic id. The demo identity (`IdentitySeeder`) is seeded **only** for the first
+  story — the per-story selectable identity registry is M37.
+- **Per-story id namespacing.** Two stories' populations never collide: the first story uses the bare stack
+  key, later stories prefix with `:story:<id>`. (Keeping the first story bare is what preserves the M34
+  single-org ids byte-for-byte — the legacy single-org path is unchanged.)
+
+### Hero placement — collision-free declaration-order slots
+
+A hero rides on a population user row (D2): the `UsersSeeder` writes her real name at the slot the
+`PersonaSeeder` verifies against. M35 assigns heroes the **first `len(heroes)` population slots in declaration
+order** (collision-free by construction; the blueprint's `len(heroes) <= size` validation guarantees they fit).
+*(M34 hashed heroes into the population, which collided ~10% of the time for a trio in a 30-person org — sharing
+a manager's row with an employee's name. The declaration-order fix makes the trio's rows correct, not just
+visible; a non-fatal warning still fires for the residual Size<heroes clamp case.)*
+
+### Supporting-population fidelity
+
+Every member (not just heroes) gets a **real replayed job role** — `memberships.job_role_id` is set to a real
+public `job_roles.node_id` (the `J-XXXXXX-XXXX` form, NOT a uuid) drawn at run time from the **replayed** stack's
+roles that *have* role-skills (`jobroleref.go`, mirroring the skill-side `TaxonomyRefs`; no taxonomy replayed →
+left NULL, never fabricated) — plus a **ramped `joined_at`** (`memberships.created_at` spread across the activity
+span, so the org reads as one that grew over time). The trio sits in a believable org.
+
+### Closure across all orgs
+
+The seed-side closure gene is **org-agnostic** (it counts every dangling seeded skill ref vs the replayed
+taxonomy, with no org filter), so `datadna measure-closure` proves **0 dangling refs across all orgs** — the
+multi-org world is as closed as the single-org one.
 
 ## Running it
 
@@ -156,10 +243,12 @@ blueprint without personas seeds exactly as before. M35 graduates this to the fu
 stacksnap replay --surface taxonomy --stack demo-N   # the skill node-ids the chain draws from
 stacksnap replay --surface directus --stack demo-N   # the sim templates the sessions link to
 
-# 2. Seed the world (the personas drive the verified-skill chain):
+# 2. Seed the world. The M34 vertical slice (one hero):
 stackseed --stack demo-N --seed presets/stories-maya.seed.yaml
+#    …or the M35 full multi-org roster (2 orgs × the thriving/struggling/manager trio):
+stackseed --stack demo-N --seed presets/stories.seed.yaml
 
-# 3. Prove closure (every seeded skill ref resolves in the replayed taxonomy):
+# 3. Prove closure (every seeded skill ref resolves in the replayed taxonomy — all orgs):
 datadna measure-closure --stack demo-N               # exit 1 on any dangling ref
 ```
 

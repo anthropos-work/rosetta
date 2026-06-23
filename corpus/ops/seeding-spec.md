@@ -237,8 +237,21 @@ chain table is `PerStackIsolated`, so the same zero-pollution posture holds.
 
 **Full reference: [`demo/stories-spec.md`](demo/stories-spec.md)** — the 7-table chain, the DB-enforced vs
 inserted-but-invisible constraint landmines, the `user_level` (claimed side) requirement, and the
-declare-a-hero blueprint shape. The vertical-slice preset is `presets/stories-maya.seed.yaml`. M35–M38
-graduate this to the full multi-org Stories & Heroes model + the presenter cockpit.
+declare-a-hero blueprint shape.
+
+**The Stories & Heroes model (v1.9 M35).** One declarative **`stories[]`** blueprint
+(`presets/stories.seed.yaml`) supersedes the org-centric single-org `stack.seed.yaml` for a believable demo
+world: it seeds **multiple orgs**, each with a **thriving / struggling / manager hero trio** at
+vantage-appropriate fidelity. Per-story `OrgID` is threaded through every seeder (all orgs in one stack's
+per-stack Postgres, scoped by `organization_id` — the platform's real multi-tenancy); the **first** story keeps
+the Clerkenstein default org so a single-identity demo login lands in it (multi-identity seat-switch is M37).
+Heroes carry a `vantage` (`end-user | manager` — a manager seeds no chain of her own, she reads the org
+aggregates her employees populate) and a `trajectory` (`thriving` = dense/high/rising/under-claim vs
+`struggling` = sparse/low/flat/over-claim — the stark gap). Every member also gets a **real replayed job role**
+(`memberships.job_role_id`) + a **ramped `joined_at`**, so the trio sits in a believable org. The closure gene
+is org-agnostic, so `datadna measure-closure` proves 0 dangling refs **across all orgs**. The vertical-slice
+preset is still `presets/stories-maya.seed.yaml` (one hero); the presenter cockpit + the Clerkenstein
+multi-identity seat-switch are M37–M38.
 
 ## Status
 
