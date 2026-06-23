@@ -1,7 +1,7 @@
 ---
 name: stack-seed
-description: Seed a running stack (dev-N or demo-N) with realistic structural data — org + users + memberships + the login identity + backdated activity — from a preset or a stack.seed.yaml. Use after the stack is up, when asked to populate / seed a stack with data.
-argument-hint: [dev-N|demo-N] [--preset dev-min|small-200|mid-500|large-1k | --seed path.yaml] [--dry-run|--reset]
+description: Seed a running stack (dev-N or demo-N) with realistic structural data — org(s) + users + memberships + the login identity + backdated activity, and (the M35 Stories & Heroes model) multiple orgs each with a thriving/struggling/manager hero trio — from a preset or a stack.seed.yaml / stack.stories.yaml. Use after the stack is up, when asked to populate / seed a stack with data.
+argument-hint: [dev-N|demo-N] [--preset dev-min|small-200|mid-500|large-1k|stories-maya|stories | --seed path.yaml] [--dry-run|--reset]
 ---
 
 # Stack Seed — backfill any stack with a believable data world
@@ -30,6 +30,10 @@ shared/prod store). Source of truth: [`corpus/ops/seeding-spec.md`](../../../cor
    /tmp/stackseed --stack demo-N --seed "$SS/presets/mid-500.seed.yaml"
    # a light dev preset (the default for a dev stack — ~1 org + ~10 users):
    /tmp/stackseed --stack dev-N --seed "$SS/presets/dev-min.seed.yaml"
+   # the M35 Stories & Heroes world (MULTIPLE orgs, each with a thriving/struggling/manager hero trio):
+   /tmp/stackseed --stack demo-N --seed "$SS/presets/stories.seed.yaml"
+   # …or the single-hero vertical slice (one org + Maya):
+   /tmp/stackseed --stack demo-N --seed "$SS/presets/stories-maya.seed.yaml"
    # or a custom blueprint:
    /tmp/stackseed --stack dev-N --seed my.seed.yaml
    # preview only (ordered plan + per-surface counts + the isolation preview — no writes):
@@ -42,7 +46,9 @@ shared/prod store). Source of truth: [`corpus/ops/seeding-spec.md`](../../../cor
    > `--stack`, `--seed`, `--dsn`, `--reset`, `--validate`, `--dry-run`, `--force`).
 
    Presets: `dev-min` (~1 org / ~10 users — the dev default), `small-200` (quick), `mid-500` (the default
-   "looks real"), `large-1k` (scale).
+   "looks real"), `large-1k` (scale), `stories-maya` (one org + one hero — the M34 vertical slice),
+   `stories` (the **M35 multi-org Stories & Heroes** world — 2 orgs × a thriving/struggling/manager trio,
+   the believable demo-narrative default; **replay the taxonomy first** so heroes get role-coherent skills).
 4. **Verify** — the run prints per-surface row counts + `isolation: clean`; a browser/API login (the seeded
    admin: `dev@anthropos.test` for `dev-min`, `user_clerkenstein` for the demo presets) should return **200**.
    Optionally `datadna measure --stack <target>` (conformance) + `datadna catalog` (what's seeded).

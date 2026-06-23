@@ -3,7 +3,7 @@ milestone: M35
 slug: stories-multi-org
 version: v1.9 "storytelling"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-22
 last_updated: 2026-06-23
 complexity: large

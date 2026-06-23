@@ -1,0 +1,36 @@
+{
+  "milestone": "M35",
+  "slug": "stories-multi-org",
+  "release": "v1.9 \"storytelling\"",
+  "shape": "section",
+  "branch": "m35/stories-multi-org",
+  "closed": "2026-06-23",
+  "theme": "the Stories & Heroes model + multi-org — turn the single-org seeder into a declarative engine where one stack.stories.yaml seeds MULTIPLE orgs, each with a thriving/struggling/manager hero trio at vantage-appropriate fidelity. blueprint.EffectiveStories() normalizes a multi-story blueprint OR a legacy single-org one into a uniform resolved-story slice (byte-identical legacy ids — one code path, the regression-containment seam); per-story OrgID/orgClerkID thread through all 8 seeders; the first story keeps the Clerkenstein default org (single-identity until M37) + later stories get deterministic StoryOrgID; PersonaSeeder scaled to the 2-story x 3-hero roster (Cervato {Maya/Tom/Dan} + Solvantis {Sara/Nick/Leah}); the trajectory logic (thriving=dense/rising/under-claim vs struggling=sparse/low/over-claim); the jobroleref.go runtime job-role resolver (real replayed J- node-ids, never fabricated); supporting-population fidelity (ramped joined_at + deduped real names). Tooling + docs only — zero platform-repo edits.",
+  "code_location": "ext: rosetta-extensions main @ 06d872c, tag storytelling-m35 (moved forward to the close-fix HEAD over 9bcc00f, the harden HEAD). rosetta: m35/stories-multi-org merged --no-ff into release/01.90-storytelling at close.",
+  "code_diff": "ext: git -C .agentspace/rosetta-extensions diff storytelling-m34..storytelling-m35 — 27 source/test files in the stack-seeding Go stack: blueprint/{blueprint.go,stories.go (NEW)}, seeders/{org,users,identity,jobsim_sessions,assignments,persona,persona_write,jobroleref (NEW),taxonomyref,activity,skillpath_sessions,userprofile,helpers}.go, cmd/stackseed/main.go, presets/stories.seed.yaml (NEW) + the _test.go files (multiorg_test.go, jobroleref_test.go, trajectory_test.go, stories_test.go, persona_integration_test.go all NEW). rosetta: git diff release/01.90-storytelling...m35/stories-multi-org — doc-half: stories-spec.md (+115, the M35 model) + seeding-spec.md (+21, blueprint supersession + name-uniqueness invariant) + .claude/skills/stack-seed/SKILL.md (+12) + the plan files.",
+  "go_test_funcs": {
+    "total_module": 347,
+    "total_module_incl_subtests": 425,
+    "by_package": {"blueprint": 28, "cmd/datadna": 19, "cmd/stackseed": 9, "dna": 117, "isolation": 22, "pg": 26, "seeder": 16, "seeders": 110},
+    "baseline_m34_stack_seeding": 302,
+    "delta": "+45 (302 -> 347 test funcs)",
+    "counting_method": "347 = top-level 'func Test...' across all _test.go minus the 2 //go:build integration funcs; 425 = '=== RUN' lines (incl t.Run subtests) from go test -count=1 ./... -v. Integration tests (TestIntegration_VerifiedSkillChain + TestIntegration_MultiOrgStories) are opt-in behind //go:build integration + STACKSEED_IT_DSN — excluded from the count.",
+    "note": "M35 added the multi-org cross-seeder tests, the jobroleref resolver tests, the trajectory-helper unit tests, the stories[] blueprint tests, + the close-phase skillPool negative-index regression test (+1). The harden passes drove blueprint 90.9->100% and seeders 95.6->98.0%."
+  },
+  "coverage": {
+    "blueprint": "100.0%",
+    "seeders": "98.0%",
+    "delta_blueprint": "90.9% -> 100.0% (harden)",
+    "delta_seeders": "95.6% -> 98.0% (harden +2.4)",
+    "note": "Residual sub-100% seeders blocks are uniform DB-write COPY-error wrappers inside seeder Seed() methods (structurally identical to the persona flush() paths M34 covers) — defensive, not gaps."
+  },
+  "benchmarks": "n/a — no performance-sensitive hot path; the seeder is DB-IO-bound bulk COPY, no benchmark target.",
+  "flake_count": 0,
+  "flake_gate": "PASS — 5/5 sequential shuffled (-shuffle=on) runs of blueprint + seeders, 0 flakes. Plus the full-suite -race run green. Deterministic by construction (seeded hashes, no time/random).",
+  "supply_chain": "GREEN — stdlib-only posture preserved; 0 third-party Go deps added by M35.",
+  "alignment_gates": "100%/100% on all 4 Clerkenstein surfaces — UNTOUCHED by M35 (M35 is stack-seeding only; the Clerkenstein org-claim alignment is a data-side requirement, not a clerkenstein code change — D-M35-2). The multi-identity seat-switch is M37.",
+  "review_summary": "close GREEN — 0 blocking. 1 should-fix code-quality landed (skillPool.at() negative-modulo normalization — asymmetric with the already-guarded sibling jobRoleRefs.at(); latent panic, safe-by-current-usage, fixed + regression test that panics on the pre-fix form); 1 doc (handbook test-count reconciliation: stack-seeding README 326->347 / 381+->425). Phase 2c adversarial: 3 scenarios traced (StoryOrgID dup-id caught by validation; array-length mismatch degrades to blank label; exhausted flat pool returns role-coherent subset per spec) — all handled by validation/design. Decision triage: D-M35-1..7 + negative-modulo Note all maintainer-mechanics already blended into stories-spec.md/seeding-spec.md during build; no further blending owed. go vet + gofmt clean.",
+  "deferral_audit": "GREEN — 0 open deferrals. The 1 inherited M34->M35 deferral (#M34-D7) LANDED IN FULL as D-M35-4 (both parts: the len(heroes)<=size validation + declaration-order collision-free slots + warning; the short-role-pool flat top-up). The 4 v1.9 backlog items (M33, DEF-M10-01, DEF-M21-01, M25-D9) re-checked — orthogonal to seeding, no aging trigger fired. 0 repeat patterns. Report: audit-deferrals/deferral-audit-2026-06-23.md.",
+  "done_bar": "MET (orchestrator-verified LIVE on the --local-content demo-3 stack): one stories.seed.yaml seeds 2 DISTINCT orgs (Cervato 2222... + Solvantis 54ca...) with 6 heroes — thriving (Maya/Sara: dense verified, under-claim), struggling (Tom/Nick: sparse, over-claim), managers (Dan/Leah: 0 verified, ride aggregates); closure gene green across BOTH orgs; the single-org regression path (dev-min/preset) unchanged. The literal browser-pixels render of a hero's INDIVIDUAL profile needs login-AS-a-hero, a M37 (Clerkenstein multi-identity) capability — Fate-2, owned by M37/M38's 'login as a hero' cockpit, NOT an M35 gap.",
+  "notes": "Second milestone of v1.9 (M34 done, M35 done, M36->M38 remain). M35 is the multi-org Stories engine the dashboard (M36) + cockpit (M37/M38) build on. D-M35-1's EffectiveStories() normalization (one code path for legacy + multi-story, byte-identical legacy ids) is the load-bearing seam — it's why the entire single-org preset/dev-min suite stays green unchanged and the natural place M36-M38 extend."
+}
