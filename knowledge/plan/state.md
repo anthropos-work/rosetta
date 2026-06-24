@@ -12,16 +12,15 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **none built yet** — M39 + M40 are the first (independent, parallel-able). **Recommended
-start: M40 ∥ M39** (the two biggest visible jumps — the library/activity unblock + the org-name/role/avatar
-identity), then M41, then M42e → M42m.
-**Next up:** **`/developer-kit:build-milestone`** — build M40 (or M39). Live acceptance each milestone: log in as a
-hero on demo-3 → the target surface fills.
-**Last closed:** **v1.9 "storytelling" (release) — 2026-06-23** via `/developer-kit:close-release` (GREEN, 0
-blocking; 9 review sweeps clean; deferral re-audit GREEN, 0 escape-hatch; all 5 alignment gates 100%/100%; Go
-1027→1248). **Pushed to origin 2026-06-24** (rosetta `main`+`v1.9`; rext `main` + `storytelling-m34..m38` + the
-prior ext tags) — the close's pending-push carry-forward is now DONE.
-**Phase:** **v1.10 in development — milestones M39–M42m planned, none started.**
+**Active milestone:** **(between milestones — see Next up)**. M39 profile identity closed 2026-06-24; M40
+(Directus serve-grant), the parallel sibling, is the natural next build. M40–M42m planned, unstarted.
+**Next up:** **`/developer-kit:build-milestone`** M40 (the highest single-surface value — one public-policy
+serve-grant unblocks the library + every detail page + the activity feed) — or M41 (profile depth; shares
+`stack-seeding`, depends on M39's `users.go` landing first, which it now has). Recommended order: M40 ∥ M41 → M42e → M42m.
+**Last closed:** **M39 profile identity (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN, 0
+blocking; 5 findings all decision-triage; deferral re-audit GREEN 0 escape-hatch; 3 offline alignment gates
+100%/100%; flake 0). Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m39`.
+**Phase:** **v1.10 in development — M39 closed; M40–M42m planned, unstarted.**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),

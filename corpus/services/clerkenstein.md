@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch) · **Last updated:** 2026-06-23
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading) · **Last updated:** 2026-06-24
 **Repo:** `stack-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
@@ -75,6 +75,27 @@ token mint, and the handshake cookies all resolve the same hero): `?__clerk_iden
 (the cockpit's [Login as] deep-link) + the `/v1/demo/{identities,select}` control plane. The single-identity
 path is byte-identical (a one-member registry). Measured by the `clerk-multi-1` DNA (`alignment/cmd/multirun`,
 9 genes, 100%/100%) — a *new measured surface* that holds while the existing four stay green.
+
+**Roster org-name threading (v1.10 M39).** The roster now carries each hero's **story org name + slug**, so a
+logged-in hero's **top bar reads her real company** (e.g. "Cervato Systems") instead of the hardcoded
+"Clerkenstein Demo Org". The thread is a **paired change** kept in lockstep by the roster's
+`DisallowUnknownFields` decoder — the producer (`stack-seeding/seeders/roster.go`) and the consumer
+(`clerk-frontend`) add the same two `org_name`/`org_slug` snake_case fields in one change, and the rext repo is
+re-tagged as a whole:
+
+- **Producer** — `RosterIdentity` (roster.go) gains `org_name`/`org_slug`, filled in `BuildRoster` from
+  `st.Org.Name` + the single-sourced `orgSlugFor` (the **same** slug rule `OrgSeeder` writes to
+  `public.organizations.slug`, so the roster-carried org and the seeded org can never disagree — #M39-D2).
+- **Consumer** — `RosterEntry` (`clerk-frontend/registry.go`) gains the matching `org_name`/`org_slug` and
+  threads them through `toDemoUser` into `DemoUser` (`resources.go`); `DemoUser.orgMemberships()` renders them
+  on the FAPI org resource (`/v1/me` → the SDK's active-org → the top bar).
+- **No-roster default fallback** — an empty `OrgName`/`OrgSlug` (the `DefaultDemoUser`, or any roster that omits
+  the fields) falls back to the `orgNameDefault`/`orgSlugDefault` constants (`"Clerkenstein Demo Org"` /
+  `"clerkenstein-demo"`), so the single-identity path is **byte-identical** and a pre-M39 roster still loads
+  (the decoder rejects *unknown* fields, not *missing* ones — forward-compatible — #M39-D3).
+
+Alignment held: the **multi-identity** (`clerk-multi-1`) + **JS/FAPI** (`clerk-js-5`) surfaces stay **9/9,
+100%/100%** (the `DefaultDemoUser` goldens are unchanged — they take the default-name fallback).
 
 **`@clerk/express` (M2c) added no new dir** — it's a *consumer* (a Node backend verifier we satisfy), so
 its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real JWKS from `clerk-frontend/`

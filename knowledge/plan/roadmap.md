@@ -184,8 +184,19 @@ the targeted fills.
 ### Milestones
 
 #### M39 — Profile identity & quick wins
-**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m39-profile-identity/`](releases/01.10-method-acting/m39-profile-identity/)
+**Status:** `done` (closed 2026-06-24) · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m39-profile-identity/`](releases/01.10-method-acting/m39-profile-identity/)
 **Goal:** a logged-in hero shows the right org name, a real role + title, and a real face.
+**Closed:** all 3 In-list items landed Fate-1 — **G1** the roster org-name thread (`RosterIdentity`/`BuildRoster`
+→ `RosterEntry` → `DemoUser`/`orgMemberships()`, the single-sourced `orgSlugFor`, the `DisallowUnknownFields`
+paired change + no-roster default), **G2** the `public.user_basic_info` role backfill (the idempotent
+IS-DISTINCT-FROM UPDATE — the table the /profile header actually reads + the role-gap widgets, no-fabrication),
+**G4** the offline self-authored parametric-SVG real-face generator → base64 data URI (deterministic, license-clean,
+~1 KB). Close review GREEN: 5 findings, 0 blocking (all decision-triage reference tags — #M39-D2/D3 in
+clerkenstein.md, #M39-D4/D5/D7 in stories-spec.md); deferral re-audit GREEN (0 deferrals; the 2 Out items are
+Fate-2, already owned by M40/M41); adversarial review (AR-1 G2 silent-0-rows, AR-2 G1 slug-collision) both
+no-fix-needed. All 3 offline Clerkenstein alignment gates 100%/100% (Go 22/22, JS 9/9, multi 9/9); go.mod/go.sum
+byte-identical (supply-chain GREEN); test funcs stack-seeding 444→**462** / clerkenstein 259→**264**; flake 0
+(5× shuffle). Code-of-record: `rosetta-extensions` @ tag `method-acting-m39` (c360b4e). **Zero platform-repo edits.**
 **Scope — In:**
 - **G1 org name** — thread `st.Org.Name`/slug through the roster (`stack-seeding/seeders/roster.go`) → clerkenstein
   `RosterEntry`/`DemoUser`/`orgMemberships()` (`clerk-frontend/registry.go`+`resources.go`) so the FAPI org resource
