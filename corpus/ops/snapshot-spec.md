@@ -437,6 +437,73 @@ referenced by 2 public sims but existing only as a customer-scoped skill — unc
 firewall or editing prod, so it is a measured, named residual, not a silent empty picker). A **non-`--local-content`**
 stack stays on the prod-read path (the documented fallback).
 
+### The public-policy serve-grant (M40 `method-acting-m40`) — relational metadata + synthesized read grants
+
+M21's serve rows registered the content collections (`directus_collections`) and **copied** the
+public-read `directus_permissions` rows prod marks public (exactly 5: `roles` / `sequences` /
+`sequences_roles` / `simulations` / `skill_paths`). That was enough to serve those 5 collections *flat* — but
+**not** the surfaces a hero lands on after "Login as": `/library/ai-simulations`, `/library/skill-paths`, and
+the `/profile/activities` feed all rendered empty. **M40 closes that**, entirely in the snapshot replay,
+**zero platform-repo edits** (it grounds in the live-demo review `.agentspace/profile_gaps.md` G6/G7,
+workflow `w7t4wq2z4`). The fix lives in `stack-snapshot/directus/structure.go`.
+
+**Root cause (verified live, demo-3).** The per-stack Directus had **`directus_relations = 0` and
+`directus_fields = 0`** — only collections + the 5 copied permissions were synthesized. cms reads the
+catalog **anonymously** (the `DIRECTUS_TOKEN` is blank on a per-stack-Directus stack, so cms omits the
+`Authorization` header — see §"Known state" above), so the **public policy is the operative permission set**.
+Without the relational metadata, every nested O2M/M2M alias cms's read path expands
+(`simulations.sequences`, `simulations.library_categories` → `library_categories.macro_category`,
+`sequences.roles`, `task_checks.sub_checks`, …) was **unknown to Directus** → `"you don't have permission to
+access field X … or it does not exist"` / a silently-stripped relation / a hard 500. The "O2M stripped under
+the public policy" symptom was this missing metadata — **not** a Directus policy limitation, so the
+activity-feed half needs **no platform nil-guard** (the original a/b/c risk-fork is refuted: both the library
+and activity-feed halves ship in tooling).
+
+**What M40 synthesizes** (added to the serve-row capture; the serve-row set is now **four** SYSTEM tables —
+`directus_collections`, `directus_permissions`, **`directus_fields`**, **`directus_relations`** — each
+admitted by the firewall structural-metadata carve-out because all four carry **zero** tenant-scope columns,
+re-verified via the sanctioned prod structural read):
+
+1. **`directus_fields` + `directus_relations`** for the served-collection **closure** — the alias-field
+   definitions + the O2M/M2M wiring that let the nested reads resolve. A row is emitted **only when both
+   endpoints are on-stack** (a served content collection OR a bootstrap-present `directus_` system collection).
+   This closure is **load-bearing**: an alias whose target table is off-stack must be **dropped, not merely
+   ungranted** — a NO-BACKING-COLUMN alias (`o2m`/`m2m`/`m2a`/`files`) registered without its relation makes
+   Directus emit `SELECT <coll>.<alias>` against a missing column → a 500 (the `sequences.assets_files` class,
+   via the off-stack `sequences_files` junction); a REAL-FK relation (`m2o`/`file`) whose relation is dropped
+   makes Directus return the **bare FK uuid string**, which cms cannot unmarshal into its nested struct (the
+   `job_position` class). So **every** relational `special` is gated on a closure-surviving relation;
+   non-relational fields (cast/date/user/uuid/group) are always kept.
+2. **The library + reference closure** added to `servedCollections`: `library_categories`,
+   `library_macro_categories`, the two M2M junctions, **`resource`** (the `skill_paths.video` M2O target) and
+   **`job_position`** (the `simulations.job_position` M2O target). Their tables already exist (the dynamic
+   structure DDL captures every non-`directus_` table); M40 registers them + grants public read so the M2O/M2M
+   expands. With no replayed rows the expansion is simply NULL/empty — which cms tolerates — instead of a
+   403/panic or an unmarshalable FK string.
+3. **A SYNTHESIZED public-read grant** for every served collection prod's public policy does **not** grant
+   (`resource` / the library collections / `job_position`) — `servePermissionsRowsSQL` only **copies** prod's 5,
+   so these are added explicitly (`fields='*'`, no filter; all referenced rows are `tenant_id`-NULL public). The
+   copied `simulations`/`skill_paths` rows keep their prod `status='published'` filter (the synth grant skips a
+   collection that already has a read row).
+4. **`directus_versions` read + create grants** (the dominant blocker). cms `skillpath.go`
+   `GetLatestOrCreateVersion` reads `/versions` (a non-`errNoVersionAvailable` 403 is **fatal** → it blocks the
+   ENTIRE skill-paths library + every detail page) and **CREATEs** a version when none exists. CRUCIAL — the
+   grant collection is the FULL system name **`directus_versions`**, NOT the `versions` API path cms hits (a row
+   with collection `'versions'` leaves `/versions` 403'ing; only `'directus_versions'` flips it to 200). On prod
+   `skill_paths` has versioning enabled with ~one version per published path, so cms reads instead of creating;
+   the per-stack `directus_versions` is empty (the row-surface doesn't replay it), so cms falls into the CREATE
+   branch — granting **create** lets cms self-heal on first read (materializing a local, anonymous,
+   content-equivalent version) instead of replaying prod's 539 version rows + their content deltas.
+
+**Idempotency.** `directus_fields` / `directus_relations` / `directus_permissions` are **id-only-PK** (no
+natural unique key), so `ON CONFLICT` can't key the natural identity — every synthesized row is a self-guarded
+`INSERT … SELECT … WHERE NOT EXISTS (the natural-key row already present)`, safe under re-apply and re-replay.
+
+**Live acceptance** (fresh demo-3, Clerkenstein, **anonymous** cms reads through the offset-port stack):
+`publicSkillPaths` = 22, `publicJobSimulations` = 50, and `jobSimulation(simulationId)` returns its
+`sequences[].scenarioIntro` (the activity-feed per-row federation path) — all **> 0**, no 403/panic/unmarshal
+error. Tooling + docs only; `go.mod`/`go.sum` byte-identical (supply-chain GREEN, 0 new deps).
+
 ### Media / blobs (M10-D4) — refs are the floor, blob bytes are S3-gated
 
 Content references media (`simulations.cover`, `skill_paths.{cover,image,video}`, `roles.avatar`,
