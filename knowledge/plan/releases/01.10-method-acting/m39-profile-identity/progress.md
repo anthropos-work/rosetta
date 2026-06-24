@@ -135,3 +135,37 @@ go.mod/go.sum byte-identical (supply-chain GREEN). Flake gate: 5× shuffle, 0 fl
 - [x] D7 → blend confirmed + tag added (#M39-D7) in stories-spec.md (offline SVG face generator)
 - [x] D1, D6, D8 → archive (maintainer-only: paired-change mechanics, backfill-every-member, dead-code removal)
 - [x] AR-1, AR-2 → archive (adversarial scenarios; no-fix-needed, recorded in decisions.md)
+
+## M39: Completeness Ledger (Phase 9 — section variant)
+
+Every `overview.md` scope item placed in exactly one three-fate category. Cross-checked against
+`overview.md` (In/Out lists), `progress.md` (all checkboxes checked), `spec-notes.md` (no unmet promise),
+`decisions.md` (no defer language), and the Phase-1 code scan (0 TODO/FIXME/HACK in M39 source).
+
+### Done (Fate 1 — delivered in this milestone)
+- **G1 — org name.** `RosterIdentity`/`BuildRoster` carry `org_name`/`org_slug` → `RosterEntry` → `DemoUser` →
+  `orgMemberships()`; the FAPI org resource reads the story org name; no-roster `"Clerkenstein Demo Org"`
+  default preserved; paired `DisallowUnknownFields` change + single tag. ✅ (commit fb9e300)
+- **G2 — role backfill.** `public.user_basic_info` backfilled (job_role_id + job_title + summary + location)
+  via the idempotent IS-DISTINCT-FROM UPDATE; lights the /profile header + role-gap widgets; no-fabrication. ✅
+  (commit 010f422)
+- **G4 — real-face avatars.** Offline self-authored parametric SVG face generator → base64 data URI,
+  deterministic by uuid, license-clean. ✅ (commit fc8a841)
+
+### Confirmed-covered (Fate 2 — already owned by another milestone of this release; no edit)
+- **Work / education history + skill depth** → **M41 (profile depth)** — its `overview.md` `In:` list owns it
+  (G3 `user_experiences`/`user_educations` + G5 skill-depth bump). Confirmed.
+- **The surfacing / serve-grant fix (library + activity feed)** → **M40 (directus serve-grant)** — its
+  `overview.md` `In:` list owns it. Confirmed.
+
+### Annotated (Fate 3 — attached to a release-milestone at close)
+- None.
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.
+
+**Verdict:** all 3 In-list scope items delivered as Fate 1; the 2 Out-list items are Fate-2 (already owned by
+M40/M41, confirmed). Nothing annotated, dropped, or escape-hatch-deferred. **Zero items require sign-off.**
