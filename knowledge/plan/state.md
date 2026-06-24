@@ -12,16 +12,18 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **none built yet** — M39 + M40 are the first (independent, parallel-able). **Recommended
-start: M40 ∥ M39** (the two biggest visible jumps — the library/activity unblock + the org-name/role/avatar
-identity), then M41, then M42e → M42m.
-**Next up:** **`/developer-kit:build-milestone`** — build M40 (or M39). Live acceptance each milestone: log in as a
-hero on demo-3 → the target surface fills.
+**Active milestone:** **M39 profile identity — BUILT** (branch `m39/profile-identity`; rext code @ tag
+`method-acting-m39`). G1 org-name roster thread + G2 `user_basic_info` role backfill + G4 offline real-face
+avatars all landed; both rext modules green (`-race` clean); 3 offline alignment gates 100%/100% (Go 22/22, JS
+9/9, multi 9/9). **Not yet closed** (run `/developer-kit:close-milestone`). M40 (Directus serve-grant) is the
+parallel sibling, still unbuilt.
+**Next up:** **`/developer-kit:close-milestone`** M39 (then build M40). Live acceptance: re-seed demo-3 + log in
+as Maya → top bar "Cervato Systems", profile shows a role + a real face.
 **Last closed:** **v1.9 "storytelling" (release) — 2026-06-23** via `/developer-kit:close-release` (GREEN, 0
 blocking; 9 review sweeps clean; deferral re-audit GREEN, 0 escape-hatch; all 5 alignment gates 100%/100%; Go
 1027→1248). **Pushed to origin 2026-06-24** (rosetta `main`+`v1.9`; rext `main` + `storytelling-m34..m38` + the
 prior ext tags) — the close's pending-push carry-forward is now DONE.
-**Phase:** **v1.10 in development — milestones M39–M42m planned, none started.**
+**Phase:** **v1.10 in development — M39 BUILT (not closed); M40–M42m planned, unstarted.**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),

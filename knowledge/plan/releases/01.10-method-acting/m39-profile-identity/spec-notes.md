@@ -4,6 +4,22 @@ Technical notes accumulate here during build. The authoritative review is
 [`.agentspace/profile_gaps.md`](../../../../.agentspace/profile_gaps.md) (live-demo review, 2026-06-24;
 root-cause workflow w7t4wq2z4). Hard facts confirmed in review `w7t4wq2z4`.
 
+## Pre-flight audits — G1 org name
+
+- **Phase 0b KB-fidelity:** **GREEN** (report: `kb-fidelity-audit.md`). All three topics PAIRED with ALIGNED
+  claims describing current behavior; the behavior changes + matching doc updates are M39's own deliverables.
+- **`public.user_basic_info` real schema** (introspected live on `demo-3-postgresql-1`): columns include
+  `id` (uuid, = users.id, FK), `location` (text), `summary` (text), `email` (varchar NOT NULL UNIQUE),
+  `job_role_id` (varchar), `job_title` (varchar). **NO `job_role_title` column** (the spec-ref's name was
+  approximate — the header reads `job_role_id` → resolved label + `job_title`). The row PRE-EXISTS (created by
+  the `users` AFTER-INSERT trigger `init_user_tables()`), so **G2 is an UPDATE keyed by `id`**, not an insert.
+- **Maya's live state (confirms the gap):** `user_basic_info` row exists but `job_role_id`/`job_title`/
+  `location`/`summary` are all NULL; her `memberships` row carries `job_role_id='J-BACKEN-A9ED'`,
+  `job_role_name='Backend Developer'`. G2 copies the same resolved role into `user_basic_info`.
+- **`ResolvedStory.Org`** is an `OrgSpec{Name, Slug, …}` — so `st.Org.Name` / `st.Org.Slug` are in hand inside
+  `BuildRoster` (roster.go) and the `users.go` Seed loop. `OrgSeeder` writes the same `st.Org.Name` to
+  `organizations.name`, so the roster-carried name and the seeded org agree by construction.
+
 ## G1 — org name threading
 
 ### rext `stack-seeding/seeders/roster.go` — `RosterIdentity` + `BuildRoster`
