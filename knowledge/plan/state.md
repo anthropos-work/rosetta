@@ -12,19 +12,21 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **(between milestones — M41 profile depth is next, planned/unstarted).** M41 (`section`,
-medium) seeds believable depth into each hero: a `ProfileSeeder` writing 2-3 `user_experiences` + 1-2
-`user_educations` per hero (G3), and a skill-depth bump (G5: `verified:` 8→~30 + a claimed-but-unverified tail
-that widens the visible claimed-vs-verified gap). Shares `stack-seeding`; depends on M39's `users.go` (landed).
-Delivers → `corpus/ops/seeding-spec.md` + `stories-spec.md`.
-**Next up:** **`/developer-kit:work-milestone` M41** (profile depth) → then **M42e** (employee 100% coverage,
+**Active milestone:** **M41 profile depth (`section`, medium) — BUILT, ready to close.** A new `ProfileSeeder`
+(rext `stack-seeding`) writes per END-USER hero a believable work-history + education timeline (G3:
+`companies` + 3 `user_experiences` + 1 `user_educations`) and a skill-depth bump (G5: `verified:` 8→~30 + a
+~60-skill claimed-but-unverified tail tied to the experiences, widening the visible claimed-vs-verified gap).
+9 new unit tests, full suite green `-race`, every emitted row dry-insert-validated against live demo-3,
+go.mod/go.sum byte-identical. Code @ `rosetta-extensions` tag `method-acting-m41`. Branch `m41/profile-depth`
+(unmerged). Delivers → `corpus/ops/seeding-spec.md` + `stories-spec.md` (both updated).
+**Next up:** **`/developer-kit:close-milestone` M41** → then **M42e** (employee 100% coverage,
 `iterative`) → **M42m** (manager 100% coverage, `iterative`).
 **Last closed:** **M40 Directus serve-grant (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN,
 0 blocking; 2 findings both docs/triage; deferral re-audit GREEN 0 escape-hatch; flake 0; supply-chain GREEN).
 Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m40`. **Reminder for the M40
 demo acceptance:** consume the M39-fix1 ALWAYS-rebuild-stackseed tooling so a re-replay doesn't reuse a stale
 binary.
-**Phase:** **v1.10 in development — M39 + M40 closed; M41 next (planned); M42e/M42m planned, unstarted.**
+**Phase:** **v1.10 in development — M39 + M40 closed; M41 BUILT (ready to close); M42e/M42m planned, unstarted.**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
