@@ -3,7 +3,7 @@ milestone: M40
 slug: directus-serve-grant
 version: v1.10 "method acting"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-24
 last_updated: 2026-06-24
 complexity: small-medium

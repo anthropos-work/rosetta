@@ -212,7 +212,19 @@ byte-identical (supply-chain GREEN); test funcs stack-seeding 444→**462** / cl
 **Delivers →** [`corpus/ops/demo/stories-spec.md`](../../corpus/ops/demo/stories-spec.md) + [`corpus/services/clerkenstein.md`](../../corpus/services/clerkenstein.md).
 
 #### M40 — Per-stack Directus public-policy serve-grant (library + activity feed)
-**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Highest single-surface value** · **Dir:** [`releases/01.10-method-acting/m40-directus-serve-grant/`](releases/01.10-method-acting/m40-directus-serve-grant/)
+**Status:** `done` (completed 2026-06-24) · **Shape:** `section` · **Complexity:** small–medium · **Highest single-surface value** · **Dir:** [`releases/01.10-method-acting/m40-directus-serve-grant/`](releases/01.10-method-acting/m40-directus-serve-grant/)
+**Closure:** Built + hardened (3 passes) + closed in one near-clean review (2 findings, 0 blocking — both docs/triage).
+The root cause was bigger than the original a/b/c framing: the per-stack Directus had `directus_relations=0` /
+`directus_fields=0`, so the nested O2M/M2M aliases were UNKNOWN to Directus (not "stripped under the public policy").
+The fix (rext `stack-snapshot/directus/structure.go` @ tag `method-acting-m40` → `5e53301`) synthesizes the relational
+web dynamically — `directus_fields` + `directus_relations` under a both-endpoints closure (off-stack aliases dropped:
+the `assets_files`-500 / `job_position`-unmarshal classes), the library/`resource`/`job_position` M2O closure,
+synthesized public-read grants, and a `directus_versions` read+create self-heal grant (the dominant blocker). **BOTH
+the library and activity-feed halves ship in tooling — the key-risk platform-nil-guard fork was REFUTED, zero platform
+edits.** Live (demo-3, anonymous cms): `publicSkillPaths=22`, `publicJobSimulations=50`, `jobSimulation` returns
+`sequences[].scenarioIntro` — all >0. Tests: stack-snapshot 333→**354** (+21; directus pkg 100% statements, `-race`
+clean); supply-chain GREEN; flake gate 5/5. Deferral: KPI "completed"=0 → **Fate-2 → M42e/M42m** (D7, their coverage
+gate owns it; no plan edit). Decisions (#M40-D1..D6) blended into [`snapshot-spec.md`](../../corpus/ops/snapshot-spec.md).
 **Goal:** the hero's content surfaces — `/library/ai-simulations`, `/library/skill-paths`, **and** `/profile/activities`
 — render the real catalog/activity from the already-seeded data, on a fresh `/demo-up`.
 **Scope — In:**

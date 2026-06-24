@@ -12,22 +12,19 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **(between milestones — see Next up)**. M39 profile identity closed 2026-06-24; M40
-(Directus serve-grant), the parallel sibling, is the natural next build. M40–M42m planned, unstarted.
-**Next up:** **`/developer-kit:build-milestone`** M40 (the highest single-surface value — one public-policy
-serve-grant unblocks the library + every detail page + the activity feed) — or M41 (profile depth; shares
-`stack-seeding`, depends on M39's `users.go` landing first, which it now has). Recommended order: M40 ∥ M41 → M42e → M42m.
-**Last closed:** **M39 profile identity (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN, 0
-blocking; 5 findings all decision-triage; deferral re-audit GREEN 0 escape-hatch; 3 offline alignment gates
-100%/100%; flake 0). Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m39`.
-**M39 LIVE ACCEPTANCE PASSED** (fresh `/demo-up 3`, logged in as Maya): G1 roster `org_name="Cervato Systems"`
-threaded + served by the rebuilt fake-fapi; G2 `user_basic_info` role = "Backend Developer" (+ summary/location);
-G4 offline real-face SVG avatar. **Acceptance surfaced + fixed a tooling defect** — `up-injected.sh` built the
-shared `stackseed` CLI *build-if-missing*, and `$STACK/bin` survives `down --purge`, so a re-consume of new
-seeder tooling silently reused the STALE binary (the acceptance no-op'd until the bin was removed by hand). Fixed
-to ALWAYS rebuild stackseed: **rext tag `method-acting-m39-fix1`** (+ regression pin). Matters for every
-remaining v1.10 milestone acceptance.
-**Phase:** **v1.10 in development — M39 closed; M40–M42m planned, unstarted.**
+**Active milestone:** **(between milestones — M41 profile depth is next, planned/unstarted).** M41 (`section`,
+medium) seeds believable depth into each hero: a `ProfileSeeder` writing 2-3 `user_experiences` + 1-2
+`user_educations` per hero (G3), and a skill-depth bump (G5: `verified:` 8→~30 + a claimed-but-unverified tail
+that widens the visible claimed-vs-verified gap). Shares `stack-seeding`; depends on M39's `users.go` (landed).
+Delivers → `corpus/ops/seeding-spec.md` + `stories-spec.md`.
+**Next up:** **`/developer-kit:work-milestone` M41** (profile depth) → then **M42e** (employee 100% coverage,
+`iterative`) → **M42m** (manager 100% coverage, `iterative`).
+**Last closed:** **M40 Directus serve-grant (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN,
+0 blocking; 2 findings both docs/triage; deferral re-audit GREEN 0 escape-hatch; flake 0; supply-chain GREEN).
+Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m40`. **Reminder for the M40
+demo acceptance:** consume the M39-fix1 ALWAYS-rebuild-stackseed tooling so a re-replay doesn't reuse a stale
+binary.
+**Phase:** **v1.10 in development — M39 + M40 closed; M41 next (planned); M42e/M42m planned, unstarted.**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
@@ -70,11 +67,12 @@ ant-academy up automatically (proven live on `:33077`). **Tooling + docs only �
 - **v1.7 "house lights"** — **2026-06-15**, tag `v1.7`. Demo-UI-hardening: M31 mkcert FAPI cert (next-web stops
   blanking) + M32 studio-desk single-port/production fix. Ext tags `house-lights-m31`/`m32`.
 
-## Headline numbers (v1.9 final close values — the v1.10 inheritance baseline, 2026-06-23)
-- **Go test funcs:** **1248** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
-  clerkenstein **259** (250 `Test` + 9 `Fuzz`) · stack-seeding **444** · stack-snapshot 333 · stack-secrets 160.
-  Verified at close: stack-seeding `go test ./...` 8 pkgs `ok`, clerkenstein 14 pkgs `ok`; `go vet`+`gofmt`
-  clean. Baseline v1.8 1027 → **+221**.
+## Headline numbers (v1.10 in-progress — through M40 close, 2026-06-24)
+- **Go test funcs:** **1292** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
+  clerkenstein **264** · stack-seeding **462** · stack-snapshot **354** · stack-secrets 160.
+  v1.10 deltas: M39 clerkenstein +5 / stack-seeding +18; M40 stack-snapshot +21 (directus pkg, the serve-grant).
+  Verified at M40 close: stack-snapshot `go test ./...` 12 pkgs `ok` (directus 75 funcs, `-race` clean);
+  `go vet`+`gofmt` clean. v1.9-close baseline 1248 → **+44**.
 - **Python tests:** **283** across the two v1.9-touched suites (demo-stack/tests **166**, stack-injection/tests
   **117** [8 opt-in skipped]). Both green; no suite decreased (untouched rext suites carry forward at v1.8
   counts).
@@ -95,12 +93,13 @@ lands in the `rosetta-extensions` authoring copy (a SEPARATE repo) at new v1.10 
 **Shipped:** **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` ·
 **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-24 (**v1.10 "method acting" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` —
-the believable-profile release; 5 milestones M39→M42m [3 `section` targeted fills: profile identity / Directus
-serve-grant for library+activity-feed / profile depth — + 2 `iterative` per-vantage Playwright coverage gates,
-M42e employee + M42m manager], grounded by the live-demo review `.agentspace/profile_gaps.md` + workflow
-`w7t4wq2z4`; branch `release/01.10-method-acting` cut, milestone dirs scaffolded. **Next: `/developer-kit:build-milestone`
-M40 ∥ M39.** Prior same day: **Post-v1.9 demo-hardening pass extended to `storytelling-postfix-2`** — the
+_Last updated: 2026-06-24 (**M40 Directus serve-grant CLOSED** via `/developer-kit:close-milestone` — GREEN, 0
+blocking, 2 findings both docs/triage; the per-stack Directus serve-grant [relations/fields + synth grants +
+directus_versions self-heal] ships the library + activity feed anonymously, both halves in tooling, zero platform
+edits; stack-snapshot 333→354 [+21], directus pkg 100% statements, flake 0, supply-chain GREEN; KPI=0 deferral
+Fate-2→M42e/M42m. Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m40`. **Next:
+M41 profile depth.** Prior: **v1.10 "method acting" DESIGNED + PROMOTED** (5 milestones M39→M42m; M39 closed
+2026-06-24). Prior same day: **Post-v1.9 demo-hardening pass extended to `storytelling-postfix-2`** — the
 ant-academy clone/token correction: `npm install` needs NO Font Awesome token [FA Pro icons are
 self-hosted/vendored; `FONTAWESOME_NPM_AUTH_TOKEN` is vestigial], and the real "ant-academy down in the demo"
 cause — an empty `stack-demo/ant-academy/` stub blocking `make init` — is fixed by `ensure-clones.sh`'s
