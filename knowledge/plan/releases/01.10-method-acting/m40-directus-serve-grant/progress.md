@@ -111,3 +111,73 @@ self-guard universality; fuzzing = the existing array-literal escape fuzz still 
 perf = N/A, a one-shot capture render with no SLA), coverage held at the 100%-statement ceiling (delta < 2% by
 construction), and the flake gate passed (3 consecutive clean sequential runs of the 13 new tests). Well under the
 5-pass cap. Supply-chain GREEN throughout (go.mod/go.sum byte-identical); `-race`/gofmt/vet clean; zero platform edits.
+
+## M40: Final Review
+
+Close-milestone review (2026-06-24). Phases 1–5 ran in parallel (Phase 2/2c + 3 via Explore agents);
+Phase 1b deferral re-audit GREEN ([`audit-deferrals/deferral-audit-2026-06-24-m40-close.md`](audit-deferrals/deferral-audit-2026-06-24-m40-close.md)).
+
+### Scope
+- [x] All 4 section checkboxes delivered as Fate-1 (a `directus_versions` + b library-categories + c
+  `sequences` O2M + the regression test); overview In-list fully covered, 0 silent drops. No scope gap.
+
+### Code Quality
+- [x] [nice-to-have] `serveVersionsActions` `[]string` slice (structure.go:353) — flagged by the adversarial
+  agent as "unused at runtime". **Considered + KEPT** (not a fix): it IS referenced — `serve_test.go:319-320`
+  diffs the SQL array-literal const against it (the drift-guard), and it's the readable source-of-truth the
+  opaque `ARRAY['read','create']::text[]` literal is pinned to. Removing it would weaken the drift-guard. Not
+  dead code.
+
+### Documentation
+- [x] snapshot-spec.md M40 section accurate/complete (no stale platform-escalation framing, handbook contract
+  clean) — but **missing the `(#M40-DK)` decision reference tags** (the project's blend-to-knowledge convention,
+  cf. M39's `(#M39-D2)`). FIXED in Phase 7: tags appended for D1–D6.
+
+### Tests & Benchmarks
+- [x] directus pkg 74 top-level tests `-race` clean; full stack-snapshot module (12 pkgs) green; vet/gofmt
+  clean; go.mod/go.sum byte-identical. No coverage/regression gap (harden held 100% statements). No benchmarks
+  (one-shot capture render, no SLA — N/A).
+
+### Adversarial Review
+See `decisions.md` § Adversarial review — 11 scenarios weighed, all HANDLED by existing code+tests (each with a
+cited test). 0 production gaps.
+
+### Decision Triage
+- [x] D1 (token-less anonymous read) → blend `corpus/ops/snapshot-spec.md` (already at l.451-453) — add `(#M40-D1)`
+- [x] D2 (relations=0/fields=0 root cause) → blend snapshot-spec.md (already at l.450) — add `(#M40-D2)`
+- [x] D3 (synthesize the relational web dynamically) → blend snapshot-spec.md (the "What M40 synthesizes" list) — add `(#M40-D3)`
+- [x] D4 (both-endpoints closure + relational-special gating) → blend snapshot-spec.md (l.467-476) — add `(#M40-D4)`
+- [x] D5 (resource/job_position M2O + synth grant) → blend snapshot-spec.md (l.477-487) — add `(#M40-D5)`
+- [x] D6 (directus_versions read+create, system name) → blend snapshot-spec.md (l.488-496) — add `(#M40-D6)`
+- [x] D7 (KPI=0 Fate-2 → M42e/M42m) → archive (maintainer/scope-routing decision, not a system mechanism)
+
+## M40: Completeness Ledger (close, 2026-06-24)
+
+Every `overview.md` In-list scope item placed into exactly one of the three-fate categories.
+
+### Done (Fate 1 — delivered in this milestone)
+- [x] **(a) `directus_versions` serve-grant** — synthesized public-read + create grant (full system name). Live: `publicSkillPaths=22`.
+- [x] **(b) library-category collections serve-grant** — `library_categories`/`library_macro_categories`/the 2 M2M junctions + `resource` + `job_position` closure + synth grants + the fields/relations registration. Live: `publicJobSimulations=50`, no `ToDomain` panic.
+- [x] **(c) `simulations.sequences` O2M nested-read serve-grant** — the `directus_relations` + `directus_fields` registration (NOT a platform nil-guard — refuted). Live: `jobSimulation(simulationId)` returns `sequences[].scenarioIntro`.
+- [x] **Regression test** — 9 build + 13 harden test funcs (`serve_test.go`/`serve_harden_test.go`); live acceptance demo-3 all three surfaces serve `>0` anonymously via cms.
+
+### Confirmed-covered (Fate 2 — already owned by another milestone of this release; no edit)
+- **KPI "AI simulations completed" = 0** (overview Open question) → **M42e + M42m** (M40-D7). Their exit gate
+  ("every reachable demo page renders non-empty semantic content, 100% pages, 0 failing") already encompasses a
+  non-zero completed-KPI; their fix-routing covers "empty section / missing seed" → stack-seeding and
+  "federation/content error" → serve-grants. CONFIRMED, no `In:`-list edit (both iterative — the gate is the
+  commitment). Deferral re-audit GREEN ([`audit-deferrals/deferral-audit-2026-06-24-m40-close.md`](audit-deferrals/deferral-audit-2026-06-24-m40-close.md)).
+
+### Annotated (Fate 3 — attached to a release-milestone at close)
+- None.
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.
+
+**Verdict:** all 4 In-list scope items delivered as Fate 1; the open-question KPI=0 is Fate-2 (already owned by
+M42e/M42m, confirmed). The 2 `overview.md` Out-list items (any seeding; identity/depth) were never in scope.
+The risk-fork open question (the O2M may need a platform nil-guard) was **refuted** at build (both halves ship in
+tooling). Nothing annotated, dropped, or escape-hatch-deferred. **Zero items require sign-off.**

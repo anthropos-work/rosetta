@@ -12,3 +12,35 @@ Implementation decisions with rationale (recorded during build). Design-time con
 | M40-D5 | **Add `resource` + `job_position` to `servedCollections` (their tables already exist via the dynamic structure DDL); synthesize a public-read grant for EVERY served collection prod doesn't grant.** `servePermissionsRowsSQL` only COPIES prod's 5 public collections, but cms's library list expands M2O targets `skill_paths.video → resource` and `simulations.job_position → job_position` — an ungranted target makes Directus return the bare FK string (unmarshalable). With no replayed rows the M2O expansion is NULL (cms tolerates pointer/omitempty). All `job_position`/`resource` referenced rows are public (`tenant_id` NULL), so the no-filter synth grant stays within the public boundary. | The copied-only grant path was the gap. The synth grant is `WHERE NOT EXISTS`-guarded so it never overrides the copied `simulations`/`skill_paths` rows (which keep their `status='published'` filter). | 2026-06-24 |
 | M40-D6 | **Grant `directus_versions` BOTH read AND create on the public policy (collection name `directus_versions`, NOT the `versions` API path).** cms `GetLatestOrCreateVersion` reads `/versions` (403 fatal) and CREATEs a version when none exists. Prod's `skill_paths` versioning has ~one version per published path so cms reads; the per-stack table is empty (not replayed) so cms CREATEs — granting create lets cms self-heal instead of replaying prod's 539 version rows + deltas. Verified live: collection `'versions'` → still 403; `'directus_versions'` → 200; +create → full skill-paths library serves. | The CREATE path is the per-stack-empty consequence of not replaying directus_versions rows; self-heal-via-create is far cheaper + content-equivalent vs a 539-row + delta replay. | 2026-06-24 |
 | M40-D7 | **KPI "AI simulations completed" = 0 is OUT of M40 scope (Fate-2 → M42e/M42m).** Its source `public.local_jobsimulation_sessions` has no CMS dependency (the feed fix is a Directus-serve gap; the KPI reads jobsimulation directly), so it is a separate frontend/auth-context concern. The M42e (employee) + M42m (manager) coverage milestones already own end-to-end per-vantage page rendering, which is where a residual KPI-zero would surface and be diagnosed. Not coupled to the feed fix. | overview.md Open question asked to re-verify + flag separately if it persists. It is genuinely a different surface (frontend KPI vs CMS serve); the right home is the coverage sweep that exercises every page, not this serve-grant. | 2026-06-24 |
+
+## Adversarial review (Phase 2c — close)
+
+External-perspective adversarial pass over the M40 serve-grant code (`rext stack-snapshot/directus/structure.go`).
+11 non-obvious failure scenarios were constructed; **all 11 are handled by existing code + tests** (0 production
+gaps surfaced). The scenarios (recorded so future reviewers see what was considered):
+
+1. **Relational field whose target relation is off-stack** (e.g. an M2M whose junction is not on-stack) — the
+   `rel_ok` both-endpoints closure (`serveFieldsRowsSQL`) drops the field. Handled: `TestServeFieldsRowsSQL_DropsOffStackRelationalAliases`, `TestServeRelationsClosure_RequiresBothEndpoints`.
+2. **Orphaned `directus_fields` row for a dropped relational alias** — the field gate requires its relation to
+   survive the closure (EXISTS clause), so the field is dropped in lockstep. Handled: same closure tests.
+3. **`directus_versions` grant keyed on the API path `versions` not the system name** (guard never matches →
+   duplicate on re-apply) — the const is pinned to `directus_versions`. Handled: `TestServeVersionsGrant_KeyedOnSystemCollectionName`.
+4. **Re-apply double-insert of fields/relations** — every guarded render is self-guarded `WHERE NOT EXISTS` on
+   its natural identity; capture is byte-deterministic. Handled: `TestCaptureServeRows_IsDeterministic`, `TestServeRenders_EveryGuardedRenderIsSelfGuarded`.
+5. **Empty input stages (0 fields / 0 relations) emitting malformed SQL** — empty parts are TrimSpace-skipped.
+   Handled: `TestCaptureServeRows_SkipsEmptyM40Stages`.
+6. **A tenant-scoped column on directus_fields/directus_relations bypassing the firewall** — `assertServeTablesAdmissible`
+   runs `AssertStructuralMetadata` over all four serve tables BEFORE any row is read; failure aborts capture.
+   Handled: `TestCaptureServeRows_AdmissibilityRejectsTenantColumn`.
+7. **M2O target removed before a second capture (job_position class)** — the relation closure drops, and the
+   field gate drops the field with it. Handled: the closure tests.
+8. **Regex `(o2m|m2m|m2a|files|m2o|file)` substring collision (`file` vs `files`)** — `files` precedes `file`
+   in the alternation (longest-first). Handled: `TestServeFieldsRelationalSpecialRegex`.
+9. **SQL injection via a collection/field name in a WHERE guard** — all values go through `quote_literal()` /
+   the `''`-escaped array-literal helper; served collection names are package constants. Handled: `TestServedCollectionsArrayLiteral_QuotesNames` + the existing array-literal escape fuzz.
+10. **versions read+create grant collapsing to one action (dedup keyed only on collection+policy)** — the guard
+    keys on `(action, policy)`, so read and create dedup independently. Handled: `TestServeVersionsGrant_KeyedOnSystemCollectionName`.
+11. **A synthesized grant landing on a non-public policy (widening the anonymous surface)** — both grant
+    templates hardcode `PublicPolicyID`; a UUID-scan asserts no other policy appears. Handled: `TestServeGrants_ScopedToPublicPolicyOnly`.
+
+No "accept-with-risk" outcomes — every scenario resolves to existing-and-tested behaviour.
