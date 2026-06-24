@@ -116,6 +116,18 @@ builder skills).
 > the rosetta corpus doc-half. Grounded by an adversarially-verified spec
 > ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md) — 6-agent recon + 3-agent code review,
 > 2026-06-22, no Phase-1 blockers). **Tooling + docs only — zero platform-repo edits.**
+>
+> **v1.10 "method acting" — IN DEVELOPMENT** (designed 2026-06-24 via `/developer-kit:design-roadmap`; branch
+> `release/01.10-method-acting`; full detail in `## In Development — v1.10` below). The **believable-profile
+> release** — v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up: when a presenter
+> clicks **Login as** a hero, the individual's **profile** (org name, role+title, work history, education, a real
+> face, deep role-aligned skills) **and** the content surfaces (**library** + the **activity feed**) populate with
+> real content, on **every** page a hero of that type can reach — proven by a **Playwright** coverage sweep
+> (DOM + screenshots) with **zero** empty pages and **zero** out-of-demo escapes. 5 milestones **M39→M42m** (3
+> `section` targeted fills + 2 `iterative` per-vantage coverage gates) across `stack-seeding` / `stack-snapshot`
+> / `clerkenstein` + a new Playwright coverage harness. Grounded by the live-demo review
+> ([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the root-cause workflow `w7t4wq2z4`).
+> **Tooling + docs only — zero platform-repo edits.**
 
 ## Version plan
 
@@ -131,6 +143,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
+| **v1.10** | **method acting** | The **believable-profile release** — a logged-in hero is a fully fleshed person: profile identity (org name, role+title, real-face avatar) + the content-surface unblock (library + activity feed, one Directus serve-grant) + profile depth (work, education, deep role-aligned skills) + **100% per-vantage demo coverage** proven by Playwright (no empty pages, no out-of-demo escapes) | { M39 ∥ M40 } → M41 → M42e → M42m | 🚧 **IN DEVELOPMENT** (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -146,6 +159,127 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## In Development — v1.10 "method acting" (the believable profile)
+
+**Theme:** v1.9 told the *story* (the org dashboard + the verified-skill spine); **v1.10 makes each *character*
+hold up under a close-up.** When a presenter clicks **Login as** a hero, that hero must read as a fully fleshed,
+believable person — the individual's **profile** (org name, role+title, work history, education, a real face,
+deep role-aligned skills) **and** the content surfaces they land on (**library** + the **activity feed**) populate
+with real semantic content, on **every** page a hero of that vantage can reach. **Tooling + docs only — zero
+platform-repo edits.** Designed 2026-06-24 via `/developer-kit:design-roadmap` from the live-demo review
+([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) — a hero logged in as **Maya Chen** read empty
+across /profile, /library, and the activity feed) + the in-depth root-cause workflow `w7t4wq2z4`.
+
+**Origin / key findings.** The foundation is sound — the org binding is correct (Maya's membership org = her Clerk
+org claim = "Cervato Systems"; nothing cross-org-hidden), the verified-skill gap mechanic works, the catalog is
+replayed. The gaps are the **believability-depth layer** v1.9 didn't build. Two research findings shaped the cut:
+(1) the empty **activity feed is NOT a seeding gap** — the data is correctly seeded (21 completed sessions), but
+cms (anonymous public-policy Directus read) can't serve the nested content it federates to → cms panics → the feed
+empties. That's the **same per-stack-Directus serve-grant gap that empties the library**, so the two collapse into
+**one** surfacing milestone (M40). (2) "100% non-empty, no out-of-demo escapes" is not enumerable up front — it's a
+measure→fix→re-measure loop, so it becomes **two iterative per-vantage coverage gates** (M42e/M42m) that run after
+the targeted fills.
+
+### Milestones
+
+#### M39 — Profile identity & quick wins
+**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m39-profile-identity/`](releases/01.10-method-acting/m39-profile-identity/)
+**Goal:** a logged-in hero shows the right org name, a real role + title, and a real face.
+**Scope — In:**
+- **G1 org name** — thread `st.Org.Name`/slug through the roster (`stack-seeding/seeders/roster.go`) → clerkenstein
+  `RosterEntry`/`DemoUser`/`orgMemberships()` (`clerk-frontend/registry.go`+`resources.go`) so the FAPI org resource
+  carries the story org name (top bar → "Cervato Systems"). "Clerkenstein Demo Org" stays the no-roster default.
+  (roster↔RosterEntry lockstep `DisallowUnknownFields` — one paired change; re-tag both repos.)
+- **G2 role backfill** — backfill `public.user_basic_info.job_role_id` (+ job_title/summary/location) from the
+  resolved hero role (`stack-seeding/seeders/users.go`). The /profile header **and** the role-gap radar /
+  role-readiness widgets read this — one UPDATE lights several surfaces.
+- **G4 real-face avatars** — seed a **bundled, license-clean real-face set** mapped deterministically by hero key
+  (replacing the DiceBear *initials* disc). Offline-safe + deterministic + license-clean.
+**Out:** work/education + skill depth (M41); the surfacing fix (M40).
+**Depends on:** none. **Parallel with:** M40.
+**Delivers →** [`corpus/ops/demo/stories-spec.md`](../../corpus/ops/demo/stories-spec.md) + [`corpus/services/clerkenstein.md`](../../corpus/services/clerkenstein.md).
+
+#### M40 — Per-stack Directus public-policy serve-grant (library + activity feed)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Highest single-surface value** · **Dir:** [`releases/01.10-method-acting/m40-directus-serve-grant/`](releases/01.10-method-acting/m40-directus-serve-grant/)
+**Goal:** the hero's content surfaces — `/library/ai-simulations`, `/library/skill-paths`, **and** `/profile/activities`
+— render the real catalog/activity from the already-seeded data, on a fresh `/demo-up`.
+**Scope — In:**
+- In `stack-snapshot/directus/structure.go`, **synthesize** public-read `directus_permissions` for the collections
+  cms's **anonymous** read path needs but prod's public policy doesn't grant: `directus_versions` (unblocks the
+  *entire* skill-paths library + every sim/path detail page), the library-category collections (unblocks the sims
+  list), **and** make the `simulations.sequences` **O2M nested read** serve under the public policy (unblocks the
+  activity feed's content federation — the feed reads 21 correctly-seeded completed sessions, but cms panics on the
+  empty nested read at `jobsimulation.go:1097`).
+- A regression test that all three surfaces serve **>0** on a fresh demo.
+**Out:** any seeding (the data is already correct); identity/depth.
+**Depends on:** none. **Parallel with:** M39, M41 (different section — `stack-snapshot` vs `stack-seeding`).
+**Risk / open:** the `sequences` O2M may not be grantable under the public policy without a platform nil-guard at
+cms `jobsimulation.go:1097` (read-only). Investigate the O2M mechanism **first**; if it needs a platform change, the
+**library half still ships** and the activity-feed half escalates for platform sign-off (the zero-edit line).
+**Delivers →** [`corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md).
+
+#### M41 — Profile depth seeding
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m41-profile-depth/`](releases/01.10-method-acting/m41-profile-depth/)
+**Goal:** a believable work history + education + a deep, role-aligned skill set with a real claimed-vs-verified gap.
+**Scope — In:**
+- **G3** — a `ProfileSeeder` (rext `stack-seeding`) writing 2–3 `public.user_experiences` + 1–2
+  `public.user_educations` per hero (deterministic UUIDs, backdated within the story's activity span, role-aligned
+  titles, tied to the verified-skill arc).
+- **G5** — bump skill depth: `verified:` knob 8→~30 (⇒ ~90 user_skills / 30 evidences) **+** a claimed-but-unverified
+  `user_skills`/`user_skill_evidences` tail (~60, is_verified=false, user_level set, anthropos_level NULL) so
+  "overall ≈ 90" **widens the visible claimed-vs-verified gap**.
+**Out:** the surfacing fix (M40), identity (M39).
+**Depends on:** M39 (shares `stack-seeding`; M39's `users.go` edits land first). **Parallel with:** M40.
+**Delivers →** [`corpus/ops/seeding-spec.md`](../../corpus/ops/seeding-spec.md) + `stories-spec.md`.
+
+#### M42e — Employee 100% demo coverage
+**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m42e-employee-coverage/`](releases/01.10-method-acting/m42e-employee-coverage/)
+**Goal:** a hero of the **employee/member** vantage sees **100% of the demo platform's pages populated** — no empty/error
+pages, no out-of-demo escapes.
+**Exit gate:** a **Playwright** sweep, logged in as an employee hero, of **every reachable demo page** asserts
+(a) **non-empty semantic content in the DOM** + (b) **populated screenshots** for **100%** of pages, with **zero**
+pages empty/error and **zero** nav links escaping the demo platform — every in-app link resolves to a **demo-local**
+surface (e.g. left-menu **Studio** → local studio-desk on its offset port, **not** prod `studio.anthropos.work`; an
+external link is **not** valid filler and must be rewritten in the demo injection/env).
+**Why iterative:** the page set + the failure modes (empty section / federation error / out-of-demo link / missing
+seed) are discovered by the sweep, not enumerable up front; each iter measures → fixes (in rext `stack-seeding` /
+`stack-snapshot` grants / the demo injection link-rewriting / a corpus doc) → re-sweeps until 100%. **Also delivers
+the Playwright coverage harness** (rext) that M42m reuses.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md) (authored by M42e).
+**Depends on:** M39 + M40 + M41 (the targeted fills land first so the loop only chases the tail). **Parallel with:** none.
+**Open decision:** **Playwright** is a **new rext dev/test dependency** (browser automation, demo-only) — the first
+non-Go tooling dep; sanctioned by the coverage requirement.
+**Delivers →** `corpus/ops/demo/coverage-protocol.md` (new) + the touched specs as gaps close.
+
+#### M42m — Manager 100% demo coverage
+**Status:** `planned` · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/01.10-method-acting/m42m-manager-coverage/`](releases/01.10-method-acting/m42m-manager-coverage/)
+**Goal:** a hero of the **manager** vantage sees **100% of the demo platform's manager-reachable pages populated** —
+no empty/error pages, no out-of-demo escapes.
+**Exit gate:** identical to M42e's, run as a **manager** hero (covers the manager-only surfaces — the Workforce
+dashboard funnel/teams/role-gap/mobility/succession/feedback + any admin pages — populated, in-demo).
+**Why iterative:** same loop as M42e; the manager page set + failure modes are discovered by the sweep.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md) (reused; M42e authors it).
+**Depends on:** M42e (the harness) + M39/M40/M41. **Parallel with:** none.
+**Delivers →** updates across the touched specs as gaps close.
+
+### Execution graph
+```
+v1.10 "method acting"
+  M40 ───────────────────────────────────┐         (stack-snapshot — independent, highest value)
+  M39 ───────────────→ M41 ──────────────┴─→ M42e ──→ M42m   (iterative coverage gates, after the fills)
+```
+**Recommended order:** M40 ∥ M39 (the two biggest visible jumps) → M41 → M42e → M42m.
+
+### Risks
+| Risk | Severity | Mitigation |
+|---|---|---|
+| M40: `simulations.sequences` O2M may need a platform nil-guard (cms, read-only) | blocks-release (activity half) | spike the O2M mechanism first; the library half ships regardless; escalate the activity half if it needs a platform change |
+| G4 avatar: no offline/deterministic license-clean face source | degrades-quality | bundled curated CC0-style face set mapped by hero key (decided) |
+| M42e/M42m: Playwright a new rext dep + flaky browser sweeps | scope / nice-to-resolve | dev/test-only dep; deterministic seeded data + retries; the gate is a count, not a snapshot-diff |
+| G7 KPI ("completed"=0) possibly a frontend/auth-context issue out of rext reach | nice-to-resolve | re-verify after M40's feed fix; flag separately (possibly platform) if it persists |
+
+**Live acceptance (every milestone):** log in as a hero on demo-3 → the target surface fills. **Branch:** `release/01.10-method-acting`.
 
 ## Done — v1.9 "storytelling" (SHIPPED 2026-06-23 · tag `v1.9`)
 

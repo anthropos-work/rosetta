@@ -34,12 +34,19 @@ and a `release/{version}` branch is cut.
 > tell a story, plus a **presenter cockpit**; 5 `section` milestones M34→M38; tooling + docs only). Designed from
 > the adversarially-verified spec [`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md). The first
 > version since v1.5 to come from a substantive backlog/spec rather than a live defect.
+> **v1.10 "method acting"** → 2026-06-24 (IN DEVELOPMENT, branch `release/01.10-method-acting`; the
+> **believable-profile release** — make each hero hold up under a close-up when a presenter *Logs in as* them:
+> profile identity [org name + role + real-face avatar] + the content-surface unblock [library + activity feed via
+> one Directus serve-grant] + profile depth [work/education/deep skills] + **100% per-vantage demo coverage** proven
+> by Playwright; 5 milestones M39→M42m [3 `section` + 2 `iterative`]; tooling + docs only). Designed from the
+> live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) — a hero (Maya Chen) read
+> empty across the profile/library/activity surfaces. The second consecutive demo-believability release after v1.9.
 
 ---
 
-> **No version currently staged.** v1.9 "storytelling" shipped 2026-06-23 (tag `v1.9`; full detail in the
-> `## Done — v1.9 "storytelling"` section of [`roadmap.md`](roadmap.md)). The next version awaits a
-> `/developer-kit:design-roadmap` run — the unscheduled backlog below is candidate input.
+> **v1.10 "method acting" is IN DEVELOPMENT** (designed 2026-06-24; branch `release/01.10-method-acting`; full
+> detail in the `## In Development — v1.10` section of [`roadmap.md`](roadmap.md)). The unscheduled backlog below is
+> orthogonal (not in v1.10 scope).
 
 ## Unscheduled backlog (not a planned release)
 
@@ -93,8 +100,12 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
+- **v1.10 "method acting"** (IN DEVELOPMENT — chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up".
 
-_Last updated: 2026-06-24 (**M33 ant-academy demo liveness FULLY RESOLVED post-v1.9** at rext tags `storytelling-postfix-1`
+_Last updated: 2026-06-24 (**v1.10 "method acting" PROMOTED to active development** — the believable-profile
+release, 5 milestones M39→M42m [3 `section` fills + 2 `iterative` Playwright per-vantage coverage gates], branch
+`release/01.10-method-acting` cut, designed from `.agentspace/profile_gaps.md`. Standing backlog [DEF-M10-01,
+DEF-M21-01, M25-D9] is orthogonal. Prior same day: **M33 ant-academy demo liveness FULLY RESOLVED post-v1.9** at rext tags `storytelling-postfix-1`
 + `storytelling-postfix-2`. postfix-1: the session-reaping was reproduced + fixed via session-detach [`launch_detached`];
 the same pass also made `DEMO_STORIES` the default, added the Directus boot health-gate, and guarded the prod-Directus
 note. postfix-2: corrected the academy residual — there is **no FA-token prerequisite** (FA Pro icons are vendored, so
