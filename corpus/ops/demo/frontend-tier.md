@@ -163,21 +163,28 @@ and Clerk-only, so the bypass gives anonymous Clerk-free browse with no academy-
 > **macOS**, which has no `setsid`), so the daemon **survives the launching session/task ending**. _(The
 > **presenter cockpit** host-native daemon had the identical bug and got the **same** `launch_detached` fix.)_
 
-> **Without the Font Awesome Pro token, ant-academy is an intentional non-fatal SKIP.** Its `npm install`
-> needs the team-issued **Font Awesome Pro** token (`FONTAWESOME_NPM_AUTH_TOKEN`), which isn't on every box —
-> without it the deps can't install, so `/demo-up` **skips** ant-academy (non-fatal, prints the manual commands)
-> and the demo proceeds. That's by design: ant-academy is a **Vercel-deployed, Clerk-only peripheral** surface —
-> the **presenter cockpit + next-web + studio-desk carry the demo**. To enable it, provision the token (e.g. via
-> [`/stack-secrets`](../secrets-spec.md)) then run `npm install` **once** in `stack-demo/ant-academy/code`.
+> **ant-academy auto-installs its deps — no token needed (the storytelling-postfix-2 "down in the demo" fix).**
+> ant-academy **does** use **Font Awesome Pro** icons, but the FA Pro assets are **self-hosted / vendored in the
+> repo** (`code/public/assets/fontawesome/webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`)
+> — they are **not** pulled from the Font Awesome npm registry, so `npm install` needs **no** token (a fresh
+> token-less install, no `.npmrc`, completes in ~14 s / 750 pkgs and the launched app serves HTTP 200 with working
+> FA icons). The `FONTAWESOME_NPM_AUTH_TOKEN` in `code/.env.example` is **vestigial** — not required to install or
+> run. The real "ant-academy down in the demo" cause was a **blocked clone**: an empty `stack-demo/ant-academy/`
+> stub (holding only a gitignored `code/.env.local`) tripped `make init`'s skip-if-present, so the source never
+> landed. **Fixed at `storytelling-postfix-2`:** `ensure-clones.sh` now **sweeps incomplete sibling stubs** (any
+> `repos.yml` repo dir with no `.git`) before `make init`, and `ant-academy.sh` **auto-runs `npm install`** (no
+> token) when `node_modules` is absent — so a fresh `/demo-up` now brings ant-academy up **automatically** (proven
+> live on `:33077`).
 
-**Default-on + non-fatal + degrades to a documented step.** If the academy clone isn't present, its deps aren't
-installed (`npm install` needs the team-issued **Font Awesome Pro** token — see above), or Node < 22, the tool
-prints the exact manual commands and continues — it never aborts a good demo bring-up:
+**Default-on + non-fatal + degrades to a documented step.** A fresh `/demo-up` clones the academy (via the
+`storytelling-postfix-2` stub-sweep) and auto-runs the token-less `npm install` (see above), so it comes up
+automatically. If anything still trips it — Node < 22, or a genuinely unavailable clone — the tool prints the
+exact manual commands and continues, never aborting a good demo bring-up:
 
 ```bash
 cd stack-demo/ant-academy/code            # M26: the academy clone lives in the demo's OWN peer set (stack-demo)
 cp .env.example .env.local                 # gitignored; keeps the repo clean
-#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0, reuse platform/.env's Clerk keys, add FONTAWESOME_NPM_AUTH_TOKEN
+#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0, reuse platform/.env's Clerk keys (no FA token needed — FA Pro is vendored)
 npm install
 BENCHMARK_VISUAL_BYPASS=1 npm run dev -- --port 23077   # demo-2: Clerk-free anonymous browse
 ```
@@ -196,9 +203,10 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-1` — the M19 UI tier first
+at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-2` — the M19 UI tier first
 shipped at `dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`;
-the session-detach fix below lands at `storytelling-postfix-1`):
+the session-detach fix below lands at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
+land at `storytelling-postfix-2`):
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
@@ -210,9 +218,10 @@ the session-detach fix below lands at `storytelling-postfix-1`):
 - `demo-stack/up-injected.sh` — the per-demo serial-before-up frontend build (offset URLs + minted pk +
   tag-guard), the 12 GB VM pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, the scoped verify.
 - `demo-stack/frontend/next-web.dockerignore` — the tooling-owned context trim for next-web.
-- `demo-stack/ant-academy.sh` — the native academy launcher / stopper / documented fallback; launches the
-  daemon **session-detached** (via `detach.sh::launch_detached`) and **non-fatally skips** when the Font Awesome
-  Pro token / deps are absent.
+- `demo-stack/ant-academy.sh` — the native academy launcher / stopper / documented fallback; **auto-runs the
+  token-less `npm install`** when `node_modules` is absent (FA Pro is vendored — no token needed), launches the
+  daemon **session-detached** (via `detach.sh::launch_detached`), and **non-fatally** prints the manual commands
+  only if a genuine blocker remains (e.g. Node < 22).
 - `demo-stack/detach.sh` — the shared `launch_detached` helper (`setsid`, or a `python3 os.setsid` double-fork on
   macOS) that session-detaches the host-native daemons (ant-academy **and** the presenter cockpit) so they
   survive the launching `/demo-up` session/task being reaped.

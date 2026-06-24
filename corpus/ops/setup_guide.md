@@ -343,7 +343,7 @@ CLERK_SECRET_KEY
 OPENAI_API_KEY            (server-side; for /api/ai/chat)
 ANTHROPIC_API_KEY         (server-side; for /api/ai/chat)
 NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT    (the Cosmo/Wundergraph gateway URL)
-FONTAWESOME_NPM_AUTH_TOKEN          (optional; only for FontAwesome Pro icons at npm install)
+FONTAWESOME_NPM_AUTH_TOKEN          (vestigial; not required — FA Pro icons are vendored/self-hosted, so npm install needs no token)
 ```
 
 For solo local dev, set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to disable the org-gate. See the

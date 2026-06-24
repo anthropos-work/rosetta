@@ -62,7 +62,8 @@ Genuinely-deferred work, no target version, not scheduled:
 **Resolved (no longer backlog):**
 
 - **M33 — ant-academy demo liveness** (deferred from v1.7 design, 2026-06-15, repro-first) → **RESOLVED post-v1.9** at
-  rext tag `storytelling-postfix-1` (a tooling-only post-v1.9 demo-hardening pass). The "dead on a later visit"
+  rext tags `storytelling-postfix-1` (session-reaping fix) + `storytelling-postfix-2` (the blocked-clone / token-residual
+  fix — ant-academy now auto-comes-up on a fresh `/demo-up`), both tooling-only post-v1.9 demo-hardening passes. The "dead on a later visit"
   reaping was **REPRODUCED + FIXED**: the host-native daemons were launched via `nohup` alone, which does **not**
   detach from the launcher's process group — so when a backgrounded `/demo-up` task's process tree was reaped on
   completion (or the launching session ended), the daemon died with it (the exact M33 hypothesis). Both ant-academy
@@ -73,10 +74,16 @@ Genuinely-deferred work, no target version, not scheduled:
   restores the legacy small-200 structural demo), added the **per-stack Directus boot health-gate** (the bring-up tail
   waits for the stack's own offset `/server/health` before returning, so autoverify can't race the ~30s re-introspect),
   and **guarded the prod-Directus content note** (it now prints only on the genuine `DEMO_NO_LOCAL_CONTENT=1` opt-out).
-  **Residual ant-academy reality:** academy still needs the team Font Awesome Pro token (`FONTAWESOME_NPM_AUTH_TOKEN`)
-  + a one-time `npm install` in `stack-demo/ant-academy/code` to actually run; without the token it's an intentional
-  **non-fatal skip** (it's a Vercel-deployed, Clerk-only peripheral surface — the cockpit / next-web / studio-desk carry
-  the demo). Provision the token (e.g. via `/stack-secrets`) then `npm install` once to enable it.
+  **ant-academy demo liveness — fully RESOLVED at rext tag `storytelling-postfix-2`:** there is *no token residual*.
+  ant-academy *uses* Font Awesome Pro icons, but the FA Pro assets are **self-hosted / vendored** in the repo
+  (`code/public/assets/fontawesome/webfonts/*.woff2` + `css/all.min.css`, rendered as `<i class="fa-solid …">`) — they
+  are **not** pulled from the Font Awesome npm registry, so `npm install` (and running the app) needs **no** token. The
+  `FONTAWESOME_NPM_AUTH_TOKEN` in `code/.env.example` is **vestigial**. The real "academy down in the demo" cause was a
+  **blocked clone**: an empty `stack-demo/ant-academy/` stub (holding only a gitignored `code/.env.local`) tripped
+  `make init`'s skip-if-present, so the source never landed. Fixed at `storytelling-postfix-2` — `ensure-clones.sh` now
+  sweeps incomplete sibling stubs (any `repos.yml` repo dir with no `.git`) before `make init`, and `ant-academy.sh`
+  **auto-runs** a token-less `npm install` when `node_modules` is absent. A fresh `/demo-up` now brings ant-academy up
+  automatically (**proven live on :33077**).
 
 **Dropped from tracking (2026-06-11, user instruction — re-proposal requires a fresh `/developer-kit:design-roadmap` run):**
 the former v1.4 seeds **AI-generated content**, **external stack shareability** (Tailscale/ingress), and **more
@@ -87,10 +94,13 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
 
-_Last updated: 2026-06-23 (**M33 ant-academy demo liveness RESOLVED post-v1.9** at rext tag `storytelling-postfix-1`
-— the session-reaping was reproduced + fixed via session-detach [`launch_detached`]; the same tooling-only
-post-v1.9 demo-hardening pass also made `DEMO_STORIES` the default, added the Directus boot health-gate, and
-guarded the prod-Directus note. Moved M33 out of backlog → resolved. Backlog now: DEF-M10-01, DEF-M21-01, M25-D9.
+_Last updated: 2026-06-24 (**M33 ant-academy demo liveness FULLY RESOLVED post-v1.9** at rext tags `storytelling-postfix-1`
++ `storytelling-postfix-2`. postfix-1: the session-reaping was reproduced + fixed via session-detach [`launch_detached`];
+the same pass also made `DEMO_STORIES` the default, added the Directus boot health-gate, and guarded the prod-Directus
+note. postfix-2: corrected the academy residual — there is **no FA-token prerequisite** (FA Pro icons are vendored, so
+`npm install` needs no token); the real cause was a **blocked clone** (empty `stack-demo/ant-academy/` stub), fixed by
+`ensure-clones.sh`'s incomplete-stub sweep + `ant-academy.sh`'s token-less auto-`npm install` — a fresh `/demo-up` now
+brings ant-academy up automatically (proven live on :33077). Moved M33 out of backlog → resolved. Backlog now: DEF-M10-01, DEF-M21-01, M25-D9.
 Prior: 2026-06-23 **v1.9 "storytelling" SHIPPED** [tag `v1.9`] via `/developer-kit:close-release` — reviewed
 M34→M38 as one PR, GREEN/0 blocking, deferral re-audit GREEN [0 escape-hatch], merged `release/01.90-storytelling`
 → `main`; 2026-06-22 v1.9 DESIGNED + PROMOTED [5 `section` milestones M34→M38]; 2026-06-15 v1.8 "understudy"

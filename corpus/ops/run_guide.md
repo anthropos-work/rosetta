@@ -255,7 +255,7 @@ ls .env > /dev/null 2>&1 && echo ".env present" || echo "Copy .env.example -> .e
 npm install
 ```
 
-> **Font Awesome Pro**: the install needs `FONTAWESOME_NPM_AUTH_TOKEN` in env or `~/.npmrc`. Ask the team if you don't have one yet.
+> **Font Awesome Pro**: no token required. The FA Pro icons are vendored/self-hosted in `code/public/assets/fontawesome/` (webfonts + `css/all.min.css`), so `npm install` pulls only from the public registry — a token-less install works. `FONTAWESOME_NPM_AUTH_TOKEN` lingers in `.env.example` but is vestigial; you don't need it to install or run Ant Academy.
 
 ### Start in tmux
 

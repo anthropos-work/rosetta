@@ -104,7 +104,7 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 | **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/library/*`, `/free`, `/free/*`, `/local-content/*`, `/catalog.json`, `/academy-manifest.json` (other `/api/*` stay gated). The last three are public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest (gating any of them 307s the fetch through sign-in and breaks it). |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
-| **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro |
+| **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
 | **PWA** | Serwist 9 (configurator mode); service worker compiled by `serwist build` |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
 | **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
@@ -118,7 +118,7 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 - npm (web app uses npm, not pnpm)
 - pnpm — only if you also want to run the mobile app
 - Clerk credentials (use the platform's dev tenant — same `@anthropos.work` domain)
-- A Font Awesome Pro npm token (issued by the team)
+- _(vestigial — NOT required)_ A Font Awesome Pro npm token. The FA Pro icons are vendored in the repo (`code/public/assets/fontawesome/`), so a fresh, token-less `npm install` succeeds and the app serves working icons. `FONTAWESOME_NPM_AUTH_TOKEN` survives in `code/.env.example` but is **not** needed to install or run.
 
 #### 1. Clone
 
@@ -146,6 +146,7 @@ cp .env.example .env
 # Minimum to boot locally:
 #   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 #   CLERK_SECRET_KEY
+# Vestigial — NOT required (FA Pro icons are vendored in the repo; token-less npm install works):
 #   FONTAWESOME_NPM_AUTH_TOKEN
 # Needed only for the server-side /api/ai/chat route handler:
 #   OPENAI_API_KEY        (server-side)

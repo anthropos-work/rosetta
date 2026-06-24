@@ -81,14 +81,19 @@ single-identity demo — see the toggle list below.) Source of truth:
    `DEMO_NO_SETDRESS=1` skips the whole pass. To get the **real** catalog on a fresh box (fill the cache once),
    see [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures
    (replay only — capture is a separate, operator-confirmed prod read).
-   (`rosetta-extensions @ storytelling-postfix-1`.)
+   (`rosetta-extensions @ storytelling-postfix-2`.)
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
    `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9000+`
    single-port (M32), ant-academy `:3077+`, presenter cockpit `:7700+`) and the **dev stack is untouched**. The
    host-native daemons (cockpit + ant-academy) now launch **session-detached** (via `detach.sh::launch_detached`)
-   so they survive the launching session/task ending — no more "dead on a later visit". (ant-academy is a
-   non-fatal skip when its Font Awesome Pro deps aren't installed — a Clerk-only Vercel-deployed peripheral; the
-   cockpit/next-web/studio-desk carry the demo.)
+   so they survive the launching session/task ending — no more "dead on a later visit". ant-academy now comes up
+   **by default** on a fresh `/demo-up` — `ensure-clones.sh` sweeps any incomplete sibling stub (a repos.yml repo
+   dir with no `.git`) before `make init` so the source actually lands, and `ant-academy.sh` **auto-runs `npm
+   install`** (no token needed — the Font Awesome Pro icons it uses are **vendored/self-hosted** in the repo, not
+   pulled from the FA npm registry) when `node_modules` is absent (`storytelling-postfix-2`). The earlier "down"
+   was a **blocked clone** (an empty `stack-demo/ant-academy/` stub holding only a gitignored `code/.env.local`
+   defeated `make init`'s skip-if-present), now fixed — not a missing FA token. It's a Clerk-only Vercel-deployed
+   peripheral; the cockpit/next-web/studio-desk carry the demo.)
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.
