@@ -99,3 +99,39 @@ error-return branches in surrounding code — out of this milestone's harden sco
 
 **Net:** 12 tests added (8 unit/edge/error + 3 integration + 1 fuzz), 0 bugs (build phase was correct), 0
 flakes. M39-touched functions all at 100%. Re-tag `method-acting-m39` → new rext HEAD.
+
+## M39: Final Review
+
+`/developer-kit:close-milestone` review (2026-06-24). A near-clean close: the build phase's implementation was
+correct and the harden pass had already deepened tests + verified all 3 alignment gates, so the review found
+**0 scope gaps, 0 code-quality must-fixes, 0 doc inaccuracies, 0 test/flake gaps**. The only fix-queue items
+were decision-triage reference tags. Deferral re-audit **GREEN** (0 deferrals; the two `Out:` items are
+Fate-2, already owned by M40/M41 — confirmed, no edit). Adversarial review (Phase 2c) weighed 2 scenarios
+(AR-1 G2 silent-0-rows, AR-2 G1 slug-collision); both no-fix-needed, recorded in `decisions.md`. All 3 offline
+Clerkenstein alignment gates re-verified at close HEAD `c360b4e`: **Go 22/22, JS 9/9, multi 9/9 — 100%/100%**.
+go.mod/go.sum byte-identical (supply-chain GREEN). Flake gate: 5× shuffle, 0 flakes, both modules.
+
+### Scope
+- [x] All 3 sections (G1/G2/G4) delivered as Fate-1 in this milestone; `Out:` items confirmed Fate-2 (M40/M41) — no gap.
+
+### Code Quality
+- [x] [verified] Cross-cutting review clean: consistent patterns (single-sourced `orgSlugFor`, deterministic-by-seed
+  helpers, `nullIfEmpty` no-fabrication, audit-on-write), no dead code (`avatarURL` removed in D8), boundary-safe
+  (empty-OrgName fallback, empty-jobTitle generic blurb), no resource leaks, `go vet` clean both modules.
+
+### Documentation
+- [x] [verified] `stories-spec.md` + `clerkenstein.md` M39 sections accurate against the implemented code; all
+  intra-/cross-doc anchors resolve; no new top-level unit (avatar.go/userprofile.go are new files in the existing,
+  already-documented `seeders` package); no handbook/count drift.
+
+### Tests & Benchmarks
+- [x] [verified] Full suites green (seeders 209 funcs/214 PASS, clerk-frontend 51/86); flake gate 5× shuffle 0 flakes;
+  no regression-test gap (0 build-phase bugs).
+
+### Decision Triage
+- [x] D2 → blend confirmed + tag added (#M39-D2) in clerkenstein.md (orgSlugFor single-source)
+- [x] D3 → blend confirmed + tag added (#M39-D3) in clerkenstein.md (no-roster fallback)
+- [x] D4/D5 → blend confirmed + tag added (#M39-D4/D5) in stories-spec.md (idempotent UPDATE + IS-DISTINCT-FROM)
+- [x] D7 → blend confirmed + tag added (#M39-D7) in stories-spec.md (offline SVG face generator)
+- [x] D1, D6, D8 → archive (maintainer-only: paired-change mechanics, backfill-every-member, dead-code removal)
+- [x] AR-1, AR-2 → archive (adversarial scenarios; no-fix-needed, recorded in decisions.md)

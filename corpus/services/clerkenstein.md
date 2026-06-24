@@ -85,14 +85,14 @@ re-tagged as a whole:
 
 - **Producer** — `RosterIdentity` (roster.go) gains `org_name`/`org_slug`, filled in `BuildRoster` from
   `st.Org.Name` + the single-sourced `orgSlugFor` (the **same** slug rule `OrgSeeder` writes to
-  `public.organizations.slug`, so the roster-carried org and the seeded org can never disagree).
+  `public.organizations.slug`, so the roster-carried org and the seeded org can never disagree — #M39-D2).
 - **Consumer** — `RosterEntry` (`clerk-frontend/registry.go`) gains the matching `org_name`/`org_slug` and
   threads them through `toDemoUser` into `DemoUser` (`resources.go`); `DemoUser.orgMemberships()` renders them
   on the FAPI org resource (`/v1/me` → the SDK's active-org → the top bar).
 - **No-roster default fallback** — an empty `OrgName`/`OrgSlug` (the `DefaultDemoUser`, or any roster that omits
   the fields) falls back to the `orgNameDefault`/`orgSlugDefault` constants (`"Clerkenstein Demo Org"` /
   `"clerkenstein-demo"`), so the single-identity path is **byte-identical** and a pre-M39 roster still loads
-  (the decoder rejects *unknown* fields, not *missing* ones — forward-compatible).
+  (the decoder rejects *unknown* fields, not *missing* ones — forward-compatible — #M39-D3).
 
 Alignment held: the **multi-identity** (`clerk-multi-1`) + **JS/FAPI** (`clerk-js-5`) surfaces stay **9/9,
 100%/100%** (the `DefaultDemoUser` goldens are unchanged — they take the default-name fallback).

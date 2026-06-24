@@ -167,7 +167,7 @@ hero (Maya on demo-3) shows the **right company, a real role+title, and a real f
   M39 has `users.go` **backfill `user_basic_info`** (`job_role_id` + `job_title` + a deterministic believable
   `summary` + `location`) from the **same resolved role** it writes to the membership. The trigger-created row
   already exists, so it's an **idempotent UPDATE keyed by `id`** with an `IS DISTINCT FROM` guard (a re-seed of
-  identical data matches 0 rows — the M17 re-run contract). **One UPDATE lights two surfaces**: the header
+  identical data matches 0 rows — the M17 re-run contract — #M39-D4/D5). **One UPDATE lights two surfaces**: the header
   role/title **and** the role-gap radar / role-readiness widgets (`jobRoleMatch` keys off the same field). The
   no-fabrication rule holds: `job_role_id` is NULL with no replayed taxonomy, and a hero keeps her **declared**
   role label as the title (the same split `users.go` applies to `memberships.job_role_name`). Backfilled for
@@ -182,7 +182,8 @@ hero (Maya on demo-3) shows the **right company, a real role+title, and a real f
   hashing the user's uuid over bounded palettes, and emits it as a **`data:image/svg+xml;base64,…` URI** written
   straight into `users.picture`. That makes it **offline-safe** (zero network fetch), **deterministic** (same
   user → same face, reruns byte-identical), **license-clean** (the SVG is authored in-repo — no third-party
-  asset, nothing to vendor), and tiny (~1 KB, fits the unbounded `varchar`). It IS a face, not an initials disc.
+  asset, nothing to vendor), and tiny (~1 KB, fits the unbounded `varchar`). It IS a face, not an initials disc
+  (#M39-D7).
 
 The live acceptance: re-seed demo-3 + log in as Maya → the top bar shows "Cervato Systems", the profile shows a
 role + title + summary + location, and every person carries a real face. Code-of-record: `rosetta-extensions`
