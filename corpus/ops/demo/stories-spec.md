@@ -22,7 +22,10 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > [`clerkenstein/knowledge/architecture.md` § Multi-identity]) — plus the **presenter cockpit** delivered in
 > **M38** (a standalone served panel that lists each story → its hero trio with **[Login as]** + **[Jump to
 > section]**, so a demo-giver picks a hero and lands on the right screen to present a flow live — see
-> [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below). It graduates
+> [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below) — plus the **profile-identity layer**
+> delivered in **v1.10 "method acting" M39** (the roster org-name thread → the real company on the top bar, the
+> `user_basic_info` role backfill → a real role+title on the /profile header, and the offline real-face avatar —
+> see [§ The profile-identity layer (v1.10 M39)](#the-profile-identity-layer-v110-method-acting-m39) below). It graduates
 > the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
 > lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
 > `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
@@ -136,11 +139,55 @@ Two pieces guarantee closure:
   0–100 distribution with a per-user upward growth arc** (replacing the binary 85/35), and `sim_type` is
   weighted ~75% toward the verification-feeding ASSESSMENT/HIRING types. The arc gives the dashboard's
   Growth/Biggest-Improvers a real trend to narrate (the "company mid AI-transformation" story).
-- **`users.go`** — real first/last names from an in-code name bank, a deterministic avatar URL, and a
-  `first.last@<org-domain>` email (no more "User N" / no picture / `@{stack}.local`). A blueprint **hero**'s
-  real name + email land at the population index the `PersonaSeeder` verifies her chain against, so the named
-  row and the verified skills are one user — both seeders derive that index from the same shared bridge
-  (`personaUserIndex` / `personaIndexMap`), so they cannot drift (#M34-D2).
+- **`users.go`** — real first/last names from an in-code name bank, a deterministic **real-face avatar**
+  (v1.10 M39 — see below), and a `first.last@<org-domain>` email (no more "User N" / no picture /
+  `@{stack}.local`). A blueprint **hero**'s real name + email land at the population index the `PersonaSeeder`
+  verifies her chain against, so the named row and the verified skills are one user — both seeders derive that
+  index from the same shared bridge (`personaUserIndex` / `personaIndexMap`), so they cannot drift (#M34-D2).
+  v1.10 M39 also has `users.go` **backfill `public.user_basic_info`** (the /profile header source) — see the
+  profile-identity layer below.
+
+### The profile-identity layer (v1.10 "method acting" M39)
+
+v1.9 seeded the verified-skill **spine**, but a logged-in hero's **profile page** still read thin: the top bar
+showed a generic org, the header showed "no role", and the avatar was a 2-letter initials disc. M39 lights the
+three highest-leverage, lowest-effort identity fixes — **tooling + docs only, zero platform-repo edits** — so a
+hero (Maya on demo-3) shows the **right company, a real role+title, and a real face**.
+
+- **Org name (G1) — the roster carries the story org.** The FAPI org resource used to hardcode "Clerkenstein
+  Demo Org". Now `roster.go` threads each hero's `st.Org.Name`/slug into the roster JSON (`org_name`/`org_slug`),
+  Clerkenstein renders it on the org resource, and the **top bar reads the real company** (e.g. "Cervato
+  Systems"). It's a `DisallowUnknownFields` **paired change** across the two structs + a no-roster
+  `"Clerkenstein Demo Org"` fallback — the full mechanism is in
+  [`../../services/clerkenstein.md` § Roster org-name threading](../../services/clerkenstein.md#multi-identity).
+
+- **Role backfill (G2) — `user_basic_info`, the table the header actually reads.** The /profile header reads
+  `profile.info.jobRole` → `infoResolver.JobRole` ← **`public.user_basic_info.job_role_id`** — but the seeder
+  wrote the role only to `public.memberships` (the wrong table for the header), so the header showed "no role".
+  M39 has `users.go` **backfill `user_basic_info`** (`job_role_id` + `job_title` + a deterministic believable
+  `summary` + `location`) from the **same resolved role** it writes to the membership. The trigger-created row
+  already exists, so it's an **idempotent UPDATE keyed by `id`** with an `IS DISTINCT FROM` guard (a re-seed of
+  identical data matches 0 rows — the M17 re-run contract). **One UPDATE lights two surfaces**: the header
+  role/title **and** the role-gap radar / role-readiness widgets (`jobRoleMatch` keys off the same field). The
+  no-fabrication rule holds: `job_role_id` is NULL with no replayed taxonomy, and a hero keeps her **declared**
+  role label as the title (the same split `users.go` applies to `memberships.job_role_name`). Backfilled for
+  **every** member (not heroes only) so any profile a presenter clicks into reads coherent. Real schema (no
+  `job_role_title` column — the header uses `job_role_id` → resolved label + `job_title`; `email` is NOT NULL
+  UNIQUE, which is why it must be an UPDATE not an INSERT).
+
+- **Real-face avatars (G4) — offline, deterministic, license-clean.** `users.picture` was a DiceBear
+  *initials* SVG fetched from `api.dicebear.com` — a 2-letter disc **and** an online fetch a sealed demo box
+  can't reach. M39's `avatar.go` is a self-authored **parametric SVG face generator**: it draws an illustrated
+  human face (varied skin tone, hair colour/style, eyes, brows, nose, mouth) chosen deterministically by
+  hashing the user's uuid over bounded palettes, and emits it as a **`data:image/svg+xml;base64,…` URI** written
+  straight into `users.picture`. That makes it **offline-safe** (zero network fetch), **deterministic** (same
+  user → same face, reruns byte-identical), **license-clean** (the SVG is authored in-repo — no third-party
+  asset, nothing to vendor), and tiny (~1 KB, fits the unbounded `varchar`). It IS a face, not an initials disc.
+
+The live acceptance: re-seed demo-3 + log in as Maya → the top bar shows "Cervato Systems", the profile shows a
+role + title + summary + location, and every person carries a real face. Code-of-record: `rosetta-extensions`
+@ tag `method-acting-m39`. Out of M39 scope (later milestones): work/education history + skill depth (M41); the
+library + activity-feed serve-grant (M40).
 
 ## The blueprint — declaring a hero
 
