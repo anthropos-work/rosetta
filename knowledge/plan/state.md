@@ -20,6 +20,13 @@ serve-grant unblocks the library + every detail page + the activity feed) — or
 **Last closed:** **M39 profile identity (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN, 0
 blocking; 5 findings all decision-triage; deferral re-audit GREEN 0 escape-hatch; 3 offline alignment gates
 100%/100%; flake 0). Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m39`.
+**M39 LIVE ACCEPTANCE PASSED** (fresh `/demo-up 3`, logged in as Maya): G1 roster `org_name="Cervato Systems"`
+threaded + served by the rebuilt fake-fapi; G2 `user_basic_info` role = "Backend Developer" (+ summary/location);
+G4 offline real-face SVG avatar. **Acceptance surfaced + fixed a tooling defect** — `up-injected.sh` built the
+shared `stackseed` CLI *build-if-missing*, and `$STACK/bin` survives `down --purge`, so a re-consume of new
+seeder tooling silently reused the STALE binary (the acceptance no-op'd until the bin was removed by hand). Fixed
+to ALWAYS rebuild stackseed: **rext tag `method-acting-m39-fix1`** (+ regression pin). Matters for every
+remaining v1.10 milestone acceptance.
 **Phase:** **v1.10 in development — M39 closed; M40–M42m planned, unstarted.**
 **Paused:** _(none)_
 
