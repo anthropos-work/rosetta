@@ -151,9 +151,13 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   exhausts the test budget, and false-scores perfectly-good `http=200` pages as empty/error (the M42e baseline
   reported 44 "failures" that were all this flake — the true count was 8). The harness navigates with
   `waitUntil: 'domcontentloaded'`, then races a **short bounded** `networkidle` settle (`.catch(()=>{})` on a
-  ~4 s timeout) for hydration + first data paint, and never blocks on never-idle. Screenshots are captured
+  ~1.5 s ceiling) for hydration + first data paint, and never blocks on never-idle. Screenshots are captured
   **inline** (an `onPage` hook in the crawl, while the page is already loaded) — never a 2nd full re-navigation
-  pass, which would re-introduce the timeout and double the nav count.
+  pass, which would re-introduce the timeout and double the nav count. The crawl also guards every assert
+  against a **closed page** (the test-timeout race can close the page mid-assert): `page.isClosed()` is checked
+  before each assert and the read is wrapped so a close degrades to an "unmeasured" note + a clean break, never
+  a crash that loses the whole partial report. Give the sweep a generous test timeout (the full reachable set
+  can hit the page cap; ~20 min) so the gate measurement is never truncated.
 - **Seed paths are guesses, not coverage commitments.** The seed list primes the BFS frontier; a seed that
   404s or redirects **away** (e.g. the authenticated root → the real landing, or a stale `/skills` → 404) is
   **dropped, not scored** — only pages reached via real in-app nav links are coverage commitments. The redirect
