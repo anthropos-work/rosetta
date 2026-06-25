@@ -3,7 +3,7 @@ milestone: M42m
 slug: manager-coverage
 version: v1.10 "method acting"
 milestone_shape: iterative
-exit_gate: "logged in as a MANAGER-vantage hero (e.g. Dan Rossi / Leah Donovan) on demo-3, the Playwright coverage sweep (manager vantage) reports 0 failing pages (no empty/error pages) AND 0 out-of-demo escapes across every manager-reachable surface — including the M36 Workforce-Intelligence dashboard (mapped→verified funnel + teams + role gap/mobility + succession + feedback + the org-scale claimed-vs-verified gap) + any admin pages"
+exit_gate: "Identical bar to M42e's re-scoped gate, run as a MANAGER hero (Dan Rossi / Leah Donovan) on a stack from a FRESH demo-up: per page AND per section/element of every manager-reachable surface — (a) REAL semantic content (not placeholder/empty-state copy or bare chrome), (b) SUBSTANTIAL cardinality (not just 1, documented 0/1 exceptions), (c) PERSONA self-consistency (role↔skills↔bio↔real-person avatar↔team↔activity cohere; org has a name+logo), (d) NO prod-eject escape (legitimate external reference links allowed but disclosed). This covers the manager-only surfaces — the M36 Workforce-Intelligence dashboard (mapped→verified funnel + teams + role gap/mobility + succession + feedback + the org-scale claimed-vs-verified gap) + any admin pages, which must show real seeded org/team data, not empty widgets. Gate = 0 sections below the bar + 0 prod-eject escapes, reproduced on a FRESH demo-up."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
 status: planned
 created: 2026-06-24
@@ -16,21 +16,29 @@ spec_ref: .agentspace/profile_gaps.md (live-demo review, 2026-06-24; root-cause 
 
 # M42m — Manager 100% demo coverage
 
+## ⚠ Re-scope (2026-06-25 — inherits M42e's re-scope)
+Same correction as M42e: the gate is the **believability bar** (real semantic content + substantial per-section
+cardinality + persona/org self-consistency, reproducible on a fresh demo-up), measured by the **new semantic
+coverage harness** — NOT the original DOM text-density check. See M42e's overview + [[demo-coverage-semantic-content-gate]].
+
 ## Goal
-A hero of the **MANAGER** vantage (e.g. Dan Rossi / Leah Donovan) sees **100% of the demo platform's
-manager-reachable pages populated** — no empty pages, no error pages, and no out-of-demo escapes. Logging in
-as that manager on demo-3, every surface the manager can reach fills with believable seeded story data and
-stays inside the demo world.
+A hero of the **MANAGER** vantage (Dan Rossi / Leah Donovan) sees a **believable, fully-populated manager
+experience** — every reachable page and **every section/element** (especially the **M36 Workforce-Intelligence
+dashboard**) shows real seeded org/team story data (no empty widgets, no placeholders, no single-row "filler"),
+the manager persona + their org/team are **internally coherent**, and nothing ejects the presenter to
+production. It must look this way on a **fresh `demo-up`**.
 
 ## Exit gate (observable, machine-verifiable)
-Identical to M42e's gate, run as a **MANAGER** hero. The Playwright coverage sweep, pointed at a manager-roster
-hero, must report **0 failing pages** (no empty/error pages) and **0 out-of-demo escapes** across every
-manager-reachable surface. This covers the **manager-only** surfaces:
+The **same bar as M42e's re-scoped gate (a)–(d)**, run as a **MANAGER** hero on a stack from a **fresh
+`demo-up`** — asserted per page AND **per section/element** of every manager-reachable surface, including the
+manager-only ones:
 - the **M36 Workforce-Intelligence dashboard** — the mapped→verified funnel + teams + role gap/mobility +
-  succession + feedback + the org-scale claimed-vs-verified gap;
+  succession + feedback + the org-scale claimed-vs-verified gap — must render **real seeded org/team data with
+  substantial cardinality**, not empty/placeholder widgets;
 - plus **any admin pages** reachable from the manager vantage.
 
-Gate = the Playwright sweep (manager vantage) reports **0 failing pages + 0 escapes**.
+**Gate = 0 sections below the content/cardinality/consistency bar + 0 prod-eject escapes (legitimate external
+reference links allowed but disclosed), reproduced on a FRESH `demo-up`.**
 
 ## Why iterative (not section)
 Same loop as M42e: the manager-vantage **page set and its failure modes are discovered by the sweep, not
