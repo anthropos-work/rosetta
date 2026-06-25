@@ -162,11 +162,17 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   404s or redirects **away** (e.g. the authenticated root → the real landing, or a stale `/skills` → 404) is
   **dropped, not scored** — only pages reached via real in-app nav links are coverage commitments. The redirect
   target is enqueued and scored as the real page. (Otherwise a wrong seed guess false-inflates `failing`.)
-- **The error-sentinel check must read the *visible* main region, not the raw `<body>`.** A page with no
-  `<main>` falls back to `<body>`, which on next-web includes a large inlined Next.js/i18n JSON payload — an
-  error-string **translation table** (e.g. `"Something went wrong while…"`) lives in that JSON and
-  false-matches the sentinel even on a healthy page. Prefer `<main>`; when absent, the sentinel match is
-  unreliable on this app and the page needs a Tier-2 per-section assertion (or a root-normalization skip).
+- **Read `innerText`, never `textContent` — and the error-sentinel reads the *visible* text only (M42e
+  iter-03/06 lesson).** `textContent` serializes hidden + inlined content, including next-web's inlined
+  Next.js/i18n JSON payload on routes that ship the whole translation table in the SSR'd `<body>` (e.g. the
+  root `/`). That table carries translation **values** like `"Something went wrong while…"` which the
+  error-sentinel scan then false-matched — flagging a fully-rendered 189 KB page as an error. The assertion
+  reads `innerText()` (only what the user actually sees), which structurally excludes the inlined table.
+  Prefer `<main>`; when a route has no `<main>` (the root `/` is a pre-redirect/loading shell), it is **not a
+  real content page** — drop it from the seed list (the real landing, `/home`, renders content and is reached
+  via seed or nav), rather than scoring the empty shell. (`innerText` returns visible text, which can be
+  shorter than `textContent`; re-sweep after switching to confirm no legitimately-terse page drops below the
+  density floor → a Tier-2 per-section assertion for any that do.)
 - **Seedable structural row vs runtime-computed artifact — not every empty page is a seed gap (M42e iter-04/05
   lesson).** Some surfaces are filled by a **runtime computation**, not a seedable row: e.g. a sim **result**
   page (`/sim/<slug>/result/<sessionId>`) reads `jobSimulationResult.evaluationStatus` — an AI evaluation the
