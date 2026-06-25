@@ -213,7 +213,7 @@ the depth — **tooling + docs only, zero platform-repo edits**; the `/profile` 
   overview's column guesses were wrong — these are verified against demo-3): `user_experiences.company` is
   `uuid NOT NULL` with an FK → `companies(id)` (the GraphQL `Company` resolver does `QueryCompany().Only(ctx)`,
   so a NULL/dangling company errors the whole timeline) ⇒ the seeder writes a real **`companies`** row per
-  distinct employer; `from`/`to` are **DATE** (not timestamptz) with a `from<=to OR to IS NULL` CHECK;
+  distinct employer (#M41-D2); `from`/`to` are **DATE** (not timestamptz) with a `from<=to OR to IS NULL` CHECK;
   `location_type` is the **lowercase** ent enum `inoffice|hybrid|fullremote` (a wrong-case value inserts but the
   GraphQL `LocationType` enum can't map it); and the `skills` column is **`json`** — an array of skill names.
 
@@ -226,16 +226,17 @@ the depth — **tooling + docs only, zero platform-repo edits**; the `/profile` 
   claimed**, **widening** the visible claimed-vs-verified gap (the demo's headline aha). The **DB landmine**:
   `user_skills_check_foreign_keys` requires ≥1 provenance edge non-NULL — since the tail has no
   `job_simulation_id`, it ties to the seeded **work history** via `user_skill_experience` /
-  `user_skill_education` (which *also* makes the claimed skills render **under** each work experience — the
-  `workExperience.Skills` resolver reads `userskill.HasExperienceWith`). The tail draws skills **distinct** from
-  the verified set (it offsets past the first `EffectiveVerified()` of the same role-coherent-then-flat combined
-  pool), so the two counts don't overlap. Both arcs read coherent: a thriving **under-claimer**'s deep profile
-  and a struggling **over-claimer**'s stark gap (few verified, many claimed) are each believable.
+  `user_skill_education` (#M41-D3) (which *also* makes the claimed skills render **under** each work experience —
+  the `workExperience.Skills` resolver reads `userskill.HasExperienceWith`). The tail draws skills **distinct**
+  from the verified set (it offsets past the first `EffectiveVerified()` of the same role-coherent-then-flat
+  combined pool (#M41-D6)), so the two counts don't overlap. Both arcs read coherent: a thriving
+  **under-claimer**'s deep profile and a struggling **over-claimer**'s stark gap (few verified, many claimed —
+  the tail applies to both arcs (#M41-D5)) are each believable.
 
 The **gap mechanic is intact** — `user_level` (claimed) vs `anthropos_level` (verified) is still the widget's
 spine; the unverified tail leaves `anthropos_level` NULL so the gap renders, and the verified evidence UPSERT is
 never clobbered (the claimed UPSERT's `ON CONFLICT … WHERE is_verified = false` guard keeps the verified side
-winning). **Closure stays measured** — every skill node-id/name comes from the same replayed taxonomy resolvers
+winning (#M41-D4)). **Closure stays measured** — every skill node-id/name comes from the same replayed taxonomy resolvers
 the verified chain uses; no replayed taxonomy → the timeline still writes (blank skills/role — never fabricated)
 and the tail is skipped, so the closure gene stays green. Every table the seeder writes (`companies`,
 `user_experiences`, `user_educations`, `user_skills`, `user_skill_evidences`) is **`PerStackIsolated`**.

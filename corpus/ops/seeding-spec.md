@@ -289,9 +289,13 @@ verified side) **and** seeds a **~60-skill claimed-but-unverified tail** (`user_
 the `user_skills_check_foreign_keys` CHECK; `user_skill_evidences` `anthropos_level` NULL, `user_level` set) — so
 the profile "overall" reads **≈ 90 = ~30 verified + ~60 claimed**, **widening** the visible gap. Live-schema
 landmines drove the design: `user_experiences.company` is `uuid NOT NULL` FK→`companies`, `from`/`to` are DATE
-with a `from<=to` CHECK, `location_type` is the lowercase ent enum `inoffice|hybrid|fullremote`, `skills` is
-json. No-fabrication + closure preserved (skill refs from the replayed taxonomy; empty pool → timeline still
-writes, tail skipped); every table `PerStackIsolated`. Full reference:
+with a `from<=to OR to IS NULL` CHECK (the current role leaves `to` NULL — open-ended), `location_type` is the
+lowercase ent enum `inoffice|hybrid|fullremote`, `skills` is json. The claimed-tail evidence UPSERT is a
+**separate** SQL from the verified one, guarded `ON CONFLICT … WHERE is_verified = false` so it **never clobbers
+a verified row** on a (skill,user) collision (the verified side always wins; the tail draws skills distinct from
+the verified set, so the guard is a re-run/safety net). No-fabrication + closure preserved (skill refs from the
+replayed taxonomy; empty pool → timeline still writes, tail skipped); every table `PerStackIsolated`. Full
+reference:
 [`demo/stories-spec.md` § The profile-depth layer (v1.10 M41)](demo/stories-spec.md#the-profile-depth-layer-v110-method-acting-m41).
 
 ## Status

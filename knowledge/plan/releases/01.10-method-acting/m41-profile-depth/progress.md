@@ -24,10 +24,11 @@ Section checklist (built by `/developer-kit:build-milestone`). Scope detail in `
   layer (the ProfileSeeder fan-out + the depth bump + the unverified tail + the widened gap + the live-schema
   landmines).
 
-**Status:** all 5 sections implemented. Code @ `rosetta-extensions` tag `method-acting-m41`. 9 new unit tests,
-full stack-seeding suite green `-race`, vet + gofmt clean, go.mod/go.sum byte-identical, every emitted row
-dry-insert-validated against the live demo-3 schema (then rolled back — zero pollution). Hardened (below).
-Ready for `/developer-kit:close-milestone`.
+**Status:** `archived` (completed 2026-06-25). All 5 sections implemented + hardened + closed. Code @
+`rosetta-extensions` tag `method-acting-m41` → `0346113`. Full stack-seeding suite green `-race`, vet + gofmt
+clean, go.mod/go.sum byte-identical, every emitted row dry-insert-validated against the live demo-3 schema (then
+rolled back — zero pollution). Closed via `/developer-kit:close-milestone` (GREEN, 0 blocking — see § M41: Final
+Review + § M41: Completeness Ledger below).
 
 ## M41: Hardening
 
@@ -81,3 +82,74 @@ moved `18c4edb → 63bcceb`. go.mod/go.sum byte-identical.
 Pass 2 closed the last 2 uncovered blocks → 0 uncovered statements on both M41 files (100% per-function).
 A Pass 3 Step-2b scan finds nothing new worth adding; coverage delta would be 0. Loop terminated (scan clean
 + full coverage + no flakes), well within the 5-pass cap.
+
+## M41: Final Review
+
+Review found **8 findings**: 0 scope · 1 code-quality (nice-to-have) · 1 adversarial · 5 docs · 1
+decision-triage. All addressed fully (no partial fixes). Deferral re-audit GREEN
+([`audit-deferrals/deferral-audit-2026-06-25-m41-close.md`](audit-deferrals/deferral-audit-2026-06-25-m41-close.md)).
+
+### Scope
+- [x] No scope gaps — all 5 section checkboxes checked; 3 open-questions resolved in build (M41-D5/D7 + the
+  3-exp/1-edu envelope); 3 `Out:` items are release-sibling partitions / leave-as-is, not dropped scope. 0
+  TODO/FIXME/HACK in M41 source.
+
+### Code Quality
+- [x] [nice-to-have] `combinedNamedPool` uses `rolePool.take(rolePool.len())` (alloc+copy where iteration would
+  do) — left as-is: trivial, not load-bearing, the slice is tiny (≤role-pool size). vet + gofmt clean;
+  consistent with persona/users seeders (interface, deterministicUUID, COPY/flush, DependsOn). No must/should-fix.
+
+### Adversarial (Phase 2c)
+- [x] AR-1 — empty-`eduIDs` round-robin modulo-by-zero: added `TestSeedClaimedTail_EmptyEducationsNoPanic`
+  (the in-seeder `len(eduIDs) > 0` guard handles it; code was already correct). AR-2 (never-clobber) + AR-3
+  (partial-UNIQUE under round-robin) already pinned by the harden pass. Recorded in `decisions.md`.
+
+### Documentation
+- [x] `seeding-spec.md` — completed the `from<=to` CHECK to `from<=to OR to IS NULL` (the current-role NULL case).
+- [x] `seeding-spec.md` — added the claimed-tail never-clobber UPSERT guard sentence (was only in stories-spec).
+- [x] `CLAUDE.md` — extended the stories-spec.md description to cover v1.10 M39 (identity) + M41 (ProfileSeeder).
+- [x] `stack-seeding/README.md` — named `ProfileSeeder` in the `seeders/` row.
+- [x] `stack-seeding/README.md` — Status section: added the v1.10 profile-depth layer + reconciled the test
+  count **406 → 496** (ground-truth `grep` of Test/Fuzz funcs across 8 packages, post-AR-1).
+
+### Decision Triage
+- [x] M41-D2 (company NOT NULL FK) → blend into stories-spec.md (already present; added `(#M41-D2)` tag).
+- [x] M41-D3 (provenance edge tie) → blend into stories-spec.md (already present; added `(#M41-D3)` tag).
+- [x] M41-D4 (separate guarded UPSERT) → blend into stories-spec.md + seeding-spec.md (added `(#M41-D4)` tag).
+- [x] M41-D5 (thriving-heroes verified split) → blend into stories-spec.md (added `(#M41-D5)` tag).
+- [x] M41-D6 (combined-pool offset) → blend into stories-spec.md (added `(#M41-D6)` tag).
+- [x] M41-D1 (separate ProfileSeeder) → archive (maintainer-only structural choice).
+- [x] M41-D7 (heroes-only) → archive (maintainer-only scope choice).
+
+## M41: Completeness Ledger (Phase 9, section variant)
+
+### Done (Fate 1 — delivered in this milestone)
+- **G3 work history** — `ProfileSeeder` writes 3 `user_experiences` + a `companies` row per employer per
+  end-user hero (deterministic, backdated, role-aligned, current role `to`=NULL; live-schema-correct).
+- **G3 education** — 1 `user_educations` per hero, backdated before the work history.
+- **G5 verified depth bump** — `verified: 8 → ~30` for thriving heroes (Maya 30, Sara 28) in the presets.
+- **G5 claimed-but-unverified tail** — ~60 `user_skills`/`user_skill_evidences` (`is_verified=false`, no
+  `job_simulation_id`, tied to experiences/educations, `user_level` set, `anthropos_level` NULL), guarded
+  UPSERT never clobbers the verified side.
+- **Docs** — `seeding-spec.md` + `stories-spec.md` carry the profile-depth layer (+ the close-fix completions
+  and #M41-Dx tags); `CLAUDE.md` + `stack-seeding/README.md` updated.
+- **Close-added** — the AR-1 adversarial empty-`eduIDs` guard test (rext `0346113`).
+
+### Confirmed-covered (Fate 2 — already owned by another release-milestone)
+- **DEF-M40-01 — KPI "AI simulations completed" = 0** → owned by **M42e + M42m** (M40-D7). Inherited single
+  deferral; the per-vantage coverage exit gate already encompasses a non-zero completed-KPI. No plan edit.
+  Not aged-out (both destinations open). Confirmed at this close's deferral re-audit (GREEN).
+
+### Annotated (Fate 3 — attached to another release-milestone at this close)
+- None.
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.
+
+**Verdict:** all G3+G5 In-list scope items delivered as **Fate 1**; the one open deferral is the **inherited**
+DEF-M40-01 (Fate-2, owned by M42e/M42m). Nothing annotated, dropped, or escape-hatch-deferred. **Zero items
+require sign-off.** The 3 overview `Out:` items are release-sibling partitions / explicit leave-as-is; the 3
+open-questions were resolved in build (M41-D5/D7 + the 3-exp/1-edu envelope).
