@@ -600,6 +600,17 @@ stacksnap capture --surface directus       --source primary-read --dsn <marco_re
 # REPLAY is automatic in the set-dress bring-up (stacksnap replay --surface <name> --stack demo-N).
 ```
 
+> **The replay leg is wired into the set-dress loop (M42e P6).** `dev-setdress.sh`'s `snapshot_step` iterates
+> `for s in taxonomy directus sim-embeddings` — so a fresh `/demo-up` (and a `/dev-up`) replays **all three**
+> public surfaces in FK order: `taxonomy` (the skiller catalog) → `directus` (the content templates **+** the 4
+> library-category tables) → `sim-embeddings` (the `cms` pgvector index + REINDEX). `sim-embeddings` targets the
+> stack's `cms` schema (a different schema than directus, same offset DSN); its replay is **non-fatal** like the
+> others (a missing `cms` schema = rc 4, a cache-miss = rc 5 → the AI-sim library degrades to empty but the seed
+> floor + the rest of set-dress still run). The `/library/skill-paths` categories come from the `directus`
+> re-replay (no separate surface); the `/library/ai-simulations` sims + `searchSimulations` pgvector results come
+> from the `sim-embeddings` replay. Before P6 the loop ran only `taxonomy directus`, so a fresh demo's AI-sim
+> library was empty even with the surface code present — the **wiring** (not the surface) was the gap P6 closed.
+
 > `marco_read` returns `sslmode=no-verify` in its DSN; swap to `sslmode=require` for the Go/pgx capture path
 > (the M25 cold-start recipe). Never print/echo the DSN — values-blind.
 
