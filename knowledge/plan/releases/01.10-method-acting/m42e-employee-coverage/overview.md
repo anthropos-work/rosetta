@@ -3,11 +3,11 @@ milestone: M42e
 slug: employee-coverage
 version: v1.10 "method acting"
 milestone_shape: iterative
-exit_gate: "a Playwright sweep, logged in as an employee hero (e.g. Maya Chen via the cockpit), of EVERY reachable demo page asserts BOTH (a) non-empty semantic content in the DOM (real text/rows per section, not just a shell) AND (b) populated screenshots, for 100% of pages, with ZERO pages empty/error AND ZERO nav links escaping the demo platform (every in-app link/nav resolves to a demo-local surface on its offset port). Gate = the sweep reports 0 failing pages + 0 escapes."
+exit_gate: "Logged in as an EMPLOYEE hero (Maya) on a stack brought up by a FRESH demo-up, the coverage sweep asserts — per page AND per section/element of every employee-reachable page — (a) REAL semantic content: actual seeded user/catalog content, NOT placeholder/empty-state copy ('add something here') and NOT bare chrome; (b) SUBSTANTIAL cardinality: each content section shows a meaningful count of items (not just 1), except documented exceptions where 0/1 is genuinely correct; (c) PERSONA self-consistency: the hero's role, skills, bio, real-person avatar (consistent across menu + profile), work-history and activity cohere as one believable person, and the org has a name + logo; (d) NO prod-eject escape: no in-app nav/menu/button ejects the presenter to a prod anthropos surface (legitimate external editorial/reference links in content are allowed but disclosed as presenter-notes). Gate = 0 sections below the content/cardinality/consistency bar + 0 prod-eject escapes, AND the same result reproduces on a FRESH demo-up (not just the live-patched stack)."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
-status: planned
+status: archived
 created: 2026-06-24
-last_updated: 2026-06-24
+last_updated: 2026-06-25
 complexity: large
 delivers: corpus/ops/demo/coverage-protocol.md (NEW — the Playwright demo-coverage sweep + triage + fix iteration protocol) + the Playwright coverage harness (a new rext section, demo-only — the first non-Go rext dev/test dependency) + updates across the touched specs (frontend-tier.md / verification.md / seeding-spec.md / snapshot-spec.md) as gaps close
 depends_on: M39+M40+M41
@@ -16,22 +16,39 @@ spec_ref: .agentspace/profile_gaps.md (live-demo review, 2026-06-24; root-cause 
 
 # M42e — Employee 100% demo coverage
 
+## ⚠ Re-scope (2026-06-25 — user live-review feedback)
+The original gate measured **DOM text-density** (`textLen > 40` in `<main>`) — far too weak. It passed pages
+that render placeholder/empty-state cards ("add something here") + nav chrome, so the harness reported a green
+`(0,0)` while a logged-in presenter saw `/profile` placeholder-only, `/library/ai-simulations` empty,
+incoherent 3D skills for a backend dev, a silhouette avatar, and no org logo. The gate below is **re-scoped to
+the believability bar**: real semantic content + substantial per-section cardinality + persona self-consistency,
+reproducible on a **fresh demo-up**. (Detail: [[demo-coverage-semantic-content-gate]] in agent memory.)
+
 ## Goal
-A hero of the **EMPLOYEE/member vantage** (e.g. Maya Chen) logged into the demo platform sees **100% of the
-demo's pages populated** — no empty pages, no error pages, no out-of-demo escapes. Every page the employee can
-reach renders real semantic content, and every in-app link/nav stays inside the demo platform on its offset
-ports.
+A hero of the **EMPLOYEE/member vantage** (Maya), logged into the demo platform, sees a **believable, fully-
+populated person and catalog** — every reachable page and **every section/element** shows real seeded content
+(no placeholders, no empty-state copy, no single-item "filler"), the persona is **internally coherent**
+(role ↔ skills ↔ bio ↔ a real face ↔ work history), and nothing ejects the presenter to production. And it must
+look this way on a **fresh `demo-up`**, not just a hand-patched stack.
 
 ## Exit gate (objective, machine-verifiable)
-A **Playwright sweep**, logged in as an employee hero (e.g. Maya Chen via the cockpit handshake), of **EVERY
-reachable demo page** asserts BOTH:
-- **(a)** non-empty **semantic content in the DOM** — real text/rows for each section, not just a shell; AND
-- **(b)** populated **screenshots**,
+Logged in as Maya on a stack from a **FRESH `demo-up`**, the coverage sweep asserts — **per page AND per
+section/element** of every employee-reachable page:
+- **(a) Real semantic content** — actual seeded user/catalog content; **placeholder / empty-state copy and bare
+  chrome do NOT count** as content.
+- **(b) Substantial cardinality** — each content section shows a **meaningful count** of items (not just 1),
+  **except** documented exceptions where 0/1 is the genuinely-correct state.
+- **(c) Persona self-consistency** — the hero's **role, skills, bio, avatar (a real-person photo, consistent
+  across the menu AND the profile), work history, and recent activity cohere as one believable person**; the
+  **org has a name + logo**.
+- **(d) No prod-eject escape** — no in-app nav / menu / feature-button takes the presenter to a **prod anthropos
+  surface** (e.g. left-menu "Studio" → `studio.anthropos.work`). Legitimate **external editorial/reference links
+  inside content** (citations; a LinkedIn-import help link) are **allowed but disclosed** in a presenter-notes
+  list — they are not prod-ejects.
 
-for **100% of pages**, with **ZERO pages empty/error** AND **ZERO nav links escaping the demo platform** —
-every in-app link/nav resolves to a **demo-local surface on its offset port** (e.g. left-menu "Studio" → the
-local studio-desk, NOT prod `studio.anthropos.work`). An external link is **NOT valid filler** and must be
-rewritten in the demo injection/env. **Gate = the sweep reports 0 failing pages + 0 escapes.**
+**Gate = 0 sections below the content/cardinality/consistency bar + 0 prod-eject escapes, reproduced on a FRESH
+`demo-up`.** A new **semantic** coverage harness (not the text-density one) measures (a)–(d) per section, with a
+documented exception list, and screenshot review is part of acceptance.
 
 ## Why iterative (not section)
 The page set and the failure modes — empty section / federation error / out-of-demo link / missing seed — are

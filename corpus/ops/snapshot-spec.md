@@ -543,6 +543,77 @@ behind**: with content present, the v1.1 seeders' `sim_id` / `skill_path_id` / `
 `stack-seeding/seeders/contentref.go`). When no content snapshot is replayed (a structural-only run), the resolver
 falls back to the free values (graceful degradation; the snapshot is a prerequisite, not a hard requirement).
 
+## The library surfaces (v1.10 "method acting" M42e P6 — sim embeddings + category taxonomy)
+
+The org-member **library** (`/library/ai-simulations`, `/library/skill-paths`) needs two more public reference
+surfaces beyond the catalog + content templates. Both are CODE in `stack-snapshot`; the **sanctioned prod capture
+itself is run by the operator** (the M40 snapshot-CAPTURE-path dance — re-capture + clear the old cache + a FRESH
+`/demo-up`, since the cache short-circuits a plain re-run).
+
+**1. The `sim-embeddings` surface (`stack-snapshot/simembeddings/`) — the `cms` pgvector sim-similarity index.**
+The org-member `/library/ai-simulations` view runs `searchSimulations` → a pgvector similarity over
+`cms.similarities`. A fresh demo has **0 rows** there → the library is empty. This surface captures the **public**
+sim embeddings (and their metadata) so the library renders the real public catalog:
+
+- `similarities` — **org-bearing root** (`organization_id`), predicate `organization_id IS NULL AND entity_type =
+  'simulation'`. `organization_id` is the tenant scope column; `entity_type = 'simulation'` is a **scoping filter**
+  in the `PublicFilter` but **NOT a scope column** (exactly as the directus surface keeps `status = 'published'`
+  out of `ScopeColumns`). Carries the pgvector `small_embedding3` (dim 1536) — flagged for **REINDEX-on-replay**
+  (`REINDEX TABLE` rebuilds the unique `entity_id` / `organization_id` btrees after the COPY; there is no pgvector
+  index in prod — the search scans the vectors directly).
+- `similarity_categories` / `similarity_features` / `similarity_skills` — **parent-scoped** to the public
+  `similarities` subset via their DB FK `entity_id → similarities.id` (captured AFTER the parent, FK replay order).
+
+`cms.similarities.entity_id` is a **bare uuid** (no DB FK to `directus.simulations`), so the surface is
+self-contained for replay — pairing it with a directus replay (which carries the public sims) lights the full
+library, but neither replay FK-depends on the other.
+
+**2. The library-category taxonomy (4 tables added to the existing `directus` surface).** `/library/skill-paths`
++ `/library/ai-simulations` show no categories until these are replayed:
+
+- `library_macro_categories` + `library_categories` — **pure-reference** (no tenant column; a public category
+  taxonomy, captured whole).
+- `simulations_library_categories` + `skill_paths_library_categories` — **junctions**, parent-scoped to public
+  published sims / skill_paths (so a tenant sim/path's category link never leaks). Listed after sims/paths +
+  categories (FK replay order).
+
+**Public-only is proven before any prod read.** Both surfaces pass `firewall.AssertPlan` (the roots filter
+directly on the tenant column; the children/junctions are parent-scoped, never whole-table). A structural
+**dry-run** (`BuildPlan` + `AssertPlan`, no row data) is unit-tested (`TestSurface_PlanIsPublicOnly`) and was
+confirmed against a real schema:
+
+```bash
+# Plan-assert only — "firewall plan OK (public-only), no data read". No rows captured.
+stacksnap capture --surface sim-embeddings --source primary-read --dsn <SAFE-DSN> --dry-run
+stacksnap capture --surface directus       --source primary-read --dsn <SAFE-DSN> --dry-run
+```
+
+**The operator's real capture + replay (the M40 dance).** The capture reads the sanctioned public-only source
+(`marco_read`, firewall-enforced); replay loads into the stack on the next FRESH `/demo-up`:
+
+```bash
+# CAPTURE (operator runs this against the sanctioned marco_read DSN; firewall keeps it public-only):
+stacksnap capture --surface sim-embeddings --source primary-read --dsn <marco_read DSN>
+stacksnap capture --surface directus       --source primary-read --dsn <marco_read DSN>   # re-capture: now carries the category tables
+# Then the M40 snapshot-CAPTURE-path dance: remove the stale cached layers for these surfaces +
+# bring the demo up FRESH (a plain /demo-up no-ops a capture-path change — the cache short-circuits it).
+# REPLAY is automatic in the set-dress bring-up (stacksnap replay --surface <name> --stack demo-N).
+```
+
+> **The replay leg is wired into the set-dress loop (M42e P6).** `dev-setdress.sh`'s `snapshot_step` iterates
+> `for s in taxonomy directus sim-embeddings` — so a fresh `/demo-up` (and a `/dev-up`) replays **all three**
+> public surfaces in FK order: `taxonomy` (the skiller catalog) → `directus` (the content templates **+** the 4
+> library-category tables) → `sim-embeddings` (the `cms` pgvector index + REINDEX). `sim-embeddings` targets the
+> stack's `cms` schema (a different schema than directus, same offset DSN); its replay is **non-fatal** like the
+> others (a missing `cms` schema = rc 4, a cache-miss = rc 5 → the AI-sim library degrades to empty but the seed
+> floor + the rest of set-dress still run). The `/library/skill-paths` categories come from the `directus`
+> re-replay (no separate surface); the `/library/ai-simulations` sims + `searchSimulations` pgvector results come
+> from the `sim-embeddings` replay. Before P6 the loop ran only `taxonomy directus`, so a fresh demo's AI-sim
+> library was empty even with the surface code present — the **wiring** (not the surface) was the gap P6 closed.
+
+> `marco_read` returns `sslmode=no-verify` in its DSN; swap to `sslmode=require` for the Go/pgx capture path
+> (the M25 cold-start recipe). Never print/echo the DSN — values-blind.
+
 ## Dev as a full-fidelity peer (M13 — the set-dress pass: recipe + auto-snapshot + light seed)
 
 Through v1.2 the snapshot mechanism was demo-facing: a replay set-dressed a **demo** stack (driven by the

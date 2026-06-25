@@ -134,6 +134,15 @@ public/
 .agentspace/
 
 # -----------------------------------------------------------------------------
+# COVERAGE-SWEEP ARTIFACTS (M42e/M42m)
+# -----------------------------------------------------------------------------
+# The demo-coverage Playwright sweep (corpus/ops/demo/coverage-protocol.md) emits
+# a coverage-report JSON; its canonical home is the gitignored rext coverage-out/.
+# A sweep run may drop a stray report copy into a milestone iter dir under
+# knowledge/plan/; those are disposable measurement artifacts, never corpus content.
+knowledge/plan/**/*-report.json
+
+# -----------------------------------------------------------------------------
 # EMAIL / MARKETING ASSETS
 # -----------------------------------------------------------------------------
 # Binary images staged for email campaigns (e.g. Ant Academy launch). These are

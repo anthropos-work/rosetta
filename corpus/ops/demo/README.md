@@ -120,6 +120,14 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+- [`coverage-protocol.md`](coverage-protocol.md) — the **coverage** iteration protocol: the **Playwright**
+  demo-coverage sweep + triage + fix loop driving the **semantic believability gate** (real seeded content +
+  substantial per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar,
+  org name+logo] + 0 prod-eject escapes — NOT the old `textLen>40` density check). The manifest-driven section
+  model, the fix-surface routing table (empty section → `stack-seeding`; content error → `stack-snapshot`
+  serve-grant; out-of-demo link → injection link-rewriting; runtime-computed surface → crawl-scope), and the
+  disclosed-presenter-note allow-rule for legitimate external citations. The harness lives in rext
+  `stack-verify/e2e/`. (v1.10 M42e)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
   With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).

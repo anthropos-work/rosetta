@@ -1,0 +1,7 @@
+# iter-20 decisions
+
+| ID | Decision | Rationale | Date |
+|----|----------|-----------|------|
+| D1 | Wire `sim-embeddings` into `dev-setdress.sh`'s replay loop (`for s in taxonomy directus sim-embeddings`), not a separate demo-only block | The loop is the ONE shared set-dress engine (`up-injected.sh --stack-type demo` reuses it verbatim), so a single edit wires BOTH the demo and the dev lifecycle. sim-embeddings is public-only (org NULL) + writes only the stack's own isolated `cms` schema → harmless on any N, exactly like taxonomy/directus (no N=0 guard, no demo-guard needed). | 2026-06-25 |
+| D2 | No new boot step for sim-embeddings | Only the `directus` surface needs a post-replay container restart (`boot_directus_step`, keyed `[ "$s" = directus ]`) so the per-stack Directus re-introspects. sim-embeddings targets the `cms` Postgres schema the running `cms` service already reads live (no introspection cache) → the reindexed rows are visible immediately, no restart. | 2026-06-25 |
+| D3 | Apply to live demo-3 via the authoring-copy CLI vs the offset DSN (not the demo's consumed clone) | The demo-3 consumed clone is at tag `method-acting-m41` (pre-iter-19, no sim-embeddings surface). Per coverage-protocol's measurement convention ("for a harness-only change, run the authoring-copy harness against the live demo directly"), built the iter-19 CLI from `.agentspace/rosetta-extensions` + ran it against demo-3's offset DSN + the shared `.agentspace/snapshots` cache. Zero platform edits, values-blind. | 2026-06-25 |

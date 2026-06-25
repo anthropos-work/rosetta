@@ -9,9 +9,9 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), learning paths, and vector embeddings (RAG)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks
-    *   **CMS**: Content management, Directus integration, and the embedded Studio-Room AI content generation pipeline (Python, in the same container)
+    *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), learning-path *progress*, and vector embeddings (RAG). (Skillpath tracks per-user progression *state*; the learning-path *content* lives in CMS — see the content-vs-runtime note below.)
+    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by CMS.)
+    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python, in the same container)
     *   **Storage**: File/blob storage
     *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
     *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
@@ -145,14 +145,21 @@ Default local development set (started by `make up`, profile `graphql`):
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
 | **Backend** (`app`) | Go | Main API Gateway / User Backend | [→](../services/backend.md) |
-| **CMS** | Go + embedded Python (studio-room) | Content Management, Directus Proxy, AI generation pipeline | [→](../services/cms.md) |
+| **CMS** | Go + embedded Python (studio-room) | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
 | **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
-| **Jobsimulation** | Go | Job environments & task simulation | [→](../services/jobsimulation.md) |
+| **Jobsimulation** | Go | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from CMS by ID | [→](../services/jobsimulation.md) |
 | **Skiller** | Go | Skill management, assessment, vector embeddings (RAG) | [→](../services/skiller.md) |
-| **Skillpath** | Go | Skill progression paths | [→](../services/skillpath.md) |
+| **Skillpath** | Go | **Runtime** — tracks per-user progression *state*; the skill-path *content* lives in CMS | [→](../services/skillpath.md) |
 | **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
 | **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
 | **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
+
+> [!IMPORTANT]
+> **Content vs. runtime state — a split-ownership model.** The platform separates the **content layer** (CMS, which wraps Directus) from the **per-domain runtime/session services**. They are easy to conflate because two services share a name with their content:
+> - **CMS owns CONTENT / DEFINITIONS** — the authored, versioned, published artifacts: skill paths (title, cover, curators, library categories, **chapters → steps**, skills-to-verify, settings), job-simulation *blueprints* (the `simulations` Directus collection + the Studio `StudioDocument`/`StudioTask` authoring model), and the content **library**. Served via CMS GraphQL/RPC (Frontend/Studio → CMS GraphQL → business logic → Redis cache → Directus → Postgres).
+> - **`skillpath` and `jobsimulation` own RUNTIME / SESSION / PROGRESS STATE** and reference CMS content **by ID only** — they hold no content. `skillpath` tracks `SkillPathSession → ChapterSession → StepSession` (it fetches the path structure from CMS via `CMS_RPC_ADDR`); `jobsimulation` runs the interactive session and emits completion events (it fetches the simulation definition from CMS via `cms.GetSimulation` Connect-RPC).
+>
+> So **"skillpath" the service ≠ skill-path content; "jobsimulation" the service ≠ simulation content.** Content = CMS/Directus; the like-named service = the runtime state machine over that content. See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), and [Jobsimulation](../services/jobsimulation.md).
 
 Available but off by default (opt-in via Docker profile):
 

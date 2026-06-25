@@ -179,15 +179,22 @@ hero (Maya on demo-3) shows the **right company, a real role+title, and a real f
   `job_role_title` column — the header uses `job_role_id` → resolved label + `job_title`; `email` is NOT NULL
   UNIQUE, which is why it must be an UPDATE not an INSERT).
 
-- **Real-face avatars (G4) — offline, deterministic, license-clean.** `users.picture` was a DiceBear
-  *initials* SVG fetched from `api.dicebear.com` — a 2-letter disc **and** an online fetch a sealed demo box
-  can't reach. M39's `avatar.go` is a self-authored **parametric SVG face generator**: it draws an illustrated
-  human face (varied skin tone, hair colour/style, eyes, brows, nose, mouth) chosen deterministically by
-  hashing the user's uuid over bounded palettes, and emits it as a **`data:image/svg+xml;base64,…` URI** written
-  straight into `users.picture`. That makes it **offline-safe** (zero network fetch), **deterministic** (same
-  user → same face, reruns byte-identical), **license-clean** (the SVG is authored in-repo — no third-party
-  asset, nothing to vendor), and tiny (~1 KB, fits the unbounded `varchar`). It IS a face, not an initials disc
-  (#M39-D7).
+- **Real-face avatars (G4 → M42e P4) — offline, deterministic, license-clean, now PHOTOREALISTIC.** `users.picture`
+  was a DiceBear *initials* SVG fetched from `api.dicebear.com` — a 2-letter disc **and** an online fetch a sealed
+  demo box can't reach. M39 replaced it with a self-authored **parametric SVG face generator** (an illustrated
+  cartoon face). **v1.10 "method acting" M42e P4** (user decision: SYNTHETIC photorealistic faces of non-existent
+  people) replaces the cartoon with a **real photorealistic synthetic face**: `avatar.go`'s `photoAvatarDataURI`
+  picks one of **12 bundled StyleGAN2 / "this-person-does-not-exist"-class portraits** (`stack-seeding/assets/avatars/`,
+  `go:embed`-ed, 160×160 JPEG ~5–7 KB) deterministically by `hash(uuid) % 12` and emits a **`data:image/jpeg;base64,…`
+  URI** into `users.picture`. The faces depict **NO real person** (synthetic ⇒ no consent/privacy; machine-generated
+  ⇒ no copyright — see `assets/avatars/LICENSE.md`), so they stay **license-clean** while being a real photo. Still
+  **offline-safe** (the photo is bundled + embedded, zero fetch) and **deterministic** (same user → same face,
+  reruns byte-identical). The illustrated-SVG generator is retained as the dependency-free fallback. **Menu ==
+  profile (M42e P4):** the SAME data URI threads to BOTH `users.picture` (the /profile avatar) AND the Clerkenstein
+  roster `Picture` → `DemoUser.Picture` → FAPI `userRes.image_url`/`has_image` (the top-menu avatar) — proven
+  byte-identical (a re-seeded hero's `users.picture` SHA256 == her roster `picture` SHA256). The **org logo** rides
+  the same path: the seeded `organizations.logo_url` monogram threads through the roster `OrgLogo` → `orgRes.image_url`
+  so the top-menu org glyph renders the seeded mark.
 
 The live acceptance: re-seed demo-3 + log in as Maya → the top bar shows "Cervato Systems", the profile shows a
 role + title + summary + location, and every person carries a real face. Code-of-record: `rosetta-extensions`
