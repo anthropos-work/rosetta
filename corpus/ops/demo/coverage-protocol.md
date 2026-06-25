@@ -145,6 +145,24 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   a harness-only change, run the authoring-copy harness against the live demo directly).
 - **Scope = the vantage's reachable set.** The crawl is bounded by what the hero's seat can navigate to; pages
   no link reaches are out of scope (the gate is over *reachable* pages).
+- **Never wait on `networkidle` — use `domcontentloaded` + a bounded settle (M42e iter-03 lesson).** next-web
+  holds long-lived connections (websocket / long-poll / streaming), so a page's network **never goes idle**.
+  A crawl that navigates with `waitUntil: 'networkidle'` eats the full per-page timeout on **every** page,
+  exhausts the test budget, and false-scores perfectly-good `http=200` pages as empty/error (the M42e baseline
+  reported 44 "failures" that were all this flake — the true count was 8). The harness navigates with
+  `waitUntil: 'domcontentloaded'`, then races a **short bounded** `networkidle` settle (`.catch(()=>{})` on a
+  ~4 s timeout) for hydration + first data paint, and never blocks on never-idle. Screenshots are captured
+  **inline** (an `onPage` hook in the crawl, while the page is already loaded) — never a 2nd full re-navigation
+  pass, which would re-introduce the timeout and double the nav count.
+- **Seed paths are guesses, not coverage commitments.** The seed list primes the BFS frontier; a seed that
+  404s or redirects **away** (e.g. the authenticated root → the real landing, or a stale `/skills` → 404) is
+  **dropped, not scored** — only pages reached via real in-app nav links are coverage commitments. The redirect
+  target is enqueued and scored as the real page. (Otherwise a wrong seed guess false-inflates `failing`.)
+- **The error-sentinel check must read the *visible* main region, not the raw `<body>`.** A page with no
+  `<main>` falls back to `<body>`, which on next-web includes a large inlined Next.js/i18n JSON payload — an
+  error-string **translation table** (e.g. `"Something went wrong while…"`) lives in that JSON and
+  false-matches the sentinel even on a healthy page. Prefer `<main>`; when absent, the sentinel match is
+  unreliable on this app and the page needs a Tier-2 per-section assertion (or a root-normalization skip).
 
 ## Related
 - [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
