@@ -5,9 +5,20 @@ Technical notes accumulate here during the iteration loop. The authoritative spe
 root-cause workflow w7t4wq2z4). The iteration protocol this milestone authors is
 [`corpus/ops/demo/coverage-protocol.md`](../../../../corpus/ops/demo/coverage-protocol.md).
 
-## The Playwright coverage harness (a new rext section — `stack-coverage` or under `stack-verify`)
-TODO: the harness home + dir layout; demo-only; the first non-Go rext dev/test dependency (Playwright pinned
-under its own dir + lockfile) — how it's wired alongside the Go rext tooling.
+## Pre-flight audits — iter-01
+- **`/developer-kit:audit-kb-fidelity --milestone=M42e`** → **GREEN** (2026-06-25). Report:
+  [`kb-fidelity-audit.md`](kb-fidelity-audit.md). 5 fidelity findings all ALIGNED, 0 blind areas. Two
+  DOC-ONLY items — `coverage-protocol.md` + the link-rewriting fix surface — are both declared M42e
+  deliverables, not blind areas. The bootstrap tok authored its strategy against verified docs.
+
+## The Playwright coverage harness — RESOLVED: extends the EXISTING `stack-verify/e2e/` harness
+**Finding (iter-01):** Playwright is NOT a from-scratch new dependency — `stack-verify/e2e/` already exists
+with `package.json` (`@playwright/test ^1.49.0`), `playwright.config.ts`, and `tests/smoke.spec.ts` (an
+unauthenticated login-page smoke test). The M42e coverage harness is the **authenticated, multi-page,
+semantic-content + escape-detection** evolution of this. **Harness home: under `stack-verify`** (reuses the
+offset/project/scope plumbing in `lib/target.sh` + the e2e dir's Playwright pin). The coverage spec/config is
+a sibling under `stack-verify/e2e/` (or a `coverage/` peer), keyed off `STACK_OFFSET`/`STACK_PROJECT` like the
+Go probes. This answers overview open-question #1 (harness home) and #4 (Playwright wiring — already pinned).
 
 ## Cockpit-handshake login as an employee hero
 TODO: how the harness logs in as a roster hero (Maya Chen) via the cockpit handshake (rides the Clerkenstein
