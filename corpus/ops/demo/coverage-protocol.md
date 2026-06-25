@@ -24,18 +24,35 @@ After a presenter clicks **Login as {hero}** in the cockpit, every page that her
 as the hero, walks every reachable page, and flags any page that comes up **empty**, **errors**, or **links
 out of the demo**. The milestone is done when the robot reports **zero** such pages.
 
-## The gate (objective, machine-verifiable)
+## The gate (objective, machine-verifiable) — the re-scoped SEMANTIC gate (M42e iter-21)
+
+> **Re-scope (2026-06-25).** The original gate measured **DOM text-density** (`textLen > 40` in `<main>`).
+> It was too weak — it passed pages that render placeholder/empty-state cards ("add something here") + nav
+> chrome, so the harness reported a green `(0,0)` while a logged-in presenter saw an empty profile, an empty
+> AI-sim library, incoherent 3D-Dental skills for a backend dev, a silhouette avatar, and no org logo. The
+> gate below is the **believability bar**: real semantic content + substantial per-section cardinality +
+> persona self-consistency + no prod-eject, reproducible on a FRESH demo-up. It is measured by a
+> **manifest-driven semantic harness**, not the text-density one.
 
 A Playwright sweep, logged in as the vantage's hero via the cockpit handshake, of **every reachable demo
-page** asserts BOTH:
-- **(a)** non-empty **semantic content in the DOM** — real text/rows per section, not just a shell; AND
-- **(b)** a populated **screenshot**,
+page** asserts — **per page AND per section/element**:
+- **(a) Real semantic content** — actual seeded user/catalog content; **placeholder / empty-state copy and
+  bare chrome do NOT count** (the `empty-states.ts` denylist). A section whose region selector is **not
+  found** is a **FAIL** (an absent section can't silently escape the gate).
+- **(b) Substantial cardinality** — each content section shows a **meaningful count** of items (≥ its
+  manifest floor, not just 1), **except** documented exceptions where 0/1 is the genuinely-correct state.
+- **(c) Persona self-consistency** — the hero's **role ↔ skills ↔ bio ↔ a real-photo avatar (consistent
+  across the menu AND the profile) ↔ work history** cohere as one believable person; the **org has a name +
+  a logo**.
+- **(d) No prod-eject escape** — no in-app nav / menu / button ejects the presenter to a **prod anthropos
+  surface** (e.g. left-menu "Studio" → `studio.anthropos.work`). Legitimate **external editorial / reference
+  links inside content** (a `/chapter` citation; a LinkedIn-import help link) are **allowed but disclosed**
+  in a presenter-notes list — they are not prod-ejects.
 
-for **100% of pages**, with **ZERO pages empty/error** AND **ZERO nav links escaping the demo platform** —
-every in-app link/nav resolves to a **demo-local surface on its offset port** (e.g. left-menu "Studio" → the
-local studio-desk, NOT prod `studio.anthropos.work`). An external link is **NOT valid filler**.
-
-**Gate = the sweep's coverage report shows `0 failing pages + 0 escapes`.**
+**Gate = `0 failing sections + 0 persona failures + 0 prod-eject escapes + 0 not-reached manifest pages`,
+over a FRONTIER-EXHAUSTED crawl (`cappedAtFrontier === false`), reproduced on a FRESH demo-up.** A
+**coverage-review.html** (per-section verdicts + screenshots + documentedExceptions[] + presenterNotes[]) is
+emitted for human review — screenshot review is part of acceptance.
 
 ## The harness (where it lives, how it runs)
 
@@ -56,33 +73,59 @@ The harness, against a **live** demo on offset ports:
    (`clerk-frontend/server.go::handleHandshake`) and establishes the RS256 session as that hero; the next-web
    app picks up the `__session` cookie. (`ignoreHTTPSErrors: true` for the openssl-fallback FAPI cert; the
    mkcert path is browser-trusted — see [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).)
-2. **Crawls** the in-app nav as that vantage — **pure in-app nav-link discovery** (BFS from the landing page
-   over same-origin links + the persistent nav chrome), NOT a static route manifest. Rationale: a manifest
-   cannot catch a nav that **escapes** the demo (an external link is invisible to a route list); the gate
-   requires escape-detection, so the crawl must observe the actual rendered links. The frontier is capped +
-   deduped; query-only variants of the same path collapse.
-3. **Per page** asserts: (a) DOM **non-emptiness** — real text/rows per section, above a per-page semantic
-   floor (see below); (b) captures a **screenshot**; (c) asserts **every link host is demo-local** — the host
-   resolves to a `localhost:<base+offset>` surface, never a prod host (`*.anthropos.work`, real Clerk, etc.).
-4. **Emits** a coverage report: each page → `{path, status, empty?, error?, escapes[]}`, plus the roll-up
-   `{pages, failing, escapes}` the gate reads.
+2. **Crawls** the in-app nav as that vantage — **pure in-app nav-link discovery** (BFS from the seed paths
+   over same-origin links + the persistent nav chrome), NOT a static route manifest. The crawl is now
+   **reachability + escape-classification ONLY** (`lib/crawl.ts`, M42e iter-21): it discovers which pages the
+   vantage can navigate to (the gate's scope) and classifies every `<a href>` host as demo-local / prod-eject
+   / allowed-external — the content VERDICT moved OUT of the crawl and INTO the manifest (step 3). Rationale
+   for keeping discovery (not a manifest) for the scope: a route manifest can't catch a nav that **escapes**
+   the demo. The frontier is capped + deduped; query-only variants of the same path collapse.
+3. **Per page** runs the **manifest's per-section asserts** (`lib/section-assert.ts` against
+   `lib/coverage-manifest.ts`): for each section the manifest declares for that page — resolve its region
+   selector (0 matches → **region-not-found = FAIL**), reject error/skeleton/empty-state content
+   (`lib/empty-states.ts`), and assert real text (mustInclude + a meaningful-length floor after stripping
+   empty-state copy) and/or **cardinality ≥ floor**. One bounded re-assert after an extra settle distinguishes
+   slow-paint from genuinely-empty. Captures a **screenshot** inline. (c) the crawl classifies links;
+   (d)-failing prod-ejects are the off-demo links the allow-rule did NOT clear.
+3a. **Persona self-consistency** (`lib/persona-assert.ts`): role ↔ skills coherence (the allow-set is derived
+   from the hero's OWN rendered role skill-panel at sweep time — the platform resolving `job_role_skills` —
+   not a hand-list; a junk-pool denylist catches the flat-pool head bug), avatar **menu == profile** + is-a-
+   real-photo (a raster data-URI / image, NOT a silhouette placeholder SVG / initials), org **name + logo**.
+4. **Emits** a coverage report JSON (`{reachable, failingSections, personaFailures, escapes, notReachedPages,
+   cappedAtFrontier, gateMet, pages[], persona[], documentedExceptions[], presenterNotes[]}`) **and a
+   `coverage-review.html`** — per-section verdicts + the per-page screenshot + the documented-exception list
+   + the presenter-notes list, for human review.
 
-### The "non-empty semantic content" assertion shape
+### The semantic-gate assertion shape — the MANIFEST model (M42e iter-21)
 
-The gate's (a) clause is the false-pass/false-fail risk. The protocol uses a **two-tier** assertion, tuned
-per-iter against the rate the sweep surfaces:
-- **Tier 1 — generic text-density floor (default):** the page's main content region must carry more than a
-  shell's worth of real text (a per-page minimum visible-text length, excluding nav chrome/footer), AND must
-  not contain an error sentinel ("Something went wrong", a stack trace, a bare "No data", a 404/500 body).
-  Cheap, catches the dominant empty-page mode.
-- **Tier 2 — per-section DOM selectors (escalated when Tier 1 false-passes/-fails a specific page):** for a
-  page where the density floor is wrong (a legitimately terse page, or a shell that's text-heavy but
-  data-empty), assert the page's known content sections by selector (e.g. the activity feed's row list, the
-  library shelf's card grid). Added per-page only as the sweep proves the floor insufficient — avoids
-  over-fitting the whole sweep to brittle selectors up front.
+The gate's (a)+(b) clauses are the false-pass/false-fail risk; the manifest (`lib/coverage-manifest.ts`)
+replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. Each descriptor is
+`{ id, region selector, realContent assertion, minCount floor, exception?+reason }`:
 
-The choice between tiers is an **iter decision**, recorded in the iter's `decisions.md` when a page escalates
-to Tier 2.
+- **region** — a CSS/text selector locating the section's container. **0 matches → `region-not-found` →
+  FAIL** (the key re-scope property: an absent section can't silently escape).
+- **realContent** — one of `text` (mustInclude substrings + a meaningful-length floor, measured AFTER
+  stripping the empty-state phrases in `empty-states.ts`), `count` (cardinality of an itemSelector inside the
+  region), or `both`.
+- **minCount** — the **cardinality floor** ("substantial, not just 1"), calibrated against what the seed +
+  set-dress actually produce (one calibration sweep) so the floors are achievable, not new false-fails.
+- **exception + reason** — set where 0/1 is the **genuinely-correct** state (e.g. a terse Settings menu); the
+  floor relaxes to "real, non-empty content" and the reason is surfaced in the review's
+  `documentedExceptions[]` (honest disclosure, never a silent skip).
+
+There are **two manifest namespaces**: **employee** (M42e — Maya, the member vantage, fully calibrated) and
+**manager** (M42m — Dan, the org-intelligence vantage; covers the M36 Workforce dashboard surfaces —
+verification funnel / teams / role gap+mobility / succession / feedback; authored from `stories-spec.md`,
+`calibrated:false` until the M42m manager sweep tunes the selectors against the live render).
+
+#### The documented-exception table (where 0/1 is legitimately correct)
+
+| Vantage | Page · section | Exception | Reason |
+|---|---|---|---|
+| employee | `/settings` · settings-menu | floor relaxed to real-content (no cardinality floor) | A thin account / security / subscription menu — terse by design; a substantial-content floor would be a false-fail. The section must still render real menu text (not a skeleton/error). |
+
+(A new exception is added here + in the manifest descriptor's `exception.reason` whenever a section's 0/1
+state is proven correct — it is disclosed in `coverage-review.html`, never a silent scope-out.)
 
 ## The iter loop (Phase A–E)
 
