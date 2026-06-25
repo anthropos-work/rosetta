@@ -27,3 +27,43 @@ remaining failing-page + escape count vs the gate).
 - iter-09 (tik, production-fix, closed-fixed): CORRECTED iter-08's dishonest sim-start skip — diagnosed the gate as Sentinel Casbin `g3` (org,membership), seeded a g3 `FEATURE_JOB_SIMULATIONS` grant per membership (stack-seeding), removed `SIM_START_SKIP` (start IN SCOPE), re-seeded demo-3 + restarted sentinel (D3 reload). `/start` now RENDERS + scored (text=625). Two harness fixes (D4 `<main>`→`<body>` fallback, D5 settle 1.5s→4s) recovered a frontier-collapse. Authoritative frontier-EXHAUSTED re-sweep `reachable=95`: HONEST residual `(failing=0, escapes=1)` — the gate is NOT (0,0): a NEW hidden escape surfaced (`/reimport-profile` → linkedin.com/help, a hardcoded platform-UI link). EXIT re-scope-trigger (zero-edit line) → user decision. iter-08's gate-MET claim corrected. — see iter-09/progress.md
 - iter-22 (tik/P8-acceptance, closed-fixed): **P8 fresh-demo-up acceptance + the stale-CLI reproducibility fix**. Bumped the consumed clone to iter21 + ran a fresh `demo-down --purge`+`demo-up` (DEMO_STORIES on): reproduced ZERO-MANUAL — Sentinel reloaded via `AuthorizationService/Reload` (P5), taxonomy+directus replayed+served (`directus_collections=14`), stories seeded, autoverify GREEN (`casbin=750`). **GAP**: sim-embeddings replay SKIPPED — `stacksnap: unknown surface "sim-embeddings"` → `cms.similarities=0`. ROOT CAUSE: `dev-setdress.sh build_cli` skip-if-present (`[ -x ]&&return`) reused a STALE `stacksnap` (Jun24, pre-P6) surviving `demo-down --purge` in `$STACK/bin`. FIX (rext): `build_cli` ALWAYS rebuilds from the consumed source (tests opt out via `DEV_SETDRESS_USE_STUB_BINS=1`); 26 DevSetdress tests pass. The AUTHORITATIVE re-run (bump→iter22→2nd fresh demo-up, stale binary present) REBUILT stacksnap → **sim-embeddings replayed ZERO-MANUAL** (1490 rows, reindexed) → `cms.similarities=274` → /library populated. Fresh roster carries picture+org_logo for maya/dan. rext `51e64a9` tag `method-acting-m42e-iter22`. Gate graded in iter-23 — see iter-22/progress.md
 - iter-23 (tik/P8-harness-fix, closed-fixed, **GATE: MET**): **P8 avatar-consistency false-fail fix + the AUTHORITATIVE employee gate + manager smoke-sweep**. The iter-22 sweep hit `failingSections=0 escapes=0 notReached=0 frontier=EXHAUSTED personaFailures=1` (avatar=FAIL). A live diagnostic PROVED the data+threading correct (clerk `user.imageUrl`=real JPEG 8011B, FAPI `/v1/me` image_url=real JPEG, header carries the user JPEG) — `readMenuAvatarSrc` returned the company-switcher ORG MONOGRAM (`alt="company logo"`, a `data:image/svg+xml` with no "logo" token) instead of the user avatar after it → false FAIL. FIX (rext, harness-only): exclude the org img by `alt` + prefer a raster candidate; same filter hardens `readProfileAvatarSrc`. **AUTHORITATIVE employee gate (consumed iter23, committed code, vs fresh zero-manual demo-3): `reachable=62 failingSections=0 personaFailures=0 escapes=0 notReached=0 frontier=EXHAUSTED → GATE MET` (gateMet:true, all 3 persona PASS).** MANAGER smoke-sweep (dan-manager, M42m input): `reachable=150/150 failingSections=0 personaFailures=0 escapes=139 notReached=5 frontier=CAPPED(+79) → NOT MET` — persona PASS (identity generalizes); escapes=139 ALL `studio.anthropos.work` (one baked left-nav prod link, link-rewriting clears all); notReached=5 = ALL `/workforce/*` M36 pages (the core M42m content+nav work); frontier CAPPED = team-roster `/user/<id>` fan-out needs a representative-sample rule + higher cap. rext `02b3f63` tag `method-acting-m42e-iter23`. **EMPLOYEE GATE MET** — M42e believability reproducibly proven — see iter-23/progress.md
+
+## M42e: Final Review (close-milestone, 2026-06-25)
+
+Iterative shape → closed **on-gate** (employee semantic gate `gateMet:true`, fresh zero-manual demo-up,
+committed code). Review found **8 findings, 0 blocking**. Deferral re-audit **GREEN**
+([`audit-deferrals/deferral-audit-2026-06-25-m42e-close.md`](audit-deferrals/deferral-audit-2026-06-25-m42e-close.md)).
+
+### Scope
+- [x] Gate-distance review: gate MET (62 reachable pages, 0 failing sections, 0 persona failures, 0 escapes,
+      frontier EXHAUSTED) — clean close, no carry-forward. Manager-vantage residual is M42m input (Fate-2/Fate-3).
+- [x] Iter-ledger: 23 iters; all closed (iters 1-9 + 10-23; iter-10 = TOK bootstrap-flavored re-scope, iter-22/23
+      = P8 acceptance + GATE MET). One-commit-per-iter held. No orphan iters.
+
+### Code Quality
+- [x] [must-fix] gofmt: `stack-seeding/seeders/curated_pools_harden_test.go` comment-alignment → `gofmt -w` (clean).
+- [x] [should-fix] `persona-assert.ts:125` raster-preference predicate missing parens (the iter-23 false-fail
+      precedence-trap class) → explicit grouping parens + load-bearing comment.
+- [x] [nice-to-have] `curated_pools.go` DevOps-loop ORDER-IS-LOAD-BEARING comment (guards a reorder regression).
+
+### Phase 2c Adversarial
+- [x] Recorded 3 scenarios in `decisions.md` § "Adversarial review" (avatar-selector org-monogram collision
+      re-entry; the harness's no-non-live-unit-test architecture [accepted, Playwright-only line]; the
+      curated-category precedence-collision [already guarded]). Fixes 1+3 landed; #2 is the harness architecture.
+
+### Documentation
+- [x] [should-fix] `corpus/ops/demo/README.md` — indexed `coverage-protocol.md` under Mechanism guides.
+- [x] [should-fix] `CLAUDE.md` — added `coverage-protocol.md` to the demo-env Key Documentation Locations.
+- [x] [should-fix] rext `stack-verify/README.md` — corrected the stale "e2e = unauthenticated smoke only" claim;
+      documented the M42e semantic coverage harness as the second e2e layer (per-unit handbook contract).
+- [x] [should-fix] `spec-notes.md` — marked the vestigial bootstrap `TODO:` scaffold lines DELIVERED (status
+      header pointing at the shipped protocol + harness).
+- [x] Verified: coverage-protocol.md accurate (semantic gate, not textLen>40); snapshot-spec/seeding-spec/
+      rosetta_demo/stories-spec reflect M42e landings; 0 broken cross-refs.
+
+### Decision Triage
+- [x] No new blends needed — the iteration loop already blended the reusable mechanisms with iter-tags:
+      runtime-computed-vs-seedable (coverage-protocol.md § iter-04/05), the citation/help-link allow-rule
+      (coverage-protocol.md § iter-08), the synthetic-avatar + org-logo resolution (stories-spec.md § M42e P4).
+      The strategy/option-tree records (TOK-01/TOK-10, AVATAR-LICENSING-BLOCKER, RE-SCOPE-TRIGGER) are
+      maintainer-only archive → stay in decisions.md.

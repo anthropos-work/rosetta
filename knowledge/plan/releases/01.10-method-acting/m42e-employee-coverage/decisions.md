@@ -6,6 +6,36 @@ assertion shape, link-rewriting surface, escalations of platform-only blockers).
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
 
+## Adversarial review (close Phase 2c) — 2026-06-25
+
+The close adversarial pass targeted the genuinely-novel surface — the TypeScript Playwright harness
+(`stack-verify/e2e/lib/`) — since the Go seeders had already been swept exhaustively by the two final-mode
+harden passes (97% stmts, 0 bugs, every COPY/error branch covered). Scenarios considered:
+
+1. **The avatar-menu selector collides with the org monogram (the iter-23 false-fail class — re-entry risk).**
+   `readMenuAvatarSrc` (`persona-assert.ts`) reads the header user-avatar `<img>` to assert menu==profile.
+   The header carries THREE imgs (wordmark, the org-switcher `data:image/svg+xml` monogram with
+   `alt="company logo"`, the user's real-photo data-URI). iter-23 fixed a false-FAIL where the selector
+   grabbed the org SVG (no `logo` token in its base64) instead of the user photo. **Adversarial finding:** the
+   raster-preference predicate `find(({src}) => src.startsWith('data:image/') && !src.startsWith('data:image/svg') || /^https?:/.test(src))`
+   relied on JS operator precedence (`&&` over `||`) with **no parentheses** — it parses to the *intended*
+   `(raster) || (http)`, so the runtime behaviour was correct, BUT a future edit could trivially flip it to the
+   wrong grouping and silently regress the exact iter-23 bug. **Response (Fate-1, landed in this close):** added
+   explicit grouping parens + a load-bearing comment naming the iter-23 regression class. The org/chrome
+   exclusion (by `alt` AND `src`) is retained as the primary guard.
+2. **The DOM-selector classifiers have no non-live unit test.** `classifyImgSrc` / `isOrgOrChrome` / the
+   junk-token filter are pure functions but live inside `page.evaluate` browser-context closures and aren't
+   exported; the harness is **Playwright-only** (no node-unit runner). **Response:** NOT a gap to fix by adding
+   a second non-Go dev/test dependency (vitest/jest) — that would break the milestone's deliberate
+   Playwright-only / 0-go.mod / supply-chain-GREEN line. This selector logic is inherently browser-context code
+   correctly verified by the live calibration probes (`calibrate-avatar.spec.ts`) + the authoritative
+   fresh-demo-up gate run. Accepted as the harness architecture (NOT a documented-risk acceptance — there is no
+   residual behavioural risk; the live gate is the verification).
+3. **A role that is BOTH infra and software (e.g. "Cloud Software Engineer") draws the wrong skill pool.**
+   `curatedCategoryForRole` resolves by keyword-loop order. **Response:** already guarded by
+   `TestCuratedCategoryForRole_PrecedenceCollision` (harden pass 1) + a now-strengthened ORDER-IS-LOAD-BEARING
+   comment on the DevOps loop (added this close) so a reorder can't silently regress an infra hero.
+
 ## AVATAR-LICENSING-BLOCKER (iter-16, P4): no license-clean AND consent-clean REAL-photo avatar source — 2026-06-25
 
 **Trigger:** the run prompt's HARD avatar rule — *"Use ONLY clearly license-clean real photos — NEVER

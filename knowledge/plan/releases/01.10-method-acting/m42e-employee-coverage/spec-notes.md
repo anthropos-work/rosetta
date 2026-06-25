@@ -5,6 +5,14 @@ Technical notes accumulate here during the iteration loop. The authoritative spe
 root-cause workflow w7t4wq2z4). The iteration protocol this milestone authors is
 [`corpus/ops/demo/coverage-protocol.md`](../../../../corpus/ops/demo/coverage-protocol.md).
 
+## ✅ Status — milestone CLOSED 2026-06-25 (all bootstrap TODOs DELIVERED)
+The `TODO:` lines below were the milestone-creation **scaffold placeholders** authored when M42e
+was scaffolded. **Every one is now delivered** — the harness + protocol shipped in the rext
+authoring repo (tagged `method-acting-m42e`) + the corpus doc. They are retained as the iteration
+archive (not deleted). Authoritative deliverables:
+- **The iteration protocol** → [`corpus/ops/demo/coverage-protocol.md`](../../../../corpus/ops/demo/coverage-protocol.md) (the measure→triage→fix→re-sweep loop + the fix-surface routing + the exception/presenter-note allow-rule).
+- **The Playwright coverage harness** → rext `stack-verify/e2e/` (`lib/cockpit-login.ts`, `lib/crawl.ts`, `lib/section-assert.ts`, `lib/coverage-manifest.ts`, `lib/persona-assert.ts`, `lib/empty-states.ts`, `lib/review-html.ts`, `tests/coverage.spec.ts`, `run-coverage.sh`).
+
 ## Pre-flight audits — iter-01
 - **`/developer-kit:audit-kb-fidelity --milestone=M42e`** → **GREEN** (2026-06-25). Report:
   [`kb-fidelity-audit.md`](kb-fidelity-audit.md). 5 fidelity findings all ALIGNED, 0 blind areas. Two

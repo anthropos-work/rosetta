@@ -274,7 +274,32 @@ Merged `m41/profile-depth` --no-ff → `release/01.10-method-acting`. **Next: M4
 **Delivers →** [`corpus/ops/seeding-spec.md`](../../corpus/ops/seeding-spec.md) + `stories-spec.md`.
 
 #### M42e — Employee 100% demo coverage
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m42e-employee-coverage/`](releases/01.10-method-acting/m42e-employee-coverage/)
+**Status:** `done` (closed-on-gate 2026-06-25) · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m42e-employee-coverage/`](releases/01.10-method-acting/m42e-employee-coverage/)
+**Close (2026-06-25):** GREEN, 0 blocking. Closed **on-gate** — the **employee semantic believability gate** fired
+(`gateMet:true`): logged in as Maya (DevOps Engineer @ Cervato Systems) on a **fresh zero-manual demo-up**, the
+Playwright sweep reports **reachable=62, failingSections=0, personaFailures=0** (all 3 persona PASS: role↔curated
+skills, menu==profile real-photo avatar, org name+logo), **escapes=0, notReached=0, frontier=EXHAUSTED** —
+AUTHORITATIVELY from the consumed clone @ tag (committed code), reproduced across 2 `demo-down --purge`+`demo-up`
+cycles. **23 iters** (1 bootstrap tok iter-01 [the harness + `coverage-protocol.md`] + 1 bootstrap-flavored re-scope
+tok iter-10 + 21 tiks; 0 triggered toks). The gate was **re-scoped mid-milestone** (2026-06-25 user live-review)
+from a weak DOM-text-density check to the semantic believability bar; iters 10-23 rebuilt to it via the design-plan's
+7 root causes (P0-P8): curated skills + DevOps specialization, `legacy_skills` json shape, per-hero activity,
+synthetic-photo avatars + org logo, the FATAL post-set-dress Sentinel reload, library capture (sim-embeddings +
+categories, 274 sims), the semantic-coverage harness rebuild, and the fresh-demo-up acceptance + 2 reproducibility
+fixes (stale-CLI always-rebuild; the avatar-selector false-fail). **Delivered:** the NEW `coverage-protocol.md`
+iteration protocol + the **Playwright semantic-coverage harness** (rext `stack-verify/e2e/` — the first non-Go rext
+dev/test dep, @playwright/test ^1.49.0). **Zero platform-repo edits.** Review: 8 findings, 0 blocking — 0 code
+must-fix (1 gofmt + 1 harness precedence-guard [the iter-23 false-fail class] + 1 reorder-guard comment landed),
+3 Phase-2c adversarial scenarios recorded, 4 docs (coverage-protocol.md indexed in README/CLAUDE; the rext
+stack-verify handbook corrected; spec-notes TODOs marked delivered). Deferral re-audit **GREEN** (0 repeat, 0
+aged-out, 0 escape-hatch; **DEF-M40-01 employee-half resolved in-milestone** [the /profile stats-row KPI section
+passes], manager-half Fate-2 → M42m; the manager smoke-sweep findings [139 studio.anthropos.work escapes, 5 unreached
+`/workforce/*` M36 pages, the team-roster fan-out] are a clean Fate-2/Fate-3 forward-route to the scaffolded M42m).
+Go test funcs **1326→1373 (+47)** (stack-seeding 496→534, stack-snapshot 354→361, clerkenstein 264→266) + the NEW
+TS harness (7 Playwright tests/6 files); seeders 97.0% stmts; flake gate 5/5 shuffled; **supply-chain GREEN**;
+all **5 alignment gates** 100%. Code-of-record: `rosetta-extensions` @ tag `method-acting-m42e` → `53574ae` (the
+final-harden `bcb4c26` + the close fix-commit). Merged `m42e/employee-coverage` --no-ff → `release/01.10-method-acting`.
+**Next: M42m** (manager 100% coverage, `iterative` — reuses this harness + protocol; its input is calibrated).
 **Goal:** a hero of the **employee/member** vantage sees **100% of the demo platform's pages populated** — no empty/error
 pages, no out-of-demo escapes.
 **Exit gate:** a **Playwright** sweep, logged in as an employee hero, of **every reachable demo page** asserts

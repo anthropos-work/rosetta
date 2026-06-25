@@ -5,9 +5,9 @@ version: v1.10 "method acting"
 milestone_shape: iterative
 exit_gate: "Logged in as an EMPLOYEE hero (Maya) on a stack brought up by a FRESH demo-up, the coverage sweep asserts — per page AND per section/element of every employee-reachable page — (a) REAL semantic content: actual seeded user/catalog content, NOT placeholder/empty-state copy ('add something here') and NOT bare chrome; (b) SUBSTANTIAL cardinality: each content section shows a meaningful count of items (not just 1), except documented exceptions where 0/1 is genuinely correct; (c) PERSONA self-consistency: the hero's role, skills, bio, real-person avatar (consistent across menu + profile), work-history and activity cohere as one believable person, and the org has a name + logo; (d) NO prod-eject escape: no in-app nav/menu/button ejects the presenter to a prod anthropos surface (legitimate external editorial/reference links in content are allowed but disclosed as presenter-notes). Gate = 0 sections below the content/cardinality/consistency bar + 0 prod-eject escapes, AND the same result reproduces on a FRESH demo-up (not just the live-patched stack)."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
-status: planned
+status: archived
 created: 2026-06-24
-last_updated: 2026-06-24
+last_updated: 2026-06-25
 complexity: large
 delivers: corpus/ops/demo/coverage-protocol.md (NEW — the Playwright demo-coverage sweep + triage + fix iteration protocol) + the Playwright coverage harness (a new rext section, demo-only — the first non-Go rext dev/test dependency) + updates across the touched specs (frontend-tier.md / verification.md / seeding-spec.md / snapshot-spec.md) as gaps close
 depends_on: M39+M40+M41
