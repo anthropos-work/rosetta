@@ -139,6 +139,35 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
 - **The sweep is the measurement.** `(failing-pages, escapes)` from the coverage report is the only metric.
   The roll-up is deterministic given a fixed seed/snapshot, so a re-sweep with no fix should reproduce the
   same numbers (a moved number with no fix = a flake to investigate, not a lift).
+- **Raise the page cap until the BFS frontier EXHAUSTS before reading the residual (M42e iter-07 lesson).** The
+  crawl is bounded by `COVERAGE_MAX_PAGES`. If the crawl stops because it HIT the cap while the queue was still
+  non-empty (`cappedAtFrontier===true`, `reachable===maxPages`), the `(failing, escapes)` it reports are
+  **FLOORS over a truncated slice**, not the true residual — unreached pages may carry more failures/escapes.
+  A `(0,0)` over a truncated frontier is structurally **not gate-met** (the gate is over the FULL reachable
+  set). The report carries `cappedAtFrontier` + `frontierRemaining` + `maxPages`, and the runner emits a CAP-HIT
+  warning, so a cap-saturated `reachable===maxPages` can never be misread as a true page count (the run-1
+  verification's exact mistake). **Raise `COVERAGE_MAX_PAGES` until `cappedAtFrontier===false` (queue empty),
+  THEN quote the residual.** The vantage's reachable set is what its in-app nav actually LINKS — e.g. the
+  employee/Maya vantage exhausts at ~87 pages (skill-paths + the sims linked from the library + profile +
+  home), NOT all 300+ sims in the catalog (most sim detail pages aren't crawl-reachable nav links from that
+  vantage). If a vantage genuinely links a huge template-identical set, a representative + boundary sample with
+  a documented rationale is defensible — but the frontier where escapes/failures live MUST exhaust.
+- **DIAGNOSE an empty page via a DOM + network + downstream-service-log probe BEFORE assuming a fix surface
+  (M42e iter-07 lesson).** "The content wasn't replayed/seeded" is a tempting but often-wrong guess. A page can
+  render empty (a perpetual loading `<main>`) while ALL its content IS replayed — because a **federation error**
+  on a non-nullable GraphQL field nulls the whole query client-side. iter-07: two skill-paths rendered empty
+  not because they weren't replayed (they were — published, full chapter_list) but because their chapters'
+  job-simulations referenced a skiller skill node-id (`K-AIFUNX-E658`) ABSENT from the demo — the federated
+  `getSkillPath.chapters.@.jobSimulations.@.simulation.skills.name` is non-nullable, so the one missing skill
+  nulled the entire `getSkillPath` payload → empty page. The root cause was a **stale public-taxonomy cache**
+  (prod gained 22 public skills after the cache's capture date), fixed by a `stack-snapshot` taxonomy
+  re-capture (in-rext, zero platform edit). The diagnostic technique: log in as the hero, navigate the empty
+  page, capture (a) the `<main>` innerHTML (spinner vs error vs empty), (b) every GraphQL response's
+  operationName + whether it carried `errors` or null `data`, (c) the relevant subgraph container's logs for
+  the same window. The federation-error string names the exact entity + field + the missing id. Distinguish at
+  triage: a missing **referenced public-reference row** (skill/role/content) → `stack-snapshot` re-capture or
+  serve-grant; a missing **tenant row the page reads** → `stack-seeding`; a **runtime-computed surface** (a
+  result/start deep-link) → crawl-scope.
 - **The demo must be live + at the consumed tag.** The sweep runs against `demo-N` on offset ports; the demo
   consumes `rosetta-extensions @ <tag>`. A harness/fix change is **authored** in the authoring copy; to be
   reflected in the sweep it must be **applied** to the live demo (re-seed/re-replay/re-build/re-export — or, for
