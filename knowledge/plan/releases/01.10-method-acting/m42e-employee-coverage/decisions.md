@@ -6,6 +6,59 @@ assertion shape, link-rewriting surface, escalations of platform-only blockers).
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
 
+## AVATAR-LICENSING-BLOCKER (iter-16, P4): no license-clean AND consent-clean REAL-photo avatar source — 2026-06-25
+
+**Trigger:** the run prompt's HARD avatar rule — *"Use ONLY clearly license-clean real photos — NEVER
+copyrighted/unlicensed/identifiable-without-consent images. If you cannot find a clearly license-clean
+real-photo source, STOP and surface it as a user-blocker."* SEVERITY: **blocker**.
+
+**The user decision (design-plan §USER DECISIONS #2):** avatars = **LICENSED real-person STOCK PHOTOS —
+NOT synthetic, NOT illustrated** (CC0 / public-domain / permissively-licensed REAL portraits).
+
+**Why it blocks — the two-axis test fails on every available source.** A REAL-person avatar must be clean
+on BOTH axes; no source clears both for depicting a real identifiable person as a fictional employee:
+- **CC0 / Unsplash / Pexels / Pixabay real portraits** — copyright clean (free for commercial use, no
+  attribution), but **NO model release** → the depicted real person's CONSENT to being shown as "Maya
+  Chen, DevOps Engineer @ Cervato Systems" is unknown/unverifiable. The **identifiable-without-consent**
+  case the prompt forbids.
+- **Released stock (Adobe/Getty/Shutterstock, with a model release)** — the standard release **prohibits
+  sensitive/misleading use** (depicting a recognizable model as a fictional persona / implying false
+  identity is forbidden), AND the assets are licensed/paid, not free/CC0 (violates "never copyrighted").
+- **FFHQ / face datasets** — the documented biometric/consent problem; no consent for commercial
+  fictional-persona reuse.
+
+So a source that is BOTH license-clean AND consent-clean for this use **does not exist** among available
+sources. The illustrated SVG avatar (avatar.go, M39 G4) is the current state; it is license-clean +
+consent-free but NOT a real photo (the user explicitly excluded illustrated).
+
+**What landed despite the blocker (iter-16):** the ORG-LOGO half of P4 — `organizations.logo_url` seeded
+with a deterministic offline MONOGRAM data URI (orglogo.go). A generated mark is clean on both axes for a
+FICTIONAL org (no trademark, no real entity's consent). The in-app org logo now renders.
+
+**What's held behind this decision:** (1) the real-photo avatar itself; (2) the coupled Clerkenstein
+userRes/orgRes top-menu IMAGE threading (the menu avatar + the top-menu org glyph) — both ride the same
+`resources.go` change + an alignment-golden re-capture, gated on the avatar decision.
+
+**The user decision (pick one):**
+- **(a) Accept synthetic non-existent-person faces** — AI-generated portraits of people who DO NOT EXIST
+  (e.g. a vendored "this-person-does-not-exist"-style set, or a generative model run once offline).
+  They LOOK like real photos (satisfies the believability intent) but depict NO real identifiable person
+  → no consent problem, license-clean. This RELAXES the user's "NOT synthetic" constraint in exchange for
+  resolving the consent conflict. **Recommended** — it is the only option that yields a photo-realistic
+  face with zero consent/licensing risk.
+- **(b) Procure a properly-released set out-of-band** — the user supplies/licenses a small portrait set
+  WITH model releases that explicitly permit fictional-persona/demo use, and vendors them into
+  `stack-seeding/assets/avatars/` with the release docs. The build agent then threads them. (Requires the
+  user to own the licensing + the legal review.)
+- **(c) Keep the illustrated SVG avatar** — accept the M39 G4 generated face as the avatar (clean, offline,
+  deterministic, already shipping) and DROP the real-photo requirement; still thread it to BOTH surfaces
+  (users.picture + the Clerkenstein userRes image) so menu==profile and neither is a silhouette — i.e.
+  fix the menu≠profile + silhouette half of root #6 without the real-photo half.
+
+Recommendation: **(a)** if a photo-realistic face is required (resolves the consent conflict cleanly), else
+**(c)** (ship the menu==profile consistency with the existing license-clean illustrated face). Surfaced to
+the user; the build does NOT unilaterally use a questionable real-photo source.
+
 ## RE-SCOPE-TRIGGER (iter-09): the `/reimport-profile` → linkedin.com/help escape is platform-only — 2026-06-25
 
 **Trigger:** the zero-edit-line re-scope trigger (`coverage-protocol.md` "Re-scope trigger"). iter-09 honestly
