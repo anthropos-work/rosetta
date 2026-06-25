@@ -109,6 +109,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | Failure mode | Root cause | Fix surface (rext) | Re-apply step |
 |---|---|---|---|
 | **Empty section / missing seed** | the page reads data the seeder never wrote | `stack-seeding` (seed the rows the page reads) | re-seed the demo |
+| **Entitlement/policy-gated empty page (a deny modal)** | the page gates on a Sentinel Casbin policy the seeder never wrote (e.g. `/sim/.../start` deny modal when the org lacks the `FEATURE_JOB_SIMULATIONS` `g3` grant) | `stack-seeding` (seed the `g3` feature grant per membership — `identity.go`/`users.go`) | re-seed the demo **+ reload Sentinel policy** (restart `<demo>-sentinel-1` — `LoadPolicy()` runs once at startup, no watcher) |
 | **Federation / content error (403/500/panic)** | the page reads replayed content not serve-granted | `stack-snapshot` serve-grants (`directus/structure.go`) | re-replay snapshot into the demo |
 | **Out-of-demo link (escape)** | a baked/rendered link host points at prod | the demo **injection + env link-rewriting** (`demo-stack/up-injected.sh` build-args / `stack-injection/gen_injected_override.py`) — rewrite the host to the offset port | re-build the frontend (baked URL) or re-emit the override + restart |
 | **Editorial citation in replayed content** (NOT an escape) | a real `<a href>` to an external article baked into replayed `/skill-path/.../chapter` body copy | the harness **citation allow-rule** (`coverage.spec.ts` `allowedExternalLink` → `crawl.ts`): classify the off-demo link on a `/chapter` path as a VALID citation, recorded as a **presenter note**, NOT counted as an escape (M42e iter-08) | (none — content fidelity; do NOT strip/rewrite the citation) |
@@ -217,6 +218,41 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page whose data is a structural row → `stack-seeding` (fix it); an empty page whose data is
   a runtime computation → crawl-scope (exclude it), or escalate as a re-scope-trigger **only if** the link is a
   load-bearing part of the vantage's demo and a platform change is the sole filler.
+- **An entitlement-gated empty page is SEEDABLE, not runtime-computed — seed the entitlement, don't skip the
+  page (M42e iter-09 lesson; corrects the iter-08 sim-start mis-triage).** Not every empty `/start`-style
+  launch surface is runtime-computed. The per-sim `/sim/<slug>/start` page renders the **org-member deny
+  modal** (an empty `<main>`) when the member's org lacks the `FEATURE_JOB_SIMULATIONS` entitlement. The page's
+  `canStartAsOrganizationMember` reads `userMembership.organizationFeatures`, which `app` resolves via
+  **Sentinel's Casbin grouping policy `g3`** (`g3 = _, _` → a `casbin_rules` row `p_type='g3', v0=org,
+  v1=membership`), NOT the `app.organization_features` table (which is 0-rows even in normal operation — a
+  red-herring symptom). The fix is a **`stack-seeding`** g3 feature grant per membership (mirroring the
+  per-member g2 grant) — a demo employee SHOULD be able to start a sim — NOT a crawl-scope skip. Distinguish at
+  triage: an empty page gated by a **missing entitlement/policy row** → `stack-seeding` (seed it); an empty page
+  filled only by a **runtime server computation** (a sim/skill-path RESULT keyed by sessionId) → crawl-scope.
+  Re-instating a skip on a seedable failure is a dishonest scope-out (the gate-honesty failure mode).
+- **A casbin/policy seed applied to a LIVE stack needs a Sentinel policy RELOAD before it takes effect (M42e
+  iter-09 lesson).** Sentinel's Casbin enforcer calls `LoadPolicy()` **once at startup** with **no watcher** —
+  a raw INSERT into `casbin_rules` (the seeder's path) is invisible to the running in-memory enforcer until it
+  reloads. On a fresh `/demo-up` the seed precedes Sentinel start, so this never bites; it bites only a
+  **re-seed of a running stack** (a Phase C re-apply of a casbin-touching seeder). Re-apply step: **restart the
+  demo's `<demo>-sentinel-1` container** (re-runs `LoadPolicy()` on startup) — or call the `Reload` RPC. The
+  app's 1-min in-process feature cache also expires on its own. Demo-local container op, zero platform edit.
+- **Some pages render their real content OUTSIDE `<main>` — fall back to `<body>` innerText when `<main>` is
+  below the floor (M42e iter-09 lesson).** The sim `/start` launch UI (`AISimulationStartWithoutSession`) mounts
+  a sibling region with an EMPTY `<main>` while the visible launch content (~625 chars) lives in `<body>`. A
+  strict `<main>`-only density read FALSE-FAILS it. The harness prefers `<main>`, but when the `<main>` read is
+  below the density floor it re-measures against the live `<body>` innerText (still VISIBLE-only, so the
+  iter-03 inlined-i18n exclusion holds) and takes the larger. This is the Tier-2 escalation for out-of-`<main>`
+  content; the `<main>`-preference (nav-chrome exclusion) still governs the common case.
+- **Bound the per-page settle to the heaviest DATA GRID, not the first paint — under-settle COLLAPSES the BFS
+  frontier (M42e iter-09 lesson).** The crawl extracts outbound links from what is PAINTED at settle-time, so a
+  settle too short for a heavy catalog grid (the library's 22 skill-paths / 307 sims) extracts too few links and
+  the whole BFS frontier collapses (iter-09: a 1.5s ceiling rendered only 1 of 22 skill-path cards after a cold
+  start → the frontier fell from 93 pages to 8). `networkidle` returns as soon as the network quiets, so a
+  generous ceiling (4s) costs fast pages nothing (they proceed early) and only the busy grids use it; a
+  never-idle long-polling page just hits the ceiling and proceeds (the `.catch`). Set the ceiling correct-over-
+  fast: full link discovery is a gate-correctness precondition. WARM the stack (or re-sweep) after a cold start
+  (e.g. a sentinel restart that cleared GraphQL caches) before quoting the authoritative residual.
 - **An editorial citation in replayed content is VALID content, not a gate escape — disclose it, don't strip
   it (M42e iter-08 lesson).** Replayed `/skill-path/.../chapter` body copy can carry a real external `<a href>`
   citation (e.g. an `en.wikipedia.org` / `strategy-business.com` reference inside the course material). That is
