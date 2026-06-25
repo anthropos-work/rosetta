@@ -170,6 +170,15 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: a missing **referenced public-reference row** (skill/role/content) → `stack-snapshot` re-capture or
   serve-grant; a missing **tenant row the page reads** → `stack-seeding`; a **runtime-computed surface** (a
   result/start deep-link) → crawl-scope.
+- **A persona RE-specialization (role change) needs a `--reset` before re-seed on a LIVE stack (M42e iter-15
+  lesson).** The verified/claimed `user_skills` rows are written with `CopyRowsIdempotent` keyed on a
+  DETERMINISTIC slot id; when a hero's ROLE changes (e.g. Maya: Backend Software Engineer → DevOps Engineer),
+  the slot id is unchanged but the underlying `skill_id` differs — so an ADDITIVE re-seed (`ON CONFLICT (id) DO
+  NOTHING`) keeps the OLD skill at that slot and the new role's skills never land. A fresh `/demo-up` runs a
+  `--reset` implicitly (truncate-then-reload), so this NEVER affects reproducibility — it only bites a
+  re-specialization MEASUREMENT on an already-seeded live stack. Re-apply step for a role change: `stackseed
+  --reset --force` THEN the full re-seed. (A re-specialization that also touches the casbin g2/g3 grants then
+  also needs the Sentinel reload — the entitlement re-apply note above.)
 - **The demo must be live + at the consumed tag.** The sweep runs against `demo-N` on offset ports; the demo
   consumes `rosetta-extensions @ <tag>`. A harness/fix change is **authored** in the authoring copy; to be
   reflected in the sweep it must be **applied** to the live demo (re-seed/re-replay/re-build/re-export — or, for
