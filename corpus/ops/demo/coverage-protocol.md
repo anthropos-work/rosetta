@@ -167,6 +167,20 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   error-string **translation table** (e.g. `"Something went wrong while…"`) lives in that JSON and
   false-matches the sentinel even on a healthy page. Prefer `<main>`; when absent, the sentinel match is
   unreliable on this app and the page needs a Tier-2 per-section assertion (or a root-normalization skip).
+- **Seedable structural row vs runtime-computed artifact — not every empty page is a seed gap (M42e iter-04/05
+  lesson).** Some surfaces are filled by a **runtime computation**, not a seedable row: e.g. a sim **result**
+  page (`/sim/<slug>/result/<sessionId>`) reads `jobSimulationResult.evaluationStatus` — an AI evaluation the
+  jobsimulation pipeline computes server-side from the session transcript, never written by a seed. A backdated
+  **seeded** session lists in `/profile/activities` (its `jobsimulation.sessions` row exists) but its result
+  `<main>` renders empty (there is no computed evaluation). Under the **zero-platform-edit line** a seeded demo
+  cannot populate such a surface (the only path is to *run* the evaluation — a platform action). The correct
+  resolution is **crawl-scope**, not seeding: per-session computed-result deep-links are excluded from the
+  vantage's reachable set (a `skipPaths` rule, e.g. `/\/result\/[0-9a-f-]{8,}/`), because the gate is over the
+  pages a vantage can **meaningfully** reach in a seeded demo — a presenter lands on `/profile/activities`
+  (which renders fine), not on a specific historical session's runtime evaluation. Distinguish the two at
+  triage: an empty page whose data is a structural row → `stack-seeding` (fix it); an empty page whose data is
+  a runtime computation → crawl-scope (exclude it), or escalate as a re-scope-trigger **only if** the link is a
+  load-bearing part of the vantage's demo and a platform change is the sole filler.
 
 ## Related
 - [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
