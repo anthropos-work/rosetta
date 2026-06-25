@@ -7,3 +7,7 @@
 ## Running ledger
 _Appended after each iter (tik = a standard iter toward the gate; tok = a strategy/retro iter). Iter closeouts
 append one line each here._
+
+- iter-01 (tok/bootstrap): authored TOK-01 (reconcile-route + clear-escape + populate-dashboard +
+  exhaust-frontier); baseline confirmed `/enterprise/` route prefix + TWO fan-outs + universal Studio eject —
+  see iter-01/progress.md
