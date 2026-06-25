@@ -11,9 +11,9 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **Backend** (`app`) | Sentinel, CMS, Skiller, Skillpath, Storage (compose `depends_on`); Gotenberg (runtime HTTP, no startup-order dep) | Postgres, Redis, **Clerk** |
 | **CMS** | Sentinel, Skiller, Storage | Postgres, Redis, **Directus**, **AI Providers** (Anthropic, OpenAI, Mistral — via embedded studio-room) |
 | **Sentinel** | - | Postgres |
-| **Jobsimulation** | Sentinel, Backend, CMS, Roadrunner, Skiller, Storage | Postgres, Redis, **LiveKit**, **AWS Chime**, **AI Providers** |
+| **Jobsimulation** | Sentinel, Backend, CMS (simulation *definitions* by ID via `cms.GetSimulation` RPC), Roadrunner, Skiller, Storage | Postgres, Redis, **LiveKit**, **AWS Chime**, **AI Providers** |
 | **Skiller** | Sentinel | Postgres (with `pgvector` in `extensions` schema), Redis, **AI Providers** (embeddings) |
-| **Skillpath** | Sentinel, CMS, Jobsimulation (RPC + Redis Stream) | Postgres, Redis |
+| **Skillpath** | Sentinel, CMS (skill-path *content* structure by ID via `CMS_RPC_ADDR`), Jobsimulation (RPC + Redis Stream) | Postgres, Redis |
 | **Storage** | - | Postgres, Redis, **S3** |
 | **Roadrunner** | - | Redis, **Judge0** (code execution) |
 | **Gotenberg** | - | - (stateless conversion service) |
@@ -22,6 +22,8 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **Graphql (Cosmo Router)** | Backend, Skiller, Jobsimulation, CMS, Skillpath, Storage | - |
 | **Studio-Desk** (opt-in profile) | Graphql, CMS | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** | (runs inside CMS container; depends on CMS process) | **OpenAI**, **Anthropic**, **Mistral** |
+
+> **Content-vs-runtime dependency:** both `skillpath` and `jobsimulation` depend on **CMS for content/definitions** — CMS is the content layer; they are runtime/session engines that hold no content and reference CMS artifacts **by ID**. `skillpath` calls CMS over Connect-RPC (`CMS_RPC_ADDR=http://cms:8091`) to fetch a skill path's chapter/step structure when (re)building a session; `jobsimulation` calls CMS over Connect-RPC (`cms.GetSimulation`) to load a simulation's definition before running it. Note `jobsimulation` does **not** hold its own `DIRECTUS_BASE_ADDR` — all its Directus reads flow *through* CMS. (See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).)
 
 Production-only:
 | Service | Depends On (Direct) | Infrastructure |
@@ -65,8 +67,8 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 
 ### 2. Job Simulation
 `Frontend` -> `Backend` / `Jobsimulation`
-*   Jobsimulation requests content from `CMS` (RPC + Redis Stream).
-*   Jobsimulation stores state changes via `Storage` or directly to DB.
+*   Jobsimulation fetches the simulation **definition** (the `simulations` content/blueprint) from `CMS` by ID (`cms.GetSimulation` RPC) — it owns no content, only the run/session state.
+*   Jobsimulation stores its session/run **state** (interactions, recordings, validation results, anti-cheat) via `Storage` or directly to its own `jobsimulation` DB schema.
 *   Voice flows go through LiveKit; video recordings via AWS Chime SDK.
 
 ### 3. Content Delivery
@@ -83,8 +85,8 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 ### 5. Skill Path Progress (Event-Driven)
 `Jobsimulation` -> `Redis Stream` -> `Skillpath`
 *   When a user completes a simulation, **Jobsimulation** publishes an event.
-*   **Skillpath** subscribes to the Jobsimulation stream and updates step/chapter/path progress.
-*   Skillpath queries **CMS** (RPC) for skill path structure and **Sentinel** for authorization.
+*   **Skillpath** subscribes to the Jobsimulation stream and updates step/chapter/path progress **state** (`SkillPathSession → ChapterSession → StepSession`) — it owns no content, only the per-user progression state.
+*   Skillpath queries **CMS** (RPC) for the skill-path **content** structure (chapters → steps it tracks against) and **Sentinel** for authorization.
 
 ### 6. Document → PDF Conversion
 `Backend (app)` → `Gotenberg`

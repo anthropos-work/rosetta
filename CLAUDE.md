@@ -165,11 +165,11 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 In the default local profile (`graphql`):
 - Backend (`app`): Main API gateway and user management
-- CMS: Content management, Directus proxy, **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry)
+- CMS: **The content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry). **NB: CMS — not the like-named `skillpath`/`jobsimulation` services — owns skill-path and simulation content** (content-vs-runtime-state split below)
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Jobsimulation: Job environments and task simulation (voice, chat, code, documents)
+- Jobsimulation: **Runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT fetched from CMS by ID (`cms.GetSimulation` Connect-RPC). It holds run/session state — not content
 - Skiller: Skill management, assessment, taxonomy (60K skills, 18K roles), and vector embeddings (RAG)
-- Skillpath: Skill progression paths
+- Skillpath: **Runtime/session engine** that tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path *content* (chapters → steps, curators, skills-to-verify) lives in CMS/Directus and is fetched by ID via `CMS_RPC_ADDR`. It holds no content
 - Storage: File/blob storage management
 - Roadrunner: Code execution proxy to Judge0 sandbox
 - Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
