@@ -111,6 +111,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | **Empty section / missing seed** | the page reads data the seeder never wrote | `stack-seeding` (seed the rows the page reads) | re-seed the demo |
 | **Federation / content error (403/500/panic)** | the page reads replayed content not serve-granted | `stack-snapshot` serve-grants (`directus/structure.go`) | re-replay snapshot into the demo |
 | **Out-of-demo link (escape)** | a baked/rendered link host points at prod | the demo **injection + env link-rewriting** (`demo-stack/up-injected.sh` build-args / `stack-injection/gen_injected_override.py`) — rewrite the host to the offset port | re-build the frontend (baked URL) or re-emit the override + restart |
+| **Editorial citation in replayed content** (NOT an escape) | a real `<a href>` to an external article baked into replayed `/skill-path/.../chapter` body copy | the harness **citation allow-rule** (`coverage.spec.ts` `allowedExternalLink` → `crawl.ts`): classify the off-demo link on a `/chapter` path as a VALID citation, recorded as a **presenter note**, NOT counted as an escape (M42e iter-08) | (none — content fidelity; do NOT strip/rewrite the citation) |
 | **Wrong identity / org on a surface** | roster/FAPI resource gap | `stack-seeding/seeders/roster.go` + `clerkenstein/clerk-frontend/resources.go` | re-export roster + restart `<demo>-fake-fapi-1` |
 | **A documented gap** | the behavior is correct but undocumented | a corpus doc update | (none) |
 
@@ -216,6 +217,25 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page whose data is a structural row → `stack-seeding` (fix it); an empty page whose data is
   a runtime computation → crawl-scope (exclude it), or escalate as a re-scope-trigger **only if** the link is a
   load-bearing part of the vantage's demo and a platform change is the sole filler.
+- **An editorial citation in replayed content is VALID content, not a gate escape — disclose it, don't strip
+  it (M42e iter-08 lesson).** Replayed `/skill-path/.../chapter` body copy can carry a real external `<a href>`
+  citation (e.g. an `en.wikipedia.org` / `strategy-business.com` reference inside the course material). That is
+  **content fidelity** — the gate's whole point is real content — so it must NOT be rewritten to an offset port
+  and must NOT fail the escape check. The harness carries a narrow **allow-rule** (`allowedExternalLink`,
+  anchored to `/chapter` paths): such a link is recorded as an `allowedCitation` → surfaced in a
+  **presenter-notes** list (so the presenter doesn't click it live), but is **not** counted in the escape total.
+  The rule is deliberately narrow so it CANNOT mask a real escape: a nav-chrome / baked-URL escape (a left-menu
+  "Studio" → prod `studio.anthropos.work`) is not on a `/chapter` page and **still fails** the gate. Disclose,
+  don't hide. Distinguish at triage: an off-demo link in **replayed editorial content** on a content page →
+  allow-rule (presenter note); an off-demo link in **nav chrome / a baked app URL** → escape (rewrite it).
+- **A long single-test sweep MUST stream per-page progress to stdout — fold the heartbeat into the harness, not
+  the runner (M42e iter-08 lesson).** The coverage sweep is one long Playwright test (~13 min over the full
+  reachable set); with the `list`/`line` reporter it otherwise emits NO stdout until the whole test finishes,
+  which trips a >5-min output-watchdog (a run-2 attempt was killed mid-sweep by exactly this). The crawl loop
+  emits one `console.log` per scored page (`[crawl] N/cap q=Q VERDICT status path`) so the sweep streams +
+  stays observable. Pure observability — it does not touch the crawl frontier, the scoring, or the report JSON.
+  When driving the sweep, line-buffer (`stdbuf -oL`) + `tee` so each line reaches stdout, and append a journal
+  heartbeat every few minutes; never run the sweep as a silent foreground call.
 
 ## Related
 - [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
