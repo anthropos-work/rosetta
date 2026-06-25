@@ -12,21 +12,23 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **M41 profile depth (`section`, medium) — BUILT, ready to close.** A new `ProfileSeeder`
-(rext `stack-seeding`) writes per END-USER hero a believable work-history + education timeline (G3:
-`companies` + 3 `user_experiences` + 1 `user_educations`) and a skill-depth bump (G5: `verified:` 8→~30 + a
-~60-skill claimed-but-unverified tail tied to the experiences, widening the visible claimed-vs-verified gap).
-9 new unit tests, full suite green `-race`, every emitted row dry-insert-validated against live demo-3,
-go.mod/go.sum byte-identical. Code @ `rosetta-extensions` tag `method-acting-m41`. Branch `m41/profile-depth`
-(unmerged). Delivers → `corpus/ops/seeding-spec.md` + `stories-spec.md` (both updated).
-**Next up:** **`/developer-kit:close-milestone` M41** → then **M42e** (employee 100% coverage,
-`iterative`) → **M42m** (manager 100% coverage, `iterative`).
-**Last closed:** **M40 Directus serve-grant (section) — 2026-06-24** via `/developer-kit:close-milestone` (GREEN,
-0 blocking; 2 findings both docs/triage; deferral re-audit GREEN 0 escape-hatch; flake 0; supply-chain GREEN).
-Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m40`. **Reminder for the M40
-demo acceptance:** consume the M39-fix1 ALWAYS-rebuild-stackseed tooling so a re-replay doesn't reuse a stale
-binary.
-**Phase:** **v1.10 in development — M39 + M40 closed; M41 BUILT (ready to close); M42e/M42m planned, unstarted.**
+**Active milestone:** **_(between section milestones — M42e is next, the first `iterative` milestone)_.** M41
+profile depth closed 2026-06-25. The two remaining v1.10 milestones — **M42e** (employee 100% demo coverage) +
+**M42m** (manager 100% demo coverage) — are `iterative` (per-vantage Playwright coverage gates); drive them with
+`/developer-kit:work-mstone-iters` / `/developer-kit:build-mstone-iters`, NOT `build-milestone`.
+**Next up:** **M42e** (employee 100% coverage, `iterative`; depends on M39+M40+M41 fills, all now landed; also
+delivers the Playwright coverage harness M42m reuses) → **M42m** (manager 100% coverage, `iterative`).
+**Last closed:** **M41 profile depth (section) — 2026-06-25** via `/developer-kit:close-milestone` (GREEN, 0
+blocking; 8 findings — 1 code nice-to-have [kept], 1 Phase-2c adversarial [empty-`eduIDs` modulo guard, code
+already correct], 5 docs [completeness, incl. README test-count 406→496], 1 decision-triage; deferral re-audit
+GREEN, 0 escape-hatch; flake 0; supply-chain GREEN). The `ProfileSeeder` (work-history + education timeline + the
+claimed-but-unverified tail) ships both G3+G5 in tooling, zero platform edits; stack-seeding 462→496 (+34), both
+M41 files 100% per-function. Merged into `release/01.10-method-acting`; rext code-of-record @ tag
+`method-acting-m41` → `0346113` (the tag moved for the close AR-1 test + README refresh). **Reminder for the M41
+demo acceptance:** login-as-Maya on a fresh `/demo-up` should show a populated `/profile` timeline + a wide
+claimed-vs-verified gap.
+**Phase:** **v1.10 in development — M39 + M40 + M41 (all `section`) closed; M42e/M42m (`iterative`) next,
+unstarted. Release NOT merged to main (M41 is not the final milestone).**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
@@ -69,12 +71,13 @@ ant-academy up automatically (proven live on `:33077`). **Tooling + docs only �
 - **v1.7 "house lights"** — **2026-06-15**, tag `v1.7`. Demo-UI-hardening: M31 mkcert FAPI cert (next-web stops
   blanking) + M32 studio-desk single-port/production fix. Ext tags `house-lights-m31`/`m32`.
 
-## Headline numbers (v1.10 in-progress — through M40 close, 2026-06-24)
-- **Go test funcs:** **1292** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
-  clerkenstein **264** · stack-seeding **462** · stack-snapshot **354** · stack-secrets 160.
-  v1.10 deltas: M39 clerkenstein +5 / stack-seeding +18; M40 stack-snapshot +21 (directus pkg, the serve-grant).
-  Verified at M40 close: stack-snapshot `go test ./...` 12 pkgs `ok` (directus 75 funcs, `-race` clean);
-  `go vet`+`gofmt` clean. v1.9-close baseline 1248 → **+44**.
+## Headline numbers (v1.10 in-progress — through M41 close, 2026-06-25)
+- **Go test funcs:** **1326** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
+  clerkenstein **264** · stack-seeding **496** · stack-snapshot **354** · stack-secrets 160.
+  v1.10 deltas: M39 clerkenstein +5 / stack-seeding +18; M40 stack-snapshot +21 (directus pkg);
+  M41 stack-seeding +34 (the ProfileSeeder — profile.go/profile_write.go + tests, both files 100% per-function).
+  Verified at M41 close: stack-seeding `go test -race ./...` 8 pkgs `ok`; `go vet`+`gofmt` clean. v1.9-close
+  baseline 1248 → **+78**.
 - **Python tests:** **283** across the two v1.9-touched suites (demo-stack/tests **166**, stack-injection/tests
   **117** [8 opt-in skipped]). Both green; no suite decreased (untouched rext suites carry forward at v1.8
   counts).
@@ -95,24 +98,18 @@ lands in the `rosetta-extensions` authoring copy (a SEPARATE repo) at new v1.10 
 **Shipped:** **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` ·
 **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-24 (**M40 Directus serve-grant CLOSED** via `/developer-kit:close-milestone` — GREEN, 0
-blocking, 2 findings both docs/triage; the per-stack Directus serve-grant [relations/fields + synth grants +
-directus_versions self-heal] ships the library + activity feed anonymously, both halves in tooling, zero platform
-edits; stack-snapshot 333→354 [+21], directus pkg 100% statements, flake 0, supply-chain GREEN; KPI=0 deferral
-Fate-2→M42e/M42m. Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m40`. **Next:
-M41 profile depth.** Prior: **v1.10 "method acting" DESIGNED + PROMOTED** (5 milestones M39→M42m; M39 closed
-2026-06-24). Prior same day: **Post-v1.9 demo-hardening pass extended to `storytelling-postfix-2`** — the
-ant-academy clone/token correction: `npm install` needs NO Font Awesome token [FA Pro icons are
-self-hosted/vendored; `FONTAWESOME_NPM_AUTH_TOKEN` is vestigial], and the real "ant-academy down in the demo"
-cause — an empty `stack-demo/ant-academy/` stub blocking `make init` — is fixed by `ensure-clones.sh`'s
-incomplete-stub sweep + `ant-academy.sh` auto-`npm install`; proven live on `:33077`. Hardening pass now spans
-`storytelling-postfix-1` [the four fixes] + `storytelling-postfix-2`.) Prior: 2026-06-23 — **v1.9
-"storytelling" SHIPPED** via `/developer-kit:close-release` — reviewed M34–M38 as one PR, **GREEN/0
-blocking**; release-level docs coherence 0 findings; deferral re-audit GREEN [0 open, 0 escape-hatch];
-supply-chain GREEN [0 new deps]; all 5 Clerkenstein alignment gates 100%/100%; Go 1027→1248. Merged
-`release/01.90-storytelling` → `main`, tagged `v1.9`, branch deleted — origin push pending [orchestrator's
-step]. **Next: `/developer-kit:design-roadmap`.** v1.8 "understudy" SHIPPED 2026-06-15. **Post-v1.9 (between
-releases): demo-hardening pass SHIPPED** (`rosetta-extensions` @ `storytelling-postfix-1` + `-postfix-2`) —
-`DEMO_STORIES` default-on + `DEMO_NO_STORIES` opt-out; M33 ant-academy/cockpit session-detach fix; Directus
-boot health-gate; guarded prod-Directus note; ant-academy clone/token correction. Tooling + docs only, zero
-platform-repo edits, 5 alignment gates still 100%. M33 dropped from the backlog.)_
+_Last updated: 2026-06-25 (**M41 profile depth CLOSED** via `/developer-kit:close-milestone` — GREEN, 0
+blocking, 8 findings [1 code nice-to-have kept, 1 Phase-2c adversarial empty-`eduIDs` modulo guard, 5 docs incl.
+README test-count 406→496, 1 decision-triage]; the `ProfileSeeder` ships G3 work-history/education timeline + G5
+verified-bump + the claimed-but-unverified tail, both halves in tooling, zero platform edits; stack-seeding
+462→496 [+34], both M41 files 100% per-function, flake 0, supply-chain GREEN; deferral re-audit GREEN [M41 added
+0; inherited KPI=0 Fate-2→M42e/M42m, not aged-out]. Merged into `release/01.10-method-acting`; rext
+code-of-record @ tag `method-acting-m41` → `0346113`. **M41 is the LAST `section` milestone — M42e/M42m
+(`iterative`) remain; release NOT merged to main. Next: M42e** (employee 100% Playwright coverage). Full M41
+narrative in roadmap.md § M41. Prior: **M40 Directus serve-grant CLOSED 2026-06-24** [stack-snapshot 333→354,
+directus pkg 100%, both library+activity-feed halves in tooling]. Prior: **M39 profile-identity CLOSED
+2026-06-24** + **v1.10 "method acting" DESIGNED + PROMOTED** [5 milestones M39→M42m]. Prior: **v1.9
+"storytelling" SHIPPED 2026-06-23** [tag `v1.9`, M34–M38, Go 1027→1248]; v1.8 "understudy" SHIPPED 2026-06-15.
+**Post-v1.9 demo-hardening pass SHIPPED** [`rosetta-extensions` @ `storytelling-postfix-1` + `-postfix-2`:
+`DEMO_STORIES` default-on, M33 session-detach fix, Directus health-gate, ant-academy clone/token correction;
+tooling + docs only, 5 alignment gates still 100%].)_

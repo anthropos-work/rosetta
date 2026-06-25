@@ -3,9 +3,9 @@ milestone: M41
 slug: profile-depth
 version: v1.10 "method acting"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-24
-last_updated: 2026-06-24
+last_updated: 2026-06-25
 complexity: medium
 delivers: corpus/ops/seeding-spec.md + corpus/ops/demo/stories-spec.md — the profile-depth layer (the new ProfileSeeder's user_experiences/user_educations fan-out + the bumped verified-skill depth + the claimed-but-unverified user_skills tail that widens the visible claimed-vs-verified gap)
 depends_on: M39 (shares the rext stack-seeding tree; M39's users.go edits land first)
