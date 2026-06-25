@@ -42,6 +42,56 @@ the gate honest (the link is reported as a presenter note, not silently skipped)
 edit), and the allow-rule stays narrow (a nav-chrome/baked-app-URL escape to a competing product still fails).
 Surfaced to the user for the decision; the iter does NOT unilaterally widen the gate's escape semantics.
 
+## TOK-10: persona-believability-by-root-cause (re-scoped gate) — 2026-06-25
+
+**Tok type:** bootstrap-flavored (re-scoped-gate strategy authoring; iter-10). The gate was RE-SCOPED at
+commit `0eaab39` from the weak DOM-text-density metric `(failing,escapes)` to the **believability bar**
+(real semantic content + substantial per-section cardinality + persona self-consistency + reproducible on a
+FRESH demo-up). TOK-01's `sweep-then-route-by-leverage` strategy operated over the now-retired metric and is
+SUPERSEDED — the new gate demands a believability-driven build. This TOK ratifies the externally-authored,
+user-approved design-plan (`.agentspace/scratch/work-m42e/design-plan.md`, 7 root causes + 9 phases P0–P8 +
+the 4 answered USER DECISIONS) as the active strategy. (Does NOT terminate the call — continues into the P0–P3
+tiks, mirroring bootstrap-tok semantics for the re-scoped gate.)
+
+**Initial strategy:** Fix the persona's believability at its ROOT CAUSES (the design-plan's 7), each landing in
+a SEEDER (rext, Go + tests) so it reproduces on a fresh demo-up — never a hand-insert into live demo-3. Use the
+live demo-3 for fast MEASUREMENT only (re-seed the touched seeders + an authenticated probe of the specific
+pages); the authoritative acceptance is the FRESH demo-up at P8. This run-4 executes **P0→P3** (the persona +
+profile + activity half of the 7 roots); P4–P8 (avatar/logo, the FATAL Sentinel-reload reproducibility fix, the
+library capture-path, the semantic harness rebuild, and the fresh-demo-up acceptance) are later runs.
+
+**Rationale:** The re-scoped gate's failure modes are not "empty pages" (the old metric) but "incoherent
+person" — a backend dev showing 3D-Dental-Anatomy skills, a `/profile` of perpetual skeletons, 0 path pills.
+These trace to specific seeder bugs (the flat-pool junk-head top-up; the bare-array vs LegacySkills json shape;
+the activity gaps), each independently fixable + testable in a seeder. Root-cause-first (vs sweep-first) is
+correct here because the design-plan ALREADY did the live triage (the 7 roots are confirmed on demo-3) — the
+work is to LAND the fixes reproducibly, not re-discover them. The semantic harness that MEASURES the new gate
+per-section is itself a P7 deliverable (the old text-density harness can't grade believability), so until P7
+the per-tik measurement is a targeted authenticated probe of the specific fixed page, not the full sweep.
+
+**Strategy class:** new-direction (the gate re-scope retires TOK-01; no prior strategy on the new gate to tune).
+
+**Distance-to-gate context:** The new gate = "0 sections below the content/cardinality/consistency bar + 0
+prod-eject escapes, reproduced on a FRESH demo-up", measured by a P7 semantic harness not yet built. P0–P3
+close 4 of the 7 roots (the CORE skill-draw + role specialization, the profile-skeleton json shape, the
+activity completeness). NOT gate-met after P3 — P4–P8 + the harness remain. The per-tik metric this run is
+qualitative: per fixed page, before→after (junk skills → coherent role skills; skeleton → rendered timeline;
+0 pills → ≥3 path pills + ≥1 completed + bookmarks), probe-confirmed on demo-3.
+
+**User decisions baked in (design-plan §USER DECISIONS, answered 2026-06-25):** (1) SPECIALIZE Maya's role
+(not align) — pick a coherent more-specialized backend role from the REAL public taxonomy with the richest
+coherent skill set; curate ~12 verified + ~18 claimed around it via a curated software allow-list resolved
+against real taxonomy (closure stays green, never fabricate); NAME the chosen role in the run output for user
+confirmation. (2) avatars = licensed real-person stock photos (P4, later run). (3) library = capture from prod
+(P6, later run). (4) defaults: curated allow-lists OK; org logo data-URI monogram; Sentinel RPC reload;
+~3–5 assignments + ≥1 completed + 2–4 bookmarks; verified ~12.
+
+**Next-tik direction:** iter-11 (tik, P0) — read-only baseline confirm on live demo-3 of the before-state of
+the pages P1–P3 fix (/home "Latest skills", /profile/skills, /profile timeline skeleton, /home Paths/pills,
+/profile/activities) via an authenticated probe + `docker exec demo-3-postgresql-1 psql` DB checks. Record the
+before-state. Then iter-12 (P1 — the core skill-draw + role specialization), iter-13 (P2 — json shape),
+iter-14 (P3 — activity).
+
 ## TOK-01: sweep-then-route-by-leverage — 2026-06-25
 
 **Tok type:** bootstrap (iter-01)
