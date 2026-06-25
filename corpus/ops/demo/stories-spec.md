@@ -25,7 +25,11 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below) — plus the **profile-identity layer**
 > delivered in **v1.10 "method acting" M39** (the roster org-name thread → the real company on the top bar, the
 > `user_basic_info` role backfill → a real role+title on the /profile header, and the offline real-face avatar —
-> see [§ The profile-identity layer (v1.10 M39)](#the-profile-identity-layer-v110-method-acting-m39) below). It graduates
+> see [§ The profile-identity layer (v1.10 M39)](#the-profile-identity-layer-v110-method-acting-m39) below) — plus the
+> **profile-depth layer** delivered in **v1.10 M41** (the new `ProfileSeeder`: a believable work-history +
+> education timeline, a verified-skill depth bump `8 → ~30`, and a ~60-skill claimed-but-unverified tail that
+> widens the visible claimed-vs-verified gap — see
+> [§ The profile-depth layer (v1.10 M41)](#the-profile-depth-layer-v110-method-acting-m41) below). It graduates
 > the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
 > lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
 > `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
@@ -189,6 +193,58 @@ The live acceptance: re-seed demo-3 + log in as Maya → the top bar shows "Cerv
 role + title + summary + location, and every person carries a real face. Code-of-record: `rosetta-extensions`
 @ tag `method-acting-m39`. Out of M39 scope (later milestones): work/education history + skill depth (M41); the
 library + activity-feed serve-grant (M40).
+
+### The profile-depth layer (v1.10 "method acting" M41)
+
+M39 gave the logged-in hero the right **identity** (company, role+title, face); M41 gives her the **depth** behind
+it: a believable **work history + education timeline** and a **deep, role-aligned skill set with a wide, obvious
+claimed-vs-verified gap**. Before M41 the `/profile` timeline was empty (`public.user_experiences` /
+`public.user_educations` were **0 rows DB-wide** — written by no seeder) and the skill set was shallow (preset
+`verified: 8` → 8 distinct verified skills). M41 adds a new **`ProfileSeeder`** (surface `"profiles"`) and bumps
+the depth — **tooling + docs only, zero platform-repo edits**; the `/profile` timeline reads
+`ent.UserExperience` / `ent.UserEducation` via `TimelineGrouped(userID)` unchanged — M41 only supplies the rows.
+
+- **Work history + education (G3).** Per **end-user** hero (a manager has no personal timeline — skipped), the
+  `ProfileSeeder` writes a believable **3-job role progression** (`user_experiences`) + a **degree**
+  (`user_educations`), all deterministic + backdated within/just-before the story's activity span so the history
+  corroborates the verified skills. The titles reuse the **resolved `jobRoleRefs`** (the same role node-id the
+  membership carries), the per-entry `skills` json is a role-coherent slice of **real public skill names** (from
+  `resolveNamedSkillRefs`), and the current role is open-ended (`to` NULL). **Live-schema landmines** (the
+  overview's column guesses were wrong — these are verified against demo-3): `user_experiences.company` is
+  `uuid NOT NULL` with an FK → `companies(id)` (the GraphQL `Company` resolver does `QueryCompany().Only(ctx)`,
+  so a NULL/dangling company errors the whole timeline) ⇒ the seeder writes a real **`companies`** row per
+  distinct employer (#M41-D2); `from`/`to` are **DATE** (not timestamptz) with a `from<=to OR to IS NULL` CHECK;
+  `location_type` is the **lowercase** ent enum `inoffice|hybrid|fullremote` (a wrong-case value inserts but the
+  GraphQL `LocationType` enum can't map it); and the `skills` column is **`json`** — an array of skill names.
+
+- **Skill depth + the claimed-but-unverified tail (G5).** The preset `verified:` knob is bumped **8 → ~30** for
+  the thriving heroes (`stories.seed.yaml` + `stories-maya.seed.yaml`), so the verified chain writes **~30
+  distinct verified skills × `verifiedSessionsPerSkill` (3) ⇒ ~90 `user_skills` + ~30 evidences** on the
+  verified side. **On top**, the `ProfileSeeder` seeds a **~60-skill claimed-but-unverified tail**:
+  `user_skills` with `is_verified=false`, **no `job_simulation_id`**, and `user_skill_evidences` with
+  **`anthropos_level` NULL, `user_level` set** — so the profile "overall" reads **≈ 90 = ~30 verified + ~60
+  claimed**, **widening** the visible claimed-vs-verified gap (the demo's headline aha). The **DB landmine**:
+  `user_skills_check_foreign_keys` requires ≥1 provenance edge non-NULL — since the tail has no
+  `job_simulation_id`, it ties to the seeded **work history** via `user_skill_experience` /
+  `user_skill_education` (#M41-D3) (which *also* makes the claimed skills render **under** each work experience —
+  the `workExperience.Skills` resolver reads `userskill.HasExperienceWith`). The tail draws skills **distinct**
+  from the verified set (it offsets past the first `EffectiveVerified()` of the same role-coherent-then-flat
+  combined pool (#M41-D6)), so the two counts don't overlap. Both arcs read coherent: a thriving
+  **under-claimer**'s deep profile and a struggling **over-claimer**'s stark gap (few verified, many claimed —
+  the tail applies to both arcs (#M41-D5)) are each believable.
+
+The **gap mechanic is intact** — `user_level` (claimed) vs `anthropos_level` (verified) is still the widget's
+spine; the unverified tail leaves `anthropos_level` NULL so the gap renders, and the verified evidence UPSERT is
+never clobbered (the claimed UPSERT's `ON CONFLICT … WHERE is_verified = false` guard keeps the verified side
+winning (#M41-D4)). **Closure stays measured** — every skill node-id/name comes from the same replayed taxonomy resolvers
+the verified chain uses; no replayed taxonomy → the timeline still writes (blank skills/role — never fabricated)
+and the tail is skipped, so the closure gene stays green. Every table the seeder writes (`companies`,
+`user_experiences`, `user_educations`, `user_skills`, `user_skill_evidences`) is **`PerStackIsolated`**.
+
+The live acceptance: re-seed demo-3 + log in as Maya → the `/profile` Work Experience + Education sections
+populate with a believable career, and her skill set reads deep (~30 verified + ~60 claimed) with a wide,
+obvious claimed-vs-verified gap. Code-of-record: `rosetta-extensions` @ tag `method-acting-m41`. Out of M41
+scope (later milestones): the employee/manager 100%-coverage Playwright sweeps (M42e/M42m).
 
 ## The blueprint — declaring a hero
 

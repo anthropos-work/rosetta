@@ -243,7 +243,24 @@ cms `jobsimulation.go:1097` (read-only). Investigate the O2M mechanism **first**
 **Delivers →** [`corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md).
 
 #### M41 — Profile depth seeding
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m41-profile-depth/`](releases/01.10-method-acting/m41-profile-depth/)
+**Status:** `done` (2026-06-25) · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m41-profile-depth/`](releases/01.10-method-acting/m41-profile-depth/)
+**Close (2026-06-25):** GREEN, 0 blocking. A NEW `ProfileSeeder` (rext `stack-seeding`, surface `"profiles"`)
+landed G3 (work-history + education timeline: `companies` + 3 `user_experiences` + 1 `user_educations` per
+end-user hero, deterministic + backdated + role-aligned, live-schema-correct — NOT-NULL company FK, DATE
+`from<=to OR to IS NULL` CHECK, lowercase `location_type` enum, json skills) + G5 (verified depth bump 8→~30 for
+thriving heroes + a ~60-skill claimed-but-unverified `user_skills`/`user_skill_evidences` tail tied to the
+experiences via `user_skill_experience`/`user_skill_education`, `anthropos_level` NULL, guarded
+`ON CONFLICT … WHERE is_verified=false` so it never clobbers the verified side) — widening the visible
+claimed-vs-verified gap. **Zero platform-repo edits** (the `/profile` timeline read path unchanged; M41 only
+supplies rows). Review: 8 findings, 0 blocking — 1 code nice-to-have (kept), 1 Phase-2c adversarial (the
+empty-`eduIDs` modulo guard — new test, code already correct), 5 docs (completeness, incl. the
+`stack-seeding/README.md` test-count reconciliation 406→496), 1 decision-triage (D2/D3/D4/D5/D6 blended+tagged in
+stories/seeding-spec; D1/D7 archive). Deferral re-audit **GREEN** (M41 added 0; the inherited DEF-M40-01 KPI=0 is
+Fate-2 → M42e/M42m, unchanged, not aged-out). **stack-seeding 462→496 (+34)**; both M41 files 100% per-function;
+flake gate 5/5; **supply-chain GREEN** (go.mod/go.sum byte-identical). Code-of-record: `rosetta-extensions` @ tag
+`method-acting-m41` → `0346113` (the tag moved `63bcceb`→`0346113` for the close AR-1 test + README refresh).
+Merged `m41/profile-depth` --no-ff → `release/01.10-method-acting`. **Next: M42e** (employee 100% coverage,
+`iterative`).
 **Goal:** a believable work history + education + a deep, role-aligned skill set with a real claimed-vs-verified gap.
 **Scope — In:**
 - **G3** — a `ProfileSeeder` (rext `stack-seeding`) writing 2–3 `public.user_experiences` + 1–2

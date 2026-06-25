@@ -276,6 +276,28 @@ returns the **partial total** of rows already written when a later FK-ordered CO
 the failing table so an operator sees *which* surface broke. Full reference:
 [`demo/stories-spec.md` § The Workforce dashboard surfaces (M36)](demo/stories-spec.md#the-workforce-dashboard-surfaces-m36).
 
+**The profile-depth layer (v1.10 M41).** v1.9 made a hero's verified-skill **spine** render; v1.10 M41 fills the
+**depth** a presenter sees after "Login as": a believable **work history + education timeline** and a **deep,
+role-aligned skill set with a wide claimed-vs-verified gap**. A new **`ProfileSeeder`** (surface `"profiles"`)
+writes, per **end-user** hero (managers skipped — no personal timeline): a **`companies`** row per distinct
+employer + a **3-job role progression** (`user_experiences`, current role `to`=NULL) + a **degree**
+(`user_educations`), backdated within/before the activity span, titles from the resolved `jobRoleRefs`, `skills`
+json a role-coherent slice of real public skill names — both timeline tables were **0 rows DB-wide** (net-new
+write surface). It **bumps the preset `verified:` knob `8 → ~30`** (→ ~90 `user_skills` + ~30 evidences on the
+verified side) **and** seeds a **~60-skill claimed-but-unverified tail** (`user_skills` `is_verified=false`, no
+`job_simulation_id`, tied to the seeded experiences via `user_skill_experience`/`user_skill_education` to satisfy
+the `user_skills_check_foreign_keys` CHECK; `user_skill_evidences` `anthropos_level` NULL, `user_level` set) — so
+the profile "overall" reads **≈ 90 = ~30 verified + ~60 claimed**, **widening** the visible gap. Live-schema
+landmines drove the design: `user_experiences.company` is `uuid NOT NULL` FK→`companies`, `from`/`to` are DATE
+with a `from<=to OR to IS NULL` CHECK (the current role leaves `to` NULL — open-ended), `location_type` is the
+lowercase ent enum `inoffice|hybrid|fullremote`, `skills` is json. The claimed-tail evidence UPSERT is a
+**separate** SQL from the verified one, guarded `ON CONFLICT … WHERE is_verified = false` so it **never clobbers
+a verified row** on a (skill,user) collision (the verified side always wins; the tail draws skills distinct from
+the verified set, so the guard is a re-run/safety net). No-fabrication + closure preserved (skill refs from the
+replayed taxonomy; empty pool → timeline still writes, tail skipped); every table `PerStackIsolated`. Full
+reference:
+[`demo/stories-spec.md` § The profile-depth layer (v1.10 M41)](demo/stories-spec.md#the-profile-depth-layer-v110-method-acting-m41).
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
@@ -288,3 +310,8 @@ seed-side closure gene); **M35** the multi-org Stories & Heroes model; **M36** t
 surfaces + the two fixes above (the funnel/teams/target-roles/succession/feedback/org-scale-gap spine),
 proven end-to-end by an opt-in live-stack integration test (`-tags integration`) that seeds the full fleet and
 asserts every dashboard aggregate resolves. The closure gene spans four skill-ref surfaces.
+**v1.10 "method acting" M39** adds the profile-identity layer (roster org-name thread + `user_basic_info` role
+backfill + offline real-face avatars); **M41** the **profile-depth layer** (the `ProfileSeeder` work-history +
+education timeline + the verified depth bump `8 → ~30` + the ~60-skill claimed-but-unverified tail that widens
+the gap) — 9 new unit tests, full suite green `-race`, every emitted row dry-insert-validated against the live
+demo-3 schema, `go.mod`/`go.sum` byte-identical. Code-of-record: `rosetta-extensions` @ tag `method-acting-m41`.
