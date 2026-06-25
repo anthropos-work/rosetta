@@ -114,9 +114,17 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
   `documentedExceptions[]` (honest disclosure, never a silent skip).
 
 There are **two manifest namespaces**: **employee** (M42e — Maya, the member vantage, fully calibrated) and
-**manager** (M42m — Dan, the org-intelligence vantage; covers the M36 Workforce dashboard surfaces —
-verification funnel / teams / role gap+mobility / succession / feedback; authored from `stories-spec.md`,
-`calibrated:false` until the M42m manager sweep tunes the selectors against the live render).
+**manager** (M42m — Dan, the org-intelligence vantage; **fully calibrated** as of M42m iter-04). The manager
+manifest covers the real **`/enterprise/*`** route surface (reconciled from the wrong `/workforce/*` guesses):
+`/enterprise/workforce` (the M36 Workforce-Intelligence dashboard — ONE **tabbed SPA** route, NOT `?tab=`
+sub-routes: the funnel + org-scale gap + the Growth / Skills & Verification / Talent Pool / Assignments /
+Activity Log tabs render in-page), `/enterprise/members`, `/enterprise/assignments`,
+`/enterprise/activity-dashboard`, `/enterprise/organization-feedback` (the ~2:1 feedback distribution — needs
+the M42m FeedbackSeeder mirror fix to render; see `stories-spec.md`), and `/enterprise/settings` (a documented
+terse exception). The manager vantage has **two manager-only fan-outs** (`/user/<uuid>` team roster +
+`/enterprise/activity-dashboard/.../<uuid>` drill-downs) AND **inherits the employee Library families**
+(`/sim/<slug>`, `/skill-path/<slug>(/chapter)`) because the manager nav links the Library — so the manager
+`SAMPLE_RULES` are a **superset** (the 2 fan-outs + the 2 library families), or the crawl explodes + times out.
 
 #### The documented-exception table (where 0/1 is legitimately correct)
 
