@@ -5,7 +5,7 @@ version: v1.10 "method acting"
 milestone_shape: iterative
 exit_gate: "On a real batch of N generated members, the engine seeds end-to-end: the cheap model emits valid JSON ≥95% of calls (re-roll on malformed), every role/skill name resolves to a REAL public-taxonomy node-id via the existing resolvers (non-resolving names drop, closure gene stays green), ZERO generated name collides with a hand-curated hero, and total cost lands within the declared --max-cost ceiling. Reproducible: an unchanged batch descriptor re-seeds byte-identical from cache at $0."
 iteration_protocol_ref: corpus/ops/demo/ai-generation-spec.md
-status: planned
+status: archived
 created: 2026-06-26
 last_updated: 2026-06-26
 complexity: large

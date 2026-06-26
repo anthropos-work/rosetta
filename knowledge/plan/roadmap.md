@@ -150,7 +150,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
-| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ✅ ∥ M44 ✅ } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 7 closed (M39–M42m + M43 + M44), 2 planned (M45, M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
+| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ✅ ∥ M44 ✅ } → M45 ✅ → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 8 closed (M39–M42m + M43 + M44 + M45), 1 planned (M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -488,7 +488,34 @@ self-rating, the manager unskip, and the bulk-member depth. Reuse: `resolveJobRo
 `dateOnly`, `legacySkillsJSON`, `roleTitle` degradation, `CopyRowsIdempotent`.
 
 #### M45 — Generation engine (LLM batch profile generation + prompt-keyed cache)
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m45-generation-engine/`](releases/01.10-method-acting/m45-generation-engine/)
+**Status:** `done` (closed-on-gate 2026-06-26) · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m45-generation-engine/`](releases/01.10-method-acting/m45-generation-engine/)
+**Closed 2026-06-26 (closed-on-gate, 5/5):** the generation engine ships — a cheap-LLM (gpt-4o-mini) batch
+profile generator with the **CODE-owns-structure / AI-owns-content** boundary. Built inside-out, fixtures-first
+(TOK-01), over **7 iters** (1 bootstrap tok + 6 tiks; re-scope trigger never fired): (1) `services/ai/` wrapper
+over the shared `ai` lib (EU-first routing → 429 fallback → model→price cost tracking, values-blind); (2)
+`blueprint.Batch` + `batch[]` + `EffectiveBatches()` (pure Go-template mother-prompt expansion, NO LLM at parse
+time → the deterministic $0-reseed foundation); (3) the `batchcache/` prompt-hash cache (atomic `.tmp`→rename,
+`.lock` fence, capture-version invalidation); (4) `cmd/gen-batch` (gpt-4o-mini default, MANDATORY `--max-cost`
+ceiling, `--max-concurrent` semaphore, `--call-timeout`, re-roll-on-malformed + hero-collision re-roll,
+per-batch cost report); (5) the `GeneratedBatchSeeder` (surface `'generated-batch'`, `DependsOn` users+taxonomy,
+`PerStackIsolated`; cache → rows via the existing resolvers, drop-not-fabricate). **Gate MET on a REAL Azure
+gpt-4o-mini run** (EU-first Sweden; the direct `OPENAI_KEY` was billing-dead), N=20 + a fresh demo-3 proof, all
+5 dims: valid-JSON **100%** (33/33) ≥95% · taxonomy-resolution **47/47 skills + 20/20 roles → real
+`skiller.*.node_id`**, `datadna measure-closure --stack demo-3` = `[PASS]` (closure GREEN, **0 fabrication**) ·
+**0 hero-collisions** · cost **$0.0059 ≤ $0.10** · **$0 byte-identical re-seed** (run 2 = 0 calls / 20 cache
+hits). Believability: **20/20 distinct multicultural names**, role-coherent resolving skills, 20/20 avatars,
+isolation CLEAN. 3 real fixes in iter-07 (per-call `--call-timeout` stall-class · intra-batch name de-dup ·
+`user_skills` CHECK-23514 FK-provenance) + an Azure env-name EU-first resolution fix + a genEmail degenerate-
+address edge fixed in harden Pass 4. **Supply-chain: the deliberate, user-acknowledged 1-new-dep inflection** —
+`github.com/anthropos-work/ai@v1.40.1` (all-permissive tree), the FIRST new dep since v1.8 (the milestone is
+ABOUT this; license-vetted, version-boundaried, NOT a regression). Final harden 5 passes stabilized (0% delta,
+exhausted dimension scan); `go test -race` clean; flake gate clean; coverage services/ai 97.8% / blueprint
+98.9% / batchcache 88.5% / cmd/gen-batch 93.0% / seeders 97.3%. **NEW** `corpus/ops/demo/ai-generation-spec.md`
++ `corpus/ops/demo/cache-spec.md` (indexed in demo/README.md + CLAUDE.md). Deferral re-audit **GREEN** (org-scale
+→ M46 Fate-2 owned; prod-key out-of-release by design; 0 repeat/chronic/aged-out). Alignment **N/A** (zero
+clerkenstein change → carries 100%/100%). **Zero canonical platform-repo edits.** stack-seeding Go test funcs
+**567→677** (+110). Merged `--no-ff` into `release/01.10-method-acting`; rext code-of-record @ tag
+`method-acting-m45-harden-final`. **M46 (org-scale fill) is now the ONLY remaining v1.10 milestone.**
 **Goal:** stand up the **AI generation engine** — a `cmd/gen-batch` CLI + `GeneratedBatchSeeder` that turns a
 high-level YAML batch descriptor into realistic per-member profiles via a **CHEAP LLM** (gpt-4o-mini default),
 with parallel/throttled generation, prompt-hash caching, and the **CODE-owns-structure / AI-owns-content**
@@ -533,8 +560,8 @@ production-seeding key story.
 (the resolvers + the CODE-owns-structure / AI-owns-content boundary), `snapshot-spec.md` (the capture version
 the cache key extends), `ai_architecture.md` + `shared_libraries.md` (the shared `ai` library + `Event_AiUsage`).
 **Delivers →** `corpus/ops/demo/ai-generation-spec.md` (**NEW** — the gen-acceptance protocol + the engine) +
-`corpus/ops/cache-spec.md` (**NEW**, or a Caching section in `ai-generation-spec.md` — the prompt-hash cache +
-capture-version invalidation).
+`corpus/ops/demo/cache-spec.md` (**NEW** — the prompt-hash cache + capture-version invalidation; placement
+resolved to `demo/` per the demo-family index convention, TOK-01).
 
 #### M46 — Org-scale fill + gen-batch preview CLI
 **Status:** `planned` · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/01.10-method-acting/m46-org-scale-fill/`](releases/01.10-method-acting/m46-org-scale-fill/)

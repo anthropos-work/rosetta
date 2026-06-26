@@ -143,6 +143,20 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   serve-grant; out-of-demo link → injection link-rewriting; runtime-computed surface → crawl-scope), and the
   disclosed-presenter-note allow-rule for legitimate external citations. The harness lives in rext
   `stack-verify/e2e/`. (v1.10 M42e)
+- [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
+  (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
+  per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +
+  `EffectiveBatches()` (pure Go-template mother-prompt expansion, NO LLM at parse time), the `cmd/gen-batch`
+  CLI (mandatory `--max-cost` ceiling, `--max-concurrent` semaphore, `--call-timeout`, re-roll-on-malformed +
+  hero-collision re-roll), and the `GeneratedBatchSeeder` — enforcing the **CODE-owns-structure /
+  AI-owns-content** boundary (every generated role/skill name routes through the existing resolvers;
+  non-resolving names **drop**, the closure gene stays green, never fabricated). Plus the measure→fix→accept
+  iteration protocol (the 5-metric gen-quality gate). The FIRST new third-party dep in the seeding module
+  (`ai v1.40.1`, a deliberate in-release decision). (v1.10 M45)
+- [`cache-spec.md`](cache-spec.md) — the **prompt-hash cache** (v1.10 M45): the
+  `.agentspace/.batchcache/batch-${hash}/member-${i}.json` store keyed by the **MOTHER prompt** + the
+  **taxonomy capture version** (invalidate on re-replay), atomic `.tmp`→rename writes, the `.lock` fence — so
+  an unchanged batch descriptor **re-seeds byte-identical at $0**. Pairs with `ai-generation-spec.md`. (v1.10 M45)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
   With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).
