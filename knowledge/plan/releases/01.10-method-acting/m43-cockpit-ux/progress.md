@@ -22,7 +22,7 @@ Section checklist (built by `/developer-kit:build-milestone`). Scope detail in `
 - [x] **Docs** — `corpus/ops/demo/cockpit-spec.md` **(NEW)** authored; reconciled the M38 two-CTA
   description in `stories-spec.md` (KB-1) + updated `demo/README.md` index + `CLAUDE.md` docs list.
 
-**Status:** `done` (all 6 sections; render-accepted on demo-3). Zero next-web / platform-repo edits — the
+**Status:** `archived` (completed 2026-06-26) — all 6 sections; render-accepted on demo-3. Zero next-web / platform-repo edits — the
 cockpit is a standalone served panel; the code lives in rext (`demo-stack/cockpit.py`, tagged
 `method-acting-m43-cockpit-ux`); cockpit.go UNCHANGED.
 

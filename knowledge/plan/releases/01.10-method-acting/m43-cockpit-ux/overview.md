@@ -3,7 +3,7 @@ milestone: M43
 slug: cockpit-ux
 version: v1.10 "method acting"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-26
 last_updated: 2026-06-26
 complexity: small-medium
