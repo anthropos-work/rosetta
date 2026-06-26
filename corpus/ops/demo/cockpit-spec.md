@@ -1,0 +1,195 @@
+# The Presenter Cockpit (UX spec)
+
+**The reference for the presenter cockpit — the slick, light login launcher a demo-giver drives.** When a
+storytelling demo is up (the default — `/demo-up N` seeds the [Stories & Heroes](stories-spec.md) world and
+wires the multi-identity fake FAPI), it serves a **standalone panel** on an offset port that lists every seeded
+story → its hero trio. The presenter picks a hero, clicks **Log in as**, and the browser lands logged-in as her
+on a sensible per-role screen — so the demo is a menu, not a hunt for the right URL + a typed login.
+
+This doc is the canonical description of the cockpit's **UX surface** + its **deep-link contract**: how the
+panel renders, what the single CTA does, and where the served panel sits relative to the platform (it never
+touches it). It graduates the cockpit mechanics that were scattered across
+[`stories-spec.md` § The presenter cockpit (M38)](stories-spec.md#the-presenter-cockpit-m38) (the original
+M37/M38 producer/consumer seam) and [`clerkenstein.md`](../../services/clerkenstein.md) (the handshake) into
+one place, and layers the **v1.10 "method acting" M43 UX pass** on top.
+
+> **Scope.** This doc is the **UX + deep-link** reference for `rosetta-extensions/demo-stack/cockpit.py` (the
+> served panel) + the manifest its menu reads (projected by `stack-seeding/seeders/cockpit.go`). The
+> **multi-identity FAPI handshake** the CTA drives lives in [`clerkenstein.md`](../../services/clerkenstein.md)
+> (unchanged by M43); the **roster/seed producer seam** (how a hero's seat resolves, `--roster-export`) lives in
+> [`stories-spec.md`](stories-spec.md). This doc owns the panel a presenter looks at.
+
+---
+
+## For PMs — the demo-driving surface
+
+A demo flows: *show Maya's verified-skill profile → show Tom's stark claimed-vs-verified gap → log in as their
+manager Dan and watch the same two people become the standout high/low rows of his Workforce dashboard.* The
+cockpit is the **remote control** for that flow. It is a clean, professional, **light** panel — a card per hero,
+the hero's name + role + a one-line presenter note, the vantage/trajectory badges, and **one button**: **Log in
+as**. One click logs in as the chosen hero **and** lands the browser on the screen that tells her part of the
+story — no typed login, no copied URL.
+
+```
+Presenter Cockpit — demo-3
+  AI TRANSFORMATION & RESKILLING     🏢 Cervato Systems
+  220 people · 220-person software co upskilling
+    ◍ Maya Chen — Backend Developer   [EMPLOYEE] [THRIVING]
+        "8 verified skills, mobility-ready"                           [⇥ Log in as]
+    ◍ Tom Becker — Backend Developer   [EMPLOYEE] [STRUGGLING]
+        "Few/low verified skills, OVER-rates himself (stark gap)"     [⇥ Log in as]
+    ◍ Dan Rossi — Engineering Manager  [MANAGER]
+        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [⇥ Log in as]
+  SDR ONBOARDING & RAMP              🏢 Solvantis
+  120 people
+    ◍ Sara Whitfield [EMPLOYEE·THRIVING] / Nick Alvarez [EMPLOYEE·STRUGGLING] / Leah Donovan [MANAGER]
+
+  ⬇ Download seed manifest
+```
+
+(The `◍`/`🏢`/`⇥` glyphs above are stand-ins for the FontAwesome icons the real panel renders:
+`fa-circle-user` per hero, `fa-building` per org, `fa-arrow-right-to-bracket` on the CTA.)
+
+**Login is the only action.** Earlier cockpits (M38) had two buttons per hero — `[Login as]` (landed on the app
+root) and `[Jump to section]` (landed on the hero's deep-link). M43 **unified** them: the single **Log in as**
+both logs the presenter in as the hero **and** lands her on a sensible per-role screen (an end-user on her
+profile, a manager on the Workforce dashboard). One CTA, one click, the right screen.
+
+**A login takes a moment — and now it shows.** The real handshake → next-web cold-load is ~2-5 seconds we can't
+shorten. Clicking **Log in as** raises a small **staged overlay** (*Signing you in… → Loading your workspace… →
+Almost there…*) so the blank-load has feedback instead of looking frozen. The overlay is feedback, not a
+progress bar — there's no real signal from the cross-origin handshake to report.
+
+**Grab the seed manifest.** A footer **Download seed manifest** link saves the cockpit's JSON menu — the same
+single-sourced projection the panel reads — handy for a presenter who wants the hero/org/jump_to list on hand,
+or for a scripted check.
+
+---
+
+## For engineers — how it works
+
+### Standalone served panel, never an in-app overlay (D15)
+
+The cockpit is a host-native HTTP server (`rosetta-extensions/demo-stack/cockpit.py`, **stdlib-only** Python) on
+an **offset port** (`7700 + N·10000`, e.g. `37700` for `demo-3`), brought up with the stack
+(`up-injected.sh`, session-detached via `launch_detached` so it survives the bring-up task being reaped) and
+torn down with it (its PID is recorded in `<stack>/cockpit.pid`). It is **never** an edit to next-web — it
+reaches the platform only as a browser would (over the FAPI handshake), preserving the hard
+zero-platform-repo-edit line. The serve is **non-fatal**: a cockpit failure never aborts an otherwise-good
+storytelling demo (the M18/M19 pattern). `DEMO_NO_COCKPIT=1` brings the demo up without the panel.
+
+### Single source — the menu is a projection of the seed (D9)
+
+The cockpit menu is a **manifest** (`cockpit-manifest.json`) the seeder projects from the very file that seeded
+the heroes (`stackseed --cockpit-export`, `cockpit.go`'s `BuildCockpitManifest`). The annotations describing a
+hero in the cockpit are the same ones that scoped her seed — the menu can never drift from the data. (The demo
+tooling is stdlib-only Python, so the YAML is parsed once on the Go side and the panel reads the derived JSON.)
+The manifest carries, per hero: the `key` (her `stories.yaml` id — the seat-switch handle), `name`, `role`,
+`vantage`/`vantage_label`, `trajectory`, the presenter `annotation`, and a **resolved `jump_to`** (her declared
+`jump_to`, or the vantage default via `defaultJumpForVantage` — an end-user → `/profile`, a manager →
+`/enterprise/workforce`).
+
+### The CTA — one [Log in as] = one FAPI handshake redirect
+
+The single **Log in as** points the browser at the multi-identity fake FAPI's handshake with the hero's
+seat-switch key **and** her per-role landing as the redirect:
+
+```
+https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=<app-base><jump_to>
+```
+
+`<fapi-host>` is the per-stack fake FAPI on its own offset port `127.0.0.1:<5400 + N·10000>` (e.g.
+`127.0.0.1:35400` for `demo-3`), served over HTTPS (clerk-js requires it); the `redirect_url` is the hero's
+`jump_to` as an absolute next-web URL on the app's offset port `<3000 + N·10000>`, **fully percent-encoded**
+inside the outer query (so a `jump_to` carrying its own `?tab=` survives — a load-bearing escaping invariant
+pinned by a test). The FAPI selects the chosen hero's seat from `__clerk_identity` **then** establishes the
+session and redirects — so the hero is the active identity *everywhere* (the client view, `/v1/me`, the minted
+token, the cookies) **and** the browser lands on her screen, in one move. The key is the hero's `stories.yaml`
+id — the **same** key the roster export gave Clerkenstein's registry, so the seat always resolves. (The
+handshake + multi-identity selection are M37; see [`clerkenstein.md`](../../services/clerkenstein.md).)
+
+**Why no `jump_to` button anymore.** The M38 cockpit rendered the handshake twice per hero — once landing on the
+app root (`[Login as]`), once on the deep-link (`[Jump to section]`). The deep-link landing is strictly the more
+useful of the two (it's already a logged-in session, just with a better starting screen), so M43 dropped the
+root-landing button and made `[Log in as]` route to `jump_to`. The root-landing helper
+(`cockpit.py::login_as_url`) is kept as the documented bare variant (a presenter who wants the app root, an
+integration check), but the rendered CTA uses the jump_to seam (`jump_url`).
+
+### The deep-link catalog (O9)
+
+The cockpit ships an enumerated, stable set of next-web routes per vantage (`cockpit.go`'s `DeepLinkCatalog`) —
+the *individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, my-growth, take-a-sim) and the
+*org-intelligence* surfaces a manager hero demos (the Workforce dashboard tabs — verification / role-readiness /
+succession / mobility — plus the talent pool). A hero's `jump_to` is matched against this catalog so the
+manifest can carry its label; an unrecognized `jump_to` still works (it's a raw path).
+
+### The UI surface (v1.10 M43)
+
+The panel is a single static HTML page (`render_page()`), restyled and enriched:
+
+- **Light professional theme.** `_PAGE_CSS` is a clean light design — CSS custom properties (one indigo accent),
+  a card-per-hero hierarchy with subtle shadows + hover, generous spacing, high-contrast typography. (Replaced
+  the original dark GitHub-style theme.)
+- **FontAwesome icons via the free CDN.** A cdnjs FA6-free `<link>` (with its SRI integrity hash) in `<head>`;
+  `fa-circle-user` as each hero's avatar, `fa-building` before each org, `fa-arrow-right-to-bracket` on the CTA,
+  `fa-download` in the footer. **The CDN `<link>` is a runtime asset, not a build dependency** — the panel stays
+  stdlib-only Python and the supply-chain posture stays GREEN. _(Offline-safe precedent, recorded for a future
+  offline-demo need: `ant-academy` vendors FA Pro locally under `code/public/assets/fontawesome/`. Not adopted
+  here — the CDN is the chosen default.)_
+- **Seed-manifest download.** The footer link targets `/manifest.json`; that endpoint serves the manifest with
+  `Content-Disposition: attachment; filename="cockpit-manifest.json"` (pretty-printed) so the browser saves a
+  file rather than rendering it inline.
+- **Staged login-progress overlay.** A small JS overlay (`_OVERLAY_JS`, a raw string — no manifest data is
+  interpolated into the JS, so no injection surface) shows on `[Log in as]` click: *Signing you in… → Loading
+  your workspace… → Almost there…* on a deterministic timer with a generous final stage. `localStorage` carries
+  an "in-flight login" flag (with a 30s freshness window) across the cross-origin redirect, so a back-navigation
+  to the cockpit re-shows the overlay rather than a dead spinner. The overlay never `preventDefault`s the real
+  navigation — it is purely additive feedback over the unavoidable latency. (The real ~2-5s handshake →
+  next-web cold-load is **unchanged**; only the feedback improves.)
+
+### Served endpoints
+
+| Path | Response |
+|------|----------|
+| `GET /` (or `/index.html`) | The cockpit HTML page |
+| `GET /healthz` | `200 "ok"` (a liveness probe) |
+| `GET /manifest.json` | The raw seed manifest as a download (`Content-Disposition: attachment`, pretty JSON) |
+| anything else | `404` |
+
+### Bring it up
+
+```bash
+# A storytelling demo is the DEFAULT: /demo-up N seeds the 2-org hero trio, wires the multi-identity
+# fake-fapi, and serves the cockpit on http://localhost:$((7700 + N*10000)).
+/demo-up 3
+# → the cockpit serves on http://localhost:37700. Pick a hero → [Log in as] → land on her per-role screen.
+```
+
+`DEMO_NO_COCKPIT=1` brings the stories demo up without the panel (e.g. an API-only run);
+`DEMO_NO_STORIES=1` brings up the structural small-200 fallback (no heroes, single identity, no cockpit). The
+cockpit + roster + seed all pin `--stack demo-N`, so the exported ids and the seeded rows are guaranteed to
+match.
+
+---
+
+## Future-feature expansion surface
+
+The cockpit is deliberately **UX-only** today — a launcher, not a presenter console. The natural next surfaces,
+recorded so a future milestone has a home (none is in v1.10 scope):
+
+- **Per-hero history / telemetry** — what the presenter showed, last-logged-in hero, a "you are currently
+  logged in as …" indicator.
+- **Note-taking / a talk-track** — the presenter's per-hero script alongside the annotation.
+- **A search / filter** as the roster grows (multi-org, many heroes).
+- **Live seed status** — surface a re-seed / re-snapshot from the panel (today the cockpit only reads the
+  manifest; the seed/snapshot lifecycle is the `/stack-*` skills).
+
+Any of these is an **additive** change to the served panel — the hard zero-platform-repo-edit line + the
+single-source (D9) + stdlib-only posture all hold.
+
+---
+
+**See also:** [`stories-spec.md`](stories-spec.md) (the seeded world + the roster/seat producer seam) ·
+[`clerkenstein.md`](../../services/clerkenstein.md) (the multi-identity FAPI handshake) ·
+[`frontend-tier.md`](frontend-tier.md) (the demo UI tier the cockpit launches into) ·
+[`rosetta_demo.md`](../rosetta_demo.md) (the demo-stack lifecycle).
