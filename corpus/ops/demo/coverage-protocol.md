@@ -328,6 +328,38 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   never-idle long-polling page just hits the ceiling and proceeds (the `.catch`). Set the ceiling correct-over-
   fast: full link discovery is a gate-correctness precondition. WARM the stack (or re-sweep) after a cold start
   (e.g. a sentinel restart that cleared GraphQL caches) before quoting the authoritative residual.
+- **At ORG SCALE a single bounded re-assert is NOT enough for the heaviest data grids — use a BOUNDED
+  re-assert POLL + warm the grid (v1.10 M46 iter-07 lesson).** The per-section slow-paint guard was a
+  *single* bounded re-assert (one extra settle, re-measure once). It was calibrated against a ~221-member org;
+  when the **generated supporting population** filled the org to ~1k members, the manager's enterprise data
+  grids (`/enterprise/members`, `/enterprise/activity-dashboard`) grew ~4.5× and their server-query +
+  serialize + client-render exceeded one re-assert's budget — so the harness captured a **skeleton** frame and
+  false-failed three sections whose data was fully present (`200`, full chrome + org name/logo + table headers,
+  but skeleton rows + a `0 / ∞` count). The screenshot is the tell: real chrome, skeleton rows. The fix is
+  twofold and is the org-scale extension of the iter-09 settle lesson: (1) the slow-paint guard re-asserts in a
+  **bounded poll** (re-settle + re-measure up to N times, return on the FIRST pass, keep polling ONLY while the
+  verdict is a paint-timing kind — `skeleton`/`empty`; a genuinely-empty section still fails after the budget,
+  so there is **no false-pass**); (2) the **warm set is vantage-aware** — the manager vantage warms its heavy
+  enterprise grids (`/enterprise/members`, `/enterprise/activity-dashboard`, `/enterprise/workforce`) before
+  the authoritative sweep, so the first visit isn't paying the cold-cache + heavy-grid cost together. A
+  skeleton-frame false-fail on a populated org is a measurement bug, NOT a content gap — diagnose it by the
+  screenshot (real chrome + skeleton rows) + the DB (the rows ARE there), and fix the harness, never the seed.
+  - **BUT bound the diagnosis: a poll that EXHAUSTS on a never-resolving query is a PLATFORM limit, not a
+    harness bug (M46 iter-07 corollary).** The bounded poll above closes a *slow-paint* skeleton (the grid
+    hydrates within a few re-asserts). It does **not** close a grid whose backing query genuinely never resolves
+    in any reasonable window. At org scale the manager's enterprise grids (`/enterprise/members`,
+    `/enterprise/activity-dashboard`, `/enterprise/settings`) fail this way: the **federated GraphQL** queries
+    (`organizationMembers` + `membershipsCount` + the activity aggregation) fan out per-row resolvers
+    (`jobRole`/`targetRole`/`tags`/`lastActivityDate`/`organizationFeatures` × Sentinel authz) into an N+1
+    across subgraphs, and the Cosmo router logs **10–84 s** latencies — so the page sits on a `…` spinner /
+    skeleton through the whole poll. Tell it apart from a slow-paint by **measuring the query, not just the
+    pixels**: (a) `docker logs <stack>-graphql-1 | grep '"latency"'` shows 10 s+ requests; (b) the raw SQL for
+    the same shape is milliseconds (so it's the federation layer, not the DB); (c) it's **invariant to org
+    size** (≈10.9 s @ 998 ≈ 10.5 s @ 500 — halving the org doesn't help). When all three hold, this is a
+    **platform resolver-performance limit**, fixable only by a platform change (forbidden by the
+    zero-canonical-edit line) — NOT the seed, NOT the harness, NOT a bigger poll. The honest move is to
+    **re-scope the gate** (document the org-scale enterprise grids as a platform-perf exception) — never widen
+    the poll to mask an 84 s query, and never shrink the org below the org-scale premise just to pass.
 - **An editorial citation in replayed content is VALID content, not a gate escape — disclose it, don't strip
   it (M42e iter-08 lesson).** Replayed `/skill-path/.../chapter` body copy can carry a real external `<a href>`
   citation (e.g. an `en.wikipedia.org` / `strategy-business.com` reference inside the course material). That is

@@ -87,6 +87,19 @@ cache at $0"* — is proven by:
 Because the seeder is a deterministic transform of `cache → rows`, byte-identical cache ⇒ byte-identical
 seed. The cache is the reproducibility anchor.
 
+**Org-scale caveat — the `$0` reseed stays DISTINCT, not necessarily byte-identical to the cache (v1.10 M46
+iter-07).** A cache captured at org scale can carry the model's raw attractor duplicates (gpt-4o-mini re-picks
+a handful of names hundreds of times across a ~600-member org; the same `email_local` recurs). The
+`GeneratedBatchSeeder` applies a **deterministic, `$0` seed-time distinctness backstop** over **two axes** —
+**name** (`seeders.DisambiguateGeneratedName` — keep the first name, swap a global-index-keyed surname) and
+**email** (`UNIQUE(email)` is enforced by `public.users`; a colliding local part gets the global index
+appended). Both are pure functions of `(cached content, global index)`, so the reseed is still **fully
+reproducible** (same cache → same distinct identities → a FRESH `/demo-up` reproduces the same org) — it just
+isn't *byte-identical to the cache* for the members whose cached name/email collided. The distinctness is what
+makes the `$0` cache-hit reseed believable rather than a wall of duplicate names. Proven on the real
+614-member cache: **614/614 distinct names + 614/614 distinct emails** seeded at `$0`. See
+[`ai-generation-spec.md` §4g](ai-generation-spec.md).
+
 ---
 
 ## 5. Invalidation summary
