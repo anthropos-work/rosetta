@@ -63,6 +63,9 @@ the hash is right.
 
 ## Tag / two-repo state
 - rext authoring (`.agentspace/rosetta-extensions`): committed `4184650`, tagged `method-acting-m43-cockpit-ux`.
+  **Harden bump:** commits `5d1b99e` (deepen tests 27→63 + meta-line double-escape fix) + `14e68fe`
+  (served-panel depth), tagged `method-acting-m43-cockpit-ux-fix1`. See
+  [`hardening-ledger.md`](hardening-ledger.md).
 - consumption clone (`stack-demo/rosetta-extensions`): fetched + checked out the tag (was `…m44…fix1`).
 - corpus m43 branch: the `Delivers → cockpit-spec.md` doc + KB-1 reconciliation + plan files.
 
