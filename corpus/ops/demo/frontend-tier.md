@@ -37,6 +37,31 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > an `index.html` SPA fallback, with no route gap (verified by code-read; #M32-D1). Full root-cause: the v1.7 M32
 > milestone record.
 
+> **studio-desk is a WORKING demo surface — `MOCK_CLERK` + `VITE_MOCK_CLERK` (v1.10 "method acting" postfix).**
+> The manager's **"Anthropos Studio" left-nav** opens the demo's own studio-desk on `:9000+offset`. Before the fix
+> it landed on a **blank `/undefined` + a dead `:3000` redirect-loop** (`ERR_TOO_MANY_REDIRECTS`): the production
+> image applies `requireAuth` to **all** routes, but studio-desk on `:9000+offset` has **no Clerk `__session`
+> cookie** (cookies are per-port; next-web is on `:3000+offset`) → a 302 to the **un-offset** `CLERK_SIGN_IN_URL`
+> = dead `localhost:3000/login`; and `VITE_CLERK_SIGN_IN_URL` was unset → the frontend stringified `undefined` →
+> the literal `:39000/undefined`. The cross-port cookie is **unsolvable** on the split-port topology, so the
+> durable fix is **mock-auth on both tiers**:
+> - **Backend** — the injected override adds **`MOCK_CLERK=true`** to studio-desk's env (`src/index.ts` →
+>   `mockPassthrough` replaces `authMiddleware`/`adminMiddleware` → the prod `sendFile` routes serve with **no
+>   302**). Re-emitted **every bring-up** (no rebuild). It also pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the
+>   demo's **own offset** next-web (defense-in-depth — kills the dead `:3000` even if `MOCK_CLERK` were ever off).
+> - **Frontend** — the SPA's mock switch is **`VITE_MOCK_CLERK`** (`app/core/main.ts`), which Vite **inlines at
+>   build time**. The canonical `Dockerfile.dev` declares only 5 ARGs, so a raw `--build-arg VITE_MOCK_CLERK` is a
+>   silent no-op — a **demopatch** (`studio-desk-mock-clerk`, the tool's **2nd** patch) declares the ARG in the
+>   **ephemeral** demo clone's Dockerfile before the build (canonical repo untouched, clone reverted clean), then
+>   the build passes `--build-arg VITE_MOCK_CLERK=true`. The bundle boots its mock-auth path (`mock-user` /
+>   `mock-token`) instead of initializing Clerk against a cookie-less cross-port instance.
+>
+> > **Cached-image caveat (the VITE bake).** `VITE_MOCK_CLERK` is baked into the **frontend bundle**, so an
+> > **existing** `demo-N-studio-desk` image is reused as-is by the tag-guard — the bake only takes on a **fresh
+> > `demo-N`** or after **`docker image rm demo-N-studio-desk`** (the documented re-capture-class caveat: clearing
+> > the cached image forces the rebuild that applies the demopatch + build-arg). The backend `MOCK_CLERK` env, by
+> > contrast, re-applies on every re-up with no rebuild.
+
 > **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
 > **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
 > for `127.0.0.1 localhost ::1`), so a fresh browser renders the signed-in app with **no proceed-anyway**. It
@@ -93,7 +118,7 @@ image. The tooling makes this cheap-where-it-can:
 | App | URLs | Clerk pk | Context trim |
 |-----|------|----------|--------------|
 | **next-web** | `--build-arg NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `_BACKEND_API_URL` / `_HOSTING_URL` (offset) — ARGs the Dockerfile already declares | **no pk ARG exists** → dropped into a **gitignored `apps/web/.env.local`** in the build context, read by `next build`, removed by a trap after | the repo ships **no** `.dockerignore`, so a **tooling-owned** one (`rosetta-extensions/demo-stack/frontend/next-web.dockerignore`) is applied **transiently** (never clobbers a repo one; trap-removed) to trim the 2.8 GB context (2.5 GB `node_modules`) to <100 MB |
-| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` (offset) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → passed straight as a build-arg | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
+| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` (offset) + **`VITE_MOCK_CLERK=true`** (the mock-auth bundle bake — declared into the clone's Dockerfile by the `studio-desk-mock-clerk` demopatch, since the canonical Dockerfile declares only 5 ARGs) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → passed straight as a build-arg | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
 
 The split — next-web's pk via the gitignored `.env.local` (its Dockerfile declares no pk ARG) vs studio-desk's
 pk straight as a build-arg (its Dockerfile *does*) — is dictated by the real, unmodified Dockerfiles (#M19-D3).

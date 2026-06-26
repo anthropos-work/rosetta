@@ -48,9 +48,18 @@ page** asserts — **per page AND per section/element**:
   surface** (e.g. left-menu "Studio" → `studio.anthropos.work`). Legitimate **external editorial / reference
   links inside content** (a `/chapter` citation; a LinkedIn-import help link) are **allowed but disclosed**
   in a presenter-notes list — they are not prod-ejects.
+- **(d′) Cross-port demo-local outbound surfaces actually WORK (v1.10 "method acting" postfix).** A demo-local
+  link to a **different port** than next-web's — e.g. the manager's **"Anthropos Studio"** left-nav →
+  studio-desk on `:9000+offset` — is now **FOLLOWED** by the crawl with the logged-in context and asserted to
+  land on a **real, non-blank** destination: on the destination `host:port`, **not** a `/login`·`/sign-in`·
+  `/undefined` surface, **not** the un-offset `:3000`, HTTP 2xx (no `ERR_TOO_MANY_REDIRECTS`), with a
+  destination DOM marker present (the studio-desk home's WelcomeSection / QuickActions). Previously the BFS only
+  recursed **same-host-AND-port**, so these cross-port destinations were never visited and a blank /
+  login-looping studio-desk slipped the gate. A failing follow is a gate **FAIL** (the studio-desk class).
 
-**Gate = `0 failing sections + 0 persona failures + 0 prod-eject escapes + 0 not-reached manifest pages`,
-over a FRONTIER-EXHAUSTED crawl (`cappedAtFrontier === false`), reproduced on a FRESH demo-up.** A
+**Gate = `0 failing sections + 0 persona failures + 0 prod-eject escapes + 0 not-reached manifest pages +
+0 cross-port-follow failures`, over a FRONTIER-EXHAUSTED crawl (`cappedAtFrontier === false`), reproduced on a
+FRESH demo-up.** A
 **coverage-review.html** (per-section verdicts + screenshots + documentedExceptions[] + presenterNotes[]) is
 emitted for human review — screenshot review is part of acceptance.
 
@@ -79,7 +88,11 @@ The harness, against a **live** demo on offset ports:
    vantage can navigate to (the gate's scope) and classifies every `<a href>` host as demo-local / prod-eject
    / allowed-external — the content VERDICT moved OUT of the crawl and INTO the manifest (step 3). Rationale
    for keeping discovery (not a manifest) for the scope: a route manifest can't catch a nav that **escapes**
-   the demo. The frontier is capped + deduped; query-only variants of the same path collapse.
+   the demo. The frontier is capped + deduped; query-only variants of the same path collapse. **The BFS recurses
+   same-host-AND-port only**; a **cross-port demo-local** link (a different port than next-web — e.g. the
+   "Anthropos Studio" left-nav → studio-desk `:9000+offset`) is collected separately and **FOLLOWED after the
+   BFS** (`onCrossPortFollow`, v1.10 postfix) — asserting the destination is non-blank / not a sign-in or
+   `/undefined` surface / not the un-offset `:3000` / HTTP 2xx / carries a destination DOM marker (gate (d′)).
 3. **Per page** runs the **manifest's per-section asserts** (`lib/section-assert.ts` against
    `lib/coverage-manifest.ts`): for each section the manifest declares for that page — resolve its region
    selector (0 matches → **region-not-found = FAIL**), reject error/skeleton/empty-state content
@@ -164,6 +177,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | **Federation / content error (403/500/panic)** | the page reads replayed content not serve-granted | `stack-snapshot` serve-grants (`directus/structure.go`) | re-replay snapshot into the demo |
 | **Out-of-demo link (escape)** | a baked/rendered link host points at prod | the demo **injection + env link-rewriting** (`demo-stack/up-injected.sh` build-args / `stack-injection/gen_injected_override.py`) — rewrite the host to the offset port. **Precondition (M42m iter-02):** the platform must expose a **per-URL `NEXT_PUBLIC_<thing>_URL` override** for that host (rewritable in the gitignored `apps/web/.env.local` overlay or a build-arg, zero-edit — e.g. next-web's `ACADEMY_URL` reads `NEXT_PUBLIC_ACADEMY_URL`). If the host is instead behind a **coarse mode-flip** (`NEXT_PUBLIC_NODE_ENV`) or a **hardcode** with no per-URL knob (e.g. next-web's `STUDIO_URL` — a `NEXT_PUBLIC_NODE_ENV` ternary, wrong-port + side-effecting on flip), the host is **platform-bound** → this row does NOT apply; it's a **re-scope trigger** (the rewrite needs a platform-source edit). Diagnose: find the constant's source, check for a dedicated `NEXT_PUBLIC_<thing>_URL` read vs a mode-flip/hardcode. | re-build the frontend (baked URL) or re-emit the override + restart |
 | **Platform-bound escape (no per-URL override)** | a baked link host is hardcoded / behind a coarse mode-flip with no `NEXT_PUBLIC_<thing>_URL` knob (e.g. next-web's `STUDIO_URL`) — the env-rewrite row above does NOT apply | the **demo-patch tool** (`demo-stack/patches/demopatch` + a content-anchored manifest, M42m iter-03): source-patch the demo's **EPHEMERAL gitignored clone** before the build to read `NEXT_PUBLIC_<thing>_URL` (a behavior-identical fallback ternary kept), then **trap-revert** after the image bakes — CANONICAL repos NEVER touched (6 guards: hard path-assert demo-clone-only, drift-refuse, never-commit, idempotent, self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert) with the offset value in the `.env.local` overlay; default-on + non-fatal (`DEMO_NO_PATCH=1` opts out). The clone is left git-clean; `ensure-clones.sh` **R1** pristine-reverts a crash-left patch + **R1b** sweeps a crash-left tooling `.dockerignore` (byte-identical + untracked guards). Resolved the Studio `studio.anthropos.work` escape demo-only (139→0). | re-build the frontend (the patch bakes into the image; revert is automatic) |
+| **Cross-port demo-local surface blank / login-loops** (studio-desk class, v1.10 postfix) | a demo-local link to a **different port** than next-web (e.g. "Anthropos Studio" → studio-desk `:9000+offset`) opens a blank `/undefined` + a dead `:3000` redirect-loop — the destination service applies `requireAuth` to all routes but has **no cross-port Clerk cookie** (cookies are per-port), so it 302s to the un-offset sign-in URL; the cross-port cookie is **unsolvable** on the split-port topology | **mock-auth on both tiers**: the **injection override** (`gen_injected_override.py`) adds `MOCK_CLERK=true` (backend auth bypass → no 302) + pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the offset next-web; the **`studio-desk-mock-clerk` demopatch** declares `VITE_MOCK_CLERK` in the ephemeral clone's `Dockerfile.dev` (the canonical one declares only 5 ARGs) so the build bakes the frontend mock switch. The harness gate is closed by the crawl's **cross-port FOLLOW** (`crawl.ts` `onCrossPortFollow` → `coverage.spec.ts`): a blank/login-loop/un-offset-`:3000` destination FAILS the gate | re-emit the override (no rebuild) for the env; **clear the cached image** (`docker image rm demo-N-studio-desk`) + re-build the frontend for the `VITE_MOCK_CLERK` bake |
 | **Editorial citation in replayed content** (NOT an escape) | a real `<a href>` to an external article baked into replayed `/skill-path/.../chapter` body copy | the harness **citation allow-rule** (`coverage.spec.ts` `allowedExternalLink` → `crawl.ts`): classify the off-demo link on a `/chapter` path as a VALID citation, recorded as a **presenter note**, NOT counted as an escape (M42e iter-08) | (none — content fidelity; do NOT strip/rewrite the citation) |
 | **Wrong identity / org on a surface** | roster/FAPI resource gap | `stack-seeding/seeders/roster.go` + `clerkenstein/clerk-frontend/resources.go` | re-export roster + restart `<demo>-fake-fapi-1` |
 | **A documented gap** | the behavior is correct but undocumented | a corpus doc update | (none) |
