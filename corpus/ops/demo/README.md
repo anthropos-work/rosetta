@@ -25,7 +25,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
                      AUTO secret-provision (values-blind, per-repo .env from .agentspace/secrets) [v1.6 M30 → secrets-spec.md]
                      AUTO set-dress (cache-first snapshot replay → Stories & Heroes seed + cockpit, default-on, non-fatal) [v1.9 M38]
                        (DEMO_NO_STORIES=1 → structural small-200 seed + single-identity fake-fapi, no cockpit — the fallback)
-  …present it…     →  open the presenter cockpit → pick a hero → [Login as] → [Jump to section]    [stories-spec.md]
+  …present it…     →  open the presenter cockpit → pick a hero → [Log in as] → her per-role screen    [cockpit-spec.md]
   …or use it…      →  browser-login as user_clerkenstein → land in a populated org (200)    [recipe-browser-login.md]
 /demo-down N      →  tear it all down (AND reap the native cockpit process), dev stack untouched [corpus/ops/rosetta_demo.md]
 ```
@@ -35,19 +35,22 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
 > heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
 > the demo's remote control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line
-> holds) listing each story → its hero trio with **[Login as]** and **[Jump to section]**, so a demo-giver
-> picks a hero, lands logged-in as her on the right screen, and presents that flow live. `DEMO_NO_STORIES=1`
+> holds) listing each story → its hero trio with one **[Log in as]** action per hero, so a demo-giver
+> picks a hero, lands logged-in as her on the right per-role screen, and presents that flow live (the slick
+> light UX — icons, the unified CTA, a manifest download, a login-progress overlay — is v1.10 M43, specced in
+> [`cockpit-spec.md`](cockpit-spec.md)). `DEMO_NO_STORIES=1`
 > (or the explicit `DEMO_STORIES=0`) restores the legacy structural `small-200` + single-identity fake-fapi +
 > no-cockpit demo (the `DEMO_NO_*` family fallback). The cockpit serve is **non-fatal** (a stories demo fails
 > loud on a broken roster — the login-as contract — but a cockpit failure leaves a fully-working seeded
 > multi-identity demo you can still drive by hand); pass `DEMO_NO_COCKPIT=1` to bring the stories demo up
-> without the panel (an API-only run). The full picture (the single-source manifest, the one-handshake
-> login-as-+-jump, the roster-export producer, the O9 deep-link catalog) is in
+> without the panel (an API-only run). The cockpit UX surface + the deep-link contract are in
+> [`cockpit-spec.md`](cockpit-spec.md); the single-source manifest, the roster-export producer, and the O9
+> deep-link catalog (the seat/seed producer seam) are in
 > [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
 > /demo-up 3                   →  default: seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
->   …present it…              →  open http://localhost:37700 → pick a hero → [Login as] → [Jump to section]
+>   …present it…              →  open http://localhost:37700 → pick a hero → [Log in as] → her per-role screen
 > DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
 > ```
@@ -100,8 +103,15 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   gap) is materialized as the **7-table fan-out** the `PersonaSeeder` writes, the constraint landmines, the G14
   session fix, the seed-side closure gene — plus the multi-org **thriving/struggling/manager trio** model (M35),
   the **Workforce-dashboard surfaces** (M36), and the **presenter cockpit** (M38 — a standalone served panel that
-  lists each story → its hero trio with **[Login as]** + **[Jump to section]**, riding the Clerkenstein
-  multi-identity seat-switch). The believability spine of a demo world + its demo-driving surface. (v1.9 M34–M38)
+  lists each story → its hero trio with a **[Log in as]** action, riding the Clerkenstein multi-identity
+  seat-switch). The believability spine of a demo world + its demo-driving surface. (v1.9 M34–M38)
+- [`cockpit-spec.md`](cockpit-spec.md) — the **presenter-cockpit UX spec** (v1.10 "method acting" M43): the slick
+  **light** login launcher a demo-giver drives — the card-per-hero layout + FontAwesome icons, the **one
+  unified [Log in as] CTA** per hero (logs in *and* lands on her per-role `jump_to`), the seed-manifest
+  download, and the staged login-progress overlay — plus the deep-link contract + the standalone-served-panel
+  (zero-platform-edit) model + the future-feature surface. Graduates the M37/M38 cockpit mechanics scattered
+  across `stories-spec.md` + `clerkenstein.md` into one place. (The seed/seat **producer** seam stays in
+  `stories-spec.md`.)
 - [`profile-completeness-spec.md`](profile-completeness-spec.md) — the **"complete profile" rubric**: the
   DATA-DENSITY bar for a fully-populated profile across the WHOLE roster — identity + content + semantic layers,
   per-vantage **member vs manager**, each component mapped to its seeding surface + a Playwright acceptance

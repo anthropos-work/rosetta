@@ -20,9 +20,10 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > [§ The Workforce dashboard surfaces (M36)](#the-workforce-dashboard-surfaces-m36) below) — plus the
 > **Clerkenstein multi-identity seat-switch** delivered in **M37** (a demo can present as any seeded hero; see
 > [`clerkenstein/knowledge/architecture.md` § Multi-identity]) — plus the **presenter cockpit** delivered in
-> **M38** (a standalone served panel that lists each story → its hero trio with **[Login as]** + **[Jump to
-> section]**, so a demo-giver picks a hero and lands on the right screen to present a flow live — see
-> [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below) — plus the **profile-identity layer**
+> **M38** (a standalone served panel that lists each story → its hero trio with a **[Log in as]** action, so a
+> demo-giver picks a hero and lands on the right screen to present a flow live — UX-specced standalone in
+> [`cockpit-spec.md`](cockpit-spec.md) since v1.10 M38→M43, see [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38)
+> below) — plus the **profile-identity layer**
 > delivered in **v1.10 "method acting" M39** (the roster org-name thread → the real company on the top bar, the
 > `user_basic_info` role backfill → a real role+title on the /profile header, and the offline real-face avatar —
 > see [§ The profile-identity layer (v1.10 M39)](#the-profile-identity-layer-v110-method-acting-m39) below) — plus the
@@ -413,11 +414,20 @@ the chain uses, so the seed-side closure gene (extended to `membership_skills`) 
 
 ## The presenter cockpit (M38)
 
+> **The cockpit UX is now specced standalone in [`cockpit-spec.md`](cockpit-spec.md) (v1.10 "method acting"
+> M43).** That doc is the canonical reference for the panel's UI surface + deep-link contract; the **v1.10 M43
+> UX pass superseded this section's two-button model** — there is now **one** unified **[Log in as]** CTA per
+> hero (it logs in *and* lands on her per-role `jump_to`), a light professional restyle, FontAwesome icons, a
+> seed-manifest download, and a staged login-progress overlay. This section is kept as the M37/M38 *producer/
+> consumer* origin (the roster-export + handshake seam below); read it with `cockpit-spec.md` for the current
+> UX.
+
 The seeded world (M34–M36) + the Clerkenstein multi-identity seat-switch (M37) make the *individual* surfaces
 real; **M38** makes the whole Stories & Heroes engine **clickable**. The **presenter cockpit** is a standalone
-served panel that lists each story → its hero trio and, per hero, two actions — **[Login as]** and **[Jump to
-section]** — so a demo-giver picks a hero, lands logged-in as her on the right screen, and presents that part of
-the story live.
+served panel that lists each story → its hero trio and, per hero, an action that logs the demo-giver in as her
+and lands her on the right screen — so a presenter picks a hero and presents that part of the story live. _(M38
+shipped two actions per hero — `[Login as]` → app root + `[Jump to section]` → the hero's deep-link; v1.10 M43
+unified them into one `[Log in as]` → `jump_to` — see [`cockpit-spec.md`](cockpit-spec.md).)_
 
 ### For PMs — the demo-driving surface
 
@@ -432,13 +442,15 @@ typing a login, no hunting for the right URL — the story is a menu.
 Presenter Cockpit — demo-3
   Story: AI Transformation & Reskilling   (Cervato Systems · 220 people)
     ▸ Maya Chen — Backend Developer · EMPLOYEE · THRIVING
-        "8 verified skills, rising growth arc, mobility-ready"        [Login as] [▶ Profile]
+        "8 verified skills, rising growth arc, mobility-ready"        [Log in as]   (→ her /profile)
     ▸ Tom Becker — Backend Developer · EMPLOYEE · STRUGGLING
-        "Few/low verified skills, OVER-rates himself (stark gap)"     [Login as] [▶ Profile]
+        "Few/low verified skills, OVER-rates himself (stark gap)"     [Log in as]   (→ his /profile)
     ▸ Dan Rossi — Engineering Manager · MANAGER
-        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [Login as] [▶ Workforce · Skills Verification]
+        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [Log in as]   (→ Workforce · Skills Verification)
   Story: SDR Onboarding & Ramp   (Solvantis · 120 people)
     ▸ Sara Whitfield · EMPLOYEE·THRIVING  /  Nick Alvarez · EMPLOYEE·STRUGGLING  /  Leah Donovan · MANAGER
+
+(v1.10 M43: ONE [Log in as] CTA per hero, routed to her per-role jump_to; the M38 [Jump to section] button is gone.)
 ```
 
 (Display-label note: `vantage: end-user` renders as **EMPLOYEE**, `manager` as **MANAGER** — the YAML attribute
@@ -458,8 +470,9 @@ the annotations describing a hero in the cockpit are the same ones that scoped h
 drift from the data. (The demo tooling is stdlib-only Python, so the YAML is parsed once on the Go side and the
 panel reads the derived JSON — single-source preserved.)
 
-**[Login as] + [Jump to section] = one FAPI handshake redirect.** Both actions point the browser at the
-multi-identity fake FAPI's handshake with the hero's seat-switch key:
+**The CTA = one FAPI handshake redirect.** The action points the browser at the multi-identity fake FAPI's
+handshake with the hero's seat-switch key _(M38 rendered two — `[Login as]` + `[Jump to section]`; v1.10 M43
+unified to one `[Log in as]` → `jump_to`, see [`cockpit-spec.md`](cockpit-spec.md))_:
 
 ```
 https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=<jump_to>
@@ -470,8 +483,8 @@ https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url
 next-web URL on the app's offset port `<3000 + N·10000>`. The FAPI selects the chosen hero's seat from
 `__clerk_identity` **then** establishes the session and redirects to `redirect_url` — so the hero is the
 active identity *everywhere* (the client view, `/v1/me`, the minted token, the cookies) AND the browser lands
-on her screen, in one move. **[Login as]** lands on the app root; **[Jump to section]** lands on the hero's
-`jump_to` deep-link. The key is the hero's `stories.yaml` id — the **same** key the roster export gave
+on her screen, in one move. The unified **[Log in as]** (v1.10 M43) lands the hero on her `jump_to` per-role
+screen. The key is the hero's `stories.yaml` id — the **same** key the roster export gave
 Clerkenstein's registry, so the seat always resolves. (The handshake + multi-identity selection are M37; see
 [`clerkenstein/knowledge/architecture.md` § Multi-identity].)
 
@@ -498,7 +511,7 @@ label; an unrecognized `jump_to` still works (it's a raw path) with a generic la
 # A storytelling demo: DEMO_STORIES=1 seeds the 2-org hero trio, wires the multi-identity fake-fapi, and
 # serves the cockpit. Default-off keeps every existing demo byte-identical (structural seed, single-identity).
 DEMO_STORIES=1 /demo-up 3
-# → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Login as] → [Jump].
+# → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Log in as] → her per-role screen.
 ```
 
 `DEMO_NO_COCKPIT=1` brings up the stories demo without the panel (e.g. an API-only run); `DEMO_STORIES_PRESET`

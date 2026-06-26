@@ -150,7 +150,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
-| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ∥ M44 ✅ } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 6 closed (M39–M42m + M44), 3 planned (M43, M45, M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
+| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ✅ ∥ M44 ✅ } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 7 closed (M39–M42m + M43 + M44), 2 planned (M45, M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -392,7 +392,24 @@ dashboard funnel/teams/role-gap/mobility/succession/feedback + any admin pages �
 > **tooling + docs only — zero platform-repo edits.**
 
 #### M43 — Cockpit UX polish
-**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m43-cockpit-ux/`](releases/01.10-method-acting/m43-cockpit-ux/)
+**Status:** `done` (completed 2026-06-26) · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m43-cockpit-ux/`](releases/01.10-method-acting/m43-cockpit-ux/)
+**Closed:** 2026-06-26 via `/developer-kit:close-milestone` (GREEN, 0 findings / 0 blocking). All five UX fills
+delivered Fate-1 + RENDER-ACCEPTED on a live demo-3 (`:37700`) + USER-APPROVED the design: **(1)** light restyle
+(`_PAGE_CSS` → clean light high-contrast, card-per-hero, indigo accent); **(2)** FontAwesome FREE-CDN icons
+(`fa-circle-user`/`fa-building`/`fa-arrow-right-to-bracket`/`fa-download`, SRI-correct); **(3)** CTA unification
+(dropped `[Jump to section]`; one `[Log in as]` per hero → the resolved `jump_to`, reusing `cockpit.go`'s
+`defaultJumpForVantage` — no `cockpit.go` change); **(4)** seed-manifest download (footer → `/manifest.json`,
+`Content-Disposition: attachment`); **(5)** staged login-progress overlay (3 stages + `localStorage` 30s window
+across the FAPI-handshake redirect). Docs: NEW `corpus/ops/demo/cockpit-spec.md` (the UX + deep-link reference +
+the future-feature expansion surface) + the `stories-spec.md` two-CTA→unified reconciliation + README/CLAUDE index
+rows. Hardening: 2 passes, cockpit Python tests 27→**63**, a meta-line double-escape bug fixed + pinned (the
+SRI/href-injection/CTA regressions locked), 0 flakes. Audits GREEN: deferral (0 deferrals — the cockpit
+future-feature surface is an `cockpit-spec.md` expansion surface, not a deferral), supply-chain (0 new deps —
+`cockpit.py` stdlib-only, FA = CDN `<link>`), alignment N/A (zero clerkenstein change), closure GREEN, KB-fidelity
+YELLOW-clear (the `cockpit-spec.md` blind-area was the planned `Delivers →` target, reconciled). **Zero canonical
+platform-repo edits.** Code-of-record: `rosetta-extensions` @ tag `method-acting-m43-cockpit-ux-fix1`; the corpus
+doc-half merged `--no-ff` into `release/01.10-method-acting`. With M43 + M44 both closed, the **{ M43 ∥ M44 }
+opening pair is DONE**; M45 (the generation engine — `iterative`) is next.
 **Goal:** turn the presenter cockpit (a 253-line stdlib-Python static-HTML server, rext `demo-stack/cockpit.py`,
 served at `:7700`+offset) from a dark utilitarian panel into a **slick, professional light login launcher** —
 one sensible CTA per hero, icons, a manifest download, and a staged login-progress overlay. **Zero next-web /
