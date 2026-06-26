@@ -16,14 +16,16 @@ platform-repo edits.** Grounded by the live-demo review
 [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + workflow `w7t4wq2z4`, and the v1.10-extend
 research note [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md).
 
-**Active milestone:** **(between milestones)** — M44 closed; the extension's opening section-pair has its
-profile-completeness half landed. **M43** (cockpit UX — the parallel-pair sibling, still `planned`) and **M45**
-(generation engine — now **UNBLOCKED** since it depends on M44) are the next candidates.
-**Next up:** **`/developer-kit:work-milestone` for M43** (cockpit — the `section` parallel-pair sibling, a different
-rext module: `demo-stack/cockpit.py`) **or M45** (`/developer-kit:work-mstone-iters` — the now-unblocked iterative
-LLM-generation gate). Then **M46** (`/developer-kit:work-mstone-iters` — iterative org-scale) → **THEN
-`/developer-kit:close-release`** (merge `release/01.10-method-acting` → `main`, tag `v1.10`). _(Do NOT run
-close-release yet — M43/M45/M46 remain.)_
+**Active milestone:** **M43 (cockpit UX) — BUILD COMPLETE on `m43/cockpit-ux`, pending close.** All 5
+deliverables landed + render-accepted on demo-3 (light restyle, FA icons, unified `[Log in as]` CTA,
+manifest download, login overlay); the rext code is tagged `method-acting-m43-cockpit-ux`; the
+`Delivers → cockpit-spec.md` doc is authored. M44 closed; the extension's opening section-pair is now both
+landed. **M45** (generation engine — **UNBLOCKED** since it depends on M44) is the remaining open candidate.
+**Next up:** **`/developer-kit:close-milestone` for M43** (merge `m43/cockpit-ux` → `release/01.10-method-acting`),
+then **M45** (`/developer-kit:work-mstone-iters` — the now-unblocked iterative LLM-generation gate), then
+**M46** (`/developer-kit:work-mstone-iters` — iterative org-scale) → **THEN `/developer-kit:close-release`**
+(merge `release/01.10-method-acting` → `main`, tag `v1.10`). _(Do NOT run close-release yet — M43 close +
+M45/M46 remain.)_
 **Last closed:** **M44 profile completeness (`section`) — 2026-06-26** via `/developer-kit:close-milestone` (GREEN,
 1 finding / 0 blocking). All four DATA-DENSITY fills delivered Fate-1 + render-verified on demo-3: §A
 trajectory-aware self-rating, §B NEW `CertificatesSeeder`+`ProjectsSeeder` (live-schema-corrected), §C manager
