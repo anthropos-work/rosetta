@@ -298,6 +298,35 @@ replayed taxonomy; empty pool → timeline still writes, tail skipped); every ta
 reference:
 [`demo/stories-spec.md` § The profile-depth layer (v1.10 M41)](demo/stories-spec.md#the-profile-depth-layer-v110-method-acting-m41).
 
+**Profile completeness — the whole roster (v1.10 M44).** M41 gave the END-USER heroes a deep profile; **M44
+makes the WHOLE roster — managers AND bulk members — read as real people**, DATA-DENSITY only (no UI change).
+Four extensions, all in `stack-seeding/seeders/`:
+- **(§A) Trajectory-aware self-rating.** `PersonaSeeder` writes `user_skill_evidences.user_level` only for a
+  **self-rated** hero (the new `Persona.EffectiveSelfRated()`: struggling = false → `user_level` NULL, the
+  claimed side absent; everyone else = true). A thriving hero shows a **completed** self-assessment; a
+  struggling hero "hasn't done the initial self-rating" — her 2-3 verified skills still render (the chart
+  needs the verified side, untouched), but the claimed gap reads incomplete.
+- **(§B) Certifications + Projects.** Two NEW seeders — **`CertificatesSeeder`** (surface `"certificates"` →
+  `public.user_certifications`, 2-3 per end-user hero) + **`ProjectsSeeder`** (surface `"projects"` →
+  `public.user_projects`, 3-4 per end-user hero) — fill the two profile sections that were **0 rows DB-wide**.
+  Both surface as top-level `TimelineGroupedItems.certifications`/`.projects` on `/profile`. **LIVE-SCHEMA
+  CORRECTED** (the overview's guesses were wrong): the table is **`user_certifications`** (NOT
+  `user_certificates`; cert *name* col is `certification`, NO `created_at`, NO `organization_id`); projects use
+  `title` (NOT `project_name`), `to` (NOT `end_date`), NO `organization_id`. Role-coherent banks, idempotent
+  COPY, closure-clean skills, managers skipped here (the §C path owns manager profiles).
+- **(§C) Manager personal data.** The pre-M44 `IsManager` skips in `PersonaSeeder` + `ProfileSeeder` are
+  removed; a manager now gets a **modest** personal profile — a FLAT 3-8 verified skills (L1-L2 band, self-rated,
+  no growth arc) + a manager-track timeline (a leadership ladder "Engineering/Sales Manager" ← "Team Lead" ←
+  "Senior X", 3 experiences + 1 education) + a SMALL claimed tail (8, not the deep ~60) — so her OWN `/profile`
+  is populated, not empty. The claimed-tail offset now uses the EXACT verified count (`trajectoryVerifiedCount`)
+  so the tail stays distinct from the verified set.
+- **(§D) Bulk-member depth.** EVERY non-hero population member gets a shallow career — `ProfileSeeder` runs a
+  second pass over the non-hero slots (3 short-tenure experiences + 1 education + a flat <=6-skill claimed tail;
+  role mirrors the `UsersSeeder` supporting-member draw) — so `/enterprise/members` reads as a roster of real
+  people. The avatar half was already satisfied (`photoAvatarDataURI` runs for every member since M42e P4).
+- Everything stays `PerStackIsolated` + closure-GREEN. Full reference + the per-vantage rubric:
+  [`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
@@ -315,3 +344,8 @@ backfill + offline real-face avatars); **M41** the **profile-depth layer** (the 
 education timeline + the verified depth bump `8 → ~30` + the ~60-skill claimed-but-unverified tail that widens
 the gap) — 9 new unit tests, full suite green `-race`, every emitted row dry-insert-validated against the live
 demo-3 schema, `go.mod`/`go.sum` byte-identical. Code-of-record: `rosetta-extensions` @ tag `method-acting-m41`.
+**M44** adds **profile completeness** — the whole roster (the §A trajectory-aware self-rating, the §B
+`CertificatesSeeder` + `ProjectsSeeder` surfaces, the §C manager personal-data unskip, the §D bulk-member
+shallow career) — all DATA-DENSITY, zero platform edits, every surface `PerStackIsolated` + closure-GREEN,
+schema-corrected against the live demo-3 DB (`user_certifications`/`user_projects`). New unit tests across the
+four sections, full suite green. Code-of-record: `rosetta-extensions` @ tag `method-acting-m44-profile-completeness`.

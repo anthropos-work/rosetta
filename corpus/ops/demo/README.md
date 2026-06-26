@@ -102,6 +102,11 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   the **Workforce-dashboard surfaces** (M36), and the **presenter cockpit** (M38 — a standalone served panel that
   lists each story → its hero trio with **[Login as]** + **[Jump to section]**, riding the Clerkenstein
   multi-identity seat-switch). The believability spine of a demo world + its demo-driving surface. (v1.9 M34–M38)
+- [`profile-completeness-spec.md`](profile-completeness-spec.md) — the **"complete profile" rubric**: the
+  DATA-DENSITY bar for a fully-populated profile across the WHOLE roster — identity + content + semantic layers,
+  per-vantage **member vs manager**, each component mapped to its seeding surface + a Playwright acceptance
+  assertion. Covers the M44 fills: trajectory-aware self-rating (§A), the `CertificatesSeeder` + `ProjectsSeeder`
+  surfaces (§B), the manager personal-data unskip (§C), and the bulk-member shallow career (§D). (v1.10 M44)
 - [`../snapshot-spec.md`](../snapshot-spec.md) — the **snapshot** reference: how the real **public** taxonomy +
   Directus content library is captured once from prod safely (the read-side **tenant-data firewall**), cached
   outside git, and replayed per-stack — measured-faithful by the snapshot-fidelity data-DNA. (M9a/M9b/M10)

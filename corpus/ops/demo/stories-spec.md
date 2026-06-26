@@ -118,6 +118,16 @@ hero's **`self_eval_bias`**: `under` (a modest under-claimer — `user_level < a
 arc), `over` (an inflated over-claimer — the stark gap, the struggling arc), or `calibrated` (≈ equal). At
 least one skill per hero must show a real gap or the widget is empty.
 
+> **Trajectory-aware self-rating (v1.10 M44 §A).** A struggling hero now models the **"hasn't done the
+> initial self-assessment"** state: `PersonaSeeder` writes `user_level` **only** for a **self-rated** hero
+> (the new `Persona.EffectiveSelfRated()` — struggling = false → `user_level` **NULL**; thriving / calibrated /
+> manager = true). A thriving hero shows a **completed** self-assessment; a struggling hero's verified skills
+> still render (the chart reads `anthropos_level`, which is untouched), but the claimed side is **absent** — the
+> profile reads as a sparse/incomplete self-rating rather than the M35 over-claim. The org-scale population
+> (`PopulationEvidenceSeeder`) is unaffected — every population member still self-rates (the over/under-claim
+> mix is the headline org "aha"). Full rubric:
+> [`profile-completeness-spec.md`](profile-completeness-spec.md).
+
 ### Closure — real skill node-ids, never fabricated, and *measured*
 
 A skill ref (`user_skills.skill_id`, `user_skill_evidences.skill_id`,
@@ -211,7 +221,13 @@ claimed-vs-verified gap**. Before M41 the `/profile` timeline was empty (`public
 the depth — **tooling + docs only, zero platform-repo edits**; the `/profile` timeline reads
 `ent.UserExperience` / `ent.UserEducation` via `TimelineGrouped(userID)` unchanged — M41 only supplies the rows.
 
-- **Work history + education (G3).** Per **end-user** hero (a manager has no personal timeline — skipped), the
+> **M44 §C update:** a **manager** is no longer skipped — she now gets a **modest** personal profile (a flat
+> 3-8 verified skills + a manager-track timeline + a small claimed tail) so her OWN `/profile` is populated.
+> The "skipped" claims below describe the M41 baseline; see
+> [`profile-completeness-spec.md`](profile-completeness-spec.md) § per-vantage for the manager + bulk-member fills.
+
+- **Work history + education (G3).** Per **end-user** hero (M41 baseline — managers got a personal timeline in
+  M44 §C; see the note above), the
   `ProfileSeeder` writes a believable **3-job role progression** (`user_experiences`) + a **degree**
   (`user_educations`), all deterministic + backdated within/just-before the story's activity span so the history
   corroborates the verified skills. The titles reuse the **resolved `jobRoleRefs`** (the same role node-id the
