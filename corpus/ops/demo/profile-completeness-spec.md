@@ -31,7 +31,7 @@ completeness bars. M44 fills both.
 | Component | Seeding surface | DB write | Playwright assertion (manifest section) |
 |---|---|---|---|
 | Real name + org-domain email | `UsersSeeder` (`users.go`) | `public.users` firstname/lastname/email | persona self-consistency: profile name == menu name |
-| Real-photo avatar (menu == profile) | `photoAvatarDataURI` (`avatar.go`) → `users.picture` + `roster.go` Picture | `public.users.picture` (data URI) | persona: avatar is a real photo, menu == profile (`lib/persona-assert.ts`) |
+| Real-photo avatar (menu == profile) | `photoAvatarDataURI` (`avatar.go`) → `users.picture` + `roster.go` Picture | `public.users.picture` (data URI) — **NB: `/enterprise/members` reads a different column, `memberships.picture_url`; see §D gotcha** | persona: avatar is a real photo, menu == profile (`lib/persona-assert.ts`) |
 | Role + title | `UsersSeeder` `user_basic_info` backfill | `public.user_basic_info.job_role_id/job_title` | `/profile` header section: role label non-empty |
 | Work history (3 jobs) | `ProfileSeeder` (`profile.go`) | `public.user_experiences` (+ `companies`) | `/profile` Experience section: `count >= floor` |
 | Education (1 degree) | `ProfileSeeder` | `public.user_educations` | `/profile` Education section: real content |
@@ -61,13 +61,22 @@ The manager's `/enterprise/members` roster must read as **real people**, not her
 
 | Component | Seeding surface | Shape |
 |---|---|---|
-| Avatar (EVERY member) | `photoAvatarDataURI` (`users.go:156`) — **already on every member since M42e P4** | a real-photo data URI per member |
+| Avatar (EVERY member) | `photoAvatarDataURI` (`users.go:156`) → **`memberships.picture_url`** (the column this surface reads) **and** `users.picture` | a real-photo data URI per member |
 | Shallow career (EVERY member) | `ProfileSeeder` member pass (`seedMemberProfile`, §D) | 3 short-tenure experiences + 1 education + a flat <=6-skill claimed tail; role mirrors the membership row |
 
-> **§D note:** the avatar half was ALREADY satisfied (`photoAvatarDataURI` has run for **every** population
-> user since M42e P4 — a live demo-3 check showed 340/341 users carry a `data:image/jpeg` photo). §D's NEW
-> work is the **bulk-member shallow career** (the timeline pass over the non-hero slots). The `/enterprise/members`
-> assertion is the manager-manifest section's cardinality + per-member avatar.
+> **§D avatar GOTCHA (M44 §D fix1, load-bearing — target the RIGHT column):** `/enterprise/members` does
+> **NOT** read `public.users.picture`. The `EnterpriseMembersTable` → `memberEmployeeColumn.tsx` renders
+> `<NamedAvatar src={member.pictureUrl}>`, and the GraphQL `pictureUrl` field resolves in the platform `app`
+> service as `_Membership_pictureUrl → obj.PictureURL` = the **`public.memberships.picture_url`** column. The
+> M44 §D build filled only `users.picture` (340/341), so the members list rendered **silhouettes** even though
+> `users.picture` was full. The fix: `UsersSeeder` now writes the SAME `photoAvatarDataURI(uid)` into
+> **`memberships.picture_url`** for every member (heroes + fill + managers) — on a fresh seed via the COPY, and
+> on a RE-seed via an idempotent UPDATE backfill (`backfillMembershipPictures`, since `CopyRowsIdempotent`'s
+> `ON CONFLICT (id) DO NOTHING` can't heal an existing row). Render-verified: 0 silhouettes, every row a photo.
+> **Future avatar work: `/profile` + the menu read `users.picture`; `/enterprise/members` reads
+> `memberships.picture_url`. Fill BOTH.** (The shallow-career half of §D — the timeline pass over the non-hero
+> slots — is unchanged; the `/enterprise/members` assertion is the manager-manifest section's cardinality +
+> per-member avatar.)
 
 ## How M44 maps to the seeding surfaces (the build summary)
 
