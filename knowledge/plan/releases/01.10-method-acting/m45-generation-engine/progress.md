@@ -10,6 +10,7 @@ fixed/hardened).
 - iter-03 (tik): component (2) — `blueprint.Batch` + `batch[]` + `EffectiveBatches()` (pure Go-template mother-prompt expansion, NO LLM at parse time, deterministic $0-reseed foundation); 12 tests; 587→599; full suite green — see iter-03/progress.md
 - iter-04 (tik): component (3) — the `batchcache/` prompt-hash cache (atomic .tmp→rename, .lock fence, capture-version invalidation; $0 byte-identical reseed proven in unit); 14 tests; 599→613; full suite green — see iter-04/progress.md
 - iter-05 (tik): component (4) — `cmd/gen-batch` (the generation CLI: mandatory --max-cost ceiling, --max-concurrent semaphore, re-roll-on-malformed, hero-collision re-roll, $0 cache reseed, dry-run, lock fence; ALL fixture-proven, no key); 10 tests; 613→623; full suite green — see iter-05/progress.md
+- iter-06 (tik): component (5) — the `GeneratedBatchSeeder` (cache → users/memberships/claimed-skills via the existing resolvers; the CODE-vs-AI drop-not-fabricate boundary, unit-proven; registered in the DAG); 9 tests; 623→632; full suite + race green. **Engine CODE-COMPLETE** — next call = the REAL gate-proving batch — see iter-06/progress.md
 
 **Exit gate:** on a real batch of N — valid JSON ≥95% (re-roll on malformed), every role/skill name
 resolves to a real public-taxonomy node-id (non-resolving drop, closure green), ZERO generated name
