@@ -117,16 +117,23 @@ builder skills).
 > ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md) — 6-agent recon + 3-agent code review,
 > 2026-06-22, no Phase-1 blockers). **Tooling + docs only — zero platform-repo edits.**
 >
-> **v1.10 "method acting" — IN DEVELOPMENT** (designed 2026-06-24 via `/developer-kit:design-roadmap`; branch
-> `release/01.10-method-acting`; full detail in `## In Development — v1.10` below). The **believable-profile
-> release** — v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up: when a presenter
-> clicks **Login as** a hero, the individual's **profile** (org name, role+title, work history, education, a real
-> face, deep role-aligned skills) **and** the content surfaces (**library** + the **activity feed**) populate with
-> real content, on **every** page a hero of that type can reach — proven by a **Playwright** coverage sweep
-> (DOM + screenshots) with **zero** empty pages and **zero** out-of-demo escapes. 5 milestones **M39→M42m** (3
-> `section` targeted fills + 2 `iterative` per-vantage coverage gates) across `stack-seeding` / `stack-snapshot`
-> / `clerkenstein` + a new Playwright coverage harness. Grounded by the live-demo review
-> ([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the root-cause workflow `w7t4wq2z4`).
+> **v1.10 "method acting" — IN DEVELOPMENT (EXTENDED with M43→M46)** (designed 2026-06-24, **extended 2026-06-26**,
+> via `/developer-kit:design-roadmap`; branch `release/01.10-method-acting`; full detail in `## In Development —
+> v1.10` below). The **believable-profile release** (M39–M42m) **+ the presenter-grade + scalable-generation
+> extension** (M43–M46) — v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up: when a
+> presenter clicks **Login as** a hero, the individual's **profile** (org name, role+title, work history,
+> education, a real face, deep role-aligned skills) **and** the content surfaces (**library** + the **activity
+> feed**) populate with real content, on **every** page a hero of that type can reach — proven by a **Playwright**
+> coverage sweep (DOM + screenshots) with **zero** empty pages and **zero** out-of-demo escapes. The first 5
+> milestones **M39→M42m** (3 `section` targeted fills + 2 `iterative` per-vantage coverage gates) are **CLOSED**;
+> the release then **reopened, extended with M43→M46** (the extension): a presenter-grade **cockpit UX polish**
+> (M43), **profile completeness** for the whole roster — members **and** managers (M44), a cheap-LLM **generation
+> engine** + prompt-keyed cache (M45), and **org-scale fill** + a gen-batch preview CLI (M46). **Close-release
+> moves to AFTER M46.** Flat sequential numbering (v1.x). Across `stack-seeding` / `stack-snapshot` /
+> `clerkenstein` / `demo-stack` + a new Playwright coverage harness + (M45) a first new third-party AI dep.
+> Grounded by the live-demo review ([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
+> root-cause workflow `w7t4wq2z4`) + the v1.10-extend research note
+> ([`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md)).
 > **Tooling + docs only — zero platform-repo edits.**
 
 ## Version plan
@@ -143,7 +150,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
-| **v1.10** | **method acting** | The **believable-profile release** — a logged-in hero is a fully fleshed person: profile identity (org name, role+title, real-face avatar) + the content-surface unblock (library + activity feed, one Directus serve-grant) + profile depth (work, education, deep role-aligned skills) + **100% per-vantage demo coverage** proven by Playwright (no empty pages, no out-of-demo escapes) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ | 🚧 **IN DEVELOPMENT** — all 5 milestones closed; ready for `/developer-kit:close-release` (branch `release/01.10-method-acting`) |
+| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ∥ M44 } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 5 closed (M39–M42m), 4 planned (M43–M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -160,7 +167,7 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
 
-## In Development — v1.10 "method acting" (the believable profile)
+## In Development — v1.10 "method acting" (the believable profile + the presenter-grade / scalable-generation extension)
 
 **Theme:** v1.9 told the *story* (the org dashboard + the verified-skill spine); **v1.10 makes each *character*
 hold up under a close-up.** When a presenter clicks **Login as** a hero, that hero must read as a fully fleshed,
@@ -170,6 +177,18 @@ with real semantic content, on **every** page a hero of that vantage can reach. 
 platform-repo edits.** Designed 2026-06-24 via `/developer-kit:design-roadmap` from the live-demo review
 ([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) — a hero logged in as **Maya Chen** read empty
 across /profile, /library, and the activity feed) + the in-depth root-cause workflow `w7t4wq2z4`.
+
+> **EXTENDED 2026-06-26 with M43→M46.** Rather than close the release after M42m, v1.10 **reopened** and added a
+> four-milestone extension — the **presenter-grade + scalable-generation** layer: M43 **cockpit UX polish** (the
+> presenter launcher goes light + professional, one CTA, manifest download, login-progress overlay), M44 **profile
+> completeness** (the whole roster — members **and** managers — fully baked: trajectory-aware self-ratings,
+> certificates + projects, manager personal data, every fill-member an avatar + career; DATA DENSITY ONLY), M45 a
+> cheap-LLM **generation engine** (`cmd/gen-batch` + a prompt-keyed cache + the CODE-owns-structure /
+> AI-owns-content boundary; the first new third-party dep), and M46 **org-scale fill** (a supporting-population
+> descriptor fills a whole believable org) + a gen-batch preview CLI. Execution: **{ M43 ∥ M44 } → M45 → M46**.
+> **Close-release moves to AFTER M46.** Grounded by the v1.10-extend research note
+> [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md).
+> Full milestone blocks under `### Extension — M43→M46` below.
 
 **Origin / key findings.** The foundation is sound — the org binding is correct (Maya's membership org = her Clerk
 org claim = "Cervato Systems"; nothing cross-org-hidden), the verified-skill gap mechanic works, the catalog is
@@ -361,13 +380,183 @@ dashboard funnel/teams/role-gap/mobility/succession/feedback + any admin pages �
 **Depends on:** M42e (the harness) + M39/M40/M41. **Parallel with:** none.
 **Delivers →** updates across the touched specs as gaps close.
 
+### Extension — M43→M46 (the presenter-grade + scalable-generation extension)
+
+> **v1.10 was EXTENDED 2026-06-26** (`/developer-kit:design-roadmap`, from the live-demo + research
+> findings note [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md)):
+> instead of closing the release after M42m, four new milestones **M43→M46** were added — the cockpit gets
+> a presenter-grade UX polish, the whole roster (members **and** managers) gets fully baked, and a **cheap-LLM
+> generation engine** scales the believable population from a hand-curated trio to a whole generated org.
+> v1.10 reopens from "all 5 closed / ready for close-release" to **IN DEVELOPMENT, extended with M43→M46**;
+> **close-release moves to AFTER M46.** Flat sequential numbering (v1.x): **M43, M44, M45, M46**. Still
+> **tooling + docs only — zero platform-repo edits.**
+
+#### M43 — Cockpit UX polish
+**Status:** `planned` · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/01.10-method-acting/m43-cockpit-ux/`](releases/01.10-method-acting/m43-cockpit-ux/)
+**Goal:** turn the presenter cockpit (a 253-line stdlib-Python static-HTML server, rext `demo-stack/cockpit.py`,
+served at `:7700`+offset) from a dark utilitarian panel into a **slick, professional light login launcher** —
+one sensible CTA per hero, icons, a manifest download, and a staged login-progress overlay. **Zero next-web /
+platform-repo edit** (the cockpit stays a standalone served panel — the hard zero-edit line).
+**Scope — In:** (1) restyle `cockpit.py` `_PAGE_CSS` (~lines 68–93) from the dark GitHub theme to a clean LIGHT
+high-contrast professional design (card hierarchy, spacing, accent color); (2) import the FontAwesome FREE CDN
+`<link>` in `render_page()` `<head>` + `fa-user-circle` before each hero name + `fa-building` before each org
+name (icon CSS); (3) **CTA unification** — remove [Jump to section], rename [Login as]→[**Log in as**], route it
+to the hero's `jump_to` per-role landing (reuse `cockpit.go`'s `defaultJumpForVantage`); (4) **seed-manifest
+download** — expose the existing `cockpit.py` `/manifest.json` as a footer download link
+(`Content-Disposition: attachment`); (5) a staged JS **login-progress overlay** (`Signing you in…`→`Loading
+dashboard…`→`Initializing app…`) with `localStorage` state across the redirect, so the 2–5s FAPI-handshake →
+next-web blank-load has feedback.
+**Scope — Out:** any next-web/platform-repo edit; removing the real handshake→next-web latency (only the FEEDBACK
+improves); a full bespoke design-system/brand pass; presenter-feature deepening (hero history, telemetry,
+note-taking).
+**Depends on:** none. **Parallel with:** M44 (different rext module).
+**Open questions:** the exact design aesthetic (default clean light flat); vendor FA for offline-safe demos vs
+the CDN (default CDN, per the user's ask); manifest as JSON vs the source `stack.stories.yaml` (default JSON);
+whether [Log in as] shows the `jump_to`-label.
+**KB dependencies:** `rosetta_demo.md` (cockpit lifecycle), `clerkenstein.md` (the `/v1/client/handshake`,
+unchanged), `frontend-tier.md` (the demo UI tier), + the scattered M37/M38 cockpit mechanics it graduates.
+**Delivers →** `corpus/ops/demo/cockpit-spec.md` (**NEW** — graduate the scattered M37/M38/clerkenstein cockpit
+mechanics into one standalone cockpit-UX spec). Reuse: `cockpit.go`'s `BuildCockpitManifest` /
+`defaultJumpForVantage`, the Clerkenstein `/v1/client/handshake` (unchanged), the existing `/manifest.json`.
+
+#### M44 — Profile completeness (members + managers fully baked)
+**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m44-profile-completeness/`](releases/01.10-method-acting/m44-profile-completeness/)
+**Goal:** close the character-facing **DATA-DENSITY** gaps so **every member AND manager profile is fully
+populated** — trajectory-aware self-ratings, certificates + projects, manager personal data, and every
+`/enterprise/members` fill-member gets an avatar + career + skills. **DATA DENSITY ONLY — zero platform/next-web
+edits** (no UI "% complete" widget — the user's choice).
+**Scope — In:** (A) **trajectory-aware self-rating** — branch `PersonaSeeder`'s `user_level` UPSERT on
+`Persona.Trajectory` so the THRIVING hero shows a completed self-assessment and the NON-THRIVING hero shows an
+INCOMPLETE/absent self-rating state (keep ~2–3 verified skills so the Skill-Spotlight chart still renders);
+(B1) **NEW `CertificatesSeeder`** (`seeders/certificates.go`, surface `'certificates'`, `DependsOn`
+users+personas) — 2–3 `public.user_certificates` rows per end-user hero, backdated in the activity span
+(`cert_name` NOT NULL, DATE types, nullable `organization_id`); (B2) **NEW `ProjectsSeeder`**
+(`seeders/projects.go`, surface `'projects'`, `DependsOn` users+personas) — 3–4 `public.user_projects` rows per
+end-user hero (`project_name` NOT NULL, nullable `end_date`, `skills` json array); (C) **MANAGER personal data**
+— remove the `IsManager` skips (`persona.go:121` + `profile.go:125`); write a small verified-skill subset (3–8
+skills, L1–L2, flat current-state, no growth arc) + a manager-track timeline (3 experiences + 1 education) so
+the manager's OWN `/profile` is populated; (D) **BULK-MEMBER depth** — extend `photoAvatarDataURI` to EVERY
+member (avatars on `/enterprise/members`) + extend `ProfileSeeder` to write a shallow timeline (3 short-tenure
+experiences, 1 education, a flat ~6-skill claimed tail) for every member.
+**Scope — Out:** any platform/next-web UI edit (NO "% complete" widget — DATA DENSITY only); LLM-generated
+content (that's M45/M46 — these are deterministic seeders); deep per-fill-member career narratives (kept shallow
+by design; richer fill is M46).
+**Depends on:** none structurally, but land BEFORE M45 (the engine reuses the certificate/project + bulk-member
+surfaces + the trajectory-aware self-rating). **Parallel with:** M43 (different rext module).
+**Open questions:** non-thriving truly-zero verified vs minimal 2–3 (default minimal); manager trajectory flat
+vs rising (default flat); bulk-member timelines for EVERY member (~3K rows/org) vs sampled (default ALL get
+avatar+career, depth shallow); shared-vs-separate `ProfileSeeder` path for managers/fill-members; the projects
+surface name (avoid collision).
+**KB dependencies:** `seeding-spec.md` (the isolation boundary the new surfaces stay within),
+`stories-spec.md` (the verified-skill chain + gap mechanic the self-rating extends), `coverage-protocol.md`
+(each component → a Playwright acceptance assertion).
+**Delivers →** `corpus/ops/demo/profile-completeness-spec.md` (**NEW** — the "complete profile" rubric: identity
++ content + semantic layers, per-vantage member vs manager, each component mapped to its seeding surface + a
+Playwright acceptance assertion) + `seeding-spec.md` / `stories-spec.md` for the new seeders, the trajectory-aware
+self-rating, the manager unskip, and the bulk-member depth. Reuse: `resolveJobRoleRefs` / `resolveNamedSkillRefs`,
+`dateOnly`, `legacySkillsJSON`, `roleTitle` degradation, `CopyRowsIdempotent`.
+
+#### M45 — Generation engine (LLM batch profile generation + prompt-keyed cache)
+**Status:** `planned` · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/01.10-method-acting/m45-generation-engine/`](releases/01.10-method-acting/m45-generation-engine/)
+**Goal:** stand up the **AI generation engine** — a `cmd/gen-batch` CLI + `GeneratedBatchSeeder` that turns a
+high-level YAML batch descriptor into realistic per-member profiles via a **CHEAP LLM** (gpt-4o-mini default),
+with parallel/throttled generation, prompt-hash caching, and the **CODE-owns-structure / AI-owns-content**
+boundary enforced by the existing taxonomy closure gate. Breaks the seeding module's 0-new-deps streak (the
+first new third-party dep — a deliberate in-release decision). **Entirely in `rosetta-extensions` — zero
+platform-repo edits.**
+**Exit gate:** _On a real batch of N generated members, the engine seeds end-to-end: the cheap model emits valid
+JSON ≥95% of calls (re-roll on malformed), every role/skill name resolves to a REAL public-taxonomy node-id via
+the existing resolvers (non-resolving names drop, closure gene stays green), ZERO generated name collides with a
+hand-curated hero, and total cost lands within the declared `--max-cost` ceiling. Reproducible: an unchanged
+batch descriptor re-seeds byte-identical from cache at $0._
+**Why iterative:** greenfield LLM integration (first new dep, prompt-engineering hardening, cache-invalidation +
+collision-dedup edge cases); the valid-JSON / taxonomy-resolution thresholds are reached by a measure→fix→accept
+loop, not enumerable up front. Budget 3–5 iters.
+**Iteration protocol:** [`corpus/ops/demo/ai-generation-spec.md`](../../corpus/ops/demo/ai-generation-spec.md)
+(the milestone AUTHORS + deepens this gen-acceptance protocol).
+**Scope — In:** a local `services/ai/` wrapper around the shared `ai` library (EU-first routing → 429 fallback →
+usage tracking — the FIRST new third-party dep in the seeding module); `blueprint.Batch` + a `batch[]` field on
+`Story`/`StackSeed` + `EffectiveBatches()` (Go-template per-member-prompt expansion, NO LLM at parse time);
+`cmd/gen-batch` (gpt-4o-mini default; `--max-concurrent` semaphore default 5; atomic `.tmp`→rename cache writes;
+a `.lock` fence; a MANDATORY `--max-cost` ceiling); a prompt-hash cache at
+`.agentspace/.batchcache/batch-${hash}/member-${i}.json` keyed by the MOTHER prompt, the key EXTENDED with the
+taxonomy capture version (invalidate on re-replay); `GeneratedBatchSeeder` (surface `'generated-batch'`,
+`DependsOn` users+taxonomy, `PerStackIsolated`) reading cached JSON and driving users/persona/profile rows
+DETERMINISTICALLY via the existing resolvers (closure green; non-resolving names drop → worst case a SHALLOWER
+profile, never invalid); hero-name collision avoidance (reserved-hero-names in the prompt + a post-gen
+collision re-roll); `Event_AiUsage` cost emission + a per-batch cost report.
+**Scope — Out:** org-scale auto-fill to full org size (that's M46 — M45 proves the engine + cache on a bounded
+batch); deep per-generated-member work-history/education timelines (kept shallow: name+skills+bio+role); a
+platform-repo secrets store (key via `.env.local` `OPENAI_API_KEY`, git-ignored; production-seeding secrets
+deferred); any platform-repo edit (entirely in rosetta-extensions).
+**Depends on:** M44 (reuses the certificate/project + bulk-member surfaces + the trajectory-aware self-rating);
+soft-depends on a replayed public taxonomy with adequate coverage. **Parallel with:** none.
+**Re-scope trigger:** if the cheap model can't reach the valid-JSON / taxonomy-resolution exit threshold after
+~5 tiks of prompt+code hardening → user-strategic-replan (model upgrade vs scope reduction).
+**Open questions:** gpt-4o-mini Azure-EU availability vs US fallback; cache-invalidation granularity (default
+coarse: invalidate on taxonomy re-replay via the capture-version in the key); the `--max-cost` ceiling value
+(mandatory — default a sane per-batch ceiling, configurable); the valid-JSON exit threshold (default 95% +
+re-roll); cache location (default `.agentspace/.batchcache` per-box; a shared/committed store flagged); the
+production-seeding key story.
+**KB dependencies:** `seeding-spec.md` (the isolation boundary the new surface stays within), `stories-spec.md`
+(the resolvers + the CODE-owns-structure / AI-owns-content boundary), `snapshot-spec.md` (the capture version
+the cache key extends), `ai_architecture.md` + `shared_libraries.md` (the shared `ai` library + `Event_AiUsage`).
+**Delivers →** `corpus/ops/demo/ai-generation-spec.md` (**NEW** — the gen-acceptance protocol + the engine) +
+`corpus/ops/cache-spec.md` (**NEW**, or a Caching section in `ai-generation-spec.md` — the prompt-hash cache +
+capture-version invalidation).
+
+#### M46 — Org-scale fill + gen-batch preview CLI
+**Status:** `planned` · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/01.10-method-acting/m46-org-scale-fill/`](releases/01.10-method-acting/m46-org-scale-fill/)
+**Goal:** scale the engine from a bounded batch to filling an ENTIRE org from one descriptor
+(supporting-population auto-fill to org size) + add a preview/dry-run CLI to review a batch before seeding.
+**Entirely in `rosetta-extensions` — zero platform-repo edits.**
+**Exit gate:** _A full org (e.g. 500) fills from a single supporting-population descriptor with a believable
+role/avatar/skill spread (not 90% hollow), the demo-coverage SEMANTIC believability gate (coverage-protocol.md,
+the M42 Playwright harness) PASSES on the generated population, hero-name collisions stay at 0 under
+population-scale load, and throughput + cost stay within the declared budget (e.g. ~1k members ≤ a few minutes at
+`--max-concurrent=5`)._
+**Why iterative:** population-scale behaviour (dedup at scale, taxonomy-clipping under load, throttle/backoff
+under burst, the believable spread) is discovered by measuring the generated org, not enumerable up front.
+Budget 3–5 iters.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md)
+(the population-believability gate = the M42 Playwright semantic-coverage sweep, here measuring the generated
+org).
+**Scope — In:** a supporting-population batch (`count: auto-fill to org size`, `roles_mix`, `verified_range`,
+`trajectory_mix`) expanding to fill the remaining N members of a story so a 220/500/1k org is believable
+end-to-end; per-story batch distribution (story-local, the multi-org Stories model); a `gen-batch`
+PREVIEW/DRY-RUN mode (render the expanded per-member prompts + cached generated JSON to stdout/file WITHOUT
+seeding, with an estimated-cost line); throughput tuning for large pops + 429 backoff verification under burst;
+an optional `--gen-batches` opt-in flag on `stackseed` (fence against silent OpenAI-unreachable failures);
+update `ai-generation-spec.md` + `cache-spec.md` with the org-scale + preview workflow.
+**Scope — Out:** the engine + cache primitives themselves (M45); deep timelines for every generated member at 1k
+scale (cost-prohibitive — shallow by default unless explicitly declared); a GUI/web preview (the CLI dry-run is
+the preview surface); any platform-repo edit.
+**Depends on:** M45 (the engine + cache + the closure-safe `GeneratedBatchSeeder`). Reuses the M42 Playwright
+coverage harness. **Parallel with:** none.
+**Re-scope trigger:** if population-scale dedup/taxonomy-clipping/throttle failures can't stabilize after ~5
+tiks → user-strategic-replan.
+**Open questions:** supporting-pop timeline depth (default shallow name+skills+bio); dedup at scale (pre-gen
+reserved-names vs post-gen re-roll); a taxonomy-coverage floor per role before large-batch gen; the
+curated-vs-batch mix per org (the product call — default ~3 curated heroes + batch-fill the rest); whether the
+preview surfaces an estimated cost before a real run (default yes).
+**KB dependencies:** `ai-generation-spec.md` + `cache-spec.md` (the engine + cache from M45), `coverage-protocol.md`
+(the M42 Playwright harness the gate reuses), `stories-spec.md` (the multi-org Stories model the batch fills),
+`seeding-spec.md` (the isolation boundary).
+**Delivers →** updates to `corpus/ops/demo/ai-generation-spec.md` + `corpus/ops/cache-spec.md` with the
+org-scale + preview workflow (the supporting-population batch, per-story distribution, the dry-run preview +
+estimated cost, throughput tuning + 429 backoff, the `--gen-batches` opt-in fence).
+
 ### Execution graph
 ```
-v1.10 "method acting"
+v1.10 "method acting"  (built: M39–M42m;  extended: M43–M46)
   M40 ───────────────────────────────────┐         (stack-snapshot — independent, highest value)
   M39 ───────────────→ M41 ──────────────┴─→ M42e ──→ M42m   (iterative coverage gates, after the fills)
+
+  extension:   { M43 ∥ M44 } ──→ M45 ──→ M46   (M43/M44 fully parallel — different rext modules;
+                                                 M45 depends on M44; M46 depends on M45 → THEN close-release)
 ```
-**Recommended order:** M40 ∥ M39 (the two biggest visible jumps) → M41 → M42e → M42m.
+**Recommended order:** M40 ∥ M39 (the two biggest visible jumps) → M41 → M42e → M42m **[built]**, then the
+extension **{ M43 ∥ M44 } → M45 → M46** → `/developer-kit:close-release`.
 
 ### Risks
 | Risk | Severity | Mitigation |
