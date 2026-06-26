@@ -150,7 +150,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
-| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ∥ M44 } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 5 closed (M39–M42m), 4 planned (M43–M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
+| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ∥ M44 ✅ } → M45 → M46 | 🚧 **IN DEVELOPMENT (EXTENDED with M43→M46)** — 6 closed (M39–M42m + M44), 3 planned (M43, M45, M46); close-release moves to AFTER M46 (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -420,7 +420,21 @@ mechanics into one standalone cockpit-UX spec). Reuse: `cockpit.go`'s `BuildCock
 `defaultJumpForVantage`, the Clerkenstein `/v1/client/handshake` (unchanged), the existing `/manifest.json`.
 
 #### M44 — Profile completeness (members + managers fully baked)
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m44-profile-completeness/`](releases/01.10-method-acting/m44-profile-completeness/)
+**Status:** `done` (completed 2026-06-26) · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/01.10-method-acting/m44-profile-completeness/`](releases/01.10-method-acting/m44-profile-completeness/)
+**Closed:** 2026-06-26 via `/developer-kit:close-milestone` (GREEN, 1 finding / 0 blocking). All four DATA-DENSITY
+fills delivered Fate-1 + RENDER-VERIFIED on a live demo-3: **(§A)** trajectory-aware self-rating (thriving
+self-rated vs struggling NULL/incomplete, chart still renders); **(§B)** NEW `CertificatesSeeder` +
+`ProjectsSeeder` (live-schema-corrected: `public.user_certifications` / `public.user_projects`); **(§C)** the
+manager personal-data unskip (modest flat verified set + manager-track timeline); **(§D)** bulk-member shallow
+career **+ the avatar-column fix** (the build's render-miss — `/enterprise/members` reads
+`memberships.picture_url`, not `users.picture`; the addendum filled 0→340/341, 20/20 photos). Docs: NEW
+`corpus/ops/demo/profile-completeness-spec.md` (+ the §D avatar GOTCHA) + seeding-spec/stories-spec/demo-README.
+Hardening: 3 passes, 17 tests, seeders stmt cov 96.5%→97.5%, 0 bugs, 0 flakes. Audits GREEN: deferral
+(0 deferrals; `Out:` = Fate-2 to M45/M46), supply-chain (0 new deps), alignment N/A (zero clerkenstein change),
+isolation clean, closure GREEN, KB-fidelity GREEN. stack-seeding Go test funcs 538→**567** (+29). **Zero canonical
+platform-repo edits.** Code-of-record: `rosetta-extensions` @ tag `method-acting-m44-profile-completeness-fix2`;
+the corpus doc-half merged `--no-ff` into `release/01.10-method-acting`. **M45 (engine) is now UNBLOCKED** (it
+reuses M44's certificate/project + bulk-member surfaces + the trajectory-aware self-rating).
 **Goal:** close the character-facing **DATA-DENSITY** gaps so **every member AND manager profile is fully
 populated** — trajectory-aware self-ratings, certificates + projects, manager personal data, and every
 `/enterprise/members` fill-member gets an avatar + career + skills. **DATA DENSITY ONLY — zero platform/next-web

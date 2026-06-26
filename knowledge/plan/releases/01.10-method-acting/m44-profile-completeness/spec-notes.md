@@ -49,3 +49,28 @@ flat ~6-skill claimed tail. Default ALL members get avatar+career; depth shallow
 TODO: the "complete profile" rubric — identity + content + semantic layers, per-vantage member vs
 manager, each component mapped to its seeding surface + a Playwright acceptance assertion (the M42e/M42m
 coverage-protocol gate).
+
+## Pre-flight audits — section A (Trajectory-aware self-rating)
+KB-fidelity audit (Phase 0b): **GREEN** — report `kb-fidelity-audit.md` (sha `dafb6ce`-base, run 2026-06-26).
+Topic→doc→code triples (verified against the rext authoring copy, all ALIGNED):
+
+| Topic | Doc | Code |
+|---|---|---|
+| verified-skill chain + `user_level` self-rating | `corpus/ops/demo/stories-spec.md` §claimed-vs-verified | `seeders/persona.go` (`selfEvalLevel`, l.212), `persona_write.go` (`upsertEvidenceSQL`) |
+| profile depth (timeline + claimed tail) | `stories-spec.md` §M41 + `corpus/ops/seeding-spec.md` l.281-297 | `seeders/profile.go` |
+| seeding isolation + write surfaces | `seeding-spec.md` §isolation-boundary l.84-106 | `stack-seeding/isolation/`, `seeders/users.go` |
+| coverage semantic gate | `corpus/ops/demo/coverage-protocol.md` | `stack-verify/e2e/` |
+| photo avatar / EVERY member | `coverage-protocol.md` persona self-consistency | `seeders/avatar.go` (`photoAvatarDataURI`), `seeders/users.go:156` |
+
+KEY LOAD-BEARING FACTS for the build (all code-verified):
+- Manager skips: `persona.go:121` + `profile.go:125` (`if p.IsManager() { continue }`). §C removes both.
+- `photoAvatarDataURI(uid)` ALREADY runs for EVERY population user (`users.go:156`, since M42e P4) — §D's
+  avatar half is already satisfied; §D = verify + bulk-member shallow career.
+- BOTH `PersonaSeeder` + `ProfileSeeder` iterate **only `st.Heroes`** — bulk-member depth (§D) = extend to
+  the non-hero population (the `user1..userN` slots `UsersSeeder` already creates).
+- Seeder registry: `cmd/stackseed/main.go:239-256` (`reg.MustRegister(...)`). §B1/B2 add two entries.
+- Reuse: `resolveJobRoleRefs`/`resolveNamedSkillRefs` (closure gate), `dateOnly`, `legacySkillsJSON`,
+  `companyFor`, `deterministicUUID`, `CopyRowsIdempotent("id")`, the `personaRows.flush` COPY pattern,
+  `roleTitle` via `jobRoleRefs.forName`, `nullIfEmpty`, the `isolation.PerStackIsolated` + audit pattern.
+- `EffectiveMapped()` already returns 0 for a manager — §C must NOT rely on it for the manager's claimed
+  tail; §C writes a small explicit verified subset + a manager-track timeline directly.
