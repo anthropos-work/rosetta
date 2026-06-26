@@ -45,7 +45,7 @@ fence) → full-suite regression → close.
 N/A — build tik; closes `closed-fixed` on the CLI landing green.
 
 ## Note (cap)
-This is the 5th tik of the session (iter-02..05 under the bootstrap-tok-led first call). After it closes,
-the 5-tik cap fires (Phase 5 §5) → the call exits `cap-reached`. The next call resumes with the
-GeneratedBatchSeeder (component 5), then hero-collision-in-seeder + the cost-emission + the REAL
+This is tik #4 of the session (iter-02..05 under the bootstrap-tok-led first call). The cap is 5 tiks, so
+one more tik (iter-06) runs THIS call. iter-06 builds the GeneratedBatchSeeder (component 5); after it
+closes, the 5-tik cap fires (Phase 5 §5) → the call exits `cap-reached`. A later call runs the REAL
 gate-proving batch.

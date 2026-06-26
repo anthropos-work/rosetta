@@ -39,10 +39,10 @@ seeder + the gate-proving batch are the next call's work), but every gate METRIC
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET (0/5 empirically — engine orchestration complete + fixture-proven; the GeneratedBatchSeeder + the REAL capped batch + the live $0-reseed remain)
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: Y (5th tik of the session) — (6) protocol-stop: n — Outcome: exit-5
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n (this is tik #4 of the session — iter-02..05; the cap is 5 tiks, not reached) — (6) protocol-stop: n — Outcome: continue
 **Decisions:** D1 (--max-cost mandatory+>0), D2 (drop-not-error on malformed-past-budget), D3 (generator struct, no globals)
 **Side-deliverables (if any):** none
-**Routes carried forward:** NEXT CALL — component (5): the `GeneratedBatchSeeder` (surface 'generated-batch', DependsOn users+taxonomy, PerStackIsolated) reading the cache → users/persona/profile rows via the existing resolvers (drop-not-fabricate, closure green); then the `Event_AiUsage` cost emission (component 6 is folded into services/ai — already emits the report; the seeder adds the per-member usage rows if needed); then the REAL gate-proving N=20 capped batch + the live $0 reseed on demo-3.
+**Routes carried forward:** iter-06 (THIS call, tik #5 → the cap fires after it) — component (5): the `GeneratedBatchSeeder` (surface 'generated-batch', DependsOn users+taxonomy, PerStackIsolated) reading the cache → users/persona/profile rows via the existing resolvers (drop-not-fabricate, closure green). Then a LATER call: the REAL gate-proving N=20 capped batch + the live $0 reseed on demo-3.
 **Lessons:** threading per-run state through a `generator` struct (not package globals) keeps the
 concurrent workers test-safe — a CLI that's a one-shot is still cleaner without globals. The ceiling guard
 must pre-check BEFORE launching each call (not after) so a breach is PREVENTED, not merely detected; the
