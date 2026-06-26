@@ -8,6 +8,7 @@ fixed/hardened).
 - iter-01 (tok/bootstrap): authored the iteration protocol (`ai-generation-spec.md`) + `cache-spec.md`; KB-fidelity GREEN; `ai` dep (`v1.40.1`) fetchable; TOK-01 (inside-out fixtures-first build) recorded — see iter-01/progress.md
 - iter-02 (tik): component (1) — the values-blind EU-first cost-tracking `services/ai/` wrapper + the sanctioned `ai` dep (v1.40.1, all-permissive tree); 20 unit tests; 567→587; full suite green — see iter-02/progress.md
 - iter-03 (tik): component (2) — `blueprint.Batch` + `batch[]` + `EffectiveBatches()` (pure Go-template mother-prompt expansion, NO LLM at parse time, deterministic $0-reseed foundation); 12 tests; 587→599; full suite green — see iter-03/progress.md
+- iter-04 (tik): component (3) — the `batchcache/` prompt-hash cache (atomic .tmp→rename, .lock fence, capture-version invalidation; $0 byte-identical reseed proven in unit); 14 tests; 599→613; full suite green — see iter-04/progress.md
 
 **Exit gate:** on a real batch of N — valid JSON ≥95% (re-roll on malformed), every role/skill name
 resolves to a real public-taxonomy node-id (non-resolving drop, closure green), ZERO generated name
