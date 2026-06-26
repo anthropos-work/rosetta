@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Academy — Giving Difficult Feedback (legacy path, migrated)</title>
+<!-- The ONE allowed network reference: the three real ant-academy fonts (DM Sans / Instrument Serif / JetBrains Mono), exactly as the academy mock loads them. Everything else is inline/offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   Tokens — copied from the AI-Academy mock (new-academy-path.html), itself
+   lifted from ant-academy ucourse-engine/styles.css + academy.css :root.
+   ============================================================================ */
+:root {
+    --bg: #141210;
+    --surface: rgba(var(--tint-rgb), 0.06);
+    --surface-hover: rgba(var(--tint-rgb), 0.10);
+    --border: rgba(var(--tint-rgb), 0.08);
+    --border-light: rgba(var(--tint-rgb), 0.06);
+    --text-primary: #F0EDE6;
+    --text-secondary: #B8B2A6;
+    --text-muted: #8A8478;
+    --text-faint: #6A6458;
+    --accent: #E8553A;
+    --accent-strong: #D04A32;
+    --accent-rgb: 232, 85, 58;
+    --accent-bg: rgba(var(--accent-rgb), 0.08);
+    --accent-border: rgba(var(--accent-rgb), 0.2);
+    --complete: #45B69C;
+    --success: #45B69C;
+    --success-bg: rgba(69,182,156,0.1);
+    --success-border: rgba(69,182,156,0.3);
+    --error: #DC3C3C;
+    --error-bg: rgba(220,60,60,0.08);
+    --error-border: rgba(220,60,60,0.25);
+    --analogy-color: #8338EC;
+    --analogy-bg: rgba(131,56,236,0.06);
+    --analogy-border: rgba(131,56,236,0.15);
+    --top-bar-bg: rgba(20, 18, 16, 0.95);
+    --tint-rgb: 255, 255, 255;
+    --diagram-bg: #232120;
+    --widget-bg: rgba(255,255,255,0.09);
+    --honey: #FFD54F;
+    --insight-text: #E8CDB8;
+    --font-serif: "Instrument Serif", Georgia, serif;
+    --font-sans: "DM Sans", sans-serif;
+    --font-mono: "JetBrains Mono", 'Fira Code', monospace;
+    --cosmo-blue: #4DA6FF;
+    --cosmo-amber: #F5C16C;
+    --cosmo-panel-bg: rgba(20, 18, 16, 0.95);
+    --cosmo-fab-bg: #000000;
+    --cosmo-fab-border: rgba(var(--tint-rgb), 0.1);
+    --cosmo-divider: rgba(var(--tint-rgb), 0.06);
+    --cosmo-divider-faint: rgba(var(--tint-rgb), 0.04);
+    --cosmo-code-bg: rgba(0, 0, 0, 0.3);
+    --cosmo-hover: rgba(var(--tint-rgb), 0.06);
+    --cosmo-scrollbar: rgba(var(--tint-rgb), 0.1);
+    --cosmo-shadow: rgba(0, 0, 0, 0.4);
+    --cosmo-shadow-soft: rgba(0, 0, 0, 0.3);
+    --cosmo-panel-width: 380px;
+    --cosmo-z: 9999;
+    /* per-type accent tints (the migrated module-type system) */
+    --t-video: #E8553A;  --t-video-rgb: 232,85,58;
+    --t-doc:   #4DA6FF;  --t-doc-rgb: 77,166,255;
+    --t-audio: #F5C16C;  --t-audio-rgb: 245,193,108;
+    --t-link:  #45B69C;  --t-link-rgb: 69,182,156;
+    --t-sim:   #8338EC;  --t-sim-rgb: 131,56,236;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-width: none;
+}
+body::-webkit-scrollbar { display: none; }
+body.cosmo-panel-open { margin-right: var(--cosmo-panel-width); transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+body:not(.cosmo-panel-open) { transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+a { color: var(--accent); text-decoration: none; }
+
+/* ---- MOCK caption bar ---- */
+.mock-caption {
+    font-family: var(--font-sans);
+    background: rgba(var(--accent-rgb), 0.10);
+    border-bottom: 1px solid var(--accent-border);
+    color: #F0D7CE; font-size: 12px; font-weight: 600; letter-spacing: 0.2px;
+    padding: 7px 18px; text-align: center; position: sticky; top: 0; z-index: 200; line-height: 1.5;
+}
+.mock-caption b { color: var(--accent); }
+.mock-caption .mig { color: #9CCAFF; }
+
+.course-page { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---- Top Menu Bar ---- */
+.app-top-bar {
+    display: flex; align-items: center; padding: 0 1.5rem;
+    background: var(--top-bar-bg); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-light); flex-shrink: 0; z-index: 100;
+    position: sticky; top: 47px;
+}
+.top-bar-row { display: flex; align-items: center; }
+.top-bar-row-main { height: 52px; gap: 0.875rem; flex: 1; min-width: 0; max-width: 920px; margin: 0 auto; width: 100%; }
+.main-app-link { display: flex; align-items: center; text-decoration: none; padding: 0.4rem; border-radius: 8px; transition: background-color 0.2s ease; color: var(--text-faint); font-size: 1.1rem; cursor: pointer; }
+.main-app-link:hover { background-color: rgba(var(--tint-rgb), 0.06); color: var(--accent); }
+.top-bar-separator { width: 1px; height: 18px; background: var(--border); }
+.top-bar-stack { display: flex; align-items: center; gap: 6px; padding: 0.4rem 10px; border-radius: 8px; border: none; background: none; color: var(--text-faint); font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; }
+.top-bar-stack:hover { color: var(--accent); background-color: rgba(var(--tint-rgb), 0.06); }
+.top-bar-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ucourse-logo { font-size: 1.35rem; font-weight: 700; color: var(--accent); line-height: 1; font-family: var(--font-serif); }
+.top-bar-title .top-bar-percent { font-size: 0.75rem; font-weight: 500; color: var(--text-faint); flex-shrink: 0; }
+
+/* ---- Layout ---- */
+.course-container { flex: 1; }
+.course-content { max-width: 760px; margin: 0 auto; padding: 44px 24px 80px; }
+
+/* ============================================================================
+   PATH OVERVIEW
+   ============================================================================ */
+.assign-banner {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    color: #F0D7CE; border-radius: 12px; padding: 11px 16px; margin-bottom: 26px; font-size: 13px;
+}
+.assign-banner b { color: var(--text-primary); font-weight: 600; }
+.assign-banner .sep { color: var(--text-faint); }
+.assign-banner .ontrack { margin-left: auto; background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); border-radius: 99px; padding: 2px 11px; font-weight: 600; font-size: 12px; white-space: nowrap; }
+
+.course-intro { margin-bottom: 36px; }
+.course-intro-top { display: flex; align-items: flex-start; gap: 2rem; }
+.course-intro-text { flex: 1; min-width: 0; }
+.course-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.course-title { font-family: var(--font-serif); font-size: clamp(34px, 5.4vw, 50px); font-weight: 400; line-height: 1.08; margin: 0 0 16px; color: var(--text-primary); }
+.course-subtitle { font-size: 15.5px; color: var(--text-muted); line-height: 1.62; max-width: 520px; margin: 0; }
+.hero-ring { position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 0.3rem; }
+.hero-ring-svg { display: block; }
+.hero-ring-fill { transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hero-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.hero-ring-percent { font-family: var(--font-sans); font-size: 1.4rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.hero-ring-percent small { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-left: 1px; }
+.hero-ring-sub { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-faint); }
+.course-stats { margin-top: 20px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-faint); flex-wrap: wrap; }
+.course-stats .dot { color: var(--text-faint); }
+.skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.skill-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 4px 11px; font-size: 12.5px; color: var(--text-secondary); }
+.skill-chip .v { color: var(--success); font-size: 11px; }
+
+/* migration note banner */
+.mig-note { display: flex; gap: 13px; align-items: flex-start; background: rgba(var(--t-doc-rgb), 0.06); border: 1px solid rgba(var(--t-doc-rgb), 0.18); border-radius: 12px; padding: 14px 18px; margin: 0 0 30px; }
+.mig-note .mn-ic { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.mig-note .mn-t { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+.mig-note .mn-t b { color: var(--text-primary); font-weight: 600; }
+.mig-note code { font-family: var(--font-mono); font-size: 0.86em; background: rgba(var(--tint-rgb),0.06); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--cosmo-amber); }
+
+/* ---- Chapter blocks ---- */
+.chapter { margin-bottom: 30px; }
+.chapter-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.chapter-num { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent); font-weight: 700; display: grid; place-items: center; font-size: 13px; font-family: var(--font-sans); }
+.chapter-title { font-family: var(--font-serif); font-size: 24px; color: var(--text-primary); line-height: 1.2; }
+.chapter-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.55; max-width: 60ch; }
+.chapter-prog { margin-left: auto; text-align: right; flex-shrink: 0; }
+.chapter-prog .cp-pct { font-size: 12px; color: var(--text-faint); font-weight: 600; }
+.chapter-prog .cp-bar { height: 5px; width: 84px; background: rgba(var(--tint-rgb),0.1); border-radius: 99px; overflow: hidden; margin-top: 5px; }
+.chapter-prog .cp-bar > span { display: block; height: 100%; background: var(--complete); border-radius: 99px; transition: width .5s; }
+
+/* ---- Module list (typed) ---- */
+.module-list { display: grid; gap: 11px; }
+.module-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: 14px; padding: 16px 18px; text-align: left; cursor: pointer; transition: all 0.22s; position: relative; overflow: hidden; width: 100%; font-family: var(--font-sans); color: var(--text-primary); }
+.module-card:hover:not(.locked) { background: var(--surface-hover); }
+.module-card.locked { cursor: default; opacity: 0.62; }
+.module-card.complete { border-color: rgba(69,182,156,0.22); }
+.module-card-inner { display: flex; align-items: center; gap: 15px; }
+.module-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.mi-video { background: rgba(var(--t-video-rgb), 0.12); }
+.mi-doc   { background: rgba(var(--t-doc-rgb), 0.12); }
+.mi-audio { background: rgba(var(--t-audio-rgb), 0.13); }
+.mi-link  { background: rgba(var(--t-link-rgb), 0.12); }
+.mi-sim   { background: rgba(var(--t-sim-rgb), 0.14); }
+.module-info { flex: 1; min-width: 0; }
+.module-meta { display: flex; align-items: center; gap: 9px; margin-bottom: 3px; flex-wrap: wrap; }
+.type-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; }
+.tt-video { color: var(--t-video); background: rgba(var(--t-video-rgb),0.12); }
+.tt-doc   { color: var(--t-doc);   background: rgba(var(--t-doc-rgb),0.12); }
+.tt-audio { color: var(--t-audio); background: rgba(var(--t-audio-rgb),0.14); }
+.tt-link  { color: var(--t-link);  background: rgba(var(--t-link-rgb),0.12); }
+.tt-sim   { color: var(--t-sim);   background: rgba(var(--t-sim-rgb),0.16); }
+.module-status { font-size: 11px; font-weight: 600; }
+.ms-done { color: var(--complete); }
+.ms-prog { color: var(--accent); }
+.ms-lock { color: var(--text-faint); }
+.module-title { font-family: var(--font-serif); font-size: 18.5px; color: var(--text-primary); line-height: 1.25; margin-bottom: 3px; }
+.module-card.locked .module-title { color: var(--text-muted); }
+.module-sub { font-size: 12.5px; color: #7A7468; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.module-sub .mdot { color: #4A463E; }
+.module-lectures { color: var(--text-secondary); font-weight: 600; }
+.module-graded { color: var(--t-sim); font-weight: 600; }
+.module-prog-bar { height: 4px; background: rgba(var(--tint-rgb),0.08); border-radius: 99px; overflow: hidden; margin-top: 9px; }
+.module-prog-bar > span { display: block; height: 100%; border-radius: 99px; transition: width .5s; }
+.module-arrow { font-size: 18px; color: var(--text-muted); flex-shrink: 0; }
+
+/* ============================================================================
+   IN-MODULE VIEW
+   ============================================================================ */
+.course-header { position: sticky; top: 47px; background: var(--top-bar-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); z-index: 10; padding: 13px 24px; }
+.course-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 15px; }
+.back-button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; font-family: var(--font-sans); padding: 4px 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.back-button:hover { color: var(--text-primary); }
+.ch-progress { flex: 1; }
+.ch-progress .pb { width: 100%; height: 4px; background: rgba(var(--tint-rgb), 0.1); border-radius: 2px; overflow: hidden; }
+.ch-progress .pb > span { display: block; height: 100%; border-radius: 2px; transition: width .5s cubic-bezier(0.4,0,0.2,1); }
+.progress-count { font-size: 12px; color: var(--text-faint); font-weight: 500; white-space: nowrap; }
+
+.module-head { margin-bottom: 22px; }
+.mh-crumb { font-size: 12px; color: var(--text-faint); margin-bottom: 8px; }
+.mh-type-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.mh-title { font-family: var(--font-serif); font-size: 30px; color: var(--text-primary); line-height: 1.15; }
+.mh-sub { font-size: 13.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+
+/* ---- the lecture-checkpoint rail (the hero) ---- */
+.lecture-rail-wrap { margin: 18px 0 22px; }
+.lecture-rail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+.lr-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+.lr-count { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; }
+.lr-count b { color: var(--accent); }
+.lecture-rail { display: flex; gap: 6px; }
+.lr-seg { flex: 1; height: 6px; border-radius: 99px; background: rgba(var(--tint-rgb),0.09); transition: background .35s; position: relative; }
+.lr-seg.done { background: var(--complete); }
+.lr-seg.active { background: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.18); }
+.lecture-list { list-style: none; display: grid; gap: 5px; margin-top: 14px; }
+.lecture-item { display: flex; align-items: center; gap: 12px; padding: 9px 13px; border-radius: 10px; border: 1px solid transparent; font-size: 13.5px; color: var(--text-muted); transition: background .15s, border-color .15s; }
+.lecture-item.done { color: var(--text-secondary); }
+.lecture-item.active { background: var(--surface); border-color: var(--accent-border); color: var(--text-primary); }
+.lecture-item .li-check { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; border: 1.5px solid rgba(var(--tint-rgb),0.18); color: transparent; }
+.lecture-item.done .li-check { background: var(--complete); border-color: var(--complete); color: #141210; }
+.lecture-item.active .li-check { border-color: var(--accent); color: var(--accent); }
+.lecture-item .li-title { flex: 1; min-width: 0; }
+.lecture-item.active .li-title { font-weight: 600; }
+.lecture-item .li-min { font-size: 11.5px; color: var(--text-faint); white-space: nowrap; }
+
+/* ---- video stage ---- */
+.video-stage { background: #0C0B0A; border: 1px solid var(--border); border-radius: 14px; aspect-ratio: 16/9; width: 100%; display: grid; place-items: center; position: relative; overflow: hidden; margin-bottom: 4px; }
+.video-stage .vbg { position: absolute; inset: 0; background: radial-gradient(120% 120% at 30% 20%, rgba(var(--accent-rgb),0.16), transparent 60%); }
+.video-stage .play { width: 64px; height: 64px; border-radius: 50%; background: rgba(var(--tint-rgb),0.10); border: 1px solid rgba(var(--tint-rgb),0.25); display: grid; place-items: center; font-size: 24px; color: #fff; backdrop-filter: blur(2px); position: relative; z-index: 1; cursor: pointer; transition: transform .15s, background .15s; }
+.video-stage .play:hover { transform: scale(1.06); background: rgba(var(--tint-rgb),0.16); }
+.video-stage .vmeta { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; justify-content: space-between; font-size: 12px; z-index: 1; }
+.video-stage .vmeta span { background: rgba(0,0,0,0.5); padding: 3px 9px; border-radius: 6px; color: #D8D2C8; }
+.video-scrub { height: 4px; background: rgba(var(--tint-rgb),0.1); border-radius: 99px; margin-top: 10px; overflow: hidden; }
+.video-scrub > span { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+
+/* ---- document stage ---- */
+.doc-stage { background: #1B1916; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; min-height: 280px; }
+.doc-page-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-bottom: 14px; letter-spacing: 0.04em; }
+.doc-stage h4 { font-family: var(--font-serif); font-size: 21px; color: var(--text-primary); margin-bottom: 12px; }
+.doc-stage p { font-size: 14.5px; color: var(--text-secondary); line-height: 1.72; margin-bottom: 10px; }
+.doc-stage ul { padding-left: 20px; margin: 8px 0; }
+.doc-stage li { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 6px; }
+.doc-stage strong { color: var(--text-primary); }
+.doc-stage em { color: var(--text-secondary); }
+.scroll-hint { font-size: 12px; color: var(--text-faint); text-align: center; margin-top: 16px; }
+
+/* ---- audio stage ---- */
+.audio-stage { background: linear-gradient(135deg, rgba(var(--t-audio-rgb),0.08), rgba(var(--t-audio-rgb),0.02)); border: 1px solid rgba(var(--t-audio-rgb),0.2); border-radius: 14px; padding: 30px; text-align: center; }
+.audio-stage .au-ic { font-size: 40px; margin-bottom: 8px; }
+.audio-stage .au-title { font-family: var(--font-serif); font-size: 20px; color: var(--text-primary); }
+.audio-stage .au-sub { font-size: 13px; color: var(--text-muted); margin: 6px 0 18px; }
+.audio-wave { display: flex; align-items: center; justify-content: center; gap: 3px; height: 40px; margin-bottom: 16px; }
+.audio-wave i { display: block; width: 3px; border-radius: 99px; background: rgba(var(--t-audio-rgb),0.4); }
+.audio-wave i.on { background: var(--t-audio); }
+.audio-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+
+/* ---- external-link stage ---- */
+.link-stage { background: var(--surface); border: 1px dashed rgba(var(--t-link-rgb),0.4); border-radius: 14px; padding: 30px; text-align: center; }
+.link-stage .lk-ic { font-size: 36px; margin-bottom: 8px; }
+.link-stage .lk-title { font-family: var(--font-serif); font-size: 20px; color: var(--text-primary); }
+.link-stage .lk-url { font-family: var(--font-mono); font-size: 12.5px; color: var(--t-link); margin: 6px 0 16px; word-break: break-all; }
+.link-stage .lk-note { display: inline-flex; align-items: flex-start; gap: 9px; text-align: left; max-width: 46ch; margin: 0 auto 18px; background: rgba(var(--t-link-rgb),0.06); border: 1px solid rgba(var(--t-link-rgb),0.18); border-radius: 10px; padding: 11px 14px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+.link-stage .lk-note b { color: var(--text-primary); }
+.link-open-btn { background: rgba(var(--t-link-rgb),0.12); border: 1px solid rgba(var(--t-link-rgb),0.35); color: var(--t-link); border-radius: 10px; padding: 10px 20px; font-family: var(--font-sans); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.link-open-btn:hover { background: rgba(var(--t-link-rgb),0.18); }
+
+/* ---- lecture body prose (shared, academy card look) ---- */
+.lecture-body { margin-top: 18px; }
+.card-body { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 26px 26px; }
+.card-text { font-family: var(--font-sans); font-size: 15px; color: var(--text-secondary); line-height: 1.72; }
+.card-text p { margin: 0 0 12px; } .card-text p:last-child { margin-bottom: 0; }
+.card-text strong { color: var(--text-primary); font-weight: 600; }
+.card-text em { color: var(--text-secondary); }
+.card-text h4 { font-family: var(--font-serif); font-size: 18px; color: var(--text-primary); margin: 18px 0 8px; }
+.card-text ul { padding-left: 20px; margin: 8px 0; }
+.card-text li { margin-bottom: 7px; }
+.dialogue-line { display: flex; gap: 12px; margin: 8px 0; }
+.dialogue-who { flex-shrink: 0; width: 64px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+.dialogue-mgr .dialogue-who { color: var(--accent); }
+.dialogue-rep .dialogue-who { color: var(--cosmo-blue); }
+.dialogue-text { font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+.dialogue-box { background: rgba(var(--tint-rgb),0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 12px 0; }
+.dodont { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 4px; }
+.dd-box { border-radius: 12px; padding: 14px 16px; }
+.dd-do { background: var(--success-bg); border: 1px solid var(--success-border); }
+.dd-dont { background: var(--error-bg); border: 1px solid var(--error-border); }
+.dd-box h5 { font-size: 13px; margin-bottom: 8px; }
+.dd-do h5 { color: var(--success); } .dd-dont h5 { color: var(--error); }
+.dd-box ul { padding-left: 17px; margin: 0; }
+.dd-box li { font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; line-height: 1.5; }
+
+/* ---- key insight (reused from academy) ---- */
+.key-insight { background: linear-gradient(135deg, var(--accent-bg), rgba(var(--accent-rgb), 0.03)); border: 1px solid var(--accent-border); border-radius: 12px; padding: 16px 20px; margin-top: 16px; display: flex; gap: 13px; align-items: flex-start; }
+.insight-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.insight-text { font-family: var(--font-sans); font-size: 14px; color: var(--insight-text); line-height: 1.62; margin: 0; font-style: italic; }
+.insight-text strong { color: var(--text-primary); font-weight: 600; font-style: normal; }
+
+/* ---- module footer nav ---- */
+.module-nav { display: flex; align-items: center; gap: 12px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border-light); }
+.nav-btn { display: flex; align-items: center; gap: 7px; padding: 10px 18px; font-size: 14px; font-family: var(--font-sans); font-weight: 600; color: var(--text-secondary); background: rgba(var(--tint-rgb), 0.04); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: background .15s, color .15s; }
+.nav-btn:hover:not(:disabled) { background: rgba(var(--tint-rgb), 0.08); color: var(--text-primary); }
+.nav-btn:disabled { opacity: 0.25; cursor: default; }
+.nav-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); border-color: transparent; color: #fff; }
+.nav-btn.primary:hover { transform: translateY(-1px); }
+.module-nav .spacer { flex: 1; }
+.module-done-flag { color: var(--complete); font-weight: 600; font-size: 13.5px; }
+
+/* ---- simulation module (graded, atomic) ---- */
+.sim-launch { border: 1px solid rgba(var(--t-sim-rgb),0.3); border-radius: 16px; background: linear-gradient(135deg, rgba(var(--t-sim-rgb),0.08), rgba(var(--t-sim-rgb),0.02)); padding: 28px; }
+.sim-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--t-sim); color: #fff; border-radius: 99px; padding: 5px 13px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.sim-launch h3 { font-family: var(--font-serif); font-size: 23px; color: var(--text-primary); margin: 16px 0 10px; line-height: 1.2; }
+.sim-scene { font-size: 14.5px; color: var(--text-secondary); line-height: 1.7; max-width: 62ch; }
+.sim-scene b { color: var(--text-primary); }
+.sim-atomic-note { display: inline-flex; align-items: center; gap: 8px; margin: 16px 0 4px; font-size: 12px; color: var(--text-muted); background: rgba(var(--t-sim-rgb),0.07); border: 1px solid rgba(var(--t-sim-rgb),0.2); border-radius: 8px; padding: 7px 12px; }
+.sim-atomic-note b { color: #C9A8F5; }
+.sim-grade-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 11px; margin: 18px 0; }
+.sim-grade { background: rgba(var(--tint-rgb),0.03); border: 1px solid rgba(var(--t-sim-rgb),0.22); border-radius: 12px; padding: 14px 15px; }
+.sim-grade .gname { font-weight: 600; font-size: 13.5px; color: #C9A8F5; margin-bottom: 4px; }
+.sim-grade .gdesc { color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+.sim-meta { display: flex; flex-wrap: wrap; gap: 16px; color: var(--text-secondary); font-size: 13px; margin: 8px 0 20px; }
+.sim-meta b { color: var(--text-primary); }
+.sim-start { background: var(--t-sim); border: none; color: #fff; font-family: var(--font-sans); font-size: 15px; font-weight: 600; padding: 12px 24px; border-radius: 11px; cursor: pointer; transition: background .15s, transform .15s; display: inline-flex; align-items: center; gap: 8px; }
+.sim-start:hover { background: #6E2DD0; transform: translateY(-1px); }
+.sim-passnote { background: rgba(var(--tint-rgb),0.03); border: 1px dashed rgba(var(--t-sim-rgb),0.35); border-radius: 11px; padding: 12px 15px; font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-top: 18px; }
+.sim-passnote b { color: #C9A8F5; }
+
+/* ---- module-complete hero (gold) ---- */
+.complete-hero { display: flex; align-items: center; gap: 18px; padding: 20px 24px; margin-top: 22px; background: linear-gradient(135deg, rgba(184,138,66,0.10), rgba(201,167,123,0.06)); border: 1px solid rgba(184,138,66,0.32); border-radius: 14px; }
+.complete-hero .ch-seal { flex-shrink: 0; width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: rgba(184,138,66,0.18); color: #B88A42; font-size: 26px; }
+.complete-hero .ch-eyebrow { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #B88A42; margin-bottom: 3px; }
+.complete-hero .ch-title { font-size: 1.22rem; font-weight: 700; color: var(--text-primary); }
+.complete-hero .ch-sub { font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+
+.fade-slide-in { animation: fadeSlideIn 0.4s ease-out both; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+
+/* ============================================================================
+   Cosmo — copied from the academy mock (assistant.css)
+   ============================================================================ */
+.cosmo-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--cosmo-fab-border); background: var(--cosmo-fab-bg); cursor: pointer; z-index: var(--cosmo-z); display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; box-shadow: 0 2px 8px var(--cosmo-shadow); padding: 0; }
+.cosmo-fab:hover { transform: scale(1.08); }
+.cosmo-fab.hidden { display: none; }
+.cosmo-avatar-mini { width: 44px; height: 44px; }
+.cosmo-avatar-mini .cosmo-svg { width: 100%; height: 100%; transform: translateY(-6%); }
+.cosmo-fab .cosmo-eyes-open { opacity: 0; transition: opacity 0.15s ease-out; }
+.cosmo-fab .cosmo-eyes-closed { opacity: 1; transition: opacity 0.15s ease-out; }
+.cosmo-fab:hover .cosmo-eyes-open { opacity: 1; }
+.cosmo-fab:hover .cosmo-eyes-closed { opacity: 0; }
+.cosmo-panel { position: fixed; right: 0; top: 0; bottom: 0; width: var(--cosmo-panel-width); background: var(--cosmo-panel-bg); backdrop-filter: blur(16px); border-left: 1px solid var(--cosmo-divider); z-index: var(--cosmo-z); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -8px 0 32px var(--cosmo-shadow-soft); }
+.cosmo-panel.open { transform: translateX(0); }
+.cosmo-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid var(--cosmo-divider); flex-shrink: 0; }
+.cosmo-panel-header-left { display: flex; align-items: center; gap: 10px; }
+.cosmo-panel-header-right { display: flex; align-items: center; gap: 4px; }
+.cosmo-panel-header .cosmo-avatar { width: 36px; height: 36px; align-self: center; }
+.cosmo-panel-header .cosmo-svg { width: 100%; height: 100%; }
+.cosmo-panel-name { font-family: var(--font-serif); font-size: 18px; color: var(--text-primary); letter-spacing: 0.02em; }
+.cosmo-btn-close, .cosmo-btn-clear { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; font-size: 16px; }
+.cosmo-btn-close:hover, .cosmo-btn-clear:hover { color: var(--text-primary); background: var(--cosmo-hover); }
+.cosmo-ctx-label { font-size: 10px; padding: 6px 16px; color: var(--text-faint); border-bottom: 1px solid var(--cosmo-divider-faint); background: var(--cosmo-subtle); font-family: var(--font-sans); }
+.cosmo-ctx-label b { color: var(--text-muted); font-weight: 600; }
+.cosmo-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--cosmo-scrollbar) transparent; }
+.cosmo-messages::-webkit-scrollbar { width: 4px; }
+.cosmo-messages::-webkit-scrollbar-thumb { background: var(--cosmo-scrollbar); border-radius: 2px; }
+.cosmo-welcome { text-align: center; padding: 24px 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.cosmo-welcome strong, .cosmo-welcome .cosmo-name { color: var(--cosmo-blue); }
+.cosmo-msg { display: flex; max-width: 95%; animation: cosmoFadeIn 0.25s ease-out; }
+.cosmo-msg-user { align-self: flex-end; }
+.cosmo-msg-assistant { align-self: flex-start; }
+.cosmo-msg-content { padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; color: var(--text-primary); word-break: break-word; }
+.cosmo-msg-user .cosmo-msg-content { background: rgba(77, 166, 255, 0.1); border: 1px solid rgba(77, 166, 255, 0.15); border-bottom-right-radius: 4px; }
+.cosmo-msg-assistant .cosmo-msg-content { background: none; border: none; border-radius: 0; padding: 0; }
+.cosmo-msg-text p { margin: 0 0 8px; } .cosmo-msg-text p:last-child { margin-bottom: 0; }
+.cosmo-msg-text strong { color: var(--text-primary); } .cosmo-msg-text em { color: var(--text-secondary); }
+.cosmo-msg-text code { font-family: var(--font-mono); font-size: 12px; padding: 2px 5px; background: var(--cosmo-code-bg); border-radius: 4px; color: var(--cosmo-amber); }
+.cosmo-cta-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; padding: 0 16px 12px; }
+.cosmo-cta-btn { padding: 6px 14px; font-size: 12.5px; font-family: var(--font-sans); color: var(--cosmo-blue); background: none; border: 1px solid rgba(77, 166, 255, 0.3); border-radius: 16px; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; text-align: left; line-height: 1.35; }
+.cosmo-cta-btn:hover { background: rgba(77, 166, 255, 0.1); border-color: var(--cosmo-blue); color: #9CCAFF; }
+.cosmo-input-area { display: flex; align-items: flex-end; gap: 6px; padding: 5px; border-top: 1px solid rgba(var(--tint-rgb), 0.06); flex-shrink: 0; }
+.cosmo-input { flex: 1; background: none; border: none; padding: 10px 14px; color: var(--text-primary); font-family: var(--font-sans); font-size: 13.5px; resize: none; outline: none; min-height: 20px; max-height: 120px; line-height: 1.4; }
+.cosmo-input::placeholder { color: var(--text-faint); }
+.cosmo-btn-action { width: 36px; height: 36px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s, transform 0.1s; font-size: 15px; flex-shrink: 0; background: none; color: var(--cosmo-blue); }
+.cosmo-btn-action:hover:not(:disabled) { transform: scale(1.05); }
+.cosmo-avatar { position: relative; } .cosmo-avatar .cosmo-svg { width: 100%; height: 100%; }
+.cosmo-slime-group { transform-origin: 32px 62px; }
+.avatar-idle .cosmo-slime-group { animation: cosmoBob 6s ease-in-out infinite; }
+@keyframes cosmoFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cosmoBob { 0%, 75%, 100% { transform: scaleY(1) scaleX(1); } 82% { transform: scaleY(0.85) scaleX(1.15); } 89% { transform: scaleY(1.05) scaleX(0.95); } 94% { transform: scaleY(0.96) scaleX(1.04); } 97% { transform: scaleY(1.01) scaleX(0.99); } }
+
+@media (max-width: 768px) {
+    .course-content { padding: 30px 16px 70px; }
+    .mh-title { font-size: 25px; }
+    .sim-grade-grid, .dodont { grid-template-columns: 1fr; }
+    .hero-ring { display: none; }
+    .chapter-prog { display: none; }
+    body.cosmo-panel-open { margin-right: 0; }
+    .cosmo-panel { width: 100%; }
+}
+</style>
+</head>
+<body class="avatar-idle">
+
+<div class="mock-caption">
+  MOCK — Legacy path <b>"Giving Difficult Feedback"</b> <span class="mig">MIGRATED</span> into the AI Academy model + UX (path &rsaquo; chapter &rsaquo; module &rsaquo; lecture).
+  Legacy steps &rarr; modules; bite-size lives in <span class="mig">lecture-checkpoints</span>.
+</div>
+
+<div class="course-page" id="coursePage"><!-- view injected here --></div>
+
+<!-- COSMO FAB — the real blue-slime avatar SVG, verbatim from the academy mock -->
+<button class="cosmo-fab" id="cosmoFab" title="Ask Cosmo">
+  <div class="cosmo-avatar-mini cosmo-avatar avatar-idle">
+    <svg viewBox="0 16 64 48" xmlns="http://www.w3.org/2000/svg" class="cosmo-svg">
+      <g class="cosmo-slime-group">
+        <path d="M 32 20 C 24 20, 4 36, 4 48 C 4 58, 16 62, 32 62 C 48 62, 60 58, 60 48 C 60 36, 40 20, 32 20 Z" fill="#4DA6FF"/>
+        <path d="M 32 24 C 26 24, 8 38, 8 48 C 8 51, 12 55, 18 57 C 12 48, 28 28, 32 26 C 36 28, 52 48, 46 57 C 52 55, 56 51, 56 48 C 56 38, 38 24, 32 24 Z" fill="white" opacity="0.15"/>
+        <g class="cosmo-eyes-open">
+          <circle cx="20" cy="42" r="4.5" fill="white"/><circle cx="44" cy="42" r="4.5" fill="white"/>
+          <circle cx="20" cy="42" r="2.5" fill="#1A1A1A"/><circle cx="44" cy="42" r="2.5" fill="#1A1A1A"/>
+        </g>
+        <g class="cosmo-eyes-closed">
+          <path d="M 16 42 Q 20 45 24 42" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M 40 42 Q 44 45 48 42" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </g>
+        <path class="cosmo-mouth-normal" d="M 28 46 Q 32 50 36 46" stroke="#1A1A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+</button>
+
+<!-- COSMO PANEL -->
+<div class="cosmo-panel" id="cosmoPanel">
+  <div class="cosmo-panel-header">
+    <div class="cosmo-panel-header-left">
+      <div class="cosmo-avatar avatar-idle" style="width:36px;height:36px">
+        <svg viewBox="0 16 64 48" xmlns="http://www.w3.org/2000/svg" class="cosmo-svg">
+          <g class="cosmo-slime-group">
+            <path d="M 32 20 C 24 20, 4 36, 4 48 C 4 58, 16 62, 32 62 C 48 62, 60 58, 60 48 C 60 36, 40 20, 32 20 Z" fill="#4DA6FF"/>
+            <circle cx="20" cy="42" r="4.5" fill="white"/><circle cx="44" cy="42" r="4.5" fill="white"/>
+            <circle cx="20" cy="42" r="2.5" fill="#1A1A1A"/><circle cx="44" cy="42" r="2.5" fill="#1A1A1A"/>
+            <path d="M 28 46 Q 32 50 36 46" stroke="#1A1A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <span class="cosmo-panel-name">Ask Cosmo</span>
+    </div>
+    <div class="cosmo-panel-header-right">
+      <button class="cosmo-btn-clear" id="cosmoClear" title="Clear chat">&#129529;</button>
+      <button class="cosmo-btn-close" id="cosmoClose" title="Close">&times;</button>
+    </div>
+  </div>
+  <div class="cosmo-ctx-label">Context: <b id="cosmoCtx">&mdash;</b></div>
+  <div class="cosmo-messages" id="cosmoMessages"></div>
+  <div class="cosmo-cta-group" id="cosmoChips"></div>
+  <div class="cosmo-input-area">
+    <textarea class="cosmo-input" id="cosmoInput" placeholder="Ask Cosmo anything..." rows="1"></textarea>
+    <button class="cosmo-btn-action" id="cosmoSend" title="Send">&uarr;</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   MIGRATED CONTENT MODEL  —  path > chapter > module > lecture
+   Legacy steps (from legacy-skill-path.html) become typed MODULES.
+   Bite-size moves one level deeper into LECTURE-checkpoints (content-model.md).
+     - video    : sliced into ~5-min time checkpoints  (the ~40-min hero slice)
+     - document : sliced into page/section checkpoints
+     - audio    : sliced into time checkpoints
+     - link     : SINGLE checkpoint ("open + mark done" — can't track off-site)
+     - sim      : NOT sliced — atomic, graded; completion = pass score
+   ============================================================================ */
+
+const META = {
+  path: "People Management",
+  title: "Giving Difficult Feedback",
+  subtitle: "The legacy skill path, migrated. Same expert content — now bite-size: every legacy step is a typed module, and the long lecture becomes lecture-checkpoints you tick as you go.",
+  label: "Skill Path",
+  level: "Intermediate"
+};
+
+/* helper: build N time-sliced lectures from a total duration */
+function timeSlices(totalMin, labels){
+  return labels.map((t, i) => ({ title: t, min: Math.round(totalMin/labels.length) }));
+}
+
+const CHAPTERS = [
+  {
+    n: 1, title: "Why Feedback Feels Hard (and the Cost of Avoiding It)",
+    desc: "Reframe feedback as an act of respect, not punishment — and understand what silence really costs your report and your team.",
+    modules: [
+      {
+        id: "c1m1", type: "video", title: "The avoidance trap: what happens when managers stay quiet",
+        by: "Dr. Dana Mercer", legacyDur: "12:08", totalMin: 12,
+        lectures: [
+          { title: "The hidden price of staying quiet", min: 4 },
+          { title: "Why \"being nice\" defers the pain", min: 4 },
+          { title: "Reframe: feedback as respect", min: 4 }
+        ],
+        prose: `
+          <p>Most managers don't withhold hard feedback because they're cruel — they withhold it because they're <strong>kind</strong>. Telling someone their work fell short feels like causing pain, so we soften it into mush.</p>
+          <p>But vagueness isn't gentler — it's <strong>crueler over a longer timeline</strong>. The report walks away unsure what was wrong, repeats the behavior, and is eventually blindsided at a review by feedback that was never made clear.</p>
+          <div class="key-insight"><span class="insight-icon">&#128161;</span><div class="insight-text">Silence doesn't spare your report — it just <strong>delays the pain</strong> and removes their chance to fix it. The kind thing and the clear thing are the same thing.</div></div>`,
+        cosmo: [
+          ["Why does staying quiet feel safer?", "Because silence lets you avoid the report's <strong>immediate</strong> reaction — the wince, the defensiveness. But you've only deferred it; the gap persists and resurfaces later, usually larger and with less goodwill."],
+          ["This was a 40-min lecture in the old path — what changed?", "Same footage, but it's now sliced into <strong>bite-size lecture-checkpoints</strong> (~4 min each). You can stop after any checkpoint and your progress is saved at that lecture — not just \"watched / not watched\" for the whole video."]
+        ]
+      },
+      {
+        id: "c1m2", type: "link", title: "HBR: \"The Feedback Fallacy\"",
+        by: "external article", url: "hbr.org/2019/03/the-feedback-fallacy", legacyDur: "9 min read",
+        lectures: [ { title: "Open the article + mark done", min: 9 } ],
+        cosmo: [
+          ["Why only one checkpoint here?", "It's an <strong>external link</strong> — the content lives off-site (hbr.org), so the academy can't track scroll or time inside it. The honest model is a <strong>single checkpoint</strong>: open it, then mark it done."],
+        ]
+      },
+      {
+        id: "c1m3", type: "doc", title: "The Cost-of-Silence worksheet",
+        by: "downloadable PDF", legacyDur: "PDF · 2 pages",
+        lectures: [
+          { title: "Page 1 — Map an avoided conversation", min: 3 },
+          { title: "Page 2 — Estimate the real cost", min: 3 }
+        ],
+        pages: [
+          { tag: "PDF · page 1 of 2", h: "Map an avoided conversation", body: `<p>Pick one piece of feedback you've been sitting on. Name the <strong>specific behavior</strong>, the <strong>situation</strong> it showed up in, and how long it's gone unsaid.</p><ul><li>What exactly did you observe?</li><li>When did it first happen?</li><li>What have you told yourself to avoid raising it?</li></ul>` },
+          { tag: "PDF · page 2 of 2", h: "Estimate the real cost", body: `<p>Now tally the compounding cost of the silence:</p><ul><li><strong>To the report</strong> — lost chance to course-correct early.</li><li><strong>To the team</strong> — others absorbing or working around the behavior.</li><li><strong>To you</strong> — the relationship debt that grows the longer you wait.</li></ul>` }
+        ],
+        cosmo: [
+          ["How does a PDF get tracked now?", "It's sliced into <strong>page/section checkpoints</strong>. As you advance through the pages, each ticks at the lecture level — so a 2-page worksheet is 2 lecture-checkpoints, not one all-or-nothing download."]
+        ]
+      },
+      {
+        id: "c1m4", type: "audio", title: "Podcast: a CTO on the feedback she wishes she'd given sooner",
+        by: "audio episode", legacyDur: "14:30", totalMin: 14,
+        lectures: [
+          { title: "00:00 — The conversation she avoided", min: 5 },
+          { title: "05:00 — What it cost the team", min: 5 },
+          { title: "10:00 — What she does differently now", min: 4 }
+        ],
+        cosmo: [
+          ["How is a podcast sliced?", "Into <strong>time checkpoints</strong>, same as video — here three ~5-min segments. Listen to a segment, it ticks; the module rolls up from the lecture level."]
+        ]
+      }
+    ]
+  },
+  {
+    n: 2, title: "The Frameworks: SBI, Radical Candor & Why the Sandwich Fails",
+    desc: "Three tools you'll actually use in the room. Separate observation from judgment, care personally while challenging directly, and stop hiding criticism between compliments.",
+    modules: [
+      {
+        id: "c2m1", type: "video", title: "SBI explained: Situation → Behavior → Impact",
+        by: "Marcus Reeve", legacyDur: "18:42", totalMin: 18, isHeroDemo: true,
+        lectures: [
+          { title: "Why judgment makes people defensive", min: 5 },
+          { title: "Situation — anchor it in time & place", min: 4 },
+          { title: "Behavior — observable facts only", min: 5 },
+          { title: "Impact — name the effect, then ask", min: 4 }
+        ],
+        prose: `
+          <p>SBI is the spine of every good piece of feedback because it strips out the one thing that makes people defensive: <strong>judgment</strong>. Instead of "you're careless" (a character verdict), you describe a <strong>Situation</strong>, the specific <strong>Behavior</strong> you observed, and its concrete <strong>Impact</strong>.</p>
+          <h4>The three parts</h4>
+          <ul>
+            <li><strong>Situation</strong> — anchor it in time and place. <em>"In yesterday's client call at 2pm…"</em></li>
+            <li><strong>Behavior</strong> — observable facts only. What a camera would have caught. <em>"…you interrupted Priya twice before she finished."</em></li>
+            <li><strong>Impact</strong> — the effect on you, the work, or the team. <em>"…and afterwards she went quiet and didn't share the migration risk she'd flagged."</em></li>
+          </ul>
+          <h4>What it sounds like in the room</h4>
+          <div class="dialogue-box">
+            <div class="dialogue-line dialogue-mgr"><div class="dialogue-who">Manager</div><div class="dialogue-text">"I want to talk about the client call yesterday. <em>(Situation)</em> Twice, you cut in before Priya finished. <em>(Behavior)</em> She stopped contributing after that, and a migration risk never made it into the room. <em>(Impact)</em> How did you see it?"</div></div>
+            <div class="dialogue-line dialogue-rep"><div class="dialogue-who">Report</div><div class="dialogue-text">"Honestly I didn't realize I cut her off — I was just trying to keep us on time."</div></div>
+            <div class="dialogue-line dialogue-mgr"><div class="dialogue-who">Manager</div><div class="dialogue-text">"That makes sense, and timekeeping matters. Can we try a 'parking lot' for tangents so people still get to finish?"</div></div>
+          </div>
+          <div class="dodont">
+            <div class="dd-box dd-do"><h5>&#10003; Do</h5><ul><li>Lead with one specific event</li><li>Use observable behavior — what a camera saw</li><li>Name the impact, then ask for their view</li><li>Hold the silence after you speak</li></ul></div>
+            <div class="dd-box dd-dont"><h5>&#10007; Don't</h5><ul><li>Open with "you always" / "you never"</li><li>Mind-read intent ("you clearly don't care")</li><li>Bury it in a sandwich of fake praise</li><li>Outsource it ("people are saying…")</li></ul></div>
+          </div>
+          <div class="key-insight"><span class="insight-icon">&#128161;</span><div class="insight-text">The person can argue with a <strong>verdict</strong>; they can't argue with what they <strong>actually did</strong>. That's why Behavior must be observable.</div></div>`,
+        cosmo: [
+          ["This is the hero of the demo — what's the migration?", "The legacy step was a single <strong>~18-min video</strong> with one \"mark complete\" button. Migrated, it's a <strong>video module sliced into 4 lecture-checkpoints</strong> (~4–5 min each). The rail above fills as you advance, and progress is tracked <strong>at the lecture level</strong>, rolling up to the module and the whole path."],
+          ["Do I have to watch in S-B-I order?", "The checkpoints follow that order because it's the teaching arc, but the non-negotiable is that <strong>Behavior is observable</strong>. A human or AI curator can re-cut the slice points if a different breakdown teaches better."]
+        ]
+      },
+      {
+        id: "c2m2", type: "doc", title: "SBI Framework — one-page cheat sheet",
+        by: "downloadable reference", legacyDur: "PDF · 1 page",
+        lectures: [
+          { title: "The three slots at a glance", min: 2 },
+          { title: "Label → behavior swaps", min: 2 }
+        ],
+        pages: [
+          { tag: "PDF · cheat-sheet · top", h: "The three slots at a glance", body: `<ul><li><strong>Situation</strong> — when &amp; where. <em>"In Tuesday's revenue deck…"</em></li><li><strong>Behavior</strong> — what a camera caught. <em>"…the Q3 totals on slide 6 didn't sum."</em></li><li><strong>Impact</strong> — the effect. <em>"…Finance flagged it to the VP and we sent a correction."</em></li></ul>` },
+          { tag: "PDF · cheat-sheet · bottom", h: "Label → behavior swaps", body: `<ul><li>"careless" &rarr; "off by 12% on slide 6"</li><li>"dismissive" &rarr; "interrupted twice before they finished"</li><li>"not a team player" &rarr; "didn't share the risk you'd flagged earlier"</li></ul>` }
+        ],
+        cosmo: [
+          ["Why slice a one-page PDF into two lectures?", "Even a one-pager has natural sections. Slicing into 2 checkpoints lets the academy <strong>track that you actually got through both halves</strong> — an upgrade on the legacy \"downloaded = done\" guess."]
+        ]
+      },
+      {
+        id: "c2m3", type: "video", title: "Radical Candor: care personally, challenge directly",
+        by: "Marcus Reeve", legacyDur: "15:55", totalMin: 16, startAt: 2,
+        lectures: [
+          { title: "The two dials you turn together", min: 4 },
+          { title: "Ruinous Empathy — the common trap", min: 4 },
+          { title: "Obnoxious Aggression vs. candor", min: 4 },
+          { title: "Moving to candor in real time", min: 4 }
+        ],
+        prose: `
+          <p>Kim Scott's <strong>Radical Candor</strong> plots feedback on two independent dials: <strong>Care Personally</strong> (do you show you give a damn about the human?) and <strong>Challenge Directly</strong> (are you willing to say the hard thing to their face?).</p>
+          <p>Turn both up and you get Radical Candor. Drop the challenge and you fall into the most common failure of all — <strong>Ruinous Empathy</strong> — where you stay so "nice" you never actually help.</p>
+          <div class="key-insight"><span class="insight-icon">&#128161;</span><div class="insight-text">Most managers default to <strong>Ruinous Empathy</strong>. It feels caring, so it's seductive — but withholding the hard truth to spare a feeling is how good people get quietly stuck.</div></div>`,
+        cosmo: [
+          ["Why is this module mid-progress?", "You'd watched the first two checkpoints in a previous session. Because progress lives at the <strong>lecture level</strong>, you resume exactly where you stopped — checkpoint 3 — instead of re-scrubbing the whole video."]
+        ]
+      },
+      {
+        id: "c2m4", type: "video", title: "Why the \"feedback sandwich\" backfires",
+        by: "Marcus Reeve", legacyDur: "10:20", totalMin: 10, locked: true,
+        lectures: [
+          { title: "What the sandwich trains people to do", min: 5 },
+          { title: "What to do instead", min: 5 }
+        ],
+        cosmo: []
+      }
+    ]
+  },
+  {
+    n: 3, title: "In the Room: Delivering It & Handling the Reaction",
+    desc: "Scripts, timing, and the part nobody trains for — defensiveness, tears, silence, and pushback. Includes the signature graded roleplay.",
+    modules: [
+      {
+        id: "c3m1", type: "video", title: "Opening lines that land: setting the conversation up",
+        by: "Dr. Dana Mercer", legacyDur: "13:10", totalMin: 13, locked: true,
+        lectures: [
+          { title: "Set a shared, caring frame", min: 4 },
+          { title: "Name the topic without flinching", min: 4 },
+          { title: "Hand the first word to them", min: 5 }
+        ],
+        cosmo: []
+      },
+      {
+        id: "c3m2", type: "doc", title: "Handling the 4 reactions — defensive / silent / tearful / pushback",
+        by: "field guide", legacyDur: "PDF · 4 pages", locked: true,
+        lectures: [
+          { title: "Defensive", min: 2 }, { title: "Silent", min: 2 },
+          { title: "Tearful", min: 2 }, { title: "Pushback", min: 2 }
+        ],
+        cosmo: []
+      },
+      {
+        id: "c3m3", type: "audio", title: "Podcast: two managers debrief a conversation that went sideways",
+        by: "audio episode", legacyDur: "22:05", totalMin: 22, locked: true,
+        lectures: [
+          { title: "00:00 — Setup", min: 6 }, { title: "07:00 — Where it broke", min: 5 },
+          { title: "14:00 — The repair", min: 6 }, { title: "20:00 — The lesson", min: 5 }
+        ],
+        cosmo: []
+      },
+      {
+        /* the signature simulation — Authored / graded / NOT sliced into lectures */
+        id: "c3m4", type: "sim", title: "Roleplay: deliver the feedback to \"Alex\"",
+        by: "interactive · scored", legacyDur: "12–18 min", required: true,
+        cosmo: [
+          ["Why isn't the simulation sliced into lectures?", "Because it's an <strong>Authored, graded</strong> module. A roleplay is one continuous interactive unit — slicing it into checkpoints would break the conversation. Completion isn't \"viewed\", it's a <strong>pass score (≥ 70)</strong>."],
+          ["So how does the path know it's done?", "There's no \"mark complete\" button. The simulation engine returns a score across <strong>Empathy · Clarity · Outcome</strong>; the module (and the verified skill) flips to done only when you pass. That result rolls up to the path the same way a lecture-tick does."]
+        ]
+      }
+    ]
+  },
+  {
+    n: 4, title: "After the Conversation: Follow-Through That Builds Trust",
+    desc: "The conversation is the start, not the end. Document, follow up, and turn a hard moment into a stronger working relationship.",
+    modules: [
+      {
+        id: "c4m1", type: "video", title: "The 48-hour follow-up and the written recap",
+        by: "Sofia Kang", legacyDur: "11:40", totalMin: 12, locked: true,
+        lectures: [
+          { title: "Why 48 hours matters", min: 4 },
+          { title: "What to put in the recap", min: 4 },
+          { title: "The 30-day check-in", min: 4 }
+        ],
+        cosmo: []
+      },
+      {
+        id: "c4m2", type: "link", title: "Template: feedback follow-up note + 30-day check-in plan",
+        by: "external template · Notion", url: "notion.so/feedback-follow-up-template", legacyDur: "link out", locked: true,
+        lectures: [ { title: "Open template + mark done", min: 3 } ],
+        cosmo: []
+      }
+    ]
+  }
+];
+
+/* ---- type metadata ---- */
+const TYPE = {
+  video: { icon: "&#9654;",  label: "Video",        cls: "video", tag: "tt-video", mi: "mi-video" },
+  doc:   { icon: "&#128196;",label: "Document · PDF",cls: "doc",   tag: "tt-doc",   mi: "mi-doc"   },
+  audio: { icon: "&#127911;",label: "Podcast · Audio",cls:"audio", tag: "tt-audio", mi: "mi-audio" },
+  link:  { icon: "&#128279;",label: "External link", cls: "link",  tag: "tt-link",  mi: "mi-link"  },
+  sim:   { icon: "&#127918;",label: "Simulation",    cls: "sim",   tag: "tt-sim",   mi: "mi-sim"   }
+};
+
+/* ============================================================================
+   STATE  —  progress tracked at the LECTURE level, rolls up to module + path
+   ============================================================================ */
+const FLAT = [];                       // flat list of all modules with chapter ref
+CHAPTERS.forEach(ch => ch.modules.forEach(m => { m.chapterN = ch.n; m.chapterTitle = ch.title; FLAT.push(m); }));
+
+const lectureDone = {};                // { moduleId: Set(lectureIdx) }
+const simPassed = {};                  // { moduleId: bool }
+FLAT.forEach(m => { lectureDone[m.id] = new Set(); });
+
+/* pre-seed realistic progress so the rail/rings start partway (mirrors legacy "43%") */
+function seed(id, n){ for(let i=0;i<n;i++) lectureDone[id].add(i); }
+seed("c1m1", 3); seed("c1m2", 1); seed("c1m3", 2); seed("c1m4", 3);   // chapter 1 fully done
+seed("c2m1", 4); seed("c2m2", 2);                                     // SBI + cheat sheet done
+seed("c2m3", 2);                                                      // Radical Candor mid-progress
+
+function lectureCount(m){ if(m.type==='sim') return 0; return m.lectures ? m.lectures.length : 0; }
+function moduleDoneCount(m){ if(m.type==='sim') return simPassed[m.id] ? 1 : 0; return lectureDone[m.id].size; }
+function moduleTotal(m){ return m.type==='sim' ? 1 : lectureCount(m); }
+function moduleComplete(m){ return moduleDoneCount(m) >= moduleTotal(m); }
+function moduleStarted(m){ return moduleDoneCount(m) > 0 && !moduleComplete(m); }
+
+function pathDone(){ return FLAT.reduce((a,m)=>a+moduleDoneCount(m),0); }
+function pathTotal(){ return FLAT.reduce((a,m)=>a+moduleTotal(m),0); }
+function pathPercent(){ return Math.round(pathDone()/pathTotal()*100); }
+function completedModuleCount(){ return FLAT.filter(moduleComplete).length; }
+function chapterPercent(ch){
+  const d = ch.modules.reduce((a,m)=>a+moduleDoneCount(m),0);
+  const t = ch.modules.reduce((a,m)=>a+moduleTotal(m),0);
+  return t ? Math.round(d/t*100) : 0;
+}
+function totalMinutes(){ return FLAT.reduce((a,m)=>{ if(m.type==='sim') return a+15; return a + (m.lectures||[]).reduce((x,l)=>x+l.min,0); },0); }
+function totalLectures(){ return FLAT.reduce((a,m)=>a+moduleTotal(m),0); }
+
+/* ---------- view state ---------- */
+let view = 'overview';     // 'overview' | 'module'
+let activeModuleId = null;
+let activeLecture = 0;     // current lecture index within the active module
+
+const page = document.getElementById('coursePage');
+function activeModule(){ return FLAT.find(m=>m.id===activeModuleId); }
+
+function render(){ view==='module' ? renderModule() : renderOverview(); loadCosmo(); }
+
+/* ============================================================================
+   OVERVIEW
+   ============================================================================ */
+function renderOverview(){
+  const pct = pathPercent();
+  const circ = 2*Math.PI*52, off = circ*(1-pct/100);
+  page.innerHTML = `
+    <header class="app-top-bar">
+      <div class="top-bar-row top-bar-row-main">
+        <a class="main-app-link" title="Back to Academy">&#127968;</a>
+        <div class="top-bar-separator"></div>
+        <button class="top-bar-stack" title="${META.path}">${META.path}</button>
+        <div class="top-bar-separator"></div>
+        <div class="top-bar-title"><span class="ucourse-logo">&mu;</span> ${META.title}
+          <span class="top-bar-percent">${pct}%</span></div>
+      </div>
+    </header>
+    <div class="course-container">
+      <div class="course-content">
+
+        <div class="assign-banner fade-slide-in">
+          <span>&#128204;</span>
+          <span><b>Assigned by your manager</b>, Priya Nair</span>
+          <span class="sep">&middot;</span>
+          <span>Due <b>Apr 30</b></span>
+          <span class="sep">&middot;</span>
+          <span>Management Track</span>
+          <span class="ontrack">&#9679; On track</span>
+        </div>
+
+        <div class="course-intro fade-slide-in">
+          <div class="course-intro-top">
+            <div class="course-intro-text">
+              <div class="course-label">${META.label} &middot; ${META.level}</div>
+              <h1 class="course-title">${META.title}</h1>
+              <p class="course-subtitle">${META.subtitle}</p>
+              <div class="course-stats">
+                <span>${completedModuleCount()}/${FLAT.length} modules</span>
+                <span class="dot">&middot;</span>
+                <span>4 chapters</span>
+                <span class="dot">&middot;</span>
+                <span>~${totalMinutes()} min</span>
+                <span class="dot">&middot;</span>
+                <span>${totalLectures()} lecture-checkpoints</span>
+                <span class="dot">&middot;</span>
+                <span style="color:var(--t-sim)">1 graded simulation</span>
+              </div>
+              <div class="skills-row">
+                ${["Performance Management","Coaching","Difficult Conversations","Active Listening","Emotional Regulation"].map(s=>`<span class="skill-chip"><span class="v">&#10003;</span> ${s}</span>`).join('')}
+              </div>
+            </div>
+            <div class="hero-ring">
+              <svg class="hero-ring-svg" width="124" height="124" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+                <circle class="hero-ring-fill" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="6"
+                  stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+                  transform="rotate(-90 60 60)"/>
+              </svg>
+              <div class="hero-ring-label">
+                <span class="hero-ring-percent">${pct}<small>%</small></span>
+                <span class="hero-ring-sub">path</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mig-note fade-slide-in">
+          <span class="mn-ic">&#128260;</span>
+          <span class="mn-t"><b>Migrated from the legacy skill path.</b> Each legacy <em>step</em> became a typed <b>module</b> below
+          (video / document / audio / external-link / simulation). The bite-size lives one level deeper, in
+          <b>lecture-checkpoints</b> — e.g. a long lecture is auto-sliced into ~5-min checkpoints, and progress is tracked
+          per lecture. Open <code>SBI explained</code> in Chapter&nbsp;2 to see the hero of the migration.</span>
+        </div>
+
+        ${CHAPTERS.map(renderChapter).join('')}
+      </div>
+    </div>`;
+
+  page.querySelectorAll('.module-card[data-mid]').forEach(c=>{
+    c.addEventListener('click', ()=>{ if(!c.classList.contains('locked')) openModule(c.dataset.mid); });
+  });
+}
+
+function renderChapter(ch){
+  const cpct = chapterPercent(ch);
+  return `
+  <section class="chapter fade-slide-in">
+    <div class="chapter-head">
+      <div class="chapter-num">${ch.n}</div>
+      <div>
+        <div class="chapter-title">${ch.title}</div>
+        <div class="chapter-desc">${ch.desc}</div>
+      </div>
+      <div class="chapter-prog">
+        <div class="cp-pct">${cpct}%</div>
+        <div class="cp-bar"><span style="width:${cpct}%"></span></div>
+      </div>
+    </div>
+    <div class="module-list">
+      ${ch.modules.map(renderModuleCard).join('')}
+    </div>
+  </section>`;
+}
+
+function renderModuleCard(m){
+  const ty = TYPE[m.type];
+  const done = moduleComplete(m), started = moduleStarted(m), locked = !!m.locked && !done && !started;
+  let statusHtml = '';
+  if(m.type==='sim'){
+    statusHtml = done ? `<span class="module-status ms-done">&#10003; Passed</span>` : `<span class="module-status module-graded">Graded &middot; pass to complete</span>`;
+  } else if(done){
+    statusHtml = `<span class="module-status ms-done">&#10003; Complete</span>`;
+  } else if(started){
+    statusHtml = `<span class="module-status ms-prog">In progress</span>`;
+  } else if(locked){
+    statusHtml = `<span class="module-status ms-lock">&#128274; Locked</span>`;
+  }
+  /* the sub-line: type, source, and the bite-size signal (lecture count) */
+  let lecLine;
+  if(m.type==='sim'){
+    lecLine = `<span class="module-graded">Authored &middot; not sliced</span>`;
+  } else if(m.type==='link'){
+    lecLine = `<span class="module-lectures">1 checkpoint</span>`;
+  } else {
+    lecLine = `<span class="module-lectures">${lectureCount(m)} lectures</span>`;
+  }
+  const progPct = moduleTotal(m) ? moduleDoneCount(m)/moduleTotal(m)*100 : 0;
+  const progBar = (started) ? `<div class="module-prog-bar"><span style="width:${progPct}%;background:${m.type==='sim'?'var(--t-sim)':'var(--accent)'}"></span></div>` : '';
+
+  return `
+  <button class="module-card ${done?'complete':''} ${locked?'locked':''} fade-slide-in" data-mid="${m.id}">
+    <div class="module-card-inner">
+      <div class="module-icon ${ty.mi}">${done && m.type!=='sim' ? '&#10003;' : ty.icon}</div>
+      <div class="module-info">
+        <div class="module-meta">
+          <span class="type-tag ${ty.tag}">${ty.label}</span>
+          ${statusHtml}
+        </div>
+        <div class="module-title">${m.title}</div>
+        <div class="module-sub">
+          ${lecLine}
+          <span class="mdot">&middot;</span>
+          <span>${m.legacyDur}</span>
+          <span class="mdot">&middot;</span>
+          <span>${m.by}</span>
+        </div>
+        ${progBar}
+      </div>
+      <div class="module-arrow">&rsaquo;</div>
+    </div>
+  </button>`;
+}
+
+/* ============================================================================
+   MODULE VIEW
+   ============================================================================ */
+function openModule(mid){
+  activeModuleId = mid;
+  const m = activeModule();
+  /* resume at first incomplete lecture */
+  if(m.type==='sim'){ activeLecture = 0; }
+  else { activeLecture = 0; for(let i=0;i<lectureCount(m);i++){ if(!lectureDone[m.id].has(i)){ activeLecture=i; break; } if(i===lectureCount(m)-1) activeLecture=i; } }
+  view='module'; render(); window.scrollTo(0,0);
+}
+function backToOverview(){ view='overview'; render(); window.scrollTo(0,0); }
+
+function renderModule(){
+  const m = activeModule();
+  if(m.type==='sim') return renderSimModule(m);
+
+  const total = lectureCount(m);
+  const lec = m.lectures[activeLecture];
+  const chPct = (activeLecture+1)/total*100;
+
+  /* mark the current lecture done on view (real-progress fallback) */
+  lectureDone[m.id].add(activeLecture);
+
+  page.innerHTML = `
+    <div class="course-header">
+      <div class="course-header-inner">
+        <span class="ucourse-logo" title="${META.title}">&mu;</span>
+        <button class="back-button" id="backBtn"><span>&larr;</span> Modules</button>
+        <div class="ch-progress"><div class="pb"><span style="width:${chPct}%;background:${m.type==='sim'?'var(--t-sim)':'var(--accent)'}"></span></div></div>
+        <span class="progress-count">Lecture ${activeLecture+1}/${total}</span>
+      </div>
+    </div>
+    <div class="course-container">
+      <div class="course-content">
+
+        <div class="module-head fade-slide-in">
+          <div class="mh-crumb">Chapter ${m.chapterN} &nbsp;&rsaquo;&nbsp; Module &nbsp;&rsaquo;&nbsp; Lecture ${activeLecture+1} of ${total}</div>
+          <div class="mh-type-row">
+            <span class="type-tag ${TYPE[m.type].tag}">${TYPE[m.type].icon} ${TYPE[m.type].label}</span>
+            <span style="font-size:12.5px;color:var(--text-faint)">${m.by} &middot; was a single ${m.legacyDur} ${m.type==='video'?'video':m.type==='audio'?'episode':'file'} in the legacy path</span>
+          </div>
+          <h2 class="mh-title">${m.title}</h2>
+        </div>
+
+        ${renderLectureRail(m)}
+
+        <div class="lecture-stage fade-slide-in">
+          ${renderStage(m, lec)}
+        </div>
+
+        ${m.prose && activeLecture===0 ? `<div class="lecture-body"><div class="card-body card-text">${m.prose}</div></div>` : ''}
+
+        <div class="module-nav">
+          <button class="nav-btn" id="prevLec" ${activeLecture===0?'disabled':''}>&#8249; Previous lecture</button>
+          <div class="spacer"></div>
+          ${activeLecture < total-1
+            ? `<button class="nav-btn primary" id="nextLec">Next lecture &#8250;</button>`
+            : `<span class="module-done-flag">&#10003; All ${total} checkpoints done</span><button class="nav-btn primary" id="finishMod" style="margin-left:12px">Finish module &#8250;</button>`}
+        </div>
+
+        ${activeLecture===total-1 ? `
+        <div class="complete-hero fade-slide-in">
+          <div class="ch-seal">&#9733;</div>
+          <div>
+            <div class="ch-eyebrow">Module complete</div>
+            <div class="ch-title">All ${total} lecture-checkpoints ticked</div>
+            <div class="ch-sub">Progress rolled up to <b>${chapterPercent(CHAPTERS[m.chapterN-1])}%</b> for this chapter and <b>${pathPercent()}%</b> for the path. Next legacy step is right below it in the module list.</div>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+
+  document.getElementById('backBtn').onclick = backToOverview;
+  const pv = document.getElementById('prevLec'); if(pv) pv.onclick = ()=>{ if(activeLecture>0){ activeLecture--; render(); window.scrollTo(0,0);} };
+  const nx = document.getElementById('nextLec'); if(nx) nx.onclick = ()=>{ activeLecture++; render(); window.scrollTo(0,0); };
+  const fn = document.getElementById('finishMod'); if(fn) fn.onclick = backToOverview;
+  page.querySelectorAll('.lr-jump').forEach(el=>{ el.onclick = ()=>{ activeLecture = +el.dataset.i; render(); window.scrollTo(0,0); }; });
+}
+
+/* the lecture-checkpoint rail — fills as the learner progresses (the hero) */
+function renderLectureRail(m){
+  const total = lectureCount(m);
+  const segs = m.lectures.map((l,i)=>{
+    const cls = lectureDone[m.id].has(i) ? (i===activeLecture?'active':'done') : (i===activeLecture?'active':'');
+    return `<div class="lr-seg ${cls}"></div>`;
+  }).join('');
+  const items = m.lectures.map((l,i)=>{
+    const done = lectureDone[m.id].has(i);
+    const cls = i===activeLecture ? 'active' : (done?'done':'');
+    const check = done ? '&#10003;' : (i===activeLecture ? '&#9654;' : (i+1));
+    return `<li class="lecture-item ${cls} lr-jump" data-i="${i}">
+      <span class="li-check">${check}</span>
+      <span class="li-title">${l.title}</span>
+      <span class="li-min">~${l.min} min</span>
+    </li>`;
+  }).join('');
+  return `
+  <div class="lecture-rail-wrap fade-slide-in">
+    <div class="lecture-rail-head">
+      <span class="lr-label">Lecture-checkpoints &middot; bite-size</span>
+      <span class="lr-count">Lecture <b>${activeLecture+1}</b> of ${total} &middot; ${lectureDone[m.id].size}/${total} done</span>
+    </div>
+    <div class="lecture-rail">${segs}</div>
+    <ul class="lecture-list">${items}</ul>
+  </div>`;
+}
+
+/* per-type stage */
+function renderStage(m, lec){
+  if(m.type==='video'){
+    const watched = ((activeLecture+1)/lectureCount(m))*100;
+    const elapsed = Math.round((m.totalMin||10) * (activeLecture+1)/lectureCount(m));
+    return `
+    <div class="video-stage">
+      <div class="vbg"></div>
+      <div class="play">&#9654;</div>
+      <div class="vmeta">
+        <span>&#9654; Stream &middot; narrated by ${m.by}</span>
+        <span>${pad(elapsed)}:00 / ${m.legacyDur}</span>
+      </div>
+    </div>
+    <div class="video-scrub"><span style="width:${watched}%"></span></div>
+    <p class="scroll-hint">Checkpoint ${activeLecture+1}: <strong style="color:var(--text-secondary)">${lec.title}</strong> &middot; ~${lec.min} min of the ${m.legacyDur} lecture</p>`;
+  }
+  if(m.type==='doc'){
+    const pg = (m.pages && m.pages[activeLecture]) || {tag:'PDF', h:lec.title, body:''};
+    return `
+    <div class="doc-stage">
+      <div class="doc-page-tag">&#128196; ${pg.tag}</div>
+      <h4>${pg.h}</h4>
+      ${pg.body}
+    </div>
+    <p class="scroll-hint">Scroll-tracked &middot; this section ticks the lecture as you read it</p>`;
+  }
+  if(m.type==='audio'){
+    const bars = Array.from({length:32}, (_,i)=>{
+      const on = i <= 32*((activeLecture+1)/lectureCount(m));
+      const h = 8 + Math.round(28*Math.abs(Math.sin(i*1.3)));
+      return `<i class="${on?'on':''}" style="height:${h}px"></i>`;
+    }).join('');
+    const elapsed = Math.round((m.totalMin||14) * (activeLecture+1)/lectureCount(m));
+    return `
+    <div class="audio-stage">
+      <div class="au-ic">&#127911;</div>
+      <div class="au-title">${lec.title}</div>
+      <div class="au-sub">Segment ${activeLecture+1} of ${lectureCount(m)} &middot; time-sliced checkpoint</div>
+      <div class="audio-wave">${bars}</div>
+      <div class="audio-time">${pad(elapsed)}:00 / ${m.legacyDur}</div>
+    </div>
+    <p class="scroll-hint">Listening-tracked &middot; each ~5-min segment ticks one lecture</p>`;
+  }
+  if(m.type==='link'){
+    return `
+    <div class="link-stage">
+      <div class="lk-ic">&#128279;</div>
+      <div class="lk-title">${m.title}</div>
+      <div class="lk-url">${m.url}</div>
+      <div class="lk-note"><span>&#9888;&#65039;</span><span><b>External content — can't be tracked inside the academy.</b> It lives off-site, so this module is a <b>single checkpoint</b>: open it, then mark it done. (Real progress-tracking isn't possible across a third-party site.)</span></div>
+      <div><button class="link-open-btn" id="linkBtn">&#8599; Open in new tab + mark done</button></div>
+    </div>`;
+  }
+  return '';
+}
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+
+/* ---- the SIMULATION module — atomic, graded, not sliced ---- */
+function renderSimModule(m){
+  const passed = !!simPassed[m.id];
+  page.innerHTML = `
+    <div class="course-header">
+      <div class="course-header-inner">
+        <span class="ucourse-logo" title="${META.title}">&mu;</span>
+        <button class="back-button" id="backBtn"><span>&larr;</span> Modules</button>
+        <div class="ch-progress"><div class="pb"><span style="width:${passed?100:0}%;background:var(--t-sim)"></span></div></div>
+        <span class="progress-count">${passed?'Passed':'Graded'}</span>
+      </div>
+    </div>
+    <div class="course-container">
+      <div class="course-content">
+
+        <div class="module-head fade-slide-in">
+          <div class="mh-crumb">Chapter ${m.chapterN} &nbsp;&rsaquo;&nbsp; Module &nbsp;&rsaquo;&nbsp; Graded simulation</div>
+          <div class="mh-type-row">
+            <span class="type-tag tt-sim">${TYPE.sim.icon} Simulation</span>
+            <span style="font-size:12.5px;color:var(--text-faint)">Authored &middot; interactive &middot; was the legacy "job simulation" step</span>
+          </div>
+          <h2 class="mh-title">${m.title}</h2>
+        </div>
+
+        <div class="sim-launch fade-slide-in">
+          <span class="sim-badge">&#127918; Authored &middot; Interactive &amp; Graded</span>
+          <h3>Have the real conversation — with a simulated direct report</h3>
+          <p class="sim-scene">
+            You manage <b>Alex</b>, a talented engineer whose code is strong but who has been dismissive of
+            teammates in reviews — leaving curt comments and overriding decisions without discussion. Two people
+            have quietly told you they're hesitant to push back on Alex. Open the conversation, deliver the
+            feedback using <b>SBI</b>, and respond live as Alex reacts — Alex may get defensive, go quiet, or push back.
+          </p>
+
+          <div class="sim-atomic-note">&#9210; <span>Unlike a video or PDF, this module is <b>not sliced into lecture-checkpoints</b> — a roleplay is one continuous graded unit.</span></div>
+
+          <div class="sim-grade-grid">
+            <div class="sim-grade"><div class="gname">&#128154; Empathy</div><div class="gdesc">Did you acknowledge Alex's perspective and stay regulated under pushback?</div></div>
+            <div class="sim-grade"><div class="gname">&#127919; Clarity</div><div class="gdesc">Was the behavior specific and the impact concrete — no vague verdicts?</div></div>
+            <div class="sim-grade"><div class="gname">&#129309; Outcome</div><div class="gdesc">Did you land a concrete, mutually-agreed next step?</div></div>
+          </div>
+
+          <div class="sim-meta">
+            <span>&#9201; Est. <b>12–18 min</b></span>
+            <span>&#128257; <b>Unlimited retries</b></span>
+            <span>&#127908; <b>Voice or chat</b></span>
+            <span>&#128202; Pass threshold: <b>70 / 100</b></span>
+          </div>
+
+          <button class="sim-start" id="simStart">${passed?'&#10003; Passed — replay':'&#9654; Start simulation'}</button>
+
+          <div class="sim-passnote">
+            <b>Completion is driven by the result, not a button.</b> There's no "mark complete" here — the engine
+            scores you on Empathy &middot; Clarity &middot; Outcome and the module flips to done (verifying
+            <em>Difficult Conversations</em>) <b>only when your score &ge; 70</b>. That pass rolls up to the path
+            exactly like a lecture-checkpoint tick.
+          </div>
+        </div>
+
+        ${passed ? `
+        <div class="complete-hero fade-slide-in">
+          <div class="ch-seal" style="background:rgba(131,56,236,0.2);color:#C9A8F5">&#127942;</div>
+          <div>
+            <div class="ch-eyebrow" style="color:#C9A8F5">Simulation passed &middot; 82 / 100</div>
+            <div class="ch-title">Skill verified: Difficult Conversations</div>
+            <div class="ch-sub">Empathy 85 &middot; Clarity 80 &middot; Outcome 81. Transcript + scores synced to your manager's dashboard. Path now <b>${pathPercent()}%</b> complete.</div>
+          </div>
+        </div>` : ''}
+
+        <div class="module-nav">
+          <button class="nav-btn" id="backBtn2">&#8249; Back to modules</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('backBtn').onclick = backToOverview;
+  document.getElementById('backBtn2').onclick = backToOverview;
+  document.getElementById('simStart').onclick = ()=>{
+    simPassed[m.id] = true;
+    render(); window.scrollTo(0,0);
+  };
+}
+
+/* wire the external-link "mark done" after render (link module) */
+page.addEventListener('click', e=>{
+  if(e.target && e.target.id==='linkBtn'){
+    const m = activeModule();
+    if(m && m.type==='link'){ lectureDone[m.id].add(0); render(); }
+  }
+});
+
+/* ============================================================================
+   Cosmo — canned, no network (mirrors the academy mock)
+   ============================================================================ */
+const panel = document.getElementById('cosmoPanel');
+const fab = document.getElementById('cosmoFab');
+const msgEl = document.getElementById('cosmoMessages');
+const chipsEl = document.getElementById('cosmoChips');
+const ctxEl = document.getElementById('cosmoCtx');
+let cosmoStarted = false;
+
+function cosmoContextObj(){ return view==='module' ? activeModule() : null; }
+function openCosmo(){ panel.classList.add('open'); document.body.classList.add('cosmo-panel-open'); fab.classList.add('hidden'); }
+function closeCosmo(){ panel.classList.remove('open'); document.body.classList.remove('cosmo-panel-open'); fab.classList.remove('hidden'); }
+fab.onclick = openCosmo;
+document.getElementById('cosmoClose').onclick = closeCosmo;
+document.getElementById('cosmoClear').onclick = ()=>{ cosmoStarted=false; loadCosmo(); };
+
+function loadCosmo(){
+  const m = cosmoContextObj();
+  ctxEl.textContent = m ? `Ch.${m.chapterN} → ${m.title}` : `${META.title} (path overview)`;
+  if(cosmoStarted) return;
+  msgEl.innerHTML = `<div class="cosmo-welcome">
+    <p>Hey there! I'm <strong class="cosmo-name">Cosmo</strong> &#128075;</p>
+    <p>${m ? `You're in the <strong>${TYPE[m.type].label}</strong> module "<strong>${m.title}</strong>". Ask me about it — or about how it was migrated.` : `This legacy path was migrated into the academy model. Open a module, or ask me how the migration works.`}</p>
+  </div>`;
+  rebuildChips();
+}
+function rebuildChips(){
+  const m = cosmoContextObj();
+  const qa = (m && m.cosmo && m.cosmo.length) ? m.cosmo : OVERVIEW_COSMO;
+  chipsEl.innerHTML = qa.map((p,i)=>`<button class="cosmo-cta-btn" data-q="${i}">${p[0]}</button>`).join('');
+  chipsEl.querySelectorAll('.cosmo-cta-btn').forEach(b=>{ b.onclick = ()=>askCosmo(qa[+b.dataset.q][0]); });
+}
+const OVERVIEW_COSMO = [
+  ["How does this map to the old skill path?", "One-to-one on structure: <strong>path &rarr; path</strong>, <strong>chapter &rarr; chapter</strong>, and each legacy <strong>step &rarr; a typed module</strong> (video / document / audio / external-link / simulation). The new level is <strong>lecture-checkpoints</strong> inside each module — that's where bite-size lives."],
+  ["What's the single biggest change?", "Progress is now tracked at the <strong>lecture level</strong>, not per step. A ~40-min video that was one all-or-nothing item becomes ~8 five-minute checkpoints that tick as you watch — so you get partial credit, accurate resume, and a real progress ring."],
+  ["What happened to the simulation?", "It stayed an <strong>atomic, graded module</strong> — not sliced into lectures. Completion = a pass score (&ge; 70), exactly like the legacy roleplay, just rendered in the academy skin."]
+];
+
+function addMsg(role, html){
+  if(!cosmoStarted){ msgEl.innerHTML=''; cosmoStarted=true; }
+  const d=document.createElement('div');
+  d.className='cosmo-msg '+(role==='user'?'cosmo-msg-user':'cosmo-msg-assistant');
+  d.innerHTML = role==='user' ? `<div class="cosmo-msg-content">${html}</div>` : `<div class="cosmo-msg-content"><div class="cosmo-msg-text">${html}</div></div>`;
+  msgEl.appendChild(d); msgEl.scrollTop=msgEl.scrollHeight; return d;
+}
+function askCosmo(q){
+  openCosmo();
+  addMsg('user', escapeHtml(q));
+  const m = cosmoContextObj();
+  const pool = (m && m.cosmo && m.cosmo.length) ? m.cosmo : OVERVIEW_COSMO;
+  const hit = pool.find(p=>p[0]===q);
+  const thinking = addMsg('assistant','<em>…thinking</em>');
+  setTimeout(()=>{
+    thinking.querySelector('.cosmo-msg-text').innerHTML = hit ? hit[1]
+      : (m ? `For this <strong>${TYPE[m.type].label}</strong> module, remember: the bite-size unit is the <strong>lecture-checkpoint</strong>, and progress rolls up from there to the module and the path. Tap a suggested question for specifics.`
+           : `Open any module and I'll explain how that specific legacy step was migrated.`);
+    msgEl.scrollTop=msgEl.scrollHeight;
+  }, 460);
+  rebuildChips();
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+document.getElementById('cosmoSend').onclick = ()=>{
+  const inp=document.getElementById('cosmoInput'); const v=inp.value.trim();
+  if(!v) return; askCosmo(v); inp.value='';
+};
+document.getElementById('cosmoInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('cosmoSend').click(); }
+});
+window.askCosmo = askCosmo;
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>
