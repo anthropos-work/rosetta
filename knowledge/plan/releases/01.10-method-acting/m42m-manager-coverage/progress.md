@@ -31,3 +31,14 @@ append one line each here._
   re-seeded demo-3: `reachable=70/120 failingSections=0 personaFailures=0 escapes=0 notReached=0
   frontier=EXHAUSTED → GATE MET`. Zero CANONICAL platform edits. `closed-fixed`, **Gate: MET**. rext @
   `method-acting-m42m-iter04`. See iter-04/progress.md + M42m-D4/D5.
+- iter-05 (tik): **the MANAGER GATE is MET on a FRESH zero-manual `demo-up`** (the authoritative acceptance —
+  iter-04 proved it on a re-seeded live stack; this proves the *build* reproduces it). Tore demo-3 down
+  `--purge` + removed the next-web image → a fresh `demo-up` applied the Studio demo-patch (SERVED bundle 0×prod
+  / 31×`:39000`; clone git-clean), seeded the FeedbackSeeder mirror (162/162 joinable), reconciled the route,
+  reloaded Sentinel, replayed the library + seeded the stories — **all automatically, no manual step**. MANAGER
+  sweep: `reachable=70/120 (0,0,0,0) EXHAUSTED gateMet=true` (reproduces iter-04). EMPLOYEE re-sweep on the same
+  fresh stack: `reachable=59/150 (0,0,0,0) EXHAUSTED gateMet=true` (**no M42e regression**). One clone-cleanliness
+  gap fixed in rext (R1b `.dockerignore` sweep); the build-time disk-exhaustion was environmental (pruned + the
+  same fresh `demo-up` resumed idempotently). Zero CANONICAL platform edits. `closed-fixed`, **Gate: MET**. rext
+  @ `method-acting-m42m-iter05`. v1.10 reproducibly gate-complete (M42e + M42m) — ready for harden+close. See
+  iter-05/progress.md + M42m iter-05 D1–D5.
