@@ -7,6 +7,8 @@ and what was tuned/fixed).
 
 <!-- iter-NN/ dirs are created by /developer-kit:build-mstone-iters on first run. -->
 
+- iter-01 (tok·bootstrap): authored TOK-01 (build 3 deliverables fixtures-first → prove on a real ~500-member org via the M42 semantic sweep); Phase 0b KB-fidelity GREEN — see iter-01/progress.md
+
 **Exit gate:** a full org (e.g. 500) fills from a single supporting-population descriptor with a believable
 role/avatar/skill spread (not 90% hollow), the demo-coverage SEMANTIC believability gate
 (coverage-protocol.md, the M42 Playwright harness) PASSES on the generated population, hero-name collisions
