@@ -1,6 +1,6 @@
 # M42m — Progress
 
-**Status:** `planned`. **Shape:** iterative (exit gate in `overview.md`).
+**Status:** `archived` (completed 2026-06-26). **Shape:** iterative (exit gate in `overview.md`).
 
 > `iter-NN/` dirs are created by `/developer-kit:build-mstone-iters` on first run (iter-01 is the bootstrap tok).
 

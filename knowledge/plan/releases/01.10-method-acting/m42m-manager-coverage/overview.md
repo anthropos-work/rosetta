@@ -5,9 +5,9 @@ version: v1.10 "method acting"
 milestone_shape: iterative
 exit_gate: "Identical bar to M42e's re-scoped gate, run as a MANAGER hero (Dan Rossi / Leah Donovan) on a stack from a FRESH demo-up: per page AND per section/element of every manager-reachable surface — (a) REAL semantic content (not placeholder/empty-state copy or bare chrome), (b) SUBSTANTIAL cardinality (not just 1, documented 0/1 exceptions), (c) PERSONA self-consistency (role↔skills↔bio↔real-person avatar↔team↔activity cohere; org has a name+logo), (d) NO prod-eject escape (legitimate external reference links allowed but disclosed). This covers the manager-only surfaces — the M36 Workforce-Intelligence dashboard (mapped→verified funnel + teams + role gap/mobility + succession + feedback + the org-scale claimed-vs-verified gap) + any admin pages, which must show real seeded org/team data, not empty widgets. Gate = 0 sections below the bar + 0 prod-eject escapes, reproduced on a FRESH demo-up."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
-status: planned
+status: archived
 created: 2026-06-24
-last_updated: 2026-06-24
+last_updated: 2026-06-26
 complexity: medium-large
 delivers: updates across the touched specs as manager-vantage gaps close — stories-spec.md (the M36 Workforce-dashboard surfaces) + frontend-tier.md + any manager-only-route fixes landed into rosetta-extensions
 depends_on: M42e (reuses the harness + protocol) + M39 + M40 + M41

@@ -143,7 +143,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
-| **v1.10** | **method acting** | The **believable-profile release** — a logged-in hero is a fully fleshed person: profile identity (org name, role+title, real-face avatar) + the content-surface unblock (library + activity feed, one Directus serve-grant) + profile depth (work, education, deep role-aligned skills) + **100% per-vantage demo coverage** proven by Playwright (no empty pages, no out-of-demo escapes) | { M39 ∥ M40 } → M41 → M42e → M42m | 🚧 **IN DEVELOPMENT** (branch `release/01.10-method-acting`) |
+| **v1.10** | **method acting** | The **believable-profile release** — a logged-in hero is a fully fleshed person: profile identity (org name, role+title, real-face avatar) + the content-surface unblock (library + activity feed, one Directus serve-grant) + profile depth (work, education, deep role-aligned skills) + **100% per-vantage demo coverage** proven by Playwright (no empty pages, no out-of-demo escapes) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ | 🚧 **IN DEVELOPMENT** — all 5 milestones closed; ready for `/developer-kit:close-release` (branch `release/01.10-method-acting`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -318,7 +318,40 @@ non-Go tooling dep; sanctioned by the coverage requirement.
 **Delivers →** `corpus/ops/demo/coverage-protocol.md` (new) + the touched specs as gaps close.
 
 #### M42m — Manager 100% demo coverage
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/01.10-method-acting/m42m-manager-coverage/`](releases/01.10-method-acting/m42m-manager-coverage/)
+**Status:** `done` (closed-on-gate 2026-06-26) · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/01.10-method-acting/m42m-manager-coverage/`](releases/01.10-method-acting/m42m-manager-coverage/)
+**Close (2026-06-26):** GREEN, 0 blocking. Closed **on-gate** — the **manager semantic believability gate** fired
+(`gateMet:true`): logged in as Dan Rossi (`dan-manager`, the org-intelligence seat @ Cervato Systems) on a **fresh
+zero-manual demo-up**, the Playwright sweep reports **reachable=70, failingSections=0, personaFailures=0, escapes=0,
+notReached=0, frontier=EXHAUSTED** — AND the **M42e employee gate HELD** on the same fresh stack (no regression:
+`reachable=59, (0,0,0,0), EXHAUSTED, gateMet:true`). **5 iters** (1 bootstrap tok iter-01 [TOK-01 the manager
+strategy + baseline] + 4 tiks iter-02..05; 0 triggered toks). The whole TOK-01 result reproduces **with no manual
+step** on the fresh build (the Studio demo-patch auto-applied [SERVED bundle 0× prod / 31× `:39000`, clone git-clean
+post trap-revert]; the FeedbackSeeder mirror auto-seeded [162/162 joinable]; the manifest route reconcile; Sentinel
+`AuthorizationService/Reload` post-set-dress; library replay + stories; autoverify GREEN). **Delivered** (rext,
+tagged): the **`demopatch` tool** (a content-anchored source-patch for the demo's EPHEMERAL clone + 6 guards — the
+sanctioned mechanism for the platform-bound Studio left-nav escape, resolved **demo-only 139→0**; CANONICAL repos
+never touched), the **FeedbackSeeder org-feedback JOIN-mirror** (the `/enterprise/organization-feedback` "No data"
+inserted-but-invisible fix), the **manager harness namespace** (`MANAGER_PAGES` reconciled from the wrong
+`/workforce/*` guesses to the real `/enterprise/*` surface [the dashboard is ONE tabbed SPA, not 5 sub-routes],
+`calibrated:true` + `MANAGER_SAMPLE_RULES` the superset), and the `ensure-clones.sh` R1/R1b/R2 + Studio env wiring.
+Corpus docs: `coverage-protocol.md` (the manager manifest + the Platform-bound-escape routing row + the env-rewrite
+precondition), `frontend-tier.md` (the demopatch note, close-added), `stories-spec.md` (the FeedbackSeeder mirror).
+**RESCOPE-1** (the platform-bound Studio escape) was resolved demo-only via the demo-patch tool — **not a platform
+edit, not a deferral**. **Zero CANONICAL platform-repo edits** (the v1.10 hard line held all milestone). Review: 3
+findings, 0 blocking — corpus diff is docs-only (the code-of-record + the code review/harden/adversarial live in rext);
+2 Fate-1 docs fixes (the coverage-protocol.md "pristine-reverts" typo + the frontend-tier.md demopatch note — the
+delivered-spec gap) + 1 decision-triage (D1–D6 → archive). Deferral re-audit **GREEN** (0 escape-hatch, 0 repeat, 0
+aged-out; **DEF-M40-01 manager-half resolved in-milestone** [route reconcile turned notReached=5 into 6 asserted
+dashboard pages rendering real M36 data: 493 mapped / 262 verified / 53.1% coverage, 19 cards / 67 charts; the
+org-feedback empty surface fixed via the FeedbackSeeder mirror]; standing backlog DEF-M10-01/DEF-M21-01/M25-D9
+unchanged). rext Go test funcs **1373→1376 (+3)** (stack-seeding 534→537, the feedback mirror tests) + the Python
+demopatch suite 18→43 (+25 adversarial-guard) + the TS manager unit spec (+17); flake gate 3× clean; **supply-chain
+GREEN** (0 dep/lockfile change in the whole M42m footprint); alignment N/A (zero clerkenstein/alignment change) — the
+**5 gates carry forward 100%**. Code-of-record: `rosetta-extensions` @ tag `method-acting-m42m-harden-final` (per-iter
+tags `method-acting-m42m-iter01..iter05` + the harden tag). Merged `m42m/manager-coverage` --no-ff →
+`release/01.10-method-acting`. **v1.10 is now reproducibly gate-complete across BOTH per-vantage coverage gates
+(employee M42e + manager M42m) → next: `/developer-kit:close-release`** (merge `release/01.10-method-acting` → `main` +
+tag `v1.10`) — the user's separate step, after their visual review.
 **Goal:** a hero of the **manager** vantage sees **100% of the demo platform's manager-reachable pages populated** —
 no empty/error pages, no out-of-demo escapes.
 **Exit gate:** identical to M42e's, run as a **manager** hero (covers the manager-only surfaces — the Workforce
