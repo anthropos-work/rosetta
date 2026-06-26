@@ -21,3 +21,24 @@ at $0.
 **Budget:** 3–5 iters. **Re-scope trigger:** if the cheap model can't reach the valid-JSON /
 taxonomy-resolution threshold after ~5 tiks of prompt+code hardening → user-strategic-replan (model
 upgrade vs scope reduction).
+
+## M45: Final Review
+
+Close review (2026-06-26) — iterative gate-met close. Code-of-record is rext-owned (5-pass hardened +
+tagged `method-acting-m45-harden-final`, a SEPARATE repo — not part of the corpus merge), so code-quality
++ test review were exhausted in build/harden; this review is the corpus doc-half.
+
+### Scope
+- [x] Gate MET 5/5, all 7 iters closed, 9 commits map cleanly (7 iter + 1 docs-fix + 1 harden); no scope gap.
+- [x] Deferral re-audit GREEN — org-scale → M46 (Fate-2, owned); prod-key out-of-release by design. (audit-deferrals/deferral-audit-2026-06-26-m45-close.md)
+
+### Documentation
+- [x] [should-fix] Index `ai-generation-spec.md` + `cache-spec.md` in `corpus/ops/demo/README.md` Mechanism-guides (they were orphaned from the demo-family nav).
+- [x] [should-fix] Add the two new specs to root `CLAUDE.md` Key Documentation Locations (demo-env section).
+- [x] [nice-to-have] `ai-generation-spec.md` "See also" — convert the two plain-text architecture-doc refs to markdown links (consistency).
+
+### Tests & Benchmarks
+- [x] N/A on the corpus side — rext-owned suites 5-pass hardened, flake gate 3×/5× clean, `-race` clean (hardening-ledger.md Pass 1–5).
+
+### Decision Triage
+- [x] TOK-01 + iter-07 env-name/3-fixes → archive (maintainer-only intra-iter implementation notes); the load-bearing protocol truths are already in `ai-generation-spec.md` + `cache-spec.md` (kb-fidelity audit confirmed alignment). No new blend.

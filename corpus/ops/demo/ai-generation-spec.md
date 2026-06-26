@@ -212,5 +212,6 @@ then re-seeded on a fresh demo via the tagged consumption clone.
   the generated members extend.
 - [`seeding-spec.md`](../seeding-spec.md) — the seeding blueprint + the production-isolation boundary the
   `GeneratedBatchSeeder` lives within.
-- `corpus/architecture/shared_libraries.md` §ai + `corpus/architecture/ai_architecture.md` — the shared
-  `ai` library the `services/ai/` wrapper layers EU-first routing + usage tracking on.
+- [`shared_libraries.md`](../../architecture/shared_libraries.md) §ai +
+  [`ai_architecture.md`](../../architecture/ai_architecture.md) — the shared `ai` library the `services/ai/`
+  wrapper layers EU-first routing + usage tracking on.
