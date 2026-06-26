@@ -12,25 +12,32 @@ serve-grant (library + activity feed) } → M41 profile depth → **M42e** emplo
 Grounded by the live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
 root-cause workflow `w7t4wq2z4`.
 
-**Active milestone:** **M42m** (manager 100% demo coverage, `iterative`) — the LAST v1.10 milestone. It REUSES the
-M42e Playwright harness + `coverage-protocol.md`; its input is already calibrated (the M42e manager smoke-sweep:
-139 `studio.anthropos.work` escapes from one baked left-nav prod link → link-rewriting; 5 unreached `/workforce/*`
-M36 dashboard pages → the core content+nav work; the team-roster `/user/<id>` fan-out → a representative-sample
-crawl rule). Drive with `/developer-kit:work-mstone-iters` / `/developer-kit:build-mstone-iters`, NOT
-`build-milestone`.
-**Next up:** **M42m** → then `/developer-kit:close-release` (v1.10 → main + tag `v1.10`).
-**Last closed:** **M42e employee 100% coverage (iterative) — 2026-06-25** via `/developer-kit:close-milestone`
-(GREEN, 0 blocking; closed **on-gate** — employee semantic believability gate `gateMet:true`, fresh zero-manual
-demo-up, 62 reachable pages / 0 failing sections / 0 persona failures / 0 escapes / frontier EXHAUSTED). 23 iters;
-delivered `coverage-protocol.md` + the Playwright semantic-coverage harness (rext `stack-verify/e2e/` — first non-Go
-rext dev/test dep). 8 findings, 0 blocking (0 code must-fix; 3 Phase-2c adversarial recorded; 4 docs); deferral
-re-audit GREEN (0 escape-hatch; DEF-M40-01 employee-half resolved, manager-half + manager-sweep findings clean
-Fate-2/Fate-3 → M42m); zero platform edits; flake 0; supply-chain GREEN; all 5 alignment gates 100%. Merged into
-`release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m42e` → `53574ae`. **M42e demo acceptance
-reminder:** login-as-Maya on a fresh `/demo-up` shows a believable fully-populated person + catalog on every
-employee page (real-photo avatar menu==profile, org logo, DevOps-coherent skills, 274-sim library, no prod escapes).
-**Phase:** **v1.10 in development — M39/M40/M41 (`section`) + M42e (`iterative`) closed; M42m (`iterative`) is the
-last milestone. Release NOT merged to main (M42m remains; close-release follows).**
+**Active milestone:** **(between milestones — all 5 v1.10 milestones closed)**. v1.10 is reproducibly gate-complete
+across BOTH per-vantage coverage gates (employee M42e + manager M42m); the release branch
+`release/01.10-method-acting` is NOT merged to main yet.
+**Next up:** **`/developer-kit:close-release`** (review the whole v1.10 release, merge `release/01.10-method-acting`
+→ `main`, tag `v1.10`) — the user's separate step, after their visual review.
+**Last closed:** **M42m manager 100% coverage (iterative) — 2026-06-26** via `/developer-kit:close-milestone`
+(GREEN, 0 blocking; closed **on-gate** — manager semantic believability gate `gateMet:true`, fresh zero-manual
+demo-up: 70 reachable / 0 failing sections / 0 persona failures / 0 escapes / frontier EXHAUSTED — AND the M42e
+employee gate HELD on the same fresh stack, no regression: 59 reachable / 0,0,0,0 / EXHAUSTED). 5 iters (1 bootstrap
+tok + 4 tiks; 0 triggered toks). Delivered (rext, tagged): the **`demopatch` tool** (the sanctioned mechanism for the
+platform-bound Studio left-nav escape — patch the demo's EPHEMERAL clone before build + trap-revert, 6 guards;
+resolved **demo-only 139→0**), the **FeedbackSeeder org-feedback JOIN-mirror** (the `/enterprise/organization-feedback`
+"No data" fix), and the **manager harness namespace** (`MANAGER_PAGES` reconciled to the real `/enterprise/*` route
+model + `MANAGER_SAMPLE_RULES` superset, `calibrated:true`). RESCOPE-1 resolved demo-only via the demopatch tool —
+**not a platform edit, not a deferral**. 3 findings, 0 blocking (corpus diff docs-only — code-of-record in rext; 2
+Fate-1 docs + 1 triage-archive); deferral re-audit GREEN (0 escape-hatch; **DEF-M40-01 manager-half resolved
+in-milestone** — route reconcile turned notReached=5 into 6 asserted dashboard pages rendering real M36 data);
+**zero CANONICAL platform edits**; flake 0; supply-chain GREEN (0 dep/lockfile change in the whole M42m footprint);
+alignment N/A (zero clerkenstein change) — 5 gates carry forward 100%. Merged into `release/01.10-method-acting`;
+rext code-of-record @ tag `method-acting-m42m-harden-final`. **M42m demo acceptance reminder:** login-as-Dan-Rossi
+(`dan-manager`) on a fresh `/demo-up` shows a believable fully-populated manager experience — the M36
+Workforce-Intelligence dashboard (493 mapped / 262 verified / 53.1% coverage, 19 cards / 67 charts), the
+`/enterprise/*` admin pages with real org/team data, the Studio left-nav resolves demo-local (`:39000`, no prod
+eject).
+**Phase:** **v1.10 fully built — all 5 milestones (M39/M40/M41 `section` + M42e/M42m `iterative`) closed; release
+NOT merged to main. Next: `/developer-kit:close-release` (v1.10 → main + tag `v1.10`).**
 **Paused:** _(none)_
 
 **Standing backlog (unscheduled, orthogonal to v1.10):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
@@ -73,16 +80,20 @@ ant-academy up automatically (proven live on `:33077`). **Tooling + docs only �
 - **v1.7 "house lights"** — **2026-06-15**, tag `v1.7`. Demo-UI-hardening: M31 mkcert FAPI cert (next-web stops
   blanking) + M32 studio-desk single-port/production fix. Ext tags `house-lights-m31`/`m32`.
 
-## Headline numbers (v1.10 in-progress — through M42e close, 2026-06-25)
-- **Go test funcs:** **1373** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
-  clerkenstein **266** · stack-seeding **534** · stack-snapshot **361** · stack-secrets 160.
+## Headline numbers (v1.10 fully built — through M42m close, 2026-06-26)
+- **Go test funcs:** **1376** total (`Test`+`Fuzz`). Per-module: `rosetta-extensions/alignment` 52 ·
+  clerkenstein **266** · stack-seeding **537** · stack-snapshot **361** · stack-secrets 160.
   v1.10 deltas: M39 clerkenstein +5 / stack-seeding +18; M40 stack-snapshot +21 (directus pkg);
-  M41 stack-seeding +34 (ProfileSeeder); **M42e** stack-seeding +38 (curated_pools/hero_activity/orglogo/
+  M41 stack-seeding +34 (ProfileSeeder); M42e stack-seeding +38 (curated_pools/hero_activity/orglogo/
   photo_avatar/identity-casbin + harden) / stack-snapshot +7 (simembeddings pkg + directus categories) /
-  clerkenstein +2 (image-threading invariant). Verified at M42e close: `go test -race ./...` GREEN on the 3
-  touched modules; `go vet`+`gofmt` clean; flake gate 5/5 shuffled. v1.9-close baseline 1248 → **+125**.
-  **PLUS the NEW TypeScript Playwright harness:** 7 tests / 6 spec files (rext `stack-verify/e2e/`) — the
-  first non-Go test surface, @playwright/test ^1.49.0.
+  clerkenstein +2 (image-threading invariant); **M42m** stack-seeding +3 (the FeedbackSeeder org-feedback
+  mirror tests). Verified at M42m close: `go test -race ./seeders/` GREEN; `go vet`+`gofmt` clean; flake gate
+  3× clean. v1.9-close baseline 1248 → **+128**.
+  **PLUS the TypeScript Playwright harness:** the manager namespace gained a pure-logic unit spec
+  (`coverage-manifest.unit.spec.ts`, +17) — the manifest decision logic now pinned in CI with no stack — on top
+  of the M42e live-sweep specs (rext `stack-verify/e2e/`, @playwright/test ^1.49.0). **PLUS the Python demopatch
+  suite:** `test_demopatch.py` 18→**43** (+25 adversarial-guard + manifest-loader parser tests) — the demopatch
+  tool patches platform source, so its REFUSE grid is the highest-value harden target.
 - **Python tests:** **283** across the two v1.9-touched suites (demo-stack/tests **166**, stack-injection/tests
   **117** [8 opt-in skipped]). Both green; no suite decreased (untouched rext suites carry forward at v1.8
   counts).
@@ -95,26 +106,31 @@ ant-academy up automatically (proven live on `:33077`). **Tooling + docs only �
   for the avatar/org-logo `image_url` threading; the image-threading JSON invariant gained a dedicated test).
 
 ## Branch model
-**v1.10 IN DEVELOPMENT:** `release/01.10-method-acting` cut from `main` 2026-06-24. Milestone branches
-`m{39..42m}/{slug}` branch from it; rext code-of-record lands in the `rosetta-extensions` authoring copy (a SEPARATE
-repo) at new v1.10 tags as milestones close. Closed-milestone rext tags: `method-acting-m39` · `m40` · `m41` ·
-**`m42e`** → `53574ae`. M42m is the last milestone; release NOT merged to main yet (close-release follows M42m).
+**v1.10 FULLY BUILT (not yet merged to main):** `release/01.10-method-acting` cut from `main` 2026-06-24. Milestone
+branches `m{39..42m}/{slug}` branched from it (all 5 merged + deleted); rext code-of-record lands in the
+`rosetta-extensions` authoring copy (a SEPARATE repo) at v1.10 tags as milestones close. Closed-milestone rext tags:
+`method-acting-m39` · `m40` · `m41` · `m42e` → `53574ae` · **`m42m-harden-final`**. All 5 milestones closed; the
+release branch is NOT merged to main yet — `/developer-kit:close-release` follows (the user's separate step).
 **v1.9 SHIPPED:** `release/01.90-storytelling` merged `--no-ff` → `main` + tagged `v1.9`; pushed to origin
 2026-06-24. The release branch is deleted. v1.9 rext code-of-record at tags `storytelling-m34..m38`.
 **Shipped:** **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` ·
 **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 
-_Last updated: 2026-06-25 (**M42e employee 100% coverage CLOSED** via `/developer-kit:close-milestone` —
-GREEN, 0 blocking; closed **on-gate** [employee semantic believability gate `gateMet:true`, fresh zero-manual
-demo-up: 62 reachable / 0 failing sections / 0 persona failures / 0 escapes / frontier EXHAUSTED]; 23 iters;
-delivered `coverage-protocol.md` + the Playwright semantic-coverage harness [rext `stack-verify/e2e/`, first
-non-Go rext dev/test dep]; 8 findings [0 code must-fix, 3 Phase-2c adversarial, 4 docs]; deferral re-audit GREEN
-[0 escape-hatch; DEF-M40-01 employee-half resolved, manager-half + manager-sweep findings clean Fate-2/Fate-3 →
-M42m]; zero platform edits; Go 1326→1373 [+47] + 7 Playwright tests; seeders 97%; flake 0; supply-chain GREEN; 5
-alignment gates 100%. Merged into `release/01.10-method-acting`; rext code-of-record @ tag `method-acting-m42e` →
-`53574ae`. **M42e is the FIRST iterative milestone closed — M42m [manager, iterative] is the last; release NOT
-merged to main. Next: M42m** [reuses the M42e harness; its input is calibrated]. Full M42e narrative in
-roadmap.md § M42e. Prior: **M41 profile depth CLOSED 2026-06-25** [ProfileSeeder G3+G5, stack-seeding 462→496];
+_Last updated: 2026-06-26 (**M42m manager 100% coverage CLOSED** via `/developer-kit:close-milestone` —
+GREEN, 0 blocking; closed **on-gate** [manager semantic believability gate `gateMet:true`, fresh zero-manual
+demo-up: 70 reachable / 0 failing sections / 0 persona failures / 0 escapes / frontier EXHAUSTED — AND the M42e
+employee gate HELD, no regression: 59 reachable / 0,0,0,0 / EXHAUSTED]; 5 iters [1 bootstrap tok + 4 tiks];
+delivered the `demopatch` tool [the platform-bound Studio escape resolved demo-only 139→0, 6 guards] + the
+FeedbackSeeder org-feedback JOIN-mirror + the manager harness namespace [`/enterprise/*` route reconcile +
+sample-rules]; 3 findings [docs-only corpus diff: 2 Fate-1 docs + 1 triage-archive]; deferral re-audit GREEN
+[0 escape-hatch; DEF-M40-01 manager-half resolved in-milestone; RESCOPE-1 demo-only, not a deferral]; zero
+CANONICAL platform edits; Go 1373→1376 [+3] + the demopatch suite 18→43 + the TS manager unit spec +17; flake 0;
+supply-chain GREEN; 5 alignment gates 100% [N/A change]. Merged into `release/01.10-method-acting`; rext
+code-of-record @ tag `method-acting-m42m-harden-final`. **M42m is the LAST v1.10 milestone — all 5 closed; v1.10 is
+reproducibly gate-complete across BOTH per-vantage gates [employee M42e + manager M42m]. Release NOT merged to main.
+Next: `/developer-kit:close-release`** [v1.10 → main + tag `v1.10`]. Full M42m narrative in roadmap.md § M42m.
+Prior: **M42e employee 100% coverage CLOSED 2026-06-25** [first iterative milestone, 23 iters, Go 1326→1373,
+Playwright harness]; **M41 profile depth CLOSED 2026-06-25** [ProfileSeeder G3+G5, stack-seeding 462→496];
 **M40 Directus serve-grant CLOSED 2026-06-24** [stack-snapshot 333→354]; **M39 profile-identity CLOSED
 2026-06-24** + **v1.10 DESIGNED**. Prior: **v1.9 "storytelling" SHIPPED 2026-06-23** [tag `v1.9`, M34–M38]; v1.8
 "understudy" SHIPPED 2026-06-15.

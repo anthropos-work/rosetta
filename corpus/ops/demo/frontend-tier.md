@@ -112,6 +112,21 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > the failed-build and real-git-status invariants were pinned: `test_next_web_failed_build_still_removes_*`,
 > `TestZeroPlatformRepoEdit` in `demo-stack/tests/test_frontend_build.py`.)_
 
+> **Baked URLs with no per-URL override → the demo-patch tool (M42m).** The build-arg / `.env.local` injection
+> above rewrites a baked URL only when next-web exposes a per-URL `NEXT_PUBLIC_<thing>_URL` knob for it (as
+> `ACADEMY_URL` does via `NEXT_PUBLIC_ACADEMY_URL`). The left-nav **Studio** link has none — `STUDIO_URL` is a
+> `NEXT_PUBLIC_NODE_ENV` ternary (`localhost:9000` | prod), wrong-port + side-effecting on flip — so it baked
+> `studio.anthropos.work` into the manager nav (a prod-eject escape, 139×). The fix keeps the zero-platform-edit
+> line: a **tooling-owned demo-patch** (`rosetta-extensions/demo-stack/patches/demopatch` + a content-anchored
+> manifest) source-patches the demo's **EPHEMERAL gitignored next-web clone** to read `NEXT_PUBLIC_STUDIO_URL`
+> (a behavior-identical fallback ternary kept) **before** the image build, then **trap-reverts** after it bakes —
+> CANONICAL repos never touched (6 guards: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
+> self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert, exactly
+> like the pk overlay), with the offset value `http://localhost:39000` in the `.env.local` overlay; default-on +
+> non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries
+> 0× prod / 31× `:39000`. Full mechanism + the failure-mode routing table (the "Platform-bound escape" row):
+> [`coverage-protocol.md`](coverage-protocol.md).
+
 ## Offset-origin CORS (the backend must allow the offset frontends)
 
 The frontends run on **offset origins** (next-web `:13000` for `demo-1`, etc.), but the backend's dev CORS
