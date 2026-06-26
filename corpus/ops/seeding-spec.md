@@ -348,4 +348,7 @@ demo-3 schema, `go.mod`/`go.sum` byte-identical. Code-of-record: `rosetta-extens
 `CertificatesSeeder` + `ProjectsSeeder` surfaces, the §C manager personal-data unskip, the §D bulk-member
 shallow career) — all DATA-DENSITY, zero platform edits, every surface `PerStackIsolated` + closure-GREEN,
 schema-corrected against the live demo-3 DB (`user_certifications`/`user_projects`). New unit tests across the
-four sections, full suite green. Code-of-record: `rosetta-extensions` @ tag `method-acting-m44-profile-completeness`.
+four sections, full suite green `-race`. Render-verified on a live demo (the §D fix1 avatar-column correction:
+`/enterprise/members` reads `memberships.picture_url`, not `users.picture`) + a 3-pass hardening sweep (17 added
+tests, seeders-pkg stmt coverage 96.5%→97.5%). Code-of-record: `rosetta-extensions` @ tag
+`method-acting-m44-profile-completeness-fix2`.
