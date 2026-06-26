@@ -8,6 +8,7 @@ and what was tuned/fixed).
 <!-- iter-NN/ dirs are created by /developer-kit:build-mstone-iters on first run. -->
 
 - iter-01 (tok·bootstrap): authored TOK-01 (build 3 deliverables fixtures-first → prove on a real ~500-member org via the M42 semantic sweep); Phase 0b KB-fidelity GREEN — see iter-01/progress.md
+- iter-02 (tik): deliverable #1 — auto-fill count (`Batch.Fill`/`resolveBatchCounts`: one descriptor fills a story to its Size, per-story, deterministically); 8 fixtures-first tests + full stack-seeding suite green; gate metric unmoved (proven on the real-run sweep, tik #5) — see iter-02/progress.md
 
 **Exit gate:** a full org (e.g. 500) fills from a single supporting-population descriptor with a believable
 role/avatar/skill spread (not 90% hollow), the demo-coverage SEMANTIC believability gate
