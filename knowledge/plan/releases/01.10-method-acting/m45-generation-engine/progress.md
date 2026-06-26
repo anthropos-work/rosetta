@@ -5,7 +5,7 @@ Iter closeouts append here (one line each — the tik/tok, what the batch run me
 gate [valid-JSON rate, taxonomy-resolution, collisions, cost vs ceiling, the $0 re-seed], and what was
 fixed/hardened).
 
-<!-- iter-NN/ dirs are created by /developer-kit:build-mstone-iters on first run. -->
+- iter-01 (tok/bootstrap): authored the iteration protocol (`ai-generation-spec.md`) + `cache-spec.md`; KB-fidelity GREEN; `ai` dep (`v1.40.1`) fetchable; TOK-01 (inside-out fixtures-first build) recorded — see iter-01/progress.md
 
 **Exit gate:** on a real batch of N — valid JSON ≥95% (re-roll on malformed), every role/skill name
 resolves to a real public-taxonomy node-id (non-resolving drop, closure green), ZERO generated name
