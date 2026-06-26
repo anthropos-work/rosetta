@@ -42,3 +42,43 @@ append one line each here._
   same fresh `demo-up` resumed idempotently). Zero CANONICAL platform edits. `closed-fixed`, **Gate: MET**. rext
   @ `method-acting-m42m-iter05`. v1.10 reproducibly gate-complete (M42e + M42m) — ready for harden+close. See
   iter-05/progress.md + M42m iter-05 D1–D5.
+
+## M42m: Final Review
+
+Close-milestone review (2026-06-26). Iterative shape → Gate Outcome Ledger (Phase 9-iter). Corpus-side diff is
+**docs-only** (the M42m CODE lives in the rext authoring repo @ `method-acting-m42m-harden-final`, hardened +
+adversarial-recorded there); the corpus review centres on the 2 touched specs + cross-references.
+
+### Scope
+- [x] Gate-distance: gate **MET** (manager 70/120 0,0,0,0 EXHAUSTED; employee 59/150 no-regression), fresh
+      zero-manual demo-up → close is "shipped on gate", no carry-forward.
+- [x] Iter-ledger: 5 iters (iter-01 bootstrap tok + iters 02–05 tiks), each with a closed `iter-NN/` dir + a
+      one-line running-ledger entry; every commit maps to an iter (one-commit-per-iter); 0 orphans.
+- [x] Carry-forward queue: DEF-M40-01 manager-half LANDED in-milestone (Fate-1); RESCOPE-1 resolved demo-only
+      (not a deferral). 0 routes carried forward.
+- [x] No code TODO/FIXME routed forward (corpus diff is docs-only).
+
+### Code Quality
+- N/A in corpus (zero code in the corpus diff). The rext code-of-record was reviewed + hardened (final pass,
+      stabilized) in the `.agentspace/rosetta-extensions` authoring copy; 0 production bug surfaced.
+
+### Documentation
+- [x] [must-fix] `coverage-protocol.md` — mangled phrase "`R1` pristine- s a crash-left patch" → "pristine-reverts"
+      (the canonical iter-05 phrasing).
+- [x] [should-fix] `frontend-tier.md` (listed in M42m `overview.md` `delivers`, but never updated) had **no**
+      demopatch / Studio-escape note → added a callout after the pk+URL build-injection block pointing to
+      `coverage-protocol.md`'s "Platform-bound escape" routing row.
+- [x] `stories-spec.md` (FeedbackSeeder org-feedback mirror note) verified accurate.
+- [x] All markdown cross-refs in the 2 touched docs resolve (10 targets checked).
+
+### Tests & Benchmarks
+- N/A in corpus (no test runner). rext tests all GREEN per the harden ledger (Go seeders `-race` ok; Python
+      demopatch 43 ok; TS unit spec 17 pass; flake gates 3× clean each).
+
+### Decision Triage
+- [x] M42m-D1…D6 → **archive (maintainer-only)**. The user-facing mechanisms (the `/enterprise/*` route model,
+      the demopatch, the FeedbackSeeder JOIN-mirror fix, the manager SAMPLE_RULES superset) are already blended
+      into `coverage-protocol.md` / `stories-spec.md` / (now) `frontend-tier.md` during the iters + this review;
+      the decision records hold the diagnosis detail (route-model falsification, the falsified env-rewrite
+      hypothesis, the 6-guard internals) which is maintainer-level. Harden ledger "Knowledge backfill: none
+      required" confirmed. No further blend needed.
