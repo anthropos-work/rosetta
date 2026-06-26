@@ -192,6 +192,31 @@ then re-seeded on a fresh demo via the tagged consumption clone.
 
 ---
 
+## 4g. Org-scale lessons (v1.10 M46 — surfaced by the real ~600-member gate-proving)
+
+Two failure modes are **structurally invisible** below ~2 batches / ~hundreds of members, so they only
+surface when the engine is proven at org scale (M45's bounded N=20 cannot reach them):
+
+- **The cache index is GLOBAL, not batch-local.** `cmd/gen-batch` selects/reads the cache by the member's
+  position in the WHOLE `EffectiveBatches()` slice (`cache.Has(i)`/`Get(i)`), so the write MUST use the same
+  global index — NOT the batch-local `Batch`-relative index (0..Count-1). With a single batch the two
+  coincide; with **multiple story batches** a later batch's local index collides with an earlier batch's,
+  so a local-index write OVERWRITES an earlier member's cached file and leaves the later slot empty — losing
+  an entire later story's generated population. A **multi-batch** regression test is mandatory (a single-batch
+  test can't catch it).
+- **A cheap name-attractor model needs a deterministic disambiguator, not just LLM re-rolls.** gpt-4o-mini
+  re-picks a small set of "distinctive" names hundreds of times across a 600-member org (the avoid-names
+  re-roll hint can't scale to hundreds of taken names). The engine's last-attempt path therefore
+  **deterministically disambiguates** a still-duplicate name (keep the generated first name + swap in a
+  distinct surname keyed on the global index — cost-free, no extra LLM call, reproducible) so **name
+  distinctness is guaranteed at any scale**, plus a larger avoid-hint (120) for more LLM-native divergence
+  first. Accepting a duplicate on the last attempt (the pre-M46 behavior) destroys org-scale believability.
+
+**Empirically proven on the real ~600-member batch (M46):** 0 hero-collisions at scale, 100% valid-JSON,
+$0 cache-hit reseed, and the **mandatory `--max-cost` guard correctly aborting at its ceiling** (the
+re-roll/dedup overhead at scale is real, so a large org-fill is run with a generous cap or finished across
+capped runs — the 579 already-cached members reseed at $0, so finishing is cheap).
+
 ## 5. What's OUT (M45 scope boundary)
 
 - **Org-scale auto-fill** to reach full org size → **M46** (M45 proves the engine + cache on a **bounded**
