@@ -242,16 +242,43 @@ headline org** (Cervato ≈ 498: ~250 curated + ~247 generated; Solvantis ≈ 23
 skills, closure GREEN, 0 hero-collisions) and passes the employee-vantage M42 sweep + the manager persona /
 cross-port checks.
 
-> **Known platform limit at org scale (M46 iter-07 — re-scope-trigger).** The manager M42 sweep on this
-> ~500-member org still fails 3 sections — `/enterprise/members`, `/enterprise/activity-dashboard`,
-> `/enterprise/settings` — because the **federated GraphQL queries backing those enterprise grids never resolve
-> in the harness window** (the Cosmo router logged 10–84 s latencies; the `organizationMembers` /
-> activity-aggregation per-row resolver fan-out — `jobRole`/`targetRole`/`tags`/`lastActivityDate`/
-> `organizationFeatures` × Sentinel authz — is an N+1 across subgraphs). This is **invariant to org size**
-> (10.88 s @ 998 ≈ 10.5 s @ 500), so neither the resize nor a bounded warm-grid poll closes it; the manager
-> gate last PASSED at ~221 members. The fix is a platform resolver change (forbidden by the zero-canonical-edit
-> line) — **NOT** a seeding or harness change — so the M46 gate's "M42 sweep PASSES on a ~500 org" criterion is
-> re-scoped: treat the enterprise members/activity grids as a documented org-scale platform-perf exception.
+> **Org-scale enterprise-grid perf — 2 of 3 grids cleared DEMO-LOCALLY; the members grid is a re-scope trigger (M46).**
+> The manager M42 sweep on this ~500-member org initially failed 3 sections — `/enterprise/members`,
+> `/enterprise/activity-dashboard`, `/enterprise/settings` — because the **federated GraphQL queries backing those
+> enterprise grids didn't resolve in the harness window** (the Cosmo router logged **10–84 s** latencies; an
+> over-broad fetch plus a per-row resolver fan-out — `jobRole`/`targetRole`/`tags` × `GetOrganizationTargetRole`,
+> which makes a **per-object Sentinel RPC per membership**, no DataLoader). The wall **decomposes into two distinct
+> costs**:
+>
+> **Demo-patchable (clears activity-dashboard + settings), zero canonical edit:**
+> 1. **next-web pagination demo-patch** (`patches/next-web-members-pagination`): the activity-dashboard mounts
+>    `InsightsContextProvider`, whose `InsightsContext.tsx` fetched `useGetOrganizationMembers({ limit: 1000 })`
+>    — ALL ~500 members, and the layout BLOCKS on it. The demo-patch caps it to `limit: 30` (a page), cutting the
+>    fan-out ~33×. (The `/enterprise/members` grid is already paginated at 20; the CSV/email export uses a
+>    separate query — no data lost.) Applied to the demo's ephemeral clone pre-build, trap-reverted after (the
+>    6-guard demopatch contract; canonical repos never touched).
+> 2. **2 post-seed FK indexes** (`CREATE INDEX IF NOT EXISTS` on `public.membership_skills(membership_skill_membership)`
+>    + `public.membership_tags(membership_tag_membership)`): both tables shipped no leading-membership-FK index, so
+>    each per-row leg was a SEQ SCAN. Run on the demo's **own** offset Postgres post-seed (a rext-owned step in
+>    `up-injected.sh`, idempotent, non-fatal) — **NOT** a canonical ent/atlas schema change.
+>
+> These took graphql max latency **84 s → ~4 s** and cleared `/enterprise/activity-dashboard` + `/enterprise/settings`
+> (`failingSections` 3 → 1).
+>
+> **NOT demo-patchable — the re-scope trigger.** `/enterprise/members`' per-row `targetRole` →
+> `OrgCheckActionPermission` checks `OrgActionAssignmentsWrite`, which is **PER-OBJECT** (per assignee), not an
+> org-wide grant. A cache/singleflight keyed by `(org, subject, action)` — dropping the object to dedupe across the
+> grid's rows — is a **correctness bug**: it returns the first row's allow/deny for every row → `failed to get
+> target role: forbidden` on legitimately-allowed members (~1744×/sweep) → the grid errors. Keyed correctly with
+> the object it can't dedupe (every row is a different object). The per-row Sentinel fan-out can only be collapsed
+> by a **DataLoader / batch `BulkCheckPermission` RPC = a PLATFORM change** (forbidden). So the members grid at org
+> scale is the genuine **re-scope trigger** — surfaced, NOT faked with a permission-poisoning cache.
+>
+> Net on demo-3 (~500 members): `failingSections=1` (`/enterprise/members`), reproducible on a FRESH `/demo-up`
+> for the demo-local parts. (Build pitfalls: any injected `app` rebuild MUST go through the inject loop so
+> `apply-authn.sh`'s disarmed colony is re-applied — a rebuild without it ships a backend that rejects every
+> Clerkenstein token, collapsing the crawl to `reachable≈7`; and never `--force-recreate` a single service
+> *without* `--no-deps` — it recreates `postgresql` and wipes the seeded org.)
 
 ## 5. What's OUT (M45 scope boundary)
 
