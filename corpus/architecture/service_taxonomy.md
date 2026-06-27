@@ -55,10 +55,10 @@ graph TB
 |:--------|:--------|:--------|:--------|:-------|
 | **Backend/App** | 8081-8083 | Main API Gateway, User Management | graphql, backend | Local `../app` |
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
-| **CMS** | 8090-8091 | Content Management, Directus Proxy, **embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
+| **CMS** | 8090-8091 | **Content layer** — owns CONTENT / DEFINITIONS (skill paths, simulation blueprints, library) via Directus Proxy, **+ embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
 | **Skiller** | 8085-8086 | Skill Management, Assessment, Vector Embeddings (RAG) | graphql, skiller | Local `../skiller` |
-| **Skillpath** | 8100-8101 | Skill Progression Paths | graphql, skillpath | Local `../skillpath` |
-| **Jobsimulation** | 8400-8401 | Job Environment Simulation | graphql, jobsimulation | Local `../jobsimulation` |
+| **Skillpath** | 8100-8101 | **Runtime** — per-user skill-path progression *state* (the path *content* lives in CMS) | graphql, skillpath | Local `../skillpath` |
+| **Jobsimulation** | 8400-8401 | **Runtime** — runs simulation *sessions* (the simulation *definition* lives in CMS) | graphql, jobsimulation | Local `../jobsimulation` |
 | **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
 | **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | graphql, roadrunner | Local `../roadrunner` |
 | **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | graphql, backend | Third-party image `gotenberg/gotenberg:8` |
@@ -106,6 +106,13 @@ make up                # Build from local code and start (graphql profile)
 make up PROFILE=cms    # Start a specific profile
 make dev S=cms         # Stop Docker container, develop natively
 ```
+
+> [!IMPORTANT]
+> **Content layer vs. runtime-state services.** Within Tier 1 there is a split-ownership model that's easy to miss because two services share a name with their content:
+> - **CMS is the content layer** — it owns the authored CONTENT / DEFINITIONS (skill-path content: chapters → steps, curators, skills-to-verify, settings; job-simulation *blueprints*; the content library) by wrapping Directus with business logic + a Redis cache.
+> - **`skillpath` and `jobsimulation` are runtime/session engines** — they own RUNTIME / SESSION / PROGRESS state and reference CMS content **by ID only**. `skillpath` fetches the path structure from CMS via `CMS_RPC_ADDR` and tracks `SkillPathSession → ChapterSession → StepSession`; `jobsimulation` fetches the simulation definition from CMS (`cms.GetSimulation` Connect-RPC) and runs the session.
+>
+> So **the `skillpath` service ≠ skill-path content, and the `jobsimulation` service ≠ simulation content.** Content = CMS/Directus; the like-named service = the state machine over it. See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).
 
 ---
 

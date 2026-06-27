@@ -37,6 +37,39 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > an `index.html` SPA fallback, with no route gap (verified by code-read; #M32-D1). Full root-cause: the v1.7 M32
 > milestone record.
 
+> **studio-desk is a CLERKENSTEIN-authenticated demo surface (v1.10 "method acting" postfix).** The
+> manager's **"Anthropos Studio" left-nav** opens the demo's own studio-desk on `:9000+offset`, where the
+> logged-in hero authenticates **through Clerkenstein** (the demo's fake FAPI/BAPI) exactly like every Go
+> service — it is the **actual logged-in hero**, not a mock-auth bypass. (An earlier postfix used `MOCK_CLERK`
+> to render the surface by skipping auth; that was reverted — studio-desk must be the authenticated hero.)
+> The production image applies `clerkMiddleware()` + `requireAuth` + `checkEnterpriseAndAdmin` to **all**
+> routes; the wiring that makes that pass in a demo:
+> - **The FAPI handshake (per-app, no cross-port cookie).** studio-desk's `clerkMiddleware()` 302s an
+>   unauthenticated browser to the **fake FAPI** `/v1/client/handshake`, which bounces back a
+>   `__clerk_handshake` RS256 token (kid `clerkenstein-rs256-demo`) that `@clerk/express` verifies
+>   **networklessly** via `CLERK_JWT_KEY`. **Each app drives its OWN handshake** against the demo's
+>   single fake FAPI (which holds the active-seat selection server-side), so the per-port `__session`
+>   cookie is **not** needed — the split-port topology is a non-issue. The minted **pk** is baked
+>   (`VITE_CLERK_PUBLISHABLE_KEY`) so the SPA derives the same fake-FAPI host the backend talks to.
+> - **The admin gate (`checkEnterpriseAndAdmin`).** Once authenticated, studio-desk calls the **fake BAPI**
+>   `getOrganizationMembershipList({userId})` and requires a membership with a Studio-eligible role
+>   (`admin`/`content_creator`). The fake BAPI is **roster-aware**: `cmd/fake-bapi` reads the **same**
+>   `FAKE_FAPI_ROSTER` the fake FAPI loads and seeds each seeded hero's `(org, user) → org_role`, so a
+>   **manager** (Dan/Leah = `admin`) **passes** the gate and an **employee** (`member`) is correctly
+>   redirected off Studio — the real role-gated behaviour. Without the roster seed the BAPI knows only the
+>   universal `user_clerkenstein`, so a logged-in hero's membership list is empty and they bounce to
+>   `WEB_APP_URL`.
+> - **The requireAuth fallback.** The injected override pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the demo's
+>   **own offset** next-web (`:3000+offset`, which HAS a `/login` route) — so the unauthenticated/non-admin
+>   fallbacks land somewhere **live**, never the dead un-offset `:3000` (`ERR_TOO_MANY_REDIRECTS`).
+>
+> > **No source patch, no mock bundle.** studio-desk needs **no demopatch** — the auth path is the unmodified
+> > production code, driven entirely by the **runtime** `CLERK_*` env + the baked pk + the roster-aware fake
+> > BAPI. (Clerkenstein itself — the fake FAPI/BAPI in `rosetta-extensions` — is tooling-owned and freely
+> > edited; the platform repos are untouched.) A `demo-N-studio-desk` image with a **stale pk/offset** is
+> > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
+> > bake; the roster-aware BAPI re-seeds on every re-up.
+
 > **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
 > **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
 > for `127.0.0.1 localhost ::1`), so a fresh browser renders the signed-in app with **no proceed-anyway**. It
@@ -93,7 +126,7 @@ image. The tooling makes this cheap-where-it-can:
 | App | URLs | Clerk pk | Context trim |
 |-----|------|----------|--------------|
 | **next-web** | `--build-arg NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `_BACKEND_API_URL` / `_HOSTING_URL` (offset) — ARGs the Dockerfile already declares | **no pk ARG exists** → dropped into a **gitignored `apps/web/.env.local`** in the build context, read by `next build`, removed by a trap after | the repo ships **no** `.dockerignore`, so a **tooling-owned** one (`rosetta-extensions/demo-stack/frontend/next-web.dockerignore`) is applied **transiently** (never clobbers a repo one; trap-removed) to trim the 2.8 GB context (2.5 GB `node_modules`) to <100 MB |
-| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` (offset) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → passed straight as a build-arg | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
+| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` + `VITE_WEB_APP_URL` (offset) — the canonical ARGs (no source patch; auth is via Clerkenstein at **runtime**, not a baked mock) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → the minted pk passed straight as a build-arg (so the SPA derives the same fake-FAPI host the backend talks to) | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
 
 The split — next-web's pk via the gitignored `.env.local` (its Dockerfile declares no pk ARG) vs studio-desk's
 pk straight as a build-arg (its Dockerfile *does*) — is dictated by the real, unmodified Dockerfiles (#M19-D3).
@@ -111,6 +144,21 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > is covered by a `.gitignore` rule (so it can never be tracked even mid-build). _(M19 harden — surfaced when
 > the failed-build and real-git-status invariants were pinned: `test_next_web_failed_build_still_removes_*`,
 > `TestZeroPlatformRepoEdit` in `demo-stack/tests/test_frontend_build.py`.)_
+
+> **Baked URLs with no per-URL override → the demo-patch tool (M42m).** The build-arg / `.env.local` injection
+> above rewrites a baked URL only when next-web exposes a per-URL `NEXT_PUBLIC_<thing>_URL` knob for it (as
+> `ACADEMY_URL` does via `NEXT_PUBLIC_ACADEMY_URL`). The left-nav **Studio** link has none — `STUDIO_URL` is a
+> `NEXT_PUBLIC_NODE_ENV` ternary (`localhost:9000` | prod), wrong-port + side-effecting on flip — so it baked
+> `studio.anthropos.work` into the manager nav (a prod-eject escape, 139×). The fix keeps the zero-platform-edit
+> line: a **tooling-owned demo-patch** (`rosetta-extensions/demo-stack/patches/demopatch` + a content-anchored
+> manifest) source-patches the demo's **EPHEMERAL gitignored next-web clone** to read `NEXT_PUBLIC_STUDIO_URL`
+> (a behavior-identical fallback ternary kept) **before** the image build, then **trap-reverts** after it bakes —
+> CANONICAL repos never touched (6 guards: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
+> self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert, exactly
+> like the pk overlay), with the offset value `http://localhost:39000` in the `.env.local` overlay; default-on +
+> non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries
+> 0× prod / 31× `:39000`. Full mechanism + the failure-mode routing table (the "Platform-bound escape" row):
+> [`coverage-protocol.md`](coverage-protocol.md).
 
 ## Offset-origin CORS (the backend must allow the offset frontends)
 

@@ -20,9 +20,17 @@ that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 > [§ The Workforce dashboard surfaces (M36)](#the-workforce-dashboard-surfaces-m36) below) — plus the
 > **Clerkenstein multi-identity seat-switch** delivered in **M37** (a demo can present as any seeded hero; see
 > [`clerkenstein/knowledge/architecture.md` § Multi-identity]) — plus the **presenter cockpit** delivered in
-> **M38** (a standalone served panel that lists each story → its hero trio with **[Login as]** + **[Jump to
-> section]**, so a demo-giver picks a hero and lands on the right screen to present a flow live — see
-> [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38) below). It graduates
+> **M38** (a standalone served panel that lists each story → its hero trio with a **[Log in as]** action, so a
+> demo-giver picks a hero and lands on the right screen to present a flow live — UX-specced standalone in
+> [`cockpit-spec.md`](cockpit-spec.md) since v1.10 M38→M43, see [§ The presenter cockpit (M38)](#the-presenter-cockpit-m38)
+> below) — plus the **profile-identity layer**
+> delivered in **v1.10 "method acting" M39** (the roster org-name thread → the real company on the top bar, the
+> `user_basic_info` role backfill → a real role+title on the /profile header, and the offline real-face avatar —
+> see [§ The profile-identity layer (v1.10 M39)](#the-profile-identity-layer-v110-method-acting-m39) below) — plus the
+> **profile-depth layer** delivered in **v1.10 M41** (the new `ProfileSeeder`: a believable work-history +
+> education timeline, a verified-skill depth bump `8 → ~30`, and a ~60-skill claimed-but-unverified tail that
+> widens the visible claimed-vs-verified gap — see
+> [§ The profile-depth layer (v1.10 M41)](#the-profile-depth-layer-v110-method-acting-m41) below). It graduates
 > the adversarially-verified analysis (the gitignored `.agentspace/seeding_gaps.md`) into the corpus. The code
 > lives in the gitignored `rosetta-extensions` monorepo (its own git; authored + tagged in
 > `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform repo is modified.**
@@ -111,6 +119,16 @@ hero's **`self_eval_bias`**: `under` (a modest under-claimer — `user_level < a
 arc), `over` (an inflated over-claimer — the stark gap, the struggling arc), or `calibrated` (≈ equal). At
 least one skill per hero must show a real gap or the widget is empty.
 
+> **Trajectory-aware self-rating (v1.10 M44 §A).** A struggling hero now models the **"hasn't done the
+> initial self-assessment"** state: `PersonaSeeder` writes `user_level` **only** for a **self-rated** hero
+> (the new `Persona.EffectiveSelfRated()` — struggling = false → `user_level` **NULL**; thriving / calibrated /
+> manager = true). A thriving hero shows a **completed** self-assessment; a struggling hero's verified skills
+> still render (the chart reads `anthropos_level`, which is untouched), but the claimed side is **absent** — the
+> profile reads as a sparse/incomplete self-rating rather than the M35 over-claim. The org-scale population
+> (`PopulationEvidenceSeeder`) is unaffected — every population member still self-rates (the over/under-claim
+> mix is the headline org "aha"). Full rubric:
+> [`profile-completeness-spec.md`](profile-completeness-spec.md).
+
 ### Closure — real skill node-ids, never fabricated, and *measured*
 
 A skill ref (`user_skills.skill_id`, `user_skill_evidences.skill_id`,
@@ -136,11 +154,121 @@ Two pieces guarantee closure:
   0–100 distribution with a per-user upward growth arc** (replacing the binary 85/35), and `sim_type` is
   weighted ~75% toward the verification-feeding ASSESSMENT/HIRING types. The arc gives the dashboard's
   Growth/Biggest-Improvers a real trend to narrate (the "company mid AI-transformation" story).
-- **`users.go`** — real first/last names from an in-code name bank, a deterministic avatar URL, and a
-  `first.last@<org-domain>` email (no more "User N" / no picture / `@{stack}.local`). A blueprint **hero**'s
-  real name + email land at the population index the `PersonaSeeder` verifies her chain against, so the named
-  row and the verified skills are one user — both seeders derive that index from the same shared bridge
-  (`personaUserIndex` / `personaIndexMap`), so they cannot drift (#M34-D2).
+- **`users.go`** — real first/last names from an in-code name bank, a deterministic **real-face avatar**
+  (v1.10 M39 — see below), and a `first.last@<org-domain>` email (no more "User N" / no picture /
+  `@{stack}.local`). A blueprint **hero**'s real name + email land at the population index the `PersonaSeeder`
+  verifies her chain against, so the named row and the verified skills are one user — both seeders derive that
+  index from the same shared bridge (`personaUserIndex` / `personaIndexMap`), so they cannot drift (#M34-D2).
+  v1.10 M39 also has `users.go` **backfill `public.user_basic_info`** (the /profile header source) — see the
+  profile-identity layer below.
+
+### The profile-identity layer (v1.10 "method acting" M39)
+
+v1.9 seeded the verified-skill **spine**, but a logged-in hero's **profile page** still read thin: the top bar
+showed a generic org, the header showed "no role", and the avatar was a 2-letter initials disc. M39 lights the
+three highest-leverage, lowest-effort identity fixes — **tooling + docs only, zero platform-repo edits** — so a
+hero (Maya on demo-3) shows the **right company, a real role+title, and a real face**.
+
+- **Org name (G1) — the roster carries the story org.** The FAPI org resource used to hardcode "Clerkenstein
+  Demo Org". Now `roster.go` threads each hero's `st.Org.Name`/slug into the roster JSON (`org_name`/`org_slug`),
+  Clerkenstein renders it on the org resource, and the **top bar reads the real company** (e.g. "Cervato
+  Systems"). It's a `DisallowUnknownFields` **paired change** across the two structs + a no-roster
+  `"Clerkenstein Demo Org"` fallback — the full mechanism is in
+  [`../../services/clerkenstein.md` § Roster org-name threading](../../services/clerkenstein.md#multi-identity).
+
+- **Role backfill (G2) — `user_basic_info`, the table the header actually reads.** The /profile header reads
+  `profile.info.jobRole` → `infoResolver.JobRole` ← **`public.user_basic_info.job_role_id`** — but the seeder
+  wrote the role only to `public.memberships` (the wrong table for the header), so the header showed "no role".
+  M39 has `users.go` **backfill `user_basic_info`** (`job_role_id` + `job_title` + a deterministic believable
+  `summary` + `location`) from the **same resolved role** it writes to the membership. The trigger-created row
+  already exists, so it's an **idempotent UPDATE keyed by `id`** with an `IS DISTINCT FROM` guard (a re-seed of
+  identical data matches 0 rows — the M17 re-run contract — #M39-D4/D5). **One UPDATE lights two surfaces**: the header
+  role/title **and** the role-gap radar / role-readiness widgets (`jobRoleMatch` keys off the same field). The
+  no-fabrication rule holds: `job_role_id` is NULL with no replayed taxonomy, and a hero keeps her **declared**
+  role label as the title (the same split `users.go` applies to `memberships.job_role_name`). Backfilled for
+  **every** member (not heroes only) so any profile a presenter clicks into reads coherent. Real schema (no
+  `job_role_title` column — the header uses `job_role_id` → resolved label + `job_title`; `email` is NOT NULL
+  UNIQUE, which is why it must be an UPDATE not an INSERT).
+
+- **Real-face avatars (G4 → M42e P4) — offline, deterministic, license-clean, now PHOTOREALISTIC.** `users.picture`
+  was a DiceBear *initials* SVG fetched from `api.dicebear.com` — a 2-letter disc **and** an online fetch a sealed
+  demo box can't reach. M39 replaced it with a self-authored **parametric SVG face generator** (an illustrated
+  cartoon face). **v1.10 "method acting" M42e P4** (user decision: SYNTHETIC photorealistic faces of non-existent
+  people) replaces the cartoon with a **real photorealistic synthetic face**: `avatar.go`'s `photoAvatarDataURI`
+  picks one of **12 bundled StyleGAN2 / "this-person-does-not-exist"-class portraits** (`stack-seeding/assets/avatars/`,
+  `go:embed`-ed, 160×160 JPEG ~5–7 KB) deterministically by `hash(uuid) % 12` and emits a **`data:image/jpeg;base64,…`
+  URI** into `users.picture`. The faces depict **NO real person** (synthetic ⇒ no consent/privacy; machine-generated
+  ⇒ no copyright — see `assets/avatars/LICENSE.md`), so they stay **license-clean** while being a real photo. Still
+  **offline-safe** (the photo is bundled + embedded, zero fetch) and **deterministic** (same user → same face,
+  reruns byte-identical). The illustrated-SVG generator is retained as the dependency-free fallback. **Menu ==
+  profile (M42e P4):** the SAME data URI threads to BOTH `users.picture` (the /profile avatar) AND the Clerkenstein
+  roster `Picture` → `DemoUser.Picture` → FAPI `userRes.image_url`/`has_image` (the top-menu avatar) — proven
+  byte-identical (a re-seeded hero's `users.picture` SHA256 == her roster `picture` SHA256). The **org logo** rides
+  the same path: the seeded `organizations.logo_url` monogram threads through the roster `OrgLogo` → `orgRes.image_url`
+  so the top-menu org glyph renders the seeded mark.
+
+The live acceptance: re-seed demo-3 + log in as Maya → the top bar shows "Cervato Systems", the profile shows a
+role + title + summary + location, and every person carries a real face. Code-of-record: `rosetta-extensions`
+@ tag `method-acting-m39`. Out of M39 scope (later milestones): work/education history + skill depth (M41); the
+library + activity-feed serve-grant (M40).
+
+### The profile-depth layer (v1.10 "method acting" M41)
+
+M39 gave the logged-in hero the right **identity** (company, role+title, face); M41 gives her the **depth** behind
+it: a believable **work history + education timeline** and a **deep, role-aligned skill set with a wide, obvious
+claimed-vs-verified gap**. Before M41 the `/profile` timeline was empty (`public.user_experiences` /
+`public.user_educations` were **0 rows DB-wide** — written by no seeder) and the skill set was shallow (preset
+`verified: 8` → 8 distinct verified skills). M41 adds a new **`ProfileSeeder`** (surface `"profiles"`) and bumps
+the depth — **tooling + docs only, zero platform-repo edits**; the `/profile` timeline reads
+`ent.UserExperience` / `ent.UserEducation` via `TimelineGrouped(userID)` unchanged — M41 only supplies the rows.
+
+> **M44 §C update:** a **manager** is no longer skipped — she now gets a **modest** personal profile (a flat
+> 3-8 verified skills + a manager-track timeline + a small claimed tail) so her OWN `/profile` is populated.
+> The "skipped" claims below describe the M41 baseline; see
+> [`profile-completeness-spec.md`](profile-completeness-spec.md) § per-vantage for the manager + bulk-member fills.
+
+- **Work history + education (G3).** Per **end-user** hero (M41 baseline — managers got a personal timeline in
+  M44 §C; see the note above), the
+  `ProfileSeeder` writes a believable **3-job role progression** (`user_experiences`) + a **degree**
+  (`user_educations`), all deterministic + backdated within/just-before the story's activity span so the history
+  corroborates the verified skills. The titles reuse the **resolved `jobRoleRefs`** (the same role node-id the
+  membership carries), the per-entry `skills` json is a role-coherent slice of **real public skill names** (from
+  `resolveNamedSkillRefs`), and the current role is open-ended (`to` NULL). **Live-schema landmines** (the
+  overview's column guesses were wrong — these are verified against demo-3): `user_experiences.company` is
+  `uuid NOT NULL` with an FK → `companies(id)` (the GraphQL `Company` resolver does `QueryCompany().Only(ctx)`,
+  so a NULL/dangling company errors the whole timeline) ⇒ the seeder writes a real **`companies`** row per
+  distinct employer (#M41-D2); `from`/`to` are **DATE** (not timestamptz) with a `from<=to OR to IS NULL` CHECK;
+  `location_type` is the **lowercase** ent enum `inoffice|hybrid|fullremote` (a wrong-case value inserts but the
+  GraphQL `LocationType` enum can't map it); and the `skills` column is **`json`** — an array of skill names.
+
+- **Skill depth + the claimed-but-unverified tail (G5).** The preset `verified:` knob is bumped **8 → ~30** for
+  the thriving heroes (`stories.seed.yaml` + `stories-maya.seed.yaml`), so the verified chain writes **~30
+  distinct verified skills × `verifiedSessionsPerSkill` (3) ⇒ ~90 `user_skills` + ~30 evidences** on the
+  verified side. **On top**, the `ProfileSeeder` seeds a **~60-skill claimed-but-unverified tail**:
+  `user_skills` with `is_verified=false`, **no `job_simulation_id`**, and `user_skill_evidences` with
+  **`anthropos_level` NULL, `user_level` set** — so the profile "overall" reads **≈ 90 = ~30 verified + ~60
+  claimed**, **widening** the visible claimed-vs-verified gap (the demo's headline aha). The **DB landmine**:
+  `user_skills_check_foreign_keys` requires ≥1 provenance edge non-NULL — since the tail has no
+  `job_simulation_id`, it ties to the seeded **work history** via `user_skill_experience` /
+  `user_skill_education` (#M41-D3) (which *also* makes the claimed skills render **under** each work experience —
+  the `workExperience.Skills` resolver reads `userskill.HasExperienceWith`). The tail draws skills **distinct**
+  from the verified set (it offsets past the first `EffectiveVerified()` of the same role-coherent-then-flat
+  combined pool (#M41-D6)), so the two counts don't overlap. Both arcs read coherent: a thriving
+  **under-claimer**'s deep profile and a struggling **over-claimer**'s stark gap (few verified, many claimed —
+  the tail applies to both arcs (#M41-D5)) are each believable.
+
+The **gap mechanic is intact** — `user_level` (claimed) vs `anthropos_level` (verified) is still the widget's
+spine; the unverified tail leaves `anthropos_level` NULL so the gap renders, and the verified evidence UPSERT is
+never clobbered (the claimed UPSERT's `ON CONFLICT … WHERE is_verified = false` guard keeps the verified side
+winning (#M41-D4)). **Closure stays measured** — every skill node-id/name comes from the same replayed taxonomy resolvers
+the verified chain uses; no replayed taxonomy → the timeline still writes (blank skills/role — never fabricated)
+and the tail is skipped, so the closure gene stays green. Every table the seeder writes (`companies`,
+`user_experiences`, `user_educations`, `user_skills`, `user_skill_evidences`) is **`PerStackIsolated`**.
+
+The live acceptance: re-seed demo-3 + log in as Maya → the `/profile` Work Experience + Education sections
+populate with a believable career, and her skill set reads deep (~30 verified + ~60 claimed) with a wide,
+obvious claimed-vs-verified gap. Code-of-record: `rosetta-extensions` @ tag `method-acting-m41`. Out of M41
+scope (later milestones): the employee/manager 100%-coverage Playwright sweeps (M42e/M42m).
 
 ## The blueprint — declaring a hero
 
@@ -259,7 +387,7 @@ seeders + two fixes land the **spine** (not every widget — the hard scope line
 | **Teams / tags** | `tags.go` | The universal **slice dimension**: a dozen business-unit tags (front-loaded so the Teams tab is non-uniform) + a cross-cutting **`mentor`** tag (the Growth-tab Mentors KPI counts members tagged `mentor`). Each member is on exactly one business unit. |
 | **Target roles** | `target_roles.go` | The **gap + two-way internal mobility**: `organization_target_roles` (an admin-set development target = the gap) + `user_target_roles` (a self-set aspiration = mobility-ready), each a real public role node-id chosen different from the member's current role. |
 | **Succession feeders** | `succession.go` | `interview_extraction_results` for >20% of members (with the `summary` jsonb the succession query reads) to lift the **Succession tab** past the coverage gate (`too_sparse` → `full`). Trajectory-aware: a struggling hero reads at-risk (low wellbeing + negative sentiment), a thriving one reads positive. (The other feeder, `validation_attempt_*`, already lands via the M34 chain.) |
-| **Feedback** | `feedback.go` | `job_simulation_feedbacks` at **~2:1 positive** (the Italgas anchor), `is_positive` matched to the option's polarity — the "people liked it" signal. |
+| **Feedback** | `feedback.go` | `job_simulation_feedbacks` at **~2:1 positive** (the Italgas anchor), `is_positive` matched to the option's polarity — the "people liked it" signal. **v1.10 M42m — the org-feedback mirror fix.** The `/enterprise/organization-feedback` page (`GetOrganizationFeedback`, `app/.../repository/jobsimulation.go`) does NOT read `job_simulation_feedbacks` directly — it **JOINs** feedback to the app mirror `public.local_jobsimulation_sessions` on `feedback.session_id = mirror.jobsimulation_session_id` and scopes by the **mirror's** `organization_id`. The population sessions the feedback links have no mirror (only the `PersonaSeeder` mirrors, for heroes — the M36-D2 "the dashboard reads the app mirror" rule at org scale), so feedback was **inserted-but-invisible** (the page showed "No data" on a fully-seeded org — the org-feedback analog of G14). The `FeedbackSeeder` now **also writes a `local_jobsimulation_sessions` mirror per feedback session** (reconstructing the population session's coherent values from the same deterministic key), so the JOIN resolves and the page renders the real ~2:1 distribution. |
 | **Org-scale gap** | `population_evidence.go` | The **claimed-vs-verified gap at org scale** (the headline "aha", §3c): a ~55% share of the *supporting* population (not just heroes) gets verified-skill evidence rows with both `user_level` (claim) and `anthropos_level` (verified) set and **diverging** — a population mix of over- and under-claimers. (`user_skill_evidences` has no FK on `jobsimulation_session_id`, so a population evidence row is a clean write without the full hero chain; the heroes' full 7-table chain is the PersonaSeeder's.) |
 
 Two **fixes** (not new seeders) round out the spine:
@@ -286,11 +414,20 @@ the chain uses, so the seed-side closure gene (extended to `membership_skills`) 
 
 ## The presenter cockpit (M38)
 
+> **The cockpit UX is now specced standalone in [`cockpit-spec.md`](cockpit-spec.md) (v1.10 "method acting"
+> M43).** That doc is the canonical reference for the panel's UI surface + deep-link contract; the **v1.10 M43
+> UX pass superseded this section's two-button model** — there is now **one** unified **[Log in as]** CTA per
+> hero (it logs in *and* lands on her per-role `jump_to`), a light professional restyle, FontAwesome icons, a
+> seed-manifest download, and a staged login-progress overlay. This section is kept as the M37/M38 *producer/
+> consumer* origin (the roster-export + handshake seam below); read it with `cockpit-spec.md` for the current
+> UX.
+
 The seeded world (M34–M36) + the Clerkenstein multi-identity seat-switch (M37) make the *individual* surfaces
 real; **M38** makes the whole Stories & Heroes engine **clickable**. The **presenter cockpit** is a standalone
-served panel that lists each story → its hero trio and, per hero, two actions — **[Login as]** and **[Jump to
-section]** — so a demo-giver picks a hero, lands logged-in as her on the right screen, and presents that part of
-the story live.
+served panel that lists each story → its hero trio and, per hero, an action that logs the demo-giver in as her
+and lands her on the right screen — so a presenter picks a hero and presents that part of the story live. _(M38
+shipped two actions per hero — `[Login as]` → app root + `[Jump to section]` → the hero's deep-link; v1.10 M43
+unified them into one `[Log in as]` → `jump_to` — see [`cockpit-spec.md`](cockpit-spec.md).)_
 
 ### For PMs — the demo-driving surface
 
@@ -305,13 +442,15 @@ typing a login, no hunting for the right URL — the story is a menu.
 Presenter Cockpit — demo-3
   Story: AI Transformation & Reskilling   (Cervato Systems · 220 people)
     ▸ Maya Chen — Backend Developer · EMPLOYEE · THRIVING
-        "8 verified skills, rising growth arc, mobility-ready"        [Login as] [▶ Profile]
+        "8 verified skills, rising growth arc, mobility-ready"        [Log in as]   (→ her /profile)
     ▸ Tom Becker — Backend Developer · EMPLOYEE · STRUGGLING
-        "Few/low verified skills, OVER-rates himself (stark gap)"     [Login as] [▶ Profile]
+        "Few/low verified skills, OVER-rates himself (stark gap)"     [Log in as]   (→ his /profile)
     ▸ Dan Rossi — Engineering Manager · MANAGER
-        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [Login as] [▶ Workforce · Skills Verification]
+        "Team gaps, role-readiness, succession (Maya), at-risk (Tom)" [Log in as]   (→ Workforce · Skills Verification)
   Story: SDR Onboarding & Ramp   (Solvantis · 120 people)
     ▸ Sara Whitfield · EMPLOYEE·THRIVING  /  Nick Alvarez · EMPLOYEE·STRUGGLING  /  Leah Donovan · MANAGER
+
+(v1.10 M43: ONE [Log in as] CTA per hero, routed to her per-role jump_to; the M38 [Jump to section] button is gone.)
 ```
 
 (Display-label note: `vantage: end-user` renders as **EMPLOYEE**, `manager` as **MANAGER** — the YAML attribute
@@ -331,8 +470,9 @@ the annotations describing a hero in the cockpit are the same ones that scoped h
 drift from the data. (The demo tooling is stdlib-only Python, so the YAML is parsed once on the Go side and the
 panel reads the derived JSON — single-source preserved.)
 
-**[Login as] + [Jump to section] = one FAPI handshake redirect.** Both actions point the browser at the
-multi-identity fake FAPI's handshake with the hero's seat-switch key:
+**The CTA = one FAPI handshake redirect.** The action points the browser at the multi-identity fake FAPI's
+handshake with the hero's seat-switch key _(M38 rendered two — `[Login as]` + `[Jump to section]`; v1.10 M43
+unified to one `[Log in as]` → `jump_to`, see [`cockpit-spec.md`](cockpit-spec.md))_:
 
 ```
 https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=<jump_to>
@@ -343,8 +483,8 @@ https://<fapi-host>/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url
 next-web URL on the app's offset port `<3000 + N·10000>`. The FAPI selects the chosen hero's seat from
 `__clerk_identity` **then** establishes the session and redirects to `redirect_url` — so the hero is the
 active identity *everywhere* (the client view, `/v1/me`, the minted token, the cookies) AND the browser lands
-on her screen, in one move. **[Login as]** lands on the app root; **[Jump to section]** lands on the hero's
-`jump_to` deep-link. The key is the hero's `stories.yaml` id — the **same** key the roster export gave
+on her screen, in one move. The unified **[Log in as]** (v1.10 M43) lands the hero on her `jump_to` per-role
+screen. The key is the hero's `stories.yaml` id — the **same** key the roster export gave
 Clerkenstein's registry, so the seat always resolves. (The handshake + multi-identity selection are M37; see
 [`clerkenstein/knowledge/architecture.md` § Multi-identity].)
 
@@ -371,7 +511,7 @@ label; an unrecognized `jump_to` still works (it's a raw path) with a generic la
 # A storytelling demo: DEMO_STORIES=1 seeds the 2-org hero trio, wires the multi-identity fake-fapi, and
 # serves the cockpit. Default-off keeps every existing demo byte-identical (structural seed, single-identity).
 DEMO_STORIES=1 /demo-up 3
-# → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Login as] → [Jump].
+# → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Log in as] → her per-role screen.
 ```
 
 `DEMO_NO_COCKPIT=1` brings up the stories demo without the panel (e.g. an API-only run); `DEMO_STORIES_PRESET`

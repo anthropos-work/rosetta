@@ -116,6 +116,27 @@ builder skills).
 > the rosetta corpus doc-half. Grounded by an adversarially-verified spec
 > ([`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md) — 6-agent recon + 3-agent code review,
 > 2026-06-22, no Phase-1 blockers). **Tooling + docs only — zero platform-repo edits.**
+>
+> **v1.10 "method acting" — FEATURE-COMPLETE (all 9 milestones M39→M46 CLOSED; awaiting close-release)** (designed
+> 2026-06-24, **extended 2026-06-26**, via `/developer-kit:design-roadmap`; branch `release/01.10-method-acting`;
+> full detail in `## In Development — v1.10` below). The **believable-profile release** (M39–M42m) **+ the
+> presenter-grade + scalable-generation
+> extension** (M43–M46) — v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up: when a
+> presenter clicks **Login as** a hero, the individual's **profile** (org name, role+title, work history,
+> education, a real face, deep role-aligned skills) **and** the content surfaces (**library** + the **activity
+> feed**) populate with real content, on **every** page a hero of that type can reach — proven by a **Playwright**
+> coverage sweep (DOM + screenshots) with **zero** empty pages and **zero** out-of-demo escapes. The first 5
+> milestones **M39→M42m** (3 `section` targeted fills + 2 `iterative` per-vantage coverage gates) are **CLOSED**;
+> the release then **reopened, extended with M43→M46** (the extension): a presenter-grade **cockpit UX polish**
+> (M43), **profile completeness** for the whole roster — members **and** managers (M44), a cheap-LLM **generation
+> engine** + prompt-keyed cache (M45), and **org-scale fill** + a gen-batch preview CLI (M46). **All four
+> extension milestones are now CLOSED → v1.10 is FEATURE-COMPLETE; close-release is next.** Flat sequential
+> numbering (v1.x). Across `stack-seeding` / `stack-snapshot` /
+> `clerkenstein` / `demo-stack` + a new Playwright coverage harness + (M45) a first new third-party AI dep.
+> Grounded by the live-demo review ([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) + the
+> root-cause workflow `w7t4wq2z4`) + the v1.10-extend research note
+> ([`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md)).
+> **Tooling + docs only — zero platform-repo edits.**
 
 ## Version plan
 
@@ -131,6 +152,7 @@ builder skills).
 | **v1.7** | **house lights** | **Demo-UI hardening** — a fresh browser at a demo's offset UI renders the working app with zero manual steps (the mkcert-trusted FAPI cert so next-web stops blanking + the studio-desk single-port/production fix) | M31 ✅ → M32 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.7`) |
 | **v1.8** | **understudy** | The **self-contained-demo release** — `stack-demo/` gets its own platform clone set so a box with only `stack-demo/` (no `stack-dev/`) runs a demo end-to-end (re-implements the orphaned M26 onto current `main`, preserving v1.6/v1.7) | M26 ✅ | ✅ **SHIPPED 2026-06-15** (tag `v1.8`) |
 | **v1.9** | **storytelling** | The **believable-demo-narrative release** — a declarative Stories & Heroes engine: per-story org + a thriving/struggling/manager hero trio, seeded via the real verified-skill chain so the skill profile + the Workforce dashboard tell a story, plus a presenter cockpit (login-as a hero + jump-to the right screen) | M34 ✅ → M35 ✅ → M36 ✅ → M37 ✅ → M38 ✅ | ✅ **SHIPPED 2026-06-23** (tag `v1.9`) |
+| **v1.10** | **method acting** | The **believable-profile release** (a logged-in hero is a fully fleshed person: profile identity + the content-surface unblock + profile depth + **100% per-vantage demo coverage** proven by Playwright) **+ the presenter-grade + scalable-generation extension** (cockpit UX polish + whole-roster profile completeness + a cheap-LLM generation engine + org-scale fill) | M39 ✅ ∥ M40 ✅ → M41 ✅ → M42e ✅ → M42m ✅ → **EXTENDED:** { M43 ✅ ∥ M44 ✅ } → M45 ✅ → M46 ✅ | ✅ **SHIPPED 2026-06-27** (tag `v1.10`) |
 
 > **Why "v1.5", not "v1.4":** v1.4 was removed 2026-06-11 (its seeds → unscheduled backlog). The next release is
 > numbered **v1.5** to leave that gap unambiguous — nothing was silently renamed into the v1.4 slot.
@@ -146,6 +168,493 @@ never authored ad-hoc inside a stack dir. New tooling is built + tested in the a
 `.agentspace/rosetta-extensions/`, tagged, then consumed per-stack as `stack-<role>/rosetta-extensions @ <tag>`
 (rosetta = read-only doc corpus + dev-env skills; `rosetta-extensions` = the executable stack tooling).
 Full brief: [`.agentspace/demo-environment-draft.md`](../../.agentspace/demo-environment-draft.md).
+
+## Done — v1.10 "method acting" (SHIPPED 2026-06-27 · tag `v1.10`) (the believable profile + the presenter-grade / scalable-generation extension)
+
+> **SHIPPED 2026-06-27** (tag `v1.10`, branch `release/01.10-method-acting` merged `--no-ff` → `main`). All 9
+> milestones M39→M46 CLOSED; close-release GREEN (0 blocking; the single doc finding — an orphaned spec index —
+> fixed at close). Records: [`releases/archive/01.10-method-acting/`](releases/archive/01.10-method-acting/).
+> rext code-of-record @ tags `method-acting-m39..m46-servegrant-closure`. Tooling + docs only — **zero
+> platform-repo edits.** rext Go tests 1248→**1551** (+303); all 5 Clerkenstein gates 100%/100%; 1 deliberate new
+> dep (`ai@v1.40.1` at M45 — the user-acknowledged in-release generation-engine inflection); proven live on demo-3.
+
+**Theme:** v1.9 told the *story* (the org dashboard + the verified-skill spine); **v1.10 makes each *character*
+hold up under a close-up.** When a presenter clicks **Login as** a hero, that hero must read as a fully fleshed,
+believable person — the individual's **profile** (org name, role+title, work history, education, a real face,
+deep role-aligned skills) **and** the content surfaces they land on (**library** + the **activity feed**) populate
+with real semantic content, on **every** page a hero of that vantage can reach. **Tooling + docs only — zero
+platform-repo edits.** Designed 2026-06-24 via `/developer-kit:design-roadmap` from the live-demo review
+([`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) — a hero logged in as **Maya Chen** read empty
+across /profile, /library, and the activity feed) + the in-depth root-cause workflow `w7t4wq2z4`.
+
+> **EXTENDED 2026-06-26 with M43→M46.** Rather than close the release after M42m, v1.10 **reopened** and added a
+> four-milestone extension — the **presenter-grade + scalable-generation** layer: M43 **cockpit UX polish** (the
+> presenter launcher goes light + professional, one CTA, manifest download, login-progress overlay), M44 **profile
+> completeness** (the whole roster — members **and** managers — fully baked: trajectory-aware self-ratings,
+> certificates + projects, manager personal data, every fill-member an avatar + career; DATA DENSITY ONLY), M45 a
+> cheap-LLM **generation engine** (`cmd/gen-batch` + a prompt-keyed cache + the CODE-owns-structure /
+> AI-owns-content boundary; the first new third-party dep), and M46 **org-scale fill** (a supporting-population
+> descriptor fills a whole believable org) + a gen-batch preview CLI. Execution: **{ M43 ∥ M44 } → M45 → M46**.
+> **Close-release moves to AFTER M46.** Grounded by the v1.10-extend research note
+> [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md).
+> Full milestone blocks under `### Extension — M43→M46` below.
+
+**Origin / key findings.** The foundation is sound — the org binding is correct (Maya's membership org = her Clerk
+org claim = "Cervato Systems"; nothing cross-org-hidden), the verified-skill gap mechanic works, the catalog is
+replayed. The gaps are the **believability-depth layer** v1.9 didn't build. Two research findings shaped the cut:
+(1) the empty **activity feed is NOT a seeding gap** — the data is correctly seeded (21 completed sessions), but
+cms (anonymous public-policy Directus read) can't serve the nested content it federates to → cms panics → the feed
+empties. That's the **same per-stack-Directus serve-grant gap that empties the library**, so the two collapse into
+**one** surfacing milestone (M40). (2) "100% non-empty, no out-of-demo escapes" is not enumerable up front — it's a
+measure→fix→re-measure loop, so it becomes **two iterative per-vantage coverage gates** (M42e/M42m) that run after
+the targeted fills.
+
+### Milestones
+
+#### M39 — Profile identity & quick wins
+**Status:** `done` (closed 2026-06-24) · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/archive/01.10-method-acting/m39-profile-identity/`](releases/archive/01.10-method-acting/m39-profile-identity/)
+**Goal:** a logged-in hero shows the right org name, a real role + title, and a real face.
+**Closed:** all 3 In-list items landed Fate-1 — **G1** the roster org-name thread (`RosterIdentity`/`BuildRoster`
+→ `RosterEntry` → `DemoUser`/`orgMemberships()`, the single-sourced `orgSlugFor`, the `DisallowUnknownFields`
+paired change + no-roster default), **G2** the `public.user_basic_info` role backfill (the idempotent
+IS-DISTINCT-FROM UPDATE — the table the /profile header actually reads + the role-gap widgets, no-fabrication),
+**G4** the offline self-authored parametric-SVG real-face generator → base64 data URI (deterministic, license-clean,
+~1 KB). Close review GREEN: 5 findings, 0 blocking (all decision-triage reference tags — #M39-D2/D3 in
+clerkenstein.md, #M39-D4/D5/D7 in stories-spec.md); deferral re-audit GREEN (0 deferrals; the 2 Out items are
+Fate-2, already owned by M40/M41); adversarial review (AR-1 G2 silent-0-rows, AR-2 G1 slug-collision) both
+no-fix-needed. All 3 offline Clerkenstein alignment gates 100%/100% (Go 22/22, JS 9/9, multi 9/9); go.mod/go.sum
+byte-identical (supply-chain GREEN); test funcs stack-seeding 444→**462** / clerkenstein 259→**264**; flake 0
+(5× shuffle). Code-of-record: `rosetta-extensions` @ tag `method-acting-m39` (c360b4e). **Zero platform-repo edits.**
+**Scope — In:**
+- **G1 org name** — thread `st.Org.Name`/slug through the roster (`stack-seeding/seeders/roster.go`) → clerkenstein
+  `RosterEntry`/`DemoUser`/`orgMemberships()` (`clerk-frontend/registry.go`+`resources.go`) so the FAPI org resource
+  carries the story org name (top bar → "Cervato Systems"). "Clerkenstein Demo Org" stays the no-roster default.
+  (roster↔RosterEntry lockstep `DisallowUnknownFields` — one paired change; re-tag both repos.)
+- **G2 role backfill** — backfill `public.user_basic_info.job_role_id` (+ job_title/summary/location) from the
+  resolved hero role (`stack-seeding/seeders/users.go`). The /profile header **and** the role-gap radar /
+  role-readiness widgets read this — one UPDATE lights several surfaces.
+- **G4 real-face avatars** — seed a **bundled, license-clean real-face set** mapped deterministically by hero key
+  (replacing the DiceBear *initials* disc). Offline-safe + deterministic + license-clean.
+**Out:** work/education + skill depth (M41); the surfacing fix (M40).
+**Depends on:** none. **Parallel with:** M40.
+**Delivers →** [`corpus/ops/demo/stories-spec.md`](../../corpus/ops/demo/stories-spec.md) + [`corpus/services/clerkenstein.md`](../../corpus/services/clerkenstein.md).
+
+#### M40 — Per-stack Directus public-policy serve-grant (library + activity feed)
+**Status:** `done` (completed 2026-06-24) · **Shape:** `section` · **Complexity:** small–medium · **Highest single-surface value** · **Dir:** [`releases/archive/01.10-method-acting/m40-directus-serve-grant/`](releases/archive/01.10-method-acting/m40-directus-serve-grant/)
+**Closure:** Built + hardened (3 passes) + closed in one near-clean review (2 findings, 0 blocking — both docs/triage).
+The root cause was bigger than the original a/b/c framing: the per-stack Directus had `directus_relations=0` /
+`directus_fields=0`, so the nested O2M/M2M aliases were UNKNOWN to Directus (not "stripped under the public policy").
+The fix (rext `stack-snapshot/directus/structure.go` @ tag `method-acting-m40` → `5e53301`) synthesizes the relational
+web dynamically — `directus_fields` + `directus_relations` under a both-endpoints closure (off-stack aliases dropped:
+the `assets_files`-500 / `job_position`-unmarshal classes), the library/`resource`/`job_position` M2O closure,
+synthesized public-read grants, and a `directus_versions` read+create self-heal grant (the dominant blocker). **BOTH
+the library and activity-feed halves ship in tooling — the key-risk platform-nil-guard fork was REFUTED, zero platform
+edits.** Live (demo-3, anonymous cms): `publicSkillPaths=22`, `publicJobSimulations=50`, `jobSimulation` returns
+`sequences[].scenarioIntro` — all >0. Tests: stack-snapshot 333→**354** (+21; directus pkg 100% statements, `-race`
+clean); supply-chain GREEN; flake gate 5/5. Deferral: KPI "completed"=0 → **Fate-2 → M42e/M42m** (D7, their coverage
+gate owns it; no plan edit). Decisions (#M40-D1..D6) blended into [`snapshot-spec.md`](../../corpus/ops/snapshot-spec.md).
+**Goal:** the hero's content surfaces — `/library/ai-simulations`, `/library/skill-paths`, **and** `/profile/activities`
+— render the real catalog/activity from the already-seeded data, on a fresh `/demo-up`.
+**Scope — In:**
+- In `stack-snapshot/directus/structure.go`, **synthesize** public-read `directus_permissions` for the collections
+  cms's **anonymous** read path needs but prod's public policy doesn't grant: `directus_versions` (unblocks the
+  *entire* skill-paths library + every sim/path detail page), the library-category collections (unblocks the sims
+  list), **and** make the `simulations.sequences` **O2M nested read** serve under the public policy (unblocks the
+  activity feed's content federation — the feed reads 21 correctly-seeded completed sessions, but cms panics on the
+  empty nested read at `jobsimulation.go:1097`).
+- A regression test that all three surfaces serve **>0** on a fresh demo.
+**Out:** any seeding (the data is already correct); identity/depth.
+**Depends on:** none. **Parallel with:** M39, M41 (different section — `stack-snapshot` vs `stack-seeding`).
+**Risk / open:** the `sequences` O2M may not be grantable under the public policy without a platform nil-guard at
+cms `jobsimulation.go:1097` (read-only). Investigate the O2M mechanism **first**; if it needs a platform change, the
+**library half still ships** and the activity-feed half escalates for platform sign-off (the zero-edit line).
+**Delivers →** [`corpus/ops/snapshot-spec.md`](../../corpus/ops/snapshot-spec.md).
+
+#### M41 — Profile depth seeding
+**Status:** `done` (2026-06-25) · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/archive/01.10-method-acting/m41-profile-depth/`](releases/archive/01.10-method-acting/m41-profile-depth/)
+**Close (2026-06-25):** GREEN, 0 blocking. A NEW `ProfileSeeder` (rext `stack-seeding`, surface `"profiles"`)
+landed G3 (work-history + education timeline: `companies` + 3 `user_experiences` + 1 `user_educations` per
+end-user hero, deterministic + backdated + role-aligned, live-schema-correct — NOT-NULL company FK, DATE
+`from<=to OR to IS NULL` CHECK, lowercase `location_type` enum, json skills) + G5 (verified depth bump 8→~30 for
+thriving heroes + a ~60-skill claimed-but-unverified `user_skills`/`user_skill_evidences` tail tied to the
+experiences via `user_skill_experience`/`user_skill_education`, `anthropos_level` NULL, guarded
+`ON CONFLICT … WHERE is_verified=false` so it never clobbers the verified side) — widening the visible
+claimed-vs-verified gap. **Zero platform-repo edits** (the `/profile` timeline read path unchanged; M41 only
+supplies rows). Review: 8 findings, 0 blocking — 1 code nice-to-have (kept), 1 Phase-2c adversarial (the
+empty-`eduIDs` modulo guard — new test, code already correct), 5 docs (completeness, incl. the
+`stack-seeding/README.md` test-count reconciliation 406→496), 1 decision-triage (D2/D3/D4/D5/D6 blended+tagged in
+stories/seeding-spec; D1/D7 archive). Deferral re-audit **GREEN** (M41 added 0; the inherited DEF-M40-01 KPI=0 is
+Fate-2 → M42e/M42m, unchanged, not aged-out). **stack-seeding 462→496 (+34)**; both M41 files 100% per-function;
+flake gate 5/5; **supply-chain GREEN** (go.mod/go.sum byte-identical). Code-of-record: `rosetta-extensions` @ tag
+`method-acting-m41` → `0346113` (the tag moved `63bcceb`→`0346113` for the close AR-1 test + README refresh).
+Merged `m41/profile-depth` --no-ff → `release/01.10-method-acting`. **Next: M42e** (employee 100% coverage,
+`iterative`).
+**Goal:** a believable work history + education + a deep, role-aligned skill set with a real claimed-vs-verified gap.
+**Scope — In:**
+- **G3** — a `ProfileSeeder` (rext `stack-seeding`) writing 2–3 `public.user_experiences` + 1–2
+  `public.user_educations` per hero (deterministic UUIDs, backdated within the story's activity span, role-aligned
+  titles, tied to the verified-skill arc).
+- **G5** — bump skill depth: `verified:` knob 8→~30 (⇒ ~90 user_skills / 30 evidences) **+** a claimed-but-unverified
+  `user_skills`/`user_skill_evidences` tail (~60, is_verified=false, user_level set, anthropos_level NULL) so
+  "overall ≈ 90" **widens the visible claimed-vs-verified gap**.
+**Out:** the surfacing fix (M40), identity (M39).
+**Depends on:** M39 (shares `stack-seeding`; M39's `users.go` edits land first). **Parallel with:** M40.
+**Delivers →** [`corpus/ops/seeding-spec.md`](../../corpus/ops/seeding-spec.md) + `stories-spec.md`.
+
+#### M42e — Employee 100% demo coverage
+**Status:** `done` (closed-on-gate 2026-06-25) · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/archive/01.10-method-acting/m42e-employee-coverage/`](releases/archive/01.10-method-acting/m42e-employee-coverage/)
+**Close (2026-06-25):** GREEN, 0 blocking. Closed **on-gate** — the **employee semantic believability gate** fired
+(`gateMet:true`): logged in as Maya (DevOps Engineer @ Cervato Systems) on a **fresh zero-manual demo-up**, the
+Playwright sweep reports **reachable=62, failingSections=0, personaFailures=0** (all 3 persona PASS: role↔curated
+skills, menu==profile real-photo avatar, org name+logo), **escapes=0, notReached=0, frontier=EXHAUSTED** —
+AUTHORITATIVELY from the consumed clone @ tag (committed code), reproduced across 2 `demo-down --purge`+`demo-up`
+cycles. **23 iters** (1 bootstrap tok iter-01 [the harness + `coverage-protocol.md`] + 1 bootstrap-flavored re-scope
+tok iter-10 + 21 tiks; 0 triggered toks). The gate was **re-scoped mid-milestone** (2026-06-25 user live-review)
+from a weak DOM-text-density check to the semantic believability bar; iters 10-23 rebuilt to it via the design-plan's
+7 root causes (P0-P8): curated skills + DevOps specialization, `legacy_skills` json shape, per-hero activity,
+synthetic-photo avatars + org logo, the FATAL post-set-dress Sentinel reload, library capture (sim-embeddings +
+categories, 274 sims), the semantic-coverage harness rebuild, and the fresh-demo-up acceptance + 2 reproducibility
+fixes (stale-CLI always-rebuild; the avatar-selector false-fail). **Delivered:** the NEW `coverage-protocol.md`
+iteration protocol + the **Playwright semantic-coverage harness** (rext `stack-verify/e2e/` — the first non-Go rext
+dev/test dep, @playwright/test ^1.49.0). **Zero platform-repo edits.** Review: 8 findings, 0 blocking — 0 code
+must-fix (1 gofmt + 1 harness precedence-guard [the iter-23 false-fail class] + 1 reorder-guard comment landed),
+3 Phase-2c adversarial scenarios recorded, 4 docs (coverage-protocol.md indexed in README/CLAUDE; the rext
+stack-verify handbook corrected; spec-notes TODOs marked delivered). Deferral re-audit **GREEN** (0 repeat, 0
+aged-out, 0 escape-hatch; **DEF-M40-01 employee-half resolved in-milestone** [the /profile stats-row KPI section
+passes], manager-half Fate-2 → M42m; the manager smoke-sweep findings [139 studio.anthropos.work escapes, 5 unreached
+`/workforce/*` M36 pages, the team-roster fan-out] are a clean Fate-2/Fate-3 forward-route to the scaffolded M42m).
+Go test funcs **1326→1373 (+47)** (stack-seeding 496→534, stack-snapshot 354→361, clerkenstein 264→266) + the NEW
+TS harness (7 Playwright tests/6 files); seeders 97.0% stmts; flake gate 5/5 shuffled; **supply-chain GREEN**;
+all **5 alignment gates** 100%. Code-of-record: `rosetta-extensions` @ tag `method-acting-m42e` → `53574ae` (the
+final-harden `bcb4c26` + the close fix-commit). Merged `m42e/employee-coverage` --no-ff → `release/01.10-method-acting`.
+**Next: M42m** (manager 100% coverage, `iterative` — reuses this harness + protocol; its input is calibrated).
+**Goal:** a hero of the **employee/member** vantage sees **100% of the demo platform's pages populated** — no empty/error
+pages, no out-of-demo escapes.
+**Exit gate:** a **Playwright** sweep, logged in as an employee hero, of **every reachable demo page** asserts
+(a) **non-empty semantic content in the DOM** + (b) **populated screenshots** for **100%** of pages, with **zero**
+pages empty/error and **zero** nav links escaping the demo platform — every in-app link resolves to a **demo-local**
+surface (e.g. left-menu **Studio** → local studio-desk on its offset port, **not** prod `studio.anthropos.work`; an
+external link is **not** valid filler and must be rewritten in the demo injection/env).
+**Why iterative:** the page set + the failure modes (empty section / federation error / out-of-demo link / missing
+seed) are discovered by the sweep, not enumerable up front; each iter measures → fixes (in rext `stack-seeding` /
+`stack-snapshot` grants / the demo injection link-rewriting / a corpus doc) → re-sweeps until 100%. **Also delivers
+the Playwright coverage harness** (rext) that M42m reuses.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md) (authored by M42e).
+**Depends on:** M39 + M40 + M41 (the targeted fills land first so the loop only chases the tail). **Parallel with:** none.
+**Open decision:** **Playwright** is a **new rext dev/test dependency** (browser automation, demo-only) — the first
+non-Go tooling dep; sanctioned by the coverage requirement.
+**Delivers →** `corpus/ops/demo/coverage-protocol.md` (new) + the touched specs as gaps close.
+
+#### M42m — Manager 100% demo coverage
+**Status:** `done` (closed-on-gate 2026-06-26) · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/archive/01.10-method-acting/m42m-manager-coverage/`](releases/archive/01.10-method-acting/m42m-manager-coverage/)
+**Close (2026-06-26):** GREEN, 0 blocking. Closed **on-gate** — the **manager semantic believability gate** fired
+(`gateMet:true`): logged in as Dan Rossi (`dan-manager`, the org-intelligence seat @ Cervato Systems) on a **fresh
+zero-manual demo-up**, the Playwright sweep reports **reachable=70, failingSections=0, personaFailures=0, escapes=0,
+notReached=0, frontier=EXHAUSTED** — AND the **M42e employee gate HELD** on the same fresh stack (no regression:
+`reachable=59, (0,0,0,0), EXHAUSTED, gateMet:true`). **5 iters** (1 bootstrap tok iter-01 [TOK-01 the manager
+strategy + baseline] + 4 tiks iter-02..05; 0 triggered toks). The whole TOK-01 result reproduces **with no manual
+step** on the fresh build (the Studio demo-patch auto-applied [SERVED bundle 0× prod / 31× `:39000`, clone git-clean
+post trap-revert]; the FeedbackSeeder mirror auto-seeded [162/162 joinable]; the manifest route reconcile; Sentinel
+`AuthorizationService/Reload` post-set-dress; library replay + stories; autoverify GREEN). **Delivered** (rext,
+tagged): the **`demopatch` tool** (a content-anchored source-patch for the demo's EPHEMERAL clone + 6 guards — the
+sanctioned mechanism for the platform-bound Studio left-nav escape, resolved **demo-only 139→0**; CANONICAL repos
+never touched), the **FeedbackSeeder org-feedback JOIN-mirror** (the `/enterprise/organization-feedback` "No data"
+inserted-but-invisible fix), the **manager harness namespace** (`MANAGER_PAGES` reconciled from the wrong
+`/workforce/*` guesses to the real `/enterprise/*` surface [the dashboard is ONE tabbed SPA, not 5 sub-routes],
+`calibrated:true` + `MANAGER_SAMPLE_RULES` the superset), and the `ensure-clones.sh` R1/R1b/R2 + Studio env wiring.
+Corpus docs: `coverage-protocol.md` (the manager manifest + the Platform-bound-escape routing row + the env-rewrite
+precondition), `frontend-tier.md` (the demopatch note, close-added), `stories-spec.md` (the FeedbackSeeder mirror).
+**RESCOPE-1** (the platform-bound Studio escape) was resolved demo-only via the demo-patch tool — **not a platform
+edit, not a deferral**. **Zero CANONICAL platform-repo edits** (the v1.10 hard line held all milestone). Review: 3
+findings, 0 blocking — corpus diff is docs-only (the code-of-record + the code review/harden/adversarial live in rext);
+2 Fate-1 docs fixes (the coverage-protocol.md "pristine-reverts" typo + the frontend-tier.md demopatch note — the
+delivered-spec gap) + 1 decision-triage (D1–D6 → archive). Deferral re-audit **GREEN** (0 escape-hatch, 0 repeat, 0
+aged-out; **DEF-M40-01 manager-half resolved in-milestone** [route reconcile turned notReached=5 into 6 asserted
+dashboard pages rendering real M36 data: 493 mapped / 262 verified / 53.1% coverage, 19 cards / 67 charts; the
+org-feedback empty surface fixed via the FeedbackSeeder mirror]; standing backlog DEF-M10-01/DEF-M21-01/M25-D9
+unchanged). rext Go test funcs **1373→1376 (+3)** (stack-seeding 534→537, the feedback mirror tests) + the Python
+demopatch suite 18→43 (+25 adversarial-guard) + the TS manager unit spec (+17); flake gate 3× clean; **supply-chain
+GREEN** (0 dep/lockfile change in the whole M42m footprint); alignment N/A (zero clerkenstein/alignment change) — the
+**5 gates carry forward 100%**. Code-of-record: `rosetta-extensions` @ tag `method-acting-m42m-harden-final` (per-iter
+tags `method-acting-m42m-iter01..iter05` + the harden tag). Merged `m42m/manager-coverage` --no-ff →
+`release/01.10-method-acting`. **v1.10 is now reproducibly gate-complete across BOTH per-vantage coverage gates
+(employee M42e + manager M42m) → next: `/developer-kit:close-release`** (merge `release/01.10-method-acting` → `main` +
+tag `v1.10`) — the user's separate step, after their visual review.
+**Goal:** a hero of the **manager** vantage sees **100% of the demo platform's manager-reachable pages populated** —
+no empty/error pages, no out-of-demo escapes.
+**Exit gate:** identical to M42e's, run as a **manager** hero (covers the manager-only surfaces — the Workforce
+dashboard funnel/teams/role-gap/mobility/succession/feedback + any admin pages — populated, in-demo).
+**Why iterative:** same loop as M42e; the manager page set + failure modes are discovered by the sweep.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md) (reused; M42e authors it).
+**Depends on:** M42e (the harness) + M39/M40/M41. **Parallel with:** none.
+**Delivers →** updates across the touched specs as gaps close.
+
+### Extension — M43→M46 (the presenter-grade + scalable-generation extension)
+
+> **v1.10 was EXTENDED 2026-06-26** (`/developer-kit:design-roadmap`, from the live-demo + research
+> findings note [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../.agentspace/scratch/roadmap-research-2026-06-26.md)):
+> instead of closing the release after M42m, four new milestones **M43→M46** were added — the cockpit gets
+> a presenter-grade UX polish, the whole roster (members **and** managers) gets fully baked, and a **cheap-LLM
+> generation engine** scales the believable population from a hand-curated trio to a whole generated org.
+> v1.10 reopened from "all 5 closed / ready for close-release" to **IN DEVELOPMENT, extended with M43→M46**;
+> **close-release moved to AFTER M46. All four extension milestones are now CLOSED (M43→M46, 2026-06-26→27) →
+> v1.10 is FEATURE-COMPLETE; close-release is next.** Flat sequential numbering (v1.x): **M43, M44, M45, M46**.
+> Still **tooling + docs only — zero platform-repo edits.**
+
+#### M43 — Cockpit UX polish
+**Status:** `done` (completed 2026-06-26) · **Shape:** `section` · **Complexity:** small–medium · **Dir:** [`releases/archive/01.10-method-acting/m43-cockpit-ux/`](releases/archive/01.10-method-acting/m43-cockpit-ux/)
+**Closed:** 2026-06-26 via `/developer-kit:close-milestone` (GREEN, 0 findings / 0 blocking). All five UX fills
+delivered Fate-1 + RENDER-ACCEPTED on a live demo-3 (`:37700`) + USER-APPROVED the design: **(1)** light restyle
+(`_PAGE_CSS` → clean light high-contrast, card-per-hero, indigo accent); **(2)** FontAwesome FREE-CDN icons
+(`fa-circle-user`/`fa-building`/`fa-arrow-right-to-bracket`/`fa-download`, SRI-correct); **(3)** CTA unification
+(dropped `[Jump to section]`; one `[Log in as]` per hero → the resolved `jump_to`, reusing `cockpit.go`'s
+`defaultJumpForVantage` — no `cockpit.go` change); **(4)** seed-manifest download (footer → `/manifest.json`,
+`Content-Disposition: attachment`); **(5)** staged login-progress overlay (3 stages + `localStorage` 30s window
+across the FAPI-handshake redirect). Docs: NEW `corpus/ops/demo/cockpit-spec.md` (the UX + deep-link reference +
+the future-feature expansion surface) + the `stories-spec.md` two-CTA→unified reconciliation + README/CLAUDE index
+rows. Hardening: 2 passes, cockpit Python tests 27→**63**, a meta-line double-escape bug fixed + pinned (the
+SRI/href-injection/CTA regressions locked), 0 flakes. Audits GREEN: deferral (0 deferrals — the cockpit
+future-feature surface is an `cockpit-spec.md` expansion surface, not a deferral), supply-chain (0 new deps —
+`cockpit.py` stdlib-only, FA = CDN `<link>`), alignment N/A (zero clerkenstein change), closure GREEN, KB-fidelity
+YELLOW-clear (the `cockpit-spec.md` blind-area was the planned `Delivers →` target, reconciled). **Zero canonical
+platform-repo edits.** Code-of-record: `rosetta-extensions` @ tag `method-acting-m43-cockpit-ux-fix1`; the corpus
+doc-half merged `--no-ff` into `release/01.10-method-acting`. With M43 + M44 both closed, the **{ M43 ∥ M44 }
+opening pair is DONE**; M45 (the generation engine — `iterative`) is next.
+**Goal:** turn the presenter cockpit (a 253-line stdlib-Python static-HTML server, rext `demo-stack/cockpit.py`,
+served at `:7700`+offset) from a dark utilitarian panel into a **slick, professional light login launcher** —
+one sensible CTA per hero, icons, a manifest download, and a staged login-progress overlay. **Zero next-web /
+platform-repo edit** (the cockpit stays a standalone served panel — the hard zero-edit line).
+**Scope — In:** (1) restyle `cockpit.py` `_PAGE_CSS` (~lines 68–93) from the dark GitHub theme to a clean LIGHT
+high-contrast professional design (card hierarchy, spacing, accent color); (2) import the FontAwesome FREE CDN
+`<link>` in `render_page()` `<head>` + `fa-user-circle` before each hero name + `fa-building` before each org
+name (icon CSS); (3) **CTA unification** — remove [Jump to section], rename [Login as]→[**Log in as**], route it
+to the hero's `jump_to` per-role landing (reuse `cockpit.go`'s `defaultJumpForVantage`); (4) **seed-manifest
+download** — expose the existing `cockpit.py` `/manifest.json` as a footer download link
+(`Content-Disposition: attachment`); (5) a staged JS **login-progress overlay** (`Signing you in…`→`Loading
+dashboard…`→`Initializing app…`) with `localStorage` state across the redirect, so the 2–5s FAPI-handshake →
+next-web blank-load has feedback.
+**Scope — Out:** any next-web/platform-repo edit; removing the real handshake→next-web latency (only the FEEDBACK
+improves); a full bespoke design-system/brand pass; presenter-feature deepening (hero history, telemetry,
+note-taking).
+**Depends on:** none. **Parallel with:** M44 (different rext module).
+**Open questions:** the exact design aesthetic (default clean light flat); vendor FA for offline-safe demos vs
+the CDN (default CDN, per the user's ask); manifest as JSON vs the source `stack.stories.yaml` (default JSON);
+whether [Log in as] shows the `jump_to`-label.
+**KB dependencies:** `rosetta_demo.md` (cockpit lifecycle), `clerkenstein.md` (the `/v1/client/handshake`,
+unchanged), `frontend-tier.md` (the demo UI tier), + the scattered M37/M38 cockpit mechanics it graduates.
+**Delivers →** `corpus/ops/demo/cockpit-spec.md` (**NEW** — graduate the scattered M37/M38/clerkenstein cockpit
+mechanics into one standalone cockpit-UX spec). Reuse: `cockpit.go`'s `BuildCockpitManifest` /
+`defaultJumpForVantage`, the Clerkenstein `/v1/client/handshake` (unchanged), the existing `/manifest.json`.
+
+#### M44 — Profile completeness (members + managers fully baked)
+**Status:** `done` (completed 2026-06-26) · **Shape:** `section` · **Complexity:** medium · **Dir:** [`releases/archive/01.10-method-acting/m44-profile-completeness/`](releases/archive/01.10-method-acting/m44-profile-completeness/)
+**Closed:** 2026-06-26 via `/developer-kit:close-milestone` (GREEN, 1 finding / 0 blocking). All four DATA-DENSITY
+fills delivered Fate-1 + RENDER-VERIFIED on a live demo-3: **(§A)** trajectory-aware self-rating (thriving
+self-rated vs struggling NULL/incomplete, chart still renders); **(§B)** NEW `CertificatesSeeder` +
+`ProjectsSeeder` (live-schema-corrected: `public.user_certifications` / `public.user_projects`); **(§C)** the
+manager personal-data unskip (modest flat verified set + manager-track timeline); **(§D)** bulk-member shallow
+career **+ the avatar-column fix** (the build's render-miss — `/enterprise/members` reads
+`memberships.picture_url`, not `users.picture`; the addendum filled 0→340/341, 20/20 photos). Docs: NEW
+`corpus/ops/demo/profile-completeness-spec.md` (+ the §D avatar GOTCHA) + seeding-spec/stories-spec/demo-README.
+Hardening: 3 passes, 17 tests, seeders stmt cov 96.5%→97.5%, 0 bugs, 0 flakes. Audits GREEN: deferral
+(0 deferrals; `Out:` = Fate-2 to M45/M46), supply-chain (0 new deps), alignment N/A (zero clerkenstein change),
+isolation clean, closure GREEN, KB-fidelity GREEN. stack-seeding Go test funcs 538→**567** (+29). **Zero canonical
+platform-repo edits.** Code-of-record: `rosetta-extensions` @ tag `method-acting-m44-profile-completeness-fix2`;
+the corpus doc-half merged `--no-ff` into `release/01.10-method-acting`. **M45 (engine) is now UNBLOCKED** (it
+reuses M44's certificate/project + bulk-member surfaces + the trajectory-aware self-rating).
+**Goal:** close the character-facing **DATA-DENSITY** gaps so **every member AND manager profile is fully
+populated** — trajectory-aware self-ratings, certificates + projects, manager personal data, and every
+`/enterprise/members` fill-member gets an avatar + career + skills. **DATA DENSITY ONLY — zero platform/next-web
+edits** (no UI "% complete" widget — the user's choice).
+**Scope — In:** (A) **trajectory-aware self-rating** — branch `PersonaSeeder`'s `user_level` UPSERT on
+`Persona.Trajectory` so the THRIVING hero shows a completed self-assessment and the NON-THRIVING hero shows an
+INCOMPLETE/absent self-rating state (keep ~2–3 verified skills so the Skill-Spotlight chart still renders);
+(B1) **NEW `CertificatesSeeder`** (`seeders/certificates.go`, surface `'certificates'`, `DependsOn`
+users+personas) — 2–3 `public.user_certificates` rows per end-user hero, backdated in the activity span
+(`cert_name` NOT NULL, DATE types, nullable `organization_id`); (B2) **NEW `ProjectsSeeder`**
+(`seeders/projects.go`, surface `'projects'`, `DependsOn` users+personas) — 3–4 `public.user_projects` rows per
+end-user hero (`project_name` NOT NULL, nullable `end_date`, `skills` json array); (C) **MANAGER personal data**
+— remove the `IsManager` skips (`persona.go:121` + `profile.go:125`); write a small verified-skill subset (3–8
+skills, L1–L2, flat current-state, no growth arc) + a manager-track timeline (3 experiences + 1 education) so
+the manager's OWN `/profile` is populated; (D) **BULK-MEMBER depth** — extend `photoAvatarDataURI` to EVERY
+member (avatars on `/enterprise/members`) + extend `ProfileSeeder` to write a shallow timeline (3 short-tenure
+experiences, 1 education, a flat ~6-skill claimed tail) for every member.
+**Scope — Out:** any platform/next-web UI edit (NO "% complete" widget — DATA DENSITY only); LLM-generated
+content (that's M45/M46 — these are deterministic seeders); deep per-fill-member career narratives (kept shallow
+by design; richer fill is M46).
+**Depends on:** none structurally, but land BEFORE M45 (the engine reuses the certificate/project + bulk-member
+surfaces + the trajectory-aware self-rating). **Parallel with:** M43 (different rext module).
+**Open questions:** non-thriving truly-zero verified vs minimal 2–3 (default minimal); manager trajectory flat
+vs rising (default flat); bulk-member timelines for EVERY member (~3K rows/org) vs sampled (default ALL get
+avatar+career, depth shallow); shared-vs-separate `ProfileSeeder` path for managers/fill-members; the projects
+surface name (avoid collision).
+**KB dependencies:** `seeding-spec.md` (the isolation boundary the new surfaces stay within),
+`stories-spec.md` (the verified-skill chain + gap mechanic the self-rating extends), `coverage-protocol.md`
+(each component → a Playwright acceptance assertion).
+**Delivers →** `corpus/ops/demo/profile-completeness-spec.md` (**NEW** — the "complete profile" rubric: identity
++ content + semantic layers, per-vantage member vs manager, each component mapped to its seeding surface + a
+Playwright acceptance assertion) + `seeding-spec.md` / `stories-spec.md` for the new seeders, the trajectory-aware
+self-rating, the manager unskip, and the bulk-member depth. Reuse: `resolveJobRoleRefs` / `resolveNamedSkillRefs`,
+`dateOnly`, `legacySkillsJSON`, `roleTitle` degradation, `CopyRowsIdempotent`.
+
+#### M45 — Generation engine (LLM batch profile generation + prompt-keyed cache)
+**Status:** `done` (closed-on-gate 2026-06-26) · **Shape:** `iterative` · **Complexity:** large · **Dir:** [`releases/archive/01.10-method-acting/m45-generation-engine/`](releases/archive/01.10-method-acting/m45-generation-engine/)
+**Closed 2026-06-26 (closed-on-gate, 5/5):** the generation engine ships — a cheap-LLM (gpt-4o-mini) batch
+profile generator with the **CODE-owns-structure / AI-owns-content** boundary. Built inside-out, fixtures-first
+(TOK-01), over **7 iters** (1 bootstrap tok + 6 tiks; re-scope trigger never fired): (1) `services/ai/` wrapper
+over the shared `ai` lib (EU-first routing → 429 fallback → model→price cost tracking, values-blind); (2)
+`blueprint.Batch` + `batch[]` + `EffectiveBatches()` (pure Go-template mother-prompt expansion, NO LLM at parse
+time → the deterministic $0-reseed foundation); (3) the `batchcache/` prompt-hash cache (atomic `.tmp`→rename,
+`.lock` fence, capture-version invalidation); (4) `cmd/gen-batch` (gpt-4o-mini default, MANDATORY `--max-cost`
+ceiling, `--max-concurrent` semaphore, `--call-timeout`, re-roll-on-malformed + hero-collision re-roll,
+per-batch cost report); (5) the `GeneratedBatchSeeder` (surface `'generated-batch'`, `DependsOn` users+taxonomy,
+`PerStackIsolated`; cache → rows via the existing resolvers, drop-not-fabricate). **Gate MET on a REAL Azure
+gpt-4o-mini run** (EU-first Sweden; the direct `OPENAI_KEY` was billing-dead), N=20 + a fresh demo-3 proof, all
+5 dims: valid-JSON **100%** (33/33) ≥95% · taxonomy-resolution **47/47 skills + 20/20 roles → real
+`skiller.*.node_id`**, `datadna measure-closure --stack demo-3` = `[PASS]` (closure GREEN, **0 fabrication**) ·
+**0 hero-collisions** · cost **$0.0059 ≤ $0.10** · **$0 byte-identical re-seed** (run 2 = 0 calls / 20 cache
+hits). Believability: **20/20 distinct multicultural names**, role-coherent resolving skills, 20/20 avatars,
+isolation CLEAN. 3 real fixes in iter-07 (per-call `--call-timeout` stall-class · intra-batch name de-dup ·
+`user_skills` CHECK-23514 FK-provenance) + an Azure env-name EU-first resolution fix + a genEmail degenerate-
+address edge fixed in harden Pass 4. **Supply-chain: the deliberate, user-acknowledged 1-new-dep inflection** —
+`github.com/anthropos-work/ai@v1.40.1` (all-permissive tree), the FIRST new dep since v1.8 (the milestone is
+ABOUT this; license-vetted, version-boundaried, NOT a regression). Final harden 5 passes stabilized (0% delta,
+exhausted dimension scan); `go test -race` clean; flake gate clean; coverage services/ai 97.8% / blueprint
+98.9% / batchcache 88.5% / cmd/gen-batch 93.0% / seeders 97.3%. **NEW** `corpus/ops/demo/ai-generation-spec.md`
++ `corpus/ops/demo/cache-spec.md` (indexed in demo/README.md + CLAUDE.md). Deferral re-audit **GREEN** (org-scale
+→ M46 Fate-2 owned; prod-key out-of-release by design; 0 repeat/chronic/aged-out). Alignment **N/A** (zero
+clerkenstein change → carries 100%/100%). **Zero canonical platform-repo edits.** stack-seeding Go test funcs
+**567→677** (+110). Merged `--no-ff` into `release/01.10-method-acting`; rext code-of-record @ tag
+`method-acting-m45-harden-final`. **M46 (org-scale fill) was the ONLY remaining v1.10 milestone at this close — now also CLOSED 2026-06-27 → v1.10 FEATURE-COMPLETE.**
+**Goal:** stand up the **AI generation engine** — a `cmd/gen-batch` CLI + `GeneratedBatchSeeder` that turns a
+high-level YAML batch descriptor into realistic per-member profiles via a **CHEAP LLM** (gpt-4o-mini default),
+with parallel/throttled generation, prompt-hash caching, and the **CODE-owns-structure / AI-owns-content**
+boundary enforced by the existing taxonomy closure gate. Breaks the seeding module's 0-new-deps streak (the
+first new third-party dep — a deliberate in-release decision). **Entirely in `rosetta-extensions` — zero
+platform-repo edits.**
+**Exit gate:** _On a real batch of N generated members, the engine seeds end-to-end: the cheap model emits valid
+JSON ≥95% of calls (re-roll on malformed), every role/skill name resolves to a REAL public-taxonomy node-id via
+the existing resolvers (non-resolving names drop, closure gene stays green), ZERO generated name collides with a
+hand-curated hero, and total cost lands within the declared `--max-cost` ceiling. Reproducible: an unchanged
+batch descriptor re-seeds byte-identical from cache at $0._
+**Why iterative:** greenfield LLM integration (first new dep, prompt-engineering hardening, cache-invalidation +
+collision-dedup edge cases); the valid-JSON / taxonomy-resolution thresholds are reached by a measure→fix→accept
+loop, not enumerable up front. Budget 3–5 iters.
+**Iteration protocol:** [`corpus/ops/demo/ai-generation-spec.md`](../../corpus/ops/demo/ai-generation-spec.md)
+(the milestone AUTHORS + deepens this gen-acceptance protocol).
+**Scope — In:** a local `services/ai/` wrapper around the shared `ai` library (EU-first routing → 429 fallback →
+usage tracking — the FIRST new third-party dep in the seeding module); `blueprint.Batch` + a `batch[]` field on
+`Story`/`StackSeed` + `EffectiveBatches()` (Go-template per-member-prompt expansion, NO LLM at parse time);
+`cmd/gen-batch` (gpt-4o-mini default; `--max-concurrent` semaphore default 5; atomic `.tmp`→rename cache writes;
+a `.lock` fence; a MANDATORY `--max-cost` ceiling); a prompt-hash cache at
+`.agentspace/.batchcache/batch-${hash}/member-${i}.json` keyed by the MOTHER prompt, the key EXTENDED with the
+taxonomy capture version (invalidate on re-replay); `GeneratedBatchSeeder` (surface `'generated-batch'`,
+`DependsOn` users+taxonomy, `PerStackIsolated`) reading cached JSON and driving users/persona/profile rows
+DETERMINISTICALLY via the existing resolvers (closure green; non-resolving names drop → worst case a SHALLOWER
+profile, never invalid); hero-name collision avoidance (reserved-hero-names in the prompt + a post-gen
+collision re-roll); `Event_AiUsage` cost emission + a per-batch cost report.
+**Scope — Out:** org-scale auto-fill to full org size (that's M46 — M45 proves the engine + cache on a bounded
+batch); deep per-generated-member work-history/education timelines (kept shallow: name+skills+bio+role); a
+platform-repo secrets store (key via `.env.local` `OPENAI_API_KEY`, git-ignored; production-seeding secrets
+deferred); any platform-repo edit (entirely in rosetta-extensions).
+**Depends on:** M44 (reuses the certificate/project + bulk-member surfaces + the trajectory-aware self-rating);
+soft-depends on a replayed public taxonomy with adequate coverage. **Parallel with:** none.
+**Re-scope trigger:** if the cheap model can't reach the valid-JSON / taxonomy-resolution exit threshold after
+~5 tiks of prompt+code hardening → user-strategic-replan (model upgrade vs scope reduction).
+**Open questions:** gpt-4o-mini Azure-EU availability vs US fallback; cache-invalidation granularity (default
+coarse: invalidate on taxonomy re-replay via the capture-version in the key); the `--max-cost` ceiling value
+(mandatory — default a sane per-batch ceiling, configurable); the valid-JSON exit threshold (default 95% +
+re-roll); cache location (default `.agentspace/.batchcache` per-box; a shared/committed store flagged); the
+production-seeding key story.
+**KB dependencies:** `seeding-spec.md` (the isolation boundary the new surface stays within), `stories-spec.md`
+(the resolvers + the CODE-owns-structure / AI-owns-content boundary), `snapshot-spec.md` (the capture version
+the cache key extends), `ai_architecture.md` + `shared_libraries.md` (the shared `ai` library + `Event_AiUsage`).
+**Delivers →** `corpus/ops/demo/ai-generation-spec.md` (**NEW** — the gen-acceptance protocol + the engine) +
+`corpus/ops/demo/cache-spec.md` (**NEW** — the prompt-hash cache + capture-version invalidation; placement
+resolved to `demo/` per the demo-family index convention, TOK-01).
+
+#### M46 — Org-scale fill + gen-batch preview CLI
+**Status:** `done` (completed 2026-06-27, `closed-on-gate`) · **Shape:** `iterative` · **Complexity:** medium–large · **Dir:** [`releases/archive/01.10-method-acting/m46-org-scale-fill/`](releases/archive/01.10-method-acting/m46-org-scale-fill/)
+**Goal:** scale the engine from a bounded batch to filling an ENTIRE org from one descriptor
+(supporting-population auto-fill to org size) + add a preview/dry-run CLI to review a batch before seeding.
+**Entirely in `rosetta-extensions` — zero platform-repo edits.**
+**Closure (2026-06-27, `closed-on-gate`):** the exit gate is **robustly MET COLD (5/5 faces)** — a ~500/735-member
+org fills from ONE supporting-population descriptor (per-story, deterministic auto-fill); the M42 Playwright
+SEMANTIC sweep PASSES on BOTH vantages cold (employee `(0,0,0,0,0)`; **manager `failingSections=0, gateMet=true,
+personaFailures=0, escapes=0`** after the close-campaign); 0 hero-collisions on a real ~600-member Azure
+gpt-4o-mini batch; closure GREEN (`datadna measure-closure` PASS, 0 fabrication); cost/throughput within budget;
+$0 byte-distinct cache-hit reseed. Built fixtures-first over **7 iters** (1 bootstrap tok + 6 tiks): the 4 code
+deliverables (auto-fill count, per-story distribution, gen-batch preview/dry-run, the `--gen-batches` fence + 429
+verification) then a real ~600-member gate-proving run. The **5th gate face** (the manager enterprise grids) was
+cleared by a custom **demo-patch / recapture campaign** (ZERO canonical edits): **T1** (next-web pagination
+`limit:1000→30` + 2 FK indexes, 84 s→~4 s), **B** (`roles.go` authz-skip read-gate drop, members 76.7 s→0.51 s),
+**DD** (a reproducible `is_interview_validation_enabled` column backfill), and **SG / Path 2** (the Directus
+serve-grant deep-fetch **CLOSURE** — `servedCollections` expanded to 7 collections + a prod-structure
+**RECAPTURE** over the sanctioned `marco_read` DSN, firewall `public_only=true`/0 tenant rows — which **resolved
+`DEF-M46-01`**, see roadmap-vision.md). iter-07 raised an `exit-3 (re-scope-trigger)` that the close-campaign
+**superseded** (the grids WERE demo-patchable — decompose a perf wall and try the DROP before declaring it a
+permanent re-scope). Harden-equivalent: the demo-patch/recapture verification campaign (4 adversarial sub-agents,
+each running the full suites + sweeps, + a fresh `--purge /demo-up 3` reproducibility proof) **exceeds** a
+standard harden pass. 0 new deps; alignment N/A (zero clerkenstein change). **M46 is the FINAL v1.10 milestone →
+v1.10 is now FEATURE-COMPLETE on `release/01.10-method-acting`; close-release follows.** rext code-of-record @
+tag `method-acting-m46-servegrant-closure`.
+**Exit gate:** _A full org (e.g. 500) fills from a single supporting-population descriptor with a believable
+role/avatar/skill spread (not 90% hollow), the demo-coverage SEMANTIC believability gate (coverage-protocol.md,
+the M42 Playwright harness) PASSES on the generated population, hero-name collisions stay at 0 under
+population-scale load, and throughput + cost stay within the declared budget (e.g. ~1k members ≤ a few minutes at
+`--max-concurrent=5`)._
+**Why iterative:** population-scale behaviour (dedup at scale, taxonomy-clipping under load, throttle/backoff
+under burst, the believable spread) is discovered by measuring the generated org, not enumerable up front.
+Budget 3–5 iters.
+**Iteration protocol:** [`corpus/ops/demo/coverage-protocol.md`](../../corpus/ops/demo/coverage-protocol.md)
+(the population-believability gate = the M42 Playwright semantic-coverage sweep, here measuring the generated
+org).
+**Scope — In:** a supporting-population batch (`count: auto-fill to org size`, `roles_mix`, `verified_range`,
+`trajectory_mix`) expanding to fill the remaining N members of a story so a 220/500/1k org is believable
+end-to-end; per-story batch distribution (story-local, the multi-org Stories model); a `gen-batch`
+PREVIEW/DRY-RUN mode (render the expanded per-member prompts + cached generated JSON to stdout/file WITHOUT
+seeding, with an estimated-cost line); throughput tuning for large pops + 429 backoff verification under burst;
+an optional `--gen-batches` opt-in flag on `stackseed` (fence against silent OpenAI-unreachable failures);
+update `ai-generation-spec.md` + `cache-spec.md` with the org-scale + preview workflow.
+**Scope — Out:** the engine + cache primitives themselves (M45); deep timelines for every generated member at 1k
+scale (cost-prohibitive — shallow by default unless explicitly declared); a GUI/web preview (the CLI dry-run is
+the preview surface); any platform-repo edit.
+**Depends on:** M45 (the engine + cache + the closure-safe `GeneratedBatchSeeder`). Reuses the M42 Playwright
+coverage harness. **Parallel with:** none.
+**Re-scope trigger:** if population-scale dedup/taxonomy-clipping/throttle failures can't stabilize after ~5
+tiks → user-strategic-replan.
+**Open questions:** supporting-pop timeline depth (default shallow name+skills+bio); dedup at scale (pre-gen
+reserved-names vs post-gen re-roll); a taxonomy-coverage floor per role before large-batch gen; the
+curated-vs-batch mix per org (the product call — default ~3 curated heroes + batch-fill the rest); whether the
+preview surfaces an estimated cost before a real run (default yes).
+**KB dependencies:** `ai-generation-spec.md` + `cache-spec.md` (the engine + cache from M45), `coverage-protocol.md`
+(the M42 Playwright harness the gate reuses), `stories-spec.md` (the multi-org Stories model the batch fills),
+`seeding-spec.md` (the isolation boundary).
+**Delivers →** updates to `corpus/ops/demo/ai-generation-spec.md` + `corpus/ops/cache-spec.md` with the
+org-scale + preview workflow (the supporting-population batch, per-story distribution, the dry-run preview +
+estimated cost, throughput tuning + 429 backoff, the `--gen-batches` opt-in fence).
+
+### Execution graph
+```
+v1.10 "method acting"  (built: M39–M42m;  extended: M43–M46)
+  M40 ───────────────────────────────────┐         (stack-snapshot — independent, highest value)
+  M39 ───────────────→ M41 ──────────────┴─→ M42e ──→ M42m   (iterative coverage gates, after the fills)
+
+  extension:   { M43 ∥ M44 } ──→ M45 ──→ M46   (M43/M44 fully parallel — different rext modules;
+                                                 M45 depends on M44; M46 depends on M45 → THEN close-release)
+```
+**Recommended order:** M40 ∥ M39 (the two biggest visible jumps) → M41 → M42e → M42m **[built]**, then the
+extension **{ M43 ∥ M44 } → M45 → M46** → `/developer-kit:close-release`.
+
+### Risks
+| Risk | Severity | Mitigation |
+|---|---|---|
+| M40: `simulations.sequences` O2M may need a platform nil-guard (cms, read-only) | blocks-release (activity half) | spike the O2M mechanism first; the library half ships regardless; escalate the activity half if it needs a platform change |
+| G4 avatar: no offline/deterministic license-clean face source | degrades-quality | bundled curated CC0-style face set mapped by hero key (decided) |
+| M42e/M42m: Playwright a new rext dep + flaky browser sweeps | scope / nice-to-resolve | dev/test-only dep; deterministic seeded data + retries; the gate is a count, not a snapshot-diff |
+| G7 KPI ("completed"=0) possibly a frontend/auth-context issue out of rext reach | nice-to-resolve | re-verify after M40's feed fix; flag separately (possibly platform) if it persists |
+
+**Live acceptance (every milestone):** log in as a hero on demo-3 → the target surface fills. **Branch:** `release/01.10-method-acting`.
 
 ## Done — v1.9 "storytelling" (SHIPPED 2026-06-23 · tag `v1.9`)
 

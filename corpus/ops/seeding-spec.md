@@ -276,6 +276,57 @@ returns the **partial total** of rows already written when a later FK-ordered CO
 the failing table so an operator sees *which* surface broke. Full reference:
 [`demo/stories-spec.md` § The Workforce dashboard surfaces (M36)](demo/stories-spec.md#the-workforce-dashboard-surfaces-m36).
 
+**The profile-depth layer (v1.10 M41).** v1.9 made a hero's verified-skill **spine** render; v1.10 M41 fills the
+**depth** a presenter sees after "Login as": a believable **work history + education timeline** and a **deep,
+role-aligned skill set with a wide claimed-vs-verified gap**. A new **`ProfileSeeder`** (surface `"profiles"`)
+writes, per **end-user** hero (managers skipped — no personal timeline): a **`companies`** row per distinct
+employer + a **3-job role progression** (`user_experiences`, current role `to`=NULL) + a **degree**
+(`user_educations`), backdated within/before the activity span, titles from the resolved `jobRoleRefs`, `skills`
+json a role-coherent slice of real public skill names — both timeline tables were **0 rows DB-wide** (net-new
+write surface). It **bumps the preset `verified:` knob `8 → ~30`** (→ ~90 `user_skills` + ~30 evidences on the
+verified side) **and** seeds a **~60-skill claimed-but-unverified tail** (`user_skills` `is_verified=false`, no
+`job_simulation_id`, tied to the seeded experiences via `user_skill_experience`/`user_skill_education` to satisfy
+the `user_skills_check_foreign_keys` CHECK; `user_skill_evidences` `anthropos_level` NULL, `user_level` set) — so
+the profile "overall" reads **≈ 90 = ~30 verified + ~60 claimed**, **widening** the visible gap. Live-schema
+landmines drove the design: `user_experiences.company` is `uuid NOT NULL` FK→`companies`, `from`/`to` are DATE
+with a `from<=to OR to IS NULL` CHECK (the current role leaves `to` NULL — open-ended), `location_type` is the
+lowercase ent enum `inoffice|hybrid|fullremote`, `skills` is json. The claimed-tail evidence UPSERT is a
+**separate** SQL from the verified one, guarded `ON CONFLICT … WHERE is_verified = false` so it **never clobbers
+a verified row** on a (skill,user) collision (the verified side always wins; the tail draws skills distinct from
+the verified set, so the guard is a re-run/safety net). No-fabrication + closure preserved (skill refs from the
+replayed taxonomy; empty pool → timeline still writes, tail skipped); every table `PerStackIsolated`. Full
+reference:
+[`demo/stories-spec.md` § The profile-depth layer (v1.10 M41)](demo/stories-spec.md#the-profile-depth-layer-v110-method-acting-m41).
+
+**Profile completeness — the whole roster (v1.10 M44).** M41 gave the END-USER heroes a deep profile; **M44
+makes the WHOLE roster — managers AND bulk members — read as real people**, DATA-DENSITY only (no UI change).
+Four extensions, all in `stack-seeding/seeders/`:
+- **(§A) Trajectory-aware self-rating.** `PersonaSeeder` writes `user_skill_evidences.user_level` only for a
+  **self-rated** hero (the new `Persona.EffectiveSelfRated()`: struggling = false → `user_level` NULL, the
+  claimed side absent; everyone else = true). A thriving hero shows a **completed** self-assessment; a
+  struggling hero "hasn't done the initial self-rating" — her 2-3 verified skills still render (the chart
+  needs the verified side, untouched), but the claimed gap reads incomplete.
+- **(§B) Certifications + Projects.** Two NEW seeders — **`CertificatesSeeder`** (surface `"certificates"` →
+  `public.user_certifications`, 2-3 per end-user hero) + **`ProjectsSeeder`** (surface `"projects"` →
+  `public.user_projects`, 3-4 per end-user hero) — fill the two profile sections that were **0 rows DB-wide**.
+  Both surface as top-level `TimelineGroupedItems.certifications`/`.projects` on `/profile`. **LIVE-SCHEMA
+  CORRECTED** (the overview's guesses were wrong): the table is **`user_certifications`** (NOT
+  `user_certificates`; cert *name* col is `certification`, NO `created_at`, NO `organization_id`); projects use
+  `title` (NOT `project_name`), `to` (NOT `end_date`), NO `organization_id`. Role-coherent banks, idempotent
+  COPY, closure-clean skills, managers skipped here (the §C path owns manager profiles).
+- **(§C) Manager personal data.** The pre-M44 `IsManager` skips in `PersonaSeeder` + `ProfileSeeder` are
+  removed; a manager now gets a **modest** personal profile — a FLAT 3-8 verified skills (L1-L2 band, self-rated,
+  no growth arc) + a manager-track timeline (a leadership ladder "Engineering/Sales Manager" ← "Team Lead" ←
+  "Senior X", 3 experiences + 1 education) + a SMALL claimed tail (8, not the deep ~60) — so her OWN `/profile`
+  is populated, not empty. The claimed-tail offset now uses the EXACT verified count (`trajectoryVerifiedCount`)
+  so the tail stays distinct from the verified set.
+- **(§D) Bulk-member depth.** EVERY non-hero population member gets a shallow career — `ProfileSeeder` runs a
+  second pass over the non-hero slots (3 short-tenure experiences + 1 education + a flat <=6-skill claimed tail;
+  role mirrors the `UsersSeeder` supporting-member draw) — so `/enterprise/members` reads as a roster of real
+  people. The avatar half was already satisfied (`photoAvatarDataURI` runs for every member since M42e P4).
+- Everything stays `PerStackIsolated` + closure-GREEN. Full reference + the per-vantage rubric:
+  [`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
@@ -288,3 +339,16 @@ seed-side closure gene); **M35** the multi-org Stories & Heroes model; **M36** t
 surfaces + the two fixes above (the funnel/teams/target-roles/succession/feedback/org-scale-gap spine),
 proven end-to-end by an opt-in live-stack integration test (`-tags integration`) that seeds the full fleet and
 asserts every dashboard aggregate resolves. The closure gene spans four skill-ref surfaces.
+**v1.10 "method acting" M39** adds the profile-identity layer (roster org-name thread + `user_basic_info` role
+backfill + offline real-face avatars); **M41** the **profile-depth layer** (the `ProfileSeeder` work-history +
+education timeline + the verified depth bump `8 → ~30` + the ~60-skill claimed-but-unverified tail that widens
+the gap) — 9 new unit tests, full suite green `-race`, every emitted row dry-insert-validated against the live
+demo-3 schema, `go.mod`/`go.sum` byte-identical. Code-of-record: `rosetta-extensions` @ tag `method-acting-m41`.
+**M44** adds **profile completeness** — the whole roster (the §A trajectory-aware self-rating, the §B
+`CertificatesSeeder` + `ProjectsSeeder` surfaces, the §C manager personal-data unskip, the §D bulk-member
+shallow career) — all DATA-DENSITY, zero platform edits, every surface `PerStackIsolated` + closure-GREEN,
+schema-corrected against the live demo-3 DB (`user_certifications`/`user_projects`). New unit tests across the
+four sections, full suite green `-race`. Render-verified on a live demo (the §D fix1 avatar-column correction:
+`/enterprise/members` reads `memberships.picture_url`, not `users.picture`) + a 3-pass hardening sweep (17 added
+tests, seeders-pkg stmt coverage 96.5%→97.5%). Code-of-record: `rosetta-extensions` @ tag
+`method-acting-m44-profile-completeness-fix2`.

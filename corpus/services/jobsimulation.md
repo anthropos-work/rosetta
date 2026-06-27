@@ -1,8 +1,11 @@
 # Jobsimulation Service
 
+> [!IMPORTANT]
+> **This service holds NO simulation content.** "Jobsimulation" the *service* ≠ simulation *content*. It is a **runtime/session engine** that *runs* a simulation; the simulation **definition/blueprint** it runs — roles, sequences, tasks, validation criteria, knowledge assets, library categories — is **owned by the CMS service** (the `simulations` Directus collection + the Studio `StudioDocument`/`StudioTask` authoring model) and fetched **by ID** over Connect-RPC (`cms.GetSimulation`). Jobsimulation does **not** hold a `DIRECTUS_BASE_ADDR` of its own — all its content reads flow *through* CMS. See **[CMS](./cms.md)** for the content side. (This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).)
+
 ## Role & Responsibility
 
-Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation definitions from CMS, hosts the interactive session (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to Skillpath and the App.
+Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation **definitions** from CMS (the content layer), hosts the interactive **session** (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to Skillpath and the App. Its own `jobsimulation` DB schema holds the **run/session state** (sessions, interactions, recordings, validation/anti-cheat results) — never the definition.
 
 This is the user-facing "experience" service. Everything else (skills, content, auth, scoring) feeds it or consumes its outputs.
 

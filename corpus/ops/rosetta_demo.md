@@ -102,6 +102,24 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 > directus service, so teardown / registry / verify all correctly see nothing. Full lifecycle:
 > [`directus-local.md`](directus-local.md) § "Container lifecycle (M22)".
 
+## Post-set-dress Sentinel policy reload (v1.10 "method acting", M42e P5)
+
+Right **after** the set-dress seed and **before** the auto-verify, a fresh demo-up now **reloads
+Sentinel's in-memory Casbin policy**. WHY it is required: Sentinel's enforcer calls `LoadPolicy()` **once
+at startup with no watcher** (`sentinel/internal/authorization/casbin.go`). `migrate-demo.sh` starts +
+migrates Sentinel **before** the set-dress seed writes the per-membership `g3 FEATURE_JOB_SIMULATIONS`
+grant into `sentinel.casbin_rules` — so on a fresh bring-up the grant lands in the DB but the running
+enforcer never sees it, and every `/sim/<slug>/start` renders the **org-member deny modal**
+(`canStartAsOrganizationMember` reads `organizationFeatures`, resolved via the `g3` grouping policy). M42e
+iter-09 papered over this with a **manual** `docker restart`; M42e P5 folds the reload into
+`demo-stack/up-injected.sh` so a fresh demo-up needs **zero** manual step. The reload prefers the
+prefix-agnostic **`AuthorizationService/Reload` RPC** on the offset 8087 port — its handler calls
+`e.LoadPolicy()` directly and returns 200 only on a successful reload, so a 2xx **proves** the policy
+re-loaded — and falls back to `docker restart <demo>-sentinel-1` (re-runs `LoadPolicy()` at startup) when
+the RPC isn't reachable. It runs only when the set-dress actually ran (it wrote the grant) and is
+**non-fatal** (the M18/M19 pattern); `DEMO_NO_SENTINEL_RELOAD=1` opts out. The reload precedes the verify
+so the casbin/sim probes see the reloaded policy.
+
 ## Auto-verify at the bring-up tail (v1.3b "dress rehearsal", M18)
 
 Every bring-up now ends with an automatic, **non-fatal** verification pass on the stack's own **offset

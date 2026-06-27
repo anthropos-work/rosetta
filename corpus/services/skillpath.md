@@ -1,7 +1,10 @@
 # Skillpath Service
 
+> [!IMPORTANT]
+> **This service holds NO content.** "Skillpath" the *service* ≠ skill-path *content*. It is a **runtime/session engine** that tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path **content** it tracks against — title, cover, curators, library categories, **chapters → steps**, the job-simulation steps, skills-to-verify, versioning — is **owned by the CMS service** (the `skill_paths` Directus collection) and fetched **by ID** over Connect-RPC via `CMS_RPC_ADDR`. See **[CMS](./cms.md)** for the content side. (This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).)
+
 ## Role & Responsibility
-*   **Primary Goal**: Manages user session state through skill progression paths, tracking progress as users complete chapters and steps within learning paths.
+*   **Primary Goal**: Manages user session **state** through skill progression paths, tracking progress as users complete chapters and steps within learning paths. **It owns the progression state, not the path content** (see the note above + [CMS](./cms.md)).
 *   **Key Functions**:
     *   **Session Management**: Creates and manages `SkillPathSession` records that track a user's journey through a skill path
     *   **Progress Tracking**: Records completion status for chapters and individual steps within a path
