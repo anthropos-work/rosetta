@@ -2,6 +2,29 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.10] "method acting" — 2026-06-27
+
+The **believable-profile release + the presenter-grade / scalable-generation extension.** v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up. When a presenter clicks **Login as** a hero, that hero reads as a fully fleshed, believable person — the individual's **profile** (org name, role + title, work history, education, a real face, deep role-aligned skills) **and** the content surfaces they land on (**library** + the **activity feed**) populate with real semantic content, on **every** page a hero of that vantage can reach — proven by a **Playwright semantic coverage sweep** with **zero** empty pages and **zero** out-of-demo escapes, at both the employee and the manager vantage. Then it scales: a presenter-grade cockpit, a whole roster baked to depth, a cheap-LLM generation engine, and a whole **~500/735-member org filled from one descriptor**. **Tooling + docs only — zero platform-repo edits.** (rext code-of-record @ tags `method-acting-m39`..`m46-servegrant-closure`)
+
+### Added
+- **Believable hero profiles.** A logged-in hero now shows the right **org name**, a real **role + title**, a real **face**, and a deep **profile** — work history + education timeline + a claimed-but-unverified skill tail that widens the visible claimed-vs-verified gap. (M39 identity + M41 depth)
+- **The content surfaces stop emptying.** The per-stack Directus **serve-grant** lets the library **and** the activity feed render real content (the anonymous public-policy deep-fetch no longer panics cms) — the two surfaces that read empty in the live review now populate. (M40)
+- **A per-vantage demo-coverage gate.** A **Playwright** sweep crawls every page a hero of a vantage can reach and asserts a **semantic believability gate** (real seeded content + per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar, org name + logo] + 0 prod-eject escapes). Both vantages pass cold (employee + manager). (M42e + M42m)
+- **A slicker presenter cockpit.** The login launcher goes **light** + professional: a card per hero, one unified **[Log in as]** CTA (logs in *and* lands on her per-role screen — no separate Jump), a seed-manifest download, and a staged login-progress overlay. (M43)
+- **The whole roster baked to depth.** Not just the heroes — **every** seeded member and manager gets trajectory-aware self-ratings, certificates + projects, an avatar, and a career, so an org grid is believable end-to-end (DATA DENSITY). (M44)
+- **A cheap-LLM generation engine.** `cmd/gen-batch` turns a YAML **batch descriptor** into realistic per-member profiles via a cheap model (gpt-4o-mini), with a **prompt-keyed cache** (an unchanged descriptor re-seeds byte-identical at **$0**), a mandatory `--max-cost` ceiling, and the **CODE-owns-structure / AI-owns-content** boundary (every generated role/skill routes through the real resolvers; non-resolving names **drop**, never fabricated). (M45)
+- **Org-scale fill + a preview CLI.** One supporting-population descriptor fills a whole believable **~500/735-member org** (per-story, deterministic auto-fill); a `gen-batch --preview` renders the expanded plan + an estimated-cost line without seeding. (M46)
+- **Five new corpus specs** — `cockpit-spec.md` (M43), `coverage-protocol.md` (M42), `profile-completeness-spec.md` (M44), `ai-generation-spec.md` + `cache-spec.md` (M45) — plus `snapshot-spec.md` / `stories-spec.md` / `seeding-spec.md` / `frontend-tier.md` / `demo/README.md` updates.
+
+### Supply chain
+- **One new dependency — deliberate + user-acknowledged.** M45 adds `github.com/anthropos-work/ai@v1.40.1` (the `services/ai` wrapper transport, EU-first Azure; transitive Azure SDK + openai-go/v3, all MIT/BSD/Apache) — the in-release inflection the generation-engine milestone is *about* (v1.8→v1.9 was 0-new-deps). M46 reuses it unchanged. License-vetted, no GPL/AGPL. Lockfile: `knowledge/plan/releases/archive/01.10-method-acting/dependencies.lock`.
+
+### Known limitations
+- The **manager enterprise grids** at org scale render through a few **`demopatch`** layers applied to the demo's ephemeral clone before build (a next-web pagination patch + 2 FK indexes + a `roles.go` read-gate drop + a Directus column-drift backfill + the serve-grant closure) — **zero canonical platform edits**, every fix reproducible on a fresh `/demo-up`, but they are demo-time patches, not platform changes.
+- **A regenerated snapshot cache needs `--purge`.** A plain `down`/`up` keeps the demo's Postgres volume and no-ops the structure replay; the serve-grant recapture only lands on a fresh `--purge /demo-up`.
+- **The org-scale fill is opt-in.** A bare `/demo-up` seeds the default Stories trio (~341); the ~500/735-member generated org is a separate `/stack-seed --gen-batches` (a $0 cache-hit reseed once the batch is cached).
+- The `clerk-express-1` alignment gate drives the genuine `@clerk/express` SDK and needs installed npm modules (a node-CI env prerequisite) — unrunnable in the authoring copy; not a regression.
+
 ## [post-v1.9] demo-hardening — `storytelling-postfix-1`, `storytelling-postfix-2` — 2026-06-23
 
 The **post-v1.9 demo-hardening patch**: the Stories & Heroes world becomes the **default** demo, and the M33-class "dead on a later visit" failures are run down and fixed. A bare `/demo-up` now seeds the narrative + serves the cockpit out of the box, the host-native daemons survive their launching session, ant-academy clones + installs itself so it comes up automatically, and two transient false-down warnings on a healthy stack are closed. **Tooling + docs only — zero platform-repo edits.** (ext tags `storytelling-postfix-1`, `storytelling-postfix-2`)

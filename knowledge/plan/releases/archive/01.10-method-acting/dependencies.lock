@@ -1,0 +1,69 @@
+# Dependency lockfile — v1.10 "method acting" (2026-06-27)
+#
+# SCOPE NOTE — the rosetta CORPUS has NO package manifest / no executable deps.
+#   Project Rosetta (this repo) is a DOCUMENTATION corpus + dev-env skills; the v1.10
+#   release diff (git diff main...release/01.10-method-acting) is confined to
+#   corpus/**, knowledge/plan/**, CLAUDE.md, .gitignore — docs only, ZERO platform-repo
+#   edits, ZERO source files. No CVE scan applies to the corpus (nothing to scan).
+#
+# The EXECUTABLE TOOLING is the `rosetta-extensions` monorepo — a SEPARATE git repo,
+#   consumed per-stack at PINNED TAGS, NOT part of the rosetta release diff. Its
+#   dependency surface is recorded here for the v1.10 code-of-record (the tags ARE the
+#   record); the rosetta close merges only the doc-half branch.
+#
+# Ext code-of-record (rosetta-extensions, separate repo) at v1.10 tags:
+#   method-acting-m39 · m40 · m41 · m42e (53574ae) · m42m-harden-final ·
+#   m43-cockpit-ux-fix1 · m44-profile-completeness-fix2 · m45-harden-final ·
+#   m46-servegrant-closure  (the M46 code-of-record; the per-stack consumption clones
+#   pin `method-acting-m46-servegrant-closure`).
+#
+# ============================================================================
+# THE SOLE NEW DEP THIS RELEASE — M45 (deliberate, user-acknowledged, sanctioned)
+# ============================================================================
+# v1.8 → v1.9 was 0-new-deps. v1.10 breaks that streak by exactly ONE dep at M45,
+#   the inflection the milestone is ABOUT (the design-roadmap user-approved adding the
+#   cheap-LLM generation engine + this dep). M46 reuses it unchanged (0 new deps at M46).
+ai               module=github.com/anthropos-work/ai@v1.40.1    consumer=stack-seeding/services/ai (the EU-first AI wrapper transport)    added=M45 (2026-06-26)    license=permissive (transitive tree: Azure SDK + openai-go/v3, all MIT/BSD/Apache)    routing=EU-first Azure
+#   - Pinned v1.40.1 across all consumers; Go 1.25.0. License-vetted (no GPL/AGPL in any
+#     distribution surface). go mod tidy a no-op at M45-harden-final and across M46.
+#
+# ============================================================================
+# Go modules (5, all go 1.25.x) — third-party set UNCHANGED from v1.9 except `ai` (M45)
+# ============================================================================
+alignment        module=anthropos.dev/alignment                                        third-party=(none; stdlib+first-party)
+clerkenstein     module=clerkenstein                                                    third-party=github.com/anthropos-work/colony@v0.34.3, github.com/clerk/clerk-sdk-go/v2@v2.6.0, github.com/google/uuid@v1.6.0, github.com/svix/svix-webhooks@v1.93.0
+stack-secrets    module=github.com/anthropos-work/rosetta-extensions/stack-secrets      third-party=(none; stdlib-only)
+stack-seeding    module=github.com/anthropos-work/rosetta-extensions/stack-seeding      third-party=github.com/jackc/pgx/v5@v5.9.2, gopkg.in/yaml.v3@v3.0.1, github.com/anthropos-work/ai@v1.40.1 (NEW @ M45)
+stack-snapshot   module=github.com/anthropos-work/rosetta-extensions/stack-snapshot     third-party=(none)
+#
+# License posture: every third-party dep is MIT / BSD / Apache-2.0 — no GPL/AGPL in any
+#   distribution surface. pgx (MIT), yaml.v3 (MIT+Apache), colony (first-party/private),
+#   clerk-sdk-go (MIT), uuid (BSD-3), svix-webhooks (MIT), ai (first-party/private;
+#   transitive Azure SDK + openai-go/v3 all MIT/BSD/Apache). Compatible with the
+#   private-tooling distribution plan.
+#
+# ============================================================================
+# Non-Go dev/test deps (sanctioned, pinned)
+# ============================================================================
+# Playwright      @playwright/test ^1.49.0     scope=dev/test-only (rext stack-verify/e2e/, the M42 coverage sweep harness)
+#   - Added M42e (2026-06-25) as the FIRST non-Go rext dev/test dep, sanctioned by the
+#     coverage requirement; held the pin across M42m/M45/M46 (NO second non-Go runner
+#     added — no vitest/jest). Drives the per-vantage semantic-coverage gate.
+#
+# Python: stdlib-only across all touched files (the cockpit panel cockpit.py is
+#   dependency-free; demopatch + manifest_loader.py import stdlib + two LOCAL rext modules
+#   only — no PyPI dep) + one PRE-EXISTING optional test dep:
+PyYAML           scope=test-only (stack-injection/tests, guarded skip-if-absent)         added=M5 (2026-06-04), unpinned, no manifest
+#
+# FontAwesome: a CDN <link> in cockpit.py's served HTML (a runtime asset with SRI, NOT a
+#   build dependency — nothing vendored, nothing in any manifest).
+#
+# Shell: demo-stack/up-injected.sh + ensure-clones.sh use host git/ssh/openssl/mkcert —
+#   host tools, nothing vendored/pinned.
+#
+# ============================================================================
+# CVE surface
+# ============================================================================
+# Corpus: N/A (no executable code). Ext: NO CHANGE vs v1.9 EXCEPT the M45 `ai` dep's
+#   transitive tree (Azure SDK + openai-go/v3) — license-vetted, all-permissive, no called
+#   CVE at v1.40.1. Prior baseline: releases/archive/01.90-storytelling/dependencies.lock.
