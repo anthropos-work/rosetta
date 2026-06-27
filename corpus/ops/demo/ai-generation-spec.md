@@ -192,6 +192,113 @@ then re-seeded on a fresh demo via the tagged consumption clone.
 
 ---
 
+## 4g. Org-scale lessons (v1.10 M46 — surfaced by the real ~600-member gate-proving)
+
+Two failure modes are **structurally invisible** below ~2 batches / ~hundreds of members, so they only
+surface when the engine is proven at org scale (M45's bounded N=20 cannot reach them):
+
+- **The cache index is GLOBAL, not batch-local.** `cmd/gen-batch` selects/reads the cache by the member's
+  position in the WHOLE `EffectiveBatches()` slice (`cache.Has(i)`/`Get(i)`), so the write MUST use the same
+  global index — NOT the batch-local `Batch`-relative index (0..Count-1). With a single batch the two
+  coincide; with **multiple story batches** a later batch's local index collides with an earlier batch's,
+  so a local-index write OVERWRITES an earlier member's cached file and leaves the later slot empty — losing
+  an entire later story's generated population. A **multi-batch** regression test is mandatory (a single-batch
+  test can't catch it).
+- **A cheap name-attractor model needs a deterministic disambiguator, not just LLM re-rolls.** gpt-4o-mini
+  re-picks a small set of "distinctive" names hundreds of times across a 600-member org (the avoid-names
+  re-roll hint can't scale to hundreds of taken names). The engine's last-attempt path therefore
+  **deterministically disambiguates** a still-duplicate name (keep the generated first name + swap in a
+  distinct surname keyed on the global index — cost-free, no extra LLM call, reproducible) so **name
+  distinctness is guaranteed at any scale**, plus a larger avoid-hint (120) for more LLM-native divergence
+  first. Accepting a duplicate on the last attempt (the pre-M46 behavior) destroys org-scale believability.
+- **Distinctness MUST be enforced at SEED time too — the gen-time disambiguator only fires on a cache MISS
+  (M46 iter-07).** The gen-time disambiguator above runs inside `genOne`, i.e. only when a member is being
+  generated (a cache miss). A **`$0` cache-hit reseed** reads the cached envelope's `name`/`email_local`
+  **verbatim** — so an EXISTING cache that pre-dates the disambiguator (or simply carries the model's raw
+  attractor duplicates) would seed **duplicate identities**. The `GeneratedBatchSeeder` therefore applies the
+  **same deterministic disambiguator at seed time** as a hard backstop, over **two distinctness axes**:
+  - **name** — a cached name already taken (by a curated hero or an earlier generated member) is rewritten by
+    `seeders.DisambiguateGeneratedName` (the **single source of truth** the gen-time path now also calls — one
+    surname pool, one algorithm, so gen-time and seed-time AGREE on the same surname for the same global index);
+  - **email** — name-distinctness alone does NOT imply email-distinctness: the cache carries duplicate
+    `email_local`s AND two *distinct* names can derive the *same* local part ("Jinwoo Park" / "Jin-woo Park" →
+    `jinwoo.park`). `public.users` enforces `UNIQUE(email)` (`user_basic_info_email_key`), so a colliding email
+    aborts the **entire** generated-batch users COPY. The seeder indexes a colliding local part
+    (`local+globalIdx@domain`, per-domain so two orgs never cross-collide).
+  Both axes are deterministic + `$0` (no LLM) + reproducible (same cache → same distinct identities on every
+  reseed → a FRESH `/demo-up` reproduces the same org). This is what makes the **`$0` cache-hit reseed**
+  genuinely believable rather than a wall of duplicate names.
+
+**Empirically proven on the real ~600-member batch (M46):** 0 hero-collisions at scale, 100% valid-JSON,
+$0 cache-hit reseed (a complete 614-member cache reseeds **614/614 distinct names + 614/614 distinct emails**
+at $0 via the seed-time backstop), and the **mandatory `--max-cost` guard correctly aborting at its ceiling**
+(the re-roll/dedup overhead at scale is real, so a large org-fill is run with a generous cap or finished
+across capped runs — the already-cached members reseed at $0, so finishing is cheap). **Population-math note
+(M46 iter-07):** because the curated `UsersSeeder` ALSO seeds a full `size` synthetic body, an org with a
+`fill: true` batch lands at ~2×`size` (heroes + a full curated body + a full generated fill), so the
+gate-proving descriptor keeps `size` at 250 (Cervato) / 120 (Solvantis) to land a **believable ~500-member
+headline org** (Cervato ≈ 498: ~250 curated + ~247 generated; Solvantis ≈ 237) rather than the ~1k a naive
+`size: 500` would produce. The seeded population is believable (real distinct names/photos, role-coherent
+skills, closure GREEN, 0 hero-collisions) and passes the employee-vantage M42 sweep + the manager persona /
+cross-port checks.
+
+> **Org-scale enterprise-grid perf — the members grid cleared by Option B; the manager gate reaches
+> failingSections=0 on a warm stack (M46).** (NB — the `/enterprise/activity-dashboard` table additionally
+> depends on the **cms→Directus** simulation-content fetch; on a snapshot whose Directus schema has drifted
+> from the CMS code — e.g. a missing `simulations.is_interview_validation_enabled` column → Directus 500 — that
+> table fails INDEPENDENTLY of the perf work below. That's a **stack-snapshot recapture** concern, not a
+> members-grid/perf issue; diagnose it via `docker logs <stack>-directus-1 | grep "does not exist"`.)
+> The manager M42 sweep on this ~500-member org initially failed 3 sections — `/enterprise/members`,
+> `/enterprise/activity-dashboard`, `/enterprise/settings` — because the **federated GraphQL queries backing those
+> enterprise grids didn't resolve in the harness window** (the Cosmo router logged **10–84 s** latencies; an
+> over-broad fetch plus a per-row resolver fan-out — `jobRole`/`targetRole`/`tags` × `GetOrganizationTargetRole`,
+> which makes a **per-object Sentinel RPC per membership**, no DataLoader). The wall **decomposes into two distinct
+> costs**:
+>
+> **Demo-patchable (clears activity-dashboard + settings), zero canonical edit:**
+> 1. **next-web pagination demo-patch** (`patches/next-web-members-pagination`): the activity-dashboard mounts
+>    `InsightsContextProvider`, whose `InsightsContext.tsx` fetched `useGetOrganizationMembers({ limit: 1000 })`
+>    — ALL ~500 members, and the layout BLOCKS on it. The demo-patch caps it to `limit: 30` (a page), cutting the
+>    fan-out ~33×. (The `/enterprise/members` grid is already paginated at 20; the CSV/email export uses a
+>    separate query — no data lost.) Applied to the demo's ephemeral clone pre-build, trap-reverted after (the
+>    6-guard demopatch contract; canonical repos never touched).
+> 2. **2 post-seed FK indexes** (`CREATE INDEX IF NOT EXISTS` on `public.membership_skills(membership_skill_membership)`
+>    + `public.membership_tags(membership_tag_membership)`): both tables shipped no leading-membership-FK index, so
+>    each per-row leg was a SEQ SCAN. Run on the demo's **own** offset Postgres post-seed (a rext-owned step in
+>    `up-injected.sh`, idempotent, non-fatal) — **NOT** a canonical ent/atlas schema change.
+>
+> These took graphql max latency **84 s → ~4 s** and cleared `/enterprise/activity-dashboard` + `/enterprise/settings`
+> (`failingSections` 3 → 1).
+>
+> **The members grid: DROP the read-gate, don't cache it (Option B — the M46 close).** `/enterprise/members`'
+> per-row `targetRole` → `roles.go` `RoleManager.checkPermission` → `OrgCheckActionPermission` checks
+> `OrgActionAssignmentsWrite`, which is **PER-OBJECT** (per assignee), not an org-wide grant. **CACHING it is a
+> correctness bug** (T2, reverted): keyed `(org, subject, action)` — object dropped to dedupe across rows — it
+> returns the first row's allow/deny for every row → `failed to get target role: forbidden` on legitimately-allowed
+> members (~1744×/sweep) → the grid errors; keyed with the object it can't dedupe (every row a different object).
+> **The safe demo-patch is to DROP the check**: `checkPermission` short-circuits `return true, nil` before the
+> per-member Sentinel RPC (mirroring its built-in `privacy.DecisionFromContext` bypass) — target roles still come
+> from the DB (`GetOrganizationTargetRoleByAssignee`), so every member's REAL role renders, fast (DB-only) AND
+> fully-populated (0 forbidden). A **disclosed READ-path authz relaxation ONLY** (`patches/app-targetrole-authz-skip`,
+> applied to the build-scratch app clone by a rext helper wired into the inject loop, svc=app, after `apply-authn`,
+> before build, trap-reverted git-clean); the assignment **mutations** still enforce via their own direct
+> `OrgCheckActionPermission` calls. On demo-3 B took the members query **76.7 s → 0.51 s** (~150×), 0 forbidden, and
+> **cleared `/enterprise/members`**. **The PLATFORM finding stays documented:** prod still needs a **DataLoader /
+> batch `BulkCheckPermission` RPC** at 500-member scale — B is a single-presenter demo-perf relaxation, NOT a prod
+> fix. (Dropping a read-gate that returns real DB data is safe where caching-it-object-blind wasn't.)
+>
+> **Net on demo-3 (~500 members): the members grid is cleared (B); the manager sweep reaches
+> `failingSections=0` → GATE MET on a warm stack** (all three — pagination, FK indexes, authz-skip — bake in via
+> the inject loop / post-seed step on a FRESH `/demo-up`). The `/enterprise/activity-dashboard` table stays green
+> ONLY while the cms→Directus simulation-content fetch succeeds; a drifted Directus snapshot schema (above) fails
+> it independently of B/T1 and is a snapshot-recapture concern, not a members/perf regression. (Build pitfalls:
+> any injected `app` rebuild MUST go through the inject loop so `apply-authn.sh`'s disarmed colony is re-applied —
+> a rebuild without it ships a backend that rejects every Clerkenstein token, collapsing the crawl to
+> `reachable≈7`; and never `--force-recreate` a single service *without* `--no-deps` — it recreates `postgresql`
+> and wipes the seeded org. **Restarting the federation tier clears the router/react-query caches that mask a
+> drifted-Directus content error — a freshly-restarted stack can surface an activity-dashboard content failure
+> that a long-warm stack masked.**)
+
 ## 5. What's OUT (M45 scope boundary)
 
 - **Org-scale auto-fill** to reach full org size → **M46** (M45 proves the engine + cache on a **bounded**

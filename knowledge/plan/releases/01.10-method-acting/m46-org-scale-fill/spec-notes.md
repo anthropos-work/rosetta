@@ -1,5 +1,9 @@
 # M46 Spec Notes
 
+> **Status: `archived` — M46 CLOSED 2026-06-27 (`closed-on-gate`).** The build-time TODO markers below were all
+> DELIVERED (iter-02..07); the load-bearing truths live in the corpus docs (`ai-generation-spec.md` §4g,
+> `cache-spec.md`, `coverage-protocol.md`, `snapshot-spec.md`). Kept as an intra-build record.
+
 Technical notes accumulate here during build. The authoritative design lives in
 [`overview.md`](overview.md) + the research note
 [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../../../.agentspace/scratch/roadmap-research-2026-06-26.md)
@@ -7,6 +11,18 @@ Technical notes accumulate here during build. The authoritative design lives in
 iteration protocol REUSES the M42 Playwright semantic-coverage harness
 ([`corpus/ops/demo/coverage-protocol.md`](../../../../corpus/ops/demo/coverage-protocol.md)) measuring the
 GENERATED org.
+
+## Pre-flight audits — iter-01
+- **KB-fidelity (Phase 0b, 2026-06-26):** **GREEN**. Report:
+  [`kb-fidelity-audit.md`](kb-fidelity-audit.md). 9/9 load-bearing claims across
+  `ai-generation-spec.md` + `cache-spec.md` ALIGNED; every M46-scope topic PAIRED (no blind areas). The
+  three M46 deliverable gaps confirmed present in code as the correct starting point: (a) `Batch.Count` is
+  a fixed int — no org-size auto-fill (`batch.go:32`); (b) `--dry-run` is a count-only summary, no
+  per-member render / estimated-cost line (`cmd/gen-batch/main.go:110`); (c) `GeneratedBatchSeeder`
+  hardcodes `stories[0]` — no per-story distribution (`seeders/generated_batch.go:118`). Topic→doc→code
+  triples are in the audit's Topic Inventory.
+- **Path nit (carry):** `overview.md` `delivers`/KB-deps frontmatter cites `corpus/ops/cache-spec.md`; the
+  file is at `corpus/ops/demo/cache-spec.md`. Correct during the doc-update phase.
 
 ## Supporting-population batch
 TODO: `count: auto-fill to org size`, `roles_mix`, `verified_range`, `trajectory_mix`. Expands to fill the
