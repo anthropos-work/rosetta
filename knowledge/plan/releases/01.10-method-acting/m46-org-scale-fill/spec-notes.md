@@ -1,5 +1,9 @@
 # M46 Spec Notes
 
+> **Status: `archived` — M46 CLOSED 2026-06-27 (`closed-on-gate`).** The build-time TODO markers below were all
+> DELIVERED (iter-02..07); the load-bearing truths live in the corpus docs (`ai-generation-spec.md` §4g,
+> `cache-spec.md`, `coverage-protocol.md`, `snapshot-spec.md`). Kept as an intra-build record.
+
 Technical notes accumulate here during build. The authoritative design lives in
 [`overview.md`](overview.md) + the research note
 [`.agentspace/scratch/roadmap-research-2026-06-26.md`](../../../../.agentspace/scratch/roadmap-research-2026-06-26.md)

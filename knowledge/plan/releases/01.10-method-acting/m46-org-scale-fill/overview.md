@@ -5,16 +5,23 @@ version: v1.10 "method acting"
 milestone_shape: iterative
 exit_gate: "A full org (e.g. 500) fills from a single supporting-population descriptor with a believable role/avatar/skill spread (not 90% hollow), the demo-coverage SEMANTIC believability gate (coverage-protocol.md, the M42 Playwright harness) PASSES on the generated population, hero-name collisions stay at 0 under population-scale load, and throughput + cost stay within the declared budget (e.g. ~1k members ≤ a few minutes at --max-concurrent=5)."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
-status: planned
+status: archived
 created: 2026-06-26
-last_updated: 2026-06-26
+last_updated: 2026-06-27
+closed: 2026-06-27
+close_status: closed-on-gate
 complexity: medium-large
-delivers: updates to corpus/ops/demo/ai-generation-spec.md + corpus/ops/cache-spec.md with the org-scale + preview workflow (the supporting-population batch, per-story distribution, the gen-batch preview/dry-run mode, throughput tuning + 429 backoff, the --gen-batches opt-in fence)
+delivers: updates to corpus/ops/demo/ai-generation-spec.md + corpus/ops/demo/cache-spec.md with the org-scale + preview workflow (the supporting-population batch, per-story distribution, the gen-batch preview/dry-run mode, throughput tuning + 429 backoff, the --gen-batches opt-in fence)
 depends_on: M45 (the engine + cache + closure-safe GeneratedBatchSeeder); reuses the M42 Playwright coverage harness
 spec_ref: .agentspace/scratch/roadmap-research-2026-06-26.md (the v1.10-extend research note; the org-scale strand)
 ---
 
 # M46 — Org-scale fill + gen-batch preview CLI
+
+> **Status: `archived` — CLOSED 2026-06-27 (`closed-on-gate`).** The exit gate is robustly MET COLD (5/5 faces);
+> the manager 5th gate face was cleared by the B/T1/DD/SG demo-patch + recapture campaign (zero canonical edits),
+> which also resolved `DEF-M46-01`. The FINAL milestone of v1.10 "method acting" → v1.10 is feature-complete. See
+> [`progress.md`](progress.md) (the Gate Outcome Ledger), [`metrics.json`](metrics.json), [`retro.md`](retro.md).
 
 ## Goal
 Scale the engine from a **bounded batch** to filling an **ENTIRE org** from one descriptor
@@ -86,7 +93,7 @@ stabilize after **~5 tiks**, escalate to a user-strategic-replan.
 M46 reads these corpus docs as contract (it must not contradict them; it extends them):
 - `corpus/ops/demo/ai-generation-spec.md` — the engine + cache + the gen-acceptance protocol (M45 authors
   it); M46 adds the org-scale + preview workflow.
-- `corpus/ops/cache-spec.md` — the prompt-hash cache (M45); M46 extends it for population-scale runs.
+- `corpus/ops/demo/cache-spec.md` — the prompt-hash cache (M45); M46 extends it for population-scale runs.
 - `corpus/ops/demo/coverage-protocol.md` — the M42 Playwright semantic-coverage harness + the iteration
   protocol (the population-believability gate reuses it).
 - `corpus/ops/demo/stories-spec.md` — the multi-org Stories model the per-story batch distribution fills.
@@ -98,5 +105,5 @@ M46 reads these corpus docs as contract (it must not contradict them; it extends
   batch (`count`/`roles_mix`/`verified_range`/`trajectory_mix`), per-story distribution, the `gen-batch`
   preview/dry-run mode (expanded prompts + cached JSON + estimated cost, no seeding), throughput tuning +
   429 backoff, and the `--gen-batches` opt-in fence.
-- `corpus/ops/cache-spec.md` — the cache behaviour at population scale (the preview reading cached JSON,
+- `corpus/ops/demo/cache-spec.md` — the cache behaviour at population scale (the preview reading cached JSON,
   cache reuse across the org-fill).
