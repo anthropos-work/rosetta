@@ -242,7 +242,12 @@ headline org** (Cervato ≈ 498: ~250 curated + ~247 generated; Solvantis ≈ 23
 skills, closure GREEN, 0 hero-collisions) and passes the employee-vantage M42 sweep + the manager persona /
 cross-port checks.
 
-> **Org-scale enterprise-grid perf — 2 of 3 grids cleared DEMO-LOCALLY; the members grid is a re-scope trigger (M46).**
+> **Org-scale enterprise-grid perf — the members grid cleared by Option B; the manager gate reaches
+> failingSections=0 on a warm stack (M46).** (NB — the `/enterprise/activity-dashboard` table additionally
+> depends on the **cms→Directus** simulation-content fetch; on a snapshot whose Directus schema has drifted
+> from the CMS code — e.g. a missing `simulations.is_interview_validation_enabled` column → Directus 500 — that
+> table fails INDEPENDENTLY of the perf work below. That's a **stack-snapshot recapture** concern, not a
+> members-grid/perf issue; diagnose it via `docker logs <stack>-directus-1 | grep "does not exist"`.)
 > The manager M42 sweep on this ~500-member org initially failed 3 sections — `/enterprise/members`,
 > `/enterprise/activity-dashboard`, `/enterprise/settings` — because the **federated GraphQL queries backing those
 > enterprise grids didn't resolve in the harness window** (the Cosmo router logged **10–84 s** latencies; an
@@ -265,20 +270,34 @@ cross-port checks.
 > These took graphql max latency **84 s → ~4 s** and cleared `/enterprise/activity-dashboard` + `/enterprise/settings`
 > (`failingSections` 3 → 1).
 >
-> **NOT demo-patchable — the re-scope trigger.** `/enterprise/members`' per-row `targetRole` →
-> `OrgCheckActionPermission` checks `OrgActionAssignmentsWrite`, which is **PER-OBJECT** (per assignee), not an
-> org-wide grant. A cache/singleflight keyed by `(org, subject, action)` — dropping the object to dedupe across the
-> grid's rows — is a **correctness bug**: it returns the first row's allow/deny for every row → `failed to get
-> target role: forbidden` on legitimately-allowed members (~1744×/sweep) → the grid errors. Keyed correctly with
-> the object it can't dedupe (every row is a different object). The per-row Sentinel fan-out can only be collapsed
-> by a **DataLoader / batch `BulkCheckPermission` RPC = a PLATFORM change** (forbidden). So the members grid at org
-> scale is the genuine **re-scope trigger** — surfaced, NOT faked with a permission-poisoning cache.
+> **The members grid: DROP the read-gate, don't cache it (Option B — the M46 close).** `/enterprise/members`'
+> per-row `targetRole` → `roles.go` `RoleManager.checkPermission` → `OrgCheckActionPermission` checks
+> `OrgActionAssignmentsWrite`, which is **PER-OBJECT** (per assignee), not an org-wide grant. **CACHING it is a
+> correctness bug** (T2, reverted): keyed `(org, subject, action)` — object dropped to dedupe across rows — it
+> returns the first row's allow/deny for every row → `failed to get target role: forbidden` on legitimately-allowed
+> members (~1744×/sweep) → the grid errors; keyed with the object it can't dedupe (every row a different object).
+> **The safe demo-patch is to DROP the check**: `checkPermission` short-circuits `return true, nil` before the
+> per-member Sentinel RPC (mirroring its built-in `privacy.DecisionFromContext` bypass) — target roles still come
+> from the DB (`GetOrganizationTargetRoleByAssignee`), so every member's REAL role renders, fast (DB-only) AND
+> fully-populated (0 forbidden). A **disclosed READ-path authz relaxation ONLY** (`patches/app-targetrole-authz-skip`,
+> applied to the build-scratch app clone by a rext helper wired into the inject loop, svc=app, after `apply-authn`,
+> before build, trap-reverted git-clean); the assignment **mutations** still enforce via their own direct
+> `OrgCheckActionPermission` calls. On demo-3 B took the members query **76.7 s → 0.51 s** (~150×), 0 forbidden, and
+> **cleared `/enterprise/members`**. **The PLATFORM finding stays documented:** prod still needs a **DataLoader /
+> batch `BulkCheckPermission` RPC** at 500-member scale — B is a single-presenter demo-perf relaxation, NOT a prod
+> fix. (Dropping a read-gate that returns real DB data is safe where caching-it-object-blind wasn't.)
 >
-> Net on demo-3 (~500 members): `failingSections=1` (`/enterprise/members`), reproducible on a FRESH `/demo-up`
-> for the demo-local parts. (Build pitfalls: any injected `app` rebuild MUST go through the inject loop so
-> `apply-authn.sh`'s disarmed colony is re-applied — a rebuild without it ships a backend that rejects every
-> Clerkenstein token, collapsing the crawl to `reachable≈7`; and never `--force-recreate` a single service
-> *without* `--no-deps` — it recreates `postgresql` and wipes the seeded org.)
+> **Net on demo-3 (~500 members): the members grid is cleared (B); the manager sweep reaches
+> `failingSections=0` → GATE MET on a warm stack** (all three — pagination, FK indexes, authz-skip — bake in via
+> the inject loop / post-seed step on a FRESH `/demo-up`). The `/enterprise/activity-dashboard` table stays green
+> ONLY while the cms→Directus simulation-content fetch succeeds; a drifted Directus snapshot schema (above) fails
+> it independently of B/T1 and is a snapshot-recapture concern, not a members/perf regression. (Build pitfalls:
+> any injected `app` rebuild MUST go through the inject loop so `apply-authn.sh`'s disarmed colony is re-applied —
+> a rebuild without it ships a backend that rejects every Clerkenstein token, collapsing the crawl to
+> `reachable≈7`; and never `--force-recreate` a single service *without* `--no-deps` — it recreates `postgresql`
+> and wipes the seeded org. **Restarting the federation tier clears the router/react-query caches that mask a
+> drifted-Directus content error — a freshly-restarted stack can surface an activity-dashboard content failure
+> that a long-warm stack masked.**)
 
 ## 5. What's OUT (M45 scope boundary)
 
