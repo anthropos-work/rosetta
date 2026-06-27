@@ -543,6 +543,59 @@ behind**: with content present, the v1.1 seeders' `sim_id` / `skill_path_id` / `
 `stack-seeding/seeders/contentref.go`). When no content snapshot is replayed (a structural-only run), the resolver
 falls back to the free values (graceful degradation; the snapshot is a prerequisite, not a hard requirement).
 
+### Schema-drift reconciliation (M46 — the post-replay column backfill, Option A)
+
+The captured Directus **structure** is a point-in-time snapshot of the prod content schema. The platform's Directus
+schema evolves (a field is added to a collection); a captured structure taken before that evolution is **drifted** —
+it lacks the new column. This bites a specific way: cms reads simulations with `SetFields("*", …)`
+(`cms/internal/directus/collections/jobsimulation.go` — `ListPublic/PrivateJobSimulations`, `ListJobSimulations`,
+`GetJobSimulation`). Directus expands `*` against the schema it knows for the `simulations` collection and emits a
+SELECT over **every** such column; if the replayed physical `directus.simulations` is missing one, Postgres rejects
+the whole query → `Directus 500 INTERNAL_SERVER_ERROR: column simulations.<col> does not exist`. The concrete M46
+case: the `/enterprise/activity-dashboard`'s per-sim `insightsByJobSimulations.jobSimulation{…}` content fetch 500s
+(the ~60-90s "latency" is the router **retrying** the failing fetch), failing the manager coverage gate. It is
+**cache-masked** in a warm sweep (react-query/router cache serves the earlier success) and only surfaces on a **cold**
+federation tier (restart cms+router+directus).
+
+The **targeted, reproducible reconciliation** (Option A) — not a full recapture — is a post-replay DDL backfill, the
+**same mechanism class as the post-seed FK indexes**: an idempotent `ALTER TABLE directus.<collection> ADD COLUMN IF
+NOT EXISTS <col> <type> [DEFAULT …]` for the **enumerated** missing-column set, run on **this** demo's isolated offset
+Postgres (schema `directus`) right after the set-dress replay. It lives in `demo-stack/up-injected.sh`'s `NO_SETDRESS`
+block next to the FK indexes — **gated on local content being on** (a `--no-local-content` demo has no per-stack
+Directus, so there is no drift to fix; it reads prod live) — **idempotent**, **non-fatal** (the M18/M19 pattern: a
+failure WARNS, never aborts), **values-blind** (psql runs inside the container as the local postgres role), with the
+**`DEMO_NO_DIRECTUS_DRIFT_FIX=1`** opt-out. A fresh `/demo-up` self-heals the drift; the activity-dashboard renders
+real per-sim content.
+
+**Enumerating the COMPLETE set (not band-aiding the first):** Postgres reports only the *first* missing column in an
+error, but the **full `*`-expanded SELECT Directus generates** lists every column it intends to read **before**
+execution. Diffing that full SELECT (from the Directus error log) against the replayed physical columns yields the
+**complete** requested set in one pass. M46's set was exactly one: `is_interview_validation_enabled boolean DEFAULT
+false` (a status-gated boolean in the SELECT; type + default grounded against the field's nature, so the existing
+replayed rows stay valid). Sibling `.*`-expanded collections (`roles`/`sequences`/`sim_features`/…) **do not** drift
+this way: when `directus_fields` is empty (the captured store), Directus introspects the **physical** schema, so `*`
+can only request columns that exist — `simulations` drifted because Directus served a stale in-memory introspection of
+a column the replayed table lacked. A cold full-crawl + the Directus-log scan are the bounded sibling sweep.
+
+This is **set-dress/snapshot territory, NOT a canonical platform edit** — DDL on the per-stack Directus database, the
+`cms`/`app` source clones stay pristine. It is a **stop-gap**: the robust all-drift fix is a proper Directus schema
+**recapture** (Option B — a tracked snapshot-recapture follow-up that re-captures the current prod Directus structure
+so the replayed schema is current and no per-column backfill is needed). See the carry-forward note.
+
+**Scope boundary — column drift vs serve-grant CLOSURE.** Option A fixes a *column* drift (a `*`-expanded SELECT over a
+column the physical table lacks). It does **not** fix a **serve-grant closure** gap, a deeper sibling class surfaced by
+M46/DD on `/enterprise/activity-dashboard`: the cms per-sim `GetJobSimulation` deep-fetch
+(`jobsimulation.go` `SetFields("*", "sequences.knowledge.*", "sequences.assets_files.directus_files_id.*",
+"sim_features.*", "translations.*", …)`) traverses target/junction collections — `knowledge_asset`, `sequences_files`,
+`directus_files`, `sim_features`, `sim_roles_tasks`, `sim_translations`, `simulations_translations` — that the M40
+[serve-grant](#the-public-policy-serve-grant-m40-method-acting-m40--relational-metadata--synthesized-read-grants)
+`servedCollections` set does **not** register/grant/relate (absent in the current cache too). When a deep `*`-alias
+targets an unregistered/ungranted collection, Directus drops the **whole parent** `sequences` alias → cms's
+`s.Sequences[0]` panics (`index out of range`) → the federated `jobSimulation.title` is null → the activity-table never
+hydrates. Closing it requires EXPANDING `servedCollections` to the full deep-fetch closure **plus a RECAPTURE** (the
+relation/field metadata is captured from prod, never hand-fabricated) — that is the **Option-B** milestone
+(`DEF-M46-01`), not the targeted column backfill.
+
 ## The library surfaces (v1.10 "method acting" M42e P6 — sim embeddings + category taxonomy)
 
 The org-member **library** (`/library/ai-simulations`, `/library/skill-paths`) needs two more public reference

@@ -35,3 +35,29 @@ minutes at `--max-concurrent=5`).
 can't stabilize after ~5 tiks → user-strategic-replan. **FIRED at iter-07** (platform-bound enterprise-grid
 render wall, not a dedup/throttle failure — a different, deeper re-scope than anticipated: a gate-criterion
 re-scope, surfaced for the owner).
+
+---
+
+> **GATE STATUS — UPDATED (post-iter-07 close + DD pass).** The iter-07 re-scope-trigger was correct for the levers tried
+> *in iter-07* (resize + warm-grid poll) but too pessimistic about the demo-patch surface. The subsequent close cleared
+> 2 of 3 manager enterprise grids **demo-locally, zero canonical edit**: **T1** (next-web pagination demo-patch
+> `InsightsContext.tsx` limit:1000→30 + 2 post-seed FK indexes) cleared activity-dashboard's member-list fetch +
+> settings (84 s→~4 s); **B** (`roles.go` `checkPermission` read-gate short-circuit — the per-object Sentinel RPC
+> dropped, DB roles still render) cleared the members grid (76.7 s→0.51 s).
+>
+> The **column-drift** residual (`simulations.is_interview_validation_enabled` missing from a stale Directus structure →
+> Directus 500, cache-masked in warm sweeps) is RESOLVED by the **DD pass (Option A)**: a reproducible post-replay
+> `ADD COLUMN IF NOT EXISTS` backfill wired into `up-injected.sh` (the FK-indexes mechanism class,
+> `DEMO_NO_DIRECTUS_DRIFT_FIX` opt-out, rext `method-acting-m46-directus-drift-fix`). **Cold-verified for its scope:**
+> after cold-starting cms+router+directus, 0 `does not exist` errors; `/enterprise/members` + `/enterprise/settings`
+> PASS.
+>
+> **HOWEVER the cold sweep surfaced a DEEPER, distinct blocker on `/enterprise/activity-dashboard` that Option A does NOT
+> cover:** a **serve-grant CLOSURE gap** — the cms per-sim `GetJobSimulation` deep-fetch traverses target/junction
+> collections (`knowledge_asset`, `sequences_files`, `directus_files`, `sim_features`, `sim_translations`, …) the M40
+> `servedCollections` set never registers/grants/relates (absent in the current cache too → a fresh `/demo-up` hits it)
+> → Directus drops the parent `sequences` alias → cms `jobsimulation.go:1097 s.Sequences[0]` panics → null
+> `jobSimulation.title` → the activity-table never hydrates. This is **Option-B** scope (expand `servedCollections` +
+> RECAPTURE the relation metadata from prod — never hand-fabricated) — tracked `DEF-M46-01`, NOT fakeable here.
+> **Honest verdict: the manager gate is NOT robustly met cold (`failingSections=1`, activity-dashboard only); Option A is
+> done + cold-verified for its scope; members + settings PASS. Not faked.** See iter-07/decisions.md D4.

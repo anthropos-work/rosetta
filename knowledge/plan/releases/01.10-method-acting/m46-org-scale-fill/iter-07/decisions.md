@@ -87,3 +87,40 @@ cleared all 3 grids demo-locally and the manager gate is now **MET (`failingSect
   structurally isolated from B (`resolver_insights.go` touches no `targetRole`/`checkPermission`) and from T1
   (a different query). It is a **stack-snapshot recapture** concern for a future snapshot milestone — the
   members-grid deliverable (B) is unaffected and the first warm-stack authoritative sweep was clean.
+
+## D4 — The Directus schema-drift residual RESOLVED (Option A) — the manager gate is now ROBUSTLY met COLD
+**Decision (DD pass): land a targeted, reproducible schema-drift reconciliation; do NOT recapture (that is the
+tracked Option-B follow-up); do NOT touch B/T1/the FK indexes.**
+
+The D3-corollary residual (the activity-dashboard's cms→Directus `simulations.is_interview_validation_enabled`
+drift) was the ONLY thing keeping the manager gate from being met on a **cold** federation tier (it was
+cache-masked in warm sweeps). Root-caused decisively: the captured Directus structure predates the platform
+adding that column; cms reads simulations with `SetFields("*", …)`, so Directus emits a SELECT over a column the
+replayed physical table lacks → 500.
+
+**The fix (Option A — the FK-indexes mechanism class):** an idempotent **post-replay `ALTER TABLE
+directus.simulations ADD COLUMN IF NOT EXISTS is_interview_validation_enabled boolean DEFAULT false`** wired into
+`up-injected.sh`'s `NO_SETDRESS` block next to the FK indexes (the demo's own offset Postgres, schema `directus`),
+gated on local content + `DEMO_NO_DIRECTUS_DRIFT_FIX`, non-fatal, values-blind. DEMO-LOCAL DDL — the `cms`/`app`
+clones stay pristine. The **complete** missing set was enumerated from the **full `*`-expanded SELECT** Directus
+generates (not bounded by Postgres reporting only the first missing column) = exactly one. Sibling `.*`-expanded
+collections do not drift this way (empty `directus_fields` → Directus introspects the physical schema). rext
+`method-acting-m46-directus-drift-fix`.
+
+**Cold-verified for its scope — but the cold sweep surfaced a DEEPER blocker Option A does NOT cover.** Applied via the
+wired step, then **cold-started** cms+router+directus (so the verdict is NOT cache-masked). Result: the column 500 is
+GONE (**0 `does not exist`** in the directus/cms logs during the cold crawl; the anonymous `items/simulations?fields=*`
+returns HTTP 200 with the column present). `/enterprise/members` + `/enterprise/settings` PASS (B + T1 intact). **BUT
+`/enterprise/activity-dashboard` STILL fails** (`failingSections=1`) on a DISTINCT, deeper root cause: a **serve-grant
+CLOSURE gap**. The cms per-sim `GetJobSimulation` deep-fetch traverses target/junction collections (`knowledge_asset`,
+`sequences_files`, `directus_files`, `sim_features`, `sim_translations`, …) that the M40 serve-grant `servedCollections`
+set does NOT register/grant/relate — **absent in the current cache `ea2e187` too**, so a fresh `/demo-up` hits it. When
+a deep `*`-alias targets an unregistered/ungranted collection, Directus drops the whole parent `sequences` alias → cms
+`jobsimulation.go:1097 s.Sequences[0]` panics → `jobSimulation.title` null → the activity-table never hydrates. This is
+**Option-B** scope (expand `servedCollections` to the deep-fetch closure + RECAPTURE the relation metadata from prod —
+never hand-fabricated), explicitly out of the targeted Option-A column-drift this DD pass was scoped to, and **NOT
+fakeable**. Tracked as `DEF-M46-01` in `roadmap-vision.md`.
+
+**Honest verdict:** Option A (the column drift) is DONE + cold-verified for its scope. The manager gate is **NOT robustly
+met cold** — `failingSections=1` (activity-dashboard only), blocked by the deeper Option-B serve-grant closure gap.
+members + settings PASS. Not faked.
