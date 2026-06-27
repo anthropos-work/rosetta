@@ -61,3 +61,19 @@ re-scope, surfaced for the owner).
 > RECAPTURE the relation metadata from prod — never hand-fabricated) — tracked `DEF-M46-01`, NOT fakeable here.
 > **Honest verdict: the manager gate is NOT robustly met cold (`failingSections=1`, activity-dashboard only); Option A is
 > done + cold-verified for its scope; members + settings PASS. Not faked.** See iter-07/decisions.md D4.
+>
+> **GATE STATUS — UPDATED (M46 Path 2: serve-grant CLOSURE — `DEF-M46-01` CLOSED).** The activity-dashboard
+> residual (the serve-grant CLOSURE gap above) is now **closed**, the durable Option-B way — entirely in the
+> snapshot tooling, **zero canonical edit**: (a) `servedCollections` in `stack-snapshot/directus/structure.go`
+> EXPANDED to the 7 deep-fetch closure collections (`knowledge_asset`, `sequences_files`, `sequences_files_2`,
+> `sim_translations`, `simulations_translations`, `sim_features`, `sim_roles_tasks`) + a SYNTHESIZED
+> `directus_files` SYSTEM public-read grant (`serveFilesCollection` / `serveFilesPermissionSQL`, read-only);
+> (b) the prod Directus structure **RECAPTURED** over the sanctioned `marco_read` DSN (firewall public-only,
+> `public_only=true`, 0 tenant rows; relation/field metadata captured from prod, never fabricated). The digest was
+> unchanged (the 7 tables were already in the DDL surface), so the capture overwrote the cached `_structure.sql`
+> in place (relations 35→45, fields 239→294, public-read perms +8). On demo-3 (re-replayed serve rows + cms Redis
+> DB-5 `simulations_*` cache cleared — the fresh-stack equivalent), the anonymous deep-fetch preserves the
+> `sequences` alias (no panic), and `/enterprise/activity-dashboard` hydrates (probe innerText 177→2409,
+> `insightsByJobSimulations=obj`, 0 errors/null-title). rext tag `method-acting-m46-servegrant-closure`. **The
+> manager gate is now robustly met cold** (members + settings via B/T1/DD, activity-dashboard via the closure) —
+> see snapshot-spec.md "The GetJobSimulation deep-fetch closure (M46 …)".

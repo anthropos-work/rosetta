@@ -65,29 +65,28 @@ Genuinely-deferred work, no target version, not scheduled:
 - **M25-D9 — dev-`N` taxonomy replay `rc=4` ("target schema empty").** A pre-existing dev-stack migrate-ordering
   nuance on opt-in `dev-N≥1 --local-content` stacks (non-fatal, orthogonal to the content-serve path — the directus
   content-serve done-bar DB-2 is GREEN). Surfaced by the M25 field-bake; tracked dev migrate-ordering follow-up.
-- **DEF-M46-01 — Directus serve-grant CLOSURE + schema RECAPTURE (Option B; the robust all-drift fix).** M46/DD landed
-  a **targeted** column reconciliation (Option A): the captured per-stack Directus structure had **drifted** behind the
-  platform (cms's `SetFields("*", …)` simulations query SELECTs `simulations.is_interview_validation_enabled`, a column
-  added to prod Directus after the snapshot was captured → `Directus 500: column does not exist`). Option A is an
-  idempotent **post-replay `ADD COLUMN IF NOT EXISTS`** backfill in `up-injected.sh` (the FK-indexes mechanism class;
-  `DEMO_NO_DIRECTUS_DRIFT_FIX` opt-out) — reproducible + demo-local + zero canonical edit. **It fixed the column 500 (0
-  `does not exist` on a cold stack), but the cold sweep surfaced a DEEPER, distinct blocker on `/enterprise/activity-dashboard`
-  that Option A does NOT cover and is squarely Option B:** the M40 serve-grant `servedCollections` set (`stack-snapshot/directus/structure.go`)
-  is **incomplete for the full cms `GetJobSimulation` deep-fetch closure**. cms requests `sequences.knowledge.*`,
+- **DEF-M46-01 — Directus serve-grant CLOSURE + schema RECAPTURE (Option B) → RESOLVED (M46 Path 2,
+  `method-acting-m46-servegrant-closure`).** M46/DD first landed a **targeted** column reconciliation (Option A): the
+  captured per-stack Directus structure had **drifted** behind the platform (cms's `SetFields("*", …)` simulations query
+  SELECTs `simulations.is_interview_validation_enabled`, a column added to prod Directus after the snapshot was captured →
+  `Directus 500: column does not exist`); Option A is an idempotent **post-replay `ADD COLUMN IF NOT EXISTS`** backfill in
+  `up-injected.sh` (the FK-indexes mechanism class; `DEMO_NO_DIRECTUS_DRIFT_FIX` opt-out) — kept. Option A fixed the
+  column 500, but the cold sweep surfaced a DEEPER, distinct blocker on `/enterprise/activity-dashboard`: the M40
+  serve-grant `servedCollections` set (`stack-snapshot/directus/structure.go`) was **incomplete for the full cms
+  `GetJobSimulation` deep-fetch closure**. cms requests `sequences.knowledge.*`,
   `sequences.assets_files.directus_files_id.*`, `sequences.collaborative_assets.*`, `sim_features.*`, `translations.*`,
   but the target/junction collections — `knowledge_asset`, `sequences_files`/`_2`, `directus_files`, `sim_features`,
-  `sim_roles_tasks`, `sim_translations`, `simulations_translations` — are NOT registered/granted/related in the per-stack
-  Directus (verified absent in the **current** cache `ea2e187`'s `_structure.sql` too → a FRESH `/demo-up` hits it). When
-  a deep `*`-alias targets an unregistered/ungranted collection, Directus drops the WHOLE parent `sequences` alias → cms
-  `jobsimulation.go:1097 s.Sequences[0]` panics (`index out of range`) → `jobSimulation.title` null → the federation
-  fails the non-nullable field → the activity-table never hydrates → manager gate `failingSections=1`. **Option B** is the
-  durable fix: (a) EXPAND `servedCollections` to the full deep-fetch closure, and (b) RECAPTURE the current prod Directus
-  structure so the relation/field metadata for those collections is captured from prod (the M40 design captures relation
-  wiring from the sanctioned prod structural read — junction_field/one_field/deselect — rather than fabricating it; a
-  capture-path milestone, per the capture-path live-acceptance pattern: re-capture + cache-bust + a FRESH `/demo-up`,
-  under the public-only firewall + capture-source policy). With the closure served and a current captured structure, the
-  per-column backfill becomes a no-op and the activity-dashboard renders. See `corpus/ops/snapshot-spec.md` →
-  "Schema-drift reconciliation (M46 …)". Tracked for a future `stack-snapshot` recapture milestone.
+  `sim_roles_tasks`, `sim_translations`, `simulations_translations` — were NOT registered/granted/related → Directus
+  dropped the WHOLE parent `sequences` alias → cms `jobsimulation.go:1097 s.Sequences[0]` panicked (`index out of range`)
+  → `jobSimulation.title` null → the federation failed the non-nullable field → the activity-table never hydrated.
+  **CLOSED by M46 Path 2 (the Option-B durable fix):** (a) EXPANDED `servedCollections` to the 7 deep-fetch closure
+  collections + a SYNTHESIZED `directus_files` SYSTEM public-read grant (`serveFilesCollection`/`serveFilesPermissionSQL`,
+  read-only); (b) RECAPTURED the prod Directus structure over the sanctioned `marco_read` DSN (firewall public-only,
+  `public_only=true`, 0 tenant rows; the relation/field metadata is captured from prod, never hand-fabricated — the digest
+  was unchanged so the capture overwrote the cached `_structure.sql` in place: relations 35→45, fields 239→294, perms +8).
+  A fresh `/demo-up` replays the regenerated cache and self-applies the closure; the anonymous deep-fetch now preserves the
+  `sequences` alias (no panic) and the activity-dashboard renders real per-sim content. See `corpus/ops/snapshot-spec.md`
+  → "The GetJobSimulation deep-fetch closure (M46 …)". rext tag `method-acting-m46-servegrant-closure`.
 
 **Resolved (no longer backlog):**
 

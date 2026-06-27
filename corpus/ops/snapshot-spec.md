@@ -505,6 +505,73 @@ natural unique key), so `ON CONFLICT` can't key the natural identity — every s
 `sequences[].scenarioIntro` (the activity-feed per-row federation path) — all **> 0**, no 403/panic/unmarshal
 error. Tooling + docs only; `go.mod`/`go.sum` byte-identical (supply-chain GREEN, 0 new deps).
 
+#### The GetJobSimulation deep-fetch closure (M46 `method-acting-m46-servegrant-closure`) — DEF-M46-01 CLOSED
+
+M40 served the **library** closure (the `/library/*` surfaces). It did **not** serve the deeper
+**`GetJobSimulation` deep-fetch** subtree — the per-sim content fetch the **`/enterprise/activity-dashboard`**
+issues. M46/DD surfaced this as the residual that blocked the manager coverage gate; **M46 (Path 2) CLOSES it**,
+the same way M40 closed the library closure: **expand `servedCollections` + recapture** (the relation/field
+metadata is captured from prod, never hand-fabricated). Still entirely in the snapshot replay, **zero
+platform-repo edits**.
+
+**Root cause (verified live, demo-3).** The activity-dashboard's `insightsByJobSimulations` → cms
+`GetJobSimulation` (`cms/internal/directus/collections/jobsimulation.go:40-62`) issues a nested
+`SetFields("*", "sequences.knowledge.*", "sequences.assets_files.directus_files_id.*",
+"sequences.collaborative_assets.directus_files_id.*", "translations.*", "sim_features.*",
+"sim_tasks.task_roles.*", …)`. The target/junction collections for those aliases — `knowledge_asset`,
+`sequences_files` / `sequences_files_2` (the files junctions) → **`directus_files`**, `sim_translations`,
+`simulations_translations`, `sim_features`, `sim_roles_tasks` — were **registered-but-not-served** (the dynamic
+structure DDL captures their tables, but M40's `servedCollections` never granted/related them). When a deep
+`*`-alias targets an unserved collection, Directus **403s the nested field and DROPS the whole parent
+`sequences` alias** → cms's `ToDomain` indexes `s.Sequences[0]` unconditionally
+(`jobsimulation.go:1097`) → `index out of range [0] with length 0` **panic** → `jobSimulation.title` is null
+→ the **non-nullable** federated field fails → the activity-table never hydrates (skeleton). The members +
+settings sections were unaffected; **only** the activity-dashboard.
+
+**What M46 adds** (same dynamic, version-robust machinery — no template edits, the serve-row SQL is
+parameterized by `servedCollectionsArrayLiteral()`):
+
+1. **The 7 deep-fetch collections added to `servedCollections`**: `knowledge_asset`, `sequences_files`,
+   `sequences_files_2`, `sim_translations`, `simulations_translations`, `sim_features`, `sim_roles_tasks`. The
+   dynamic structure DDL already captures their tables; adding them registers + closure-relates + (synth-)grants
+   public read on each, so the nested aliases resolve instead of 403'ing. **Prod does NOT grant these public
+   read** (`public_read_grants = 0`, verified via the sanctioned prod structural read) — so the COPY render
+   doesn't grant them; the **synthesized** read grant (`serveSynthesizedPermissionsSQL`) covers them, exactly as
+   M40 does for `resource`/library/`job_position`.
+2. **A SYNTHESIZED `directus_files` public-read grant** (`serveFilesCollection` + `serveFilesPermissionSQL`).
+   `directus_files` is a **SYSTEM** table (bootstrap registers it; it is **not** in `servedCollections`), and it
+   is the M2O target of the files-junction aliases (`sequences.{assets_files,collaborative_assets}.directus_files_id.*`).
+   Without a **read grant** on `directus_files`, Directus refuses to expand the `directus_files_id.*` leg → it
+   drops the parent `sequences` alias again. Prod **does** grant `directus_files` public read
+   (`public_read_grants = 1`), so the grant reproduces prod's anonymous behaviour; it is granted **read-only**
+   (unlike `directus_versions`, which also needs `create`), self-guarded `WHERE NOT EXISTS` (id-only-PK),
+   appended after the versions grant in `CaptureServeRows`.
+
+**This is a snapshot-CAPTURE-path change** — so it follows the M40 dance: the served set expanded, then the
+operator **recaptured** the directus surface from the sanctioned `marco_read` DSN (firewall public-only,
+`public_only = true`, 0 tenant rows) — the schema **digest is unchanged** (the 7 tables were already in the
+DDL surface), so the capture **overwrites** the cached `_structure.sql` in place with the new serve rows (totals:
+relations 35 → 45, fields 239 → 294, public-read permissions +8). A fresh `/demo-up` replays the regenerated
+cache and self-applies the closure.
+
+**Live acceptance** (demo-3, cold federation tier, **anonymous** deep-fetch via directus REST): the exact cms
+field tree returns **no 403 / no "does not exist"**; the top-level **`sequences` alias is preserved** (an array,
+not dropped/null) → cms's `s.Sequences[0]` no longer panics; the nested `knowledge`/`assets_files`/
+`collaborative_assets`/`sim_features`/`translations` aliases **resolve** (empty lists where no rows replay, which
+cms tolerates). The `/enterprise/activity-dashboard` activity-table hydrates with real per-sim content. Tooling +
+docs only; `go.mod`/`go.sum` byte-identical (supply-chain GREEN, 0 new deps).
+
+> **Reproducibility caveat — the cms `GetJobSimulation` Redis cache.** cms caches `GetJobSimulation`
+> per-id responses in **Redis DB 5** (`simulations_<id>_<hash>`, **24 h TTL, cache-FIRST** —
+> `cms/internal/directus/querybuilder.go` `cacheGet` before the fetch). A **fresh `/demo-up`** is correct by
+> construction: the set-dress provisions the per-stack Directus (with the new serve grant) **before** cms ever
+> queries it, and Redis starts empty — so cms caches **correct** (sequences-bearing) responses from the first
+> request. The poison only appears if you re-replay the serve rows into an **already-running** demo and cms read
+> a sim **during** the serve-grant settle window (an empty-`sequences` response gets cached for 24 h, and
+> cache-first re-serves it → the panic persists even though a fresh directus fetch now succeeds). To fix in place
+> without a fresh up: clear the DB-5 `simulations_*` keys (`redis-cli -n 5 --scan --pattern 'simulations_*' | xargs
+> redis-cli -n 5 DEL`). This is **not** a code change — it reproduces the fresh-stack empty-cache state.
+
 ### Media / blobs (M10-D4) — refs are the floor, blob bytes are S3-gated
 
 Content references media (`simulations.cover`, `skill_paths.{cover,image,video}`, `roles.avatar`,
@@ -587,14 +654,14 @@ column the physical table lacks). It does **not** fix a **serve-grant closure** 
 M46/DD on `/enterprise/activity-dashboard`: the cms per-sim `GetJobSimulation` deep-fetch
 (`jobsimulation.go` `SetFields("*", "sequences.knowledge.*", "sequences.assets_files.directus_files_id.*",
 "sim_features.*", "translations.*", …)`) traverses target/junction collections — `knowledge_asset`, `sequences_files`,
-`directus_files`, `sim_features`, `sim_roles_tasks`, `sim_translations`, `simulations_translations` — that the M40
-[serve-grant](#the-public-policy-serve-grant-m40-method-acting-m40--relational-metadata--synthesized-read-grants)
-`servedCollections` set does **not** register/grant/relate (absent in the current cache too). When a deep `*`-alias
-targets an unregistered/ungranted collection, Directus drops the **whole parent** `sequences` alias → cms's
+`sequences_files_2`, `directus_files`, `sim_features`, `sim_roles_tasks`, `sim_translations`, `simulations_translations` —
+that the M40 `servedCollections` set did **not** register/grant/relate. When a deep `*`-alias targets an
+unregistered/ungranted collection, Directus drops the **whole parent** `sequences` alias → cms's
 `s.Sequences[0]` panics (`index out of range`) → the federated `jobSimulation.title` is null → the activity-table never
-hydrates. Closing it requires EXPANDING `servedCollections` to the full deep-fetch closure **plus a RECAPTURE** (the
-relation/field metadata is captured from prod, never hand-fabricated) — that is the **Option-B** milestone
-(`DEF-M46-01`), not the targeted column backfill.
+hydrates. This is a distinct fix from the Option-A column backfill: it requires EXPANDING `servedCollections` to the
+full deep-fetch closure **plus a recapture** (the relation/field metadata is captured from prod, never hand-fabricated).
+**M46 (Path 2) CLOSED it** (`DEF-M46-01` resolved) — see
+[The GetJobSimulation deep-fetch closure](#the-getjobsimulation-deep-fetch-closure-m46-method-acting-m46-servegrant-closure--def-m46-01-closed).
 
 ## The library surfaces (v1.10 "method acting" M42e P6 — sim embeddings + category taxonomy)
 
