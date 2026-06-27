@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legacy Skill Path — Giving Difficult Feedback to a Direct Report</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --border: #e8eaed;
+    --border-strong: #d9dde2;
+    --ink: #1f2733;
+    --ink-2: #525c6b;
+    --ink-3: #8a93a2;
+    --primary: #4254e8;
+    --primary-weak: #eef0fd;
+    --primary-ink: #2c3bc4;
+    --green: #1f9d63;
+    --green-weak: #e6f6ee;
+    --amber: #c47d12;
+    --amber-weak: #fbf2df;
+    --violet: #7c4dd6;
+    --violet-weak: #f1ebfb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 14px rgba(16,24,40,.05);
+    --shadow-lift: 0 6px 24px rgba(16,24,40,.10);
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 650; letter-spacing: -.01em; }
+
+  /* ---- mock caption bar ---- */
+  .mockbar {
+    background: #15181f;
+    color: #cfd6e0;
+    font-size: 12.5px;
+    padding: 9px 18px;
+    text-align: center;
+    letter-spacing: .01em;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .mockbar b { color: #fff; }
+  .mockbar .pill {
+    display: inline-block;
+    background: #2a2f3a;
+    color: #aeb7c4;
+    border-radius: 999px;
+    padding: 1px 9px;
+    margin-left: 8px;
+    font-size: 11px;
+  }
+
+  .section-label {
+    max-width: 1160px;
+    margin: 30px auto 8px;
+    padding: 0 22px;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+
+  /* ---- top app chrome ---- */
+  .appbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 22px;
+  }
+  .appbar .logo { font-weight: 800; letter-spacing: -.02em; font-size: 16px; }
+  .appbar .logo .mark { color: var(--primary); }
+  .appbar .nav { display: flex; gap: 18px; color: var(--ink-2); font-size: 14px; }
+  .appbar .nav .active { color: var(--ink); font-weight: 600; }
+  .appbar .spacer { flex: 1; }
+  .appbar .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #6b78f0, #9a6bf0);
+    color: #fff; font-size: 12px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 22px; }
+
+  /* ---- assignment banner ---- */
+  .assign {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--primary-weak);
+    border: 1px solid #d6dbfb;
+    color: var(--primary-ink);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 14px;
+  }
+  .assign .icon { font-size: 18px; }
+  .assign .sep { color: #b8c0f5; }
+  .assign .ontrack {
+    margin-left: auto;
+    background: var(--green-weak); color: var(--green);
+    border-radius: 999px; padding: 3px 11px; font-weight: 650; font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  /* ---- path header card ---- */
+  .pathhead {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 22px;
+  }
+  .cover {
+    border-radius: var(--radius-sm);
+    background:
+      radial-gradient(120% 120% at 15% 10%, #5b6cf2 0%, #7c4dd6 55%, #b14fc9 100%);
+    color: #fff;
+    min-height: 210px;
+    padding: 18px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(60% 60% at 85% 80%, rgba(255,255,255,.22), transparent 70%);
+  }
+  .cover .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; opacity: .85; }
+  .cover .glyph { font-size: 46px; align-self: flex-start; filter: drop-shadow(0 2px 6px rgba(0,0,0,.2)); }
+  .cover .cname { font-size: 19px; font-weight: 700; line-height: 1.25; position: relative; z-index: 1; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px 18px; color: var(--ink-2); font-size: 13.5px; margin: 10px 0 14px; }
+  .meta-row b { color: var(--ink); font-weight: 600; }
+  .lvl {
+    background: var(--amber-weak); color: var(--amber);
+    border-radius: 999px; padding: 2px 10px; font-weight: 650; font-size: 12.5px;
+  }
+
+  .pdesc { color: var(--ink-2); font-size: 14.5px; max-width: 62ch; }
+
+  .progress-wrap { margin-top: 16px; }
+  .progress-top { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+  .progress-top b { color: var(--ink); }
+  .bar { height: 9px; background: #edeff3; border-radius: 999px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), #6b78f0); border-radius: 999px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    background: #f1f3f7; border: 1px solid var(--border);
+    color: var(--ink-2); border-radius: 999px;
+    padding: 4px 11px; font-size: 12.5px; font-weight: 550;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip .v { color: var(--green); }
+  .chips-label { font-size: 12px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .07em; margin: 18px 0 0; }
+
+  /* ---- experts ---- */
+  .experts { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 22px; }
+  .experts h3 { font-size: 16px; margin-bottom: 4px; }
+  .experts .sub { color: var(--ink-3); font-size: 13px; margin-bottom: 16px; }
+  .expert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .expert { display: flex; gap: 12px; }
+  .expert .av { width: 46px; height: 46px; border-radius: 50%; flex: 0 0 46px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 15px; }
+  .av.a { background: linear-gradient(135deg,#e0708a,#d6534f); }
+  .av.b { background: linear-gradient(135deg,#4a8de0,#3a5fd6); }
+  .av.c { background: linear-gradient(135deg,#2faa7e,#1f9d63); }
+  .expert .nm { font-weight: 650; font-size: 14px; }
+  .expert .role { color: var(--ink-3); font-size: 12px; margin-bottom: 4px; }
+  .expert .bio { color: var(--ink-2); font-size: 12.5px; line-height: 1.45; }
+
+  /* ---- chapter list ---- */
+  .ch { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; }
+  .ch-head { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+  .ch-num { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 8px; background: var(--primary-weak); color: var(--primary-ink); font-weight: 700; display: grid; place-items: center; font-size: 14px; }
+  .ch-head h3 { font-size: 16px; }
+  .ch-head .cdesc { color: var(--ink-2); font-size: 13.5px; margin-top: 3px; }
+  .ch-head .cmeta { color: var(--ink-3); font-size: 12.5px; margin-top: 6px; }
+  .ch-prog { margin-left: auto; text-align: right; font-size: 12px; color: var(--ink-3); min-width: 92px; }
+  .ch-prog .mini { height: 6px; width: 92px; background: #edeff3; border-radius: 999px; overflow: hidden; margin-top: 5px; }
+  .ch-prog .mini > span { display: block; height: 100%; background: var(--green); }
+
+  .steps { list-style: none; margin: 0; padding: 6px 0; }
+  .step {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 20px 11px 18px;
+    border-left: 3px solid transparent;
+  }
+  .step:hover { background: #fafbfc; }
+  .step .stat { width: 22px; flex: 0 0 22px; text-align: center; font-size: 16px; }
+  .stat.done { color: var(--green); }
+  .stat.prog { color: var(--primary); }
+  .stat.lock { color: var(--ink-3); }
+  .step .tico {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 8px;
+    display: grid; place-items: center; font-size: 16px;
+    background: #f1f3f7; border: 1px solid var(--border);
+  }
+  .tico.video { background:#fdecef; border-color:#f8d6dd; }
+  .tico.doc   { background:#eef4ff; border-color:#d8e6ff; }
+  .tico.link  { background:#eef9f1; border-color:#d4eddb; }
+  .tico.pod   { background:#fff4e6; border-color:#fadcb8; }
+  .tico.sim   { background:var(--violet-weak); border-color:#e0d2f7; }
+  .step .sbody { flex: 1; min-width: 0; }
+  .step .stitle { font-weight: 600; font-size: 14px; }
+  .step.locked .stitle { color: var(--ink-3); }
+  .step .stype { color: var(--ink-3); font-size: 12px; display: flex; gap: 8px; align-items: center; }
+  .step .stype .typetag { text-transform: uppercase; letter-spacing: .05em; font-weight: 650; }
+  .tt-video { color:#d6534f; } .tt-doc { color:#3a5fd6; } .tt-link { color:#1f9d63; } .tt-pod { color:#c47d12; } .tt-sim { color: var(--violet); }
+  .step .dur { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; }
+  .step .sgrade { font-size: 11.5px; font-weight: 650; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .sgrade.pass { background: var(--green-weak); color: var(--green); }
+  .step.sim-row { background: linear-gradient(90deg, var(--violet-weak), transparent 70%); border-left-color: var(--violet); }
+
+  /* ---- PLAYER VIEW ---- */
+  .player-shell {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .player-side { border-right: 1px solid var(--border); background: #fbfbfc; }
+  .player-side .ps-head { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
+  .player-side .ps-head .ptitle { font-size: 14px; font-weight: 700; }
+  .player-side .ps-head .pprog { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+  .player-side .ps-head .bar { margin-top: 6px; }
+  .ps-chapter { padding: 10px 16px 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); }
+  .ps-steps { list-style: none; margin: 0 0 8px; padding: 0; }
+  .ps-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px; font-size: 13px; cursor: pointer;
+    border-left: 3px solid transparent; color: var(--ink-2);
+  }
+  .ps-step:hover { background: #f2f4f7; }
+  .ps-step.active { background: var(--primary-weak); border-left-color: var(--primary); color: var(--primary-ink); font-weight: 650; }
+  .ps-step.locked { color: var(--ink-3); cursor: default; }
+  .ps-step .si { width: 16px; text-align: center; }
+  .ps-step .sd { margin-left: auto; font-size: 11px; color: var(--ink-3); }
+
+  .player-main { padding: 24px 28px 28px; min-height: 520px; }
+  .pm-crumb { color: var(--ink-3); font-size: 12.5px; margin-bottom: 4px; }
+  .pm-title { font-size: 21px; margin-bottom: 14px; }
+  .video-box {
+    background: #11141b; border-radius: var(--radius-sm);
+    aspect-ratio: 16/9; width: 100%;
+    display: grid; place-items: center; color: #cfd6e0;
+    position: relative; overflow: hidden; margin-bottom: 16px;
+  }
+  .video-box .play { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,.12); display: grid; place-items: center; font-size: 28px; backdrop-filter: blur(2px); border: 1px solid rgba(255,255,255,.25); }
+  .video-box .vmeta { position: absolute; bottom: 12px; left: 14px; right: 14px; display: flex; justify-content: space-between; font-size: 12.5px; }
+  .video-box .vmeta .src { background: rgba(0,0,0,.45); padding: 2px 8px; border-radius: 6px; }
+  .video-box .vmeta .time { background: rgba(0,0,0,.45); padding: 2px 8px; border-radius: 6px; }
+
+  .prose { color: var(--ink); font-size: 14.5px; max-width: 70ch; }
+  .prose p { margin: 0 0 12px; }
+  .prose h4 { font-size: 15px; margin: 18px 0 8px; }
+  .prose ul { margin: 6px 0 14px; padding-left: 20px; }
+  .prose li { margin: 4px 0; }
+  .dialogue { background: #f7f8fa; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin: 12px 0 16px; font-size: 13.5px; }
+  .dialogue .turn { margin: 5px 0; }
+  .dialogue .mgr { color: var(--primary-ink); font-weight: 650; }
+  .dialogue .rep { color: var(--violet); font-weight: 650; }
+  .callout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .callout .box { border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; border: 1px solid; }
+  .callout .do { background: var(--green-weak); border-color: #cfeeda; }
+  .callout .do h5 { color: var(--green); margin: 0 0 6px; }
+  .callout .dont { background: #fdecef; border-color: #f6d3da; }
+  .callout .dont h5 { color: #d6534f; margin: 0 0 6px; }
+  .callout ul { margin: 0; padding-left: 18px; }
+
+  .player-footer { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .btn { border-radius: var(--radius-sm); padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--border-strong); background: #fff; color: var(--ink); }
+  .btn:hover { background: #f6f7f9; }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primary:hover { background: var(--primary-ink); }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+  .player-footer .spacer { flex: 1; }
+  .complete-flag { color: var(--green); font-weight: 650; font-size: 13.5px; display: none; }
+
+  /* simulation launch card */
+  .sim-launch {
+    border: 1px solid #e0d2f7; border-radius: var(--radius);
+    background: linear-gradient(135deg, #faf7ff, #f1ebfb);
+    padding: 24px; margin-top: 4px;
+    box-shadow: var(--shadow);
+  }
+  .sim-launch .badge { display:inline-flex; align-items:center; gap:7px; background: var(--violet); color:#fff; border-radius:999px; padding:4px 12px; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .sim-launch h3 { font-size: 19px; margin: 14px 0 8px; }
+  .sim-launch .scene { color: var(--ink-2); font-size: 14px; max-width: 64ch; }
+  .sim-grade-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 18px 0; }
+  .sim-grade { background: #fff; border: 1px solid #e7ddf6; border-radius: var(--radius-sm); padding: 12px 14px; }
+  .sim-grade .gname { font-weight: 650; font-size: 13.5px; color: var(--violet); }
+  .sim-grade .gdesc { color: var(--ink-3); font-size: 12px; margin-top: 2px; }
+  .sim-meta { display: flex; gap: 18px; color: var(--ink-2); font-size: 13px; margin: 6px 0 18px; }
+  .sim-meta b { color: var(--ink); }
+  .sim-passnote { background: #fff; border: 1px dashed #d8c8f3; border-radius: var(--radius-sm); padding: 11px 14px; font-size: 12.5px; color: var(--ink-2); margin-top: 14px; }
+  .sim-passnote b { color: var(--violet); }
+  .sim-launch .startbtn { background: var(--violet); border-color: var(--violet); color: #fff; font-size: 15px; padding: 11px 22px; }
+  .sim-launch .startbtn:hover { background: #6a3dc0; }
+
+  .legend { max-width: 1160px; margin: 6px auto 0; padding: 0 22px 40px; color: var(--ink-3); font-size: 12.5px; }
+  .legend code { background:#eceef2; border-radius:5px; padding:1px 6px; color: var(--ink-2); }
+
+  @media (max-width: 880px) {
+    .pathhead, .expert-grid, .player-shell, .sim-grade-grid, .callout { grid-template-columns: 1fr; }
+    .player-side { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mockbar">
+  <b>MOCK — Legacy skill-path model</b> (path › chapter › step). Steps are curated resources + simulations.
+  <span class="pill">Topic: Giving Difficult Feedback</span>
+</div>
+
+<div class="appbar">
+  <div class="logo"><span class="mark">▲</span> Anthropos <span style="color:var(--ink-3);font-weight:600">Workforce</span></div>
+  <nav class="nav">
+    <span>Dashboard</span>
+    <span class="active">Learning</span>
+    <span>Skills</span>
+    <span>Team</span>
+  </nav>
+  <div class="spacer"></div>
+  <div class="avatar">JM</div>
+</div>
+
+<!-- ===================== SECTION 1: PATH OVERVIEW / DETAIL ===================== -->
+<div class="section-label">View 1 — Path overview / detail page</div>
+<div class="wrap">
+
+  <!-- assignment banner -->
+  <div class="assign">
+    <span class="icon">📌</span>
+    <span><b>Assigned by your manager</b>, Priya Nair</span>
+    <span class="sep">·</span>
+    <span>Due <b>Apr 30</b></span>
+    <span class="sep">·</span>
+    <span>Enterprise · Management Track</span>
+    <span class="ontrack">● On track</span>
+  </div>
+
+  <!-- path header -->
+  <div class="pathhead">
+    <div class="cover">
+      <div>
+        <div class="kicker">Skill Path</div>
+        <div class="glyph">🗣️</div>
+      </div>
+      <div class="cname">Giving Difficult Feedback to a Direct Report</div>
+    </div>
+    <div>
+      <h1 style="font-size:24px;">Giving Difficult Feedback to a Direct Report</h1>
+      <div class="meta-row">
+        <span class="lvl">Intermediate</span>
+        <span>⏱ <b>3h 20m</b> total</span>
+        <span>📚 <b>4 chapters</b> · 14 steps</span>
+        <span>🎯 <b>1 graded simulation</b></span>
+        <span>🏢 Enterprise · in-app</span>
+      </div>
+      <p class="pdesc">
+        Feedback is the single highest-leverage thing a manager does — and the thing most managers
+        avoid. This path turns vague, anxiety-driven "we need to talk" moments into clear, kind,
+        and effective conversations. You'll learn a repeatable structure (Situation–Behavior–Impact),
+        the Radical Candor model for caring personally while challenging directly, why the classic
+        "feedback sandwich" backfires, and how to handle the reactions that actually happen — defensiveness,
+        silence, tears, and pushback. You finish in a <b>graded roleplay</b> where you deliver real
+        feedback to a simulated report and get scored on empathy, clarity, and outcome.
+      </p>
+
+      <div class="progress-wrap">
+        <div class="progress-top"><span>Your progress · <b>server-synced</b> across devices</span><span><b>43%</b> · 6 of 14 steps</span></div>
+        <div class="bar"><span style="width:43%"></span></div>
+      </div>
+
+      <div class="chips-label">Skills you'll verify</div>
+      <div class="chips">
+        <span class="chip"><span class="v">✓</span> Performance Management</span>
+        <span class="chip"><span class="v">✓</span> Coaching</span>
+        <span class="chip"><span class="v">✓</span> Difficult Conversations</span>
+        <span class="chip"><span class="v">✓</span> Active Listening</span>
+        <span class="chip"><span class="v">✓</span> Emotional Regulation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- meet the experts -->
+  <div class="experts">
+    <h3>Meet the Experts</h3>
+    <div class="sub">Curators who designed and narrate this path</div>
+    <div class="expert-grid">
+      <div class="expert">
+        <div class="av a">DM</div>
+        <div>
+          <div class="nm">Dr. Dana Mercer</div>
+          <div class="role">Organizational Psychologist · ex-Head of People, Helix Labs</div>
+          <div class="bio">20 years coaching first-time and senior managers through high-stakes conversations. Designed the SBI and reaction-handling modules.</div>
+        </div>
+      </div>
+      <div class="expert">
+        <div class="av b">RT</div>
+        <div>
+          <div class="nm">Marcus Reeve</div>
+          <div class="role">Executive Coach · author, "The Honest Manager"</div>
+          <div class="bio">Trains leadership teams at Fortune 500s on Radical Candor in practice. Narrates the dialogue walkthroughs and the sandwich critique.</div>
+        </div>
+      </div>
+      <div class="expert">
+        <div class="av c">SK</div>
+        <div>
+          <div class="nm">Sofia Kang</div>
+          <div class="role">Director of L&D · Northwind Group</div>
+          <div class="bio">Built the simulation scenario and grading rubric from 300+ real manager transcripts. Owns the "after the conversation" follow-through chapter.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== chapters ===== -->
+
+  <!-- chapter 1 -->
+  <div class="ch">
+    <div class="ch-head">
+      <div class="ch-num">1</div>
+      <div>
+        <h3>Why Feedback Feels Hard (and the Cost of Avoiding It)</h3>
+        <div class="cdesc">Reframe feedback as an act of respect, not punishment — and understand what silence really costs your report and your team.</div>
+        <div class="cmeta">4 steps · 38m · verifies <i>Difficult Conversations</i></div>
+      </div>
+      <div class="ch-prog">100% complete<div class="mini"><span style="width:100%"></span></div></div>
+    </div>
+    <ul class="steps">
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">The avoidance trap: what happens when managers stay quiet</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · Dr. Dana Mercer</div>
+        </span>
+        <span class="dur">12:08</span>
+      </li>
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico link">🔗</span>
+        <span class="sbody">
+          <div class="stitle">HBR: "The Feedback Fallacy" — read before you decide your style</div>
+          <div class="stype"><span class="typetag tt-link">Web link</span> · external article · hbr.org</div>
+        </span>
+        <span class="dur">9 min read</span>
+      </li>
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico doc">📄</span>
+        <span class="sbody">
+          <div class="stitle">The Cost-of-Silence worksheet</div>
+          <div class="stype"><span class="typetag tt-doc">Document · PDF</span> · downloadable</div>
+        </span>
+        <span class="dur">PDF · 2 pages</span>
+      </li>
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico pod">🎧</span>
+        <span class="sbody">
+          <div class="stitle">Podcast: a CTO on the feedback she wishes she'd given sooner</div>
+          <div class="stype"><span class="typetag tt-pod">Podcast</span> · audio episode</div>
+        </span>
+        <span class="dur">14:30</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- chapter 2 -->
+  <div class="ch">
+    <div class="ch-head">
+      <div class="ch-num">2</div>
+      <div>
+        <h3>The Frameworks: SBI, Radical Candor &amp; Why the Sandwich Fails</h3>
+        <div class="cdesc">Three tools you'll actually use in the room. Learn to separate observation from judgment, care personally while challenging directly, and stop hiding criticism between compliments.</div>
+        <div class="cmeta">4 steps · 52m · verifies <i>Coaching</i>, <i>Active Listening</i></div>
+      </div>
+      <div class="ch-prog">50% complete<div class="mini"><span style="width:50%"></span></div></div>
+    </div>
+    <ul class="steps">
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">SBI explained: Situation → Behavior → Impact</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · Marcus Reeve</div>
+        </span>
+        <span class="dur">18:42</span>
+      </li>
+      <li class="step">
+        <span class="stat done">✓</span>
+        <span class="tico doc">📄</span>
+        <span class="sbody">
+          <div class="stitle">SBI Framework — one-page cheat sheet.pdf</div>
+          <div class="stype"><span class="typetag tt-doc">Document · PDF</span> · downloadable reference</div>
+        </span>
+        <span class="dur">PDF · 1 page</span>
+      </li>
+      <li class="step">
+        <span class="stat prog">◐</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">Radical Candor: care personally, challenge directly</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · Marcus Reeve · <span style="color:var(--primary)">in progress</span></div>
+        </span>
+        <span class="dur">15:55</span>
+      </li>
+      <li class="step locked">
+        <span class="stat lock">🔒</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">Why the "feedback sandwich" backfires — and what to do instead</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · unlocks when previous step is complete</div>
+        </span>
+        <span class="dur">10:20</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- chapter 3 -->
+  <div class="ch">
+    <div class="ch-head">
+      <div class="ch-num">3</div>
+      <div>
+        <h3>In the Room: Delivering It &amp; Handling the Reaction</h3>
+        <div class="cdesc">Scripts, timing, and the part nobody trains for — defensiveness, tears, silence, and pushback. Includes the signature graded roleplay.</div>
+        <div class="cmeta">4 steps · 1h 02m · verifies <i>Emotional Regulation</i>, <i>Performance Management</i></div>
+      </div>
+      <div class="ch-prog">0% complete<div class="mini"><span style="width:0%"></span></div></div>
+    </div>
+    <ul class="steps">
+      <li class="step">
+        <span class="stat lock">🔒</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">Opening lines that land: setting the conversation up</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · Dr. Dana Mercer</div>
+        </span>
+        <span class="dur">13:10</span>
+      </li>
+      <li class="step">
+        <span class="stat lock">🔒</span>
+        <span class="tico doc">📄</span>
+        <span class="sbody">
+          <div class="stitle">Handling the 4 reactions — defensive / silent / tearful / pushback.pdf</div>
+          <div class="stype"><span class="typetag tt-doc">Document · PDF</span> · field guide</div>
+        </span>
+        <span class="dur">PDF · 4 pages</span>
+      </li>
+      <li class="step">
+        <span class="stat lock">🔒</span>
+        <span class="tico pod">🎧</span>
+        <span class="sbody">
+          <div class="stitle">Podcast: two managers debrief a conversation that went sideways</div>
+          <div class="stype"><span class="typetag tt-pod">Podcast</span> · audio episode</div>
+        </span>
+        <span class="dur">22:05</span>
+      </li>
+      <!-- the signature simulation step -->
+      <li class="step sim-row">
+        <span class="stat lock">🔒</span>
+        <span class="tico sim">🎮</span>
+        <span class="sbody">
+          <div class="stitle">Roleplay: deliver the feedback to "Alex" — graded</div>
+          <div class="stype"><span class="typetag tt-sim">Job simulation</span> · interactive · scored · <b>required to complete the path</b></div>
+        </span>
+        <span class="sgrade pass" style="background:#f1ebfb;color:var(--violet)">Pass / fail</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- chapter 4 -->
+  <div class="ch">
+    <div class="ch-head">
+      <div class="ch-num">4</div>
+      <div>
+        <h3>After the Conversation: Follow-Through That Builds Trust</h3>
+        <div class="cdesc">The conversation is the start, not the end. Document, follow up, and turn a hard moment into a stronger working relationship.</div>
+        <div class="cmeta">2 steps · 28m · verifies <i>Performance Management</i></div>
+      </div>
+      <div class="ch-prog">0% complete<div class="mini"><span style="width:0%"></span></div></div>
+    </div>
+    <ul class="steps">
+      <li class="step">
+        <span class="stat lock">🔒</span>
+        <span class="tico video">▶</span>
+        <span class="sbody">
+          <div class="stitle">The 48-hour follow-up and the written recap</div>
+          <div class="stype"><span class="typetag tt-video">Video</span> · Sofia Kang</div>
+        </span>
+        <span class="dur">11:40</span>
+      </li>
+      <li class="step">
+        <span class="stat lock">🔒</span>
+        <span class="tico link">🔗</span>
+        <span class="sbody">
+          <div class="stitle">Template: feedback follow-up note + 30-day check-in plan</div>
+          <div class="stype"><span class="typetag tt-link">Web link</span> · external template · Notion</div>
+        </span>
+        <span class="dur">link out</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ===================== SECTION 2: STEP PLAYER VIEW ===================== -->
+<div class="section-label">View 2 — Step player (in-app, with chapter → step sidebar)</div>
+<div class="wrap">
+  <div class="player-shell">
+
+    <!-- left sidebar: chapter -> step nav -->
+    <aside class="player-side">
+      <div class="ps-head">
+        <div class="ptitle">Giving Difficult Feedback</div>
+        <div class="pprog">43% · 6 of 14 steps · synced</div>
+        <div class="bar"><span style="width:43%"></span></div>
+      </div>
+
+      <div class="ps-chapter">Ch. 1 · Why It Feels Hard</div>
+      <ul class="ps-steps">
+        <li class="ps-step"><span class="si">✓</span> The avoidance trap <span class="sd">12:08</span></li>
+        <li class="ps-step"><span class="si">✓</span> The Feedback Fallacy <span class="sd">9m</span></li>
+      </ul>
+
+      <div class="ps-chapter">Ch. 2 · The Frameworks</div>
+      <ul class="ps-steps">
+        <li class="ps-step active" data-step="video" onclick="showStep('video')"><span class="si">▶</span> SBI explained <span class="sd">18:42</span></li>
+        <li class="ps-step"><span class="si">✓</span> SBI cheat sheet <span class="sd">PDF</span></li>
+        <li class="ps-step"><span class="si">◐</span> Radical Candor <span class="sd">15:55</span></li>
+        <li class="ps-step locked"><span class="si">🔒</span> Sandwich critique <span class="sd">10:20</span></li>
+      </ul>
+
+      <div class="ps-chapter">Ch. 3 · In the Room</div>
+      <ul class="ps-steps">
+        <li class="ps-step locked"><span class="si">🔒</span> Opening lines <span class="sd">13:10</span></li>
+        <li class="ps-step locked"><span class="si">🔒</span> Handling reactions <span class="sd">PDF</span></li>
+        <li class="ps-step sim-side" data-step="sim" onclick="showStep('sim')" style="cursor:pointer"><span class="si">🎮</span> Roleplay: Alex <span class="sd">graded</span></li>
+      </ul>
+
+      <div class="ps-chapter">Ch. 4 · Follow-Through</div>
+      <ul class="ps-steps">
+        <li class="ps-step locked"><span class="si">🔒</span> 48-hour follow-up <span class="sd">11:40</span></li>
+        <li class="ps-step locked"><span class="si">🔒</span> Follow-up template <span class="sd">link</span></li>
+      </ul>
+    </aside>
+
+    <!-- main player -->
+    <main class="player-main">
+
+      <!-- VIDEO STEP -->
+      <section id="step-video">
+        <div class="pm-crumb">Chapter 2 · The Frameworks &nbsp;›&nbsp; Step 1 of 4</div>
+        <h2 class="pm-title">SBI explained: Situation → Behavior → Impact</h2>
+
+        <div class="video-box">
+          <div class="play">▶</div>
+          <div class="vmeta">
+            <span class="src">▶ Bunny Stream · narrated by Marcus Reeve</span>
+            <span class="time">04:12 / 18:42</span>
+          </div>
+        </div>
+
+        <div class="prose">
+          <p>
+            SBI is the spine of every good piece of feedback because it strips out the one thing that
+            makes people defensive: <b>judgment</b>. Instead of "you're careless" (a character verdict),
+            you describe a <b>Situation</b>, the specific <b>Behavior</b> you observed, and its concrete
+            <b>Impact</b>. The person can argue with a verdict; they can't argue with what they actually did.
+          </p>
+
+          <h4>The three parts</h4>
+          <ul>
+            <li><b>Situation</b> — anchor it in time and place so it's a real event, not a pattern accusation. <i>"In yesterday's client call at 2pm…"</i></li>
+            <li><b>Behavior</b> — observable facts only. What a camera would have caught. <i>"…you interrupted Priya twice before she finished her point."</i></li>
+            <li><b>Impact</b> — the effect on you, the work, or the team. <i>"…and afterwards she went quiet and didn't share the migration risk she'd flagged to me earlier."</i></li>
+          </ul>
+
+          <h4>What it sounds like in the room</h4>
+          <div class="dialogue">
+            <div class="turn"><span class="mgr">Manager:</span> "I want to talk about the client call yesterday afternoon. <i>(Situation)</i> Twice, you cut in before Priya finished her point. <i>(Behavior)</i> I noticed she stopped contributing after that, and she'd had a migration risk to raise that never made it into the room. <i>(Impact)</i> How did you see it?"</div>
+            <div class="turn"><span class="rep">Report:</span> "Honestly I didn't realize I cut her off — I was just trying to keep us on time."</div>
+            <div class="turn"><span class="mgr">Manager:</span> "That makes sense, and timekeeping matters. Let's find a way to do both — can we try a 'parking lot' for tangents so people still get to finish?"</div>
+          </div>
+
+          <div class="callout">
+            <div class="box do">
+              <h5>✓ Do</h5>
+              <ul>
+                <li>Lead with one specific event, not "lately…"</li>
+                <li>Use observable behavior — what a camera saw</li>
+                <li>Name the impact, then ask for their view</li>
+                <li>Hold the silence after you speak</li>
+              </ul>
+            </div>
+            <div class="box dont">
+              <h5>✕ Don't</h5>
+              <ul>
+                <li>Open with "you always" / "you never"</li>
+                <li>Mind-read intent ("you clearly don't care")</li>
+                <li>Bury it in a sandwich of fake praise</li>
+                <li>Outsource it ("people are saying…")</li>
+              </ul>
+            </div>
+          </div>
+
+          <p style="color:var(--ink-2);font-size:13.5px">
+            <b>Why not the sandwich?</b> Praise → criticism → praise trains people to brace every time you
+            compliment them, and the real message gets lost between two slices of filler. Be kind <i>and</i>
+            direct: that's the Radical Candor quadrant you'll learn in the next step.
+          </p>
+        </div>
+
+        <div class="player-footer">
+          <button class="btn ghost" onclick="showStep('video')">‹ Previous: The Feedback Fallacy</button>
+          <div class="spacer"></div>
+          <span class="complete-flag" id="vflag">✓ Marked complete · progress synced</span>
+          <button class="btn primary" id="vbtn" onclick="markComplete('v')">Mark complete</button>
+          <button class="btn" onclick="showStep('sim')">Next: SBI cheat sheet ›</button>
+        </div>
+      </section>
+
+      <!-- SIMULATION STEP (hidden by default) -->
+      <section id="step-sim" style="display:none">
+        <div class="pm-crumb">Chapter 3 · In the Room &nbsp;›&nbsp; Step 4 of 4 · graded</div>
+        <h2 class="pm-title">Roleplay: deliver the feedback to "Alex"</h2>
+
+        <div class="sim-launch">
+          <span class="badge">🎮 Job Simulation · Interactive &amp; Graded</span>
+          <h3>Have the real conversation — with a simulated direct report</h3>
+          <p class="scene">
+            You manage <b>Alex</b>, a talented engineer whose code is strong but who has been dismissive of
+            teammates in reviews — leaving curt comments and overriding decisions without discussion. Two
+            people have quietly told you they're hesitant to push back on Alex. In this roleplay you'll open
+            the conversation, deliver the feedback using SBI, and respond live as Alex reacts — Alex may get
+            defensive, go quiet, or push back. You'll be <b>scored on three dimensions</b>, and the path
+            completes only when you pass.
+          </p>
+
+          <div class="sim-grade-grid">
+            <div class="sim-grade">
+              <div class="gname">💚 Empathy</div>
+              <div class="gdesc">Did you acknowledge Alex's perspective and stay regulated under pushback?</div>
+            </div>
+            <div class="sim-grade">
+              <div class="gname">🎯 Clarity</div>
+              <div class="gdesc">Was the behavior specific and the impact concrete — no vague verdicts?</div>
+            </div>
+            <div class="sim-grade">
+              <div class="gname">🤝 Outcome</div>
+              <div class="gdesc">Did you land a concrete, mutually-agreed next step?</div>
+            </div>
+          </div>
+
+          <div class="sim-meta">
+            <span>⏱ Est. <b>12–18 min</b></span>
+            <span>🔁 <b>Unlimited retries</b></span>
+            <span>🎙 <b>Voice or chat</b></span>
+            <span>📊 Pass threshold: <b>70 / 100</b></span>
+          </div>
+
+          <button class="btn startbtn" onclick="alert('▶ Launching graded simulation…\n\nScenario: Alex, dismissive in reviews.\nYou will be scored on Empathy · Clarity · Outcome.\n(Mock — no live engine in this static preview.)')">▶ Start simulation</button>
+
+          <div class="sim-passnote">
+            <b>Completion is driven by the simulation result.</b> Unlike a video or PDF, this step has no
+            "Mark complete" button — the platform marks it done (and verifies <i>Difficult Conversations</i>)
+            <b>only when your score ≥ 70</b>. Your transcript and per-dimension scores sync to your manager's
+            dashboard.
+          </div>
+        </div>
+
+        <div class="player-footer">
+          <button class="btn ghost" onclick="showStep('video')">‹ Back to SBI explained</button>
+          <div class="spacer"></div>
+          <button class="btn" disabled style="opacity:.5;cursor:not-allowed">Next: After the Conversation (locked until passed) 🔒</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="legend">
+  Legacy content model rendered above: <code>path</code> → <code>chapter</code> → <code>step</code>.
+  Step types shown: <code>video</code> (Bunny/YouTube), <code>document/PDF</code>, <code>web link</code>,
+  <code>podcast</code> (audio), and the signature <code>job simulation</code> (interactive, graded, pass/fail —
+  completion driven by the result, not a button). Status icons: ✓ done · ◐ in progress · 🔒 locked/pending.
+  Progress is server-synced across chapters/steps and surfaced to the assigning manager.
+</div>
+
+<script>
+  function showStep(which) {
+    document.getElementById('step-video').style.display = (which === 'video') ? 'block' : 'none';
+    document.getElementById('step-sim').style.display   = (which === 'sim')   ? 'block' : 'none';
+    // update sidebar active state
+    document.querySelectorAll('.ps-step[data-step]').forEach(function (el) {
+      el.classList.toggle('active', el.getAttribute('data-step') === which);
+    });
+    window.scrollTo({ top: document.querySelector('.player-shell').offsetTop - 60, behavior: 'smooth' });
+  }
+  function markComplete(kind) {
+    if (kind === 'v') {
+      document.getElementById('vbtn').style.display = 'none';
+      document.getElementById('vflag').style.display = 'inline';
+    }
+  }
+</script>
+
+</body>
+</html>

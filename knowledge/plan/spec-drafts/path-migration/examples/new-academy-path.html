@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ant Academy — Giving Difficult Feedback (micro-course)</title>
+<!-- The ONE allowed network reference: the three real ant-academy fonts (DM Sans / Instrument Serif / JetBrains Mono), exactly as app/layout.jsx loads them via next/font/google. Everything else is inline/offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   Tokens — copied verbatim from
+   ant-academy/code/ucourses/ucourse-engine/styles.css  +  academy.css  :root
+   (the real font family vars resolve to the Google fonts loaded above)
+   ============================================================================ */
+:root {
+    --bg: #141210;
+    --surface: rgba(var(--tint-rgb), 0.06);
+    --surface-hover: rgba(var(--tint-rgb), 0.10);
+    --border: rgba(var(--tint-rgb), 0.08);
+    --border-light: rgba(var(--tint-rgb), 0.06);
+    --text-primary: #F0EDE6;
+    --text-secondary: #B8B2A6;
+    --text-muted: #8A8478;
+    --text-faint: #6A6458;
+    --accent: #E8553A;
+    --accent-strong: #D04A32;
+    --accent-rgb: 232, 85, 58;
+    --accent-bg: rgba(var(--accent-rgb), 0.08);
+    --accent-border: rgba(var(--accent-rgb), 0.2);
+    --complete: #45B69C;
+    --success: #45B69C;
+    --success-bg: rgba(69,182,156,0.1);
+    --success-border: rgba(69,182,156,0.3);
+    --error: #DC3C3C;
+    --error-bg: rgba(220,60,60,0.08);
+    --error-border: rgba(220,60,60,0.25);
+    --analogy-color: #8338EC;
+    --analogy-bg: rgba(131,56,236,0.06);
+    --analogy-border: rgba(131,56,236,0.15);
+    --top-bar-bg: rgba(20, 18, 16, 0.95);
+    --tint-rgb: 255, 255, 255;
+    --diagram-bg: #232120;
+    --diagram-border: #2A2826;
+    --widget-bg: rgba(255,255,255,0.09);
+    --honey: #FFD54F;
+    --honey-rgb: 255, 213, 79;
+    --card-raise: none;
+    --insight-text: #E8CDB8;
+    --font-serif: "Instrument Serif", Georgia, serif;
+    --font-sans: "DM Sans", sans-serif;
+    --font-mono: "JetBrains Mono", 'Fira Code', monospace;
+    --cosmo-blue: #4DA6FF;
+    --cosmo-amber: #F5C16C;
+    --cosmo-panel-bg: rgba(20, 18, 16, 0.95);
+    --cosmo-fab-bg: #000000;
+    --cosmo-fab-border: rgba(var(--tint-rgb), 0.1);
+    --cosmo-divider: rgba(var(--tint-rgb), 0.06);
+    --cosmo-divider-faint: rgba(var(--tint-rgb), 0.04);
+    --cosmo-code-bg: rgba(0, 0, 0, 0.3);
+    --cosmo-subtle: rgba(var(--tint-rgb), 0.02);
+    --cosmo-subtle-2: rgba(var(--tint-rgb), 0.03);
+    --cosmo-hover: rgba(var(--tint-rgb), 0.06);
+    --cosmo-scrollbar: rgba(var(--tint-rgb), 0.1);
+    --cosmo-shadow: rgba(0, 0, 0, 0.4);
+    --cosmo-shadow-soft: rgba(0, 0, 0, 0.3);
+    --cosmo-panel-width: 380px;
+    --cosmo-z: 9999;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-width: none;
+}
+body::-webkit-scrollbar { display: none; }
+body.cosmo-panel-open { margin-right: var(--cosmo-panel-width); transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+body:not(.cosmo-panel-open) { transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ---- MOCK caption bar (the only non-app chrome) ---- */
+.mock-caption {
+    font-family: var(--font-sans);
+    background: rgba(var(--accent-rgb), 0.10);
+    border-bottom: 1px solid var(--accent-border);
+    color: #F0D7CE; font-size: 12px; font-weight: 600; letter-spacing: 0.2px;
+    padding: 7px 18px; text-align: center; position: sticky; top: 0; z-index: 200;
+}
+.mock-caption b { color: var(--accent); }
+
+.course-page { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---- Top Menu Bar ---- */
+.app-top-bar {
+    display: flex; align-items: center; padding: 0 1.5rem;
+    background: var(--top-bar-bg); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-light); flex-shrink: 0; z-index: 100;
+    position: sticky; top: 33px;
+}
+.top-bar-row { display: flex; align-items: center; }
+.top-bar-row-main { height: 52px; gap: 0.875rem; flex: 1; min-width: 0; max-width: 960px; margin: 0 auto; width: 100%; }
+.main-app-link { display: flex; align-items: center; text-decoration: none; padding: 0.4rem; border-radius: 8px; transition: background-color 0.2s ease; color: var(--text-faint); font-size: 1.1rem; cursor: pointer; }
+.main-app-link:hover { background-color: rgba(var(--tint-rgb), 0.06); color: var(--accent); }
+.top-bar-separator { width: 1px; height: 18px; background: var(--border); }
+.top-bar-stack {
+    display: flex; align-items: center; gap: 6px; padding: 0.4rem 10px; border-radius: 8px;
+    border: none; background: none; color: var(--text-faint); font-family: var(--font-sans);
+    font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0;
+}
+.top-bar-stack:hover { color: var(--accent); background-color: rgba(var(--tint-rgb), 0.06); }
+.top-bar-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ucourse-logo { font-size: 1.35rem; font-weight: 700; color: var(--accent); line-height: 1; font-family: var(--font-serif); }
+.top-bar-title .top-bar-percent { font-size: 0.75rem; font-weight: 500; color: var(--text-faint); flex-shrink: 0; }
+
+/* ---- Course Header (in-module) ---- */
+.course-header { position: sticky; top: 33px; background: var(--top-bar-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); z-index: 10; padding: 14px 24px; }
+.course-header-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+.back-button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; font-family: var(--font-sans); padding: 4px 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.back-button:hover { color: var(--text-primary); }
+.progress-bar-container { flex: 1; }
+.progress-bar { width: 100%; height: 4px; background: rgba(var(--tint-rgb), 0.1); border-radius: 2px; overflow: hidden; }
+.progress-bar.mini { margin-top: 10px; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.progress-count { font-size: 12px; color: var(--text-faint); font-weight: 500; white-space: nowrap; }
+
+/* ---- Layout ---- */
+.course-container { flex: 1; }
+.course-content { max-width: 680px; margin: 0 auto; padding: 48px 24px; }
+
+/* ---- Module List / Intro ---- */
+.course-intro { margin-bottom: 48px; }
+.course-intro-inner { display: flex; flex-direction: column; gap: 0; }
+.course-intro-top { display: flex; align-items: flex-start; gap: 2rem; }
+.course-intro-text { flex: 1; min-width: 0; }
+.hero-ring { position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 0.5rem; }
+.hero-ring-svg { display: block; }
+.hero-ring-fill { transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hero-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.hero-ring-percent { font-family: var(--font-sans); font-size: 1.35rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.hero-ring-percent small { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-left: 1px; }
+.course-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.course-title { font-family: var(--font-serif); font-size: clamp(36px, 6vw, 52px); font-weight: 400; line-height: 1.1; margin: 0 0 16px; color: var(--text-primary); }
+.course-subtitle { font-size: 16px; color: var(--text-muted); line-height: 1.6; max-width: 480px; margin: 0; }
+.course-stats { margin-top: 20px; display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--text-faint); flex-wrap: wrap; }
+.stats-actions { display: flex; gap: 8px; margin-left: auto; }
+.action-button { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; color: var(--text-faint); cursor: pointer; transition: all 0.2s; font-size: 14px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; font-family: var(--font-sans); }
+.action-button .btn-label { font-size: 0.7rem; font-weight: 600; }
+.action-button:hover { color: var(--text-primary); border-color: rgba(var(--tint-rgb), 0.15); background: rgba(var(--tint-rgb), 0.04); }
+.action-button.offline-saved { color: var(--success); border-color: rgba(69,182,156,0.2); }
+.continue-cta { background: rgba(var(--accent-rgb), 0.1); border: 1px solid rgba(var(--accent-rgb), 0.25); border-radius: 6px; padding: 4px 12px; color: var(--accent); font-family: var(--font-sans); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; margin-left: auto; }
+.continue-cta:hover { background: rgba(var(--accent-rgb), 0.16); border-color: rgba(var(--accent-rgb), 0.35); }
+
+.module-list { display: grid; gap: 12px; }
+.module-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: 14px; padding: 22px 24px; text-align: left; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; width: 100%; font-family: var(--font-sans); color: var(--text-primary); }
+.module-card:hover:not(.locked) { background: var(--surface-hover); }
+.module-card.complete { border-color: rgba(69,182,156,0.2); background: var(--surface); }
+.module-card.continue-target { border-color: var(--accent-border); }
+.module-card-inner { display: flex; align-items: center; gap: 16px; }
+.module-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; background: rgba(var(--tint-rgb), 0.04); }
+.module-info { flex: 1; min-width: 0; }
+.module-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.module-number { font-size: 11px; color: var(--text-faint); font-weight: 600; letter-spacing: 0.04em; }
+.module-status { font-size: 11px; color: var(--complete); font-weight: 600; }
+.module-title { font-family: var(--font-serif); font-size: 20px; color: var(--text-primary); margin-bottom: 3px; }
+.module-subtitle { font-size: 13px; color: #7A7468; }
+.module-time { color: #5A5448; }
+.module-arrow { font-size: 18px; color: var(--text-muted); flex-shrink: 0; }
+
+/* ---- Section Header ---- */
+.section-header { margin-bottom: 28px; }
+.section-module-label { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.section-module-title { font-family: var(--font-serif); font-size: 32px; margin: 8px 0 0; color: var(--text-primary); }
+
+/* ---- Cards ---- */
+.card { margin-bottom: 20px; }
+.card-body { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; margin-bottom: 20px; }
+.card-title { font-family: var(--font-serif); font-size: 26px; color: var(--text-primary); margin: 0 0 20px; line-height: 1.3; }
+.card-text { font-family: var(--font-sans); font-size: 15.5px; color: var(--text-secondary); line-height: 1.75; }
+.card-text .text-highlight { color: var(--text-primary); font-weight: 600; }
+.card-text p { margin: 0 0 12px; }
+.card-text p:last-child { margin-bottom: 0; }
+.card-text strong { color: var(--text-primary); font-weight: 600; }
+.card-text em { color: var(--text-secondary); }
+.card-text code { font-family: var(--font-mono); font-size: 0.88em; background: rgba(var(--tint-rgb), 0.06); border: 1px solid rgba(var(--tint-rgb), 0.08); border-radius: 4px; padding: 2px 6px; }
+.card-text ul, .card-text ol { padding-left: 20px; margin: 8px 0; }
+.card-text li { margin-bottom: 6px; }
+.card-text blockquote { border-left: 3px solid var(--accent); margin: 12px 0; padding: 8px 16px; color: var(--text-muted); background: rgba(var(--tint-rgb), 0.02); border-radius: 0 6px 6px 0; }
+
+/* time pill on the section header (the bite-size signal) */
+.section-time-pill { display: inline-flex; align-items: center; gap: 5px; margin-left: 12px; font-size: 11px; font-weight: 600; color: var(--text-faint); background: rgba(var(--tint-rgb), 0.05); border: 1px solid var(--border); border-radius: 99px; padding: 2px 9px; vertical-align: middle; }
+
+/* ---- Analogy Card ---- */
+.analogy-body { background: linear-gradient(135deg, var(--analogy-bg), rgba(131,56,236,0.02)); border-color: var(--analogy-border); }
+.analogy-badge { display: inline-block; background: rgba(131,56,236,0.15); border-radius: 8px; padding: 4px 12px; margin-bottom: 16px; font-size: 12px; font-weight: 700; color: #B388FF; letter-spacing: 0.06em; }
+.analogy-body .text-highlight { color: #D4C8FF; }
+
+/* ---- Key Insight ---- */
+.key-insight { background: linear-gradient(135deg, var(--accent-bg), rgba(var(--accent-rgb), 0.03)); border: 1px solid var(--accent-border); border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start; }
+.insight-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.insight-text { font-family: var(--font-sans); font-size: 14.5px; color: var(--insight-text); line-height: 1.65; margin: 0; font-style: italic; }
+.insight-text strong { color: var(--text-primary); font-weight: 600; }
+.insight-text em { color: #fff; font-style: italic; }
+
+/* ---- Example Card ---- */
+.example-grid { display: grid; gap: 16px; margin-bottom: 20px; }
+.example-box { border-radius: 14px; padding: 22px 24px; overflow: hidden; }
+.example-box.bad { background: var(--error-bg); border: 1px solid var(--error-border); }
+.example-box.good { background: var(--success-bg); border: 1px solid var(--success-border); }
+.example-label { font-family: var(--font-sans); font-size: 13px; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.03em; }
+.bad-label { color: var(--error); }
+.good-label { color: var(--success); }
+.example-code { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-word; }
+.good-code { color: var(--text-secondary); }
+/* dialogue uses the same example-card frame */
+.dialogue-line { display: flex; gap: 12px; margin-bottom: 10px; font-family: var(--font-sans); }
+.dialogue-line:last-child { margin-bottom: 0; }
+.dialogue-who { flex-shrink: 0; width: 56px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+.dialogue-mgr .dialogue-who { color: var(--accent); }
+.dialogue-rep .dialogue-who { color: var(--cosmo-blue); }
+.dialogue-text { font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+
+/* ---- Practice Card ---- */
+.practice-badge { display: inline-block; background: rgba(var(--accent-rgb), 0.12); border-radius: 8px; padding: 5px 14px; margin-bottom: 16px; font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
+.practice-question { font-size: 24px; line-height: 1.4; margin-bottom: 22px; }
+.options-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+.option-button { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; text-align: left; cursor: pointer; transition: all 0.2s; font-family: var(--font-sans); font-size: 14.5px; color: var(--text-primary); line-height: 1.5; width: 100%; display: block; }
+.option-button:hover:not(.correct):not(.incorrect):not(.correct-hint) { background: rgba(var(--tint-rgb), 0.06); }
+.option-letter { opacity: 0.4; margin-right: 10px; font-size: 13px; }
+.option-explanation { display: none; margin-top: 12px; padding-top: 12px; font-size: 13.5px; line-height: 1.6; }
+.option-explanation.show { display: block; }
+.option-button.correct { background: var(--success-bg); border-color: var(--success-border); color: var(--text-primary); cursor: default; }
+.option-button.correct .option-explanation { border-top: 1px solid var(--success-border); color: var(--text-secondary); }
+.option-button.incorrect { background: var(--error-bg); border-color: var(--error-border); color: var(--text-primary); cursor: default; }
+.option-button.incorrect .option-explanation { border-top: 1px solid var(--error-border); color: var(--text-secondary); }
+.option-button.correct-hint { background: var(--success-bg); border-color: var(--success-border); cursor: default; }
+.revealed .option-button { cursor: default; }
+
+/* ---- Buttons ---- */
+.next-button { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); border: none; border-radius: 10px; padding: 12px 28px; color: #fff; font-family: var(--font-sans); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.next-button:hover { transform: translateY(-1px); }
+.next-button.hidden { display: none !important; }
+
+/* ---- Section Nav Bar ---- */
+.section-nav { display: flex; flex-direction: column; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(var(--tint-rgb), 0.06); gap: 6px; }
+.section-nav-row { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px; }
+.section-nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-family: var(--font-sans); font-weight: 500; color: var(--text-secondary); background: rgba(var(--tint-rgb), 0.04); border: 1px solid rgba(var(--tint-rgb), 0.08); border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
+.section-nav-btn:hover:not(:disabled) { background: rgba(var(--tint-rgb), 0.08); color: var(--text-primary); }
+.section-nav-btn:disabled { opacity: 0.2; cursor: default; }
+.section-nav-prev { padding: 8px 12px; }
+.section-nav-center { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+.section-nav-center-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-right: 4px; }
+.section-nav-widget { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; background: none; border: none; border-radius: 6px; cursor: pointer; color: #4A463E; font-size: 14px; transition: color 0.15s; }
+.section-nav-widget:hover { color: #4DA6FF; }
+.section-nav-hint { font-size: 11px; font-family: var(--font-sans); color: var(--text-faint); height: 16px; text-align: center; width: 100%; }
+
+.hidden { display: none !important; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.fade-slide-in { animation: fadeSlideIn 0.4s ease-out both; }
+
+/* ---- Completion hero (gold — from styles.css M2 §2) ---- */
+.completion-hero { display: flex; align-items: center; gap: 22px; padding: 24px 28px; margin: 28px 0; background: linear-gradient(135deg, rgba(184, 138, 66, 0.10) 0%, rgba(201, 167, 123, 0.08) 100%); border: 1px solid rgba(184, 138, 66, 0.32); border-radius: 14px; }
+.completion-hero-seal { flex-shrink: 0; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(184, 138, 66, 0.18); color: #B88A42; font-size: 30px; }
+.completion-hero-text { flex: 1; min-width: 0; }
+.completion-hero-eyebrow { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #B88A42; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.completion-hero-title { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+.completion-hero-sub { margin: 6px 0 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* ---- Custom-stack hint (build your own path) ---- */
+.course-extras { margin-top: 16px; }
+.custom-stack-hint { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 1px dashed var(--border); border-radius: 14px; background: none; width: 100%; text-align: left; cursor: pointer; font-family: var(--font-sans); color: var(--text-secondary); transition: background 0.15s; }
+.custom-stack-hint:hover { background: rgba(var(--tint-rgb), 0.03); }
+.custom-stack-hint .csh-icon { font-size: 20px; color: var(--accent); flex-shrink: 0; }
+.custom-stack-hint .csh-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; display: block; }
+.custom-stack-hint .csh-sub { font-size: 12px; color: var(--text-muted); line-height: 1.45; display: block; }
+
+/* ============================================================================
+   Cosmo — copied from assistant/assistant.css
+   ============================================================================ */
+.cosmo-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--cosmo-fab-border); background: var(--cosmo-fab-bg); cursor: pointer; z-index: var(--cosmo-z); display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; box-shadow: 0 2px 8px var(--cosmo-shadow); padding: 0; }
+.cosmo-fab:hover { transform: scale(1.08); }
+.cosmo-fab.hidden { display: none; }
+.cosmo-avatar-mini { width: 44px; height: 44px; }
+.cosmo-avatar-mini .cosmo-svg { width: 100%; height: 100%; transform: translateY(-6%); }
+.cosmo-fab .cosmo-eyes-open { opacity: 0; transition: opacity 0.15s ease-out; }
+.cosmo-fab .cosmo-eyes-closed { opacity: 1; transition: opacity 0.15s ease-out; }
+.cosmo-fab:hover .cosmo-eyes-open { opacity: 1; }
+.cosmo-fab:hover .cosmo-eyes-closed { opacity: 0; }
+
+.cosmo-panel { position: fixed; right: 0; top: 0; bottom: 0; width: var(--cosmo-panel-width); background: var(--cosmo-panel-bg); backdrop-filter: blur(16px); border-left: 1px solid var(--cosmo-divider); z-index: var(--cosmo-z); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -8px 0 32px var(--cosmo-shadow-soft); }
+.cosmo-panel.open { transform: translateX(0); }
+.cosmo-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid var(--cosmo-divider); flex-shrink: 0; }
+.cosmo-panel-header-left { display: flex; align-items: center; gap: 10px; }
+.cosmo-panel-header-right { display: flex; align-items: center; gap: 4px; }
+.cosmo-panel-header .cosmo-avatar { width: 36px; height: 36px; align-self: center; }
+.cosmo-panel-header .cosmo-svg { width: 100%; height: 100%; }
+.cosmo-panel-name { font-family: var(--font-serif); font-size: 18px; color: var(--text-primary); letter-spacing: 0.02em; }
+.cosmo-btn-close, .cosmo-btn-clear { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; font-size: 16px; }
+.cosmo-btn-close:hover, .cosmo-btn-clear:hover { color: var(--text-primary); background: var(--cosmo-hover); }
+.cosmo-ctx-label { font-size: 10px; padding: 6px 16px; color: var(--text-faint); border-bottom: 1px solid var(--cosmo-divider-faint); background: var(--cosmo-subtle); font-family: var(--font-sans); }
+.cosmo-ctx-label b { color: var(--text-muted); font-weight: 600; }
+.cosmo-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--cosmo-scrollbar) transparent; }
+.cosmo-messages::-webkit-scrollbar { width: 4px; }
+.cosmo-messages::-webkit-scrollbar-thumb { background: var(--cosmo-scrollbar); border-radius: 2px; }
+.cosmo-welcome { text-align: center; padding: 24px 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.cosmo-welcome strong, .cosmo-welcome .cosmo-name { color: var(--cosmo-blue); }
+.cosmo-msg { display: flex; max-width: 95%; animation: cosmoFadeIn 0.25s ease-out; }
+.cosmo-msg-user { align-self: flex-end; }
+.cosmo-msg-assistant { align-self: flex-start; }
+.cosmo-msg-content { padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; color: var(--text-primary); word-break: break-word; }
+.cosmo-msg-user .cosmo-msg-content { background: rgba(77, 166, 255, 0.1); border: 1px solid rgba(77, 166, 255, 0.15); border-bottom-right-radius: 4px; }
+.cosmo-msg-assistant .cosmo-msg-content { background: none; border: none; border-radius: 0; padding: 0; }
+.cosmo-msg-text p { margin: 0 0 8px; }
+.cosmo-msg-text p:last-child { margin-bottom: 0; }
+.cosmo-msg-text strong { color: var(--text-primary); }
+.cosmo-msg-text em { color: var(--text-secondary); }
+.cosmo-msg-text code { font-family: var(--font-mono); font-size: 12px; padding: 2px 5px; background: var(--cosmo-code-bg); border-radius: 4px; color: var(--cosmo-amber); }
+.cosmo-cta-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; padding: 0 16px 12px; }
+.cosmo-cta-btn { padding: 6px 14px; font-size: 12.5px; font-family: var(--font-sans); color: var(--cosmo-blue); background: none; border: 1px solid rgba(77, 166, 255, 0.3); border-radius: 16px; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; text-align: left; line-height: 1.35; }
+.cosmo-cta-btn:hover { background: rgba(77, 166, 255, 0.1); border-color: var(--cosmo-blue); color: #9CCAFF; }
+.cosmo-input-area { display: flex; align-items: flex-end; gap: 6px; padding: 5px; border-top: 1px solid rgba(var(--tint-rgb), 0.06); flex-shrink: 0; }
+.cosmo-input { flex: 1; background: none; border: none; padding: 10px 14px; color: var(--text-primary); font-family: var(--font-sans); font-size: 13.5px; resize: none; outline: none; min-height: 20px; max-height: 120px; line-height: 1.4; }
+.cosmo-input::placeholder { color: var(--text-faint); }
+.cosmo-btn-action { width: 36px; height: 36px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s, transform 0.1s; font-size: 15px; flex-shrink: 0; background: none; color: var(--cosmo-blue); }
+.cosmo-btn-action:hover:not(:disabled) { transform: scale(1.05); }
+.cosmo-avatar { position: relative; }
+.cosmo-avatar .cosmo-svg { width: 100%; height: 100%; }
+.cosmo-slime-group { transform-origin: 32px 62px; }
+.avatar-idle .cosmo-slime-group { animation: cosmoBob 6s ease-in-out infinite; }
+@keyframes cosmoFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cosmoBob { 0%, 75%, 100% { transform: scaleY(1) scaleX(1); } 82% { transform: scaleY(0.85) scaleX(1.15); } 89% { transform: scaleY(1.05) scaleX(0.95); } 94% { transform: scaleY(0.96) scaleX(1.04); } 97% { transform: scaleY(1.01) scaleX(0.99); } }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .course-content { padding: 32px 16px; }
+    .card-body { padding: 24px 20px; }
+    .section-module-title { font-size: 26px; }
+    .app-top-bar { padding: 0 1rem; }
+    .hero-ring { display: none; }
+    body.cosmo-panel-open { margin-right: 0; }
+    .cosmo-panel { width: 100%; }
+}
+</style>
+</head>
+<body class="avatar-idle">
+
+<div class="mock-caption">
+  MOCK — <b>New AI Academy model</b> (path &rsaquo; chapter &rsaquo; module &rsaquo; section). Bite-size authored pills + AI tutor. Topic: <b>Giving Difficult Feedback</b>.
+</div>
+
+<div class="course-page" id="coursePage"><!-- view injected here --></div>
+
+<!-- COSMO FAB — the real blue-slime avatar SVG, verbatim from avatar.js -->
+<button class="cosmo-fab" id="cosmoFab" title="Ask Cosmo">
+  <div class="cosmo-avatar-mini cosmo-avatar avatar-idle">
+    <svg viewBox="0 16 64 48" xmlns="http://www.w3.org/2000/svg" class="cosmo-svg">
+      <g class="cosmo-slime-group">
+        <path d="M 32 20 C 24 20, 4 36, 4 48 C 4 58, 16 62, 32 62 C 48 62, 60 58, 60 48 C 60 36, 40 20, 32 20 Z" fill="#4DA6FF"/>
+        <path d="M 32 24 C 26 24, 8 38, 8 48 C 8 51, 12 55, 18 57 C 12 48, 28 28, 32 26 C 36 28, 52 48, 46 57 C 52 55, 56 51, 56 48 C 56 38, 38 24, 32 24 Z" fill="white" opacity="0.15"/>
+        <g class="cosmo-eyes-open">
+          <circle cx="20" cy="42" r="4.5" fill="white"/><circle cx="44" cy="42" r="4.5" fill="white"/>
+          <circle cx="20" cy="42" r="2.5" fill="#1A1A1A"/><circle cx="44" cy="42" r="2.5" fill="#1A1A1A"/>
+        </g>
+        <g class="cosmo-eyes-closed">
+          <path d="M 16 42 Q 20 45 24 42" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M 40 42 Q 44 45 48 42" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </g>
+        <path class="cosmo-mouth-normal" d="M 28 46 Q 32 50 36 46" stroke="#1A1A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+</button>
+
+<!-- COSMO PANEL — DOM mirrors chat-ui.js -->
+<div class="cosmo-panel" id="cosmoPanel">
+  <div class="cosmo-panel-header">
+    <div class="cosmo-panel-header-left">
+      <div class="cosmo-avatar avatar-idle" style="width:36px;height:36px">
+        <svg viewBox="0 16 64 48" xmlns="http://www.w3.org/2000/svg" class="cosmo-svg">
+          <g class="cosmo-slime-group">
+            <path d="M 32 20 C 24 20, 4 36, 4 48 C 4 58, 16 62, 32 62 C 48 62, 60 58, 60 48 C 60 36, 40 20, 32 20 Z" fill="#4DA6FF"/>
+            <circle cx="20" cy="42" r="4.5" fill="white"/><circle cx="44" cy="42" r="4.5" fill="white"/>
+            <circle cx="20" cy="42" r="2.5" fill="#1A1A1A"/><circle cx="44" cy="42" r="2.5" fill="#1A1A1A"/>
+            <path d="M 28 46 Q 32 50 36 46" stroke="#1A1A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <span class="cosmo-panel-name">Ask Cosmo</span>
+    </div>
+    <div class="cosmo-panel-header-right">
+      <button class="cosmo-btn-clear" id="cosmoClear" title="Clear chat">&#129529;</button>
+      <button class="cosmo-btn-close" id="cosmoClose" title="Close">&times;</button>
+    </div>
+  </div>
+  <div class="cosmo-ctx-label">Context: <b id="cosmoCtx">&mdash;</b></div>
+  <div class="cosmo-messages" id="cosmoMessages"></div>
+  <div class="cosmo-cta-group" id="cosmoChips"></div>
+  <div class="cosmo-input-area">
+    <textarea class="cosmo-input" id="cosmoInput" placeholder="Ask Cosmo anything..." rows="1"></textarea>
+    <button class="cosmo-btn-action" id="cosmoSend" title="Send">&uarr;</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   CONTENT MODEL — path > chapter > module > section
+   Mirrors the real course JSON shape: meta + modules[] each with
+   id/title/subtitle/icon/color/sections[]; a section is one of
+   concept | analogy | example | practice. (See content/.../*.json.)
+   ============================================================================ */
+const META = {
+  path: "People Management",
+  title: "Giving Difficult Feedback",
+  subtitle: "A bite-size manager's course on delivering hard feedback so it lands — and changes behavior — without burning the relationship.",
+  label: "Mastery Course",
+  chapterOf: "Chapter 2 of 5"
+};
+
+const MODULES = [
+  {
+    id: 0, title: "Why It Goes Wrong", subtitle: "The avoidance trap", icon: "&#129488;", color: "#E8553A",
+    sections: [
+      { type:"concept", min:3, title:"Vague Feedback Is a Kindness That Backfires",
+        body:`<p>Most managers don't withhold hard feedback because they're cruel — they withhold it because they're <span class="text-highlight">kind</span>. Telling someone their work fell short feels like causing pain, so we soften it into mush: <em>"Maybe just tighten things up a bit next time."</em></p>
+        <p>The problem is that vagueness isn't gentler — it's <span class="text-highlight">crueler over a longer timeline</span>. The report walks away unsure what was actually wrong, repeats the behavior, and is eventually blindsided at a review by feedback that was never made clear. The kind thing and the clear thing are the <span class="text-highlight">same thing</span>.</p>`,
+        keyInsight:`Unclear feedback doesn't spare your report — it just delays the pain and removes their chance to fix it. **Clarity _is_ the kindness.**`,
+        cosmo:[
+          ["Why does vague feedback feel safer in the moment?",
+           "Because vagueness lets you avoid the report's <strong>immediate</strong> reaction — the wince, the defensiveness. But you've only deferred it. The report can't act on what they can't hear, so the gap persists and resurfaces later, usually larger and with less goodwill."],
+          ["Give me a one-line reframe I can remember.",
+           "Try: <strong>“Clear is kind. Unclear is unkind.”</strong> (Brené Brown). When you catch yourself softening into mush, that line is the tripwire to be specific instead."]
+        ]
+      },
+      { type:"analogy", min:2, title:"Feedback Is a GPS Reroute, Not a Speeding Ticket",
+        body:`<p>A speeding ticket is about <span class="text-highlight">punishment</span> — it judges what you did and hands you a penalty. A GPS reroute is about <span class="text-highlight">direction</span> — it notices you've drifted off course and calmly says <em>"recalculating… turn here."</em> No shame, no verdict, just a better path forward.</p>
+        <p>When feedback feels like a ticket, the report gets defensive and protects their ego. When it feels like a reroute, they lean in — because you've signalled you're both trying to reach the same destination.</p>`,
+        keyInsight:`Frame feedback around the _destination you share_ ("here's where we're trying to get to") rather than the _offense committed_. **Direction invites; judgment defends.**`,
+        cosmo:[
+          ["Doesn't a reroute ignore accountability?",
+           "No — a good reroute still names the wrong turn plainly (“you missed the exit”). The difference is <strong>tone and aim</strong>: it's oriented toward the next correct move, not toward establishing blame. Accountability lives in the clear ask for change, not the size of the scolding."],
+          ["How do I open a feedback talk with this framing?",
+           "Anchor the shared destination first: <em>“We both want this to land with the exec team. Let's look at where this draft veers off that.”</em> Now the specifics that follow read as navigation, not attack."]
+        ]
+      },
+      { type:"practice", min:2, title:"Quick Check",
+        question:`Your report shipped a launch email with three typos to 4,000 customers. Which opener frames feedback as a "reroute" rather than a "ticket"?`,
+        options:[
+          {text:`"This is exactly the kind of sloppiness we can't afford. What were you even doing?"`, correct:false,
+           explanation:`This is a ticket: a verdict ("sloppiness"), a character judgment, and a rhetorical question that invites defensiveness, not change. The report protects their ego instead of fixing the process.`},
+          {text:`"It's fine, don't worry — happens to everyone. Just maybe glance over things next time."`, correct:false,
+           explanation:`The avoidance trap from the previous section: so soft the real issue (a customer-facing error) never lands. "Maybe glance over things" gives no usable correction.`},
+          {text:`"We both want our launch emails to feel buttoned-up to customers. Three typos went out to 4,000 people — let's figure out what check we can add before send."`, correct:true,
+           explanation:`A reroute: names the shared destination, states the specific facts plainly without a character verdict, and points forward to the next correct move (a pre-send check). Clear AND kind.`},
+          {text:`"I'm not angry, but the CEO noticed and now I look bad to leadership because of you."`, correct:false,
+           explanation:`Makes the feedback about your own standing, not the report's growth or the shared goal. It loads guilt rather than direction — a ticket dressed up as a confession.`}
+        ],
+        cosmo:[
+          ["Why is the soft 'don't worry' option wrong if it's nice?",
+           "Because <strong>niceness isn't the goal — usefulness is</strong>. That option leaves the report with no concrete correction and signals a customer-facing error doesn't matter. Vague kindness backfires."]
+        ]
+      }
+    ]
+  },
+  {
+    id: 1, title: "The SBI Framework", subtitle: "Situation · Behavior · Impact", icon: "&#127919;", color: "#E8553A",
+    sections: [
+      { type:"concept", min:4, title:"Three Slots That Strip the Blame Out",
+        body:`<p><span class="text-highlight">SBI</span> (from the Center for Creative Leadership) gives difficult feedback a skeleton so it stays factual and lands without an accusation. Three slots, in order:</p>
+        <ul>
+          <li><strong>Situation</strong> — anchor the <em>when &amp; where</em>, so it's about a moment, not a personality. <em>"In yesterday's client call…"</em></li>
+          <li><strong>Behavior</strong> — describe the <em>observable action</em>, the thing a camera would have caught. No interpretation, no labels. <em>"…you interrupted the client twice before they finished."</em></li>
+          <li><strong>Impact</strong> — share the <em>effect</em> it had. <em>"…and I noticed they stopped offering detail after that."</em></li>
+        </ul>
+        <p>The magic is in the <span class="text-highlight">Behavior</span> slot. "You were dismissive" is a label the report can dispute. "You interrupted twice" is a fact they can't — so the conversation skips the argument and goes straight to the fix.</p>`,
+        keyInsight:`Replace _labels_ ("careless", "dismissive", "not a team player") with _observable behavior_ a camera could record. **Facts can't be argued with; labels always are.**`,
+        cosmo:[
+          ["What if the impact was on someone else, not me?",
+           "That's fine and often stronger. Impact can be on you, the team, the client, or the goal: <em>“…and the client stopped sharing detail”</em>. Just keep it <strong>specific and real</strong> — don't inflate it (“you ruined the deal”), which turns Impact back into a label."],
+          ["Do I have to say the three parts in S-B-I order?",
+           "Order helps, but it's a skeleton, not a script. The non-negotiable is that <strong>Behavior is observable</strong>. Weave them naturally as long as all three are present."]
+        ]
+      },
+      { type:"example", min:3, title:"Same Message, Two Ways",
+        intro:`A report, Daniel, keeps turning in analyses with calculation errors. Identical concern, opposite landing.`,
+        bad:{ label:`&#10060; Label-driven (vague)`,
+              text:`"Daniel, you've been really careless lately and I can't trust your numbers anymore. You need to be more detail-oriented."
+
+→ "careless" / "can't trust you" are character labels Daniel can dispute and feel attacked by. "Be more detail-oriented" gives nothing to act on. No situation, no observable behavior, no concrete impact.` },
+        good:{ label:`&#9989; SBI-structured`,
+               text:`"In Tuesday's revenue deck [S], the Q3 totals on slide 6 didn't sum — off by about 12% [B]. Finance flagged it in front of the VP and we had to send a correction [I]. Can we walk through how the numbers get checked before a deck goes out?"
+
+→ A specific moment, an observable fact Daniel can verify, a real impact, a forward-looking question. No "careless", no "can't trust you" — just facts and a path.` },
+        keyInsight:`Notice the SBI version is _longer_ and feels _easier_ to say — **specificity is what makes hard feedback feel safe to deliver.**`,
+        cosmo:[
+          ["The good version is wordier. Isn't shorter better?",
+           "For difficult feedback, <strong>specific beats short</strong>. The extra words are all <em>facts</em> (which slide, how far off, who flagged it) — exactly what defuses defensiveness. Trim filler, never the SBI specifics."],
+          ["Where's the Radical Candor part here?",
+           "It's in the <em>posture</em>: the manager clearly cares (collaborative “can we walk through…”) while challenging directly (states the 12% error plainly). That's the next module."]
+        ]
+      },
+      { type:"practice", min:2, title:"Quick Check",
+        question:`Which line is a clean SBI "Behavior" — purely observable, with no hidden label?`,
+        options:[
+          {text:`"You clearly didn't care about the deadline."`, correct:false,
+           explanation:`"Didn't care" is an interpretation of an internal state — you can't observe caring, and the report will dispute it. State what you saw: "the draft arrived two days after the agreed date."`},
+          {text:`"You came across as unprepared and a bit arrogant in the meeting."`, correct:false,
+           explanation:`"Unprepared" and "arrogant" are impressions, not behaviors. A camera can't film "arrogant." Convert: "you didn't have the figures the client asked for, and you talked over two of their questions."`},
+          {text:`"You sent the report at 11pm on Thursday, after the Tuesday noon deadline."`, correct:true,
+           explanation:`Pure observable behavior — a timestamp and a deadline, both verifiable facts. Nothing to argue. Exactly the Behavior slot SBI is built around.`},
+          {text:`"You always do this when things get busy."`, correct:false,
+           explanation:`"Always" is a generalization (rarely literally true) and "this" is vague. SBI anchors to one specific situation and one observable action, not a sweeping pattern the report can counter with one exception.`}
+        ],
+        cosmo:[
+          ["Quick rule to spot a label vs a behavior?",
+           "Ask: <strong>“Could a camera have recorded this?”</strong> A camera records “arrived 11pm Thursday” but not “didn't care” or “arrogant.” If a camera can't capture it, rewrite it before you say it."]
+        ]
+      }
+    ]
+  },
+  {
+    id: 2, title: "Radical Candor", subtitle: "Care personally, challenge directly", icon: "&#9878;&#65039;", color: "#E8553A",
+    sections: [
+      { type:"concept", min:3, title:"The Two Dials You Turn Together",
+        body:`<p>Kim Scott's <span class="text-highlight">Radical Candor</span> plots feedback on two independent dials:</p>
+        <ul>
+          <li><strong>Care Personally</strong> — do you show the person you give a damn about them as a human, not just as output?</li>
+          <li><strong>Challenge Directly</strong> — are you willing to say the hard thing to their face?</li>
+        </ul>
+        <p>Turn <em>both</em> dials up and you get <span class="text-highlight">Radical Candor</span>. Turn them the wrong way and you fall into the failure modes — and most managers' default is the polite one.</p>`,
+        keyInsight:`**Radical Candor = Care Personally + Challenge Directly.** Drop the care → brutal aggression; drop the challenge → the most common failure of all, _ruinous empathy_, where you stay so "nice" you never actually help.`,
+        cosmo:[
+          ["What are the other three quadrants called?",
+           "Low care + high challenge = <strong>Obnoxious Aggression</strong> (right but brutal). High care + low challenge = <strong>Ruinous Empathy</strong> (nice but useless — the most common). Low + low = <strong>Manipulative Insincerity</strong>. Only high+high is Radical Candor."],
+          ["Which failure mode do most managers fall into?",
+           "<strong>Ruinous Empathy.</strong> It feels caring, so it's seductive — but withholding the hard truth to spare a feeling is how good people get quietly stuck. It's the “vague kindness that backfires” from Module 1."]
+        ]
+      },
+      { type:"practice", min:2, title:"Quick Check",
+        question:`A manager tells a struggling report "You're doing greaaat, honestly no notes!" — while privately telling peers the report may not make probation. In Radical Candor terms this is…`,
+        options:[
+          {text:`Radical Candor — they're protecting the report's confidence.`, correct:false,
+           explanation:`No — Radical Candor requires challenging directly. Hiding a probation risk behind "no notes" is the opposite of direct. False confidence sets up a brutal surprise later.`},
+          {text:`Ruinous Empathy — high care expressed, but zero direct challenge.`, correct:true,
+           explanation:`Correct. "You're doing great" signals warmth (care); withholding the truth that the report is at risk means no challenge at all. Feels kind, is actively harmful — the textbook ruinous-empathy trap.`},
+          {text:`Obnoxious Aggression — they're being too blunt.`, correct:false,
+           explanation:`Obnoxious Aggression is high challenge / low care — harsh truth without warmth. This is the reverse: lots of (fake) warmth, no truth.`},
+          {text:`Manipulative Insincerity — they're lying to peers.`, correct:false,
+           explanation:`Close, but the defining act is what's said to the report's face: warm praise that withholds a real concern. That's Ruinous Empathy. Manipulative Insincerity is low-care AND low-challenge.`}
+        ],
+        cosmo:[
+          ["How do I move from Ruinous Empathy to Radical Candor in real time?",
+           "Keep the care, add one direct sentence: <em>“I really want you to clear probation, and I'm worried about two things we need to fix fast — let's go through them.”</em> Same warmth, now with the truth attached."]
+        ]
+      }
+    ]
+  },
+  {
+    id: 3, title: "Running the Conversation", subtitle: "Open, deliver, agree a next step", icon: "&#128172;", color: "#E8553A",
+    sections: [
+      { type:"concept", min:3, title:"Make It a Two-Way Door",
+        body:`<p>SBI gives you the <em>content</em>; Radical Candor gives you the <em>posture</em>. The last piece is the <span class="text-highlight">shape</span> of the conversation: a dialogue, not a delivery. A monologue, however well-structured, leaves the report no room to own the fix.</p>
+        <p>The reliable arc is four beats: <strong>(1)</strong> set a shared, caring frame · <strong>(2)</strong> deliver the SBI plainly · <strong>(3)</strong> pause and genuinely listen · <strong>(4)</strong> agree one concrete next step together.</p>`,
+        keyInsight:`After you deliver the SBI, **stop talking.** The silence feels long to you and normal to them — that pause is where they move from defending to problem-solving.`,
+        cosmo:[
+          ["What if they get defensive or upset?",
+           "Don't argue label vs. fact — you don't have to, because you used <strong>observable behavior</strong>. Acknowledge the feeling (“I can see this is frustrating”), restate the shared goal, and re-anchor on the one specific fact. Emotion is information, not a derailment."],
+          ["What's a strong closing line?",
+           "Co-author the next step so they own it: <em>“What feels like the right change here, and how do you want me to support it?”</em> Then summarize the agreement out loud so you both leave with the same one commitment."]
+        ]
+      },
+      { type:"example", min:3, title:"A Full Conversation, End to End",
+        intro:`Aisha (manager) to Daniel (report) about the recurring errors — all four beats together. Watch the SBI inside the dialogue and the deliberate pause.`,
+        dialogue:[
+          {who:"Aisha", role:"mgr", text:`Thanks for making time. I want our analyses to be the thing leadership trusts without re-checking — that's a shared goal. (frame)`},
+          {who:"Daniel", role:"rep", text:`Sure, of course.`},
+          {who:"Aisha", role:"mgr", text:`In Tuesday's revenue deck, the Q3 totals on slide 6 were off by about 12%, Finance flagged it to the VP, and we had to send a correction. (SBI)`},
+          {who:"Aisha", role:"mgr", text:`…(stays quiet — lets it land)`},
+          {who:"Daniel", role:"rep", text:`Yeah… I rushed the last tab and didn't re-run the totals. That's on me.`},
+          {who:"Aisha", role:"mgr", text:`I appreciate you owning it. What would catch this before a deck ships? (listen / co-author)`},
+          {who:"Daniel", role:"rep", text:`A 10-minute totals-reconciliation pass, and I'll have Priya sanity-check anything client-facing.`},
+          {who:"Aisha", role:"mgr", text:`Great — let's make that the standard for external decks. I'll back you on the extra time. (one concrete next step)`}
+        ],
+        keyInsight:`Aisha never said "careless." She stated a fact, paused, and let Daniel arrive at ownership himself — then they _co-authored_ the fix. **All four beats in 90 seconds.**`,
+        cosmo:[
+          ["What made Daniel own it instead of getting defensive?",
+           "Three things: the <strong>shared-goal frame</strong> up front, the <strong>observable fact</strong> (nothing to dispute), and the <strong>pause</strong>. By not filling the silence with more criticism, Aisha left the only available move as problem-solving."],
+          ["What if Daniel had NOT owned it?",
+           "Stay on the fact, not the feeling: <em>“I hear it felt rushed — and the 12% gap still reached the VP. What change keeps that from recurring?”</em> Acknowledge, re-anchor on the behavior, keep steering to the co-authored next step."]
+        ]
+      },
+      { type:"practice", min:2, title:"Final Check",
+        question:`You've just delivered a clean SBI statement. What's the single most effective thing to do in the next five seconds?`,
+        options:[
+          {text:`Immediately soften it with "...but honestly it's not a huge deal."`, correct:false,
+           explanation:`This undercuts everything you just said and signals the feedback was optional — straight back into ruinous empathy. Don't dilute a clean SBI on delivery.`},
+          {text:`Stop talking and let the silence do its work.`, correct:true,
+           explanation:`Yes. The pause feels long to you and normal to them — it's where the report shifts from defending to problem-solving and often arrives at ownership on their own, exactly like Daniel.`},
+          {text:`Stack on three more examples so they really get it.`, correct:false,
+           explanation:`Piling on turns a reroute into a pile-on and reads as an attack. One well-formed SBI lands harder than a list — and leaves room to listen.`},
+          {text:`Ask "does that make sense?" to confirm they agree.`, correct:false,
+           explanation:`A leading, closed question that pressures a quick "yes" and shuts down dialogue. An open prompt after the pause — "how do you see it?" — invites ownership instead of compliance.`}
+        ],
+        cosmo:[
+          ["Why is silence so hard to hold?",
+           "Your brain reads the pause as <strong>3–4× longer</strong> than it feels to the other person, tempting you to rescue the moment by softening. Knowing the distortion is the trick — count to five, let it breathe. That space does the real work."]
+        ]
+      }
+    ]
+  }
+];
+
+/* ---------- tiny markdown for keyInsight (**bold**, _italic_, `code`) ---------- */
+function md(s){
+  return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+          .replace(/_(.+?)_/g,'<em>$1</em>')
+          .replace(/`(.+?)`/g,'<code>$1</code>');
+}
+function moduleMinutes(mod){ return mod.sections.reduce((a,s)=>a+(s.min||3),0); }
+function totalMinutes(){ return MODULES.reduce((a,m)=>a+moduleMinutes(m),0); }
+function totalSections(){ return MODULES.reduce((a,m)=>a+m.sections.length,0); }
+
+/* ---------- state ---------- */
+let view = 'intro';            // 'intro' | 'content'
+let currentModule = 0;
+let currentSection = 0;
+let revealedPractice = false;
+let selectedOption = null;
+let isOffline = false;
+const completedSections = MODULES.map(()=>new Set());   // per-module set of completed section idx
+function moduleComplete(mi){ return completedSections[mi].size >= MODULES[mi].sections.length; }
+function completedModuleCount(){ return MODULES.filter((m,mi)=>moduleComplete(mi)).length; }
+function completedSectionTotal(){ return completedSections.reduce((a,s)=>a+s.size,0); }
+function percent(){ return Math.round(completedSectionTotal()/totalSections()*100); }
+function nextModuleIndex(){ for(let i=0;i<MODULES.length;i++){ if(!moduleComplete(i)) return i; } return -1; }
+
+/* ---------- render ---------- */
+const page = document.getElementById('coursePage');
+
+function render(){ view === 'content' ? renderContent() : renderIntro(); loadCosmo(); }
+
+function renderIntro(){
+  const pct = percent();
+  const circ = 2*Math.PI*52;
+  const off = circ*(1 - pct/100);
+  const cc = completedModuleCount();
+  const allComplete = cc === MODULES.length;
+  const nmi = nextModuleIndex();
+  page.innerHTML = `
+    <header class="app-top-bar">
+      <div class="top-bar-row top-bar-row-main">
+        <a class="main-app-link" title="Back to Academy">&#127968;</a>
+        <div class="top-bar-separator"></div>
+        <button class="top-bar-stack" title="${META.path}">${META.path}</button>
+        <div class="top-bar-separator"></div>
+        <div class="top-bar-title"><span class="ucourse-logo">&mu;</span> ${META.title}
+          <span class="top-bar-percent">${pct}%</span></div>
+      </div>
+    </header>
+    <div class="course-container">
+      <div class="course-content">
+        <div class="course-intro fade-slide-in">
+          <div class="course-intro-inner">
+            <div class="course-intro-top">
+              <div class="course-intro-text">
+                <div class="course-label">${META.label} &middot; ${META.chapterOf}</div>
+                <h1 class="course-title">${META.title}</h1>
+                <p class="course-subtitle">${META.subtitle}</p>
+              </div>
+              <div class="hero-ring">
+                <svg class="hero-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+                  <circle class="hero-ring-fill" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+                    transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="hero-ring-label">
+                  <span class="hero-ring-percent">${pct}<small>%</small></span>
+                </div>
+              </div>
+            </div>
+            <div class="course-stats">
+              <span>${cc > 0 || pct > 0 ? cc+'/'+MODULES.length+' completed' : MODULES.length+' modules'}</span>
+              <span>&middot;</span>
+              <span>~${totalMinutes()} min</span>
+              <span>&middot;</span>
+              <span>${totalSections()} bite-size pills</span>
+              <div class="stats-actions">
+                <button class="action-button ${isOffline?'offline-saved':''}" id="offlineBtn" title="${isOffline?'Remove offline copy':'Save for offline'}">
+                  <span>${isOffline?'&#9729;&#65039;&#10003;':'&#11015;&#65039;'}</span>
+                  <span class="btn-label">${isOffline?'Downloaded':'Download'}</span>
+                </button>
+                ${nmi !== -1 ? `<button class="continue-cta" id="continueBtn">Continue &rarr;</button>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${allComplete ? `
+        <div class="completion-hero">
+          <div class="completion-hero-seal">&#9733;</div>
+          <div class="completion-hero-text">
+            <div class="completion-hero-eyebrow">Chapter complete</div>
+            <h3 class="completion-hero-title">You've finished "${META.title}"</h3>
+            <p class="completion-hero-sub">Every pill done. The next chapter in this path is "Delivering Praise That Sticks".</p>
+          </div>
+        </div>` : ''}
+
+        <div class="module-list">
+          ${MODULES.map((mod,idx)=>{
+            const done = moduleComplete(idx);
+            const prog = completedSections[idx].size;
+            const isTarget = idx === nmi;
+            return `
+            <button class="module-card ${done?'complete':''} ${isTarget?'continue-target':''} fade-slide-in"
+                    data-module="${idx}" style="animation-delay:${idx*0.08}s">
+              <div class="module-card-inner">
+                <div class="module-icon" style="color:${done?'var(--complete)':'var(--accent)'}">${done?'&#10003;':mod.icon}</div>
+                <div class="module-info">
+                  <div class="module-meta">
+                    <span class="module-number">MODULE ${idx+1}</span>
+                    ${done?'<span class="module-status">COMPLETE</span>':''}
+                  </div>
+                  <div class="module-title">${mod.title}</div>
+                  <div class="module-subtitle">${mod.subtitle} <span class="module-time">&middot; ~${moduleMinutes(mod)} min &middot; ${mod.sections.length} pills</span></div>
+                  ${prog>0 && !done ? `<div class="progress-bar mini"><div class="progress-fill" style="width:${prog/mod.sections.length*100}%;background:${mod.color}"></div></div>`:''}
+                </div>
+                <div class="module-arrow">&rsaquo;</div>
+              </div>
+            </button>`;
+          }).join('')}
+        </div>
+
+        <div class="course-extras">
+          <button class="custom-stack-hint" id="customStackBtn">
+            <span class="csh-icon">&#129520;</span>
+            <span>
+              <span class="csh-title">Build your own path</span>
+              <span class="csh-sub">Stack chapters from any topic — feedback, delegation, hiring — into a custom path for your team.</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  page.querySelectorAll('.module-card').forEach(c=>{ c.addEventListener('click', ()=>goToModule(+c.dataset.module)); });
+  const ob = document.getElementById('offlineBtn'); if(ob) ob.onclick = toggleOffline;
+  const cb = document.getElementById('continueBtn'); if(cb) cb.onclick = ()=>goToModule(nmi);
+  const cs = document.getElementById('customStackBtn'); if(cs) cs.onclick = ()=>{ cs.querySelector('.csh-title').textContent = 'Custom stacks — coming soon in this mock'; };
+}
+
+function renderContent(){
+  const mod = MODULES[currentModule];
+  const section = mod.sections[currentSection];
+  const fillW = ((currentSection+1)/mod.sections.length)*100;
+  page.innerHTML = `
+    <div class="course-header">
+      <div class="course-header-inner">
+        <a class="main-app-link" title="Back to Academy">&#127968;</a>
+        <div class="top-bar-separator"></div>
+        <span class="ucourse-logo" title="${META.title}">&mu;</span>
+        <button class="back-button" id="backBtn"><span>&larr;</span> Modules</button>
+        <div class="progress-bar-container">
+          <div class="progress-bar"><div class="progress-fill" style="width:${fillW}%;background:${mod.color}"></div></div>
+        </div>
+        <span class="progress-count">${currentSection+1}/${mod.sections.length}</span>
+      </div>
+    </div>
+    <div class="course-container">
+      <div class="course-content">
+        <div class="section-header">
+          <span class="section-module-label" style="color:${mod.color}">Module ${currentModule+1}</span>
+          <h2 class="section-module-title">${mod.title}</h2>
+        </div>
+        <div class="section-body">
+          ${renderSection(section)}
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('backBtn').onclick = goBackToModules;
+  wireSection(section);
+}
+
+function timePill(min){ return `<span class="section-time-pill">&#9201; ~${min} min</span>`; }
+
+function renderSection(section){
+  const t = section.type;
+  if(t === 'concept'){
+    return `<div class="card concept-card fade-slide-in">
+      <div class="card-body">
+        <h3 class="card-title">${section.title}${timePill(section.min)}</h3>
+        <div class="card-text">${section.body}</div>
+      </div>
+      ${section.keyInsight ? keyInsight(section.keyInsight) : ''}
+      ${sectionNav(section)}
+    </div>`;
+  }
+  if(t === 'analogy'){
+    return `<div class="card analogy-card fade-slide-in">
+      <div class="card-body analogy-body">
+        <div class="analogy-badge">ANALOGY</div>
+        <h3 class="card-title">${section.title}${timePill(section.min)}</h3>
+        <div class="card-text">${section.body}</div>
+      </div>
+      ${section.keyInsight ? keyInsight(section.keyInsight) : ''}
+      ${sectionNav(section)}
+    </div>`;
+  }
+  if(t === 'example'){
+    let inner;
+    if(section.dialogue){
+      inner = `<div class="example-box good"><div class="example-label good-label">&#128172; ${section.intro}</div>
+        ${section.dialogue.map(l=>`<div class="dialogue-line dialogue-${l.role}"><div class="dialogue-who">${l.who}</div><div class="dialogue-text">${l.text}</div></div>`).join('')}
+      </div>`;
+    } else {
+      inner = `<div class="example-grid">
+        <div class="example-box bad"><div class="example-label bad-label">${section.bad.label}</div><pre class="example-code">${section.bad.text}</pre></div>
+        <div class="example-box good"><div class="example-label good-label">${section.good.label}</div><pre class="example-code good-code">${section.good.text}</pre></div>
+      </div>`;
+    }
+    return `<div class="card example-card fade-slide-in">
+      <h3 class="card-title">${section.title}${timePill(section.min)}</h3>
+      ${section.intro && !section.dialogue ? `<div class="card-text" style="margin-bottom:16px">${section.intro}</div>` : ''}
+      ${inner}
+      ${section.keyInsight ? keyInsight(section.keyInsight) : ''}
+      ${sectionNav(section)}
+    </div>`;
+  }
+  if(t === 'practice'){
+    const isLast = currentSection >= MODULES[currentModule].sections.length - 1;
+    return `<div class="card practice-card fade-slide-in ${revealedPractice?'revealed':''}">
+      <div class="practice-badge">PRACTICE &middot; &#9201; ~${section.min} min</div>
+      <h3 class="card-title practice-question">${section.question}</h3>
+      <div class="options-grid">
+        ${section.options.map((opt,idx)=>{
+          let cls='option-button';
+          const isCorrectOverall = selectedOption!==null ? section.options[selectedOption]?.correct : false;
+          if(revealedPractice && idx===selectedOption) cls += opt.correct ? ' correct' : ' incorrect';
+          if(revealedPractice && !isCorrectOverall && opt.correct) cls += ' correct-hint';
+          return `<button class="${cls}" data-option="${idx}" data-correct="${opt.correct}">
+            <span class="option-letter">${String.fromCharCode(65+idx)}.</span>
+            <span class="option-text">${opt.text}</span>
+            <div class="option-explanation ${(revealedPractice && idx===selectedOption)?'show':''}">${opt.explanation}</div>
+          </button>`;
+        }).join('')}
+      </div>
+      <button class="next-button ${revealedPractice?'':'hidden'}" id="practiceNext">${isLast?'Finish module':'Next'} <span>&rarr;</span></button>
+      ${sectionNav(section)}
+    </div>`;
+  }
+  return '';
+}
+
+function keyInsight(text){
+  return `<div class="key-insight">
+    <span class="insight-icon">&#128161;</span>
+    <div class="insight-text">${md(text)}</div>
+  </div>`;
+}
+
+const WIDGETS = [
+  {icon:'&#10067;', hint:'Test what you just learned'},
+  {icon:'&#127183;', hint:'Review the key concepts'},
+  {icon:'&#10005;', hint:'Connect terms and ideas'},
+  {icon:'&#128290;', hint:'Put the steps in order'},
+  {icon:'&#128376;&#65039;', hint:'See how it all connects'}
+];
+function sectionNav(){
+  const hasPrev = currentSection > 0 || currentModule > 0;
+  const isLast = currentSection >= MODULES[currentModule].sections.length - 1;
+  return `<div class="section-nav">
+    <div class="section-nav-row">
+      <button class="section-nav-btn section-nav-prev" id="navPrev" ${hasPrev?'':'disabled'}>&#8249;</button>
+      <div class="section-nav-center">
+        <span class="section-nav-center-label">Go deeper</span>
+        ${WIDGETS.map((w,i)=>`<button class="section-nav-widget" data-widget="${i}" title="${w.hint}">${w.icon}</button>`).join('')}
+      </div>
+      <button class="section-nav-btn section-nav-next" id="navNext">${isLast?'Complete':'Continue'} &#8250;</button>
+    </div>
+    <div class="section-nav-hint" id="navHint">&nbsp;</div>
+  </div>`;
+}
+
+function wireSection(section){
+  const np = document.getElementById('navPrev'); if(np) np.onclick = goToPrevSection;
+  const nn = document.getElementById('navNext'); if(nn) nn.onclick = goToNextSection;
+  const pn = document.getElementById('practiceNext'); if(pn) pn.onclick = goToNextSection;
+  const hint = document.getElementById('navHint');
+  page.querySelectorAll('.section-nav-widget').forEach(w=>{
+    w.onmouseenter = ()=>{ if(hint) hint.textContent = WIDGETS[+w.dataset.widget].hint; };
+    w.onmouseleave = ()=>{ if(hint) hint.innerHTML = '&nbsp;'; };
+    w.onclick = ()=>{ askCosmo('[Go deeper] ' + WIDGETS[+w.dataset.widget].hint + ' for this section.'); };
+  });
+  if(section.type === 'practice'){
+    page.querySelectorAll('.option-button').forEach(btn=>{
+      btn.onclick = ()=>{
+        if(revealedPractice) return;
+        revealedPractice = true;
+        selectedOption = +btn.dataset.option;
+        completedSections[currentModule].add(currentSection); // practice counts done on answer
+        renderContent();
+        loadCosmo();
+      };
+    });
+  } else {
+    completedSections[currentModule].add(currentSection); // non-practice: done on view
+  }
+}
+
+/* ---------- navigation ---------- */
+function goToModule(mi){ currentModule = mi; currentSection = 0; resetPractice(); view = 'content'; render(); window.scrollTo(0,0); }
+function goBackToModules(){ view = 'intro'; render(); window.scrollTo(0,0); }
+function resetPractice(){ revealedPractice = false; selectedOption = null; }
+function goToNextSection(){
+  const mod = MODULES[currentModule];
+  if(currentSection < mod.sections.length - 1){ currentSection++; resetPractice(); render(); window.scrollTo(0,0); }
+  else { goBackToModules(); }   // last section of module -> back to module list (mirrors "Complete")
+}
+function goToPrevSection(){
+  if(currentSection > 0){ currentSection--; resetPractice(); render(); window.scrollTo(0,0); }
+  else if(currentModule > 0){ currentModule--; currentSection = MODULES[currentModule].sections.length - 1; resetPractice(); render(); window.scrollTo(0,0); }
+}
+function toggleOffline(){ isOffline = !isOffline; render(); }
+
+document.addEventListener('keydown', e=>{
+  if(document.activeElement === document.getElementById('cosmoInput')) return;
+  if(view !== 'content') return;
+  if(e.key === 'ArrowRight') goToNextSection();
+  if(e.key === 'ArrowLeft') goToPrevSection();
+});
+
+/* ============================================================================
+   Cosmo — canned, no network (mirrors chat-ui.js behavior)
+   ============================================================================ */
+const panel = document.getElementById('cosmoPanel');
+const fab = document.getElementById('cosmoFab');
+const msgEl = document.getElementById('cosmoMessages');
+const chipsEl = document.getElementById('cosmoChips');
+const ctxEl = document.getElementById('cosmoCtx');
+let cosmoStarted = false;
+
+function currentSectionObj(){ return view === 'content' ? MODULES[currentModule].sections[currentSection] : null; }
+function openCosmo(){ panel.classList.add('open'); document.body.classList.add('cosmo-panel-open'); fab.classList.add('hidden'); }
+function closeCosmo(){ panel.classList.remove('open'); document.body.classList.remove('cosmo-panel-open'); fab.classList.remove('hidden'); }
+fab.onclick = openCosmo;
+document.getElementById('cosmoClose').onclick = closeCosmo;
+document.getElementById('cosmoClear').onclick = ()=>{ cosmoStarted = false; loadCosmo(); };
+
+function loadCosmo(){
+  const sec = currentSectionObj();
+  ctxEl.textContent = sec ? `${MODULES[currentModule].title} → ${sec.title}` : `${META.title} (overview)`;
+  if(cosmoStarted) return; // don't wipe an active conversation on re-render
+  msgEl.innerHTML = `<div class="cosmo-welcome">
+    <p>Hey there! I'm <strong class="cosmo-name">Cosmo</strong> &#128075;</p>
+    <p>${sec ? `I can see you're on <strong>"${sec.title}"</strong>. Ask me anything about it, or tap a question below.` : `Pick a module to get started, or ask me about this course.`}</p>
+  </div>`;
+  rebuildChips();
+}
+function rebuildChips(){
+  const sec = currentSectionObj();
+  chipsEl.innerHTML = (sec && sec.cosmo ? sec.cosmo : []).map((qa,i)=>`<button class="cosmo-cta-btn" data-q="${i}">${qa[0]}</button>`).join('');
+  chipsEl.querySelectorAll('.cosmo-cta-btn').forEach(b=>{ b.onclick = ()=>askCosmo(sec.cosmo[+b.dataset.q][0]); });
+}
+function addMsg(role, html){
+  if(!cosmoStarted){ msgEl.innerHTML = ''; cosmoStarted = true; }
+  const m = document.createElement('div');
+  m.className = 'cosmo-msg ' + (role==='user'?'cosmo-msg-user':'cosmo-msg-assistant');
+  m.innerHTML = role==='user'
+    ? `<div class="cosmo-msg-content">${html}</div>`
+    : `<div class="cosmo-msg-content"><div class="cosmo-msg-text">${html}</div></div>`;
+  msgEl.appendChild(m);
+  msgEl.scrollTop = msgEl.scrollHeight;
+  return m;
+}
+function askCosmo(q){
+  openCosmo();
+  addMsg('user', escapeHtml(q));
+  const sec = currentSectionObj();
+  const hit = (sec && sec.cosmo) ? sec.cosmo.find(qa=>qa[0]===q) : null;
+  const thinking = addMsg('assistant', '<em>…thinking</em>');
+  setTimeout(()=>{
+    thinking.querySelector('.cosmo-msg-text').innerHTML = hit
+      ? hit[1]
+      : (sec
+          ? `Good question. For <strong>"${sec.title}"</strong>, the core move is to keep feedback <strong>specific and observable</strong> and to pair care with directness. Tap a suggested question for more, or tell me your situation.`
+          : `Open a module and I'll tailor my help to the exact section you're reading.`);
+    msgEl.scrollTop = msgEl.scrollHeight;
+  }, 480);
+  rebuildChips();
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+document.getElementById('cosmoSend').onclick = ()=>{
+  const inp = document.getElementById('cosmoInput'); const v = inp.value.trim();
+  if(!v) return; askCosmo(v); inp.value='';
+};
+document.getElementById('cosmoInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('cosmoSend').click(); }
+});
+window.askCosmo = askCosmo; // mirrors the real window.askCosmo used by "Go deeper"
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>
