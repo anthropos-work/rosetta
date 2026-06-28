@@ -20,7 +20,7 @@
 | 3 | **How a test locates elements** (given zero-platform-edit) | ✅ | **Pure-semantic by default** (role / accessible-name / label / a11y-tree) **+ a thin Rosetta-side landmark registry** for ambiguous surfaces (anchors we *find*, not hooks we *add*). No platform edits. [`spec.md`](spec.md) §5.2. |
 | 4 | The manifest — how expressive + how laid out | ✅ | **Prose-intent**: `flow`/`expectations` as plain-language *what*, not executable *how* (code implements). **One file per product**; a **light validator** (unique ids, every use case → a Playthrough id or `TODO`). [`spec.md`](spec.md) §5.3. |
 | 5 | **The seed/world** the suite runs against | ✅ | A **dedicated Playthrough seed, decoupled from the demo seed** (may fork it as a starting point); runs on **both dev-N and demo-N**. Rationale: demo data changes faster than tests can chase + they serve different purposes. [`spec.md`](spec.md) §5.4. |
-| 6 | **Harness relationship** — extend M42 vs. a new section | 🔴 | Lean: **extend `stack-verify/e2e`** (it owns the Playwright foundation); promote to a dedicated `playthroughs` rext section only if it grows to warrant it. [`spec.md`](spec.md) §5.6. |
+| 6 | **Where Playthroughs live** in rext | ✅ | A **dedicated `playthroughs` section** (own manifest, dedicated-seed wiring, lifecycle) on a **shared e2e foundation** (Playwright + Clerkenstein-login + locator/landmark helpers shared with `stack-verify`). [`spec.md`](spec.md) §5.6. |
 | 7 | First **coverage targets** (which products/stories first) | ⏭️ | **After** this spec — the build backlog, not part of defining the capability. The user's directive was define capability/principles/tech now, **not** list/build tests. → [`next-release.md`](next-release.md). |
 | 8 | Relationship to the M42 coverage sweep | ✅ | **Complementary, not redundant.** Coverage = *presence* (pages show real content); Playthroughs = *function* (the hero can complete the use case). [`spec.md`](spec.md) §6. |
 | 9 | What this capability is **not** | ✅ | Not visual-regression (the opposite of P2), not perf/load, not unit/integration, not API-contract, not security/a11y-auditing. [`spec.md`](spec.md) §7. |
@@ -82,6 +82,15 @@ Why: the demo evolves for showcase reasons faster than the tests can follow, and
 purpose-built preconditions — coupling the suite to a moving demo target would make it brittle. Different data
 for different purposes. (Reusing the demo world as-is, and a shared-base + per-use-case-fixtures hybrid, were set
 aside for exactly this reason — the decoupling is the point.)
+
+### Point 6 — where Playthroughs live in the tooling (decided 2026-06-28)
+
+A **dedicated `playthroughs` rext section** rather than folding into `stack-verify`. Coverage (presence) and
+Playthroughs (function) are different capabilities — and having decoupled their *data* (Point 5), we decouple
+their *code/ownership* too: Playthroughs get their own manifest, dedicated-seed wiring, and lifecycle/reporting.
+The low-level e2e plumbing — Playwright, Clerkenstein-login, the locator/landmark helpers, stack binding — is
+**shared** via a common foundation, so nothing is rebuilt. Folding into `stack-verify` was set aside: it would
+mix two purposes in one section and muddy as the suite grows.
 
 ### Point 7 — first coverage targets (deferred 2026-06-28)
 

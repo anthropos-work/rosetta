@@ -238,9 +238,11 @@ functionality is proven?"* and *"what is declared but not yet built?"*
 
 ### 5.6 Where it lives
 
-In **`rosetta-extensions`** — extending the `stack-verify` section (which already owns the M42 e2e harness), or a
-dedicated `playthroughs` section if it grows to warrant one. Authored + **tagged** like all rext tooling and
-consumed per-stack at a pinned tag, per the corpus's tooling policy.
+In **`rosetta-extensions`**, as a **dedicated `playthroughs` section** — its own manifest, dedicated-seed wiring,
+and lifecycle/reporting — built on a **shared e2e foundation** (the Playwright + Clerkenstein-login +
+locator/landmark helpers it shares with `stack-verify`, so the plumbing isn't duplicated). Authored + **tagged**
+like all rext tooling and consumed per-stack at a pinned tag, per the corpus's tooling policy. (Decided —
+spec-progress #6.)
 
 ---
 
@@ -272,9 +274,10 @@ deliberately **not** this capability (parked in [`next-release.md`](next-release
 
 ## 8. Open / to-confirm
 
-Tracked, worked one at a time, in [`spec-progress.md`](spec-progress.md). Decided so far: the **name**
-(*Playthroughs*), the **locator policy** (§5.2), the **manifest** (prose-intent, per-product, §5.3), and the
-**seed/world** (dedicated + decoupled from demo, runs on dev *and* demo, §5.4). Still open:
+Tracked in [`spec-progress.md`](spec-progress.md). **All in-scope points are decided** — the name
+(*Playthroughs*), the **locator policy** (§5.2), the **manifest** (prose-intent, per-product, §5.3), the
+**seed/world** (dedicated + decoupled, dev *and* demo, §5.4), and the **home** (a dedicated `playthroughs`
+section on a shared e2e foundation, §5.6).
 
-1. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
-2. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).
+The only remaining item is **deferred to after this spec**: *which products / stories / use-cases to declare
+first* — the build backlog, a natural `/developer-kit:design-roadmap` job.
