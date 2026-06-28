@@ -46,11 +46,11 @@ and a `release/{version}` branch is cut.
 > **v2.0 "opening night"** → 2026-06-28 (IN DEVELOPMENT, branch `release/02.00-opening-night`; a **NEW MAJOR** —
 > opens the **Playthroughs** pillar: functional-flow *testing*, a manifest-driven deterministic e2e suite that
 > *pretends to be the human* and proves the platform's core user journeys **actually work** — distinct from the
-> v1.x demo/seeding lineage. 3 milestones M201 → { M202 ∥ M203 } [`Mxyy` numbering]: M201 Playthroughs Foundation
-> [`section`] → M202 employee-vantage coverage ∥ M203 manager-vantage coverage [both `iterative`]; tooling + docs
-> only — zero platform-repo edits). Designed from the consolidated capability spec
-> [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. The **Playthroughs** capability
-> **graduated from spec-draft to active development** here.
+> v1.x demo/seeding lineage. 4 milestones M201 ∥ M202 → { M203 ∥ M204 } [`Mxyy` numbering]: M201 Manifest corpus
+> [`iterative`, user-guided] ∥ M202 Playthroughs Foundation [`section`] → M203 employee-vantage coverage ∥ M204
+> manager-vantage coverage [both `iterative`]; tooling + docs only — zero platform-repo edits). Designed from the
+> consolidated capability spec [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. The
+> **Playthroughs** capability **graduated from spec-draft to active development** here.
 
 ---
 
@@ -61,25 +61,25 @@ and a `release/{version}` branch is cut.
 
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
-The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night" (M201
-→ { M202 ∥ M203 }). The milestones below are the **declared-but-deferred** Playthroughs surfaces — real future
-work, **not** pre-assigned to a minor version (per the `Mxyy` rule, a future major's milestone gets its number at
-*design* time, not before). They are governed by the same capability spec
+The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night"
+(M201 ∥ M202 → { M203 ∥ M204 }). The milestones below are the **declared-but-deferred** Playthroughs surfaces —
+real future work, **not** pre-assigned to a minor version (per the `Mxyy` rule, a future major's milestone gets
+its number at *design* time, not before). They are governed by the same capability spec
 [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md).
 
-- **M204 — Hiring + tier gates.** The **recruiter** vantage: candidate-pipeline journeys (post a role → review
+- **M205 — Hiring + tier gates.** The **recruiter** vantage: candidate-pipeline journeys (post a role → review
   applicants → advance a candidate) + the **free→paid entitlement gates** (a flow that's gated by tier proves the
   gate fires). Needs a **new `HiringSeeder`** (a recruiter persona + a candidate pipeline the seed populates) +
   a **Stripe test-mode / assertion-boundary** for the paid-tier gate (Stripe is one of the integration third
   parties with no mirror today — spec §5.8; test-mode is the likely mirror).
-- **M205 — AI-sim mirror tier.** The signature **voice / recording** AI-simulation journey — **voice (LiveKit)**
+- **M206 — AI-sim mirror tier.** The signature **voice / recording** AI-simulation journey — **voice (LiveKit)**
   + **recording (Chime)** — driven at the **launch / completion assertion boundary** (the flow launched, reached
   an interactive state, the outcome artifact materialized), NOT turn-by-turn. Needs **mirror engines**:
   **Clerkenstein only mocks Clerk** — there is no LiveKit/Chime mirror yet (spec §5.8). Until a mirror lands,
   these legs are parked as `later — needs a mirror engine`.
-- **Academy coverage** — Playthroughs over the **separate ant-academy deployment** (its own Vercel-deployed app,
-  Clerk-only, not in the platform docker-compose). A distinct target environment from the demo-N hero stacks; a
-  future surface for the capability, not yet scoped to a milestone number.
+- **M207 — Academy coverage** — Playthroughs over the **separate ant-academy deployment** (its own Vercel-deployed
+  app, Clerk-only, not in the platform docker-compose). A distinct target environment from the demo-N hero stacks;
+  a future surface for the capability.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -159,11 +159,12 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
 
 _Last updated: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
-**Playthroughs** pillar [functional-flow e2e *testing*], 3 milestones M201 → { M202 ∥ M203 } [`Mxyy` numbering;
-M201 `section` foundation + M202/M203 `iterative` per-vantage coverage], branch `release/02.00-opening-night` cut
-from `main`, designed from `spec-drafts/playthroughs/spec.md` v0.3. The Playthroughs capability **graduated from
-spec-draft to active development**. Future v2 milestones [M204 Hiring/tier-gates, M205 AI-sim-mirror-tier,
-Academy] added — NOT pre-assigned to minor versions. v1.x history rotated to `roadmap-legacy.md`. Standing backlog
+**Playthroughs** pillar [functional-flow e2e *testing*], **4 milestones M201 ∥ M202 → { M203 ∥ M204 }** [`Mxyy`
+numbering; M201 `iterative`+user-guided manifest corpus ∥ M202 `section` foundation → M203/M204 `iterative`
+per-vantage coverage], branch `release/02.00-opening-night` cut from `main`, designed from
+`spec-drafts/playthroughs/spec.md` v0.3. The Playthroughs capability **graduated from spec-draft to active
+development**. Future v2 milestones [M205 Hiring/tier-gates, M206 AI-sim-mirror-tier, M207 Academy] added — NOT
+pre-assigned to minor versions. v1.x history rotated to `roadmap-legacy.md`. Standing backlog
 [DEF-M10-01, DEF-M21-01, M25-D9] is orthogonal + intact. Prior: 2026-06-27 **v1.10 "method acting" SHIPPED**
 [tag `v1.10`] — the last release of the v1.x major. Prior: 2026-06-24 **v1.10 PROMOTED to active development** — the
 believable-profile release, M39→M42m extended to M46, designed from `.agentspace/profile_gaps.md`. Prior same day:

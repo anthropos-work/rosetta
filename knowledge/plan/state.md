@@ -14,28 +14,36 @@ the **Playthroughs** pillar: functional-flow *testing*, a manifest-driven determ
 to be the human* and proves the platform's core user journeys **actually work** end-to-end (the **functional**
 sibling of v1.x's M42 **presence** coverage sweep). Governed by the consolidated capability spec
 [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) (v0.3). v2+ uses **`Mxyy`** milestone
-numbering. **Tooling + docs only — zero platform-repo edits.** 3 milestones:
+numbering. **Tooling + docs only — zero platform-repo edits.** 4 milestones:
 
 ```
-M201 ──→ M202 ─┐
-          M203 ─┴──→ ship
+M201 ──┐                 (manifest corpus — prose, user-guided)
+M202 ──┼──→ M203 ─┐
+            M204 ─┴──→ ship
 ```
 
-**Active milestone:** **M201 — Playthroughs Foundation** (`section`, complexity medium, depends on none —
-reuses the M42 harness + seeding machinery). Goal: stand up the `playthroughs` rext section on the shared M42
-e2e foundation, proven by **one trivial end-to-end Playthrough** (login → /profile → assert hero identity).
-In-scope: the manifest model + light validator (both-way id integrity + precondition-coverage, datadna-gated);
-the per-surface locator/landmark page-object layer (1 surface to start); the dedicated decoupled seed preset
-(entitlement tiers + multi-org-private); the reset-to-seed lifecycle + serial-default runner; the 4-state
-reporting map (passing / failing / unimplemented / unimplementable-without-platform-edit); one trivial proof
-Playthrough. Delivers → a corpus runbook graduating the spec (`corpus/ops/demo/playthroughs.md`). Records:
-[`releases/02.00-opening-night/m201-foundation/`](releases/02.00-opening-night/m201-foundation/).
+**Active milestone:** **M201 — Manifest corpus** (`iterative`, **USER-GUIDED**, complexity large, depends on
+none — the manifest is prose). Goal: top-down, **user-directed** curation of the **full goal-aligned Product →
+Story → Use Case manifest corpus** — the build+regression contract every coverage milestone (M203/M204)
+implements against. Per pass: **outline** (products → stories → use cases) → **validate** (against the real
+platform surface + the spec's manifest model) → **write the prose-intent manifest YAML** (spec §5.3, one file
+per product). **Explicitly NOT bounded by the current minimal demo seed** — it captures what the goal says must
+be proven; where a use case needs preconditions the demo lacks, that **feeds the M202 dedicated-seed expansion**
+(noted, not resolved here). Worked **conversationally** + via `/developer-kit:work-mstone-iters`. Exit gate: the
+corpus is comprehensively outlined, validated, written as prose-intent YAML (one file per product, each use case
+carrying goal + actor + flow + intermediate/final expectations, §5.3 validator passes — ids unique + both-way),
+**and the USER signs off the corpus as the complete-enough v2.0 coverage contract.** Records:
+[`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/).
 
-**Phase:** **v2.0 in development** — M201 planned, not yet started.
+**Phase:** **v2.0 in development** — M201 planned, not yet started. (M202 the foundation is its parallel peer —
+prose-only M201 carries no code dependency; M202 builds the validator + dedicated seed to match the corpus.)
 
-**Next up:** **`/developer-kit:build-milestone`** — build **M201** (the `section` foundation; it gates the two
-`iterative` vantage-coverage milestones M202 ∥ M203). _(The orchestrator pushes `main` + the `v1.10` tag + the
-ext tags to origin — the v1.10 LOCAL close did not push; v2.0 design likewise did not push.)_
+**Next up:** **work M201 WITH THE USER** — `/developer-kit:work-mstone-iters` (the user directs each top-down
+pass; the first pass outlines the readiest product slice, validates it, writes the prose-intent YAML). The
+prose manifest corpus is authorable in **parallel** with the M202 `section` foundation, which then builds the
+§5.3 validator + the dedicated seed to match it; M203 ∥ M204 implement Playthroughs against the M201-declared
+use cases on the M202 foundation. _(The orchestrator pushes `main` + the `v1.10` tag + the ext tags to origin —
+the v1.10 LOCAL close did not push; v2.0 design likewise did not push.)_
 
 **Last shipped:** **v1.10 — 2026-06-27** (`method acting`, 9 milestones M39→M46, tag `v1.10`,
 `release/01.10-method-acting` merged `--no-ff` → `main`). The **last release of the v1.x major**; its history +
@@ -47,7 +55,7 @@ the full shipped log now live in [`roadmap-legacy.md`](roadmap-legacy.md). Recor
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
 DEF-M21-01 (`replayCmd` hermetic test), M25-D9 (dev taxonomy `rc=4`). Pre-existing, tracked in
 [`roadmap-vision.md`](roadmap-vision.md); none scheduled. **Future v2 milestones** (Playthroughs pillar, NOT
-pre-assigned to a minor): M204 Hiring + tier gates · M205 AI-sim mirror tier · Academy coverage — also in
+pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier · M207 Academy coverage — also in
 `roadmap-vision.md`.
 
 ## Recently shipped releases
@@ -69,12 +77,12 @@ pre-assigned to a minor): M204 Hiring + tier gates · M205 AI-sim mirror tier ·
 
 ## Headline numbers (v2.0 — inheriting the v1.10-close baseline; no v2 work yet)
 The v2.0 baseline is the v1.10-close inheritance — no v2.0 milestone has built yet, so these are the carried-over
-totals (re-measured at first M201 close):
+totals (re-measured at first milestone close):
 - **Go test funcs (rext):** **1551** total (`Test`+`Fuzz`) at the v1.10 close. Per-module: `alignment` 52 ·
   clerkenstein 270 · stack-seeding 706 · stack-snapshot 363 · stack-secrets 160. (A new `playthroughs` rext
-  section arrives in M201; its first tests land at M201 build/close.)
+  section arrives in M202; its first tests land at M202 build/close.)
 - **Python / TS:** the cockpit `cockpit.py` suite 63 + the demopatch suite 43; `stack-injection` 117. The
-  `@playwright/test ^1.49.0` coverage harness (M42e) is the e2e foundation M201 reuses (the first non-Go rext
+  `@playwright/test ^1.49.0` coverage harness (M42e) is the e2e foundation M202 reuses (the first non-Go rext
   dev/test dep).
 - **Flake:** **0** at v1.10 close.
 - **Supply-chain:** the v1.10 close carried **1 new dep** (`github.com/anthropos-work/ai@v1.40.1`, M45). v2.0 has
@@ -85,16 +93,19 @@ totals (re-measured at first M201 close):
 
 ## Branch model
 **v2.0 IN DEVELOPMENT:** `release/02.00-opening-night` cut from `main` 2026-06-28 (LOCAL — origin push is the
-orchestrator's step). Milestone branches `m{201,202,203}/{slug}` will branch from it at build time. rext code of
-record (a SEPARATE repo) gains a `playthroughs` section, authored + tagged per the tooling policy at M201 build.
+orchestrator's step). Milestone branches `m{201,202,203,204}/{slug}` will branch from it at build time. rext code
+of record (a SEPARATE repo) gains a `playthroughs` section, authored + tagged per the tooling policy at M202 build.
 **v1.10 SHIPPED:** `release/01.10-method-acting` merged `--no-ff` → `main` + tagged `v1.10` at close (LOCAL).
 rext code @ tags `method-acting-m39..m46-servegrant-closure`.
 **Shipped:** **v1.10** `v1.10` · **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` ·
 **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-06-28 (**v2.0 "opening night" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — a
-NEW MAJOR opening the Playthroughs pillar; 3 milestones M201 → { M202 ∥ M203 } [`Mxyy` numbering], branch
-`release/02.00-opening-night` cut from `main`. v1.x history rotated to `roadmap-legacy.md`; the active roadmap
-holds v2.0 only. Designed from `spec-drafts/playthroughs/spec.md` v0.3. Headline numbers reset to the v1.10-close
-inheritance baseline. Next: `/developer-kit:build-milestone` — M201.)_
+_Last updated: 2026-06-28 (**v2.0 "opening night" — M201 Manifest corpus INSERTED as the new first milestone**;
+the prior 3 milestones renumbered M201→M202 [foundation], M202→M203 [employee], M203→M204 [manager]. 4 milestones
+M201 ∥ M202 → { M203 ∥ M204 } [`Mxyy` numbering]: M201 `iterative`+user-guided manifest corpus is the prose
+build+regression contract, authorable in parallel with the M202 `section` foundation. Active milestone now M201;
+next: work it WITH THE USER via `/developer-kit:work-mstone-iters`. Future v2 milestones bumped to M205
+Hiring/tier-gates, M206 AI-sim-mirror-tier, M207 Academy. Prior: 2026-06-28 v2.0 DESIGNED + PROMOTED — a NEW MAJOR
+opening the Playthroughs pillar, branch `release/02.00-opening-night` cut from `main`, from
+`spec-drafts/playthroughs/spec.md` v0.3. Headline numbers reset to the v1.10-close inheritance baseline.)_

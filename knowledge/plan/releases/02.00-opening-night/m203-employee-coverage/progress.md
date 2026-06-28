@@ -1,4 +1,4 @@
-# M202 Progress
+# M203 Progress
 
 This is an **`iterative`** milestone — progress accrues per-iter toward the **exit gate** (not a fixed section
 checklist). The gate + the iteration protocol live in [`overview.md`](overview.md). Iters are created under
@@ -8,7 +8,7 @@ checklist). The gate + the iteration protocol live in [`overview.md`](overview.m
 > employee stories — Skill Paths, AI Simulations NON-voice, Profile), with 0 false-fails over 5 consecutive reset
 > runs.**
 
-**Status:** `planned` — not yet started. Next (after M201 lands): `/developer-kit:build-mstone-iters` (the
+**Status:** `planned` — not yet started. Next (after M202 lands): `/developer-kit:build-mstone-iters` (the
 BOOTSTRAP iter authors the first coverage strategy as iter-01).
 
 ## Running ledger

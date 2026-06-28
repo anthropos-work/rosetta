@@ -1,10 +1,11 @@
-# M201 Spec Notes
+# M202 Spec Notes
 
 Technical notes accumulate here during build. The authoritative design lives in [`overview.md`](overview.md) +
 the consolidated capability spec
-[`knowledge/plan/spec-drafts/playthroughs/spec.md`](../../../spec-drafts/playthroughs/spec.md) (v0.3). M201 is
+[`knowledge/plan/spec-drafts/playthroughs/spec.md`](../../../spec-drafts/playthroughs/spec.md) (v0.3). M202 is
 **tooling + docs only — zero platform-repo edits**; the platform stays read-only (an un-drivable surface
-escalates via `unimplementable-without-platform-edit`, it never edits the platform).
+escalates via `unimplementable-without-platform-edit`, it never edits the platform). The manifest **content** this
+milestone's validator consumes is the **M201 manifest corpus** (prose-only, authorable in parallel).
 
 ## Scope (see overview.md for the authoritative cards)
 - **(1) Manifest model + light validator** — both-way id integrity + precondition-coverage + datadna-gated.
@@ -29,8 +30,9 @@ Built on the foundation it shares with `stack-verify` (§5.6) — cite/wire thes
 
 ## Tag / two-repo state
 TODO (build): the rext authoring copy (`.agentspace/rosetta-extensions`) commit + tag for the new `playthroughs`
-section; the consumption clone (`stack-demo/rosetta-extensions`) checkout; the corpus m201 branch (the
-`Delivers → playthroughs.md` runbook + plan files).
+section; the consumption clone (`stack-demo/rosetta-extensions`) checkout; the corpus m202 branch (the
+`Delivers → playthroughs.md` runbook + plan files). The **M201 manifest corpus** YAML lands in this new
+`playthroughs` section once it exists (until then it is drafted under the M201 milestone dir / spec-draft area).
 
 ## Open questions (carry into the build; record resolutions in decisions.md)
 - Harness home: the `playthroughs` section's own dir vs nesting under `stack-verify/e2e/` — decide against how
@@ -45,4 +47,4 @@ section; the consumption clone (`stack-demo/rosetta-extensions`) checkout; the c
 ## Delivers — `corpus/ops/demo/playthroughs.md` (NEW)
 TODO (build): graduate the spec-draft into the corpus runbook (the capability, the manifest model, the
 page-object layer, the dedicated-seed + reset-to-seed lifecycle, the serial-default runner, the 4-state reporting
-map). This becomes the `iteration_protocol_ref` for M202/M203.
+map). This becomes the `iteration_protocol_ref` for M203/M204.

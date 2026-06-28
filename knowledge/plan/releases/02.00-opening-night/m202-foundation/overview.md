@@ -1,5 +1,5 @@
 ---
-milestone: M201
+milestone: M202
 slug: foundation
 version: v2.0 "opening night"
 milestone_shape: section
@@ -8,19 +8,21 @@ created: 2026-06-28
 last_updated: 2026-06-28
 complexity: medium
 delivers: corpus/ops/demo/playthroughs.md (NEW — graduates the playthroughs spec-draft into a corpus runbook: the capability, the manifest model, the page-object layer, the dedicated-seed + reset-to-seed lifecycle, the serial-default runner, the 4-state reporting map) + the new `playthroughs` rext section (the manifest + light validator + the per-surface locator/landmark page-object layer + the dedicated decoupled seed + the runner) built on the shared M42 e2e foundation
-depends_on: none (reuses the M42 e2e harness + the seeding machinery)
+depends_on: none (reuses the M42 e2e harness + the seeding machinery; the M201 manifest corpus is its build+regression contract — authorable in parallel, the validator lands here to match it)
 spec_ref: knowledge/plan/spec-drafts/playthroughs/spec.md (the consolidated capability spec, v0.3)
 ---
 
-# M201 — Playthroughs Foundation
+# M202 — Playthroughs Foundation
 
 ## Goal
 Stand up the **`playthroughs` rext section** on the **shared M42 e2e foundation**, proven by **one trivial
 end-to-end Playthrough**. A Playthrough is an automated actor that **is the user** — it logs in as a seeded hero,
-plays a real journey through the platform, and proves the platform delivered the outcome. M201 builds the
+plays a real journey through the platform, and proves the platform delivered the outcome. M202 builds the
 **plumbing** (the section, the manifest model + validator, the page-object layer, the dedicated seed + reset
-lifecycle, the runner + reporting) — not the real product coverage (that is M202/M203). The proof of life is the
-trivial Playthrough: **login → /profile → assert hero identity**.
+lifecycle, the runner + reporting) — not the real product coverage (that is M203/M204). The proof of life is the
+trivial Playthrough: **login → /profile → assert hero identity**. The manifest **content** it validates is the
+**M201 manifest corpus** (the user-guided Product → Story → Use Case curation) — authorable in parallel; M202
+builds the validator + dedicated seed to match it.
 
 ## Scope
 **In:**
@@ -48,18 +50,21 @@ trivial Playthrough: **login → /profile → assert hero identity**.
 - **(6) One trivial proof Playthrough** — **login → /profile → assert hero identity** (the foundation smoke
   test; the cockpit-login handshake + the page-object layer + the seed + a single user-observable assertion).
 
-**Out:** real product coverage (M202+); the AI-sim / integration mirror tier; cross-vantage.
+**Out:** real product coverage (M203+); the AI-sim / integration mirror tier; cross-vantage.
 
 ## Why section (not iterative)
 The foundation is **decomposable up front** — the manifest model, the validator, the page-object layer, the seed,
 the reset lifecycle, the runner, the reporting map, and the one proof Playthrough are a known, enumerable
-checklist. (The *coverage* of real journeys against the real antd UI — that is exploratory, and is M202/M203's
+checklist. (The *coverage* of real journeys against the real antd UI — that is exploratory, and is M203/M204's
 `iterative` job.) Build with `/developer-kit:build-milestone`.
 
 ## Depends on / Parallel with
-- **Depends on:** **none** — it reuses the M42 e2e harness + the seeding machinery, both already shipped.
-- **Parallel with:** none. M201 **lands first**; it gates the two `iterative` vantage-coverage milestones
-  **M202 ∥ M203** (they import its page-object layer + run on its reset-to-seed lifecycle).
+- **Depends on:** **none** — it reuses the M42 e2e harness + the seeding machinery, both already shipped. The
+  **M201 manifest corpus** is the prose contract this milestone's validator + dedicated seed implement against;
+  M201 is prose-only so it can be authored **in parallel** with this foundation (no hard ordering).
+- **Parallel with:** **M201** (the manifest corpus — prose-only, no code dependency). M202 **lands the plumbing
+  first** among the coding milestones; it gates the two `iterative` vantage-coverage milestones **M203 ∥ M204**
+  (they import its page-object layer + run on its reset-to-seed lifecycle).
 
 ## Reuse paths (cite in spec-notes)
 The shared e2e foundation it builds on (the §5.6 *built on a shared foundation it shares with `stack-verify`*):
@@ -82,9 +87,11 @@ A surface that can't be driven without a platform edit (the `unimplementable-wit
 ## KB dependencies
 Read as contract:
 - [`knowledge/plan/spec-drafts/playthroughs/spec.md`](../../../spec-drafts/playthroughs/spec.md) — the
-  consolidated capability spec (v0.3) M201 builds the contract of (and graduates to a corpus runbook).
+  consolidated capability spec (v0.3) M202 builds the contract of (and graduates to a corpus runbook).
+- [`../m201-manifest-corpus/overview.md`](../m201-manifest-corpus/overview.md) — the **M201 manifest corpus**, the
+  prose Product → Story → Use Case contract this milestone's validator + dedicated seed implement against.
 - [`corpus/ops/demo/coverage-protocol.md`](../../../../../corpus/ops/demo/coverage-protocol.md) — the M42
-  Playwright coverage sweep + the shared e2e foundation / locator discipline M201 extends from presence→function.
+  Playwright coverage sweep + the shared e2e foundation / locator discipline M202 extends from presence→function.
 - [`corpus/ops/seeding-spec.md`](../../../../../corpus/ops/seeding-spec.md) — the seeding machinery + the
   `stack.seed.yaml` blueprint + the production-isolation boundary the dedicated seed reuses.
 - [`corpus/ops/idempotency.md`](../../../../../corpus/ops/idempotency.md) — the `--reset` contract + the N=0
@@ -94,7 +101,7 @@ Read as contract:
 - **NEW** [`corpus/ops/demo/playthroughs.md`](../../../../../corpus/ops/demo/playthroughs.md) — the corpus runbook
   that **graduates the playthroughs spec-draft**: the capability, the manifest model + vocabulary, the per-surface
   page-object layer, the dedicated-seed + reset-to-seed lifecycle, the serial-default runner, and the 4-state
-  reporting map. (Becomes the `iteration_protocol_ref` for M202/M203.)
+  reporting map. (Becomes the `iteration_protocol_ref` for M203/M204.)
 - The **`playthroughs` rext section** — the manifest + light validator, the per-surface locator/landmark
   page-object layer (1 surface), the dedicated decoupled seed preset, the runner, and the one trivial proof
   Playthrough — authored + tagged per the tooling policy, consumed per-stack at a pinned tag.

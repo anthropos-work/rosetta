@@ -1,4 +1,4 @@
-# M201 Progress
+# M202 Progress
 
 Section checklist (built by `/developer-kit:build-milestone`). Scope detail in [`overview.md`](overview.md).
 
@@ -17,8 +17,9 @@ Section checklist (built by `/developer-kit:build-milestone`). Scope detail in [
   (the last escalates, never edits the platform).
 - [ ] **(6) One trivial proof Playthrough** — login → /profile → assert hero identity (the foundation smoke
   test).
-- [ ] **Docs** — `corpus/ops/demo/playthroughs.md` **(NEW)** graduates the spec-draft (becomes the M202/M203
+- [ ] **Docs** — `corpus/ops/demo/playthroughs.md` **(NEW)** graduates the spec-draft (becomes the M203/M204
   `iteration_protocol_ref`); update the `demo/README.md` index + `CLAUDE.md` docs list.
 
-**Status:** `planned` — not yet started. Next: `/developer-kit:build-milestone` (M201). Tooling + docs only —
-zero platform-repo edits; the new `playthroughs` rext section is authored + tagged per the tooling policy.
+**Status:** `planned` — not yet started. Next: `/developer-kit:build-milestone` (M202). Tooling + docs only —
+zero platform-repo edits; the new `playthroughs` rext section is authored + tagged per the tooling policy. The
+validator + dedicated seed implement against the **M201 manifest corpus** (prose, authorable in parallel).
