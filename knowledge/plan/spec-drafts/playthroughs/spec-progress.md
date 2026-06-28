@@ -17,7 +17,7 @@
 | G | Document the principles so building + extending stay aligned | ✅ | Done — [`spec.md`](spec.md) §3 (P1–P8) is the alignment contract; P8 makes the doc itself the mechanism. |
 | 1 | **The brand name** for the tests / the feature | ✅ | **Decided: "Playthroughs."** A complete **play through** the product's content, following the story — the gaming sense (a playthrough completes the content/quests following the story). Maps exactly to "follow the stories, complete all their use cases," and a playthrough is about completing the journey, **not** the cosmetics. Considered: Run-throughs / Encore / Odysseys. |
 | 2 | Pretend-to-be-human boundary — backdoors? | ✅ | The **action under test** uses no API/DB backdoor (P1). Backdoors allowed for **setup/teardown only** (seed/reset). [`spec.md`](spec.md) §3 P1. |
-| 3 | **Pure-semantic vs. a "semantic landmark" convention** (given zero-platform-edit) | 🔴 | Default = **pure semantic** (role / accessible-name / a11y-tree); **no platform `data-testid` dependency** (zero-platform-edit). Open: whether to also bless a lightweight set of already-exposed **semantic landmarks** as load-bearing anchors — WITHOUT any platform edit. [`spec.md`](spec.md) §5.2. |
+| 3 | **How a test locates elements** (given zero-platform-edit) | ✅ | **Pure-semantic by default** (role / accessible-name / label / a11y-tree) **+ a thin Rosetta-side landmark registry** for ambiguous surfaces (anchors we *find*, not hooks we *add*). No platform edits. [`spec.md`](spec.md) §5.2. |
 | 4 | The authoritative **manifest schema** + file layout + validation | 🔴 | Shape sketched ([`spec.md`](spec.md) §4) — `products[] → stories[] → use_cases[]{id,goal,actor,seed,flow,expectations,playthrough}`. The exact schema, on-disk layout, and a validator are TBD. |
 | 5 | **Stack binding** — which seeded world the suite runs against | 🔴 | Reuse the seeded **stories & heroes** world (§2 symmetry) — open whether a **dedicated** Playthrough seed/preset or the existing demo stories world; and how a manifest `seed:` resolves to a real stack. [`spec.md`](spec.md) §5.4. |
 | 6 | **Harness relationship** — extend M42 vs. a new section | 🔴 | Lean: **extend `stack-verify/e2e`** (it owns the Playwright foundation); promote to a dedicated `playthroughs` rext section only if it grows to warrant it. [`spec.md`](spec.md) §5.6. |
@@ -51,14 +51,16 @@ aside: **Run-throughs** (theatre; the original proposal), **Encore** (regression
 first-build role), **Odysseys** (evocative but less precise). The whole spec uses it; the spec-draft dir is
 `playthroughs/`.
 
-### Point 3 — semantic locating under zero-platform-edit (open 2026-06-28)
+### Point 3 — how a test locates elements (decided 2026-06-28)
 
-The hard constraint: Rosetta makes **zero platform-repo edits**, so we **cannot** add `data-testid` hooks for
-the tests. That actually *reinforces* P2/P3 — we locate by what the **user** perceives (ARIA role, accessible
-name, label, the accessibility tree), never by markup. The open sub-question is whether, on top of pure-semantic
-locating, we sanction a small set of **already-exposed semantic landmarks** (headings/roles/labels we agree to
-treat as load-bearing) as a documented fallback — strictly without any platform change. Default stands at
-**pure-semantic**; revisit if real surfaces prove too ambiguous to locate reliably.
+Zero-platform-edit rules out `data-testid` hooks, so locating is **pure-semantic by default** — ARIA role,
+accessible name, label, the accessibility tree (what the *user* perceives), never markup. Because real
+enterprise surfaces (unlabelled data grids, duplicate names, custom widgets) aren't always cleanly accessible,
+we add a **thin Rosetta-side landmark registry**: a small, shared map of stable anchors (a region heading, a
+unique visible label, a parent role to scope within) for the ambiguous cases — defined once, reused, fixed in
+one place if the platform shifts. Crucially these are anchors we **find**, never hooks we **add** — no platform
+edit, no platform dependency. Strictly-pure (no fallback) was set aside as impractical for messy surfaces;
+adding test-ids to the platform is ruled out by zero-platform-edit.
 
 ### Point 7 — first coverage targets (deferred 2026-06-28)
 

@@ -202,13 +202,12 @@ A strict **locator discipline** turns the principles into mechanics:
 - **Assert on state & outcome:** that the **goal-state is reachable and visible** (the right data landed in the
   right place), expressed through accessible semantics — not "the button says X at position Y".
 
-**The key tension (open — spec-progress #3):** zero-platform-edit means we **cannot** ask the platform to add
-`data-testid` hooks. Pure semantic/role/accessible-name locating is the default and the most resilient-to-the-
-right-things — but it leans on the platform being reasonably accessible. The open question is whether we stay
-**purely semantic**, or define a lightweight **"semantic landmark" convention** (stable, human-meaningful
-anchors the platform happens to already expose, e.g. headings/roles/labels we agree to treat as load-bearing) —
-**without** any platform edit. The default is **pure-semantic**; landmarks are a documented fallback, not a
-platform dependency.
+**The locator policy (decided — spec-progress #3):** zero-platform-edit means we **cannot** add `data-testid`
+hooks, so locating is **pure-semantic by default** (role / accessible-name / label / the a11y tree — what the
+*user* perceives). For genuinely ambiguous surfaces (unlabelled data grids, duplicate names, custom widgets), a
+**thin Rosetta-side landmark registry** supplies stable anchors — a region heading, a unique visible label, a
+parent role to scope within — defined once, reused, and fixed in one place if the platform shifts. These are
+anchors we **find**, never hooks we **add**: no platform edit, no platform dependency.
 
 ### 5.3 The manifest format
 
@@ -267,11 +266,10 @@ deliberately **not** this capability (parked in [`next-release.md`](next-release
 
 ## 8. Open / to-confirm
 
-Tracked, worked one at a time, in [`spec-progress.md`](spec-progress.md). Headlines (the name is **decided** —
-*Playthroughs*):
+Tracked, worked one at a time, in [`spec-progress.md`](spec-progress.md). Decided so far: the **name**
+(*Playthroughs*) and the **locator policy** (pure-semantic + a thin landmark registry, §5.2). Still open:
 
-1. **Pure-semantic vs. a "semantic landmark" convention** (under zero-platform-edit) — §5.2.
-2. **The authoritative manifest schema** + file layout + validation — §5.3.
-3. **Stack binding** — a dedicated Playthrough seeded world vs. the existing demo stories world — §5.4.
-4. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
-5. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).
+1. **The authoritative manifest schema** + file layout + validation — §5.3.
+2. **Stack binding** — a dedicated Playthrough seeded world vs. the existing demo stories world — §5.4.
+3. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
+4. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).
