@@ -34,19 +34,52 @@ and a `release/{version}` branch is cut.
 > tell a story, plus a **presenter cockpit**; 5 `section` milestones M34→M38; tooling + docs only). Designed from
 > the adversarially-verified spec [`.agentspace/seeding_gaps.md`](../../.agentspace/seeding_gaps.md). The first
 > version since v1.5 to come from a substantive backlog/spec rather than a live defect.
-> **v1.10 "method acting"** → 2026-06-24 (IN DEVELOPMENT, branch `release/01.10-method-acting`; the
+> **v1.10 "method acting"** → 2026-06-24 (shipped 2026-06-27, tag `v1.10`; the
 > **believable-profile release** — make each hero hold up under a close-up when a presenter *Logs in as* them:
 > profile identity [org name + role + real-face avatar] + the content-surface unblock [library + activity feed via
 > one Directus serve-grant] + profile depth [work/education/deep skills] + **100% per-vantage demo coverage** proven
-> by Playwright; 5 milestones M39→M42m [3 `section` + 2 `iterative`]; tooling + docs only). Designed from the
+> by Playwright, **EXTENDED** with cockpit-UX + whole-roster completeness + a cheap-LLM generation engine + org-scale
+> fill; 9 milestones M39→M46 [section + iterative]; tooling + docs only). Designed from the
 > live-demo review [`.agentspace/profile_gaps.md`](../../.agentspace/profile_gaps.md) — a hero (Maya Chen) read
-> empty across the profile/library/activity surfaces. The second consecutive demo-believability release after v1.9.
+> empty across the profile/library/activity surfaces. The second consecutive demo-believability release after v1.9,
+> and the **last release of the v1.x major** — the v1.x history now lives in [`roadmap-legacy.md`](roadmap-legacy.md).
+> **v2.0 "opening night"** → 2026-06-28 (IN DEVELOPMENT, branch `release/02.00-opening-night`; a **NEW MAJOR** —
+> opens the **Playthroughs** pillar: functional-flow *testing*, a manifest-driven deterministic e2e suite that
+> *pretends to be the human* and proves the platform's core user journeys **actually work** — distinct from the
+> v1.x demo/seeding lineage. 3 milestones M201 → { M202 ∥ M203 } [`Mxyy` numbering]: M201 Playthroughs Foundation
+> [`section`] → M202 employee-vantage coverage ∥ M203 manager-vantage coverage [both `iterative`]; tooling + docs
+> only — zero platform-repo edits). Designed from the consolidated capability spec
+> [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. The **Playthroughs** capability
+> **graduated from spec-draft to active development** here.
 
 ---
 
-> **v1.10 "method acting" is IN DEVELOPMENT** (designed 2026-06-24; branch `release/01.10-method-acting`; full
-> detail in the `## In Development — v1.10` section of [`roadmap.md`](roadmap.md)). The unscheduled backlog below is
-> orthogonal (not in v1.10 scope).
+> **v2.0 "opening night" is IN DEVELOPMENT** (designed 2026-06-28; branch `release/02.00-opening-night`; full
+> detail in the `## In Development — v2.0` section of [`roadmap.md`](roadmap.md) — the active roadmap now holds the
+> v2.0 major; v1.x history is in [`roadmap-legacy.md`](roadmap-legacy.md)). The future v2 milestones + the
+> unscheduled backlog below are orthogonal (not in v2.0 scope).
+
+## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
+
+The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night" (M201
+→ { M202 ∥ M203 }). The milestones below are the **declared-but-deferred** Playthroughs surfaces — real future
+work, **not** pre-assigned to a minor version (per the `Mxyy` rule, a future major's milestone gets its number at
+*design* time, not before). They are governed by the same capability spec
+[`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md).
+
+- **M204 — Hiring + tier gates.** The **recruiter** vantage: candidate-pipeline journeys (post a role → review
+  applicants → advance a candidate) + the **free→paid entitlement gates** (a flow that's gated by tier proves the
+  gate fires). Needs a **new `HiringSeeder`** (a recruiter persona + a candidate pipeline the seed populates) +
+  a **Stripe test-mode / assertion-boundary** for the paid-tier gate (Stripe is one of the integration third
+  parties with no mirror today — spec §5.8; test-mode is the likely mirror).
+- **M205 — AI-sim mirror tier.** The signature **voice / recording** AI-simulation journey — **voice (LiveKit)**
+  + **recording (Chime)** — driven at the **launch / completion assertion boundary** (the flow launched, reached
+  an interactive state, the outcome artifact materialized), NOT turn-by-turn. Needs **mirror engines**:
+  **Clerkenstein only mocks Clerk** — there is no LiveKit/Chime mirror yet (spec §5.8). Until a mirror lands,
+  these legs are parked as `later — needs a mirror engine`.
+- **Academy coverage** — Playthroughs over the **separate ant-academy deployment** (its own Vercel-deployed app,
+  Clerk-only, not in the platform docker-compose). A distinct target environment from the demo-N hero stacks; a
+  future surface for the capability, not yet scoped to a milestone number.
 
 ## Unscheduled backlog (not a planned release)
 
@@ -122,12 +155,19 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
-- **v1.10 "method acting"** (IN DEVELOPMENT — chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up".
+- **v1.10 "method acting"** (shipped 2026-06-27, tag `v1.10` — codename now permanent; chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up". **The last release of the v1.x major.**
+- **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
 
-_Last updated: 2026-06-24 (**v1.10 "method acting" PROMOTED to active development** — the believable-profile
-release, 5 milestones M39→M42m [3 `section` fills + 2 `iterative` Playwright per-vantage coverage gates], branch
-`release/01.10-method-acting` cut, designed from `.agentspace/profile_gaps.md`. Standing backlog [DEF-M10-01,
-DEF-M21-01, M25-D9] is orthogonal. Prior same day: **M33 ant-academy demo liveness FULLY RESOLVED post-v1.9** at rext tags `storytelling-postfix-1`
+_Last updated: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
+**Playthroughs** pillar [functional-flow e2e *testing*], 3 milestones M201 → { M202 ∥ M203 } [`Mxyy` numbering;
+M201 `section` foundation + M202/M203 `iterative` per-vantage coverage], branch `release/02.00-opening-night` cut
+from `main`, designed from `spec-drafts/playthroughs/spec.md` v0.3. The Playthroughs capability **graduated from
+spec-draft to active development**. Future v2 milestones [M204 Hiring/tier-gates, M205 AI-sim-mirror-tier,
+Academy] added — NOT pre-assigned to minor versions. v1.x history rotated to `roadmap-legacy.md`. Standing backlog
+[DEF-M10-01, DEF-M21-01, M25-D9] is orthogonal + intact. Prior: 2026-06-27 **v1.10 "method acting" SHIPPED**
+[tag `v1.10`] — the last release of the v1.x major. Prior: 2026-06-24 **v1.10 PROMOTED to active development** — the
+believable-profile release, M39→M42m extended to M46, designed from `.agentspace/profile_gaps.md`. Prior same day:
+**M33 ant-academy demo liveness FULLY RESOLVED post-v1.9** at rext tags `storytelling-postfix-1`
 + `storytelling-postfix-2`. postfix-1: the session-reaping was reproduced + fixed via session-detach [`launch_detached`];
 the same pass also made `DEMO_STORIES` the default, added the Directus boot health-gate, and guarded the prod-Directus
 note. postfix-2: corrected the academy residual — there is **no FA-token prerequisite** (FA Pro icons are vendored, so
