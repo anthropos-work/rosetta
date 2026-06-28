@@ -211,10 +211,13 @@ anchors we **find**, never hooks we **add**: no platform edit, no platform depen
 
 ### 5.3 The manifest format
 
-A **YAML manifest** (sibling-in-spirit to `stack.seed.yaml`): `products[] → stories[] → use_cases[]` with the
-fields of §4. It is authored and version-controlled as the build+regression source of truth; the Playthrough
-implementations reference use-case ids. Exact schema, file layout, and validation rules are an open item
-(spec-progress #4).
+A **YAML manifest** (sibling-in-spirit to `stack.seed.yaml`), declared as **human-readable intent**: a use case's
+`flow` and `expectations` are plain-language steps and outcome statements (*what*, never *how*) — the
+**Playthrough code implements the mechanics**. This keeps the manifest a readable contract and honors P2.
+**Layout: one file per product** (`hiring.yaml`, `workforce.yaml`, …), use cases nested under their stories. A
+**light validator** enforces structure — unique ids, and every use case maps to a Playthrough id or an explicit
+`TODO` (the build-reference gap). The exact field list refines during the first build. (Decided — spec-progress
+#4.)
 
 ### 5.4 The actor & environment
 
@@ -267,9 +270,9 @@ deliberately **not** this capability (parked in [`next-release.md`](next-release
 ## 8. Open / to-confirm
 
 Tracked, worked one at a time, in [`spec-progress.md`](spec-progress.md). Decided so far: the **name**
-(*Playthroughs*) and the **locator policy** (pure-semantic + a thin landmark registry, §5.2). Still open:
+(*Playthroughs*), the **locator policy** (§5.2), and the **manifest** (prose-intent, per-product, §5.3). Still
+open:
 
-1. **The authoritative manifest schema** + file layout + validation — §5.3.
-2. **Stack binding** — a dedicated Playthrough seeded world vs. the existing demo stories world — §5.4.
-3. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
-4. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).
+1. **Stack binding** — a dedicated Playthrough seeded world vs. the existing demo stories world — §5.4.
+2. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
+3. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).

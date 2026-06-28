@@ -18,7 +18,7 @@
 | 1 | **The brand name** for the tests / the feature | ✅ | **Decided: "Playthroughs."** A complete **play through** the product's content, following the story — the gaming sense (a playthrough completes the content/quests following the story). Maps exactly to "follow the stories, complete all their use cases," and a playthrough is about completing the journey, **not** the cosmetics. Considered: Run-throughs / Encore / Odysseys. |
 | 2 | Pretend-to-be-human boundary — backdoors? | ✅ | The **action under test** uses no API/DB backdoor (P1). Backdoors allowed for **setup/teardown only** (seed/reset). [`spec.md`](spec.md) §3 P1. |
 | 3 | **How a test locates elements** (given zero-platform-edit) | ✅ | **Pure-semantic by default** (role / accessible-name / label / a11y-tree) **+ a thin Rosetta-side landmark registry** for ambiguous surfaces (anchors we *find*, not hooks we *add*). No platform edits. [`spec.md`](spec.md) §5.2. |
-| 4 | The authoritative **manifest schema** + file layout + validation | 🔴 | Shape sketched ([`spec.md`](spec.md) §4) — `products[] → stories[] → use_cases[]{id,goal,actor,seed,flow,expectations,playthrough}`. The exact schema, on-disk layout, and a validator are TBD. |
+| 4 | The manifest — how expressive + how laid out | ✅ | **Prose-intent**: `flow`/`expectations` as plain-language *what*, not executable *how* (code implements). **One file per product**; a **light validator** (unique ids, every use case → a Playthrough id or `TODO`). [`spec.md`](spec.md) §5.3. |
 | 5 | **Stack binding** — which seeded world the suite runs against | 🔴 | Reuse the seeded **stories & heroes** world (§2 symmetry) — open whether a **dedicated** Playthrough seed/preset or the existing demo stories world; and how a manifest `seed:` resolves to a real stack. [`spec.md`](spec.md) §5.4. |
 | 6 | **Harness relationship** — extend M42 vs. a new section | 🔴 | Lean: **extend `stack-verify/e2e`** (it owns the Playwright foundation); promote to a dedicated `playthroughs` rext section only if it grows to warrant it. [`spec.md`](spec.md) §5.6. |
 | 7 | First **coverage targets** (which products/stories first) | ⏭️ | **After** this spec — the build backlog, not part of defining the capability. The user's directive was define capability/principles/tech now, **not** list/build tests. → [`next-release.md`](next-release.md). |
@@ -61,6 +61,17 @@ unique visible label, a parent role to scope within) for the ambiguous cases —
 one place if the platform shifts. Crucially these are anchors we **find**, never hooks we **add** — no platform
 edit, no platform dependency. Strictly-pure (no fallback) was set aside as impractical for messy surfaces;
 adding test-ids to the platform is ruled out by zero-platform-edit.
+
+### Point 4 — the manifest (decided 2026-06-28)
+
+The manifest is **human-readable intent**, not code-in-YAML. A use case's `flow` and `expectations` are
+plain-language steps and outcome statements — *what* the user does and what must be true — and the **Playthrough
+code** does the actual clicking/reading. This keeps the manifest the readable build+regression contract and
+honors P2 (the manifest never describes selectors or mechanics). **Layout: one file per product** (use cases
+nested under stories), with a **light structural validator** (unique ids; every use case maps to a Playthrough
+id or an explicit `TODO` marking a build-reference gap). The exact field set refines during the first build.
+Set aside: a structured/executable-steps manifest (couples to UI mechanics, fights P2/P3) and a single
+monolithic file (unwieldy at scale).
 
 ### Point 7 — first coverage targets (deferred 2026-06-28)
 
