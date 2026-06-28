@@ -78,9 +78,10 @@ Product             (1) a platform product / capability area  (Hiring, Workforce
 the **build reference** (the functional surface that must exist) and the **regression reference** (the surface
 that must keep passing). Coverage is simply: *use cases with a passing Playthrough ÷ declared use cases.*
 
-**Symmetry with seeding.** Seeding writes the world; Playthroughs play it. Wherever possible the **same seeded
-stories & heroes** are the substrate the Playthroughs act on — the seeded world is the level, the heroes are the
-players, the use cases are the objectives they complete.
+**Symmetry with seeding.** Playthroughs reuse seeding's **machinery and stories model** — the seeded world is the
+level, the heroes are the players, the use cases are the objectives they complete. But the Playthrough world is a
+**dedicated, decoupled seed** (§5.4): the demo seed can be the *starting point*, yet test data and demo data are
+kept **separate** — they serve different purposes and change at different rates.
 
 ---
 
@@ -221,10 +222,12 @@ A **YAML manifest** (sibling-in-spirit to `stack.seed.yaml`), declared as **huma
 
 ### 5.4 The actor & environment
 
-Playthroughs run against a **seeded stack** (`demo-N` / `dev-N`) at a **known state**, and **log in via
-Clerkenstein** as the seeded hero the use case names — reusing the **stories & heroes** seeding produces (the
-seeding ↔ Playthrough symmetry of §2). Deterministic seed → deterministic Playthrough (P6). The binding between
-a manifest seed and the actual seeded world is an open item (spec-progress #5).
+Playthroughs run against a stack — **dev-N or demo-N, the same suite for both** — seeded to a **known state**,
+logging in via **Clerkenstein** as the hero the use case names. The seed is a **dedicated Playthrough world,
+decoupled from the demo seed**: built on the same seeding machinery and stories model (and it may be *forked*
+from the demo seed as a starting point), but maintained on its own. Why decoupled: the demo evolves for showcase
+reasons faster than tests can chase, and test data needs stable, purpose-built preconditions — different data for
+different purposes. Deterministic seed → deterministic Playthrough (P6). (Decided — spec-progress #5.)
 
 ### 5.5 Mapping, traceability & reporting
 
@@ -270,9 +273,8 @@ deliberately **not** this capability (parked in [`next-release.md`](next-release
 ## 8. Open / to-confirm
 
 Tracked, worked one at a time, in [`spec-progress.md`](spec-progress.md). Decided so far: the **name**
-(*Playthroughs*), the **locator policy** (§5.2), and the **manifest** (prose-intent, per-product, §5.3). Still
-open:
+(*Playthroughs*), the **locator policy** (§5.2), the **manifest** (prose-intent, per-product, §5.3), and the
+**seed/world** (dedicated + decoupled from demo, runs on dev *and* demo, §5.4). Still open:
 
-1. **Stack binding** — a dedicated Playthrough seeded world vs. the existing demo stories world — §5.4.
-2. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
-3. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).
+1. **Harness relationship** — extend the M42 `stack-verify/e2e` harness vs. a separate `playthroughs` section — §5.6.
+2. **First coverage targets** — which products/stories to declare first (the build backlog — *after* this spec).

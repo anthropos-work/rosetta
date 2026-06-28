@@ -19,7 +19,7 @@
 | 2 | Pretend-to-be-human boundary — backdoors? | ✅ | The **action under test** uses no API/DB backdoor (P1). Backdoors allowed for **setup/teardown only** (seed/reset). [`spec.md`](spec.md) §3 P1. |
 | 3 | **How a test locates elements** (given zero-platform-edit) | ✅ | **Pure-semantic by default** (role / accessible-name / label / a11y-tree) **+ a thin Rosetta-side landmark registry** for ambiguous surfaces (anchors we *find*, not hooks we *add*). No platform edits. [`spec.md`](spec.md) §5.2. |
 | 4 | The manifest — how expressive + how laid out | ✅ | **Prose-intent**: `flow`/`expectations` as plain-language *what*, not executable *how* (code implements). **One file per product**; a **light validator** (unique ids, every use case → a Playthrough id or `TODO`). [`spec.md`](spec.md) §5.3. |
-| 5 | **Stack binding** — which seeded world the suite runs against | 🔴 | Reuse the seeded **stories & heroes** world (§2 symmetry) — open whether a **dedicated** Playthrough seed/preset or the existing demo stories world; and how a manifest `seed:` resolves to a real stack. [`spec.md`](spec.md) §5.4. |
+| 5 | **The seed/world** the suite runs against | ✅ | A **dedicated Playthrough seed, decoupled from the demo seed** (may fork it as a starting point); runs on **both dev-N and demo-N**. Rationale: demo data changes faster than tests can chase + they serve different purposes. [`spec.md`](spec.md) §5.4. |
 | 6 | **Harness relationship** — extend M42 vs. a new section | 🔴 | Lean: **extend `stack-verify/e2e`** (it owns the Playwright foundation); promote to a dedicated `playthroughs` rext section only if it grows to warrant it. [`spec.md`](spec.md) §5.6. |
 | 7 | First **coverage targets** (which products/stories first) | ⏭️ | **After** this spec — the build backlog, not part of defining the capability. The user's directive was define capability/principles/tech now, **not** list/build tests. → [`next-release.md`](next-release.md). |
 | 8 | Relationship to the M42 coverage sweep | ✅ | **Complementary, not redundant.** Coverage = *presence* (pages show real content); Playthroughs = *function* (the hero can complete the use case). [`spec.md`](spec.md) §6. |
@@ -72,6 +72,16 @@ nested under stories), with a **light structural validator** (unique ids; every 
 id or an explicit `TODO` marking a build-reference gap). The exact field set refines during the first build.
 Set aside: a structured/executable-steps manifest (couples to UI mechanics, fights P2/P3) and a single
 monolithic file (unwieldy at scale).
+
+### Point 5 — the seed/world the suite runs against (decided 2026-06-28)
+
+A **dedicated Playthrough seed, decoupled from the demo seed.** Playthroughs are for **both dev and demo** — the
+same suite runs on a dev-N or a demo-N stack. They reuse seeding's machinery and the stories model, and the demo
+seed can be the **starting point** (fork it), but test data is then maintained **separately** from demo data.
+Why: the demo evolves for showcase reasons faster than the tests can follow, and Playthroughs need stable,
+purpose-built preconditions — coupling the suite to a moving demo target would make it brittle. Different data
+for different purposes. (Reusing the demo world as-is, and a shared-base + per-use-case-fixtures hybrid, were set
+aside for exactly this reason — the decoupling is the point.)
 
 ### Point 7 — first coverage targets (deferred 2026-06-28)
 
