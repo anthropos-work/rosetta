@@ -15,7 +15,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ∥ M202 → { M203 ∥ M204 } → ship | 🚧 **IN DEVELOPMENT** (branch `release/02.00-opening-night`) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — a **v1.10 backfill** is interposed (re-sync + re-ground prod), then v2.0 resumes |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -82,6 +82,11 @@ their own exit gates and reconcile the registry additively at merge.
 
 **M201 — Manifest corpus** · `iterative` · **USER-GUIDED** · complexity **large** · depends on: **none** (the
 manifest is prose — authorable before/parallel to the M202 foundation).
+**Status:** ✅ **`done` — closed-on-gate 2026-06-29.** 9 products · 26 stories · 28 use-cases authored,
+**adversarially re-grounded** (11-agent wf `wvpnpvozh` → 15/27 runnable), **user-signed-off**. Records:
+[`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/)
+(deliverable: `manifest-draft.yaml`). The close discovered the **stale-clone drift** (next-web 115+ commits behind
+prod) → **v2.0 PAUSED for a v1.10 backfill** (re-sync + re-ground + re-validate, user-driven) before resuming.
 **Goal:** top-down, **user-directed** curation of the **full goal-aligned Product → Story → Use Case manifest
 corpus** — the build + regression contract every coverage milestone (M203/M204) implements against. The flow per
 pass: **outline** (products → stories → use cases) → **validate** (against the real platform surface + the spec's

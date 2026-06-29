@@ -1,9 +1,9 @@
 ---
-active_release: "v2.0 opening night"
-active_branch: "release/02.00-opening-night"
-active_milestone: "M201"
-phase: "v2.0 in development"
-last_updated: "2026-06-28"
+active_release: "v2.0 opening night (PAUSED — v1.10 backfill interposed)"
+active_branch: "main"
+active_milestone: "(between — M201 CLOSED; v2.0 paused for the v1.10 backfill)"
+phase: "v2.0 PAUSED — v1.10 backfill next (user-driven)"
+last_updated: "2026-06-29"
 ---
 
 # State
@@ -22,35 +22,34 @@ M202 ──┼──→ M203 ─┐
             M204 ─┴──→ ship
 ```
 
-**Active milestone:** **M201 — Manifest corpus** (`iterative`, **USER-GUIDED**, complexity large, depends on
-none — the manifest is prose). Goal: top-down, **user-directed** curation of the **full goal-aligned Product →
-Story → Use Case manifest corpus** — the build+regression contract every coverage milestone (M203/M204)
-implements against. Per pass: **outline** (products → stories → use cases) → **validate** (against the real
-platform surface + the spec's manifest model) → **write the prose-intent manifest YAML** (spec §5.3, one file
-per product). **Explicitly NOT bounded by the current minimal demo seed** — it captures what the goal says must
-be proven; where a use case needs preconditions the demo lacks, that **feeds the M202 dedicated-seed expansion**
-(noted, not resolved here). Worked **conversationally** + via `/developer-kit:work-mstone-iters`. Exit gate: the
-corpus is comprehensively outlined, validated, written as prose-intent YAML (one file per product, each use case
-carrying goal + actor + flow + intermediate/final expectations, §5.3 validator passes — ids unique + both-way),
-**and the USER signs off the corpus as the complete-enough v2.0 coverage contract.** Records:
-[`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/).
+**Active milestone:** **(between — M201 CLOSED 2026-06-29; v2.0 paused).** **M201 "Manifest corpus"**
+(`iterative`, user-guided) **closed-on-gate** — the prose-intent Playthroughs manifest corpus (**9 products · 26
+stories · 28 use-cases**) authored, **adversarially re-grounded** (11-agent workflow `wvpnpvozh` → 15/27 runnable),
+and **signed off** by the user as the complete-enough v2.0 coverage contract. Deliverable:
+[`releases/02.00-opening-night/m201-manifest-corpus/manifest-draft.yaml`](releases/02.00-opening-night/m201-manifest-corpus/manifest-draft.yaml).
+The close surfaced the **stale-clone drift** (see Phase) → the v2.0 pause.
 
-**Phase:** **v2.0 in development** — M201 planned, not yet started. (M202 the foundation is its parallel peer —
-prose-only M201 carries no code dependency; M202 builds the validator + dedicated seed to match the corpus.)
+**Phase:** **v2.0 PAUSED for a v1.10 BACKFILL (user-directed).** M201's adversarial verify discovered the
+stack-demo clones are **5 weeks / 115+ commits behind prod** (next-web @ v2.33.2; backends at early-June tags) and
+the corpus likewise lags shipped features (the member-AI-readiness flow exists in prod + has live customers, but
+is invisible to the stale clones — a proven false negative). So **everything downstream — demo, seeders, corpus,
+and M201's own verify verdicts — is graded against stale code.** v2.0 is paused to interpose a dedicated backfill:
+**re-sync the corpus + stack clones to current prod, then re-validate.** The M201 corpus is **preserved as the v2.0
+spec**, resumable after the backfill.
 
-**Next up:** **work M201 WITH THE USER** — `/developer-kit:work-mstone-iters` (the user directs each top-down
-pass; the first pass outlines the readiest product slice, validates it, writes the prose-intent YAML). The
-prose manifest corpus is authorable in **parallel** with the M202 `section` foundation, which then builds the
-§5.3 validator + the dedicated seed to match it; M203 ∥ M204 implement Playthroughs against the M201-declared
-use cases on the M202 foundation. _(The orchestrator pushes `main` + the `v1.10` tag + the ext tags to origin —
-the v1.10 LOCAL close did not push; v2.0 design likewise did not push.)_
+**Next up:** **the user kicks off + runs the v1.10 backfill** (re-sync clones + re-ground corpus → re-validate the
+M201 negative verdicts → fix the real gaps). The user owns the backfill design (`/developer-kit:design-roadmap`).
+v2.0 "opening night" (Playthroughs) resumes after. _(The orchestrator still owes origin the pushes: `main` + the
+`v1.10` tag + the v1.10 ext tags — the v1.10 LOCAL close did not push; this M201 close merges to `main` LOCALLY.)_
 
 **Last shipped:** **v1.10 — 2026-06-27** (`method acting`, 9 milestones M39→M46, tag `v1.10`,
 `release/01.10-method-acting` merged `--no-ff` → `main`). The **last release of the v1.x major**; its history +
 the full shipped log now live in [`roadmap-legacy.md`](roadmap-legacy.md). Records:
 [`releases/archive/01.10-method-acting/`](releases/archive/01.10-method-acting/).
 
-**Paused:** _(none)_
+**Paused:** **v2.0 "opening night" (Playthroughs)** — paused 2026-06-29 after M201 closed, to interpose the
+**v1.10 backfill** (re-sync + re-ground + re-validate). M201 corpus preserved as the v2.0 spec; M202 ∥ M203 ∥ M204
+not started. Resume after the backfill.
 
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes),
 DEF-M21-01 (`replayCmd` hermetic test), M25-D9 (dev taxonomy `rc=4`). Pre-existing, tracked in
@@ -101,7 +100,11 @@ rext code @ tags `method-acting-m39..m46-servegrant-closure`.
 **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-06-28 (**v2.0 "opening night" — M201 Manifest corpus INSERTED as the new first milestone**;
+_Last updated: 2026-06-29 (**M201 "Manifest corpus" CLOSED-on-gate** — 9 products · 26 stories · 28 use-cases,
+adversarially re-grounded [wf `wvpnpvozh`], user-signed-off; closed on `release/02.00-opening-night` + merged →
+`main` per the user, no `v2.0` tag. **v2.0 PAUSED** for a user-driven **v1.10 backfill** [re-sync + re-ground +
+re-validate] triggered by the **stale-clone discovery** [next-web 115+ commits behind prod]. M201 corpus preserved
+as the v2.0 spec. Prior: 2026-06-28 (**v2.0 "opening night" — M201 Manifest corpus INSERTED as the new first milestone**;
 the prior 3 milestones renumbered M201→M202 [foundation], M202→M203 [employee], M203→M204 [manager]. 4 milestones
 M201 ∥ M202 → { M203 ∥ M204 } [`Mxyy` numbering]: M201 `iterative`+user-guided manifest corpus is the prose
 build+regression contract, authorable in parallel with the M202 `section` foundation. Active milestone now M201;

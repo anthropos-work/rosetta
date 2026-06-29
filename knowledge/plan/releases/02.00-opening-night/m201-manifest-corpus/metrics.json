@@ -1,0 +1,42 @@
+{
+  "milestone": "M201",
+  "slug": "manifest-corpus",
+  "version": "v2.0 opening night",
+  "shape": "iterative",
+  "status": "done",
+  "close_mode": "closed-on-gate",
+  "closed": "2026-06-29",
+  "gate_met": true,
+  "corpus": {
+    "active_products": 9,
+    "stories": 26,
+    "use_cases": 28,
+    "deferred_products": ["ai-labs"],
+    "deferred_capabilities": ["voice-simulations"]
+  },
+  "adversarial_verify": {
+    "workflow": "wvpnpvozh",
+    "agents": 11,
+    "subagent_tokens": 1317576,
+    "use_cases_verified": 27,
+    "runnable": 15,
+    "partial": 11,
+    "not_runnable": 1,
+    "open_flags_resolved": 4,
+    "ai_labs_class_traps_caught": 2,
+    "stale_clone_discovered": true
+  },
+  "staleness_finding": {
+    "next_web_clone": "v2.33.2 (2026-05-27)",
+    "commits_behind_origin_main": 115,
+    "consequence": "negative verify verdicts conflate real gaps with stale-clone artifacts; must re-ground post-sync"
+  },
+  "pivot": {
+    "v2_0_paused": true,
+    "reason": "v1.10 backfill (re-sync corpus + clones + re-validate) interposed before resuming v2.0",
+    "m201_preserved_as_v2_spec": true
+  },
+  "passes": 11,
+  "iter_dirs": 0,
+  "worked": "conversationally (user-guided)"
+}

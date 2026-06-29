@@ -1,0 +1,470 @@
+# Playthroughs — Manifest Corpus (DRAFT)
+# v2.0 "opening night" / M201. Prose-intent (spec §5.3): a use case declares WHAT (goal + flow +
+# expectations); the Playthrough code implements HOW. One use case ↔ one Playthrough.
+#
+# STATUS (2026-06-29): FIRST PASS + ADVERSARIAL VERIFY COMPLETE (11-agent re-grounding vs the stack-demo clones;
+#   full report: workflow wvpnpvozh). Result: 15/27 runnable · 11 partial · 1 not-runnable. The 4 open flags are
+#   RESOLVED (see below). Fidelity fixes applied inline; M202 seed/wiring corrections appended at the bottom.
+# ⚠ STALENESS CAVEAT (2026-06-29): the adversarial verify grounded against STALE clones — next-web-app @ v2.33.2
+#   (2026-05-27), 115+ commits behind origin/main; backend clones pinned at early-June tags. So its
+#   negative ("not-runnable / partial / missing") verdicts CONFLATE real gaps with stale-clone artifacts. PROVEN:
+#   the member AI-readiness "not-runnable" is a FALSE NEGATIVE (the feature is in prod, customers use it). EVERY
+#   negative verdict must be RE-GROUNDED against fresh clones before it is trusted.
+# ⚠ RELEASE PIVOT (2026-06-29, user-directed): v2.0 "opening night" (Playthroughs) is PAUSED to open a dedicated
+#   BACKFILL of issues left behind during v1.10 — starting with re-syncing the corpus + the stack clones to current
+#   prod. This M201 manifest is PRESERVED as the v2.0 spec, resumable after the backfill.
+# SCOPE NOTES:
+#   - Login / signup AND checkout/payment are OUT — only the ONBOARDING of a user matters.
+#   - AI Simulations are NON-VOICE this release; voice (LiveKit) → next release / M206 mirror tier.
+#   - Provisional stories (Workforce Intelligence, Org Admin & Settings) CONFIRMED + reconciled to real /enterprise/* routes.
+# OPEN FLAGS — ALL RESOLVED by adversarial verify (2026-06-29):
+#   1. profile-skills.import — RESOLVED POSITIVE: /reimport-profile exists + wired → KEEP.
+#   2. profile-skills.growth — RESOLVED NEGATIVE: target-role setter not wired → growth is VIEW-ONLY (gap vs current role).
+#   3. workforce-intelligence — RESOLVED: activity-dashboard covered by assignment.UC2; organization-feedback → ADDED as a WI story.
+#   4. org-admin-settings.feature-config — RESOLVED POSITIVE: /enterprise/settings is a real multi-toggle config → KEEP.
+# ⚠ 2 PENDING USER DECISIONS (NOT-RUNNABLE traps — see the inline ⚠ markers):
+#   A. skill-paths.academy.UC1 — academy not runnable in the demo (anonymous launch + no assessment module + unseeded catalog).
+#   B. onboarding.enterprise-workforce-ai-readiness.UC1 — no member-facing AI-readiness flow exists (manager-only).
+
+products:
+  - id: onboarding
+    name: "Onboarding"
+    note: >
+      User onboarding only. Login/signup AND payment/checkout are OUT (setup/preconditions, never the
+      action-under-test). Shared step model: Import → Role → Skills → Done.
+    stories:
+      - id: onboarding.individual
+        name: "Individual onboarding"
+        use_cases:
+          - id: onboarding.individual.UC1
+            goal: "A solo (no-org) user completes first-run setup and reaches their usable home."
+            actor: "day-0 individual (no org membership)"   # SEED GAP: fresh pre-onboarding actor
+            flow: ["land on onboarding with no org context", "pick a job role", "finish setup"]
+            expectations:
+              intermediate: ["a role-selection step is presented and a role is accepted"]
+              final: "onboarding is marked complete; the user lands in the app and is not routed back to onboarding"
+      - id: onboarding.enterprise-workforce-standard
+        name: "Enterprise workforce onboarding — standard"
+        use_cases:
+          - id: onboarding.enterprise-workforce-standard.UC1
+            goal: "A new org member builds a career profile by importing a CV/LinkedIn (self-import)."
+            actor: "day-0 org member (membership exists, onboarding pre-Done)"   # SEED GAP
+            flow: ["land on onboarding in an org context", "choose an import source (LinkedIn URL or résumé fixture)", "wait for the async import to complete", "confirm role + refine auto-detected skills", "finish"]
+            expectations:
+              intermediate: ["LinkedIn-or-résumé import is offered", "the import completes and a profile is populated (presence, not exact extracted values)", "skill clusters are presented to keep/discard"]
+              final: "onboarding completes; the user lands on their org profile showing imported career data + a curated skill set"
+          - id: onboarding.enterprise-workforce-standard.UC2
+            goal: "A member whose org pre-filled their profile (manager-prepared) confirms rather than imports."
+            actor: "day-0 org member where the org pre-seeded the profile"   # SEED GAP
+            flow: ["land on onboarding and see an org-prepared profile summary (not the import form)", "confirm/adjust the pre-filled role", "refine suggested skills", "finish"]
+            expectations:
+              intermediate: ["an org-prepared profile summary is shown instead of an empty import form", "the pre-filled role is confirmed"]
+              final: "onboarding completes from the prepared state with the org-prepared data retained"
+      - id: onboarding.enterprise-workforce-ai-readiness
+        name: "Enterprise workforce onboarding — AI readiness"
+        # ⚠ VERIFY VERDICT WAS A STALE-CLONE FALSE NEGATIVE (user, 2026-06-29): the member-facing AI-readiness flow
+        #   EXISTS IN PRODUCTION and customers use it NOW. The adversarial verify saw only the manager surface because
+        #   it grounded against the stack-demo next-web clone @ v2.33.2 (2026-05-27) — 115+ commits BEHIND origin/main.
+        #   The corpus and/or the clones were not updated. KEEP this UC; RE-GROUND it after the clones are re-synced
+        #   (the v1.10 backfill). Do NOT defer/rescope on the strength of the stale verdict.
+        note: "The MEMBER-facing AI-readiness guided onboarding/home (exists in prod; our clone is stale — re-verify post-sync)."
+        use_cases:
+          - id: onboarding.enterprise-workforce-ai-readiness.UC1
+            goal: "A member in an AI-readiness-enabled org completes their AI-readiness via the special guided onboarding/home."
+            actor: "day-0 member in an AI-readiness-enabled org"   # SEED GAP + re-ground the member flow
+            flow: ["land on the AI-readiness guided onboarding/home", "follow the guided steps for the AI-readiness flow", "complete the flow"]
+            expectations:
+              intermediate: ["the guided AI-readiness steps are presented and progressed"]
+              final: "the member's AI-readiness flow is completed and the guided home reflects completion"
+      - id: onboarding.enterprise-hiring
+        name: "Enterprise hiring onboarding"
+        use_cases:
+          - id: onboarding.enterprise-hiring.UC1
+            goal: "A hiring-org member onboards, lands in the hiring app, and finds an assigned hiring simulation ready to start."
+            actor: "day-0 member in a hiring-flagged org"   # SEED GAP: hiring org + actor
+            flow: ["onboard via the shared flow into a hiring-flagged org", "land in the hiring app", "see the assigned hiring simulation"]
+            expectations:
+              intermediate: ["the member is routed into the hiring app (not the workforce app)"]
+              final: "the member lands in the hiring app with a hiring simulation assigned and ready to start"
+
+  - id: skill-paths
+    name: "Skill Paths"
+    note: >
+      Two coexisting engines (grounded in spec-drafts/path-migration/spec.md): LEGACY (next-web + cms + Directus +
+      app; path→chapter→step; click-to-complete; a skill verifies by passing an assessment sim) and ACADEMY
+      (ant-academy + app; path→chapter→module→lecture; real progress tracking; chapter closes when modules done +
+      assessment passed; Certificate of Mastery on completion).
+    stories:
+      - id: skill-paths.legacy
+        name: "Legacy skill path"
+        note: "Existing engine: learn → progress → complete → a skill verifies."
+        use_cases:
+          - id: skill-paths.legacy.UC1
+            goal: "A learner completes a legacy skill path end-to-end; progress tracks across its chapters/steps and a skill is verified on completion."
+            actor: "onboarded member with an available legacy skill path that contains an assessment simulation"   # SEED: a legacy path WITH an assessment sim
+            flow: ["open the legacy skill path (next-web library)", "progress through chapters → steps, completing each step", "complete the assessment step (non-voice simulation)", "reach path completion"]
+            expectations:
+              intermediate: ["step/chapter progress advances and the path progress % climbs", "progress persists across leaving and returning"]
+              final: "the path is marked complete and the path's skill shows as verified on the learner's profile / Skill Spotlight"
+      - id: skill-paths.academy
+        name: "Academy skill path"
+        # ⚠ PENDING USER DECISION (adversarial verify → NOT-RUNNABLE this release): the demo launches ant-academy
+        #   ANONYMOUS (BENCHMARK_VISUAL_BYPASS, no hero login → account-scoped progress/cert writes fail closed);
+        #   the academy engine has NO assessment-sim/AI-lab module (R2 parity unbuilt — only ucourse sections),
+        #   chapter-closure is module-count-only (no assessment gate), and the academy catalog is UNSEEDED
+        #   (DB-authoritative → empty). A human cannot drive open→progress→pass→Certificate. → DEFER (like AI Labs)
+        #   unless the user wants a rescoped browse-only UC. Awaiting the user's call.
+        note: "New academy engine: learn → progress → complete → Certificate of Mastery. (Backend app/internal/academy is real; the DEMO wiring is not — see PENDING above.)"
+        use_cases:
+          - id: skill-paths.academy.UC1
+            goal: "A learner completes an academy skill path and is awarded a Certificate of Mastery."
+            actor: "onboarded learner with academy access (seat/subscription) and an available academy path"   # SEED + WIRING: ant-academy up + hero login into the academy
+            flow: ["open the academy path (catalog → start)", "progress through its modules → lectures (real progress tracked)", "pass the chapter's assessment sim / AI lab", "complete the final module → reach path completion"]
+            expectations:
+              intermediate: ["lecture/module progress advances and persists", "a chapter closes only when its modules are completed AND its assessment is passed"]
+              final: "the path completes and a Certificate of Mastery is issued / visible"
+
+  - id: ai-simulations
+    name: "AI Simulations"
+    note: >
+      The jobsimulation runtime engine runs a sim (definition = CMS content) and emits a completion/result event.
+      Non-voice only this release; voice (LiveKit) → next release (M206 mirror tier).
+      INTEGRATION-FLOW posture (spec §5.8 + P2): all three drive the live AI engine — assert FUNCTIONAL truth
+      (a response returns, the sim progresses, completion + a result fire), NOT exact AI transcript text.
+    stories:
+      - id: ai-simulations.chat
+        name: "Chat-only simulation"
+        use_cases:
+          - id: ai-simulations.chat.UC1
+            goal: "A user completes a chat-only AI simulation and receives a result."
+            actor: "onboarded member with an available chat simulation"
+            flow: ["open the chat simulation from the library", "exchange messages through the roleplay scenario", "reach the simulation's end", "receive the completion/result"]
+            expectations:
+              intermediate: ["the AI replies in-context to the user's messages (a reply returns — functional, not exact text)", "the conversation advances toward the scenario's end"]
+              final: "the simulation completes and a result/score is emitted (feeds profile/verification)"
+      - id: ai-simulations.code
+        name: "Simulation with code"
+        use_cases:
+          - id: ai-simulations.code.UC1
+            goal: "A user completes a code AI simulation: writes + runs code and gets it graded."
+            actor: "onboarded member with an available code simulation"   # SEED/STACK: code-execution path (Roadrunner → Judge0) available
+            flow: ["open the code simulation", "read the task prompt", "write a solution and run/submit it", "code executes (Judge0 via Roadrunner) and is evaluated", "reach completion"]
+            expectations:
+              intermediate: ["submitted code executes and returns output/result (the code-execution path works)", "the solution is evaluated against the task"]
+              final: "the simulation completes with a graded result"
+      - id: ai-simulations.interview
+        name: "Interview simulation"
+        use_cases:
+          - id: ai-simulations.interview.UC1
+            goal: "A user completes a non-voice (text) interview simulation and receives feedback."
+            actor: "onboarded member with an available interview simulation"
+            flow: ["open the interview simulation (text, non-voice)", "answer the interviewer's questions in sequence", "reach the end of the interview", "receive the completion/feedback"]
+            expectations:
+              intermediate: ["each answer is accepted and the interviewer advances (functional progression, not exact text)", "the interview proceeds through its question set"]
+              final: "the simulation completes and a result/feedback is produced"
+
+  - id: profile-skills
+    name: "Profile & Skills Verification"
+    note: >
+      The POST-onboarding profile surfaces (distinct from Onboarding's first-run setup): /profile, Skill Spotlight
+      (verified-skill chart, ≥2 datapoints), the claimed-vs-verified gap (claimed tail = user_skills is_verified=false),
+      self-rating (user_skill_evidences.user_level), my-growth (trajectory), target-role aspiration.
+    stories:
+      - id: profile-skills.import
+        name: "Profile/CV mapping — import & enrich"
+        note: "Import a CV / LinkedIn profile to enrich the user's skill/profile data — post-onboarding."
+        use_cases:
+          - id: profile-skills.import.UC1
+            goal: "An already-onboarded user enriches their profile by importing a CV / LinkedIn."
+            actor: "onboarded member"
+            flow: ["open the profile and start an import/enrich", "choose a source (LinkedIn URL or résumé fixture)", "wait for the import to complete", "accept the enriched data"]
+            expectations:
+              intermediate: ["the import runs and returns career/skill data (presence, not exact extracted values)"]
+              final: "the profile reflects newly-imported experience and/or skills"
+            # RESOLVED (adversarial verify, flag #1 POSITIVE): a real post-onboarding re-import surface exists + wired —
+            #   /reimport-profile (OnboardingUser with the `reimport` prop). KEEP. (LinkedIn branch needs external
+            #   CoreSignal + an AI key; the résumé-fixture path is the P6-safe one.)
+      - id: profile-skills.self-evaluation
+        name: "Self-evaluation of skills"
+        use_cases:
+          - id: profile-skills.self-evaluation.UC1
+            goal: "A user self-rates their skills and the self-assessment is saved + shown on the profile."
+            actor: "onboarded member"
+            flow: ["open the profile / skills surface", "self-rate one or more skills (set a proficiency level)", "save"]
+            expectations:
+              intermediate: ["a self-rating control accepts a level for a skill"]
+              final: "the self-assessment persists and shows on the profile (user_skill_evidences.user_level set)"
+      - id: profile-skills.verified
+        name: "Verified skills (claimed-vs-verified)"
+        note: "Verification is EARNED by passing an assessment — composes with ai-simulations / skill-paths (P7). The assertion here is on the PROFILE side."
+        use_cases:
+          - id: profile-skills.verified.UC1
+            goal: "A user earns a verified skill (passes an assessment) and the profile's Skill Spotlight + claimed-vs-verified gap update to reflect it."
+            actor: "onboarded member with a claimed-but-unverified skill and an assessment that verifies it"
+            flow: ["note a skill that is claimed-but-unverified on the profile", "complete the assessment that verifies that skill (an assessment sim — composes ai-simulations.*)", "return to the profile"]
+            expectations:
+              intermediate: ["the assessment completes with a passing result"]
+              final: "the skill now shows as verified on the Skill Spotlight and the claimed-vs-verified gap shrinks accordingly"
+      - id: profile-skills.growth
+        name: "Growth — trajectory & gap-to-role (view)"
+        note: >
+          Verified-skill trajectory chart + gap-to-CURRENT-role. It lives in the /profile/skills tab (NO /my-growth
+          route). VIEW-ONLY (flag #2 → RESOLVED NEGATIVE by adversarial verify): setting an aspirational target role
+          is NOT wired — createUserTargetRole has zero FE callers (a looks-like-a-feature trap); the rendered gap is
+          vs the user's CURRENT/assigned role. (/profile/aspirations is a separate goals questionnaire, not this.)
+        use_cases:
+          - id: profile-skills.growth.UC1
+            goal: "A user views their growth — a verified-skill trajectory over time — and the gap-to-target for their current role."
+            actor: "onboarded member with a verified-skill history (≥2 passed sessions/skill) and a current role"
+            flow: ["open /profile (the skills tab)", "view the verified-skill trajectory chart (≥2 datapoints)", "view the gap-to-target for the current role"]
+            expectations:
+              final: "the growth surface renders a real multi-point trajectory and a coherent gap-to-role (not an empty/placeholder chart)"
+
+  - id: workforce-intelligence
+    name: "Workforce Intelligence"
+    note: >
+      The MANAGER/org (enterprise vantage) dashboards. Real routes (M42m-reconciled): /enterprise/workforce — ONE
+      tabbed SPA (mapped→verified funnel + org-scale claimed-vs-verified gap + Growth / Skills & Verification /
+      Talent Pool / Activity Log tabs), /enterprise/members, /enterprise/activity-dashboard,
+      /enterprise/organization-feedback. These are monitoring (read) flows: be-the-manager = navigate the surface;
+      the assertion = real org-scale aggregates render (the M42m SEMANTIC gate), NOT placeholders.
+      (Assignments-monitoring → its own product; org settings → Org Admin & Settings.)
+    # RESOLVED (adversarial verify, flag #3): /enterprise/activity-dashboard is already covered by
+    #   assignment-monitoring.UC2; /enterprise/organization-feedback is a real, non-flag-gated top-level admin
+    #   dashboard (wired backend) → ADDED as workforce-intelligence.organization-feedback below.
+    stories:
+      - id: workforce-intelligence.skills-funnel
+        name: "Skills verification funnel + org-scale gap"
+        use_cases:
+          - id: workforce-intelligence.skills-funnel.UC1
+            goal: "A manager reads the org's mapped→verified skills funnel and the org-scale claimed-vs-verified gap."
+            actor: "org manager (enterprise vantage)"
+            flow: ["open /enterprise/workforce (the Workforce-Intelligence dashboard)", "read the mapped→verified funnel", "read the org-scale claimed-vs-verified gap"]
+            expectations:
+              final: "the funnel shows real per-stage counts and the org-scale gap renders real aggregates (not empty/placeholder)"
+      - id: workforce-intelligence.roster
+        name: "Member roster"
+        use_cases:
+          - id: workforce-intelligence.roster.UC1
+            goal: "A manager views the full member roster at org scale."
+            actor: "org manager (enterprise vantage)"
+            flow: ["open /enterprise/members", "view the member grid (each member's role + skills)"]
+            expectations:
+              final: "the roster renders the org's real members with roles/skills (populated at org scale, no spinner-wall / empty grid)"
+      - id: workforce-intelligence.talent-pool
+        name: "Talent Pool — succession / at-risk / mobility"
+        use_cases:
+          - id: workforce-intelligence.talent-pool.UC1
+            goal: "A manager reviews the talent pool — succession candidates, at-risk members, and role mobility."
+            actor: "org manager (enterprise vantage)"
+            flow: ["open /enterprise/workforce/(new)/succession (NB: succession/at-risk/mobility live in the (new)/succession ROUTE — NOT the SPA 'Talent Pool' tab, which is a skills/roles/certs inventory)", "review succession candidates / at-risk / role-mobility"]
+            expectations:
+              final: "the succession view renders real succession / at-risk / mobility data for the org"
+      - id: workforce-intelligence.ai-readiness-monitoring
+        name: "AI-readiness monitoring (manager, org-scale)"
+        note: "The MANAGER side of AI-readiness — pairs with onboarding.enterprise-workforce-ai-readiness.UC1 (the MEMBER who completes it). P7 compose."
+        use_cases:
+          - id: workforce-intelligence.ai-readiness-monitoring.UC1
+            goal: "A manager monitors the org's AI-readiness at scale — the org/team AI-readiness SCORE spread (AI-Aware / Functional / Ready)."
+            actor: "org manager in an AI-readiness-enabled org"   # SEED: members with VARIED AI-SKILL COVERAGE (NOT 'completion' — Tier2/Tier3 stages are unwired placeholders; readiness is a continuous skill-match score)
+            flow: ["open /enterprise/workforce/(new)/ai-readiness (admin-gated)", "read the org AI-readiness score + per-team breakdown"]
+            expectations:
+              final: "the view renders a real org/team AI-readiness score spread (OrgSummaryCard + TeamBreakdownCard), not empty"
+      - id: workforce-intelligence.organization-feedback
+        name: "Organization feedback (manager dashboard)"
+        note: >
+          ADDED by adversarial verify (flag #3): a real, non-flag-gated top-level enterprise-admin dashboard
+          (/enterprise/organization-feedback) — org-scale post-simulation feedback sentiment recap + per-member /
+          per-sim table + filters + XLSX export. A separate data axis from the WI funnel + assignment activity (it
+          aggregates createJobSimulationFeedback). Wired backend (resolver_organization_feedback.go + jobsimfeedback.go).
+        use_cases:
+          - id: workforce-intelligence.organization-feedback.UC1
+            goal: "A manager reads the org's collected post-simulation feedback — the sentiment recap + the per-member feedback table."
+            actor: "org manager / admin (enterprise vantage)"   # SEED: collected post-sim feedback with a believable sentiment distribution (~2:1)
+            flow: ["open /enterprise/organization-feedback (top-level admin nav)", "read the sentiment recap (positive/negative distribution)", "filter the per-member / per-simulation feedback table"]
+            expectations:
+              final: "the recap + feedback table render real org-scale feedback aggregates (not empty/placeholder)"
+
+  - id: org-admin-settings
+    name: "Org Admin & Settings"
+    note: >
+      Admin WRITE flows (mutate org config → P6 reset-to-seed matters). Real routes: /enterprise/roles (+ role
+      detail people/skills tabs), /enterprise/members (the WRITE/manage side; WI.roster is the read view),
+      /enterprise/tags, /enterprise/settings. (Personal /settings/account + /settings/subscription are USER
+      settings, not org-admin; subscription = billing, OUT this release.)
+    stories:
+      - id: org-admin-settings.roles
+        name: "Roles"
+        use_cases:
+          - id: org-admin-settings.roles.UC1
+            goal: "An org admin creates / edits an org role and configures its skills."
+            actor: "org admin"
+            flow: ["open /enterprise/roles", "create a new role (or open an existing one)", "configure the role's skills (the role → skills tab)", "save"]
+            expectations:
+              intermediate: ["the role editor accepts a name + skills"]
+              final: "the role persists and appears in the org roles list with its configured skills"
+      - id: org-admin-settings.members
+        name: "Members"
+        note: "The WRITE/manage side (assign role/team) — distinct from workforce-intelligence.roster (read)."
+        use_cases:
+          - id: org-admin-settings.members.UC1
+            goal: "An org admin manages a member — assigns a role and/or a team/tag."
+            actor: "org admin"
+            flow: ["open /enterprise/members", "open a member", "assign a role and/or a team/tag", "save"]
+            expectations:
+              intermediate: ["the member-management controls accept a role/team assignment"]
+              final: "the assignment persists and reflects on the member"
+      - id: org-admin-settings.tags
+        name: "Tags / teams"
+        use_cases:
+          - id: org-admin-settings.tags.UC1
+            goal: "An org admin creates a tag/team and assigns members to it."
+            actor: "org admin"
+            flow: ["open /enterprise/tags", "create a tag/team", "assign one or more members to it", "save"]
+            expectations:
+              intermediate: ["the tag/team editor accepts a name + member assignment"]
+              final: "the tag/team persists with its members and is usable as a slice dimension"
+      - id: org-admin-settings.feature-config
+        name: "Feature config"
+        use_cases:
+          - id: org-admin-settings.feature-config.UC1
+            goal: "An org admin changes an org feature/configuration setting."
+            actor: "org admin"
+            flow: ["open /enterprise/settings", "change a feature/config setting", "save"]
+            expectations:
+              intermediate: ["the settings surface accepts a config change"]
+              final: "the setting persists (and, where it has an effect, org behavior reflects it)"
+            # RESOLVED (adversarial verify, flag #4 POSITIVE): /enterprise/settings is a rich multi-toggle config
+            #   (NOT terse/read-only) — always-on org-setting Switches persist via EnableOrganizationSettings. KEEP.
+            #   (P6: pin a non-advanced toggle e.g. SimulationLeaderboard, OR seed flag_show_advanced_settings=true;
+            #   reset spans BOTH the skiller + app backends.)
+
+  - id: assignment-monitoring
+    name: "Assignment & Monitoring"
+    note: >
+      Manager assigns content + then monitors it. Real routes: /enterprise/assignments (+ @tabs ai-simulations /
+      ai-interviews / skill-paths) for assigning; /enterprise/activity-dashboard (+ per-content / per-user
+      drill-downs) for tracking. NB: academy paths are self-serve (NOT assignable) until R4 (path-migration §2) —
+      assign a LEGACY skill path / sim / interview. (AI labs are NOT an assignable resource —
+      AssignmentResourceType = {job_simulation, skill_path} only; corrected by adversarial verify.)
+    stories:
+      - id: assignment-monitoring.assign-and-track
+        name: "Assign content + monitor"
+        note: "Two distinct flows: assign (write) + track (monitor)."
+        use_cases:
+          - id: assignment-monitoring.assign-and-track.UC1
+            goal: "A manager assigns content (a legacy skill path / simulation / interview) to a person or team with a deadline."
+            actor: "org manager / admin"
+            flow: ["open /enterprise/assignments", "create an assignment: pick content (skill path / sim / interview)", "pick the target (a person or a team/tag)", "set a deadline", "confirm"]
+            expectations:
+              intermediate: ["the assignment builder accepts content + target + deadline"]
+              final: "the assignment is created — it appears in the manager's assignments view AND as assigned for the target member(s)"
+          - id: assignment-monitoring.assign-and-track.UC2
+            goal: "A manager monitors assigned content's progress + completion across members."
+            actor: "org manager / admin"   # SEED: assigned content with a believable mix of member progress states
+            flow: ["open /enterprise/activity-dashboard", "view assigned content's progress/completion across members (a mix of not-started / in-progress / completed)", "drill into a member's progress on a piece of content"]
+            expectations:
+              final: "the activity dashboard renders real per-member progress + completion for assigned content (a believable mix of statuses), and the member drill-down shows that member's detail"
+
+  - id: studio
+    name: "Studio (Content Creation)"
+    note: >
+      Studio = studio-desk (cross-port :9000+offset) — driven as the logged-in creator via the Clerkenstein
+      per-app FAPI handshake (P1; the M42m studio-desk login fix), NEVER an auth bypass. The simulation builder
+      has a real mode chooser (src/index.ts:169 'mode chooser: Guided vs Advanced'); BOTH modes must work. Guided
+      is AI-assisted (studio-room generation) → INTEGRATION flow (§5.8 + P2): assert a blueprint was generated +
+      persists, not exact generated content.
+    stories:
+      - id: studio.create-sim-guided
+        name: "Create a simulation — guided mode"
+        use_cases:
+          - id: studio.create-sim-guided.UC1
+            goal: "A creator builds a simulation in GUIDED mode and it is created."
+            actor: "a creator/manager with Studio access"   # WIRING: studio-desk cross-port login (Clerkenstein FAPI handshake)
+            flow: ["open Studio (studio-desk)", "start a new simulation, choose GUIDED mode", "provide the guided brief/inputs", "let the guided flow generate the blueprint (AI-assisted — studio-room)", "save/create the simulation"]
+            expectations:
+              intermediate: ["the guided flow accepts the brief and produces a draft blueprint (a blueprint is generated — functional, not exact content)"]
+              final: "the simulation blueprint is created and persists (openable / usable; composes with ai-simulations.* to run it)"
+      - id: studio.create-sim-advanced
+        name: "Create a simulation — advanced mode"
+        use_cases:
+          - id: studio.create-sim-advanced.UC1
+            goal: "A creator builds a simulation in ADVANCED mode and it is created."
+            actor: "a creator/manager with Studio access"
+            flow: ["open Studio (studio-desk)", "start a new simulation, choose ADVANCED mode", "author the blueprint manually (the advanced editor's required fields)", "save/create the simulation"]
+            expectations:
+              intermediate: ["the advanced editor accepts the manual blueprint definition"]
+              final: "the simulation blueprint is created and persists (openable / usable)"
+
+  - id: talk-to-data
+    name: "Talk to Data"
+    note: >
+      Real + wired: /enterprise/talk-to-data (SSE-streaming Q&A UI) → backend internal/askengine (Bedrock /
+      Anthropic NL→SQL over the org's data, with a SQL-validation sandbox; writes ask_conversations / ask_messages).
+      INTEGRATION flow (§5.8 + P2): assert an answer streams back, NOT exact content. Needs the ask_* tables
+      migrated + AI keys (Bedrock).
+    stories:
+      - id: talk-to-data.query
+        name: "Ask the org's data"
+        note: "AI-powered org-wide Q&A over the org's content/data."
+        use_cases:
+          - id: talk-to-data.query.UC1
+            goal: "A manager asks a natural-language question about the org's data and gets an answer."
+            actor: "org manager (enterprise vantage)"
+            flow: ["open /enterprise/talk-to-data", "type a natural-language question about the org's data", "submit", "wait for the streamed answer"]
+            expectations:
+              intermediate: ["the question is accepted and an SSE response begins streaming"]
+              final: "a coherent answer is returned for the question (functional — an answer streams back, not exact text)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OUT of v2.0 (recorded for traceability):
+#   - hiring-recruiting   — the full hiring product (post role → interview → advance candidates). NOT this
+#                           release. (Hiring ONBOARDING is in, as onboarding.enterprise-hiring.)
+#   - billing-entitlements — free→paid, tier gates. Deferred to a future release.
+#   - academy (internal)   — not distinct; the academy concept lives in skill-paths.academy.
+#   - mobile (Expo)        — paused + Playwright can't drive native.
+# DEFERRED capability (planned products, not testable THIS release):
+#   - voice simulations (LiveKit) → next release / M206 mirror tier.
+#   - AI Labs (run an interactive lab) → next release. NOT wired to a runnable surface yet: backend
+#     lab.v1.LabSessionService persists a lab_sessions row but the labs-api client is nil (no VM boots,
+#     no ide_url/preview_url; real VM client = "PR 6", not landed), AND there is NO frontend launch
+#     surface in next-web. Nothing to be-the-human against. Revisit when labs-api PR 6 + a launch UI land.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# ADVERSARIAL-VERIFY FINDINGS (2026-06-29, workflow wvpnpvozh) — M202 SEED/WIRING CORRECTIONS
+# (fidelity fixes already applied inline above; these are the build-time prereqs the dedicated Playthrough
+#  seed + foundation must satisfy — captured so M202 doesn't rediscover them):
+#   - ai-simulations (ALL): jobsimulation BOOT-FAILS without AI keys (NewAIManager) → /stack-secrets must provision them.
+#       Each UC needs a PUBLISHED sim of the matching flavor in the captured Directus catalog — the seeder writes only
+#       non-FK history rows, NOT launchable defs. The snapshot replay must carry a chat / code / interview sim.
+#   - ai-simulations.code: Judge0 is an EXTERNAL hardcoded host (JUDGE0_BASE_URL=http://<remote-ip>:2358), NO local
+#       container, blank JUDGE0_API_KEY → unverifiable third-party dependency, no local fallback. Verify reachability.
+#   - ai-simulations.interview: NOT a distinct run surface — reuses the SAME chat engine (AISimulationChatContainer);
+#       "interview" is a sim_type. The Interview* RPCs are MANAGER analytics, not a candidate flow. Seed an
+#       interview-TYPED (text, non-voice) sim; the run assertion = the chat-engine completion path.
+#   - profile-skills.verified COMPOSITION (P7): only ASSESSMENT/HIRING-typed sims write verified user_skills
+#       (jobsimulations.go:251 type-gate) — generic chat/code/interview sims do NOT verify. The verified seed MUST pin
+#       an ASSESSMENT-type sim; the chat/code/interview UCs' "feeds verification" only holds for assessment-typed sims.
+#   - profile-skills (ALL): need PersonaSeeder user_skill_evidences.user_level + ≥2 passed sessions/skill (Spotlight
+#       hides <2 datapoints) + a résumé PDF static fixture for import.UC1.
+#   - skill-paths.legacy: the seeder writes session ROWS (non-FK), NOT a live-drivable assessment-sim-bearing path —
+#       the verified-skill OUTCOME needs the snapshot/Directus replay to include a legacy path whose assessment step
+#       points at a RUNNABLE job-simulation.
+#   - org-admin-settings: writes span TWO backends — roles/skills → SKILLER subgraph; members/tags/feature-config → APP
+#       subgraph. P6 reset MUST reset both. Actor MUST be a manager-vantage hero (admin), not an end-user hero.
+#   - studio.create-sim-guided: the /simulation-builder mode chooser is BYPASSED (redirects to advanced in dev+prod);
+#       GUIDED is reachable ONLY via the direct /sim-guided-builder deep-link (P3) — anchor the flow there, not "the
+#       chooser". Backend persist path is identical + real. studio-room needs AZURE_API_KEY + cms ENVIRONMENT=development.
+#   - talk-to-data: front-door gates the inline note MISSED — page needs PostHog flag_enable_talk_to_data=true AND an
+#       org-Admin actor (else an infinite loading spinner; no NEXT_PUBLIC_POSTHOG_KEY in the demo today). Missing Bedrock
+#       creds → the WHOLE app service refuses to boot (not just this feature). M202 must enable the FF + admin actor.
+#   - onboarding.standard.UC1: LinkedIn branch = external CoreSignal + AI key; the résumé-fixture path is P6-safe.
+#   - onboarding.hiring.UC1: requires the demo UI tier to actually serve apps/hiring (separate from apps/web).
+#
+# COVERAGE HOLES surfaced (a LATER user pass — do NOT add silently):
+#   - workforce-intelligence: NO UC for the Growth tab (~12 /workforce/growth/* endpoints, growth.go 48KB — the
+#       largest WI surface), the Trends tab ((new)/trends), or the Activity Log tab. Real, wired, unasserted.
+#   - ai-simulations: a 'document' (deliverable) sim flavor is wired (SendFinalDocument) but omitted (user scoped to 3).
+#   - assignment-monitoring: edit/extend-deadline + unassign (inverse writes) omitted — optional lifecycle completeness.
+#   - DEDUP: workforce-intelligence.roster.UC1 is a strict prefix of org-admin-settings.members.UC1 (SAME route +
+#       component — EnterpriseMembersTable carries both read columns + write controls). Candidate to collapse.
