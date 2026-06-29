@@ -1,0 +1,23 @@
+{
+  "milestone": "M48",
+  "slug": "corpus-reground",
+  "release": "v1.10b \"fit-up\"",
+  "shape": "section",
+  "branch": "m48/corpus-reground",
+  "closed": "2026-06-29",
+  "theme": "Corpus re-ground — bring the rosetta docs current with the (M47-confirmed-current) clones. The load-bearing deliverable: a NEW corpus/services/ai-readiness.md documenting the previously-undocumented member-AI-readiness feature (the M51 seeder contract). Plus drift reconciliation (backend.md / next-web-app.md / architecture_overview.md / service_taxonomy.md now name the subsystem) + the ant-academy stale-claim fix (corrected the false 'in repos.yml / cloned by make init' across CLAUDE.md + ant-academy.md x3; M49 #5 owns the repos.yml fix). Driven by 3 read-only investigation agents (AI-readiness backend / frontend / corpus drift). Docs-only — never touched the live demo (M48 ∥ M49).",
+  "scope_status": "all sections S1-S4 Done (Fate 1). D2 (seed strategy → M51) + D3 (repos.yml fix → M49) are Fate-2. Zero escape-hatch deferrals.",
+  "code_location": "rosetta only (docs corpus): m48/corpus-reground merged --no-ff into release/01.10b-fit-up. No rext / platform code touched.",
+  "code_diff": "NEW corpus/services/ai-readiness.md (the feature doc + the M51 seeding contract). Edited: CLAUDE.md, corpus/services/{ant-academy,backend,next-web-app}.md, corpus/architecture/{architecture_overview,service_taxonomy}.md, + the milestone plan files.",
+  "go_test_funcs": "n/a — docs-only milestone, no code/tests changed. rext total unchanged at 1552 (the M47 baseline).",
+  "coverage": "n/a (no code).",
+  "benchmarks": "n/a.",
+  "flake_count": 0,
+  "flake_gate": "n/a — no test suite touched (pure docs). Doc QA instead: all cross-references verified resolving, code fences balanced, cited code paths (ai_readiness.go:283-343, the 9 ent schemas, the org-setting enum) verified present.",
+  "deliverables": {
+    "new_docs": ["corpus/services/ai-readiness.md"],
+    "edited_docs": ["CLAUDE.md", "corpus/services/ant-academy.md", "corpus/services/backend.md", "corpus/services/next-web-app.md", "corpus/architecture/architecture_overview.md", "corpus/architecture/service_taxonomy.md"],
+    "stale_claims_fixed": ["ant-academy 'in repos.yml / cloned by make init' (false) — CLAUDE.md + ant-academy.md x3"]
+  },
+  "notes": "Adversarial review (Phase 2c) caught + fixed a real doc-accuracy bug pre-merge: the active-cycle manager dashboard RECOMPUTES from signals (computeOrgBreakdowns), so the draft's 'snapshot-direct' seed strategy would leave it empty — rewrote the seeding contract as cycle-state-dependent (active⇒signals-true / closed⇒frozen-snapshot-direct). This sharpens the M51 contract. Authoritative in-repo KB (app/knowledge/ai-readiness/) cross-linked."
+}

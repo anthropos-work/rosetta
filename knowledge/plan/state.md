@@ -1,9 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M48 — Corpus re-ground (next to build)"
-last_closed: "M47 — 2026-06-29 (Re-sync & recapture)"
-phase: "v1.10b building — M47 CLOSED; M48 corpus re-ground next"
+active_milestone: "M49 — Bring-up hardening + truth-up (next to build — first demo-touching milestone)"
+last_closed: "M48 — 2026-06-29 (Corpus re-ground)"
+phase: "v1.10b building — M48 CLOSED; M49 bring-up hardening next (the 7 demo-up fixes)"
 last_updated: "2026-06-29"
 ---
 
@@ -26,24 +26,25 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M48 — Corpus re-ground** (`section`, **next to build**). Bring the rosetta corpus current
-with the (M47-confirmed-current) clones — the GENUINE staleness. Document the shipped-but-undocumented
-**member-AI-readiness flow** (its surfaces + data model — the contract M51's seeder builds against), reconcile
-`corpus/architecture/` + `corpus/services/` drift, and retire stale "RESOLVED"/tag claims. Pure docs-vs-code (never
-touches the live demo) → parallelizable with M49. Records:
-[`releases/01.10b-fit-up/m48-corpus-reground/`](releases/01.10b-fit-up/m48-corpus-reground/). _(M47 closed
-2026-06-29 — see Recently closed.)_
+**Active milestone:** **M49 — Bring-up hardening + truth-up** (`section`, **next to build**). The first
+**demo-touching** milestone — so the M48 ∥ M49 parallel window closes here and the **single-demo serialization**
+(fix-on-live → M53 cold rebuild) begins. The 7 remaining demo-up issues: #3 `.env`-guard order, #4
+`INVITATION_HMAC_SECRET` (critical secret-DNA + auto-gen), #5 **ant-academy → `repos.yml`** (M48 already corrected
+the doc), #6 disk pre-flight + `demo-down` image cleanup, #7 true non-fatal frontend, #8 demopatch re-anchor, #1 the
+`.agentspace/rext.tag` source-of-truth. rext work in `.agentspace/rosetta-extensions` → tag `fit-up-m49` + re-pin.
+Records: [`releases/01.10b-fit-up/m49-bringup-hardening/`](releases/01.10b-fit-up/m49-bringup-hardening/). _(M48
+closed 2026-06-29 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47 CLOSED (foundation); M48 corpus re-ground next.** M47's finding: the clones were
-already current — the real stale surface is the corpus (M48). Design decisions: re-ground first, codename "fit-up",
-the manifest as one inlined file, + a new AI-readiness showcase org (M51). The 4 KB blind-areas are each homed via a
-milestone `Delivers →` line.
+**Phase:** **v1.10b building — M47 + M48 CLOSED; M49 bring-up hardening next.** Foundation (M47 re-sync/recapture)
++ corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) are done. M49 starts the **demo-touching**
+work; from here the single-demo constraint serializes (fix-on-live → M53 cold rebuild). Design decisions: re-ground
+first, codename "fit-up", one inlined manifest (M52), + the AI-readiness showcase org (M51).
 
-**Next up:** **build M48 — corpus re-ground** (`/developer-kit:build-milestone`): document the **AI-readiness
-feature** + reconcile the stale `corpus/architecture` + `corpus/services` docs against the now-current clones — the
-**genuine** staleness. **M48 ∥ M49** (M48 is docs-only, never touches the demo). The 1-demo-stack constraint
-serializes verification:
-fix-on-live across M48→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
+**Next up:** **build M49 — bring-up hardening + truth-up** (`/developer-kit:build-milestone`): the 7 demo-up bug
+fixes (#1,3,4,5,6,7,8) so a from-cold `/demo-up` completes on a `stack-demo`-only box (incl. ant-academy → `repos.yml`,
+which M48 already flagged). **First demo-touching milestone** → the M48 ∥ M49 window closes; single-demo
+serialization (fix-on-live across M49→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof)
+begins. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
 the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this v1.10b branch is cut from that
 local `main`.)_
 
@@ -63,6 +64,10 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 `roadmap-vision.md`.
 
 ## Recently closed (v1.10b milestones)
+- **M48 — Corpus re-ground** — **2026-06-29** (`section`; merged → `release/01.10b-fit-up`). NEW
+  `corpus/services/ai-readiness.md` (the M51 seeder contract — Phase-2c-sharpened: active⇒signals-true,
+  closed⇒frozen-snapshot) + drift reconciled + the false ant-academy "in repos.yml" claim corrected (M49 #5 owns
+  the code fix). Docs-only; 3-agent investigation. Full narrative in `roadmap.md` § M48.
 - **M47 — Re-sync & recapture** — **2026-06-29** (`section`; merged → `release/01.10b-fit-up`; rext `fit-up-m47`).
   The heavy re-sync was a no-op (clones already current); delivered `pg.NormalizeDSN` (the wired MCP DSN now works
   as a capture `--dsn`), recaptured all 3 snapshot surfaces (digests unchanged), confirmed the AI-readiness feature

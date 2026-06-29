@@ -90,9 +90,15 @@ confirmed present** (M201 false-negative resolved); `snapshot-cold-start.md` upd
 KB-47-01). The `up-injected.sh` auto-capture wiring was descoped per the user (no new entry point — D3); re-pin
 deferred (push-gated). **Delivered → `corpus/ops/snapshot-cold-start.md`.**
 
-**M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49**. Sweep `corpus/architecture/` +
-`corpus/services/` against the current clones; **document the member-AI-readiness flow** (the contract M51 builds
-against); retire stale "RESOLVED"/tag claims. **Delivers →** `architecture/*` + `services/*` re-ground.
+**M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49** · ✅ **`done` — closed 2026-06-29** (merged →
+`release/01.10b-fit-up`). Delivered (3-agent investigation of the current clones): **NEW
+[`corpus/services/ai-readiness.md`](../../corpus/services/ai-readiness.md)** documenting the previously-undocumented
+member-AI-readiness feature (org enablement gate, 3-step 30/40/30 scoring, the 9 `ai_readiness_*` tables, GraphQL+REST
+interface, surfaces, narratives) **+ the M51 seeding contract** (Phase-2c-sharpened: active-cycle ⇒ signals-true,
+closed-cycle ⇒ frozen-snapshot-direct — the dashboard recomputes from signals). Reconciled the material drift
+(backend.md / next-web-app.md / architecture_overview.md / service_taxonomy.md now name the subsystem) + corrected the
+false ant-academy "in repos.yml" claim (CLAUDE.md + ant-academy.md×3; **M49 #5 owns the repos.yml fix**). Docs-only —
+never touched the demo. **Delivered → `corpus/services/ai-readiness.md`** + the re-grounded arch/service docs.
 
 **M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48**. The 7 remaining demo-up issues
 so a from-cold `/demo-up` on a `stack-demo`-only box completes: #3 `.env`-guard order, #4 `INVITATION_HMAC_SECRET`

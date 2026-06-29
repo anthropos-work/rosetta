@@ -53,7 +53,7 @@ graph TB
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Backend/App** | 8081-8083 | Main API Gateway, User Management | graphql, backend | Local `../app` |
+| **Backend/App** | 8081-8083 | Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)) | graphql, backend | Local `../app` |
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
 | **CMS** | 8090-8091 | **Content layer** — owns CONTENT / DEFINITIONS (skill paths, simulation blueprints, library) via Directus Proxy, **+ embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
 | **Skiller** | 8085-8086 | Skill Management, Assessment, Vector Embeddings (RAG) | graphql, skiller | Local `../skiller` |
