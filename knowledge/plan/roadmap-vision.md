@@ -51,6 +51,15 @@ and a `release/{version}` branch is cut.
 > manager-vantage coverage [both `iterative`]; tooling + docs only — zero platform-repo edits). Designed from the
 > consolidated capability spec [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. The
 > **Playthroughs** capability **graduated from spec-draft to active development** here.
+> **v1.10b "fit-up"** → 2026-06-29 (IN DEVELOPMENT, branch `release/01.10b-fit-up`; tag `v1.10.1`; an **interposed
+> field-hardening backfill** in the v1.3b "dress rehearsal" lineage — **v2.0 "opening night" is PAUSED** until it
+> ships). A from-scratch `/demo-up` surfaced 8 bring-up issues + a tail of v1.10 content gaps, and the M201 close
+> found the `stack-demo` clones + the corpus ~5 weeks / 115+ commits **behind prod**. v1.10b re-grounds demo +
+> corpus to current prod, fixes those issues, adds a curated **AI-readiness showcase org** (redeeming the M201
+> member-AI-readiness false-negative), and consolidates **one auditable seed+gen manifest**. **7 milestones
+> M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53** (the v1.x flat counter re-opened — backfill work is a `.1` patch of
+> v1.10, not a v2 `Mxyy` milestone). Designed from `.agentspace/annotation.md` + the M201 stale-clone finding.
+> Tooling + docs only — zero platform-repo edits.
 
 ---
 
@@ -157,8 +166,15 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
 - **v1.10 "method acting"** (shipped 2026-06-27, tag `v1.10` — codename now permanent; chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up". **The last release of the v1.x major.**
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
+- **v1.10b "fit-up"** (IN DEVELOPMENT — chosen 2026-06-29 by the user, theatre lineage): the *fit-up* (a.k.a. the get-in) is the technical work of **building and rigging the set correctly in the venue** before the show can run — the crew assembles the world so it holds together under the lights. Exactly this backfill's job: re-ground the demo to current prod and fix the bring-up so the environment stands up cleanly from cold — the technical preparation that must happen **before** v2.0 "opening night" can resume. Sits in the same field-hardening lineage as **v1.3b "dress rehearsal"** (the prior demo-up-issue backfill). Alternatives weighed: "tech rehearsal", "house notes".
 
-_Last updated: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
+_Last updated: 2026-06-29 (**v1.10b "fit-up" PROMOTED to active development** — the interposed **field-hardening
+backfill** [v1.3b "dress rehearsal" lineage]; **7 milestones M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53**
+[v1.x flat counter re-opened], branch `release/01.10b-fit-up` cut from `main`, tag `v1.10.1`; designed from
+`.agentspace/annotation.md` + the M201 stale-clone finding. Re-grounds demo + corpus to current prod, fixes the 8
+demo-up issues + the v1.10 content gaps, adds the AI-readiness showcase org [M51], consolidates one inlined
+seed+gen manifest [M52]. **v2.0 "opening night" PAUSED** until it ships. Codename "fit-up" chosen by the user.
+Prior: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
 **Playthroughs** pillar [functional-flow e2e *testing*], **4 milestones M201 ∥ M202 → { M203 ∥ M204 }** [`Mxyy`
 numbering; M201 `iterative`+user-guided manifest corpus ∥ M202 `section` foundation → M203/M204 `iterative`
 per-vantage coverage], branch `release/02.00-opening-night` cut from `main`, designed from

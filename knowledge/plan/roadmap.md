@@ -5,17 +5,25 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
-> **Designed 2026-06-28** via `/developer-kit:design-roadmap`. **v2.0 "opening night"** opens a **NEW MAJOR** —
-> **Playthroughs** is a new pillar (functional-flow *testing*: proving the platform's core user journeys actually
-> work end-to-end), distinct from the v1.x demo/seeding lineage. v2+ adopts the **`Mxyy`** milestone-numbering
-> scheme (M201, M202, M203, M204 — major 2, milestone 01/02/03/04). The v1.x flat counter (M0 … M46) is closed and
-> archived in `roadmap-legacy.md`.
+> **Designed 2026-06-29** via `/developer-kit:design-roadmap`. **v1.10b "fit-up"** is an **interposed
+> field-hardening backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up
+> issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus ~5 weeks /
+> 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod and fixes those issues, so
+> **v2.0 "opening night" is PAUSED** until it ships. The v1.x flat milestone counter **re-opens** at **M47**
+> (M47→M53); tag **`v1.10.1`**; branch `release/01.10b-fit-up`.
+>
+> **Designed 2026-06-28** (prior): **v2.0 "opening night"** opens a **NEW MAJOR** — **Playthroughs** is a new pillar
+> (functional-flow *testing*: proving the platform's core user journeys actually work end-to-end), distinct from the
+> v1.x demo/seeding lineage. v2+ adopts the **`Mxyy`** scheme (M201, M202, M203, M204). M201 closed-on-gate; the
+> rest (M202→M204) is **PAUSED** behind the v1.10b backfill. The pre-v2 v1.x history (M0 … M46) lives in
+> `roadmap-legacy.md`.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — a **v1.10 backfill** is interposed (re-sync + re-ground prod), then v2.0 resumes |
+| **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ▶ **IN DEVELOPMENT** (branch `release/01.10b-fit-up`, designed 2026-06-29; tag `v1.10.1`) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — the **v1.10b "fit-up"** backfill is interposed; v2.0 resumes after it ships |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -31,7 +39,97 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In Development — v2.0 "opening night"
+## In Development — v1.10b "fit-up"
+
+> **Theme:** *fit-up — build and rig the set correctly in the venue before opening night.* An **interposed
+> field-hardening backfill** in the **v1.3b "dress rehearsal"** lineage. A from-scratch `/demo-up` surfaced 8
+> bring-up issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus
+> ~5 weeks / 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod, **fixes** the
+> bring-up + content issues, **adds** a curated **AI-readiness showcase org** (redeeming the M201
+> member-AI-readiness false-negative), and **consolidates** one auditable **seed+generation manifest**.
+> **Tooling + docs only — zero platform-repo edits.** The v1.x flat counter re-opens at **M47** (M47→M53); tag
+> **`v1.10.1`**; branch `release/01.10b-fit-up`.
+>
+> **Designed 2026-06-29** via `/developer-kit:design-roadmap`, from the field review in
+> [`.agentspace/annotation.md`](../../.agentspace/annotation.md) + the M201 stale-clone finding. Three research
+> agents mapped the fix surfaces (file:line), the content/seeding gaps, and the KB blind-areas (all homed below via
+> `Delivers →` lines).
+
+### Execution graph
+
+```
+v1.10b "fit-up"   (ONE live demo → verification serializes; only rext authoring parallelizes)
+  M47 ──→ ┌ M48  corpus re-ground   (reads code, NO demo) ─┐
+          └ M49  bring-up hardening (NEEDS the live demo)  ─┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
+ re-sync                                                       content  AI-ready  manifest  cold-rebuild
+```
+
+**The 1-demo-stack constraint shapes the graph.** The user's box hosts **one** demo at a time, so milestone
+**verification serializes** on the single live stack — the release is an honest sequential chain ending in a
+**cold destroy-and-rebuild acceptance** (M53). The **one** genuine parallel pair is **M48 ∥ M49**: M48 (corpus
+re-ground) is pure docs-vs-code and never touches the demo, while M49 (bring-up hardening) monopolizes it —
+disjoint file clusters (`architecture`+`services` vs `ops`+rext), additive merge. The "fix-on-live → final cold
+rebuild" the user asked for *is* the M47→…→M53 shape.
+
+### Milestones
+
+(compact per-milestone summaries — the full contracts live under
+[`releases/01.10b-fit-up/m*/overview.md`](releases/01.10b-fit-up/))
+
+**M47 — Re-sync & recapture** · `section` ⚠ · depends: **none** (foundation). Clone the **absent** rext authoring
+copy (`.agentspace/rosetta-extensions/` — the note-2 prerequisite); re-sync the `stack-demo` clones to current prod
+(rebuild + re-migrate); implement the sanctioned cold-start **MCP-DSN auto-capture** (demo-up #2: normalize
+`sslmode no-verify→require`, public-only firewall, **no prompt**); recapture the snapshot; re-validate the M201
+false-negatives. **Delivers →** `corpus/ops/snapshot-cold-start.md`.
+
+**M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49**. Sweep `corpus/architecture/` +
+`corpus/services/` against the current clones; **document the member-AI-readiness flow** (the contract M51 builds
+against); retire stale "RESOLVED"/tag claims. **Delivers →** `architecture/*` + `services/*` re-ground.
+
+**M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48**. The 7 remaining demo-up issues
+so a from-cold `/demo-up` on a `stack-demo`-only box completes: #3 `.env`-guard order, #4 `INVITATION_HMAC_SECRET`
+(critical secret-DNA + auto-gen), #5 ant-academy clone, #6 disk pre-flight + `demo-down` image cleanup, #7 *true*
+non-fatal frontend, #8 demopatch re-anchor, #1 single **`.agentspace/rext.tag`** source-of-truth (also the note-2
+reproducible pin). **Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
+
+**M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). **Exit gate:** Maya (employee) + Dan
+(manager) render fully-populated across every annotation-listed surface on a COLD reset-to-seed demo, proven by the
+**M42 semantic coverage gate** (both vantages), 0 prod-eject escapes. Iterative because the real root-causes are
+**hypotheses until observed** on the clean bring-up (some need new seeders, e.g. `MemberLanguagesSeeder`; some are
+demo-up #7 artifacts that vanish once set-dress runs).
+
+**M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. **Exit
+gate:** a curated **200-person 3rd org** with the AI-readiness manager dashboard **enabled**, **~80%** of members
+having completed all **3** onboarding/evaluation steps, **1 hero started + 1 hero completed** — proven by the
+coverage gate. Iterative because the feature's data model (invisible to the stale clones) is mapped fresh in M48.
+
+**M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51**. Extract the Go mother-prompts to
+YAML; author **one** checked-in `seed-generation-manifest.yaml` inlining population blueprint (all 3 orgs) +
+prompts + batch config + snapshot sources (**cache + generated data excluded**); the cockpit **[Download]** serves
+it. **Delivers →** NEW `corpus/ops/demo/seed-manifest-spec.md`.
+
+**M53 — Cold-rebuild acceptance** · `section` · depends: **M52**. Destroy the live demo + **rebuild from cold** on
+a `stack-demo`-only box; assert healthy backends + complete set-dress/seed (all 3 orgs)/verify/cockpit + both-vantage
+coverage + the AI-readiness criteria + the complete manifest download. Tag **`v1.10.1`** + bump `.agentspace/rext.tag`.
+
+### Top risks
+
+- **clone re-sync (M47) → blocks-release, the biggest unknown.** 5 weeks × the platform repo set may surface new
+  migrations / build breaks; the recapture changes the snapshot digest. *Mitigate:* foundation milestone — absorb
+  the breakage before any fix leans on it; the user chose **re-ground first** over the fix-on-stale-clones lever
+  (if intractable, escalate — don't silently descope).
+- **content root-causes are hypotheses → degrades-quality.** M50 is iterative; it starts with a fresh observation
+  pass on the clean bring-up, not the static guesses. Several "empty" surfaces may be demo-up #7 artifacts.
+- **AI-readiness data model unknown → M51 exploratory.** The feature was invisible to the stale clones; M48
+  documents it before M51 seeds it.
+- **1-demo constraint → sequential chain, longer wall-clock.** No parallel verification; only rext authoring
+  parallelizes (worktrees). M53 is the single from-cold acceptance truth.
+- **M52 cache integrity.** Extracting prompts to YAML must preserve or deliberately re-key the M45 prompt-hash cache.
+- **AI-provider keys → decision (M49/M50).** Which become throwaway/sandbox demo values vs documented-as-absent.
+
+---
+
+## Paused — v2.0 "opening night"
 
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
@@ -86,7 +184,8 @@ manifest is prose — authorable before/parallel to the M202 foundation).
 **adversarially re-grounded** (11-agent wf `wvpnpvozh` → 15/27 runnable), **user-signed-off**. Records:
 [`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/)
 (deliverable: `manifest-draft.yaml`). The close discovered the **stale-clone drift** (next-web 115+ commits behind
-prod) → **v2.0 PAUSED for a v1.10 backfill** (re-sync + re-ground + re-validate, user-driven) before resuming.
+prod) → **v2.0 PAUSED for the v1.10b "fit-up" backfill** (re-sync + re-ground + re-validate + fix, user-driven; see
+the In-Development section above) before resuming.
 **Goal:** top-down, **user-directed** curation of the **full goal-aligned Product → Story → Use Case manifest
 corpus** — the build + regression contract every coverage milestone (M203/M204) implements against. The flow per
 pass: **outline** (products → stories → use cases) → **validate** (against the real platform surface + the spec's
@@ -210,8 +309,10 @@ The complete shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`)
 
 - **Milestone numbering — v2+ uses `Mxyy`** (`M` + major digit + two-digit milestone): **M201, M202, M203, M204**
   for v2.0. This is the major-version scheme `context.md` reserved for *"a future *major* v2+"*; the v1.x flat
-  sequential counter (M0 … M46, with the `a`/`b`/`c`/`e`/`m` suffix conventions) is **closed** and lives in
-  [`roadmap-legacy.md`](roadmap-legacy.md) § Notes.
+  sequential counter (M0 … M46, with the `a`/`b`/`c`/`e`/`m` suffix conventions) lives in
+  [`roadmap-legacy.md`](roadmap-legacy.md) § Notes. **It was thought closed at M46, but the interposed v1.10b
+  "fit-up" backfill RE-OPENS it at M47** (M47→M53) — the backfill is v1.x-major work (a `.1` patch of v1.10), not a
+  v2 milestone, so it keeps the flat counter rather than `Mxyy`.
 - **Milestone shapes** mix within v2.0: **M201 is `iterative` + USER-GUIDED** (the manifest corpus — a top-down,
   user-directed prose curation toward a sign-off gate); **M202 is `section`** (a fixed In-scope checklist — the
   foundation is decomposable up front); **M203 + M204 are `iterative`** (a measurable exit gate, exploratory path
@@ -222,8 +323,12 @@ The complete shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`)
   governing spec is [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md), graduated to a corpus
   runbook (`corpus/ops/demo/playthroughs.md`) by M202.
 
-_Last updated: 2026-06-28 (**v2.0 "opening night" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — a
-NEW MAJOR opening the **Playthroughs** pillar; **4 milestones M201 ∥ M202 → { M203 ∥ M204 }** [M201 manifest
-corpus inserted as the user-guided prose contract]; branch `release/02.00-opening-night` cut from `main`. v1.x
-history rotated to `roadmap-legacy.md`. Designed from the consolidated capability spec
-`spec-drafts/playthroughs/spec.md` v0.3. Tooling + docs only — zero platform-repo edits.)_
+_Last updated: 2026-06-29 (**v1.10b "fit-up" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — an
+interposed **field-hardening backfill** [the v1.3b "dress rehearsal" lineage]; **7 milestones M47 → { M48 ∥ M49 } →
+M50 → M51 → M52 → M53** re-opening the v1.x flat counter; branch `release/01.10b-fit-up` cut from `main`; tag
+`v1.10.1`. Designed from the field review `.agentspace/annotation.md` + the M201 stale-clone finding [3 research
+agents]. Re-grounds demo + corpus to current prod, fixes the from-scratch `/demo-up` issues + the v1.10 content
+gaps, adds the AI-readiness showcase org, consolidates one auditable seed+gen manifest. **v2.0 "opening night"
+PAUSED** until it ships. Tooling + docs only — zero platform-repo edits. Prior: 2026-06-28 **v2.0 "opening night"
+DESIGNED + PROMOTED** — a NEW MAJOR opening the **Playthroughs** pillar; 4 milestones M201 ∥ M202 → { M203 ∥ M204 };
+branch `release/02.00-opening-night`; from `spec-drafts/playthroughs/spec.md` v0.3.)_
