@@ -1,8 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M47 — Re-sync & recapture (BUILD-COMPLETE — all sections S1-S6 done; ready for close-milestone)"
-phase: "v1.10b building — M47 build-complete; next: close M47 → M48 corpus re-ground (the real staleness)"
+active_milestone: "M48 — Corpus re-ground (next to build)"
+last_closed: "M47 — 2026-06-29 (Re-sync & recapture)"
+phase: "v1.10b building — M47 CLOSED; M48 corpus re-ground next"
 last_updated: "2026-06-29"
 ---
 
@@ -25,31 +26,23 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M47 — Re-sync & recapture** (`section`, **BUILD-COMPLETE — ready for close-milestone**).
-All sections S1-S6 done: rext authoring copy cloned to `.agentspace` (S1); the **sslmode `no-verify→require` fix**
-(`pg.NormalizeDSN`, rext `c5323a1`, **tagged `fit-up-m47`**) so the wired MCP DSN works as a capture `--dsn` (S2,
-demo-up #2, proven live); **clones confirmed current** (S3 — a trivial `make pull`, NOT a 5-week re-sync — see the
-CORRECTION above); **all 3 snapshot surfaces recaptured** from current prod — directus + sim-embeddings + taxonomy,
-all schema digests unchanged (S4); **AI-readiness feature confirmed present** in `app` (S5 — M201's false-negative
-resolved); **`snapshot-cold-start.md` updated** (S6, KB-47-01). The ⚠ "biggest unknown" (heavy re-sync)
-**evaporated** — the clones were already current. Consumption-clone re-pin deferred (needs the tag pushed; the fix
-only affects capture). Records:
-[`releases/01.10b-fit-up/m47-resync-recapture/`](releases/01.10b-fit-up/m47-resync-recapture/).
+**Active milestone:** **M48 — Corpus re-ground** (`section`, **next to build**). Bring the rosetta corpus current
+with the (M47-confirmed-current) clones — the GENUINE staleness. Document the shipped-but-undocumented
+**member-AI-readiness flow** (its surfaces + data model — the contract M51's seeder builds against), reconcile
+`corpus/architecture/` + `corpus/services/` drift, and retire stale "RESOLVED"/tag claims. Pure docs-vs-code (never
+touches the live demo) → parallelizable with M49. Records:
+[`releases/01.10b-fit-up/m48-corpus-reground/`](releases/01.10b-fit-up/m48-corpus-reground/). _(M47 closed
+2026-06-29 — see Recently closed.)_
 
-**Phase:** **v1.10b BUILDING — M47 in progress** (clones found current; see the CORRECTION above). Designed from the field review
-[`.agentspace/annotation.md`](../../.agentspace/annotation.md) (8 demo-up issues + the content/hero/manager gaps) +
-the M201 stale-clone finding, via 3 parallel research agents (fix surfaces at file:line, content/seeding gaps, KB
-blind-areas). User decisions captured: **re-ground first** (the clones turned out **current** — a trivial pull; the
-~1-month-stale **corpus** is the real re-ground → M48),
-codename **"fit-up"**, the manifest as **one inlined file**, and a new **AI-readiness showcase org** (M51,
-redeeming the M201 member-AI-readiness false-negative). The 4 KB blind-areas (cold-start MCP auto-capture,
-ant-academy-in-demo, the unified seed+gen manifest, the rext tag-pin source-of-truth) are each homed via a milestone
-`Delivers →` line.
+**Phase:** **v1.10b building — M47 CLOSED (foundation); M48 corpus re-ground next.** M47's finding: the clones were
+already current — the real stale surface is the corpus (M48). Design decisions: re-ground first, codename "fit-up",
+the manifest as one inlined file, + a new AI-readiness showcase org (M51). The 4 KB blind-areas are each homed via a
+milestone `Delivers →` line.
 
-**Next up:** **close M47** (`/developer-kit:close-milestone` — merges `m47/resync-recapture` →
-`release/01.10b-fit-up`), then **M48 — corpus re-ground** (`/developer-kit:build-milestone`): document the
-**AI-readiness feature** + reconcile the ~1-month-stale `corpus/architecture` + `corpus/services` docs against the
-now-confirmed-current clones — the **genuine** staleness. The 1-demo-stack constraint serializes verification:
+**Next up:** **build M48 — corpus re-ground** (`/developer-kit:build-milestone`): document the **AI-readiness
+feature** + reconcile the stale `corpus/architecture` + `corpus/services` docs against the now-current clones — the
+**genuine** staleness. **M48 ∥ M49** (M48 is docs-only, never touches the demo). The 1-demo-stack constraint
+serializes verification:
 fix-on-live across M48→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
 the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this v1.10b branch is cut from that
 local `main`.)_
@@ -69,6 +62,12 @@ DEF-M21-01 (`replayCmd` hermetic test), M25-D9 (dev taxonomy `rc=4`). Pre-existi
 pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier · M207 Academy coverage — also in
 `roadmap-vision.md`.
 
+## Recently closed (v1.10b milestones)
+- **M47 — Re-sync & recapture** — **2026-06-29** (`section`; merged → `release/01.10b-fit-up`; rext `fit-up-m47`).
+  The heavy re-sync was a no-op (clones already current); delivered `pg.NormalizeDSN` (the wired MCP DSN now works
+  as a capture `--dsn`), recaptured all 3 snapshot surfaces (digests unchanged), confirmed the AI-readiness feature
+  present (M201 false-negative resolved). Full narrative in `roadmap.md` § M47.
+
 ## Recently shipped releases
 - **v1.10 "method acting"** — **2026-06-27**, tag `v1.10`. The **believable-profile release + the presenter-grade
   / scalable-generation extension**: a logged-in hero reads as a fully-fleshed person, proven by a **Playwright
@@ -86,16 +85,14 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 - **Earlier v1.x** (v1.0 … v1.7) — the full shipped table is in
   [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.
 
-## Headline numbers (v2.0 — inheriting the v1.10-close baseline; no v2 work yet)
-The v2.0 baseline is the v1.10-close inheritance — no v2.0 milestone has built yet, so these are the carried-over
-totals (re-measured at first milestone close):
-- **Go test funcs (rext):** **1551** total (`Test`+`Fuzz`) at the v1.10 close. Per-module: `alignment` 52 ·
-  clerkenstein 270 · stack-seeding 706 · stack-snapshot 363 · stack-secrets 160. (A new `playthroughs` rext
-  section arrives in M202; its first tests land at M202 build/close.)
+## Headline numbers (v1.10b — M47 close)
+- **Go test funcs (rext):** **1552** total (`Test`+`Fuzz`) at M47 close (v1.10-close baseline 1551). Per-module:
+  `alignment` 52 · clerkenstein 270 · stack-seeding 706 · **stack-snapshot 364** (+1 vs 363: `TestNormalizeDSN`) ·
+  stack-secrets 160.
 - **Python / TS:** the cockpit `cockpit.py` suite 63 + the demopatch suite 43; `stack-injection` 117. The
   `@playwright/test ^1.49.0` coverage harness (M42e) is the e2e foundation M202 reuses (the first non-Go rext
   dev/test dep).
-- **Flake:** **0** at v1.10 close.
+- **Flake:** **0** (M47 close flake gate 5/5 on the touched suite).
 - **Supply-chain:** the v1.10 close carried **1 new dep** (`github.com/anthropos-work/ai@v1.40.1`, M45). v2.0 has
   added none yet. The rosetta corpus is docs-only (no package manifest). Lockfile inherited from
   [`releases/archive/01.10-method-acting/dependencies.lock`](releases/archive/01.10-method-acting/dependencies.lock).

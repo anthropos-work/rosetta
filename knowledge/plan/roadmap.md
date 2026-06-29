@@ -81,13 +81,14 @@ rebuild" the user asked for *is* the M47→…→M53 shape.
 (compact per-milestone summaries — the full contracts live under
 [`releases/01.10b-fit-up/m*/overview.md`](releases/01.10b-fit-up/))
 
-**M47 — Re-sync & recapture** · `section` · depends: **none** (foundation) · **IN PROGRESS — mostly done.**
-✅ rext authoring copy cloned to `.agentspace`; ✅ **sslmode `no-verify→require` fix** (`pg.NormalizeDSN`, rext
-`c5323a1`) so the wired MCP DSN works as a capture `--dsn` (demo-up #2 — proven by a live dry-run); ✅ **clones
-confirmed current** (a trivial `make pull`, not a re-sync); ✅ **directus + sim-embeddings recaptured** from current
-prod, taxonomy recapture running; ✅ **AI-readiness feature confirmed present** in `app` (M201 false-negative
-resolved); ✅ S6 doc. Remaining: finish taxonomy recapture + tag `fit-up-m47` + re-pin. **Delivers →**
-`corpus/ops/snapshot-cold-start.md`.
+**M47 — Re-sync & recapture** · `section` · depends: **none** (foundation) · ✅ **`done` — closed 2026-06-29**
+(merged → `release/01.10b-fit-up`; rext tag `fit-up-m47`). The flagged heavy re-sync was a **no-op** — the clones
+were already current (next-web @ v2.89.0); the genuine staleness is the corpus (→ M48). Delivered: `pg.NormalizeDSN`
+(sslmode `no-verify→require`) so the wired MCP DSN works as a capture `--dsn` (demo-up #2, proven by a live dry-run +
+9 tests); all 3 snapshot surfaces recaptured from current prod (digests unchanged); the **AI-readiness feature
+confirmed present** (M201 false-negative resolved); `snapshot-cold-start.md` updated (the MCP-configured-DSN path,
+KB-47-01). The `up-injected.sh` auto-capture wiring was descoped per the user (no new entry point — D3); re-pin
+deferred (push-gated). **Delivered → `corpus/ops/snapshot-cold-start.md`.**
 
 **M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49**. Sweep `corpus/architecture/` +
 `corpus/services/` against the current clones; **document the member-AI-readiness flow** (the contract M51 builds
