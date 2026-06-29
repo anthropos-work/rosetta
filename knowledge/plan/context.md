@@ -61,7 +61,8 @@ The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design
 **Active:** **v1.10b "fit-up" — IN DEVELOPMENT** (designed 2026-06-29 via `/developer-kit:design-roadmap`; branch
 `release/01.10b-fit-up` cut from `main`; tag `v1.10.1`). An **interposed field-hardening backfill** (the v1.3b
 "dress rehearsal" lineage) — a from-scratch `/demo-up` surfaced 8 bring-up issues + a tail of v1.10 content gaps,
-and the M201 close found the `stack-demo` clones + the corpus ~5 weeks behind prod. 7 milestones (v1.x flat counter
+and the M201 close *reported* the clones behind prod (M47 later found the clones **current** — the **corpus** is
+the stale surface, re-grounded by M48). 7 milestones (v1.x flat counter
 re-opened): **M47** Re-sync & recapture [`section` ⚠, the foundation — re-sync clones to current prod + cold-start
 MCP-DSN auto-capture + recapture snapshot] → { **M48** Corpus re-ground [`section`, documents the member-AI-readiness
 flow] ∥ **M49** Bring-up hardening + truth-up [`section`, the 7 remaining demo-up issues + the `.agentspace/rext.tag`

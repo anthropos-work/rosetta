@@ -3,7 +3,7 @@ milestone: M47
 slug: resync-recapture
 version: v1.10b "fit-up"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-29
 last_updated: 2026-06-29
 complexity: large
@@ -16,7 +16,15 @@ issues: Thread-A stale-clone drift (M201 false-negatives) + demo-up #2 (cold-sta
 ## Goal
 Bring the `stack-demo` clone set **and** the captured snapshot **current with prod**, clone the absent rext
 authoring copy, and re-validate the M201 false-negatives — so every downstream fix in this release is graded
-against **current code**, not the ~5-week-stale clones that paused v2.0.
+against **current code**.
+
+## FINDING (2026-06-29) — the clones were already current
+The M201 close *reported* the clones ~5 weeks / 115+ commits behind prod (next-web @ v2.33.2). **M47 measured them
+and found them CURRENT:** next-web @ **v2.89.0** (2 commits behind, fast-forwarded by `make pull`), every other repo
+at `origin/main` (0 behind), and the **member-AI-readiness feature present** in `app` (v1.315). So the heavy "re-sync
+5 weeks + rebuild" was a **trivial `make pull`** — the ⚠ risk did not materialize. The genuinely-stale surface is the
+**rosetta corpus** (AI-readiness undocumented) — that is **M48**'s job, not M47's. The snapshot recapture confirmed
+**both schema digests unchanged** (taxonomy `c75ce94…`, directus `ea2e187…`) → a clean in-place data refresh.
 
 ## Why section
 The deliverables are enumerable up front: clone the authoring copy, sync N repos, rebuild + re-migrate, implement
@@ -70,9 +78,8 @@ None — the **foundation**. **Parallel with:** none (everything else builds on 
 - **→ rosetta:** `corpus/ops/snapshot-cold-start.md` — the wired `postgres` MCP DSN is now a **sanctioned**
   cold-start primary-read source (was explicitly NOT, per M20-D4); the auto-capture is part of the bring-up flow.
 
-## Risk
-**(blocks-release, ⚠ the release's biggest unknown)** pulling ~5 weeks × the platform repo set may surface new
-migrations, breaking changes, or build failures; the recapture changes the snapshot digest (cache invalidation).
-*Mitigate:* this is the foundation milestone — surface + absorb the breakage here, before any fix leans on it. The
-user chose **re-ground first** over the fix-on-stale-clones lever; if re-sync proves intractable, escalate (the
-lever is fix-on-current-clones + defer re-sync), don't silently descope.
+## Risk — RETIRED
+The flagged ⚠ "biggest unknown" (pulling 5 weeks × the repo set → migrations/build breaks; a digest-changing
+recapture) **did not materialize**: the clones were already current (trivial pull) and both snapshot digests were
+unchanged (clean in-place refresh). See the FINDING above. The release's real risk now lives in the *other*
+milestones (M50 content root-causes, M51's freshly-mapped AI-readiness data model), not here.
