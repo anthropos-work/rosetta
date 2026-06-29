@@ -1,9 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M48 — Corpus re-ground (next to build)"
+active_milestone: "M48 — Corpus re-ground (BUILD-COMPLETE — ready for close-milestone)"
 last_closed: "M47 — 2026-06-29 (Re-sync & recapture)"
-phase: "v1.10b building — M47 CLOSED; M48 corpus re-ground next"
+phase: "v1.10b building — M48 build-complete (ai-readiness.md authored + drift reconciled); close next"
 last_updated: "2026-06-29"
 ---
 
@@ -34,10 +34,11 @@ touches the live demo) → parallelizable with M49. Records:
 [`releases/01.10b-fit-up/m48-corpus-reground/`](releases/01.10b-fit-up/m48-corpus-reground/). _(M47 closed
 2026-06-29 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47 CLOSED (foundation); M48 corpus re-ground next.** M47's finding: the clones were
-already current — the real stale surface is the corpus (M48). Design decisions: re-ground first, codename "fit-up",
-the manifest as one inlined file, + a new AI-readiness showcase org (M51). The 4 KB blind-areas are each homed via a
-milestone `Delivers →` line.
+**Phase:** **v1.10b building — M48 corpus re-ground BUILD-COMPLETE; close next.** M48 authored the new
+`corpus/services/ai-readiness.md` (the load-bearing M51 seeder contract) + reconciled the material drift +
+corrected the ant-academy stale claim (M49 owns the repos.yml fix). M47's finding stands: the clones were already
+current — the corpus was the real stale surface, now re-grounded. Design decisions: re-ground first, codename
+"fit-up", the manifest as one inlined file, + a new AI-readiness showcase org (M51).
 
 **Next up:** **build M48 — corpus re-ground** (`/developer-kit:build-milestone`): document the **AI-readiness
 feature** + reconcile the stale `corpus/architecture` + `corpus/services` docs against the now-current clones — the

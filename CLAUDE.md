@@ -164,7 +164,7 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 **Core Backend Services (Tier 1)**: Go microservices
 
 In the default local profile (`graphql`):
-- Backend (`app`): Main API gateway and user management
+- Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`)
 - CMS: **The content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry). **NB: CMS — not the like-named `skillpath`/`jobsimulation` services — owns skill-path and simulation content** (content-vs-runtime-state split below)
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
 - Jobsimulation: **Runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT fetched from CMS by ID (`cms.GetSimulation` Connect-RPC). It holds run/session state — not content
@@ -195,7 +195,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
 - Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the cms container** as `cms/studio/` via `cd cms && make init-studio`; no longer a standalone deployment.
-- Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** Cloned by `make init` (in `repos.yml`); runs natively via `cd ant-academy/code && npm run dev` (port 3077). No platform backend dependencies at runtime — only Clerk. See `corpus/services/ant-academy.md`.
+- Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** ⚠️ **NOT in `repos.yml` today** — so `make init` does **not** clone it (a known v1.10b gap; **M49 adds the `repos.yml` entry**, demo-up #5). Runs natively via `cd ant-academy/code && npm run dev` (port 3077). No platform backend dependencies at runtime — only Clerk. See `corpus/services/ant-academy.md`.
 
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)

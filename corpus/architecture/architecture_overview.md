@@ -7,7 +7,7 @@ This document provides a high-level overview of the Anthropos platform architect
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
 *   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
-    *   **Backend/App**: Main API gateway, user and organization management
+    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md))
     *   **Sentinel**: Security and access control (the bouncer)
     *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), learning-path *progress*, and vector embeddings (RAG). (Skillpath tracks per-user progression *state*; the learning-path *content* lives in CMS — see the content-vs-runtime note below.)
     *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by CMS.)
