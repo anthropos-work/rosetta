@@ -7,9 +7,12 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 > **Designed 2026-06-29** via `/developer-kit:design-roadmap`. **v1.10b "fit-up"** is an **interposed
 > field-hardening backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up
-> issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus ~5 weeks /
-> 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod and fixes those issues, so
-> **v2.0 "opening night" is PAUSED** until it ships. The v1.x flat milestone counter **re-opens** at **M47**
+> issues + a tail of v1.10 content gaps. The M201 close *reported* the `stack-demo` clones ~5 weeks / 115+ commits
+> behind prod — but **M47 found the clones actually CURRENT** (next-web @ v2.89.0); the genuinely-stale surface is
+> the **corpus** (the shipped AI-readiness feature is undocumented), which **M48** re-grounds. v1.10b recaptures the
+> snapshot, re-grounds the corpus, fixes the bring-up + content issues, adds an AI-readiness showcase org, and
+> consolidates one auditable manifest — so **v2.0 "opening night" is PAUSED** until it ships. The v1.x flat
+> milestone counter **re-opens** at **M47**
 > (M47→M53); tag **`v1.10.1`**; branch `release/01.10b-fit-up`.
 >
 > **Designed 2026-06-28** (prior): **v2.0 "opening night"** opens a **NEW MAJOR** — **Playthroughs** is a new pillar
@@ -43,8 +46,10 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 > **Theme:** *fit-up — build and rig the set correctly in the venue before opening night.* An **interposed
 > field-hardening backfill** in the **v1.3b "dress rehearsal"** lineage. A from-scratch `/demo-up` surfaced 8
-> bring-up issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus
-> ~5 weeks / 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod, **fixes** the
+> bring-up issues + a tail of v1.10 content gaps. **CORRECTION (M47 finding):** the M201 close *reported* the
+> clones ~5 weeks / 115+ commits behind prod, but **M47 found them CURRENT** (next-web @ v2.89.0, every repo ≤2
+> behind; the AI-readiness feature present) — the re-sync was a trivial `make pull`. The real stale surface is the
+> **corpus** (M48). v1.10b **recaptures** the snapshot from current prod, **re-grounds** the corpus, **fixes** the
 > bring-up + content issues, **adds** a curated **AI-readiness showcase org** (redeeming the M201
 > member-AI-readiness false-negative), and **consolidates** one auditable **seed+generation manifest**.
 > **Tooling + docs only — zero platform-repo edits.** The v1.x flat counter re-opens at **M47** (M47→M53); tag
@@ -76,11 +81,13 @@ rebuild" the user asked for *is* the M47→…→M53 shape.
 (compact per-milestone summaries — the full contracts live under
 [`releases/01.10b-fit-up/m*/overview.md`](releases/01.10b-fit-up/))
 
-**M47 — Re-sync & recapture** · `section` ⚠ · depends: **none** (foundation). Clone the **absent** rext authoring
-copy (`.agentspace/rosetta-extensions/` — the note-2 prerequisite); re-sync the `stack-demo` clones to current prod
-(rebuild + re-migrate); implement the sanctioned cold-start **MCP-DSN auto-capture** (demo-up #2: normalize
-`sslmode no-verify→require`, public-only firewall, **no prompt**); recapture the snapshot; re-validate the M201
-false-negatives. **Delivers →** `corpus/ops/snapshot-cold-start.md`.
+**M47 — Re-sync & recapture** · `section` · depends: **none** (foundation) · **IN PROGRESS — mostly done.**
+✅ rext authoring copy cloned to `.agentspace`; ✅ **sslmode `no-verify→require` fix** (`pg.NormalizeDSN`, rext
+`c5323a1`) so the wired MCP DSN works as a capture `--dsn` (demo-up #2 — proven by a live dry-run); ✅ **clones
+confirmed current** (a trivial `make pull`, not a re-sync); ✅ **directus + sim-embeddings recaptured** from current
+prod, taxonomy recapture running; ✅ **AI-readiness feature confirmed present** in `app` (M201 false-negative
+resolved); ✅ S6 doc. Remaining: finish taxonomy recapture + tag `fit-up-m47` + re-pin. **Delivers →**
+`corpus/ops/snapshot-cold-start.md`.
 
 **M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49**. Sweep `corpus/architecture/` +
 `corpus/services/` against the current clones; **document the member-AI-readiness flow** (the contract M51 builds
@@ -114,10 +121,10 @@ coverage + the AI-readiness criteria + the complete manifest download. Tag **`v1
 
 ### Top risks
 
-- **clone re-sync (M47) → blocks-release, the biggest unknown.** 5 weeks × the platform repo set may surface new
-  migrations / build breaks; the recapture changes the snapshot digest. *Mitigate:* foundation milestone — absorb
-  the breakage before any fix leans on it; the user chose **re-ground first** over the fix-on-stale-clones lever
-  (if intractable, escalate — don't silently descope).
+- **clone re-sync (M47) → RETIRED (was flagged the biggest unknown).** M47 found the clones already **current**
+  (next-web @ v2.89.0, every repo ≤2 behind) — the re-sync was a trivial `make pull`, no 5-week catch-up, no
+  cascading breakage. The snapshot recapture confirmed **both schema digests unchanged** (taxonomy `c75ce94…`,
+  directus `ea2e187…`), so it was a clean in-place data refresh. The heavy-rebuild risk did not materialize.
 - **content root-causes are hypotheses → degrades-quality.** M50 is iterative; it starts with a fresh observation
   pass on the clean bring-up, not the static guesses. Several "empty" surfaces may be demo-up #7 artifacts.
 - **AI-readiness data model unknown → M51 exploratory.** The feature was invisible to the stale clones; M48
@@ -185,7 +192,9 @@ manifest is prose — authorable before/parallel to the M202 foundation).
 [`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/)
 (deliverable: `manifest-draft.yaml`). The close discovered the **stale-clone drift** (next-web 115+ commits behind
 prod) → **v2.0 PAUSED for the v1.10b "fit-up" backfill** (re-sync + re-ground + re-validate + fix, user-driven; see
-the In-Development section above) before resuming.
+the In-Development section above) before resuming. *(Correction: the v1.10b M47 milestone later found the clones
+actually current — next-web @ v2.89.0; the stale surface is the corpus, re-grounded by M48. The pause stands; the
+backfill's real work is the corpus + the bring-up/content fixes, not a clone re-sync.)*
 **Goal:** top-down, **user-directed** curation of the **full goal-aligned Product → Story → Use Case manifest
 corpus** — the build + regression contract every coverage milestone (M203/M204) implements against. The flow per
 pass: **outline** (products → stories → use cases) → **validate** (against the real platform surface + the spec's

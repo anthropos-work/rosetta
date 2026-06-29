@@ -1,8 +1,8 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M47 — Re-sync & recapture (planned; next to build)"
-phase: "v1.10b DESIGNED — M47 next to build"
+active_milestone: "M47 — Re-sync & recapture (IN PROGRESS — clones found current; sslmode fix + content recapture done; taxonomy recapture running)"
+phase: "v1.10b building — M47 in progress (clones were already current; the real stale surface is the corpus → M48)"
 last_updated: "2026-06-29"
 ---
 
@@ -11,27 +11,34 @@ last_updated: "2026-06-29"
 **Active release:** **v1.10b "fit-up" — IN DEVELOPMENT** (designed 2026-06-29 via
 `/developer-kit:design-roadmap`; branch `release/01.10b-fit-up` cut from `main`). An **interposed field-hardening
 backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up issues + a tail of
-v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus ~5 weeks / 115+ commits **behind
-prod**. v1.10b **re-grounds** demo + corpus to current prod, fixes those issues, adds a curated **AI-readiness
-showcase org**, and consolidates **one auditable seed+gen manifest**. The v1.x flat counter re-opens at **M47**;
-tag **`v1.10.1`**. **Tooling + docs only — zero platform-repo edits.** 7 milestones:
+v1.10 content gaps. **CORRECTION (M47 finding, 2026-06-29):** the M201 close *reported* the `stack-demo` clones
+~5 weeks / 115+ commits behind prod (next-web @ v2.33.2), but **M47 found the clones actually CURRENT** (next-web @
+v2.89.0, every repo ≤2 behind; the **AI-readiness feature is present** in `app`) — the re-sync was a trivial
+`make pull`. The genuinely-stale surface is the **rosetta corpus** (e.g. the shipped AI-readiness feature is
+**undocumented**), which **M48** re-grounds. So v1.10b: snapshot recaptured from current prod (M47), corpus
+re-grounded (M48), the 8 bring-up issues + v1.10 content gaps fixed (M49/M50), a curated **AI-readiness showcase
+org** added (M51), **one auditable seed+gen manifest** consolidated (M52), cold-rebuild proof (M53). The v1.x flat
+counter re-opens at **M47**; tag **`v1.10.1`**. **Tooling + docs only — zero platform-repo edits.** 7 milestones:
 
 ```
 M47 ──→ ┌ M48 corpus re-ground ───────────┐                (M48 ∥ M49 — disjoint clusters; M48 no-demo)
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M47 — Re-sync & recapture** (`section` ⚠, **planned, next to build**). The foundation:
-clone the **absent** rext authoring copy (`.agentspace/rosetta-extensions/`), re-sync the `stack-demo` clones to
-current prod (rebuild + re-migrate), implement the sanctioned cold-start **MCP-DSN auto-capture** (demo-up #2),
-recapture the snapshot, and re-validate the M201 false-negatives. The biggest unknown (5 weeks × the repo set), so
-it goes first — every downstream fix is graded against the current code it produces. Records:
-[`releases/01.10b-fit-up/m47-resync-recapture/`](releases/01.10b-fit-up/m47-resync-recapture/).
+**Active milestone:** **M47 — Re-sync & recapture** (`section`, **IN PROGRESS — mostly done**). Done: rext
+authoring copy cloned to `.agentspace` (S1); the **sslmode `no-verify→require` fix** (`pg.NormalizeDSN`, rext
+`c5323a1`) so the wired MCP DSN works as a capture `--dsn` (S2, demo-up #2); **clones confirmed current** (S3 — a
+trivial `make pull`, NOT a 5-week re-sync — see the CORRECTION above); **directus + sim-embeddings recaptured** from
+current prod, **taxonomy recapture running** (S4); **AI-readiness feature confirmed present** in `app` (S5 —
+M201's false-negative resolved). Remaining: finish taxonomy recapture, the S6 cold-start doc (done) + tag
+`fit-up-m47` + re-pin. The ⚠ "biggest unknown" (heavy re-sync) **evaporated** — the clones were already current.
+Records: [`releases/01.10b-fit-up/m47-resync-recapture/`](releases/01.10b-fit-up/m47-resync-recapture/).
 
-**Phase:** **v1.10b DESIGNED — ready to build M47.** Designed from the field review
+**Phase:** **v1.10b BUILDING — M47 in progress** (clones found current; see the CORRECTION above). Designed from the field review
 [`.agentspace/annotation.md`](../../.agentspace/annotation.md) (8 demo-up issues + the content/hero/manager gaps) +
 the M201 stale-clone finding, via 3 parallel research agents (fix surfaces at file:line, content/seeding gaps, KB
-blind-areas). User decisions captured: **re-ground first** (re-sync clones AND the ~1-month-stale corpus),
+blind-areas). User decisions captured: **re-ground first** (the clones turned out **current** — a trivial pull; the
+~1-month-stale **corpus** is the real re-ground → M48),
 codename **"fit-up"**, the manifest as **one inlined file**, and a new **AI-readiness showcase org** (M51,
 redeeming the M201 member-AI-readiness false-negative). The 4 KB blind-areas (cold-start MCP auto-capture,
 ant-academy-in-demo, the unified seed+gen manifest, the rext tag-pin source-of-truth) are each homed via a milestone
@@ -115,7 +122,8 @@ re-ground first, codename "fit-up", one inlined manifest, +AI-readiness org. Act
 `/developer-kit:build-milestone`. Tooling + docs only. Prior: 2026-06-29 **M201 "Manifest corpus" CLOSED-on-gate** —
 9 products · 26 stories · 28 use-cases, adversarially re-grounded [wf `wvpnpvozh`], user-signed-off; closed on
 `release/02.00-opening-night` + merged → `main` per the user, no `v2.0` tag. **v2.0 PAUSED** for this backfill,
-triggered by the **stale-clone discovery** [next-web 115+ commits behind prod]. M201 corpus preserved as the v2.0
+triggered by the **stale-clone discovery** [next-web 115+ commits behind prod — *later corrected: M47 found the
+clones current; the stale surface is the corpus, → M48*]. M201 corpus preserved as the v2.0
 spec. Prior: 2026-06-28 (**v2.0 "opening night" — M201 Manifest corpus INSERTED as the new first milestone**;
 the prior 3 milestones renumbered M201→M202 [foundation], M202→M203 [employee], M203→M204 [manager]. 4 milestones
 M201 ∥ M202 → { M203 ∥ M204 } [`Mxyy` numbering]: M201 `iterative`+user-guided manifest corpus is the prose

@@ -51,7 +51,10 @@ The first real `/demo-up` hit all of these at once (ISSUE-13):
   `replay` has nothing to stamp in.
 - **No `~/.pgpass`** — no read DSN wired for `primary-read`.
 - **No staging `pg_dump` on disk** — nothing to restore for `dump-ingest`.
-- **The wired `postgres` MCP — which is NOT a capture source.** This is the load-bearing limitation, below.
+- **No `~/.pgpass` *but* a wired `postgres` MCP** — as of **M47 (v1.10b "fit-up")** the MCP's *configured DSN* is
+  itself a usable `primary-read --dsn`, so a box with the MCP set up is **no longer cold for capture** (see
+  [the M47 update](#m47-the-mcps-configured-dsn-is-a-usable---dsn) below). The MCP *tool* still can't stream COPY —
+  the nuance is below.
 
 The stack still comes up. `replay` exits non-zero on a cache miss, the bring-up treats that as a **warning, not a
 failure** (the auto-set-dress pass is non-fatal — see [the auto-set-dress chain](#how-this-fits-the-auto-set-dress-bring-up)),
@@ -75,9 +78,28 @@ The obvious-looking shortcut — "we already have a read-only `postgres` MCP poi
   it produced would be identical to the `--dsn` path (the same reasoning that dropped the offline `pg_dump`-FILE
   reader, M9b-D9).
 
-**So: the MCP is great for *investigating* and *sizing* the surface (catalog-only counts, the public/customer
-split — that's exactly what [`db-access.md`](db-access.md) uses it for), but it is not a `stacksnap` capture
-source. Capture reads over a real `--dsn`.**
+**So: the MCP *tool* is great for *investigating* and *sizing* the surface (catalog-only counts, the
+public/customer split — that's exactly what [`db-access.md`](db-access.md) uses it for), but it cannot itself
+*stream* a capture. Capture reads over a real `--dsn`.**
+
+### M47 — the MCP's *configured DSN* IS a usable `--dsn`
+
+The spike result above is about the MCP **tool** (`mcp__postgres__query`) — it cannot run `COPY … TO STDOUT`, so
+you can't capture *through the tool*. But the MCP is **configured with** a read-only prod connection string (the
+`marco_read` DSN, in `~/.claude.json`). **M47 (v1.10b "fit-up")** makes that DSN directly usable as the
+`primary-read --dsn` — `stacksnap` connects to it over pgx and runs the real `COPY`, exactly the `--dsn` path:
+
+- The only thing that had blocked it was the DSN's `sslmode=no-verify` (a value pgx/libpq does not accept). M47
+  added `pg.NormalizeDSN` (applied at the `Connect` choke point), which maps `no-verify → require` (encrypt, skip
+  cert verification); DSNs without `no-verify` pass through byte-identical. So the wired DSN now connects with no
+  hand-editing.
+- This is **not** "capture through the MCP tool" (still impossible) — it is the **ordinary `primary-read --dsn`
+  path** (Option 2 below) pointed at the **same prod read endpoint the MCP already uses**. Same firewall
+  (`AssertPublicOnly`, public-only), same bounded read-only session.
+
+**Net:** on a box where the `postgres` MCP is configured, the cold-start capture is **turnkey** — extract the DSN
+the MCP is configured with (values-blind; never echo it) and pass it as `--source primary-read --dsn …`. No
+separate `~/.pgpass`/Tailscale wiring is required when that DSN already reaches prod.
 
 ## The sanctioned cold-start path — fill the cache once, over a safe `--dsn`
 
@@ -124,6 +146,20 @@ off-peak, bounded, public-only, catalog-sized read is a sanctioned fallback, not
 READ_DSN="postgres://<name>_read@<rds-private-ip>:5432/postgres?sslmode=require"
 stacksnap capture --surface taxonomy --source primary-read --dsn "$READ_DSN"
 stacksnap capture --surface directus --source primary-read --dsn "$READ_DSN"
+```
+
+#### Option 2b — the wired `postgres` MCP DSN (turnkey, M47)
+
+If the box already has the `postgres` MCP configured, its DSN *is* the prod read endpoint — no separate `~/.pgpass`
+needed. Extract it **values-blind** (never echo/log it) and pass it straight through; `sslmode=no-verify` is
+auto-normalized by `pg.NormalizeDSN` (M47):
+
+```bash
+# Extract the MCP's read DSN into a var WITHOUT printing it (values-blind, safety.md).
+DSN=$(jq -r '(.mcpServers.postgres.args[]?, (.projects[]?.mcpServers.postgres.args[]?)) | select(test("postgres"))' ~/.claude.json | head -1)
+stacksnap capture --surface taxonomy --source primary-read --dsn "$DSN"
+stacksnap capture --surface directus --source primary-read --dsn "$DSN"
+stacksnap capture --surface sim-embeddings --source primary-read --dsn "$DSN"
 ```
 
 > Both options read **public-only** — the tenant-data firewall (`AssertPublicOnly`) hard-fails the capture on a

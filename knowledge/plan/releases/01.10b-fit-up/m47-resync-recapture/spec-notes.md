@@ -22,9 +22,22 @@ Tracked KB item: **KB-47-01** — snapshot-cold-start.md MCP-not-a-source claim 
 
 Proceeding to Phase 1 (S2) per the GREEN/YELLOW gate.
 
-## S2 — file surfaces (from the design-session research, to verify against the authoring copy)
-- `stack-snapshot/pg/pg.go` — `DSNForOffset` (~L54): parse DSN; does not normalize `sslmode`. pgx pool rejects
-  `sslmode=no-verify` (the MCP DSN's mode).
-- `stack-snapshot/source/source.go` (~L84-103): `Resolve()` picks dump-ingest vs primary-read; neither
-  auto-reads the MCP DSN.
-- `demo-stack/up-injected.sh` set-dress (~L567-593): the cold-cache path warns/prompts instead of auto-capturing.
+## S2 — file surfaces (verified against the authoring copy)
+- `stack-snapshot/pg/pg.go` — added `NormalizeDSN` + helpers, applied at `Connect` (was: raw `pgxpool.New(dsn)` at
+  L188 which rejected `sslmode=no-verify`). 7 table tests in `pg_test.go`. rext commit `c5323a1`.
+- `stack-snapshot/source/source.go` + `cmd/stacksnap/main.go:204` — already make `--dsn`→`primary-read` a
+  candidate; **no change** (decision D2).
+- **No `up-injected.sh` change** — per the user, capture stays the existing operator/agent step (bring-up is
+  replay-only by design); no new auto-capture entry point. The fix is the sslmode normalization (so the wired DSN
+  works) + the S6 doc.
+
+## S3/S4/S5 — re-sync + recapture results (2026-06-29)
+- **S3 lag (fetch+count):** next-web-app v2.88.0→**v2.89.0** (2 behind, ff'd by `make pull`); app v1.315, cms
+  v0.254.1, jobsimulation v0.252.0, skiller v0.103.0, all others 0 behind. **Clones were already current.**
+- **S4 recapture (primary-read over the wired MCP DSN, sslmode-normalized; public-only firewall):**
+  - directus  @ `ea2e187a…` (UNCHANGED digest) — 14 tables / 11,986 rows + `_structure.sql` (425 stmts)
+  - sim-embeddings @ `10146f28…` (UNCHANGED) — 4 tables / 1,490 rows
+  - taxonomy @ `c75ce94d…` (UNCHANGED) — 10 tables / ~330k rows, ~1.4 GB (background recapture)
+  - dry-run proved the sslmode fix end-to-end against the live wired DSN (DSN carries `sslmode=no-verify`).
+- **S5:** `app` AI-readiness commits present (e.g. "AI-generated narratives for AI readiness diagnosis",
+  "frequency field to AIReadinessInterviewFinding"); next-web `ai-readiness/` UI present → M201 false-negative resolved.

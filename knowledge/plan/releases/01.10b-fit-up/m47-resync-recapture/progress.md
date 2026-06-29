@@ -14,22 +14,23 @@
 - [ ] wire the auto-capture into `demo-stack/up-injected.sh` set-dress (cache-miss → extract MCP DSN → `stacksnap capture --dsn … --source primary-read`)
 - [ ] tag `fit-up-m47` + re-pin `stack-demo/rosetta-extensions` *(after the wiring lands)*
 
-### S3 — Re-sync platform clones to current prod — operational ⚠
-- [ ] capture before-refs; pull/checkout current per-repo refs across the `stack-demo` repo set
-- [ ] rebuild images; re-migrate
-- [ ] record after-refs; note any breakage absorbed
+### S3 — Re-sync platform clones to current prod ✅ (the heavy re-sync was a no-op — see FINDING)
+- [x] measured true lag (fetch + count): **clones already current** — next-web @ v2.89.0 (2 behind, ff'd), all others 0 behind
+- [x] `make pull` — trivial fast-forward (next-web +2); NO rebuild needed for the code (per the "build part only" decision)
+- [x] recorded: the M201 "115 behind / v2.33.2" premise does NOT hold; the AI-readiness feature is present in `app` v1.315
 
-### S4 — Recapture snapshot from current prod — operational, uses S2
-- [ ] run the auto-capture (taxonomy + Directus) over the sanctioned MCP DSN, public-only firewall (0 tenant rows)
-- [ ] bump the capture version; refresh `.agentspace/snapshots/` cache + manifest
-- [ ] coordinate the version bump with the M52 batch-cache key
+### S4 — Recapture snapshot from current prod ✅ (content) / ⏳ (taxonomy)
+- [x] directus recaptured: 14 tables / 11,986 rows, public-only=true, primary-read (over the wired MCP DSN, sslmode-normalized)
+- [x] sim-embeddings recaptured: 4 tables / 1,490 rows
+- [⏳] taxonomy recapture running in background (~1.4 GB vectors); both schema digests UNCHANGED → clean in-place refresh
+- [x] no version bump needed (digests unchanged) → M52 batch-cache key unaffected
 
-### S5 — Re-validate the M201 false-negatives
-- [ ] re-grade member-AI-readiness (+ the other M201 negatives) against current code
-- [ ] record which were stale false-negatives (feeds M48 doc + M51 seeder)
+### S5 — Re-validate the M201 false-negatives ✅
+- [x] member-AI-readiness CONFIRMED PRESENT in current `app` (v1.315 + the ai-readiness next-web UI) → M201's false-negative was a stale-at-the-time read; resolved
+- [x] feeds M48 (document the feature) + M51 (seed the showcase org)
 
-### S6 — Doc: snapshot-cold-start.md (Delivers →)
-- [ ] document the sanctioned MCP-DSN auto-capture path (supersedes the M20-D4 "MCP is NOT a capture source" stance)
+### S6 — Doc: snapshot-cold-start.md (Delivers →) ✅
+- [x] documented the M47 update: the MCP's *configured DSN* is a usable `primary-read --dsn` (sslmode auto-normalized) — turnkey cold-start; the MCP *tool* still isn't a COPY source (the M20-D4 nuance preserved). Added Option 2b (values-blind wired-DSN invocation). Resolves KB-47-01.
 
 ## Notes
 - **Section order rationale:** S2 (code) before S4 (recapture) because recapture *uses* the new auto-capture. S3
