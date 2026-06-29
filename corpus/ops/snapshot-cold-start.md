@@ -53,7 +53,7 @@ The first real `/demo-up` hit all of these at once (ISSUE-13):
 - **No staging `pg_dump` on disk** — nothing to restore for `dump-ingest`.
 - **No `~/.pgpass` *but* a wired `postgres` MCP** — as of **M47 (v1.10b "fit-up")** the MCP's *configured DSN* is
   itself a usable `primary-read --dsn`, so a box with the MCP set up is **no longer cold for capture** (see
-  [the M47 update](#m47-the-mcps-configured-dsn-is-a-usable---dsn) below). The MCP *tool* still can't stream COPY —
+  [the M47 update](#m47-the-mcp-configured-dsn-as-a-capture-source) below). The MCP *tool* still can't stream COPY —
   the nuance is below.
 
 The stack still comes up. `replay` exits non-zero on a cache miss, the bring-up treats that as a **warning, not a
@@ -82,7 +82,7 @@ The obvious-looking shortcut — "we already have a read-only `postgres` MCP poi
 public/customer split — that's exactly what [`db-access.md`](db-access.md) uses it for), but it cannot itself
 *stream* a capture. Capture reads over a real `--dsn`.**
 
-### M47 — the MCP's *configured DSN* IS a usable `--dsn`
+### M47: the MCP-configured DSN as a capture source
 
 The spike result above is about the MCP **tool** (`mcp__postgres__query`) — it cannot run `COPY … TO STDOUT`, so
 you can't capture *through the tool*. But the MCP is **configured with** a read-only prod connection string (the
