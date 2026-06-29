@@ -12,7 +12,7 @@
 - [x] ~~accept the MCP DSN as a primary-read source in `source.go`~~ — **already supported**: `source.go` precedence + `cmd/stacksnap/main.go:204` already make `--dsn` a primary-read candidate; no change needed
 - [ ] drop the cold-cache prompt → auto-capture instead *(needs the MCP-DSN-extraction decision — checkpoint)*
 - [ ] wire the auto-capture into `demo-stack/up-injected.sh` set-dress (cache-miss → extract MCP DSN → `stacksnap capture --dsn … --source primary-read`)
-- [ ] tag `fit-up-m47` + re-pin `stack-demo/rosetta-extensions` *(after the wiring lands)*
+- [x] tag `fit-up-m47` (rext authoring copy, on `c5323a1`) — DONE (local). **Re-pin DEFERRED:** needs the tag pushed to origin (tracked with the other pending pushes) + the sslmode fix only affects *capture* (the agent step), not the consumed bring-up/replay tooling → low-value until M49+ rext changes land or M53.
 
 ### S3 — Re-sync platform clones to current prod ✅ (the heavy re-sync was a no-op — see FINDING)
 - [x] measured true lag (fetch + count): **clones already current** — next-web @ v2.89.0 (2 behind, ff'd), all others 0 behind
@@ -22,7 +22,7 @@
 ### S4 — Recapture snapshot from current prod ✅ (content) / ⏳ (taxonomy)
 - [x] directus recaptured: 14 tables / 11,986 rows, public-only=true, primary-read (over the wired MCP DSN, sslmode-normalized)
 - [x] sim-embeddings recaptured: 4 tables / 1,490 rows
-- [⏳] taxonomy recapture running in background (~1.4 GB vectors); both schema digests UNCHANGED → clean in-place refresh
+- [~] taxonomy recapture **stopped** (user-killed the ~1.4 GB background pull); cache intact at the schema-current `c75ce94…` copy from today 09:49 (atomic write protected it — no corruption/partial). Low-value to retry: schema digest unchanged + the copy is same-day. Left as-is.
 - [x] no version bump needed (digests unchanged) → M52 batch-cache key unaffected
 
 ### S5 — Re-validate the M201 false-negatives ✅
