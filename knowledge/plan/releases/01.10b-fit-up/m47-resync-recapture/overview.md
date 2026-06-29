@@ -3,7 +3,7 @@ milestone: M47
 slug: resync-recapture
 version: v1.10b "fit-up"
 milestone_shape: section
-status: planned
+status: done
 created: 2026-06-29
 last_updated: 2026-06-29
 complexity: large

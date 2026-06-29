@@ -1,8 +1,8 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M47 — Re-sync & recapture (IN PROGRESS — clones found current; sslmode fix + content recapture done; taxonomy recapture running)"
-phase: "v1.10b building — M47 in progress (clones were already current; the real stale surface is the corpus → M48)"
+active_milestone: "M47 — Re-sync & recapture (BUILD-COMPLETE — all sections S1-S6 done; ready for close-milestone)"
+phase: "v1.10b building — M47 build-complete; next: close M47 → M48 corpus re-ground (the real staleness)"
 last_updated: "2026-06-29"
 ---
 
@@ -25,14 +25,16 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M47 — Re-sync & recapture** (`section`, **IN PROGRESS — mostly done**). Done: rext
-authoring copy cloned to `.agentspace` (S1); the **sslmode `no-verify→require` fix** (`pg.NormalizeDSN`, rext
-`c5323a1`) so the wired MCP DSN works as a capture `--dsn` (S2, demo-up #2); **clones confirmed current** (S3 — a
-trivial `make pull`, NOT a 5-week re-sync — see the CORRECTION above); **directus + sim-embeddings recaptured** from
-current prod, **taxonomy recapture running** (S4); **AI-readiness feature confirmed present** in `app` (S5 —
-M201's false-negative resolved). Remaining: finish taxonomy recapture, the S6 cold-start doc (done) + tag
-`fit-up-m47` + re-pin. The ⚠ "biggest unknown" (heavy re-sync) **evaporated** — the clones were already current.
-Records: [`releases/01.10b-fit-up/m47-resync-recapture/`](releases/01.10b-fit-up/m47-resync-recapture/).
+**Active milestone:** **M47 — Re-sync & recapture** (`section`, **BUILD-COMPLETE — ready for close-milestone**).
+All sections S1-S6 done: rext authoring copy cloned to `.agentspace` (S1); the **sslmode `no-verify→require` fix**
+(`pg.NormalizeDSN`, rext `c5323a1`, **tagged `fit-up-m47`**) so the wired MCP DSN works as a capture `--dsn` (S2,
+demo-up #2, proven live); **clones confirmed current** (S3 — a trivial `make pull`, NOT a 5-week re-sync — see the
+CORRECTION above); **all 3 snapshot surfaces recaptured** from current prod — directus + sim-embeddings + taxonomy,
+all schema digests unchanged (S4); **AI-readiness feature confirmed present** in `app` (S5 — M201's false-negative
+resolved); **`snapshot-cold-start.md` updated** (S6, KB-47-01). The ⚠ "biggest unknown" (heavy re-sync)
+**evaporated** — the clones were already current. Consumption-clone re-pin deferred (needs the tag pushed; the fix
+only affects capture). Records:
+[`releases/01.10b-fit-up/m47-resync-recapture/`](releases/01.10b-fit-up/m47-resync-recapture/).
 
 **Phase:** **v1.10b BUILDING — M47 in progress** (clones found current; see the CORRECTION above). Designed from the field review
 [`.agentspace/annotation.md`](../../.agentspace/annotation.md) (8 demo-up issues + the content/hero/manager gaps) +
@@ -44,9 +46,11 @@ redeeming the M201 member-AI-readiness false-negative). The 4 KB blind-areas (co
 ant-academy-in-demo, the unified seed+gen manifest, the rext tag-pin source-of-truth) are each homed via a milestone
 `Delivers →` line.
 
-**Next up:** **build M47** — `/developer-kit:build-milestone` (the `section` foundation). The 1-demo-stack
-constraint serializes verification: fix-on-live across M47→M52, then **M53 destroys + cold-rebuilds** as the single
-acceptance proof. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
+**Next up:** **close M47** (`/developer-kit:close-milestone` — merges `m47/resync-recapture` →
+`release/01.10b-fit-up`), then **M48 — corpus re-ground** (`/developer-kit:build-milestone`): document the
+**AI-readiness feature** + reconcile the ~1-month-stale `corpus/architecture` + `corpus/services` docs against the
+now-confirmed-current clones — the **genuine** staleness. The 1-demo-stack constraint serializes verification:
+fix-on-live across M48→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
 the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this v1.10b branch is cut from that
 local `main`.)_
 

@@ -19,11 +19,11 @@
 - [x] `make pull` — trivial fast-forward (next-web +2); NO rebuild needed for the code (per the "build part only" decision)
 - [x] recorded: the M201 "115 behind / v2.33.2" premise does NOT hold; the AI-readiness feature is present in `app` v1.315
 
-### S4 — Recapture snapshot from current prod ✅ (content) / ⏳ (taxonomy)
-- [x] directus recaptured: 14 tables / 11,986 rows, public-only=true, primary-read (over the wired MCP DSN, sslmode-normalized)
-- [x] sim-embeddings recaptured: 4 tables / 1,490 rows
-- [~] taxonomy recapture **stopped** (user-killed the ~1.4 GB background pull); cache intact at the schema-current `c75ce94…` copy from today 09:49 (atomic write protected it — no corruption/partial). Low-value to retry: schema digest unchanged + the copy is same-day. Left as-is.
-- [x] no version bump needed (digests unchanged) → M52 batch-cache key unaffected
+### S4 — Recapture snapshot from current prod ✅
+- [x] directus recaptured: 14 tables / 11,986 rows, public-only=true, primary-read (over the wired MCP DSN, sslmode-normalized) — `13:14`
+- [x] sim-embeddings recaptured: 4 tables / 1,490 rows — `13:14`
+- [x] taxonomy recaptured: 10 tables / 330,261 rows @ `c75ce94…` (~1.4 GB; re-launched after an accidental stop) — `14:43`. **All 3 surfaces now fresh from current prod.**
+- [x] all three schema digests UNCHANGED → no version bump → M52 batch-cache key unaffected
 
 ### S5 — Re-validate the M201 false-negatives ✅
 - [x] member-AI-readiness CONFIRMED PRESENT in current `app` (v1.315 + the ai-readiness next-web UI) → M201's false-negative was a stale-at-the-time read; resolved
