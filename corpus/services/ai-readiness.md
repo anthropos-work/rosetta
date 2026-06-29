@@ -117,14 +117,29 @@ jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progress` (3× `com
 `ai_readiness_live_snapshots` upsert (`score≈100, stage=3, archetype` per the score). The **"started" hero**: only
 the skill_mapping signal + a `stage=1`/`score≈30` live snapshot. The **"completed" hero**: all 3 + `stage=3`.
 
-**Two valid seed strategies — an M51 decision (not resolved here):** (a) **signals-true** — write the real
-underlying evidence/sessions and let the engine compute snapshots (consistent with the existing verified-skill
-chain, but heavier); (b) **snapshot-direct** — write `ai_readiness_user_step_progress` + upsert
-`ai_readiness_live_snapshots` directly (lighter, but bypasses the compute path). **No AI keys needed** (narratives
-fall back to static text). For a closed-cycle view, flip the cycle to `closed` + copy live → `ai_readiness_snapshots`.
+**⚠️ Which table the dashboard reads depends on the cycle state — this dictates the seed strategy (an M51
+decision):**
+
+- **Active cycle → the dashboard RECOMPUTES from signals.** `GetAIReadinessWithOptions` → `buildLiveResponse` →
+  `computeOrgBreakdowns` (`ai_readiness.go:283-343`) re-derives each member's score **from the underlying signals**:
+  `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
+  `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no step-1 signal** from the
+  aggregate. So an **active**-cycle dashboard requires the **signals-true** seed (write the real skill evidences +
+  sim sessions + `ai_readiness_user_step_progress`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
+  is a **materialized cache** (rewritten by `RefreshLiveSnapshots`, consumed by Talk-to-Data SQL) — **NOT** the
+  dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
+- **Closed cycle → the dashboard reads frozen snapshots.** `buildResponseFromSnapshots` reads `ai_readiness_snapshots`
+  directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
+  cycle to `closed`) with **no underlying signals** — lighter, but the world reads as a *finished* assessment.
+
+**No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 
 ## Cross-references
 
+- **Authoritative in-repo deep-dive** (the platform's own KB): `app/knowledge/ai-readiness/overview.md` (start
+  there; per-topic docs under `app/knowledge/ai-readiness/`) — the 2-axis/4-archetype model, the 3-step plan, the
+  scoring engine, live-vs-frozen cycles, compare, CSV, Talk-to-Data. This corpus doc *summarizes* for the rosetta
+  reader + the M51 seeder; that KB is the source of truth for deep work.
 - Backend service: [`backend.md`](backend.md) (AI Readiness is an `app/internal/workforce/` subsystem).
 - The seeded demo world it plugs into: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md) (the Stories &
   Heroes model — M51 adds the AI-readiness showcase org as a 3rd story).
