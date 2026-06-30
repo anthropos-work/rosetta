@@ -59,3 +59,23 @@ the org renders.
 **baseline manager-vantage sweep** logged in as the new manager hero (expect the dashboard to gate-render — possibly
 empty/funnel-less until the config+funnel strands land — establishing the baseline `(failing, escapes)`).
 
+## USER-BLOCKER (iter-04, 2026-06-30): demo-1 rext consumption clone is hand-modified, blocking the perf-wall re-up
+
+**Context:** iter-04 triaged the 6 GATED-sweep failures as the M46 base-Workforce org-scale PERF-WALL
+(skeleton false-fails, data confirmed in the DB; the fix is the demo-UP path, not `stack-seeding`). The
+routed fix is to re-pin demo-1's consumed rext tag to `fit-up-m50` (which wires the
+`next-web-members-pagination` + `app-targetrole-authz-skip` + post-seed FK-index perf-patches into
+`up-injected.sh`) and `/demo-down 1` + `/demo-up 1`.
+
+**Blocker:** `git checkout fit-up-m50` in `stack-demo/rosetta-extensions` ABORTS — the consumption clone is
+NOT a pristine tag checkout. It carries leftover hand-modifications (a partial M50 application, almost
+certainly from the same concurrency incident that left iter-03 uncommitted): `up-injected.sh` modified +
+differing from BOTH m49 and m50; `test_demopatch.py` modified == m50; and an UNTRACKED
+`patches/next-web-public-website-url/next-web-public-website-url.yaml` (== m50) that blocks the checkout.
+
+**Why user-blocker:** unblocking requires `git clean`/`rm` (the untracked file) + `git checkout --`/`git stash`
+(the modified files) — all in the build-iter FORBIDDEN-OPS list. The user + orchestrator are the only allowed
+deciders on this dirty consumption-clone state. Full detail + recommended resolution in iter-04/decisions.md.
+
+**iter-04 left mid-Phase-C, NOT closed** (no fix landed, no `iter(M51/04):` commit). The untracked
+`iter-04/` dir is left uncommitted by design (Phase 4 Step 0 budget/blocker-interrupted-iter rule).
