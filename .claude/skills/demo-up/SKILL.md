@@ -23,12 +23,20 @@ single-identity demo — see the toggle list below.) Source of truth:
 2. **Resource check** — a full stack is ~10–12 GB at runtime; the **frontend build** spikes to ~3.7 GB. Set
    the **Docker VM to 12 GB / swap 3 GB** (Settings → Resources) so the per-demo next-web build doesn't
    swap-thrash. `up-injected.sh` runs a **non-fatal** 12 GB pre-flight assert (warns, never blocks;
-   `DEMO_VM_MIN_GIB=N` overrides). For a tight box or an API-only demo, use `--no-ui` (`DEMO_NO_UI=1`) or a
-   reduced `--services` set. **Never** exceed the box.
+   `DEMO_VM_MIN_GIB=N` overrides) **plus a disk-headroom assert** (M49 #6 — warns below ~20 GB host free +
+   offers `docker system prune`; `DEMO_DISK_MIN_GIB=N` overrides). For a tight box or an API-only demo, use
+   `--no-ui` (`DEMO_NO_UI=1`) or a reduced `--services` set. **Never** exceed the box. Reclaim a dead demo's
+   disk with `/demo-down N --purge` (M49 #6: it now removes that stack's images too).
 3. **Bring it up** via the tooling. The demo stack consumes `demo-stack` tooling from its **OWN**
    `stack-demo/rosetta-extensions` clone pinned at a tag — never edited ad-hoc inside `stack-demo`.
    New or changed tooling is authored + tested in the `.agentspace/rosetta-extensions/` authoring copy
-   and tagged first, then consumed per-stack at that pinned tag.
+   and tagged first, then consumed per-stack at that pinned tag. **The pin is read from one file —
+   `.agentspace/rext.tag`** (the single source-of-truth, M49 #1; a bare one-line tag). Before bringing a
+   demo up, check `stack-demo/rosetta-extensions` out at that tag (`git -C stack-demo/rosetta-extensions
+   fetch --tags && git -C stack-demo/rosetta-extensions checkout "$(cat .agentspace/rext.tag)"`); if the
+   file is absent, create it from the release pin documented in
+   [`corpus/ops/rosetta_demo.md`](../../../corpus/ops/rosetta_demo.md) *"The pin is a file"*. `ensure-clones.sh`
+   re-reads the same file at bring-up and warns (non-fatal) if the consumption clone has drifted off the pin.
    **Self-contained clone set (v1.8 "understudy", M26):** the **first** action of `up-injected.sh` is
    `ensure-clones.sh` — it bootstraps `stack-demo`'s **own** platform clone set (clones `stack-demo/platform`
    from GitHub if absent, `make init` the sibling service repos, seeds `.env` from `stack-dev` copy-if-present /
@@ -81,7 +89,7 @@ single-identity demo — see the toggle list below.) Source of truth:
    `DEMO_NO_SETDRESS=1` skips the whole pass. To get the **real** catalog on a fresh box (fill the cache once),
    see [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md). It NEVER captures
    (replay only — capture is a separate, operator-confirmed prod read).
-   (`rosetta-extensions @ storytelling-postfix-2`.)
+   (Consumed at the tag in `.agentspace/rext.tag` — the single source-of-truth pin; see step 3.)
 5. **Verify** — the bring-up auto-runs a scoped, non-fatal verify (covers the UI tier + the seeded data). Then
    `"$DEMO/rosetta-demo" status`; confirm demo-N is on offset ports (next-web `:3000+`, studio-desk `:9000+`
    single-port (M32), ant-academy `:3077+`, presenter cockpit `:7700+`) and the **dev stack is untouched**. The

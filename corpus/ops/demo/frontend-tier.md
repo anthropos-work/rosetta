@@ -97,8 +97,13 @@ image. The tooling makes this cheap-where-it-can:
   out of scope".
 - **Built serially, before `compose up`.** The two frontend builds run **one at a time, before** the stack
   starts — kept out of the parallel Go-service fan-out so the build RAM spike never overlaps anything else.
-- **Non-fatal.** A frontend build failure **warns** but never aborts the backend bring-up; re-run to retry, or
-  `DEMO_NO_UI=1` to skip.
+- **Non-fatal — actually true now (v1.10b M49 #7).** A frontend build failure **warns** but never aborts the
+  backend bring-up. The build step was always non-fatal, but `compose up` would still try to **start** a
+  frontend whose image is **absent** (a failed/skipped build) and abort the whole bring-up under
+  `set -euo pipefail` — so backend + set-dress + verify + cockpit never ran. Now an absent frontend image is
+  **scaled to 0 replicas** at `compose up` (`--scale next-web-app=0` / `--scale studio-desk=0`), so the rest of
+  the stack comes up and the demo is usable (API + cockpit); re-run to retry the UI, or `DEMO_NO_UI=1` to skip
+  it entirely (under `--no-ui` the injected override omits the frontends, so there's nothing to scale).
 
 ## The 12 GB Docker-VM prerequisite
 
@@ -120,6 +125,20 @@ image. The tooling makes this cheap-where-it-can:
 > host, run the UI tier with **only one stack resident**, or use `DEMO_NO_UI=1` and verify the local-Directus
 > serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
 > A 12 GB VM needs a **≥24 GB host** to be comfortable.
+
+### Disk headroom — a second non-fatal pre-flight (v1.10b M49 #6)
+
+Alongside the RAM check, `/demo-up` runs a **disk-headroom pre-flight** (mirrors the RAM assert: a warning,
+never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, the `demo-N-<svc>:injected` Go
+services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
+used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
+
+> **Below ~20 GB host disk free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
+> `DEMO_DISK_MIN_GIB=N`; the free-space signal is `df` on the filesystem backing Docker's data — host root as
+> the portable proxy). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
+> removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
+> tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
+> re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
 
 ## How the pk + URLs are baked (zero platform edit)
 
@@ -159,6 +178,13 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries
 > 0× prod / 31× `:39000`. Full mechanism + the failure-mode routing table (the "Platform-bound escape" row):
 > [`coverage-protocol.md`](coverage-protocol.md).
+>
+> **Re-anchored to the current source (v1.10b M49 #8).** The manifest's `pre_sha256`/`post_sha256` pin the
+> whole-file hash, and the M47 re-sync moved next-web to **v2.89.0** — so the hashes (pinned to the v1.10 ref)
+> would have made G2 **drift-refuse** the pristine current file, leaving the Studio link prod-baked. The
+> `STUDIO_URL` hunk itself is byte-identical to v1.10; only the file-level hashes moved (sibling exports drifted
+> — `AI_READINESS_URL`, the `/enterprise/*` URLs, the member-profile regexes). M49 recomputed both hashes from
+> the v2.89.0 source and verified the apply→revert cycle against it.
 
 ## Offset-origin CORS (the backend must allow the offset frontends)
 
@@ -251,10 +277,12 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-2` — the M19 UI tier first
-shipped at `dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`;
-the session-detach fix below lands at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
-land at `storytelling-postfix-2`):
+at the **pinned tag recorded in `.agentspace/rext.tag`** (the single source-of-truth, M49 #1 — see
+[`rosetta_demo.md`](../rosetta_demo.md) *"The pin is a file"*; current v1.10b "fit-up" pin: `fit-up-m49`).
+*Landing provenance (which historical tag first shipped each piece):* the M19 UI tier first shipped at
+`dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`; the
+session-detach fix below landed at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
+landed at `storytelling-postfix-2`:
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
@@ -273,6 +301,9 @@ land at `storytelling-postfix-2`):
 - `demo-stack/detach.sh` — the shared `launch_detached` helper (`setsid`, or a `python3 os.setsid` double-fork on
   macOS) that session-detaches the host-native daemons (ant-academy **and** the presenter cockpit) so they
   survive the launching `/demo-up` session/task being reaped.
+- `demo-stack/lib/rext_tag.sh` — the shared reader for the `.agentspace/rext.tag` consumption-tag source-of-truth
+  (v1.10b M49 #1); both `/demo-up` and `ensure-clones.sh` source it to resolve the pinned rext tag. Picks the first
+  non-comment / non-blank token, strips a trailing CR so a CRLF-edited pin still resolves as a clean git ref.
 
 ## What's out of scope (the user-owned follow-up)
 

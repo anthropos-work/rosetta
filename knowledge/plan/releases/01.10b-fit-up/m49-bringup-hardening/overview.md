@@ -3,9 +3,9 @@ milestone: M49
 slug: bringup-hardening
 version: v1.10b "fit-up"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-29
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 complexity: medium
 delivers: corpus/ops/{rosetta_demo,demo/frontend-tier,secrets-spec}.md + corpus/services/ant-academy.md truth-up; the .agentspace/rext.tag source-of-truth
 issues: demo-up #1, #3, #4, #5, #6, #7, #8

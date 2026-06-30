@@ -127,7 +127,8 @@ Directus) never false-warns even on an unscoped run:
 > `boot_directus_step` now **waits** for the stack's own offset `/server/health` to answer `200` before
 > returning (bounded by `DEV_SETDRESS_DIRECTUS_BOOT_TIMEOUT`, default `90s`; **non-fatal** on timeout or a
 > missing `curl`), so autoverify can't run ahead of it. The probes themselves are **unchanged** — the fix
-> lives at the restart, not at the probe. (Consumed at `rosetta-extensions @ storytelling-postfix-1`.)
+> lives at the restart, not at the probe. (The health-gate fix landed at `storytelling-postfix-1`; the demo
+> consumes the tag recorded in `.agentspace/rext.tag` — the single source-of-truth pin, M49 #1.)
 
 ## What runs, and on which ports
 

@@ -1,10 +1,10 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M49 — Bring-up hardening + truth-up (next to build — first demo-touching milestone)"
-last_closed: "M48 — 2026-06-29 (Corpus re-ground)"
-phase: "v1.10b building — M48 CLOSED; M49 bring-up hardening next (the 7 demo-up fixes)"
-last_updated: "2026-06-29"
+active_milestone: "M50 — Content & seeding fill (iterative; next to build)"
+last_closed: "M49 — 2026-06-30 (Bring-up hardening + truth-up)"
+phase: "v1.10b building — M47/M48/M49 CLOSED; next M50 (content & seeding fill, iterative)"
+last_updated: "2026-06-30"
 ---
 
 # State
@@ -26,27 +26,27 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M49 — Bring-up hardening + truth-up** (`section`, **next to build**). The first
-**demo-touching** milestone — so the M48 ∥ M49 parallel window closes here and the **single-demo serialization**
-(fix-on-live → M53 cold rebuild) begins. The 7 remaining demo-up issues: #3 `.env`-guard order, #4
-`INVITATION_HMAC_SECRET` (critical secret-DNA + auto-gen), #5 **ant-academy → `repos.yml`** (M48 already corrected
-the doc), #6 disk pre-flight + `demo-down` image cleanup, #7 true non-fatal frontend, #8 demopatch re-anchor, #1 the
-`.agentspace/rext.tag` source-of-truth. rext work in `.agentspace/rosetta-extensions` → tag `fit-up-m49` + re-pin.
-Records: [`releases/01.10b-fit-up/m49-bringup-hardening/`](releases/01.10b-fit-up/m49-bringup-hardening/). _(M48
-closed 2026-06-29 — see Recently closed.)_
+**Active milestone:** **M50 — Content & seeding fill** (`iterative`, **next to build**). **Exit gate:** Maya
+(employee) + Dan (manager) render fully-populated across every annotation-listed surface on a COLD reset-to-seed
+demo, proven by the **M42 semantic coverage gate** (both vantages), 0 prod-eject escapes. Iterative because the real
+root-causes are **hypotheses until observed** on the clean bring-up (some need new seeders, e.g.
+`MemberLanguagesSeeder`; some are demo-up #7 artifacts that vanish once set-dress runs). The **AI-provider-keys
+policy** lands here (M49 routed it forward — which of OPENAI/ANTHROPIC/MISTRAL/ELEVENLABS/LIVEKIT become
+throwaway/sandbox demo values vs documented-as-absent; gates the academy AI chat). Records:
+[`releases/01.10b-fit-up/m50-content-seeding-fill/`](releases/01.10b-fit-up/m50-content-seeding-fill/). _(M49 closed
+2026-06-30 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47 + M48 CLOSED; M49 bring-up hardening next.** Foundation (M47 re-sync/recapture)
-+ corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) are done. M49 starts the **demo-touching**
-work; from here the single-demo constraint serializes (fix-on-live → M53 cold rebuild). Design decisions: re-ground
-first, codename "fit-up", one inlined manifest (M52), + the AI-readiness showcase org (M51).
+**Phase:** **v1.10b building — M47 + M48 + M49 CLOSED; next M50 (iterative).** Foundation (M47 re-sync/recapture) +
+corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) + bring-up hardening (M49 — the 7 demo-up fixes,
+live-verified, rext @ `fit-up-m49`) are done. The first demo-touching milestone has shipped, so the M48 ∥ M49 window
+has closed and the **single-demo serialization** (fix-on-live across M50→M52, then **M53 destroys + cold-rebuilds**
+as the single acceptance proof) is now in effect.
 
-**Next up:** **build M49 — bring-up hardening + truth-up** (`/developer-kit:build-milestone`): the 7 demo-up bug
-fixes (#1,3,4,5,6,7,8) so a from-cold `/demo-up` completes on a `stack-demo`-only box (incl. ant-academy → `repos.yml`,
-which M48 already flagged). **First demo-touching milestone** → the M48 ∥ M49 window closes; single-demo
-serialization (fix-on-live across M49→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof)
-begins. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
-the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this v1.10b branch is cut from that
-local `main`.)_
+**Next up:** **build M50** (`/developer-kit:work-mstone-iters` — iterative content & seeding fill toward the
+both-vantage coverage gate). _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10
+ext tags + now the `fit-up-m47..m49` rext tags — the v1.10 LOCAL close did not push; the M201 close merged to `main`
+LOCALLY; this v1.10b branch is cut from that local `main`. The consumption-clone re-pin to `fit-up-m49` is the
+push-gated KEEP tracked here, authoritatively bumped at M53.)_
 
 **Last shipped:** **v1.10 — 2026-06-27** (`method acting`, 9 milestones M39→M46, tag `v1.10`,
 `release/01.10-method-acting` merged `--no-ff` → `main`). The **last release of the v1.x major**; its history +
@@ -64,6 +64,11 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 `roadmap-vision.md`.
 
 ## Recently closed (v1.10b milestones)
+- **M49 — Bring-up hardening + truth-up** — **2026-06-30** (`section`; merged → `release/01.10b-fit-up`; rext tag
+  `fit-up-m49` @ `ba586d6`). Closed the 7 remaining demo-up issues (rext.tag SoT + CRLF-tolerant reader, .env-guard
+  order, `INVITATION_HMAC_SECRET` critical+auto-gen, ant-academy explicit clone, disk pre-flight + `down --purge`,
+  true non-fatal frontend, demopatch re-anchor to v2.89.0) — **live-verified** from cold (demo-1 UP). Tests rext Go
+  1552→1555 · demo-stack Python 299; flake 0. AI-keys policy → M50 (Fate-2). Full narrative in `roadmap.md` § M49.
 - **M48 — Corpus re-ground** — **2026-06-29** (`section`; merged → `release/01.10b-fit-up`). NEW
   `corpus/services/ai-readiness.md` (the M51 seeder contract — Phase-2c-sharpened: active⇒signals-true,
   closed⇒frozen-snapshot) + drift reconciled + the false ant-academy "in repos.yml" claim corrected (M49 #5 owns
@@ -90,14 +95,15 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 - **Earlier v1.x** (v1.0 … v1.7) — the full shipped table is in
   [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.
 
-## Headline numbers (v1.10b — M47 close)
-- **Go test funcs (rext):** **1552** total (`Test`+`Fuzz`) at M47 close (v1.10-close baseline 1551). Per-module:
-  `alignment` 52 · clerkenstein 270 · stack-seeding 706 · **stack-snapshot 364** (+1 vs 363: `TestNormalizeDSN`) ·
-  stack-secrets 160.
-- **Python / TS:** the cockpit `cockpit.py` suite 63 + the demopatch suite 43; `stack-injection` 117. The
+## Headline numbers (v1.10b — M49 close)
+- **Go test funcs (rext):** **1555** total (`Test`+`Fuzz`) at M49 close (M47-close baseline 1552). Per-module:
+  `alignment` 52 · clerkenstein 270 · stack-seeding 706 · stack-snapshot 364 · **stack-secrets 163** (+3 vs 160:
+  the M49 #4 `INVITATION_HMAC_SECRET` gene asserts + the `TestMintedShape_DemoGeneratedKeyIsOpaque` harden probe).
+- **Python / TS:** the `demo-stack` suite **299** (incl. `test_tooling` **111** · `test_demopatch` **47** ·
+  `test_frontend_build` 55 · `test_cockpit` 63 · `test_ant_academy` 17); `stack-injection` 117. The
   `@playwright/test ^1.49.0` coverage harness (M42e) is the e2e foundation M202 reuses (the first non-Go rext
   dev/test dep).
-- **Flake:** **0** (M47 close flake gate 5/5 on the touched suite).
+- **Flake:** **0** (M49 close flake gate 5/5 on the M49-touched suite: 175 Python + the Go secretdna pkg).
 - **Supply-chain:** the v1.10 close carried **1 new dep** (`github.com/anthropos-work/ai@v1.40.1`, M45). v2.0 has
   added none yet. The rosetta corpus is docs-only (no package manifest). Lockfile inherited from
   [`releases/archive/01.10-method-acting/dependencies.lock`](releases/archive/01.10-method-acting/dependencies.lock).
@@ -118,23 +124,18 @@ rext code @ tags `method-acting-m39..m46-servegrant-closure`.
 **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`.
 (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-06-29 (**v1.10b "fit-up" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — the
-interposed **field-hardening backfill**; **7 milestones M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53** [v1.x flat
-counter re-opened]; branch `release/01.10b-fit-up` cut from `main`; tag `v1.10.1`. Designed from
-`.agentspace/annotation.md` + the M201 stale-clone finding [3 research agents]. Re-grounds demo + the ~1-month-stale
-corpus to current prod; fixes the 8 demo-up issues + the v1.10 content gaps; adds the **AI-readiness showcase org**
-[M51]; consolidates **one inlined seed+gen manifest** [M52]; cold-rebuild acceptance [M53]. User decisions:
-re-ground first, codename "fit-up", one inlined manifest, +AI-readiness org. Active milestone now **M47**; next:
-`/developer-kit:build-milestone`. Tooling + docs only. Prior: 2026-06-29 **M201 "Manifest corpus" CLOSED-on-gate** —
-9 products · 26 stories · 28 use-cases, adversarially re-grounded [wf `wvpnpvozh`], user-signed-off; closed on
-`release/02.00-opening-night` + merged → `main` per the user, no `v2.0` tag. **v2.0 PAUSED** for this backfill,
-triggered by the **stale-clone discovery** [next-web 115+ commits behind prod — *later corrected: M47 found the
-clones current; the stale surface is the corpus, → M48*]. M201 corpus preserved as the v2.0
-spec. Prior: 2026-06-28 (**v2.0 "opening night" — M201 Manifest corpus INSERTED as the new first milestone**;
-the prior 3 milestones renumbered M201→M202 [foundation], M202→M203 [employee], M203→M204 [manager]. 4 milestones
-M201 ∥ M202 → { M203 ∥ M204 } [`Mxyy` numbering]: M201 `iterative`+user-guided manifest corpus is the prose
-build+regression contract, authorable in parallel with the M202 `section` foundation. Active milestone now M201;
-next: work it WITH THE USER via `/developer-kit:work-mstone-iters`. Future v2 milestones bumped to M205
-Hiring/tier-gates, M206 AI-sim-mirror-tier, M207 Academy. Prior: 2026-06-28 v2.0 DESIGNED + PROMOTED — a NEW MAJOR
-opening the Playthroughs pillar, branch `release/02.00-opening-night` cut from `main`, from
-`spec-drafts/playthroughs/spec.md` v0.3. Headline numbers reset to the v1.10-close inheritance baseline.)_
+_Last updated: 2026-06-30 (**M49 "Bring-up hardening + truth-up" CLOSED** via `/developer-kit:close-milestone` —
+the 7 remaining demo-up issues, live-verified from cold [demo-1 UP, autoverify "verified-working"]; rext tag
+`fit-up-m49` @ `ba586d6`; merged `--no-ff` → `release/01.10b-fit-up`. Close review: 6 findings all Fate-1 [2 stale
+`make init` ant-academy claims in `service_taxonomy.md` retired; test-count literals reconciled]; deferral audit
+**GREEN** [AI-keys policy → M50; consumption-clone re-pin → push-gated KEEP]. Tests rext Go 1552→1555 · demo-stack
+Python 299; flake 0. Active milestone now **M50** (iterative content & seeding fill); next:
+`/developer-kit:work-mstone-iters`. The M48 ∥ M49 parallel window is closed — single-demo serialization in effect.
+Prior: 2026-06-29 **M48 "Corpus re-ground" CLOSED** [NEW `corpus/services/ai-readiness.md` + drift reconciled];
+**M47 "Re-sync & recapture" CLOSED** [clones found current; `pg.NormalizeDSN`; snapshots recaptured]. Prior:
+2026-06-29 **v1.10b "fit-up" DESIGNED + PROMOTED** — the interposed **field-hardening backfill**; 7 milestones
+M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 [v1.x flat counter re-opened]; branch `release/01.10b-fit-up` cut from
+`main`; tag `v1.10.1`. Re-grounds demo + corpus to current prod, fixes the demo-up issues + content gaps, adds the
+AI-readiness showcase org [M51], consolidates one inlined seed+gen manifest [M52], cold-rebuild acceptance [M53].
+Tooling + docs only. Prior: 2026-06-29 **M201 "Manifest corpus" CLOSED-on-gate** [9 products · 26 stories · 28
+use-cases, user-signed-off]; **v2.0 PAUSED** for this backfill. Full v2.0-design history in `roadmap.md`.)_

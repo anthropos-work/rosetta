@@ -23,7 +23,7 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
 | **Local dev port** | **3077** (web); **8555** (mobile web preview) |
 | **Authentication** | Clerk (`@anthropos.work` domain gate + org-membership gate) |
 | **Repository** | `git@github.com:anthropos-work/ant-academy.git` → `stack-dev/ant-academy/` |
-| **In `repos.yml`** | ⚠️ **No (drift)** — NOT listed in `platform/repos.yml` today, so `make init` / `make pull` do **not** clone/pull it. The "cloned by `make init`" claims below are **stale**. **v1.10b M49 (demo-up #5) adds the entry** (`type: node-npm`, `migrations: false`); until then ant-academy is brought up by the demo `ensure-clones` sweep or cloned manually. |
+| **In `repos.yml`** | **No — by design (v1.10b M49 #5).** NOT in `platform/repos.yml`, so `make init` / `make pull` do **not** clone/pull it. M49 did **not** add the entry: `repos.yml` lives in the *ephemeral, gitignored* `stack-demo/platform` clone (editing it is non-durable + a platform-repo edit). Instead, for a **demo**, `ensure-clones.sh` clones ant-academy **explicitly** (phase d2 — the cms/studio submodule-pattern precedent, non-fatal). For **dev**, clone it directly (it's a Vercel-native peripheral). The old "cloned by `make init`" claims are **stale**. |
 | **In `docker-compose.yml`** | **No** — runs natively only |
 
 ### Role & Responsibility
@@ -122,15 +122,15 @@ The only platform-shared concern is **Clerk** — Ant Academy reuses the platfor
 
 #### 1. Clone
 
-⚠️ **Stale (drift):** ant-academy is **NOT** in `platform/repos.yml` today, so `make init` does **not** clone it
-(this is the source of the demo-up #5 "ant-academy never cloned" gap; **v1.10b M49 adds the entry**, after which the
-`make init` path below works). **Until M49 lands, clone it directly:**
+ant-academy is **NOT** in `platform/repos.yml` (by design — v1.10b M49 #5), so `make init` does **not** clone it.
+This was the demo-up #5 "ant-academy never cloned" gap; **M49 fixed it for a demo by cloning ant-academy
+explicitly** in `ensure-clones.sh` (phase d2 — `repos.yml` lives in the ephemeral platform clone, so editing it
+is non-durable + a platform-repo edit; the explicit clone mirrors the `make init-studio` exception). **For a
+demo, `/demo-up` clones it automatically.** For **dev** (no `ensure-clones.sh`), clone it directly:
 
 ```bash
-# After M49 (ant-academy in repos.yml):
-cd stack-dev/platform && make init    # clones ant-academy into stack-dev/ant-academy/ if missing
-
-# Today (NOT yet in repos.yml) — clone directly:
+# Demo: ensure-clones.sh does this automatically on /demo-up (phase d2) — into stack-demo/ant-academy/.
+# Dev (or a manual clone): clone it directly — it's a Vercel-native peripheral, not in repos.yml.
 cd stack-dev
 git clone git@github.com:anthropos-work/ant-academy.git
 ```
@@ -229,8 +229,9 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 ### Why It's Not in `docker-compose.yml`
 
 Ant Academy is deployed to Vercel and runs natively in dev (`npm run dev`) just like `studio-desk` natively or `next-web-app` natively. It has no upstream service it needs to wait on, no migrations to apply, and its container would only duplicate what Vercel already serves. We deliberately mirror the studio-desk pattern: **clone, run natively, skip docker-compose** — though, unlike
-studio-desk, ant-academy is **not yet in `repos.yml`** (the demo-up #5 gap; M49 adds it), so today the clone comes
-from the demo `ensure-clones` sweep or a manual `git clone`, not `make init`.
+studio-desk, ant-academy is **not in `repos.yml`** (by design — v1.10b M49 #5 kept it out, since `repos.yml`
+lives in the ephemeral platform clone). So for a **demo**, `ensure-clones.sh` clones it **explicitly** (phase
+d2, non-fatal); for **dev**, it's a manual `git clone` — not `make init`.
 
 If you ever need to add a Docker profile (e.g. for an integration-test harness), follow studio-desk's containerized variant as the template.
 
