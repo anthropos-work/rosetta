@@ -3,7 +3,7 @@ active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
 active_milestone: "M49 — Bring-up hardening + truth-up (BUILT — awaiting harden/close)"
 last_closed: "M48 — 2026-06-29 (Corpus re-ground)"
-phase: "v1.10b building — M48 CLOSED; M49 BUILT (7 demo-up fixes landed; rext tag fit-up-m49 + close pending)"
+phase: "v1.10b building — M48 CLOSED; M49 BUILT (7 demo-up fixes landed; rext tagged fit-up-m49; close pending)"
 last_updated: "2026-06-30"
 ---
 
@@ -37,7 +37,7 @@ closed 2026-06-29 — see Recently closed.)_
 
 **Phase:** **v1.10b building — M47 + M48 CLOSED; M49 BUILT (awaiting harden/close).** Foundation (M47
 re-sync/recapture) + corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) are done. **M49's 7
-demo-up fixes are built + committed** (rext code on `main`, awaiting the `fit-up-m49` tag [orchestrator step];
+demo-up fixes are built + committed** (rext code on `main` @ tag `fit-up-m49`;
 corpus truth-ups on `m49/bringup-hardening`). From here the single-demo constraint serializes (fix-on-live →
 M53 cold rebuild). Design decisions: re-ground
 first, codename "fit-up", one inlined manifest (M52), + the AI-readiness showcase org (M51).

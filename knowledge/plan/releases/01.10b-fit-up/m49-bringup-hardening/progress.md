@@ -13,6 +13,6 @@ _Each section = one rext code fix (committed in `.agentspace/rosetta-extensions`
 - [x] **§7 demopatch-reanchor** (#8) — re-anchored `next-web-studio-url` `pre_sha256` (b3d62db→e961aeae) + `post_sha256` (9f27e25→be0c803a) to the current v2.89.0 source (the hunk is byte-identical; only file-level hashes moved). Computed via the tool's manifest_loader; VERIFIED apply→revert end-to-end on a throwaway copy. Doc: `frontend-tier.md`. 46 demopatch tests green.
 
 ### Close gate
-- [x] All 7 rext fixes committed in the authoring copy — **tag `fit-up-m49` is the orchestrator's step** (after this build returns; the on-box `.agentspace/rext.tag` already pins `fit-up-m49`).
+- [x] All 7 rext fixes committed in the authoring copy + **tagged `fit-up-m49`** (annotated, on rext HEAD `1035efd`); the on-box `.agentspace/rext.tag` pins `fit-up-m49`.
 - [x] Both working trees clean (verified at build-end).
 - [x] Static/code-level verification only (no live `/demo-up` — that's the orchestrator's live-verify gate + M53). bash -n + shellcheck -x clean; secret-DNA JSON valid; Go (secretdna+stack-secrets) + 163 demo-stack + 46 demopatch tests green; demopatch re-anchor verified apply→revert.
