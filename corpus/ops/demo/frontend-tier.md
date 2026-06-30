@@ -301,6 +301,9 @@ landed at `storytelling-postfix-2`:
 - `demo-stack/detach.sh` — the shared `launch_detached` helper (`setsid`, or a `python3 os.setsid` double-fork on
   macOS) that session-detaches the host-native daemons (ant-academy **and** the presenter cockpit) so they
   survive the launching `/demo-up` session/task being reaped.
+- `demo-stack/lib/rext_tag.sh` — the shared reader for the `.agentspace/rext.tag` consumption-tag source-of-truth
+  (v1.10b M49 #1); both `/demo-up` and `ensure-clones.sh` source it to resolve the pinned rext tag. Picks the first
+  non-comment / non-blank token, strips a trailing CR so a CRLF-edited pin still resolves as a clean git ref.
 
 ## What's out of scope (the user-owned follow-up)
 

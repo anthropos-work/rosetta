@@ -10,12 +10,12 @@ _Each section = one rext code fix (committed in `.agentspace/rosetta-extensions`
 - [x] **§4 ant-academy-clone** (#5) — ensure-clones.sh phase (d2) clones ant-academy EXPLICITLY (non-fatal), NOT via repos.yml (ephemeral platform clone = non-durable + platform edit). Static + 4 functional tests. Docs: `ant-academy.md` (3 spots), `CLAUDE.md` corrected (the M48 "M49 adds repos.yml entry" prediction → the actual explicit-clone fix). 103 demo-stack tests green.
 - [x] **§5 disk-preflight-down-cleanup** (#6) — `preflight_disk_headroom()` (non-fatal, mirrors the RAM check, offers prune, `DEMO_DISK_MIN_GIB`/`DEMO_DISK_AVAIL_KB`) + `cmd_down --purge` removes the stack's `demo-N-*` images (scoped, non-fatal; plain `down` keeps them). 5 functional + 2 static tests. Docs: `frontend-tier.md` + `demo-up/SKILL.md`. 162 tests green.
 - [x] **§6 nonfatal-frontend** (#7) — before `compose up`, scale any absent-image frontend to 0 (`--scale svc=0`, set-u-safe) so a failed UI build no longer aborts backend + set-dress + verify + cockpit. Static pins (image check, scale-to-0, NO_UI gate, ordering). Doc: `frontend-tier.md` (the "non-fatal" claim is now true). 163 tests green.
-- [x] **§7 demopatch-reanchor** (#8) — re-anchored `next-web-studio-url` `pre_sha256` (b3d62db→e961aeae) + `post_sha256` (9f27e25→be0c803a) to the current v2.89.0 source (the hunk is byte-identical; only file-level hashes moved). Computed via the tool's manifest_loader; VERIFIED apply→revert end-to-end on a throwaway copy. Doc: `frontend-tier.md`. 46 demopatch tests green.
+- [x] **§7 demopatch-reanchor** (#8) — re-anchored `next-web-studio-url` `pre_sha256` (b3d62db→e961aeae) + `post_sha256` (9f27e25→be0c803a) to the current v2.89.0 source (the hunk is byte-identical; only file-level hashes moved). Computed via the tool's manifest_loader; VERIFIED apply→revert end-to-end on a throwaway copy. Doc: `frontend-tier.md`. 46 demopatch tests green at build (→ 47 after harden Pass 2 added the live-clone hash-reproduction regression).
 
 ### Close gate
-- [x] All 7 rext fixes committed in the authoring copy + **tagged `fit-up-m49`** (annotated, on rext HEAD `1035efd`); the on-box `.agentspace/rext.tag` pins `fit-up-m49`.
+- [x] All 7 rext fixes committed in the authoring copy + **tagged `fit-up-m49`** (annotated; `fit-up-m49^{commit}` = rext HEAD `ba586d6`, i.e. the 7 build fixes + the 3 harden commits); the on-box `.agentspace/rext.tag` pins `fit-up-m49`.
 - [x] Both working trees clean (verified at build-end).
-- [x] Static/code-level verification only (no live `/demo-up` — that's the orchestrator's live-verify gate + M53). bash -n + shellcheck -x clean; secret-DNA JSON valid; Go (secretdna+stack-secrets) + 163 demo-stack + 46 demopatch tests green; demopatch re-anchor verified apply→revert.
+- [x] Static/code-level verification only (no live `/demo-up` — that's the orchestrator's live-verify gate + M53). bash -n + shellcheck -x clean; secret-DNA JSON valid; Go (secretdna 68 funcs + full stack-secrets module) + **299** Python `tests/` (incl. **111** `test_tooling.py` / **47** `test_demopatch.py`) green; demopatch re-anchor verified apply→revert. _(Close-Phase-4/8 re-run confirmed all green; the per-section "N tests green" lines above are build-phase running tallies at each section's point-in-time, not the final whole-suite count.)_
 
 ## M49: Hardening
 
@@ -29,8 +29,8 @@ covered by `bash -n` + `shellcheck -x` + the demo-stack Python suites + the from
 | `stack-secrets/secretdna/demo.go` (#4 `DemoGeneratedKeys` overlay) | Go | `demo_test.go`, `demo_harden_test.go` (M28) | 99.0% pkg; `Shape` 88.9% (one M49 branch uncovered) |
 | `stack-secrets/secretdna/secret-dna.json` (#4 critical gene) | Go (JSON) | `secret_dna_json_test.go` (gene asserts ✓) | n/a — fully asserted |
 | `demo-stack/lib/rext_tag.sh` (#1 reader) | bash | `test_tooling.py` | live-verify + shellcheck + py |
-| `demo-stack/{up-injected,ensure-clones,rosetta-demo,ant-academy}.sh` (#3/#5/#6/#7) | bash | `test_tooling.py`(163), `test_frontend_build.py`, `test_ant_academy.py`(17) | live-verify + shellcheck + py |
-| `demo-stack/patches/next-web-studio-url/*.yaml` (#8) | manifest | `test_demopatch.py` (46) | live-verify apply→revert + py |
+| `demo-stack/{up-injected,ensure-clones,rosetta-demo,ant-academy}.sh` (#3/#5/#6/#7) | bash | `test_tooling.py`(111), `test_frontend_build.py`(55), `test_ant_academy.py`(17) | live-verify + shellcheck + py |
+| `demo-stack/patches/next-web-studio-url/*.yaml` (#8) | manifest | `test_demopatch.py` (47) | live-verify apply→revert + py |
 
 **Gap surfaced:** `demo.go:105` — the `IsDemoGenerated(key) → ShapeOpaque` branch of `mintedSource.Shape`.
 `Shape` is only reached via `FormatMatch`, which only runs for a gene naming a `format:*` operator; the
@@ -71,4 +71,30 @@ Full six-dimension re-scan of the remaining M49 surface (#3 `.env`-guard order, 
 
 ### Stop condition
 Loop terminated after Pass 2's deepening + a clean Pass 3 re-scan: the Step 2b scan found nothing new worth adding, the M49 Go surface is at 100% (residual package % is non-M49 code), and the flake gate is clean (3 consecutive sequential runs of all 5 new tests, zero flakes). Final tally: 5 new tests (2 unit Go + JSON-structure already complete / 3 bash-functional regression+edge / 1 manifest-hash regression), 1 real bug fixed inline (the rext_tag CRLF leak) with a negative-control-verified regression, 1 knowledge backfill. Both repos clean. The bash bring-up scripts (#3/#5/#6/#7) stay covered by shellcheck + the Python suites + the live-verify gate per the milestone's static-only harden scope; `/developer-kit:close-milestone` Phase 4 runs as defense-in-depth.
+
+## M49: Final Review
+
+_Close review (2026-06-30). Phases 1–5 ran as parallel scans (deferral audit blocking-gate GREEN; code-quality + doc + test in both repos). Default fix-everything; no escape-hatch deferrals surfaced._
+
+### Scope
+- [x] All 7 sections checked off; harden Pass 1–3 + stop-condition complete; live-verify gate PASSED (spec-notes.md). No scope gap. AI-keys policy → M50 (Fate-2, confirmed by audit-deferrals GREEN: M50 overview owns it). Consumption-clone re-pin → push-gated KEEP (release-level pending pushes; authoritative bump = M53). No code TODO/FIXME/HACK in the M49-touched rext files.
+
+### Code Quality
+- [x] [nice-to-have] `up-injected.sh` #4 auto-gen: a present-but-empty `INVITATION_HMAC_SECRET=` line is appended-not-replaced (last-wins, so behavior is correct; the path is never hit on a fresh demo). Cosmetic — left as-is; documented here so a future reader doesn't re-flag it. (rext clean: bash -n + shellcheck -x + go vet/build + JSON valid all green.)
+
+### Documentation
+- [x] [should-fix] `corpus/architecture/service_taxonomy.md:191` + `:383` — two residual stale "ant-academy clone via `make init`" claims (un-touched parent arch doc; contradicts the M48/M49-corrected ant-academy.md:26 + CLAUDE.md:198). Reconcile to "NOT in repos.yml; explicit clone (ensure-clones.sh for demo / manual for dev), not `make init`".
+- [x] [nice-to-have] The new `demo-stack/lib/rext_tag.sh` helper is behaviorally documented + the `.agentspace/rext.tag` file is discoverable from parent docs, but the helper script is not named in prose (unlike sibling `detach.sh`). Name it in `frontend-tier.md`'s "where the tooling lives" list for parity.
+
+### Tests & Benchmarks
+- [x] [must-fix — handbook-count contract] progress.md quotes "163 demo-stack tests" (close-gate + scope-manifest); actual `test_tooling.py` collects **111** (the 163 was a non-monotonic cumulative build-phase tally pinned as a literal). Reconcile to the runner: test_tooling **111**, whole `tests/` dir **299**.
+- [x] [must-fix — handbook-count contract] "46 demopatch tests" (close-gate + §7) → actual **47** (Pass-2 added the live-clone manifest-hash regression). Reconcile to 47.
+- [x] All suites PASS (Go secretdna 68 funcs + full stack-secrets module ok; Python 299). All 7 fixes covered incl. #4 auto-gen idempotency + #6 per-demo image scoping. The README(50)/GUIDE(47) curated-subset counts are self-policed (TestGuideDocTruth passes) — intentional, NOT drift; no change. By-design: no live end-to-end in static suites (deferred to M53; documented scope, not a hole).
+
+### Decision Triage
+- [x] D(#5 ant-academy explicit-clone) → already blended into `corpus/services/ant-academy.md:26` + `CLAUDE.md:198` during build (verified accurate). No new blend.
+- [x] D(AI-keys → M50) → archive (maintainer-only routing detail; the consumer-facing policy lands in M50's `secrets-spec.md` touch). No blend.
+
+### Adversarial review
+- The one non-trivial M49 mechanism (the `rext_tag.sh` pin reader) had its adversarial scenario found + fixed during harden Pass 1: a CRLF-edited `.agentspace/rext.tag` (Windows/`\r\n` editor) leaked a trailing `\r` into the picked token, which would fail `git checkout <ref>` with a baffling "pathspec did not match" (invisible CR in the ref). Fixed with `gsub(/\r/,"",$1)`; regression test negative-control-verified. No further adversarial scenario surfaced for the close (the other 6 fixes are bash orchestration covered by shellcheck + Python fences + the from-cold live-verify gate).
 
