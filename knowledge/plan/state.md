@@ -95,14 +95,15 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 - **Earlier v1.x** (v1.0 … v1.7) — the full shipped table is in
   [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.
 
-## Headline numbers (v1.10b — M47 close)
-- **Go test funcs (rext):** **1552** total (`Test`+`Fuzz`) at M47 close (v1.10-close baseline 1551). Per-module:
-  `alignment` 52 · clerkenstein 270 · stack-seeding 706 · **stack-snapshot 364** (+1 vs 363: `TestNormalizeDSN`) ·
-  stack-secrets 160.
-- **Python / TS:** the cockpit `cockpit.py` suite 63 + the demopatch suite 43; `stack-injection` 117. The
+## Headline numbers (v1.10b — M49 close)
+- **Go test funcs (rext):** **1555** total (`Test`+`Fuzz`) at M49 close (M47-close baseline 1552). Per-module:
+  `alignment` 52 · clerkenstein 270 · stack-seeding 706 · stack-snapshot 364 · **stack-secrets 163** (+3 vs 160:
+  the M49 #4 `INVITATION_HMAC_SECRET` gene asserts + the `TestMintedShape_DemoGeneratedKeyIsOpaque` harden probe).
+- **Python / TS:** the `demo-stack` suite **299** (incl. `test_tooling` **111** · `test_demopatch` **47** ·
+  `test_frontend_build` 55 · `test_cockpit` 63 · `test_ant_academy` 17); `stack-injection` 117. The
   `@playwright/test ^1.49.0` coverage harness (M42e) is the e2e foundation M202 reuses (the first non-Go rext
   dev/test dep).
-- **Flake:** **0** (M47 close flake gate 5/5 on the touched suite).
+- **Flake:** **0** (M49 close flake gate 5/5 on the M49-touched suite: 175 Python + the Go secretdna pkg).
 - **Supply-chain:** the v1.10 close carried **1 new dep** (`github.com/anthropos-work/ai@v1.40.1`, M45). v2.0 has
   added none yet. The rosetta corpus is docs-only (no package manifest). Lockfile inherited from
   [`releases/archive/01.10-method-acting/dependencies.lock`](releases/archive/01.10-method-acting/dependencies.lock).

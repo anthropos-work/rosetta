@@ -1,0 +1,39 @@
+{
+  "milestone": "M49",
+  "slug": "bringup-hardening",
+  "release": "v1.10b \"fit-up\"",
+  "shape": "section",
+  "branch": "m49/bringup-hardening",
+  "closed": "2026-06-30",
+  "theme": "Bring-up hardening + truth-up — close the 7 remaining demo-up issues so a from-cold /demo-up on a stack-demo-only box reaches set-dress + seed + verify + cockpit cleanly, and make the bring-up docs tell the truth. #1 single .agentspace/rext.tag consumption-tag source-of-truth (+ CRLF-tolerant lib/rext_tag.sh reader), #3 .env-guard ordering (provision-then-check), #4 INVITATION_HMAC_SECRET critical secret-DNA gene + values-blind auto-gen + DemoGeneratedKeys overlay, #5 ant-academy explicit ensure-clones.sh clone (NOT repos.yml — the ephemeral platform clone makes that non-durable), #6 disk-headroom pre-flight + down --purge per-demo image cleanup, #7 true non-fatal frontend (absent image scaled to 0), #8 demopatch re-anchor to next-web v2.89.0. Two-repo split: rext code @ tag fit-up-m49; rosetta carries the corpus truth-up + records.",
+  "scope_status": "all 7 sections Done (Fate 1); harden Pass 1-3 + stop-condition complete; live-verify gate PASSED (from-cold /demo-up on fit-up-m49 proved all 7 fixes, demo-1 UP, autoverify verified-working). AI-keys policy -> M50 (Fate-2, confirmed by audit-deferrals GREEN). Consumption-clone re-pin -> push-gated KEEP (release-level pending pushes; authoritative bump = M53). Zero escape-hatch deferrals.",
+  "code_location": "TWO-REPO SPLIT. rext code of record: .agentspace/rosetta-extensions @ main, annotated tag fit-up-m49 (^{commit} = ba586d6 = 7 build fixes + 3 harden commits) — consumed per-stack, NOT merged into rosetta. rosetta doc/record half: m49/bringup-hardening merged --no-ff into release/01.10b-fit-up.",
+  "code_diff": "rext (frozen @ fit-up-m49): demo-stack/{up-injected.sh,rosetta-demo,ensure-clones.sh,ant-academy.sh}, NEW demo-stack/lib/rext_tag.sh, stack-secrets/secretdna/{secret-dna.json,demo.go}, demo-stack/patches/next-web-studio-url/*.yaml + tests. rosetta: corpus/ops/{rosetta_demo,demo/frontend-tier,secrets-spec}.md, corpus/services/ant-academy.md, corpus/architecture/service_taxonomy.md (close-fix), CLAUDE.md, corpus/{README,ops/README,ops/verification}.md, .claude/skills/{demo-up,stack-secrets}/SKILL.md + the milestone records.",
+  "tests": {
+    "go_test_funcs_rext_total": 1555,
+    "go_test_funcs_delta_vs_M47": "+3 (stack-secrets 160 -> 163: the #4 INVITATION_HMAC_SECRET gene asserts + TestMintedShape_DemoGeneratedKeyIsOpaque harden probe)",
+    "go_per_module": {"alignment": 52, "clerkenstein": 270, "stack-seeding": 706, "stack-snapshot": 364, "stack-secrets": 163},
+    "python_demo_stack_total": 299,
+    "python_per_suite": {"test_tooling": 111, "test_demopatch": 47, "test_frontend_build": 55, "test_cockpit": 63, "test_ant_academy": 17, "test_detach": 3, "test_migrate_race_live": 3},
+    "python_delta": "demopatch 46 -> 47 (+1: the harden Pass-2 live-clone hash-reproduction regression); test_tooling +the 3 RextTagSoT harden tests",
+    "harden_added": "5 new tests (2 Go: the JSON gene asserts complete + TestMintedShape_DemoGeneratedKeyIsOpaque; 3 Python RextTagSoT bash-functional CRLF/comment/glued-hash; 1 Python demopatch live-clone hash-reproduction)"
+  },
+  "coverage": "secretdna pkg 99.0% -> 99.3%; demo.go (#4 overlay, M49-touched) Shape 88.9% -> 100.0%, every other func 100%. Residual 0.7% = non-M49 code (catalog.go/dna.go/introspect.go).",
+  "benchmarks": "n/a — no perf-sensitive code (bring-up scripts + a secret-DNA gene).",
+  "flake_count": 0,
+  "flake_gate": "5/5 clean (sequential, pytest-randomly seeds): 175 Python (test_tooling 111 + demopatch 47 + ant_academy 17) each run + the Go secretdna pkg green each run. 1 real bug fixed inline during harden (the rext_tag.sh CRLF carriage-return leak; negative-control-verified regression).",
+  "deliverables": {
+    "rext_tag": "fit-up-m49 (annotated, ^{commit} ba586d6)",
+    "new_rext_files": ["demo-stack/lib/rext_tag.sh", ".agentspace/rext.tag (on-box pin)"],
+    "edited_docs": ["corpus/ops/rosetta_demo.md", "corpus/ops/demo/frontend-tier.md", "corpus/ops/secrets-spec.md", "corpus/services/ant-academy.md", "corpus/architecture/service_taxonomy.md", "CLAUDE.md", ".claude/skills/demo-up/SKILL.md", ".claude/skills/stack-secrets/SKILL.md", "corpus/ops/verification.md"],
+    "issues_closed": ["#1 rext.tag SoT", "#3 .env-guard order", "#4 INVITATION_HMAC_SECRET", "#5 ant-academy explicit clone", "#6 disk pre-flight + down --purge", "#7 true non-fatal frontend", "#8 demopatch re-anchor v2.89.0"]
+  },
+  "close_review": {
+    "findings": 6,
+    "by_category": {"scope": 0, "code_quality": 1, "docs": 2, "tests": 2, "decision_triage": 0},
+    "fixed_fate1": ["service_taxonomy.md:191/383 stale 'cloned via make init' ant-academy claims retired", "progress.md test-count literals reconciled to runner (163->111, 46->47, +299 whole-dir; rext HEAD SHA 1035efd->ba586d6)", "frontend-tier.md names the new rext_tag.sh helper"],
+    "no_change_documented": ["#4 auto-gen present-but-empty dup-line (last-wins, correct; rext frozen @ tag — cosmetic)"],
+    "deferral_audit": "GREEN (0 repeat, 0 blocking; AI-keys->M50 Fate-2, re-pin push-gated KEEP)"
+  },
+  "notes": "Live-verify gate is the M49 acceptance (recorded in spec-notes.md): a from-cold /demo-up on a re-pinned fit-up-m49 consumption clone proved all 7 fixes end-to-end (teardown #6 image-cleanup ~5GB reclaimed; #3 provision-before-guard 26 keys written; #4 critical-keys-100% + backend /api/health 200; #6 disk pre-flight 237 GiB OK; #1 pin-guard non-blocking; #5 ant-academy on :13077; #7 2 frontends joined no-abort; #8 demopatch applied; set-dress + seed 57,858 rows isolation-clean + cockpit :17700 + autoverify verified-working -> demo-1 UP). DO-NOT re-run a live /demo-up at close (heavy, single demo machine); close ran the STATIC suites as defense-in-depth. First demo-touching milestone -> the M48 || M49 parallel window closes; single-demo serialization (fix-on-live across M49->M52, then M53 cold-rebuild acceptance) begins. NOT the final milestone -> next is M50."
+}
