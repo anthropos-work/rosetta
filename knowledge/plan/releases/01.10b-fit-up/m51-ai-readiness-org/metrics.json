@@ -7,26 +7,26 @@
     "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
     "met": false
   },
-  "iters_total": 4,
-  "tiks": 3,
+  "iters_total": 5,
+  "tiks": 4,
   "toks": 1,
   "current_metric": {
-    "failingSections": 6,
+    "failingSections": 5,
     "escapes": 0,
     "personaFailures": 0,
     "notReachedPages": 0,
-    "reachable": 49,
+    "reachable": 65,
     "cappedAtFrontier": false,
     "baseline_failing": 6,
-    "delta_from_baseline": 0
+    "delta_from_baseline": -1
   },
   "qualitative_gate_conditions": {
     "dashboard_enabled": true,
     "pct_all_3_complete": 78.4,
     "hero_started": true,
     "hero_completed": true,
-    "note": "Data layer of the gate is satisfied for Northwind (rebuilt at fit-up-m50 + re-seeded). The residual failingSections=6 is the base-Workforce org-scale perf-wall: iter-04 proved the m50 perf-patches (pagination + targetRole-authz-skip + FK indexes) reduce the wall 76.4s->~11.6s but the residual COLD members-grid query still exceeds the harness measurement budget -> skeleton false-fails persist (data-in-DB, slow-not-erroring). iter-05 targets the residual via a harness warm/poll deepening + the manager-manifest AI-readiness assertion (route /enterprise/workforce/ai-readiness) + the cockpit jump_to re-point."
+    "note": "iter-05 (closed-fixed-partial) cleared the stale-Sentinel-policy reachability root cause (reachable 49->65) + landed the content-presence warmHeavyGrids (real-rows warm replacing the 4s networkidle bail), the gate-proving AI-readiness manifest descriptor (route /enterprise/workforce/ai-readiness: org-score + 3-step funnel assertions + seedPath prime), the cockpit ai-readiness deep-link + Dana jump_to re-point, and the org-agnostic corporate-email regex CORRECTING the shared manifest's hardcoded cervato-systems.com (which false-failed Northwind). GATED manager sweep moved failingSections 6->5, escapes 0, persona GREEN. Residual 5: 2 cervato-systems.com false-fails (RESOLVED by the committed manifest correction, pending re-sweep verify) + 3 genuine org-scale cold-grid perf-wall sections (verification-funnel, talent-languages, activity-table) routed to iter-06, alongside bake-Sentinel-reload-after-seed."
   },
-  "last_iter": "iter-04",
+  "last_iter": "iter-05",
   "last_updated": "2026-06-30"
 }
