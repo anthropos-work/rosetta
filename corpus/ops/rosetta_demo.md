@@ -57,13 +57,22 @@
    - `make -C stack-demo/platform init` clones every `repos.yml` repo as a sibling into `stack-demo/`
      (skip-if-present — the platform's own idempotent clone loop), plus `make init-studio` for `cms`;
    - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json`.
-2. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
+2. **secret pre-flight + provision** (the M28/M30 step, before the heavy build): the demo-aware
+   coverage pre-flight reads the secret source (`.agentspace/secrets`) **directly** (it needs no `.env`
+   present yet), then `/stack-secrets` **provisions** `stack-demo`'s per-repo `.env` from it (values-blind)
+   and repoints the demo's base env (`BASE_ENV`) at the provisioned `stack-demo/platform/.env`.
+   **The `.env`-presence guard runs HERE — *after* provision (M49 #3), not after `ensure-clones`** — so a
+   `stack-demo`-only box (where `ensure-clones` could not seed the `.env` from an absent `stack-dev`)
+   provisions its `.env` from `.agentspace/secrets` first, instead of aborting prematurely. A box with
+   **neither** a `stack-dev` seed **nor** a usable secret source aborts loud here (the genuine
+   unprovisionable case).
+3. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
    `stack-demo/<svc>`; the two frontends build from `stack-demo/next-web-app` + `stack-demo/studio-desk`;
    the non-Clerk services (sentinel/storage/roadrunner/graphql) build from `stack-demo`'s clones via the
    compose `build.context` (the compose dir `PLAT` is `stack-demo/platform`, so the relative contexts
    resolve against `stack-demo`). **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
    built images (which could carry dev WIP), even when dev is up; opt back in with `DEMO_REUSE_DEV_IMAGES=1`.
-3. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
+4. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
    the shared `stack-demo/<svc>` clone is the COPY's SOURCE and stays git-clean.
 
 > **The manual `rosetta-demo up` verb** is the minimal/infra-only path — it does **not** call

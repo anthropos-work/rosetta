@@ -5,7 +5,7 @@ _Checked off as each In-scope deliverable lands. Close when all boxes are ticked
 _Each section = one rext code fix (committed in `.agentspace/rosetta-extensions` @ `main`, rolled into tag `fit-up-m49`) + its corpus doc truth-up (committed in `rosetta` @ `m49/bringup-hardening`)._
 
 - [x] **§1 rext-tag-sot** (#1) — `.agentspace/rext.tag` SoT + `lib/rext_tag.sh` reader + non-fatal pin guard in `ensure-clones.sh`; reconciled **4** conflicting prose pins (the overview's 3 + a stray in `verification.md`) to read from it. Pin = `fit-up-m49`. Docs: `rosetta_demo.md`, `demo-up/SKILL.md`, `frontend-tier.md`, `verification.md`. 96/96 tests green.
-- [ ] **§2 env-guard-order** (#3) — move the `platform/.env` presence guard to AFTER the provision step in `up-injected.sh`. Doc: `corpus/ops/rosetta_demo.md`.
+- [x] **§2 env-guard-order** (#3) — moved the `.env`-presence guard below the M30 provision block (now checks `BASE_ENV`); a stack-demo-only box provisions-then-checks instead of aborting. Regression test added. Doc: `rosetta_demo.md` bring-up-order step 2. 149/149 tests green.
 - [ ] **§3 invitation-hmac-secret** (#4) — add `INVITATION_HMAC_SECRET` to the secret-DNA as **critical** + auto-generate a throwaway non-prod value at provision. Doc: `corpus/ops/secrets-spec.md` (+ note AI-keys policy is M50).
 - [ ] **§4 ant-academy-clone** (#5) — make ant-academy actually clone for a demo (repos.yml vs explicit clone — decide against code) + reconcile. Doc: `corpus/services/ant-academy.md`.
 - [ ] **§5 disk-preflight-down-cleanup** (#6) — add a disk-headroom pre-flight (warn + offer prune, mirror the RAM check) + have `demo-down`/`cmd_down` remove the stack's images. Doc: `corpus/ops/demo/frontend-tier.md`.
