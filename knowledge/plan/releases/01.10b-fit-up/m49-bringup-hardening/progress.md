@@ -10,9 +10,9 @@ _Each section = one rext code fix (committed in `.agentspace/rosetta-extensions`
 - [x] **§4 ant-academy-clone** (#5) — ensure-clones.sh phase (d2) clones ant-academy EXPLICITLY (non-fatal), NOT via repos.yml (ephemeral platform clone = non-durable + platform edit). Static + 4 functional tests. Docs: `ant-academy.md` (3 spots), `CLAUDE.md` corrected (the M48 "M49 adds repos.yml entry" prediction → the actual explicit-clone fix). 103 demo-stack tests green.
 - [x] **§5 disk-preflight-down-cleanup** (#6) — `preflight_disk_headroom()` (non-fatal, mirrors the RAM check, offers prune, `DEMO_DISK_MIN_GIB`/`DEMO_DISK_AVAIL_KB`) + `cmd_down --purge` removes the stack's `demo-N-*` images (scoped, non-fatal; plain `down` keeps them). 5 functional + 2 static tests. Docs: `frontend-tier.md` + `demo-up/SKILL.md`. 162 tests green.
 - [x] **§6 nonfatal-frontend** (#7) — before `compose up`, scale any absent-image frontend to 0 (`--scale svc=0`, set-u-safe) so a failed UI build no longer aborts backend + set-dress + verify + cockpit. Static pins (image check, scale-to-0, NO_UI gate, ordering). Doc: `frontend-tier.md` (the "non-fatal" claim is now true). 163 tests green.
-- [ ] **§7 demopatch-reanchor** (#8) — re-anchor `next-web-studio-url` demopatch `pre_sha256`/`post_sha256` to the current `stack-demo/next-web-app` source (v2.89.0). Doc: `corpus/ops/rosetta_demo.md` / `corpus/ops/demo/frontend-tier.md`.
+- [x] **§7 demopatch-reanchor** (#8) — re-anchored `next-web-studio-url` `pre_sha256` (b3d62db→e961aeae) + `post_sha256` (9f27e25→be0c803a) to the current v2.89.0 source (the hunk is byte-identical; only file-level hashes moved). Computed via the tool's manifest_loader; VERIFIED apply→revert end-to-end on a throwaway copy. Doc: `frontend-tier.md`. 46 demopatch tests green.
 
 ### Close gate
-- [ ] All 7 rext fixes committed in the authoring copy + tagged `fit-up-m49` (annotated).
-- [ ] Both working trees clean.
-- [ ] Static/code-level verification only (no live `/demo-up` — that's the orchestrator's live-verify gate + M53).
+- [x] All 7 rext fixes committed in the authoring copy — **tag `fit-up-m49` is the orchestrator's step** (after this build returns; the on-box `.agentspace/rext.tag` already pins `fit-up-m49`).
+- [x] Both working trees clean (verified at build-end).
+- [x] Static/code-level verification only (no live `/demo-up` — that's the orchestrator's live-verify gate + M53). bash -n + shellcheck -x clean; secret-DNA JSON valid; Go (secretdna+stack-secrets) + 163 demo-stack + 46 demopatch tests green; demopatch re-anchor verified apply→revert.

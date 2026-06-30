@@ -178,6 +178,13 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries
 > 0× prod / 31× `:39000`. Full mechanism + the failure-mode routing table (the "Platform-bound escape" row):
 > [`coverage-protocol.md`](coverage-protocol.md).
+>
+> **Re-anchored to the current source (v1.10b M49 #8).** The manifest's `pre_sha256`/`post_sha256` pin the
+> whole-file hash, and the M47 re-sync moved next-web to **v2.89.0** — so the hashes (pinned to the v1.10 ref)
+> would have made G2 **drift-refuse** the pristine current file, leaving the Studio link prod-baked. The
+> `STUDIO_URL` hunk itself is byte-identical to v1.10; only the file-level hashes moved (sibling exports drifted
+> — `AI_READINESS_URL`, the `/enterprise/*` URLs, the member-profile regexes). M49 recomputed both hashes from
+> the v2.89.0 source and verified the apply→revert cycle against it.
 
 ## Offset-origin CORS (the backend must allow the offset frontends)
 
