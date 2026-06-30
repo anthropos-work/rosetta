@@ -7,15 +7,15 @@
     "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
     "met": false
   },
-  "iters_total": 5,
-  "tiks": 4,
+  "iters_total": 6,
+  "tiks": 5,
   "toks": 1,
   "current_metric": {
     "failingSections": 5,
     "escapes": 0,
     "personaFailures": 0,
     "notReachedPages": 0,
-    "reachable": 65,
+    "reachable": 66,
     "cappedAtFrontier": false,
     "baseline_failing": 6,
     "delta_from_baseline": -1
@@ -25,8 +25,13 @@
     "pct_all_3_complete": 78.4,
     "hero_started": true,
     "hero_completed": true,
-    "note": "iter-05 (closed-fixed-partial) cleared the stale-Sentinel-policy reachability root cause (reachable 49->65) + landed the content-presence warmHeavyGrids (real-rows warm replacing the 4s networkidle bail), the gate-proving AI-readiness manifest descriptor (route /enterprise/workforce/ai-readiness: org-score + 3-step funnel assertions + seedPath prime), the cockpit ai-readiness deep-link + Dana jump_to re-point, and the org-agnostic corporate-email regex CORRECTING the shared manifest's hardcoded cervato-systems.com (which false-failed Northwind). GATED manager sweep moved failingSections 6->5, escapes 0, persona GREEN. Residual 5: 2 cervato-systems.com false-fails (RESOLVED by the committed manifest correction, pending re-sweep verify) + 3 genuine org-scale cold-grid perf-wall sections (verification-funnel, talent-languages, activity-table) routed to iter-06, alongside bake-Sentinel-reload-after-seed."
+    "note": "iter-06 (closed-no-lift) re-swept with the corrected iter-05 harness: the org-agnostic email fix CLEARED the 2 cervato false-fails; the deepened warmHeavyGrids (added the ai-readiness route + skeletons-cleared hydration) landed clean but did NOT lift the metric (5->5). ROOT CAUSE of the residual 5: a PLATFORM-side AI-readiness response-build perf wall — GET /api/workforce/ai-readiness NEVER completes in-budget at 200 members (0 backend completions; ai_readiness_refresh worker deadline-exceeded), every AI-readiness SQL query EXPLAINs at ms (not index-bound), the cause is the live-recompute + a per-skill federated translation N+1 (withSkillerLang -> skiller _entities), same class as the M46 per-object Sentinel RPC. USER-BLOCKER: the gate cannot reach (0,0) without a platform-read-path edit (forbidden by the invariant), a substantial NEW app-translation/snapshot-short-circuit demo-patch, OR a disclosed-residual sign-off (slow-but-correct, data proven in DB) — surfaced for the user's decision. Carried: bake-Sentinel-reload-after-seed."
   },
-  "last_iter": "iter-05",
-  "last_updated": "2026-06-30"
+  "blocker": {
+    "kind": "user-blocker",
+    "summary": "AI-readiness dashboard GET never completes in-budget at 200 members (platform-side response-build perf wall: live-recompute + per-skill federated translation N+1). Gate cannot reach (0,0) without one of: (a) a new app read-path demo-patch (batch translation OR default-call-reads-snapshots), (b) escalate a platform fix (unimplementable-without-platform-edit), or (c) accept a disclosed-presenter-note residual (slow-but-correct, data proven in DB) with user sign-off.",
+    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-06/decisions.md (D3) + progress.md"
+  },
+  "last_iter": "iter-06",
+  "last_updated": "2026-07-01"
 }

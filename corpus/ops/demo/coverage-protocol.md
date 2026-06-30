@@ -394,6 +394,29 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     demo-perf relaxation, NOT a prod fix. **Lesson: decompose a perf wall before judging it; and a per-OBJECT
     authz RPC can't be CACHED (object-blind = wrong answer) but it CAN be DROPPED where the read returns real
     DB data and the mutations stay enforced — dropping a read-gate is safe where caching-it-wrong wasn't.**
+  - **A never-COMPLETING server response is a different wall than a slow-PAINT — check the backend request log
+    for a completion BEFORE investing in a harness warm (v1.10b M51 iter-06).** The slow-paint poll + the
+    `warmHeavyGrids` cache-primer both assume the backing query EVENTUALLY returns (the warm primes a result
+    that WOULD complete; the poll waits for a paint that WILL happen). A grid whose server response **never
+    completes in-budget** defeats both: `GET /api/workforce/ai-readiness` on the 200-member showcase org logged
+    **ZERO completions** across the entire backend log (only OPTIONS preflights) — the React Query fetch is
+    aborted every time, and the `ai_readiness_refresh` background worker (same compute) timed out
+    `context deadline exceeded`. Tell this apart from a slow-paint / cold-cache wall by **grepping the backend
+    request log for a COMPLETED request**: `docker logs <stack>-backend-1 | grep 'GET /api/<route>' | grep -v
+    OPTIONS` — **0 hits = the server can't produce the response in-budget**, so no warm/poll will help (you'd be
+    deepening a primer for a result that never arrives). The root cause here was NOT index-bound (every
+    AI-readiness SQL query EXPLAINed at ms — jobsimulation.sessions fully indexed) and NOT the M46 members-grid
+    fan-out: it was the **response-build live-recompute + a per-skill federated TRANSLATION fan-out**
+    (`withSkillerLang` → skiller `_entities` `get skill translation <uuid>/english`, one round-trip per skill in
+    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-skiller-1` logs). That is the
+    **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
+    snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
+    takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind
+    a *closed* `CycleID`), so seeding the snapshot table would NOT short-circuit the default call — the
+    short-circuit itself is a platform-read-path change. **Decompose like M46:** if a demo-patch can batch/relax
+    the translation fan-out or make the default call read snapshots (the `app-targetrole-authz-skip` precedent),
+    that's demo-local; if not, it's the milestone Re-scope trigger (`unimplementable-without-platform-edit`) —
+    escalate, never edit the platform, and never widen the harness budget to mask a server that can't answer.
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and
