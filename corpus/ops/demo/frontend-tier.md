@@ -97,8 +97,13 @@ image. The tooling makes this cheap-where-it-can:
   out of scope".
 - **Built serially, before `compose up`.** The two frontend builds run **one at a time, before** the stack
   starts — kept out of the parallel Go-service fan-out so the build RAM spike never overlaps anything else.
-- **Non-fatal.** A frontend build failure **warns** but never aborts the backend bring-up; re-run to retry, or
-  `DEMO_NO_UI=1` to skip.
+- **Non-fatal — actually true now (v1.10b M49 #7).** A frontend build failure **warns** but never aborts the
+  backend bring-up. The build step was always non-fatal, but `compose up` would still try to **start** a
+  frontend whose image is **absent** (a failed/skipped build) and abort the whole bring-up under
+  `set -euo pipefail` — so backend + set-dress + verify + cockpit never ran. Now an absent frontend image is
+  **scaled to 0 replicas** at `compose up` (`--scale next-web-app=0` / `--scale studio-desk=0`), so the rest of
+  the stack comes up and the demo is usable (API + cockpit); re-run to retry the UI, or `DEMO_NO_UI=1` to skip
+  it entirely (under `--no-ui` the injected override omits the frontends, so there's nothing to scale).
 
 ## The 12 GB Docker-VM prerequisite
 
