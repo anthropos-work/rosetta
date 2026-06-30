@@ -3,9 +3,9 @@ milestone: M50
 slug: content-seeding-fill
 version: v1.10b "fit-up"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-06-29
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 complexity: large
 exit_gate: "On a COLD reset-to-seed demo, both Maya (employee) and Dan (manager) render fully-populated across every annotation-listed surface, proven by a re-run of the M42 semantic coverage gate (employee + manager), 0 prod-eject escapes."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md

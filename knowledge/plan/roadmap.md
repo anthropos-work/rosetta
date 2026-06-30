@@ -117,11 +117,30 @@ findings all Fate-1 (2 stale `make init` ant-academy claims in `service_taxonomy
 reconciled); deferral audit **GREEN** (AI-keys policy → M50 Fate-2; consumption-clone re-pin → push-gated KEEP).
 **Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
 
-**M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). **Exit gate:** Maya (employee) + Dan
-(manager) render fully-populated across every annotation-listed surface on a COLD reset-to-seed demo, proven by the
-**M42 semantic coverage gate** (both vantages), 0 prod-eject escapes. Iterative because the real root-causes are
-**hypotheses until observed** on the clean bring-up (some need new seeders, e.g. `MemberLanguagesSeeder`; some are
-demo-up #7 artifacts that vanish once set-dress runs).
+**M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). ✅ **`done` — closed-on-gate 2026-06-30**
+(merged → `release/01.10b-fit-up`; rext tag `fit-up-m50` @ `f0d984c` + close fix-commit `3c2de27`, consumed
+per-stack). **M42 semantic coverage gate MET on BOTH vantages** (employee + manager) on a WARM demo-1, on the
+manifest **STRENGTHENED to PROVE the gaps** (frontier-exhausted, (failingSections,escapes)=(0,0), 0 persona,
+0 cross-port). 6 iters (1 tok + 5 tiks). Delivered (the sweep-driven seed fill): a NEW **`MemberLanguagesSeeder`**
+(ISO-639-1 `world_languages` catalog + per-member `user_languages` → `membership_languages` via the platform's
+AFTER-INSERT trigger — the manager Talent-tab "Languages spoken" chart, 0 rows → 747 across all 340 members), the
+**`CertificatesSeeder` member-coverage extension** (hero-only → ~45% role-coherent, certs 9→236), the **`UsersSeeder`
+member-field backfill** (`memberships.joined_at`/`location`/`last_activity_date` for `/enterprise/members`,
+NULL-only idempotent guard), the **`next-web-public-website-url` demopatch** (the `PUBLIC_WEBSITE_URL` JS-constant
+escape class) + a NEW **post-replay Directus content-URL rewrite** (the replayed-content escape class — prod hosts
+baked into `public_landing_page_url`/`read_more_link`, regex over any `anthropos.work` subdomain → demo host), and
+the **manager-manifest strengthening** (new `preAssert` tab-click + `textMatch` OR-assert harness primitives that
+ASSERT the members-Location column + the Talent-tab languages/certs charts — the D4/F1 reconciliation: the run-1
+gate passed BLIND to two M50-own gaps; the gate now PROVES them). All DATA-DENSITY, `PerStackIsolated` +
+closure-GREEN, M17-idempotent, zero platform edits. **AI-keys policy DECIDED: documented-as-absent** (values-blind,
+no key provisioned; AI surfaces inert-by-design — resolves the inherited M49 deferral). Tests: rext stack-seeding
+719 (seeders pkg 349, +1 at close; 97.4% stmt) · demo-stack Python 108; flake **0** (5/5). Close review: 11
+findings all Fate-1 (gofmt 2 files + 2 code pins + 3 docs incl the NEW routing-table escape row + a broken M51
+backref); deferral audit **GREEN** (0 repeat/chronic/aged). **Carry-forward (three-fate, none escape-hatch):**
+**COLD reset-to-seed acceptance → M53** (Fate-2, user-decided — all M50 seeders + fixes reproduce from the bring-up
+tooling on a fresh `/demo-up`); **academy content + menu-link/non-anonymous-session (F6) → M51** (Fate-3);
+consumption-clone re-pin to `fit-up-m50` = push-gated KEEP (authoritative at M53). **Delivers →**
+`profile-completeness-spec.md`, `seeding-spec.md`, `coverage-protocol.md`, `secrets-spec.md`.
 
 **M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. **Exit
 gate:** a curated **200-person 3rd org** with the AI-readiness manager dashboard **enabled**, **~80%** of members

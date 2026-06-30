@@ -31,6 +31,25 @@
   "manager_sweep_cap": 300,
   "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04/05/06 fixes synced to consumption clone for live verification; authoritative re-pin to fit-up-m50 at close)",
   "rext_commits": "fix(M50/02), fix(M50/04), fix(M50/05) x2, iter(M50/06)",
-  "carry_forward": "COLD reset-to-seed acceptance (M53); AI-keys policy (F7) + academy (F6) decision deliverables; re-pin consumption clone to fit-up-m50 at close",
+  "tests": {
+    "rext_go_stack_seeding_total": 719,
+    "rext_go_seeders_pkg": 349,
+    "rext_go_seeders_pkg_coverage_pct": 97.4,
+    "rext_demo_stack_python_touched": 108,
+    "delta_vs_m49_note": "close added +1 Go test (TestNativeLanguageByCity_CoversLocations, locations-sync invariant). M49 stack-secrets-centric counts not directly comparable to M50's seeding-centric footprint; coverage 97.4% unchanged from harden Pass 2 (stable).",
+    "flake_count": 0,
+    "flake_gate": "5/5 seeders package, shuffled, sequential (-p 1)"
+  },
+  "close": {
+    "gate_outcome": "closed-on-gate (M42 warm both vantages, strengthened manifest)",
+    "iters": 6,
+    "tiks": 5,
+    "toks": 1,
+    "findings": "3 scope (clean) + 3 code-quality (1 must-fix gofmt, 2 nice-to-have) + 3 docs + 2 tests + 4 decision-triage",
+    "fixes_landed": "gofmt 2 files; co-derivation comment; locations-sync test (+1); 2 ResourceWarning handles; coverage-protocol replayed-content-URL escape row; seeding-spec M50 line; secrets-spec AI-keys policy; D-CLOSE-1/2/3 + adversarial subsection; 1 broken M51 backref depth fixed",
+    "rext_close_commit": "3c2de27 (authoring main; tag fit-up-m50 @ f0d984c unchanged)",
+    "deferral_audit": "GREEN (0 repeat, 0 chronic, 0 aged-out)"
+  },
+  "carry_forward": "COLD reset-to-seed acceptance -> M53 (Fate-2, user-decided); academy content+menu-link/non-anon-session (F6) -> M51 (Fate-3); AI-keys policy RESOLVED at close (documented-as-absent); re-pin consumption clone to fit-up-m50 = push-gated KEEP (authoritative at M53)",
   "last_updated": "2026-06-30"
 }
