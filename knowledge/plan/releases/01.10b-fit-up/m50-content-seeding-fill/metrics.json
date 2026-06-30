@@ -3,18 +3,21 @@
   "shape": "iterative",
   "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
   "primary_metric": "(failingSections, escapes) per vantage",
-  "iters_closed": 1,
-  "tiks": 0,
+  "iters_closed": 2,
+  "tiks": 1,
   "toks": 1,
   "baseline": {
-    "employee": "not yet measured (iter-02)",
-    "manager": "not yet measured (iter-02)"
+    "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true (GATE MET — valid)",
+    "manager": "NOT MEASURABLE — frontier-cap (per-member /user + activity-dashboard drill-down explosion past the 150-page cap → cappedAtFrontier; gate-invalid). iter-03 tooling-iter fixes the SAMPLE_RULES."
   },
   "current": {
-    "employee": "not yet measured",
-    "manager": "not yet measured"
+    "employee": "GATE MET (no fix needed)",
+    "manager": "unmeasured (pending iter-03 tooling fix); member-field fill landed in rext (gate-delta unverified)"
   },
   "gate_met": false,
+  "gate_met_employee": true,
+  "gate_met_manager": "unmeasured",
   "rext_tag_consumed_by_demo1": "fit-up-m49",
+  "rext_uncommitted_fix": "fix(M50/02) member-field fill — committed to authoring copy, not yet tagged",
   "last_updated": "2026-06-30"
 }
