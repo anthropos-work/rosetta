@@ -352,3 +352,13 @@ four sections, full suite green `-race`. Render-verified on a live demo (the §D
 `/enterprise/members` reads `memberships.picture_url`, not `users.picture`) + a 3-pass hardening sweep (17 added
 tests, seeders-pkg stmt coverage 96.5%→97.5%). Code-of-record: `rosetta-extensions` @ tag
 `method-acting-m44-profile-completeness-fix2`.
+**v1.10b "fit-up" M50** completes the Talent-tab fill on the clean re-grounded demo: a NEW
+**`MemberLanguagesSeeder`** (the ISO-639-1 `world_languages` catalog + per-member `user_languages`, which the DB
+AFTER-INSERT trigger fans out to `membership_languages` — the manager Talent-tab "Languages spoken" chart), the
+**`CertificatesSeeder` member-coverage extension** (hero-only → ~45% role-coherent members, so the "Certifications"
+chart reads as a credentialed workforce), and the **`UsersSeeder` member-field backfill** (`memberships.joined_at`
+/ `location` / `last_activity_date` for the `/enterprise/members` columns, NULL-only idempotent guard). All
+DATA-DENSITY, `PerStackIsolated` + closure-GREEN (the ISO catalog is a published standard, not a fabricated
+node-id), proven by the M42 coverage gate on the manifest STRENGTHENED to assert them (both vantages, warm). The
+detail lives in [`profile-completeness-spec.md`](demo/profile-completeness-spec.md) §"the Talent-tab fill" + §"the
+shared per-member uuid-space". Code-of-record: `rosetta-extensions` @ tag `fit-up-m50`.
