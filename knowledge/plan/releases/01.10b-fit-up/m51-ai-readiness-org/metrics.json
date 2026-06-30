@@ -1,0 +1,32 @@
+{
+  "milestone": "M51",
+  "slug": "ai-readiness-org",
+  "iteration_protocol": "corpus/ops/demo/coverage-protocol.md",
+  "gate": {
+    "metric": "(failingSections, escapes) manager-vantage on the 3rd org (Northwind Aviation), frontier-exhausted, on a fresh demo-up",
+    "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
+    "met": false
+  },
+  "iters_total": 3,
+  "tiks": 2,
+  "toks": 1,
+  "current_metric": {
+    "failingSections": 6,
+    "escapes": 0,
+    "personaFailures": 0,
+    "notReachedPages": 0,
+    "reachable": 49,
+    "cappedAtFrontier": false,
+    "baseline_failing": 6,
+    "delta_from_baseline": 0
+  },
+  "qualitative_gate_conditions": {
+    "dashboard_enabled": true,
+    "pct_all_3_complete": 78.4,
+    "hero_started": true,
+    "hero_completed": true,
+    "note": "Data layer of the gate is satisfied for Northwind; the residual (failingSections=6) is the base-Workforce org-scale perf-wall cluster (skeleton false-fails, data-in-DB) + the manager manifest does not yet assert the AI-readiness funnel section."
+  },
+  "last_iter": "iter-03",
+  "last_updated": "2026-06-30"
+}
