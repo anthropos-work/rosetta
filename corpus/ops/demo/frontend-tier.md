@@ -251,10 +251,12 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-2` — the M19 UI tier first
-shipped at `dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`;
-the session-detach fix below lands at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
-land at `storytelling-postfix-2`):
+at the **pinned tag recorded in `.agentspace/rext.tag`** (the single source-of-truth, M49 #1 — see
+[`rosetta_demo.md`](../rosetta_demo.md) *"The pin is a file"*; current v1.10b "fit-up" pin: `fit-up-m49`).
+*Landing provenance (which historical tag first shipped each piece):* the M19 UI tier first shipped at
+`dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`; the
+session-detach fix below landed at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
+landed at `storytelling-postfix-2`:
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,

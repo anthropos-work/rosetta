@@ -4,7 +4,7 @@
 _Checked off as each In-scope deliverable lands. Close when all boxes are ticked._
 _Each section = one rext code fix (committed in `.agentspace/rosetta-extensions` @ `main`, rolled into tag `fit-up-m49`) + its corpus doc truth-up (committed in `rosetta` @ `m49/bringup-hardening`)._
 
-- [ ] **§1 rext-tag-sot** (#1) — introduce `.agentspace/rext.tag` single source-of-truth; `/demo-up` skill + `ensure-clones.sh` read it; reconcile the 3 conflicting prose pins. Doc: `corpus/ops/rosetta_demo.md`.
+- [x] **§1 rext-tag-sot** (#1) — `.agentspace/rext.tag` SoT + `lib/rext_tag.sh` reader + non-fatal pin guard in `ensure-clones.sh`; reconciled **4** conflicting prose pins (the overview's 3 + a stray in `verification.md`) to read from it. Pin = `fit-up-m49`. Docs: `rosetta_demo.md`, `demo-up/SKILL.md`, `frontend-tier.md`, `verification.md`. 96/96 tests green.
 - [ ] **§2 env-guard-order** (#3) — move the `platform/.env` presence guard to AFTER the provision step in `up-injected.sh`. Doc: `corpus/ops/rosetta_demo.md`.
 - [ ] **§3 invitation-hmac-secret** (#4) — add `INVITATION_HMAC_SECRET` to the secret-DNA as **critical** + auto-generate a throwaway non-prod value at provision. Doc: `corpus/ops/secrets-spec.md` (+ note AI-keys policy is M50).
 - [ ] **§4 ant-academy-clone** (#5) — make ant-academy actually clone for a demo (repos.yml vs explicit clone — decide against code) + reconcile. Doc: `corpus/services/ant-academy.md`.
