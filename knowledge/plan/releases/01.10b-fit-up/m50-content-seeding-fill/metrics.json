@@ -3,30 +3,34 @@
   "shape": "iterative",
   "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
   "primary_metric": "(failingSections, escapes) per vantage",
-  "iters_closed": 5,
-  "tiks": 4,
+  "iters_closed": 6,
+  "tiks": 5,
   "toks": 1,
   "warm_gate_met_both_vantages": true,
+  "warm_gate_met_strengthened_manifest": true,
   "baseline": {
     "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true",
     "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 (the prod-eject blocker)"
   },
   "current": {
-    "employee": "GATE MET (reachable=59, frontier-exhausted, all 0) — iter-02",
-    "manager": "GATE MET (reachable=69, frontier-exhausted, failingSections=0 escapes=0 personaFailures=0 crossPortFailures=0) — iter-05"
+    "employee": "GATE MET (reachable=59, frontier-exhausted, all 0) — iter-02 (manifest unaffected by iter-06's additive changes)",
+    "manager": "GATE MET on the STRENGTHENED manifest (reachable=69, frontier-exhausted, failingSections=0 escapes=0 personaFailures=0 crossPortFailures=0; talent-languages/talent-certifications/members-roster-Location/members-location-values all PASS real-content) — iter-06"
   },
-  "gate_met": "WARM both vantages (employee iter-02 + manager iter-05). COLD reset-to-seed acceptance (the explicit exit_gate) = the remaining step → M53 / close.",
+  "gate_met": "WARM both vantages on the STRENGTHENED manifest (employee iter-02 + manager iter-06). COLD reset-to-seed acceptance (the explicit exit_gate) = the remaining step → M53 / close.",
   "gate_met_employee": true,
   "gate_met_manager": true,
   "gate_met_cold": false,
+  "run2_d4f1_reconciliation": "the run-1 (0,0) passed BLIND to two M50-own annotation gaps (languages 0 rows DB-wide, certs hero-only 9/340); iter-06 FILLED them + STRENGTHENED the manager manifest to ASSERT them, so the gate now PROVES the gaps closed",
+  "iter06_data": "world_languages=16, user_languages=747 (ALL 340 members), membership_languages=747 (DB-trigger fan-out), user_certifications 9->236 (158 distinct users ~46%); M17 idempotent (2nd seed=0 new rows)",
   "fixes": [
     "fix(M50/02) member-field fill (memberships joined_at/location/last_activity_date)",
     "fix(M50/04) next-web-public-website-url demopatch (JS-constant escape class)",
-    "fix(M50/05) post-replay Directus content-URL rewrite (replayed-content escape class: simulations + skill_paths, regex over any anthropos.work subdomain)"
+    "fix(M50/05) post-replay Directus content-URL rewrite (replayed-content escape class: simulations + skill_paths, regex over any anthropos.work subdomain)",
+    "iter(M50/06) MemberLanguagesSeeder (NEW) + CertificatesSeeder member-coverage + manager-manifest strengthening (preAssert tab-click + textMatch OR-assert)"
   ],
   "manager_sweep_cap": 300,
-  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04/05 fixes synced to consumption clone for live verification; authoritative re-pin to fit-up-m50 at close)",
-  "rext_commits": "fix(M50/02), fix(M50/04), fix(M50/05) x2",
-  "carry_forward": "COLD reset-to-seed acceptance (M53); manager manifest-strengthening (D4/F1) to gate-PROVE the member-field fill; AI-keys policy (F7) + academy (F6) decision deliverables",
+  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04/05/06 fixes synced to consumption clone for live verification; authoritative re-pin to fit-up-m50 at close)",
+  "rext_commits": "fix(M50/02), fix(M50/04), fix(M50/05) x2, iter(M50/06)",
+  "carry_forward": "COLD reset-to-seed acceptance (M53); AI-keys policy (F7) + academy (F6) decision deliverables; re-pin consumption clone to fit-up-m50 at close",
   "last_updated": "2026-06-30"
 }

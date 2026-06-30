@@ -35,8 +35,9 @@ completeness bars. M44 fills both.
 | Role + title | `UsersSeeder` `user_basic_info` backfill | `public.user_basic_info.job_role_id/job_title` | `/profile` header section: role label non-empty |
 | Work history (3 jobs) | `ProfileSeeder` (`profile.go`) | `public.user_experiences` (+ `companies`) | `/profile` Experience section: `count >= floor` |
 | Education (1 degree) | `ProfileSeeder` | `public.user_educations` | `/profile` Education section: real content |
-| **Certifications (2-3)** | **`CertificatesSeeder`** (`certificates.go`, M44 §B1) | `public.user_certifications` | `/profile` Certifications section: `count >= 1` |
+| **Certifications (2-3 hero; ~45% of members carry 1-2 — v1.10b M50)** | **`CertificatesSeeder`** (`certificates.go`, M44 §B1; member-coverage extended in v1.10b "fit-up" M50) | `public.user_certifications` | `/profile` Certifications: `count >= 1`; **manager Workforce → Talent Pool "Certifications" chart** |
 | **Projects (3-4)** | **`ProjectsSeeder`** (`projects.go`, M44 §B2) | `public.user_projects` | `/profile` Projects section: `count >= 1` |
+| **Spoken languages (every member: 1-3 — v1.10b M50)** | **`MemberLanguagesSeeder`** (`member_languages.go`, v1.10b "fit-up" M50) | `public.world_languages` (catalog) + `public.user_languages` → `public.membership_languages` (via the DB AFTER-INSERT trigger) | **manager Workforce → Talent Pool "Languages spoken" chart** (`/profile` also reads `user_languages`) |
 | Verified skills + Skill-Spotlight chart | `PersonaSeeder` (the §3 7-table chain) | `public.user_skills` (is_verified) + `user_skill_evidences` | `/profile` Skill Spotlight: chart renders (>=2 datapoints) |
 | Claimed-but-unverified tail (the gap) | `ProfileSeeder` claimed tail | `user_skills` (is_verified=false) + evidences (anthropos NULL) | persona: the claimed-vs-verified gap is visible |
 | **Self-rating completeness (§A)** | `PersonaSeeder` `user_level` branch | `user_skill_evidences.user_level` (set or NULL) | thriving hero: a self-assessment shows; struggling: it reads incomplete |
@@ -92,6 +93,33 @@ The manager's `/enterprise/members` roster must read as **real people**, not her
   gets a modest flat verified set + a manager-track timeline (above).
 - **§D bulk-member depth** — every non-hero member gets a shallow career (above).
 
+### v1.10b "fit-up" M50 — the Talent-tab fill (languages + org-wide cert coverage)
+
+The field review flagged the manager's Workforce → **Talent Pool** tab: *"no language spoken + Certification
+are really low numbers."* Two surfaces were genuinely empty/sparse on a clean demo, both filled in M50:
+
+- **`MemberLanguagesSeeder`** (surface `"member_languages"`, `member_languages.go`) — the language tables
+  (`world_languages` / `user_languages` / `membership_languages`) were 0 rows DB-wide. It populates
+  `world_languages` with a **curated ISO-639-1 standard catalog** (16 EU-professional-weighted entries — a
+  published standard list is a factual reference, NOT a fabricated taxonomy node-id; the closure gene governs
+  skiller node-ids, not ISO codes) then writes **per-member `user_languages`** (every member, 1-3 distinct
+  languages: a location-coherent native at level 5 + near-universal English + an occasional third). **It seeds
+  ONLY `user_languages`** — the DB AFTER-INSERT trigger `on_insert_user_languages_insert_membership_languages`
+  fans each row out to `membership_languages` (the column the org Talent tab reads). Idempotent COPY on
+  `id` (deterministic per user+language) → a re-seed conflicts-and-skips, so the trigger does not re-fire.
+  Runs in the DAG after `users`.
+- **`CertificatesSeeder` member-coverage extension** — certs were **hero-only** (the "really low numbers" gap).
+  M50 extends the seeder to give a deterministic **~45% of the supporting population** 1-2 role-coherent certs
+  (heroes still carry their 2-3; managers still excluded — the §C path owns them), so the org reads as a
+  credentialed workforce. The cert bank + skills stay role-coherent via the SAME deterministic role assignment
+  `UsersSeeder` writes (no fabrication — an empty taxonomy pool → the general bank + no skills tag).
+- **The manager coverage manifest is strengthened to PROVE these** (the D4/F1 reconciliation): before M50 the
+  manager M42 gate passed `(0,0)` BLIND to languages/certs/member-fields (the manifest never asserted them). M50
+  adds a `preAssert` tab-click capability + a `textMatch` (OR-over-alternatives) assertion to
+  `stack-verify/e2e/`, and the manager manifest now asserts: `/enterprise/members` Location column + a real
+  seeded city value, and `/enterprise/workforce` → Talent Pool's "Languages spoken" + "Certifications" charts.
+  The gate is MET only when this STRENGTHENED manifest passes — proving the gaps closed, not passing blind.
+
 ## The isolation + closure invariants (inherited, unchanged)
 
 Every M44 write surface is **`PerStackIsolated`** (per-stack Postgres — the same zero-pollution class as the
@@ -116,3 +144,14 @@ demo-3 DB; the overview's guesses were wrong on every count:
 Both are also FK targets for `user_skills` provenance edges (`user_skill_certification` / `user_skill_project`)
 in the `user_skills_check_foreign_keys` CHECK — so claimed skills *could* attach to them, though M44 keeps
 certs/projects standalone (their own `skills` json) and ties the claimed tail to experiences/educations.
+
+**Language tables (verified against demo-1, v1.10b M50):**
+- **`public.world_languages`** — the PUBLIC reference catalog: `id` (uuid), `code` (varchar(2) NOT NULL UNIQUE —
+  ISO-639-1), `name` (text NOT NULL). Empty on a clean demo (the snapshot didn't carry it) → M50 seeds it.
+- **`public.user_languages`** — `user` (uuid FK → users), `level` (int — CEFR-ish 1..5, 5=native), `id` (uuid),
+  `world_language_user_languages` (uuid FK → world_languages), `created_at`/`updated_at`. UNIQUE
+  `(user, world_language)`. Carries an **AFTER-INSERT trigger** that writes the matching
+  `membership_languages` row per the user's memberships — so seed `user_languages` only.
+- **`public.membership_languages`** — the trigger-written org-side mirror (`membership_languages` FK → memberships,
+  `world_language_membership_languages` FK → world_languages, `level`). The manager Talent-tab languages chart
+  reads this. Never seeded directly (the trigger owns it).
