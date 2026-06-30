@@ -100,11 +100,22 @@ closed-cycle ⇒ frozen-snapshot-direct — the dashboard recomputes from signal
 false ant-academy "in repos.yml" claim (CLAUDE.md + ant-academy.md×3; **M49 #5 owns the repos.yml fix**). Docs-only —
 never touched the demo. **Delivered → `corpus/services/ai-readiness.md`** + the re-grounded arch/service docs.
 
-**M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48**. The 7 remaining demo-up issues
-so a from-cold `/demo-up` on a `stack-demo`-only box completes: #3 `.env`-guard order, #4 `INVITATION_HMAC_SECRET`
-(critical secret-DNA + auto-gen), #5 ant-academy clone, #6 disk pre-flight + `demo-down` image cleanup, #7 *true*
-non-fatal frontend, #8 demopatch re-anchor, #1 single **`.agentspace/rext.tag`** source-of-truth (also the note-2
-reproducible pin). **Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
+**M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48** · ✅ **`done` — closed
+2026-06-30** (merged → `release/01.10b-fit-up`; rext tag `fit-up-m49` @ `ba586d6` = 7 build fixes + 3 harden
+commits, consumed per-stack). Closed the 7 remaining demo-up issues so a from-cold `/demo-up` on a `stack-demo`-only
+box completes — **proven end-to-end by the live-verify gate** (a from-cold `/demo-up` on a re-pinned `fit-up-m49`
+clone: demo-1 UP, autoverify "verified-working"): #3 `.env`-guard order (provision-then-check), #4
+`INVITATION_HMAC_SECRET` (critical secret-DNA gene + values-blind auto-gen + `DemoGeneratedKeys` overlay; the silent
+`app Exited (0)` class fixed), #5 ant-academy **explicit `ensure-clones.sh` clone** (NOT `repos.yml` — the ephemeral
+gitignored platform clone makes that non-durable + a platform edit; the cms/studio submodule-pattern precedent), #6
+disk pre-flight + `demo-down --purge` per-demo image cleanup (~5 GB reclaimed live), #7 *true* non-fatal frontend
+(absent image → `--scale svc=0`), #8 demopatch re-anchor to next-web **v2.89.0**, #1 single **`.agentspace/rext.tag`**
+source-of-truth (+ CRLF-tolerant `lib/rext_tag.sh` reader; reconciled 4 stale prose pins; doubles as the note-2
+reproducible pin). Harden fixed 1 real bug inline (the `rext_tag.sh` CRLF carriage-return leak). Tests: rext Go
+1552→**1555** (stack-secrets +3) · demo-stack Python **299** (demopatch 46→47); flake **0** (5/5). Close review: 6
+findings all Fate-1 (2 stale `make init` ant-academy claims in `service_taxonomy.md` retired; test-count literals
+reconciled); deferral audit **GREEN** (AI-keys policy → M50 Fate-2; consumption-clone re-pin → push-gated KEEP).
+**Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
 
 **M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). **Exit gate:** Maya (employee) + Dan
 (manager) render fully-populated across every annotation-listed surface on a COLD reset-to-seed demo, proven by the
