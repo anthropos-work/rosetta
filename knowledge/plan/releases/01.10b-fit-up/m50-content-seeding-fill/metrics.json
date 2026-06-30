@@ -1,0 +1,20 @@
+{
+  "milestone": "M50",
+  "shape": "iterative",
+  "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
+  "primary_metric": "(failingSections, escapes) per vantage",
+  "iters_closed": 1,
+  "tiks": 0,
+  "toks": 1,
+  "baseline": {
+    "employee": "not yet measured (iter-02)",
+    "manager": "not yet measured (iter-02)"
+  },
+  "current": {
+    "employee": "not yet measured",
+    "manager": "not yet measured"
+  },
+  "gate_met": false,
+  "rext_tag_consumed_by_demo1": "fit-up-m49",
+  "last_updated": "2026-06-30"
+}
