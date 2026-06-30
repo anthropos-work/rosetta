@@ -261,10 +261,19 @@ real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-fligh
 **non-fatally** into `/dev-up` + `/demo-up` (warn standard / fail critical — the
 [`verification.md`](verification.md) convention).
 
-> **AI-provider keys policy — owned by M50 (not M49).** Which of `OPENAI`/`ANTHROPIC`/`MISTRAL`/`ELEVENLABS`/
-> `LIVEKIT` keys become throwaway/sandbox values in the demo secret source vs **documented-as-absent** is
-> **M50's** decision — the **bring-up itself needs no AI keys**, so M49 provisions none. This note is the
-> placeholder M50 fills in.
+> **AI-provider keys policy — DECIDED (v1.10b "fit-up" M50): documented-as-absent.** The demo's content
+> believability does **not** need live AI — every seeded surface (the heroes, the roster, languages,
+> certifications, the Workforce dashboards, the verified-skill chain) renders from **seeded structural data**,
+> not a live model call. So the AI-provider keys (`OPENAI` / `ANTHROPIC` / `MISTRAL` / `ELEVENLABS` / the
+> `LIVEKIT` voice pair) stay **absent** from the demo secret source — none becomes a throwaway/sandbox demo
+> value, and **no real key is ever provisioned** (this decision is itself **values-blind**: it provisions
+> nothing). The AI-dependent surfaces are therefore **inert-by-design** unless an operator supplies their own
+> sandbox/throwaway keys into the source: the **AI-simulation voice** engine (LiveKit), the **ant-academy
+> `/api/ai/chat`** assistant (`OPENAI_API_KEY`/`ANTHROPIC_API_KEY`), and the **M45 AI batch-generation**
+> (`ai v1.40.1`) all no-op gracefully — they are not on any demo gate path (the M42 coverage gate is MET on
+> both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
+> demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
+> the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
 
 ### The values-blind safety statement (the inviolable invariant)
 

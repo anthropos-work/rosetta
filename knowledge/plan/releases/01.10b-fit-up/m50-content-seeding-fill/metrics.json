@@ -1,0 +1,55 @@
+{
+  "milestone": "M50",
+  "shape": "iterative",
+  "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
+  "primary_metric": "(failingSections, escapes) per vantage",
+  "iters_closed": 6,
+  "tiks": 5,
+  "toks": 1,
+  "warm_gate_met_both_vantages": true,
+  "warm_gate_met_strengthened_manifest": true,
+  "baseline": {
+    "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true",
+    "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 (the prod-eject blocker)"
+  },
+  "current": {
+    "employee": "GATE MET (reachable=59, frontier-exhausted, all 0) — iter-02 (manifest unaffected by iter-06's additive changes)",
+    "manager": "GATE MET on the STRENGTHENED manifest (reachable=69, frontier-exhausted, failingSections=0 escapes=0 personaFailures=0 crossPortFailures=0; talent-languages/talent-certifications/members-roster-Location/members-location-values all PASS real-content) — iter-06"
+  },
+  "gate_met": "WARM both vantages on the STRENGTHENED manifest (employee iter-02 + manager iter-06). COLD reset-to-seed acceptance (the explicit exit_gate) = the remaining step → M53 / close.",
+  "gate_met_employee": true,
+  "gate_met_manager": true,
+  "gate_met_cold": false,
+  "run2_d4f1_reconciliation": "the run-1 (0,0) passed BLIND to two M50-own annotation gaps (languages 0 rows DB-wide, certs hero-only 9/340); iter-06 FILLED them + STRENGTHENED the manager manifest to ASSERT them, so the gate now PROVES the gaps closed",
+  "iter06_data": "world_languages=16, user_languages=747 (ALL 340 members), membership_languages=747 (DB-trigger fan-out), user_certifications 9->236 (158 distinct users ~46%); M17 idempotent (2nd seed=0 new rows)",
+  "fixes": [
+    "fix(M50/02) member-field fill (memberships joined_at/location/last_activity_date)",
+    "fix(M50/04) next-web-public-website-url demopatch (JS-constant escape class)",
+    "fix(M50/05) post-replay Directus content-URL rewrite (replayed-content escape class: simulations + skill_paths, regex over any anthropos.work subdomain)",
+    "iter(M50/06) MemberLanguagesSeeder (NEW) + CertificatesSeeder member-coverage + manager-manifest strengthening (preAssert tab-click + textMatch OR-assert)"
+  ],
+  "manager_sweep_cap": 300,
+  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04/05/06 fixes synced to consumption clone for live verification; authoritative re-pin to fit-up-m50 at close)",
+  "rext_commits": "fix(M50/02), fix(M50/04), fix(M50/05) x2, iter(M50/06)",
+  "tests": {
+    "rext_go_stack_seeding_total": 719,
+    "rext_go_seeders_pkg": 349,
+    "rext_go_seeders_pkg_coverage_pct": 97.4,
+    "rext_demo_stack_python_touched": 108,
+    "delta_vs_m49_note": "close added +1 Go test (TestNativeLanguageByCity_CoversLocations, locations-sync invariant). M49 stack-secrets-centric counts not directly comparable to M50's seeding-centric footprint; coverage 97.4% unchanged from harden Pass 2 (stable).",
+    "flake_count": 0,
+    "flake_gate": "5/5 seeders package, shuffled, sequential (-p 1)"
+  },
+  "close": {
+    "gate_outcome": "closed-on-gate (M42 warm both vantages, strengthened manifest)",
+    "iters": 6,
+    "tiks": 5,
+    "toks": 1,
+    "findings": "3 scope (clean) + 3 code-quality (1 must-fix gofmt, 2 nice-to-have) + 3 docs + 2 tests + 4 decision-triage",
+    "fixes_landed": "gofmt 2 files; co-derivation comment; locations-sync test (+1); 2 ResourceWarning handles; coverage-protocol replayed-content-URL escape row; seeding-spec M50 line; secrets-spec AI-keys policy; D-CLOSE-1/2/3 + adversarial subsection; 1 broken M51 backref depth fixed",
+    "rext_close_commit": "3c2de27 (authoring main; tag fit-up-m50 @ f0d984c unchanged)",
+    "deferral_audit": "GREEN (0 repeat, 0 chronic, 0 aged-out)"
+  },
+  "carry_forward": "COLD reset-to-seed acceptance -> M53 (Fate-2, user-decided); academy content+menu-link/non-anon-session (F6) -> M51 (Fate-3); AI-keys policy RESOLVED at close (documented-as-absent); re-pin consumption clone to fit-up-m50 = push-gated KEEP (authoritative at M53)",
+  "last_updated": "2026-06-30"
+}

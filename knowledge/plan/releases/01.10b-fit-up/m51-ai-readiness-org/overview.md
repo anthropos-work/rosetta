@@ -47,6 +47,15 @@ engineered (the M48 contract). The goal is crisp; the path is exploratory.
 - A **3-step onboarding/evaluation seeder** writing the funnel for 200 members at ~80% all-3-complete, with the two
   named heroes pinned to **started** and **completed** states.
 - **Cockpit** jump-to links — the 3rd org's heroes land on the AI-readiness dashboard / their onboarding element.
+- **ant-academy course content + the hero academy menu-link + a non-anonymous academy session** *(annotated by
+  M50 close, 2026-06-30 — Fate-3 handoff; the F6 item from M50's candidate fix surface).* The field review flagged
+  the academy as `0 chapters / 0 skill-paths`, no menu link, and an anonymous session when reached directly. M50's
+  M42 gate is MET both vantages WITHOUT the academy (it's not on a coverage-gate path), so M50 routed it here — the
+  academy content/wiring is a seeding/content surface, M51's domain. **The academy AI chat stays
+  documented-as-absent** (gated by the AI-keys policy DECIDED at M50: documented-as-absent — see
+  [`corpus/ops/secrets-spec.md`](../../../../../corpus/ops/secrets-spec.md)); the course-content + menu-link +
+  non-anonymous-session are the seedable/wirable part. Decide the academy content surface (shared-Directus replay vs
+  a dedicated academy snapshot surface) here.
 
 ## Open questions (resolve during build)
 - Enablement mechanism (org setting vs feature flag) — from the M48 contract.
