@@ -3,23 +3,23 @@
   "shape": "iterative",
   "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
   "primary_metric": "(failingSections, escapes) per vantage",
-  "iters_closed": 3,
-  "tiks": 2,
+  "iters_closed": 4,
+  "tiks": 3,
   "toks": 1,
   "baseline": {
     "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true (GATE MET — valid)",
-    "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 crossPortFollowFails=0 cappedAtFrontier=false (gate-VALID; the SOLE blocker is 1 prod-eject to anthropos.work on the activity-dashboard sim drill-down)"
+    "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 crossPortFailures=0 cappedAtFrontier=false (gate-VALID; the SOLE blocker is 1 prod-eject)"
   },
   "current": {
     "employee": "GATE MET (no fix needed)",
-    "manager": "1 escape blocker (PUBLIC_WEBSITE_URL hardcode); content fully populated. member-field fill landed in rext (unverified by gate — manifest doesn't assert those cols)"
+    "manager": "failingSections=0 personaFailures=0 crossPortFailures=0 escapes=1 — the residual escape is a REPLAYED-CONTENT URL field (directus.simulations.public_landing_page_url/read_more_link → anthropos.work), NOT the JS constant (the next-web-public-website-url demopatch landed + cleared the constant class). member-field fill landed in rext (unverified by gate)."
   },
   "gate_met": false,
   "gate_met_employee": true,
   "gate_met_manager": false,
-  "manager_blocker": "escapes=1 — https://anthropos.work/library/job-simulations/<slug> on /enterprise/activity-dashboard/ai-simulations/<simId> (hardcoded PUBLIC_WEBSITE_URL, no env override → next-web-public-website-url demopatch in iter-04)",
+  "manager_blocker": "escapes=1 — directus.simulations.public_landing_page_url (+read_more_link) carries prod https://anthropos.work/library/job-simulations/<slug> REPLAYED from prod (28/14 sims). Fix = stack-snapshot content rewrite (iter-05). The next-web-public-website-url demopatch (iter-04, JS-constant class) is landed + verified-correct + stays.",
   "manager_sweep_cap": 300,
-  "rext_tag_consumed_by_demo1": "fit-up-m49",
-  "rext_uncommitted_fix": "fix(M50/02) member-field fill — committed to authoring copy, not yet tagged",
+  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04 patch synced to consumption clone for the frontend rebuild verification; authoritative re-pin at close)",
+  "rext_commits": "fix(M50/02) member-field fill; fix(M50/04) next-web-public-website-url demopatch",
   "last_updated": "2026-06-30"
 }
