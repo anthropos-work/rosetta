@@ -1,10 +1,10 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M49 — Bring-up hardening + truth-up (next to build — first demo-touching milestone)"
+active_milestone: "M49 — Bring-up hardening + truth-up (BUILT — awaiting harden/close)"
 last_closed: "M48 — 2026-06-29 (Corpus re-ground)"
-phase: "v1.10b building — M48 CLOSED; M49 bring-up hardening next (the 7 demo-up fixes)"
-last_updated: "2026-06-29"
+phase: "v1.10b building — M48 CLOSED; M49 BUILT (7 demo-up fixes landed; rext tag fit-up-m49 + close pending)"
+last_updated: "2026-06-30"
 ---
 
 # State
@@ -35,16 +35,21 @@ the doc), #6 disk pre-flight + `demo-down` image cleanup, #7 true non-fatal fron
 Records: [`releases/01.10b-fit-up/m49-bringup-hardening/`](releases/01.10b-fit-up/m49-bringup-hardening/). _(M48
 closed 2026-06-29 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47 + M48 CLOSED; M49 bring-up hardening next.** Foundation (M47 re-sync/recapture)
-+ corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) are done. M49 starts the **demo-touching**
-work; from here the single-demo constraint serializes (fix-on-live → M53 cold rebuild). Design decisions: re-ground
+**Phase:** **v1.10b building — M47 + M48 CLOSED; M49 BUILT (awaiting harden/close).** Foundation (M47
+re-sync/recapture) + corpus re-ground (M48 — the new `ai-readiness.md` + the drift fixes) are done. **M49's 7
+demo-up fixes are built + committed** (rext code on `main`, awaiting the `fit-up-m49` tag [orchestrator step];
+corpus truth-ups on `m49/bringup-hardening`). From here the single-demo constraint serializes (fix-on-live →
+M53 cold rebuild). Design decisions: re-ground
 first, codename "fit-up", one inlined manifest (M52), + the AI-readiness showcase org (M51).
 
-**Next up:** **build M49 — bring-up hardening + truth-up** (`/developer-kit:build-milestone`): the 7 demo-up bug
-fixes (#1,3,4,5,6,7,8) so a from-cold `/demo-up` completes on a `stack-demo`-only box (incl. ant-academy → `repos.yml`,
-which M48 already flagged). **First demo-touching milestone** → the M48 ∥ M49 window closes; single-demo
-serialization (fix-on-live across M49→M52, then **M53 destroys + cold-rebuilds** as the single acceptance proof)
-begins. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
+**Next up:** **close M49** (`/developer-kit:close-milestone`, after the orchestrator's live-verify gate + the
+`fit-up-m49` rext tag). M49's 7 demo-up fixes are BUILT (#1 rext.tag SoT, #3 .env-guard order, #4
+`INVITATION_HMAC_SECRET` critical+auto-gen, #5 ant-academy explicit clone [NOT repos.yml — the ephemeral
+platform clone made that non-durable], #6 disk pre-flight + `down --purge` image cleanup, #7 true non-fatal
+frontend, #8 demopatch re-anchor to v2.89.0). Static-verified (bash -n + shellcheck + Go + 209 Python tests +
+demopatch apply→revert); the from-cold live proof is the orchestrator's gate + M53. **First demo-touching
+milestone** → the M48 ∥ M49 window closes; single-demo serialization (fix-on-live across M49→M52, then **M53
+destroys + cold-rebuilds** as the single acceptance proof) begins. _(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags —
 the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this v1.10b branch is cut from that
 local `main`.)_
 
