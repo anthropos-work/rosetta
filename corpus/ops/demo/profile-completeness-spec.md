@@ -128,6 +128,20 @@ skill node-id / role node-id comes from the **same replayed taxonomy resolvers**
 (`resolveJobRoleRefs` / `resolveNamedSkillRefs`) — an absent taxonomy degrades (blank skills/role, tail
 skipped) and **never fabricates** a node-id, so the closure gene (`datadna measure-closure`) stays GREEN.
 
+### The shared per-member uuid-space (the cross-seeder believability spine)
+
+Every member-facing seeder derives a member's user uuid **identically** —
+`deterministicUUID(fmt.Sprintf("%s:user:%d", storyKeyPrefix(stack, story), i))` for population index `i` —
+so a member's `users`/`memberships` row (`UsersSeeder`), spoken languages (`MemberLanguagesSeeder`),
+certifications (`CertificatesSeeder`), and the rest of the density fleet **all attach to the SAME person**.
+This shared key namespace is the load-bearing invariant behind the whole-roster density: if it ever drifted
+between two seeders, a demo member would show one person's languages, another's certs, and a third's
+location — every per-seeder test still green. The M50 final-harden pass pins it explicitly with a cross-iter
+integration sweep (`m50_crossiter_harden_test.go`): every `user_languages`/`user_certifications` row must
+reference a uuid `UsersSeeder` created (no orphan writes), the hero reads as one consistent person across all
+three surfaces, and re-running the three seeders together adds **0 rows** (the joint reset-to-seed M17
+contract — they compose idempotently, not just individually).
+
 ## Live-schema corrections (the overview's column guesses were WRONG)
 
 M41's spec-notes warned "the live demo schema wins". M44 verified the cert/project schemas against the live
