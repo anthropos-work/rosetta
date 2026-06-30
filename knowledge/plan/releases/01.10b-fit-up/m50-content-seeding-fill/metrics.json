@@ -3,23 +3,30 @@
   "shape": "iterative",
   "gate": "M42 coverage sweep (failingSections, escapes) = (0,0) both vantages on a COLD reset-to-seed demo, 0 prod-eject escapes, frontier exhausted",
   "primary_metric": "(failingSections, escapes) per vantage",
-  "iters_closed": 4,
-  "tiks": 3,
+  "iters_closed": 5,
+  "tiks": 4,
   "toks": 1,
+  "warm_gate_met_both_vantages": true,
   "baseline": {
-    "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true (GATE MET — valid)",
-    "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 crossPortFailures=0 cappedAtFrontier=false (gate-VALID; the SOLE blocker is 1 prod-eject)"
+    "employee": "reachable=59 failingSections=0 escapes=0 personaFailures=0 cappedAtFrontier=false gateMet=true",
+    "manager": "reachable=68 failingSections=0 escapes=1 personaFailures=0 (the prod-eject blocker)"
   },
   "current": {
-    "employee": "GATE MET (no fix needed)",
-    "manager": "failingSections=0 personaFailures=0 crossPortFailures=0 escapes=1 — the residual escape is a REPLAYED-CONTENT URL field (directus.simulations.public_landing_page_url/read_more_link → anthropos.work), NOT the JS constant (the next-web-public-website-url demopatch landed + cleared the constant class). member-field fill landed in rext (unverified by gate)."
+    "employee": "GATE MET (reachable=59, frontier-exhausted, all 0) — iter-02",
+    "manager": "GATE MET (reachable=69, frontier-exhausted, failingSections=0 escapes=0 personaFailures=0 crossPortFailures=0) — iter-05"
   },
-  "gate_met": false,
+  "gate_met": "WARM both vantages (employee iter-02 + manager iter-05). COLD reset-to-seed acceptance (the explicit exit_gate) = the remaining step → M53 / close.",
   "gate_met_employee": true,
-  "gate_met_manager": false,
-  "manager_blocker": "escapes=1 — directus.simulations.public_landing_page_url (+read_more_link) carries prod https://anthropos.work/library/job-simulations/<slug> REPLAYED from prod (28/14 sims). Fix = stack-snapshot content rewrite (iter-05). The next-web-public-website-url demopatch (iter-04, JS-constant class) is landed + verified-correct + stays.",
+  "gate_met_manager": true,
+  "gate_met_cold": false,
+  "fixes": [
+    "fix(M50/02) member-field fill (memberships joined_at/location/last_activity_date)",
+    "fix(M50/04) next-web-public-website-url demopatch (JS-constant escape class)",
+    "fix(M50/05) post-replay Directus content-URL rewrite (replayed-content escape class: simulations + skill_paths, regex over any anthropos.work subdomain)"
+  ],
   "manager_sweep_cap": 300,
-  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04 patch synced to consumption clone for the frontend rebuild verification; authoritative re-pin at close)",
-  "rext_commits": "fix(M50/02) member-field fill; fix(M50/04) next-web-public-website-url demopatch",
+  "rext_tag_consumed_by_demo1": "fit-up-m49 (+ iter-04/05 fixes synced to consumption clone for live verification; authoritative re-pin to fit-up-m50 at close)",
+  "rext_commits": "fix(M50/02), fix(M50/04), fix(M50/05) x2",
+  "carry_forward": "COLD reset-to-seed acceptance (M53); manager manifest-strengthening (D4/F1) to gate-PROVE the member-field fill; AI-keys policy (F7) + academy (F6) decision deliverables",
   "last_updated": "2026-06-30"
 }
