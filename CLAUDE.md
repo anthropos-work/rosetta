@@ -195,7 +195,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
 - Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the cms container** as `cms/studio/` via `cd cms && make init-studio`; no longer a standalone deployment.
-- Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** ⚠️ **NOT in `repos.yml` today** — so `make init` does **not** clone it (a known v1.10b gap; **M49 adds the `repos.yml` entry**, demo-up #5). Runs natively via `cd ant-academy/code && npm run dev` (port 3077). No platform backend dependencies at runtime — only Clerk. See `corpus/services/ant-academy.md`.
+- Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** **NOT in `repos.yml` (by design — v1.10b M49 #5)** — so `make init` does **not** clone it. For a **demo**, `ensure-clones.sh` clones it **explicitly** (phase d2, non-fatal — `repos.yml` lives in the ephemeral platform clone, so editing it is non-durable + a platform edit); for **dev**, it's a manual `git clone`. Runs natively via `cd ant-academy/code && npm run dev` (port 3077). No platform backend dependencies at runtime — only Clerk. See `corpus/services/ant-academy.md`.
 
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
