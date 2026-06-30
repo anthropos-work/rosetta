@@ -18,3 +18,18 @@ _Technical notes accumulate here during build (file:line surfaces, rext tag, sch
 
 ## Open decision — #5 repos.yml vs explicit clone (resolve in §4)
 `stack-demo/platform` is an EPHEMERAL gitignored clone (ensure-clones.sh bootstrap-clones it fresh from GitHub). Editing its `repos.yml` is non-durable (overwritten on re-clone) AND a platform-repo edit (forbidden). Durable rext-owned fix lives in `ensure-clones.sh`. To confirm in §4: does the freshly-cloned `stack-demo/platform/repos.yml` already carry ant-academy (then the bug is elsewhere), or not (then ensure-clones.sh must add the clone)?
+
+## Live-verify gate (orchestrator, before close) — PASSED 2026-06-30
+
+A from-cold rebuild on the consumption clone re-pinned to `fit-up-m49` proved all 7 fixes end-to-end
+(log: `.agentspace/scratch/work-m49/cold-rebuild.log`, 1475 lines):
+- Teardown (`rosetta-demo down 1 --purge`): **#6 image-cleanup fired** (demo-1 images removed, ~5 GB reclaimed).
+- Cold `up-injected.sh 1`: **#3** provisioned-before-guard (26 written, no abort); **#4** "critical keys 100% present"
+  + `backend /api/health 200` (the backend started — INVITATION_HMAC_SECRET auto-gen works); **#6** disk pre-flight
+  "237 GiB ≥ 20 GiB OK"; **#1** ensure-clones pin-guard non-blocking; **#5** ant-academy started on :13077; **#7**
+  2 frontends built + joined (no abort); **#8** `demopatch apply: next-web-studio-url applied` (the drifted patch
+  re-anchored to next-web v2.89.0 applies cleanly).
+- Completion: set-dress (snapshot replay) + seed (2 orgs × 3-hero, 57,858 rows, isolation clean) + cockpit (:17700)
+  + **autoverify "verified-working" → demo-1 UP**.
+- No from-cold bugs surfaced. (The provision summary's "MISS INVITATION_HMAC_SECRET" was the secret-SOURCE coverage
+  report — expected; the #4 auto-gen writes it to the demo base env separately, confirmed present + nonempty.)
