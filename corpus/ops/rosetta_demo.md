@@ -15,7 +15,9 @@
 - **The pin is a file, not prose — `.agentspace/rext.tag` (the single source-of-truth, M49 #1).** One canonical
   place declares which tag a demo consumes, read by **both** the `/demo-up` skill (it checks the consumption clone
   out at this tag) **and** `ensure-clones.sh` (which reads the same file + logs/warns the consumed-vs-pinned tag at
-  bring-up — non-fatal). It is a bare one-line tag string (blank lines + `#` comments tolerated). It lives in the
+  bring-up — non-fatal). It is a bare one-line tag string (blank lines, `#` comments, and CRLF line endings
+  tolerated — the reader strips a trailing carriage return so a Windows-edited pin still resolves as a clean git
+  ref, M49 harden). It lives in the
   gitignored `.agentspace/`, so it's a **per-box** pin; the release's canonical value is recorded here so a fresh
   box recreates it (**current v1.10b "fit-up" pin: `fit-up-m49`**). This retires the earlier scattered prose pins
   (which had drifted: `storytelling-postfix-1` here vs `storytelling-postfix-2` in the skill + the frontend-tier
