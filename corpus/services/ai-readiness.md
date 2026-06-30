@@ -1,9 +1,10 @@
 # AI Readiness (Workforce) — service documentation
 
-> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48 — corpus re-ground). The feature ships in **`app` v1.315+**
-> (backend) + **`next-web-app` v2.89.0+** (UI) and had **no prior corpus coverage** (it was invisible to the
-> ~1-month-stale clones, which is why M201's verify reported it as a false-negative). This doc is the contract the
-> v1.10b **M51** AI-readiness showcase-org seeder builds against.
+> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48 — corpus re-ground); **re-verified GREEN against `app` code
+> 2026-06-30** (M51 iter-01 pre-flight KB-fidelity gate — all behavioral claims ALIGNED, incl. the load-bearing
+> cycle-state read-path). The feature ships in **`app` v1.315+** (backend) + **`next-web-app` v2.89.0+** (UI) and had
+> **no prior corpus coverage** (it was invisible to the ~1-month-stale clones, which is why M201's verify reported it
+> as a false-negative). This doc is the contract the v1.10b **M51** AI-readiness showcase-org seeder builds against.
 
 ## Role & Responsibility
 
@@ -19,7 +20,7 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 
 1. **Org setting** — a row in `organization_settings` with `setting = 'ai_readiness'`, `is_enabled = true`
    (`app/internal/data/ent/enum/organization_settings.go:47` → `OrganizationSettingAIReadiness = "ai_readiness"`;
-   checked by `WorkforceManager.isAIReadinessEnabled`, `app/internal/workforce/readiness_steps.go:452`). No row =
+   checked by `WorkforceManager.isAIReadinessEnabled`, `app/internal/workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
    off. Exposed to the FE as the GraphQL query `aiReadinessEnabled: Boolean!`
    (`resolver_ai_readiness.go` — returns `false`, not an error, for non-enabled orgs).
 2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
@@ -28,7 +29,8 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 ## The 3-step framework + scoring
 
 The evaluation is a fixed **3-step** framework (per-org orderable, canonical default below), each step a scoring
-axis (`enum.AIReadinessStepType`; `app/internal/workforce/ai_readiness.go:173-229`):
+axis (`enum.AIReadinessStepType` defined in `app/internal/data/ent/enum/ai_readiness.go` — `StepSkillMapping` /
+`StepSimulation` / `StepInterview`; consumed + scored in `app/internal/workforce/ai_readiness.go:173-229`):
 
 | # | Step (`step_type`) | Method | Max pts | Signal that completes it |
 |---|--------------------|--------|---------|--------------------------|
