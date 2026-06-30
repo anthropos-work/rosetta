@@ -79,3 +79,12 @@ deciders on this dirty consumption-clone state. Full detail + recommended resolu
 
 **iter-04 left mid-Phase-C, NOT closed** (no fix landed, no `iter(M51/04):` commit). The untracked
 `iter-04/` dir is left uncommitted by design (Phase 4 Step 0 budget/blocker-interrupted-iter rule).
+
+**RESOLVED (run-2, 2026-06-30):** the orchestrator reset the consumption clone to a clean `fit-up-m50`. iter-04
+RESUMED + ran to a **closed-no-lift**: demo-1 rebuilt at fit-up-m50 (all 3 perf demo-patches baked) + re-seeded
+the AI-readiness showcase org + re-exported the 9-hero roster/cockpit; the GATED manager sweep HELD at
+`(failing=6, escapes=0)` frontier-exhausted. The m50 perf-patches reduced the members-grid wall 76.4s→~11.6s but
+the residual COLD query still exceeds the harness measurement budget → the 6 skeleton false-fails persist
+(data-in-DB, slow-not-erroring). The hypothesis "m50 patches alone clear all 6" is FALSIFIED. The residual is
+demo-local-addressable (a harness warm/poll deepening) → iter-05; the manifest AI-readiness assertion + cockpit
+jump_to (TOK-01 strand-4) are mapped + also routed to iter-05. See iter-04/{progress,decisions}.md.

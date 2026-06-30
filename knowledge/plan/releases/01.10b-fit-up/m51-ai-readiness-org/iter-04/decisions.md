@@ -49,3 +49,32 @@ perf-wall demo re-up requires; every resolution path is in the FORBIDDEN-OPS lis
 - **iter-04 is NOT closed** (no fix landed, mid-Phase-C). No close-section, no `iter(M51/04):`
   commit. The untracked `iter-04/` dir (this file + overview.md + empty progress.md) is left
   uncommitted in the rosetta tree by design (Phase 4 Step 0 budget/blocker-interrupted-iter rule).
+
+---
+
+## RUN-2 RESUME (2026-06-30) — the user-blocker was CLEARED; iter-04 ran to a closed-no-lift
+
+The orchestrator reset the demo-1 consumption clone to a clean `fit-up-m50` (verified HEAD `f0d984c`, no dirty
+files). iter-04 then ran Phase C–E to completion. Closed **no-lift** (the planned re-up landed; the targeted
+perf-wall cluster did not clear; the hypothesis is falsified). Decisions:
+
+- **D1 — re-up at `fit-up-m50`, not a fresh authoring tag.** The m50 tag is the planned fix surface (it wires
+  all 3 M46/M50 perf demo-patches into `up-injected.sh`). `/demo-down 1 --purge` + `/demo-up 1` rebuilt the
+  injected next-web (pagination) + app (targetRole-authz-skip) images + applied the post-seed FK indexes — all
+  verified in the build/up log. No new authoring tag was cut (the perf fix is consumed-tag-side, not
+  authoring-code-side).
+- **D2 — re-seed + re-export roster/cockpit from the AUTHORING copy.** The m50-consumed `stories.seed.yaml` has
+  only the 2 original orgs (Cervato + Solvantis); Northwind + the `OrgSettingsSeeder`/`AIReadinessConfigSeeder`/
+  `AIReadinessFunnelSeeder` are authoring-only @ `45a20c0`. So after the demo-up auto-set-dress (2-org), the
+  iter re-seeded demo-1 from the authoring-built `stackseed` with the 3-org `stories.seed.yaml`, and re-exported
+  the 9-hero roster + cockpit (the 6-identity demo-up roster lacks `dana-manager`, whom the sweep logs in as) +
+  restarted fake-fapi/bapi. Verified the data layer in the live DB (Northwind ENABLED, active cycle, 78.4%
+  all-3, heroes pinned). No rext production code changed.
+- **D3 — close-no-lift with documented falsification (not partial, not blocked).** Phase 4 Step 0: the iter's
+  PLANNED scope (re-up + re-seed + re-measure) landed FULLY, but the targeted cluster (the 6 perf-wall sections)
+  did not clear, so there is no metric lift to claim. The hypothesis "m50 perf-patches alone clear all 6" is
+  falsified by evidence (DB has the data; screenshot shows real-chrome-over-skeleton; GraphQL latency shows
+  76.4s→11.6s — a real reduction that still exceeds the harness budget; slow-not-erroring). This is a complete
+  cycle ending in characterization — the protocol working, a first-class no-lift outcome — NOT a partial (no
+  some-of-scale landed beyond what iter-03 already had) and NOT a user-blocker (the run-1 blocker is cleared; the
+  residual is demo-local-addressable in iter-05). Routes carried forward in iter-04/progress.md.
