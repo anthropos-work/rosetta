@@ -121,6 +121,20 @@ image. The tooling makes this cheap-where-it-can:
 > serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
 > A 12 GB VM needs a **≥24 GB host** to be comfortable.
 
+### Disk headroom — a second non-fatal pre-flight (v1.10b M49 #6)
+
+Alongside the RAM check, `/demo-up` runs a **disk-headroom pre-flight** (mirrors the RAM assert: a warning,
+never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, the `demo-N-<svc>:injected` Go
+services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
+used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
+
+> **Below ~20 GB host disk free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
+> `DEMO_DISK_MIN_GIB=N`; the free-space signal is `df` on the filesystem backing Docker's data — host root as
+> the portable proxy). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
+> removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
+> tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
+> re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
+
 ## How the pk + URLs are baked (zero platform edit)
 
 | App | URLs | Clerk pk | Context trim |
