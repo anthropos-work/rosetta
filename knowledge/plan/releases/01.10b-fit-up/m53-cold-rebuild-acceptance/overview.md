@@ -3,9 +3,9 @@ milestone: M53
 slug: cold-rebuild-acceptance
 version: v1.10b "fit-up"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-29
-last_updated: 2026-06-29
+last_updated: 2026-07-01
 complexity: medium
 delivers: a release acceptance record + the v1.10.1 rext release tag + .agentspace/rext.tag bump
 issues: the whole release, proven from cold (the user's "make sure this time it works")

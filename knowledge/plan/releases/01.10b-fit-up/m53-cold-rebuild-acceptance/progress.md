@@ -103,3 +103,31 @@ may need a re-roll at close to include the harden tests (the tag-at-close preced
 
 ### Release-tag step
 - [x] Re-roll `v1.10.1` to the final rext HEAD `576dbcb` (incl. the harden tests) + re-pin consumption clone.
+
+## M53: Completeness Ledger
+
+Section-shaped; three-fate accounting. **This is the FINAL v1.10b milestone.**
+
+### Done (Fate 1 — landed in M53)
+- **§1 Academy F6** — content + hero [Academy] menu-link + non-anonymous (member) academy session; Cosmo absent-by-design. (rext `e91f004`; F6 GREEN from cold.)
+- **§2 Roll `v1.10.1`** — the v1.10b release tag (rolls up `fit-up-m47..m52`); re-rolled at the AB4 gate (`117fe41`) then at close (`576dbcb`, incl. harden tests). `.agentspace/rext.tag` = `v1.10.1`; consumption clone re-pinned.
+- **§3 DESTROY** — `/demo-down 1 --purge`: all 17 containers + network + ALL demo-1 images (M49 #6 verified).
+- **§4 COLD REBUILD** — single `/demo-up 1` at the `v1.10.1` pin, no manual steps, EXIT 0, no #7 abort.
+- **§5 ASSERT** — 6/6 acceptance criteria + academy F6 PASS from cold (AB1–AB6 + F6). AB4 fixed at the gate (M51-owned regression, user-approved exception).
+- **§6 Acceptance record + rext.tag bump** — `acceptance-record.md` (6/6+F6 GREEN); `.agentspace/rext.tag` = `v1.10.1`.
+- **Close doc fixes** — DOC-1 (AB4 org-conditional manifest → coverage-protocol.md), DOC-2 (KB-2 78.4%/199 reconcile → ai-readiness.md).
+
+### Confirmed-covered (Fate 2 — owned by a milestone of this release, no edit)
+- **up-injected.sh end-to-end glue** (DEF-M52-01) — confirmed exercised by M53's cold `/demo-up` (AB3 + AB6). Landed as acceptance evidence, no separate shell harness (a 3-line bring-up hook; its constituents are unit-fenced).
+- **COLD reset-to-seed acceptance** (M50 D-CLOSE-2) — this IS M53's defining deliverable.
+
+### Annotated (Fate 3 — attached to another milestone at close)
+- None new. (The historical academy-F6 Fate-3 → M53 handoff, made at M51 close, LANDED here as §1.)
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires sign-off)
+- **None.** No escape-hatch entries. The sole outstanding cross-milestone item is the **origin push** (push-gated administrative KEEP — the orchestrator/user's step: `main` + the `v1.10` tag + ext tags + `fit-up-m47..m52` + `v1.10.1`), tracked in `state.md`. Not a close-blocking deferral.
+
+**Verdict:** All M53 scope delivered as Fate 1; two Fate-2 confirmations (both landed in M53's own acceptance); nothing dropped or escape-hatch-deferred. Deferral re-audit GREEN. Clean section close → merge. This closes the FINAL v1.10b milestone → next: `/developer-kit:close-release`.
