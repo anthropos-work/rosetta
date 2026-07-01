@@ -17,12 +17,12 @@ _Ordered per overview.md acceptance flow (a)→(f). Sections gate on prior secti
   - [x] Re-pin consumption clone `stack-demo/rosetta-extensions` → `v1.10.1` (clean fetch + checkout; tree clean)
 - [x] **§3 — DESTROY the live demo** (`/demo-down 1 --purge`) — all 17 containers + network removed, ALL demo-1 images purged (M49 #6 verified working); native academy/cockpit stopped
 - [x] **§4 — COLD REBUILD** (single `/demo-up 1` at v1.10.1 pin, no manual steps) — EXIT 0, no #7 abort; 17 containers Up (0 Exited); autoverify GREEN; log: `cold-rebuild.log`
-- [ ] **§5 — ASSERT the acceptance bar** (all 6 criteria + academy F6)
-  - [ ] AB1 — all backends healthy (M47/M49; no silent `app Exited`)
-  - [ ] AB2 — cold-start MCP-DSN auto-capture filled snapshot with NO prompt (M47)
-  - [ ] AB3 — set-dress + seed (all 3 orgs incl. AI-readiness) + verify + cockpit complete (no #7 abort)
-  - [ ] AB4 — both-vantage M42 coverage GREEN (employee + manager), 0 escapes (M50)
-  - [ ] AB5 — AI-readiness dashboard criteria hold on 3rd org (M51: enabled, ~80%/3-step, 1 started + 1 completed; fast render)
-  - [ ] AB6 — cockpit [Download manifest] returns complete inlined `seed-generation-manifest.yaml` (M52)
-  - [ ] F6 — academy: course content present + hero menu-link + non-anonymous session
+- [~] **§5 — ASSERT the acceptance bar** (5/6 + academy F6 PASS; **AB4 manager-half BLOCKER → routes to M51**)
+  - [x] AB1 — all backends healthy: 17 containers Up, 0 Exited; health 200, casbin 1150, all probes passed
+  - [x] AB2 — snapshot replay prompt-free from the filled cache (taxonomy/directus/sim-embeddings replayed, no prompt) — KB-1
+  - [x] AB3 — set-dress + seed (3 orgs incl. Northwind AI-readiness) + verify + cockpit — EXIT 0, no #7 abort
+  - [ ] **AB4 — BLOCKER: employee GREEN (0,0); manager `dan-manager`@Cervato RED (failingSections=2, both ai-readiness) — an M51 unconditional-seedPath regression → routes to M51 (see decisions.md AB4-REGRESSION). Do NOT fix in M53.**
+  - [x] AB5 — AI-readiness dashboard GREEN on 3rd org (dana-manager@Northwind): enabled, 50/100, 199 members, 87% functional+, 3-step funnel, renders fast (541 chars, no timeout) — KB-2
+  - [x] AB6 — cockpit [Download manifest] serves complete inlined `seed-generation-manifest.yaml` (7593B, 3 orgs + generation prompt + batch $0.3 ceiling + snapshot_sources)
+  - [x] F6 — academy: content real (copilot/claude-code/ai-eng chapters), 9 cockpit [Academy] links→:13077, both e2e_persona gates set (authenticated member), Cosmo absent by design
 - [ ] **§6 — Acceptance record + rext.tag bump** (corpus acceptance note; feeds close-release)

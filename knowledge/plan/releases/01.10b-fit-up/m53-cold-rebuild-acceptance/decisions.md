@@ -75,3 +75,65 @@ key, so Cosmo is genuinely absent. The Phase 0b audit found this is *implied* bu
 **Choice.** Do NOT enable Cosmo in the demo (leave the flag unset). Add one explicit line to
 `corpus/ops/demo/frontend-tier.md` § ant-academy stating the AI chat is absent-by-design in the demo (no keys
 provisioned) — per the AI-keys policy. No `/api/ai/chat` assertion in the F6 acceptance.
+
+## AB4-REGRESSION — the M42 manager gate (dan-manager @ Cervato) is BROKEN by an M51 unconditional seedPath → routes back to M51
+**This is an ACCEPTANCE FINDING, not an M53 fix. Per the acceptance-not-fix rule, the fix routes BACK to
+M51 (its owner); M53 does NOT repair it.**
+
+**What the cold-rebuild both-vantage sweep found:**
+- Employee vantage (maya-thriving @ Cervato Systems): **GATE MET** — reachable=59/150, failingSections=0,
+  escapes=0, personaFailures=0, notReached=0, frontier=EXHAUSTED. (AB4 employee half ✅.)
+- Manager vantage `dan-manager` @ Cervato Systems (**M50's canonical M42 manager gate**, `run-coverage.sh 1
+  manager` default): **GATE NOT MET** — failingSections=**2**, escapes=0, personaFailures=0,
+  frontier=EXHAUSTED. BOTH failing sections are `/enterprise/workforce/ai-readiness`
+  (`ai-readiness-org-score` + `ai-readiness-funnel`, kind=`empty`, "meaningful text 50 < floor 80/60") — the
+  page renders (HTTP 200, 0 ejects) but shows **"No AI readiness data yet for this org"** (screenshot verified;
+  org header = Cervato Systems).
+- Manager vantage `dana-manager` @ Northwind Aviation (**M51's canonical AI-readiness gate**, `run-coverage.sh
+  1 manager dana-manager "Northwind Aviation"`): **GATE MET** — reachable=70/150, failingSections=0, escapes=0,
+  frontier=EXHAUSTED; the ai-readiness sections PASS (541 meaningful chars). Dashboard renders 50/100 org
+  readiness, 199 members, 173/199 (87%) functional+, the 3-step funnel + the By-team grid (screenshot
+  verified). **AB5 ✅.**
+
+**Root cause (owned by M51 iter-05 D3):** the 199 AI-readiness snapshots are seeded ONLY for **Northwind
+Aviation** (in a `closed` cycle — the M51 showcase-org design; confirmed via
+`ai_readiness_snapshots → ai_readiness_cycles → organizations`). M51 iter-05 D3 added
+`/enterprise/workforce/ai-readiness` to `MANAGER_MANIFEST.seedPaths` (`stack-verify/e2e/lib/coverage-manifest.ts:520`)
+**UNCONDITIONALLY** — so EVERY manager sweep (any org) is primed to visit the ai-readiness page and assert the
+funnel renders. But the funnel data is org-specific (Northwind only). M51's own gate ran ONLY `dana-manager` @
+Northwind (where it passes), so M51 never re-ran the M50 `dan-manager` @ Cervato manager sweep and **never saw
+the regression its unconditional seedPath introduced** into the M50 gate. M50 (which closed BEFORE M51) had a
+GREEN manager gate (`dan-manager` @ Cervato, reachable=69, failingSections=0) — because the ai-readiness
+seedPath did not exist yet.
+
+**Why this is exactly what M53 exists to catch:** the M53 risk line — "a cold-rebuild surfacing a regression
+late" — is realized here. The fix-on-live serialization across M47..M52 never re-ran the M50 Cervato manager
+sweep after M51's manifest change; M53's from-cold both-vantage assertion is the first time both the M50 gate
+(dan-manager @ Cervato) AND the M51 gate (dana-manager @ Northwind) are re-measured together, surfacing the
+cross-milestone drift.
+
+**Routing (M51 fixes — NOT M53):** the ai-readiness seedPath + its two section descriptors must be made
+**org-conditional** — asserted only for the showcase-org manager vantage (Northwind / `dana-manager`), not
+primed for every manager org. Options M51 should weigh: (a) gate the seedPath on `COVERAGE_EXPECTED_ORG ===
+"Northwind Aviation"` (or an `expectedOrg` field on the descriptor); (b) move the ai-readiness descriptor into
+a Northwind-only manifest overlay; (c) tag the descriptor `showcaseOrgOnly: true` and have the sweep skip
+showcase-org-only sections when the logged-in org isn't the showcase org. The correct, complete fix is M51's
+to design (the three-fate rule: this is NOT a "land 20%" in M53 — it is a full manifest-conditioning change
+owned by M51's subject area).
+
+**Severity: BLOCKER.** The M53 acceptance bar AB4 ("both-vantage M42 semantic coverage GREEN … on the existing
+orgs (M50)") is NOT met from cold: the M50 manager vantage (dan-manager @ Cervato) is RED. This blocks the
+v1.10b cold-rebuild acceptance until M51 conditions the seedPath and the M50 dan-manager @ Cervato manager gate
+is GREEN again (with AB5's dana-manager @ Northwind gate still GREEN). AB1/AB2/AB3/AB5/AB6 + the academy F6 all
+PASS from cold; AB4 is the sole failure.
+
+## AB4-ROUTING — M51 is archived; the regression escalates to the orchestrator/user (not annotated in M53)
+Per the acceptance-not-fix rule, a failed acceptance assertion routes to its owning milestone and M53 does
+NOT fix it. M51 (`status: archived`) is that owner (its iter-05 D3 added the unconditional seedPath). Because
+M51 is already closed+archived, the correct mechanism is NOT to silently re-open it or land a fix in M53 —
+it is to **STOP with SEVERITY=blocker and surface the regression to the orchestrator/user** with the evidence
++ the fix design, who decides the routing (re-open M51 for a targeted manifest-conditioning fix, or schedule
+it as a tracked follow-up before the v1.10b release closes). The v1.10b cold-rebuild acceptance is NOT green
+until AB4's manager half (dan-manager @ Cervato) is GREEN again with AB5 (dana-manager @ Northwind) still
+GREEN. This is a genuine release-blocker, correctly surfaced by M53's from-cold both-vantage assertion — the
+milestone did its job (caught a late cross-milestone regression the live-serialization missed).
