@@ -142,10 +142,28 @@ tooling on a fresh `/demo-up`); **academy content + menu-link/non-anonymous-sess
 consumption-clone re-pin to `fit-up-m50` = push-gated KEEP (authoritative at M53). **Delivers →**
 `profile-completeness-spec.md`, `seeding-spec.md`, `coverage-protocol.md`, `secrets-spec.md`.
 
-**M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. **Exit
-gate:** a curated **200-person 3rd org** with the AI-readiness manager dashboard **enabled**, **~80%** of members
-having completed all **3** onboarding/evaluation steps, **1 hero started + 1 hero completed** — proven by the
-coverage gate. Iterative because the feature's data model (invisible to the stale clones) is mapped fresh in M48.
+**M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. ✅ **`done` —
+closed-on-gate 2026-07-01** (merged → `release/01.10b-fit-up`). **Exit gate:** a curated **200-person 3rd org** with
+the AI-readiness manager dashboard **enabled**, **~80%** of members having completed all **3** onboarding/evaluation
+steps, **1 hero started + 1 hero completed** — proven by the coverage gate. **MET at iter-09:** manager-vantage
+`(failingSections, escapes) = (0, 0)` frontier-exhausted on a fresh demo-up (reachable 70, personaFailures 0);
+org **Northwind Aviation** (200 members) ENABLED, **78.4%** all-3-complete, **Ben STARTED** (stage 1) + **Aria
+COMPLETED** (stage 3), cycle `closed` + 199 frozen snapshots. **9 iters** (1 bootstrap tok + 8 tiks). The
+strategy arc: iter-02/03 landed the 3rd story + the 3 net-new seeders (`OrgSettingsSeeder` +
+`AIReadinessConfigSeeder` + `AIReadinessFunnelSeeder`); iters 06/07/08 falsified three read-fast strategies
+(active-signals → closed-cycle-snapshot → deep-link) against the platform AI-readiness read-path org-scale perf
+wall (**"frozen SCORES ≠ frozen RESPONSE"** — `buildResponseFromSnapshots` re-joins members via an unbounded
+whole-org `loadMembers`); **TOK-02** (user-authored, triggered by the 3-tik no-prog streak) pivoted to the
+iter-09 **`app-aireadiness-snapshot-loadmembers`** read-path demo-patch (a PURE data-identical bound of that
+hydration to the ~199 snapshot users → the frozen `?cycle=` GET 180s-timeout → 19ms). Tests: rext stack-seeding
+**749** (seeders pkg 382, **97.6%** stmt, +30 vs M50's 719 across the iters + final harden + close) · e2e TS unit
+**33** (+13 at close: the new `section-assert.ts` no-browser spec); flake **0** (5/5 Go + 5/5 TS). Close review:
+16 findings all Fate-1 (S1 the 3rd AI-readiness story authored → **`delivers` MET**; C1/C3/C4 code + T1/T2 tests +
+D1–D5 docs). Deferral audit **RED→CLEARED**: the academy **F6** repeat-defer (M50→M51) fated **LAND-NEXT → M53**
+(Fate-3, user-decided — the cold rebuild is where academy content is seeded + verified). **Carry-forward (three-fate,
+none escape-hatch):** academy F6 → M53 (Fate-3); COLD reset-to-seed acceptance → M53 (Fate-2); consumption-clone
+re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →** `demo/stories-spec.md` (the 3rd story),
+`services/ai-readiness.md`, `seeding-spec.md`, `CLAUDE.md`; rext tag **`fit-up-m51`**.
 
 **M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51**. Extract the Go mother-prompts to
 YAML; author **one** checked-in `seed-generation-manifest.yaml` inlining population blueprint (all 3 orgs) +

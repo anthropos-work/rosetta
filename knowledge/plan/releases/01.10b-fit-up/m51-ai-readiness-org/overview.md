@@ -3,9 +3,9 @@ milestone: M51
 slug: ai-readiness-org
 version: v1.10b "fit-up"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-06-29
-last_updated: 2026-06-29
+last_updated: 2026-07-01
 complexity: large
 exit_gate: "On the live demo, a curated 200-person 3rd org renders the AI-readiness manager dashboard ENABLED with ~80% of members having completed all 3 onboarding/evaluation steps; one hero shows STARTED and one shows COMPLETED — proven by the coverage gate."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md

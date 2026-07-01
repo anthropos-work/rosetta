@@ -1,9 +1,10 @@
 # AI Readiness (Workforce) — service documentation
 
-> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48 — corpus re-ground). The feature ships in **`app` v1.315+**
-> (backend) + **`next-web-app` v2.89.0+** (UI) and had **no prior corpus coverage** (it was invisible to the
-> ~1-month-stale clones, which is why M201's verify reported it as a false-negative). This doc is the contract the
-> v1.10b **M51** AI-readiness showcase-org seeder builds against.
+> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48 — corpus re-ground); **re-verified GREEN against `app` code
+> 2026-06-30** (M51 iter-01 pre-flight KB-fidelity gate — all behavioral claims ALIGNED, incl. the load-bearing
+> cycle-state read-path). The feature ships in **`app` v1.315+** (backend) + **`next-web-app` v2.89.0+** (UI) and had
+> **no prior corpus coverage** (it was invisible to the ~1-month-stale clones, which is why M201's verify reported it
+> as a false-negative). This doc is the contract the v1.10b **M51** AI-readiness showcase-org seeder builds against.
 
 ## Role & Responsibility
 
@@ -19,7 +20,7 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 
 1. **Org setting** — a row in `organization_settings` with `setting = 'ai_readiness'`, `is_enabled = true`
    (`app/internal/data/ent/enum/organization_settings.go:47` → `OrganizationSettingAIReadiness = "ai_readiness"`;
-   checked by `WorkforceManager.isAIReadinessEnabled`, `app/internal/workforce/readiness_steps.go:452`). No row =
+   checked by `WorkforceManager.isAIReadinessEnabled`, `app/internal/workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
    off. Exposed to the FE as the GraphQL query `aiReadinessEnabled: Boolean!`
    (`resolver_ai_readiness.go` — returns `false`, not an error, for non-enabled orgs).
 2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
@@ -28,7 +29,8 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 ## The 3-step framework + scoring
 
 The evaluation is a fixed **3-step** framework (per-org orderable, canonical default below), each step a scoring
-axis (`enum.AIReadinessStepType`; `app/internal/workforce/ai_readiness.go:173-229`):
+axis (`enum.AIReadinessStepType` defined in `app/internal/data/ent/enum/ai_readiness.go` — `StepSkillMapping` /
+`StepSimulation` / `StepInterview`; consumed + scored in `app/internal/workforce/ai_readiness.go:173-229`):
 
 | # | Step (`step_type`) | Method | Max pts | Signal that completes it |
 |---|--------------------|--------|---------|--------------------------|
@@ -110,7 +112,9 @@ having completed all 3 steps**, plus **one hero "started"** and **one hero "comp
 3. `ai_readiness_skills` × ~5 core (weight 1.0) + a few enabling (0.5), `node_id` = **real taxonomy node-ids** (route
    through the existing seeding resolvers — never fabricate, per the closure gate).
 4. `ai_readiness_sims` × 2 (`step_type` simulation + interview, `sim_ref` = a real Directus sim id or a `PLACEHOLDER-` ref).
-5. `ai_readiness_cycles` × 1 (`status='active'`).
+5. `ai_readiness_cycles` × 1. **M51 SHIPPED `status='closed'`** (the frozen-snapshot strategy — see the ⚠ blocks
+   below for why the active-signals path was falsified); the active-cycle contract is retained here as the
+   alternative.
 
 **Per-member (≈160 "completed"):** the underlying signals (≥1 `user_skill_evidences` for a configured skill;
 jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progress` (3× `completed`) **+** an
@@ -130,7 +134,42 @@ decision):**
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
 - **Closed cycle → the dashboard reads frozen snapshots.** `buildResponseFromSnapshots` reads `ai_readiness_snapshots`
   directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
-  cycle to `closed`) with **no underlying signals** — lighter, but the world reads as a *finished* assessment.
+  cycle to `closed`) with **no underlying signals** — the world reads as a *finished* assessment. **This is the
+  strategy M51 shipped** (`AIReadinessConfigSeeder` writes the cycle `closed` + `AIReadinessFunnelSeeder` writes 199
+  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
+  completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
+
+  **⚠ M51 iter-07 — the frozen path is CYCLE-SCOPED; the DEFAULT dashboard GET does NOT take it.**
+  `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
+  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (`CycleID == nil`,
+  line 301) is hardcoded to `buildLiveResponse` (the live-recompute path). The next-web manager dashboard
+  (`AIReadinessClient.tsx`) is designed to pass `?cycle=selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id`
+  — so IN PRINCIPLE a closed cycle (no active cycle) makes the FE pass the closed id → the fast frozen path. **But
+  the M51 iter-07 demo evidence (an authenticated network probe) showed the demo FE firing the data GET WITHOUT
+  `?cycle=` (the live path — which then hits the 200-member translation-N+1 wall and never completes) and never
+  firing the `/cycles` list that supplies `latestClosedCycle.id`.** Net: seeding a closed cycle + frozen snapshots
+  makes the DB the correct showcase and renders fast via the **cycle picker / a `?cycle=` deep-link**, but does NOT
+  by itself make the DEFAULT manager-dashboard load fast — that gap is **platform-bound** (the FE must pass the
+  cycle id by default, or the backend default must prefer a closed cycle when no active cycle exists). Treat this
+  as the load-bearing caveat for any "seed it closed to dodge the perf wall" plan. See
+  `knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/` + `corpus/ops/demo/coverage-protocol.md`
+  (the "cycle-scoped fast read-path" lesson).
+
+  **⚠⚠ M51 iter-08/09 — the frozen READ is ITSELF org-scale-slow ("frozen" froze the SCORES, not the RESPONSE).**
+  Even when the frozen branch IS selected (a direct `?cycle=<closed>` GET), `buildResponseFromSnapshots`
+  (`ai_readiness.go:512`) reads the frozen scores fast but then calls **`loadMembers(orgID, "")`** — an
+  **unbounded whole-org member hydration** (`hydrateMembers` over ~200 members) to re-join current tags/name/role
+  onto each snapshot. At 200 members that member-load is the **same org-scale wall** as the live path: the
+  `?cycle=<closed>` GET timed out at 180 s (iter-08's authenticated dual-endpoint probe). It is NOT the
+  demo-patchable per-object targetRole Sentinel RPC (`queryBaseMembers` reads `jobRole` from a SQL column). **In the
+  demo**, M51 iter-09 bounds it with the `app-aireadiness-snapshot-loadmembers` app read-path demo-patch
+  (`loadMembers(orgID,"")` → the bounded sibling `loadMembersByUserIDs` over the ~199 snapshot user-ids — a pure,
+  data-identical perf optimization; 180 s → 19 ms). **In PROD** the frozen read still hydrates the whole org and
+  would need `loadMembers` bounded in the snapshot path, or a **`frozen_tags jsonb` column** so the snapshot read
+  needn't re-join live members (**M314b** — a disclosed demo-perf relaxation, NOT a prod fix). See
+  [`../ops/demo/coverage-protocol.md`](../ops/demo/coverage-protocol.md) (the iter-08/09 loadMembers lesson) +
+  [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
+  (the seeder + demo-patch).
 
 **No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 

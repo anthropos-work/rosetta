@@ -41,6 +41,19 @@ owning milestone's fix**, it does not become new scope here.
     - the **AI-readiness dashboard criteria hold** on the 3rd org (M51: enabled, ~80%/3-step, 1 started + 1
       completed);
     - the cockpit **[Download manifest]** returns the **complete inlined** `seed-generation-manifest.yaml` (M52).
+  - **Academy content on the cold build (F6 — landed here, M50→M51→M53 handoff chain).** The ant-academy
+    field-review gap F6 (M50 finding, Fate-3→M51, not executed there — M51's 9 iters went entirely to the
+    AI-readiness dashboard perf saga; the M51 gate was MET without it) lands in M53 because M53 already
+    **cold-rebuilds the demo from scratch** — the natural place to seed + verify academy content on a clean
+    build (rather than patch it onto the live demo). On the cold rebuild, assert: (i) **course content** is
+    present (the academy shows real chapters/skill-path content, not an empty shell); (ii) a **hero academy
+    menu-link** routes from the cockpit/persona into the academy; (iii) a **non-anonymous academy session**
+    (the reached-directly-while-anonymous gap is closed — the hero lands authenticated). The **AI chat stays
+    documented-as-absent** per the AI-keys policy (no `/api/ai/chat` assertion — the academy's AI assistant
+    needs keys the demo doesn't provision). This is a Fate-3 override of M53's `No new feature code`
+    scope-guard (recorded in M51 `decisions.md`): the academy content + wiring is a small seeding/verify
+    surface, not new platform feature code — a failed academy assertion still routes back to its owner, it
+    does not expand M53.
   - **Tag the rext** at **`v1.10.1`** (the release tag) + bump `.agentspace/rext.tag` to it.
 - **Out:** new fixes — a failed assertion routes back to its owning milestone (M47–M52), not into M53.
 
