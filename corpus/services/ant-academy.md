@@ -135,6 +135,17 @@ cd stack-dev
 git clone git@github.com:anthropos-work/ant-academy.git
 ```
 
+> **In a demo the academy is AUTHENTICATED-as-a-member, keyless (v1.10b "fit-up" M53 F6).** `/demo-up` launches
+> the academy with **both** halves of its own `e2e_persona` cookie bypass set — the server gate
+> `BENCHMARK_VISUAL_BYPASS=1` **and** the client gate `NEXT_PUBLIC_E2E_AUTH=1` — so an `e2e_persona=member`
+> cookie drives a **signed-in** context (server RSC `anonymous=false` + entitlement; client Clerk hooks resolve a
+> synthetic **`E2E Member`**) with **no real Clerk keys**. The **presenter cockpit's** per-hero **[Academy]**
+> link sets that cookie browser-side (cookies on `localhost` are port-agnostic, so the cockpit origin's cookie is
+> read by the academy origin) then navigates in — a hero lands **authenticated**, not anonymous. The **Cosmo AI
+> assistant stays absent** in a demo (its flag + OpenAI key are deliberately not provisioned — the AI-keys
+> policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
+> standalone cockpit panel. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
+
 #### 2. Configure env
 
 The **app's** env file is `code/.env`, not the repo root:

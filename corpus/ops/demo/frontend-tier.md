@@ -19,7 +19,7 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
 | **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
-| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Clerk-free via `BENCHMARK_VISUAL_BYPASS` (anonymous browse) |
+| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Keyless via the `e2e_persona` bypass (`BENCHMARK_VISUAL_BYPASS` + `NEXT_PUBLIC_E2E_AUTH`); the cockpit [Academy] link lands a hero **authenticated as a member** (M53 F6) |
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
 
@@ -218,15 +218,40 @@ offset frontends would still be CORS-blocked if you ran them (a known gap, not y
 CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
 and the REST-backed dashboards load.
 
-## ant-academy — native, Clerk-free, session-detached, with a documented fallback
+## ant-academy — native, keyless, session-detached, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
-launches it natively on `:3077+offset` **Clerk-free** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
-`NODE_ENV=development` flag that opens `/` and `/chapters/*` to anonymous traffic), paired with
+launches it natively on `:3077+offset` **keyless** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
+`NODE_ENV=development` flag that opens `/` and `/chapters/*` without a Clerk session), paired with
 `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip the org gate. The per-demo env is a **gitignored `code/.env.local`**
 overlay (zero academy-repo edits). Launching it natively (vs only documenting the step) resolved the overview's
 open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
-and Clerk-only, so the bypass gives anonymous Clerk-free browse with no academy-repo edits (#M19-D6).
+and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo edits (#M19-D6).
+
+> **The demo academy is AUTHENTICATED, not anonymous (v1.10b "fit-up" M53 F6 — the field-review gap close).**
+> The launcher now sets **both** halves of the academy's own `e2e_persona` cookie bypass: the **server** gate
+> `BENCHMARK_VISUAL_BYPASS=1` **and** the **client** gate `NEXT_PUBLIC_E2E_AUTH=1`. With those two set, an
+> `e2e_persona=member` cookie drives a **signed-in** context end-to-end — the server RSC resolves
+> `anonymous=false` + entitlement, and the client Clerk hooks resolve a named **`E2E Member`** identity
+> (progress / certificates / sidebar all active) — with **no real Clerk keys** (the box runs keyless; the client
+> hooks are mocked). The **presenter cockpit** sets that cookie: each hero card carries an **[Academy]** link
+> (rendered when `/demo-up` threads `--academy-base` into the cockpit) that sets `e2e_persona=member`
+> browser-side, then navigates to the academy origin. Cookies on `localhost` are **port-agnostic** (RFC 6265
+> ignores the port), so the cookie the cockpit origin (`:7700+offset`) sets is read by the academy origin
+> (`:3077+offset`) — **no academy-side route + no academy-repo edit**. So a hero who walks in from the cockpit
+> lands **authenticated as a member** (a non-anonymous academy session), not as an anonymous visitor. Without
+> the cookie the portal still opens for anonymous browse (the flags enable the bypass; the cookie chooses the
+> persona). The academy identity is the synthetic `E2E Member`, **not** the exact seeded platform hero (the
+> academy runs standalone with no platform-backend link, so it can't resolve the platform user) — the F6 bar is
+> "authenticated, not anonymous", which `member` (signed-in + org + entitled) satisfies.
+
+> **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
+> academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
+> per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —
+> the demo provisions **no** AI keys (the same AI-keys policy that keeps the `/api/ai/chat` route unexercised) —
+> so Cosmo is genuinely **absent** in a demo academy. This is intentional: the F6 acceptance makes **no**
+> `/api/ai/chat` assertion. Course content + the authenticated browse experience are the demo surface; the AI
+> assistant needs keys the demo deliberately doesn't carry.
 
 > **The native daemon is SESSION-DETACHED (the M33 "dead on a later visit" fix).** ant-academy was previously
 > launched with `nohup` alone — which does **not** detach from the launcher's process group. So when a
@@ -258,9 +283,11 @@ exact manual commands and continues, never aborting a good demo bring-up:
 ```bash
 cd stack-demo/ant-academy/code            # M26: the academy clone lives in the demo's OWN peer set (stack-demo)
 cp .env.example .env.local                 # gitignored; keeps the repo clean
-#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0, reuse platform/.env's Clerk keys (no FA token needed — FA Pro is vendored)
+#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0 and NEXT_PUBLIC_E2E_AUTH=1 (M53 F6 authenticated-member session);
+#   Clerk keys are optional (keyless works — no FA token needed either, FA Pro is vendored)
 npm install
-BENCHMARK_VISUAL_BYPASS=1 npm run dev -- --port 23077   # demo-2: Clerk-free anonymous browse
+BENCHMARK_VISUAL_BYPASS=1 NEXT_PUBLIC_E2E_AUTH=1 npm run dev -- --port 23077   # demo-2: keyless
+#   then set the e2e_persona=member cookie (the cockpit [Academy] link does this) to land authenticated.
 ```
 
 `/demo-down N` stops the native academy first (it's a process, not a container, so `compose down` can't reach

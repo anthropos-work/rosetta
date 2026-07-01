@@ -5,12 +5,12 @@ _Checked off as each In-scope deliverable lands. Close when all boxes are ticked
 
 _Ordered per overview.md acceptance flow (a)→(f). Sections gate on prior sections._
 
-- [ ] **§1 — Academy F6 seeder/wiring** (the ONE new-code section; in the rext authoring copy)
-  - [ ] Course content seeding present (real chapters/skill-path content, not empty shell)
-  - [ ] Hero academy menu-link routes from cockpit/persona into the academy
-  - [ ] Non-anonymous academy session (hero lands authenticated)
-  - [ ] AI chat stays documented-as-absent (NO `/api/ai/chat` assertion)
-  - [ ] Commit on rext authoring `main`
+- [x] **§1 — Academy F6 seeder/wiring** (the ONE new-code section; in the rext authoring copy) — rext `e91f004`
+  - [x] Course content present (3250 static-JSON files ship with the clone — verify-only, not seeded)
+  - [x] Hero academy menu-link: per-hero cockpit [Academy] deep-link (cockpit.go External entry + cockpit.py + up-injected --academy-base)
+  - [x] Non-anonymous academy session: launcher sets BOTH e2e_persona bypass gates; cockpit link sets e2e_persona=member cookie
+  - [x] AI chat documented-as-absent (Cosmo flag+key not provisioned; NO `/api/ai/chat` assertion) — D3 + frontend-tier.md
+  - [x] Commit on rext authoring `main` (e91f004; tests +13, all green, shellcheck-clean)
 - [ ] **§2 — Roll v1.10.1 rext release tag** (rolls up `fit-up-m47..m52` + academy commit)
   - [ ] Tag `v1.10.1` on rext authoring `main`
   - [ ] Bump `.agentspace/rext.tag` → `v1.10.1`
