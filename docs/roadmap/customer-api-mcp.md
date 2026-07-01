@@ -19,7 +19,8 @@ Everything the internal `Talk to Data` feature can answer, a customer can now an
 **Design tenets.**
 - **Read-first**. v1 is read-only across the board. Writes come only when we have a signed contract for them (out of scope for this roadmap).
 - **Federation-native**. Do not re-implement domain logic. The customer API is a thin, hardened facade over the existing Cosmo Router supergraph and its 5 subgraphs (`backend`, `cms`, `skiller`, `jobsimulation`, `skillpath`).
-- **Tenant isolation by construction**. Every request path resolves an `organization_id` at the edge, injects it as a synthetic Clerk-equivalent context, and every downstream query is Ent-policy-filtered as it is today. There is no path where a caller can omit the org scope.
+- **Auth-layer independence (HARD CONSTRAINT — Stefano).** The public API + MCP + Integrations UI depend **only** on a stable internal **identity/principal contract** — `{organization_id, actor (user_id | service_principal_id), scopes, roles, session_id, issued_at, expires_at}` — populated by a thin **`IdentityProvider` adapter**. Clerk is *one* adapter today; it must be swappable (Auth0, WorkOS, self-hosted OIDC, or none) without touching a single line of API/MCP/UI logic. **No milestone below may reference Clerk claims, Clerk sessions, or Clerk SDKs directly** — the only place the word "Clerk" is allowed is inside the adapter package. When we drop Clerk, we replace the adapter and everything above it keeps working.
+- **Tenant isolation by construction**. Every request path resolves an `organization_id` at the edge from the internal principal (never from a provider-specific claim), and every downstream query is Ent-policy-filtered as it is today. There is no path where a caller can omit the org scope.
 - **One brain, two mouths (three, counting the UI)**. REST, GraphQL, and MCP all delegate to a single internal `query-service` façade so behavior is identical and evolves together.
 - **Bring-your-own-agent from day one**. The MCP endpoint is remote (HTTP+SSE / Streamable HTTP), works with Claude Desktop, `claude` CLI, ChatGPT (once ChatGPT ships MCP client support broadly), and the Anthropic Agent SDK.
 - **Do not conflate service names with content.** The customer's `skills`, `roles`, `skill-paths`, `simulations`, `assessments`, `sessions` come from the right owner service (see the content-vs-runtime split in `corpus/architecture/architecture_overview.md`). The API surface hides the split behind one clean product noun set.
@@ -45,8 +46,8 @@ Everything the internal `Talk to Data` feature can answer, a customer can now an
 
 ## Milestone list (sequential)
 
-- **M1** — Discovery, contract & security review (docs-only gate)
-- **M2** — API-key primitive: issue / rotate / revoke, hashed at rest, org-scoped
+- **M1** — Discovery, contract & security review (docs-only gate) — includes the Clerk-coupling audit + the `IdentityProvider` / `Principal` auth-abstraction seam
+- **M2** — API-key primitive: issue / rotate / revoke, hashed at rest, org-scoped — **our own primitive, IdP-independent**
 - **M3** — Public API gateway (`api.anthropos.work`) + REST read layer v1 (people, skills, roles, paths, simulations, sessions, assessments, reports)
 - **M4** — Customer-facing GraphQL surface (persisted queries + the same read schema)
 - **M5** — Rate limiting, quotas, audit log, error taxonomy, request tracing
@@ -67,8 +68,10 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 **Scope in.**
 - Enumerate the v1 read surface (entities + fields) across all 5 subgraphs + `askengine`'s `rules.md` allowlist.
 - Draft OpenAPI 3.1 + GraphQL SDL for the customer-facing schema (not the federated internal one).
-- Decide the auth model: **API key** (org-scoped, service-to-service) and **Personal Access Token** (user-scoped, inherits the user's Clerk role); v1 ships **API key only**, PAT deferred to M10+.
-- Decide the tenancy contract: every key belongs to exactly one Clerk `organization` (Anthropos internal `eid`); no cross-org keys.
+- **Audit every Clerk coupling point touched by this initiative** — grep the corpus + `backend`, `apps/web`, and any consumer of `colony/authn`; produce `docs/api/clerk-coupling-audit.md` listing each site (file:line), what claim / SDK call is used, and the equivalent internal-principal call it must migrate to. This is the pre-condition for defining the seam.
+- **Define the auth-abstraction seam.** Specify the internal `IdentityProvider` interface + the `Principal` DTO (`organization_id, actor_id, actor_kind ∈ {user, service_principal}, scopes[], roles[], session_id, issued_at, expires_at, provider_hint`) as the ONLY thing the public API / MCP / UI ever see. Clerk becomes one implementation (`identity/clerk`); a `Static` and a `Test` implementation ship alongside for local dev and tests. No branching on `provider_hint` above the adapter.
+- Decide the auth model at the principal layer: **API key** (org-scoped, service-principal — a first-class actor_kind, no Clerk user needed) and **Personal Access Token** (user-scoped, inherits the actor's roles as resolved by the current IdentityProvider); v1 ships **API key only**, PAT deferred to M10+.
+- Decide the tenancy contract: every key belongs to exactly one Anthropos `organization_id` (our own primary key — not Clerk's `eid`; the adapter is responsible for the `eid → organization_id` mapping); no cross-org keys.
 - Threat model: key exfiltration, SSRF via `ask`, prompt injection through customer data, over-broad reads that hit the GB tables listed in `corpus/ops/db-access.md:32-38`.
 
 **Scope out.** Any code changes, DB migrations, or UI work.
@@ -77,6 +80,8 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - `docs/api/surface-v1.md` — the v1 entity catalog with per-entity field list, filter set, and originating subgraph.
 - `docs/api/security-model.md` — auth, tenancy, scopes, rotation, revocation, incident response.
 - `docs/api/threat-model.md` — STRIDE table + mitigations, sign-off log.
+- `docs/api/identity-seam.md` — the `IdentityProvider` interface, the `Principal` DTO, adapter contract, the Clerk-adapter mapping table, and the migration playbook for swapping providers.
+- `docs/api/clerk-coupling-audit.md` — the exhaustive audit produced under Scope-in above.
 - `docs/api/openapi.yaml` (draft) and `docs/api/schema.graphql` (draft).
 
 **Technical approach.**
@@ -98,11 +103,13 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 
 **Open questions (flag inline).**
 - Do we want a single `read:all` scope in v1, or already carve `read:people`, `read:skills`, `read:activity`? Recommendation: single scope, note as v2 seam.
-- PAT model: mint via Clerk custom claims, or a separate `personal_tokens` table? Recommendation: separate table with a Clerk `user_id` FK; do not overload Clerk.
+- PAT model: separate `personal_tokens` table keyed to the internal `actor_id` (never to a provider-specific user id); the adapter resolves the actor. Do not overload the identity provider.
 
 **Acceptance.**
 - Surface catalog reviewed by product + at least one design partner.
 - Threat model signed off by security.
+- **`docs/api/identity-seam.md` signed off** — reviewers confirm the `Principal` DTO carries every field the API/MCP/UI will ever need, and that no downstream milestone requires a provider-specific claim.
+- **`docs/api/clerk-coupling-audit.md` complete** — every coupling point has a named migration target on the seam.
 - OpenAPI + GraphQL drafts lint clean (`spectral`, `graphql-schema-linter`).
 - No code committed.
 
@@ -110,25 +117,30 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 
 ## M2 — API-key primitive: issue / rotate / revoke
 
-**Goal.** Introduce a first-class, org-scoped `api_key` in the `backend` service (`public` schema) that can be issued, listed, rotated, and revoked, and is the sole thing the future gateway trusts for customer traffic.
+**Goal.** Introduce a first-class, org-scoped `api_key` in the `backend` service (`public` schema) — **entirely our own primitive**, with no runtime dependency on Clerk (or any external IdP) for issuance, storage, or validation. This is the sole thing the future gateway trusts for customer traffic.
+
+**Auth-independence contract (non-negotiable).**
+- `apikey` package **must not import** any Clerk SDK, must not read any Clerk-shaped claim, and must not call the IdP at validation time. The only inputs to `apikey.Validate(secret)` are the DB row and the presented secret.
+- The one admin-facing touchpoint — "an org admin requests a new key in-app" — goes through the **abstract `IdentityProvider`** defined in M1. The RPC/handler receives a `Principal` (already resolved by the adapter) and authorizes against `Principal.roles`, never against a Clerk claim. Swapping the IdP later touches the adapter only; the `apikey` service is untouched.
+- Every `api_key` row references an actor as **`created_by_actor_id` (our own internal id)**, not a Clerk `user_id`. The adapter is responsible for mapping the external user to our internal actor at admin-login time.
 
 **Scope in.**
 - Ent schema: `api_keys` on `backend` (`public` schema — same place as `users`, `organizations`, `memberships`).
-- CLI + Connect-RPC methods (internal only, admin-gated) to issue/list/rotate/revoke.
+- CLI + Connect-RPC methods (internal only, admin-gated via the `Principal`) to issue/list/rotate/revoke.
 - **Hashed at rest** (Argon2id or bcrypt) — plaintext returned once at creation only.
 - Prefix + last-4 stored plaintext for display (e.g. `ant_live_ABCD…WXYZ`).
-- `organization_id` FK is **required**; `created_by_user_id` FK; `scopes` string array (v1 always `["read:all"]`); `expires_at` optional; `revoked_at`.
-- Sentinel policy: only Clerk `org:admin` in the owning org may CRUD their org's keys.
+- `organization_id` FK is **required**; `created_by_actor_id` FK (internal actor, not an external user id); `scopes` string array (v1 always `["read:all"]`); `expires_at` optional; `revoked_at`.
+- Authorization policy (in Sentinel or its successor — Sentinel is called with `Principal.roles`, not with a Clerk claim): only an actor holding the internal `org:admin` role in the owning org may CRUD their org's keys.
 
 **Scope out.** Gateway edge validation (M3), rate-limit accounting (M5), UI (M8), PATs.
 
 **Deliverables (code).**
 - `app/internal/data/ent/schema/apikey.go` (Ent schema) + `atlas migrate diff`ed migration.
-- `app/internal/apikey/` package: `manager.go`, `hash.go`, `format.go` (key prefix + secret encoding), `manager_test.go`.
-- Connect-RPC: `backend.v1.ApiKeyService/{Create,List,Rotate,Revoke}` in `app/rpc.go`.
+- `app/internal/apikey/` package: `manager.go`, `hash.go`, `format.go` (key prefix + secret encoding), `manager_test.go`. No Clerk imports; enforced by an `import`-lint rule in CI.
+- Connect-RPC: `backend.v1.ApiKeyService/{Create,List,Rotate,Revoke}` in `app/rpc.go`. Handlers receive a `Principal` from the identity middleware, never a raw Clerk session.
 - Cobra subcommand `app apikey {create,list,rotate,revoke}` under `cmd/apikey`.
-- Sentinel: add `p2` policy row `org:feature:integrations:apikey:manage` gated to `admin`; wire into `init_policy.sql` + a `local_superadmin_grants.sql` note.
-- Redis Streams event: `backend` stream carries `ApiKeyCreated|Rotated|Revoked` for downstream audit consumers.
+- Authorization: add the `org:feature:integrations:apikey:manage` policy gated to the internal `admin` role; wire into `init_policy.sql` + a `local_superadmin_grants.sql` note.
+- Redis Streams event: `backend` stream carries `ApiKeyCreated|Rotated|Revoked` for downstream audit consumers (payload carries `actor_id`, not any external user id).
 
 **Technical approach.**
 - Key format: `ant_{env}_{22-char-b32}.{40-char-b32}` — `{22-char}` is the record id (short, indexable), `{40-char}` is the secret. Constant-time compare on lookup; index the record id.
@@ -136,15 +148,16 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - Rotation: creating a rotation returns a new secret and marks the old key `revoked_at = now() + grace` (default 24h grace, configurable per key).
 - **Never log the plaintext.** Reuse the values-blind principle from `corpus/ops/secrets-spec.md`.
 
-**Dependencies.** None. Isolated to `backend`.
+**Dependencies.** M1 (the `IdentityProvider` seam + `Principal` DTO must exist as spec).
 
 **Risks.**
 - If we ever leak a plaintext into `ai_usages` or a Sentry breadcrumb, it's game over. Add a `regexp` breadcrumb scrubber for `ant_live_.*\.` and unit-test it.
 - Argon2 CPU cost on `create` — fine (rare op), unit-test that `verify` under load stays <5ms P99.
 
 **Acceptance.**
-- Create → list → verify (RPC) → rotate → revoke cycle covered by integration tests.
-- Sentinel denies non-admin `Create`; permits admin.
+- Create → list → verify (RPC) → rotate → revoke cycle covered by integration tests, driven by both the Clerk adapter and the Static adapter — behavior identical across both, proving auth-independence.
+- Authorization denies a non-admin `Principal` on `Create`; permits admin.
+- Import-lint rule fails CI if `apikey/` gains any Clerk-SDK import.
 - Argon2 hash time within the tuned envelope on the reference CI runner.
 - Audit event published to `backend` stream and consumed cleanly in a fixture consumer.
 
@@ -157,7 +170,7 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 **Scope in.**
 - New repo (or new dir in `platform`) `apigw` — a Go service using colony, sitting in the compose file at `:8500` (dev) / behind ALB (prod), profile `graphql` peers.
 - REST v1 endpoints for the M1 catalog (paginated `GET /v1/{people,skills,roles,skill-paths,simulations,sessions,assessments,reports}` + `GET /v1/{entity}/{id}`).
-- Key resolution middleware: `Authorization: Bearer ant_live_…` → hash-verify against `api_keys` → hydrate `organization_id` → mint a **short-lived internal Clerk-shaped JWT** signed by an internal HS256 key that `colony/authn`'s `Dummy` provider (or a new `Internal` provider) accepts.
+- Key resolution middleware: `Authorization: Bearer ant_live_…` → hash-verify against `api_keys` → hydrate a `Principal` (`organization_id`, `actor_kind = service_principal`, `actor_id = api_key.id`, `scopes`, `roles = ["api:read"]`) → mint a **short-lived internal JWT signed BY OUR SERVICE against the `Principal`** (HS256, 5-min TTL). The claim set is our own (`org_id`, `actor_id`, `actor_kind`, `scopes`, `roles`) — **NOT** Clerk-shaped, **NOT** derived from any Clerk-issued token. Every subgraph accepts this internal JWT via a new `authn` provider (`identity/internal`), sitting alongside — never downstream of — the Clerk adapter.
 - Query translation: every REST resource maps to a **persisted GraphQL operation** compiled at build time from `docs/api/schema.graphql`; no ad-hoc GraphQL execution from customer input.
 - Response shaping: JSON:API-lite (`data`, `meta.page`, `links.next`) — pick a shape, document it, stick to it.
 
@@ -168,7 +181,7 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - `apigw/openapi.yaml` — the runtime spec (frozen from M1 draft).
 - Persisted GraphQL operations under `apigw/persisted/*.graphql` + a compile-time SHA registry.
 - `platform/docker-compose.yml` entry, `platform/repos.yml` entry, Terraform ECS service block, ALB routing rule for `api.anthropos.work`.
-- `authn` extension: an **`Internal` provider** that trusts JWTs signed with a shared secret (`APIGW_INTERNAL_JWT_KEY`), rotated separately; carries the same `eid`/`org`/`org_role` claims Clerk does. Documented in `corpus/architecture/shared_libraries.md`.
+- `authn` extension: an **`Internal` identity provider** that trusts JWTs signed by the gateway with a shared secret (`APIGW_INTERNAL_JWT_KEY`, rotated separately). Claims are the internal `Principal` shape (`org_id`, `actor_id`, `actor_kind`, `scopes`, `roles`, `session_id`) — **explicitly not the Clerk claim shape**. Documented in `corpus/architecture/shared_libraries.md` alongside the Clerk adapter as peer implementations of the same `IdentityProvider` interface.
 
 **Technical approach.**
 - `apigw` **never** talks to Postgres directly. It only calls `http://graphql:8080/graphql` with the internal JWT — that path is already Ent-policy-filtered by `organization_id` in every subgraph. Tenancy is preserved by construction, not by hope.
@@ -180,6 +193,7 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 
 **Risks.**
 - **Internal-JWT provider is the weakest link.** If leaked, an attacker can impersonate any org. Mitigations: rotate every 24h automatically, sign in the gateway process only, never write the key to disk in prod (SecretsManager → memory), narrow the acceptance window to 5 min.
+- **Provider-shape leak.** If any subgraph starts treating an internal-JWT claim as if it were a Clerk claim, we have re-coupled by accident. Guard: the `authn` middleware exposes only the `Principal` DTO to handler code; a CI import-lint rule forbids `context`-typed Clerk claim helpers in any code that also handles `Principal`.
 - Persisted-query compilation vs Cosmo static composition — the customer schema must not drift ahead of what the compose-time supergraph exposes. Add a CI check that every persisted op validates against the frozen supergraph.
 
 **Open questions.**
@@ -370,7 +384,7 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
   - **Usage** — chart of requests / errors / cost this month, per key, from `api_audit_events` + `ai_usages`. Read-only rollups.
   - **Docs** — inline links to the developer docs (M9) with the org's example key embedded.
   - **Quickstart** — a 3-step banner: (1) create key, (2) copy this snippet, (3) run it, see it work; shown until the org has made ≥ 1 successful API call.
-- Sentinel policy: only `org:admin` can open the Integrations page (mirrors existing `/enterprise/settings` gating).
+- **Admin authorization via the abstract identity, not Clerk.** The page gate, the mutation gate, and every conditional render key off the internal `Principal.roles` (e.g. `hasRole('org:admin')`) exposed by a Next.js server-side `getPrincipal()` helper that hides which IdP is behind it. **No component in `apps/web/src/app/enterprise/settings/integrations/` may import `@clerk/*` directly.** Swapping Clerk later replaces the `getPrincipal()` implementation only; the Integrations UI is untouched.
 - All data via the federated GraphQL — the customer-facing UI itself must not use the new customer API (avoid the loop where our own UI depends on our public throttles).
 
 **Scope out.** PAT UI (deferred), team/user-level scopes (deferred), webhooks/events (out of roadmap).
@@ -382,11 +396,11 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - Storybook stories for the new components; Playwright E2E: create key → hit `/v1/people` with it → see it in Usage.
 
 **Technical approach.**
-- Mirror the existing `/enterprise/*` UX patterns already in `apps/web` — TanStack React Query + `useGraphql`, `<Protect>`-equivalent org-admin gate.
+- Mirror the existing `/enterprise/*` UX patterns already in `apps/web` — TanStack React Query + `useGraphql`, plus a new `<PrincipalProtect requires="org:admin">` component that wraps the existing IdP-specific gate. Under the hood it reads from `getPrincipal()`; today it delegates to Clerk's `<Protect>`, tomorrow it delegates to whatever replaces it. Consumers never see the swap.
 - **Plaintext key display** — one-time modal with a copy button, big "you will not see this again" warning, hash-verify test button.
 - Endpoint URLs shown per environment (dev / staging / prod) — the UI reads these from `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_MCP_BASE_URL`.
 
-**Dependencies.** M2, M3, M5, M6.
+**Dependencies.** M1 (identity seam), M2, M3, M5, M6.
 
 **Risks.**
 - Copy-to-clipboard on plaintext key on non-HTTPS localhost silently no-ops — add a fallback and warn.
@@ -395,7 +409,8 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 **Acceptance.**
 - Playwright: fresh admin can create a key, run a `curl`, see a green check in Usage within 30s.
 - The Integrations page renders empty-state correctly for a brand-new org.
-- Non-admin gets 403 on all four `orgApiKey*` mutations.
+- Non-admin `Principal` gets 403 on all four `orgApiKey*` mutations.
+- Grep gate: `apps/web/src/app/enterprise/settings/integrations/**` has zero `@clerk/*` imports.
 
 ---
 
