@@ -472,6 +472,45 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     `docker logs <stack>-backend-1` for `clerk`). And never recreate a single service with `--force-recreate`
     *without* `--no-deps` — it recreates `postgresql` too and wipes the seeded org. Never widen the poll to mask a
     slow query, and never shrink the org below the org-scale premise just to pass.
+  - **An unbounded-hydration perf wall often has an EXISTING id-restricted loader — swap, don't rewrite; and
+    a demo-patch CAN bound a snapshot read-path where it can't cache an authz gate (v1.10b M51 iter-09, the
+    fix that closed the wall).** iter-08 proved the frozen AI-readiness read (`buildResponseFromSnapshots`)
+    times out because it calls `loadMembers(orgID, "")` — a full UNBOUNDED whole-org member hydration — to
+    re-join current Tags/Name/Role onto each frozen snapshot. The fix is a **new app read-path demo-patch**
+    (`patches/app-aireadiness-snapshot-loadmembers`, the `app-targetrole-authz-skip` precedent: a pinned
+    anchor→replacement manifest + a rext-owned `apply-*.sh` helper mirroring the swap, wired INTO
+    `up-injected.sh`'s inject loop svc=app after apply-authn + the authz-skip, before the build, trap-clean,
+    `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND=1` opt-out) that **bounds** the hydration: collect the ~199
+    snapshot user-ids and call the EXISTING bounded sibling `loadMembersByUserIDs(orgID, "", snapUserIDs)`
+    (indexed `memberships."user" = ANY(...)`) instead. It is a **PURE perf optimization, data-identical**:
+    `buildResponseFromSnapshots` uses the members map ONLY keyed-by + looked-up-by each snapshot's UserID, so
+    the returned `AIReadinessResponse` is byte-identical; only the member-load cost drops. The frozen
+    `?cycle=<closed>` GET went **180 s-timeout → 19 ms** and the dashboard rendered the full funnel. **Two
+    lessons:** (1) when a perf wall is an unbounded hydration, look for an id-restricted sibling loader in the
+    codebase BEFORE writing a new query — the fix is often a one-call data-identical swap. (2) Unlike a
+    per-OBJECT authz RPC (which can't be CACHED object-blind — the M46 T2 correctness bug — but CAN be
+    DROPPED), an unbounded READ hydration can be **BOUNDED** by a demo-patch where the narrower set is already
+    known (the snapshot user-ids), returning identical data faster — a third safe demo-patch shape alongside
+    drop-the-read-gate (M46/B) and cap-the-fetch (M46/A). The prod finding stays: prod's frozen read still
+    hydrates the whole org and needs `loadMembers` bounded in the snapshot path / a `frozen_tags` column
+    (M314b) — a disclosed demo-perf relaxation, not a prod fix.
+  - **A believability-gate section descriptor that requires TWO strings the FE renders MUTUALLY EXCLUSIVELY
+    is a latent FALSE-FAIL — check EITHER/OR conditional headers before treating an absent substring as a
+    content gap (v1.10b M51 iter-09).** The AI-readiness funnel section false-failed on "region missing
+    required content: Stage breakdown" (re-asserted 6× — NOT a paint-timing skeleton) while its sibling
+    section passed and the funnel WAS fully rendered. Root cause: `AIReadinessView.tsx` renders the funnel
+    header as ONE of two mutually-exclusive strings — `t('stepsCompletionLink')` ("Steps completion", a link)
+    when an `onStepsClick` handler is provided, ELSE `t('stageBreakdown')` ("Stage breakdown") — never both.
+    The manager dashboard always provides the steps-completion drawer handler, so it renders "Steps
+    completion" and NEVER "Stage breakdown"; the descriptor's `mustInclude: [..., 'Stage breakdown', 'Steps
+    completion']` was impossible-in-manager-mode. The fix is a **harness** correction (drop the impossible
+    alternative, keep the load-bearing proof — the three stage labels + the funnel header), NOT a seed/content
+    fix and NOT a gate-loosening (the funnel's real proof still asserts). **Distinguish at triage:** a section
+    that fails on ONE substring while its siblings render + the page's `main` dump shows a SIBLING string of an
+    either/or pair → a mutually-exclusive-header descriptor bug (harness fix); a section that fails on ALL its
+    substrings + a skeleton screenshot → a real empty/slow-paint (seed or warm/poll fix). The tell is the
+    probe/`main` dump: if the missing string is the OTHER branch of a conditional you can SEE rendered, it's a
+    descriptor false-fail.
 - **An editorial citation in replayed content is VALID content, not a gate escape — disclose it, don't strip
   it (M42e iter-08 lesson).** Replayed `/skill-path/.../chapter` body copy can carry a real external `<a href>`
   citation (e.g. an `en.wikipedia.org` / `strategy-business.com` reference inside the course material). That is

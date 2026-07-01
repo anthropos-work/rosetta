@@ -173,3 +173,59 @@ iter-08 surfaces the decision rather than picking one. The closed-cycle seeder +
 are KEPT + committed (correct + reusable regardless of the resolution). Protocol lesson added
 (coverage-protocol.md, M51 iter-08: frozen SCORES ≠ frozen RESPONSE; measure the fast branch END-TO-END).
 `fit-up-m51` is NOT tagged (gate not met). Full evidence in iter-08/{progress,decisions}.md.
+
+## TOK-02: app read-path demo-patch — bound loadMembers in the snapshot path — 2026-07-01
+
+**Tok type:** triggered (3-no-prog streak: iter-06/07/08 all held failingSections=5) — but the strategy
+revision was **authored + reviewed OUT-OF-BAND by the user** across the iter-06/07/08 user-blocker exits.
+The user reviewed the three surfaced falsifications and CHOSE option (c) — a new app read-path demo-patch —
+for run 6, directing "continue with iter-09 (app injection patch)". So this TOK records the user-ratified
+pivot; the mandated triggered-tok user-review already happened (the run-6 brief IS its output). Per the
+user's explicit direction to execute the app-injection tik THIS run, iter-09 proceeds as a tik under TOK-02
+rather than exiting for a review that has already occurred.
+
+**Prior strategy:** TOK-01 (active-cycle signals-true) + its iter-07 closed-cycle amendment + the iter-08
+deep-link. The coverage-drive strand assumed the AI-readiness dashboard read could be made fast either by
+seeding signals (active-cycle recompute), by freezing scores (closed-cycle snapshots), or by deep-linking the
+FE to the frozen branch.
+
+**Why it stopped working (the 3 no-prog tiks):** iter-06 falsified the active-cycle path (live-recompute +
+per-skill translation N+1 never completes in-budget). iter-07 falsified "seed a closed cycle" (the DEFAULT FE
+GET omits `?cycle=`, so the frozen branch is never SELECTED). iter-08 falsified the deep-link
+(`buildResponseFromSnapshots` itself calls `loadMembers(orgID, "")` — a full UNBOUNDED org-member hydration —
+so even a direct `?cycle=<closed>` GET times out at 180s: "frozen" froze the SCORES, not the RESPONSE). The
+common wall across all three: the ~200-member unbounded member hydration in the read path.
+
+**New strategy:** author a NEW app injection demo-patch — `app-aireadiness-snapshot-loadmembers` — following
+the `app-targetrole-authz-skip` precedent (an in-inject-loop source swap of the demo's build-scratch app clone
+via a rext-owned `apply-*.sh` helper mirroring a pinned anchor→replacement manifest). The swap: in
+`buildResponseFromSnapshots` (`internal/workforce/ai_readiness.go`), replace the unbounded
+`m.loadMembers(ctx, orgID, "")` with a BOUNDED `m.loadMembersByUserIDs(ctx, orgID, "", snapUserIDs)` where
+`snapUserIDs` are the ~199 snapshot user-ids — hydrating ONLY the frozen members via the indexed
+`memberships."user" = ANY($2::uuid[])` filter (`queryBaseMembers` byUser=true) instead of a whole-org scan.
+
+**Why it is a PURE perf optimization (data-identical):** in `buildResponseFromSnapshots`, the loaded members
+are used ONLY to build `membersByUserID` (keyed by `Member.UserID`), which is looked up ONLY by each
+snapshot's `s.UserID`. Members with no matching snapshot were loaded-but-never-used. `loadMembersByUserIDs`
+(the existing bounded sibling used by the live scoring path) restricts `queryBaseMembers` to those user-ids
+and hydrates tags/skills/sims off the loaded rows' membership ids — so the resulting map carries the same
+entries for every `s.UserID` that resolves. Snapshot users with no active membership fall to the identical
+orphan branch (map miss) in both forms. The `AIReadinessResponse` (Org aggregate, ByTeam, People) is
+byte-identical; only the member-load cost drops from whole-org to the snapshot set. Scoped to the snapshot/
+closed-cycle read path ONLY — the live/active-cycle behavior for other orgs is untouched.
+
+**Strategy class:** more-granular — a per-function bounded-query swap in the one hot path, retrying the
+closed-cycle strategy with the NEW evidence (iter-08's `loadMembers` root cause) that identifies the exact
+unbounded call to bound. Reuses the established app-demo-patch tooling (precedent + helper + manifest schema).
+
+**Distance-to-gate context:** gate = (failingSections, escapes) manager-vantage on Northwind = (0,0)
+frontier-exhausted on a fresh demo-up, + the qualitative conditions (already DB-correct: closed cycle, 199
+frozen snapshots, 78.4% stage-3, Aria/Ben/Dana). Current: (5, 0). The 5 = 2 AI-readiness + 3
+workforce-aggregate — all in the same `loadMembers`/member-hydration family, so the one bounded-query patch is
+hypothesized to clear all 5. Expected lift: 5 → 0.
+
+**Next-tik direction:** iter-09 (tik under TOK-02) — author + commit the patch (manifest + `apply-*.sh` helper
++ `up-injected.sh` wiring) in the authoring copy; re-pin the consumption clone to the new sha; rebuild demo-1's
+app image (through the inject loop) + re-seed; verify with the cheap dual-endpoint probe (frozen GET now
+completes fast + returns the correct funnel) BEFORE the gated sweep; then run the gated manager sweep and drive
+failingSections 5 → 0.

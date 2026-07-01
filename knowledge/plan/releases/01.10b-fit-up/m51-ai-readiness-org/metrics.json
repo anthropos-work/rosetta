@@ -5,20 +5,21 @@
   "gate": {
     "metric": "(failingSections, escapes) manager-vantage on the 3rd org (Northwind Aviation), frontier-exhausted, on a fresh demo-up",
     "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
-    "met": false
+    "met": true
   },
-  "iters_total": 8,
-  "tiks": 7,
+  "iters_total": 9,
+  "tiks": 8,
   "toks": 1,
   "current_metric": {
-    "failingSections": 5,
+    "failingSections": 0,
     "escapes": 0,
     "personaFailures": 0,
     "notReachedPages": 0,
-    "reachable": 66,
+    "reachable": 70,
     "cappedAtFrontier": false,
+    "gateMet": true,
     "baseline_failing": 6,
-    "delta_from_baseline": -1
+    "delta_from_baseline": -6
   },
   "qualitative_gate_conditions": {
     "dashboard_enabled": true,
@@ -27,13 +28,11 @@
     "hero_completed": true,
     "cycle_status": "closed",
     "frozen_snapshots": 199,
-    "note": "iter-07 (closed-no-lift) applied the user-chosen M48 CLOSED-CYCLE alternative to the iter-06 platform perf wall: cycle active->closed + a frozen ai_readiness_snapshots row per member (platform-model-scored; Aria=stage3/champion, Ben=stage1/standby, Dana=none). Re-seeded demo-1 CLEANLY (the 8 ai_readiness_* tables added to stackseed --reset + the new --reload-sentinel). DB VERIFIED correct: cycle closed, 199 frozen snapshots, 78.4% stage-3. But the GATED manager sweep HELD at (failing=5, escapes=0): HYPOTHESIS PARTIALLY FALSIFIED. An authenticated network probe proved the platform FE's DEFAULT dashboard GET fires the LIVE path (no ?cycle=, never completes) and never fires the /cycles list that would supply latestClosedCycle.id, so the fast frozen path (app buildResponseFromSnapshots, reachable ONLY for CycleID!=nil && status=='closed') is never taken by the default call. Closing the gap is PLATFORM-bound. The closed-cycle data + --reload-sentinel tooling are KEPT (correct + reusable; the cycle picker / a ?cycle= deep-link renders the fast frozen dashboard)."
+    "funnel_stage_counts": {"stage1": 22, "stage2": 21, "stage3": 156},
+    "note": "iter-09 (closed-fixed, GATE MET) applied the user-chosen run-6 APP READ-PATH DEMO-PATCH (option (c) from the iter-08 user-blocker): a new app injection demo-patch (app-aireadiness-snapshot-loadmembers) that bounds the unbounded loadMembers(orgID, \"\") whole-org hydration in buildResponseFromSnapshots (the frozen AI-readiness read path) to the ~199 snapshot users via the existing bounded sibling loadMembersByUserIDs — a PURE perf optimization (data-identical: the members map is keyed+looked-up by snapshot UserID), scoped to the snapshot read path. Authored via the app-targetrole-authz-skip precedent (pinned manifest + rext-owned apply-*.sh helper mirroring the swap + up-injected.sh inject-loop wiring). The cheap dual-endpoint probe CONFIRMED the fix: the frozen ?cycle=<closed> GET went 180s-timeout -> 19ms and the dashboard renders the full funnel (199 members, 78.4% stage-3). Gated manager sweep #1: 5 -> 1 (the 1 residual a MANIFEST false-fail — the ai-readiness-funnel header is one of two mutually-exclusive strings, 'Steps completion' link OR 'Stage breakdown' label, never both; the manager mode always renders 'Steps completion'). Harness fix (drop the impossible 'Stage breakdown' from the descriptor, keep the load-bearing Stage 1/2/3 + funnel-header proof). Sweep #2: (0,0), persona 0, escapes 0, frontier EXHAUSTED, reachable 70, gateMet=true, on a fresh demo-up. rext tagged fit-up-m51 (3733523); consumption clone re-pinned to the tag."
   },
-  "blocker": {
-    "kind": "user-blocker",
-    "summary": "iter-08 applied the user-chosen run-5 DEEP-LINK strategy (point the cockpit jump_to + coverage manifest at ?cycle=<latest-closed-cycle-id> so the FE fires the cycle-scoped GET -> the fast frozen path). The mandated cheap probe FIRST (an authed dual-endpoint DIRECT probe) FALSIFIED it: /cycles is fast (40ms) but the frozen data GET ?cycle=<closed> NEVER completes (180s timeout), because app buildResponseFromSnapshots reads the frozen scores fast then calls loadMembers(org, \"\") -- a full unbounded org-member hydration -- which at 200 members is the SAME org-scale wall (NOT the demo-patchable targetRole authz RPC; jobRole is a SQL column). So the deep-link is INERT -- 'frozen' froze the SCORES, not the RESPONSE. Stronger falsification than iter-07 (which showed only the DEFAULT FE route omits ?cycle=). No cockpit/manifest edit made (would ship a hanging ?cycle=), no sweep run (would reconfirm 5). Gate cannot reach (0,0) without one of: (a) a disclosed-presenter-note residual (data proven-correct in DB, slow-only) with the user's EXPLICIT sign-off (NOT self-granted -- would loosen the gate to force a pass), (b) escalate a platform edit (bound loadMembers in the snapshot path via restrictUserIDs, OR add a frozen_tags jsonb column [M314b] so the snapshot read needn't re-join live members) = unimplementable-without-platform-edit, or (c) a new app read-path demo-patch bounding loadMembers in the snapshot path (the app-targetrole-authz-skip precedent, a new tooling investment NOT in the run-5 brief).",
-    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-08/{progress,decisions}.md + decisions.md (USER-BLOCKER iter-08) + rext stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts"
-  },
-  "last_iter": "iter-08",
+  "last_iter": "iter-09",
+  "gate_met_iter": "iter-09",
+  "rext_tag": "fit-up-m51",
   "last_updated": "2026-07-01"
 }
