@@ -25,11 +25,23 @@ Everything the internal `Talk to Data` feature can answer, a customer can now an
 - **Bring-your-own-agent from day one**. The MCP endpoint is remote (HTTP+SSE / Streamable HTTP), works with Claude Desktop, `claude` CLI, ChatGPT (once ChatGPT ships MCP client support broadly), and the Anthropic Agent SDK.
 - **Do not conflate service names with content.** The customer's `skills`, `roles`, `skill-paths`, `simulations`, `assessments`, `sessions` come from the right owner service (see the content-vs-runtime split in `corpus/architecture/architecture_overview.md`). The API surface hides the split behind one clean product noun set.
 
+**Write layer — cross-cutting contract (applies to W1 + W2 + every future write).**
+Writes are additive to the read stack, gated behind M5 (audit + limits + tracing must exist first), and follow one uniform contract so REST / GraphQL / MCP surface them identically:
+- **Per-resource READ vs WRITE scopes on API keys.** Scopes take the shape `people:read`, `people:write`, `people:delete`, `assignments:write`, `webhooks:manage`, etc. Writes are **DEFAULT-OFF** on every newly minted key (the key CRUD UI + API must require an explicit opt-in per resource, per action class).
+- **Destructive-action gating.** Delete + deactivate + role-remove are a **separate elevated scope** (`*:delete`), never granted by `*:write`. **Soft-delete is the default** for every deletable resource (sets `deleted_at`, hidden from all default reads, reversible for 30d); **hard-delete requires the `*:delete:hard` scope AND a step-up confirmation** (`X-Confirm: irreversible` header + `?confirm=<resource_id>` param that must match the target — no cross-request replay).
+- **Idempotency keys on all writes.** `Idempotency-Key: <caller-supplied ULID>` is REQUIRED on every mutating request (POST/PATCH/PUT/DELETE); server stores `(key_id, idempotency_key) → response_hash` with 24h TTL; replay returns the cached response unchanged; a mismatched body against the same key returns `409 idempotency_conflict`. GraphQL writes carry the same key in an `x-idempotency-key` header + persisted-op restriction.
+- **Async job model for bulk (1 → 20 000).** Every bulk action returns `202 Accepted` with `{job_id, status_url, estimated_duration_s}` — never blocks. Jobs are first-class: `GET /v1/jobs/{id}` (poll), `job.progress` / `job.completed` / `job.failed` outbound webhooks, and per-row result stream so a poison row never rolls back its siblings (mirroring the backend's existing `bulkImportV2 → Job!` pattern). Job records inherit the caller's `Principal`, org, key id, and audit chain.
+- **Dry-run / validate mode.** Every write endpoint (single and bulk) accepts `?dry_run=true` (REST) / `dryRun: true` (GraphQL) / `dry_run` arg (MCP): validates + returns the diff the write would produce, **never touches state**, no idempotency slot consumed, no audit row written (a `write_dry_run` row is instead).
+- **MCP write tools — explicitly separated + annotated.** MCP tools split into `list_*` / `get_*` (read) vs `create_*` / `update_*` / `assign_*` / `delete_*` (write). Every write tool carries the MCP `destructive` + `non_idempotent` annotations (MCP spec fields) so LLM clients render a confirmation dialog. `delete_*` tools additionally require the client to echo an `acknowledge_destructive: true` argument (dropped silently by non-destructive tools). The `ask` endpoint (M7) remains **read-only** — it cannot invoke a write tool in v1 (the MCP write catalog is opt-in per key).
+- **Audit before + after per write.** Every mutating request writes `api_audit_events` with `{before_snapshot, after_snapshot, diff, actor_principal, key_id, idempotency_key, dry_run, request_id}` — the two snapshots are the exact stored JSON blob of the entity pre/post write, `diff` is the RFC 6902 patch. Retention aligned to the M5 90-day window; longer for `*:delete:hard` (7 years, DPA-aligned).
+- **Stricter write rate limits.** Per-key write budget defaults are an order of magnitude below reads: 6 rpm / 100 rph / 2 000 rpd for single writes; 10 async jobs/hour with per-job concurrency = 1 per resource kind. Bulk-job size caps: 20 000 rows/job, 5 concurrent jobs/org. Independent 429 accounting from the read budget — a write burn does not throttle reads.
+- **Write endpoints go through the SAME persisted-operation registry as reads.** No customer-supplied SQL, no ad-hoc mutations by default (opt-in per key via the same `allow_adhoc_graphql` flag from M4).
+- **Auth-layer independence carries over.** Every write handler receives the internal `Principal` from the middleware — never a Clerk claim, never a raw session. Writes carry `Principal.actor_id` into the audit row; when the actor is a service-principal (API key), that's what's recorded.
+
 **Non-goals for v1.**
-- No write endpoints.
 - No BYO-model / BYO-Bedrock for the `ask` endpoint.
-- No public "webhooks out" surface (events for customer subscribers) — separate track.
-- No fine-grained ABAC exposed to customers (they get a single "read all my org data" scope in v1; scopes granularize in v2).
+- No fine-grained ABAC exposed to customers (they get resource-level scopes in v1 per the write-scope table above; row-level policies granularize in v2).
+- The `ask` endpoint cannot invoke write tools in v1 (agentic writes deferred to a later track with mandatory human-in-the-loop confirmation).
 
 **Grounding — what exists today (from the corpus).**
 | Concern | Today | Reference |
@@ -46,16 +58,23 @@ Everything the internal `Talk to Data` feature can answer, a customer can now an
 
 ## Milestone list (sequential)
 
-- **M1** — Discovery, contract & security review (docs-only gate) — includes the Clerk-coupling audit + the `IdentityProvider` / `Principal` auth-abstraction seam
-- **M2** — API-key primitive: issue / rotate / revoke, hashed at rest, org-scoped — **our own primitive, IdP-independent**
+**Read track (M1–M10) — original scope, ships first.**
+- **M1** — Discovery, contract & security review (docs-only gate) — includes the Clerk-coupling audit + the `IdentityProvider` / `Principal` auth-abstraction seam + the **write-surface audit** (real-mutation inventory + gap table, see Appendix A)
+- **M2** — API-key primitive: issue / rotate / revoke, hashed at rest, org-scoped — **our own primitive, IdP-independent**; carries **per-resource READ scopes AND WRITE scopes** (writes DEFAULT-OFF)
 - **M3** — Public API gateway (`api.anthropos.work`) + REST read layer v1 (people, skills, roles, paths, simulations, sessions, assessments, reports)
 - **M4** — Customer-facing GraphQL surface (persisted queries + the same read schema)
-- **M5** — Rate limiting, quotas, audit log, error taxonomy, request tracing
+- **M5** — Rate limiting, quotas, audit log, error taxonomy, request tracing — **prerequisite for any write**
 - **M6** — MCP Server (remote, Streamable HTTP), exposing the read tools + resource templates
 - **M7** — Natural-language `ask` endpoint (customer-safe generalization of `askengine`) — REST, GraphQL, and MCP tool
 - **M8** — `Enterprise Settings → Integrations` UI: key CRUD, MCP enable, quickstart, live docs, usage panel
-- **M9** — Developer docs site + Claude / ChatGPT / SDK quickstarts + reference SDKs (TS, Python)
-- **M10** — Private beta → GA hardening: versioning policy, deprecation contract, SLOs, on-call runbook
+
+**Write track (W1–W2) — inserted AFTER M5, gated by it; ships in parallel with M6–M8.**
+- **W1** — Write foundations + user/org lifecycle + assignments: async job model (job id + poll/webhook), idempotency-key contract, dry-run/validate mode, stricter write rate limits, tighter audit-before/after. Ships PEOPLE (create/invite/update/deactivate/reactivate/soft-delete + elevated hard-delete, HRIS-style bulk upsert), ORG STRUCTURE (teams/departments — new; job-role CRUD — new; assign person↔role), ASSIGNMENTS (assign Sim / Interview / Skill Path / Academy / AI Lab to person or group, reschedule, cancel/revoke, BULK 1→20 000 async).
+- **W2** — Skills + learning + sessions + reports + webhooks: SKILLS (assign/remove on person or role, set/override level, trigger reassessment, role-skill requirements+levels), LEARNING (enroll/unenroll skill path or development program, mark complete/reset), ASSESSMENT SESSIONS (launch/schedule sim or interview, resend invite, revoke), REPORTS+EVENTS (trigger report/export async; outbound webhooks — subscribe/manage/rotate-secret for `assessment.completed`, `skill.verified`, `assignment.completed`, `user.created`). Extends M6 with MCP write tools (destructive-annotated, confirmation semantics) + M8 with write-scope toggles + destructive-action confirmation UX.
+
+**Release track.**
+- **M9** — Developer docs site + Claude / ChatGPT / SDK quickstarts + reference SDKs (TS, Python) — includes write recipes + webhook receiver templates
+- **M10** — Private beta → GA hardening: versioning policy, deprecation contract, SLOs, on-call runbook — separate SLOs + pentest scope for writes
 
 Each milestone below has: **Goal · Scope in / out · Deliverables · Technical approach · Dependencies · Risks · Acceptance**.
 
@@ -129,7 +148,9 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - CLI + Connect-RPC methods (internal only, admin-gated via the `Principal`) to issue/list/rotate/revoke.
 - **Hashed at rest** (Argon2id or bcrypt) — plaintext returned once at creation only.
 - Prefix + last-4 stored plaintext for display (e.g. `ant_live_ABCD…WXYZ`).
-- `organization_id` FK is **required**; `created_by_actor_id` FK (internal actor, not an external user id); `scopes` string array (v1 always `["read:all"]`); `expires_at` optional; `revoked_at`.
+- `organization_id` FK is **required**; `created_by_actor_id` FK (internal actor, not an external user id); `scopes` string array with the structured resource:action grammar defined in `docs/api/scopes.md`; `expires_at` optional; `revoked_at`.
+- **Scope grammar (v1).** Reads: `people:read`, `skills:read`, `roles:read`, `paths:read`, `simulations:read`, `sessions:read`, `assessments:read`, `reports:read` (a legacy `read:all` alias expands to all `*:read` scopes at issuance time; kept for the M3–M4 window). Writes (opt-in, DEFAULT-OFF): `people:write`, `org:write`, `roles:write`, `skills:write`, `assignments:write`, `learning:write`, `sessions:write`, `reports:write`, `webhooks:manage`. Elevated destructive: `people:delete`, `org:delete`, `roles:delete`, `assignments:delete`, `webhooks:delete`, plus the hard-delete tier `*:delete:hard` (each is a distinct scope, never implied by any other). The `ask` endpoint requires `ask:invoke` (separate — expensive).
+- **Default-off enforcement at issuance.** `apikey.Manager.Create` rejects a key request that includes any `*:write`, `*:delete`, or `ask:invoke` scope unless the caller passes `explicit_write_optin: true` AND the `Principal` carries `roles ∋ "org:admin"`. The UI (M8) surfaces per-scope toggles + a destructive-cluster confirmation.
 - Authorization policy (in Sentinel or its successor — Sentinel is called with `Principal.roles`, not with a Clerk claim): only an actor holding the internal `org:admin` role in the owning org may CRUD their org's keys.
 
 **Scope out.** Gateway edge validation (M3), rate-limit accounting (M5), UI (M8), PATs.
@@ -280,6 +301,128 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 
 ---
 
+## W1 — Write foundations + user/org lifecycle + assignments
+
+**Goal.** Ship the first customer-facing write surface — people lifecycle, org structure (teams/departments + job roles, both new), and assignment lifecycle — on top of the async-job / idempotency / audit-before-after contract defined in the cross-cutting section.
+
+**Ordering.** W1 lands **only after M5**. The cross-cutting write contract (idempotency, audit before/after, stricter limits, async jobs, dry-run) is a hard prerequisite — writes without it are not shipped.
+
+**Scope in — foundations.**
+- Async-job service in `apigw`: `POST /v1/jobs`, `GET /v1/jobs/{id}`, `GET /v1/jobs?filter=` (list of the caller's jobs); backing `api_jobs` table on `backend` with `{id, org_id, key_id, actor_id, kind, params, status, progress_pct, results_url, created_at, updated_at, expires_at}`. Reuses the existing `Job!` pattern already returned by `bulkImportV2` (documented at `app/internal/web/backend/graphql/graph/schemas/mutations.graphqls:164` per Appendix A). Watermill-driven worker in `backend`; the worker owns the write, `apigw` never writes directly.
+- Idempotency middleware in `apigw` (`internal/idempotency/`): stores response hashes in Redis with 24h TTL; returns `409 idempotency_conflict` on body mismatch.
+- Dry-run middleware: injects a `principal.dry_run = true` flag through to the persisted-op executor; every mutation resolver honors it.
+- Write-scope enforcement middleware: rejects writes whose key's scopes do not cover the resource:action; destructive-scope + `X-Confirm` header enforcement.
+- Audit-before/after writer: pre-write snapshot pulled by the persisted-op (SELECT before UPDATE/DELETE); post-write snapshot from the mutation response; `write_dry_run` audit-kind for dry-runs.
+
+**Scope in — PEOPLE lifecycle.**
+- `POST /v1/people` — create + invite (wraps the existing `inviteMember` mutation). Idempotent on `email + organization_id`.
+- `PATCH /v1/people/{id}` — update attributes, manager, department, status (wraps existing profile mutations + new `manager_id` + `department_id` fields on `Membership`; the manager/department FKs are new and land as part of W1).
+- `POST /v1/people/{id}/deactivate` + `POST /v1/people/{id}/reactivate` — new; adds `membership.status ∈ {active, deactivated}` (new column) so we can pause a seat without hard-removing it. Reversible. Gap-filler per Appendix A.
+- `DELETE /v1/people/{id}` — SOFT-delete by default (sets `deleted_at`, hidden from all reads, reversible for 30d).
+- `DELETE /v1/people/{id}?hard=true` — HARD-delete, requires `people:delete:hard` + `X-Confirm: irreversible` + `?confirm={id}`. Wraps the existing `removeMember` mutation which is already hard.
+- `POST /v1/people:bulk-upsert` — HRIS-style bulk upsert on `{external_id | email}` as merge key: creates, updates, deactivates by-omission-toggle (opt-in via `deactivate_omitted: true`). Async job, up to 20 000 rows. Extends the existing `bulkImportV2` job pattern to full upsert semantics (which today is invite-only per Appendix A).
+
+**Scope in — ORG STRUCTURE.**
+- `POST|GET|PATCH|DELETE /v1/teams`, `/v1/departments` — **all new**. No corresponding backend mutations exist today (only `Tag` — Appendix A gap). Ships alongside new `teams`, `departments` tables on `backend` (`public` schema) + membership FKs (`membership.team_id`, `membership.department_id`) + Ent schemas. Soft-delete default; hard-delete tier as above.
+- `POST|GET|PATCH|DELETE /v1/roles` — org-scoped job-role CRUD. Currently orgs can only ASSIGN a public-taxonomy `NodeID` role to a member (`createOrganizationRole` — Appendix A); v1 adds org-private role authoring backed by a new `organization_roles` table. Public-taxonomy roles remain read-only + referenced by `taxonomy_node_id`.
+- `POST /v1/people/{id}/roles` + `DELETE /v1/people/{id}/roles/{role_id}` — assign / unassign person↔role. Wraps existing `createOrganizationRole` / `deleteOrganizationRole`.
+
+**Scope in — ASSIGNMENTS.**
+- `POST /v1/assignments` — assign an AI Simulation, AI Interview, Skill Path, Academy path, or AI Lab to a person or group. **Gap:** backend `AssignmentType` enum today covers only `skillPath` + `jobSimulation` (Appendix A); W1 extends the enum to `aiInterview | academyPath | aiLab` alongside a new `assignment_kind_registry` so future kinds don't require an enum bump. New assignment kinds land in the `assignments.graphqls` federated schema as an additive extension.
+- `PATCH /v1/assignments/{id}` — reschedule (`due_date`) or reassign (`assignee_id`). Wraps `bulkUpdateOrganizationAssignments` on the single-row case; extends it with a new `updateOrganizationAssignment` mutation for the individual write (Appendix A gap — only bulk exists today).
+- `POST /v1/assignments/{id}:revoke` — cancel / revoke a specific assignment (individual, non-bulk — new; today only `bulkDeleteOrganizationAssignments` exists). Wraps a new `revokeOrganizationAssignment` mutation.
+- `POST /v1/assignments:bulk` — assign to 1 → 20 000 people in one async job. Wraps `createOrganizationAssignments` which already accepts a membership list; the async wrapper adds job + progress semantics.
+
+**Scope out.** Skills mutations, learning enroll/unenroll, session launch, reports, webhooks — all W2.
+
+**Deliverables.**
+- `apigw/internal/{idempotency,jobs,scopes,audit_writer,dryrun}/`.
+- `backend`: new Ent schemas + migrations for `api_jobs`, `teams`, `departments`, `organization_roles`, `membership.status`, `membership.manager_id`, `membership.team_id`, `membership.department_id`.
+- New/extended backend GraphQL mutations: `updateOrganizationAssignment`, `revokeOrganizationAssignment`, team/department/role CRUD, `deactivateMember`, `reactivateMember`, `bulkUpsertMembers` (returns `Job!`).
+- Persisted write-ops registry under `apigw/persisted/writes/*.graphql` — SHA-registered same as reads.
+- `docs/api/writes-v1.md`, `docs/api/scopes.md`, `docs/api/idempotency.md`, `docs/api/jobs.md`, `docs/api/destructive-actions.md`.
+
+**Dependencies.** M2 (scopes), M3 (persisted-op path), M4 (GraphQL path), M5 (audit + limits + tracing).
+
+**Risks.**
+- **Assignment enum extension** touches the federated `assignments.graphqls` in the backend subgraph — coordinate with the Cosmo static-composition build (a schema change is a supergraph rebuild + redeploy). Land the extension in an M5 → W1 window with the FE team synced.
+- **HRIS bulk upsert** is a classic data-loss vector (a botched delimiter + `deactivate_omitted: true` = mass deactivation). Mandatory: dry-run required on first call per key, 24h "cooling" flag that requires dry-run within the prior week for every subsequent full-upsert.
+
+**Acceptance.**
+- Create + rotate a key with `people:write + assignments:write` (destructive OFF); assign a Skill Path to 10 members via `POST /v1/assignments:bulk`; job completes with per-row audit; a repeat call with the same `Idempotency-Key` returns the same job id.
+- Attempt `DELETE /v1/people/{id}?hard=true` without `people:delete:hard` → 403; with the scope but without `X-Confirm` → 400; with both → hard-deletes + writes an audit row with retention 7y.
+- Dry-run `POST /v1/people:bulk-upsert` with 500 rows returns a diff, touches no state, appears as `write_dry_run` audit-kind.
+- The federated supergraph rebuilds cleanly with the extended `AssignmentType`.
+
+---
+
+## W2 — Skills, learning, sessions, reports, webhooks
+
+**Goal.** Complete the write catalog: skill assignment + reassessment triggers, learning enroll/unenroll + mark-complete/reset, session launch/schedule/resend/revoke, report/export triggering, and **outbound webhook management** (subscribe / list / rotate secret / delete for the four event kinds).
+
+**Ordering.** W2 lands after W1 (shares W1's job + idempotency + audit foundations).
+
+**Scope in — SKILLS.**
+- `POST /v1/people/{id}/skills` — assign a skill to a person; wraps existing `addUserSkill`.
+- `DELETE /v1/people/{id}/skills/{skill_id}` — remove skill(s); wraps `removeUserSkills`.
+- `PATCH /v1/people/{id}/skills/{skill_id}` — set/override level; wraps existing `overrideSkillLevel` / `rateUserSkillLevel`.
+- `POST /v1/roles/{id}/skills` + `DELETE /v1/roles/{id}/skills/{skill_id}` — **role skill requirements + levels** (org-role side). **Gap:** no such backend mutation today (Appendix A); a new `role_skill_requirements` table + `setRoleSkillRequirement` / `removeRoleSkillRequirement` mutations land on the backend subgraph. Public-taxonomy role requirements stay read-only from customers (they belong to the skiller taxonomy).
+- `POST /v1/people/{id}/skills/{skill_id}:reassess` — **trigger reassessment**. **Gap:** no direct mutation today (skill verification happens via simulation completion events per `corpus/services/skillpath.md` + the verified-skill chain). W2 exposes a new `triggerSkillReassessment` mutation that enqueues an assessment assignment for the person — a bridge, not a re-implementation. Async job.
+
+**Scope in — LEARNING.**
+- `POST /v1/people/{id}/enrollments` — enroll in a skill path or development program. **Gap:** skillpath auto-creates a session on view (`getOrCreateSkillPathSession`); W2 adds an explicit `enrollSkillPathSession` mutation (wrapping the auto-create with a source=api tag). Development programs don't exist as a first-class type yet — flagged as a spec gap in Appendix A; ships when the platform defines the type.
+- `DELETE /v1/people/{id}/enrollments/{enrollment_id}` — unenroll (archives the `SkillPathSession`, soft-delete default). New `archiveSkillPathSession` mutation on the skillpath subgraph.
+- `POST /v1/enrollments/{id}:complete` — mark complete (wraps repeated `completeSkillPathStep` calls into a single atomic bulk completion; new mutation).
+- `POST /v1/enrollments/{id}:reset` — new `resetSkillPathSession` mutation (clears step completions, keeps history).
+
+**Scope in — ASSESSMENT SESSIONS.**
+- `POST /v1/sessions:launch` — launch or schedule an AI Sim / AI Interview session for a person. Wraps existing `createOrganizationSimInvitationLink` (invitation-link path) + adds a new `launchSimSession` mutation (Appendix A gap — today only invitation LINKS exist, not per-candidate launches).
+- `POST /v1/sessions/{id}:resend-invite` — **new** (Appendix A gap). Wraps a new `resendSimInvitation` mutation that re-triggers the messenger send.
+- `POST /v1/sessions/{id}:revoke` — wraps `revokeOrganizationSimInvitationLink`.
+
+**Scope in — REPORTS + EVENTS.**
+- `POST /v1/reports` — trigger a report / export (workforce activity, coverage-by-role, growth-by-period, roster export). Async job returning `results_url` on completion. **Gap:** no report/export trigger mutation today (Appendix A) — a new `queueReportExport` mutation lands on the backend subgraph, worker in `backend/internal/worker/` renders the export to `storage` + signs a URL.
+- **Outbound webhooks** — first-class management API:
+  - `POST /v1/webhooks` — subscribe: `{url, event_kinds[], secret_lifecycle: "generated" | "provided"}`; server returns a `signing_secret` on create (shown once).
+  - `GET /v1/webhooks` — list.
+  - `PATCH /v1/webhooks/{id}` — update url / event list.
+  - `DELETE /v1/webhooks/{id}` — unsubscribe.
+  - `POST /v1/webhooks/{id}:rotate-secret` — rotate signing secret; old secret honored for 24h grace.
+  - `POST /v1/webhooks/{id}:test` — send a test event.
+  - `GET /v1/webhooks/{id}/deliveries` — recent delivery attempts + retry status.
+  - **Event kinds (v1):** `assessment.completed`, `skill.verified`, `assignment.completed`, `user.created` (Stefano's target set). Plus the internal `job.progress` / `job.completed` / `job.failed` from W1's async model.
+  - Delivery: HMAC-SHA256 signature in `X-Anthropos-Signature`, timestamp in `X-Anthropos-Timestamp`, retry with exponential backoff (0/15s/1m/10m/1h/6h then dead-letter). Delivery attempts audited.
+
+**Scope in — MCP WRITE TOOLS (extends M6).**
+- Every write endpoint above gets an MCP tool variant: `create_person`, `update_person`, `deactivate_person`, `delete_person`, `assign_role`, `create_team`, `create_assignment`, `bulk_upsert_people`, `enroll_skill_path`, `launch_session`, `queue_report`, `subscribe_webhook`, etc.
+- Each tool carries the MCP `destructive` + `non_idempotent` annotations per the cross-cutting contract; `delete_*` and `deactivate_*` require an `acknowledge_destructive: true` argument.
+- The MCP server exposes write tools only if the connecting key holds the matching write scope — the tool list a client sees is scope-filtered at connect time (so an LLM never even sees a tool it cannot invoke).
+- The `ask` endpoint remains read-only in v1.
+
+**Scope out.** Row-level ABAC scopes, delegated tokens on behalf of a user, agent-initiated writes without operator confirmation.
+
+**Deliverables.**
+- Backend: new mutations (`setRoleSkillRequirement`, `removeRoleSkillRequirement`, `triggerSkillReassessment`, `archiveSkillPathSession`, `resetSkillPathSession`, `launchSimSession`, `resendSimInvitation`, `queueReportExport`) + `webhook_subscriptions`, `webhook_deliveries` tables + worker.
+- New service `webhook-dispatcher/` (or a `backend/internal/webhook_dispatcher` package if we keep it in-process) — consumes Redis Streams events (`backend`, `skillpath`, `jobsimulation`) and dispatches to customer endpoints.
+- `apigw`: write-tool wiring for all of the above; MCP write-tool wiring on `mcp-server/`.
+- UI (extends M8): write-scope toggle UI + destructive-action confirmation UX (see M8 diff below).
+- `docs/api/webhooks.md`, `docs/api/events.md`, `docs/api/writes-v2.md`.
+
+**Dependencies.** W1, M6 (MCP), M8 (UI toggles).
+
+**Risks.**
+- Webhook delivery infrastructure is a service tier of its own — undelivered → data-loss customer complaints. SLO: 99.9% of events delivered within 5 min P95; automatic dead-letter after 6h; UI shows failing subscriptions loudly.
+- `triggerSkillReassessment` is expensive (spawns a sim/interview) — bill against the org's `ai_usages` budget and rate-limit per-person (max 1 reassessment/skill/24h).
+- Enrolling a person in a development program that doesn't exist as a first-class platform type is a spec-gap — ship the skill-path variant in W2, defer development-programs to W2b or the next release.
+
+**Acceptance.**
+- Subscribe to `assessment.completed`; complete a sim end-to-end; receive a signed webhook within 30s; rotate the secret; the next delivery uses the new secret; the old secret honored for 24h then rejected.
+- `POST /v1/reports` returns a job id; `GET /v1/jobs/{id}` polls to completion; `results_url` downloads the export.
+- Claude Desktop (connected via MCP with `assignments:write`) can `create_assignment` for a person after user confirmation; without `assignments:write`, the tool is not visible.
+- All writes appear in `api_audit_events` with `before` + `after` snapshots.
+
+---
+
 ## M6 — MCP Server: remote Streamable-HTTP endpoint
 
 **Goal.** Ship `mcp.anthropos.work` — a hosted MCP server that exposes the M3–M4 read catalog as MCP tools + resource templates, so Claude Desktop / Claude Code / any MCP-capable client can connect in minutes.
@@ -287,7 +430,7 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 **Scope in.**
 - Transport: **Streamable HTTP** (the current spec-recommended remote transport) + SSE fallback for older clients.
 - Auth: same `Authorization: Bearer ant_live_…` API key as M3 (MCP allows arbitrary HTTP headers) plus an optional `?key=…` for clients that don't let you set headers (documented as inferior).
-- Tools (v1):
+- **Read tools (v1)** — always visible:
   - `list_people`, `get_person`
   - `list_skills`, `get_skill`, `search_skills`
   - `list_roles`, `get_role`
@@ -296,11 +439,19 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
   - `list_assessments`, `get_assessment`, `list_verified_skills`
   - `run_report` (canonical rollups: workforce_activity, coverage_by_role, growth_by_period)
   - `ask` — deferred to M7, but the tool slot is reserved
-- Resources (v1): `person://{id}`, `skill://{id}`, `role://{id}`, `skill-path://{id}`, `simulation://{id}`, `session://{id}` — each resolves to a JSON blob (or a small markdown summary + JSON payload).
+- **Write tools (v1)** — surfaced only when the connecting key carries the matching write scope; hidden entirely from `tools/list` otherwise (per-scope visibility filter in the MCP server). Every write tool declares the MCP `destructive` / `non_idempotent` annotations honestly and requires the same idempotency key + async-job contract as REST (see W1/W2):
+  - `create_person`, `update_person`, `deactivate_person`, `reactivate_person`, `soft_delete_person` — behind `people:write`; `hard_delete_person` behind `people:delete:hard` **plus** an explicit `acknowledge_destructive: true` argument (any write tool tagged `destructive` refuses to run without it — the LLM must be told to pass it).
+  - `create_team`, `update_team`, `delete_team`, `create_department`, `update_department`, `delete_department`, `create_role`, `update_role`, `delete_role` — behind `org:write` / `roles:write`.
+  - `assign_content`, `bulk_assign_content`, `revoke_assignment` — behind `assignments:write`; bulk returns `{job_id, status_url}` and the MCP server emits a progress notification when the job finishes (or the client can call `get_job`).
+  - `add_person_skill`, `remove_person_skill`, `set_role_skill_requirement`, `trigger_skill_reassessment` — behind `skills:write` / `roles:write`.
+  - `enroll_person_in_path`, `unenroll_person_from_path`, `launch_session`, `resend_session_invite`, `revoke_session_invite` — behind `learning:write` / `sessions:write`.
+  - `queue_report_export`, `create_webhook`, `rotate_webhook_secret`, `delete_webhook` — behind `reports:write` / `webhooks:manage`.
+  - `get_job` — job-status polling tool (surfaces to any key that holds any write scope, so async writes are inspectable).
+- Resources (v1): `person://{id}`, `skill://{id}`, `role://{id}`, `skill-path://{id}`, `simulation://{id}`, `session://{id}`, `job://{id}` — each resolves to a JSON blob (or a small markdown summary + JSON payload).
 - Prompts (v1): a small set of curated prompts — e.g. `weekly-workforce-summary`, `role-skill-gap`, `hiring-funnel-status` — each is a saved prompt template that uses the tools above.
 - Discovery: `GET /` on the MCP endpoint returns human-readable "how to add this to Claude Desktop / ChatGPT" instructions and a link to the docs.
 
-**Scope out.** Client-side installers, non-remote (stdio) MCP variant, tool-generated writes.
+**Scope out.** Client-side installers, non-remote (stdio) MCP variant, unbounded free-form write tools (every write tool is one-purpose-one-tool — no `execute_graphql` escape hatch).
 
 **Deliverables.**
 - New service `mcp-server/` — Go, uses the official `mcp-go` SDK (or the reference Anthropic MCP Go implementation if we adopt it), boots on `:8600` in compose, deployed as its own ECS service.
@@ -313,16 +464,18 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 - The MCP server holds no data. It resolves the API key on connect, maps it to an `org_id`, and threads that into every tool call as a header to `apigw`.
 - Streaming: `ask` returns a stream of MCP progress notifications; other tools return synchronously.
 
-**Dependencies.** M3, M4, M5.
+**Dependencies.** M3, M4, M5, W1, W2 (writes are optional per-scope; the read cut can ship first).
 
 **Risks.**
 - MCP spec churn — pin the version we implement in `docs/api/mcp.md`; add a CI job that pins the SDK version and re-tests the connect flow.
 - Prompt injection through customer data pulled by a tool. Mitigations documented in `docs/api/prompt-injection.md`; do not concatenate untrusted content into agent instructions on the server side.
+- **LLM misuse of destructive tools** — an agent can be tricked into calling `hard_delete_person` if we're careless. Mitigations: `destructive`/`non_idempotent` annotations honestly declared so hosts show confirmation UI; `acknowledge_destructive: true` required argument on any destructive tool; write-scope default-off (M2) means most keys never see these tools; every destructive tool call written to the audit log with the full prompt + tool_call trace.
 
 **Acceptance.**
-- Adding the MCP URL + key to Claude Desktop's config surfaces every tool.
+- Adding the MCP URL + key to Claude Desktop's config surfaces every tool the key is scoped for — and only those.
 - A Claude Sonnet chat "how many verified Python skills across my org?" resolves via `list_verified_skills` filtered by skill = python.
-- MCP-Inspector CLI shows all tools + resources + prompts pass validation.
+- A read-only key sees 0 write tools; a key with `people:write` sees `create_person`/`update_person`/`deactivate_person`/`reactivate_person`/`soft_delete_person` but NOT `hard_delete_person`; a key with `people:delete:hard` sees the hard-delete tool but calling it without `acknowledge_destructive: true` returns a structured error.
+- MCP-Inspector CLI shows all tools + resources + prompts pass validation, including annotation correctness on every write tool.
 
 ---
 
@@ -379,37 +532,47 @@ Each milestone below has: **Goal · Scope in / out · Deliverables · Technical 
 **Scope in.**
 - New route `apps/web/src/app/enterprise/settings/integrations/` with sub-pages:
   - **Overview** — what the API + MCP are, in 60 seconds; two big CTAs (Create API key / Enable MCP).
-  - **API Keys** — list, create, rotate, revoke; show `prefix + last4`, created-by, last-used-at (from audit), scope, expiry; **plaintext shown once at creation**, with a "download env" affordance.
-  - **MCP Server** — one toggle to enable/disable at org level (so an admin can shut off MCP globally without touching keys), the endpoint URL, and per-client connect snippets (Claude Desktop config JSON, `claude` CLI, ChatGPT).
-  - **Usage** — chart of requests / errors / cost this month, per key, from `api_audit_events` + `ai_usages`. Read-only rollups.
+  - **API Keys** — list, create, rotate, revoke; show `prefix + last4`, created-by, last-used-at (from audit), scope, expiry; **plaintext shown once at creation**, with a "download env" affordance. The **create-key wizard** is a two-step form:
+    1. **Reads** — pick per-resource read scopes from a checklist (`people:read`, `skills:read`, `roles:read`, `paths:read`, `simulations:read`, `sessions:read`, `assessments:read`, `reports:read`) with a "Select all reads" convenience; default = all reads on.
+    2. **Writes (advanced, collapsed by default)** — a separately-collapsed panel with a top-of-panel warning banner ("Write scopes let this key modify data. Enable only what you need."). Each write scope is a toggle: `people:write`, `org:write`, `roles:write`, `skills:write`, `assignments:write`, `learning:write`, `sessions:write`, `reports:write`, `webhooks:manage`. Enabling ANY write toggle reveals a mandatory checkbox: "I understand this key can modify {resource} in my organization."
+    3. **Destructive scopes (elevated)** — `*:delete` (soft-delete) and `*:delete:hard` (hard-delete) sit under a second, further-collapsed panel gated by a "Show destructive scopes" reveal. Turning on any hard-delete scope forces a typed confirmation: the admin types their org name to unlock the Create button. The `X-Confirm: irreversible` header is documented next to the toggle so the customer's client code makes the requirement legible.
+  - **Key detail view** — the scope list is rendered as pill groups (Reads / Writes / Destructive) with per-scope in-place edit and a "revoke scope" affordance; scope revocation is single-click and takes effect immediately (Sentinel policy update within one Reload cycle).
+  - **MCP Server** — one toggle to enable/disable at org level (so an admin can shut off MCP globally without touching keys), the endpoint URL, per-client connect snippets (Claude Desktop config JSON, `claude` CLI, ChatGPT), and a "MCP-visible tools for this key" preview that mirrors the M6 scope-visibility filter (admins can see exactly which tools a key will expose to an LLM before they hand it out).
+  - **Usage** — chart of requests / errors / cost this month, per key, from `api_audit_events` + `ai_usages`. Read-only rollups; write requests split out visually (a second series) so admins immediately see if a write scope is being exercised.
+  - **Jobs** — list of async write jobs (bulk imports, bulk assigns, report exports) with status, key, submitter, counts, and a "view diff" link that opens the audit RFC-6902 diff for the affected rows.
+  - **Webhooks** — CRUD on the org's outbound webhook endpoints (URL, event filter, signing-secret rotate, test-fire button, last 10 deliveries with attempt counts); driven by W2.
   - **Docs** — inline links to the developer docs (M9) with the org's example key embedded.
   - **Quickstart** — a 3-step banner: (1) create key, (2) copy this snippet, (3) run it, see it work; shown until the org has made ≥ 1 successful API call.
 - **Admin authorization via the abstract identity, not Clerk.** The page gate, the mutation gate, and every conditional render key off the internal `Principal.roles` (e.g. `hasRole('org:admin')`) exposed by a Next.js server-side `getPrincipal()` helper that hides which IdP is behind it. **No component in `apps/web/src/app/enterprise/settings/integrations/` may import `@clerk/*` directly.** Swapping Clerk later replaces the `getPrincipal()` implementation only; the Integrations UI is untouched.
 - All data via the federated GraphQL — the customer-facing UI itself must not use the new customer API (avoid the loop where our own UI depends on our public throttles).
 
-**Scope out.** PAT UI (deferred), team/user-level scopes (deferred), webhooks/events (out of roadmap).
+**Scope out.** PAT UI (deferred), team/user-level scopes (deferred).
 
 **Deliverables.**
 - Next.js routes + Ant Design 6 pages in `apps/web/src/app/enterprise/settings/integrations/`.
 - New GraphQL ops in `next-web-app/packages/graphql/src/query/integrations/*.graphql` + generated hooks.
-- Backend GraphQL: extend the `backend` subgraph with `orgApiKeys`, `createApiKey`, `rotateApiKey`, `revokeApiKey`, `orgMcpSettings`, `setOrgMcpEnabled`, `orgApiUsage`.
-- Storybook stories for the new components; Playwright E2E: create key → hit `/v1/people` with it → see it in Usage.
+- Backend GraphQL: extend the `backend` subgraph with `orgApiKeys`, `createApiKey`, `rotateApiKey`, `revokeApiKey`, `updateApiKeyScopes`, `orgMcpSettings`, `setOrgMcpEnabled`, `orgApiUsage`, `orgApiJobs`, `orgWebhooks`, `createOrgWebhook`, `updateOrgWebhook`, `rotateOrgWebhookSecret`, `deleteOrgWebhook`, `testOrgWebhook`, `listOrgWebhookDeliveries`.
+- Storybook stories for the new components; Playwright E2E: (a) create read-only key → hit `/v1/people` with it → see it in Usage; (b) create write-scoped key → `POST /v1/people` → see the row + audit diff in Jobs; (c) try to enable hard-delete scope without typed org-name confirmation → Create button stays disabled.
 
 **Technical approach.**
 - Mirror the existing `/enterprise/*` UX patterns already in `apps/web` — TanStack React Query + `useGraphql`, plus a new `<PrincipalProtect requires="org:admin">` component that wraps the existing IdP-specific gate. Under the hood it reads from `getPrincipal()`; today it delegates to Clerk's `<Protect>`, tomorrow it delegates to whatever replaces it. Consumers never see the swap.
 - **Plaintext key display** — one-time modal with a copy button, big "you will not see this again" warning, hash-verify test button.
+- **Destructive-confirmation UX** — reused as a component `<DestructiveConfirmModal resource="…" orgName="…">` so the same typed-org-name pattern is reachable from any future admin surface that mints destructive scopes.
+- **Write-scope preview** — the wizard's final step shows a **plain-English audit sentence** ("This key can: read people, skills, roles; write people; hard-delete people.") derived from the toggled scopes, so admins double-check semantics before submit.
 - Endpoint URLs shown per environment (dev / staging / prod) — the UI reads these from `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_MCP_BASE_URL`.
 
-**Dependencies.** M1 (identity seam), M2, M3, M5, M6.
+**Dependencies.** M1 (identity seam), M2, M3, M5, M6, W1, W2 (webhooks + jobs pages need W2's endpoints).
 
 **Risks.**
 - Copy-to-clipboard on plaintext key on non-HTTPS localhost silently no-ops — add a fallback and warn.
 - Admins mis-reading the "usage" chart as billing — label carefully; link out to Billing.
+- **Admin over-scoping** — the natural pull is to check every write box "just in case". Mitigations: reads default-on but writes default-off; a persistent inline hint under the write panel ("Anthropos recommends scoping keys to the narrowest surface a single integration needs.").
 
 **Acceptance.**
 - Playwright: fresh admin can create a key, run a `curl`, see a green check in Usage within 30s.
 - The Integrations page renders empty-state correctly for a brand-new org.
-- Non-admin `Principal` gets 403 on all four `orgApiKey*` mutations.
+- Non-admin `Principal` gets 403 on all `orgApiKey*` + `orgWebhook*` mutations.
+- Enabling a `*:delete:hard` scope requires the typed-org-name confirm; the Create button remains disabled otherwise (asserted in E2E).
 - Grep gate: `apps/web/src/app/enterprise/settings/integrations/**` has zero `@clerk/*` imports.
 
 ---
@@ -529,18 +692,86 @@ Each milestone that adds a service or a durable operating concern MUST update th
 ## Milestone dependency graph
 
 ```
-M1 (design)  ──►  M2 (api_key)  ──►  M3 (REST gateway) ──►  M4 (GraphQL surface)
+M1 (design)  ──►  M2 (api_key + scope grammar)  ──►  M3 (REST reads) ──►  M4 (GraphQL reads)
                                         │                          │
                                         └──►  M5 (limits+audit) ◄──┘
                                                     │
-                                        ┌───────────┼───────────┐
-                                        ▼           ▼           ▼
-                                       M6 (MCP)    M7 (ask)    M8 (UI)
-                                        │           │           │
-                                        └────►  M9 (docs+SDKs)  ◄
-                                                    │
-                                                    ▼
-                                                M10 (beta→GA)
+                                          ┌─────────┴─────────┐
+                                          ▼                   ▼
+                                       W1 (writes:            M7 (ask)
+                                       people/org/                │
+                                       assignments)               │
+                                          │                       │
+                                          ▼                       │
+                                       W2 (skills/                │
+                                       learning/                  │
+                                       sessions/                  │
+                                       webhooks)                  │
+                                          │                       │
+                                          ├──────────►  M6 (MCP: reads + scoped writes)
+                                          │                       │
+                                          └──────────►  M8 (UI: keys + write toggles + webhooks + jobs)
+                                                                  │
+                                                                  ▼
+                                                              M9 (docs + SDKs)
+                                                                  │
+                                                                  ▼
+                                                              M10 (beta → GA)
 ```
 
-M6, M7, M8 can proceed in parallel after M5. M9 depends on the schemas being stable across M3/M4/M6/M7. M10 depends on everything.
+**Parallelizable slices.** Read track (M1→M5) is a hard prefix. Once M5 lands, W1 and M7 can proceed in parallel; W2 depends on W1's async-job + idempotency middleware but not on its endpoint surface. M6 can ship a **read-only** cut against M5 immediately, with write tools layering in as W1/W2 land. M8 can ship a **read-only Integrations page** off M5 and then extend to write-scope toggles / webhooks / jobs as W1 + W2 land. M9 depends on the schemas being stable across M3/M4/W1/W2/M6/M7. M10 depends on everything.
+
+---
+
+## Appendix A — Write-surface audit: real mutations discovered + gap analysis
+
+This appendix is the evidence backing M1's audit + W1/W2's scope-in. It enumerates the mutations that **already exist** in the platform's GraphQL subgraphs (as of 2026-06 read) and the gaps we must close to deliver the target write catalog. Sources: `internal/web/backend/graphql/graph/schemas/*.graphqls` in the `ant-platform-backend` repo (subgraphs: `backend`, `academy`, `labs`, `assignments`, `ai_readiness`, etc.).
+
+### A.1 What already exists (usable behind M2/W1/W2)
+
+| Domain | Existing mutation | Sub-graph | Notes |
+|---|---|---|---|
+| People / membership | `inviteMember`, `bulkImportV2(input): Job!`, `removeMember`, `bulkRemoveMembers`, `changeMemberRole` | backend | `bulkImportV2` **already returns `Job!`** — validates the async-job pattern the whole write layer standardises on. Reused by W1's `POST /v1/people:bulk-upsert`. |
+| Self-profile | `updateMeInBriefInfo`, `updateProfileInfo`, `addWorkExperience`/`updateWorkExperience`/`deleteWorkExperience`, `addEducation`/…, `addCertification`/…, `addProject`/…, `addVolunteering`/…, `addContent`/… | backend | These are **self-writes** (subject == principal). NOT exposed customer-side in W1 (customer API is admin-side). Kept internal. |
+| Org | `createOrganization` | backend | Org creation stays platform-scoped for now — customers don't create orgs via the API. |
+| Skills | `addUserSkill`, `removeUserSkills`, `rateUserSkillLevel`, `overrideSkillLevel`, `updateUserCoreSkills` | backend | Backs W2's `POST/DELETE /v1/people/{id}/skills` + `PATCH` (level override). |
+| Assignments | `createPersonalAssignment`, `createOrganizationAssignments(input: OrganizationAssignmentInput!)`, `bulkUpdateOrganizationAssignments`, `bulkDeleteOrganizationAssignments` | backend | `createOrganizationAssignments` already handles a *list* of memberships in one call — the bulk path. Backs W1's `POST /v1/assignments` + `:bulk`. |
+| Sim invitations | `createOrganizationSimInvitationLink`, `revokeOrganizationSimInvitationLink` | backend | Link-based flow only. Backs W2's `POST /v1/sessions:invite-link` variant. |
+| Tags | `addTag`, `editTag`, `deleteTag`, `tagMembers`, `untagMembers` | backend | Not in the customer catalog v1 — parked. |
+| Target roles | `createUserTargetRole`, `createOrganizationTargetRole`, `createOrganizationRole` | backend | `createOrganizationRole` is the closest existing hook for W1 `POST /v1/roles`, but only *creates* — no update/delete. |
+| Labs | `createLabSession(template, model, agent, budgetUsd, mode)`, `cancelLabSession(id)` | labs | Self-invoked only — no "assign lab to a candidate" mutation. |
+| Academy | `upsertChapterProgress`, `claimPathCertificate`, `addAcademyBookmark`, `upsertAcademyFeedback` | academy | Learner-side only — no admin-side "assign academy path" mutation. |
+| AI Readiness | `completeAiReadinessSkillMapping: Boolean!` | ai_readiness | Self-completion. Not customer-catalog. |
+
+### A.2 Gaps (net-new mutations W1/W2 add)
+
+| Gap | Milestone | New mutation(s) or table(s) |
+|---|---|---|
+| Teams as first-class org units (only `Tags` exist today) | W1 | New `teams` table + `createTeam` / `updateTeam` / `deleteTeam` mutations + `membership.team_id` column. |
+| Departments as first-class org units | W1 | New `departments` table + full CRUD + `membership.department_id` column. |
+| Org-private job-role CRUD (today: create-only; taxonomy roles are read-only) | W1 | New `organization_roles` table + `createOrganizationRole` (extended), `updateOrganizationRole`, `deleteOrganizationRole`. |
+| Role → required skills with levels | W2 | New `role_skill_requirements` table + `setRoleSkillRequirement` / `removeRoleSkillRequirement`. |
+| Soft-delete vs hard-delete on person removal (today: `removeMember` is one-shot) | W1 | New `membership.status` column (`active|deactivated|deleted`) + `deactivateMember` / `reactivateMember` (soft) alongside `hardDeleteMember` (destructive, elevated). |
+| HRIS-style bulk upsert (today: `bulkImportV2` invites only) | W1 | Extend `bulkImportV2` (or new `bulkUpsertMembers`) to accept `{external_id, ...}` and idempotently insert-or-update by external_id. |
+| Trigger skill reassessment on demand | W2 | New `triggerSkillReassessment(userId, skillId): Job!` returning the async job. |
+| `AssignmentType` enum missing modalities | W1 | Extend enum: `skillPath, jobSimulation` → add `aiInterview | academyPath | aiLab`. Corresponds to new `AssignmentResource` subtypes. |
+| Assign academy path (no mutation today) | W1 | New `createAcademyPathAssignment` (via extended `createOrganizationAssignments` with `academyPath` variant). |
+| Assign AI Lab (no mutation today) | W1 | New `createLabAssignment` variant on `createOrganizationAssignments`. |
+| Per-assignment reschedule / update (today only bulk) | W1 | New singular `updateOrganizationAssignment(id, input)`. |
+| Individual assignment revoke (today only `bulkDelete`) | W1 | New `revokeOrganizationAssignment(id)`. |
+| Launch a per-candidate session directly (today only invitation-link) | W2 | New `launchSimSession(userId, simulationId, scheduledAt?): Session!`. |
+| Resend invite (today none) | W2 | New `resendSimInvitation(sessionId)`. |
+| Enroll / unenroll into a skill path atomically (today auto-created by skillpath runtime) | W2 | New `enrollSkillPathSession(userId, skillPathId): SkillPathSession!` + `archiveSkillPathSession(sessionId)`. |
+| Mark path complete / reset (admin override) | W2 | New `markSkillPathSessionComplete(sessionId)`, `resetSkillPathSession(sessionId)`. |
+| Trigger report / export (today none) | W2 | New `queueReportExport(kind, params): Job!`. |
+| Outbound webhooks (today: Clerk-inbound only) | W2 | New `webhook_endpoints` table + full CRUD + signing-secret rotate + `webhook_deliveries` table + retry worker. Event kinds: `assessment.completed`, `skill.verified`, `assignment.completed`, `user.created`, `job.*`. |
+| Async-job registry (today: only `bulkImportV2` returns `Job!`, no generic surface) | W1 | Formalise `jobs` table + `jobService.Enqueue/Get/Update` + `GET /v1/jobs/{id}` + a `job.completed` webhook so every write ≥ N rows follows the same shape. |
+| Idempotency-key store (today: none) | W1 | New `idempotency_keys` table keyed by `(api_key_id, key)` + middleware; 24h TTL + 409 on payload conflict. |
+
+### A.3 Non-goals (out of the customer write catalogue for v1)
+
+- Direct-to-DB writes bypassing the subgraph (never — every write flows through a subgraph mutation via `apigw`).
+- Free-form GraphQL mutations for customers (persisted mutations only; ad-hoc gated per-key like the read side).
+- Self-profile edits on behalf of users (customer API is admin-side; user-owned edits stay in `next-web-app`).
+- Org creation via the customer API (platform-scoped).
+- Tag CRUD (parked — will re-enter roadmap only if a design partner asks).
