@@ -136,9 +136,14 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
   stdlib-only Python and the supply-chain posture stays GREEN. _(Offline-safe precedent, recorded for a future
   offline-demo need: `ant-academy` vendors FA Pro locally under `code/public/assets/fontawesome/`. Not adopted
   here — the CDN is the chosen default.)_
-- **Seed-manifest download.** The footer link targets `/manifest.json`; that endpoint serves the manifest with
-  `Content-Disposition: attachment; filename="cockpit-manifest.json"` (pretty-printed) so the browser saves a
-  file rather than rendering it inline.
+- **Seed-manifest download (v1.10b M52 repoint).** The footer **[Download seed manifest]** now serves the
+  **CONSOLIDATED** `seed-generation-manifest.yaml` — the single auditable file inlining the whole seed+gen
+  intent (population + the file-resident mother prompt + the batch config + the snapshot sources; cache +
+  generated data excluded — see [`seed-manifest-spec.md`](seed-manifest-spec.md)). It is served at
+  `/seed-generation-manifest.yaml` with `Content-Disposition: attachment` (verbatim YAML). The link falls
+  back to the menu manifest (`/manifest.json`) when no consolidated manifest is served (an old bring-up), so
+  it is never dead. The **menu** manifest (`cockpit-manifest.json`, the stories→heroes projection) still
+  drives the `[Log in as]` CTAs and stays served at `/manifest.json`.
 - **Staged login-progress overlay.** A small JS overlay (`_OVERLAY_JS`, a raw string — no manifest data is
   interpolated into the JS, so no injection surface) shows on `[Log in as]` click: *Signing you in… → Loading
   your workspace… → Almost there…* on a deterministic timer with a generous final stage. `localStorage` carries
@@ -153,7 +158,8 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 |------|----------|
 | `GET /` (or `/index.html`) | The cockpit HTML page |
 | `GET /healthz` | `200 "ok"` (a liveness probe) |
-| `GET /manifest.json` | The raw seed manifest as a download (`Content-Disposition: attachment`, pretty JSON) |
+| `GET /seed-generation-manifest.yaml` | (v1.10b M52) The **consolidated** seed+generation manifest as a download (`Content-Disposition: attachment`, verbatim YAML) — the footer **[Download seed manifest]** target, when served (`--seed-manifest`) |
+| `GET /manifest.json` | The **menu** manifest (stories→heroes projection) as a download (`Content-Disposition: attachment`, pretty JSON) — the `[Log in as]` source + the fallback download |
 | anything else | `404` |
 
 ### Bring it up
@@ -189,7 +195,8 @@ single-source (D9) + stdlib-only posture all hold.
 
 ---
 
-**See also:** [`stories-spec.md`](stories-spec.md) (the seeded world + the roster/seat producer seam) ·
+**See also:** [`seed-manifest-spec.md`](seed-manifest-spec.md) (the consolidated seed+generation manifest the
+[Download] serves, v1.10b M52) · [`stories-spec.md`](stories-spec.md) (the seeded world + the roster/seat producer seam) ·
 [`clerkenstein.md`](../../services/clerkenstein.md) (the multi-identity FAPI handshake) ·
 [`frontend-tier.md`](frontend-tier.md) (the demo UI tier the cockpit launches into) ·
 [`rosetta_demo.md`](../rosetta_demo.md) (the demo-stack lifecycle).

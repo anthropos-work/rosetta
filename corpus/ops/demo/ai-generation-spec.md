@@ -73,7 +73,11 @@ time.** The LLM runs **only** in `cmd/gen-batch`. Parsing a blueprint with a `ba
 deterministic, and free.
 
 The expansion produces, per member, a **MOTHER prompt** (the deterministic per-member prompt string) — the
-cache key (§ [`cache-spec.md`](cache-spec.md)).
+cache key (§ [`cache-spec.md`](cache-spec.md)). The default per-member prompt template is **file-resident**
+(v1.10b "fit-up" M52): `blueprint/prompts/default_batch_prompt.tmpl`, embedded via `//go:embed` into
+`blueprint.DefaultBatchPromptTemplate` (formerly a Go const) so the prompt is auditable in one plain file —
+the source the consolidated [`seed-manifest-spec.md`](seed-manifest-spec.md) inlines. The extraction is
+byte-for-byte, so the rendered prompt + the cache key are unchanged.
 
 ### 2c. `cmd/gen-batch` — the generation CLI
 
@@ -319,6 +323,9 @@ cross-port checks.
   the generated members extend.
 - [`seeding-spec.md`](../seeding-spec.md) — the seeding blueprint + the production-isolation boundary the
   `GeneratedBatchSeeder` lives within.
+- [`seed-manifest-spec.md`](seed-manifest-spec.md) — the consolidated single-auditable seed+generation
+  manifest (v1.10b M52): it inlines the file-resident mother prompt + the batch config + the population,
+  served by the cockpit's [Download seed manifest].
 - [`shared_libraries.md`](../../architecture/shared_libraries.md) §ai +
   [`ai_architecture.md`](../../architecture/ai_architecture.md) — the shared `ai` library the `services/ai/`
   wrapper layers EU-first routing + usage tracking on.
