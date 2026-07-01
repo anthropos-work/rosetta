@@ -11,10 +11,10 @@ _Ordered per overview.md acceptance flow (a)→(f). Sections gate on prior secti
   - [x] Non-anonymous academy session: launcher sets BOTH e2e_persona bypass gates; cockpit link sets e2e_persona=member cookie
   - [x] AI chat documented-as-absent (Cosmo flag+key not provisioned; NO `/api/ai/chat` assertion) — D3 + frontend-tier.md
   - [x] Commit on rext authoring `main` (e91f004; tests +13, all green, shellcheck-clean)
-- [ ] **§2 — Roll v1.10.1 rext release tag** (rolls up `fit-up-m47..m52` + academy commit)
-  - [ ] Tag `v1.10.1` on rext authoring `main`
-  - [ ] Bump `.agentspace/rext.tag` → `v1.10.1`
-  - [ ] Re-pin consumption clone `stack-demo/rosetta-extensions` → `v1.10.1` (clean fetch + checkout)
+- [x] **§2 — Roll v1.10.1 rext release tag** (rolls up `fit-up-m47..m52` + academy commit)
+  - [x] Tag `v1.10.1` on rext authoring `main` (annotated; points at e91f004; 46-commit roll-up)
+  - [x] Bump `.agentspace/rext.tag` → `v1.10.1` + canonical pin in rosetta_demo.md
+  - [x] Re-pin consumption clone `stack-demo/rosetta-extensions` → `v1.10.1` (clean fetch + checkout; tree clean)
 - [ ] **§3 — DESTROY the live demo** (`/demo-down` + image purge — exercises M49 #6 cleanup)
 - [ ] **§4 — COLD REBUILD** (single `/demo-up` at v1.10.1 pin, no manual steps)
 - [ ] **§5 — ASSERT the acceptance bar** (all 6 criteria + academy F6)

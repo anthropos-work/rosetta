@@ -19,7 +19,9 @@
   tolerated — the reader strips a trailing carriage return so a Windows-edited pin still resolves as a clean git
   ref, M49 harden). It lives in the
   gitignored `.agentspace/`, so it's a **per-box** pin; the release's canonical value is recorded here so a fresh
-  box recreates it (**current v1.10b "fit-up" pin: `fit-up-m49`**). This retires the earlier scattered prose pins
+  box recreates it (**current v1.10b "fit-up" pin: `v1.10.1`** — the release tag rolled at the M53 cold-rebuild
+  acceptance gate, rolling up `fit-up-m47..m52` + the M53 academy F6 commit; supersedes the mid-release
+  `fit-up-mNN` milestone pins). This retires the earlier scattered prose pins
   (which had drifted: `storytelling-postfix-1` here vs `storytelling-postfix-2` in the skill + the frontend-tier
   doc) — there is now exactly one read path.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
