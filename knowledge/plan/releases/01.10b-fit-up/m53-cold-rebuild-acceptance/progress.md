@@ -80,3 +80,26 @@ coverage delta < 2% on both measurable stacks, and 0 flakes across 3 consecutive
 
 **rext authoring HEAD moved to `576dbcb`** (one harden commit past `v1.10.1` = `117fe41`) — `v1.10.1`
 may need a re-roll at close to include the harden tests (the tag-at-close precedent).
+
+## M53: Final Review
+
+### Scope
+- [x] All §1–§6 boxes checked; acceptance-only milestone; F6+AB4 sanctioned exceptions landed + tagged. No new deferral originates in M53.
+
+### Code Quality
+- [x] [confirm] F6 academy DeepLink is a single-source catalog entry; AB4 `manifestFor` org-gate is case-insensitive substring; shellcheck clean — 0 findings (build + harden already reviewed).
+
+### Documentation
+- [x] AB4 org-conditional manager manifest was UNDOCUMENTED in `coverage-protocol.md` → added the M53 AB4 org-conditional note (showcase `MANAGER_MANIFEST` vs `MANAGER_MANIFEST_BASE`).
+- [x] KB-2 stale round number: `ai-readiness.md` carried `~80% (≈160 members)` / `≈160 "completed"` → reconciled to the shipped **78.4% (≈156 of 199)** (2 spots), consistent with `seeding-spec.md`.
+
+### Tests & Benchmarks
+- [x] Full unit suites green (no coverage sweep per acceptance-close directive): Go `stack-seeding` all ok (791 Test/Fuzz funcs) + other 4 Go modules green; Python `demo-stack` **326**; TS unit **29**. Flake gate below.
+
+### Decision Triage
+- [x] D1/D2/D3 (academy F6 mechanics) → already blended into `frontend-tier.md` + `ant-academy.md` (verified accurate + tagged).
+- [x] AB4-FIX (org-conditional manifest) → blended into `coverage-protocol.md` (#M53 tag).
+- [x] KB-1 (replay-from-filled-cache reading of AB2), KB-2 investigation, AB4-REGRESSION/ROUTING narrative → archive (maintainer-only; #M53 refs in `decisions.md`).
+
+### Release-tag step
+- [x] Re-roll `v1.10.1` to the final rext HEAD `576dbcb` (incl. the harden tests) + re-pin consumption clone.
