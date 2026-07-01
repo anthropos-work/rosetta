@@ -1,0 +1,48 @@
+{
+  "milestone": "M53",
+  "slug": "cold-rebuild-acceptance",
+  "milestone_shape": "section",
+  "sections": ["S1 academy F6 seeder/wiring", "S2 roll v1.10.1 rext release tag", "S3 DESTROY the live demo", "S4 COLD REBUILD", "S5 ASSERT the acceptance bar (6/6+F6)", "S6 acceptance record + rext.tag bump"],
+  "rext_tag": "v1.10.1",
+  "rext_tag_sha": "576dbcb",
+  "rext_tag_note": "v1.10.1 (the v1.10b release tag) re-rolled at M53 close to 576dbcb — the FINAL rext HEAD incl. the M53 close-phase harden tests (F6 academy-link + AB4 manifest org-gating edge tests). Roll chain: e91f004 (F6 build) -> 117fe41 (AB4 fix, acceptance HEAD) -> 576dbcb (harden tests). Each re-roll a local, unpushed annotated-tag re-roll (git tag -d + re-create; NOT a force-push). Rolls up fit-up-m47..m52. The acceptance bar (6/6+F6) was measured at 117fe41; 576dbcb is test-only past it, so the verdict is unaffected.",
+  "acceptance": {
+    "verdict": "GREEN — 6/6 acceptance criteria + academy F6 PASS from cold",
+    "record": "acceptance-record.md",
+    "stack": "demo-1 (offset 10000), cold-rebuilt from v1.10.1 by a single /demo-up (no manual steps)",
+    "criteria": {
+      "AB1_backends_healthy": "PASS — 17 containers Up, 0 Exited; /api/health 200, casbin 1150, all probes",
+      "AB2_snapshot_prompt_free": "PASS — replayed from filled 1.4GB cache, no prompt (taxonomy 330261 / directus 11986 / sim-embeddings 1490)",
+      "AB3_setdress_seed_verify_cockpit": "PASS — /demo-up EXIT 0, no #7 abort; 3 orgs incl. Northwind AI-readiness; cockpit :17700",
+      "AB4_both_vantage_coverage": "PASS (fixed at gate) — employee (maya@Cervato) GATE MET (0,0); manager base gate (dan-manager@Cervato) GATE MET after AB4 fix (failingSections 2->0, reachable 69, escapes 0, persona 0)",
+      "AB5_ai_readiness_dashboard": "PASS (re-verified post-fix) — dana-manager@Northwind GATE MET (reachable 70); both ai-readiness sections PASS (541 chars); 50/100, 199 members, 3-step funnel, renders fast",
+      "AB6_manifest_download": "PASS — GET :17700/seed-generation-manifest.yaml 200, 7593B, complete (3 orgs + gen prompt + max_cost 0.3 + snapshot_sources)",
+      "F6_academy": "PASS — content real (copilot/claude-code/ai-eng chapters); 9 cockpit [Academy] links -> :13077 (data-academy-persona=member); both e2e_persona gates set (authenticated member); Cosmo absent by design"
+    }
+  },
+  "tests": {
+    "rext_go_stack_seeding_total": 791,
+    "rext_go_seeders_pkg_funcs": 388,
+    "rext_python_demo_stack_total": 326,
+    "rext_python_cockpit_academy_subset": 101,
+    "rext_ts_e2e_unit": 29,
+    "delta_vs_m52_note": "M52 close baseline: rext_go_stack_seeding_total=786, demo_stack_python=313, ts_e2e_unit=33. M53 build+harden+close: Go stack-seeding 786->791 (+5: the F6 academy DeepLink/AcademyDeepLink build tests + the +2 harden cockpit_test.go single-source + call-stability tests). Python demo_stack 313->326 (+13: the F6 academy authenticated-session + cockpit [Academy] deep-link tests across test_cockpit.py + test_ant_academy.py + the +5 harden _academy_catalog_entry edge/escape tests). TS e2e unit 33->29 is NOT a regression: the earlier 33 counted the whole coverage-manifest.unit.spec.ts including manager-base variants; the M53 file has 29 discrete test() cases, +2 net vs the pre-AB4 27 (the AB4 org-gating edge + referential-stability tests). NOTE: the 313/33 M52 counts were measured differently (M52 quoted demo_stack=313 vs M53's 326 — the +13 is the F6 academy work landing in M53).",
+    "flake_count": 0,
+    "flake_gate": "5/5 Go seeders (count=1, -shuffle=on, sequential) + 5/5 Python cockpit+academy (101 passed each) + 5/5 TS coverage-manifest.unit (29 passed each)"
+  },
+  "coverage": {
+    "note": "No coverage sweep at M53 close (acceptance-close directive — the acceptance sweeps already ran + passed from cold). Harden Pass 1 recorded: seeders cockpit.go 97.6% (ceiling; sole gap = unreachable defensive AcademyDeepLink not-found branch), cockpit.py 98% (KeyboardInterrupt + __main__ idioms), coverage-manifest.ts behavior-tested by 29 unit tests."
+  },
+  "close": {
+    "shape": "section (Completeness Ledger)",
+    "findings": "2 total: 2 docs (Fate-1). 0 scope gaps, 0 code-quality (build+harden already reviewed; F6/AB4 prod code clean), 0 test gaps (suites green + flake 0), 0 adversarial (harden pinned the scenarios).",
+    "fixes_landed": "DOC-1 coverage-protocol.md: document the M53 AB4 org-conditional manager manifest (MANAGER_MANIFEST showcase vs MANAGER_MANIFEST_BASE) — was undocumented. DOC-2 ai-readiness.md: reconcile the stale ~80%/≈160 contract prose to the shipped 78.4% (≈156 of 199), consistent with seeding-spec.md (KB-2, 2 spots).",
+    "decision_triage": "D1/D2/D3 (academy F6 mechanics) already blended into frontend-tier.md + ant-academy.md (verified). AB4-FIX blended into coverage-protocol.md (#M53). KB-1/KB-2 investigation + AB4-REGRESSION/ROUTING narrative -> archive (maintainer-only, #M53 refs in decisions.md).",
+    "rext_close_commits": ["none — no rext production code changed at close; the harden tests (576dbcb) predate close and the tag was re-rolled onto them"],
+    "rosetta_close_commits": ["d5b8e4b doc fixes + deferral audit", "ab9eb8f re-roll v1.10.1 to 576dbcb"],
+    "deferral_audit": "GREEN — every carry pointing at M53 LANDED here (up-injected.sh glue Fate-2 via the cold /demo-up; COLD acceptance = M53 itself; academy F6 = e91f004; re-pin box-level DONE). The historical academy-F6 REPEAT is resolved by execution. 0 M53-originated deferrals, 0 repeats, 0 aged-out, 0 escape-hatch. Sole residual: origin push (push-gated KEEP, orchestrator/user's step)."
+  },
+  "carry_forward": "None new. Push-gated KEEP: origin pushes (main + the v1.10 tag + ext tags + fit-up-m47..m52 + v1.10.1) remain owed to origin — the orchestrator/user's step, tracked in state.md. This is the FINAL v1.10b milestone -> next is /developer-kit:close-release.",
+  "notes": "Acceptance-only milestone (no new feature code). The cold destroy-and-rebuild is the release's single source of acceptance truth: demo-1 purged (--purge, all containers+images) + cold-rebuilt from v1.10.1 by a single /demo-up, then 6/6 acceptance criteria + academy F6 asserted GREEN. AB4 surfaced an M51-owned gate regression (unconditional ai-readiness manager seedPath, M51 iter-05) — fixed at the gate with user approval (org-conditional manager manifest, rext 117fe41, +3 unit tests, both manager vantages re-verified GREEN); exactly the late cross-milestone regression M53 exists to catch. v1.10b is GREEN from cold -> release complete.",
+  "last_updated": "2026-07-01"
+}

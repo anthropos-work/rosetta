@@ -139,6 +139,20 @@ terse exception). The manager vantage has **two manager-only fan-outs** (`/user/
 (`/sim/<slug>`, `/skill-path/<slug>(/chapter)`) because the manager nav links the Library — so the manager
 `SAMPLE_RULES` are a **superset** (the 2 fan-outs + the 2 library families), or the crawl explodes + times out.
 
+> **The manager manifest is ORG-CONDITIONAL (v1.10b "fit-up" M53 AB4).** The `/enterprise/workforce/ai-readiness`
+> page (its two descriptors + its seedPath) is a **showcase-org-only** prime: the 199 frozen AI-readiness
+> snapshots seed only for **Northwind Aviation** (the M51 showcase org, a `closed` cycle), so the dashboard is
+> LEGITIMATELY empty on any base-Workforce org (Cervato / Solvantis) — asserting it there is a false-fail.
+> `manifestFor(vantage, expectedOrg)` therefore returns the full **`MANAGER_MANIFEST`** (which primes + asserts
+> the AI-readiness page) only when `expectedOrg` contains `AI_READINESS_SHOWCASE_ORG` (`'Northwind Aviation'`,
+> case-insensitive substring); for any other manager org (or an empty/undefined org) it returns
+> **`MANAGER_MANIFEST_BASE`** — the same surface MINUS the AI-readiness seedPath + descriptor. `coverage.spec.ts`
+> threads `COVERAGE_EXPECTED_ORG` in. The employee manifest is org-independent. This fixed an M51 regression: an
+> unconditional AI-readiness seedPath (M51 iter-05) had silently broken the M50 base-org manager gate
+> (`dan-manager` @ Cervato) — surfaced only by M53's from-cold both-vantage assertion. The page's real proof
+> (the funnel renders from real seeded data) still holds on the showcase org (Northwind), so the split removes a
+> false assertion, not a real one.
+
 #### The documented-exception table (where 0/1 is legitimately correct)
 
 | Vantage | Page · section | Exception | Reason |

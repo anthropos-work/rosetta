@@ -103,8 +103,10 @@ Enable for an org by inserting the `organization_settings` row (`setting='ai_rea
 
 ## Seeding contract (demo / M51)
 
-To make a **200-person demo org** show the AI-readiness manager dashboard **enabled**, with **~80% (≈160 members)
-having completed all 3 steps**, plus **one hero "started"** and **one hero "completed"** — the seeder writes:
+To make a **200-person demo org** show the AI-readiness manager dashboard **enabled**, with **78.4% (≈156 of the
+199 frozen snapshots) having completed all 3 steps** (the shipped figure — see `seeding-spec.md`; this supersedes
+the earlier round "~80%/≈160" contract prose), plus **one hero "started"** and **one hero "completed"** — the
+seeder writes:
 
 **Org config (≈10 rows):**
 1. `organization_settings` (`setting='ai_readiness'`, `is_enabled=true`) — the gate.
@@ -116,7 +118,7 @@ having completed all 3 steps**, plus **one hero "started"** and **one hero "comp
    below for why the active-signals path was falsified); the active-cycle contract is retained here as the
    alternative.
 
-**Per-member (≈160 "completed"):** the underlying signals (≥1 `user_skill_evidences` for a configured skill;
+**Per-member (≈156 of 199 "completed"):** the underlying signals (≥1 `user_skill_evidences` for a configured skill;
 jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progress` (3× `completed`) **+** an
 `ai_readiness_live_snapshots` upsert (`score≈100, stage=3, archetype` per the score). The **"started" hero**: only
 the skill_mapping signal + a `stage=1`/`score≈30` live snapshot. The **"completed" hero**: all 3 + `stage=3`.

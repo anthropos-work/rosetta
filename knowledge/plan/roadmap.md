@@ -185,9 +185,36 @@ re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →**
 reconciled cross-refs (`cockpit-spec.md`, `ai-generation-spec.md`, `cache-spec.md`, `seeding-spec.md`, `README.md`,
 `CLAUDE.md`); rext tag **`fit-up-m52`** (`36d7430`).
 
-**M53 — Cold-rebuild acceptance** · `section` · depends: **M52**. Destroy the live demo + **rebuild from cold** on
+**M53 — Cold-rebuild acceptance** · `section` · depends: **M52** · ✅ **`done` — closed 2026-07-01**
+(merged → `release/01.10b-fit-up`; **the FINAL v1.10b milestone**). Destroy the live demo + **rebuild from cold** on
 a `stack-demo`-only box; assert healthy backends + complete set-dress/seed (all 3 orgs)/verify/cockpit + both-vantage
 coverage + the AI-readiness criteria + the complete manifest download. Tag **`v1.10.1`** + bump `.agentspace/rext.tag`.
+**All 6 sections landed** (§1 academy F6 seeder/wiring; §2 roll `v1.10.1`; §3 DESTROY via `/demo-down 1 --purge` — 17
+containers + network + ALL demo-1 images, M49 #6 verified; §4 COLD REBUILD via a single `/demo-up 1`, no manual steps,
+EXIT 0, no #7 abort; §5 ASSERT; §6 acceptance record + rext.tag bump). **Acceptance verdict: GREEN — 6/6 criteria +
+academy F6 from cold** (AB1 backends healthy 17-up-0-exited/casbin 1150; AB2 prompt-free replay from the filled 1.4 GB
+cache; AB3 set-dress+seed 3 orgs incl. Northwind AI-readiness + cockpit, EXIT 0; **AB4 both-vantage coverage GREEN**;
+AB5 AI-readiness dashboard on Northwind — 50/100, 199 members, 3-step funnel, renders fast; AB6 cockpit [Download] =
+complete inlined `seed-generation-manifest.yaml` 7593 B; **F6 academy** — real content + 9 cockpit [Academy] links →
+authenticated member, Cosmo absent-by-design). **AB4 was RED on first assertion — an M51-owned gate regression
+(M51 iter-05's unconditional ai-readiness manager `seedPath` broke the M50 base-org manager gate `dan-manager` @
+Cervato); fixed at the acceptance gate** with user approval (an org-conditional manager manifest — `manifestFor(vantage,
+expectedOrg)` returns the showcase `MANAGER_MANIFEST` only for Northwind, else `MANAGER_MANIFEST_BASE`; rext `117fe41`,
++3 unit tests; both manager vantages re-verified GREEN). Exactly the late cross-milestone regression M53 exists to catch
+— the from-cold both-vantage assertion is the first joint re-measure of the M50 + M51 gates. Tests: rext stack-seeding
+**791** (+5 vs M52's 786: F6 academy DeepLink/AcademyDeepLink build + harden single-source tests) · demo-stack Python
+**326** (+13: F6 authenticated-session + [Academy] deep-link + harden `_academy_catalog_entry` edge/escape tests) · e2e
+TS unit **29** (AB4 org-gating + referential-stability edges, +2 vs the pre-AB4 27); flake **0** (5/5 Go seeders shuffle
++ 5/5 Python cockpit+academy + 5/5 TS manifest). Close review: **2 findings, both Fate-1 docs** — DOC-1 documents the
+AB4 org-conditional manager manifest in `coverage-protocol.md` (was undocumented); DOC-2 reconciles the stale
+`~80%/≈160` AI-readiness prose to the shipped **78.4%/≈156-of-199** in `ai-readiness.md` (KB-2). Deferral audit **GREEN**
+— every carry pointing at M53 LANDED here (up-injected.sh glue Fate-2 via the cold `/demo-up`; COLD acceptance = M53
+itself; academy F6 = `e91f004`; box-level re-pin DONE); the historical academy-F6 REPEAT resolved by execution; 0
+M53-originated deferrals, 0 escape-hatch. **Delivers →** the release acceptance record (`acceptance-record.md`, feeds
+`/developer-kit:close-release`) + `.agentspace/rext.tag` = `v1.10.1`; rext release tag **`v1.10.1`** (`576dbcb` — rolls
+up `fit-up-m47..m52` + F6 + AB4 + the M53 harden tests; re-rolled at close, local unpushed annotated re-roll). **Sole
+residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is GREEN from cold; the release is complete →
+`/developer-kit:close-release`.**
 
 ### Top risks
 
