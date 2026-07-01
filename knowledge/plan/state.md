@@ -1,9 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M53 — Cold-rebuild acceptance (section; next to build — the final v1.10b milestone)"
+active_milestone: "M53 — Cold-rebuild acceptance (section; BUILT — 6/6+F6 GREEN from cold; ready to close)"
 last_closed: "M52 — 2026-07-01 (Single auditable seed+gen manifest, section)"
-phase: "v1.10b building — M47..M52 CLOSED; next M53 (section, final) — cold-rebuild acceptance + tag v1.10.1"
+phase: "v1.10b building — M47..M52 CLOSED; M53 BUILT (6/6+F6 GREEN from cold, v1.10.1 re-rolled at the AB4 gate-fix) — ready to close"
 last_updated: "2026-07-01"
 ---
 
@@ -35,13 +35,16 @@ up-injected.sh end-to-end glue (Fate-2). Then tag **`v1.10.1`** + bump `.agentsp
 [`releases/01.10b-fit-up/m53-cold-rebuild-acceptance/`](releases/01.10b-fit-up/m53-cold-rebuild-acceptance/). _(M52
 closed 2026-07-01 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47..M52 CLOSED; next M53 (section, FINAL).** Foundation + corpus re-ground + bring-up
-hardening + content/seeding fill + the AI-readiness showcase org + the single auditable seed+gen manifest are done
-(rext @ `fit-up-m52`). The **single-demo serialization** (fix-on-live across M47..M52, then **M53 destroys +
-cold-rebuilds** as the single acceptance proof) is in effect — M53 is that from-cold confirmation.
+**Phase:** **v1.10b building — M47..M52 CLOSED; M53 BUILT (6/6+F6 GREEN from cold).** Foundation + corpus re-ground +
+bring-up hardening + content/seeding fill + the AI-readiness showcase org + the single auditable seed+gen manifest are
+done (rext @ re-rolled `v1.10.1` / `117fe41`). The **single-demo serialization** (fix-on-live across M47..M52, then
+**M53 destroyed + cold-rebuilt** as the single acceptance proof) ran to completion: demo-1 was purged + rebuilt from
+the `v1.10.1` tag by a single `/demo-up`; the acceptance bar asserted **6/6 + academy F6** from cold. AB4 surfaced an
+M51-owned gate regression (unconditional ai-readiness manager seedPath) — **fixed at the gate** (user-approved
+exception; org-conditional manager manifest, rext `117fe41`; both manager vantages re-verified GREEN), and `v1.10.1`
+re-rolled to include it.
 
-**Next up:** **build M53** (`/developer-kit:work-milestone` — cold-rebuild acceptance + tag `v1.10.1`), the release's
-last milestone (then `/developer-kit:close-release`). _(The orchestrator still owes origin the pushes: `main` + the
+**Next up:** **close M53** (`/developer-kit:close-milestone`) — its build is complete — then `/developer-kit:close-release`. _(The orchestrator still owes origin the pushes: `main` + the
 `v1.10` tag + the v1.10 ext tags + now the `fit-up-m47..m52` rext tags — the v1.10 LOCAL close did not push; the M201
 close merged to `main` LOCALLY; this v1.10b branch is cut from that local `main`. The consumption-clone re-pin to the
 release rext tag is the push-gated KEEP tracked here, authoritatively bumped at M53.)_
