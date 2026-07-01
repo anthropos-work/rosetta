@@ -26,3 +26,57 @@ _Ordered per overview.md acceptance flow (a)→(f). Sections gate on prior secti
   - [x] AB6 — cockpit [Download manifest] serves complete inlined `seed-generation-manifest.yaml` (7593B, 3 orgs + generation prompt + batch $0.3 ceiling + snapshot_sources)
   - [x] F6 — academy: content real (copilot/claude-code/ai-eng chapters), 9 cockpit [Academy] links→:13077, both e2e_persona gates set (authenticated member), Cosmo absent by design
 - [x] **§6 — Acceptance record + rext.tag bump** (corpus acceptance note; feeds close-release) — acceptance-record.md updated to 6/6+F6 GREEN; AB4 fix + re-roll recorded
+
+## M53: Hardening
+
+### Pass 1 — 2026-07-01
+**Scope (milestone-touched, from Phase 1):** rext authoring copy, two commits —
+- F6 academy seeder/wiring (`e91f004`): `stack-seeding/seeders/cockpit.go` (+ `cockpit_test.go`),
+  `demo-stack/cockpit.py` (+ `tests/test_cockpit.py`), `demo-stack/ant-academy.sh`,
+  `demo-stack/up-injected.sh` (+ `tests/test_ant_academy.py`).
+- AB4 manager-manifest org-conditional (`117fe41`): `stack-verify/e2e/lib/coverage-manifest.ts`
+  (+ `tests/coverage-manifest.unit.spec.ts`), `tests/coverage.spec.ts`.
+
+**Coverage delta (milestone-touched files):**
+- Go `stack-seeding/seeders/cockpit.go`: 97.6% → 97.6% (unchanged — at achievable ceiling; the
+  sole gap is `AcademyDeepLink`'s `return DeepLink{}, false` fall-through, UNREACHABLE via the
+  constant `DeepLinkCatalog()` — a defensive branch, now documented by a test rather than contorted
+  into false coverage).
+- Python `demo-stack/cockpit.py`: 98% → 98% (unchanged — the 3 misses are the `KeyboardInterrupt`
+  handler [576-577] + the `__main__` guard [584], untestable-by-design idioms).
+- TS `coverage-manifest.ts`: covered by 29 passing unit tests (was 27). No line tool locally; the
+  pure-logic manifest selection is exhaustively behavior-tested.
+
+The deltas are 0% because both surfaces were already at their achievable statement ceiling at build
+(F6 +13, AB4 +3). The hardening value here is BEHAVIORAL depth over new lines (finder-not-goal).
+
+**Tests added (behavior, not lines):**
+- `coverage-manifest.unit.spec.ts`: +2 — (1) `manifestFor` org-gating boundary edges: whitespace-only
+  org, a PARTIAL showcase name (`"Northwind"` w/o `"Aviation"`) does NOT promote to showcase, the
+  showcase name embedded in a LARGER label DOES, employee vantage is org-independent; (2) `manifestFor`
+  referential stability (same singleton across calls — no per-call rebuild drift). These pin the exact
+  org-substring gate that separates the regressed-then-fixed M50 base gate from the AB5 showcase gate.
+- `cockpit_test.go`: +2 — `AcademyDeepLink()` returns the catalog's external entry VERBATIM
+  (single-source with the manifest projection) + exactly-one-external invariant (documents the
+  not-found return as intentional dead defensive code); call stability.
+- `test_cockpit.py`: +5 (`TestAcademyCatalogEntryEdges`) — `_academy_catalog_entry` selects the academy
+  entry among multiple externals / skips a non-external decoy / handles a missing catalog key; the
+  renderer defaults path/persona/label on a tampered entry + HTML-escapes them.
+
+**Bugs fixed inline:** none — no production code changed; no bug surfaced.
+
+**Flakes stabilized:** none — flake gate 3/3 clean sequential runs (Go seeders subset + Python academy
+subset + TS manifest suite).
+
+**Knowledge backfill:** no KB-worthy findings — the two surfaces are already documented
+(`snapshot`/`cockpit-spec.md` for F6, `coverage-protocol.md` + `decisions.md` AB4-FIX for the
+org-conditional manifest); the harden added edge tests around already-documented behavior, surfacing no
+new invariant.
+
+### Stop condition
+Stopped after Pass 1: the full Step 2b six-dimension scan found nothing further worth adding (the
+remaining uncovered lines are untestable idioms + one unreachable defensive branch, now documented),
+coverage delta < 2% on both measurable stacks, and 0 flakes across 3 consecutive sequential runs.
+
+**rext authoring HEAD moved to `576dbcb`** (one harden commit past `v1.10.1` = `117fe41`) — `v1.10.1`
+may need a re-roll at close to include the harden tests (the tag-at-close precedent).
