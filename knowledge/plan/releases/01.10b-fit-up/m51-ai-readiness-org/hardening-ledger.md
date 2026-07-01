@@ -16,3 +16,23 @@
 **Flakes stabilized:** none
 **Cross-iter integration findings:** pending (Pass 2 covers config skill-pool + member_languages native-English branch + cmd/stackseed --reload-sentinel + the TS coverage-manifest/section-assert subsystem)
 **Stop condition:** continue-to-next-pass — readAIReadinessSkillPool (90%) query-error arm, languageRowsForMember (96.7%) native-English branch, cmd/stackseed --reload-sentinel path (58.2%), and the stack-verify TS coverage-manifest/section-assert helpers still unswept
+
+## Pass 2 — 2026-07-01 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative-scope final pass; Pass-2 targets = config skill-pool query-error arm, member_languages native-English + both non-English proficiency arms, cmd/stackseed --reload-sentinel gate, the TS coverage-manifest AI-readiness manager contract)
+**Tiks covered since prior pass:** all iters in milestone (final-mode cumulative scope)
+**Coverage delta on touched files:**
+- seeders `readAIReadinessSkillPool`: 90.0% -> 100.0% stmts (the query-error arm — a faulted skiller read returns an EMPTY pool, no crash/fabrication)
+- cmd/stackseed `shouldReloadSentinel` (extracted pure gate): new -> 100.0% (8-case truth table; prod + dev-N=0 + seed-failed suppression proven)
+- seeders `languageRowsForMember`: 96.7% -> 96.7% stmts (both English-proficiency arms [professional-4 default + the deterministic %3==0 native-5] now PROVEN reachable via a 60-member non-English sweep; the residual is a single defensively-unreachable `add` early-return guard — see below)
+- cmd/stackseed (package): 58.2% -> 58.4% stmts (the residual is `reloadStackSentinel`'s live-RPC + docker-restart side-effect body — correctly untestable in a unit; its GATE is now 100%)
+- seeders (package): 97.0% -> 97.0% stmts (held; the new tests deepen already-counted lines)
+**Tests added:**
+- ai_readiness_harden_test.go: +1 config query-error (readAIReadinessSkillPool empty-on-fault) + 1 whole-seeder graceful-degradation (AIReadinessConfigSeeder no-taxonomy) + 1 native-English/unknown-city branch + 1 non-English 60-member proficiency-arm sweep (both English levels + per-slot level invariants + distinct-FK invariant)
+- cmd/stackseed/main_test.go: +1 exhaustive shouldReloadSentinel truth table (8 cases)
+- stack-verify/e2e/tests/coverage-manifest.unit.spec.ts: +3 AI-readiness manager-manifest contract (page-on-seedPaths+descriptor, funnel 3-stage-labels + iter-09 mutual-exclusive "Steps completion" header [forbids re-adding "Stage breakdown"], org-score HeroCard copy)
+**Bugs surfaced + fixed inline:** none functional. One refactor-for-testability (Fate 1, ~12 lines): extracted the inline `reloadSentinel && runErr==nil && !target.IsProd && n>0` gate in doSeed into the pure `shouldReloadSentinel` helper so the safety boundary (never-prod, never-dev-N0, never-after-failed-seed) is unit-pinned. Behavior identical.
+**Flakes stabilized:** none
+**Cross-iter integration findings:** the AI-readiness manager contract now spans seed (config+funnel seeders, iter-03/07) AND verify (the coverage-manifest funnel-header fix, iter-09) — the new TS contract test pins that the iter-09 "Steps completion" mutual-exclusion fix stays in lock-step with what the manager dashboard actually renders (a regression that re-requires "Stage breakdown" is now caught in CI with no demo up). The `languageRowsForMember` `add` guard at member_languages.go:208 (`code=="" || seen[code]`) is defensively unreachable via the public function — every call site pre-checks (native falls back to "en"; the second-English add is `native != "en"`-gated; the third-lang add is `!seen[cand]`-gated) — so its residual non-coverage is accepted, not a gap.
+**Knowledge backfill:** none — no new edge-case/error-path semantics beyond what the seeding-spec/coverage-protocol docs already state; the reload-sentinel gate rationale lives in the new helper's doc comment.
+**Stop condition:** continue-to-next-pass — Pass-2 targets all landed; running Pass 3 to confirm coverage-delta stabilization (< 2% across passes) + a clean dimension re-scan over the cumulative footprint per the no-early-exit discipline.
