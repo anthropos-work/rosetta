@@ -36,3 +36,21 @@
 **Cross-iter integration findings:** the AI-readiness manager contract now spans seed (config+funnel seeders, iter-03/07) AND verify (the coverage-manifest funnel-header fix, iter-09) — the new TS contract test pins that the iter-09 "Steps completion" mutual-exclusion fix stays in lock-step with what the manager dashboard actually renders (a regression that re-requires "Stage breakdown" is now caught in CI with no demo up). The `languageRowsForMember` `add` guard at member_languages.go:208 (`code=="" || seen[code]`) is defensively unreachable via the public function — every call site pre-checks (native falls back to "en"; the second-English add is `native != "en"`-gated; the third-lang add is `!seen[cand]`-gated) — so its residual non-coverage is accepted, not a gap.
 **Knowledge backfill:** none — no new edge-case/error-path semantics beyond what the seeding-spec/coverage-protocol docs already state; the reload-sentinel gate rationale lives in the new helper's doc comment.
 **Stop condition:** continue-to-next-pass — Pass-2 targets all landed; running Pass 3 to confirm coverage-delta stabilization (< 2% across passes) + a clean dimension re-scan over the cumulative footprint per the no-early-exit discipline.
+
+## Pass 3 — 2026-07-01 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative-scope final pass; a fresh per-function dimension re-scan over the 5 M51-touched Go source files found the seeder Seed-method write-error arms + empty-org/default guards still unswept)
+**Tiks covered since prior pass:** all iters in milestone (final-mode cumulative scope)
+**Coverage delta on touched files:**
+- seeders `seedAIReadinessOrgFunnel`: 92.9% -> 100.0% stmts (the n<=0 empty-org guard)
+- seeders `AIReadinessConfigSeeder.Seed`: 87.8% -> 98.0% stmts (the four COPY write-error arms; the residual `months<=0` arm at :127 is defensively unreachable — see below)
+- seeders `OrgSettingsSeeder.Seed`: 93.3% -> 100.0% stmts (the organization_settings COPY write-error arm)
+- seeders (package): 97.0% -> 97.3% stmts
+**Tests added:**
+- ai_readiness_harden_test.go: +4 config COPY write-error (cycles/steps/skills/sims fault injection via failCopyConn, each assertWrapped on seeder-context + failing-table) + 1 config zero-Activity end-to-end invariant + 1 funnel empty-org guard (Size 0 and -1 → zero signals)
+- org_settings_test.go: +1 organization_settings write-error propagation
+**Bugs surfaced + fixed inline:** none — every faulted write already propagated wrapped; the guards were already correct.
+**Flakes stabilized:** none
+**Cross-iter integration findings:** two defensively-unreachable guards documented (not contrived into coverage): (1) `ai_readiness_config.go:127` `months <= 0` — blueprint.EffectiveStories() re-fills a zero Activity with defaultStoryActivity() (Months=6) BEFORE the seeder runs, so the seed path never presents months<=0; the test proves the observable contract (a windowless org still gets a real closed cycle) instead. (2) `member_languages.go:208` the `add` closure's `seen[code]` early-return — every call site pre-checks. Both are belt-and-suspenders arms behind an upstream invariant. The rest of the M51 footprint's still-uncovered lines are interface stubs (Surface/DependsOn/Isolation — constant returns) + DB-live functions (doSeed/doReset/reloadStackSentinel/printResults/resetCasbin/envMap — need a live Postgres, out of unit scope; their GATES [shouldReloadSentinel, the n=0 --reset guard] are unit-pinned).
+**Knowledge backfill:** none — the defensive-guard findings are captured in the test doc comments + this ledger; no subsystem-doc semantic drift.
+**Stop condition:** continue-to-next-pass — the coverage delta (97.0% -> 97.3%, < 2%) is stabilizing, but THIS pass's dimension scan surfaced new reachable branches (the write-error arms), so a Pass-4 confirming re-scan is required before "stabilized" per the both-conditions rule.
