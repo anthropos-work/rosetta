@@ -16,7 +16,7 @@ _Ordered per overview.md acceptance flow (a)→(f). Sections gate on prior secti
   - [x] Bump `.agentspace/rext.tag` → `v1.10.1` + canonical pin in rosetta_demo.md
   - [x] Re-pin consumption clone `stack-demo/rosetta-extensions` → `v1.10.1` (clean fetch + checkout; tree clean)
 - [x] **§3 — DESTROY the live demo** (`/demo-down 1 --purge`) — all 17 containers + network removed, ALL demo-1 images purged (M49 #6 verified working); native academy/cockpit stopped
-- [ ] **§4 — COLD REBUILD** (single `/demo-up` at v1.10.1 pin, no manual steps)
+- [x] **§4 — COLD REBUILD** (single `/demo-up 1` at v1.10.1 pin, no manual steps) — EXIT 0, no #7 abort; 17 containers Up (0 Exited); autoverify GREEN; log: `cold-rebuild.log`
 - [ ] **§5 — ASSERT the acceptance bar** (all 6 criteria + academy F6)
   - [ ] AB1 — all backends healthy (M47/M49; no silent `app Exited`)
   - [ ] AB2 — cold-start MCP-DSN auto-capture filled snapshot with NO prompt (M47)
