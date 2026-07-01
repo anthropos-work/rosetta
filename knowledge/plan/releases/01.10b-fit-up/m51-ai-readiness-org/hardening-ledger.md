@@ -54,3 +54,30 @@
 **Cross-iter integration findings:** two defensively-unreachable guards documented (not contrived into coverage): (1) `ai_readiness_config.go:127` `months <= 0` — blueprint.EffectiveStories() re-fills a zero Activity with defaultStoryActivity() (Months=6) BEFORE the seeder runs, so the seed path never presents months<=0; the test proves the observable contract (a windowless org still gets a real closed cycle) instead. (2) `member_languages.go:208` the `add` closure's `seen[code]` early-return — every call site pre-checks. Both are belt-and-suspenders arms behind an upstream invariant. The rest of the M51 footprint's still-uncovered lines are interface stubs (Surface/DependsOn/Isolation — constant returns) + DB-live functions (doSeed/doReset/reloadStackSentinel/printResults/resetCasbin/envMap — need a live Postgres, out of unit scope; their GATES [shouldReloadSentinel, the n=0 --reset guard] are unit-pinned).
 **Knowledge backfill:** none — the defensive-guard findings are captured in the test doc comments + this ledger; no subsystem-doc semantic drift.
 **Stop condition:** continue-to-next-pass — the coverage delta (97.0% -> 97.3%, < 2%) is stabilizing, but THIS pass's dimension scan surfaced new reachable branches (the write-error arms), so a Pass-4 confirming re-scan is required before "stabilized" per the both-conditions rule.
+
+## Pass 4 — 2026-07-01 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative-scope final pass; the Pass-3 re-scan left the three M51 seeders' interface stubs [Surface/DependsOn/Isolation] uncovered — covered here via a MEANINGFUL registration-contract test, not a shallow stub-call)
+**Tiks covered since prior pass:** all iters in milestone (final-mode cumulative scope)
+**Coverage delta on touched files:**
+- seeders `AIReadinessConfigSeeder` / `AIReadinessFunnelSeeder` / `OrgSettingsSeeder` interface stubs (Surface/DependsOn/Isolation): 0.0% -> 100.0% (all 9 methods)
+- seeders (package): 97.3% -> 97.6% stmts
+**Tests added:**
+- ai_readiness_harden_test.go: +1 seeder registration contract (TestAIReadinessSeeders_RegistrationContract) — asserts distinct surface names, the config's org+taxonomy+content deps, the funnel's `ai-readiness-config`+users+personas+population-evidence deps (the load-bearing funnel-AFTER-config DAG ordering), and PerStackIsolated for all three (the isolation firewall). A wrong DependsOn would let BuildDAG order the funnel before its config → Step-scored signals referencing non-existent cycle/skills/sims rows.
+**Bugs surfaced + fixed inline:** none — the dependency declarations + isolation classes were all correct.
+**Flakes stabilized:** none
+**Cross-iter integration findings:** the registration contract is the integration-level pin the per-iter tests didn't sweep — iter-03 wrote the config seeder + iter-07 the funnel seeder, each with its own happy-path test, but nothing asserted their RELATIVE DAG ordering until now.
+**Knowledge backfill:** none
+**Stop condition:** continue-to-next-pass — this pass added the registration contract (new work), so a Pass-5 confirming re-scan + the flake gate are required before "stabilized".
+
+## Pass 5 — 2026-07-01 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative-scope final pass; CONFIRMING re-scan + the flake gate — no new tests, this pass verifies stabilization)
+**Tiks covered since prior pass:** all iters in milestone (final-mode cumulative scope)
+**Coverage delta on touched files:** none (no tests added — confirming pass). Final M51 footprint coverage: seeders package 97.6% stmts; cmd/stackseed 58.4% (residual = DB-live functions needing a live Postgres, out of unit scope — their GATES are unit-pinned). The full-footprint re-scan found ONLY two documented defensively-unreachable guards uncovered: `ai_readiness_config.go:127` (months<=0, behind EffectiveStories' upstream Activity default) and `member_languages.go:208` (the `add` closure's seen-guard, behind every call site's pre-check). Zero NEW reachable branches.
+**Tests added:** none (confirming pass).
+**Bugs surfaced + fixed inline:** none.
+**Flakes stabilized:** none needed — the flake gate ran 3x clean on all newly-added Go tests (seeders + the stackseed gate predicate) AND 3x clean on the TS coverage-manifest unit spec (20/20 each run). `go vet ./seeders/ ./cmd/stackseed/` clean; full `go test ./...` green across all 12 stack-seeding packages.
+**Cross-iter integration findings:** none new — the cumulative footprint is fully swept. All reachable M51 branches covered; the only residuals are interface-stub-free-of-logic (now covered) + DB-live (out of unit scope) + two belt-and-suspenders guards behind upstream invariants.
+**Knowledge backfill:** none.
+**Stop condition:** stabilized — coverage delta < 2% across passes (97.0 -> 97.3 -> 97.6, each step sub-2%) AND the dimension re-scan found nothing new (only documented-defensive residuals). The final harden is complete; M51 is ready for /developer-kit:close-milestone.
