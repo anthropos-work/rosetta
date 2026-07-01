@@ -17,7 +17,7 @@ a tail of v1.10 content gaps. **7 milestones M47 → { M48 ∥ M49 } → M50 →
 recaptured from current prod (M47), corpus re-grounded (M48), the 8 bring-up issues + v1.10 content gaps fixed
 (M49/M50), a curated **AI-readiness showcase org** added (M51), **one auditable seed+gen manifest** consolidated (M52),
 and **cold-rebuild acceptance proven 6/6 + academy F6 GREEN from cold** (M53). **Tooling + docs only — zero
-platform-repo edits. Zero new third-party deps.** Records: [`releases/01.10b-fit-up/`](releases/01.10b-fit-up/).
+platform-repo edits. Zero new third-party deps.** Records: [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/).
 
 ```
 M47 ──→ ┌ M48 corpus re-ground ───────────┐                (M48 ∥ M49 — disjoint clusters; M48 no-demo)
@@ -50,7 +50,7 @@ Academy coverage. All tracked in [`roadmap-vision.md`](roadmap-vision.md); none 
   corpus re-ground, from-cold `/demo-up` hardening, content/AI-readiness-org seeding fill, one auditable seed+gen
   manifest, then a from-cold destroy-and-rebuild acceptance (**6/6 + academy F6 GREEN**). 7 milestones M47..M53.
   Tooling + docs only, zero platform edits, zero new deps. Records:
-  [`releases/01.10b-fit-up/`](releases/01.10b-fit-up/).
+  [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/).
 - **v1.10 "method acting"** — **2026-06-27**, tag `v1.10`. The believable-profile release + presenter-grade /
   scalable-generation extension; Playwright SEMANTIC coverage gate at both vantages cold; 9 milestones (M39→M46). The
   **last v1.x release** — detail in [`roadmap-legacy.md`](roadmap-legacy.md). Records:
@@ -87,7 +87,7 @@ _(M49/M48/M47 closed 2026-06-30/29 — full narratives in `roadmap.md` §§ M47�
 - **Supply-chain:** **0 new deps** this release (`ai v1.40.1` from v1.10 M45 carried forward unchanged; `go:embed` is
   stdlib). The inherited HIGH **CVE-2026-39821** (`x/net` idna, called only in stack-seeding, disclosed post-v1.10) was
   **CLEARED** at close (`x/net v0.53.0→v0.55.0`; `govulncheck` → "No vulnerabilities found"). node audit 0 vulns. No
-  GPL/AGPL. Lockfile: [`releases/01.10b-fit-up/dependencies.lock`](releases/01.10b-fit-up/dependencies.lock).
+  GPL/AGPL. Lockfile: [`releases/archive/01.10b-fit-up/dependencies.lock`](releases/archive/01.10b-fit-up/dependencies.lock).
 - **Coverage:** no >2pp drop on any measured surface (seeders ~97.5→97.6%; NEW M52 manifest pkg 100% stmt).
 - **Alignment gates:** **100%/100%** on all 5 Clerkenstein surfaces (carried from v1.10; v1.10b touched no contract
   surface — clerkenstein unchanged).

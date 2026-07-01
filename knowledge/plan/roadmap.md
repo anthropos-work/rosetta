@@ -25,8 +25,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ▶ **IN DEVELOPMENT** (branch `release/01.10b-fit-up`, designed 2026-06-29; tag `v1.10.1`) |
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — the **v1.10b "fit-up"** backfill is interposed; v2.0 resumes after it ships |
+| **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — the interposed **v1.10b "fit-up"** backfill has **SHIPPED**, so v2.0 **resumes next** (still PAUSED pending resume — the user re-activates it via `design-roadmap`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -42,7 +42,7 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In Development — v1.10b "fit-up"
+## Done — v1.10b "fit-up" (SHIPPED 2026-07-01, tag v1.10.1)
 
 > **Theme:** *fit-up — build and rig the set correctly in the venue before opening night.* An **interposed
 > field-hardening backfill** in the **v1.3b "dress rehearsal"** lineage. A from-scratch `/demo-up` surfaced 8
@@ -79,7 +79,7 @@ rebuild" the user asked for *is* the M47→…→M53 shape.
 ### Milestones
 
 (compact per-milestone summaries — the full contracts live under
-[`releases/01.10b-fit-up/m*/overview.md`](releases/01.10b-fit-up/))
+[`releases/archive/01.10b-fit-up/m*/overview.md`](releases/archive/01.10b-fit-up/))
 
 **M47 — Re-sync & recapture** · `section` · depends: **none** (foundation) · ✅ **`done` — closed 2026-06-29**
 (merged → `release/01.10b-fit-up`; rext tag `fit-up-m47`). The flagged heavy re-sync was a **no-op** — the clones
@@ -235,6 +235,11 @@ residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is G
 
 ## Paused — v2.0 "opening night"
 
+> **Status (2026-07-01):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), so v2.0
+> **resumes now** — it is the one paused-but-next release. It stays PAUSED *pending resume*; the user re-activates it
+> as the active release (assigning the next active milestone) via `/developer-kit:design-roadmap`. M201 is already
+> `done`; M202 ∥ M203 ∥ M204 are not started.
+>
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
 > across the platform start-to-finish the way a person would, then proves the platform delivered the outcome.
@@ -406,7 +411,14 @@ assertion boundary.
 
 ## Shipped releases
 
-The complete shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`) through **v1.10 "method acting"**
+- **v1.10.1 "fit-up"** — **2026-07-01**, tag `v1.10.1`, **7 milestones (M47 … M53)**. The interposed
+  **field-hardening backfill** (a `.1` patch on v1.10): re-sync + recapture, corpus re-ground, from-cold `/demo-up`
+  hardening, content + AI-readiness-showcase-org seeding fill, one auditable seed+gen manifest, then a from-cold
+  destroy-and-rebuild acceptance (**6/6 + academy F6 GREEN**). Tooling + docs only, zero platform edits, zero new
+  deps. Records archived under
+  [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/).
+
+The complete earlier shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`) through **v1.10 "method acting"**
 (2026-06-27, tag `v1.10`), 11 versions / milestones M0 … M46 — is preserved in
 [`roadmap-legacy.md`](roadmap-legacy.md) (the retired v1.x major). Records are archived under
 [`releases/archive/`](releases/archive/). No v2.0 release has shipped yet.

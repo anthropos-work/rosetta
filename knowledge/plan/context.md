@@ -33,7 +33,7 @@ roadmap rotated there; the active [`roadmap.md`](roadmap.md) holds v2.0 only.)
   the v2.0 opening when the v1.x major retired
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + future v2 milestones + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v1.10b dirs** are under [`releases/01.10b-fit-up/`](releases/01.10b-fit-up/) (`m47-resync-recapture/`, `m48-corpus-reground/`, `m49-bringup-hardening/`, `m50-content-seeding-fill/`, `m51-ai-readiness-org/`, `m52-seed-manifest/`, `m53-cold-rebuild-acceptance/`), scaffolded by the 2026-06-29 `/developer-kit:design-roadmap` run. The **paused v2.0 dirs** are under [`releases/02.00-opening-night/`](releases/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v1.10b dirs** are under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/`, `m48-corpus-reground/`, `m49-bringup-hardening/`, `m50-content-seeding-fill/`, `m51-ai-readiness-org/`, `m52-seed-manifest/`, `m53-cold-rebuild-acceptance/`), scaffolded by the 2026-06-29 `/developer-kit:design-roadmap` run. The **paused v2.0 dirs** are under [`releases/02.00-opening-night/`](releases/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
 
 ## Conventions
 
@@ -71,7 +71,7 @@ source-of-truth] } → **M50** Content & seeding fill [`iterative`, the Maya/Dan
 manifest [`section`, one inlined file the cockpit serves] → **M53** Cold-rebuild acceptance [`section`, destroy +
 rebuild from cold]. The **1-demo-stack** constraint serializes verification (only M48 ∥ M49 truly parallelize — M48
 never touches the demo); the "fix-on-live → final cold rebuild" model. Tooling + docs only — zero platform-repo
-edits. Records under [`releases/01.10b-fit-up/`](releases/01.10b-fit-up/); designed from
+edits. Records under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/); designed from
 [`.agentspace/annotation.md`](../../.agentspace/annotation.md). **PAUSES v2.0 "opening night"** (the Playthroughs
 pillar, M201 closed + M202→M204 paused; resumes after v1.10b ships; records under
 [`releases/02.00-opening-night/`](releases/02.00-opening-night/)). **Last shipped:** **v1.10 "method acting"**
