@@ -417,6 +417,26 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     the translation fan-out or make the default call read snapshots (the `app-targetrole-authz-skip` precedent),
     that's demo-local; if not, it's the milestone Re-scope trigger (`unimplementable-without-platform-edit`) —
     escalate, never edit the platform, and never widen the harness budget to mask a server that can't answer.
+  - **A cycle-scoped FAST read-path only helps if the DEFAULT client call SELECTS it — confirm the FE's
+    request SHAPE, not just the server branch (v1.10b M51 iter-07).** iter-06 root-caused the AI-readiness
+    wall as a live-recompute + translation N+1 on the ACTIVE-cycle path; the M48 contract documents a fast
+    alternative — a CLOSED cycle whose read takes `buildResponseFromSnapshots` (a pre-computed frozen read).
+    iter-07 seeded the cycle closed + a frozen `ai_readiness_snapshots` row per member (DB-verified correct:
+    199 snapshots, 78.4% stage-3, heroes right) — and the GATED sweep STILL held at the same failing count.
+    The frozen branch EXISTS in code but the DEFAULT dashboard GET never takes it: `app
+    GetAIReadinessWithOptions` reaches `buildResponseFromSnapshots` ONLY for `opts.CycleID != nil &&
+    status=="closed"` — the nil-CycleID default is hardcoded to `buildLiveResponse`. An AUTHENTICATED network
+    probe (log in as the hero, log every outbound backend request URL + query params + whether it completes)
+    proved the demo FE fires the data GET **WITHOUT `?cycle=`** (the live path — it hangs) and never fires the
+    `/cycles` list that would supply `latestClosedCycle.id`. **Lesson: a server-side fast branch is necessary
+    but not sufficient — before assuming a data-shape change (a closed cycle, a materialized mirror) clears a
+    wall, confirm BOTH sides: (1) the server branch exists AND (2) the FE's DEFAULT call fires the variant that
+    hits it. Diagnose the FE side with an authenticated network probe (which request VARIANT the client fires),
+    not just the backend completion log (which only tells you IF a request completed). When the fast branch is
+    reachable only via a param the default FE omits, closing the gap is PLATFORM-bound (the FE must pass the
+    param, or the backend default must prefer the closed cycle) → the milestone Re-scope trigger, or the
+    disclosed-presenter-note (data proven-correct in the DB, slow-only via the default route) with the user's
+    explicit sign-off.**
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and

@@ -88,3 +88,37 @@ the residual COLD query still exceeds the harness measurement budget → the 6 s
 (data-in-DB, slow-not-erroring). The hypothesis "m50 patches alone clear all 6" is FALSIFIED. The residual is
 demo-local-addressable (a harness warm/poll deepening) → iter-05; the manifest AI-readiness assertion + cockpit
 jump_to (TOK-01 strand-4) are mapped + also routed to iter-05. See iter-04/{progress,decisions}.md.
+
+## USER-BLOCKER (iter-07, 2026-07-01): the closed-cycle strategy is DB-correct but the platform FE default doesn't route to the frozen path
+
+**Context:** the user chose the M48-documented CLOSED-CYCLE alternative to the iter-06 perf wall (seed the
+cycle closed + frozen per-member `ai_readiness_snapshots` so the dashboard reads pre-computed data instead of
+live-recomputing + the per-skill translation N+1). iter-07 implemented it (config: active→closed; funnel: a
+frozen snapshot per stage>=1 member, platform-model-scored; stackseed: ai_readiness_* in --reset + baked
+--reload-sentinel) and re-seeded demo-1. **The DB is now the CORRECT showcase: cycle closed, 199 frozen
+snapshots, 78.4% stage-3, Aria=stage3/champion, Ben=stage1/standby, Dana no snapshot.**
+
+**Blocker (root-caused, zero platform edit):** the platform read path reaches the FAST frozen branch
+(`app buildResponseFromSnapshots`) ONLY for a `?cycle=<closed-id>` request; the DEFAULT GET (nil CycleID) is
+hardcoded to `buildLiveResponse` (`ai_readiness.go:301`). An authenticated network probe proved the demo FE
+fires the dashboard's data GET **WITHOUT `?cycle=`** (the live path — it hangs, never completes) and **never
+fires the `/cycles` list** that would supply `latestClosedCycle.id`. So the frozen data is present + fast-readable
+but the default dashboard call never selects it → the GATED manager sweep HELD at (failing=5, escapes=0). The
+2 AI-readiness sections stay skeleton; the 3 workforce-aggregate sections are the same iter-06 wall family.
+
+**Why user-blocker:** every path to `(0,0)` needs a user/architectural decision the invariant forbids the
+build-iter from taking:
+  (a) **DISCLOSED residual** (the session-brief fallback) — the data is PROVEN correct in the DB; the section is
+      slow-but-correct due to a platform FE/read-path ROUTING behavior, not a seed gap. Disclose as a
+      presenter-note per the coverage-protocol's NARROW disclosed-allow → the gate reaches green-with-disclosure.
+      **Needs the user's EXPLICIT sign-off** (it is NOT an editorial-citation auto-allow). The seeded closed-cycle
+      data STAYS (honest + correct; the cycle picker / a `?cycle=` deep-link renders the fast frozen dashboard).
+  (b) **ESCALATE a platform edit** (`unimplementable-without-platform-edit`, the milestone Re-scope trigger) — make
+      next-web's default dashboard query pass the latest-closed cycle id, OR make `app`'s default GET prefer a
+      closed cycle when no active cycle exists.
+  (c) a NEW app read-path demo-patch (batch/relax the live translation N+1) — the `app-targetrole-authz-skip`
+      precedent; a substantial new tooling investment; option B of the session brief, NOT chosen.
+
+iter-07 surfaces the decision rather than picking one. Full evidence in iter-07/{progress,decisions}.md. The
+closed-cycle seeder + --reload-sentinel are KEPT + committed (the DB showcase is correct + reusable regardless
+of the chosen resolution). `fit-up-m51` is NOT tagged (gate not met).

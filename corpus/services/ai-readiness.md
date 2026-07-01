@@ -134,6 +134,22 @@ decision):**
   directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
   cycle to `closed`) with **no underlying signals** — lighter, but the world reads as a *finished* assessment.
 
+  **⚠ M51 iter-07 — the frozen path is CYCLE-SCOPED; the DEFAULT dashboard GET does NOT take it.**
+  `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
+  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (`CycleID == nil`,
+  line 301) is hardcoded to `buildLiveResponse` (the live-recompute path). The next-web manager dashboard
+  (`AIReadinessClient.tsx`) is designed to pass `?cycle=selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id`
+  — so IN PRINCIPLE a closed cycle (no active cycle) makes the FE pass the closed id → the fast frozen path. **But
+  the M51 iter-07 demo evidence (an authenticated network probe) showed the demo FE firing the data GET WITHOUT
+  `?cycle=` (the live path — which then hits the 200-member translation-N+1 wall and never completes) and never
+  firing the `/cycles` list that supplies `latestClosedCycle.id`.** Net: seeding a closed cycle + frozen snapshots
+  makes the DB the correct showcase and renders fast via the **cycle picker / a `?cycle=` deep-link**, but does NOT
+  by itself make the DEFAULT manager-dashboard load fast — that gap is **platform-bound** (the FE must pass the
+  cycle id by default, or the backend default must prefer a closed cycle when no active cycle exists). Treat this
+  as the load-bearing caveat for any "seed it closed to dodge the perf wall" plan. See
+  `knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/` + `corpus/ops/demo/coverage-protocol.md`
+  (the "cycle-scoped fast read-path" lesson).
+
 **No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 
 ## Cross-references

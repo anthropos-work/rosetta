@@ -7,8 +7,8 @@
     "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
     "met": false
   },
-  "iters_total": 6,
-  "tiks": 5,
+  "iters_total": 7,
+  "tiks": 6,
   "toks": 1,
   "current_metric": {
     "failingSections": 5,
@@ -25,13 +25,15 @@
     "pct_all_3_complete": 78.4,
     "hero_started": true,
     "hero_completed": true,
-    "note": "iter-06 (closed-no-lift) re-swept with the corrected iter-05 harness: the org-agnostic email fix CLEARED the 2 cervato false-fails; the deepened warmHeavyGrids (added the ai-readiness route + skeletons-cleared hydration) landed clean but did NOT lift the metric (5->5). ROOT CAUSE of the residual 5: a PLATFORM-side AI-readiness response-build perf wall — GET /api/workforce/ai-readiness NEVER completes in-budget at 200 members (0 backend completions; ai_readiness_refresh worker deadline-exceeded), every AI-readiness SQL query EXPLAINs at ms (not index-bound), the cause is the live-recompute + a per-skill federated translation N+1 (withSkillerLang -> skiller _entities), same class as the M46 per-object Sentinel RPC. USER-BLOCKER: the gate cannot reach (0,0) without a platform-read-path edit (forbidden by the invariant), a substantial NEW app-translation/snapshot-short-circuit demo-patch, OR a disclosed-residual sign-off (slow-but-correct, data proven in DB) — surfaced for the user's decision. Carried: bake-Sentinel-reload-after-seed."
+    "cycle_status": "closed",
+    "frozen_snapshots": 199,
+    "note": "iter-07 (closed-no-lift) applied the user-chosen M48 CLOSED-CYCLE alternative to the iter-06 platform perf wall: cycle active->closed + a frozen ai_readiness_snapshots row per member (platform-model-scored; Aria=stage3/champion, Ben=stage1/standby, Dana=none). Re-seeded demo-1 CLEANLY (the 8 ai_readiness_* tables added to stackseed --reset + the new --reload-sentinel). DB VERIFIED correct: cycle closed, 199 frozen snapshots, 78.4% stage-3. But the GATED manager sweep HELD at (failing=5, escapes=0): HYPOTHESIS PARTIALLY FALSIFIED. An authenticated network probe proved the platform FE's DEFAULT dashboard GET fires the LIVE path (no ?cycle=, never completes) and never fires the /cycles list that would supply latestClosedCycle.id, so the fast frozen path (app buildResponseFromSnapshots, reachable ONLY for CycleID!=nil && status=='closed') is never taken by the default call. Closing the gap is PLATFORM-bound. The closed-cycle data + --reload-sentinel tooling are KEPT (correct + reusable; the cycle picker / a ?cycle= deep-link renders the fast frozen dashboard)."
   },
   "blocker": {
     "kind": "user-blocker",
-    "summary": "AI-readiness dashboard GET never completes in-budget at 200 members (platform-side response-build perf wall: live-recompute + per-skill federated translation N+1). Gate cannot reach (0,0) without one of: (a) a new app read-path demo-patch (batch translation OR default-call-reads-snapshots), (b) escalate a platform fix (unimplementable-without-platform-edit), or (c) accept a disclosed-presenter-note residual (slow-but-correct, data proven in DB) with user sign-off.",
-    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-06/decisions.md (D3) + progress.md"
+    "summary": "The AI-readiness closed-cycle strategy produced correct fast-readable data (199 frozen snapshots, DB-verified) but the platform FE's DEFAULT dashboard GET does not route to the frozen path (it fires the live-recompute GET with no ?cycle= and never fires /cycles). Gate cannot reach (0,0) without one of: (a) a disclosed-presenter-note residual (data proven-correct in DB, slow-only via the default route) with the user's explicit sign-off, (b) escalate a platform edit (FE pass latest-closed by default OR backend default prefer a closed cycle) = unimplementable-without-platform-edit, or (c) a new app read-path demo-patch batching/relaxing the translation N+1 (option B of the brief, NOT chosen).",
+    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/{progress,decisions}.md + decisions.md (USER-BLOCKER iter-07)"
   },
-  "last_iter": "iter-06",
+  "last_iter": "iter-07",
   "last_updated": "2026-07-01"
 }
