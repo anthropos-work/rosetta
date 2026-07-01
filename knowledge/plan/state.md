@@ -1,9 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M52 — Single auditable seed+gen manifest (section; BUILT, awaiting close)"
-last_closed: "M51 — 2026-07-01 (AI-readiness showcase org, closed-on-gate)"
-phase: "v1.10b building — M47..M51 CLOSED; M52 BUILT (all 4 sections landed), awaiting close; then M53"
+active_milestone: "M53 — Cold-rebuild acceptance (section; next to build — the final v1.10b milestone)"
+last_closed: "M52 — 2026-07-01 (Single auditable seed+gen manifest, section)"
+phase: "v1.10b building — M47..M52 CLOSED; next M53 (section, final) — cold-rebuild acceptance + tag v1.10.1"
 last_updated: "2026-07-01"
 ---
 
@@ -26,25 +26,25 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53
 ```
 
-**Active milestone:** **M52 — Single auditable seed+gen manifest** (`section`, **next to build**). Extract the Go
-mother-prompts to YAML; author **one** checked-in `seed-generation-manifest.yaml` inlining the population blueprint
-(all 3 orgs, incl. the M51 AI-readiness org) + prompts + batch config + snapshot sources (**cache + generated data
-excluded**); the cockpit **[Download]** serves it. `section` — a fixed extract-and-inline scope. **Delivers →** NEW
-`corpus/ops/demo/seed-manifest-spec.md`. Records:
-[`releases/01.10b-fit-up/m52-seed-manifest/`](releases/01.10b-fit-up/m52-seed-manifest/). _(M51 closed-on-gate
-2026-07-01 — see Recently closed.)_
+**Active milestone:** **M53 — Cold-rebuild acceptance** (`section`, **next to build — the FINAL v1.10b milestone**).
+Destroy the live demo + **rebuild from cold** on a `stack-demo`-only box (a single `/demo-up`, no manual steps, at
+`.agentspace/rext.tag`); assert healthy backends + complete set-dress/seed (all 3 orgs incl. AI-readiness)/verify/cockpit
++ both-vantage coverage + the AI-readiness criteria + the **complete manifest [Download]** (the M52 file) — the single
+source of acceptance truth. Owns M50's COLD reset-to-seed clause + M51's academy-F6 Fate-3 handoff + the M52
+up-injected.sh end-to-end glue (Fate-2). Then tag **`v1.10.1`** + bump `.agentspace/rext.tag`. Records:
+[`releases/01.10b-fit-up/m53-cold-rebuild-acceptance/`](releases/01.10b-fit-up/m53-cold-rebuild-acceptance/). _(M52
+closed 2026-07-01 — see Recently closed.)_
 
-**Phase:** **v1.10b building — M47..M51 CLOSED; next M52 (section).** Foundation + corpus re-ground + bring-up
-hardening + content/seeding fill + the AI-readiness showcase org are done (M51's manager coverage gate MET, `(0,0)`
-frontier-exhausted; rext @ `fit-up-m51`). The **single-demo serialization** (fix-on-live across M52, then **M53
-destroys + cold-rebuilds** as the single acceptance proof — which also owns M50's deferred COLD reset-to-seed clause +
-now M51's academy-F6 Fate-3 handoff) is in effect.
+**Phase:** **v1.10b building — M47..M52 CLOSED; next M53 (section, FINAL).** Foundation + corpus re-ground + bring-up
+hardening + content/seeding fill + the AI-readiness showcase org + the single auditable seed+gen manifest are done
+(rext @ `fit-up-m52`). The **single-demo serialization** (fix-on-live across M47..M52, then **M53 destroys +
+cold-rebuilds** as the single acceptance proof) is in effect — M53 is that from-cold confirmation.
 
-**Next up:** **build M52** (`/developer-kit:work-milestone` — extract the mother-prompts + inline the one manifest).
-_(The orchestrator still owes origin the pushes: `main` + the `v1.10` tag + the v1.10 ext tags + now the
-`fit-up-m47..m51` rext tags — the v1.10 LOCAL close did not push; the M201 close merged to `main` LOCALLY; this
-v1.10b branch is cut from that local `main`. The consumption-clone re-pin to the release rext tag is the push-gated
-KEEP tracked here, authoritatively bumped at M53.)_
+**Next up:** **build M53** (`/developer-kit:work-milestone` — cold-rebuild acceptance + tag `v1.10.1`), the release's
+last milestone (then `/developer-kit:close-release`). _(The orchestrator still owes origin the pushes: `main` + the
+`v1.10` tag + the v1.10 ext tags + now the `fit-up-m47..m52` rext tags — the v1.10 LOCAL close did not push; the M201
+close merged to `main` LOCALLY; this v1.10b branch is cut from that local `main`. The consumption-clone re-pin to the
+release rext tag is the push-gated KEEP tracked here, authoritatively bumped at M53.)_
 
 **Last shipped:** **v1.10 — 2026-06-27** (`method acting`, 9 milestones M39→M46, tag `v1.10`,
 `release/01.10-method-acting` merged `--no-ff` → `main`). The **last release of the v1.x major**; its history +
@@ -62,6 +62,17 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
 `roadmap-vision.md`.
 
 ## Recently closed (v1.10b milestones)
+- **M52 — Single auditable seed+gen manifest** — **2026-07-01** (`section`; merged → `release/01.10b-fit-up`;
+  rext tag `fit-up-m52` @ `36d7430`). ONE checked-in `seed-generation-manifest.yaml` now drives all seed+gen intent
+  (all 3 orgs + the file-resident mother prompt + batch config + snapshot sources; cache/generated data excluded),
+  projected + **honesty-gated** from the canonical presets, served by the cockpit **[Download]**. 4 sections (S1
+  `go:embed` prompt extraction byte-identical → M45 cache preserved; S2 the NEW `manifest` pkg + `--manifest-export`
+  verb; S3 cockpit repoint w/ non-fatal fallback; S4 the NEW `demo/seed-manifest-spec.md`). Tests rext stack-seeding
+  **749→786** (NEW `manifest` pkg 100%) · demo-stack Python **299→313**; flake 0. Close: **12 findings all Fate-1** —
+  F1 dedup the 3-way projection helper to one `blueprint` source; **F4 warn on an orphan gen-story id** (a typo was
+  silently dropping the generation intent); F3 second cache-key golden fences the `(none)` branch; F5 empty-manifest
+  fallback; F2/F6/F7/F8/F9. Deferral audit **GREEN** (up-injected.sh glue = Fate-2 → M53). Full narrative in
+  `roadmap.md` § M52.
 - **M51 — AI-readiness showcase org** — **2026-07-01** (`iterative`, **closed-on-gate**; merged →
   `release/01.10b-fit-up`; rext tag `fit-up-m51` @ `a23f38d` + close fix-commit `1e958ac`). Manager coverage gate
   MET at iter-09: `(failingSections, escapes) = (0,0)` frontier-exhausted (reachable 70) on a fresh demo-up; org
@@ -86,11 +97,8 @@ pre-assigned to a minor): M205 Hiring + tier gates · M206 AI-sim mirror tier ·
   order, `INVITATION_HMAC_SECRET` critical+auto-gen, ant-academy explicit clone, disk pre-flight + `down --purge`,
   true non-fatal frontend, demopatch re-anchor to v2.89.0) — **live-verified** from cold (demo-1 UP). Tests rext Go
   1552→1555 · demo-stack Python 299; flake 0. AI-keys policy → M50 (Fate-2). Full narrative in `roadmap.md` § M49.
-- **M48 — Corpus re-ground** — **2026-06-29** (`section`; merged → `release/01.10b-fit-up`). NEW
-  `corpus/services/ai-readiness.md` (the M51 seeder contract — Phase-2c-sharpened: active⇒signals-true,
-  closed⇒frozen-snapshot) + drift reconciled + the false ant-academy "in repos.yml" claim corrected (M49 #5 owns
-  the code fix). Docs-only; 3-agent investigation. Full narrative in `roadmap.md` § M48.
-_(M47 "Re-sync & recapture" closed 2026-06-29 — trimmed from this list; full narrative in `roadmap.md` § M47.)_
+_(M48 "Corpus re-ground" + M47 "Re-sync & recapture" closed 2026-06-29 — trimmed from this list; full narratives in
+`roadmap.md` §§ M48 / M47.)_
 
 ## Recently shipped releases
 - **v1.10 "method acting"** — **2026-06-27**, tag `v1.10`. The **believable-profile release + the presenter-grade
@@ -109,18 +117,17 @@ _(M47 "Re-sync & recapture" closed 2026-06-29 — trimmed from this list; full n
 - **Earlier v1.x** (v1.0 … v1.7) — the full shipped table is in
   [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.
 
-## Headline numbers (v1.10b — M51 close)
-- **Go test funcs (rext):** at M51 close the M51-touched module **stack-seeding = 749** (`Test`+`Fuzz`; seeders pkg
-  382, **97.6%** stmt coverage — +30 vs M50's 719 across M51's 9 iters + the 5-pass final harden + close's +2
-  [`TestAIReadinessSimRefs_CoDerivationInvariant` + `TestBuildRegistry_AIReadinessConfigPrecedesFunnelInPlan`]).
-  M49-close per-module baseline (unchanged this milestone): `alignment` 52 · clerkenstein 270 · stack-snapshot 364 ·
-  stack-secrets 163.
-- **Python / TS:** the `demo-stack` Python suite **299** (unchanged this milestone — M51 touched no Python). The rext
-  **e2e TS unit** suite **33** (+13 at M51 close: the NEW `section-assert.ts` no-browser verdict spec, joining the
-  20-test `coverage-manifest.unit.spec.ts`) — runs via the `@playwright/test` harness with no demo up. `stack-injection`
-  117.
-- **Flake:** **0** (M51 close flake gate 5/5 Go [seeders + cmd/stackseed, count=1, sequential] + 5/5 TS [both unit
-  specs, 33 passed each]).
+## Headline numbers (v1.10b — M52 close)
+- **Go test funcs (rext):** at M52 close the M52-touched module **stack-seeding = 786** (`Test`+`Fuzz`; +37 vs M51's
+  749 across M52's 4 sections + 3 harden passes + close's +5 [`TestMergeGenerationBatches_MultiStory`,
+  `TestDefaultBatchPromptTemplate_CacheKeyGolden_EmptyReserved`, `TestManifest_HonestyGateHasTeeth_GenerationAxis`,
+  `TestStripLeadingComments`, and the F1 dedup re-points]). NEW `manifest` pkg (100% stmt). M49-close per-module
+  baseline (unchanged this milestone): `alignment` 52 · clerkenstein 270 · stack-snapshot 364 · stack-secrets 163.
+- **Python / TS:** the `demo-stack` Python suite **313** (+14 vs M51's 299 — M52's cockpit `--seed-manifest`
+  endpoint + fallback tests incl. close's empty-manifest-falls-back). The rext **e2e TS unit** suite **33**
+  (unchanged — M52 touched no TS). `stack-injection` 117.
+- **Flake:** **0** (M52 close flake gate 5/5 Go [blueprint + manifest + seeders + cmd/stackseed, count=1,
+  `-shuffle=on`, sequential] + 5/5 Python [cockpit suite, 71 passed each]).
 - **Supply-chain:** the v1.10 close carried **1 new dep** (`github.com/anthropos-work/ai@v1.40.1`, M45). v2.0 has
   added none yet. The rosetta corpus is docs-only (no package manifest). Lockfile inherited from
   [`releases/archive/01.10-method-acting/dependencies.lock`](releases/archive/01.10-method-acting/dependencies.lock).
