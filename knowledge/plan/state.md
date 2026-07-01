@@ -1,13 +1,19 @@
 ---
-active_release: "v1.10b fit-up — SHIPPED 2026-07-01 (tag v1.10.1). v2.0 opening night PAUSED — resumes next (design-roadmap/user assigns)"
-active_branch: "main"
-active_milestone: "(between releases)"
-last_closed: "v1.10b fit-up — 2026-07-01 (tag v1.10.1, 7 milestones M47..M53)"
-phase: "between releases — v1.10b shipped; v2.0 opening night resumes next"
+active_release: "v2.0 opening night (Playthroughs) — RESUMED 2026-07-01; M201 shipped, M202 next"
+active_branch: "release/02.00-opening-night"
+active_milestone: "M202 — Foundation (section; next to build)"
+last_closed: "v1.10b fit-up — 2026-07-01 (tag v1.10.1, 7 milestones M47..M53) — the interposed backfill"
+phase: "v2.0 opening night building — M201 corpus shipped; M202 foundation next"
 last_updated: "2026-07-01"
 ---
 
 # State
+
+**Active release:** **v2.0 "opening night" — RESUMED 2026-07-01** (the **Playthroughs** pillar; branch
+`release/02.00-opening-night`). Paused 2026-06-29 after M201 to interpose the v1.10b field-hardening backfill (now
+SHIPPED, tag `v1.10.1`); resumed here — **no re-design needed, the milestones are already scaffolded.** Governed by
+[`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md). Execution graph:
+**M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship.**
 
 **Last shipped:** **v1.10b "fit-up" — 2026-07-01, tag `v1.10.1`** (rext code-of-record @ `66a021e`). An **interposed
 field-hardening backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up issues +
@@ -24,16 +30,17 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53 ✅ shipped
 ```
 
-**Active milestone:** **(between releases).** v1.10b shipped 2026-07-01; there is no active milestone.
+**Active milestone:** **M202 — Foundation** (`section`, next to build). M201 "Manifest corpus" shipped
+(closed-on-gate); M202 ∥ M203 ∥ M204 are already designed + scaffolded (shapes/scope set — no re-design needed). Start
+it with **`/developer-kit:work-milestone m202`** (M203/M204 are `iterative` → `/developer-kit:work-mstone-iters`).
+Records: [`releases/02.00-opening-night/`](releases/02.00-opening-night/).
 
-**Phase:** **between releases — v1.10b shipped; v2.0 "opening night" resumes next.** v1.10b's close-release ran to
-completion: full suites green + a 3× flake gate clean (rext Go **1640** / demo-stack Python **326** / TS unit **42**,
-flake **0**), the inherited HIGH `x/net` CVE cleared, `release/01.10b-fit-up` merged → `main` + tagged `v1.10.1`.
+**Phase:** **v2.0 "opening night" building — M201 shipped; M202 foundation next.** The interposed v1.10b backfill
+closed 2026-07-01 (full suites + a 3× flake gate clean, the inherited `x/net` CVE cleared, merged → `main` + tagged
+`v1.10.1`). A `playthroughs` rext section arrives at M202 build.
 
-**Next up:** **resume v2.0 "opening night" (Playthroughs).** It was paused 2026-06-29 after M201 closed, to interpose
-this backfill. The M201 corpus is preserved as the v2.0 spec; M202 ∥ M203 ∥ M204 are not started. `design-roadmap` /
-the user assigns the next active release + milestone. _(The orchestrator still owes origin the pushes — see the
-push-gated KEEP below.)_
+**Next up:** **build M202 — Foundation** (`/developer-kit:work-milestone m202`). _(The orchestrator still owes origin
+the pushes — see the push-gated KEEP below.)_
 
 **Push-gated KEEP (the user's manual step):** origin has NOT received `main` + the `v1.10` tag + the v1.10 ext tags +
 the `fit-up-m47..m52` rext tags + `v1.10.1`. Local closes deliberately do not push; this is the user's gate. The
