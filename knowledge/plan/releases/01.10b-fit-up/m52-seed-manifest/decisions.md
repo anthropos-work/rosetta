@@ -47,3 +47,17 @@ _Implementation decisions with rationale (one entry per decision: context → op
 - **Why:** the manifest is the auditable source of the whole generation intent; the budget ceiling is
   part of that intent. Making it file-resident + validation-enforced means an auditor sees the cap and a
   zero-cap manifest fails loud, mirroring the CLI's own guard.
+
+## D5 — [Download] serves the consolidated manifest; the MENU stays the stories→heroes projection
+- **Context:** the cockpit's `/manifest.json` currently drives BOTH the [Log in as] menu AND the
+  [Download] link. M52 repoints the download to the consolidated file. Option: replace the menu manifest
+  outright vs keep both.
+- **Choice:** keep BOTH files. The MENU (cockpit-manifest.json) still drives the [Log in as] CTAs (it's
+  the deep-link/seat-switch source — a different shape). The [Download] serves the NEW consolidated
+  `seed-generation-manifest.yaml` (the auditable intent). The download endpoint is
+  `/seed-generation-manifest.yaml`; `/manifest.json` stays served for back-compat + the fallback.
+- **Why:** the two files serve different needs — the menu is a login launcher (needs jump_to/vantage
+  labels), the download is an auditor's read (needs the prompt/config/sources). Conflating them would
+  either bloat the menu or strip the download. A NON-FATAL fallback (has_seed_manifest / missing file →
+  menu-manifest download) keeps an old bring-up's link alive. Live-verified byte-identical on a throwaway
+  cockpit; demo-1 untouched.

@@ -17,9 +17,12 @@ _Checked off as each In-scope deliverable lands. Close when all boxes are ticked
       a self-documenting `excludes:` block for the cache/generated-data boundary). Honesty-gated by
       `TestManifest_CanonicalFileMatchesProjection` (checked-in body == live projection). No new dep;
       go.mod/go.sum unchanged. rext @ `0828f7f`.
-- [ ] **S3 — Repoint the cockpit [Download manifest]** (`demo-stack/cockpit.py` + the `up-injected.sh`
-      export wiring) to serve the consolidated `seed-generation-manifest.yaml` as the download (replacing the
-      stories→heroes projection as the *download* target; keep the projection as the menu source).
+- [x] **S3 — Repoint the cockpit [Download manifest]** — `cockpit.py` gets `--seed-manifest` + a new
+      `/seed-generation-manifest.yaml` endpoint (verbatim YAML attachment) + the footer link repoint; the
+      MENU stays the stories→heroes projection (drives [Log in as]). NON-FATAL fallback to the menu-manifest
+      download. `up-injected.sh` exports the consolidated manifest (`--manifest-export`, `--gen-seed` the
+      org-fill preset) + passes `--seed-manifest`. **Live-verified** byte-identical on a throwaway cockpit
+      (:17799); demo-1 untouched. 6 new Python tests; demo-stack suite 311 green. rext @ `104896e`.
 - [ ] **S4 — NEW rosetta doc `corpus/ops/demo/seed-manifest-spec.md`** — the consolidated single-file
       seed+generation contract (what's inlined, what's excluded, how the cockpit serves it, the cache-key
       integrity rule), cross-referenced from `demo/README.md` + `seeding-spec.md` + `ai-generation-spec.md` +
