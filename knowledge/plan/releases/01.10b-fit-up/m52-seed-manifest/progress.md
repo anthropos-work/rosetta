@@ -23,7 +23,14 @@ _Checked off as each In-scope deliverable lands. Close when all boxes are ticked
       download. `up-injected.sh` exports the consolidated manifest (`--manifest-export`, `--gen-seed` the
       org-fill preset) + passes `--seed-manifest`. **Live-verified** byte-identical on a throwaway cockpit
       (:17799); demo-1 untouched. 6 new Python tests; demo-stack suite 311 green. rext @ `104896e`.
-- [ ] **S4 — NEW rosetta doc `corpus/ops/demo/seed-manifest-spec.md`** — the consolidated single-file
+- [x] **S4 — NEW rosetta doc `corpus/ops/demo/seed-manifest-spec.md`** — the consolidated single-file
       seed+generation contract (what's inlined, what's excluded, how the cockpit serves it, the cache-key
-      integrity rule), cross-referenced from `demo/README.md` + `seeding-spec.md` + `ai-generation-spec.md` +
-      `cockpit-spec.md`.
+      integrity rule §5, the honesty-gated projection). Cross-referenced from `demo/README.md` + `CLAUDE.md`
+      + `cockpit-spec.md` + `cache-spec.md` + `ai-generation-spec.md` + `seeding-spec.md`; the stale
+      "prompt-in-Go-const" (ai-generation §2b) + "download = menu JSON" (cockpit Served-endpoints) claims
+      reconciled to the M52 reality. All cross-refs resolve.
+
+## Status
+All 4 sections landed. rext authoring copy @ `104896e` (S1 `e57665f` + S2 `0828f7f` + S3 `104896e`); the
+`fit-up-m52` tag is cut at CLOSE, not here. Live-verify DONE (S3 cockpit download repoint, byte-identical,
+demo-1 untouched).

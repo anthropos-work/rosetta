@@ -1,9 +1,9 @@
 ---
 active_release: "v1.10b fit-up (interposed backfill; v2.0 opening night PAUSED)"
 active_branch: "release/01.10b-fit-up"
-active_milestone: "M52 — Single auditable seed+gen manifest (section; next to build)"
+active_milestone: "M52 — Single auditable seed+gen manifest (section; BUILT, awaiting close)"
 last_closed: "M51 — 2026-07-01 (AI-readiness showcase org, closed-on-gate)"
-phase: "v1.10b building — M47..M51 CLOSED; next M52 (single auditable seed+gen manifest, section)"
+phase: "v1.10b building — M47..M51 CLOSED; M52 BUILT (all 4 sections landed), awaiting close; then M53"
 last_updated: "2026-07-01"
 ---
 
