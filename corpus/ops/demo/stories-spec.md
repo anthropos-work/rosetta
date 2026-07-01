@@ -346,6 +346,14 @@ mirroring the platform's real multi-tenancy (so it's *more* realistic, not a hac
   `org_clerkenstein`) so a **single-identity demo login** (the only mode until M37) lands in it. Every later
   story gets its own deterministic id. The demo identity (`IdentitySeeder`) is seeded **only** for the first
   story — the per-story selectable identity registry is M37.
+  - **Second-world-on-a-shared-stack landmine `(#M202-D4)`.** The default-org slot is **single-tenant** — the
+    first story of *any* seed run claims it. So seeding a **second** stories world onto an **already-seeded**
+    stack (e.g. the Playthroughs `pt-world` on top of a seeded demo-1) collides: its first story merges into the
+    prior world's default org and duplicate-keys on that org's pre-existing rows (a *different* unique constraint
+    than the idempotent-on-id COPY). The zero-platform-edit, zero-fork fix is a leading **anchor story** (size 0,
+    no heroes) that harmlessly re-declares the default org, pushing the real orgs to story index ≥1 so they get
+    their own deterministic `StoryOrgID`s. See [`playthroughs.md`](playthroughs.md) (the Playthroughs dedicated
+    seed) for the worked instance.
 - **Per-story id namespacing.** Two stories' populations never collide: the first story uses the bare stack
   key, later stories prefix with `:story:<id>`. (Keeping the first story bare is what preserves the M34
   single-org ids byte-for-byte — the legacy single-org path is unchanged.)

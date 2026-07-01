@@ -3,9 +3,9 @@ milestone: M202
 slug: foundation
 version: v2.0 "opening night"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-28
-last_updated: 2026-06-28
+last_updated: 2026-07-01
 complexity: medium
 delivers: corpus/ops/demo/playthroughs.md (NEW — graduates the playthroughs spec-draft into a corpus runbook: the capability, the manifest model, the page-object layer, the dedicated-seed + reset-to-seed lifecycle, the serial-default runner, the 4-state reporting map) + the new `playthroughs` rext section (the manifest + light validator + the per-surface locator/landmark page-object layer + the dedicated decoupled seed + the runner) built on the shared M42 e2e foundation
 depends_on: none (reuses the M42 e2e harness + the seeding machinery; the M201 manifest corpus is its build+regression contract — authorable in parallel, the validator lands here to match it)
