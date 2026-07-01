@@ -9,12 +9,14 @@ _Checked off as each In-scope deliverable lands. Close when all boxes are ticked
       the former const, so the rendered mother prompt + the M45 prompt-hash cache key are **unchanged** — proven
       by `TestDefaultBatchPromptTemplate_FileResident` + every existing MotherPrompt/determinism/hash test
       passing untouched. No new dep (embed is stdlib); go.mod/go.sum byte-identical. rext @ `e57665f`.
-- [ ] **S2 — Author the consolidated `seed-generation-manifest.yaml`** — ONE checked-in file inlining the
-      population blueprint (all 3 orgs incl. the M51 AI-readiness org), the generation prompt templates, the
-      batch config (`--max-cost` ceiling, `--max-concurrent`, re-roll rules), and the snapshot sources
-      (taxonomy + Directus capture versions). EXCLUDES `.agentspace/.batchcache` + generated member
-      envelopes. A reader/loader (Go) that parses it + a `stackseed --manifest-export` (or equivalent) that
-      emits/validates it for the cockpit.
+- [x] **S2 — Author the consolidated `seed-generation-manifest.yaml`** — NEW `stack-seeding/manifest`
+      package (`SeedGenerationManifest` schema + `Build` projection + `Validate` + `Write`/`Parse`) + the
+      `stackseed --manifest-export` verb (`--gen-seed`/`--manifest-out`/`--manifest-max-cost`) + the
+      checked-in `presets/seed-generation-manifest.yaml` (all 3 orgs incl. AI-readiness + the file-resident
+      mother prompt + the batch config incl. the MANDATORY `max_cost_usd` ceiling + the snapshot sources +
+      a self-documenting `excludes:` block for the cache/generated-data boundary). Honesty-gated by
+      `TestManifest_CanonicalFileMatchesProjection` (checked-in body == live projection). No new dep;
+      go.mod/go.sum unchanged. rext @ `0828f7f`.
 - [ ] **S3 — Repoint the cockpit [Download manifest]** (`demo-stack/cockpit.py` + the `up-injected.sh`
       export wiring) to serve the consolidated `seed-generation-manifest.yaml` as the download (replacing the
       stories→heroes projection as the *download* target; keep the projection as the menu source).
