@@ -56,6 +56,87 @@ Writes are additive to the read stack, gated behind M5 (audit + limits + tracing
 
 ---
 
+## Goals
+
+The business + product outcomes this initiative must achieve. Every milestone below must trace to at least one of these.
+
+- **Self-serve programmatic access to org data** — an admin mints a key in Settings and pulls their own org data without a CS ticket, an SE call, or a NDA.
+- **"Connect Claude/ChatGPT in minutes" moment** — a demoable, marketable, differentiated "point your AI at your workforce data" story from an MCP URL + a key.
+- **Reduce custom-integration + Customer Success burden** — collapse the ~2-week per-customer "we'll build a one-off pipe" pattern into a public API + docs a customer eng team runs on their own.
+- **Enable partner + HRIS integrations as a distribution surface** — Workday / BambooHR / Rippling / Snowflake / Slack become reachable via a stable public contract, unlocking co-sell.
+- **Unlock AI-copilot use cases on top of Anthropos data** — a customer builds *their own* HR/L&D/hiring copilot with the Anthropic Agent SDK against our MCP, and Anthropos is the data foundation.
+- **Provisioning + assignment automation** (write track) — HRIS-driven user lifecycle, bulk-assign learning + assessments, cut manual admin work.
+- **Event-producing platform** (write track, webhooks) — `assessment.completed` / `skill.verified` / `assignment.completed` push into the customer's stack; turn Anthropos from a destination into a source-of-truth event producer.
+- **Move from closed platform to platform-with-an-ecosystem** — the surface partners + customers build against, and the wedge for a marketplace story later.
+
+---
+
+## Customer use cases
+
+Concrete jobs a real customer would run against the API + MCP. Each is tagged with persona, JTBD, value, READ/WRITE, milestone requirements, and a **FIRST-USABLE** flag = which release delivers it end-to-end.
+
+| # | Use case | Persona | JTBD (one line) | Value | R/W | Requires | FIRST-USABLE |
+|---|---|---|---|---|---|---|---|
+| 1 | Nightly export of skills/people/roles to BI | People-Ops analyst / IT data team | Pull `/v1/people` + `/v1/skills` + `/v1/roles` on cron into Snowflake / BigQuery | Replaces CSV + email; unblocks internal dashboards | R | M2 + M3 + M8-lite | **v1.0 MVP** |
+| 2 | Skill-gap / readiness view for a team or role | L&D lead / People-Ops | "% of engineering with verified Python, by team" via `/v1/reports/coverage-by-role` | Board reporting, workforce planning without opening the web app | R | M2 + M3 + M8-lite | **v1.0 MVP** |
+| 3 | Connect Claude Desktop via MCP + ask questions | Exec, hiring manager, HRBP | "Who on Product could step into a Staff PM role?" via Claude Desktop against `mcp.anthropos.work` | The AI-copilot demo moment; unique-in-market | R | M2 + M3 + M6 + M8-lite | **v1.1 (fast-follow)** |
+| 4 | Connect ChatGPT via MCP | Same as (3), ChatGPT-preferring | Same as (3) via ChatGPT once its MCP client is GA | Reaches the ChatGPT-first buyer segment | R | M2 + M3 + M6 + M8-lite | **v1.1 (fast-follow)** |
+| 5 | Wire the Anthropic Agent SDK / Claude API for a customer-built agent | Customer eng team | "Our own internal HR copilot" powered by Anthropos data via MCP tools | Highest-leverage AI story; deep lock-in | R | M2 + M3 + M6 + M8-lite | **v1.1 (fast-follow)** |
+| 6 | Self-serve API keys in Settings | Org admin | Mint / rotate / revoke a key in-app with a one-time plaintext reveal + copy | Unblocks every other use case without CS involvement | R (of own keys) | M2 + M8-lite | **v1.0 MVP** |
+| 7 | Natural-language `ask` endpoint over org data | Analyst, exec, embedded product | "How many verified Python skills across my org?" answered without SQL, streamed | Replaces internal Talk-to-Data for customer-side surfaces | R | M2 + M3 + M5-full + M7 (+ optional M6) | **v1.2** |
+| 8 | Pull a canonical report (workforce activity / growth / coverage) | Exec, board-report author | `GET /v1/reports/workforce_activity?period=quarter` | Kills screenshot-of-a-dashboard workflow | R | M2 + M3 + M8-lite | **v1.0 MVP** |
+| 9 | Provision / deactivate a user via API | IT admin / HRIS integrator | Create user on join, deactivate on leave via `POST/PATCH /v1/people` + `:deactivate` | Eliminates manual admin on employee lifecycle events | W | M2 + M3 + M5-full + W1 + M8-full | **v1.3 (Write GA)** |
+| 10 | Bulk-assign simulations / skill paths (1 → 20 000) | L&D lead, People-Ops | "Assign Manager-101 to these 500 people" via `POST /v1/assignments:bulk` async | Mass rollout in one call, not 500 clicks | W (bulk async) | M2 + M3 + M5-full + W1 + M8-full | **v1.3 (Write GA)** |
+| 11 | Sync from HRIS (Workday / BambooHR / Rippling) | HRIS integration partner or in-house IT | Nightly upsert of the roster keyed by `external_id` | Opens the partner distribution channel; the "we integrate with your HRIS" checkbox | W (bulk upsert) | M2 + M3 + M5-full + W1 | **v1.3 (Write GA)** |
+| 12 | Subscribe to webhooks (`assessment.completed`, `skill.verified`, `assignment.completed`, `user.created`) | Customer eng | Sign a URL, receive HMAC-signed events with retry | Turns Anthropos into an event-producing platform (Slack / Snowflake / HRIS listeners) | W (webhook mgmt is a write scope) | M2 + M5-full + W2 + M8-full | **v1.3 (Write GA)** |
+| 13 | Trigger an async report export | Exec / analyst | `POST /v1/reports/export` returns `{job_id, status_url}`, then a `job.completed` webhook | Long-running exports without holding the request | W (queue) | M2 + M3 + M5-full + W2 + M8-full | **v1.3 (Write GA)** |
+
+### First customer-usable release (MVP)
+
+**MVP definition.** The SMALLEST milestone set that lets a real customer admin, unassisted, go from "I have an Anthropos account" → "my script / BI tool / AI copilot is pulling my org data."
+
+**Included in v1.0 MVP:**
+- **M1** (design + auth-seam + Clerk-coupling audit — docs-only gate)
+- **M2** (API-key primitive with reads scope grammar; write scopes are declared but no write endpoints exist yet)
+- **M3** (`api.anthropos.work` + REST read layer over the M1 catalog)
+- **M5-lite** (per-key token-bucket rate limit + one `api_audit_events` row per request — carved out of full M5)
+- **M8-lite** (Integrations page with **only**: Overview, API Keys list/create/rotate/revoke, Docs tab, Quickstart banner, basic Usage chart — carved out of full M8; Jobs / Webhooks / write-scope wizard / MCP tools preview all deferred)
+- **M9-lite** (a single-page quickstart + REST reference published alongside MVP — full docs site follows)
+
+**MVP unlocks use cases 1, 2, 6, 8.** That's the "get my data out programmatically, self-serve" story — real customer value, one release.
+
+**v1.1 fast-follow — MCP.** Ship **M6** as the immediate next release. Adds use cases **3, 4, 5** — the marketable Claude/ChatGPT/Agent-SDK demo moment. This is the highest-leverage release after MVP because it converts MVP into a differentiated AI-copilot story.
+
+**Explicitly deferred out of MVP + fast-follow:**
+- **M4** (customer-facing GraphQL) → v1.2. REST covers first customers; GraphQL waits for a design-partner ask.
+- **M7** (NL `ask`) → v1.2. Own writeup calls it the "highest-risk milestone"; pentest + M5-full first.
+- **W1 / W2** (writes) → v1.3. No signed customer contract requires writes yet; let inbound MVP demand size the write track.
+- **M8-full** (Jobs, Webhooks, write-scope wizard, MCP-tools preview) → v1.3, bundled with W1/W2.
+- **M5-full** (deep quotas + distributed tracing + full error taxonomy) → v1.2, bundled with M7.
+- **M10** (formal beta → GA hardening + SLOs + pentest) → v2.0. The MVP + v1.1 releases go out under a "design partners only" flag.
+
+### Recommended sequencing change
+
+**Current dep chain has M8 downstream of M6 (`M8 depends on M6`) and treats M5 as monolithic prereq.** That structure delays first customer value: without a self-serve key-mint UI, every early customer becomes a CS ticket; and blocking on the full audit + tracing + error taxonomy work of M5 postpones a shippable read cut.
+
+**Recommended (adopted below):**
+1. **Split M8** into **M8-lite** (key CRUD + Docs + Quickstart + basic Usage — ships in v1.0 MVP alongside M3) and **M8-full** (Jobs + Webhooks + write-scope wizard + MCP-tools preview + destructive-confirm UX — ships in v1.3 with W1/W2).
+2. **Split M5** into **M5-lite** (per-key rate limit + minimal audit row — ships in v1.0 MVP inline with M3) and **M5-full** (quotas, tracing, error taxonomy — ships in v1.2, prerequisite for M7 + writes).
+3. **Promote M6** to the immediate fast-follow (v1.1) — it's the release that wins deals; don't let it sit behind M7 in scheduling.
+4. **Push M4 / M7 to v1.2** — REST + MCP cover first customers.
+5. **Bundle W1 + W2 + M8-full as v1.3 Write GA** — one coherent write release, contract-driven.
+
+**Net revised release plan:**
+- **v1.0 MVP** — M1 · M2 · M3 · M5-lite · M8-lite · M9-lite
+- **v1.1 Fast-follow** — M6 (MCP, read-only cut)
+- **v1.2** — M4 · M5-full · M7 · M9-full
+- **v1.3 Write GA** — W1 · W2 · M8-full · M6 write-tools layer
+- **v2.0 Ecosystem** — M10 (SLOs, pentest, GA)
+
+The milestone list below stays authoritative for the *contract* of each milestone (goal / scope / deliverables); the ORDER of shipping is the plan above.
+
+---
+
 ## Milestone list (sequential)
 
 **Read track (M1–M10) — original scope, ships first.**
