@@ -19,7 +19,7 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
 | **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
-| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Clerk-free via `BENCHMARK_VISUAL_BYPASS` (anonymous browse) |
+| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Keyless via the `e2e_persona` bypass (`BENCHMARK_VISUAL_BYPASS` + `NEXT_PUBLIC_E2E_AUTH`); the cockpit [Academy] link lands a hero **authenticated as a member** (M53 F6) |
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
 
@@ -97,8 +97,13 @@ image. The tooling makes this cheap-where-it-can:
   out of scope".
 - **Built serially, before `compose up`.** The two frontend builds run **one at a time, before** the stack
   starts — kept out of the parallel Go-service fan-out so the build RAM spike never overlaps anything else.
-- **Non-fatal.** A frontend build failure **warns** but never aborts the backend bring-up; re-run to retry, or
-  `DEMO_NO_UI=1` to skip.
+- **Non-fatal — actually true now (v1.10b M49 #7).** A frontend build failure **warns** but never aborts the
+  backend bring-up. The build step was always non-fatal, but `compose up` would still try to **start** a
+  frontend whose image is **absent** (a failed/skipped build) and abort the whole bring-up under
+  `set -euo pipefail` — so backend + set-dress + verify + cockpit never ran. Now an absent frontend image is
+  **scaled to 0 replicas** at `compose up` (`--scale next-web-app=0` / `--scale studio-desk=0`), so the rest of
+  the stack comes up and the demo is usable (API + cockpit); re-run to retry the UI, or `DEMO_NO_UI=1` to skip
+  it entirely (under `--no-ui` the injected override omits the frontends, so there's nothing to scale).
 
 ## The 12 GB Docker-VM prerequisite
 
@@ -120,6 +125,20 @@ image. The tooling makes this cheap-where-it-can:
 > host, run the UI tier with **only one stack resident**, or use `DEMO_NO_UI=1` and verify the local-Directus
 > serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
 > A 12 GB VM needs a **≥24 GB host** to be comfortable.
+
+### Disk headroom — a second non-fatal pre-flight (v1.10b M49 #6)
+
+Alongside the RAM check, `/demo-up` runs a **disk-headroom pre-flight** (mirrors the RAM assert: a warning,
+never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, the `demo-N-<svc>:injected` Go
+services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
+used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
+
+> **Below ~20 GB host disk free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
+> `DEMO_DISK_MIN_GIB=N`; the free-space signal is `df` on the filesystem backing Docker's data — host root as
+> the portable proxy). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
+> removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
+> tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
+> re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
 
 ## How the pk + URLs are baked (zero platform edit)
 
@@ -159,6 +178,13 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries
 > 0× prod / 31× `:39000`. Full mechanism + the failure-mode routing table (the "Platform-bound escape" row):
 > [`coverage-protocol.md`](coverage-protocol.md).
+>
+> **Re-anchored to the current source (v1.10b M49 #8).** The manifest's `pre_sha256`/`post_sha256` pin the
+> whole-file hash, and the M47 re-sync moved next-web to **v2.89.0** — so the hashes (pinned to the v1.10 ref)
+> would have made G2 **drift-refuse** the pristine current file, leaving the Studio link prod-baked. The
+> `STUDIO_URL` hunk itself is byte-identical to v1.10; only the file-level hashes moved (sibling exports drifted
+> — `AI_READINESS_URL`, the `/enterprise/*` URLs, the member-profile regexes). M49 recomputed both hashes from
+> the v2.89.0 source and verified the apply→revert cycle against it.
 
 ## Offset-origin CORS (the backend must allow the offset frontends)
 
@@ -192,15 +218,40 @@ offset frontends would still be CORS-blocked if you ran them (a known gap, not y
 CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
 and the REST-backed dashboards load.
 
-## ant-academy — native, Clerk-free, session-detached, with a documented fallback
+## ant-academy — native, keyless, session-detached, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
-launches it natively on `:3077+offset` **Clerk-free** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
-`NODE_ENV=development` flag that opens `/` and `/chapters/*` to anonymous traffic), paired with
+launches it natively on `:3077+offset` **keyless** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
+`NODE_ENV=development` flag that opens `/` and `/chapters/*` without a Clerk session), paired with
 `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip the org gate. The per-demo env is a **gitignored `code/.env.local`**
 overlay (zero academy-repo edits). Launching it natively (vs only documenting the step) resolved the overview's
 open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
-and Clerk-only, so the bypass gives anonymous Clerk-free browse with no academy-repo edits (#M19-D6).
+and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo edits (#M19-D6).
+
+> **The demo academy is AUTHENTICATED, not anonymous (v1.10b "fit-up" M53 F6 — the field-review gap close).**
+> The launcher now sets **both** halves of the academy's own `e2e_persona` cookie bypass: the **server** gate
+> `BENCHMARK_VISUAL_BYPASS=1` **and** the **client** gate `NEXT_PUBLIC_E2E_AUTH=1`. With those two set, an
+> `e2e_persona=member` cookie drives a **signed-in** context end-to-end — the server RSC resolves
+> `anonymous=false` + entitlement, and the client Clerk hooks resolve a named **`E2E Member`** identity
+> (progress / certificates / sidebar all active) — with **no real Clerk keys** (the box runs keyless; the client
+> hooks are mocked). The **presenter cockpit** sets that cookie: each hero card carries an **[Academy]** link
+> (rendered when `/demo-up` threads `--academy-base` into the cockpit) that sets `e2e_persona=member`
+> browser-side, then navigates to the academy origin. Cookies on `localhost` are **port-agnostic** (RFC 6265
+> ignores the port), so the cookie the cockpit origin (`:7700+offset`) sets is read by the academy origin
+> (`:3077+offset`) — **no academy-side route + no academy-repo edit**. So a hero who walks in from the cockpit
+> lands **authenticated as a member** (a non-anonymous academy session), not as an anonymous visitor. Without
+> the cookie the portal still opens for anonymous browse (the flags enable the bypass; the cookie chooses the
+> persona). The academy identity is the synthetic `E2E Member`, **not** the exact seeded platform hero (the
+> academy runs standalone with no platform-backend link, so it can't resolve the platform user) — the F6 bar is
+> "authenticated, not anonymous", which `member` (signed-in + org + entitled) satisfies.
+
+> **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
+> academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
+> per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —
+> the demo provisions **no** AI keys (the same AI-keys policy that keeps the `/api/ai/chat` route unexercised) —
+> so Cosmo is genuinely **absent** in a demo academy. This is intentional: the F6 acceptance makes **no**
+> `/api/ai/chat` assertion. Course content + the authenticated browse experience are the demo surface; the AI
+> assistant needs keys the demo deliberately doesn't carry.
 
 > **The native daemon is SESSION-DETACHED (the M33 "dead on a later visit" fix).** ant-academy was previously
 > launched with `nohup` alone — which does **not** detach from the launcher's process group. So when a
@@ -232,9 +283,11 @@ exact manual commands and continues, never aborting a good demo bring-up:
 ```bash
 cd stack-demo/ant-academy/code            # M26: the academy clone lives in the demo's OWN peer set (stack-demo)
 cp .env.example .env.local                 # gitignored; keeps the repo clean
-#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0, reuse platform/.env's Clerk keys (no FA token needed — FA Pro is vendored)
+#   set REQUIRE_ORGANIZATION_MEMBERSHIP=0 and NEXT_PUBLIC_E2E_AUTH=1 (M53 F6 authenticated-member session);
+#   Clerk keys are optional (keyless works — no FA token needed either, FA Pro is vendored)
 npm install
-BENCHMARK_VISUAL_BYPASS=1 npm run dev -- --port 23077   # demo-2: Clerk-free anonymous browse
+BENCHMARK_VISUAL_BYPASS=1 NEXT_PUBLIC_E2E_AUTH=1 npm run dev -- --port 23077   # demo-2: keyless
+#   then set the e2e_persona=member cookie (the cockpit [Academy] link does this) to land authenticated.
 ```
 
 `/demo-down N` stops the native academy first (it's a process, not a container, so `compose down` can't reach
@@ -251,10 +304,12 @@ them out and never false-`down`s an absent frontend (#M19-D7).
 ## Where the tooling lives
 
 All of the above is `rosetta-extensions` tooling, authored + tagged in the authoring copy and consumed per-stack
-at the **current pinned tag** (`stack-demo/rosetta-extensions @ storytelling-postfix-2` — the M19 UI tier first
-shipped at `dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`;
-the session-detach fix below lands at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
-land at `storytelling-postfix-2`):
+at the **pinned tag recorded in `.agentspace/rext.tag`** (the single source-of-truth, M49 #1 — see
+[`rosetta_demo.md`](../rosetta_demo.md) *"The pin is a file"*; current v1.10b "fit-up" pin: `fit-up-m49`).
+*Landing provenance (which historical tag first shipped each piece):* the M19 UI tier first shipped at
+`dress-rehearsal-m19`; the CORS + token-strip items were later, ≥ `dress-rehearsal-m20-fix15`/`fix17`; the
+session-detach fix below landed at `storytelling-postfix-1`; the academy stub-sweep + token-less auto-install
+landed at `storytelling-postfix-2`:
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
@@ -273,6 +328,9 @@ land at `storytelling-postfix-2`):
 - `demo-stack/detach.sh` — the shared `launch_detached` helper (`setsid`, or a `python3 os.setsid` double-fork on
   macOS) that session-detaches the host-native daemons (ant-academy **and** the presenter cockpit) so they
   survive the launching `/demo-up` session/task being reaped.
+- `demo-stack/lib/rext_tag.sh` — the shared reader for the `.agentspace/rext.tag` consumption-tag source-of-truth
+  (v1.10b M49 #1); both `/demo-up` and `ensure-clones.sh` source it to resolve the pinned rext tag. Picks the first
+  non-comment / non-blank token, strips a trailing CR so a CRLF-edited pin still resolves as a clean git ref.
 
 ## What's out of scope (the user-owned follow-up)
 

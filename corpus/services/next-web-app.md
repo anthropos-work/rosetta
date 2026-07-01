@@ -27,7 +27,7 @@
 
 | App | Package | Port | Product / purpose | Dockerized? |
 |-----|---------|------|-------------------|-------------|
-| **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard | ✅ (the only one) |
+| **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard, **AI-readiness** (the member 3-step onboarding `components/ai-readiness/` + the manager dashboard `app/.../ai-readiness/`; gated on PostHog `flag_ai_readiness` + the org `ai_readiness` setting — see [`ai-readiness.md`](ai-readiness.md)) | ✅ (the only one) |
 | **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels | ❌ Vercel-only |
 | **Integration** | `@anthropos/integration` | 3002 | Public-website embed (WordPress via proxy rewrites, SEO/Prerender) | ❌ Vercel-only |
 | **Maintenance** | `@anthropos/maintenance-app` | — | Downtime/outage placeholder UI | ❌ |

@@ -91,24 +91,26 @@ alias (a family id — genes sharing ONE underlying value), source_hint, note
 
 The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are unique across the DNA.
 
-**The 6-repo / 55-gene map** (the committed `secret-dna.json`, version `stage-door-m30`, profile `graphql`):
+**The 6-repo / 56-gene map** (the committed `secret-dna.json`, version `stage-door-m30`, profile `graphql`):
 
 | Repo | Target file | Genes | Notable keys |
 |---|---|---|---|
-| **platform** | `.env` | 28 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants, `DIRECTUS_TOKEN`, the LiveKit pair, `ENVIRONMENT`, `PUBLIC_HOST` |
+| **platform** | `.env` | 29 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants, `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
 | **app** | `.env` | 5 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) |
 | **sentinel** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example` |
 | **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
 
-Status split: **39 required · 8 optional · 8 waived**. Of the required genes, **12 are `critical`** (the
+Status split: **40 required · 8 optional · 8 waived**. Of the required genes, **13 are `critical`** (the
 gate denominator) and 27 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
 no required+critical gene is rejected at load (else `Critical` would score a hollow 100% over zero genes),
 the same defence the data-DNA + alignment frameworks carry. (The M30 field-bake reclassified
 `sentinel/DB_CONNECTION` from critical/required to `waived-config` — it is compose-injected, never read from
-a `.env`; this shifted the split from 40/8/7 + 13-critical to 39/8/8 + 12-critical without weakening the
-guard, which still holds with 12 required+critical genes.)
+a `.env`; this shifted the split from 40/8/7 + 13-critical to 39/8/8 + 12-critical. **M49 #4** then added
+`platform/INVITATION_HMAC_SECRET` as critical/required — the `app` exits early when it is unset
+(`invitations.NewTokenManager` errors and `main` returns: the silent `app Exited (0)` class) — landing the
+split at **40/8/8 + 13-critical**; the anti-vacuous guard still holds.)
 
 ### The per-repo target-file map (where `provision` writes)
 
@@ -240,16 +242,38 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
 present-critical/total-critical (unweighted), gate = `Critical == 1.0` — plus a per-repo rollup ("repo X is
 short key Y"). It reuses the data-DNA `ratio()` empty-denominator + anti-vacuous-100 guards.
 
-The check is **stack-type-aware** (`--demo`): on a **demo** stack the Clerk credentials are **not** sourced
-from the secret dir — Clerkenstein **mints** them at bring-up (PK_DEMO + an `sk_test_<demo>` secret; see
-[`clerkenstein.md`](../services/clerkenstein.md)). So a demo's coverage treats the **minted Clerk family**
-as satisfied even when the source lacks them (`secretdna.MintedKeys`: `CLERK_SECRET_KEY`,
-`CLERK_PUBLISHABLE_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`,
-`CLERK_WEBHOOK_SECRET`, `CLERK_JWT_KEY`) — otherwise a perfectly-good demo would false-fail on exactly the
-keys it is designed *not* to carry. This is a values-blind overlay on `Measure` (presence by gene NAME, never
-a value); a **dev** stack still requires the real Clerk keys in the source. The pre-flight `check` is wired
+The check is **stack-type-aware** (`--demo`): on a **demo** stack two families of keys are **not** sourced
+from the secret dir, yet count as satisfied (`secretdna.demoSatisfied` = `MintedKeys ∪ DemoGeneratedKeys`):
+
+- **The minted Clerk family** — Clerkenstein **mints** them at bring-up (PK_DEMO + an `sk_test_<demo>`
+  secret; see [`clerkenstein.md`](../services/clerkenstein.md)) — `secretdna.MintedKeys`: `CLERK_SECRET_KEY`,
+  `CLERK_PUBLISHABLE_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`,
+  `CLERK_WEBHOOK_SECRET`, `CLERK_JWT_KEY`.
+- **The demo-auto-generated family (M49 #4)** — `secretdna.DemoGeneratedKeys`: `INVITATION_HMAC_SECRET`. It's
+  a **per-deployment** value (not a shared secret), so the source never carries it; a demo is non-prod, so
+  `up-injected.sh` generates a **throwaway** value (`openssl rand -hex 32`, values-blind, idempotent) into the
+  demo base env at provision. Without the gene + overlay, the `app` exited silently (`NewTokenManager` errors
+  when it's unset) — now the pre-flight catches a genuine absence on **dev** while the demo self-provisions.
+
+Otherwise a perfectly-good demo would false-fail on exactly the keys it is designed *not* to carry. This is a
+values-blind overlay on `Measure` (presence by gene NAME, never a value); a **dev** stack still requires the
+real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-flight `check` is wired
 **non-fatally** into `/dev-up` + `/demo-up` (warn standard / fail critical — the
 [`verification.md`](verification.md) convention).
+
+> **AI-provider keys policy — DECIDED (v1.10b "fit-up" M50): documented-as-absent.** The demo's content
+> believability does **not** need live AI — every seeded surface (the heroes, the roster, languages,
+> certifications, the Workforce dashboards, the verified-skill chain) renders from **seeded structural data**,
+> not a live model call. So the AI-provider keys (`OPENAI` / `ANTHROPIC` / `MISTRAL` / `ELEVENLABS` / the
+> `LIVEKIT` voice pair) stay **absent** from the demo secret source — none becomes a throwaway/sandbox demo
+> value, and **no real key is ever provisioned** (this decision is itself **values-blind**: it provisions
+> nothing). The AI-dependent surfaces are therefore **inert-by-design** unless an operator supplies their own
+> sandbox/throwaway keys into the source: the **AI-simulation voice** engine (LiveKit), the **ant-academy
+> `/api/ai/chat`** assistant (`OPENAI_API_KEY`/`ANTHROPIC_API_KEY`), and the **M45 AI batch-generation**
+> (`ai v1.40.1`) all no-op gracefully — they are not on any demo gate path (the M42 coverage gate is MET on
+> both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
+> demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
+> the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
 
 ### The values-blind safety statement (the inviolable invariant)
 
@@ -283,7 +307,7 @@ non-prod stack, values-blind.
 
 ## Status
 
-M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/55-gene map)
+M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/56-gene map)
 + the two-tier keep-listed `diff` gate, **113 Go tests** (hermetic, `-race` clean). M28 adds the `provision`
 engine (alias-mapped per-file writes, copy-if-absent + `--force`, N=0-guarded, the `DIRECTUS_TOKEN`
 non-rearm regression pinned) + the demo-aware `check`, wired non-fatally into `/dev-up` + `/demo-up`

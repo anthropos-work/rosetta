@@ -1,0 +1,54 @@
+{
+  "date": "2026-07-01",
+  "time": "18:00",
+  "code": {
+    "source_files": 0,
+    "source_lines": 0,
+    "test_files": 0,
+    "test_lines": 0,
+    "total_code_lines": 0
+  },
+  "docs": {
+    "knowledge_files": 0,
+    "knowledge_lines": 0,
+    "plan_files": 0,
+    "plan_lines": 0,
+    "journal_files": 0,
+    "journal_lines": 0,
+    "total_doc_files": 0,
+    "total_doc_lines": 0
+  },
+  "tests": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "suites": 0,
+    "runner": "none",
+    "test_to_source_ratio": 0.00,
+    "tests_per_source_file": 0.0
+  },
+  "git": {
+    "total_commits": 635,
+    "first_commit": "2026-01-21",
+    "latest_commit": "2026-07-01",
+    "project_age_days": 160,
+    "commits_last_7d": 193,
+    "commits_per_day": 4.0,
+    "lines_added": 96093,
+    "lines_removed": 20805,
+    "churn_pct": 22,
+    "merge_commits": 77,
+    "ai_assisted_commits": 551
+  },
+  "structure": {
+    "milestones_done": 0,
+    "milestones_planned": 0,
+    "milestones_total": 0,
+    "total_decisions": 15,
+    "source_modules": 0
+  },
+  "output": {
+    "velocity_loc_day": 0,
+    "total_lines": 0
+  }
+}

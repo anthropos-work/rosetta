@@ -120,3 +120,6 @@ makes the `$0` cache-hit reseed believable rather than a wall of duplicate names
   is extended with.
 - [`idempotency.md`](../idempotency.md) — the broader bring-up re-run safety contract the `$0` reseed
   slots into.
+- [`seed-manifest-spec.md`](seed-manifest-spec.md) — the consolidated seed+generation manifest (v1.10b M52):
+  it inlines the mother prompt this cache keys on but **EXCLUDES the cache itself** (intent, not derived
+  data); §5 states the cache-key integrity rule the M52 prompt-extraction preserves.

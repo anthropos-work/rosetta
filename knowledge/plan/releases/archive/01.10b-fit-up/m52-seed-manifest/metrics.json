@@ -1,0 +1,36 @@
+{
+  "milestone": "M52",
+  "slug": "seed-manifest",
+  "milestone_shape": "section",
+  "sections": ["S1 extract mother prompt (go:embed)", "S2 consolidated seed-generation-manifest.yaml + --manifest-export verb", "S3 cockpit [Download] repoint", "S4 NEW corpus/ops/demo/seed-manifest-spec.md"],
+  "rext_tag": "fit-up-m52",
+  "rext_tag_sha": "36d7430",
+  "tests": {
+    "rext_go_stack_seeding_total": 786,
+    "rext_go_manifest_pkg_coverage_pct": 100.0,
+    "rext_python_demo_stack_total": 313,
+    "rext_python_cockpit_suite": 71,
+    "rext_ts_e2e_unit": 33,
+    "delta_vs_m51_note": "M51 baseline: rext_go_stack_seeding_total=749, demo_stack_python=299 (M51 touched no Python). M52 build+harden+close: Go +37 (749->786) incl. the NEW manifest pkg (schema/Build/Validate/Write/Parse, 100% stmt) + go:embed extraction + the --manifest-export CLI verb, plus close's +5 (multi-story-merge, empty-reserved cache golden, gen-axis honesty-teeth, stripLeadingComments fence, F1 dedup re-points). Python +14 (299->313) = the cockpit --seed-manifest endpoint + fallback tests incl. close's empty-manifest-falls-back. TS unchanged (M52 touched no TS).",
+    "flake_count": 0,
+    "flake_gate": "5/5 Go (blueprint + manifest + seeders + cmd/stackseed, count=1, -shuffle=on, sequential) + 5/5 Python (cockpit suite, 71 passed each)"
+  },
+  "coverage": {
+    "manifest_pkg": "100.0% stmt (M52 NEW package)",
+    "cmd_stackseed_M52_funcs": "doManifestExport 97.1% / mergeGenerationBatches 100%",
+    "cockpit_py": "98%",
+    "blueprint": "97.2% (residual is pre-M52 out-of-scope error paths)"
+  },
+  "close": {
+    "shape": "section (Completeness Ledger)",
+    "findings": "12 total: 1 scope (Fate-2 confirmed, no edit) + 4 code-quality (0 must-fix, 2 should-fix F1/F2, 2 nice-to-have F9/F10) + 4 adversarial (F3/F4/F5/F6, Fate-1) + 1 docs (F7) + 1 regression (F8) + 3 decision-triage (D1/D2 blend, D3-D5 archive)",
+    "fixes_landed": "F1 export blueprint.BatchesForStory/StoryAnnotationByID/NormalizeVantage — dedup the 3-way projection helper (manifest+seeders consume one source); F2 teeth-test description typo; F3 second cache-key golden for the empty-ReservedNames {{else}}(none) branch; F4 mergeGenerationBatches WARNS on orphan gen-story id + multi-story merge test; F5 cockpit treats empty/blank seed-manifest as absent (fallback) + test; F6 generation-axis honesty-teeth test; F7 reconcile stale cockpit-spec For-PMs prose; F8 stripLeadingComments unit fence; F9 drop vestigial Build doc-param; F10 confirm SnapshotSources scaffolding intentional (no code change)",
+    "rext_close_commits": ["c62623d F1 dedup", "99dc098 F2-F9 Go", "36d7430 F5 cockpit"],
+    "rext_tag_note": "fit-up-m52 cut at close on 36d7430 (the M52 HEAD past the close doc-fixes; M50/M51 tag-at-close precedent). Consumption-clone re-pin is M53's push-gated concern.",
+    "rosetta_close_commit": "e523d93 (Phase 7 doc fixes + decision ref-tags + review artifacts)",
+    "deferral_audit": "GREEN (DEF-M52-01 up-injected.sh end-to-end glue = Fate-2 confirmed -> M53 owns the cold /demo-up cockpit-download assert; 0 repeats, 0 blockers)"
+  },
+  "carry_forward": "up-injected.sh end-to-end glue (manifest export + --seed-manifest wiring) -> M53 cold-rebuild (Fate-2, no unit-test surface, exercised by the from-cold /demo-up); consumption-clone re-pin to fit-up-m52 + .agentspace/rext.tag bump -> M53 (push-gated KEEP)",
+  "notes": "Docs (rosetta seed-manifest-spec.md + reconciled cross-refs) + rext tooling (manifest pkg/verb/prompt-extract/cockpit repoint). No new dep in either stack (go:embed is stdlib). The single-file goal's core value — an auditable manifest that can't silently drop intent — was hardened at close: F4 makes an orphan gen-id VISIBLE (was silent), F3 fences both branches of the cache-key golden, F1 removes the projection-drift risk the honesty gate couldn't catch.",
+  "last_updated": "2026-07-01"
+}

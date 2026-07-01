@@ -157,6 +157,13 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   `.agentspace/.batchcache/batch-${hash}/member-${i}.json` store keyed by the **MOTHER prompt** + the
   **taxonomy capture version** (invalidate on re-replay), atomic `.tmp`→rename writes, the `.lock` fence — so
   an unchanged batch descriptor **re-seeds byte-identical at $0**. Pairs with `ai-generation-spec.md`. (v1.10 M45)
+- [`seed-manifest-spec.md`](seed-manifest-spec.md) — the **consolidated single-auditable seed+generation
+  manifest** (v1.10b "fit-up" M52): ONE checked-in `seed-generation-manifest.yaml` inlining the whole demo-data
+  intent — the population (all 3 orgs + heroes), the file-resident **mother prompt** (extracted from the Go
+  const to `blueprint/prompts/default_batch_prompt.tmpl`), the batch config (the MANDATORY `max_cost_usd`
+  ceiling + concurrency + re-roll rules), and the snapshot sources; **cache + generated data EXCLUDED**. A
+  PROJECTION of the canonical presets (honesty-gated so it can't drift), emitted by `stackseed
+  --manifest-export`, served by the cockpit's **[Download seed manifest]**. (v1.10b M52)
 - [`../../architecture/alignment_testing.md`](../../architecture/alignment_testing.md) § "The data dimension" —
   the **data-DNA**: how a seeder's output is conformance-gated against the platform schema, and drift-detected.
   With snapshots, coverage now reads **100%** (both formerly-`waived` surfaces promoted to `snapshot-seeded`).

@@ -85,6 +85,7 @@ internal/
 
 * **Talk to Data** (v1.266.0+, May 2026): SSE-streaming Q&A on the platform's data. Bedrock-backed Anthropic streaming, SQL validation sandbox in `internal/askengine/sandbox.go`, business rules in `internal/askengine/rules.md`. Has its own conversation table and rate-limiting.
 * **Workforce analytics** (v1.266.2): Skill + sim aggregations across org members with date filtering.
+* **AI Readiness** (v1.266+, the `internal/workforce` subsystem): org-level AI-capability diagnostics — a 3-step onboarding/evaluation (skill-mapping 30 → simulation 40 → interview 30) yielding a per-member score + archetype, an org **manager dashboard** (funnel + Knowledge×Usage matrix + per-team/person drill-down), **org-gated** via `organization_settings.ai_readiness`, with persisted LLM diagnosis narratives. Engine: `internal/workforce/ai_readiness.go` + `readiness_steps.go` + `readiness_narrative.go`; GraphQL `graph/schemas/ai_readiness.graphqls`; ~10 `/api/workforce/ai-readiness*` REST handlers + an `ai_readiness_refresh` worker task; 9 `ai_readiness_*` ent tables. **Full doc: [`ai-readiness.md`](ai-readiness.md).**
 * **Hiring talk-to-data** (`feat/hiring-talk-to-data` branch): Variant scoped to hiring workflows.
 * **Bedrock task role policy statements** (v1.267.1): IAM additions for Bedrock model access from the prod ECS task role.
 * **Company context (M1/M2)** (`feat/company-context-m1m2` branch): Org-level context propagation through AI calls.

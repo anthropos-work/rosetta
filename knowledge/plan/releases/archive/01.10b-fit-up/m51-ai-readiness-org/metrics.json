@@ -1,0 +1,58 @@
+{
+  "milestone": "M51",
+  "slug": "ai-readiness-org",
+  "iteration_protocol": "corpus/ops/demo/coverage-protocol.md",
+  "gate": {
+    "metric": "(failingSections, escapes) manager-vantage on the 3rd org (Northwind Aviation), frontier-exhausted, on a fresh demo-up",
+    "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
+    "met": true
+  },
+  "iters_total": 9,
+  "tiks": 8,
+  "toks": 1,
+  "current_metric": {
+    "failingSections": 0,
+    "escapes": 0,
+    "personaFailures": 0,
+    "notReachedPages": 0,
+    "reachable": 70,
+    "cappedAtFrontier": false,
+    "gateMet": true,
+    "baseline_failing": 6,
+    "delta_from_baseline": -6
+  },
+  "qualitative_gate_conditions": {
+    "dashboard_enabled": true,
+    "pct_all_3_complete": 78.4,
+    "hero_started": true,
+    "hero_completed": true,
+    "cycle_status": "closed",
+    "frozen_snapshots": 199,
+    "funnel_stage_counts": {"stage1": 22, "stage2": 21, "stage3": 156},
+    "note": "iter-09 (closed-fixed, GATE MET) applied the user-chosen run-6 APP READ-PATH DEMO-PATCH (option (c) from the iter-08 user-blocker): a new app injection demo-patch (app-aireadiness-snapshot-loadmembers) that bounds the unbounded loadMembers(orgID, \"\") whole-org hydration in buildResponseFromSnapshots (the frozen AI-readiness read path) to the ~199 snapshot users via the existing bounded sibling loadMembersByUserIDs — a PURE perf optimization (data-identical: the members map is keyed+looked-up by snapshot UserID), scoped to the snapshot read path. Authored via the app-targetrole-authz-skip precedent (pinned manifest + rext-owned apply-*.sh helper mirroring the swap + up-injected.sh inject-loop wiring). The cheap dual-endpoint probe CONFIRMED the fix: the frozen ?cycle=<closed> GET went 180s-timeout -> 19ms and the dashboard renders the full funnel (199 members, 78.4% stage-3). Gated manager sweep #1: 5 -> 1 (the 1 residual a MANIFEST false-fail — the ai-readiness-funnel header is one of two mutually-exclusive strings, 'Steps completion' link OR 'Stage breakdown' label, never both; the manager mode always renders 'Steps completion'). Harness fix (drop the impossible 'Stage breakdown' from the descriptor, keep the load-bearing Stage 1/2/3 + funnel-header proof). Sweep #2: (0,0), persona 0, escapes 0, frontier EXHAUSTED, reachable 70, gateMet=true, on a fresh demo-up. rext tagged fit-up-m51 (3733523); consumption clone re-pinned to the tag."
+  },
+  "last_iter": "iter-09",
+  "gate_met_iter": "iter-09",
+  "rext_tag": "fit-up-m51",
+  "tests": {
+    "rext_go_stack_seeding_total": 749,
+    "rext_go_seeders_pkg": 382,
+    "rext_go_seeders_pkg_coverage_pct": 97.6,
+    "rext_ts_e2e_unit": 33,
+    "delta_vs_m50_note": "M50 baseline rext_go_stack_seeding_total=719 seeders_pkg=349 cov=97.4%. M51's iters + 5-pass final harden + close added the 3 AI-readiness seeders' test suites (config/funnel/harden) → +30 Go top-level tests (719→749) and lifted seeders coverage 97.4→97.6%. Close itself added +2 Go (C4 sim-ref co-derivation invariant + T1 config-before-funnel resolved-DAG integration) + a NEW TS unit spec (T2 section-assert.ts, 13 no-browser verdict-branch tests → e2e unit 20→33).",
+    "flake_count": 0,
+    "flake_gate": "5/5 Go (seeders + cmd/stackseed, count=1, sequential) + 5/5 TS (both unit specs, 33 passed each)"
+  },
+  "close": {
+    "gate_outcome": "closed-on-gate (M42 manager-vantage (0,0) frontier-exhausted on the 3rd org, iter-09)",
+    "iters": 9,
+    "tiks": 8,
+    "toks": 1,
+    "findings": "2 scope (S1 delivers-UNMET Fate-1 + S2 academy-F6 repeat-defer, BLOCKING) + 5 code-quality (0 must-fix; C1/C3 fixed, C2/C5 accept-doc, C4 refactor+test) + 5 docs (D1–D5) + 2 tests (T1/T2) + 1 decision-triage",
+    "fixes_landed": "S1 3rd AI-readiness story authored in stories-spec.md (delivers MET); C1 --reset to_regclass guard (+ the Conn.QueryRow build-bug fixed); C3 stale comment; C4 shared aiReadinessSimRefs helper + co-derivation invariant test; C2/C5 accept-comments; D2 seeding-spec M51 entry; D3 ai-readiness.md loadMembers/M314b/closed-cycle finding; D4 CLAUDE.md index; D5 2→3-stories correction; T1 config-before-funnel resolved-DAG integration test; T2 section-assert.ts 13-test no-browser unit spec",
+    "rext_close_commit": "1e958ac (authoring main; tag fit-up-m51 @ a23f38d unchanged — close commit sits past the tag, M50 tag-at-gate precedent; re-tag is a push-gated / M53 concern)",
+    "deferral_audit": "RED→CLEARED (academy F6 repeat-defer fated LAND-NEXT → M53, Fate-3, user-decided; 4 other items clean)"
+  },
+  "carry_forward": "academy F6 (course content + hero menu-link + non-anon session) → M53 (Fate-3, LAND-NEXT — the cold rebuild seeds+verifies academy content); COLD reset-to-seed acceptance → M53 (Fate-2); re-pin consumption clone to the release rext tag + .agentspace/rext.tag bump → M53 (push-gated KEEP); M314b (prod frozen-read whole-org hydration) = documented prod-finding in coverage-protocol.md (not a demo fix); standing cross-release backlog stays in roadmap-vision.md",
+  "last_updated": "2026-07-01"
+}

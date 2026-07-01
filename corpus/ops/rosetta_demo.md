@@ -11,8 +11,19 @@
 - **The tooling (gitignored locally):** `stack-demo/rosetta-extensions/demo-stack/` — the `rosetta-demo` CLI,
   `up-injected.sh`, `migrate-demo.sh`, `inject/`.
 - **The clone-role/tag model:** the authoring copy lives at `.agentspace/rosetta-extensions/` (build/test/tag the
-  tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`
-  (current post-v1.9 demo-stack/set-dress tag: **`storytelling-postfix-1`**).
+  tooling there); the demo stack consumes it at a pinned tag as `stack-demo/rosetta-extensions @ <tag>`.
+- **The pin is a file, not prose — `.agentspace/rext.tag` (the single source-of-truth, M49 #1).** One canonical
+  place declares which tag a demo consumes, read by **both** the `/demo-up` skill (it checks the consumption clone
+  out at this tag) **and** `ensure-clones.sh` (which reads the same file + logs/warns the consumed-vs-pinned tag at
+  bring-up — non-fatal). It is a bare one-line tag string (blank lines, `#` comments, and CRLF line endings
+  tolerated — the reader strips a trailing carriage return so a Windows-edited pin still resolves as a clean git
+  ref, M49 harden). It lives in the
+  gitignored `.agentspace/`, so it's a **per-box** pin; the release's canonical value is recorded here so a fresh
+  box recreates it (**current v1.10b "fit-up" pin: `v1.10.1`** — the release tag rolled at the M53 cold-rebuild
+  acceptance gate, rolling up `fit-up-m47..m52` + the M53 academy F6 commit; supersedes the mid-release
+  `fit-up-mNN` milestone pins). This retires the earlier scattered prose pins
+  (which had drifted: `storytelling-postfix-1` here vs `storytelling-postfix-2` in the skill + the frontend-tier
+  doc) — there is now exactly one read path.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
   and the generic `/stack-list` drive that tooling (the dev peer is `/dev-up` / `/dev-down`).
 - **The secrets:** [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md) provisions the stack's
@@ -50,13 +61,22 @@
    - `make -C stack-demo/platform init` clones every `repos.yml` repo as a sibling into `stack-demo/`
      (skip-if-present — the platform's own idempotent clone loop), plus `make init-studio` for `cms`;
    - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json`.
-2. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
+2. **secret pre-flight + provision** (the M28/M30 step, before the heavy build): the demo-aware
+   coverage pre-flight reads the secret source (`.agentspace/secrets`) **directly** (it needs no `.env`
+   present yet), then `/stack-secrets` **provisions** `stack-demo`'s per-repo `.env` from it (values-blind)
+   and repoints the demo's base env (`BASE_ENV`) at the provisioned `stack-demo/platform/.env`.
+   **The `.env`-presence guard runs HERE — *after* provision (M49 #3), not after `ensure-clones`** — so a
+   `stack-demo`-only box (where `ensure-clones` could not seed the `.env` from an absent `stack-dev`)
+   provisions its `.env` from `.agentspace/secrets` first, instead of aborting prematurely. A box with
+   **neither** a `stack-dev` seed **nor** a usable secret source aborts loud here (the genuine
+   unprovisionable case).
+3. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
    `stack-demo/<svc>`; the two frontends build from `stack-demo/next-web-app` + `stack-demo/studio-desk`;
    the non-Clerk services (sentinel/storage/roadrunner/graphql) build from `stack-demo`'s clones via the
    compose `build.context` (the compose dir `PLAT` is `stack-demo/platform`, so the relative contexts
    resolve against `stack-demo`). **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
    built images (which could carry dev WIP), even when dev is up; opt back in with `DEMO_REUSE_DEV_IMAGES=1`.
-3. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
+4. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
    the shared `stack-demo/<svc>` clone is the COPY's SOURCE and stays git-clean.
 
 > **The manual `rosetta-demo up` verb** is the minimal/infra-only path — it does **not** call

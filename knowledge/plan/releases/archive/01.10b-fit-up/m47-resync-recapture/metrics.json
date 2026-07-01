@@ -1,0 +1,32 @@
+{
+  "milestone": "M47",
+  "slug": "resync-recapture",
+  "release": "v1.10b \"fit-up\"",
+  "shape": "section",
+  "branch": "m47/resync-recapture",
+  "closed": "2026-06-29",
+  "theme": "Foundation milestone of the v1.10b 'fit-up' backfill. Intended as a heavy 're-sync the ~5-week-stale clones to current prod + recapture the snapshot + re-validate the M201 false-negatives'. KEY FINDING: the clones were NOT stale — M47 measured them current (next-web @ v2.89.0, every repo <=2 behind; the member-AI-readiness feature present in app v1.315), so the re-sync was a trivial `make pull` and the flagged big-unknown risk evaporated. The genuine stale surface is the rosetta corpus (AI-readiness undocumented) -> M48. Code deliverable: pg.NormalizeDSN (sslmode no-verify->require, applied at the Connect choke point) so the wired `postgres` MCP DSN works as a primary-read capture `--dsn` (demo-up #2) — proven end-to-end by a live dry-run + the full recapture. source.go/cmd/stacksnap already supported --dsn->primary-read (no change, D2). The up-injected.sh auto-capture wiring was DESCOPED per user (no new entry point, D3): capture stays the existing operator/agent step, now turnkey. All 3 snapshot surfaces recaptured from current prod; all schema digests UNCHANGED (clean in-place refresh). Tooling + docs only — ZERO platform-repo edits.",
+  "scope_status": "all sections S1-S6 Done (Fate 1). One conscious scope revision (D3, up-injected.sh auto-capture descoped per user — capability still delivered). Zero escape-hatch deferrals.",
+  "code_location": "ext (code-of-record, SEPARATE repo, the tag IS the record): rosetta-extensions @ tag fit-up-m47 (HEAD f30194c). rosetta: m47/resync-recapture merged --no-ff into release/01.10b-fit-up at close (the corpus doc-half: snapshot-cold-start.md update + the milestone planning archive + the design + premise corrections).",
+  "code_diff": "ext: stack-snapshot ONLY — pg/pg.go (+NormalizeDSN + normalizeURLSSLMode + normalizeKeywordSSLMode, applied at Connect) + pg/pg_test.go (+TestNormalizeDSN, 9 table cases incl. 2 adversarial). NO go.mod/go.sum change (0 new deps). rosetta: corpus/ops/snapshot-cold-start.md (the M47 MCP-configured-DSN section + Option 2b) + the plan files (overview/progress/decisions/spec-notes/metrics/retro + roadmap/state/roadmap-vision/context premise corrections) + the v1.8 archive-move chore (on main).",
+  "go_test_funcs": {
+    "by_module": {"alignment": 52, "clerkenstein": 270, "stack-seeding": 706, "stack-snapshot": 364, "stack-secrets": 160},
+    "total": 1552,
+    "counting_method": "top-level 'func Test...' + 'func Fuzz...' across all _test.go per rext Go module (ground-truth grep at tag fit-up-m47).",
+    "baseline_v1.10_close": {"stack-snapshot": 363, "total": 1551},
+    "delta": "stack-snapshot 363 -> 364 (+1): TestNormalizeDSN (9 table cases). All other modules UNCHANGED (M47 touches stack-snapshot/pg ONLY)."
+  },
+  "coverage": "n/a — no harden pass for this section milestone (the touched surface is one pure function with 9 table cases + a live end-to-end dry-run proof).",
+  "benchmarks": "n/a — no performance-sensitive hot path in scope.",
+  "flake_count": 0,
+  "flake_gate": "PASS — pg suite 5x sequential shuffled (go test ./pg/ -count=1 -shuffle=on): 5/5 ok. go vet + gofmt clean; stack-snapshot build green.",
+  "snapshot_recapture": {
+    "source": "primary-read over the wired postgres MCP DSN (sslmode normalized), public-only firewall (AssertPublicOnly)",
+    "directus": {"tables": 14, "rows": 11986, "digest": "ea2e187a1605", "schema_unchanged": true},
+    "sim-embeddings": {"tables": 4, "rows": 1490, "digest": "10146f281304", "schema_unchanged": true},
+    "taxonomy": {"tables": 10, "rows": 330261, "digest": "c75ce94d6a80", "schema_unchanged": true},
+    "note": "All 3 digests unchanged vs the prior cache -> no capture-version bump -> the M52 batch-cache key is unaffected."
+  },
+  "rext_tag": "fit-up-m47",
+  "notes": "Consumption-clone (stack-demo/rosetta-extensions) re-pin DEFERRED: needs the tag pushed to origin (tracked with the release's other pending pushes) + the sslmode fix only affects capture (the agent step), not the consumed bring-up/replay tooling. KB-47-01 (snapshot-cold-start.md MCP-not-a-source stance) resolved in S6."
+}

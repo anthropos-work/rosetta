@@ -139,6 +139,20 @@ terse exception). The manager vantage has **two manager-only fan-outs** (`/user/
 (`/sim/<slug>`, `/skill-path/<slug>(/chapter)`) because the manager nav links the Library — so the manager
 `SAMPLE_RULES` are a **superset** (the 2 fan-outs + the 2 library families), or the crawl explodes + times out.
 
+> **The manager manifest is ORG-CONDITIONAL (v1.10b "fit-up" M53 AB4).** The `/enterprise/workforce/ai-readiness`
+> page (its two descriptors + its seedPath) is a **showcase-org-only** prime: the 199 frozen AI-readiness
+> snapshots seed only for **Northwind Aviation** (the M51 showcase org, a `closed` cycle), so the dashboard is
+> LEGITIMATELY empty on any base-Workforce org (Cervato / Solvantis) — asserting it there is a false-fail.
+> `manifestFor(vantage, expectedOrg)` therefore returns the full **`MANAGER_MANIFEST`** (which primes + asserts
+> the AI-readiness page) only when `expectedOrg` contains `AI_READINESS_SHOWCASE_ORG` (`'Northwind Aviation'`,
+> case-insensitive substring); for any other manager org (or an empty/undefined org) it returns
+> **`MANAGER_MANIFEST_BASE`** — the same surface MINUS the AI-readiness seedPath + descriptor. `coverage.spec.ts`
+> threads `COVERAGE_EXPECTED_ORG` in. The employee manifest is org-independent. This fixed an M51 regression: an
+> unconditional AI-readiness seedPath (M51 iter-05) had silently broken the M50 base-org manager gate
+> (`dan-manager` @ Cervato) — surfaced only by M53's from-cold both-vantage assertion. The page's real proof
+> (the funnel renders from real seeded data) still holds on the showcase org (Northwind), so the split removes a
+> false assertion, not a real one.
+
 #### The documented-exception table (where 0/1 is legitimately correct)
 
 | Vantage | Page · section | Exception | Reason |
@@ -181,6 +195,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | **Platform-bound escape (no per-URL override)** | a baked link host is hardcoded / behind a coarse mode-flip with no `NEXT_PUBLIC_<thing>_URL` knob (e.g. next-web's `STUDIO_URL`) — the env-rewrite row above does NOT apply | the **demo-patch tool** (`demo-stack/patches/demopatch` + a content-anchored manifest, M42m iter-03): source-patch the demo's **EPHEMERAL gitignored clone** before the build to read `NEXT_PUBLIC_<thing>_URL` (a behavior-identical fallback ternary kept), then **trap-revert** after the image bakes — CANONICAL repos NEVER touched (6 guards: hard path-assert demo-clone-only, drift-refuse, never-commit, idempotent, self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert) with the offset value in the `.env.local` overlay; default-on + non-fatal (`DEMO_NO_PATCH=1` opts out). The clone is left git-clean; `ensure-clones.sh` **R1** pristine-reverts a crash-left patch + **R1b** sweeps a crash-left tooling `.dockerignore` (byte-identical + untracked guards). Resolved the Studio `studio.anthropos.work` escape demo-only (139→0). | re-build the frontend (the patch bakes into the image; revert is automatic) |
 | **Cross-port demo-local surface blank / login-loops / wrong-eject** (studio-desk class, v1.10 postfix) | a demo-local link to a **different port** than next-web (e.g. "Anthropos Studio" → studio-desk `:9000+offset`) doesn't render the authenticated home for the **logged-in hero** — it opens a blank `/undefined`, a dead `:3000` redirect-loop, a `/login` loop, or ejects to `WEB_APP_URL` (the non-admin redirect when the hero's membership doesn't resolve) | **authenticate via Clerkenstein, never bypass**: studio-desk drives its **own** fake-FAPI handshake (per-app — the cross-port `__session` cookie is **not** needed; the FAPI holds the active seat server-side) verified networklessly via `CLERK_JWT_KEY`. The **injection override** (`gen_injected_override.py`) wires the runtime `CLERK_*` (← `DESK_CLERK_*` minted by `up-injected.sh`) + pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the offset next-web (the requireAuth fallback). For the **admin gate** (`checkEnterpriseAndAdmin` reads the fake BAPI's `getOrganizationMembershipList`), make the fake BAPI **roster-aware** (`cmd/fake-bapi` reads the same `FAKE_FAPI_ROSTER` + seeds each hero's `(org, user)→org_role`) so a manager passes and an employee is correctly redirected. The harness gate is closed by the crawl's **cross-port FOLLOW** (`crawl.ts` `onCrossPortFollow` → `coverage.spec.ts`) **in the logged-in context**: a blank/login-loop/un-offset-`:3000`/eject destination FAILS the gate | re-up (the roster re-seeds + the override re-emits, no rebuild) for the env/BAPI; **clear the cached image** (`docker image rm demo-N-studio-desk`) only to re-bake a stale pk/offset |
 | **Org-scale grid perf wall (slow GraphQL, not empty)** (M46) | at org scale (~500 members) a heavy enterprise grid (`/enterprise/members`, `/enterprise/activity-dashboard`, `/enterprise/settings`) sits on a `…` spinner / skeleton through the whole warm-grid poll because its backing **federated GraphQL** takes 10–84 s — an over-broad fetch (`InsightsContext.tsx` loads `limit: 1000` = ALL members) AND a per-membership resolver fan-out (`jobRole`/`targetRole`/`tags` × a **per-object Sentinel RPC** in `app` `roles.go GetOrganizationTargetRole`, no DataLoader). DIAGNOSE it's perf-not-content by `docker logs <stack>-graphql-1` + `grep latency` (10 s+) while raw SQL is ms (so it's RPC-round-trip-count, not the DB). **Decompose it — part demo-patchable, part platform-bound:** | **The over-broad-fetch + missing-index part is demo-local (zero canonical edit), and clears the grids whose cost is fetch-width or DB-index-bound:** **(1)** a **next-web pagination demo-patch** (`patches/next-web-members-pagination`: `InsightsContext.tsx` `limit 1000→30` — the grids that already paginate, e.g. `/enterprise/members` at 20, are untouched; the CSV/email export uses a separate query so no data is lost) applied to the demo's ephemeral clone pre-build + trap-reverted (the demopatch 6-guard contract); **(2)** **post-seed FK indexes** (`CREATE INDEX IF NOT EXISTS` on `membership_skills(membership_skill_membership)` + `membership_tags(membership_tag_membership)`) on the demo's **own** Postgres via a rext-owned `up-injected.sh` step (idempotent, non-fatal — NOT a canonical ent/atlas change). On demo-3 (~500 members) (1)+(2) took graphql max latency **84 s → ~4 s** and cleared `/enterprise/activity-dashboard` + `/enterprise/settings`. **BUT the `/enterprise/members` per-row `targetRole` → `OrgCheckActionPermission` Sentinel RPC is `OrgActionAssignmentsWrite`, which is PER-OBJECT (per assignee), NOT an org-wide grant** — a manager legitimately can-write-assignments for some members and not others. CACHING that check is a **correctness bug** — keyed `(org, subject, action)` (object dropped to dedupe across rows) it returns the first row's allow/deny for all rows → `failed to get target role: forbidden` on legit members (~1744×/sweep) → the grid errors (this was T2, reverted); keyed correctly `(org, subject, OBJECT, action)` it cannot dedupe (every row = a different object). **The safe demo-patch is to DROP the read-gate, not cache it (Option B, the M46 close):** `roles.go RoleManager.checkPermission` short-circuits `return true, nil` BEFORE the per-member Sentinel RPC (mirroring its built-in `privacy.DecisionFromContext` bypass) — target roles still come from the DB so every member's REAL role renders (fast, fully-populated, 0 forbidden). Read-path relaxation ONLY (`patches/app-targetrole-authz-skip`, applied to the build-scratch app clone via a rext helper wired into the inject loop, svc=app, after `apply-authn`, before build, trap-reverted) — the assignment **mutations** still enforce via their own direct `OrgCheckActionPermission` calls. On demo-3 B took the members query **76.7 s → 0.51 s** and **cleared `/enterprise/members` → the manager gate is MET (no re-scope)**. The PLATFORM finding stays: prod needs a **DataLoader / batch `BulkCheckPermission` RPC**; B is a disclosed demo-perf relaxation, not a prod fix. **⚠ if you rebuild the injected `app` image, it MUST go through the inject loop so `apply-authn.sh` (the disarmed colony) is re-applied** — a rebuild without it ships a backend that hits real `api.clerk.com`, rejects every Clerkenstein token, and collapses the crawl to `reachable≈7` (a broken-auth artifact, not a content fail — grep `docker logs <stack>-backend-1` for `clerk`); and **never recreate one service with `--force-recreate` *without* `--no-deps`** (it recreates `postgresql` too and wipes the seeded org). | re-build the frontend (pagination bakes in) + re-build the injected `app` (the authz-skip bakes in) via the inject loop + re-up/re-seed (indexes apply post-seed) — all three demo-local, gate MET |
+| **Replayed-CONTENT URL-field escape** (v1.10b "fit-up" M50) | a prod host (`https://[*.]anthropos.work/...`) is **baked into a replayed Directus content field**, not built from a JS constant — e.g. `directus.simulations.public_landing_page_url` / `read_more_link` (28 / 14 sims carried a prod URL), surfaced when the activity-dashboard sim drill-down renders the field as a link → prod-eject. **Distinct from BOTH the JS-constant "Platform-bound escape" row (a built-in-the-bundle constant — fixed by the demopatch; M50's `next-web-public-website-url` demopatch is an instance, killing the `PUBLIC_WEBSITE_URL`-built links) AND the serve-grant "Federation/content error" row (a 403/500, not a working link to the wrong host).** Diagnose: the escape URL matches a replayed row's *field value*, AND the JS-constant ejects are already 0 (the demopatch worked) — so the residual lives in the replayed DATA, not the code. | a **post-replay content-URL rewrite** in `demo-stack/up-injected.sh`'s `NO_SETDRESS` block — an idempotent demo-local `UPDATE … regexp_replace(<field>, 'https?://[a-z0-9.-]*anthropos\.work', '<demo next-web host:3000+offset>')` over the `anthropos.work`-bearing content fields (`directus.simulations.{public_landing_page_url,read_more_link}` + `directus.skill_paths.public_landing_page_url`) — the content-side analog of the injection link-rewriting for app constants. Same class as the M46 FK indexes / Directus column backfill: demo-local DDL on the per-stack Directus (the `cms`/Directus clones stay pristine), idempotent (a re-run matches 0 rows), non-fatal (M18/M19), gated on local content, `DEMO_NO_CONTENT_URL_REWRITE` opt-out. A **REGEX** over any `anthropos.work` subdomain (not a bare prefix) catches prod **and** `staging.anthropos.work`. | re-up (the rewrite runs post-replay; if fixing in place, clear the cms Redis DB-5 `simulations_*` cache like the serve-grant row) — then re-sweep → escapes → 0 |
 | **Editorial citation in replayed content** (NOT an escape) | a real `<a href>` to an external article baked into replayed `/skill-path/.../chapter` body copy | the harness **citation allow-rule** (`coverage.spec.ts` `allowedExternalLink` → `crawl.ts`): classify the off-demo link on a `/chapter` path as a VALID citation, recorded as a **presenter note**, NOT counted as an escape (M42e iter-08) | (none — content fidelity; do NOT strip/rewrite the citation) |
 | **Wrong identity / org on a surface** | roster/FAPI resource gap | `stack-seeding/seeders/roster.go` + `clerkenstein/clerk-frontend/resources.go` | re-export roster + restart `<demo>-fake-fapi-1` |
 | **A documented gap** | the behavior is correct but undocumented | a corpus doc update | (none) |
@@ -393,6 +408,77 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     demo-perf relaxation, NOT a prod fix. **Lesson: decompose a perf wall before judging it; and a per-OBJECT
     authz RPC can't be CACHED (object-blind = wrong answer) but it CAN be DROPPED where the read returns real
     DB data and the mutations stay enforced — dropping a read-gate is safe where caching-it-wrong wasn't.**
+  - **A never-COMPLETING server response is a different wall than a slow-PAINT — check the backend request log
+    for a completion BEFORE investing in a harness warm (v1.10b M51 iter-06).** The slow-paint poll + the
+    `warmHeavyGrids` cache-primer both assume the backing query EVENTUALLY returns (the warm primes a result
+    that WOULD complete; the poll waits for a paint that WILL happen). A grid whose server response **never
+    completes in-budget** defeats both: `GET /api/workforce/ai-readiness` on the 200-member showcase org logged
+    **ZERO completions** across the entire backend log (only OPTIONS preflights) — the React Query fetch is
+    aborted every time, and the `ai_readiness_refresh` background worker (same compute) timed out
+    `context deadline exceeded`. Tell this apart from a slow-paint / cold-cache wall by **grepping the backend
+    request log for a COMPLETED request**: `docker logs <stack>-backend-1 | grep 'GET /api/<route>' | grep -v
+    OPTIONS` — **0 hits = the server can't produce the response in-budget**, so no warm/poll will help (you'd be
+    deepening a primer for a result that never arrives). The root cause here was NOT index-bound (every
+    AI-readiness SQL query EXPLAINed at ms — jobsimulation.sessions fully indexed) and NOT the M46 members-grid
+    fan-out: it was the **response-build live-recompute + a per-skill federated TRANSLATION fan-out**
+    (`withSkillerLang` → skiller `_entities` `get skill translation <uuid>/english`, one round-trip per skill in
+    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-skiller-1` logs). That is the
+    **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
+    snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
+    takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind
+    a *closed* `CycleID`), so seeding the snapshot table would NOT short-circuit the default call — the
+    short-circuit itself is a platform-read-path change. **Decompose like M46:** if a demo-patch can batch/relax
+    the translation fan-out or make the default call read snapshots (the `app-targetrole-authz-skip` precedent),
+    that's demo-local; if not, it's the milestone Re-scope trigger (`unimplementable-without-platform-edit`) —
+    escalate, never edit the platform, and never widen the harness budget to mask a server that can't answer.
+  - **A cycle-scoped FAST read-path only helps if the DEFAULT client call SELECTS it — confirm the FE's
+    request SHAPE, not just the server branch (v1.10b M51 iter-07).** iter-06 root-caused the AI-readiness
+    wall as a live-recompute + translation N+1 on the ACTIVE-cycle path; the M48 contract documents a fast
+    alternative — a CLOSED cycle whose read takes `buildResponseFromSnapshots` (a pre-computed frozen read).
+    iter-07 seeded the cycle closed + a frozen `ai_readiness_snapshots` row per member (DB-verified correct:
+    199 snapshots, 78.4% stage-3, heroes right) — and the GATED sweep STILL held at the same failing count.
+    The frozen branch EXISTS in code but the DEFAULT dashboard GET never takes it: `app
+    GetAIReadinessWithOptions` reaches `buildResponseFromSnapshots` ONLY for `opts.CycleID != nil &&
+    status=="closed"` — the nil-CycleID default is hardcoded to `buildLiveResponse`. An AUTHENTICATED network
+    probe (log in as the hero, log every outbound backend request URL + query params + whether it completes)
+    proved the demo FE fires the data GET **WITHOUT `?cycle=`** (the live path — it hangs) and never fires the
+    `/cycles` list that would supply `latestClosedCycle.id`. **Lesson: a server-side fast branch is necessary
+    but not sufficient — before assuming a data-shape change (a closed cycle, a materialized mirror) clears a
+    wall, confirm BOTH sides: (1) the server branch exists AND (2) the FE's DEFAULT call fires the variant that
+    hits it. Diagnose the FE side with an authenticated network probe (which request VARIANT the client fires),
+    not just the backend completion log (which only tells you IF a request completed). When the fast branch is
+    reachable only via a param the default FE omits, closing the gap is PLATFORM-bound (the FE must pass the
+    param, or the backend default must prefer the closed cycle) → the milestone Re-scope trigger, or the
+    disclosed-presenter-note (data proven-correct in the DB, slow-only via the default route) with the user's
+    explicit sign-off.**
+  - **A "frozen"/materialized read path can carry its OWN org-scale wall — measure the FROZEN read
+    END-TO-END, not just confirm it is reachable (v1.10b M51 iter-08).** iter-07 assumed the closed-cycle
+    frozen branch (`buildResponseFromSnapshots`) was *fast* and that the only gap was the FE not routing to it
+    (the default GET omitting `?cycle=`). The user's chosen zero-edit fix was to **deep-link the demo entry** —
+    make Dana's cockpit `jump_to` + the coverage manifest carry `?cycle=<latest-closed-cycle-id>` so the FE
+    fires the cycle-scoped GET → the frozen branch. **Before touching the cockpit/manifest, an authenticated
+    DUAL-ENDPOINT DIRECT probe** (lift the hero's bearer from a real outbound request, then hit `/cycles` AND
+    the frozen data GET `?cycle=<closed>` **directly** via `page.request`, bypassing the FE's React Query
+    orchestration) **falsified the premise**: `/cycles` returned **200 in 40 ms** (fast — the FE gate is fine),
+    but the frozen data GET `?cycle=<closed>` **NEVER COMPLETED** (timed out the full 180 s budget), *identical*
+    to the live-recompute default. Root cause: `buildResponseFromSnapshots` reads the frozen scores fast but
+    then calls **`loadMembers(orgID, "")` — a full unbounded org-member hydration** (`hydrateMembers` with
+    `memberIDs=nil, userIDs=nil` → whole-org tag/skill/sim aggregation) to attach current identity/tags to each
+    snapshot; at 200 members that hydration is the SAME org-scale wall as the live path (and even the
+    `ai_readiness_refresh` worker's parallel compute logs `context deadline exceeded`). So the frozen branch is
+    NOT a fast path in this demo — the deep-link cannot clear the wall even in principle, and (crucially) it is
+    NOT one of the demo-patchable costs: `queryBaseMembers` here reads `jobRole` from a SQL column (NOT the
+    per-object targetRole Sentinel RPC that `app-targetrole-authz-skip` already drops), so the existing
+    demo-patch does nothing for it. **Lesson: "frozen"/"pre-computed"/"materialized" names a *scores* freeze, not
+    necessarily a *response* freeze — a snapshot read that re-joins live per-member identity re-incurs the
+    org-scale member-load wall. Before betting a strategy on a fast branch, MEASURE THE BRANCH END-TO-END with a
+    direct authenticated probe of the exact request the strategy will fire (here `?cycle=<closed>&includePeople=true`),
+    not just confirm the branch is reachable / the DB rows are correct. When the frozen read is itself
+    org-scale-slow and its cost is NOT a demo-patchable authz gate, the remaining zero-edit path is the
+    disclosed-presenter-note (data proven-correct in the DB, slow-only) — which needs the user's EXPLICIT
+    sign-off; a platform fix (bound `loadMembers` in the snapshot path / a frozen_tags column so it needn't
+    re-join live members) is the Re-scope trigger. Reusable diagnostic:
+    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts`.**
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and
@@ -400,6 +486,45 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     `docker logs <stack>-backend-1` for `clerk`). And never recreate a single service with `--force-recreate`
     *without* `--no-deps` — it recreates `postgresql` too and wipes the seeded org. Never widen the poll to mask a
     slow query, and never shrink the org below the org-scale premise just to pass.
+  - **An unbounded-hydration perf wall often has an EXISTING id-restricted loader — swap, don't rewrite; and
+    a demo-patch CAN bound a snapshot read-path where it can't cache an authz gate (v1.10b M51 iter-09, the
+    fix that closed the wall).** iter-08 proved the frozen AI-readiness read (`buildResponseFromSnapshots`)
+    times out because it calls `loadMembers(orgID, "")` — a full UNBOUNDED whole-org member hydration — to
+    re-join current Tags/Name/Role onto each frozen snapshot. The fix is a **new app read-path demo-patch**
+    (`patches/app-aireadiness-snapshot-loadmembers`, the `app-targetrole-authz-skip` precedent: a pinned
+    anchor→replacement manifest + a rext-owned `apply-*.sh` helper mirroring the swap, wired INTO
+    `up-injected.sh`'s inject loop svc=app after apply-authn + the authz-skip, before the build, trap-clean,
+    `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND=1` opt-out) that **bounds** the hydration: collect the ~199
+    snapshot user-ids and call the EXISTING bounded sibling `loadMembersByUserIDs(orgID, "", snapUserIDs)`
+    (indexed `memberships."user" = ANY(...)`) instead. It is a **PURE perf optimization, data-identical**:
+    `buildResponseFromSnapshots` uses the members map ONLY keyed-by + looked-up-by each snapshot's UserID, so
+    the returned `AIReadinessResponse` is byte-identical; only the member-load cost drops. The frozen
+    `?cycle=<closed>` GET went **180 s-timeout → 19 ms** and the dashboard rendered the full funnel. **Two
+    lessons:** (1) when a perf wall is an unbounded hydration, look for an id-restricted sibling loader in the
+    codebase BEFORE writing a new query — the fix is often a one-call data-identical swap. (2) Unlike a
+    per-OBJECT authz RPC (which can't be CACHED object-blind — the M46 T2 correctness bug — but CAN be
+    DROPPED), an unbounded READ hydration can be **BOUNDED** by a demo-patch where the narrower set is already
+    known (the snapshot user-ids), returning identical data faster — a third safe demo-patch shape alongside
+    drop-the-read-gate (M46/B) and cap-the-fetch (M46/A). The prod finding stays: prod's frozen read still
+    hydrates the whole org and needs `loadMembers` bounded in the snapshot path / a `frozen_tags` column
+    (M314b) — a disclosed demo-perf relaxation, not a prod fix.
+  - **A believability-gate section descriptor that requires TWO strings the FE renders MUTUALLY EXCLUSIVELY
+    is a latent FALSE-FAIL — check EITHER/OR conditional headers before treating an absent substring as a
+    content gap (v1.10b M51 iter-09).** The AI-readiness funnel section false-failed on "region missing
+    required content: Stage breakdown" (re-asserted 6× — NOT a paint-timing skeleton) while its sibling
+    section passed and the funnel WAS fully rendered. Root cause: `AIReadinessView.tsx` renders the funnel
+    header as ONE of two mutually-exclusive strings — `t('stepsCompletionLink')` ("Steps completion", a link)
+    when an `onStepsClick` handler is provided, ELSE `t('stageBreakdown')` ("Stage breakdown") — never both.
+    The manager dashboard always provides the steps-completion drawer handler, so it renders "Steps
+    completion" and NEVER "Stage breakdown"; the descriptor's `mustInclude: [..., 'Stage breakdown', 'Steps
+    completion']` was impossible-in-manager-mode. The fix is a **harness** correction (drop the impossible
+    alternative, keep the load-bearing proof — the three stage labels + the funnel header), NOT a seed/content
+    fix and NOT a gate-loosening (the funnel's real proof still asserts). **Distinguish at triage:** a section
+    that fails on ONE substring while its siblings render + the page's `main` dump shows a SIBLING string of an
+    either/or pair → a mutually-exclusive-header descriptor bug (harness fix); a section that fails on ALL its
+    substrings + a skeleton screenshot → a real empty/slow-paint (seed or warm/poll fix). The tell is the
+    probe/`main` dump: if the missing string is the OTHER branch of a conditional you can SEE rendered, it's a
+    descriptor false-fail.
 - **An editorial citation in replayed content is VALID content, not a gate escape — disclose it, don't strip
   it (M42e iter-08 lesson).** Replayed `/skill-path/.../chapter` body copy can carry a real external `<a href>`
   citation (e.g. an `en.wikipedia.org` / `strategy-business.com` reference inside the course material). That is

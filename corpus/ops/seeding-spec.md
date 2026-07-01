@@ -352,3 +352,35 @@ four sections, full suite green `-race`. Render-verified on a live demo (the §D
 `/enterprise/members` reads `memberships.picture_url`, not `users.picture`) + a 3-pass hardening sweep (17 added
 tests, seeders-pkg stmt coverage 96.5%→97.5%). Code-of-record: `rosetta-extensions` @ tag
 `method-acting-m44-profile-completeness-fix2`.
+**v1.10b "fit-up" M50** completes the Talent-tab fill on the clean re-grounded demo: a NEW
+**`MemberLanguagesSeeder`** (the ISO-639-1 `world_languages` catalog + per-member `user_languages`, which the DB
+AFTER-INSERT trigger fans out to `membership_languages` — the manager Talent-tab "Languages spoken" chart), the
+**`CertificatesSeeder` member-coverage extension** (hero-only → ~45% role-coherent members, so the "Certifications"
+chart reads as a credentialed workforce), and the **`UsersSeeder` member-field backfill** (`memberships.joined_at`
+/ `location` / `last_activity_date` for the `/enterprise/members` columns, NULL-only idempotent guard). All
+DATA-DENSITY, `PerStackIsolated` + closure-GREEN (the ISO catalog is a published standard, not a fabricated
+node-id), proven by the M42 coverage gate on the manifest STRENGTHENED to assert them (both vantages, warm). The
+detail lives in [`profile-completeness-spec.md`](demo/profile-completeness-spec.md) §"the Talent-tab fill" + §"the
+shared per-member uuid-space". Code-of-record: `rosetta-extensions` @ tag `fit-up-m50`.
+**v1.10b "fit-up" M51** adds the **AI-readiness showcase org — a 3rd story** (org "Northwind Aviation", 200
+members, hero trio Aria COMPLETED / Ben STARTED / Dana manager), with three **net-new AI-readiness seeders**:
+**`OrgSettingsSeeder`** (the `organization_settings` `ai_readiness` enablement gate-row — nothing wrote that table
+before), **`AIReadinessConfigSeeder`** (`ai_readiness_cycles` **closed** + `ai_readiness_skills` with **real
+replayed-taxonomy node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), and **`AIReadinessFunnelSeeder`** (199
+frozen `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), DAG-ordered
+`config → funnel`. The milestone shipped the **closed-cycle / frozen-snapshot** strategy (the active-signals path
+was falsified — the live-recompute never completes in the coverage-harness budget) plus the
+**`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's whole-org
+`loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
+`PerStackIsolated` + closure-GREEN across all 3 orgs, proven by the **M42 manager-vantage** coverage gate `(0,0)`.
+The detail lives in [`demo/stories-spec.md`](demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
++ the seeder contract [`../services/ai-readiness.md`](../services/ai-readiness.md). Code-of-record:
+`rosetta-extensions` @ tag `fit-up-m51`.
+**v1.10b "fit-up" M52** consolidates the whole seed+generation intent into **one auditable file**
+(`presets/seed-generation-manifest.yaml`): the population (all 3 orgs + heroes), the **file-resident** mother
+prompt (extracted from the Go const to `blueprint/prompts/default_batch_prompt.tmpl`), the batch config (the
+MANDATORY `max_cost_usd` ceiling + concurrency + re-roll rules), and the snapshot sources — **cache +
+generated data excluded**. It is a PROJECTION of the canonical presets (honesty-gated so it can't drift),
+emitted by `stackseed --manifest-export`, and served by the presenter cockpit's **[Download seed manifest]**.
+Full reference: [`demo/seed-manifest-spec.md`](demo/seed-manifest-spec.md). Code-of-record:
+`rosetta-extensions` @ tag `fit-up-m52`.

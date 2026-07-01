@@ -2,6 +2,31 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v1.10.1] "fit-up" — 2026-07-01
+
+The **field-hardening backfill.** A from-scratch `/demo-up` surfaced bring-up issues + a tail of v1.10 content gaps; v1.10b re-grounds the demo + corpus to current prod, fixes them, adds the AI-readiness showcase org, consolidates the seed+gen intent into one auditable file, and — the proof — **destroys the demo and cold-rebuilds it from scratch**, verified end-to-end (6/6 acceptance bars + the academy). 7 milestones M47→M53. **Tooling + docs only — zero platform-repo edits.** (rext code-of-record @ tag `v1.10.1`)
+
+### Added
+- **AI-readiness showcase org.** A curated 200-person org (Northwind Aviation) with the manager AI-readiness dashboard **enabled**, ~80% of members having completed all 3 onboarding/evaluation steps, and hero personas — one who *started* the readiness onboarding and one who *completed* it. (M51)
+- **One auditable seed+generation manifest.** A single checked-in file (`seed-generation-manifest.yaml`) inlining the entire seed+gen intent — all 3 orgs' population blueprint, the generation prompt templates, the batch config (cost ceiling, concurrency), and the snapshot sources — **cache + generated data excluded**. The cockpit **[Download manifest]** serves it. (M52)
+- **Academy content on the demo.** Real course content + a hero academy menu-link + a non-anonymous academy session, seeded + verified on the cold build. (M53)
+- New docs: `corpus/services/ai-readiness.md` (the previously-undocumented member-AI-readiness feature) + `corpus/ops/demo/seed-manifest-spec.md`.
+
+### Changed
+- **The demo now cold-rebuilds from scratch** and is verified end-to-end as the single acceptance proof — a `stack-demo`-only box brings the whole stack up with one `/demo-up`, no manual steps. (M53)
+- Snapshot recaptured from current prod; the corpus re-grounded to match (the shipped AI-readiness feature was undocumented). (M47/M48)
+
+### Fixed
+- The 8 from-scratch `/demo-up` bring-up issues (rext.tag source-of-truth, env-guard order, an auto-generated invitation secret, ant-academy explicit clone, disk pre-flight + `demo-down` image purge, non-fatal frontend, demopatch re-anchor) + v1.10 content/seeding gaps (member languages, certificates, member-field backfill). (M49/M50)
+- **The AI-readiness dashboard now renders at 200-member scale** — an app read-path demo-patch bounds the unbounded member hydration (180s timeout → 19ms), a data-identical perf swap. (M51)
+- A manager coverage-gate assertion that M51 made unconditional (breaking the base-Workforce org's gate) is now org-conditional — caught from cold by the acceptance gate and fixed at the gate. (M53)
+
+### Supply chain
+- Cleared the inherited HIGH **CVE-2026-39821** by bumping `golang.org/x/net` v0.53.0 → v0.55.0 in `stack-seeding` (the CVE was disclosed after the v1.10 close; called only in one low-blast-radius path).
+
+### Known limitations
+- Tooling + docs only — zero platform-repo edits. The AI-readiness dashboard's org-scale perf fix is a **demo-injection patch**; the production read-path (`loadMembers`) remains a documented prod-team follow-up. The academy's AI chat stays absent-by-design (no keys provisioned in the demo).
+
 ## [v1.10] "method acting" — 2026-06-27
 
 The **believable-profile release + the presenter-grade / scalable-generation extension.** v1.9 told the *story*; v1.10 makes each *character* hold up under a close-up. When a presenter clicks **Login as** a hero, that hero reads as a fully fleshed, believable person — the individual's **profile** (org name, role + title, work history, education, a real face, deep role-aligned skills) **and** the content surfaces they land on (**library** + the **activity feed**) populate with real semantic content, on **every** page a hero of that vantage can reach — proven by a **Playwright semantic coverage sweep** with **zero** empty pages and **zero** out-of-demo escapes, at both the employee and the manager vantage. Then it scales: a presenter-grade cockpit, a whole roster baked to depth, a cheap-LLM generation engine, and a whole **~500/735-member org filled from one descriptor**. **Tooling + docs only — zero platform-repo edits.** (rext code-of-record @ tags `method-acting-m39`..`m46-servegrant-closure`)

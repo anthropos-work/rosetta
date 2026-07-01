@@ -7,9 +7,12 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 > **Designed 2026-06-29** via `/developer-kit:design-roadmap`. **v1.10b "fit-up"** is an **interposed
 > field-hardening backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up
-> issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus ~5 weeks /
-> 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod and fixes those issues, so
-> **v2.0 "opening night" is PAUSED** until it ships. The v1.x flat milestone counter **re-opens** at **M47**
+> issues + a tail of v1.10 content gaps. The M201 close *reported* the `stack-demo` clones ~5 weeks / 115+ commits
+> behind prod — but **M47 found the clones actually CURRENT** (next-web @ v2.89.0); the genuinely-stale surface is
+> the **corpus** (the shipped AI-readiness feature is undocumented), which **M48** re-grounds. v1.10b recaptures the
+> snapshot, re-grounds the corpus, fixes the bring-up + content issues, adds an AI-readiness showcase org, and
+> consolidates one auditable manifest — so **v2.0 "opening night" is PAUSED** until it ships. The v1.x flat
+> milestone counter **re-opens** at **M47**
 > (M47→M53); tag **`v1.10.1`**; branch `release/01.10b-fit-up`.
 >
 > **Designed 2026-06-28** (prior): **v2.0 "opening night"** opens a **NEW MAJOR** — **Playthroughs** is a new pillar
@@ -22,8 +25,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ▶ **IN DEVELOPMENT** (branch `release/01.10b-fit-up`, designed 2026-06-29; tag `v1.10.1`) |
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — the **v1.10b "fit-up"** backfill is interposed; v2.0 resumes after it ships |
+| **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ⏸ **PAUSED** after M201 (branch `release/02.00-opening-night`) — the interposed **v1.10b "fit-up"** backfill has **SHIPPED**, so v2.0 **resumes next** (still PAUSED pending resume — the user re-activates it via `design-roadmap`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -39,12 +42,14 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In Development — v1.10b "fit-up"
+## Done — v1.10b "fit-up" (SHIPPED 2026-07-01, tag v1.10.1)
 
 > **Theme:** *fit-up — build and rig the set correctly in the venue before opening night.* An **interposed
 > field-hardening backfill** in the **v1.3b "dress rehearsal"** lineage. A from-scratch `/demo-up` surfaced 8
-> bring-up issues + a tail of v1.10 content gaps, and the M201 close found the `stack-demo` clones + the corpus
-> ~5 weeks / 115+ commits **behind prod**. v1.10b **re-grounds** demo + corpus to current prod, **fixes** the
+> bring-up issues + a tail of v1.10 content gaps. **CORRECTION (M47 finding):** the M201 close *reported* the
+> clones ~5 weeks / 115+ commits behind prod, but **M47 found them CURRENT** (next-web @ v2.89.0, every repo ≤2
+> behind; the AI-readiness feature present) — the re-sync was a trivial `make pull`. The real stale surface is the
+> **corpus** (M48). v1.10b **recaptures** the snapshot from current prod, **re-grounds** the corpus, **fixes** the
 > bring-up + content issues, **adds** a curated **AI-readiness showcase org** (redeeming the M201
 > member-AI-readiness false-negative), and **consolidates** one auditable **seed+generation manifest**.
 > **Tooling + docs only — zero platform-repo edits.** The v1.x flat counter re-opens at **M47** (M47→M53); tag
@@ -74,50 +79,149 @@ rebuild" the user asked for *is* the M47→…→M53 shape.
 ### Milestones
 
 (compact per-milestone summaries — the full contracts live under
-[`releases/01.10b-fit-up/m*/overview.md`](releases/01.10b-fit-up/))
+[`releases/archive/01.10b-fit-up/m*/overview.md`](releases/archive/01.10b-fit-up/))
 
-**M47 — Re-sync & recapture** · `section` ⚠ · depends: **none** (foundation). Clone the **absent** rext authoring
-copy (`.agentspace/rosetta-extensions/` — the note-2 prerequisite); re-sync the `stack-demo` clones to current prod
-(rebuild + re-migrate); implement the sanctioned cold-start **MCP-DSN auto-capture** (demo-up #2: normalize
-`sslmode no-verify→require`, public-only firewall, **no prompt**); recapture the snapshot; re-validate the M201
-false-negatives. **Delivers →** `corpus/ops/snapshot-cold-start.md`.
+**M47 — Re-sync & recapture** · `section` · depends: **none** (foundation) · ✅ **`done` — closed 2026-06-29**
+(merged → `release/01.10b-fit-up`; rext tag `fit-up-m47`). The flagged heavy re-sync was a **no-op** — the clones
+were already current (next-web @ v2.89.0); the genuine staleness is the corpus (→ M48). Delivered: `pg.NormalizeDSN`
+(sslmode `no-verify→require`) so the wired MCP DSN works as a capture `--dsn` (demo-up #2, proven by a live dry-run +
+9 tests); all 3 snapshot surfaces recaptured from current prod (digests unchanged); the **AI-readiness feature
+confirmed present** (M201 false-negative resolved); `snapshot-cold-start.md` updated (the MCP-configured-DSN path,
+KB-47-01). The `up-injected.sh` auto-capture wiring was descoped per the user (no new entry point — D3); re-pin
+deferred (push-gated). **Delivered → `corpus/ops/snapshot-cold-start.md`.**
 
-**M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49**. Sweep `corpus/architecture/` +
-`corpus/services/` against the current clones; **document the member-AI-readiness flow** (the contract M51 builds
-against); retire stale "RESOLVED"/tag claims. **Delivers →** `architecture/*` + `services/*` re-ground.
+**M48 — Corpus re-ground** · `section` · depends: **M47** · ∥ **M49** · ✅ **`done` — closed 2026-06-29** (merged →
+`release/01.10b-fit-up`). Delivered (3-agent investigation of the current clones): **NEW
+[`corpus/services/ai-readiness.md`](../../corpus/services/ai-readiness.md)** documenting the previously-undocumented
+member-AI-readiness feature (org enablement gate, 3-step 30/40/30 scoring, the 9 `ai_readiness_*` tables, GraphQL+REST
+interface, surfaces, narratives) **+ the M51 seeding contract** (Phase-2c-sharpened: active-cycle ⇒ signals-true,
+closed-cycle ⇒ frozen-snapshot-direct — the dashboard recomputes from signals). Reconciled the material drift
+(backend.md / next-web-app.md / architecture_overview.md / service_taxonomy.md now name the subsystem) + corrected the
+false ant-academy "in repos.yml" claim (CLAUDE.md + ant-academy.md×3; **M49 #5 owns the repos.yml fix**). Docs-only —
+never touched the demo. **Delivered → `corpus/services/ai-readiness.md`** + the re-grounded arch/service docs.
 
-**M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48**. The 7 remaining demo-up issues
-so a from-cold `/demo-up` on a `stack-demo`-only box completes: #3 `.env`-guard order, #4 `INVITATION_HMAC_SECRET`
-(critical secret-DNA + auto-gen), #5 ant-academy clone, #6 disk pre-flight + `demo-down` image cleanup, #7 *true*
-non-fatal frontend, #8 demopatch re-anchor, #1 single **`.agentspace/rext.tag`** source-of-truth (also the note-2
-reproducible pin). **Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
+**M49 — Bring-up hardening + truth-up** · `section` · depends: **M47** · ∥ **M48** · ✅ **`done` — closed
+2026-06-30** (merged → `release/01.10b-fit-up`; rext tag `fit-up-m49` @ `ba586d6` = 7 build fixes + 3 harden
+commits, consumed per-stack). Closed the 7 remaining demo-up issues so a from-cold `/demo-up` on a `stack-demo`-only
+box completes — **proven end-to-end by the live-verify gate** (a from-cold `/demo-up` on a re-pinned `fit-up-m49`
+clone: demo-1 UP, autoverify "verified-working"): #3 `.env`-guard order (provision-then-check), #4
+`INVITATION_HMAC_SECRET` (critical secret-DNA gene + values-blind auto-gen + `DemoGeneratedKeys` overlay; the silent
+`app Exited (0)` class fixed), #5 ant-academy **explicit `ensure-clones.sh` clone** (NOT `repos.yml` — the ephemeral
+gitignored platform clone makes that non-durable + a platform edit; the cms/studio submodule-pattern precedent), #6
+disk pre-flight + `demo-down --purge` per-demo image cleanup (~5 GB reclaimed live), #7 *true* non-fatal frontend
+(absent image → `--scale svc=0`), #8 demopatch re-anchor to next-web **v2.89.0**, #1 single **`.agentspace/rext.tag`**
+source-of-truth (+ CRLF-tolerant `lib/rext_tag.sh` reader; reconciled 4 stale prose pins; doubles as the note-2
+reproducible pin). Harden fixed 1 real bug inline (the `rext_tag.sh` CRLF carriage-return leak). Tests: rext Go
+1552→**1555** (stack-secrets +3) · demo-stack Python **299** (demopatch 46→47); flake **0** (5/5). Close review: 6
+findings all Fate-1 (2 stale `make init` ant-academy claims in `service_taxonomy.md` retired; test-count literals
+reconciled); deferral audit **GREEN** (AI-keys policy → M50 Fate-2; consumption-clone re-pin → push-gated KEEP).
+**Delivers →** `rosetta_demo.md`, `frontend-tier.md`, `secrets-spec.md`, `ant-academy.md`.
 
-**M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). **Exit gate:** Maya (employee) + Dan
-(manager) render fully-populated across every annotation-listed surface on a COLD reset-to-seed demo, proven by the
-**M42 semantic coverage gate** (both vantages), 0 prod-eject escapes. Iterative because the real root-causes are
-**hypotheses until observed** on the clean bring-up (some need new seeders, e.g. `MemberLanguagesSeeder`; some are
-demo-up #7 artifacts that vanish once set-dress runs).
+**M50 — Content & seeding fill** · `iterative` · depends: **M49** (+M48). ✅ **`done` — closed-on-gate 2026-06-30**
+(merged → `release/01.10b-fit-up`; rext tag `fit-up-m50` @ `f0d984c` + close fix-commit `3c2de27`, consumed
+per-stack). **M42 semantic coverage gate MET on BOTH vantages** (employee + manager) on a WARM demo-1, on the
+manifest **STRENGTHENED to PROVE the gaps** (frontier-exhausted, (failingSections,escapes)=(0,0), 0 persona,
+0 cross-port). 6 iters (1 tok + 5 tiks). Delivered (the sweep-driven seed fill): a NEW **`MemberLanguagesSeeder`**
+(ISO-639-1 `world_languages` catalog + per-member `user_languages` → `membership_languages` via the platform's
+AFTER-INSERT trigger — the manager Talent-tab "Languages spoken" chart, 0 rows → 747 across all 340 members), the
+**`CertificatesSeeder` member-coverage extension** (hero-only → ~45% role-coherent, certs 9→236), the **`UsersSeeder`
+member-field backfill** (`memberships.joined_at`/`location`/`last_activity_date` for `/enterprise/members`,
+NULL-only idempotent guard), the **`next-web-public-website-url` demopatch** (the `PUBLIC_WEBSITE_URL` JS-constant
+escape class) + a NEW **post-replay Directus content-URL rewrite** (the replayed-content escape class — prod hosts
+baked into `public_landing_page_url`/`read_more_link`, regex over any `anthropos.work` subdomain → demo host), and
+the **manager-manifest strengthening** (new `preAssert` tab-click + `textMatch` OR-assert harness primitives that
+ASSERT the members-Location column + the Talent-tab languages/certs charts — the D4/F1 reconciliation: the run-1
+gate passed BLIND to two M50-own gaps; the gate now PROVES them). All DATA-DENSITY, `PerStackIsolated` +
+closure-GREEN, M17-idempotent, zero platform edits. **AI-keys policy DECIDED: documented-as-absent** (values-blind,
+no key provisioned; AI surfaces inert-by-design — resolves the inherited M49 deferral). Tests: rext stack-seeding
+719 (seeders pkg 349, +1 at close; 97.4% stmt) · demo-stack Python 108; flake **0** (5/5). Close review: 11
+findings all Fate-1 (gofmt 2 files + 2 code pins + 3 docs incl the NEW routing-table escape row + a broken M51
+backref); deferral audit **GREEN** (0 repeat/chronic/aged). **Carry-forward (three-fate, none escape-hatch):**
+**COLD reset-to-seed acceptance → M53** (Fate-2, user-decided — all M50 seeders + fixes reproduce from the bring-up
+tooling on a fresh `/demo-up`); **academy content + menu-link/non-anonymous-session (F6) → M51** (Fate-3);
+consumption-clone re-pin to `fit-up-m50` = push-gated KEEP (authoritative at M53). **Delivers →**
+`profile-completeness-spec.md`, `seeding-spec.md`, `coverage-protocol.md`, `secrets-spec.md`.
 
-**M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. **Exit
-gate:** a curated **200-person 3rd org** with the AI-readiness manager dashboard **enabled**, **~80%** of members
-having completed all **3** onboarding/evaluation steps, **1 hero started + 1 hero completed** — proven by the
-coverage gate. Iterative because the feature's data model (invisible to the stale clones) is mapped fresh in M48.
+**M51 — AI-readiness showcase org** · `iterative` · depends: **M48** (the feature contract) + **M50**. ✅ **`done` —
+closed-on-gate 2026-07-01** (merged → `release/01.10b-fit-up`). **Exit gate:** a curated **200-person 3rd org** with
+the AI-readiness manager dashboard **enabled**, **~80%** of members having completed all **3** onboarding/evaluation
+steps, **1 hero started + 1 hero completed** — proven by the coverage gate. **MET at iter-09:** manager-vantage
+`(failingSections, escapes) = (0, 0)` frontier-exhausted on a fresh demo-up (reachable 70, personaFailures 0);
+org **Northwind Aviation** (200 members) ENABLED, **78.4%** all-3-complete, **Ben STARTED** (stage 1) + **Aria
+COMPLETED** (stage 3), cycle `closed` + 199 frozen snapshots. **9 iters** (1 bootstrap tok + 8 tiks). The
+strategy arc: iter-02/03 landed the 3rd story + the 3 net-new seeders (`OrgSettingsSeeder` +
+`AIReadinessConfigSeeder` + `AIReadinessFunnelSeeder`); iters 06/07/08 falsified three read-fast strategies
+(active-signals → closed-cycle-snapshot → deep-link) against the platform AI-readiness read-path org-scale perf
+wall (**"frozen SCORES ≠ frozen RESPONSE"** — `buildResponseFromSnapshots` re-joins members via an unbounded
+whole-org `loadMembers`); **TOK-02** (user-authored, triggered by the 3-tik no-prog streak) pivoted to the
+iter-09 **`app-aireadiness-snapshot-loadmembers`** read-path demo-patch (a PURE data-identical bound of that
+hydration to the ~199 snapshot users → the frozen `?cycle=` GET 180s-timeout → 19ms). Tests: rext stack-seeding
+**749** (seeders pkg 382, **97.6%** stmt, +30 vs M50's 719 across the iters + final harden + close) · e2e TS unit
+**33** (+13 at close: the new `section-assert.ts` no-browser spec); flake **0** (5/5 Go + 5/5 TS). Close review:
+16 findings all Fate-1 (S1 the 3rd AI-readiness story authored → **`delivers` MET**; C1/C3/C4 code + T1/T2 tests +
+D1–D5 docs). Deferral audit **RED→CLEARED**: the academy **F6** repeat-defer (M50→M51) fated **LAND-NEXT → M53**
+(Fate-3, user-decided — the cold rebuild is where academy content is seeded + verified). **Carry-forward (three-fate,
+none escape-hatch):** academy F6 → M53 (Fate-3); COLD reset-to-seed acceptance → M53 (Fate-2); consumption-clone
+re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →** `demo/stories-spec.md` (the 3rd story),
+`services/ai-readiness.md`, `seeding-spec.md`, `CLAUDE.md`; rext tag **`fit-up-m51`**.
 
-**M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51**. Extract the Go mother-prompts to
+**M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51** · ✅ **`done` — closed 2026-07-01**
+(merged → `release/01.10b-fit-up`). Extract the Go mother-prompts to
 YAML; author **one** checked-in `seed-generation-manifest.yaml` inlining population blueprint (all 3 orgs) +
 prompts + batch config + snapshot sources (**cache + generated data excluded**); the cockpit **[Download]** serves
 it. **Delivers →** NEW `corpus/ops/demo/seed-manifest-spec.md`.
+All 4 sections landed (S1 `go:embed` extraction byte-identical → cache preserved; S2 the NEW `manifest` pkg + the
+honesty-gated projection + `--manifest-export` verb; S3 cockpit [Download] repoint, non-fatal fallback; S4 the NEW
+spec). Tests: rext stack-seeding **786** (+37 vs M51's 749; NEW `manifest` pkg 100% stmt) · demo-stack Python **313**
+(+14: cockpit `--seed-manifest` endpoint + fallback); flake **0** (5/5 Go `-shuffle` + 5/5 Python). Close review: **12
+findings all Fate-1** — F1 dedup the 3-way projection helper to one canonical `blueprint` source (removes the
+projection-drift the honesty gate can't catch); F3 second cache-key golden fences the `{{else}}(none)` branch;
+**F4 `mergeGenerationBatches` now WARNS on an orphan gen-story id** (a story-id typo was silently producing a
+generation-less "auditable" manifest — the exact silent drop this milestone exists to prevent); F5 cockpit treats an
+empty/blank `--seed-manifest` as absent; F2/F6/F7/F8/F9 (teeth-typo, gen-axis teeth, stale For-PMs prose, strip-helper
+fence, vestigial doc-param). Deferral audit **GREEN** (up-injected.sh end-to-end glue = Fate-2 → M53's cold-rebuild;
+0 repeats). **Carry-forward (three-fate, none escape-hatch):** up-injected.sh glue → M53 (Fate-2); consumption-clone
+re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →** `demo/seed-manifest-spec.md` (NEW) +
+reconciled cross-refs (`cockpit-spec.md`, `ai-generation-spec.md`, `cache-spec.md`, `seeding-spec.md`, `README.md`,
+`CLAUDE.md`); rext tag **`fit-up-m52`** (`36d7430`).
 
-**M53 — Cold-rebuild acceptance** · `section` · depends: **M52**. Destroy the live demo + **rebuild from cold** on
+**M53 — Cold-rebuild acceptance** · `section` · depends: **M52** · ✅ **`done` — closed 2026-07-01**
+(merged → `release/01.10b-fit-up`; **the FINAL v1.10b milestone**). Destroy the live demo + **rebuild from cold** on
 a `stack-demo`-only box; assert healthy backends + complete set-dress/seed (all 3 orgs)/verify/cockpit + both-vantage
 coverage + the AI-readiness criteria + the complete manifest download. Tag **`v1.10.1`** + bump `.agentspace/rext.tag`.
+**All 6 sections landed** (§1 academy F6 seeder/wiring; §2 roll `v1.10.1`; §3 DESTROY via `/demo-down 1 --purge` — 17
+containers + network + ALL demo-1 images, M49 #6 verified; §4 COLD REBUILD via a single `/demo-up 1`, no manual steps,
+EXIT 0, no #7 abort; §5 ASSERT; §6 acceptance record + rext.tag bump). **Acceptance verdict: GREEN — 6/6 criteria +
+academy F6 from cold** (AB1 backends healthy 17-up-0-exited/casbin 1150; AB2 prompt-free replay from the filled 1.4 GB
+cache; AB3 set-dress+seed 3 orgs incl. Northwind AI-readiness + cockpit, EXIT 0; **AB4 both-vantage coverage GREEN**;
+AB5 AI-readiness dashboard on Northwind — 50/100, 199 members, 3-step funnel, renders fast; AB6 cockpit [Download] =
+complete inlined `seed-generation-manifest.yaml` 7593 B; **F6 academy** — real content + 9 cockpit [Academy] links →
+authenticated member, Cosmo absent-by-design). **AB4 was RED on first assertion — an M51-owned gate regression
+(M51 iter-05's unconditional ai-readiness manager `seedPath` broke the M50 base-org manager gate `dan-manager` @
+Cervato); fixed at the acceptance gate** with user approval (an org-conditional manager manifest — `manifestFor(vantage,
+expectedOrg)` returns the showcase `MANAGER_MANIFEST` only for Northwind, else `MANAGER_MANIFEST_BASE`; rext `117fe41`,
++3 unit tests; both manager vantages re-verified GREEN). Exactly the late cross-milestone regression M53 exists to catch
+— the from-cold both-vantage assertion is the first joint re-measure of the M50 + M51 gates. Tests: rext stack-seeding
+**791** (+5 vs M52's 786: F6 academy DeepLink/AcademyDeepLink build + harden single-source tests) · demo-stack Python
+**326** (+13: F6 authenticated-session + [Academy] deep-link + harden `_academy_catalog_entry` edge/escape tests) · e2e
+TS unit **29** (AB4 org-gating + referential-stability edges, +2 vs the pre-AB4 27); flake **0** (5/5 Go seeders shuffle
++ 5/5 Python cockpit+academy + 5/5 TS manifest). Close review: **2 findings, both Fate-1 docs** — DOC-1 documents the
+AB4 org-conditional manager manifest in `coverage-protocol.md` (was undocumented); DOC-2 reconciles the stale
+`~80%/≈160` AI-readiness prose to the shipped **78.4%/≈156-of-199** in `ai-readiness.md` (KB-2). Deferral audit **GREEN**
+— every carry pointing at M53 LANDED here (up-injected.sh glue Fate-2 via the cold `/demo-up`; COLD acceptance = M53
+itself; academy F6 = `e91f004`; box-level re-pin DONE); the historical academy-F6 REPEAT resolved by execution; 0
+M53-originated deferrals, 0 escape-hatch. **Delivers →** the release acceptance record (`acceptance-record.md`, feeds
+`/developer-kit:close-release`) + `.agentspace/rext.tag` = `v1.10.1`; rext release tag **`v1.10.1`** (`576dbcb` — rolls
+up `fit-up-m47..m52` + F6 + AB4 + the M53 harden tests; re-rolled at close, local unpushed annotated re-roll). **Sole
+residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is GREEN from cold; the release is complete →
+`/developer-kit:close-release`.**
 
 ### Top risks
 
-- **clone re-sync (M47) → blocks-release, the biggest unknown.** 5 weeks × the platform repo set may surface new
-  migrations / build breaks; the recapture changes the snapshot digest. *Mitigate:* foundation milestone — absorb
-  the breakage before any fix leans on it; the user chose **re-ground first** over the fix-on-stale-clones lever
-  (if intractable, escalate — don't silently descope).
+- **clone re-sync (M47) → RETIRED (was flagged the biggest unknown).** M47 found the clones already **current**
+  (next-web @ v2.89.0, every repo ≤2 behind) — the re-sync was a trivial `make pull`, no 5-week catch-up, no
+  cascading breakage. The snapshot recapture confirmed **both schema digests unchanged** (taxonomy `c75ce94…`,
+  directus `ea2e187…`), so it was a clean in-place data refresh. The heavy-rebuild risk did not materialize.
 - **content root-causes are hypotheses → degrades-quality.** M50 is iterative; it starts with a fresh observation
   pass on the clean bring-up, not the static guesses. Several "empty" surfaces may be demo-up #7 artifacts.
 - **AI-readiness data model unknown → M51 exploratory.** The feature was invisible to the stale clones; M48
@@ -131,6 +235,11 @@ coverage + the AI-readiness criteria + the complete manifest download. Tag **`v1
 
 ## Paused — v2.0 "opening night"
 
+> **Status (2026-07-01):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), so v2.0
+> **resumes now** — it is the one paused-but-next release. It stays PAUSED *pending resume*; the user re-activates it
+> as the active release (assigning the next active milestone) via `/developer-kit:design-roadmap`. M201 is already
+> `done`; M202 ∥ M203 ∥ M204 are not started.
+>
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
 > across the platform start-to-finish the way a person would, then proves the platform delivered the outcome.
@@ -185,7 +294,9 @@ manifest is prose — authorable before/parallel to the M202 foundation).
 [`releases/02.00-opening-night/m201-manifest-corpus/`](releases/02.00-opening-night/m201-manifest-corpus/)
 (deliverable: `manifest-draft.yaml`). The close discovered the **stale-clone drift** (next-web 115+ commits behind
 prod) → **v2.0 PAUSED for the v1.10b "fit-up" backfill** (re-sync + re-ground + re-validate + fix, user-driven; see
-the In-Development section above) before resuming.
+the In-Development section above) before resuming. *(Correction: the v1.10b M47 milestone later found the clones
+actually current — next-web @ v2.89.0; the stale surface is the corpus, re-grounded by M48. The pause stands; the
+backfill's real work is the corpus + the bring-up/content fixes, not a clone re-sync.)*
 **Goal:** top-down, **user-directed** curation of the **full goal-aligned Product → Story → Use Case manifest
 corpus** — the build + regression contract every coverage milestone (M203/M204) implements against. The flow per
 pass: **outline** (products → stories → use cases) → **validate** (against the real platform surface + the spec's
@@ -300,7 +411,14 @@ assertion boundary.
 
 ## Shipped releases
 
-The complete shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`) through **v1.10 "method acting"**
+- **v1.10.1 "fit-up"** — **2026-07-01**, tag `v1.10.1`, **7 milestones (M47 … M53)**. The interposed
+  **field-hardening backfill** (a `.1` patch on v1.10): re-sync + recapture, corpus re-ground, from-cold `/demo-up`
+  hardening, content + AI-readiness-showcase-org seeding fill, one auditable seed+gen manifest, then a from-cold
+  destroy-and-rebuild acceptance (**6/6 + academy F6 GREEN**). Tooling + docs only, zero platform edits, zero new
+  deps. Records archived under
+  [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/).
+
+The complete earlier shipped history — **v1.0 "body double"** (2026-06-03, tag `v1.0`) through **v1.10 "method acting"**
 (2026-06-27, tag `v1.10`), 11 versions / milestones M0 … M46 — is preserved in
 [`roadmap-legacy.md`](roadmap-legacy.md) (the retired v1.x major). Records are archived under
 [`releases/archive/`](releases/archive/). No v2.0 release has shipped yet.

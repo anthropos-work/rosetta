@@ -54,8 +54,9 @@ and a `release/{version}` branch is cut.
 > **v1.10b "fit-up"** → 2026-06-29 (IN DEVELOPMENT, branch `release/01.10b-fit-up`; tag `v1.10.1`; an **interposed
 > field-hardening backfill** in the v1.3b "dress rehearsal" lineage — **v2.0 "opening night" is PAUSED** until it
 > ships). A from-scratch `/demo-up` surfaced 8 bring-up issues + a tail of v1.10 content gaps, and the M201 close
-> found the `stack-demo` clones + the corpus ~5 weeks / 115+ commits **behind prod**. v1.10b re-grounds demo +
-> corpus to current prod, fixes those issues, adds a curated **AI-readiness showcase org** (redeeming the M201
+> *reported* the `stack-demo` clones ~5 weeks / 115+ commits behind prod (M47 later found the clones **current** —
+> the **corpus** is the stale surface, → M48). v1.10b recaptures the snapshot, re-grounds the corpus, fixes the
+> bring-up + content issues, adds a curated **AI-readiness showcase org** (redeeming the M201
 > member-AI-readiness false-negative), and consolidates **one auditable seed+gen manifest**. **7 milestones
 > M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53** (the v1.x flat counter re-opened — backfill work is a `.1` patch of
 > v1.10, not a v2 `Mxyy` milestone). Designed from `.agentspace/annotation.md` + the M201 stale-clone finding.
