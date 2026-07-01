@@ -77,6 +77,9 @@ key, so Cosmo is genuinely absent. The Phase 0b audit found this is *implied* bu
 provisioned) — per the AI-keys policy. No `/api/ai/chat` assertion in the F6 acceptance.
 
 ## AB4-REGRESSION — the M42 manager gate (dan-manager @ Cervato) is BROKEN by an M51 unconditional seedPath → routes back to M51
+> **STATUS: RESOLVED — see AB4-FIX below.** The user APPROVED fixing this at the acceptance gate (M51 is
+> archived). This entry is the original diagnosis (accurate history); the fix + re-verification are in AB4-FIX.
+
 **This is an ACCEPTANCE FINDING, not an M53 fix. Per the acceptance-not-fix rule, the fix routes BACK to
 M51 (its owner); M53 does NOT repair it.**
 
@@ -128,6 +131,9 @@ is GREEN again (with AB5's dana-manager @ Northwind gate still GREEN). AB1/AB2/A
 PASS from cold; AB4 is the sole failure.
 
 ## AB4-ROUTING — M51 is archived; the regression escalates to the orchestrator/user (not annotated in M53)
+> **STATUS: RESOLVED — see AB4-FIX below.** The escalation ran as designed: the regression was surfaced to the
+> user WITH the evidence + fix design, and the user chose the routing (fix at the gate, not re-open M51).
+
 Per the acceptance-not-fix rule, a failed acceptance assertion routes to its owning milestone and M53 does
 NOT fix it. M51 (`status: archived`) is that owner (its iter-05 D3 added the unconditional seedPath). Because
 M51 is already closed+archived, the correct mechanism is NOT to silently re-open it or land a fix in M53 —
@@ -137,3 +143,50 @@ it as a tracked follow-up before the v1.10b release closes). The v1.10b cold-reb
 until AB4's manager half (dan-manager @ Cervato) is GREEN again with AB5 (dana-manager @ Northwind) still
 GREEN. This is a genuine release-blocker, correctly surfaced by M53's from-cold both-vantage assertion — the
 milestone did its job (caught a late cross-milestone regression the live-serialization missed).
+
+## AB4-FIX — org-condition the manager AI-readiness manifest, fixed at the acceptance gate (a recorded M53 exception)
+**Context.** The AB4-ROUTING escalation surfaced the M51-owned regression to the user with the evidence + fix
+design. Because M51 is archived, re-opening it for a one-line manifest change is heavier than the fix itself.
+**The user APPROVED fixing it at the M53 acceptance gate** — a conscious, recorded exception to M53's
+"acceptance-not-fix / no fix code" rule, in exactly the same class as the academy F6 exception (D1/D2): the
+touched code is a rext **test/gate artifact** (the coverage manifest), NOT platform code, and the fix is
+narrow + fully test-covered.
+
+**Options (from AB4-REGRESSION's routing note).** (a) gate the seedPath on `COVERAGE_EXPECTED_ORG === the
+showcase org`; (b) a Northwind-only manifest overlay; (c) a `showcaseOrgOnly: true` descriptor tag the sweep
+skips off-showcase. **Chosen: (a)**, the smallest correct change that reuses the org name the sweep already
+threads (`COVERAGE_EXPECTED_ORG`, the same value persona-assert's `orgIdentity` matches on).
+
+**Change (rext authoring `117fe41`, `stack-verify/e2e/`; zero platform edits).**
+- `AI_READINESS_SHOWCASE_ORG = 'Northwind Aviation'` — the org whose manager vantage carries the AI-readiness
+  surface (the 199 snapshots seed only there).
+- Extracted the AI-readiness page into an exported `AI_READINESS_PAGE` descriptor.
+- `MANAGER_MANIFEST` (unchanged name/role) = the SHOWCASE manifest: base pages + `AI_READINESS_PAGE`, seedPaths
+  including `/enterprise/workforce/ai-readiness`. Kept canonical so AB5 + the existing manager unit tests
+  (which reference `MANAGER_MANIFEST`) still see the full surface.
+- New `MANAGER_MANIFEST_BASE` = the base-org manifest: the SAME surface MINUS the AI-readiness seedPath +
+  descriptor.
+- `manifestFor(vantage, expectedOrg?)` returns the showcase manifest only when `expectedOrg` matches
+  `AI_READINESS_SHOWCASE_ORG` (case-insensitive substring); otherwise (base org, or empty/undefined — the
+  manager default) the base manifest. Employee vantage returns `EMPLOYEE_MANIFEST` unchanged.
+- `coverage.spec.ts` threads `expectedOrg` into `manifestFor(vantage, expectedOrg)`.
+- +3 unit tests (showcase includes the page; base/Cervato/Solvantis/empty omit both seedPath + descriptor; no
+  collateral drop — base = showcase minus exactly one page). **27/27 manifest unit tests pass.**
+
+**Why base org omission is correct (not a coverage hole).** On a base-Workforce org the AI-readiness dashboard
+is LEGITIMATELY empty (no seeded cycle) — asserting it there is a false-fail. The page's real proof (the funnel
+renders from real seeded data) is still asserted on the showcase org (Northwind, AB5). So the fix removes a
+false assertion, not a real one; escapes stay 0, persona stays green.
+
+**Re-verification (both manager vantages, same cold demo-1, run-coverage.sh at the re-rolled v1.10.1):**
+- `dan-manager` @ Cervato (M50 base gate): **GATE MET** — reachable=69/150, failingSections **2→0**, escapes=0,
+  persona=0, frontier=EXHAUSTED; ai-readiness NOT in the reached set (base manifest omits it).
+- `dana-manager` @ Northwind (M51 showcase gate, AB5): **GATE MET** — reachable=70/150, failingSections=0,
+  escapes=0, persona=0; ai-readiness seedPath crawled (position #3) + **both ai-readiness sections PASS** (541
+  meaningful chars). AB5 intact.
+
+**`v1.10.1` re-rolled** at the fix HEAD `117fe41` (local unpushed annotated-tag re-roll — NOT a force-push);
+`.agentspace/rext.tag` stays `v1.10.1`; the `stack-demo/rosetta-extensions` consumption clone re-pinned via a
+clean `git fetch <authoring> main --tags && git checkout v1.10.1`.
+
+**Verdict.** AB4 GREEN both manager vantages → the full M53 acceptance bar is **6/6 + F6 PASS from cold**.
