@@ -1,6 +1,6 @@
 # Customer API + MCP — Programmatic-Access Spec
 
-> **Status:** Consolidated draft `v0.1` · spec-draft · 2026-07-01
+> **Status:** Consolidated draft `v0.2` · spec-draft · 2026-07-01 (scope correction: R1 READ surface = full Talk-to-Data data parity — see §4.2 catalog, §4.4 UCs, §4.5 read-contract rules, §6.2 MVP, §6.3 R1 milestone shape)
 > **Companions:** [`spec-progress.md`](spec-progress.md) (decision tracker + log) · [`next-release.md`](next-release.md) (out-of-scope / parking lot) · [`vision.md`](vision.md) (north-star + long-horizon posture)
 > **Brand:** *Anthropos Public API* + *Anthropos MCP Server* — one contract, two shells (REST-and-later-GraphQL for scripts, MCP for AI agents).
 
@@ -146,23 +146,78 @@ Product        (1) a platform capability area          (People, Learning, Verifi
 - **Tool** — the **atomic unit of contract**. One tool = one REST endpoint + one MCP tool + one audit row shape
   + one rate-limit bucket. **Two shells, one tool** (P5).
 
-### 4.2 API resource catalog (indicative, first pass)
+### 4.2 API resource catalog (R1 READ = Talk-to-Data data parity)
 
-The catalog is the spec's **build reference** for the roadmap in §6. It is deliberately **shorter than what the
-platform can technically expose** — it starts from customer use cases (§4.4), not from the internal RPC surface.
+**Scope-defining decision (v0.2):** the R1 READ surface must reach **data parity with Talk to Data** — every
+domain a customer can query through the AI chat surface today must be queryable through a stable, versioned,
+principal-scoped REST endpoint. Authoritative coverage is the `askengine.TableRegistry` in the platform backend
+(`ant-platform-backend/internal/askengine/registry.go`) + `rules.md` (Table Registry section + business rules)
+— **~55 tables across 9 domains** at spec time.
 
-| Product | Resource | Actions (planned) | First release |
+**The projection is a product API, not raw SQL.** Internal detail (validation_*, task_*, anticheat_results,
+etc.) is **nested under a parent resource** (a simulation session), never surfaced as a raw table endpoint.
+Reference / translation tables (skill_translations, sim_translations, job_role_translations, world_languages)
+are consumed via a `?language=` query param on the parent resource, not exposed as standalone endpoints.
+
+#### 4.2.1 Products → Resources → Endpoints
+
+Legend: `[L]` = list, `[G]` = get-by-id, `[nested]` = collection under a parent-resource path, `∗` = FIRST-USABLE
+(the R1 opening set — the seven UCs a customer can end-to-end on day one; every other resource in R1 closes
+under the same per-resource gate).
+
+| Product | Resource | R1 endpoints | Backing tables (Talk-to-Data) |
 |---|---|---|---|
-| **People** | `organization`, `member`, `role`, `manager-report-line` | `list`, `get` (R1); `w1: member.create`, `member.update`, `member.deactivate` (R4) | R1 read / R4 W1 |
-| **Learning** | `skill-path`, `skill-path-assignment`, `skill-path-progress`, `certificate` | `list`, `get` (R1); `w1: assignment.create`, `assignment.reassign` (R4) | R1 read / R4 W1 |
-| **Verification** | `user-skill` (claimed), `verified-skill`, `skill-taxonomy-node` | `list`, `get` (R1); `w2: verified-skill.emit` (R5, gated) | R1 read / R5 W2 |
-| **Simulations** | `simulation-session`, `simulation-blueprint`, `session-result` | `list`, `get` (R1); `w2: session.launch` (R5) | R1 read / R5 W2 |
-| **Audit** | `audit-event` | `list`, `get` (R1); `webhook.subscribe` (R5) | R1 read / R5 webhook |
-| **Access** | `api-key`, `scope`, `rate-limit-budget` | `list`, `get`, `admin: create/rotate/revoke` (R1) | R1 admin |
+| **People** | `organization` | `GET /v1/people/organization` (org + settings + `max_level`) ∗ | `organizations`, `organization_settings` |
+| **People** | `member` | `GET /v1/people/members` [L] ∗, `GET /v1/people/members/{member_id}` [G] ∗ | `memberships` ⋈ `users` |
+| **People** | `member.skill` | `GET /v1/people/members/{member_id}/skills` [nested L] ∗ (mapped + verified split, level on org scale) | `user_skill_evidences`, `membership_skills`, `skiller.skills`, `skiller.skill_translations` |
+| **People** | `member.certification` | `GET /v1/people/members/{member_id}/certifications` [nested L] | `user_certifications` |
+| **People** | `member.education` | `GET /v1/people/members/{member_id}/educations` [nested L] | `user_educations` |
+| **People** | `member.experience` | `GET /v1/people/members/{member_id}/experiences` [nested L] | `user_experiences` |
+| **People** | `member.language` | `GET /v1/people/members/{member_id}/languages` [nested L] | `user_languages`, `membership_languages`, `world_languages` |
+| **People** | `member.target-role` | `GET /v1/people/members/{member_id}/target-roles` [nested L] | `user_target_roles` |
+| **People** | `member.tag` | `GET /v1/people/members/{member_id}/tags` [nested L] (the teams a member belongs to) | `membership_tags` |
+| **People** | `member.profile-history` | `GET /v1/people/members/{member_id}/profile-history` [nested L] (admin sees all; non-admin self-scoped) | `profile_histories` |
+| **People** | `team` | `GET /v1/people/teams` [L], `GET /v1/people/teams/{team_id}` [G] (`tags` under a product noun) | `tags` |
+| **People** | `invitation` | `GET /v1/people/invitations` [L], `GET /v1/people/invitations/{invitation_id}` [G] | `invitations` |
+| **People** | `company` | `GET /v1/people/companies` [L] (reference read for experience-history resolution) | `companies` |
+| **Assignments** | `assignment` | `GET /v1/assignments` [L], `GET /v1/assignments/{assignment_id}` [G] | `organization_assignments` |
+| **Assignments** | `assignment.session` | `GET /v1/assignments/{assignment_id}/sessions` [nested L] | `organization_assignment_sessions` |
+| **Assignments** | `organization-role` | `GET /v1/assignments/organization-roles` [L] | `organization_roles` ⋈ `skiller.job_roles` |
+| **Assignments** | `organization-target-role` | `GET /v1/assignments/organization-target-roles` [L] | `organization_target_roles` ⋈ `skiller.job_roles` |
+| **Simulations** | `simulation-session` | `GET /v1/simulations/sessions` [L] ∗, `GET /v1/simulations/sessions/{session_id}` [G] ∗ (score on org scale) | `jobsimulation.sessions` |
+| **Simulations** | `simulation-session.recording` | `GET /v1/simulations/sessions/{session_id}/recordings` [nested L] | `jobsimulation.recordings` |
+| **Simulations** | `simulation-session.interaction` | `GET /v1/simulations/sessions/{session_id}/interactions` [nested L] | `jobsimulation.interactions` |
+| **Simulations** | `simulation-session.realtime-call` | `GET /v1/simulations/sessions/{session_id}/realtime-calls` [nested L] | `jobsimulation.realtime_calls` |
+| **Simulations** | `simulation-session.code-submission` | `GET /v1/simulations/sessions/{session_id}/code-submissions` [nested L] | `jobsimulation.code_submissions` |
+| **Simulations** | `simulation-session.anticheat-result` | `GET /v1/simulations/sessions/{session_id}/anticheat-results` [nested L] | `jobsimulation.anticheat_results` |
+| **Simulations** | `simulation-session.activity-event` | `GET /v1/simulations/sessions/{session_id}/activity-events` [nested L] | `jobsimulation.activity_events` |
+| **Simulations** | `simulation-session.task-check` | `GET /v1/simulations/sessions/{session_id}/task-checks` [nested L] (`sub_checks[]` embedded) | `jobsimulation.task_checks`, `jobsimulation.task_sub_checks` |
+| **Simulations** | `simulation-session.conversation-extraction` | `GET /v1/simulations/sessions/{session_id}/conversation-extractions` [nested L] | `jobsimulation.conversation_extractions` |
+| **Simulations** | `simulation-session.interview-extraction` | `GET /v1/simulations/sessions/{session_id}/interview-extractions` [nested L] | `jobsimulation.interview_extraction_results` |
+| **Simulations** | `simulation-session.validation-result` | `GET /v1/simulations/sessions/{session_id}/validation-results` [nested L] | `jobsimulation.validation_results` |
+| **Simulations** | `simulation-session.validation-attempt` | `GET /v1/simulations/sessions/{session_id}/validation-attempts` [nested L] (`skill_results[]`, `criterion_results[]`, `check_results[]` embedded) | `jobsimulation.validation_attempt_results`, `validation_attempt_skill_results`, `validation_criterion_results`, `validation_check_results` |
+| **Simulations** | `simulation-feedback` | `GET /v1/simulations/feedback` [L] | `job_simulation_feedbacks` |
+| **Learning** | `skill-path-session` | `GET /v1/learning/skill-path-sessions` [L] ∗ | `skillpath.skill_path_sessions` |
+| **Catalog** | `simulation-template` | `GET /v1/catalog/simulations` [L], `GET /v1/catalog/simulations/{simulation_id}` [G] (title via `?language=`) | `directus.simulations`, `directus.sim_translations` |
+| **Catalog** | `skill-path-template` | `GET /v1/catalog/skill-paths` [L], `GET /v1/catalog/skill-paths/{skill_path_id}` [G] | `directus.skill_paths` |
+| **Taxonomy** | `skill` | `GET /v1/taxonomy/skills` [L] (public + org-custom; `?language=` resolves translated name) | `skiller.skills`, `skiller.skill_translations` |
+| **Taxonomy** | `job-role` | `GET /v1/taxonomy/job-roles` [L] (public + org-custom; `?language=` resolves translated name) | `skiller.job_roles`, `skiller.job_role_translations` |
+| **Taxonomy** | `world-language` | `GET /v1/taxonomy/world-languages` [L] | `world_languages` |
+| **Academy** | `series` | `GET /v1/academy/series` [L] | `academy_series` |
+| **Academy** | `skill-path` | `GET /v1/academy/skill-paths` [L] (`lifecycle = published` + tenant-scoped) | `academy_skill_paths` |
+| **Academy** | `chapter` | `GET /v1/academy/chapters` [L], `GET /v1/academy/chapters/{slug}` [G] (locale-metadata via `?locale=`; body NOT projected) | `academy_chapters`, `academy_chapter_bodies` |
+| **Academy** | `progress` | `GET /v1/academy/progress` [L] (per-member chapter progress) | `academy_chapter_progresses` |
+| **AI Readiness** | `live` | `GET /v1/ai-readiness/live` [L] (the "right now" materialised score) | `ai_readiness_live_snapshots` |
+| **AI Readiness** | `cycle` | `GET /v1/ai-readiness/cycles` [L], `GET /v1/ai-readiness/cycles/{cycle_id}` [G] | `ai_readiness_cycles` |
+| **AI Readiness** | `cycle.snapshot` | `GET /v1/ai-readiness/cycles/{cycle_id}/snapshots` [nested L] (frozen per-participant) | `ai_readiness_snapshots` |
+| **Audit** | `audit-event` | `GET /v1/audit/events` [L] ∗ (the customer's own API-usage audit trail — from M302) | `customer_api.audit_events` |
+| **Access** | `api-key`, `scope`, `rate-limit-budget` | `list`, `get`, `admin: create / rotate / revoke` (from M302 — admin tier) | *(customer-api-owned)* |
 
-**W1 (safe writes, R4)**: the "roster + assignment" cluster — high value, low blast radius, well-understood
-platform mutations. **W2 (advanced writes, R5)**: verification emissions + session launches — larger blast
-radius, tighter entitlement gates, per-action rate limits.
+**Total:** **9 products, 35 resources / ~44 R1 endpoints, ~55 backing tables.** Every Talk-to-Data-queryable
+domain becomes a read resource. Every response respects the read-contract rules in **§4.6**.
+
+**Writes are unchanged from v0.1:** `w1` (R4) = safe writes, `w2` (R5) = advanced writes, `admin` (R1) = the
+Access-product mint/rotate/revoke via M302 only. No customer-data write in R1.
 
 ### 4.3 What a Resource declares (the tool contract)
 
@@ -184,29 +239,84 @@ Every catalog entry declares a **tool contract** — the atomic unit of §4.1. T
 ### 4.4 Customer use cases (the source of truth for the catalog)
 
 The catalog is derived from a **numbered use-case list** — each row is a real thing a real customer does. Use
-cases marked **FIRST-USABLE** are the R1 MVP surface (§6.2).
+cases marked **FIRST-USABLE** are the R1 opening surface (§6.2). The list was expanded in v0.2 to cover the full
+Talk-to-Data data parity (§4.2); every domain in the catalog is anchored to at least one UC below.
 
-| # | Use case | Persona / JTBD | Value | Kind | Ships |
+| # | Use case | Persona / JTBD | Domain | Kind | Ships |
 |---|---|---|---|:---:|:---:|
-| **UC1** | List all members of my org | HR ops · "keep our HRIS in sync" | replace nightly CSV export | READ | R1 **FIRST-USABLE** |
-| **UC2** | Fetch skill-path progress for a team | HR ops · "show weekly training pulse" | replace the manual roll-up | READ | R1 **FIRST-USABLE** |
-| **UC3** | Fetch verified-skill state per employee | HR ops · "compliance report" | replace one-off SQL | READ | R1 **FIRST-USABLE** |
-| **UC4** | Pull org structure + reporting lines | HR ops · "sync org chart into HRIS" | | READ | R1 **FIRST-USABLE** |
-| **UC5** | Manager pulls team competency snapshot for review | Manager · "1:1 prep" | replace UI clicking | READ | R1 |
-| **UC6** | Compliance officer exports the audit log | Compliance · "SIEM feed" | new capability | READ | R1 |
-| **UC7** | Ecosystem partner mirrors Anthropos org data into HRIS | Partner · "keep systems in lockstep" | ecosystem enablement (G3) | READ | R1 |
-| **UC8** | AI agent (Claude) answers *"who has verified skill X?"* over MCP | AI agent (G2, G8) | new capability | READ (MCP) | R2 **FIRST-MCP** |
-| **UC9** | AI agent recommends *"what should Bob take next?"* over MCP | AI agent (G2) | new capability | READ (MCP) | R2 |
-| **UC10** | Onboard a batch of new employees | HR ops · "new-hire ingest" | replace batch UI | WRITE (W1) | R4 |
-| **UC11** | Assign a skill path to a team | HR ops / L&D · "assign training" | replace UI | WRITE (W1) | R4 |
-| **UC12** | Update org structure / reassign a manager | HR ops · "reorg" | replace UI | WRITE (W1) | R4 |
-| **UC13** | Ecosystem app launches an AI simulation on behalf of a user | Partner · "embed sim in partner app" | new capability | WRITE (W2) | R5 |
+| **UC1** | List all members of my org (with pagination + `?since=`) | HR ops · "keep our HRIS in sync" | People | READ | R1 **FIRST-USABLE** |
+| **UC2** | Fetch one member's full profile + skills + roles | HR ops · "1:1 prep, on demand" | People | READ | R1 **FIRST-USABLE** |
+| **UC3** | Fetch mapped vs verified skills per member (org scale + `max_level`) | HR ops · "compliance report" | People | READ | R1 **FIRST-USABLE** |
+| **UC4** | Pull org profile + settings (`max_level`, feature toggles) | HR ops · "know the org scale" | People | READ | R1 **FIRST-USABLE** |
+| **UC5** | Pull certifications + educations + experiences + languages per member | HR ops · "resume equivalent for HRIS" | People | READ | R1 |
+| **UC6** | Pull target-roles + tags (teams) per member | HR ops · "workforce planning" | People | READ | R1 |
+| **UC7** | Pull profile change history (admin sees all; self-scoped otherwise) | HR ops / member · "audit self-edits" | People | READ | R1 |
+| **UC8** | List teams (product noun for `tags`) + their members | HR ops · "team roster" | People | READ | R1 |
+| **UC9** | List invitations + their state | HR ops · "onboarding pulse" | People | READ | R1 |
+| **UC10** | Look up companies referenced in experience-history | HR ops · "resolve prior employers" | People | READ | R1 |
+| **UC11** | List assignments + drill into their per-member sessions | HR ops · "assignment progress" | Assignments | READ | R1 |
+| **UC12** | List organization-roles + organization-target-roles | HR ops · "role catalog for the org" | Assignments | READ | R1 |
+| **UC13** | List AI-simulation sessions + their outcome (score on org scale) | HR ops · "who ran what, how did it go" | Simulations | READ | R1 **FIRST-USABLE** |
+| **UC14** | Drill into one simulation session's validation attempts (with embedded skill/criterion/check results) | Compliance · "why did this session pass?" | Simulations | READ | R1 |
+| **UC15** | Drill into one simulation session's recording + interactions + realtime-calls + code-submissions | Compliance · "session forensics" | Simulations | READ | R1 |
+| **UC16** | Drill into one simulation session's activity-events + anticheat-results + task-checks (with sub-checks) | Compliance · "integrity audit" | Simulations | READ | R1 |
+| **UC17** | Drill into one simulation session's conversation-extractions + interview-extraction-results | HR ops · "structured interview evidence" | Simulations | READ | R1 |
+| **UC18** | List post-simulation feedbacks | HR ops · "candidate voice-of-user" | Simulations | READ | R1 |
+| **UC19** | List skill-path sessions + progress per member | HR ops / L&D · "training pulse" | Learning | READ | R1 **FIRST-USABLE** |
+| **UC20** | Browse the simulation-template catalog (title/desc via `?language=`) | HR ops · "what sims are available" | Catalog | READ | R1 |
+| **UC21** | Browse the skill-path-template catalog | HR ops · "what paths are available" | Catalog | READ | R1 |
+| **UC22** | Resolve skill / job-role names from the taxonomy (public + org-custom, `?language=`) | HR ops / integrator · "human labels, never raw ids" | Taxonomy | READ | R1 |
+| **UC23** | List world-languages the platform supports | Integrator · "know the vocabulary" | Taxonomy | READ | R1 |
+| **UC24** | List AI Academy series + published skill-paths + chapters | Learner / HR ops · "which academy content is live" | Academy | READ | R1 |
+| **UC25** | Fetch per-member Academy chapter progress | HR ops · "who is learning what" | Academy | READ | R1 |
+| **UC26** | Get the org's **live** AI-readiness score ("right now") | HR ops · "am I ready today" | AI Readiness | READ | R1 |
+| **UC27** | List AI-readiness cycles + drill into per-participant frozen snapshots | HR ops · "cycle-over-cycle progression" | AI Readiness | READ | R1 |
+| **UC28** | Compliance officer exports the API-usage audit log | Compliance · "SIEM feed" | Audit | READ | R1 **FIRST-USABLE** |
+| **UC29** | Ecosystem partner mirrors Anthropos org data into HRIS | Partner · "keep systems in lockstep" (G3) | (cross-domain) | READ | R1 |
+| **UC30** | AI agent (Claude) answers *"who has verified skill X?"* over MCP | AI agent (G2, G8) | (cross-domain) | READ (MCP) | R2 **FIRST-MCP** |
+| **UC31** | AI agent recommends *"what should Bob take next?"* over MCP | AI agent (G2) | (cross-domain) | READ (MCP) | R2 |
+| **UC32** | Onboard a batch of new employees | HR ops · "new-hire ingest" | People | WRITE (W1) | R4 |
+| **UC33** | Assign a skill path to a team | HR ops / L&D · "assign training" | Learning | WRITE (W1) | R4 |
+| **UC34** | Update org structure / reassign a manager | HR ops · "reorg" | People | WRITE (W1) | R4 |
+| **UC35** | Ecosystem app launches an AI simulation on behalf of a user | Partner · "embed sim in partner app" | Simulations | WRITE (W2) | R5 |
 
-The **FIRST-USABLE flag** lands on UC1–UC4 — enough that a customer can *do something real end-to-end* the day
-R1 ships (roster + progress + verified skill + org chart, all self-serve). **UC8 is the FIRST-MCP** — R2's proof
-that the MCP shell works on the R1 read foundation. Writes stay parked until R4/R5 behind the audit floor (P1).
+**FIRST-USABLE flags** land on the seven UCs that anchor the seven ∗-marked endpoints in §4.2 — enough that a
+customer can *do something real end-to-end* the day R1 ships (organization, roster, member get, mapped-vs-verified
+skills, sim sessions, learning progress, audit trail — all self-serve). Every other R1 UC closes under the same
+per-resource gate (§6.3). **UC30 is the FIRST-MCP** — R2's proof that the MCP shell works on the R1 read
+foundation. Writes stay parked until R4/R5 behind the audit floor (P1).
 
-### 4.5 Write staging — W1 / W2 / admin
+### 4.5 Read-contract rules (business-truth invariants)
+
+Every R1 read endpoint MUST honor the following invariants, extracted from `askengine/rules.md` (the platform's
+canonical business-rules doc that governs the Talk-to-Data engine). A response that violates any of these is
+incorrect, not merely suboptimal — contract tests (§5.7) enforce them per endpoint. They are numbered so audits
++ decisions can reference them.
+
+| # | Rule | Enforcement |
+|---|---|---|
+| **CR1 — Principal-scoping** | Every request is filtered by `Principal.organization_id`; there is **no** `org_id` query param; cross-org reads do not exist in the customer API (P2). | Handler middleware; cross-tenant isolation gauntlet. |
+| **CR2 — Soft-delete exclusion** | All lists exclude rows with `deleted_at IS NOT NULL` unless the endpoint is explicitly an audit / history endpoint. | Repository predicate; contract test asserts a soft-deleted fixture is invisible. |
+| **CR3 — Active-member definition** | `active` = `memberships.status = 'active' AND memberships.deleted_at IS NULL`. No other definition is accepted. | Shared predicate constant; contract test. |
+| **CR4 — Completed-simulation definition** | A completed session = `jobsimulation.sessions.ended_at IS NOT NULL AND status IN ('ended','timedout')`. Pass/fail comes from `completion_status ∈ {passed, failed, timed_out, discarded}`. | Shared predicate; contract test on a fixture matrix (running / ended / timedout / discarded). |
+| **CR5 — Mapped ≠ Verified** | Mapped skills = all `user_skill_evidences` rows for the member; Verified skills = the subset where `is_verified = true`. The member-skill response exposes **both dimensions distinctly** (never blended into a single list). | Response shape has two lists (`mapped[]`, `verified[]`); contract test asserts they never merge and that `verified ⊆ mapped`. |
+| **CR6 — Org-scale everywhere** | Every skill level + simulation score is returned on the **org scale** `0..max_level`, where `max_level` is resolved from `organization_settings.options->>'levels_count'::int` for the row where `setting = 'skills_custom_levels' AND is_enabled = true` (default `5`). Raw `0..100` values NEVER appear in a customer-facing field. Every response carrying a level or score also carries `max_level`. | Shared level-normaliser; contract test on a fixture org with `levels_count = 7`. |
+| **CR7 — Skill level source column** | A member's displayed skill level comes from `user_skill_evidences.level`, **not** `membership_skills.skill_level` (legacy). | Repository query; lint on any query touching `membership_skills.skill_level`. |
+| **CR8 — Forbidden stale tables** | The customer API MUST NEVER read from `local_jobsimulation_sessions`, `local_skill_path_sessions`, or `membership_skills.skill_level`. Use `jobsimulation.sessions`, `skillpath.skill_path_sessions`, and `user_skill_evidences.level` respectively. | Static lint on `internal/customerapi/`; grep-based CI check. |
+| **CR9 — Person identifier** | Every customer-facing member identifier is the user UUID (`memberships."user"`), never the membership PK (`memberships.id`). Every member-scoped path uses `{member_id}` bound to `m."user"`. | Route parameter contract; contract test asserts a call with a membership-PK 404s. |
+| **CR10 — Catalog resolution (human labels)** | Every skill / simulation / skill-path / job-role reference in a response is resolved to its human-readable name (via the taxonomy + catalog joins). Raw ids MAY appear alongside for machine consumers but are never the sole identifier. | Response shape; contract test asserts a name field is present + non-empty. |
+| **CR11 — Localization** | Reads accept `?language=` with values `english | italian | spanish | french | german | dutch` (`+ japanese` for AI-Simulation catalog reads). Missing translation → fallback to English (never a raw id, never a null). Locale param name is `language` at customer-facing endpoints; `locale` is accepted for the Academy resource per its schema. | Shared locale resolver; contract test on a fixture with partial translations. |
+| **CR12 — AI Readiness: live ≠ frozen** | `/v1/ai-readiness/live` answers "right now" from `ai_readiness_live_snapshots` (materialised view). `/v1/ai-readiness/cycles/{cycle_id}/snapshots` answers "in cycle X" from `ai_readiness_snapshots` (per-cycle immutable). They are two resources; a client MUST NOT read live and label it "cycle result". | Distinct handlers; contract test asserts both resources exist and return distinct shapes. |
+| **CR13 — Profile-history self-scoping** | `/v1/people/members/{member_id}/profile-history`: an admin principal sees the whole org's trail; a non-admin principal is force-scoped to `target_user_id = Principal.UserID` regardless of the `{member_id}` in the path. | Middleware guarantee, not a query param; contract test with a non-admin principal asserts other members' history is invisible. |
+| **CR14 — Academy visibility** | `/v1/academy/*` exposes only rows where `lifecycle = 'published'` (or the equivalent per-table published flag) AND tenant-scoped under the path-wins-when-more-restrictive rule. | Repository predicate; contract test with a `draft` fixture. |
+| **CR15 — Read-only R1** | Every R1 endpoint is `GET`. `POST` / `PUT` / `PATCH` / `DELETE` exist ONLY under the `admin` action-type on the Access product (M302's `/v1/access/api-keys`). Customer-data writes = R4 / R5. | HTTP-method allow-list on the customer-API router; contract test asserts a `POST` to a customer-data resource returns 405. |
+
+**Why these are contract, not doc:** each CR was a real bug class in the internal `askengine` before it became a
+rule — CR6 (raw 0-100 leaking) and CR8 (stale-table reads) in particular. Encoding them into the customer-API
+contract tests keeps the same class of bug from re-emerging under a customer principal, where the blast radius
+would be worse (a wrong customer-visible score is a compliance incident).
+
+### 4.6 Write staging — W1 / W2 / admin
 
 Writes never ship in the same release as the read foundation. The staging:
 
@@ -319,11 +429,16 @@ Workforce's own scripts). Both routes converge on the same `Principal` and the s
 - **Contract tests:** every catalog entry has a contract test (input/output schema conformance, principal
   isolation, rate-limit fires, audit row lands).
 - **Cross-tenant isolation gauntlet:** a dedicated suite that runs every read endpoint under Org A's principal
-  and asserts **zero** Org B rows leak. Ships **at R1**, not later (P2).
+  and asserts **zero** Org B rows leak. Ships **at R1**, not later (P2). Scope in v0.2: all ~44 R1 endpoints
+  from the expanded catalog (§4.2), not just the FIRST-USABLE seven.
+- **Read-contract rule suite (CR1–CR15):** a per-rule test-matrix that asserts every applicable endpoint honors
+  the corresponding rule from §4.5. Fixtures include: a soft-deleted member (CR2), a `levels_count = 7` org
+  (CR6), a `timedout` sim session (CR4), a partial-translation skill (CR11), a `draft` academy chapter (CR14).
+  The lint side of CR7/CR8 lives in CI (grep-based gate on `internal/customerapi/`).
 - **MCP conformance:** R2's MCP server ships with an MCP-spec-conformance suite (tool discovery, schema, error
   shape).
-- **Playthroughs sibling:** the R1 customer flows (UC1–UC4 self-serve) are also candidate Playthroughs on the
-  v2.0 foundation once R1 lands — but this is a follow-on, not R1 scope.
+- **Playthroughs sibling:** the R1 customer flows (the FIRST-USABLE seven) are also candidate Playthroughs on
+  the v2.0 foundation once R1 lands — but this is a follow-on, not R1 scope.
 
 ---
 
@@ -347,8 +462,11 @@ also available in Workforce; the UI is not deprecated for customers who prefer i
 
 ### 6.2 The MVP (R1 — the smallest customer-usable slice)
 
-**In R1:** the FIRST-USABLE reads (UC1–UC4), the audit + rate-limit floor, API-key self-serve mint/rotate/revoke,
-minimal docs. Just enough for a customer to script the nightly HRIS pull.
+**In R1:** **full data parity with Talk to Data on the read side** — every domain a customer can query through
+the AI chat surface today is queryable through a stable, versioned, principal-scoped REST endpoint (§4.2:
+9 products / 35 resources / ~44 endpoints / ~55 backing tables). Plus the audit + rate-limit floor, API-key
+self-serve mint/rotate/revoke, and minimal docs. The FIRST-USABLE seven anchor the day-one demo; the rest close
+under the same per-resource gate (§6.3).
 
 **Explicitly deferred from R1:**
 - Writes of any kind → **R4/R5**.
@@ -356,10 +474,10 @@ minimal docs. Just enough for a customer to script the nightly HRIS pull.
 - Aggregations, streaming, GraphQL projection → **R3**.
 - SDK code-gen, hosted MCP, SLA → **R6**.
 
-**Why this shape:** it is the **shortest end-to-end customer-usable slice** — a real customer replaces a real
-support ticket with a real curl call on day one — while establishing the audit + rate-limit + Principal +
-API-key floor that every subsequent release inherits. **Read-first + audit-from-R1 = writes-cheap-later** (P1
-+ P6).
+**Why this shape:** it is the **shortest end-to-end customer-usable slice that is also the honest one** — a
+real customer replaces a real support ticket with a real curl call on day one, AND any question their AI agent
+could answer via Talk to Data today has a stable customer-owned URL tomorrow, under the same principal + audit +
+rate-limit floor. **Read-first + parity-from-R1 + audit-from-R1 = writes-cheap-later** (P1 + P6).
 
 ### 6.3 R1 milestone shape (governed by this spec's `/developer-kit:design-roadmap` run)
 
@@ -372,10 +490,14 @@ sequential:
 - **M302 — Access primitive** (`section`) — the API-key mint/rotate/revoke path; the `ApiKeyIdentityProvider`;
   the audit ledger table + append-only middleware; the rate-limit middleware (Redis token-bucket). No customer
   data endpoint yet — the primitive is proven with a `/v1/access/whoami` echo.
-- **M303 — REST reads gateway** (`iterative`) — the R1 read catalog (People + Learning + Verification + Audit),
-  one resource at a time, each closed on: OpenAPI entry + contract test + cross-tenant isolation test + audit
-  row + rate-limit fire. **Exit gate:** UC1–UC7 all green on an integration stack with 0 cross-tenant leakage
-  over N runs.
+- **M303 — REST reads gateway** (`iterative`) — the R1 read catalog at **Talk-to-Data parity** — the 9
+  products / 35 resources / ~44 endpoints / ~55 backing tables from §4.2, iterated one resource-family at a
+  time. Each resource closed on: OpenAPI entry + contract test + cross-tenant isolation test + the applicable
+  CR1–CR15 rule tests (§4.5) + audit row + rate-limit fire. **Exit gate:** every resource-family in §4.2 has a
+  green endpoint on an integration stack; the FIRST-USABLE seven UCs are end-to-end scripted; the CR1–CR15
+  rule-matrix is fully green; **0 cross-tenant leakage over N runs across the full ~44-endpoint surface**; the
+  static-lint side of CR7/CR8 (no `local_jobsimulation_sessions`, no `local_skill_path_sessions`, no
+  `membership_skills.skill_level`) is CI-gated.
 - **M304 — Customer surface + docs lite** (`section`) — the Workforce self-serve API-key UI (list / mint /
   rotate / revoke / usage) + the `docs.anthropos.work/api/v1/` docs site (OpenAPI-generated + hand-written
   quickstart for UC1–UC4).
