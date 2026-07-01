@@ -26,6 +26,22 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
    queries `aiReadinessEnabled` (`apps/web/.../ai-readiness/AIReadinessClient.tsx`).
 
+> **These two gates are different layers — not a contradiction.** `stories-spec.md` (the `OrgSettingsSeeder` row)
+> calls enablement "an **org setting**, not a PostHog flag": that is precise about the **enablement/data layer**
+> (gate 1) the seeder writes — a `organization_settings` DB row, resolved from the M48 contract, which is *not*
+> stored in PostHog. It does **not** deny gate 2: the next-web client *additionally* checks the PostHog
+> `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and UI-also-checks-the-flag (gate 2)
+> are complementary, and both must hold for the dashboard to render.
+>
+> **How the demo satisfies gate 2 (the FE flag).** The seeder writes only gate 1 (the org setting) — the PostHog
+> `flag_ai_readiness` is out of seeder reach (M51 iter-02). The demo next-web bakes **no** `NEXT_PUBLIC_POSTHOG_KEY`
+> (only the minted Clerk pk + offset URLs — see `demo/frontend-tier.md`), so the client-side flag check has no
+> PostHog backend to consult and does not block the route. Empirically this is proven: the M53 cold-rebuild
+> acceptance **AB5** renders the manager dashboard from cold on the showcase org (Northwind: 50/100 org readiness,
+> 199 members, the 3-step funnel, both sections PASS) — so gate 2 is provably satisfied in the demo. (The exact
+> in-SDK default-through path is inferred from "no key baked + AB5 renders"; it is not separately traced in the
+> FE code here.)
+
 ## The 3-step framework + scoring
 
 The evaluation is a fixed **3-step** framework (per-org orderable, canonical default below), each step a scoring
