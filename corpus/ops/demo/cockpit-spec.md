@@ -60,9 +60,12 @@ shorten. Clicking **Log in as** raises a small **staged overlay** (*Signing you 
 Almost there…*) so the blank-load has feedback instead of looking frozen. The overlay is feedback, not a
 progress bar — there's no real signal from the cross-origin handshake to report.
 
-**Grab the seed manifest.** A footer **Download seed manifest** link saves the cockpit's JSON menu — the same
-single-sourced projection the panel reads — handy for a presenter who wants the hero/org/jump_to list on hand,
-or for a scripted check.
+**Grab the seed manifest.** A footer **Download seed manifest** link saves the **consolidated
+`seed-generation-manifest.yaml`** (v1.10b M52) — the single auditable file inlining the whole seed+generation
+intent (all 3 orgs' population + the mother prompt + batch config + snapshot sources; cache/generated data
+excluded), so a presenter or auditor can read the entire demo-world direction in one place. (An old bring-up
+with no manifest wired falls back to saving the cockpit's JSON menu.) See
+[`seed-manifest-spec.md`](seed-manifest-spec.md).
 
 ---
 

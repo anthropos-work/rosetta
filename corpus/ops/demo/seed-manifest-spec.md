@@ -82,7 +82,8 @@ The checked-in `presets/seed-generation-manifest.yaml` is the canonical authored
 `cmd/stackseed`) re-derives the projection from the canonical presets and asserts the checked-in body still
 equals it. So the "single auditable file" is also a **true** one — if a preset, the embedded prompt, or the
 config changes without regenerating the manifest, CI fails loud. This extends the cockpit's D9 single-source
-property (the menu can't drift from the seed) to the whole manifest.
+property (the menu can't drift from the seed) to the whole manifest. _(Projection-not-hand-authored:
+`#M52-D2`.)_
 
 ### 4. The mandatory `--max-cost` ceiling is file-resident + validated
 
@@ -104,7 +105,12 @@ renders a well-formed prompt (a broken/empty `//go:embed` fails at test, never a
 > **The invariant:** editing the `.tmpl` (or any manifest input) is exactly as cache-affecting as editing
 > the old const would have been — a re-word re-keys the affected members (the documented, intentional
 > invalidation); an identity-preserving move (M52's extraction) keeps every key. Never a *silent* cache
-> bust.
+> bust. _(`go:embed`, byte-identical: `#M52-D1`.)_
+
+Two **cache-key goldens** fence this: `TestDefaultBatchPromptTemplate_CacheKeyGolden` pins the rendered
+`sha256` for a reserved-names-PRESENT context, and `TestDefaultBatchPromptTemplate_CacheKeyGolden_EmptyReserved`
+pins the EMPTY-reserved render — so a re-word of *either* branch of the branchy template (including the
+`{{else}}(none){{end}}` path a hero-less fill batch renders) fails loud rather than silently re-keying.
 
 ### 6. How the cockpit serves it
 
