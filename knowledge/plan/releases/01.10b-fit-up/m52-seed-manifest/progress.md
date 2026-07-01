@@ -3,11 +3,12 @@
 ## Section checklist
 _Checked off as each In-scope deliverable lands. Close when all boxes are ticked._
 
-- [ ] **S1 — Extract the mother prompt to a file-resident YAML** (`stack-seeding/blueprint/batch.go`
-      `DefaultBatchPromptTemplate` const → a checked-in `go:embed`-loaded prompt file, editable without
-      recompile). Cache-integrity: the embedded template must render the **byte-identical** effective
-      mother prompt (so the M45 prompt-hash cache stays valid) — proven by a test that diffs the old const
-      vs the new embedded template's expansion.
+- [x] **S1 — Extract the mother prompt to a file-resident file** (`stack-seeding/blueprint/batch.go`
+      `DefaultBatchPromptTemplate` const → the checked-in `prompts/default_batch_prompt.tmpl`, `go:embed`-loaded
+      into the same-named var, editable without recompile). Cache-integrity: the embed is **byte-identical** to
+      the former const, so the rendered mother prompt + the M45 prompt-hash cache key are **unchanged** — proven
+      by `TestDefaultBatchPromptTemplate_FileResident` + every existing MotherPrompt/determinism/hash test
+      passing untouched. No new dep (embed is stdlib); go.mod/go.sum byte-identical. rext @ `e57665f`.
 - [ ] **S2 — Author the consolidated `seed-generation-manifest.yaml`** — ONE checked-in file inlining the
       population blueprint (all 3 orgs incl. the M51 AI-readiness org), the generation prompt templates, the
       batch config (`--max-cost` ceiling, `--max-concurrent`, re-roll rules), and the snapshot sources
