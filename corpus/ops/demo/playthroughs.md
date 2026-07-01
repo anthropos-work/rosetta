@@ -207,7 +207,7 @@ fake-FAPI so dev-N gains the seat-switch is a carried open build item (spec §5.
 ### The dedicated, decoupled seed
 
 Test data ≠ demo data. The Playthrough world is a **dedicated preset decoupled from the demo seed**, built on
-the same seeding machinery **unchanged** (a `stack.stories.yaml` consumed by `stackseed`):
+the same seeding machinery **unchanged (M202-D3)** (a `stack.stories.yaml` consumed by `stackseed`):
 [`seed/pt-world.seed.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/seed/pt-world.seed.yaml). It
 seeds **two private orgs** distinct from the demo showcase orgs, spanning entitlement tiers + multi-org-private
 content. The `seed-worlds.yaml` index
@@ -323,7 +323,9 @@ carried as `later — needs a mirror engine` items (spec §5.8).
 - **Section:** `rosetta-extensions/playthroughs/` — `manifest/` (Go model + validator) · `cmd/ptvalidate` +
   `cmd/ptreport` (the CLIs) · `seed/` (the dedicated preset + the seed-worlds index) · `e2e/` (the Playwright
   page-object layer + specs + the serial runner) · `report/` (the four-state map) · `fixtures/`
-  (version-controlled static fixtures fed to the real file chooser, spec §5.4). Section README:
+  (reserved for version-controlled static fixtures fed to the real file chooser, spec §5.4 —
+  populated by M203/M204's upload flows; empty at the M202 foundation, whose proof Playthrough
+  needs no fixture). Section README:
   [`playthroughs/README.md`](../../../.agentspace/rosetta-extensions/playthroughs/README.md).
 - **Mixed toolchain (M202-D1):** Go for the manifest/validator/report (matching the seeding module's
   `datadna`/`stackseed` CLI family + the datadna-gated requirement) + TypeScript for the Playwright layer

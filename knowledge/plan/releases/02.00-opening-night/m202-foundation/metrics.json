@@ -1,0 +1,77 @@
+{
+  "milestone": "M202",
+  "slug": "foundation",
+  "version": "v2.0 opening night",
+  "shape": "section",
+  "status": "done",
+  "close_mode": "closed-complete",
+  "closed": "2026-07-01",
+  "sections_delivered": 6,
+  "docs_deliverable": "corpus/ops/demo/playthroughs.md (NEW — the M203/M204 iteration_protocol_ref)",
+  "tests": {
+    "go": {
+      "module": "playthroughs",
+      "test_funcs": 92,
+      "fuzz_funcs": 4,
+      "total": 96,
+      "delta_vs_prev_milestone": "+96 (new module; M201 was iterative/prose-only, 0 rext test funcs)",
+      "packages": ["manifest", "report", "cmd/ptvalidate", "cmd/ptreport"],
+      "race": true,
+      "vet": "clean"
+    },
+    "typescript": {
+      "layer": "playthroughs/e2e",
+      "unit_specs": 12,
+      "e2e_proof_specs": 1,
+      "total": 13,
+      "proof_playthrough": "profile-identity.spec.ts (@pt:pt-profile-identity) — GREEN on demo-1 (build e77e176)",
+      "tsc": "clean"
+    },
+    "shell": {
+      "runner": "e2e/run-playthroughs.sh",
+      "check": "bash -n clean; guard-covered by manifest/runner_safety_test.go (reset-contract doc-drift guard)"
+    }
+  },
+  "coverage": {
+    "section_statements_pct": 98.5,
+    "by_package": {
+      "report": 100.0,
+      "manifest": 99.4,
+      "ptvalidate": 97.6,
+      "ptreport": 94.8
+    },
+    "note": "from /developer-kit:harden-milestone Pass 1-2 + the M202-close CQ1/CQ3 regression tests"
+  },
+  "flake_count": 0,
+  "flake_gate": "Go 5/5 shuffled -race clean + TS unit 5/5 clean (M202 close)",
+  "close_review": {
+    "findings_total": 8,
+    "scope_gaps": 0,
+    "code_quality": {"should_fix": 2, "nice_to_have": 2},
+    "docs": {"must_fix": 1, "minor": 1},
+    "test_regressions_added": 3,
+    "decision_triage_blended": 1,
+    "all_fixed_fate1": true,
+    "deferral_audit": "GREEN — 0 milestone-owned deferrals; see audit-deferrals/deferral-audit-2026-07-01-m202-close.md"
+  },
+  "close_fixes": {
+    "CQ1": "ptvalidate branches datadna exit-3 (usage/config) vs exit-1 (gate FAILED) — misdiagnosis fixed + regression test",
+    "CQ2": "PW_WORKERS validated via resolveWorkers() in stack-env.ts (positive-int-or-throw) — serial-safety invariant guarded + 5 unit tests + runner-safety guard updated",
+    "CQ3": "truncate(s,n) n<=1 guard (total) + boundary test",
+    "CQ4": "ptTagRe lockstep cross-reference comments (report/playwright.go + cmd/ptvalidate/discover.go)",
+    "DOC1": "playthroughs indexed in both rext section READMEs (+ restored stack-secrets in knowledge/README)",
+    "DOC2": "fixtures/ re-worded future-tense (empty/reserved for M203/M204) in playthroughs.md + section README",
+    "D4_blend": "second-world-on-a-shared-stack landmine + anchor-story mitigation blended into stories-spec.md (#M202-D4)"
+  },
+  "supply_chain": {
+    "new_deps": 0,
+    "note": "playthroughs Go module depends only on gopkg.in/yaml.v3 (stdlib + existing); e2e depends only on @playwright/test (existing rext e2e dep). Zero platform-repo edits."
+  },
+  "two_repo_state": {
+    "rext_authoring_head_at_build": "e77e176",
+    "rext_authoring_head_at_harden": "39ef562",
+    "tag_cut_at_close": "opening-night-m202",
+    "consumption_repin": "not required (foundation milestone runs from authoring copy against demo-1; .agentspace/rext.tag stays v1.10.1 — the demo-1 pin)"
+  },
+  "notes": "M202 Playthroughs Foundation — section shape, closed-complete. All 6 sections + the NEW playthroughs.md runbook delivered; proof Playthrough GREEN on demo-1. Tooling + docs only, zero platform edits. Close surfaced 8 findings (2 should-fix code, 2 nice-to-have, 2 docs, 1 decision-blend), all landed Fate-1 with 3 new regression tests. Next: M203 ∥ M204 (iterative vantage-coverage) import this page-object layer + run on its reset-to-seed lifecycle per playthroughs.md."
+}
