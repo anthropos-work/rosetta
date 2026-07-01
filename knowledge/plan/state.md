@@ -1,9 +1,9 @@
 ---
 active_release: "v2.0 opening night (Playthroughs) — RESUMED 2026-07-01; M201 shipped, M202 next"
 active_branch: "release/02.00-opening-night"
-active_milestone: "M202 — Foundation (section; next to build)"
+active_milestone: "M202 — Foundation (section; BUILT — proof green, close pending)"
 last_closed: "v1.10b fit-up — 2026-07-01 (tag v1.10.1, 7 milestones M47..M53) — the interposed backfill"
-phase: "v2.0 opening night building — M201 corpus shipped; M202 foundation next"
+phase: "v2.0 opening night building — M201 corpus shipped; M202 foundation BUILT (proof green), close pending"
 last_updated: "2026-07-01"
 ---
 
@@ -30,14 +30,17 @@ M47 ──→ ┌ M48 corpus re-ground ───────────┐     
         └ M49 bring-up hardening ──────────┘ ──→ M50 ──→ M51 ──→ M52 ──→ M53 ✅ shipped
 ```
 
-**Active milestone:** **M202 — Foundation** (`section`, next to build). M201 "Manifest corpus" shipped
-(closed-on-gate); M202 ∥ M203 ∥ M204 are already designed + scaffolded (shapes/scope set — no re-design needed). Start
-it with **`/developer-kit:work-milestone m202`** (M203/M204 are `iterative` → `/developer-kit:work-mstone-iters`).
-Records: [`releases/02.00-opening-night/`](releases/02.00-opening-night/).
+**Active milestone:** **M202 — Foundation** (`section`, **BUILT — close pending**). M201 "Manifest corpus" shipped
+(closed-on-gate); M202's `playthroughs` rext section (§1–§6) is built + the `corpus/ops/demo/playthroughs.md`
+runbook authored + the proof Playthrough (login → /profile → assert identity) **GREEN on demo-1**, on branch
+`m202/foundation`. Close it with **`/developer-kit:close-milestone`** (optional `/developer-kit:harden-milestone`
+first). M203 ∥ M204 (`iterative` → `/developer-kit:work-mstone-iters`) follow, driven by the `playthroughs.md`
+iteration protocol. Records: [`releases/02.00-opening-night/`](releases/02.00-opening-night/).
 
-**Phase:** **v2.0 "opening night" building — M201 shipped; M202 foundation next.** The interposed v1.10b backfill
-closed 2026-07-01 (full suites + a 3× flake gate clean, the inherited `x/net` CVE cleared, merged → `main` + tagged
-`v1.10.1`). A `playthroughs` rext section arrives at M202 build.
+**Phase:** **v2.0 "opening night" building — M201 shipped; M202 foundation BUILT (proof green), close pending.**
+The interposed v1.10b backfill closed 2026-07-01 (full suites + a 3× flake gate clean, the inherited `x/net` CVE
+cleared, merged → `main` + tagged `v1.10.1`). The `playthroughs` rext section landed at M202 build (authoring
+copy @ `e77e176`); the `opening-night-m202` tag + consumption-clone re-pin happen at close.
 
 **Next up:** **build M202 — Foundation** (`/developer-kit:work-milestone m202`). _(The orchestrator still owes origin
 the pushes — see the push-gated KEEP below.)_
