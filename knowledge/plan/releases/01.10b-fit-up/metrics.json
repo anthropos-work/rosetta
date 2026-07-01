@@ -1,0 +1,76 @@
+{
+  "release": "v1.10b \"fit-up\"",
+  "branch": "release/01.10b-fit-up",
+  "closed": "2026-07-01",
+  "milestones": ["M47", "M48", "M49", "M50", "M51", "M52", "M53"],
+  "theme": "The v1.10b 'fit-up' BACKFILL — re-sync the (M47-confirmed-current) clones + recapture the snapshot, re-ground the rosetta corpus to current prod (the new AI-readiness feature doc), harden the from-cold /demo-up on a stack-demo-only box across 7 known issues, fill the content-seeding + AI-readiness-org gaps to a (0,0) semantic coverage gate at BOTH vantages, consolidate the seed intent into a single auditable seed-generation-manifest.yaml, then DESTROY + COLD-REBUILD the live demo from the release tag and assert a 6/6 + academy-F6 acceptance bar. Tooling (rext) + docs (rosetta) ONLY — ZERO platform-repo edits throughout. NO new third-party deps this release (the ai v1.40.1 M45 dep carries forward unchanged; go:embed is stdlib).",
+  "code_location": "TWO-REPO split. rext code-of-record (SEPARATE git repo, gitignored from rosetta — the tag IS the record): rosetta-extensions @ tag v1.10.1 (sha 576dbcb), branch main; rolls up per-milestone tags fit-up-m47..fit-up-m52. On-box consumption pin: .agentspace/rext.tag = v1.10.1. rosetta doc-half: release/01.10b-fit-up (7 milestone branches merged --no-ff). Close-release merges release/01.10b-fit-up into main + tags; pushing main + tags + the ext tags to origin is the orchestrator's separate post-close step (LOCAL-only here).",
+  "code_diff": "rext: M47 stack-snapshot pg.NormalizeDSN (+TestNormalizeDSN); M49 demo-stack bring-up hardening (rext_tag.sh SoT + INVITATION_HMAC_SECRET secret-DNA gene + ant-academy explicit clone + disk pre-flight + non-fatal frontend + demopatch v2.89.0) + stack-secrets; M50 MemberLanguagesSeeder + CertificatesSeeder member-coverage + 2 demopatch escape-class fixes + manager-manifest strengthening; M51 3 AI-readiness org seeders (config/funnel) + the app-aireadiness-snapshot-loadmembers read-path demo-patch; M52 the manifest pkg + --manifest-export verb + go:embed mother-prompt extract + cockpit repoint; M53 academy F6 seeder/wiring + the org-conditional manager manifest (AB4 fix). rosetta: NEW corpus/services/ai-readiness.md + corpus/ops/demo/seed-manifest-spec.md; edits to snapshot-cold-start.md, rosetta_demo.md, frontend-tier.md, secrets-spec.md, coverage-protocol.md, seeding-spec.md, stories-spec.md, ant-academy.md, backend.md, next-web-app.md, verification.md, architecture_overview.md, service_taxonomy.md, CLAUDE.md, README.md, the demo-up/stack-secrets skills + the 7 milestone plan archives. ZERO platform (.go/.py/.sh in platform repos) edits.",
+
+  "go_test_funcs": {
+    "rext_total": 1640,
+    "by_module": {"alignment": 52, "clerkenstein": 270, "stack-seeding": 791, "stack-snapshot": 364, "stack-secrets": 163},
+    "counting_method": "top-level 'func Test...' + 'func Fuzz...' across all _test.go per rext Go module. Ground-truth grep in the .agentspace/rosetta-extensions authoring copy at the code-of-record HEAD (tag v1.10.1, sha 576dbcb). Cross-checked against each milestone's recorded counts (M53: stack-seeding 791; M49: stack-secrets 163, stack-snapshot 364; alignment 52 + clerkenstein 270 untouched all release).",
+    "baseline_v1.10_close": {"total": 1551, "by_module": {"alignment": 52, "clerkenstein": 270, "stack-seeding": 706, "stack-snapshot": 363, "stack-secrets": 160}},
+    "delta": "+89 (1551 -> 1640) — INCREASE, no decrease",
+    "by_module_delta": "stack-seeding 706 -> 791 (+85: M50 +13 [MemberLanguages/Certificates member-coverage + locations-sync], M51 +30 [3 AI-readiness seeders config/funnel + close integration/co-derivation], M52 +37 [NEW manifest pkg schema/Build/Validate/Write/Parse + go:embed + --manifest-export verb], M53 +5 [F6 academy DeepLink build tests + cockpit single-source/call-stability]); stack-snapshot 363 -> 364 (+1: M47 TestNormalizeDSN, 9 table cases); stack-secrets 160 -> 163 (+3: M49 INVITATION_HMAC_SECRET gene asserts + DemoGeneratedKey opaque-shape probe); alignment 52 + clerkenstein 270 UNCHANGED (untouched by v1.10b)."
+  },
+
+  "python_tests": {
+    "rext_demo_stack_total": 326,
+    "by_suite": {"test_tooling": 111, "test_demopatch": 49, "test_frontend_build": 59, "test_cockpit": 82, "test_ant_academy": 19, "test_detach": 3, "test_migrate_race_live": 3},
+    "counting_method": "def test_ per suite; ground-truth via `pytest tests/ -q` in demo-stack (python3.12 runner) = 326 passed / 0 failed (96.67s). Matches the grep count of 'def test_'. Also matches M53's recorded rext_python_demo_stack_total=326.",
+    "baseline_v1.10_close_note": "v1.10 close recorded Python by TOUCHED suite (cockpit 63, demopatch 43) not a whole-dir demo-stack total. The v1.10b whole-dir demo-stack total is 326; the release GREW every touched suite (cockpit 63->82 [M43->M53 academy], demopatch 43->49, frontend_build ->59, ant_academy ->19); no suite decreased. Other rext python suites (stack-injection 117 [8 skipped], dev-stack, stack-core, stack-verify) untouched, carry forward.",
+    "delta": "touched demo-stack suites grew (M49 +the RextTagSoT/hash-repro tests, M50 member-fill, M52 +14 cockpit manifest endpoint, M53 +13 academy F6); no suite decreased."
+  },
+
+  "ts_tests": {
+    "rext_e2e_unit_total": 42,
+    "by_spec": {"coverage-manifest.unit.spec.ts": 29, "section-assert.unit.spec.ts": 13},
+    "counting_method": "`npx playwright test tests/*.unit.spec.ts --reporter=list` (the pure-logic, NO-browser unit specs — NOT the ~13min Playwright coverage SWEEP, which is the demo-acceptance gate, out of scope for close-release). 42 passed (coverage-manifest 29 + section-assert 13).",
+    "baseline_v1.10_close_note": "v1.10 recorded ts_e2e_unit as the single coverage-manifest.unit.spec.ts (17 at M42m). M51 added section-assert.unit.spec.ts (13); coverage-manifest grew to 29 (M51 AI-readiness section pins + M53 AB4 org-gating edges). The M53 metric of '29' tracked coverage-manifest alone; the full unit surface is 42 across the 2 specs. Growth, no decrease.",
+    "delta": "coverage-manifest 17 -> 29 (+12); +NEW section-assert 13. Total unit e2e -> 42."
+  },
+
+  "coverage_snapshot": "no >2pp drop on any measured surface across the release. stack-seeding seeders pkg stmt cov ~97.5% (v1.10 close) -> 97.6% (M51) — stable/up; the M52 NEW manifest pkg 100.0% stmt; M49 secretdna pkg 99.0->99.3% + the demo.go overlay 88.9->100%; M50 seeders 97.4% (stable). M53: no fresh coverage sweep (acceptance-close directive — the acceptance sweeps already ran+passed from cold; harden Pass 1 recorded cockpit.go 97.6% / cockpit.py 98% / coverage-manifest.ts behavior-covered by 29 unit tests). Each schema-touching seeder verified against the real schema.",
+
+  "benchmarks": "n/a — no performance-sensitive rext hot path across the release (seeders are DB-IO-bound bulk COPY/UPSERT; cockpit is a stdlib HTTP server; snapshot is COPY-bytes IO). The M51 read-path WALL (the frozen AI-readiness ?cycle= 180s-timeout) was a PLATFORM read-path characteristic (unbounded loadMembers whole-org hydration), addressed by the app-aireadiness-snapshot-loadmembers demo-patch (180s -> 19ms, data-identical), not a rext hot path. No rext benchmark target.",
+
+  "flake": 0,
+  "flake_gate": "PASS. Per-milestone flake gates all clean (5/5 sequential shuffled): M47 pg 5x; M49 175 Python + Go secretdna 5x; M50 seeders 5x; M51 Go seeders+cmd/stackseed 5x + TS both unit specs 5x; M52 Go blueprint+manifest+seeders+cmd 5x + Python cockpit 5x; M53 Go seeders 5x + Python cockpit+academy 5x + TS coverage-manifest.unit 5x. Close-release re-ran the FULL suites once as defense-in-depth: rext Go `go test ./...` all 5 modules EXIT 0 (0 FAIL) + `go vet ./...` clean; demo-stack pytest 326 passed / 0 failed; TS unit 42 passed. No CI wired for the corpus (no executable suite) — rext suites verified per-milestone at their tags + once at close (the local carry-forward, same as v1.5..v1.10). The 1 pre-existing ensure-clones SC2015 shellcheck info is NOT a flake and NOT introduced by v1.10b.",
+
+  "supply_chain": {
+    "new_deps": 0,
+    "note": "ZERO new third-party deps this release. The `ai v1.40.1` dep (v1.10 M45 inflection) carries forward UNCHANGED (stack-seeding services/ai — present + verified). M52's manifest work uses go:embed (stdlib). No new node runner (@playwright/test held its pin). No new Python dep.",
+    "ai_dep_status": "PRESENT + VERIFIED: github.com/anthropos-work/ai v1.40.1 in stack-seeding/go.mod (direct require); its transitive tree (Azure SDK azcore/azidentity + openai-go/v3 + anthropics/anthropic-sdk-go v1.34.0 + aws-sdk-go-v2 + gage-technologies/mistral-go) all resolve; stack-seeding go test ./... green.",
+    "govulncheck": {
+      "modules_scanned": 5,
+      "called_high_or_critical": 1,
+      "called_total": 1,
+      "uncalled_in_required_modules": 5,
+      "finding": "GO-2026-5026 / CVE-2026-39821 (HIGH): golang.org/x/net@v0.53.0 idna.ToASCII/ToUnicode accept ASCII-only Punycode-encoded labels (hostname-validation bypass -> potential privilege escalation for apps validating hostnames before Unicode conversion). Fixed in x/net@v0.55.0. CALLED path exists ONLY in stack-seeding: cmd/stackseed/main.go:547 reloadStackSentinel -> http.Client.Do -> idna.ToASCII. x/net is an INDIRECT dep pulled via the ai v1.40.1 tree (not a direct require). The other 4 Go modules: 'No vulnerabilities found.' Remediation: `go get golang.org/x/net@v0.55.0 && go mod tidy` in stack-seeding (a mechanical indirect bump; low blast radius).",
+      "disclosure_timing": "CVE-2026-39821 was disclosed AFTER the v1.10 close (2026-06-27); the v1.10 lockfile/metrics predate it (v1.10 recorded a clean posture). It surfaces here because close-release Phase 0 re-scanned on 2026-07-01. NOT a v1.10b-introduced regression (v1.10b added 0 deps; x/net@v0.53.0 was already in the tree at v1.10)."
+    },
+    "node_audit": {"omit_dev": {"high": 0, "critical": 0, "total": 0}, "all": {"high": 0, "critical": 0, "total": 0}, "note": "npm audit clean both --omit=dev and full. Playwright 1.61.1 + transitive (playwright, playwright-core, fsevents)."},
+    "license": "every Go dep spot-checked = Apache-2.0 / MIT / BSD (openai-go/v3 Apache-2.0, aws-sdk-go-v2 Apache-2.0, mistral-go MIT, pgx MIT, yaml.v3 MIT+Apache, x/net BSD); node @playwright/test Apache-2.0. GPL/AGPL grep over cached LICENSE files = 0 hits. Context: this is INTERNAL tooling — not distributed to third parties / not a commercial-distribution surface; the rosetta CORPUS has no package manifest. No copyleft exposure.",
+    "lockfile": "releases/01.10b-fit-up/dependencies.lock"
+  },
+
+  "regression_vs_v1.10": {
+    "verdict": "GREEN",
+    "go_delta": "+89 (1551 -> 1640) — INCREASE, no decrease",
+    "python_delta": "whole-dir demo-stack total 326; every touched suite grew, no suite decreased (v1.10 recorded by touched-suite, so not a like-for-like whole-dir number — the v1.10b whole-dir 326 is not a regression under any read)",
+    "ts_delta": "unit e2e 17 -> 42 (coverage-manifest 17->29 + NEW section-assert 13) — increase",
+    "coverage": "no >2pp drop on any measured surface (seeders ~97.5->97.6%, manifest pkg 100%)",
+    "flake": "0 (no regression)",
+    "supply_chain": "0 new deps (ai v1.40.1 unchanged) — no supply-chain regression. NEW finding: 1 HIGH called CVE (GO-2026-5026, x/net@v0.53.0) disclosed post-v1.10 — an inherited transitive advisory, not a v1.10b-introduced dep; mechanical fix (bump x/net to v0.55.0 in stack-seeding).",
+    "apples_to_oranges_caveat": "v1.10b is a DOCS + TOOLING backfill with ZERO platform edits — a strict like-for-like compare with v1.10 (a feature release) is partly apples-to-oranges (esp. the Python metric shape: v1.10 recorded touched-suite counts, v1.10b the whole-dir total). The load-bearing close-release check is 'NO test REGRESSION + flake 0', which HOLDS unambiguously: Go +89, Python/TS grew, flake 0, coverage stable.",
+    "rules_applied": "test-count decrease -> blocker (NOT triggered: Go +89, Python/TS grew); flake>0 -> blocker (NOT triggered, flake=0); coverage drop>2pp -> blocker (NOT triggered); unsanctioned new dep -> blocker (NOT triggered: 0 new deps). All BLOCKING regression gates PASS. ADVISORY (non-blocking for the regression gate): the 1 inherited HIGH x/net CVE — recommend the x/net@v0.55.0 bump before/with the origin push; does not gate the doc/tooling tag under the internal-tooling / not-distributed context, but should be tracked."
+  },
+
+  "alignment_gates": "N/A-change — v1.10b touched NO Clerkenstein contract surface (clerkenstein module UNCHANGED, 270 tests, untouched all release). The v1.10 100%/100% gates on all 5 surfaces carry forward.",
+
+  "headline": "v1.10b GREEN from cold. Tooling + docs only — ZERO platform-repo edits (the rosetta release diff is confined to corpus/** + knowledge/plan/** + CLAUDE.md; code lives in rext @ v1.10.1). Test growth: rext Go 1551 -> 1640 (+89); demo-stack Python whole-dir 326 (every touched suite grew); TS unit e2e 17 -> 42. Flake 0. Coverage stable (no >2pp drop). 0 new deps (ai v1.40.1 carried forward). Supply-chain: node audit 0 vulns; Go 1 inherited HIGH advisory (CVE-2026-39821 in x/net@v0.53.0 via the ai tree, disclosed post-v1.10 — a mechanical x/net@v0.55.0 bump, low blast radius, called only in stack-seeding). No GPL/AGPL. M53 destroyed + cold-rebuilt demo-1 from v1.10.1 by a single /demo-up and asserted 6/6 + academy-F6 GREEN.",
+
+  "notes": "7-milestone release (M47/M48/M49 section + M50/M51 iterative + M52/M53 section). Code-of-record in the rosetta-extensions authoring copy (SEPARATE git repo) at tag v1.10.1 (re-rolled at M53 close onto 576dbcb, the final HEAD incl. the M53 harden tests; rolls up fit-up-m47..m52). Close-release Phase 0/4/4b (this file's provenance): supply-chain re-scanned, full suites re-run once at close (all green, flake 0), metrics aggregated. Carry-forward: (1) push main + the v1.10b tag + the ext tags (fit-up-m47..m52 + v1.10.1) to origin — the orchestrator's step, push-gated KEEP; (2) ADVISORY: bump golang.org/x/net to v0.55.0 in stack-seeding to clear GO-2026-5026 (inherited HIGH, called path in reloadStackSentinel). Standing cross-release backlog stays in roadmap-vision.md."
+}

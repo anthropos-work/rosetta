@@ -1,0 +1,227 @@
+# v1.10b "fit-up" — dependencies.lock (what shipped)
+#
+# Release: v1.10b "fit-up" (rosetta corpus docs + the rext tooling monorepo backfill)
+# rext code-of-record: rosetta-extensions @ tag v1.10.1 (sha 576dbcb), branch main
+# .agentspace/rext.tag (on-box consumption pin): v1.10.1
+# Generated: 2026-07-01  (close-release Phase 0 — supply-chain)
+# Toolchain: go 1.25.0 / toolchain go1.25.11 (all 5 Go modules) ; node v22.22.0 / npm 10.9.4
+#
+# CONTEXT: internal tooling — NOT distributed to third parties / not a commercial-distribution
+# surface. The rosetta CORPUS itself has NO package manifest (docs only). All executable deps
+# live in the rext monorepo (5 Go modules + 1 node dev/test harness). The 7 milestones (M47–M53)
+# added ZERO new third-party deps; the sole third-party runtime dep of the release family remains
+# `ai v1.40.1` (introduced in v1.10 M45, unchanged here). go:embed (M52) is stdlib.
+#
+# ============================================================================================
+# SUPPLY-CHAIN SUMMARY
+# ============================================================================================
+#   Go govulncheck (all 5 modules):  1 CALLED vuln (HIGH), 5 uncalled-in-required-modules.
+#     -> GO-2026-5026 / CVE-2026-39821 (HIGH): golang.org/x/net@v0.53.0 idna.ToASCII/ToUnicode
+#        accepts ASCII-only Punycode labels (hostname-validation bypass). Fixed in x/net@v0.55.0.
+#        Reached ONLY in stack-seeding via: cmd/stackseed/main.go:547 reloadStackSentinel
+#        -> http.Client.Do -> idna.ToASCII. Enters transitively via the `ai v1.40.1` tree.
+#        Other 4 Go modules: "No vulnerabilities found." x/net is INDIRECT (not a direct require);
+#        remediation = `go get golang.org/x/net@v0.55.0` + `go mod tidy` in stack-seeding.
+#        NOTE: this CVE was disclosed AFTER the v1.10 close (2026-06-27); v1.10's lockfile predates it.
+#   Node npm audit (--omit=dev AND full):  0 vulnerabilities (info/low/moderate/high/critical = 0).
+#   License posture:  every Go dep spot-checked = Apache-2.0 / MIT / BSD ; node = Apache-2.0.
+#                     NO GPL / AGPL anywhere (GPL/AGPL grep over cached LICENSE files = 0 hits).
+#
+# ============================================================================================
+# THE DELIBERATE NEW DEP (v1.10 M45 inflection, carried unchanged into v1.10b)
+# ============================================================================================
+github.com/anthropos-work/ai v1.40.1        # stack-seeding services/ai wrapper transport (EU-first LLM routing + cost tracking). First new dep since v1.8. Permissive transitive tree (Azure SDK + openai-go/v3 + anthropic-sdk-go + aws-sdk-go-v2 + mistral-go — all Apache-2.0/MIT/BSD).
+
+# ============================================================================================
+# GO MODULE — stack-seeding  (module github.com/anthropos-work/rosetta-extensions/stack-seeding)
+#   go 1.25.0 / go1.25.11.  Direct requires: ai, pgx/v5, yaml.v3.  62-module graph.
+# ============================================================================================
+# --- direct ---
+github.com/anthropos-work/ai v1.40.1
+github.com/jackc/pgx/v5 v5.9.2
+gopkg.in/yaml.v3 v3.0.1
+# --- full module graph (go list -m all) ---
+github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
+github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
+github.com/Azure/azure-sdk-for-go/sdk/internal v1.12.0
+github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0
+github.com/anthropics/anthropic-sdk-go v1.34.0
+github.com/anthropos-work/ai v1.40.1
+github.com/avast/retry-go/v4 v4.7.0
+github.com/aws/aws-sdk-go-v2 v1.41.5
+github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.8
+github.com/aws/aws-sdk-go-v2/config v1.32.14
+github.com/aws/aws-sdk-go-v2/credentials v1.19.14
+github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.21
+github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.21
+github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.21
+github.com/aws/aws-sdk-go-v2/internal/ini v1.8.6
+github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.7
+github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.21
+github.com/aws/aws-sdk-go-v2/service/signin v1.0.9
+github.com/aws/aws-sdk-go-v2/service/sso v1.30.15
+github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.19
+github.com/aws/aws-sdk-go-v2/service/sts v1.41.10
+github.com/aws/smithy-go v1.24.3
+github.com/davecgh/go-spew v1.1.1
+github.com/dlclark/regexp2 v1.11.5
+github.com/gage-technologies/mistral-go v1.1.0
+github.com/golang-jwt/jwt/v5 v5.3.0
+github.com/google/gofuzz v1.0.0
+github.com/google/uuid v1.6.0
+github.com/jackc/pgpassfile v1.0.0
+github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+github.com/jackc/pgx/v5 v5.9.2
+github.com/jackc/puddle/v2 v2.2.2
+github.com/json-iterator/go v1.1.12
+github.com/kr/pretty v0.3.1
+github.com/kr/text v0.2.0
+github.com/kylelemons/godebug v1.1.0
+github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/reflect2 v1.0.2
+github.com/openai/openai-go/v3 v3.31.0
+github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+github.com/pmezard/go-difflib v1.0.0
+github.com/rogpeppe/go-internal v1.15.0
+github.com/samber/go-gpt-3-encoder v0.3.1
+github.com/samber/lo v1.53.0
+github.com/stretchr/objx v0.1.0
+github.com/stretchr/testify v1.11.1
+github.com/tidwall/gjson v1.18.0
+github.com/tidwall/match v1.2.0
+github.com/tidwall/pretty v1.2.1
+github.com/tidwall/sjson v1.2.5
+golang.org/x/crypto v0.50.0
+golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17
+golang.org/x/mod v0.34.0
+golang.org/x/net v0.53.0          # <-- GO-2026-5026 / CVE-2026-39821 (HIGH); fix @ v0.55.0 (indirect, via ai)
+golang.org/x/sync v0.20.0
+golang.org/x/sys v0.43.0
+golang.org/x/term v0.42.0
+golang.org/x/text v0.36.0
+golang.org/x/tools v0.43.0
+gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+gopkg.in/yaml.v3 v3.0.1
+
+# ============================================================================================
+# GO MODULE — stack-snapshot  (module github.com/anthropos-work/rosetta-extensions/stack-snapshot)
+#   go 1.25.0 / go1.25.11.  No direct third-party requires beyond pgx/yaml/testify.  16-module graph.
+#   govulncheck: No vulnerabilities found.  (M47 added pg.NormalizeDSN — 0 new deps.)
+# ============================================================================================
+github.com/davecgh/go-spew v1.1.1
+github.com/jackc/pgpassfile v1.0.0
+github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+github.com/jackc/pgx/v5 v5.9.2
+github.com/jackc/puddle/v2 v2.2.2
+github.com/kr/pretty v0.3.0
+github.com/pmezard/go-difflib v1.0.0
+github.com/stretchr/objx v0.1.0
+github.com/stretchr/testify v1.11.1
+golang.org/x/mod v0.27.0
+golang.org/x/sync v0.17.0
+golang.org/x/text v0.29.0
+golang.org/x/tools v0.36.0
+gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+gopkg.in/yaml.v3 v3.0.1
+
+# ============================================================================================
+# GO MODULE — stack-secrets  (module github.com/anthropos-work/rosetta-extensions/stack-secrets)
+#   go 1.25.0 / go1.25.11.  STDLIB-ONLY (no third-party deps; go list -m all = self only).
+#   govulncheck: No vulnerabilities found.  (M49 added the INVITATION_HMAC_SECRET gene — 0 new deps.)
+# ============================================================================================
+# (no third-party modules)
+
+# ============================================================================================
+# GO MODULE — clerkenstein  (module clerkenstein)
+#   go 1.25.0 / go1.25.11.  71-module graph (colony/proto/taxonomy + clerk-sdk + gqlgen + connect).
+#   govulncheck: No vulnerabilities found.  UNTOUCHED by v1.10b (carried forward from v1.10).
+#   Note: uses golang.org/x/net v0.54.0 (still < v0.55.0 fix, but govulncheck found no CALLED path).
+# ============================================================================================
+connectrpc.com/connect v1.19.2
+github.com/99designs/gqlgen v0.17.90
+github.com/Rican7/retry v0.3.1
+github.com/ThreeDotsLabs/watermill v1.5.2
+github.com/ThreeDotsLabs/watermill-redisstream v1.4.5
+github.com/agnivade/levenshtein v1.2.1
+github.com/anthropos-work/colony v0.34.3
+github.com/anthropos-work/proto v1.196.0
+github.com/anthropos-work/taxonomy v1.2.0
+github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20221221133751-67e37ae746cd
+github.com/cenkalti/backoff/v5 v5.0.3
+github.com/cespare/xxhash/v2 v2.3.0
+github.com/clerk/clerk-sdk-go/v2 v2.6.0
+github.com/davecgh/go-spew v1.1.1
+github.com/envoyproxy/protoc-gen-validate v1.3.3
+github.com/getsentry/sentry-go v0.46.2
+github.com/go-jose/go-jose/v3 v3.0.5
+github.com/go-viper/mapstructure/v2 v2.5.0
+github.com/goccy/go-json v0.10.6
+github.com/golang/protobuf v1.5.4
+github.com/google/go-cmp v0.5.9
+github.com/google/uuid v1.6.0
+github.com/gorilla/websocket v1.5.3
+github.com/hashicorp/golang-lru/v2 v2.0.7
+github.com/jackc/pgpassfile v1.0.0
+github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+github.com/jackc/pgx/v5 v5.9.2
+github.com/jackc/puddle/v2 v2.2.2
+github.com/jarcoal/httpmock v1.3.1
+github.com/labstack/echo/v4 v4.15.2
+github.com/labstack/gommon v0.5.0
+github.com/lithammer/shortuuid/v3 v3.0.7
+github.com/mattn/go-colorable v0.1.14
+github.com/mattn/go-isatty v0.0.22
+github.com/oklog/ulid v1.3.1
+github.com/pkg/errors v0.9.1
+github.com/pmezard/go-difflib v1.0.0
+github.com/posthog/posthog-go v1.12.5
+github.com/redis/go-redis/v9 v9.19.0
+github.com/rogpeppe/go-internal v1.12.0
+github.com/rs/cors v1.11.1
+github.com/samber/lo v1.53.0
+github.com/samber/slog-common v0.22.0
+github.com/samber/slog-multi v1.8.0
+github.com/samber/slog-sentry/v2 v2.10.3
+github.com/sony/gobreaker v1.0.0
+github.com/sosodev/duration v1.4.0
+github.com/stretchr/objx v0.1.0
+github.com/stretchr/testify v1.11.1
+github.com/svix/svix-webhooks v1.93.0
+github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/fasttemplate v1.2.2
+github.com/vektah/gqlparser/v2 v2.5.33
+github.com/vmihailenco/msgpack v4.0.4+incompatible
+github.com/yuin/goldmark v1.4.13
+go.uber.org/atomic v1.11.0
+golang.org/x/crypto v0.51.0
+golang.org/x/mod v0.8.0
+golang.org/x/net v0.54.0
+golang.org/x/sync v0.20.0
+golang.org/x/sys v0.44.0
+golang.org/x/term v0.43.0
+golang.org/x/text v0.37.0
+golang.org/x/time v0.15.0
+golang.org/x/tools v0.6.0
+golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+google.golang.org/appengine v1.6.8
+google.golang.org/protobuf v1.36.11
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+gopkg.in/yaml.v3 v3.0.1
+
+# ============================================================================================
+# GO MODULE — alignment  (module anthropos.dev/alignment)
+#   go 1.25.0 / go1.25.11.  STDLIB-ONLY (no third-party deps).  UNTOUCHED by v1.10b.
+#   govulncheck: No vulnerabilities found.
+# ============================================================================================
+# (no third-party modules)
+
+# ============================================================================================
+# NODE — stack-verify/e2e  (the Playwright coverage/e2e harness; DEV/TEST-ONLY, not shipped/run in prod)
+#   package: rosetta-test-platform-e2e   lockfileVersion: 3   node v22.22.0 / npm 10.9.4
+#   Declared devDependency: @playwright/test ^1.49.0  (resolved 1.61.1).  npm audit: 0 vulns.
+#   name@version  (integrity)
+# ============================================================================================
+@playwright/test@1.61.1  integrity=sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM
+playwright@1.61.1        integrity=sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQ
+playwright-core@1.61.1   integrity=sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzE
+fsevents@2.3.2           integrity=sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsg    # optional, darwin-only
