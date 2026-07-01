@@ -26,7 +26,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 → { M203 ∥ M204 } → ship | ▶ **IN DEVELOPMENT** (RESUMED 2026-07-01, branch `release/02.00-opening-night`) — M201 shipped; **M202 next**. The v1.10b backfill shipped (tag `v1.10.1`); already-designed, no re-design |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ∥ M204 } → ship | ▶ **IN DEVELOPMENT** (branch `release/02.00-opening-night`) — M201 + M202 shipped (the foundation: `playthroughs` rext section + runbook, proof GREEN on demo-1); **M203 ∥ M204 next** (iterative vantage-coverage). The v1.10b backfill shipped (tag `v1.10.1`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -235,11 +235,11 @@ residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is G
 
 ## In Development — v2.0 "opening night"
 
-> **Status (RESUMED 2026-07-01):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), and
-> v2.0 is the **active release** again. It was already fully designed before the pause — **no re-design needed**: M201
-> "Manifest corpus" is `done` (closed-on-gate); **M202 (Foundation, `section`) is next to build** —
-> `/developer-kit:work-milestone m202` — followed by M203 ∥ M204 (both `iterative`,
-> `/developer-kit:work-mstone-iters`). Build straight from the scaffold below.
+> **Status (updated 2026-07-01):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), and
+> v2.0 is the **active release** again. M201 "Manifest corpus" is `done` (closed-on-gate) and **M202 (Foundation,
+> `section`) is `done`** (closed-complete 2026-07-01 — the `playthroughs` rext section + runbook, proof GREEN on
+> demo-1, tag `opening-night-m202`). **Next: M203 ∥ M204** (both `iterative`, `/developer-kit:work-mstone-iters`) —
+> they import M202's page-object layer + run on its reset-to-seed lifecycle per `corpus/ops/demo/playthroughs.md`.
 >
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
@@ -323,6 +323,17 @@ Settings, cross-product journeys** (candidate→employee).
 
 **M202 — Playthroughs Foundation** · `section` · complexity **medium** · depends on: **none** (reuses the M42
 harness + the seeding machinery; the M201 manifest corpus is its build+regression contract, authorable in parallel).
+**Status:** ✅ **`done` — closed-complete 2026-07-01.** All 6 sections + the NEW `corpus/ops/demo/playthroughs.md`
+runbook delivered; the trivial proof Playthrough (login → /profile → assert hero identity) **GREEN on demo-1**. The
+`playthroughs` rext section: manifest model + light validator (both-way id integrity + precondition-coverage +
+datadna closure gate) · per-surface page-object layer (1 surface: `/profile`, re-pin O(surfaces)) · dedicated
+decoupled `pt-world` seed (2 private orgs, entitlement tiers + multi-org-private) · reset-to-seed lifecycle +
+serial-default runner · 4-state reporting map. **96 Go test/fuzz funcs (98.5% section) + 13 TS** (5/5 flake-clean).
+Close surfaced 8 findings, all Fate-1: CQ1 datadna exit-3 diagnosis · CQ2 `PW_WORKERS` serial-safety guard · CQ3
+`truncate` totality · CQ4 `ptTagRe` lockstep · DOC1 section-index · DOC2 fixtures wording · M202-D4 anchor-story
+landmine blended into `stories-spec.md`. Deferral audit **GREEN** (0 milestone-owned). Tooling + docs only — **zero
+platform edits, zero new deps**. rext authoring @ `b1e5528`, tagged **`opening-night-m202`**. The runbook IS the
+M203/M204 `iteration_protocol_ref`. Records: [`releases/02.00-opening-night/m202-foundation/`](releases/02.00-opening-night/m202-foundation/).
 **Goal:** stand up the **`playthroughs` rext section** on the **shared M42 e2e foundation**, proven by **one
 trivial end-to-end Playthrough**.
 **Scope — In:**

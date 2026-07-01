@@ -27,7 +27,7 @@ Section checklist (built by `/developer-kit:build-milestone`). Scope detail in [
   `iteration_protocol_ref`); cross-referenced from the `demo/README.md` index + `coverage-protocol.md` (function
   sibling) + `CLAUDE.md` docs list.
 
-**Status:** `complete` — all 6 sections + the runbook deliverable landed; proof Playthrough GREEN on demo-1.
+**Status:** `archived` (completed 2026-07-01) — all 6 sections + the runbook deliverable landed; proof Playthrough GREEN on demo-1.
 Tooling + docs only — zero platform-repo edits. rext authoring copy @ `e77e176` (§1–§6, `79df988..e77e176`),
 tree clean; the `opening-night-m202` tag + the consumption-clone re-pin happen at CLOSE. Next:
 `/developer-kit:harden-milestone` (optional) then `/developer-kit:close-milestone`.
@@ -106,3 +106,28 @@ no-shallow-tests rule); coverage deltas are now negligible (<2%); zero flakes (G
 -race clean + TS 3/3 clean). Section total: **98.5% statements**, **94 Go+TS test/fuzz functions**
 on the playthroughs section. No production-code change across the whole harden (zero bugs
 surfaced). Tooling only — zero platform edits.
+
+## M202: Final Review
+
+Consolidated from close-milestone Phases 1-5 (2026-07-01). Deferral re-audit (Phase 1b): **GREEN** —
+[`audit-deferrals/deferral-audit-2026-07-01-m202-close.md`](audit-deferrals/deferral-audit-2026-07-01-m202-close.md)
+(0 milestone-owned deferrals; only admin KEEPs — the tag @ close + origin pushes @ user gate).
+
+### Scope
+- [x] All 6 sections + Docs checked off; overview `Out:` items are Fate-2 (M203/M204/roadmap-vision) — nothing dropped, no stray TODO/FIXME/HACK (the `playthrough: TODO` hits are the documented sentinel vocabulary).
+
+### Code Quality
+- [x] [should-fix] CQ1 — `ptvalidate` `runDatadnaClosure` collapsed datadna **exit-3** (usage/config error) into "closure gate FAILED"; branch on exit code so a config error diagnoses as usage, reserve "gate FAILED" for exit 1.
+- [x] [should-fix] CQ2 — `PW_WORKERS` unvalidated in `playwright.config.ts` (`NaN`/`0`/negative silently defeat the serial-safety invariant); validate to a positive integer, matching `resolveStackEnv`'s rigor for `PT_STACK_N`.
+- [x] [nice-to-have] CQ3 — `truncate(s,n)` panics at `n≤1` (unreachable via the literal-80 caller, but the fn is general); add an `n<=0` guard → total.
+- [x] [nice-to-have] CQ4 — `ptTagRe` (`@pt:…`) duplicated verbatim in `report/playwright.go` + `cmd/ptvalidate/discover.go`; add a lockstep cross-reference comment on both (grammar must stay in sync).
+
+### Documentation
+- [x] [must-fix] DOC1 — the new `playthroughs` rext section is absent from both section indexes (`.agentspace/rosetta-extensions/README.md` table + `knowledge/README.md` bullets); add the row/bullet (per-unit handbook contract — README present, index half was missing). (Also restores the pre-existing `stack-secrets` gap in the knowledge/README bullet list.)
+- [x] [minor] DOC2 — `fixtures/` cited present-tense "version-controlled" in `playthroughs.md` §Where-it-lives + the section README, but the dir is empty/untracked (a forward-looking M203/M204 placeholder); reword to future-tense.
+
+### Tests & Benchmarks
+- [x] Regression tests for the 3 behavioral code fixes (CQ1 datadna exit-3 arm · CQ2 PW_WORKERS validation · CQ3 truncate n≤1 boundary).
+
+### Decision Triage
+- [x] M202-D4 → blend one line into `stories-spec.md` §"first story keeps the default org" (the second-world-on-a-shared-stack landmine + the anchor-story mitigation, tagged `(#M202-D4)`, x-ref playthroughs.md). D1/D2/D3 → already covered in the `playthroughs.md` runbook (mixed toolchain / subprocess boundary / seed reuse); reference tags added inline.
