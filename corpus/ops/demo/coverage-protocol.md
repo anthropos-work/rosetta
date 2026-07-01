@@ -437,6 +437,34 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     param, or the backend default must prefer the closed cycle) → the milestone Re-scope trigger, or the
     disclosed-presenter-note (data proven-correct in the DB, slow-only via the default route) with the user's
     explicit sign-off.**
+  - **A "frozen"/materialized read path can carry its OWN org-scale wall — measure the FROZEN read
+    END-TO-END, not just confirm it is reachable (v1.10b M51 iter-08).** iter-07 assumed the closed-cycle
+    frozen branch (`buildResponseFromSnapshots`) was *fast* and that the only gap was the FE not routing to it
+    (the default GET omitting `?cycle=`). The user's chosen zero-edit fix was to **deep-link the demo entry** —
+    make Dana's cockpit `jump_to` + the coverage manifest carry `?cycle=<latest-closed-cycle-id>` so the FE
+    fires the cycle-scoped GET → the frozen branch. **Before touching the cockpit/manifest, an authenticated
+    DUAL-ENDPOINT DIRECT probe** (lift the hero's bearer from a real outbound request, then hit `/cycles` AND
+    the frozen data GET `?cycle=<closed>` **directly** via `page.request`, bypassing the FE's React Query
+    orchestration) **falsified the premise**: `/cycles` returned **200 in 40 ms** (fast — the FE gate is fine),
+    but the frozen data GET `?cycle=<closed>` **NEVER COMPLETED** (timed out the full 180 s budget), *identical*
+    to the live-recompute default. Root cause: `buildResponseFromSnapshots` reads the frozen scores fast but
+    then calls **`loadMembers(orgID, "")` — a full unbounded org-member hydration** (`hydrateMembers` with
+    `memberIDs=nil, userIDs=nil` → whole-org tag/skill/sim aggregation) to attach current identity/tags to each
+    snapshot; at 200 members that hydration is the SAME org-scale wall as the live path (and even the
+    `ai_readiness_refresh` worker's parallel compute logs `context deadline exceeded`). So the frozen branch is
+    NOT a fast path in this demo — the deep-link cannot clear the wall even in principle, and (crucially) it is
+    NOT one of the demo-patchable costs: `queryBaseMembers` here reads `jobRole` from a SQL column (NOT the
+    per-object targetRole Sentinel RPC that `app-targetrole-authz-skip` already drops), so the existing
+    demo-patch does nothing for it. **Lesson: "frozen"/"pre-computed"/"materialized" names a *scores* freeze, not
+    necessarily a *response* freeze — a snapshot read that re-joins live per-member identity re-incurs the
+    org-scale member-load wall. Before betting a strategy on a fast branch, MEASURE THE BRANCH END-TO-END with a
+    direct authenticated probe of the exact request the strategy will fire (here `?cycle=<closed>&includePeople=true`),
+    not just confirm the branch is reachable / the DB rows are correct. When the frozen read is itself
+    org-scale-slow and its cost is NOT a demo-patchable authz gate, the remaining zero-edit path is the
+    disclosed-presenter-note (data proven-correct in the DB, slow-only) — which needs the user's EXPLICIT
+    sign-off; a platform fix (bound `loadMembers` in the snapshot path / a frozen_tags column so it needn't
+    re-join live members) is the Re-scope trigger. Reusable diagnostic:
+    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts`.**
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and

@@ -7,8 +7,8 @@
     "target": "(0, 0) + dashboard ENABLED + ~80% all-3-complete + 1 hero STARTED + 1 COMPLETED",
     "met": false
   },
-  "iters_total": 7,
-  "tiks": 6,
+  "iters_total": 8,
+  "tiks": 7,
   "toks": 1,
   "current_metric": {
     "failingSections": 5,
@@ -31,9 +31,9 @@
   },
   "blocker": {
     "kind": "user-blocker",
-    "summary": "The AI-readiness closed-cycle strategy produced correct fast-readable data (199 frozen snapshots, DB-verified) but the platform FE's DEFAULT dashboard GET does not route to the frozen path (it fires the live-recompute GET with no ?cycle= and never fires /cycles). Gate cannot reach (0,0) without one of: (a) a disclosed-presenter-note residual (data proven-correct in DB, slow-only via the default route) with the user's explicit sign-off, (b) escalate a platform edit (FE pass latest-closed by default OR backend default prefer a closed cycle) = unimplementable-without-platform-edit, or (c) a new app read-path demo-patch batching/relaxing the translation N+1 (option B of the brief, NOT chosen).",
-    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/{progress,decisions}.md + decisions.md (USER-BLOCKER iter-07)"
+    "summary": "iter-08 applied the user-chosen run-5 DEEP-LINK strategy (point the cockpit jump_to + coverage manifest at ?cycle=<latest-closed-cycle-id> so the FE fires the cycle-scoped GET -> the fast frozen path). The mandated cheap probe FIRST (an authed dual-endpoint DIRECT probe) FALSIFIED it: /cycles is fast (40ms) but the frozen data GET ?cycle=<closed> NEVER completes (180s timeout), because app buildResponseFromSnapshots reads the frozen scores fast then calls loadMembers(org, \"\") -- a full unbounded org-member hydration -- which at 200 members is the SAME org-scale wall (NOT the demo-patchable targetRole authz RPC; jobRole is a SQL column). So the deep-link is INERT -- 'frozen' froze the SCORES, not the RESPONSE. Stronger falsification than iter-07 (which showed only the DEFAULT FE route omits ?cycle=). No cockpit/manifest edit made (would ship a hanging ?cycle=), no sweep run (would reconfirm 5). Gate cannot reach (0,0) without one of: (a) a disclosed-presenter-note residual (data proven-correct in DB, slow-only) with the user's EXPLICIT sign-off (NOT self-granted -- would loosen the gate to force a pass), (b) escalate a platform edit (bound loadMembers in the snapshot path via restrictUserIDs, OR add a frozen_tags jsonb column [M314b] so the snapshot read needn't re-join live members) = unimplementable-without-platform-edit, or (c) a new app read-path demo-patch bounding loadMembers in the snapshot path (the app-targetrole-authz-skip precedent, a new tooling investment NOT in the run-5 brief).",
+    "evidence": "knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-08/{progress,decisions}.md + decisions.md (USER-BLOCKER iter-08) + rext stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts"
   },
-  "last_iter": "iter-07",
+  "last_iter": "iter-08",
   "last_updated": "2026-07-01"
 }

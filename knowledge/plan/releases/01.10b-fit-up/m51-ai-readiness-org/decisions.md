@@ -122,3 +122,54 @@ build-iter from taking:
 iter-07 surfaces the decision rather than picking one. Full evidence in iter-07/{progress,decisions}.md. The
 closed-cycle seeder + --reload-sentinel are KEPT + committed (the DB showcase is correct + reusable regardless
 of the chosen resolution). `fit-up-m51` is NOT tagged (gate not met).
+
+## USER-BLOCKER (iter-08, 2026-07-01): the user-chosen DEEP-LINK strategy is FALSIFIED — the frozen READ is itself org-scale-slow
+
+**Context:** the run-5 brief chose the zero-platform-edit **deep-link the demo entry** fix for the iter-07
+residual: point Dana's cockpit `jump_to` + the coverage manifest at the AI-readiness dashboard with
+`?cycle=<latest-closed-cycle-id>` so the FE fires the cycle-scoped GET, which the platform "serves FAST via
+`buildResponseFromSnapshots` — reachable only when the request carries the closed cycle id." The brief mandated
+**verifying the deep-link hits the frozen fast path FIRST (a cheap probe before a full sweep)**.
+
+**Falsification (the cheap probe, before any cockpit/manifest edit or sweep):** an authenticated dual-endpoint
+DIRECT probe (`stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts` — lift Dana's bearer, hit both
+endpoints directly via `page.request`, bypassing the FE React Query gate) showed:
+  - `GET /api/workforce/ai-readiness/cycles` → **200 in 40 ms** (fast — the FE gate is fine; returns the closed
+    cycle `95d9fc3d-48c0-53ca-82ac-e10713100c97`).
+  - `GET /api/workforce/ai-readiness?cycle=<closed>&includePeople=true` (the FROZEN path) → **NEVER COMPLETED**
+    (180 s timeout), identical to the live-recompute default.
+
+**Root cause (source read, zero platform edit):** `app buildResponseFromSnapshots` (`ai_readiness.go:512`)
+reads the frozen SCORES fast, but then calls **`loadMembers(orgID, "")`** — a full UNBOUNDED org-member
+hydration (`hydrateMembers` with `memberIDs=nil, userIDs=nil` → whole-org tag/skill/sim aggregation over ~200
+members) to re-join CURRENT tags/name/role onto each snapshot. At 200 members that member-load is the SAME
+org-scale wall as the live path (the `ai_readiness_refresh` worker logs `context deadline exceeded`). Crucially
+it is NOT the demo-patchable per-object targetRole Sentinel RPC — `queryBaseMembers` reads `jobRole` from a SQL
+column, so the applied `app-targetrole-authz-skip` patch does nothing for it. **"Frozen" froze the SCORES, not
+the RESPONSE** — the response re-joins live members → re-incurs the wall.
+
+**Why this is a STRONGER falsification than iter-07:** iter-07 concluded only "the DEFAULT FE GET omits
+`?cycle=`, so the frozen branch is never SELECTED." iter-08 shows the frozen branch, even when selected by a
+direct `?cycle=` request, is ITSELF org-scale-slow — so the deep-link (the user's chosen zero-edit fix) cannot
+clear the wall EVEN IN PRINCIPLE. No cockpit/manifest deep-link edit was made (it would ship an inert `?cycle=`
+that still hangs); no GATED sweep was run (it would only reconfirm `failingSections=5`).
+
+**Why user-blocker (the decision the user must make):** every remaining path to `(0,0)`:
+  (a) **DISCLOSED residual** (the run-5 brief's stated fallback): the data is PROVEN correct in the DB — the 2
+      AI-readiness sections + the 3 workforce aggregates (same `loadMembers` family) are slow-but-correct due
+      to a platform read-path perf wall, not a seed gap. Disclose as a presenter-note per the coverage-protocol's
+      NARROW disclosed-allow → green-with-disclosure. Per the coverage-protocol + iter-07 this needs the user's
+      **EXPLICIT sign-off** (NOT an auto-allow); self-granting it would be loosening the gate to force a pass
+      (the invariant's hard line), so the build-iter does NOT self-grant it. The seeded closed-cycle data STAYS
+      (honest + correct).
+  (b) **ESCALATE a platform edit** (`unimplementable-without-platform-edit`, the milestone Re-scope trigger):
+      bound `loadMembers` in the snapshot path (pass the ~199 snapshot user-ids as `restrictUserIDs` instead of
+      a whole-org hydration) OR add the deferred `frozen_tags jsonb` column (M314b) so the snapshot read needn't
+      re-join live members. The invariant forbids doing it here.
+  (c) a NEW app read-path demo-patch bounding `loadMembers` in the snapshot path (the `app-targetrole-authz-skip`
+      precedent) — a substantial new tooling investment NOT in the run-5 brief's chosen scope.
+
+iter-08 surfaces the decision rather than picking one. The closed-cycle seeder + the reusable diagnostic probe
+are KEPT + committed (correct + reusable regardless of the resolution). Protocol lesson added
+(coverage-protocol.md, M51 iter-08: frozen SCORES ≠ frozen RESPONSE; measure the fast branch END-TO-END).
+`fit-up-m51` is NOT tagged (gate not met). Full evidence in iter-08/{progress,decisions}.md.
