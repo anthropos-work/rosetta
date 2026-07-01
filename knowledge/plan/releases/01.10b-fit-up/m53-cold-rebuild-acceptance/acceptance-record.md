@@ -1,6 +1,6 @@
 # M53 — v1.10b "fit-up" cold-rebuild acceptance record
 
-**Date:** 2026-07-01 · **Stack:** demo-1 (offset 10000) · **rext pin:** `v1.10.1` (authoring HEAD `117fe41`)
+**Date:** 2026-07-01 · **Stack:** demo-1 (offset 10000) · **rext pin:** `v1.10.1` (authoring HEAD `576dbcb` — re-rolled at close over the acceptance HEAD `117fe41` to include the M53 close-phase harden tests; the acceptance itself was measured at `117fe41`)
 **Verdict:** **GREEN — 6/6 acceptance criteria + academy F6 PASS from cold.** AB4 was RED on first assertion
 (an M51-owned gate regression); it was **fixed at the acceptance gate** (a conscious, recorded exception to
 M53's no-fix-code rule — same class as the academy F6 exception — because M51 is archived) and **re-verified
@@ -13,10 +13,13 @@ The single live demo the M47–M52 fixes were iterated against was **destroyed**
 ## The rext release tag
 - **`v1.10.1`** (annotated) — originally rolled on the authoring copy at `e91f004` (rolling up `fit-up-m47..m52`,
   46 rext commits + the M53 academy F6 commit); **re-rolled at the acceptance gate to `117fe41`** to include the
-  AB4 org-conditional-manager-manifest fix (a local, unpushed tag re-roll — `git tag -d` + re-create annotated;
-  NOT a force-push). `.agentspace/rext.tag` stays `v1.10.1`; the `stack-demo/rosetta-extensions` consumption
-  clone re-pinned to the re-rolled `v1.10.1` via a clean fetch + checkout. Canonical pin recorded in
-  `corpus/ops/rosetta_demo.md`.
+  AB4 org-conditional-manager-manifest fix; **re-rolled once more at M53 close to `576dbcb`** to include the M53
+  close-phase harden tests (F6 academy-link + AB4 manifest org-gating edge tests) — the tag-at-close precedent.
+  Each re-roll is a local, unpushed tag re-roll (`git tag -d` + re-create annotated; NOT a force-push). The
+  acceptance bar was measured at `117fe41`; the harden tests at `576dbcb` are test-only (no production code
+  changed since `117fe41`), so the acceptance verdict is unaffected. `.agentspace/rext.tag` stays `v1.10.1`; the
+  `stack-demo/rosetta-extensions` consumption clone re-pinned to the final `v1.10.1` (`576dbcb`) via a clean
+  fetch + checkout (tree clean). Canonical pin recorded in `corpus/ops/rosetta_demo.md`.
 
 ## The acceptance bar
 
