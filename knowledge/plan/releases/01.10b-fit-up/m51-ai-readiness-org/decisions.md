@@ -229,3 +229,37 @@ hypothesized to clear all 5. Expected lift: 5 → 0.
 app image (through the inject loop) + re-seed; verify with the cheap dual-endpoint probe (frozen GET now
 completes fast + returns the correct funnel) BEFORE the gated sweep; then run the gated manager sweep and drive
 failingSections 5 → 0.
+
+## D-CLOSE-1 (close, 2026-07-01): academy F6 repeat-defer fate — LAND-NEXT → M53
+
+**Context:** the M51 close deferral re-audit (Phase 1b, `audit-deferrals/deferral-audit-2026-07-01-m51-close.md`)
+flagged **RED**: the ant-academy field-review gap **F6** (0 course-content + no hero academy menu-link +
+anonymous session when the academy is reached directly) is a **REPEAT deferral** — first raised at M50 close
+(D-CLOSE-3, Fate-3 → M51), then not executed in any M51 iter (M51's 9 iters went entirely to the AI-readiness
+dashboard perf saga: active-cycle → closed-cycle → deep-link → app read-path demo-patch). The M51 manager
+coverage gate was MET without it. A repeat deferral requires an explicit per-item user fate decision before the
+milestone can close (the RED can only clear on that decision).
+
+**Options (from the audit):**
+- (a) KEEP-DEFERRED-WITH-SIGNOFF → a future release (v2.0 **M207 Academy coverage**) — the auditor's
+  recommendation (the academy is a coherent separate Vercel deployment already owned by a named v2 milestone).
+- (b) LAND-NEXT via a Fate-3 override of a sibling milestone's scope (M52 `Out: new seeding` / M53
+  `No new feature code (acceptance only)`).
+- (c) LAND-NOW in M51 close — rejected by the auditor as new emergent scope disjoint from M51's AI-readiness work.
+- (d) DROP.
+
+**Choice: (b) LAND-NEXT → M53** (Fate-3 override of M53's `No new feature code` scope-guard). **User-decided.**
+
+**Why:** M53 already **destroys the live demo and cold-rebuilds it from scratch** — that is the single natural
+place to *seed + verify* academy content on a clean build, rather than patch it onto the live demo late. The F6
+items are a small ant-academy **seeding/content + wiring** surface (course content present; a hero academy
+menu-link; a non-anonymous academy session), not new platform **feature code** — so the Fate-3 override of M53's
+acceptance-only guard is honest (it adds a seed+assert surface, not a feature). The academy's **AI chat stays
+documented-as-absent** per the AI-keys policy (the `/api/ai/chat` route needs keys the demo doesn't provision —
+no assertion on it). This closes the M50→M51→M53 handoff chain: the item lands on the cold-rebuild acceptance,
+and a failed academy assertion routes back to its owner (never expands M53).
+
+**Applied:** M53 `overview.md` Scope `In:` now carries the academy-F6 item (course content + hero menu-link +
+non-anonymous session; AI chat documented-as-absent) with the handoff-chain rationale. The Phase-1b audit RED
+is thereby **cleared** (the repeat-defer has an explicit LAND-NEXT fate). See
+`m53-cold-rebuild-acceptance/overview.md` + the updated `audit-deferrals/deferral-audit-2026-07-01-m51-close.md`.

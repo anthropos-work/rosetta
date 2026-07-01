@@ -316,7 +316,8 @@ stories:
     heroes: [ … Sara·thriving / Nick·struggling / Leah·manager … ]
 ```
 
-The shipped `presets/stories.seed.yaml` is the runnable locked **2-stories × 3-heroes** roster.
+The shipped `presets/stories.seed.yaml` is the runnable **3-stories × 3-heroes** roster (the M35 two stories +
+the M51 AI-readiness showcase org — see [The AI-readiness showcase org](#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)).
 
 ### Vantage & trajectory (the two hero axes)
 
@@ -411,6 +412,75 @@ surfaced now at org scale.
 **Closure stays measured.** Every new skill-ref surface draws its node-ids from the **same** taxonomy resolver
 the chain uses, so the seed-side closure gene (extended to `membership_skills`) still proves **0 dangling refs**
 — the mapped funnel is as closed as the verified chain.
+
+## The AI-readiness showcase org — the 3rd story (v1.10b "fit-up" M51)
+
+M51 adds a **3rd story** curated to demonstrate the **member-AI-readiness flow** end-to-end on the manager
+dashboard — the very feature the M201 verify reported as a false-negative (shipped in prod, invisible to the stale
+clones; confirmed present at M47). It is a full peer of the M35 two stories, seeded through the same declarative
+`stories[]` model and the same closure gate, plus three **net-new AI-readiness seeders** and one **app read-path
+demo-patch**.
+
+### The story
+
+A 3rd `stories[]` entry in `presets/stories.seed.yaml` (so the roster is now **3 stories × 3 heroes**, not the
+former 2×3): org **Northwind Aviation** (200 members, `narrative: ai-readiness`), with a hero trio —
+
+| Hero | Vantage / trajectory | AI-readiness state |
+|---|---|---|
+| **Aria** | end-user, thriving | **COMPLETED** — stage 3 (all 3 steps of the onboarding/evaluation done) |
+| **Ben** | end-user, struggling | **STARTED** — stage 1 (mid-cycle, in-progress on the onboarding element) |
+| **Dana** | manager | views the org **AI-readiness dashboard** (rides the aggregates; seeds no chain of her own) |
+
+The `narrative: ai-readiness` biases a share of members toward AI-named skills via the existing
+`isAISkillName`/`filterAISkills` path (`membership_skills.go`) — the same substring semantics the dashboard's
+`matchAISkill` uses. Dana's cockpit `jump_to` lands on `/enterprise/workforce/ai-readiness` (carrying
+`?cycle=<closed-cycle-id>` — see the demo-patch below); Aria/Ben land on their onboarding element.
+
+### The three net-new seeders (the AI-readiness chain)
+
+Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51; three seeders do now, DAG-ordered
+`config → funnel` (the funnel's Step-scored signals reference the config's cycle/skills/sims rows — a wrong
+`DependsOn` would order them backwards; pinned by `TestAIReadinessSeeders_RegistrationContract`):
+
+| Seeder (`stack-seeding/seeders/`) | Writes | What it lands |
+|---|---|---|
+| **`OrgSettingsSeeder`** (`org_settings.go`) | `organization_settings` (`setting='ai_readiness', is_enabled=true`, one row per org) | The **enablement gate** the dashboard keys on. (Enablement is an **org setting**, resolved from the M48 contract — not a PostHog flag.) |
+| **`AIReadinessConfigSeeder`** (`ai_readiness_config.go`) | `ai_readiness_cycles` (×1, **`status='closed'`**), `ai_readiness_skills` (~core weight-1.0 + enabling 0.5, **real replayed-taxonomy node-ids** via the resolver — never fabricated), `ai_readiness_sims` (×2, deterministic sim-refs), `ai_readiness_steps` (×3) | The **cycle + 3-step definition** the funnel scores against. |
+| **`AIReadinessFunnelSeeder`** (`ai_readiness_funnel.go`) | **199 frozen `ai_readiness_snapshots`** (one per stage≥1 member, platform-model-scored) + `ai_readiness_user_step_progresses` | The **200-member funnel at 78.4% all-3-complete** (stage-3 = 156, stage-2 = 21, stage-1 = 22), Aria pinned stage 3 / Ben stage 1 / Dana excluded. |
+
+### Why closed-cycle + frozen snapshots (the strategy M51 shipped)
+
+The M48 contract offers two seed strategies (see [`../../services/ai-readiness.md`](../../services/ai-readiness.md)):
+an **active** cycle (the dashboard live-recomputes from signals) or a **closed** cycle (the dashboard reads
+pre-computed `ai_readiness_snapshots` directly). M51's iters 03→06 built and then **falsified** the active-signals
+path — the live-recompute never completes in the coverage harness's budget (a per-skill federated translation N+1,
+the M46 per-object-RPC class). The milestone **shipped the closed-cycle / frozen-snapshot** strategy: the cycle is
+seeded `closed`, one frozen snapshot per member carries the platform-model score, so the dashboard reads finished
+data. (`ai_readiness_*` were also added to `stackseed --reset` + a baked `--reload-sentinel` after seed, so the
+showcase re-seeds cleanly.)
+
+### The `app-aireadiness-snapshot-loadmembers` demo-patch (the frozen-read perf bound)
+
+Freezing the *scores* was not enough: the frozen read path (`app buildResponseFromSnapshots`) still calls
+`loadMembers(orgID, "")` — an **unbounded whole-org member hydration** to re-join current name/role/tags onto each
+snapshot — so even a direct `?cycle=<closed>` GET timed out at 180 s at 200 members (**"frozen" froze the SCORES,
+not the RESPONSE** — iter-08's root cause). The fix is a **pure perf** app injection demo-patch
+(`patches/app-aireadiness-snapshot-loadmembers.yaml` + `apply-app-aireadiness-loadmembers.sh`, wired non-fatally
+into `up-injected.sh`, following the M46 `app-targetrole-authz-skip` precedent): it swaps the unbounded
+`loadMembers` for the existing bounded sibling `loadMembersByUserIDs` over the ~199 snapshot user-ids. **Data-
+identical** (the members map is keyed and looked up by snapshot `UserID`; members with no matching snapshot were
+loaded-but-never-used), scoped to the snapshot read path only. The frozen GET went **180 s-timeout → 19 ms**; the
+dashboard renders the full funnel. This is a disclosed demo-perf relaxation, not a prod fix — **prod's frozen read
+still hydrates the whole org and would need `loadMembers` bounded / a `frozen_tags` column (M314b)**, documented in
+[`coverage-protocol.md`](coverage-protocol.md).
+
+### The gate
+
+Proven by the **M42 semantic coverage gate, manager vantage**, on Northwind: `(failingSections, escapes) = (0, 0)`,
+persona green, frontier-exhausted, on a fresh `/demo-up` (rext `fit-up-m51`). Closure stays measured — the
+AI-readiness skills resolve through the same taxonomy resolver, so the seed-side closure gene proves 0 dangling
+refs across all 3 orgs.
 
 ## The presenter cockpit (M38)
 
@@ -508,7 +578,7 @@ label; an unrecognized `jump_to` still works (it's a raw path) with a generic la
 ### Bring it up
 
 ```bash
-# A storytelling demo: DEMO_STORIES=1 seeds the 2-org hero trio, wires the multi-identity fake-fapi, and
+# A storytelling demo: DEMO_STORIES=1 seeds the 3-org hero trios, wires the multi-identity fake-fapi, and
 # serves the cockpit. Default-off keeps every existing demo byte-identical (structural seed, single-identity).
 DEMO_STORIES=1 /demo-up 3
 # → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Log in as] → her per-role screen.
@@ -527,7 +597,7 @@ stacksnap replay --surface directus --stack demo-N   # the sim templates the ses
 
 # 2. Seed the world. The M34 vertical slice (one hero):
 stackseed --stack demo-N --seed presets/stories-maya.seed.yaml
-#    …or the M35 full multi-org roster (2 orgs × the thriving/struggling/manager trio):
+#    …or the full multi-org roster (3 orgs × the thriving/struggling/manager trio — M35 two + the M51 AI-readiness org):
 stackseed --stack demo-N --seed presets/stories.seed.yaml
 
 # 3. Prove closure (every seeded skill ref resolves in the replayed taxonomy — all orgs):

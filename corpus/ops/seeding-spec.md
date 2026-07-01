@@ -362,3 +362,17 @@ DATA-DENSITY, `PerStackIsolated` + closure-GREEN (the ISO catalog is a published
 node-id), proven by the M42 coverage gate on the manifest STRENGTHENED to assert them (both vantages, warm). The
 detail lives in [`profile-completeness-spec.md`](demo/profile-completeness-spec.md) §"the Talent-tab fill" + §"the
 shared per-member uuid-space". Code-of-record: `rosetta-extensions` @ tag `fit-up-m50`.
+**v1.10b "fit-up" M51** adds the **AI-readiness showcase org — a 3rd story** (org "Northwind Aviation", 200
+members, hero trio Aria COMPLETED / Ben STARTED / Dana manager), with three **net-new AI-readiness seeders**:
+**`OrgSettingsSeeder`** (the `organization_settings` `ai_readiness` enablement gate-row — nothing wrote that table
+before), **`AIReadinessConfigSeeder`** (`ai_readiness_cycles` **closed** + `ai_readiness_skills` with **real
+replayed-taxonomy node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), and **`AIReadinessFunnelSeeder`** (199
+frozen `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), DAG-ordered
+`config → funnel`. The milestone shipped the **closed-cycle / frozen-snapshot** strategy (the active-signals path
+was falsified — the live-recompute never completes in the coverage-harness budget) plus the
+**`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's whole-org
+`loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
+`PerStackIsolated` + closure-GREEN across all 3 orgs, proven by the **M42 manager-vantage** coverage gate `(0,0)`.
+The detail lives in [`demo/stories-spec.md`](demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
++ the seeder contract [`../services/ai-readiness.md`](../services/ai-readiness.md). Code-of-record:
+`rosetta-extensions` @ tag `fit-up-m51`.

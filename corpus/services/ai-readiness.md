@@ -112,7 +112,9 @@ having completed all 3 steps**, plus **one hero "started"** and **one hero "comp
 3. `ai_readiness_skills` × ~5 core (weight 1.0) + a few enabling (0.5), `node_id` = **real taxonomy node-ids** (route
    through the existing seeding resolvers — never fabricate, per the closure gate).
 4. `ai_readiness_sims` × 2 (`step_type` simulation + interview, `sim_ref` = a real Directus sim id or a `PLACEHOLDER-` ref).
-5. `ai_readiness_cycles` × 1 (`status='active'`).
+5. `ai_readiness_cycles` × 1. **M51 SHIPPED `status='closed'`** (the frozen-snapshot strategy — see the ⚠ blocks
+   below for why the active-signals path was falsified); the active-cycle contract is retained here as the
+   alternative.
 
 **Per-member (≈160 "completed"):** the underlying signals (≥1 `user_skill_evidences` for a configured skill;
 jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progress` (3× `completed`) **+** an
@@ -132,7 +134,10 @@ decision):**
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
 - **Closed cycle → the dashboard reads frozen snapshots.** `buildResponseFromSnapshots` reads `ai_readiness_snapshots`
   directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
-  cycle to `closed`) with **no underlying signals** — lighter, but the world reads as a *finished* assessment.
+  cycle to `closed`) with **no underlying signals** — the world reads as a *finished* assessment. **This is the
+  strategy M51 shipped** (`AIReadinessConfigSeeder` writes the cycle `closed` + `AIReadinessFunnelSeeder` writes 199
+  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
+  completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
 
   **⚠ M51 iter-07 — the frozen path is CYCLE-SCOPED; the DEFAULT dashboard GET does NOT take it.**
   `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
@@ -149,6 +154,22 @@ decision):**
   as the load-bearing caveat for any "seed it closed to dodge the perf wall" plan. See
   `knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/` + `corpus/ops/demo/coverage-protocol.md`
   (the "cycle-scoped fast read-path" lesson).
+
+  **⚠⚠ M51 iter-08/09 — the frozen READ is ITSELF org-scale-slow ("frozen" froze the SCORES, not the RESPONSE).**
+  Even when the frozen branch IS selected (a direct `?cycle=<closed>` GET), `buildResponseFromSnapshots`
+  (`ai_readiness.go:512`) reads the frozen scores fast but then calls **`loadMembers(orgID, "")`** — an
+  **unbounded whole-org member hydration** (`hydrateMembers` over ~200 members) to re-join current tags/name/role
+  onto each snapshot. At 200 members that member-load is the **same org-scale wall** as the live path: the
+  `?cycle=<closed>` GET timed out at 180 s (iter-08's authenticated dual-endpoint probe). It is NOT the
+  demo-patchable per-object targetRole Sentinel RPC (`queryBaseMembers` reads `jobRole` from a SQL column). **In the
+  demo**, M51 iter-09 bounds it with the `app-aireadiness-snapshot-loadmembers` app read-path demo-patch
+  (`loadMembers(orgID,"")` → the bounded sibling `loadMembersByUserIDs` over the ~199 snapshot user-ids — a pure,
+  data-identical perf optimization; 180 s → 19 ms). **In PROD** the frozen read still hydrates the whole org and
+  would need `loadMembers` bounded in the snapshot path, or a **`frozen_tags jsonb` column** so the snapshot read
+  needn't re-join live members (**M314b** — a disclosed demo-perf relaxation, NOT a prod fix). See
+  [`../ops/demo/coverage-protocol.md`](../ops/demo/coverage-protocol.md) (the iter-08/09 loadMembers lesson) +
+  [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
+  (the seeder + demo-patch).
 
 **No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 
