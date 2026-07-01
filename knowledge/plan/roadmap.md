@@ -165,10 +165,25 @@ none escape-hatch):** academy F6 → M53 (Fate-3); COLD reset-to-seed acceptance
 re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →** `demo/stories-spec.md` (the 3rd story),
 `services/ai-readiness.md`, `seeding-spec.md`, `CLAUDE.md`; rext tag **`fit-up-m51`**.
 
-**M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51**. Extract the Go mother-prompts to
+**M52 — Single auditable seed+gen manifest** · `section` · depends: **M50 + M51** · ✅ **`done` — closed 2026-07-01**
+(merged → `release/01.10b-fit-up`). Extract the Go mother-prompts to
 YAML; author **one** checked-in `seed-generation-manifest.yaml` inlining population blueprint (all 3 orgs) +
 prompts + batch config + snapshot sources (**cache + generated data excluded**); the cockpit **[Download]** serves
 it. **Delivers →** NEW `corpus/ops/demo/seed-manifest-spec.md`.
+All 4 sections landed (S1 `go:embed` extraction byte-identical → cache preserved; S2 the NEW `manifest` pkg + the
+honesty-gated projection + `--manifest-export` verb; S3 cockpit [Download] repoint, non-fatal fallback; S4 the NEW
+spec). Tests: rext stack-seeding **786** (+37 vs M51's 749; NEW `manifest` pkg 100% stmt) · demo-stack Python **313**
+(+14: cockpit `--seed-manifest` endpoint + fallback); flake **0** (5/5 Go `-shuffle` + 5/5 Python). Close review: **12
+findings all Fate-1** — F1 dedup the 3-way projection helper to one canonical `blueprint` source (removes the
+projection-drift the honesty gate can't catch); F3 second cache-key golden fences the `{{else}}(none)` branch;
+**F4 `mergeGenerationBatches` now WARNS on an orphan gen-story id** (a story-id typo was silently producing a
+generation-less "auditable" manifest — the exact silent drop this milestone exists to prevent); F5 cockpit treats an
+empty/blank `--seed-manifest` as absent; F2/F6/F7/F8/F9 (teeth-typo, gen-axis teeth, stale For-PMs prose, strip-helper
+fence, vestigial doc-param). Deferral audit **GREEN** (up-injected.sh end-to-end glue = Fate-2 → M53's cold-rebuild;
+0 repeats). **Carry-forward (three-fate, none escape-hatch):** up-injected.sh glue → M53 (Fate-2); consumption-clone
+re-pin + `.agentspace/rext.tag` bump → M53 (push-gated KEEP). **Delivers →** `demo/seed-manifest-spec.md` (NEW) +
+reconciled cross-refs (`cockpit-spec.md`, `ai-generation-spec.md`, `cache-spec.md`, `seeding-spec.md`, `README.md`,
+`CLAUDE.md`); rext tag **`fit-up-m52`** (`36d7430`).
 
 **M53 — Cold-rebuild acceptance** · `section` · depends: **M52**. Destroy the live demo + **rebuild from cold** on
 a `stack-demo`-only box; assert healthy backends + complete set-dress/seed (all 3 orgs)/verify/cockpit + both-vantage

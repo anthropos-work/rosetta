@@ -3,9 +3,9 @@ milestone: M52
 slug: seed-manifest
 version: v1.10b "fit-up"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-06-29
-last_updated: 2026-06-29
+last_updated: 2026-07-01
 complexity: medium
 delivers: corpus/ops/demo/seed-manifest-spec.md (NEW — the consolidated single-file seed+generation contract)
 issues: user note 3 (single auditable seed/generation manifest — one inlined file)
