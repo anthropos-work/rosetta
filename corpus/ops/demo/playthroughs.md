@@ -258,11 +258,20 @@ a **per-suite reset-to-seed** on `--reset`:
   therefore pins **`workers: 1`, `fullyParallel: false`, `retries: 0`** (a retry that masks a flake hides a
   Playthrough defect). The sanctioned throughput-reclaim paths — **stack-per-worker** (a stack each) or per-worker
   org/hero partitions in the seed — are opt-in via `PW_WORKERS`, never the day-one default.
+- **The runner reconciles inline** (M204 iter-02). After the Playwright run it invokes `ptreport` over the
+  manifest + this run's fresh JSON results and prints the four-state map — so a single `run-playthroughs.sh`
+  invocation both *runs* and *reconciles*. The reconciliation is non-fatal (it never masks Playwright's own
+  verdict) and the runner exits with Playwright's status. **Reporter-override lesson (load-bearing):** a
+  Playwright CLI `--reporter=…` flag REPLACES the config's *entire* reporter list — so the runner must **not**
+  pass one, or it silently suppresses the config's `['json', {outputFile: ./report/last-run.json}]` reporter,
+  leaving `last-run.json` stale and decoupling `ptreport` from the actual run (a green-but-wrong-reconciliation
+  trap). The config declares `['list', 'json', 'html']`; letting that set fire keeps the console `list` output
+  AND refreshes the JSON `ptreport` reads. (This fixed a latent M202/M203 wiring defect too.)
 
 ```bash
 cd playthroughs/e2e
-./run-playthroughs.sh 1              # run the suite against demo-1 (serial), no reset
-./run-playthroughs.sh 1 --reset      # reset-to-seed the pt-world FIRST, then run
+./run-playthroughs.sh 1              # run the suite against demo-1 (serial), no reset; reconciles inline
+./run-playthroughs.sh 1 --reset      # reset-to-seed the pt-world FIRST, then run + reconcile
 ./run-playthroughs.sh 1 --grep pt-profile-identity   # a single Playthrough by @pt tag
 ```
 
