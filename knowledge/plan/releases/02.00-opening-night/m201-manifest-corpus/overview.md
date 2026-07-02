@@ -5,7 +5,7 @@ version: v2.0 "opening night"
 milestone_shape: iterative
 exit_gate: "The manifest corpus is comprehensively outlined, validated, and written as prose-intent YAML (one file per product) — covering the platform's products × their must-work user journeys, each use case carrying goal + actor + flow + intermediate/final expectations, structurally valid (the spec §5.3 validator passes, ids unique + both-way) — and the USER signs off the corpus as the complete-enough v2.0 coverage contract."
 iteration_protocol_ref: knowledge/plan/spec-drafts/playthroughs/spec.md (the capability spec — esp. §2 model, §4 use-case shape, §5.3 manifest format)
-status: planned
+status: archived
 created: 2026-06-28
 last_updated: 2026-06-28
 complexity: large

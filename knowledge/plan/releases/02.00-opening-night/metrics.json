@@ -1,0 +1,89 @@
+{
+  "release": "v2.0 \"opening night\"",
+  "branch": "release/02.00-opening-night",
+  "closed": "2026-07-02",
+  "milestones": ["M201", "M202", "M203", "M204"],
+  "pillar": "Playthroughs — functional-flow e2e tests that pretend to be the human and prove the platform does its job at both the employee and manager vantage, on a cold reset-to-seed demo.",
+  "theme": "The FIRST milestone of a NEW pillar. M201 = the Manifest corpus spec (iterative, prose, closed-on-gate — v2.0 was paused for the v1.10b backfill, M201 preserved as the v2 spec). M202 = the Playthroughs Foundation (section: manifest model + page-object layer + reset-to-seed lifecycle + serial runner + 4-state reporting + the proof Playthrough; NEW playthroughs/ Go module + e2e TS layer + the playthroughs.md runbook). M203 = employee-vantage coverage (iterative, 6/6 Playthroughs green, closed-on-gate). M204 = manager-vantage coverage (iterative, 4/4 Playthroughs green, closed-on-gate, FINAL v2.0 milestone). Tooling (rext) + docs (rosetta) ONLY — ZERO platform-repo edits throughout. ZERO net-new third-party deps (the new pillar's Go module needs only yaml.v3 [already across rext]; its e2e needs only @playwright/test [the existing rext e2e dep]).",
+
+  "code_location": "TWO-REPO split. rext code-of-record (SEPARATE git repo, gitignored from rosetta — the tag IS the record): rosetta-extensions branch main @ HEAD c81c6dd. The v2.0 code is the NEW playthroughs/ section (its own Go module: manifest/report/seed/cmd; a TS e2e; run-playthroughs.sh; fixtures). Per-milestone tags: opening-night-m202 (b1e5528), opening-night-m203 (fb94458), opening-night-m204 (c81c6dd). Built on the reused M42 e2e foundation (stack-verify/e2e) + seeding (stack-seeding). On-box consumption pin: .agentspace/rext.tag = v1.10.1 (66a021e5, the demo-1 pin) — UNCHANGED; the playthroughs section runs from the authoring copy, not repinned. rosetta doc-half: release/02.00-opening-night (4 milestone branches merged --no-ff; 27 commits vs main).",
+
+  "playthroughs_go": {
+    "module": "github.com/anthropos-work/rosetta-extensions/playthroughs",
+    "total": 105,
+    "test_funcs": 101,
+    "fuzz_funcs": 4,
+    "by_package": {"manifest": 44, "report": 28, "cmd/ptvalidate": 18, "cmd/ptreport": 15},
+    "note_seed_pkg": "seed pkg present but has no _test.go (0 test funcs); its behaviour is exercised live via the reset-to-seed lifecycle + gate-verified Playthroughs.",
+    "counting_method": "top-level 'func Test...' + 'func Fuzz...' grep across all _test.go in .agentspace/rosetta-extensions/playthroughs at HEAD c81c6dd = 105. Cross-checked vs M204 recorded total (105) and per-package counts (manifest 44, report 28, ptvalidate 18, ptreport 15). Growth M202 96 -> M203 103 -> M204 105.",
+    "go_test": "go test ./... EXIT 0 (4 pkgs ok: manifest, report, cmd/ptvalidate, cmd/ptreport)",
+    "go_vet": "clean",
+    "gofmt": "clean (per M203/M204 close)",
+    "delta_vs_prev_release": "+105 (NEW module; v1.10b had 0 playthroughs test funcs). Additive — new pillar."
+  },
+
+  "playthroughs_ts": {
+    "layer": "playthroughs/e2e",
+    "unit_total": 58,
+    "by_spec": {"url-shapes.unit.spec.ts": 46, "stack-env.unit.spec.ts": 12},
+    "counting_method": "`npx playwright test tests/*.unit.spec.ts --reporter=list` (pure-logic, NO-browser unit specs) = 58 passed. Matches M204 recorded 58 (url-shapes 46 + stack-env 12). Growth M202 13 -> M203 38 -> M204 58 (the M202 count of 13 was 12 unit + 1 e2e proof spec; the pure-unit line is 58 at close).",
+    "tsc": "clean (tsc --noEmit)",
+    "delta_vs_prev_release": "+58 (NEW e2e layer; v1.10b unit e2e was the stack-verify/e2e 42 across coverage-manifest+section-assert — a DIFFERENT layer). Additive — new pillar."
+  },
+
+  "live_playthroughs": {
+    "corpus_total": 10,
+    "employee": 6,
+    "employee_ids": ["pt-profile-identity", "pt-profile-verified", "pt-profile-growth", "pt-profile-timeline", "pt-skillpath-legacy", "pt-aisim-chat-launch"],
+    "manager": 4,
+    "manager_ids": ["pt-workforce-funnel", "pt-workforce-roster", "pt-workforce-succession", "pt-activity-drilldown"],
+    "manifest_todo": 1,
+    "manifest_todo_detail": "assignment-monitoring.assign-and-track.UC1 (the assign-WRITE half — two-backend org-admin write). Fate-2, tracked in-manifest (playthrough TODO, reports unimplemented, presence-pinned via TestRealCorpus_ManagerCoverageIsPresent). Out of M204's declared 3 manager journeys. Recorded D-CLOSE-1.",
+    "browser_determinism": "M203 6/6 employee 5/5 cold reset-to-seed 0 false-fails (iter-06); M204 4/4 manager 5/5 cold reset-to-seed 0 false-fails (iter-05). NOT re-run at close (gate already green + 5/5, per closed-on-gate directive). The ~13min coverage sweep + live Playthroughs are gate-verified per milestone — out of close-release-tests scope."
+  },
+
+  "coverage_snapshot": {
+    "playthroughs_go_by_package_at_close": {"manifest": 100.0, "report": 100.0, "cmd/ptvalidate": 98.8, "cmd/ptreport": 94.8},
+    "section_statements_pct_m202": 98.5,
+    "note": "M202 section stmt cov 98.5% (report 100 / manifest 99.4 / ptvalidate 97.6 / ptreport 94.8). M203 raised manifest+report to 100.0 (checkPreconditionCoverage + discoverRegistry arms) and ptvalidate to 98.8. M204 harden PINNED untested invariants (reporter-override drift + manager-coverage presence) at 0.0% stmt-delta (manifest already 100). Manager page objects are locator-returning (no pure logic to unit-cover) — their journeys are gate-verified live. TS url-shapes.ts predicates ~100% via url-shapes.unit.spec.ts (46 tests). No >2pp drop on any measured surface across the release.",
+    "prev_release_note": "v1.10b measured DIFFERENT surfaces (stack-seeding seeders ~97.6%, manifest pkg 100%, cockpit ~97.6%). Not a like-for-like compare — v2.0's playthroughs module is a NEW surface. No carried-over surface regressed (other rext modules untouched)."
+  },
+
+  "flake": 0,
+  "flake_gate": "PASS. Close-release re-verification (2026-07-02): playthroughs Go `go test ./... -count=1 -race -shuffle=on` 5/5 clean (0 FAIL lines each run); TS unit `tests/*.unit.spec.ts` 5/5 clean (58 passed each run). Matches the per-milestone gates (M202 Go 5/5 shuffled -race + TS 5/5; M203 Go shuffle 5/5 + TS unit 5/5 + browser 5/5 cold; M204 Go shuffle 5/5 + TS unit 5/5 + browser 5/5 cold).",
+
+  "supply_chain": {
+    "new_deps": 0,
+    "note": "ZERO net-new third-party deps. The NEW playthroughs Go module requires ONLY gopkg.in/yaml.v3 v3.0.1 (already across rext) — stdlib otherwise. The e2e requires ONLY @playwright/test (the existing rext e2e dep, shared with stack-verify/e2e) + @types/node + typescript (dev tooling). The ai v1.40.1 dep (v1.10 M45) is NOT in playthroughs; it stays in stack-seeding, unchanged. Zero platform-repo edits.",
+    "govulncheck": {
+      "modules_scanned": 6,
+      "playthroughs": "No vulnerabilities found.",
+      "other_rext_modules": {"stack-seeding": "clean", "stack-snapshot": "clean", "stack-secrets": "clean", "alignment": "clean", "clerkenstein": "clean"},
+      "high_or_critical_called": 0,
+      "resolved_carry_forward": "The v1.10b-flagged inherited HIGH advisory GO-2026-5026 / CVE-2026-39821 (golang.org/x/net@v0.53.0, called in stack-seeding reloadStackSentinel) is now CLEARED — stack-seeding runs x/net v0.55.0 (commit bc36832). The v1.10b advisory carry-forward is CLOSED."
+    },
+    "node_audit": {"omit_dev": {"high": 0, "critical": 0, "total": 0}, "all": {"high": 0, "critical": 0, "total": 0}, "note": "playthroughs/e2e: npm audit 0 vulns both prod and full. @playwright/test 1.61.1 (+ playwright, playwright-core, fsevents) + typescript 5.9.3 + @types/node 20.19.43. Shared stack-verify/e2e also 0 vulns."},
+    "license": "playthroughs Go deps: yaml.v3 (MIT+Apache), check.v1 test-only (BSD-2). node deps: @playwright/test/playwright/playwright-core/typescript (Apache-2.0), @types/node/undici-types/fsevents (MIT). GPL/AGPL grep = 0 hits. Context: INTERNAL tooling — not distributed to third parties / not a commercial-distribution surface; the rosetta CORPUS has no package manifest. No copyleft exposure.",
+    "lockfile": "releases/02.00-opening-night/dependencies.lock"
+  },
+
+  "regression_vs_v1.10b": {
+    "verdict": "GREEN",
+    "framing": "v2.0 is a NEW pillar (adds the playthroughs module + its e2e layer). Test counts ADD — the compare is largely new-vs-old, so the check is 'NO regression on the carried-over surfaces + the new pillar's own coverage', NOT a like-for-like delta.",
+    "go_delta": "+105 playthroughs (NEW module). Carried-over rext modules (stack-seeding 791, stack-snapshot 364, stack-secrets 163, alignment 52, clerkenstein 270 = 1640 at v1.10b) UNTOUCHED by v2.0 — carry forward unchanged. Total rext Go test funcs now 1640 + 105 = 1745. No module decreased.",
+    "ts_delta": "+58 NEW playthroughs/e2e unit surface. The v1.10b stack-verify/e2e 42 (coverage-manifest 29 + section-assert 13) is a DIFFERENT layer, untouched. No decrease.",
+    "coverage": "no >2pp drop on any measured surface (playthroughs pkgs 94.8-100%; carried-over surfaces untouched).",
+    "flake": "0 (no regression).",
+    "supply_chain": "0 net-new deps; the 1 inherited HIGH x/net advisory from v1.10b is RESOLVED (v0.55.0). No supply-chain regression — a supply-chain IMPROVEMENT.",
+    "rules_applied": "test-count decrease -> blocker (NOT triggered: playthroughs +105, TS +58, carried-over surfaces unchanged); coverage drop >2pp -> blocker (NOT triggered); flake>0 -> blocker (NOT triggered, flake=0); unsanctioned new dep -> blocker (NOT triggered: 0 net-new deps). All BLOCKING regression gates PASS.",
+    "prev_release_baseline": "releases/archive/01.10b-fit-up/metrics.json (v1.10b, closed 2026-07-01; rext @ v1.10.1 / 66a021e5)."
+  },
+
+  "cross_milestone_coverage_gap": "1 in-manifest Fate-2 TODO: assignment-monitoring.assign-and-track.UC1 (the assign-WRITE half — two-backend org-admin write). Tracked in-manifest (playthrough TODO + reports unimplemented + presence-pinned), out of M204's declared 3 manager journeys, recorded D-CLOSE-1. M203 also routed 4 non-gate edge employee UCs (code-sim, interview-sim, verify-terminal, self-eval) Fate-3 -> M206 (roadmap-vision.md annotated, D-CLOSE-1). No UNTRACKED gap.",
+
+  "alignment_gates": "N/A-change — v2.0 touched NO Clerkenstein contract surface (clerkenstein module UNCHANGED, 270 tests, untouched). The v1.10 100%/100% gates on all 5 surfaces carry forward.",
+
+  "headline": "v2.0 \"opening night\" GREEN — a NEW pillar (Playthroughs) landed additively. playthroughs Go 105 test/fuzz funcs (go test EXIT 0, vet clean, 5/5 shuffle -race); playthroughs/e2e TS unit 58 (5/5 clean, tsc clean); 10 live Playthroughs (6 employee 5/5-deterministic + 4 manager 5/5-deterministic on cold reset-to-seed) + 1 in-manifest Fate-2 TODO. Flake 0. Coverage 94.8-100% across the new module, no >2pp drop anywhere. Supply-chain: 0 net-new deps (yaml.v3 + @playwright/test only), Go govulncheck clean across all 6 modules, node audit 0 vulns, 0 GPL/AGPL — and the v1.10b inherited x/net HIGH advisory is RESOLVED (v0.55.0). Tooling + docs only, ZERO platform-repo edits. Regression verdict vs v1.10b: GREEN (all blocking gates pass; new-vs-old, nothing carried-over regressed).",
+
+  "notes": "4-milestone release (M201 iterative spec / M202 section / M203+M204 iterative closed-on-gate). Code-of-record in the rosetta-extensions authoring copy (SEPARATE git repo) — tags opening-night-m202/m203/m204; HEAD c81c6dd. Close-release Phase 0/4/4b (this file's provenance): supply-chain scanned (playthroughs + 6 rext modules + 2 node e2e layers), playthroughs Go + TS unit suites re-run once at close (all green, flake 0, 5/5 shuffle/re-run), metrics aggregated from m201..m204/metrics.json. The ~13min coverage sweep + the live Playthroughs are gate-verified per milestone (M203 6/6 5/5, M204 4/4 5/5) — out of close-release-tests scope. Carry-forward: (1) push main + the v2.0 tag + the ext tags (opening-night-m202..m204) to origin — the orchestrator's step; (2) the 1 Fate-2 assign-WRITE UC1 + the 4 Fate-3 edge UCs are tracked (D-CLOSE-1 / M206 roadmap-vision.md)."
+}

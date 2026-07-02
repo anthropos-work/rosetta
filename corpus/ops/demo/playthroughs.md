@@ -180,8 +180,8 @@ maintainability property: a UI / antd / copy shift is absorbed by editing the pe
 Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
 
 - The base is [`e2e/lib/page-object.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/page-object.ts)
-  (`PageObject`): the shared semantic-locator primitives (`goto`, `main`, `region(headingText)`, `byRole`,
-  `byText`) that enforce the discipline in one place.
+  (`PageObject`): the shared semantic-locator primitives (`goto`, `main`, `byRole`, `byText`) that enforce the
+  discipline in one place — every shipped surface scopes to `main()` then disambiguates by visible text.
 - The **locator discipline** (P2/P3, enforced by convention): prefer `getByRole(role,{name})` → `getByLabel` →
   `getByPlaceholder` → tolerant `getByText` → last resort a **stable landmark** (a region heading, a unique
   visible label, a parent role to scope within). **Forbid** raw CSS / nth-child / XPath / class-name / coordinate
@@ -192,6 +192,15 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   surface (a handful of `aria-label`s, **0** `data-testid`). Anchor types are pinned to what antd actually gives
   us: the page `<main>`, `h1`–`h4` region headings, visible button text, and domain text (org / role / person
   names). Not class names, not nth-child.
+- **`main()` is not universal — scope to the surface, not reflexively to `<main>` (M204 iter-03 D2).** Most
+  surfaces (profile, roster) render their content inside `<main>`, so `main()` is the right outer scope. But some
+  do **not**: the activity-dashboard **drill-down detail** renders its per-member results table in a plain-div
+  layout *outside* `<main>` (the page even carries two `<main>` elements; `table.closest('main')` is false). There,
+  scoping to `main()` finds the wrong/empty region — the correct anchor is a **page-level** table locator
+  disambiguated by the surface itself (we're on the segment-anchored drill-down route, under the "Simulation
+  Results" heading, and the detail carries exactly one `<table>`). Still within §5.2 ("scope within a named
+  *surface*, disambiguate by a visible landmark") — the discipline is surface-scoping, and `<main>` is only the
+  most common surface, not the only one.
 - The **starting surface** (M202) was `/profile`:
   [`e2e/lib/profile-page.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/profile-page.ts)
   (`ProfilePage`) — it owns the "how do I find the hero's name on /profile" knowledge (`heroName(name)` scoped
@@ -266,6 +275,13 @@ a **per-suite reset-to-seed** on `--reset`:
   `ON CONFLICT DO NOTHING` re-seed silently leaves stale state (the M42e "green-but-wrong" trap). See
   [`idempotency.md`](../idempotency.md) + [`seeding-spec.md`](../seeding-spec.md) for the `--reset` contract.
 - The runner **refuses N=0** (the main dev stack) outright — a Playthrough run always targets a demo-N.
+- **Gate-run prereq — the pinned `stackseed` must be on PATH (M204 iter-05 D1).** The runner shells out to bare
+  `stackseed` (the pinned tooling the demo consumes), which is **not on the login PATH**. When running the gate
+  against a demo from its **consumption clone**, prepend that demo's `bin/` —
+  `stack-demo/rosetta-extensions/demo-stack/stacks/demo-N/bin` — so `run-playthroughs.sh --reset` resolves the
+  pinned `stackseed`/`stacksnap`. This is a **gate-run environment prereq, not a runner code change**: the runner
+  correctly delegates to the pinned CLI rather than hard-coding a path. (Running from the authoring copy instead,
+  the CLIs are `go run`-able in place.)
 - **Serial by default.** The runtime is a single shared `organization_id`-scoped Postgres, so two mutating
   Playwright workers would interfere — and Playwright defaults to *parallel*. The config
   ([`e2e/playwright.config.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/playwright.config.ts))
@@ -371,9 +387,9 @@ DB grant.
 - **Section:** `rosetta-extensions/playthroughs/` — `manifest/` (Go model + validator) · `cmd/ptvalidate` +
   `cmd/ptreport` (the CLIs) · `seed/` (the dedicated preset + the seed-worlds index) · `e2e/` (the Playwright
   page-object layer + specs + the serial runner) · `report/` (the four-state map) · `fixtures/`
-  (reserved for version-controlled static fixtures fed to the real file chooser, spec §5.4 —
-  populated by M203/M204's upload flows; empty at the M202 foundation, whose proof Playthrough
-  needs no fixture). Section README:
+  (reserved for version-controlled static fixtures fed to the real file chooser, spec §5.4 — **still
+  empty through M204**: no shipped Playthrough exercises a file-upload flow yet, so the dir stands
+  reserved for a future upload use-case rather than populated). Section README:
   [`playthroughs/README.md`](../../../.agentspace/rosetta-extensions/playthroughs/README.md).
 - **Mixed toolchain (M202-D1):** Go for the manifest/validator/report (matching the seeding module's
   `datadna`/`stackseed` CLI family + the datadna-gated requirement) + TypeScript for the Playwright layer
