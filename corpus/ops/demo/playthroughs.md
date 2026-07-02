@@ -318,6 +318,16 @@ interactive state, the outcome artifact materialized), which is the only thing p
 in the loop. Chat / code / document sim modalities are playable as-is. The mirror engines for the other legs are
 carried as `later — needs a mirror engine` items (spec §5.8).
 
+**Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
+(a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via
+`userMembership.organizationFeatures` → the g3 grouping policy) is only effective **after the running Sentinel
+enforcer RELOADS**. The seed writes the g3 grant into `sentinel.casbin_rules`, but the enforcer **caches its
+policy in-memory** — a freshly-seeded grant is invisible to a running stack until an explicit `Reload` RPC. So
+`run-playthroughs.sh --reset` calls Sentinel's `Reload` after re-seed (idempotent, non-fatal, zero platform
+edits — it drives Sentinel's own RPC). **General rule:** any seed that writes casbin policy for a *running*
+enforcer must pair with a post-seed Sentinel Reload, or the authz-gated surface false-denies despite a correct
+DB grant.
+
 ## Where it lives + hard constraints
 
 - **Section:** `rosetta-extensions/playthroughs/` — `manifest/` (Go model + validator) · `cmd/ptvalidate` +
