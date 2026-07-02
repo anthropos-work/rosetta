@@ -15,3 +15,17 @@
 **Cross-iter integration findings:** the reporter-override fix (iter-02) is a FOUNDATION-level invariant spanning all iters (every Playthrough's four-state gate depends on the config's json reporter writing a fresh `last-run.json`); it had no drift guard. Pinned via `TestRunnerSafety_ReporterOverrideGate`, verified fail-red when `--reporter=list` is reintroduced on an executable line. Mirrors the M203 `TestRunnerSafety_SentinelReloadGate` cross-iter pin.
 **Knowledge backfill:** none needed — the reporter-override rationale is already documented inline in `run-playthroughs.sh` (the M204 iter-02 NB comment) and is now ENFORCED by the drift guard (assertion 3 pins the rationale comment's presence).
 **Stop condition:** continue-to-next-pass — one pass cannot compute the "delta < 2% across MULTIPLE passes" stabilization condition; a second pass is required to confirm the dimension scan finds nothing new.
+
+## Pass 2 — 2026-07-02 — final
+
+**Iters hardened this pass:** all milestone-touched code (--final; cumulative-scope re-sweep, dimension scan across all 6 dimensions)
+**Tiks covered since prior pass:** all iters in milestone (same cumulative --final scope)
+**Coverage delta on touched files:**
+- `playthroughs/manifest/` (Go): 100.0% -> 100.0% stmts (delta 0.0%, < 2%) — the new pin is test-side over already-covered production code
+**Tests added:**
+- all iters -> `playthroughs/manifest/corpus_test.go`: 1 deliverable-presence pin (`TestRealCorpus_ManagerCoverageIsPresent`) + the `strings` import
+**Bugs surfaced + fixed inline:** none
+**Flakes stabilized:** none
+**Cross-iter integration findings:** Dimension-1 orthogonal gap — the real-corpus test proves INTERNAL consistency but not deliverable EXISTENCE, so a silently-dropped manager manifest / renamed playthrough id would pass with the manager coverage gone. Closed with an external presence pin (the four M204 manager PT ids declared non-TODO, every manager UC played by pt-manager, the assign-write UC1 gap kept as a declared TODO). Verified fail-red on a renamed manager PT id. Dimensions 2/3 (edge/error on manifest TODO/EffectiveOutcome) already covered by manifest_test + manifest_edge_test; Dimension 5 (fuzz) already covers the YAML loader incl. a TODO seed (the manager manifests parse through the same path); Dimension 6 (perf) N/A — page objects are locators.
+**Knowledge backfill:** none needed — the deliverable scope is documented in the manager manifests' header prose (assignment-monitoring.yaml records UC1 as a build-reference gap); the pin now enforces it.
+**Stop condition:** continue-to-next-pass — this pass's dimension scan SURFACED a new gap (the deliverable-presence pin) and closed it, so "the scan found nothing new" is not yet true for this pass; a confirming Pass 3 is required to grade stabilized.
