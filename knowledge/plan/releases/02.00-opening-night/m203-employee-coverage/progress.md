@@ -24,3 +24,10 @@ entry is the BOOTSTRAP tok — iter-01.)_
 | iter-03 (tik) | 2026-07-02 | Profile: work/education timeline | closed-fixed — profile.timeline.UC1 GREEN; full Profile gate journey covered (ptreport 4/4) | +1 employee UC passing — see iter-03/progress.md |
 | iter-04 (tik) | 2026-07-02 | Skill Paths: legacy learn & progress | closed-fixed — skill-paths.legacy.UC1 GREEN (browse→open→start→progress; verify-skill composes P7); 2/3 gate journeys (ptreport 5/5) | +1 employee UC passing — see iter-04/progress.md |
 | iter-05 (tik) | 2026-07-02 | AI Simulations: chat launch (NON-voice) | closed-fixed — ai-simulations.chat.UC1 GREEN (§5.8 launch boundary) + post-seed Sentinel Reload fix; ALL 3 gate journeys covered (ptreport 6/6) | +1 employee UC passing — see iter-05/progress.md |
+| iter-06 (tik) | 2026-07-02 | 5-run reset-to-seed determinism gate | closed-fixed — **GATE MET**: 5/5 reset runs passed, 0 false-fails (6/6 Playthroughs per run) | **exit gate FULLY MET** — see iter-06/progress.md |
+
+## GATE STATUS: **MET** (2026-07-02)
+Every declared employee-vantage use case (6/6 — Profile identity+verified+growth+timeline, Skill Paths legacy,
+AI Simulations chat launch) has a PASSING Playthrough on a COLD reset-to-seed demo, with **0 false-fails over 5
+consecutive reset runs** (iter-06: 5/5 passed). Next: `/developer-kit:harden-mstone-iters --final` then
+`/developer-kit:close-milestone` (which tags `opening-night-m203`).
