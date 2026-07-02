@@ -90,11 +90,13 @@ product-file; `LoadDir` reads a directory of them and merges in sorted (determin
 | `expectations.final` | The goal achieved (or the correct refusal landed), observable to the user. |
 | `playthrough` | The id of the test that proves it, OR the sentinel `TODO` while it is still a build-reference gap. |
 
-The **foundation manifest** ([`playthroughs/manifest/profile.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/manifest/profile.yaml))
-declares one product (`profile`), one story, and the single proof-of-life use case
+The M202 **foundation manifest** ([`playthroughs/manifest/profile.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/manifest/profile.yaml))
+opened with one product (`profile`), one story, and the single proof-of-life use case
 `profile.foundation.UC1` (login → /profile → assert hero identity). The M201 manifest corpus (the
-user-curated 9-product / ~27-use-case surface) lands here product-by-product in M203/M204, each validated by the
-same contract.
+user-curated 9-product / ~27-use-case surface) lands here product-by-product across the coverage milestones, each
+validated by the same contract. **M203 (employee vantage) has landed** the 3 employee-vantage products —
+`profile.yaml` (identity + verified-skill + growth + timeline), `skill-paths.yaml`, `ai-simulations.yaml` — as
+**6 live Playthroughs, 0 TODO**; **M204** adds the manager vantage.
 
 ## The principles (the alignment contract)
 
@@ -185,10 +187,23 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   surface (a handful of `aria-label`s, **0** `data-testid`). Anchor types are pinned to what antd actually gives
   us: the page `<main>`, `h1`–`h4` region headings, visible button text, and domain text (org / role / person
   names). Not class names, not nth-child.
-- The **one starting surface** (M202) is `/profile`:
+- The **starting surface** (M202) was `/profile`:
   [`e2e/lib/profile-page.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/profile-page.ts)
   (`ProfilePage`) — it owns the "how do I find the hero's name on /profile" knowledge (`heroName(name)` scoped
-  within the identity region, `exact:false`); the test owns only the "assert her name is there" intent.
+  within the identity region, `exact:false`); the test owns only the "assert her name is there" intent. M203 grew
+  `ProfilePage` with the Skills/Career-tab accessors and added the skill-path + simulation surfaces (next bullet).
+- **M203 adds the employee-journey surfaces**: `skill-path-page.ts` (`SkillPathPage`), `simulation-page.ts`
+  (`SimulationPage`), plus the profile Skills/Career tabs on `ProfilePage`. Their **route-shape decision logic**
+  (am-I-in-the-chapter-player vs still-on-detail; did-the-sim-reach-`/start` vs opened-detail) and the
+  ProfileSeeder **timeline dated-range** landmark are extracted into pure, browser-free predicates in
+  [`e2e/lib/url-shapes.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/url-shapes.ts) that the
+  page objects delegate to — so the resolution logic is unit-testable without a live stack
+  (`tests/url-shapes.unit.spec.ts`). **Route-shape discipline (M203 harden truth):** anchor the terminal segment
+  (`/chapter(?:[/?#]|$)`, `/start(?:[/?#]|$)`, `/profile/skills(?:[/?#]|$)`), **never a bare `\b`** — a bare
+  word-boundary false-matches look-alike sibling segments (`/chapter-list`, `/start-now`, `/profile/skills-summary`,
+  since `-` is a word boundary), a green-but-wrong hazard. Every route shape is single-sourced in `url-shapes.ts`
+  (M203 close consolidated the last three inline `/profile/skills` `\b` copies into the anchored `SKILLS_TAB_URL`),
+  so a re-pin is O(surfaces), not O(tests).
 
 ### Named-hero login — the cockpit seat-switch, reused
 
@@ -317,6 +332,16 @@ inside the widget. It asserts at the **launch / completion boundary** (the flow 
 interactive state, the outcome artifact materialized), which is the only thing provable under P6 with a live LLM
 in the loop. Chat / code / document sim modalities are playable as-is. The mirror engines for the other legs are
 carried as `later — needs a mirror engine` items (spec §5.8).
+
+**Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
+(a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via
+`userMembership.organizationFeatures` → the g3 grouping policy) is only effective **after the running Sentinel
+enforcer RELOADS**. The seed writes the g3 grant into `sentinel.casbin_rules`, but the enforcer **caches its
+policy in-memory** — a freshly-seeded grant is invisible to a running stack until an explicit `Reload` RPC. So
+`run-playthroughs.sh --reset` calls Sentinel's `Reload` after re-seed (idempotent, non-fatal, zero platform
+edits — it drives Sentinel's own RPC). **General rule:** any seed that writes casbin policy for a *running*
+enforcer must pair with a post-seed Sentinel Reload, or the authz-gated surface false-denies despite a correct
+DB grant.
 
 ## Where it lives + hard constraints
 
