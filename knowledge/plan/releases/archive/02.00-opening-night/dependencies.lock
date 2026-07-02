@@ -1,0 +1,100 @@
+# dependencies.lock — v2.0 "opening night" (Playthroughs pillar)
+
+Release: v2.0 "opening night" — the Playthroughs pillar (M201 spec + M202 foundation +
+M203 employee-vantage coverage + M204 manager-vantage coverage).
+Generated: 2026-07-02 (close-release Phase 0 — supply-chain).
+Context: INTERNAL tooling (rosetta-extensions), NOT distributed to third parties / no
+commercial-distribution surface; the rosetta CORPUS has no package manifest.
+
+Code-of-record: rosetta-extensions (SEPARATE git repo, gitignored from rosetta — the tag IS
+the record), branch main @ HEAD c81c6dd. Per-milestone tags: opening-night-m202 (b1e5528),
+opening-night-m203 (fb94458), opening-night-m204 (c81c6dd). The prior release code pin
+v1.10.1 (66a021e5) carries forward as the on-box demo-1 consumption pin (.agentspace/rext.tag
+= v1.10.1 — the playthroughs section runs from the authoring copy, NOT repinned).
+
+The v2.0 code is the NEW playthroughs/ section — its own Go module + a TypeScript e2e layer,
+built on the reused M42 e2e foundation (stack-verify/e2e) + the existing seeding.
+
+===============================================================================
+NET-NEW DEPS THIS RELEASE: 0 (zero)
+===============================================================================
+v2.0 adds a NEW pillar (the playthroughs module) but introduces ZERO net-new third-party
+deps vs the existing rext modules:
+  - The playthroughs Go module requires ONLY gopkg.in/yaml.v3 v3.0.1 — already present
+    across rext (stack-seeding/snapshot/secrets all use yaml.v3). stdlib for everything else.
+  - The playthroughs e2e depends ONLY on @playwright/test (the existing rext e2e dep, shared
+    with stack-verify/e2e) + @types/node + typescript (both dev-only tooling, standard).
+  - Zero platform-repo edits throughout.
+The `ai v1.40.1` dep (v1.10 M45) is NOT in the playthroughs module — it stays confined to
+stack-seeding and carries forward unchanged.
+
+===============================================================================
+GO — playthroughs module (github.com/anthropos-work/rosetta-extensions/playthroughs)
+===============================================================================
+go.mod:
+  go 1.25.0
+  toolchain go1.25.11
+  require gopkg.in/yaml.v3 v3.0.1
+
+go list -m all:
+  github.com/anthropos-work/rosetta-extensions/playthroughs   (this module)
+  gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405        (indirect, test-only — yaml.v3's own test dep)
+  gopkg.in/yaml.v3 v3.0.1
+
+Packages: manifest, report, cmd/ptvalidate, cmd/ptreport (+ seed — no _test.go, no third-party deps).
+
+govulncheck ./... (go1.25.11, darwin/arm64):  "No vulnerabilities found."  (0 findings)
+
+License:
+  gopkg.in/yaml.v3 v3.0.1          — MIT + Apache-2.0 (dual)
+  gopkg.in/check.v1 (test-only)    — BSD-2-Clause
+  GPL/AGPL: 0 hits.
+
+===============================================================================
+GO — other rext modules (regression spot-check; NOT touched by v2.0)
+===============================================================================
+v2.0 touched NO other rext Go module (no commits since v1.10.1 to stack-seeding/snapshot/
+secrets/alignment/clerkenstein except the standalone security bump bc36832). govulncheck
+re-scanned all 5 as defense-in-depth — ALL "No vulnerabilities found":
+  stack-seeding    — No vulnerabilities found.  (build ./... exit 0)
+  stack-snapshot   — No vulnerabilities found.
+  stack-secrets    — No vulnerabilities found.
+  alignment        — No vulnerabilities found.
+  clerkenstein     — No vulnerabilities found.
+
+RESOLVED CARRY-FORWARD: the v1.10b-flagged inherited HIGH advisory GO-2026-5026 /
+CVE-2026-39821 (golang.org/x/net@v0.53.0, called path in stack-seeding
+cmd/stackseed reloadStackSentinel -> idna.ToASCII) is now CLEARED — stack-seeding
+runs golang.org/x/net v0.55.0 (bumped in commit bc36832 "bump x/net v0.53.0->v0.55.0
+to clear CVE-2026-39821"). The v1.10b advisory carry-forward is closed. ai dep
+unchanged: github.com/anthropos-work/ai v1.40.1.
+
+===============================================================================
+NODE — playthroughs/e2e  (rosetta-playthroughs-e2e @ 0.1.0, lockfileVersion 3)
+===============================================================================
+devDependencies (all dev-only — the e2e harness, not shipped):
+  @playwright/test  ^1.49.0  -> resolved 1.61.1   (Apache-2.0)
+    playwright        1.61.1                        (Apache-2.0)
+    playwright-core   1.61.1                        (Apache-2.0)
+    fsevents          2.3.2   (optional, darwin)    (MIT)
+  @types/node       ^20.0.0  -> resolved 20.19.43  (MIT)
+    undici-types    ~6.21.0  -> 6.21.0             (MIT)
+  typescript        ^5.6.0   -> resolved 5.9.3     (Apache-2.0)
+
+npm audit --omit=dev : found 0 vulnerabilities  (high 0, critical 0, total 0)
+npm audit (full)     : found 0 vulnerabilities  (high 0, critical 0, total 0)
+tsc --noEmit         : clean
+GPL/AGPL: 0 hits.
+
+Shared M42 foundation — stack-verify/e2e (regression spot-check, NOT touched by v2.0):
+  devDependencies: @playwright/test ^1.49.0 only.
+  npm audit (full): found 0 vulnerabilities.
+
+===============================================================================
+SUPPLY-CHAIN SUMMARY
+===============================================================================
+CVEs (Go)   : 0 high, 0 critical (playthroughs + all 5 other rext modules clean;
+              the v1.10b inherited x/net HIGH is RESOLVED — v0.55.0).
+CVEs (node) : 0 high, 0 critical (playthroughs/e2e + stack-verify/e2e; prod + full).
+Net-new deps: 0.
+License     : all Apache-2.0 / MIT / BSD; 0 GPL/AGPL; internal-tooling context (not distributed).

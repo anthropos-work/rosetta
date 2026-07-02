@@ -15,6 +15,12 @@ with **real semantic content** and **zero out-of-demo escapes**. The page set an
 >
 > All the harness code lives in the gitignored `rosetta-extensions` monorepo (authored + tagged in the
 > authoring copy, consumed per-stack at a pinned tag) — **zero platform-repo edits** (the v1.10 hard line).
+>
+> **Function sibling:** [`playthroughs.md`](playthroughs.md) (v2.0 "opening night" M202) proves what this sweep
+> does not — that a hero can **do** the thing, not just that the page **shows** content. A Playthrough plays a
+> real journey end-to-end and asserts the outcome (function); this sweep proves presence. Playthroughs extend
+> this same M42 Playwright foundation (the `cockpit-login` handshake + the centralized-anchor discipline) into a
+> mutating, reset-to-seed, serial suite with its own manifest + four-state map.
 
 ## For PMs — what "100% coverage" means
 

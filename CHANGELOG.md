@@ -2,6 +2,26 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.0] "opening night" — 2026-07-02
+
+**The Playthroughs pillar — the platform's core user journeys, proven to actually work.** A **Playthrough** is an automated actor that *is the user*: it logs in as a seeded hero, plays a real journey across the platform end-to-end, and proves the platform delivered the outcome. Where the v1.x coverage sweep proves **presence** (every page *shows* real content), a Playthrough proves **function** (the hero can *do* the thing) — it breaks only when a capability breaks, not when pixels shift. A new MAJOR (v2.x, `Mxyy` milestone numbering); the demo/seeding lineage carries forward as the foundation. 4 milestones M201→M204. **Tooling + docs only — zero platform-repo edits, zero net-new third-party deps.** (rext code-of-record @ tag `v2.0`)
+
+### Added
+- **The Playthroughs manifest corpus** — a prose-intent contract of the platform's products × their must-work user journeys (9 products · 26 stories · 28 use-cases), each use case carrying goal + actor + flow + expectations. The build+regression contract every coverage milestone implements against. (M201)
+- **The `playthroughs` tooling pillar** (a new `rosetta-extensions` section) — a manifest model + validator (both-way id integrity + precondition coverage, gated on the seed-closure check), a per-surface page-object/locator layer (semantic-by-default; re-pinning a UI shift is O(surfaces), not O(tests)), a dedicated decoupled test world (`pt-world`, two private orgs — test data ≠ demo data), a **reset-to-seed serial runner**, and a 4-state coverage report (`passing` / `failing` / `unimplemented` / `unimplementable-without-platform-edit`). (M202)
+- **10 live Playthroughs, GREEN on a cold reset-to-seed demo, deterministic over 5 consecutive runs:**
+  - **Employee vantage (6):** Profile (identity + verified-skill Spotlight + claimed-vs-verified gap + growth trajectory + work/education timeline), Skill Paths (browse → open → start → progress), AI Simulations (chat launch). (M203)
+  - **Manager vantage (4):** Workforce funnel + member roster, per-member activity-dashboard drill-down, succession / at-risk. (M204)
+- New runbook: [`corpus/ops/demo/playthroughs.md`](corpus/ops/demo/playthroughs.md) — the functional-flow e2e protocol + the M203/M204 iteration protocol.
+
+### Changed
+- The presenter cockpit's seat-switch (M37) and the M42 e2e foundation are now **reused** (never forked) as the Playthrough login + browser-drive substrate.
+
+### Known limitations
+- **1 declared in-manifest TODO:** `assignment-monitoring.assign-and-track` UC1 — the assign-**write** half (a two-backend org-admin write flow) — is declared and surfaced as `unimplemented` (a first-class tracked state, presence-pinned so it can't silently vanish), routed to a future manager-write tier.
+- **4 non-gate employee edge journeys** (Judge0 code-sim, text-interview, the skill-path verify-skill terminal, profile self-evaluation write) are routed to the future **M206** AI-sim-mirror tier.
+- Voice/recording AI-simulation journeys and the separate Ant Academy deployment are out of v2.0 scope by design (future M206 / M207). The read-only-platform line carries over: an un-drivable surface **escalates**, it never edits the platform.
+
 ## [v1.10.1] "fit-up" — 2026-07-01
 
 The **field-hardening backfill.** A from-scratch `/demo-up` surfaced bring-up issues + a tail of v1.10 content gaps; v1.10b re-grounds the demo + corpus to current prod, fixes them, adds the AI-readiness showcase org, consolidates the seed+gen intent into one auditable file, and — the proof — **destroys the demo and cold-rebuilds it from scratch**, verified end-to-end (6/6 acceptance bars + the academy). 7 milestones M47→M53. **Tooling + docs only — zero platform-repo edits.** (rext code-of-record @ tag `v1.10.1`)

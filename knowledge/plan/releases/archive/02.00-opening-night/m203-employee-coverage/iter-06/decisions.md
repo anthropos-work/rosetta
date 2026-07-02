@@ -1,0 +1,6 @@
+# iter-06 decisions
+
+| ID | Decision | Rationale | Date |
+|----|----------|-----------|------|
+| D1 | Run the **5-run reset-to-seed determinism gate this iter from the AUTHORING-built `stackseed`/`datadna`**, rather than deferring it to milestone-close on the consumption clone (as iter-04/05 tentatively routed). | Re-survey found the authoring copy builds `stackseed` + `datadna` directly from `stack-seeding/cmd/` — so the gate is runnable now, and the authoring build is the CORRECT binary (it carries the pt-world seed + the M203 runner Sentinel-Reload fix; the demo-1 consumption `stackseed` binary is pinned to v1.10.1, pre-M203). Running it now closes the gate's determinism half in-milestone rather than waiting for the `opening-night-m203` consumption-clone tag. This is a target substitution under TOK-01 (not a re-scope) — the strategy holds. | 2026-07-02 |
+| D2 | Count the determinism gate over the **6 @pt Playthroughs only** (`--grep @pt:`), excluding the 12 stack-env unit specs. | The gate is about the FUNCTIONAL journeys' determinism under mutation+reset; the unit specs are pure-logic (no stack, no mutation) and always pass. The validation cycle ran the FULL suite (18/18) to confirm nothing regressed; the 5-run determinism count is scoped to the mutating Playthroughs that the reset-to-seed actually governs. | 2026-07-02 |

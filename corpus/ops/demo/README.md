@@ -143,6 +143,17 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   serve-grant; out-of-demo link → injection link-rewriting; runtime-computed surface → crawl-scope), and the
   disclosed-presenter-note allow-rule for legitimate external citations. The harness lives in rext
   `stack-verify/e2e/`. (v1.10 M42e)
+- [`playthroughs.md`](playthroughs.md) — the **functional-flow e2e runbook** (the Playthroughs pillar, v2.0
+  "opening night" M202): a **Playthrough is an automated actor that IS the user** — it logs in as a seeded hero,
+  plays a real journey, and proves the platform delivered the outcome. Proves **function** (the hero can *do* the
+  thing) where the coverage sweep proves **presence** (every page *shows* real content). The manifest model
+  (Products → Stories → Use Cases → Playthroughs) + the light validator (both-way id integrity +
+  precondition-coverage + the datadna gate), the per-surface page-object/locator layer (re-pin O(surfaces), not
+  O(tests)), the dedicated decoupled seed (`pt-world`, test data ≠ demo data) + the reset-to-seed lifecycle
+  (the real `--reset`, additive-re-seed FORBIDDEN), the serial-default runner, and the 4-state reporting map
+  (`passing`/`failing`/`unimplemented`/`unimplementable-without-platform-edit`). Also **the iteration protocol
+  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed — the corpus now
+  stands at **10 live Playthroughs, 1 TODO**). Section `rext playthroughs/`. (v2.0 M202–M204)
 - [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
   (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
   per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +
