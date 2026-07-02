@@ -22,6 +22,8 @@ entry is the BOOTSTRAP tok — iter-01.)_
 |------|------|--------------------|---------|------------|
 | iter-01 | 2026-07-02 | (bootstrap tok) | TOK-01 authored: manager-surface-per-iter | 0 declared / 0 passing (baseline) |
 | iter-02 | 2026-07-02 | Workforce funnel + member roster | +2 passing (`skills-funnel.UC1` + `roster.UC1` green) | 0 → 2 passing manager UCs |
+| iter-03 | 2026-07-02 | Member drill-down (activity-dashboard) | +1 passing (`assign-and-track.UC2` green) | 2 → 3 passing manager UCs |
 
 - iter-01 (tok/bootstrap): authored TOK-01 (manager-surface-per-iter strategy); baseline 0 manager UCs — see iter-01/progress.md
 - iter-02 (tik): Workforce funnel + member roster both green + reconciled `[PASS]`; +2 passing manager UCs; side-fix: runner reporter-override (stale-JSON) — see iter-02/progress.md
+- iter-03 (tik): activity-dashboard per-member drill-down green + `[PASS]`; +1 passing manager UC; fixed a SPA-URL race + an out-of-main table scope (D1/D2) — see iter-03/progress.md
