@@ -20,4 +20,6 @@ entry is the BOOTSTRAP tok — iter-01.)_
 
 | iter | date | use case / surface | outcome | gate delta |
 |------|------|--------------------|---------|------------|
-| | | _(none yet)_ | | |
+| iter-01 | 2026-07-02 | (bootstrap tok) | TOK-01 authored: manager-surface-per-iter | 0 declared / 0 passing (baseline) |
+
+- iter-01 (tok/bootstrap): authored TOK-01 (manager-surface-per-iter strategy); baseline 0 manager UCs — see iter-01/progress.md

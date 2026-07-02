@@ -37,3 +37,23 @@ TODO (iter loop): per-iter rext authoring commits + tags; consumption-clone chec
 - The member-drill-down outcome assertion against the activity-dashboard's federation deep-fetch (the M46
   serve-grant closure must be present in the demo's replay).
 - The succession/at-risk Growth-tab signal's concrete user-observable outcome marker.
+
+## Pre-flight audits — iter-01
+**KB-fidelity audit (Phase 0b, iter-01 bootstrap):** verdict **YELLOW** — docs aligned + code-faithful; gaps are
+known-context for the strategy, no RED/blind areas. Report: run via general-purpose sub-agent (2026-07-02).
+Key findings carried into TOK-01:
+- Foundation docs (`playthroughs.md`) match the built rext `playthroughs/` section exactly; the M203 iter-05
+  Sentinel-Reload is real in `run-playthroughs.sh` (POST `AuthorizationService/Reload` post-reseed).
+- Manager routes documented consistently across M201 corpus / `stories-spec.md` / `coverage-protocol.md`:
+  `/enterprise/workforce` (ONE tabbed SPA), `/enterprise/members` (roster read), `/enterprise/activity-dashboard`
+  (+ per-member drill-down), succession/at-risk at `/enterprise/workforce/(new)/succession` (a ROUTE, not the SPA
+  Talent-Pool tab).
+- **Manager hero = Morgan Reyes** (`pt-manager`, org_role=admin, Meridian Labs / Org A). "Dan" in the milestone
+  prompt is the demo-showcase precedent (Dan Rossi, Cervato); the pt-world dedicated seed's manager is Morgan
+  (test data ≠ demo data, spec §5.4). Manager UCs name `actor.hero: pt-manager`, `actor.entitlement: enterprise`.
+- **Perf wall**: pt Org A = size:40, well under the ~200-member wall (M46/M51/M53) — no injection demo-patches
+  expected; grids render fast.
+- **Seed-scale is the key known-context**: confirm the base stories model runs the M36 org-dashboard seeders at
+  Org A (funnel / roster / succession / activity-dashboard). Org A's only end-user hero (Pat) is `thriving` — the
+  at-risk signal may need a struggling hero in Org A (Sam is in Org B). Resolve per-iter against real render.
+- `workforce-intelligence.ai-readiness-monitoring.UC1` is OUT of M204's declared 3 (showcase-only, Northwind).

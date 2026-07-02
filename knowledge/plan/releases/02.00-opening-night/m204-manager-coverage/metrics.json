@@ -1,0 +1,14 @@
+{
+  "milestone": "M204",
+  "shape": "iterative",
+  "gate": "every declared manager-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo, 0 false-fails over 5 consecutive reset runs",
+  "metric": "manager-vantage use cases passing / declared",
+  "declared_manager_ucs": 0,
+  "passing_manager_ucs": 0,
+  "iters_closed": 1,
+  "tiks": 0,
+  "toks": 1,
+  "gate_met": false,
+  "last_iter": "iter-01",
+  "last_updated": "2026-07-02"
+}
