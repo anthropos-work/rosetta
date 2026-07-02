@@ -17,16 +17,16 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 >
 > **Designed 2026-06-28** (prior): **v2.0 "opening night"** opens a **NEW MAJOR** — **Playthroughs** is a new pillar
 > (functional-flow *testing*: proving the platform's core user journeys actually work end-to-end), distinct from the
-> v1.x demo/seeding lineage. v2+ adopts the **`Mxyy`** scheme (M201, M202, M203, M204). M201 closed-on-gate; the
-> rest (M202→M204) is **PAUSED** behind the v1.10b backfill. The pre-v2 v1.x history (M0 … M46) lives in
-> `roadmap-legacy.md`.
+> v1.x demo/seeding lineage. v2+ adopts the **`Mxyy`** scheme (M201, M202, M203, M204). The v1.10b backfill
+> shipped (tag `v1.10.1`) and **all four v2.0 milestones (M201 → M204) are now closed** — the release is ready for
+> `/developer-kit:close-release`. The pre-v2 v1.x history (M0 … M46) lives in `roadmap-legacy.md`.
 
 ## Version plan
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 } → ship | ▶ **IN DEVELOPMENT** (branch `release/02.00-opening-night`) — M201 + M202 + **M203 (employee vantage, closed-on-gate)** shipped; **M204 (manager vantage) is the last milestone** (iterative). The v1.10b backfill shipped (tag `v1.10.1`) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 ✅ } → ship | ✅ **ALL MILESTONES CLOSED** (branch `release/02.00-opening-night`) — M201 + M202 + **M203 (employee vantage)** + **M204 (manager vantage)**, all closed-on-gate. **10 live Playthroughs, 1 TODO.** Ready for `/developer-kit:close-release`. The v1.10b backfill shipped (tag `v1.10.1`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -239,9 +239,11 @@ residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is G
 > v2.0 is the **active release**. M201 "Manifest corpus" is `done` (closed-on-gate), **M202 (Foundation, `section`)
 > is `done`** (closed-complete 2026-07-01, tag `opening-night-m202`), and **M203 (Employee-vantage coverage,
 > `iterative`) is `done`** (closed-on-gate 2026-07-02 — 6/6 employee Playthroughs GREEN on cold reset-to-seed, 5/5
-> deterministic; tag `opening-night-m203`). **Next + LAST: M204** (manager-vantage, `iterative`,
-> `/developer-kit:work-mstone-iters`) — imports M203's shared page-object layer + runs on the reset-to-seed lifecycle
-> per `corpus/ops/demo/playthroughs.md`. The release ships when M204's gate fires.
+> deterministic; tag `opening-night-m203`). **M204 (Manager-vantage coverage, `iterative`) is `done`**
+> (closed-on-gate 2026-07-02 — 4/4 manager Playthroughs GREEN on cold reset-to-seed, 5/5 deterministic; tag
+> `opening-night-m204` @ `c81c6dd`) — the FINAL v2.0 milestone; it imported M203's shared page-object layer + ran
+> on the reset-to-seed lifecycle per `corpus/ops/demo/playthroughs.md`. **All v2.0 milestones are now closed
+> (10 live Playthroughs, 1 TODO); the release is ready for `/developer-kit:close-release`.**
 >
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
@@ -396,7 +398,29 @@ timeline). **Why iterative:** the use-cases are *declarable* (in the M201 corpus
 the real antd UI (the landmark layer) + the AI-sim assertion boundary is **exploratory**, like M42e.
 
 **M204 — Manager-vantage coverage** · `iterative` · complexity **large** · depends on: **M202** ·
-parallel-with: **M203**.
+parallel-with: **M203**. ✅ **`done` — closed-on-gate 2026-07-02** (merged → `release/02.00-opening-night`; rext
+tag **`opening-night-m204`** @ `c81c6dd`). **THE FINAL v2.0 milestone.** **Exit gate MET at iter-05:** every
+declared manager-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo (**4/4** — Workforce
+funnel + org-scale gap · member roster · per-member activity-dashboard drill-down · succession/at-risk), with **0
+false-fails over 5 consecutive reset runs** (5/5). **5 iters** (1 bootstrap tok + 4 tiks, all closed-fixed). The
+strategy arc (TOK-01, manager-surface-per-iter): iter-02 the Workforce funnel + roster (the manager landing
+surface) + the runner **reporter-override** fix (a stale-JSON gate hazard, drift-guarded), iter-03 the
+activity-dashboard per-member drill-down (a SPA-URL race + an out-of-`<main>` table scope fixed), iter-04
+succession/at-risk (all 3 declared journeys green — no seed expansion needed, Org A size-40 rendered the M36
+aggregates), iter-05 the 5-run determinism gate. All 4 manager UCs are READ/monitoring flows → the risk was
+seed-scale render + antd grid ambiguity, not mutation-determinism. Tests: rext playthroughs Go **105** (+2 vs
+M203's 103: the reporter-override drift guard + the manager-coverage deliverable-presence pin) · e2e TS **58**
+unit (+20 vs 38) + **4** browser Playthroughs; flake **0** (Go 5/5 -shuffle + TS unit 5/5; browser 5/5 cold-reset
+iter-05). Close review: **5 findings all Fate-1** — 1 code-quality should-fix (documented the manager
+predicate-API's deliberate symmetric shape — kept, not pruned, consistent with the M203 `isOnSkillsTab`
+precedent), 3 docs (flip the stale "M204 adds" future-voice → landed; corpus now **10 live Playthroughs, 1 TODO**;
+add the M204 manager page-object bullet), 1 decision-triage (D-CLOSE-1). Deferral audit **GREEN** (0
+repeat/chronic/aged). **Carry-forward (three-fate, none escape-hatch):** `assignment-monitoring.assign-and-track.UC1`
+(the assign-WRITE half — a two-backend org-admin WRITE flow) → **Fate-2**, tracked in-manifest as `playthrough:
+TODO` (reports `unimplemented`, presence-pinned; out of M204's declared 3 monitoring journeys; a future
+manager-write tier is its home). Tooling + docs only — zero platform edits, zero new deps. Records:
+[`releases/02.00-opening-night/m204-manager-coverage/`](releases/02.00-opening-night/m204-manager-coverage/).
+
 **Goal:** **Dan's** core **manager** journeys play green (declared in the M201 manifest corpus) —
 - **Workforce funnel** + member roster,
 - **member drill-down** (the activity-dashboard),

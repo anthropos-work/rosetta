@@ -10,10 +10,10 @@ This runbook **graduates** the consolidated capability spec
 v0.3) into an operational corpus reference: the model, the vocabulary, the per-surface page-object layer, the
 dedicated-seed + reset-to-seed lifecycle, the serial-default runner, and the four-state reporting map — as they
 are actually built, in the rext **`playthroughs` section** (v2.0 "opening night" M202 "Foundation"). It is also
-**the iteration protocol the coverage milestones follow** (M203 employee-vantage ∥ M204 manager-vantage — the
-`iterative` milestones that grow the real journey coverage against this foundation; see § "The iteration
-protocol" below). It is the *function* sibling of [`coverage-protocol.md`](coverage-protocol.md)'s *presence*
-sweep.
+**the iteration protocol the coverage milestones followed** (M203 employee-vantage ∥ M204 manager-vantage — the
+`iterative` milestones that grew the real journey coverage against this foundation to 10 live Playthroughs; see
+§ "The iteration protocol" below). It is the *function* sibling of [`coverage-protocol.md`](coverage-protocol.md)'s
+*presence* sweep.
 
 > **Read alongside:** [`coverage-protocol.md`](coverage-protocol.md) (the M42 Playwright sweep this is built
 > on + the presence-vs-function split), [`stories-spec.md`](stories-spec.md) (the Stories & Heroes seed model +
@@ -94,9 +94,14 @@ The M202 **foundation manifest** ([`playthroughs/manifest/profile.yaml`](../../.
 opened with one product (`profile`), one story, and the single proof-of-life use case
 `profile.foundation.UC1` (login → /profile → assert hero identity). The M201 manifest corpus (the
 user-curated 9-product / ~27-use-case surface) lands here product-by-product across the coverage milestones, each
-validated by the same contract. **M203 (employee vantage) has landed** the 3 employee-vantage products —
+validated by the same contract. **M203 (employee vantage) landed** the 3 employee-vantage products —
 `profile.yaml` (identity + verified-skill + growth + timeline), `skill-paths.yaml`, `ai-simulations.yaml` — as
-**6 live Playthroughs, 0 TODO**; **M204** adds the manager vantage.
+**6 live Playthroughs**; **M204 (manager vantage) landed** the manager products — `workforce.yaml` (funnel /
+roster / succession) + `assignment-monitoring.yaml` (the per-member activity-dashboard drill-down) — as **4 more
+live Playthroughs** (`pt-workforce-funnel`, `pt-workforce-roster`, `pt-workforce-succession`, `pt-activity-drilldown`).
+The corpus now stands at **10 live Playthroughs, 1 TODO** — the sole TODO being the assign-WRITE half
+(`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared build-reference gap
+tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
 
 ## The principles (the alignment contract)
 
@@ -204,6 +209,15 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   since `-` is a word boundary), a green-but-wrong hazard. Every route shape is single-sourced in `url-shapes.ts`
   (M203 close consolidated the last three inline `/profile/skills` `\b` copies into the anchored `SKILLS_TAB_URL`),
   so a re-pin is O(surfaces), not O(tests).
+- **M204 adds the manager-journey surfaces** (the additive merge with M203 — each vantage adds its own page
+  objects, no collision): `workforce-page.ts` (`WorkforcePage` — the WI SPA funnel + org-scale gap),
+  `members-page.ts` (`MembersPage` — the roster), `activity-dashboard-page.ts` (`ActivityDashboardPage` — the
+  per-content activity aggregates + the per-member drill-down), and `succession-page.ts` (`SuccessionPage` — the
+  succession / at-risk / mobility route). Their `/enterprise/*` route shapes are single-sourced in `url-shapes.ts`
+  under the same anchored-segment discipline (`WORKFORCE_URL`, `MEMBERS_URL`, `ACTIVITY_DASHBOARD_URL`,
+  `ACTIVITY_DRILLDOWN_URL`, `SUCCESSION_URL` — each with a symmetric `isOn*`/`isIn*` predicate pinned by the
+  single-source-agreement block). All four extend `PageObject` and use only find-only landmarks (`<main>`,
+  headings, visible stat labels, scoped `svg`/`table tbody tr`), identical in shape to the M203 trio.
 
 ### Named-hero login — the cockpit seat-switch, reused
 
@@ -258,11 +272,20 @@ a **per-suite reset-to-seed** on `--reset`:
   therefore pins **`workers: 1`, `fullyParallel: false`, `retries: 0`** (a retry that masks a flake hides a
   Playthrough defect). The sanctioned throughput-reclaim paths — **stack-per-worker** (a stack each) or per-worker
   org/hero partitions in the seed — are opt-in via `PW_WORKERS`, never the day-one default.
+- **The runner reconciles inline** (M204 iter-02). After the Playwright run it invokes `ptreport` over the
+  manifest + this run's fresh JSON results and prints the four-state map — so a single `run-playthroughs.sh`
+  invocation both *runs* and *reconciles*. The reconciliation is non-fatal (it never masks Playwright's own
+  verdict) and the runner exits with Playwright's status. **Reporter-override lesson (load-bearing):** a
+  Playwright CLI `--reporter=…` flag REPLACES the config's *entire* reporter list — so the runner must **not**
+  pass one, or it silently suppresses the config's `['json', {outputFile: ./report/last-run.json}]` reporter,
+  leaving `last-run.json` stale and decoupling `ptreport` from the actual run (a green-but-wrong-reconciliation
+  trap). The config declares `['list', 'json', 'html']`; letting that set fire keeps the console `list` output
+  AND refreshes the JSON `ptreport` reads. (This fixed a latent M202/M203 wiring defect too.)
 
 ```bash
 cd playthroughs/e2e
-./run-playthroughs.sh 1              # run the suite against demo-1 (serial), no reset
-./run-playthroughs.sh 1 --reset      # reset-to-seed the pt-world FIRST, then run
+./run-playthroughs.sh 1              # run the suite against demo-1 (serial), no reset; reconciles inline
+./run-playthroughs.sh 1 --reset      # reset-to-seed the pt-world FIRST, then run + reconcile
 ./run-playthroughs.sh 1 --grep pt-profile-identity   # a single Playthrough by @pt tag
 ```
 

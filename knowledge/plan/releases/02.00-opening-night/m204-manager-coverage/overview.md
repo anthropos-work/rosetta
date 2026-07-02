@@ -5,9 +5,9 @@ version: v2.0 "opening night"
 milestone_shape: iterative
 exit_gate: "Same shape as M203, manager-vantage: every declared MANAGER-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo stack (Dan's core journeys: Workforce funnel + member roster; member drill-down via the activity-dashboard; succession/at-risk via the Growth tab signals), with 0 false-fails over 5 consecutive reset runs."
 iteration_protocol_ref: knowledge/plan/spec-drafts/playthroughs/spec.md (the consolidated capability spec; the M202-delivered runbook corpus/ops/demo/playthroughs.md supersedes it as the protocol once M202 graduates it)
-status: planned
+status: archived
 created: 2026-06-28
-last_updated: 2026-06-28
+last_updated: 2026-07-02
 complexity: large
 delivers: passing manager-vantage Playthroughs (in the `playthroughs` rext section) for Dan's core journeys — Workforce funnel + member roster, member drill-down (activity-dashboard), succession/at-risk (Growth tab) — added to the manifest + the per-surface page-object layer, on the M202 foundation; plus the corpus/runbook updates as use-cases land
 depends_on: M202
