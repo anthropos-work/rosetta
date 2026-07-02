@@ -1,19 +1,87 @@
 {
   "milestone": "M204",
+  "slug": "manager-coverage",
+  "version": "v2.0 opening night",
   "shape": "iterative",
-  "gate": "every declared manager-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo, 0 false-fails over 5 consecutive reset runs",
+  "status": "done",
+  "close_mode": "closed-on-gate",
+  "closed": "2026-07-02",
+  "gate": {
+    "target": "every declared manager-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo, 0 false-fails over 5 consecutive reset runs",
+    "achieved": "4/4 manager Playthroughs pass; 5/5 cold reset-to-seed runs, 0 false-fails (iter-05)",
+    "status": "MET",
+    "distance": 0
+  },
+  "iters": {
+    "total": 5,
+    "tok_bootstrap": 1,
+    "tiks": 4,
+    "tok_triggered": 0,
+    "all_closed_fixed": true
+  },
   "metric": "manager-vantage use cases passing / declared",
   "declared_manager_ucs": 4,
   "passing_manager_ucs": 4,
   "target_manager_journeys": 3,
   "journeys_covered": "funnel+roster (1), activity-dashboard drill-down (2), succession/at-risk (3) — ALL green",
-  "functional_half_met": true,
-  "determinism_half_met": true,
-  "determinism_gate": "5-run reset-to-seed: run1..run5 all PASS, 0 false-fails / 5 (evidence iter-05/5run-gate.log)",
-  "iters_closed": 5,
-  "tiks": 4,
-  "toks": 1,
-  "gate_met": true,
-  "last_iter": "iter-05",
-  "last_updated": "2026-07-02"
+  "products_covered": ["workforce-intelligence", "assignment-monitoring"],
+  "live_playthroughs_manager": 4,
+  "live_playthrough_ids_manager": ["pt-workforce-funnel", "pt-workforce-roster", "pt-workforce-succession", "pt-activity-drilldown"],
+  "live_playthroughs_corpus_total": 10,
+  "manifest_todo_ucs": 1,
+  "manifest_todo_detail": "assignment-monitoring.assign-and-track.UC1 (the assign-WRITE half — two-backend org-admin write; Fate-2 tracked in-manifest, out of M204's declared 3 manager journeys)",
+  "tests": {
+    "go": {
+      "module": "playthroughs",
+      "test_funcs": 101,
+      "fuzz_funcs": 4,
+      "total": 105,
+      "delta_vs_prev_milestone": "+2 vs M203's 103 (the 2 M204 harden pins: TestRunnerSafety_ReporterOverrideGate [reporter-override drift guard, iter-02 invariant] + TestRealCorpus_ManagerCoverageIsPresent [manager-coverage deliverable-presence pin])",
+      "packages": ["manifest", "report", "cmd/ptvalidate", "cmd/ptreport"],
+      "package_test_counts": {"manifest": 44, "report": 28, "cmd/ptvalidate": 18, "cmd/ptreport": 15},
+      "shuffle": "5/5 clean",
+      "vet": "clean",
+      "gofmt": "clean"
+    },
+    "typescript": {
+      "layer": "playthroughs/e2e",
+      "unit_specs": 58,
+      "unit_specs_breakdown": {"url-shapes.unit": 46, "stack-env.unit": 12},
+      "delta_unit_vs_prev": "+20 vs M203's 38 (M204 harden url-shapes.unit +6 manager edge/interaction/fuzz on top of the manager pattern/predicate agreement pins added during the iter loop)",
+      "browser_playthroughs_manager": 4,
+      "browser_playthrough_ids_manager": ["pt-workforce-funnel", "pt-workforce-roster", "pt-workforce-succession", "pt-activity-drilldown"],
+      "unit_flake": "5/5 clean",
+      "tsc": "clean",
+      "browser_determinism": "5/5 cold reset-to-seed, 0 false-fails (iter-05, live demo stack; NOT re-run at close per closed-on-gate directive)"
+    },
+    "shell": {
+      "runner": "e2e/run-playthroughs.sh",
+      "check": "reporter-override (iter-02) + post-seed Sentinel Reload guard-covered by manifest/runner_safety_test.go TestRunnerSafety_ReporterOverrideGate + TestRunnerSafety_SentinelReloadGate + TestRunnerSafety_ResetContract"
+    }
+  },
+  "coverage": {
+    "by_package": {
+      "manifest": 100.0
+    },
+    "notes": "manifest already 100% stmts before harden — the 3 harden passes were untested-invariant PINNING (reporter-override drift guard + manager-coverage deliverable-presence), not statement-% gains (delta 0.0% across all 3 passes). TS manager url-shapes.ts predicates ~100% via url-shapes.unit.spec.ts (46 tests). Manager page objects are locator-returning (no pure logic to unit-cover); their journeys are gate-verified live e2e."
+  },
+  "flake_count": 0,
+  "close_review": {
+    "findings_total": 5,
+    "all_fate_1": true,
+    "scope": 0,
+    "code_quality": 1,
+    "must_fix": 0,
+    "should_fix": 1,
+    "nice_to_have": 0,
+    "docs": 3,
+    "tests": 0,
+    "decision_triage": 1,
+    "escape_hatch": 0,
+    "notes": "code-quality should-fix = the manager predicate-API intent doc (kept symmetric, not dead code — consistent with M203 isOnSkillsTab); docs = the 3 stale-framing/count fixes (playthroughs.md line ~97 must-flip + header + README row + the missing M204 page-object bullet); decision-triage = D-CLOSE-1 (the Fate-2 verdict, already blended into decisions.md + the audit report)."
+  },
+  "deferral_audit": "GREEN — 0 repeat/chronic/aged-out; the assign-WRITE UC1 (assignment-monitoring.assign-and-track.UC1) is a single, in-manifest Fate-2 tracked gap (playthrough: TODO, reports unimplemented, presence-pinned) — recorded D-CLOSE-1; see audit-deferrals/deferral-audit-2026-07-02-m204-close.md",
+  "rext_tag": "opening-night-m204 @ c81c6dd (re-rolled at close from the harden HEAD e29cb7a + the close fix-commit c81c6dd 'symmetric predicate-API intent doc'; local-tag re-roll, not a force-push)",
+  "rext_consumption_repin": "none — the playthroughs section runs from the authoring copy; .agentspace/rext.tag stays v1.10.1 (demo-1 pin, unaffected)",
+  "notes": "Iterative closed-on-gate. Gate MET at iter-05 (4/4 manager Playthroughs GREEN on cold reset-to-seed, 5/5 deterministic, 0 false-fails). All 3 declared manager journeys green (funnel+roster / activity-dashboard drill-down / succession-at-risk). Tooling + docs only — zero platform-repo edits, zero new deps. THE FINAL v2.0 milestone — after this close, run /developer-kit:close-release. No coverage sweep / browser re-run at close (gate already green + 5/5)."
 }
