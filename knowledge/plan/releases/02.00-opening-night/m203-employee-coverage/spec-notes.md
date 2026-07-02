@@ -31,8 +31,16 @@ Each becomes one Playthrough (one use case ↔ one Playthrough), played as Maya 
 - AI/voice creds **are** provisioned on demo-N; the barrier for voice is the missing **mirror** + determinism,
   not missing wiring (spec §5.8). NON-voice chat/code is in scope here.
 
+## Pre-flight audits — iter-01
+**KB-fidelity (2026-07-02): GREEN.** Report: [`kb-fidelity-audit.md`](kb-fidelity-audit.md). Every topic PAIRED
+(or DOC-ONLY by design — the M201 use-case declarations this milestone implements); every doc claim in
+`corpus/ops/demo/playthroughs.md` ALIGNED with the freshly-shipped M202 `playthroughs/` code (4-state report +
+gates, validator's 3 checks, serial config pins, hero-login reuse, all cross-refs + cited paths resolve). No
+blind areas, no stale load-bearing claims. The bootstrap tok authors its strategy against verified docs.
+
 ## Tag / two-repo state
 TODO (iter loop): per-iter rext authoring commits + tags; consumption-clone checkouts; the corpus m203 branch.
+`opening-night-m203` is tagged only at milestone end (gate-met), not per-iter.
 
 ## Open questions (resolve in the iter loop; record in decisions.md)
 - Which surfaces need a landmark anchor vs play purely on semantic locators (discovered per-iter against the

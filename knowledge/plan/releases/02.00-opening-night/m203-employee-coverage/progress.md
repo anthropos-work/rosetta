@@ -19,4 +19,4 @@ entry is the BOOTSTRAP tok — iter-01.)_
 
 | iter | date | use case / surface | outcome | gate delta |
 |------|------|--------------------|---------|------------|
-| | | _(none yet)_ | | |
+| iter-01 (tok/bootstrap) | 2026-07-02 | — (strategy) | TOK-01 authored: deterministic-read-first → mutating → integration boundary | baseline 1/~8 employee UCs — see iter-01/progress.md |
