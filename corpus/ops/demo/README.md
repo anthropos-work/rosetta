@@ -152,7 +152,8 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   O(tests)), the dedicated decoupled seed (`pt-world`, test data ≠ demo data) + the reset-to-seed lifecycle
   (the real `--reset`, additive-re-seed FORBIDDEN), the serial-default runner, and the 4-state reporting map
   (`passing`/`failing`/`unimplemented`/`unimplementable-without-platform-edit`). Also **the iteration protocol
-  for M203/M204** (the coverage milestones). Section `rext playthroughs/`. (v2.0 M202)
+  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed — the corpus now
+  stands at **10 live Playthroughs, 1 TODO**). Section `rext playthroughs/`. (v2.0 M202–M204)
 - [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
   (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
   per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +

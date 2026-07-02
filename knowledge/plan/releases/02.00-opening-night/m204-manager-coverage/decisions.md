@@ -7,6 +7,7 @@ Implementation decisions with rationale (recorded during the iter loop). Design-
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
 | | _(intra-iter decisions live in each `iter-NN/decisions.md`; strategy TOK entries below)_ | | |
+| D-CLOSE-1 | **`assignment-monitoring.assign-and-track.UC1` (the assign-WRITE half) → Fate-2 (tracked in-manifest), no plan edit.** | The assign-WRITE half is a two-backend org-admin WRITE flow, OUT of M204's declared 3 (READ/monitoring) manager journeys from the start (M201 declared it as one of two distinct flows; M204 landed the sibling monitoring flow UC2 green). It is durably tracked in the corpus: `assignment-monitoring.yaml` declares it `playthrough: TODO`, `ptreport` surfaces it as `unimplemented` (a first-class tracked state, not a silent drop), and the harden Pass-2 `TestRealCorpus_ManagerCoverageIsPresent` pin enforces the TODO stays declared (fail-red if removed). Not a repeat-defer (single M201 declaration); no aging trigger. No current v2.0 milestone owns the manager-WRITE class (M205 Hiring/tier-gates · M206 AI-sim-mirror · M207 Academy) — a future manager-write tier is the natural home; the manifest TODO is the ready-made declaration. Deferral audit: GREEN — see [`audit-deferrals/deferral-audit-2026-07-02-m204-close.md`](audit-deferrals/deferral-audit-2026-07-02-m204-close.md). | 2026-07-02 |
 
 ## TOK-01: manager-surface-per-iter — 2026-07-02
 
