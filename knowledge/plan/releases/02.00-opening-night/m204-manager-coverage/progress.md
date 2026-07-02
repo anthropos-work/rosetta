@@ -24,8 +24,10 @@ entry is the BOOTSTRAP tok — iter-01.)_
 | iter-02 | 2026-07-02 | Workforce funnel + member roster | +2 passing (`skills-funnel.UC1` + `roster.UC1` green) | 0 → 2 passing manager UCs |
 | iter-03 | 2026-07-02 | Member drill-down (activity-dashboard) | +1 passing (`assign-and-track.UC2` green) | 2 → 3 passing manager UCs |
 | iter-04 | 2026-07-02 | Succession / at-risk (last surface) | +1 passing (`talent-pool.UC1` green) | 3 → 4 passing manager UCs — all journeys functionally green |
+| iter-05 | 2026-07-02 | 5-run reset-to-seed determinism gate | **GATE MET** — 0 false-fails / 5, all 4 manager UCs green each reset run | **exit gate FULLY MET** |
 
 - iter-01 (tok/bootstrap): authored TOK-01 (manager-surface-per-iter strategy); baseline 0 manager UCs — see iter-01/progress.md
 - iter-02 (tik): Workforce funnel + member roster both green + reconciled `[PASS]`; +2 passing manager UCs; side-fix: runner reporter-override (stale-JSON) — see iter-02/progress.md
 - iter-03 (tik): activity-dashboard per-member drill-down green + `[PASS]`; +1 passing manager UC; fixed a SPA-URL race + an out-of-main table scope (D1/D2) — see iter-03/progress.md
 - iter-04 (tik): succession/at-risk green + `[PASS]`; +1 passing manager UC → all 3 declared manager journeys / 4 UCs functionally green (no seed expansion needed); DETERMINISM half (5-run gate) next — see iter-04/progress.md
+- iter-05 (tik): the 5-run reset-to-seed determinism gate — **0 false-fails / 5, all 4 manager UCs green each run → M204 exit gate FULLY MET** — see iter-05/progress.md + 5run-gate.log
