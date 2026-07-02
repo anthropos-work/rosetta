@@ -189,6 +189,16 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   [`e2e/lib/profile-page.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/profile-page.ts)
   (`ProfilePage`) — it owns the "how do I find the hero's name on /profile" knowledge (`heroName(name)` scoped
   within the identity region, `exact:false`); the test owns only the "assert her name is there" intent.
+- **M203 adds the employee-journey surfaces**: `skill-path-page.ts` (`SkillPathPage`), `simulation-page.ts`
+  (`SimulationPage`), plus the profile Skills/Career tabs on `ProfilePage`. Their **route-shape decision logic**
+  (am-I-in-the-chapter-player vs still-on-detail; did-the-sim-reach-`/start` vs opened-detail) and the
+  ProfileSeeder **timeline dated-range** landmark are extracted into pure, browser-free predicates in
+  [`e2e/lib/url-shapes.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/url-shapes.ts) that the
+  page objects delegate to — so the resolution logic is unit-testable without a live stack
+  (`tests/url-shapes.unit.spec.ts`). **Route-shape discipline (M203 harden truth):** anchor the terminal segment
+  (`/chapter(?:[/?#]|$)`, `/start(?:[/?#]|$)`), **never a bare `\b`** — a bare word-boundary false-matches
+  look-alike sibling segments (`/chapter-list`, `/start-now`, since `-` is a word boundary), a green-but-wrong
+  hazard.
 
 ### Named-hero login — the cockpit seat-switch, reused
 
