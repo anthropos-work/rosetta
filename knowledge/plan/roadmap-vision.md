@@ -86,7 +86,18 @@ its number at *design* time, not before). They are governed by the same capabili
   + **recording (Chime)** — driven at the **launch / completion assertion boundary** (the flow launched, reached
   an interactive state, the outcome artifact materialized), NOT turn-by-turn. Needs **mirror engines**:
   **Clerkenstein only mocks Clerk** — there is no LiveKit/Chime mirror yet (spec §5.8). Until a mirror lands,
-  these legs are parked as `later — needs a mirror engine`.
+  these legs are parked as `later — needs a mirror engine`. **Also absorbs the non-gate employee-vantage
+  coverage-DEEPENING legs the M203 gate legitimately left additional** (the M203 gate enumerated + proved the 3
+  core employee journeys — Profile / Skill Paths / AI-sims chat-launch — GREEN; these are extra edge UCs beyond
+  it, routed at M203 close 2026-07-02 via Fate-3): **`ai-simulations.code.UC1`** (Judge0-via-Roadrunner code sim
+  — needs the external hardcoded Judge0 host as a live seed/stack precondition), **`ai-simulations.interview.UC1`**
+  (text/non-voice interview — reuses the chat engine, needs an interview-typed catalog sim), **the Skill-Paths
+  verify-skill end-to-end TERMINAL** (compose browse→learn→complete→verify with a NON-voice ASSESSMENT sim; the
+  verify OUTCOME is already proven on the profile side by `pt-profile-verified`), and **`profile.self-evaluation.UC1`**
+  (the Profile skill self-rate WRITE — a rate-modal click-intercept quirk that needs live browser iteration to
+  stabilize). All four need a live demo + a browser drive to land (out of the docs-only M203 close's scope); the
+  code-sim + interview additionally carry seed/stack preconditions. Provenance: M203 iter-05/iter-06 "routes carried
+  forward" + `m203-employee-coverage/decisions.md` D-CLOSE-1.
 - **M207 — Academy coverage** — Playthroughs over the **separate ant-academy deployment** (its own Vercel-deployed
   app, Clerk-only, not in the platform docker-compose). A distinct target environment from the demo-N hero stacks;
   a future surface for the capability.

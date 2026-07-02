@@ -1,0 +1,77 @@
+{
+  "milestone": "M203",
+  "slug": "employee-coverage",
+  "version": "v2.0 opening night",
+  "shape": "iterative",
+  "status": "done",
+  "close_mode": "closed-on-gate",
+  "closed": "2026-07-02",
+  "gate": {
+    "target": "every declared employee-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo, 0 false-fails over 5 consecutive reset runs",
+    "achieved": "6/6 employee Playthroughs pass; 5/5 cold reset-to-seed runs, 0 false-fails (iter-06)",
+    "status": "MET",
+    "distance": 0
+  },
+  "iters": {
+    "total": 6,
+    "tok_bootstrap": 1,
+    "tiks": 5,
+    "tok_triggered": 0,
+    "all_closed_fixed": true
+  },
+  "products_covered": ["profile", "skill-paths", "ai-simulations"],
+  "live_playthroughs": 6,
+  "manifest_todo_ucs": 0,
+  "tests": {
+    "go": {
+      "module": "playthroughs",
+      "test_funcs": 99,
+      "fuzz_funcs": 4,
+      "total": 103,
+      "delta_vs_prev_milestone": "+7 vs M202's 96 (iter drift-guard runner_safety_test.go from harden + close: @pt lockstep x2 packages, invalid-engine enum arm, discoverRegistry read-error arm)",
+      "packages": ["manifest", "report", "cmd/ptvalidate", "cmd/ptreport"],
+      "shuffle": "5/5 clean",
+      "vet": "clean",
+      "gofmt": "clean"
+    },
+    "typescript": {
+      "layer": "playthroughs/e2e",
+      "unit_specs": 38,
+      "delta_unit_vs_prev": "+25 vs M202's 13 (harden url-shapes.unit grid + M203-close isOnSkillsTab/SKILLS_TAB_URL cases; incl stack-env.unit 12)",
+      "browser_playthroughs": 6,
+      "browser_playthrough_ids": ["pt-profile-identity", "pt-profile-verified", "pt-profile-growth", "pt-profile-timeline", "pt-skillpath-legacy", "pt-aisim-chat-launch"],
+      "unit_flake": "5/5 clean",
+      "tsc": "clean",
+      "browser_determinism": "5/5 cold reset-to-seed, 0 false-fails (iter-06, live demo-1; NOT re-run at close per closed-on-gate directive)"
+    },
+    "shell": {
+      "runner": "e2e/run-playthroughs.sh",
+      "check": "post-seed Sentinel Reload (iter-05) guard-covered by manifest/runner_safety_test.go TestRunnerSafety_SentinelReloadGate + TestRunnerSafety_ResetContract"
+    }
+  },
+  "coverage": {
+    "by_package": {
+      "manifest": 100.0,
+      "report": 100.0,
+      "ptvalidate": 98.8,
+      "ptreport": 94.8
+    },
+    "notes": "checkPreconditionCoverage + discoverRegistry both raised to 100% at close (invalid-engine arm + read-error arm). TS url-shapes.ts route/landmark predicates ~100% via url-shapes.unit.spec.ts."
+  },
+  "flake_count": 0,
+  "close_review": {
+    "findings_total": 11,
+    "all_fate_1": true,
+    "must_fix": 1,
+    "should_fix": 2,
+    "nice_to_have": 1,
+    "docs": 2,
+    "tests": 3,
+    "decision_triage": 2,
+    "escape_hatch": 0
+  },
+  "deferral_audit": "GREEN — 0 repeat/chronic/aged-out; 4 non-gate edge UCs (code-sim, interview-sim, verify-terminal, self-eval) routed Fate-3 -> M206 (roadmap-vision.md annotated; D-CLOSE-1)",
+  "rext_tag": "opening-night-m203 @ fb94458 (re-rolled at close from the harden HEAD 30b3ff9 + the close fix-commit)",
+  "rext_consumption_repin": "none — the playthroughs section runs from the authoring copy; .agentspace/rext.tag stays v1.10.1 (demo-1 pin, unaffected)",
+  "notes": "Iterative closed-on-gate. Gate MET at iter-06 (6/6 employee Playthroughs GREEN on cold reset-to-seed, 5/5 deterministic). Tooling + docs only — zero platform-repo edits, zero new deps. NOT the final v2.0 milestone (M204 manager-vantage remains). No coverage sweep / browser re-run at close (gate already green + 5/5)."
+}
