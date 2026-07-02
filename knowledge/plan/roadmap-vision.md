@@ -51,6 +51,16 @@ and a `release/{version}` branch is cut.
 > manager-vantage coverage [both `iterative`]; tooling + docs only — zero platform-repo edits). Designed from the
 > consolidated capability spec [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. The
 > **Playthroughs** capability **graduated from spec-draft to active development** here.
+> **v3.0 "open house"** → 2026-07-01 (**PROPOSAL — awaiting review**; a **NEW MAJOR** proposal — opens the
+> **Customer API + MCP** pillar: a stable, programmatic surface [REST façade + MCP server] that lets a
+> customer's script or AI agent read/write against their tenant without going through the UI. Distinct from
+> the v2.x Playthroughs lineage — v2.0 proves the *user* journeys work; v3.0 opens those same domain
+> resources to *machines*. 4 milestones M301 → M302 → M303 → M304 [`Mxyy` numbering]: M301 discovery + identity
+> seam [`section`] → M302 access primitive [`section`] → M303 REST reads gateway [`iterative`, exit gate =
+> UC1–UC7 green with 0 cross-tenant leakage over 5 runs] → M304 customer surface + docs-lite [`section`];
+> strictly sequential. R1 is READ-ONLY end-to-end; W1/W2 writes are R2+. Governed by the consolidated pillar
+> spec [`spec-drafts/customer-api-mcp/spec.md`](spec-drafts/customer-api-mcp/spec.md) v0.1 + its companions
+> [`spec-progress.md`, `next-release.md`, `vision.md`]).
 
 ---
 
@@ -59,7 +69,56 @@ and a `release/{version}` branch is cut.
 > v2.0 major; v1.x history is in [`roadmap-legacy.md`](roadmap-legacy.md)). The future v2 milestones + the
 > unscheduled backlog below are orthogonal (not in v2.0 scope).
 
+## Future versions
+
+### v3.0 "open house" — PROPOSAL (2026-07-01), NOT yet promoted
+
+A **NEW MAJOR** — opens the **Customer API + MCP** pillar: a stable, programmatic surface (REST façade + an
+MCP server) that lets a customer's script or AI agent read/write against their tenant without going through
+the UI. Distinct from the v2.x Playthroughs lineage — v2.0 proves the *user* journeys work; v3.0 opens those
+same domain resources to *machines*. Governed by the consolidated capability spec
+[`spec-drafts/customer-api-mcp/spec.md`](spec-drafts/customer-api-mcp/spec.md) v0.1 + its companions
+(`spec-progress.md`, `next-release.md`, `vision.md`).
+
+**Codename:** _open house_ continues the theatre lineage — after opening night proves the show works, the
+venue opens its doors to guests (here: API consumers + AI agents).
+
+**4 milestones, sequential** (Mxyy numbering, major digit 3):
+
+- **M301 — Discovery + identity seam** (`section`): the `customer-api-mcp` package skeleton in
+  `app/internal/customerapi/` + the OpenAPI-3.1-based `catalog.yaml` registry (with `x-anthropos-*` extension)
+  + the loader/validator + the `Principal` DTO + the `IdentityProvider` adapter port + the first adapter
+  `ClerkIdentityProvider` (with the `ClerkGuardrails` static-lint fence) + a smoke `/v1/access/whoami` handler.
+  Proves the auth-vendor-swap boundary.
+- **M302 — Access primitive** (`section`, depends on M301): the API-key store (Postgres, argon2id-hashed) +
+  the `ApiKeyIdentityProvider` (2nd adapter) + mint/rotate/revoke via 3 admin-tier catalog entries + the
+  append-only audit ledger + the shared audit-write middleware + the Redis token-bucket rate-limit middleware
+  + a proof `/v1/access/whoami` + `/v1/access/api-keys` (list). No customer-data endpoint yet — the primitive
+  is proven with an echo.
+- **M303 — REST reads gateway** (`iterative`, depends on M302, exit gate: UC1–UC7 green with 0 cross-tenant
+  leakage over 5 consecutive runs, iteration protocol = the pillar spec): the R1 READ catalog — 7 resources
+  across 4 products (People `member.list`+`.get`, Learning `skill-path.list`+`.get`+`session.list`,
+  Verification `verified-skill.list`, Audit `event.list`), each closed-per-resource on: contract test +
+  cross-tenant isolation test + audit row + rate-limit fire.
+- **M304 — Customer surface + docs-lite** (`section`, depends on M303): the Workforce API-key page
+  (list/mint/rotate/revoke) + the `docs.anthropos.work/api/v1/` static site (OpenAPI-rendered reference +
+  4 Quickstarts for UC1–UC4 + Principles page + entitlement-tier page). R1 becomes visible + usable.
+
+**Execution graph:** `M301 → M302 → M303 → M304` (strictly sequential — every downstream milestone reads
+outputs from the prior one; no parallelism in R1). The **MCP server** is a fast-follow after R1 (see
+`next-release.md` — parked for R2), not in-scope here.
+
+**Scope boundary:** R1 is **read-only** end-to-end. All writes (W1 safe writes, W2 advanced writes) are R2+.
+The write staging model + a mutation-gap inventory are in the spec (§4 + Appendix A), enforcing the
+"real-mutations-only, escalate-never-shim" principle (P1) when writes land.
+
+**Milestone dirs scaffolded** under [`releases/03.00-open-house/`](releases/03.00-open-house/) — awaiting
+review and promotion. Once promoted, `release/03.00-open-house` branch cuts from `main` post-v2.0 ship, and
+this section moves into `roadmap.md`.
+
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
+
+### Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
 The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night"
 (M201 ∥ M202 → { M203 ∥ M204 }). The milestones below are the **declared-but-deferred** Playthroughs surfaces —
@@ -80,6 +139,14 @@ its number at *design* time, not before). They are governed by the same capabili
 - **M207 — Academy coverage** — Playthroughs over the **separate ant-academy deployment** (its own Vercel-deployed
   app, Clerk-only, not in the platform docker-compose). A distinct target environment from the demo-N hero stacks;
   a future surface for the capability.
+
+### Future v3 minors (Customer API + MCP pillar — NOT yet clustered)
+
+After v3.0 R1 ships, the pillar's post-R1 arc is spec'd in
+[`spec-drafts/customer-api-mcp/next-release.md`](spec-drafts/customer-api-mcp/next-release.md): **R2** the MCP
+server + W1 safe writes + interactive OpenAPI + SDKs, **R3** W2 advanced writes + entitlement enforcement,
+**R4–R6** the developer-portal + billing/quotas + partner tier. No pre-assigned Mxyy numbers (per the rule, a
+future minor's milestone gets its number at *design* time, not before).
 
 ## Unscheduled backlog (not a planned release)
 
@@ -157,8 +224,15 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").
 - **v1.10 "method acting"** (shipped 2026-06-27, tag `v1.10` — codename now permanent; chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up". **The last release of the v1.x major.**
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
+- **v3.0 "open house"** (PROPOSAL 2026-07-01, awaiting review, **new-major** codename): continues the theatre lineage past opening night — an *open house* is when the venue throws its doors open to guests who weren't in the original audience. Exactly v3.0's thesis: the **Customer API + MCP** pillar opens the platform to programmatic consumers (customer scripts + AI agents), not just human users at the UI. Chosen at the 2026-07-01 `/developer-kit:design-roadmap` run. Alternatives considered: "curtain call", "matinee", "backstage pass".
 
-_Last updated: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
+_Last updated: 2026-07-01 (**v3.0 "open house" PROPOSED** — a NEW-MAJOR proposal opening the **Customer API + MCP**
+pillar [programmatic access], **4 milestones M301 → M302 → M303 → M304** [`Mxyy` numbering; M301 `section`
+identity seam ∥ M302 `section` access primitive → M303 `iterative` REST reads gateway → M304 `section` customer
+surface + docs-lite; strictly sequential], governed by the consolidated pillar spec
+`spec-drafts/customer-api-mcp/spec.md` v0.1 + its companions. Milestone dirs scaffolded under
+`releases/03.00-open-house/`. R1 is **READ-ONLY**; W1/W2 writes staged for R2/R3. v2.0 opening night remains in
+development — this v3.0 proposal is orthogonal and awaits review. Prior: 2026-06-28 (**v2.0 "opening night" PROMOTED to active development** — a NEW MAJOR opening the
 **Playthroughs** pillar [functional-flow e2e *testing*], **4 milestones M201 ∥ M202 → { M203 ∥ M204 }** [`Mxyy`
 numbering; M201 `iterative`+user-guided manifest corpus ∥ M202 `section` foundation → M203/M204 `iterative`
 per-vantage coverage], branch `release/02.00-opening-night` cut from `main`, designed from
