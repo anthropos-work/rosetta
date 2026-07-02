@@ -22,3 +22,4 @@ entry is the BOOTSTRAP tok — iter-01.)_
 | iter-01 (tok/bootstrap) | 2026-07-02 | — (strategy) | TOK-01 authored: deterministic-read-first → mutating → integration boundary | baseline 1/~8 employee UCs — see iter-01/progress.md |
 | iter-02 (tik) | 2026-07-02 | Profile: verified + growth (read) | closed-fixed — profile.verified.UC1 + profile.growth.UC1 GREEN on demo-1 (ptreport 3/3, no-regressions) | +2 employee UCs passing — see iter-02/progress.md |
 | iter-03 (tik) | 2026-07-02 | Profile: work/education timeline | closed-fixed — profile.timeline.UC1 GREEN; full Profile gate journey covered (ptreport 4/4) | +1 employee UC passing — see iter-03/progress.md |
+| iter-04 (tik) | 2026-07-02 | Skill Paths: legacy learn & progress | closed-fixed — skill-paths.legacy.UC1 GREEN (browse→open→start→progress; verify-skill composes P7); 2/3 gate journeys (ptreport 5/5) | +1 employee UC passing — see iter-04/progress.md |
