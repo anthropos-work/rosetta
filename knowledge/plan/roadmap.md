@@ -26,7 +26,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
-| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ∥ M204 } → ship | ▶ **IN DEVELOPMENT** (branch `release/02.00-opening-night`) — M201 + M202 shipped (the foundation: `playthroughs` rext section + runbook, proof GREEN on demo-1); **M203 ∥ M204 next** (iterative vantage-coverage). The v1.10b backfill shipped (tag `v1.10.1`) |
+| **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 } → ship | ▶ **IN DEVELOPMENT** (branch `release/02.00-opening-night`) — M201 + M202 + **M203 (employee vantage, closed-on-gate)** shipped; **M204 (manager vantage) is the last milestone** (iterative). The v1.10b backfill shipped (tag `v1.10.1`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -235,11 +235,13 @@ residual = origin push (push-gated KEEP, orchestrator/user).** → **v1.10b is G
 
 ## In Development — v2.0 "opening night"
 
-> **Status (updated 2026-07-01):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), and
-> v2.0 is the **active release** again. M201 "Manifest corpus" is `done` (closed-on-gate) and **M202 (Foundation,
-> `section`) is `done`** (closed-complete 2026-07-01 — the `playthroughs` rext section + runbook, proof GREEN on
-> demo-1, tag `opening-night-m202`). **Next: M203 ∥ M204** (both `iterative`, `/developer-kit:work-mstone-iters`) —
-> they import M202's page-object layer + run on its reset-to-seed lifecycle per `corpus/ops/demo/playthroughs.md`.
+> **Status (updated 2026-07-02):** the interposed **v1.10b "fit-up"** backfill has **SHIPPED** (tag `v1.10.1`), and
+> v2.0 is the **active release**. M201 "Manifest corpus" is `done` (closed-on-gate), **M202 (Foundation, `section`)
+> is `done`** (closed-complete 2026-07-01, tag `opening-night-m202`), and **M203 (Employee-vantage coverage,
+> `iterative`) is `done`** (closed-on-gate 2026-07-02 — 6/6 employee Playthroughs GREEN on cold reset-to-seed, 5/5
+> deterministic; tag `opening-night-m203`). **Next + LAST: M204** (manager-vantage, `iterative`,
+> `/developer-kit:work-mstone-iters`) — imports M203's shared page-object layer + runs on the reset-to-seed lifecycle
+> per `corpus/ops/demo/playthroughs.md`. The release ships when M204's gate fires.
 >
 > **Theme:** *the platform's core user journeys, proven to actually work.* A **Playthrough** is an automated
 > actor that **is the user** — it logs in as a seeded hero, sets out with a goal, plays through a real journey
@@ -365,21 +367,33 @@ prose contract the validator + seed implement against),
 section-assert,empty-states,coverage-manifest}.ts`, `stack-demo/rosetta-extensions/stack-seeding/`.
 
 **M203 — Employee-vantage coverage** · `iterative` · complexity **large** · depends on: **M202** ·
-parallel-with: **M204** (caveat: the shared **landmark-registry + locator index** is an *additive* merge surface;
-both are iterative).
-**Goal:** **Maya's** core **employee** journeys play green (declared in the M201 manifest corpus) —
-- **Skill Paths** (browse → enroll → complete → verify-skill),
-- **AI Simulations** (chat/code launch → complete → score-in-range, **NON-voice**),
-- **Profile** (verified-skill chart + the claimed-vs-verified gap + work/education timeline).
-**Exit gate:** **every declared employee-vantage use case has a passing Playthrough on a COLD reset-to-seed demo
-stack (the 3 employee stories), with 0 false-fails over 5 consecutive reset runs.**
-**iteration_protocol_ref:** the playthroughs spec / the M202-delivered runbook
-([`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) until M202 graduates it to
-`corpus/ops/demo/playthroughs.md`).
-**Why iterative:** the use-cases are *declarable* (in the M201 corpus), but getting them green against the real
-antd UI (the landmark layer) + the AI-sim assertion boundary is **exploratory**, like M42e.
-**Re-scope trigger:** a surface that can't be driven without a platform edit (the
-`unimplementable-without-platform-edit` state) → **escalate, don't edit**.
+parallel-with: **M204**. ✅ **`done` — closed-on-gate 2026-07-02** (merged → `release/02.00-opening-night`; rext
+tag **`opening-night-m203`** @ `fb94458`). **Exit gate MET at iter-06:** every declared employee-vantage use case
+has a PASSING Playthrough on a COLD reset-to-seed demo (**6/6** — Profile identity+verified+growth+timeline · Skill
+Paths legacy learn&progress · AI Simulations chat launch §5.8), with **0 false-fails over 5 consecutive reset runs**
+(5/5). **6 iters** (1 bootstrap tok + 5 tiks, all closed-fixed). The strategy arc (TOK-01, deterministic-read-first):
+iter-02/03 landed the full Profile journey (Spotlight + claimed-vs-verified gap + trajectory + work/education
+timeline), iter-04 Skill Paths (browse→open→start→progress; verify-skill composes P7 on the profile side), iter-05
+AI Sims chat launch + the **post-seed Sentinel-Reload** fix (a casbin g3 feature grant is only effective after the
+enforcer RELOADS — folded into `run-playthroughs.sh`, drift-guarded), iter-06 the 5-run determinism gate (runnable
+from the authoring-built `stackseed`). Tests: rext playthroughs Go **103** (+7 vs M202's 96: @pt-tag lockstep ×2
+packages + invalid-engine + read-error arms + the iter-05 Sentinel-reload drift guard) · e2e TS **38** unit (+25
+vs 13) + **6** browser Playthroughs; flake **0** (Go 5/5 -shuffle + TS unit 5/5; browser 5/5 cold-reset iter-06).
+Close review: **11 findings all Fate-1** — F1/F5 (must-fix) the segment-anchor route-shape fix was NOT applied to
+two inline `\b`-terminal copies (a load-bearing `waitForURL`) → centralized into `url-shapes.ts` `SKILLS_TAB_URL`;
+F3 dropped 4 dead speculative self-eval accessors; TEST-G1 the unenforced `@pt:`-grammar lockstep → twin tests;
+TEST-G3/G4 two coverage arms → 100%; DOC README + runbook M203 backfill. Deferral audit **GREEN** (0
+repeat/chronic/aged). **Carry-forward (three-fate, none escape-hatch):** the 4 **non-gate** edge UCs
+(`ai-simulations.code.UC1` Judge0 · `ai-simulations.interview.UC1` text · the Skill-Paths verify-skill terminal ·
+`profile.self-evaluation.UC1`) → **Fate-3 → M206** (roadmap-vision annotated; the gate enumerated the 3 CORE
+journeys, all GREEN — these are additional). Academy UC OUT by design; voice sims → M206 by design. Tooling + docs
+only — zero platform edits, zero new deps. Records:
+[`releases/02.00-opening-night/m203-employee-coverage/`](releases/02.00-opening-night/m203-employee-coverage/).
+**Goal (as designed):** **Maya's** core **employee** journeys play green (declared in the M201 manifest corpus) —
+Skill Paths (browse → enroll → complete → verify-skill), AI Simulations (chat/code launch → complete →
+score-in-range, **NON-voice**), Profile (verified-skill chart + the claimed-vs-verified gap + work/education
+timeline). **Why iterative:** the use-cases are *declarable* (in the M201 corpus), but getting them green against
+the real antd UI (the landmark layer) + the AI-sim assertion boundary is **exploratory**, like M42e.
 
 **M204 — Manager-vantage coverage** · `iterative` · complexity **large** · depends on: **M202** ·
 parallel-with: **M203**.

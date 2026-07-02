@@ -5,9 +5,9 @@ version: v2.0 "opening night"
 milestone_shape: iterative
 exit_gate: "Every declared EMPLOYEE-vantage use case has a PASSING Playthrough on a COLD reset-to-seed demo stack (the 3 employee stories — Maya's core journeys: Skill Paths browse→enroll→complete→verify-skill; AI Simulations chat/code launch→complete→score-in-range NON-voice; Profile verified-skill chart + claimed-vs-verified gap + work/education timeline), with 0 false-fails over 5 consecutive reset runs."
 iteration_protocol_ref: knowledge/plan/spec-drafts/playthroughs/spec.md (the consolidated capability spec; the M202-delivered runbook corpus/ops/demo/playthroughs.md supersedes it as the protocol once M202 graduates it)
-status: planned
+status: archived
 created: 2026-06-28
-last_updated: 2026-06-28
+last_updated: 2026-07-02
 complexity: large
 delivers: passing employee-vantage Playthroughs (in the `playthroughs` rext section) for Maya's core journeys — Skill Paths, AI Simulations (NON-voice), Profile — added to the manifest + the per-surface page-object layer, on the M202 foundation; plus the corpus/runbook updates as use-cases land
 depends_on: M202
