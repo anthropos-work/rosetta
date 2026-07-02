@@ -29,3 +29,16 @@
 **Cross-iter integration findings:** Dimension-1 orthogonal gap — the real-corpus test proves INTERNAL consistency but not deliverable EXISTENCE, so a silently-dropped manager manifest / renamed playthrough id would pass with the manager coverage gone. Closed with an external presence pin (the four M204 manager PT ids declared non-TODO, every manager UC played by pt-manager, the assign-write UC1 gap kept as a declared TODO). Verified fail-red on a renamed manager PT id. Dimensions 2/3 (edge/error on manifest TODO/EffectiveOutcome) already covered by manifest_test + manifest_edge_test; Dimension 5 (fuzz) already covers the YAML loader incl. a TODO seed (the manager manifests parse through the same path); Dimension 6 (perf) N/A — page objects are locators.
 **Knowledge backfill:** none needed — the deliverable scope is documented in the manager manifests' header prose (assignment-monitoring.yaml records UC1 as a build-reference gap); the pin now enforces it.
 **Stop condition:** continue-to-next-pass — this pass's dimension scan SURFACED a new gap (the deliverable-presence pin) and closed it, so "the scan found nothing new" is not yet true for this pass; a confirming Pass 3 is required to grade stabilized.
+
+## Pass 3 — 2026-07-02 — final
+
+**Iters hardened this pass:** all milestone-touched code (--final; confirming clean-scan re-sweep across all 6 dimensions)
+**Tiks covered since prior pass:** all iters in milestone (same cumulative --final scope)
+**Coverage delta on touched files:**
+- `playthroughs/manifest/` (Go): 100.0% -> 100.0% stmts (delta 0.0%, < 2%, stable across all 3 passes)
+**Tests added:** none — confirming pass; the dimension scan surfaced no new gap (legitimately a zero-test pass, per the harden anti-pattern guard: run the confirming pass even when the prior looked clean, to grade stabilized against a real re-measurement)
+**Bugs surfaced + fixed inline:** none
+**Flakes stabilized:** none — flake gate ran 3 consecutive clean runs of the newly-added tests (Go drift guards + TS pure-logic unit spec): 3/3 PASS both stacks
+**Cross-iter integration findings:** clean re-scan. Dim1 — no PURE (non-live-Page) logic remains in the manager page objects (every method is a Locator return delegating to base helpers; the one async-nav method drillIntoActiveContent delegates to the already-unit-pinned ACTIVITY_DRILLDOWN_URL). The manager Playthrough specs are live e2e journeys (gate-verified green + 5/5 deterministic at iter-05), correctly out of harden's unit-deepening scope. Dims 2/3/5 pre-covered (manifest error/TODO/fuzz); Dim 6 N/A (locators, no perf-sensitive path).
+**Knowledge backfill:** none — all M204 invariants are now either documented inline AND enforced by a drift guard (reporter-override, Pass 1) or pinned as a deliverable-existence test (manager coverage, Pass 2).
+**Stop condition:** stabilized — coverage delta 0.0% (< 2%) across all 3 passes AND the Pass 3 dimension scan found nothing new. Final harden complete; the milestone is ready for /developer-kit:close-milestone.
