@@ -2,7 +2,8 @@
 
 Iterative milestone — closed-per-resource-family loop (built by `/developer-kit:build-mstone-iters`). Scope
 detail in [`overview.md`](overview.md). The gate + per-family close bar are the source of truth. Spec §4.2 (the
-9-product / 35-resource / ~44-endpoint catalog at Talk-to-Data parity) is the authoritative resource list.
+9-product / 36-resource / ~46-endpoint catalog at Talk-to-Data parity + the Hiring candidate-invite link from
+spec §4.7.4) is the authoritative resource list.
 
 ## Iters ledger
 
@@ -55,6 +56,7 @@ closes when all 7 per-family bar points are green (spec.md §5.7 + overview.md).
 - [ ] `GET /v1/simulations/sessions/{session_id}/validation-results` (`simulation-session.validation-result`).
 - [ ] `GET /v1/simulations/sessions/{session_id}/validation-attempts` (`simulation-session.validation-attempt`; skill/criterion/check results embedded).
 - [ ] `GET /v1/simulations/feedback` (`simulations.simulation-feedback`).
+- [ ] `GET /v1/simulations/invitation-links` + `GET /v1/simulations/invitation-links/{link_id}` (`simulations.simulation-invitation-link`; Hiring's candidate-invite mechanism — spec.md §4.7.4).
 
 ### Product 4 — Learning
 - [ ] **`GET /v1/learning/skill-path-sessions`** ∗ (`learning.skill-path-session`) — the training-pulse read.
@@ -102,8 +104,8 @@ closes when all 7 per-family bar points are green (spec.md §5.7 + overview.md).
 
 ## Exit-gate acceptance (measured at close)
 
-- [ ] All ~44 endpoints green on the per-family bar (rows above).
-- [ ] **5 consecutive integration runs with 0 cross-tenant leakage across the full ~44-endpoint surface.**
+- [ ] All ~46 endpoints green on the per-family bar (rows above).
+- [ ] **5 consecutive integration runs with 0 cross-tenant leakage across the full ~46-endpoint surface.**
 - [ ] All 15 CR1–CR15 rule tests green; CR7 + CR8 static-lint CI gates enforced.
 - [ ] The 7 FIRST-USABLE ∗ endpoints exercised end-to-end in one integration script under one minted API key.
 - [ ] `openapi.yaml` published + linted (Spectral) with 0 must-fix.

@@ -1,6 +1,6 @@
 # Customer API + MCP — Spec Progress (open points tracker)
 
-> **Status:** Draft · spec-draft · 2026-07-01 (tracks [`spec.md`](spec.md) `v0.2` — scope correction landed as Point U)
+> **Status:** Draft · spec-draft · 2026-07-02 (tracks [`spec.md`](spec.md) `v0.3` — grounded per-resource CRUD matrix landed as Points W1–W7)
 > Tracker + decision log for the spec. Decisions are worked **one at a time** and recorded here.
 
 **Legend:** 🔴 not decided · 🟡 discussing / proposed · ✅ decided · ⏭️ deferred (→ [`next-release.md`](next-release.md))
@@ -29,6 +29,13 @@
 | T | Mutation gap posture | ✅ | Real-mutation gap analysis is Appendix A. **Missing mutations are escalated, never shimmed** — the customer API never invents a mutation the platform doesn't own. Mirrors Playthroughs' `unimplementable-without-platform-edit` state. [`spec.md`](spec.md) Appendix A. |
 | **U** | **R1 read scope = Talk-to-Data data parity** | **✅** | **v0.2 scope correction.** Customers must be able to query, over a stable versioned principal-scoped endpoint, ALL data Talk to Data can today — not just 7 resources. Authoritative coverage: `askengine/registry.go` (~55 tables) + `askengine/rules.md`. Projected as a **product API, not raw SQL**: 9 products / 35 resources / ~44 endpoints; internal detail (`validation_*`, `task_*`, `anticheat_*`) nested under `simulation-session`; translation tables consumed via `?language=`, never surfaced as endpoints. Grew the UC list from 13 to 35. [`spec.md`](spec.md) §4.2, §4.4, §6.2, §6.3. |
 | **V** | **Read-contract rules (business-truth invariants)** | **✅** | **v0.2.** 15 rules (**CR1–CR15**) extracted from `askengine/rules.md` and encoded as customer-API contract-test invariants: principal-scoping, soft-delete exclusion, active/completed definitions, mapped ≠ verified separation, org-scale everywhere (`max_level` from `organization_settings`, never raw 0-100), skill-level source column, forbidden stale tables (`local_jobsimulation_sessions`, `local_skill_path_sessions`, `membership_skills.skill_level`), person identifier = user UUID (not membership PK), catalog resolution (human labels), localization contract, AI-readiness live ≠ frozen, profile-history self-scoping, academy visibility, read-only R1. Each rule is enforcement-typed (contract test + lint gate where applicable). [`spec.md`](spec.md) §4.5. |
+| **W1** | **Per-resource CRUD matrix — grounded in real manager actions** | **✅** | **v0.3.** New §4.7 declares every customer-API resource's Create / Read / Update / Delete / (Assign / Other) tier + backing platform mutation. 33 W1/W2 writes projected from 5 `extend type Mutation` blocks (`mutations.graphqls`, `academy.graphqls`, `labs.graphqls`, `ai_readiness.graphqls`, `admin_audit.graphqls`). 3 escalated GAPs (§4.7.3): `people.member.hard-delete` (GDPR erasure — no mutation), `simulations.simulation-session.launch` (partner UC35 — no external-authored session-start), `learning.skill-path-session.reset` (no reset mutation, escalate only if a real UC arrives). All self-service mutations (profile edits, academy progress, labs, personal target roles) explicitly excluded from the customer-API surface by design. Matrix is the source of truth for writes; §4.6 now points at §4.7. [`spec.md`](spec.md) §4.6, §4.7. |
+| **W2** | **Hiring product boundary — no new customer-API product** | **✅** | **v0.3.** Hiring is a **UI lens** over the Workforce resource surface, not a separate product in the catalog. Evidence: (a) `apps/hiring/src/**` contains **zero** inline `gql\`mutation\`` documents — every write goes through shared `Enterprise*` components that invoke Workforce mutations; (b) Hiring routes mirror Workforce (`/enterprise/members`, `/enterprise/assignments`, `/enterprise/tags`, `/enterprise/settings`, `/enterprise/bulk-export`, `/enterprise/activity-dashboard`, `/enterprise/organization-feedback`) with only `interview-bulk-export` unique — a variant of bulk-export; (c) candidates are `Membership` rows with `role = candidate` (`MembershipRoles` enum in `organizations.graphqls`), not a distinct resource; (d) the sole Hiring-distinctive resource is the candidate-invite link (`OrganizationSimInvitationLink`) — modelled here as `simulations.simulation-invitation-link` (36th resource in §4.2), audience-tagged **WF+HR**. R1 read scope does not balloon — Hiring adds a single resource / 2 endpoints. [`spec.md`](spec.md) §4.7.4. |
+| **W3** | **TAGS (teams) — full CRUD + assign/unassign in R4** | **✅** | **v0.3 (Stefano's paradigm example).** Backing mutations `addTag` / `editTag` / `deleteTag` / `tagMembers` / `untagMembers` all exist and are manager-facing today in both Workforce and Hiring — a manager can already create, edit, delete, and assign/unassign a tag in the UI. Customer-API projection: `people.team.create` (R4 · `addTag`), `people.team.update` (R4 · `editTag`), `people.team.delete` (R4 · `deleteTag`), `people.team.assign_members` (R4 · `tagMembers`), `people.team.unassign_members` (R4 · `untagMembers`). Naming reconciliation: the customer-facing noun stays **team** (from §4.2 catalog); backing mutations stay tag-named — the read `GET /v1/people/teams` already exposes the noun swap in R1, so writes just reuse it. `getTaggedMembers` is projected as a read (list members of a team). [`spec.md`](spec.md) §4.7.1 Product 1, UC36. |
+| **W4** | **Teams vs departments — no separate resource** | **✅** | **v0.3.** Anthropos has **no `Team` or `Department` resource distinct from `Tag`** in the mutation surface — the read catalog's `people.team` already IS the tag. No separate `people.department` resource is introduced. If a future customer UC needs a hierarchical department (parent-child grouping beyond flat tags), that is a platform escalation, not a customer-API design. [`spec.md`](spec.md) §4.7.1 Product 1. |
+| **W5** | **Skill-path enrollment / complete / reset — assignment-driven, no reset** | **✅** | **v0.3.** No `assignSkillPath` / `enrollSkillPath` / `completeSkillPath` / `resetSkillPath` mutations exist. In Anthropos today, a manager assigns a skill path to a member by creating an `organization_assignment` targeting the skill-path template — projected as `assignments.assignment.create` (R4 · `createOrganizationAssignments`). Enrollment / completion is member-driven runtime state (skillpath engine emits progress + completion). Manager-driven **reset** of a member's progress is not a workflow in the product today → escalated as GAP-R5 only if a real UC arrives. UC33 (assign a skill path to a team) is now grounded on `createOrganizationAssignments` + `tagMembers` composition, not a dedicated mutation. [`spec.md`](spec.md) §4.7.1 Product 4, §4.7.3. |
+| **W6** | **Member delete — soft-only at R5; hard-delete = GAP-R5** | **✅** | **v0.3.** `removeMember(membershipId: ID!): Boolean!` is the only member-removal mutation; it performs a soft delete (`memberships.status = deleted`, `deleted_at = now()`). No GDPR-erasure mutation exists. Customer-API projection: `people.member.delete` (R5 · `removeMember`, soft-delete only — placed at R5 not R4 because of blast-radius: bulk-remove exists AND a role change / removal touches identity + billing state), and `people.member.hard-delete` as **GAP-R5** — platform must add a hard-erasure mutation before the hard-delete endpoint ships. The `bulkRemoveMembers` mutation is projected as `people.member.bulk_remove` (R5, extra-actions column). [`spec.md`](spec.md) §4.7.1 Product 1, §4.7.3. |
+| **W7** | **Assignments — create / bulk-update-dueDate / bulk-delete; no per-assignment reassign or reschedule** | **✅** | **v0.3.** The three assignment mutations map cleanly: `createOrganizationAssignments` = bulk-create (single = list-of-one), `bulkUpdateOrganizationAssignments` = bulk-update **dueDate only** (no other field is editable — assignee, template, and org-scoping are all fixed at create), `bulkDeleteOrganizationAssignments` = bulk-delete. **Per-assignment reassign** (change assignee) is not a mutation → in practice it's a **delete + create**, projected as-is (client-composed, not a new endpoint). **Reschedule** = `bulkUpdateOrganizationAssignments` with a single id + new dueDate. All three land at **R4** — assignments are the common HR ops workflow (UC33 + UC37) and Stefano's team-scoped assign case is composition of `tagMembers` + `createOrganizationAssignments`. [`spec.md`](spec.md) §4.7.1 Product 2, UC33, UC37. |
 | 1 | API-key hashing algorithm (argon2id vs bcrypt) | 🟡 | Decide at **M302 build**. Leaning **argon2id** (modern default; OWASP guidance). |
 | 2 | OpenAPI vs homegrown catalog format for the machine source | 🟡 | Decide at **M301 build**. Leaning **OpenAPI 3.1 + small `x-anthropos-*` extension** for MCP fields. |
 | 3 | MCP hosted vs customer-hosted default | 🟡 | Decide at **R2 design**. Leaning **customer-hosted binary** (customer holds the key, hosts the binary); hosted variant deferred to R6. |
@@ -127,4 +134,39 @@ capability. **The customer API never invents a mutation the platform doesn't own
 escalated to the platform roadmap (its own release beat), and the customer-API endpoint stays behind an
 `unimplemented` state until the mutation lands. This mirrors Playthroughs' `unimplementable-without-platform-
 edit` state — a zero-invention escape valve.
+
+### Rationale — grounding the writes in real manager actions (Points W1–W7)
+
+The v0.2 write cluster prose (§4.6) named categories — *safe writes / advanced writes* — without enumerating
+what a manager can actually do in the product today. That is a loaded gun: a customer-API author reading only
+§4.6 could invent an endpoint that has no backing platform mutation, and the mutation would silently ship as an
+`unimplemented` placeholder or, worse, be shimmed on top of a partial-fit internal RPC (violating Point T's
+never-invent rule). §4.7 closes that gap by enumerating every W1 / W2 entry per-resource + naming the backing
+platform mutation. Every write in the customer API is now the same verb a manager already runs in Workforce or
+Hiring today.
+
+**Method:** enumerate `type Mutation` + all `extend type Mutation` blocks in `ant-platform-backend/internal/web/
+backend/graphql/graph/schemas/*.graphqls` (5 files, 74 mutations total); split into manager-facing vs
+self-service; audience-tag by grepping `apps/web` (Workforce) + `apps/hiring` (Hiring) invocation. This is the
+Rosetta-lifecycle discipline applied to the write catalog: no `w1` / `w2` cell exists without a named backing
+mutation the platform already owns.
+
+**Stefano's paradigm case (W3 — tags/teams):** the trivial-seeming *"a manager creates, deletes, and assigns
+tags"* is the reason to do the whole matrix. It is the archetype of a real workflow that would have been silently
+missed by a category-level "safe writes" description. Once the discipline lands on tags, every other write
+inherits the same rigour — assignments, org-target-roles, sim-invitation links, feedback, org settings, feature
+grants, skill-level overrides. Six of the seven decisions (W3, W4, W5, W6, W7 plus §4.7's coverage of the rest)
+are downstream of the same grounding pass.
+
+**Hiring (W2) — the negative result that mattered:** the initial fear was that Hiring would introduce a new
+resource family (job postings / applicants / applications / scorecards / stages) and balloon R1 read scope.
+Evidence-based investigation showed the opposite: Hiring is a UI **lens** over Workforce resources. Candidates
+are memberships with `role = candidate`; the candidate-invite link is the only distinctive resource, added as
+`simulations.simulation-invitation-link` (36th resource, +2 endpoints). This is the kind of scope check the
+grounding pass exists to force — the honest answer is *smaller than feared*, not *bigger than hoped*.
+
+**GAPs (W5, W6, W7-adjacent):** three writes are real manager or partner asks but have no backing mutation.
+Under Point T they stay `GAP-R5` in the matrix and escalate to the platform roadmap. This is the design working
+as intended: the customer-API spec surfaces the platform's mutation-surface debt (hard-delete for GDPR erasure,
+external-app session launch, skill-path progress reset) without silently absorbing it.
 

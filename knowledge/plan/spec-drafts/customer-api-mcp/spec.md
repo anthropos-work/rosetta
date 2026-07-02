@@ -1,6 +1,6 @@
 # Customer API + MCP — Programmatic-Access Spec
 
-> **Status:** Consolidated draft `v0.2` · spec-draft · 2026-07-01 (scope correction: R1 READ surface = full Talk-to-Data data parity — see §4.2 catalog, §4.4 UCs, §4.5 read-contract rules, §6.2 MVP, §6.3 R1 milestone shape)
+> **Status:** Consolidated draft `v0.3` · spec-draft · 2026-07-02 (v0.3 landing: grounded per-resource CRUD matrix in §4.7, extracted from the real Workforce + Hiring manager-action surface — 33 W1/W2 mutations projected, 3 GAP-R5 escalated, Hiring shown to be a Workforce lens with no new product; adds `simulations.simulation-invitation-link` as a 36th resource for the Hiring candidate-invite; UCs UC36–UC42 anchor the new write catalog. v0.2 (2026-07-01) scope correction remains: R1 READ = Talk-to-Data data parity — see §4.2 catalog, §4.4 UCs, §4.5 read-contract rules, §6.2 MVP, §6.3 R1 milestone shape.)
 > **Companions:** [`spec-progress.md`](spec-progress.md) (decision tracker + log) · [`next-release.md`](next-release.md) (out-of-scope / parking lot) · [`vision.md`](vision.md) (north-star + long-horizon posture)
 > **Brand:** *Anthropos Public API* + *Anthropos MCP Server* — one contract, two shells (REST-and-later-GraphQL for scripts, MCP for AI agents).
 
@@ -197,6 +197,7 @@ under the same per-resource gate).
 | **Simulations** | `simulation-session.validation-result` | `GET /v1/simulations/sessions/{session_id}/validation-results` [nested L] | `jobsimulation.validation_results` |
 | **Simulations** | `simulation-session.validation-attempt` | `GET /v1/simulations/sessions/{session_id}/validation-attempts` [nested L] (`skill_results[]`, `criterion_results[]`, `check_results[]` embedded) | `jobsimulation.validation_attempt_results`, `validation_attempt_skill_results`, `validation_criterion_results`, `validation_check_results` |
 | **Simulations** | `simulation-feedback` | `GET /v1/simulations/feedback` [L] | `job_simulation_feedbacks` |
+| **Simulations** | `simulation-invitation-link` | `GET /v1/simulations/invitation-links` [L], `GET /v1/simulations/invitation-links/{link_id}` [G] (Hiring's candidate-invite mechanism — see §4.7.4) | `organization_sim_invitation_links` |
 | **Learning** | `skill-path-session` | `GET /v1/learning/skill-path-sessions` [L] ∗ | `skillpath.skill_path_sessions` |
 | **Catalog** | `simulation-template` | `GET /v1/catalog/simulations` [L], `GET /v1/catalog/simulations/{simulation_id}` [G] (title via `?language=`) | `directus.simulations`, `directus.sim_translations` |
 | **Catalog** | `skill-path-template` | `GET /v1/catalog/skill-paths` [L], `GET /v1/catalog/skill-paths/{skill_path_id}` [G] | `directus.skill_paths` |
@@ -213,11 +214,13 @@ under the same per-resource gate).
 | **Audit** | `audit-event` | `GET /v1/audit/events` [L] ∗ (the customer's own API-usage audit trail — from M302) | `customer_api.audit_events` |
 | **Access** | `api-key`, `scope`, `rate-limit-budget` | `list`, `get`, `admin: create / rotate / revoke` (from M302 — admin tier) | *(customer-api-owned)* |
 
-**Total:** **9 products, 35 resources / ~44 R1 endpoints, ~55 backing tables.** Every Talk-to-Data-queryable
-domain becomes a read resource. Every response respects the read-contract rules in **§4.6**.
+**Total:** **9 products, 36 resources / ~46 R1 endpoints, ~56 backing tables.** Every Talk-to-Data-queryable
+domain becomes a read resource + the Hiring candidate-invite link (v0.3, from §4.7.4). Every response respects
+the read-contract rules in **§4.5**.
 
-**Writes are unchanged from v0.1:** `w1` (R4) = safe writes, `w2` (R5) = advanced writes, `admin` (R1) = the
-Access-product mint/rotate/revoke via M302 only. No customer-data write in R1.
+**Writes are grounded in §4.7 (v0.3):** `w1` (R4) = safe writes, `w2` (R5) = advanced writes, `admin` (R1) = the
+Access-product mint/rotate/revoke via M302 only. No customer-data write in R1. The full per-resource CRUD matrix
++ backing-mutation mapping + GAP escalation list is §4.7.
 
 ### 4.3 What a Resource declares (the tool contract)
 
@@ -278,7 +281,14 @@ Talk-to-Data data parity (§4.2); every domain in the catalog is anchored to at 
 | **UC32** | Onboard a batch of new employees | HR ops · "new-hire ingest" | People | WRITE (W1) | R4 |
 | **UC33** | Assign a skill path to a team | HR ops / L&D · "assign training" | Learning | WRITE (W1) | R4 |
 | **UC34** | Update org structure / reassign a manager | HR ops · "reorg" | People | WRITE (W1) | R4 |
-| **UC35** | Ecosystem app launches an AI simulation on behalf of a user | Partner · "embed sim in partner app" | Simulations | WRITE (W2) | R5 |
+| **UC35** | Ecosystem app launches an AI simulation on behalf of a user | Partner · "embed sim in partner app" | Simulations | WRITE (W2) | R5 (GAP — see §4.7.3) |
+| **UC36** | Create / update / delete a **team** (tag) and assign/unassign members | HR ops · "org my roster into teams" (Stefano's paradigm) | People | WRITE (W1) | R4 |
+| **UC37** | Assign an org role or org-target-role to a member | HR ops · "role assignment" | Assignments | WRITE (W1) | R4 |
+| **UC38** | Grant / revoke a per-member feature flag; set org feature credits | HR ops · "who can use what, how much" | People | WRITE (W2) | R5 |
+| **UC39** | Create + revoke a Hiring candidate-invite (sim invitation link) | Hiring · "invite a candidate to an assessment" | Simulations | READ + WRITE (W1) | R1 (reads) + R4 (writes) |
+| **UC40** | Give / update a manager's post-session feedback | HR ops · "structured feedback loop" | Simulations | WRITE (W1) | R4 |
+| **UC41** | Override or rate a member's skill level; add/remove a skill from a member | HR ops · "manual verification" | People | WRITE (W2) | R5 |
+| **UC42** | Enable / disable / update an organization setting | HR ops · "configure org-level policy" | People | WRITE (W2) | R5 |
 
 **FIRST-USABLE flags** land on the seven UCs that anchor the seven ∗-marked endpoints in §4.2 — enough that a
 customer can *do something real end-to-end* the day R1 ships (organization, roster, member get, mapped-vs-verified
@@ -318,18 +328,205 @@ would be worse (a wrong customer-visible score is a compliance incident).
 
 ### 4.6 Write staging — W1 / W2 / admin
 
-Writes never ship in the same release as the read foundation. The staging:
+Writes never ship in the same release as the read foundation. The staging is enumerated per-resource in **§4.7
+(CRUD matrix — grounded in real manager actions)**. Tier summary:
 
 - **`admin`** (R1) — org-scoped admin over the **Access** product only (mint/rotate/revoke API keys, view
   rate-limit budgets). No customer-data mutation. Ships with R1 because the reads need keys.
-- **`w1`** (R4) — the **safe writes cluster**: create/update/deactivate members, create/reassign skill-path
-  assignments, update org structure. Well-understood platform mutations, low blast radius, high customer value.
-- **`w2`** (R5) — the **advanced writes cluster**: emit a verified skill, launch a simulation session, subscribe
-  to webhooks. Larger blast radius, tighter entitlement gates (`paying` or `enterprise` only), per-action rate
-  limits, in some cases require a signed provenance claim (e.g. verified-skill emission).
+- **`w1`** (R4) — the **safe writes cluster**: low-blast-radius manager workflows a customer already runs in
+  Workforce/Hiring today (tag CRUD + assign/unassign, single-member invite, assignment create + reschedule +
+  delete, org-role + org-target-role assign/unassign, sim invitation link create/revoke, session feedback
+  create/update). Every W1 action maps 1:1 to an existing platform mutation (§4.7 backing-mutation column).
+- **`w2`** (R5) — the **advanced writes cluster**: higher blast radius, tighter entitlement gates (`paying` or
+  `enterprise` only), per-action rate limits — member remove (soft), role change, bulk import + bulk remove, org
+  settings enable/disable/update, feature grant + credits, skill-level override + rate. Includes the
+  ecosystem-partner writes that require a signed provenance claim (verified-skill emission, external session
+  launch).
+- **`gap-r4` / `gap-r5`** — a manager can already do the action in the UI but no clean platform mutation exists.
+  These are escalated to platform (per Point T's *never-invent* posture) and stay `unimplemented` until the
+  mutation lands. Enumerated in §4.7 + Appendix A.
 
 **No write endpoint bypasses the audit floor or the rate-limit budget** (P6). A write's audit row records
 principal + resource + action + input hash (never the raw input for W2, per privacy).
+
+The **grounded rule**: no W1 / W2 action ships in this catalog unless it is backed by a real, existing
+manager-facing capability in Workforce or Hiring today. The customer API is a projection of what a manager can
+do, not an invention of new manager verbs. §4.7 is the enforcement of that rule.
+
+### 4.7 CRUD matrix — grounded in real manager actions
+
+**Purpose.** For every customer-API resource, this matrix declares the release tier at which each CRUD verb (and
+each non-CRUD action verb) ships, plus the **backing platform mutation** it maps to. It is the source of truth
+for the write catalog. If a cell is empty, that action is not offered. If a cell says `GAP-R4` / `GAP-R5`, a
+manager already performs the action in the UI but no platform mutation exposes it yet — the customer-API
+endpoint is designed and left `unimplemented` until platform lands the mutation (Point T + Appendix A).
+
+**Grounding source.** Every write-tier entry (`R4` or `R5`) is a mutation defined today in one of the five
+`extend type Mutation` blocks of the platform's GraphQL schema (`mutations.graphqls`, `academy.graphqls`,
+`labs.graphqls`, `ai_readiness.graphqls`, `admin_audit.graphqls`), invoked by the Workforce (`apps/web`) or
+Hiring (`apps/hiring`) apps. The audience label (**WF** = Workforce, **HR** = Hiring, **WF+HR** = both) records
+which app calls the mutation — see Point W2 for the Hiring-shares-Workforce boundary. `mgr` = manager-facing;
+`self` = member-self (excluded from the customer API by design; the API is a partner-integration surface, not a
+personal-self surface).
+
+**Column legend.**
+- `R1` — reads ship at R1 (§6.2). Every resource in the catalog has read = R1.
+- `R4 · <mutation>` — write ships in the W1 (safe) cluster, backed by the named GraphQL mutation.
+- `R5 · <mutation>` — write ships in the W2 (advanced) cluster, backed by the named GraphQL mutation.
+- `admin` — Access product only (M302).
+- `GAP-R4` / `GAP-R5` — real manager action, no backing mutation. Escalated to platform.
+- `—` — intentionally not offered (self-service action, not manager-facing; or authoring-only, out-of-scope).
+
+**Extra-actions column.** For non-CUD verbs (assign, unassign, rotate, revoke, invite, etc.) the matrix has an
+**Assign / Other** column. Where multiple non-CUD verbs apply, they are listed with `;` separators.
+
+#### 4.7.1 Product-by-product matrix
+
+**Product 1 — People**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `people.organization` | — *(org creation is Clerk-onboarding-driven, not partner-write)* | R1 | R5 · `updateOrganizationSettingsOptions` | — | R5 · enable=`enableOrganizationSettings`; disable=`disableOrganizationSettings` |
+| `people.member` | R4 · `inviteMember` *(single)* | R1 | R5 · `changeMemberRole` *(role only; other fields self-edit)* | R5 · `removeMember` *(soft-delete; hard-delete = GAP-R5, no mutation)* | R5 · bulk-invite=`bulkImportV2`; bulk-remove=`bulkRemoveMembers`; feature-grant=`allowMemberToUseFeature`; feature-revoke=`disallowMemberToUseFeature` |
+| `people.member.skill` | R5 · `addUserSkill` | R1 | R5 · `overrideSkillLevel`; R5 · `rateUserSkillLevel` | R5 · `removeUserSkills` | R5 · core-skill-set=`updateUserCoreSkills` |
+| `people.member.certification` | — *(self)* | R1 | — *(self)* | — *(self)* | — |
+| `people.member.education` | — *(self)* | R1 | — *(self)* | — *(self)* | — |
+| `people.member.experience` | — *(self)* | R1 | — *(self)* | — *(self)* | — |
+| `people.member.language` | — *(self)* | R1 | — *(self)* | — *(self)* | — |
+| `people.member.target-role` *(org-side)* | R4 · `createOrganizationTargetRole` | R1 | — *(delete-then-create)* | R4 · `deleteOrganizationTargetRole` | — |
+| `people.member.tag` *(a member's tags)* | R4 · `tagMembers` *(add tag to member — member-centric mount)* | R1 | — | R4 · `untagMembers` | — |
+| `people.member.profile-history` | — *(system-emitted)* | R1 | — | — | — |
+| `people.team` *(product noun for `tags` — Stefano's example)* | R4 · `addTag` | R1 | R4 · `editTag` | R4 · `deleteTag` | R4 · assign-members=`tagMembers`; unassign-members=`untagMembers`; list-members=`getTaggedMembers` *(read)* |
+| `people.invitation` | R4 · `inviteMember` *(shares create with `people.member`)* | R1 | — | — *(revoke is a Clerk-side lifecycle)* | — |
+| `people.company` | — *(taxonomy-side reference; managers do not author companies)* | R1 | — | — | — |
+
+**Product 2 — Assignments**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `assignments.assignment` | R4 · `createOrganizationAssignments` *(bulk — the platform verb is bulk; single = list-of-one)* | R1 | R4 · `bulkUpdateOrganizationAssignments` *(dueDate only — reassign-to-different-member = delete + create, no per-assignment reassign mutation)* | R4 · `bulkDeleteOrganizationAssignments` | — |
+| `assignments.assignment.session` | — *(session created by the runtime engine, not partner-write)* | R1 | — | — | — |
+| `assignments.organization-role` | R4 · `createOrganizationRole` | R1 | — *(delete-then-create)* | R4 · `deleteOrganizationRole` | — |
+| `assignments.organization-target-role` | R4 · `createOrganizationTargetRole` | R1 | — *(delete-then-create)* | R4 · `deleteOrganizationTargetRole` | — |
+
+**Product 3 — Simulations**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `simulations.simulation-session` | GAP-R5 *(the "external session launch" partner write — UC35; no platform mutation exposes an ecosystem-app-driven session creation; must be added by platform)* | R1 | — | — | — |
+| `simulations.simulation-session.*` *(11 nested reads)* | — *(system-emitted)* | R1 | — | — | — |
+| `simulations.simulation-invitation-link` *(Hiring's candidate-invite mechanism — surfaced as a new manager-facing resource; see Point W2)* | R4 · `createOrganizationSimInvitationLink` | R1 *(list + get land as reads in the same R1 pass — see UC39)* | R4 · `updateOrganizationSimInvitationLink` | R4 · `revokeOrganizationSimInvitationLink` *(`delete…Link` is `@deprecated`; revoke is the sanctioned lifecycle verb)* | — |
+| `simulations.simulation-feedback` | R4 · `createJobSimulationFeedback` | R1 | R4 · `updateJobSimulationFeedback` | — *(no delete mutation; audit-immutable by design)* | — |
+
+**Product 4 — Learning**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `learning.skill-path-session` | — *(session is state, not authored — created when a member starts a skill-path via an `organization_assignment`; use `assignments.assignment.create` to assign a skill-path to a member)* | R1 | — *(state advances from the skillpath runtime, not partner-write)* | — | GAP-R5 *(reset-progress: managers do not reset a member's skill-path progress in-product today; if this becomes a real workflow, escalate to platform)* |
+
+**Product 5 — Catalog**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `catalog.simulation-template` | — *(authoring — out-of-scope by Point Q; authored in Studio, not exposed on the product API)* | R1 | — | — | — |
+| `catalog.skill-path-template` | — *(authoring — out-of-scope)* | R1 | — | — | — |
+
+**Product 6 — Taxonomy**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `taxonomy.skill` | — *(taxonomy authoring — out-of-scope; org-custom skills are created inside Workforce onboarding + import flows, not the partner API)* | R1 | — | — | — |
+| `taxonomy.job-role` | — *(taxonomy authoring — out-of-scope)* | R1 | — | — | — |
+| `taxonomy.world-language` | — *(system-owned reference set)* | R1 | — | — | — |
+
+**Product 7 — Academy**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `academy.series` | — *(authoring — out-of-scope)* | R1 | — | — | — |
+| `academy.skill-path` | — *(authoring — out-of-scope)* | R1 | — | — | — |
+| `academy.chapter` | — *(authoring — out-of-scope)* | R1 | — | — | — |
+| `academy.progress` | — *(learner-self action, not manager-facing — `upsertChapterProgress` is called by the Academy client, not by a partner integration)* | R1 | — *(learner-self)* | — | — |
+
+**Product 8 — AI Readiness**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `ai-readiness.live` | — *(materialised view — computed, not written)* | R1 | — | — | — |
+| `ai-readiness.cycle` | — *(cycle lifecycle is platform-internal today; no manager mutation)* | R1 | — | — | — |
+| `ai-readiness.cycle.snapshot` | — *(frozen per-participant; system-emitted)* | R1 | — | — | — |
+
+**Product 9 — Audit**
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `audit.audit-event` | — *(system-emitted; append-only ledger)* | R1 | — | — | — |
+
+**Product 10 — Access** *(customer-api-owned; not in the read-parity catalog — carries the admin action-type)*
+
+| Resource | Create | Read | Update | Delete | Assign / Other |
+|---|---|---|---|---|---|
+| `access.api-key` | admin (R1) *(mint)* | R1 | — *(scope-set is fixed at mint; rotate for a new tail)* | admin (R1) *(revoke)* | admin (R1) · rotate |
+| `access.scope` | — *(fixed vocabulary — declared, not customer-mutable)* | R1 | — | — | — |
+| `access.rate-limit-budget` | — *(admin surface via platform-internal only; not on the customer API)* | R1 | — | — | — |
+
+#### 4.7.2 The mutation surface it maps to
+
+The R4/R5 write catalog draws from **five `extend type Mutation` blocks** in the backend GraphQL schema.
+Explicit enumeration keeps future audits honest:
+
+| Schema file | Manager-facing mutations projected into the customer API |
+|---|---|
+| `mutations.graphqls` (base) | `inviteMember`, `removeMember`, `changeMemberRole`, `bulkImportV2`, `bulkRemoveMembers`, `addTag`, `editTag`, `deleteTag`, `tagMembers`, `untagMembers`, `createOrganizationAssignments`, `bulkUpdateOrganizationAssignments`, `bulkDeleteOrganizationAssignments`, `createOrganizationTargetRole`, `deleteOrganizationTargetRole`, `createOrganizationRole`, `deleteOrganizationRole`, `createOrganizationSimInvitationLink`, `updateOrganizationSimInvitationLink`, `revokeOrganizationSimInvitationLink`, `enableOrganizationSettings`, `disableOrganizationSettings`, `updateOrganizationSettingsOptions`, `allowMemberToUseFeature`, `disallowMemberToUseFeature`, `setOrganizationFeatureCredits`, `overrideSkillLevel`, `rateUserSkillLevel`, `addUserSkill`, `removeUserSkills`, `updateUserCoreSkills`, `createJobSimulationFeedback`, `updateJobSimulationFeedback` |
+| `academy.graphqls` | — *(all 11 academy mutations are learner-self actions; not manager-facing → not projected)* |
+| `labs.graphqls` | — *(`createLabSession`, `cancelLabSession` are internal-lab-facing → not projected)* |
+| `ai_readiness.graphqls` | — *(`completeAiReadinessSkillMapping` is member-self → not projected)* |
+| `admin_audit.graphqls` | — *(`impersonateUser` is superadmin-only → not projected)* |
+
+Manager mutations excluded from the customer API by design (self-service surface, not partner-integration): all
+profile-self edits (`updateProfileInfo`, `updateLanguages`, `updateLinks`, `add/update/deleteProject`,
+`.../Education`, `.../Volunteering`, `.../Content`, `.../WorkExperience`, `.../Certification`,
+`addBookmark`/`deleteBookmark`), `setUserPreferences`, `setUserStudioPreferences`, `setUserLanguage`,
+`updateMeInBriefInfo`, `updateOnboarding`, `updateQuestionnaire`, `createCompany`, `newImportFromSource`,
+`replaceProfileJobResult`, `createPersonalAssignment`/`updatePersonalAssignment`/`deletePersonalAssignment`,
+`createUserTargetRole`/`deleteUserTargetRole`, `addUserExperiencePoints`, `executeDeadLetterQueue` (infra).
+
+#### 4.7.3 Backing-mutation GAPs (escalated to platform)
+
+Per Point T (*never invent*), the following manager actions are real product asks but have no clean mutation
+surface and are escalated:
+
+- **GAP-R5 `people.member.hard-delete`** — GDPR erasure. Today `removeMember` performs a soft delete
+  (`memberships.status = deleted`); no mutation exposes a hard-erasure path. Platform must add it before the
+  customer-API endpoint ships.
+- **GAP-R5 `simulations.simulation-session.launch`** — the ecosystem-partner UC35 (an external app initiates a
+  sim session on behalf of a member). Today session creation is runtime-driven (the sim engine launches a
+  session on receiving a start event from the Anthropos UI); no external-authored session-start mutation exists.
+- **GAP-R5 `learning.skill-path-session.reset`** — reset a member's skill-path progress. Not a workflow today;
+  escalated only if a real partner UC arrives.
+
+Everything else in the R4/R5 columns has a backing mutation and can be implemented without a platform edit.
+
+#### 4.7.4 Hiring product boundary — no new resource product
+
+Hiring is a **UI lens over the Workforce resource surface**, not a distinct product in the customer-API catalog.
+Point W2 records the decision + evidence. The audience column (**WF+HR**) on every resource in §4.7.1 that
+Hiring touches suffices — no `hiring.*` resource namespace is introduced. Concretely:
+
+- Hiring's manager surface (roster, assignments, tags, org settings, bulk-export, activity dashboard) is served
+  by shared `Enterprise*` components that invoke the **same** Workforce mutations projected above.
+- Hiring's only distinctive resource is the **candidate-invite link**, modelled here as
+  `simulations.simulation-invitation-link` (backed by `createOrganizationSimInvitationLink`) and audience-tagged
+  **WF+HR** (Workforce uses the same link for candidate-mode assessments).
+- Candidates are memberships with `role = candidate` (see `organizations.graphqls` `MembershipRoles` enum);
+  no separate `candidate` resource.
+- The `apps/hiring/src/**` app contains **zero inline `gql\`mutation\`` documents** — it drives writes purely
+  via shared components — confirming the shared-surface conclusion.
+
+Scope implication: **R1 read scope does not balloon** to add Hiring. R1 stays at 9 products / 35 resources /
+~44 endpoints — the Hiring surface's `simulation-invitation-link` list + get lands in R1 as reads (`GET
+/v1/simulations/invitation-links`, `GET /v1/simulations/invitation-links/{link_id}`) and joins §4.2 as a 36th
+resource / +2 endpoints. See Point W3 + UC39 for the fold-in.
 
 ---
 
