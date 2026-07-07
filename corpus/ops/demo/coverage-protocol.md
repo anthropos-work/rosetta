@@ -209,7 +209,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 ### Re-scope trigger (the zero-edit line)
 
 If a 100%-blocking failure can **ONLY** be closed by a **platform change** (next-web / app / cms /
-jobsimulation / skiller are read-only this entire release), that is the milestone's **Re-scope trigger**:
+jobsimulation are read-only this entire release), that is the milestone's **Re-scope trigger**:
 **escalate** (exit `EXIT_REASON: re-scope-trigger`), **record it** in the milestone-root `decisions.md`, and
 **do NOT edit the platform repo**. The user decides whether to (a) carve the page out of the vantage's gate
 with a documented rationale, (b) own an upstream platform PR out-of-band, or (c) pivot strategy.
@@ -428,7 +428,8 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     AI-readiness SQL query EXPLAINed at ms — jobsimulation.sessions fully indexed) and NOT the M46 members-grid
     fan-out: it was the **response-build live-recompute + a per-skill federated TRANSLATION fan-out**
     (`withSkillerLang` → skiller `_entities` `get skill translation <uuid>/english`, one round-trip per skill in
-    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-skiller-1` logs). That is the
+    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-skiller-1` logs; on a
+    post-merge stack the translation path lives inside `app` — check `<stack>-backend-1` logs instead). That is the
     **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
     snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
     takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind

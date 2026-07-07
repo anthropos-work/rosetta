@@ -39,7 +39,7 @@ third-party dependency. This keeps the services consistent and small.
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
 | **Version pin** | `v0.34.3` across all live services (archived `chronos` pins `v0.30.1`) |
-| **Imported by** | **Every** Go service: app, cms, jobsimulation, skiller, skillpath, sentinel, storage, messenger, roadrunner |
+| **Imported by** | **Every** Go service: app, cms, jobsimulation, skillpath, sentinel, storage, messenger, roadrunner |
 
 The platform framework. Each service composes its server out of colony packages:
 
@@ -67,7 +67,7 @@ colony does **not** actually enforce GraphQL rate limiting today.
 | **Module** | `github.com/anthropos-work/proto` |
 | **Language** | Go (`go 1.25.0`); tooling: `buf` (CI pins `v1.57.0`), protoc-gen-go, protoc-gen-connect-go, goverter |
 | **Version pin** | mostly `v1.196.0`; **cms & jobsimulation are ahead at `v1.198.0`** (real version skew) |
-| **Imported by** | every Go service that does RPC (app, cms, jobsimulation, skiller, skillpath, sentinel, storage, messenger, roadrunner) |
+| **Imported by** | every Go service that does RPC (app, cms, jobsimulation, skillpath, sentinel, storage, messenger, roadrunner) |
 
 The **single source of truth for RPC contracts**. Two layers:
 
@@ -100,7 +100,7 @@ e.g. `storage/internal/migration` imports `go/simulator/storage/v1` as `legacySt
 | **Module** | `github.com/anthropos-work/ai` |
 | **Language** | Go (`go 1.25.0`) |
 | **Version pin** | `v1.40.1` across consumers |
-| **Imported by** | app, cms, jobsimulation, skiller (Go services only — **not** Studio-Desk, which is TypeScript) |
+| **Imported by** | app, cms, jobsimulation (Go services only — **not** Studio-Desk, which is TypeScript) |
 
 A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 `ChatCompletionStream`, `Response`, `CreateEmbeddings`, `CreateSpeech`, `OCRProcess`,
@@ -139,7 +139,7 @@ the response (parse accordingly). Retry policy: 10 attempts, exponential backoff
 |:---------|:------|
 | **Module (standalone)** | `github.com/anthropos-work/authn` — **legacy** (tag `v1.7.0`) |
 | **Live form** | `github.com/anthropos-work/colony/authn` (absorbed into colony) |
-| **Imported by** | via colony: app (heaviest), cms, jobsimulation, skiller, skillpath |
+| **Imported by** | via colony: app (heaviest), cms, jobsimulation, skillpath |
 
 Provider-agnostic authentication: verifies bearer tokens (Clerk JWTs in practice) and
 injects a typed `User`/`Organization` into request context for `net/http`, Echo, and
@@ -175,14 +175,16 @@ GraphQL servers.
 | **Module** | `github.com/anthropos-work/taxonomy` (README title: **"nodeid"**) |
 | **Language** | Go (`go 1.21.0`), **zero external dependencies** (stdlib only) |
 | **Version pin** | `v1.2.0` |
-| **Imported by** | directly: app, cms, jobsimulation, messenger, skiller; indirectly: skillpath, storage, sentinel (**8 total**) |
+| **Imported by** | directly: app, cms, jobsimulation, messenger; indirectly: skillpath, storage, sentinel (**7 total**) |
 
 > ### ⚠️ Major correction: taxonomy is a LIBRARY, not data
 > Multiple corpus docs called this "Skills taxonomy data (60K skills, 18K roles)". That
 > is **wrong**. The repo is a **131-line** node-id library (`node.go`) and ships **no
-> dataset**. The 60K-skill / 18K-role data is owned by and stored in **skiller**'s
-> Postgres schema, loaded at runtime from **external** CSV/JSON by skiller's own importers
-> (`skiller/cmd/importSkills`, `cmd/importJobRole`, `cmd/importer`). The taxonomy module
+> dataset**. The 60K-skill / 18K-role data is owned by and stored in **app**'s
+> `public` Postgres schema (the merged skiller domain — formerly the standalone skiller
+> service's schema), originally loaded from **external** CSV/JSON by the former skiller
+> importers (`importSkills` / `importJobRole`); taxonomy CLIs now live under `app/cmd/`
+> (e.g. `createTaxonomy`). The taxonomy module
 > only supplies the **ID type/format** used as keys.
 
 The whole product is the `NodeID` type and its generators/validators:
@@ -201,7 +203,7 @@ HASH = first 4 hex of SHA-1 of the sanitized name(+org). Deterministic and
 cross-language-consistent (a matching Python implementation exists for data pipelines).
 Example: `NewSkillID("go") = K-GOXXXX-F63F`, `".net" = K-DOTNET-DDE9`, `"c#" = K-CSHAXX-5F5B`.
 
-> Note: service-local packages named `taxonomy` (e.g. `skiller/internal/taxonomy`,
+> Note: service-local packages named `taxonomy` (e.g.
 > `app/internal/taxonomy`) are **distinct** from this module — don't confuse them.
 
 ---

@@ -23,6 +23,14 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > production-isolation boundary is [`seeding-spec.md`](seeding-spec.md). The cloud/S3 store + AI-generated content +
 > shareability are **deferred (unscheduled backlog)** (formerly slated v1.3, then v1.4 — now no staged version).
 
+> **Present-state note (July 2026 — skiller→app merge).** The standalone `skiller` service was merged into `app`
+> ("backend"); in prod the taxonomy tables now live in the **`public` schema** (same table names — `skills`,
+> `job_roles`, embeddings, translations, …) and the old `skiller` DB schema is **legacy, no longer authoritative**.
+> The taxonomy surface definition below (and `stack-snapshot/taxonomy/` in rosetta-extensions) still enumerates the
+> tables under the pre-merge `skiller.` schema — a fresh capture against post-merge prod needs the surface
+> re-pointed at `public.` (the public predicates/scopes are otherwise unchanged). Existing cached snapshots and
+> the M9b-verified counts describe the pre-merge layout.
+
 ## For PMs — what it does
 
 A demo world needs more than an org with users — it needs the **library** behind the product: the ~60K-skill /
@@ -425,7 +433,7 @@ demo-1 audit: 0/16 containers carry the token). The read is **within the read-si
 is a **non-self-contained runtime dependency**, and it pairs **full-prod-live content** with a
 **full public taxonomy** in skiller. The consequence is a **referential-consistency boundary**: a public
 sim can reference a taxonomy node-id that is NOT public (a customer-scoped skill the firewall must not capture),
-and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved by skiller) then fails the whole
+and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved by app, which absorbed skiller) then fails the whole
 query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
 **collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
 **executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
@@ -722,7 +730,7 @@ stacksnap capture --surface directus       --source primary-read --dsn <marco_re
 
 > **The replay leg is wired into the set-dress loop (M42e P6).** `dev-setdress.sh`'s `snapshot_step` iterates
 > `for s in taxonomy directus sim-embeddings` — so a fresh `/demo-up` (and a `/dev-up`) replays **all three**
-> public surfaces in FK order: `taxonomy` (the skiller catalog) → `directus` (the content templates **+** the 4
+> public surfaces in FK order: `taxonomy` (the skills-taxonomy catalog, ex-skiller) → `directus` (the content templates **+** the 4
 > library-category tables) → `sim-embeddings` (the `cms` pgvector index + REINDEX). `sim-embeddings` targets the
 > stack's `cms` schema (a different schema than directus, same offset DSN); its replay is **non-fatal** like the
 > others (a missing `cms` schema = rc 4, a cache-miss = rc 5 → the AI-sim library degrades to empty but the seed

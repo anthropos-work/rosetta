@@ -75,7 +75,7 @@ migrate → Sentinel policy → org → users → memberships + casbin + feature
 ```
 
 M7a ships the spine: `org` → `users` (bulk COPY) and the `identity` seeder. M7c fills the fleet. **M9b** wires the
-`taxonomy` snapshot node into the DAG (the public skiller catalog, replayed out-of-band; `activity` orders behind
+`taxonomy` snapshot node into the DAG (the public skills-taxonomy catalog, ex-skiller, replayed out-of-band; `activity` orders behind
 it). **M10** wires the `content` snapshot node (the public Directus template library) and orders the
 session/assignment seeders **behind** it, so their `sim_id` / `skill_path_id` / `resource_id` refs resolve against
 the **real replayed public templates** (the M10 linkage; free-value fallback when no content snapshot is replayed) —

@@ -78,7 +78,7 @@ graph LR
     subgraph Core["Core Backend (Tier 1, Docker)"]
         App[app]
         CMS[cms]
-        Skiller[skiller]
+        Jobsim[jobsimulation]
     end
 
     Academy --> Clerk

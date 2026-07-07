@@ -23,6 +23,12 @@ stacksnap status      →  list cached snapshots (surface, schema version, rows,
 (`store.Resolve`: a cached manifest whose `schema_version` matches the stack → **zero prod read**), a curator
 almost always just replays an existing snapshot. Capture is the rare refresh op.
 
+> **Skiller→app merge (July 2026).** `skiller` was merged into `app`; app's migrations now create the taxonomy
+> tables in the **`public` schema**, so a freshly-migrated post-merge stack has no `skiller` schema. The
+> `taxonomy` surface in rosetta-extensions still targets the legacy `skiller` schema — on such a stack the
+> taxonomy replay exits `4` (missing target schema) until the surface is re-pointed at `public`. The
+> `skiller`-schema mentions below describe the pre-merge / tool-as-built layout.
+
 ## A — replay into a stack (the common path)
 
 **Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`

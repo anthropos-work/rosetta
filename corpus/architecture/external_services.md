@@ -304,12 +304,12 @@ Directus can trigger webhooks on content changes:
 | **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
 | **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
 | **Port** | 5050 (host) → 8080 (container) |
-| **Purpose** | Federated GraphQL API gateway over 5 subgraphs |
+| **Purpose** | Federated GraphQL API gateway over 4 subgraphs |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
 ### What the gateway provides
 
-- **Federation v2**: Composes five subgraphs (`backend`, `skiller`, `jobsimulation`, `cms`, `skillpath`) into one supergraph
+- **Federation v2**: Composes four subgraphs (`backend`, `jobsimulation`, `cms`, `skillpath`) into one supergraph (the former `skiller` subgraph was removed when skiller merged into `app`, July 2026)
 - **Subscriptions** for `jobsimulation` over SSE POST (`subscription.protocol: sse_post`)
 - **Apollo-compatibility flags** enabled for stricter validation behavior
 - **Playground** at `/graphql` for local development
@@ -329,9 +329,8 @@ graph TB
         WG[Cosmo Router :5050]
     end
 
-    subgraph Subgraphs[5 GraphQL Subgraphs]
+    subgraph Subgraphs[4 GraphQL Subgraphs]
         Backend[backend :8082]
-        Skiller[skiller :8085]
         Skillpath[skillpath :8100]
         Jobsim[jobsimulation :8400]
         CMS[cms :8090]
@@ -341,7 +340,6 @@ graph TB
     Hiring --> WG
     Desk --> WG
     WG --> Backend
-    WG --> Skiller
     WG --> Skillpath
     WG --> Jobsim
     WG --> CMS
@@ -351,7 +349,6 @@ graph TB
 
 From `docker-compose.yml`, the gateway `depends_on`:
 - backend
-- skiller
 - jobsimulation
 - cms
 - skillpath
@@ -368,7 +365,6 @@ RUN npm install -g wgc@0.104.0
 COPY graphql-wundergraph/supergraph-config-compose.yaml ./supergraph-config.yaml
 COPY graphql-wundergraph/config.compose.yaml ./config.yaml
 COPY app/internal/web/backend/graphql/graph/schemas/ /tmp/schemas/backend/
-COPY skiller/graph/schemas/schema.graphqls ./schemas/skiller.graphqls
 COPY cms/internal/graph/schemas/ /tmp/schemas/cms/
 COPY jobsimulation/internal/graph/schemas/ /tmp/schemas/jobsimulation/
 COPY skillpath/internal/graph/schemas/ /tmp/schemas/skillpath/
@@ -387,7 +383,6 @@ From `graphql-wundergraph/supergraph-config-compose.yaml`:
 | Subgraph | URL (Docker network) |
 |----------|----------------------|
 | backend | `http://backend:8082/graphql/query` |
-| skiller | `http://skiller:8085/query` |
 | jobsimulation | `http://jobsimulation:8400/query` (SSE POST for subscriptions) |
 | cms | `http://cms:8090/query` |
 | skillpath | `http://skillpath:8100/query` |
@@ -468,8 +463,8 @@ For full details on models, routing, voice engines, and recording architecture, 
 
 | Provider | Routing | Integration Points | Purpose |
 |:---|:---|:---|:---|
-| **Azure OpenAI (EU)** | Primary | Jobsimulation, Skiller, CMS, Studio | GPT-5.x, GPT-4.1 for simulations and content |
-| **AWS Bedrock (EU)** | Primary | Jobsimulation, Skiller | Claude 4.5/4 Sonnet for simulations |
+| **Azure OpenAI (EU)** | Primary | Jobsimulation, Backend (app — merged skiller domain), CMS, Studio | GPT-5.x, GPT-4.1 for simulations and content |
+| **AWS Bedrock (EU)** | Primary | Jobsimulation, Backend (app) | Claude 4.5/4 Sonnet for simulations |
 | **Mistral (EU)** | Primary | CMS | OCR and specialized tasks |
 | **OpenAI Direct (US)** | Fallback | All services | Fallback when EU unavailable |
 | **Anthropic Direct (US)** | Fallback | Studio-Room | Fallback for analytical tasks |
@@ -504,7 +499,7 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
    - Voice calls via **LiveKit + GPT Realtime** agents
    - Document analysis and code evaluation
 
-2. **Skills Matching** (Skiller):
+2. **Skills Matching** (Backend `app` — merged skiller domain):
    - Embeddings (Text Embedding 3 Small) for 60K skills + 18K roles
    - RAG for job role matching
 
@@ -646,7 +641,7 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 docker compose ps graphql
 
 # Check dependent services are up
-docker compose ps backend cms skiller jobsimulation skillpath storage
+docker compose ps backend cms jobsimulation skillpath storage
 ```
 
 **Schema outdated**:

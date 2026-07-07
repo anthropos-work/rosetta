@@ -2,17 +2,17 @@
 
 ## Role & Responsibility
 
-`app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and exposes:
+`app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the 60K+ skills graph, skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
 
-* **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries
-* **Connect-RPC** for inter-service calls (consumed by skiller, jobsimulation, skillpath, cms)
+* **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries — plus the taxonomy types/queries absorbed from the former skiller subgraph (`graph/schemas/skiller_taxonomy.graphqls`)
+* **Connect-RPC** for inter-service calls (consumed by jobsimulation, skillpath, cms, messenger) — including the **skiller RPC surface** (`SkillerService`), now served by app
 * **HTTP** endpoints on port 8082 for webhooks and miscellaneous integrations
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
 
 * **Talk to Data** (`internal/askengine`) — SSE-streaming natural-language Q&A over the platform's data, powered by Bedrock (Anthropic) with a SQL-validation sandbox. Added 2026-Q2 (v1.266+).
 * **Workforce analytics** (`internal/workforce`) — aggregations of skills, simulations, and growth across org members
-* **Job-simulation feedback** (`internal/jobsimfeedback`) — post-session signals routed back to skiller
+* **Job-simulation feedback** (`internal/jobsimfeedback`) — post-session signals routed back to the skills domain (in-process since the skiller merge)
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
 * **Bootstrap & admin** (`internal/admin`, `internal/bootstrap`, `cmd/bootstrap-org`) — provisioning utilities
 * **Copilot** (`internal/copilot`) — internal assistant flows
@@ -69,7 +69,8 @@ internal/
   rpc/                      Connect-RPC server
   set/                      Set / collection utilities
   skill/                    Skill domain
-  skiller/, skillpaths/     Backend's view of skiller/skillpath data
+  skiller/, skillerai/      Merged skiller domain: taxonomy, embeddings, AI matching (skiller-in-app)
+  skillpaths/               Backend's view of skillpath data
   subscriptions/            Subscription lifecycle
   taxonomy/                 Taxonomy access
   templates/                Email / message templates
@@ -90,12 +91,13 @@ internal/
 * **Bedrock task role policy statements** (v1.267.1): IAM additions for Bedrock model access from the prod ECS task role.
 * **Company context (M1/M2)** (`feat/company-context-m1m2` branch): Org-level context propagation through AI calls.
 * **Taxonomy translations** (`feat/taxonomy-translations` branch): Localized skill/role labels.
+* **Skiller-in-app merge** (July 2026): the standalone `skiller` microservice was merged into `app`. Taxonomy/embeddings Ent models moved into `internal/data/ent/schema/` (data ported from the old `skiller` DB schema into `public`; the old schema is legacy), the `SkillerService` Connect-RPC surface is served from `internal/rpc/skillerrpc/` (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`, `GetJobRole` are the externally-reached methods), and the taxonomy GraphQL queries were folded into app's subgraph (the skiller subgraph was removed from federation; `categoryTree` / `fullCategoryTree` were dropped, not ported). The internal app→skiller RPC path is retired (PR #989). See [skiller.md](./skiller.md).
 * **AI Labs LabSession** (Phase B PR 2, #896): Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a new `lab_sessions` Ent table — `id` supplied by labs-api as a 12-char hex (not a UUID); `user_id`, `organization_id` (optional — empty for individual payers), `template`, `mode` (test/build/teach), `status` (booting/ready/grading/stopped/failed/cancelled), `budget_usd`/`spend_usd`/`total_tokens`, `started_at`/`stopped_at`, `grade_result` JSON. Registered as a third RPC handler in `main.go` after Users and Organizations. The labs-api client (`LabsAPIClient`) is wired as nil for now, so Create persists the LabSession row but does not boot a VM (no `ide_url`/`preview_url` returned) and Cancel marks the row cancelled without calling labs-api; the real HTTP client that drives VM lifecycle lands in PR 6.
 
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by skiller, jobsim, skillpath, cms via `BACKEND_USERS_RPC_ADDR=http://backend:8083`. Services include `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) registered in `main.go` as a third RPC handler after Users and Organizations.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by jobsim, skillpath, cms, messenger via `BACKEND_USERS_RPC_ADDR=http://backend:8083`. Services include `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) registered in `main.go` as a third RPC handler after Users and Organizations, and `SkillerService` (`internal/rpc/skillerrpc/`) — consumers reach it via `SKILLER_RPC_ADDR=http://backend:8083` locally (`http://backend:8081` in production terraform).
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
@@ -109,17 +111,16 @@ internal/
 
 * **Sentinel** — authz on every request
 * **CMS** — content RPC for assignments, simulation metadata
-* **Skiller** — taxonomy and matching RPC
 * **Skillpath** — skill-progression queries
 * **Storage** — file uploads
 * **Gotenberg** — Office → PDF conversion
 * **PostgreSQL** (`public` schema), **Redis** (cache + streams)
-* **External**: Clerk (auth), Stripe (payments), Customer.io, PostHog, Bedrock (AI), Brevo (via Messenger), Sentry
+* **External**: Clerk (auth), Stripe (payments), Customer.io, PostHog, Bedrock (AI), AI providers via the shared `ai` library (embeddings + skill matching — merged skiller domain), Brevo (via Messenger), Sentry
 
 ### Redis Streams
 
-* Producer: `backend` stream (user/org updates)
-* Consumer: `cms`, `skiller` events; `AI` usage stream (also produces)
+* Producer: `backend` stream (user/org updates); `skiller` stream (skill score changes — both ends of this stream live inside app since the skiller merge)
+* Consumer: `cms`, `jobsimulation`, `skillpath`, `skiller` events; `AI` usage stream (also produces)
 
 ## Local Development
 
@@ -167,5 +168,6 @@ go test ./internal/askengine/...
 ## Related Documentation
 
 * [AI Architecture](../architecture/ai_architecture.md) — Bedrock routing, cost tracking
-* [CMS](./cms.md), [Skiller](./skiller.md), [Skillpath](./skillpath.md), [Jobsimulation](./jobsimulation.md) — downstream services
+* [CMS](./cms.md), [Skillpath](./skillpath.md), [Jobsimulation](./jobsimulation.md) — downstream services
+* [Skiller](./skiller.md) — the former standalone skills-taxonomy service, merged into app (July 2026)
 * [Gotenberg](./gotenberg.md) — PDF conversion sidecar
