@@ -71,6 +71,10 @@ per (hero × verified skill), across **three Postgres schemas**:
  skiller.skills.node_id ── supplies the skill_id string (a loose ref, NOT a FK) ──┘
 ```
 
+> *(Note: since the July 2026 skiller→app merge, a freshly-migrated stack carries the taxonomy in `public`, not
+> `skiller` — the `skiller.`-schema references in this spec describe the tool-as-built replay layout; see the
+> merge note in [`recipe-snapshot-world.md`](recipe-snapshot-world.md).)*
+
 The seeder writes **3 passed sessions per verified skill** (the Spotlight chart hides below 2 datapoints), each
 through the full chain, then one `user_skills` row per session and one UPSERTed `user_skill_evidences` per
 skill. For Maya with 8 verified skills that's ~200 rows — a complete, queryable profile.

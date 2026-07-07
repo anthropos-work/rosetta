@@ -285,9 +285,12 @@ M22 booted + served the per-stack Directus; M23 (`prop-room-m23`) **cut the plat
 ### Referential closure — measured, not assumed (`#M23-D5`)
 
 The served catalog must be **referentially closed**: no content row may reference a taxonomy node-id the stack's
-skiller lacks (the empty Assign-AI-Simulation-picker class). The load-bearing cross-surface reference is the
+taxonomy store lacks (the empty Assign-AI-Simulation-picker class). The load-bearing cross-surface reference is the
 per-sequence `directus.sequences.skills` JSON array of `{node_id, …}` resolving against `skiller.skills.node_id`
 (what `publicJobSimulations.skills` resolves; the non-nullable federated field whose failure empties the picker).
+*(The `skiller.`-schema references here describe the tool-as-built replay layout — since the July 2026 skiller→app
+merge, freshly-migrated stacks carry the taxonomy in `public`; see the merge note in
+[`recipe-snapshot-world.md`](demo/recipe-snapshot-world.md).)*
 
 - **Closure is maximal by construction.** The taxonomy surface captures `organization_id IS NULL` — **every**
   public node, not a content-referenced subset — so the only way a content ref can dangle is if it points at a

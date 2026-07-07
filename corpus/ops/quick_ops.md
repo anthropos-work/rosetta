@@ -27,7 +27,7 @@ docker exec ant-rosetta-postgresql-1 psql -U postgres -c "SELECT * FROM users LI
 ### Connect to a specific schema
 
 ```bash
-docker exec -it ant-rosetta-postgresql-1 psql -U postgres -c "SET search_path TO skiller;" -c "\dt"
+docker exec -it ant-rosetta-postgresql-1 psql -U postgres -c "SET search_path TO cms;" -c "\dt"
 ```
 
 ---
@@ -125,7 +125,6 @@ cd stack-dev
 (cd backend && atlas migrate apply --env local)
 (cd cms && atlas migrate apply --env local)
 (cd jobsimulation && atlas migrate apply --env local)
-(cd skiller && atlas migrate apply --env local)
 ```
 
 ### Check migration status
@@ -142,7 +141,7 @@ cd stack-dev/backend && atlas migrate status --env local
 
 ```bash
 cd stack-dev
-for repo in platform backend cms jobsimulation skiller next-web-app studio-desk studio-room; do
+for repo in platform backend cms jobsimulation next-web-app studio-desk studio-room; do
   (cd "$repo" 2>/dev/null && git pull origin main) || true
 done
 ```

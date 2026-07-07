@@ -49,7 +49,7 @@ internal/
 * **CMS** — simulation definitions, content, studio entities. **Jobsimulation reads Directus content *through* CMS over RPC — it does NOT hold a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own.** So the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) carries jobsimulation's content reads to local automatically; no jobsimulation env change is needed.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
-* **Skiller** — skill metadata
+* **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
 * **Roadrunner** — code execution sandboxing (for code-task simulations)
 * **PostgreSQL**, **Redis** — base infra
 

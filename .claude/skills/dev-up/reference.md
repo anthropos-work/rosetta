@@ -35,12 +35,12 @@ cd cms && make init-studio && cd ..   # CMS studio submodule
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"
-make up                   # build from local code + start (graphql profile) — expect 12 containers
-make migrate              # apply migrations (app, cms, jobsimulation, skiller, skillpath)
+make up                   # build from local code + start (graphql profile) — expect 11 containers
+make migrate              # apply migrations (app, cms, jobsimulation, skillpath)
 
 # Start / restart an already-built stack:
 make up                   # rebuild + start
-make ps                   # 12 healthy containers in graphql
+make ps                   # 11 healthy containers in graphql
 ```
 
 ### Expected service set (default `graphql` profile, main dev stack)
@@ -50,8 +50,7 @@ make ps                   # 12 healthy containers in graphql
 | anthropos-postgresql-1 | 5432 | Health gate for others |
 | anthropos-redis-1 | 6379 | Health gate for others |
 | anthropos-sentinel-1 | 8087 | Always on (no profile) |
-| anthropos-backend-1 | 8081-8083 | |
-| anthropos-skiller-1 | 8085-8086 | |
+| anthropos-backend-1 | 8081-8083 | Also serves the merged skiller RPC surface |
 | anthropos-skillpath-1 | 8100-8101 | |
 | anthropos-cms-1 | 8090-8091 | Embedded Python studio-room |
 | anthropos-jobsimulation-1 | 8400-8401 | |
@@ -62,7 +61,7 @@ make ps                   # 12 healthy containers in graphql
 
 Not in this profile (don't expect running): `messenger`, `customerio-sync` (explicit profile),
 `ant-academy` (native-only on port 3077, never in docker-compose). Archived (not orchestrated locally):
-`chronos`, `intelligence`.
+`chronos`, `intelligence`, `skiller` (merged into `app`, July 2026).
 
 ## Mode B — additional dev-N (N ≥ 1): bring up + set-dress
 

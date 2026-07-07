@@ -23,7 +23,7 @@ When invoking, describe what you want to document:
 | Evidence | Example Invocation |
 |----------|-------------------|
 | New repository | `/update-knowledge the new studio-analytics repo` |
-| New feature | `/update-knowledge the new skill progression API in skiller` |
+| New feature | `/update-knowledge the new skill progression API in app` |
 | New tool | `/update-knowledge we added pnpm as required tooling` |
 | Setup feedback | `/update-knowledge issues found in setup_progress.md` |
 | Missing aspect | `/update-knowledge the Redis caching layer isn't documented` |

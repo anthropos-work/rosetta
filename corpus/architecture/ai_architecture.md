@@ -48,7 +48,7 @@ All Go services access AI through the shared `ai` library, which provides:
 | Service | AI Use Case |
 |:--------|:------------|
 | **Jobsimulation** | Simulation conversations (chat + voice), document analysis, code evaluation |
-| **Skiller** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy (see [Vector storage](#vector-storage-in-skiller)) |
+| **Backend (`app`)** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy — the merged skiller domain, July 2026 (see [Vector storage](#vector-storage-merged-skiller-domain)); plus Talk to Data (Bedrock) |
 | **CMS** | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
 | **Studio-Desk** | Copilot AI assistant for content authoring (multi-provider chain: Azure OpenAI / OpenAI / Anthropic via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** (Python) | Full simulation generation pipeline. **Runs as a subprocess inside the CMS container** (lives at `cms/studio/`, cloned from `anthropos-studio-room` via `cd cms && make init-studio`). |
@@ -65,16 +65,16 @@ The Python generation pipeline uses configurable model slots:
 | CREATIVE | gpt-4o | gpt-5.2 |
 | REASONING | — | gpt-5.2 |
 
-### Embeddings & RAG (Skiller)
+### Embeddings & RAG (Backend `app` — merged skiller domain)
 
 - **Model**: Text Embedding 3 Small (OpenAI), 1536-dim
 - **Data**: Vectors for 60K skills and 18K job roles
 - **Process**: RAG matches user input to taxonomy using OpenAI (Azure EU) or Anthropic (Bedrock EU)
 - **Caching**: Redis for frequent matches
 
-#### Vector storage in skiller
+#### Vector storage (merged skiller domain)
 
-As of 2026-Q2 (migrations `20260417103036` and `20260417120309`), embeddings are stored in **dedicated tables**, not as columns on the entity tables:
+As of 2026-Q2 (skiller migrations `20260417103036` and `20260417120309`), embeddings are stored in **dedicated tables**, not as columns on the entity tables. Since the skiller→app merge (July 2026) these tables live in the **`public` schema** owned by `app` (ported from the legacy `skiller` schema):
 
 ```
 job_role_embeddings(
@@ -169,4 +169,4 @@ Cost is tracked centrally in the backend `app` service (`internal/aiusage/ai_usa
 - [Security & Compliance](./security_compliance.md)
 - [External Services](./external_services.md)
 - [Jobsimulation Service](../services/jobsimulation.md)
-- [Skiller Service](../services/skiller.md)
+- [Backend Service](../services/backend.md) — owns the embeddings/matching domain (former [skiller](../services/skiller.md), merged July 2026)
