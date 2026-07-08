@@ -164,7 +164,7 @@ cd stack-dev/platform
 make migrate
 ```
 
-This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skiller, skillpath).
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skillpath).
 
 ### Apply Single Service Migration
 

@@ -209,7 +209,8 @@ doesn't add failures — a deeper crawl that holds coverage).
 ### Re-scope trigger (the zero-edit line)
 
 If a 100%-blocking failure can **ONLY** be closed by a **platform change** (next-web / app / cms /
-jobsimulation / skiller are read-only this entire release), that is the milestone's **Re-scope trigger**:
+jobsimulation are read-only this entire release — the skills/taxonomy domain is part of `app` since the
+skiller→app merge), that is the milestone's **Re-scope trigger**:
 **escalate** (exit `EXIT_REASON: re-scope-trigger`), **record it** in the milestone-root `decisions.md`, and
 **do NOT edit the platform repo**. The user decides whether to (a) carve the page out of the vantage's gate
 with a documented rationale, (b) own an upstream platform PR out-of-band, or (c) pivot strategy.
@@ -249,7 +250,7 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   render empty (a perpetual loading `<main>`) while ALL its content IS replayed — because a **federation error**
   on a non-nullable GraphQL field nulls the whole query client-side. iter-07: two skill-paths rendered empty
   not because they weren't replayed (they were — published, full chapter_list) but because their chapters'
-  job-simulations referenced a skiller skill node-id (`K-AIFUNX-E658`) ABSENT from the demo — the federated
+  job-simulations referenced a taxonomy skill node-id (`K-AIFUNX-E658`) ABSENT from the demo — the federated
   `getSkillPath.chapters.@.jobSimulations.@.simulation.skills.name` is non-nullable, so the one missing skill
   nulled the entire `getSkillPath` payload → empty page. The root cause was a **stale public-taxonomy cache**
   (prod gained 22 public skills after the cache's capture date), fixed by a `stack-snapshot` taxonomy
@@ -427,8 +428,9 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     deepening a primer for a result that never arrives). The root cause here was NOT index-bound (every
     AI-readiness SQL query EXPLAINed at ms — jobsimulation.sessions fully indexed) and NOT the M46 members-grid
     fan-out: it was the **response-build live-recompute + a per-skill federated TRANSLATION fan-out**
-    (`withSkillerLang` → skiller `_entities` `get skill translation <uuid>/english`, one round-trip per skill in
-    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-skiller-1` logs). That is the
+    (`withSkillerLang` → backend `_entities` `get skill translation <uuid>/english`, one round-trip per skill in
+    the aggregate's skill set — visible as a `context canceled` storm in `<stack>-backend-1` logs; the taxonomy
+    translation surface is served by the backend subgraph since the skiller→app merge). That is the
     **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
     snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
     takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind

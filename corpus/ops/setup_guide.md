@@ -231,7 +231,6 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 | `app` | Go backend | Yes (public schema) |
 | `cms` | Go backend | Yes (cms schema) |
 | `jobsimulation` | Go backend | Yes (jobsimulation schema) |
-| `skiller` | Go backend | Yes (skiller schema) |
 | `skillpath` | Go backend | Yes (skillpath schema) |
 | `sentinel` | Go backend | No |
 | `storage` | Go backend | No |
@@ -242,7 +241,7 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 | `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
 | `graphql-wundergraph` | Node.js (npm) | No |
 
-> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`). Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
+> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`), and `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned). Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
 ### Initialize CMS Studio Submodule
 
@@ -382,7 +381,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skiller, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router.
+    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router.
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -397,7 +396,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
 After the first `make up`, PostgreSQL is running but missing schemas required by Sentinel and migrations. Create them now:
 
 ```bash
-# Create pgvector extensions (required by CMS and Skiller migrations)
+# Create pgvector extensions (required by CMS and app/backend embeddings migrations)
 docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
 
 # Create Sentinel schema (required for Casbin authorization)
@@ -417,7 +416,7 @@ After the first startup, apply database schemas:
 ```bash
 make migrate
 ```
-This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skiller, skillpath).
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skillpath).
 
 *Verification*: Commands should complete without errors.
 
@@ -551,7 +550,7 @@ make gen
 This issue occurred with older versions of the frontend that used `import ... assert { type: 'json' }` syntax removed in Node.js v22+. The frontend has since been updated and now works with Node.js v22+. If you encounter this error on an old branch, switch to the latest `main` branch.
 
 ### "schema 'extensions' does not exist" (Atlas migrations)
-CMS and Skiller services require the pgvector extension for vector embeddings.
+CMS and the backend (`app` — which owns the merged skiller embeddings) require the pgvector extension for vector embeddings.
 *   **Solution**: The custom PostgreSQL image (built from `platform/postgresql/`) should include pgvector. If missing:
     ```bash
     docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"

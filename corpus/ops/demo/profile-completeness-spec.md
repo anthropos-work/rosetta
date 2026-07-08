@@ -102,7 +102,8 @@ are really low numbers."* Two surfaces were genuinely empty/sparse on a clean de
   (`world_languages` / `user_languages` / `membership_languages`) were 0 rows DB-wide. It populates
   `world_languages` with a **curated ISO-639-1 standard catalog** (16 EU-professional-weighted entries — a
   published standard list is a factual reference, NOT a fabricated taxonomy node-id; the closure gene governs
-  skiller node-ids, not ISO codes) then writes **per-member `user_languages`** (every member, 1-3 distinct
+  the taxonomy node-ids (the skills/roles catalog — in the `public` schema since the v2.1 skiller→app merge),
+  not ISO codes) then writes **per-member `user_languages`** (every member, 1-3 distinct
   languages: a location-coherent native at level 5 + near-universal English + an occasional third). **It seeds
   ONLY `user_languages`** — the DB AFTER-INSERT trigger `on_insert_user_languages_insert_membership_languages`
   fans each row out to `membership_languages` (the column the org Talent tab reads). Idempotent COPY on

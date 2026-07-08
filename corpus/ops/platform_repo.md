@@ -20,7 +20,7 @@ operate everything else.
 
 ```
 Makefile            Single entry point for all dev ops (parses repos.yml with awk — no yq/python)
-docker-compose.yml  13 app service definitions; `include: [common.yml]`
+docker-compose.yml  12 app service definitions; `include: [common.yml]`
 common.yml          Base infra: postgresql + redis (always-on, no profile); declares app-network
 repos.yml           Manifest of repos `make init` clones (name / type / migrations / schema)
 postgresql/         Custom Postgres image (Dockerfile: compiles pgvector v0.4.4 onto bitnamilegacy/postgresql:15)
@@ -56,17 +56,19 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **13 app services**: `graphql`, `sentinel`, `backend`,
-`skiller`, `jobsimulation`, `cms`, `skillpath`, `storage`, `customerio-sync`,
+`docker-compose.yml` defines **12 app services**: `graphql`, `sentinel`, `backend`,
+`jobsimulation`, `cms`, `skillpath`, `storage`, `customerio-sync`,
 `messenger`, `roadrunner`, `studio-desk`, `next-web-app` — plus the third-party
-`gotenberg` image and the two base services from `common.yml`.
+`gotenberg` image and the two base services from `common.yml`. (The former `skiller`
+service was merged into `app`/`backend` in July 2026 — its RPC surface is now served
+by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose.)
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, skiller, jobsimulation, cms, skillpath, storage, roadrunner, gotenberg, **graphql** |
+| `graphql` *(default)* | backend, jobsimulation, cms, skillpath, storage, roadrunner, gotenberg, **graphql** |
 | `backend` | backend, gotenberg |
-| `skiller` / `jobsimulation` / `cms` / `skillpath` / `storage` / `roadrunner` | **only that one service** |
-| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation/skiller/skillpath) |
+| `jobsimulation` / `cms` / `skillpath` / `storage` / `roadrunner` | **only that one service** |
+| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation/skillpath) |
 | `customerio-sync` | customerio-sync |
 | `frontend` | next-web-app (containerized Workforce) |
 | `studio-desk` | studio-desk (containerized) |
@@ -74,7 +76,7 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
-> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=skiller` gives you skiller but no usable `:5050` endpoint.
+> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=cms` gives you cms but no usable `:5050` endpoint.
 > * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it.
 > * Every Go service hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it.
 > * All app builds use BuildKit SSH forwarding (`ssh: ["default"]`) + `GH_ACCESS_TOKEN=$GH_PAT` to pull private Go modules — needs a loaded SSH agent **and** `GH_PAT` in `.env`.
@@ -83,9 +85,9 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 ## `repos.yml` (what `make init` clones)
 
-13 entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
+Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
 
-* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation), `skiller` (skiller), `skillpath` (skillpath) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`.
+* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation), `skillpath` (skillpath) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`.
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm), `ant-academy` (node-npm), `graphql-wundergraph` (node-npm).
 
 > `ant-academy` is cloned but has **no compose service** (runs natively / Vercel). The
@@ -97,8 +99,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC) |
-| skiller | 8085, 8086 (RPC) |
+| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface) |
 | sentinel | 8087 |
 | cms | 8090, 8091 (RPC) |
 | skillpath | 8100, 8101 (RPC) |
@@ -114,7 +115,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 ## Infrastructure (`common.yml`)
 
-* **PostgreSQL 15** — a **built** image (`postgresql/Dockerfile` compiles **pgvector v0.4.4** onto `bitnamilegacy/postgresql:15`), `ALLOW_EMPTY_PASSWORD=yes`, `pg_isready` healthcheck, data persisted via `./data/postgresql`. Schema isolation by `search_path` per service (skiller uses `skiller,extensions`; sentinel uses `sentinel`; the rest default to `public`).
+* **PostgreSQL 15** — a **built** image (`postgresql/Dockerfile` compiles **pgvector v0.4.4** onto `bitnamilegacy/postgresql:15`), `ALLOW_EMPTY_PASSWORD=yes`, `pg_isready` healthcheck, data persisted via `./data/postgresql`. Schema isolation by `search_path` per service (sentinel uses `sentinel`; the rest default to `public` — skills data lives in `public` since the skiller→app merge; the old `skiller` schema is legacy).
 * **Redis** — `bitnamilegacy/redis:latest`, no password; Watermill streams at `REDIS_STREAMS_INDEX=4` plus per-service worker/recording indexes.
 
 ## Environment
@@ -136,7 +137,7 @@ Key variables include `GH_PAT` (private Go modules), `CLERK_SECRET_KEY`, the
 `NEXT_PUBLIC_*` URLs for remote VMs). Non-secret config baked into `docker-compose.yml`
 includes the Judge0 sandbox URL, the LiveKit cloud URL, and the Directus address.
 
-> Two OpenAI keys coexist and are easy to confuse: **`OPENAI_KEY`** (app/jobsim/skiller)
+> Two OpenAI keys coexist and are easy to confuse: **`OPENAI_KEY`** (app/jobsim)
 > vs **`OPENAI_API_KEY`** (cms). CMS also has its own `CMS_AZURE_OPENAI_*` and `AZURE_API_KEY`.
 
 ## Related Documentation

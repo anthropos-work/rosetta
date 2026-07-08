@@ -28,7 +28,7 @@ docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 
 # Git status across repos:
 cd stack-dev
-for repo in platform app cms jobsimulation skiller next-web-app; do
+for repo in platform app cms jobsimulation next-web-app; do
   echo "=== $repo ==="
   (cd "$repo" && git status -s) 2>/dev/null || echo "  Not found"
 done
@@ -51,7 +51,7 @@ make pull
 (cd studio-desk && npm install)
 (cd ant-academy/code && npm install)   # internal learning portal, native only
 
-# Apply migrations (5 services: app, cms, jobsimulation, skiller, skillpath):
+# Apply migrations (4 services: app, cms, jobsimulation, skillpath):
 make migrate
 
 # Rebuild and start:
@@ -98,14 +98,13 @@ make logs S=[service]
 2. app            (main API)
 3. cms            (content management + embedded studio-room)
 4. jobsimulation
-5. skiller
-6. skillpath
-7. next-web-app   (frontend)
-8. studio-desk
-9. ant-academy    (internal learning portal — independent of backend, safe to update last)
+5. skillpath
+6. next-web-app   (frontend)
+7. studio-desk
+8. ant-academy    (internal learning portal — independent of backend, safe to update last)
 ```
 
-Archived (no longer cloned/orchestrated): `chronos`, `intelligence`.
+Archived (no longer cloned/orchestrated): `chronos`, `intelligence`, `skiller` (merged into `app`, July 2026).
 
 ## Updating a stack's tooling (tag bump, not in-place edit)
 

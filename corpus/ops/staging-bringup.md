@@ -108,13 +108,13 @@ sudo usermod -aG analytics-and-reports $USER
 
 ## 2. Clone repos and lay out the workspace
 
-The platform's `Makefile init` target does the heavy lifting (it clones 14 repos as siblings of `platform/`). To match the layout the sync routine expects, also clone `rosetta` and `ant-singularity` alongside.
+The platform's `Makefile init` target does the heavy lifting (it clones every repo in `repos.yml` as a sibling of `platform/`). To match the layout the sync routine expects, also clone `rosetta` and `ant-singularity` alongside.
 
 ```bash
 cd ~
 git clone https://github.com/anthropos-work/platform.git
 cd platform
-make init                  # clones app/, cms/, skiller/, jobsimulation/, ...
+make init                  # clones app/, cms/, jobsimulation/, ...
                            # uses GH_PAT under-the-hood via the gh-cli helper
 
 cd ~
@@ -141,7 +141,6 @@ You will end up with this layout:
 ├── platform/                      # orchestrator (Makefile, docker-compose.yml, .env)
 ├── app/                           # Go backend (CORS, GraphQL gateway)
 ├── cms/                           # Go content management
-├── skiller/                       # Go skill graph service
 ├── skillpath/                     # Go skill-path runtime
 ├── jobsimulation/                 # Go AI simulations service
 ├── sentinel/                      # Go authz (casbin)
@@ -245,7 +244,7 @@ cat ~/prod_dump.sql | docker compose exec -T postgresql psql -U postgres -d post
 
 ### Sanity-check the restore
 
-**Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `skiller`, `cms`, `skillpath`, `jobsimulation`) all sit *inside* `postgres`. Running `docker compose exec -T postgresql psql -U postgres -c '\l'` listing only `postgres / template0 / template1` is the **expected** post-restore shape — it is **not** evidence that the restore failed. The 2026-05-14 Ithaca repair burned an hour on this misread; don't repeat it.
+**Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `cms`, `skillpath`, `jobsimulation` — plus the legacy `skiller` schema older dumps carry, pre-dating the skiller→app merge) all sit *inside* `postgres`. Running `docker compose exec -T postgresql psql -U postgres -c '\l'` listing only `postgres / template0 / template1` is the **expected** post-restore shape — it is **not** evidence that the restore failed. The 2026-05-14 Ithaca repair burned an hour on this misread; don't repeat it.
 
 To actually sanity-check the data, you must query *inside* the `postgres` DB (note the `-d postgres`):
 
@@ -309,9 +308,8 @@ Per-service `<schema>` values (this is the `search_path` Atlas writes the `atlas
 
 | Service           | `search_path=` | Why                                                          |
 | ----------------- | -------------- | ------------------------------------------------------------ |
-| `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs |
+| `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs — plus the merged skiller taxonomy (skills, job roles, translations, embeddings) since July 2026 |
 | `cms`             | `cms`          | Directus / content schema                                    |
-| `skiller`         | `skiller`      | Skill graph, translations, embeddings                        |
 | `skillpath`       | `skillpath`    | Skill-path runtime                                           |
 | `jobsimulation`   | `jobsimulation`| Job sims, interview extraction results                       |
 
@@ -345,7 +343,7 @@ atlas migrate apply --exec-order linear-skip --env local --url "..."
 
 ```bash
 cd ~/platform
-docker compose restart backend skiller jobsimulation
+docker compose restart backend jobsimulation
 # replace with whatever services you applied migrations for
 ```
 
@@ -440,7 +438,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
    cd colony && git checkout fix/clerk-getuser-nil-client
    git apply /path/to/colony-v2-jwt-patch.diff
    go test ./authn/provider/clerk/...      # all green incl. v2 tests
-   for svc in app cms skiller jobsimulation; do
+   for svc in app cms jobsimulation; do
      rm -rf ~/$svc/vendor-colony
      cp -r ~/colony ~/$svc/vendor-colony
      rm -rf ~/$svc/vendor-colony/.git
@@ -453,10 +451,10 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
      grep -q "^vendor-colony/" ~/$svc/.git/info/exclude \
        || echo "vendor-colony/" >> ~/$svc/.git/info/exclude
    done
-   cd ~/platform && docker compose up --build -d backend cms skiller jobsimulation
+   cd ~/platform && docker compose up --build -d backend cms jobsimulation
    ```
 
-   Four services vendor `colony` because all four call `colony.User.GetOrganization()`: `app`, `cms`, `skiller`, `jobsimulation`. `go.mod` colony pins (v0.34.0 / v0.33.2 / v0.34.0 / v0.33.0 respectively) stay unchanged — the `replace` directive overrides them. The `go.mod`, `go.sum`, `Dockerfile.dev` get `skip-worktree`'d so the daily sync doesn't reset them; `vendor-colony/` goes in `.git/info/exclude` so it survives `reset --hard` as an unknown file.
+   Three services vendor `colony` because all three call `colony.User.GetOrganization()`: `app`, `cms`, `jobsimulation` (`skiller` used to be the fourth, until its July 2026 merge into `app`). `go.mod` colony pins (v0.34.0 / v0.33.2 / v0.33.0 respectively) stay unchanged — the `replace` directive overrides them. The `go.mod`, `go.sum`, `Dockerfile.dev` get `skip-worktree`'d so the daily sync doesn't reset them; `vendor-colony/` goes in `.git/info/exclude` so it survives `reset --hard` as an unknown file.
 
    **Why two PRs, not one:** the nil-client PR is small and obviously correct — likely lands soon. The v2-claim fallback needs a follow-up upstream because it adds a real dependency on the Clerk Backend API at request time (rate-limited), and the long-term fix is the dashboard session-token template plus a colony switch that prefers it. Until then, the lazy fetch + cache works fine at staging-scale traffic.
 

@@ -75,7 +75,7 @@ migrate → Sentinel policy → org → users → memberships + casbin + feature
 ```
 
 M7a ships the spine: `org` → `users` (bulk COPY) and the `identity` seeder. M7c fills the fleet. **M9b** wires the
-`taxonomy` snapshot node into the DAG (the public skiller catalog, replayed out-of-band; `activity` orders behind
+`taxonomy` snapshot node into the DAG (the public skills-taxonomy catalog — the `public` schema since the v2.1 skiller→app merge, replayed out-of-band; `activity` orders behind
 it). **M10** wires the `content` snapshot node (the public Directus template library) and orders the
 session/assignment seeders **behind** it, so their `sim_id` / `skill_path_id` / `resource_id` refs resolve against
 the **real replayed public templates** (the M10 linkage; free-value fallback when no content snapshot is replayed) —
@@ -207,7 +207,7 @@ datadna diff      --stack demo-1 --dna <dna.json>        # recorded shapes vs th
 The shipped manifest is `rosetta-extensions/stack-seeding/dna/data-dna.json` (8 seeded surfaces conformance-gated +
 **2 snapshot-seeded**). **As of M10 NOTHING is left waived → coverage reads 100% over the full catalog** (the v1.2
 thesis complete). The two formerly-waived surfaces are both promoted and **count toward coverage**:
-- **`taxonomy`** (M9b): `waived-m7c → snapshot-seeded-m9b` — the public skiller catalog, fidelity-gated by five
+- **`taxonomy`** (M9b): `waived-m7c → snapshot-seeded-m9b` — the public skills-taxonomy catalog (`public` schema), fidelity-gated by five
   snapshot operators (row-count / structural / referential / embedding-dim / public-only).
 - **`content`** (M10): `waived-m7c → snapshot-seeded-m10` — the public Directus template library (schema `directus`,
   predicate `private=false AND tenant_id IS NULL AND status='published'`), fidelity-gated by four operators (the four
@@ -231,7 +231,7 @@ profile** + Skill Spotlight chart render, with the **claimed-vs-verified gap** t
 the **G14** session bug (the pre-M34 `jobsim_sessions.go` wrote invalid free-text enum/result/sim_type values +
 an over-long token, so its sessions INSERTed but were filtered out of every dashboard query — dead rows) and
 patches `users.go` to real names/avatars/org-domain emails (no more "User N"). The skill node-ids are drawn
-from the **real replayed public `skiller` taxonomy** (role-coherent via `TaxonomyRefs`, never fabricated), and a
+from the **real replayed public taxonomy** (the `public`-schema skills/roles catalog; role-coherent via `TaxonomyRefs`, never fabricated), and a
 **seed-side closure gene** (`datadna measure-closure`) proves zero dangling skill refs after seeding. Every
 chain table is `PerStackIsolated`, so the same zero-pollution posture holds.
 

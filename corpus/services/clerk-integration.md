@@ -70,7 +70,7 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 | Layer | Clerk's role here | Decision maker |
 |-------|-------------------|----------------|
 | `colony/authn` | verify JWT, surface claims | — (authentication only) |
-| **Backend `app`** + jobsimulation, cms, skiller, skillpath | authenticate; supply `org_id` for tenant scoping | **[Sentinel](./sentinel.md)** via Connect-RPC (`OrgCheckUserPermission`, `CheckFeature`, …). `AuthRole()` has **zero** call sites on the allow/deny path. |
+| **Backend `app`** + jobsimulation, cms, skillpath | authenticate; supply `org_id` for tenant scoping | **[Sentinel](./sentinel.md)** via Connect-RPC (`OrgCheckUserPermission`, `CheckFeature`, …). `AuthRole()` has **zero** call sites on the allow/deny path. |
 | **Sentinel** | not used at all (no Clerk/authn import) | Sentinel's own Casbin policy store |
 | storage, messenger | — | no auth |
 | **next-web-app / studio-desk / ant-academy** | authenticate **and** authorize | **local app code** reading Clerk `org:admin` / membership |
@@ -90,7 +90,7 @@ Clerk ships a **separate package per framework** (Go, Next.js, Express, browser-
 |------------|----------------------------|---------------|
 | **colony** (`/authn`) — imported by every Go service | `clerk-sdk-go/v2` | Verifies the session JWT (JWKS) + reads claims. The shared auth core for all Go services. |
 | **app** (backend) | `clerk-sdk-go/v2`, `svix-webhooks/go` | Authn (via colony) + org/membership/invitation Backend-API writes + svix-verified webhook sync → Postgres + Sentinel. |
-| **jobsimulation, cms, skiller, skillpath** | *(none direct — via `colony/authn`)* | Authenticate only; authorization → Sentinel. |
+| **jobsimulation, cms, skillpath** | *(none direct — via `colony/authn`)* | Authenticate only; authorization → Sentinel. |
 | **storage, messenger** | — | No Clerk / no auth. |
 | **sentinel** | — | Does **not** use Clerk; pure Casbin authorization. |
 | **next-web-app** — `apps/web`, `apps/hiring`, `apps/integration` | `@clerk/nextjs` (+ `@clerk/localizations`) | Next.js App Router auth: `clerkMiddleware` route protection, `useAuth().getToken()` bearer, org/role gating (see deep-dive). |

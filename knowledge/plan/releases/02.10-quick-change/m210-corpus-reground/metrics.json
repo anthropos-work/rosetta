@@ -1,0 +1,83 @@
+{
+  "milestone": "M210",
+  "slug": "corpus-reground",
+  "version": "v2.1 quick change",
+  "shape": "section",
+  "status": "done",
+  "close_mode": "closed-complete",
+  "closed": "2026-07-08",
+  "diff_profile": {
+    "kind": "docs",
+    "committed_diff": "100% documentation",
+    "files_changed": 50,
+    "insertions": 429,
+    "deletions": 455,
+    "code_or_test_files": 0,
+    "corpus_and_skill_md": 45,
+    "plan_md": 5,
+    "note": "50 .md files (45 corpus/skills doc bodies + 5 milestone/plan records). No .go/.ts/.sh touched (git diff --name-only a139ada..HEAD). Email-asset PNGs on the colleague's branch EXCLUDED."
+  },
+  "tests": {
+    "applicable": false,
+    "reason": "docs-only milestone — zero code/test surface in the committed diff. The release's testable code surface is M209 (rext). Inherited v2.0 baseline unchanged: rext Go 1763 funcs, 10 live Playthroughs.",
+    "flake_count": 0
+  },
+  "core_outcome": {
+    "stale_skiller_table_query_refs": 0,
+    "leftover_interim_disclosure_notes": 0,
+    "subgraph_count_consistent": 4,
+    "five_subgraph_leftovers": 0,
+    "broken_relative_md_links": 0,
+    "db_access_tooling_reconciled": true,
+    "public_skills_org_null": 42763,
+    "verdict": "GREEN — corpus internally consistent with M209's landed public.* code"
+  },
+  "close_review": {
+    "findings_total": 1,
+    "scope": 0,
+    "code_quality": 1,
+    "must_fix": 0,
+    "should_fix": 0,
+    "nice_to_have": 1,
+    "documentation": 0,
+    "tests": 0,
+    "decision_triage_blends": 0,
+    "fixed_in_place": 0,
+    "no_change_needed": 1,
+    "note": "1 nice-to-have (no-change-needed): the app==backend subgraph dual-naming is the corpus's long-standing convention (app repo / backend container), not an M210 defect — left as-is. 0 fixes owed. All 5 decisions archive-only (maintainer); the public.* knowledge IS the corpus deliverable in the flipped docs -> 0 blends."
+  },
+  "deferral_audit": {
+    "verdict": "GREEN",
+    "scope": "milestone",
+    "total": 11,
+    "resolved_at_destination_by_m210": 7,
+    "still_open_confirmed": 4,
+    "single": 11,
+    "repeat": 0,
+    "chronic": 0,
+    "aged_out": 0,
+    "escape_hatch": 0,
+    "m210_originated": 0,
+    "resolved": {
+      "DEF-M208-03": "Fate-2 -> M210 backend.md pre-merge prose -> LANDED (S1)",
+      "DEF-M208-04": "Fate-2 -> M210 skiller.md standalone body -> LANDED (S1 stub)",
+      "DEF-M208-05": "Fate-2 -> M210 5->4 subgraphs CLAUDE.md/graphql -> LANDED (S5/S6)",
+      "DEF-M209-01": "Fate-2 -> M210 snapshot-spec body-flip -> LANDED (S3)",
+      "DEF-M209-02": "Fate-2 -> M210 seeding-spec prose -> LANDED (S3)",
+      "DEF-M209-03": "Fate-2 -> M210 safety.md firewall row -> LANDED (S3)",
+      "DEF-M209-05": "Fate-2 -> M210 conceptual bare-word skiller -> LANDED (S2/S3)"
+    },
+    "still_open": {
+      "DEF-M208-01": "Fate-3 -> M211 (extensions bootstrap + PG-readiness; M25-D9 class) [confirm]",
+      "DEF-M208-02": "Fate-2 -> M211 / /stack-secrets (INVITATION_HMAC_SECRET dev .env) [confirm]",
+      "DEF-M209-04": "Fate-3 -> M211 (recapture public.* taxonomy; data op) [confirm]",
+      "TEST-1": "Fate-2 -> close-release rext roll / M211 rext re-tag (rext README count drift, rext frozen 2f06e78) [confirm]"
+    },
+    "report": "audit-deferrals/deferral-audit-2026-07-08.md"
+  },
+  "harden": {
+    "ran": false,
+    "reason": "N/A — no code/test surface to deepen (100% documentation diff)"
+  },
+  "notes": "Completed the corpus re-ground: adopted the colleague's correct architecture/subgraph/service-page half (28 files, reconciled vs the M208 fact-sheet, no duplicate merge section), fixed the profile-completeness node-id prose (no phantom 43/44 fabricated), flipped the 6 rext-facing tooling-doc bodies + directus-local.md skiller.*->public.*, reconciled db-access <-> tooling, swept 4 skill files to the merged 4-subgraph/no-skiller-container compose (superseding the colleague's stale exit-4 note), and updated the CLAUDE.md catalog. Verified core outcome: 0 stale skiller.<table> tooling-query refs corpus-wide; the corpus now aligns with M209's landed code. RESOLVES the KB-1/2/3 body-flip deferrals M208+M209 routed here. Zero platform-repo edits."
+}

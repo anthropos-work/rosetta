@@ -22,7 +22,7 @@ Registry of development tools and toolchains.
 ### [Services](./services/)
 Individual service documentation and developer maps.
 
-*   **Core Backend Services**: 9 Go microservices (Backend, CMS, Sentinel, Skiller, etc.)
+*   **Core Backend Services**: 8 Go microservices (Backend, CMS, Sentinel, etc. — skiller was merged into Backend, July 2026)
 *   **Gateway & Frontend**:
     *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
     *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)

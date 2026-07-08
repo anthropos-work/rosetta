@@ -1,205 +1,55 @@
 # Skiller Service
 
-> ## ⚠️ Merged into `app` — no longer a standalone service (v2.1 "quick change", July 2026)
+> ## ⚠️ Merged into `app` — no longer a standalone service
 >
-> The `skiller` microservice has been **merged into `app`** (the "backend" service): the skills-taxonomy
-> domain moved to the **`public`** schema (table names unchanged), the `SkillerService` RPC is served by
-> app at `SKILLER_RPC_ADDR=http://backend:8083`, the skiller GraphQL subgraph was removed (**4 subgraphs**
-> now), and the skiller container/repo are gone. **Authoritative merged-shape statement:**
+> As of **July 2026** ("skiller-in-app"), the standalone `skiller` Go microservice has been **merged into the
+> `app` monolith** (the service the platform calls "backend"). Skiller no longer runs as a separate service —
+> not in the local compose, not in production ECS.
+>
+> Where everything went:
+>
+> * **Domain** — the skills taxonomy (60K+ skills graph), skill/job-role embeddings, AI skill matching, and
+>   job-role skills now live inside `app`: Ent models in `app/internal/data/ent/schema/` (`skill.go`,
+>   `jobrole.go`, `skill_embeddings.go`, `job_role_embeddings.go`, `category.go`, `specialization.go`, …),
+>   data in the **`public` schema** of the same PostgreSQL database. The old `skiller` DB schema is **legacy —
+>   no longer authoritative**.
+> * **RPC** — the skiller Connect-RPC surface (`SkillerService`) is now served by `app`
+>   (`app/internal/rpc/skillerrpc/`). Consumers keep the same env var, re-pointed:
+>   `SKILLER_RPC_ADDR=http://backend:8083` locally; `skiller_rpc_addr = http://backend:8081` in production
+>   terraform. The externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
+>   `GetJobRole`) are implemented in `app`.
+> * **GraphQL** — the skiller subgraph was **removed** from the WunderGraph/Cosmo federation; `app`'s `backend`
+>   subgraph now serves the taxonomy types/queries (`app/.../graph/schemas/skiller_taxonomy.graphqls`). The
+>   `categoryTree` / `fullCategoryTree` queries were **dropped entirely** (not ported).
+> * **Infrastructure** — the skiller ECS service and its terraform module were removed from production (the
+>   old ECR repo is intentionally orphaned pending manual deletion). `app`'s internal app→skiller RPC path is
+>   retired (app PR #989).
+> * **Repo** — the `skiller` git repo still exists but is **legacy/decommissioned**, no longer deployed or
+>   cloned by `make init`.
+>
+> **Authoritative merged-shape statement (the verified numbers the v2.1 re-ground grades against):**
 > [Backend (`app`) § Skiller-in-app merge — fact-sheet](./backend.md#skiller-in-app-merge--fact-sheet-v21-quick-change).
->
-> The body below still describes the **pre-merge** standalone service — retained as history; the full
-> re-point of this doc lands in M210 of the v2.1 release.
+> For current documentation of this domain, see [Backend (`app`)](./backend.md).
 
-## Role & Responsibility
+## Still-true domain knowledge
 
-Skiller is the **skills graph** of the platform. It owns the 60K-skill / 18K-job-role Anthropos taxonomy, computes vector embeddings for skills and roles (for RAG-based matching), and exposes job-role matching and skill-management APIs to the rest of the platform.
-
-This is the AI-heaviest pure-Go service: every other AI surface (jobsimulation, cms) uses skiller for skill-aware behavior.
-
-The 60K-skill / 18K-role taxonomy **data** is loaded into the skiller DB by the `importskills` and `importjobroles` cobra subcommands (`cmd/importSkills`, `cmd/importJobRole`), which read the CSVs and call `TaxonomyManager.CreateSkill` / `JobRoleManager.CreateJobRole`. The `anthropos-work/taxonomy` library only supplies NodeID generation helpers, not the data.
-
-> **Demo/dev set-dressing (v1.2):** for disposable stacks, the **public** taxonomy (`organization_id IS NULL` — skills/roles/specializations/categories + embeddings + translations) is captured read-only from prod and replayed per-stack by the snapshot mechanism — see [`corpus/ops/snapshot-spec.md`](../ops/snapshot-spec.md) (the M9b taxonomy surface). Customer-private taxonomy is never captured (the tenant firewall).
-
-## Architecture & Code Map
-
-* **Codebase**: `skiller` (Local directory; repo `git@github.com:anthropos-work/skiller`)
-* **Language**: Go 1.25
-* **Frameworks**: gqlgen (GraphQL Federation v2), Connect-RPC, Ent ORM, **Asynq** (background task queue)
-* **Database**: PostgreSQL `skiller` schema, with `pgvector` from the `extensions` schema
-* **Ports**: 8085 (GraphQL), 8086 (Connect-RPC)
-* **Profile**: `graphql` (default) and `skiller`
-* **Deploy**: Docker → ECR → ECS
-
-### Key directories
-
-```
-main.go                       Entry point
-cmd/
-  importSkills/               Bulk skill/specialization/category import from CSV (cobra subcommand: importskills)
-  importJobRole/              Bulk job-role import + skill linking from CSV (cobra subcommand: importjobroles)
-  importer/                   Standalone taxonomy-directory importer (reads a skill-taxonomy/ path arg)
-  jrembeddings/               Job-role embeddings backfill CLI
-  skillembeddings/            Skill embeddings backfill CLI
-  jrtranslations/             Translate job roles into ContentLanguages (cobra subcommand: jrtranslations)
-  skilltranslations/          Translate skills into ContentLanguages (cobra subcommand: skilltranslations)
-  backfilltranslations/       Seed english *_translations rows from legacy fields (cobra subcommand: backfilltranslations)
-  jobroleMeta/                Job-role metadata utility
-  jobroleSkills/              Job-role ↔ skill linking utility
-  skillmatchbenchmark/        Benchmark/eval harness
-internal/
-  ai/                         AI integration (matching prompts)
-  authorization/              Sentinel client
-  cache/                      Redis caching
-  content/                    Localized content access
-  embeddings/                 Vector embedding generation + storage
-  localization/               Per-skill / per-role translation management
-  rag/                        Retrieval-augmented generation for role matching
-  jobrole/                    Job-role business logic
-  organization/               Org-scoping for taxonomy
-  rpcsrv/                     Connect-RPC server
-  search/                     Skill / role search
-  taxonomy/                   Anthropos taxonomy ops (60K skills, 18K roles)
-  templates/                  Prompt templates
-  translation/                Translation generation pipeline
-  worker/                     Async background workers
-graph/
-  schemas/schema.graphqls     GraphQL contract (federated by Cosmo Router)
-ent/schema/                   Ent entity definitions:
-                              skill.go, jobrole.go, category.go, specialization.go,
-                              jobroleEmbeddings.go, skillEmbeddings.go,
-                              skillTranslation.go, jobroleTranslation.go,
-                              jobroleskill.go, jobroleCategory.go, mixin.go
-```
-
-## Vector Storage (2026-Q2)
-
-Embeddings live in dedicated tables, not on the entity tables themselves. Migrations `20260417103036` and `20260417120309` created the new layout and dropped the old denormalized columns.
-
-```
-job_role_embeddings(
-  id BIGSERIAL PK,
-  job_role_id UUID FK → job_roles.id,
-  small_embedding3 extensions.vector(1536),  -- OpenAI text-embedding-3-small
-  -- IVFFLAT index on small_embedding3
-)
-
-skill_embeddings(
-  id BIGSERIAL PK,
-  skill_id UUID FK → skills.id,
-  small_embedding3 extensions.vector(1536),
-  -- IVFFLAT index on small_embedding3
-)
-```
-
-The `extensions` schema (which houses `pgvector`) must exist before applying these migrations. The setup guide creates it as part of the first-run flow.
-
-See [AI Architecture → Embeddings & RAG](../architecture/ai_architecture.md#embeddings--rag-skiller) for the full picture.
-
-## Localization / Multilingual content
-
-Skiller stores per-skill / per-job-role translations (`skill_translations`, `job_role_translations` tables; `ent/schema/skillTranslation.go`, `jobroleTranslation.go`) across 8 `ContentLanguage`s (english, italian, spanish, french, german, dutch, japanese, portuguese).
-
-Most GraphQL queries/mutations accept an optional `language: ContentLanguage` arg (`skillDetails`, `skillsByName`, `matchSkill`, `jobRoleDetails`, `matchJobRole`, `jobRoleSkills`, etc.); `Skill` / `JobRole` expose `language` and `availableLanguages`.
-
-Translations are generated/seeded via cobra subcommands of the skiller binary:
-
-```bash
-go run . skilltranslations <node_id>...
-go run . jrtranslations <node_id>...
-go run . backfilltranslations          # seeds english rows from legacy fields; idempotent
-```
-
-A `localizationManager` (`cmd/root.go:172`) is wired into the Connect-RPC server.
-
-## Interface Discovery
-
-* **GraphQL**: `graph/schemas/schema.graphqls`. Skiller is one of 5 subgraphs in the Cosmo Router federation.
-* **Connect-RPC**: `internal/rpcsrv/`. Consumed via `SKILLER_RPC_ADDR=http://skiller:8086`.
-
-### Notable RPC operations
-
-(per `internal/rpcsrv/rpc.go`)
-
-* `MatchJobRole(name, context, organization_id)` — AI-powered job role matching using embeddings + RAG
-* `MatchMultipleSkills` — batch skill matching
-* `MatchMultipleJobRoles` — batch job-role matching
-* `GetSimilarJobRoles` — nearest-neighbour job roles via embeddings
-* `GetJobRoleMatch` — fetch a previously computed job-role match
-* `FilterSkills` — filtered skill lookup
-* `SearchSkill` — skill search
-* Job-role and skill CRUD types
-
-### Upstream consumers
-
-* Backend (`app`) — user-skill data, taxonomy queries
-* CMS — skill metadata for content
-* Jobsimulation — skill metadata during sessions
-* Skillpath — skill progression contexts
-
-### Downstream dependencies
-
-* **Sentinel** — authz
-* **Backend (app)** — user data via RPC (`BACKEND_USERS_RPC_ADDR=http://backend:8083`)
-* **AI providers** — OpenAI + Anthropic via the shared `ai` library (embeddings + matching)
-* PostgreSQL (with pgvector), Redis
-
-## Local Development
-
-### Run in Docker
-
-```bash
-cd platform
-make up                       # default graphql profile
-# or just skiller:
-make up PROFILE=skiller
-```
-
-### Run natively
-
-```bash
-cd platform
-make dev S=skiller
-cd ../skiller
-go generate ./...             # runs all 3 //go:generate directives: gqlgen (generate.go), Ent/entc (ent/generate.go), mockgen (internal/cache/memoize.go)
-go run .
-```
-
-`go generate ./...` regenerates Ent (`ent/generate.go` → `go run entc.go`), gqlgen, and mockgen mocks — all committed. The `ent`/atlas tooling (installed by `make setup`) is needed to produce **migrations** via `make migrations` (`atlas migrate diff --env local`).
-
-### Migrations
-
-```bash
-cd platform
-make migrate S=skiller
-```
-
-The `extensions` schema must exist (run setup_guide §6 once) before vector-table migrations will apply.
-
-### Backfill embeddings
-
-After importing or updating the taxonomy:
-
-```bash
-cd skiller
-go run ./cmd/jrembeddings    # Job-role embeddings
-go run ./cmd/skillembeddings # Skill embeddings
-```
-
-### Benchmarks
-
-```bash
-go run ./cmd/skillmatchbenchmark
-```
-
-## Testing
-
-```bash
-go test ./...
-```
+* The **taxonomy data** (60K skills / 18K job roles) is a dataset owned by the service DB, not by the
+  `anthropos-work/taxonomy` library — that library only supplies `NodeID` generation helpers
+  (see [Shared Libraries → taxonomy](../architecture/shared_libraries.md#taxonomy)).
+* **Embeddings** live in dedicated tables (`skill_embeddings`, `job_role_embeddings` — OpenAI
+  text-embedding-3-small, `extensions.vector(1536)` with IVFFLAT indexes), now in the `public` schema. The
+  `extensions` schema (housing `pgvector`) must exist before the vector migrations apply. See
+  [AI Architecture](../architecture/ai_architecture.md).
+* **Localization**: per-skill / per-job-role translations (`skill_translations`, `job_role_translations`)
+  across 8 `ContentLanguage`s carried over into `app`.
+* **Demo/dev set-dressing (v1.2)**: the **public** taxonomy (`organization_id IS NULL`) is captured read-only
+  from prod and replayed per-stack by the snapshot mechanism — see
+  [`corpus/ops/snapshot-spec.md`](../ops/snapshot-spec.md). The capture source was re-grounded to the
+  `public` schema in v2.1 "quick change" M209 (the taxonomy now lives in `public`, not the legacy `skiller`
+  schema); the tooling queries `public.*`.
 
 ## Related Documentation
 
+* [Backend (`app`)](./backend.md) — where the skiller domain now lives
 * [AI Architecture](../architecture/ai_architecture.md) — embeddings, RAG, provider routing
-* [Backend](./backend.md) — user identity / org scoping
 * [Dependency Map](../architecture/dependency_map.md)
