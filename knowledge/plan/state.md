@@ -3,7 +3,7 @@ active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quic
 active_branch: "release/02.10-quick-change"
 active_milestone: "M210 — Corpus + skills re-ground (section, planned) — flip the rext-facing tooling-doc bodies to public.* in lockstep with M209's landed schema"
 last_closed: "M209 — 2026-07-08 (rext tooling re-ground — skiller.*→public.* across snapshot+seeding+small modules; 6 Go modules GREEN, 0 skiller.<table> queries; rext tagged quick-change-m209@2f06e78; recapture Fate-3→M211)"
-phase: "M209 CLOSED (merged → release/02.10-quick-change): rext re-grounded skiller.*→public.*, digest narrowed, MinRows floor, tagged quick-change-m209@2f06e78 (14 harden funcs, 0 bugs, 0 flakes). Recapture Fate-3→M211. Next: /developer-kit:build-milestone M210"
+phase: "M209 CLOSED (merged → release/02.10-quick-change): rext re-grounded skiller.*→public.*, digest narrowed, MinRows floor, tagged quick-change-m209@2f06e78 (14 harden funcs, 0 bugs, 0 flakes). Recapture Fate-3→M211. M210 BUILT (m210/corpus-reground, 6 sections, 0 stale skiller.<table>). Next: /developer-kit:close-milestone M210"
 last_updated: "2026-07-08"
 ---
 
