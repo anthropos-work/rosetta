@@ -1,9 +1,9 @@
 ---
 active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quick-change; tag v2.1)"
 active_branch: "release/02.10-quick-change"
-active_milestone: "M211 — Bring-up acceptance: dev-up + demo-up green on the merged platform (iterative, closed-on-gate, planned) — prove the whole chain works end-to-end on the merged 4-subgraph platform with the re-grounded tooling; its first tik recaptures the public.* taxonomy"
+active_milestone: "M211 — Bring-up acceptance (iterative, IN PROGRESS — PAUSED 2026-07-08 for user commute): 8 iters committed (iter-01..08); gate ~5.5/6 (5/6 proven warm + cold /demo-up GREEN); remaining: M42 coverage + v2.0 Playthroughs + cold /dev-up. Resume: /developer-kit:work-mstone-iters M211"
 last_closed: "M210 — 2026-07-08 (corpus + skills re-ground — adopted the colleague's arch/subgraph/service half + flipped the 6 rext-facing tooling-doc bodies skiller.*→public.*; 0 stale skiller.<table> refs corpus-wide; docs-only 50 .md, HARDEN N/A; deferral audit GREEN, KB-1/2/3 resolved)"
-phase: "M210 CLOSED (merged → release/02.10-quick-change): corpus re-grounded to M209's landed public.* code — arch/subgraph/service half adopted, 6 tooling-doc bodies + directus-local flipped, db-access↔tooling reconciled, 4 skill files + CLAUDE.md swept to the 4-subgraph/no-skiller compose. 0 stale skiller.<table> refs; docs-only → HARDEN N/A; 0 must-fix; deferral audit GREEN. Next: /developer-kit:work-mstone-iters M211 (iterative bring-up acceptance — the FINAL v2.1 milestone)"
+phase: "M211 IN PROGRESS — PAUSED (user commute 2026-07-08) at run-2 iter-08. Iterative bring-up acceptance: TOK-01 warm-first-cache-migrate/cold-prove-both; the CACHE-MIGRATION workaround SUCCEEDED (real 42,790-row taxonomy cache re-keyed skiller.*→public.* at .agentspace/snapshots/taxonomy/5afc0bcc…; cold replay hits it); rext.tag→quick-change-m209; fixed dev casbin-policy-load gap; verify GREEN; 0 residual skiller; dev cold-path extensions-bootstrap prep landed; **cold /demo-up GREEN on merged platform** (demo half of cold headline). GATE ~5.5/6. REMAINING: (e) M42 coverage + v2.0 Playthroughs (vs the UP demo-1) + cold /dev-up. demo-1 stack UP (16 containers; `cd stack-demo/platform && make down` to free resources). 8 iters committed (durable). Resume: /developer-kit:work-mstone-iters M211."
 last_updated: "2026-07-08"
 ---
 
