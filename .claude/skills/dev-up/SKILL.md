@@ -54,10 +54,16 @@ before/after each step, request confirmation before installs or destructive ops,
    cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
    init-studio`) → `platform/.env` configured → services up (`make up` — expect **11 containers** in
    `graphql` post-merge; the `skiller` container is gone since July 2026, its taxonomy tables merged into
-   `app`'s `public` schema) → PostgreSQL schemas (`extensions`, `sentinel`) → **Sentinel policy load**
-   (`sentinel/init_policy.sql` → seeds `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on
-   startup but does NOT seed the policy — without this load every authorized route 403s) → migrations
-   (`make migrate`) → frontend + Studio-Desk deps → health.
+   `app`'s `public` schema) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
+   `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
+   without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
+   → health. **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
+   — it bootstraps the extensions + schemas, atlas-migrates the 4 merged services (`app:public`/`cms`/
+   `jobsimulation`/`skillpath`), and loads the casbin policy in one call (mirrors `demo-stack/migrate-demo.sh`;
+   closes the M25-D9 gap where the un-editable platform `make migrate` doesn't create `extensions` → a cold
+   `make reset-db`/`make migrate` fails `schema "extensions" does not exist`). See `corpus/ops/setup_guide.md`
+   § Full Database Reset.
 4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 11 healthy containers
    (`make ps`) — the merged 4-subgraph platform (no `skiller` container), GraphQL gateway on
    `localhost:5050`. Then **start native processes in tmux** (required —

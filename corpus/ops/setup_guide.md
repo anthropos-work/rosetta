@@ -620,6 +620,15 @@ This removes PostgreSQL data, restarts the container, and re-runs all migrations
 > (The first-time cold `/dev-up` build avoids this race because it creates the schemas **between** `make up`
 > and `make migrate`; only `make reset-db`'s bundled auto-migrate hits it. This is a bring-up-ordering
 > prerequisite of the merged taxonomy, not a migration defect — the M25-D9 class.)
+>
+> **One-command alternative (v2.1 M211): `dev-stack/migrate-dev.sh`.** The rext hook
+> `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh` automates this whole cold DB-init in one call —
+> `wait_pg` → create schemas (`extensions`/`sentinel`/`cms`/`jobsimulation`/`skillpath`) + `CREATE EXTENSION
+> vector/pgcrypto/pg_trgm SCHEMA extensions` → atlas-migrate the 4 merged services (`app:public` / `cms` /
+> `jobsimulation` / `skillpath`) → load the global Sentinel casbin policy (guarded on empty) → restart
+> sentinel+backend. It **mirrors `demo-stack/migrate-demo.sh`** for the main dev stack (project `anthropos`,
+> postgres `:5432`), so a cold dev DB-init is reproducible instead of hand-run. Prefer it over the manual block
+> above; use `make migrate` directly only when the schemas + extensions already exist.
 
 ### "Permission denied" when starting Postgres after a fresh checkout
 Bitnami Postgres runs as uid 1001 inside the container. The bind-mount root (`platform/data/postgresql`) is created by Docker as root and the container can't write to it. Pre-create with the right ownership before first start:
