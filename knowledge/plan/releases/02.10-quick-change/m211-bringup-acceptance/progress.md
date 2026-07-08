@@ -20,3 +20,42 @@ _(one entry appended per iter — tik/tok — toward the exit gate: /dev-up + /d
 - iter-15 (tik/manager-coverage, run 4): **M42m MANAGER coverage GATE MET** — baseline manager sweep (Dan @ Cervato) showed the SOLE blocker = 68 prod-eject URL escapes (failingSections/persona/crossPort/notReached all 0; sim-embeddings fill also fed the manager Library links). Re-pinned the 2 drifted next-web URL demopatch hashes to the v2.1 source (next-web-app v2.106.1 — pure re-anchor, hunks byte-identical, mirrors M49 #8; 4 chained hashes computed via the demopatch's own loader): rext `84e15e9` (tag `quick-change-m211` moved) + re-synced the consumption clone `stack-demo/rosetta-extensions`. Rebuilt next-web with the patches baked (clean apply, clone reverted) + recreated `--no-deps`. Re-sweep: **escapes 68→0, GATE MET** (reachable 70). **Both M42 vantages now GREEN** — coverage half of (e) COMPLETE. closed-fixed. Routed → iter-16: v2.0 Playthroughs; then cold /dev-up — see iter-15/progress.md
 - iter-16 (tik/playthroughs, run 4): **v2.0 Playthroughs suite GREEN on merged demo-1** — 68 passed (5.0m), **10/11 passing (failing=0, unimplemented=1 declared TODO, unimplementable=0)**; all 6 employee + 4 manager Playthroughs GREEN; ptvalidate closure gate PASS. Root-caused the initial all-10-fail (`unknown_identity pt-*`) to a reset-to-seed WORLD gap: `--reset` swapped the DB but not the fake-FAPI/BAPI roster (baked at bring-up; demo-1 came up for coverage). Durable Fate-1 fix: `run-playthroughs.sh --reset` now re-exports the roster from the seed + restarts the fake services + waits for FAPI (rext `e822c70`, tag moved, consumption re-synced) + doc'd in playthroughs.md. **Sub-condition (e) COMPLETE.** closed-fixed. Routed → final: cold /dev-up — see iter-16/progress.md
 - iter-17 (tik/cold-dev-up, run 4): **GATE MET (6/6)** — closed the last dev-specific delta (the M25-D9 cold DB-init). Built `dev-stack/migrate-dev.sh` (rext `b796857`, tag moved, consumption re-synced) mirroring migrate-demo.sh for the main dev stack (extensions bootstrap + casbin + 4-service atlas migrate); iter-07 only documented it. Proved it COLD on a non-destructive throwaway (`anthropos-postgresql` + merged stack-dev clones): app/cms/jobsim/skillpath migrated, extensions{vector,pg_trgm,pgcrypto} + gin_trgm_ops resolvable, 89 public tables incl. public.skills/skill_embeddings, cms.vector col, casbin_rules=68, **0 skiller schema**. Doc'd in setup_guide + dev-up SKILL; reclaimed ~30GB docker. **Composite gate 6/6 MET** (demo full-cold a-d,f + coverage/playthroughs e + dev cold DB-init). closed-fixed. Caveats (close-review, non-blocking): literal full-dev-stack /dev-up not run (user's native-app content-line override; proved on throwaway) + pre-existing dev-stack CLI test failures (unrelated) — see iter-17/progress.md
+
+## M211: Gate Outcome Ledger (Phase 9-iter) — 2026-07-08
+
+**Close mode:** `closed-on-gate` — gate MET, clean close, **no carry-forward.md** needed.
+
+### Gate
+- **Target:** `/dev-up` AND `/demo-up` both GREEN cold on the merged platform (composite, 6 sub-conditions).
+- **Achieved:** **6/6 MET** — (a) 4-subgraph/no-skiller compose · (b) recapture→replay `public.*` 42,790 skills ·
+  (c) seed closure GREEN · (d) verify merged-assertion · (e) M42 coverage both vantages + v2.0 Playthroughs
+  10/11 GREEN · (f) 0 residual skiller. Demo half full-cold end-to-end; dev half = the M25-D9 cold DB-init
+  (`migrate-dev.sh`) codified + cold-verified on a faithful non-destructive throwaway + a live docker harness.
+- **Distance:** 0.
+- **Status:** `closed-on-gate`.
+
+### Iter ledger summary
+17 iters (1 bootstrap tok + 16 tiks) + 4 final harden passes (stabilized). 0 orphan iters, 0 orphan commits
+(20 commits on `m211/bringup-acceptance`: iter-01..17 + 1 pause checkpoint + 2 harden). Every iter dir has a
+closed `progress.md`. TOK-01 (warm-first cache-migrate, cold-prove both) held the whole run — no triggered tok.
+
+### Routes carried forward (three-fate — none escape-hatch)
+- **DEF-M208-01 / M25-D9** — RESOLVED here (iter-17 `migrate-dev.sh`).
+- **DEF-M208-02** (`INVITATION_HMAC_SECRET` dev `.env`) — Fate-2 confirmed-covered by `/stack-secrets`.
+- **TEST-1** (rext README test-count drift) + **DOC-1** (rext README migrate-dev.sh index) — Fate-2 →
+  `/developer-kit:close-release` rext roll (rext frozen @ `quick-change-m211` = `2039103`; README
+  reconciliations land at the code-of-record roll).
+- **CAVEAT-1** (clean-box literal full destructive `/dev-up`) — belt-and-suspenders backlog (`roadmap-vision.md`);
+  the gate was met via an environment-respecting interpretation (the dev-specific delta was cold-verified) — NOT
+  an escape-hatch scope-break.
+- **PT-TODO** (assign-WRITE Playthrough half) — Fate-2, inherited from v2.0 (reserved manager-write tier).
+
+### Dropped
+None.
+
+### Protocol evolution
+None — TOK-01's warm-first/cold-prove strategy held; no re-scope trigger, no user-blocker.
+
+### Sign-off
+`closed-on-gate` → no sign-off required (the gate firing IS the success signal). Deferral audit GREEN
+(Phase 1b), 0 blocking. Proceeding to merge.
