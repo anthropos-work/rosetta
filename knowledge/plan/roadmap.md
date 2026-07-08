@@ -214,8 +214,33 @@ platform-repo edits.
 + re-pointed tooling docs).
 
 **M211 — Bring-up acceptance: dev-up + demo-up green on the merged platform** · `iterative` (closed-on-gate) ·
-complexity **large** · depends on: **M209 + M210**.
-**Status:** `planned`.
+complexity **large** · depends on: **M209 + M210** · **the FINAL v2.1 milestone**.
+**Status:** ✅ **`done` — closed-on-gate 2026-07-08** (merged → `release/02.10-quick-change`). **Gate 6/6 MET** —
+proved the merged (skiller-in-app) 4-subgraph platform stands up end-to-end via the re-grounded tooling on BOTH
+stacks, cold, with **zero platform-repo edits**. Delivered (all in the rext tooling, tag `quick-change-m211` =
+`2039103`): the **cache-migration** (real 42,790-row taxonomy + 274 sims re-keyed `skiller.*→public.*`, replayed
+— the no-prod-access recapture); the **root-cause fix** (the injected build-scratch was pinned pre-merge + survived
+`--purge` → every rebuild baked a stale pre-merge binary → federation `_entities(Skill.name)` 422s; fixed to
+re-sync the scratch to the source's release tag every bring-up); the dev bring-up casbin `init_policy.sql` load
+(silent-403 fix); frontend offset-reuse guard; demo-local `ACADEMY_URL` bake + academy-aware cross-port hook;
+demopatch URL re-pin (next-web v2.106.1); the Playthroughs reset-to-seed **roster-refresh**; and the new
+**`dev-stack/migrate-dev.sh`** (dev cold DB-init — extensions + `gin_trgm_ops` + casbin, mirror of
+`migrate-demo.sh`, the M25-D9 path). **Result:** cold `/demo-up` GREEN end-to-end; **M42 coverage GREEN both
+vantages**; **v2.0 Playthroughs 10/11 GREEN** (1 declared in-manifest TODO); dev cold DB-init cold-verified on a
+faithful non-destructive throwaway + a live docker harness; 0 residual skiller. **17 iters** (1 bootstrap tok +
+16 tiks) + 4 stabilized final harden passes. Close: rosetta diff **docs+plan only** (3 corpus/skill docs + plan
+records, 0 code — the tooling code is the frozen rext tag) → HARDEN N/A for rosetta; the rext suites spot-verified
+GREEN (Go/vet, demo 114, dev migrate-dev 14, TS 32). Close review **1 finding** (DOC-1: `migrate-dev.sh` not
+indexed in rext `dev-stack/README.md` → **Fate-2 → close-release rext roll**, bundled with TEST-1; rext frozen).
+Deferral audit **GREEN** (7 in scope, 0 blocking; DEF-M208-01/M25-D9 RESOLVED, TEST-1 aged→re-fated Fate-2,
+CAVEAT-1 belt-and-suspenders backlog). Two close-review caveats (non-blocking): (1) a literal full destructive
+clean-box `/dev-up` was **deliberately not run** — this box is committed to the user's native-app content-line dev
+(`docker-compose.override.yml` → `backend:host-gateway` + an `app-01.10-content-line` worktree); the sole
+dev-specific gate delta (the M25-D9 DB-init) was cold-verified on a faithful throwaway — an environment-respecting
+gate interpretation, with a clean-box full `/dev-up` recorded as a belt-and-suspenders backlog note; (2) 33
+pre-existing `test_dev_stack.py` CLI failures from an incomplete local `.agentspace/secrets` source (unrelated to
+M211). **→ v2.1 is complete; run `/developer-kit:close-release`** (rolls the rext `v2.1` tag, bumps
+`.agentspace/rext.tag`, merges → `main`, reconciles the rext READMEs [TEST-1 + DOC-1]).
 **Goal:** prove the whole chain works end-to-end on the merged platform with the re-grounded tooling.
 **Exit gate:** from a re-synced state, **`/dev-up` AND `/demo-up` both go GREEN cold** — 4-subgraph compose / no
 skiller container; snapshot **recapture→replay** loads `public.*` (taxonomy replay exits 0, ~42,763 public skills);

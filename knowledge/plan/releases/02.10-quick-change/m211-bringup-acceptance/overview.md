@@ -3,7 +3,7 @@ milestone: M211
 slug: bringup-acceptance
 version: v2.1 "quick change"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-08
 last_updated: 2026-07-08
 complexity: large
