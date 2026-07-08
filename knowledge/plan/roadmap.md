@@ -143,7 +143,7 @@ authoritative merge fact-sheet — so every downstream fix grades against curren
 M47 risk class)? — bounded; capture before/after.
 
 **M209 — rext tooling re-ground** · `section` · complexity **medium** · depends on: **M208**.
-**Status:** `planned`.
+**Status:** `done` (completed 2026-07-08).
 **Goal:** re-point every rext tool that queries the old skiller schema or expects the skiller service to the merged
 reality, recapture the snapshot, and tag a new rext.
 **Scope:**
@@ -166,6 +166,19 @@ reality, recapture the snapshot, and tag a new rext.
 - Build + test the authoring copy; **tag a new rext (`v2.1`)**; prepare the per-stack consumption re-pin.
 - **Out:** the stack re-sync (M208); doc bodies (M210); live bring-up (M211).
 **KB dependencies:** `corpus/ops/snapshot-spec.md`, `corpus/ops/seeding-spec.md`, `corpus/ops/safety.md`.
+**Closed 2026-07-08:** re-grounded rext `skiller.*→public.*` across **stack-snapshot** (the `taxonomy.go` const
+flip re-grounding capture+replay; the Risk-1 `Surface.VersionTables()` digest-narrowing so taxonomy digests only
+its 10 tables while a structure-bearing surface still whole-schema-invalidates; a one-sided `MinRows` under-capture
+floor; Risk-2 verified — the capture is names-only/type-agnostic so the `extensions.`-qualified merged columns need
+no change), **stack-seeding** (24 files, `organization_id IS NULL` preserved, `data-dna.json` golden, `isolation.go`),
+and the **small shell modules** (readiness/services/up-injected/migrate-demo, 5→4 services; stack-verify Python
+104/104). **6 Go modules GREEN, `go vet` clean, 5× flake-clean; 0 `skiller.<table>` queries in any production path.**
+rext tagged `quick-change-m209` (build `00a3ec5`/`e458acf`/`75bc4cf` + harden `42ad600`/`72a5259`/`2f06e78` — 14
+harden test funcs, 0 bugs, 0 flakes; tag re-pointed to the post-harden HEAD `2f06e78` at close). Close: **1
+nice-to-have finding** (a pre-existing rext `stack-seeding/README` test-count drift, last reconciled M41 — routed
+to the v2.1 rext roll; rext frozen at `2f06e78` this close), **deferral audit GREEN** (10 in scope, 0 repeat/aged/
+escape). **Recapture Fate-3→M211** (tooling READY; no local COPY-byte capture source — a data op M211 owns).
+The `v2.1` rext roll + `.agentspace/rext.tag` consumption re-pin remain **`/developer-kit:close-release`'s** job.
 
 **M210 — Corpus + skills re-ground** · `section` · complexity **medium** · depends on: **M209** (the tooling-doc
 bodies flip to match M209's landed schema).

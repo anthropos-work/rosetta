@@ -3,7 +3,7 @@ milestone: M209
 slug: rext-reground
 version: v2.1 "quick change"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-08
 last_updated: 2026-07-08
 complexity: medium
