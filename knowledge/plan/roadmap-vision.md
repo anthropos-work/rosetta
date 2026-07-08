@@ -128,9 +128,24 @@ Genuinely-deferred work, no target version, not scheduled:
   connector seam (>50 lines, touches the load-bearing replay path). Tracked KEEP across the M21→M25 close-audits;
   **landed here at v1.5 close-release (2026-06-14)** so it survives the release-branch merge. Pick up in a future
   `stack-snapshot` build iter when the replay path is next opened.
-- **M25-D9 — dev-`N` taxonomy replay `rc=4` ("target schema empty").** A pre-existing dev-stack migrate-ordering
-  nuance on opt-in `dev-N≥1 --local-content` stacks (non-fatal, orthogonal to the content-serve path — the directus
-  content-serve done-bar DB-2 is GREEN). Surfaced by the M25 field-bake; tracked dev migrate-ordering follow-up.
+- **M25-D9 — dev cold DB-init (extensions-schema bootstrap + PG-readiness) → RESOLVED (v2.1 M211).** The
+  extensions-bootstrap-before-migrate class (a cold `make reset-db`/`make migrate` failing `schema "extensions"
+  does not exist` because the un-editable platform `make migrate` doesn't create `extensions`) is now codified in
+  **`dev-stack/migrate-dev.sh`** (rext `quick-change-m211`) — `wait_pg` → create schemas
+  (`extensions`/`sentinel`/`cms`/`jobsimulation`/`skillpath`) + `CREATE EXTENSION vector/pgcrypto/pg_trgm SCHEMA
+  extensions` → atlas-migrate the 4 merged services → load the casbin policy, a mirror of `demo-stack/migrate-demo.sh`
+  for the main dev stack. Cold-verified on a faithful non-destructive throwaway (extensions + `gin_trgm_ops` + 89
+  public tables + `cms.vector` + casbin, 0 skiller). Documented in `corpus/ops/setup_guide.md` + `.claude/skills/dev-up/SKILL.md`.
+  _(Residual nuance, narrow: the original `dev-N≥1 --local-content` taxonomy-replay `rc=4` "target schema empty"
+  symptom — orthogonal to the content-serve done-bar DB-2, which is GREEN — consumes the same hook; no separate
+  work owed.)_
+- **Clean-box literal full destructive `/dev-up` (v2.1 M211 belt-and-suspenders).** M211's gate proved the dev
+  half via the M25-D9 cold DB-init cold-verified on a faithful throwaway + a live docker harness — a literal full
+  all-services destructive `/dev-up` + verify-net was **deliberately not run** because this box is committed to the
+  user's native-app content-line dev (`docker-compose.override.yml` → `backend:host-gateway` + an
+  `app-01.10-content-line` worktree), which a full bring-up would clobber (and it can't go green without a v2.1
+  native backend). An environment-respecting gate interpretation, not a gap. A clean-box full `/dev-up` remains a
+  nice belt-and-suspenders confirmation on a box not committed to unrelated native-app work; unscheduled.
 - **DEF-M46-01 — Directus serve-grant CLOSURE + schema RECAPTURE (Option B) → RESOLVED (M46 Path 2,
   `method-acting-m46-servegrant-closure`).** M46/DD first landed a **targeted** column reconciliation (Option A): the
   captured per-stack Directus structure had **drifted** behind the platform (cms's `SetFields("*", …)` simulations query

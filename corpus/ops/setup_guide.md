@@ -402,13 +402,23 @@ docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS 
 # Create Sentinel schema (required for Casbin authorization)
 docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
 
-# Restart Sentinel (it was crash-looping without its schema)
+# Load the Sentinel global authorization POLICY (the role→feature p-model). Sentinel's
+# Casbin adapter auto-creates the EMPTY sentinel.casbin_rules table on startup but does
+# NOT seed the policy — without this load, casbin_rules stays empty and every authorized
+# route 403s (the M18 "silent-403" class; the seeder's per-user grants have no p-model to
+# attach to). init_policy.sql is CREATE TABLE IF NOT EXISTS + a one-shot INSERT, so apply
+# it only on a fresh stack (empty casbin_rules) to avoid duplicate policy rows.
+docker compose exec -T postgresql psql -U postgres -d postgres < ../sentinel/init_policy.sql
+
+# Restart Sentinel (it was crash-looping without its schema) so it picks up schema + policy
 docker compose restart sentinel
 ```
 
-*Verification*: `make ps` should show Sentinel with `Up` status (not `Restarting`).
+*Verification*: `make ps` should show Sentinel with `Up` status (not `Restarting`); and
+`docker compose exec postgresql psql -U postgres -d postgres -tAc "SELECT count(*) FROM sentinel.casbin_rules"`
+returns a non-zero count (the global p-model policy is loaded — the bring-up verify's cheap-win assert).
 
-> **Note**: These schemas only need to be created once. They persist across `make down` / `make up` cycles. Only `make reset-db` requires re-creating them.
+> **Note**: These schemas + the loaded policy only need to be created once. They persist across `make down` / `make up` cycles. Only `make reset-db` requires re-creating them (the `sentinel/init_policy.sql` load included — a wiped DB has an empty `casbin_rules`).
 
 ### Database Migrations
 
@@ -591,7 +601,34 @@ If your database is corrupted or you want a clean start:
 ```bash
 make reset-db
 ```
-This removes PostgreSQL data, restarts the container, and re-runs all migrations.
+This removes PostgreSQL data, restarts the container, and re-runs all migrations **automatically**.
+
+> **⚠ Cold-reset ordering (do this or the auto-migrate fails).** `make reset-db` wipes the DB — including the
+> `extensions` and `sentinel` schemas — then re-runs `make migrate` **immediately**, before you get a chance
+> to re-create them. On the merged platform the app/cms `vector(1536)` embedding columns and the app
+> gin-trigram index depend on `extensions` existing (`extensions.vector`, `extensions.gin_trgm_ops`), so the
+> auto-migrate step **fails cold** with `schema "extensions" does not exist`. Re-create the schemas + reload
+> the Sentinel policy, then re-run the migrations:
+> ```bash
+> # re-create the wiped schemas + extensions (same as the first-run "Prepare PostgreSQL Schemas" step)
+> docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+> docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+> docker compose exec -T postgresql psql -U postgres -d postgres < ../sentinel/init_policy.sql   # empty casbin_rules after a wipe
+> docker compose restart sentinel
+> make migrate                                                                                   # re-run the migrations the auto-pass failed on
+> ```
+> (The first-time cold `/dev-up` build avoids this race because it creates the schemas **between** `make up`
+> and `make migrate`; only `make reset-db`'s bundled auto-migrate hits it. This is a bring-up-ordering
+> prerequisite of the merged taxonomy, not a migration defect — the M25-D9 class.)
+>
+> **One-command alternative (v2.1 M211): `dev-stack/migrate-dev.sh`.** The rext hook
+> `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh` automates this whole cold DB-init in one call —
+> `wait_pg` → create schemas (`extensions`/`sentinel`/`cms`/`jobsimulation`/`skillpath`) + `CREATE EXTENSION
+> vector/pgcrypto/pg_trgm SCHEMA extensions` → atlas-migrate the 4 merged services (`app:public` / `cms` /
+> `jobsimulation` / `skillpath`) → load the global Sentinel casbin policy (guarded on empty) → restart
+> sentinel+backend. It **mirrors `demo-stack/migrate-demo.sh`** for the main dev stack (project `anthropos`,
+> postgres `:5432`), so a cold dev DB-init is reproducible instead of hand-run. Prefer it over the manual block
+> above; use `make migrate` directly only when the schemas + extensions already exist.
 
 ### "Permission denied" when starting Postgres after a fresh checkout
 Bitnami Postgres runs as uid 1001 inside the container. The bind-mount root (`platform/data/postgresql`) is created by Docker as root and the container can't write to it. Pre-create with the right ownership before first start:
