@@ -61,13 +61,25 @@ and a `release/{version}` branch is cut.
 > M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53** (the v1.x flat counter re-opened — backfill work is a `.1` patch of
 > v1.10, not a v2 `Mxyy` milestone). Designed from `.agentspace/annotation.md` + the M201 stale-clone finding.
 > Tooling + docs only — zero platform-repo edits.
+> **v2.1 "quick change"** → 2026-07-08 (IN DEVELOPMENT, branch `release/02.10-quick-change`; tag `v2.1`; the
+> **skiller-in-app re-ground** — a field-hardening release in the v1.3b "dress rehearsal" / v1.10b "fit-up" lineage,
+> triggered by a **landed platform structural change**: the `skiller` service + its DB schema merged into
+> `app`/`public` [table names unchanged, `skiller.X → public.X`], RPC → `backend`, the skiller GraphQL subgraph gone
+> [**4 subgraphs**], skiller repo/container removed. Re-fits the rext tooling + corpus + stacks to the merged
+> platform and **proves `dev-up` + `demo-up` still work**. **4 milestones M208 → M209 → M210 → M211**, strictly
+> sequential; tooling + docs only, zero platform edits). Designed from the user's skiller-merge briefing + the
+> colleague's `origin/docs/skiller-in-app-merge` corpus sweep (correct-but-incomplete). Takes **M208+** — the
+> reserved Playthroughs futures **M205–M207 stay in vision** (M206 is a live Fate-3 destination from the M203 close),
+> per the established "reserved-number-ships-later" precedent (M26).
 
 ---
 
-> **v2.0 "opening night" is IN DEVELOPMENT** (designed 2026-06-28; branch `release/02.00-opening-night`; full
-> detail in the `## In Development — v2.0` section of [`roadmap.md`](roadmap.md) — the active roadmap now holds the
-> v2.0 major; v1.x history is in [`roadmap-legacy.md`](roadmap-legacy.md)). The future v2 milestones + the
-> unscheduled backlog below are orthogonal (not in v2.0 scope).
+> **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`); **v2.1 "quick change" is now IN DEVELOPMENT**
+> (designed 2026-07-08; branch `release/02.10-quick-change`; tag `v2.1`; full detail in the
+> `## In Development — v2.1` section of [`roadmap.md`](roadmap.md) — the active roadmap holds the v2.x major; v1.x
+> history is in [`roadmap-legacy.md`](roadmap-legacy.md)). v2.1 is a **field-hardening re-ground** (the skiller-in-app
+> merge), **not** a Playthroughs release — so it takes **M208+** and the reserved Playthroughs futures **M205–M207
+> below stay in vision**, orthogonal to v2.1 scope. The unscheduled backlog below is likewise orthogonal.
 
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
@@ -180,8 +192,12 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
 - **v1.10b "fit-up"** (IN DEVELOPMENT — chosen 2026-06-29 by the user, theatre lineage): the *fit-up* (a.k.a. the get-in) is the technical work of **building and rigging the set correctly in the venue** before the show can run — the crew assembles the world so it holds together under the lights. Exactly this backfill's job: re-ground the demo to current prod and fix the bring-up so the environment stands up cleanly from cold — the technical preparation that must happen **before** v2.0 "opening night" can resume. Sits in the same field-hardening lineage as **v1.3b "dress rehearsal"** (the prior demo-up-issue backfill). Alternatives weighed: "tech rehearsal", "house notes".
 
-_Last updated: 2026-06-29 (**v1.10b "fit-up" PROMOTED to active development** — the interposed **field-hardening
-backfill** [v1.3b "dress rehearsal" lineage]; **7 milestones M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53**
+_Last updated: 2026-07-08 (**v2.1 "quick change" DESIGNED + PROMOTED to active development** — the **skiller-in-app
+re-ground**, a field-hardening release [v1.3b "dress rehearsal" / v1.10b "fit-up" lineage] triggered by the landed
+platform merge of `skiller` into `app`/`public`; **4 milestones M208 → M209 → M210 → M211**, strictly sequential;
+branch `release/02.10-quick-change`, tag `v2.1`. Takes M208+; the reserved Playthroughs futures M205–M207 stay in
+vision. Prior: 2026-07-02 **v2.0 "opening night" SHIPPED** [tag `v2.0`]. Prior: 2026-06-29 (**v1.10b "fit-up"
+PROMOTED to active development** — the interposed **field-hardening backfill** [v1.3b "dress rehearsal" lineage]; **7 milestones M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53**
 [v1.x flat counter re-opened], branch `release/01.10b-fit-up` cut from `main`, tag `v1.10.1`; designed from
 `.agentspace/annotation.md` + the M201 stale-clone finding. Re-grounds demo + corpus to current prod, fixes the 8
 demo-up issues + the v1.10 content gaps, adds the AI-readiness showcase org [M51], consolidates one inlined
