@@ -274,6 +274,15 @@ a **per-suite reset-to-seed** on `--reset`:
   own N=0 guard) **then** a fresh seed of `pt-world.seed.yaml`. **Additive re-seed is FORBIDDEN as a reset** — an
   `ON CONFLICT DO NOTHING` re-seed silently leaves stale state (the M42e "green-but-wrong" trap). See
   [`idempotency.md`](../idempotency.md) + [`seeding-spec.md`](../seeding-spec.md) for the `--reset` contract.
+- **It also refreshes the Clerkenstein roster + restarts the fake services (v2.1 M211 iter-16).** The world the
+  cockpit seat-switch logs into is *DB + identities* — but the fake-FAPI/BAPI resolve identities from a mounted
+  `/roster/roster.json` baked at **bring-up** from that demo's preset. A reset that only swaps the DB leaves a
+  stale roster, so a hero login for a `pt-world` seat on a demo brought up for **something else** (e.g. a
+  stories/coverage demo) `400`s with `unknown_identity` — the whole suite red. So `--reset` re-exports the roster
+  from THIS seed (`stackseed --roster-export --seed pt-world` — a pure function of the seed, no DB) to the
+  `docker inspect`-discovered mount path, restarts `demo-N-fake-{fapi,bapi}`, and waits for the FAPI. This
+  **completes the reset-to-seed** so the Playthroughs run on **any** demo, not only a `pt-world`-native one
+  (M204 masked this by bringing its demo up `pt-world`-native). Non-fatal for a roster-native demo; zero platform edits.
 - The runner **refuses N=0** (the main dev stack) outright — a Playthrough run always targets a demo-N.
 - **Gate-run prereq — the pinned `stackseed` must be on PATH (M204 iter-05 D1).** The runner shells out to bare
   `stackseed` (the pinned tooling the demo consumes), which is **not on the login PATH**. When running the gate
