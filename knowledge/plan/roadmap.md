@@ -182,7 +182,7 @@ The `v2.1` rext roll + `.agentspace/rext.tag` consumption re-pin remain **`/deve
 
 **M210 — Corpus + skills re-ground** · `section` · complexity **medium** · depends on: **M209** (the tooling-doc
 bodies flip to match M209's landed schema).
-**Status:** `planned`.
+**Status:** `done` (completed 2026-07-08).
 **Goal:** land the colleague's docs sweep as the *complete, internally-consistent* corpus re-ground.
 **Scope:**
 - **In:** adopt/validate `origin/docs/skiller-in-app-merge` (correct-but-incomplete — the architecture/subgraph
@@ -194,6 +194,22 @@ bodies flip to match M209's landed schema).
   `db-query/SKILL`) so container counts / migration lists / RPC addr / subgraph counts match the re-synced stacks;
   update `CLAUDE.md` service catalog.
 - **Out:** rext code (M209); live bring-up (M211).
+**Closed 2026-07-08** (merged → `release/02.10-quick-change`): made the corpus internally consistent with the merged
+platform + M209's landed `public.*` rext code. Adopted the colleague's correct architecture/subgraph/service half
+(28 files; each hunk verified vs the M208 fact-sheet + the re-synced `stack-dev/app` clone; kept M208's authoritative
+`backend.md`/`skiller.md` fact-sheet — no duplicate merge section); fixed the profile-completeness node-id prose
+(**verified NO literal "43/44" exists anywhere** — the design-note count was inaccurate; made the one genuine
+merge-sweep fix, did **not** fabricate a phantom count); flipped the **6 rext-facing tooling-doc bodies + directus-local.md**
+`skiller.*→public.*` and deleted the interim disclosure notes; reconciled db-access ↔ tooling on `public.*`; swept the
+4 skill files to the verified merged compose (no skiller container, **4 subgraphs**, `SKILLER_RPC_ADDR=http://backend:8083`;
+superseded the colleague's now-stale "still-targets-skiller/exit-4" note with an accurate M209-done note); updated the
+`CLAUDE.md` catalog. Email-asset PNGs excluded. **Verified core outcome:** 0 stale `skiller.<table>` tooling-query refs
+corpus-wide, 0 leftover interim notes, 4 subgraphs consistent, 0 broken `.md` links. **RESOLVES the KB-1/2/3 body-flip
+deferrals** M208+M209 routed Fate-2 → M210 (7 defers landed at destination). Committed rosetta diff is **100%
+documentation** (50 `.md`, 0 code/test) → HARDEN N/A; close review **0 must-fix / 1 nice-to-have no-change-needed**
+(the app==backend subgraph dual-naming is the corpus's established convention, not an M210 defect); deferral audit
+**GREEN** (11 in scope, 7 resolved, 4 still-open confirm-only → M211/close-release; 0 repeat/aged/escape). Zero
+platform-repo edits.
 **Delivers → knowledge/corpus:** the completed corpus (`corpus/services/skiller.md` stub + `backend.md` ownership
 + re-pointed tooling docs).
 
