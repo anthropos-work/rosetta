@@ -108,8 +108,24 @@ acceptance closer — bring-up isn't trusted until `/dev-up` + `/demo-up` both g
 
 ### Milestones
 
-**M208 — Re-sync & merged-schema ground-truth** · `section` · complexity **medium** · depends on: **none**.
-**Status:** `planned`.
+**M208 — Re-sync & merged-schema ground-truth** · `section` · complexity **medium** · depends on: **none** ·
+✅ **`done` — closed 2026-07-08** (merged → `release/02.10-quick-change`). The **load-bearing foundation** of
+v2.1 (mirrors v1.10b M47) landed: re-synced both stacks to the merged platform (`app` `a848cccb→c3c45e01`
+v1.334.1 — the **86-commit merge pull**; `platform` `5e1ae6b→0808b92` — skiller gone from
+compose/repos.yml/Make; sibling set current), removed both vestigial `stack-*/skiller/` clones, and **retired
+the #1 release risk GREEN** via a live containerized de-risk on stack-dev: cold `make up` rc=0 with a
+**4-subgraph** compose and **no skiller container** (`SKILLER_RPC_ADDR=http://backend:8083`); a clean-slate
+`make reset-db`+`make migrate` builds the **full `public` taxonomy from scratch** (skills w/ `organization_id`,
+job_roles, job_role_skills, skill_embeddings, categories, specializations) with **no `skiller` schema on a clean
+DB**; measured prod `public.skills WHERE organization_id IS NULL` = **42,790** (the roadmap's ~42,763 figure).
+Pinned the authoritative **merge fact-sheet** in `corpus/services/backend.md` (§ Skiller-in-app merge + banner)
++ a stub banner on `corpus/services/skiller.md`. Committed rosetta diff is **100% documentation** (zero
+code/test) → HARDEN N/A; close review found **0 findings**; deferral audit **GREEN** (5 single, 0 repeat).
+**Two bring-up findings routed forward (both user-accepted):** Finding 1 (clean-bring-up `extensions`-schema
+bootstrap + PG-readiness, the M25-D9 class — did NOT fall out as a trivial Fate-1) → **Fate-3 M211** (+ M209
+Risk-2 cross-ref); Finding 2 (`INVITATION_HMAC_SECRET` dev-`.env` completeness gap, not merge-caused) →
+**Fate-2 M211 / `/stack-secrets`**. Zero platform-repo edits. **Delivers →** the merge fact-sheet
+(`corpus/services/backend.md` + `corpus/services/skiller.md` stub).
 **Goal:** bring both stacks (and the snapshot's target reality) current with the merged platform, and pin the
 authoritative merge fact-sheet — so every downstream fix grades against current code.
 **Scope:**
