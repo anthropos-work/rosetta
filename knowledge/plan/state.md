@@ -1,9 +1,9 @@
 ---
 active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quick-change; tag v2.1)"
 active_branch: "release/02.10-quick-change"
-active_milestone: "M209 — rext tooling re-ground (section, planned) — next"
+active_milestone: "M209 — rext tooling re-ground (section, BUILT — pending close) — on branch m209/rext-reground"
 last_closed: "M208 — 2026-07-08 (Re-sync & merged-schema ground-truth — the v2.1 foundation; 86-commit app merge pull re-synced + live de-risk GREEN, merge fact-sheet pinned)"
-phase: "M208 CLOSED (merged → release/02.10-quick-change): both stacks re-synced to the merged platform, vestigial skiller clones removed, live containerized de-risk GREEN, merge fact-sheet pinned. Next: /developer-kit:build-milestone M209 (rext tooling re-ground + snapshot recapture + tag rext v2.1)"
+phase: "M209 BUILT (on m209/rext-reground, NOT merged): rext re-grounded skiller.*→public.* across snapshot+seeding+small modules; 6 Go modules GREEN, 0 skiller.<table> queries in production; rext tagged quick-change-m209 (3 commits). Recapture Fate-3→M211 (no local capture source). Next: /developer-kit:close-milestone M209"
 last_updated: "2026-07-08"
 ---
 
