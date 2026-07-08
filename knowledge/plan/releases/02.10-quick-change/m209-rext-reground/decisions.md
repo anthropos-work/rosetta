@@ -53,3 +53,31 @@ are not schema-existence claims and not queries; rewording them is M210 doc-narr
 WRONG "missing skiller schema" comments WERE fixed. `stack-verify/repos/run.sh` keeps a dead `skiller)` repo-test
 case (unreachable — repos.yml has no skiller; harmless; out of chartered scope). `stack-secrets` synthetic
 `skiller`/`BUNNY` waived-repo test fixtures left (overview: optional; self-contained; tests green).
+
+## Adversarial review (close Phase 2c)
+No NEW adversarial scenario surfaced at close — the harden phase (rext `42ad600`/`72a5259`/`2f06e78`) already
+exercised the milestone's non-obvious failure modes and recorded them in `progress.md § M209: Hardening`:
+- **Schema-const revert** — the pre-existing identity check `s.Schema != Schema` was tautological (both sides
+  the same const); harden added a literal-value guard (`Schema == "public"` + every `TableSpec.Schema`/PublicVia
+  is `public.`-qualified) so a flip back to `"skiller"` is caught. The real regression guard on THE change.
+- **MinRows off-by-one / empty-schema** — floor is one-sided (`rows>=MinRows`), aborts in-loop before any store
+  write AND before the post-loop `AssertCaptured` leak gate; the 0-row wrong-schema capture trips it.
+- **Digest scope leak** — a STRUCTURE-bearing surface (directus) returns `nil` → whole-schema digest (a new
+  dynamic collection still invalidates); a row-only surface (taxonomy) returns its 10 tables → stable vs the
+  merged `public` monolith's app-migration churn. Both sides of the cache-key comparison use the same helper.
+- **Seeder query-shape** — a recorder now asserts `taxonomy_snapshot`'s countConn counts
+  `public.skills WHERE organization_id IS NULL` (never `skiller.`). 0 bugs, 0 flakes across all three passes.
+
+## D-close-2 — rext stack-seeding/README test-count drift (pre-existing) → routed, not fixed in-place
+Close Phase-4 handbook reconciliation surfaced `stack-seeding/README.md:106` = "496 test funcs across 8
+packages" vs authoritative `go test -list` = **788 across 13 packages**. **Pre-existing, cross-release drift:**
+the README count was last reconciled at **M41** (commit `0346113`, v1.10 "method acting"); the gap accumulated
+across v1.10b (M47–53) + v2.0 (M201–204) + v2.1 seeder additions. **M209 did NOT touch this README** (git-verified)
+and its own stack-seeding test delta was small (renamed matchers + the taxonomy_snapshot harden test). The file
+lives in the **rext repo, mandate-frozen at HEAD `2f06e78`** for this close (tag `quick-change-m209`→`2f06e78`,
+clean tree required per the orchestrator + top-of-prompt dirty-tree ban) — an in-place fix would require a rext
+commit that moves HEAD off `2f06e78` (violating the explicit tag mandate) or a dirty rext tree (blocker). So it
+is **recorded + routed** to the next legitimate rext advance — the **v2.1 rext roll at `/developer-kit:close-release`**
+(the rext repo's chartered v2.1 re-tag) or an earlier **M211 rext re-tag** — whichever advances rext past
+`2f06e78` first. Nice-to-have doc hygiene; not load-bearing; not an M209 deliverable; does not gate the close.
+Tracked as a standing rext-doc-hygiene item (see state.md Standing backlog).

@@ -81,3 +81,37 @@ focus areas + sub-edges covered — incl. the "empty/missing table in the set" e
 negligible **by design** (build phase hit the lines; harden added assertion depth); zero flakes.
 The only sizeable uncovered surface is the `pg.Conn` DB-integration layer — deliberately integration-only
 and unchanged by M209; a live-DB-mutating test was rejected as inappropriate to the read-only tooling ethos.
+
+## M209: Final Review
+
+Close review (Phases 1–5). Build + harden were already GREEN; this cross-cutting pass surfaced **1 finding**
+(nice-to-have, pre-existing, routed) and **0 must-fix / should-fix**.
+
+### Scope
+- [x] All 8 section boxes checked; done-bar met (0 `skiller.<table>` queries verified; digest narrowed; column
+  list reconciled; rext tagged). Recapture Fate-3→M211, KB-1/2/3 Fate-2→M210 — re-confirmed at deferral audit.
+
+### Code Quality
+- [x] `go vet ./...` clean on both touched Go modules (stack-snapshot, stack-seeding); 0 orphan `"skiller"`
+  schema literals in production Go (grep-verified); the `skiller.*→public.*` swap is internally consistent.
+
+### Documentation
+- [x] Corpus doc bodies (snapshot-spec.md / seeding-spec.md / safety.md) + CLAUDE.md catalog + "5 subgraphs"
+  are M210's chartered lockstep re-ground — NOT flipped here (Fate-2, would collide with M210). No new
+  top-level unit introduced → no new handbook owed. stack-snapshot/README has no count line (nothing owed).
+
+### Tests & Benchmarks
+- [x] 6 Go modules GREEN; 5× sequential flake gate clean on the two touched modules; 1763→ actual test funcs.
+- [ ] [nice-to-have · routed] **TEST-1:** `stack-seeding/README.md:106` quotes "496 test funcs across 8
+  packages"; authoritative `go test -list` = **788 across 13 packages**. **Pre-existing** multi-release drift
+  (README last reconciled at M41 / v1.10; the 496→788 gap accumulated across v1.10b + v2.0 + v2.1). **M209 did
+  NOT touch this README**, and it lives in the **rext repo which is mandate-frozen at HEAD `2f06e78`** for this
+  close (tag `quick-change-m209`→`2f06e78`, clean tree required) — editing it would break the frozen-HEAD /
+  clean-tree invariant. **Disposition:** recorded + routed (D-close-2) to the next rext advance (the v2.1 rext
+  roll at close-release, or an M211 rext re-tag). Not fixed in-place; not blocking; not M209-caused.
+
+### Decision Triage
+- [x] M209 decisions are implementation-specific (schema-flip mechanics, Risk 1/2 resolutions). The
+  knowledge-worthy invariants (MinRows one-sided floor; VersionTables digest-scope==capture-scope lockstep;
+  the `CapturesStructure` whole-schema gate) blend into `snapshot-spec.md` — but that body-flip is **M210's**
+  chartered deliverable (blending now would collide). Decisions stay as archive; knowledge-blend rides M210.
