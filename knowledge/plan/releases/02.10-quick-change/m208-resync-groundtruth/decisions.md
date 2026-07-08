@@ -86,3 +86,25 @@ pointer banner on `backend.md` and a minimal stub banner on `corpus/services/ski
 prose bodies are **left untouched** (KB-1/2/3 → M210's full body-flip). Deliberately did NOT adopt the
 colleague's `origin/docs/skiller-in-app-merge` full drafts (that branch is M210's to land) — referenced
 only to ground facts.
+
+## Adversarial review (Phase 2c, close 2026-07-08)
+
+M208 touched **no code modules** — the diff is 100% documentation (fact-sheet + milestone records + two
+sibling-overview routing edits + state.md; `git diff --name-only e319d2f..HEAD` = zero `.go`/`.ts`/`.sh`
+files). The classic per-module adversarial angle is therefore N/A. The one artifact carrying downstream
+risk is the **fact-sheet as a grading contract**: a wrong fact or a broken anchor would make M209/M210/M211
+grade against a falsehood. Scenario examined + neutralized:
+- **Broken anchor** (skiller.md → backend.md#…): the two references use
+  `#skiller-in-app-merge--fact-sheet-v21-quick-change`, which is exactly the GitHub slug of the
+  `## Skiller-in-app merge — fact-sheet (v2.1 "quick change")` heading (verified by slug computation +
+  `grep` at close). Resolves.
+- **Wrong load-bearing number/fact**: every grading fact — tables moved to `public` (names unchanged), the
+  `organization_id IS NULL` public predicate, the **42,790** public-skill count (measured on prod; the
+  roadmap's ~42,763 reconciled), the `SKILLER_RPC_ADDR=http://backend:8083` re-point, **4 subgraphs**, and
+  **no skiller container/schema on a clean DB** — is grounded in the verified re-synced clone
+  (`app@c3c45e01`, `platform@0808b92`), the live containerized `make up`+`reset-db`+`migrate` de-risk, and
+  read-only prod. No unverified load-bearing assertion.
+- **Residual (non-load-bearing):** the fact-sheet's "`categoryTree`/`fullCategoryTree` were dropped, not
+  ported" is a GraphQL-surface detail M210 verifies against `backend.graphqls` during the subgraph
+  reconciliation (M210 owns deep subgraph accuracy); it is not read by M209's `public.*` tooling re-ground,
+  so it is not load-bearing for the release's tooling path. Noted for M210, not a close-blocker.
