@@ -18,6 +18,13 @@ per-stack), `capture` (the rare prod-read maintenance op), `status` (list the ca
 > CLI. The extensions **section** named `stack-snapshot` (`rosetta-extensions/stack-snapshot/`) is where that
 > CLI is built. The skill operates the tooling; the section name inside the repo is unchanged.
 
+> **Skiller→app merge (July 2026), taxonomy surface re-grounded (v2.1 M209).** The standalone `skiller`
+> service was merged into `app`; app's migrations now create the taxonomy tables in the **`public` schema**, so
+> a freshly-migrated post-merge stack has **no `skiller` schema**. The `taxonomy` surface in
+> `rosetta-extensions/stack-snapshot/` was **re-pointed at `public`** in v2.1 M209 (the capture predicate +
+> replay target now query `public.*`), so replay/capture work against a post-merge stack. (Re-capturing the
+> live `public.*` taxonomy from a safe prod source lands in M211; until then a cached capture still replays.)
+
 ## Where this sits in the flow
 `/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,
 `/dev-up` already runs this set-dress pass by default — use this skill to re-run or refresh it.) The snapshot
