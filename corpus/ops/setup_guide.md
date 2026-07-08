@@ -402,13 +402,23 @@ docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS 
 # Create Sentinel schema (required for Casbin authorization)
 docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
 
-# Restart Sentinel (it was crash-looping without its schema)
+# Load the Sentinel global authorization POLICY (the role→feature p-model). Sentinel's
+# Casbin adapter auto-creates the EMPTY sentinel.casbin_rules table on startup but does
+# NOT seed the policy — without this load, casbin_rules stays empty and every authorized
+# route 403s (the M18 "silent-403" class; the seeder's per-user grants have no p-model to
+# attach to). init_policy.sql is CREATE TABLE IF NOT EXISTS + a one-shot INSERT, so apply
+# it only on a fresh stack (empty casbin_rules) to avoid duplicate policy rows.
+docker compose exec -T postgresql psql -U postgres -d postgres < ../sentinel/init_policy.sql
+
+# Restart Sentinel (it was crash-looping without its schema) so it picks up schema + policy
 docker compose restart sentinel
 ```
 
-*Verification*: `make ps` should show Sentinel with `Up` status (not `Restarting`).
+*Verification*: `make ps` should show Sentinel with `Up` status (not `Restarting`); and
+`docker compose exec postgresql psql -U postgres -d postgres -tAc "SELECT count(*) FROM sentinel.casbin_rules"`
+returns a non-zero count (the global p-model policy is loaded — the bring-up verify's cheap-win assert).
 
-> **Note**: These schemas only need to be created once. They persist across `make down` / `make up` cycles. Only `make reset-db` requires re-creating them.
+> **Note**: These schemas + the loaded policy only need to be created once. They persist across `make down` / `make up` cycles. Only `make reset-db` requires re-creating them (the `sentinel/init_policy.sql` load included — a wiped DB has an empty `casbin_rules`).
 
 ### Database Migrations
 
