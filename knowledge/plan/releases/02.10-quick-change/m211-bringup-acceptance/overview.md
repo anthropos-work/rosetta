@@ -8,7 +8,7 @@ created: 2026-07-08
 last_updated: 2026-07-08
 complexity: large
 depends_on: M209, M210
-exit_gate: "/dev-up AND /demo-up both GREEN cold on the merged platform — 4-subgraph compose / no skiller container; snapshot recapture→replay loads public.* (taxonomy replay rc 0, ~42,763 public skills); seed resolves real public node-ids (closure green); verify passes with a merged-platform assertion (no skiller schema/subgraph/container); M42 coverage sweep + v2.0 Playthroughs suite GREEN; 0 residual skiller-schema references in any queried path"
+exit_gate: "/dev-up AND /demo-up both GREEN cold on the merged platform — 4-subgraph compose / no skiller container; snapshot recapture→replay loads public.* (taxonomy replay rc 0, ~42,790 public skills); seed resolves real public node-ids (closure green); verify passes with a merged-platform assertion (no skiller schema/subgraph/container); M42 coverage sweep + v2.0 Playthroughs suite GREEN; 0 residual skiller-schema references in any queried path"
 iteration_protocol_ref: corpus/ops/verification.md (+ corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md gates)
 delivers: proof the merged platform stands up end-to-end via the re-grounded tooling
 ---
@@ -22,7 +22,7 @@ can bring up a **dev** stack AND a **demo** stack, set-dressed + seeded + verifi
 ## Exit gate (measurable)
 From a re-synced state, **`/dev-up` AND `/demo-up` both go GREEN cold**:
 - platform composes **4 subgraphs** / **no skiller container**;
-- snapshot **recapture → replay** loads `public.*` (taxonomy replay exits **0**, ~**42,763** public skills);
+- snapshot **recapture → replay** loads `public.*` (taxonomy replay exits **0**, ~**42,790** public skills);
 - **seed** succeeds — the re-pointed taxonomy resolvers resolve real public node-ids, `datadna` closure GREEN;
 - **verify** (`verification.md` net) passes with a **merged-platform assertion** (no skiller
   schema/subgraph/container expected; `readiness.sh` schema probe GREEN);
@@ -56,6 +56,21 @@ pinned here so M211's first tik doesn't re-discover it:
 
 Both are bring-up-tooling requirements (M25-D9 class). See M208 `spec-notes.md`/`decisions.md` Finding 1;
 the `extensions.`-qualified capture column list is also cross-referenced in M209's Risk-2 (`overview.md` §In).
+
+## Pre-surfaced recapture prerequisite (Fate-3 from M209's code re-ground)
+M209 re-grounded the snapshot tooling to capture/replay `public.*` (const flip + digest-narrow + verified
+column list + the ~42,790 `skills` MinRows floor) and confirmed it builds/tests GREEN — but it **could not run
+the actual recapture**: no valid COPY-byte capture source is provisioned locally (values-blind-checked — no
+`marco_read`/prod-read Postgres DSN in `.agentspace/secrets` or `platform/.env`; the merged `stack-dev` Postgres
+holds **0** taxonomy rows so it can't be a source; the wired `postgres` MCP returns JSON rows, not COPY bytes —
+see `corpus/ops/snapshot-cold-start.md`). So the existing cache
+(`.agentspace/snapshots/taxonomy/c75ce94…`) is the **stale pre-merge skiller-keyed capture** — structurally
+wrong for a merged stack and cache-key stale (M209 narrowed the digest, so the key changed too).
+**M211's first tik must recapture** `public.*` via the sanctioned `stacksnap capture --surface taxonomy --dsn
+<source>` path (a restored prod `pg_dump` **table-scoped** to the taxonomy tables — `-t public.skills …` — since
+schema-scoped `-n public` is no longer small; or the `marco_read` prod read endpoint when provisioned), under
+`AssertPublicOnly`, then verify replay exits 0 + ~42,790 public skills (the MinRows floor auto-catches an
+empty/under-capture). This is a **data** prerequisite; the tooling CODE is ready.
 
 ## Three-fate note
 Fixes surfaced mid-iter route per the three-fate rule. A surface that **cannot be driven without a platform-repo

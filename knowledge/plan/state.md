@@ -1,9 +1,9 @@
 ---
 active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quick-change; tag v2.1)"
 active_branch: "release/02.10-quick-change"
-active_milestone: "M209 — rext tooling re-ground (section, planned) — next"
-last_closed: "M208 — 2026-07-08 (Re-sync & merged-schema ground-truth — the v2.1 foundation; 86-commit app merge pull re-synced + live de-risk GREEN, merge fact-sheet pinned)"
-phase: "M208 CLOSED (merged → release/02.10-quick-change): both stacks re-synced to the merged platform, vestigial skiller clones removed, live containerized de-risk GREEN, merge fact-sheet pinned. Next: /developer-kit:build-milestone M209 (rext tooling re-ground + snapshot recapture + tag rext v2.1)"
+active_milestone: "M210 — Corpus + skills re-ground (section, planned) — flip the rext-facing tooling-doc bodies to public.* in lockstep with M209's landed schema"
+last_closed: "M209 — 2026-07-08 (rext tooling re-ground — skiller.*→public.* across snapshot+seeding+small modules; 6 Go modules GREEN, 0 skiller.<table> queries; rext tagged quick-change-m209@2f06e78; recapture Fate-3→M211)"
+phase: "M209 CLOSED (merged → release/02.10-quick-change): rext re-grounded skiller.*→public.*, digest narrowed, MinRows floor, tagged quick-change-m209@2f06e78 (14 harden funcs, 0 bugs, 0 flakes). Recapture Fate-3→M211. Next: /developer-kit:build-milestone M210"
 last_updated: "2026-07-08"
 ---
 
@@ -19,23 +19,24 @@ M211, strictly sequential** (the user's execution choice). **Tooling + docs + st
 platform-repo edits** (the platform already did its half). Detail:
 [`roadmap.md`](roadmap.md) § In Development — v2.1.
 
-**Active milestone:** **M209 — rext tooling re-ground** (`section`, `planned`) — re-point every rext tool that
-queries the old `skiller` schema or expects the skiller service to the merged reality (`skiller.*→public.*`),
-recapture the snapshot from merged-prod, and tag a new rext (`v2.1`). Grades against M208's pinned merge
-fact-sheet. **Next:** `/developer-kit:build-milestone` M209.
+**Active milestone:** **M210 — Corpus + skills re-ground** (`section`, `planned`) — land the colleague's
+`origin/docs/skiller-in-app-merge` sweep as the complete, internally-consistent corpus re-ground and **flip the
+5-6 rext-facing tooling-doc bodies to `public.*` in lockstep with M209's landed schema** (`snapshot-spec.md`,
+`seeding-spec.md`, `safety.md` firewall row, `stories-spec.md`, `recipe-snapshot-world.md`, `coverage-protocol.md`),
+fix the missed `profile-completeness-spec.md`, sweep the skill files + `CLAUDE.md` (5→4 subgraphs, container counts).
+**Next:** `/developer-kit:build-milestone` M210.
 
-**Phase:** **M208 CLOSED** (merged → `release/02.10-quick-change`) — both stacks re-synced to the merged platform
-(`app`→v1.334.1 / 86-commit merge pull; `platform`→`0808b92`, skiller gone from compose/repos.yml/Make), vestigial
-`stack-*/skiller/` clones removed, live containerized de-risk GREEN (4-subgraph compose, no skiller container,
-clean-slate migrate builds the full `public` taxonomy with no skiller schema, prod public-skills = 42,790), merge
-fact-sheet pinned in `backend.md`+`skiller.md`. Close: 0 findings, deferral audit GREEN.
+**Phase:** **M209 CLOSED** (merged → `release/02.10-quick-change`) — rext re-grounded `skiller.*→public.*` across
+stack-snapshot (the `taxonomy.go` const flip re-grounding capture+replay; the Risk-1 `Surface.VersionTables()`
+digest-narrowing; a one-sided `MinRows` under-capture floor; Risk-2 verified names-only, no column change),
+stack-seeding (24 files, `organization_id IS NULL` preserved, `data-dna.json` golden, `isolation.go`), and the
+small shell modules (5→4 services; stack-verify Python 104/104). 6 Go modules GREEN, `go vet` clean, 5× flake-clean,
+**0 `skiller.<table>` queries in any production path**; rext tagged `quick-change-m209@2f06e78` (14 harden funcs, 0
+bugs, 0 flakes). Close: 1 nice-to-have finding (pre-existing rext README count drift, routed), deferral audit GREEN.
 
-**Next up:** **run `/developer-kit:build-milestone`** for **M209** (flip `stack-snapshot/taxonomy` const
-`skiller→public`, narrow the `SchemaVersionSQL` cache-key digest, verify the capture column list vs merged-prod
-[`extensions.vector` / `extensions.gin_trgm_ops`, confirmed by M208], re-point the 5 seeding real-SQL files
-keeping the `organization_id IS NULL` predicate, drop skiller from the verify/demo-stack probes, recapture the
-public taxonomy, tag rext `v2.1`). Then M210 (corpus re-ground, lockstep with M209) → M211 (iterative bring-up
-acceptance: `/dev-up` + `/demo-up` GREEN cold on the merged platform).
+**Next up:** **run `/developer-kit:build-milestone`** for **M210** (the corpus body-flip, lockstep with M209's
+landed schema). Then M211 (iterative bring-up acceptance: `/dev-up` + `/demo-up` GREEN cold on the merged platform;
+its first tik **recaptures** the `public.*` taxonomy — the M209-deferred data op — via a sanctioned COPY-byte source).
 
 **Design inputs / evidence:** the user's skiller-merge briefing + the colleague's unmerged
 `origin/docs/skiller-in-app-merge` corpus sweep (correct-but-incomplete). A 7-agent research workflow
@@ -53,8 +54,10 @@ stays at `v1.10.1` until M209 tags `v2.1` and re-pins the consumption stacks. An
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01
 (`replayCmd` hermetic test), **M25-D9** (dev taxonomy `rc=4` — **surfaced at M208 on the clean-slate re-migrate as
 the `extensions`-schema-bootstrap + PG-readiness bring-up requirement; did NOT fall out as a trivial Fate-1 →
-routed Fate-3 to M211**), M314b (prod frozen-read whole-org hydration — a prod-team follow-up). All tracked in
-[`roadmap-vision.md`](roadmap-vision.md). The reserved **Playthroughs futures** (M205 Hiring/tier-gates · M206
+routed Fate-3 to M211**), **rext `stack-seeding/README` test-count drift** (says 496 / 8 pkgs, actual ~788 / 13;
+pre-existing since M41, cross-release — reconcile at the v2.1 rext roll / next rext re-tag; rext was frozen at
+`2f06e78` for the M209 close — see M209 `decisions.md` D-close-2), M314b (prod frozen-read whole-org hydration —
+a prod-team follow-up). All tracked in [`roadmap-vision.md`](roadmap-vision.md). The reserved **Playthroughs futures** (M205 Hiring/tier-gates · M206
 AI-sim-mirror-tier + M203-carried edge UCs · M207 Academy) stay reserved in vision — v2.1 takes M208+ per the
 established "reserved-number-ships-later" precedent (M206 is a live Fate-3 destination from the M203 close).
 
@@ -75,8 +78,9 @@ established "reserved-number-ships-later" precedent (M206 is a live Fate-3 desti
 _(Earlier v1.x — v1.0 … v1.9 — full shipped table in [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.)_
 
 ## Headline numbers (inherited from v2.0 — final; v2.1 baseline)
-- **rext Go test funcs:** **1745** across 6 modules (playthroughs the 6th). `go vet ./...` clean. — v2.1 M209 will
-  re-point the seeding/snapshot tests (net count roughly flat; a lockstep rename, not new surface).
+- **rext Go test funcs:** **1763** across 6 modules (playthroughs the 6th). `go vet ./...` clean. — v2.1 M209
+  re-pointed the seeding/snapshot tests (net +18: the ~111 `skiller.*→public.*` fake-Conn matcher renames are flat;
+  +14 harden funcs on the two new non-mechanical risk items + a few build-phase matcher additions).
 - **Live Playthroughs:** **10** (6 employee + 4 manager) GREEN on cold reset-to-seed + 1 in-manifest TODO. v2.1
   M211 keeps this suite GREEN as a bring-up-acceptance gate on the merged platform.
 - **Supply-chain:** **0 net-new deps** target for v2.1 (a schema re-point adds none). `ai v1.40.1` unchanged.
@@ -91,6 +95,7 @@ _(Earlier v1.x — v1.0 … v1.9 — full shipped table in [`roadmap-legacy.md`]
 **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` ·
 **v1.1** `v1.1` · **v1.0** `v1.0`. (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-07-08 (M208 "Re-sync & merged-schema ground-truth" CLOSED — the v2.1 foundation; both stacks
-re-synced to the merged platform, skiller clones removed, live de-risk GREEN, merge fact-sheet pinned; merged →
-`release/02.10-quick-change`. 0 close findings, deferral audit GREEN. Next: `/developer-kit:build-milestone` M209.)_
+_Last updated: 2026-07-08 (M209 "rext tooling re-ground" CLOSED — rext re-grounded `skiller.*→public.*` across
+snapshot+seeding+small modules, 6 Go modules GREEN + `go vet` clean + 5× flake-clean, 0 `skiller.<table>` queries in
+production; rext tagged `quick-change-m209@2f06e78` (14 harden funcs, 0 bugs); merged → `release/02.10-quick-change`.
+1 nice-to-have finding (pre-existing rext README drift, routed), deferral audit GREEN. Next: `/developer-kit:build-milestone` M210.)_

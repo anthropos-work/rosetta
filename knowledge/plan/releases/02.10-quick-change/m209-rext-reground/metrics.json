@@ -1,0 +1,94 @@
+{
+  "milestone": "M209",
+  "slug": "rext-reground",
+  "version": "v2.1 quick change",
+  "shape": "section",
+  "status": "done",
+  "close_mode": "closed-complete",
+  "closed": "2026-07-08",
+  "two_repo": {
+    "note": "M209 code lives in the rext repo (.agentspace/rosetta-extensions/, a separate gitignored git repo); the rosetta branch carries planning docs only.",
+    "rext_head": "2f06e78",
+    "rext_build_commits": ["00a3ec5", "e458acf", "75bc4cf"],
+    "rext_harden_commits": ["42ad600", "72a5259", "2f06e78"],
+    "rext_diff": "74 files, +961/-339 (00eef00..2f06e78)",
+    "rext_tag": "quick-change-m209",
+    "rext_tag_repointed": "75bc4cf (build HEAD) -> 2f06e78 (post-harden HEAD) at close; local annotated tag, never pushed",
+    "rext_frozen_at_close": "2f06e78 (clean tree required; no close-phase rext commits)"
+  },
+  "diff_profile": {
+    "kind": "code+ops (code in rext; rosetta side = planning docs)",
+    "rosetta_committed_diff": "100% planning docs",
+    "rosetta_files_changed": 6,
+    "rosetta_insertions": 257,
+    "rosetta_deletions": 18,
+    "rosetta_code_or_test_files": 0,
+    "note": "rosetta build/harden commits (fef42b3, d35379d) touched only knowledge/plan records + m211 overview routing + state.md. The re-ground code + tests are the rext diff (see two_repo)."
+  },
+  "tests": {
+    "applicable": true,
+    "stack": "rext Go (6 modules)",
+    "test_funcs": 1763,
+    "baseline_v2_0": 1745,
+    "delta": "+18 (14 harden test funcs + ~4 build-phase lockstep matcher additions; net ~flat rename of ~111 skiller.*->public.* fake-Conn matchers)",
+    "modules_green": ["stack-snapshot", "stack-seeding", "stack-secrets", "alignment", "clerkenstein", "playthroughs"],
+    "touched_modules": ["stack-snapshot", "stack-seeding"],
+    "go_vet": "clean (touched modules)",
+    "flake_gate": "5x sequential non-cached on the two touched modules -> 0 failures each run",
+    "flake_count": 0,
+    "authoritative_note": "counts via `grep -rhE '^func (Test|Fuzz)'` (1763) and `go test -list` (stack-seeding 788 top-level, ex-TestMain/integration-tagged). rext modules have no JUnit-XML runner; go test exit code is the pass gate.",
+    "non_go_modules": "dev-stack / demo-stack / stack-verify are shell+Python; stack-verify Python suite 104/104 re-grounded (15->14 services). Two PRE-EXISTING env-gated demo-stack Python failures (test_demopatch.*_against_live_clone, needs a live clone) + a next-web-app source-hash drift are unrelated to M209."
+  },
+  "close_review": {
+    "findings_total": 1,
+    "scope": 0,
+    "code_quality": 0,
+    "documentation": 0,
+    "tests": 1,
+    "must_fix": 0,
+    "should_fix": 0,
+    "nice_to_have": 1,
+    "fixed_in_place": 0,
+    "routed": 1,
+    "decision_triage_blends": 0,
+    "note": "TEST-1 (D-close-2): stack-seeding/README.md test-count drift 496->788 -- PRE-EXISTING (last reconciled M41/v1.10), M209 did not touch the README, rext frozen at 2f06e78 -> recorded + routed to the v2.1 rext roll (close-release) / M211 rext re-tag; not fixed in-place. Knowledge-blend of the MinRows/VersionTables invariants rides M210's snapshot-spec body-flip (blending now would collide)."
+  },
+  "deferral_audit": {
+    "verdict": "GREEN",
+    "scope": "milestone",
+    "total": 10,
+    "m209_own": 5,
+    "inherited_m208": 5,
+    "single": 10,
+    "repeat": 0,
+    "chronic": 0,
+    "aged_out": 0,
+    "escape_hatch": 0,
+    "routes": {
+      "DEF-M209-01": "Fate-2 -> M210 (snapshot-spec.md skiller.* body-flip)",
+      "DEF-M209-02": "Fate-2 -> M210 (seeding-spec.md prose)",
+      "DEF-M209-03": "Fate-2 -> M210 (safety.md firewall evidence row)",
+      "DEF-M209-04": "Fate-3 -> M211 (recapture the public.* taxonomy; no local COPY-byte source -> data op M211 owns)",
+      "DEF-M209-05": "Fate-2 -> M210 (conceptual bare-word skiller comments/labels)"
+    },
+    "report": "audit-deferrals/deferral-audit-2026-07-08.md"
+  },
+  "harden": {
+    "ran": true,
+    "location": "rext repo (42ad600, 72a5259, 2f06e78)",
+    "passes": 3,
+    "tests_added": 14,
+    "bugs_fixed": 0,
+    "flakes_stabilized": 0,
+    "focus": "the two NEW non-mechanical risk items (MinRows one-sided floor; VersionTables/Risk-1 digest-scope==capture-scope lockstep + directus whole-schema gate) + a literal-value revert guard on the load-bearing schema const (the pre-existing identity check was tautological)."
+  },
+  "done_bar": {
+    "skiller_table_queries_in_production": 0,
+    "digest_narrowed": true,
+    "capture_column_list_reconciled": "no change needed (tooling is names-only / type+opclass-agnostic)",
+    "minrows_floor": "skills >= 40000 (~42,790 in prod)",
+    "rext_tagged": "quick-change-m209 -> 2f06e78",
+    "recapture_data_op": "Fate-3 -> M211 (tooling READY; no local capture source)"
+  },
+  "notes": "The tooling half of v2.1's re-ground (mirrors v1.10b's tooling milestones). Re-grounded rext from the removed skiller schema to the merged public schema across stack-snapshot (taxonomy const flip re-grounding capture+replay; Surface.VersionTables digest-narrowing; MinRows floor; Risk-2 verified names-only), stack-seeding (24 files skiller.*->public.*, organization_id IS NULL preserved, data-dna.json golden, isolation.go), and the small shell modules (readiness/services/up-injected/migrate-demo, 5->4 services). 6 Go modules GREEN, go vet clean, 5x flake-clean. Close: 1 nice-to-have finding (pre-existing rext README drift, routed), deferral audit GREEN. The v2.1 rext roll + .agentspace/rext.tag consumption re-pin are close-release's job. Zero platform-repo edits."
+}
