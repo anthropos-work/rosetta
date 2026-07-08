@@ -7,7 +7,7 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 > **Scope.** This doc covers the **M9a framework** (the capture/serialize/replay contract + portable format, the
 > production-safe capture-source policy, the tenant-data firewall, the `.agentspace` manifest-cached pluggable
 > store, the `stacksnap` CLI, and the snapshot-fidelity data-DNA extension), the **M9b taxonomy surface** (the
-> ~2.1 GB public skiller catalog), **and the M10 Directus content surface** — the public simulation / skill-path
+> ~2.1 GB public skills-taxonomy catalog), **and the M10 Directus content surface** — the public simulation / skill-path
 > template library (the 9-table set under the per-surface `directus` public predicate, the per-stack Directus store
 > fork, the media refs, the content fidelity gene, and the `sim_id`/`skill_path_id` linkage; see [The Directus
 > content surface](#the-directus-content-surface-m10--the-second-real-surface)). With M10 the **last `waived` surface
@@ -72,7 +72,7 @@ A capture must never block the hot primary. The source is **pluggable** and trie
 
 **Both live sources read over `--dsn`** — there is **no offline pg_dump-FILE reader**. A `pg_dump` is "ingested" by
 **restoring it into Postgres and pointing `--dsn` at the restore** (Postgres bulk-load handles the restore well; a
-schema-scoped `pg_dump -n skiller` is small to restore). `dump-ingest` and `primary-read` differ only in *what*
+schema-scoped `pg_dump` of the taxonomy schema is small to restore — `public` since the v2.1 skiller→app merge; pre-merge it was the `skiller` schema, see [`snapshot-cold-start.md`](snapshot-cold-start.md)). `dump-ingest` and `primary-read` differ only in *what*
 `--dsn` addresses — a restored dump vs the prod read endpoint — plus the manifest label + precedence. (A direct
 offline file-reader was considered and **dropped**, M9b-D9: it adds no new capability — the produced snapshot is
 identical — and no reliable speed gain; restore-then-`--dsn` + the safe primary read cover the need.)
@@ -113,10 +113,10 @@ per surface — the scope column(s) that decide public-vs-customer, plus the SQL
 The org-only predicate is the **default** (`firewall.DefaultPredicate`), so taxonomy + the reference surfaces are
 unchanged; a new surface declares its own. A table is admissible iff **one** of:
 
-- it has **none of the predicate's scope columns** (a pure-reference table — e.g. `skiller.categories` or
+- it has **none of the predicate's scope columns** (a pure-reference table — e.g. `public.categories` or
   `directus.resource`), captured whole; OR
 - it **carries a scope column and is filtered to the public subset** (the predicate's filter — e.g.
-  `skiller.skills`: `organization_id IS NULL`, 42,763 public vs 794 customer; or `directus.simulations`:
+  `public.skills`: `organization_id IS NULL`, 42,763 public vs 794 customer; or `directus.simulations`:
   `private=false AND tenant_id IS NULL AND status='published'`, 304 public-published of 2,597); OR
 - it is **column-less but scoped via a public parent** (embeddings/translations/`sim_tasks` carry no scope column;
   they are public iff their parent is — judged under the surface's predicate). **Multi-level chains** (M10-D4): a
@@ -180,7 +180,7 @@ by location, so a remote backend re-implements the same
 ## Embedding capture (M9a-Q3)
 
 pgvector columns are captured **verbatim** (the vectors are in the payload), but the **index is NOT transported** —
-for `skiller.skill_embeddings` the index is ~689 MB of a 692 MB total (heap is only ~3 MB). The dry-run flags any
+for `public.skill_embeddings` the index is ~689 MB of a 692 MB total (heap is only ~3 MB). The dry-run flags any
 table whose total size dwarfs its heap as **index-rebuild-on-replay**; replay runs `REINDEX` after loading the
 table's rows. The **embedding-dimension integrity** fidelity gene then confirms the replayed vectors carry the
 captured dimension.
@@ -229,10 +229,10 @@ The snapshot dimension extends the M7b data-DNA harness (`stack-seeding/dna/`, t
   the captured set), **embedding-dimension integrity**, the **public-only / provenance** gene (the firewall's
   measured counterpart: zero tenant rows after replay), and (M23) the **cross-surface closure** gene.
 - **Cross-surface closure (M23, `snapshot-cross-surface-closure`).** Closure that spans the directus content
-  surface → the skiller taxonomy surface, distinct from the within-surface referential gene. Content references
-  taxonomy through `directus.sequences.skills` — a JSON array of `{node_id}` targeting `skiller.skills.node_id`
+  surface → the public taxonomy surface, distinct from the within-surface referential gene. Content references
+  taxonomy through `directus.sequences.skills` — a JSON array of `{node_id}` targeting `public.skills.node_id`
   (prod-verified; `simulations.job_roles` is a JSON array of role *names*, not node-ids). The gene
-  (`FidelityProbe.CrossSurfaceDangling`) counts, against the **replayed** directus↔skiller pair, every
+  (`FidelityProbe.CrossSurfaceDangling`) counts, against the **replayed** directus↔taxonomy pair, every
   content-referenced node-id that does NOT resolve in the replayed taxonomy; a non-zero count fails the gene and
   names a sample node. It is on the **`content`** gene at **`standard`** criticality — so a residual surfaces in
   the overall score but does **not** block the critical gate (and `measure-snapshot` is not run in the bring-up,
@@ -250,7 +250,7 @@ the firewall**. A live-run recipe (the DDL in `reference/reference.go`) stands t
 
 ## The taxonomy surface (M9b — the first REAL surface)
 
-M9b proves the framework on the live **public skiller taxonomy** — the ~60K-skill / 18K-role library behind the
+M9b proves the framework on the live **public skills taxonomy** — the ~60K-skill / 18K-role library behind the
 product (~2.1 GB, prod-measured ~98% public). The surface is enumerated in `stack-snapshot/taxonomy/` (one source of
 truth shared by the CLI registry, the fidelity gene, and any live-run recipe): `stacksnap capture --surface taxonomy`.
 
@@ -260,19 +260,19 @@ A table is listed AFTER every table it references, so a bulk-COPY replay never v
 
 | # | Table | Capture scope | Public rows (2026-06-06) |
 |---|-------|---------------|--------------------------|
-| 1 | `skiller.categories` | `organization_id IS NULL` | 22 |
-| 2 | `skiller.job_role_categories` | **pure-reference** (no org column) — captured whole | 22 |
-| 3 | `skiller.specializations` | `organization_id IS NULL` | 1,442 |
-| 4 | `skiller.skills` | `organization_id IS NULL` | 42,763 |
-| 5 | `skiller.job_roles` | `organization_id IS NULL` | 22,315 |
-| 6 | `skiller.skill_embeddings` | public-via `skills` — vector `small_embedding3` dim **1536** | 42,763 |
-| 7 | `skiller.job_role_embeddings` | public-via `job_roles` — vector `small_embedding3` dim 1536 | 18,904 |
-| 8 | `skiller.skill_translations` | public-via `skills` | 85,491 |
-| 9 | `skiller.job_role_translations` | public-via `job_roles` | 43,550 |
-| 10 | `skiller.job_role_skills` | public-via **BOTH** `job_roles` AND `skills` | 72,556 |
+| 1 | `public.categories` | `organization_id IS NULL` | 22 |
+| 2 | `public.job_role_categories` | **pure-reference** (no org column) — captured whole | 22 |
+| 3 | `public.specializations` | `organization_id IS NULL` | 1,442 |
+| 4 | `public.skills` | `organization_id IS NULL` | 42,763 |
+| 5 | `public.job_roles` | `organization_id IS NULL` | 22,315 |
+| 6 | `public.skill_embeddings` | public-via `skills` — vector `small_embedding3` dim **1536** | 42,763 |
+| 7 | `public.job_role_embeddings` | public-via `job_roles` — vector `small_embedding3` dim 1536 | 18,904 |
+| 8 | `public.skill_translations` | public-via `skills` | 85,491 |
+| 9 | `public.job_role_translations` | public-via `job_roles` | 43,550 |
+| 10 | `public.job_role_skills` | public-via **BOTH** `job_roles` AND `skills` | 72,556 |
 
 The FK graph: `skills.parent → specializations`, `specializations.parent → categories`,
-`job_roles.category_id → job_role_categories` (a **separate** pure-reference parent — NOT `skiller.categories`),
+`job_roles.category_id → job_role_categories` (a **separate** pure-reference parent — NOT `public.categories`),
 the embeddings/translations → their parent, and `job_role_skills → {job_roles, skills}`. The public hierarchy is
 referentially closed: 0 public skills with a customer/missing specialization parent, 0 public specs with a
 customer/missing category, 0 public roles with a missing category.
@@ -287,10 +287,10 @@ real predicate:
 
 ```sql
 -- one parent (skill_embeddings / skill_translations):
-skill_id IN (SELECT id FROM skiller.skills WHERE organization_id IS NULL)
+skill_id IN (SELECT id FROM public.skills WHERE organization_id IS NULL)
 -- two parents, ANDed (job_role_skills — role AND skill must both be public):
-job_role_id IN (SELECT id FROM skiller.job_roles WHERE organization_id IS NULL)
-  AND skill_id IN (SELECT id FROM skiller.skills WHERE organization_id IS NULL)
+job_role_id IN (SELECT id FROM public.job_roles WHERE organization_id IS NULL)
+  AND skill_id IN (SELECT id FROM public.skills WHERE organization_id IS NULL)
 ```
 
 The post-capture firewall probe (`AssertCaptured`) is parent-aware: for a column-less table it counts rows **within
@@ -423,9 +423,9 @@ in `cms/internal/directus/directus.go`, verified @ v0.251.2; prod Directus serve
 anonymous reads — verified 2026-06-11, incl. `publicJobSimulations` through a demo's router post-strip; live
 demo-1 audit: 0/16 containers carry the token). The read is **within the read-side public boundary** — but it
 is a **non-self-contained runtime dependency**, and it pairs **full-prod-live content** with a
-**full public taxonomy** in skiller. The consequence is a **referential-consistency boundary**: a public
+**full public taxonomy** in the `public` schema. The consequence is a **referential-consistency boundary**: a public
 sim can reference a taxonomy node-id that is NOT public (a customer-scoped skill the firewall must not capture),
-and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved by skiller) then fails the whole
+and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved by the backend subgraph) then fails the whole
 query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
 **collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
 **executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
@@ -722,7 +722,7 @@ stacksnap capture --surface directus       --source primary-read --dsn <marco_re
 
 > **The replay leg is wired into the set-dress loop (M42e P6).** `dev-setdress.sh`'s `snapshot_step` iterates
 > `for s in taxonomy directus sim-embeddings` — so a fresh `/demo-up` (and a `/dev-up`) replays **all three**
-> public surfaces in FK order: `taxonomy` (the skiller catalog) → `directus` (the content templates **+** the 4
+> public surfaces in FK order: `taxonomy` (the public skills catalog) → `directus` (the content templates **+** the 4
 > library-category tables) → `sim-embeddings` (the `cms` pgvector index + REINDEX). `sim-embeddings` targets the
 > stack's `cms` schema (a different schema than directus, same offset DSN); its replay is **non-fatal** like the
 > others (a missing `cms` schema = rc 4, a cache-miss = rc 5 → the AI-sim library degrades to empty but the seed
