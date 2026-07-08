@@ -360,7 +360,7 @@ its data reproduces the captured public source — row-for-row, structurally, re
 dimension, and with zero tenant leakage — and that fidelity is enumerable and measurable, just like behaviour.**
 
 **Wired to real surfaces (M9b + M10).** The dimension stops being theoretical at M9b: the **taxonomy** surface (the
-public skiller catalog) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries all five
+public skills-taxonomy catalog — formerly the skiller service's; the domain now lives in `app`'s `public` schema) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries all five
 fidelity operators. **M10** promotes the **content** surface (the public Directus template library)
 `waived-m7c → snapshot-seeded-m10`, carrying four operators (no `embedding-dim` — content has no vectors) with the
 **public-only gene measured against the per-surface directus predicate** (`private=false AND tenant_id IS NULL AND

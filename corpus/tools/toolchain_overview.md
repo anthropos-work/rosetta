@@ -51,7 +51,7 @@ Tools specific to developing, building, and running the Go-based microservices.
 *   **Atlas**
     *   *Function*: Database Schema Management.
     *   *User*: Backend Engineers.
-    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations (`public`, `cms`, `jobsimulation`, `skiller`) and versioning. Used via `atlas migrate apply`.
+    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations (`public`, `cms`, `jobsimulation`, `skillpath`) and versioning. Used via `atlas migrate apply`.
 
 ## 3. Web Development (Frontend)
 Tools specific to the Next.js monorepo and web applications.

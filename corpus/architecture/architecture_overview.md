@@ -7,9 +7,9 @@ This document provides a high-level overview of the Anthropos platform architect
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
 *   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
-    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md))
+    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — 60K+ skills graph, vector embeddings (RAG), AI skill matching (formerly the standalone skiller service)
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Skiller/Skillpath**: Managing user skills, taxonomy (60K skills), learning-path *progress*, and vector embeddings (RAG). (Skillpath tracks per-user progression *state*; the learning-path *content* lives in CMS — see the content-vs-runtime note below.)
+    *   **Skillpath**: Learning-path *progress* tracking. (Skillpath tracks per-user progression *state*; the learning-path *content* lives in CMS — see the content-vs-runtime note below.)
     *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by CMS.)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python, in the same container)
     *   **Storage**: File/blob storage
@@ -51,7 +51,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `graphql` profile):
-1. **Core Backend Services**: 9 Go microservices (Backend/App, Sentinel, CMS, Skiller, Skillpath, Jobsimulation, Storage, Roadrunner, Messenger when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+1. **Core Backend Services**: 8 Go microservices (Backend/App, Sentinel, CMS, Skillpath, Jobsimulation, Storage, Roadrunner, Messenger when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized. (The skiller microservice was merged into Backend/App in July 2026.)
 2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is now embedded in the CMS container.
 3. **External Services**: Clerk, Directus, GraphQL, AI providers, LiveKit, AWS Chime
 4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
@@ -77,10 +77,9 @@ graph TD
     end
 
     subgraph Core["⚙️ Core Backend Services (Go)"]
-        Gateway[Backend / App Gateway]
+        Gateway[Backend / App Gateway<br/>+ skills taxonomy, embeddings, matching]
         Sentinel[Sentinel]
         CMS_Service[CMS Service<br/>+ embedded Studio-Room]
-        Skiller[Skiller]
         JobSim[Job Simulation]
         Skillpath[Skillpath]
         Storage[Storage]
@@ -105,10 +104,9 @@ graph TD
     Desk --> GraphQL
     Room -.->|generates from| Desk
     
-    %% GraphQL aggregation (5 subgraphs: backend, skiller, jobsimulation, cms, skillpath)
+    %% GraphQL aggregation (4 subgraphs: backend, jobsimulation, cms, skillpath)
     GraphQL --> Gateway
     GraphQL --> CMS_Service
-    GraphQL --> Skiller
     GraphQL --> JobSim
     GraphQL --> Skillpath
 
@@ -123,8 +121,6 @@ graph TD
     %% Data connections
     Gateway --> Postgres
     Gateway --> Redis
-    Skiller --> Postgres
-    Skiller --> Redis
     JobSim --> Postgres
     JobSim --> Redis
     Directus --> Postgres
@@ -144,11 +140,10 @@ Default local development set (started by `make up`, profile `graphql`):
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Backend** (`app`) | Go | Main API Gateway / User Backend | [→](../services/backend.md) |
+| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026) | [→](../services/backend.md) |
 | **CMS** | Go + embedded Python (studio-room) | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
 | **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
 | **Jobsimulation** | Go | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from CMS by ID | [→](../services/jobsimulation.md) |
-| **Skiller** | Go | Skill management, assessment, vector embeddings (RAG) | [→](../services/skiller.md) |
 | **Skillpath** | Go | **Runtime** — tracks per-user progression *state*; the skill-path *content* lives in CMS | [→](../services/skillpath.md) |
 | **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
 | **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
@@ -174,12 +169,13 @@ Production-only (deployed but not in local docker-compose):
 | :--- | :--- | :--- | :--- |
 | **db-backup** | Go | Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner | [→](../services/db-backup.md) |
 
-Archived (removed from local orchestration; repos still exist):
+Archived / merged (removed from local orchestration; repos still exist):
 
 | Service Name | Status | Documentation |
 | :--- | :--- | :--- |
 | **Chronos** | Removed via platform commit `045857c` | [→](../services/chronos.md) |
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
+| **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
 
 #### Shared Libraries (Not Deployed)
 
@@ -191,7 +187,7 @@ Archived (removed from local orchestration; repos still exist):
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types |
 | **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) |
-| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in skiller |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app`'s `public` schema (former skiller service) |
 
 #### Studio Services (Tier 2)
 
@@ -206,7 +202,7 @@ Archived (removed from local orchestration; repos still exist):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath) | [→](../services/graphql-wundergraph.md) |
+| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (4 subgraphs: app, jobsimulation, cms, skillpath) | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
@@ -224,13 +220,13 @@ Archived (removed from local orchestration; repos still exist):
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 
 #### Frontend/Studio → Backend
-*   **Primary**: GraphQL via Cosmo Router (Apollo Federation v2 with 5 subgraphs)
+*   **Primary**: GraphQL via Cosmo Router (Apollo Federation v2 with 4 subgraphs)
 *   **Direct**: Some services expose REST endpoints for specific use cases
 
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via CMS service (business logic layer)
-*   **GraphQL**: Cosmo Router aggregates 5 subgraph services (app, skiller, jobsimulation, cms, skillpath) into federated schema
+*   **GraphQL**: Cosmo Router aggregates 4 subgraph services (app, jobsimulation, cms, skillpath) into federated schema
 *   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
 
 For detailed integration patterns, see [External Services](./external_services.md).
@@ -241,7 +237,7 @@ A typical API request follows this path:
 
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
-  → Subgraph service (app/skiller/jobsim/cms/skillpath)
+  → Subgraph service (app/jobsim/cms/skillpath)
     → gRPC to internal services (sentinel, storage, roadrunner, ...)
     → Redis Streams for async events
 ```
@@ -275,13 +271,12 @@ The platform uses a **Code-First** approach to data management, relying on stric
 
 #### 3. Database Separation
 Although all services may share a physical PostgreSQL instance (in dev/docker), they are logically separated by **PostgreSQL Schemas** (source: `platform/repos.yml` `schema:` field for services with `migrations: true`):
-*   `backend` service → `public` schema
+*   `backend` service → `public` schema (including the skills taxonomy + embeddings ported from the old `skiller` schema; the legacy `skiller` schema is no longer authoritative)
 *   `cms` service → `cms` schema
 *   `jobsimulation` service → `jobsimulation` schema
-*   `skiller` service → `skiller` schema
 *   `skillpath` service → `skillpath` schema
 *   `sentinel` service → `sentinel` schema (created manually during setup; sentinel does not run migrations)
-*   `extensions` schema → houses `pgvector` extension (required by skiller embeddings)
+*   `extensions` schema → houses `pgvector` extension (required by the skill/job-role embeddings, now owned by `backend`)
 
 > [!IMPORTANT]
 > **Manual Setup Required**: The platform does *not* automatically apply migrations on startup (to prevent accidental production overrides). Developers must run `atlas migrate apply` manually when setting up a fresh environment or pulling schema changes.

@@ -134,7 +134,7 @@ GetSkillPathSession(ctx, req *skillpathv1.GetSkillPathSessionRequest) (*skillpat
 ### Dependencies
 
 *   **Upstream Consumers**:
-    *   Cosmo Router (federated queries — skillpath is one of the 5 subgraphs)
+    *   Cosmo Router (federated queries — skillpath is one of the 4 subgraphs)
     *   Backend (`app`) — depends on skillpath at compose startup
 *   **Downstream Dependencies**:
     *   **Sentinel** (Connect-RPC): authorization (manager + admin checks)

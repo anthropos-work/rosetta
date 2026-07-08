@@ -150,7 +150,7 @@ Anthropos uses a **three-tier microservices architecture**:
 
 | Tier | Services | Technology |
 |------|----------|------------|
-| **Core Backend** | Backend, CMS, Sentinel, Skiller, Jobsimulation, Skillpath, Storage, Roadrunner | Go |
+| **Core Backend** | Backend (incl. the skills taxonomy domain — the former Skiller service, merged into it), CMS, Sentinel, Jobsimulation, Skillpath, Storage, Roadrunner | Go |
 | **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline, embedded in CMS), Ant Academy (internal learning portal) | TypeScript, Python, Next.js + Expo |
 | **External** | Clerk (auth), Directus (CMS), GraphQL/Wundergraph (gateway) | SaaS / Docker |
 
