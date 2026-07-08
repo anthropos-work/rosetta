@@ -1,9 +1,9 @@
 ---
 active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quick-change; tag v2.1)"
 active_branch: "release/02.10-quick-change"
-active_milestone: "M208 — Re-sync & merged-schema ground-truth (section, planned) — next up"
+active_milestone: "M208 — Re-sync & merged-schema ground-truth (section, built) — awaiting close"
 last_closed: "v2.0 opening night — 2026-07-02 (tag v2.0, 4 milestones M201..M204) — the Playthroughs pillar"
-phase: "designed — release branch cut + milestones scaffolded; awaiting /developer-kit:build-milestone (M208)"
+phase: "M208 built — both stacks re-synced to merged platform, skiller clones removed, live containerized de-risk GREEN (merged public schema migrates clean, 4-subgraph compose, no skiller container, prod public-skills=42,790), merge fact-sheet pinned; 2 bring-up findings routed Fate-3→M211; awaiting /developer-kit:close-milestone (M208)"
 last_updated: "2026-07-08"
 ---
 

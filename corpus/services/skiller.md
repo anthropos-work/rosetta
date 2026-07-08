@@ -1,5 +1,16 @@
 # Skiller Service
 
+> ## ⚠️ Merged into `app` — no longer a standalone service (v2.1 "quick change", July 2026)
+>
+> The `skiller` microservice has been **merged into `app`** (the "backend" service): the skills-taxonomy
+> domain moved to the **`public`** schema (table names unchanged), the `SkillerService` RPC is served by
+> app at `SKILLER_RPC_ADDR=http://backend:8083`, the skiller GraphQL subgraph was removed (**4 subgraphs**
+> now), and the skiller container/repo are gone. **Authoritative merged-shape statement:**
+> [Backend (`app`) § Skiller-in-app merge — fact-sheet](./backend.md#skiller-in-app-merge--fact-sheet-v21-quick-change).
+>
+> The body below still describes the **pre-merge** standalone service — retained as history; the full
+> re-point of this doc lands in M210 of the v2.1 release.
+
 ## Role & Responsibility
 
 Skiller is the **skills graph** of the platform. It owns the 60K-skill / 18K-job-role Anthropos taxonomy, computes vector embeddings for skills and roles (for RAG-based matching), and exposes job-role matching and skill-management APIs to the rest of the platform.

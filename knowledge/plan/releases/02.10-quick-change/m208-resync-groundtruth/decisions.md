@@ -34,3 +34,55 @@ a dead host-gateway. **Decision:** temporarily PARK the override (`mv …overrid
 …override.yml.m208-parked`) for the duration of the containerized `make up`/verify, then RESTORE it
 verbatim at section close. Fully reversible; the user's native-dev config is returned untouched.
 `stack-demo/platform` has no such override.
+
+## Finding 2 — INVITATION_HMAC_SECRET per-stack .env gap → M211 / /stack-secrets (2026-07-08)
+
+The cold containerized `backend` `Exited(0)` at startup on `INVITATION_HMAC_SECRET is not set` (fatal:
+`app/main.go:266` → `internal/invitations/token.go:23`; POSTHOG key also empty). **Investigated** (three-fate
+guard): a **documented, known** required secret — `corpus/ops/secrets-spec.md:111` states "the app exits
+early when it is unset"; one of the platform `.env` 29 keys (line 98); in `secretdna.DemoGeneratedKeys`
+(demo auto-generates it; app `docs/invitation-reminders.md` prescribes `openssl rand -hex 32`). **Not a
+merge regression** — stack-dev's hand-assembled `.env` lacked it because its containerized `backend` is
+normally never run (native-worktree dev). During the existing-volume run I did a Fate-1 dev-value add
+(values-blind) to confirm the federation serves end-to-end, then **reverted it** per the orchestrator
+directive ("do NOT provision secrets here"); the `.env` is left in its original gap state. **Routed to
+M211 / a `/stack-secrets` follow-up** — the sanctioned provisioner, not an ad-hoc edit. No corpus change
+(the secrets-spec already documents the key + the exit-early behavior).
+
+## Finding 1 — clean-bring-up extensions bootstrap + PG-readiness (M25-D9 class) → M211 Fate-3 + M209 Risk-2 (2026-07-08)
+
+The M25-D9 opportunistic item **surfaced** — on the **clean-slate** `make reset-db` path (the existing-volume
+migrate masked it). A clean reset-db does not bootstrap the `extensions` schema (pgvector + `pg_trgm`) before
+migrate, so the merged vector/trigram migrations fail on an empty DB: app `20260518125439`
+(`ask_query_examples.embedding extensions.vector(1536)`) and cms `20250116133510`
+(`similarities.small_embedding3 …`) → `pq: schema "extensions" does not exist`; app `20260623090000` needs
+the `extensions.gin_trgm_ops` opclass. Manual `CREATE SCHEMA extensions; CREATE EXTENSION vector/pg_trgm
+SCHEMA extensions;` unblocks table creation. Plus a secondary **PG-readiness race** on reset-db
+(`connection reset by peer`; a re-run succeeds). It did **not** trivially fall out as Fate-1 (it's a
+bring-up-tooling requirement). **Fate-3: routed to M211** (bring-up acceptance — edited M211/overview.md
+In-scope to name the extensions-bootstrap + PG-readiness requirement) with an **M209 Risk-2 cross-ref**
+(the capture column list uses `extensions.vector` + `extensions.gin_trgm_ops`). Details in spec-notes
+Finding 1.
+
+## Live de-risk result (2026-07-08) — the milestone's load-bearing proof
+
+The #1 release risk (86-commit `app` pull + migration re-run) is **retired GREEN**: the merged image
+builds; a clean-slate `make reset-db` + `make migrate` creates the **full public taxonomy from scratch**
+(public.skills with `organization_id`, job_roles, job_role_skills, skill_embeddings, categories,
+specializations) with **no `skiller` schema on a clean DB** — provided the `extensions` schema is
+bootstrapped first (Finding 1); the 4-subgraph compose comes up with **no skiller container** and
+`SKILLER_RPC_ADDR=http://backend:8083`; the merged app subscribes to the `skiller` Redis stream in-process
+and its DB search_path has no skiller. The existing-volume run additionally confirmed the router SERVES the
+absorbed taxonomy subgraph end-to-end (with a dev HMAC secret present; the clean-slate run couldn't, per
+Finding 2). Measured prod public-skill count (`public.skills WHERE organization_id IS NULL`) = **42,790**,
+confirming the ~42,763 assertion (the figure M209's post-capture assertion will grade against).
+M209/M210/M211 grade against this proven state.
+
+## Fact-sheet placement — minimal anchor, not M210's body-flip
+
+M208 delivers a **minimal + authoritative** merge fact-sheet: a self-contained `## Skiller-in-app merge`
+section added to `corpus/services/backend.md` (the grading contract for M209/M210/M211) + a top-of-file
+pointer banner on `backend.md` and a minimal stub banner on `corpus/services/skiller.md`. The pre-merge
+prose bodies are **left untouched** (KB-1/2/3 → M210's full body-flip). Deliberately did NOT adopt the
+colleague's `origin/docs/skiller-in-app-merge` full drafts (that branch is M210's to land) — referenced
+only to ground facts.
