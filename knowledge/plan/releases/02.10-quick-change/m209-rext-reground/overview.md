@@ -37,7 +37,9 @@ cache-key digest + the capture column-list). Enumerable up front → `section`.
   keying on the enumerated table set (or app migration rev) instead of `md5(all columns of all tables in schema)`.
 - **Verify the capture SELECT column list vs merged prod** (Risk 2 — the one non-mechanical bit): the column names
   may differ post-merge (`embedding → small_embedding3`, generated `ts_search`/GIN opclasses now `extensions.`-
-  qualified). Reconcile the capture column mapping.
+  qualified). Reconcile the capture column mapping. **Confirmed by M208's live de-risk** — the merged taxonomy
+  vector columns are `extensions.vector(1536)` and the trigram index uses `extensions.gin_trgm_ops` (M208
+  spec-notes Finding 1); the capture column list must carry these `extensions.`-qualified types.
 - Keep `AssertPublicOnly` (the runtime net that rejects any captured row with non-null `organization_id`) + add a
   post-capture assertion that `public.skills WHERE organization_id IS NULL` ≈ **42,763** rows (catches an empty /
   over-broad capture).

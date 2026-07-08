@@ -42,6 +42,21 @@ The fit-up/dress-rehearsal **fix → re-measure → re-run bring-up** loop, driv
 gates. Each tik: run the bring-up, triage a failure, route the fix to its surface (rext → M209-class change on the
 authoring copy + re-tag; corpus → M210-class doc fix; stack → re-sync), re-measure. Close-on-gate.
 
+## Pre-surfaced bring-up requirement (Fate-3 from M208's live de-risk)
+M208's live containerized de-risk already surfaced one concrete cold-bring-up fix-loop (the **M25-D9 class**),
+pinned here so M211's first tik doesn't re-discover it:
+- **Bootstrap the `extensions` schema before `make migrate` on a clean DB** — `CREATE SCHEMA extensions;
+  CREATE EXTENSION vector SCHEMA extensions; CREATE EXTENSION pg_trgm SCHEMA extensions;` — with the
+  `extensions.gin_trgm_ops` opclass **resolvable** (search_path handling). Without it, a clean `make reset-db`
+  + migrate fails: app `20260518125439` + cms `20250116133510` (`extensions.vector(1536)` columns) →
+  `schema "extensions" does not exist`, and app `20260623090000` (GIN-trigram index) can't resolve
+  `extensions.gin_trgm_ops`. Not a merge defect — a bring-up-ordering prerequisite the merged taxonomy needs.
+- **Add a PG-readiness wait before migrate on a cold bring-up** — reset-db currently races Postgres
+  (`connection reset by peer` on the first migrate pass; a re-run succeeds).
+
+Both are bring-up-tooling requirements (M25-D9 class). See M208 `spec-notes.md`/`decisions.md` Finding 1;
+the `extensions.`-qualified capture column list is also cross-referenced in M209's Risk-2 (`overview.md` §In).
+
 ## Three-fate note
 Fixes surfaced mid-iter route per the three-fate rule. A surface that **cannot be driven without a platform-repo
 edit ESCALATES** (the `unimplementable-without-platform-edit` state) — it never edits the platform. The platform

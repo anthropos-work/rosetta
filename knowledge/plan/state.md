@@ -1,9 +1,9 @@
 ---
 active_release: "v2.1 quick change — IN DEVELOPMENT (branch release/02.10-quick-change; tag v2.1)"
 active_branch: "release/02.10-quick-change"
-active_milestone: "M208 — Re-sync & merged-schema ground-truth (section, planned) — next up"
-last_closed: "v2.0 opening night — 2026-07-02 (tag v2.0, 4 milestones M201..M204) — the Playthroughs pillar"
-phase: "designed — release branch cut + milestones scaffolded; awaiting /developer-kit:build-milestone (M208)"
+active_milestone: "M209 — rext tooling re-ground (section, planned) — next"
+last_closed: "M208 — 2026-07-08 (Re-sync & merged-schema ground-truth — the v2.1 foundation; 86-commit app merge pull re-synced + live de-risk GREEN, merge fact-sheet pinned)"
+phase: "M208 CLOSED (merged → release/02.10-quick-change): both stacks re-synced to the merged platform, vestigial skiller clones removed, live containerized de-risk GREEN, merge fact-sheet pinned. Next: /developer-kit:build-milestone M209 (rext tooling re-ground + snapshot recapture + tag rext v2.1)"
 last_updated: "2026-07-08"
 ---
 
@@ -19,16 +19,22 @@ M211, strictly sequential** (the user's execution choice). **Tooling + docs + st
 platform-repo edits** (the platform already did its half). Detail:
 [`roadmap.md`](roadmap.md) § In Development — v2.1.
 
-**Active milestone:** **M208 — Re-sync & merged-schema ground-truth** (`section`, `planned`) — the load-bearing
-foundation; everything downstream grades against the current merged code it produces. **Next:**
-`/developer-kit:build-milestone` M208.
+**Active milestone:** **M209 — rext tooling re-ground** (`section`, `planned`) — re-point every rext tool that
+queries the old `skiller` schema or expects the skiller service to the merged reality (`skiller.*→public.*`),
+recapture the snapshot from merged-prod, and tag a new rext (`v2.1`). Grades against M208's pinned merge
+fact-sheet. **Next:** `/developer-kit:build-milestone` M209.
 
-**Phase:** **designed** — release branch cut + `m208…m211` milestone dirs scaffolded; awaiting
-`/developer-kit:build-milestone`.
+**Phase:** **M208 CLOSED** (merged → `release/02.10-quick-change`) — both stacks re-synced to the merged platform
+(`app`→v1.334.1 / 86-commit merge pull; `platform`→`0808b92`, skiller gone from compose/repos.yml/Make), vestigial
+`stack-*/skiller/` clones removed, live containerized de-risk GREEN (4-subgraph compose, no skiller container,
+clean-slate migrate builds the full `public` taxonomy with no skiller schema, prod public-skills = 42,790), merge
+fact-sheet pinned in `backend.md`+`skiller.md`. Close: 0 findings, deferral audit GREEN.
 
-**Next up:** **run `/developer-kit:build-milestone`** to build **M208** (`make pull` both stacks to the merged
-platform, remove the vestigial `stack-*/skiller/` clones, re-migrate against `public`, pin the merge fact-sheet).
-Then M209 (rext re-ground + recapture) → M210 (corpus re-ground, lockstep with M209) → M211 (iterative bring-up
+**Next up:** **run `/developer-kit:build-milestone`** for **M209** (flip `stack-snapshot/taxonomy` const
+`skiller→public`, narrow the `SchemaVersionSQL` cache-key digest, verify the capture column list vs merged-prod
+[`extensions.vector` / `extensions.gin_trgm_ops`, confirmed by M208], re-point the 5 seeding real-SQL files
+keeping the `organization_id IS NULL` predicate, drop skiller from the verify/demo-stack probes, recapture the
+public taxonomy, tag rext `v2.1`). Then M210 (corpus re-ground, lockstep with M209) → M211 (iterative bring-up
 acceptance: `/dev-up` + `/demo-up` GREEN cold on the merged platform).
 
 **Design inputs / evidence:** the user's skiller-merge briefing + the colleague's unmerged
@@ -45,8 +51,9 @@ tags. Local closes deliberately do not push; this is the user's gate. The box-le
 stays at `v1.10.1` until M209 tags `v2.1` and re-pins the consumption stacks. An administrative KEEP, not a deferral.
 
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01
-(`replayCmd` hermetic test), **M25-D9** (dev taxonomy `rc=4` — **now on the M208 re-sync migration path →
-opportunistic Fate-1**), M314b (prod frozen-read whole-org hydration — a prod-team follow-up). All tracked in
+(`replayCmd` hermetic test), **M25-D9** (dev taxonomy `rc=4` — **surfaced at M208 on the clean-slate re-migrate as
+the `extensions`-schema-bootstrap + PG-readiness bring-up requirement; did NOT fall out as a trivial Fate-1 →
+routed Fate-3 to M211**), M314b (prod frozen-read whole-org hydration — a prod-team follow-up). All tracked in
 [`roadmap-vision.md`](roadmap-vision.md). The reserved **Playthroughs futures** (M205 Hiring/tier-gates · M206
 AI-sim-mirror-tier + M203-carried edge UCs · M207 Academy) stay reserved in vision — v2.1 takes M208+ per the
 established "reserved-number-ships-later" precedent (M206 is a live Fate-3 destination from the M203 close).
@@ -84,6 +91,6 @@ _(Earlier v1.x — v1.0 … v1.9 — full shipped table in [`roadmap-legacy.md`]
 **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` ·
 **v1.1** `v1.1` · **v1.0** `v1.0`. (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-07-08 (v2.1 "quick change" DESIGNED + PROMOTED — the skiller-in-app re-ground; 4 milestones
-M208 → M209 → M210 → M211, strictly sequential; branch `release/02.10-quick-change` cut from `main`, tag `v2.1`.
-Next: `/developer-kit:build-milestone` M208.)_
+_Last updated: 2026-07-08 (M208 "Re-sync & merged-schema ground-truth" CLOSED — the v2.1 foundation; both stacks
+re-synced to the merged platform, skiller clones removed, live de-risk GREEN, merge fact-sheet pinned; merged →
+`release/02.10-quick-change`. 0 close findings, deferral audit GREEN. Next: `/developer-kit:build-milestone` M209.)_
