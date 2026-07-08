@@ -601,7 +601,25 @@ If your database is corrupted or you want a clean start:
 ```bash
 make reset-db
 ```
-This removes PostgreSQL data, restarts the container, and re-runs all migrations.
+This removes PostgreSQL data, restarts the container, and re-runs all migrations **automatically**.
+
+> **⚠ Cold-reset ordering (do this or the auto-migrate fails).** `make reset-db` wipes the DB — including the
+> `extensions` and `sentinel` schemas — then re-runs `make migrate` **immediately**, before you get a chance
+> to re-create them. On the merged platform the app/cms `vector(1536)` embedding columns and the app
+> gin-trigram index depend on `extensions` existing (`extensions.vector`, `extensions.gin_trgm_ops`), so the
+> auto-migrate step **fails cold** with `schema "extensions" does not exist`. Re-create the schemas + reload
+> the Sentinel policy, then re-run the migrations:
+> ```bash
+> # re-create the wiped schemas + extensions (same as the first-run "Prepare PostgreSQL Schemas" step)
+> docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;"
+> docker compose exec postgresql psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS sentinel;"
+> docker compose exec -T postgresql psql -U postgres -d postgres < ../sentinel/init_policy.sql   # empty casbin_rules after a wipe
+> docker compose restart sentinel
+> make migrate                                                                                   # re-run the migrations the auto-pass failed on
+> ```
+> (The first-time cold `/dev-up` build avoids this race because it creates the schemas **between** `make up`
+> and `make migrate`; only `make reset-db`'s bundled auto-migrate hits it. This is a bring-up-ordering
+> prerequisite of the merged taxonomy, not a migration defect — the M25-D9 class.)
 
 ### "Permission denied" when starting Postgres after a fresh checkout
 Bitnami Postgres runs as uid 1001 inside the container. The bind-mount root (`platform/data/postgresql`) is created by Docker as root and the container can't write to it. Pre-create with the right ownership before first start:

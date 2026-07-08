@@ -52,13 +52,15 @@ before/after each step, request confirmation before installs or destructive ops,
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
    cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
-   init-studio`) → `platform/.env` configured → services up (`make up` — expect **12 containers** in
-   `graphql`) → PostgreSQL schemas (`extensions`, `sentinel`) → **Sentinel policy load**
+   init-studio`) → `platform/.env` configured → services up (`make up` — expect **11 containers** in
+   `graphql` post-merge; the `skiller` container is gone since July 2026, its taxonomy tables merged into
+   `app`'s `public` schema) → PostgreSQL schemas (`extensions`, `sentinel`) → **Sentinel policy load**
    (`sentinel/init_policy.sql` → seeds `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on
    startup but does NOT seed the policy — without this load every authorized route 403s) → migrations
    (`make migrate`) → frontend + Studio-Desk deps → health.
-4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 12 healthy containers
-   (`make ps`), GraphQL gateway on `localhost:5050`. Then **start native processes in tmux** (required —
+4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 11 healthy containers
+   (`make ps`) — the merged 4-subgraph platform (no `skiller` container), GraphQL gateway on
+   `localhost:5050`. Then **start native processes in tmux** (required —
    these are not in the `graphql` Docker profile and must outlive the Claude session):
    ```bash
    # next-web-app (always native — required)
