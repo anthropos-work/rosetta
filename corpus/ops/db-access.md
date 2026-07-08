@@ -29,8 +29,8 @@ customer-scoped rows as if they were shareable reference data.**
 
 1. **Read-only + low-impact.** SELECT only; schema-qualified; always `LIMIT`. For sizing/shape prefer
    **catalog-only** queries — `pg_class.reltuples`, `pg_total_relation_size(oid)`, `information_schema.columns` —
-   which are instant and scan nothing. Avoid `COUNT(*)` / full scans on the GB tables (`skiller.skill_embeddings`,
-   `skiller.skills`, `public.ai_usages`, `jobsimulation.interactions/validation_*/activity_events`). The snapshot
+   which are instant and scan nothing. Avoid `COUNT(*)` / full scans on the GB tables (`public.skill_embeddings`,
+   `public.skills`, `public.ai_usages`, `jobsimulation.interactions/validation_*/activity_events`). The snapshot
    **capture-source policy** ([`snapshot-spec.md`](snapshot-spec.md)) generalizes this with a source-pluggable
    precedence (M9a-D3): **ingest an existing prod `pg_dump` [default, zero new prod load]** → **safe throttled
    primary read [fallback]** (MVCC means a read-only `SELECT`/`COPY` never blocks writers — off-peak + chunked +
@@ -43,13 +43,15 @@ customer-scoped rows as if they were shareable reference data.**
 
 ### The public-vs-customer split (prod-verified 2026-06-06, catalog-grounded)
 
+> *(Note: with the July 2026 skiller→app merge the taxonomy tables moved to the `public` schema — same table names, same split; the old `skiller` schema is legacy, no longer authoritative. Counts below are the 2026-06-06 verification.)*
+
 | Surface | public (`org_id IS NULL`) | customer (`org_id` set) | snapshot rule |
 |---|---|---|---|
-| `skiller.skills` | 42,763 | 794 | capture public |
-| `skiller.job_roles` | 22,315 | 2,381 | capture public |
-| `skiller.specializations` | 1,442 | 154 | capture public |
-| `skiller.categories` | 22 | 42 | capture public |
-| `skiller.{skill,job_role}_embeddings` | — (no org col) | — | via public parent; rebuild index on replay |
+| `public.skills` | 42,763 | 794 | capture public |
+| `public.job_roles` | 22,315 | 2,381 | capture public |
+| `public.specializations` | 1,442 | 154 | capture public |
+| `public.categories` | 22 | 42 | capture public |
+| `public.{skill,job_role}_embeddings` | — (no org col) | — | via public parent; rebuild index on replay |
 | `cms.studio_documents` | **0** | 3,060 | **exclude (all customer)** |
 | `cms.studio_tasks` | **0** | 2,353 | **exclude (all customer)** |
 | `cms.similarities` | 274 | 733 | public only |
@@ -69,11 +71,11 @@ separate Postgres — M10-D2 corrected the spike's "separate store" inference). 
 SELECT c.relname, to_char(c.reltuples,'FM999,999,999') AS approx_rows,
        pg_size_pretty(pg_total_relation_size(c.oid)) AS total
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname='skiller' AND c.relkind='r'
+WHERE n.nspname='public' AND c.relkind='r'
 ORDER BY pg_total_relation_size(c.oid) DESC;
 ```
 
-Prod headline (2026-06-06): `skiller` ≈ **2.1 GB** (the v1.2 taxonomy snapshot surface) — `skill_embeddings` 692 MB
+Prod headline (2026-06-06, measured pre-merge in the then-live `skiller` schema; the same tables now live in `public`): the taxonomy surface ≈ **2.1 GB** (the v1.2 taxonomy snapshot surface) — `skill_embeddings` 692 MB
 (but heap only 3.3 MB → ~689 MB is the **pgvector index** → rebuild on replay, don't transport it), `skills`
 436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The `cms` content tables are tens of MB.
 
