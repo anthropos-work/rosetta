@@ -37,3 +37,9 @@
 - [ ] [should-fix] Capture the **cache-migration-as-recapture** pattern (the substantive M211 mechanism) as a durable corpus note (snapshot-spec.md).
 - [ ] [should-fix] Capture the recurring **stale-clone / build-scratch** class (M208 re-sync + M211 build-scratch) as a durable note.
 - [x] Re-ground substantively complete + correct; M210 correctly refused the phantom 43/44 fabrication.
+
+## Resolution (Phase 7 — all findings landed)
+**Corpus/planning (rosetta `47d9ff5`):** count 42,763→42,790 (3 tooling docs) · stack-snapshot/SKILL.md replay-target skiller→public · service_taxonomy 9→8 Go services · M314b roadmap-vision entry · idempotency migrate-dev.sh row · 2 KB notes (cache-migration-recapture + build-scratch freshness).
+**Rext (`quick-change-m211` → `7906f3f`):** FIX A toolchain go1.25.11→go1.25.12 (govulncheck clean all 6) · FIX B stack-verify/e2e typescript + tsconfig (typecheck exit 0) · FIX C dropped skiller from `gen_injected_override.py` INJECTED + `run.sh` (suites kept green: test_injection 96, test_verify 104) · FIX D 5 doc-comment double-words · FIX E exported `isAcademyPort` (test validates shipped code).
+**Verification:** Phase 8 both trees clean; Phase 8b triple-clean 3/3 (-shuffle, go1.25.12); Go 6/6 green, TS typecheck+units green, govulncheck clean.
+**Deferred to the v2.1 rext roll (Phase 10):** TEST-1 + DOC-1 (rext README reconciliations).
