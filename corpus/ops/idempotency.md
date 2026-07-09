@@ -35,7 +35,7 @@ become **safe to retry**, which is the foundation the later milestones build aut
 
 | Component | Tool / path | Re-run verdict | Guard (M17) |
 |---|---|---|---|
-| **migrate** | `demo-stack/migrate-demo.sh` | **SAFE** (idempotent) | Schemas `IF NOT EXISTS`; atlas is declarative/revision-tracked; `init_policy.sql` applied only when `casbin_rules` is empty. **+ the first-run-race hardening** (below). |
+| **migrate** | `demo-stack/migrate-demo.sh` (demo) · `dev-stack/migrate-dev.sh` (dev peer, v2.1 M211) | **SAFE** (idempotent) | Schemas `IF NOT EXISTS`; `CREATE EXTENSION … IF NOT EXISTS` (the `extensions` schema bootstrap — the M25-D9 cold-DB-init fix); atlas is declarative/revision-tracked; `init_policy.sql` applied only when `casbin_rules` is empty. **+ the first-run-race hardening** (below). |
 | **snapshot-replay** | `stacksnap replay` (`stack-snapshot/replay/`) | **SAFE** (idempotent) | **Per-stack-isolated `TRUNCATE`-then-reload** before COPY — a 2nd replay REPLACES, never appends. |
 | **directus-provision** | `dev-setdress.sh::provision_directus_step` / `boot_directus_step` (M22) | **SAFE** (converges) | `CREATE SCHEMA IF NOT EXISTS`; **bootstrap guarded on the `directus_collections` sentinel** (a half-bootstrap re-bootstraps); the structure/serve-row apply rides the replay's gap-gated auto-provision (no-op once provisioned); the serving container is the **compose service** (re-up reuses the name; the bootstrap `docker run` is `--rm`, no name clash); restart is idempotent. |
 | **seed** | `stackseed` (`stack-seeding/`) | **SAFE** (idempotent) | **Idempotent COPY** (`ON CONFLICT (id) DO NOTHING`) for every deterministic-id surface + a **`WHERE NOT EXISTS`** casbin grant. `--reset` clears the **full** fleet. |

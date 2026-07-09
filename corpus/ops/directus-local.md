@@ -285,15 +285,16 @@ M22 booted + served the per-stack Directus; M23 (`prop-room-m23`) **cut the plat
 ### Referential closure — measured, not assumed (`#M23-D5`)
 
 The served catalog must be **referentially closed**: no content row may reference a taxonomy node-id the stack's
-skiller lacks (the empty Assign-AI-Simulation-picker class). The load-bearing cross-surface reference is the
-per-sequence `directus.sequences.skills` JSON array of `{node_id, …}` resolving against `skiller.skills.node_id`
+`public` taxonomy lacks (the empty Assign-AI-Simulation-picker class). The load-bearing cross-surface reference is the
+per-sequence `directus.sequences.skills` JSON array of `{node_id, …}` resolving against `public.skills.node_id`
 (what `publicJobSimulations.skills` resolves; the non-nullable federated field whose failure empties the picker).
+*(The taxonomy lives in the `public` schema since the v2.1 skiller→app merge — pre-merge it was the `skiller` schema.)*
 
 - **Closure is maximal by construction.** The taxonomy surface captures `organization_id IS NULL` — **every**
   public node, not a content-referenced subset — so the only way a content ref can dangle is if it points at a
   node that **isn't public** (a customer-scoped skill the firewall must not capture). No subsetting change needed.
 - **A measured gene, not an assumption.** `OpSnapshotCrossSurfaceClosure` / `FidelityProbe.CrossSurfaceDangling`
-  check, against the **replayed** directus↔skiller pair, that every content-referenced node-id resolves; a
+  check, against the **replayed** directus↔taxonomy pair, that every content-referenced node-id resolves; a
   non-zero dangling count fails the gene and names a sample node. Criticality `standard` (it surfaces in the
   overall score but does not block the *critical* gate, and `measure-snapshot` isn't run at bring-up, so it never
   blocks UP).

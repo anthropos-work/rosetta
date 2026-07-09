@@ -1,0 +1,64 @@
+{
+  "milestone": "M208",
+  "slug": "resync-groundtruth",
+  "version": "v2.1 quick change",
+  "shape": "section",
+  "status": "done",
+  "close_mode": "closed-complete",
+  "closed": "2026-07-08",
+  "diff_profile": {
+    "kind": "docs+ops",
+    "committed_diff": "100% documentation",
+    "files_changed": 9,
+    "insertions": 379,
+    "deletions": 10,
+    "code_or_test_files": 0,
+    "note": "corpus fact-sheet (backend.md +47, skiller.md +11) + milestone records + 2 sibling-overview routing edits (m209, m211) + state.md. No .go/.ts/.sh touched (git diff --name-only e319d2f..HEAD)."
+  },
+  "tests": {
+    "applicable": false,
+    "reason": "docs+ops milestone — zero code/test surface in the committed rosetta diff; the release's testable code surface is M209 (rext). Inherited v2.0 baseline unchanged: rext Go 1745 funcs, 10 live Playthroughs.",
+    "flake_count": 0
+  },
+  "live_de_risk": {
+    "stack": "stack-dev (containerized, cold)",
+    "make_up_rc": 0,
+    "subgraphs": 4,
+    "skiller_container": false,
+    "skiller_rpc_addr": "http://backend:8083",
+    "clean_slate_reset_db_migrate": "full public taxonomy created from scratch; no skiller schema on clean DB",
+    "prod_public_skills_org_null": 42790,
+    "verdict": "GREEN"
+  },
+  "close_review": {
+    "findings_total": 0,
+    "scope": 0,
+    "code_quality": 0,
+    "documentation": 0,
+    "tests": 0,
+    "decision_triage_blends": 0,
+    "note": "merged-shape facts already blended — the backend.md fact-sheet IS the knowledge blend"
+  },
+  "deferral_audit": {
+    "verdict": "GREEN",
+    "scope": "milestone",
+    "total": 5,
+    "single": 5,
+    "repeat": 0,
+    "chronic": 0,
+    "escape_hatch": 0,
+    "routes": {
+      "DEF-M208-01": "Fate-3 -> M211 (extensions bootstrap + PG-readiness; M25-D9 class)",
+      "DEF-M208-02": "Fate-2 -> M211 / /stack-secrets (INVITATION_HMAC_SECRET dev .env gap)",
+      "DEF-M208-03": "Fate-2 -> M210 (backend.md pre-merge prose)",
+      "DEF-M208-04": "Fate-2 -> M210 (skiller.md standalone body)",
+      "DEF-M208-05": "Fate-2 -> M210 (5->4 subgraphs in CLAUDE.md / graphql-wundergraph.md)"
+    },
+    "report": "audit-deferrals/deferral-audit-2026-07-08.md"
+  },
+  "harden": {
+    "ran": false,
+    "reason": "N/A — no code/test surface to deepen (100% documentation diff)"
+  },
+  "notes": "The load-bearing foundation of v2.1 (mirrors v1.10b M47). Re-synced both stacks to the merged platform (app a848cccb->c3c45e01 v1.334.1, the 86-commit merge pull; platform 5e1ae6b->0808b92; skiller gone from compose/repos.yml/Make), removed both vestigial stack-*/skiller/ clones, retired the #1 release risk GREEN via a live containerized de-risk, and pinned the authoritative merge fact-sheet. Two bring-up findings routed forward (Fate-3/Fate-2 -> M211), both user-accepted. Zero platform-repo edits."
+}

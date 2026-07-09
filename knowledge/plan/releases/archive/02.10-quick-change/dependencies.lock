@@ -1,0 +1,39 @@
+# dependencies.lock — Project Rosetta / rosetta-extensions
+# Release: v2.1 "quick change" (the skiller-in-app re-ground)
+# Phase 0 SUPPLY-CHAIN audit record. Scanned: 2026-07-09.
+#
+# rosetta:   branch release/02.10-quick-change — DOCS + PLANNING ONLY, no code manifest.
+# rext code: .agentspace/rosetta-extensions @ HEAD 2039103 (tag quick-change-m211).
+#            Authoritative per-package SHA integrity lives in each module's committed
+#            go.sum (Go) and package-lock.json (npm) — byte-identical to v2.0 (0 net-new deps).
+#
+# ── Net-new dependencies vs v2.0: ZERO ──
+# The v2.1 code delta (18 commits / 84 files) is a schema re-point (skiller.*→public.*) +
+# shell/TS bring-up glue (migrate-dev.sh, cache-migration, e2e roster-refresh). No go.mod
+# require lines added; no package.json deps added. go.mod + committed go.sum byte-identical
+# across all 6 rext modules between opening-night-m204 (v2.0) and quick-change-m211 (v2.1).
+#
+# ── Go (6 modules; toolchain pinned) ──
+# toolchain: go1.25.11   ⚠ RECOMMEND BUMP → go1.25.12 (clears 2 inherited stdlib advisories)
+# modules:   alignment · clerkenstein · playthroughs · stack-secrets · stack-seeding · stack-snapshot
+# 123 unique external modules, all permissive (MIT / Apache-2.0 / BSD-3) except
+#   github.com/hashicorp/golang-lru/v2 v2.0.7 = MPL-2.0 (file-level weak copyleft; NOT GPL/AGPL).
+# First-party private: colony, proto, ai (v1.40.1), taxonomy (internal).
+#
+# ── npm (2 rext e2e packages; devDependencies only, nothing ships) ──
+# playthroughs/e2e + stack-verify/e2e:
+#   @playwright/test 1.61.1 · playwright 1.61.1 · playwright-core 1.61.1 · fsevents 2.3.2
+#   (playthroughs/e2e also) @types/node 20.19.43 · undici-types 6.21.0 · typescript 5.9.3
+#   npm audit --omit=dev AND full: 0 vulnerabilities.
+#
+# ── Vulnerability scan (govulncheck, all 6 Go modules) ──
+# GO-2026-5856 / CVE-2026-42505  crypto/tls ECH privacy leak  MEDIUM (5.3)  CALLED (clerkenstein,
+#     stack-seeding, stack-snapshot). Inherited from go1.25.11 stdlib (DB-published post-v2.0).
+#     Fixed: go1.25.12.  → SHOULD-FIX toolchain bump.
+# GO-2026-4970 / CVE-2026-39822  os.Root symlink traversal    HIGH (7.8)    NOT reachable (call-graph
+#     confirms). Inherited from go1.25.11 stdlib. Fixed: go1.25.12.  → cleared by same bump.
+# CVE-2026-39821 / GO-2026-5026  golang.org/x/net             HIGH          RESOLVED (v2.0) + STAYED
+#     resolved (stack-seeding x/net v0.55.0; no other module calls a vulnerable x/net symbol).
+#
+# ── License verdict: 0 GPL/AGPL across all consumed surfaces (internal tooling; not distributed). ──
+# ── Verdict: YELLOW (no blocker). Reachable vuln = MEDIUM; HIGH = unreachable; internal tooling. ──

@@ -164,11 +164,10 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 **Core Backend Services (Tier 1)**: Go microservices
 
 In the default local profile (`graphql`):
-- Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`)
+- Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`) **and the skills domain** — taxonomy (60K skills, 18K roles), assessment, AI skill matching, and vector embeddings (RAG), absorbed from the former standalone Skiller service (its Ent models now live in `app`, data in the `public` schema; the old `skiller` DB schema is legacy). The skiller RPC surface (GetSkills, GetSkill, SearchSkill, MatchSkill, GetJobRole) is served by `app` — consumers keep the env var, re-pointed at `SKILLER_RPC_ADDR=http://backend:8083` (local; `http://backend:8081` in prod terraform); the `skiller` git repo still exists but is decommissioned
 - CMS: **The content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry). **NB: CMS — not the like-named `skillpath`/`jobsimulation` services — owns skill-path and simulation content** (content-vs-runtime-state split below)
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
 - Jobsimulation: **Runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT fetched from CMS by ID (`cms.GetSimulation` Connect-RPC). It holds run/session state — not content
-- Skiller: Skill management, assessment, taxonomy (60K skills, 18K roles), and vector embeddings (RAG)
 - Skillpath: **Runtime/session engine** that tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path *content* (chapters → steps, curators, skills-to-verify) lives in CMS/Directus and is fetched by ID via `CMS_RPC_ADDR`. It holds no content
 - Storage: File/blob storage management
 - Roadrunner: Code execution proxy to Judge0 sandbox
@@ -181,16 +180,17 @@ Available in other profiles but NOT started by default:
 Production-only / deployed-only (not in local docker-compose):
 - db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
 
-Archived (removed from local orchestration; repo dirs may still exist on disk):
+Archived / merged (removed from local orchestration; repo dirs may still exist on disk):
 - Chronos (was: scheduling & time-based events) — removed via platform commit `045857c`
 - Intelligence (was: background data sync between backend and skiller schemas) — removed via platform commit `fdfa189`
+- Skiller (was: skills taxonomy, assessment, embeddings) — **merged into `app`** (July 2026, v2.1 "quick change"); domain now in the `public` schema, `skiller` repo decommissioned, no skiller container/subgraph. See `corpus/services/skiller.md` + the `backend.md` fact-sheet
 
 **Shared Libraries** (imported as private Go modules — **not** cloned by `make init`/`repos.yml`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). See `corpus/architecture/shared_libraries.md`.
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
 - proto: Protobuf definitions (RPC contracts) + hand-written domain types
 - ai: AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). NOTE: cost tracking lives in `app/internal/aiusage`, and EU-first routing lives in each consumer's wrapper — **not** in this library
 - authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
-- taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in skiller
+- taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app` (backend — the `public` schema, since the skiller→app merge)
 
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
@@ -200,7 +200,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
-- GraphQL/Cosmo Router: Apollo Federation v2 gateway (5 subgraphs: app, skiller, jobsimulation, cms, skillpath)
+- GraphQL/Cosmo Router: Apollo Federation v2 gateway (4 subgraphs: app, jobsimulation, cms, skillpath — the former skiller subgraph was removed; app's subgraph serves its types/queries, and `categoryTree`/`fullCategoryTree` were dropped, not ported)
 - AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
@@ -213,7 +213,7 @@ Archived (removed from local orchestration; repo dirs may still exist on disk):
 ### Communication Patterns
 
 - **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging
-- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 5 subgraphs)
+- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 4 subgraphs)
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via CMS service
 - **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)

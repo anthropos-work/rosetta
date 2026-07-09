@@ -5,6 +5,16 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-08** via `/developer-kit:design-roadmap`. **v2.1 "quick change"** is the **skiller-in-app
+> re-ground** — a field-hardening release (v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a
+> **landed platform structural change**: the `skiller` service + its DB schema **merged into `app`** (domain → the
+> **`public`** schema, table names unchanged `skiller.X → public.X`; RPC → `backend`; the skiller GraphQL subgraph
+> gone → **4 subgraphs**; skiller repo/container removed). A colleague's `docs/skiller-in-app-merge` corpus sweep is
+> **correct-but-incomplete** and touches no tooling; the **rext** tooling still queries `skiller.<table>` and the
+> stacks are half-synced. v2.1 re-fits the tooling, the corpus, and the stacks to the merged platform and **proves
+> `dev-up` + `demo-up` still work**. **4 milestones M208 → M209 → M210 → M211** (strictly sequential); tag
+> **`v2.1`**; branch `release/02.10-quick-change`. Tooling + docs only — zero platform-repo edits.
+>
 > **Designed 2026-06-29** via `/developer-kit:design-roadmap`. **v1.10b "fit-up"** is an **interposed
 > field-hardening backfill** (the v1.3b "dress rehearsal" lineage): a from-scratch `/demo-up` surfaced 8 bring-up
 > issues + a tail of v1.10 content gaps. The M201 close *reported* the `stack-demo` clones ~5 weeks / 115+ commits
@@ -19,8 +29,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 > (functional-flow *testing*: proving the platform's core user journeys actually work end-to-end), distinct from the
 > v1.x demo/seeding lineage. v2+ adopts the **`Mxyy`** scheme (M201, M202, M203, M204). **v2.0 SHIPPED 2026-07-02
 > (tag `v2.0`)** — all four milestones closed, 10 live Playthroughs GREEN on cold reset-to-seed; the first v2.x
-> release. **No release is currently active** — the next v2.x release awaits `/developer-kit:design-roadmap`. The
-> pre-v2 v1.x history (M0 … M46) lives in `roadmap-legacy.md`.
+> release. **v2.1 "quick change"** (the skiller-in-app re-ground) is now **IN DEVELOPMENT** (designed 2026-07-08;
+> see below). The pre-v2 v1.x history (M0 … M46) lives in `roadmap-legacy.md`.
 
 ## Version plan
 
@@ -28,6 +38,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 |---------|----------|-------|------------|--------|
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
 | **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 ✅ } → ✅ ship | ✅ **SHIPPED 2026-07-02 (tag `v2.0`)** (branch `release/02.00-opening-night`, designed 2026-06-28; all 4 milestones closed-on-gate/complete). **10 live Playthroughs (6 employee + 4 manager) GREEN on cold reset-to-seed, 1 in-manifest TODO.** The first v2.x release. Tooling + docs only, zero platform edits, zero new deps |
+| **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -40,6 +51,225 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Done — v2.1 "quick change" (SHIPPED 2026-07-09, tag `v2.1`)
+
+> **Status (SHIPPED 2026-07-09, tag `v2.1`):** designed 2026-07-08 via `/developer-kit:design-roadmap`; branch
+> `release/02.10-quick-change` cut from `main`, merged → `main` + tagged `v2.1` at close-release; rext code-of-record
+> rolled to `v2.1` (= `quick-change-m211`). **4 milestones M208 → M209 → M210 → M211, strictly sequential — ALL
+> `done`.** close-release GREEN: both blocking gates (deferral + metrics) GREEN + adversarially verified, 0 must-fix,
+> all should-fix landed (the 42,790 count reconcile, the `go1.25.12` toolchain bump, the doc-flip fidelity), triple-clean
+> 3/3, 0 net-new deps. **The merged skiller-in-app platform stands up cold on both stacks via the re-grounded tooling.**
+>
+> **Theme:** *quick change — backstage, the actor sheds one costume and re-enters as another, seamless to the
+> audience.* skiller's part now folds into `app`; v2.1 re-fits the whole apparatus to the changed stage. A
+> **field-hardening re-ground** in the **v1.3b "dress rehearsal" / v1.10b "fit-up"** lineage — but triggered by a
+> **landed platform structural change**, not a bring-up defect: the standalone `skiller` Go service **merged into
+> the `app` monolith** — its domain (60K-skill taxonomy, embeddings, job-roles, matching) now lives in the
+> **`public` schema** (table names unchanged, only the schema prefix changed `skiller.X → public.X`; the old
+> `skiller` schema is dropped), its Connect-RPC surface is served by `backend`
+> (`SKILLER_RPC_ADDR=http://backend:8083`), its GraphQL subgraph left the federation (**4 subgraphs** now), and
+> the skiller repo + container are gone (`make init` no longer clones it). **This is landed upstream** (platform
+> `origin/main` @ `0808b92` drops skiller from compose + repos.yml; app @ v1.334 carries the "Deprecate skiller
+> schema" merge) — so v2.1 is **tooling + docs + stack-re-sync only; zero platform-repo edits** (the platform
+> already did its half).
+>
+> **Why a release:** three surfaces are stale + mutually inconsistent. (1) **Stacks** — `app` is post-merge but
+> `platform` is 2 commits behind (still composes skiller); both stacks hold vestigial `skiller/` clones. (2) **rext
+> tooling** — untouched by the docs branch; still queries `skiller.<table>` (seeding taxonomy resolvers, snapshot
+> capture/replay) and probes a skiller container/schema (`readiness.sh`, `services.sh`, `up-injected.sh`), so it
+> **breaks** on the merged platform. (3) **Corpus** — the colleague's `docs/skiller-in-app-merge` sweep is
+> **correct-but-incomplete**: the architecture/subgraph half is solid, but 5–6 rext-facing tooling docs still
+> describe `skiller.*` and it **cannot land independently** without contradicting the tooling.
+>
+> **Designed 2026-07-08** via `/developer-kit:design-roadmap`, from the user's skiller-merge briefing + the
+> colleague's `docs/skiller-in-app-merge` branch. A 7-agent research workflow (`wf_08b6bf4a`) mapped the per-module
+> blast radius (file:line), **adversarially confirmed** the firewall public-predicate **survives** the merge
+> (`organization_id IS NULL` still isolates public taxonomy — no data-leak risk; `skiller_mixins.OrganizationIDMixin`
+> ports the tenant boundary 1:1), and confirmed the docs branch **cannot land present-tense** before the rext
+> re-ground + stack re-sync. **Phase-0: 🟢 GREEN** deferral audit (M25-D9 opportunistic Fate-1 on the re-sync
+> migration path) + clear KB blind-areas (every topic has an anchor).
+
+### Execution graph
+
+```
+v2.1 "quick change"   (strictly sequential — single track)
+  M208 ─────→ M209 ─────→ M210 ─────→ M211
+  re-sync     rext        corpus      bring-up
+  +ground     re-ground   re-ground   acceptance (iterative)
+```
+
+**Strictly sequential** (the user's choice). **M208** establishes current merged code — everything grades against
+it. **M209** re-grounds the rext tooling (+ recapture the snapshot from merged-prod). **M210** completes the corpus
+in lockstep with M209's landed schema (the tooling-doc bodies flip to `public.*`). **M211** is the iterative
+acceptance closer — bring-up isn't trusted until `/dev-up` + `/demo-up` both go GREEN cold on the merged platform.
+*(Scope-flex from design: if the corpus reconcile proves large, M210 can split into land+reconcile / rext-gap-fill;
+4 is the clean target.)*
+
+### Milestones
+
+**M208 — Re-sync & merged-schema ground-truth** · `section` · complexity **medium** · depends on: **none** ·
+✅ **`done` — closed 2026-07-08** (merged → `release/02.10-quick-change`). The **load-bearing foundation** of
+v2.1 (mirrors v1.10b M47) landed: re-synced both stacks to the merged platform (`app` `a848cccb→c3c45e01`
+v1.334.1 — the **86-commit merge pull**; `platform` `5e1ae6b→0808b92` — skiller gone from
+compose/repos.yml/Make; sibling set current), removed both vestigial `stack-*/skiller/` clones, and **retired
+the #1 release risk GREEN** via a live containerized de-risk on stack-dev: cold `make up` rc=0 with a
+**4-subgraph** compose and **no skiller container** (`SKILLER_RPC_ADDR=http://backend:8083`); a clean-slate
+`make reset-db`+`make migrate` builds the **full `public` taxonomy from scratch** (skills w/ `organization_id`,
+job_roles, job_role_skills, skill_embeddings, categories, specializations) with **no `skiller` schema on a clean
+DB**; measured prod `public.skills WHERE organization_id IS NULL` = **42,790** (the roadmap's ~42,763 figure).
+Pinned the authoritative **merge fact-sheet** in `corpus/services/backend.md` (§ Skiller-in-app merge + banner)
++ a stub banner on `corpus/services/skiller.md`. Committed rosetta diff is **100% documentation** (zero
+code/test) → HARDEN N/A; close review found **0 findings**; deferral audit **GREEN** (5 single, 0 repeat).
+**Two bring-up findings routed forward (both user-accepted):** Finding 1 (clean-bring-up `extensions`-schema
+bootstrap + PG-readiness, the M25-D9 class — did NOT fall out as a trivial Fate-1) → **Fate-3 M211** (+ M209
+Risk-2 cross-ref); Finding 2 (`INVITATION_HMAC_SECRET` dev-`.env` completeness gap, not merge-caused) →
+**Fate-2 M211 / `/stack-secrets`**. Zero platform-repo edits. **Delivers →** the merge fact-sheet
+(`corpus/services/backend.md` + `corpus/services/skiller.md` stub).
+**Goal:** bring both stacks (and the snapshot's target reality) current with the merged platform, and pin the
+authoritative merge fact-sheet — so every downstream fix grades against current code.
+**Scope:**
+- **In:** `make pull` stack-dev + stack-demo `platform` to `origin/main` (skiller gone from compose/repos.yml),
+  pull `app` to current (v1.334, post-merge domain) + the sibling repo set; capture before/after refs. Remove the
+  vestigial `stack-dev/skiller/` + `stack-demo/skiller/` clones. Rebuild images + re-run migrations against the
+  merged `public` schema; confirm the 4-subgraph compose (`backend`, jobsimulation, cms, skillpath), no skiller
+  container, `SKILLER_RPC_ADDR=http://backend:8083`. Pin the **merge fact-sheet** (moved tables in `public`, the
+  confirmed `organization_id IS NULL` public predicate, the ~42,763 public-skill count, the re-pointed RPC).
+  Opportunistic **M25-D9** dev migrate-ordering fix (Fate-1 — lives on this path).
+- **Out:** rext code (M209); corpus body re-point (M210); live bring-up (M211).
+**Delivers → knowledge/corpus:** the merge fact-sheet (anchored in `corpus/services/backend.md` +
+`corpus/services/skiller.md` stub).
+**Open questions:** does the 86-commit `app` pull + migration re-run surface a schema/migration issue (⚠ the fit-up
+M47 risk class)? — bounded; capture before/after.
+
+**M209 — rext tooling re-ground** · `section` · complexity **medium** · depends on: **M208**.
+**Status:** `done` (completed 2026-07-08).
+**Goal:** re-point every rext tool that queries the old skiller schema or expects the skiller service to the merged
+reality, recapture the snapshot, and tag a new rext.
+**Scope:**
+- **In (snapshot):** flip `stack-snapshot/taxonomy/taxonomy.go:43 const Schema "skiller"→"public"` (re-grounds
+  capture *and* replay); update the 2 load-bearing `taxonomy_test.go` PublicVia assertions; **narrow the
+  `pg.SchemaVersionSQL` staleness digest** to the surface's enumerated tables (fixes the post-merge whole-monolith
+  cache-thrash — Risk 1); **verify the capture SELECT column list** vs merged prod (Risk 2 —
+  `embedding→small_embedding3`, `extensions.`-qualified GIN opclasses — the one non-mechanical bit); keep
+  `AssertPublicOnly` + add the ~42,763-row post-capture assertion; **recapture** the public taxonomy from
+  merged-prod into `.agentspace/snapshots/` (bump the capture version; the batch cache re-keys).
+- **In (seeding):** re-point the 5 real-SQL files (`seeders/taxonomyref.go`, `skillref_named.go` [the shared
+  `namedSkillSelect` const → also fixes `curated_pools.go` + `ai_readiness_config.go`], `jobroleref.go`,
+  `taxonomy_snapshot.go`, `dna/fidelity_probe.go`) `skiller.*→public.*` keeping the `organization_id IS NULL`
+  public-pool predicate; drop skiller from `isolation/isolation.go` schema-note + re-ground `dna/data-dna.json`
+  golden (schema + FK ref_schema); rename the 111 fake-Conn test string-matchers in lockstep; reword the
+  comment/attribution refs (incl. `services/ai`).
+- **In (small):** remove skiller from `stack-verify/lib/readiness.sh` `probe_postgres_schemas` + `services.sh`
+  container probe; drop skiller from `demo-stack/up-injected.sh` INJECT_SVCS (else it clones/builds a gone repo) +
+  the "5 Clerk-token services"→4 note.
+- Build + test the authoring copy; **tag a new rext (`v2.1`)**; prepare the per-stack consumption re-pin.
+- **Out:** the stack re-sync (M208); doc bodies (M210); live bring-up (M211).
+**KB dependencies:** `corpus/ops/snapshot-spec.md`, `corpus/ops/seeding-spec.md`, `corpus/ops/safety.md`.
+**Closed 2026-07-08:** re-grounded rext `skiller.*→public.*` across **stack-snapshot** (the `taxonomy.go` const
+flip re-grounding capture+replay; the Risk-1 `Surface.VersionTables()` digest-narrowing so taxonomy digests only
+its 10 tables while a structure-bearing surface still whole-schema-invalidates; a one-sided `MinRows` under-capture
+floor; Risk-2 verified — the capture is names-only/type-agnostic so the `extensions.`-qualified merged columns need
+no change), **stack-seeding** (24 files, `organization_id IS NULL` preserved, `data-dna.json` golden, `isolation.go`),
+and the **small shell modules** (readiness/services/up-injected/migrate-demo, 5→4 services; stack-verify Python
+104/104). **6 Go modules GREEN, `go vet` clean, 5× flake-clean; 0 `skiller.<table>` queries in any production path.**
+rext tagged `quick-change-m209` (build `00a3ec5`/`e458acf`/`75bc4cf` + harden `42ad600`/`72a5259`/`2f06e78` — 14
+harden test funcs, 0 bugs, 0 flakes; tag re-pointed to the post-harden HEAD `2f06e78` at close). Close: **1
+nice-to-have finding** (a pre-existing rext `stack-seeding/README` test-count drift, last reconciled M41 — routed
+to the v2.1 rext roll; rext frozen at `2f06e78` this close), **deferral audit GREEN** (10 in scope, 0 repeat/aged/
+escape). **Recapture Fate-3→M211** (tooling READY; no local COPY-byte capture source — a data op M211 owns).
+The `v2.1` rext roll + `.agentspace/rext.tag` consumption re-pin remain **`/developer-kit:close-release`'s** job.
+
+**M210 — Corpus + skills re-ground** · `section` · complexity **medium** · depends on: **M209** (the tooling-doc
+bodies flip to match M209's landed schema).
+**Status:** `done` (completed 2026-07-08).
+**Goal:** land the colleague's docs sweep as the *complete, internally-consistent* corpus re-ground.
+**Scope:**
+- **In:** adopt/validate `origin/docs/skiller-in-app-merge` (correct-but-incomplete — the architecture/subgraph
+  half is solid); fix the fully-missed `profile-completeness-spec.md` (43/44→44/44); **flip the 5–6 rext-facing
+  tooling-doc bodies to `public.*`** (`snapshot-spec.md` [26 mentions — the taxonomy surface enumeration +
+  FidelityProbe gene + capture predicate], `safety.md`, `recipe-snapshot-world.md`, `stories-spec.md`,
+  `seeding-spec.md`, `coverage-protocol.md`) + delete the interim disclosure notes; reconcile the db-access ↔
+  tooling contradiction; sweep the skill files (`dev-up/reference`, `stack-snapshot/SKILL`, `stack-update/reference`,
+  `db-query/SKILL`) so container counts / migration lists / RPC addr / subgraph counts match the re-synced stacks;
+  update `CLAUDE.md` service catalog.
+- **Out:** rext code (M209); live bring-up (M211).
+**Closed 2026-07-08** (merged → `release/02.10-quick-change`): made the corpus internally consistent with the merged
+platform + M209's landed `public.*` rext code. Adopted the colleague's correct architecture/subgraph/service half
+(28 files; each hunk verified vs the M208 fact-sheet + the re-synced `stack-dev/app` clone; kept M208's authoritative
+`backend.md`/`skiller.md` fact-sheet — no duplicate merge section); fixed the profile-completeness node-id prose
+(**verified NO literal "43/44" exists anywhere** — the design-note count was inaccurate; made the one genuine
+merge-sweep fix, did **not** fabricate a phantom count); flipped the **6 rext-facing tooling-doc bodies + directus-local.md**
+`skiller.*→public.*` and deleted the interim disclosure notes; reconciled db-access ↔ tooling on `public.*`; swept the
+4 skill files to the verified merged compose (no skiller container, **4 subgraphs**, `SKILLER_RPC_ADDR=http://backend:8083`;
+superseded the colleague's now-stale "still-targets-skiller/exit-4" note with an accurate M209-done note); updated the
+`CLAUDE.md` catalog. Email-asset PNGs excluded. **Verified core outcome:** 0 stale `skiller.<table>` tooling-query refs
+corpus-wide, 0 leftover interim notes, 4 subgraphs consistent, 0 broken `.md` links. **RESOLVES the KB-1/2/3 body-flip
+deferrals** M208+M209 routed Fate-2 → M210 (7 defers landed at destination). Committed rosetta diff is **100%
+documentation** (50 `.md`, 0 code/test) → HARDEN N/A; close review **0 must-fix / 1 nice-to-have no-change-needed**
+(the app==backend subgraph dual-naming is the corpus's established convention, not an M210 defect); deferral audit
+**GREEN** (11 in scope, 7 resolved, 4 still-open confirm-only → M211/close-release; 0 repeat/aged/escape). Zero
+platform-repo edits.
+**Delivers → knowledge/corpus:** the completed corpus (`corpus/services/skiller.md` stub + `backend.md` ownership
++ re-pointed tooling docs).
+
+**M211 — Bring-up acceptance: dev-up + demo-up green on the merged platform** · `iterative` (closed-on-gate) ·
+complexity **large** · depends on: **M209 + M210** · **the FINAL v2.1 milestone**.
+**Status:** ✅ **`done` — closed-on-gate 2026-07-08** (merged → `release/02.10-quick-change`). **Gate 6/6 MET** —
+proved the merged (skiller-in-app) 4-subgraph platform stands up end-to-end via the re-grounded tooling on BOTH
+stacks, cold, with **zero platform-repo edits**. Delivered (all in the rext tooling, tag `quick-change-m211` =
+`2039103`): the **cache-migration** (real 42,790-row taxonomy + 274 sims re-keyed `skiller.*→public.*`, replayed
+— the no-prod-access recapture); the **root-cause fix** (the injected build-scratch was pinned pre-merge + survived
+`--purge` → every rebuild baked a stale pre-merge binary → federation `_entities(Skill.name)` 422s; fixed to
+re-sync the scratch to the source's release tag every bring-up); the dev bring-up casbin `init_policy.sql` load
+(silent-403 fix); frontend offset-reuse guard; demo-local `ACADEMY_URL` bake + academy-aware cross-port hook;
+demopatch URL re-pin (next-web v2.106.1); the Playthroughs reset-to-seed **roster-refresh**; and the new
+**`dev-stack/migrate-dev.sh`** (dev cold DB-init — extensions + `gin_trgm_ops` + casbin, mirror of
+`migrate-demo.sh`, the M25-D9 path). **Result:** cold `/demo-up` GREEN end-to-end; **M42 coverage GREEN both
+vantages**; **v2.0 Playthroughs 10/11 GREEN** (1 declared in-manifest TODO); dev cold DB-init cold-verified on a
+faithful non-destructive throwaway + a live docker harness; 0 residual skiller. **17 iters** (1 bootstrap tok +
+16 tiks) + 4 stabilized final harden passes. Close: rosetta diff **docs+plan only** (3 corpus/skill docs + plan
+records, 0 code — the tooling code is the frozen rext tag) → HARDEN N/A for rosetta; the rext suites spot-verified
+GREEN (Go/vet, demo 114, dev migrate-dev 14, TS 32). Close review **1 finding** (DOC-1: `migrate-dev.sh` not
+indexed in rext `dev-stack/README.md` → **Fate-2 → close-release rext roll**, bundled with TEST-1; rext frozen).
+Deferral audit **GREEN** (7 in scope, 0 blocking; DEF-M208-01/M25-D9 RESOLVED, TEST-1 aged→re-fated Fate-2,
+CAVEAT-1 belt-and-suspenders backlog). Two close-review caveats (non-blocking): (1) a literal full destructive
+clean-box `/dev-up` was **deliberately not run** — this box is committed to the user's native-app content-line dev
+(`docker-compose.override.yml` → `backend:host-gateway` + an `app-01.10-content-line` worktree); the sole
+dev-specific gate delta (the M25-D9 DB-init) was cold-verified on a faithful throwaway — an environment-respecting
+gate interpretation, with a clean-box full `/dev-up` recorded as a belt-and-suspenders backlog note; (2) 33
+pre-existing `test_dev_stack.py` CLI failures from an incomplete local `.agentspace/secrets` source (unrelated to
+M211). **→ v2.1 is complete; run `/developer-kit:close-release`** (rolls the rext `v2.1` tag, bumps
+`.agentspace/rext.tag`, merges → `main`, reconciles the rext READMEs [TEST-1 + DOC-1]).
+**Goal:** prove the whole chain works end-to-end on the merged platform with the re-grounded tooling.
+**Exit gate:** from a re-synced state, **`/dev-up` AND `/demo-up` both go GREEN cold** — 4-subgraph compose / no
+skiller container; snapshot **recapture→replay** loads `public.*` (taxonomy replay exits 0, ~42,763 public skills);
+**seed** resolves real public node-ids (closure green); **verify** (`verification.md` net) passes with a
+merged-platform assertion (no skiller schema/subgraph/container; `readiness.sh` schema probe green); the M42
+coverage sweep + the v2.0 Playthroughs suite stay GREEN; **0 residual skiller-schema references** in any queried
+path.
+**Iteration protocol:** the fit-up/dress-rehearsal fix→re-measure→re-run bring-up loop
+(`corpus/ops/verification.md` + the coverage/playthroughs gates).
+**Why iterative:** the merged 4-subgraph platform has never been stood up locally with the re-grounded tooling; it
+*will* surface fix-loops (migration ordering, the column-mapping caveat, vestigial container/clone cleanup, cache
+behavior).
+
+### Top risks
+
+1. **Cache-key digest regression** (degrades-quality) — post-merge `SchemaVersionSQL` digests the whole app
+   monolith → taxonomy cache thrashes on any migration. **Mitigation:** narrow the digest to enumerated surface
+   tables (M209). *The single non-obvious regression the merge introduces.*
+2. **Capture column-mapping** (blocks-release if wrong) — the SELECT list may not be a pure prefix swap
+   (`small_embedding3`, `extensions.`-qualified opclasses). **Mitigation:** verify vs merged-prod in M209; the
+   ~42,763-row assertion catches empty/over-broad capture.
+3. **86-commit app pull + migration re-run** (M208) — the fit-up M47 ⚠ class. **Mitigation:** bounded; capture
+   before/after refs.
+4. **Docs lockstep** (would create a self-contradicting corpus) — the branch can't land present-tense before rext +
+   re-sync. **Mitigation:** M210 flips bodies in lockstep with M209 (why the design keeps them adjacent + sequential).
+5. **Recapture safety** — verified **low**: the firewall predicate HOLDS (`org_id IS NULL` survives the merge) +
+   `AssertPublicOnly` runtime net rejects any non-null-org captured row.
 
 ---
 

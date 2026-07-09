@@ -18,6 +18,13 @@ per-stack), `capture` (the rare prod-read maintenance op), `status` (list the ca
 > CLI. The extensions **section** named `stack-snapshot` (`rosetta-extensions/stack-snapshot/`) is where that
 > CLI is built. The skill operates the tooling; the section name inside the repo is unchanged.
 
+> **Skiller→app merge (July 2026), taxonomy surface re-grounded (v2.1 M209).** The standalone `skiller`
+> service was merged into `app`; app's migrations now create the taxonomy tables in the **`public` schema**, so
+> a freshly-migrated post-merge stack has **no `skiller` schema**. The `taxonomy` surface in
+> `rosetta-extensions/stack-snapshot/` was **re-pointed at `public`** in v2.1 M209 (the capture predicate +
+> replay target now query `public.*`), so replay/capture work against a post-merge stack. (Re-capturing the
+> live `public.*` taxonomy from a safe prod source lands in M211; until then a cached capture still replays.)
+
 ## Where this sits in the flow
 `/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,
 `/dev-up` already runs this set-dress pass by default — use this skill to re-run or refresh it.) The snapshot
@@ -30,7 +37,7 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
 1. **Read the spec** — `corpus/ops/snapshot-spec.md` (the capture/replay contract, the read-side **tenant-data
    firewall**, the cache-first store, the fidelity gate). Confirm the target is a **non-prod** stack (`dev-N` /
    `demo-N`, never production).
-2. **Confirm the stack is up + migrated** — `/dev-up N` or `/demo-up N` first if needed, so the `skiller` +
+2. **Confirm the stack is up + migrated** — `/dev-up N` or `/demo-up N` first if needed, so the `public` (taxonomy) +
    `directus` schemas exist as replay targets.
 3. **Build the tool** (gitignored at `stack-<role>/rosetta-extensions/stack-snapshot/`; canonical source is the
    `.agentspace/rosetta-extensions/` authoring copy). Use the matching per-stack clone for the target
@@ -57,7 +64,7 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
    target schema is **missing/empty** — provision the STACK (a capture will NOT help); `5` = **no cached snapshot
    at the stack's schema digest** — either the cache is empty/outdated (run a `capture` — see below), or the
    stack's schema **diverged** from the captured source (`stacksnap status` compares digests). The `taxonomy`
-   surface replays straight away (its `skiller` schema exists from migration). The `directus` content surface
+   surface replays straight away (its `public` schema exists from migration). The `directus` content surface
    additionally needs its **per-stack Directus** against the stack's own `directus` schema (**bootstrap →
    apply-structure → replay → boot**, 4 steps). Since **v1.5 M21–M23 this is automated** on a
    **`--local-content` stack** (demo **default-on**; dev **opt-in** via `--local-content`; `N=0` behind
@@ -107,7 +114,7 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
   staging `pg_dump`; sanctioned fallback: a throttled, off-peak, read-only primary read — MVCC = no writer
   blocking) inside a bounded `READ ONLY` session. It **never** runs through the platform services and **never**
   writes anywhere.
-- **Replay is per-stack only.** It writes the per-stack-isolated `skiller` / `directus` Postgres (offset port,
+- **Replay is per-stack only.** It writes the per-stack-isolated `public` / `directus` Postgres (offset port,
   class `PerStackIsolated`); it can **never** write the shared prod Directus, the prod S3 bucket, or live Clerk.
 - **Never** point `capture --dsn` at production for a write, and **never** boot a per-stack Directus against
   `content.anthropos.work` — `EnvContract.Validate()` hard-rejects it.

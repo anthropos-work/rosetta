@@ -26,7 +26,6 @@ graph TB
         Backend[Backend/App]
         Sentinel[Sentinel]
         CMS[CMS]
-        Skiller[Skiller]
         JobSim[Job Simulation]
         Others[+ Others]
     end
@@ -49,14 +48,13 @@ graph TB
 - **Database**: PostgreSQL (dedicated schemas per service)
 - **Source**: Private GitHub repositories
 
-**Services** (current local docker-compose, as of 2026-05-11):
+**Services** (current local docker-compose, as of 2026-07):
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Backend/App** | 8081-8083 | Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)) | graphql, backend | Local `../app` |
+| **Backend/App** | 8081-8083 | Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)) | graphql, backend | Local `../app` |
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
 | **CMS** | 8090-8091 | **Content layer** — owns CONTENT / DEFINITIONS (skill paths, simulation blueprints, library) via Directus Proxy, **+ embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
-| **Skiller** | 8085-8086 | Skill Management, Assessment, Vector Embeddings (RAG) | graphql, skiller | Local `../skiller` |
 | **Skillpath** | 8100-8101 | **Runtime** — per-user skill-path progression *state* (the path *content* lives in CMS) | graphql, skillpath | Local `../skillpath` |
 | **Jobsimulation** | 8400-8401 | **Runtime** — runs simulation *sessions* (the simulation *definition* lives in CMS) | graphql, jobsimulation | Local `../jobsimulation` |
 | **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
@@ -77,12 +75,13 @@ graph TB
 - **PostgreSQL** :5432 (custom image with pgvector extension)
 - **Redis** :6379 (`bitnamilegacy/redis:latest`)
 
-**Archived (removed from local orchestration; repo dirs may still exist on disk)**:
+**Archived / merged (removed from local orchestration; repo dirs may still exist on disk)**:
 
 | Service | Why removed | Reference |
 |:--------|:------------|:----------|
 | **Chronos** | Removed from local dev orchestration | Platform commit `045857c` |
 | **Intelligence** | Removed from local dev orchestration | Platform commit `fdfa189` |
+| **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned | [skiller.md](../services/skiller.md) |
 
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
@@ -95,7 +94,7 @@ graph TB
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types | `git@github.com:anthropos-work/proto.git` |
 | **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib | `git@github.com:anthropos-work/ai.git` |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) | `git@github.com:anthropos-work/authn.git` |
-| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K/18K data lives in skiller | `git@github.com:anthropos-work/taxonomy.git` |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K/18K data lives in `app`'s `public` schema (former skiller service) | `git@github.com:anthropos-work/taxonomy.git` |
 
 **Development Pattern**:
 ```bash
@@ -286,12 +285,12 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 | **Port** | 5050 |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
-| **Subgraphs** | app, skiller, jobsimulation, cms, skillpath |
+| **Subgraphs** | app, jobsimulation, cms, skillpath |
 
 > Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
 
 **Aggregates**:
-- Backend (app), CMS, Skiller, Jobsimulation, Skillpath services
+- Backend (app), CMS, Jobsimulation, Skillpath services
 
 **Consumed By**:
 - Next.js frontend applications
@@ -302,7 +301,7 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 ## Service Communication Patterns
 
 ### Core Services ↔ Core Services
-- **Synchronous**: HTTP RPC (e.g., `SKILLER_RPC_ADDR=http://skiller:8086`)
+- **Synchronous**: HTTP RPC (e.g., `CMS_RPC_ADDR=http://cms:8091`; note `SKILLER_RPC_ADDR=http://backend:8083` — the skiller surface is served by backend since the merge)
 - **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
 
 ### Studio Services → Core Services
@@ -359,10 +358,10 @@ go run .               # Run natively
 | Profile | Services started |
 |---------|------------------|
 | (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, skiller, skillpath, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
+| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, skillpath, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
-| `skiller` / `skillpath` / `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
-| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation/skiller/skillpath — bring those up too) |
+| `skillpath` / `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
+| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation/skillpath — bring those up too) |
 | `customerio-sync` | postgresql, redis, sentinel, customerio-sync |
 | `frontend` | + next-web-app (containerized) |
 | `studio-desk` | + studio-desk (containerized) |
@@ -376,11 +375,11 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 
 | Tier | Count | Technology | Deployment | Management |
 |:-----|:------|:-----------|:-----------|:-----------|
-| **Core Backend (local `graphql` profile)** | 10 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Core Backend (local `graphql` profile)** | 8 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
-| **Archived** | Chronos, Intelligence | Go | Removed from local orchestration (2026-Q2) | GitHub repos still exist |
+| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026) | Go | Removed from local orchestration | GitHub repos still exist |
 | **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

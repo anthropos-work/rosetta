@@ -68,7 +68,7 @@ per (hero × verified skill), across **three Postgres schemas**:
                                                           ├─ local_jobsimulation_sessions (the app mirror)
                                                           ├─ user_skills (is_verified=true, job_simulation_id)
                                                           └─ user_skill_evidences (UPSERT: levels+counts+verified)
- skiller.skills.node_id ── supplies the skill_id string (a loose ref, NOT a FK) ──┘
+ public.skills.node_id ── supplies the skill_id string (a loose ref, NOT a FK) ──┘
 ```
 
 The seeder writes **3 passed sessions per verified skill** (the Spotlight chart hides below 2 datapoints), each
@@ -133,17 +133,17 @@ least one skill per hero must show a real gap or the widget is empty.
 
 A skill ref (`user_skills.skill_id`, `user_skill_evidences.skill_id`,
 `validation_attempt_skill_results.skill`) is a loose string (`K-XXXXXX-XXXX`), **not a DB FK**. A fabricated
-node-id passes every field-regex but **dangles** — it resolves to no skill in `skiller`, so the profile
+node-id passes every field-regex but **dangles** — it resolves to no skill in the `public` taxonomy, so the profile
 federates a blank name/category and the chart has a hole (the skill-side analog of the M23 empty-picker class).
 Two pieces guarantee closure:
 
-- **The `TaxonomyRefs` resolver** draws every skill node-id from the **real replayed public `skiller`
-  taxonomy** — role-coherent where the hero's role resolves (`skillsByRole`: `job_roles ⋈ job_role_skills ⋈
+- **The `TaxonomyRefs` resolver** draws every skill node-id from the **real replayed public
+  taxonomy** (the `public`-schema skills/roles catalog) — role-coherent where the hero's role resolves (`skillsByRole`: `job_roles ⋈ job_role_skills ⋈
   skills`, public-only, is_core-first), falling back to a flat public-skill pool otherwise. If **no** taxonomy
   has been replayed (an empty pool), the seeder **skips** the hero — it **never fabricates** a node-id.
 - **The seed-side closure gene** (`datadna measure-closure --stack demo-N`) then *proves* it: it counts the
   distinct seeded skill node-ids (across all three ref surfaces) that don't resolve in the replayed
-  `skiller.skills` — must be **0**, naming a sample on failure. This mirrors the M23
+  `public.skills` — must be **0**, naming a sample on failure. This mirrors the M23
   `snapshot-cross-surface-closure` gene (the content side); together they are the closure family (see
   [`../../architecture/`](../../architecture/) and the `dna/README.md` in the extension). "Believable" is
   **measured, not assumed.**
@@ -392,7 +392,7 @@ seeders + two fixes land the **spine** (not every widget — the hard scope line
 
 | Surface | Seeder (`stack-seeding/seeders/`) | What it feeds on the dashboard |
 |---|---|---|
-| **Mapped skills** | `membership_skills.go` | The mapped→verified **verification funnel**. Every member is mapped to a role-coherent set of real public skills (the `skill_name` is set — every dashboard query filters it NOT NULL); since mapped covers ~all members but only a subset verify, **mapped outnumbers verified per skill** → the believable drop-off. The funnel joins the mapped side to the verified side **on the skill _name_, not the node-id** — so `membership_skills.skill_name` must equal the verified skills' `skiller.skills.name`; the seeder's `skillref_named.go` resolver draws names from the same replayed taxonomy the verified chain uses, so they line up by construction (#M36-D1). Also feeds the **AI-readiness** scan (an AI-narrative org biases a share of members toward AI-named skills). |
+| **Mapped skills** | `membership_skills.go` | The mapped→verified **verification funnel**. Every member is mapped to a role-coherent set of real public skills (the `skill_name` is set — every dashboard query filters it NOT NULL); since mapped covers ~all members but only a subset verify, **mapped outnumbers verified per skill** → the believable drop-off. The funnel joins the mapped side to the verified side **on the skill _name_, not the node-id** — so `membership_skills.skill_name` must equal the verified skills' `public.skills.name`; the seeder's `skillref_named.go` resolver draws names from the same replayed taxonomy the verified chain uses, so they line up by construction (#M36-D1). Also feeds the **AI-readiness** scan (an AI-narrative org biases a share of members toward AI-named skills). |
 | **Teams / tags** | `tags.go` | The universal **slice dimension**: a dozen business-unit tags (front-loaded so the Teams tab is non-uniform) + a cross-cutting **`mentor`** tag (the Growth-tab Mentors KPI counts members tagged `mentor`). Each member is on exactly one business unit. |
 | **Target roles** | `target_roles.go` | The **gap + two-way internal mobility**: `organization_target_roles` (an admin-set development target = the gap) + `user_target_roles` (a self-set aspiration = mobility-ready), each a real public role node-id chosen different from the member's current role. |
 | **Succession feeders** | `succession.go` | `interview_extraction_results` for >20% of members (with the `summary` jsonb the succession query reads) to lift the **Succession tab** past the coverage gate (`too_sparse` → `full`). Trajectory-aware: a struggling hero reads at-risk (low wellbeing + negative sentiment), a thriving one reads positive. (The other feeder, `validation_attempt_*`, already lands via the M34 chain.) |

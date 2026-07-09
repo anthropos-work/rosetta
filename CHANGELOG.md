@@ -2,6 +2,33 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.1] "quick change" — 2026-07-09
+
+**The skiller-in-app re-ground.** The platform merged the standalone `skiller` service + its DB schema into `app` — the skills taxonomy, embeddings, and job-roles now live in the `public` schema (table names unchanged, only `skiller.X → public.X`), the RPC surface is served by `backend`, and the skiller GraphQL subgraph is gone (**4 subgraphs**). This release re-fits the environment-builder tooling, the corpus, and the local stacks to that merged platform and **proves `/dev-up` + `/demo-up` still work end-to-end, cold**. A field-hardening release (v1.3b/v1.10b lineage) — **tooling + docs + stack-re-sync only; zero platform-repo edits.** (rext code-of-record @ tag `v2.1`.)
+
+### Changed
+- **rext tooling re-grounded `skiller.*` → `public.*`** (M209): the snapshot capture/replay taxonomy surface (one const flip re-grounds both capture and replay) + the cache-key staleness digest narrowed to the surface's own tables (no post-merge cache-thrash) + the seeding taxonomy resolvers — all keeping the `organization_id IS NULL` public predicate; the `skiller` service probe dropped from verify + demo bring-up.
+- **Corpus + skills re-ground** (M210): the merged-platform architecture (4 subgraphs, RPC→backend, taxonomy in `public`) documented + 6 rext-facing tooling-doc bodies flipped to `public.*` (0 stale `skiller.<table>` tooling refs corpus-wide).
+- **Both local stacks re-synced** to the merged platform (M208); the vestigial `skiller/` clones removed.
+
+### Added
+- **`dev-stack/migrate-dev.sh`** — a dev cold DB-init (bootstraps the `extensions` schema + pgvector/pg_trgm/pgcrypto + casbin before migrate; mirror of the demo path), resolving the standing M25-D9 cold-bring-up gap.
+- **Cache-migration recapture** — re-key a captured snapshot cache `skiller.*→public.*` when a merge preserves data + table names (no prod capture source needed); used to recapture the 42,790-skill public taxonomy + the sim-embeddings, cold.
+- **A build-scratch freshness guard** — the demo bring-up now re-syncs its injected build-scratch to the current source ref on every bring-up (a pinned scratch had been silently shipping pre-merge binaries through `--purge`).
+
+### Fixed
+- The cold `/dev-up` missing casbin-policy load (the M18 silent-403 class); a reset-to-seed roster gap that failed all 10 Playthroughs; a stale-image mishmash that made "cold" demos ship pre-merge code.
+- Two inherited Go-stdlib advisories cleared by `go1.25.11 → go1.25.12` (govulncheck clean on all 6 modules).
+
+### Verified
+- **M42 coverage GREEN at both vantages + the v2.0 Playthroughs 10/11 GREEN** on the merged platform (M211, gate 6/6, closed-on-gate); triple-clean 3/3; Clerkenstein alignment gates 100%/100% held.
+
+### Supply chain
+- **0 net-new dependencies** (a schema re-point adds no imports). Go toolchain `go1.25.11 → go1.25.12`. npm 0 vulnerabilities; 0 GPL/AGPL.
+
+### Known limitations
+- The dev-cold gate was proven at the **DB-init level on a non-destructive throwaway** (to protect the box's native-app content-line dev setup), not a literal full destructive `/dev-up`; a clean-box full run is tracked as belt-and-suspenders backlog (CAVEAT-1).
+
 ## [v2.0] "opening night" — 2026-07-02
 
 **The Playthroughs pillar — the platform's core user journeys, proven to actually work.** A **Playthrough** is an automated actor that *is the user*: it logs in as a seeded hero, plays a real journey across the platform end-to-end, and proves the platform delivered the outcome. Where the v1.x coverage sweep proves **presence** (every page *shows* real content), a Playthrough proves **function** (the hero can *do* the thing) — it breaks only when a capability breaks, not when pixels shift. A new MAJOR (v2.x, `Mxyy` milestone numbering); the demo/seeding lineage carries forward as the foundation. 4 milestones M201→M204. **Tooling + docs only — zero platform-repo edits, zero net-new third-party deps.** (rext code-of-record @ tag `v2.0`)

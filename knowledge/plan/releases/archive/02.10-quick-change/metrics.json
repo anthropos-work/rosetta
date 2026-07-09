@@ -1,0 +1,51 @@
+{
+  "release": "v2.1 \"quick change\"",
+  "branch": "release/02.10-quick-change",
+  "closed": "2026-07-09",
+  "milestones": ["M208", "M209", "M210", "M211"],
+  "theme": "The skiller-in-app re-ground — a field-hardening release (v1.3b/v1.10b lineage) triggered by a LANDED platform structural change: the skiller service + its DB schema merged into app (domain -> the public schema, table names unchanged skiller.X -> public.X; RPC -> backend; the skiller GraphQL subgraph gone -> 4 subgraphs; skiller repo/container removed). Re-fit the rext tooling + corpus + stacks to the merged platform and PROVED /dev-up + /demo-up still work end-to-end cold. Strictly sequential M208 (re-sync + live de-risk) -> M209 (rext re-point skiller.*->public.* + snapshot recapture + cache-key digest narrowing) -> M210 (flip 6 rext-facing tooling-doc bodies to public.*) -> M211 (iterative, closed-on-gate 6/6: cache-migration recapture + build-scratch-resync root-fix + migrate-dev.sh cold DB-init; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN on the merged platform). Tooling (rext) + docs (rosetta) + stack-re-sync ONLY — ZERO platform-repo edits. ZERO net-new third-party deps (a schema re-point adds no imports).",
+
+  "code_location": "TWO-REPO split. rext code-of-record (SEPARATE gitignored git repo — the tag IS the record): rosetta-extensions @ tag quick-change-m211 = HEAD 7906f3f (post-harden + close-release fixes). The v2.1 code is the skiller.*->public.* re-point (stack-snapshot taxonomy const + digest-narrowing + MinRows floor; stack-seeding 5 real-SQL files + goldens; the small-module probes) + the M211 bring-up tooling (dev-stack/migrate-dev.sh; the cache-migration re-key; demo-stack build-scratch re-sync + offset-reuse guard + academy URL + cross-port hook; playthroughs run-playthroughs.sh --reset roster-refresh). Per-milestone tag: quick-change-m209 (the mid-release rext state); quick-change-m211 (final). On-box consumption pin: .agentspace/rext.tag = quick-change-m211 (re-pinned from v1.10.1 at M211). rosetta doc-half: release/02.10-quick-change (design + 4 milestone branches merged --no-ff).",
+
+  "rext_go_test_funcs": {
+    "total": 1764,
+    "delta_vs_prev_release": "+19 vs v2.0's 1745 (every module flat-or-up). M209 +18 (a skiller.*->public.* fake-Conn matcher rename [count-preserving] + harden: stack-snapshot +17, stack-seeding +1); M211 +1 (playthroughs RosterRefreshGate).",
+    "by_module": {"alignment": 52, "clerkenstein": 270, "playthroughs": 106, "stack-secrets": 163, "stack-seeding": 792, "stack-snapshot": 381},
+    "go_test": "go test ./... EXIT 0 on all 6 modules (go1.25.12)",
+    "go_vet": "clean all 6",
+    "counting_method": "grep '^func (Test|Fuzz)' per module at tag quick-change-m211=7906f3f; cross-checked vs M209 metrics (1763) + M211's +1 = 1764."
+  },
+
+  "ts_unit": {
+    "total": 103,
+    "delta_vs_prev_release": "+3 vs v2.0's 100 (stack-verify/e2e coverage-manifest 29->32 from the 15->14 service re-ground + the cross-port classifier dedup; playthroughs/e2e 58 flat).",
+    "by_layer": {"stack-verify/e2e": 45, "playthroughs/e2e": 58},
+    "tsc": "clean (stack-verify/e2e gained typescript + tsconfig.json in close-release Fix B; typecheck exit 0)"
+  },
+
+  "live_playthroughs": {
+    "corpus_total": 10,
+    "employee": 6,
+    "manager": 4,
+    "manifest_todo": 1,
+    "note": "The v2.0 10-Playthrough suite (6 employee + 4 manager + 1 declared in-manifest TODO) was RE-PROVEN GREEN on the MERGED (skiller-in-app) platform at M211 as a bring-up-acceptance gate — 10/11 green on the genuinely-cold reset-to-seed demo. Unchanged vs v2.0."
+  },
+
+  "flake": {"count": 0, "evidence": "close-release triple-clean 3/3 (-shuffle) on the touched modules; M209 5x sequential clean; M211 harden Pass-4 live docker harness 3x clean; metrics-verify agent 3x -race -shuffle clean."},
+
+  "coverage": {"delta": "<2pp on touched files (M209 harden 0.0% invariant-pinning; M211 harden <2%; the re-point is a rename-not-removal so tested surface preserved)", "regression": "none >2pp"},
+
+  "supply_chain": {
+    "net_new_deps": 0,
+    "note": "A schema re-point adds no imports; go.mod + committed go.sum byte-identical to v2.0 across all 6 modules.",
+    "go_toolchain": "go1.25.11 -> go1.25.12 (close-release Fix A) — cleared 2 inherited stdlib advisories (GO-2026-5856 crypto/tls ECH MEDIUM called; GO-2026-4970 os.Root HIGH not-reachable); govulncheck 'No vulnerabilities found' on all 6 modules post-bump.",
+    "npm": "0 vulnerabilities (both rext e2e packages, prod + full).",
+    "licenses": "0 GPL/AGPL (internal tooling; all permissive + one MPL-2.0 file-level).",
+    "lockfile": "releases/02.10-quick-change/dependencies.lock"
+  },
+
+  "alignment_gates": {"clerkenstein": "100%/100% on 5 surfaces (carried from v1.10; v2.1 touched no Clerk contract surface — clerkenstein module 270 tests unchanged)"},
+
+  "platform_repo_edits": 0,
+  "verdicts": {"deferral_gate": "GREEN (0 Fate-3-undelivered)", "metrics_regression_gate": "GREEN (no test-count drop, no >2pp coverage drop, flake 0, 0 net-new deps)", "supply_chain": "GREEN post-toolchain-bump", "triple_clean": "3/3"}
+}

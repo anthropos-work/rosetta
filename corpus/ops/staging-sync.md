@@ -35,7 +35,7 @@ The current sync **force-resets every repo to `origin/main` every run, no except
 
 | Cadence              | Script                                                | What it does                                                                                                                                                                                                            |
 | -------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 16 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
+| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 15 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
 | Daily<br>06:00 UTC   | `~/.local/bin/anthropos-staging-sync.sh`              | Full sync: per-repo safety patch → `git checkout main; git reset --hard origin/main` → re-apply skip-worktree → `docker compose build` + `up -d` for each changed service → Playwright smoke test. ~10-60 min wall. |
 
 Both run as systemd **user** units. `loginctl enable-linger $USER` is required so they fire even when no SSH session is attached.
@@ -96,9 +96,9 @@ In practice this almost never fires — the rule is "no WIP on staging clones". 
 
 ## Repo scope
 
-The 16 repos the routine covers (same on every staging host):
+The 15 repos the routine covers (same on every staging host):
 
-**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `skiller`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`.
+**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`.
 
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
@@ -108,12 +108,13 @@ The 16 repos the routine covers (same on every staging host):
 - `ant-academy/` — historically optional, not part of the prod stack.
 - `colony/` — vendored snapshot (no `.git`), not a git checkout.
 - `skill-path-builder/` — not deployed on staging.
+- `skiller/` — merged into `app` (July 2026); the repo is legacy/decommissioned and no longer deployed, so it dropped off the sync scope.
 
 ---
 
 ## Skip-worktree handling
 
-The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `skiller`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
+The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
 
 ### Apply once per staging clone (idempotent)
 
@@ -140,7 +141,7 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, `internal/cors/cors.go`, `internal/web/backend/graphql/graph/handler.go`       |
 | `cms`                      | `Dockerfile.dev`, `go.mod`                                                                                           |
-| `skiller`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
+| `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
 | `next-web-app`             | `Dockerfile.dev`                                                                                                     |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
 
@@ -173,7 +174,6 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | `app`               | `backend`              |
 | `next-web-app`      | `next-web-app`         |
 | `cms`               | `cms`                  |
-| `skiller`           | `skiller`              |
 | `skillpath`         | `skillpath`            |
 | `jobsimulation`     | `jobsimulation`        |
 | `storage`           | `storage`              |
@@ -206,7 +206,7 @@ command -v atlas >/dev/null || curl -sSf https://atlasgo.sh | sh
 
 # Check + apply per service. Schemas per service in
 # staging-bringup.md § 4.5.
-for svc_schema in "app:public" "skiller:skiller" "jobsimulation:jobsimulation" "cms:cms" "skillpath:skillpath"; do
+for svc_schema in "app:public" "jobsimulation:jobsimulation" "cms:cms" "skillpath:skillpath"; do
   svc="${svc_schema%%:*}"; schema="${svc_schema##*:}"
   echo "=== $svc → $schema ==="
   (cd ~/$svc && atlas migrate status --env local \

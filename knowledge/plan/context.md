@@ -4,27 +4,26 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-06-29):** **v1.0 … v1.10 SHIPPED** (the whole **v1.x major**; tagged `v1.0` … `v1.10`; records
-archived under [`releases/archive/`](releases/archive/), full history in
-[`roadmap-legacy.md`](roadmap-legacy.md)). **v1.10b "fit-up" is IN DEVELOPMENT (active)** — an **interposed
-field-hardening backfill** (designed 2026-06-29 via `/developer-kit:design-roadmap`; branch `release/01.10b-fit-up`;
-tag `v1.10.1`; 7 milestones M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53, the v1.x flat counter re-opened): it
-re-grounds demo + the ~1-month-stale corpus to current prod, fixes the from-scratch `/demo-up` issues + the v1.10
-content gaps, adds an AI-readiness showcase org, and consolidates one auditable seed+gen manifest. It **PAUSES**
-**v2.0 "opening night"** (designed 2026-06-28; branch `release/02.00-opening-night`; M201 closed, M202→M204 paused)
-until it ships. v2.0 opens the
-**Playthroughs** pillar: functional-flow *testing* — a manifest-driven deterministic e2e suite that *pretends to
-be the human* and proves the platform's core user journeys **actually work** end-to-end (the **functional**
-sibling of v1.x's M42 **presence** coverage sweep). 4 milestones **M201 ∥ M202 → { M203 ∥ M204 }** (`Mxyy`
-numbering; M201 `iterative`+user-guided manifest corpus ∥ M202 `section` foundation → M203/M204 `iterative`
-per-vantage coverage), governed by the consolidated capability
-spec [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md) v0.3. **Tooling + docs only — zero
-platform-repo edits.** The last v1.x release, **v1.10 "method acting"** (SHIPPED 2026-06-27, tag `v1.10`), was the
-believable-profile release + the presenter-grade/scalable-generation extension (M39→M46). Genuinely-deferred work
-stays **unscheduled backlog** — DEF-M10-01 (cloud store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test),
-M25-D9 (dev taxonomy rc=4) ([`roadmap-vision.md`](roadmap-vision.md)). Live state: [`state.md`](state.md).
-(**[`roadmap-legacy.md`](roadmap-legacy.md) now exists** — the v1.x major retired at the v2.0 opening, so its
-roadmap rotated there; the active [`roadmap.md`](roadmap.md) holds v2.0 only.)
+**Status (2026-07-08):** **v1.0 … v1.10 + v1.10b + v2.0 SHIPPED** (the whole **v1.x major** tagged `v1.0` … `v1.10`
++ the `v1.10.1` backfill; the first v2.x releases **v2.0 "opening night"** (`v2.0`) + **v2.1 "quick change"** (`v2.1`) shipped; records archived
+under [`releases/archive/`](releases/archive/), v1.x history in [`roadmap-legacy.md`](roadmap-legacy.md)). **v2.1
+"quick change" SHIPPED 2026-07-09 (tag `v2.1`)** — the **skiller-in-app re-ground**, a **field-hardening release**
+(v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform structural change** (designed 2026-07-08 via
+`/developer-kit:design-roadmap`; branch `release/02.10-quick-change`; tag `v2.1`; **4 milestones M208 → M209 → M210
+→ M211**, strictly sequential): the `skiller` service + its DB schema merged into `app` (domain → the **`public`**
+schema, table names unchanged `skiller.X → public.X`; RPC → `backend`; the skiller GraphQL subgraph gone → **4
+subgraphs**; skiller repo/container removed). It re-fits the **rext tooling** (the `skiller.<table>` → `public.<table>`
+re-point + recapture), the **corpus** (completing the colleague's `origin/docs/skiller-in-app-merge` sweep in
+lockstep), and the **stacks** (re-sync to the merged platform), then **proves `/dev-up` + `/demo-up` still work** on
+the merged platform (the iterative M211 acceptance gate). **Tooling + docs + stack-re-sync only — zero platform-repo
+edits** (the platform already did its half). The prior release, **v2.0 "opening night"** (SHIPPED 2026-07-02, tag
+`v2.0`), opened the **Playthroughs** pillar (functional-flow e2e *testing*; M201 ∥ M202 → { M203 ∥ M204 }; 10 live
+Playthroughs GREEN on cold reset-to-seed). Genuinely-deferred work stays **unscheduled backlog** — DEF-M10-01 (cloud
+store / S3 blob bytes), DEF-M21-01 (replayCmd hermetic test), M25-D9 (dev taxonomy rc=4 — now on the M208 re-sync
+path → opportunistic Fate-1), M314b (prod frozen-read hydration) ([`roadmap-vision.md`](roadmap-vision.md)); the
+reserved **Playthroughs futures** M205–M207 stay in vision (v2.1 takes M208+). Live state: [`state.md`](state.md).
+(The active [`roadmap.md`](roadmap.md) holds the v2.x major — v2.0 "Done" + v2.1 "In Development"; v1.x history is in
+[`roadmap-legacy.md`](roadmap-legacy.md).)
 
 ## Files
 
@@ -33,7 +32,7 @@ roadmap rotated there; the active [`roadmap.md`](roadmap.md) holds v2.0 only.)
   the v2.0 opening when the v1.x major retired
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + future v2 milestones + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v1.10b dirs** are under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/`, `m48-corpus-reground/`, `m49-bringup-hardening/`, `m50-content-seeding-fill/`, `m51-ai-readiness-org/`, `m52-seed-manifest/`, `m53-cold-rebuild-acceptance/`), scaffolded by the 2026-06-29 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v2.1 dirs** are under [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/) (`m208-resync-groundtruth/`, `m209-rext-reground/`, `m210-corpus-reground/`, `m211-bringup-acceptance/`), scaffolded by the 2026-07-08 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs); the **shipped v1.10b dirs** under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/` … `m53-cold-rebuild-acceptance/`). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
 
 ## Conventions
 
@@ -58,26 +57,28 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v1.10b "fit-up" — IN DEVELOPMENT** (designed 2026-06-29 via `/developer-kit:design-roadmap`; branch
-`release/01.10b-fit-up` cut from `main`; tag `v1.10.1`). An **interposed field-hardening backfill** (the v1.3b
-"dress rehearsal" lineage) — a from-scratch `/demo-up` surfaced 8 bring-up issues + a tail of v1.10 content gaps,
-and the M201 close *reported* the clones behind prod (M47 later found the clones **current** — the **corpus** is
-the stale surface, re-grounded by M48). 7 milestones (v1.x flat counter
-re-opened): **M47** Re-sync & recapture [`section` ⚠, the foundation — re-sync clones to current prod + cold-start
-MCP-DSN auto-capture + recapture snapshot] → { **M48** Corpus re-ground [`section`, documents the member-AI-readiness
-flow] ∥ **M49** Bring-up hardening + truth-up [`section`, the 7 remaining demo-up issues + the `.agentspace/rext.tag`
-source-of-truth] } → **M50** Content & seeding fill [`iterative`, the Maya/Dan content gaps, M42-coverage gate] →
-**M51** AI-readiness showcase org [`iterative`, the curated 200-person 3rd org] → **M52** Single auditable seed+gen
-manifest [`section`, one inlined file the cockpit serves] → **M53** Cold-rebuild acceptance [`section`, destroy +
-rebuild from cold]. The **1-demo-stack** constraint serializes verification (only M48 ∥ M49 truly parallelize — M48
-never touches the demo); the "fix-on-live → final cold rebuild" model. Tooling + docs only — zero platform-repo
-edits. Records under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/); designed from
-[`.agentspace/annotation.md`](../../.agentspace/annotation.md). **PAUSED v2.0 "opening night"** (the Playthroughs
-pillar, M201 closed + M202→M204 paused; resumed after v1.10b shipped — v2.0 has since **SHIPPED** 2026-07-02, tag
-`v2.0`; records archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/)). **Last shipped:** **v1.10 "method acting"**
-(2026-06-27, tag `v1.10`; the last v1.x release; full v1.x roadmap in [`roadmap-legacy.md`](roadmap-legacy.md)).
-**Next:** **`/developer-kit:build-milestone`** — build **M47** (the `section` foundation; everything downstream is
-graded against the current code it produces). _(Live state: [`state.md`](state.md). Backlog:
+**Active:** **(between releases) — v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`). The description below is
+the shipped record. **v2.1 "quick change"** (designed 2026-07-08 via `/developer-kit:design-roadmap`;
+branch `release/02.10-quick-change` cut from `main`; tag `v2.1`). The **skiller-in-app re-ground** — a
+**field-hardening release** (the v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform
+structural change**: the `skiller` service + its DB schema merged into `app` (domain → the **`public`** schema, table
+names unchanged `skiller.X → public.X`; RPC → `backend`; the skiller GraphQL subgraph gone → **4 subgraphs**; skiller
+repo/container removed). **4 milestones, strictly sequential:** **M208** Re-sync & merged-schema ground-truth
+[`section` ⚠, the foundation — `make pull` both stacks to the merged platform + remove the vestigial `skiller/`
+clones + re-migrate against `public` + pin the merge fact-sheet] → **M209** rext tooling re-ground [`section`, the
+`skiller.<table>` → `public.<table>` re-point across stack-snapshot + stack-seeding + the small modules, narrow the
+cache-key digest, verify the capture column list, recapture the snapshot, tag rext `v2.1`] → **M210** Corpus + skills
+re-ground [`section`, complete the colleague's `origin/docs/skiller-in-app-merge` sweep in lockstep with M209 — flip
+the rext-facing tooling-doc bodies to `public.*`] → **M211** Bring-up acceptance [`iterative`, the exit gate:
+`/dev-up` + `/demo-up` GREEN cold on the merged platform, 0 residual skiller-schema refs, M42 coverage + v2.0
+Playthroughs GREEN]. Strictly sequential (the user's execution choice — single-substrate-safe). Tooling + docs +
+stack-re-sync only — zero platform-repo edits (the platform already did its half). Records under
+[`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/); designed from the user's skiller-merge briefing + the
+colleague's docs branch + the 7-agent blast-radius workflow (`wf_08b6bf4a`). **Last shipped:** **v2.0 "opening
+night"** (2026-07-02, tag `v2.0`; the first v2.x release — the Playthroughs pillar; records archived under
+[`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/)).
+**Next:** **`/developer-kit:design-roadmap`** — v2.1 is shipped (all 4 milestones closed + merged → `main`, tagged
+`v2.1`); the next v2.x release awaits design. _(Live state: [`state.md`](state.md). Backlog:
 [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note

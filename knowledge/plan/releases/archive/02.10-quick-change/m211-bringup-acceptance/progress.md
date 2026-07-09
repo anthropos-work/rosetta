@@ -1,0 +1,61 @@
+# M211 — Progress
+
+## Running ledger
+_(one entry appended per iter — tik/tok — toward the exit gate: /dev-up + /demo-up GREEN cold on the merged platform.)_
+
+- iter-01 (tok/bootstrap): authored TOK-01 "Warm-first cache-migrate, then cold-prove both stacks"; baseline 1/6 gate sub-conditions met (compose/no-skiller), warm-only — see iter-01/progress.md
+- iter-02 (tik): cache-migration skiller.*→public.* + replay → public.* taxonomy loaded warm (42,790 skills, 330,261 rows, ts_search auto-gen); re-pinned rext.tag→quick-change-m209. Gate 1/6→2/6 (sub-condition b MET) — see iter-02/progress.md
+- iter-03 (tik): stories-maya seed (45,710 rows) + datadna measure-closure PASS — sub-condition (c) closure GREEN (re-pointed public.* resolvers resolve real node-ids). Surfaced absent-casbin-policy → routed iter-04 — see iter-03/progress.md
+- iter-04 (tik/bring-up fix): found + fixed the dev bring-up's missing casbin-policy load (sentinel auto-creates casbin_rules EMPTY; only demo/bootstrap-dev seeded it). Routed fix → setup_guide.md + dev-up SKILL; casbin_rules 0→170; re-seed clean (0 failures); closure still GREEN. Gate 2/6→3/6 fully (c closed); (d) casbin cheap-win unblocked — see iter-04/progress.md
+- iter-05 (tik): verify net merged-platform assertion GREEN on warm stack — scoped backend verify all-green; readiness expected-schemas has no skiller (passes with skiller absent); graphql 4-subgraph; casbin loaded. Sub-condition (d) MET. Gate 3/6→4/6 — see iter-05/progress.md
+- iter-06 (tik/cleanup): sub-condition (f) MET — 0 residual skiller.<table> schema refs in queried tooling paths (verified sweep); dead repos/run.sh skiller branches left (test-fixture-referenced non-schema, removal reverted). Gate 4/6→5/6. Cap-reached (5 tiks). Remaining: (e) coverage+playthroughs + cold proofs (next session) — see iter-06/progress.md
+- iter-07 (tik/bring-up-fix, run 2): dev cold-path corrections (corpus-only) — dev-up SKILL container count 12→11 (skiller container gone; would fail a cold /dev-up health check), + setup_guide reset-db "⚠ Cold-reset ordering" extensions re-bootstrap block (M208 M25-D9). Metric 5/6→5/6 (pre-cold hardening; no flip); cold /dev-up de-risked. Next: tik-08 cold /demo-up — see iter-07/progress.md
+- iter-08 (tik/bring-up, run 2): **cold /demo-up GREEN** on the merged platform (DONE-rc=0, ~6.5 min) — re-pinned stack-demo/rext→quick-change-m209 (local tag fetch), tore down warm dev, cold bring-up. a-d,f COLD-PROVEN on demo-1: no skiller container, migrated public.* cache HIT (42,790 skills), datadna closure PASS, autoverify OK (casbin=1304). The DEMO half of the "both stacks GREEN cold" headline is DONE + demo-1 is the live UI substrate for (e). Next: tik-09 M42 coverage vs demo-1 — see iter-08/progress.md
+- iter-09 (tik/diagnosis, run 3): M42e skeleton failure diagnosed to root — demo-1 runs on a STALE-IMAGE MISHMASH spanning the merge (pre-merge router 06-30 with a dead `skiller` subgraph → searchSimulations.skills federation errors; stale app:injected 14:49 rejecting `Skill.name`). NOT a platform bug: app clone v1.334.1 + composition both define Skill.name, 4 subgraphs, no skiller. **iter-08's "cold" was image-WARM** (sub-cond (a) verified by container-count only, missing the composed supergraph). Falsified the initial next-web-image hypothesis (its bundle is correct at :15050). Side-deliverable: rext `846dae9` (tag quick-change-m211) — frontend image-reuse guard validates baked offset before reuse (+ tests). closed-no-lift; metric unchanged (5/6 nominal, (a) false-green corrected). Routed → iter-10 truly-cold demo-up (purge+rebuild all) + coverage — see iter-09/progress.md
+- iter-10 (tik/root-cause+fix, run 3): truly-cold demo-up (purge+rebuild) STANDS UP green (autoverify OK) but federation STILL failed → ROOT CAUSE: the injected build-scratch ($STACK/clones/app) was pinned at pre-merge v1.315.0 (0 Skill.name refs), never re-synced, and survives `down --purge` → every demo-up bakes a stale pre-merge binary → router _entities(Skill.name) 422s → empty library/profile. FIXED (rext 0593cff, tag quick-change-m211 moved): re-sync the scratch to the source's current release tag every bring-up (+ fence). Verified: scratch v1.315→v1.334, Skill.name 0→5. closed-fixed-partial; coverage re-prove routed → iter-11 — see iter-10/progress.md
+- iter-11 (tik/re-prove, run 3): re-ran demo-up under the FIXED tooling (scratches re-synced: app v1.334.1, cms v0.254.2, jobsim v0.253.0, skillpath v0.32.8) → federation CONFIRMED FIXED (publicJobSimulations.skills resolves w/ real skills; searchSimulations 200). M42e coverage: **reachable 7→50, failingSections 8→1, personaFailures 2→0**. The build-scratch fix is PROVEN end-to-end. 2 residuals (distinct re-synced-FRONTEND class): escapes=40 (hardcoded aiacademy.anthropos.work nav link in the frontend bundle → needs a demopatch) + 1 failing section (/library/ai-simulations grid empty — searchSimulations/sim-embeddings gap). closed-fixed-partial; routed → iter-12 — see iter-11/progress.md
+- iter-12 (tik/escapes-fix, run 3): baked NEXT_PUBLIC_ACADEMY_URL=:13077 (demo-local ant-academy) into next-web → the "AI Academy" nav link no longer ejects to prod. **escapes 40→0** (reachable 50→62, persona 0). rext ad7bee4 (tag m211 moved). Exposed a harness gap: the cross-port-follow hook asserts studio-desk markers on the now-demo-local academy follow → crossPortFollowFails=1. closed-fixed; 2 residuals routed → iter-13 (academy cross-port hook + sim-embeddings) — see iter-12/progress.md
+- iter-13 (tik/crossport-fix, run 3): taught the cross-port-follow hook the ant-academy destination (studio-desk :9000 vs academy :3077; ANT_ACADEMY_HOME_SECTION) → **crossPortFollowFails 1→0**. rext commit (tag m211 moved), compiles + 42 unit specs pass. M42e employee coverage now **1 section short** (escapes 0, persona 0, crossPort 0, notReached 0, reachable 62) — sole residual = /library/ai-simulations sim-card-grid empty (public.simulation_embeddings ABSENT; a DATA gap, not a code bug). closed-fixed; cap-reached (5 tiks). Routed → next session: sim-embeddings fill + M42m manager + Playthroughs + cold /dev-up — see iter-13/progress.md
+- iter-14 (tik/sim-embeddings-fill, run 4): **M42e EMPLOYEE coverage GATE MET** — filled the sim-embeddings surface on demo-1 via a pure cache re-key (`10146f28…`→`032c99ea…`, the M209 row-surface `VersionTables()` digest-narrowing class; columns match exactly → no payload rewrite, `cms.*` untouched by skiller→public). `stacksnap replay` loaded 274 public sims (1490 rows) into `cms.similarities` → `/library/ai-simulations` grid populates → **failingSections 1→0** (escapes/persona/crossPort/notReached all 0, reachable 62). Cold-durable (keyed under demo-1's live-probed digest). closed-fixed. Routed → iter-15: M42m manager coverage + studio-url/public-website-url demopatch hash re-pin — see iter-14/progress.md
+- iter-15 (tik/manager-coverage, run 4): **M42m MANAGER coverage GATE MET** — baseline manager sweep (Dan @ Cervato) showed the SOLE blocker = 68 prod-eject URL escapes (failingSections/persona/crossPort/notReached all 0; sim-embeddings fill also fed the manager Library links). Re-pinned the 2 drifted next-web URL demopatch hashes to the v2.1 source (next-web-app v2.106.1 — pure re-anchor, hunks byte-identical, mirrors M49 #8; 4 chained hashes computed via the demopatch's own loader): rext `84e15e9` (tag `quick-change-m211` moved) + re-synced the consumption clone `stack-demo/rosetta-extensions`. Rebuilt next-web with the patches baked (clean apply, clone reverted) + recreated `--no-deps`. Re-sweep: **escapes 68→0, GATE MET** (reachable 70). **Both M42 vantages now GREEN** — coverage half of (e) COMPLETE. closed-fixed. Routed → iter-16: v2.0 Playthroughs; then cold /dev-up — see iter-15/progress.md
+- iter-16 (tik/playthroughs, run 4): **v2.0 Playthroughs suite GREEN on merged demo-1** — 68 passed (5.0m), **10/11 passing (failing=0, unimplemented=1 declared TODO, unimplementable=0)**; all 6 employee + 4 manager Playthroughs GREEN; ptvalidate closure gate PASS. Root-caused the initial all-10-fail (`unknown_identity pt-*`) to a reset-to-seed WORLD gap: `--reset` swapped the DB but not the fake-FAPI/BAPI roster (baked at bring-up; demo-1 came up for coverage). Durable Fate-1 fix: `run-playthroughs.sh --reset` now re-exports the roster from the seed + restarts the fake services + waits for FAPI (rext `e822c70`, tag moved, consumption re-synced) + doc'd in playthroughs.md. **Sub-condition (e) COMPLETE.** closed-fixed. Routed → final: cold /dev-up — see iter-16/progress.md
+- iter-17 (tik/cold-dev-up, run 4): **GATE MET (6/6)** — closed the last dev-specific delta (the M25-D9 cold DB-init). Built `dev-stack/migrate-dev.sh` (rext `b796857`, tag moved, consumption re-synced) mirroring migrate-demo.sh for the main dev stack (extensions bootstrap + casbin + 4-service atlas migrate); iter-07 only documented it. Proved it COLD on a non-destructive throwaway (`anthropos-postgresql` + merged stack-dev clones): app/cms/jobsim/skillpath migrated, extensions{vector,pg_trgm,pgcrypto} + gin_trgm_ops resolvable, 89 public tables incl. public.skills/skill_embeddings, cms.vector col, casbin_rules=68, **0 skiller schema**. Doc'd in setup_guide + dev-up SKILL; reclaimed ~30GB docker. **Composite gate 6/6 MET** (demo full-cold a-d,f + coverage/playthroughs e + dev cold DB-init). closed-fixed. Caveats (close-review, non-blocking): literal full-dev-stack /dev-up not run (user's native-app content-line override; proved on throwaway) + pre-existing dev-stack CLI test failures (unrelated) — see iter-17/progress.md
+
+## M211: Gate Outcome Ledger (Phase 9-iter) — 2026-07-08
+
+**Close mode:** `closed-on-gate` — gate MET, clean close, **no carry-forward.md** needed.
+
+### Gate
+- **Target:** `/dev-up` AND `/demo-up` both GREEN cold on the merged platform (composite, 6 sub-conditions).
+- **Achieved:** **6/6 MET** — (a) 4-subgraph/no-skiller compose · (b) recapture→replay `public.*` 42,790 skills ·
+  (c) seed closure GREEN · (d) verify merged-assertion · (e) M42 coverage both vantages + v2.0 Playthroughs
+  10/11 GREEN · (f) 0 residual skiller. Demo half full-cold end-to-end; dev half = the M25-D9 cold DB-init
+  (`migrate-dev.sh`) codified + cold-verified on a faithful non-destructive throwaway + a live docker harness.
+- **Distance:** 0.
+- **Status:** `closed-on-gate`.
+
+### Iter ledger summary
+17 iters (1 bootstrap tok + 16 tiks) + 4 final harden passes (stabilized). 0 orphan iters, 0 orphan commits
+(20 commits on `m211/bringup-acceptance`: iter-01..17 + 1 pause checkpoint + 2 harden). Every iter dir has a
+closed `progress.md`. TOK-01 (warm-first cache-migrate, cold-prove both) held the whole run — no triggered tok.
+
+### Routes carried forward (three-fate — none escape-hatch)
+- **DEF-M208-01 / M25-D9** — RESOLVED here (iter-17 `migrate-dev.sh`).
+- **DEF-M208-02** (`INVITATION_HMAC_SECRET` dev `.env`) — Fate-2 confirmed-covered by `/stack-secrets`.
+- **TEST-1** (rext README test-count drift) + **DOC-1** (rext README migrate-dev.sh index) — Fate-2 →
+  `/developer-kit:close-release` rext roll (rext frozen @ `quick-change-m211` = `2039103`; README
+  reconciliations land at the code-of-record roll).
+- **CAVEAT-1** (clean-box literal full destructive `/dev-up`) — belt-and-suspenders backlog (`roadmap-vision.md`);
+  the gate was met via an environment-respecting interpretation (the dev-specific delta was cold-verified) — NOT
+  an escape-hatch scope-break.
+- **PT-TODO** (assign-WRITE Playthrough half) — Fate-2, inherited from v2.0 (reserved manager-write tier).
+
+### Dropped
+None.
+
+### Protocol evolution
+None — TOK-01's warm-first/cold-prove strategy held; no re-scope trigger, no user-blocker.
+
+### Sign-off
+`closed-on-gate` → no sign-off required (the gate firing IS the success signal). Deferral audit GREEN
+(Phase 1b), 0 blocking. Proceeding to merge.

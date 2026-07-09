@@ -61,7 +61,7 @@ Most messenger sends are reactive — driven by **Redis Streams** events from ot
 
 ## Dependencies
 
-* **RPC clients**: messenger calls out to `cms`, `backend` (users + organizations), `skiller`, and `jobsimulation`. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
+* **RPC clients**: messenger calls out to `cms`, `backend` (users + organizations), `skiller` (a surface now **served by `backend`** — the skiller service was merged into app, July 2026; `SKILLER_RPC_ADDR` points at backend), and `jobsimulation`. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
 * **Downstream**:
   * **Brevo API** — outbound email delivery (`BREVO_KEY`)
   * **PostgreSQL** — read-only `public` schema access for org / whitelabel lookups
@@ -80,7 +80,7 @@ make up PROFILE=messenger
 docker compose --profile graphql --profile messenger up --build -d
 ```
 
-Messenger depends on `backend`, `cms`, `jobsimulation`, `skiller`, `skillpath` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack.
+Messenger depends on `backend`, `cms`, `jobsimulation`, `skillpath` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack.
 
 ### Run natively
 
@@ -106,7 +106,7 @@ For local development, set `BREVO_KEY=""` to route through the **console sender*
 | `BACKEND_USERS_RPC_ADDR` | `http://backend:8083` | Backend RPC for user lookups |
 | `CMS_RPC_ADDR` | `http://cms:8091` | CMS RPC |
 | `JOBSIMULATION_RPC_ADDR` | `http://jobsimulation:8401` | Jobsimulation RPC |
-| `SKILLER_RPC_ADDR` | `http://skiller:8086` | Skiller RPC |
+| `SKILLER_RPC_ADDR` | `http://backend:8083` | Skiller RPC surface — served by `backend` since the skiller→app merge |
 | `SKILLPATH_RPC_ADDR` | `http://skillpath:8101` | Set in docker-compose but NOT read by the code — messenger has no Skillpath RPC client; skill-path data is read via the CMS client (`internal/flow/assignments.go:815`). |
 
 > Values shown are what docker-compose injects. The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).

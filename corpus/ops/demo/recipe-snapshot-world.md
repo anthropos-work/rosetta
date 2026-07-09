@@ -26,7 +26,7 @@ almost always just replays an existing snapshot. Capture is the rare refresh op.
 ## A — replay into a stack (the common path)
 
 **Prerequisite.** A stack up (`/demo-up N` **or** `/dev-up N` — dev is a peer; replay works on `dev-N|demo-N`
-alike) and migrated (so the `skiller` schema exists as the **taxonomy** replay target). The **`directus` replay
+alike) and migrated (so the taxonomy tables exist in the **`public`** schema as the **taxonomy** replay target — `public` since the v2.1 skiller→app merge, formerly the `skiller` schema). The **`directus` replay
 target** is created by the per-stack-Directus bootstrap, which **v1.5 M21–M23 automate on a `--local-content`
 stack** (demo default-on; dev opt-in): the set-dress pass bootstraps + auto-provisions the structure + boots the
 per-stack Directus + cuts `cms` over, so the `directus` replay **exits 0** and content is self-contained. On a
@@ -63,7 +63,7 @@ a diverged stack schema).
 ```
 
 ### The per-stack Directus boot (content surface)
-The taxonomy replays straight into the stack's `skiller` Postgres schema and is immediately visible. The Directus
+The taxonomy replays straight into the stack's `public` Postgres schema and is immediately visible. The Directus
 content surface needs its per-stack Directus **booted against the stack's own `directus` schema** (bootstrap →
 content-schema → replay → boot — 4 steps since fix16; the content-schema step is the not-yet-automated M10
 collection-schema gap, so today this remains an operator recipe and the replay exits 4 until it closes), pointed
@@ -106,7 +106,7 @@ Capture is a **privileged prod READ**. Two guards, both hard-fail:
   (`SET TRANSACTION READ ONLY`, `statement_timeout`, `idle_in_transaction_session_timeout`) caps the impact. The
   capture **never** runs through the platform services and **never** writes anywhere.
 
-Replay is **per-stack only** — it writes the per-stack-isolated `skiller` / `directus` Postgres (offset-port
+Replay is **per-stack only** — it writes the per-stack-isolated `public` (taxonomy) / `directus` Postgres (offset-port
 container), class `PerStackIsolated` (always allowed); it can **never** write the shared prod Directus, the prod S3
 bucket, or live Clerk. The read-side firewall (`AssertPublicOnly`) and the write-side isolation guard
 (`AssertClean`, from seeding) together close both halves.

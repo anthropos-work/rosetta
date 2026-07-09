@@ -120,7 +120,8 @@ the restore — the restore *is* the ingest, so production sees **no new read**:
 
 ```bash
 # 1. Restore a (public-catalog-bearing) staging dump into a throwaway Postgres.
-#    A schema-scoped dump is small to restore: `pg_dump -n skiller -n directus …`.
+#    A schema-scoped dump is small to restore (pre-merge dumps: `pg_dump -n skiller -n directus …`;
+#    post-July-2026 dumps carry the taxonomy in `public` — the old `skiller` schema is legacy).
 docker run -d --name snapsrc -e POSTGRES_PASSWORD=x -p 55432:5432 postgres:15
 pg_restore -d "postgres://postgres:x@localhost:55432/postgres" path/to/staging.dump
 
