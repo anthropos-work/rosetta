@@ -61,7 +61,8 @@ and a `release/{version}` branch is cut.
 > M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53** (the v1.x flat counter re-opened — backfill work is a `.1` patch of
 > v1.10, not a v2 `Mxyy` milestone). Designed from `.agentspace/annotation.md` + the M201 stale-clone finding.
 > Tooling + docs only — zero platform-repo edits.
-> **v2.1 "quick change"** → 2026-07-08 (IN DEVELOPMENT, branch `release/02.10-quick-change`; tag `v2.1`; the
+> **v2.1 "quick change"** → 2026-07-08 (SHIPPED 2026-07-09, tag `v2.1`, branch `release/02.10-quick-change` merged →
+> `main`; the
 > **skiller-in-app re-ground** — a field-hardening release in the v1.3b "dress rehearsal" / v1.10b "fit-up" lineage,
 > triggered by a **landed platform structural change**: the `skiller` service + its DB schema merged into
 > `app`/`public` [table names unchanged, `skiller.X → public.X`], RPC → `backend`, the skiller GraphQL subgraph gone
@@ -74,12 +75,12 @@ and a `release/{version}` branch is cut.
 
 ---
 
-> **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`); **v2.1 "quick change" is now IN DEVELOPMENT**
-> (designed 2026-07-08; branch `release/02.10-quick-change`; tag `v2.1`; full detail in the
-> `## In Development — v2.1` section of [`roadmap.md`](roadmap.md) — the active roadmap holds the v2.x major; v1.x
-> history is in [`roadmap-legacy.md`](roadmap-legacy.md)). v2.1 is a **field-hardening re-ground** (the skiller-in-app
-> merge), **not** a Playthroughs release — so it takes **M208+** and the reserved Playthroughs futures **M205–M207
-> below stay in vision**, orthogonal to v2.1 scope. The unscheduled backlog below is likewise orthogonal.
+> **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`) + **v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`).
+> **No release is active** — the next v2.x release awaits `/developer-kit:design-roadmap`. (v2.0/v2.1 detail is in the
+> `## Done` sections of [`roadmap.md`](roadmap.md) — the active roadmap holds the v2.x major; v1.x history is in
+> [`roadmap-legacy.md`](roadmap-legacy.md).) v2.1 was a **field-hardening re-ground** (the skiller-in-app merge),
+> **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
+> vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 

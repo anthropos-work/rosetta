@@ -38,7 +38,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 |---------|----------|-------|------------|--------|
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
 | **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 ✅ } → ✅ ship | ✅ **SHIPPED 2026-07-02 (tag `v2.0`)** (branch `release/02.00-opening-night`, designed 2026-06-28; all 4 milestones closed-on-gate/complete). **10 live Playthroughs (6 employee + 4 manager) GREEN on cold reset-to-seed, 1 in-manifest TODO.** The first v2.x release. Tooling + docs only, zero platform edits, zero new deps |
-| **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | 🔨 **IN DEVELOPMENT** (branch `release/02.10-quick-change`, designed 2026-07-08; tag `v2.1`; tooling + docs only, zero platform edits) |
+| **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -54,12 +54,14 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In Development — v2.1 "quick change" (designed 2026-07-08)
+## Done — v2.1 "quick change" (SHIPPED 2026-07-09, tag `v2.1`)
 
-> **Status (IN DEVELOPMENT):** designed 2026-07-08 via `/developer-kit:design-roadmap`; branch
-> `release/02.10-quick-change` cut from `main`; tag `v2.1`; rext tag `v2.1`. **4 milestones M208 → M209 → M210 →
-> M211, strictly sequential** (the user's execution choice — single-substrate-safe, no parallel-branch
-> coordination). All `planned`.
+> **Status (SHIPPED 2026-07-09, tag `v2.1`):** designed 2026-07-08 via `/developer-kit:design-roadmap`; branch
+> `release/02.10-quick-change` cut from `main`, merged → `main` + tagged `v2.1` at close-release; rext code-of-record
+> rolled to `v2.1` (= `quick-change-m211`). **4 milestones M208 → M209 → M210 → M211, strictly sequential — ALL
+> `done`.** close-release GREEN: both blocking gates (deferral + metrics) GREEN + adversarially verified, 0 must-fix,
+> all should-fix landed (the 42,790 count reconcile, the `go1.25.12` toolchain bump, the doc-flip fidelity), triple-clean
+> 3/3, 0 net-new deps. **The merged skiller-in-app platform stands up cold on both stacks via the re-grounded tooling.**
 >
 > **Theme:** *quick change — backstage, the actor sheds one costume and re-enters as another, seamless to the
 > audience.* skiller's part now folds into `app`; v2.1 re-fits the whole apparatus to the changed stage. A

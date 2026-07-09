@@ -5,10 +5,10 @@ on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.m
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
 **Status (2026-07-08):** **v1.0 … v1.10 + v1.10b + v2.0 SHIPPED** (the whole **v1.x major** tagged `v1.0` … `v1.10`
-+ the `v1.10.1` backfill; the first v2.x release **v2.0 "opening night"** tagged `v2.0`; records archived under
-[`releases/archive/`](releases/archive/), v1.x history in [`roadmap-legacy.md`](roadmap-legacy.md)). **v2.1 "quick
-change" is IN DEVELOPMENT (active)** — the **skiller-in-app re-ground**, a **field-hardening release** (v1.3b "dress
-rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform structural change** (designed 2026-07-08 via
++ the `v1.10.1` backfill; the first v2.x releases **v2.0 "opening night"** (`v2.0`) + **v2.1 "quick change"** (`v2.1`) shipped; records archived
+under [`releases/archive/`](releases/archive/), v1.x history in [`roadmap-legacy.md`](roadmap-legacy.md)). **v2.1
+"quick change" SHIPPED 2026-07-09 (tag `v2.1`)** — the **skiller-in-app re-ground**, a **field-hardening release**
+(v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform structural change** (designed 2026-07-08 via
 `/developer-kit:design-roadmap`; branch `release/02.10-quick-change`; tag `v2.1`; **4 milestones M208 → M209 → M210
 → M211**, strictly sequential): the `skiller` service + its DB schema merged into `app` (domain → the **`public`**
 schema, table names unchanged `skiller.X → public.X`; RPC → `backend`; the skiller GraphQL subgraph gone → **4
@@ -32,7 +32,7 @@ reserved **Playthroughs futures** M205–M207 stay in vision (v2.1 takes M208+).
   the v2.0 opening when the v1.x major retired
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + future v2 milestones + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v2.1 dirs** are under [`releases/02.10-quick-change/`](releases/02.10-quick-change/) (`m208-resync-groundtruth/`, `m209-rext-reground/`, `m210-corpus-reground/`, `m211-bringup-acceptance/`), scaffolded by the 2026-07-08 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs); the **shipped v1.10b dirs** under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/` … `m53-cold-rebuild-acceptance/`). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v2.1 dirs** are under [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/) (`m208-resync-groundtruth/`, `m209-rext-reground/`, `m210-corpus-reground/`, `m211-bringup-acceptance/`), scaffolded by the 2026-07-08 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs); the **shipped v1.10b dirs** under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/` … `m53-cold-rebuild-acceptance/`). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
 
 ## Conventions
 
@@ -57,7 +57,8 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v2.1 "quick change" — IN DEVELOPMENT** (designed 2026-07-08 via `/developer-kit:design-roadmap`;
+**Active:** **(between releases) — v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`). The description below is
+the shipped record. **v2.1 "quick change"** (designed 2026-07-08 via `/developer-kit:design-roadmap`;
 branch `release/02.10-quick-change` cut from `main`; tag `v2.1`). The **skiller-in-app re-ground** — a
 **field-hardening release** (the v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform
 structural change**: the `skiller` service + its DB schema merged into `app` (domain → the **`public`** schema, table
@@ -72,12 +73,12 @@ the rext-facing tooling-doc bodies to `public.*`] → **M211** Bring-up acceptan
 `/dev-up` + `/demo-up` GREEN cold on the merged platform, 0 residual skiller-schema refs, M42 coverage + v2.0
 Playthroughs GREEN]. Strictly sequential (the user's execution choice — single-substrate-safe). Tooling + docs +
 stack-re-sync only — zero platform-repo edits (the platform already did its half). Records under
-[`releases/02.10-quick-change/`](releases/02.10-quick-change/); designed from the user's skiller-merge briefing + the
+[`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/); designed from the user's skiller-merge briefing + the
 colleague's docs branch + the 7-agent blast-radius workflow (`wf_08b6bf4a`). **Last shipped:** **v2.0 "opening
 night"** (2026-07-02, tag `v2.0`; the first v2.x release — the Playthroughs pillar; records archived under
 [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/)).
-**Next:** **`/developer-kit:build-milestone`** — build **M208** (the `section` foundation; everything downstream is
-graded against the current merged code it produces). _(Live state: [`state.md`](state.md). Backlog:
+**Next:** **`/developer-kit:design-roadmap`** — v2.1 is shipped (all 4 milestones closed + merged → `main`, tagged
+`v2.1`); the next v2.x release awaits design. _(Live state: [`state.md`](state.md). Backlog:
 [`roadmap-vision.md`](roadmap-vision.md).)_
 
 ## Project note
