@@ -74,7 +74,7 @@ subset):
 
 | Surface | Public predicate (`firewall.PublicPredicate.PublicFilter`) | Prod-verified split (2026-06-06) |
 |---|---|---|
-| **taxonomy** (`public` schema, formerly skiller) | `organization_id IS NULL` (`firewall.DefaultPredicate` / `firewall.PublicFilter`) | `public.skills` 42,763 public / 794 customer |
+| **taxonomy** (`public` schema, formerly skiller) | `organization_id IS NULL` (`firewall.DefaultPredicate` / `firewall.PublicFilter`) | `public.skills` 42,790 public / 794 customer |
 | **Directus content** | `private = false AND tenant_id IS NULL AND status = 'published'` | `directus.simulations` 304 strict-public-published / 2,597 total |
 
 The org-only predicate is the **default** every surface gets unless it declares its own, so the taxonomy surface

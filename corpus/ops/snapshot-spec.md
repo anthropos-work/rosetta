@@ -116,7 +116,7 @@ unchanged; a new surface declares its own. A table is admissible iff **one** of:
 - it has **none of the predicate's scope columns** (a pure-reference table — e.g. `public.categories` or
   `directus.resource`), captured whole; OR
 - it **carries a scope column and is filtered to the public subset** (the predicate's filter — e.g.
-  `public.skills`: `organization_id IS NULL`, 42,763 public vs 794 customer; or `directus.simulations`:
+  `public.skills`: `organization_id IS NULL`, 42,790 public vs 794 customer; or `directus.simulations`:
   `private=false AND tenant_id IS NULL AND status='published'`, 304 public-published of 2,597); OR
 - it is **column-less but scoped via a public parent** (embeddings/translations/`sim_tasks` carry no scope column;
   they are public iff their parent is — judged under the surface's predicate). **Multi-level chains** (M10-D4): a
@@ -176,6 +176,30 @@ stale→refresh** decision (`store.Resolve`):
 (unscheduled-backlog) swap** (DEF-M10-01 — no staged version; deferred with the rest of the cloud/S3/AI-content seeds) — the manifest already addresses payloads
 by location, so a remote backend re-implements the same
 `PutManifest` / `PutPayload` / `GetManifest` / `GetPayload` / `List` surface with no contract change.
+
+## Cache-migration recapture — schema re-key without a re-capture (v2.1 M211)
+
+When a platform change **preserves the data + table names but moves them to a different schema** (the
+skiller→app merge: `skiller.skills` → `public.skills`, rows byte-identical), a fresh COPY-byte re-capture from
+prod is **not required** — you can **migrate the existing captured cache**: rewrite the manifest's per-table
+`Schema` (+ the `PublicVia` labels + payload filenames) `skiller.* → public.*` and re-key the cache dir under the
+new merged **schema digest** (the taxonomy surface probes the digest, so the migrated cache HITs on the next
+replay). The payloads are hardlinked (bytes unchanged → SHA256s still valid); the column set is verified to match
+the merged target first (M209's names-only/type-agnostic capture makes this safe). v2.1 M211 used this to recapture
+the 42,790-row public taxonomy + 274 sim-embeddings with **no prod access** — a faithful re-key of real captured
+data, never a fabrication. This is the sanctioned no-prod-capture-source path when a merge is a pure schema-prefix
+move; a genuine schema/column change still needs a real recapture (`snapshot-cold-start.md`).
+
+## The build-scratch freshness invariant (v2.1 M211 — stale-clone class)
+
+The demo bring-up builds its injected service images from a **per-stack build-scratch clone** (`$STACK/clones/…`).
+A build-scratch that was cloned once and **pinned to an old source ref** produces **stale binaries on every
+rebuild** — and, crucially, a stale scratch **survives `down --purge`** (purge removes images, not the source
+clone), so a "cold" rebuild can silently ship pre-merge code (v2.1 M211 hit this: a scratch pinned at pre-merge
+`v1.315.0` → a post-merge federation `Skill.name`/`_entities` error even after a full image purge). **Invariant:
+re-sync every injected build-scratch to its source's current release tag on every bring-up** (codified in rext
+`quick-change-m211`). This is the same stale-clone class as the M208 stack re-sync — the fix is always *re-sync at
+use*, not *trust a prior clone*.
 
 ## Embedding capture (M9a-Q3)
 
@@ -263,9 +287,9 @@ A table is listed AFTER every table it references, so a bulk-COPY replay never v
 | 1 | `public.categories` | `organization_id IS NULL` | 22 |
 | 2 | `public.job_role_categories` | **pure-reference** (no org column) — captured whole | 22 |
 | 3 | `public.specializations` | `organization_id IS NULL` | 1,442 |
-| 4 | `public.skills` | `organization_id IS NULL` | 42,763 |
+| 4 | `public.skills` | `organization_id IS NULL` | 42,790 |
 | 5 | `public.job_roles` | `organization_id IS NULL` | 22,315 |
-| 6 | `public.skill_embeddings` | public-via `skills` — vector `small_embedding3` dim **1536** | 42,763 |
+| 6 | `public.skill_embeddings` | public-via `skills` — vector `small_embedding3` dim **1536** | 42,790 |
 | 7 | `public.job_role_embeddings` | public-via `job_roles` — vector `small_embedding3` dim 1536 | 18,904 |
 | 8 | `public.skill_translations` | public-via `skills` | 85,491 |
 | 9 | `public.job_role_translations` | public-via `job_roles` | 43,550 |

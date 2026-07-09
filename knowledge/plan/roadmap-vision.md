@@ -146,6 +146,12 @@ Genuinely-deferred work, no target version, not scheduled:
   `app-01.10-content-line` worktree), which a full bring-up would clobber (and it can't go green without a v2.1
   native backend). An environment-respecting gate interpretation, not a gap. A clean-box full `/dev-up` remains a
   nice belt-and-suspenders confirmation on a box not committed to unrelated native-app work; unscheduled.
+- **M314b — prod frozen-read whole-org AI-readiness hydration (a prod-team / PLATFORM follow-up, out of rosetta
+  tooling scope).** Inherited from the v1.10b M51 AI-readiness showcase-org work: the prod AI-readiness snapshot
+  read-path loads members whole-org from a frozen read, a hydration surface that belongs to the **platform** (which
+  rosetta's read-only line does not edit) — so there is **no rosetta tooling work owed**. Context lives in
+  `corpus/ops/demo/coverage-protocol.md` + `corpus/services/ai-readiness.md` + the v1.10b/v2.0 retros; tracked here
+  as a standing prod-team backlog pointer so the state.md/context.md cross-reference resolves.
 - **DEF-M46-01 — Directus serve-grant CLOSURE + schema RECAPTURE (Option B) → RESOLVED (M46 Path 2,
   `method-acting-m46-servegrant-closure`).** M46/DD first landed a **targeted** column reconciliation (Option A): the
   captured per-stack Directus structure had **drifted** behind the platform (cms's `SetFields("*", …)` simulations query

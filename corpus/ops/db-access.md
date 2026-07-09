@@ -47,7 +47,7 @@ customer-scoped rows as if they were shareable reference data.**
 
 | Surface | public (`org_id IS NULL`) | customer (`org_id` set) | snapshot rule |
 |---|---|---|---|
-| `public.skills` | 42,763 | 794 | capture public |
+| `public.skills` | 42,790 | 794 | capture public |
 | `public.job_roles` | 22,315 | 2,381 | capture public |
 | `public.specializations` | 1,442 | 154 | capture public |
 | `public.categories` | 22 | 42 | capture public |

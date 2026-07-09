@@ -375,7 +375,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 
 | Tier | Count | Technology | Deployment | Management |
 |:-----|:------|:-----------|:-----------|:-----------|
-| **Core Backend (local `graphql` profile)** | 9 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Core Backend (local `graphql` profile)** | 8 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
