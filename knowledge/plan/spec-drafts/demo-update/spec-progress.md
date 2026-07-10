@@ -49,3 +49,7 @@
 ## Decision log
 
 - **2026-07-10** — All rows A..P decided in initial draft. Q1..Q5 opened for milestone-time resolution.
+- **2026-07-10 (M-B live-run)** — Closure gate fired RED on demo-1 against two pre-existing substrate defects — both **out of the `/demo-update` lane**, both recorded durably in [`known-findings.md`](known-findings.md):
+  - **Finding A** (stacksnap): taxonomy capture stale vs post-seed FK indexes (schema fingerprint drift). Not user-visible. Fix in `rosetta-extensions/stack-snapshot`.
+  - **Finding B** (stack-seeding): `stories.seed.yaml` gen-batch mints fabricated `K-*` verified-skill node-ids instead of resolving via `TaxonomyRefs`. **User-visible on demo-1 today** — 168 `is_verified=true` rows on `user_skills` + 113 distinct fabricated IDs on `membership_skills` (3 522 rows) render on Skill Spotlight / org-workforce / member listings. Fix in `rosetta-extensions/stack-seeding` (`stories.seed.yaml` preset + `GeneratedBatchSeeder` gen-batch path). Prioritise independently of `/demo-update`.
+  - **`/demo-update` decision:** accept RED as spec P1 validation. Gate is doing its job. Ship M-B and move to M-C.
