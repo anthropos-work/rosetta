@@ -283,7 +283,7 @@ teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tail
 ```
 
 **Why HTTPS everywhere?** Clerk's `clerk-js` needs a **secure context** (Web Crypto) — a plain-`http://` MagicDNS
-origin is not one, so HTTPS on the app origin is effectively required, not cosmetic (M213 decision D-SCHEME-1).
+origin is not one, so HTTPS on the app origin is effectively required, not cosmetic (M213-D-SCHEME-1).
 
 **Why per-port, not a single port-less `https://<host>`?** M213's reverse proxy is **`tailscale serve`** run
 **per port**, PRESERVING the offset-port scheme (M213 decision D-PROXY-2): each browser-facing plaintext service
@@ -321,7 +321,7 @@ flip covers every baked endpoint, redirect, and cross-surface link; the asset pl
 **one** deliberate plain-http surface is the **presenter cockpit's own page** (port `7700+off`): it is not in
 `tailscale serve`'s front list, so it serves plain HTTP — an http launcher page linking/POSTing to the https demo
 surfaces is fine (a navigation from http to https is not mixed content). Fronting the cockpit too is a live-
-acceptance polish tracked for M215.
+acceptance polish left as an accepted future enhancement (M215 shipped with the cockpit deliberately plain-HTTP).
 
 ## The tailscale-cert FAPI (the Clerk-free login over a real cert)
 
@@ -394,6 +394,10 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 | **F11** — hero identity vs profile-name mismatch (cosmetic) | e.g. logged in as `maya-thriving`, profile person renders as a different generated name | **known issue (seed polish)** — login + render work; unrelated to the remote story |
 | **F12** — the teardown didn't reset `tailscale serve` → a re-deploy port-conflicts | `serve` binds the tailnet IP `:<offsetport>` as a listener that persists past `compose down`; the next deploy fails `address already in use` (surfaced on the billion cold reset-to-seed) | **rext fix (shipped)** — `/demo-down` resets THIS demo's serve ports (per-port `--https=<port> off`, offset-scoped), + a defensive up-path pre-reset (idempotent re-up); non-fatal, no-op on localhost. Manual by-hand-teardown unblock: `tailscale serve reset` (Step 7) |
 
+> **Numbering note.** The ledger skips **F10** (unused). **F13** — a jobsimulation-service startup crash — is
+> **off the proven journey path** and out of this runbook's host-deploy scope (it would hit any demo, remote or
+> local); it is recorded in the milestone findings ledger + routed to standing backlog, not baked here.
+
 ## Safety framing
 
 - **Opt-in, default-off.** No demo is externally reachable unless `--public-host` is passed. A bare `/demo-up N`
@@ -430,7 +434,8 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   PAT-over-HTTPS clone in Step 1).
 - [`coverage-protocol.md`](coverage-protocol.md) — the 0-prod-eject believability gate (the evidence base for the
   `urls.ts` residual decision).
-- Design decisions: `knowledge/plan/releases/02.20-panorama/` — M212 (the knob), M213 (TLS/proxy/pk, D-PROXY-2 /
-  D-SCHEME-1), M214 (origins & links, D-SCHEME-1 / D-VITE-SIGNIN-1 / D-URLS-1), M215 (the live acceptance —
-  findings F1–F13 at `m215-prove-on-odyssey/iter-01/findings.md`).
+- Design decisions: `knowledge/plan/releases/archive/02.20-panorama/` — M212 (the knob), M213 (TLS/proxy/pk, D-PROXY-2 /
+  M213-D-SCHEME-1), M214 (origins & links, M214-D-SCHEME-1 / D-VITE-SIGNIN-1 / D-URLS-1), M215 (the live
+  acceptance — the full finding ledger F1–F13 at `m215-prove-on-odyssey/iter-01/findings.md`; F13 = the
+  out-of-scope jobsimulation-service crash, off the proven journey path).
 </content>

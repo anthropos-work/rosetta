@@ -1,0 +1,138 @@
+# dependencies.lock — Project Rosetta / rosetta-extensions
+# Release: v2.2 "panorama" (remote Linux-VM demo over Tailscale)
+# Phase 0 SUPPLY-CHAIN audit record. Scanned: 2026-07-11.
+#
+# rosetta:   branch release/02.20-panorama — DOCS + TOOLING PLANNING ONLY, no code manifest,
+#            no dependency surface of its own.
+# rext code: .agentspace/rosetta-extensions @ HEAD 00ba6b6 (tag panorama-m215).
+#            Authoritative per-package SHA integrity lives in each module's committed
+#            go.sum (Go) and package-lock.json (npm).
+#
+# ── Net-new dependencies vs v2.1 "quick change": ZERO ──
+# v2.2 is tooling + docs only (host knob, auth/TLS over tailscale-serve, CORS + ant-academy
+# patch, first remote-VM deploy). No go.mod require lines added; no package.json deps added;
+# no Python packages introduced. 0 net-new deps, confirmed against tag quick-change-m211.
+# NB: toolchain advanced go1.25.11 → go1.25.12 (the v2.1 SHOULD-FIX bump landed) — this CLEARS
+# the two inherited stdlib advisories flagged in v2.1 (GO-2026-5856 ECH leak, GO-2026-4970 os.Root).
+#
+# ============================================================================
+#  GO  — 6 modules, toolchain pinned go1.25.12 (go directive 1.25.0)
+# ============================================================================
+# 110 unique external modules across the 6 modules; all permissive (MIT / Apache-2.0 / BSD-3)
+# EXCEPT github.com/hashicorp/golang-lru/v2 v2.0.7 = MPL-2.0 (file-level weak copyleft; NOT
+# GPL/AGPL; pulled into clerkenstein via watermill/redis). No GPL / LGPL / AGPL anywhere.
+# First-party PRIVATE: anthropos-work/{colony,proto,ai,taxonomy}. Third-party PUBLIC first-party-
+# vendor SDK: github.com/anthropics/anthropic-sdk-go v1.34.0 (MIT, via anthropos-work/ai).
+#
+# Direct requires ("what we chose"); full transitive pin set is in each committed go.sum:
+#
+#  alignment            module anthropos.dev/alignment
+#                       (no external deps — stdlib only; no go.sum)
+#
+#  stack-secrets        module .../stack-secrets
+#                       (no external deps — stdlib only; no go.sum)
+#
+#  playthroughs         module .../playthroughs                     go.sum: 4 lines
+#                       gopkg.in/yaml.v3                v3.0.1
+#
+#  stack-snapshot       module .../stack-snapshot                   go.sum: 30 lines
+#                       github.com/jackc/pgx/v5         v5.9.2
+#                       (indirect) jackc/pgpassfile v1.0.0 · jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+#                       (indirect) jackc/puddle/v2 v2.2.2 · golang.org/x/sync v0.17.0 · golang.org/x/text v0.29.0
+#
+#  clerkenstein         module clerkenstein                         go.sum: 115 lines
+#                       github.com/anthropos-work/colony       v0.34.3
+#                       github.com/clerk/clerk-sdk-go/v2        v2.6.0
+#                       github.com/google/uuid                 v1.6.0
+#                       github.com/svix/svix-webhooks          v1.93.0
+#                       (indirect) github.com/go-jose/go-jose/v3 v3.0.5
+#                       (indirect) golang.org/x/crypto          v0.51.0   ◄── dependabot: 13 open (see below)
+#                       colony transitively pins: connectrpc.com/connect v1.19.2 · 99designs/gqlgen v0.17.90 ·
+#                         anthropos-work/proto v1.196.0 · anthropos-work/taxonomy v1.2.0 · redis/go-redis/v9 v9.19.0 ·
+#                         posthog-go v1.12.5 · getsentry/sentry-go v0.46.2 · hashicorp/golang-lru/v2 v2.0.7 (MPL-2.0) ·
+#                         google.golang.org/protobuf v1.36.11 · jackc/pgx/v5 v5.9.2 · golang.org/x/net v0.54.0
+#
+#  stack-seeding        module .../stack-seeding                    go.sum: 108 lines
+#                       github.com/anthropos-work/ai   v1.40.1   (the sole first-party non-colony dep; introduced v1.10)
+#                       github.com/jackc/pgx/v5        v5.9.2
+#                       gopkg.in/yaml.v3               v3.0.1
+#                       ai transitively pins: anthropics/anthropic-sdk-go v1.34.0 · openai/openai-go/v3 v3.31.0 ·
+#                         gage-technologies/mistral-go v1.1.0 · Azure/azure-sdk-for-go/sdk/azcore v1.21.0 +azidentity v1.13.1 ·
+#                         aws/aws-sdk-go-v2 v1.41.5 (+config/credentials/sso/sts/smithy-go v1.24.3) ·
+#                         golang-jwt/jwt/v5 v5.3.0 · avast/retry-go/v4 v4.7.0 · dlclark/regexp2 v1.11.5 ·
+#                         samber/{lo v1.53.0, go-gpt-3-encoder v0.3.1} · tidwall/{gjson v1.18.0,sjson v1.2.5} ·
+#                         json-iterator/go v1.1.12 · golang.org/x/{net v0.55.0, crypto v0.51.0, text v0.37.0, sync v0.20.0}
+#
+# ============================================================================
+#  NPM  — 2 rext e2e packages; devDependencies ONLY, nothing ships to prod
+# ============================================================================
+# stack-verify/e2e  (lockfileVersion 3, 7 nodes)  +  playthroughs/e2e  (lockfileVersion 3, 7 nodes)
+# Identical resolved trees:
+#   @playwright/test  1.61.1   (Apache-2.0)
+#   playwright        1.61.1   (Apache-2.0)
+#   playwright-core   1.61.1   (Apache-2.0)
+#   @types/node       20.19.43 (MIT)
+#   undici-types      6.21.0   (MIT)
+#   typescript        5.9.3    (Apache-2.0)
+#   fsevents          2.3.2    (MIT, optional/darwin)
+#   npm audit (--package-lock-only, audit-level=low): 0 vulnerabilities, both packages.
+#
+# ============================================================================
+#  PYTHON  — demo-stack · stack-injection · stack-core · dev-stack · stack-verify
+# ============================================================================
+# 25 .py files. ZERO third-party dependencies. No requirements.txt / pyproject.toml / setup.py /
+# Pipfile / poetry.lock anywhere. Every import resolves to the Python standard library or a
+# sibling local module (clone_repos, cockpit, inject, stack_registry, manifest_loader, …).
+# Tests use stdlib `unittest` (not a pinned pytest dep). Nothing to lock; nothing to audit.
+#
+# ============================================================================
+#  VULNERABILITY SCAN
+# ============================================================================
+# govulncheck (golang.org/x/vuln v1.6.0) — reachability-aware, run on ALL 6 modules
+# against the pinned go1.25.12 toolchain stdlib + full dep graph:
+#     alignment · clerkenstein · playthroughs · stack-secrets · stack-seeding · stack-snapshot
+#     → "No vulnerabilities found." on every module. 0 reachable vulns. (Cleaner than v2.1,
+#       whose go1.25.11 stdlib had a reachable MEDIUM ECH leak — cleared by the 1.25.12 bump.)
+# npm audit → 0 vulnerabilities (both e2e packages).
+#
+# ── PRE-EXISTING GitHub dependabot advisories (NOT introduced by v2.2) ──
+# 13 OPEN alerts, ALL on the SAME indirect dep in clerkenstein/go.mod:
+#     golang.org/x/crypto v0.51.0   (vulnerable range < 0.52.0 · first_patched 0.52.0)
+#   severity: 7 CRITICAL · 2 HIGH · 4 MEDIUM
+#   #1  crit  GHSA-89gr-r52h-f8rx   FIDO/U2F presence-check bypass
+#   #2  crit  GHSA-x527-x647-q7gg   VerifiedPublicKeyCallback permission skip
+#   #3  crit  GHSA-5cgq-3rg8-m6cv   auth bypass via unenforced @revoked status
+#   #4  crit  GHSA-rm3j-f69w-wqmq   infinite loop on large channel writes
+#   #6  crit  GHSA-f5wc-c3c7-36mc   agent key-forward constraint drop
+#   #7  crit  GHSA-vgwf-h737-ff37   server deadlock on unexpected responses
+#   #11 crit  GHSA-jppx-rxg9-jmrx   unenforced key constraints
+#   #9  high  GHSA-q4h4-gmj2-qvw2   byte-arithmetic underflow panic
+#   #10 high  GHSA-w879-237q-wc7r   pathological RSA/DSA param DoS
+#   #5  med   GHSA-9m57-25v3-79x9   pathological-input client panic
+#   #8  med   GHSA-45gg-vh54-h5m9   certificate-restriction bypass
+#   #12 med   GHSA-78mq-xcr3-xm33   CheckHostKey/Authenticate server panic
+#   #13 med   GHSA-qpw4-5x99-6vjp   channel-reject memory-leak DoS
+#
+#   ASSESSMENT: every one of these advisories lives in the golang.org/x/crypto/ssh (and
+#   .../ssh/agent) subpackage — SSH server/client/agent code paths. Clerkenstein is a Clerk
+#   auth MOCK: it consumes x/crypto ONLY transitively via go-jose (JWT sign/verify) and never
+#   imports x/crypto/ssh. govulncheck's call-graph confirms NOT REACHABLE → 0 flagged. The alerts
+#   are version-range matches on an indirect dep one patch-release behind; they were PUBLISHED
+#   against the already-pinned v0.51.0 after v2.1 shipped — v2.2 added no dep and did not touch it.
+#   REMEDIATION (SHOULD-FIX, one line, out of scope for this audit-only phase):
+#       cd clerkenstein && go get golang.org/x/crypto@v0.52.0 && go mod tidy   → clears all 13.
+#   (x/crypto v0.51.0 also appears transitively in stack-seeding's graph via the aws/anthropic/
+#    jwt SDKs; dependabot did not flag that manifest, and govulncheck confirms it unreachable there too.)
+#
+# ============================================================================
+#  LICENSE VERDICT: 0 GPL / LGPL / AGPL across every consumed surface.
+#  Only weak-copyleft = hashicorp/golang-lru/v2 v2.0.7 (MPL-2.0, file-level). Internal tooling,
+#  not distributed. No license blocker.
+# ============================================================================
+#  OVERALL VERDICT: YELLOW (no blocker; no release-gating issue).
+#    GREEN blocked by: 7 CRITICAL open dependabot alerts on an indirect dep.
+#    Not RED because: 0 reachable vulns (govulncheck clean on all 6 modules + npm + no py deps),
+#      the advisories are the unreachable x/crypto/ssh subpackage, the fix is a one-line indirect
+#      bump, and this is internal demo/dev tooling — not a distributed or SSH-serving artifact.
+#    ACTION: bump clerkenstein's golang.org/x/crypto → v0.52.0 next release to retire all 13 alerts.
+# ============================================================================

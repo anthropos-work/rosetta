@@ -96,7 +96,7 @@
 > HTTPS — both the employee (`maya-thriving` → `/profile`) and manager (`dan-manager` → `/enterprise/workforce`)
 > vantages. A Linux **deploy host** needs a few host-side prereqs a dev box doesn't (Go 1.25.x, the `atlas` CLI,
 > the Tailscale operator, a keyless ssh-agent) — see [`setup_guide.md`](setup_guide.md) §"Linux host prerequisites
-> (for a remote/VM demo)". Full recipe, topology, and safety framing: [`demo/tailscale-serve.md`](demo/tailscale-serve.md).
+> (for a remote/VM demo over Tailscale)". Full recipe, topology, and safety framing: [`demo/tailscale-serve.md`](demo/tailscale-serve.md).
 
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)
 

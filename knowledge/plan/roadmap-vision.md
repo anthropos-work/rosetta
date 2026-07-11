@@ -72,7 +72,8 @@ and a `release/{version}` branch is cut.
 > colleague's `origin/docs/skiller-in-app-merge` corpus sweep (correct-but-incomplete). Takes **M208+** — the
 > reserved Playthroughs futures **M205–M207 stay in vision** (M206 is a live Fate-3 destination from the M203 close),
 > per the established "reserved-number-ships-later" precedent (M26).
-> **v2.2 "panorama"** → 2026-07-11 (IN DEVELOPMENT, branch `release/02.20-panorama`; the **external-shareability
+> **v2.2 "panorama"** → 2026-07-11 (SHIPPED 2026-07-12, tag `v2.2`, branch `release/02.20-panorama` merged → `main`;
+> rext code-of-record `v2.2` = `39e8013`); the **external-shareability
 > release** — make dev/demo stacks reachable from other machines on a **Tailscale** tailnet (run a stack on a
 > Tailscale VM, e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host; a teammate with Tailscale up browses
 > the demo end-to-end). **4 milestones M212 → { M213 ∥ M214 } → M215** (+ optional M216); opt-in default-off,
@@ -85,7 +86,8 @@ and a `release/{version}` branch is cut.
 
 ---
 
-> **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`) + **v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`).
+> **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`) + **v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`) +
+> **v2.2 "panorama" SHIPPED 2026-07-12** (tag `v2.2`).
 > **v2.2 "panorama" is now IN DEVELOPMENT** (branch `release/02.20-panorama`, designed 2026-07-11 — the external-shareability / Tailscale-serve release). (v2.0/v2.1 detail is in the
 > `## Done` sections of [`roadmap.md`](roadmap.md) — the active roadmap holds the v2.x major; v1.x history is in
 > [`roadmap-legacy.md`](roadmap-legacy.md).) v2.1 was a **field-hardening re-ground** (the skiller-in-app merge),

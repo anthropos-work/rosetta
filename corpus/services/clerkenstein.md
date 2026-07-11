@@ -130,7 +130,7 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
   **VM caveat (proven on billion, M215):** the bring-up calls `tailscale cert` **un-sudo'd**, so the deploy VM must
   have the Tailscale **operator** set once — `sudo tailscale set --operator=<user>` — or the un-sudo'd call fails
   and the cert silently falls back to mkcert (local-trust-only → a *remote* browser sees an untrusted cert). See
-  [`../ops/setup_guide.md`](../ops/setup_guide.md) §"Linux host prerequisites (for a remote/VM demo)". (#M213-D-CERT-1)
+  [`../ops/setup_guide.md`](../ops/setup_guide.md) §"Linux host prerequisites (for a remote/VM demo over Tailscale)". (#M213-D-CERT-1)
 - **pk host stays dotted.** The publishable key is minted host-parametrically (the `--fapi-host` is the MagicDNS
   FQDN); the demo wiring pre-checks the dotted-host rule (the `dotless-pk-rejected` gene) and fails loud on a
   dotless `--public-host`. The **codec** (`clerk-frontend/key.go` `MintPublishableKey`) stays permissive — the

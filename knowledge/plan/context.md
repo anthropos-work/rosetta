@@ -37,7 +37,7 @@ reserved **Playthroughs futures** M205–M207 stay in vision (v2.1 takes M208+).
   the v2.0 opening when the v1.x major retired
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + future v2 milestones + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **active v2.2 dirs** are under [`releases/02.20-panorama/`](releases/02.20-panorama/) (`m212-public-host-knob/`, `m213-auth-over-tailnet/`, `m214-origins-and-links/`, `m215-prove-on-odyssey/`), scaffolded by the 2026-07-11 `/developer-kit:design-roadmap` run (M216 is roadmap-only until promoted). The **shipped v2.1 dirs** are under [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/) (`m208-resync-groundtruth/`, `m209-rext-reground/`, `m210-corpus-reground/`, `m211-bringup-acceptance/`), scaffolded by the 2026-07-08 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs); the **shipped v1.10b dirs** under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/` … `m53-cold-rebuild-acceptance/`). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **shipped v2.2 dirs** are archived under [`releases/archive/02.20-panorama/`](releases/archive/02.20-panorama/) (`m212-public-host-knob/`, `m213-auth-over-tailnet/`, `m214-origins-and-links/`, `m215-prove-on-odyssey/`), scaffolded by the 2026-07-11 `/developer-kit:design-roadmap` run + archived at the 2026-07-12 close (M216 stays roadmap-only until promoted). The **shipped v2.1 dirs** are under [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/) (`m208-resync-groundtruth/`, `m209-rext-reground/`, `m210-corpus-reground/`, `m211-bringup-acceptance/`), scaffolded by the 2026-07-08 `/developer-kit:design-roadmap` run. The **shipped v2.0 dirs** are archived under [`releases/archive/02.00-opening-night/`](releases/archive/02.00-opening-night/) (`m201-manifest-corpus/` + the foundation/coverage dirs); the **shipped v1.10b dirs** under [`releases/archive/01.10b-fit-up/`](releases/archive/01.10b-fit-up/) (`m47-resync-recapture/` … `m53-cold-rebuild-acceptance/`). v1.x's shipped milestone dirs are archived under `releases/archive/01.{00..10}-{codename}/`, each with overview/progress/decisions/retro/metrics._
 
 ## Conventions
 
@@ -62,11 +62,14 @@ The standard milestone lifecycle uses the developer-kit skills:
 The canonical flow: the `release/{VV.VV}-{codename}` branch is created at design time (the
 `/developer-kit:design-roadmap` invocation) so milestone branches have a parent from M1 onward.
 
-**Active:** **v2.2 "panorama" — IN DEVELOPMENT** (branch `release/02.20-panorama`, designed 2026-07-11; the
-external-shareability / Tailscale-serve release — **M212 → { M213 ∥ M214 } → M215** (+ opt M216); opt-in
-default-off, HTTPS-everywhere, demo-first; tooling + docs + an opt-in flag only; the sanctioned re-proposal of the
-dropped v1.4 Tailscale/ingress seed). Records `releases/02.20-panorama/`; next milestone **M212** (run
-`/developer-kit:build-milestone`). _Prior shipped record below:_ **v2.1 "quick change" SHIPPED 2026-07-09** (tag
+**Active:** **(between releases)** — **v2.2 "panorama" SHIPPED 2026-07-12** (tag `v2.2`; branch
+`release/02.20-panorama` merged `--no-ff` → `main`; rext code-of-record `v2.2` = `39e8013`; `.agentspace/rext.tag`
+bumped `v2.1`→`v2.2`). The external-shareability / Tailscale-serve release — **M212 → { M213 ∥ M214 } → M215** (+
+optional M216, not scaffolded); opt-in default-off, HTTPS-everywhere, demo-first; **tooling + docs + an opt-in flag
+only — zero platform-repo edits, 0 net-new deps**; the sanctioned re-proposal of the dropped v1.4 Tailscale/ingress
+seed. The first live remote Linux-VM demo deploy, both vantages green on a trusted cert. Records
+`releases/archive/02.20-panorama/`; next: **`/developer-kit:design-roadmap`** for the next release. _Prior shipped
+record below:_ **v2.1 "quick change" SHIPPED 2026-07-09** (tag
 `v2.1`; designed 2026-07-08 via `/developer-kit:design-roadmap`;
 branch `release/02.10-quick-change` cut from `main`; tag `v2.1`). The **skiller-in-app re-ground** — a
 **field-hardening release** (the v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a **landed platform

@@ -24,7 +24,8 @@ fresh reader can stand up a remote demo on a new Linux VM from `corpus/ops/demo/
 ## 2. Corpus / KB — ✅
 - [x] **`corpus/ops/demo/tailscale-serve.md`** — full remote Linux-VM deploy runbook (Step 0 prereqs w/ install
       commands → GitHub-PAT clone → workspace → secrets → snapshot cache → `--public-host` bring-up → `tailscale serve`
-      → verify [exact curls + cockpit login, both vantages] → teardown [F12 serve-reset]) + an F1–F13 finding-set table.
+      → verify [exact curls + cockpit login, both vantages] → teardown [F12 serve-reset]) + an F1–F12 host/deploy
+      finding-set table (F13 noted out-of-scope — the jobsimulation crash, off the proven journey path).
 - [x] **`corpus/ops/setup_guide.md`** — "Linux host prerequisites (for a remote/VM demo over Tailscale)" section.
 - [x] **`corpus/ops/rosetta_demo.md`** — remote/Linux deploy proven cross-machine (both vantages) + prereq pointer.
 - [x] **`corpus/services/clerkenstein.md`** — `tailscale cert` needs-operator caveat.
