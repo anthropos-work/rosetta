@@ -32,6 +32,21 @@ Front the browser-facing ports on the MagicDNS host with the `tailscale cert`, s
 which browsers grant only on `localhost` or HTTPS — a plain-`http://` MagicDNS origin is NOT a secure context, so
 HTTPS on the app origin is effectively required for auth, not just cosmetic).
 
+## Live foundation — PROVEN on billion (2026-07-11)
+A live PoC on the target VM confirmed the load-bearing assumption **before build**: `sudo tailscale cert
+billion.taildc510.ts.net` mints a real **Let's Encrypt** cert (CN=billion.taildc510.ts.net, issuer LE `YE1`, 90-day),
+and a **remote** tailnet machine fetched an HTTPS endpoint served from that cert with **`ssl_verify_result=0`
+(trusted, ZERO CA install)** in ~83 ms over the tailnet — served via `ssl.load_cert_chain(fapi.crt, fapi.key)`, the
+**exact path-mounted-cert model the fake-FAPI's `ListenAndServeTLS` uses**. So the mkcert→`tailscale cert` swap is a
+genuine drop-in, and a `0.0.0.0`-bound port is reachable over Tailscale (UFW allows the tailscale interface). Two
+findings carried forward:
+- **Cert renewal:** the LE cert is 90-day (expires ~Oct 9). `tailscale cert` re-issues on re-run — add a
+  renew-then-reload-FAPI step for a long-lived stack.
+- **RAM (→ M215, not a M213 blocker):** the constraint is the **odyssey host** (128 GB physical, ~180 GB configured
+  across 13 VMs, ~94% used), NOT billion. billion is pinned to its 8 GB balloon floor; the only host-RAM reclaim
+  lever (the balloon-OFF `ithaca`/`ailabs` VMs, 52 GB fixed) is **off-limits (billion-only, user constraint)**.
+  Mitigated: a **16 GB swap net** added to billion (persistent, `swappiness=10`). M215 runs swap-backed / trimmed.
+
 ## Scope
 - **In:**
   - **FAPI cert:** when `STACK_PUBLIC_HOST != localhost`, replace the mkcert/openssl mint (`up-injected.sh:630-659`)
