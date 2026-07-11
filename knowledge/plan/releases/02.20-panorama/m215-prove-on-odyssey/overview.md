@@ -62,6 +62,13 @@ rext patch (M214's mechanism), never a clone edit.
 The acceptance record + any live-surfaced fix routed back into the M212–M214 surfaces; finalizes
 `corpus/ops/demo/tailscale-serve.md` with the proven walkthrough.
 
+**Propagation close-gate (user directive 2026-07-11).** This is the FIRST Linux + remote-over-Tailscale
+deployment, so **M215 does not close until every finding is propagated into all three surfaces — tools (rext),
+corpus (KB), and skills** — so the next Linux/remote stack build is covered properly. Tracked in
+[`propagation-checklist.md`](propagation-checklist.md); each `iter-NN/findings.md` item must land in ≥1 surface
+(no orphan finding), and the corpus runbook must let a fresh reader stand up a remote demo on a new Linux VM
+unaided. Close verifies this checklist is complete.
+
 ## KB dependencies
 `corpus/ops/verification.md`, `corpus/ops/demo/coverage-protocol.md`, `corpus/ops/demo/playthroughs.md`,
 `corpus/ops/demo/tailscale-serve.md` (M214), the odyssey server reference (kb-ant-business `odyssey` skill).

@@ -91,7 +91,12 @@
 > CORS `https://$HOST` origins + studio-desk/academy redirects + every baked URL's scheme, `0.0.0.0` binds, the
 > two platform-family patches (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL`
 > overlay), and a `/stack-list` `external_host` record. The host must be a **dotted** MagicDNS FQDN (a dotless
-> name is refused). Full recipe, topology, and safety framing: [`demo/tailscale-serve.md`](demo/tailscale-serve.md).
+> name is refused). **Proven live cross-machine on a real Linux VM** (the odyssey `billion` box, 2026-07-11):
+> a teammate on another tailnet machine logged in as a seeded hero and completed a real journey over trusted
+> HTTPS — both the employee (`maya-thriving` → `/profile`) and manager (`dan-manager` → `/enterprise/workforce`)
+> vantages. A Linux **deploy host** needs a few host-side prereqs a dev box doesn't (Go 1.25.x, the `atlas` CLI,
+> the Tailscale operator, a keyless ssh-agent) — see [`setup_guide.md`](setup_guide.md) §"Linux host prerequisites
+> (for a remote/VM demo)". Full recipe, topology, and safety framing: [`demo/tailscale-serve.md`](demo/tailscale-serve.md).
 
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)
 

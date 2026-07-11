@@ -126,7 +126,11 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
 - **FAPI cert → `tailscale cert`.** For a MagicDNS host the fake-FAPI cert is minted via `tailscale cert` (a real
   Let's Encrypt cert **trusted tailnet-wide, no per-machine CA install**) instead of mkcert/openssl — **same output
   paths** (`<stack>/certs/fapi.{crt,key}`), so the path-only mount + `cmd/fake-fapi` `ListenAndServeTLS` are
-  untouched. Falls back to the local mkcert/openssl mint (non-fatal). 90-day LE cert → renew-then-reload (M215). (#M213-D-CERT-1)
+  untouched. Falls back to the local mkcert/openssl mint (non-fatal). 90-day LE cert → renew-then-reload (M215).
+  **VM caveat (proven on billion, M215):** the bring-up calls `tailscale cert` **un-sudo'd**, so the deploy VM must
+  have the Tailscale **operator** set once — `sudo tailscale set --operator=<user>` — or the un-sudo'd call fails
+  and the cert silently falls back to mkcert (local-trust-only → a *remote* browser sees an untrusted cert). See
+  [`../ops/setup_guide.md`](../ops/setup_guide.md) §"Linux host prerequisites (for a remote/VM demo)". (#M213-D-CERT-1)
 - **pk host stays dotted.** The publishable key is minted host-parametrically (the `--fapi-host` is the MagicDNS
   FQDN); the demo wiring pre-checks the dotted-host rule (the `dotless-pk-rejected` gene) and fails loud on a
   dotless `--public-host`. The **codec** (`clerk-frontend/key.go` `MintPublishableKey`) stays permissive — the
