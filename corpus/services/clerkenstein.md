@@ -102,7 +102,10 @@ its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real 
 + read endpoints in `clerk-backend/`), measured by the `alignment/cmd/expressrun` runner driving the
 **genuine `@clerk/backend`** — the same "verify against the real library" discipline `clerk-webhook/` uses
 with `svix`. `@clerk/express` verifies RS256-via-JWKS and rejects HS256, so the RS256 path is additive (the
-HS256 seams + M1/M2 gates stay green).
+HS256 seams + M1/M2 gates stay green). Its `clerk-express-1` DNA includes the **`dotless-pk-rejected`** gene:
+`@clerk/backend`'s `assertValidPublishableKey` (run by `clerkMiddleware` on every request) rejects a pk whose
+decoded FAPI host has **no dot** — which is why the demo pk host is a **dotted** `127.0.0.1` (not `localhost`)
+and why a MagicDNS FQDN (`billion.taildc510.ts.net`, also dotted) validates natively (v2.2 M213).
 
 **The deployment/injection surface (M3) *did* add `deploy/` + `cmd/`.** Unlike the `authn/` twin (which
 mocks the standalone `colony/authn` interface), the platform actually consumes `colony/authn/provider/clerk`
@@ -114,6 +117,26 @@ carries, not a hard-coded user). Its contract is checked at *compile time* and s
 `alignment/cmd/deployrun` runner (the `clerk-deploy-1` DNA). `cmd/` ships the supporting standalone tools:
 `mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers
 for demos).
+
+### Remote HTTPS over the tailnet (v2.2 "panorama" M213)
+
+Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in via `/demo-up --public-host
+<magicdns>`) touches three Clerkenstein-adjacent seams — all **gated** so an unset host is byte-identical:
+
+- **FAPI cert → `tailscale cert`.** For a MagicDNS host the fake-FAPI cert is minted via `tailscale cert` (a real
+  Let's Encrypt cert **trusted tailnet-wide, no per-machine CA install**) instead of mkcert/openssl — **same output
+  paths** (`<stack>/certs/fapi.{crt,key}`), so the path-only mount + `cmd/fake-fapi` `ListenAndServeTLS` are
+  untouched. Falls back to the local mkcert/openssl mint (non-fatal). 90-day LE cert → renew-then-reload (M215).
+- **pk host stays dotted.** The publishable key is minted host-parametrically (the `--fapi-host` is the MagicDNS
+  FQDN); the demo wiring pre-checks the dotted-host rule (the `dotless-pk-rejected` gene) and fails loud on a
+  dotless `--public-host`. The **codec** (`clerk-frontend/key.go` `MintPublishableKey`) stays permissive — the
+  alignment gene deliberately mints a dotless pk to test the consumer's rejection.
+- **clerk-js egress is overridable.** The FAPI proxies the clerk-js bundle from `cdn.jsdelivr.net` (its one outbound
+  dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror.
+
+The one-clean-HTTPS-origin reverse proxy (`tailscale serve`) fronting the *rest* of the browser surface + the
+CORS/link emission land in **M214**; the live cross-machine acceptance is **M215**. Bring-up mechanics:
+[`recipe-browser-login.md §B`](../ops/demo/recipe-browser-login.md).
 
 ## Read next (in the clerkenstein repo)
 

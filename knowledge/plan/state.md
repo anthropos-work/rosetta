@@ -1,9 +1,9 @@
 ---
 active_release: "v2.2 panorama — IN DEVELOPMENT (branch release/02.20-panorama; tag v2.2 at close); designed 2026-07-11"
 active_branch: "release/02.20-panorama"
-active_milestone: "(between milestones) — M212 CLOSED + merged into release/02.20-panorama 2026-07-11; next { M213 ∥ M214 }"
+active_milestone: "M213 auth-over-tailnet — BUILT on m213/auth-over-tailnet (pending /developer-kit:close-milestone); ∥ M214 not yet started"
 last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground | latest milestone: M212 — 2026-07-11"
-phase: "in development — M212 closed + merged; next /developer-kit:build-milestone → { M213 ∥ M214 } → M215"
+phase: "in development — M212 closed+merged; M213 BUILT (pending close); next: close M213 → M214 → M215"
 last_updated: "2026-07-11"
 ---
 
@@ -39,10 +39,14 @@ Design-roadmap Phase 0 note: the deferral audit + KB blind-area check were folde
 release **authors** its KB anchor `tailscale-serve.md` in M214, so the one blind area is homed via a `Delivers →`
 line, not designed into).
 
-**Next up:** **run `/developer-kit:build-milestone`** → **M213** (auth over the tailnet: cert/proxy/pk) **∥ M214**
-(origins & links: CORS/patch-tail/recipe) — disjoint files, additive merge, both consuming the M212 knob. Then
-**M215** (the iterative cross-machine acceptance gate on odyssey). The optional **M216** (dev-path parity) is
-roadmap-only until promoted.
+**Next up:** **M213 is BUILT** (branch `m213/auth-over-tailnet`, not merged) — the tailscale-cert FAPI swap +
+dotted-pk validation + the `tailscale serve` reverse-proxy generator + the topology guard + the confirmed
+build-rebuild-on-HOST guard + the cdn.jsdelivr.net egress (all gated on `--public-host`, byte-identical when unset;
+config generation + unit tests only — no live tailnet run). rext code-of-record at tag **`panorama-m213`**. **Run
+`/developer-kit:close-milestone`** to review + merge M213 into `release/02.20-panorama`. Then **M214** (origins &
+links: CORS/patch-tail/`tailscale-serve.md` recipe) **∥**-ready, then **M215** (the iterative cross-machine
+acceptance gate on odyssey — the live `tailscale cert`/`serve` run + cert-renewal + RAM burn-down). Optional **M216**
+(dev-path parity) stays roadmap-only until promoted.
 
 **Origin sync (2026-07-11):** origin has `main` + all shipped tags (`v1.10.1`, `v2.0`, `v2.1`) for **both** rosetta
 and rosetta-extensions, **and** the `release/02.20-panorama` branch (pushed 2026-07-11, `765528d`). **Local ahead of
