@@ -3,7 +3,7 @@ milestone: M215
 slug: prove-on-odyssey
 version: v2.2 "panorama"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-11
 last_updated: 2026-07-11
 complexity: large

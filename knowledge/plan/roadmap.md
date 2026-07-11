@@ -48,7 +48,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
 | **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 ✅ } → ✅ ship | ✅ **SHIPPED 2026-07-02 (tag `v2.0`)** (branch `release/02.00-opening-night`, designed 2026-06-28; all 4 milestones closed-on-gate/complete). **10 live Playthroughs (6 employee + 4 manager) GREEN on cold reset-to-seed, 1 in-manifest TODO.** The first v2.x release. Tooling + docs only, zero platform edits, zero new deps |
 | **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
-| **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 → { M213 ∥ M214 } → M215 (+ opt M216) | 🚧 **IN DEVELOPMENT** (branch `release/02.20-panorama`, designed 2026-07-11; opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, patch tail via the rext mechanism) |
+| **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | 🚧 **IN DEVELOPMENT — all 4 core milestones CLOSED, ready for `/developer-kit:close-release`** (branch `release/02.20-panorama`, designed 2026-07-11; opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, patch tail via the rext mechanism). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -66,9 +66,11 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ## In Development — v2.2 "panorama"
 
-> **Status (IN DEVELOPMENT):** designed 2026-07-11 via `/developer-kit:design-roadmap`; branch
-> `release/02.20-panorama` cut from `main`; tag (at close) **`v2.2`**. **4 milestones M212 → { M213 ∥ M214 } →
-> M215** (+ optional/deferrable **M216**). The **external-shareability release** — make dev/demo stacks reachable
+> **Status (IN DEVELOPMENT — all 4 core milestones CLOSED 2026-07-11; ready for `/developer-kit:close-release`):**
+> designed 2026-07-11 via `/developer-kit:design-roadmap`; branch `release/02.20-panorama` cut from `main`; tag (at
+> close) **`v2.2`**. **4 milestones M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅** (+ optional/deferrable **M216**) — all
+> merged `--no-ff`; M215 (the iterative acceptance closer) is `closed-on-gate`. The **external-shareability release**
+> — make dev/demo stacks reachable
 > from other machines on a **Tailscale** tailnet (run a stack on a Tailscale VM, e.g. `billion.taildc510.ts.net` on
 > the odyssey Proxmox host; a teammate with Tailscale up browses the demo end-to-end). **Tooling + docs + an opt-in
 > flag only — zero platform-repo edits** (two platform-family files ride the EXISTING rext sha-pinned patch
@@ -176,6 +178,29 @@ reset-to-seed; unset knob = byte-identical to today. **Iteration protocol:** the
 drive-from-a-2nd-machine → fix-in-the-M212/M213/M214-surface loop (`verification.md` + the coverage/playthroughs
 gates from a remote origin). **Why iterative:** the last breakages (secure-context, mixed-content, cookie
 same-site, cert PEM/renewal, RAM fit) surface only on a live cross-machine run.
+**Status:** `done` (closed 2026-07-11, `closed-on-gate`). Merged `--no-ff` into `release/02.20-panorama`; the
+`m215/prove-on-odyssey` branch is deleted. **Core exit gate MET:** the FIRST remote Linux-VM demo deploy over
+Tailscale was driven end-to-end from a **DIFFERENT** tailnet machine (a remote Mac) for **both** vantages — employee
+(`maya-thriving` → `/profile`, the M41 ProfileSeeder depth rendered) and manager (`dan-manager` →
+`/enterprise/workforce`, real seeded structural data) — over a **genuinely trusted** Let's Encrypt cert
+(`ignoreHTTPSErrors:false`, `verify=0`, no per-machine CA install), **0 console errors, 0 functional request
+failures, 0 localhost/prod ejects**, assets rendering; then a clean **cold reset-to-seed** one-shot `--public-host`
+bring-up proved reproducibility (14 containers, `tailscale serve` fronting 5 ports, seed 12,245 rows / 541 users,
+login-ready from the Mac). Unset knob byte-identical. Driven directly (live shared-infra work — D-STRAT-1); canonical
+record `iter-01/findings.md` (findings F1–F13). The **user-directed propagation close-gate is SATISFIED**: every
+deployment finding (F1/F2/F4/F6/F8/F9/F12) landed in **tools (rext) + KB + skills**, and a fresh reader can stand up
+a remote demo on a new Linux VM unaided from the NEW `corpus/ops/demo/tailscale-serve.md` runbook. rext code-of-record
+FROZEN at tag **`panorama-m215`** @ `00ba6b6` (rext re-tag + `.agentspace/rext.tag` bump reserved for close-release):
+the host pre-flight (F1/F2/F8) + keyless ssh-agent (F4) + Linux data-dir perms (F6) + the `git for-each-ref` build-tag
+resolver (F3) + the `tailscale serve` teardown/up-path reset (F12); demo-stack **424** (+41) / stack-injection
+**147p/8s**, shellcheck clean, macOS/dev path byte-identical. Close review = 4 findings (0 scope · 0 code · 2 docs
+fixed · 0 tests · 1 adversarial [ADV-1, non-blocking] · plan-artifact backfill): the `tailscale-serve.md` `F1–F11`→
+`F1–F12`/`F1–F13` range + the setup_guide §-anchor label; the stub `progress.md`/`decisions.md` backfilled. Deferral
+audit **GREEN** (11 records: 3 inherited→M215 all landed Fate-1/resolved; 3 D-CLOSE-1/-2/-3 → close-release; 4 new
+F5/F9/F11/F13 → standing backlog Fate-2; 0 repeat/aged-out/escape-hatch). **4 documented non-blocking residuals**
+routed via [`carry-forward.md`](releases/02.20-panorama/m215-prove-on-odyssey/carry-forward.md). Zero platform-repo
+edits. **This is the FINAL v2.2 milestone — all 4 core milestones (M212, M213, M214, M215) are now closed; the
+release is ready for `/developer-kit:close-release`.**
 
 **M216 — Dev-path parity + operator surface** · `section` · **OPTIONAL / deferrable** · depends: **M215**.
 Generalize the knob to the DEV path (main dev `PUBLIC_HOST` + native-worktree `.env.local`) + a
