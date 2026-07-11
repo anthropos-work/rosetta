@@ -70,11 +70,15 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
 > > bake; the roster-aware BAPI re-seeds on every re-up.
 
-> **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
-> **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
-> for `127.0.0.1 localhost ::1`), so a fresh browser renders the signed-in app with **no proceed-anyway**. It
-> degrades to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`. Full
-> story + the security/remote-VM/Firefox/expiry caveats: [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).
+> **Browser-trusted FAPI cert (M31; M213 remote path).** The Clerk-free login routes the browser through
+> Clerkenstein's fake FAPI over **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it. For a **local**
+> demo (default) that's `mkcert` (idempotent `-install` + a leaf for `127.0.0.1 localhost ::1`), degrading to an
+> openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`. For a **remote /
+> tailnet** demo (`/demo-up --public-host <magicdns>`, M213/v2.2), the cert is minted via **`tailscale cert`** — a
+> real Let's Encrypt cert **trusted tailnet-wide with no per-machine CA install**, so a teammate's browser trusts it
+> with no proceed-anyway (falls back to the local mkcert/openssl path if `tailscaled` isn't up). Same output paths
+> either way, so the mount is unchanged. Full story + the security/remote-VM/Firefox/expiry/renewal caveats:
+> [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).
 
 **Default-on, skippable.** The UI tier is built + brought up by default. `DEMO_NO_UI=1 /demo-up N` (or the
 `--no-ui` equivalent) brings up a **backend-only** demo — no frontend build, no academy, and the verify net is

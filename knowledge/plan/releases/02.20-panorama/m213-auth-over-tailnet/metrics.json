@@ -1,0 +1,89 @@
+{
+  "milestone": "M213",
+  "title": "Auth over the tailnet — Clerkenstein auth + the whole browser surface under ONE trusted HTTPS MagicDNS origin: mkcert->tailscale cert (path-only drop-in), dotted-pk validation, the tailscale-serve reverse-proxy generator, the FAPI-same-host topology guard, the confirmed build-rebuild-on-HOST guard, and the cdn.jsdelivr.net egress (FAKE_FAPI_CLERKJS_CDN). All gated on --public-host, byte-identical when unset; config generation + unit tests only (the live cross-machine run is M215).",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-07-11",
+  "is_last_milestone": false,
+  "kind": "the v2.2 'panorama' M213 (auth/TLS) milestone — Python + bash in rext tooling (stack-injection/gen_tailscale_serve.py NEW + inject.py; demo-stack/up-injected.sh) PLUS Go (clerkenstein/clerk-frontend/server.go clerkJSCDNBase). ZERO platform-repo edits. Code-of-record: rext tag panorama-m213 @ b9f41dd (frozen at close — rext re-tag reserved for /developer-kit:close-release). The rosetta m213 branch carries plan/doc + the corpus docs (clerkenstein.md, recipe-browser-login.md, frontend-tier.md).",
+  "tests": {
+    "language": "go (go test -race) + python (pytest) + shellcheck",
+    "go_m213_touched": {
+      "package": "clerkenstein/clerk-frontend",
+      "new_test_file": "clerkjs_proxy_test.go",
+      "new_test_funcs": 7,
+      "of_which_build": 4,
+      "of_which_harden": 3,
+      "suite_result": "all clerkenstein packages ok; clerk-frontend -race + -shuffle=on -count=5 clean",
+      "go_note": "M213 is v2.2's first Go touch (M212 touched zero Go). Baseline rext Go test funcs 1764 (v2.1) + 7 clerkjs_proxy = 1771. The other 5 rext Go modules carried unchanged."
+    },
+    "python_m213_touched": {
+      "stack-injection (test_injection.py + test_apply_authn.py)": 152,
+      "of_which_stack-injection_skipped": 8,
+      "demo-stack (full suite: test_tooling + test_frontend_build + test_ant_academy + test_cockpit + test_demopatch + test_detach + test_migrate_race_live)": 367,
+      "stack-core (untouched by M213, carried)": 97,
+      "m213_touched_total_collected": 519,
+      "m213_touched_total_passed": 511,
+      "m213_touched_total_skipped": 8,
+      "m213_touched_total_failed": 0
+    },
+    "counts_source": "authoritative — pytest --junit-xml per section, tallied from the parsed XML (not grepped stdout); go from `go test ./...` exit-code-gated `ok` lines",
+    "python_delta": "+33 M213 test funcs across the sections (build) then +11 more (harden Pass 1). stack-injection 130 (M212) -> 152 (+22: gen_tailscale_serve.main in-process x5 + require_dotted_host boundary + build's serve/dotted-host tests). demo-stack 350 (M212) -> 367 (+17: the functional guard-execution tests + serve/egress coverage).",
+    "close_added_test": "none — the close surfaced no defect requiring a new regression test; the 4 adversarial scenarios (ADV-1..ADV-4 in decisions.md) are each already handled and pinned by build/harden tests.",
+    "shellcheck": "demo-stack/up-injected.sh CLEAN at harden (shellcheck unavailable on the close box; go vet + gofmt + py_compile clean at close)",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean. go clerk-frontend: -race -shuffle=on -count=5 (randomized order) clean. stack-injection: 5x sequential (144p/8s identical each run). demo-stack test_tooling.py (the M213-touched file): 5x sequential (128p identical each run). pytest-randomly not installed -> sequential 5x (deterministic intra-suite order = realistic CI condition)."
+  },
+  "coverage": {
+    "note": "harden Pass 1 (recorded in progress.md). gen_tailscale_serve.py 64% -> 98% statements (only the __main__ entrypoint guard remains, exercised via subprocess). inject.py held at 98% (require_dotted_host/mint_pk/parse_pk/main fully covered; only __main__ guard remains). clerk-frontend touched funcs (clerkJSCDNBase, handleClerkJSBundle) 100%/100%. Bash guards (dotted-host + topology) moved from grep-pinned to functionally executed under set -euo pipefail.",
+    "gen_tailscale_serve_py": "98% statements",
+    "inject_py": "98% statements",
+    "clerk_frontend_touched_funcs": "100%"
+  },
+  "delivered": {
+    "fapi_cert_swap": "gen_tailscale_fapi_cert (up-injected.sh): when STACK_PUBLIC_HOST is set, mint a real Let's Encrypt cert via `tailscale cert --cert-file $CERTS/fapi.crt --key-file $CERTS/fapi.key $HOST` (trusted tailnet-wide, no CA install) -> SAME output paths as mkcert/openssl, so the path-only mount + fake-fapi ListenAndServeTLS are untouched. Falls back non-fatally to the factored gen_local_fapi_cert (mkcert/openssl LOCAL trust). Proven live on billion 2026-07-11 (ssl_verify_result=0 from a remote machine). D-CERT-1.",
+    "dotted_pk_validation": "inject.py::require_dotted_host + an early up-injected.sh case-guard reject a dotless --public-host loud at wiring time (the dotless-pk-rejected gene: @clerk/backend rejects a pk whose decoded FAPI host has no dot). The codec mint_pk STAYS permissive (a faithful mirror of clerk-frontend/key.go, which the alignment runner drives dotless on purpose). D-PK-1 (refines M212 D-IMPL-1).",
+    "reverse_proxy_generator": "gen_tailscale_serve.py (NEW): emits per-port `tailscale serve --bg --https=<offsetport> http://127.0.0.1:<offsetport>` for the browser-facing plaintext services {app 8082, cosmo 5050, next-web 3000, studio-desk 9000, academy 3077}+offset — the fake-FAPI (5400) EXCLUDED (self-TLS). Zero net-new dep (tailscale CLI already on every target VM). Pure generation; wired gated+non-fatal in up-injected.sh. D-PROXY-1/2. Live stand-up is M215.",
+    "topology_guard": "up-injected.sh: `[ \"$HOST\" != \"$FAPI_HOST\" ]` => exit 1 on the public path — the FAPI must be same-host as the app so the host-only SameSite=Lax handshake cookie stays same-site. Equal-by-construction today (one STACK_PUBLIC_HOST knob), a regression tripwire for a future subdomain split. PSL VERIFIED: ts.net is the public suffix -> taildc510.ts.net is the eTLD+1. D-TOPO-1.",
+    "rebuild_guard_confirmed": "the M212 want_ep cache-validator embeds $HOST, so a localhost->MagicDNS change invalidates a stale localhost-baked frontend image -> rebuild (re-baking the new pk). CONFIRMED + re-verified under M213's diff, already test-covered by M212's harden. D-REBUILD-1 (no new code).",
+    "egress_made_explicit": "clerk-frontend/server.go: the hardcoded cdn.jsdelivr.net turned into clerkJSCDNBase() + a defaultClerkJSCDN const + a FAKE_FAPI_CLERKJS_CDN override -> unit-testable (httptest, no real network) + operator-overridable to a mirror. up-injected.sh adds a non-fatal host-side egress pre-check. JS/FAPI alignment re-scored 100%/100%. D-EGRESS-1."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/ stack-injection (gen_tailscale_serve.py NEW + inject.py) + demo-stack (up-injected.sh) + clerkenstein (clerk-frontend/server.go). Tests: stack-injection/tests/test_injection.py, demo-stack/tests/test_tooling.py, clerkenstein/clerk-frontend/clerkjs_proxy_test.go.",
+    "head": "b9f41dd",
+    "tag": "panorama-m213",
+    "tag_note": "annotated tag at the post-harden HEAD b9f41dd. FROZEN at close — this rosetta-only M213 close does NOT advance/re-tag rext; the rext re-tag + the box-level .agentspace/rext.tag bump are /developer-kit:close-release's job when v2.2 ships.",
+    "diff_range_reviewed": "770f81b..b9f41dd (9 files, +926/-18)",
+    "build_commits": [
+      "7287023 (M213 §A: tailscale cert FAPI mint swap, gated + fallback)",
+      "63b5f7a (M213 §B: dotted-pk validation up in the demo wiring)",
+      "7acbc76 (M213 §C: tailscale-serve reverse-proxy component)",
+      "fdf74b3 (M213 §D: FAPI-same-host topology guard; PSL verified)",
+      "636db11 (M213 §F: cdn.jsdelivr.net egress explicit + overridable)",
+      "d8f28c3 (M213 docs: clerkenstein KB — tailscale-cert path, dotless-pk gene, egress)"
+    ],
+    "harden_commits": [
+      "b9f41dd (harden Pass 1: in-process serve CLI + functional guard execution + proxy-transparency tests)"
+    ],
+    "close_touched_rext": false,
+    "close_commit": "none in rext — the close made ZERO rext changes (frozen tag). The one rext-doc residual (stack-injection/README.md missing a gen_tailscale_serve.py index row) is routed to close-release (D-CLOSE-2, bundled with M212's D-CLOSE-1)."
+  },
+  "review": {
+    "findings": 7,
+    "scope": "GREEN — all 7 build checkboxes checked; every overview Scope.In item maps to a delivered rext artifact (cert swap / dotted-pk / serve-gen / topology guard / rebuild-guard confirm / egress); Out: items (proxy recipe + CORS/links -> M214, live acceptance + port-binding + renewal + RAM -> M215) confirmed-covered; no stray TODO/FIXME/HACK in the M213-touched source.",
+    "code_quality": "GREEN — rext diff 770f81b..b9f41dd reviewed cross-cuttingly: named defaultClerkJSCDN const + clerkJSCDNBase() override, factored gen_local_fapi_cert (no duplicated mkcert/openssl), safe set-u array expansion, non-fatal gating throughout, byte-identity preserved when the knob is unset, no dead code, no cross-module reach-in. gofmt + go vet + py_compile clean; go -race clean. 0 must-fix.",
+    "docs": "GREEN(1 routed) — corpus docs accurate + cross-referenced: clerkenstein.md (Remote-HTTPS section + dotless-pk gene ref, with (#M213-D-*) trace tags added at close), recipe-browser-login.md §B (remote tailscale-cert path + egress), frontend-tier.md (cert callout). No broken links (tailscale-serve.md is a prose M214 forward-ref). ONE finding: rext stack-injection/README.md 'What's here' table missing a gen_tailscale_serve.py row -> D-CLOSE-2, Fate 2 -> close-release (rext frozen tag; same pattern as M212 D-CLOSE-1).",
+    "tests": "GREEN — go clerkenstein -race all ok (clerk-frontend +7 clerkjs_proxy funcs); stack-injection 152 (144p/8s/0f); demo-stack 367p/0f (JUnit-authoritative). flake gate 5/5 (go 5x-shuffle, stack-injection 5x, demo-stack test_tooling 5x). Coverage: gen_tailscale_serve 98% / inject 98% / clerk-frontend touched funcs 100%.",
+    "decision_triage": "1 net-new knowledge edit — added (#M213-D-CERT-1/D-PK-1/D-EGRESS-1) reference tags to the clerkenstein.md blended knowledge (corpus trace convention). D-CERT-1/D-PK-1/D-EGRESS-1 user-facing 'why' already blended during build (verified accurate). D-PROXY-1/2 home is M214's tailscale-serve.md recipe. D-SCHEME-1/D-TOPO-1/D-REBUILD-1 stay archive (maintainer-only).",
+    "adversarial": "4 scenarios recorded (Phase 2c, ADV-1..ADV-4 in decisions.md): gen_tailscale_serve port-collision assert verified inert (FAPI never double-fronted); require_dotted_host rejects IPv6-literal + empty hosts (intended + tested); clerkJSCDNBase concurrent per-request os.Getenv reads race-safe + empty-override falls back to default (race-clean); serve/egress wiring non-fatal + gated, topology guard the one hard-fail (harden functionally executed both). 0 unhandled defects.",
+    "deferral_audit": "GREEN — m213-auth-over-tailnet/audit-deferrals/deferral-audit-2026-07-11.md — 5 Fate-2 routings (recipe+CORS -> M214; live acceptance + port-binding + renewal+RAM -> M215; rext README index -> close-release) all confirmed-owned; DEF-M212-02 (dotted-host doc) landed EARLY as Fate-1 in M213; 0 repeat, 0 aged-out, 0 escape-hatch."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 7 sections (tailscale cert FAPI mint swap + local fallback; dotted-pk validation in the demo wiring; gen_tailscale_serve.py reverse-proxy generator + gated wiring; FAPI-same-host topology guard; build-rebuild-on-HOST guard CONFIRMED; cdn.jsdelivr.net egress explicit+overridable; +33 build tests +11 harden tests). PLUS the inherited DEF-M212-02 clerkenstein.md dotted-host doc landed early as Fate-1.",
+    "confirmed_covered_fate2": "the one-clean-HTTPS-origin reverse proxy topology recipe (tailscale-serve.md) + CORS/link emission -> M214; the LIVE tailscale cert+serve run on billion + remote hero journey -> M215; the docker/native loopback-vs-0.0.0.0 port-binding reconciliation -> M215; cert renewal (90-day LE) + RAM/swap burn-down -> M215; the rext stack-injection/README.md index-row (D-CLOSE-2) -> v2.2 close-release.",
+    "annotated_fate3": "none (all routings were pre-existing owners; no overview.md edited)",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none"
+  },
+  "notes": "M213 makes Clerkenstein auth complete from a remote tailnet browser under one trusted HTTPS MagicDNS origin — config-only because the three load-bearing premises align (dotted-host validator + host-agnostic token verify + path-only cert mount). The tailscale cert swap was PROVEN live on billion (ssl_verify_result=0 from a remote machine) before build. All work is gated on --public-host (byte-identical when unset). The build held under harden Pass 1 + 4 close adversarial scenarios with zero defects. rext code-of-record FROZEN at tag panorama-m213 (b9f41dd) — the sole close residual (a section-README index row) is routed to close-release rather than re-pointing the frozen tag. Runs parallel with M214 (origins & links); both feed M215 (prove it on odyssey — the live cross-machine acceptance gate)."
+}
