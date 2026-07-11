@@ -72,11 +72,21 @@ and a `release/{version}` branch is cut.
 > colleague's `origin/docs/skiller-in-app-merge` corpus sweep (correct-but-incomplete). Takes **M208+** — the
 > reserved Playthroughs futures **M205–M207 stay in vision** (M206 is a live Fate-3 destination from the M203 close),
 > per the established "reserved-number-ships-later" precedent (M26).
+> **v2.2 "panorama"** → 2026-07-11 (IN DEVELOPMENT, branch `release/02.20-panorama`; the **external-shareability
+> release** — make dev/demo stacks reachable from other machines on a **Tailscale** tailnet (run a stack on a
+> Tailscale VM, e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host; a teammate with Tailscale up browses
+> the demo end-to-end). **4 milestones M212 → { M213 ∥ M214 } → M215** (+ optional M216); opt-in default-off,
+> HTTPS-everywhere under one MagicDNS origin, demo-first; **tooling + docs + an opt-in flag only — zero
+> platform-repo edits** (a 2-item patch tail via the existing rext sha-pinned mechanism). The **sanctioned
+> re-proposal** of the v1.4 seed "external stack shareability (Tailscale/ingress)" dropped 2026-06-11 — takes
+> **M212+**, the next free band after v2.1's M211 (reserved Playthroughs futures M205–M207 untouched in vision).
+> Designed from the user's Tailscale-serve briefing + the 5-agent feasibility workflow `wf_bea3be47` (config-only
+> core confirmed).
 
 ---
 
 > **v2.0 "opening night" SHIPPED 2026-07-02** (tag `v2.0`) + **v2.1 "quick change" SHIPPED 2026-07-09** (tag `v2.1`).
-> **No release is active** — the next v2.x release awaits `/developer-kit:design-roadmap`. (v2.0/v2.1 detail is in the
+> **v2.2 "panorama" is now IN DEVELOPMENT** (branch `release/02.20-panorama`, designed 2026-07-11 — the external-shareability / Tailscale-serve release). (v2.0/v2.1 detail is in the
 > `## Done` sections of [`roadmap.md`](roadmap.md) — the active roadmap holds the v2.x major; v1.x history is in
 > [`roadmap-legacy.md`](roadmap-legacy.md).) v2.1 was a **field-hardening re-ground** (the skiller-in-app merge),
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
@@ -203,9 +213,13 @@ Genuinely-deferred work, no target version, not scheduled:
   automatically (**proven live on :33077**).
 
 **Dropped from tracking (2026-06-11, user instruction — re-proposal requires a fresh `/developer-kit:design-roadmap` run):**
-the former v1.4 seeds **AI-generated content**, **external stack shareability** (Tailscale/ingress), and **more
-mirror engines**; the **deployment/injection CI gate** (a local-only alignment surface; gates nothing in the
-demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX nicety with no owner).
+the former v1.4 seeds **AI-generated content** and **more mirror engines**; the **deployment/injection CI gate** (a
+local-only alignment surface; gates nothing in the demo/dev workflow); and the **`/dev-up` frontend-image pre-warm**
+question (a UX nicety with no owner).
+> **RE-PROPOSED 2026-07-11 — `external stack shareability` (Tailscale/ingress):** brought back via the sanctioned
+> path (a fresh `/developer-kit:design-roadmap` run) and **promoted to v2.2 "panorama"** (IN DEVELOPMENT, branch
+> `release/02.20-panorama`). No longer dropped. The other three items above remain dropped (re-proposal requires
+> their own fresh design-roadmap run).
 
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
@@ -213,8 +227,15 @@ demo/dev workflow); and the **`/dev-up` frontend-image pre-warm** question (a UX
 - **v1.10 "method acting"** (shipped 2026-06-27, tag `v1.10` — codename now permanent; chosen 2026-06-24, the runner-up codename from the v1.9 round, now apt): continues the theatre lineage and names the thesis directly — *method acting* is the deep, immersive work that makes a single **character** believable up close, exactly v1.10's job (the hero you log in as must read as a real, fully-fleshed person on every page). Alternatives weighed: "in character", "close-up". **The last release of the v1.x major.**
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
 - **v1.10b "fit-up"** (IN DEVELOPMENT — chosen 2026-06-29 by the user, theatre lineage): the *fit-up* (a.k.a. the get-in) is the technical work of **building and rigging the set correctly in the venue** before the show can run — the crew assembles the world so it holds together under the lights. Exactly this backfill's job: re-ground the demo to current prod and fix the bring-up so the environment stands up cleanly from cold — the technical preparation that must happen **before** v2.0 "opening night" can resume. Sits in the same field-hardening lineage as **v1.3b "dress rehearsal"** (the prior demo-up-issue backfill). Alternatives weighed: "tech rehearsal", "house notes".
+- **v2.2 "panorama"** (IN DEVELOPMENT — chosen 2026-07-11 by the user, over the proposed "on tour" / "road show" / "the transfer" / "guest house"): a *panorama* was a 19th-C immersive spectacle attraction — the whole scene, taken in from any vantage. Names the thesis directly: the whole environment made **viewable from anywhere on the tailnet**, no longer a single-seat show on the host's own `localhost`. Fits the spectacle/entertainment lineage even as it steps outside the strict backstage-of-a-play metaphor.
 
-_Last updated: 2026-07-08 (**v2.1 "quick change" DESIGNED + PROMOTED to active development** — the **skiller-in-app
+_Last updated: 2026-07-11 (**v2.2 "panorama" DESIGNED + PROMOTED to active development** — the **external-shareability
+/ Tailscale-serve release**: make dev/demo stacks reachable from other machines on a Tailscale tailnet; **4 milestones
+M212 → { M213 ∥ M214 } → M215** (+ opt M216), branch `release/02.20-panorama` cut from `main`, tag `v2.2`; opt-in
+default-off, HTTPS-everywhere, demo-first; tooling + docs + an opt-in flag only, the 2-item patch tail via the rext
+mechanism. The **sanctioned re-proposal** of the dropped v1.4 Tailscale/ingress seed; designed from the user's
+briefing + the 5-agent feasibility workflow `wf_bea3be47`. Takes M212+; reserved Playthroughs futures M205–M207 stay
+in vision. Prior: 2026-07-08 (**v2.1 "quick change" DESIGNED + PROMOTED to active development** — the **skiller-in-app
 re-ground**, a field-hardening release [v1.3b "dress rehearsal" / v1.10b "fit-up" lineage] triggered by the landed
 platform merge of `skiller` into `app`/`public`; **4 milestones M208 → M209 → M210 → M211**, strictly sequential;
 branch `release/02.10-quick-change`, tag `v2.1`. Takes M208+; the reserved Playthroughs futures M205–M207 stay in

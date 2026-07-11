@@ -5,6 +5,15 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-11** via `/developer-kit:design-roadmap`. **v2.2 "panorama"** is the **external-shareability
+> release** — make dev/demo stacks reachable from other machines on a **Tailscale** tailnet (run a stack on a
+> Tailscale VM, e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host; a teammate with Tailscale up browses
+> the demo end-to-end). The **sanctioned re-proposal** of the v1.4 seed "external stack shareability
+> (Tailscale/ingress)" dropped 2026-06-11 pending a fresh design-roadmap run. **4 milestones M212 → { M213 ∥ M214 }
+> → M215** (+ optional M216); tag **`v2.2`**; branch `release/02.20-panorama`. **Tooling + docs + an opt-in flag
+> only — zero platform-repo edits** (two platform-family files ride the EXISTING rext sha-pinned patch mechanism).
+> Decisions: HTTPS-everywhere under one MagicDNS origin; external access **opt-in, default off**; demo-first.
+>
 > **Designed 2026-07-08** via `/developer-kit:design-roadmap`. **v2.1 "quick change"** is the **skiller-in-app
 > re-ground** — a field-hardening release (v1.3b "dress rehearsal" / v1.10b "fit-up" lineage) triggered by a
 > **landed platform structural change**: the `skiller` service + its DB schema **merged into `app`** (domain → the
@@ -39,6 +48,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v1.10b** | **fit-up** | Field-hardening backfill — re-ground demo + corpus to current prod, fix the from-scratch `/demo-up` issues + the v1.10 content gaps, add the **AI-readiness showcase org**, and consolidate **one auditable seed+gen manifest** | M47 → { M48 ∥ M49 } → M50 → M51 → M52 → M53 | ✅ **SHIPPED 2026-07-01 (tag `v1.10.1`)** (branch `release/01.10b-fit-up`, designed 2026-06-29; all 7 milestones done) |
 | **v2.0** | **opening night** | The platform's core user journeys, **proven to actually work** — a new **Playthroughs** pillar: a manifest-driven, deterministic e2e suite that *pretends to be the human* and proves the platform does its job | M201 ✅ ∥ M202 ✅ → { M203 ✅ ∥ M204 ✅ } → ✅ ship | ✅ **SHIPPED 2026-07-02 (tag `v2.0`)** (branch `release/02.00-opening-night`, designed 2026-06-28; all 4 milestones closed-on-gate/complete). **10 live Playthroughs (6 employee + 4 manager) GREEN on cold reset-to-seed, 1 in-manifest TODO.** The first v2.x release. Tooling + docs only, zero platform edits, zero new deps |
 | **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
+| **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 → { M213 ∥ M214 } → M215 (+ opt M216) | 🚧 **IN DEVELOPMENT** (branch `release/02.20-panorama`, designed 2026-07-11; opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, patch tail via the rext mechanism) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -51,6 +61,105 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## In Development — v2.2 "panorama"
+
+> **Status (IN DEVELOPMENT):** designed 2026-07-11 via `/developer-kit:design-roadmap`; branch
+> `release/02.20-panorama` cut from `main`; tag (at close) **`v2.2`**. **4 milestones M212 → { M213 ∥ M214 } →
+> M215** (+ optional/deferrable **M216**). The **external-shareability release** — make dev/demo stacks reachable
+> from other machines on a **Tailscale** tailnet (run a stack on a Tailscale VM, e.g. `billion.taildc510.ts.net` on
+> the odyssey Proxmox host; a teammate with Tailscale up browses the demo end-to-end). **Tooling + docs + an opt-in
+> flag only — zero platform-repo edits** (two platform-family files ride the EXISTING rext sha-pinned patch
+> mechanism). **The sanctioned re-proposal** of the v1.4 seed "external stack shareability (Tailscale/ingress)"
+> dropped 2026-06-11 pending a fresh design-roadmap run.
+>
+> **Theme:** *panorama — the whole environment, viewable from anywhere on the tailnet.* Today a stack is a
+> single-seat show on the host's own `localhost`; panorama opens the house so any teammate on the tailnet can take
+> in the whole thing, live.
+>
+> **Designed 2026-07-11** via `/developer-kit:design-roadmap`, from the user's Tailscale-serve briefing + a 5-agent
+> feasibility workflow (`wf_bea3be47`) that mapped the browser-URL / Clerk-FAPI / CORS / injection surfaces
+> (file:line) and **confirmed the core is config-only**: network reachability is ALREADY solved (ports bind
+> `0.0.0.0`), `localhost` lives entirely in rext tooling (not platform files), and Clerk auth survives the move by
+> design (dotted-host validator + host-agnostic token verify + path-only cert mount → `tailscale cert` drops in).
+> Two narrow platform-family items (ant-academy `allowedDevOrigins`; conditional next-web `urls.ts`) ride the
+> existing rext patch mechanism. **Live-verified 2026-07-11:** local + remote Tailscale up, MagicDNS
+> `taildc510.ts.net`, `billion` VM has Docker + `tailscale cert`. **Decisions (2026-07-11):** HTTPS-everywhere under
+> one MagicDNS origin (Clerk needs a secure context); external access **opt-in, default off** (an explicit
+> `/demo-up --public-host` flag); demo-first (dev-path parity = optional M216).
+
+### Execution graph
+
+```
+v2.2 "panorama"
+  M212 ──┬──► M213  auth over the tailnet (TLS + proxy + pk) ─┐
+  knob   └──► M214  origins & links (CORS + patch tail)       ┴──► M215  prove it on odyssey (iterative)
+                                                                    [+ M216 dev-path parity — optional]
+```
+
+**M212 opens** (the single opt-in host knob threaded through every rext browser-facing emitter). **M213 ∥ M214**
+then run on disjoint files — M213 (cert/proxy/pk) vs M214 (CORS/links/patches), additive merge — both consuming the
+knob. **M215** is the iterative acceptance closer: the demo is not trusted reachable until a teammate on a
+*different* tailnet machine drives a full hero journey green on a cold reset-to-seed.
+
+### Milestones
+
+(compact summaries — full contracts under
+[`releases/02.20-panorama/m*/overview.md`](releases/02.20-panorama/))
+
+**M212 — The single host knob** · `section` · complexity **medium** · depends: **none**. Introduce
+`STACK_PUBLIC_HOST` (default `localhost` → **byte-identical when unset**) surfaced as an opt-in
+`/demo-up --public-host` flag, threaded through every rext emitter that bakes a browser-facing `localhost`/`127.0.0.1`
+(`up-injected.sh` build-args + `.env.local` + the `demo_web` rewrite + cache-validators; `inject.py --fapi-host`;
+`gen_injected_override.py` host-param plumbing; cockpit `--host 0.0.0.0` + hosts; `ant-academy.sh`; `stack_registry`
+additive `external_host`). Scoped to browser-facing values (control-plane DSNs stay `localhost`). **Delivers →** the
+substitution surface (seed for the M214 recipe).
+
+**M213 — Auth over the tailnet** · `section` · complexity **medium** · depends: **M212** · ∥ **M214**. Serve
+Clerkenstein auth + the whole browser surface under **one trusted HTTPS MagicDNS origin**: swap mkcert →
+`tailscale cert` (path-only drop-in), re-mint the pk from the dotted MagicDNS FAPI host (validator-safe), stand up a
+lightweight reverse proxy (tailscale serve / Caddy) fronting the browser-facing ports, keep FAPI same-host (SameSite
+guard). Backend token verify is already host-agnostic → no verify change. **Delivers →** `clerkenstein.md` (the
+tailscale-cert FAPI path).
+
+**M214 — Origins & links** · `section` · complexity **medium** · depends: **M212** · ∥ **M213**. Admit the MagicDNS
+origin everywhere gated + close cross-surface ejects + land the bounded patch tail via the EXISTING rext patch
+mechanism: extend `CORS_EXTRA_ORIGINS` emission (+ tests); studio-desk runtime redirects + the
+`VITE_CLERK_SIGN_IN_URL` bake gap; **NEW `apply-*.sh`** for ant-academy `allowedDevOrigins` (required); conditional
+next-web `urls.ts` demopatch. **Delivers →** NEW `corpus/ops/demo/tailscale-serve.md` (the remote-access recipe) +
+`rosetta_demo.md` / `frontend-tier.md` / `clerkenstein.md` updates.
+
+**M215 — Prove it on odyssey** · `iterative` · complexity **large** · depends: **M212 + M213 + M214** · **the FINAL
+milestone**. **Exit gate:** `/demo-up N --public-host billion.taildc510.ts.net` (opt-in) → a teammate on a
+DIFFERENT tailnet machine completes a full employee AND manager hero journey (Clerkenstein login + a real journey)
+with 0 localhost/prod ejects, 0 CORS blocks, 0 cert-untrusted, 0 mixed-content, assets rendering, on a cold
+reset-to-seed; unset knob = byte-identical to today. **Iteration protocol:** the bring-up →
+drive-from-a-2nd-machine → fix-in-the-M212/M213/M214-surface loop (`verification.md` + the coverage/playthroughs
+gates from a remote origin). **Why iterative:** the last breakages (secure-context, mixed-content, cookie
+same-site, cert PEM/renewal, RAM fit) surface only on a live cross-machine run.
+
+**M216 — Dev-path parity + operator surface** · `section` · **OPTIONAL / deferrable** · depends: **M215**.
+Generalize the knob to the DEV path (main dev `PUBLIC_HOST` + native-worktree `.env.local`) + a
+`/dev-up --public-host` flag + full corpus docs. **Defer-safe:** the demo path (M212–M215) is the shippable core;
+dev parity can be Fate-2 if scope tightens. *(Not yet scaffolded — roadmap-only until promoted.)*
+
+### Top risks
+
+1. **Secure-context / auth (blocks-release if wrong)** — Clerk's clerk-js uses Web Crypto, granted only on
+   `localhost` or HTTPS; a plain-`http://` MagicDNS origin is not a secure context. **Mitigation:** HTTPS-everywhere
+   (the M213 decision) + burn down early on the live box (M215). *The make-or-break surface — config-only ONLY
+   because the dotted-host validator + host-agnostic verify + path-only cert mount all align.*
+2. **Mixed-content (degrades-quality)** — an https page making an http browser call is blocked independent of CORS.
+   **Mitigation:** the reverse proxy terminates one HTTPS origin; M214 mixed-content check.
+3. **RAM on `billion` (nice-to-resolve)** — ~13 GB avail vs ~12 GB UI-tier want. **Mitigation:** the `--no-ui`
+   escape or a VM RAM bump on odyssey; validated in iter-01 of M215.
+4. **Build-time bake tax (degrades-quality)** — browser URLs + the pk are baked into next-web/studio-desk images; a
+   host change forces a per-host rebuild. **Mitigation:** the M212 cache-validators must invalidate on HOST, not
+   just offset.
+5. **Patch-tail drift (nice-to-resolve)** — ant-academy `allowedDevOrigins` is a CONFIRMED patch; sha-pinned
+   drift-refusal makes an upstream `next.config.js` change fail loudly (by design).
 
 ---
 
