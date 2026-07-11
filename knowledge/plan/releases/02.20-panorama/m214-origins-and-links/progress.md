@@ -58,3 +58,35 @@ Stopped after Pass 1: the full Step 2b scan found no further meaningful gap (all
 bug-fix commits need regression tests; no parser/perf surface justifies fuzz/benchmark work), the Python coverage
 delta is flat at an uncoverable ceiling (99%), and zero flakes. rext code-of-record re-tagged `panorama-m214` @
 `99c86b7`.
+
+## M214: Final Review
+
+Close review 2026-07-11. Reviewed the rosetta docs+plan branch (`m214/origins-and-links`) + the FROZEN rext code
+diff `b9f41dd..99c86b7` (tag `panorama-m214`). **4 findings, all Fate-1, all rosetta-side — zero rext touch (the
+annotated tag stays put; rext README reconcile → close-release, D-CLOSE-3).**
+
+### Scope
+- [x] 0 gaps. Every `overview.md` In-item landed Fate-1 except the conditional `urls.ts`, which is the
+  evidence-decided documented residual D-URLS-1 (re-confirmed still NOT a deferral in the close deferral audit).
+
+### Code Quality
+- [x] 0 must-fix. The frozen rext diff is high quality — one `browser_scheme`/`$SCHEME` predicate mirrored across
+  `gen_injected_override.py` + `up-injected.sh` + `ant-academy.sh`, gated on `STACK_PUBLIC_HOST`, byte-identical
+  when unset, trap-reverted overlays, drift-refuse + idempotent + non-fatal patch application. (Frozen anyway.)
+
+### Documentation
+- [x] [should-fix] `tailscale-serve.md:32` cited clerkenstein.md §"Remote reach over Tailscale" — actual heading
+  is "Remote HTTPS over the tailnet (v2.2 M213)". Corrected the prose §-name (the link target already resolved).
+- [x] [nice-to-have] Added the `(#M214-D-URLS-1)` reference tag to `tailscale-serve.md`'s "Documented residual"
+  section so the residual decision traces back to `decisions.md`.
+- [x] All 7 linked docs exist; recipe-browser-login §B + every cross-ref resolves; the recipe is accurate to code.
+
+### Tests & Benchmarks
+- [x] 0 gaps. stack-injection 147p/8s (=155) · demo-stack 383p/0s — both exit 0. Reconcile exactly with M213
+  (stack-injection 152→155 +3; demo-stack 367→383 = +16 net-new test funcs). rext already hardened at 99% stmt.
+
+### Decision Triage
+- [x] Adversarial review — 3 scenarios recorded in `decisions.md` (all handled by existing guards; no code fix).
+- [x] D-SCHEME-1 / D-VITE-SIGNIN-1 already blended into `clerkenstein.md` (ref-tagged); D-PATCH-1 / D-URLS-1 into
+  `tailscale-serve.md` — no new blend needed.
+- [x] D-CLOSE-3 recorded in `decisions.md` (Fate-2 → close-release rext re-tag, bundled with D-CLOSE-1/-2).

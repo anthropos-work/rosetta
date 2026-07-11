@@ -29,7 +29,7 @@ itself is the access control** (only tailnet members can reach the host; there i
 `--public-host` maps to the `STACK_PUBLIC_HOST` env knob (either form works). Unset ⇒ `localhost` (byte-identical
 to a normal demo). The host **must be a dotted MagicDNS FQDN** — a dotless bare name is refused at bring-up
 (`@clerk/backend`'s publishable-key host must be dotted; see [`../../services/clerkenstein.md`](../../services/clerkenstein.md)
-§"Remote reach over Tailscale").
+§"Remote HTTPS over the tailnet").
 
 `/stack-list` then shows the reachable external URL for the stack (the registry records `external_host` on the
 public path — opt-in, non-fatal).
@@ -137,7 +137,7 @@ The **two already-shipped demopatches** — `next-web-studio-url` + `next-web-pu
 MagicDNS baked value cleanly: their values are baked by `up-injected.sh` as `$SCHEME://$HOST:…`, so under a public
 host they resolve demo-local over HTTPS (no prod-eject, no mixed-content).
 
-### Documented residual — next-web `WEB_APP_URL` / `HIRING_APP_URL`
+### Documented residual — next-web `WEB_APP_URL` / `HIRING_APP_URL` (#M214-D-URLS-1)
 
 These `urls.ts` constants are `NEXT_PUBLIC_NODE_ENV` ternaries → prod (`app.`/`hiring.anthropos.work`) with no
 per-URL override, so they *would* prod-eject if traversed. **They are a documented residual, not patched** —

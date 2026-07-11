@@ -65,3 +65,41 @@ in the Document phase (not a pre-existing stale claim to correct up-front).
   example is localhost-only + no `allowedDevOrigins` patch note. All three are declared M214 doc updates.
 - **KB-3** (carry-forward from M213 Phase 0b KB-4): `frontend-tier.md` "Browser-trusted FAPI cert (M31)" callout
   still describes the pre-M213 mkcert/`127.0.0.1` world — reconcile in the Document phase.
+
+## Adversarial review (close, 2026-07-11)
+
+Scenarios simulated against the M214 rext surface (frozen at `panorama-m214`). All handled by existing
+code/tests — recorded here (the scenario, not the fix) so future reviewers see what was considered. No code fix
+needed (nothing was broken; the rext tag stays put).
+
+- **ADV-1 — `ACADEMY_ROOT` resolves wrong (patch target absent).** `ant-academy.sh` derives
+  `ACADEMY_ROOT="$(cd "$ACADEMY/.." … || echo "$DEV/ant-academy")"`; if `$ACADEMY/..` can't `cd`, the fallback
+  path may not hold `code/next.config.js`. **Handled:** `apply-ant-academy-dev-origins.sh` asserts
+  `[ -f "$TARGET" ]` and exits non-zero, and `ant-academy.sh` invokes it as `if … apply … ; then … else log ⚠
+  (non-fatal)` — a bad root just logs the documented residual and the academy still launches. Pinned by the
+  new `test_apply_missing_target_is_refused` clone-independent test.
+- **ADV-2 — concurrent studio-desk overlay in the SHARED clone.** Two demo-N builds writing
+  `.env.production.local` + the transient `!.env.production.local` `.dockerignore` re-include into the same
+  studio-desk context could race. **Handled / pre-existing:** this is the SAME shared-clone serial-build model
+  as next-web's established `.env.local` overlay (not an M214-introduced risk); the RETURN trap reverts both on
+  every build exit (proven by `test_studio_desk_failed_build_still_reverts_overlay_and_dockerignore`), and a
+  pre-existing overlay is never clobbered (`test_studio_desk_does_not_clobber_a_preexisting_env_production_local`).
+- **ADV-3 — `browser_scheme` on a dotted non-MagicDNS host (e.g. `127.0.0.1`).** `browser_scheme("127.0.0.1")`
+  returns `https` (truthy + `!= "localhost"`), which would be wrong for a bare IP. **Handled upstream:** the
+  bring-up contract requires a dotted MagicDNS FQDN and M213's `require_dotted_host` / `assertValidPublishableKey`
+  gate rejects a misuse; `browser_scheme` is downstream of that guard. The documented, supported input is a
+  MagicDNS name (see `tailscale-serve.md` TL;DR "must be a dotted MagicDNS FQDN"). Not an M214 code defect.
+
+## D-CLOSE-3 — M214's new rext helper + patch are not indexed in the rext READMEs → close-release (Fate-2, rext-frozen)
+The NEW `stack-injection/apply-ant-academy-dev-origins.sh` helper and the
+`demo-stack/patches/ant-academy-dev-origins/` manifest are not listed in the rext index docs
+(`stack-injection/README.md`'s apply-script table + `demo-stack/patches/README.md`'s "Shipped manifests"). The
+rext code-of-record is FROZEN at annotated tag `panorama-m214` @ `99c86b7`; editing a rext README now re-points
+that tag, which is **`/developer-kit:close-release`'s** job (it bumps the box-level `.agentspace/rext.tag` +
+reconciles the rext READMEs). **Fate 2 → close-release**, bundled with M212's D-CLOSE-1 (demo-stack test-count
+drift) + M213's D-CLOSE-2 (stack-injection index gap) in the single rext commit close-release makes at the rext
+re-tag. NB: both rext READMEs are already ILLUSTRATIVE (each documents ONE canonical example — `apply-authn.sh` /
+`next-web-studio-url` — and omits the other pre-existing helpers/patches), and carry **no numeric count claim**, so
+this is an index-completeness row to add at the re-tag, not a NEW count-drift. Not a repeat deferral (a distinct
+item from D-CLOSE-1/-2, same destination — the designed per-milestone rext-freeze pattern). Provenance:
+`audit-deferrals/deferral-audit-2026-07-11.md`.
