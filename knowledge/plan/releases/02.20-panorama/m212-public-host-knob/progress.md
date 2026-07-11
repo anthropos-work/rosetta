@@ -64,3 +64,27 @@ tag `panorama-m212` re-pointed `d4f6da6` → post-harden HEAD.
 
 ### Stop condition
 Stopped after Pass 2: the remaining line-coverage misses are all module-entry `__main__` guards + one argparse-unreachable `return 1` (subparsers are `required=True`), which carry no behavioral value; the Step 2b dimension scan surfaced nothing new; no flaky tests across the verification runs. Post-harden rext totals: stack-core **97**, stack-injection **130** (8 skipped), demo-stack **350** — all green; both scripts shellcheck-clean.
+
+## M212: Final Review (close, 2026-07-11)
+
+Review found **1 substantive finding** (a rext-frozen handbook count-drift, routed) + 4 adversarial scenarios
+(all handled/pinned). Suites re-verified green (577 tests: stack-core 97 · stack-injection 122+8skip ·
+demo-stack 350; 0 failures); both scripts shellcheck-clean; flake gate 5× clean.
+
+### Scope
+- [x] All 12 sections checked; overview `In:` list fully mapped; no stray TODO/FIXME (M214-seam markers are the intentional D-IMPL-3 wire).
+
+### Code Quality
+- [x] rext prod diff `d0cdfbb..770f81b` reviewed — consistent HOST/FAPI_HOST/BIND_HOST derivation, `+alt` bash-3.2 empty-array guards, byte-identity preserved, no dead/unsafe code. No fix needed.
+- [x] Adversarial review (Phase 2c): 4 scenarios recorded in `decisions.md` — flag-parse edges, empty-export precedence, symmetric-pk-round-trip contract, `want_ep` HOST-invalidation. All handled or pinned.
+
+### Documentation
+- [x] `demo-up` + `stack-list` SKILL docs (operator surface) reviewed — accurate, cross-referenced, correctly frame M212 as the foundation (M213/M214/M215 complete the feature). No fix.
+- [x] [should-fix, routed] `demo-stack/README.md:66` quotes `test_tooling.py (50 tests)`; actual **111**. Pre-existing drift (not M212-caused) in the FROZEN rext tag — cannot fix in-place without re-tagging (orchestrator-reserved for close-release). → **D-CLOSE-1, Fate 2 → v2.2 close-release.**
+
+### Tests & Benchmarks
+- [x] Full rext suites for the 3 touched sections re-run + JUnit-tallied (authoritative): 569 passed / 8 skipped / 0 failed. No new gaps (harden already drove inject.main() end-to-end + want_ep HOST-invalidation + flag behavior + set_host edges). Handbook count reconciliation → the same D-CLOSE-1 residual above.
+
+### Decision Triage
+- [x] D-DESIGN-1 (opt-in default-off) + D-IMPL-2 (0.0.0.0 bind gated) + D-IMPL-4 (registry external_host) → user-facing bits already blended into `demo-up`/`stack-list` SKILL docs at build (commit 072b32c); verified accurate. Archive the rest.
+- [x] D-IMPL-1 / KB-1 (dotted-FAPI-host constraint) + D-IMPL-3 (CORS/Clerk-URL emission seam) → knowledge home is M214's `tailscale-serve.md` + `clerkenstein.md` (confirmed in M214 `overview.md`). No new M212 blend (overview: "No new doc lands here").

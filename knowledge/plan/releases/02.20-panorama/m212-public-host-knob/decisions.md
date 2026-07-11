@@ -44,3 +44,41 @@ host works for the pk. Thoroughly commented in code (`up-injected.sh:581-586`, `
 homed to M214** (`corpus/ops/demo/tailscale-serve.md`, the release's declared KB anchor): explaining why a
 MagicDNS origin validates for the pk is exactly that doc's remit. Non-blocking for M212 (the `127.0.0.1` default
 is preserved byte-identically). Full audit: `kb-fidelity-audit.md`.
+
+## Adversarial review (Phase 2c — close, 2026-07-11)
+_Scenarios considered against the milestone-touched modules. Each is handled, pinned by a test, or a documented
+input-contract with downstream validation. Recorded per the close-milestone Phase 2c contract (the scenario, not
+just the fix). No unhandled defect surfaced; no code change required._
+
+1. **up-injected.sh flag parse — flag-before-N / unknown-arg / missing-value.** `up-injected.sh --public-host X`
+   sets `N="--public-host"`, which fails the `^[0-9]+$` integer check (exit 1); an unknown argument hits the `*)`
+   reject arm; `--public-host` with no value trips the `${2:?}` guard. All three are pinned by
+   `test_frontend_build.py` (harden Pass 2). Fails loudly, never silently mis-parses.
+2. **Empty-string exported `STACK_PUBLIC_HOST` precedence.** `export STACK_PUBLIC_HOST="${STACK_PUBLIC_HOST:-}"`
+   always exports (empty when unset). Every downstream gate uses `:-` / `-n` (`HOST="${STACK_PUBLIC_HOST:-localhost}"`,
+   `FAPI_HOST="${STACK_PUBLIC_HOST:-127.0.0.1}"`, `[ -n "${STACK_PUBLIC_HOST:-}" ]`), so an empty export is
+   byte-identical to unset — localhost host, 127.0.0.1 FAPI, no external bind, no registry write. Holds in the child
+   `ant-academy.sh` too (it re-derives from the exported var).
+3. **The pk round-trip is symmetric — a host with an embedded port would pass the self-check.** `mint_pk`/`parse_pk`
+   round-trip ANY string, so `FAPI_HOST=host:port` (a contract violation — the knob is a BARE host) mints a pk that
+   round-trips OK yet fails downstream at `@clerk/backend`'s dotted-host `assertValidPublishableKey`. Mitigations:
+   the knob's documented contract is a bare MagicDNS host (`billion.taildc510.ts.net`); `mint_pk` hard-rejects a `$`
+   (the empty-`PK_DEMO` guard then aborts the bring-up loudly); STRICT host-format/pk validation is **M213's**
+   declared scope (its `assertValidPublishableKey` dotted-host gate + base64 round-trip). Not an M212 regression —
+   identical pre-knob behaviour for a malformed `--fapi-host`.
+4. **`want_ep` cache-validator staleness on a HOST change.** The build-arg cache-validator must invalidate on a HOST
+   change, not only an OFFSET change (else a stale localhost-baked image is silently reused on a `--public-host`
+   stack). `want_ep` embeds `$HOST`; pinned by `test_frontend_build.py` rebuild-on-host-change / reuse-on-host-match
+   for BOTH next-web and studio-desk (harden Pass 1 — the overview's top-risk item).
+
+## D-CLOSE-1 — the demo-stack README `test_tooling` count-drift is a rext-frozen residual, routed to v2.2 close-release
+`demo-stack/README.md:66` quotes `test_tooling.py (50 tests)`; ground truth is **111**. This is pre-existing drift
+accumulated across prior releases — M212 modified ONE assertion in `test_tooling.py` (the `$HOST`/`$FAPI_HOST`
+parametrization) and added NO tests, so it is **not** an M212 regression. The Phase 4 step-6 reconciliation would
+normally fix a count drift in-place, but the file lives in the **frozen rext tag `panorama-m212` @ `770f81b`**,
+which this rosetta-only M212 close must not advance or re-tag (the orchestrator reserved the rext re-tag + the
+box-level `.agentspace/rext.tag` bump for `/developer-kit:close-release` when the whole v2.2 release ships; M212 is
+not the last milestone). **Fate 2 — routed to v2.2 `/developer-kit:close-release`**, which legitimately re-tags /
+advances rext and runs the release-level knowledge/doc-hygiene pass (its Phase 3b consolidation). Surfaced in the
+completeness ledger + retro so it is not silently elided. Stays in-release (not an escape-hatch); not a repeat or
+aged-out deferral.
