@@ -1,9 +1,9 @@
 ---
 active_release: "v2.2 panorama — IN DEVELOPMENT (branch release/02.20-panorama; tag v2.2 at close); designed 2026-07-11"
 active_branch: "release/02.20-panorama"
-active_milestone: "M212 — the single host knob (BUILT on m212/public-host-knob @ rext panorama-m212; awaiting /developer-kit:close-milestone)"
-last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground"
-phase: "in development — M212 built (run /developer-kit:close-milestone), then { M213 ∥ M214 }"
+active_milestone: "(between milestones) — M212 CLOSED + merged into release/02.20-panorama 2026-07-11; next { M213 ∥ M214 }"
+last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground | latest milestone: M212 — 2026-07-11"
+phase: "in development — M212 closed + merged; next /developer-kit:build-milestone → { M213 ∥ M214 } → M215"
 last_updated: "2026-07-11"
 ---
 
@@ -25,25 +25,30 @@ Records: [`releases/02.20-panorama/`](releases/02.20-panorama/).
 up cold on both stacks via the re-grounded tooling. 4 milestones M208..M211. Records:
 [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/).
 
-**Active milestone:** **M212 — The single host knob** (`section`, **BUILT — awaiting close**). Introduced
+**Active milestone:** **(between milestones)** — **M212 — The single host knob** (`section`) **CLOSED 2026-07-11**,
+merged `--no-ff` into `release/02.20-panorama`; the `m212/public-host-knob` branch is deleted. It introduced
 `STACK_PUBLIC_HOST` (default `localhost` → byte-identical when unset) surfaced as the opt-in `/demo-up --public-host`
-flag, threaded through every rext emitter that bakes a browser-facing `localhost`/`127.0.0.1`. All 12 sections landed on
-`m212/public-host-knob`; rext code @ tag `panorama-m212` (sha `d4f6da6`, 3 commits). Next: `/developer-kit:close-milestone`.
+flag, threaded through every rext browser-facing emitter. rext code-of-record FROZEN at tag `panorama-m212` @
+`770f81b` (rext re-tag deferred to close-release). Close: tests **577** (569/8skip/0fail), flake 5/5, 1 routed finding
+(D-CLOSE-1 → close-release), deferral audit GREEN. **Next active:** { **M213** ∥ **M214** } via `/developer-kit:build-milestone`.
 
-**Phase:** **in development.** The release branch is cut + all four milestone contracts are scaffolded under
-`releases/02.20-panorama/`; the feasibility is established (workflow `wf_bea3be47` — config-only core + a 2-item
-patch tail; Tailscale confirmed live both ends). Design-roadmap Phase 0 note: the deferral audit + KB blind-area
-check were folded into the feasibility pass (the release **authors** its KB anchor `tailscale-serve.md` in M214, so
-the one blind area is homed via a `Delivers →` line, not designed into).
+**Phase:** **in development — 1 of 4 milestones closed (M212).** The release branch carries the M212 merge; the
+knob foundation is in. The remaining contracts are scaffolded under `releases/02.20-panorama/`; the feasibility is
+established (workflow `wf_bea3be47` — config-only core + a 2-item patch tail; Tailscale confirmed live both ends).
+Design-roadmap Phase 0 note: the deferral audit + KB blind-area check were folded into the feasibility pass (the
+release **authors** its KB anchor `tailscale-serve.md` in M214, so the one blind area is homed via a `Delivers →`
+line, not designed into).
 
-**Next up:** **run `/developer-kit:close-milestone`** → reviews + merges **M212** (`m212/public-host-knob`) into
-`release/02.20-panorama`. Then { M213 ∥ M214 } → M215 (the iterative acceptance gate). The optional **M216**
-(dev-path parity) is roadmap-only until promoted.
+**Next up:** **run `/developer-kit:build-milestone`** → **M213** (auth over the tailnet: cert/proxy/pk) **∥ M214**
+(origins & links: CORS/patch-tail/recipe) — disjoint files, additive merge, both consuming the M212 knob. Then
+**M215** (the iterative cross-machine acceptance gate on odyssey). The optional **M216** (dev-path parity) is
+roadmap-only until promoted.
 
 **Origin sync (2026-07-11):** origin has `main` + all shipped tags (`v1.10.1`, `v2.0`, `v2.1`) for **both** rosetta
-and rosetta-extensions, **and** the `release/02.20-panorama` branch (pushed 2026-07-11, `765528d`). rext is fully in
-sync at `quick-change-m211` / `v2.1` (`.agentspace/rext.tag` = `v2.1`); this design run made **no** rext changes. No
-push backlog.
+and rosetta-extensions, **and** the `release/02.20-panorama` branch (pushed 2026-07-11, `765528d`). **Local ahead of
+origin (push at release close):** the rosetta `release/02.20-panorama` now carries the **M212 merge** (+ its close
+commits); rext has a **new local annotated tag `panorama-m212` @ `770f81b`** (M212 code-of-record — the box-level
+`.agentspace/rext.tag` stays `v2.1` until `/developer-kit:close-release` bumps it). No push performed by the close.
 
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01
 (`replayCmd` hermetic test), CAVEAT-1 (clean-box literal full `/dev-up` — belt-and-suspenders), M314b (prod
@@ -76,7 +81,7 @@ from it per `/developer-kit:build-milestone`; merge back at `/developer-kit:clos
 **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` ·
 **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`. (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-07-11 (v2.2 "panorama" DESIGNED + PROMOTED to active development — the external-shareability /
-Tailscale-serve release; branch `release/02.20-panorama`, tag `v2.2`; 4 milestones M212 → { M213 ∥ M214 } → M215
-(+ opt M216); opt-in default-off, HTTPS-everywhere, demo-first; the sanctioned re-proposal of the dropped v1.4
-Tailscale/ingress seed. Next: `/developer-kit:build-milestone` → M212.)_
+_Last updated: 2026-07-11 (M212 "the single host knob" CLOSED + merged into `release/02.20-panorama` — the
+opt-in `STACK_PUBLIC_HOST` foundation, byte-identical when unset, threaded through every rext browser-facing
+emitter; rext code-of-record @ tag `panorama-m212`; 577 tests / flake 0; 1 routed close finding (D-CLOSE-1). Next:
+`/developer-kit:build-milestone` → { M213 ∥ M214 } → M215.)_

@@ -3,7 +3,7 @@ milestone: M212
 slug: public-host-knob
 version: v2.2 "panorama"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-11
 last_updated: 2026-07-11
 complexity: medium

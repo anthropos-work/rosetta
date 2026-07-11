@@ -116,6 +116,12 @@ knob. **M215** is the iterative acceptance closer: the demo is not trusted reach
 `gen_injected_override.py` host-param plumbing; cockpit `--host 0.0.0.0` + hosts; `ant-academy.sh`; `stack_registry`
 additive `external_host`). Scoped to browser-facing values (control-plane DSNs stay `localhost`). **Delivers →** the
 substitution surface (seed for the M214 recipe).
+**Status:** `done` (closed 2026-07-11). All 12 sections landed on `m212/public-host-knob`, merged `--no-ff` into
+`release/02.20-panorama`; rext code-of-record FROZEN at tag `panorama-m212` @ `770f81b` (rext re-tag deferred to
+close-release). Tests **577** (569 pass / 8 skip / 0 fail) across the 3 touched rext suites, flake gate 5/5,
+shellcheck clean. Byte-identity contract held (unset knob ⇒ identical to today). Decisions D-DESIGN-1 + D-IMPL-1..4;
+close review = 1 routed finding (a rext-frozen README count-drift → close-release, D-CLOSE-1) + 4 adversarial
+scenarios (all handled). Deferral audit GREEN (2 Fate-2 items → M214; 0 repeat/aged-out). Zero platform-repo edits.
 
 **M213 — Auth over the tailnet** · `section` · complexity **medium** · depends: **M212** · ∥ **M214**. Serve
 Clerkenstein auth + the whole browser surface under **one trusted HTTPS MagicDNS origin**: swap mkcert →
