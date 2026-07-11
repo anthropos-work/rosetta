@@ -14,7 +14,7 @@ itself is the access control** (only tailnet members can reach the host; there i
 > a real journey over trusted HTTPS — for **both** the employee vantage (`maya-thriving` → `/profile`) and the
 > manager vantage (`dan-manager` → `/enterprise/workforce`), `ignoreHTTPSErrors:false`, 0 console errors, 0
 > functional request failures. Everything below is grounded in that run; the host-prereq + rext-fix set it
-> surfaced (findings F1–F11) is baked into this runbook.
+> surfaced (findings F1–F12) is baked into this runbook.
 
 > **Scope of this doc.** Two halves. **Part 1 — the runbook:** stand up a remote demo on a **fresh Linux VM**
 > unaided (prereqs, GitHub-via-PAT, secrets, workspace, the `--public-host` bring-up, verify, teardown).
@@ -67,7 +67,7 @@ steps run on the **host**. Then it's clone → secrets → bring up → verify.
 | 6 | **The snapshot cache** (content surfaces only) | the taxonomy (~42,790 public skills) + Directus content are **set-dressed from the snapshot cache**, not migrations. Without `.agentspace/snapshots` on the VM, `public.skills=0` and the library/skills surfaces are sparse (identity/profile/dashboard still render fully) | `scp` the `.agentspace/snapshots` cache to the VM, or capture per [`../snapshot-cold-start.md`](../snapshot-cold-start.md) | **F9** |
 
 The canonical prereq list + these install commands also live in
-[`../setup_guide.md`](../setup_guide.md) §"Linux host prerequisites (for a remote/VM demo)".
+[`../setup_guide.md`](../setup_guide.md) §"Linux host prerequisites (for a remote/VM demo over Tailscale)".
 
 **What the tooling now does for you** (so a bare VM doesn't re-trip the M215 findings):
 
@@ -417,7 +417,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   self-contained `stack-demo` clone-set model.
 - [`frontend-tier.md`](frontend-tier.md) — the UI tier build (offset URLs, the CORS `CORS_EXTRA_ORIGINS`, the
   studio-desk requireAuth fallback) — the HTTPS/remote deltas are cross-referenced there.
-- [`../setup_guide.md`](../setup_guide.md) — §"Linux host prerequisites (for a remote/VM demo)" (the canonical
+- [`../setup_guide.md`](../setup_guide.md) — §"Linux host prerequisites (for a remote/VM demo over Tailscale)" (the canonical
   prereq list Step 0 mirrors).
 - [`../secrets-spec.md`](../secrets-spec.md) — the values-blind secret provisioning (`/stack-secrets`) the VM
   runs from `.agentspace/secrets`.
@@ -432,5 +432,5 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   `urls.ts` residual decision).
 - Design decisions: `knowledge/plan/releases/02.20-panorama/` — M212 (the knob), M213 (TLS/proxy/pk, D-PROXY-2 /
   D-SCHEME-1), M214 (origins & links, D-SCHEME-1 / D-VITE-SIGNIN-1 / D-URLS-1), M215 (the live acceptance —
-  findings F1–F11 at `m215-prove-on-odyssey/iter-01/findings.md`).
+  findings F1–F13 at `m215-prove-on-odyssey/iter-01/findings.md`).
 </content>

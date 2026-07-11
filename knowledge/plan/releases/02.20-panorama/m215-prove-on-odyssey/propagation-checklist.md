@@ -45,3 +45,14 @@ fresh reader can stand up a remote demo on a new Linux VM from `corpus/ops/demo/
 
 _Residuals (documented, not blocking — routed to future tiks / separate fixes): F9 snapshot cache for content
 surfaces; F5 demopatch re-anchor; F11 seed hero-name cosmetic; F13 jobsimulation service-command (AI-sim surface)._
+
+---
+
+**Close re-verification (2026-07-11, `/developer-kit:close-milestone` — NOT rubber-stamped).** Independently
+confirmed at close: all 9 `tailscale-serve.md` See-also cross-references resolve; the `setup_guide.md` §"Linux host
+prerequisites (for a remote/VM demo over Tailscale)" + `clerkenstein.md` §"Remote HTTPS over the tailnet" anchors
+exist; the `/demo-up`, `/stack-secrets`, `/dev-up` skill diffs carry the Linux/remote content; every deployment
+finding (F1/F2/F4/F6/F8/F9/F12) maps to ≥1 surface (no orphan); the rext fix set (F3/F4/F6/F12 + host pre-flight) at
+tag `panorama-m215` @ `00ba6b6` reviewed GREEN with demo-stack **424** + stack-injection **147p/8s** re-run passing +
+shellcheck clean. Two minor `tailscale-serve.md` doc-accuracy nits fixed at close (the stale `F1–F11` finding range →
+`F1–F12`/`F1–F13`; a truncated setup_guide §-anchor label). Gate: **CLOSED — propagation close-gate SATISFIED.**
