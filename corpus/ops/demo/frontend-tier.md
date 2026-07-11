@@ -70,11 +70,15 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
 > > bake; the roster-aware BAPI re-seeds on every re-up.
 
-> **Browser-trusted FAPI cert (M31).** The Clerk-free login routes the browser through Clerkenstein's fake FAPI over
-> **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it via `mkcert` (idempotent `-install` + a leaf
-> for `127.0.0.1 localhost ::1`), so a fresh browser renders the signed-in app with **no proceed-anyway**. It
-> degrades to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`. Full
-> story + the security/remote-VM/Firefox/expiry caveats: [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).
+> **Browser-trusted FAPI cert (M31; M213 remote path).** The Clerk-free login routes the browser through
+> Clerkenstein's fake FAPI over **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it. For a **local**
+> demo (default) that's `mkcert` (idempotent `-install` + a leaf for `127.0.0.1 localhost ::1`), degrading to an
+> openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`. For a **remote /
+> tailnet** demo (`/demo-up --public-host <magicdns>`, M213/v2.2), the cert is minted via **`tailscale cert`** — a
+> real Let's Encrypt cert **trusted tailnet-wide with no per-machine CA install**, so a teammate's browser trusts it
+> with no proceed-anyway (falls back to the local mkcert/openssl path if `tailscaled` isn't up). Same output paths
+> either way, so the mount is unchanged. Full story + the security/remote-VM/Firefox/expiry/renewal caveats:
+> [`recipe-browser-login.md §B step 2`](recipe-browser-login.md).
 
 **Default-on, skippable.** The UI tier is built + brought up by default. `DEMO_NO_UI=1 /demo-up N` (or the
 `--no-ui` equivalent) brings up a **backend-only** demo — no frontend build, no academy, and the verify net is
@@ -208,6 +212,24 @@ CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhos
 > studio-desk's **single-port** `9000` — not the dead `9100`. studio-desk is single-port production (the browser
 > only ever talks to `9000+offset`), so the un-offset `9100` that `cors.go` still hardcodes is a dead entry the
 > override no longer mirrors (#M32-D2).
+
+> **Remote / `--public-host` demo (v2.2 M214).** On a Tailscale-reachable demo the browser's origin is
+> `https://$HOST:<offsetport>` (M213's per-port `tailscale serve` fronts each offset port with HTTPS,
+> **preserving the port**), so the override **appends** the HTTPS MagicDNS origins while **keeping** the
+> `localhost` trio for on-host use:
+> ```
+> CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhost:19000,\
+>                    https://billion.taildc510.ts.net:13000,https://billion.taildc510.ts.net:13001,https://billion.taildc510.ts.net:19000
+> ```
+> A **single scheme predicate** (`browser_scheme` in `gen_injected_override.py`, mirrored by `$SCHEME` in
+> `up-injected.sh`/`ant-academy.sh`) drives the http→https flip for **every** browser-facing surface — the CORS
+> origins, the studio-desk `CLERK_SIGN_IN_URL`/`WEB_APP_URL` requireAuth fallback, all the baked
+> `NEXT_PUBLIC_*`/`VITE_*` endpoints, and the cross-surface links — so there is **no plain-http browser call**
+> under HTTPS-everywhere (mixed-content clean; the asset plane stays prod-HTTPS). Unset host ⇒ byte-identical to
+> the localhost block above. studio-desk's SPA sign-in gets a new `VITE_CLERK_SIGN_IN_URL` bake (a gitignored
+> `.env.production.local` overlay — no Dockerfile ARG), and ant-academy's `next dev` `allowedDevOrigins` admits
+> the MagicDNS host via the `ant-academy-dev-origins` sha-pinned patch. The full recipe + topology:
+> [`tailscale-serve.md`](tailscale-serve.md).
 
 This is emitted by `gen_injected_override.py` (the `backend` service gets an additive `environment:` block), so it
 applies to a stack brought up **through the demo injected override** (`/demo-up`). The **dev** override

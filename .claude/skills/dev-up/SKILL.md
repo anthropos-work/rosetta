@@ -120,6 +120,15 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
    **main dev stack is untouched**, the catalog shows real skills (snapshot), and a `dev@anthropos.test`
    login lands in a populated org (the `dev-min` seed → 200).
 
+> **Bare Linux VM note (vs local macOS).** The dev stack can also run on a fresh Linux host. Beyond the prereqs
+> already listed above — **Go** + **Atlas** are required for the host-side rext tooling (`stacksnap`/`stackseed`
+> + `migrate-dev.sh`'s `atlas migrate apply`) — a bare Linux VM needs two more one-time fixes the same as the
+> remote-demo path: the Docker compose build declares `ssh: default`, so an **ssh-agent** must be present (a
+> **keyless** agent suffices — module pulls use the `GH_PAT`, not the agent); and the Bitnami data dirs (postgres
+> UID 1001) need writable perms (`chmod -R 777 $STACK/data` — Docker Desktop remaps this on macOS, native Linux
+> does not). Without an org SSH key, clone the private repos over HTTPS via the `GH_PAT`. Full host-prereq list:
+> [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md).
+
 ## Defaults & flags
 
 - `--no-setdress` — bare bring-up of `dev-N` (no snapshot, no seed).

@@ -69,10 +69,17 @@ early "mint a pk and log in" sketch missed):
      your OS (and, if `certutil` is present, Firefox) trust store. That is a real, if small, **trust expansion** —
      anything signed by that CA is trusted on your machine until you `mkcert -uninstall`. If you'd rather not, set
      **`DEMO_NO_MKCERT=1`** to force the openssl/proceed-anyway path; nothing else changes.
-   - **Remote / VM demos.** `mkcert -install` trusts the **machine the bring-up runs on**. If you bring the demo up
-     on a VM/remote box but **browse from a different machine**, that machine's browser still hits the untrusted
-     cert → you need the proceed-anyway path (or to import the CA / cert on the browsing machine). The zero-touch
-     promise is for a **local, same-machine** demo.
+   - **Remote / VM demos.** For a **local, same-machine** demo, `mkcert -install` trusts only the **machine the
+     bring-up runs on** — browse from a *different* machine and its browser hits the untrusted cert (proceed-anyway,
+     or import the CA). **M213 (v2.2 "panorama") removes that limit for a tailnet demo:** bring the demo up with
+     `/demo-up --public-host <magicdns>` (e.g. `billion.taildc510.ts.net`) and the FAPI cert is minted via
+     **`tailscale cert`** — a real **Let's Encrypt** cert trusted **tailnet-wide with no per-machine CA install**, so
+     a teammate's browser on the tailnet renders the signed-in app with **no proceed-anyway**. Same output paths
+     (`<stack>/certs/fapi.{crt,key}`), so the mount + `ListenAndServeTLS` are unchanged; a mint failure (no
+     `tailscaled` / not logged in) falls back to the mkcert/openssl **local-trust** path (non-fatal). The LE cert is
+     **90-day** — `tailscale cert` re-issues on re-run; a long-lived stack needs a renew-then-reload step (M215). The
+     one-clean-HTTPS-origin reverse proxy (`tailscale serve`) that fronts the *rest* of the browser surface lands in
+     **M214** (`tailscale-serve.md`).
    - **Firefox needs `certutil`.** mkcert wires Chrome/Safari via the OS keychain automatically; **Firefox** has its
      own trust store and only picks up the CA when `certutil` is installed at `-install` time
      (`brew install nss`). Without it, Firefox falls back to proceed-anyway.
@@ -84,7 +91,11 @@ early "mint a pk and log in" sketch missed):
    `https://<fapi>/v1/client/handshake?…&format=nonce`. The fake FAPI signs the demo user in and **303-bounces** back
    to the app with `?__clerk_handshake=<token>` carrying the `Set-Cookie` directives (`__session` + `__client_uat` +
    `__clerk_db_jwt` — the dev-browser cookie is what breaks the `dev-browser-missing` redirect loop). The fake FAPI
-   also **proxies `clerk-js`** (`/npm/...`) and serves `/v1/environment` + `/v1/client`.
+   also **proxies `clerk-js`** (`/npm/...`) and serves `/v1/environment` + `/v1/client`. The clerk-js proxy is the
+   fake FAPI's **one outbound-egress dependency** — it fetches the bundle from **`cdn.jsdelivr.net`**, so the FAPI
+   container needs outbound HTTPS to it (a `--public-host` bring-up runs a **non-fatal** host-side egress pre-check +
+   warns if it's blocked). On a locked-down network, point the FAPI at a mirror with **`FAKE_FAPI_CLERKJS_CDN`**
+   (M213).
 4. **`__session` is RS256, verified networklessly.** The Node SDKs (`@clerk/nextjs`, `@clerk/express`) **reject
    HS256** and verify the session as RS256 via `CLERK_JWT_KEY` (the fixed demo public key, supplied as **runtime
    container env** — filled per-demo into `.env.demo-N` by `up-injected.sh`, not build-baked) or the

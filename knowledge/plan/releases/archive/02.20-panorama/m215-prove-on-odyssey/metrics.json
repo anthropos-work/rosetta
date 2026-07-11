@@ -1,0 +1,75 @@
+{
+  "milestone": "M215",
+  "title": "Prove it on odyssey — the FIRST remote Linux-VM demo deploy over Tailscale, driven end-to-end for BOTH vantages (employee maya-thriving -> /profile; manager dan-manager -> /enterprise/workforce) from a DIFFERENT tailnet machine on a trusted Let's Encrypt cert (verify=0, no CA install), 0 console errors, 0 localhost/prod ejects, assets rendering, reproducibly on a cold reset-to-seed. The iterative acceptance closer of v2.2 'panorama'. Plus the propagation close-gate: every deployment finding landed in tools (rext) + KB + skills.",
+  "shape": "iterative",
+  "status": "done",
+  "closed": "2026-07-11",
+  "is_last_milestone": true,
+  "kind": "the v2.2 'panorama' M215 (live cross-machine acceptance gate) milestone. Live shared-infra work on the odyssey 'billion' VM (Ubuntu 24.04). rosetta deliverable = docs+plan (the NEW corpus/ops/demo/tailscale-serve.md full remote-Linux-VM runbook + setup_guide/rosetta_demo/clerkenstein updates + demo-up/stack-secrets/dev-up skill updates + iter-01/findings.md + propagation-checklist.md). rext deliverable = the host-prereq + F3/F4/F6/F12 fix set, FROZEN at annotated tag panorama-m215 @ 00ba6b6 (rext re-tag + .agentspace/rext.tag bump reserved for /developer-kit:close-release). ZERO platform-repo edits.",
+  "gate": {
+    "target": "From a fresh box, /demo-up N --public-host <magicdns> (opt-in) brings up a demo reachable at https://<magicdns>; a teammate on a DIFFERENT tailnet machine completes a full employee AND manager hero journey with 0 localhost/prod ejects, 0 CORS blocks, 0 cert-untrusted warnings, 0 mixed-content, assets rendering, reproducibly on a cold reset-to-seed; the UNSET knob (default) is byte-identical to today.",
+    "achieved": "MET (core). Both vantages driven live from a remote Mac over Tailscale (maya-thriving -> /profile with the M41 ProfileSeeder depth; dan-manager -> /enterprise/workforce 'Workforce Intelligence' with real seeded structural data), ignoreHTTPSErrors:false (genuinely trusted LE cert, verify=0, no CA install), 0 console errors, 0 functional request failures, 0 localhost/prod ejects, assets rendering. A clean cold reset-to-seed one-shot --public-host bring-up with the fixed tooling (14 containers, tailscale serve fronting 5 ports, seed 12,245 rows / 541 users / 9-hero roster, /api/health 200, login-ready from the Mac). Unset knob byte-identical (macOS/dev path proven byte-identical by guards + tests).",
+    "distance": "gate met (core); 4 non-blocking documented residuals routed forward (F5/F9/F11/F13)",
+    "status": "closed-on-gate"
+  },
+  "iters": {
+    "total": 1,
+    "shape": "direct-drive (live shared-infra work, not background sub-agents) — D-STRAT-1",
+    "record": "iter-01/findings.md (tik-1 trimmed de-risk -> tik-2 remote employee login -> manager vantage -> cold reset-to-seed capstone), findings F1-F13",
+    "duration": "2026-07-11 (single session)"
+  },
+  "tests": {
+    "language": "rext bash + python (pytest); M215 touched ZERO Go and ZERO TS",
+    "rext_frozen_tag": "panorama-m215 @ 00ba6b6",
+    "diff_range_reviewed": "41a28aa..00ba6b6",
+    "demo_stack": 424,
+    "demo_stack_passed": 424,
+    "demo_stack_skipped": 0,
+    "demo_stack_failed": 0,
+    "stack_injection_collected": 155,
+    "stack_injection_passed": 147,
+    "stack_injection_skipped": 8,
+    "stack_injection_failed": 0,
+    "counts_source": "authoritative — independently re-run at close via python3.12 -m pytest (pytest 9.0.3; box-default python3 is 3.14 with no pytest). demo-stack '424 passed in 107.75s'; stack-injection '147 passed, 8 skipped in 3.93s'. Matches the propagation-checklist + iter-01 claims exactly.",
+    "python_delta": "demo-stack 383 (M214) -> 424 (M215) = +41 net-new funcs (+25 host-prereqs pre-flight/ssh-agent/data-dirs/atlas-fail-loud [tests/test_host_prereqs_m215.py = 41/41 incl. the ~400-tag F3 fixture regression] + +16 F12 tailscale-serve teardown/up-path reset). stack-injection unchanged at 155 (147p/8s) — the M215 rext work is demo-stack + gen_tailscale_serve.py --reset (exercised via demo-stack).",
+    "close_added_test": "none — the close is rosetta docs+plan only; rext is frozen at panorama-m215 (a rosetta-only close must not re-tag). It surfaced no defect requiring a new regression test. ADV-1 (F12 up-path pre-reset placement) is non-blocking (teardown reset is the primary mechanism; up-path is defensive-only; manual `tailscale serve reset` unblock documented) and routes a one-line reconciliation to the rext close-release re-tag.",
+    "shellcheck": "clean (shellcheck 0.11.0 at -S style on the three touched shell files: migrate-demo.sh, up-injected.sh, rosetta-demo — zero findings each).",
+    "flake_count": 0,
+    "flake_gate": "n/a for the rosetta close (docs+plan; no rosetta-side test suite). The rext suite is frozen at panorama-m215 and was hardened+flake-gated at its own build/harden (per the propagation-checklist: 424 demo-stack / 147p8s stack-injection, macOS/dev path byte-identical). Re-run once at close = identical counts."
+  },
+  "gate_outcome_ledger": {
+    "gate_status": "closed-on-gate (core commitment met)",
+    "routes_carried_forward_fate2": [
+      "F9 (DEF-M215-02) — remote VM taxonomy/library needs the .agentspace/snapshots cache scp'd/captured; documented residual (tailscale-serve.md Step 4) + future cache-auto-sync -> standing backlog",
+      "F5 (DEF-M215-01) — two app demopatches sha-drift refuse (non-fatal); a demopatch re-anchor -> standing backlog (rext frozen)",
+      "F13 (DEF-M215-04) — jobsimulation container exits(1) on startup; separate demo-service fix, off the proven path, not remote/Linux-specific -> standing backlog",
+      "F11 (DEF-M215-03) — seed hero identity-key vs profile-name mismatch (cosmetic) + a committed repeatable remote-origin Playwright gate -> standing backlog (stack-seeding / stack-verify)",
+      "D-CLOSE-1/-2/-3 — three distinct rext-frozen README index reconciles -> v2.2 /developer-kit:close-release (the single rext commit when rext re-tags)"
+    ],
+    "annotated_fate3": "none (v2.2 is closing — no further milestone to annotate; all routings are standing-backlog Fate-2 or close-release-owned)",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none",
+    "protocol_evolution": "The iteration protocol (corpus/ops/verification.md + coverage-protocol.md + playthroughs.md) was extended to a REMOTE-ORIGIN variant: the cold-reset-to-seed gates run from a second tailnet machine against https://<magicdns>:<offsetport> instead of localhost, reusing the M42 e2e harness + the M202 cockpit seat-switch for hero login. Codified in the NEW corpus/ops/demo/tailscale-serve.md."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/ demo-stack (up-injected.sh preflight_host_prereqs + ensure_ssh_agent + precreate_linux_data_dirs + the F3 for-each-ref build-tag resolver + F12 up-path serve pre-reset; migrate-demo.sh fail-loud; rosetta-demo cmd_down serve-reset) + stack-injection (gen_tailscale_serve.py --reset). Tests: demo-stack/tests/test_host_prereqs_m215.py (NEW) + the F12 serve-reset paths.",
+    "head": "00ba6b6",
+    "tag": "panorama-m215",
+    "tag_note": "annotated tag at the post-fix HEAD 00ba6b6. FROZEN at close — this rosetta-only M215 close does NOT advance/re-tag rext. The rext re-tag + the box-level .agentspace/rext.tag bump (currently v2.1) are /developer-kit:close-release's job when v2.2 ships (it also reconciles D-CLOSE-1/-2/-3 + the ADV-1 F12 comment/placement in the same rext commit).",
+    "close_touched_rext": false,
+    "close_commit": "none in rext — the close made ZERO rext changes (frozen tag)."
+  },
+  "review": {
+    "findings": 4,
+    "scope": "GREEN (iterative) — core exit gate MET (both vantages live + cold reset-to-seed reproducible + unset knob byte-identical); inherited Fate-2->M215 items (DEF-M213-02/03/04) all landed Fate-1/resolved-documented; residuals F5/F9/F11/F13 documented + Fate-2 routed (carry-forward.md); no stray TODO/FIXME/HACK in M215-touched rosetta source; the direct-drive milestone's stub progress.md + decisions.md backfilled at close.",
+    "code_quality": "GREEN — rext diff 41a28aa..00ba6b6 reviewed cross-cuttingly (via an independent review agent): one scheme/guard pattern; macOS/dev path byte-identical (Linux-only / missing-prereq-only / public-host-only guards); F3 pipe-less resolver correct under set -e; F4 keyless agent reaped (sole EXIT trap); F6 macOS no-op; preflight fails loud with exact fix lines; F12 teardown reset is the exact inverse of serve. No dead code, no resource leak. 0 must-fix. rext frozen (not re-tagged).",
+    "docs": "GREEN(2 fixed) — the NEW tailscale-serve.md is accurate + followable end-to-end; all 9 See-also cross-refs resolve; the setup_guide + clerkenstein anchors exist; the demo-up/stack-secrets/dev-up skills carry the Linux/remote content. Two nits fixed at close: (1) [should-fix] 'findings F1-F11' -> F1-F12 (the runbook now includes the F12 teardown serve-reset) + the file-pointer -> F1-F13; (2) [nice-to-have] the setup_guide section-anchor label completed to '...(for a remote/VM demo over Tailscale)'.",
+    "tests": "GREEN — demo-stack 424 (424p/0s/0f), stack-injection 147p/8s — independently re-run at close, exit 0, matching the propagation-checklist + findings claims; shellcheck clean. No rosetta-side test suite (docs+plan deliverable).",
+    "decision_triage": "the direct-drive milestone left decisions.md a stub; backfilled at close with D-STRAT-1 (direct-drive rationale) + the inherited-item resolutions + DEF-M215-01..04 residual fates + ADV-1. The mechanism/why-it-works knowledge was already blended into tailscale-serve.md + clerkenstein.md during M213/M214 — 0 net-new knowledge blend needed at M215 close.",
+    "adversarial": "1 scenario recorded (ADV-1 in decisions.md): the F12 up-path defensive pre-reset sits after compose-up, so it can't prevent a backend-bind conflict from a leftover serve listener; the teardown reset (primary) covers the normal /demo-down->/demo-up cycle, the by-hand-teardown case is covered by the documented manual `tailscale serve reset`, the block is non-fatal + localhost no-op. 0 blocking defects; rext frozen -> a one-line reconciliation routes to the close-release rext re-tag.",
+    "deferral_audit": "GREEN — m215-prove-on-odyssey/audit-deferrals/deferral-audit-2026-07-11.md — 11 records: 3 inherited->M215 all LANDED Fate-1/resolved; 3 inherited->close-release (D-CLOSE-1/-2/-3, correct destination, runs next); 4 new M215->standing-backlog Fate-2 (F5/F9/F11/F13); 1 re-reviewed evidence-decided non-deferral (D-URLS-1). 0 repeat, 0 chronic, 0 aged-out, 0 escape-hatch, 0 blocking."
+  },
+  "gate_outcome": "closed-on-gate",
+  "propagation_close_gate": "SATISFIED (user directive 2026-07-11) — every deployment finding (F1/F2/F4/F6/F8/F9/F12) is in tools (rext) + KB + skills; a fresh reader can stand up a remote demo on a new Linux VM unaided from corpus/ops/demo/tailscale-serve.md alone (verified). Tracked in propagation-checklist.md (spot-checked accurate at close, not rubber-stamped).",
+  "notes": "M215 is the FINAL v2.2 milestone -> /developer-kit:close-release runs next (rolls the rext v2.2 tag, bumps .agentspace/rext.tag from v2.1, reconciles D-CLOSE-1/-2/-3 + the ADV-1 F12 note, merges release/02.20-panorama -> main + tags v2.2). The core acceptance is PROVEN: the first remote Linux-VM demo over Tailscale works end-to-end for both vantages on a trusted cert, reproducibly on a cold reset-to-seed. rext code-of-record FROZEN at tag panorama-m215 @ 00ba6b6. Zero platform-repo edits."
+}

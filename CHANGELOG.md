@@ -2,6 +2,33 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.2] "panorama" — 2026-07-12
+
+**External shareability over Tailscale.** Make a dev/demo stack reachable from **another machine on a Tailscale tailnet** — run a demo on a Tailscale VM (e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host) and a teammate with Tailscale up browses it end-to-end over **one trusted HTTPS origin**. External access is **opt-in, default-off** (an explicit `/demo-up N --public-host <magicdns>` flag); a bare `/demo-up N` is byte-identical to before. This release ships the whole surface as **tooling + docs + one opt-in flag — zero platform-repo edits, 0 net-new deps** — and is the **first live remote Linux-VM deploy**, proven end-to-end. (rext code-of-record @ tag `v2.2` = `39e8013`.)
+
+### Added
+- **`/demo-up N --public-host <magicdns>`** (M212) — the opt-in host knob (`STACK_PUBLIC_HOST`) that makes a demo bind + advertise a public MagicDNS origin instead of `localhost`. Default-off, unset ⇒ byte-identical to today.
+- **HTTPS-everywhere over the tailnet** (M213) — one trusted **`tailscale cert`** origin (real Let's Encrypt, no CA install) fronted by a per-offset-port `tailscale serve` reverse proxy (`gen_tailscale_serve.py`), so Clerk gets the secure context it requires. Dotted-publishable-key host validation; host-agnostic token verify; path-only cert mount.
+- **`corpus/ops/demo/tailscale-serve.md`** (M214) — the full **remote Linux-VM deploy runbook**: Step-0 host prereqs (Go + atlas + tailscale operator) with install commands → PAT clone → workspace → secrets → snapshot cache → `--public-host` bring-up → `tailscale serve` → verify (exact curls + cockpit login, both vantages) → teardown. Plus the F1–F12 host-deploy finding set + safety framing. Indexed from `CLAUDE.md` + `corpus/ops/README.md`.
+- **Host pre-flight + auto-handling for a fresh Linux VM** (M215, in rext) — `preflight_host_prereqs` (Go/atlas/tailscale-operator → fail loud with exact fix lines; `DEMO_NO_HOST_PREFLIGHT=1` opt-out); a keyless ssh-agent auto-start for buildx; Linux bind-mount data-dir pre-creation; `migrate-demo.sh` fails loud on a genuine atlas failure.
+
+### Changed
+- **CORS + origins** (M214) — `CORS_EXTRA_ORIGINS` emits the https origin trio; the ant-academy `allowedDevOrigins` rides the existing rext **sha-pinned patch mechanism** (drift-refuse fails loud on an upstream change; reverted on teardown) — never a canonical platform-repo edit.
+- **Teardown resets `tailscale serve`** (M215) — `/demo-down` clears THIS demo's serve ports (offset-scoped per-port `off`) + a defensive up-path pre-reset, so a re-deploy no longer port-conflicts on a leftover listener. Non-fatal, no-op on localhost.
+- **rext README index reconcile** (close) — demo-stack test-count, the `gen_tailscale_serve.py` + `apply-ant-academy-dev-origins.sh` rows, and the F12 ADV-1 comment (D-CLOSE-1/-2/-3 + ADV-1).
+
+### Fixed
+- **`git tag --list | head` SIGPIPE → exit 141** aborting bring-up on a many-tag repo (`app` ~337 v-tags) — replaced with a pipe-less `git for-each-ref --count=1` (M215/F3).
+
+### Verified
+- **First live remote Linux-VM deploy** on `billion` (M215, `closed-on-gate`): a browser on a **different** tailnet machine completed a full journey for **both** hero vantages — employee `maya-thriving` → `/profile` and manager `dan-manager` → `/enterprise/workforce` — on a **genuinely trusted** cert (`ignoreHTTPSErrors:false`, `verify=0`, no CA install), 0 console errors, 0 localhost/prod ejects, assets rendering, **reproducibly on a clean cold reset-to-seed** one-shot. Unset knob byte-identical (regression-safe). Triple-clean demo-stack suite 3/3; Go `go test ./...` exit 0 all 6 modules; shellcheck clean.
+
+### Supply chain
+- **0 net-new dependencies** (a network/scheme reconfiguration adds no imports). 0 reachable vulnerabilities (govulncheck, go1.25.12); npm 0; Python 0 third-party deps; 0 GPL/AGPL. 13 pre-existing dependabot alerts (all the **unreachable** `x/crypto` ssh-subpackage in the clerkenstein Clerk mock) → cleared next rext roll with `go get x/crypto@v0.52.0`.
+
+### Known limitations
+- **Standing-backlog residuals** (documented, non-blocking, off the proven journey path): F5 two `app` demopatches sha-drift-refuse (demo works, slower per-member fan-out) → demopatch re-anchor; F9 a fresh VM has no snapshot cache (taxonomy/library sparse; identity/profile/dashboard/workforce render fully) → cache pre-stage/auto-sync; F11 a cosmetic seed hero-name mismatch; F13 the jobsimulation container exits(1) on startup (AI-Simulations surface, would hit any demo). Optional **M216** (dev-path Tailscale parity) stays roadmap-only until promoted.
+
 ## [v2.1] "quick change" — 2026-07-09
 
 **The skiller-in-app re-ground.** The platform merged the standalone `skiller` service + its DB schema into `app` — the skills taxonomy, embeddings, and job-roles now live in the `public` schema (table names unchanged, only `skiller.X → public.X`), the RPC surface is served by `backend`, and the skiller GraphQL subgraph is gone (**4 subgraphs**). This release re-fits the environment-builder tooling, the corpus, and the local stacks to that merged platform and **proves `/dev-up` + `/demo-up` still work end-to-end, cold**. A field-hardening release (v1.3b/v1.10b lineage) — **tooling + docs + stack-re-sync only; zero platform-repo edits.** (rext code-of-record @ tag `v2.1`.)

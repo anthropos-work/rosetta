@@ -83,6 +83,21 @@
 > `ensure-clones.sh` (the auto `/demo-up` path does). It presupposes a populated `stack-demo` (run
 > `up-injected.sh` / a prior `ensure-clones.sh` to bootstrap the peer clone set + seed the shared `.env`).
 
+> **Remote reach over Tailscale — `--public-host <magicdns>` (v2.2 "panorama", opt-in, default-off).**
+> `/demo-up N --public-host billion.taildc510.ts.net` (or `STACK_PUBLIC_HOST=<magicdns>`) makes the demo
+> reachable from another machine on your Tailscale tailnet — a teammate opens `https://<magicdns>:3000+off` and
+> browses it end-to-end over HTTPS. Unset ⇒ **byte-identical** to a normal localhost demo (loopback bind, no
+> external listener). The knob flips: HTTPS-everywhere (per-port `tailscale serve` + a tailscale-cert FAPI), the
+> CORS `https://$HOST` origins + studio-desk/academy redirects + every baked URL's scheme, `0.0.0.0` binds, the
+> two platform-family patches (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL`
+> overlay), and a `/stack-list` `external_host` record. The host must be a **dotted** MagicDNS FQDN (a dotless
+> name is refused). **Proven live cross-machine on a real Linux VM** (the odyssey `billion` box, 2026-07-11):
+> a teammate on another tailnet machine logged in as a seeded hero and completed a real journey over trusted
+> HTTPS — both the employee (`maya-thriving` → `/profile`) and manager (`dan-manager` → `/enterprise/workforce`)
+> vantages. A Linux **deploy host** needs a few host-side prereqs a dev box doesn't (Go 1.25.x, the `atlas` CLI,
+> the Tailscale operator, a keyless ssh-agent) — see [`setup_guide.md`](setup_guide.md) §"Linux host prerequisites
+> (for a remote/VM demo over Tailscale)". Full recipe, topology, and safety framing: [`demo/tailscale-serve.md`](demo/tailscale-serve.md).
+
 ## Unified stack registry + first-available-N allocation (v1.3 "stack party", M12)
 
 Every isolated stack — **dev** *or* **demo** — maps host port `P → P + N·10000`, so its `N` is what keeps

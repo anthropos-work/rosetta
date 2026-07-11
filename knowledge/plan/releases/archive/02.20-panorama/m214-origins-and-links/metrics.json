@@ -1,0 +1,80 @@
+{
+  "milestone": "M214",
+  "title": "Origins & links — admit the MagicDNS/HTTPS origin everywhere a browser->backend or cross-surface call is gated, close the cross-surface link ejects, and land the bounded platform-family patch tail via the EXISTING rext sha-pinned mechanism: extend CORS_EXTRA_ORIGINS emission, studio-desk runtime redirects + the VITE_CLERK_SIGN_IN_URL bake gap, a NEW apply-ant-academy-dev-origins.sh for ant-academy allowedDevOrigins, and the conditional next-web urls.ts (documented residual). Delivers the NEW corpus/ops/demo/tailscale-serve.md remote-access recipe. All gated on --public-host, byte-identical when unset; config/generation + unit tests only (the live cross-machine run is M215).",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-07-11",
+  "is_last_milestone": false,
+  "kind": "the v2.2 'panorama' M214 (CORS + cross-surface links + patch tail) milestone — Python + bash in rext tooling (stack-injection/gen_injected_override.py + apply-ant-academy-dev-origins.sh NEW; demo-stack/up-injected.sh + ant-academy.sh + patches/ant-academy-dev-origins/). ZERO platform-repo edits (two platform-family files ride the existing sha-pinned patch mechanism on the demo's EPHEMERAL clone). Code-of-record: rext tag panorama-m214 @ 99c86b7 (FROZEN at close — rext re-tag reserved for /developer-kit:close-release). The rosetta m214 branch carries plan/doc + the NEW corpus/ops/demo/tailscale-serve.md recipe + cross-ref updates (rosetta_demo.md, frontend-tier.md, clerkenstein.md, demo/README.md).",
+  "tests": {
+    "language": "python (pytest) + bash; M214 touched ZERO Go and ZERO TS",
+    "python_m214_touched": {
+      "stack-injection (test_injection.py + test_apply_authn.py)": 155,
+      "of_which_stack-injection_passed": 147,
+      "of_which_stack-injection_skipped": 8,
+      "demo-stack (full suite: test_tooling + test_frontend_build + test_ant_academy + test_cockpit + test_demopatch + test_detach + test_migrate_race_live)": 383,
+      "of_which_demo-stack_passed": 383,
+      "of_which_demo-stack_skipped": 0,
+      "m214_touched_total_collected": 538,
+      "m214_touched_total_passed": 530,
+      "m214_touched_total_skipped": 8,
+      "m214_touched_total_failed": 0
+    },
+    "counts_source": "authoritative — pytest --junit-xml per section (junit-stack-injection.xml + junit-demo-stack.xml), exit-code-gated; cross-checked against net-new `def test_` counts in the diff.",
+    "python_delta": "stack-injection 152 (M213) -> 155 (+3 test_injection funcs: browser_scheme + the https CORS trio + scheme-flipped studio-desk redirects). demo-stack 367 (M213) -> 383 (+16 net-new funcs: +12 test_ant_academy [-1] the patch apply/revert/drift-refuse/error paths + +6 test_frontend_build [-1] the studio-desk VITE overlay/.dockerignore trap + never-clobber). The M213->M214 progression is clean: demo-stack 350(M212)->367(M213)->383(M214); stack-injection 130(M212)->152(M213)->155(M214).",
+    "close_added_test": "none — the close is rosetta docs+plan only; it surfaced no defect requiring a new regression test. The 3 adversarial scenarios (ADV-1..ADV-3 in decisions.md) are each already handled and pinned by build/harden tests (the ant-academy clone-independent refusal tests + the studio-desk failed-build trap-revert + never-clobber tests added at harden Pass 1).",
+    "shellcheck": "clean at harden (shellcheck unavailable on the close box; py_compile clean at close via python3.12).",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean. Both milestone-touched suites re-run 5x sequentially (one suite at a time = realistic CI condition; pytest-randomly not installed -> deterministic intra-suite order): stack-injection 147p/8s identical each run; demo-stack 383p/0s identical each run. 0 failures across all 10 runs."
+  },
+  "coverage": {
+    "note": "harden Pass 1 (recorded in progress.md). The Python surface (gen_injected_override.py browser_scheme + CORS/redirect emission) was already at 99% statements (sole miss = the uncoverable __main__ entrypoint). The milestone's declared TOP RISKS are shell-behavioral (trap-safety + drift-refuse), which pytest-cov doesn't instrument — harden deepened those two shell surfaces directly with +5 behavioral tests (studio-desk failed-build overlay+dockerignore trap-revert & never-clobber; the ant-academy helper's clone-independent refusal contract).",
+    "gen_injected_override_py": "99% statements (flat; sole miss uncoverable __main__)",
+    "shell_surfaces": "up-injected.sh studio-desk builder trap + apply-ant-academy-dev-origins.sh refusal paths — behavioral coverage deepened at harden"
+  },
+  "delivered": {
+    "cors_emission": "gen_injected_override.py browser_scheme(host) predicate: the offset localhost trio is ALWAYS emitted (byte-identical); a public MagicDNS host ADDS the https://$HOST:{3000,3001,9000}+off trio to CORS_EXTRA_ORIGINS. cors.go honors it in non-production (backend runs ENVIRONMENT=development). D-SCHEME-1.",
+    "studio_desk_redirects": "gen_injected_override.py emits studio-desk CLERK_SIGN_IN_URL/WEB_APP_URL requireAuth fallback at {scheme}://{host}:3000+off (was hardcoded http://localhost). D-SCHEME-1.",
+    "vite_signin_bake": "the ONE client bake gap: VITE_CLERK_SIGN_IN_URL has no Dockerfile ARG (a platform edit), so config.ts fell back to the un-offset http://localhost:3000/login. up-injected.sh bakes it via a gitignored .env.production.local overlay (vite production mode loads it) admitted past studio-desk's .env* .dockerignore by a TRANSIENT !.env.production.local re-include; both reverted on the RETURN trap (clone left git-clean). Fixes the un-offset :3000 for EVERY demo; https for a public host. D-VITE-SIGNIN-1.",
+    "ant_academy_patch": "NEW apply-ant-academy-dev-origins.sh + demo-stack/patches/ant-academy-dev-origins/ant-academy-dev-origins.yaml: admit the demo's MagicDNS host into next.config.js allowedDevOrigins (which hardcodes a DIFFERENT tailnet host, blocking `next dev` cross-origin requests). Env-var indirection (allowedDevOrigins reads ANT_ACADEMY_ALLOWED_DEV_ORIGIN, prepended to the kept originals) so the source change is STATIC (fixed post_sha256) and the host arrives at `next dev` launch. sha-pinned drift-refuse + single-occurrence anchor + idempotent + post-condition re-check; applied by ant-academy.sh before launch (gated on the public host), reverted on --stop. NON-FATAL. Mirrors apply-app-authz-skip.sh; the canonical repo is never touched. D-PATCH-1.",
+    "scheme_flip": "up-injected.sh + ant-academy.sh SCHEME var (mirrors browser_scheme): every baked browser URL (NEXT_PUBLIC_* / VITE_* endpoints, _STUDIO_URL/_ACADEMY_URL/_PUBLIC_WEBSITE_URL, the cache-validators want_ep, the demo_web content-URL rewrite, the cockpit [Log in as]/[Academy] deep-links) is $SCHEME://$HOST:<offsetport> — http on localhost (byte-identical), https for a public host. The image cache-validators embed $SCHEME (D-REBUILD-1 extended) so an http-baked image rebuilds under an https host. Confirms the two shipped demopatches (next-web-studio-url + next-web-public-website-url) carry the MagicDNS value cleanly.",
+    "mixed_content_check": "under HTTPS-everywhere no browser-facing call resolves to plain http:// — the scheme flip covers every baked endpoint/redirect/cross-surface link; the asset plane stays prod-HTTPS (already allowlisted in next.config remotePatterns). The ONE deliberate plain-http surface is the cockpit's own page (7700+off, not in M213's serve front list — an http launcher -> https demo is not mixed content); fronting it is an M215 live-acceptance polish.",
+    "urls_ts_residual": "next-web urls.ts WEB_APP_URL/HIRING_APP_URL: DOCUMENTED RESIDUAL, evidence-decided NOT a demopatch (D-URLS-1). The M42e+M42m coverage sweeps gate at 0 prod-ejects and surfaced only STUDIO_URL+PUBLIC_WEBSITE_URL (both fixed); these two never surfaced (their apps/web usages are public marketing chrome / PDF-SEO / a dead Clerk.provider fallback / hiring-product features — not Workforce demo flows). Adding a speculative demopatch for an unrendered link is gold-plating; the mechanism is proven+ready if a future sweep surfaces one.",
+    "recipe_doc": "NEW corpus/ops/demo/tailscale-serve.md (198 lines): the remote-access recipe — the opt-in --public-host flag, the HTTPS-everywhere per-offset-port topology, the tailscale-cert FAPI, the CORS + patch tail, the teammate walkthrough, and the safety framing (Tailscale = the access control; opt-in default-off). + cross-ref updates to rosetta_demo.md / frontend-tier.md / clerkenstein.md / demo/README.md."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/ stack-injection (gen_injected_override.py + apply-ant-academy-dev-origins.sh NEW) + demo-stack (up-injected.sh + ant-academy.sh + patches/ant-academy-dev-origins/ NEW). Tests: stack-injection/tests/test_injection.py, demo-stack/tests/test_ant_academy.py + test_frontend_build.py.",
+    "head": "99c86b7",
+    "tag": "panorama-m214",
+    "tag_note": "annotated tag at the post-harden HEAD 99c86b7. FROZEN at close — this rosetta-only M214 close does NOT advance/re-tag rext; the rext re-tag + the box-level .agentspace/rext.tag bump are /developer-kit:close-release's job when v2.2 ships.",
+    "diff_range_reviewed": "b9f41dd..99c86b7 (9 files, +685/-95)",
+    "build_commits": [
+      "bf3edd1 (M214 §CORS+redirects: emit the MagicDNS/HTTPS origin via gen_injected_override browser_scheme)",
+      "ca4cb0b (M214 §scheme-flip: HTTPS-everywhere browser URLs + the VITE sign-in bake gap)",
+      "4599a2d (M214 §ant-academy patch: allowedDevOrigins via the sha-pinned mechanism)"
+    ],
+    "harden_commits": [
+      "99c86b7 (harden Pass 1: deepen origins/links trap-safety + patch error paths — +5 shell-behavioral tests)"
+    ],
+    "close_touched_rext": false,
+    "close_commit": "none in rext — the close made ZERO rext changes (frozen tag). The one rext-doc residual (the rext READMEs don't index the new apply-ant-academy-dev-origins.sh helper + the ant-academy-dev-origins patch) is routed to close-release (D-CLOSE-3, bundled with M212's D-CLOSE-1 + M213's D-CLOSE-2)."
+  },
+  "review": {
+    "findings": 4,
+    "scope": "GREEN — all 8 build checkboxes checked; every overview Scope.In item maps to a delivered artifact (CORS emission / studio-desk redirects / VITE bake / ant-academy patch / scheme-flip confirming the shipped demopatches / mixed-content check / the NEW recipe doc); the conditional urls.ts landed as the evidence-decided documented residual (D-URLS-1); Out: items (knob M212 / TLS+proxy+pk M213 / live acceptance M215) confirmed out; no stray TODO/FIXME/HACK in the M214-touched source.",
+    "code_quality": "GREEN — the frozen rext diff b9f41dd..99c86b7 reviewed cross-cuttingly: ONE scheme predicate (browser_scheme / $SCHEME) mirrored across gen_injected_override.py + up-injected.sh + ant-academy.sh, gated on STACK_PUBLIC_HOST, byte-identical when unset; the new patch helper mirrors apply-app-authz-skip.sh (drift-refuse + single-occurrence anchor + idempotent + post-condition re-check + non-fatal); trap-reverted overlays leave the clone git-clean; env-var indirection keeps a FIXED post_sha256 for a dynamic host; no dead code, no cross-module reach-in. 0 must-fix (and rext is frozen anyway).",
+    "docs": "GREEN(2 fixed) — the NEW tailscale-serve.md is accurate to code (browser_scheme, per-port serve/D-PROXY-2, the patch tail, the documented residual) and cross-referenced; all 7 linked docs exist + every relative link resolves. Two doc fixes landed at close: (1) [should-fix] tailscale-serve.md §-ref cited clerkenstein §'Remote reach over Tailscale' -> corrected to the actual heading §'Remote HTTPS over the tailnet'; (2) [nice-to-have] added the (#M214-D-URLS-1) reference tag to the residual section.",
+    "tests": "GREEN — stack-injection 155 (147p/8s/0f); demo-stack 383 (383p/0s/0f) — JUnit-authoritative, both exit 0. Counts reconcile exactly with M213 (stack-injection 152->155 +3; demo-stack 367->383 = +16 net-new test funcs). flake gate 5/5 both suites, 0 failures. rext already hardened at 99% stmt (Python) + deepened shell behavior at harden Pass 1.",
+    "decision_triage": "0 net-new blends needed — D-SCHEME-1/D-VITE-SIGNIN-1 already blended into clerkenstein.md with (#M214-D-*) ref tags during build; D-PATCH-1/D-URLS-1 already in tailscale-serve.md (the residual got its ref tag at close). Recorded at close: 3 adversarial scenarios (ADV-1..ADV-3) + D-CLOSE-3 (rext README index -> close-release).",
+    "adversarial": "3 scenarios recorded (Phase 2c, ADV-1..ADV-3 in decisions.md): ACADEMY_ROOT wrong/absent -> the helper asserts [-f target] + the caller is non-fatal (pinned by test_apply_missing_target_is_refused); concurrent studio-desk overlay in the shared clone -> same serial-build model as next-web's established overlay, RETURN-trap reverted + never-clobber (both tested); browser_scheme on a dotted non-MagicDNS host -> gated upstream by M213's require_dotted_host / assertValidPublishableKey. 0 unhandled defects; no code fix (rext frozen, nothing broken).",
+    "deferral_audit": "GREEN — m214-origins-and-links/audit-deferrals/deferral-audit-2026-07-11.md — the 2 items routed INTO M214 (DEF-M212-01 CORS emission, DEF-M213-01 recipe+links) LANDED complete as Fate-1; 3 Fate-2 -> M215 (live acceptance + port-binding/offset + cert-renewal/RAM) + 2 Fate-2 -> close-release (D-CLOSE-1/-2) confirmed-owned; +D-CLOSE-3 new (rext README index -> close-release); D-URLS-1 re-reviewed = still an evidence-decided non-deferral; 0 repeat, 0 chronic, 0 aged-out, 0 escape-hatch."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 8 sections (CORS_EXTRA_ORIGINS https-MagicDNS emission + tests; studio-desk CLERK_SIGN_IN_URL/WEB_APP_URL host+scheme substitution; the VITE_CLERK_SIGN_IN_URL overlay bake; the NEW ant-academy allowedDevOrigins apply-*.sh patch; the scheme-flip confirming the two shipped demopatches carry the MagicDNS value; the mixed-content check; the NEW tailscale-serve.md recipe + cross-ref updates). PLUS the two inherited routings that landed here as Fate-1 (DEF-M212-01 CORS/Clerk-URL emission; DEF-M213-01 recipe + link admission).",
+    "confirmed_covered_fate2": "the LIVE tailscale cert+serve run on billion + the remote hero journey -> M215; the docker/native loopback-vs-0.0.0.0 port-binding + offset-in-every-baked-URL reconciliation -> M215; cert renewal (90-day LE) + RAM/swap burn-down -> M215; the cockpit-HTTPS-fronting (7700) live-acceptance polish -> M215; the rext README index for the new patch/helper (D-CLOSE-3) + M212's D-CLOSE-1 + M213's D-CLOSE-2 -> v2.2 close-release.",
+    "annotated_fate3": "none (all routings are pre-existing owners; no overview.md edited)",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none"
+  },
+  "notes": "M214 admits the MagicDNS/HTTPS origin everywhere a browser->backend or cross-surface call is gated, closes the cross-surface link ejects, and lands the bounded platform-family patch tail — all via one scheme predicate flipped by the M212 knob, byte-identical when unset. The one required patch (ant-academy allowedDevOrigins) rides the EXISTING sha-pinned mechanism with env-var indirection (fixed post_sha256, dynamic host); the studio-desk VITE bake gap is closed with a gitignored overlay + transient .dockerignore re-include, both trap-reverted. The conditional next-web urls.ts is the evidence-decided documented residual (0-eject coverage sweeps never surfaced it). Zero platform-repo edits. The build held under harden Pass 1 (+5 shell-behavioral tests, 0 bugs) + 3 close adversarial scenarios (0 defects). rext code-of-record FROZEN at tag panorama-m214 (99c86b7) — the sole close residual (rext README index rows) routes to close-release rather than re-pointing the frozen tag. Runs parallel with the now-closed M213; both feed M215 (prove it on odyssey — the live cross-machine acceptance gate)."
+}

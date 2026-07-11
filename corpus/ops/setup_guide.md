@@ -107,6 +107,65 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
 
 </details>
 
+#### Linux host prerequisites (for a remote/VM demo over Tailscale)
+
+These are the **deploy-host** prereqs for running a demo on a bare Linux VM so a teammate on another tailnet
+machine browses it over HTTPS (`/demo-up N --public-host <magicdns>` — see the
+[Remote demo over Tailscale runbook](demo/tailscale-serve.md)). They are **distinct from the macOS dev-box tools
+above**: the Docker image builds compile Go **in-image**, but the rext orchestration tooling
+(`stacksecrets`/`stacksnap`/`stackseed`) **and** `atlas migrate` run on the **host** — so a bare VM needs these
+before the bring-up. Proven live on the odyssey `billion` VM (2026-07-11).
+
+<details>
+<summary><strong>Remote/VM demo host (Ubuntu on Tailscale)</strong></summary>
+
+1.  **Docker + Compose** — usually already present on a dev VM.
+    *   *Verification*: `docker ps && docker compose version`
+2.  **Go 1.25.x** — the rext host tools (`stacksecrets`/`stacksnap`/`stackseed`) are Go and run **on the host**;
+    a bare VM with no Go skips secret provisioning → `no usable platform .env` → abort. Install (rext declares
+    `toolchain go1.25.12`):
+    ```bash
+    curl -sSfL https://go.dev/dl/go1.25.12.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
+    export PATH=$PATH:/usr/local/go/bin   # persist in your shell profile
+    ```
+    *   *Verification*: `go version`
+3.  **atlas CLI** — `migrate-demo.sh` runs `atlas migrate apply`; without it the schemas are created but with
+    **0 tables**, and every seeder then fails `relation public.X does not exist`. Install (Linux amd64):
+    ```bash
+    curl -sSfL https://release.ariga.io/atlas/atlas-linux-amd64-latest -o atlas && sudo install -m755 atlas /usr/local/bin
+    ```
+    *   *Verification*: `atlas version`
+4.  **Tailscale operator** — set once so `tailscale cert` / `tailscale serve` run **without sudo** as the deploy
+    user (the bring-up calls them un-sudo'd; without the operator the FAPI cert falls back to `mkcert` =
+    local-trust-only, so a *remote* browser sees an untrusted cert):
+    ```bash
+    sudo tailscale set --operator=$USER
+    ```
+    *   *Verification*: `tailscale cert <your-magicdns-fqdn>` succeeds without sudo (see also [clerkenstein.md](../services/clerkenstein.md) §"Remote HTTPS over the tailnet").
+5.  **ssh-agent** — the platform `docker-compose.yml` build blocks declare `ssh: default`, so `buildx bake`
+    refuses to load without `SSH_AUTH_SOCK`. A **keyless** agent suffices (the private-module pulls use the
+    `GH_PAT` build-arg, not the agent). The bring-up now auto-starts one if absent; to pre-arm manually:
+    `eval "$(ssh-agent -s)"`.
+6.  **(content surfaces only) the snapshot cache** — the 42K-skill taxonomy + Directus content are set-dressed
+    from the `.agentspace/snapshots` cache, **not** from migrations. Without it `public.skills = 0` and the
+    library/skills surfaces are sparse (identity/profile/dashboard still work). `scp` the cache to the VM (or
+    capture once) if you need the content surfaces.
+
+**GitHub without an org SSH key** — use the `GH_PAT` (in the secret bundle) over HTTPS so `make init` /
+`ensure-clones.sh` can clone the private repos:
+```bash
+git config --global url."https://github.com/".insteadOf git@github.com:
+git config --global credential.helper store   # then prime it once with the PAT
+```
+
+**Linux bind-mount data-dir perms** — the Bitnami containers (postgresql, UID 1001) can't write a root-owned
+host bind-mount. The bring-up now pre-creates the data dirs writable; the manual fix is
+`sudo chmod -R 777 $STACK/data` (or `chown` to UID 1001). Not needed on macOS (Docker Desktop remaps).
+
+</details>
+
+Full remote-deploy recipe, topology, and safety framing: [demo/tailscale-serve.md](demo/tailscale-serve.md).
+
 ---
 
 ## Automated Setup with Claude Code

@@ -8,8 +8,10 @@ argument-hint: (no args)
 
 Reports the **unified stack registry** (M12) — which `dev-N` **and** `demo-N` exist, with the fields the
 registry actually carries per stack: `type`, `n`, `status`, resolved host `ports` (the offset is `base + N·10000`),
-and `created` — plus a live `ps` per project. One N-pool spans both kinds, so this is the single source of
-truth for "what's running and which N is free". (Formerly `/demo-status`, now generalized to both stack types.)
+`created`, and — for a stack brought up with `/demo-up --public-host <magicdns>` (v2.2 "panorama" M212) — the
+additive `external_host` field (the reachable MagicDNS URL). One N-pool spans both kinds, so this is the single
+source of truth for "what's running and which N is free". (Formerly `/demo-status`, now generalized to both stack
+types.)
 
 ## Mission
 

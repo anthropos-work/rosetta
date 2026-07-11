@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
+argument-hint: [N] [--public-host <magicdns>] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
 ---
 
 # Demo Up — spin up an isolated demo stack
@@ -60,7 +60,43 @@ single-identity demo — see the toggle list below.) Source of truth:
    DEMO_NO_PROVISION=1 "$DEMO/up-injected.sh" N
    # minimal stack (infra only — proves isolation, fits a tight box, fast):
    "$DEMO/rosetta-demo" up N --services "postgresql redis"
+   # EXTERNAL access (opt-in, default off — v2.2 "panorama" M212): make the demo reachable from ANOTHER
+   # machine on a Tailscale tailnet by baking a MagicDNS host into every browser-facing URL (and binding the
+   # host-native servers — cockpit + ant-academy — on 0.0.0.0). Omit ⇒ byte-identical to today (localhost).
+   STACK_PUBLIC_HOST=billion.taildc510.ts.net "$DEMO/up-injected.sh" N   # env-var form
+   "$DEMO/up-injected.sh" N --public-host billion.taildc510.ts.net       # equivalent flag form
    ```
+   > **`--public-host` — remote cross-machine access over Tailscale (v2.2 "panorama"; PROVEN live on a Linux VM
+   > 2026-07-11).** It threads ONE browser-facing host through every rext emitter (build-args, `.env.local`
+   > overlays, the pk/FAPI host, the cockpit + academy bases, the `demo_web` content-URL rewrite), mints the HTTPS
+   > cert + a per-offset-port **`tailscale serve`** reverse proxy (M213 — the fake FAPI serves its own tailscale-cert
+   > TLS on `:5400+off`), emits the CORS + Clerk sign-in origins (M214), and records the reachable URL on the
+   > registry (`/stack-list` shows it). A teammate on another tailnet machine then browses the demo end-to-end over
+   > a **trusted** cert (employee `maya-thriving` → `/profile` **and** manager `dan-manager` →
+   > `/enterprise/workforce` both proven from a remote Mac, 0 console errors). The host **must be a dotted MagicDNS
+   > FQDN** (a bare name is refused — clerk-js needs a dotted pk host + a secure context). Control-plane loopback
+   > calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. Public reach is **never** default-on
+   > (D-DESIGN-1) — external binding happens ONLY when this flag is set, and **Tailscale itself is the access
+   > control** (tailnet-only, no public-internet exposure). Full recipe + topology + walkthrough:
+   > [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md).
+   >
+   > **Remote Linux-VM host prereqs (a bare Ubuntu VM).** The Docker builds compile Go in-image, but the rext
+   > orchestration tooling runs on the **HOST**, so a fresh VM needs, one-time: **Docker + Compose**; **Go 1.25.12**
+   > on the host (the `stacksecrets`/`stacksnap`/`stackseed` tools are Go — without it secret-provision is skipped →
+   > `no usable platform .env` → abort); the **`atlas` CLI** on the host (`migrate-demo.sh` runs `atlas migrate
+   > apply` — without it the schemas create with **0 tables** and every seeder fails `relation … does not exist`);
+   > the **Tailscale operator** (`sudo tailscale set --operator=<user>` so the un-sudo'd `tailscale cert`/`tailscale
+   > serve` calls run — else the cert falls back to local-trust-only mkcert and a remote browser sees it untrusted);
+   > and an **ssh-agent** (the platform compose build declares `ssh: default` → buildx bake needs `SSH_AUTH_SOCK`; a
+   > **keyless** agent suffices — module pulls use the PAT, not the agent — and the bring-up now auto-starts one if
+   > absent). On **native Linux** the Bitnami data dirs (postgres UID 1001) need writable perms (the bring-up
+   > pre-creates them; manual fix `sudo chmod -R 777 $STACK/data`) — not needed on macOS (Docker Desktop remaps).
+   > Without an org SSH key, clone the private repos over HTTPS with the bundled `GH_PAT` (`git config --global
+   > url."https://github.com/".insteadOf git@github.com:` + a credential store). For the **taxonomy/library/skills**
+   > content surfaces the `.agentspace/snapshots` cache must be on the VM (they set-dress from the snapshot, **not**
+   > migrations; without it identity/profile/dashboard still render, but skills surfaces are sparse). Bring-up on the
+   > VM: `STACK_PUBLIC_HOST=<host> bash "$DEMO/up-injected.sh" N --public-host <host>` (add `DEMO_NO_UI=1` for a
+   > backend-only first pass, `DEMO_NO_LOCAL_CONTENT=1` to read content live from prod).
    **M30 secret auto-provision (default-on, non-fatal):** after the demo-aware secret pre-flight `check`, the
    bring-up PROVISIONS the demo's per-repo `.env` from `.agentspace/secrets` (values-blind; `stacksecrets
    provision --force`) and runs the demo from that **assembled-source** base env (`stack-demo/platform/.env`) —
