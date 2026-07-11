@@ -1,0 +1,82 @@
+{
+  "milestone": "M212",
+  "title": "The single host knob — STACK_PUBLIC_HOST (opt-in, default localhost => byte-identical when unset) surfaced as the /demo-up --public-host flag, threaded through every rext browser-facing emitter (up-injected.sh build-args + .env.local overlays + demo_web rewrite + want_ep cache-validators; inject.py --fapi-host; gen_injected_override.py host-param seam; cockpit + ant-academy host+bind; stack_registry additive external_host)",
+  "shape": "section",
+  "status": "done",
+  "closed": "2026-07-11",
+  "is_last_milestone": false,
+  "kind": "the v2.2 'panorama' release-opening milestone — Python + bash in the rext tooling (stack-core/stack_registry.py, stack-injection/inject.py + gen_injected_override.py, demo-stack/up-injected.sh + ant-academy.sh + rosetta-demo); ZERO platform-repo edits; ZERO Go touched. Code-of-record: rext tag panorama-m212 @ 770f81b (frozen at close — rext re-tag reserved for /developer-kit:close-release). The rosetta m212 branch carries ONLY plan/doc + the operator-surface SKILL edits.",
+  "tests": {
+    "language": "python (pytest) + shellcheck",
+    "go_total": 0,
+    "go_note": "M212 touched ZERO Go — the knob is Python + bash in rext tooling. The rext Go modules (alignment/clerkenstein/stack-seeding/stack-snapshot/stack-secrets/playthroughs, ~1764 funcs at v2.1) are carried unchanged.",
+    "python_m212_touched": {
+      "stack-core (test_stack_registry + gen_override + corpus_index_guard)": 97,
+      "stack-injection (test_injection + test_apply_authn)": 130,
+      "of_which_stack-injection_skipped": 8,
+      "demo-stack (test_tooling + test_frontend_build + test_ant_academy + test_cockpit + test_demopatch + test_detach + test_migrate_race_live)": 350,
+      "total_collected": 577,
+      "total_passed": 569,
+      "total_skipped": 8,
+      "total_failed": 0
+    },
+    "counts_source": "authoritative — JUnit XML tally (junit_tally.py) over pytest --junit-xml per section",
+    "python_delta": "+16 net-new test funcs across the milestone from the 2 harden passes: test_injection.py TestInjectMainArtifacts +7 (inject.main() end-to-end 0%->98% + pk padding grid) & test_frontend_build.py +7 (want_ep HOST-invalidation next-web/studio-desk + --public-host operator-flag behavior) & test_stack_registry.py TestExternalHost +2 (set_host additive-preservation + idempotent re-stamp). Build baseline stack-core 95 / stack-injection 123-incl-8skip / demo-stack 340.",
+    "close_added_test": "none — the close surfaced no defect requiring a new regression test; the 4 adversarial scenarios are each already handled and pinned by harden-added tests (recorded in decisions.md Adversarial review).",
+    "shellcheck": "demo-stack/up-injected.sh + demo-stack/ant-academy.sh both CLEAN",
+    "flake_count": 0,
+    "flake_gate": "5/5 clean — each of the 3 M212-touched pytest suites run 5x sequentially in default order (stack-core 97 / stack-injection 122+8skip / demo-stack 350 identical each run; stdlib-unittest deterministic intra-suite order = the realistic CI condition; pytest-randomly not installed)"
+  },
+  "coverage": {
+    "note": "harden ran 2 passes (recorded in progress.md). inject.py 33% -> 98% statements (only the __main__ guard remains); gen_injected_override.py + stack_registry.py already 99%, held. Remaining misses are module-entry __main__ guards + one argparse-unreachable return 1 (subparsers required=True) — no behavioral value. Bash is I/O-bound (offline-uncoverable) — guarded by shellcheck + the byte-identity/flag tests.",
+    "inject_py": "98% statements",
+    "gen_injected_override_py": "99% statements",
+    "stack_registry_py": "99% statements"
+  },
+  "delivered": {
+    "the_knob": "STACK_PUBLIC_HOST (default localhost) derived in up-injected.sh:44+ as HOST/FAPI_HOST/BIND_HOST — HOST for browser-facing URLs, FAPI_HOST with a DOTTED 127.0.0.1 default (D-IMPL-1: @clerk/backend rejects dotless localhost for the pk), BIND_HOST=0.0.0.0 ONLY when the knob is set (D-IMPL-2: external binding is opt-in, never default-on).",
+    "operator_surface": "/demo-up --public-host <magicdns> flag AND the STACK_PUBLIC_HOST env-var form, both plumbed to up-injected.sh (flag parse loop + export for child launchers); documented in .claude/skills/demo-up/SKILL.md (argument-hint + the foundation-not-whole-feature note) + stack-list/SKILL.md (the additive external_host field).",
+    "browser_facing_substitution": "$HOST replaces localhost in: next-web build-args (WUNDERGRAPH/BACKEND_API/HOSTING_URL) + .env.local overlays (STUDIO_URL/ACADEMY_URL/PUBLIC_WEBSITE_URL); studio-desk build-args (VITE_GRAPHQL_ENDPOINT/VITE_WEB_APP_URL); the pk-mint --fapi-host ($FAPI_HOST); the cockpit --app-base/--fapi-host/--academy-base; ant-academy NEXT_PUBLIC_STUDIO_URL; the demo_web Directus content-URL rewrite. Control-plane loopback (set-dress DSN, directus_addr) deliberately stays localhost.",
+    "cache_validity_fix": "want_ep build-arg cache-validators (next-web + studio-desk) now embed $HOST so a HOST change invalidates a stale localhost-baked image (the overview's top-risk item; pinned by test_frontend_build.py).",
+    "registry": "stack_registry.py additive external_host on allocate()/set_ports() + a NEW set_host() reconcile-then-upsert (adopts the docker-ps-adopted demo-N row) + the set-host CLI subcommand; rosetta-demo status renders external_host; up-injected.sh calls set-host ONLY on the opt-in path, non-fatal (D-IMPL-4).",
+    "seam_for_m214": "gen_injected_override.py threads host through frontend_lines/build_lines + the --public-host flag, but the CORS + Clerk sign-in/web-app URL EMISSION stays localhost (byte-identical, pinned) — the emission is M214 (D-IMPL-3)."
+  },
+  "extensions": {
+    "module": "rosetta-extensions/ stack-core (stack_registry.py) + stack-injection (inject.py, gen_injected_override.py) + demo-stack (up-injected.sh, ant-academy.sh, rosetta-demo). Tests: test_stack_registry.py, test_injection.py, test_frontend_build.py, test_ant_academy.py, test_tooling.py.",
+    "head": "770f81b",
+    "tag": "panorama-m212",
+    "tag_note": "annotated tag re-pointed from the initial-closure sha d4f6da6 to the post-harden HEAD 770f81b. FROZEN at close — this rosetta-only M212 close does NOT advance/re-tag rext; the rext re-tag + the box-level .agentspace/rext.tag bump are /developer-kit:close-release's job when v2.2 ships.",
+    "diff_range_reviewed": "d0cdfbb..770f81b (11 files, +597/-44)",
+    "build_commits": [
+      "787f020 (M212 §11: additive external_host on the stack registry)",
+      "4ee93d2 (M212 §5/§6: pk/FAPI host + gen_injected_override host plumbing)",
+      "d4f6da6 (M212 §1-4,7-12: the single host knob threaded through the demo bring-up)"
+    ],
+    "harden_commits": [
+      "7e3d37b (harden: drive inject.py main() end-to-end + pk padding grid)",
+      "b9760ca (harden: pin want_ep cache-validator HOST-invalidation — top-risk item)",
+      "6134ea0 (harden: exercise the --public-host operator-surface flag)",
+      "770f81b (harden: set_host additive-preservation + idempotent re-stamp)"
+    ],
+    "close_touched_rext": false,
+    "close_commit": "none in rext — the close made ZERO rext changes (frozen tag); the one doc-hygiene residual (demo-stack/README.md count) is routed to close-release (D-CLOSE-1)."
+  },
+  "review": {
+    "findings": 1,
+    "scope": "GREEN — all 12 sections checked; every overview Scope.In item maps to a delivered artifact; Out: items (TLS/proxy/pk -> M213, CORS/links/patches/recipe -> M214, live acceptance -> M215, dev parity -> opt M216) confirmed-covered in each target overview; no stray TODO/FIXME/HACK (the M214-seam markers are the intentional D-IMPL-3 wire); D-DESIGN-1 + D-IMPL-1..4 + KB-1 recorded.",
+    "code_quality": "GREEN — rext prod diff d0cdfbb..770f81b reviewed cross-cuttingly: consistent HOST/FAPI_HOST/BIND_HOST derivation, +alt bash-3.2 empty-array guards throughout, byte-identity preserved everywhere the knob is unset, additive-symmetric registry API (allocate/set_ports/set_host all take external_host), no dead code, no cross-module reach-in, no resource leaks; both shell scripts shellcheck-CLEAN. 0 must-fix.",
+    "docs": "YELLOW->GREEN(routed) — demo-up + stack-list SKILL operator docs accurate + cross-referenced (M212 correctly framed as the foundation; M213/M214/M215 complete the feature). No new top-level unit => per-unit handbook contract n/a. ONE finding: demo-stack/README.md:66 quotes test_tooling.py (50 tests); actual 111 — pre-existing (not-M212) drift in the FROZEN rext tag; cannot fix in-place without re-tagging => D-CLOSE-1, Fate 2 -> close-release.",
+    "tests": "GREEN — 577 collected / 569 passed / 8 skipped / 0 failed across the 3 M212-touched suites (JUnit-authoritative); flake gate 5/5; shellcheck clean; inject.py 98% / gen_injected_override.py 99% / stack_registry.py 99%. Handbook count reconciliation = the same D-CLOSE-1 residual.",
+    "decision_triage": "0 net-new knowledge edits — D-DESIGN-1 (opt-in default-off) + D-IMPL-2 (0.0.0.0 gated) + D-IMPL-4 (external_host) user-facing 'why' already blended into demo-up/stack-list SKILL docs during build (072b32c, verified accurate); D-IMPL-1/KB-1 (dotted FAPI host) + D-IMPL-3 (CORS/Clerk-URL emission) knowledge home is M214's tailscale-serve.md + clerkenstein.md (overview: 'No new doc lands here'). All M212 decisions stay archive.",
+    "adversarial": "4 scenarios recorded (Phase 2c): up-injected flag-parse edges (pinned), empty-export STACK_PUBLIC_HOST precedence (:- / -n gates make empty == unset), symmetric-pk-round-trip host-with-port (input-contract; downstream dotted-host validation is M213), want_ep HOST-invalidation (pinned) — 0 unhandled defects; no documented-risk acceptance needed.",
+    "deferral_audit": "GREEN — m212-public-host-knob/audit-deferrals/deferral-audit-2026-07-11.md — M212 opens v2.2 (nothing inherited within-release); 2 Fate-2 items (CORS/Clerk-URL emission + the dotted-host doc gap) both confirmed-owned by M214; 0 repeat, 0 aged-out, 0 escape-hatch."
+  },
+  "completeness_ledger": {
+    "done_fate1": "all 12 sections (HOST/FAPI_HOST/BIND_HOST derivation; --public-host flag+env-var operator surface; next-web + studio-desk build-args & overlays; inject.py --fapi-host pk mint; gen_injected_override host seam; cockpit host+bind; ant-academy host+gated bind; demo_web rewrite; want_ep HOST-invalidation; registry additive external_host + set_host; unset-knob byte-identical regression).",
+    "confirmed_covered_fate2": "TLS cert swap + HTTPS reverse proxy + pk validation -> M213; CORS + Clerk-URL emission (D-IMPL-3) + link ejects + patch tail + tailscale-serve.md recipe -> M214; the clerkenstein dotted-FAPI-host doc constraint (KB-1) -> M214; live cross-machine acceptance -> M215; dev-path parity + /dev-up flag -> optional M216; the demo-stack/README.md count-drift (D-CLOSE-1) -> v2.2 close-release.",
+    "annotated_fate3": "none (all routings were pre-existing owners; no overview.md edited)",
+    "dropped": "none",
+    "escape_hatch_release_scope_breaking": "none"
+  },
+  "notes": "M212 is the release-opening milestone of v2.2 'panorama' and the whole external-shareability foundation — one opt-in knob threaded through every rext browser-facing emitter, byte-identical when unset (the hard regression contract, pinned by TestHostKnobClosure + test_host_knob_derivation_*). Zero platform-repo edits; zero Go. The implementation held under 2 harden passes + 4 close adversarial scenarios with zero defects. The rext code-of-record is FROZEN at tag panorama-m212 (770f81b) — the sole close residual (a pre-existing README test-count drift) is routed to close-release rather than editing the frozen tag. Next: { M213 (auth over the tailnet) parallel with M214 (origins & links) } -> M215 (prove it on odyssey)."
+}
