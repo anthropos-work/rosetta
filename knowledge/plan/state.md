@@ -1,9 +1,9 @@
 ---
 active_release: "v2.2 panorama — IN DEVELOPMENT (branch release/02.20-panorama; tag v2.2 at close); designed 2026-07-11"
 active_branch: "release/02.20-panorama"
-active_milestone: "M213 auth-over-tailnet — BUILT on m213/auth-over-tailnet (pending /developer-kit:close-milestone); ∥ M214 not yet started"
-last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground | latest milestone: M212 — 2026-07-11"
-phase: "in development — M212 closed+merged; M213 BUILT (pending close); next: close M213 → M214 → M215"
+active_milestone: "(between milestones) — M213 auth-over-tailnet CLOSED+merged 2026-07-11; next: M214 origins-and-links (not yet started) → M215 (final, iterative)"
+last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground | latest milestone: M213 — 2026-07-11"
+phase: "in development — M212 + M213 closed+merged; next: M214 → M215"
 last_updated: "2026-07-11"
 ---
 
@@ -25,34 +25,38 @@ Records: [`releases/02.20-panorama/`](releases/02.20-panorama/).
 up cold on both stacks via the re-grounded tooling. 4 milestones M208..M211. Records:
 [`releases/archive/02.10-quick-change/`](releases/archive/02.10-quick-change/).
 
-**Active milestone:** **(between milestones)** — **M212 — The single host knob** (`section`) **CLOSED 2026-07-11**,
-merged `--no-ff` into `release/02.20-panorama`; the `m212/public-host-knob` branch is deleted. It introduced
-`STACK_PUBLIC_HOST` (default `localhost` → byte-identical when unset) surfaced as the opt-in `/demo-up --public-host`
-flag, threaded through every rext browser-facing emitter. rext code-of-record FROZEN at tag `panorama-m212` @
-`770f81b` (rext re-tag deferred to close-release). Close: tests **577** (569/8skip/0fail), flake 5/5, 1 routed finding
-(D-CLOSE-1 → close-release), deferral audit GREEN. **Next active:** { **M213** ∥ **M214** } via `/developer-kit:build-milestone`.
+**Active milestone:** **(between milestones)** — **M213 — Auth over the tailnet** (`section`) **CLOSED 2026-07-11**,
+merged `--no-ff` into `release/02.20-panorama`; the `m213/auth-over-tailnet` branch is deleted. It serves Clerkenstein
+auth + the whole browser surface under **one trusted HTTPS MagicDNS origin**: the `tailscale cert` FAPI mint swap
+(path-only drop-in + local mkcert/openssl fallback), dotted-pk validation in the demo wiring, the NEW
+`gen_tailscale_serve.py` reverse-proxy generator (per-port HTTPS, 0 net-new deps), the FAPI-same-host topology guard,
+the confirmed build-rebuild-on-HOST guard, and the overridable `cdn.jsdelivr.net` egress (`FAKE_FAPI_CLERKJS_CDN`) —
+all gated on `--public-host`, byte-identical when unset. rext code-of-record FROZEN at tag `panorama-m213` @ `b9f41dd`
+(rext re-tag deferred to close-release). Close: go clerk-frontend +7 / stack-injection **152** / demo-stack **367**,
+flake 5/5, 7 findings (0 must-fix; 1 rext-README residual → close-release, D-CLOSE-2), deferral audit GREEN. **Next
+active:** **M214 — Origins & links** via `/developer-kit:build-milestone`.
 
-**Phase:** **in development — 1 of 4 milestones closed (M212).** The release branch carries the M212 merge; the
-knob foundation is in. The remaining contracts are scaffolded under `releases/02.20-panorama/`; the feasibility is
-established (workflow `wf_bea3be47` — config-only core + a 2-item patch tail; Tailscale confirmed live both ends).
-Design-roadmap Phase 0 note: the deferral audit + KB blind-area check were folded into the feasibility pass (the
-release **authors** its KB anchor `tailscale-serve.md` in M214, so the one blind area is homed via a `Delivers →`
-line, not designed into).
+**Phase:** **in development — 2 of 4 milestones closed (M212, M213).** The release branch carries the M212 + M213
+merges; the knob foundation + the HTTPS-over-tailnet auth surface are in. The remaining contracts (M214 origins/links,
+M215 the live cross-machine acceptance) are scaffolded under `releases/02.20-panorama/`; the feasibility is established
+(workflow `wf_bea3be47` — config-only core + a 2-item patch tail; the `tailscale cert` swap proven live on billion).
 
-**Next up:** **M213 is BUILT** (branch `m213/auth-over-tailnet`, not merged) — the tailscale-cert FAPI swap +
-dotted-pk validation + the `tailscale serve` reverse-proxy generator + the topology guard + the confirmed
-build-rebuild-on-HOST guard + the cdn.jsdelivr.net egress (all gated on `--public-host`, byte-identical when unset;
-config generation + unit tests only — no live tailnet run). rext code-of-record at tag **`panorama-m213`**. **Run
-`/developer-kit:close-milestone`** to review + merge M213 into `release/02.20-panorama`. Then **M214** (origins &
-links: CORS/patch-tail/`tailscale-serve.md` recipe) **∥**-ready, then **M215** (the iterative cross-machine
-acceptance gate on odyssey — the live `tailscale cert`/`serve` run + cert-renewal + RAM burn-down). Optional **M216**
-(dev-path parity) stays roadmap-only until promoted.
+**Next up:** **M214 — Origins & links** (`section`, ∥-ready with the now-closed M213, different files) — admit the
+MagicDNS origin everywhere gated + close cross-surface ejects + land the bounded patch tail via the EXISTING rext
+patch mechanism: extend `CORS_EXTRA_ORIGINS` emission, studio-desk runtime redirects + the `VITE_CLERK_SIGN_IN_URL`
+bake gap, a NEW `apply-*.sh` for ant-academy `allowedDevOrigins`, and the conditional next-web `urls.ts` demopatch.
+**Delivers →** the NEW `corpus/ops/demo/tailscale-serve.md` remote-access recipe. Run `/developer-kit:build-milestone`.
+Then **M215** (the FINAL, iterative cross-machine acceptance gate on odyssey — the live `tailscale cert`/`serve` run +
+cert-renewal + RAM burn-down + the loopback-vs-0.0.0.0 serve reconciliation). Optional **M216** (dev-path parity)
+stays roadmap-only until promoted. Two M213-surfaced Fate-2 items are owned here/M215; the rext-README residual
+(D-CLOSE-2) + M212's D-CLOSE-1 land at close-release when rext re-tags.
 
 **Origin sync (2026-07-11):** origin has `main` + all shipped tags (`v1.10.1`, `v2.0`, `v2.1`) for **both** rosetta
 and rosetta-extensions, **and** the `release/02.20-panorama` branch (pushed 2026-07-11, `765528d`). **Local ahead of
-origin (push at release close):** the rosetta `release/02.20-panorama` now carries the **M212 merge** (+ its close
-commits); rext has a **new local annotated tag `panorama-m212` @ `770f81b`** (M212 code-of-record — the box-level
-`.agentspace/rext.tag` stays `v2.1` until `/developer-kit:close-release` bumps it). No push performed by the close.
+origin (push at release close):** the rosetta `release/02.20-panorama` now carries the **M212 + M213 merges** (+ their
+close commits); rext has **two new local annotated tags — `panorama-m212` @ `770f81b` and `panorama-m213` @ `b9f41dd`**
+(the per-milestone code-of-record; the box-level `.agentspace/rext.tag` stays `v2.1` until `/developer-kit:close-release`
+bumps it + reconciles the D-CLOSE-1/D-CLOSE-2 rext-README residuals). No push performed by the close.
 
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01
 (`replayCmd` hermetic test), CAVEAT-1 (clean-box literal full `/dev-up` — belt-and-suspenders), M314b (prod
@@ -70,12 +74,14 @@ tracked in [`roadmap-vision.md`](roadmap-vision.md).
 
 _(Earlier v1.x — v1.0 … v1.10 — full shipped table in [`roadmap-legacy.md`](roadmap-legacy.md) § Shipped releases.)_
 
-## Headline numbers (inherited baseline — v2.1 final; v2.2 sets its own at close)
-- **rext Go test funcs:** **1764** across 6 modules (v2.1 baseline). `go vet ./...` clean; triple-clean 3/3.
-- **rext TS unit specs:** **103**. **Live Playthroughs:** **10** (6 employee + 4 manager) + 1 in-manifest TODO.
-- **Flake:** **0**. **Supply-chain:** target **0 net-new deps** (a reverse-proxy component, if not a stdlib/OS
-  package, is the one supply-chain item to weigh in M213). **Alignment gates:** **100%/100%** on all 5 Clerkenstein
-  surfaces (v2.2 touches the pk/FAPI host + cert, NOT the Clerk contract — re-score at M213/M215).
+## Headline numbers (v2.2 in progress — baseline v2.1 final; M212 + M213 closed)
+- **rext Go test funcs:** **1771** across 6 modules (v2.1 baseline 1764 + **7** M213 `clerkjs_proxy` funcs; M212
+  touched zero Go). `go vet ./...` + `gofmt` clean; clerk-frontend `-race`+shuffle clean.
+- **rext Python (M213-touched suites):** stack-injection **152** (144p/8s), demo-stack **367** (0f) — the M213 delta
+  is +33 build + 11 harden test funcs. **TS unit specs:** **103**. **Live Playthroughs:** **10** + 1 in-manifest TODO.
+- **Flake:** **0** (5/5 gate). **Supply-chain:** **0 net-new deps held** — M213 chose `tailscale serve` (already on
+  every target VM) over Caddy for the reverse proxy (D-PROXY-1). **Alignment gates:** **100%/100%** on all 5
+  Clerkenstein surfaces — M213 re-scored the JS/FAPI surface 100%/100% after the egress refactor (M215 re-scores live).
 
 ## Branch model / shipped tags
 **v2.2 IN DEVELOPMENT:** `release/02.20-panorama` cut from `main` 2026-07-11. Milestone branches `m{N}/{slug}` cut
@@ -85,7 +91,9 @@ from it per `/developer-kit:build-milestone`; merge back at `/developer-kit:clos
 **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` ·
 **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`. (Full shipped detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
-_Last updated: 2026-07-11 (M212 "the single host knob" CLOSED + merged into `release/02.20-panorama` — the
-opt-in `STACK_PUBLIC_HOST` foundation, byte-identical when unset, threaded through every rext browser-facing
-emitter; rext code-of-record @ tag `panorama-m212`; 577 tests / flake 0; 1 routed close finding (D-CLOSE-1). Next:
-`/developer-kit:build-milestone` → { M213 ∥ M214 } → M215.)_
+_Last updated: 2026-07-11 (M213 "auth over the tailnet" CLOSED + merged into `release/02.20-panorama` — Clerkenstein
+auth + the whole browser surface under one trusted HTTPS MagicDNS origin: the `tailscale cert` FAPI swap + dotted-pk
+validation + the `gen_tailscale_serve.py` reverse-proxy generator + the topology guard + the overridable jsdelivr
+egress, all gated on `--public-host`, byte-identical when unset; rext code-of-record @ tag `panorama-m213` @ `b9f41dd`;
+go +7 / stack-injection 152 / demo-stack 367 / flake 0; 7 close findings (0 must-fix, 1 rext-README residual →
+close-release D-CLOSE-2); deferral audit GREEN. Next: `/developer-kit:build-milestone` → M214 → M215.)_

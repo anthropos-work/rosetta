@@ -129,6 +129,19 @@ Clerkenstein auth + the whole browser surface under **one trusted HTTPS MagicDNS
 lightweight reverse proxy (tailscale serve / Caddy) fronting the browser-facing ports, keep FAPI same-host (SameSite
 guard). Backend token verify is already host-agnostic → no verify change. **Delivers →** `clerkenstein.md` (the
 tailscale-cert FAPI path).
+**Status:** `done` (closed 2026-07-11). All 7 sections landed on `m213/auth-over-tailnet`, merged `--no-ff` into
+`release/02.20-panorama`; rext code-of-record FROZEN at tag `panorama-m213` @ `b9f41dd` (rext re-tag deferred to
+close-release). Delivered: the `tailscale cert` FAPI mint swap (path-only drop-in + local mkcert/openssl fallback,
+proven live on billion — `ssl_verify_result=0` from a remote machine), dotted-pk validation up in the demo wiring
+(`require_dotted_host`, codec stays permissive), the NEW `gen_tailscale_serve.py` reverse-proxy generator (per-port
+HTTPS, 0 net-new deps, FAPI self-TLS-excluded), the FAPI-same-host topology guard (PSL-verified `ts.net` eTLD+1), the
+confirmed build-rebuild-on-HOST guard, and the `cdn.jsdelivr.net` egress made explicit + overridable
+(`FAKE_FAPI_CLERKJS_CDN`). Decisions D-SCHEME-1 + D-CERT-1 + D-PROXY-1/2 + D-PK-1 + D-TOPO-1 + D-REBUILD-1 + D-EGRESS-1.
+Tests: go clerk-frontend +7 (`-race`+shuffle clean); stack-injection **152** (144p/8s/0f); demo-stack **367** (0f);
+flake gate 5/5, `flake_count` 0; coverage gen_tailscale_serve 98% / inject 98% / clerk-frontend touched 100%. Close
+review = 7 findings (0 scope · 0 code · 2 docs · 0 tests · 4 adversarial [all handled] · 1 triage): ref-tags added +
+ADV-1..4 recorded + D-CLOSE-2 (rext README index row → close-release). Deferral audit GREEN (5 Fate-2 → M214/M215/
+close-release; DEF-M212-02 dotted-host doc landed early Fate-1; 0 repeat/aged-out/escape-hatch). Zero platform-repo edits.
 
 **M214 — Origins & links** · `section` · complexity **medium** · depends: **M212** · ∥ **M213**. Admit the MagicDNS
 origin everywhere gated + close cross-surface ejects + land the bounded patch tail via the EXISTING rext patch
