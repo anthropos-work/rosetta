@@ -7,3 +7,61 @@ The one required platform-family change (ant-academy `allowedDevOrigins`) and th
 `urls.ts`) go through the rext `apply-*.sh` / demopatch surface (drift-refuse, idempotent, non-fatal), never a raw
 clone edit. **Why:** the platform stays read-only (CLAUDE.md hard rule); drift-refusal makes an upstream change fail
 loudly by design.
+
+## D-SCHEME-1 — one predicate flips the whole emission (http localhost / https MagicDNS), per-port
+The emission M212 wired-but-deferred is flipped by a single predicate — `browser_scheme(host)` in
+`gen_injected_override.py` + the mirrored `SCHEME` var in `up-injected.sh`/`ant-academy.sh`: `http` when the host
+is `localhost`/unset (byte-identical to pre-M214), `https` for a dotted MagicDNS FQDN. **Per-port, NOT port-less
+443:** M213's `tailscale serve` fronts each browser-facing offset port with HTTPS on the SAME offset port
+(D-PROXY-2), so the browser origin is `https://$HOST:<offsetport>`. **Why one predicate:** every host-bearing
+site (CORS origins, studio-desk redirects, all NEXT_PUBLIC_*/VITE_* bakes, the cockpit deep-links, the content-URL
+rewrite) derives its scheme from it, so localhost stays byte-identical and a public host flips http→https
+uniformly — no site can drift. The cache validators (`want_ep`) embed `$SCHEME` too (D-REBUILD-1 extended: an
+http-baked image is correctly stale under an https host). The cockpit's OWN serving URL stays http — it is NOT in
+M213's `tailscale serve` front list, so it serves plain-http on its port; an http launcher page → https demo
+surfaces is fine (a nav/POST from http to https is not mixed content). Fronting the cockpit (7700) too is a
+live-acceptance polish for **M215**, not M214's CORS/links scope (disjoint from M213's frozen proxy component).
+
+## D-VITE-SIGNIN-1 — the VITE_CLERK_SIGN_IN_URL bake via a gitignored overlay, not a Dockerfile ARG
+studio-desk's `Dockerfile.dev` declares no `ARG VITE_CLERK_SIGN_IN_URL`, so `config.ts`'s SPA sign-in redirect
+falls back to the un-offset `http://localhost:3000/login`. **Declaring the ARG is a platform-repo edit
+(forbidden); a naive build-context `.env` is dropped by studio-desk's `.dockerignore` (`.env*`).** Resolution: a
+gitignored `.env.production.local` overlay at the context root (vite production mode loads it into
+`import.meta.env`; `.env.*.local` matches studio-desk's gitignore so the clone never shows it untracked),
+admitted past the `.env*` exclusion by a TRANSIENT `!.env.production.local` re-include appended to the
+`.dockerignore` — both reverted on the RETURN trap (clone left git-clean), the same apply→build→revert contract
+as next-web's transient `.dockerignore` + `.env.local`. Baked at `$SCHEME://$HOST:3000+offset/login` — **fixes
+the un-offset `:3000` default for EVERY demo** (not just public) and is https for a public host. **Why not the
+Dockerfile:** keeps the "unmodified platform Dockerfile" property + zero platform edit.
+
+## D-URLS-1 — next-web `urls.ts` WEB_APP_URL/HIRING_APP_URL: DOCUMENTED RESIDUAL (evidence-decided, not deferred)
+The conditional item. `WEB_APP_URL`/`HIRING_APP_URL` are `NEXT_PUBLIC_NODE_ENV` ternaries → prod
+(`app./hiring.anthropos.work`) with no per-URL override, so IF a demo flow traversed them it would prod-eject.
+**Investigated (Fate-1 discipline, not a default deferral) — decided with evidence they are NOT a new demopatch:**
+1. **The coverage sweeps gate at 0 prod-ejects and did NOT surface them.** `coverage-protocol.md` (:53,66,94,108)
+   gates M42e (employee) + M42m (manager) at `0 prod-eject escapes`, classifying every `<a href>` host. The two
+   escapes it DID surface — `STUDIO_URL`, `PUBLIC_WEBSITE_URL` — are both fixed (demopatches). `WEB_APP_URL`/
+   `HIRING_APP_URL` were never surfaced ⇒ the demo's target flows don't render them as off-demo links.
+2. **The `apps/web` usages are non-demo surfaces:** PUBLIC marketing chrome (`PublicHeader`/`PublicFooter`/
+   `BlackFridayBanner` — anonymous-only, the demo personas are authenticated enterprise users), PDF/SEO metadata
+   (non-navigation), the Clerk.provider `HOSTING_URL` FALLBACK (dead — the demo BAKES `NEXT_PUBLIC_HOSTING_URL`),
+   and HIRING-product features (share-sim/invite/start-sim — the demo is a Workforce demo, not recruiting).
+3. **The remote dimension doesn't change reachability:** the same authenticated surfaces are browsed remotely; and
+   under HTTPS-everywhere the prod hosts are https-prod (not mixed-content), only an eject on flows the demo never
+   exercises.
+`coverage-protocol.md` makes "add a demopatch mirroring `next-web-studio-url`" a **re-scope trigger only when a
+0-eject sweep surfaces the escape** — it hasn't. Adding one speculatively for an unrendered link is gold-plating.
+**Decision: documented residual** (recorded here + in `tailscale-serve.md`); if a future coverage sweep surfaces
+one of these hosts, the fix is a demopatch mirroring `next-web-studio-url` (the mechanism is proven and ready).
+
+## KB findings from Phase 0b (YELLOW — tracked for the Document phase)
+Full audit: `kb-fidelity-audit.md` (2026-07-11). Verdict YELLOW — no blind area that isn't already a declared
+`Delivers →` deliverable, no stale load-bearing claim. Every doc gap below is an M214 doc DELIVERABLE, authored
+in the Document phase (not a pre-existing stale claim to correct up-front).
+- **KB-1** (blind area, expected): `corpus/ops/demo/tailscale-serve.md` does not exist — it IS the milestone's
+  declared `Delivers →` deliverable. Author it in the Document phase (the remote-access recipe).
+- **KB-2** (completeness): `rosetta_demo.md` has no `--public-host` coverage; `clerkenstein.md` covers the M213
+  cert/dotted-pk but not the CORS / `allowedDevOrigins` / per-port-serve origin shape; `frontend-tier.md` CORS
+  example is localhost-only + no `allowedDevOrigins` patch note. All three are declared M214 doc updates.
+- **KB-3** (carry-forward from M213 Phase 0b KB-4): `frontend-tier.md` "Browser-trusted FAPI cert (M31)" callout
+  still describes the pre-M213 mkcert/`127.0.0.1` world — reconcile in the Document phase.

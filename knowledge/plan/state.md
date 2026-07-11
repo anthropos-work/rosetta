@@ -1,9 +1,9 @@
 ---
 active_release: "v2.2 panorama — IN DEVELOPMENT (branch release/02.20-panorama; tag v2.2 at close); designed 2026-07-11"
 active_branch: "release/02.20-panorama"
-active_milestone: "(between milestones) — M213 auth-over-tailnet CLOSED+merged 2026-07-11; next: M214 origins-and-links (not yet started) → M215 (final, iterative)"
+active_milestone: "M214 origins-and-links — BUILT on m214/origins-and-links (not yet closed/merged) 2026-07-11; next: close M214 → M215 (final, iterative)"
 last_closed: "v2.1 quick change — 2026-07-09 (tag v2.1, 4 milestones M208..M211) — the skiller-in-app re-ground | latest milestone: M213 — 2026-07-11"
-phase: "in development — M212 + M213 closed+merged; next: M214 → M215"
+phase: "in development — M212 + M213 closed+merged; M214 built (awaiting close); next: M215"
 last_updated: "2026-07-11"
 ---
 
