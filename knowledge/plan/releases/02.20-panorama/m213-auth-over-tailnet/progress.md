@@ -31,3 +31,41 @@ line-anchor + PSL fixes. The proxy-topology recipe (`tailscale-serve.md`) + CORS
 cross-machine acceptance + cert renewal + RAM burn-down are **M215** (Fate-2, already-owned scope).
 
 rext code-of-record: tag **`panorama-m213`** at rext HEAD (post-build). rosetta plan/doc commits on `m213/auth-over-tailnet`.
+
+## M213: Hardening
+
+### Pass 1 — 2026-07-11 (rext `b9f41dd`; tag `panorama-m213` re-pointed → `b9f41dd`)
+Scope manifest (M213-touched, `770f81b..d8f28c3`): **src** — `stack-injection/gen_tailscale_serve.py` (py),
+`stack-injection/inject.py` (py), `demo-stack/up-injected.sh` (sh: `gen_tailscale_fapi_cert` + dotted-host +
+topology guards + serve/egress wiring), `clerkenstein/clerk-frontend/server.go` (go: `clerkJSCDNBase` +
+`handleClerkJSBundle`). **tests** — `stack-injection/tests/test_injection.py`, `demo-stack/tests/test_tooling.py`,
+`clerkenstein/clerk-frontend/clerkjs_proxy_test.go`. Docs `clerkenstein/knowledge/*.md` (no tests).
+
+**Coverage delta (milestone-touched files):**
+- `gen_tailscale_serve.py`: **64% → 98%** statements (+34; only the `if __name__` entrypoint guard remains — exercised by the subprocess test, uncoverable in-process)
+- `inject.py`: **98% → 98%** (steady; only its entrypoint guard remains — `require_dotted_host`/`mint_pk`/`parse_pk`/`main()` fully covered)
+- `clerkenstein/clerk-frontend` touched funcs (`clerkJSCDNBase`, `handleClerkJSBundle`): **100% / 100%** (already max at build; new tests add behaviour assertions, not lines)
+- `up-injected.sh` (shell — no line-coverage tool): the two safety guards moved from grep-pinned to **functionally executed**
+
+**Tests added (11):**
+- `test_injection.py`: 5 `gen_tailscale_serve.main()` IN-PROCESS (stdout plan / `--out` write+chmod+stderr-port-count / `--no-ui` = 2 API ports / `--target-host` seam / localhost no-op) + 1 `require_dotted_host` boundary (empty + IPv6 fail the has-a-dot predicate)
+- `test_tooling.py`: 4 FUNCTIONAL guard-execution tests (extract + source under `set -euo pipefail`) — dotless host aborts (assertValidPublishableKey), split FAPI host aborts (topology guard), valid same-host MagicDNS passes, unset host is a no-op even when HOST/FAPI mismatch (proves the opt-in gate)
+- `clerkjs_proxy_test.go`: 3 behaviour tests — CDN non-200 forwarded transparently (404 not masked/502, JS MIME still applied) / no-query request appends no trailing `?` / empty `FAKE_FAPI_CLERKJS_CDN` falls back to default (`v != ""` guard)
+
+**Bugs fixed inline:** none — no production code touched; the M213 build surface held up under deeper testing.
+
+**Flakes stabilized:** none — 3 consecutive clean sequential runs of the new tests (they use subprocess/tempdir/bash/awk; verified deterministic, `go test -count=1`).
+
+**Knowledge backfill:** no KB-worthy findings — the new tests pin behaviour already documented in `decisions.md`
+(D-PROXY-2 the serve model, D-PK-1 the dotted-host split, D-TOPO-1 the topology guard, D-EGRESS-1 the CDN override)
+and `spec-notes.md`; no new invariant, edge semantic, or flake root-cause surfaced.
+
+**Full suites GREEN:** stack-injection 144 passed / 8 skipped; demo-stack test_tooling 128 passed; clerk-frontend
+`-race` + `go vet` + `gofmt` clean; `up-injected.sh` shellcheck rc 0.
+
+### Stop condition
+Stopped after Pass 1: the Phase-2b scan found no meaningful remaining gap (the residual shell serve-wiring/egress
+glue is a thin gated non-fatal wrapper whose payload — the generator, guards, and cert branch — is fully tested;
+functionally executing it would be a heavy integration harness with <2% return); touched Python files are at their
+practical coverage ceiling (98%, remaining lines are uncoverable `if __name__` entrypoint guards); Go touched funcs
+100%; zero flakes. Build env has no tailnet host, so `tailscale cert`/`serve` stay stubbed — the live run is M215.
