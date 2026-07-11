@@ -126,13 +126,13 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
 - **FAPI cert → `tailscale cert`.** For a MagicDNS host the fake-FAPI cert is minted via `tailscale cert` (a real
   Let's Encrypt cert **trusted tailnet-wide, no per-machine CA install**) instead of mkcert/openssl — **same output
   paths** (`<stack>/certs/fapi.{crt,key}`), so the path-only mount + `cmd/fake-fapi` `ListenAndServeTLS` are
-  untouched. Falls back to the local mkcert/openssl mint (non-fatal). 90-day LE cert → renew-then-reload (M215).
+  untouched. Falls back to the local mkcert/openssl mint (non-fatal). 90-day LE cert → renew-then-reload (M215). (#M213-D-CERT-1)
 - **pk host stays dotted.** The publishable key is minted host-parametrically (the `--fapi-host` is the MagicDNS
   FQDN); the demo wiring pre-checks the dotted-host rule (the `dotless-pk-rejected` gene) and fails loud on a
   dotless `--public-host`. The **codec** (`clerk-frontend/key.go` `MintPublishableKey`) stays permissive — the
-  alignment gene deliberately mints a dotless pk to test the consumer's rejection.
+  alignment gene deliberately mints a dotless pk to test the consumer's rejection. (#M213-D-PK-1)
 - **clerk-js egress is overridable.** The FAPI proxies the clerk-js bundle from `cdn.jsdelivr.net` (its one outbound
-  dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror.
+  dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror. (#M213-D-EGRESS-1)
 
 The one-clean-HTTPS-origin reverse proxy (`tailscale serve`) fronting the *rest* of the browser surface + the
 CORS/link emission land in **M214**; the live cross-machine acceptance is **M215**. Bring-up mechanics:

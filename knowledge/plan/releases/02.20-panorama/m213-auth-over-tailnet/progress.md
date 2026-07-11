@@ -69,3 +69,40 @@ glue is a thin gated non-fatal wrapper whose payload — the generator, guards, 
 functionally executing it would be a heavy integration harness with <2% return); touched Python files are at their
 practical coverage ceiling (98%, remaining lines are uncoverable `if __name__` entrypoint guards); Go touched funcs
 100%; zero flakes. Build env has no tailnet host, so `tailscale cert`/`serve` stay stubbed — the live run is M215.
+
+## M213: Final Review
+
+Close review (2026-07-11). Phases 1–5 across the rext diff `770f81b..b9f41dd` + the rosetta corpus/plan commits.
+Findings: Scope 0 · Code-quality 0 · Docs 2 · Tests 0 · Adversarial 4 (all handled) · Decision-triage 1 should-fix
++ archives. Deferral re-audit GREEN (`audit-deferrals/deferral-audit-2026-07-11.md`).
+
+### Scope
+- [x] All 7 build checkboxes checked; the rext diff covers every In-scope item (cert swap, dotted-pk, serve-gen,
+      topology guard, rebuild-guard confirm, egress) — 0 gaps, 0 orphan TODO/FIXME in the M213-touched source.
+
+### Code Quality
+- [x] [verified] rext source clean + consistent: named `defaultClerkJSCDN` const + `clerkJSCDNBase()` override,
+      factored `gen_local_fapi_cert` (no duplicated mkcert/openssl), safe `set -u` array expansion, non-fatal gating.
+      gofmt / `go vet` / `py_compile` clean; go `-race` clean. (shellcheck unavailable on the close box — was rc 0 at harden.)
+
+### Documentation
+- [x] Corpus docs accurate: `clerkenstein.md` (Remote-HTTPS section + dotless-pk gene), `recipe-browser-login.md §B`,
+      `frontend-tier.md` cert callout — all correctly attribute the reverse proxy → M214 + renewal → M215. No broken
+      links (`tailscale-serve.md` is a prose M214 forward-ref, not a markdown link).
+- [x] [→ close-release] `stack-injection/README.md` "What's here" table is missing a `gen_tailscale_serve.py` row.
+      The README lives in the rext repo FROZEN at tag `panorama-m213`; fixing it re-points the tag → routed to
+      close-release (bundle with M212's D-CLOSE-1 rext-README reconcile at the rext re-tag). Recorded as D-CLOSE-2.
+
+### Tests & Benchmarks
+- [x] Full suites GREEN post-review: clerkenstein Go `-race` all `ok`; stack-injection 152 (144p/8s/0f);
+      demo-stack 367p/0f. Harden Pass 1 already deepened the touched-file coverage (gen_tailscale_serve 98%,
+      guards functionally executed). No new gaps.
+
+### Decision Triage
+- [x] [should-fix, Fate-1] Add `(#M213-…)` reference tags to the blended knowledge (corpus convention — `(#M21-D1)`
+      etc. exist) — added `(#M213-D-CERT-1)` / `(#M213-D-PK-1)` / `(#M213-D-EGRESS-1)` to `clerkenstein.md` Remote-HTTPS bullets.
+- [x] [Fate-1] Record the 4 adversarial scenarios in `decisions.md` under an `Adversarial review` subsection (ADV-1..ADV-4).
+- [x] D-CERT-1 / D-PK-1 / D-EGRESS-1 → already blended into `clerkenstein.md` + `recipe-browser-login.md` +
+      `frontend-tier.md` during build (verified accurate; add ref tags per above).
+- [x] D-PROXY-1 / D-PROXY-2 → fully home in M214's `tailscale-serve.md` recipe (not a gap; M213 docs forward-ref it).
+- [x] D-SCHEME-1 / D-TOPO-1 / D-REBUILD-1 → archive (maintainer-only; the user-facing consequences are captured).

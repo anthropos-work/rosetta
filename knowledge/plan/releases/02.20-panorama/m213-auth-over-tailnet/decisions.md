@@ -108,3 +108,36 @@ Surfaced during M213 build, confirmed covered by M215 (no new deferral, no plan 
 - Resolve the port-binding so the per-port serve is conflict-free live (docker/native loopback-bind vs a serve
   port scheme) + decide whether to collapse to a literal single `https://<host>` (443 path-routing).
 - Cert renewal (90-day LE) + RAM/swap burn-down (per overview "Live foundation").
+
+## Adversarial review (close Phase 2c — scenarios considered, all verified handled; no code changed)
+Each is a specific non-obvious failure mode for a non-trivial M213 module; the code was checked against it
+(and the harden Pass-1 tests pin most). None required a fix — the M213 surface holds.
+- **ADV-1 — `gen_tailscale_serve` port-collision assert can never trip.** The `assert port != FAPI_BASE_PORT +
+  offset` guard would fire if a browser-facing port collided with the FAPI (5400) after offset. The fronted
+  bases {3000,5050,8082,9000,3077} are all distinct from 5400 and all receive the SAME offset, so no offset
+  makes any equal 5400+offset. The assert is a defensive tripwire, verified inert — the FAPI is never
+  double-fronted (D-CERT-1 self-TLS preserved).
+- **ADV-2 — `require_dotted_host` rejects IPv6-literal + empty hosts.** A bracketed IPv6 literal (`[::1]`) or an
+  empty host has no `.` → rejected. Intended and harden-tested (the "empty + IPv6 fail the has-a-dot predicate"
+  boundary): every valid remote-demo host is a dotted MagicDNS FQDN, so no legitimate host is wrongly refused;
+  a dotless bare short name (the real misconfig) fails loud at wiring time instead of 500ing every request.
+- **ADV-3 — `clerkJSCDNBase` concurrent per-request reads are race-safe.** `handleClerkJSBundle` calls
+  `os.Getenv` per request across concurrent goroutines; Go's `os.Getenv` is safe for concurrent use, and the
+  `v != ""` guard makes an explicitly-empty `FAKE_FAPI_CLERKJS_CDN` fall back to the default (never builds a
+  schemeless `/npm/...` target). Verified by the `-race` suite + `TestClerkJSBundle_EmptyEnvFallsBackToDefault`.
+- **ADV-4 — the serve/egress wiring is non-fatal + gated; the topology guard is the one hard-fail.** `tailscale`
+  absence, `curl` absence, serve-plan gen failure, and a blocked jsdelivr egress all log-and-continue (the
+  never-abort-a-good-bring-up contract). The single hard-fail on the public path is the topology guard
+  (`[ "$HOST" != "$FAPI_HOST" ]` ⇒ exit 1) — equal-by-construction today, a deliberate regression tripwire for
+  a future FAPI-subdomain split (D-TOPO-1). Harden Pass 1 functionally executed both guards under `set -euo pipefail`.
+
+## D-CLOSE-2 — stack-injection README index gap → close-release (Fate-2, rext-frozen)
+Close Phase 3 found the rext `stack-injection/README.md` "What's here" file table lists `inject.py` +
+`gen_injected_override.py` + `apply-authn.sh` but NOT the new M213 generator `gen_tailscale_serve.py`. The
+fix is a one-row table addition, BUT the README lives in the rext repo whose code-of-record is FROZEN at the
+annotated tag `panorama-m213` — editing it re-points that tag, which is `/developer-kit:close-release`'s job
+(same constraint as M212's D-CLOSE-1, the rext-README count-drift). **Fate 2 → close-release:** bundle this
+row-add with the D-CLOSE-1 rext-README reconcile in the single rext commit that close-release makes when it
+re-tags rext to the v2.2 code-of-record. Not landable at milestone close without violating the frozen-tag
+contract; low severity (a section-README index row for a new generator; the generator itself is fully
+docstring'd + tested). No rosetta-side edit exists (the corpus does not index rext generators file-by-file).
