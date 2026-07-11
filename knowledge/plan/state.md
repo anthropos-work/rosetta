@@ -39,9 +39,10 @@ the one blind area is homed via a `Delivers →` line, not designed into).
 `release/02.20-panorama`, accumulates commits). Then { M213 ∥ M214 } → M215 (the iterative acceptance gate). The
 optional **M216** (dev-path parity) is roadmap-only until promoted.
 
-**Push-gated KEEP (the user's manual step):** origin has NOT received `main` + tags `v1.10.1` + `v2.0` + `v2.1` +
-the rext tags. The new `release/02.20-panorama` branch is likewise local. `.agentspace/rext.tag` is `v2.1`. An
-administrative KEEP, not a deferral.
+**Origin sync (2026-07-11):** origin has `main` + all shipped tags (`v1.10.1`, `v2.0`, `v2.1`) for **both** rosetta
+and rosetta-extensions, **and** the `release/02.20-panorama` branch (pushed 2026-07-11, `765528d`). rext is fully in
+sync at `quick-change-m211` / `v2.1` (`.agentspace/rext.tag` = `v2.1`); this design run made **no** rext changes. No
+push backlog.
 
 **Standing backlog (unscheduled, cross-release):** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01
 (`replayCmd` hermetic test), CAVEAT-1 (clean-box literal full `/dev-up` — belt-and-suspenders), M314b (prod
