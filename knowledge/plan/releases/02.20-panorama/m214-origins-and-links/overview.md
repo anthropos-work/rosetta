@@ -3,7 +3,7 @@ milestone: M214
 slug: origins-and-links
 version: v2.2 "panorama"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-11
 last_updated: 2026-07-11
 complexity: medium

@@ -135,6 +135,13 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+- [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"): the opt-in
+  `--public-host <magicdns>` flag that makes a demo reachable from another machine on your **Tailscale** tailnet,
+  the **HTTPS-everywhere** per-offset-port topology (`tailscale serve` + the tailscale-cert FAPI), what the knob
+  flips (CORS `https://$HOST` origins, the studio-desk/academy redirects, every baked URL's scheme), the
+  **patch tail** (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL` overlay, via the
+  sha-pinned mechanism), the "teammate on the tailnet browses it" walkthrough, and the safety framing
+  (Tailscale = the access control; opt-in, default-off; zero platform-repo edits). (v2.2 M212–M214)
 - [`coverage-protocol.md`](coverage-protocol.md) — the **coverage** iteration protocol: the **Playwright**
   demo-coverage sweep + triage + fix loop driving the **semantic believability gate** (real seeded content +
   substantial per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar,

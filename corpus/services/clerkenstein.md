@@ -134,8 +134,21 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
 - **clerk-js egress is overridable.** The FAPI proxies the clerk-js bundle from `cdn.jsdelivr.net` (its one outbound
   dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror. (#M213-D-EGRESS-1)
 
-The one-clean-HTTPS-origin reverse proxy (`tailscale serve`) fronting the *rest* of the browser surface + the
-CORS/link emission land in **M214**; the live cross-machine acceptance is **M215**. Bring-up mechanics:
+A fourth seam — **the origins & links emission (M214)** — admits the MagicDNS/HTTPS origin everywhere a
+browser→backend or cross-surface call is gated, again all gated on the knob:
+
+- **CORS + redirects → HTTPS MagicDNS.** The injected override appends `https://$HOST:{3000,3001,9000}+off` to
+  the backend's `CORS_EXTRA_ORIGINS` (the `localhost` trio is kept), and emits studio-desk's
+  `CLERK_SIGN_IN_URL`/`WEB_APP_URL` requireAuth fallback at `https://$HOST:3000+off`. **Per-port HTTPS**, because
+  `tailscale serve` preserves the offset port (M213 D-PROXY-2) — the browser origin is `https://$HOST:<offsetport>`,
+  not a port-less 443. One scheme predicate (`browser_scheme`) flips http→localhost / https→MagicDNS uniformly.
+- **The bounded patch tail** rides the **existing** sha-pinned mechanism (never a canonical repo edit): ant-academy's
+  `next dev` `allowedDevOrigins` admits the MagicDNS host (the `ant-academy-dev-origins` demo-patch, env-var
+  indirection so the post-hash stays fixed), and studio-desk's SPA `VITE_CLERK_SIGN_IN_URL` bakes via a gitignored
+  `.env.production.local` overlay (no Dockerfile ARG). (#M214-D-SCHEME-1 / D-VITE-SIGNIN-1)
+
+The **live cross-machine acceptance** is **M215**. The full remote-access recipe + topology:
+[`../ops/demo/tailscale-serve.md`](../ops/demo/tailscale-serve.md); bring-up mechanics:
 [`recipe-browser-login.md §B`](../ops/demo/recipe-browser-login.md).
 
 ## Read next (in the clerkenstein repo)

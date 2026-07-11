@@ -149,6 +149,24 @@ mechanism: extend `CORS_EXTRA_ORIGINS` emission (+ tests); studio-desk runtime r
 `VITE_CLERK_SIGN_IN_URL` bake gap; **NEW `apply-*.sh`** for ant-academy `allowedDevOrigins` (required); conditional
 next-web `urls.ts` demopatch. **Delivers →** NEW `corpus/ops/demo/tailscale-serve.md` (the remote-access recipe) +
 `rosetta_demo.md` / `frontend-tier.md` / `clerkenstein.md` updates.
+**Status:** `done` (closed 2026-07-11). All 8 sections landed on `m214/origins-and-links`, merged `--no-ff` into
+`release/02.20-panorama`; rext code-of-record FROZEN at tag `panorama-m214` @ `99c86b7` (rext re-tag deferred to
+close-release). Delivered: the `CORS_EXTRA_ORIGINS` https-MagicDNS emission (`browser_scheme` + the offset https trio,
+byte-identical when unset), the studio-desk `CLERK_SIGN_IN_URL`/`WEB_APP_URL` host+scheme substitution, the
+`VITE_CLERK_SIGN_IN_URL` overlay bake (gitignored `.env.production.local` + a transient `.dockerignore` re-include,
+trap-reverted — also fixes the un-offset `:3000` for EVERY demo), the NEW `apply-ant-academy-dev-origins.sh` +
+`ant-academy-dev-origins` sha-pinned patch (env-var indirection admits the MagicDNS host into `next dev`'s
+`allowedDevOrigins` with a fixed post_sha256), the `$SCHEME` flip confirming the two shipped demopatches carry the
+MagicDNS value + the mixed-content check, and the NEW `corpus/ops/demo/tailscale-serve.md` remote-access recipe. The
+conditional next-web `urls.ts` landed as the evidence-decided **documented residual** (D-URLS-1 — the 0-prod-eject
+coverage sweeps never surfaced `WEB_APP_URL`/`HIRING_APP_URL`). Decisions D-PATCH-1 + D-SCHEME-1 + D-VITE-SIGNIN-1 +
+D-URLS-1. Tests: stack-injection **155** (147p/8s/0f), demo-stack **383** (0f) — +3/+16 net-new funcs; flake gate 5/5,
+`flake_count` 0; Python surface 99% + shell behavior deepened at harden Pass 1. Close review = 4 findings (0 scope ·
+0 code · 2 docs · 0 tests · 3 adversarial [all handled] · 2 triage): the `tailscale-serve.md` §-name corrected + the
+`(#M214-D-URLS-1)` tag added + ADV-1..3 recorded + D-CLOSE-3 (rext READMEs don't index the new patch/helper →
+close-release, bundled with M212's D-CLOSE-1 + M213's D-CLOSE-2). Deferral audit GREEN (the 2 items routed INTO M214
+— DEF-M212-01 CORS emission, DEF-M213-01 recipe+links — landed Fate-1; 4 Fate-2 → M215, 3 → close-release; 0
+repeat/aged-out/escape-hatch). Zero platform-repo edits.
 
 **M215 — Prove it on odyssey** · `iterative` · complexity **large** · depends: **M212 + M213 + M214** · **the FINAL
 milestone**. **Exit gate:** `/demo-up N --public-host billion.taildc510.ts.net` (opt-in) → a teammate on a
