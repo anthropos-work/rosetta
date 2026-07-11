@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
+argument-hint: [N] [--public-host <magicdns>] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
 ---
 
 # Demo Up — spin up an isolated demo stack
@@ -60,7 +60,19 @@ single-identity demo — see the toggle list below.) Source of truth:
    DEMO_NO_PROVISION=1 "$DEMO/up-injected.sh" N
    # minimal stack (infra only — proves isolation, fits a tight box, fast):
    "$DEMO/rosetta-demo" up N --services "postgresql redis"
+   # EXTERNAL access (opt-in, default off — v2.2 "panorama" M212): make the demo reachable from ANOTHER
+   # machine on a Tailscale tailnet by baking a MagicDNS host into every browser-facing URL (and binding the
+   # host-native servers — cockpit + ant-academy — on 0.0.0.0). Omit ⇒ byte-identical to today (localhost).
+   STACK_PUBLIC_HOST=billion.taildc510.ts.net "$DEMO/up-injected.sh" N   # env-var form
+   "$DEMO/up-injected.sh" N --public-host billion.taildc510.ts.net       # equivalent flag form
    ```
+   > **`--public-host` is the M212 knob — the FOUNDATION, not the whole feature.** It threads ONE browser-facing
+   > host through every rext emitter (build-args, `.env.local` overlays, the pk/FAPI host, the cockpit + academy
+   > bases, the `demo_web` content-URL rewrite) and records the reachable URL on the registry (`/stack-list`
+   > shows it). The **HTTPS cert + reverse proxy** (M213) and the **CORS + Clerk sign-in URL emission** (M214)
+   > that complete true cross-machine access land in later v2.2 milestones; M215 is the live acceptance. Control-plane
+   > loopback calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. Public reach is **never**
+   > default-on (D-DESIGN-1) — external binding happens ONLY when this flag is set.
    **M30 secret auto-provision (default-on, non-fatal):** after the demo-aware secret pre-flight `check`, the
    bring-up PROVISIONS the demo's per-repo `.env` from `.agentspace/secrets` (values-blind; `stacksecrets
    provision --force`) and runs the demo from that **assembled-source** base env (`stack-demo/platform/.env`) —

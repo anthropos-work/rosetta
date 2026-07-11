@@ -28,3 +28,11 @@ All sites are in **rext tooling** — zero platform-repo files.
 
 ## Registry
 - `stack_registry.py:197-202` record `{type,n,ports,status,created}` → add `external_host` (additive).
+
+## Pre-flight audits — §all (Phase 0b, 2026-07-11)
+KB-fidelity verdict **YELLOW** — proceed with tracking. Report: `kb-fidelity-audit.md`. Topic→doc→code triples:
+- browser-facing URL baking → `frontend-tier.md` · `rosetta_demo.md` → `up-injected.sh` · `gen_injected_override.py` — ALIGNED.
+- pk/FAPI host → `clerkenstein.md` → `inject.py::mint_pk` · `up-injected.sh:590,928` — ALIGNED (KB-1 completeness gap → M214).
+- `demo_web` content-URL rewrite → `coverage-protocol.md` → `up-injected.sh:876-881` — ALIGNED.
+- `STACK_PUBLIC_HOST` knob doc → BLIND-AREA homed to M214 (`tailscale-serve.md`).
+Audit reused across all sections (single subsystem = rext tooling; all sections share this triple set; sha at audit = 6f61f16).
