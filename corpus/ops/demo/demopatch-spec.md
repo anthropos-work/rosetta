@@ -185,8 +185,27 @@ whole-file proxy rots.
 ### Re-pin runbook
 
 1. The preflight fails loud and prints the paste-ready corrected `pre_sha256` / `post_sha256`.
-2. `demopatch --repin` (or paste the two lines).
+2. `apply_patch.py --repin` (or paste the two lines).
 3. Commit + tag rext.
+
+#### `--repin` works on an ALREADY-PATCHED target — and that matters
+
+The natural workflow puts you there: you run a bring-up, see the **SELF-HEALED** notice with the corrected pins,
+and *then* want to record them. But by that point the build-scratch clone **is patched**.
+
+> **This used to silently do nothing** and print *"already patched (idempotent no-op)"* — so the operator
+> believed the manifest had been updated when it had not. (Found in M217's hardening pass.)
+
+`--repin` now **recovers the pristine form** by reversing the swap (the same content-anchored move G5's revert
+makes) and **round-trip verifies** it: re-applying the patch to the recovered body must reproduce the current
+file **byte-for-byte**. Only then does it write the pin.
+
+- **Drift *outside* the patched hunk** (the common case — `app` churns elsewhere constantly) round-trips
+  cleanly → it re-pins.
+- **A hand-edit *inside* the patched hunk** does not round-trip → it **REFUSES (exit 1)**.
+  **We do not write a pin we cannot prove.** Re-checkout the clone and try again.
+
+`--repin` **never touches the target file** — only the manifest.
 
 ---
 

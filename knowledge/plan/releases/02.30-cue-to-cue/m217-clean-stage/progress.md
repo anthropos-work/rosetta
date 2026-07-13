@@ -141,3 +141,59 @@ Fixed with `--add-host=host.docker.internal:host-gateway` (Docker 20.10+, a no-o
 | autoverify | "1 check(s) FAILED" — *no name* | **names every failing probe** |
 | cockpit | logged "serving" unconditionally | **healthz-gated**; a dead cockpit is reported |
 | rext pin | warned; both clones drifted anyway | **FATAL**; both clones at `cue-to-cue-m217` |
+
+---
+
+## M217: Hardening
+
+### Pass 1 — 2026-07-13
+
+**Scope:** M217-touched code only. The pass deliberately concentrated on the two most dangerous files in the
+milestone — `reap.sh` (it **kills processes**) and `apply_patch.py` (it **rewrites platform source inside a
+build**). An untested error path in those is not a coverage statistic; it is a hazard.
+
+**Coverage (milestone-touched Python):**
+
+| file | before | after | note |
+|------|--------|-------|------|
+| `apply_patch.py` | **18%** | **64%** | the 18% was a **measurement blind spot**: every test drove it through a *subprocess*, so the tracer never saw inside. That was also a **design** gap — nothing tested its Python API as a callable contract. The remaining lines are CLI paths the 23 subprocess tests do cover. |
+| `gen_injected_override.py` | 99% | 99% | — |
+| `gen_override.py` | 88% | 88% | — |
+| `cockpit.py` | *(96%)* | 96% | **I initially reported 0% and was wrong** — I had measured it while running only a subset of the suite. It has **82 existing tests**. Caught before writing a redundant test file on top of a well-covered one. |
+
+> **Coverage was used as a finder, not a goal** — and it earned its keep exactly once: it exposed the
+> subprocess blind spot on `apply_patch.py`, which is what led to the API-level tests.
+
+**Bugs fixed inline (4) — all found by adversarially probing error paths, none by chasing coverage:**
+
+| # | Bug | Why it mattered |
+|---|-----|-----------------|
+| **1** | **`--repin` on an already-patched target silently did NOTHING and reported success.** It hit the `ALREADY_PATCHED` early-return before reaching the repin branch. | It breaks **the one workflow that matters**: run a bring-up → see the SELF-HEALED notice with the corrected pins → `--repin` to record them. But by then the clone *is* patched, so the re-pin no-op'd while printing *"idempotent no-op"*, and the operator believed the manifest was updated. **Fix:** recover the pristine form by reversing the swap, **round-trip verify** it, then pin — and **refuse (exit 1)** if it doesn't round-trip. We do not write a pin we cannot prove. |
+| **2** | **A listener whose command line we cannot READ was silently skipped.** On Linux `ss` only reveals pids you own, so a **root-owned** listener has no readable identity. | The old code `continue`d, left `foreign=0`, and then reported *"STILL held after the reap"* — which reads as *our reap is broken* rather than *this is not ours*. **Actively misleading.** **Fix:** treat unidentifiable as **foreign**. *The safe default for a process-killer is: if we cannot prove it is ours, we do not touch it.* A listener that merely **raced** away is distinguished (`kill -0`) and stays silent. |
+| **3** | **A host with none of `lsof`/`ss`/`fuser` got a FALSE ALL-CLEAR** — `reap_port` answered *"nothing listening"* **without ever having looked**. | A blind process-killer reporting "clear" is the wrong failure mode. Not biting today (Linux has `ss`, macOS has `lsof`), but the honest answer to *"I cannot see"* is to **say so**. |
+| **4** | **A binary or permission-denied target raised an UNCAUGHT PYTHON TRACEBACK**, not the clean `exit 1` the CLI documents. | This runs **inside the bring-up**. A raw traceback in the log is exactly the kind of noise that let the original patch rot go unnoticed for four releases. **Fix:** fail with a sentence, not a stack trace. |
+
+**New tripwire — the `!reset null` blast radius.** `volumes: !reset null` drops **every** volume on
+jobsimulation, not just the AWS bind. That is safe **today only because the AWS bind is its only volume**. A
+test now asserts exactly that, plus that **no other service carries a `$HOME` bind** (the same bug class). If
+either changes, we hear about it *here* — not from a mystery crash on a VM.
+
+**Refuted (the record shows the question was asked):**
+- **`patch_rc=$?` in the `else`-branch of `if out=$(cmd)`** — I suspected bash had clobbered the exit code, which
+  would mean the milestone's **FATAL-on-broken-anchor** safety property *never fires*. **Refuted:** `$?` survives,
+  and `patch_rc=$?` is the **first** statement in both `else` branches. The abort is real.
+- **The re-pin regex corrupting a comment line** — the real manifests *mention* `pre_sha256` in prose. **Refuted:**
+  the regex is line-anchored (`^pre_sha256:`), the prose sits behind a `#`, and `repin()` asserts exactly one
+  substitution anyway.
+- **Cockpit HTML injection via a seeded hero name** — **refuted:** `html.escape` is applied at every interpolation.
+- **`!reset null` collateral damage** — **refuted** (and now fenced): the AWS bind is jobsimulation's only volume,
+  and it is the only `$HOME` bind in the whole compose file.
+
+**Flakes stabilized:** none found (3/3 clean sequential runs). Fixed a **temp-dir leak** in all three new suites
+(`mkdtemp` with no cleanup).
+
+**Tests added:** +16 (37 → 53 on M217 surfaces) — 9 error-path/regression, 5 in-process API, 2 tripwire.
+**Suites:** demo-stack **442**, stack-injection **180**, stack-core **97** — all green. shellcheck clean.
+
+**Knowledge backfill:** `demopatch-spec.md` § the freshness gate — the `--repin`-on-a-patched-target recovery
+contract (reverse-swap + round-trip verify, refuse if unprovable). See below.

@@ -235,3 +235,22 @@ single-source (D9) + stdlib-only posture all hold.
 [`clerkenstein.md`](../../services/clerkenstein.md) (the multi-identity FAPI handshake) ·
 [`frontend-tier.md`](frontend-tier.md) (the demo UI tier the cockpit launches into) ·
 [`rosetta_demo.md`](../rosetta_demo.md) (the demo-stack lifecycle).
+
+### The reap's safety rule (M217 hardening)
+
+The port reap has one non-negotiable rule, and it is worth stating plainly because it constrains every future
+change to `reap.sh`:
+
+> **If we cannot PROVE a listener is ours, we do not touch it.**
+
+Three cases, deliberately distinguished:
+
+| The listener… | What we do |
+|---|---|
+| matches our identity regex on **this stack's** offset port | **kill it** (TERM, then KILL) |
+| does **not** match — someone else's server | **report it loudly, leave it alive** |
+| has **no readable command line** (on Linux, `ss` only reveals pids you own — a **root-owned** listener is opaque) | **treat as foreign.** Report, do not kill |
+| was there on the probe and **gone** by the re-probe (it raced away) | **say nothing** — benign |
+
+And if the host has **none** of `lsof`/`ss`/`fuser`, the reap says **"CANNOT CHECK"** rather than reporting the
+port free. A blind process-killer that answers *"clear"* is worse than one that admits it cannot see.
