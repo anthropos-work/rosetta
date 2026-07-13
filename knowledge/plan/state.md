@@ -34,10 +34,24 @@ claim file:line-cited, at [`.agentspace/scratch/roadmap-research-2026-07-13.md`]
    **v2.3 formally re-opens it.**
 4. **Two `app` perf demo-patches silently REFUSE on sha-drift, on every run** (pinned @ app v1.295/v1.315; the box
    runs **v1.337**) — **with the refusal reason piped to `/dev/null`** (`up-injected.sh:701,717`).
-5. **The last real run on `billion` was not a valid measurement** — the cockpit **crashed** on a leaked port (so the
-   user was likely driving a **stale cockpit** with dead clerk-ids against a re-seeded DB); all 3 snapshot replays
-   **SKIPPED**; autoverify **FAILED**; `jobsimulation` **exits(1)**. **M217 is a hard barrier: no number taken
-   before it lands is trustworthy.**
+5. **The last real run on `billion` was not a valid measurement** — the cockpit **crashed** on a leaked port and the
+   bring-up **logged "serving" anyway**, so the operator drove a **stale predecessor**; 2 of 3 snapshot replays were
+   cache misses (directus was rc=4, a *different* fault); autoverify **FAILED** with the failing probe's identity
+   **discarded**; `jobsimulation` **exits(1)**. **M217 is a hard barrier: no number taken before it lands is
+   trustworthy.**
+
+**⚠️ M217's KB-fidelity gate came back RED (2026-07-13) — and it was right.** 14 load-bearing stale claims, **three
+inside the milestone's own overview**. The worst: the drafted `jobsimulation` fix (`command: serve`) would have
+**actively broken the service** — its cobra **root `RunE` IS the server**; the real cause is a `$HOME/.aws/credentials`
+bind that Docker auto-creates as an empty **directory**, hard-erroring the AWS SDK and making cobra print its usage
+block. Also corrected: the stale cockpit carries **no dead clerk-ids** (that mechanism does not exist), and **two**,
+not three, replays were cache misses. All three corrected; gate cleared to **YELLOW**. Report:
+[`releases/02.30-cue-to-cue/m217-clean-stage/kb-fidelity-audit.md`](releases/02.30-cue-to-cue/m217-clean-stage/kb-fidelity-audit.md)
+— **its §5 is the ground truth the build works from, not the corpus docs.**
+
+**Live finding:** the `/demo-down` run on `billion` earlier that day **left an orphaned cockpit alive** (pid 83214,
+`0.0.0.0:17700`) — an unauthenticated hero-vending panel pointing at a deleted database. Killed manually. That is
+**S2's defect, caught live**: teardown reaps by PID only, discards `kill`'s status, and prints success regardless.
 
 **Active milestone:** **M217 "clean stage"** (`section`, medium) — **planned; opens the build.** A `/demo-up` that
 comes up **green**: reap the leaked cockpit port, un-swallow the demo-patch REFUSE reason, re-pin the two `app` perf
