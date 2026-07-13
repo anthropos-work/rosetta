@@ -70,6 +70,59 @@ internal/
 
 Redis Streams consumption is handled by the colony pubsub `SubscriberServer` wired up in `cmd/root.go`, not by `internal/worker/` (which is Asynq-only).
 
+## Startup contract — read this before diagnosing a crash (M217)
+
+**The cobra ROOT command's `RunE` *is* the server.** There is **no `serve` and no `run` subcommand.**
+
+- The image is `ENTRYPOINT ["./application"]` with **no CMD**; docker-compose passes **no `command:`**.
+- Running the binary with **zero arguments is correct** — that starts the server.
+- The optional subcommands are `aggregate`, `clone-session`, `test-command`, `validate`. **None of them starts
+  the service.**
+
+> ⚠️ **`command: serve` would BREAK it** — cobra would reject `unknown command "serve"` and exit 1. The repo's own
+> `CLAUDE.md` documents `go run . serve`; **that command does not exist.** (It is a platform repo — don't trust
+> it here, and don't edit it.)
+
+### "It printed the CLI help" means an INIT ERROR — not a missing subcommand
+
+The root command sets neither `SilenceUsage` nor `SilenceErrors`. So **any** error returned from `RunE` makes
+cobra print `Error: …` **followed by the full usage/help block**, then exit 1.
+
+**That usage block is a symptom of a failed init, not of a wrong command.** It was misread as "the container
+needs a subcommand" for an entire release cycle, and the proposed fix would have broken the service.
+
+**Always read the FIRST line of `docker logs`, never the help block:**
+
+```bash
+docker logs demo-<N>-jobsimulation-1 2>&1 | head -3
+# Error: can't init AI: can't load AWS config: failed to load shared config file, ...
+```
+
+### The `$HOME/.aws/credentials` landmine (why it died in every demo)
+
+`docker-compose.yml` binds `$HOME/.aws/credentials:/root/.aws/credentials:ro` — the **only** AWS bind in the
+file. **When the host path does not exist, Docker auto-creates it as an empty DIRECTORY.** The container then
+sees a *directory* where a file belongs, and `aws-sdk-go-v2`'s `config.LoadDefaultConfig()` **opens it
+successfully** (opening a directory succeeds!) before failing `EISDIR` on the read — so it is *not* skipped as
+an unreadable file. That error propagates out of `ai.NewAIManager` → the root `RunE` → cobra's usage block →
+`exit 1`.
+
+**With the path simply absent, `LoadDefaultConfig` returns `nil`.** The mount is the bug.
+
+- **On a workstation** with a real `~/.aws/credentials` file, it works — which is why this never showed up in
+  local dev and only bit a fresh Linux box.
+- **In a demo/dev stack**, rext's **generated compose override drops the bind** (`volumes: !reset null` on the
+  demo path; an `!override`-tagged empty list on the dev path). Zero platform-repo edits. A stack carries **no
+  AWS credentials at all**, so that mount could only ever *be* the broken empty directory.
+
+> ⚠️ **A bare `volumes: []` does NOT remove it** — compose *merges* volume sequences and the inherited bind
+> survives. Only the `!reset` / `!override` tags remove it. Verified against the compose binary.
+
+**Downstream while it is dead:** the AI-Simulations surface is gone; its GraphQL subgraph errors; the
+`pt-aisim-chat-launch` playthrough cannot pass; no session-completed events reach the Redis stream, so Skillpath
+progression never sees completions. And it is the service behind the nameless *"1 check(s) FAILED"* the
+bring-up's autoverify used to report.
+
 ## Local Development
 
 ### Run in Docker
