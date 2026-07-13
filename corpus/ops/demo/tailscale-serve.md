@@ -5,6 +5,8 @@
 demo end-to-end, in their own browser, over HTTPS. This is the **external-shareability** surface of v2.2
 "panorama".
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 It is **opt-in and default-off**: a plain `/demo-up N` is byte-identical to today (localhost only, no external
 listener). Remote reach is requested explicitly with **one flag** — `--public-host <magicdns>` — and **Tailscale
 itself is the access control** (only tailnet members can reach the host; there is no public internet exposure).
@@ -133,8 +135,19 @@ one-line tag string; `#`-comments + blank lines + CRLF tolerated), then check th
 mkdir -p <root>/stack-demo <root>/.agentspace
 echo "<panorama-tag>" > <root>/.agentspace/rext.tag       # the tag carrying M212–M215 + the F1–F8 fixes
 git clone https://github.com/anthropos-work/rosetta-extensions.git <root>/stack-demo/rosetta-extensions
-git -C <root>/stack-demo/rosetta-extensions checkout "$(cat <root>/.agentspace/rext.tag)"
+# M217: `git fetch --tags` is MANDATORY. A fresh clone does NOT necessarily carry the tag you are about to
+# check out, and a bare `checkout <tag>` then dies `pathspec did not match` — or, worse, silently leaves the
+# clone on a bare sha. THE OMISSION OF THIS LINE IS EXACTLY HOW `billion` ENDED UP ON AN UNTAGGED COMMIT
+# (panorama-m214-3-g41a28aa) that then warned about itself on every bring-up for a whole release.
+git -C <root>/stack-demo/rosetta-extensions fetch --tags origin
+git -C <root>/stack-demo/rosetta-extensions checkout -f "$(cat <root>/.agentspace/rext.tag)"
+git -C <root>/stack-demo/rosetta-extensions describe --tags --exact-match   # MUST print the pinned tag
 ```
+
+> **The pin is now enforced, not suggested.** Since M217 a mismatch between the clone's checkout and
+> `.agentspace/rext.tag` **aborts the bring-up** (`DEMO_ALLOW_UNPINNED_REXT=1` to override). Detached HEAD is the
+> correct end state — `ensure-clones.sh` keys on `git describe --tags --exact-match`, so leaving the clone on a
+> branch trips the guard even when the content is right.
 
 `.agentspace/rext.tag` is the single source-of-truth both `/demo-up` and `ensure-clones.sh` read (M49 #1). The
 consumed tag **must** carry the M215 host fixes — the pre-flights (F1/F2/F8), the auto ssh-agent (F4), the

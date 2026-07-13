@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M217 clean-stage (planned — opens the build)"
-last_closed: "v2.2 panorama — 2026-07-12 (tag v2.2, 4 milestones M212..M215) — external-shareability over Tailscale"
-phase: "designed — awaiting /developer-kit:build-milestone on M217"
+active_milestone: "(between milestones) — M217 CLOSED; M218 ∥ M219 ∥ M220 are next"
+last_closed: "M217 clean-stage — 2026-07-13 (v2.3 cue to cue; exit gate MET on billion; 32 bugs)"
+phase: "M217 merged into release/02.30-cue-to-cue — next: /developer-kit:build-milestone on M218 (or M219/M220 in parallel)"
 last_updated: "2026-07-13"
 ---
 
@@ -34,20 +34,42 @@ claim file:line-cited, at [`.agentspace/scratch/roadmap-research-2026-07-13.md`]
    **v2.3 formally re-opens it.**
 4. **Two `app` perf demo-patches silently REFUSE on sha-drift, on every run** (pinned @ app v1.295/v1.315; the box
    runs **v1.337**) — **with the refusal reason piped to `/dev/null`** (`up-injected.sh:701,717`).
-5. **The last real run on `billion` was not a valid measurement** — the cockpit **crashed** on a leaked port (so the
-   user was likely driving a **stale cockpit** with dead clerk-ids against a re-seeded DB); all 3 snapshot replays
-   **SKIPPED**; autoverify **FAILED**; `jobsimulation` **exits(1)**. **M217 is a hard barrier: no number taken
-   before it lands is trustworthy.**
+5. **The last real run on `billion` was not a valid measurement** — the cockpit **crashed** on a leaked port and the
+   bring-up **logged "serving" anyway**, so the operator drove a **stale predecessor**; 2 of 3 snapshot replays were
+   cache misses (directus was rc=4, a *different* fault); autoverify **FAILED** with the failing probe's identity
+   **discarded**; `jobsimulation` **exits(1)**. **M217 is a hard barrier: no number taken before it lands is
+   trustworthy.**
 
-**Active milestone:** **M217 "clean stage"** (`section`, medium) — **planned; opens the build.** A `/demo-up` that
-comes up **green**: reap the leaked cockpit port, un-swallow the demo-patch REFUSE reason, re-pin the two `app` perf
-patches + a **loud** freshness preflight, fix `jobsimulation` exits(1), prime the snapshot cache on `billion`, re-pin
-the drifted rext clones. Delivers the **`demopatch-spec.md`** the whole release depends on (a blind area today).
+**⚠️ M217's KB-fidelity gate came back RED (2026-07-13) — and it was right.** 14 load-bearing stale claims, **three
+inside the milestone's own overview**. The worst: the drafted `jobsimulation` fix (`command: serve`) would have
+**actively broken the service** — its cobra **root `RunE` IS the server**; the real cause is a `$HOME/.aws/credentials`
+bind that Docker auto-creates as an empty **directory**, hard-erroring the AWS SDK and making cobra print its usage
+block. Also corrected: the stale cockpit carries **no dead clerk-ids** (that mechanism does not exist), and **two**,
+not three, replays were cache misses. All three corrected; gate cleared to **YELLOW**. Report:
+[`releases/02.30-cue-to-cue/m217-clean-stage/kb-fidelity-audit.md`](releases/02.30-cue-to-cue/m217-clean-stage/kb-fidelity-audit.md)
+— **its §5 is the ground truth the build works from, not the corpus docs.**
 
-**Phase:** **designed — awaiting `/developer-kit:build-milestone`** on M217.
+**Live finding:** the `/demo-down` run on `billion` earlier that day **left an orphaned cockpit alive** (pid 83214,
+`0.0.0.0:17700`) — an unauthenticated hero-vending panel pointing at a deleted database. Killed manually. That is
+**S2's defect, caught live**: teardown reaps by PID only, discards `kill`'s status, and prints success regardless.
 
-**Next up:** **`/developer-kit:build-milestone`** → **M217**. Then **{ M218 ∥ M219 ∥ M220 }** in parallel (M218
-merges first of the three — it and M220 both touch `up-injected.sh`), then **M221** (prove it on `billion`).
+**Active milestone:** **(between milestones).** **M217 "clean stage" CLOSED 2026-07-13** — merged
+`--no-ff` into `release/02.30-cue-to-cue`. rext code-of-record: **`cue-to-cue-m217`**. **32 bugs fixed** (build 0
+→ harden ×3: 24 → close: 8). **Exit gate MET on `billion`** (cold reset-to-seed: `autoverify: OK`, 3/3 replays
+exit 0, 2/2 app patches applied [one self-healed], jobsimulation serving, content plane local). Records:
+[`releases/02.30-cue-to-cue/m217-clean-stage/`](releases/02.30-cue-to-cue/m217-clean-stage/).
+
+> **⚠ Carried into M221:** the **pre-bind reap has still never run live**. The close review found that
+> `up-injected.sh` called `reap_port` **without sourcing `reap.sh`** — so the milestone's headline deliverable
+> was dead code (exit 127, swallowed) *during the green proof run on `billion`*. It is fixed and unit-proven;
+> it is **not field-proven**. M221 re-proves everything on the box.
+
+**Phase:** **M217 closed + merged — next: `/developer-kit:build-milestone` on M218** (the headline latency
+milestone), or **M219 ∥ M220** in parallel.
+
+**Next up:** **{ M218 ∥ M219 ∥ M220 }** in parallel (M218 merges first of the three — it and M220 both touch
+`up-injected.sh`), then **M221**. **M218 may now measure** — and `autoverify.json` is the signal it gates on, so it
+can never again measure a broken stack.
 
 ## User decisions taken at design time (binding)
 
@@ -68,17 +90,17 @@ merges first of the three — it and M220 both touch `up-injected.sh`), then **M
 | **M220** | Cue sheet — `/demo-up` defaults: the doc fix + remote **opt-out** + `safety.md` **Part 3** | `section` | medium | M217 |
 | **M221** | Prove it on billion — every gate, on the VM, over the tailnet, **no flags** | `iterative` | large | M217–M220 |
 
-## Headline numbers (inherited from the v2.2 close — the v2.3 baseline)
-- **rext Go test funcs:** **1772** across 6 modules. `go test ./...` exit 0 + `go vet` clean, all 6.
-- **rext Python:** **668** passed (demo-stack 424, stack-injection 147p/8s, stack-core 97). **TS e2e:** **124**.
-  **TS unit specs:** **103**. **Live Playthroughs:** **10** + 1 in-manifest TODO.
-- **Flake:** **0**. **Supply-chain:** 0 reachable vulns; 13 pre-existing dependabot alerts (all the **unreachable**
-  `x/crypto` ssh-subpackage in clerkenstein) → **cleared in M218's rext roll** (`go get x/crypto@v0.52.0`).
-- **Platform-repo edits:** **0** — the release invariant, unbroken for 8 releases. rext code-of-record `v2.2` =
-  `39e8013`.
-- **NEW in v2.3 — the metric the project has never had:** **p95 click→ACCESS latency, both vantages.** No perf
-  budget, baseline, or even a *definition of "access"* exists anywhere in `corpus/**` or rext today (M218's blind
-  area). The first measured baseline lands in **M218 iter-01**.
+## Headline numbers (M217 close, 2026-07-13)
+- **Python tests:** **867** (0 fail, 11 skip) — demo-stack 462 · stack-injection 194 · stack-verify 109 ·
+  stack-core 97 · dev-stack(new) 5. Counted from **JUnit XML**, never grepped stdout.
+- **Go test funcs:** **1750** (+1 vs v2.2 **measured by the same method**, which gives 1749 at v2.2). *The 1772
+  recorded at the v2.2 close used a DIFFERENT method and is not comparable — the method is now pinned in
+  `metrics.json` so future closes compare like with like.*
+- **Flake:** **0** (5/5 clean, sequential). **Platform-repo edits:** **0**.
+- **Known issue (flagged, not a regression):** **33 pre-existing `dev-stack` failures** — environmental (they
+  need a live Postgres on `:15432`), **identical count at v2.2**. M217 took that suite from 55 → 60 passing.
+- **NEW metric this release:** p95 click→ACCESS latency — **not yet measured**; M218 iter-01 sets the baseline.
+
 
 ## Branch model / shipped tags
 **v2.3 IN DEVELOPMENT:** `release/02.30-cue-to-cue` cut from `main` at `/developer-kit:design-roadmap` (2026-07-13);

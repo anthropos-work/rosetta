@@ -6,6 +6,8 @@
 > **no prior corpus coverage** (it was invisible to the ~1-month-stale clones, which is why M201's verify reported it
 > as a false-negative). This doc is the contract the v1.10b **M51** AI-readiness showcase-org seeder builds against.
 
+> **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 ## Role & Responsibility
 
 **AI Readiness** is an org-level **AI-capability diagnostic**: each member runs a **3-step onboarding/evaluation**,

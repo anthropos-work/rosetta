@@ -168,6 +168,54 @@ stacksnap capture --surface sim-embeddings --source primary-read --dsn "$DSN"
 > this path ([`safety.md`](safety.md) §1.1). The two zero-primary-impact upgrades (`restore-from-snapshot`,
 > `read-replica`) activate automatically once eu-west-1 AWS/infra access is wired — they need no doc change here.
 
+### Option 3 — **ship a warm cache to the box** (M217; no prod credential needed on the target at all)
+
+> **This is the option a remote VM actually needs, and it did not exist.** On `billion` — a fresh Linux VM on the
+> tailnet — **Options 1 and 2 are both dead**: there is no `~/.pgpass`, no `~/.claude.json`, and no staging
+> `pg_dump` on the box. Every sanctioned path above requires a prod DSN *on the target host*, and a demo VM has
+> none — nor should it.
+
+A snapshot cache is **portable**. Copy the digest directories from a box that already has a warm cache:
+
+```bash
+SRC=<rosetta>/.agentspace/snapshots
+DST=devops@billion:~/panorama/.agentspace/snapshots     # the store root the box's own walk-up resolves to
+
+rsync -a --checksum "$SRC/taxonomy/<digest>"       "$DST/taxonomy/"
+rsync -a --checksum "$SRC/sim-embeddings/<digest>" "$DST/sim-embeddings/"
+rsync -a --checksum "$SRC/directus/<digest>"       "$DST/directus/"
+
+# verify the TOOL sees them (not just that bytes landed):
+ssh devops@billion 'cd ~/panorama/stack-demo/rosetta-extensions/stack-snapshot &&
+  go run ./cmd/stacksnap status --store ~/panorama/.agentspace/snapshots'
+```
+
+**Why this is safe — and it is the same argument the cache already rests on:**
+
+- The payloads are the **public-only, firewalled** data the tooling already replays into every stack. Each manifest
+  declares `public_only: true` and carries a predicate (org-null / directus-public-published /
+  sim-embeddings-public-simulation). **No customer data can be in there** — `AssertPublicOnly` hard-fails a capture
+  before a single customer-scoped row is written.
+- The artifacts carry **no host paths and no secrets** (`payload` fields are bare filenames; grep the manifests and
+  `_structure.sql` for `password|secret|postgres://` → zero hits).
+- **Transport is self-verifying:** replay checks every payload's **SHA-256 before any write**, so a truncated or
+  corrupted transfer **fails loud** rather than silently poisoning a stack.
+- **No prod credential ever touches the target box.** That is a strict *improvement* on Options 1 and 2, which
+  require one.
+
+> ⚠️ **Priming the cache alone is NOT enough on Linux.** Two things bite, and both were found by M217's proof run:
+>
+> 1. **`directus` replay exits `rc=4`, not `rc=5`.** `rc=4` means *the stack's own directus schema is missing* —
+>    a **stack-side** precondition, not a cache miss. **A cache prime cannot fix it.** The stack must run with
+>    **local content ON**, from a **PURGED** stack: the auto-provision is gated on a **virgin** schema and its DDL
+>    is **not idempotent**, so a half-provisioned schema silently falls through and never self-repairs.
+> 2. **`host.docker.internal` does not resolve on Linux Docker Engine.** The provision reaches the host's offset
+>    Postgres from inside a container by that name — a **Docker Desktop** convenience. On Linux it resolves to
+>    *nothing*, so `CREATE SCHEMA directus` failed, the whole local-content provision was **skipped**, and the demo
+>    quietly fell back to reading content **live from prod over the WAN**. Fixed in M217 with
+>    `--add-host=host.docker.internal:host-gateway` (Docker 20.10+; a harmless no-op on Docker Desktop).
+>    **Same class as the `jobsimulation` AWS-mount bug: fine on a Mac, dead on a fresh Linux VM.**
+
 ### Then: replay is a cache-hit forever after
 
 Once the cache is warm, every stack on this box stamps the real catalog in with **zero** prod read:

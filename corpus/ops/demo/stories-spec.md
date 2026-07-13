@@ -8,6 +8,8 @@ canonical description of how `rosetta-extensions/stack-seeding` materializes one
 that silently hide it if you get them wrong) — **and** (v1.9 M35) the declarative **Stories & Heroes** model
 that lifts it into a multi-org, thriving/struggling/manager-trio demo world.
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Scope (v1.9 "storytelling").** This doc covers the **verified-skill chain** delivered in **M34** — the
 > `PersonaSeeder`, the `TaxonomyRefs` resolver, the `jobsim_sessions.go` G14 fix, the `users.go`
 > name/avatar/email patch, and the **seed-side closure gene** — plus the **Stories & Heroes model + multi-org**

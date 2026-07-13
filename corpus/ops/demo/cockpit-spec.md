@@ -76,10 +76,42 @@ with no manifest wired falls back to saving the cockpit's JSON menu.) See
 The cockpit is a host-native HTTP server (`rosetta-extensions/demo-stack/cockpit.py`, **stdlib-only** Python) on
 an **offset port** (`7700 + N·10000`, e.g. `37700` for `demo-3`), brought up with the stack
 (`up-injected.sh`, session-detached via `launch_detached` so it survives the bring-up task being reaped) and
-torn down with it (its PID is recorded in `<stack>/cockpit.pid`). It is **never** an edit to next-web — it
-reaches the platform only as a browser would (over the FAPI handshake), preserving the hard
+torn down with it. It binds `127.0.0.1` by default; **`0.0.0.0` only under `--public-host`**. It is **never** an
+edit to next-web — it reaches the platform only as a browser would (over the FAPI handshake), preserving the hard
 zero-platform-repo-edit line. The serve is **non-fatal**: a cockpit failure never aborts an otherwise-good
-storytelling demo (the M18/M19 pattern). `DEMO_NO_COCKPIT=1` brings the demo up without the panel.
+storytelling demo (the M18/M19 pattern) — **but it is now REPORTED** (below). `DEMO_NO_COCKPIT=1` brings the demo
+up without the panel.
+
+#### Teardown is PORT-authoritative, not pid-authoritative (M217)
+
+> **This doc previously said the cockpit is "torn down with the stack (its PID is recorded in
+> `<stack>/cockpit.pid`)". That was true of the *intent* and false of the *behaviour*.**
+
+`docker compose down` cannot reach a host-native process, so teardown must reap the cockpit itself. It used to do
+so **by PID**, from that pidfile — and that leaks a listener three ways:
+
+1. `launch_detached` writes the pidfile **unconditionally**, *before and independent of* a successful bind. A
+   cockpit that died on `EADDRINUSE` still leaves a pidfile naming a dead pid.
+2. A second bring-up **overwrites** the pidfile — orphaning the first cockpit **forever**. It keeps serving a
+   **stale manifest** on the port and nothing records it.
+3. `kill` on a **recycled** pid kills the wrong process, silently.
+
+And the teardown **discarded `kill`'s status**, `rm -f`'d the pidfile regardless, and printed *"stopped the
+presenter cockpit"* **either way**. Found in the field on `billion`: an orphaned cockpit still **LISTENING on
+`0.0.0.0:17700`** — an unauthenticated *"become any hero"* panel pointing at a database whose containers had been
+removed — which **survived a `/demo-down` that reported success**.
+
+Since M217 (`demo-stack/reap.sh`):
+
+- **Teardown reaps by PORT**, which is what actually blocks the next bind. The pidfile is a *hint*, not the truth.
+- **The reap is identity-checked.** It kills only listeners whose command line matches (`cockpit.py`, scoped to
+  *this* stack's offset port, so a co-resident demo's cockpit is untouchable). A **foreign** process holding the
+  port is **reported loudly and left alive** — reaping a port must never become `kill $(lsof -t -i:PORT)`.
+- **The bring-up pre-reaps** its own stale predecessor before binding.
+- **`cockpit.py` fails cleanly** on a bind conflict (exit 2 + a diagnosis) instead of an unhandled traceback.
+- **"presenter cockpit serving on …" is now gated on a real `/healthz` probe.** It used to print unconditionally —
+  which is *how an operator drove a dead cockpit for a whole session*. A failed cockpit now says so, and its log
+  tail is surfaced.
 
 ### Single source — the menu is a projection of the seed (D9)
 
@@ -203,3 +235,22 @@ single-source (D9) + stdlib-only posture all hold.
 [`clerkenstein.md`](../../services/clerkenstein.md) (the multi-identity FAPI handshake) ·
 [`frontend-tier.md`](frontend-tier.md) (the demo UI tier the cockpit launches into) ·
 [`rosetta_demo.md`](../rosetta_demo.md) (the demo-stack lifecycle).
+
+### The reap's safety rule (M217 hardening)
+
+The port reap has one non-negotiable rule, and it is worth stating plainly because it constrains every future
+change to `reap.sh`:
+
+> **If we cannot PROVE a listener is ours, we do not touch it.**
+
+Three cases, deliberately distinguished:
+
+| The listener… | What we do |
+|---|---|
+| matches our identity regex on **this stack's** offset port | **kill it** (TERM, then KILL) |
+| does **not** match — someone else's server | **report it loudly, leave it alive** |
+| has **no readable command line** (on Linux, `ss` only reveals pids you own — a **root-owned** listener is opaque) | **treat as foreign.** Report, do not kill |
+| was there on the probe and **gone** by the re-probe (it raced away) | **say nothing** — benign |
+
+And if the host has **none** of `lsof`/`ss`/`fuser`, the reap says **"CANNOT CHECK"** rather than reporting the
+port free. A blind process-killer that answers *"clear"* is worse than one that admits it cannot see.

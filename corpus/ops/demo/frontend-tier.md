@@ -5,6 +5,8 @@
 stakeholder lands on a real, clickable, Clerk-free UI, not just a running backend. This is the v1.3b M19
 deliverable that completes the [demo family](README.md): up → snapshot → seed → **see it in a browser** → down.
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Read [`../safety.md`](../safety.md) first** for *why* this is safe, and [`../rosetta_demo.md`](../rosetta_demo.md)
 > for the stack lifecycle this extends. This page is the **frontend-specific** "how the UI tier is built and run".
 

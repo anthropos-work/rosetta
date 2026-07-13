@@ -1,0 +1,53 @@
+{
+  "milestone": "M217",
+  "slug": "clean-stage",
+  "version": "v2.3 cue to cue",
+  "closed": "2026-07-13",
+  "shape": "section",
+  "tests": {
+    "python": {
+      "demo-stack": 462,
+      "dev-stack-new": 5,
+      "stack-core": 97,
+      "stack-injection": 194,
+      "stack-verify": 109
+    },
+    "python_total": 867,
+    "python_failures": 0,
+    "python_skipped": 11,
+    "go_test_funcs": 1750,
+    "go_test_funcs_delta_vs_v22": 1,
+    "note": "Go count uses `grep -c '^func Test'` across all 6 go.mod modules. v2.2 by the SAME method = 1749. The 1772 recorded at the v2.2 close used a DIFFERENT method and is NOT comparable \u2014 recording the method here so future closes compare like with like."
+  },
+  "coverage": {
+    "apply_patch.py": {
+      "before": 0.18,
+      "after": 0.64,
+      "note": "the 18% was a subprocess blind spot, not absent tests"
+    },
+    "gen_injected_override.py": 0.99,
+    "gen_override.py": 0.88,
+    "cockpit.py": 0.96
+  },
+  "flake_count": 0,
+  "flake_gate": "5/5 clean, sequential",
+  "platform_repo_edits": 0,
+  "bugs_fixed": {
+    "build": 0,
+    "harden_pass1": 4,
+    "harden_pass2": 9,
+    "harden_pass3": 11,
+    "close": 8,
+    "total": 32
+  },
+  "known_issues": [
+    {
+      "id": "PRE-EXISTING-DEVSTACK",
+      "what": "33 dev-stack test failures",
+      "status": "pre-existing at v2.2 (identical count); environmental \u2014 they need a live Postgres on :15432",
+      "m217_effect": "M217 took the suite from 55 -> 60 passing (added 5)",
+      "action": "flagged in the Completeness Ledger for user sign-off; NOT an M217 regression"
+    }
+  ],
+  "notes": "The exit gate (a green cold reset-to-seed /demo-up on billion) was met BEFORE the close review found that reap.sh was never sourced \u2014 so the pre-bind reap was dead during that proof. The green result stands (no leaked ports existed at the time), but the reap itself was NOT exercised live. M221 re-proves everything on billion."
+}
