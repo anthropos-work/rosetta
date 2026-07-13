@@ -197,3 +197,72 @@ either changes, we hear about it *here* — not from a mystery crash on a VM.
 
 **Knowledge backfill:** `demopatch-spec.md` § the freshness gate — the `--repin`-on-a-patched-target recovery
 contract (reverse-swap + round-trip verify, refuse if unprovable). See below.
+
+### Pass 2 + 3 — 2026-07-13 (the adversarial hunt)
+
+**A 37-agent adversarial hunt (45 candidates, 31 verified by refutation) found 20 bugs — not the 4 pass 1
+found. THREE OF THEM WERE INTRODUCED BY PASS 1.** The hardening pass that was supposed to make the code safe
+had, in three places, made it more dangerous. That is the single most useful thing this milestone learned.
+
+**The three I introduced, and what they say:**
+
+| # | My bug | The lesson |
+|---|--------|------------|
+| **B3** | **My test suite killed the developer's processes.** `test_offset_zero_targets_the_base_ports` called the **real** `reap_native_ports 0`, SIGTERMing whatever listens on `:7700` (cockpit) and `:3077` (ant-academy). **Verified live: running the test file killed a real cockpit and a real academy listener.** | *A test for a process-killer must never call the process-killer.* Now shadows `reap_port` after sourcing and asserts the **arguments**, with a sentinel proving a listener on the real `:7700` **survives** the file. |
+| **B2** | **My identity regex killed foreign processes.** `"ant-academy\|next"`, matched **unanchored** against the full argv — so **any** process whose command line merely contains the word *"next"* was treated as ours and killed. **Proven live: a `/srv/nextcloud-helper/serve.py` listener was SIGTERMed and logged as ours.** | ***That is exactly the footgun the identity check exists to prevent.*** The guard was guarding nothing. A safety mechanism you don't adversarially test is decoration. |
+| **B1** | **My "unidentifiable listener" fix had the wrong causal model.** The real Linux failure is not *"pid present, cmdline unreadable"* — it is `ss`/`lsof` **omitting the pid entirely** for another user's socket. So `reap_port` inferred occupancy **from attribution** and reported a **held** port as **FREE**. My pass-1 test stubbed a pid the real failure never produces. | *It fenced a model, not the bug.* **Occupancy must be established attribution-free, before we ever ask whose it is.** |
+
+**And the one that stings most (B10): a fix I had already reported to the user as working was DEAD, and the
+test suite certified it green.**
+
+`volumes: !override` with no items is not "an empty sequence" — it is **invalid compose**
+(`services.jobsimulation.volumes must be a array`, rc=1). The dev-path jobsimulation fix therefore **never
+worked**. It was invisible because the test helper **never checked `docker compose config`'s return code**, and
+every caller then asserted `assertNotIn(AWS_TARGET, stdout)` — and **when compose errors, stdout is `""`, and
+`assertNotIn(x, "")` passes.** My own manual "verification" made the identical mistake: I grepped the empty
+output of a **failed** command and read the absence of a match as success.
+
+> **AN EMPTY RESULT IS NOT EVIDENCE.** The helper now asserts `rc == 0` **and** a positive control before any
+> absence-assertion, and the old test is **inverted** — it now asserts that a bare `!override` *is* invalid.
+
+**The rest (B4–B20), by theme:**
+
+- **Asserts that fire on legitimate configurations** — worse than no assert, because they train people to
+  ignore output. **B5:** the cockpit/fake-FAPI cheap-wins ran unconditionally, so **every dev stack was
+  permanently red** and `autoverify.json` was hard-wired `green:false` for the whole dev family — *I broke the
+  machine-readable gate M218 consumes, in the commit that introduced it.* **B7:** `demopatch.log` was
+  append-only and survives `--purge`, so one historical refusal made a demo report red **forever**.
+- **Asserts that can't see what they claim to** — **B6:** the demo-patch cheap-win grepped `REFUSE|ANCHOR
+  BROKEN`, missing the **entire rc=1 class** (*"target not found"* — i.e. exactly what an app refactor that
+  **moves** the patched file produces). *This is the assert whose stated job is catching the rot that survived
+  four releases.* **B4:** the probe count included the summary line (always +1).
+- **The patcher could corrupt source** — **B12:** G7 was a **tautology** (it re-hashed the same in-memory
+  object), so exit 5 was unreachable and *"a bad swap cannot be written"* was false; the write was
+  truncate-in-place with no rollback. Now **atomic** (tmp + fsync + `os.replace`) and verified **on disk**.
+  **B13:** a **partially-written** target classified as `ALREADY_PATCHED, exit 0` — the gate could not tell a
+  patched file from a **corpse**. **B14:** the manifest loader was **last-wins on duplicate keys**, so a
+  duplicate `anchor:` could **steer which hunk gets replaced in platform source**.
+- **B17:** `reap_port` with an **empty** identity regex is a **blind kill** (`grep -qE ""` matches everything).
+  Nothing stopped a caller — or a refactor that dropped an argument — from doing it.
+- **B11:** the AWS fix **never reached the main dev stack** (N=0 uses `make up`, no override). Fixed host-side.
+- **B18:** the now-FATAL pin guard would have **aborted every correctly-pinned stack** the moment the
+  close-release roll tagged the same commit `v2.3`.
+
+**Two static fences broke because I documented the thing they guard** (they matched their own comments). *A
+static fence must skip comment lines* — learned twice.
+
+**Suites:** demo-stack **446** · stack-injection **186** · stack-core **97** · stack-verify **109** ·
+stack-seeding **go PASS**. Flake gate **3/3**. shellcheck + gofmt clean.
+
+### Stop condition
+
+**Pass 3.** The hunt's confirmed-bug list (B1–B20) is exhausted: 17 fixed, 3 assessed as nits and consciously
+left (B19 zero-padded N, B20 a misplaced `__main__` guard, and the `!reset null` blast radius which is now
+tripwired). No new bug classes surfaced in pass 3 that pass 2 had not already opened. **Coverage is not the
+stop signal here — the hunt was.**
+
+> **The honest headline: pass 1 was shallow.** It found 4 bugs by probing error paths and pronounced the code
+> hardened. An adversary that actually *ran* the code — bound real listeners, executed the emitters through
+> the real `docker compose`, fuzzed the applier — found **five times as many**, including three I had just
+> introduced and one fix that had never worked at all. **Self-review found the bugs I was looking for;
+> adversarial execution found the ones I wasn't.**
