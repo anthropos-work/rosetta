@@ -36,16 +36,28 @@ The one seam byte-identical across the fix is the demo's own: `FAKE_FAPI_ROSTER`
 | `demo-stack/rosetta-demo` (`cmd_down`) | purge fenced (iter-05); **verdict lifecycle unfenced** | **7 tests** (behaviour + wiring + ordering) |
 | `demo-stack/patches/next-web-ssr-graphql-origin/` + `gen_injected_override.py` | **0 tests — the milestone's headline fix** | **12 tests**, incl. the live-clone freshness gate |
 
-**Tests added:** 36 (17 Go alignment · 12 Go clerkrun · 19 Python — 7 verdict-lifecycle, 12 SSR-chain).
-_Counted by file: `coverage_test.go` ×2, `bapi_http_test.go`, `test_verdict_lifecycle.py`, `test_ssr_origin_chain.py`._
+**Tests added:** 37 (17 Go alignment · 12 Go clerkrun · 19 Python — 7 verdict-lifecycle, 12 SSR-chain · 1 F-6 fence).
+_Files: `coverage_test.go` ×2, `bapi_http_test.go`, `test_verdict_lifecycle.py`, `test_ssr_origin_chain.py`, `test_frontend_build.py`._
+
+**Final suite state:** Python **592 passed / 0 failed** (was **1 failing** — see below) · Go **0 failures**
+across all 3 modules · Go alignment gate **rc=0**.
 
 **Bugs surfaced + fixed inline:**
-- `gate.sh` **could not run at all on a clean box** — `GOPROXY=off` + a `go.mod` `toolchain` directive made
+- **`demo-stack/tests` was RED — and M218 itself broke it.** `test_tag_guard_present_for_both_frontends`
+  pinned `docker image rm -f "$img"` at **2**; **iter-03's own F-6 fix (`0cfe23e`) added a third** rebuild
+  trigger (next-web's minted-PK check) and never updated the fence. Verified failing identically at baseline
+  `f296e5e`, and my diff changes none of the three counts — so it has been red since iter-03 and nothing
+  caught it. Count corrected to 3, **with the reason written down** so it isn't "fixed" back down. (`f849b5f`)
+- **The F-6 guard itself had no test** — the guard that catches a **Clerkenstein-DEWIRED demo talking to
+  production Clerk**. Now fenced (the validator must grep the *built bundle* for the minted pk, since an
+  ENV-level check cannot see a build-inlined constant). **Mutation-proven:** swap the bundle grep for an
+  ENV-only check → the assertion fails. (`f849b5f`)
+- **`gate.sh` could not run at all on a clean box** — `GOPROXY=off` + a `go.mod` `toolchain` directive made
   `GOTOOLCHAIN=auto` try to *download* the toolchain and die on `checksum database disabled` (a red herring;
-  the local Go already satisfied the directive). Pinned `GOTOOLCHAIN=${GOTOOLCHAIN:-local}`. (commit `dd65ad0`)
-- My own first ordering test matched `docker compose` inside a **comment** and failed a correct file. Fixed the
+  the local Go already satisfied the directive). Pinned `GOTOOLCHAIN=${GOTOOLCHAIN:-local}`. (`dd65ad0`)
+- **My own first ordering test matched `docker compose` inside a comment** and failed a correct file. Fixed the
   test (assert on comment-stripped code) — and added `checked > 0` guards so an assertion that inspects
-  nothing **fails** instead of passing. (commit `fc32baa`)
+  nothing **fails** instead of passing. (`fc32baa`)
 
 **Cross-iter integration finding (the defining work of final mode).** The milestone's **headline fix** — the
 SSR GraphQL origin, worth ~37.5 s of the 39.45 s → 2.4 s collapse — is a **two-part chain across two
@@ -92,4 +104,17 @@ graded-artifact boundary.
 | `DOC-M218-audit-corrections` | **F1-3 discharged** (the coverage claim) **+ the CI-inert correction discharged**. **Remaining:** the `clerkenstein.md:3-4` header. |
 | `TEST-M219-expressrun-dep-gate` | `expressrun` is **UNMEASURABLE** on a box without `@clerk/express` `node_modules` (rc=2, no score) — reproduced identically at baseline `f296e5e`, so **pre-existing**. iter-04's "all 5 surfaces 100%" is therefore **not reproducible here**; 4 of 5 were re-measured this pass. |
 | `TEST-M219-freshness-gate-skips` | The demo-patch live-clone freshness gate **skips** when `stack-demo/next-web-app` is absent (the established `test_demopatch.py` tradeoff). It ran here — but a box without the clone gets **no** anchor-drift protection. Itself an instance of *absence read as success*. |
-| _(pre-existing, out of M218 scope — **M217** footprint)_ | `stack-injection` `test_next_web_block_shape` (1 failure) and `dev-stack/tests/test_dev_stack.py` (several) fail on this box — **reproduced at baseline**. `dev-stack`'s are environment-driven (this box's `.agentspace/secrets` lacks critical keys, so the secret-coverage pre-flight aborts before the N-guard is reached — which also suggests `guard_n` should precede the pre-flight). |
+| _(pre-existing, out of M218 scope — **M217** footprint)_ | `stack-injection` `test_next_web_block_shape` (1 failure) and `dev-stack/tests/test_dev_stack.py` (several) fail on this box — **reproduced at baseline `f296e5e`**, so not regressions from this pass. `dev-stack`'s are **environment-driven**: this box's `.agentspace/secrets` lacks critical keys, so the secret-coverage pre-flight aborts *before the N-guard is reached* — which incidentally shows `guard_n` should run **before** the pre-flight (a dev-stack ordering smell, M217 footprint). Not touched: outside this milestone's diff. |
+
+### What the coverage sweep found that per-iter tests structurally could not
+
+Two of this pass's four inline fixes were **tests that were already red or absent inside the milestone's own
+footprint**, and neither could have been caught by the iter loop's per-symptom discipline:
+
+- `demo-stack/tests` had been **failing since iter-03** — iter-03 added a rebuild trigger and left the fence
+  pinned at the old count. A per-iter regression test fences *the symptom it just fixed*; nothing re-runs the
+  **neighbouring** fence.
+- The **headline fix** (SSR origin) and the **F-6 guard** were both **entirely unfenced**, because each spans
+  a chain (patch ⇄ injected env; ENV-check ⇄ built bundle) that no single iter's diff contains.
+
+That is the argument for final mode existing at all: cumulative scope catches what iter-diff scope cannot see.
