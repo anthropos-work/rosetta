@@ -203,15 +203,53 @@ casbin assert — seconds to run, decisive:
 | **the cockpit isn't answering** | The presenter has **no way in** — and until M217 the bring-up logged *"presenter cockpit serving on …"* **unconditionally**, even when it had just died on a leaked port. |
 | **the fake-FAPI isn't answering** | **NOBODY CAN LOG IN** — and verify stayed **green**, because no probe covered it. A demo nobody can log into is not a demo. |
 
-### `<stack>/autoverify.json` — the machine-readable signal
+### `autoverify.json` — the machine-readable signal
 
 ```json
 {"project":"demo-1","offset":10000,"warnings":0,"green":true}
 ```
 
+Its path is **`rosetta-extensions/demo-stack/stacks/<project>/autoverify.json`** — *not* `<stack>/autoverify.json`,
+as this doc claimed until M218 (**iter-01 F-2/D3**; the tooling that gates on it, `stack-verify/e2e/run-latency.sh`,
+reads the real path).
+
 Until M217, `/demo-up` **exited 0 on a red verify and still printed UP**, so nothing downstream could gate on
 *"did this stack actually come up green?"*. **M218 measures login latency and must not measure a broken stack** —
 this file is what it gates on.
+
+> #### A green verdict is only as fresh as the image it graded (M218 iter-03 **D9**)
+>
+> The file records a **stack-at-an-instant**, not a stack-forever. M218 iter-03 found a `demo-1` whose
+> `autoverify.json` said `{"green":true}` — written **nine hours** before an **out-of-band `docker build`** swapped
+> the `next-web` image underneath it. The stack was, at that moment, **Clerkenstein-dewired** (see below) and
+> **nobody could log in** — while the green file sat there asserting otherwise.
+>
+> ⇒ **Anything that gates on this file must ensure the verdict was written against the image actually under test.**
+> A fresh bring-up writes a fresh verdict; trusting the file's mere *existence* re-opens the exact hazard M217 shut.
+
+### Validate a baked constant by reading the artifact it was baked into (M218 iter-03 **D8/F-6**)
+
+A cache-validator can only see the constants it can **read** — and `docker image inspect` sees only image **ENV**.
+
+`up-injected.sh`'s `next-web` image cache-validator (M211) compared the baked `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`,
+which *is* an image ENV. But the **minted publishable key** — the constant that **wires Clerkenstein** — is **not**:
+it is written to a gitignored `apps/web/.env.local` overlay, consumed by `next build`, and **inlined into the
+bundle**. The validator was therefore **structurally blind** to it, and an image carrying the **right offset** with
+the **wrong, real-Clerk key** *passed the guard and got silently reused*. Consequences, both real:
+
+- **login is broken** — the browser's clerk-js talks to the **real Clerk app**, finds no session, and loops to
+  `/login`; and
+- **the demo phones production auth**, which [`safety.md`](safety.md) forbids outright.
+
+The fix asserts the minted pk is **present in the built bundle** (`docker run --rm … grep -rqs "$PK_DEMO"
+/app/apps/web/.next/static`), **fail-safe toward rebuild**: anything unverifiable rebuilds, because a needless
+~3 min build is strictly cheaper than shipping a real-Clerk-wired demo. All four overlay-borne constants come from
+that one file, so a single probe covers the class.
+
+> **The general rule:** *if a constant is inlined into an artifact, validate it by reading the artifact.* Build-time
+> inlining (`NEXT_PUBLIC_*` and friends) is invisible to every ENV-level guard — and it was **M218's antagonist
+> twice over**: once as C-1 (a build-inlined URL a consumer *cannot override*) and once as F-6 (a build-inlined key
+> a rebuild path *failed to supply*).
 
 ## Cross-references
 

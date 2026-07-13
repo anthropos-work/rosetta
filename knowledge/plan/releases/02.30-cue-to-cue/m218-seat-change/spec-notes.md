@@ -55,6 +55,32 @@ matches the user's "1 or 2 minutes."
 
 ---
 
+## Measured — iter-03 (POST-FIX). billion, demo-1, rext `cue-to-cue-m218-iter03b`, **cold** reset-to-seed, autoverify **green (0 warnings)**
+
+| vantage | iter-02 baseline | **iter-03** | gate |
+|---|---|---|---|
+| employee (`maya-thriving` → `/profile`) | p95 **39.45 s** | p95 **7.90 s** · p50 6.93 s | < 5 s |
+| manager (`dan-manager` → `/enterprise/…`) | p95 **38.30 s** | p95 **7.00 s** · p50 6.68 s | < 5 s |
+
+**6/6 reached ACCESS.** Secondary (REPORTED-not-gated, D-DESIGN-1): data-settle p50 **12.60 s** / **9.29 s**.
+
+**Origin reachability from inside `demo-1-next-web-app-1`** (the fix's whole thesis, measured on the green stack):
+
+| origin | result |
+|---|---|
+| `http://graphql:8080/graphql` — the fix's server-only origin | **76 ms · HTTP 200** |
+| `https://billion…:15050/graphql` — the build-inlined public URL SSR *used* to fetch | **10,481 ms · `UND_ERR_CONNECT_TIMEOUT`** |
+| `https://billion…:18082` — baked `NEXT_PUBLIC_BACKEND_API_URL` (**F-7**, dormant) | **10,553 ms · `UND_ERR_CONNECT_TIMEOUT`** |
+
+The fix does **not** repair the unreachable address — it stops the **server** from using it. (*Fix the address, not
+the variable.*)
+
+**The residual, and it is arithmetically legible:** the SSR body still blocks **6,104 / 6,107 ms — reproducible to
+±3 ms across both vantages**. Not a blackhole (10.5 s/attempt); the **`retry: 2` / 2 s+4 s ladder on a FAST-failing
+fetch**: `3 × ~33 ms + (2 s + 4 s) ≈ 6.0 s`. Kill it and p95 → ~1.8 s, under the gate. **iter-04.**
+
+---
+
 ## Harness contract (constraints discovered in iter-01 — binding on iter-02)
 
 1. **curl cannot drive this flow.** The fake-FAPI **validates `redirect_url`** against the public origin (HTTP 400
