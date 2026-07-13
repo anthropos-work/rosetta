@@ -4,6 +4,8 @@
 **Repo:** `stack-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
+> **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **This is a pointer.** The full, self-contained documentation now lives **in the clerkenstein repo's own
 > knowledge base** (added in M2b): start at `stack-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
 > keeps only the platform-side orientation + the cross-links a rosetta reader needs — it deliberately does

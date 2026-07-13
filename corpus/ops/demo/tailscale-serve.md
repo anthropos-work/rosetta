@@ -5,6 +5,8 @@
 demo end-to-end, in their own browser, over HTTPS. This is the **external-shareability** surface of v2.2
 "panorama".
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 It is **opt-in and default-off**: a plain `/demo-up N` is byte-identical to today (localhost only, no external
 listener). Remote reach is requested explicitly with **one flag** — `--public-host <magicdns>` — and **Tailscale
 itself is the access control** (only tailnet members can reach the host; there is no public internet exposure).

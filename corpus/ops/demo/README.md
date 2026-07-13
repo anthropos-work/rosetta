@@ -142,6 +142,16 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   **patch tail** (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL` overlay, via the
   sha-pinned mechanism), the "teammate on the tailnet browses it" walkthrough, and the safety framing
   (Tailscale = the access control; opt-in, default-off; zero platform-repo edits). (v2.2 M212–M214)
+- [`demopatch-spec.md`](demopatch-spec.md) — **the demo-patch mechanism: the sanctioned zero-platform-edit escape
+  hatch.** When a demo needs a fix that has **no env/config/compose seam** (the value is baked into platform
+  source), `demopatch` patches the demo's **own ephemeral clone** just before the image build and reverts it after —
+  so the *image* carries the fix, the clone is left git-clean, and the canonical `anthropos-work` repos are **never
+  touched**. Documents the **7 guards** (G1 path-assert · G2 drift-refuse + exactly-once anchor · G3 never-commit ·
+  G4 idempotent · G5 self-revert · G6 demo-only · **G7 apply post-condition**), the 10-key manifest schema, the
+  **three apply vehicles** (the `app` patches target the build-scratch clone *outside* the workspace, so
+  `demopatch`'s own G1/G6 correctly refuse them), the **chain rule**, and — the M217 lesson — the **self-healing
+  freshness gate**: *the anchor is the contract, the whole-file sha is only a baseline*. **Read this before adding
+  any patch.** (v2.3 M217)
 - [`coverage-protocol.md`](coverage-protocol.md) — the **coverage** iteration protocol: the **Playwright**
   demo-coverage sweep + triage + fix loop driving the **semantic believability gate** (real seeded content +
   substantial per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar,

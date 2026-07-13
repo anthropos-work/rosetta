@@ -8,6 +8,8 @@ with **real semantic content** and **zero out-of-demo escapes**. The page set an
 (run the sweep) → **triages** the failures → **fixes** them in `rosetta-extensions` (or a corpus doc) →
 **re-sweeps**, until the gate is GREEN.
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Read first:** [`frontend-tier.md`](frontend-tier.md) (the UI tier the sweep crawls), [`verification.md`](../verification.md)
 > (the offset/project/scope-aware probe net this harness sits beside + reuses), [`rosetta_demo.md`](../rosetta_demo.md)
 > (the demo lifecycle + offset ports + Clerkenstein injection the cockpit login rides), and

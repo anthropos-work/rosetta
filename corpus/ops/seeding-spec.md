@@ -4,6 +4,8 @@
 structural data from one declarative blueprint, the dependency order, and (most importantly) the
 **production-isolation boundary** that keeps a non-prod seeding run from polluting production.
 
+> **The demo-patch mechanism is specified in [`demo/demopatch-spec.md`](demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Scope.** This doc covers the **M7a framework**: the blueprint, the seeder contract, the dependency-DAG
 > orchestrator, the direct-Postgres perf path, and the isolation guard. The full **seeder fleet** (taxonomy,
 > content, sessions, backdated activity at scale) is M7c; the **data-DNA** schema-conformance/drift gate is
