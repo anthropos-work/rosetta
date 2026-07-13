@@ -173,6 +173,46 @@ The stack is still up; the warning points you straight at `/test-platform` for t
 and (for the casbin case) the fix is re-running the migrate step (see [`idempotency.md`](idempotency.md) —
 migrate is re-run-safe).
 
+### M217 — the warning now NAMES the failing probe
+
+> **It didn't used to.** `autoverify` invoked `verify.sh` as `>/dev/null 2>&1`, which threw away **every**
+> `✗ <service> <detail>` line and collapsed N failing probes into exactly **one nameless** warning. The live
+> output on `billion` was:
+>
+> ```
+> ⚠ verify live reported failing probe(s) — some service is not serving correctly.
+> ⚠⚠ autoverify demo-1: 1 check(s) FAILED — the stack is UP but may be non-functional.
+> ```
+>
+> …with **nothing anywhere naming the service.** (It was `jobsimulation`, dead in a crash loop in *every* demo.)
+> **A safety net that fires without saying what it caught is barely a safety net.**
+
+The failing probes are now listed inline, the full transcript is persisted to **`<stack>/autoverify.log`**, and a
+non-zero exit with *no* `✗` line is reported as *"the verifier itself may be broken"* rather than blamed on a
+service.
+
+### The four cheap-wins verify could not see (M217)
+
+Liveness probes cannot observe a stack that is **up and wrong**. These four are the same shape as the ISSUE-7
+casbin assert — seconds to run, decisive:
+
+| Check | Why it exists |
+|-------|---------------|
+| **a demo-patch was REFUSED** | **This is literally how the perf rot survived four releases.** Both `app` perf patches refused on every run, the reason was piped to `/dev/null`, and *nothing downstream noticed*. The stack was green, looked fine, and shipped a **76-second members grid**. |
+| **snapshot replay SKIPPED** (`public.skills = 0`) | A cold cache exits `rc=5` **non-fatally**, so the catalog is empty and the bring-up still prints **UP**. Every skill surface renders blank. |
+| **the cockpit isn't answering** | The presenter has **no way in** — and until M217 the bring-up logged *"presenter cockpit serving on …"* **unconditionally**, even when it had just died on a leaked port. |
+| **the fake-FAPI isn't answering** | **NOBODY CAN LOG IN** — and verify stayed **green**, because no probe covered it. A demo nobody can log into is not a demo. |
+
+### `<stack>/autoverify.json` — the machine-readable signal
+
+```json
+{"project":"demo-1","offset":10000,"warnings":0,"green":true}
+```
+
+Until M217, `/demo-up` **exited 0 on a red verify and still printed UP**, so nothing downstream could gate on
+*"did this stack actually come up green?"*. **M218 measures login latency and must not measure a broken stack** —
+this file is what it gates on.
+
 ## Cross-references
 
 - [`rosetta_demo.md`](rosetta_demo.md) — the demo lifecycle + the unified registry whose **recorded ports**
