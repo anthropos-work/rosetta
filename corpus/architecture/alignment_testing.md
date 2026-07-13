@@ -168,8 +168,48 @@ So the framework **records once and replays forever**:
 
 > **Honesty caveat:** the score is only as complete as the DNA. 100% on a thin DNA is hollow — it
 > just means "matches across the genes we bothered to enumerate." Two things keep the DNA honest:
-> `/align-dna`'s capability-coverage check (every consumed endpoint is present) and the
-> version-bump DNA diff (M1b) that surfaces newly-added source behavior.
+> the **capability-coverage check** (`alignctl dna coverage` — below) and the version-bump DNA diff (M1b)
+> that surfaces newly-added source behavior.
+
+### The capability-coverage check — what it actually guarantees
+
+> ⚠ **This section was rewritten in M218 because the previous version described a check that did not
+> exist.** The doc had offered, as *the* named mitigation for a hollow score, "`/align-dna`'s
+> capability-coverage check (every consumed endpoint is present)". There was no such check: `alignctl dna`
+> was `list | diff | validate`, and the only "coverage" anywhere in the tooling was an **eyeball** step in
+> the `/align-dna` skill ("*List to eyeball coverage*"). The cost was exact. `GET /v1/users/{id}` — which
+> next-web's server-side `currentUser()` calls on **every authenticated render** — had no capability in any
+> of the five DNAs, so Clerkenstein scored **100% critical / 100% overall / 0 divergences while its fake
+> BAPI returned the wrong human for every hero**. The goldens ratified the defect: the score was identical
+> before and after the fix. A safeguard that exists only in prose is not a safeguard.
+
+The check is now real, and it **binds**:
+
+| | |
+|---|---|
+| **What declares it** | A DNA may carry a `consumed_surface`: a list of `{endpoint, consumer, capability \| covered_by}` — the endpoints a **real consumer actually calls**, and who calls each one. |
+| **What enforces it** | `DNA.Validate()` **rejects** a consumed endpoint that names no capability (or names one that doesn't exist). `alignctl run` calls `Validate` **before it scores anything**, so such a DNA cannot be scored at all — the missing-gene state is *unrepresentable*, not merely undetected. |
+| **How you run it** | `alignctl dna coverage --dna PATH` → exit **0** every declared endpoint has a gene · exit **2** an endpoint is uncovered, *or the DNA declares no surface at all*. Wired into `gate.sh`, so it runs on every gate, before the score. |
+| **The escape hatch** | `covered_by` names a capability on **another** surface's DNA (e.g. `clerk-express-1:ClerkClientBAPI/get-organization`). It is **not** machine-verified — but it must be *written down*, which is the whole difference from the silence that hid the bug. |
+
+**And what it does NOT guarantee — stated plainly, because over-claiming this is what caused the bug:**
+
+- **It binds the *declared* surface. It cannot discover consumption nobody wrote down.** This is a strictly
+  weaker claim than the old "every consumed endpoint is present," and it is the true one. Adding a consumer
+  without adding its endpoint to `consumed_surface` re-opens exactly the M218 hole.
+- **Only `clerk-2.6.0` (the fake BAPI's HTTP surface — where the failure happened) declares a
+  `consumed_surface` today.** The other four DNAs declare none, so the check **does not bind for them**;
+  `gate.sh` prints a loud `NO COVERAGE CLAIM` warning on every run for each. An undeclared surface reads as
+  **unguarded**, never as clean — that is why the bare command exits 2 rather than passing quietly.
+- It checks that an endpoint *has a gene*. It cannot check that the gene is a **good** one. A gene whose
+  golden encodes the mirror's own bug still passes — see the `universal-user` variants below.
+
+> **The deeper lesson (M218 D15).** Three genes *did* name identity — `ExtractIdentity`, `Me`,
+> `DeployIdentity` — and all three assert the variant **`universal-user`**: the stub itself. They stayed
+> green *because* the mirror served the stub. **When a golden is captured from a mirror rather than derived
+> from the source's contract, it ratifies whatever the mirror does — including its bugs.** The fix is
+> two-sided assertions: `GetUser` now asks for hero **A** *and* hero **B** and requires **A ≠ B**, which no
+> single stub identity can satisfy. Prefer a gene that *cannot* be satisfied by the failure mode you fear.
 
 ## The two skills
 
@@ -229,14 +269,19 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   and runner all live in the **`clerkenstein` repo**, not here.
 - **M1b (Clerk drift detection)** reuses the framework wholesale: on a Clerk version bump, `alignctl
   dna diff` shows what changed and `alignctl run` re-scores the existing mirror against the new
-  source — a CI gate on the alignment score turns a silent break into a flagged, mechanical update.
-  Mechanized as `alignment/scripts/{gate,drift-check}.sh` + a weekly CI workflow in the clerkenstein repo;
-  the bump runbook + exit-code contract are in the repo's own
-  [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from [Clerkenstein](../services/clerkenstein.md)).
+  source — turning a silent break into a flagged, mechanical update.
+  Mechanized as `alignment/scripts/{gate,drift-check}.sh`; the bump runbook + exit-code contract are in the
+  repo's own [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
+  [Clerkenstein](../services/clerkenstein.md)).
+  > ⚠ **These scripts are run by hand, not by CI (corrected in M218).** This page previously described "a
+  > weekly CI workflow in the clerkenstein repo" and said `gate.sh` "CI-gates it alongside the Go DNA."
+  > **There is no CI workflow** — `rosetta-extensions` has no `.github/workflows` at all. The gate is a
+  > *manual* `/align-run`. Drift is therefore caught only when someone runs it, which is precisely why the
+  > alignment blind spot survived four releases undetected.
 - **M2 (browser session + webhook)** proves the framework is **surface-generic**: it authors a *second*
   DNA — `clerk-js-5` (the FAPI/browser surface) — with its own runner (`jsfapirun`) and goldens, scored
   by the same `alignctl` to the same gate (100%/100%, 9 genes). Same machinery, a new surface; the
-  parameterized `gate.sh` CI-gates it alongside the Go DNA. See
+  parameterized `gate.sh` gates it alongside the Go DNA (**by hand — there is no CI**; see the M1b note). See
   [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
   browser↔backend coherence chain).
 - **M2c (`@clerk/express` backend session verification)** exercises the framework a **third** time, on the

@@ -1,0 +1,95 @@
+# Hardening Ledger — M218 seat change
+
+## Pass 1 — 2026-07-14 — final
+
+**Iters hardened this pass:** all milestone-touched code (final mode, cumulative scope — iter-01 … iter-05)
+**Tiks covered since prior pass:** all iters in milestone (no prior harden pass)
+
+**Scope.** The true M218 rext footprint is **17 files** (`3fab10c^..f296e5e`) — `clerk-backend/` +
+`cmd/fake-bapi/` (iter-04), `rosetta-demo` + `up-injected.sh` + `test_purge.py` (iter-05), the
+`next-web-ssr-graphql-origin` demo-patch + `gen_injected_override.py` (iter-03), the `stack-verify/e2e/`
+latency harness (iter-02), `cockpit.py`. Plus, in rosetta: `alignment_testing.md`, `verification.md`,
+`cockpit-spec.md`, `latency-budget.md`. (`dev-stack/` appeared in an earlier, wrongly-widened diff — it is
+**M217's**, not this milestone's.)
+
+### The three owed Fate-1 items — ALL LANDED
+
+| # | Item | Outcome | Proof |
+|---|---|---|---|
+| **F1-1** | `GetUser` per-hero-identity gene on the BAPI surface | **LANDED** | `gate.sh` exit **2 (RED)** @ `8ebc89e^` — GetUser **0/2**, critical **88.2%**, both heroes returned the stub `11111111-…`/`demo@anthropos.test`. `gate.sh` exit **0 (GREEN)** @ HEAD — GetUser **2/2**, critical **100.0%**. Measured, not asserted. |
+| **F1-2** | Teardown must unlink `autoverify.json` (F-10) | **LANDED** | `clear_stack_verdict()` called **first** in `cmd_down` + unlink at bring-up start + `ts` field. **7 regression tests, all 7 RED against `f296e5e`**, all green after. |
+| **F1-3** | The capability-coverage check is not binding | **LANDED** | It did not merely fail to bind — **it did not exist**. `alignctl dna` was `list\|diff\|validate`; the only "coverage" was an *eyeball* step in `align-dna/SKILL.md:63`. Now: `consumed_surface` schema + `Validate` rejection (so `alignctl run` **refuses to score**) + `alignctl dna coverage` + wired into `gate.sh`. Doc rewritten to state what it actually guarantees **and what it does not**. |
+
+**How F1-1 avoided being theatre.** The runner never mounts a roster, so an in-process gene falls back to the
+stub — it would have been **green against the broken *and* the fixed mirror**. It also could not have compiled
+against the pre-fix store (`Store.SeedUserIdentity` did not exist), and **a build error is not a red gene**.
+The one seam byte-identical across the fix is the demo's own: `FAKE_FAPI_ROSTER` → `cmd/fake-bapi` →
+`GET /v1/users/{id}`. The gene drives that binary as a subprocess, which also fences the **wiring**.
+
+**Coverage delta on touched files** (coverage used as a *finder*, not a goal — see below for what it found):
+
+| file | before | after |
+|---|---|---|
+| `clerkenstein/clerk-backend/{server,resources,store}.go` (`getUser` path) | unit tests only (iter-04); **no alignment gene** | **4 critical genes** + 3 unit tests; the `getUser` HTTP path is now gated |
+| `clerkenstein/cmd/fake-bapi/main.go` (roster→identity seeding) | **0 tests** | fenced end-to-end by the roster-driven genes (the binary itself is booted) |
+| `alignment/internal/dna` + `cmd/alignctl` | no coverage check at all | **17 new tests** (9 validate + 8 CLI/exit-code) |
+| `demo-stack/rosetta-demo` (`cmd_down`) | purge fenced (iter-05); **verdict lifecycle unfenced** | **7 tests** (behaviour + wiring + ordering) |
+| `demo-stack/patches/next-web-ssr-graphql-origin/` + `gen_injected_override.py` | **0 tests — the milestone's headline fix** | **12 tests**, incl. the live-clone freshness gate |
+
+**Tests added:** 36 (17 Go alignment · 12 Go clerkrun · 19 Python — 7 verdict-lifecycle, 12 SSR-chain).
+_Counted by file: `coverage_test.go` ×2, `bapi_http_test.go`, `test_verdict_lifecycle.py`, `test_ssr_origin_chain.py`._
+
+**Bugs surfaced + fixed inline:**
+- `gate.sh` **could not run at all on a clean box** — `GOPROXY=off` + a `go.mod` `toolchain` directive made
+  `GOTOOLCHAIN=auto` try to *download* the toolchain and die on `checksum database disabled` (a red herring;
+  the local Go already satisfied the directive). Pinned `GOTOOLCHAIN=${GOTOOLCHAIN:-local}`. (commit `dd65ad0`)
+- My own first ordering test matched `docker compose` inside a **comment** and failed a correct file. Fixed the
+  test (assert on comment-stripped code) — and added `checked > 0` guards so an assertion that inspects
+  nothing **fails** instead of passing. (commit `fc32baa`)
+
+**Cross-iter integration finding (the defining work of final mode).** The milestone's **headline fix** — the
+SSR GraphQL origin, worth ~37.5 s of the 39.45 s → 2.4 s collapse — is a **two-part chain across two
+subsystems** (the demo-patch reads `WUNDERGRAPH_SSR_ENDPOINT`; `gen_injected_override.py` supplies it) and
+**had zero tests**. Neither half works alone. Per-iter regression tests, each scoped to one iter's diff,
+*structurally cannot* hold such a chain together. Worse, `demopatch` **refuses a drifted patch silently** —
+`demopatch-spec.md`'s own warning is that this shipped a 76 s members grid for four releases. Landed 12 tests
+(`ef6eefc`), mutation-proven: half-2 deleted → 2 fail; public origin → 2 fail; anchor drift → gate fails.
+
+**Flakes stabilized:** none found. The new BAPI genes boot real subprocesses on ephemeral ports — flake gate
+run **3×** consecutively: clean 3/3 (Go alignment, Go clerkrun, both Python suites, and `gate.sh` rc=0).
+
+**Knowledge backfill:**
+- `corpus/architecture/alignment_testing.md` — the capability-coverage section **rewritten** (it described a
+  check that did not exist), with an explicit *what it does NOT guarantee*; the **CI-inert correction**
+  (there is **no** `.github/workflows` in rext — the "weekly CI workflow" never existed); and the
+  golden-ratifies-the-mirror lesson (prefer genes a stub **cannot** satisfy).
+- `corpus/ops/verification.md` — **THE STALE-VERDICT HAZARD** promoted to a first-class named hazard (below).
+- `.claude/skills/align-dna/SKILL.md` — step 7 "*List to eyeball coverage*" → **run `alignctl dna coverage`**.
+- `rosetta-extensions/clerkenstein/knowledge/alignment.md` + `alignment/README.md` — new gene counts, the
+  97.2% score and why, and the `expressrun` dependency-gate honesty note.
+
+**The named hazard (the cross-cutting pattern).** The same failure class hit **five times in one milestone** —
+F-6, F-9, F-10, plus two probe-level instances (`[ -e ]` reading permission-denied as absence; `assertNotIn`
+passing on a failed command's empty output). It had already survived M217's hardening. Fixing a sixth instance
+in isolation would have missed the point, so it is now documented as a first-class hazard:
+**a status artifact that outlives the thing it describes, and is then read as evidence.** Two invariants:
+(1) a verdict must not outlive its subject — destroy it on teardown *and* at the start of every bring-up, and
+destroy it **first**; (2) **absence must be the safe state** — a grader with no verdict must refuse to measure.
+Corollary for the checks themselves: a probe that can pass **without executing its assertion** is a stale
+verdict in test form.
+
+**Stop condition:** `stabilized` — the three owed Fate-1 items are landed and independently proven
+(red-before/green-after, not asserted); the cumulative-scope dimension scan found one further gap (the
+unfenced headline chain), which is now closed; the flake gate is clean 3/3; and the remaining surfaced items
+are all **routed forward with named handlers** (below), none fixable inline without violating the
+graded-artifact boundary.
+
+### Routed forward (NOT fixable inline — recorded, not silently dropped)
+
+| handler | item |
+|---|---|
+| `FIX-M219-bapi-org-eid` (**F-11**, new) | The BAPI fabricates `organization.public_metadata.eid` as `"org_eid_"+orgID` for any non-demo org instead of the **real** org UUID the roster carries — the **ORG-level twin** of the user-identity stub. **Not fixed here:** `resources.go` is the demo's **runtime** path and the 5-cycle cold gate was graded on the current binary (iter-05 **D13**); changing it post-gate would ship something other than what was measured. Landed instead as a **deliberately RED, permanently-visible** standard gene (`MembershipOrgIdentity/real-org-eid`) → Go surface **97.2% / 100% critical**, gate still MET. **A silently-omitted field is how the headline bug survived four releases.** |
+| `DOC-M218-audit-corrections` | **F1-3 discharged** (the coverage claim) **+ the CI-inert correction discharged**. **Remaining:** the `clerkenstein.md:3-4` header. |
+| `TEST-M219-expressrun-dep-gate` | `expressrun` is **UNMEASURABLE** on a box without `@clerk/express` `node_modules` (rc=2, no score) — reproduced identically at baseline `f296e5e`, so **pre-existing**. iter-04's "all 5 surfaces 100%" is therefore **not reproducible here**; 4 of 5 were re-measured this pass. |
+| `TEST-M219-freshness-gate-skips` | The demo-patch live-clone freshness gate **skips** when `stack-demo/next-web-app` is absent (the established `test_demopatch.py` tradeoff). It ran here — but a box without the clone gets **no** anchor-drift protection. Itself an instance of *absence read as success*. |
+| _(pre-existing, out of M218 scope — **M217** footprint)_ | `stack-injection` `test_next_web_block_shape` (1 failure) and `dev-stack/tests/test_dev_stack.py` (several) fail on this box — **reproduced at baseline**. `dev-stack`'s are environment-driven (this box's `.agentspace/secrets` lacks critical keys, so the secret-coverage pre-flight aborts before the N-guard is reached — which also suggests `guard_n` should precede the pre-flight). |

@@ -8,9 +8,22 @@ _Implementation + strategy choices with rationale (incl. tok strategy revisions)
 
 ---
 
-## OPEN — Fate-1 items owed by this milestone, with a named handler
+## ✅ CLOSED — Fate-1 items owed by this milestone (all three LANDED, 2026-07-14)
 
-_Milestone-scope, because the handler is a milestone-scope actor. **Do not close M218 with these open.**_
+> **Discharged by `/developer-kit:harden-mstone-iters --final` (pass 1).** Full evidence:
+> [`hardening-ledger.md`](hardening-ledger.md). `/developer-kit:close-milestone` is unblocked.
+>
+> | # | Outcome | The proof (measured, not asserted) |
+> |---|---|---|
+> | **F1-1** | **LANDED** | `gate.sh` exit **2 (RED)** @ `8ebc89e^` — `GetUser` **0/2**, critical **88.2%**; both heroes came back as the stub `11111111-…`/`demo@anthropos.test`. `gate.sh` exit **0 (GREEN)** @ HEAD — `GetUser` **2/2**, critical **100.0%**. The gene fences the bug. |
+> | **F1-2** | **LANDED** | `clear_stack_verdict()` runs **first** in `cmd_down` (before any step that could abort it), plus an unlink at bring-up start and a `ts` field. **7 regression tests — all 7 RED against `f296e5e`.** |
+> | **F1-3** | **LANDED** | The check **did not exist** (not merely "did not bind"). Now: `consumed_surface` + a `Validate` rejection that makes `alignctl run` **refuse to score**, `alignctl dna coverage`, wired into `gate.sh`. Doc rewritten to state what it guarantees **and what it does not**. |
+>
+> **Two new blind spots surfaced while landing them** — `GET /v1/users/{id}/organization_memberships`
+> (studio-desk's admin gate: no gene in any DNA either → now 2 critical genes) and **F-11**, the ORG-level
+> twin of the user stub (routed forward, see below).
+
+_Original statement of the three items, kept verbatim for the record:_
 
 **Handler: `/developer-kit:harden-mstone-iters --final`** (runs after the gate fires, before
 `/developer-kit:close-milestone`).
@@ -22,6 +35,77 @@ _Milestone-scope, because the handler is a milestone-scope actor. **Do not close
 | **F1-3** | **The capability-coverage check is not binding.** `alignment_testing.md:169–172` offers, as the *named mitigation* for a hollow score, "`/align-dna`'s capability-coverage check (**every consumed endpoint is present**)". `GET /v1/users/{id}` **is** consumed (next-web's server-side `currentUser()`, every authenticated render) and has no capability — so the safeguard did not bind. | The doc currently **over-claims a guarantee the tooling does not provide**. Either make it bind, or say so. | Either the check covers the fake BAPI's read surface, or `alignment_testing.md` states honestly that it does not. Joins `DOC-M218-audit-corrections`. |
 
 _Full analysis + evidence: `iter-05/decisions.md` **D15**._
+
+---
+
+## D16 — Ship an honest 97.2% over a hollow 100% (the deliberately RED gene) — 2026-07-14
+
+**Handler:** `/developer-kit:harden-mstone-iters --final`, pass 1.
+
+**What surfaced.** Landing F1-1 exposed a **second** identity stub, one layer up. The demo roster carries each
+hero's real internal **org** UUID (`org_eid`), and real Clerk reports it in
+`organization.public_metadata.eid` (the platform syncs it there via `UpdateClerkOrganizationWithExternalId`).
+Clerkenstein's `organizationWithEid` instead **fabricates** `"org_eid_" + orgID` for any org that isn't the
+hardcoded demo org. It is the **ORG-level twin of the user-level stub that cost this milestone ~6 s per
+render** — the same defect, the same blind spot, one field over. Nothing measured it. (**F-11**)
+
+**The bind.** Three options, all bad in different ways:
+
+1. **Fix it inline.** `resources.go` is the demo's **runtime** path. The milestone's exit gate is *a p95 over
+   5 cold reset-to-seed cycles*, graded on the current binary — and **iter-05 D13 established that a code
+   change restarts the count**. Fixing it post-gate means **shipping something other than what was measured**,
+   which is precisely the sin iter-05 spent its whole budget eradicating (grading a stack that was not what it
+   claimed to be). Rejected.
+2. **Omit the field from the gene.** The gene goes green, the score stays 100%, and nobody ever hears about
+   it. This is *exactly* how the headline bug survived four releases — **a silently-omitted field**. Rejected,
+   emphatically.
+3. **Land it as a RED gene.** The mirror is genuinely not 100% faithful, so **the score should not say 100%**.
+
+**The decision: option 3.** `MembershipOrgIdentity/real-org-eid` ships **red**, `standard` weight. The Go
+surface now reports **97.2% overall / 100% critical** — the gate (**≥95 / =100**) is still **MET**, and the
+divergence is named in the report on **every single run** until someone lands the fix with a fresh battery:
+
+```
+FAIL MembershipOrgIdentity/real-org-eid  (exact, w2)
+     value differs: source={"org_eid":"1d0e6c22-…"} mirror={"org_eid":"org_eid_org_seed_demo-1"}
+```
+
+**Why this is the right trade.** The entire thesis of this milestone is that **a 100% score which hides a lie
+is worse than an honest 97%** — Clerkenstein scored 100%/100%/0-divergences while returning the wrong human
+for every hero. Restoring a clean 100% by *looking away from* the next stub would reproduce the failure mode
+in the very pass convened to end it. The score is now a measurement rather than a decoration.
+
+**Routed forward:** `FIX-M219-bapi-org-eid` (needs a runtime change + a fresh 5-cycle battery).
+
+**⚠ Reviewer's note.** This deliberately reduces a reported score from 100% → 97.2%. If that is unacceptable,
+the honest alternative is **not** to omit the gene but to land the runtime fix *and re-run the 5-cycle cold
+battery* — never to drop the assertion.
+
+---
+
+## D17 — The stale-verdict hazard is the *class*, not five bugs — 2026-07-14
+
+M218 hit the **same failure class five times**: **F-6** (a 9-h-old `autoverify.json` graded a
+production-Clerk-wired stack green), **F-9** (`--purge` returned `rc=1`, purged nothing, said nothing),
+**F-10** (a green verdict for a stack with **zero containers**), plus two probe-level instances (`[ -e ]`
+reading *permission-denied* as *absence*; `assertNotIn` passing on a **failed** command's empty output). It
+had **already survived M217's hardening**.
+
+**Decision:** stop fixing instances. Name the class and give it invariants —
+[`corpus/ops/verification.md` → *THE STALE-VERDICT HAZARD*](../../../../../corpus/ops/verification.md):
+**a status artifact that outlives the thing it describes, and is then read as evidence.**
+
+1. **A verdict must not outlive its subject.** Destroy it on teardown **and** at the start of every bring-up —
+   and destroy it **first**, before anything that could fail and abort the sequence (exactly how F-9 leaked).
+2. **Absence must be the safe state.** A grader with no verdict **refuses to measure**. Nearly every instance
+   is the same mistake in different clothing: treating *"nothing here"* as *"nothing wrong."*
+
+**Corollary, applied to this pass's own tests:** a probe that can pass **without ever executing its
+assertion** is a stale verdict in test form. The new regression tests count what they inspected and **fail if
+the count is zero**.
+
+**Sibling hazard, same family:** a **safeguard that exists only in prose** — which is precisely what F1-3
+turned out to be (`alignment_testing.md` named a coverage check that had never been written).
 
 ---
 

@@ -206,12 +206,19 @@ casbin assert — seconds to run, decisive:
 ### `autoverify.json` — the machine-readable signal
 
 ```json
-{"project":"demo-1","offset":10000,"warnings":0,"green":true}
+{"project":"demo-1","offset":10000,"warnings":0,"green":true,"ts":"2026-07-13T22:41:07Z"}
 ```
 
 Its path is **`rosetta-extensions/demo-stack/stacks/<project>/autoverify.json`** — *not* `<stack>/autoverify.json`,
 as this doc claimed until M218 (**iter-01 F-2/D3**; the tooling that gates on it, `stack-verify/e2e/run-latency.sh`,
 reads the real path).
+
+**Its lifecycle is the guarantee** (M218 harden, **F-10**). The file is **unlinked on teardown**
+(`rosetta-demo`'s `clear_stack_verdict`, called *first* in `cmd_down`, before any teardown step that could
+itself fail) **and again at the start of every bring-up** (`up-injected.sh`). So a verdict on disk can only
+have been written by *the run under test*. **Absence is the safe state**: a grader with no verdict refuses to
+measure. `ts` is defence-in-depth, not the guard — if some future path ever misses an unlink, the staleness
+is at least *visible*.
 
 Until M217, `/demo-up` **exited 0 on a red verify and still printed UP**, so nothing downstream could gate on
 *"did this stack actually come up green?"*. **M218 measures login latency and must not measure a broken stack** —
@@ -250,6 +257,48 @@ that one file, so a single probe covers the class.
 > inlining (`NEXT_PUBLIC_*` and friends) is invisible to every ENV-level guard — and it was **M218's antagonist
 > twice over**: once as C-1 (a build-inlined URL a consumer *cannot override*) and once as F-6 (a build-inlined key
 > a rebuild path *failed to supply*).
+
+## THE STALE-VERDICT HAZARD — a status artifact that outlives the thing it describes
+
+> **This is a first-class, named hazard, not an anecdote.** M218 hit the *same failure class* **five separate
+> times** — in the tooling, in the demo lifecycle, and in the probes themselves. It had already survived one
+> full hardening pass (M217). Fixing the sixth instance in isolation would miss the point: **the class is the
+> bug.**
+
+**The shape.** Some artifact records a *verdict* — green, done, absent, empty, purged. Its subject then
+changes or dies. The artifact does not. Something later reads it as **current evidence**, and it lies.
+
+**The five instances, all in one milestone:**
+
+| # | The artifact | What it asserted | The truth |
+|---|---|---|---|
+| **F-6** | `autoverify.json`, 9 h old | `{"green":true}` | An out-of-band rebuild had swapped the image; the stack was wired to **production Clerk** and nobody could log in. |
+| **F-9** | `/demo-down --purge`'s **exit code** | *(a bare `rc=1`, unread)* | The purge **deleted nothing**. Postgres's UID-1001/0700 cluster dir defeated `rm -rf`; `set -euo pipefail` then aborted teardown. Every "cold" bring-up for **days** reused a 2-day-old database — including the one that first claimed the exit gate. |
+| **F-10** | `autoverify.json`, not unlinked on teardown | `{"green":true,"warnings":0}` | The stack had **zero containers**. The bring-up had *failed*. It still graded green to every reader. |
+| — | a `[ -e ]` file test | "absent" | **Permission denied.** Unreadable was read as not-there. |
+| — | an `assertNotIn` probe | "the bad string isn't present" | The command had **failed and produced no output**. Absence of evidence scored as evidence of absence. |
+
+**The two invariants that kill it:**
+
+1. **A verdict must not outlive its subject.** Destroy it on teardown *and* at the **start** of every
+   bring-up — and destroy it **first**, before any step that could itself fail and abort the sequence
+   (exactly how F-9 leaked). Then the artifact's *presence* means "the run under test wrote this," which is
+   the only thing a grader can safely conclude from it.
+2. **Absence must be the safe state.** A grader with **no** verdict must **refuse to measure** — never
+   default to pass. Nearly every instance above is the same mistake in different clothing: *treating
+   "nothing here" as "nothing wrong."* An empty result is not evidence of success.
+
+**And the corollary for the checks themselves:** a probe that can pass **without ever executing its
+assertion** is a stale verdict in test form. `assertNotIn` on a failed command's empty output, a `[ -e ]`
+that cannot read the path, a coverage check nobody wired up — all report green having measured **nothing**.
+Assert that the check *ran*: count what you inspected, and fail if the count is zero. (M218's own new
+regression tests do this — see `test_verdict_lifecycle.py`'s `checked > 0` guards.)
+
+> **The sibling hazard, same family:** a **safeguard that exists only in prose**. `alignment_testing.md`
+> named a "capability-coverage check" as *the* mitigation against a hollow alignment score. There was no such
+> check — and the endpoint it would have caught was being called on every authenticated render while the
+> mirror scored **100%**. A documented guarantee with no enforcement behind it is a stale verdict about your
+> own tooling. See [`alignment_testing.md`](../architecture/alignment_testing.md#the-capability-coverage-check--what-it-actually-guarantees).
 
 ## Cross-references
 

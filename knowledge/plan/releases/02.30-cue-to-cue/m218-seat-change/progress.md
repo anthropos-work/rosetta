@@ -18,13 +18,27 @@ entry per iter and creates `iter-NN/` dirs as it goes._
 **None — the milestone's exit gate is MET *as written*** (iter-05: 5/5 cold reset-to-seed cycles, both vantages,
 worst p95 **2413 ms** vs < 5000 ms).
 
-Next: **`/developer-kit:harden-mstone-iters --final`**, then `/developer-kit:close-milestone`.
+Next: ~~`/developer-kit:harden-mstone-iters --final`~~ **DONE (pass 1, 2026-07-14)** →
+**`/developer-kit:close-milestone`**.
 
-> ⚠ **The final harden pass owes three Fate-1 items** (see `decisions.md` → *OPEN — Fate-1 items owed by this
-> milestone*): **F1-1** the `GetUser` per-hero identity gene (the alignment blind spot — Clerkenstein scored
-> 100%/100% while serving a stub identity to every hero), **F1-2** teardown must unlink `autoverify.json`
-> (F-10), **F1-3** the capability-coverage check does not bind (the corpus over-claims it). **Do not close M218
-> with these open.**
+> ✅ **The final harden pass LANDED all three owed Fate-1 items** — see
+> [`hardening-ledger.md`](hardening-ledger.md) and `decisions.md` → *CLOSED — Fate-1 items owed by this
+> milestone*. **`/developer-kit:close-milestone` is unblocked.**
+>
+> - **F1-1** — the `GetUser` per-hero identity gene: **RED (`gate.sh` exit 2, critical 88.2%) against
+>   `8ebc89e^`, GREEN (exit 0, critical 100%) after.** Measured on both sides — it fences the bug, it is not
+>   theatre. Also surfaced a **second** uncovered endpoint (`…/organization_memberships`, studio-desk's admin
+>   gate) → 2 more critical genes.
+> - **F1-2** — `autoverify.json` is now unlinked on teardown **and** at bring-up start (`ts` added as
+>   defence-in-depth). **7 regression tests, all 7 RED pre-fix.**
+> - **F1-3** — the capability-coverage check **did not exist at all** (`alignctl dna` was
+>   `list|diff|validate`; the "check" was an *eyeball* step in a skill). Now binding: `alignctl run` **refuses
+>   to score** a DNA with an uncovered consumed endpoint. Corpus corrected.
+>
+> **Two things a reviewer should look at first:** (1) the Go alignment surface now scores **97.2% / 100%
+> critical** — not 100% — because a **deliberately RED** gene (**F-11**, the ORG-level twin of the user stub)
+> now tells the truth about a real divergence rather than omitting the field (**D16**); (2) the milestone's
+> **headline fix had no test at all** until this pass (the SSR-origin chain — 12 tests added, mutation-proven).
 
 ## Carry-forward queue (none block the gate)
 
@@ -34,7 +48,10 @@ Next: **`/developer-kit:harden-mstone-iters --final`**, then `/developer-kit:clo
 | `FIX-M218-telemetry-egress` | **F-5:** the demo attempts **Google Analytics + DoubleClick + Google Ads + LinkedIn Ads** on every authenticated load (+ the in-scope Clerk-telemetry off). |
 | `FIX-M218-c5-clerkjs` | **C-5:** vendor clerk-js + bound the **unbounded** `Timeout: 0` (`server.go:187`). Alignment-invisible ⇒ gate-free. |
 | `PROBE-M218-c3-rerun` | **C-3:** now exercisable. The router **is** logging cms/Directus **403s** (`getSkillPaths`, `_entities JobSimulation`) on the CONTENT path — not the login path; affects data-settle. |
-| `DOC-M218-audit-corrections` | **DONE for M43-D5 + `latency-budget.md`** (iter-04). **Remaining:** the CI-inert correction (`alignment_testing.md:232,233,239`) + the `clerkenstein.md:3-4` header + **(iter-05, F1-3)** the "capability-coverage check (every consumed endpoint is present)" claim at `alignment_testing.md:169–172` — **it does not bind** (the BAPI's consumed `GET /v1/users/{id}` has no capability). |
-| `HARDEN-M218-F1-1` (**Fate 1** — final harden pass) | **The alignment blind spot (D15).** Add a `GetUser` gene with **per-hero identity** to the BAPI DNA (`clerk-2.6.0`). Must be **red against `8ebc89e^`, green after** — Clerkenstein scored **100%/100%, 0 divergences** *before and after* iter-04 while serving a **stub identity to every hero**. **Do not close M218 with this open.** |
-| `HARDEN-M218-F1-2` (**Fate 1** — final harden pass) | **F-10:** teardown does **not** unlink `autoverify.json`, so a torn-down/failed stack still presents `{"green":true,"warnings":0}` to every grader (incl. `run-latency.sh`'s green gate). Same class as **F-6**. Fold the iter-05 battery's workaround into `cmd_down`. |
+| `DOC-M218-audit-corrections` | **DONE for M43-D5 + `latency-budget.md`** (iter-04) **+ the CI-inert correction + F1-3's coverage claim** (harden pass — and the CI claim was *worse* than inert: **rext has no `.github/workflows` at all**). **Remaining:** the `clerkenstein.md:3-4` header. |
+| ~~`HARDEN-M218-F1-1`~~ | ✅ **LANDED** (harden pass 1). RED @ `8ebc89e^` / GREEN @ HEAD, proven both sides. |
+| ~~`HARDEN-M218-F1-2`~~ | ✅ **LANDED** (harden pass 1). 7 tests, all RED pre-fix. |
+| **`FIX-M219-bapi-org-eid`** (**F-11**, new) | The BAPI fabricates `organization.public_metadata.eid` as `"org_eid_"+orgID` instead of the roster's **real** org UUID — the **ORG-level twin** of the user stub. Needs a **runtime** change + a **fresh 5-cycle battery** (iter-05 D13), so it could not land post-gate. Shipped as a **deliberately RED gene** so the score stops lying (**D16**). |
+| `TEST-M219-expressrun-dep-gate` | `expressrun` is **UNMEASURABLE** without `@clerk/express` `node_modules` (rc=2, *no score*) — **pre-existing** (identical at baseline `f296e5e`). So iter-04's "all 5 surfaces 100%" is **not reproducible on this box**; 4 of 5 were re-measured. |
+| `TEST-M219-freshness-gate-skips` | The demo-patch live-clone freshness gate **skips** when the `stack-demo/next-web-app` clone is absent — so a box without it gets **no anchor-drift protection**. Itself an instance of *absence read as success*. |
 | _(also-in-scope, from overview)_ | ant-academy real-Clerk-secret leak · `x/crypto@v0.52.0`. |
