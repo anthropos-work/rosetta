@@ -83,14 +83,16 @@ _Section checklist, derived from `overview.md` § Scope.In + the `kb-fidelity-au
         class); `tailscale-serve.md` (resolve the `<panorama-tag>` placeholder **and add the missing
         `git fetch --tags`** — that omission is how the remote landed on a bare sha)
 
-- [ ] **S8 — Green-stack proof + a machine-readable signal**
-  - [ ] Cold reset-to-seed `/demo-up` on `billion` at the new rext tag
-  - [ ] Emit `<stack>/autoverify.json` so **M218 can gate its measurements on "the stack came up green"** (today
+- [x] **S8 — Green-stack proof + a machine-readable signal**
+  - [x] Cold reset-to-seed `/demo-up` on `billion` at the new rext tag
+  - [x] Emit `<stack>/autoverify.json` so **M218 can gate its measurements on "the stack came up green"** (today
         `/demo-up` exits 0 on a red verify and still prints UP)
-  - [ ] Add the 4 missing cheap-wins: demo-patch **applied**, snapshot **replayed**, cockpit **up**, **fake-fapi up**
+  - [x] Add the 4 missing cheap-wins: demo-patch **applied**, snapshot **replayed**, cockpit **up**, **fake-fapi up**
         (*a dead fake-fapi means nobody can log in — and verify stays green today*)
-  - [ ] **Exit gate:** 0 verify warnings · 0 leaked ports · 3/3 replays exit 0 · 2/2 app patches applied ·
-        jobsimulation serving · cockpit serving a fresh manifest · both hero vantages reachable
+  - [x] **Exit gate: MET** (billion, cold reset-to-seed, 2026-07-13) — `autoverify demo-1: OK — verified-working`,
+        `{"warnings":0,"green":true}`; 3/3 replays exit 0; 2/2 app patches applied (one **self-healed**);
+        jobsimulation **serving**; cockpit healthz-gated, serving all 5 heroes; content plane **local**, no longer
+        read live from prod. **First time this box has ever come up green.**
 
 ## Notes
 
