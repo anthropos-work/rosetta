@@ -18,68 +18,68 @@ _Section checklist, derived from `overview.md` § Scope.In + the `kb-fidelity-au
   - [x] Kill the **live orphaned cockpit on `billion`** (pid 83214, `0.0.0.0:17700` — survived the `/demo-down`)
   - [x] Confirm a demo carries **no AWS credentials at all** (0 hits for `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`)
   - [x] Write `kb-fidelity-audit.md`
-  - [ ] Propagate the corrections to `roadmap.md` + `state.md`
+  - [x] Propagate the corrections to `roadmap.md` + `state.md`
 
 - [x] **S1 — `corpus/ops/demo/demopatch-spec.md`** (the blind area — FIRST, before any code)
-  - [ ] Author the spec from the audit's §5-0 ground truth: G1–**G7**, the 10 mandatory manifest keys, the sha gate
+  - [x] Author the spec from the audit's §5-0 ground truth: G1–**G7**, the 10 mandatory manifest keys, the sha gate
         (**whole-file** — the rot source) + both exit-code spaces, the byte-exact exactly-once anchor, the **three
         apply vehicles**, the **chain rule**, why the `app` patches are never reverted, the three `DEMO_NO_*`
         opt-outs, the full patch inventory, the BD-3 decision, the freshness preflight, the re-pin runbook
-  - [ ] Back-link from `frontend-tier.md`, `coverage-protocol.md`, `seeding-spec.md`, `stories-spec.md`,
+  - [x] Back-link from `frontend-tier.md`, `coverage-protocol.md`, `seeding-spec.md`, `stories-spec.md`,
         `ai-readiness.md`, `tailscale-serve.md`, `clerkenstein.md`
-  - [ ] Index it from `corpus/ops/demo/README.md` + `CLAUDE.md`
+  - [x] Index it from `corpus/ops/demo/README.md` + `CLAUDE.md`
 
 - [x] **S2 — Port reap: bring-up + teardown** (scope 1)
-  - [ ] `demo-stack/reap.sh`: `reap_port` + `reap_stack_ports` (argv-guarded; port-authoritative, not pid-only)
-  - [ ] `rosetta-demo cmd_down`: reap the **whole offset range** after `compose down`; stop the pidfile lie
+  - [x] `demo-stack/reap.sh`: `reap_port` + `reap_stack_ports` (argv-guarded; port-authoritative, not pid-only)
+  - [x] `rosetta-demo cmd_down`: reap the **whole offset range** after `compose down`; stop the pidfile lie
         (`:152-156` discards `kill`'s status, `rm -f`s regardless, and prints "stopped the presenter cockpit" even
         when nothing was killed)
-  - [ ] `up-injected.sh`: **pre-bind reap** before the cockpit launch + a compose-range preflight before `up`
-  - [ ] `cockpit.py`: wrap the bind (`:567`) in try/except → clean exit 2, not an unhandled traceback
-  - [ ] Replace the **unconditional** "presenter cockpit serving on …" log with a real `/healthz` probe
-  - [ ] Docs: `cockpit-spec.md` (teardown is **port**-authoritative), `demo/README.md` + `demo-down/SKILL.md` (the
+  - [x] `up-injected.sh`: **pre-bind reap** before the cockpit launch + a compose-range preflight before `up`
+  - [x] `cockpit.py`: wrap the bind (`:567`) in try/except → clean exit 2, not an unhandled traceback
+  - [x] Replace the **unconditional** "presenter cockpit serving on …" log with a real `/healthz` probe
+  - [x] Docs: `cockpit-spec.md` (teardown is **port**-authoritative), `demo/README.md` + `demo-down/SKILL.md` (the
         real teardown), `rosetta_demo.md` (the registry is **not** the port source), `idempotency.md` (re-up over a
         half-dead stack now self-heals)
 
 - [x] **S3 — Un-swallow the REFUSE reason** (scope 2)
-  - [ ] `up-injected.sh:701,717` — capture the helpers' stderr and re-emit it in the else-branch (**keep NON-FATAL**)
-  - [ ] Same discipline at `autoverify.sh:138` — it swallows `verify.sh`'s stderr, collapsing N failing probes into
+  - [x] `up-injected.sh:701,717` — capture the helpers' stderr and re-emit it in the else-branch (**keep NON-FATAL**)
+  - [x] Same discipline at `autoverify.sh:138` — it swallows `verify.sh`'s stderr, collapsing N failing probes into
         exactly **1 nameless** warning. Propagate the real fail-count + name the probes; tee to `<stack>/autoverify.log`
-  - [ ] Static fence in `test_frontend_build.py`: assert no applier invocation redirects stderr to `/dev/null`
-  - [ ] Preserve the asymmetry: the three next-web `demopatch` calls already do **not** swallow
+  - [x] Static fence in `test_frontend_build.py`: assert no applier invocation redirects stderr to `/dev/null`
+  - [x] Preserve the asymmetry: the three next-web `demopatch` calls already do **not** swallow
 
 - [x] **S4 — `jobsimulation` exits(1)** (scope 4)
-  - [ ] `gen_injected_override.py::build_lines` → `if name == "jobsimulation": body.append("    volumes: !reset null")`
-  - [ ] Mirror the fix on the **dev** path (`stack-core/gen_override.py`) — same bug, same 3 lines (Fate-1)
-  - [ ] Non-fatal warn if `[ -d "$HOME/.aws/credentials" ]` (a Docker-created directory is a smell worth surfacing)
-  - [ ] `test_injection.py`: positive assert (`volumes: !reset null` on jobsimulation) **and negative** (no service
+  - [x] `gen_injected_override.py::build_lines` → `if name == "jobsimulation": body.append("    volumes: !reset null")`
+  - [x] Mirror the fix on the **dev** path (`stack-core/gen_override.py`) — same bug, same 3 lines (Fate-1)
+  - [x] Non-fatal warn if `[ -d "$HOME/.aws/credentials" ]` (a Docker-created directory is a smell worth surfacing)
+  - [x] `test_injection.py`: positive assert (`volumes: !reset null` on jobsimulation) **and negative** (no service
         ever gets a `command:` key — the drafted fix that would have broken it)
-  - [ ] Doc: `corpus/services/jobsimulation.md` — a **Startup contract** section (root `RunE` **is** the server; no
+  - [x] Doc: `corpus/services/jobsimulation.md` — a **Startup contract** section (root `RunE` **is** the server; no
         `serve`/`run` subcommand; any init error ⇒ `Error:` + usage + exit 1, so *"it printed help" means an INIT
         ERROR*)
 
 - [x] **S5 — Re-pin the two `app` perf patches + the LOUD freshness preflight** (scope 3)
-  - [ ] Re-pin `app-targetrole-authz-skip` (one pin works on both boxes)
-  - [ ] Re-pin `app-aireadiness-snapshot-loadmembers` **at the tag the target box builds** (⚠ the two boxes diverge —
+  - [x] Re-pin `app-targetrole-authz-skip` (one pin works on both boxes)
+  - [x] Re-pin `app-aireadiness-snapshot-loadmembers` **at the tag the target box builds** (⚠ the two boxes diverge —
         see BD-3)
-  - [ ] The freshness preflight (fails **LOUD**, emits paste-ready corrected pins) before the inject loop
-  - [ ] A `--repin` verb
-  - [ ] **Live-clone pin tests for BOTH `app` manifests** — closing the test gap that let the drift ship
+  - [x] The freshness preflight (fails **LOUD**, emits paste-ready corrected pins) before the inject loop
+  - [x] A `--repin` verb
+  - [x] **Live-clone pin tests for BOTH `app` manifests** — closing the test gap that let the drift ship
 
 - [x] **S6 — Prime the snapshot cache on `billion`** (scope 5)
-  - [ ] `rsync` the 3 digest dirs (~1.45 GB) to `~/panorama/.agentspace/snapshots/`; verify with `stacksnap status`
-  - [ ] Re-run **with local content ON**, from a **purged** stack, `directus:11.6.1` pinned
-  - [ ] Docs: `snapshot-cold-start.md` — a **new Option 3: ship a warm cache to a remote box** (every existing
+  - [x] `rsync` the 3 digest dirs (~1.45 GB) to `~/panorama/.agentspace/snapshots/`; verify with `stacksnap status`
+  - [x] Re-run **with local content ON**, from a **purged** stack, `directus:11.6.1` pinned
+  - [x] Docs: `snapshot-cold-start.md` — a **new Option 3: ship a warm cache to a remote box** (every existing
         option is **dead on that box**: no `~/.pgpass`, no staging dump); `snapshot-spec.md` — why a cache is
         transportable at all (row surfaces digest their own tables; directus digests the whole schema)
 
 - [x] **S7 — Re-pin the drifted rext clones** (scope 6) — **AFTER S2's reap**
-  - [ ] Re-verify the subset proof, then `git fetch --tags` (**mandatory** — neither clone has `v2.2`) + `checkout`
-  - [ ] **Fix the drift injector**: `.claude/skills/stack-secrets/SKILL.md:75` hardcodes `stage-door-m30` and
+  - [x] Re-verify the subset proof, then `git fetch --tags` (**mandatory** — neither clone has `v2.2`) + `checkout`
+  - [x] **Fix the drift injector**: `.claude/skills/stack-secrets/SKILL.md:75` hardcodes `stage-door-m30` and
         checks it out in the same clone `/demo-up` pins — and `/demo-up` invokes `/stack-secrets`. Without this the
         re-pin is a **no-op within one run**
-  - [ ] Promote `ensure-clones.sh`'s pin guard from **WARN to FAIL** (+ `DEMO_ALLOW_UNPINNED_REXT=1`)
-  - [ ] Docs: `rosetta_demo.md` (drop the stale `v1.10.1` prose copy of the pin — the prose copy *is* the drift
+  - [x] Promote `ensure-clones.sh`'s pin guard from **WARN to FAIL** (+ `DEMO_ALLOW_UNPINNED_REXT=1`)
+  - [x] Docs: `rosetta_demo.md` (drop the stale `v1.10.1` prose copy of the pin — the prose copy *is* the drift
         class); `tailscale-serve.md` (resolve the `<panorama-tag>` placeholder **and add the missing
         `git fetch --tags`** — that omission is how the remote landed on a bare sha)
 
