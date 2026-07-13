@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M217 clean-stage (planned — opens the build)"
+active_milestone: "M217 clean-stage — BUILT (all 9 sections; exit gate MET on billion). Awaiting /developer-kit:close-milestone"
 last_closed: "v2.2 panorama — 2026-07-12 (tag v2.2, 4 milestones M212..M215) — external-shareability over Tailscale"
-phase: "designed — awaiting /developer-kit:build-milestone on M217"
+phase: "M217 built + green on billion — awaiting /developer-kit:harden-milestone (optional) then /developer-kit:close-milestone"
 last_updated: "2026-07-13"
 ---
 
@@ -53,15 +53,41 @@ not three, replays were cache misses. All three corrected; gate cleared to **YEL
 `0.0.0.0:17700`) — an unauthenticated hero-vending panel pointing at a deleted database. Killed manually. That is
 **S2's defect, caught live**: teardown reaps by PID only, discards `kill`'s status, and prints success regardless.
 
-**Active milestone:** **M217 "clean stage"** (`section`, medium) — **planned; opens the build.** A `/demo-up` that
-comes up **green**: reap the leaked cockpit port, un-swallow the demo-patch REFUSE reason, re-pin the two `app` perf
-patches + a **loud** freshness preflight, fix `jobsimulation` exits(1), prime the snapshot cache on `billion`, re-pin
-the drifted rext clones. Delivers the **`demopatch-spec.md`** the whole release depends on (a blind area today).
+**Active milestone:** **M217 "clean stage"** (`section`, medium) — **BUILT (2026-07-13). All 9 sections closed; the
+exit gate is MET on `billion`.** rext code-of-record: **`cue-to-cue-m217`**.
 
-**Phase:** **designed — awaiting `/developer-kit:build-milestone`** on M217.
+> **The exit gate, on a cold reset-to-seed `/demo-up` on the remote Linux VM:**
+> ```
+> ✓ demo-patches: none refused        ✓ taxonomy replayed: public.skills = 42790
+> ✓ presenter cockpit answering       ✓ clerkenstein fake-FAPI answering (hero login is possible)
+> ▶ autoverify demo-1: OK — verified-working.     autoverify.json: {"warnings":0,"green":true}
+> ```
+> **3/3 snapshot replays exit 0** (was 2 cache-miss + 1 rc=4) · content plane now **LOCAL**, no longer read live
+> from prod over the WAN · **2/2 `app` perf patches applied** (one **self-healed**) · `jobsimulation` **serving**
+> (dead in *every* demo before this) · cockpit serving all 5 heroes · 3 story orgs + 1 AI-readiness-enabled org.
+> **First time this box has ever come up green.**
 
-**Next up:** **`/developer-kit:build-milestone`** → **M217**. Then **{ M218 ∥ M219 ∥ M220 }** in parallel (M218
-merges first of the three — it and M220 both touch `up-injected.sh`), then **M221** (prove it on `billion`).
+**What M217 actually found** (the KB-fidelity gate came back **RED before a line of code** — and was right; **three
+false claims were in the milestone's own overview**):
+1. **The drafted `jobsimulation` fix would have BROKEN the service.** Its cobra **root `RunE` IS the server**;
+   `command: serve` → a real `unknown command`. The cause is a `$HOME/.aws/credentials` bind Docker auto-creates as
+   an empty **directory**, hard-erroring the AWS SDK — and cobra then prints its **usage block**, which is the
+   "prints CLI help" everyone misread.
+2. **A static demo-patch pin CANNOT work.** `ai_readiness.go` is not byte-identical across the two boxes' app tags,
+   so no committed whole-file sha can be right on both. → the **self-healing gate** (D1): *the anchor is the
+   contract; the sha is only a baseline.* **Validated live** — the freshly re-pinned manifest drifted immediately on
+   `billion` and self-healed.
+3. **The tooling was implicitly DOCKER-DESKTOP-SHAPED.** Two independent bugs, same failure: `jobsimulation`'s AWS
+   mount, and **`host.docker.internal` not resolving on Linux Docker Engine** (which silently skipped the whole
+   local-content provision and made the demo read content **live from prod**). Both *"fine on a Mac, dead on a fresh
+   Linux VM"*, invisible until v2.2 put a demo on `billion`.
+
+**Phase:** **M217 built + green — awaiting `/developer-kit:harden-milestone` (optional) then
+`/developer-kit:close-milestone`.**
+
+**Next up:** close **M217**, then **{ M218 ∥ M219 ∥ M220 }** in parallel (M218 merges first of the three — it and
+M220 both touch `up-injected.sh`), then **M221**. **M218 may now measure** — and `autoverify.json` is the signal it
+gates on, so it can never again measure a broken stack.
 
 ## User decisions taken at design time (binding)
 
