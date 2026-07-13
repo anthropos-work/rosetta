@@ -135,8 +135,19 @@ one-line tag string; `#`-comments + blank lines + CRLF tolerated), then check th
 mkdir -p <root>/stack-demo <root>/.agentspace
 echo "<panorama-tag>" > <root>/.agentspace/rext.tag       # the tag carrying M212–M215 + the F1–F8 fixes
 git clone https://github.com/anthropos-work/rosetta-extensions.git <root>/stack-demo/rosetta-extensions
-git -C <root>/stack-demo/rosetta-extensions checkout "$(cat <root>/.agentspace/rext.tag)"
+# M217: `git fetch --tags` is MANDATORY. A fresh clone does NOT necessarily carry the tag you are about to
+# check out, and a bare `checkout <tag>` then dies `pathspec did not match` — or, worse, silently leaves the
+# clone on a bare sha. THE OMISSION OF THIS LINE IS EXACTLY HOW `billion` ENDED UP ON AN UNTAGGED COMMIT
+# (panorama-m214-3-g41a28aa) that then warned about itself on every bring-up for a whole release.
+git -C <root>/stack-demo/rosetta-extensions fetch --tags origin
+git -C <root>/stack-demo/rosetta-extensions checkout -f "$(cat <root>/.agentspace/rext.tag)"
+git -C <root>/stack-demo/rosetta-extensions describe --tags --exact-match   # MUST print the pinned tag
 ```
+
+> **The pin is now enforced, not suggested.** Since M217 a mismatch between the clone's checkout and
+> `.agentspace/rext.tag` **aborts the bring-up** (`DEMO_ALLOW_UNPINNED_REXT=1` to override). Detached HEAD is the
+> correct end state — `ensure-clones.sh` keys on `git describe --tags --exact-match`, so leaving the clone on a
+> branch trips the guard even when the content is right.
 
 `.agentspace/rext.tag` is the single source-of-truth both `/demo-up` and `ensure-clones.sh` read (M49 #1). The
 consumed tag **must** carry the M215 host fixes — the pre-flights (F1/F2/F8), the auto ssh-agent (F4), the
