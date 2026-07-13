@@ -1,0 +1,129 @@
+---
+milestone: M220
+slug: cue-sheet
+version: v2.3 "cue to cue"
+milestone_shape: section
+status: planned
+created: 2026-07-13
+last_updated: 2026-07-13
+complexity: medium
+depends_on: M217
+parallel_with: M218, M219
+delivers: "/demo-up MEANS what the user thinks it means — full data + 3 orgs + remotely reachable BY DEFAULT (opt-out); dev stays opt-in. Plus corpus/ops/safety.md Part 3 — the exposure side (a whole axis the safety contract does not cover) + the correction of a FALSE safety claim in tailscale-serve.md"
+issues: "the docs say '2 orgs'; the code ships 3 — that 4-line lie is why the user believed the seeding ask was unmet. 'Pull all data' is ALREADY default-on; the real failure is a COLD CACHE, not a default. And tailscale-serve.md:405-407 falsely claims 0.0.0.0 binding is gated on the knob — every demo container is published on ALL interfaces on EVERY demo-up, today, flag or no flag"
+---
+
+# M220 — Cue sheet
+
+## Goal
+`/demo-up` **means what the user thinks it means**: full data, the three story orgs, and remotely reachable — **by
+default**.
+
+## What the user asked for vs what is actually true
+
+| Ask | Reality | Work |
+|-----|---------|------|
+| *"it should pull all the data (taxonomy, content, library, etc.)"* | **ALREADY DEFAULT-ON.** `for s in taxonomy directus sim-embeddings` **IS** the complete surface registry (library = directus; `/library/ai-simulations` = sim-embeddings). **No 4th surface exists.** | **Doc it.** The real failure is **not a default — it is a COLD CACHE**: replay is cache-first and **never captures**, so on a fresh box every surface exits rc=5 → a structural-only world. That is exactly what happened on `billion`. **The fix is M217's cache prime, not a flag.** |
+| *"make sure it does the expected seeding with the 3 orgs of the stories"* | **ALREADY DEFAULT-ON** (`DEMO_STORIES` defaults to 1 — it is already opt-*out*), and the preset ships **3** orgs. | **A 4-LINE DOC FIX.** The docs say **"2 orgs"** — `.claude/skills/demo-up/SKILL.md:109,153`, `corpus/ops/demo/README.md:34`, the stale `seed_label` at `up-injected.sh:1081`, `stories.seed.yaml:1`. **This is almost certainly why the user believes the ask is unmet.** |
+| *"access from remote should be opt-out"* | **THE ONE GENUINE FLIP.** `--public-host` is opt-in, default-empty, and there is **ZERO host auto-discovery anywhere in rext** (grep `tailscale status|BackendState|DNSName` → only comments). | Build it. See below. |
+
+## Why section
+Every deliverable is enumerable: a doc fix, a defaults table, a capability ladder with a specified rung list, a flag,
+and a safety-doc authoring task.
+
+## Scope
+
+### In
+
+**(a) The doc fix** — "2 orgs" → **3** at the 4 sites above.
+
+**(b) The `/demo-up` DEFAULTS TABLE** — **BLIND AREA.** No enumerated defaults contract exists in the corpus; the
+only complete knob list is a skill `argument-hint`. Document all ~25 `DEMO_*` knobs: knob | default | consumer |
+file:line.
+
+**(c) The remote flip (D-DESIGN-3): `--public-host auto`, DEFAULT-ON for demo** (opt-out via `--no-public-host`),
+driven by a strict **capability ladder** — *capability-gated, never presence-probed*:
+
+1. `command -v tailscale`
+2. `BackendState == "Running"`
+3. a **dotted** `.Self.DNSName` (strip the trailing dot). **A dotless host is hard-refused** at
+   `up-injected.sh:81-86` because `@clerk/backend`'s `assertValidPublishableKey` rejects it.
+4. `MagicDNSEnabled == true`
+5. `tailscale serve status` shows no operator/sudo denial (reuse the F1 probe at `up-injected.sh:238-247`)
+6. **`tailscale cert` actually mints**
+
+> ### HARD INVARIANT — the fallback is not optional
+> **Any failed rung ⇒ fall back to an EMPTY `STACK_PUBLIC_HOST` — byte-identical to today's localhost path — with
+> ONE loud line naming the exact fix command.**
+>
+> **Why this is non-negotiable:** `SCHEME` (`up-injected.sh:74`) and `BIND_HOST` (`:66`) **both derive from the same
+> `-n $STACK_PUBLIC_HOST` predicate**. So a **half-satisfied** public path is **strictly worse than localhost** —
+> every baked URL becomes `https://` against **plain-HTTP listeners**, and the demo **does not load at all**. Today
+> it always works. A laptop with no tailscale must stay **byte-identical to today**.
+
+**(d) The dev-side opt-in `--public-host`** — per D-DESIGN-3, dev stays **opt-in**, which means building the flag
+`/dev-up` **does not have today**. This **folds the reserved M216** (dev-path Tailscale parity), consuming the
+reservation.
+> **DECLARED SCOPE-FLEX LEVER.** If (d) bloats, it **drops back to M216** and the release still fully meets the
+> user's demo-side spec. Do not let it eat the milestone.
+
+**(e) Front the cockpit on `tailscale serve`** — add `('cockpit', 7700)` to `gen_tailscale_serve.py:42-46`. Today
+the presenter's **entry point** is the **one plain-HTTP, unauthenticated surface** on the tailnet
+(`up-injected.sh:1289-1294` deliberately excludes it).
+
+### Out
+- Anything about *speed* (M218) or the AI-readiness render path (M219).
+- A "hiring" story org — **D-DESIGN-4: it does not exist and will not be built.**
+
+## Delivers → knowledge/corpus
+
+**1. `corpus/ops/safety.md` Part 3 — the exposure side.** **BLIND AREA, and BLOCKING for the flip.** safety.md's two
+promises are **read-side** (never read customer data) and **write-side** (never write prod). Grep it for
+`tailscale|remote|expose|network|localhost` → **zero hits**. **Remote reach is a THIRD AXIS the safety contract does
+not cover at all.** A default-on flip cannot ship without a real safety argument, not a doc edit.
+
+The argument must state plainly, in writing, what is being made ambient:
+
+> **A demo is an unauthenticated, authz-weakened build.** Clerkenstein disarms Clerk token verification in
+> app/cms/jobsimulation/skillpath; an **authz-skip demo-patch is applied by default** (`DEMO_NO_AUTHZ_SKIP=0`); and
+> **the presenter cockpit is a one-click, password-free "become any seeded hero" launcher** — a bare GET to
+> `/v1/client/handshake?__clerk_identity=<key>`. Default-on remote reach makes that panel **ambient on every box
+> that satisfies the capability ladder.**
+
+The steelman **for** the flip (also record it): the demo's data is synthetic + public-snapshot-only (Parts 1 and 2
+hold unchanged — no customer data can be in a demo, prod writes are structurally blocked); a tailnet is a real
+authenticated device mesh (WireGuard, per-device keys, ACL-gated, no public listener); and the **exposure delta is
+smaller than the docs claim** (see below).
+
+**2. An explicit written SUPERSESSION of v2.2's D-DESIGN-1** (*"public reach is never default-on"*,
+`demo-up/SKILL.md:78`) — **for the demo path only.** Never a silent contradiction.
+
+**3. The CORRECTION of a FALSE safety claim** at `tailscale-serve.md:405-407`. It says: *"no open
+0.0.0.0-on-the-LAN surprise… Binding 0.0.0.0 is gated on the knob precisely so it is never ambient."*
+**This is false.** `gen_injected_override.py:259-260,292-294` emits `ports: !override` with **bare
+`"<hostport>:<target>"` pairs — no `127.0.0.1` prefix** — so Docker publishes **every demo container on ALL
+interfaces on EVERY demo-up, today, with or without `--public-host`** (and on Linux, Docker's iptables **bypass the
+host firewall**). `BIND_HOST` gates only the two **host-native** servers (cockpit, ant-academy).
+> **This correction ships REGARDLESS of the flip decision.** A shipped safety doc that understates actual exposure
+> is the worst failure mode in the project.
+
+## Open question — `tailscale cert` and Let's Encrypt rate limits
+
+rext's own docs assert the cert **RE-ISSUES on re-run** (`up-injected.sh:885-886`; `tailscale-serve.md:335-336`). If
+that is true, **default-on is a live LE hazard**: `ts.net` is a **PSL entry**, so the duplicate-certificate bucket is
+**per-tailnet**, and a mint failure **silently falls back to a local-trust cert that a remote browser rejects**
+(`:902-904`). The `$CERTS/fapi.crt` skip (`:895`) only holds **per demo-N** — every fresh `demo-N` always calls the
+mint.
+
+**Settle it EMPIRICALLY before flipping:** run `tailscale cert` twice on `billion`, diff the wall-clock, and
+`journalctl -u tailscaled | grep -i acme` for a second ACME order. If tailscaled caches (as it should), **the repo's
+claim is a doc bug**. If it does not, the mint must be cached at the **box** level, not the per-demo-N `$CERTS` dir.
+
+## KB dependencies
+- `corpus/ops/safety.md` (the contract being extended — **read it before writing Part 3**)
+- `corpus/ops/demo/tailscale-serve.md` (the v2.2 remote-access runbook + the false claim)
+- `corpus/ops/demo/README.md` · `.claude/skills/demo-up/SKILL.md` · `.claude/skills/dev-up/SKILL.md`
+- `corpus/ops/snapshot-spec.md` + `corpus/ops/snapshot-cold-start.md` (why "pull all data" is a cache problem, not a
+  default problem)
+- rext: `demo-stack/up-injected.sh` (the only arg parser — it **hard-errors on unknown args**) ·
+  `stack-injection/gen_tailscale_serve.py`
