@@ -46,12 +46,12 @@ unnamed until this spec.
 | Guard | Enforces |
 |-------|----------|
 | **G1 — hard path-assert (demo-clone only)** | The target is canonicalized with `realpath` (which resolves `..` **and every symlink**, killing symlink escapes) and must resolve **inside the stack workspace**; the path must equal the manifest's `repo`/`path` **exactly** — no globs, no traversal. The manifest-derived path is *re-*canonicalized and re-checked, so a `repo: ../stack-dev/…` manifest is refused. The loader independently rejects `..`/absolute paths at parse time. |
-| **G2 — pre-patch drift-refuse + single-occurrence anchor** | `sha256(target)` must be one of `{pre_sha256, post_sha256}`; a third hash means the clone **drifted** → refuse. `post_sha256` alone is not enough to count as *patched* — the `post_marker` must also be present, so a hash collision on a partial apply cannot masquerade as success. If pristine, the **anchor must occur EXACTLY ONCE**: zero → refuse ("content drift"); two or more → refuse ("ambiguous — refusing to choose a hunk"). |
+| **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target (post-sha **and** marker) is a no-op, exit 0. |
 | **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
-| **G7 — apply post-condition** *(unnamed until this spec)* | After the in-memory swap and **before writing a byte**: the patched text's sha must equal `post_sha256`, and the `post_marker` must be present. |
+| **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
 > **No write path bypasses G1 + G2.** `apply` runs both before it writes anything.
 
@@ -63,7 +63,7 @@ A deliberately tiny **strict YAML subset** — parsed by a hand-written loader, 
 supply-chain rule). Top-level `key: scalar` and `key: |` literal blocks only; nested maps, flow collections, and
 anchors are errors.
 
-**All ten keys are mandatory.** There are no optional keys, and a present-but-empty value fails.
+**All ten keys are mandatory.** There are no optional keys, and a present-but-empty value fails. **A duplicate key is refused at load** (M217-close): the loader was previously *last-wins*, so a manifest with two `pre_sha256:` lines let `--repin` rewrite the first while the loader returned the second — and, far worse, a duplicate `anchor:` could **steer which hunk gets replaced in platform source**. *An ambiguous manifest is not a manifest.*
 
 | Key | Meaning |
 |-----|---------|
@@ -160,6 +160,20 @@ box"** — so *any* unrelated edit anywhere in that file, in any app release, br
 
 Meanwhile **the anchor survives every tag tested**, occurring exactly once. The *semantic* target is stable; only the
 whole-file proxy rots.
+
+### The freshness preflight — it runs BEFORE the clone (M217-close)
+
+A dedicated preflight runs **before the inject loop**: it resolves the app tag this box will build, reads each
+patch target **straight out of git** (`git show <tag>:<path>` — no clone, no checkout, no build), and runs the
+gate in `--check` mode. **A broken anchor aborts there**, in seconds, instead of minutes into a build that has
+already done `make init`, the secret provision, a clone, and a `checkout -f`.
+
+> This was **promised and checked off in M217's own plan, and never built** — the gate ran *inside* the loop.
+> It is built now. (Finding that a checked box described code that did not exist is exactly the class of
+> false-claim this milestone's first section exists to delete.)
+
+The preflight honours the same `DEMO_NO_*` opt-outs as the appliers: a deliberate no-patch run is never blocked
+by a gate.
 
 ### The gate (decided M217 — the self-healing gate)
 

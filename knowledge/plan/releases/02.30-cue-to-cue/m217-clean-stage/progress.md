@@ -266,3 +266,58 @@ stop signal here — the hunt was.**
 > the real `docker compose`, fuzzed the applier — found **five times as many**, including three I had just
 > introduced and one fix that had never worked at all. **Self-review found the bugs I was looking for;
 > adversarial execution found the ones I wasn't.**
+
+---
+
+## M217: Final Review (close)
+
+The close review (4 reviewers + adversarial verification) found **6 must-fixes**. **Three were bugs introduced
+during this milestone's own hardening passes.** All landed as **Fate 1**.
+
+### Scope
+- [x] **The "freshness preflight before the inject loop" was a CHECKED BOX for code that did not exist.**
+      `--check` had **zero callers**; the gate ran *inside* the loop, so an anchor-broken patch aborted the
+      build **minutes in** — after `make init`, the secret provision, the clone and a `checkout -f`. That is
+      the precise wasted-work failure the preflight was specified to prevent, and **shipping a checked box for
+      unbuilt code is the same false-claim class S0 exists to delete.** → **BUILT** (reads the target straight
+      out of git; aborts on rc=3 before any clone).
+- [x] **`assert_ports_free` was dead code** — defined, tested, never called — **and** an unmet scope item
+      ("a compose-range preflight before `up`"). → **wired** before `compose up`.
+
+### Code Quality
+- [x] **[must-fix] `reap.sh` was NEVER SOURCED.** `up-injected.sh` *called* `reap_port` (the pre-bind reap —
+      **the milestone's headline deliverable**) and `assert_ports_free` without sourcing their definitions. In
+      bash that is "command not found" (127), swallowed by `|| true`. **The pre-bind reap has never once
+      executed** — including during the green proof run on `billion`.
+- [x] **[must-fix] The two patch vehicles had DIVERGENT gates.** `apply_patch` self-healed; `demopatch` kept
+      the **old hard sha gate** for the three next-web patches — against a clone `make pull` updates. **Same
+      rot, slower fuse.** → converged: the anchor is the contract in *both*, same coherence probe, same atomic
+      write.
+- [x] **[must-fix] `_port_held` was python3-blind** — any interpreter failure was indistinguishable from
+      "port is free", on a target platform that is a fresh Linux VM. → **tri-state**: held / free / **cannot
+      tell**, and *cannot tell* refuses.
+- [x] **[must-fix] A false green in the signal M218 will gate on.** Only 2 of 6 appliers wrote
+      `demopatch.log`, which autoverify keys on. A refused **`next-web-studio-url`** — which re-opens the
+      **prod-eject to `studio.anthropos.work`** — produced `✓ none refused` + `green:true`. → every failure
+      branch leaves evidence, fenced **per patch**.
+- [x] **[must-fix] `cockpit.py`** still crashed on `"stories": null` (a 4th call site) and tracebacked
+      **after the bind** on a wrong-shaped manifest. → shape validated **before** the bind.
+- [x] **[must-fix] The dev-stack suite wrote to the developer's real `$HOME`** (`cmd_up` heals `~/.aws`).
+      Same class as the reap test that SIGTERMed a real cockpit. → all 4 env dicts isolate `HOME`.
+- [x] `if ! cmd; then rc=$?` **does not capture the command's status** (the `!` inverts the pipeline → `$?` is
+      0). The preflight's rc=3 abort was **unreachable** — the block *contained* `exit 1`; it could never run.
+      **A grep-for-`exit 1` fence would have missed it.** → captured directly; fenced by a test that *proves*
+      the bash semantics.
+
+### Tests
+- [x] Regression tests for every close finding. The new fences **execute** rather than grep — the string-fence
+      is what let the unsourced `reap.sh` ship.
+- [x] `test_aws_heal.py` (5 tests, **HOME-isolated**) — committed, not left untracked.
+- [x] Fixed a **TOCTOU race in my own `_free_port()` helper** (bind :0 → close → re-bind window).
+
+### Documentation
+- [x] `demopatch-spec.md` was authored in **S1, before three hardening passes** — its G2, G7, manifest and
+      freshness-gate sections all described superseded behaviour. Rewritten against the shipped code.
+
+### Decision Triage
+- [x] D1–D6 + the close decisions recorded in `decisions.md`.

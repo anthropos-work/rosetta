@@ -181,3 +181,60 @@ autoverify.json: {"project":"demo-1","offset":10000,"warnings":0,"green":true}
 
 **This is the first time this box has ever come up green.** M218 may now measure — and the `autoverify.json` signal
 is what it gates on, so it can never again measure a broken stack.
+
+---
+
+## D7 — The gate is unified across BOTH patch vehicles (close)
+
+**Binds:** `demo-stack/patches/demopatch` + `stack-injection/apply_patch.py`.
+
+The self-healing gate (D1) was implemented only in `apply_patch.py` — the vehicle for the two `app` patches.
+`demopatch` — the vehicle for the **three next-web patches** — kept the **old whole-file sha gate**.
+
+That is the *same bug*, unfixed, in the vehicle I did not touch. The next-web clone is **persistent and updated
+by `make pull`**, so it drifts exactly as `app` does; the only difference is the fuse length. On the next
+next-web release the Studio link would have silently reverted to ejecting presenters to
+`studio.anthropos.work`, and the members grid to `limit:1000` — **failing silently**, which is the precise
+pathology M217 exists to eliminate.
+
+**Decision: converge.** The anchor is the contract in both vehicles, with the same coherence probe for
+"already patched" and the same atomic write. The vehicles now differ **only** in where they are permitted to
+write (G1/G6 path scoping) — which is the only thing that ever justified having two.
+
+## D8 — `if ! cmd; then rc=$?` is banned in this codebase
+
+**Binds:** the preflight in `up-injected.sh`; fenced in `test_reap.py`.
+
+The `!` inverts the pipeline status, so `$?` inside the then-branch is **0** — not the command's exit code. The
+preflight's `rc=3` abort was therefore **unreachable**: the block *contained* `exit 1`, and it could never run.
+
+**A static fence that greps for `exit 1` would have passed.** The fence now *proves* the bash semantics by
+executing them.
+
+> The sibling form `if out=$(cmd); …; else rc=$?` **is** safe — no `!`, and the else-branch preserves the
+> command's status. The two shapes look alike and behave differently. That is exactly why this is written down.
+
+## D9 — A test that greps for a call proves nothing about whether the call resolves
+
+**Binds:** every static fence in this milestone.
+
+`up-injected.sh` called `reap_port` — the milestone's **headline deliverable** — without ever sourcing
+`reap.sh`. In bash that is "command not found" (exit 127), swallowed by `|| true`. **The pre-bind reap never
+executed once**, including during the green proof run on `billion`. The test asserted that the *string*
+`reap_port` appears in the file, and passed happily over a function that did not exist.
+
+**Rule:** where a fence can *execute* the thing, it must. Grep only for what cannot be run.
+
+## Adversarial review (Phase 2c)
+
+Scenarios considered and their outcomes:
+
+| Scenario | Outcome |
+|---|---|
+| Does `_port_held(127.0.0.1)` see a **`0.0.0.0`**-bound listener (what `--public-host` binds)? | **Yes** — verified. The reap is not blind on the box it was built for. |
+| An **IPv6-only** (`::1`) listener | Invisible to the probe — but nothing in the stack binds IPv6-only, and a `::1`-only squatter cannot block our IPv4 bind. **Accepted, documented.** |
+| **python3 missing/broken** on the host | Was a **false all-clear**. Now tri-state (D-close): *cannot tell* → refuse. |
+| `apply_patch` target a **symlink** into the canonical repo | `manifest_loader` rejects `..`/absolute paths at parse; `demopatch`'s G1 re-canonicalizes with `realpath`. `apply_patch` (build-scratch only) relies on the manifest gate. **No escape found.** |
+| **Concurrent** `apply_patch` on the same scratch clone | The write is atomic (`os.replace`); a racing apply is idempotent (marker probe). |
+| A manifest whose `stories` is a **string** | Tracebacked *after* the bind. **Fixed** — shape validated before binding. |
+| `autoverify` with an **unwritable** `STACK_DIR` | Still exits 0 (the non-fatal contract holds). |
