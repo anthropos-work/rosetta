@@ -50,6 +50,18 @@ re-run. Tik/tok until the gate holds on a cold reset-to-seed.
 > **No new platform edits invented during iteration.** A surfaced platform-source hardcode routes to a **NEW
 > sha-pinned demo-patch** (D-DESIGN-2) or **escalates**. It never gets edited.
 
+## Inherited from M217 (Fate-3, added at the M217 close)
+
+- **The pre-bind reap has never run live.** M217's close review found that `up-injected.sh` called `reap_port`
+  **without sourcing `reap.sh`** — so the milestone's headline deliverable was dead code (exit 127, swallowed by
+  `|| true`) **during the green proof run on `billion`**. It is fixed and unit-proven; it is **not field-proven**.
+  **M221 must exercise it**: leave a cockpit listening on the offset port, re-run `/demo-up`, and assert the
+  pre-bind reap actually reclaims it.
+- **The compose-range preflight** (`assert_ports_free`) was likewise wired only at the close — never run in the
+  field. Same treatment.
+- **The freshness preflight** (built at the close) has never aborted a real bring-up. Verify it fires by
+  temporarily breaking an anchor.
+
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
   latency gate **cannot be a Playthrough** (Playthroughs declare perf a **NON-GOAL**), so it is a **new

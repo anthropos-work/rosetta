@@ -155,8 +155,24 @@ v2.3 "cue to cue"
 
 ### Milestones
 
-#### M217 — Clean stage  (`section`, medium)
+#### M217 — Clean stage  (`section`, medium) — ✅ **DONE 2026-07-13**
 **Goal:** a `/demo-up` that comes up **green** — so that everything measured afterwards is real.
+
+> **Closed 2026-07-13.** Exit gate MET on `billion` (cold reset-to-seed: `autoverify: OK — verified-working`,
+> 3/3 replays exit 0, 2/2 app patches applied [one **self-healed**], jobsimulation serving, content plane local).
+> **32 bugs fixed** across build (0) → harden ×3 (24) → close (8). rext code-of-record: `cue-to-cue-m217`.
+>
+> **What it actually taught us**, beyond the fixes:
+> - **The KB-fidelity gate caught three false claims in the milestone's own plan** — including a `jobsimulation`
+>   diagnosis whose prescribed fix would have **broken the service**. *The errors were in the plan, not the code.*
+> - **The tooling was implicitly Docker-Desktop-shaped.** Two independent bugs (`jobsimulation`'s AWS mount;
+>   Directus's `host.docker.internal`) are the same failure: *fine on a Mac, dead on a fresh Linux VM.*
+> - **Self-review finds the bugs you are looking for; adversarial execution finds the ones you are not.** Pass 1
+>   of hardening found 4 bugs and declared victory; an adversary that actually *ran* the code found 20 — three of
+>   them introduced by pass 1 itself.
+> - **A test that greps for a call proves nothing about whether the call resolves** (D9). `up-injected.sh` called
+>   `reap_port` — the headline deliverable — without sourcing `reap.sh`. **It never executed once**, including
+>   during the green proof run. A string-fence passed over a function that did not exist.
 **In:** reap the leaked cockpit port (`7700+off`) + make `demo-down` reap the whole offset range (2 of the last 3
 runs on `billion` died on a leaked port); **un-swallow the demo-patch REFUSE reason** (`up-injected.sh:701,717`);
 **re-pin the two `app` perf patches** + add a **patch-freshness preflight that fails LOUD** (a perf patch that

@@ -3,7 +3,7 @@ milestone: M217
 slug: clean-stage
 version: v2.3 "cue to cue"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-13
 last_updated: 2026-07-13
 complexity: medium
