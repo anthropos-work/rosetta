@@ -136,6 +136,16 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+- [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
+  knob and flag that controls a bring-up — **all 25 env knobs + 9 CLI flags**, with real defaults and the exact
+  `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
+  doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
+  *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
+  `up-injected.sh` takes only `<N>` + `--public-host` and **hard-errors on anything else**, while
+  `--profile`/`--services` belong to the separate `rosetta-demo` wrapper. And the shape of the whole surface:
+  **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 3-org world, the full UI
+  tier, the cockpit, and set-dress — *"pull all the data + seed the 3 orgs" was always the default; the usual
+  culprit is a cold snapshot cache, not a knob.*
 - [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"): the opt-in
   `--public-host <magicdns>` flag that makes a demo reachable from another machine on your **Tailscale** tailnet,
   the **HTTPS-everywhere** per-offset-port topology (`tailscale serve` + the tailscale-cert FAPI), what the knob

@@ -137,6 +137,21 @@ Two items that can only be settled **on the box, over the tailnet** — which is
   dependency: this battery is **itself** exposed to the host-isolation hazard above — **`GUARD-M221-host-isolation`
   lands first, or this re-proof can corrupt its own evidence exactly as M219's did.**
 
+## Inherited from M220 (Fate-3, added during M220 S0–S2, 2026-07-14)
+
+- **`FIX-M221-devstack-test-spin` — `dev-stack/tests/test_dev_stack.py` BUSY-SPINS forever, so the rext suite
+  cannot be run whole.** Measured during M220's S0 regression sweep: **8 min wall, 526 s user CPU, 145 % CPU,
+  `rc=124`** — it *spins*, it does not block on I/O, and it never reaches a summary. Consequence: a whole-repo
+  `python3 -m unittest discover` **never completes**, which is exactly how a regression hides — and
+  **`/developer-kit:close-release` runs the suites**, so this will block the v2.3 close.
+  - **Pre-existing, and NOT from M220:** it reproduces identically on clean `HEAD` with M220's diff stashed, and
+    it drives `dev-stack/dev-setdress.sh`, which M220 never touches. Nondeterministic — a different test is
+    in-flight on each run, so it is a spin *condition*, not one bad test.
+  - Per-file triage already done, so M221 starts warm: `test_aws_heal.py` **5 OK**, `test_migrate_dev_live.py`
+    **4 skipped**, `test_dev_stack.py` **HANGS**. The spin is confined to that one file.
+  - **An unrunnable suite is an absence-read-as-success risk (D17):** a suite that cannot finish must never be
+    recorded as passing.
+
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
   latency gate **cannot be a Playthrough** (Playthroughs declare perf a **NON-GOAL**), so it is a **new

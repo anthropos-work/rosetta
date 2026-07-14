@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "(between milestones) — M219 CLOSED; M220 is next, then M221 (last)"
+active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences, no demo needed); S3–S7 NOT started (they need a live demo, run one at a time)"
 last_closed: "M219 — 2026-07-14"
-phase: "M219 merged into release/02.30-cue-to-cue — next: /developer-kit:build-milestone on M220, then M221 (last)"
+phase: "M220 S0–S2 landed on m220/cue-sheet (KB-fidelity YELLOW; 3 doc-vs-code fences RED-proven then GREEN). NEXT: S3–S7 — each needs a LIVE DEMO. Then M221 (last)."
 last_updated: "2026-07-14"
 ---
 

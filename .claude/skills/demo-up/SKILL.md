@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--public-host <magicdns>] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
+argument-hint: '[N] [--public-host <magicdns>] — up-injected.sh takes ONLY these two and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1 — all 25 in corpus/ops/demo/demo-up-defaults.md)'
 ---
 
 # Demo Up — spin up an isolated demo stack
