@@ -1,9 +1,15 @@
-# Remote demo access over Tailscale — the `--public-host` runbook
+# Remote stack access over Tailscale — the `--public-host` runbook
 
-**Make a demo stack reachable from another machine on your Tailscale tailnet** — run a demo on a Tailscale VM
+**Make a stack reachable from another machine on your Tailscale tailnet** — run it on a Tailscale VM
 (e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host) and a teammate with Tailscale up browses the whole
 demo end-to-end, in their own browser, over HTTPS. This is the **external-shareability** surface of v2.2
 "panorama".
+
+> **Both stack families are covered here, with OPPOSITE defaults** (v2.3's D-DESIGN-3):
+> **`/demo-up` is DEFAULT-ON** (Steps 0–7 below — opt out with `--no-public-host`) and
+> **`/dev-up` is OPT-IN** (**[Step 8](#step-8--the-dev-path-same-reach-opposite-default-v23-m220-s7)** — opt in
+> with `--public-host auto`). The **capability ladder is one implementation shared by both**; only the default
+> differs. A dev box that passes no flag makes **zero** `tailscale` calls.
 
 > **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -321,6 +327,56 @@ bring-up and where `tailscale` is absent.
 > the `tailscale serve` config is **not** cleared — run **`tailscale serve reset`** before the next `--public-host`
 > deploy, or it will port-conflict. (`/demo-down` does this per-port for you; the blanket `reset` is the manual
 > catch-all.)
+
+---
+
+# Step 8 — The DEV path: same reach, opposite default (v2.3 M220 S7)
+
+Everything above is the **demo** path, where remote reach is **default-on**. A **dev** stack can be made
+reachable too — but you must **ask**:
+
+```bash
+DEV=stack-dev/rosetta-extensions/dev-stack
+
+"$DEV/dev-stack" up 2                              # ← nothing happens. No tailscale, no probe, no serve.
+"$DEV/dev-stack" up 2 --public-host auto           # ← opt IN: walk the ladder, adopt this box's MagicDNS host
+"$DEV/dev-stack" up 2 --public-host box.tail.ts.net  # ← ...or name it outright (no probe; you have spoken)
+DEV_PUBLIC_HOST=auto "$DEV/dev-stack" up 2         # ← the env form of the same opt-in
+
+"$DEV/dev-stack" down 2                            # ← clears this stack's serve ports, exactly like /demo-down
+```
+
+**Why the asymmetry** — it is **v2.3's D-DESIGN-3**, in the user's words: *"opt-out at build time for
+`demo-up`, **opt-in** at build time for `stack up`"*. A demo exists to be shown to someone else. A dev box does
+not, and — unlike a demo — **its content is not guaranteed synthetic** (a dev stack reads content live from prod
+by default). See [`../safety.md`](../safety.md) **§3.5.3**.
+
+| | remote reach | escape hatch | env form |
+|---|---|---|---|
+| **`/demo-up N`** | **DEFAULT-ON** | `--no-public-host` | `DEMO_NO_PUBLIC_HOST=1` |
+| **`/dev-up N`** | **OFF** | `--public-host auto` \| `<fqdn>` | `DEV_PUBLIC_HOST` |
+
+**What is shared, and what differs:**
+
+- **The ladder is the SAME code** — `demo-stack/tailscale_autohost.py`, all six rungs, reused cross-section
+  (not reimplemented). Same rungs, same order, same verdict, same fix-lines; only the words on stderr change
+  (`dev-up:` instead of `demo-up:`). **The one difference is the default, and it lives in the caller.**
+- **The fallback is the same and just as hard.** Any failed rung ⇒ an **empty host** ⇒ the localhost dev stack
+  that has always worked, plus one loud line naming the fix. Never a half-satisfied public path.
+- **Pass no flag ⇒ byte-identical to before the feature existed.** Zero `tailscale` invocations — it does not
+  probe and decline, it does not look. (Fenced with a tripwire stub that fails the test if `tailscale` is
+  called at all.)
+- **`DEV_PUBLIC_HOST`, not `STACK_PUBLIC_HOST`.** `up-injected.sh` *exports* the latter, so an inherited value
+  would otherwise flip a dev stack public with no flag on the command line. Dev has its own namespace.
+- **Only the ports your `--profile` actually publishes are fronted** (default `graphql` ⇒ backend API + Cosmo
+  GraphQL). The demo's fixed registry does not apply: `tailscale serve` **binds** what it fronts, so fronting a
+  port with no listener would hold it against the next bring-up.
+- **No cockpit, no Clerkenstein.** A dev stack authenticates against **real Clerk** and has no presenter
+  launcher. §3.2's *"unauthenticated, authz-weakened build"* is a description of a **demo**, not of this.
+
+> **The dev up-path pre-reset runs BEFORE `docker compose up`** — which the demo path (ADV-1) cannot do, since
+> it resolves its host later. So a stale serve listener from a previous dev stack is cleared *before* the
+> containers try to bind, rather than after.
 
 ---
 

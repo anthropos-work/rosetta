@@ -397,15 +397,28 @@ requires the real keys. (#M27 #M28)
 > Remote reach was a **third axis with no contract at all**, and v2.3 proposed to make it **default-on**. A flip
 > like that cannot ship on a doc edit; it needs an argument written down where it can be attacked.
 
-### 3.1 The disclosure — the ports are ALREADY open, on every demo, today
+### 3.1 The disclosure — the ports are ALREADY open, on every demo **and every dev stack**, today
 
 **Every demo container's offset port is published on `0.0.0.0` — ALL interfaces — on EVERY `demo-up`, with or
 without `--public-host`.** This is not introduced by remote access. It has been true of every demo since the
 injected override existed.
 
-- `stack-injection/gen_injected_override.py` emits published ports as **bare `"<hostport>:<target>"` pairs** at
-  all three emitters (`directus_lines`, `frontend_lines`, `build_lines`). **Docker's default bind for a bare
-  `host:container` mapping is `0.0.0.0`.** There is no `127.0.0.1` prefix anywhere.
+> 🔴 **AND THE SAME IS TRUE OF EVERY `dev-N` STACK — which this section did not say until v2.3 M220 S7.**
+> `stack-core/gen_override.py` (the **dev** override builder) constructs its port strings **exactly the same
+> way** — bare `"<hostport>:<target>"`, no `127.0.0.1` prefix — so a `dev-N` stack's containers are world-
+> published too, on every `dev-stack up`, **with or without** `--public-host`. **Measured, not read:** the
+> exposure guard now runs *both* emitters and reports `DEMO: 14 ports → 0.0.0.0` and `DEV: 8 ports → 0.0.0.0`.
+>
+> **This matters MOST because the dev path is opt-in** (§3.5.3). A reader who learns *"remote reach is OFF by
+> default on dev"* will reasonably conclude *"so my dev stack is not exposed."* **That conclusion is false.**
+> What the opt-in withholds is the **trusted HTTPS origin on the tailnet** — not the LAN binding, which was
+> always there. This is the S0 lie one family over: the guard proved the truth for the demo emitter and the
+> corpus disclosed it for demos only, so the dev family inherited the silence.
+
+- `stack-injection/gen_injected_override.py` (demo) emits published ports as **bare `"<hostport>:<target>"`
+  pairs** at all three emitters (`directus_lines`, `frontend_lines`, `build_lines`), and
+  `stack-core/gen_override.py` (dev) does the same in `build_override`. **Docker's default bind for a bare
+  `host:container` mapping is `0.0.0.0`.** There is no `127.0.0.1` prefix anywhere, in either family.
 - **On Linux this bypasses the host firewall.** Docker installs its rules in its own iptables chain, consulted
   *before* `ufw`/`firewalld`. A `ufw deny` on the port does **not** block it.
 - `BIND_HOST` (`demo-stack/up-injected.sh`) *is* gated on the public-host knob — but it is read **only** by the
@@ -566,6 +579,54 @@ the single page not behind the trusted cert, while everything it links to was.
 does **not** password-protect it. Anyone who can reach the tailnet can still become any hero, exactly as before;
 they now do so over a trusted origin. The reason that is acceptable is unchanged and structural: **there is no
 customer data in a demo, and it cannot write prod** (Parts 1–2).
+
+#### 3.5.3 The DEV path — remote reach is now a real opt-in, where before it was a vacuous one (M220 S7)
+
+§3.5 has said *"`/dev-up` remains opt-in"* since the flip was designed. That sentence was **true and hollow**:
+before M220 S7 there was **no `--public-host` on the dev path at all** — nothing to opt *into*. "Opt-in" named a
+choice the tool did not offer. S7 builds the flag, which is what makes the asymmetry a **contract** rather than
+an accident of what happened to be implemented:
+
+| | remote reach | the escape hatch |
+|---|---|---|
+| **`/demo-up N`** | **DEFAULT-ON** — the box's own MagicDNS host, auto-discovered (§3.5.1) | opt **out**: `--no-public-host` |
+| **`/dev-up N`** | **OFF** | opt **in**: `--public-host auto` \| `<fqdn>` (env: `DEV_PUBLIC_HOST`) |
+
+**The OFF side is the load-bearing half, and it is fenced as such.** A dev bring-up that does not ask for a
+public host makes **zero** `tailscale` calls — it does not probe and decline, it does not look. No cert mint, no
+`serve` config, no new files, no changed output: byte-identical to the pre-S7 tool. The fence proves this with a
+**tripwire** stub (a healthy `tailscale` on `PATH` that fails the test if invoked at all), because "it fell back
+safely" would be a passing grade for a tool that probed — which is exactly what the opt-in default forbids.
+
+**Dev reads `DEV_PUBLIC_HOST`, deliberately NOT the demo's `STACK_PUBLIC_HOST`.** `up-injected.sh` **exports**
+`STACK_PUBLIC_HOST` for its child launchers. Had dev read that name, a value inherited from an enclosing shell
+could have flipped a dev stack world-reachable **with no flag on the command line** — an exposure nobody typed.
+Separate namespace, no ambient inheritance.
+
+**Three things the dev path does NOT get, and the reason is the same each time:** a dev stack is not a demo.
+
+- **No Clerkenstein, no minted pk, no fake FAPI** — `/dev-up` uses **real Clerk**. §3.2's *"unauthenticated,
+  authz-weakened build"* describes a **demo**, not a dev stack; a dev stack still authenticates.
+- **No cockpit.** The password-free "become any hero" launcher is a demo surface (gated on `DEMO_STORIES`). A
+  dev stack never starts one, so `--no-cockpit` is passed unconditionally and its port is never fronted.
+- **Only the ports the stack actually publishes are fronted** — derived from the generated override, not from
+  the demo's fixed registry, because `--profile` decides what a dev stack runs. (`tailscale serve` *binds* the
+  ports it fronts; fronting a dead one would hold it against the next bring-up.)
+
+🔴 **What OPT-IN does NOT mean — read this before you conclude your dev stack is private.** It is *not* the case
+that a no-flag `dev-stack up` is unreachable from the network. **Every `dev-N` container is published on
+`0.0.0.0` already** — see §3.1, where this is now measured for the dev emitter (`8 ports → 0.0.0.0`) and not
+merely asserted — and on Linux Docker's iptables **bypass `ufw`/`firewalld`**. What `--public-host` adds is the
+**trusted HTTPS origin on the tailnet** (a `tailscale serve` front + a real cert), *not* the LAN exposure, which
+was there before you ever heard of this flag. The opt-in governs **reachability by name, over TLS, from another
+machine** — not reachability at all.
+
+⚠️ **And the residual that does NOT go away: §3.4's residual #1 is a LIVE risk on dev, not a hypothetical one.**
+A demo's content is synthetic + public-snapshot-only by construction (Parts 1–2). **A dev stack has no such
+guarantee** — it is a working environment, an engineer may point it at anything, and `/dev-up`'s own default is
+to read content **live from prod**. That is the entire reason dev is opt-in and demo is not, and it is why this
+flag asks you to say so out loud. As on the demo path, what you are turning on is **transport, not
+authentication** (§3.5.2): the tailnet's TLS + device mesh, not a password.
 
 ### 3.6 The EGRESS half — what a demo sends OUT (v2.3 M220 S5/S6)
 

@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences); S5+S6 DONE (live: academy session-poisoning FIXED, zero egress, clerk-js from disk); S3+S4 DONE (live on billion: remote reach is DEFAULT-ON via a 6-rung capability ladder, and the presenter cockpit is behind the trusted cert — both proven from a tailnet peer, and a no-tailscale box proven byte-identical). ONLY S7 remains (the dev-side opt-in flag — a declared scope-flex lever)"
+active_milestone: "M220 (cue sheet) — ALL 8 SECTIONS DONE on m220/cue-sheet, ready for /developer-kit:close-milestone. S0-S2 (docs/fences); S3+S4 (live on billion: demo remote reach DEFAULT-ON via a 6-rung capability ladder + the cockpit behind the trusted cert); S5+S6 (live: academy session-poisoning FIXED, zero egress, clerk-js from disk); S7 (the dev-side OPT-IN --public-host — LANDED, scope-flex lever NOT pulled; folds + discharges the reserved M216)"
 last_closed: "M219 — 2026-07-14"
-phase: "M220 S0–S6 landed on m220/cue-sheet. S3+S4 proven on ONE live billion cycle: bare demo-up auto-discovers the MagicDNS host (all 6 rungs), cockpit :17700 = HTTPS 200 ssl_verify=0 from a peer, hero login green both vantages; and a genuinely-no-tailscale box falls back byte-identical (cockpit http://localhost, 0 serve listeners, REFUSED off-loopback). rext @ cue-to-cue-m220-r5. NEXT: S7 (scope-flex lever, user decides). Then M221 (last)."
+phase: "M220 COMPLETE — all 8 sections checked off. S7 landed the dev-side opt-in --public-host (Fate 1): the ladder is REUSED from S3 cross-section, never forked; a dev box that passes no flag makes ZERO tailscale calls (tripwire-fenced, 9/9 mutants RED). It also found the dev family had NO 0.0.0.0 exposure disclosure at all (the S0 lie one family over: DEV publishes 8 ports on 0.0.0.0, measured) and that --inject has been undiscoverable since M5. rext @ cue-to-cue-m220-r6. NEXT: /developer-kit:close-milestone on M220, then M221 (last)."
 last_updated: "2026-07-14"
 ---
 
@@ -24,8 +24,10 @@ shorten"* — booked as M43-D5 with **zero deferrals recorded**, so it never ent
 Full gap analysis: [`.agentspace/scratch/roadmap-research-2026-07-13.md`](../../.agentspace/scratch/roadmap-research-2026-07-13.md).
 Per-milestone closure narratives live in [`roadmap.md`](roadmap.md) — **not here**.
 
-**Active milestone:** **(between milestones).** **M219 "readiness renders" CLOSED 2026-07-14** — merged `--no-ff`
-into `release/02.30-cue-to-cue` (`e7a33c6`). rext code-of-record: **`cue-to-cue-m219-final`**. **`closed-complete`.**
+**Active milestone:** **M220 "cue sheet" — ALL 8 SECTIONS COMPLETE** on `m220/cue-sheet` (2026-07-14), awaiting
+`/developer-kit:close-milestone`. rext code-of-record: **`cue-to-cue-m220-r6`**. The last section, **S7**, landed the
+**dev-side opt-in `--public-host`** (Fate 1 — the declared scope-flex lever was **not** pulled), which **consumes and
+discharges the reserved M216**.
 
 > ### ✅ M219 — THE USER'S KICKOFF BAR IS MET ON BOTH COUNTS
 > *"each element and sub section of readiness **filled** spot data"* + *"the **right** dashboards/pages … **not the
@@ -60,17 +62,16 @@ into `release/02.30-cue-to-cue` (`e7a33c6`). rext code-of-record: **`cue-to-cue-
 > M217's green proof run on `billion`. Fixed and unit-proven; **not field-proven**. M221 re-proves everything on
 > the box.
 
-**Phase:** **M219 closed + merged — next: `/developer-kit:build-milestone` on M220**, then **M221** (last).
+**Phase:** **M220 COMPLETE (all 8 sections) — next: `/developer-kit:close-milestone` on M220**, then **M221** (last).
 
-**Next up:** **M220 "cue sheet"** (the `/demo-up` doc fix + remote **opt-out** + `safety.md` Part 3), then **M221
-"prove it on billion"** — which re-proves **every** gate on the VM, over the tailnet, **with no flags**.
-**M220 now carries TWO 🔴 demo-BREAKING escalations from M219** (below).
+**Next up:** **`/developer-kit:close-milestone` on M220**, then **M221 "prove it on billion"** (the last milestone) —
+which re-proves **every** gate on the VM, over the tailnet, **with no flags**.
 
 **Recently closed:** **M219** readiness-renders — 2026-07-14 (`closed-complete`; 13 bugs; the user's bar met on
 both counts) · **M218** seat-change — 2026-07-14 (`closed-on-gate`; 21 bugs; the <5 s gate MET) · **M217**
 clean-stage — 2026-07-13 (gate MET on `billion`; 32 bugs).
 
-## ⚠️ M220 inherits two DEMO-BREAKING defects (M219 close, Fate-3 — its `overview.md` is EDITED)
+## ✅ M220 inherited two DEMO-BREAKING defects from M219 — BOTH FIXED in S5 (2026-07-14)
 
 - 🔴 **The academy POISONS the demo session.** `:13077` runs its own **keyless Clerk**; visiting it returns
   `Set-Cookie: __session=; Expires=1970` (**deletes the demo session**) and `__client_uat=0;
@@ -81,8 +82,14 @@ clean-stage — 2026-07-13 (gate MET on `billion`; 32 bugs).
   the demo**. An **in-demo dead end**, which is why the sweep's prod-eject detector never flagged it. → M220 item
   **(j)**, added at close.
 
-*Both ship with **honest fences that deliberately report RED** until M220 lands — a half-fix that reports green is
-worse than no fix.*
+**Both are FIXED and their fences are GREEN (M220 S5).** The academy is now **Clerkenstein-wired** from the stack's
+own `.env` — it never reads `platform/.env` again, keyless mode cannot engage, and **no cookie is ever deleted**
+(proven by a controlled A/B from a tailnet peer: login → `/profile` → **ACADEMY** → `/profile` ⇒ **still signed in as
+"Maya Chen"**; direct `curl` at `:13077` returns **zero `Set-Cookie` headers**). studio-desk was **never a session
+bug at all** — M219's *"302 → /login"* was an **unauthenticated `curl`**, i.e. the correct answer to a cookieless
+request, mis-read as the defect (D15); `dan-manager` clicks **Anthropos Studio** and **stays on `:19000`**.
+*One residual, honestly RED and deliberately not weakened:* the academy home renders **0 paths / 0 courses** — a
+**separate** content-pipeline defect (**F-M220-2**), routed to **M221**.
 
 ## D17 — the release's signature hazard (name it, then stop walking into it)
 
@@ -147,8 +154,12 @@ milestone branches `m217/clean-stage` … `m221/prove-on-billion` branch from it
 - **The v2.2 residuals are FOLDED INTO v2.3 (Fate-1).** ✅ **DISCHARGED:** DEF-M215-01 → M217 · DEF-M215-04 → M217 ·
   **DEF-M215-03(b)** → **M218 built it** (M221 runs it remotely) · **`x/crypto@v0.52.0`** → **LANDED at the M218
   close**. **STILL OPEN:** DEF-M215-02 (remote-VM snapshot cache) → **M221**.
-- **M216** (dev-path Tailscale parity) — **CONSUMED by M220(d)** per D-DESIGN-3. It is the release's declared
-  scope-flex lever (it drops back to a reservation only if M220 bloats).
+- ~~**M216** (dev-path Tailscale parity)~~ — ✅ **CONSUMED AND DISCHARGED by M220 S7** (2026-07-14, D28). The
+  declared scope-flex lever was **NOT pulled**: S3 had already built + fenced the 6-rung ladder, so S7 was the
+  thin wiring job the plan hoped for (a flag, a default, cross-section reuse — the ladder is *reused*, never
+  forked). `/dev-up` now has `--public-host <host>|auto` (+ `DEV_PUBLIC_HOST`), **opt-in**, with a no-flag path
+  proven **byte-identical** (zero `tailscale` invocations, tripwire-fenced). **M216 is retired as a
+  reservation, never built as a milestone** — exactly as `roadmap-vision.md` said it would be.
 - **Plan hygiene → next close-release:** `metrics-history.md` has **no v2.2 row**; no release-scope deferral audit
   exists for v2.1 or v2.2.
 - **Older, still unscheduled:** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01 (`replayCmd` hermetic

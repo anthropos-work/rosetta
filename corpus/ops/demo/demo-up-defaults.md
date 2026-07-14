@@ -77,6 +77,24 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | `DEMO_NO_PUBLIC_HOST` | `0` | **the opt-OUT for the flip** (flag form: `--no-public-host`). `1` ⇒ do not even *probe*: no `tailscale` calls, no cert mint, forced localhost demo | `up-injected.sh:35` |
 | `DEMO_NO_MKCERT` | `0` | the local-trust cert is minted (the localhost path) | `up-injected.sh:132` |
 
+> ### ⚠️ This table is the **demo** contract. The **dev** contract is its MIRROR IMAGE.
+>
+> Remote reach is **default-ON for `/demo-up`** (this table) and **OPT-IN for `/dev-up`** — v2.3's
+> **D-DESIGN-3**, in the user's words: *"opt-out at build time for `demo-up`, **opt-in** at build time for
+> `stack up`."* The two knobs are deliberately **differently named**, and it is not cosmetic:
+>
+> | | knob | default | to change it |
+> |---|---|---|---|
+> | **demo** (`up-injected.sh`) | `STACK_PUBLIC_HOST` | `""` → **auto-discovered** | `--no-public-host` / `DEMO_NO_PUBLIC_HOST=1` |
+> | **dev** (`dev-stack up`) | **`DEV_PUBLIC_HOST`** | `""` → **off; nothing is probed** | `--public-host auto` \| `<fqdn>` |
+>
+> **`up-injected.sh` EXPORTS `STACK_PUBLIC_HOST`** for its child launchers. Had the dev path read that same
+> name, an inherited value could have flipped a dev stack world-reachable **with no flag on the command line**.
+> Dev reads its own `DEV_*` knob or nothing at all. The **capability ladder is shared code** (one ladder, two
+> callers — `demo-stack/tailscale_autohost.py`); only the **default** differs.
+> Flags: [`/dev-up` § Defaults & flags](../../../.claude/skills/dev-up/SKILL.md) ·
+> runbook: [`tailscale-serve.md` Step 8](tailscale-serve.md) · safety: [`../safety.md` §3.5.3](../safety.md).
+
 > ### The capability ladder — *capability-gated, never presence-probed*
 >
 > Auto-discovery adopts a host **only** if all six rungs pass. *"The binary exists"* is **not** *"it works"* —

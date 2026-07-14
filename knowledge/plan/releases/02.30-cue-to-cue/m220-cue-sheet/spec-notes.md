@@ -254,9 +254,127 @@ rate-limited the whole tailnet.
 **Suites:** demo-stack **569** · stack-injection **214** · stack-core **129** — all green, including the **11 that
 were already RED at `r4`** (F-M220-6).
 
+## Pre-flight audits — S7
+
+**Phase 0b reused** from S0 per §"Audit reuse": same subsystem (the stack bring-up / exposure / doc surface);
+the milestone-scoped `/developer-kit:audit-kb-fidelity --milestone=M220` (YELLOW, commit `d395946`) covered the
+`--public-host` topic in the same pass, and the only load-bearing knowledge docs changed since are M220's own
+S0–S6 deliverables (`safety.md` Part 3, `demo-up-defaults.md`, `tailscale-serve.md`) — which S7 **extends**
+rather than depends on.
+
+## S7 — the dev-side opt-in `--public-host` (LANDED; the scope-flex lever was NOT pulled)
+
+### What S7 actually had to build, vs what it reused
+
+| Piece | Source |
+|---|---|
+| the 6-rung capability ladder | **REUSED** — `demo-stack/tailscale_autohost.py` (S3), cross-section, `--label dev-up --noun "dev stack"` |
+| the `tailscale serve` plan + its inverse | **REUSED** — `stack-injection/gen_tailscale_serve.py` (M213/M215-F12), plus a new `--only-ports` filter |
+| the teardown-clears-the-listener pattern | **REUSED** — `rosetta-demo down`'s "the serve plan on disk IS the record that this stack was public" |
+| the flag, the default, the wiring | **NEW** — ~60 lines in `dev-stack/dev-stack` |
+
+Cross-section reuse is the established rext pattern, and this is it **in the other direction**:
+`up-injected.sh:1489` already runs `"$HERE/../dev-stack/dev-setdress.sh" --stack-type demo` **verbatim**.
+
+### The invariant, and how it is actually fenced
+
+**`dev-stack/tests/test_dev_public_host.py` — 22 tests.** The `tailscale` stub is a **TRIPWIRE, not a mock**:
+on the no-flag path it is *healthy and on `PATH`* (the common case — a dev laptop on the company tailnet) and
+the test asserts the call log is **EMPTY**. *"It probed and fell back safely"* would be a **PASS for a tool that
+probed** — the one behaviour the opt-in default forbids.
+
+| assertion | measured |
+|---|---|
+| `dev-stack up 7` (no flag), tailscale healthy on PATH | **0** tailscale invocations · **0** plan files · `public-host='(none — localhost)'` |
+| `STACK_PUBLIC_HOST=<host> dev-stack up 7` (ambient, no flag) | **0** tailscale invocations — the demo's exported knob **cannot** flip a dev stack |
+| `--public-host auto`, rung 2 fails (logged out) | `dev-up: … STOPPED at rung 2/6` · **rc 0** · **0** serve plans · `LOCALHOST dev stack` |
+| `--public-host auto`, rung 6 fails (rc=0 but **no cert**) | `STOPPED at rung 6/6` · **0** serve plans |
+| `--public-host <fqdn>` (explicit) | **0** `tailscale status` calls — the operator is not second-guessed |
+| ordering | every `serve --bg` is **after** `compose up`; every pre-reset `--https=… off` is **before** it |
+| ports fronted (profile `graphql`, N=7) | **`75050` + `78082` only.** `73000` / `79000` / `73077` / `77700` **not** fronted — no listener ⇒ fronting would **bind and hold** them |
+| `dev-stack down 7` (public) | clears `--https=75050 off` + `--https=78082 off` |
+| `dev-stack down 7` (localhost) | **0** tailscale invocations |
+
+### The mutation battery — and the fact that the FIRST one was theatre
+
+**Take 1 was invalid, and I nearly filed it as a pass.** Its `restore()` ran `git checkout` against
+**uncommitted** work, so after the first mutant it reverted the tree to `HEAD` — **where S7 did not exist**.
+Mutants 2–8 then ran against a **featureless tree** and "went RED" because the feature was **absent**.
+
+> **The tell was sitting in the output: M2–M7 all reported an identical `15` failures.**
+> A uniform count across unrelated mutations is not a result. It is a constant.
+
+**Take 2** runs against a **committed** baseline and **asserts each mutant actually changed the file** (md5
+before/after — a no-op `perl` substitution that "goes RED" is measuring something else). The counts now
+**discriminate**, and each names the test that catches it:
+
+| mutant (the naive thing a reasonable engineer writes) | verdict |
+|---|---|
+| **probe-always** — copy the demo's default-on shape onto dev | **RED (6)** |
+| **read the ambient `STACK_PUBLIC_HOST`** | **RED (2)** |
+| **second-guess an explicit `--public-host`** | **RED (1)** |
+| **capture stderr into the host** (`2>&1`) — a failed rung's **fix-line becomes the hostname** | **RED (3)** |
+| **front the registry, not the published ports** | **RED (2)** |
+| **front the ports BEFORE `compose up`** (the S4/D20 `EADDRINUSE` bug) | **RED (2)** |
+| **teardown never clears the serve listener** | **RED (1)** |
+| **empty `--only-ports` fails OPEN** (fronts all 6) | **RED (1)** |
+| **the reset ignores the filter** (clears all 6 — clobbers a co-resident stack) | **RED (2)** |
+
+**9 mutants · 9 RED · 0 theatre · 0 no-ops.**
+
+### The two fences the bookkeeping produced — both RED-proven against the SHIPPED tree
+
+| Fence | Pre-fix | Post-fix |
+|---|---|---|
+| `stack-core/dev_flag_guard.py` (the `/dev-up` CLI-flag ↔ docs rule, **both directions**) | **RED — 2 UNDISCOVERABLE flags** | GREEN (6 flags agree) |
+| `stack-injection/exposure_claim_guard.py`, extended to the **dev** emitter | **RED — the dev family had NO disclosure** | GREEN (both families) |
+
+**`--inject` has been in `dev-stack up`'s parser since M5 with zero user-facing doc surface.** It exists and
+nobody can find it — direction (2) of the both-directions rule, live for releases, on the one path S2's fence
+never covered. The guard's third clause: **being *hinted* is not being *documented*** — a token in a one-line
+`argument-hint` tells you a flag exists and nothing about what it does.
+
+### 🔴 The real find: the dev family had no exposure disclosure at all
+
+`stack-core/gen_override.py` (dev) builds its port strings **exactly** like `gen_injected_override.py` (demo) —
+bare `"<hostport>:<target>"`, **no `127.0.0.1` prefix**. **Measured by running both emitters, not by reading
+them:**
+
+```
+exposure-claim-guard: the DEMO emitters publish 14 port(s); effective bind(s) = ['0.0.0.0']
+exposure-claim-guard: the DEV  emitter  publishes  8 port(s); effective bind(s) = ['0.0.0.0']
+```
+
+So **every `dev-N` container is world-published on `0.0.0.0`, on every `dev-stack up`, with or without
+`--public-host`** — and on Linux Docker's iptables bypass `ufw`. `safety.md` §3.1 disclosed this **for demos
+only**. **This is the S0 lie, one family over** — and the silence landed exactly where it does the most damage:
+**dev's opt-in default invites the inference *"remote reach is off, so I am not exposed"*, which is false.** The
+opt-in withholds the **trusted HTTPS origin on the tailnet**; it does not withhold the LAN binding, which was
+always there.
+
+The generic `_DISCLOSURE_RE` was **satisfied by the demo paragraph alone** — one family's disclosure standing in
+for two — so the dev half gets its own `_DEV_DISCLOSURE_RE`. Both halves RED-proven: deleting the dev paragraph
+⇒ **RED**; making the dev emitter bind loopback ⇒ **RED** (the families disagree).
+
+### Suites at S7 exit
+
+**demo-stack 572** (+3) · **stack-injection 222** (+8) · **stack-core 136** (+7) · **dev-stack: 7 of 8 classes
+green + the 22 new S7 tests.** The 8th (`DevSetdressLocalContent`) is **F-M220-1b** — pre-existing, 19/20
+failing against a real Postgres, routed to M221.
+
 ### rext rolls
 
 `cue-to-cue-m220-r1` → `-r2` (fingerprint) → `-r3` (port reap) → `-r4` (the live proof spec) → **`-r5`**
-(S3 ladder + S4 cockpit-fronting + the cert-claim correction + the 11 stale-test fixes). Host pinned at
-`-r4`-equivalent code; `.agentspace/rext.tag` updated (the pin guard **correctly refused** the first bring-up
-when the clone and the tag disagreed — it worked exactly as designed).
+(S3 ladder + S4 cockpit-fronting + the cert-claim correction + the 11 stale-test fixes) → **`-r6`**
+(S7: the dev-side opt-in `--public-host` + `dev_flag_guard` + the dev exposure disclosure + the 6 pre-existing
+`test_dev_stack` failures). Host pinned at `-r4`-equivalent code; `.agentspace/rext.tag` → `cue-to-cue-m220-r6`
+(the pin guard **correctly refused** an S3/S4 bring-up when the clone and the tag disagreed — it worked exactly
+as designed).
+
+> **S7 is dev-path work: it was NOT exercised on `billion`.** The demo host stayed idle throughout (0
+> containers, 0 orphans) — S7 touches no demo code path, and the 572 demo-stack tests prove the demo's ladder
+> messages are byte-identical. What that means honestly: **the dev `--public-host` is fenced, not
+> live-proven.** Its ladder is S3's, which *was* proven live on `billion` in both directions; its serve
+> generator is M213/M215's, proven live in v2.2. The **net-new** code is the ~60 lines of wiring, and those are
+> covered by the 22-test tripwire fence + 9 mutants. A live dev-path burn-in on a tailnet VM would be the
+> natural M221 addition if the release wants one; it was not required to close S7.

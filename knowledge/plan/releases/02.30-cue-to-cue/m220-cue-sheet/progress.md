@@ -155,10 +155,48 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
         Fixed with a **patch-set fingerprint** baked as an image **label** (no Dockerfile edit). **It fired on
         its first live run** (`<none: predates the fingerprint> != cee1e4ff…` → rebuild).
 
-- [ ] **S7 — The dev-side opt-in `--public-host`.** *(overview (d) — folds the reserved M216)*
-  - [ ] Dev stays **opt-in** per D-DESIGN-3. Builds the flag `/dev-up` does not have today.
-  - [ ] **DECLARED SCOPE-FLEX LEVER:** if this bloats it **drops back to M216**, and the release still fully
-        meets the user's demo-side spec. Do not let it eat the milestone.
+- [x] **S7 — The dev-side opt-in `--public-host`.** *(overview (d) — folds the reserved M216)*
+  - [x] Dev stays **opt-in** per D-DESIGN-3. **LANDED (Fate 1) — the scope-flex lever was NOT pulled.** It was
+        the thin wiring job the plan hoped for: S3 had already built and fenced the hard part (the 6-rung
+        ladder), and the demo family already had a teardown-reset pattern and a serve generator to reuse.
+        `dev-stack up N --public-host <host>|auto` (+ `DEV_PUBLIC_HOST`); **`/dev-up` had no such flag at all**
+        before this, so "dev stays opt-in" had been naming a choice the tool did not offer.
+  - [x] **REUSED, NOT FORKED.** `--public-host auto` runs `demo-stack/tailscale_autohost.py` cross-section —
+        the same pattern, in the other direction, as `up-injected.sh` running `dev-stack/dev-setdress.sh
+        --stack-type demo`. `--label`/`--noun` change the WORDS on stderr and nothing else: same rungs, same
+        order, same verdict (fenced), and the demo's messages stay **byte-for-byte** what S3 shipped.
+  - [x] **THE INVARIANT, fenced with a TRIPWIRE not a mock:** no flag ⇒ **ZERO `tailscale` invocations**. The
+        stub is a healthy tailscale on PATH that **fails the test if called at all** — because *"it probed and
+        fell back safely"* would be a **passing grade for the behaviour the opt-in default forbids**.
+        `DEV_PUBLIC_HOST`, deliberately **not** the demo's exported `STACK_PUBLIC_HOST`: an ambient value would
+        otherwise flip a dev stack public **with no flag on the command line**.
+  - [x] **Fences RED-proven by MUTATION: 9 mutants, 9 RED, 0 theatre, 0 no-ops.** ⚠️ **The first battery was
+        itself theatre** — its `restore()` ran `git checkout` against **uncommitted** work, so mutants 2–8 ran
+        against a tree where S7 **did not exist** and "went RED" because the feature was **absent**. The tell
+        was in the output: **M2–M7 all reported an identical 15 failures.** A uniform count across unrelated
+        mutations is not a result, it is a constant. Take 2 runs against a **committed** baseline and **asserts
+        every mutant actually changed the file** (a no-op mutant that "goes RED" is measuring something else).
+        **D17, reproduced inside the battery built to enforce D17.**
+
+- [x] **S7 bookkeeping — the CLI-flag ↔ docs rule, applied to the side that had no fence.**
+  - [x] **`--inject` has been in `dev-stack up`'s parser since M5 with NO user-facing doc surface** — it exists
+        and nobody can find it. That is direction (2) of the both-directions rule, live for releases, on the
+        one path S2's fence did not cover. New `stack-core/dev_flag_guard.py` (both directions + a third
+        clause: **being *hinted* is not being *documented***). **RED-proven: 2 UNDISCOVERABLE flags** pre-fix.
+  - [x] **S2's defaults table still holds** after S3/S4/S7 — `demo_knob_guard` re-run, **PASS**. All four
+        corpus guards green (`story_org_count` · `demo_knob` · `dev_flag` · `exposure_claim`).
+  - [x] 🔴 **THE REAL FIND: the dev family had NO exposure disclosure at all.** `stack-core/gen_override.py`
+        builds its port strings **exactly like the demo's** — bare `"<hostport>:<target>"`, no `127.0.0.1` —
+        so **every `dev-N` container is world-published on `0.0.0.0`, on every `dev-stack up`, flag or no
+        flag**, and on Linux Docker's iptables bypass `ufw`. `safety.md` §3.1 disclosed this **for demos
+        only**. The silence landed exactly where it does the most damage: **dev's opt-in default invites the
+        inference *"remote reach is off, so I am not exposed"* — which is FALSE.** The opt-in withholds the
+        **trusted HTTPS origin**, not the LAN binding, which was always there. **This is the S0 lie, one family
+        over.** `exposure_claim_guard` now RUNS both emitters (**DEMO 14 → `0.0.0.0`, DEV 8 → `0.0.0.0`** —
+        measured, not read) and a **separate** `_DEV_DISCLOSURE_RE` fences the dev half, because the generic
+        regex was satisfied by the demo paragraph alone — **one family's disclosure standing in for two**.
+        Both halves RED-proven (doc-side + code-side).
+  - [x] **M216's reservation is CONSUMED** (`decisions.md` **D28**) — not handed back.
 
 ## Out
 - Speed (M218) · the AI-readiness render path (M219).

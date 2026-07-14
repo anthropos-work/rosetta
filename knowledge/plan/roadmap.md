@@ -412,9 +412,9 @@ operator/sudo denial → **`tailscale cert` actually mints**. **HARD INVARIANT: 
 EMPTY `STACK_PUBLIC_HOST`, byte-identical to today's localhost path, with ONE loud line naming the fix.** A
 *half-satisfied* public path is **strictly worse than localhost** — `SCHEME` and `BIND_HOST` both derive from the
 same `-n $STACK_PUBLIC_HOST` predicate, so every baked URL becomes `https://` against plain-HTTP listeners and the
-demo does not load **at all**. **(d)** the **dev-side opt-in `--public-host`** (folds the reserved **M216**;
-**declared scope-flex lever** — if it bloats, it drops back to M216 and the release still meets the user's demo-side
-spec). **(e)** front the **cockpit** on `tailscale serve` (`('cockpit', 7700)` → `gen_tailscale_serve.py:42-46`) —
+demo does not load **at all**. **(d)** ✅ **LANDED (S7)** — the **dev-side opt-in `--public-host`** (folds + **discharges**
+the reserved **M216**; the **declared scope-flex lever was NOT pulled** — S3's ladder is **reused cross-section, never
+forked**, and a dev box that passes no flag is proven **byte-identical**: zero `tailscale` invocations, tripwire-fenced). **(e)** front the **cockpit** on `tailscale serve` (`('cockpit', 7700)` → `gen_tailscale_serve.py:42-46`) —
 today the presenter's entry point is the **one plain-HTTP, unauthenticated surface**.
 **Delivers →** `corpus/ops/safety.md` **Part 3 — the exposure side** (**BLIND AREA, BLOCKING** — safety.md's two
 promises are read-side and write-side only; grep for `tailscale|remote|expose|network` → **zero hits**. Remote reach
@@ -459,7 +459,7 @@ surface on a live cross-machine run.
 | **DEF-M215-03(b)** | no committed remote-origin Playwright gate | **Fate-1 → M218 + M221** (it IS the measurement substrate) |
 | **DEF-M215-04 / F13** | `jobsimulation` exits(1) → AI-Simulations dead in every demo | **Fate-1 → M217** ("the demo works properly" cannot be claimed with a container in a crash loop) |
 | supply chain | `x/crypto@v0.52.0` (13 alerts, all UNREACHABLE) | **Fate-1 → M218's rext roll** |
-| **M216** (reserved) | dev-path Tailscale parity | **CONSUMED → M220(d)** per D-DESIGN-3; declared scope-flex lever |
+| ~~**M216** (reserved)~~ | dev-path Tailscale parity | ✅ **CONSUMED + DISCHARGED by M220 S7** (2026-07-14, M220-D28). The declared scope-flex lever was **NOT pulled** — S3 had already built + fenced the 6-rung ladder, so S7 was a thin wiring job (a flag, a default, **cross-section reuse of the ladder — never a fork**). `/dev-up` now has `--public-host <host>\|auto` (+ `DEV_PUBLIC_HOST`), **opt-in**, with the no-flag path proven **byte-identical** (zero `tailscale` invocations, tripwire-fenced, 9/9 mutants RED). **M216 is retired as a reservation, never built as a milestone.** |
 | plan hygiene | `metrics-history.md` has no v2.2 row; no release-scope deferral audit for v2.1/v2.2 | **Fate-3 → close-release** |
 
 ### Top risks
