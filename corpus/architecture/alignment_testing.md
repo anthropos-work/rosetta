@@ -260,11 +260,24 @@ Two things this table is designed to stop you from saying:
    is a **deliberately RED** `standard` gene (M218 **D16**): the fake BAPI fabricates the org's external id
    instead of returning the roster's real UUID. It could have been made green by **omitting the field from
    the gene** — which is precisely how the *user*-level version of the same stub survived four releases. The
-   divergence is therefore printed on **every run** until the fix lands (`FIX-M219-bapi-org-eid`).
+   divergence was therefore printed on **every run** until the fix landed.
    **Prefer a red gene that tells the truth to a green one that doesn't.**
+   > ✅ **RESOLVED M219** (`FIX-M219-bapi-org-eid`). The BAPI now reports the roster's real `org_eid`
+   > (`Store.SeedOrgIdentity`/`LookupOrgEid`, wired from the roster at `cmd/fake-bapi`), behind a three-tier
+   > ladder — roster eid → demo-org eid → the historical stub — so the alignment runner (which mounts no
+   > roster) stays byte-identical and **exactly one gene moved**. Go surface: **97.2% → 100.0% / 100%
+   > critical, 27/27, no divergences.** The gene **stays in the DNA** as a permanent fence over the whole
+   > wiring path (roster JSON → `LoadRoster` → `seedRosterMemberships` → store → `organizationWithEid` → HTTP).
 2. **"All five surfaces are measured."** `expressrun` is **dependency-gated**: on a box without the Node
-   modules it cannot build, exits rc=2, and produces **no number at all** — which nothing currently treats as
-   a failure. *Absence of a score is not a passing score* (`TEST-M219-expressrun-dep-gate`).
+   modules it cannot build and produces **no number at all** — and it exited with the **same code (2)** that a
+   real regression uses, so nothing could tell *"we never ran this"* from *"this is fine"*. The express
+   surface was recorded as 100% for several releases **having never been run**.
+   *Absence of a score is not a passing score.*
+   > ✅ **RESOLVED M219** (`TEST-M219-expressrun-dep-gate`). `alignctl run` now splits the codes:
+   > **`3` = UNMEASURABLE** (the runner could not execute — **no genes ran, no score exists**) vs
+   > **`2` = REGRESSED** (a real, *measured* score below the gate), with a banner that refuses to be mistaken
+   > for a pass. `gate.sh` reports the verdict explicitly rather than letting `set -e` blur them. A surface
+   > that did not run must be reported as **UNMEASURED** — never carried forward at a stale value.
 
 ## Worked example: the toy reference
 

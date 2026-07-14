@@ -125,6 +125,16 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > ⚠️ **This is exactly how two perf patches rotted silently for four releases** (see §6). Non-fatality is right; a
 > refusal that is **invisible** is not. A refusal must be **loud**.
 
+> ✅ **M219 closed the last silent hole in this** (`TEST-M219-freshness-gate-skips`). The freshness preflight was
+> wrapped in `if [ "${DEMO_NO_PATCH:-0}" != 1 ] && [ -d "$DEMO/app/.git" ]` **with no `else`** — so on a box with
+> no app clone the entire block, *including its only success line*, was skipped and **nothing was printed at
+> all**. The bring-up log was byte-identical to one where the gate had run and passed: zero anchor-drift
+> protection, silently. Both branches now speak — a deliberate `DEMO_NO_PATCH=1` says so, and a missing clone
+> says **"NOT RUN … this is NOT a pass"**. Separately, three unit tests skipped themselves with a message
+> deferring to a *"live-verify gate"* that **does not exist** (grep-confirmed); they now report themselves as
+> **coverage holes, not passes**. A skip is not a pass — the same rule as the alignment surfaces'
+> *absence-of-a-score* (`alignment_testing.md`).
+
 ---
 
 ## 5. The patch inventory
