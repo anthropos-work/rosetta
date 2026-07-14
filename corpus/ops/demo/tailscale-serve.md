@@ -217,9 +217,9 @@ cockpit → the non-fatal auto-verify on the offset ports. `/stack-list` then sh
 
 ## Step 6 — Verify (the exact curls + the cockpit login)
 
-Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet machine** (or the
-VM itself), the plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its
-own TLS — so **no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
+Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet PEER**, the
+plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its own TLS — so
+**no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
 
 ```bash
 HOST=billion.taildc510.ts.net
@@ -230,6 +230,32 @@ curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15400/v1/client    # FAPI
 
 All three answered `verify=0` (cert trusted, no CA install) from a **remote** Mac on the M215 run — the
 make-or-break proof that the M213/M214 remote-auth foundation works on a real Linux VM.
+
+> ### ⚠️ NOT from the VM itself — `tailscale serve` is bypassed on the loopback path (M219)
+>
+> This section used to read *"from any tailnet machine **(or the VM itself)**"*. **The parenthetical is false**,
+> and it cost M219 a full false-RED sweep before it was diagnosed.
+>
+> `docker-proxy` binds the demo's offset ports on **`0.0.0.0`**, which includes the VM's own `100.x` tailscale
+> address. A connection originating **on the VM** to `https://<magicdns>:<port>` therefore lands on the **kernel
+> socket** — the container, speaking plain HTTP — instead of being intercepted by `tailscaled`'s `serve` layer,
+> which is what terminates TLS. Plain HTTP answering a TLS handshake yields:
+>
+> ```
+> curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+> ```
+>
+> Measured on `billion`: **from the VM, https on `:13000`, `:15050` and `:18082` ALL fail TLS; from a tailnet
+> peer all three answer 307/200/200.** From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
+> the trusted cert — which is why `tailscale serve status` can list a mapping that nevertheless does not apply to
+> traffic you originate locally.
+>
+> **Consequence for testing.** A `--public-host` demo bakes the MagicDNS origin into the frontend build, so the
+> app's own GraphQL client calls `https://<magicdns>:15050/graphql`. Drive that app from a browser **on the VM**
+> and every GraphQL call dies `ERR_SSL_PROTOCOL_ERROR`, every page renders a permanent loading spinner, and every
+> content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
+> coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
+> [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at `http://$HOST:17700` (`7700+off`,
 plain HTTP — it is deliberately *not* fronted by `tailscale serve`; navigating from an http launcher page to the

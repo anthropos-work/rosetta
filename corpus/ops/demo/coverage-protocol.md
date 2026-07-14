@@ -84,6 +84,36 @@ added as a sibling spec/runner under `stack-verify` so it reuses verify's offset
 > under `stack-verify/e2e/` with its own `package.json` + lockfile (already present). The Go rext tooling is
 > untouched (supply-chain stays GREEN — no Go go.mod/go.sum change).
 
+> ### ⚠️ WHERE you run the sweep is part of the test (M219, v2.3 "cue to cue")
+>
+> **Run the sweep from the vantage a PRESENTER has — a tailnet peer. Never from the demo host itself.**
+>
+> Until M219 both runners (`run-coverage.sh`, `run-playthroughs.sh`) hardcoded their app/FAPI bases to
+> `localhost`, so a demo living on a remote tailnet VM **could not be swept at all**. That is a large part of
+> *why* the AI-readiness asserts sat unrun for four releases. They now take `COVERAGE_HOST` /
+> `COVERAGE_APP_SCHEME` (and `PT_HOST` / `PT_APP_SCHEME`).
+>
+> But pointing them at `localhost` **on the demo box** is not merely awkward — it is **wrong**, and it fails in
+> a way that looks exactly like a product bug:
+>
+> - A `--public-host` demo **bakes the MagicDNS origin into the frontend build**, so the app's own GraphQL
+>   client calls `https://<magicdns>:<15050+offset>/graphql`.
+> - `docker-proxy` binds `0.0.0.0`, so a connection **from the demo host** to its own `100.x` tailscale IP hits
+>   the kernel socket and **bypasses `tailscale serve`** — the thing that terminates TLS. Plain HTTP then
+>   answers a TLS handshake: `ERR_SSL_PROTOCOL_ERROR` / *"wrong version number"*.
+> - Every GraphQL call fails ⇒ every page is a permanent loading spinner ⇒ **every section reports
+>   `region-not-found`** and the persona checks fail for want of an org name and an avatar.
+>
+> Measured on `billion`: from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS; **from a
+> tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
+> `failingSections=21, personaFailures=3` — a **systemic false-RED**, and exactly the sort that gets "fixed" by
+> weakening asserts. From the correct vantage the same build reported `failingSections=0, personaFailures=0`.
+>
+> **A sweep that cannot reach the app does not report "broken" — it reports "empty", and empty is the one
+> result this protocol forbids you to read as anything.** The `--reset-only` flag exists so the DB half (which
+> needs docker + `stackseed`, i.e. the host) and the browser half (which needs the peer) can run on different
+> machines.
+
 The harness, against a **live** demo on offset ports:
 1. **Logs in** as the vantage's roster hero via the **cockpit handshake** — the demo's fake FAPI deep-link
    `https://<fapi-host>/v1/client/handshake?…&__clerk_identity=<hero-key>` selects the hero's seat

@@ -471,6 +471,29 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 > against a step they never took). The full contract, with the arithmetic and the RED-proven fences, is in
 > [`../../services/ai-readiness.md` § The FILLED-ness contract](../../services/ai-readiness.md).
 
+> **⚠️ A HERO'S ROLE MUST CLASSIFY — or her skills are the taxonomy's alphabetical head (M219).** Both
+> AI-readiness heroes shipped with junk profiles for four releases, and the first employee sweep ever run on a
+> Northwind seat found it immediately. Two causes, one symptom:
+>
+> 1. **The curated tier only covered the orgs that existed when it was built.** M42e added the curated
+>    skill-name allow-lists precisely to keep the flat pool's `ORDER BY node_id` head (`15Five`, `3dcart`) out of
+>    a profile — but it curated exactly **`software`** and **`sales`**. M51 then added Northwind with **"Data
+>    Analyst"** and **"Operations Specialist"**, which match *neither*, so both heroes fell through to the flat
+>    pool: **Aria — a Data Analyst — claimed "24-hour dietary recall", "2D Animation Software" and "3D
+>    Bioprinting in Dentistry".** The classifier's own comment blessed the fall-through as *"no regression for an
+>    unclassified role"*. A silent fall-through to the flat pool **is** the regression.
+> 2. **"Operations Specialist" is not a public `job_role` at all** (the preset comment claiming it "resolves" was
+>    false — the taxonomy has Operations *Analyst*/*Manager*/*Engineer*, never *Specialist*). So Ben had **no
+>    role**: no title on `/profile/skills`, no role-core skills, and therefore **even his VERIFIED skills came
+>    off the flat head — he was "verified" in `15Five` and `17Track`.** He is now an **Operations Analyst**,
+>    which resolves; a non-resolving name must **drop, never be invented**.
+>
+> M219 adds `data` + `operations` curated categories (hand-picked, taxonomy-verified — the ops family also
+> contains real junk for this persona: *"Lean NOx Traps"*, *"Scheduling irrigations"*). **The fence, which is the
+> point:** `TestShippedPresets_EveryHeroRoleClassifies` asserts **every role any shipped preset actually seeds
+> classifies to a real curated category**, read from the real presets, never a fixture. **Add an org with a new
+> role family and it fails at `go test` — not four releases later, in front of a customer.**
+
 ### Why closed-cycle + frozen snapshots (the strategy M51 shipped)
 
 The M48 contract offers two seed strategies (see [`../../services/ai-readiness.md`](../../services/ai-readiness.md)):
