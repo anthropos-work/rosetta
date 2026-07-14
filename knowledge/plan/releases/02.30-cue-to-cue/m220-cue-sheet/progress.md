@@ -66,22 +66,32 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
         rule — a doc-promised flag with no parser entry is a false promise; a parser flag with no doc surface
         is undiscoverable). **RED-proven pre-fix by KB-3 above.**
 
-- [ ] **S3 — The remote flip: `--public-host auto`, DEFAULT-ON for demo.** *(overview (c) — D-DESIGN-3)*
-  - [ ] Capability ladder — **capability-gated, never presence-probed**: `command -v tailscale` →
-        `BackendState == Running` → a **dotted** `.Self.DNSName` (a dotless host is hard-refused —
-        `@clerk/backend`'s `assertValidPublishableKey` rejects it) → `MagicDNSEnabled` → `tailscale serve
-        status` shows no operator/sudo denial → **`tailscale cert` actually mints**.
-  - [ ] **HARD INVARIANT — the fallback is not optional.** Any failed rung ⇒ **empty `STACK_PUBLIC_HOST`,
-        byte-identical to today's localhost path**, plus ONE loud line naming the exact fix command. `SCHEME`
-        and `BIND_HOST` both derive from the same `-n $STACK_PUBLIC_HOST` predicate, so a **half-satisfied**
-        public path is **strictly worse than localhost**: every baked URL becomes `https://` against plain-HTTP
-        listeners and the demo does not load at all. A laptop with no tailscale MUST stay byte-identical.
-  - [ ] Opt-out: `--no-public-host`.
-  - [ ] Fences: each rung RED-proven — a failing rung must **fall back**, never half-satisfy.
+- [x] **S3 — The remote flip: `--public-host auto`, DEFAULT-ON for demo.** *(overview (c) — D-DESIGN-3)*
+  - [x] Capability ladder — **capability-gated, never presence-probed** (`demo-stack/tailscale_autohost.py`):
+        `command -v tailscale` → `BackendState == Running` → a **dotted** `.Self.DNSName` (a dotless host is
+        hard-refused — `@clerk/backend`'s `assertValidPublishableKey` rejects it) → `MagicDNSEnabled` →
+        `tailscale serve status` shows no operator/sudo denial → **`tailscale cert` actually mints**.
+  - [x] **HARD INVARIANT — the fallback is not optional.** Any failed rung ⇒ **empty `STACK_PUBLIC_HOST`,
+        byte-identical to today's localhost path**, plus ONE loud line naming the exact fix command.
+        **PROVEN LIVE, both directions** (below).
+  - [x] Opt-out: `--no-public-host` (+ `DEMO_NO_PUBLIC_HOST=1`). Passing it **with** `--public-host` is a hard
+        refusal, not a precedence rule — "public AND not public" has no correct answer.
+  - [x] Fences: each rung RED-proven **by mutation** — 4 naive `discover()` mutants (presence-probe rung 6,
+        no-dotted-check, soft rung 4, trust-rc==0) + 6 bash-wiring mutants (dropped `|| true`, probe-despite-
+        opt-out, second-guess an explicit host, capture-stderr-into-the-host, …). Every one goes **RED**.
 
-- [ ] **S4 — Front the cockpit on `tailscale serve`.** *(overview (e))*
-  - [ ] Add `('cockpit', 7700)` to `gen_tailscale_serve.py`. Today the presenter's **entry point** is the one
-        plain-HTTP, unauthenticated surface on the tailnet (`up-injected.sh` deliberately excludes it).
+- [x] **S4 — Front the cockpit on `tailscale serve`.** *(overview (e))*
+  - [x] `('cockpit', 7700)` added to `gen_tailscale_serve.py` — on its **OWN axis**, *not* `UI_BROWSER_FACING`:
+        the cockpit is gated on `DEMO_STORIES`, **not** on `--no-ui`, so filing it under the UI tier would leave
+        a **live** cockpit unfronted on a `--no-ui` stories demo (and front a dead port when stories are off).
+  - [x] **Ordering is load-bearing.** `tailscale serve` binds the tailnet IP `:<port>` as a **real listener**, so
+        fronting `:7700` *before* the cockpit binds kills it with `EADDRINUSE` — we would have "fixed" the
+        cockpit's exposure by killing the cockpit (the M215 F12 / F-M220-4 contention). The **first** apply
+        passes `--no-cockpit`; a **second**, idempotent apply fronts it after `/healthz` answers. The **reset**
+        plan always includes `:7700` (else a re-up finds the port held and the cockpit cannot start at all).
+  - [x] Documented **honestly**: this is **transport, not authentication** (`safety.md` §3.5.2). The cockpit is
+        still a one-click, password-free "become any hero" launcher; it is now behind the tailnet's TLS +
+        device mesh rather than in cleartext. Fronting it does not password-protect it.
 
 - [x] **S5 — The two demo-BREAKING click paths.** *(overview (i)+(j) — escalated from M219 D4)*
   - [x] **(i) The academy POISONS the demo session.** FIXED. The academy is **Clerkenstein-wired** from the
@@ -163,7 +173,47 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
 
 ## Notes
 
-### S0–S2 landed 2026-07-14 (S3–S7 NOT started — they need a live demo)
+### S3 + S4 landed 2026-07-14 — ONE live demo cycle on `billion`, both paths proven
+
+**The flip is live and the fallback holds.** Asserted from a **tailnet peer** (the Mac), never on-host.
+
+| path | trigger | result |
+|---|---|---|
+| **default-on** | bare `up-injected.sh 1`, **no flag** | `AUTO-DISCOVERED billion.taildc510.ts.net (all 6 rungs)`. **Cockpit `:17700` = HTTPS 200, `ssl_verify=0`** (trusted LE cert) — it was **plain HTTP** before S4. All 5 other browser ports `ssl_verify=0`. Hero login end-to-end **over the cert**: `maya-thriving` → `/profile` **200**, `dan-manager` → `/enterprise/workforce` **200** (control: no session ⇒ **307** handshake-loop). Cockpit renders all **3 orgs** + heroes. autoverify **OK** (casbin 1150, skills 42790). Clones left **0-dirty**. |
+| **fallback** | `tailscale` made **genuinely unavailable** (`chmod -x`; `shutil.which` → `None`) | `STOPPED at rung 1/6 … Fix: install Tailscale`. Cockpit `http://localhost:17700`; **0** serve listeners; baked URLs `http://localhost:*`; cockpit re-bound to **`127.0.0.1`** and **REFUSED** from the tailnet IP; autoverify **OK**. **Byte-identical.** |
+
+**The open question that gated the flip — SETTLED EMPIRICALLY.** rext claimed `tailscale cert` *"RE-ISSUES on
+re-run"*. **Measured FALSE:** two back-to-back mints returned the **identical certificate serial** (`05777C48…`)
+in **0.01 s** each, with **zero** new ACME orders. tailscaled caches. Had the claim been true, default-on —
+whose rung 6 **mints on every bring-up** — would burn a Let's Encrypt **duplicate-certificate** slot per
+`demo-up`, and since **`ts.net` is a PSL entry** that bucket is **per-tailnet**, shared by every box on it.
+Corrected in `tailscale-serve.md` + `up-injected.sh`.
+
+**My own ordering fence was THEATRE on the first cut.** It asserted `--no-cockpit` was present in the first
+serve apply by scanning the script text — and matched the word inside the **comment** I had written directly
+above the command. Deleting the flag from the *command* still passed. It now strips comments before scanning.
+D17 reproduced **inside the fence built to catch it**; only the mutation run exposed it.
+
+### S5/S6 shipped a RED suite, and it nearly cost me a mis-triage (fixed here, Fate 1)
+
+`cue-to-cue-m220-r4` — **the tag the demo host was pinned at** — had **11 failing demo-stack tests**. S5/S6
+changed the code and left its tests asserting the **old** contract: the inverse D17, a *test* outliving the
+thing it describes. My own 7 regressions landed on top of them, and "14 failures" is indistinguishable from
+"11 pre-existing + 3 mine" until you baseline. All 18 now green (569 + 214 + 129):
+
+- **`test_frontend_build`** — S6/h's clerk-js-cache `mkdir` (D14) landed **inside the block**
+  `TestReuseFlagArrayExpansion` extracts, and the harness PATH had no `mkdir` ⇒ `rc=127` on all 8 cases, with
+  the assertion message blaming the `+`-guard (*"regressed?"*) and pointing the next reader at **entirely the
+  wrong bug**.
+- **`test_frontend_build`** — the docker stub answered **every** `--format` inspect with `$STALE_ENV`, so
+  S6/g's new `demo.patchset` label read back as the env blob, never matched, and **all five REUSE tests
+  silently exercised the REBUILD path** — asserting the opposite of their own names while the suite looked
+  fine. The stub now answers the label query separately, with the fingerprint the **shipped** function computes.
+- **`test_ant_academy`** — three assertions still demanded the `e2e_persona` bypass S5/D10 **deliberately
+  deleted**, and the pk/secret S5 **stopped** copying out of the real `platform/.env`. **Inverted, not dropped**
+  — a removed feature deserves a fence that keeps it removed.
+
+### S0–S2 landed 2026-07-14
 
 **Three fences, all RED-proven against the pre-fix tree, all GREEN after.** Every one of them found more than
 the plan predicted, and — the useful part — **each caught bugs in itself while being RED-proven.**

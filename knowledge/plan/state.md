@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences); S5+S6 DONE (proven on a live demo: the academy session-poisoning is FIXED — A/B green from a tailnet peer; zero egress; clerk-js from disk). S3, S4, S7 NOT started (each needs a live demo, run one at a time)"
+active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences); S5+S6 DONE (live: academy session-poisoning FIXED, zero egress, clerk-js from disk); S3+S4 DONE (live on billion: remote reach is DEFAULT-ON via a 6-rung capability ladder, and the presenter cockpit is behind the trusted cert — both proven from a tailnet peer, and a no-tailscale box proven byte-identical). ONLY S7 remains (the dev-side opt-in flag — a declared scope-flex lever)"
 last_closed: "M219 — 2026-07-14"
-phase: "M220 S0–S2 + S5 + S6 landed on m220/cue-sheet. S5/S6 proven on a live billion demo (0 ejects, 0 egress, alignment 100%/100% both surfaces). NEXT: S3, S4, S7 — each needs a LIVE DEMO. Then M221 (last)."
+phase: "M220 S0–S6 landed on m220/cue-sheet. S3+S4 proven on ONE live billion cycle: bare demo-up auto-discovers the MagicDNS host (all 6 rungs), cockpit :17700 = HTTPS 200 ssl_verify=0 from a peer, hero login green both vantages; and a genuinely-no-tailscale box falls back byte-identical (cockpit http://localhost, 0 serve listeners, REFUSED off-loopback). rext @ cue-to-cue-m220-r5. NEXT: S7 (scope-flex lever, user decides). Then M221 (last)."
 last_updated: "2026-07-14"
 ---
 
