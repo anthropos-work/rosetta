@@ -1,10 +1,10 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "(between milestones) — M217 CLOSED; M218 ∥ M219 ∥ M220 are next"
-last_closed: "M217 clean-stage — 2026-07-13 (v2.3 cue to cue; exit gate MET on billion; 32 bugs)"
-phase: "M217 merged into release/02.30-cue-to-cue — next: /developer-kit:build-milestone on M218 (or M219/M220 in parallel)"
-last_updated: "2026-07-13"
+active_milestone: "(between milestones) — M218 CLOSED; M219 ∥ M220 are next (parallel), then M221"
+last_closed: "M218 — 2026-07-14"
+phase: "M218 merged into release/02.30-cue-to-cue — next: /developer-kit:build-milestone on M219 ∥ M220, then M221 (last)"
+last_updated: "2026-07-14"
 ---
 
 # State
@@ -53,23 +53,40 @@ not three, replays were cache misses. All three corrected; gate cleared to **YEL
 `0.0.0.0:17700`) — an unauthenticated hero-vending panel pointing at a deleted database. Killed manually. That is
 **S2's defect, caught live**: teardown reaps by PID only, discards `kill`'s status, and prints success regardless.
 
-**Active milestone:** **(between milestones).** **M217 "clean stage" CLOSED 2026-07-13** — merged
-`--no-ff` into `release/02.30-cue-to-cue`. rext code-of-record: **`cue-to-cue-m217`**. **32 bugs fixed** (build 0
-→ harden ×3: 24 → close: 8). **Exit gate MET on `billion`** (cold reset-to-seed: `autoverify: OK`, 3/3 replays
-exit 0, 2/2 app patches applied [one self-healed], jobsimulation serving, content plane local). Records:
-[`releases/02.30-cue-to-cue/m217-clean-stage/`](releases/02.30-cue-to-cue/m217-clean-stage/).
+**Active milestone:** **(between milestones).** **M218 "seat change" CLOSED 2026-07-14** — merged `--no-ff`
+into `release/02.30-cue-to-cue`. rext code-of-record: **`cue-to-cue-m218`**. **`closed-on-gate`.**
 
-> **⚠ Carried into M221:** the **pre-bind reap has still never run live**. The close review found that
-> `up-injected.sh` called `reap_port` **without sourcing `reap.sh`** — so the milestone's headline deliverable
-> was dead code (exit 127, swallowed) *during the green proof run on `billion`*. It is fixed and unit-proven;
-> it is **not field-proven**. M221 re-proves everything on the box.
+> ### ✅ THE HEADLINE GATE OF THE RELEASE IS MET — click→ACCESS **2413 ms / 1767 ms** vs **< 5000 ms**
+> Worst-case p95 over **5 GENUINE cold reset-to-seed cycles**, both vantages, **50/50** ACCESS, on `billion`
+> over the tailnet. **From 39.45 s / 38.30 s — a ~16× improvement.** Two root causes, **both in demo tooling,
+> zero platform edits**: (1) next-web's SSR GraphQL origin was a **build-inlined PUBLIC url that blackholes
+> from inside the container** (~37.5 s); (2) Clerkenstein's fake BAPI served **a hardcoded STUB user to every
+> hero**, so `app` refused `userPreferences` and a retry ladder burned ~6 s per render.
+>
+> **⚠ The gate number is 2413 ms — NOT the 1456 ms iter-04 reported.** That was measured on a **warm DB**:
+> **F-9**, `/demo-down --purge` had **never purged on any Linux host**, so every "cold" bring-up for days
+> reused the same database and images. The gate was **ungradeable** until that was fixed. Records:
+> [`releases/02.30-cue-to-cue/m218-seat-change/`](releases/02.30-cue-to-cue/m218-seat-change/).
 
-**Phase:** **M217 closed + merged — next: `/developer-kit:build-milestone` on M218** (the headline latency
-milestone), or **M219 ∥ M220** in parallel.
+> **⚠ Alignment now reads 97.2%, not 100% — deliberately.** A **permanently-visible RED gene**
+> (`MembershipOrgIdentity/real-org-eid`, **F-11/D16**) names a real divergence: the fake BAPI fabricates the
+> org's external id. It was kept red rather than hidden by omitting the field — **a silently-omitted field is
+> exactly how the user-level stub survived four releases.** Critical is **100%**; the gate (≥95/=100) is
+> **MET**. → **`FIX-M219-bapi-org-eid`** (needs a runtime change **+ a fresh 5-cycle battery**).
 
-**Next up:** **{ M218 ∥ M219 ∥ M220 }** in parallel (M218 merges first of the three — it and M220 both touch
-`up-injected.sh`), then **M221**. **M218 may now measure** — and `autoverify.json` is the signal it gates on, so it
-can never again measure a broken stack.
+> **⚠ Carried into M221 (from M217):** the **pre-bind reap has still never run live** — it was dead code
+> (unsourced `reap.sh`, exit 127 swallowed) *during M217's green proof run on `billion`*. Fixed and
+> unit-proven; **not field-proven**. M221 re-proves everything on the box.
+
+**Phase:** **M218 closed + merged — next: `/developer-kit:build-milestone` on M219 ∥ M220** (parallel), then
+**M221** (last).
+
+**Next up:** **{ M219 ∥ M220 }** in parallel, then **M221 "prove it on billion"** — which re-proves **every**
+gate on the VM, over the tailnet, **with no flags**. M218 merged first of the three parallel milestones (it
+and M220 both touch `up-injected.sh`).
+
+**Recently closed:** **M218** seat-change — 2026-07-14 (`closed-on-gate`; 21 bugs) · **M217** clean-stage —
+2026-07-13 (gate MET on `billion`; 32 bugs).
 
 ## User decisions taken at design time (binding)
 
@@ -84,23 +101,28 @@ can never again measure a broken stack.
 
 | # | Name | Shape | Complexity | Depends on |
 |---|------|-------|------------|------------|
-| **M217** | Clean stage — a demo that comes up **green** (the hard barrier) | `section` | medium | — |
-| **M218** | Seat change — **click→ACCESS < 5 s**, both vantages | `iterative` | large | M217 |
+| ~~**M217**~~ | ✅ **DONE** — Clean stage: a demo that comes up **green** | `section` | medium | — |
+| ~~**M218**~~ | ✅ **DONE** — Seat change: click→ACCESS **2413/1767 ms** vs < 5 s | `iterative` | large | M217 |
 | **M219** | Readiness renders — the AI-readiness story is **visible** (the seed is a **verified no-op**) | `section` | medium | M217 |
 | **M220** | Cue sheet — `/demo-up` defaults: the doc fix + remote **opt-out** + `safety.md` **Part 3** | `section` | medium | M217 |
 | **M221** | Prove it on billion — every gate, on the VM, over the tailnet, **no flags** | `iterative` | large | M217–M220 |
 
-## Headline numbers (M217 close, 2026-07-13)
-- **Python tests:** **867** (0 fail, 11 skip) — demo-stack 462 · stack-injection 194 · stack-verify 109 ·
-  stack-core 97 · dev-stack(new) 5. Counted from **JUnit XML**, never grepped stdout.
-- **Go test funcs:** **1750** (+1 vs v2.2 **measured by the same method**, which gives 1749 at v2.2). *The 1772
-  recorded at the v2.2 close used a DIFFERENT method and is not comparable — the method is now pinned in
-  `metrics.json` so future closes compare like with like.*
+## Headline numbers (M218 close, 2026-07-14)
+- **NEW — p95 click→ACCESS:** **2413 ms** (employee) / **1767 ms** (manager) vs the **< 5000 ms** gate, over
+  **5 genuine cold reset-to-seed cycles**, 50/50 ACCESS. **Baseline 39.45 s / 38.30 s.** *A latency number
+  without its environment is not a measurement:* `billion`, Linux VM, 7.3 GiB RAM, over the tailnet origin.
+- **Python tests:** **887** (0 fail, 12 skip) — demo-stack 495 · stack-injection 186 · stack-verify 109 ·
+  stack-core 97. Counted from **JUnit XML**, never grepped stdout.
+- **Go test funcs:** **1784** (+34 vs M217's 1750, **by the same method** — pinned in `metrics.json` so
+  future closes compare like with like). **0 failures across all 6 modules.**
+- **Alignment (Clerkenstein Go surface):** **97.2% overall / 100% critical** (26/27) — gate ≥95/=100 ⇒ **MET**.
+  The 2.8% is **one deliberately RED gene** (see above). **Only 4 of 5 surfaces are measurable** — `expressrun`
+  is dependency-gated and exits **rc=2 with NO score** on a box without `@clerk/express` `node_modules`, which
+  nothing treated as a failure (**pre-existing**; → `TEST-M219-expressrun-dep-gate`).
 - **Flake:** **0** (5/5 clean, sequential). **Platform-repo edits:** **0**.
-- **Known issue (flagged, not a regression):** **33 pre-existing `dev-stack` failures** — environmental (they
-  need a live Postgres on `:15432`), **identical count at v2.2**. M217 took that suite from 55 → 60 passing.
-- **NEW metric this release:** p95 click→ACCESS latency — **not yet measured**; M218 iter-01 sets the baseline.
-
+- **Known issue (flagged, not a regression):** the **`dev-stack` suite fails on this box** — environmental
+  (needs a live Postgres on `:15432`; this box's `.agentspace/secrets` is also incomplete). Identical at v2.2
+  and M217. **M218 does not touch `dev-stack/`.**
 
 ## Branch model / shipped tags
 **v2.3 IN DEVELOPMENT:** `release/02.30-cue-to-cue` cut from `main` at `/developer-kit:design-roadmap` (2026-07-13);
@@ -110,10 +132,12 @@ milestone branches `m217/clean-stage` … `m221/prove-on-billion` branch from it
 `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`. (Full detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
 ## Standing backlog (unscheduled, cross-release)
-- **The v2.2 residuals are now FOLDED INTO v2.3 (Fate-1), not standing:** DEF-M215-01 (app demopatch sha re-anchor)
-  → **M217**; DEF-M215-02 (remote-VM snapshot cache) → **M217 + M221**; DEF-M215-03(b) (committed remote-origin
-  Playwright gate) → **M218 + M221**; DEF-M215-04 (`jobsimulation` exits(1)) → **M217**; the `x/crypto@v0.52.0` bump
-  → **M218's rext roll**.
+- **The v2.2 residuals are FOLDED INTO v2.3 (Fate-1).** ✅ **DISCHARGED:** DEF-M215-01 (app demopatch sha
+  re-anchor) → M217 · DEF-M215-04 (`jobsimulation` exits(1)) → M217 · **DEF-M215-03(b)** (committed
+  remote-origin Playwright gate) → **M218 built it** (the `stack-verify/e2e/` latency harness; M221 runs it
+  remotely) · **`x/crypto@v0.52.0`** → **LANDED at the M218 close** (it was a *repeat + aged-out* deferral;
+  the close **is** M218's rext roll — alignment gate scores identically pre/post ⇒ behaviour-neutral).
+  **STILL OPEN:** DEF-M215-02 (remote-VM snapshot cache) → **M221**.
 - **M216** (dev-path Tailscale parity) — **CONSUMED by M220(d)** per D-DESIGN-3. No longer a reservation; it is the
   release's declared scope-flex lever (it drops back to a reservation only if M220 bloats).
 - **Plan hygiene → next close-release:** `metrics-history.md` has **no v2.2 row**; no release-scope deferral audit

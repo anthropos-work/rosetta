@@ -60,9 +60,27 @@ gate's Node dependency, the deploy gate's private-module/`GH_PAT` dependency).
    with `operator`, `input`, and — when needed — `normalize`/`weight`). Set each capability's
    `criticality` (`critical`/`standard`/`optional`); it drives default weight and the critical gate.
 6. **Validate:** `alignctl dna validate --dna PATH` — fixes every structural error before proceeding.
-7. **List to eyeball coverage:** `alignctl dna list --dna PATH` — confirm every consumed capability
-   is present and the gene count/weights look right. A capability the consumer calls but the DNA
-   omits is a blind spot the score will hide.
+7. **Declare the consumed surface, then RUN the coverage check — do not eyeball it.**
+   For each endpoint a **real consumer actually calls**, add a `consumed_surface` entry:
+   `{endpoint, consumer, capability}` (or `covered_by: "other-dna:Cap/variant"` when another surface's DNA
+   owns it). Then:
+   ```
+   alignctl dna coverage --dna PATH     # exit 0 = every consumed endpoint has a gene; 2 = a hole
+   alignctl dna list --dna PATH         # sanity-check gene count / weights
+   ```
+   `alignctl run` also refuses to score a DNA with an uncovered consumed endpoint, so the hole cannot
+   silently become a 100%.
+
+   > ⚠ **This step used to read "List to eyeball coverage."** It was the *named* mitigation in
+   > `alignment_testing.md` against a hollow score — and eyeballing is not a check. It missed
+   > `GET /v1/users/{id}`, consumed by next-web's `currentUser()` on every authenticated render, and
+   > Clerkenstein scored **100% while returning the wrong human for every hero** (M218). Declare the
+   > endpoint and let the tool fail; a capability the consumer calls but the DNA omits is a blind spot the
+   > score will hide, and a human scanning a list will not reliably catch it.
+
+   **Prefer genes a stub cannot satisfy.** A golden captured from the *mirror* ratifies the mirror's bugs —
+   three identity genes all asserted the variant `universal-user` (the stub itself) and stayed green
+   throughout. Assert **two-sided**: ask for hero A *and* hero B and require A ≠ B.
 8. **Ensure the runner handles every capability.** The mirror repo ships a runner
    (`RUNNER --target {source|mirror} --dna PATH` → outcomes JSON). Each capability id in the DNA must
    have a branch in the runner that invokes it with the gene's `input`.
@@ -84,7 +102,8 @@ gate's Node dependency, the deploy gate's private-module/`GH_PAT` dependency).
 
 | Command | Purpose |
 |---|---|
-| `alignctl dna validate --dna PATH` | structural checks (every gene has a valid operator; `normalized` genes have `normalize` paths; no duplicate gene ids). |
+| `alignctl dna validate --dna PATH` | structural checks (every gene has a valid operator; `normalized` genes have `normalize` paths; no duplicate gene ids; **every declared consumed endpoint names a real capability**). |
+| `alignctl dna coverage --dna PATH [--if-declared]` | **the capability-coverage check** — every consumed endpoint has a gene. Exit 0 covered / 2 uncovered **or no `consumed_surface` declared at all** (an undeclared surface is *unguarded*, not clean). `--if-declared` downgrades only the undeclared case to a warning, for shared gate scripts; a declared hole always fails. |
 | `alignctl dna list --dna PATH [--json]` | list genes with operator / weight / criticality; count coverage. |
 | `alignctl dna diff --old PATH --new PATH [--json]` | added / removed / changed genes between two DNA versions; exit 1 on drift. |
 | `alignctl capture --dna PATH --runner CMD --golden-dir DIR` | record source goldens for offline replay. |

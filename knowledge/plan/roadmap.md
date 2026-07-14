@@ -208,6 +208,62 @@ auto-repin verb + the loud preflight.** Evidence it matters: two agents computed
 days apart — a one-shot re-pin is a band-aid.
 
 #### M218 — Seat change  (`iterative`, large → very-large)
+**Status:** ✅ **`done` — closed-on-gate 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue`.
+rext code-of-record: **`cue-to-cue-m218`**. **Dir:** [`m218-seat-change/`](releases/02.30-cue-to-cue/m218-seat-change/)
+
+> ### THE GATE IS MET — worst-case p95 **2413 ms** / **1767 ms** vs **< 5000 ms**
+>
+> **5 GENUINE cold reset-to-seed cycles**, both vantages, **50/50** logins reaching ACCESS, on `billion` over
+> the tailnet. **Baseline 39.45 s / 38.30 s → a ~16× improvement on the honest cold number.**
+>
+> **⚠ The gate number is 2413 ms, not the 1456 ms iter-04 reported.** That figure was taken on a **warm
+> database** — **F-9**: `/demo-down --purge` had **never purged on any Linux host** (postgres's UID-1001/0700
+> cluster dir defeats `rm -rf`; `set -euo pipefail` then aborted `cmd_down` *silently*, leaking the registry
+> slot and the images with a bare `rc=1`). `billion`'s postgres still carried the `PG_VERSION` `initdb` wrote
+> on **2026-07-11**: every "cold" bring-up for days, iter-04's included, reused the same DB and images. **The
+> gate was not merely ungraded — it was ungradeable.** The count was restarted at 0 and 5 cycles were run,
+> each **proven cold** (`initdb` re-ran) and **proven green** before being measured.
+>
+> **Two root causes, both in demo tooling. Zero platform-repo edits.**
+> 1. **~37.5 s** — next-web's **SSR** GraphQL origin was a **build-inlined PUBLIC url** that **blackholes from
+>    inside the container** (`3 × 10.5 s` undici connect-timeout + a 2 s/4 s retry ladder). The milestone's own
+>    planned one-line fix (re-point the runtime env) was a **proven no-op** — `NEXT_PUBLIC_*` is build-inlined,
+>    so SSR never reads `process.env`. Fixed by *fixing the address, not the variable*: a **server-only**
+>    `WUNDERGRAPH_SSR_ENDPOINT` (deliberately **not** a `NEXT_PUBLIC_*` name, so it is a real runtime read) +
+>    a sha-pinned demo-patch teaching `server.graphql.ts` to prefer it.
+> 2. **~6.1 s** — Clerkenstein's fake **BAPI served a hardcoded STUB user to every hero** (`// Disarmed: any
+>    id → the demo user` — true when a demo had one user, false since M35's Stories & Heroes model). The BAPI
+>    identity disagreed with the JWT identity, `app` refused `userPreferences`, and next-web's `retry: 2`
+>    ladder burned ~6 s on **every** authenticated render. Fixed by making the BAPI **roster-aware**.
+>
+> **A blackhole and a refusal are six seconds apart in signature** — `3 × 10.5 s + 6 s` vs `3 × 33 ms + 6 s`.
+> The magnitude named the bug *class* before a line of code was read. Folded into `latency-budget.md`.
+>
+> **Alignment: 97.2% overall / 100% critical (26/27) — the gate (≥95/=100) is MET, and the 2.8% is
+> DELIBERATE.** Landing the `GetUser` gene exposed **F-11**: the BAPI *also* fabricates the **org** eid. It
+> ships as a **permanently-visible RED gene** rather than being hidden by omitting the field (**D16**) —
+> because **a silently-omitted field is exactly how the user-level stub survived four releases**. →
+> `FIX-M219-bapi-org-eid`.
+>
+> **21 bugs fixed** (build 6 · harden 4 · **close 11**). **Python 887/0** · **Go 0 failures / 6 modules /
+> 1784 funcs** · **flake 5/5** · **platform edits 0**.
+>
+> **The close's defining finding:** the hardening ledger **misfiled an M218 regression as "pre-existing"**
+> because it used `f296e5e` — *M218's own iter-05 commit* — as the "baseline". Three further **false-greens**
+> were found, all the **D17 stale-verdict class**, and **one sat directly on the gate path**: a **SKIPPED**
+> demo-patch wrote nothing to `demopatch.log`, so a stack running **without the headline SSR fix** would have
+> printed *"✓ demo-patches: none refused"*, graded **green**, and been **measured**. → **D18**: *"reproduced at
+> baseline ⇒ pre-existing" is only sound if the baseline predates the milestone.*
+>
+> **Carried forward (9, all Fate-3, every receiving `overview.md` EDITED; ZERO escape-hatch):**
+> **M219** ← F-11 org-eid · `expressrun` unmeasurable · freshness-gate skips.
+> **M220** ← Clerk telemetry off · F-5 ad-tech egress · **C-5 vendor clerk-js + bound the unbounded
+> `Timeout: 0`** · ant-academy's real-Clerk-secret leak.
+> **M221** ← **F-7** the `NEXT_PUBLIC_BACKEND_API_URL` blackhole twin (*a loaded gun* — a measured 10.5 s
+> blackhole, dormant only because every reader is client-side) · **C-3** the cms/Directus 403s.
+> *None could land here without invalidating the gate: a demo-runtime change **restarts the 5-cycle count**
+> (iter-05 D13).*
+
 **Goal:** click **[Log in as]** → the hero is **in the platform** in **under 5 seconds**, for both vantages.
 **Exit gate:** **p95 click→ACCESS < 5 s** — where **ACCESS** = the authenticated shell is rendered and interactive
 with the hero's identity present (full-screen loading gone; user menu shows the hero) — for **both**

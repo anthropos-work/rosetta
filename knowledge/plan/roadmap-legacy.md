@@ -445,8 +445,10 @@ name (icon CSS); (3) **CTA unification** — remove [Jump to section], rename [L
 to the hero's `jump_to` per-role landing (reuse `cockpit.go`'s `defaultJumpForVantage`); (4) **seed-manifest
 download** — expose the existing `cockpit.py` `/manifest.json` as a footer download link
 (`Content-Disposition: attachment`); (5) a staged JS **login-progress overlay** (`Signing you in…`→`Loading
-dashboard…`→`Initializing app…`) with `localStorage` state across the redirect, so the 2–5s FAPI-handshake →
-next-web blank-load has feedback.
+dashboard…`→`Initializing app…`) with `localStorage` state across the redirect, so the ~~2–5s~~ FAPI-handshake →
+next-web blank-load has feedback. **⚠️ The "2–5 s" figure here is FALSE and was never measured — it was
+actually 38–40 s (up to 60–120 s on the tailnet VM). Corrected by v2.3 M218; M43-D5 is formally superseded.
+See [`corpus/ops/demo/latency-budget.md`](../../corpus/ops/demo/latency-budget.md).**
 **Scope — Out:** any next-web/platform-repo edit; removing the real handshake→next-web latency (only the FEEDBACK
 improves); a full bespoke design-system/brand pass; presenter-feature deepening (hero history, telemetry,
 note-taking).

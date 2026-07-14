@@ -55,10 +55,35 @@ root) and `[Jump to section]` (landed on the hero's deep-link). M43 **unified** 
 both logs the presenter in as the hero **and** lands her on a sensible per-role screen (an end-user on her
 profile, a manager on the Workforce dashboard). One CTA, one click, the right screen.
 
-**A login takes a moment — and now it shows.** The real handshake → next-web cold-load is ~2-5 seconds we can't
-shorten. Clicking **Log in as** raises a small **staged overlay** (*Signing you in… → Loading your workspace… →
-Almost there…*) so the blank-load has feedback instead of looking frozen. The overlay is feedback, not a
-progress bar — there's no real signal from the cross-origin handshake to report.
+**A login takes about a second.** Clicking **Log in as** raises a small **staged overlay** (*Signing you in… →
+Loading your workspace… → Almost there…*) so the load has feedback instead of looking frozen. The overlay is
+feedback, not a progress bar — there's no real signal from the cross-origin handshake to report.
+
+> #### ⚠ CORRECTION (M218 "seat change", v2.3) — this doc used to say *"~2–5 seconds we can't shorten"*
+>
+> **That claim was never measured, and it was wrong by 20–40×.** The first instrument ever pointed at this path
+> (M218 iter-02) measured click→ACCESS at **p95 39.45 s** (employee) / **38.30 s** (manager) on a remote demo.
+> The "we can't shorten it" half was wrong too: **M218 shortened it.**
+>
+> | | before M218 | after M218 |
+> |---|---|---|
+> | **employee** (`maya-thriving` → `/profile`) | p95 **39.45 s** | **p95 1.46 s** (p50 1.00 s) |
+> | **manager** (`dan-manager` → `/enterprise/…`) | p95 **38.30 s** | **p95 1.40 s** (p50 1.12 s) |
+>
+> *(5 consecutive cold logins/vantage, `billion` tailnet demo, `autoverify` green — the presenter's real vantage.)*
+>
+> **Two defects, both in the demo tooling, neither in the platform:**
+> 1. next-web's **server-side** GraphQL origin was the **build-inlined public URL**, which is unreachable from
+>    inside its own container → a 10.5 s connect-timeout × 3 attempts + backoff ≈ **37.5 s** of blocked SSR on
+>    *every* authenticated render. Fixed with a server-only `WUNDERGRAPH_SSR_ENDPOINT` (a sha-pinned demo-patch).
+> 2. Clerkenstein's fake **BAPI** served a **hardcoded stub user** to every hero, so `currentUser().externalId`
+>    disagreed with the JWT's identity → `app` refused `userPreferences` → a `retry: 2` / 2 s+4 s ladder burned a
+>    further **~6 s**. Fixed by making the BAPI **roster-aware**.
+>
+> **The lesson is not the numbers — it is that an unmeasured number sat in this doc, asserting its own
+> unfixability, for four releases, and that is exactly why nobody investigated.** Booked as an M43 scope-`Out:`
+> with decision **D5** and *zero* deferrals recorded, so it never entered a ledger. Don't write "we can't fix
+> this" about something you have never measured. See [`latency-budget.md`](latency-budget.md).
 
 **Grab the seed manifest.** A footer **Download seed manifest** link saves the **consolidated
 `seed-generation-manifest.yaml`** (v1.10b M52) — the single auditable file inlining the whole seed+generation
@@ -184,8 +209,8 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
   your workspace… → Almost there…* on a deterministic timer with a generous final stage. `localStorage` carries
   an "in-flight login" flag (with a 30s freshness window) across the cross-origin redirect, so a back-navigation
   to the cockpit re-shows the overlay rather than a dead spinner. The overlay never `preventDefault`s the real
-  navigation — it is purely additive feedback over the unavoidable latency. (The real ~2-5s handshake →
-  next-web cold-load is **unchanged**; only the feedback improves.)
+  navigation — it is purely additive feedback over the login latency, which **M218 cut from ~39 s to ~1.4 s p95**
+  (see the correction above; this line used to call a never-measured "~2-5s" latency *unavoidable*).
 
 ### Served endpoints
 

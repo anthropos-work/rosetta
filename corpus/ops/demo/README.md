@@ -152,6 +152,18 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   `demopatch`'s own G1/G6 correctly refuse them), the **chain rule**, and — the M217 lesson — the **self-healing
   freshness gate**: *the anchor is the contract, the whole-file sha is only a baseline*. **Read this before adding
   any patch.** (v2.3 M217)
+- [`latency-budget.md`](latency-budget.md) — **the demo's performance budget: what "fast" means, and how it is
+  measured.** Before v2.3 there was **no** perf budget, baseline, gate, or even a *definition of "access"*
+  anywhere in the corpus — while a presenter's click→login actually took **60–120 s**, and the corpus asserted
+  in four places that it took "~2–5 s, which we can't shorten." Defines **ACCESS** (the authenticated shell is
+  rendered and interactive with the hero's identity present), the **< 5 s p95 gate**, the **per-leg attribution
+  model** (click → handshake/303 → SSR → clerk-js → client-gate → data-query), the measured baseline
+  (**39.45 s** employee / **38.30 s** manager) and the shipped number (**cold p95 2413 ms / 1767 ms**), the
+  harness contract (`stack-verify/e2e/run-latency.sh` — never gate on `networkidle`; always gate on a **fresh
+  green** `autoverify.json`), and the **arithmetic signatures** that name a bug class before you read a line of
+  code (a *blackholing* address ≈ `3 × 10.5 s + 6 s`; a *fast-failing* fetch ≈ `3 × 33 ms + 6 s`). **State the
+  environment with every number** — the same defect cost ~6 s on a laptop and ~112 s on the tailnet VM.
+  (v2.3 M218)
 - [`coverage-protocol.md`](coverage-protocol.md) — the **coverage** iteration protocol: the **Playwright**
   demo-coverage sweep + triage + fix loop driving the **semantic believability gate** (real seeded content +
   substantial per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar,

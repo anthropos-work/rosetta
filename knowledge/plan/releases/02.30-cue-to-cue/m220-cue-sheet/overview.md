@@ -71,6 +71,38 @@ reservation.
 the presenter's **entry point** is the **one plain-HTTP, unauthenticated surface** on the tailnet
 (`up-injected.sh:1289-1294` deliberately excludes it).
 
+### In — inherited from M218 (Fate-3, added at the M218 close, 2026-07-14)
+
+Four **egress / injected-env / safety-contract** items. All four were declared *"also in scope"* in M218's own
+overview and **did not land there**: each mutates the demo runtime on or beside the login path, and M218's exit
+gate is *a p95 over 5 consecutive cold reset-to-seed cycles graded on a specific binary* — **iter-05 D13
+established that a runtime change restarts the count** (the same bind that routed **F-11** to M219, **D16**).
+They belong here regardless: M220 **owns** `/demo-up`'s defaults, the injected-env contract, and `safety.md`
+**Part 3 — the exposure side**, and all four are exposure/egress items.
+
+**(f) Clerk telemetry OFF** — `CLERK_TELEMETRY_DISABLED` + `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED`. Real egress
+from **both** frontends today (grep across rext: **zero** hits for `TELEMETRY_DISABLED` — it was never wired).
+It is also what makes Playwright's `networkidle` hang. **Pure env, no repo edit.**
+
+**(g) Ad-tech egress on authenticated loads (F-5)** — the demo attempts **Google Analytics + DoubleClick +
+Google Ads + LinkedIn Ads** on **every authenticated page load**. A demo that claims to be self-contained
+should not phone four ad networks. Measure, then kill at the injected-env / CSP layer.
+
+**(h) Vendor clerk-js + bound the unbounded timeout (C-5)** — the fake FAPI proxies `clerk.browser.js` **live
+from `cdn.jsdelivr.net`** on every full page load, via `http.Get` = `http.DefaultClient` = **`Timeout: 0`
+(unbounded)**, with **no server-side cache** (`clerkenstein/clerk-frontend/server.go:187`). next-web's entire
+authenticated tree is **client-gated on clerk-js**, so a CDN stall is an **unbounded hang on the login path**.
+Costs 0.2 s healthy / **~127 s if egress blackholes**. **Alignment-INVISIBLE** — no DNA gene covers `GET /npm/`
+⇒ a **gate-free** win. Serve from disk; keep the CDN proxy only as a bounded fallback.
+> This is the single item that most directly contradicts `safety.md`: **an unbounded internet dependency in the
+> login path of a demo the corpus describes as self-contained.** It is Part-3 material, not a nice-to-have.
+
+**(i) Clerkenstein-wire ant-academy** — `demo-stack/ant-academy.sh:146` copies `CLERK_SECRET_KEY` **straight
+from `platform/.env`**, i.e. the **REAL Clerk app's secret**, into a demo process; `PK_DEMO` is never used, so
+`@clerk/nextjs` runs **keyless** and phones Clerk to provision a throwaway app. Off the login path, but it is
+**real-Clerk egress + a real production secret inside a demo** — the **same class as the `DIRECTUS_TOKEN`
+fix16/17 strip**, and it contradicts `safety.md`. **Pure env.**
+
 ### Out
 - Anything about *speed* (M218) or the AI-readiness render path (M219).
 - A "hiring" story org — **D-DESIGN-4: it does not exist and will not be built.**

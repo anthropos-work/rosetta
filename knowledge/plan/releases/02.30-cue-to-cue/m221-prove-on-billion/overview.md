@@ -62,6 +62,24 @@ re-run. Tik/tok until the gate holds on a cold reset-to-seed.
 - **The freshness preflight** (built at the close) has never aborted a real bring-up. Verify it fires by
   temporarily breaking an anchor.
 
+## Inherited from M218 (Fate-3, added at the M218 close, 2026-07-14)
+
+Two items that can only be settled **on the box, over the tailnet** — which is precisely this milestone's job.
+
+- **`PROBE-M218-backend-api-url-twin` (F-7) — the loaded gun.** `NEXT_PUBLIC_BACKEND_API_URL` bakes to
+  `https://billion…:18082` and was **measured at 10,553 ms → `UND_ERR_CONNECT_TIMEOUT` from inside the
+  container** — **the exact C-1 shape that cost M218 37.5 s per render**. It is dormant **only** because every
+  current reader is client-side (M218 **D10**). A single future server-side read re-introduces the
+  38-second login. **DoD:** either the address is made reachable from inside the container, or the
+  server-side origin is made explicit the way `WUNDERGRAPH_SSR_ENDPOINT` was — and a probe **fences** it so a
+  server-side reader can never silently appear. Verify **on `billion`**, where it actually blackholes.
+- **`PROBE-M218-c3-rerun` (C-3) — now exercisable for the first time.** Until M218 landed, the SSR fetch died
+  *upstream* of the router, so the federation was never exercised and C-3 could not be measured. It can be now:
+  the Cosmo router **is** logging **cms/Directus 403s** (`getSkillPaths`, `_entities JobSimulation`) on the
+  **CONTENT** path. Not on the login path (so it never threatened M218's gate), but it directly threatens **this
+  milestone's gate item (2): "the full replayed catalog — no SKIPPED surface."** Root-cause the 403s (a
+  serve-grant on the replayed Directus is the prime suspect) and fix or explain them.
+
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
   latency gate **cannot be a Playthrough** (Playthroughs declare perf a **NON-GOAL**), so it is a **new
