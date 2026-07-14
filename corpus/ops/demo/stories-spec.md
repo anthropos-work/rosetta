@@ -493,6 +493,24 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 > point:** `TestShippedPresets_EveryHeroRoleClassifies` asserts **every role any shipped preset actually seeds
 > classifies to a real curated category**, read from the real presets, never a fixture. **Add an org with a new
 > role family and it fails at `go test` — not four releases later, in front of a customer.**
+>
+> ### And the allow-list alone fixes NOTHING — the FALLBACK LADDER is the load-bearing part
+>
+> The curated `operations` pool shipped **fully populated and completely unused**. On the first cold reseed the
+> Data Analyst hero came out clean while the Operations Analyst hero was *still* "verified" in `15Five`.
+>
+> `skillsForRole`'s ladder was **role → FLAT**. A public `job_role` can **exist and carry zero
+> `job_role_skills`** — `Operations Analyst` is exactly that — so `byRole` is empty and the function returned the
+> flat `ORDER BY node_id` head. And `combinedNamedPool` draws its **role tier from that same function**, so
+> **tier 1 was already the junk** and filled the whole quota before the curated tier was ever consulted.
+>
+> **The ladder is now `role → CURATED → flat`.** Flat stays the last resort (never fabricate, never fail to fill)
+> but is genuinely *last*. Both twins (`namedSkillRefs`, `taxonomyRefs`) carried the bug — which is why even the
+> hero's **verified** chain certified him in a junk skill.
+>
+> ⚠️ **Two unit tests were green throughout**: they proved the curated pool *resolved*. Neither proved anything
+> ever *read* it. **A test that proves a thing exists is not a test that proves it is used** — only a cold
+> reset-to-seed, and looking at what actually came out of the database, exposed this.
 
 ### Why closed-cycle + frozen snapshots (the strategy M51 shipped)
 
