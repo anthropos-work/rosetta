@@ -161,3 +161,36 @@ again — by seeding the active cycle the comment always described.
 | Skills / sims / steps / step-progress | **8 / 2 / 3 / 532** | the `ai_readiness_*` tables |
 | Narratives / recommendations / translations | **0 / 0 / 0** | ← `ai_readiness_recommendations` is **absent from the corpus doc's data model** (S1 doc fix) |
 | Dana's JWT `org_eid` | `d7bb7482-…` — **the real Northwind UUID** | FAPI handshake → the **FAPI is correct**; only the **BAPI** fabricates (F-11) |
+
+---
+
+## LIVE VERIFICATION of the ACTIVE-cycle fix (billion, demo-1, 2026-07-14)
+
+The active cycle was applied to the running demo exactly as the M219 seeder now writes it
+(`participants_filter` left to its column default — confirmed `{"all": true}`, so every member is in audience),
+then both vantages were re-probed authenticated. **Measured, not assumed:**
+
+| Probe | Before (closed-only) | **After (+ active cycle)** |
+|-------|----------------------|---------------------------|
+| **Ben** `aiReadinessUserPlanProgress` | `deadline: null` ⇒ `AIReadinessHero.tsx:88` returns null ⇒ **NOTHING RENDERS** | `deadline: 2026-08-13`, `completedSteps: 1`, `currentStep: 2`, `done: false` ⇒ mode **`progress`** ⇒ **the funnel renders** |
+| **Aria** `aiReadinessUserPlanProgress` | `deadline: null` ⇒ mode `archived` ⇒ only the compact rail-card | `deadline: 2026-08-13`, `completedSteps: 3`, `done: true` ⇒ mode **`done`** ⇒ **the full hero** (ScoreGauge + 3 recap rows) |
+| **Dana** `/cycles` | 1 (closed) | **2** — `active` "…— Q3" + `closed` ⇒ the FE's `activeCycle?.id` resolves ⇒ `?cycle=<active>` |
+| **Dana** dashboard payload | `interview` NULL · `diagnosis` MISSING · `sources` MISSING | **`interview` PRESENT · `diagnosis` PRESENT · `sources` PRESENT** · `cycle` = the active one (so the HeroCard meta row fills too) |
+
+**Timing, honestly.** The first (cold) live read was **2.09 s**; the post-warm `?cycle=<active>` read was **0.034 s**
+— the live path warms a cache. Report the **cold** number (~2.1 s) as the cost, not the warm one.
+
+**Funnel coherence checked** (item 8, persona self-consistency): `useAIReadinessProgram.ts:141`
+`scores[n] = isDone ? step.score : null` — the FE nulls any step whose *status* is not `completed`, so Ben's
+`activeIdx = scores.indexOf(null) = 1` ⇒ **step 1 done / step 2 active / step 3 locked**. The backend's stray
+`score: 21` on his `not_started` interview step (it computes step scores from signals regardless of the progress
+row) is correctly **ignored** by the member funnel. Not a render gap.
+
+### Residual findings (reported, not silently absorbed)
+
+| id | Finding | Fate |
+|----|---------|------|
+| **R-1** | `howWeMeasure.cycleTotals.interviewQuestions = 0` on **both** read paths — a genuine zero cell in the "Handled for you this cycle" tile. | open — see progress.md S2 |
+| **R-2** | Step-1 (`skill_mapping`) scores are low for both heroes (Aria **5**/30, Ben **2**/30) — few of their `user_skill_evidences` match the org's 8 `ai_readiness_skills`. Aria totals 64/100. Believable but weak for a "Champion" showcase. **A believability weakness, not an empty section.** | open |
+| **R-3** | Ben carries interview/sim **signals** (score 21) while his `ai_readiness_user_step_progresses` row says `not_started` — the session seeder and the funnel seeder disagree. Invisible on the member funnel (R-2 note above) but it does feed his manager-side tier3 score. | open |
+| **R-4** | The active cycle was applied to the **running** demo by hand for this probe. The **seeder** path is unit-tested (13/13 Go pkgs green, incl. a future-`end_date` assert) but **has not yet been proven on a cold reset-to-seed**. | **PENDING — must be run before close** |

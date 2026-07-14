@@ -76,11 +76,12 @@ All tables live in `app` (`public` schema); ent schemas under `app/internal/data
 | `ai_readiness_steps` | org's ordered 3-step plan | `step_type`, `position`; default = all 3 canonical if no rows |
 | `ai_readiness_skills` | org's AI-skill set | `node_id` (taxonomy), `weight` (1.0 core / 0.5 enabling) — Step 1 scoring |
 | `ai_readiness_sims` | org's sim registry | `step_type` (simulation/interview), `sim_ref` (Directus sim id or `PLACEHOLDER-{slug}`) — Steps 2/3 |
-| `ai_readiness_user_step_progress` | per-(org,user,step) progress | `status`, `completed_at` |
+| `ai_readiness_user_step_progresses` | per-(org,user,step) progress (**plural** — the ent-generated table name; M219) | `status`, `completed_at` |
 | `ai_readiness_live_snapshots` | **live** per-member score (mutable, upserted) | `score/knowledge/usage/archetype/stage/...`; exposed to Talk-to-Data SQL |
 | `ai_readiness_snapshots` | **frozen** per-(cycle,user) snapshot at close (immutable) | `frozen_*` mirror of live |
 | `ai_readiness_diagnose_narratives` | persisted per-member LLM narrative | keyed `(org,user,cycle_ref,lang)` + `signals_hash` |
 | `ai_readiness_text_translations` | content-addressed translation cache | `source_hash`+`lang` |
+| `ai_readiness_recommendations` | per-member recommended actions (the What-to-do-next drawer's "Recommended actions") | **was missing from this doc until M219**; the demo seeds **0 rows** — the live read derives `people[].diagnosis.recommendations` instead |
 | `organization_settings` (existing) | the enablement gate | `setting='ai_readiness'`, `is_enabled` |
 
 Scoring engine: `app/internal/workforce/ai_readiness.go` (`computeAIReadiness`, `GetAIReadinessWithOptions`,
@@ -96,14 +97,44 @@ Scoring engine: `app/internal/workforce/ai_readiness.go` (`computeAIReadiness`, 
   `/narrative` (POST, LLM diagnosis), `/compare`, `/export.csv`.
 - **Background:** `app/internal/worker/tasks/ai_readiness_refresh.go` re-materializes live snapshots.
 
-## Surfaces (UI)
+## Surfaces (UI) — **current vs legacy** (M219, v2.3 "cue to cue")
 
-- **Manager dashboard** (`next-web-app` `apps/web/.../ai-readiness/`): HeroCard (org score + dominant archetype +
-  **Steps-Completion %**) + tabs **Snapshot** (archetype matrix + donuts + by-tag), **How-we-measure** (the 3-step
-  ribbon + skill strengths/gaps + sims + interview findings), **What-to-do-next** (archetype action groups + per-person
-  **Diagnose** narrative drawer), **Compare** (cycle deltas — gated off by default).
-- **Member onboarding** (`apps/web/src/components/ai-readiness/AIReadinessHero.tsx`): the 3-step funnel
-  (modes new/progress/done/archived); Step 1 = skill-mapping modal, Step 2 → a sim, Step 3 → an interview.
+> ⚠️ **There are TWO manager dashboards. Only one of them is the product.** Every AI-readiness demo pointer —
+> the cockpit deep-link catalog, the manager hero's `jump_to`, and the coverage sweep's page descriptor —
+> targeted the **legacy** one for four releases. Nothing ever failed, because the legacy page *does* render.
+> It just isn't the dashboard the product ships. **Establish which surface you are on before you conclude
+> anything about AI readiness.**
+
+| Vantage | Surface | Route | Status |
+|---------|---------|-------|--------|
+| **Manager** | **`AIReadinessClient`** — HeroCard (org score + dominant archetype + **Steps-Completion %**) + tabs **Snapshot** (archetype matrix + donuts + by-tag), **How-we-measure** (3-step ribbon + skill strengths/gaps + sims + **interview findings**), **What-to-do-next** (archetype action groups + per-person **Diagnose** drawer). **Cycle-aware.** | **`/ai-readiness`** | ✅ **CURRENT** |
+| **Manager** | `AIReadinessContainer` → `AIReadinessView` — pre-v3.0 org-summary card + team table. **No cycle picker, no archetype matrix, no people, no How-we-measure, no What-to-do-next.** | `/enterprise/workforce/ai-readiness` | ❌ **LEGACY** |
+| **Employee** | `AIReadinessHero` (the 3-step funnel; modes new/progress/done/archived) + `AIReadinessRailCard`. **NO ROUTE OF ITS OWN — both are EMBEDDED in `/home`.** Step 1 = skill-mapping modal, Step 2 → a sim, Step 3 → an interview. | **`/home`** | ✅ **CURRENT** |
+
+**How to tell them apart in code** (there is no `@deprecated` marker, no `-v2` naming, and no feature flag
+switching between them — the legacy one is simply *unlinked*):
+
+- **`/ai-readiness` is the only readiness route the navbar links** — `AI_READINESS_URL`
+  (`packages/core-js/src/constants/urls.ts:50`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx:253-260`.
+  It is also the only one next-web's own e2e covers (`e2e/specs/web.ai-readiness.spec.ts`).
+- **The legacy route is an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omits it),
+  no redirect points at it. Its hook (`hooks/useWorkforceAIReadiness.ts:23-27`) calls
+  `GET /api/workforce/ai-readiness?tag=` — **there is no `cycle` param in it at all**, and it never calls `/cycles`.
+- The `(new)` in the legacy path is a Next.js **route group** for the workforce refactor — *not* a version marker.
+  Don't read it as "the new one".
+
+**The `flag_ai_readiness` PostHog flag gates the EMPLOYEE side only** (`useAiReadinessActive.ts:22`). It does
+**not** select between the two manager trees. The manager dashboard gates purely on the GraphQL
+`aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
+
+**Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
+**hard-gated off** — `AIReadinessClient.tsx:69` `const SHOW_SECONDARY_TABS = false;` strips it from the tab list.
+`/ai-readiness?tab=compare` renders no panel. It is neither current nor legacy: complete-but-disabled.
+
+**The demo's pointers** (all repointed at the current surfaces in M219, and a legacy target is now a **hard
+failure** — `stack-seeding/seeders/cockpit.go` `LegacyReadinessPaths` / `ValidateCockpitManifest`):
+`stories.seed.yaml` (Dana → `/ai-readiness`; Aria + Ben → `/home`) · the cockpit deep-link catalog (which
+gained the **missing** end-user readiness entry) · `stack-verify/e2e/lib/coverage-manifest.ts`.
 
 ## Narrative generation
 
@@ -159,21 +190,33 @@ decision):**
   frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
   completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
 
-  **⚠ M51 iter-07 — the frozen path is CYCLE-SCOPED; the DEFAULT dashboard GET does NOT take it.**
+  **⚠ The frozen path is CYCLE-SCOPED; the DEFAULT (`CycleID == nil`) GET does NOT take it.**
   `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
-  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (`CycleID == nil`,
-  line 301) is hardcoded to `buildLiveResponse` (the live-recompute path). The next-web manager dashboard
-  (`AIReadinessClient.tsx`) is designed to pass `?cycle=selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id`
-  — so IN PRINCIPLE a closed cycle (no active cycle) makes the FE pass the closed id → the fast frozen path. **But
-  the M51 iter-07 demo evidence (an authenticated network probe) showed the demo FE firing the data GET WITHOUT
-  `?cycle=` (the live path — which then hits the 200-member translation-N+1 wall and never completes) and never
-  firing the `/cycles` list that supplies `latestClosedCycle.id`.** Net: seeding a closed cycle + frozen snapshots
-  makes the DB the correct showcase and renders fast via the **cycle picker / a `?cycle=` deep-link**, but does NOT
-  by itself make the DEFAULT manager-dashboard load fast — that gap is **platform-bound** (the FE must pass the
-  cycle id by default, or the backend default must prefer a closed cycle when no active cycle exists). Treat this
-  as the load-bearing caveat for any "seed it closed to dodge the perf wall" plan. See
-  `knowledge/plan/releases/01.10b-fit-up/m51-ai-readiness-org/iter-07/` + `corpus/ops/demo/coverage-protocol.md`
-  (the "cycle-scoped fast read-path" lesson).
+  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (line 301) is
+  hardcoded to `buildLiveResponse`. The **current** manager dashboard passes the cycle id, so this is not a
+  problem in practice — see the correction below.
+
+  > **✅ CORRECTED M219 (v2.3 "cue to cue") — the old M51 iter-07 caveat here was MISATTRIBUTED, and it sent a
+  > later milestone hunting for a demo-patch that was never needed.**
+  >
+  > The retracted claim: *"the demo FE fires the data GET WITHOUT `?cycle=` … and never fires the `/cycles` list
+  > that supplies `latestClosedCycle.id`"*, concluded to be **platform-bound**.
+  >
+  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:137-138`) computes
+  > `effectiveCycleId = selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id` and gates the data GET on
+  > `cyclesQ.isFetched` (`:150-154`) — i.e. it **waits for `/cycles`, then passes `?cycle=`**. Verified live
+  > against a running demo (authenticated as the manager hero): `/cycles` returns the seeded cycle, and the
+  > frozen read answers **HTTP 200 in 24 ms**.
+  >
+  > The iter-07 probe was watching the **LEGACY** page (`/enterprise/workforce/ai-readiness`), whose hook
+  > (`useWorkforceAIReadiness.ts:23-27`) has **no `cycle` param at all** and **never calls `/cycles`** — which is
+  > exactly the behavior that was observed and then attributed to the platform. **It was a pointer bug, not a
+  > platform gap.** See § Surfaces (UI) above.
+  >
+  > **And the live path does not "never complete".** Measured on the same 199-member org:
+  > **LIVE `GET /api/workforce/ai-readiness` → HTTP 200 · 2.09 s · 304 KB.** The M51-era "translation-N+1 that
+  > never completes in-budget" is **not reproducible** on the app tag the demo builds today. Re-measure before
+  > relying on either number; do not re-derive them from prose.
 
   **⚠⚠ M51 iter-08/09 — the frozen READ is ITSELF org-scale-slow ("frozen" froze the SCORES, not the RESPONSE).**
   Even when the frozen branch IS selected (a direct `?cycle=<closed>` GET), `buildResponseFromSnapshots`
@@ -190,6 +233,46 @@ decision):**
   [`../ops/demo/coverage-protocol.md`](../ops/demo/coverage-protocol.md) (the iter-08/09 loadMembers lesson) +
   [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
   (the seeder + demo-patch).
+
+### The CYCLE-STATE contract — seed BOTH cycles (M219, v2.3 "cue to cue")
+
+**The two vantages need opposite cycle states, and one cycle cannot serve both.** The demo therefore seeds
+**one CLOSED cycle + one ACTIVE cycle** per readiness org (legal: the *one active cycle per org* partial unique
+index permits it).
+
+**Why an ACTIVE cycle is mandatory — the member surface does not exist without one.** `AIReadinessHero` is gated
+on `deadline`, and the backend derives `deadline` **only** from an active cycle
+(`readiness_steps.go:291-313` `queryActiveCycleEndDate` → `StatusEQ(active)` → `IsNotFound` → `nil`).
+`deriveMode` (`useAIReadiness.ts:48-62`) then treats a **null deadline as "deadline passed"**. So against a
+**closed-only** org:
+
+| Hero | Steps done | Mode | What renders |
+|------|-----------|------|--------------|
+| the **COMPLETED** hero | 3 / 3 | `archived` | only the compact right-rail mini-card — **not** the full done-hero |
+| the **STARTED** hero | 1 / 3 | `progress` | **NOTHING.** `AIReadinessHero.tsx:88` `if (!air.deadline) return null;` |
+
+The started hero — the entire point of the persona — was **invisible**, and no gate caught it, because an absent
+section is not an error. The active cycle's `end_date` **must be in the future** (it *is* the member deadline)
+and its `participants_filter` must stay `{"all":true}` (a tag-scoped cycle returns a nil deadline for anyone
+outside the tags, silently re-hiding the surface for most of the org).
+
+**Why the CLOSED cycle is retained:** it owns the frozen 199-snapshot showcase and gives the dashboard a real
+cycle *history* in the picker; a `?cycle=<closed>` read still answers off the frozen rows in ~24 ms.
+
+**What the manager then reads — and why that is the point.** With an active cycle present, `AIReadinessClient`'s
+`activeCycle?.id ?? latestClosedCycle?.id` resolves the **active** id, so the dashboard takes `buildLiveResponse`.
+That is **deliberate**: the frozen read returns **six sub-sections as null**, and the dashboard renders them as
+*absent*:
+
+| API field (FROZEN → LIVE) | Sections it feeds |
+|---|---|
+| `howWeMeasure.interview` — **null** → present | the whole **Step-3** block + **"How they use AI"** + **"What holds them back"** + **"Strengths"** + **"Unexpected angles"** |
+| `people[].diagnosis` — **missing** → present | the Diagnose drawer's **"Recommended actions"** |
+| `people[].sources` — **missing** → present | the Diagnose drawer's **"Assessment sources"** (else grey "not started" cards) |
+
+Cost: the manager data-load goes **24 ms → ~2.09 s** (measured, 199 members). **Reported, not gated** — the
+milestone that owns login speed is a different one. Both paths fill `org.*`, `byTeam` (13), `people` (199),
+`howWeMeasure.{steps,skillInsights,simulations,cycleTotals}`.
 
 **No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 
