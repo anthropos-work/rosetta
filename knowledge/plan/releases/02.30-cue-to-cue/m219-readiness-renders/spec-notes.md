@@ -332,3 +332,52 @@ defects on the bring-up's **own reporting path**:
 The stack reported the academy as started, graded GREEN, and served a bare **502** on the AI Academy link for
 the entire life of the stack. Fixed (rext `f803999`): resolve a satisfying node under `~/.nvm` or **fail loud**;
 poll the **port**, not the pid.
+
+---
+
+## R-5b — the curated allow-list was a NO-OP for the very role it was written for
+
+**The cold reseed is what caught it.** R-5 shipped, cycle 1 came up green, and the cold-seeded DB said:
+
+| Hero | Role | `job_role_skills` | Result on the cold reseed |
+|---|---|---|---|
+| Aria | Data Analyst | **10** | **CLEAN** — Business Intelligence, Data Analysis, Looker, PowerBI, Agentic Coding, ML… |
+| Ben | Operations Analyst | **0** | **STILL** "verified" in `15Five`/`17Track`; still claiming `24-hour dietary recall`, `2Checkout`, `2D Animation` |
+
+…with the `operations` curated pool **fully populated and unused**.
+
+**Root cause.** `skillsForRole`'s fallback ladder was **role → FLAT**. A public `job_role` can *exist* and
+carry **zero** `job_role_skills` — "Operations Analyst" is exactly that — so `byRole` is empty and the
+function handed back `r.flat`: the `ORDER BY node_id` head of the whole taxonomy, i.e. the junk pool the
+curated tier exists to keep out of a profile.
+
+And it defeated the curated tier **silently**. `combinedNamedPool` layers role → curated → flat, **but it
+draws its ROLE tier from `skillsForRole`** — so for such a role **tier 1 was already the junk**, and it filled
+the entire quota before the curated tier was ever consulted. Adding a curated allow-list for the role's family
+therefore changed *nothing at all*. Both twins carried it (`namedSkillRefs` and `taxonomyRefs`), which is why
+even Ben's **verified** chain certified him in `15Five`.
+
+**Fix (rext `e284338`):** the ladder is **role → CURATED → flat**. Flat remains the last resort (never
+fabricate, never fail to fill) but is now genuinely last. `TestSkillsForRole_ZeroRoleSkillsFallsToCuratedNotFlat`
+fences the real shape — a role that *exists with zero role-skills* — **proven RED** against the old ladder
+(*"fell through to the FLAT pool: got 15Five"*).
+
+> ### ⚠️ The lesson — the D17 shape, a fourth time, and the sharpest instance of it
+>
+> **The classifier test and the pool-resolution test were BOTH GREEN while the seeder still wrote junk.**
+> They proved the curated pool *resolved*. Neither proved anything ever *read* it.
+>
+> **A test that proves a thing exists is not a test that proves it is used.** The only thing that caught this
+> was seeding a real database from zero and looking at what came out. That is the whole argument for the cold
+> reset-to-seed battery, and it is why "the unit tests are green" was never going to be enough for this
+> milestone.
+
+### The D17 tally for this milestone (it bit SEVEN times before M219, and FOUR more inside it)
+
+| # | The artifact that outlived the thing it described |
+|---|---|
+| 1 | A fence that asserted the **LEGACY** strings — and passed (round 2, `01f2644`). |
+| 2 | A start check that read *"a pid exists"* as *"the service is up"* — the academy 502'd for the life of every stack (**F-13**). |
+| 3 | My own R-2 verification query: `IN (SELECT skill_id FROM ai_readiness_skills)` silently bound `skill_id` to the **outer** scope (the table's column is `node_id`), so the `IN` was always true. It returned a plausible number and would have **passed** — only the impossible `36 > 8` exposed it. |
+| 4 | My first render probe declared **"RENDERED at 4s"** on `main>0 && bodyLen>200` while the body still read *"Loading AI Readiness…"*. A success condition that does not exclude the loading state is not a success condition. |
+| 5 | **R-5b**: two green tests proving a pool *resolved*, while nothing *read* it. |
