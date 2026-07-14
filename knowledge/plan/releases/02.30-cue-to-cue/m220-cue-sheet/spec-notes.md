@@ -73,3 +73,75 @@ default is a **cold snapshot cache** (replay is cache-first and *never* captures
 No `127.0.0.1` prefix at any site ⇒ Docker's default for a bare `host:container` mapping is **`0.0.0.0`**.
 `BIND_HOST` (`up-injected.sh:76`) is set to `0.0.0.0` only under a public host — but it is consumed **solely** by
 the two **host-native** servers (cockpit, ant-academy), never by a container.
+
+## Pre-flight audits — S5 + S6
+
+**Phase 0b reused** from S0 per §"Audit reuse": same subsystem (the demo bring-up / injected-env / doc surface),
+the milestone-scoped `/developer-kit:audit-kb-fidelity --milestone=M220` (YELLOW, commit `d395946`) already
+covered S5/S6's topics in one pass, and the only knowledge docs changed since are M220's own S0–S2 deliverables.
+
+## The live cycle (S5 + S6) — one demo, `billion`, demo-1, offset 10000
+
+Bring-up: `up-injected.sh 1 --public-host billion.taildc510.ts.net` (foreground, attached). Asserted from a
+**tailnet peer** (the Mac), never on-host. Cold: migrate ✓ (4 services + sentinel policy), replay ✓ (taxonomy
+330 261 rows / directus 11 986 / sim-embeddings 1 490), stories seed ✓ (3 orgs × 3-hero trio, 9-identity roster),
+autoverify ✓ (`public.skills = 42790`). Demo clone left **0-dirty**; `demopatch.log` **empty** (nothing refused).
+
+### S5(i) — the academy session A/B (the DoD)
+
+| arm | one variable | result |
+|---|---|---|
+| **A** (control) | login as `maya-thriving` → `/profile` | signed in — page renders **"Maya Chen · DevOps Engineer · Berlin"** |
+| **B** (the fix) | login → `/profile` → **ACADEMY `:13077`** → `/profile` | **STILL signed in as "Maya Chen"** |
+
+Cookies across arm B: `__session` **present throughout**; `__client_uat` a **live timestamp** (`1784052754` →
+`…756` → `…759`), **never `0`**. Direct `curl -D -` at `:13077`: **zero `Set-Cookie` headers** — no
+`__session=; Expires=1970`, no `__client_uat=0; Domain=…`, no keyless bounce.
+
+**Values-blind secret check** (sha16 of the value, never the value):
+`platform/.env` `CLERK_SECRET_KEY` = `b47f934a4c92f784` · academy `.env.local` = `7adefe7a43b3497a` ⇒ **different**,
+and the academy's is `sk_test_…` (Clerkenstein). Publishable-key lines in `.env.local`: **1** (was 11 → last-wins).
+
+### S6 — egress, measured in a real browser on an authenticated load
+
+**0 hits** across all 11 denied hosts (GTM · GA · DoubleClick · Google Ads · LinkedIn · Plausible · Bellasio ·
+BetterStack · clerk-telemetry · jsdelivr · real Clerk). The fence also asserts it captured traffic at all.
+
+**(g) artifact RED → GREEN** (files in the built bundle containing each id):
+
+| id | pre-fix image | post-fix image |
+|---|---|---|
+| `GTM-PXRTBZK` | 2 | **0 in `.next/static`** (1 `.js.map` only) |
+| `plausible.io` | 6 | **0 in `.next/static`** (5 server chunks / maps) |
+| `analytics.bellasio.com` | 2 | **0 in `.next/static`** (1 map) |
+| `uptime.betterstack.com` | 2 | **0 in `.next/static`** (1 map) |
+
+The client bundle — the only thing the browser receives — carries **none** of them; the survivors are dead server
+chunks and source maps. The browser capture is the load-bearing proof.
+
+**(h) clerk-js from disk.** Cache dir `demo-stack/stacks/.clerkjs-cache/` (box-level) holds 4 chunks after the
+first load, incl. `npm_@clerk_clerk-js@5_dist_clerk.browser.js` (**321 927 B**) + `ui-common` (442 KB). The
+browser fetches clerk-js **from the FAPI host**, never `cdn.jsdelivr.net`.
+
+**Alignment after touching the FAPI** (the item claimed *alignment-invisible*; verified, not assumed):
+
+| DNA | genes | overall | critical | gate |
+|---|---|---|---|---|
+| `clerk-2.6.0.json` (Go) | **27/27** | 100.0% | 100.0% | **MET** |
+| `clerk-js-5.json` (JS/FAPI) | **9/9** | 100.0% | 100.0% | **MET** |
+
+### The patch-set fingerprint fired on its first live run
+
+```
+next-web: cached image demo-1-next-web was built with a DIFFERENT demo-patch set
+  (<none: predates the fingerprint> != cee1e4ff4cf9cd1e…) — removing + rebuilding
+```
+
+Without it the stale image (matching endpoint + pk) would have been **reused**, and `next-web-no-thirdparty`
+would never have reached the bundle — a green bring-up over a demo still phoning home to seven third parties.
+
+### rext rolls
+
+`cue-to-cue-m220-r1` → `-r2` (fingerprint) → `-r3` (port reap) → **`-r4`** (the live proof spec). Host pinned at
+`-r4`-equivalent code; `.agentspace/rext.tag` updated (the pin guard **correctly refused** the first bring-up
+when the clone and the tag disagreed — it worked exactly as designed).

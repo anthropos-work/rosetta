@@ -1,9 +1,9 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences, no demo needed); S3–S7 NOT started (they need a live demo, run one at a time)"
+active_milestone: "M220 (cue sheet) — IN PROGRESS on m220/cue-sheet. S0+S1+S2 DONE (docs/fences); S5+S6 DONE (proven on a live demo: the academy session-poisoning is FIXED — A/B green from a tailnet peer; zero egress; clerk-js from disk). S3, S4, S7 NOT started (each needs a live demo, run one at a time)"
 last_closed: "M219 — 2026-07-14"
-phase: "M220 S0–S2 landed on m220/cue-sheet (KB-fidelity YELLOW; 3 doc-vs-code fences RED-proven then GREEN). NEXT: S3–S7 — each needs a LIVE DEMO. Then M221 (last)."
+phase: "M220 S0–S2 + S5 + S6 landed on m220/cue-sheet. S5/S6 proven on a live billion demo (0 ejects, 0 egress, alignment 100%/100% both surfaces). NEXT: S3, S4, S7 — each needs a LIVE DEMO. Then M221 (last)."
 last_updated: "2026-07-14"
 ---
 

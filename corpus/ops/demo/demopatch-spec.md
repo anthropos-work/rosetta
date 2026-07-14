@@ -150,7 +150,45 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `next-web-aireadiness-flag-gate` | `next-web-app` · `components/ai-readiness/data/useAiReadinessActive.ts` | **(M219)** the **member** readiness surface never mounts on a demo: a demo bakes no PostHog, so `useFeatureFlagEnabled()` is `undefined` **forever** and the code demands `=== true`. Treats *"PostHog unconfigured"* as *"no rollout gate"*; the ORG boolean still decides. **Behaviour-identical wherever PostHog IS configured.** Targets its **own** file — does **not** chain with the `urls.ts` pair |
 | `app-targetrole-authz-skip` | `app` · `internal/roles/roles.go` | short-circuits a per-member Sentinel RPC on the **read** path → members grid **76.7 s → 0.51 s**. Mutations still enforce |
 | `app-aireadiness-snapshot-loadmembers` | `app` · `internal/workforce/ai_readiness.go` | bounds the frozen-read member hydration to the ~199 snapshot users instead of the whole org → the **180 s** AI-readiness read completes. **Data-identical** |
+| `next-web-no-thirdparty` | `next-web-app` · `apps/web/src/app/layout.tsx` | **(M220 S6/g) stops the demo phoning home.** The root layout hardcodes **four** third-party scripts with **no env seam of any kind** — `plausible.io`, `analytics.bellasio.com`, `uptime.betterstack.com`, and `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` (which itself loads **Google Analytics, DoubleClick, Google Ads and LinkedIn Ads**). They fire on **every page load**, so a presenter demoing to a customer silently ships that customer's page views to **seven** third parties, from a demo the corpus calls self-contained. The patch wraps all four in one build-time env gate (`NEXT_PUBLIC_DISABLE_THIRD_PARTY_SCRIPTS`, baked to `1`); every tag is preserved byte-for-byte inside it, so the behaviour is **identical when the var is unset**. Targets its **own** file — no chain. *The plan named only the 4 GTM ad networks; reading the file found 3 more vendors on top — the D17 signature again.* |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
+
+---
+
+## 5-bis. The image cache had no idea which patches were in it (M220 S6/g)
+
+**A patch that applies perfectly can still never reach the demo.** This is the mechanism behind this document's
+own war story — *"a silently-refused perf patch shipped a 76 s members grid for four releases"* — and it is not
+about refusal at all.
+
+`build_frontend_next_web` **reuses** a cached `demo-N-next-web` image when two things still match: the baked
+offset endpoint, and the minted publishable key. **Neither has any relationship to the demo-patch set.** So an
+image built *before* a patch was added — or before a patch's sha was re-pinned — passes both checks and is
+reused. The patch is applied to the clone, dutifully reverted afterwards, and **never reaches the image**. The
+bring-up reports success. The bundle is unpatched. Nothing anywhere says so.
+
+> **It was about to happen again.** The `demo-1-next-web` image on `billion` already carried a matching endpoint
+> and pk, so the first bring-up after adding `next-web-no-thirdparty` would have **reused it** and served a
+> bundle still phoning home to all four vendors — *while grading green*.
+
+**The fix: a PATCH-SET FINGERPRINT.** The sha256 of the manifest set (each manifest's own sha256, plus the
+`DEMO_NO_PATCH` opt-out) is baked into the image as a **label** (`demo.patchset`) and compared on reuse. A label
+is image metadata, so it needs **no Dockerfile edit** — the zero-platform-edit line holds (the repo stays a build
+*context* only). Change a patch, re-pin a hash, add a manifest, or flip `DEMO_NO_PATCH` ⇒ the label moves ⇒
+**rebuild**. An image with **no** label predates the fingerprint and is treated as a mismatch (fail-safe: a
+needless ~3 min build is far cheaper than serving an unpatched demo to a customer).
+
+It fired on its first live run:
+
+```
+next-web: cached image demo-1-next-web was built with a DIFFERENT demo-patch set
+  (<none: predates the fingerprint> != cee1e4ff…) — removing + rebuilding so the current patches
+  actually bake into the image.
+```
+
+**The rule this adds to §4's ladder:** *applying a patch is not shipping it.* Adding a manifest to the apply
+ladder and forgetting it in the fingerprint call re-opens the same hole one level up — so a fence asserts the two
+sets agree.
 
 ---
 

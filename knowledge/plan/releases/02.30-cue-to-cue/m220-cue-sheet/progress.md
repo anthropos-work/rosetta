@@ -83,34 +83,67 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
   - [ ] Add `('cockpit', 7700)` to `gen_tailscale_serve.py`. Today the presenter's **entry point** is the one
         plain-HTTP, unauthenticated surface on the tailnet (`up-injected.sh` deliberately excludes it).
 
-- [ ] **S5 — The two demo-BREAKING click paths.** *(overview (i)+(j) — escalated from M219 D4)*
-  - [ ] **(i) The academy POISONS the demo session.** `:13077` runs its own **keyless** Clerk and returns
-        `Set-Cookie: __session=; Expires=1970` (**deletes the demo session**) + `__client_uat=0;
-        Domain=<tailnet>` — **domain-wide, not port-scoped** (cookies scope by HOST, not PORT). So **a
-        presenter who clicks AI Academy is LOGGED OUT of the demo into `ERR_TOO_MANY_REDIRECTS`**, and every
-        employee coverage sweep aborts. Cause: `ant-academy.sh` greps `CLERK_*` out of `platform/.env`, which
-        carries **11 matching lines** — all written to `.env.local`, **last one wins**, and it is not the
-        demo's minted key. Fix: use **`PK_DEMO`** (already written into next-web's `.env.local`).
-  - [ ] **DoD is NOT "it paints":** log in → click the academy → **the demo session must SURVIVE**.
-  - [ ] **(j) studio-desk EJECTS the presenter.** `:19000` → 302 → `:13000/login` → lands on `:13000/home`.
-        Not a prod-eject (`:13000` is the demo's own next-web) — which is exactly why the sweep's prod-eject
-        detector never caught it. studio-desk's auth check doesn't recognise the Clerkenstein session.
-  - [ ] Fence: a presenter clicking **Anthropos Studio** stays **in Studio**. "The port answers" is not the bar.
-  - [ ] M219's honest fences (`SERVES BUT DOES NOT RENDER`; the `AI Academy` marker + 400-char floor) go GREEN
-        only when this lands. **They are RED by design until then.**
+- [x] **S5 — The two demo-BREAKING click paths.** *(overview (i)+(j) — escalated from M219 D4)*
+  - [x] **(i) The academy POISONS the demo session.** FIXED. The academy is **Clerkenstein-wired** from the
+        stack's own `.env.demo-N` (minted pk + disarmed fake BAPI + networkless RS256 key) — it never reads
+        `platform/.env` again, so keyless mode cannot engage and **no cookie is ever deleted**. The
+        `e2e_persona` bypass is REMOVED (kept alongside real keys it short-circuits `proxy.js` BEFORE the real
+        session resolves and renders a generic *"E2E Member"* to a presenter logged in as **Maya**).
+        The fake BAPI is published on **`127.0.0.1:5401+offset`** — the demo's **first loopback-bound** port —
+        because the host-native academy cannot use the in-network `api.clerk.com` alias, and without it its
+        only reachable `CLERK_API_URL` is **real Clerk**.
+  - [x] **DoD PROVEN — the session SURVIVES.** Controlled A/B on `billion`, from a tailnet **peer**, in a real
+        browser, one variable: **ARM A** login → `/profile` ⇒ signed in as *"Maya Chen"*. **ARM B** login →
+        `/profile` → **ACADEMY** → `/profile` ⇒ **STILL signed in as "Maya Chen"**. `__session` present
+        throughout; `__client_uat` a **live timestamp, never 0**. Direct `curl` at `:13077` now returns
+        **ZERO `Set-Cookie` headers** — the deletion mechanism is gone at source. **Values-blind:** the
+        academy's `CLERK_SECRET_KEY` sha ≠ `platform/.env`'s, and it is `sk_test_` (Clerkenstein) — the REAL
+        production secret is no longer inside a demo process. Exactly **1** publishable-key line, so dotenv
+        *last-one-wins* cannot bite again.
+  - [x] **(j) studio-desk EJECTS the presenter.** GREEN: `dan-manager` clicks **Anthropos Studio** and
+        **STAYS on `:19000`**. Root cause was *not* a broken session — the roster already seeds the manager's
+        `admin` membership into the fake BAPI, which `checkEnterpriseAndAdmin` reads. **M219's "302 → /login"
+        was an UNAUTHENTICATED `curl`** — the expected answer to a cookieless request, mis-read as the defect.
+        An employee is still (correctly) redirected off Studio: that is the real platform's behaviour.
+  - [x] Fence: a presenter clicking **Anthropos Studio** stays **in Studio**.
+  - [x] M219's launcher fence (`SERVES BUT DOES NOT RENDER`) is **GREEN**. It also had to drop
+        `__clerk_handshake` from its keyless pattern: once wired, **that URL is the SUCCESS path**, so the
+        fence would have gone RED against the very fix it demanded.
+  - [ ] ⚠️ **M219's 400-char CONTENT floor stays RED — honestly, and NOT weakened.** A **separate** defect,
+        not the session bug: the academy renders its portal shell + the 3 audience cards and then says
+        **"0 PATHS / 0 COURSES / No adventures here… yet"** (348 chars). Its clone HAS content
+        (`[build-catalog]` = 2705 entries / 419 public chapters) but `[build-local-catalog]` emits **0**, and
+        the home reads the **local** catalog (`local-catalog.generated.js` = 368 bytes). → **`FIX-M221-academy-empty-catalog`** (Fate 3).
 
-- [ ] **S6 — Egress: stop the demo phoning home.** *(overview (f)+(g)+(h))*
-  - [ ] **(f) Clerk telemetry OFF** — `CLERK_TELEMETRY_DISABLED` + `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED`.
-        Real egress from **both** frontends today (grep across rext: **0** hits — never wired). Also what makes
-        Playwright's `networkidle` hang. Pure env.
-  - [ ] **(g) Ad-tech egress (F-5)** — the demo attempts **Google Analytics + DoubleClick + Google Ads +
-        LinkedIn Ads** on **every authenticated page load**. Measure, then kill at the injected-env/CSP layer.
-  - [ ] **(h) Vendor clerk-js + bound the unbounded timeout (C-5)** — the fake FAPI proxies
-        `clerk.browser.js` **live from `cdn.jsdelivr.net`** via `http.DefaultClient` = **`Timeout: 0`
-        (unbounded)** with **no cache** (`clerk-frontend/server.go:187`). next-web's whole authenticated tree
-        is client-gated on clerk-js ⇒ **a CDN stall is an unbounded hang on the login path** (0.2 s healthy /
-        **~127 s if egress blackholes**). Serve from disk; keep the CDN proxy as a **bounded** fallback.
-        **Alignment-INVISIBLE** (no gene covers `GET /npm/`) ⇒ a gate-free win.
+- [x] **S6 — Egress: stop the demo phoning home.** *(overview (f)+(g)+(h))*
+  - [x] **(f) Clerk telemetry OFF** — both halves: `CLERK_TELEMETRY_DISABLED` (server, runtime env) +
+        `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED` (browser, **build-inlined** → baked into the image's
+        `.env.local`). Either alone leaves one collector phoning home. Wired for next-web, studio-desk and the
+        academy. **Residual (measured, not assumed):** studio-desk's **Vite** browser bundle reads neither name
+        and passes no `telemetry` prop — that half is not reachable from env at all. It did **not** fire in the
+        live capture, so no demo-patch was spent on it.
+  - [x] **(g) Ad-tech egress (F-5)** — MEASURED FIRST, and the plan **undercounted**: next-web's root layout
+        hardcodes **FOUR** scripts with no env seam — `plausible.io`, `analytics.bellasio.com`,
+        `uptime.betterstack.com`, **plus** `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` (→ GA + DoubleClick +
+        Google Ads + LinkedIn). **Seven** third parties, every page load. New sha-pinned demo-patch
+        **`next-web-no-thirdparty`** gates all four behind one build-time env var; behaviour-identical when
+        unset. RED baseline from the pre-fix image (2/6/2/2 files); post-fix the **client bundle
+        (`.next/static`) carries ZERO** — only dead server chunks + `.js.map`s retain the strings.
+  - [x] **(h) Vendor clerk-js + bound the unbounded timeout (C-5)** — clerk-js is now **served from disk** (a
+        **box-level** cache shared by every `demo-N`, keyed by the request path's `package@version` —
+        self-invalidating); the CDN survives only as a **bounded (15 s)** fallback that populates the cache
+        atomically and **never caches a non-200**. Verified live: 4 chunks on disk (incl. the 322 KB main
+        bundle), and the browser fetches clerk-js **from the FAPI**, never `cdn.jsdelivr.net`.
+        **Alignment re-run after touching the FAPI: Go 27/27 + JS/FAPI 9/9 — 100%/100%, both GATES MET.**
+  - [x] **Live egress capture (tailnet peer, authenticated load): ZERO** hits on any of the 11 denied hosts.
+        The fence asserts it captured traffic at all — an empty scan is a FINDING, not a pass.
+  - [x] **BONUS (found while landing (g), and it would have EATEN it): the image cache had no idea which
+        demo-patches were baked into it.** Reuse keyed only on the offset endpoint + minted pk — neither
+        related to the patch set. The `demo-1-next-web` image on `billion` matched both, so the first bring-up
+        after adding the patch would have **reused it** and served a bundle still phoning home — *while grading
+        green*. This is the mechanism behind demopatch-spec's own war story (the 76 s members grid, 4 releases).
+        Fixed with a **patch-set fingerprint** baked as an image **label** (no Dockerfile edit). **It fired on
+        its first live run** (`<none: predates the fingerprint> != cee1e4ff…` → rebuild).
 
 - [ ] **S7 — The dev-side opt-in `--public-host`.** *(overview (d) — folds the reserved M216)*
   - [ ] Dev stays **opt-in** per D-DESIGN-3. Builds the flag `/dev-up` does not have today.

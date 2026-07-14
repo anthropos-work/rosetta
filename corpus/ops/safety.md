@@ -502,7 +502,33 @@ hypothetical one.
 > ACCESS, not full first-page render"*). The ids collide across releases; a bare reference resolves to the wrong
 > decision.
 
-### 3.6 What this does NOT change
+### 3.6 The EGRESS half — what a demo sends OUT (v2.3 M220 S5/S6)
+
+§3.1–3.5 are about who can reach **in**. The mirror question went unasked for the whole demo family: **what does
+a demo reach OUT to?** A corpus that calls the demo *self-contained* owed an answer, and the honest one was bad.
+
+| what phoned home | measured | now |
+|---|---|---|
+| **Google Analytics · DoubleClick · Google Ads · LinkedIn Ads** | on **every page load**, via a **hardcoded** `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` in next-web's root layout | **gone** — the `next-web-no-thirdparty` demo-patch |
+| **Plausible · analytics.bellasio.com · uptime.betterstack.com** | same file, same three hardcoded `<Script>` tags. **Not in the plan** — found by reading the file. A presenter demoing to a customer was shipping that customer's page views to **seven** third parties | **gone** — same patch |
+| **Clerk telemetry** (`clerk-telemetry.com`) | real egress from **both** frontends. `TELEMETRY_DISABLED` had **zero** hits across the whole tooling repo — it was never wired. Also a reason Playwright's `networkidle` never settles | **off** — `CLERK_TELEMETRY_DISABLED` (server) + `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED` (browser, build-inlined). **Both halves, or one collector still phones home** |
+| **`cdn.jsdelivr.net`** — the clerk-js bundle | the fake FAPI proxied `clerk.browser.js` **live from the CDN on every full page load**, with `http.Get` = `http.DefaultClient` = **`Timeout: 0` (UNBOUNDED)** and **no cache**. next-web's entire authenticated tree is client-gated on clerk-js ⇒ **an unbounded internet dependency ON THE LOGIN PATH**: 0.2 s healthy, **~127 s if egress blackholes** — a presenter stuck on a white page with nothing to do but wait | **served from disk.** A box-level cache (shared by every `demo-N`) keyed by the request path's `package@version` — self-invalidating by construction. The CDN survives only as a **bounded** (15 s) fallback that populates the cache atomically and never caches a non-200 |
+| **real Clerk** (`api.clerk.com`) | the academy ran **keyless** and phoned Clerk to provision a throwaway app — holding the **REAL Clerk app's `CLERK_SECRET_KEY`**, copied out of `platform/.env` | **gone** — Clerkenstein-wired (see [`demo/frontend-tier.md`](demo/frontend-tier.md)). Same class as the `DIRECTUS_TOKEN` strip of §2.9 |
+
+**This is the item that most directly contradicted this document.** An unbounded, uncached internet fetch in the
+login path of a demo the corpus describes as self-contained is not a performance note — it is a false claim in a
+safety doc, which §3.1 already established is the worst failure mode in this project.
+
+**Verified from a tailnet peer, in a real browser, on an authenticated page load: zero requests to any of the
+above.** The check asserts it captured traffic at all — an empty scan is a FINDING, not a pass.
+
+> **One new listener, and it is the demo's FIRST loopback-bound port.** The disarmed fake BAPI is now published
+> on **`127.0.0.1:5401+offset`**, because ant-academy is the demo's one **host-native** frontend and cannot use
+> the in-network `api.clerk.com` alias — without it, its only reachable `CLERK_API_URL` is **real Clerk**. It is
+> bound to loopback precisely *because* §3.1 established that every other port is world-published: a mock that
+> ignores the bearer token entirely is the last thing that should be ambient on a tailnet.
+
+### 3.7 What this does NOT change
 
 Parts 1 and 2 hold **exactly** as written. Remote reach changes the *origin and scheme* a browser uses; it does
 not touch the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the
