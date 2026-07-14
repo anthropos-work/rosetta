@@ -31,7 +31,8 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ```
 
 > **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38) — now the DEFAULT.** A bare
-> `/demo-up N` set-dress seeds the locked **2-orgs × 3-heroes** Stories & Heroes world (each org a
+> `/demo-up N` set-dress seeds the locked **3-orgs × 3-heroes** Stories & Heroes world (Cervato Systems ·
+> Solvantis · Northwind Aviation — each org a
 > thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
 > heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
 > the demo's remote control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line
@@ -49,7 +50,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
-> /demo-up 3                   →  default: seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
+> /demo-up 3                   →  default: seed the 3-org hero trio + multi-identity fake-fapi + serve the cockpit
 >   …present it…              →  open http://localhost:37700 → pick a hero → [Log in as] → her per-role screen
 > DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
@@ -135,6 +136,16 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+- [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
+  knob and flag that controls a bring-up — **all 25 env knobs + 9 CLI flags**, with real defaults and the exact
+  `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
+  doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
+  *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
+  `up-injected.sh` takes only `<N>` + `--public-host` and **hard-errors on anything else**, while
+  `--profile`/`--services` belong to the separate `rosetta-demo` wrapper. And the shape of the whole surface:
+  **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 3-org world, the full UI
+  tier, the cockpit, and set-dress — *"pull all the data + seed the 3 orgs" was always the default; the usual
+  culprit is a cold snapshot cache, not a knob.*
 - [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"): the opt-in
   `--public-host <magicdns>` flag that makes a demo reachable from another machine on your **Tailscale** tailnet,
   the **HTTPS-everywhere** per-offset-port topology (`tailscale serve` + the tailscale-cert FAPI), what the knob

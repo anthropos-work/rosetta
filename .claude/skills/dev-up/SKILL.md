@@ -1,7 +1,7 @@
 ---
 name: dev-up
 description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with a cache-first snapshot replay + a light dev-min seed, plus (opt-in via --local-content) an EXECUTED per-stack Directus so the stack's content is self-contained (otherwise it reads content live from prod). Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
-argument-hint: [N | 'main'] [--local-content] [--no-setdress] [--no-snapshot] [--profile P] [scenario|step]
+argument-hint: [N | 'main'] [--local-content] [--no-setdress] [--no-snapshot] [--profile P] [--inject] [--public-host <host>|auto] [scenario|step]
 ---
 
 # Dev Up — build, start, and set-dress a local dev stack
@@ -106,6 +106,8 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
    "$DEV/dev-stack" up N --no-snapshot   # seed only (skip the snapshot replay)
    "$DEV/dev-stack" up N --no-setdress   # bare bring-up (no snapshot, no seed)
    "$DEV/dev-stack" up N --inject        # optional: Clerkenstein-inject (offline/clean-room dev)
+   "$DEV/dev-stack" up N --public-host auto          # OPT-IN: reachable from the tailnet (v2.3 M220 S7)
+   "$DEV/dev-stack" up N --public-host box.tail.ts.net   # ...or name the MagicDNS host outright
    ```
    The set-dress pass is **default-on + non-fatal**: a stale/missing snapshot cache is a warning, the seed
    still runs; the whole pass can be skipped with `--no-setdress`. (`dev-setdress.sh`, M13.)
@@ -131,10 +133,47 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
 
 ## Defaults & flags
 
-- `--no-setdress` — bare bring-up of `dev-N` (no snapshot, no seed).
-- `--no-snapshot` — seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs).
-- `--profile P` — compose profile (default `graphql`).
-- Set-dressing applies to **`dev-N` (N ≥ 1)** only; `dev-up main` (N=0) stays real-Clerk + unseeded.
+Every flag `dev-stack up` accepts, and its default. Fenced **in both directions** by
+`stack-core/dev_flag_guard.py` — a flag promised here that the parser rejects is a false promise; a flag the
+parser accepts that is missing here is undiscoverable. (`--inject` had shipped in the parser with **no doc
+surface at all** since M5; the guard is what found it.)
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--profile P` | `graphql` | compose profile |
+| `--no-setdress` | off (set-dress is **on**) | bare bring-up of `dev-N` — no snapshot, no seed |
+| `--no-snapshot` | off (snapshot is **on**) | seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs) |
+| `--local-content` | **off** (dev reads content live from prod) | EXECUTE a per-stack Directus so content is self-contained (v1.5 M22/M23) |
+| `--inject` | **off** (dev uses **real Clerk**) | Clerkenstein-inject `dev-N` — offline / clean-room dev, no real-Clerk dependency (M5) |
+| `--public-host <host>\|auto` | **off — nothing is probed** | **OPT-IN remote reach** (v2.3 M220 S7). See below. Env form: `DEV_PUBLIC_HOST` |
+
+Set-dressing applies to **`dev-N` (N ≥ 1)** only; `dev-up main` (N=0) stays real-Clerk + unseeded.
+
+### `--public-host` — remote reach is OPT-IN on dev (and default-ON on demo)
+
+The asymmetry is deliberate — it is **v2.3's D-DESIGN-3**, in the user's words: *"opt-out at build time for
+`demo-up`, **opt-in** at build time for `stack up`."* A demo exists to be shown to someone else; a dev box does
+not, so it stays local until you say otherwise.
+
+| | remote reach | how you change it |
+|---|---|---|
+| **`/demo-up N`** | **DEFAULT-ON** — auto-discovers this box's MagicDNS host | opt **out**: `--no-public-host` |
+| **`/dev-up N`** | **OFF** | opt **in**: `--public-host auto` (or name a host) |
+
+- **`--public-host auto`** walks the **same 6-rung capability ladder** the demo path uses
+  (`demo-stack/tailscale_autohost.py` — on PATH → daemon `Running` → a **dotted** MagicDNS name → MagicDNS
+  enabled → operator set → **`tailscale cert` actually mints**). It is *reused*, not reimplemented.
+- **`--public-host <fqdn>`** takes the host verbatim — no probe, no second-guessing.
+- **Any failed rung ⇒ an EMPTY host ⇒ the localhost dev stack you have always had**, plus one loud line
+  naming the exact fix command. A half-satisfied public path is never shipped.
+- **Pass nothing and NOTHING happens** — no `tailscale` process, no cert mint, no serve config, no new files.
+  This is fenced by a tripwire stub, not asserted in prose (`dev-stack/tests/test_dev_public_host.py`).
+- It fronts only the ports **your profile actually publishes** (default `graphql` ⇒ the backend API + Cosmo
+  GraphQL), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the next
+  bring-up.
+- ⚠️ **Transport, not authentication.** This puts the stack behind the tailnet's TLS + authenticated device
+  mesh. It does **not** add auth. Read [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3** and
+  the runbook [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md) before using it.
 
 ## Safety (the load-bearing part)
 

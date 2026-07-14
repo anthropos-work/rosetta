@@ -1,0 +1,88 @@
+{
+  "milestone": "M220",
+  "slug": "cue-sheet",
+  "version": "v2.3 cue to cue",
+  "closed": "2026-07-15",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "rext_tag": "cue-to-cue-m220-final",
+  "rext_tag_graded_live_on_billion": "cue-to-cue-m220-r6",
+  "user_ask": {
+    "pull_all_the_data": "ALREADY DEFAULT-ON — the real failure was a COLD CACHE (M217's cache prime), not a missing default. Documented (S0).",
+    "seed_the_3_story_orgs": "ALREADY DEFAULT-ON — the preset ships 3 (Cervato / Solvantis / Northwind). The docs LIED ('2 orgs') at 11 sites, live 4 releases. Fixed + fenced (S0).",
+    "remote_access_opt_out_for_demo": "THE ONE GENUINE FLIP. Landed (S3): a bare up-injected.sh 1 auto-discovers the tailnet host via a 6-rung capability ladder and serves over a trusted cert. Opt out with --no-public-host. Proven live on billion (hero login -> /profile 200; manager -> /enterprise/workforce 200)."
+  },
+  "sections": {
+    "S0": "the two doc lies fixed + 3 doc-vs-code fences (org count 11 violations, exposure claim 3 false + 2 missing, defaults table)",
+    "S1": "safety.md Part 3 — the exposure axis + the explicit supersession of v2.2's D-DESIGN-1",
+    "S2": "the /demo-up defaults contract (26 knobs + 10 flags, derived from the parsers, 2 entry points)",
+    "S3": "remote reach DEFAULT-ON via the 6-rung ladder (opt-out) — proven live on billion, both vantages",
+    "S4": "the presenter cockpit fronted behind the trusted cert (was the one plain-HTTP unauthenticated surface)",
+    "S5": "the academy stops POISONING the demo session (Clerkenstein-wired) + studio-desk was never a session bug (D15)",
+    "S6": "zero egress on an authenticated load (7 third parties killed) + clerk-js served from disk (bounded, was unbounded CDN)",
+    "S7": "the dev-side OPT-IN --public-host (Fate 1, folds+discharges M216) + the dev family's 0.0.0.0 disclosure it never had"
+  },
+  "tests": {
+    "python_by_section": {
+      "demo-stack": 583,
+      "stack-injection": 246,
+      "stack-core": 152,
+      "dev-stack": 120,
+      "stack-verify": 114
+    },
+    "python_total": 1215,
+    "python_failures": 0,
+    "python_skipped": 16,
+    "python_subtests": 39,
+    "python_delta_vs_m219": "+312 COUNTED, but the honest number is smaller: M219 counted 903 across demo-stack/stack-injection/stack-verify/stack-core ONLY, because the dev-stack suite could not be run whole (rc=124). This close FIXED that (D31), so dev-stack (120) is countable for the first time and the other sections' M220 additions land on top. Like-for-like on the 4 sections M219 counted: 583+246+152+114 = 1095 vs 903 = +192; plus dev-stack 120 now visible.",
+    "python_counting_method": "JUnit XML (pytest --junit-xml), classname-grouped from the testsuite element. NEVER grepped from piped stdout.",
+    "whole_python_suite_first_completion": "This is the FIRST milestone at which `python3.12 -m pytest` over the whole rext tree completes at all — the dev-stack suite busy-failed (rc=124) for 5 milestones across 2 releases until D31.",
+    "go_test_funcs": 1827,
+    "go_test_funcs_delta_vs_m219": 6,
+    "go_failures": 0,
+    "go_modules": 6,
+    "go_counting_method": "grep -c '^func Test' across all 6 go.mod modules — the SAME method M217/M218/M219 recorded, so the +6 is like-for-like.",
+    "go_vet": "clean across all 6 modules"
+  },
+  "coverage_harden_pass": {
+    "exposure_claim_guard.py": "57% -> 89% (the S7 DEV half + all of main() were uncovered; delete _DEV_DISCLOSURE_RE and the suite stayed green)",
+    "tailscale_autohost.py": "92% -> 99% (_default_run's never-raises arms + the new rung-3 hostname refusal)",
+    "gen_tailscale_serve.py": "81% -> 94% (reset_script was 100% uncovered while S4's :7700-in-reset claim was load-bearing)",
+    "story_org_count_guard.py": "62% -> 91% (main() exit codes: 2 'could not run' != 0 'found nothing')",
+    "demo_knob_guard.py": "80% -> 91% (main())",
+    "dev_flag_guard.py": "71% -> 74% (incl. the anti-D17 'zero flags must FAIL' branch)"
+  },
+  "mutation_battery": {
+    "artifact": "stack-core/tests/test_m220_mutation_battery.py (COMMITTED — S3/S7 claimed 12+9 mutants but committed NEITHER battery; the result survived only as a sentence in a progress note, which is the exact D17 the release is named for)",
+    "mutants": 17,
+    "mutants_red": 17,
+    "breakdown": "4 naive ladders (in-process) + 6 up-injected.sh + 7 dev-stack, driven through the REAL suites via two env seams",
+    "anti_theatre_assertions": [
+      "the BASELINE must be GREEN before any RED is read (fired on its own first run — caught a 14-test staging bug that would have logged all 7 dev mutants as false REDs, S7's original bug reproduced live)",
+      "every mutant must ACTUALLY change its subject (a no-op mutant that 'goes RED' measures nothing)",
+      "the failure SIGNATURES must not all be identical (a constant is not a result — the tell that nearly let S7's broken battery through)"
+    ],
+    "findings": {
+      "H-1": "THE HARD INVARIANT WAS UNFENCED — the fence RE-TYPED the SCHEME/BIND_HOST derivation inside the test, so mutating the shipped SCHEME to unconditional https left all 23 tests green. Fixed by naming the derivation (derive_public_host_vars) so the fence calls the shipped one. Mutants D5/D6 now RED.",
+      "H-3": "the || true in resolve_dev_public_host was load-bearing and untested (mutant V4 survived) — a broken tailscale can never exercise it (ladder is exit-0-always); only a broken ladder PROCESS can. New regression test breaks the process."
+    }
+  },
+  "flake_count": 0,
+  "flake_gate": "5 sequential runs of the milestone-touched suites in random order — all identical, 0 flakes",
+  "demo_patches": {
+    "total": 8,
+    "added_this_milestone": "next-web-no-thirdparty (S6/g — gates 4 hardcoded ad/analytics scripts = 7 third parties behind one build-time env var; behaviour-identical when unset)",
+    "platform_repo_edits": 0
+  },
+  "deferrals": {
+    "audit": "audit-deferrals/deferral-audit-2026-07-15-m220-close.md",
+    "verdict": "YELLOW (was heading RED)",
+    "chronic_resolved": "the dev-stack suite — 5 milestones / 2 releases as 'environmental' — LANDED Fate 1 (one env var, D31)",
+    "escape_hatch_deferrals": 0,
+    "blocking_items": 0,
+    "fate1_landed_at_close": ["F-M220-1b (D31 — the stub seam)", "the rung-3 hostname refusal (D32 — adversarial)", "5 undocumented modules in section READMEs", "demo-stack README count 424 -> 576"],
+    "fate3_routed_to_m221": ["FIX-M221-academy-empty-catalog (F-M220-2)", "FIX-M221-academy-loopback-bind (F-M220-5)", "F-M220-4 (academy re-runnability)", "BURNIN-M221-dev-public-host"],
+    "m221_stale_route_corrected": "FIX-M221-devstack-test-spin was DISCHARGED (its 'busy-spins forever' description was already known-wrong); M221 overview.md retraction written rather than a silent delete"
+  },
+  "notes": "M220 delivered: the user's ask was three things, and TWO were already true — the docs lied. 'Pull all data' + 'seed 3 orgs' were both default-on; the '2 orgs' lie (11 sites, 4 releases) was why the user believed the ask was unmet. The one genuine flip (remote opt-out) landed and is live-proven. The invariant that mattered most and holds: a box with no Tailscale falls back to BYTE-IDENTICAL localhost behaviour (proven by genuinely removing tailscale, tripwire-fenced). D17 was the retro's spine (~20 hits M217->M220), several found by the tooling IN ITSELF. NOT the final milestone — M221 is last; no merge to main, no v2.3 tag."
+}

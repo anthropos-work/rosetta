@@ -399,6 +399,30 @@ profile/workforce/skill-paths/ai-simulations/assignment-monitoring only; **Aria'
 e2e-proven**) + its section in `corpus/ops/demo/playthroughs.md`; updates to `corpus/services/ai-readiness.md`.
 
 #### M220 — Cue sheet  (`section`, medium)
+**Status:** ✅ **`done` — closed-complete 2026-07-15.** All 8 sections (S0–S7) landed on `m220/cue-sheet`, merged
+`--no-ff` into `release/02.30-cue-to-cue`. rext code-of-record **`cue-to-cue-m220-final`** (live-graded on
+`billion` at `-r6`). **Zero platform-repo edits.**
+> **The user's ask was three things; TWO were already true and the docs lied.** *"Pull all data"* + *"seed 3
+> orgs"* were **already default-on** — the `"2 orgs"` lie (11 sites, 4 releases) was why the user believed the
+> seeding ask was unmet. The **one genuine flip** (remote reach default-on, opt-out `--no-public-host`) **landed
+> (S3) and is live-proven** on `billion`, both vantages, on a trusted LE cert, cold reset-to-seed reproducible,
+> 0 ejects. The invariant that holds: a box with **no** Tailscale is **byte-identical to localhost** (proven by
+> genuinely removing `tailscale`, tripwire-fenced). Other landings: the academy stops **poisoning the demo
+> session** (S5); **zero egress** on an authenticated load (7 third parties killed, S6); clerk-js **served from
+> disk** (was an unbounded CDN fetch on the login path); the cockpit is **behind HTTPS** (S4); `safety.md`
+> **Part 3 — the exposure axis** + supersession of v2.2's D-DESIGN-1 (S1); the dev-side **opt-in**
+> `--public-host` **discharges M216** without pulling the scope-flex lever (S7).
+> **Harden** committed the **17-mutant battery** M220 claimed but never left behind, and it found the milestone's
+> own **HARD INVARIANT unfenced** (H-1: `SCHEME`/`BIND_HOST` was asserted against a re-typed copy of itself) + an
+> **untested `|| true`** (H-3). **Close** resolved a **5-milestone chronic deferral** — the dev-stack suite's
+> *"environmental"* failure was **one missing env var** (D31), so the whole rext Python suite now completes for
+> the first time (**1215 tests, 0 fail**) — and an **adversarial** finding: rung 3 accepted any dotted string as
+> a hostname, so a value with a space / leading dash cleared 6 rungs into the pk + argv (D32). **Deferral audit
+> YELLOW, 0 blocking, 0 escape-hatch.** Full closure record in `m220-cue-sheet/{retro.md, metrics.json,
+> progress.md, decisions.md}`. **Fate-3 routes to M221** (both academy items + dev burn-in), and the stale
+> `FIX-M221-devstack-test-spin` route **retracted** in M221's overview (discharged, not silently deleted).
+> **Go 1827 test funcs / 0 fail; Python 1215 / 0 fail; flake 0.**
+
 **Goal:** `/demo-up` **means** what the user thinks it means — full data, the three orgs, and remotely reachable,
 by default.
 **In:** **(a) the doc fix** — "2 orgs" → **3** (`.claude/skills/demo-up/SKILL.md:109,153`;
@@ -412,15 +436,16 @@ operator/sudo denial → **`tailscale cert` actually mints**. **HARD INVARIANT: 
 EMPTY `STACK_PUBLIC_HOST`, byte-identical to today's localhost path, with ONE loud line naming the fix.** A
 *half-satisfied* public path is **strictly worse than localhost** — `SCHEME` and `BIND_HOST` both derive from the
 same `-n $STACK_PUBLIC_HOST` predicate, so every baked URL becomes `https://` against plain-HTTP listeners and the
-demo does not load **at all**. **(d)** the **dev-side opt-in `--public-host`** (folds the reserved **M216**;
-**declared scope-flex lever** — if it bloats, it drops back to M216 and the release still meets the user's demo-side
-spec). **(e)** front the **cockpit** on `tailscale serve` (`('cockpit', 7700)` → `gen_tailscale_serve.py:42-46`) —
+demo does not load **at all**. **(d)** ✅ **LANDED (S7)** — the **dev-side opt-in `--public-host`** (folds + **discharges**
+the reserved **M216**; the **declared scope-flex lever was NOT pulled** — S3's ladder is **reused cross-section, never
+forked**, and a dev box that passes no flag is proven **byte-identical**: zero `tailscale` invocations, tripwire-fenced). **(e)** front the **cockpit** on `tailscale serve` (`('cockpit', 7700)` → `gen_tailscale_serve.py:42-46`) —
 today the presenter's entry point is the **one plain-HTTP, unauthenticated surface**.
 **Delivers →** `corpus/ops/safety.md` **Part 3 — the exposure side** (**BLIND AREA, BLOCKING** — safety.md's two
 promises are read-side and write-side only; grep for `tailscale|remote|expose|network` → **zero hits**. Remote reach
 is a **third axis the safety contract does not cover**, and default-on cannot ship without it); an explicit written
-**supersession of v2.2's D-DESIGN-1**; and the **correction of the FALSE claim** at `tailscale-serve.md:405-407`
-(it says binding `0.0.0.0` is gated on the knob — **it is not**: `gen_injected_override.py:259-260,292-294` emits
+**supersession of v2.2's D-DESIGN-1**; and the **correction of the FALSE claim** at `tailscale-serve.md:452-453`
+(anchor corrected by M220's KB-fidelity audit — it says binding `0.0.0.0` is gated on the knob — **it is not**:
+`gen_injected_override.py:210,276-277,308` emits
 bare `"<hostport>:<target>"` port pairs, so Docker publishes **every demo container on ALL interfaces on EVERY
 demo-up, today, flag or no flag** — and on Linux Docker's iptables bypass the host firewall). **This correction
 ships regardless of the flip.**
@@ -458,7 +483,7 @@ surface on a live cross-machine run.
 | **DEF-M215-03(b)** | no committed remote-origin Playwright gate | **Fate-1 → M218 + M221** (it IS the measurement substrate) |
 | **DEF-M215-04 / F13** | `jobsimulation` exits(1) → AI-Simulations dead in every demo | **Fate-1 → M217** ("the demo works properly" cannot be claimed with a container in a crash loop) |
 | supply chain | `x/crypto@v0.52.0` (13 alerts, all UNREACHABLE) | **Fate-1 → M218's rext roll** |
-| **M216** (reserved) | dev-path Tailscale parity | **CONSUMED → M220(d)** per D-DESIGN-3; declared scope-flex lever |
+| ~~**M216** (reserved)~~ | dev-path Tailscale parity | ✅ **CONSUMED + DISCHARGED by M220 S7** (2026-07-14, M220-D28). The declared scope-flex lever was **NOT pulled** — S3 had already built + fenced the 6-rung ladder, so S7 was a thin wiring job (a flag, a default, **cross-section reuse of the ladder — never a fork**). `/dev-up` now has `--public-host <host>\|auto` (+ `DEV_PUBLIC_HOST`), **opt-in**, with the no-flag path proven **byte-identical** (zero `tailscale` invocations, tripwire-fenced, 9/9 mutants RED). **M216 is retired as a reservation, never built as a milestone.** |
 | plan hygiene | `metrics-history.md` has no v2.2 row; no release-scope deferral audit for v2.1/v2.2 | **Fate-3 → close-release** |
 
 ### Top risks

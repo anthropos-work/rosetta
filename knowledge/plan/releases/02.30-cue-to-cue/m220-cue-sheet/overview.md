@@ -3,9 +3,9 @@ milestone: M220
 slug: cue-sheet
 version: v2.3 "cue to cue"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-13
-last_updated: 2026-07-13
+last_updated: 2026-07-15
 complexity: medium
 depends_on: M217
 parallel_with: M218, M219
@@ -24,7 +24,7 @@ default**.
 | Ask | Reality | Work |
 |-----|---------|------|
 | *"it should pull all the data (taxonomy, content, library, etc.)"* | **ALREADY DEFAULT-ON.** `for s in taxonomy directus sim-embeddings` **IS** the complete surface registry (library = directus; `/library/ai-simulations` = sim-embeddings). **No 4th surface exists.** | **Doc it.** The real failure is **not a default — it is a COLD CACHE**: replay is cache-first and **never captures**, so on a fresh box every surface exits rc=5 → a structural-only world. That is exactly what happened on `billion`. **The fix is M217's cache prime, not a flag.** |
-| *"make sure it does the expected seeding with the 3 orgs of the stories"* | **ALREADY DEFAULT-ON** (`DEMO_STORIES` defaults to 1 — it is already opt-*out*), and the preset ships **3** orgs. | **A 4-LINE DOC FIX.** The docs say **"2 orgs"** — `.claude/skills/demo-up/SKILL.md:109,153`, `corpus/ops/demo/README.md:34`, the stale `seed_label` at `up-injected.sh:1081`, `stories.seed.yaml:1`. **This is almost certainly why the user believes the ask is unmet.** |
+| *"make sure it does the expected seeding with the 3 orgs of the stories"* | **ALREADY DEFAULT-ON** (`DEMO_STORIES` defaults to 1 — it is already opt-*out*), and the preset ships **3** orgs (`stories.seed.yaml:37,75,136`). | **A 7-LINE DOC FIX** (**not 4** — the KB-fidelity audit found 3 more sites and 1 stale anchor). The docs say **"2 orgs"** at: `.claude/skills/demo-up/SKILL.md:109,153` · `corpus/ops/demo/README.md:34` · `corpus/ops/rosetta_demo.md:49` · `.claude/skills/stack-seed/SKILL.md:50` · the stale `seed_label` at `up-injected.sh:`**`1317`** (not `:1081`) · `stories.seed.yaml:1`. **This is almost certainly why the user believes the ask is unmet.** |
 | *"access from remote should be opt-out"* | **THE ONE GENUINE FLIP.** `--public-host` is opt-in, default-empty, and there is **ZERO host auto-discovery anywhere in rext** (grep `tailscale status|BackendState|DNSName` → only comments). | Build it. See below. |
 
 ## Why section
@@ -35,11 +35,16 @@ and a safety-doc authoring task.
 
 ### In
 
-**(a) The doc fix** — "2 orgs" → **3** at the 4 sites above.
+**(a) The doc fix** — "2 orgs" → **3** at the **7** sites above.
 
 **(b) The `/demo-up` DEFAULTS TABLE** — **BLIND AREA.** No enumerated defaults contract exists in the corpus; the
 only complete knob list is a skill `argument-hint`. Document all ~25 `DEMO_*` knobs: knob | default | consumer |
 file:line.
+> **Audit KB-3 — there are TWO parsers, and the docs conflate them.** `up-injected.sh` accepts **only** `<N>` +
+> `--public-host` and **hard-errors on anything else** (`:26-27`); `--profile`/`--services` belong to the
+> **`rosetta-demo`** wrapper (`:110-113`). The `demo-up` `argument-hint` lists all four as one flag set — so
+> **`up-injected.sh --profile X` exits 1 today.** The table must say *which entry point reads which knob*. This
+> is the RED that pre-proves the both-directions fence.
 
 **(c) The remote flip (D-DESIGN-3): `--public-host auto`, DEFAULT-ON for demo** (opt-out via `--no-public-host`),
 driven by a strict **capability ladder** — *capability-gated, never presence-probed*:
@@ -192,12 +197,17 @@ smaller than the docs claim** (see below).
 **2. An explicit written SUPERSESSION of v2.2's D-DESIGN-1** (*"public reach is never default-on"*,
 `demo-up/SKILL.md:78`) — **for the demo path only.** Never a silent contradiction.
 
-**3. The CORRECTION of a FALSE safety claim** at `tailscale-serve.md:405-407`. It says: *"no open
-0.0.0.0-on-the-LAN surprise… Binding 0.0.0.0 is gated on the knob precisely so it is never ambient."*
-**This is false.** `gen_injected_override.py:259-260,292-294` emits `ports: !override` with **bare
-`"<hostport>:<target>"` pairs — no `127.0.0.1` prefix** — so Docker publishes **every demo container on ALL
-interfaces on EVERY demo-up, today, with or without `--public-host`** (and on Linux, Docker's iptables **bypass the
-host firewall**). `BIND_HOST` gates only the two **host-native** servers (cockpit, ant-academy).
+**3. The CORRECTION of a FALSE safety claim** at **`tailscale-serve.md:452-453`** (**anchor corrected by the audit
+— it is NOT `:405-407`**). It says: *"no open 0.0.0.0-on-the-LAN surprise… Binding 0.0.0.0 is gated on the knob
+precisely so it is never ambient."*
+**This is false.** `gen_injected_override.py` emits `ports: !override` with **bare `"<hostport>:<target>"` pairs —
+no `127.0.0.1` prefix** — at **three** sites (`:210` directus · `:276-277` frontends · `:308` backends) — so Docker
+publishes **every demo container on ALL interfaces on EVERY demo-up, today, with or without `--public-host`** (and
+on Linux, Docker's iptables **bypass the host firewall**). `BIND_HOST` (`up-injected.sh:76`) gates only the two
+**host-native** servers (cockpit, ant-academy).
+> **The doc already contradicts itself:** `tailscale-serve.md:239` states the truth — *"`docker-proxy` binds the
+> demo's offset ports on **`0.0.0.0`**, which includes the VM's own `100.x` tailscale [address]"* — while `:452-453`
+> denies it. The correction is not new knowledge; it is the doc agreeing with itself.
 > **This correction ships REGARDLESS of the flip decision.** A shipped safety doc that understates actual exposure
 > is the worst failure mode in the project.
 
