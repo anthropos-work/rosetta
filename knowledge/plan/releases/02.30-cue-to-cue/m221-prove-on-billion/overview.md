@@ -80,6 +80,38 @@ Two items that can only be settled **on the box, over the tailnet** — which is
   milestone's gate item (2): "the full replayed catalog — no SKIPPED surface."** Root-cause the 403s (a
   serve-grant on the replayed Directus is the prime suspect) and fix or explain them.
 
+## Inherited from M219 (Fate-3, added at the M219 close, 2026-07-14)
+
+- **`GUARD-M221-host-isolation` — two agents can run cycles against ONE demo host, and nothing stops them.**
+  M219's 5-cycle cold battery was corrupted **by an orchestration error, not a demo defect**: two batteries were
+  run **concurrently against the single demo host**, and one of them purged the stack **mid-measurement** while
+  the other was reading it. Cycle 5's `no-junk-skills` gate consequently went **UNEXECUTED** — and an unexecuted
+  gate is a **FINDING, not a pass** (D17). No demo defect was observed in anything that *was* measured, and the
+  five graded greens are each independently evidenced, but the audit trail now carries a permanent, disclosed
+  asterisk: **they are not a single uncontested consecutive run.**
+
+  The demo host is a **singleton shared resource** and the tooling treats it as if it were private. The same
+  class already bit the coverage harness twice this milestone: `run-coverage.sh`'s out-dir was keyed on vantage
+  only, so a Northwind sweep **silently overwrote** a Cervato sweep's `coverage-report.json` (fixed, M219 S1);
+  and its report was re-read **without a freshness check**, so a concurrent writer's numbers could be graded as
+  yours (fixed in the M219 harden pass, `TestCoverageReportFreshness`). Both are the same root cause as the
+  battery corruption: **no mutual exclusion on a shared host.**
+
+  **DoD:** a cycle **cannot start** while another holds the host. Either a **host lock** (an advertised,
+  stale-tolerant lockfile on the demo host, taken for the life of a cycle and named with the holder's identity),
+  or a **per-cycle stack `N`** so concurrent runs are isolated by construction. A second concurrent cycle must
+  **fail loud** with the holder's identity — never queue silently, and never proceed. **This is a prerequisite
+  for M221's own gate**, which is itself a multi-cycle battery on the single `billion` host: without it, this
+  milestone can corrupt its own evidence exactly as M219 did.
+
+- **`FIX-M221-reap-native-academy` — `down --purge` does not reap the native academy.** The academy is a
+  **host-native** `next dev` process (not a container), so `down --purge` leaves it holding `:13077` **across
+  cycles**. The next bring-up's academy then dies `EADDRINUSE` while **the OLD process keeps answering the
+  port** — and the launcher log says *"the academy process DIED"* while the port still serves. Another
+  *serves ≠ works* case, and it silently makes cycle N+1 measure cycle N's process. Folds naturally into the
+  pre-bind-reap item above (same `reap.sh` surface) — but note that the reap must cover the **native** processes
+  (cockpit **and** academy), not only the container ports.
+
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
   latency gate **cannot be a Playthrough** (Playthroughs declare perf a **NON-GOAL**), so it is a **new

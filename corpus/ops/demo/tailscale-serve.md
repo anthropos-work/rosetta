@@ -217,9 +217,9 @@ cockpit → the non-fatal auto-verify on the offset ports. `/stack-list` then sh
 
 ## Step 6 — Verify (the exact curls + the cockpit login)
 
-Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet machine** (or the
-VM itself), the plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its
-own TLS — so **no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
+Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet PEER**, the
+plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its own TLS — so
+**no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
 
 ```bash
 HOST=billion.taildc510.ts.net
@@ -230,6 +230,32 @@ curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15400/v1/client    # FAPI
 
 All three answered `verify=0` (cert trusted, no CA install) from a **remote** Mac on the M215 run — the
 make-or-break proof that the M213/M214 remote-auth foundation works on a real Linux VM.
+
+> ### ⚠️ NOT from the VM itself — `tailscale serve` is bypassed on the loopback path (M219)
+>
+> This section used to read *"from any tailnet machine **(or the VM itself)**"*. **The parenthetical is false**,
+> and it cost M219 a full false-RED sweep before it was diagnosed.
+>
+> `docker-proxy` binds the demo's offset ports on **`0.0.0.0`**, which includes the VM's own `100.x` tailscale
+> address. A connection originating **on the VM** to `https://<magicdns>:<port>` therefore lands on the **kernel
+> socket** — the container, speaking plain HTTP — instead of being intercepted by `tailscaled`'s `serve` layer,
+> which is what terminates TLS. Plain HTTP answering a TLS handshake yields:
+>
+> ```
+> curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+> ```
+>
+> Measured on `billion`: **from the VM, https on `:13000`, `:15050` and `:18082` ALL fail TLS; from a tailnet
+> peer all three answer 307/200/200.** From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
+> the trusted cert — which is why `tailscale serve status` can list a mapping that nevertheless does not apply to
+> traffic you originate locally.
+>
+> **Consequence for testing.** A `--public-host` demo bakes the MagicDNS origin into the frontend build, so the
+> app's own GraphQL client calls `https://<magicdns>:15050/graphql`. Drive that app from a browser **on the VM**
+> and every GraphQL call dies `ERR_SSL_PROTOCOL_ERROR`, every page renders a permanent loading spinner, and every
+> content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
+> coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
+> [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at `http://$HOST:17700` (`7700+off`,
 plain HTTP — it is deliberately *not* fronted by `tailscale serve`; navigating from an http launcher page to the
@@ -350,7 +376,14 @@ re-issues on re-run, and a long-lived stack needs a renew-then-reload step. Full
 [`recipe-browser-login.md`](recipe-browser-login.md) §B step 2 and
 [`../../services/clerkenstein.md`](../../services/clerkenstein.md).
 
-## The patch tail — two platform-family files, both via the existing sha-pinned mechanism
+## The patch tail — THREE platform-family files, all via the existing sha-pinned mechanism
+
+> ⚠️ **M219 close: this section listed only TWO, and omitted the one patch that exists *because of* `--public-host`.**
+> **`next-web-ssr-graphql-origin`** (M218) is the fix for the **38-second login**: the SSR pass fetched the public
+> MagicDNS origin **from inside the container**, where the tailnet IP **blackholes** (ts-input drops the SYN-ACK on
+> the docker bridge) → ~37 s per authenticated render. That defect **only manifests on a `--public-host` demo** —
+> i.e. exactly the flow this runbook documents — and the remote-access runbook never mentioned it. See
+> [`demopatch-spec.md` § 5](demopatch-spec.md) for the row.
 
 Two files in the platform **family** aren't reachable by the pure config/env layer, so they ride the **existing
 rext sha-pinned patch mechanism** (drift-refuse, single-occurrence anchor, idempotent, non-fatal) applied to the
@@ -400,7 +433,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 | **F2** — the host needs Go for the rext tooling | no Go → secret provisioning skipped → `no usable platform .env` → abort | **pre-flight + prereq** — install Go 1.25.x (Step 0 #2) |
 | **F3** — `git tag --list \| head -1` SIGPIPE → 141 → `set -e` aborts | reproduces on a many-tag repo (`app` ~337 v-tags) | **rext fix (shipped)** — pipe-less `git for-each-ref --count=1` in `up-injected.sh` |
 | **F4** — buildx bake needs `SSH_AUTH_SOCK` (`ssh: default`) even though pulls use the PAT | a bare host with no ssh-agent fails at definition-load | **auto-handled** — the bring-up starts a **keyless** ssh-agent when absent (the PAT still does the real pulls) |
-| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | **known issue** — a demopatch re-anchor, separate from the remote story |
+| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | ✅ **RESOLVED (M217 self-healing anchor gate).** *The anchor is the contract; the whole-file sha is only a baseline* — a drifted sha with an intact anchor now **self-heals** and applies (`demopatch-spec.md` §6). **Do not chase a re-pin; it no longer exists.** M219 (F-7) further confirmed the `loadmembers` patch is not dead. |
 | **F6** — Linux bind-mount data-dir perms (Bitnami UID 1001 can't write a root-owned host dir) | `mkdir: /bitnami/postgresql/data: Permission denied`; macOS Docker Desktop remaps, native Linux does not | **auto-handled** — the bring-up pre-creates the data dirs writable (manual fix was `sudo chmod -R 777 $STACK/data`) |
 | **F7/F8** — the host needs the `atlas` CLI; without it `migrate` creates 0 tables → every seeder fails | `migrate-demo.sh` treated `atlas`-missing as a non-fatal warning that masked a total migration failure | **pre-flight + prereq** — install atlas (Step 0 #3); the bring-up now fails loud on `atlas`-not-found |
 | **F9** — the taxonomy is set-dressed from the snapshot cache, not migrations | no `.agentspace/snapshots` on the VM → `public.skills=0`, sparse library/skills surfaces | **prereq (optional)** — scp/capture the cache (Step 4); identity/profile/dashboard work without it |

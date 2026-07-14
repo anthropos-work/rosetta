@@ -103,6 +103,68 @@ from `platform/.env`**, i.e. the **REAL Clerk app's secret**, into a demo proces
 **real-Clerk egress + a real production secret inside a demo** — the **same class as the `DIRECTUS_TOKEN`
 fix16/17 strip**, and it contradicts `safety.md`. **Pure env.**
 
+> **(i) IS ALSO A RENDER BUG, not only an egress bug — escalated from M219 (Fate 3, 2026-07-14, D4).**
+> The keyless mode this item describes is **why the academy paints nothing**. Measured from a tailnet peer:
+> `:13077` returns **200 to curl** (F-13's launcher fix is real — the 502 is gone) but **in a browser it
+> redirects to `/clerk-sync-keyless?__clerk_handshake=…` and renders 0 meaningful text.** A presenter clicking
+> **AI Academy** gets a blank page.
+>
+> **New evidence for the fix:** the `.env.local` overlay (`ant-academy.sh:181`) greps
+> `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY|CLERK_SECRET_KEY` out of `platform/.env` — which carries **11 matching
+> lines**. All 11 are written to `.env.local`; the **last one wins**, and it is not the demo's minted key. That
+> is the concrete mechanism by which Clerk ends up with no usable publishable key and falls into keyless mode.
+> The fix is the one this item already names — **use `PK_DEMO`** (the minted Clerkenstein pk that
+> `up-injected.sh:391` already writes into next-web's `.env.local`) — but it must now also be **verified to
+> RENDER in a browser**, not merely to stop leaking. It needs live browser iteration against a running demo,
+> which is why it is here and not in M219.
+>
+> **M219 already landed the honest fences** (so this cannot go green while blank): the launcher now reads the
+> response BODY and fails loud with `SERVES BUT DOES NOT RENDER` on a keyless bounce
+> (`ant-academy.sh`), and `ANT_ACADEMY_HOME_SECTION` now requires an `AI Academy` marker + a 400-char floor
+> instead of the meaningless 40 (`stack-verify/e2e/lib/coverage-manifest.ts`). **Both will report RED until this
+> item lands — that is intended.** An accurate red beats a comfortable green.
+>
+> ### 🔴 SEVERITY RAISED — THE ACADEMY DOES NOT MERELY RENDER BLANK. IT POISONS THE DEMO SESSION.
+>
+> **This is demo-BREAKING, not cosmetic, and it is the reason (i) must land.** The academy's own keyless Clerk
+> on `:13077` responds with:
+>
+> ```
+> Set-Cookie: __session=; Expires=Thu, 01 Jan 1970 00:00:00 GMT     ← DELETES the demo's session
+> Set-Cookie: __client_uat=0; Domain=taildc510.ts.net               ← DOMAIN-wide, not port-scoped
+> ```
+>
+> **Cookies are scoped by HOST, not by PORT.** So the academy on `:13077` clobbers the session next-web holds on
+> `:13000`. Two consequences, both measured, and proven by a controlled A/B from a peer (same seat, same page,
+> one variable changed):
+>
+> 1. **A presenter who clicks the AI Academy link is LOGGED OUT of the demo** — and lands in
+>    `ERR_TOO_MANY_REDIRECTS`. The blank academy page is the *lesser* half of this bug; the presenter's live
+>    demo session is gone, mid-demo.
+> 2. **Every EMPLOYEE coverage sweep aborts** once the crawler reaches the academy link. So while this is live,
+>    **the employee vantage has no runnable sweep at all** — which is itself an *absence-read-as-success* risk
+>    (D17): a vantage that cannot be measured must never be recorded as measured.
+>
+> **The `PK_DEMO` fix this item already names is the fix for this too** — a Clerkenstein-wired academy shares the
+> demo's session instead of destroying it. But it must be verified by **logging in, visiting the academy, and
+> then confirming the demo session SURVIVES** — not merely that the academy paints.
+
+**(j) studio-desk bounces the presenter OUT of the demo — escalated from M219 (Fate 3, 2026-07-14, D4).**
+Reproducible with plain `curl` from a tailnet peer, **not** a harness artifact: `studio-desk` on **`:19000`
+returns a 302 to `https://billion.taildc510.ts.net:13000/login`**, and in a browser it lands on **`:13000/home`**.
+So a presenter who clicks **"Anthropos Studio"** is silently thrown out of Studio and back into next-web — the
+Studio surface is **unreachable in the demo**, and the demo's own nav is the thing that ejects them.
+
+`:13000` is the demo's own next-web (3000 + offset 10000), so this is **not a prod-eject** — which is exactly why
+the coverage sweep's prod-eject detector never flagged it. It is an **in-demo dead end**: studio-desk's auth check
+does not recognise the Clerkenstein session minted for the demo origin and bounces to a login that next-web
+immediately satisfies. Same family as (i): a UI-tier surface whose **Clerk wiring was never verified end-to-end
+from a browser**, only that its port answers.
+
+Diagnosis needs a running demo + browser (which session/cookie/origin studio-desk actually rejects), so it is
+**demo-up-defaults work, not seed work**. Fix it alongside (i) and (e) — and add a fence that asserts a presenter
+clicking **Anthropos Studio** stays *in Studio*, since "the port answers" demonstrably does not.
+
 ### Out
 - Anything about *speed* (M218) or the AI-readiness render path (M219).
 - A "hiring" story org — **D-DESIGN-4: it does not exist and will not be built.**

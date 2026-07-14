@@ -3,14 +3,14 @@ milestone: M219
 slug: readiness-renders
 version: v2.3 "cue to cue"
 milestone_shape: section
-status: planned
+status: complete
 created: 2026-07-13
-last_updated: 2026-07-13
+last_updated: 2026-07-14
 complexity: medium
 depends_on: M217
 parallel_with: M218, M220
 delivers: the AI-readiness story VISIBLE (Dana's filled page, Ben's started workflow, Aria's completed state) + the ai-readiness playthrough manifest (their journeys are not e2e-proven today)
-issues: "the SEEDING is a verified no-op (already default-on and proven); the story does not RENDER — Dana's page needs M217's re-pinned patch AND a new demo-patch for the CycleID==nil → buildLiveResponse default that bypasses the frozen-snapshot seed"
+issues: "RESOLVED — and two of the premises below were REFUTED by measurement. (1) The CycleID==nil blocker DOES NOT EXIST: the CURRENT manager page already passes `?cycle=`; the old observation was made against the LEGACY page, whose hook takes no cycle param. That demo-patch is WITHDRAWN (D-M219-2). (2) M217's loadmembers patch is not dead — it self-heals (F-7). What the milestone actually found: all 3 demo pointers targeted an UNLINKED ORPHAN page; the claimed-skill tail drew the taxonomy's alphanumeric junk head org-wide; a hero rendered ROLE-LESS; and the manager's four interview-findings blocks read a table NO SEEDER EVER WROTE. One NEW demo-patch was authored — next-web-aireadiness-flag-gate (the member surface never mounts: no PostHog on a demo ⇒ the flag is `undefined` forever, and the code demands `=== true`)."
 ---
 
 # M219 — Readiness renders
@@ -83,8 +83,43 @@ than what was measured. They land here, where a fresh battery is affordable.
    all. Itself an instance of *absence read as success*. **DoD:** the skip is explicit and loud, or the gate
    finds another source of truth.
 
+### In — added by the user at M219 kickoff (2026-07-14)
+
+The user's kickoff direction: *"make sure each element and sub section of readiness is filled spot data + make
+sure to use the right dashboards/pages for readiness (both for managers and employees).. not the old legacy
+ones"*. This **raises the bar** on items 1–3: "renders" is not enough, and it must be the **right** surface that
+renders.
+
+8. **Every readiness element and sub-section is FILLED with real spot data — on BOTH vantages.** The bar is the
+   **semantic believability gate** already defined in `corpus/ops/demo/coverage-protocol.md` (real seeded content
+   + **per-section cardinality** + persona self-consistency + 0 prod-eject escapes), applied to the readiness
+   surfaces specifically. **No empty widgets, no zero-state panels, no placeholder/lorem text, no "—" cells** in
+   any element or sub-section of the readiness pages. Enumerate the sections first (a manifest), then assert each
+   one is non-empty **and** consistent with the seeded persona — do not assert on page-level text density (that
+   check was superseded; see the coverage protocol).
+   - **DoD:** a per-section manifest exists; every section on the manager AND employee readiness surfaces asserts
+     non-empty + persona-consistent; any section that cannot be filled routes to a **seeder** fix
+     (`stack-seeding`) or a **snapshot serve-grant** (`stack-snapshot`) per the coverage-protocol routing table —
+     **never** a platform edit.
+   - ⚠️ **An empty section is a FINDING, not a pass.** Per M218's **D17**, absence must never read as success.
+
+9. **The demo must surface the CURRENT readiness dashboards/pages — NOT the legacy ones.** The user reports there
+   are old/legacy readiness surfaces still reachable. **Establish, in code, which readiness surfaces are current
+   vs legacy for BOTH the manager and the employee vantage** (`next-web-app` routes + the AI-readiness product
+   surfaces in `corpus/services/ai-readiness.md`). Then make every demo pointer target the **current** ones:
+   - the presenter cockpit's per-hero **`jump_to`** deep-links (`demo-stack/cockpit.py` + the seeded cockpit
+     manifest — `stack-seeding/seeders/cockpit.go`),
+   - the new **`ai-readiness` playthrough manifest** (item under *Delivers*),
+   - the **coverage sweep**'s section manifest (item 8).
+   - **DoD:** the current-vs-legacy split is **documented in `corpus/services/ai-readiness.md`** (so the next
+     agent cannot re-guess it), and **no demo pointer resolves to a legacy surface** for either vantage. If a
+     legacy surface is still the only one that renders the seeded data, that is a **finding** — report it, do not
+     silently point the demo at the legacy page.
+
 ### Out
-- Any seeder work (the seed is proven — see above).
+- Any seeder work **for the org/funnel structure itself** (that seed is proven — see above). **NOT out:** filling
+  gaps found by item 8 — if a readiness sub-section renders empty because nothing seeds it, that seeder work is
+  **in scope** (Fate 1).
 - The manager page's **speed** — that is M218's business, and per **D-DESIGN-1** the grid's data-load is reported,
   not gated. **This milestone proves it RENDERS; M218 proves the LOGIN is fast.**
 
