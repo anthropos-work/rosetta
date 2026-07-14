@@ -75,10 +75,23 @@ single-identity demo — see the toggle list below.) Source of truth:
    > a **trusted** cert (employee `maya-thriving` → `/profile` **and** manager `dan-manager` →
    > `/enterprise/workforce` both proven from a remote Mac, 0 console errors). The host **must be a dotted MagicDNS
    > FQDN** (a bare name is refused — clerk-js needs a dotted pk host + a secure context). Control-plane loopback
-   > calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. Public reach is **never** default-on
-   > (D-DESIGN-1) — external binding happens ONLY when this flag is set, and **Tailscale itself is the access
-   > control** (tailnet-only, no public-internet exposure). Full recipe + topology + walkthrough:
+   > calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. **Tailscale is the access control** for
+   > the published origin (tailnet-only, no public-internet listener). Full recipe + topology + walkthrough:
    > [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md).
+   >
+   > **⚠️ v2.2's D-DESIGN-1 — _"public reach is never default-on"_ — is SUPERSEDED** by v2.3's **D-DESIGN-3**
+   > (demo path **only**; `/dev-up` stays opt-in). The decision, both sides of the argument, and the reversal's
+   > justification are written up in
+   > [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **§3.5** — read it before relying on either default.
+   > **As of M220 S0-S2 the CODE still requires this flag** (the default-on flip is M220 **S3**); this note exists
+   > so the decision is never a silent contradiction.
+   >
+   > **The flag does NOT gate exposure — and never did.** v2.2 claimed *"external binding happens ONLY when this
+   > flag is set"*. **That is false.** Every demo container is published on **`0.0.0.0` (all interfaces) on every
+   > `demo-up`, flag or no flag** — `BIND_HOST` gates only the two *host-native* servers (cockpit, ant-academy),
+   > not one container. What this flag actually adds is the **trusted HTTPS origin** (a real `tailscale cert`)
+   > that makes the already-reachable demo *browsable* (Clerk needs a secure context). See
+   > [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3 — the exposure side**.
    >
    > **Remote Linux-VM host prereqs (a bare Ubuntu VM).** The Docker builds compile Go in-image, but the rext
    > orchestration tooling runs on the **HOST**, so a fresh VM needs, one-time: **Docker + Compose**; **Go 1.25.12**
