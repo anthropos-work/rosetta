@@ -84,57 +84,63 @@ The bring-up pre-flights / fails loud on most of these; confirm before Phases 4�
 
 ---
 
-## Run a target live — **frontend** (next-web-app) — the smooth path
+## Run a target live — **frontend** (next-web-app) — native `next dev` + HOT-RELOAD over **localhost**
 
-Goal: the native next-web process listens on the demo's **offset** port (`3000+OFF`, e.g. 13000), so it inherits
-the demo's baked CORS origins, the minted Clerk pk, and the existing `tailscale serve` for that port. Bind it to
-`127.0.0.1` so `tailscale serve` (which fronts the tailnet IP) owns the public side.
+> **CORRECTED 2026-07-14 (proven).** Do **NOT** front the native dev server with `tailscale serve`. Reach it
+> over **`localhost`**. Fronting `next dev` with a tailnet HTTPS hostname breaks BOTH Clerk login AND hot-reload:
+> @clerk/nextjs's middleware rewrites every request to an absolute same-origin URL, and the hostname/proto
+> mismatch (tailscale terminates TLS → forwards plain HTTP) makes Next **self-proxy** it into a `500` loop
+> (`Failed to proxy … wrong version number` / `socket hang up`). `localhost` is a browser **secure context**
+> (Clerk works over http) and preserves the HMR websocket. For a teammate on another machine, use a
+> **localhost-preserving SSH tunnel** (the repo's own `knowledge/remote-dev-on-vm.md`), NOT the tailnet host:
+> `ssh -C -L 13000:localhost:13000 <box>` then browse `http://localhost:13000`.
 
 ```bash
-# 0. PREREQ (FATAL): node >=24 must be on PATH in a login shell. Check before spawning tmux.
-bash -lc 'v=$(node -v 2>/dev/null | sed s/v//); [ "${v%%.*}" -ge 24 ] 2>/dev/null' \
-  || { echo "STOP: need node >=24 on PATH (see Host prereqs)"; exit 3; }
+# 0. PREREQ (FATAL): node >=24 on PATH in a login shell (see Host prereqs).
+bash -lc 'v=$(node -v 2>/dev/null|sed s/v//); [ "${v%%.*}" -ge 24 ] 2>/dev/null' || { echo "STOP: node>=24"; exit 3; }
 
-# 1. Worktree + branch off the demo's clone (never edit stack-demo/next-web-app directly).
-#    NEW branch: use -b. RESUME (branch already exists): drop -b (see Resume, below).
+# 1. Worktree + branch (never edit stack-demo/next-web-app directly). NEW=-b; RESUME drops -b.
 git -C stack-demo/next-web-app worktree add -b feat/<name> ../.worktrees/next-web-app-feat-<name>
 WT=stack-demo/.worktrees/next-web-app-feat-<name>
 
-# 2. Free the offset port: stop the containerized next-web (leaves every other service running).
-$DC stop next-web-app          # frees 13000 AND resolves the F12 0.0.0.0-bind shadow for that port
+# 2. Capture the CONTAINER's exact Clerk env (login must match), THEN stop it so the native server owns the port.
+docker exec demo-$N-next-web-app-1 printenv > /tmp/cenv.txt
+$DC stop next-web-app
 
-# 3. ASSEMBLE the native env (do NOT copy apps/web/.env.local — /demo-up trap-DELETES it after the build).
-#    The minted pk lives in the per-stack env; assemble a fresh $WT/apps/web/.env.local (FATAL if pk missing):
+# 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> LOCALHOST offset ports (NOT the tailnet host). Mirror the
+#    container's server-side Clerk keys. Point CLERK_API_URL at the fake-bapi's REACHABLE address — the host
+#    /etc/hosts `api.clerk.com` alias goes STALE on re-bring-up (new docker IP) => the #1 native-login failure
+#    (`unable to resolve handshake: fetch failed ECONNREFUSED`). On Linux the host reaches the container IP directly.
 PK=$(grep -E '^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=' "$STACK/.env.demo-$N" | cut -d= -f2-)
-[ -n "$PK" ] || { echo "STOP: no minted pk in $STACK/.env.demo-$N — is demo-$N up?"; exit 4; }
-SCHEME=https   # http when NOT --public-host (localhost demo)
-BASE=$SCHEME://$HOST   # http://localhost when not public
-cat > "$WT/apps/web/.env.local" <<EOF
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK
-NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=$BASE:$((5050+OFF))/graphql
-NEXT_PUBLIC_BACKEND_API_URL=$BASE:$((8082+OFF))
-NEXT_PUBLIC_STUDIO_URL=$BASE:$((9000+OFF))
-NEXT_PUBLIC_ACADEMY_URL=$BASE:$((3077+OFF))
-DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
-EOF
-#    Server-side Clerk (middleware/SSR) — append CLERK_SECRET_KEY / CLERK_API_URL / CLERK_JWT_KEY from the
-#    demo's assembled base env if present (grep them out of stack-demo/platform/.env and $STACK/.env.demo-$N).
-#    Do NOT copy any DIRECTUS_TOKEN. If login misbehaves, cross-check against the values the demo's next-web
-#    CONTAINER was built with (recorded in $STACK/.env.demo-$N + the up-injected build args).
+BIP=$(docker inspect demo-$N-fake-bapi-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
+{ echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK"
+  echo "NEXT_PUBLIC_HOSTING_URL=http://localhost:$((3000+OFF))"
+  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:$((5050+OFF))/graphql"
+  echo "NEXT_PUBLIC_BACKEND_API_URL=http://localhost:$((8082+OFF))"
+  echo "DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work"
+  grep -E '^CLERK_SECRET_KEY=|^CLERK_JWT_KEY=|^CLERK_PUBLISHABLE_KEY=|^CLERK_WEBHOOK_SECRET=' /tmp/cenv.txt  # values-blind
+  echo "CLERK_API_URL=http://$BIP:443"      # fake-bapi is plain HTTP on :443
+  echo "STRIPE_SECRET_KEY=sk_test_dummy"    # current code has a module-eval throw; a dummy unblocks SSR
+} > "$WT/apps/web/.env.local"
+# The router/backend just need to answer on localhost:<offset> (a 0.0.0.0 bind already does). F12 (127.0.0.1
+# rebind) is only for the tailscale-served CONTAINER tier, NOT this localhost path.
 
-# 4. Run native on the OFFSET port, bound to 127.0.0.1, in a detached login-shell tmux session.
-#    Call `next` directly (unambiguous -p; no reliance on script/turbo passthrough).
+# 4. Run native with HOT-RELOAD, bound to `localhost` — the -H value is LOAD-BEARING: `-H localhost` makes Clerk's
+#    absolute-URL middleware rewrite resolve INTERNALLY; `-H 127.0.0.1` makes Next self-proxy it -> 500 loop.
 tmux new-session -d -s dfd-web-$N -c "$(pwd)/$WT/apps/web" \
-  "bash -lc 'pnpm install && pnpm exec next dev -H 127.0.0.1 -p $((3000+OFF)) --turbopack'"
+  "bash -lc 'NODE_TLS_REJECT_UNAUTHORIZED=0 pnpm install && pnpm exec next dev -H localhost -p $((3000+OFF)) --turbopack'"
 
-# 5. Remote-serve it (idempotent — demo-up already serves this port; re-running just re-points it at the native
-#    process now on 127.0.0.1:13000). NON-FATAL if it errors — the demo may already have it.
-tailscale serve --bg --https=$((3000+OFF)) http://127.0.0.1:$((3000+OFF))
+# 5. Reach it over LOCALHOST (on the box, or `ssh -C -L $((3000+OFF)):localhost:$((3000+OFF)) <box>` from a laptop).
+#    Do NOT tailscale-serve this port. LOG IN with a localhost handshake (cockpit tailnet links won't hit localhost):
+#      https://$HOST:$((5400+OFF))/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=http://localhost:$((3000+OFF))/<path>
+#      OR http://localhost:$((3000+OFF))/api/dev/login-as?email=<hero@org>   # DEV_LOGIN_ENABLED under next dev
 
-# 6. Verify (NON-FATAL): open $BASE:$((3000+OFF)), log in, edit a string in $WT, confirm it hot-reloads live.
+# 6. Verify (NON-FATAL) in a REAL browser — curl won't store Clerk's Secure cookies over http. Log in, open the
+#    page, edit a string, confirm it hot-reloads in ~seconds. GOTCHA: cockpit `jump_to` deep-links can 404 under
+#    dev (e.g. /enterprise/workforce/ai-readiness -> real route is /ai-readiness) — navigate via the in-app menu.
 ```
-**studio-desk** / **ant-academy** follow the same shape (offset ports `9000+OFF` / `3077+OFF`, their own
-`tailscale serve`; ant-academy runs `npm run dev -H 0.0.0.0`, and needs `ANT_ACADEMY_ALLOWED_DEV_ORIGIN=$HOST`).
+**studio-desk** / **ant-academy** follow the same **localhost** principle (never a tailnet-host front for a
+native dev server that uses Clerk): offset ports `9000+OFF` / `3077+OFF`, reached over localhost / an SSH tunnel.
 
 ---
 
