@@ -290,3 +290,80 @@ landed is the *decision* (`safety.md` §3.5) plus a forward-pointer; not a pre-a
 **Routed out:** `FIX-M221-devstack-test-spin` (Fate 3 → M221) — `dev-stack/tests/test_dev_stack.py` busy-spins
 forever (145 % CPU, `rc=124`), so the rext suite cannot be run whole. Pre-existing; reproduces on clean `HEAD`
 with M220 stashed. It will block the release close.
+
+## M220: Hardening
+
+### Pass 1 — 2026-07-14 · rext `b1d5d4f`
+
+**Scope manifest** (M220-touched code, `c6648d1..HEAD`): 30 files. Python — `demo-stack/tailscale_autohost.py`
+(NEW) · `demo-stack/up-injected.sh` · `demo-stack/ant-academy.sh` · `dev-stack/dev-stack` ·
+`stack-core/{story_org_count,demo_knob,dev_flag}_guard.py` (NEW) · `stack-injection/exposure_claim_guard.py`
+(NEW) · `stack-injection/gen_{injected_override,tailscale_serve}.py`. Go — `clerkenstein/clerk-frontend/server.go`.
+TS — `stack-verify/e2e/tests/m220-session-and-egress.spec.ts` (live-demo e2e; not runnable in this pass — no
+bring-up). **Every source file had a co-located test file.** The gaps were not *missing* tests; they were tests
+that did not test what they claimed.
+
+**THE HEADLINE: the mutation batteries M220 claimed did not exist.** S3's note reports 12 mutants, S7's reports
+9. Both were ad-hoc scripts, run once, deleted. The result survived only as a sentence in a progress note —
+**unfalsifiable, and therefore exactly the artifact class this release is named for (D17).** It is now a
+committed test: `stack-core/tests/test_m220_mutation_battery.py`, **17 mutants** (4 naive ladders in-process ·
+6 `up-injected.sh` · 7 `dev-stack`), driven through the **real** suites via two env seams
+(`$M220_UP_INJECTED` / `$M220_DEV_STACK`; unset = the shipped file). It carries the three anti-theatre
+assertions, **each of which is a bug this milestone actually shipped**:
+
+1. **the BASELINE must be GREEN** before a single RED is read;
+2. **every mutant must ACTUALLY change its subject** (a no-op mutant that "goes RED" measures nothing);
+3. **the failure SIGNATURES must not all be identical** (a constant is not a result — the precise tell that
+   nearly let S7's broken battery through: *M2–M7 all reported an identical 15 failures*).
+
+**It found three things on its first two runs.**
+
+| # | Finding |
+|---|---|
+| **H-1** | 🔴 **THE HARD INVARIANT WAS UNFENCED — and the fence that claimed to prove it was asserting a copy of itself.** M220's central safety argument is that `$SCHEME` and `$BIND_HOST` **both** derive from the same `-n $STACK_PUBLIC_HOST` predicate, so a *half-satisfied* public path is strictly **worse** than localhost (every URL bakes `https://` against plain-HTTP listeners; the demo does not load at all). `test_public_host_flip.py` **RE-TYPED those three lines inside the test** — directly beneath a docstring asserting it did **not** do that (*"so we assert the shipped predicate, not a paraphrase of it"*). It **was** a paraphrase, and a paraphrase cannot disagree with itself: mutating `SCHEME` to an unconditional `https` (**D5**) and `BIND_HOST` to `0.0.0.0` (**D6**) left **all 23 tests GREEN**. Fixed: `up-injected.sh` now exposes `derive_public_host_vars`, called **unconditionally at exactly the point the straight-line block used to sit** (both paths byte-identical, `bash -n` + all 572 demo-stack tests green), and the fence drives the **shipped** derivation. D5/D6 now go RED. |
+| **H-2** | 🟡 **The baseline assertion fired on its own first run** — 14 tests "RED" on an **unmutated** `dev-stack` copy. My staging bug: both scripts resolve siblings from `$HERE`, so a subject in `/tmp` cannot find the code it drives. **Without that assertion, all 7 dev mutants would have been recorded RED and the battery would have "proven" the fences while measuring nothing.** S7's original bug, reproduced live, caught by the guard built for it. Mutants now stage **beside** the real subject (gitignored `.m220-mutant-*`). |
+| **H-3** | 🔴 **`\|\| true` in `resolve_dev_public_host` was load-bearing and untested** (mutant **V4 survived**). The existing test breaks *tailscale* — but `tailscale_autohost.py`'s contract is **exit-0 ALWAYS** (a failed rung is the documented fallback), so **a broken tailscale can never make the ladder exit non-zero** and `\|\| true` is never reached. Only the **ladder PROCESS** dying can: a missing/broken `python3`, an OOM, an `ImportError` at import time (raised *before* `main()`'s try/except exists). With `set -euo pipefail` and a bare `pub="$(...)"` call site (which does **not** mask status, unlike `local pub=$(...)`), that **aborts the bring-up**. New test breaks the ladder *process*, not tailscale. |
+
+**Coverage delta (milestone-touched files):**
+
+| module | before | after | what was uncovered |
+|---|---|---|---|
+| `exposure_claim_guard.py` | **57%** | **89%** | 🔴 **the S7 DEV half had ZERO tests.** `dev_emitted_port_specs`, `find_missing_dev_disclosures`, `_DEV_DISCLOSURE_RE` — **delete the regex and the suite stayed green.** S7 claims "both halves RED-proven"; the proof was real but left **nothing behind that could fail.** Plus all of `main()`: the DEV/DEMO-disagreement branch, the posture-change **inversion** branch, and the zero-ports *"emitters changed shape"* branch (**an empty result is a FINDING, not a pass**). |
+| `tailscale_autohost.py` | 92% | **99%** | `_default_run`'s timeout/OSError arms — the module's **"NEVER raises"** promise is implemented *entirely* in them, and the suite injects `run` everywhere, so **the only code that can actually raise was never executed.** |
+| `gen_tailscale_serve.py` | 81% | **94%** | `reset_script` was **100% uncovered** while S4's load-bearing claim is that *the reset plan **always** includes `:7700`, else a re-up finds the port held and the cockpit cannot start at all*. The command **list** was tested; the bash it **renders** — the thing that runs at teardown — was not. |
+| `story_org_count_guard.py` | 62% | **91%** | `main()`'s exit codes. **2 ("I could not run") is not 0 ("I ran and found nothing")** — conflating them is the release's own defect. |
+| `demo_knob_guard.py` | 80% | **91%** | `main()`. |
+| `dev_flag_guard.py` | 71% | **74%** | the anti-D17 branch that had **no test**: parsing **ZERO flags must FAIL, not pass** — an empty parser makes every doc-vs-parser comparison trivially agree, and the guard goes green against a parser it never read. |
+
+**Tests added: +61.** (mutation battery 6 tests / 30 subtests · exposure-guard dev-half + `main()` 20 ·
+`reset_script` render 7 · `_default_run`/never-raises 4 · guards' `main()` exit codes 11 · the crashing-ladder-
+**process** regression 1.)
+
+**Bugs fixed inline:** H-1 (the unfenced HARD INVARIANT + the paraphrasing fence) · H-3 (the unexercised
+`|| true`) · the battery's own staging bug (H-2). **No product behaviour changed** — `derive_public_host_vars`
+is a pure extraction, called at the same point, and the full demo-stack suite (572) is green on it.
+
+**And two of my own new assertions were the same bug in miniature:** `assertNotIn("--https=", plan)` matched
+the string inside the generated **header comment**, not the code — the identical defect to S3's ordering fence,
+which matched `--no-cockpit` in the comment directly above the command it was auditing. They strip comments
+before scanning now. *The fence-writing failure mode is not rare; it is the default.*
+
+**Flakes:** none. 3 consecutive sequential runs, identical counts (402 passed / 8 skipped / 39 subtests).
+
+**Suite honesty re-verified:** the five `test_tag_guard_reuses_*` tests (which S6 found were silently
+exercising the **rebuild** path, asserting the opposite of their own names) genuinely take the reuse path —
+the docker stub answers `Config.Labels` **before** the generic `--format` arm, so the `demo.patchset`
+fingerprint reads back as itself. Confirmed by reading the stub's case order, not by trusting the fix note.
+
+**Knowledge backfill:** `corpus/ops/demo/tailscale-serve.md` — the `SCHEME`/`BIND_HOST` co-derivation is now
+stated as a named, testable invariant (`derive_public_host_vars`) rather than a prose aside, and the
+ladder's exit-0-always contract is recorded as *the reason a broken `tailscale` cannot exercise the `|| true`
+fallback* (H-3's root cause — the non-obvious fact that makes the dev/demo fallback tests mean different
+things).
+
+**Stop condition:** scan clean after pass 1 — every dimension (test depth · edge cases · error paths ·
+regression · fuzz surface · benchmarks) either closed or has no surface in this milestone's diff (no perf-SLA
+path; the only fuzz-shaped surface, the guards' doc scanners, is already property-tested by the wrapped-prose /
+fenced-block / per-preset regression set). Coverage deltas on a second pass would be < 2%, and the three
+findings above were all structural, not incremental. **Remaining scope is the live-demo e2e
+(`m220-session-and-egress.spec.ts`), which needs a bring-up and is out of scope for this pass.**

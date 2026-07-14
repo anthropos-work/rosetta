@@ -32,6 +32,38 @@ demo end-to-end, in their own browser, over HTTPS. This is the **external-sharea
 > Everything below — the topology, the cert, the serve proxies, the walkthrough — is **unchanged and still
 > correct**. Only the *trigger* changed: what you had to ask for, the bring-up now offers.
 
+> ### The co-derivation is a NAMED invariant, not a convention (M220 harden)
+>
+> The sentence above — *"`SCHEME` and `BIND_HOST` share the same predicate"* — is the load-bearing safety
+> argument for the whole default-on flip. It lives in **one function**, `derive_public_host_vars()` in
+> `up-injected.sh`, which is where both are derived and where the dotless-pk refusal and the FAPI topology
+> guard also sit. It is a function *specifically so the fence can call it*: it used to be straight-line
+> top-level code, and because the lib-only test seam executes that block at **source** time — before a test
+> can resolve a host — the fence **re-typed the three derivation lines inside the test**, beneath a docstring
+> claiming it did not. Mutating the shipped `SCHEME` to an unconditional `https` therefore left the entire
+> suite **green**: the test was comparing a copy of the predicate against itself.
+>
+> **If you change how `HOST` / `FAPI_HOST` / `SCHEME` / `BIND_HOST` are derived, change them inside that
+> function.** A second derivation site anywhere else re-creates the exact hole, and it is invisible to a
+> green suite. RED-proven by mutants D5/D6 in `stack-core/tests/test_m220_mutation_battery.py`.
+
+> ### The ladder ALWAYS exits 0 — which is why a broken `tailscale` cannot test the fallback (M220 harden)
+>
+> `tailscale_autohost.py`'s contract is **exit 0, always**: a failed rung is the *documented fallback*, not an
+> error, and the module converts every internal crash into the empty host. A direct consequence, and it is not
+> obvious: **a broken/absent `tailscale` binary can never make the ladder process exit non-zero.** So it can
+> never exercise the `|| true` on the caller's side.
+>
+> The `|| true` in `resolve_public_host` / `resolve_dev_public_host` is still **load-bearing** — with
+> `set -euo pipefail` and a bare `pub="$(resolve_… )"` assignment (which, unlike `local pub=$(…)`, does *not*
+> mask the exit status), a non-zero collapses the whole bring-up. But the only thing that can produce one is
+> the **ladder process itself** dying: a missing or broken `python3`, an OOM, or an `ImportError`/`SyntaxError`
+> raised at *import* time — i.e. before `main()`'s `try/except` exists to catch it.
+>
+> **A test that stubs a failing `tailscale` is therefore testing the rung ladder, not the fallback.** To test
+> the fallback you must break the *interpreter or the module*. The dev path shipped with only the former and
+> the `|| true` went unexercised (mutant V4 survived the whole suite).
+
 Historically (v2.2) this was **opt-in and default-off**: a plain `/demo-up N` was byte-identical to a localhost
 demo, and remote reach was requested explicitly with **one flag** — `--public-host <magicdns>`. In both eras
 **Tailscale itself is the access control** (only tailnet members can reach the host; there is no public internet
