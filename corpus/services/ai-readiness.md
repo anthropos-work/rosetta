@@ -83,6 +83,44 @@ All tables live in `app` (`public` schema); ent schemas under `app/internal/data
 | `ai_readiness_text_translations` | content-addressed translation cache | `source_hash`+`lang` |
 | `ai_readiness_recommendations` | per-member recommended actions (the What-to-do-next drawer's "Recommended actions") | **was missing from this doc until M219**; the demo seeds **0 rows** — the live read derives `people[].diagnosis.recommendations` instead |
 | `organization_settings` (existing) | the enablement gate | `setting='ai_readiness'`, `is_enabled` |
+| **`jobsimulation.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
+
+### The Step-3 interview findings — `jobsimulation.interview_aggregated_reports` (M219 R-8)
+
+The manager's **How-we-measure → Step-3 breakdown** panel has four sub-sections. On the shipped demo **three
+rendered their HEADINGS WITH NO CONTENT** and **a fourth did not render at all**, and the coverage gate **passed
+it under a disclosed exception**. An empty sub-section is a **FINDING, not a pass** — the exception is gone and
+the seeder fills the blocks.
+
+**It was blamed on the wrong table.** The milestone's own DB corroboration pointed at
+`jobsimulation.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
+counts and *nothing on this surface reads it*. `interview_extraction_results` (165 rows, written by the
+`SuccessionSeeder`) feeds a **different** surface. `app/internal/workforce/how_we_measure_v2.go`
+(`computeInterviewInsightsV2`) reads **exactly one table**, and decodes its `report` JSONB:
+
+| `report` key | → renders | Notes |
+|---|---|---|
+| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (4 tiles) | ids `avg_frequency` / `avg_breadth` / `avg_depth` / `avg_context_fit`, each a **0-100 cohort average**. `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all four is why the tile row did not render at all**, rather than rendering empty. |
+| `narrative.patterns[]` | **Strengths** | `evidence[0]` **IS** the rendered verbatim quote; `source_session_id` is what `resolveSessionAuthors` joins (`sessions → memberships`) to hydrate the quote's **author name + job role**. |
+| `narrative.unexpected[]` | **Unexpected angles** | **NO chart fallback exists** — the narrative is the only way this column can *ever* render. |
+| `narrative.insights[]` where `category` contains **`"risk"`** | **What holds them back** | The category string is **load-bearing**: `holdsBackFromInsights` filters on it. Get it wrong and the column silently empties again. |
+| `catalog_charts[]` `top_concerns` / `top_unexpected` | the **no-narrative fallbacks** | Back What-holds-them-back / Strengths when the LLM narrative is absent. The seeded row carries a narrative, so these are belt-and-braces. |
+
+**Seeder:** `stack-seeding/seeders/ai_readiness_interview_report.go`, flushed by the `AIReadinessFunnelSeeder`
+(one row per AI-readiness org, deterministic id → `ON CONFLICT (id)` makes a re-seed a no-op). The table is in the
+`--reset` list. **The honesty rules it holds to:**
+- every `source_session_id` / `session_ids` entry is a **REAL seeded Step-3 session id**, so quote attribution
+  resolves to a **real seeded member** through the platform's own join — never a fabricated id, never a quote
+  from nobody;
+- the four usage KPIs are **DERIVED from the org's own seeded Step-3 session scores** (the same raw numbers the
+  frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented;
+- `session_count` is the true number of seeded interviews;
+- an org with **zero** seeded Step-3 interviews writes **no row** (nothing to aggregate — honest degradation).
+
+The narrative prose itself is **code-owned demo copy** (like `aiReadinessInterviewPrompts`) — what a real
+aggregation LLM would have synthesised. Fenced by `ai_readiness_interview_report_test.go`, which decodes the
+seeded row **through the platform's own contract** (transcribed structs), because *"the seeder wrote a row"* is
+not the proposition that matters — *"the row makes the four blocks render"* is.
 
 Scoring engine: `app/internal/workforce/ai_readiness.go` (`computeAIReadiness`, `GetAIReadinessWithOptions`,
 `computeOrgBreakdowns`). Steps/progress: `readiness_steps.go`. Cycles: `cycles.go`. Narrative: `readiness_narrative.go`.

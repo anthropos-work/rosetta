@@ -88,11 +88,37 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
       resolve a satisfying node under `~/.nvm` or **fail loud**; poll the **port**. **Verified on a cold
       bring-up:** `started + SERVING on :13077`, and the academy answers **HTTP 200** from a tailnet peer.
 
-## Battery — 5 cold reset-to-seed cycles at final code (rext `cue-to-cue-m219-r6`)
+## R-8 — the r7 battery's cycle 1 came back RED, and the fixes that answer it
+
+The r7 5-cycle battery ran **cycle 1** on a **proven-cold, proven-green** stack and returned **RED**. It stopped
+rather than retrying — correctly. Four defects, all fixed; **the battery restarts from zero (D13 — these are
+seed-path changes).**
+
+| # | Defect | Root cause (as MEASURED, not as guessed) | Fix | Fence (RED @ `ffc6ffe` → GREEN) |
+|---|---|---|---|---|
+| **D1** | Aria claims `15Five` / `17Track` / `24-hour dietary recall`; **8 other members claim "24-hour dietary recall"** — org-wide, not hero-only | **Pool SIZE, not resolution.** `want`=28; `data` shipped **28 names, 23 resolved** (5 dead), **~8 deduped** vs the role's 10 → **25 usable** → 3 off the flat head. Ben clean only because his `want` (16) was covered — **that asymmetry is the proof** | **Flat tier DELETED.** Ladder = role → curated → **general** → STOP. New `general` family (33 verified names); `data` 28→50, `operations` 30→45 | `TestSeededMembers_NeverDrawFromFlatPool` (poisoned flat, models attrition + role-overlap) + `TestCuratedLadder_CoversLargestWant` |
+| **D2** | Ben renders **ROLE-LESS** | **"Operations Analyst" (`J-OPERAT-3566`) has ZERO `job_role_skills`.** The seeder's own resolver requires `EXISTS(job_role_skills)` → **rejected** → `job_role_id` NULL → `user_basic_info.job_role_id` NULL → no title. **"It resolves" ≠ "it has skills"** | → **Business Operations Analyst** (`J-BUSOPE-38C4`, 10 role-skills, same curated family) in all 3 presets + **`assertHeroRolesResolve`** = HARD seed failure | `TestAssertHeroRolesResolve` + `TestShippedPresets_EveryHeroRoleIsSeedable` |
+| **D3** | The manager's 4 interview-findings sub-sections are **EMPTY**, and the gate **passes them under a disclosed exception** | **The brief's DB corroboration was a RED HERRING.** Not `conversation_extractions`; `computeInterviewInsightsV2` reads **exactly one** table — **`jobsimulation.interview_aggregated_reports`** — which **no seeder wrote** (`git grep` @ `ffc6ffe`: 0 refs) | New seeder (KPIs derived from the org's real Step-3 scores; quotes pinned to **real seeded session ids**) + **the exception DELETED** + a **900-char** content floor | `TestInterviewReport_FillsAllFourFindingsBlocks` (decodes through the platform's own contract) |
+| **D4** | studio-desk `:19000` → 302 → `:13000/login` (presenter **leaves** Studio); ant-academy serves 200 but **renders nothing** (Clerk keyless bounce) | Demo-up **wiring**, needs live browser iteration | **Fate 3 → M220** (which already carries item **(i)** for the academy's Clerk wiring). **Evidence handed over:** `platform/.env` has **11** matching Clerk-key lines; the last wins and it is not `PK_DEMO` | **Landed here:** the launcher now reads the **body** (fails loud on a keyless bounce) and `ANT_ACADEMY_HOME_SECTION` drops its meaningless 40-char floor for an `AI Academy` marker + 400. **Both RED until M220 — intended.** |
+
+**The 17-test reckoning.** The D1 fix turned **17 existing seeder tests red**, and every one of them asserted the
+flat fallback as the **contract** (*"unmatched role must fall back to flat pool"*; an expected value with
+`K-JUNK-1` in it). They were the bug, pinned. All **inverted**. Several fixtures modelled a taxonomy containing
+**none** of the general/curated skills — a taxonomy that does not exist — which is *why* they "needed" flat to
+fill; they were given the real families.
+
+**And the fence caught itself.** The first cut of the poisoned-flat fence **PASSED against the broken ladder**
+(it modelled no attrition, so Aria's 28 was exactly covered and flat never fired). It was strengthened before
+shipping. See **D-M219-18**.
+
+## Battery — 5 cold reset-to-seed cycles at final code (rext `cue-to-cue-m219-r8`)
 
 Each cycle: `down --purge` (data dir + images) → cold `up` (initdb → migrate → replay → seed) → autoverify.
 Coldness is *proven per cycle*, not assumed: `data dir GONE (purged)`, `images remaining: 0`, and a **new
 `PG_VERSION` mtime** (initdb re-ran).
+
+> **RESTARTED from zero at R-8** (D13): D1/D2/D3 are all **seed-path** changes. The r7 run's cycle 1 is
+> **void as a grade** — it is retained above as the *evidence* that produced R-8.
 
 | Cycle | up rc | purge | images | initdb re-ran | autoverify |
 |---|---|---|---|---|---|

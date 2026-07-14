@@ -164,6 +164,35 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
   floor relaxes to "real, non-empty content" and the reason is surfaced in the review's
   `documentedExceptions[]` (honest disclosure, never a silent skip).
 
+> **⚠️ AN EXCEPTION DESCRIBES A FINDING. IT MUST NEVER PASS ONE (M219 R-8).** The clause above says an
+> exception is for where **0/1 is the genuinely-correct state**. That is the *only* legitimate use, and it was
+> violated: `ai-readiness-interview-findings` carried an exception disclosing that **three findings blocks
+> rendered their HEADINGS WITH NO CONTENT** and **a fourth did not render at all** — because *"the data they
+> summarize is written by no seeder."* Empty was **not** the correct state. It was a **seeder gap**, honestly
+> named, and then **shipped green for four releases** while the gate reported *"8/8 sections pass."*
+>
+> A disclosed empty is better than a hidden one. **It is still an empty section.** The discipline:
+>
+> | The exception is… | …when |
+> |---|---|
+> | ✅ **legitimate** | the surface is *genuinely* terse and 0/1 items is what a real user *should* see (a Settings menu with 2 entries) |
+> | ❌ **a finding wearing a badge** | the section is empty because **something upstream is missing** (no seeder writes it, a serve-grant is absent, a link is unrewritten). **Fix the cause and DELETE the exception.** |
+>
+> The M219 R-8 test of the distinction, which is worth stating as a question: *"if this were fixed, would the
+> section fill?"* If yes, it is **not** an exception — it is a **deferral with better prose**. The
+> interview-findings exception was deleted, the four blocks are seeded
+> (`corpus/services/ai-readiness.md` → `interview_aggregated_reports`), and the descriptor now asserts **all
+> four blocks are FILLED** — including a **900-char content floor**, because the four empty headings measured
+> ~120-200 chars and the old floor of **120** passed straight over them.
+>
+> **The same class, in the launcher:** the ant-academy liveness probe proved the port **SERVES** (200 to curl)
+> and reported *"started + SERVING"* over a page that, in a browser, redirects to Clerk's keyless handshake and
+> **renders nothing**. *"It serves"* ≠ *"it renders"* — the same sentence as *"the role classifies"* ≠ *"the pool
+> is big enough"* and *"it resolves"* ≠ *"it has skills"*. Both that probe and
+> `ANT_ACADEMY_HOME_SECTION` (which asserted a meaningless **40-char** floor with **no required markers** — the
+> very `textLen>40` density check this protocol claims to have superseded) now assert the **render**. They report
+> **RED until the render is fixed in M220 — which is intended.** An accurate red beats a comfortable green.
+
 > **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
 > asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers
 > behind them are `1,284` or `0`. So a section can clear a `mustInclude` + length floor while every value in it

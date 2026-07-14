@@ -494,6 +494,75 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 > classifies to a real curated category**, read from the real presets, never a fixture. **Add an org with a new
 > role family and it fails at `go test` — not four releases later, in front of a customer.**
 >
+> ---
+>
+> ### ⚠️ …AND THAT FENCE PROVED THE WRONG PROPOSITION. THE JUNK SHIPPED ANYWAY (M219 R-8).
+>
+> The fence above passed. **Aria Holt still shipped claiming `15Five`, `17Track` and `24-hour dietary recall`**,
+> and so did **eight ordinary Northwind members** (Ava Park, Amara Fischer, Zara Costa, Hannah Petrov, Theo
+> Ferrari, Tom Okafor, Arjun Andersen, Sven Okafor — all claiming *"24-hour dietary recall"*). It was never
+> hero-only.
+>
+> **"The role classifies" is not "the family is big enough."** The draw is filled to
+> `want = trajectoryVerifiedCount + claimedTailCount`. Aria's `want` is **28**. Her `data` family shipped **28
+> names — of which only 23 RESOLVED** against the live taxonomy (5 were dead: *ETL*, *Exploratory Data Analysis*,
+> *KPI Development*, *Data Governance*, *Forecasting*), and **~8 of the survivors deduped** against Data Analyst's
+> 10 role-skills. **25 usable tokens for a want of 28** → the last 3 came off the flat pool's `ORDER BY node_id`
+> head. **Ben was clean only because his `want` (16) was small enough that his family still covered it** — and
+> that asymmetry is the *proof* the defect was pool **SIZE**, not pool **resolution**. (`operations` shipped 5
+> dead names too: *Process Optimization Techniques*, *Capacity Planning*, *Root Cause Analysis*, *Vendor
+> Management*, *Quality Assurance*. Nobody had ever checked.)
+>
+> **THE FIX — the flat tier is DELETED, not demoted.** The ladder is now:
+>
+> ```
+>   role's job_role_skills  →  the role's CURATED family  →  the CURATED GENERAL family  →  STOP
+> ```
+>
+> `curatedGeneralSkills` (33 transferable-professional names — *Communication*, *Written Communication*,
+> *Problem Solving*, *Microsoft Excel*, *Prompt Engineering* …, every one verified to resolve) is the coherent
+> last tier: it fills an unclassified role's draw **without lying**, so the flat pool could be removed outright
+> rather than merely pushed further down. **If all three tiers are exhausted the seeder draws FEWER skills.**
+> Honest degradation is the contract; padding is not. `data` grew 28 → **50** and `operations` 30 → **45**, all
+> names re-verified against the live taxonomy.
+>
+> **THE TWO FENCES** (both RED-proven against the pre-R-8 ladder, green after —
+> `seeders/curated_ladder_m219r8_test.go`):
+> 1. **`TestSeededMembers_NeverDrawFromFlatPool`** — the structural DoD. The flat pool is **poisoned** with
+>    sentinel tokens and every draw path (`combinedNamedPool`, `resolveHeroSkills`, `skillsForRole`) is run at
+>    every shipped persona's real `want`. One poison token anywhere is a failure. It models the two forces that
+>    actually shrank the pool — **1-in-6 name attrition** and **role/curated node-id overlap** — because a first
+>    cut *without* them **passed against the broken ladder**, which is the same theatre it was written to end.
+> 2. **`TestCuratedLadder_CoversLargestWant`** — the SIZE property the old fence never proved: every family must
+>    carry `want + curatedAttritionMargin` (15). RED-proving it also surfaced a **second** under-margin family
+>    nobody had noticed: **`sales`** (33 vs the 41 Sara needs).
+>
+> **The rule this encodes, stated once:** *a fence that proves the wrong proposition is the bug.* "The role
+> classifies" ≠ "the pool is big enough". "It resolves" ≠ "it has skills" (see the role-less-hero box below).
+> "It serves" ≠ "it renders".
+>
+> ### ⚠️ A HERO'S ROLE MUST *CARRY ROLE-SKILLS*, NOT MERELY EXIST (M219 R-8 — the role-less hero)
+>
+> Ben rendered with **no role title at all** on `/profile/skills`, while Aria's rendered fine. The repoint to
+> **"Operations Analyst"** (above) was *not* the fix it looked like: that job_role **exists** (`J-OPERAT-3566`)
+> and carries **ZERO `job_role_skills`**.
+>
+> The seeder's own resolver has *always* required role-skills — `readJobRolePool` / `readJobRoleByName` both
+> demand `EXISTS(job_role_skills)` (*"a role with none isn't a believable hero role"*). So the resolver
+> **rejected** the role, `job_role_id` landed **NULL**, and `public.user_basic_info.job_role_id` — which is what
+> `/profile` + `/profile/skills` read the role title from, and what the `jobRoleMatch` role-gap widgets key off —
+> had nothing to read. **The seeder then took its silent-degradation path and seeded happily.** A preset comment
+> was even written asserting *"Operations Analyst DOES resolve"*. It resolves as a row; it does not resolve as a
+> **hero role**.
+>
+> **Fixed two ways:** Ben is now a **Business Operations Analyst** (`J-BUSOPE-38C4`, 10 role-skills, still
+> classifies to the `operations` family — persona unchanged), in `stories.seed.yaml`,
+> `seed-generation-manifest.yaml` **and** `playthroughs/seed/pt-world.seed.yaml`; and
+> **`assertHeroRolesResolve`** (wired into `UsersSeeder`) now makes a hero role the resolver rejects a **HARD
+> SEED FAILURE** naming the hero, the role, and what the user would have seen. The no-fabrication path is
+> preserved exactly where it is legitimate: with **no replayed taxonomy** there is nothing to resolve against, so
+> the fence is a no-op and the hero keeps her declared label.
+>
 > ### And the allow-list alone fixes NOTHING — the FALLBACK LADDER is the load-bearing part
 >
 > The curated `operations` pool shipped **fully populated and completely unused**. On the first cold reseed the
