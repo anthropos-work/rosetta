@@ -234,6 +234,9 @@ The executable harness (`rosetta-extensions/alignment/cmd/alignctl`):
 
 ```
 alignctl run      --dna P --runner CMD [--golden-dir D] [--source golden|live]
+                  # exit: 0 = gate met · 2 = REGRESSED (a MEASURED score below the gate)
+                  #       3 = UNMEASURABLE (the runner could not execute — NO genes ran, NO score exists)
+                  # 2 and 3 were the SAME code until M219. Absence of a score is not a passing score.
                   [--report out.json] [--gate-overall F] [--gate-critical F]
 alignctl capture  --dna P --runner CMD --golden-dir D
 alignctl dna list     --dna P [--json]
@@ -252,7 +255,7 @@ alignctl dna coverage --dna P [--if-declared]     # M218. exit 2 = a consumed en
 | JS/FAPI | `clerk-js-5` | 100% / 100% (9 genes) | |
 | multi-identity | `clerk-multi-1` | 100% / 100% (9 genes) | |
 | deployment/injection | `clerk-deploy-1` | 100% / 100% (7 genes) | |
-| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**2**, **no score** | **not a pass** |
+| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**3**, **no score** *(was rc=2, indistinguishable from a real regression — split at M219)* | **not a pass** |
 
 Two things this table is designed to stop you from saying:
 

@@ -573,9 +573,19 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 > flat `ORDER BY node_id` head. And `combinedNamedPool` draws its **role tier from that same function**, so
 > **tier 1 was already the junk** and filled the whole quota before the curated tier was ever consulted.
 >
-> **The ladder is now `role → CURATED → flat`.** Flat stays the last resort (never fabricate, never fail to fill)
-> but is genuinely *last*. Both twins (`namedSkillRefs`, `taxonomyRefs`) carried the bug — which is why even the
-> hero's **verified** chain certified him in a junk skill.
+> **R-5b made the ladder `role → CURATED → flat`** — flat genuinely *last*, rather than first. Both twins
+> (`namedSkillRefs`, `taxonomyRefs`) carried the bug — which is why even the hero's **verified** chain certified
+> him in a junk skill.
+>
+> > ⚠️ **SUPERSEDED — and the supersession is the point. That ladder STILL SHIPPED THE JUNK.** Demoting flat was
+> > not enough: it **fired whenever the curated family ran DRY before `want`**. Aria's `want` was 28; her `data`
+> > family shipped 28 names of which only **23 resolved** (5 dead) and **~8 deduped** against her role's 10
+> > role-skills → **25 usable** → the last 3 came off the flat head. Ben was clean *only* because his `want` (16)
+> > was covered — **that asymmetry is the proof the defect was pool SIZE, not pool ORDER.**
+> >
+> > **R-8 DELETES the flat tier.** The ladder is `role → curated → **general** → **STOP**` (see the R-8 section
+> > above). An exhausted ladder yields **FEWER** skills, never padded ones — honest degradation is the contract;
+> > padding is not. *"It classifies" ≠ "it is big enough."*
 >
 > ⚠️ **Two unit tests were green throughout**: they proved the curated pool *resolved*. Neither proved anything
 > ever *read* it. **A test that proves a thing exists is not a test that proves it is used** — only a cold

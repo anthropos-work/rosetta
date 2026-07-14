@@ -376,7 +376,14 @@ re-issues on re-run, and a long-lived stack needs a renew-then-reload step. Full
 [`recipe-browser-login.md`](recipe-browser-login.md) §B step 2 and
 [`../../services/clerkenstein.md`](../../services/clerkenstein.md).
 
-## The patch tail — two platform-family files, both via the existing sha-pinned mechanism
+## The patch tail — THREE platform-family files, all via the existing sha-pinned mechanism
+
+> ⚠️ **M219 close: this section listed only TWO, and omitted the one patch that exists *because of* `--public-host`.**
+> **`next-web-ssr-graphql-origin`** (M218) is the fix for the **38-second login**: the SSR pass fetched the public
+> MagicDNS origin **from inside the container**, where the tailnet IP **blackholes** (ts-input drops the SYN-ACK on
+> the docker bridge) → ~37 s per authenticated render. That defect **only manifests on a `--public-host` demo** —
+> i.e. exactly the flow this runbook documents — and the remote-access runbook never mentioned it. See
+> [`demopatch-spec.md` § 5](demopatch-spec.md) for the row.
 
 Two files in the platform **family** aren't reachable by the pure config/env layer, so they ride the **existing
 rext sha-pinned patch mechanism** (drift-refuse, single-occurrence anchor, idempotent, non-fatal) applied to the
@@ -426,7 +433,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 | **F2** — the host needs Go for the rext tooling | no Go → secret provisioning skipped → `no usable platform .env` → abort | **pre-flight + prereq** — install Go 1.25.x (Step 0 #2) |
 | **F3** — `git tag --list \| head -1` SIGPIPE → 141 → `set -e` aborts | reproduces on a many-tag repo (`app` ~337 v-tags) | **rext fix (shipped)** — pipe-less `git for-each-ref --count=1` in `up-injected.sh` |
 | **F4** — buildx bake needs `SSH_AUTH_SOCK` (`ssh: default`) even though pulls use the PAT | a bare host with no ssh-agent fails at definition-load | **auto-handled** — the bring-up starts a **keyless** ssh-agent when absent (the PAT still does the real pulls) |
-| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | **known issue** — a demopatch re-anchor, separate from the remote story |
+| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | ✅ **RESOLVED (M217 self-healing anchor gate).** *The anchor is the contract; the whole-file sha is only a baseline* — a drifted sha with an intact anchor now **self-heals** and applies (`demopatch-spec.md` §6). **Do not chase a re-pin; it no longer exists.** M219 (F-7) further confirmed the `loadmembers` patch is not dead. |
 | **F6** — Linux bind-mount data-dir perms (Bitnami UID 1001 can't write a root-owned host dir) | `mkdir: /bitnami/postgresql/data: Permission denied`; macOS Docker Desktop remaps, native Linux does not | **auto-handled** — the bring-up pre-creates the data dirs writable (manual fix was `sudo chmod -R 777 $STACK/data`) |
 | **F7/F8** — the host needs the `atlas` CLI; without it `migrate` creates 0 tables → every seeder fails | `migrate-demo.sh` treated `atlas`-missing as a non-fatal warning that masked a total migration failure | **pre-flight + prereq** — install atlas (Step 0 #3); the bring-up now fails loud on `atlas`-not-found |
 | **F9** — the taxonomy is set-dressed from the snapshot cache, not migrations | no `.agentspace/snapshots` on the VM → `public.skills=0`, sparse library/skills surfaces | **prereq (optional)** — scp/capture the cache (Step 4); identity/profile/dashboard work without it |

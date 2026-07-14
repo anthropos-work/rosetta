@@ -202,7 +202,7 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > line: a **tooling-owned demo-patch** (`rosetta-extensions/demo-stack/patches/demopatch` + a content-anchored
 > manifest) source-patches the demo's **EPHEMERAL gitignored next-web clone** to read `NEXT_PUBLIC_STUDIO_URL`
 > (a behavior-identical fallback ternary kept) **before** the image build, then **trap-reverts** after it bakes —
-> CANONICAL repos never touched (6 guards: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
+> CANONICAL repos never touched (**7** guards — G7, the apply post-condition, was made real at the M217 close: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
 > self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert, exactly
 > like the pk overlay), with the offset value `http://localhost:39000` in the `.env.local` overlay; default-on +
 > non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries

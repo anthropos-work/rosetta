@@ -149,6 +149,24 @@ The manifest carries, per hero: the `key` (her `stories.yaml` id — the seat-sw
 `jump_to`, or the vantage default via `defaultJumpForVantage` — an end-user → `/profile`, a manager →
 `/enterprise/workforce`).
 
+### A `jump_to` pointing at a LEGACY surface is a HARD SEED FAILURE (v2.3 M219)
+
+`WriteCockpitManifest` calls **`ValidateCockpitManifest`**, which refuses any hero whose resolved `jump_to`
+matches **`LegacyReadinessPaths()`** (`stack-seeding/seeders/cockpit.go`). **The seed FAILS — it does not warn.**
+
+This exists because **every one of the demo's three AI-readiness pointers targeted the legacy page**, and nothing
+caught it for four releases. `/enterprise/workforce/ai-readiness` is an **unlinked orphan**: no nav entry, no
+workforce tab, no redirect points at it, and its hook takes no `cycle` param — so it reads the cycle-less endpoint
+and renders no cycle picker, no archetype matrix, no people, no How-we-measure, no What-to-do-next. A presenter
+driven there sees a shell. The **current** manager surface is **`/ai-readiness`**.
+
+The deep-link catalog is therefore no longer end-user-vs-manager only. It carries **an end-user readiness entry**
+too — **`ai-readiness-member` → `/home`** — because the member readiness surface **has no route of its own**
+(it is a region of the authenticated landing). *That is precisely why route-crawling never found it.*
+
+Current pointers: `dana-manager → /ai-readiness` · `aria-completed → /home` · `ben-started → /home`.
+See [`../../services/ai-readiness.md` § Surfaces](../../services/ai-readiness.md) for the current-vs-legacy split.
+
 ### The CTA — one [Log in as] = one FAPI handshake redirect
 
 The single **Log in as** points the browser at the multi-identity fake FAPI's handshake with the hero's

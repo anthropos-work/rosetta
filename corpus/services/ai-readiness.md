@@ -91,7 +91,7 @@ axis (`enum.AIReadinessStepType` defined in `app/internal/data/ent/enum/ai_readi
 medium(41-70)/high(71-100).
 
 **Started vs completed (the funnel):** a member carries a `stage` ∈ {1,2,3} (0 = none/done) and a `score` (null =
-not-completed). Per-step status lives in `ai_readiness_user_step_progress` (`not_started`/`in_progress`/`completed`,
+not-completed). Per-step status lives in `ai_readiness_user_step_progresses` (`not_started`/`in_progress`/`completed`,
 `completed_at` set once, never re-updated). The org funnel = counts of members reaching `stage1`/`stage2`/`stage3`;
 the dashboard's "X% completed all 3 steps" = `stage3 / members`.
 
@@ -230,12 +230,16 @@ seeder writes:
 3. `ai_readiness_skills` × ~5 core (weight 1.0) + a few enabling (0.5), `node_id` = **real taxonomy node-ids** (route
    through the existing seeding resolvers — never fabricate, per the closure gate).
 4. `ai_readiness_sims` × 2 (`step_type` simulation + interview, `sim_ref` = a real Directus sim id or a `PLACEHOLDER-` ref).
-5. `ai_readiness_cycles` × 1. **M51 SHIPPED `status='closed'`** (the frozen-snapshot strategy — see the ⚠ blocks
-   below for why the active-signals path was falsified); the active-cycle contract is retained here as the
-   alternative.
+5. `ai_readiness_cycles` **× 2 — one `closed` AND one `active`** (v2.3 M219; see § *The CYCLE-STATE contract —
+   seed BOTH cycles* below, which this line used to contradict). The **active** cycle (future `end_date`,
+   `participants_filter {"all":true}`) is the one the manager dashboard resolves and LIVE-recomputes — it is what
+   fills Ben's funnel, Aria's full hero card, and the `interview` / `diagnosis` / `sources` sub-sections that were
+   NULL or absent under closed-only. The **closed** cycle is retained as cycle *history* (its 199 frozen snapshots
+   stay meaningful in the CyclePill). M51 shipped `closed` alone on the belief that the active-signals path was
+   falsified — **M219 measured the live recompute at 2.09 s and refuted that.**
 
 **Per-member (≈156 of 199 "completed"):** the underlying signals (≥1 `user_skill_evidences` for a configured skill;
-jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progress` (3× `completed`) **+** an
+jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progresses` (3× `completed`) **+** an
 `ai_readiness_live_snapshots` upsert (`score≈100, stage=3, archetype` per the score). The **"started" hero**: only
 the skill_mapping signal + a `stage=1`/`score≈30` live snapshot. The **"completed" hero**: all 3 + `stage=3`.
 
@@ -247,7 +251,7 @@ decision):**
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
   `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no step-1 signal** from the
   aggregate. So an **active**-cycle dashboard requires the **signals-true** seed (write the real skill evidences +
-  sim sessions + `ai_readiness_user_step_progress`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
+  sim sessions + `ai_readiness_user_step_progresses`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
   is a **materialized cache** (rewritten by `RefreshLiveSnapshots`, consumed by Talk-to-Data SQL) — **NOT** the
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
 - **Closed cycle → the dashboard reads frozen snapshots.** `buildResponseFromSnapshots` reads `ai_readiness_snapshots`
