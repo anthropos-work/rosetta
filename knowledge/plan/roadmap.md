@@ -419,8 +419,9 @@ today the presenter's entry point is the **one plain-HTTP, unauthenticated surfa
 **Delivers →** `corpus/ops/safety.md` **Part 3 — the exposure side** (**BLIND AREA, BLOCKING** — safety.md's two
 promises are read-side and write-side only; grep for `tailscale|remote|expose|network` → **zero hits**. Remote reach
 is a **third axis the safety contract does not cover**, and default-on cannot ship without it); an explicit written
-**supersession of v2.2's D-DESIGN-1**; and the **correction of the FALSE claim** at `tailscale-serve.md:405-407`
-(it says binding `0.0.0.0` is gated on the knob — **it is not**: `gen_injected_override.py:259-260,292-294` emits
+**supersession of v2.2's D-DESIGN-1**; and the **correction of the FALSE claim** at `tailscale-serve.md:452-453`
+(anchor corrected by M220's KB-fidelity audit — it says binding `0.0.0.0` is gated on the knob — **it is not**:
+`gen_injected_override.py:210,276-277,308` emits
 bare `"<hostport>:<target>"` port pairs, so Docker publishes **every demo container on ALL interfaces on EVERY
 demo-up, today, flag or no flag** — and on Linux Docker's iptables bypass the host firewall). **This correction
 ships regardless of the flip.**

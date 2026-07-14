@@ -7,21 +7,33 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
 ## Sections
 
 - [ ] **S0 — The two lies the docs tell.** *(overview (a) + Delivers 3)*
-  - [ ] "2 orgs" → **3** at the 4 sites (`demo-up/SKILL.md:109,153`, `demo/README.md:34`, the stale
-        `seed_label` at `up-injected.sh:1081`, `stories.seed.yaml:1`). VERIFIED in code — the preset ships
-        **Cervato Systems** (ai-transformation) + **Solvantis** (onboarding-ramp) + **Northwind Aviation**
-        (ai-readiness). This 4-line lie is why the user believed the seeding ask was unmet.
-  - [ ] **Correct the FALSE safety claim** at `tailscale-serve.md:405-407`. **VERIFIED FALSE:** ports are
-        emitted as bare `"<hostport>:<target>"` pairs (`gen_injected_override.py`) with **no `127.0.0.1`
-        prefix**, so Docker publishes **every demo container on ALL interfaces on EVERY demo-up, today** —
-        flag or no flag — and on Linux its iptables **bypass the host firewall**. `BIND_HOST` gates only the
-        two host-native servers (cockpit, ant-academy). A doc that denies a live exposure is worse than none.
+  - [ ] "2 orgs" → **3** at the **7** sites (the KB-fidelity audit found **3 more than the plan's 4**, and
+        corrected two stale anchors — see `kb-fidelity-audit.md` KB-1/KB-2):
+        `demo-up/SKILL.md:109,153` · `corpus/ops/demo/README.md:34` · **`corpus/ops/rosetta_demo.md:49`** (new) ·
+        **`.claude/skills/stack-seed/SKILL.md:50`** (new) · the stale `seed_label` at
+        **`up-injected.sh:1317`** (**not** `:1081` — anchor was stale) · `stories.seed.yaml:1`.
+        VERIFIED in code — `stories.seed.yaml` ships **3** `org:` entries (`:37` Cervato Systems /
+        ai-transformation / 220 · `:75` Solvantis / onboarding-ramp / 120 · `:136` Northwind Aviation /
+        ai-readiness / 200). This lie is why the user believed the seeding ask was unmet.
+  - [ ] **Correct the FALSE safety claim** at **`tailscale-serve.md:452-453`** (**not** `:405-407` — anchor
+        was stale; the same stale anchor is cited in `roadmap.md:422`). **VERIFIED FALSE:** ports are
+        emitted as bare `"<hostport>:<target>"` pairs at **three** sites in `gen_injected_override.py`
+        (`:210` directus · `:276-277` frontends · `:308` backends) with **no `127.0.0.1` prefix**, so Docker
+        publishes **every demo container on ALL interfaces on EVERY demo-up, today** — flag or no flag — and
+        on Linux its iptables **bypass the host firewall**. `BIND_HOST` (`up-injected.sh:76`) gates only the
+        two host-native servers (cockpit, ant-academy). **The doc already CONTRADICTS ITSELF:**
+        `tailscale-serve.md:239` states the truth (*"`docker-proxy` binds the demo's offset ports on
+        `0.0.0.0`"*) while `:452-453` denies it. A doc that denies a live exposure is worse than none.
   - [ ] Regression fences: a doc-vs-code fence on the org count; a fence asserting the published-port shape.
+        Home: `stack-core/tests/` (precedent: `test_corpus_index_guard.py` — the existing doc-vs-code fence)
+        and `stack-injection/tests/`. Both **RED-proven pre-fix**.
 
 - [ ] **S1 — `corpus/ops/safety.md` Part 3: the exposure side.** *(Delivers 1+2 — BLIND AREA, BLOCKS S3)*
-  - [ ] The gap, proven by grep: `tailscale|remote|expose|network|localhost` → **0 hits** in safety.md.
-        Read-side (never read customer data) + write-side (never write prod) exist; **remote reach is a THIRD
-        AXIS with no contract at all.**
+  - [ ] The gap, re-proven by the audit: `tailscale|remote|expose|network|localhost` → **2 hits, not 0**
+        (`safety.md:146`, `:215`) — but **both are incidental** (`in-network` Directus addressing), and the
+        doc's section list runs **Part 1 (read side) → Part 2 (write side)** with **no exposure section**.
+        **The substance holds: remote reach is a THIRD AXIS with no contract at all.** (Grep the *sections*,
+        not the *words* — a keyword hit is not a contract. D17.)
   - [ ] State plainly what default-on makes ambient: a demo is an **unauthenticated, authz-weakened build**
         (Clerkenstein disarms token verification; the authz-skip patch is default-on; **the cockpit is a
         one-click, password-free "become any hero" launcher** — a bare GET to `/v1/client/handshake`).
@@ -29,14 +41,30 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
         tailnet is an authenticated WireGuard device mesh (per-device keys, ACL-gated, no public listener),
         and — per S0 — **the exposure delta is smaller than the docs claimed, because the LAN exposure already
         exists today.**
-  - [ ] Explicit written **SUPERSESSION of v2.2 D-DESIGN-1** ("public reach is never default-on",
-        `demo-up/SKILL.md:78`) — **demo path only.** Never a silent contradiction.
+  - [ ] Explicit written **SUPERSESSION of v2.2's D-DESIGN-1** ("public reach is never default-on",
+        **`demo-up/SKILL.md:79`** — **not** `:78`) — **demo path only.** Never a silent contradiction.
+        ⚠️ **ID COLLISION (audit KB-4):** **v2.3 has its OWN `D-DESIGN-1`** (*"the <5 s gate is on ACCESS,
+        not full render"* — `roadmap.md:127`, `state.md:105`). A bare `D-DESIGN-1` in this release resolves
+        to the **wrong** decision. Every supersession sentence MUST read **"v2.2's D-DESIGN-1"**, never bare.
 
 - [ ] **S2 — The `/demo-up` defaults table.** *(overview (b) — BLIND AREA)*
-  - [ ] No enumerated defaults contract exists in the corpus; the only complete knob list is a skill
-        `argument-hint`. Document all ~25 `DEMO_*` knobs: knob | default | consumer | file:line.
+  - [ ] No enumerated defaults contract exists in the corpus (audit-confirmed: no `knob | default` table
+        anywhere under `corpus/`); the only complete knob list is a skill `argument-hint`. Document the
+        `DEMO_*` knobs: knob | default | consumer | file:line. **Audit-measured surface: 35 raw `DEMO_*`
+        tokens across rext, of which ~25 are real user-facing knobs** — the rest are internals
+        (`DEMO_WS`/`DEMO_N`/`DEMO_STACK`/`DEMO_OFFSET`/`DEMO_PORT_OFFSET`), a computed name
+        (`DEMO_1_DIRECTUS_DSN`), and a grep artifact (`DEMO_NO_`). Enumerate from the parser; classify, don't
+        just dump.
+  - [ ] **THERE ARE TWO ENTRY POINTS, NOT ONE — and the docs conflate them (audit KB-3, a LIVE false
+        promise).** `up-injected.sh` (the one the skill actually invokes, `SKILL.md:52`) accepts **ONLY**
+        `<N>` and `--public-host`, and **hard-errors `unknown argument` + `exit 1` on anything else**
+        (`:26-27`). `--profile` / `--services` are flags of the **`rosetta-demo` wrapper** (`:110-113`).
+        The `demo-up` `argument-hint` lists all four **as if one parser took them** — so
+        `up-injected.sh --profile X` **exits 1 today**. The table must record *which entry point reads which
+        knob*.
   - [ ] Fence: the table is checked against the parser so it cannot drift (the CLI-flag ↔ docs both-directions
-        rule — a doc-promised flag with no parser entry is a false promise).
+        rule — a doc-promised flag with no parser entry is a false promise; a parser flag with no doc surface
+        is undiscoverable). **RED-proven pre-fix by KB-3 above.**
 
 - [ ] **S3 — The remote flip: `--public-host auto`, DEFAULT-ON for demo.** *(overview (c) — D-DESIGN-3)*
   - [ ] Capability ladder — **capability-gated, never presence-probed**: `command -v tailscale` →
