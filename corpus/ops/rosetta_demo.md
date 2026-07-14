@@ -46,7 +46,8 @@
   control plane. Server-authoritative, so every surface resolves the same hero. Measured by the `clerk-multi-1`
   Alignment DNA (9 genes, 100%/100%) — see [clerkenstein.md](../services/clerkenstein.md) § Multi-identity.
 - **Stories & cockpit are the DEFAULT (post-v1.9 demo-hardening):** a bare `/demo-up N` now seeds the
-  multi-org **Stories & Heroes** world (2 orgs × a thriving/struggling/manager hero trio) **and** serves the
+  multi-org **Stories & Heroes** world (**3 orgs** × a thriving/struggling/manager hero trio — Cervato
+  Systems / Solvantis / Northwind Aviation) **and** serves the
   presenter cockpit **by default** — the M38-D4 opt-in flipped to opt-**out**. `DEMO_NO_STORIES=1` (or the
   explicit `DEMO_STORIES=0`) restores the legacy structural **small-200** + single-identity fake-fapi +
   no-cockpit demo (mirroring the `DEMO_NO_*` family). So: stories = default; small-200 = the

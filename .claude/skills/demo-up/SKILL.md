@@ -106,7 +106,8 @@ single-identity demo — see the toggle list below.) Source of truth:
    ensure-clones-seeded `stack-demo/platform/.env` base instead — M26). See
    [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
 4. **Auto set-dress (default-on, non-fatal)** — after migrate the bring-up runs a cache-first snapshot
-   **replay → the multi-org Stories & Heroes seed** (2 orgs × a thriving/struggling/manager hero trio) **and
+   **replay → the multi-org Stories & Heroes seed** (**3 orgs** — Cervato Systems / Solvantis / Northwind
+   Aviation — × a thriving/struggling/manager hero trio) **and
    serves the presenter cockpit — both BY DEFAULT** (the M38-D4 opt-in became opt-OUT), reusing the same proven
    pass `/dev-up` uses. `DEMO_NO_STORIES=1` (or `DEMO_STORIES=0`) restores the **legacy `small-200`** structural
    seed + single-identity fake-FAPI + no-cockpit demo (so `small-200` is the fallback, **not** the default).
@@ -150,7 +151,7 @@ proves zero shared/prod pollution. Full contract: [`corpus/ops/safety.md`](../..
 ## After bring-up
 
 A bare `/demo-up N` already auto-set-dressed the stack with the **Stories & Heroes** world + the presenter
-cockpit **by default** (real catalog + 2 orgs × a thriving/struggling/manager hero trio) — so just **log in**
+cockpit **by default** (real catalog + **3 orgs** × a thriving/struggling/manager hero trio) — so just **log in**
 (browser-login as `user_clerkenstein` → land in a narratable, populated org), and **open the presenter cockpit**
 on the demo's offset **`:7700+`** port to walk the seeded stories. (`DEMO_NO_STORIES=1` instead lands the legacy
 `small-200` single-identity org with no cockpit.) The fake-FAPI TLS cert is **auto-trusted**

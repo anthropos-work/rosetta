@@ -446,18 +446,54 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 
 ## Safety framing
 
-- **Opt-in, default-off.** No demo is externally reachable unless `--public-host` is passed. A bare `/demo-up N`
-  binds loopback only and is byte-identical to today.
-- **Tailscale is the access control.** The host is reachable **only** to members of your tailnet — there is no
-  public-internet exposure, no port-forward, no open 0.0.0.0-on-the-LAN surprise beyond the tailnet. Binding
-  `0.0.0.0` is gated on the knob precisely so it is never ambient. The teammate's client must keep Tailscale
+> ### 🔴 CORRECTION (v2.3 "cue to cue", M220) — this section used to state the opposite, and it was FALSE
+>
+> Until M220 this section read (quoted as a historical artifact — **do not treat as current**):
+>
+> ```text
+> RETRACTED — FALSE (shipped v2.2, corrected v2.3 M220):
+>   "Opt-in, default-off. … A bare `/demo-up N` binds loopback only and is byte-identical to today."
+>   "…no open 0.0.0.0-on-the-LAN surprise beyond the tailnet. Binding `0.0.0.0` is gated on the knob
+>    precisely so it is never ambient."
+> ```
+>
+> **Both sentences were false.** `stack-injection/gen_injected_override.py` emits **every** published port as
+> a bare `"<hostport>:<target>"` pair — with **no `127.0.0.1` prefix** — at all three emitters (`directus_lines`,
+> `frontend_lines`, `build_lines`). **Docker's default bind for a bare `host:container` mapping is `0.0.0.0`.**
+>
+> The doc had even said so itself, 200 lines above (§ "Why per-port `serve`…"): *"`docker-proxy` binds the demo's
+> offset ports on **`0.0.0.0`**."* The reassuring half is the one people quoted.
+>
+> **A shipped safety doc that understates real exposure is worse than no doc** — no doc at least prompts you to
+> go and look. The correction below is now fenced by `stack-injection/exposure_claim_guard.py`, which derives the
+> bind by *running* the emitters and fails if any doc denies it.
+
+- **⚠️ CONTAINER PORTS ARE PUBLISHED ON ALL INTERFACES — on EVERY `demo-up`, TODAY, flag or no flag.** Every
+  demo container's offset port is bound on **`0.0.0.0`**, with **or without** `--public-host`. This is **not**
+  introduced by remote access; it has been true of every demo since the injected override existed. Anyone who can
+  route to the host's IP can reach the demo's ports directly, bypassing `tailscale serve` entirely.
+  - **On Linux this bypasses your host firewall.** Docker installs its own iptables rules in the `DOCKER` chain,
+    which are consulted *before* `ufw`/`firewalld`'s. A `ufw deny` on the port does **not** block it.
+  - **What `--public-host` actually adds** is *not* the exposure — it is the **trusted-HTTPS origin** (a real
+    `tailscale cert`) and the per-port `tailscale serve` proxy that make the demo *usable* by a tailnet peer. The
+    ports were already reachable; the flag makes them *browsable* (Clerk needs a secure context).
+  - **Therefore the exposure delta of a default-on remote flip is far smaller than this doc used to imply** — the
+    LAN/tailnet-IP exposure is already there. See [`../safety.md`](../safety.md) **Part 3 — the exposure side**
+    for the full contract, and for what a demo actually *is* (an unauthenticated, authz-weakened build).
+- **`BIND_HOST` gates only the two HOST-NATIVE servers** — the presenter cockpit and ant-academy, which run as
+  plain host processes, not containers. It is `""` (loopback) by default and `0.0.0.0` under a public host. **It
+  does not touch a single container**, which is why it never gated what the old text claimed it gated.
+- **Tailscale is the access control for the *published origin*.** The MagicDNS host + `tailscale serve` listeners
+  are reachable **only** to members of your tailnet: no public-internet listener, no port-forward. This is a real
+  guarantee — it is just **narrower** than "nothing else is exposed". The teammate's client must keep Tailscale
   **MagicDNS on** (the default) for the `<magicdns>` name to resolve.
 - **Zero platform-repo edits.** The whole surface is rext tooling + this doc + the opt-in flag. The two
   platform-family patches touch only the demo's **ephemeral** clone via the sha-pinned mechanism (drift-refuse
   fails loud on an upstream change; reverted on teardown), never a canonical repo.
 - **The demo's data-isolation guarantees are unchanged.** Remote reach changes the *origin/scheme*, not the data
   plane: the tenant-data firewall, the per-stack isolated Postgres, and the never-write-prod boundary all hold
-  exactly as documented in [`../safety.md`](../safety.md).
+  exactly as documented in [`../safety.md`](../safety.md) (Parts 1 and 2). **This is the load-bearing mitigation:
+  the ports are open, and there is nothing real behind them.**
 
 ---
 

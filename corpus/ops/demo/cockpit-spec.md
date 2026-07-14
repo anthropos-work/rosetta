@@ -243,7 +243,7 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 ### Bring it up
 
 ```bash
-# A storytelling demo is the DEFAULT: /demo-up N seeds the 2-org hero trio, wires the multi-identity
+# A storytelling demo is the DEFAULT: /demo-up N seeds the 3-org hero trio, wires the multi-identity
 # fake-fapi, and serves the cockpit on http://localhost:$((7700 + N*10000)).
 /demo-up 3
 # → the cockpit serves on http://localhost:37700. Pick a hero → [Log in as] → land on her per-role screen.

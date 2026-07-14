@@ -31,7 +31,8 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ```
 
 > **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38) — now the DEFAULT.** A bare
-> `/demo-up N` set-dress seeds the locked **2-orgs × 3-heroes** Stories & Heroes world (each org a
+> `/demo-up N` set-dress seeds the locked **3-orgs × 3-heroes** Stories & Heroes world (Cervato Systems ·
+> Solvantis · Northwind Aviation — each org a
 > thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
 > heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
 > the demo's remote control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line
@@ -49,7 +50,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
-> /demo-up 3                   →  default: seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
+> /demo-up 3                   →  default: seed the 3-org hero trio + multi-identity fake-fapi + serve the cockpit
 >   …present it…              →  open http://localhost:37700 → pick a hero → [Log in as] → her per-role screen
 > DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
