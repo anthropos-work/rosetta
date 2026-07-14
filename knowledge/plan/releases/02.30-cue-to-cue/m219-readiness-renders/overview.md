@@ -3,14 +3,14 @@ milestone: M219
 slug: readiness-renders
 version: v2.3 "cue to cue"
 milestone_shape: section
-status: planned
+status: complete
 created: 2026-07-13
-last_updated: 2026-07-13
+last_updated: 2026-07-14
 complexity: medium
 depends_on: M217
 parallel_with: M218, M220
 delivers: the AI-readiness story VISIBLE (Dana's filled page, Ben's started workflow, Aria's completed state) + the ai-readiness playthrough manifest (their journeys are not e2e-proven today)
-issues: "the SEEDING is a verified no-op (already default-on and proven); the story does not RENDER — Dana's page needs M217's re-pinned patch AND a new demo-patch for the CycleID==nil → buildLiveResponse default that bypasses the frozen-snapshot seed"
+issues: "RESOLVED — and two of the premises below were REFUTED by measurement. (1) The CycleID==nil blocker DOES NOT EXIST: the CURRENT manager page already passes `?cycle=`; the old observation was made against the LEGACY page, whose hook takes no cycle param. That demo-patch is WITHDRAWN (D-M219-2). (2) M217's loadmembers patch is not dead — it self-heals (F-7). What the milestone actually found: all 3 demo pointers targeted an UNLINKED ORPHAN page; the claimed-skill tail drew the taxonomy's alphanumeric junk head org-wide; a hero rendered ROLE-LESS; and the manager's four interview-findings blocks read a table NO SEEDER EVER WROTE. One NEW demo-patch was authored — next-web-aireadiness-flag-gate (the member surface never mounts: no PostHog on a demo ⇒ the flag is `undefined` forever, and the code demands `=== true`)."
 ---
 
 # M219 — Readiness renders

@@ -123,6 +123,31 @@ fix16/17 strip**, and it contradicts `safety.md`. **Pure env.**
 > (`ant-academy.sh`), and `ANT_ACADEMY_HOME_SECTION` now requires an `AI Academy` marker + a 400-char floor
 > instead of the meaningless 40 (`stack-verify/e2e/lib/coverage-manifest.ts`). **Both will report RED until this
 > item lands — that is intended.** An accurate red beats a comfortable green.
+>
+> ### 🔴 SEVERITY RAISED — THE ACADEMY DOES NOT MERELY RENDER BLANK. IT POISONS THE DEMO SESSION.
+>
+> **This is demo-BREAKING, not cosmetic, and it is the reason (i) must land.** The academy's own keyless Clerk
+> on `:13077` responds with:
+>
+> ```
+> Set-Cookie: __session=; Expires=Thu, 01 Jan 1970 00:00:00 GMT     ← DELETES the demo's session
+> Set-Cookie: __client_uat=0; Domain=taildc510.ts.net               ← DOMAIN-wide, not port-scoped
+> ```
+>
+> **Cookies are scoped by HOST, not by PORT.** So the academy on `:13077` clobbers the session next-web holds on
+> `:13000`. Two consequences, both measured, and proven by a controlled A/B from a peer (same seat, same page,
+> one variable changed):
+>
+> 1. **A presenter who clicks the AI Academy link is LOGGED OUT of the demo** — and lands in
+>    `ERR_TOO_MANY_REDIRECTS`. The blank academy page is the *lesser* half of this bug; the presenter's live
+>    demo session is gone, mid-demo.
+> 2. **Every EMPLOYEE coverage sweep aborts** once the crawler reaches the academy link. So while this is live,
+>    **the employee vantage has no runnable sweep at all** — which is itself an *absence-read-as-success* risk
+>    (D17): a vantage that cannot be measured must never be recorded as measured.
+>
+> **The `PK_DEMO` fix this item already names is the fix for this too** — a Clerkenstein-wired academy shares the
+> demo's session instead of destroying it. But it must be verified by **logging in, visiting the academy, and
+> then confirming the demo session SURVIVES** — not merely that the academy paints.
 
 **(j) studio-desk bounces the presenter OUT of the demo — escalated from M219 (Fate 3, 2026-07-14, D4).**
 Reproducible with plain `curl` from a tailnet peer, **not** a harness artifact: `studio-desk` on **`:19000`

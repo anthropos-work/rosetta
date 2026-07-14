@@ -48,9 +48,12 @@ _Section checklist. Populated from `overview.md` § Scope.In at build time; clos
         "verified" in `15Five`/`17Track`). Fixed + fenced over **every shipped preset role** (RED-proven).
   - [x] **R-5b** (found by the cold battery) — the curated allow-list was a **NO-OP for the role it was written
         for**: `skillsForRole`'s ladder was role → **FLAT**, and `combinedNamedPool` draws its role tier from it,
-        so tier 1 *was already the junk* and the curated pool was never read. Ladder is now
+        so tier 1 *was already the junk* and the curated pool was never read. R-5b made the ladder
         role → **CURATED** → flat. RED-proven. **Two unit tests were green throughout** — they proved the pool
         *resolved*, never that anything *read* it (D-M219-14).
+        > ⚠️ **SUPERSEDED by R-8:** that ladder still shipped the junk, because `flat` **fired whenever the
+        > curated family ran dry before `want`**. The flat tier is now **DELETED** — ladder =
+        > role → curated → **general** → **STOP** (exhausted ⇒ *fewer* skills, never padded ones). See § R-8.
   - [x] The stale `app-aireadiness-snapshot-loadmembers` manifest header comment — **N/A**: F-7 refuted the
         "dead patch" premise; the patch self-heals and needs no re-pin. Recorded instead of "fixed".
 
@@ -120,22 +123,161 @@ Coldness is *proven per cycle*, not assumed: `data dir GONE (purged)`, `images r
 > **RESTARTED from zero at R-8** (D13): D1/D2/D3 are all **seed-path** changes. The r7 run's cycle 1 is
 > **void as a grade** — it is retained above as the *evidence* that produced R-8.
 
-| Cycle | up rc | purge | images | initdb re-ran | autoverify |
-|---|---|---|---|---|---|
-| 1 | _pending_ | | | | |
-| 2 | _pending_ | | | | |
-| 3 | _pending_ | | | | |
-| 4 | _pending_ | | | | |
-| 5 | _pending_ | | | | |
+**RESULT — 5 cold reset-to-seed rebuilds at `cue-to-cue-m219-r8` passed all five graded gates.** Each cycle is
+**independently evidenced**, not asserted: a `PG_VERSION` mtime read from **inside** the container and compared
+against the cycle-start fence (initdb provably re-ran), a **fresh** `autoverify.json` timestamp, per-section char
+counts, **all 132 distinct claimed skill names enumerated and read** (the D1 gate), the hero role titles (D2),
+`ai_readiness_cycles == 2` (1 active + 1 closed), and `interview_aggregated_reports` non-empty (D3).
+
+| Cycle | up rc | purge | images | initdb re-ran | autoverify | graded gates |
+|---|---|---|---|---|---|---|
+| 1 | 0 | data dir GONE | 0 | ✅ new PG_VERSION mtime | fresh ts | 5/5 |
+| 2 | 0 | data dir GONE | 0 | ✅ new PG_VERSION mtime | fresh ts | 5/5 |
+| 3 | 0 | data dir GONE | 0 | ✅ new PG_VERSION mtime | fresh ts | 5/5 |
+| 4 | 0 | data dir GONE | 0 | ✅ new PG_VERSION mtime | fresh ts | 5/5 |
+| 5 | 0 | data dir GONE | 0 | ✅ new PG_VERSION mtime | fresh ts | 5/5 |
+
+### ⚠️ DISCLOSED CAVEAT — the battery is not a single uncontested consecutive run
+
+**Two further runs were graded RED for BATTERY-INTEGRITY reasons caused by an ORCHESTRATION error — not by a demo
+defect.** The orchestrator ran **two batteries concurrently against the single demo host**, and one of them
+**purged the stack mid-measurement** while the other was reading it. Cycle 5's `no-junk-skills` gate consequently
+went **UNEXECUTED** — and *an unexecuted gate is a **FINDING**, not a pass* (D17: absence must never read as
+success).
+
+**No demo defect was observed in anything that was measured.** The five greens above are each individually
+evidenced. But they were not produced by one clean consecutive sweep, and this milestone will not pretend
+otherwise: **the audit trail carries a disclosed asterisk.** Recording it as a clean 5/5 would be precisely the
+"status artifact that outlives the thing it describes" pattern this release exists to kill.
+
+**Route forward (Fate 3 → M221):** `GUARD-M221-host-isolation` — a **host lock** (or a per-cycle stack `N`) so two
+agents can never run cycles against one demo host. Attached to `m221-prove-on-billion/overview.md` § *Inherited
+from M219*. It is a **prerequisite for M221's own gate**, which is itself a multi-cycle battery on that same
+single host.
+
+> **Provenance:** the battery was run by the orchestrating session at `cue-to-cue-m219-r8`. The **harden pass did
+> not re-run it** and did not touch the demo host (`billion` is pinned, idle, clones clean). This table records
+> the reported result and its caveat verbatim; it does not add an independent verification the harden pass did not
+> perform.
 
 ## Notes
 
 - **Phase 0b — KB-fidelity: YELLOW** (satisfied by the census; D-M219-1; reused across sections per the skill's
   audit-reuse rule — same subsystem, knowledge docs unchanged but for this milestone's own output).
-- **Two of the overview's premises were REFUTED by measurement** (F-2, F-7). The planned **new demo-patch is
-  WITHDRAWN** — the non-patch fix (point the demo at the *current* surface) was available, which is the correct
-  order of preference per `demopatch-spec.md §1`. **Zero platform-repo edits; zero new demo-patches.**
+- **Two of the overview's premises were REFUTED by measurement** (F-2, F-7). The **planned `CycleID == nil`
+  demo-patch is WITHDRAWN** — the non-patch fix (point the demo at the *current* surface) was available, which is
+  the correct order of preference per `demopatch-spec.md §1` (D-M219-2). **Zero platform-repo edits.**
+- **ONE new demo-patch WAS authored, and it is not the withdrawn one:** **`next-web-aireadiness-flag-gate`**
+  (`useAiReadinessActive.ts`). The MEMBER surface never mounts on a demo — a demo bakes no PostHog, so
+  `useFeatureFlagEnabled()` resolves `undefined` **forever** and the code demands `=== true`; the org-enablement
+  query is never even fired. No env/config/compose seam exists (the flag's value is not an env var), so it takes
+  the sanctioned hatch. Behaviour-identical wherever PostHog **is** configured. Registered in
+  `corpus/ops/demo/demopatch-spec.md` § 5 (the roster now carries **7** patches, four of them `next-web-app`).
+  > ⚠️ **This bullet previously read "zero new demo-patches."** That was false from the moment the patch landed,
+  > and it is the release's own signature hazard (M218 **D17**) inside the milestone's own status artifact —
+  > caught by the harden pass, not by the close. The withdrawn patch and the authored patch are different patches.
 - The user's kickoff report is **confirmed in code**: every demo pointer targeted the **legacy** page (F-1).
 - **D17 bit FIVE more times inside this milestone** — see `spec-notes.md` § The D17 tally. The sharpest:
   R-5b, where **two green unit tests proved a pool *resolved* while nothing ever *read* it**. Only a cold
   reset-to-seed exposed it.
+
+## M219: Hardening
+
+### Pass 1 — 2026-07-14
+
+**Scope manifest.** `rosetta` = docs only (13 files). The code is in `rosetta-extensions`
+(`cue-to-cue-m218..HEAD`, 12 commits, 64 files / +5,659−332): Go (`stack-seeding/seeders`, `clerkenstein`,
+`alignment/cmd/alignctl`), Python (`demo-stack/tests`), TS (`stack-verify/e2e`, `playthroughs/e2e`), shell
+(`ant-academy.sh`, `up-injected.sh`, `run-coverage.sh`, `run-playthroughs.sh`).
+
+**Baseline (all GREEN at HEAD):** stack-seeding 13/13 pkgs · clerkenstein 15/15 pkgs · demo-stack 506 passed/4
+skipped · stack-verify TS 38 + typecheck · playthroughs TS 56 + typecheck · stack-verify pytest 109.
+
+#### The fence audit — MUTATION-TESTED, not re-run
+
+The release's rule is that *a fence which passes against both the pre- and post-fix code is theatre*. So each
+M219 fence was graded by **surgically re-introducing the defect it claims to catch** into HEAD's production code
+(a mutation), rather than by re-running it green. **7 mutations, 7 REDs — the fence set is load-bearing:**
+
+| # | Mutation (the defect, restored) | Fence | Verdict |
+|---|---|---|---|
+| D1 | the `flat` tier re-appended to `combinedNamedPool` | `TestSeededMembers_NeverDrawFromFlatPool` | **RED** — names `ZZZ-FLAT-POOL-JUNK-0` |
+| D2 | hero role reverted to `Operations Analyst` (0 job_role_skills) | `TestShippedPresets_EveryHeroRoleIsSeedable` | **RED** — names `J-OPERAT-3566` vs `J-BUSOPE-38C4` |
+| D3 | the four findings blocks emptied | `TestInterviewReport_FillsAllFourFindingsBlocks` | **RED** — all four blocks fail *independently* |
+| S1 | Dana repointed at `/enterprise/workforce/ai-readiness` | `TestStoriesPreset_ReadinessHeroesPointAtCurrentSurfaces` | **RED** — diagnostic cites the corpus doc |
+| S3 | the roster eid tier dropped from `organizationWithEid` | `TestNewServer_RosterOrgEid_MembershipReportsRealEid` | **RED** — names the fabricated `org_eid_org_seed_northwind` |
+| S4a | `ExitUnmeasurable` collapsed back into `ExitRegressed` | `TestExitCodes_UnmeasurableIsDistinctFromRegressed` | **RED** — *"collapsing them IS the bug"* |
+| F-13 | the pid-only liveness check restored | `test_daemon_alive_but_never_serving_is_NOT_reported_started` | **RED** — mutant prints *"started + SERVING"* over a dead academy |
+
+#### Bugs found and fixed inline (commit `b5bf65b`)
+
+**1. `run-coverage.sh` reported the PREVIOUS run's numbers as the current run's.** The release's signature hazard
+(D17), live on the coverage harness's **own reporting path**, and worse than first described:
+`tests/coverage.spec.ts` writes `coverage-report.json` as its **last** statement, so a spec that throws first
+(login failure, poisoned session, unreachable demo) writes **nothing** — while the script swallowed playwright's
+rc with `|| true`, printed *"coverage report written to …"* **unconditionally**, and summarized whatever JSON was
+on disk: the **previous run's, "GATE: MET ✅" and all**, exiting **0**. It nearly graded an M219 rebuild on
+hours-old numbers from the **old, broken** stack.
+- **Fix** (no clock, no `stat(1)`): **delete the report first**, so its presence afterwards *proves this run wrote
+  it*. Absence ⇒ a loud `THIS IS NOT A PASS` banner + non-zero rc, never a carry-forward. `generatedAt` is
+  additionally fenced against the run-start timestamp — which catches the **second** shape: a **concurrent** run
+  writing the same out-dir (exactly how this milestone's battery got corrupted). playwright's rc is now
+  propagated.
+- **Fenced** by `TestCoverageReportFreshness` (4 tests) + the shellcheck gate the script was never in.
+  **RED-proven: 3 of the 4 FAIL against the pre-fix script** — including `0 == 0 : a sweep that produced NO report
+  exited 0` — while the success-path test passes on **both**, which is correct: that path was never broken.
+- **`run-playthroughs.sh` already got this right.** M204 iter-02 hit the identical class (a `--reporter` flag
+  suppressing the json reporter, leaving `last-run.json` stale and decoupling `ptreport` from the actual run) and
+  fixed it *there*. **The lesson was never propagated one directory over.**
+
+**2. `resolveClaimedSkillNames` — the flat pool's OTHER consumer — was entirely untested.** R-8 deleted the flat
+tier from the claimed-tail ladder, but the pool is **retained** for two legitimate callers, and one of them (the
+AI-generated-batch path, `generated_batch.go:254`) takes it as a parameter with **zero tests**. It is safe today
+because it uses the pool as a **name→node-id INDEX** and **drops** names it cannot resolve — the
+CODE-owns-structure / AI-owns-content boundary. That boundary is load-bearing and was **unpinned**: a future
+author "helpfully" padding a short generated tail from `flatPool` would reintroduce **D1 on a path D1's own fence
+does not watch**. Fenced (4 subtests); **RED-proven** against a pad-from-flat mutation (`K-JUNK-0`/`K-JUNK-1`
+enter the result).
+
+**3. `namedSkillRefs.flat` still documented itself as *"the universal fallback pool"*.** The comment described the
+mechanism R-8 **deleted**, and would have walked the next author straight back into it. Corrected to state what
+`flat` is now for (filter + lookup, **never** fill) and what it must never become again.
+
+#### Documentation defects found (the same D17 shape, in the docs)
+
+**4. `progress.md` claimed *"zero new demo-patches"* — false.** M219 **did** author one:
+**`next-web-aireadiness-flag-gate`**. The *withdrawn* patch (`CycleID == nil`, D-M219-2) and the *authored* patch
+are **different patches**, and the note conflated them. Corrected, with the distinction spelled out.
+
+**5. `demopatch-spec.md`'s patch roster was missing that patch** — the doc CLAUDE.md calls *"the contract to read
+before adding or re-pinning any patch"* did not list the patch this milestone added, and still said *"the **three**
+`next-web-app` patches"* (now four). Roster now carries **7**.
+
+**6. `ai-readiness.md` asserted the exact claim the new patch FALSIFIES** — and the patch manifest already said
+*"the doc is corrected in the same milestone"*, **which it was not**. The doc said absence of PostHog *defaults the
+flag through*; in fact it makes the flag `undefined` **forever** while the code demands `=== true`, so the **member
+surface never mounts on a demo**. **Why the false claim survived: it was proven against the wrong vantage** — the
+cited "empirical proof" (M53 **AB5**) renders the **manager** dashboard, but `flag_ai_readiness` gates the
+**employee side only**, so AB5 was never evidence about that gate at all. The doc's own parenthetical conceded the
+mechanism was *"inferred … not separately traced"*. **This is the same wrong-vantage trap that made two of M219's
+opening premises false** (F-1/F-2). Corrected in full, with the mechanism traced in code.
+
+**Coverage delta:** stack-verify pytest **109 → 114** (+5); stack-seeding seeders **+1 fence, 4 subtests**. Go
+coverage is a *finder* here, not a goal — the milestone's real defects (R-5b, D1, D3) were **invisible to a green
+unit suite** and only a cold reset-to-seed exposed them (**D-M219-14**), which is why this pass graded fences by
+**mutation** rather than by chasing line coverage.
+
+**Flakes stabilized:** none observed. 3 consecutive sequential runs of the new fences: clean.
+
+**Knowledge backfill:** `corpus/services/ai-readiness.md` (the falsified PostHog gate-2 claim, traced in code) ·
+`corpus/ops/demo/demopatch-spec.md` (the 7th patch + the corrected `next-web-app` count) ·
+`m220-cue-sheet/overview.md` (the academy **session-poisoning** escalation) · `m221-prove-on-billion/overview.md`
+(the `GUARD-M221-host-isolation` + native-academy-reap Fate-3 items).
+
+### Stop condition
+**Pass 1, stopped.** The Step-2b scan surfaced nothing further worth adding: the fence set is mutation-proven
+load-bearing (7/7), the two real code gaps found (the coverage-report staleness path + the untested flat-pool
+consumer) are both fixed and RED-proven, and the remaining findings are documentation defects — now corrected. The
+known REDs (academy session-poisoning, studio-desk 302) are **routed to M220 by design** and their fences
+**deliberately report RED** until it lands; deepening tests against them here would be testing a defect this
+milestone does not own.

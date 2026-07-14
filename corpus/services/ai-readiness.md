@@ -35,14 +35,43 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 > `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and UI-also-checks-the-flag (gate 2)
 > are complementary, and both must hold for the dashboard to render.
 >
-> **How the demo satisfies gate 2 (the FE flag).** The seeder writes only gate 1 (the org setting) — the PostHog
-> `flag_ai_readiness` is out of seeder reach (M51 iter-02). The demo next-web bakes **no** `NEXT_PUBLIC_POSTHOG_KEY`
-> (only the minted Clerk pk + offset URLs — see `demo/frontend-tier.md`), so the client-side flag check has no
-> PostHog backend to consult and does not block the route. Empirically this is proven: the M53 cold-rebuild
-> acceptance **AB5** renders the manager dashboard from cold on the showcase org (Northwind: 50/100 org readiness,
-> 199 members, the 3-step funnel, both sections PASS) — so gate 2 is provably satisfied in the demo. (The exact
-> in-SDK default-through path is inferred from "no key baked + AB5 renders"; it is not separately traced in the
-> FE code here.)
+> ### ⚠️ How the demo satisfies gate 2 (the FE flag) — CORRECTED, M219 (v2.3 "cue to cue")
+>
+> **This section previously asserted the exact opposite of the truth, and the error is instructive.** It said:
+> *"the demo next-web bakes no `NEXT_PUBLIC_POSTHOG_KEY`, so the client-side flag check has no PostHog backend
+> to consult and does not block the route"* — i.e. that absence of PostHog **defaults the flag through**.
+>
+> **It does not. Absence of PostHog makes the flag `undefined`, and the code demands `=== true`:**
+>
+> ```ts
+> const rawFlag     = useFeatureFlagEnabled(AI_READINESS_FLAG);  // no PostHog → undefined, FOREVER
+> const flagEnabled = stickyFlag.current === true;               // undefined === true → FALSE
+> const { orgEnabled } = useAiReadinessEnabled(flagEnabled);     // queried ONLY when the flag is on
+> active = flagEnabled && orgEnabled === true;                   // → never active
+> ```
+>
+> `Analytics.provider.tsx` initializes PostHog only when **both** `NEXT_PUBLIC_POSTHOG_KEY` and
+> `NEXT_PUBLIC_POSTHOG_HOST` are present; a demo supplies neither. So on a demo the **member** AI-readiness
+> surface **never mounts, for any member, in any cycle state** — and the org-enablement query is never even
+> fired, because the hook short-circuits on the flag. Measured on `billion`/demo-1 (cold reset-to-seed, both
+> seeded heroes, authenticated): `/home` body contains "AI Readiness" → **NO**; readiness network calls →
+> **NONE**.
+>
+> **Why the old claim survived: it was proven against the wrong vantage.** The "empirical proof" cited was the
+> M53 acceptance **AB5**, which renders the **manager** dashboard. But `flag_ai_readiness` gates the
+> **EMPLOYEE side only** (`useAiReadinessActive.ts` — see § below); the manager page does not route through
+> that hook at all. A manager-side render was therefore never evidence about gate 2. The doc's own parenthetical
+> conceded the mechanism was *"inferred … not separately traced in the FE code"* — and the inference was wrong.
+> This is the same wrong-vantage trap that made two of M219's own opening premises false.
+>
+> **How a demo ACTUALLY satisfies gate 2:** the sha-pinned demo-patch **`next-web-aireadiness-flag-gate`**
+> (M219) widens the gate to treat *"PostHog is not configured"* as *"no rollout gate"* — behaviour-identical
+> wherever PostHog **is** configured, and the ORG boolean still has the final say in every case, so a
+> non-readiness org stays dark on a demo too. See [`demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).
+>
+> **The genuine platform limitation this records** (the patch does not erase it): a deployment without PostHog
+> cannot turn AI Readiness on for members **at all**, whatever its org settings say. The real platform fix
+> would be to fall back to the org boolean when the analytics provider was never initialized.
 
 ## The 3-step framework + scoring
 

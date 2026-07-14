@@ -93,7 +93,7 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the three `next-web-app` patches | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **four** `next-web-app` patches | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
 | **`stack-injection/apply-ant-academy-dev-origins.sh`** | `ant-academy-dev-origins` | ant-academy runs **natively** (`next dev`), not baked into an image → the patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop |
 
@@ -144,6 +144,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `next-web-studio-url` | `next-web-app` · `packages/core-js/src/constants/urls.ts` | the Studio nav link stops ejecting to `studio.anthropos.work` |
 | `next-web-public-website-url` | **same file — CHAINED** | the sim drill-down stays demo-local |
 | `next-web-members-pagination` | `next-web-app` · `InsightsContext.tsx` | the enterprise members fetch `limit: 1000 → 30` |
+| `next-web-aireadiness-flag-gate` | `next-web-app` · `components/ai-readiness/data/useAiReadinessActive.ts` | **(M219)** the **member** readiness surface never mounts on a demo: a demo bakes no PostHog, so `useFeatureFlagEnabled()` is `undefined` **forever** and the code demands `=== true`. Treats *"PostHog unconfigured"* as *"no rollout gate"*; the ORG boolean still decides. **Behaviour-identical wherever PostHog IS configured.** Targets its **own** file — does **not** chain with the `urls.ts` pair |
 | `app-targetrole-authz-skip` | `app` · `internal/roles/roles.go` | short-circuits a per-member Sentinel RPC on the **read** path → members grid **76.7 s → 0.51 s**. Mutations still enforce |
 | `app-aireadiness-snapshot-loadmembers` | `app` · `internal/workforce/ai_readiness.go` | bounds the frozen-read member hydration to the ~199 snapshot users instead of the whole org → the **180 s** AI-readiness read completes. **Data-identical** |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
