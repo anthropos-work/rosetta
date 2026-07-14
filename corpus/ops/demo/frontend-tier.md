@@ -25,6 +25,30 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
 
+> ### ⚠️ ant-academy needs **Node ≥ 22**, and "started" must mean **the port answers** (F-13, M219)
+>
+> For four releases the bring-up reported the academy as **started** while the demo's **AI Academy** link served
+> a bare **502 for the entire life of the stack**. Two defects, both on the bring-up's *own reporting path*:
+>
+> 1. **The node check tested EXISTENCE, not the version.** `command -v node` passed on the demo VM — with
+>    **Node 18**. ant-academy declares `"engines": { "node": ">=22" }`, ships Next 16, and its toolchain imports
+>    `node:util`'s `styleText` (Node ≥ 20), so `next dev` died at import **every single time**:
+>    `SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'`.
+>    **A version requirement that is only checked for existence is not checked at all.** (The VM had v22.22.1
+>    installed under nvm and unused — a session-detached daemon never sources `nvm.sh`.) The launcher now
+>    resolves a satisfying node under `~/.nvm`, or **fails loud with the remedy**.
+> 2. **The liveness probe polled `kill -0 $pid` for 3 s**, then printed *"started (pid N)"*. The pid was alive at
+>    t=1 s and gone by t=5 s. **A probe that cannot outlive the thing it probes is not a probe.** It now polls the
+>    **port** (bounded by `ACADEMY_READY_TIMEOUT_S`, default **120 s** — `next dev` genuinely cold-compiles for
+>    30–60 s on a slow VM), watching the pid so a crash fails fast, and prints the log tail when the port never
+>    answers. The only success phrasing is **`started + SERVING on :PORT`**.
+>
+> The demo-coverage sweep catches this independently as a **cross-port failure** (`:3077+offset` → HTTP 502) —
+> which is how it was confirmed. **The launcher's own test fixtures were the bug**: the npm stub was
+> `run) exec sleep 30` (alive, serving nothing) and the node stub answered `-v` with silence, so the suite was
+> green *against the broken launcher*. The stubs now model a real academy, and both failure shapes are fenced
+> (the liveness one proven RED — the old check cheerfully printed "started" for a daemon serving nothing).
+
 > **studio-desk is single-port (M32).** The studio-desk image (`Dockerfile.dev`) is a **production build**
 > (`npm run build:server && build:frontend`, `CMD npm start`, and it even bakes `ENV NODE_ENV=production`): one
 > node process serves the built SPA *and* the API on **9000** — the `9100` Vite dev port exists only under
