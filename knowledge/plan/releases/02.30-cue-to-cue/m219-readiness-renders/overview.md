@@ -3,9 +3,12 @@ milestone: M219
 slug: readiness-renders
 version: v2.3 "cue to cue"
 milestone_shape: section
-status: complete
+status: archived
 created: 2026-07-13
 last_updated: 2026-07-14
+closed: 2026-07-14
+close_status: closed-complete
+rext_tag: cue-to-cue-m219-final
 complexity: medium
 depends_on: M217
 parallel_with: M218, M220

@@ -112,6 +112,31 @@ Two items that can only be settled **on the box, over the tailnet** — which is
   pre-bind-reap item above (same `reap.sh` surface) — but note that the reap must cover the **native** processes
   (cockpit **and** academy), not only the container ports.
 
+- **`REPROVE-M221-battery-at-final-code` — the code that GRADED M219 is not the code that SHIPPED it.**
+  M219's 5-cycle cold battery was graded at rext tag **`cue-to-cue-m219-r8`**. **Two commits landed after it**,
+  during harden/close:
+  - `b5bf65b` — the coverage-harness stale-report fix. **Harness only** — it *grades* the demo, it is not *in* it.
+  - `c6648d1` — **`aiReadinessStep1Score` double-rounded.** It routed through a 0–100 intermediate
+    (`round(round(held/total*100) * 30/100)`) while the platform's `computeTier1` rounds **once**; they disagree on
+    **3 of the 14** reachable `heldWeight`s (2.5 → 11 vs 12 · 4.0 → 19 vs 18 · 5.5 → 26 vs 25). **This is a
+    SEED-PATH change** — and **per M218 D13, a seed-path change RESTARTS the battery count** (M219 D-M219-15
+    honoured that rule once already, re-running a 35-minute battery rather than argue a fix was "behaviourally
+    identical").
+
+  **The delta is small and strictly corrective** — a seeded Step-1 score off by one point for some members, and the
+  fix makes the seed **agree with the platform** where it previously disagreed. It does **not** affect whether any
+  section renders. **M219 did not round it away, and neither should this milestone.** It matters more *after* M219,
+  which seeds an **active** (live-recomputed) cycle alongside the **closed** (frozen) one: a double-rounded frozen
+  score means the **same member reports two different Step-1 scores depending on which cycle is viewed**.
+
+  **DoD:** M219's readiness gates are re-proven **at final code** as part of this milestone's own cold
+  reset-to-seed battery — it rebuilds the demo from scratch on the VM anyway, so this costs **no extra cycle**.
+  Concretely, fold M219's five graded gates into this battery's assertions: **no junk skills** (enumerate every
+  distinct claimed skill name), **hero role titles resolve**, `ai_readiness_cycles == 2`,
+  `interview_aggregated_reports` **non-empty**, and the readiness sections **filled** (900-char floor). Note the
+  dependency: this battery is **itself** exposed to the host-isolation hazard above — **`GUARD-M221-host-isolation`
+  lands first, or this re-proof can corrupt its own evidence exactly as M219's did.**
+
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
   latency gate **cannot be a Playthrough** (Playthroughs declare perf a **NON-GOAL**), so it is a **new

@@ -304,7 +304,84 @@ correction** (the "~2–5 s" claim, 4 sites).
 **Re-scope trigger:** if the harness shows neither C-1 nor C-3 explains the **employee** vantage, **stop and
 re-measure** — do not proceed on a manager-only fix set.
 
-#### M219 — Readiness renders  (`section`, medium)
+#### M219 — Readiness renders  (`section`, medium) — ✅ **DONE 2026-07-14**
+**Status:** ✅ **`done` — closed-complete 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue` (`e7a33c6`).
+rext code-of-record: **`cue-to-cue-m219-final`**. **Dir:** [`m219-readiness-renders/`](releases/02.30-cue-to-cue/m219-readiness-renders/)
+
+> ### ✅ THE USER'S KICKOFF BAR IS MET ON BOTH COUNTS
+> *"make sure each element and sub section of readiness is filled spot data + make sure to use the **right**
+> dashboards/pages for readiness (both for managers and employees).. **not the old legacy ones**"* — proven on
+> **5 cold reset-to-seed rebuilds** at `cue-to-cue-m219-r8`, each independently evidenced. **Zero platform-repo
+> edits.** Manager: **all 8 readiness sections PASS**, `failingSections=0`. Employee: **both heroes**
+> `failingSections=0`. **Zero** demo pointers resolve to a legacy surface.
+>
+> **⚠ TWO of this milestone's OWN PREMISES were REFUTED by measurement — and the planned demo-patch was
+> WITHDRAWN, not built.** (**F-2**) The `CycleID == nil` blocker **does not exist**: the CURRENT frontend passes
+> `?cycle=`; the original note was made against the **LEGACY** page. (**F-7**) M217's `loadmembers` patch is **not
+> dead** — it *self-heals*; and *"the live recompute never completes"* is **false** — **2.09 s**, measured.
+>
+> **What was ACTUALLY broken.** All 3 demo pointers targeted `/enterprise/workforce/ai-readiness` — an **UNLINKED
+> ORPHAN** (no nav, no tab, no redirect). The **employee surface has no route of its own** (it is embedded in
+> `/home`) — *which is why route-crawling never found it*. **Junk skills ORG-WIDE**: the claimed-tail pool ran
+> **dry** and topped up from the flat pool's **alphabetical head** — Aria + 8 named members claimed **"24-hour
+> dietary recall"** / `15Five` / `17Track`. The arithmetic closed exactly (`want`=28, role pool=10, curated `data`
+> supplied only **25 usable** ⇒ **exactly 3** junk tokens) and **Ben was clean only because his `want` (16) fit his
+> pool — that asymmetry was the proof** it was pool **SIZE**, not resolution. **The flat tier is DELETED** (ladder =
+> role → curated → **general** → **STOP**; exhausted ⇒ *fewer* skills, never padded ones). A hero rendered
+> **ROLE-LESS** (`Operations Analyst` **resolves** but has **0 `job_role_skills`** ⇒ the resolver rejected it —
+> ***"it resolves" ≠ "it has skills"***). And the manager's **4 interview-findings blocks rendered HEADINGS OVER
+> NOTHING** — they read `jobsimulation.interview_aggregated_reports`, which **NO SEEDER EVER WROTE**. Now seeded;
+> **the manifest's disclosed EXCEPTION was DELETED** and the floor raised **120 → 900** (the empty headings measured
+> ~120–200 chars — *which is exactly why 120 passed over them*).
+>
+> **ONE new demo-patch, and it is not the withdrawn one:** `next-web-aireadiness-flag-gate` — no PostHog on a demo
+> ⇒ the flag is `undefined` **forever** and the code demands `=== true`, so the member surface never mounts. Roster
+> now carries **7**.
+>
+> **Inherited from M218, all landed:** **F-11** (the BAPI fabricated the org eid) ⇒ alignment **97.2% → 100% / 100%
+> critical (27/27)**, the gene **retained as a permanent fence**; and **both absence-gates** — `expressrun` is no
+> longer *unmeasurable-as-a-pass* (exit **3** ≠ exit **2**), and the freshness-gate's silent skip now **speaks**.
+>
+> **THE D17 THREAD — the spine of this milestone.** *A status artifact that outlives the thing it describes, and is
+> then read as evidence* has now bitten **~14 times across M217→M219**. **Five new instances inside M219 — several
+> found by the tooling in ITSELF:** `run-coverage.sh` printed *"coverage report written to …"* **unconditionally**
+> and re-read whatever JSON was on disk, so a spec that threw first presented the **PREVIOUS run's numbers, "GATE:
+> MET ✅" and all, exiting 0** — *it nearly graded an M219 rebuild on hours-old data from the **old, broken**
+> stack*. **17 existing tests asserted the junk-fallback AS THE CONTRACT** (an expected value literally containing
+> `K-JUNK-1`) — **they were not missing the bug, they were guarding it**; all inverted. The poisoned-pool fence's
+> **first cut PASSED against the broken code** — theatre inside its own fix. The interview-findings fence asserted
+> the **LEGACY** page's strings — and passed. And the academy launcher read *"a pid exists"* as *"the service is
+> up"*, its **fixtures having encoded the broken behaviour** — so the suite was **GREEN for four releases while the
+> academy 502'd**.
+>
+> **The generalized lessons:** ***"the role classifies" ≠ "the pool is big enough"*** · ***"it resolves" ≠ "it has
+> skills"*** · ***"it serves" ≠ "it renders"*** · ***"the pool resolved" ≠ "the content is sane"*** · ***an errored
+> SQL query is not "zero rows"*** · ***an unexecuted gate is a FINDING, not a pass.***
+>
+> **⚠ TWO DISCLOSED CAVEATS ON THE BATTERY — neither hidden, neither rounded away.**
+> **(1) It is NOT one uncontested consecutive run.** Two further runs were graded RED for **battery-INTEGRITY**
+> reasons caused by an **ORCHESTRATION error, not a demo defect**: two batteries were run **concurrently against the
+> single demo host** and one **purged the stack mid-measurement**, so a gate went **UNEXECUTED**. *No demo defect was
+> observed in anything that was measured*, and the 5 greens are each individually evidenced — but the audit trail
+> carries a permanent asterisk. **(2) The code that GRADED is not the code that SHIPPED:** `c6648d1`
+> (`aiReadinessStep1Score` **double-rounded** — it disagreed with the platform's `computeTier1` on **3 of 14**
+> reachable weights) is a **SEED-PATH** change that landed **after** the graded tag, and **per D13 a seed-path change
+> restarts the battery count**. Small, strictly corrective — **and still not allowed to be rounded away.**
+>
+> **13 bugs fixed** (build/R-8 9 · harden 3 · close 1). **Python 903/0** (+16) · **Go 1821 funcs / 0 failures / 6
+> modules** (+37, same method) · **flake 0** · **platform edits 0**.
+>
+> **Carried forward (5, all Fate-3, BOTH receiving `overview.md` files EDITED; ZERO escape-hatch):**
+> **M220** ← 🔴 **the academy POISONS the demo session** (cookies scope by **HOST, not PORT** — a presenter who
+> clicks the academy link is **logged OUT of the demo** into `ERR_TOO_MANY_REDIRECTS`, and every employee coverage
+> sweep **aborts**; severity **RAISED** on item **(i)**) · 🔴 **studio-desk `:19000` → 302 → `:13000/login`** (item
+> **(j)**, added at close — clicking *"Anthropos Studio"* **ejects the presenter**). *Both ship with **honest fences
+> that deliberately report RED** until M220 lands — a half-fix that reports green is worse than no fix.*
+> **M221** ← **`GUARD-M221-host-isolation`** (a host lock or per-cycle stack `N`; **a prerequisite for M221's own
+> gate**, itself a multi-cycle battery on that same singleton host) · **`FIX-M221-reap-native-academy`** (`down
+> --purge` doesn't reap the host-native academy — the **old** process keeps answering `:13077` while the log says it
+> *"DIED"*) · **`REPROVE-M221-battery-at-final-code`**.
+
 **Goal:** the AI-readiness story is **visible**, not merely seeded.
 **The seeding is a VERIFIED NO-OP** — Northwind Aviation (`narrative: ai-readiness`, 200 members, heroes **Aria
 COMPLETED / Ben STARTED / Dana manager**) is in the **DEFAULT** preset (`stack-seeding/presets/stories.seed.yaml:118-153`);

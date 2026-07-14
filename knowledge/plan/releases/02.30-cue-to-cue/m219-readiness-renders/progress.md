@@ -160,6 +160,29 @@ single host.
 > the reported result and its caveat verbatim; it does not add an independent verification the harden pass did not
 > perform.
 
+### ⚠️ SECOND DISCLOSED DELTA — the code that GRADED is not the code that SHIPPED
+
+The heading above says *"at final code."* **It was true when written and false by the close** — the same D17 shape,
+in this milestone's own status artifact, for the second time (see § Notes). **Two rext commits landed AFTER the
+graded tag `cue-to-cue-m219-r8`:**
+
+| Commit | What | On the demo's runtime/seed path? |
+|---|---|---|
+| `b5bf65b` | the coverage-harness stale-report fix (`run-coverage.sh`) | **No** — harness only; it grades the demo, it is not *in* the demo |
+| `c6648d1` | **`aiReadinessStep1Score` double-rounded** — it routed through a 0–100 intermediate (`round(round(held/total*100) * 30/100)`) while the platform's `computeTier1` rounds **once**. They disagree on **3 of the 14** reachable `heldWeight`s (2.5 → 11 vs 12 · 4.0 → 19 vs 18 · 5.5 → 26 vs 25). Also: the Playthrough refused to assert the milestone's own headline fix (D-M219-27) | **YES — this is a SEED-PATH change** |
+
+**Per M218 D13 a seed-path change RESTARTS the battery count.** So, stated plainly: **the shipped code is not the
+code the 5 greens graded.** The delta is small and *strictly corrective* — a seeded Step-1 score off by one point
+for some members, and the fix makes the seed **agree with the platform** where it previously disagreed. It does
+**not** affect whether any section renders, which is this milestone's actual bar. But the rule does not bend for a
+small delta: **that is exactly the rationalization D13 and D17 exist to refuse** (D-M219-15 refused it once already,
+and re-ran a 35-minute battery rather than argue the fix was "behaviourally identical").
+
+**Route forward (Fate 3 → M221):** **`REPROVE-M221-battery-at-final-code`** — the battery is re-proven at **final**
+code by M221, the milestone that rebuilds the demo from scratch on the remote VM and verifies the whole release.
+Attached to `m221-prove-on-billion/overview.md` § *Inherited from M219*. **This milestone does not claim a battery
+at its own shipped HEAD, and does not round one up.**
+
 ## Notes
 
 - **Phase 0b — KB-fidelity: YELLOW** (satisfied by the census; D-M219-1; reused across sections per the skill's
@@ -281,3 +304,129 @@ consumer) are both fixed and RED-proven, and the remaining findings are document
 known REDs (academy session-poisoning, studio-desk 302) are **routed to M220 by design** and their fences
 **deliberately report RED** until it lands; deepening tests against them here would be testing a defect this
 milestone does not own.
+
+## M219: Completeness Ledger
+
+Every `overview.md` § Scope.In item (1–9), the § Delivers items, and the net-new findings, fated under the
+three-fate rule. **The user's kickoff bar — *"each element and sub section of readiness filled spot data"* + *"the
+right dashboards/pages … not the old legacy ones"* — is MET on both counts**, proven on 5 cold reset-to-seed
+rebuilds at `cue-to-cue-m219-r8` (with the two disclosed asterisks recorded in § Battery — read them; they are not
+footnotes).
+
+### Done (Fate 1 — landed in M219, properly and completely)
+
+- **Item 1 — Dana (manager) sees a FILLED AI-readiness page.** Delivered, but **not by the route the plan
+  predicted**: both of the plan's named blockers were **REFUTED by measurement** (see § Dropped). The page was
+  blank because all 3 demo pointers aimed at an **unlinked orphan** (`/enterprise/workforce/ai-readiness` — no nav,
+  no tab, no redirect) and because 4 of its sections read a table no seeder wrote. Verified live: manager
+  **8/8 readiness sections PASS**, `failingSections=0`, 0 prod-eject escapes. — S1 + S2.
+- **Item 2 — Ben's from-scratch STARTED workflow is visible on his dashboard.** The **ACTIVE cycle** is now seeded
+  (F-6); Ben's funnel previously rendered **nothing**. Also fixed here: Ben rendered **ROLE-LESS** (D2 —
+  `Operations Analyst` **resolves** but carries **0 `job_role_skills`**, so the seeder's own resolver rejected it →
+  `job_role_id` NULL). Repointed to `Business Operations Analyst`; `assertHeroRolesResolve` now **hard-fails the
+  seed**. — S2 + § R-8 D2.
+- **Item 3 — Aria's COMPLETED state renders.** Promoted from the compact archived card to the **full done-hero**;
+  Step-1 **30/30**, total **89 "champion"**. — S2 (R-2).
+- **Item 4 — the stale ACTIVE-vs-CLOSED comment** (`stories.seed.yaml:112-117`). Fixed. — S1.
+- **Item 5 — `FIX-M219-bapi-org-eid` (F-11, inherited from M218).** The roster's real `org_eid` is wired through a
+  3-tier ladder; the deliberately-RED gene is **GREEN** and **retained as a permanent fence**. Go surface
+  **97.2% → 100.0% overall / 100% critical (27/27)**. RED-proven pre-fix. — S3.
+- **Item 6 — `TEST-M219-expressrun-dep-gate` (inherited from M218).** `alignctl` exit codes **split**: `3` =
+  UNMEASURABLE vs `2` = REGRESSED, with a banner that cannot be mistaken for a pass. **An unmeasurable surface can
+  no longer present as absence of a score.** Verified live. — S4.
+- **Item 7 — `TEST-M219-freshness-gate-skips` (inherited from M218).** The preflight's silent skip now **speaks**
+  (it printed *nothing*). Plus three unit tests that deferred to a *"live-verify gate"* **that does not exist** now
+  report themselves as **coverage holes, not passes**. — S4.
+- **Item 8 — every element and sub-section FILLED with real spot data, on BOTH vantages** *(the user's kickoff
+  bar)*. The coverage sweep was **EXECUTED against a live demo for the first time** (the harness could not even be
+  *pointed* at a remote demo — F-14). From the presenter's true vantage (a tailnet peer): manager
+  `failingSections=0` / **all 8 readiness sections PASS**; employee **both heroes** `failingSections=0`. The four
+  manager interview-findings blocks — which rendered **headings over nothing** — are now seeded from
+  `jobsimulation.interview_aggregated_reports` (**3,671 chars**, all four blocks carrying body content), and **the
+  manifest's disclosed EXCEPTION was DELETED** with the content floor raised **120 → 900**. — S2 + § R-8 D3.
+- **Item 8 (seeder gaps found by it — declared IN scope by `overview.md` § Out).** The claimed-skill tail drew the
+  taxonomy's **alphanumeric junk head ORG-WIDE** (Aria + 8 named members claimed *"24-hour dietary recall"* /
+  `15Five` / `17Track`). Root cause was pool **SIZE**, not resolution — the arithmetic closed exactly. **The flat
+  tier is DELETED** (ladder = role → curated → **general** → **STOP**; exhausted ⇒ *fewer* skills, never padded
+  ones); a curated `general` family is the new coherent last tier. Proven from cold: **all 132 distinct claimed
+  skill names enumerated and read, 3,474 user_skill rows / 540 members, 0 junk.** — § R-8 D1.
+- **Item 9 — the demo surfaces the CURRENT readiness dashboards, not the legacy ones** *(the user's kickoff bar)*.
+  The current-vs-legacy split is established **in code** and **documented** in `corpus/services/ai-readiness.md`
+  (§ Surfaces) — including the fact that **the employee surface has no route of its own** (it is embedded in
+  `/home`), which is *why* route-crawling never found it. Every demo pointer repointed; **a legacy pointer is now a
+  hard test failure** (`LegacyReadinessPaths` + `ValidateCockpitManifest`), RED-proven against the pre-M219 shipped
+  preset. Verified on the cold-seeded manifest: **zero** occurrences of the legacy path. — S1.
+- **Delivers → the `ai-readiness` playthrough manifest + its section in `corpus/ops/demo/playthroughs.md`** (was a
+  declared **BLIND AREA** — Aria's and Ben's journeys were not e2e-proven at all). **EXECUTED, not merely
+  validated**: 82 passed / 0 failed; ptreport **14/15 (93.3%)**; **all four AI-readiness Playthroughs PASS**. — S5.
+- **F-13 (net-new, found on the live host).** The bring-up reported the academy **"started"** while it was dying,
+  and served a bare **502 for the life of every stack**. The node check tested **existence**, not `engines: >=22`;
+  the liveness probe polled `kill -0 $pid` — *a probe that cannot outlive the thing it probes*. Now: resolve a
+  satisfying node or **fail loud**; **poll the port**. The launcher's own **test fixtures had encoded the broken
+  behaviour**, so the suite was GREEN for four releases while the academy 502'd (D-M219-16).
+- **One NEW demo-patch, authored and registered:** `next-web-aireadiness-flag-gate` — the member surface never
+  mounts on a demo (no PostHog ⇒ the flag resolves `undefined` **forever** and the code demands `=== true`). No
+  env/config/compose seam exists, so it takes the sanctioned hatch. Roster now carries **7** patches. **Zero
+  platform-repo edits.**
+
+### Confirmed-covered by another milestone in this release (Fate 2)
+
+- **The manager page's SPEED.** Declared **Out** by `overview.md` and owned by **M218** (gate met: p95 click→ACCESS
+  2413/1767 ms). M219 re-measured the readiness load and **reports** it per **D-DESIGN-1**: cold **2.09 s** — which
+  also **REFUTES** the plan's inherited claim that the live recompute *"never completes"*. Reported, never gated.
+  No M220/M221 edit needed.
+
+### Annotated to a milestone of this release (Fate 3 — the target's `overview.md` was EDITED at close)
+
+- **The ant-academy POISONS THE DEMO SESSION** — **Attached to:** M220 → `m220-cue-sheet/overview.md` item **(i)**
+  — **Decision:** D-M219-22. The base item (Clerkenstein-wire the academy) **pre-existed** in M220's `In:` list
+  (a Fate-2 shape), but this close **EDITED it**: severity **raised to demo-BREAKING**, with the mechanism proven
+  by controlled A/B from a peer. `:13077` runs its own keyless Clerk and returns `Set-Cookie: __session=;
+  Expires=1970` + `__client_uat=0; Domain=taildc510.ts.net` — and **cookies scope by HOST, not by PORT**. So **a
+  presenter who clicks the academy link is LOGGED OUT of the demo** into `ERR_TOO_MANY_REDIRECTS`, and **every
+  employee coverage sweep aborts**. M219 landed the **honest fences** (they report **RED until M220 lands** —
+  intended; a half-fix that reports green is worse than no fix).
+- **studio-desk bounces the presenter OUT of the demo** — **Attached to:** M220 → `m220-cue-sheet/overview.md` item
+  **(j)**, added at this close — **Why this target:** it is `demo-up` **defaults wiring** and needs live browser
+  iteration, which is M220's domain — **Decision:** D-M219-22. `:19000` → **302** → `:13000/login`: clicking
+  *"Anthropos Studio"* ejects the presenter. An **in-demo dead end**, which is why the sweep's prod-eject detector
+  never flagged it.
+- **`GUARD-M221-host-isolation`** — **Attached to:** M221 → `m221-prove-on-billion/overview.md` — **Why this
+  target:** it must be **proven on the host**, and it is a **prerequisite for M221's own gate**, which is itself a
+  multi-cycle battery on that same singleton host — **Decision:** D-M219-23. Two agents can run cycles against ONE
+  demo host and **nothing stops them**; this orchestration hazard cost this milestone hours and **corrupted its own
+  audit trail**. The same root cause (no mutual exclusion on a shared resource) bit the coverage harness **twice**
+  in this milestone alone.
+- **`FIX-M221-reap-native-academy`** — **Attached to:** M221 → `m221-prove-on-billion/overview.md` — **Decision:**
+  D-M219-23. `down --purge` does not reap the **host-native** academy, so it holds `:13077` **across cycles**: the
+  new process dies `EADDRINUSE` while **the old one keeps answering**, and the launcher log says *"the academy
+  process DIED"* while the port still serves. Another *serves ≠ works* — and it silently makes cycle N+1 measure
+  cycle N's process.
+- **`REPROVE-M221-battery-at-final-code`** — **Attached to:** M221 → `m221-prove-on-billion/overview.md` — **Why
+  this target:** M221 rebuilds the demo from scratch on the remote VM and verifies the whole release, so it is
+  where a battery at final code is affordable and meaningful — **Decision:** D-M219-26. **The code that graded is
+  not the code that shipped**: `c6648d1` (the `aiReadinessStep1Score` double-round) is a **seed-path** change that
+  landed **after** the graded tag `cue-to-cue-m219-r8`, and **per D13 a seed-path change restarts the battery
+  count**. See § Battery → *SECOND DISCLOSED DELTA*. Small, strictly corrective, and **still not allowed to be
+  rounded away**.
+
+### Dropped (cut from the plan entirely)
+
+- **The planned `CycleID == nil` demo-patch — WITHDRAWN.** **Reason:** the blocker **DOES NOT EXIST**. The
+  **CURRENT** manager page already passes `?cycle=`; the original observation was made against the **LEGACY** page,
+  whose hook takes no cycle param. A **non-patch** fix was available (point the demo at the *current* surface),
+  which is the correct order of preference per `demopatch-spec.md §1`. **Decision:** D-M219-2. *(This is the
+  wrong-vantage trap — the same one that later falsified a claim in `ai-readiness.md`.)*
+- **The re-pin of `app-aireadiness-snapshot-loadmembers`** (item 1's other named blocker). **Reason:** the
+  "dead patch" premise was **REFUTED** (F-7) — **the patch self-heals** and needs no re-pin. Recorded as N/A rather
+  than reported as "fixed". **Decision:** F-7 in `spec-notes.md`.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+
+- **None.** Zero escape-hatch deferrals; **nothing leaves v2.3.**
+
+**Every scope item is Fate 1 except the two REFUTED premises (Dropped) and the five items routed Fate 3 — and every
+receiving `overview.md` was EDITED, not merely name-checked.** Fate 3 means the sibling's *plan* changes, not that a
+string changes in ours.
+
+_Completeness ledger: 2026-07-14._
