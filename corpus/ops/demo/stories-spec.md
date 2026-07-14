@@ -444,8 +444,14 @@ former 2×3): org **Northwind Aviation** (200 members, `narrative: ai-readiness`
 
 The `narrative: ai-readiness` biases a share of members toward AI-named skills via the existing
 `isAISkillName`/`filterAISkills` path (`membership_skills.go`) — the same substring semantics the dashboard's
-`matchAISkill` uses. Dana's cockpit `jump_to` lands on `/enterprise/workforce/ai-readiness` (carrying
-`?cycle=<closed-cycle-id>` — see the demo-patch below); Aria/Ben land on their onboarding element.
+`matchAISkill` uses.
+
+> **✅ CORRECTED (M219, v2.3 "cue to cue") — the `jump_to` targets above were the LEGACY page.** Dana's deep-link
+> pointed at `/enterprise/workforce/ai-readiness`, the pre-v3.0 **unlinked orphan**; Aria's and Ben's pointed at
+> the generic `/profile`, **which shows no readiness at all**. They now land on **`/ai-readiness`** (Dana — the
+> current dashboard) and **`/home`** (Aria + Ben — the member readiness surface has **no route of its own**; it is
+> embedded there). A legacy target is now a **hard failure** at seed time (`cockpit.go` `LegacyReadinessPaths` /
+> `ValidateCockpitManifest`). See [`../../services/ai-readiness.md` § Surfaces](../../services/ai-readiness.md).
 
 ### The three net-new seeders (the AI-readiness chain)
 
@@ -456,8 +462,14 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 | Seeder (`stack-seeding/seeders/`) | Writes | What it lands |
 |---|---|---|
 | **`OrgSettingsSeeder`** (`org_settings.go`) | `organization_settings` (`setting='ai_readiness', is_enabled=true`, one row per org) | The **enablement gate** the dashboard keys on. (Enablement — this **gate 1**/data layer — is an **org setting**, resolved from the M48 contract, *not* a PostHog flag. The next-web UI *additionally* checks a **gate 2** PostHog flag `flag_ai_readiness`, a separate layer the seeder doesn't write — see [`ai-readiness.md`](../../services/ai-readiness.md#org-enablement-the-gate) for both gates + how the demo satisfies the FE flag.) |
-| **`AIReadinessConfigSeeder`** (`ai_readiness_config.go`) | `ai_readiness_cycles` (×1, **`status='closed'`**), `ai_readiness_skills` (~core weight-1.0 + enabling 0.5, **real replayed-taxonomy node-ids** via the resolver — never fabricated), `ai_readiness_sims` (×2, deterministic sim-refs), `ai_readiness_steps` (×3) | The **cycle + 3-step definition** the funnel scores against. |
-| **`AIReadinessFunnelSeeder`** (`ai_readiness_funnel.go`) | **199 frozen `ai_readiness_snapshots`** (one per stage≥1 member, platform-model-scored) + `ai_readiness_user_step_progresses` | The **200-member funnel at 78.4% all-3-complete** (stage-3 = 156, stage-2 = 21, stage-1 = 22), Aria pinned stage 3 / Ben stage 1 / Dana excluded. |
+| **`AIReadinessConfigSeeder`** (`ai_readiness_config.go`) | `ai_readiness_cycles` (**×2 since M219 — one `closed` + one `active`**), `ai_readiness_skills` (~core weight-1.0 + enabling 0.5, **real replayed-taxonomy node-ids** via the resolver — never fabricated), `ai_readiness_sims` (×2, **from the content pool's RESERVED TAIL** since M219), `ai_readiness_steps` (×3) | The **cycles + 3-step definition** the funnel scores against. |
+| **`AIReadinessFunnelSeeder`** (`ai_readiness_funnel.go`) | **199 frozen `ai_readiness_snapshots`** (one per stage≥1 member, platform-model-scored) + `ai_readiness_user_step_progresses` + the Step-1 `user_skill_evidences` + the Step-2/3 sessions + (**M219**) each interview's `jobsimulation.actors` + `jobsimulation.interactions` turns | The **200-member funnel at 78.4% all-3-complete** (stage-3 = 156, stage-2 = 21, stage-1 = 22), Aria pinned stage 3 / Ben stage 1 / Dana excluded. |
+
+> **M219 rewrote three of this seeder's contracts** — the cycle state (both cycles, because the two vantages need
+> opposite ones), the per-member skill count (one mapped skill scored the COMPLETED "Champion" hero **5/30**), and
+> the sim-ref reservation (a generic activity session could draw the readiness sim and silently score a member
+> against a step they never took). The full contract, with the arithmetic and the RED-proven fences, is in
+> [`../../services/ai-readiness.md` § The FILLED-ness contract](../../services/ai-readiness.md).
 
 ### Why closed-cycle + frozen snapshots (the strategy M51 shipped)
 

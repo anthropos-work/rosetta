@@ -99,9 +99,45 @@ validated by the same contract. **M203 (employee vantage) landed** the 3 employe
 **6 live Playthroughs**; **M204 (manager vantage) landed** the manager products — `workforce.yaml` (funnel /
 roster / succession) + `assignment-monitoring.yaml` (the per-member activity-dashboard drill-down) — as **4 more
 live Playthroughs** (`pt-workforce-funnel`, `pt-workforce-roster`, `pt-workforce-succession`, `pt-activity-drilldown`).
-The corpus now stands at **10 live Playthroughs, 1 TODO** — the sole TODO being the assign-WRITE half
-(`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared build-reference gap
-tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
+**M219 (v2.3 "cue to cue") landed `ai-readiness.yaml`** — the AI-readiness product, as **4 more live
+Playthroughs** (see below). The corpus now stands at **14 live Playthroughs, 1 TODO** — the sole TODO being the
+assign-WRITE half (`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared
+build-reference gap tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
+
+### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
+
+Until M219 the AI-readiness diagnostic — a shipped product, seeded into the demo since v1.10b — was covered by
+**nothing**, on **either** vantage. No Playthrough, no coverage descriptor for the member half. What that
+bought, in the demo the team was presenting:
+
+- the **STARTED** hero — *the entire point of the persona* — rendered **no readiness surface at all**. The
+  member funnel is gated on a `deadline`; the backend derives one **only from an ACTIVE cycle**; the seed wrote
+  only a **closed** one; `AIReadinessHero` returns `null` without a deadline. Nothing failed. Nothing asserted.
+- the **COMPLETED** hero silently degraded from her full result hero to a compact archived rail-card.
+- **six** manager sub-sections (the whole Step-3 interview-findings block and the four under it, the per-person
+  *Recommended actions*, the *Assessment sources*) were **absent from the page** — the frozen (closed-cycle)
+  read returns them as `null`.
+- and every demo pointer (cockpit `jump_to`, deep-link catalog, coverage manifest) resolved to
+  `/enterprise/workforce/ai-readiness` — the **pre-v3.0 LEGACY orphan**: no nav entry, no tab, no redirect,
+  reading a cycle-less endpoint with no cycles, no archetypes and no people. The sweep asserted it for four
+  releases and **passed**, because the page *does* render. It renders the dashboard the product no longer ships.
+
+**A surface that renders is not the same as the RIGHT surface** — and that distinction is only visible to a test
+that names the route. The four Playthroughs cover both vantages and both cycle states:
+
+| Playthrough | Hero (seat) | Surface | What it proves |
+|---|---|---|---|
+| `pt-aireadiness-member-done` | `pt-ai-completed` | **`/home`** | the COMPLETED member's result renders — her score + a recap of all 3 steps. Anchored on the mode-`done` title, so the silent archived-rail-card degradation is a **red test**, not a shrug. |
+| `pt-aireadiness-member-progress` | `pt-ai-started` | **`/home`** | the STARTED member's in-progress funnel renders — the 3 steps + the cycle due-date. **This is the surface that rendered as literally nothing.** |
+| `pt-aireadiness-manager-dashboard` | `pt-ai-manager` | **`/ai-readiness`** | the org score, the Knowledge × Usage archetype matrix, the team breakdown, and a **resolved** cycle (not the "no cycles yet" zero-state) — **and** that the manager is NOT on the legacy orphan. |
+| `pt-aireadiness-manager-howwemeasure` | `pt-ai-manager` | **`/ai-readiness`** | the 3-step method **and** the Step-3 AI-interview **findings** — the blocks a frozen read returns as `null` and the page therefore omits entirely. |
+
+> **The member surface has NO ROUTE OF ITS OWN.** `AIReadinessHero` + `AIReadinessRailCard` are **embedded in
+> `/home`**. That is why route-crawling never found them, and it is the single fact any future work on this
+> product must start from. The manager dashboard is **`/ai-readiness`** (the only readiness route the navbar
+> links). `url-shapes.ts` carries both as patterns — `AI_READINESS_URL` is **origin-anchored** (`://host/ai-readiness`)
+> precisely so it **refuses** the legacy `…/workforce/ai-readiness`; `LEGACY_AI_READINESS_URL` exists so a
+> Playthrough can assert the manager did **not** land there.
 
 ## The principles (the alignment contract)
 
@@ -247,8 +283,10 @@ fake-FAPI so dev-N gains the seat-switch is a carried open build item (spec §5.
 Test data ≠ demo data. The Playthrough world is a **dedicated preset decoupled from the demo seed**, built on
 the same seeding machinery **unchanged (M202-D3)** (a `stack.stories.yaml` consumed by `stackseed`):
 [`seed/pt-world.seed.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/seed/pt-world.seed.yaml). It
-seeds **two private orgs** distinct from the demo showcase orgs, spanning entitlement tiers + multi-org-private
-content. The `seed-worlds.yaml` index
+seeds **three private orgs** distinct from the demo showcase orgs, spanning entitlement tiers +
+multi-org-private content — Org A (the enterprise employee + manager), Org B (the free-tier entitlement actor),
+and, from **M219**, **Org C** (`narrative: ai-readiness`, size 40 — the AI-readiness diagnostic org with a
+COMPLETED member, a STARTED member, and its manager). The `seed-worlds.yaml` index
 ([`seed/seed-worlds.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/seed/seed-worlds.yaml)) is
 **single-sourced with the preset** — every world id / roster seat / tier / capability the validator resolves
 against is materialized by the seed. It is covered by the **same datadna conformance gate** as the demo seed
@@ -262,6 +300,17 @@ against is materialized by the seed. It is covered by the **same datadna conform
 > get their own deterministic `StoryOrgID`s and never collide. This is a genuine seeding-machinery constraint for
 > a *second world on a shared stack* (the demo default-org slot is single-tenant), recorded for the coverage
 > milestones to inherit.
+
+> **A world's shape is DECLARED, and the declaration is enforced (M219).** `seed-worlds.yaml` is not
+> documentation — `ptvalidate`'s **precondition-coverage** check resolves every use case's `seed.world`,
+> `actor.hero`, `actor.entitlement` and `seed.preconditions[]` against it and **hard-fails** on anything the
+> seed does not provide. That is why the AI-readiness product had to land its **three artifacts in lockstep** —
+> the `pt-world` Org C, the `seed-worlds` capabilities (`ai-readiness-org`, `ai-readiness-active-cycle`,
+> `ai-readiness-completed-member`, `ai-readiness-started-member`), and the manifest. A partial landing is not a
+> head start; it is a **broken validator**. The capabilities are deliberately *distinct* rather than one lumped
+> `ai-readiness`: each one, absent, breaks a **different** Playthrough, and the whole point of
+> precondition-coverage is that a missing precondition surfaces at **validate-time** instead of as a SETUP
+> failure masquerading as a capability break.
 
 ## The lifecycle — reset-to-seed + the serial-default runner
 

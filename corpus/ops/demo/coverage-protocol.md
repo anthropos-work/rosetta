@@ -134,6 +134,23 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
   floor relaxes to "real, non-empty content" and the reason is surfaced in the review's
   `documentedExceptions[]` (honest disclosure, never a silent skip).
 
+> **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
+> asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers
+> behind them are `1,284` or `0`. So a section can clear a `mustInclude` + length floor while every value in it
+> is zero — **an empty section wearing a hat**, and the sweep calls it a pass. It did: the AI-readiness
+> *"✨ Handled for you this cycle"* tile shipped with a hard-`0` counter and nothing noticed, because nothing
+> asserted a **value**.
+>
+> The fix is the existing **`textMatch`** kind, pointed at the values instead of the labels: a pattern requiring
+> a **leading non-zero digit** in front of each counter label, with `minMatches` set to the **number of
+> counters** — so `0 AI skills mapped` matches zero times and the section reports **empty**, and *one* dead
+> counter among three still fails (`minMatches: 3`, not "at least one survived"). Its unit tests assert the
+> pattern **rejects** a zeroed tile and **accepts** a filled one — an assert nobody has ever seen fail is not a
+> fence.
+>
+> **Reach for `textMatch`-on-values wherever a section's content is a NUMBER.** `text` proves a section
+> *rendered*; only a value assert proves it rendered something **true**.
+
 There are **two manifest namespaces**: **employee** (M42e — Maya, the member vantage, fully calibrated) and
 **manager** (M42m — Dan, the org-intelligence vantage; **fully calibrated** as of M42m iter-04). The manager
 manifest covers the real **`/enterprise/*`** route surface (reconciled from the wrong `/workforce/*` guesses):

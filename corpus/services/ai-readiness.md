@@ -276,6 +276,66 @@ milestone that owns login speed is a different one. Both paths fill `org.*`, `by
 
 **No AI keys needed either way** (diagnosis narratives fall back to static per-archetype text on AI error).
 
+### The FILLED-ness contract — three ways a readiness seed reads as real but is not (M219)
+
+The M219 bar was *"every element and sub-section filled with spot data"*. Raising it turned three quiet
+mis-seeds into defects. Each is a **seeder** contract, and each is now fenced by a regression test that was
+**proven RED against the pre-fix code**.
+
+**1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`ai_readiness.go:133-170`) divides the
+member's **held** skill-weight by the org's **entire configured repertoire** (5 core @ 1.0 + 3 enabling @ 0.5 =
+**6.5**), normalized to 30. So *one* core skill is `round(1.0/6.5*30)` = **5/30**, and one *enabling* skill is
+**2/30**. The seeder wrote exactly one evidence row per member — so the COMPLETED hero, the org's showcase
+**"Champion"**, scored **5/30** on Step 1, and the STARTED hero **2/30**. Non-empty, and not believable.
+
+> **Full marks require holding EVERY configured skill.** The denominator is the whole repertoire, by design —
+> "a larger configured set makes a full score harder to reach" (the platform's own comment). A seeder that
+> ignores this produces a technically-populated, semantically-broken funnel.
+
+The held-count is now **stage- and hero-aware**: the COMPLETED hero maps the full repertoire (**30/30**), the
+STARTED hero the 3 core skills (**14/30**), and the population spreads by funnel stage (stage 3: 5…all;
+stage 2: 3…5; stage 1: 1…3). Heroes start core-first (deterministic — a hero's score is a story beat, not a
+sample); the population rotates its window so the org's per-skill strengths spread across the repertoire.
+The **frozen snapshot's `frozen_step1` is now COMPUTED from the same held weight** (it was a flat constant 5) —
+so a frozen row and a live recompute of the same member finally agree.
+
+**2. The readiness sims must be RESERVED — or an unrelated session silently scores a member.** The platform
+scores Steps 2/3 from **any** ended session whose `sim_id` is in the org's `ai_readiness_sims` set. It does
+**not** consult the step-progress row. The generic session seeders hash their `sim_id` out of the *same* ~50-id
+replayed content pool the readiness config draws from — so a member's **unrelated activity session** could land
+on the readiness sim by coincidence and score them against a step they never took. That is exactly what
+happened to the STARTED hero: his funnel row said `interview: not_started` while the backend read an interview
+signal (score 21) off a stray activity session. The two readiness refs now come from a **reserved tail** of the
+sims pool that no general picker can draw (`contentref.go`), making the sets **provably disjoint**. The fence is
+**structural, not statistical**: asserting "no seeded session happened to collide" clears by luck about one run
+in ten.
+
+**3. An interview session with no turns is incoherent data.** `computeCycleTotals`
+(`how_we_measure.go:253-261`) counts `interviewQuestions` as `COUNT(jobsimulation.interactions)` joined through
+sessions to the org's interview sim. The funnel seeded the **session** and not one interaction, so the field was
+a hard **0**. The funnel now writes each stage-3 interview's two `jobsimulation.actors` (the AI interviewer +
+the member — the interaction FKs *require* them, and the DB enforces `source_id <> target_id`) and **6–11**
+`jobsimulation.interactions` turns (`action_type='call'` — the platform's enum is exactly `{email, call}`).
+
+> **Measured, not assumed — and it corrects the finding that opened this thread.** The **current** dashboard's
+> *"✨ Handled for you this cycle"* tile renders **`skillsMapped` / `handsOnMinutes` / `interviewMinutes`** —
+> and **does not render `interviewQuestions` at all** (`HowWeMeasureTab.tsx:2773-2797`; the field exists in the
+> API and in the FE's TypeScript type, `useAIReadiness.ts:250`, and is drawn by nothing). So its zero was a
+> **payload** zero, not a visible empty cell. Filled regardless — an interview with no questions is not real
+> data — but the honest claim is that this tile's *visible* zero-risk lives in the three cells that do render,
+> which the coverage sweep now fences with a **non-zero-value** assert rather than a label assert (a section
+> that renders with all-zero numbers is an empty section wearing a hat).
+
+**Also (a latent hazard closed while scaling #1):** the funnel's Step-1 evidence UPSERT is now
+**presence-preserving** — on a conflict with a row the verified-skill chain already wrote it asserts only that
+the row exists and is verified, and leaves `level` / `anthropos_level` / `user_level` alone. Step 1 is
+presence-based (`queryUserAISkills` selects only `user_id, skill_id, is_verified`), so preserving is both
+correct and safer: with a member now mapping up to 8 skills, the old clobbering upsert would have let the
+readiness seeder quietly restate a hero's claimed-vs-verified gap.
+
+**End-to-end proof:** the AI-readiness journeys are now covered by **4 Playthroughs** (both member vantages +
+the manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+
 ## Cross-references
 
 - **Authoritative in-repo deep-dive** (the platform's own KB): `app/knowledge/ai-readiness/overview.md` (start
