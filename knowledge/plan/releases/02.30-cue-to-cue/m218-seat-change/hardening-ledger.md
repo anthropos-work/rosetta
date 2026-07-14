@@ -104,7 +104,35 @@ graded-artifact boundary.
 | `DOC-M218-audit-corrections` | **F1-3 discharged** (the coverage claim) **+ the CI-inert correction discharged**. **Remaining:** the `clerkenstein.md:3-4` header. |
 | `TEST-M219-expressrun-dep-gate` | `expressrun` is **UNMEASURABLE** on a box without `@clerk/express` `node_modules` (rc=2, no score) — reproduced identically at baseline `f296e5e`, so **pre-existing**. iter-04's "all 5 surfaces 100%" is therefore **not reproducible here**; 4 of 5 were re-measured this pass. |
 | `TEST-M219-freshness-gate-skips` | The demo-patch live-clone freshness gate **skips** when `stack-demo/next-web-app` is absent (the established `test_demopatch.py` tradeoff). It ran here — but a box without the clone gets **no** anchor-drift protection. Itself an instance of *absence read as success*. |
-| _(pre-existing, out of M218 scope — **M217** footprint)_ | `stack-injection` `test_next_web_block_shape` (1 failure) and `dev-stack/tests/test_dev_stack.py` (several) fail on this box — **reproduced at baseline `f296e5e`**, so not regressions from this pass. `dev-stack`'s are **environment-driven**: this box's `.agentspace/secrets` lacks critical keys, so the secret-coverage pre-flight aborts *before the N-guard is reached* — which incidentally shows `guard_n` should run **before** the pre-flight (a dev-stack ordering smell, M217 footprint). Not touched: outside this milestone's diff. |
+| ~~_(pre-existing, out of M218 scope — **M217** footprint)_~~ **← ❌ WRONG. CORRECTED AT THE CLOSE, 2026-07-14.** | ~~`stack-injection` `test_next_web_block_shape` (1 failure)~~ **is an M218 REGRESSION, not pre-existing.** See the correction immediately below. The `dev-stack/tests/test_dev_stack.py` half of this row **stands**: those failures are **environment-driven** (this box's `.agentspace/secrets` lacks critical keys, so the secret-coverage pre-flight aborts *before the N-guard is reached* — which incidentally shows `guard_n` should run **before** the pre-flight, a dev-stack ordering smell, M217 footprint). |
+
+#### ❌ Correction (close-milestone Phase 4, 2026-07-14) — this pass misdiagnosed its own regression
+
+`stack-injection::test_next_web_block_shape` was classified above as *"pre-existing, M217 footprint"* on the
+evidence that it **"reproduced at baseline `f296e5e`"**. **That baseline was wrong.** `f296e5e` is *M218's own
+iter-05 commit* — it is not the pre-M218 baseline. The true pre-M218 baseline is the rext tag
+**`cue-to-cue-m217`**, and the close re-measured against it:
+
+| ref | result |
+|---|---|
+| `cue-to-cue-m217` (**true** pre-M218 baseline) | **PASSES** — `1 passed, 131 deselected` |
+| M218 HEAD (`f849b5f`) | **FAILS** — `First extra element 13: '      - WUNDERGRAPH_SSR_ENDPOINT=http://graphql:8080/graphql'` |
+
+⇒ **M218 broke it, in iter-03.** iter-03's C-1 fix added `WUNDERGRAPH_SSR_ENDPOINT` to the next-web block in
+`gen_injected_override.py` and left the exact-shape fence pinned to the old block. The suite had been red since
+iter-03 and nothing caught it — **the identical bug, one file over, from the identical cause, as the
+`demo-stack` `test_tag_guard_present_for_both_frontends` fence this very pass found and fixed.** The pass caught
+the neighbour and misfiled the twin.
+
+**Why the misdiagnosis is the point, not a footnote.** "Reproduced at baseline ⇒ pre-existing" is only sound if
+the baseline predates the milestone. Choosing a *mid-milestone* commit as "baseline" turns a regression into a
+clean bill of health — **a status artifact that outlives the thing it describes, and is then read as
+evidence.** That is **D17, the stale-verdict hazard**, in its sixth instance of this milestone — surfacing
+inside the very hardening pass convened to name it.
+
+**Fixed at the close:** the fence now asserts the `WUNDERGRAPH_SSR_ENDPOINT` line, **with the reason written
+into the test** so it cannot be "fixed" back down by deleting the line. `stack-injection`: **186 passed / 0
+failed** (was 185 passed / **1 failed**).
 
 ### What the coverage sweep found that per-iter tests structurally could not
 

@@ -1,7 +1,10 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading) · **Last updated:** 2026-06-24
-**Repo:** `stack-demo/rosetta-extensions/clerkenstein` (gitignored demo scratchpad, its own git) · **Measured by:** the
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading; v2.2 "panorama" M213 MagicDNS/egress; v2.3 "cue to cue" M217 self-healing demopatch gate + **M218 the roster-aware fake BAPI**) · **Last updated:** 2026-07-14
+**Repo:** the `clerkenstein/` **section** of the `rosetta-extensions` monorepo — authored at
+`.agentspace/rosetta-extensions/clerkenstein`, consumed per-stack at a pinned tag as
+`stack-demo/rosetta-extensions/clerkenstein`. (It is **not** "its own git" — see *One monorepo, two clone
+roles* below, which this line used to contradict.) · **Measured by:** the
 [alignment framework](../architecture/alignment_testing.md)
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
@@ -26,9 +29,37 @@ with no Clerk friction (one universal credential, no live API, no webhooks, no r
 repos keep "thinking" they use Clerk with **zero source changes**.
 
 It is the **first mirror produced by the M0 alignment process** (not a hand-built mock): its fidelity is
-*measured* as a 0–100% alignment score against a Clerk **Alignment DNA**, driven to the gate — **100%
-critical / 100% overall** on **all five** measured surfaces: the Go surface (22/22 genes, `clerk-sdk-go/v2
-@ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
+*measured* as a 0–100% alignment score against a Clerk **Alignment DNA**.
+
+> ### ⚠ The score, honestly (corrected in v2.3 M218 — it used to read "100% / 100% on all five surfaces")
+>
+> | surface | score | note |
+> |---|---|---|
+> | **Go SDK** (`clerk-2.6.0`, M1) | **97.2% overall · 100% critical** — **26/27 genes**, 14 capabilities | Gate is ≥95 / =100 ⇒ **MET**. The 2.8% is **one deliberately RED gene** (see below). |
+> | **JS/FAPI** (`clerk-js-5`, M2) | 100% / 100% (9 genes) | |
+> | **multi-identity seat-switch** (`clerk-multi-1`, M37) | 100% / 100% (9 genes) | |
+> | **deployment/injection** (`clerk-deploy-1`, M3) | 100% / 100% (7 genes) | |
+> | **`@clerk/express`** (`clerk-express-1`, M2c) | **UNMEASURABLE on a box without `@clerk/express` `node_modules`** — the runner cannot build, exits **rc=2, with NO score**. | **Not** a pass. Routed forward as `TEST-M219-expressrun-dep-gate`. |
+>
+> **So "all five surfaces at 100%" is false on two counts**, and the previous version of this paragraph
+> asserted it. Four surfaces are measured; the fifth is dependency-gated and frequently produces *no number
+> at all* — which nothing treated as a failure.
+>
+> **The deliberately RED gene (M218 D16).** `MembershipOrgIdentity/real-org-eid` ships **failing, on
+> purpose**. The fake BAPI fabricates `organization.public_metadata.eid` as `"org_eid_" + orgID` instead of
+> the roster's real org UUID. It could not be fixed inside M218 (the milestone's exit gate was a p95 over 5
+> cold reset-to-seed cycles graded on a specific binary; a runtime change restarts that count), so rather
+> than **omit the field and keep a clean 100%**, the divergence is named in the report on **every single
+> run** until it lands. Routed forward as `FIX-M219-bapi-org-eid`.
+>
+> **Why this matters more than the number.** Before M218, Clerkenstein scored **100% critical / 100%
+> overall / 0 divergences while its fake BAPI returned the wrong human for every hero** — `GET
+> /v1/users/{id}` had no gene in any of the five DNAs, and the three genes that *did* name identity all
+> asserted the stub itself. **The goldens ratified the defect.** That cost ~6 s on every authenticated
+> render for four releases. **A 100% that hides a lie is worse than an honest 97.2%** — which is exactly why
+> restoring a clean 100% by looking away from the next stub was rejected.
+
+Driven to the gate across: the Go surface (`clerk-sdk-go/v2 @ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
 **multi-identity seat-switch** surface (9/9 genes, `clerk-multi-1` — the v1.9 M37 registry + active-seat
 selection, so a demo can present as any seeded hero; the multi-session FAPI semantics real clerk-js exhibits
 with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express`
@@ -139,6 +170,26 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
   alignment gene deliberately mints a dotless pk to test the consumer's rejection. (#M213-D-PK-1)
 - **clerk-js egress is overridable.** The FAPI proxies the clerk-js bundle from `cdn.jsdelivr.net` (its one outbound
   dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror. (#M213-D-EGRESS-1)
+- **…and it is UNBOUNDED and UNCACHED — the proxy's real contract (documented in M218; it had never been
+  written down).** `clerk-frontend/server.go:187` fetches the bundle with a bare **`http.Get`**, which is
+  `http.DefaultClient` — i.e. **`Timeout: 0`, no timeout at all**. There is **no server-side cache**: the
+  only caching is a *response-side* `Cache-Control: public, max-age=3600` header (`:194`), so **every full
+  page load in a cold browser re-fetches from the CDN**, and the fake FAPI re-fetches from jsdelivr each
+  time. Consequences, in order of severity:
+  - next-web's **entire authenticated tree is client-gated on clerk-js**, so this sits squarely **on the
+    login path**. Measured at **0.17–0.19 s healthy** — but **~127 s if egress blackholes**, with *no
+    timeout to cut it short*. It is an **unbounded internet dependency in the login path of a demo the
+    corpus describes as self-contained**.
+  - The bring-up's egress pre-check curls from the **host, not from inside the container**
+    (`up-injected.sh`), so it can pass green while the container cannot reach the CDN at all.
+  - **No DNA gene covers `GET /npm/`** — the proxy is **alignment-invisible**, so vendoring the bundle and
+    bounding the timeout is a **gate-free** change.
+
+  M218 measured it and confirmed it was **not** the cause of the 38-second login (it was healthy on
+  `billion`), so the fix was **not** taken there — a runtime change would have restarted the milestone's
+  5-cycle cold battery. **Routed forward to M220** (vendor the bundle; serve from disk; keep the CDN proxy
+  only as a *bounded* fallback). Until then, treat a slow/blocked jsdelivr as a **plausible cause of an
+  arbitrarily long demo login**.
 
 A fourth seam — **the origins & links emission (M214)** — admits the MagicDNS/HTTPS origin everywhere a
 browser→backend or cross-surface call is gated, again all gated on the knob:

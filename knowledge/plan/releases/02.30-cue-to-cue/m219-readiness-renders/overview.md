@@ -53,6 +53,36 @@ one e2e manifest, one stale comment.
 4. Fix the **stale ACTIVE-vs-CLOSED comment** at `stories.seed.yaml:112-117` — the code writes `status='closed'`
    (`ai_readiness_config.go:98,143`).
 
+### In — inherited from M218 (Fate-3, added at the M218 close, 2026-07-14)
+
+M218 could not land these **without invalidating its own exit gate**: its gate is *a p95 over 5 consecutive cold
+reset-to-seed cycles*, graded on a specific binary, and **iter-05 D13 established that a demo-runtime change
+restarts the 5-cycle count**. Shipping a runtime fix *after* the battery would mean shipping something other
+than what was measured. They land here, where a fresh battery is affordable.
+
+5. **`FIX-M219-bapi-org-eid` (F-11) — the BAPI fabricates the org eid.** Clerkenstein's
+   `organizationWithEid` returns `"org_eid_" + orgID` in `organization.public_metadata.eid` for any org that
+   isn't the hardcoded demo org, instead of the **real** org UUID the demo roster carries (real Clerk gets it
+   via `UpdateClerkOrganizationWithExternalId`). It is the **ORG-level twin of the user-identity stub that cost
+   M218 ~6 s per authenticated render** — same defect, same blind spot, one field over.
+   - **It currently ships as a deliberately RED alignment gene** (`MembershipOrgIdentity/real-org-eid`,
+     `standard` weight) so the score stops lying — the Go surface reports **97.2% overall / 100% critical**
+     (gate ≥95/=100 ⇒ still MET), and the divergence is named on **every single run** until this lands. See
+     **M218 D16**. **Do not "fix" the score by omitting the gene** — a silently-omitted field is exactly how
+     M218's headline bug survived four releases.
+   - **DoD:** `resources.go` returns the roster's real `org_eid`; the gene goes green; **and a fresh 5-cycle
+     cold battery is run** (the change is on the demo's runtime path).
+6. **`TEST-M219-expressrun-dep-gate` — `expressrun` is UNMEASURABLE, and scores nothing.** Without
+   `@clerk/express` `node_modules` it exits **rc=2 with no score** — and nothing treats that as a failure.
+   Consequence, recorded honestly: **M218 iter-04's "all 5 surfaces 100%" claim is not reproducible** — only
+   **4 of 5** surfaces were measured at the M218 harden pass. **Pre-existing** (identical at baseline
+   `f296e5e`), not an M218 regression. **DoD:** a missing dependency **fails loud**; it must never present as
+   *absence of a score* (the D17 *absence-read-as-success* class).
+7. **`TEST-M219-freshness-gate-skips` — the demo-patch live-clone freshness gate SKIPS when
+   `stack-demo/next-web-app` is absent**, so a box without that clone gets **no anchor-drift protection** at
+   all. Itself an instance of *absence read as success*. **DoD:** the skip is explicit and loud, or the gate
+   finds another source of truth.
+
 ### Out
 - Any seeder work (the seed is proven — see above).
 - The manager page's **speed** — that is M218's business, and per **D-DESIGN-1** the grid's data-load is reported,

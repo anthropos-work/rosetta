@@ -52,6 +52,28 @@ move. Proven, not assumed — `/align-run` across **all five surfaces** after th
 
 Gate = critical ≥ 100 / overall ≥ 95. **All five exit 0. Nothing moved.**
 
+> ### ⚠ CORRECTED AT THE M218 CLOSE (2026-07-14) — this table is not reproducible, and the Go row has moved
+>
+> Two corrections, recorded rather than quietly overwritten:
+>
+> 1. **`expressrun` is DEPENDENCY-GATED and is now UNMEASURABLE.** Without `@clerk/express` `node_modules`
+>    the runner cannot build: it exits **rc=2 with NO score** — and *nothing in the tooling treats that as a
+>    failure*. The final harden pass reproduced this **identically at baseline `f296e5e`**, so it is
+>    **pre-existing, not a regression** — but it means **only 4 of the 5 surfaces could be re-measured**, and
+>    the "all five" claim above **cannot be reproduced on this box**. The `13/13 100%` row must therefore be
+>    read as *"what was recorded on the box that ran iter-04"*, not as a standing, checkable fact.
+>    **Absence of a score is not a passing score.** → `TEST-M219-expressrun-dep-gate`.
+> 2. **The `clerkrun` (Go) row is now `26/27` → 97.2% overall / 100% critical, deliberately.** The final
+>    harden pass added the `GetUser` per-hero identity genes that this milestone's own fix should always have
+>    had — and, in doing so, surfaced **F-11**: the fake BAPI *also* fabricates the **org** eid. It ships as a
+>    **deliberately RED** gene rather than being hidden by omitting the field (**D16**). The gate (≥95/=100)
+>    is still **MET**.
+>
+> The `22/22` in the `clerkrun` row was, at the time, a **hollow 100%** — `GET /v1/users/{id}` had no gene at
+> all, which is precisely the bug iter-04 was fixing. The score did not move across that fix **because
+> nothing was measuring the thing that broke**. That is the lesson, and it is why this table is annotated
+> instead of deleted.
+
 **Note on the guard's scope.** The milestone's BLOCKING clause names `clerkenstein/clerk-frontend/`; this change
 is in `clerk-backend/`. The guard was run **anyway** — the `DistinctIdentity/*` genes are `critical` and the
 critical gate has **no partial credit**, so "the clause does not technically apply" is not a reason to skip a

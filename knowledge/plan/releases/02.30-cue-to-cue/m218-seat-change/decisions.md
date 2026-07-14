@@ -172,3 +172,72 @@ perf a **non-goal**). Deliverables: per-leg attribution, `autoverify.json` green
 p95 over N runs, both vantages. Ship it, run it against the **current unfixed** `billion` demo, and **record the
 honest pre-fix baseline** — that number is the milestone's headline and the M43-D5 correction's evidence.
 **Write no fix in iter-02.**
+
+---
+
+## D18 — "Baseline" must resolve to the milestone's START ref, not to any earlier commit — 2026-07-14
+
+**Handler:** `/developer-kit:close-milestone`, Phase 4.
+
+**What surfaced.** The final harden pass declared `stack-injection::test_next_web_block_shape` *"pre-existing,
+out of M218 scope — M217 footprint"*, on the evidence that it **"reproduced at baseline `f296e5e`"**.
+
+`f296e5e` is **M218's own iter-05 commit**.
+
+Re-measured against the **true** pre-M218 ref — the rext tag `cue-to-cue-m217`:
+
+| ref | result |
+|---|---|
+| `cue-to-cue-m217` (true pre-M218 baseline) | **PASSES** (`1 passed, 131 deselected`) |
+| M218 HEAD (`f849b5f`) | **FAILS** — `First extra element 13: '      - WUNDERGRAPH_SSR_ENDPOINT=…'` |
+
+**M218 broke it, in iter-03** — its own C-1 fix added `WUNDERGRAPH_SSR_ENDPOINT` to the next-web block and
+left the exact-shape fence pinned to the old block. The suite had been red since iter-03 and nothing caught
+it. **It is the identical bug, one file over, from the identical cause, as the `demo-stack`
+`test_tag_guard_present_for_both_frontends` fence that the same pass found and fixed.** The pass caught the
+neighbour and misfiled the twin.
+
+**The rule.** *"Reproduced at baseline ⇒ pre-existing"* is a sound inference **only if the baseline predates
+the milestone.** Choosing a mid-milestone commit as "baseline" converts a regression into a clean bill of
+health — which is **D17 exactly**: a status artifact (the verdict *"pre-existing"*) that outlives the thing it
+described, and is then read as evidence.
+
+**Binding for future harden/close passes:** resolve "baseline" to the milestone's **start ref** (the release
+branch's merge-base, or the previous milestone's rext tag) — **never** to a commit that merely predates the
+current *pass*. State the ref explicitly in the ledger, so the claim is checkable.
+
+**Meta.** This is the **sixth** instance of D17's class in one milestone, and the first to appear **inside the
+pass convened to name it**. That is not irony; it is the evidence that the class is real and that naming a
+hazard does not inoculate you against it. Only a probe does.
+
+---
+
+## D19 — Ship the `x/crypto` bump, and say what it does and does not prove — 2026-07-14
+
+**Handler:** `/developer-kit:close-milestone`, Phase 7 (the rext roll).
+
+**The bind.** `x/crypto@v0.52.0` (13 dependabot alerts, **all govulncheck-UNREACHABLE**) was deferred at the
+v2.2 close, re-fated **"Fate-1 → M218's rext roll"** in the v2.3 roadmap, and restated in M217's retro. **It
+still had not landed.** This close **is** the rext roll — so deferring again would make it a **repeat +
+aged-out** deferral, which the deferral audit treats as a **RED blocker**.
+
+Against that: bumping it **rebuilds the clerkenstein binaries**, i.e. it perturbs the artifact the 5-cycle
+cold latency battery was graded on — the same objection that routed **F-11** to M219 (**D16**).
+
+**The decision: land it — and be precise about the difference.** F-11 is a **behavioural** change to the demo's
+runtime identity path. This is an **indirect, transitive crypto library** with no code path on the login flow.
+The claim is not *"it's fine, trust us"*; it is **measured**:
+
+- The **56-gene alignment gate scores IDENTICALLY pre- and post-bump** — `97.2% overall / 100% critical`,
+  `rc=0`, same single divergence. The gate includes every `critical` handshake/identity gene. **That is the
+  instrument that would detect a behavioural change in the mirror, and it did not move.**
+- Full suites: Python **887/0**, Go **0 failures across 6 modules**, flake gate **5/5**.
+
+**What this does NOT prove, stated plainly:** the **5-cycle cold latency battery was not re-run** after the
+bump. A crypto transitive has no latency surface, and re-running the battery costs a full remote 5-cycle
+campaign — but the honest statement is *"behaviour-neutral by the alignment gate and the suites"*, **not**
+*"re-graded against the gate"*.
+
+**Why that residual is acceptable:** **M221 "prove it on billion" re-runs the p95 gate on the VM, with no
+flags, by design.** The perturbed binary gets re-graded there as a matter of course. Leaving 13 open security
+alerts to avoid a rebuild that the next milestone re-measures anyway is the worse trade.

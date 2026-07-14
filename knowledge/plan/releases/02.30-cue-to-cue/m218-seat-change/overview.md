@@ -3,9 +3,9 @@ milestone: M218
 slug: seat-change
 version: v2.3 "cue to cue"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-13
-last_updated: 2026-07-13
+last_updated: 2026-07-14
 complexity: large
 depends_on: M217
 exit_gate: "p95 click→ACCESS < 5 s — where ACCESS = the authenticated shell is rendered and interactive with the hero's identity present (full-screen loading gone; user menu shows the hero) — for BOTH maya-thriving (employee → /profile) AND dan-manager (manager → /enterprise/…), measured over 5 consecutive cold reset-to-seed runs. In-page data-completion time is REPORTED, not gated (D-DESIGN-1)."
