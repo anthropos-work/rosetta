@@ -84,16 +84,17 @@ The bring-up pre-flights / fails loud on most of these; confirm before Phases 4�
 
 ---
 
-## Run a target live — **frontend** (next-web-app) — native `next dev` + HOT-RELOAD over **localhost**
+## Run a target live — **frontend** (next-web-app) — native `next dev` + HOT-RELOAD over the **tailnet HTTPS URL**
 
-> **CORRECTED 2026-07-14 (proven).** Do **NOT** front the native dev server with `tailscale serve`. Reach it
-> over **`localhost`**. Fronting `next dev` with a tailnet HTTPS hostname breaks BOTH Clerk login AND hot-reload:
-> @clerk/nextjs's middleware rewrites every request to an absolute same-origin URL, and the hostname/proto
-> mismatch (tailscale terminates TLS → forwards plain HTTP) makes Next **self-proxy** it into a `500` loop
-> (`Failed to proxy … wrong version number` / `socket hang up`). `localhost` is a browser **secure context**
-> (Clerk works over http) and preserves the HMR websocket. For a teammate on another machine, use a
-> **localhost-preserving SSH tunnel** (the repo's own `knowledge/remote-dev-on-vm.md`), NOT the tailnet host:
-> `ssh -C -L 13000:localhost:13000 <box>` then browse `http://localhost:13000`.
+> **CORRECTED 2026-07-14 (proven — remote tailnet access + hot-reload, no SSH tunnel).** Serve the dev server over
+> **HTTPS directly** (`next dev --experimental-https` with the demo's **Tailscale cert**), bound to the tailnet,
+> and do **NOT** put `tailscale serve` in front of it. It's then reachable at the **same `https://<host>:<offset>`
+> URL as the rest of the demo**. Why direct-HTTPS: @clerk/nextjs's middleware rewrites every request to a
+> same-origin URL; serving HTTPS directly keeps the origin consistent (`https://<host>:<offset>`), so the rewrite
+> stays **relative → resolved internally**. `tailscale serve` (HTTPS→plain-HTTP) creates a host/proto mismatch that
+> makes Next **self-proxy** the rewrite into a 500 loop (`Failed to proxy … wrong version number`). *(Pure on-box
+> dev also works with `-H localhost` over `http://localhost:<offset>` — a secure context, loop-free — but that
+> isn't tailnet-reachable; use the direct-HTTPS form to match the rest of the demo.)*
 
 ```bash
 # 0. PREREQ (FATAL): node >=24 on PATH in a login shell (see Host prereqs).
@@ -103,44 +104,46 @@ bash -lc 'v=$(node -v 2>/dev/null|sed s/v//); [ "${v%%.*}" -ge 24 ] 2>/dev/null'
 git -C stack-demo/next-web-app worktree add -b feat/<name> ../.worktrees/next-web-app-feat-<name>
 WT=stack-demo/.worktrees/next-web-app-feat-<name>
 
-# 2. Capture the CONTAINER's exact Clerk env (login must match), THEN stop it so the native server owns the port.
+# 2. Capture the CONTAINER's exact Clerk env (login must match), THEN stop it + free the port from tailscale serve
+#    (the dev server binds this port with HTTPS DIRECTLY).
 docker exec demo-$N-next-web-app-1 printenv > /tmp/cenv.txt
 $DC stop next-web-app
+tailscale serve --https=$((3000+OFF)) off
 
-# 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> LOCALHOST offset ports (NOT the tailnet host). Mirror the
-#    container's server-side Clerk keys. Point CLERK_API_URL at the fake-bapi's REACHABLE address — the host
-#    /etc/hosts `api.clerk.com` alias goes STALE on re-bring-up (new docker IP) => the #1 native-login failure
-#    (`unable to resolve handshake: fetch failed ECONNREFUSED`). On Linux the host reaches the container IP directly.
+# 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> the TAILNET HTTPS host:offset (router/backend are F12'd +
+#    tailscale-served on :$((5050+OFF))/$((8082+OFF))). Mirror the container's server-side Clerk keys. Point
+#    CLERK_API_URL at the fake-bapi's REACHABLE IP — the host /etc/hosts `api.clerk.com` alias goes STALE on
+#    re-bring-up (new docker IP) => the #1 login failure (`resolve handshake: fetch failed ECONNREFUSED`).
 PK=$(grep -E '^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=' "$STACK/.env.demo-$N" | cut -d= -f2-)
 BIP=$(docker inspect demo-$N-fake-bapi-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 { echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK"
-  echo "NEXT_PUBLIC_HOSTING_URL=http://localhost:$((3000+OFF))"
-  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:$((5050+OFF))/graphql"
-  echo "NEXT_PUBLIC_BACKEND_API_URL=http://localhost:$((8082+OFF))"
+  echo "NEXT_PUBLIC_HOSTING_URL=https://$HOST:$((3000+OFF))"
+  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((5050+OFF))/graphql"
+  echo "NEXT_PUBLIC_BACKEND_API_URL=https://$HOST:$((8082+OFF))"
   echo "DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work"
   grep -E '^CLERK_SECRET_KEY=|^CLERK_JWT_KEY=|^CLERK_PUBLISHABLE_KEY=|^CLERK_WEBHOOK_SECRET=' /tmp/cenv.txt  # values-blind
   echo "CLERK_API_URL=http://$BIP:443"      # fake-bapi is plain HTTP on :443
   echo "STRIPE_SECRET_KEY=sk_test_dummy"    # current code has a module-eval throw; a dummy unblocks SSR
 } > "$WT/apps/web/.env.local"
-# The router/backend just need to answer on localhost:<offset> (a 0.0.0.0 bind already does). F12 (127.0.0.1
-# rebind) is only for the tailscale-served CONTAINER tier, NOT this localhost path.
 
-# 4. Run native with HOT-RELOAD, bound to `localhost` — the -H value is LOAD-BEARING: `-H localhost` makes Clerk's
-#    absolute-URL middleware rewrite resolve INTERNALLY; `-H 127.0.0.1` makes Next self-proxy it -> 500 loop.
+# 4. Reuse the demo's Tailscale cert (its SAN already covers $HOST — minted by /demo-up for the fake-FAPI);
+#    or `tailscale cert --cert-file c.crt --key-file c.key $HOST`.
+CERT="$(pwd)/$STACK/certs/fapi.crt"; KEY="$(pwd)/$STACK/certs/fapi.key"
+
+# 5. Run native with HOT-RELOAD over HTTPS, bound to 0.0.0.0 (tailnet-reachable). Origin stays https://$HOST:<off>
+#    so Clerk's middleware rewrite is RELATIVE/internal (no self-proxy loop). Do NOT tailscale-serve this port.
 tmux new-session -d -s dfd-web-$N -c "$(pwd)/$WT/apps/web" \
-  "bash -lc 'NODE_TLS_REJECT_UNAUTHORIZED=0 pnpm install && pnpm exec next dev -H localhost -p $((3000+OFF)) --turbopack'"
+  "bash -lc 'NODE_TLS_REJECT_UNAUTHORIZED=0 pnpm install && pnpm exec next dev --experimental-https \
+     --experimental-https-cert $CERT --experimental-https-key $KEY -H 0.0.0.0 -p $((3000+OFF)) --turbopack'"
 
-# 5. Reach it over LOCALHOST (on the box, or `ssh -C -L $((3000+OFF)):localhost:$((3000+OFF)) <box>` from a laptop).
-#    Do NOT tailscale-serve this port. LOG IN with a localhost handshake (cockpit tailnet links won't hit localhost):
-#      https://$HOST:$((5400+OFF))/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=http://localhost:$((3000+OFF))/<path>
-#      OR http://localhost:$((3000+OFF))/api/dev/login-as?email=<hero@org>   # DEV_LOGIN_ENABLED under next dev
-
-# 6. Verify (NON-FATAL) in a REAL browser — curl won't store Clerk's Secure cookies over http. Log in, open the
-#    page, edit a string, confirm it hot-reloads in ~seconds. GOTCHA: cockpit `jump_to` deep-links can 404 under
-#    dev (e.g. /enterprise/workforce/ai-readiness -> real route is /ai-readiness) — navigate via the in-app menu.
+# 6. Reach it at the SAME tailnet URL as the rest of the demo: https://$HOST:$((3000+OFF)) (no SSH tunnel). LOG IN
+#    via the cockpit handshake (redirect to the tailnet host — Chromium trusts the LE tailscale cert):
+#      https://$HOST:$((5400+OFF))/v1/client/handshake?__clerk_identity=<hero-key>&redirect_url=https://$HOST:$((3000+OFF))/<path>
+# Verify (NON-FATAL) in a REAL browser: log in, open the page, edit a string, confirm it hot-reloads in ~seconds.
+# GOTCHA: cockpit `jump_to` links can 404 under dev (/enterprise/workforce/ai-readiness -> real route /ai-readiness).
 ```
-**studio-desk** / **ant-academy** follow the same **localhost** principle (never a tailnet-host front for a
-native dev server that uses Clerk): offset ports `9000+OFF` / `3077+OFF`, reached over localhost / an SSH tunnel.
+**studio-desk** / **ant-academy**: same direct-HTTPS-on-the-tailnet principle for any native dev server that uses
+Clerk — serve HTTPS with the tailscale cert on the offset port, never `tailscale serve` it.
 
 ---
 

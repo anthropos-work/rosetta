@@ -167,25 +167,26 @@ the summary below is the shape, not a substitute.
    (`git -C stack-demo/<repo> worktree add -b feat/<name> ../.worktrees/<repo>-feat-<name>`).
 2. **Stop that one container** so the native process owns the offset slot (`$DC stop <svc>` — leaves every other
    service running; also clears the F12 serve-shadow for that port).
-3. **Assemble the native env + run it** — bound to **`localhost`** (the `-H` value is load-bearing) on the
-   **offset** port, in a **detached login-shell tmux** session:
-   - **Frontend (native `next dev` + HOT-RELOAD):** author a fresh `apps/web/.env.local` — **do NOT copy the
-     demo's `.env.local`; `/demo-up` trap-deletes it.** Point `NEXT_PUBLIC_*` at **localhost** offset ports;
-     mirror the demo container's server-side Clerk keys (`docker exec … printenv` **before** stopping it); set
-     `CLERK_API_URL=http://<fake-bapi-docker-ip>:443` (the `/etc/hosts` `api.clerk.com` alias goes **STALE** on
-     re-bring-up → the #1 login failure); add `STRIPE_SECRET_KEY=sk_test_dummy`; then
-     `pnpm exec next dev -H localhost -p <offset> --turbopack`. **`-H localhost`, NOT `127.0.0.1`** — else Clerk's
-     absolute-URL middleware rewrite gets self-proxied into a 500 loop. Full recipe: reference.md § *frontend*.
+3. **Assemble the native env + run it over HTTPS** (so it's tailnet-reachable like the rest of the demo), in a
+   **detached login-shell tmux** session:
+   - **Frontend (native `next dev` + HOT-RELOAD, HTTPS on the tailnet):** author a fresh `apps/web/.env.local` —
+     **do NOT copy the demo's; `/demo-up` trap-deletes it.** Point `NEXT_PUBLIC_*` at the **tailnet HTTPS host**
+     (`https://<host>:<offset>`; router/backend are F12'd + tailscale-served); mirror the container's server-side
+     Clerk keys (`docker exec … printenv` **before** stopping it); set `CLERK_API_URL=http://<fake-bapi-docker-ip>:443`
+     (the `/etc/hosts` `api.clerk.com` alias goes **STALE** on re-bring-up → the #1 login failure); add
+     `STRIPE_SECRET_KEY=sk_test_dummy`. Then run **`next dev --experimental-https` with the demo's Tailscale cert**
+     (`$STACK/certs/fapi.crt` already covers the host), bound `-H 0.0.0.0 -p <offset> --turbopack`, and **stop
+     `tailscale serve` on that port**. Serving HTTPS **directly** keeps the origin consistent so Clerk's rewrite
+     stays internal (no self-proxy loop); `tailscale serve` (HTTPS→HTTP) is what loops it. Recipe: reference.md § *frontend*.
    - **Backend (more caveated):** `go run .` reaches **nothing** until you **rewrite**
      `DB_CONNECTION`/`REDIS_ADDR`/`*_RPC_ADDR` to `localhost:<base+off>` (they live in `docker-compose.yml`, not
      `.env`). And router→native-subgraph federation needs host-gateway wiring on the router — **flag that as a
      tooling gap to raise, don't hack the stack.**
-4. **Reach it over `localhost`** — on the box directly, or from a laptop via a **localhost-preserving SSH tunnel**
-   (`ssh -C -L <offset>:localhost:<offset> <box>`; the repo's `knowledge/remote-dev-on-vm.md`). **Do NOT
-   `tailscale serve` a native `next dev` frontend** — the tailnet-host origin/proto mismatch breaks Clerk login
-   AND hot-reload (self-proxy 500 loop). Tailscale serve stays for the demo's CONTAINER tier only.
-5. **Verify (NON-FATAL) in a REAL browser** (curl won't store Clerk's `Secure` cookies over http): log in via a
-   localhost handshake or `/api/dev/login-as`, open the page, edit a string, confirm it hot-reloads in ~seconds.
+4. **Reach it at the SAME tailnet URL as the rest of the demo** — `https://<host>:<offset>` (no SSH tunnel;
+   Tailscale itself is the access control). *(Pure on-box dev also works with `-H localhost` over
+   `http://localhost:<offset>` — loop-free — but that isn't tailnet-reachable.)*
+5. **Verify (NON-FATAL) in a REAL browser** (Chromium trusts the LE tailscale cert): log in via the cockpit
+   handshake (redirect to the tailnet host), open the page, edit a string, confirm it hot-reloads in ~seconds.
    GOTCHA: cockpit `jump_to` deep-links can 404 under dev (real route may differ, e.g. `/ai-readiness`).
 
 ### Phase 6 — Record the session manifest
@@ -220,12 +221,12 @@ them back plainly so both you and the user are on the same page:
 
 Give the user a short intro (a few lines, plain English):
 - **What's set up** — which TARGET(s) are running live, on which branch, against demo-N.
-- **Where to look** — for a native `next dev` frontend TARGET the URL is **`http://localhost:<offset>`** (on the
-  box, or via `ssh -C -L <offset>:localhost:<offset> <box>` from a laptop — **NOT** a tailnet-host URL; that
-  breaks Clerk + HMR). The demo's CONTAINER pieces (studio-desk, ant-academy, router) stay tailscale-served. The
-  presenter cockpit is at `:7700+` (plain HTTP, on-box), but its `jump_to` links target the tailnet host — for
-  the localhost dev server log in with a **localhost handshake** or `/api/dev/login-as` instead. Explain the loop
-  plainly: "as I edit the code in `<worktree>`, the page **hot-reloads in ~seconds — no rebuild**."
+- **Where to look** — the native `next dev` frontend TARGET is reachable at the **same tailnet URL as the rest of
+  the demo**: **`https://<host>:<offset>`** (real HTTPS via the tailscale cert — **no SSH tunnel**). The presenter
+  cockpit is at `:7700+` (plain HTTP, on-box); its `jump_to` links target the tailnet host, so logging in through
+  it lands on the live dev server. Explain the loop plainly: "as I edit the code in `<worktree>`, the page
+  **hot-reloads in ~seconds — no rebuild**." (GOTCHA: a `jump_to` link can 404 under dev — real route may differ,
+  e.g. `/ai-readiness`.)
 - **One next step** — "tell me what to build/fix and I'll work only inside the TARGET."
 
 ### Phase 9 — When the user asks "what next / how do I move forward"
