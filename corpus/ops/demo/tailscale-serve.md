@@ -7,9 +7,30 @@ demo end-to-end, in their own browser, over HTTPS. This is the **external-sharea
 
 > **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
-It is **opt-in and default-off**: a plain `/demo-up N` is byte-identical to today (localhost only, no external
-listener). Remote reach is requested explicitly with **one flag** — `--public-host <magicdns>` — and **Tailscale
-itself is the access control** (only tailnet members can reach the host; there is no public internet exposure).
+> ## ⚠️ v2.3 M220 S3 — THIS IS NOW **DEFAULT-ON** (opt-out), NOT OPT-IN
+>
+> This page was written for v2.2, where remote reach was **opt-in** behind `--public-host`. **As of v2.3 M220 S3
+> (D-DESIGN-3, superseding v2.2's D-DESIGN-1) a bare `/demo-up N` auto-discovers the host and brings the demo up
+> reachable.** The flag still works (it forces a host and skips discovery); the new thing is that you no longer
+> need it. Opt out with **`--no-public-host`** (or `DEMO_NO_PUBLIC_HOST=1`), which does not even probe.
+>
+> **Auto-discovery is capability-gated, never presence-probed** — six rungs: `tailscale` on PATH →
+> `BackendState == Running` → a **dotted** `.Self.DNSName` → `MagicDNSEnabled` → no operator/sudo denial on
+> `tailscale serve status` → **`tailscale cert` actually MINTS**. *"The binary exists" is not "it works."*
+>
+> **🔴 Any failed rung ⇒ an EMPTY host ⇒ the plain localhost demo, byte-identical to v2.2**, plus one loud line
+> naming the fix. Never a *partial* public path: `SCHEME` and `BIND_HOST` share the same `-n $STACK_PUBLIC_HOST`
+> predicate, so a half-satisfied public path bakes `https://` URLs against plain-HTTP listeners and the demo
+> **does not load at all**. Contract + rationale: [`../safety.md`](../safety.md) **§3.5**.
+>
+> Everything below — the topology, the cert, the serve proxies, the walkthrough — is **unchanged and still
+> correct**. Only the *trigger* changed: what you had to ask for, the bring-up now offers.
+
+Historically (v2.2) this was **opt-in and default-off**: a plain `/demo-up N` was byte-identical to a localhost
+demo, and remote reach was requested explicitly with **one flag** — `--public-host <magicdns>`. In both eras
+**Tailscale itself is the access control** (only tailnet members can reach the host; there is no public internet
+listener) — and note that this was *never* what gated the container ports, which have always been published on
+`0.0.0.0` (see the correction at the bottom of this page, and `safety.md` §3.1).
 
 > **This is a PROVEN recipe, not a plan.** M215 executed it live on a real Linux VM (`billion`, odyssey Proxmox
 > host) on **2026-07-11**: a teammate on a **different** tailnet machine logged in as a seeded hero and completed
@@ -356,11 +377,31 @@ localhost) so no site can drift:
 | **Registry** | no interaction | records `external_host` for `/stack-list` | `up-injected.sh` (M212) |
 
 **Mixed-content clean.** With HTTPS-everywhere, no browser-facing call resolves to plain `http://` — the scheme
-flip covers every baked endpoint, redirect, and cross-surface link; the asset plane is already prod-HTTPS. The
-**one** deliberate plain-http surface is the **presenter cockpit's own page** (port `7700+off`): it is not in
-`tailscale serve`'s front list, so it serves plain HTTP — an http launcher page linking/POSTing to the https demo
-surfaces is fine (a navigation from http to https is not mixed content). Fronting the cockpit too is a live-
-acceptance polish left as an accepted future enhancement (M215 shipped with the cockpit deliberately plain-HTTP).
+flip covers every baked endpoint, redirect, and cross-surface link; the asset plane is already prod-HTTPS.
+
+> **v2.3 M220 S4 — the last plain-HTTP surface is gone.** This paragraph used to end: *"The **one** deliberate
+> plain-http surface is the **presenter cockpit's own page** (`7700+off`): it is not in `tailscale serve`'s front
+> list … fronting the cockpit too is a live-acceptance polish left as an accepted future enhancement."*
+>
+> **It is no longer a polish, and it is no longer excluded.** `gen_tailscale_serve.py` now carries
+> `('cockpit', 7700)` on its **own axis** (gated on `DEMO_STORIES`, *not* on `--no-ui` — the cockpit runs on a
+> `--no-ui` stories demo, so filing it under the UI tier would have left a **live** cockpit unfronted), and
+> `up-injected.sh` fronts it with the same trusted MagicDNS cert as every other browser-facing port.
+>
+> **Why it mattered enough to fix now:** S3 made remote reach **default-on**. Leaving the cockpit on plain HTTP
+> then becomes the worst possible combination — the demo's **entry point**, the *one* page a presenter actually
+> opens, is the *one* page not behind the trusted cert.
+>
+> **Ordering matters, and it is not cosmetic.** `tailscale serve` binds the tailnet IP `:<port>` as a **real
+> listener**, so fronting `:7700` *before* the cockpit binds makes the cockpit's own bind fail `EADDRINUSE` —
+> you would "fix" its exposure by killing it (the same contention M215 F12 hit for `ant-academy`). So the
+> bring-up's **first** serve apply passes `--no-cockpit`, and a **second**, idempotent apply fronts the cockpit
+> only after its `/healthz` answers. Bind first, front second. The **reset** plan, by contrast, always includes
+> `:7700` — otherwise a re-up over a stale serve config finds the port held and the cockpit cannot start at all.
+>
+> **This is transport, not authentication** — do not over-read it. The cockpit remains a one-click,
+> password-free *"become any seeded hero"* launcher; it is now behind the tailnet's TLS + device mesh rather than
+> in cleartext. See [`../safety.md`](../safety.md) **§3.5.2**.
 
 ## The tailscale-cert FAPI (the Clerk-free login over a real cert)
 
@@ -371,8 +412,21 @@ CA install**, exactly what `mkcert` cannot give a *remote* browser. The fake-FAP
 that cert on `5400+off` (so it is excluded from the `tailscale serve` proxy — double-fronting would double-TLS).
 The consumer mount is path-only (`<stack>/certs/fapi.{crt,key}`), so it is a drop-in at the same paths as the
 local mkcert/openssl cert. Falls back to the local mkcert/openssl path (local trust only) if `tailscaled` isn't
-up **or** the tailscale operator isn't set (F1 — set it, Step 0 #4). The LE cert is **90-day**; `tailscale cert`
-re-issues on re-run, and a long-lived stack needs a renew-then-reload step. Full cert story + caveats:
+up **or** the tailscale operator isn't set (F1 — set it, Step 0 #4). The LE cert is **90-day**, so a long-lived
+stack still needs a renew-then-reload step eventually.
+
+> **CORRECTION (M220 S3, measured).** This paragraph used to add: *"`tailscale cert` re-issues on re-run"*.
+> **It does not.** Two back-to-back mints on `billion` (2026-07-14) returned the **identical certificate serial**
+> (`05777C48…`) in **0.01 s** each, with **zero** new ACME orders in `tailscaled`'s journal. tailscaled serves
+> the cert from its own cache and only re-orders near expiry.
+>
+> **Why this was load-bearing, not trivia.** M220 S3 makes remote reach **default-on**, and its capability
+> ladder **mints a cert as rung 6 — on every bring-up**. If the old claim had been true, default-on would burn a
+> Let's Encrypt **duplicate-certificate** slot per `demo-up` — and since `ts.net` is a **PSL entry**, that bucket
+> is **per-tailnet**, shared by every box on it. A mint failure then silently degrades to a local-trust cert a
+> remote browser rejects. The flip was gated on **settling this empirically** rather than trusting the sentence.
+
+Full cert story + caveats:
 [`recipe-browser-login.md`](recipe-browser-login.md) §B step 2 and
 [`../../services/clerkenstein.md`](../../services/clerkenstein.md).
 

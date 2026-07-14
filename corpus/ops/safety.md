@@ -408,9 +408,27 @@ injected override existed.
   `host:container` mapping is `0.0.0.0`.** There is no `127.0.0.1` prefix anywhere.
 - **On Linux this bypasses the host firewall.** Docker installs its rules in its own iptables chain, consulted
   *before* `ufw`/`firewalld`. A `ufw deny` on the port does **not** block it.
-- `BIND_HOST` (`demo-stack/up-injected.sh`) *is* gated on `--public-host` — but it is read **only** by the two
-  **host-native** servers (the presenter cockpit and ant-academy, which are plain host processes). **It does not
-  touch a single container.**
+- `BIND_HOST` (`demo-stack/up-injected.sh`) *is* gated on the public-host knob — but it is read **only** by the
+  two **host-native** servers (the presenter cockpit and ant-academy, which are plain host processes). **It does
+  not touch a single container.**
+- 🔴 **…and it only actually CONSTRAINS one of those two. MEASURED on `billion`, M220 S3 (2026-07-14).** On a
+  **localhost** demo (`BIND_HOST=""`), with the demo up and `ss -ltnp` read on the host:
+
+  | host-native server | bound to | reachable at the node's `100.x` tailnet IP? |
+  |---|---|---|
+  | presenter cockpit (`7700+off`) | **`127.0.0.1:17700`** | **no** — connection refused ✅ |
+  | ant-academy (`3077+off`) | **`*:13077`** | **YES — HTTP 200** ❌ |
+
+  `BIND_HOST=""` means *"pass no `-H` flag and let each server keep its own default"* — and **`next dev`'s own
+  default is `0.0.0.0`**. So the academy is world-published on **every** demo, exactly like the containers, and
+  the *"gated on the knob"* framing is only true of the cockpit.
+
+  **This is the same false-loopback claim §3.1 exists to retract, one layer up** — and it survived M220 S0
+  because the exposure fence (`exposure_claim_guard`) checks the three **container** port emitters and has no
+  notion of the host-native servers. An exposure fence that cannot see a whole class of listener will report a
+  confident, quietly incomplete pass. *(Routed: `FIX-M221-academy-loopback-bind` — pass `-H 127.0.0.1` when
+  `BIND_HOST` is empty. Deliberately NOT bundled into S3/S4: it changes the localhost path's behaviour, and the
+  invariant S3 is fenced on is that the localhost path stays **byte-identical**.)*
 
 > **`corpus/ops/demo/tailscale-serve.md` claimed the opposite until M220:**
 >
@@ -501,6 +519,53 @@ hypothetical one.
 > ⚠️ **Cite it as "v2.2's D-DESIGN-1", never bare.** v2.3 has its **own** `D-DESIGN-1` (*"the <5 s gate is on
 > ACCESS, not full first-page render"*). The ids collide across releases; a bare reference resolves to the wrong
 > decision.
+
+**Status: LIVE in code as of M220 S3** (2026-07-14; proven default-on end-to-end on `billion`, and proven to
+fall back byte-identically on a box with no Tailscale). §3.5 previously recorded only the *decision* — the code
+still required the flag. It no longer does.
+
+#### 3.5.1 How default-on actually decides — the capability ladder
+
+Default-on does **not** mean *"assume the box is on a tailnet"*. It means *"find out, and prove it"*. Six rungs,
+**capability-gated, never presence-probed** (`demo-stack/tailscale_autohost.py`):
+
+1. `tailscale` is on `PATH`
+2. `tailscale status --json` → `BackendState == "Running"` — *installed-but-logged-out is a **failure***
+3. `.Self.DNSName` present and **dotted** — a dotless name is **hard-refused** (`@clerk/backend`'s
+   `assertValidPublishableKey` rejects a dotless FAPI host, and the host is baked into the publishable key, so a
+   dotless host **500s every request** — it is not a degraded demo, it is a broken one)
+4. `CurrentTailnet.MagicDNSEnabled == true` — *cannot confirm ⇒ refuse*
+5. `tailscale serve status` shows no operator/sudo denial
+6. **`tailscale cert` actually MINTS a certificate** — *not "the binary is installed"*. Rungs 1–5 all pass on a
+   box where the mint still fails (no operator, tailnet HTTPS off, an ACME hiccup); the cert step then silently
+   degrades to a **local-trust** cert that the *remote* browser — the only machine this feature exists for —
+   rejects. A green bring-up nobody can use. So rung 6 demands a **certificate**, not a **binary**.
+
+> #### 🔴 The fallback is not optional — and it is a correctness property, not caution
+> **Any failed rung ⇒ an EMPTY `STACK_PUBLIC_HOST` ⇒ byte-identical to the v2.2 localhost demo**, plus **one
+> loud line** naming the exact fix command. **Never a partially-satisfied public path.**
+>
+> `SCHEME` and `BIND_HOST` in `up-injected.sh` both derive from the **same `-n $STACK_PUBLIC_HOST` predicate**.
+> A **half-satisfied** public path is therefore **strictly worse than localhost**: every baked browser URL flips
+> to `https://` while the listeners are still plain HTTP, and the demo **does not load at all**. Today a laptop
+> with no Tailscale always works, and it must keep always working. Fenced in
+> `demo-stack/tests/test_public_host_flip.py` — including the case where discovery **crashes** (a dropped
+> `|| true` would abort the bring-up, leaving a box unable to run *any* demo, not even the localhost one it ran
+> yesterday).
+
+#### 3.5.2 The cockpit is now behind the tailnet's TLS — which is **transport**, not **authentication**
+
+M220 S4 adds the presenter cockpit (`7700+offset`) to the `tailscale serve` front list. Until v2.3 it was the
+**one** browser-facing surface deliberately left on **plain HTTP** — and with remote reach now default-on that
+was the worst possible combination: the demo's **entry point**, the single page a presenter actually opens, was
+the single page not behind the trusted cert, while everything it links to was.
+
+**Do not read this as a hardening of the cockpit.** Per §3.2 the cockpit remains a **one-click, password-free
+"become any seeded hero" launcher** — a bare `GET /v1/client/handshake?__clerk_identity=<key>`. Fronting it on
+`tailscale serve` puts it behind the tailnet's **TLS + authenticated device mesh** instead of cleartext HTTP. It
+does **not** password-protect it. Anyone who can reach the tailnet can still become any hero, exactly as before;
+they now do so over a trusted origin. The reason that is acceptable is unchanged and structural: **there is no
+customer data in a demo, and it cannot write prod** (Parts 1–2).
 
 ### 3.6 The EGRESS half — what a demo sends OUT (v2.3 M220 S5/S6)
 
