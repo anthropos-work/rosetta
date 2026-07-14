@@ -367,3 +367,89 @@ path; the only fuzz-shaped surface, the guards' doc scanners, is already propert
 fenced-block / per-preset regression set). Coverage deltas on a second pass would be < 2%, and the three
 findings above were all structural, not incremental. **Remaining scope is the live-demo e2e
 (`m220-session-and-egress.spec.ts`), which needs a bring-up and is out of scope for this pass.**
+
+## M220: Final Review
+
+_Close-phase findings + fixes. All Fate 1 (landed) unless routed. See `decisions.md` D31/D32 and
+`audit-deferrals/deferral-audit-2026-07-15-m220-close.md`._
+
+### Scope
+- [x] Phase 1b deferral audit: **YELLOW, 0 blocking, 0 escape-hatch** — the one chronic repeat (dev-stack
+      suite, 5 milestones) was investigated and **LANDED Fate 1** (D31).
+
+### Code Quality
+- [x] [must-fix] `DevSetdressLocalContent` ran the REAL `stackseed` against a REAL Postgres (missing
+      `DEV_SETDRESS_USE_STUB_BINS=1`) — 19 failures → 20 pass. **D29's class one harness over.** (D31)
+- [x] [must-fix] rung 3 accepted any dotted string as a hostname → a value with a space / semicolon / leading
+      dash cleared all 6 rungs and got baked into the pk + argv. RFC-1123 now required. (D32, adversarial)
+- [x] bash -n clean on all 4 touched scripts · py_compile clean · go vet clean across 6 modules.
+
+### Documentation
+- [x] **5 new modules were undocumented in their section READMEs** (the ladder + 4 corpus guards) — the same
+      undiscoverability defect S7 found in `--inject`. Documented (stack-core / stack-injection / demo-stack),
+      with the exit-code contracts (2 ≠ 0; empty = FINDING).
+- [x] demo-stack README test count **424 → 576**, reconciled against the JUnit XML.
+- [x] `tailscale-serve.md` backfill: the SCHEME/BIND_HOST co-derivation as a NAMED invariant + the
+      exit-0-always ladder contract (why a broken tailscale can't test `|| true`). (harden Phase 3b)
+
+### Tests & Benchmarks
+- [x] Mutation battery committed (17 mutants, 3 anti-theatre assertions) — the artifact S3/S7 claimed but
+      never left behind. Found H-1 (unfenced HARD INVARIANT) + H-3 (untested `|| true`).
+- [x] Coverage lifted on every M220 guard/module (57→89 / 92→99 / 81→94 / 62→91 / 80→91 / 71→74).
+- [x] The whole `dev-stack` suite runs for the first time; the whole rext Python suite completes (1215 / 0 fail).
+- [x] Flake gate: 5 sequential randomized runs, 0 flakes.
+
+### Decision Triage
+- [x] D1 (fences derive, never restate) → blended into `stack-core/README.md` (the corpus-guards section).
+- [x] D18/H-1 (the co-derivation invariant) → blended into `corpus/ops/demo/tailscale-serve.md`.
+- [x] D19/D20 (cockpit own-axis + bind-first-front-second) → blended into `stack-injection/README.md`.
+- [x] D27 (the dev 0.0.0.0 disclosure, one family for two) → blended into `stack-injection/README.md`.
+- [x] D31 (the chronic deferral) → recorded; state.md "environmental" known-issue **retracted** (Phase 10).
+- [x] D32 (rung-3 hostname refusal) → `demo-stack/README.md` ladder entry + the module docstring.
+- Remaining decisions (D2–D17, D21–D26, D28–D30) → **archive** (maintainer-only implementation choices).
+
+## Completeness Ledger (section variant)
+
+**Cross-checked against `overview.md` §Scope.In, every `progress.md` checkbox, `spec-notes.md`, and
+`decisions.md`.**
+
+### Done (Fate 1) — landed in THIS milestone
+| Scope item | Evidence |
+|---|---|
+| (a) the "2 orgs"→3 doc fix + org-count fence | `story_org_count_guard.py` — 11 violations RED→GREEN; live guard GREEN |
+| (b) the `/demo-up` defaults table + parser fence | `demo_knob_guard.py` — 26 knobs + 10 flags, 2 entry points; GREEN |
+| (c) remote flip default-ON via the 6-rung ladder (opt-out) | `tailscale_autohost.py`; **proven live on billion**, both vantages |
+| (d) the dev-side opt-in `--public-host` (folds M216) | S7; `dev-stack up N --public-host auto`; tripwire-fenced |
+| (e) cockpit fronted on `tailscale serve` | `gen_tailscale_serve.py` cockpit own-axis (D19) + bind-first (D20) |
+| (f) Clerk telemetry OFF | both halves wired for next-web/studio-desk/academy |
+| (g) ad-tech egress killed | `next-web-no-thirdparty` — 7 third parties → 0 in the client bundle |
+| (h) vendor clerk-js + bound the timeout | box-level disk cache; live: browser fetches from FAPI not CDN |
+| (i) academy stops poisoning the session | Clerkenstein-wired; A/B on billion: session SURVIVES |
+| (j) studio-desk "eject" | **NOT a bug (D15)** — M219's evidence was a cookieless curl; `dan-manager` stays in Studio |
+| Delivers 1: `safety.md` Part 3 (exposure axis) | authored; the fence's own subject |
+| Delivers 2: supersession of v2.2's D-DESIGN-1 | written where it lives, never bare (D7) |
+| Delivers 3: correction of the false 0.0.0.0 claim | `exposure_claim_guard.py` — 3 false + 2 missing RED→GREEN |
+| **the open question (LE rate limits)** | **settled empirically on billion** (D22): re-mint = identical serial, 0.01 s, 0 ACME |
+| **the 5-milestone chronic dev-stack deferral** | **D31 — one env var; whole rext Python suite now completes** |
+| **the rung-3 hostname refusal** | **D32 — adversarial review; 7 regression tests** |
+
+### Confirmed-covered (Fate 2) — already owned by M221's `In:` list
+M217 (pre-bind reap / port preflight / freshness preflight) · M218 (F-7 backend-api-url-twin, C-3 federation
+403s) · M219 (GUARD-host-isolation, FIX-reap-native-academy, REPROVE-battery-at-final-code) ·
+v2.2 residual DEF-M215-02. **No plan edit — confirmed present.**
+
+### Annotated (Fate 3) — added to M221's `overview.md` at this close
+`FIX-M221-academy-empty-catalog` (F-M220-2) · `FIX-M221-academy-loopback-bind` (F-M220-5) · `F-M220-4`
+(academy re-runnability) · `BURNIN-M221-dev-public-host`. Each with a stated DoD. Plus the **stale**
+`FIX-M221-devstack-test-spin` **retraction** (discharged, not silently deleted).
+
+### Dropped
+A "hiring" story org — **D-DESIGN-4**: it does not exist and will not be built. (Never in scope; recorded for
+completeness.)
+
+### Release-scope-breaking deferral (escape hatch)
+**NONE.** Zero cross-release deferrals. Nothing requires user sign-off at this close.
+
+**Every scope item in `overview.md` §Scope.In is in the Done category.** All 8 sections checked; the one
+unchecked sub-item (S5's 400-char academy content floor) is the **deliberately-RED, not-weakened** F-M220-2,
+routed to M221 as an honest failing gate — an accurate red, not a dropped item.

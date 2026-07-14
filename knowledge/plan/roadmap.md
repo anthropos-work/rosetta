@@ -399,6 +399,30 @@ profile/workforce/skill-paths/ai-simulations/assignment-monitoring only; **Aria'
 e2e-proven**) + its section in `corpus/ops/demo/playthroughs.md`; updates to `corpus/services/ai-readiness.md`.
 
 #### M220 — Cue sheet  (`section`, medium)
+**Status:** ✅ **`done` — closed-complete 2026-07-15.** All 8 sections (S0–S7) landed on `m220/cue-sheet`, merged
+`--no-ff` into `release/02.30-cue-to-cue`. rext code-of-record **`cue-to-cue-m220-final`** (live-graded on
+`billion` at `-r6`). **Zero platform-repo edits.**
+> **The user's ask was three things; TWO were already true and the docs lied.** *"Pull all data"* + *"seed 3
+> orgs"* were **already default-on** — the `"2 orgs"` lie (11 sites, 4 releases) was why the user believed the
+> seeding ask was unmet. The **one genuine flip** (remote reach default-on, opt-out `--no-public-host`) **landed
+> (S3) and is live-proven** on `billion`, both vantages, on a trusted LE cert, cold reset-to-seed reproducible,
+> 0 ejects. The invariant that holds: a box with **no** Tailscale is **byte-identical to localhost** (proven by
+> genuinely removing `tailscale`, tripwire-fenced). Other landings: the academy stops **poisoning the demo
+> session** (S5); **zero egress** on an authenticated load (7 third parties killed, S6); clerk-js **served from
+> disk** (was an unbounded CDN fetch on the login path); the cockpit is **behind HTTPS** (S4); `safety.md`
+> **Part 3 — the exposure axis** + supersession of v2.2's D-DESIGN-1 (S1); the dev-side **opt-in**
+> `--public-host` **discharges M216** without pulling the scope-flex lever (S7).
+> **Harden** committed the **17-mutant battery** M220 claimed but never left behind, and it found the milestone's
+> own **HARD INVARIANT unfenced** (H-1: `SCHEME`/`BIND_HOST` was asserted against a re-typed copy of itself) + an
+> **untested `|| true`** (H-3). **Close** resolved a **5-milestone chronic deferral** — the dev-stack suite's
+> *"environmental"* failure was **one missing env var** (D31), so the whole rext Python suite now completes for
+> the first time (**1215 tests, 0 fail**) — and an **adversarial** finding: rung 3 accepted any dotted string as
+> a hostname, so a value with a space / leading dash cleared 6 rungs into the pk + argv (D32). **Deferral audit
+> YELLOW, 0 blocking, 0 escape-hatch.** Full closure record in `m220-cue-sheet/{retro.md, metrics.json,
+> progress.md, decisions.md}`. **Fate-3 routes to M221** (both academy items + dev burn-in), and the stale
+> `FIX-M221-devstack-test-spin` route **retracted** in M221's overview (discharged, not silently deleted).
+> **Go 1827 test funcs / 0 fail; Python 1215 / 0 fail; flake 0.**
+
 **Goal:** `/demo-up` **means** what the user thinks it means — full data, the three orgs, and remotely reachable,
 by default.
 **In:** **(a) the doc fix** — "2 orgs" → **3** (`.claude/skills/demo-up/SKILL.md:109,153`;

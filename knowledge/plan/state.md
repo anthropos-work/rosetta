@@ -1,10 +1,10 @@
 ---
 active_release: "v2.3 cue to cue — the presenter-speed release (designed 2026-07-13)"
 active_branch: "release/02.30-cue-to-cue"
-active_milestone: "M220 (cue sheet) — ALL 8 SECTIONS DONE on m220/cue-sheet, ready for /developer-kit:close-milestone. S0-S2 (docs/fences); S3+S4 (live on billion: demo remote reach DEFAULT-ON via a 6-rung capability ladder + the cockpit behind the trusted cert); S5+S6 (live: academy session-poisoning FIXED, zero egress, clerk-js from disk); S7 (the dev-side OPT-IN --public-host — LANDED, scope-flex lever NOT pulled; folds + discharges the reserved M216)"
-last_closed: "M219 — 2026-07-14"
-phase: "M220 COMPLETE — all 8 sections checked off. S7 landed the dev-side opt-in --public-host (Fate 1): the ladder is REUSED from S3 cross-section, never forked; a dev box that passes no flag makes ZERO tailscale calls (tripwire-fenced, 9/9 mutants RED). It also found the dev family had NO 0.0.0.0 exposure disclosure at all (the S0 lie one family over: DEV publishes 8 ports on 0.0.0.0, measured) and that --inject has been undiscoverable since M5. rext @ cue-to-cue-m220-r6. NEXT: /developer-kit:close-milestone on M220, then M221 (last)."
-last_updated: "2026-07-14"
+active_milestone: "M221 (prove-on-billion) — the LAST milestone. Iterative. Re-prove EVERY v2.3 gate on the remote VM over the tailnet with NO FLAGS: p95 click->ACCESS <5s both vantages, full replayed catalog, 3 orgs incl. AI-readiness, remote reach default-on. Inherits M217-M220 field routes (incl. the 4 M220 Fate-3 routes: 2 academy + dev burn-in)."
+last_closed: "M220 — 2026-07-15"
+phase: "M220 CLOSED (closed-complete, merged --no-ff into release/02.30-cue-to-cue). NEXT + LAST: M221. Do NOT merge to main / tag v2.3 until M221 closes."
+last_updated: "2026-07-15"
 ---
 
 # State
@@ -24,86 +24,71 @@ shorten"* — booked as M43-D5 with **zero deferrals recorded**, so it never ent
 Full gap analysis: [`.agentspace/scratch/roadmap-research-2026-07-13.md`](../../.agentspace/scratch/roadmap-research-2026-07-13.md).
 Per-milestone closure narratives live in [`roadmap.md`](roadmap.md) — **not here**.
 
-**Active milestone:** **M220 "cue sheet" — ALL 8 SECTIONS COMPLETE** on `m220/cue-sheet` (2026-07-14), awaiting
-`/developer-kit:close-milestone`. rext code-of-record: **`cue-to-cue-m220-r6`**. The last section, **S7**, landed the
-**dev-side opt-in `--public-host`** (Fate 1 — the declared scope-flex lever was **not** pulled), which **consumes and
-discharges the reserved M216**.
+**Active milestone:** **M221 "prove it on billion" — the LAST milestone** (`iterative`, large). Re-prove **every**
+v2.3 gate on the **remote VM, over the tailnet, with NO FLAGS**: p95 click→ACCESS **< 5 s** both vantages, the full
+replayed catalog (no skipped surface), all 3 orgs incl. AI-readiness, remote reach **default-on**. It inherits the
+field routes from M217–M220 — including M220's **4 Fate-3 routes**: `FIX-M221-academy-empty-catalog`,
+`FIX-M221-academy-loopback-bind` (+ extend the exposure fence to host-native listeners), `F-M220-4`
+(academy re-runnable on a live public-host demo), `BURNIN-M221-dev-public-host`.
 
-> ### ✅ M219 — THE USER'S KICKOFF BAR IS MET ON BOTH COUNTS
-> *"each element and sub section of readiness **filled** spot data"* + *"the **right** dashboards/pages … **not the
-> old legacy ones**"* — proven on **5 cold reset-to-seed rebuilds**, each independently evidenced. Manager: **all 8
-> readiness sections PASS**. Employee: **both heroes** `failingSections=0`. **Zero** pointers resolve to a legacy
-> surface. **Zero platform-repo edits.**
+> ### ✅ M220 CLOSED — the user's ask was three things, and TWO were already true (the docs lied)
+> *"Pull all data"* + *"seed 3 orgs"* were **already default-on**; the `"2 orgs"` lie (**11 sites, 4 releases**)
+> is why the user believed the seeding ask was unmet — fixed + **fenced** (a doc-vs-code guard that counts the
+> preset). The **one genuine flip** — remote reach **default-on**, opt-out `--no-public-host` — **landed (S3) and
+> is live-proven** on `billion`, both vantages, on a trusted LE cert, cold reset-to-seed reproducible, 0 ejects.
+> **The invariant that holds:** a box with **no** Tailscale is **byte-identical to localhost** (proven by
+> genuinely removing `tailscale`, tripwire-fenced — `SCHEME`/`BIND_HOST` share one predicate, so a half-satisfied
+> public path is strictly worse than localhost). Also: academy stops **poisoning the session** (S5); **zero
+> egress** on an authed load (7 third parties killed, S6); clerk-js **from disk** (was unbounded CDN on the login
+> path); cockpit **behind HTTPS** (S4); `safety.md` **Part 3 — the exposure axis** (S1). The dev-side **opt-in**
+> `--public-host` **discharged M216** without pulling the scope-flex lever (S7). **studio-desk (j) was NOT a bug**
+> — M219's *"302 → /login"* was a **cookieless curl**, mis-read (D15). **Zero platform-repo edits.**
 >
-> **TWO of the milestone's OWN premises were REFUTED by measurement**, and **the planned demo-patch was WITHDRAWN,
-> not built.** All 3 demo pointers had targeted an **UNLINKED ORPHAN** page; the employee surface **has no route of
-> its own** (embedded in `/home`) — *which is why route-crawling never found it*. Junk skills **ORG-WIDE** (the
-> claimed-tail pool ran dry and topped up from the taxonomy's **alphabetical head**) — **the flat tier is DELETED**.
-> A hero rendered **ROLE-LESS**. The manager's **4 interview-findings blocks rendered HEADINGS OVER NOTHING** — they
-> read a table **no seeder ever wrote**; now seeded, the **disclosed EXCEPTION deleted**, floor **120 → 900**.
->
-> **Alignment is now 100% / 100% critical (27/27)** — M218's deliberately-RED gene (**F-11**) is **fixed** and
-> **retained as a permanent fence**. Both absence-gates landed too.
-
-> **⚠ M219's battery carries TWO DISCLOSED CAVEATS — neither hidden, neither rounded away.**
-> **(1) Not one uncontested consecutive run.** Two further runs went RED on **battery INTEGRITY** — an
-> **ORCHESTRATION error, not a demo defect**: two batteries ran **concurrently against the single demo host** and
-> one **purged the stack mid-measurement**, so a gate went **UNEXECUTED** (*an unexecuted gate is a **FINDING**, not
-> a pass*). **No demo defect was observed in anything that was measured.**
-> **(2) The code that GRADED is not the code that SHIPPED** — `c6648d1` (`aiReadinessStep1Score` **double-rounded**)
-> is a **SEED-PATH** change landed **after** the graded tag, and **per D13 that restarts the battery count**. Small,
-> strictly corrective — **and still not allowed to be rounded away.** → **`REPROVE-M221-battery-at-final-code`**.
+> **Harden + close found their own defects, several in the tooling itself (D17):** the **17-mutant battery** M220
+> *claimed but never committed* (unfalsifiable — the exact D17) is now a test, and it found the milestone's own
+> **HARD INVARIANT unfenced** (the fence asserted a **re-typed copy** of the derivation; H-1) + an **untested
+> `|| true`** (H-3). Close resolved a **5-milestone chronic deferral**: the dev-stack suite's *"environmental"*
+> failure was **one missing env var** (D31) — so the **whole rext Python suite completes for the first time**
+> (1215 tests, 0 fail). Adversarial: rung 3 accepted any dotted string as a hostname (D32). **Deferral audit
+> YELLOW, 0 blocking, 0 escape-hatch.**
 
 > **⚠ THE RELEASE'S HEADLINE GATE WAS MET AT M218 — click→ACCESS 2413 ms / 1767 ms vs < 5000 ms** (worst-case p95,
-> **5 GENUINE cold reset-to-seed cycles**, both vantages, 50/50 ACCESS, on `billion` over the tailnet). **From
-> 39.45 s / 38.30 s — a ~16× improvement.** Two root causes, **both in demo tooling, zero platform edits**.
+> **5 GENUINE cold reset-to-seed cycles**, both vantages, on `billion` over the tailnet). **From 39.45 s / 38.30 s
+> — a ~16× improvement.** M221 re-proves it (and everything) live, **with no flags**.
 
-> **⚠ Carried into M221 (from M217):** the **pre-bind reap has still never run live** — it was dead code during
-> M217's green proof run on `billion`. Fixed and unit-proven; **not field-proven**. M221 re-proves everything on
-> the box.
+> **⚠ Carried into M221:** the **pre-bind reap has never run live** (M217, dead code during the green proof run);
+> **two disclosed M219 caveats** (the battery was not one uncontested consecutive run — an orchestration error;
+> and the graded code ≠ the shipped code, `aiReadinessStep1Score` double-rounded → `REPROVE-M221-battery-at-final-code`);
+> and M218's `PROBE-F7`/`C-3`. All settled only **on the box**, which is M221's whole job.
 
-**Phase:** **M220 COMPLETE (all 8 sections) — next: `/developer-kit:close-milestone` on M220**, then **M221** (last).
+**Phase:** **M220 CLOSED** (closed-complete, merged `--no-ff`). **Next + LAST: M221.** Do **NOT** merge to `main`
+or tag `v2.3` until M221 closes.
 
-**Next up:** **`/developer-kit:close-milestone` on M220**, then **M221 "prove it on billion"** (the last milestone) —
-which re-proves **every** gate on the VM, over the tailnet, **with no flags**.
+**Next up:** **M221 "prove it on billion"** (the last milestone) — re-prove **every** gate on the VM, over the
+tailnet, **with no flags**, then `/developer-kit:close-release`.
 
-**Recently closed:** **M219** readiness-renders — 2026-07-14 (`closed-complete`; 13 bugs; the user's bar met on
-both counts) · **M218** seat-change — 2026-07-14 (`closed-on-gate`; 21 bugs; the <5 s gate MET) · **M217**
-clean-stage — 2026-07-13 (gate MET on `billion`; 32 bugs).
-
-## ✅ M220 inherited two DEMO-BREAKING defects from M219 — BOTH FIXED in S5 (2026-07-14)
-
-- 🔴 **The academy POISONS the demo session.** `:13077` runs its own **keyless Clerk**; visiting it returns
-  `Set-Cookie: __session=; Expires=1970` (**deletes the demo session**) and `__client_uat=0;
-  Domain=taildc510.ts.net` — **domain-wide, not port-scoped** (**cookies scope by HOST, not by PORT**). So **a
-  presenter who clicks the AI Academy link is LOGGED OUT of the demo** into `ERR_TOO_MANY_REDIRECTS`, and **every
-  employee coverage sweep aborts**. Proven by controlled A/B from a peer. → M220 item **(i)**, severity **RAISED**.
-- 🔴 **studio-desk `:19000` → 302 → `:13000/login`** — clicking *"Anthropos Studio"* **ejects the presenter from
-  the demo**. An **in-demo dead end**, which is why the sweep's prod-eject detector never flagged it. → M220 item
-  **(j)**, added at close.
-
-**Both are FIXED and their fences are GREEN (M220 S5).** The academy is now **Clerkenstein-wired** from the stack's
-own `.env` — it never reads `platform/.env` again, keyless mode cannot engage, and **no cookie is ever deleted**
-(proven by a controlled A/B from a tailnet peer: login → `/profile` → **ACADEMY** → `/profile` ⇒ **still signed in as
-"Maya Chen"**; direct `curl` at `:13077` returns **zero `Set-Cookie` headers**). studio-desk was **never a session
-bug at all** — M219's *"302 → /login"* was an **unauthenticated `curl`**, i.e. the correct answer to a cookieless
-request, mis-read as the defect (D15); `dan-manager` clicks **Anthropos Studio** and **stays on `:19000`**.
-*One residual, honestly RED and deliberately not weakened:* the academy home renders **0 paths / 0 courses** — a
-**separate** content-pipeline defect (**F-M220-2**), routed to **M221**.
+**Recently closed:** **M220** cue-sheet — 2026-07-15 (`closed-complete`; the "2 orgs" lie + remote opt-out +
+`safety.md` Part 3; a 5-milestone chronic deferral resolved) · **M219** readiness-renders — 2026-07-14
+(`closed-complete`; 13 bugs) · **M218** seat-change — 2026-07-14 (`closed-on-gate`; the <5 s gate MET).
 
 ## D17 — the release's signature hazard (name it, then stop walking into it)
 
 **D17: *a status artifact that outlives the thing it describes, and is then read as evidence.*** Named at the M218
-close. It has now bitten **~14 times across M217→M219** — **five new instances inside M219 alone, several found by
-the tooling in ITSELF**: `run-coverage.sh` printed *"coverage report written to …"* **unconditionally** and re-read
-whatever JSON was on disk, so a spec that threw first presented the **PREVIOUS run's numbers** — *it nearly graded
-an M219 rebuild on hours-old data from the **old, broken** stack*. **17 existing tests asserted the junk-fallback AS
-THE CONTRACT** — **they were not missing the bug, they were guarding it.** The academy launcher's **fixtures had
-encoded the broken behaviour**, so the suite was **GREEN for four releases while the academy 502'd**.
+close. It has now bitten **~20 times across M217→M220** — and in M220 the pattern turned inward: **the fences kept
+catching themselves.** The **17-mutant battery M220 *claimed but never committed*** was itself a D17 (a result
+surviving only as a sentence in a progress note); once committed it found the milestone's own **HARD INVARIANT
+asserted against a re-typed COPY of itself** (mutating the shipped `SCHEME` to `https` left all 23 tests green).
+The **image cache** matched a stale image so a new demo-patch **never baked while grading green**. **Five "reuse"
+tests exercised the REBUILD path.** And the deepest: the dev-stack suite's *"environmental"* excuse **sat in this
+file's own headline numbers for four releases**, re-characterised by every milestone that touched it — **one
+missing env var underneath** (M220-D31).
 
-**The generalized lessons:** ***"the role classifies" ≠ "the pool is big enough"*** · ***"it resolves" ≠ "it has
-skills"*** · ***"it serves" ≠ "it renders"*** · ***"the pool resolved" ≠ "the content is sane"*** · ***an errored SQL
-query is not "zero rows"*** · ***an unexecuted gate is a FINDING, not a pass.***
+**The generalized lessons:** ***"the doc says N" ≠ "the code ships N"*** · ***"it serves" ≠ "it renders" ≠ "the
+session survives"*** · ***"the flag exists" ≠ "the flag works"*** · ***"the test is named X" ≠ "the test tests
+X"*** · ***"the binary is installed" ≠ "it mints a cert"*** · ***"tailscaled handed me a string" ≠ "it is a
+hostname"*** · ***an errored command is not "zero results"*** · ***a uniform result across unrelated mutations is a
+constant, not a result*** · ***"we deferred this before" is not a reason to defer it again — a re-characterised
+excuse is where a chronic bug hides.***
 
 ## User decisions taken at design time (binding)
 
@@ -121,27 +106,29 @@ query is not "zero rows"*** · ***an unexecuted gate is a FINDING, not a pass.**
 | ~~**M217**~~ | ✅ **DONE** — Clean stage: a demo that comes up **green** | `section` | medium | — |
 | ~~**M218**~~ | ✅ **DONE** — Seat change: click→ACCESS **2413/1767 ms** vs < 5 s | `iterative` | large | M217 |
 | ~~**M219**~~ | ✅ **DONE** — Readiness renders: **filled**, on the **current** surfaces | `section` | medium | M217 |
-| **M220** | Cue sheet — `/demo-up` defaults: the doc fix + remote **opt-out** + `safety.md` **Part 3** | `section` | medium | M217 |
+| ~~**M220**~~ | ✅ **DONE** — Cue sheet: the "2 orgs" lie + remote **opt-out** + `safety.md` **Part 3** | `section` | medium | M217 |
 | **M221** | Prove it on billion — every gate, on the VM, over the tailnet, **no flags** | `iterative` | large | M217–M220 |
 
-## Headline numbers (M219 close, 2026-07-14)
+## Headline numbers (M220 close, 2026-07-15)
 - **p95 click→ACCESS (the release's headline gate, set at M218):** **2413 ms** (employee) / **1767 ms** (manager)
   vs the **< 5000 ms** gate, over **5 genuine cold reset-to-seed cycles**. **Baseline 39.45 s / 38.30 s.**
   *A latency number without its environment is not a measurement:* `billion`, Linux VM, 7.3 GiB RAM, tailnet origin.
-- **Python tests:** **903** (0 fail, 12 skip) — demo-stack 506 · stack-injection 186 · stack-verify 114 ·
-  stack-core 97. **+16 vs M218.** Counted from **JUnit XML**, never grepped stdout.
-- **Go test funcs:** **1821** (+37 vs M218's 1784, **by the same method** — pinned in `metrics.json` so future
-  closes compare like with like). **0 failures across all 6 modules.**
-- **Alignment (Clerkenstein Go surface):** **100% overall / 100% critical (27/27)** — gate ≥95/=100 ⇒ **MET**.
-  M218's deliberately-RED gene (**F-11**, the fabricated org eid) is **FIXED**, and the gene is **retained as a
-  permanent fence**. **An unmeasurable surface now FAILS LOUD** (exit `3` ≠ exit `2`) — it used to score nothing
-  and pass.
-- **Demo-patches:** **7** (M219 added `next-web-aireadiness-flag-gate`). **Platform-repo edits:** **0**.
-- **Fences:** graded by **MUTATION**, not by re-running them green — **7 mutations, 7 REDs**. *A fence which passes
-  against both the pre- and post-fix code is theatre.*
-- **Flake:** **0**.
-- **Known issue (flagged, not a regression):** the **`dev-stack` suite fails on this box** — environmental (needs a
-  live Postgres on `:15432`; this box's `.agentspace/secrets` is also incomplete). Identical at v2.2, M217, M218.
+  **M221 re-proves it live, with no flags.**
+- **Python tests:** **1215** (0 fail, 16 skip, 39 subtests) — demo-stack 583 · stack-injection 246 · stack-core
+  152 · **dev-stack 120** · stack-verify 114. Counted from **JUnit XML**, never grepped stdout. **The whole rext
+  Python suite completes for the FIRST time** — the `dev-stack` suite was un-runnable (`rc=124`) for 5 milestones
+  until M220-D31 (**one missing env var**, not "environmental"). Like-for-like on M219's 4 counted sections:
+  **1095 vs 903 = +192**; dev-stack 120 now visible.
+- **Go test funcs:** **1827** (+6 vs M219's 1821, **same method**). **0 failures across all 6 modules; `go vet`
+  clean.**
+- **Fences graded by MUTATION** — M220's **17-mutant battery is now COMMITTED** (S3/S7 claimed 12+9 but committed
+  neither; that was itself a D17). 17 mutants, 17 RED, with three anti-theatre assertions (baseline-green /
+  mutants-actually-change-the-file / signatures-not-a-constant). *A fence that passes against the bug is theatre —
+  three of M220's were, caught only by the mutation run.*
+- **Alignment (Clerkenstein Go surface):** **100% / 100% critical (27/27)** — MET; re-run at M220 S6 after
+  touching the FAPI (clerk-js from disk).
+- **Demo-patches:** **8** (M220 added `next-web-no-thirdparty`). **Platform-repo edits:** **0**.
+- **Flake:** **0** (5 sequential randomized runs).
 
 ## Branch model / shipped tags
 **v2.3 IN DEVELOPMENT:** `release/02.30-cue-to-cue` cut from `main` at `/developer-kit:design-roadmap` (2026-07-13);
@@ -167,6 +154,8 @@ milestone branches `m217/clean-stage` … `m221/prove-on-billion` branch from it
   Reserved **Playthroughs futures** M205–M207 stay in vision. All tracked in
   [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-14 (M219 close — retro + metrics + Completeness Ledger written; roadmap flipped to `done`;
-5 Fate-3 routes attached, both receiving `overview.md` files EDITED; zero escape-hatch deferrals. **Next: M220**,
-which now carries two 🔴 demo-BREAKING escalations.)_
+_Last updated: 2026-07-15 (M220 close — retro + metrics + Completeness Ledger written; roadmap flipped to `done`;
+merged `--no-ff` into `release/02.30-cue-to-cue`; rext tag `cue-to-cue-m220-final`. Deferral audit YELLOW, 0
+blocking, 0 escape-hatch — the 5-milestone "environmental" dev-stack carry LANDED Fate 1 (one env var). 4 Fate-3
+routes attached to M221's `overview.md` (EDITED) + the stale `devstack-test-spin` route retracted. **Next + LAST:
+M221** — do NOT merge to `main` or tag `v2.3` until it closes.)_

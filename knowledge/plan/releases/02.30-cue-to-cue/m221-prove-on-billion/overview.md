@@ -137,20 +137,62 @@ Two items that can only be settled **on the box, over the tailnet** — which is
   dependency: this battery is **itself** exposed to the host-isolation hazard above — **`GUARD-M221-host-isolation`
   lands first, or this re-proof can corrupt its own evidence exactly as M219's did.**
 
-## Inherited from M220 (Fate-3, added during M220 S0–S2, 2026-07-14)
+## Inherited from M220 (Fate-3, added at the M220 close, 2026-07-15)
 
-- **`FIX-M221-devstack-test-spin` — `dev-stack/tests/test_dev_stack.py` BUSY-SPINS forever, so the rext suite
-  cannot be run whole.** Measured during M220's S0 regression sweep: **8 min wall, 526 s user CPU, 145 % CPU,
-  `rc=124`** — it *spins*, it does not block on I/O, and it never reaches a summary. Consequence: a whole-repo
-  `python3 -m unittest discover` **never completes**, which is exactly how a regression hides — and
-  **`/developer-kit:close-release` runs the suites**, so this will block the v2.3 close.
-  - **Pre-existing, and NOT from M220:** it reproduces identically on clean `HEAD` with M220's diff stashed, and
-    it drives `dev-stack/dev-setdress.sh`, which M220 never touches. Nondeterministic — a different test is
-    in-flight on each run, so it is a spin *condition*, not one bad test.
-  - Per-file triage already done, so M221 starts warm: `test_aws_heal.py` **5 OK**, `test_migrate_dev_live.py`
-    **4 skipped**, `test_dev_stack.py` **HANGS**. The spin is confined to that one file.
-  - **An unrunnable suite is an absence-read-as-success risk (D17):** a suite that cannot finish must never be
-    recorded as passing.
+> ### ✅ `FIX-M221-devstack-test-spin` is **DISCHARGED — do not work it.**
+> It was routed here during M220 S0–S2 as *"`test_dev_stack.py` **BUSY-SPINS forever** — 8 min wall, 145 % CPU,
+> `rc=124`; a whole-repo run never completes, and **this will block the v2.3 close**."* **That description was
+> wrong, and the item is now closed.** It was never a spin. It was two things, both fixed:
+> - **(a)** both subprocess harnesses ran the **real M28 secret pre-flight**, which **compiles a Go binary** (the
+>   "145 % CPU") and reads the developer's own `.agentspace/secrets`, dying `rc=1` **before reaching the code
+>   under test** → fixed at M220 S7 (**D29**).
+> - **(b)** `DevSetdressLocalContent.run_sd` never set **`DEV_SETDRESS_USE_STUB_BINS=1`** — the one flag
+>   `build_cli` consults before honouring the stubs — so a **unit** test did a real `go build` and ran the real
+>   `stackseed` against a **real Postgres that was never meant to be there** (20 tests, 486 s, **19 failures**,
+>   all `connection refused`) → fixed at the M220 close (**D31**). **One environment variable.**
+>
+> **The whole `dev-stack` suite now runs: 116 passed · 4 skipped · 127 s.** The whole rext Python suite completes
+> for the first time in the release: **1208 tests · 0 failures.** **The v2.3 close is no longer blocked by it.**
+>
+> It had been carried as *"a known issue — **environmental**"* in `state.md` since **v2.2**, across M217, M218
+> and M219, **re-characterised every single time** and investigated by none. That is **D17 in the release's own
+> headline numbers**: a status artifact that outlived the thing it described and was read as evidence. This
+> paragraph stays here as the retraction — **a route that is quietly deleted teaches nobody.**
+
+**Four genuine routes from M220, all needing a live box (which is this milestone's whole job):**
+
+- **`FIX-M221-academy-empty-catalog` (F-M220-2).** The academy now renders and the demo session **survives** it
+  (S5), but its **catalog is EMPTY**: *"0 PATHS / 0 COURSES / No adventures here… yet"* (**348 chars**) while its
+  own clone HAS content — `[build-catalog]` emits **2,705 entries across 419 public chapters**. The home reads the
+  **LOCAL** catalog, and `[build-local-catalog]` emits **0** (`code/ucourses/local-catalog.generated.js` = **368
+  bytes**). **Not the session bug, and not caused by the Clerkenstein wiring** — a separate content-pipeline
+  defect. **M219's 400-char content floor is therefore honestly RED and was deliberately NOT weakened.** A fix
+  likely needs a new rext-owned demo-patch (the `ant-academy-dev-origins` precedent); the repo itself is out of
+  bounds.
+
+- **`FIX-M221-academy-loopback-bind` (F-M220-5).** **ant-academy binds `*:13077`** and answers HTTP 200 on the
+  tailnet IP **even on a localhost demo** — `BIND_HOST=""` passes no `-H`, and **`next dev`'s own default is
+  `0.0.0.0`**. So the academy is world-published on **every** demo, exactly like the containers. **This is the S0
+  lie one layer up**, and it survived S0/S1 because `exposure_claim_guard` only ever knew about the three
+  **container** port emitters — *an exposure fence blind to a whole class of listener reports a confident,
+  quietly incomplete pass.* **The docs were corrected in M220 (Fate 1);** the **code** fix (`-H 127.0.0.1` when
+  `BIND_HOST` is empty) is here, because it would change the very localhost path S3's HARD INVARIANT is fenced
+  on. **Extend `exposure_claim_guard` to the host-native listeners at the same time** — otherwise the fence stays
+  blind to the class that just bit it twice.
+
+- **`F-M220-4` — `ant-academy.sh` is not re-runnable on a live public-host demo.** A **standalone** re-run *after*
+  `tailscale serve` is configured **cannot bind** (serve holds the tailnet IPv4/IPv6 on the same port), and a
+  standalone re-run **without** `STACK_PUBLIC_HOST` silently bakes **localhost** URLs into a public-host demo.
+  Worked around by hand in M220 (`serve off` → launch → restore). **DoD:** re-derive the host from the registry;
+  cycle the serve proxy around the bind.
+
+- **`BURNIN-M221-dev-public-host` — the dev `--public-host` is FENCED, not LIVE-PROVEN.** S7's ladder and serve
+  generator were proven live on `billion` (S3) and in v2.2, and the ladder is **reused, not forked** — but the
+  **~60 lines of net-new dev wiring** (`resolve_dev_public_host`, `gen_serve_plans`, the teardown reset) are
+  covered by the tripwire fence + 13 mutants **and nothing else**. It has never brought up a real remote dev
+  stack. **DoD:** one `dev-stack up N --public-host auto` on the VM, reached from a peer; and one **no-flag**
+  `dev-stack up` proving **zero** `tailscale` invocations on a box that HAS tailscale (the invariant the whole
+  opt-in rests on, verified in the field rather than against a stub).
 
 ## Also lands
 - **DEF-M215-03(b)** — the **committed, repeatable remote-origin Playwright gate** that v2.2 owed. Note that the
