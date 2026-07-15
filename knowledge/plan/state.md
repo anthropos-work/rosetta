@@ -1,9 +1,9 @@
 ---
 active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "M223 casting-the-ensemble (planned — the HiringSeeder: 5 admins + 45 candidates on 5 shared real HIRING sims + the realistic funnel)"
+active_milestone: "M223 casting-the-ensemble (BUILT — S0-S7 done: the 4th hiring story + HiringConfigSeeder + HiringFunnelSeeder [the mirror pair] + reset/closure/isolation wiring; ready to close)"
 last_closed: "M222 — 2026-07-15"
-phase: "M222 CLOSED (GO — hiring-model spike + render-proof + is_hiring gate); merged to release/02.40-casting-call; building M223"
+phase: "M223 BUILT (all sections S0-S7; 16 net-new tests, mirror-trap fence RED-proven, full suite green, 0 platform edits); NOT merged — ready for /developer-kit:close-milestone"
 last_updated: "2026-07-15"
 ---
 
@@ -14,7 +14,9 @@ last_updated: "2026-07-15"
 a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5
 positions and a manager compares them side by side**, distinct from the three workforce orgs. **M222 CLOSED
 2026-07-15 (GO — the go/no-go barrier cleared; BA-3 refuted; the mirror-table read-model + the `is_hiring` gate
-landed).** **Next: `/developer-kit:build-milestone` → M223 casting-the-ensemble.**
+landed).** **M223 "casting the ensemble" BUILT 2026-07-15** (the 4th hiring story + the HiringConfig/HiringFunnel
+seeders — the recruiter candidate-comparison funnel writing the `local_jobsimulation_sessions` MIRROR pair; all
+S0-S7). **Next: `/developer-kit:close-milestone` → M223.**
 
 ## Active release — v2.4 "casting call"
 
