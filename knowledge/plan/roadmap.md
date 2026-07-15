@@ -65,7 +65,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
-| **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | 🔵 **IN DEVELOPMENT** (branch `release/02.30-cue-to-cue`, designed 2026-07-13). Tooling + docs only — zero platform-repo edits |
+| **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | 🟢 **ALL 5 MILESTONES DONE** (M217–M221 closed + merged into `release/02.30-cue-to-cue`; M221 closed-on-gate 2026-07-15). **Awaiting `/developer-kit:close-release`** (release→main merge + `v2.3` tag). Tooling + docs only — zero platform-repo edits |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -460,6 +460,22 @@ browser rejects**. **Settle empirically before flipping** (run `tailscale cert` 
 `journalctl -u tailscaled | grep -i acme`). If tailscaled caches, the repo's claim is a doc bug.
 
 #### M221 — Prove it on billion  (`iterative`, large)
+**Status:** ✅ **`done` — closed-on-gate 2026-07-15.** Merged `--no-ff` into `release/02.30-cue-to-cue`. rext
+code-of-record **`cue-to-cue-m221-final`** (live-graded on `billion` at `-r4`). **Zero platform-repo edits.**
+> **Gate MET 8/8** on the iter-06 FINAL cold no-flag r4 cycle, browser-graded from a tailnet peer: **login p95
+> maya-thriving 2.11 s / dan-manager 1.31 s** (both < 5 s, ACCESS 5/5, tailnet HTTPS origin); full catalog
+> replayed (skills **42,790**, directus_collections 21, sim-embeddings — the F1 store-root shadow fixed live);
+> 3 orgs; **Dana `/ai-readiness` browser 900-char check PASSED** (1,745 / 1,629 / 2,305); Ben STARTED; Aria
+> COMPLETED; remote default-on no-flag; 0 platform edits. M219 readiness fold-in all MET; F10 field-exercised;
+> seed isolation CLEAN (49 writes / 71,783 rows / prod=false). **Reproducibly:** two independent cold r4 cycles
+> (iter-05 + iter-06) at the same rext code, per the user's one-cycle pragmatic mandate. **The billion demo is
+> LEFT LIVE** (cockpit `https://billion.taildc510.ts.net:17700`, app `:13000`) as an intentional final
+> deliverable — not torn down. Final harden (2 passes, stabilized): a false-green suite fix (`test_reap.py`
+> ran 21/41 on direct run), **F-M221-06b landed** (`run-latency.sh` `LATENCY_SCHEME`), and an F1 depth-2
+> loud-not-silent edge. Deferral audit YELLOW; 4 non-gate tail carries route to v2.4 (sign-off at close-release).
+> Tests: python 1341 (+96 M221-attributable across 3 touched sections), Go 1831 (+4). **This is the FINAL
+> milestone of v2.3** — release→main merge + the `v2.3` tag are `/developer-kit:close-release`'s to do.
+
 **Goal:** every requirement of this release, verified **on the remote VM, over the tailnet, with no flags passed**.
 **Exit gate:** on `billion.taildc510.ts.net`, a **default** `/demo-up N` (no flags) yields, **reproducibly on a cold
 reset-to-seed**: **(1)** p95 click→ACCESS **< 5 s** for both `maya-thriving` and `dan-manager`, measured **over the

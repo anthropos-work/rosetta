@@ -459,9 +459,10 @@ localhost) so no site can drift:
 | **studio-desk redirects** (`CLERK_SIGN_IN_URL` / `WEB_APP_URL`) | `http://localhost:3000+off` | `https://$HOST:3000+off` | `gen_injected_override.py` (runtime env) |
 | **Baked browser URLs** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `_BACKEND_API_URL`, `_HOSTING_URL`, `_STUDIO_URL`, `_ACADEMY_URL`, `_PUBLIC_WEBSITE_URL`, `VITE_GRAPHQL_ENDPOINT`, `VITE_WEB_APP_URL`) | `http://localhost:…` | `https://$HOST:…` | `up-injected.sh` (`$SCHEME`) — the image cache-validators embed `$SCHEME` too, so an http-baked image is rebuilt under an https host |
 | **studio-desk SPA sign-in** (`VITE_CLERK_SIGN_IN_URL`) | *(was the un-offset `localhost:3000/login` default)* → now `http://localhost:3000+off/login` | `https://$HOST:3000+off/login` | `up-injected.sh` — baked via a gitignored `.env.production.local` overlay (no Dockerfile ARG; see §"The patch tail") |
-| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, loopback bind, hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
+| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **`*:13077` bind** (`next dev`'s own default is `0.0.0.0` when no `-H` — **not** loopback; F-M220-5), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
 | **FAPI cert** | `mkcert`/openssl (local trust) | `tailscale cert` (tailnet-wide trust) | `up-injected.sh` (M213) |
-| **Cockpit / academy bind** | loopback | `0.0.0.0` | `up-injected.sh` / `ant-academy.sh` (M212) |
+| **Cockpit bind** | `127.0.0.1` (loopback, `cockpit.py --host` default) | `0.0.0.0` | `up-injected.sh` (M212) |
+| **ant-academy bind** | **`*:13077`** (`next dev` default `0.0.0.0`, not loopback — F-M220-5) | `0.0.0.0` | `ant-academy.sh` (M212) |
 | **Registry** | no interaction | records `external_host` for `/stack-list` | `up-injected.sh` (M212) |
 
 **Mixed-content clean.** With HTTPS-everywhere, no browser-facing call resolves to plain `http://` — the scheme
@@ -623,8 +624,13 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
     LAN/tailnet-IP exposure is already there. See [`../safety.md`](../safety.md) **Part 3 — the exposure side**
     for the full contract, and for what a demo actually *is* (an unauthenticated, authz-weakened build).
 - **`BIND_HOST` gates only the two HOST-NATIVE servers** — the presenter cockpit and ant-academy, which run as
-  plain host processes, not containers. It is `""` (loopback) by default and `0.0.0.0` under a public host. **It
-  does not touch a single container**, which is why it never gated what the old text claimed it gated.
+  plain host processes, not containers. `BIND_HOST` is `""` by default and `0.0.0.0` under a public host, and it
+  **does not touch a single container**. But `""` means *"pass no `-H` and let each server keep its own default"*,
+  and the two servers differ: the **cockpit** (`cockpit.py --host`) defaults to **`127.0.0.1`** (loopback), while
+  **ant-academy** (`next dev`) defaults to **`0.0.0.0`** — so **the academy is world-published on `*:13077` on every
+  demo, flag or no flag**, exactly like the containers. The *"loopback by default"* framing is true **only of the
+  cockpit** (see [`../safety.md`](../safety.md) Part 3 and `FIX-M221-academy-loopback-bind` — the `-H 127.0.0.1`
+  fix that makes the academy actually loopback-by-default is routed to M221).
 - **Tailscale is the access control for the *published origin*.** The MagicDNS host + `tailscale serve` listeners
   are reachable **only** to members of your tailnet: no public-internet listener, no port-forward. This is a real
   guarantee — it is just **narrower** than "nothing else is exposed". The teammate's client must keep Tailscale
