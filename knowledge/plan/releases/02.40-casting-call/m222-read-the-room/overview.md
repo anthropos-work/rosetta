@@ -3,8 +3,9 @@ milestone: M222
 slug: read-the-room
 version: v2.4 "casting call"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-15
+last_updated: 2026-07-15
 depends_on: none
 delivers: corpus/services/hiring.md (BLIND AREA — the hiring READ-model BA-1/BA-2 + the isEnterprise divergence + the isHiringOrg derivation) + the is_hiring gate + the narrative:hiring discriminator + a render-proof GO/NO-GO decision + the exact seeder-output contract M223/M224 build against; registrations pending in seeding-spec.md/stories-spec.md/README.md
 ---

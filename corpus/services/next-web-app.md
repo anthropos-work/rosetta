@@ -10,7 +10,7 @@
 * **Primary Goal**: The main user-facing frontend — a pnpm + Turborepo monorepo of
   Next.js apps that consume the federated GraphQL gateway and authenticate with Clerk.
 * **Key Functions**:
-  * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`).
+  * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`). The hiring **org-type** (`is_hiring`) re-skins `apps/web` and exposes the recruiter **candidate-comparison read-model** — see [`hiring.md`](hiring.md).
   * Talk to the backend **only** through the GraphQL gateway (`:5050/graphql`) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through the gateway → the CMS subgraph → Directus, so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
   * Enforce auth at the edge via Clerk middleware (all routes protected by default, explicit public allowlist).
   * Deploy per-app to **Vercel**; only `apps/web` is also containerizable for local Docker.
@@ -28,7 +28,7 @@
 | App | Package | Port | Product / purpose | Dockerized? |
 |-----|---------|------|-------------------|-------------|
 | **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard, **AI-readiness** (the member 3-step onboarding `components/ai-readiness/` + the manager dashboard `app/.../ai-readiness/`; gates DIFFER by surface — corrected v2.3 M219: the **member** funnel is gated on PostHog `flag_ai_readiness` **and** the org `ai_readiness` setting; the **manager dashboard** is gated on the GraphQL `aiReadinessEnabled` + the `isEnterprise` nav, and does **NOT** read the PostHog flag. Conflating them is the wrong-vantage error M219 spent a section correcting. A demo bakes no PostHog, so the flag resolves `undefined` forever and the member surface needs the `next-web-aireadiness-flag-gate` demo-patch — see [`ai-readiness.md`](ai-readiness.md)) | ✅ (the only one) |
-| **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels | ❌ Vercel-only |
+| **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels. **NB the demo's recruiter candidate-comparison scoreboard is an `is_hiring` ORG-TYPE surface in the dockerized `apps/web`** (`/enterprise/activity-dashboard`), **not** this Vercel-only app — the full hiring org-type + read-model is [`hiring.md`](hiring.md) | ❌ Vercel-only |
 | **Integration** | `@anthropos/integration` | 3002 | Public-website embed (WordPress via proxy rewrites, SEO/Prerender) | ❌ Vercel-only |
 | **Maintenance** | `@anthropos/maintenance-app` | — | Downtime/outage placeholder UI | ❌ |
 | **Mobile** | `@anthropos/mobile` | 3031 (Expo) | Expo / React Native PoC (**paused**); **excluded** from the pnpm workspace, uses `EXPO_PUBLIC_*` | ❌ |
