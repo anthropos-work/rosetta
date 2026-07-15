@@ -383,6 +383,17 @@ filters keep the captured child set parent-closed. Public counts prod-verified r
 | 8 | `directus.task_sub_checks` | **multi-level** via `task_checks`→`sim_tasks`→`simulations` | 2,850 |
 | 9 | `directus.sequences_roles` | parent-scoped via **BOTH** `sequences` AND `roles` | 953 |
 
+> **No `directus.job_position` replay surface (v2.4 "casting call" M223 — the dropped S3).** The recruiter
+> hiring org's **5 "positions" are 5 real captured `SIMULATION_TYPE_HIRING` sims** — a **type-filtered read of
+> the already-captured `directus.simulations` surface** (row 1 above; the seeder's `readHiringSimPool` selects
+> `WHERE type='SIMULATION_TYPE_HIRING'`, of which the public snapshot carries **87**), **NOT** a new capture
+> surface. `directus.job_position` is **NOT replayed**: it captured **0 rows** (the prod "443" was never
+> captured — M222 BA-6/D4), and the candidate-comparison scoreboard does **not** read it
+> (`JobSimulation.jobPosition` is optional + unused). The M40 public-policy serve-grant references
+> `job_position` only as **relational metadata** for the `simulations.job_position` M2O target (a permission
+> row so a served `simulations` read doesn't dangle), never as replayed content. So M223 added no capture/replay
+> surface for hiring — the type-aware read of the existing `simulations` surface is the whole mechanism.
+
 ### The per-stack Directus store fork (M10-D2, recipe corrected in fix16)
 
 Booting a per-stack Directus needs its `directus_*` **system schema**, the **content-model structure** (the
