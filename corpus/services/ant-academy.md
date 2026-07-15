@@ -139,9 +139,12 @@ git clone git@github.com:anthropos-work/ant-academy.git
 > the academy with **both** halves of its own `e2e_persona` cookie bypass set — the server gate
 > `BENCHMARK_VISUAL_BYPASS=1` **and** the client gate `NEXT_PUBLIC_E2E_AUTH=1` — so an `e2e_persona=member`
 > cookie drives a **signed-in** context (server RSC `anonymous=false` + entitlement; client Clerk hooks resolve a
-> synthetic **`E2E Member`**) with **no real Clerk keys**. The **presenter cockpit's** per-hero **[Academy]**
-> link sets that cookie browser-side (cookies on `localhost` are port-agnostic, so the cockpit origin's cookie is
-> read by the academy origin) then navigates in — a hero lands **authenticated**, not anonymous. The **Cosmo AI
+> synthetic **`E2E Member`**) with **no real Clerk keys**. ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's
+> per-hero [Academy] link was REMOVED — the cockpit is now login-only** (per user request), so it **no longer
+> sets the `e2e_persona` cookie**. Formerly, that link set the cookie browser-side (cookies on `localhost` are
+> port-agnostic, so the cockpit origin's cookie was read by the academy origin) then navigated in, and a hero
+> landed **authenticated**; reaching the demo academy as a member now needs the cookie set by other means (and
+> the academy grid's empty-catalog render defect remains a v2.4 carry, **F4**). The **Cosmo AI
 > assistant stays absent** in a demo (its flag + OpenAI key are deliberately not provisioned — the AI-keys
 > policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
 > standalone cockpit panel. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).

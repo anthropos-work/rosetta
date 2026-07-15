@@ -348,12 +348,19 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > `e2e_persona=member` cookie drives a **signed-in** context end-to-end — the server RSC resolves
 > `anonymous=false` + entitlement, and the client Clerk hooks resolve a named **`E2E Member`** identity
 > (progress / certificates / sidebar all active) — with **no real Clerk keys** (the box runs keyless; the client
-> hooks are mocked). The **presenter cockpit** sets that cookie: each hero card carries an **[Academy]** link
-> (rendered when `/demo-up` threads `--academy-base` into the cockpit) that sets `e2e_persona=member`
-> browser-side, then navigates to the academy origin. Cookies on `localhost` are **port-agnostic** (RFC 6265
-> ignores the port), so the cookie the cockpit origin (`:7700+offset`) sets is read by the academy origin
-> (`:3077+offset`) — **no academy-side route + no academy-repo edit**. So a hero who walks in from the cockpit
-> lands **authenticated as a member** (a non-anonymous academy session), not as an anonymous visitor. Without
+> hooks are mocked).
+> > ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's [Academy] link was REMOVED** — the cockpit is now
+> > **login-only** (one `[Log in as]` CTA per hero, per user request). So the cockpit **no longer sets the
+> > `e2e_persona` cookie**; the paragraph below describes how the academy behaved when reached *via* that
+> > (now-removed) link. Reaching the demo academy as a signed-in member now requires the cookie set by other
+> > means, or it lands anonymous. (The academy grid's empty-catalog render defect is a v2.4 carry, **F4**.)
+>
+> The `e2e_persona=member` cookie (formerly set browser-side by the cockpit's [Academy] link before it
+> navigated to the academy origin) drove the authenticated context. Cookies on `localhost` are
+> **port-agnostic** (RFC 6265 ignores the port), so the cookie the cockpit origin (`:7700+offset`) set was
+> read by the academy origin (`:3077+offset`) — **no academy-side route + no academy-repo edit**. So a hero
+> who walked in from the cockpit landed **authenticated as a member** (a non-anonymous academy session), not
+> as an anonymous visitor. Without
 > the cookie the portal still opens for anonymous browse (the flags enable the bypass; the cookie chooses the
 > persona). The academy identity is the synthetic `E2E Member`, **not** the exact seeded platform hero (the
 > academy runs standalone with no platform-backend link, so it can't resolve the platform user) — the F6 bar is
