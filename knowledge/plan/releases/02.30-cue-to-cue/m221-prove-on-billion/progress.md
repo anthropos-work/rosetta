@@ -11,3 +11,5 @@ entry per iter and creates `iter-NN/` dirs as it goes._
 
 ## Next iter
 _(set by the previous iter's closeout)_
+
+- iter-01 (tok/bootstrap): authored TOK-01 (fix-then-prove, host-isolation first) — see iter-01/progress.md
