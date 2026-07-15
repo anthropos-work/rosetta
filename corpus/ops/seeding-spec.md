@@ -462,6 +462,6 @@ The 5 positions are **disjoint-reserved** from the generic sims pool (M219 R-3);
 refs** (closure green trivially); the admins inherit `org:feature:insights` from the global `p3` admin policy
 (no net-new grant). No `directus.job_position` replay (M222 D4 — 0 rows captured; the scoreboard doesn't read
 it). DAG-ordered at level 2 (`hiring-config`/`hiring-funnel` after org/users/content). **Seeder only** — the
-render proof + cockpit heroes + the Clerkenstein `publicMetadata.isHiring` wiring are M224. 16 net-new unit
+render proof + cockpit heroes + the Clerkenstein `publicMetadata.isHiring` wiring are M224. 17 net-new unit
 tests (the mirror-trap fence RED-proven), full suite green, `go vet`/`gofmt` clean, 0 platform-repo edits.
 Code-of-record: `rosetta-extensions` @ `main` (tagged when v2.4 closes).

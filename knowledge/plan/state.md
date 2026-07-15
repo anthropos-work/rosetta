@@ -3,7 +3,7 @@ active_release: "v2.4 casting call — the recruiter-vantage / hiring-org releas
 active_branch: "release/02.40-casting-call"
 active_milestone: "M223 casting-the-ensemble (BUILT — S0-S7 done: the 4th hiring story + HiringConfigSeeder + HiringFunnelSeeder [the mirror pair] + reset/closure/isolation wiring; ready to close)"
 last_closed: "M222 — 2026-07-15"
-phase: "M223 BUILT (all sections S0-S7; 16 net-new tests, mirror-trap fence RED-proven, full suite green, 0 platform edits); NOT merged — ready for /developer-kit:close-milestone"
+phase: "M223 BUILT (all sections S0-S7; 17 net-new tests, mirror-trap fence RED-proven, full suite green, 0 platform edits); NOT merged — ready for /developer-kit:close-milestone"
 last_updated: "2026-07-15"
 ---
 
