@@ -1,9 +1,9 @@
 ---
 active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "M222 read-the-room (planned — the hiring-model spike + render-proof + the is_hiring gate; opens the build)"
-last_closed: "v2.3 «cue to cue» — 2026-07-15 (tag v2.3; the presenter-speed release)"
-phase: "designed — awaiting /developer-kit:build-milestone on M222"
+active_milestone: "M223 casting-the-ensemble (planned — the HiringSeeder: 5 admins + 45 candidates on 5 shared real HIRING sims + the realistic funnel)"
+last_closed: "M222 — 2026-07-15"
+phase: "M222 CLOSED (GO — hiring-model spike + render-proof + is_hiring gate); merged to release/02.40-casting-call; building M223"
 last_updated: "2026-07-15"
 ---
 
@@ -12,8 +12,9 @@ last_updated: "2026-07-15"
 **v2.4 "casting call" — IN DEVELOPMENT** (designed 2026-07-15 via `/developer-kit:design-roadmap`; branch
 `release/02.40-casting-call` cut from `main`; tag will be `v2.4`). The **recruiter-vantage / hiring-org release**:
 a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5
-positions and a manager compares them side by side**, distinct from the three workforce orgs. All 5 milestone
-contracts are scaffolded. **Next: `/developer-kit:build-milestone` → M222.**
+positions and a manager compares them side by side**, distinct from the three workforce orgs. **M222 CLOSED
+2026-07-15 (GO — the go/no-go barrier cleared; BA-3 refuted; the mirror-table read-model + the `is_hiring` gate
+landed).** **Next: `/developer-kit:build-milestone` → M223 casting-the-ensemble.**
 
 ## Active release — v2.4 "casting call"
 
@@ -36,10 +37,11 @@ room     ensemble callback the set  night
 section  section  iter     section  iter
 ```
 
-- **M222 read-the-room** (`section`) — the hiring-model spike: author `corpus/services/hiring.md` (BLIND AREA),
-  **prove by rendering** the comparison surface is demo-servable + renders a comparable score from seedable data,
-  land the `is_hiring` gate + `narrative: hiring`. **HARD go/no-go barrier — escalates if the comparison surface is
-  `apps/hiring`-only.**
+- **M222 read-the-room** (`section`) — ✅ **DONE 2026-07-15 (GO).** The hiring-model spike: delivered
+  `corpus/services/hiring.md` (BLIND AREA), **proved by rendering** the comparison surface is demo-servable +
+  renders a comparable score from seedable data (BA-3 refuted), landed the `is_hiring` gate + `narrative: hiring`.
+  **The go/no-go barrier cleared** — the mirror-table trap named (score = `local_jobsimulation_sessions`, not
+  `jobsimulation.sessions`); no HiringSeeder/funnel (→ M223).
 - **M223 casting-the-ensemble** (`section`) — the `HiringSeeder`: exactly 5 `admin` + 45 `candidate`, 5 shared REAL
   replayed positions (`directus.job_position` snapshot extension), the realistic funnel, closure/isolation wiring.
 - **M224 the-callback** (`iterative`) — cockpit heroes (1 manager + 2 candidates), DeepLinkCatalog, Clerkenstein
@@ -87,7 +89,7 @@ Milestone contracts: [`releases/02.40-casting-call/`](releases/02.40-casting-cal
 ## Headline numbers (inherited from v2.3 close, 2026-07-15 — v2.4 baseline)
 - **p95 click→ACCESS (v2.3 headline gate):** **2.11 s** (employee) / **1.31 s** (manager) vs the **< 5000 ms** gate,
   on `billion` over the tailnet, cold reset-to-seed. v2.4 extends this to a **3rd (recruiter) vantage** at M226.
-- **Go test funcs:** **1831** (0 failures across all 6 modules; `go vet` clean).
+- **Go test funcs:** **1838** (0 failures across all 6 modules; `go vet` clean; **+7 at M222** — the is_hiring gate).
 - **Python tests:** **1341** (0 fail, 16 skip) via JUnit XML.
 - **TS e2e:** **151** (69 stack-verify/e2e + 82 playthroughs/e2e).
 - **Alignment (Clerkenstein Go surface):** **100% / 100% critical (27/27)** — held. *(v2.4 M224 extends Clerkenstein
@@ -121,8 +123,7 @@ rows." Full arc: [`releases/archive/02.30-cue-to-cue/release-retro.md`](releases
   Reserved **Playthroughs futures** M206–M207 stay in vision; **M205** is now CONSUMED-in-intent by v2.4 (recruiter/
   seeder half) with the tier-gate/ATS half residual. All tracked in [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-15 (v2.4 "casting call" DESIGNED + PROMOTED to active development via
-/developer-kit:design-roadmap — the recruiter-vantage / hiring-org release; reverses v2.3's D-DESIGN-4; 5 milestones
-M222→M226, branch `release/02.40-casting-call` cut from `main`, tag v2.4; tooling + docs only, zero platform edits.
-Genuine `is_hiring=true`, real replayed positions + realistic funnel, cockpit heroes 1 manager + 2 candidates. M222
-is a hard go/no-go barrier. **NEXT: /developer-kit:build-milestone → M222.**)_
+_Last updated: 2026-07-15 (**M222 "read the room" CLOSED** via /developer-kit:close-milestone — merged `--no-ff`
+into `release/02.40-casting-call`; the go/no-go barrier came back **GO** [BA-3 refuted], the mirror-table read-model
+doc + the `is_hiring` gate landed, Go funcs 1831→1838, flake 5/5, deferral audit GREEN, 0 platform-repo edits. M222
+is NOT the final milestone — no main-merge/tag. **NEXT: /developer-kit:build-milestone → M223 casting-the-ensemble.**)_

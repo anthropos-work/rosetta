@@ -181,7 +181,22 @@ v2.4 "casting call"
 
 ### Milestones
 
-#### M222 — Read the room  (`section`, small→medium)
+#### M222 — Read the room  (`section`, small→medium) — ✅ **DONE 2026-07-15 (GO)**
+
+> **Closed 2026-07-15.** The make-or-break go/no-go came back **GO** (D1): the recruiter candidate-comparison
+> surface (`/enterprise/activity-dashboard`) lives in the **dockerized `apps/web`**, renders from seedable data, and
+> survives the `is_hiring` flip — **BA-3 refuted**, no escalation, R2 retired. **Headline finding — the mirror-table
+> trap** (D2): the shown candidate score is `public.local_jobsimulation_sessions.score`, **NOT**
+> `jobsimulation.sessions.score` (seeding the obvious table renders EMPTY — the M219 render-gate-bypasses-the-seed
+> class). Delivered `corpus/services/hiring.md` (190 lines, the BLIND-AREA read-model; every file:line claim
+> re-verified against the READ-ONLY platform clones at close) + the **`is_hiring` gate** in rext stack-seeding
+> (`StoryOrg.IsHiring` + `narrative: hiring` + `ResolvedStory.IsHiringOrg()` + `OrgSeeder` writes `st.IsHiringOrg()`,
+> was hardcoded `false`, + reserved `HiringOrgID()` + `manifest.Org.IsHiring`), with a **RED-provable** gate test.
+> **No HiringSeeder/funnel — correctly deferred to M223.** Decisions D1 (GO) · D2 (mirror-table contract) · D3
+> (is_hiring dual-write → M224 Clerkenstein) · D4 (BA-6: 5 real HIRING sims, **no `job_position` replay** — a Fate-3
+> refinement applied to M223's Scope.In). Go test funcs 1831 → **1838** (+7); flake 5/5; **0 platform-repo edits**.
+> rext code-of-record: `main` (S2 gate `5e92826` + S5 README `5920d47`; tagged when M223 consumes it).
+
 **Goal:** author the missing hiring-model doc, and **prove by rendering** — on a throwaway hand-seed against a live
 dockerized `apps/web` — that the recruiter comparison surface (a) exists in the demo-servable app and (b) renders a
 comparable score from seedable data. Land the `is_hiring` gate + `narrative: hiring` discriminator.
