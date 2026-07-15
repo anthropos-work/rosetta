@@ -5,6 +5,25 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-15** via `/developer-kit:design-roadmap`. **v2.4 "casting call"** is the
+> **recruiter-vantage / hiring-org release** — a **NET-NEW** release that adds a **4th, HIRING demo org** to the
+> presenter cockpit, where **45 candidates audition on the same 5 positions and a manager compares them side by
+> side**, distinct from the three workforce orgs. **This release formally REVERSES v2.3's `D-DESIGN-4`**
+> (*"there is no hiring org and none will be built"*): the stated blocker — *"a hiring story would need the
+> `hiring-app` frontend, which is not in the demo UI tier"* — was **REFUTED by research**: the candidate-comparison
+> surface ships inside the **dockerized `apps/web` (Workforce)** app the demo already builds, and the domain
+> primitives (`organizations.is_hiring`, the `candidate` membership role, `jobsimulation.sessions` typed
+> `SIMULATION_TYPE_HIRING`) **already exist in the platform**. It is **not a clean section release**: two blind
+> areas (the hiring read-model + proof-by-rendering that the comparison surface is demo-servable) gate it, so it
+> **opens with an investigation-first spike (M222) that is a HARD go/no-go barrier**. **5 milestones M222 → M223 →
+> M224 → M225 → M226** (largely sequential); tag **`v2.4`**; branch `release/02.40-casting-call`. **Tooling + docs
+> only — zero platform-repo edits** (a platform-source render gate routes to a sanctioned sha-pinned demo-patch,
+> never a repo edit; an un-patchable surface **escalates**). **Consumes the recruiter/seeder half of the reserved
+> vision M205**, leaving M205's Stripe-tier-gate + ATS-pipeline half a residual vision reservation. User decisions
+> baked in: a **genuine hiring org** (`is_hiring=true` end-to-end, Clerkenstein `isHiring` wiring in scope) · **real
+> replayed positions + a realistic non-degenerate funnel** (not a flat 225-session grid) · cockpit heroes = **1
+> manager + 2 candidates** (one assessed, one only-assigned), login-only.
+>
 > **Designed 2026-07-13** via `/developer-kit:design-roadmap`. **v2.3 "cue to cue"** is the **presenter-speed
 > release** — a **field-hardening release** (the v1.3b / v1.10b / v2.1 lineage) triggered by a **live presenter
 > defect**: clicking a hero in the cockpit takes **1–2 MINUTES** to land in the platform, making a hero swap
@@ -66,6 +85,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
 | **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
+| **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 | 🔵 **IN DEVELOPMENT** (branch `release/02.40-casting-call`, designed 2026-07-15; 5 milestones — M222 spike [`section`] → M223 seeder [`section`] → M224 render [`iterative`] → M225 demo-integration [`section`] → M226 prove-on-billion [`iterative`]; **M222 is a HARD go/no-go barrier** — escalates if the comparison surface is `apps/hiring`-only; genuine `is_hiring=true`, real replayed positions + realistic funnel, cockpit heroes = 1 manager + 2 candidates; tooling + docs only, zero platform-repo edits) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -78,6 +98,213 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Active — v2.4 "casting call" (IN DEVELOPMENT, designed 2026-07-15, tag `v2.4`)
+
+**Theme.** *The recruiter's vantage — a 4th, HIRING org where 45 candidates audition on the same 5 positions and a
+manager compares them side by side, distinct from the three workforce orgs on the cockpit.*
+
+**Trigger.** A user ask (2026-07-15) to add a **genuine hiring demo org** to the presenter cockpit. Designed from a
+3-report research workflow (platform hiring model · rext Stories & Heroes seeder · cockpit/enterprise integration);
+the full file:line-cited proposal is preserved at
+[`releases/02.40-casting-call/design-notes.md`](releases/02.40-casting-call/design-notes.md).
+
+### What the research found
+
+- **Most of the hiring machine already EXISTS and is reusable — zero platform edits.** `organizations.is_hiring`
+  (bool, wired end-to-end; today hardcoded `false` in `stack-seeding/seeders/org.go`), the `candidate`
+  `MembershipRole` (auto-assigned on an `is_hiring` org), the `admin`/enterprise manager seat, scored
+  `SIMULATION_TYPE_HIRING` `jobsimulation.sessions`, the narrative-gated-org seeder pattern (AI-readiness M51), and
+  the **"N members, same shared sims, comparably scored"** funnel seeder are all present — never wired into a hiring
+  org. `directus.job_position` = 443 public rows; 715 HIRING sims (127 public) exist, so the 5 positions can be
+  **REAL replayed content**.
+- **★ The candidate-COMPARISON surface ships in the dockerized `apps/web`** (`/enterprise/activity-dashboard →
+  AI-Simulations tab → [simId]`: `InsightsByMembersContainer` + `useGetInsightsByMembers` = a sortable per-sim
+  candidate leaderboard, plus `[simId]/[userId]` detail). **No new frontend build** — this is the manager view that
+  compares 45 candidates on 5 shared sims. The Vercel-only `apps/hiring` product is **not** required.
+- **Two BLIND AREAS gate it** (why it is not a clean section stack): **BA-1** the undocumented hiring READ-model
+  (does the comparable score come from `sessions.score` alone, or ALSO a `validation_*`/eval row the seeder must
+  write?); **BA-2/BA-3** whether the comparison surface actually RENDERS for an `is_hiring` org and is truly in
+  `apps/web` (many pages hardcode `isHiringOrg={false}`; two divergent `isEnterprise` definitions). → **M222 must
+  prove by rendering; if `apps/hiring`-only, ESCALATE — do not proceed.**
+
+### D-DESIGN-4 REVERSAL (recorded)
+
+**v2.3's D-DESIGN-4 said:** *"The three story orgs are the three that already exist. There is no hiring org and none
+will be built — a real hiring story would need unmapped domain tables + the `hiring-app` frontend, which is not in
+the demo UI tier."* **v2.4 REVERSES it.** D-DESIGN-4 was **right that a hiring org is net-new work**, but its stated
+blocker is **refuted**: the comparison surface ships in the **dockerized `apps/web`** the demo already builds (not
+`apps/hiring`), and the domain primitives already exist in the platform. The reversal is tractable **within the
+zero-platform-edit wall** — but gated on the two blind areas above, which is why the release opens with M222's
+render-proof spike rather than committing the seeder work blind.
+
+### User decisions (2026-07-15, binding — resolve the proposal's Q1/Q3 + the release-go)
+
+| # | Decision | Consequence |
+|---|----------|-------------|
+| **D-DESIGN-1** | **Genuine hiring org (`is_hiring=true`).** The org AND candidates read as hiring end-to-end — not just a comparison view on a workforce org. | **Clerkenstein `isHiring` wiring IS in scope (M224).** Flipping `is_hiring` is the intent; **M222 must de-risk the flag-flip blast radius** (R5 — the two `isEnterprise` definitions) and prove the comparison surface still renders under `is_hiring=true`. A break routes to a sha-pinned demo-patch (D-DESIGN-2 order) or ESCALATES — never a platform edit. |
+| **D-DESIGN-2** | **Real positions + realistic funnel.** The 5 job positions are REAL replayed content (extend the snapshot to replay `directus.job_position` + pin 5 real HIRING sims); the 45 candidates are a realistic funnel — MOST assessed on the 5 shared positions (comparison populated + comparable) with SOME in earlier states (assigned-not-taken). | **NOT** a flat 225-session grid. A realistic non-degenerate score **distribution** (the M219 anti-junk / anti-flat-arc discipline). |
+| **D-DESIGN-3** | **Cockpit heroes = 1 manager + 2 candidates**, login-only (v2.3.2 — one [Log in as] CTA per hero, no academy button). | The 2 candidates show two funnel states: one **assigned AND assessed** on a hiring sim, one **only assigned** (not taken). The candidate heroes render usable assessed `/profile` surfaces. |
+
+### Hard constraints (carried from the v1.x/v2.x lineage — unchanged)
+
+**Zero platform-repo edits.** The platform stays read-only. A wall whose root cause is platform source (an
+`isHiringOrg` render-gate; a score that demands an un-seedable resolver path) routes to a **new sha-pinned
+demo-patch** (per `corpus/ops/demo/demopatch-spec.md`) or **escalates** — it does not get edited. All
+stack-operating tooling lives in **`rosetta-extensions`** (authored + tested in `.agentspace/rosetta-extensions/`,
+tagged, consumed per-stack at a pinned tag).
+
+### Version plan / execution graph — largely SEQUENTIAL
+
+Each milestone consumes the prior's output (the render can't be proven before the seed exists; coverage can't sweep
+before the render is green; the live proof needs everything). The only real overlap is **M225 manifest *authoring* ∥
+M224 render loop** (authoring can begin once M223 freezes the seed shape; M225's *gate* waits on M224 green).
+
+```
+v2.4 "casting call"
+
+  M222 ─────→ M223 ─────→ M224 ─────→ M225 ─────→ M226
+  read the    casting     the         dress       opening
+  room        ensemble    callback    the set     night
+  (spike +    (seeder +   (render,    (coverage   (prove on
+   doc +       content +   iterative)  + playthru) billion,
+   is_hiring   5 shared               ╎            iterative)
+   gate)       positions)             ╎
+   section     section    iterative   section──────╯ authoring can begin
+                                        once M223 freezes the seed shape
+
+  M222 is a HARD go/no-go barrier: if its render-probe shows the comparison
+  surface is apps/hiring-only (BA-3), the release ESCALATES rather than proceeding.
+```
+
+### Milestones
+
+#### M222 — Read the room  (`section`, small→medium)
+**Goal:** author the missing hiring-model doc, and **prove by rendering** — on a throwaway hand-seed against a live
+dockerized `apps/web` — that the recruiter comparison surface (a) exists in the demo-servable app and (b) renders a
+comparable score from seedable data. Land the `is_hiring` gate + `narrative: hiring` discriminator.
+**Shape — section:** the deliverables ARE enumerable (a corpus doc, render-probes, a go/no-go, a one-value gate
+thread); what is uncertain is the *result* (which re-scopes M224), not the task list.
+**In:** author `corpus/services/hiring.md` (the model: `is_hiring`, `candidate` role, hiring sims ↔ `job_position`,
+`SIMULATION_TYPE_HIRING`, the comparison read-path, the `isHiringOrg` Clerk-publicMetadata derivation, the
+`isEnterprise` divergence blast radius) · add the blueprint `Org.IsHiring` field + `narrative: hiring` · thread
+`is_hiring=true` into `org.go` (the load-bearing one-value change) · reserve the hiring-org deterministic `OrgID` ·
+**render-probe answers to BA-1/BA-2/BA-3/BA-6** and record a **go/no-go + the exact seeder-output contract** M223/M224
+build against (score from `sessions.score` alone, or a `validation_*`/eval row per session?).
+**Out:** the full 50-person seed · the assessment funnel · cockpit heroes · any latency work.
+**Depends on:** nothing (release entry point). The **v2.3 `billion` demo left live** is a free render substrate.
+**KB-deps:** `kb-ant-business` hiring.md/ai-interview.md · `stories-spec.md` · `snapshot-spec.md` · `demopatch-spec.md`.
+**Delivers →** `corpus/services/hiring.md` **(BLIND AREA — BA-1/BA-2)**; registrations pending in
+`seeding-spec.md`/`stories-spec.md`/`README.md`.
+**Demo-patch?** **No patch built here** — but M222 *decides whether one is needed downstream*. If BA-3 comes back
+"`apps/hiring`-only," **escalate — do not proceed.**
+
+#### M223 — Casting the ensemble  (`section`, medium→large)
+**Goal:** the hiring org exists in the seed: **exactly 5 `admin` + 45 `candidate`** (no `member`), distinct from the
+3 workforce orgs, with the **5 shared job positions** resolved to **real replayed content**.
+**Shape — section:** a direct M51 analog (1 preset org + narrative-gated seeders + reset/closure wiring + a content
+reader/replay) — all enumerable up front against the M222 contract.
+**In:** a 4th `stories[]` entry (`narrative: hiring`, `RoleMix` ≈ 0.1 admin / 0.9 candidate) + a hero-trio
+placeholder · a `HiringConfigSeeder` (AI-readiness-config analog) defining the org's **5 shared HIRING sims** · the
+**type-aware hiring-sim reader** (`type=HIRING AND job_position NOT NULL`) · the **snapshot extension to replay
+`directus.job_position` rows** + pin the 5 chosen HIRING sims · wire new hiring rows into `resetTables` + the closure
+gate + the isolation audit · the `candidate`-assessment **funnel seeder** (AI-readiness-funnel analog): MOST
+candidates scored on all 5 shared sims, SOME assigned-not-taken, each rolled into a **comparable-but-DIFFERENTIATED**
+per-candidate score (a realistic spread, not a flat arc).
+**Out:** the render proof (M224) · cockpit heroes (M224) · coverage/playthrough (M225).
+**Depends on:** M222 (the seeder-output contract + real-vs-synth decision + is_hiring gate).
+**KB-deps:** `stories-spec.md` · `seeding-spec.md` · `snapshot-spec.md` · `ai-readiness.md` · `corpus/services/hiring.md`.
+**Delivers →** updates to `snapshot-spec.md` (the `job_position` replay surface) + `seeding-spec.md`/`stories-spec.md`
+(the 4th story + `is_hiring` gate).
+**Demo-patch?** **Pure seeding** (+ a tooling-owned snapshot extension). If M222 found the read-path needs a
+per-session `validation_*`/eval row, that extra row is **added to the seeder (still data-only)**, not a patch.
+
+#### M224 — The callback  (`iterative`, large)
+**Goal:** click **[Log in as]** the recruiter hero → land on `/enterprise/activity-dashboard` and see, for **each** of
+the 5 positions, **~45 rankable, comparable, non-junk** candidate rows; the org reads as hiring; a candidate hero
+renders a usable assessed `/profile`.
+**Shape — iterative:** the render-risk heart. Whether ~45 comparable non-junk rows actually paint is
+**measurement-driven** — the exact read-path is a blind area (BA-1), and the M219 lesson is that *a render gate
+silently bypasses the seed*. You **seed → render → attribute the gap → fix (data-only seeding OR a sha-pinned
+demo-patch OR Clerkenstein wiring) → re-render.**
+**Exit gate:** on a **cold reset-to-seed**, the manager hero's comparison surface renders **≥40 comparable candidate
+rows per each of the 5 sims** with a **realistic non-degenerate score distribution**, **0 junk skills/roles/names**
+(closure green), **0 prod-eject escapes**, over **≥3 consecutive cold runs**. (Latency is *reported, not gated* here —
+gated at M226, per D-DESIGN-1's v2.3 lineage.)
+**Iteration protocol:** `corpus/ops/demo/coverage-protocol.md` (the live-browser measure→attribute→fix→re-measure
+loop) + `verification.md`.
+**In:** the hero trio — **1 recruiter/manager** → `jump_to` the comparison surface; **2 candidate exemplars** (one
+assessed, one only-assigned) → `/profile`|`/profile/skills` · **DeepLinkCatalog** entries for the comparison surface
+(a proper `[Log in as]` label; a `NeedsID` entry if the jump targets a specific `[simId]`) · **extend Clerkenstein
+FAPI/BAPI to emit org `public_metadata.isHiring`** (D-DESIGN-1: genuine hiring) · drive the render loop to green.
+**Out:** the coverage-sweep gate + playthrough (M225) · the live billion proof (M226).
+**Depends on:** M222, M223.
+**KB-deps:** `coverage-protocol.md` · `cockpit-spec.md` · `clerkenstein.md` · `stories-spec.md` · `hiring.md` ·
+`demopatch-spec.md`.
+**Delivers →** the render-path + hiring-vantage section into `corpus/services/hiring.md` + `cockpit-spec.md`.
+**Demo-patch? — LIKELY** (the release's D-DESIGN-2 order-of-preference call): **prefer the Clerkenstein `isHiring`
+wiring first** (tooling, no patch); only if a surface *still* won't mount does it route to a **sha-pinned
+`next-web-hiring-flag-gate` demo-patch** (the M219 precedent). A perf demo-patch for the 45×5 compare-table hydration
+may defer to M226 (latency is not this milestone's gate). **A platform-repo edit is never in bounds; an un-patchable
+surface escalates.**
+
+#### M225 — Dress the set  (`section`, medium)
+**Goal:** the hiring org comes up **auto-set-dressed** on a default `/demo-up`, passes a **hiring-vantage coverage
+gate**, and has **one GREEN playthrough** proving the recruiter journey end-to-end.
+**Shape — section:** enumerable — extend the auto-set-dress bring-up to replay `job_position`, author a hiring
+coverage manifest + a hiring playthrough, wire the org into `pt-world`. Reuses the M42 coverage + M202 playthrough
+machinery (never forked).
+**In:** fold the `job_position` replay + 5-sim capture into the auto-set-dress pass · a **hiring coverage manifest**
+wired into `manifestFor(vantage, expectedOrg, identityKey)` (org-conditional dispatch, the AI-readiness precedent) —
+candidate persona self-consistency (role↔skills↔score) + the compare-surface sections + 0 prod-eject · a
+**`playthroughs/manifest/hiring.yaml`** use case (recruiter compares candidates on a shared sim; optionally a
+candidate completes a hiring assessment) + the hiring org into the decoupled `pt-world` seed.
+**Out:** the live cross-machine proof (M226).
+**Depends on:** M223 (frozen seed shape) + M224 (a rendering surface to sweep). Manifest *authoring* can begin once
+M223 freezes the seed shape (partial overlap with M224); the coverage/playthrough **gate** waits on M224 green.
+**KB-deps:** `coverage-protocol.md` · `playthroughs.md` · `frontend-tier.md` · `snapshot-spec.md`.
+**Delivers →** the hiring sections of `coverage-protocol.md` + `playthroughs.md`.
+**Demo-patch?** Pure tooling (manifests + seed + set-dress). No platform-render gap.
+
+#### M226 — Opening night  (`iterative`, large)
+**Goal:** every requirement of this release verified **on the remote VM, over the tailnet, default `/demo-up`, no
+flags.**
+**Shape — iterative:** the direct analogue is **M215 "prove-on-odyssey" / M221 "prove-on-billion"** — the last
+breakages only surface on a live cross-machine run over the tailnet; the path is discovered, not enumerated.
+**Exit gate:** on `billion.taildc510.ts.net`, a default `/demo-up N` yields, **reproducibly on a cold
+reset-to-seed**: **(1)** the hiring org present, `is_hiring=true`, **exactly 5 managers + 45 candidates**; **(2)** the
+recruiter hero lands on the comparison surface and sees **≥40 comparable non-junk rows per each of the 5 positions**;
+**(3)** the 2 candidate heroes render usable assessed profiles; **(4)** the org reads as hiring; **(5)** **p95
+click→ACCESS < 5 s** for the recruiter vantage (v2.3's gate extended to a 3rd measured path); **(6)** coexists with
+the 3 workforce orgs on the cockpit; **(7)** **0 platform-repo edits.**
+**Iteration protocol:** `corpus/ops/verification.md` (+ `coverage-protocol.md` + v2.3's `latency-budget.md`).
+**Depends on:** M222, M223, M224, M225.
+**KB-deps:** `tailscale-serve.md` · `latency-budget.md` · `verification.md` · `safety.md`.
+**Delivers →** the live-proof record; any latency finding folds into `latency-budget.md` (a hiring 3rd vantage).
+**Demo-patch?** Whatever M224 pinned, **re-proven live at final code** (the M221 `REPROVE-…-at-final-code`
+discipline); a live-only perf gap may pin a perf demo-patch here.
+
+### On the reserved M205
+
+The vision reserved **M205 "Hiring + tier gates"**. v2.4 **DISCHARGES the recruiter/seeder half** but **explicitly
+LEAVES OUT** (a) the **Stripe tier gates** (no mirror engine exists) and (b) the **ATS candidate-pipeline**
+(post-a-role / applications / advance-a-candidate — which the platform deliberately does not model). M205's tier-gate
+half stays a residual vision reservation; v2.4's hiring org is a **comparison-of-assessed-candidates** demo, **not** a
+hiring-*product* build.
+
+### Top risks
+
+| # | Risk | Severity | Mitigation |
+|---|------|----------|------------|
+| **R1** | A platform HIRING render path **bypasses the seed** (the M219 precedent) — the comparison surface hard-gates on `isHiringOrg`, or the score demands an un-seedable resolver → "45 seeded candidates" shows as **0 rows** | blocks-milestone (M224) | **M222 proves the read-path by RENDERING before M224 commits.** Prefer Clerkenstein `isHiring` wiring; a genuine render gate → a sha-pinned demo-patch; un-patchable → **escalate** |
+| **R2** | The comparison view is **`apps/hiring`-only** (Vercel, not in `/demo-up`) → showing it = containerizing a Vercel app + a platform edit | **blocks-release** | Strong evidence it is already in dockerized `apps/web`, but **inferred, not render-proven** → **M222's make-or-break go/no-go.** If `apps/hiring`-only: **escalate, do not proceed** |
+| **R3** | Believability — **45 junk-or-identical assessments** (the M219 junk-skill + flat-arc failure) | degrades-quality (the demo's whole point) | Reuse the M219 fix: skill ladder role→curated→general→**STOP, never pad**; every ref through real resolvers (**closure green**); a **realistic non-degenerate score DISTRIBUTION**; a hiring believability manifest in M225's sweep |
+| **R4** | Whole-org-hydration latency on the 45×5 compare table (the AI-readiness `loadMembers` class) | degrades-quality → blocks-milestone (M226) | Measure before blaming code; if real, a sha-pinned perf demo-patch pinned at M224, re-proven live at M226. Latency *reported* at M224, *gated* at M226 |
+| **R5** | **`isHiring` blast radius** — `apps/web` has two `isEnterprise` definitions; flipping `is_hiring` may hide/relabel a surface the compare demo depends on | degrades-quality | **M222 enumerates** the surfaces that change vs stay identical under `is_hiring=true` (D-DESIGN-1: we DO flip it, so the blast radius must be de-risked, not dodged) |
+| **R6** | Scope creep into the Hiring **product** / ATS | scope | **Hard line, stated up front:** this demo shows the **Workforce app's `/enterprise` comparison surface** for an `is_hiring` org, **NOT** the Hiring product. M205's tier-gate/pipeline half stays out |
+| **R7** | **Snapshot content starvation** — the cold-primed public snapshot may lack ≥5 HIRING sims tied to positions | degrades-quality | M222 probes the captured pool; fallback is a dedicated hiring-sim pattern query or synthesized sims that **still resolve real skill/role refs** (closure preserved) |
 
 ---
 
