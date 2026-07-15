@@ -2,6 +2,69 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.3] "cue to cue" — 2026-07-15
+
+**The presenter-speed release.** A presenter can now **swap from one hero to the next in seconds** — click a
+seeded hero in the cockpit and you're inside the platform as them in **under 5 seconds**, on a demo that comes up
+**green, fully-loaded, and reachable from another machine by default**. The trigger was a live defect (*"I click a
+user, then it takes 1 or 2 minutes to access the platform"*); the fix was real, and it's **proven live** on a
+remote Linux VM over the tailnet, cold, with no special flags. Tooling + docs only — **zero platform-repo edits.**
+
+### Added
+- **Remote reach is on by default for demos.** A bare `/demo-up N` now brings the demo up reachable over your
+  Tailscale tailnet (a trusted HTTPS origin) — a teammate with Tailscale up can browse it end-to-end with no extra
+  steps. Opt out with `--no-public-host`. (Dev stacks stay opt-in: `/dev-up --public-host`.)
+- **The presenter cockpit is served over trusted HTTPS** on the tailnet (behind the same real cert as the rest of
+  the demo), so the login launcher itself is reachable from another machine — not just the app.
+- **`safety.md` Part 3 — the exposure axis.** A new, plainly-worded section of the safety contract: who can
+  *reach* a demo, and exactly what an unauthorized reacher would (and would not) get — because a demo is an
+  unauthenticated, authz-weakened build with **nothing real behind the door** (no customer data, cannot write
+  prod).
+
+### Changed
+- **A demo comes up FULL and remotely reachable by default** — the real catalog is replayed, the three story orgs
+  are seeded (incl. the AI-readiness showcase org), and remote reach is on, all without flags.
+- **"2 orgs" → the true "3 orgs" everywhere.** The docs claimed a demo seeded 2 orgs; it has shipped **3** for
+  four releases. Corrected across the corpus and skills — the seeding ask presenters thought was unmet was
+  already done.
+
+### Fixed
+- **Hero login dropped from ~38 seconds to ~2 seconds.** Clicking a hero used to hang on a blank/loading screen
+  for up to a minute or two; click→access is now **2.11 s / 1.31 s** (employee / manager), proven live on
+  `billion` over the tailnet — an ~18× improvement over the 39/38 s baseline. (The corpus had wrongly called this
+  "~2–5 s, which we can't shorten" — it was never actually measured.)
+- **The AI-readiness pages render filled, on the current screens.** They were pointing at an old, unlinked legacy
+  page, and several sections had no data to show; both the pointers and the missing data are fixed (employee and
+  manager surfaces).
+- **The catalog no longer shows up empty on a fresh box.** A snapshot cache-shadow (a stale/empty store quietly
+  masking the real cache) left the skills catalog at zero on some cold bring-ups; it now reloads the full catalog
+  (42,790 skills) and fails **loud, never silent** if a store is wrong.
+- **The AI Academy no longer logs the presenter out of the demo, and no longer world-publishes itself.** The
+  academy shared a session boundary that could eject the presenter on click (fixed), and its dev server used to
+  bind all network interfaces even on a local demo — it now binds **loopback** on a localhost demo (it opens to
+  the tailnet only when you actually asked for remote reach).
+- **~24 "stale status" defects** across the release — cases where a report, log, test, or doc kept claiming
+  something that was no longer true (a torn-down stack still reporting "green", a test named for a check it wasn't
+  running, a doc describing a fix as pending after it shipped). Tracked as one recurring class (D17) and corrected.
+
+### Verified
+- **Every release gate re-proven live on `billion.taildc510.ts.net`**, over the tailnet, from a real browser on a
+  different machine, with a default `/demo-up` (no flags): 8/8 on a cold reset-to-seed — both hero logins < 5 s,
+  full catalog, 3 orgs, the AI-readiness page filled, remote default-on. The `billion` demo is **left running** as
+  the shipped proof. Triple-clean 3/3 (Go + Python suites, randomized order); alignment 100% / 100% critical held.
+
+### Supply chain
+- **0 net-new dependencies.** The only change in the whole release is one indirect patch bump
+  (`golang.org/x/crypto v0.51.0 → v0.52.0`). `govulncheck` clean on all modules; all licenses permissive.
+
+### Known limitations
+Four items are carried to **v2.4** (none affects the proven demo journey):
+- **AI Academy grid renders 0 cards** even though its catalog serves 2,705 — the fix lives in the `ant-academy`
+  app itself, which this release doesn't edit (a documented cosmetic gap).
+- **The dev-path `--public-host` flag** is built and tested but hasn't had a live remote-dev burn-in.
+- **Re-running the academy on an already-live remote demo** can contend for its port (first boot is fine).
+- **A content-path permission re-check** (Cosmo/Directus 403) still needs a run against a live stack.
+
 ## [v2.2] "panorama" — 2026-07-12
 
 **External shareability over Tailscale.** Make a dev/demo stack reachable from **another machine on a Tailscale tailnet** — run a demo on a Tailscale VM (e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host) and a teammate with Tailscale up browses it end-to-end over **one trusted HTTPS origin**. External access is **opt-in, default-off** (an explicit `/demo-up N --public-host <magicdns>` flag); a bare `/demo-up N` is byte-identical to before. This release ships the whole surface as **tooling + docs + one opt-in flag — zero platform-repo edits, 0 net-new deps** — and is the **first live remote Linux-VM deploy**, proven end-to-end. (rext code-of-record @ tag `v2.2` = `39e8013`.)

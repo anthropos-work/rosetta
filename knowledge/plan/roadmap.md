@@ -65,7 +65,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
-| **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | 🟢 **ALL 5 MILESTONES DONE** (M217–M221 closed + merged into `release/02.30-cue-to-cue`; M221 closed-on-gate 2026-07-15). **Awaiting `/developer-kit:close-release`** (release→main merge + `v2.3` tag). Tooling + docs only — zero platform-repo edits |
+| **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -81,7 +81,7 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In Development — v2.3 "cue to cue" (designed 2026-07-13, branch `release/02.30-cue-to-cue`)
+## Done — v2.3 "cue to cue" (SHIPPED 2026-07-15, tag `v2.3`)
 
 **Theme.** *A presenter swaps heroes in under 5 seconds, on a demo that comes up green, fully-loaded, and remotely
 reachable by default.*
@@ -209,7 +209,7 @@ days apart — a one-shot re-pin is a band-aid.
 
 #### M218 — Seat change  (`iterative`, large → very-large)
 **Status:** ✅ **`done` — closed-on-gate 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue`.
-rext code-of-record: **`cue-to-cue-m218`**. **Dir:** [`m218-seat-change/`](releases/02.30-cue-to-cue/m218-seat-change/)
+rext code-of-record: **`cue-to-cue-m218`**. **Dir:** [`m218-seat-change/`](releases/archive/02.30-cue-to-cue/m218-seat-change/)
 
 > ### THE GATE IS MET — worst-case p95 **2413 ms** / **1767 ms** vs **< 5000 ms**
 >
@@ -306,7 +306,7 @@ re-measure** — do not proceed on a manager-only fix set.
 
 #### M219 — Readiness renders  (`section`, medium) — ✅ **DONE 2026-07-14**
 **Status:** ✅ **`done` — closed-complete 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue` (`e7a33c6`).
-rext code-of-record: **`cue-to-cue-m219-final`**. **Dir:** [`m219-readiness-renders/`](releases/02.30-cue-to-cue/m219-readiness-renders/)
+rext code-of-record: **`cue-to-cue-m219-final`**. **Dir:** [`m219-readiness-renders/`](releases/archive/02.30-cue-to-cue/m219-readiness-renders/)
 
 > ### ✅ THE USER'S KICKOFF BAR IS MET ON BOTH COUNTS
 > *"make sure each element and sub section of readiness is filled spot data + make sure to use the **right**
@@ -1323,6 +1323,14 @@ assertion boundary.
 
 ## Shipped releases
 
+- **v2.3 "cue to cue"** — **2026-07-15**, tag `v2.3`, **5 milestones (M217 → { M218 ∥ M219 ∥ M220 } → M221)**. The
+  **presenter-speed** / field-hardening release: a presenter swaps heroes in **under 5 s** on a demo that comes up
+  green, fully-loaded, and remotely reachable by default. Headline **click→ACCESS < 5 s** gate set at M218 and
+  **re-proven live 8/8 on `billion`** over the tailnet, no flags (2.11 s / 1.31 s vs a ~39/38 s baseline, ~18×);
+  remote default-on for demo; `safety.md` Part 3 (exposure axis); the ~24-instance **D17** status-artifact thread
+  told honestly. **4 non-gate tail carries → v2.4.** Tooling + docs only, zero platform edits, 0 net-new direct
+  deps (one indirect `x/crypto` patch). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE.
+  Records archived under [`releases/archive/02.30-cue-to-cue/`](releases/archive/02.30-cue-to-cue/).
 - **v2.0 "opening night"** — **2026-07-02**, tag `v2.0`, **4 milestones (M201 … M204)**. The **Playthroughs**
   pillar: a manifest-driven, deterministic e2e suite that plays real user journeys and proves the platform delivers
   the outcome (**function**, vs the M42 coverage sweep's **presence**). Manifest corpus → foundation → employee +
