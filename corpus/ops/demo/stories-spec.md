@@ -624,6 +624,29 @@ persona green, frontier-exhausted, on a fresh `/demo-up` (rext `fit-up-m51`). Cl
 AI-readiness skills resolve through the same taxonomy resolver, so the seed-side closure gene proves 0 dangling
 refs across all 3 orgs.
 
+## The hiring org — the 4th story (v2.4 "casting call" M222 gate / M223 seed)
+
+The 4th story is a **genuine recruiting org** (`is_hiring=true`) that demonstrates the **recruiter
+candidate-comparison scoreboard** — `/enterprise/activity-dashboard → AI-Simulations → [simId]`, one row per
+candidate who took a hiring simulation, ranked by a comparable score. Unlike the three Workforce orgs
+(admin/member), it is **~5 `admin` + 45 `candidate`, no `member`**; its "positions" are **5 real captured
+`SIMULATION_TYPE_HIRING` sims** (real content, zero synth — **no `directus.job_position` replay**, per M222 BA-6).
+
+**M222 "read the room" lands the GATE only** (this milestone): the blueprint's `StoryOrg.IsHiring` (yaml
+`is_hiring`) field + the **`narrative: hiring`** discriminator (unified through `ResolvedStory.IsHiringOrg()`), the
+`OrgSeeder` thread into `public.organizations.is_hiring` (was hardcoded `false`), and the reserved deterministic
+`blueprint.HiringOrgID()` (`= StoryOrgID("hiring")`). **M223 "casting the ensemble"** adds the population + the
+candidate-assessment funnel (the M51 `AIReadinessFunnelSeeder` shape generalized to 45 candidates × 5 shared sims,
+with the M219 non-degenerate score distribution). **M224 "the callback"** adds the cockpit hero seat + the
+Clerkenstein `publicMetadata.isHiring` wiring (the browser re-skin's client-side half of the dual-write).
+
+> **The render-gate trap (why the read-model is documented before the seeder).** The scoreboard's score renders
+> from the MIRROR table **`app.public.local_jobsimulation_sessions.score`**, **NOT** `jobsimulation.sessions.score`.
+> Seeding only `jobsimulation.sessions` yields a scoreboard that renders its chrome with every score blank — the
+> same **render-gate-bypasses-the-seed** class M219 hit with AI-readiness. The current `PersonaSeeder` already
+> co-writes the required 2-table pair (`persona_write.go`), so M223 is a generalization, not net-new. Full read-model
+> + write-set contract: [`../../services/hiring.md`](../../services/hiring.md).
+
 ## The presenter cockpit (M38)
 
 > **The cockpit UX is now specced standalone in [`cockpit-spec.md`](cockpit-spec.md) (v1.10 "method acting"

@@ -397,3 +397,16 @@ generated data excluded**. It is a PROJECTION of the canonical presets (honesty-
 emitted by `stackseed --manifest-export`, and served by the presenter cockpit's **[Download seed manifest]**.
 Full reference: [`demo/seed-manifest-spec.md`](demo/seed-manifest-spec.md). Code-of-record:
 `rosetta-extensions` @ tag `fit-up-m52`.
+**v2.4 "casting call" M222 "read the room"** lands the **`is_hiring` gate** — the foundation for a **4th story: a
+genuine recruiting org** (the M223 candidate seeder builds on it). The blueprint's `StoryOrg` gains an **`IsHiring
+bool` (yaml `is_hiring`)** field + a **`narrative: hiring`** discriminator, unified through
+`ResolvedStory.IsHiringOrg()` (`= IsHiring || Narrative == "hiring"` — the two signals can't disagree); the
+`OrgSeeder` now threads it into `public.organizations.is_hiring` (**was hardcoded `false`**), the hiring org's
+deterministic id is reserved (`blueprint.HiringOrgID()` = `StoryOrgID("hiring")`), and the org-type is surfaced in
+the auditable manifest (`manifest.Org.IsHiring`, `omitempty` — so every existing preset stays byte-identical). **The
+GATE only** — no HiringSeeder/funnel (M223), no cockpit hero + no Clerkenstein `publicMetadata.isHiring` wiring
+(M224). Why it matters: the recruiter **candidate-comparison read-model** requires `is_hiring=true`, and its score
+renders from the MIRROR table **`public.local_jobsimulation_sessions.score`**, NOT `jobsimulation.sessions.score`
+(the M219-class render-gate trap). The full model — the dual-write, the read-path, the seeder-output write-set —
+is [`../services/hiring.md`](../services/hiring.md). Code-of-record: `rosetta-extensions` @ `main` (the M222 S2
+gate commit; tagged when M223 consumes it).
