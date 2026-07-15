@@ -433,15 +433,24 @@ injected override existed.
   | ant-academy (`3077+off`) | **`*:13077`** | **YES — HTTP 200** ❌ |
 
   `BIND_HOST=""` means *"pass no `-H` flag and let each server keep its own default"* — and **`next dev`'s own
-  default is `0.0.0.0`**. So the academy is world-published on **every** demo, exactly like the containers, and
-  the *"gated on the knob"* framing is only true of the cockpit.
+  default is `0.0.0.0`**. So **at the time of that M220 S3 measurement** the academy was world-published on
+  **every** demo, exactly like the containers, and the *"gated on the knob"* framing was true only of the cockpit.
+
+  > ✅ **LANDED in v2.3 M221 (F-M220-5) — the host-native academy now binds loopback.**
+  > `demo-stack/ant-academy.sh:330` passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` **only** when a
+  > public host is requested), so on a localhost demo the academy binds **`127.0.0.1:13077`**, not `*:13077`.
+  > The M220 S3 table above is retained as the **dated** measurement that *drove* the fix — not a current claim.
+  > ⚠ **Scope of the fix:** it tightens **only** the host-native academy's bind; **every demo *container* port
+  > stays `0.0.0.0` by design** — that half of §3.1's disclosure is unchanged and still true. Fenced by
+  > `stack-injection/exposure_claim_guard.py`, extended at M221 to *see* the host-native listeners it was blind to.
 
   **This is the same false-loopback claim §3.1 exists to retract, one layer up** — and it survived M220 S0
-  because the exposure fence (`exposure_claim_guard`) checks the three **container** port emitters and has no
+  because the exposure fence (`exposure_claim_guard`) checked the three **container** port emitters and had no
   notion of the host-native servers. An exposure fence that cannot see a whole class of listener will report a
-  confident, quietly incomplete pass. *(Routed: `FIX-M221-academy-loopback-bind` — pass `-H 127.0.0.1` when
-  `BIND_HOST` is empty. Deliberately NOT bundled into S3/S4: it changes the localhost path's behaviour, and the
-  invariant S3 is fenced on is that the localhost path stays **byte-identical**.)*
+  confident, quietly incomplete pass. *(LANDED: `F-M220-5` at M221 — pass `-H 127.0.0.1` when `BIND_HOST` is
+  empty, and the exposure guard was extended to run the host-native emitters too. It was deliberately NOT bundled
+  into M220 S3/S4 because it changes the localhost path's behaviour, and the invariant S3 is fenced on is that the
+  localhost path stays **byte-identical**.)*
 
 > **`corpus/ops/demo/tailscale-serve.md` claimed the opposite until M220:**
 >
@@ -653,6 +662,12 @@ above.** The check asserts it captured traffic at all — an empty scan is a FIN
 > the in-network `api.clerk.com` alias — without it, its only reachable `CLERK_API_URL` is **real Clerk**. It is
 > bound to loopback precisely *because* §3.1 established that every other port is world-published: a mock that
 > ignores the bearer token entirely is the last thing that should be ambient on a tailnet.
+>
+> **Reconciled at v2.3 M221 (F-M220-5):** the fake BAPI is no longer the *only* host-native listener bound to
+> loopback — M221 tightened the **ant-academy** `next dev` bind to `127.0.0.1` on a localhost demo as well (§3.1).
+> The "every other port is world-published" reasoning still holds for the demo **container** ports (unchanged);
+> among the **host-native** listeners, the cockpit was already loopback, and on a localhost demo the academy and
+> this fake BAPI now join it — all three bind loopback.
 
 ### 3.7 What this does NOT change
 

@@ -146,13 +146,15 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 3-org world, the full UI
   tier, the cockpit, and set-dress — *"pull all the data + seed the 3 orgs" was always the default; the usual
   culprit is a cold snapshot cache, not a knob.*
-- [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"): the opt-in
-  `--public-host <magicdns>` flag that makes a demo reachable from another machine on your **Tailscale** tailnet,
+- [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"; remote reach
+  flipped **default-on for the demo path** at v2.3 M220 — D-DESIGN-3): remote reach is **default-on for `/demo-up`,
+  opt-out via `--no-public-host`** (`/dev-up` stays **opt-in** via `--public-host <magicdns>`), making a demo
+  reachable from another machine on your **Tailscale** tailnet,
   the **HTTPS-everywhere** per-offset-port topology (`tailscale serve` + the tailscale-cert FAPI), what the knob
   flips (CORS `https://$HOST` origins, the studio-desk/academy redirects, every baked URL's scheme), the
   **patch tail** (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL` overlay, via the
   sha-pinned mechanism), the "teammate on the tailnet browses it" walkthrough, and the safety framing
-  (Tailscale = the access control; opt-in, default-off; zero platform-repo edits). (v2.2 M212–M214)
+  (Tailscale = the access control; default-on for demo / opt-in for dev; zero platform-repo edits). (v2.2 M212–M214; default-on flip v2.3 M220)
 - [`demopatch-spec.md`](demopatch-spec.md) — **the demo-patch mechanism: the sanctioned zero-platform-edit escape
   hatch.** When a demo needs a fix that has **no env/config/compose seam** (the value is baked into platform
   source), `demopatch` patches the demo's **own ephemeral clone** just before the image build and reverts it after —

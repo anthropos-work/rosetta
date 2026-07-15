@@ -121,10 +121,12 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 > published on **`0.0.0.0` (all interfaces) on every bring-up**, with or without it. What the knob adds is the
 > **trusted HTTPS origin** that makes the already-reachable demo *browsable*. `BIND_HOST` — which *is* derived
 > from this knob — is read only by the two **host-native** servers (cockpit, ant-academy), never a container.
-> **And it only actually constrains ONE of them** (measured, M220 S3): on a localhost demo the cockpit binds
-> `127.0.0.1:17700` (refused from the tailnet IP ✅) but ant-academy binds **`*:13077` and answers 200 from the
-> tailnet IP** ❌ — `BIND_HOST=""` passes no `-H`, and `next dev`'s own default is `0.0.0.0`. See
-> [`../safety.md`](../safety.md) §3.1.
+> **At M220 S3 it constrained only ONE of them** (measured, M220 S3): on a localhost demo the cockpit bound
+> `127.0.0.1:17700` (refused from the tailnet IP ✅) while ant-academy bound **`*:13077` and answered 200 from the
+> tailnet IP** ❌ — `BIND_HOST=""` passed no `-H`, and `next dev`'s own default is `0.0.0.0`. **✅ LANDED v2.3 M221
+> (F-M220-5): ant-academy now passes `-H 127.0.0.1` on the localhost path**, so it binds `127.0.0.1:13077`
+> (loopback) — both host-native servers now bind loopback on a localhost demo. The **container** ports stay
+> `0.0.0.0` by design (unchanged). See [`../safety.md`](../safety.md) §3.1.
 > Full contract: [`../safety.md`](../safety.md) **Part 3 — the exposure side**.
 
 ### Secrets & clones
