@@ -6,14 +6,15 @@ milestone_shape: section
 status: planned
 created: 2026-07-15
 depends_on: M222
-delivers: updates to snapshot-spec.md (the directus.job_position replay surface) + seeding-spec.md/stories-spec.md (the 4th HIRING story + the is_hiring gate + the candidate-assessment funnel)
+delivers: a type-aware HIRING-sim reader (5 real captured SIMULATION_TYPE_HIRING sims — NO directus.job_position replay, per M222 BA-6/Fate-3) + updates to seeding-spec.md/stories-spec.md (the 4th HIRING story + the is_hiring gate + the candidate-assessment funnel)
 ---
 
 # M223 — Casting the ensemble
 
 ## Goal
 The hiring org exists in the seed: **≤50 people (exactly 5 `admin` + 45 `candidate`, no `member`)**, distinct from
-the 3 workforce orgs, with the **5 shared job positions** resolved to **real replayed content**. The 45 candidates
+the 3 workforce orgs, with the **5 shared "positions" = 5 real captured `SIMULATION_TYPE_HIRING` sims** (real
+content, zero synth — M222 BA-6/Fate-3; **no `directus.job_position` replay**). The 45 candidates
 form a **realistic funnel** — MOST assessed on the 5 shared positions (so the comparison view is populated +
 comparable), SOME in earlier states (assigned-not-taken) — with a **realistic non-degenerate score distribution**
 (the M219 anti-junk / anti-flat-arc discipline), **NOT** a flat 225-session grid.
@@ -33,10 +34,13 @@ candidates × 5 shared sims is a direct generalization (2 shared → 5) of the `
    `contentref` pool is type-blind: `SELECT id ORDER BY id LIMIT 50`; the `readAIReadinessSkillPool` precedent for a
    dedicated pattern query). Reserve the 5 shared sims **disjoint** in the reserved tail
    (`contentref.go reservedSimRefs/reservedAt`) so generic activity sessions can't collide/mis-score a candidate.
-4. The **snapshot extension to REPLAY `directus.job_position` rows** (all 443 public) + guarantee the 5 chosen HIRING
-   sims are captured — today `job_position` is structure + a synthesized public-read grant only ("no replayed rows,
-   the expansion is simply NULL"). This makes the 5 positions **REAL replayed content** (D-DESIGN-2), pending M222's
-   BA-6 confirm that the cold snapshot carries ≥5 usable HIRING sims.
+4. ~~The snapshot extension to REPLAY `directus.job_position` rows (all 443 public)~~ **DROPPED — M222 BA-6/Fate-3
+   refinement.** M222 measured the captured snapshot: **87 real `SIMULATION_TYPE_HIRING` sims** (published + public)
+   are present (pick 5), but **`directus.job_position` has 0 rows captured** (the "443" was a **PROD** count, never
+   captured) — and the comparison scoreboard does **not** read `job_position` (`JobSimulation.jobPosition` is
+   optional/unused). So there is **nothing to replay**: the **5 "positions" ARE 5 real captured HIRING sims**
+   (D-DESIGN-2 satisfied by real sim content, not by a `job_position` replay). The reader (#3 above) simply picks 5
+   from the captured HIRING-typed pool. No snapshot extension for `job_position` is built.
 5. **Wire new hiring rows into `resetTables`** + the closure gate (`datadna measure-closure`) + the isolation audit
    (`isolation.Guard`) — new hiring rows join `resetTables` + stay closure-measured across all orgs.
 6. The **`candidate`-assessment funnel seeder** (the AI-readiness-funnel analog): resolve the org's 5 shared sim refs
@@ -60,8 +64,10 @@ real-vs-synth decision (BA-6) + the `is_hiring` gate + the `narrative: hiring` d
   `corpus/services/hiring.md` (M222)
 
 ## Delivers → knowledge/corpus
-Updates to `snapshot-spec.md` (the `job_position` replay surface) + `seeding-spec.md`/`stories-spec.md` (the 4th
-story + the `is_hiring` gate + the candidate-assessment funnel).
+The type-aware HIRING-sim reader (5 real captured `SIMULATION_TYPE_HIRING` sims) + updates to
+`seeding-spec.md`/`stories-spec.md` (the 4th story + the `is_hiring` gate + the candidate-assessment funnel).
+**No `snapshot-spec.md` `job_position` replay surface** — dropped per M222 BA-6/Fate-3 (0 rows captured; the
+scoreboard doesn't read it).
 
 ## Demo-patch?
 **Pure seeding** (+ a tooling-owned snapshot extension). No platform-render gap here — this is data. **If M222 found
@@ -71,5 +77,6 @@ not a patch.**
 ## Risks carried
 - **R3 (degrades-quality — the demo's whole point)** — 45 junk-or-identical assessments. Mitigation: the M219
   ladder + a realistic non-degenerate score DISTRIBUTION + closure green. (The believability manifest is M225's.)
-- **R7 (degrades-quality)** — snapshot content starvation. If BA-6 came back thin, fall back to a dedicated
-  hiring-sim pattern query or synthesized sims that **still resolve real skill/role refs** (closure preserved).
+- **R7 (degrades-quality)** — snapshot content starvation. **M222 BA-6 came back RICH** (87 captured
+  `SIMULATION_TYPE_HIRING` sims, published + public), so the thin-pool fallback (a dedicated hiring-sim pattern
+  query or synthesized sims that still resolve real skill/role refs) is **not needed** — R7 effectively retired.
