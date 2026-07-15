@@ -31,7 +31,8 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ```
 
 > **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38) — now the DEFAULT.** A bare
-> `/demo-up N` set-dress seeds the locked **2-orgs × 3-heroes** Stories & Heroes world (each org a
+> `/demo-up N` set-dress seeds the locked **3-orgs × 3-heroes** Stories & Heroes world (Cervato Systems ·
+> Solvantis · Northwind Aviation — each org a
 > thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
 > heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
 > the demo's remote control: a standalone panel (never an in-app overlay — the zero-platform-repo-edit line
@@ -49,7 +50,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
-> /demo-up 3                   →  default: seed the 2-org hero trio + multi-identity fake-fapi + serve the cockpit
+> /demo-up 3                   →  default: seed the 3-org hero trio + multi-identity fake-fapi + serve the cockpit
 >   …present it…              →  open http://localhost:37700 → pick a hero → [Log in as] → her per-role screen
 > DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
@@ -135,13 +136,47 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
-- [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"): the opt-in
-  `--public-host <magicdns>` flag that makes a demo reachable from another machine on your **Tailscale** tailnet,
+- [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
+  knob and flag that controls a bring-up — **all 25 env knobs + 9 CLI flags**, with real defaults and the exact
+  `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
+  doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
+  *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
+  `up-injected.sh` takes only `<N>` + `--public-host` and **hard-errors on anything else**, while
+  `--profile`/`--services` belong to the separate `rosetta-demo` wrapper. And the shape of the whole surface:
+  **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 3-org world, the full UI
+  tier, the cockpit, and set-dress — *"pull all the data + seed the 3 orgs" was always the default; the usual
+  culprit is a cold snapshot cache, not a knob.*
+- [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"; remote reach
+  flipped **default-on for the demo path** at v2.3 M220 — D-DESIGN-3): remote reach is **default-on for `/demo-up`,
+  opt-out via `--no-public-host`** (`/dev-up` stays **opt-in** via `--public-host <magicdns>`), making a demo
+  reachable from another machine on your **Tailscale** tailnet,
   the **HTTPS-everywhere** per-offset-port topology (`tailscale serve` + the tailscale-cert FAPI), what the knob
   flips (CORS `https://$HOST` origins, the studio-desk/academy redirects, every baked URL's scheme), the
   **patch tail** (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL` overlay, via the
   sha-pinned mechanism), the "teammate on the tailnet browses it" walkthrough, and the safety framing
-  (Tailscale = the access control; opt-in, default-off; zero platform-repo edits). (v2.2 M212–M214)
+  (Tailscale = the access control; default-on for demo / opt-in for dev; zero platform-repo edits). (v2.2 M212–M214; default-on flip v2.3 M220)
+- [`demopatch-spec.md`](demopatch-spec.md) — **the demo-patch mechanism: the sanctioned zero-platform-edit escape
+  hatch.** When a demo needs a fix that has **no env/config/compose seam** (the value is baked into platform
+  source), `demopatch` patches the demo's **own ephemeral clone** just before the image build and reverts it after —
+  so the *image* carries the fix, the clone is left git-clean, and the canonical `anthropos-work` repos are **never
+  touched**. Documents the **7 guards** (G1 path-assert · G2 drift-refuse + exactly-once anchor · G3 never-commit ·
+  G4 idempotent · G5 self-revert · G6 demo-only · **G7 apply post-condition**), the 10-key manifest schema, the
+  **three apply vehicles** (the `app` patches target the build-scratch clone *outside* the workspace, so
+  `demopatch`'s own G1/G6 correctly refuse them), the **chain rule**, and — the M217 lesson — the **self-healing
+  freshness gate**: *the anchor is the contract, the whole-file sha is only a baseline*. **Read this before adding
+  any patch.** (v2.3 M217)
+- [`latency-budget.md`](latency-budget.md) — **the demo's performance budget: what "fast" means, and how it is
+  measured.** Before v2.3 there was **no** perf budget, baseline, gate, or even a *definition of "access"*
+  anywhere in the corpus — while a presenter's click→login actually took **60–120 s**, and the corpus asserted
+  in four places that it took "~2–5 s, which we can't shorten." Defines **ACCESS** (the authenticated shell is
+  rendered and interactive with the hero's identity present), the **< 5 s p95 gate**, the **per-leg attribution
+  model** (click → handshake/303 → SSR → clerk-js → client-gate → data-query), the measured baseline
+  (**39.45 s** employee / **38.30 s** manager) and the shipped number (**cold p95 2413 ms / 1767 ms**), the
+  harness contract (`stack-verify/e2e/run-latency.sh` — never gate on `networkidle`; always gate on a **fresh
+  green** `autoverify.json`), and the **arithmetic signatures** that name a bug class before you read a line of
+  code (a *blackholing* address ≈ `3 × 10.5 s + 6 s`; a *fast-failing* fetch ≈ `3 × 33 ms + 6 s`). **State the
+  environment with every number** — the same defect cost ~6 s on a laptop and ~112 s on the tailnet VM.
+  (v2.3 M218)
 - [`coverage-protocol.md`](coverage-protocol.md) — the **coverage** iteration protocol: the **Playwright**
   demo-coverage sweep + triage + fix loop driving the **semantic believability gate** (real seeded content +
   substantial per-section cardinality + persona self-consistency [role↔skills, menu==profile real-photo avatar,

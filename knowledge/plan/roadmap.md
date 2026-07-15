@@ -5,6 +5,21 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-13** via `/developer-kit:design-roadmap`. **v2.3 "cue to cue"** is the **presenter-speed
+> release** — a **field-hardening release** (the v1.3b / v1.10b / v2.1 lineage) triggered by a **live presenter
+> defect**: clicking a hero in the cockpit takes **1–2 MINUTES** to land in the platform, making a hero swap
+> unusable in a live demo. The investigation found the cockpit + Clerkenstein handshake leg **provably free** (no
+> sleeps, no I/O, a 303) — **the wall is entirely downstream**, and it was **already measured in-repo** (76 s members
+> grid, 84 s router max-latency, a 180 s AI-readiness read) while **the corpus asserted in 4 places that login is
+> "~2–5 s we can't shorten"** (a 20–40× false claim, booked as M43-D5 and never revisited). Two `app` perf
+> demo-patches exist to kill those walls and **both silently REFUSE on sha-drift on every run** (pinned @ app
+> v1.295/v1.315; the box runs v1.337) with **the refusal reason piped to `/dev/null`**. **5 milestones M217 →
+> { M218 ∥ M219 ∥ M220 } → M221**; tag **`v2.3`**; branch `release/02.30-cue-to-cue`. **Tooling + docs only — zero
+> platform-repo edits** (platform-side walls route to the sanctioned sha-pinned demo-patch hatch, never to a repo
+> edit). Decisions: the <5 s gate is on **ACCESS (authenticated, interactive shell), not full first-page data
+> render**; demo remote-access flips to **opt-out** (dev stays opt-in); the three story orgs are **the three that
+> already exist** (no hiring org).
+>
 > **Designed 2026-07-11** via `/developer-kit:design-roadmap`. **v2.2 "panorama"** is the **external-shareability
 > release** — make dev/demo stacks reachable from other machines on a **Tailscale** tailnet (run a stack on a
 > Tailscale VM, e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host; a teammate with Tailscale up browses
@@ -50,6 +65,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.1** | **quick change** | The **skiller-in-app re-ground** — re-fit the tooling, corpus, and stacks to the merged platform (skiller service + schema folded into `app`/`public`, RPC → `backend`, **4 subgraphs**) and **prove** `dev-up` + `demo-up` still work. Field-hardening lineage (v1.3b/v1.10b), triggered by a landed platform change | M208 → M209 → M210 → M211 (strictly sequential) | ✅ **SHIPPED 2026-07-09 (tag `v2.1`)** (branch `release/02.10-quick-change`, designed 2026-07-08; all 4 milestones done — the merged platform stands up **cold on both stacks**; M42 coverage both vantages + v2.0 Playthroughs 10/11 GREEN; tooling + docs only, zero platform edits, 0 net-new deps) |
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
+| **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
+
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
 
@@ -61,6 +78,443 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Done — v2.3 "cue to cue" (SHIPPED 2026-07-15, tag `v2.3`)
+
+**Theme.** *A presenter swaps heroes in under 5 seconds, on a demo that comes up green, fully-loaded, and remotely
+reachable by default.*
+
+**Trigger.** A live presenter defect, reported by the user: *"I click a user, then it takes 1 or 2 minutes to access
+the actual platform. Once logged in it works normally. For a demo stack it is key that a presenter can swap from one
+hero to another with little time."*
+
+### What the investigation actually found (2026-07-13, 10-agent workflow + a dedicated residual-Clerk audit)
+
+The full gap analysis — every claim file:line-cited — is preserved at
+[`.agentspace/scratch/roadmap-research-2026-07-13.md`](../../.agentspace/scratch/roadmap-research-2026-07-13.md).
+The five findings that shape this release:
+
+1. **Clerkenstein is INNOCENT.** The cockpit CTA is a plain `<a href>` (`demo-stack/cockpit.py:397`); the FAPI
+   handshake is an in-memory mint + a 303 with **zero I/O** (`clerkenstein/clerk-frontend/server.go:204-255`);
+   `grep time.Sleep` across all of `clerkenstein/` returns **zero hits**. The cockpit's overlay timers
+   (0/1200/3000 ms) are cosmetic text swaps that explicitly never `preventDefault`. **Every surviving suspect lives
+   AFTER the 303.** Also REFUTED: a cold Next.js JIT compile (the demo runs a **production** build —
+   `Dockerfile.dev` runs `pnpm turbo build`, compose pins `NODE_ENV=production`).
+2. **The walls were already measured, in this repo, and nobody looked** — 76.7 s members grid, 84 s router
+   max-latency, a 180 s AI-readiness read that never completes (`stack-verify/e2e/lib/section-assert.ts:63-73`;
+   `corpus/ops/demo/coverage-protocol.md:203,411,471`). The tooling even encodes the truth
+   (`playthroughs/e2e/playwright.config.ts:22` `timeout: 120_000`, comment: *"minute-scale"*).
+3. **The corpus asserts the opposite, in 4 places** — *"~2–5 s, which we can't shorten"*
+   (`corpus/ops/demo/cockpit-spec.md:58,155`; `cockpit.py:12,204-208`). Booked as an M43 scope-`Out:` + decision
+   **D5** with **zero deferrals recorded**, so it never entered a ledger and was never revisited across v1.10b /
+   v2.0 / v2.1 / v2.2. **This release formally RE-OPENS M43-D5 as a design correction.**
+4. **Two `app` perf demo-patches silently REFUSE on sha-drift — on every run.** Pinned @ app v1.295.0/v1.315.0;
+   `billion` runs **v1.337.0**. The applier prints the exact mismatch and **`up-injected.sh:701,717` pipes its
+   stderr to `/dev/null`**. The warnings are present in **all four** bring-up logs on the box. The un-patched code
+   is confirmed live: `roles.go:96` per-row Sentinel RPC; `ai_readiness.go:538` unbounded `loadMembers`.
+5. **The last real run on `billion` was not a valid measurement.** The cockpit **crashed** (`OSError: Address already
+   in use`, `cockpit.py:567`) on a port leaked by its predecessor — so the user was very likely driving a **stale
+   cockpit** serving a **stale manifest** (dead clerk-ids) against a freshly-reseeded DB. All three snapshot replays
+   **SKIPPED** (cold cache → structural-only catalog); autoverify ended **FAILING**; `jobsimulation` **exits(1)** in
+   every demo. **No number taken before M217 lands is trustworthy.**
+
+### User decisions (2026-07-13, at design time — binding)
+
+| # | Decision | Consequence |
+|---|----------|-------------|
+| **D-DESIGN-1** | **The <5 s gate is on ACCESS, not on full first-page render.** *"The gate is on the login/access to the platform, not on the load of the complete render of the first page."* | **ACCESS** := the authenticated shell is rendered and interactive with the hero's identity present (full-screen loading gone; user menu shows the hero). Heavy in-page data (the 200-member grid) may stream in after and is **REPORTED as a secondary metric, never gated**. This sidesteps the platform-side DataLoader defect instead of fighting it. |
+| **D-DESIGN-2** | **Fix it properly via Clerk/rext first; demo-patches are allowed if genuinely required.** *"if changes are required (after trying to address them properly via clerk) you can go for patches of course."* | Order of preference: rext env/compose/injection fix → Clerkenstein fix → **new sha-pinned demo-patch** (the sanctioned hatch). **A platform-repo edit is NEVER in bounds.** |
+| **D-DESIGN-3** | **Remote access: OPT-OUT for `/demo-up`, OPT-IN for `/dev-up`.** *"if I write `/demo-up` the demo is built with remote access by default."* | **SUPERSEDES v2.2's D-DESIGN-1** ("public reach is never default-on") **for the demo path only**. Dev stays opt-in — which means **building the `/dev-up --public-host` flag that does not exist today** (the reserved **M216** scope, hereby **folded into M220**). |
+| **D-DESIGN-4** | **The three story orgs are the three that already exist.** There is **no hiring org** and none will be built. | The shipped three are **ai-transformation (Cervato) / sales-ramp (Solvantis) / ai-readiness (Northwind)**. A real hiring story would need unmapped domain tables **+ the `hiring-app` frontend, which is not in the demo UI tier** — a separate release, mapping onto the reserved **M205**. **The "3 orgs" ask is therefore a DOC FIX** (the docs say "2 orgs"; the code ships 3). |
+
+### Hard constraints (carried from the v1.x/v2.x lineage — unchanged)
+
+**Zero platform-repo edits.** The platform stays read-only. A wall whose root cause is platform source
+(`GetOrganizationTargetRole`'s 3-RPC-per-member fan-out; the AI-readiness `CycleID == nil → buildLiveResponse`
+default; `jobsimulation`'s missing subcommand) routes to a **new sha-pinned demo-patch** or **escalates** — it does
+not get edited. All stack-operating tooling lives in **`rosetta-extensions`** (authored + tested in
+`.agentspace/rosetta-extensions/`, tagged, consumed per-stack at a pinned tag).
+
+### Execution graph
+
+```
+v2.3 "cue to cue"
+
+  M217 ──┬──→ M218 (iterative: <5 s access, both vantages) ──┬──→ M221 (iterative: prove it on billion)
+  clean  │                                                    │
+  stage  ├──→ M219 (AI-readiness RENDERS) ───────────────────┤
+         │                                                    │
+         └──→ M220 (demo-up defaults + remote opt-out) ──────┘
+
+  M217 is a HARD barrier: the stale-cockpit + dead-patch + cold-cache confounds mean
+  NO measurement before it lands is trustworthy. M218/M219/M220 then run in parallel.
+  M218 merges FIRST of the three (it and M220 both touch up-injected.sh).
+```
+
+### Milestones
+
+#### M217 — Clean stage  (`section`, medium) — ✅ **DONE 2026-07-13**
+**Goal:** a `/demo-up` that comes up **green** — so that everything measured afterwards is real.
+
+> **Closed 2026-07-13.** Exit gate MET on `billion` (cold reset-to-seed: `autoverify: OK — verified-working`,
+> 3/3 replays exit 0, 2/2 app patches applied [one **self-healed**], jobsimulation serving, content plane local).
+> **32 bugs fixed** across build (0) → harden ×3 (24) → close (8). rext code-of-record: `cue-to-cue-m217`.
+>
+> **What it actually taught us**, beyond the fixes:
+> - **The KB-fidelity gate caught three false claims in the milestone's own plan** — including a `jobsimulation`
+>   diagnosis whose prescribed fix would have **broken the service**. *The errors were in the plan, not the code.*
+> - **The tooling was implicitly Docker-Desktop-shaped.** Two independent bugs (`jobsimulation`'s AWS mount;
+>   Directus's `host.docker.internal`) are the same failure: *fine on a Mac, dead on a fresh Linux VM.*
+> - **Self-review finds the bugs you are looking for; adversarial execution finds the ones you are not.** Pass 1
+>   of hardening found 4 bugs and declared victory; an adversary that actually *ran* the code found 20 — three of
+>   them introduced by pass 1 itself.
+> - **A test that greps for a call proves nothing about whether the call resolves** (D9). `up-injected.sh` called
+>   `reap_port` — the headline deliverable — without sourcing `reap.sh`. **It never executed once**, including
+>   during the green proof run. A string-fence passed over a function that did not exist.
+**In:** reap the leaked cockpit port (`7700+off`) + make `demo-down` reap the whole offset range (2 of the last 3
+runs on `billion` died on a leaked port); **un-swallow the demo-patch REFUSE reason** (`up-injected.sh:701,717`);
+**re-pin the two `app` perf patches** + add a **patch-freshness preflight that fails LOUD** (a perf patch that
+silently degrades a demo from 5 s to 120 s is worse than one that refuses); fix `jobsimulation` exits(1)
+(**DEF-M215-04** — AI-Simulations is dead in *every* demo today); **prime the snapshot cache on `billion`**
+(**DEF-M215-02**); re-pin the drifted rext consumption clones (local `quick-change-m211`, remote
+`panorama-m214-3-g41a28aa` → `v2.x`).
+
+> **⚠️ CORRECTED 2026-07-13 by the M217 KB-fidelity gate (which came back RED — and was right).** The design-time
+> research got **three** things wrong, and the milestone doc has been fixed:
+> - **`jobsimulation` is NOT a missing-subcommand problem, and the drafted "compose-command fix" would have BROKEN
+>   the service** (`command: serve` → a real `unknown command "serve"` → exit 1). The cobra **root `RunE` IS the
+>   server**. The actual cause: `docker-compose.yml` binds `$HOME/.aws/credentials`, Docker **auto-creates the
+>   missing host path as an empty DIRECTORY**, the AWS SDK hard-errors EISDIR inside `ai.NewAIManager`, cobra prints
+>   its **usage block** on the returned error — *that* is the "prints CLI help" everyone mis-read. Fix: drop the
+>   bind in the **generated override** (`volumes: !reset null`) — rext-only, no demo-patch, no escalation. (A demo
+>   carries **zero** AWS credentials, so the mount could only ever be the broken empty dir.)
+> - **The stale cockpit does NOT serve "dead clerk-ids"** — `CockpitHero` carries no clerk id at all. M218 must
+>   **re-measure on a green stack** rather than inherit a phantom hypothesis.
+> - **TWO, not three, replays were cache misses.** Directus was **rc=4** (`--no-local-content` ⇒ no directus schema),
+>   so **priming the cache alone will not fix it** — the billion run must also be **local-content ON, from a purged
+>   stack**.
+>
+> **BD-3 is now decisive:** `ai_readiness.go` differs **between the two boxes** (v1.334.1 vs v1.337.0), so **no
+> single static whole-file sha pin can be correct on both** — the manifest schema cannot express the truth, and a
+> one-shot re-pin cannot close M217. The **anchor** survives every tag (exactly 1×). See M217's `overview.md`.
+**Out:** any latency fix (that is M218 — do not scaffold a fix before the harness measures).
+**Delivers →** `corpus/ops/demo/demopatch-spec.md` (**BLIND AREA** — the sanctioned escape hatch this whole release
+depends on has **no corpus doc**; its 6-guard contract exists only in a Python module docstring).
+**Open question (BD-3):** keep the file-sha gate (safe, rots every `app` bump) or move to anchor-only
+single-occurrence matching (survives bumps, weaker drift safety)? **Recommendation: keep the sha gate, add an
+auto-repin verb + the loud preflight.** Evidence it matters: two agents computed *different* `ai_readiness.go` shas
+days apart — a one-shot re-pin is a band-aid.
+
+#### M218 — Seat change  (`iterative`, large → very-large)
+**Status:** ✅ **`done` — closed-on-gate 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue`.
+rext code-of-record: **`cue-to-cue-m218`**. **Dir:** [`m218-seat-change/`](releases/archive/02.30-cue-to-cue/m218-seat-change/)
+
+> ### THE GATE IS MET — worst-case p95 **2413 ms** / **1767 ms** vs **< 5000 ms**
+>
+> **5 GENUINE cold reset-to-seed cycles**, both vantages, **50/50** logins reaching ACCESS, on `billion` over
+> the tailnet. **Baseline 39.45 s / 38.30 s → a ~16× improvement on the honest cold number.**
+>
+> **⚠ The gate number is 2413 ms, not the 1456 ms iter-04 reported.** That figure was taken on a **warm
+> database** — **F-9**: `/demo-down --purge` had **never purged on any Linux host** (postgres's UID-1001/0700
+> cluster dir defeats `rm -rf`; `set -euo pipefail` then aborted `cmd_down` *silently*, leaking the registry
+> slot and the images with a bare `rc=1`). `billion`'s postgres still carried the `PG_VERSION` `initdb` wrote
+> on **2026-07-11**: every "cold" bring-up for days, iter-04's included, reused the same DB and images. **The
+> gate was not merely ungraded — it was ungradeable.** The count was restarted at 0 and 5 cycles were run,
+> each **proven cold** (`initdb` re-ran) and **proven green** before being measured.
+>
+> **Two root causes, both in demo tooling. Zero platform-repo edits.**
+> 1. **~37.5 s** — next-web's **SSR** GraphQL origin was a **build-inlined PUBLIC url** that **blackholes from
+>    inside the container** (`3 × 10.5 s` undici connect-timeout + a 2 s/4 s retry ladder). The milestone's own
+>    planned one-line fix (re-point the runtime env) was a **proven no-op** — `NEXT_PUBLIC_*` is build-inlined,
+>    so SSR never reads `process.env`. Fixed by *fixing the address, not the variable*: a **server-only**
+>    `WUNDERGRAPH_SSR_ENDPOINT` (deliberately **not** a `NEXT_PUBLIC_*` name, so it is a real runtime read) +
+>    a sha-pinned demo-patch teaching `server.graphql.ts` to prefer it.
+> 2. **~6.1 s** — Clerkenstein's fake **BAPI served a hardcoded STUB user to every hero** (`// Disarmed: any
+>    id → the demo user` — true when a demo had one user, false since M35's Stories & Heroes model). The BAPI
+>    identity disagreed with the JWT identity, `app` refused `userPreferences`, and next-web's `retry: 2`
+>    ladder burned ~6 s on **every** authenticated render. Fixed by making the BAPI **roster-aware**.
+>
+> **A blackhole and a refusal are six seconds apart in signature** — `3 × 10.5 s + 6 s` vs `3 × 33 ms + 6 s`.
+> The magnitude named the bug *class* before a line of code was read. Folded into `latency-budget.md`.
+>
+> **Alignment: 97.2% overall / 100% critical (26/27) — the gate (≥95/=100) is MET, and the 2.8% is
+> DELIBERATE.** Landing the `GetUser` gene exposed **F-11**: the BAPI *also* fabricates the **org** eid. It
+> ships as a **permanently-visible RED gene** rather than being hidden by omitting the field (**D16**) —
+> because **a silently-omitted field is exactly how the user-level stub survived four releases**. →
+> `FIX-M219-bapi-org-eid`.
+>
+> **21 bugs fixed** (build 6 · harden 4 · **close 11**). **Python 887/0** · **Go 0 failures / 6 modules /
+> 1784 funcs** · **flake 5/5** · **platform edits 0**.
+>
+> **The close's defining finding:** the hardening ledger **misfiled an M218 regression as "pre-existing"**
+> because it used `f296e5e` — *M218's own iter-05 commit* — as the "baseline". Three further **false-greens**
+> were found, all the **D17 stale-verdict class**, and **one sat directly on the gate path**: a **SKIPPED**
+> demo-patch wrote nothing to `demopatch.log`, so a stack running **without the headline SSR fix** would have
+> printed *"✓ demo-patches: none refused"*, graded **green**, and been **measured**. → **D18**: *"reproduced at
+> baseline ⇒ pre-existing" is only sound if the baseline predates the milestone.*
+>
+> **Carried forward (9, all Fate-3, every receiving `overview.md` EDITED; ZERO escape-hatch):**
+> **M219** ← F-11 org-eid · `expressrun` unmeasurable · freshness-gate skips.
+> **M220** ← Clerk telemetry off · F-5 ad-tech egress · **C-5 vendor clerk-js + bound the unbounded
+> `Timeout: 0`** · ant-academy's real-Clerk-secret leak.
+> **M221** ← **F-7** the `NEXT_PUBLIC_BACKEND_API_URL` blackhole twin (*a loaded gun* — a measured 10.5 s
+> blackhole, dormant only because every reader is client-side) · **C-3** the cms/Directus 403s.
+> *None could land here without invalidating the gate: a demo-runtime change **restarts the 5-cycle count**
+> (iter-05 D13).*
+
+**Goal:** click **[Log in as]** → the hero is **in the platform** in **under 5 seconds**, for both vantages.
+**Exit gate:** **p95 click→ACCESS < 5 s** — where **ACCESS** = the authenticated shell is rendered and interactive
+with the hero's identity present (full-screen loading gone; user menu shows the hero) — for **both**
+`maya-thriving` (employee → `/profile`) **and** `dan-manager` (manager → `/enterprise/…`), measured over **5
+consecutive cold reset-to-seed runs**. In-page data-completion time is **reported, not gated** (D-DESIGN-1).
+**Why iterative:** the cost budget does **not yet sum to 60–120 s** — the confirmed suspects total ~18 s. Reaching
+2 minutes requires one of the unconfirmed big-ticket items to be real. **Build the harness first, guess second.**
+**Iteration protocol:** `corpus/ops/verification.md` + `corpus/ops/demo/coverage-protocol.md` (the live-browser
+measure → attribute → fix → re-measure loop). **The 4-leg experiment discriminates all suspects in ONE bring-up with
+zero code written** — run it as iter-01.
+**Ranked suspects (adversarially surviving):**
+
+| | Suspect | Vantage | Est. | Fix surface |
+|---|---------|---------|------|-------------|
+| **C-1** | next-web's **server-side** GraphQL URL resolves to its own loopback (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` → `localhost:5050`, un-offset; the demo exports `STACK_PUBLIC_HOST`, never `PUBLIC_HOST`) → `prefetchUserStatus` `retry:2` + `retryDelay 2s/4s`, and all three fetchers rethrow | **BOTH** | **~6 s / render** | **one line** in `stack-injection/gen_injected_override.py:96-112` (runtime env only — `NEXT_PUBLIC_*` is build-inlined, so the browser keeps its correct offset URL) |
+| **C-2** | the two dead `app` perf demo-patches | manager | 76 s → **11.6 s even patched** | M217 re-pins; the 11.6 s residual is **out of gate scope** per D-DESIGN-1 |
+| **C-3** | **cold-federation Directus drift → the Cosmo router RETRYING** for 60–90 s (cache-masked in a warm sweep; surfaces only on a COLD federation tier — and `billion` read content **live from prod over the WAN** because directus replay skipped) | **BOTH** | **60–90 s** | a real snapshot replay (M217's cache prime) — **the closest single match to "1–2 minutes" on a path both heroes traverse** |
+| **C-4** | stale cockpit / dead clerk-ids (the crash) | both | unknown | M217 (**must land first — it contaminates everything**) |
+| **C-5** | the fake FAPI proxies `clerk.browser.js` **live from `cdn.jsdelivr.net`, uncached, `http.DefaultClient` (no timeout)**, on every full page load — and next-web's whole authed tree is client-gated on clerk-js | both | **0.2 s healthy / ~127 s if egress blackholes** | vendor the bundle into the fake-fapi image. **Alignment-INVISIBLE (zero DNA genes cover `GET /npm/`) → a gate-free win.** Take it regardless |
+| **C-6** | `billion` has **7.3 GiB RAM** vs the documented **12 GiB** floor | both, remote | unknown | measure `docker stats` during a login before blaming code; may be a pure VM resize |
+
+**Also in scope:** disable Clerk telemetry (real egress from both frontends; it is what makes Playwright's
+`networkidle` hang); Clerkenstein-wire **ant-academy** (it is handed the **real** `CLERK_SECRET_KEY` today —
+`ant-academy.sh:146` copies from `platform/.env`; off the login path, but real-Clerk egress + a real secret in a
+demo process, contradicting `safety.md`); the `x/crypto@v0.52.0` bump (13 dependabot alerts, all
+govulncheck-UNREACHABLE) since we are in `clerkenstein/` anyway.
+**Alignment guard (H3):** **no DNA gene covers latency or the clerk-js proxy** → caching/vendoring is free. But the
+genes that break on a **handshake-shape** change are all `critical`, and the critical gate is **100%, no partial
+credit** — and **CI is INERT** (`clerkenstein/.github/workflows/alignment.yml:10-11` says so of itself, while
+`corpus/architecture/alignment_testing.md:233` claims a weekly workflow). **Any change to
+`clerkenstein/clerk-frontend/` MUST carry an explicit `/align-run` step. Do not rely on CI.**
+**Delivers →** `corpus/ops/demo/latency-budget.md` (**BLIND AREA** — there is **no** perf/latency budget, baseline,
+or even a definition of "access" anywhere in `corpus/**` or rext); a full **click→painted-page login-sequence**
+section in `corpus/ops/demo/cockpit-spec.md` (**BLIND AREA** — the next-web half of the login path is documented
+nowhere; you cannot code a fix against one line); the clerk-js proxy caching/timeout contract in
+`corpus/services/clerkenstein.md`; the **CI-inert correction** in `alignment_testing.md`; and the **M43-D5
+correction** (the "~2–5 s" claim, 4 sites).
+**Re-scope trigger:** if the harness shows neither C-1 nor C-3 explains the **employee** vantage, **stop and
+re-measure** — do not proceed on a manager-only fix set.
+
+#### M219 — Readiness renders  (`section`, medium) — ✅ **DONE 2026-07-14**
+**Status:** ✅ **`done` — closed-complete 2026-07-14.** Merged `--no-ff` into `release/02.30-cue-to-cue` (`e7a33c6`).
+rext code-of-record: **`cue-to-cue-m219-final`**. **Dir:** [`m219-readiness-renders/`](releases/archive/02.30-cue-to-cue/m219-readiness-renders/)
+
+> ### ✅ THE USER'S KICKOFF BAR IS MET ON BOTH COUNTS
+> *"make sure each element and sub section of readiness is filled spot data + make sure to use the **right**
+> dashboards/pages for readiness (both for managers and employees).. **not the old legacy ones**"* — proven on
+> **5 cold reset-to-seed rebuilds** at `cue-to-cue-m219-r8`, each independently evidenced. **Zero platform-repo
+> edits.** Manager: **all 8 readiness sections PASS**, `failingSections=0`. Employee: **both heroes**
+> `failingSections=0`. **Zero** demo pointers resolve to a legacy surface.
+>
+> **⚠ TWO of this milestone's OWN PREMISES were REFUTED by measurement — and the planned demo-patch was
+> WITHDRAWN, not built.** (**F-2**) The `CycleID == nil` blocker **does not exist**: the CURRENT frontend passes
+> `?cycle=`; the original note was made against the **LEGACY** page. (**F-7**) M217's `loadmembers` patch is **not
+> dead** — it *self-heals*; and *"the live recompute never completes"* is **false** — **2.09 s**, measured.
+>
+> **What was ACTUALLY broken.** All 3 demo pointers targeted `/enterprise/workforce/ai-readiness` — an **UNLINKED
+> ORPHAN** (no nav, no tab, no redirect). The **employee surface has no route of its own** (it is embedded in
+> `/home`) — *which is why route-crawling never found it*. **Junk skills ORG-WIDE**: the claimed-tail pool ran
+> **dry** and topped up from the flat pool's **alphabetical head** — Aria + 8 named members claimed **"24-hour
+> dietary recall"** / `15Five` / `17Track`. The arithmetic closed exactly (`want`=28, role pool=10, curated `data`
+> supplied only **25 usable** ⇒ **exactly 3** junk tokens) and **Ben was clean only because his `want` (16) fit his
+> pool — that asymmetry was the proof** it was pool **SIZE**, not resolution. **The flat tier is DELETED** (ladder =
+> role → curated → **general** → **STOP**; exhausted ⇒ *fewer* skills, never padded ones). A hero rendered
+> **ROLE-LESS** (`Operations Analyst` **resolves** but has **0 `job_role_skills`** ⇒ the resolver rejected it —
+> ***"it resolves" ≠ "it has skills"***). And the manager's **4 interview-findings blocks rendered HEADINGS OVER
+> NOTHING** — they read `jobsimulation.interview_aggregated_reports`, which **NO SEEDER EVER WROTE**. Now seeded;
+> **the manifest's disclosed EXCEPTION was DELETED** and the floor raised **120 → 900** (the empty headings measured
+> ~120–200 chars — *which is exactly why 120 passed over them*).
+>
+> **ONE new demo-patch, and it is not the withdrawn one:** `next-web-aireadiness-flag-gate` — no PostHog on a demo
+> ⇒ the flag is `undefined` **forever** and the code demands `=== true`, so the member surface never mounts. Roster
+> now carries **7**.
+>
+> **Inherited from M218, all landed:** **F-11** (the BAPI fabricated the org eid) ⇒ alignment **97.2% → 100% / 100%
+> critical (27/27)**, the gene **retained as a permanent fence**; and **both absence-gates** — `expressrun` is no
+> longer *unmeasurable-as-a-pass* (exit **3** ≠ exit **2**), and the freshness-gate's silent skip now **speaks**.
+>
+> **THE D17 THREAD — the spine of this milestone.** *A status artifact that outlives the thing it describes, and is
+> then read as evidence* has now bitten **~14 times across M217→M219**. **Five new instances inside M219 — several
+> found by the tooling in ITSELF:** `run-coverage.sh` printed *"coverage report written to …"* **unconditionally**
+> and re-read whatever JSON was on disk, so a spec that threw first presented the **PREVIOUS run's numbers, "GATE:
+> MET ✅" and all, exiting 0** — *it nearly graded an M219 rebuild on hours-old data from the **old, broken**
+> stack*. **17 existing tests asserted the junk-fallback AS THE CONTRACT** (an expected value literally containing
+> `K-JUNK-1`) — **they were not missing the bug, they were guarding it**; all inverted. The poisoned-pool fence's
+> **first cut PASSED against the broken code** — theatre inside its own fix. The interview-findings fence asserted
+> the **LEGACY** page's strings — and passed. And the academy launcher read *"a pid exists"* as *"the service is
+> up"*, its **fixtures having encoded the broken behaviour** — so the suite was **GREEN for four releases while the
+> academy 502'd**.
+>
+> **The generalized lessons:** ***"the role classifies" ≠ "the pool is big enough"*** · ***"it resolves" ≠ "it has
+> skills"*** · ***"it serves" ≠ "it renders"*** · ***"the pool resolved" ≠ "the content is sane"*** · ***an errored
+> SQL query is not "zero rows"*** · ***an unexecuted gate is a FINDING, not a pass.***
+>
+> **⚠ TWO DISCLOSED CAVEATS ON THE BATTERY — neither hidden, neither rounded away.**
+> **(1) It is NOT one uncontested consecutive run.** Two further runs were graded RED for **battery-INTEGRITY**
+> reasons caused by an **ORCHESTRATION error, not a demo defect**: two batteries were run **concurrently against the
+> single demo host** and one **purged the stack mid-measurement**, so a gate went **UNEXECUTED**. *No demo defect was
+> observed in anything that was measured*, and the 5 greens are each individually evidenced — but the audit trail
+> carries a permanent asterisk. **(2) The code that GRADED is not the code that SHIPPED:** `c6648d1`
+> (`aiReadinessStep1Score` **double-rounded** — it disagreed with the platform's `computeTier1` on **3 of 14**
+> reachable weights) is a **SEED-PATH** change that landed **after** the graded tag, and **per D13 a seed-path change
+> restarts the battery count**. Small, strictly corrective — **and still not allowed to be rounded away.**
+>
+> **13 bugs fixed** (build/R-8 9 · harden 3 · close 1). **Python 903/0** (+16) · **Go 1821 funcs / 0 failures / 6
+> modules** (+37, same method) · **flake 0** · **platform edits 0**.
+>
+> **Carried forward (5, all Fate-3, BOTH receiving `overview.md` files EDITED; ZERO escape-hatch):**
+> **M220** ← 🔴 **the academy POISONS the demo session** (cookies scope by **HOST, not PORT** — a presenter who
+> clicks the academy link is **logged OUT of the demo** into `ERR_TOO_MANY_REDIRECTS`, and every employee coverage
+> sweep **aborts**; severity **RAISED** on item **(i)**) · 🔴 **studio-desk `:19000` → 302 → `:13000/login`** (item
+> **(j)**, added at close — clicking *"Anthropos Studio"* **ejects the presenter**). *Both ship with **honest fences
+> that deliberately report RED** until M220 lands — a half-fix that reports green is worse than no fix.*
+> **M221** ← **`GUARD-M221-host-isolation`** (a host lock or per-cycle stack `N`; **a prerequisite for M221's own
+> gate**, itself a multi-cycle battery on that same singleton host) · **`FIX-M221-reap-native-academy`** (`down
+> --purge` doesn't reap the host-native academy — the **old** process keeps answering `:13077` while the log says it
+> *"DIED"*) · **`REPROVE-M221-battery-at-final-code`**.
+
+**Goal:** the AI-readiness story is **visible**, not merely seeded.
+**The seeding is a VERIFIED NO-OP** — Northwind Aviation (`narrative: ai-readiness`, 200 members, heroes **Aria
+COMPLETED / Ben STARTED / Dana manager**) is in the **DEFAULT** preset (`stack-seeding/presets/stories.seed.yaml:118-153`);
+all 3 seeders are registered **unconditionally** (`cmd/stackseed/main.go:410,411,431`); "enabled" = a
+`public.organization_settings` row, written (`seeders/org_settings.go:72-73`); the last run wrote
+`org rows=3, ai-readiness-config rows=6, org-settings rows=1`. **Do not budget seeder work.**
+**In:** prove **Dana** sees a **FILLED** AI-readiness page — which needs M217's re-pinned patch **AND** resolving
+that the **default GET (`CycleID == nil`) takes `buildLiveResponse`** (`app/internal/workforce/ai_readiness.go:285,301`),
+bypassing the frozen-snapshot seed unless the FE passes `?cycle=` → **a NEW demo-patch** (platform-shaped, the hatch
+is the answer); prove **Ben's** from-scratch STARTED workflow appears on his dashboard and **Aria's** COMPLETED
+state renders; fix the stale ACTIVE-vs-CLOSED comment in `stories.seed.yaml:112-117` (the code writes
+`status='closed'`).
+**Delivers →** an **`ai-readiness` playthrough manifest** (**BLIND AREA** — the e2e suites are
+profile/workforce/skill-paths/ai-simulations/assignment-monitoring only; **Aria's and Ben's journeys are not
+e2e-proven**) + its section in `corpus/ops/demo/playthroughs.md`; updates to `corpus/services/ai-readiness.md`.
+
+#### M220 — Cue sheet  (`section`, medium)
+**Status:** ✅ **`done` — closed-complete 2026-07-15.** All 8 sections (S0–S7) landed on `m220/cue-sheet`, merged
+`--no-ff` into `release/02.30-cue-to-cue`. rext code-of-record **`cue-to-cue-m220-final`** (live-graded on
+`billion` at `-r6`). **Zero platform-repo edits.**
+> **The user's ask was three things; TWO were already true and the docs lied.** *"Pull all data"* + *"seed 3
+> orgs"* were **already default-on** — the `"2 orgs"` lie (11 sites, 4 releases) was why the user believed the
+> seeding ask was unmet. The **one genuine flip** (remote reach default-on, opt-out `--no-public-host`) **landed
+> (S3) and is live-proven** on `billion`, both vantages, on a trusted LE cert, cold reset-to-seed reproducible,
+> 0 ejects. The invariant that holds: a box with **no** Tailscale is **byte-identical to localhost** (proven by
+> genuinely removing `tailscale`, tripwire-fenced). Other landings: the academy stops **poisoning the demo
+> session** (S5); **zero egress** on an authenticated load (7 third parties killed, S6); clerk-js **served from
+> disk** (was an unbounded CDN fetch on the login path); the cockpit is **behind HTTPS** (S4); `safety.md`
+> **Part 3 — the exposure axis** + supersession of v2.2's D-DESIGN-1 (S1); the dev-side **opt-in**
+> `--public-host` **discharges M216** without pulling the scope-flex lever (S7).
+> **Harden** committed the **17-mutant battery** M220 claimed but never left behind, and it found the milestone's
+> own **HARD INVARIANT unfenced** (H-1: `SCHEME`/`BIND_HOST` was asserted against a re-typed copy of itself) + an
+> **untested `|| true`** (H-3). **Close** resolved a **5-milestone chronic deferral** — the dev-stack suite's
+> *"environmental"* failure was **one missing env var** (D31), so the whole rext Python suite now completes for
+> the first time (**1215 tests, 0 fail**) — and an **adversarial** finding: rung 3 accepted any dotted string as
+> a hostname, so a value with a space / leading dash cleared 6 rungs into the pk + argv (D32). **Deferral audit
+> YELLOW, 0 blocking, 0 escape-hatch.** Full closure record in `m220-cue-sheet/{retro.md, metrics.json,
+> progress.md, decisions.md}`. **Fate-3 routes to M221** (both academy items + dev burn-in), and the stale
+> `FIX-M221-devstack-test-spin` route **retracted** in M221's overview (discharged, not silently deleted).
+> **Go 1827 test funcs / 0 fail; Python 1215 / 0 fail; flake 0.**
+
+**Goal:** `/demo-up` **means** what the user thinks it means — full data, the three orgs, and remotely reachable,
+by default.
+**In:** **(a) the doc fix** — "2 orgs" → **3** (`.claude/skills/demo-up/SKILL.md:109,153`;
+`corpus/ops/demo/README.md:34`; the stale `seed_label` at `up-injected.sh:1081`; `stories.seed.yaml:1`). *This is
+why the user believed the seeding ask was unmet.* **(b)** author the **`/demo-up` DEFAULTS TABLE** (**BLIND AREA** —
+no enumerated contract exists; the only complete knob list is a skill `argument-hint`). **(c) the remote flip
+(D-DESIGN-3):** `--public-host auto` **default-ON for demo** (opt-out via `--no-public-host`), driven by a strict
+**capability ladder** — `command -v tailscale` → `BackendState == "Running"` → a **dotted** `.Self.DNSName` (a
+dotless host is hard-refused: `@clerk/backend`'s `assertValidPublishableKey`) → `MagicDNSEnabled` → no
+operator/sudo denial → **`tailscale cert` actually mints**. **HARD INVARIANT: any failed rung ⇒ fall back to an
+EMPTY `STACK_PUBLIC_HOST`, byte-identical to today's localhost path, with ONE loud line naming the fix.** A
+*half-satisfied* public path is **strictly worse than localhost** — `SCHEME` and `BIND_HOST` both derive from the
+same `-n $STACK_PUBLIC_HOST` predicate, so every baked URL becomes `https://` against plain-HTTP listeners and the
+demo does not load **at all**. **(d)** ✅ **LANDED (S7)** — the **dev-side opt-in `--public-host`** (folds + **discharges**
+the reserved **M216**; the **declared scope-flex lever was NOT pulled** — S3's ladder is **reused cross-section, never
+forked**, and a dev box that passes no flag is proven **byte-identical**: zero `tailscale` invocations, tripwire-fenced). **(e)** front the **cockpit** on `tailscale serve` (`('cockpit', 7700)` → `gen_tailscale_serve.py:42-46`) —
+today the presenter's entry point is the **one plain-HTTP, unauthenticated surface**.
+**Delivers →** `corpus/ops/safety.md` **Part 3 — the exposure side** (**BLIND AREA, BLOCKING** — safety.md's two
+promises are read-side and write-side only; grep for `tailscale|remote|expose|network` → **zero hits**. Remote reach
+is a **third axis the safety contract does not cover**, and default-on cannot ship without it); an explicit written
+**supersession of v2.2's D-DESIGN-1**; and the **correction of the FALSE claim** at `tailscale-serve.md:452-453`
+(anchor corrected by M220's KB-fidelity audit — it says binding `0.0.0.0` is gated on the knob — **it is not**:
+`gen_injected_override.py:210,276-277,308` emits
+bare `"<hostport>:<target>"` port pairs, so Docker publishes **every demo container on ALL interfaces on EVERY
+demo-up, today, flag or no flag** — and on Linux Docker's iptables bypass the host firewall). **This correction
+ships regardless of the flip.**
+**Safety note to record in writing:** the cockpit is a **one-click, password-free "become any seeded hero"**
+launcher, and a demo is an **authz-weakened build** (Clerkenstein disarms token verification; an authz-skip patch
+is applied by default). Default-on remote reach makes that panel **ambient on every box that satisfies the ladder** —
+which is why the ladder must be *capability*-gated, not *presence*-probed.
+**Open question:** `tailscale cert` + **Let's Encrypt rate limits** — rext's own docs claim the cert **re-issues on
+re-run** (`up-injected.sh:885-886`). If true, default-on is a live LE hazard (`ts.net` is a PSL entry ⇒ the
+duplicate-cert bucket is **per-tailnet**), and a mint failure **silently falls back to a local-trust cert a remote
+browser rejects**. **Settle empirically before flipping** (run `tailscale cert` twice on `billion`, diff wall-clock,
+`journalctl -u tailscaled | grep -i acme`). If tailscaled caches, the repo's claim is a doc bug.
+
+#### M221 — Prove it on billion  (`iterative`, large)
+**Status:** ✅ **`done` — closed-on-gate 2026-07-15.** Merged `--no-ff` into `release/02.30-cue-to-cue`. rext
+code-of-record **`cue-to-cue-m221-final`** (live-graded on `billion` at `-r4`). **Zero platform-repo edits.**
+> **Gate MET 8/8** on the iter-06 FINAL cold no-flag r4 cycle, browser-graded from a tailnet peer: **login p95
+> maya-thriving 2.11 s / dan-manager 1.31 s** (both < 5 s, ACCESS 5/5, tailnet HTTPS origin); full catalog
+> replayed (skills **42,790**, directus_collections 21, sim-embeddings — the F1 store-root shadow fixed live);
+> 3 orgs; **Dana `/ai-readiness` browser 900-char check PASSED** (1,745 / 1,629 / 2,305); Ben STARTED; Aria
+> COMPLETED; remote default-on no-flag; 0 platform edits. M219 readiness fold-in all MET; F10 field-exercised;
+> seed isolation CLEAN (49 writes / 71,783 rows / prod=false). **Reproducibly:** two independent cold r4 cycles
+> (iter-05 + iter-06) at the same rext code, per the user's one-cycle pragmatic mandate. **The billion demo is
+> LEFT LIVE** (cockpit `https://billion.taildc510.ts.net:17700`, app `:13000`) as an intentional final
+> deliverable — not torn down. Final harden (2 passes, stabilized): a false-green suite fix (`test_reap.py`
+> ran 21/41 on direct run), **F-M221-06b landed** (`run-latency.sh` `LATENCY_SCHEME`), and an F1 depth-2
+> loud-not-silent edge. Deferral audit YELLOW; 4 non-gate tail carries route to v2.4 (sign-off at close-release).
+> Tests: python 1341 (+96 M221-attributable across 3 touched sections), Go 1831 (+4). **This is the FINAL
+> milestone of v2.3** — release→main merge + the `v2.3` tag are `/developer-kit:close-release`'s to do.
+
+**Goal:** every requirement of this release, verified **on the remote VM, over the tailnet, with no flags passed**.
+**Exit gate:** on `billion.taildc510.ts.net`, a **default** `/demo-up N` (no flags) yields, **reproducibly on a cold
+reset-to-seed**: **(1)** p95 click→ACCESS **< 5 s** for both `maya-thriving` and `dan-manager`, measured **over the
+tailnet origin** (the extra TLS/proxy hop is *in* the budget); **(2)** the **full replayed catalog** (taxonomy +
+directus content + sim-embeddings — **no SKIPPED surface**); **(3)** all **3 story orgs** seeded, incl. AI-readiness;
+**(4)** **Dana** sees a **FILLED** AI-readiness page; **(5)** **Ben's** from-scratch STARTED workflow is visible on
+his dashboard; **(6)** **Aria's** COMPLETED state renders; **(7)** remote access came up **by default**; **(8)** **0
+platform-repo edits**.
+**Why iterative:** the direct analogue is **M215 "prove-on-odyssey" (7.1 h, direct-drive)** — the last breakages only
+surface on a live cross-machine run.
+**Also lands:** **DEF-M215-03(b)** — the committed, repeatable **remote-origin Playwright gate** that v2.2 owed.
+(Note: Playthroughs declare perf a **NON-GOAL**, so the latency gate **cannot** be a Playthrough — it is a new
+`stack-verify` surface.) And the **7.3 GiB RAM** question gets measured and decided.
+
+### Deferrals folded in (LAND-NEXT)
+
+| ID | Item | Fate |
+|----|------|------|
+| **DEF-M215-01 / F5** | the `app` perf demo-patches sha-drift REFUSE | **Fate-1 → M217** (it *is* part of the reported bug) |
+| **DEF-M215-02 / F9** | fresh remote VM has no snapshot cache → sparse catalog | **Fate-1 → M217 + M221** (milestones 4 and 5 are unachievable without it; it also feeds **C-3**) |
+| **DEF-M215-03(b)** | no committed remote-origin Playwright gate | **Fate-1 → M218 + M221** (it IS the measurement substrate) |
+| **DEF-M215-04 / F13** | `jobsimulation` exits(1) → AI-Simulations dead in every demo | **Fate-1 → M217** ("the demo works properly" cannot be claimed with a container in a crash loop) |
+| supply chain | `x/crypto@v0.52.0` (13 alerts, all UNREACHABLE) | **Fate-1 → M218's rext roll** |
+| ~~**M216** (reserved)~~ | dev-path Tailscale parity | ✅ **CONSUMED + DISCHARGED by M220 S7** (2026-07-14, M220-D28). The declared scope-flex lever was **NOT pulled** — S3 had already built + fenced the 6-rung ladder, so S7 was a thin wiring job (a flag, a default, **cross-section reuse of the ladder — never a fork**). `/dev-up` now has `--public-host <host>\|auto` (+ `DEV_PUBLIC_HOST`), **opt-in**, with the no-flag path proven **byte-identical** (zero `tailscale` invocations, tripwire-fenced, 9/9 mutants RED). **M216 is retired as a reservation, never built as a milestone.** |
+| plan hygiene | `metrics-history.md` has no v2.2 row; no release-scope deferral audit for v2.1/v2.2 | **Fate-3 → close-release** |
+
+### Top risks
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| **The measurement is contaminated before it starts** — the stale-cockpit confound means any number taken before the port reap is untrustworthy | **blocks-release** | **M217 is a hard barrier. Sequence is non-negotiable.** |
+| **The confirmed cost budget does not sum to 60–120 s** (C-1 ~6 s + C-2 ~11.6 s ≈ 18 s). Reaching 2 min needs C-2-unpatched (76 s) and/or C-3 (60–90 s) and/or C-5-hanging | **blocks-release** | **Build the harness first, guess second.** The 4-leg experiment discriminates all suspects in one bring-up, zero code written. **Do not scaffold fixes before it runs.** |
+| **The employee vantage is under-explained** — both dead patches are *manager* surfaces, yet the user reports **both** are slow ⇒ there is a **common** factor (only C-1 and C-3 qualify) | **blocks-release** | If the harness clears both for `/profile`, **stop and re-measure**. Re-scope trigger, declared in M218. |
+| **Demo-patches rot silently BY DESIGN** — the demo builds from a scratch clone force-checked-out at the newest `v*` tag on **every** bring-up, so ref-pinning the source clones would **not** stop it | **degrades-quality (recurring)** | BD-3 → the loud freshness preflight + an auto-repin verb (M217). A one-shot re-pin is a band-aid. |
+| **Default-on remote reach publishes an unauthenticated identity-vending cockpit** on every capable box | **blocks-release (safety)** | The capability ladder + the hard localhost fallback + **safety.md Part 3** + fronting the cockpit on TLS. All in M220, all blocking. |
+| **`tailscale cert` / Let's Encrypt rate limits** under a default-on flip | degrades-quality | Settle **empirically** before flipping (M220 open question). |
+| **Alignment CI is INERT while the corpus claims it runs weekly** | degrades-quality | Explicit `/align-run` step in M218; correct the doc. |
+| **Scope creep via "hiring"** | (closed) | **D-DESIGN-4** — no hiring org. If it ever revives, it is a separate release (reserved M205). |
+| **The manager's residual 11.6 s** (fully patched) | (de-risked) | **D-DESIGN-1** puts it out of gate scope; it is reported, not gated. Demo-patches remain available (D-DESIGN-2). |
 
 ---
 
@@ -869,6 +1323,14 @@ assertion boundary.
 
 ## Shipped releases
 
+- **v2.3 "cue to cue"** — **2026-07-15**, tag `v2.3`, **5 milestones (M217 → { M218 ∥ M219 ∥ M220 } → M221)**. The
+  **presenter-speed** / field-hardening release: a presenter swaps heroes in **under 5 s** on a demo that comes up
+  green, fully-loaded, and remotely reachable by default. Headline **click→ACCESS < 5 s** gate set at M218 and
+  **re-proven live 8/8 on `billion`** over the tailnet, no flags (2.11 s / 1.31 s vs a ~39/38 s baseline, ~18×);
+  remote default-on for demo; `safety.md` Part 3 (exposure axis); the ~24-instance **D17** status-artifact thread
+  told honestly. **4 non-gate tail carries → v2.4.** Tooling + docs only, zero platform edits, 0 net-new direct
+  deps (one indirect `x/crypto` patch). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE.
+  Records archived under [`releases/archive/02.30-cue-to-cue/`](releases/archive/02.30-cue-to-cue/).
 - **v2.0 "opening night"** — **2026-07-02**, tag `v2.0`, **4 milestones (M201 … M204)**. The **Playthroughs**
   pillar: a manifest-driven, deterministic e2e suite that plays real user journeys and proves the platform delivers
   the outcome (**function**, vs the M42 coverage sweep's **presence**). Manifest corpus → foundation → employee +

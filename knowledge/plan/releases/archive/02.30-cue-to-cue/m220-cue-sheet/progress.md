@@ -1,0 +1,455 @@
+# M220 — Progress
+
+_Section checklist. Populated from `overview.md` § Scope.In at build time; closed by `/developer-kit:close-milestone`._
+
+**Branch:** `m220/cue-sheet` (from `release/02.30-cue-to-cue`) · **Shape:** section
+
+## Sections
+
+- [x] **S0 — The two lies the docs tell.** *(overview (a) + Delivers 3)*
+  - [x] "2 orgs" → **3** at the **7** sites (the KB-fidelity audit found **3 more than the plan's 4**, and
+        corrected two stale anchors — see `kb-fidelity-audit.md` KB-1/KB-2):
+        `demo-up/SKILL.md:109,153` · `corpus/ops/demo/README.md:34` · **`corpus/ops/rosetta_demo.md:49`** (new) ·
+        **`.claude/skills/stack-seed/SKILL.md:50`** (new) · the stale `seed_label` at
+        **`up-injected.sh:1317`** (**not** `:1081` — anchor was stale) · `stories.seed.yaml:1`.
+        VERIFIED in code — `stories.seed.yaml` ships **3** `org:` entries (`:37` Cervato Systems /
+        ai-transformation / 220 · `:75` Solvantis / onboarding-ramp / 120 · `:136` Northwind Aviation /
+        ai-readiness / 200). This lie is why the user believed the seeding ask was unmet.
+  - [x] **Correct the FALSE safety claim** at **`tailscale-serve.md:452-453`** (**not** `:405-407` — anchor
+        was stale; the same stale anchor is cited in `roadmap.md:422`). **VERIFIED FALSE:** ports are
+        emitted as bare `"<hostport>:<target>"` pairs at **three** sites in `gen_injected_override.py`
+        (`:210` directus · `:276-277` frontends · `:308` backends) with **no `127.0.0.1` prefix**, so Docker
+        publishes **every demo container on ALL interfaces on EVERY demo-up, today** — flag or no flag — and
+        on Linux its iptables **bypass the host firewall**. `BIND_HOST` (`up-injected.sh:76`) gates only the
+        two host-native servers (cockpit, ant-academy). **The doc already CONTRADICTS ITSELF:**
+        `tailscale-serve.md:239` states the truth (*"`docker-proxy` binds the demo's offset ports on
+        `0.0.0.0`"*) while `:452-453` denies it. A doc that denies a live exposure is worse than none.
+  - [x] Regression fences: a doc-vs-code fence on the org count; a fence asserting the published-port shape.
+        Home: `stack-core/tests/` (precedent: `test_corpus_index_guard.py` — the existing doc-vs-code fence)
+        and `stack-injection/tests/`. Both **RED-proven pre-fix**.
+
+- [x] **S1 — `corpus/ops/safety.md` Part 3: the exposure side.** *(Delivers 1+2 — BLIND AREA, BLOCKS S3)*
+  - [x] The gap, re-proven by the audit: `tailscale|remote|expose|network|localhost` → **2 hits, not 0**
+        (`safety.md:146`, `:215`) — but **both are incidental** (`in-network` Directus addressing), and the
+        doc's section list runs **Part 1 (read side) → Part 2 (write side)** with **no exposure section**.
+        **The substance holds: remote reach is a THIRD AXIS with no contract at all.** (Grep the *sections*,
+        not the *words* — a keyword hit is not a contract. D17.)
+  - [x] State plainly what default-on makes ambient: a demo is an **unauthenticated, authz-weakened build**
+        (Clerkenstein disarms token verification; the authz-skip patch is default-on; **the cockpit is a
+        one-click, password-free "become any hero" launcher** — a bare GET to `/v1/client/handshake`).
+  - [x] Record the steelman FOR the flip: synthetic + public-snapshot-only data (Parts 1-2 hold unchanged), a
+        tailnet is an authenticated WireGuard device mesh (per-device keys, ACL-gated, no public listener),
+        and — per S0 — **the exposure delta is smaller than the docs claimed, because the LAN exposure already
+        exists today.**
+  - [x] Explicit written **SUPERSESSION of v2.2's D-DESIGN-1** ("public reach is never default-on",
+        **`demo-up/SKILL.md:79`** — **not** `:78`) — **demo path only.** Never a silent contradiction.
+        ⚠️ **ID COLLISION (audit KB-4):** **v2.3 has its OWN `D-DESIGN-1`** (*"the <5 s gate is on ACCESS,
+        not full render"* — `roadmap.md:127`, `state.md:105`). A bare `D-DESIGN-1` in this release resolves
+        to the **wrong** decision. Every supersession sentence MUST read **"v2.2's D-DESIGN-1"**, never bare.
+
+- [x] **S2 — The `/demo-up` defaults table.** *(overview (b) — BLIND AREA)*
+  - [x] No enumerated defaults contract exists in the corpus (audit-confirmed: no `knob | default` table
+        anywhere under `corpus/`); the only complete knob list is a skill `argument-hint`. Document the
+        `DEMO_*` knobs: knob | default | consumer | file:line. **Audit-measured surface: 35 raw `DEMO_*`
+        tokens across rext, of which ~25 are real user-facing knobs** — the rest are internals
+        (`DEMO_WS`/`DEMO_N`/`DEMO_STACK`/`DEMO_OFFSET`/`DEMO_PORT_OFFSET`), a computed name
+        (`DEMO_1_DIRECTUS_DSN`), and a grep artifact (`DEMO_NO_`). Enumerate from the parser; classify, don't
+        just dump.
+  - [x] **THERE ARE TWO ENTRY POINTS, NOT ONE — and the docs conflate them (audit KB-3, a LIVE false
+        promise).** `up-injected.sh` (the one the skill actually invokes, `SKILL.md:52`) accepts **ONLY**
+        `<N>` and `--public-host`, and **hard-errors `unknown argument` + `exit 1` on anything else**
+        (`:26-27`). `--profile` / `--services` are flags of the **`rosetta-demo` wrapper** (`:110-113`).
+        The `demo-up` `argument-hint` lists all four **as if one parser took them** — so
+        `up-injected.sh --profile X` **exits 1 today**. The table must record *which entry point reads which
+        knob*.
+  - [x] Fence: the table is checked against the parser so it cannot drift (the CLI-flag ↔ docs both-directions
+        rule — a doc-promised flag with no parser entry is a false promise; a parser flag with no doc surface
+        is undiscoverable). **RED-proven pre-fix by KB-3 above.**
+
+- [x] **S3 — The remote flip: `--public-host auto`, DEFAULT-ON for demo.** *(overview (c) — D-DESIGN-3)*
+  - [x] Capability ladder — **capability-gated, never presence-probed** (`demo-stack/tailscale_autohost.py`):
+        `command -v tailscale` → `BackendState == Running` → a **dotted** `.Self.DNSName` (a dotless host is
+        hard-refused — `@clerk/backend`'s `assertValidPublishableKey` rejects it) → `MagicDNSEnabled` →
+        `tailscale serve status` shows no operator/sudo denial → **`tailscale cert` actually mints**.
+  - [x] **HARD INVARIANT — the fallback is not optional.** Any failed rung ⇒ **empty `STACK_PUBLIC_HOST`,
+        byte-identical to today's localhost path**, plus ONE loud line naming the exact fix command.
+        **PROVEN LIVE, both directions** (below).
+  - [x] Opt-out: `--no-public-host` (+ `DEMO_NO_PUBLIC_HOST=1`). Passing it **with** `--public-host` is a hard
+        refusal, not a precedence rule — "public AND not public" has no correct answer.
+  - [x] Fences: each rung RED-proven **by mutation** — 4 naive `discover()` mutants (presence-probe rung 6,
+        no-dotted-check, soft rung 4, trust-rc==0) + 6 bash-wiring mutants (dropped `|| true`, probe-despite-
+        opt-out, second-guess an explicit host, capture-stderr-into-the-host, …). Every one goes **RED**.
+
+- [x] **S4 — Front the cockpit on `tailscale serve`.** *(overview (e))*
+  - [x] `('cockpit', 7700)` added to `gen_tailscale_serve.py` — on its **OWN axis**, *not* `UI_BROWSER_FACING`:
+        the cockpit is gated on `DEMO_STORIES`, **not** on `--no-ui`, so filing it under the UI tier would leave
+        a **live** cockpit unfronted on a `--no-ui` stories demo (and front a dead port when stories are off).
+  - [x] **Ordering is load-bearing.** `tailscale serve` binds the tailnet IP `:<port>` as a **real listener**, so
+        fronting `:7700` *before* the cockpit binds kills it with `EADDRINUSE` — we would have "fixed" the
+        cockpit's exposure by killing the cockpit (the M215 F12 / F-M220-4 contention). The **first** apply
+        passes `--no-cockpit`; a **second**, idempotent apply fronts it after `/healthz` answers. The **reset**
+        plan always includes `:7700` (else a re-up finds the port held and the cockpit cannot start at all).
+  - [x] Documented **honestly**: this is **transport, not authentication** (`safety.md` §3.5.2). The cockpit is
+        still a one-click, password-free "become any hero" launcher; it is now behind the tailnet's TLS +
+        device mesh rather than in cleartext. Fronting it does not password-protect it.
+
+- [x] **S5 — The two demo-BREAKING click paths.** *(overview (i)+(j) — escalated from M219 D4)*
+  - [x] **(i) The academy POISONS the demo session.** FIXED. The academy is **Clerkenstein-wired** from the
+        stack's own `.env.demo-N` (minted pk + disarmed fake BAPI + networkless RS256 key) — it never reads
+        `platform/.env` again, so keyless mode cannot engage and **no cookie is ever deleted**. The
+        `e2e_persona` bypass is REMOVED (kept alongside real keys it short-circuits `proxy.js` BEFORE the real
+        session resolves and renders a generic *"E2E Member"* to a presenter logged in as **Maya**).
+        The fake BAPI is published on **`127.0.0.1:5401+offset`** — the demo's **first loopback-bound** port —
+        because the host-native academy cannot use the in-network `api.clerk.com` alias, and without it its
+        only reachable `CLERK_API_URL` is **real Clerk**.
+  - [x] **DoD PROVEN — the session SURVIVES.** Controlled A/B on `billion`, from a tailnet **peer**, in a real
+        browser, one variable: **ARM A** login → `/profile` ⇒ signed in as *"Maya Chen"*. **ARM B** login →
+        `/profile` → **ACADEMY** → `/profile` ⇒ **STILL signed in as "Maya Chen"**. `__session` present
+        throughout; `__client_uat` a **live timestamp, never 0**. Direct `curl` at `:13077` now returns
+        **ZERO `Set-Cookie` headers** — the deletion mechanism is gone at source. **Values-blind:** the
+        academy's `CLERK_SECRET_KEY` sha ≠ `platform/.env`'s, and it is `sk_test_` (Clerkenstein) — the REAL
+        production secret is no longer inside a demo process. Exactly **1** publishable-key line, so dotenv
+        *last-one-wins* cannot bite again.
+  - [x] **(j) studio-desk EJECTS the presenter.** GREEN: `dan-manager` clicks **Anthropos Studio** and
+        **STAYS on `:19000`**. Root cause was *not* a broken session — the roster already seeds the manager's
+        `admin` membership into the fake BAPI, which `checkEnterpriseAndAdmin` reads. **M219's "302 → /login"
+        was an UNAUTHENTICATED `curl`** — the expected answer to a cookieless request, mis-read as the defect.
+        An employee is still (correctly) redirected off Studio: that is the real platform's behaviour.
+  - [x] Fence: a presenter clicking **Anthropos Studio** stays **in Studio**.
+  - [x] M219's launcher fence (`SERVES BUT DOES NOT RENDER`) is **GREEN**. It also had to drop
+        `__clerk_handshake` from its keyless pattern: once wired, **that URL is the SUCCESS path**, so the
+        fence would have gone RED against the very fix it demanded.
+  - [ ] ⚠️ **M219's 400-char CONTENT floor stays RED — honestly, and NOT weakened.** A **separate** defect,
+        not the session bug: the academy renders its portal shell + the 3 audience cards and then says
+        **"0 PATHS / 0 COURSES / No adventures here… yet"** (348 chars). Its clone HAS content
+        (`[build-catalog]` = 2705 entries / 419 public chapters) but `[build-local-catalog]` emits **0**, and
+        the home reads the **local** catalog (`local-catalog.generated.js` = 368 bytes). → **`FIX-M221-academy-empty-catalog`** (Fate 3).
+
+- [x] **S6 — Egress: stop the demo phoning home.** *(overview (f)+(g)+(h))*
+  - [x] **(f) Clerk telemetry OFF** — both halves: `CLERK_TELEMETRY_DISABLED` (server, runtime env) +
+        `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED` (browser, **build-inlined** → baked into the image's
+        `.env.local`). Either alone leaves one collector phoning home. Wired for next-web, studio-desk and the
+        academy. **Residual (measured, not assumed):** studio-desk's **Vite** browser bundle reads neither name
+        and passes no `telemetry` prop — that half is not reachable from env at all. It did **not** fire in the
+        live capture, so no demo-patch was spent on it.
+  - [x] **(g) Ad-tech egress (F-5)** — MEASURED FIRST, and the plan **undercounted**: next-web's root layout
+        hardcodes **FOUR** scripts with no env seam — `plausible.io`, `analytics.bellasio.com`,
+        `uptime.betterstack.com`, **plus** `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` (→ GA + DoubleClick +
+        Google Ads + LinkedIn). **Seven** third parties, every page load. New sha-pinned demo-patch
+        **`next-web-no-thirdparty`** gates all four behind one build-time env var; behaviour-identical when
+        unset. RED baseline from the pre-fix image (2/6/2/2 files); post-fix the **client bundle
+        (`.next/static`) carries ZERO** — only dead server chunks + `.js.map`s retain the strings.
+  - [x] **(h) Vendor clerk-js + bound the unbounded timeout (C-5)** — clerk-js is now **served from disk** (a
+        **box-level** cache shared by every `demo-N`, keyed by the request path's `package@version` —
+        self-invalidating); the CDN survives only as a **bounded (15 s)** fallback that populates the cache
+        atomically and **never caches a non-200**. Verified live: 4 chunks on disk (incl. the 322 KB main
+        bundle), and the browser fetches clerk-js **from the FAPI**, never `cdn.jsdelivr.net`.
+        **Alignment re-run after touching the FAPI: Go 27/27 + JS/FAPI 9/9 — 100%/100%, both GATES MET.**
+  - [x] **Live egress capture (tailnet peer, authenticated load): ZERO** hits on any of the 11 denied hosts.
+        The fence asserts it captured traffic at all — an empty scan is a FINDING, not a pass.
+  - [x] **BONUS (found while landing (g), and it would have EATEN it): the image cache had no idea which
+        demo-patches were baked into it.** Reuse keyed only on the offset endpoint + minted pk — neither
+        related to the patch set. The `demo-1-next-web` image on `billion` matched both, so the first bring-up
+        after adding the patch would have **reused it** and served a bundle still phoning home — *while grading
+        green*. This is the mechanism behind demopatch-spec's own war story (the 76 s members grid, 4 releases).
+        Fixed with a **patch-set fingerprint** baked as an image **label** (no Dockerfile edit). **It fired on
+        its first live run** (`<none: predates the fingerprint> != cee1e4ff…` → rebuild).
+
+- [x] **S7 — The dev-side opt-in `--public-host`.** *(overview (d) — folds the reserved M216)*
+  - [x] Dev stays **opt-in** per D-DESIGN-3. **LANDED (Fate 1) — the scope-flex lever was NOT pulled.** It was
+        the thin wiring job the plan hoped for: S3 had already built and fenced the hard part (the 6-rung
+        ladder), and the demo family already had a teardown-reset pattern and a serve generator to reuse.
+        `dev-stack up N --public-host <host>|auto` (+ `DEV_PUBLIC_HOST`); **`/dev-up` had no such flag at all**
+        before this, so "dev stays opt-in" had been naming a choice the tool did not offer.
+  - [x] **REUSED, NOT FORKED.** `--public-host auto` runs `demo-stack/tailscale_autohost.py` cross-section —
+        the same pattern, in the other direction, as `up-injected.sh` running `dev-stack/dev-setdress.sh
+        --stack-type demo`. `--label`/`--noun` change the WORDS on stderr and nothing else: same rungs, same
+        order, same verdict (fenced), and the demo's messages stay **byte-for-byte** what S3 shipped.
+  - [x] **THE INVARIANT, fenced with a TRIPWIRE not a mock:** no flag ⇒ **ZERO `tailscale` invocations**. The
+        stub is a healthy tailscale on PATH that **fails the test if called at all** — because *"it probed and
+        fell back safely"* would be a **passing grade for the behaviour the opt-in default forbids**.
+        `DEV_PUBLIC_HOST`, deliberately **not** the demo's exported `STACK_PUBLIC_HOST`: an ambient value would
+        otherwise flip a dev stack public **with no flag on the command line**.
+  - [x] **Fences RED-proven by MUTATION: 9 mutants, 9 RED, 0 theatre, 0 no-ops.** ⚠️ **The first battery was
+        itself theatre** — its `restore()` ran `git checkout` against **uncommitted** work, so mutants 2–8 ran
+        against a tree where S7 **did not exist** and "went RED" because the feature was **absent**. The tell
+        was in the output: **M2–M7 all reported an identical 15 failures.** A uniform count across unrelated
+        mutations is not a result, it is a constant. Take 2 runs against a **committed** baseline and **asserts
+        every mutant actually changed the file** (a no-op mutant that "goes RED" is measuring something else).
+        **D17, reproduced inside the battery built to enforce D17.**
+
+- [x] **S7 bookkeeping — the CLI-flag ↔ docs rule, applied to the side that had no fence.**
+  - [x] **`--inject` has been in `dev-stack up`'s parser since M5 with NO user-facing doc surface** — it exists
+        and nobody can find it. That is direction (2) of the both-directions rule, live for releases, on the
+        one path S2's fence did not cover. New `stack-core/dev_flag_guard.py` (both directions + a third
+        clause: **being *hinted* is not being *documented***). **RED-proven: 2 UNDISCOVERABLE flags** pre-fix.
+  - [x] **S2's defaults table still holds** after S3/S4/S7 — `demo_knob_guard` re-run, **PASS**. All four
+        corpus guards green (`story_org_count` · `demo_knob` · `dev_flag` · `exposure_claim`).
+  - [x] 🔴 **THE REAL FIND: the dev family had NO exposure disclosure at all.** `stack-core/gen_override.py`
+        builds its port strings **exactly like the demo's** — bare `"<hostport>:<target>"`, no `127.0.0.1` —
+        so **every `dev-N` container is world-published on `0.0.0.0`, on every `dev-stack up`, flag or no
+        flag**, and on Linux Docker's iptables bypass `ufw`. `safety.md` §3.1 disclosed this **for demos
+        only**. The silence landed exactly where it does the most damage: **dev's opt-in default invites the
+        inference *"remote reach is off, so I am not exposed"* — which is FALSE.** The opt-in withholds the
+        **trusted HTTPS origin**, not the LAN binding, which was always there. **This is the S0 lie, one family
+        over.** `exposure_claim_guard` now RUNS both emitters (**DEMO 14 → `0.0.0.0`, DEV 8 → `0.0.0.0`** —
+        measured, not read) and a **separate** `_DEV_DISCLOSURE_RE` fences the dev half, because the generic
+        regex was satisfied by the demo paragraph alone — **one family's disclosure standing in for two**.
+        Both halves RED-proven (doc-side + code-side).
+  - [x] **M216's reservation is CONSUMED** (`decisions.md` **D28**) — not handed back.
+
+## Out
+- Speed (M218) · the AI-readiness render path (M219).
+- A "hiring" story org — **D-DESIGN-4: it does not exist and will not be built.**
+
+## Operating rules for this milestone (learned the hard way in M218/M219)
+- **ONE agent against the demo host at a time.** Two concurrent batteries corrupted M219's audit trail.
+- **No detached / background scripts on the demo host.** Every orphan left running wiped a stack mid-measurement.
+- **Never kill a build mid-bake** — it strands the demopatches, and the next image ships silently unpatched.
+- **An empty / absent / unexecuted result is a FINDING, not a pass** (D17 — ~14 hits and counting).
+- Every new fence must be **RED-proven pre-fix**. A fence that passes against the bug is theatre.
+
+## Notes
+
+### S3 + S4 landed 2026-07-14 — ONE live demo cycle on `billion`, both paths proven
+
+**The flip is live and the fallback holds.** Asserted from a **tailnet peer** (the Mac), never on-host.
+
+| path | trigger | result |
+|---|---|---|
+| **default-on** | bare `up-injected.sh 1`, **no flag** | `AUTO-DISCOVERED billion.taildc510.ts.net (all 6 rungs)`. **Cockpit `:17700` = HTTPS 200, `ssl_verify=0`** (trusted LE cert) — it was **plain HTTP** before S4. All 5 other browser ports `ssl_verify=0`. Hero login end-to-end **over the cert**: `maya-thriving` → `/profile` **200**, `dan-manager` → `/enterprise/workforce` **200** (control: no session ⇒ **307** handshake-loop). Cockpit renders all **3 orgs** + heroes. autoverify **OK** (casbin 1150, skills 42790). Clones left **0-dirty**. |
+| **fallback** | `tailscale` made **genuinely unavailable** (`chmod -x`; `shutil.which` → `None`) | `STOPPED at rung 1/6 … Fix: install Tailscale`. Cockpit `http://localhost:17700`; **0** serve listeners; baked URLs `http://localhost:*`; cockpit re-bound to **`127.0.0.1`** and **REFUSED** from the tailnet IP; autoverify **OK**. **Byte-identical.** |
+
+**The open question that gated the flip — SETTLED EMPIRICALLY.** rext claimed `tailscale cert` *"RE-ISSUES on
+re-run"*. **Measured FALSE:** two back-to-back mints returned the **identical certificate serial** (`05777C48…`)
+in **0.01 s** each, with **zero** new ACME orders. tailscaled caches. Had the claim been true, default-on —
+whose rung 6 **mints on every bring-up** — would burn a Let's Encrypt **duplicate-certificate** slot per
+`demo-up`, and since **`ts.net` is a PSL entry** that bucket is **per-tailnet**, shared by every box on it.
+Corrected in `tailscale-serve.md` + `up-injected.sh`.
+
+**My own ordering fence was THEATRE on the first cut.** It asserted `--no-cockpit` was present in the first
+serve apply by scanning the script text — and matched the word inside the **comment** I had written directly
+above the command. Deleting the flag from the *command* still passed. It now strips comments before scanning.
+D17 reproduced **inside the fence built to catch it**; only the mutation run exposed it.
+
+### S5/S6 shipped a RED suite, and it nearly cost me a mis-triage (fixed here, Fate 1)
+
+`cue-to-cue-m220-r4` — **the tag the demo host was pinned at** — had **11 failing demo-stack tests**. S5/S6
+changed the code and left its tests asserting the **old** contract: the inverse D17, a *test* outliving the
+thing it describes. My own 7 regressions landed on top of them, and "14 failures" is indistinguishable from
+"11 pre-existing + 3 mine" until you baseline. All 18 now green (569 + 214 + 129):
+
+- **`test_frontend_build`** — S6/h's clerk-js-cache `mkdir` (D14) landed **inside the block**
+  `TestReuseFlagArrayExpansion` extracts, and the harness PATH had no `mkdir` ⇒ `rc=127` on all 8 cases, with
+  the assertion message blaming the `+`-guard (*"regressed?"*) and pointing the next reader at **entirely the
+  wrong bug**.
+- **`test_frontend_build`** — the docker stub answered **every** `--format` inspect with `$STALE_ENV`, so
+  S6/g's new `demo.patchset` label read back as the env blob, never matched, and **all five REUSE tests
+  silently exercised the REBUILD path** — asserting the opposite of their own names while the suite looked
+  fine. The stub now answers the label query separately, with the fingerprint the **shipped** function computes.
+- **`test_ant_academy`** — three assertions still demanded the `e2e_persona` bypass S5/D10 **deliberately
+  deleted**, and the pk/secret S5 **stopped** copying out of the real `platform/.env`. **Inverted, not dropped**
+  — a removed feature deserves a fence that keeps it removed.
+
+### S0–S2 landed 2026-07-14
+
+**Three fences, all RED-proven against the pre-fix tree, all GREEN after.** Every one of them found more than
+the plan predicted, and — the useful part — **each caught bugs in itself while being RED-proven.**
+
+| Fence | Home | Pre-fix | Post-fix |
+|---|---|---|---|
+| org count (doc↔preset) | `stack-core/story_org_count_guard.py` | **RED — 11 violations** | GREEN |
+| exposure claim (doc↔emitters) | `stack-injection/exposure_claim_guard.py` | **RED — 3 false claims + 2 missing disclosures** | GREEN |
+| defaults table (doc↔parsers) | `stack-core/demo_knob_guard.py` | **RED — doc absent, then 2 conflations** | GREEN |
+
+**The count that matters: the plan said 4 org-count sites. The KB audit found 7. The fence found 11.** That gap
+*is* the argument for a fence over a prose list — and it is the same D17 shape the release is about: a
+hand-maintained list, never checked against the thing it describes, read as if it were complete.
+
+**The fences' own bugs (each now a regression test — a fence with a hole reports a confident, quietly incomplete
+failure list, which is D17 one level up):**
+- `.agentspace` in an exclusion list, matched as an **absolute-path substring** — rext lives under
+  `.agentspace/`, so the guard **silently skipped both of its own repo's sites** while printing a clean-looking
+  5-hit list.
+- `heroes?` parses as `"heroe"`+optional-`s` and does **not** match bare `"hero"` — the `seed_label` site slipped
+  through.
+- **Markdown prose WRAPS.** The shipped exposure lie was split across a line break; a per-line scanner reported
+  1 confident hit **while a second live lie sat one line below, inside the block it had just audited.**
+- **Truth is per-preset.** `stories-maya` really ships 1 org, so *"one org + Maya"* is TRUE. A single global
+  truth flagged three true statements as lies — including a **measurement** (*"1 org on the M215 run"*, a
+  correct observation of a cold-cache run). Rewriting that to "3" would have had the guard **manufacturing** the
+  defect class it exists to catch.
+- **A naive both-directions check goes GREEN on the conflation bug.** `--profile` *is* parsed — by
+  `rosetta-demo`. So *"does SOME parser accept it?"* passes while `up-injected.sh N --profile cms` still
+  **exits 1**. The rule had to become: accepted by the **primary** entry point, or the hint **names** the other.
+
+**Scope honesty (D8):** `demo-up/SKILL.md` was **not** changed to say "default-on". The code still requires the
+flag — that flip is **S3**. A doc claiming a behavior the code lacks is the exact defect S0 just fixed. What
+landed is the *decision* (`safety.md` §3.5) plus a forward-pointer; not a pre-announcement of code.
+
+**Routed out:** `FIX-M221-devstack-test-spin` (Fate 3 → M221) — `dev-stack/tests/test_dev_stack.py` busy-spins
+forever (145 % CPU, `rc=124`), so the rext suite cannot be run whole. Pre-existing; reproduces on clean `HEAD`
+with M220 stashed. It will block the release close.
+
+## M220: Hardening
+
+### Pass 1 — 2026-07-14 · rext `b1d5d4f`
+
+**Scope manifest** (M220-touched code, `c6648d1..HEAD`): 30 files. Python — `demo-stack/tailscale_autohost.py`
+(NEW) · `demo-stack/up-injected.sh` · `demo-stack/ant-academy.sh` · `dev-stack/dev-stack` ·
+`stack-core/{story_org_count,demo_knob,dev_flag}_guard.py` (NEW) · `stack-injection/exposure_claim_guard.py`
+(NEW) · `stack-injection/gen_{injected_override,tailscale_serve}.py`. Go — `clerkenstein/clerk-frontend/server.go`.
+TS — `stack-verify/e2e/tests/m220-session-and-egress.spec.ts` (live-demo e2e; not runnable in this pass — no
+bring-up). **Every source file had a co-located test file.** The gaps were not *missing* tests; they were tests
+that did not test what they claimed.
+
+**THE HEADLINE: the mutation batteries M220 claimed did not exist.** S3's note reports 12 mutants, S7's reports
+9. Both were ad-hoc scripts, run once, deleted. The result survived only as a sentence in a progress note —
+**unfalsifiable, and therefore exactly the artifact class this release is named for (D17).** It is now a
+committed test: `stack-core/tests/test_m220_mutation_battery.py`, **17 mutants** (4 naive ladders in-process ·
+6 `up-injected.sh` · 7 `dev-stack`), driven through the **real** suites via two env seams
+(`$M220_UP_INJECTED` / `$M220_DEV_STACK`; unset = the shipped file). It carries the three anti-theatre
+assertions, **each of which is a bug this milestone actually shipped**:
+
+1. **the BASELINE must be GREEN** before a single RED is read;
+2. **every mutant must ACTUALLY change its subject** (a no-op mutant that "goes RED" measures nothing);
+3. **the failure SIGNATURES must not all be identical** (a constant is not a result — the precise tell that
+   nearly let S7's broken battery through: *M2–M7 all reported an identical 15 failures*).
+
+**It found three things on its first two runs.**
+
+| # | Finding |
+|---|---|
+| **H-1** | 🔴 **THE HARD INVARIANT WAS UNFENCED — and the fence that claimed to prove it was asserting a copy of itself.** M220's central safety argument is that `$SCHEME` and `$BIND_HOST` **both** derive from the same `-n $STACK_PUBLIC_HOST` predicate, so a *half-satisfied* public path is strictly **worse** than localhost (every URL bakes `https://` against plain-HTTP listeners; the demo does not load at all). `test_public_host_flip.py` **RE-TYPED those three lines inside the test** — directly beneath a docstring asserting it did **not** do that (*"so we assert the shipped predicate, not a paraphrase of it"*). It **was** a paraphrase, and a paraphrase cannot disagree with itself: mutating `SCHEME` to an unconditional `https` (**D5**) and `BIND_HOST` to `0.0.0.0` (**D6**) left **all 23 tests GREEN**. Fixed: `up-injected.sh` now exposes `derive_public_host_vars`, called **unconditionally at exactly the point the straight-line block used to sit** (both paths byte-identical, `bash -n` + all 572 demo-stack tests green), and the fence drives the **shipped** derivation. D5/D6 now go RED. |
+| **H-2** | 🟡 **The baseline assertion fired on its own first run** — 14 tests "RED" on an **unmutated** `dev-stack` copy. My staging bug: both scripts resolve siblings from `$HERE`, so a subject in `/tmp` cannot find the code it drives. **Without that assertion, all 7 dev mutants would have been recorded RED and the battery would have "proven" the fences while measuring nothing.** S7's original bug, reproduced live, caught by the guard built for it. Mutants now stage **beside** the real subject (gitignored `.m220-mutant-*`). |
+| **H-3** | 🔴 **`\|\| true` in `resolve_dev_public_host` was load-bearing and untested** (mutant **V4 survived**). The existing test breaks *tailscale* — but `tailscale_autohost.py`'s contract is **exit-0 ALWAYS** (a failed rung is the documented fallback), so **a broken tailscale can never make the ladder exit non-zero** and `\|\| true` is never reached. Only the **ladder PROCESS** dying can: a missing/broken `python3`, an OOM, an `ImportError` at import time (raised *before* `main()`'s try/except exists). With `set -euo pipefail` and a bare `pub="$(...)"` call site (which does **not** mask status, unlike `local pub=$(...)`), that **aborts the bring-up**. New test breaks the ladder *process*, not tailscale. |
+
+**Coverage delta (milestone-touched files):**
+
+| module | before | after | what was uncovered |
+|---|---|---|---|
+| `exposure_claim_guard.py` | **57%** | **89%** | 🔴 **the S7 DEV half had ZERO tests.** `dev_emitted_port_specs`, `find_missing_dev_disclosures`, `_DEV_DISCLOSURE_RE` — **delete the regex and the suite stayed green.** S7 claims "both halves RED-proven"; the proof was real but left **nothing behind that could fail.** Plus all of `main()`: the DEV/DEMO-disagreement branch, the posture-change **inversion** branch, and the zero-ports *"emitters changed shape"* branch (**an empty result is a FINDING, not a pass**). |
+| `tailscale_autohost.py` | 92% | **99%** | `_default_run`'s timeout/OSError arms — the module's **"NEVER raises"** promise is implemented *entirely* in them, and the suite injects `run` everywhere, so **the only code that can actually raise was never executed.** |
+| `gen_tailscale_serve.py` | 81% | **94%** | `reset_script` was **100% uncovered** while S4's load-bearing claim is that *the reset plan **always** includes `:7700`, else a re-up finds the port held and the cockpit cannot start at all*. The command **list** was tested; the bash it **renders** — the thing that runs at teardown — was not. |
+| `story_org_count_guard.py` | 62% | **91%** | `main()`'s exit codes. **2 ("I could not run") is not 0 ("I ran and found nothing")** — conflating them is the release's own defect. |
+| `demo_knob_guard.py` | 80% | **91%** | `main()`. |
+| `dev_flag_guard.py` | 71% | **74%** | the anti-D17 branch that had **no test**: parsing **ZERO flags must FAIL, not pass** — an empty parser makes every doc-vs-parser comparison trivially agree, and the guard goes green against a parser it never read. |
+
+**Tests added: +61.** (mutation battery 6 tests / 30 subtests · exposure-guard dev-half + `main()` 20 ·
+`reset_script` render 7 · `_default_run`/never-raises 4 · guards' `main()` exit codes 11 · the crashing-ladder-
+**process** regression 1.)
+
+**Bugs fixed inline:** H-1 (the unfenced HARD INVARIANT + the paraphrasing fence) · H-3 (the unexercised
+`|| true`) · the battery's own staging bug (H-2). **No product behaviour changed** — `derive_public_host_vars`
+is a pure extraction, called at the same point, and the full demo-stack suite (572) is green on it.
+
+**And two of my own new assertions were the same bug in miniature:** `assertNotIn("--https=", plan)` matched
+the string inside the generated **header comment**, not the code — the identical defect to S3's ordering fence,
+which matched `--no-cockpit` in the comment directly above the command it was auditing. They strip comments
+before scanning now. *The fence-writing failure mode is not rare; it is the default.*
+
+**Flakes:** none. 3 consecutive sequential runs, identical counts (402 passed / 8 skipped / 39 subtests).
+
+**Suite honesty re-verified:** the five `test_tag_guard_reuses_*` tests (which S6 found were silently
+exercising the **rebuild** path, asserting the opposite of their own names) genuinely take the reuse path —
+the docker stub answers `Config.Labels` **before** the generic `--format` arm, so the `demo.patchset`
+fingerprint reads back as itself. Confirmed by reading the stub's case order, not by trusting the fix note.
+
+**Knowledge backfill:** `corpus/ops/demo/tailscale-serve.md` — the `SCHEME`/`BIND_HOST` co-derivation is now
+stated as a named, testable invariant (`derive_public_host_vars`) rather than a prose aside, and the
+ladder's exit-0-always contract is recorded as *the reason a broken `tailscale` cannot exercise the `|| true`
+fallback* (H-3's root cause — the non-obvious fact that makes the dev/demo fallback tests mean different
+things).
+
+**Stop condition:** scan clean after pass 1 — every dimension (test depth · edge cases · error paths ·
+regression · fuzz surface · benchmarks) either closed or has no surface in this milestone's diff (no perf-SLA
+path; the only fuzz-shaped surface, the guards' doc scanners, is already property-tested by the wrapped-prose /
+fenced-block / per-preset regression set). Coverage deltas on a second pass would be < 2%, and the three
+findings above were all structural, not incremental. **Remaining scope is the live-demo e2e
+(`m220-session-and-egress.spec.ts`), which needs a bring-up and is out of scope for this pass.**
+
+## M220: Final Review
+
+_Close-phase findings + fixes. All Fate 1 (landed) unless routed. See `decisions.md` D31/D32 and
+`audit-deferrals/deferral-audit-2026-07-15-m220-close.md`._
+
+### Scope
+- [x] Phase 1b deferral audit: **YELLOW, 0 blocking, 0 escape-hatch** — the one chronic repeat (dev-stack
+      suite, 5 milestones) was investigated and **LANDED Fate 1** (D31).
+
+### Code Quality
+- [x] [must-fix] `DevSetdressLocalContent` ran the REAL `stackseed` against a REAL Postgres (missing
+      `DEV_SETDRESS_USE_STUB_BINS=1`) — 19 failures → 20 pass. **D29's class one harness over.** (D31)
+- [x] [must-fix] rung 3 accepted any dotted string as a hostname → a value with a space / semicolon / leading
+      dash cleared all 6 rungs and got baked into the pk + argv. RFC-1123 now required. (D32, adversarial)
+- [x] bash -n clean on all 4 touched scripts · py_compile clean · go vet clean across 6 modules.
+
+### Documentation
+- [x] **5 new modules were undocumented in their section READMEs** (the ladder + 4 corpus guards) — the same
+      undiscoverability defect S7 found in `--inject`. Documented (stack-core / stack-injection / demo-stack),
+      with the exit-code contracts (2 ≠ 0; empty = FINDING).
+- [x] demo-stack README test count **424 → 576**, reconciled against the JUnit XML.
+- [x] `tailscale-serve.md` backfill: the SCHEME/BIND_HOST co-derivation as a NAMED invariant + the
+      exit-0-always ladder contract (why a broken tailscale can't test `|| true`). (harden Phase 3b)
+
+### Tests & Benchmarks
+- [x] Mutation battery committed (17 mutants, 3 anti-theatre assertions) — the artifact S3/S7 claimed but
+      never left behind. Found H-1 (unfenced HARD INVARIANT) + H-3 (untested `|| true`).
+- [x] Coverage lifted on every M220 guard/module (57→89 / 92→99 / 81→94 / 62→91 / 80→91 / 71→74).
+- [x] The whole `dev-stack` suite runs for the first time; the whole rext Python suite completes (1215 / 0 fail).
+- [x] Flake gate: 5 sequential randomized runs, 0 flakes.
+
+### Decision Triage
+- [x] D1 (fences derive, never restate) → blended into `stack-core/README.md` (the corpus-guards section).
+- [x] D18/H-1 (the co-derivation invariant) → blended into `corpus/ops/demo/tailscale-serve.md`.
+- [x] D19/D20 (cockpit own-axis + bind-first-front-second) → blended into `stack-injection/README.md`.
+- [x] D27 (the dev 0.0.0.0 disclosure, one family for two) → blended into `stack-injection/README.md`.
+- [x] D31 (the chronic deferral) → recorded; state.md "environmental" known-issue **retracted** (Phase 10).
+- [x] D32 (rung-3 hostname refusal) → `demo-stack/README.md` ladder entry + the module docstring.
+- Remaining decisions (D2–D17, D21–D26, D28–D30) → **archive** (maintainer-only implementation choices).
+
+## Completeness Ledger (section variant)
+
+**Cross-checked against `overview.md` §Scope.In, every `progress.md` checkbox, `spec-notes.md`, and
+`decisions.md`.**
+
+### Done (Fate 1) — landed in THIS milestone
+| Scope item | Evidence |
+|---|---|
+| (a) the "2 orgs"→3 doc fix + org-count fence | `story_org_count_guard.py` — 11 violations RED→GREEN; live guard GREEN |
+| (b) the `/demo-up` defaults table + parser fence | `demo_knob_guard.py` — 26 knobs + 10 flags, 2 entry points; GREEN |
+| (c) remote flip default-ON via the 6-rung ladder (opt-out) | `tailscale_autohost.py`; **proven live on billion**, both vantages |
+| (d) the dev-side opt-in `--public-host` (folds M216) | S7; `dev-stack up N --public-host auto`; tripwire-fenced |
+| (e) cockpit fronted on `tailscale serve` | `gen_tailscale_serve.py` cockpit own-axis (D19) + bind-first (D20) |
+| (f) Clerk telemetry OFF | both halves wired for next-web/studio-desk/academy |
+| (g) ad-tech egress killed | `next-web-no-thirdparty` — 7 third parties → 0 in the client bundle |
+| (h) vendor clerk-js + bound the timeout | box-level disk cache; live: browser fetches from FAPI not CDN |
+| (i) academy stops poisoning the session | Clerkenstein-wired; A/B on billion: session SURVIVES |
+| (j) studio-desk "eject" | **NOT a bug (D15)** — M219's evidence was a cookieless curl; `dan-manager` stays in Studio |
+| Delivers 1: `safety.md` Part 3 (exposure axis) | authored; the fence's own subject |
+| Delivers 2: supersession of v2.2's D-DESIGN-1 | written where it lives, never bare (D7) |
+| Delivers 3: correction of the false 0.0.0.0 claim | `exposure_claim_guard.py` — 3 false + 2 missing RED→GREEN |
+| **the open question (LE rate limits)** | **settled empirically on billion** (D22): re-mint = identical serial, 0.01 s, 0 ACME |
+| **the 5-milestone chronic dev-stack deferral** | **D31 — one env var; whole rext Python suite now completes** |
+| **the rung-3 hostname refusal** | **D32 — adversarial review; 7 regression tests** |
+
+### Confirmed-covered (Fate 2) — already owned by M221's `In:` list
+M217 (pre-bind reap / port preflight / freshness preflight) · M218 (F-7 backend-api-url-twin, C-3 federation
+403s) · M219 (GUARD-host-isolation, FIX-reap-native-academy, REPROVE-battery-at-final-code) ·
+v2.2 residual DEF-M215-02. **No plan edit — confirmed present.**
+
+### Annotated (Fate 3) — added to M221's `overview.md` at this close
+`FIX-M221-academy-empty-catalog` (F-M220-2) · `FIX-M221-academy-loopback-bind` (F-M220-5) · `F-M220-4`
+(academy re-runnability) · `BURNIN-M221-dev-public-host`. Each with a stated DoD. Plus the **stale**
+`FIX-M221-devstack-test-spin` **retraction** (discharged, not silently deleted).
+
+### Dropped
+A "hiring" story org — **D-DESIGN-4**: it does not exist and will not be built. (Never in scope; recorded for
+completeness.)
+
+### Release-scope-breaking deferral (escape hatch)
+**NONE.** Zero cross-release deferrals. Nothing requires user sign-off at this close.
+
+**Every scope item in `overview.md` §Scope.In is in the Done category.** All 8 sections checked; the one
+unchecked sub-item (S5's 400-char academy content floor) is the **deliberately-RED, not-weakened** F-M220-2,
+routed to M221 as an honest failing gate — an accurate red, not a dropped item.

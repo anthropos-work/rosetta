@@ -1,0 +1,164 @@
+{
+  "milestone": "M218",
+  "iter": 5,
+  "gate": "p95 click->ACCESS < 5000 ms, both vantages, 5 consecutive cold reset-to-seed runs",
+  "host": "billion (demo-1, offset 10000, --public-host billion.taildc510.ts.net)",
+  "rext": "cue-to-cue-m218-iter05 (3d6227a)",
+  "measured_from": "tailnet (presenter vantage)",
+  "harness": "rext stack-verify/e2e/run-latency.sh (iter-02, reused unchanged)",
+  "gate_ms": 5000,
+  "runs_per_vantage": 5,
+  "code_changes_during_battery": 0,
+  "cycles": [
+    {
+      "cycle": 1,
+      "proven_cold": true,
+      "cold_witness": "PG_VERSION mtime newer than cycle start (initdb re-ran)",
+      "autoverify": {
+        "project": "demo-1",
+        "offset": 10000,
+        "warnings": 0,
+        "green": true
+      },
+      "employee": {
+        "identity": "maya-thriving",
+        "p50Ms": 1035,
+        "p95Ms": 2413,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:12:19.492Z"
+      },
+      "manager": {
+        "identity": "dan-manager",
+        "p50Ms": 1164,
+        "p95Ms": 1417,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:12:40.436Z"
+      },
+      "pass": true
+    },
+    {
+      "cycle": 2,
+      "proven_cold": true,
+      "cold_witness": "PG_VERSION mtime newer than cycle start (initdb re-ran)",
+      "autoverify": {
+        "project": "demo-1",
+        "offset": 10000,
+        "warnings": 0,
+        "green": true
+      },
+      "employee": {
+        "identity": "maya-thriving",
+        "p50Ms": 1037,
+        "p95Ms": 2246,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:20:08.969Z"
+      },
+      "manager": {
+        "identity": "dan-manager",
+        "p50Ms": 1147,
+        "p95Ms": 1767,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:20:29.812Z"
+      },
+      "pass": true
+    },
+    {
+      "cycle": 3,
+      "proven_cold": true,
+      "cold_witness": "PG_VERSION mtime newer than cycle start (initdb re-ran)",
+      "autoverify": {
+        "project": "demo-1",
+        "offset": 10000,
+        "warnings": 0,
+        "green": true
+      },
+      "employee": {
+        "identity": "maya-thriving",
+        "p50Ms": 1008,
+        "p95Ms": 2239,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:27:40.737Z"
+      },
+      "manager": {
+        "identity": "dan-manager",
+        "p50Ms": 1137,
+        "p95Ms": 1320,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:28:01.165Z"
+      },
+      "pass": true
+    },
+    {
+      "cycle": 4,
+      "proven_cold": true,
+      "cold_witness": "PG_VERSION mtime newer than cycle start (initdb re-ran)",
+      "autoverify": {
+        "project": "demo-1",
+        "offset": 10000,
+        "warnings": 0,
+        "green": true
+      },
+      "employee": {
+        "identity": "maya-thriving",
+        "p50Ms": 1041,
+        "p95Ms": 2311,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:35:09.625Z"
+      },
+      "manager": {
+        "identity": "dan-manager",
+        "p50Ms": 1140,
+        "p95Ms": 1375,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:35:29.711Z"
+      },
+      "pass": true
+    },
+    {
+      "cycle": 5,
+      "proven_cold": true,
+      "cold_witness": "PG_VERSION mtime newer than cycle start (initdb re-ran)",
+      "autoverify": {
+        "project": "demo-1",
+        "offset": 10000,
+        "warnings": 0,
+        "green": true
+      },
+      "employee": {
+        "identity": "maya-thriving",
+        "p50Ms": 1015,
+        "p95Ms": 2243,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:42:44.401Z"
+      },
+      "manager": {
+        "identity": "dan-manager",
+        "p50Ms": 1112,
+        "p95Ms": 1371,
+        "reachedAccess": 5,
+        "runs": 5,
+        "capturedAt": "2026-07-13T21:43:04.290Z"
+      },
+      "pass": true
+    }
+  ],
+  "verdict": {
+    "gate": "MET",
+    "worst_p95_ms": 2413,
+    "worst_employee_p95_ms": 2413,
+    "worst_manager_p95_ms": 1767,
+    "margin_x": 2.07,
+    "cycles_passed": 5,
+    "cycles_total": 5,
+    "note": "iter-04 warm-DB run (employee p95 1456 / manager 1398) is NOT counted \u2014 see D12/D13."
+  }
+}

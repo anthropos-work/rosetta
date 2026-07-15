@@ -29,6 +29,24 @@ the dev `anthropos` stack and any other demos untouched. Manual teardown is the 
 tear down the dev stack. Verified live: demo-1 up→status→down with the dev stack (12 containers) untouched.
 Teardown **frees the demo's slot** in the unified dev+demo registry (M12), so its N is re-allocatable.
 
+### The host-native listeners (M217 — check these, `compose down` cannot)
+
+A demo owns **two listeners that are not containers**: the **presenter cockpit** (`7700+N·10000`) and
+**ant-academy** (`3077+N·10000`). `docker compose down` cannot reach either. Since M217, `down` **reaps them by
+PORT** (identity-checked — a foreign process on the port is reported, never killed) and says so.
+
+> **Before M217 this leaked.** The reap was by PID from a pidfile that `launch_detached` writes *before* the bind
+> succeeds and that a re-up *overwrites* — so a leaked cockpit became unreapable while teardown printed *"stopped
+> the presenter cockpit"* regardless. A real orphan was found on `billion` still serving an **unauthenticated
+> "become any hero" panel on `0.0.0.0:17700`**, pointing at a deleted database, after a `/demo-down` reported
+> success.
+
+**When verifying a teardown, check the cockpit port too** — not just the containers:
+
+```bash
+ss -tlnp | grep -E ":(7700|3077)"     # + N·10000 for demo-N   (macOS: lsof -nP -iTCP -sTCP:LISTEN)
+```
+
 ## Related skills
 
 | Skill | Use when |

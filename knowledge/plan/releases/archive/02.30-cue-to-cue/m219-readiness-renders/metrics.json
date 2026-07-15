@@ -1,0 +1,186 @@
+{
+  "milestone": "M219",
+  "slug": "readiness-renders",
+  "version": "v2.3 cue to cue",
+  "closed": "2026-07-14",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "rext_tag": "cue-to-cue-m219-final",
+  "rext_tag_graded_by_battery": "cue-to-cue-m219-r8",
+  "user_bar": {
+    "kickoff": "make sure each element and sub section of readiness is filled spot data + make sure to use the right dashboards/pages for readiness (both for managers and employees).. not the old legacy ones",
+    "filled_spot_data": "MET",
+    "right_dashboards_not_legacy": "MET",
+    "evidence": "5 cold reset-to-seed rebuilds at cue-to-cue-m219-r8, each independently evidenced. Manager: failingSections=0, all 8 readiness sections PASS. Employee: both heroes failingSections=0. Zero demo pointers resolve to the legacy surface."
+  },
+  "battery": {
+    "target": "5 cold reset-to-seed rebuilds, all graded gates green",
+    "cycles_graded_green": 5,
+    "graded_gates_per_cycle": 5,
+    "status": "PASSED — with TWO disclosed caveats (below). Neither is hidden, and neither is rounded away.",
+    "coldness_proof_per_cycle": "PG_VERSION mtime read from INSIDE the container and compared against the cycle-start fence (initdb provably re-ran) + data dir GONE (purged) + images remaining 0 + a FRESH autoverify.json timestamp",
+    "gate_evidence": {
+      "no_junk_skills": "all 132 distinct claimed skill names ENUMERATED AND READ; 3,474 user_skill rows / 540 members; 0 junk",
+      "hero_roles": "hero role titles present (D2 — Business Operations Analyst resolves WITH job_role_skills)",
+      "readiness_cycles": "ai_readiness_cycles == 2 (1 active + 1 closed), from the seeder, from zero",
+      "interview_findings": "jobsimulation.interview_aggregated_reports non-empty; 3,671 chars vs the raised 900-char floor; all four blocks carrying body content",
+      "sections_filled": "per-section char counts asserted against the raised floor"
+    },
+    "caveat_1_orchestration": {
+      "what": "The battery is NOT a single uncontested consecutive run. Two further runs were graded RED for BATTERY-INTEGRITY reasons caused by an ORCHESTRATION error, not a demo defect: the orchestrator ran two batteries CONCURRENTLY against the single demo host, and one purged the stack mid-measurement while the other was reading it. Cycle 5's no-junk-skills gate consequently went UNEXECUTED.",
+      "rule": "An unexecuted gate is a FINDING, not a pass (D17: absence must never read as success).",
+      "demo_defects_observed": 0,
+      "honest_statement": "No demo defect was observed in anything that WAS measured. The 5 greens are each individually evidenced. They were not produced by one clean consecutive sweep, and this milestone does not pretend otherwise — recording it as a clean 5/5 would be precisely the 'status artifact that outlives the thing it describes' pattern this release exists to kill.",
+      "user_accepted": true,
+      "routed_to": "GUARD-M221-host-isolation"
+    },
+    "caveat_2_graded_is_not_shipped": {
+      "what": "The code that GRADED is not the code that SHIPPED. Two rext commits landed AFTER the graded tag cue-to-cue-m219-r8, during harden/close.",
+      "b5bf65b": "the coverage-harness stale-report fix — HARNESS ONLY, not the demo runtime (it grades the demo, it is not in it)",
+      "c6648d1": "aiReadinessStep1Score double-rounded: it routed through a 0-100 intermediate (round(round(held/total*100) * 30/100)) while the platform's computeTier1 rounds ONCE. They disagree on 3 of the 14 reachable heldWeights (2.5 -> 11 vs 12 | 4.0 -> 19 vs 18 | 5.5 -> 26 vs 25). THIS IS A SEED-PATH CHANGE.",
+      "rule": "Per M218 D13, a seed-path change RESTARTS the battery count. So the shipped code is not the code the 5 greens graded.",
+      "impact": "Small and strictly corrective — a seeded Step-1 score off by one point for some members; it does NOT affect whether any section renders. The fix makes the seed AGREE with the platform where it previously disagreed.",
+      "not_rounded_away": "D-M219-15 honoured this same rule once already, re-running a 35-minute battery rather than argue a fix was 'behaviourally identical'. The rule does not bend for a small delta.",
+      "routed_to": "REPROVE-M221-battery-at-final-code"
+    }
+  },
+  "tests": {
+    "python": {
+      "demo-stack": 506,
+      "stack-core": 97,
+      "stack-injection": 186,
+      "stack-verify": 114
+    },
+    "python_total": 903,
+    "python_failures": 0,
+    "python_skipped": 12,
+    "python_delta_vs_m218": "+16 passing (demo-stack 495->506 = +11; stack-verify 109->114 = +5; stack-core and stack-injection unchanged)",
+    "python_counting_method": "JUnit XML (pytest --junit-xml), parsed from the testsuite element. NEVER grepped from piped stdout.",
+    "go_test_funcs": 1821,
+    "go_test_funcs_delta_vs_m218": 37,
+    "go_failures": 0,
+    "go_modules": 6,
+    "go_counting_method": "grep -c '^func Test' across all 6 go.mod modules — the SAME method M217 (1750) and M218 (1784) recorded, so the +37 is like-for-like.",
+    "ts": {
+      "stack-verify_e2e": 38,
+      "playthroughs_e2e": 56,
+      "note": "TS unit/typecheck counts as recorded by the harden pass. The e2e SUITES themselves require a live demo and were NOT re-run at close (the demo host is pinned and idle)."
+    },
+    "playthroughs": {
+      "specs_passed": 82,
+      "specs_failed": 0,
+      "ptreport": "14/15 passing (93.3%) — failing=0, unimplemented=1 (the DECLARED in-manifest assign-WRITE TODO), unimplementable=0",
+      "ai_readiness_playthroughs": "all 4 PASS (manager-dashboard.UC1/UC2, member-funnel.UC1/UC2)",
+      "manifest": "6 products, 15 use cases, 14 live Playthroughs, 1 TODO",
+      "provenance": "EXECUTED, not merely validated (the D17 rule). Recorded from the build/R-8 run; not re-run at close."
+    }
+  },
+  "alignment": {
+    "go_surface_overall_pct": 100.0,
+    "go_surface_critical_pct": 100.0,
+    "genes": "27/27",
+    "gate_threshold": ">=95 overall / =100 critical",
+    "status": "MET",
+    "delta_vs_m218": "97.2% -> 100.0% — FIX-M219-bapi-org-eid (F-11) landed: the roster's real org_eid is wired through a 3-tier ladder (roster -> demo-org -> stub), so exactly one gene moves and the runner stays byte-identical.",
+    "red_gene_resolved": {
+      "gene": "MembershipOrgIdentity/real-org-eid",
+      "was": "deliberately RED at M218 (the fake BAPI fabricated organization.public_metadata.eid)",
+      "now": "GREEN — and the gene is RETAINED in the DNA as a permanent fence"
+    },
+    "unmeasurable_surface_gate": {
+      "was": "expressrun exited rc=2 with NO score, and nothing treated that as a failure (the D17 absence-read-as-success class)",
+      "now": "alignctl exit codes SPLIT: 3 = UNMEASURABLE vs 2 = REGRESSED, with a banner that cannot be mistaken for a pass. Verified live.",
+      "closes": "TEST-M219-expressrun-dep-gate"
+    },
+    "provenance": "Recorded from the S3 build/verify run (progress.md S3). NOT re-measured at close — the close is documentation + bookkeeping only."
+  },
+  "fences": {
+    "graded_by": "MUTATION — each fence was graded by surgically re-introducing the defect it claims to catch into HEAD's production code, rather than by re-running it green. The release's rule: a fence which passes against both the pre- and post-fix code is theatre.",
+    "mutations": 7,
+    "reds": 7,
+    "verdict": "the fence set is load-bearing (7/7)",
+    "self_catch": "The poisoned-pool fence's FIRST cut PASSED against the broken code (it did not model name attrition) — theatre, inside its own fix. Strengthened until it went RED pre-fix. See D-M219-18."
+  },
+  "demo_patches": {
+    "roster_total": 7,
+    "added_this_milestone": [
+      {
+        "name": "next-web-aireadiness-flag-gate",
+        "target": "useAiReadinessActive.ts",
+        "why": "The MEMBER surface never mounts on a demo: a demo bakes no PostHog, so useFeatureFlagEnabled() resolves `undefined` FOREVER and the code demands `=== true`. No env/config/compose seam exists (the flag's value is not an env var), so it takes the sanctioned hatch. Behaviour-identical wherever PostHog IS configured."
+      }
+    ],
+    "withdrawn": [
+      {
+        "name": "the planned CycleID == nil patch",
+        "why": "WITHDRAWN — the blocker DOES NOT EXIST. The CURRENT frontend passes ?cycle=; the original note was made against the LEGACY page, whose hook takes no cycle param. A non-patch fix was available (point the demo at the current surface), which is the correct order of preference per demopatch-spec.md §1. See D-M219-2."
+      }
+    ]
+  },
+  "platform_repo_edits": 0,
+  "flake_count": 0,
+  "bugs_fixed": {
+    "build_and_R8": 9,
+    "harden_pass1": 3,
+    "close": 1,
+    "total": 13,
+    "close_breakdown": "progress.md's § Battery claimed the battery ran 'at final code' — true when written, false by the close (two commits landed after the graded tag, one of them seed-path). Corrected in place and routed to M221. The milestone's own status artifact, D17 shape, for the second time."
+  },
+  "refuted_premises": {
+    "count": 2,
+    "note": "TWO of the milestone's own plan premises were REFUTED by measurement — which is the defining fact of M219, and the reason the planned demo-patch was never built.",
+    "F-2": "The CycleID == nil blocker DOES NOT EXIST. The CURRENT frontend passes ?cycle=; the original observation was made against the LEGACY page. => the planned demo-patch was WITHDRAWN.",
+    "F-7": "M217's loadmembers patch is NOT dead — it self-heals. And 'the live recompute never completes' is FALSE: 2.09 s, measured (reported, never gated, per D-DESIGN-1)."
+  },
+  "carry_forward": {
+    "count": 5,
+    "escape_hatch": 0,
+    "to_M220": [
+      "The academy POISONS the demo session — item (i), SEVERITY RAISED to demo-BREAKING (cookies scope by HOST not PORT; a presenter who clicks the academy link is LOGGED OUT of the demo into ERR_TOO_MANY_REDIRECTS, and every employee coverage sweep aborts)",
+      "studio-desk :19000 -> 302 -> :13000/login — item (j), added at close (clicking 'Anthropos Studio' EJECTS the presenter from the demo)"
+    ],
+    "to_M221": [
+      "GUARD-M221-host-isolation — a host lock (or a per-cycle stack N) so two agents can NEVER run cycles against one demo host. A PREREQUISITE for M221's own gate, which is itself a multi-cycle battery on that same singleton host.",
+      "FIX-M221-reap-native-academy — down --purge does not reap the host-native academy; the OLD process keeps answering :13077 across cycles while the launcher log says it 'DIED'",
+      "REPROVE-M221-battery-at-final-code — the shipped code is NOT the code the 5 greens graded (c6648d1, seed-path, landed post-r8)"
+    ],
+    "note": "All 5 are Fate-3 and BOTH receiving overview.md files were EDITED (verified). Zero escape-hatch deferrals — nothing leaves v2.3. The two M220 items ship with HONEST FENCES that deliberately report RED until M220 lands: a half-fix that reports green is worse than no fix.",
+    "fates": {
+      "fate_1_done": "items 1-9 + Delivers + F-13 + the item-8 seeder gaps (declared in-scope by overview.md § Out)",
+      "fate_2_confirmed_covered": "the manager page's SPEED — declared Out, owned by M218 (gate met). M219 REPORTS it (2.09 s cold) per D-DESIGN-1.",
+      "fate_3_annotated": 5,
+      "dropped": "the planned CycleID == nil demo-patch (premise refuted, D-M219-2) + the loadmembers re-pin (premise refuted, F-7 — the patch self-heals)"
+    }
+  },
+  "d17_tally": {
+    "hazard": "D17 — a status artifact that outlives the thing it describes, and is then read as evidence. Named in M218.",
+    "instances_across_m217_m219": "~14",
+    "new_in_m219": 5,
+    "sharpest": "run-coverage.sh printed 'coverage report written to ...' UNCONDITIONALLY and re-read whatever coverage-report.json was on disk — so a spec that threw before assembling a report presented the PREVIOUS run's numbers, 'GATE: MET' and all, exiting 0. It nearly graded an M219 rebuild on hours-old data from the OLD, BROKEN stack.",
+    "the_test_was_the_bug": "17 existing seeder tests asserted the junk-fallback AS THE CONTRACT ('unmatched role must fall back to flat pool'; an expected value literally containing K-JUNK-1). They were not missing the bug — they were GUARDING it. Any correct fix was guaranteed to fail them. All inverted.",
+    "found_by_the_tooling_in_itself": "the coverage harness, the seeder's own fence (its first cut passed against the broken code), and the academy launcher (whose test FIXTURES had encoded the broken behaviour — the suite was GREEN for four releases while the academy 502'd)",
+    "generalized_lessons": [
+      "'the role classifies' != 'the pool is big enough'",
+      "'it resolves' != 'it has skills'",
+      "'it serves' != 'it renders'",
+      "'the pool resolved' != 'the content is sane'",
+      "an errored SQL query is not 'zero rows'",
+      "an unexecuted gate is a FINDING, not a pass"
+    ]
+  },
+  "inherited_from_m218_landed": {
+    "F-11_bapi_org_eid": "LANDED — alignment 97.2% -> 100% / 100% critical",
+    "expressrun_unmeasurable": "LANDED — exit 3 (UNMEASURABLE) is now distinct from exit 2 (REGRESSED) and fails loud",
+    "freshness_gate_skips": "LANDED — the silent skip now SPEAKS (it printed nothing). Plus three unit tests that deferred to a 'live-verify gate' THAT DOES NOT EXIST now report themselves as coverage holes, not passes."
+  },
+  "known_issues": [
+    {
+      "id": "PRE-EXISTING-DEVSTACK",
+      "what": "dev-stack test suite fails on this box",
+      "status": "environmental — needs a live Postgres on :15432; this box's .agentspace/secrets is also incomplete. Identical at v2.2, M217, and M218.",
+      "m219_effect": "none — M219 does not touch dev-stack/",
+      "action": "flagged, not an M219 regression"
+    }
+  ],
+  "notes": "The defining fact of M219 is that TWO of its own plan premises were REFUTED by measurement, and the planned demo-patch was WITHDRAWN rather than built. The page was not blank for the reason the plan said: all 3 demo pointers targeted an UNLINKED ORPHAN (no nav, no tab, no redirect), and the employee surface has no route of its own at all (it is embedded in /home) — which is WHY route-crawling never found it. The junk-skill defect closed on arithmetic: want=28, role pool=10, curated 'data' supplied only 25 usable => exactly 3 junk tokens; Ben was clean only because his want (16) fit his 30-name pool, and THAT ASYMMETRY WAS THE PROOF the defect was pool SIZE, not pool resolution. The flat tier is now DELETED (exhausted => FEWER skills, never padded ones). Both the manager's empty interview-findings blocks and the 120-char floor that passed over them are gone (the empty headings measured ~120-200 chars, which is exactly why 120 passed)."
+}

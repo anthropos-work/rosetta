@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: [N] [--public-host <magicdns>] [--profile P] [--services "a b"] (stories/UI/set-dress/local-content/cert toggled by env vars on up-injected.sh: DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_MKCERT=1)
+argument-hint: '[N] [--public-host <magicdns>] [--no-public-host] — up-injected.sh takes ONLY these three and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Remote reach is DEFAULT-ON (auto-discovered; --no-public-host opts out). Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_PUBLIC_HOST=1 — all 26 in corpus/ops/demo/demo-up-defaults.md)'
 ---
 
 # Demo Up — spin up an isolated demo stack
@@ -60,14 +60,34 @@ single-identity demo — see the toggle list below.) Source of truth:
    DEMO_NO_PROVISION=1 "$DEMO/up-injected.sh" N
    # minimal stack (infra only — proves isolation, fits a tight box, fast):
    "$DEMO/rosetta-demo" up N --services "postgresql redis"
-   # EXTERNAL access (opt-in, default off — v2.2 "panorama" M212): make the demo reachable from ANOTHER
-   # machine on a Tailscale tailnet by baking a MagicDNS host into every browser-facing URL (and binding the
-   # host-native servers — cockpit + ant-academy — on 0.0.0.0). Omit ⇒ byte-identical to today (localhost).
-   STACK_PUBLIC_HOST=billion.taildc510.ts.net "$DEMO/up-injected.sh" N   # env-var form
-   "$DEMO/up-injected.sh" N --public-host billion.taildc510.ts.net       # equivalent flag form
+   # EXTERNAL access is now DEFAULT-ON (v2.3 "cue to cue" M220 S3 — D-DESIGN-3, superseding v2.2's
+   # D-DESIGN-1). A bare `/demo-up N` walks a 6-rung tailscale capability ladder and, if every rung passes,
+   # makes the demo reachable from ANOTHER machine on the tailnet over a trusted HTTPS cert. Any failed rung
+   # ⇒ a plain localhost demo, byte-identical to v2.2, plus one loud line naming the fix.
+   "$DEMO/up-injected.sh" N                                              # ← remote reach, if the box can
+   "$DEMO/up-injected.sh" N --no-public-host                             # opt OUT (never probes tailscale)
+   "$DEMO/up-injected.sh" N --public-host billion.taildc510.ts.net       # force a host (skips discovery)
+   STACK_PUBLIC_HOST=billion.taildc510.ts.net "$DEMO/up-injected.sh" N   # equivalent env-var form
    ```
-   > **`--public-host` — remote cross-machine access over Tailscale (v2.2 "panorama"; PROVEN live on a Linux VM
-   > 2026-07-11).** It threads ONE browser-facing host through every rext emitter (build-args, `.env.local`
+   > **Remote cross-machine access over Tailscale — DEFAULT-ON since v2.3 M220 S3** (v2.2 "panorama" built it as
+   > an opt-in flag; PROVEN live on a Linux VM 2026-07-11, and re-proven default-on 2026-07-14).
+   >
+   > **You no longer pass a flag.** A bare `/demo-up N` runs the **capability ladder** — `tailscale` on PATH →
+   > `BackendState == Running` → a **dotted** `.Self.DNSName` → `MagicDNSEnabled` → no operator/sudo denial on
+   > `tailscale serve status` → **`tailscale cert` actually MINTS** — and adopts this box's own MagicDNS FQDN if
+   > and only if **all six** pass. *Capability-gated, never presence-probed:* "the binary exists" is not "it
+   > works", which is exactly why rung 6 demands a real certificate rather than a real binary.
+   >
+   > **🔴 Any failed rung ⇒ a plain localhost demo, byte-identical to v2.2**, plus ONE loud line naming the exact
+   > fix command. This is not caution, it is correctness: `SCHEME` and `BIND_HOST` derive from the **same**
+   > `-n $STACK_PUBLIC_HOST` predicate, so a *half-satisfied* public path bakes `https://` URLs against plain-HTTP
+   > listeners and **the demo does not load at all**. A laptop with no Tailscale keeps working exactly as before.
+   >
+   > `--no-public-host` (or `DEMO_NO_PUBLIC_HOST=1`) opts out **without probing** — no `tailscale` call, no cert
+   > mint. `--public-host <host>` still forces a specific host and skips discovery. The two together are a **hard
+   > refusal**, not a precedence rule.
+   >
+   > Mechanically it threads ONE browser-facing host through every rext emitter (build-args, `.env.local`
    > overlays, the pk/FAPI host, the cockpit + academy bases, the `demo_web` content-URL rewrite), mints the HTTPS
    > cert + a per-offset-port **`tailscale serve`** reverse proxy (M213 — the fake FAPI serves its own tailscale-cert
    > TLS on `:5400+off`), emits the CORS + Clerk sign-in origins (M214), and records the reachable URL on the
@@ -75,10 +95,34 @@ single-identity demo — see the toggle list below.) Source of truth:
    > a **trusted** cert (employee `maya-thriving` → `/profile` **and** manager `dan-manager` →
    > `/enterprise/workforce` both proven from a remote Mac, 0 console errors). The host **must be a dotted MagicDNS
    > FQDN** (a bare name is refused — clerk-js needs a dotted pk host + a secure context). Control-plane loopback
-   > calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. Public reach is **never** default-on
-   > (D-DESIGN-1) — external binding happens ONLY when this flag is set, and **Tailscale itself is the access
-   > control** (tailnet-only, no public-internet exposure). Full recipe + topology + walkthrough:
+   > calls (set-dress DSN, sentinel reload) deliberately stay `localhost`. **Tailscale is the access control** for
+   > the published origin (tailnet-only, no public-internet listener). Full recipe + topology + walkthrough:
    > [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md).
+   >
+   > **⚠️ v2.2's D-DESIGN-1 — _"public reach is never default-on"_ — is SUPERSEDED** by v2.3's **D-DESIGN-3**
+   > (demo path **only**; `/dev-up` stays opt-in). The decision, both sides of the argument, and the reversal's
+   > justification are written up in
+   > [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **§3.5** — read it before relying on either default.
+   > **As of M220 S3 the flip is LIVE in code** (M220 S0–S2 had landed only the *decision*; this line used to
+   > say *"the CODE still requires this flag"* and is corrected here rather than deleted, because a skill that
+   > describes a behaviour the code no longer has is the exact defect this milestone exists to end).
+   >
+   > **The flag never gated exposure — and default-on changes that less than it sounds.** v2.2 claimed
+   > *"external binding happens ONLY when this flag is set"*. **That is false.** Every demo container is
+   > published on **`0.0.0.0` (all interfaces) on every `demo-up`, flag or no flag** — `BIND_HOST` is read only
+   > by the two *host-native* servers (cockpit, ant-academy), not one container, **and it only actually
+   > constrains the cockpit**: `BIND_HOST=""` passes no `-H`, and `next dev`'s own default is `0.0.0.0`, so the
+   > academy answers 200 on the tailnet IP even on a localhost demo (measured M220 S3 →
+   > `FIX-M221-academy-loopback-bind`). So the LAN exposure was **already
+   > there**; what the flip adds on top is the **trusted HTTPS origin** (a real `tailscale cert`) plus the
+   > tailnet's **authenticated device mesh**. See
+   > [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3 — the exposure side**.
+   >
+   > **What a reacher obtains — say it plainly.** A demo is an **unauthenticated, authz-weakened build**, and
+   > the **presenter cockpit is a one-click, password-free "become any seeded hero" launcher**. M220 S4 puts the
+   > cockpit behind the tailnet's TLS + device mesh (it was the one plain-HTTP surface left) — but that is
+   > **transport**, not **authentication**: fronting it does not password-protect it. The data is synthetic and
+   > public-snapshot-only (safety.md Parts 1–2 hold unchanged), which is what makes the trade acceptable.
    >
    > **Remote Linux-VM host prereqs (a bare Ubuntu VM).** The Docker builds compile Go in-image, but the rext
    > orchestration tooling runs on the **HOST**, so a fresh VM needs, one-time: **Docker + Compose**; **Go 1.25.12**
@@ -106,7 +150,8 @@ single-identity demo — see the toggle list below.) Source of truth:
    ensure-clones-seeded `stack-demo/platform/.env` base instead — M26). See
    [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
 4. **Auto set-dress (default-on, non-fatal)** — after migrate the bring-up runs a cache-first snapshot
-   **replay → the multi-org Stories & Heroes seed** (2 orgs × a thriving/struggling/manager hero trio) **and
+   **replay → the multi-org Stories & Heroes seed** (**3 orgs** — Cervato Systems / Solvantis / Northwind
+   Aviation — × a thriving/struggling/manager hero trio) **and
    serves the presenter cockpit — both BY DEFAULT** (the M38-D4 opt-in became opt-OUT), reusing the same proven
    pass `/dev-up` uses. `DEMO_NO_STORIES=1` (or `DEMO_STORIES=0`) restores the **legacy `small-200`** structural
    seed + single-identity fake-FAPI + no-cockpit demo (so `small-200` is the fallback, **not** the default).
@@ -150,7 +195,7 @@ proves zero shared/prod pollution. Full contract: [`corpus/ops/safety.md`](../..
 ## After bring-up
 
 A bare `/demo-up N` already auto-set-dressed the stack with the **Stories & Heroes** world + the presenter
-cockpit **by default** (real catalog + 2 orgs × a thriving/struggling/manager hero trio) — so just **log in**
+cockpit **by default** (real catalog + **3 orgs** × a thriving/struggling/manager hero trio) — so just **log in**
 (browser-login as `user_clerkenstein` → land in a narratable, populated org), and **open the presenter cockpit**
 on the demo's offset **`:7700+`** port to walk the seeded stories. (`DEMO_NO_STORIES=1` instead lands the legacy
 `small-200` single-identity org with no cockpit.) The fake-FAPI TLS cert is **auto-trusted**

@@ -8,6 +8,8 @@ with **real semantic content** and **zero out-of-demo escapes**. The page set an
 (run the sweep) → **triages** the failures → **fixes** them in `rosetta-extensions` (or a corpus doc) →
 **re-sweeps**, until the gate is GREEN.
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Read first:** [`frontend-tier.md`](frontend-tier.md) (the UI tier the sweep crawls), [`verification.md`](../verification.md)
 > (the offset/project/scope-aware probe net this harness sits beside + reuses), [`rosetta_demo.md`](../rosetta_demo.md)
 > (the demo lifecycle + offset ports + Clerkenstein injection the cockpit login rides), and
@@ -82,6 +84,36 @@ added as a sibling spec/runner under `stack-verify` so it reuses verify's offset
 > under `stack-verify/e2e/` with its own `package.json` + lockfile (already present). The Go rext tooling is
 > untouched (supply-chain stays GREEN — no Go go.mod/go.sum change).
 
+> ### ⚠️ WHERE you run the sweep is part of the test (M219, v2.3 "cue to cue")
+>
+> **Run the sweep from the vantage a PRESENTER has — a tailnet peer. Never from the demo host itself.**
+>
+> Until M219 both runners (`run-coverage.sh`, `run-playthroughs.sh`) hardcoded their app/FAPI bases to
+> `localhost`, so a demo living on a remote tailnet VM **could not be swept at all**. That is a large part of
+> *why* the AI-readiness asserts sat unrun for four releases. They now take `COVERAGE_HOST` /
+> `COVERAGE_APP_SCHEME` (and `PT_HOST` / `PT_APP_SCHEME`).
+>
+> But pointing them at `localhost` **on the demo box** is not merely awkward — it is **wrong**, and it fails in
+> a way that looks exactly like a product bug:
+>
+> - A `--public-host` demo **bakes the MagicDNS origin into the frontend build**, so the app's own GraphQL
+>   client calls `https://<magicdns>:<15050+offset>/graphql`.
+> - `docker-proxy` binds `0.0.0.0`, so a connection **from the demo host** to its own `100.x` tailscale IP hits
+>   the kernel socket and **bypasses `tailscale serve`** — the thing that terminates TLS. Plain HTTP then
+>   answers a TLS handshake: `ERR_SSL_PROTOCOL_ERROR` / *"wrong version number"*.
+> - Every GraphQL call fails ⇒ every page is a permanent loading spinner ⇒ **every section reports
+>   `region-not-found`** and the persona checks fail for want of an org name and an avatar.
+>
+> Measured on `billion`: from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS; **from a
+> tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
+> `failingSections=21, personaFailures=3` — a **systemic false-RED**, and exactly the sort that gets "fixed" by
+> weakening asserts. From the correct vantage the same build reported `failingSections=0, personaFailures=0`.
+>
+> **A sweep that cannot reach the app does not report "broken" — it reports "empty", and empty is the one
+> result this protocol forbids you to read as anything.** The `--reset-only` flag exists so the DB half (which
+> needs docker + `stackseed`, i.e. the host) and the browser half (which needs the peer) can run on different
+> machines.
+
 The harness, against a **live** demo on offset ports:
 1. **Logs in** as the vantage's roster hero via the **cockpit handshake** — the demo's fake FAPI deep-link
    `https://<fapi-host>/v1/client/handshake?…&__clerk_identity=<hero-key>` selects the hero's seat
@@ -132,6 +164,52 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
   floor relaxes to "real, non-empty content" and the reason is surfaced in the review's
   `documentedExceptions[]` (honest disclosure, never a silent skip).
 
+> **⚠️ AN EXCEPTION DESCRIBES A FINDING. IT MUST NEVER PASS ONE (M219 R-8).** The clause above says an
+> exception is for where **0/1 is the genuinely-correct state**. That is the *only* legitimate use, and it was
+> violated: `ai-readiness-interview-findings` carried an exception disclosing that **three findings blocks
+> rendered their HEADINGS WITH NO CONTENT** and **a fourth did not render at all** — because *"the data they
+> summarize is written by no seeder."* Empty was **not** the correct state. It was a **seeder gap**, honestly
+> named, and then **shipped green for four releases** while the gate reported *"8/8 sections pass."*
+>
+> A disclosed empty is better than a hidden one. **It is still an empty section.** The discipline:
+>
+> | The exception is… | …when |
+> |---|---|
+> | ✅ **legitimate** | the surface is *genuinely* terse and 0/1 items is what a real user *should* see (a Settings menu with 2 entries) |
+> | ❌ **a finding wearing a badge** | the section is empty because **something upstream is missing** (no seeder writes it, a serve-grant is absent, a link is unrewritten). **Fix the cause and DELETE the exception.** |
+>
+> The M219 R-8 test of the distinction, which is worth stating as a question: *"if this were fixed, would the
+> section fill?"* If yes, it is **not** an exception — it is a **deferral with better prose**. The
+> interview-findings exception was deleted, the four blocks are seeded
+> (`corpus/services/ai-readiness.md` → `interview_aggregated_reports`), and the descriptor now asserts **all
+> four blocks are FILLED** — including a **900-char content floor**, because the four empty headings measured
+> ~120-200 chars and the old floor of **120** passed straight over them.
+>
+> **The same class, in the launcher:** the ant-academy liveness probe proved the port **SERVES** (200 to curl)
+> and reported *"started + SERVING"* over a page that, in a browser, redirects to Clerk's keyless handshake and
+> **renders nothing**. *"It serves"* ≠ *"it renders"* — the same sentence as *"the role classifies"* ≠ *"the pool
+> is big enough"* and *"it resolves"* ≠ *"it has skills"*. Both that probe and
+> `ANT_ACADEMY_HOME_SECTION` (which asserted a meaningless **40-char** floor with **no required markers** — the
+> very `textLen>40` density check this protocol claims to have superseded) now assert the **render**. They report
+> **RED until the render is fixed in M220 — which is intended.** An accurate red beats a comfortable green.
+
+> **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
+> asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers
+> behind them are `1,284` or `0`. So a section can clear a `mustInclude` + length floor while every value in it
+> is zero — **an empty section wearing a hat**, and the sweep calls it a pass. It did: the AI-readiness
+> *"✨ Handled for you this cycle"* tile shipped with a hard-`0` counter and nothing noticed, because nothing
+> asserted a **value**.
+>
+> The fix is the existing **`textMatch`** kind, pointed at the values instead of the labels: a pattern requiring
+> a **leading non-zero digit** in front of each counter label, with `minMatches` set to the **number of
+> counters** — so `0 AI skills mapped` matches zero times and the section reports **empty**, and *one* dead
+> counter among three still fails (`minMatches: 3`, not "at least one survived"). Its unit tests assert the
+> pattern **rejects** a zeroed tile and **accepts** a filled one — an assert nobody has ever seen fail is not a
+> fence.
+>
+> **Reach for `textMatch`-on-values wherever a section's content is a NUMBER.** `text` proves a section
+> *rendered*; only a value assert proves it rendered something **true**.
+
 There are **two manifest namespaces**: **employee** (M42e — Maya, the member vantage, fully calibrated) and
 **manager** (M42m — Dan, the org-intelligence vantage; **fully calibrated** as of M42m iter-04). The manager
 manifest covers the real **`/enterprise/*`** route surface (reconciled from the wrong `/workforce/*` guesses):
@@ -145,19 +223,32 @@ terse exception). The manager vantage has **two manager-only fan-outs** (`/user/
 (`/sim/<slug>`, `/skill-path/<slug>(/chapter)`) because the manager nav links the Library — so the manager
 `SAMPLE_RULES` are a **superset** (the 2 fan-outs + the 2 library families), or the crawl explodes + times out.
 
-> **The manager manifest is ORG-CONDITIONAL (v1.10b "fit-up" M53 AB4).** The `/enterprise/workforce/ai-readiness`
-> page (its two descriptors + its seedPath) is a **showcase-org-only** prime: the 199 frozen AI-readiness
-> snapshots seed only for **Northwind Aviation** (the M51 showcase org, a `closed` cycle), so the dashboard is
-> LEGITIMATELY empty on any base-Workforce org (Cervato / Solvantis) — asserting it there is a false-fail.
-> `manifestFor(vantage, expectedOrg)` therefore returns the full **`MANAGER_MANIFEST`** (which primes + asserts
-> the AI-readiness page) only when `expectedOrg` contains `AI_READINESS_SHOWCASE_ORG` (`'Northwind Aviation'`,
-> case-insensitive substring); for any other manager org (or an empty/undefined org) it returns
-> **`MANAGER_MANIFEST_BASE`** — the same surface MINUS the AI-readiness seedPath + descriptor. `coverage.spec.ts`
-> threads `COVERAGE_EXPECTED_ORG` in. The employee manifest is org-independent. This fixed an M51 regression: an
-> unconditional AI-readiness seedPath (M51 iter-05) had silently broken the M50 base-org manager gate
-> (`dan-manager` @ Cervato) — surfaced only by M53's from-cold both-vantage assertion. The page's real proof
-> (the funnel renders from real seeded data) still holds on the showcase org (Northwind), so the split removes a
-> false assertion, not a real one.
+> **The manager manifest is ORG-CONDITIONAL (v1.10b "fit-up" M53 AB4; routes + shape CORRECTED in v2.3 M219).**
+> The **`/ai-readiness`** page (its **8** descriptors + its seedPath) is a **showcase-org-only** prime: the
+> AI-readiness cycles seed only for **Northwind Aviation** (the M51 showcase org — which since M219 carries
+> **both** a `closed` and an `active` cycle), so the dashboard is LEGITIMATELY empty on any base-Workforce org
+> (Cervato / Solvantis) — asserting it there is a false-fail. `manifestFor(vantage, expectedOrg, identityKey)`
+> therefore returns the full **`MANAGER_MANIFEST`** (which primes + asserts the AI-readiness page) only when
+> `expectedOrg` contains `AI_READINESS_SHOWCASE_ORG` (`'Northwind Aviation'`, case-insensitive substring); for
+> any other manager org (or an empty/undefined org) it returns **`MANAGER_MANIFEST_BASE`** — the same surface
+> MINUS the AI-readiness seedPath + descriptors. `coverage.spec.ts` threads `COVERAGE_EXPECTED_ORG` in.
+>
+> ⚠️ **M219 corrected three things this block used to say.**
+> 1. **The route was the LEGACY one.** It said `/enterprise/workforce/ai-readiness` — an **unlinked orphan**
+>    (no nav entry, no workforce tab, no redirect points at it). The CURRENT manager surface is **`/ai-readiness`**.
+>    This protocol was the last place the dead pointer survived after M219 repointed every other one.
+> 2. **"two descriptors"** → **8**.
+> 3. **"The employee manifest is org-independent"** is now **FALSE**. `manifestFor` is **3-arg**: the employee
+>    vantage is **IDENTITY-conditional**, because the member readiness surface **has no route of its own** — it is
+>    embedded in `/home`. Seats `aria-completed` / `ben-started` get `EMPLOYEE_MANIFEST_READINESS_DONE` /
+>    `_STARTED`, each asserting an `/home` readiness section (`ai-readiness-member-done` / `-progress`). Every
+>    other seat gets the base employee manifest. *A member surface with no route is exactly why route-crawling
+>    never found it.*
+>
+> The original M53 split fixed an M51 regression: an unconditional AI-readiness seedPath (M51 iter-05) had
+> silently broken the M50 base-org manager gate (`dan-manager` @ Cervato) — surfaced only by M53's from-cold
+> both-vantage assertion. The page's real proof (the funnel renders from real seeded data) still holds on the
+> showcase org, so the split removes a false assertion, not a real one.
 
 #### The documented-exception table (where 0/1 is legitimately correct)
 
@@ -198,7 +289,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | **Directus schema-drift content 500 — COLUMN class** (M46/DD, Option A) | a cms `SetFields("*", …)` content query (e.g. simulations) SELECTs a column the **captured Directus structure** lacks because the platform added it after the capture → `Directus 500: column <collection>.<col> does not exist` → the content fetch fails (the ~60–90 s "latency" is the router **retrying**). **Cache-masked** in a warm sweep; surfaces only on a **cold** federation tier (restart cms+router+directus). DIAGNOSE via `docker logs <stack>-directus-1 \| grep 'does not exist'` + diff the **full `*`-expanded SELECT** Directus generates against the replayed physical columns (the full SELECT lists every requested column before execution → the COMPLETE missing COLUMN set in one pass, not bounded by Postgres reporting only the first). | a reproducible **post-replay column backfill** — an idempotent `ALTER TABLE directus.<collection> ADD COLUMN IF NOT EXISTS <col> <type> [DEFAULT …]` in `demo-stack/up-injected.sh`'s `NO_SETDRESS` block (next to the FK indexes, on the demo's own offset Postgres, schema `directus`), gated on local content + `DEMO_NO_DIRECTUS_DRIFT_FIX`, non-fatal, values-blind (the FK-indexes mechanism class). DEMO-LOCAL DDL — the `cms`/`app` clones stay pristine. **Scope:** column drift ONLY — NOT the serve-grant closure row below. | re-up (the backfill runs post-replay) — verify on a **COLD** tier (restart cms+router+directus) so it isn't cache-masked |
 | **Directus serve-grant CLOSURE gap — RELATION/COLLECTION class** (M46/DD → **CLOSED by M46 Path 2**) | a cms deep-fetch (`GetJobSimulation`: `sequences.knowledge.*`, `sequences.assets_files.directus_files_id.*`, `sim_features.*`, `translations.*`, …) traverses a target/junction collection (`knowledge_asset`, `sequences_files`/`_2`, `directus_files`, `sim_features`, `sim_translations`, `simulations_translations`, `sim_roles_tasks`) the M40 [serve-grant](#…) `servedCollections` set does NOT register/grant/relate → Directus drops the **whole parent alias** (e.g. `sequences`) → cms `s.Sequences[0]` **panics** (`index out of range`) → a federated non-nullable field (`jobSimulation.title`) is null → the whole section (e.g. activity-dashboard's activity-table) never hydrates. DIAGNOSE via `probe-empty.spec.ts` (the `insightsByJobSimulations.rows.@.jobSimulation` DOWNSTREAM_SERVICE_ERROR) + `docker logs <stack>-cms-1 \| grep 'index out of range'` + check `directus.directus_{collections,relations,permissions}` for the traversed collections. **NOT an Option-A column backfill** (an `ADD COLUMN` won't help) and the relation metadata must be CAPTURED from prod (never hand-fabricated — the M25 subtle-FK-bug risk). **⚠ cms caches `GetJobSimulation` per-id responses in Redis DB 5 (`simulations_<id>_<hash>`, 24 h TTL, cache-FIRST) — so a re-replay into an ALREADY-running demo can serve a poisoned EMPTY-sequences entry cached during the serve-grant settle. A FRESH `/demo-up` starts empty + provisions directus before cms queries it (no poison); to fix in place, clear DB 5 `simulations_*`.** | **The fix (M46 Path 2):** EXPAND `servedCollections` in `stack-snapshot/directus/structure.go` to the full deep-fetch closure (the 7 collections above) + a SYNTHESIZED `directus_files` SYSTEM read grant (`serveFilesCollection`/`serveFilesPermissionSQL`) + **RECAPTURE** the prod Directus structure (the relation/field metadata is captured, never fabricated). | **a FRESH `/demo-up`** off the regenerated cache (the capture-path live-acceptance pattern — re-capture + cache-bust + fresh up); on an already-running demo, re-replay the serve rows + **clear the cms Redis DB-5 `simulations_*` cache** |
 | **Out-of-demo link (escape)** | a baked/rendered link host points at prod | the demo **injection + env link-rewriting** (`demo-stack/up-injected.sh` build-args / `stack-injection/gen_injected_override.py`) — rewrite the host to the offset port. **Precondition (M42m iter-02):** the platform must expose a **per-URL `NEXT_PUBLIC_<thing>_URL` override** for that host (rewritable in the gitignored `apps/web/.env.local` overlay or a build-arg, zero-edit — e.g. next-web's `ACADEMY_URL` reads `NEXT_PUBLIC_ACADEMY_URL`). If the host is instead behind a **coarse mode-flip** (`NEXT_PUBLIC_NODE_ENV`) or a **hardcode** with no per-URL knob (e.g. next-web's `STUDIO_URL` — a `NEXT_PUBLIC_NODE_ENV` ternary, wrong-port + side-effecting on flip), the host is **platform-bound** → this row does NOT apply; it's a **re-scope trigger** (the rewrite needs a platform-source edit). Diagnose: find the constant's source, check for a dedicated `NEXT_PUBLIC_<thing>_URL` read vs a mode-flip/hardcode. | re-build the frontend (baked URL) or re-emit the override + restart |
-| **Platform-bound escape (no per-URL override)** | a baked link host is hardcoded / behind a coarse mode-flip with no `NEXT_PUBLIC_<thing>_URL` knob (e.g. next-web's `STUDIO_URL`) — the env-rewrite row above does NOT apply | the **demo-patch tool** (`demo-stack/patches/demopatch` + a content-anchored manifest, M42m iter-03): source-patch the demo's **EPHEMERAL gitignored clone** before the build to read `NEXT_PUBLIC_<thing>_URL` (a behavior-identical fallback ternary kept), then **trap-revert** after the image bakes — CANONICAL repos NEVER touched (6 guards: hard path-assert demo-clone-only, drift-refuse, never-commit, idempotent, self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert) with the offset value in the `.env.local` overlay; default-on + non-fatal (`DEMO_NO_PATCH=1` opts out). The clone is left git-clean; `ensure-clones.sh` **R1** pristine-reverts a crash-left patch + **R1b** sweeps a crash-left tooling `.dockerignore` (byte-identical + untracked guards). Resolved the Studio `studio.anthropos.work` escape demo-only (139→0). | re-build the frontend (the patch bakes into the image; revert is automatic) |
+| **Platform-bound escape (no per-URL override)** | a baked link host is hardcoded / behind a coarse mode-flip with no `NEXT_PUBLIC_<thing>_URL` knob (e.g. next-web's `STUDIO_URL`) — the env-rewrite row above does NOT apply | the **demo-patch tool** (`demo-stack/patches/demopatch` + a content-anchored manifest, M42m iter-03): source-patch the demo's **EPHEMERAL gitignored clone** before the build to read `NEXT_PUBLIC_<thing>_URL` (a behavior-identical fallback ternary kept), then **trap-revert** after the image bakes — CANONICAL repos NEVER touched (**7** guards, incl. G7 the apply post-condition: hard path-assert demo-clone-only, drift-refuse, never-commit, idempotent, self-owned reversal, demo-only, apply post-condition). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert) with the offset value in the `.env.local` overlay; default-on + non-fatal (`DEMO_NO_PATCH=1` opts out). The clone is left git-clean; `ensure-clones.sh` **R1** pristine-reverts a crash-left patch + **R1b** sweeps a crash-left tooling `.dockerignore` (byte-identical + untracked guards). Resolved the Studio `studio.anthropos.work` escape demo-only (139→0). | re-build the frontend (the patch bakes into the image; revert is automatic) |
 | **Cross-port demo-local surface blank / login-loops / wrong-eject** (studio-desk class, v1.10 postfix) | a demo-local link to a **different port** than next-web (e.g. "Anthropos Studio" → studio-desk `:9000+offset`) doesn't render the authenticated home for the **logged-in hero** — it opens a blank `/undefined`, a dead `:3000` redirect-loop, a `/login` loop, or ejects to `WEB_APP_URL` (the non-admin redirect when the hero's membership doesn't resolve) | **authenticate via Clerkenstein, never bypass**: studio-desk drives its **own** fake-FAPI handshake (per-app — the cross-port `__session` cookie is **not** needed; the FAPI holds the active seat server-side) verified networklessly via `CLERK_JWT_KEY`. The **injection override** (`gen_injected_override.py`) wires the runtime `CLERK_*` (← `DESK_CLERK_*` minted by `up-injected.sh`) + pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the offset next-web (the requireAuth fallback). For the **admin gate** (`checkEnterpriseAndAdmin` reads the fake BAPI's `getOrganizationMembershipList`), make the fake BAPI **roster-aware** (`cmd/fake-bapi` reads the same `FAKE_FAPI_ROSTER` + seeds each hero's `(org, user)→org_role`) so a manager passes and an employee is correctly redirected. The harness gate is closed by the crawl's **cross-port FOLLOW** (`crawl.ts` `onCrossPortFollow` → `coverage.spec.ts`) **in the logged-in context**: a blank/login-loop/un-offset-`:3000`/eject destination FAILS the gate | re-up (the roster re-seeds + the override re-emits, no rebuild) for the env/BAPI; **clear the cached image** (`docker image rm demo-N-studio-desk`) only to re-bake a stale pk/offset |
 | **Org-scale grid perf wall (slow GraphQL, not empty)** (M46) | at org scale (~500 members) a heavy enterprise grid (`/enterprise/members`, `/enterprise/activity-dashboard`, `/enterprise/settings`) sits on a `…` spinner / skeleton through the whole warm-grid poll because its backing **federated GraphQL** takes 10–84 s — an over-broad fetch (`InsightsContext.tsx` loads `limit: 1000` = ALL members) AND a per-membership resolver fan-out (`jobRole`/`targetRole`/`tags` × a **per-object Sentinel RPC** in `app` `roles.go GetOrganizationTargetRole`, no DataLoader). DIAGNOSE it's perf-not-content by `docker logs <stack>-graphql-1` + `grep latency` (10 s+) while raw SQL is ms (so it's RPC-round-trip-count, not the DB). **Decompose it — part demo-patchable, part platform-bound:** | **The over-broad-fetch + missing-index part is demo-local (zero canonical edit), and clears the grids whose cost is fetch-width or DB-index-bound:** **(1)** a **next-web pagination demo-patch** (`patches/next-web-members-pagination`: `InsightsContext.tsx` `limit 1000→30` — the grids that already paginate, e.g. `/enterprise/members` at 20, are untouched; the CSV/email export uses a separate query so no data is lost) applied to the demo's ephemeral clone pre-build + trap-reverted (the demopatch 6-guard contract); **(2)** **post-seed FK indexes** (`CREATE INDEX IF NOT EXISTS` on `membership_skills(membership_skill_membership)` + `membership_tags(membership_tag_membership)`) on the demo's **own** Postgres via a rext-owned `up-injected.sh` step (idempotent, non-fatal — NOT a canonical ent/atlas change). On demo-3 (~500 members) (1)+(2) took graphql max latency **84 s → ~4 s** and cleared `/enterprise/activity-dashboard` + `/enterprise/settings`. **BUT the `/enterprise/members` per-row `targetRole` → `OrgCheckActionPermission` Sentinel RPC is `OrgActionAssignmentsWrite`, which is PER-OBJECT (per assignee), NOT an org-wide grant** — a manager legitimately can-write-assignments for some members and not others. CACHING that check is a **correctness bug** — keyed `(org, subject, action)` (object dropped to dedupe across rows) it returns the first row's allow/deny for all rows → `failed to get target role: forbidden` on legit members (~1744×/sweep) → the grid errors (this was T2, reverted); keyed correctly `(org, subject, OBJECT, action)` it cannot dedupe (every row = a different object). **The safe demo-patch is to DROP the read-gate, not cache it (Option B, the M46 close):** `roles.go RoleManager.checkPermission` short-circuits `return true, nil` BEFORE the per-member Sentinel RPC (mirroring its built-in `privacy.DecisionFromContext` bypass) — target roles still come from the DB so every member's REAL role renders (fast, fully-populated, 0 forbidden). Read-path relaxation ONLY (`patches/app-targetrole-authz-skip`, applied to the build-scratch app clone via a rext helper wired into the inject loop, svc=app, after `apply-authn`, before build, trap-reverted) — the assignment **mutations** still enforce via their own direct `OrgCheckActionPermission` calls. On demo-3 B took the members query **76.7 s → 0.51 s** and **cleared `/enterprise/members` → the manager gate is MET (no re-scope)**. The PLATFORM finding stays: prod needs a **DataLoader / batch `BulkCheckPermission` RPC**; B is a disclosed demo-perf relaxation, not a prod fix. **⚠ if you rebuild the injected `app` image, it MUST go through the inject loop so `apply-authn.sh` (the disarmed colony) is re-applied** — a rebuild without it ships a backend that hits real `api.clerk.com`, rejects every Clerkenstein token, and collapses the crawl to `reachable≈7` (a broken-auth artifact, not a content fail — grep `docker logs <stack>-backend-1` for `clerk`); and **never recreate one service with `--force-recreate` *without* `--no-deps`** (it recreates `postgresql` too and wipes the seeded org). | re-build the frontend (pagination bakes in) + re-build the injected `app` (the authz-skip bakes in) via the inject loop + re-up/re-seed (indexes apply post-seed) — all three demo-local, gate MET |
 | **Replayed-CONTENT URL-field escape** (v1.10b "fit-up" M50) | a prod host (`https://[*.]anthropos.work/...`) is **baked into a replayed Directus content field**, not built from a JS constant — e.g. `directus.simulations.public_landing_page_url` / `read_more_link` (28 / 14 sims carried a prod URL), surfaced when the activity-dashboard sim drill-down renders the field as a link → prod-eject. **Distinct from BOTH the JS-constant "Platform-bound escape" row (a built-in-the-bundle constant — fixed by the demopatch; M50's `next-web-public-website-url` demopatch is an instance, killing the `PUBLIC_WEBSITE_URL`-built links) AND the serve-grant "Federation/content error" row (a 403/500, not a working link to the wrong host).** Diagnose: the escape URL matches a replayed row's *field value*, AND the JS-constant ejects are already 0 (the demopatch worked) — so the residual lives in the replayed DATA, not the code. | a **post-replay content-URL rewrite** in `demo-stack/up-injected.sh`'s `NO_SETDRESS` block — an idempotent demo-local `UPDATE … regexp_replace(<field>, 'https?://[a-z0-9.-]*anthropos\.work', '<demo next-web host:3000+offset>')` over the `anthropos.work`-bearing content fields (`directus.simulations.{public_landing_page_url,read_more_link}` + `directus.skill_paths.public_landing_page_url`) — the content-side analog of the injection link-rewriting for app constants. Same class as the M46 FK indexes / Directus column backfill: demo-local DDL on the per-stack Directus (the `cms`/Directus clones stay pristine), idempotent (a re-run matches 0 rows), non-fatal (M18/M19), gated on local content, `DEMO_NO_CONTENT_URL_REWRITE` opt-out. A **REGEX** over any `anthropos.work` subdomain (not a bare prefix) catches prod **and** `staging.anthropos.work`. | re-up (the rewrite runs post-replay; if fixing in place, clear the cms Redis DB-5 `simulations_*` cache like the serve-grant row) — then re-sweep → escapes → 0 |

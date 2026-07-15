@@ -19,11 +19,18 @@
   tolerated — the reader strips a trailing carriage return so a Windows-edited pin still resolves as a clean git
   ref, M49 harden). It lives in the
   gitignored `.agentspace/`, so it's a **per-box** pin; the release's canonical value is recorded here so a fresh
-  box recreates it (**current v1.10b "fit-up" pin: `v1.10.1`** — the release tag rolled at the M53 cold-rebuild
-  acceptance gate, rolling up `fit-up-m47..m52` + the M53 academy F6 commit; supersedes the mid-release
-  `fit-up-mNN` milestone pins). This retires the earlier scattered prose pins
-  (which had drifted: `storytelling-postfix-1` here vs `storytelling-postfix-2` in the skill + the frontend-tier
-  doc) — there is now exactly one read path.
+  box recreates it. **Read the value from `.agentspace/rext.tag` — never from prose.**
+  > **M217: this line used to carry a hardcoded prose copy of the pin (`v1.10.1`), and it was SIX RELEASES
+  > STALE.** A prose copy of a pin *is* the drift class it was meant to retire. The file is the SoT; this doc
+  > points at it and states no value.
+  >
+  > **M217 also promoted the pin guard from WARN to FAIL.** It had warned for six releases while nobody read the
+  > log, and the clones drifted anyway — the local one 5 tags stale, the remote one not even *on* a tag (it
+  > warned about *itself* every run). A stack consuming the wrong tooling silently attributes its results to the
+  > wrong code. `DEMO_ALLOW_UNPINNED_REXT=1` still allows deliberate authoring work.
+
+  This retires the earlier scattered prose pins (which had drifted: `storytelling-postfix-1` here vs
+  `storytelling-postfix-2` in the skill + the frontend-tier doc) — there is now exactly one read path.
 - **The skills (here in rosetta):** [`/demo-up`](../../.claude/skills/demo-up/SKILL.md), `/demo-down`,
   and the generic `/stack-list` drive that tooling (the dev peer is `/dev-up` / `/dev-down`).
 - **The secrets:** [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md) provisions the stack's
@@ -39,7 +46,8 @@
   control plane. Server-authoritative, so every surface resolves the same hero. Measured by the `clerk-multi-1`
   Alignment DNA (9 genes, 100%/100%) — see [clerkenstein.md](../services/clerkenstein.md) § Multi-identity.
 - **Stories & cockpit are the DEFAULT (post-v1.9 demo-hardening):** a bare `/demo-up N` now seeds the
-  multi-org **Stories & Heroes** world (2 orgs × a thriving/struggling/manager hero trio) **and** serves the
+  multi-org **Stories & Heroes** world (**3 orgs** × a thriving/struggling/manager hero trio — Cervato
+  Systems / Solvantis / Northwind Aviation) **and** serves the
   presenter cockpit **by default** — the M38-D4 opt-in flipped to opt-**out**. `DEMO_NO_STORIES=1` (or the
   explicit `DEMO_STORIES=0`) restores the legacy structural **small-200** + single-identity fake-fapi +
   no-cockpit demo (mirroring the `DEMO_NO_*` family). So: stories = default; small-200 = the

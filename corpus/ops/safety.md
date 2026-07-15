@@ -9,6 +9,14 @@ guarantees, proven in code and tested:
    stack's own isolated stores — enforced by a 3-layer write-isolation guard that makes a shared/prod write
    **structurally impossible** on a non-prod target, and an audit log that *proves* nothing leaked.
 
+…and, since v2.3, a third axis that is **a disclosure, not a guarantee**:
+
+3. **Who can REACH a demo, and what they get if they do** (**[Part 3](#part-3--the-exposure-side-who-can-reach-a-demo-and-what-they-get-if-they-do)**).
+   A demo is an **unauthenticated, authz-weakened build**, and its container ports are published on **all
+   interfaces** on **every** bring-up — today, flag or no flag. That cannot be promised away. What makes it
+   defensible is guarantees 1 and 2: **there is nothing behind the door.** Read Part 3 before exposing a demo,
+   and before trusting any sentence in this corpus that says a demo binds loopback.
+
 > **Scope.** This doc is the consolidated safety contract over the v1.2 snapshot mechanism + the v1.1 seeding
 > framework, as they stand at v1.3 "stack party" (dev stacks are now first-class peers of demo stacks; both
 > kinds run the same tooling). It is the *why-it-is-safe* companion to the three operational specs it
@@ -38,6 +46,14 @@ A third write surface joined the family in v1.6: the **secret provisioner** move
 source→gitignored-target to fill each stack's `.env`. It is fenced the same way — **values-blind** (no verb
 ever reads, echoes, or logs a secret value), it never re-arms the prod-write path (the prod
 `DIRECTUS_TOKEN` is written blank on a non-prod target), and a secret never enters git. See **§2.9** below.
+
+**And one thing the tooling does *not* promise (v2.3).** A demo environment is deliberately built with its
+**login checks switched off** — that is what makes it a demo you can hand to a presenter, who clicks a name and
+is instantly "signed in" as that person. It also means **anyone who can reach a running demo over the network
+can do the same**, with no password. The tooling does **not** claim otherwise, and — contrary to what one of our
+own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
+machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
+data and cannot write to production.** There is nothing behind the door. See **Part 3**.
 
 ---
 
@@ -368,6 +384,300 @@ requires the real keys. (#M27 #M28)
 
 ---
 
+## Part 3 — The exposure side: who can REACH a demo, and what they get if they do
+
+> **This Part is NOT a third "never".** Parts 1 and 2 are **structural guarantees** — a prod read of customer
+> data and a prod write are made *impossible*, and the code is written so that forgetting a flag cannot defeat
+> them. Part 3 cannot make that shape of promise, because **a demo that nobody can reach is a demo that does
+> not work.** What Part 3 does instead is state, precisely and without flattery, **what is exposed, to whom,
+> and what an unauthorized reacher would actually obtain.** The safety argument then rests on that last clause
+> — not on a claim that nobody can knock.
+>
+> **Added v2.3 "cue to cue" (M220).** Until then this contract had exactly two axes — read-side and write-side.
+> Remote reach was a **third axis with no contract at all**, and v2.3 proposed to make it **default-on**. A flip
+> like that cannot ship on a doc edit; it needs an argument written down where it can be attacked.
+
+### 3.1 The disclosure — the ports are ALREADY open, on every demo **and every dev stack**, today
+
+**Every demo container's offset port is published on `0.0.0.0` — ALL interfaces — on EVERY `demo-up`, with or
+without `--public-host`.** This is not introduced by remote access. It has been true of every demo since the
+injected override existed.
+
+> 🔴 **AND THE SAME IS TRUE OF EVERY `dev-N` STACK — which this section did not say until v2.3 M220 S7.**
+> `stack-core/gen_override.py` (the **dev** override builder) constructs its port strings **exactly the same
+> way** — bare `"<hostport>:<target>"`, no `127.0.0.1` prefix — so a `dev-N` stack's containers are world-
+> published too, on every `dev-stack up`, **with or without** `--public-host`. **Measured, not read:** the
+> exposure guard now runs *both* emitters and reports `DEMO: 14 ports → 0.0.0.0` and `DEV: 8 ports → 0.0.0.0`.
+>
+> **This matters MOST because the dev path is opt-in** (§3.5.3). A reader who learns *"remote reach is OFF by
+> default on dev"* will reasonably conclude *"so my dev stack is not exposed."* **That conclusion is false.**
+> What the opt-in withholds is the **trusted HTTPS origin on the tailnet** — not the LAN binding, which was
+> always there. This is the S0 lie one family over: the guard proved the truth for the demo emitter and the
+> corpus disclosed it for demos only, so the dev family inherited the silence.
+
+- `stack-injection/gen_injected_override.py` (demo) emits published ports as **bare `"<hostport>:<target>"`
+  pairs** at all three emitters (`directus_lines`, `frontend_lines`, `build_lines`), and
+  `stack-core/gen_override.py` (dev) does the same in `build_override`. **Docker's default bind for a bare
+  `host:container` mapping is `0.0.0.0`.** There is no `127.0.0.1` prefix anywhere, in either family.
+- **On Linux this bypasses the host firewall.** Docker installs its rules in its own iptables chain, consulted
+  *before* `ufw`/`firewalld`. A `ufw deny` on the port does **not** block it.
+- `BIND_HOST` (`demo-stack/up-injected.sh`) *is* gated on the public-host knob — but it is read **only** by the
+  two **host-native** servers (the presenter cockpit and ant-academy, which are plain host processes). **It does
+  not touch a single container.**
+- 🔴 **…and it only actually CONSTRAINS one of those two. MEASURED on `billion`, M220 S3 (2026-07-14).** On a
+  **localhost** demo (`BIND_HOST=""`), with the demo up and `ss -ltnp` read on the host:
+
+  | host-native server | bound to | reachable at the node's `100.x` tailnet IP? |
+  |---|---|---|
+  | presenter cockpit (`7700+off`) | **`127.0.0.1:17700`** | **no** — connection refused ✅ |
+  | ant-academy (`3077+off`) | **`*:13077`** | **YES — HTTP 200** ❌ |
+
+  `BIND_HOST=""` means *"pass no `-H` flag and let each server keep its own default"* — and **`next dev`'s own
+  default is `0.0.0.0`**. So **at the time of that M220 S3 measurement** the academy was world-published on
+  **every** demo, exactly like the containers, and the *"gated on the knob"* framing was true only of the cockpit.
+
+  > ✅ **LANDED in v2.3 M221 (F-M220-5) — the host-native academy now binds loopback.**
+  > `demo-stack/ant-academy.sh:330` passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` **only** when a
+  > public host is requested), so on a localhost demo the academy binds **`127.0.0.1:13077`**, not `*:13077`.
+  > The M220 S3 table above is retained as the **dated** measurement that *drove* the fix — not a current claim.
+  > ⚠ **Scope of the fix:** it tightens **only** the host-native academy's bind; **every demo *container* port
+  > stays `0.0.0.0` by design** — that half of §3.1's disclosure is unchanged and still true. Fenced by
+  > `stack-injection/exposure_claim_guard.py`, extended at M221 to *see* the host-native listeners it was blind to.
+
+  **This is the same false-loopback claim §3.1 exists to retract, one layer up** — and it survived M220 S0
+  because the exposure fence (`exposure_claim_guard`) checked the three **container** port emitters and had no
+  notion of the host-native servers. An exposure fence that cannot see a whole class of listener will report a
+  confident, quietly incomplete pass. *(LANDED: `F-M220-5` at M221 — pass `-H 127.0.0.1` when `BIND_HOST` is
+  empty, and the exposure guard was extended to run the host-native emitters too. It was deliberately NOT bundled
+  into M220 S3/S4 because it changes the localhost path's behaviour, and the invariant S3 is fenced on is that the
+  localhost path stays **byte-identical**.)*
+
+> **`corpus/ops/demo/tailscale-serve.md` claimed the opposite until M220:**
+>
+> ```text
+> RETRACTED — FALSE (shipped v2.2, corrected v2.3 M220):
+>   "…no open 0.0.0.0-on-the-LAN surprise beyond the tailnet. Binding `0.0.0.0` is gated on the knob
+>    precisely so it is never ambient."
+> ```
+>
+> **That was false**, and it is now retracted in place. A shipped safety
+> doc that understates real exposure is the worst failure mode in this project: it doesn't just fail to warn, it
+> actively talks a reader *out of* looking. Fenced by `stack-injection/exposure_claim_guard.py`, which derives
+> the bind by **running** the emitters and fails if any doc denies it — or if this section stops disclosing it.
+
+**Consequence, and it cuts in the flip's favour:** the exposure delta of making remote reach default-on is **far
+smaller than this corpus used to imply**, because the LAN/host-IP exposure is *already there*. The honest framing
+of `--public-host` is that it does not open the demo — it makes the already-open demo **usable** (a trusted HTTPS
+origin, which Clerk requires for a secure context).
+
+### 3.2 What a demo actually IS — an unauthenticated, authz-weakened build
+
+This is the part that must be said plainly, because every mitigation below is judged against it.
+
+| Weakening | Mechanism | Default |
+|---|---|---|
+| **Clerk token verification is disarmed** in `app`, `cms`, `jobsimulation`, `skillpath` | `stack-injection/apply-authn.sh` vendors a **disarmed colony** into the demo's clone — `authn/provider/clerk` is replaced by a twin that verifies with a **universal HS256 key** (`INJECTED` in `gen_injected_override.py`) | **always, by construction** |
+| **Authorization is short-circuited** on the per-member target-role write path | the `app-targetrole-authz-skip` **demo-patch** | **ON** (`DEMO_NO_AUTHZ_SKIP=0`) |
+| **The presenter cockpit is a password-free "become any seeded hero" launcher** | a **bare GET** to `<fapi>/v1/client/handshake?__clerk_identity=<key>&redirect_url=<jump_to>` — the fake FAPI selects the seat and *establishes the session*. No credential is presented at any point | **ON** (served whenever `DEMO_STORIES=1`) |
+
+**So: anyone who can reach the cockpit port is one click away from an authenticated session as any seeded hero —
+including the manager vantage.** There is no login to fail. Default-on remote reach makes that panel **ambient on
+every box that satisfies the capability ladder**, without the operator opting in.
+
+That is the true statement of the risk. It is not softened anywhere below.
+
+### 3.3 The case FOR default-on remote reach (v2.3, D-DESIGN-3)
+
+Recorded honestly, as the argument that actually carries the decision:
+
+1. **There is nothing behind the door.** This is the load-bearing mitigation, and it is exactly what **Parts 1
+   and 2 already guarantee, unchanged**: a demo's data is **synthetic + public-snapshot-only**. The tenant-data
+   firewall means **no customer data can be in a demo** — not "should not", *cannot*, or the capture aborts. The
+   3-layer write guard means a demo **cannot write prod**. An attacker who fully owns a demo obtains: a generated
+   population, the public skills taxonomy every customer already sees, and public Directus content. **The
+   authz-weakening is only alarming if there is something to protect, and there is not.**
+2. **A tailnet is not the open internet.** It is an **authenticated WireGuard device mesh** — per-device keys,
+   ACL-gated, **no public listener**. Reaching a `*.ts.net` MagicDNS name requires already being an enrolled
+   device on that tailnet. "Ambient on the tailnet" means ambient *to colleagues who are already inside*.
+3. **The delta is small (§3.1).** The ports are already world-published on the host's interfaces. Default-on
+   changes the *usability* of that surface, not — mostly — its existence.
+4. **The failure mode it removes is real.** Opt-in remote reach means the presenter discovers, at demo time, that
+   the demo is unreachable. That is the defect v2.3 exists to fix.
+
+### 3.4 The case AGAINST — the residual, stated not dismissed
+
+1. **"Nothing behind the door" is a property of the SEED, not of the BUILD.** It holds because Parts 1-2 hold.
+   Anyone who points a demo at a non-synthetic data source — a restored prod dump, a hand-loaded CSV — has
+   silently converted an authz-free build into a data-bearing one, and Part 3's whole argument evaporates. The
+   capture-source policy (§1.4) is what keeps this honest; **it is now also load-bearing for exposure**, which it
+   was not before.
+2. **Ambient means the operator did not choose.** A default-on surface is reachable by people who never decided
+   to publish it — including on a laptop that joins a corporate tailnet later.
+3. **The cockpit is the sharpest edge.** It is the one surface whose *entire purpose* is to hand out sessions
+   without credentials.
+
+**These are why the flip is scoped to the demo path only, and why `--no-public-host` exists.**
+
+### 3.5 SUPERSESSION — v2.2's D-DESIGN-1 is reversed, for the demo path only
+
+> **v2.2 D-DESIGN-1 (`.claude/skills/demo-up/SKILL.md`): _"Public reach is never default-on"_** — external
+> binding happens ONLY when `--public-host` is set.
+>
+> **SUPERSEDED by v2.3 D-DESIGN-3, for `/demo-up` only.** Remote reach becomes **default-on with opt-out**
+> (`--no-public-host`) on the **demo** path. **`/dev-up` remains opt-in** — unchanged.
+
+**Why the reversal is justified, in one paragraph:** D-DESIGN-1 was written believing that opt-in *withheld* an
+exposure. §3.1 shows it did not — the containers were world-published either way, so D-DESIGN-1 was buying less
+safety than it appeared to, at the cost of a demo that a presenter could not reach. What it *did* withhold was
+the trusted HTTPS origin. Meanwhile the thing that actually makes a demo safe to expose — **there is no customer
+data in it, and it cannot write prod** — is a *structural* property (Parts 1-2), not a consequence of the flag.
+D-DESIGN-3 therefore moves the default, keeps the escape hatch, and confines the change to the path whose entire
+purpose is to be shown to other people.
+
+**Dev stays opt-in** because a dev stack has no such guarantee of synthetic-only content: it is a working
+environment, an engineer may point it anywhere, and §3.4's residual #1 is a live risk there rather than a
+hypothetical one.
+
+> ⚠️ **Cite it as "v2.2's D-DESIGN-1", never bare.** v2.3 has its **own** `D-DESIGN-1` (*"the <5 s gate is on
+> ACCESS, not full first-page render"*). The ids collide across releases; a bare reference resolves to the wrong
+> decision.
+
+**Status: LIVE in code as of M220 S3** (2026-07-14; proven default-on end-to-end on `billion`, and proven to
+fall back byte-identically on a box with no Tailscale). §3.5 previously recorded only the *decision* — the code
+still required the flag. It no longer does.
+
+#### 3.5.1 How default-on actually decides — the capability ladder
+
+Default-on does **not** mean *"assume the box is on a tailnet"*. It means *"find out, and prove it"*. Six rungs,
+**capability-gated, never presence-probed** (`demo-stack/tailscale_autohost.py`):
+
+1. `tailscale` is on `PATH`
+2. `tailscale status --json` → `BackendState == "Running"` — *installed-but-logged-out is a **failure***
+3. `.Self.DNSName` present and **dotted** — a dotless name is **hard-refused** (`@clerk/backend`'s
+   `assertValidPublishableKey` rejects a dotless FAPI host, and the host is baked into the publishable key, so a
+   dotless host **500s every request** — it is not a degraded demo, it is a broken one)
+4. `CurrentTailnet.MagicDNSEnabled == true` — *cannot confirm ⇒ refuse*
+5. `tailscale serve status` shows no operator/sudo denial
+6. **`tailscale cert` actually MINTS a certificate** — *not "the binary is installed"*. Rungs 1–5 all pass on a
+   box where the mint still fails (no operator, tailnet HTTPS off, an ACME hiccup); the cert step then silently
+   degrades to a **local-trust** cert that the *remote* browser — the only machine this feature exists for —
+   rejects. A green bring-up nobody can use. So rung 6 demands a **certificate**, not a **binary**.
+
+> #### 🔴 The fallback is not optional — and it is a correctness property, not caution
+> **Any failed rung ⇒ an EMPTY `STACK_PUBLIC_HOST` ⇒ byte-identical to the v2.2 localhost demo**, plus **one
+> loud line** naming the exact fix command. **Never a partially-satisfied public path.**
+>
+> `SCHEME` and `BIND_HOST` in `up-injected.sh` both derive from the **same `-n $STACK_PUBLIC_HOST` predicate**.
+> A **half-satisfied** public path is therefore **strictly worse than localhost**: every baked browser URL flips
+> to `https://` while the listeners are still plain HTTP, and the demo **does not load at all**. Today a laptop
+> with no Tailscale always works, and it must keep always working. Fenced in
+> `demo-stack/tests/test_public_host_flip.py` — including the case where discovery **crashes** (a dropped
+> `|| true` would abort the bring-up, leaving a box unable to run *any* demo, not even the localhost one it ran
+> yesterday).
+
+#### 3.5.2 The cockpit is now behind the tailnet's TLS — which is **transport**, not **authentication**
+
+M220 S4 adds the presenter cockpit (`7700+offset`) to the `tailscale serve` front list. Until v2.3 it was the
+**one** browser-facing surface deliberately left on **plain HTTP** — and with remote reach now default-on that
+was the worst possible combination: the demo's **entry point**, the single page a presenter actually opens, was
+the single page not behind the trusted cert, while everything it links to was.
+
+**Do not read this as a hardening of the cockpit.** Per §3.2 the cockpit remains a **one-click, password-free
+"become any seeded hero" launcher** — a bare `GET /v1/client/handshake?__clerk_identity=<key>`. Fronting it on
+`tailscale serve` puts it behind the tailnet's **TLS + authenticated device mesh** instead of cleartext HTTP. It
+does **not** password-protect it. Anyone who can reach the tailnet can still become any hero, exactly as before;
+they now do so over a trusted origin. The reason that is acceptable is unchanged and structural: **there is no
+customer data in a demo, and it cannot write prod** (Parts 1–2).
+
+#### 3.5.3 The DEV path — remote reach is now a real opt-in, where before it was a vacuous one (M220 S7)
+
+§3.5 has said *"`/dev-up` remains opt-in"* since the flip was designed. That sentence was **true and hollow**:
+before M220 S7 there was **no `--public-host` on the dev path at all** — nothing to opt *into*. "Opt-in" named a
+choice the tool did not offer. S7 builds the flag, which is what makes the asymmetry a **contract** rather than
+an accident of what happened to be implemented:
+
+| | remote reach | the escape hatch |
+|---|---|---|
+| **`/demo-up N`** | **DEFAULT-ON** — the box's own MagicDNS host, auto-discovered (§3.5.1) | opt **out**: `--no-public-host` |
+| **`/dev-up N`** | **OFF** | opt **in**: `--public-host auto` \| `<fqdn>` (env: `DEV_PUBLIC_HOST`) |
+
+**The OFF side is the load-bearing half, and it is fenced as such.** A dev bring-up that does not ask for a
+public host makes **zero** `tailscale` calls — it does not probe and decline, it does not look. No cert mint, no
+`serve` config, no new files, no changed output: byte-identical to the pre-S7 tool. The fence proves this with a
+**tripwire** stub (a healthy `tailscale` on `PATH` that fails the test if invoked at all), because "it fell back
+safely" would be a passing grade for a tool that probed — which is exactly what the opt-in default forbids.
+
+**Dev reads `DEV_PUBLIC_HOST`, deliberately NOT the demo's `STACK_PUBLIC_HOST`.** `up-injected.sh` **exports**
+`STACK_PUBLIC_HOST` for its child launchers. Had dev read that name, a value inherited from an enclosing shell
+could have flipped a dev stack world-reachable **with no flag on the command line** — an exposure nobody typed.
+Separate namespace, no ambient inheritance.
+
+**Three things the dev path does NOT get, and the reason is the same each time:** a dev stack is not a demo.
+
+- **No Clerkenstein, no minted pk, no fake FAPI** — `/dev-up` uses **real Clerk**. §3.2's *"unauthenticated,
+  authz-weakened build"* describes a **demo**, not a dev stack; a dev stack still authenticates.
+- **No cockpit.** The password-free "become any hero" launcher is a demo surface (gated on `DEMO_STORIES`). A
+  dev stack never starts one, so `--no-cockpit` is passed unconditionally and its port is never fronted.
+- **Only the ports the stack actually publishes are fronted** — derived from the generated override, not from
+  the demo's fixed registry, because `--profile` decides what a dev stack runs. (`tailscale serve` *binds* the
+  ports it fronts; fronting a dead one would hold it against the next bring-up.)
+
+🔴 **What OPT-IN does NOT mean — read this before you conclude your dev stack is private.** It is *not* the case
+that a no-flag `dev-stack up` is unreachable from the network. **Every `dev-N` container is published on
+`0.0.0.0` already** — see §3.1, where this is now measured for the dev emitter (`8 ports → 0.0.0.0`) and not
+merely asserted — and on Linux Docker's iptables **bypass `ufw`/`firewalld`**. What `--public-host` adds is the
+**trusted HTTPS origin on the tailnet** (a `tailscale serve` front + a real cert), *not* the LAN exposure, which
+was there before you ever heard of this flag. The opt-in governs **reachability by name, over TLS, from another
+machine** — not reachability at all.
+
+⚠️ **And the residual that does NOT go away: §3.4's residual #1 is a LIVE risk on dev, not a hypothetical one.**
+A demo's content is synthetic + public-snapshot-only by construction (Parts 1–2). **A dev stack has no such
+guarantee** — it is a working environment, an engineer may point it at anything, and `/dev-up`'s own default is
+to read content **live from prod**. That is the entire reason dev is opt-in and demo is not, and it is why this
+flag asks you to say so out loud. As on the demo path, what you are turning on is **transport, not
+authentication** (§3.5.2): the tailnet's TLS + device mesh, not a password.
+
+### 3.6 The EGRESS half — what a demo sends OUT (v2.3 M220 S5/S6)
+
+§3.1–3.5 are about who can reach **in**. The mirror question went unasked for the whole demo family: **what does
+a demo reach OUT to?** A corpus that calls the demo *self-contained* owed an answer, and the honest one was bad.
+
+| what phoned home | measured | now |
+|---|---|---|
+| **Google Analytics · DoubleClick · Google Ads · LinkedIn Ads** | on **every page load**, via a **hardcoded** `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` in next-web's root layout | **gone** — the `next-web-no-thirdparty` demo-patch |
+| **Plausible · analytics.bellasio.com · uptime.betterstack.com** | same file, same three hardcoded `<Script>` tags. **Not in the plan** — found by reading the file. A presenter demoing to a customer was shipping that customer's page views to **seven** third parties | **gone** — same patch |
+| **Clerk telemetry** (`clerk-telemetry.com`) | real egress from **both** frontends. `TELEMETRY_DISABLED` had **zero** hits across the whole tooling repo — it was never wired. Also a reason Playwright's `networkidle` never settles | **off** — `CLERK_TELEMETRY_DISABLED` (server) + `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED` (browser, build-inlined). **Both halves, or one collector still phones home** |
+| **`cdn.jsdelivr.net`** — the clerk-js bundle | the fake FAPI proxied `clerk.browser.js` **live from the CDN on every full page load**, with `http.Get` = `http.DefaultClient` = **`Timeout: 0` (UNBOUNDED)** and **no cache**. next-web's entire authenticated tree is client-gated on clerk-js ⇒ **an unbounded internet dependency ON THE LOGIN PATH**: 0.2 s healthy, **~127 s if egress blackholes** — a presenter stuck on a white page with nothing to do but wait | **served from disk.** A box-level cache (shared by every `demo-N`) keyed by the request path's `package@version` — self-invalidating by construction. The CDN survives only as a **bounded** (15 s) fallback that populates the cache atomically and never caches a non-200 |
+| **real Clerk** (`api.clerk.com`) | the academy ran **keyless** and phoned Clerk to provision a throwaway app — holding the **REAL Clerk app's `CLERK_SECRET_KEY`**, copied out of `platform/.env` | **gone** — Clerkenstein-wired (see [`demo/frontend-tier.md`](demo/frontend-tier.md)). Same class as the `DIRECTUS_TOKEN` strip of §2.9 |
+
+**This is the item that most directly contradicted this document.** An unbounded, uncached internet fetch in the
+login path of a demo the corpus describes as self-contained is not a performance note — it is a false claim in a
+safety doc, which §3.1 already established is the worst failure mode in this project.
+
+**Verified from a tailnet peer, in a real browser, on an authenticated page load: zero requests to any of the
+above.** The check asserts it captured traffic at all — an empty scan is a FINDING, not a pass.
+
+> **One new listener, and it is the demo's FIRST loopback-bound port.** The disarmed fake BAPI is now published
+> on **`127.0.0.1:5401+offset`**, because ant-academy is the demo's one **host-native** frontend and cannot use
+> the in-network `api.clerk.com` alias — without it, its only reachable `CLERK_API_URL` is **real Clerk**. It is
+> bound to loopback precisely *because* §3.1 established that every other port is world-published: a mock that
+> ignores the bearer token entirely is the last thing that should be ambient on a tailnet.
+>
+> **Reconciled at v2.3 M221 (F-M220-5):** the fake BAPI is no longer the *only* host-native listener bound to
+> loopback — M221 tightened the **ant-academy** `next dev` bind to `127.0.0.1` on a localhost demo as well (§3.1).
+> The "every other port is world-published" reasoning still holds for the demo **container** ports (unchanged);
+> among the **host-native** listeners, the cockpit was already loopback, and on a localhost demo the academy and
+> this fake BAPI now join it — all three bind loopback.
+
+### 3.7 What this does NOT change
+
+Parts 1 and 2 hold **exactly** as written. Remote reach changes the *origin and scheme* a browser uses; it does
+not touch the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the
+3-layer write-isolation guard, the never-write-prod boundary, and the values-blind secret contract are all
+unaffected — and they are precisely what makes §3.3's argument work. **Part 3 is a debt that Parts 1 and 2 pay.**
+
+---
+
 ## How this relates to the platform's own isolation
 
 The platform itself has a 3-layer **tenant-isolation** posture — DB (`organization_id` on every table, Ent
@@ -388,6 +698,10 @@ section is a forward pointer only; everything else in this doc describes what sh
 currently staged for it — see the roadmap.)
 
 ## See also
+- [`demo/tailscale-serve.md`](demo/tailscale-serve.md) — the remote-access runbook (**exposure-side**). Its
+  § "Safety framing" carries the M220 retraction of the false `0.0.0.0`-is-gated claim; **Part 3 here is its
+  safety contract**. Fenced by `stack-injection/exposure_claim_guard.py` (derives the bind by *running* the
+  emitters; fails if any doc denies it, or if Part 3 stops disclosing it).
 - [`db-access.md`](db-access.md) — the production read foundation + the public-vs-customer boundary (read-side).
 - [`snapshot-spec.md`](snapshot-spec.md) — the capture/replay mechanism + the firewall + the capture-source policy.
 - [`seeding-spec.md`](seeding-spec.md) — the seeding framework + the 3-layer write-isolation boundary.

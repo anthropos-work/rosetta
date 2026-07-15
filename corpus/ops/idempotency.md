@@ -176,3 +176,32 @@ make a re-seed safe:
 - [`seeding-spec.md`](seeding-spec.md) — the seeder fleet, the `stack.seed.yaml` blueprint, the `--reset`
   model, and the n=0-dev guards.
 - [`rosetta_demo.md`](rosetta_demo.md) — the demo lifecycle: bring-up, `migrate-demo.sh`, teardown.
+
+---
+
+## Re-running a bring-up over a HALF-DEAD stack (M217)
+
+The re-run cases above assume the previous stack was either fully up or cleanly down. The case that bit us in the
+field is the third one: **a stack that crashed part-way**, leaving host-native listeners alive.
+
+**What used to happen.** A demo's cockpit (`7700+N·10000`) and ant-academy (`3077+N·10000`) are **not containers**,
+so `docker compose down` cannot reach them, and the teardown reaped them by PID from a pidfile that
+`launch_detached` writes *before the bind succeeds* and that a subsequent bring-up *overwrites*. So a re-up over a
+half-dead stack would:
+
+1. find the port still held by the **previous** cockpit,
+2. die on `EADDRINUSE` with an **unhandled traceback** (the bind sat outside any `try`),
+3. and **still log "presenter cockpit serving on …"**, because that message was unconditional.
+
+The operator then drove the **stale predecessor** — serving a manifest from the *previous* seed against a
+*freshly re-seeded* database — with no indication anything was wrong. Two of the last three bring-ups on `billion`
+were broken this way.
+
+**What happens now.** The bring-up **pre-reaps its own stale listener** on that exact port before binding
+(identity-checked, so a foreign process is reported rather than killed), `cockpit.py` fails cleanly with exit 2 and
+a diagnosis if the port genuinely cannot be freed, and the "serving" message is **gated on a real `/healthz`
+probe** — a dead cockpit is reported, with its log tail, instead of being claimed as alive.
+
+**So: a re-run over a half-dead stack now self-heals**, and the one case it cannot heal (a *foreign* process on the
+port) fails loud and names the process. See [`demo/cockpit-spec.md`](demo/cockpit-spec.md) § *Teardown is
+PORT-authoritative* and `rosetta-extensions/demo-stack/reap.sh`.

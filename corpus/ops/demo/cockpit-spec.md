@@ -55,10 +55,35 @@ root) and `[Jump to section]` (landed on the hero's deep-link). M43 **unified** 
 both logs the presenter in as the hero **and** lands her on a sensible per-role screen (an end-user on her
 profile, a manager on the Workforce dashboard). One CTA, one click, the right screen.
 
-**A login takes a moment — and now it shows.** The real handshake → next-web cold-load is ~2-5 seconds we can't
-shorten. Clicking **Log in as** raises a small **staged overlay** (*Signing you in… → Loading your workspace… →
-Almost there…*) so the blank-load has feedback instead of looking frozen. The overlay is feedback, not a
-progress bar — there's no real signal from the cross-origin handshake to report.
+**A login takes about a second.** Clicking **Log in as** raises a small **staged overlay** (*Signing you in… →
+Loading your workspace… → Almost there…*) so the load has feedback instead of looking frozen. The overlay is
+feedback, not a progress bar — there's no real signal from the cross-origin handshake to report.
+
+> #### ⚠ CORRECTION (M218 "seat change", v2.3) — this doc used to say *"~2–5 seconds we can't shorten"*
+>
+> **That claim was never measured, and it was wrong by 20–40×.** The first instrument ever pointed at this path
+> (M218 iter-02) measured click→ACCESS at **p95 39.45 s** (employee) / **38.30 s** (manager) on a remote demo.
+> The "we can't shorten it" half was wrong too: **M218 shortened it.**
+>
+> | | before M218 | after M218 |
+> |---|---|---|
+> | **employee** (`maya-thriving` → `/profile`) | p95 **39.45 s** | **p95 1.46 s** (p50 1.00 s) |
+> | **manager** (`dan-manager` → `/enterprise/…`) | p95 **38.30 s** | **p95 1.40 s** (p50 1.12 s) |
+>
+> *(5 consecutive cold logins/vantage, `billion` tailnet demo, `autoverify` green — the presenter's real vantage.)*
+>
+> **Two defects, both in the demo tooling, neither in the platform:**
+> 1. next-web's **server-side** GraphQL origin was the **build-inlined public URL**, which is unreachable from
+>    inside its own container → a 10.5 s connect-timeout × 3 attempts + backoff ≈ **37.5 s** of blocked SSR on
+>    *every* authenticated render. Fixed with a server-only `WUNDERGRAPH_SSR_ENDPOINT` (a sha-pinned demo-patch).
+> 2. Clerkenstein's fake **BAPI** served a **hardcoded stub user** to every hero, so `currentUser().externalId`
+>    disagreed with the JWT's identity → `app` refused `userPreferences` → a `retry: 2` / 2 s+4 s ladder burned a
+>    further **~6 s**. Fixed by making the BAPI **roster-aware**.
+>
+> **The lesson is not the numbers — it is that an unmeasured number sat in this doc, asserting its own
+> unfixability, for four releases, and that is exactly why nobody investigated.** Booked as an M43 scope-`Out:`
+> with decision **D5** and *zero* deferrals recorded, so it never entered a ledger. Don't write "we can't fix
+> this" about something you have never measured. See [`latency-budget.md`](latency-budget.md).
 
 **Grab the seed manifest.** A footer **Download seed manifest** link saves the **consolidated
 `seed-generation-manifest.yaml`** (v1.10b M52) — the single auditable file inlining the whole seed+generation
@@ -76,10 +101,42 @@ with no manifest wired falls back to saving the cockpit's JSON menu.) See
 The cockpit is a host-native HTTP server (`rosetta-extensions/demo-stack/cockpit.py`, **stdlib-only** Python) on
 an **offset port** (`7700 + N·10000`, e.g. `37700` for `demo-3`), brought up with the stack
 (`up-injected.sh`, session-detached via `launch_detached` so it survives the bring-up task being reaped) and
-torn down with it (its PID is recorded in `<stack>/cockpit.pid`). It is **never** an edit to next-web — it
-reaches the platform only as a browser would (over the FAPI handshake), preserving the hard
+torn down with it. It binds `127.0.0.1` by default; **`0.0.0.0` only under `--public-host`**. It is **never** an
+edit to next-web — it reaches the platform only as a browser would (over the FAPI handshake), preserving the hard
 zero-platform-repo-edit line. The serve is **non-fatal**: a cockpit failure never aborts an otherwise-good
-storytelling demo (the M18/M19 pattern). `DEMO_NO_COCKPIT=1` brings the demo up without the panel.
+storytelling demo (the M18/M19 pattern) — **but it is now REPORTED** (below). `DEMO_NO_COCKPIT=1` brings the demo
+up without the panel.
+
+#### Teardown is PORT-authoritative, not pid-authoritative (M217)
+
+> **This doc previously said the cockpit is "torn down with the stack (its PID is recorded in
+> `<stack>/cockpit.pid`)". That was true of the *intent* and false of the *behaviour*.**
+
+`docker compose down` cannot reach a host-native process, so teardown must reap the cockpit itself. It used to do
+so **by PID**, from that pidfile — and that leaks a listener three ways:
+
+1. `launch_detached` writes the pidfile **unconditionally**, *before and independent of* a successful bind. A
+   cockpit that died on `EADDRINUSE` still leaves a pidfile naming a dead pid.
+2. A second bring-up **overwrites** the pidfile — orphaning the first cockpit **forever**. It keeps serving a
+   **stale manifest** on the port and nothing records it.
+3. `kill` on a **recycled** pid kills the wrong process, silently.
+
+And the teardown **discarded `kill`'s status**, `rm -f`'d the pidfile regardless, and printed *"stopped the
+presenter cockpit"* **either way**. Found in the field on `billion`: an orphaned cockpit still **LISTENING on
+`0.0.0.0:17700`** — an unauthenticated *"become any hero"* panel pointing at a database whose containers had been
+removed — which **survived a `/demo-down` that reported success**.
+
+Since M217 (`demo-stack/reap.sh`):
+
+- **Teardown reaps by PORT**, which is what actually blocks the next bind. The pidfile is a *hint*, not the truth.
+- **The reap is identity-checked.** It kills only listeners whose command line matches (`cockpit.py`, scoped to
+  *this* stack's offset port, so a co-resident demo's cockpit is untouchable). A **foreign** process holding the
+  port is **reported loudly and left alive** — reaping a port must never become `kill $(lsof -t -i:PORT)`.
+- **The bring-up pre-reaps** its own stale predecessor before binding.
+- **`cockpit.py` fails cleanly** on a bind conflict (exit 2 + a diagnosis) instead of an unhandled traceback.
+- **"presenter cockpit serving on …" is now gated on a real `/healthz` probe.** It used to print unconditionally —
+  which is *how an operator drove a dead cockpit for a whole session*. A failed cockpit now says so, and its log
+  tail is surfaced.
 
 ### Single source — the menu is a projection of the seed (D9)
 
@@ -91,6 +148,24 @@ The manifest carries, per hero: the `key` (her `stories.yaml` id — the seat-sw
 `vantage`/`vantage_label`, `trajectory`, the presenter `annotation`, and a **resolved `jump_to`** (her declared
 `jump_to`, or the vantage default via `defaultJumpForVantage` — an end-user → `/profile`, a manager →
 `/enterprise/workforce`).
+
+### A `jump_to` pointing at a LEGACY surface is a HARD SEED FAILURE (v2.3 M219)
+
+`WriteCockpitManifest` calls **`ValidateCockpitManifest`**, which refuses any hero whose resolved `jump_to`
+matches **`LegacyReadinessPaths()`** (`stack-seeding/seeders/cockpit.go`). **The seed FAILS — it does not warn.**
+
+This exists because **every one of the demo's three AI-readiness pointers targeted the legacy page**, and nothing
+caught it for four releases. `/enterprise/workforce/ai-readiness` is an **unlinked orphan**: no nav entry, no
+workforce tab, no redirect points at it, and its hook takes no `cycle` param — so it reads the cycle-less endpoint
+and renders no cycle picker, no archetype matrix, no people, no How-we-measure, no What-to-do-next. A presenter
+driven there sees a shell. The **current** manager surface is **`/ai-readiness`**.
+
+The deep-link catalog is therefore no longer end-user-vs-manager only. It carries **an end-user readiness entry**
+too — **`ai-readiness-member` → `/home`** — because the member readiness surface **has no route of its own**
+(it is a region of the authenticated landing). *That is precisely why route-crawling never found it.*
+
+Current pointers: `dana-manager → /ai-readiness` · `aria-completed → /home` · `ben-started → /home`.
+See [`../../services/ai-readiness.md` § Surfaces](../../services/ai-readiness.md) for the current-vs-legacy split.
 
 ### The CTA — one [Log in as] = one FAPI handshake redirect
 
@@ -152,8 +227,8 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
   your workspace… → Almost there…* on a deterministic timer with a generous final stage. `localStorage` carries
   an "in-flight login" flag (with a 30s freshness window) across the cross-origin redirect, so a back-navigation
   to the cockpit re-shows the overlay rather than a dead spinner. The overlay never `preventDefault`s the real
-  navigation — it is purely additive feedback over the unavoidable latency. (The real ~2-5s handshake →
-  next-web cold-load is **unchanged**; only the feedback improves.)
+  navigation — it is purely additive feedback over the login latency, which **M218 cut from ~39 s to ~1.4 s p95**
+  (see the correction above; this line used to call a never-measured "~2-5s" latency *unavoidable*).
 
 ### Served endpoints
 
@@ -168,7 +243,7 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 ### Bring it up
 
 ```bash
-# A storytelling demo is the DEFAULT: /demo-up N seeds the 2-org hero trio, wires the multi-identity
+# A storytelling demo is the DEFAULT: /demo-up N seeds the 3-org hero trio, wires the multi-identity
 # fake-fapi, and serves the cockpit on http://localhost:$((7700 + N*10000)).
 /demo-up 3
 # → the cockpit serves on http://localhost:37700. Pick a hero → [Log in as] → land on her per-role screen.
@@ -203,3 +278,22 @@ single-source (D9) + stdlib-only posture all hold.
 [`clerkenstein.md`](../../services/clerkenstein.md) (the multi-identity FAPI handshake) ·
 [`frontend-tier.md`](frontend-tier.md) (the demo UI tier the cockpit launches into) ·
 [`rosetta_demo.md`](../rosetta_demo.md) (the demo-stack lifecycle).
+
+### The reap's safety rule (M217 hardening)
+
+The port reap has one non-negotiable rule, and it is worth stating plainly because it constrains every future
+change to `reap.sh`:
+
+> **If we cannot PROVE a listener is ours, we do not touch it.**
+
+Three cases, deliberately distinguished:
+
+| The listener… | What we do |
+|---|---|
+| matches our identity regex on **this stack's** offset port | **kill it** (TERM, then KILL) |
+| does **not** match — someone else's server | **report it loudly, leave it alive** |
+| has **no readable command line** (on Linux, `ss` only reveals pids you own — a **root-owned** listener is opaque) | **treat as foreign.** Report, do not kill |
+| was there on the probe and **gone** by the re-probe (it raced away) | **say nothing** — benign |
+
+And if the host has **none** of `lsof`/`ss`/`fuser`, the reap says **"CANNOT CHECK"** rather than reporting the
+port free. A blind process-killer that answers *"clear"* is worse than one that admits it cannot see.

@@ -27,7 +27,7 @@
 
 | App | Package | Port | Product / purpose | Dockerized? |
 |-----|---------|------|-------------------|-------------|
-| **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard, **AI-readiness** (the member 3-step onboarding `components/ai-readiness/` + the manager dashboard `app/.../ai-readiness/`; gated on PostHog `flag_ai_readiness` + the org `ai_readiness` setting — see [`ai-readiness.md`](ai-readiness.md)) | ✅ (the only one) |
+| **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard, **AI-readiness** (the member 3-step onboarding `components/ai-readiness/` + the manager dashboard `app/.../ai-readiness/`; gates DIFFER by surface — corrected v2.3 M219: the **member** funnel is gated on PostHog `flag_ai_readiness` **and** the org `ai_readiness` setting; the **manager dashboard** is gated on the GraphQL `aiReadinessEnabled` + the `isEnterprise` nav, and does **NOT** read the PostHog flag. Conflating them is the wrong-vantage error M219 spent a section correcting. A demo bakes no PostHog, so the flag resolves `undefined` forever and the member surface needs the `next-web-aireadiness-flag-gate` demo-patch — see [`ai-readiness.md`](ai-readiness.md)) | ✅ (the only one) |
 | **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels | ❌ Vercel-only |
 | **Integration** | `@anthropos/integration` | 3002 | Public-website embed (WordPress via proxy rewrites, SEO/Prerender) | ❌ Vercel-only |
 | **Maintenance** | `@anthropos/maintenance-app` | — | Downtime/outage placeholder UI | ❌ |

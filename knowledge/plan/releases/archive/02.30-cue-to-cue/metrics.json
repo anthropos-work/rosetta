@@ -1,0 +1,60 @@
+{
+  "release": "v2.3",
+  "codename": "cue to cue",
+  "shipped": "2026-07-15",
+  "branch": "release/02.30-cue-to-cue",
+  "rext_code_of_record": "cue-to-cue-m221-final",
+  "milestones": ["M217", "M218", "M219", "M220", "M221"],
+  "aggregation_method": "End-of-release counts (M221's final JUnit/grep reconciliation), NOT a naive per-milestone sum. Test counts are cumulative suite sizes, so the release value is the final milestone's count; deltas are stated vs v2.2 on the like-for-like method.",
+  "tests": {
+    "go_test_funcs": 1831,
+    "go_failures": 0,
+    "go_vet": "clean across all 6 modules",
+    "go_counting_method": "grep -c '^func Test' across all 6 go.mod modules (playthroughs, clerkenstein, alignment, stack-secrets, stack-snapshot, stack-seeding) — the SAME method M217-M221 used.",
+    "go_delta_vs_v22": "+82 (v2.2 = 1749 by this same like-for-like method; the 1772/1764 recorded at the v2.2 close used a DIFFERENT method and is NOT comparable — see M217 metrics note).",
+    "go_progression": {"v2.2_like_for_like": 1749, "M217": 1750, "M218": 1784, "M219": 1821, "M220": 1827, "M221": 1831},
+
+    "python_total": 1341,
+    "python_failures": 0,
+    "python_skipped": 16,
+    "python_by_section": {"demo-stack": 663, "stack-injection": 260, "stack-core": 182, "dev-stack": 122, "stack-verify": 114},
+    "python_counting_method": "JUnit XML (pytest --junit-xml), summed testsuite tests/failures/errors/skipped — NEVER grepped from piped stdout (a subtest rolls stdout '650 passed + 9 subtests' to 659/663 collected in XML; the XML is authoritative). M220 + M221 both use this; standardized here for the release.",
+    "python_delta_vs_v22": "v2.2 = 668 across 3 sections; v2.3 = 1341 across 5 sections (net-new dev-stack + stack-core reach the whole tree for the first time at M220). Like-for-like on the 3 SHARED sections: 668 -> 1105.",
+    "python_first_whole_suite_completion": "M220 — the whole rext Python tree ran end-to-end for the first time (the 5-milestone dev-stack 'spins forever' chronic was LAND-NOW'd at M220: one missing env var, DEV_SETDRESS_USE_STUB_BINS=1). Re-verified GREEN at M221 close (118 passed / 4 skipped, no hang).",
+    "python_count_method_drift_note": "Two apparent per-milestone DECREASES are method changes, not shrinking suites: stack-injection 194 (M217 incl-skipped) -> 186 (M218 passing-only); stack-core 152 (M220 passing) -> 182 (M221 JUnit collected incl 30 subtests). Underlying suites only grew. The release standardizes on JUnit COLLECTED counts.",
+
+    "ts_e2e": 151,
+    "ts_e2e_breakdown": {"stack-verify_e2e": 69, "playthroughs_e2e": 82},
+    "ts_e2e_counting_method": "npx playwright test --list (the canonical like-for-like method v2.2 used to record 124). Re-run at HEAD in the release review = 69 + 82 = 151, i.e. +27 vs v2.2 (INCREASE).",
+    "ts_e2e_false_regression_note": "M219's metrics.json recorded ts = {stack-verify_e2e 38 + playthroughs_e2e 56 = 94} via a DIFFERENT unit/typecheck measure. Copying M219's 94 against v2.2's 124 would register a false 124->94 DECREASE (a blocker under the regression rules). The release records the like-for-like 151 instead; the 94 is a different measure, so NO false regression is filed. (Itself a live D17 instance — a count artifact read as evidence.)"
+  },
+  "flake_count": 0,
+  "flake_gate": "0 every milestone. close-release triple-clean: 3/3 consecutive full-suite runs (Go 6 modules + Python 5 sections) in randomized order, each in an isolated git worktree. CLEAN 3/3.",
+  "supply_chain": {
+    "verdict": "GREEN",
+    "govulncheck": "No vulnerabilities found on all 6 Go modules.",
+    "net_new_direct_deps": 0,
+    "only_dep_change": "golang.org/x/crypto v0.51.0 -> v0.52.0 (INDIRECT, behaviour-neutral, patched) — landed at the M218 close. Zero package.json / requirements changes. Zero new direct Go deps.",
+    "licenses": "all permissive (MIT/BSD/Apache, no copyleft). The corpus-flagged deliberate dep anthropos-work/ai@v1.40.1 (a v1.10/M45 addition) is present, unchanged, org-internal.",
+    "go_toolchain": "go1.25.3 (authoring/CI box)."
+  },
+  "platform_repo_edits": 0,
+  "rosetta_release_diff": "108 files, 100% docs/planning (verified in the release review).",
+  "regression_rules_applied": {
+    "test_count_decrease": "NONE on the like-for-like methods — Go 1749->1831 (+82); Python 668->1105 on the 3 shared sections; TS e2e 124->151 (+27) via playwright test --list. PASS.",
+    "flake_gt_0": "flake = 0 every milestone + triple-clean 3/3. PASS.",
+    "net_new_deps": "0 net-new direct deps (one indirect x/crypto patch bump). PASS.",
+    "platform_repo_edits": "0. PASS."
+  },
+  "verdicts": {
+    "code_tests_supply_chain": "GREEN",
+    "flake": "GREEN (0)",
+    "supply_chain": "GREEN (0 net-new direct deps)",
+    "platform_repo_edits": "GREEN (0)"
+  },
+  "close_release": {
+    "review": "release-review.md (verdict YELLOW, 0 blockers; the 2 must-fix doc-staleness defects + the deferral/metrics paperwork discharged at close).",
+    "gate_headline": "click->ACCESS < 5 s (set M218, re-proven live 8/8 on billion over the tailnet with NO flags: maya-thriving 2.11 s / dan-manager 1.31 s vs baseline 39.45 s / 38.30 s).",
+    "tail_carries_to_v24": ["F4", "BURNIN-M221-dev-public-host", "F-M220-4", "PROBE-M218-c3-rerun"]
+  }
+}

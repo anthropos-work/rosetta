@@ -1,0 +1,116 @@
+{
+  "milestone": "M218",
+  "slug": "seat-change",
+  "version": "v2.3 cue to cue",
+  "closed": "2026-07-14",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "rext_tag": "cue-to-cue-m218",
+  "exit_gate": {
+    "target": "p95 click->ACCESS < 5000 ms for BOTH maya-thriving (employee -> /profile) AND dan-manager (manager -> /enterprise/...), over 5 consecutive cold reset-to-seed runs",
+    "status": "MET",
+    "achieved_worst_p95_ms": {
+      "employee": 2413,
+      "manager": 1767
+    },
+    "margin": "2.07x under the gate (worst case)",
+    "cycles": 5,
+    "cycles_proven_cold": 5,
+    "access_rate": "50/50",
+    "baseline_p95_ms": {
+      "employee": 39450,
+      "manager": 38300
+    },
+    "improvement": "~16x on the honest cold number",
+    "environment": "billion.taildc510.ts.net (Linux VM, 7.3 GiB RAM), demo-1, over the tailnet origin",
+    "warm_db_caveat": "iter-04's 1456/1400 ms figures were measured on a WARM database (F-9: --purge had never purged on Linux, so every 'cold' bring-up for days reused the same DB and images). They are NOT the gate number. The gate number is iter-05's 2413/1767 ms, over 5 cycles each PROVEN cold (initdb re-ran) and PROVEN green before being measured."
+  },
+  "tests": {
+    "python": {
+      "demo-stack": 495,
+      "stack-core": 97,
+      "stack-injection": 186,
+      "stack-verify": 109
+    },
+    "python_total": 887,
+    "python_failures": 0,
+    "python_skipped": 12,
+    "python_delta_vs_m217": "+20 passing (demo-stack 462->495 incl. +12 close fences; stack-injection 194->186 counts PASSING only, M217's 194 was total)",
+    "python_counting_method": "JUnit XML (pytest --junit-xml), parsed. NEVER grepped from piped stdout.",
+    "go_test_funcs": 1784,
+    "go_test_funcs_delta_vs_m217": 34,
+    "go_failures": 0,
+    "go_modules": 6,
+    "note": "Go count uses `grep -c '^func Test'` across all 6 go.mod modules — the SAME method M217 recorded (1750), so the +34 is like-for-like."
+  },
+  "alignment": {
+    "gate_rc": 0,
+    "go_surface_overall_pct": 97.2,
+    "go_surface_critical_pct": 100.0,
+    "genes": "26/27",
+    "gate_threshold": ">=95 overall / =100 critical",
+    "status": "MET",
+    "deliberately_red_genes": [
+      {
+        "gene": "MembershipOrgIdentity/real-org-eid",
+        "weight": "standard",
+        "why": "F-11 / D16 — the fake BAPI fabricates organization.public_metadata.eid as 'org_eid_'+orgID instead of the roster's real org UUID (the ORG-level twin of the user stub that cost this milestone ~6 s/render). NOT fixed here: resources.go is the demo's RUNTIME path and the 5-cycle cold gate was graded on the current binary (iter-05 D13), so a post-gate runtime change would ship something other than what was measured. Landed RED so the score stops lying — a silently-omitted field is how the headline bug survived four releases.",
+        "routed_to": "FIX-M219-bapi-org-eid"
+      }
+    ],
+    "surfaces_measured": 4,
+    "surfaces_total": 5,
+    "unmeasured": [
+      {
+        "surface": "expressrun (clerk-express-1)",
+        "why": "dependency-gated: without @clerk/express node_modules the runner cannot build — exits rc=2 with NO score, and nothing treats that as a failure. Reproduced identically at baseline f296e5e => PRE-EXISTING, not a regression.",
+        "consequence": "iter-04's 'all 5 surfaces 100%' claim is NOT reproducible on this box. Corrected in progress.md, iter-04/decisions.md, and 7 rext/corpus docs.",
+        "routed_to": "TEST-M219-expressrun-dep-gate"
+      }
+    ]
+  },
+  "flake_count": 0,
+  "flake_gate": "5/5 clean, sequential",
+  "platform_repo_edits": 0,
+  "iters": {
+    "total": 5,
+    "toks": 1,
+    "tiks": 4,
+    "harden_passes": 1
+  },
+  "bugs_fixed": {
+    "build_loop": 6,
+    "harden_pass1": 4,
+    "close": 11,
+    "total": 21,
+    "close_breakdown": "1 misfiled regression (stack-injection fence, RED since iter-03) + 3 must-fix false-greens (MF-1 purge collateral leak, MF-2 stale-image green, MF-3 skipped-patch green) + cmd_up verdict + ts field write-only + sync.Once/deleted-binary + latency-out committed + LATENCY_RUNS NaN + purge diagnostics to /dev/null + x/crypto bump"
+  },
+  "carry_forward": {
+    "count": 9,
+    "escape_hatch": 0,
+    "to_M219": ["FIX-M219-bapi-org-eid", "TEST-M219-expressrun-dep-gate", "TEST-M219-freshness-gate-skips"],
+    "to_M220": ["Clerk telemetry off", "F-5 ad-tech egress", "C-5 vendor clerk-js + bound the unbounded Timeout:0", "ant-academy real-Clerk-secret leak"],
+    "to_M221": ["F-7 NEXT_PUBLIC_BACKEND_API_URL blackhole twin (the loaded gun)", "C-3 cms/Directus 403s on the CONTENT path"],
+    "note": "All 9 are Fate-3 and the receiving milestones' overview.md files were EDITED (verified). None could land in M218 without invalidating its own exit gate: a demo-runtime change restarts the 5-cycle cold battery (iter-05 D13 / D16). Zero escape-hatch deferrals — nothing leaves v2.3."
+  },
+  "deferral_audit": {
+    "verdict": "YELLOW",
+    "items": 13,
+    "land_now": 3,
+    "land_next": 10,
+    "escape_hatch": 0,
+    "repeat_deferrals": 1,
+    "repeat_resolved": "x/crypto@v0.52.0 — deferred at v2.2, re-fated Fate-1 to 'M218's rext roll', still not landed at close. AGED_OUT + REPEAT => LAND-NOW. Bumped 0.51.0 -> 0.52.0; alignment gate score IDENTICAL pre/post (97.2%/100%), which is how we know it is behaviour-neutral.",
+    "report": "audit-deferrals/deferral-audit-2026-07-14.md"
+  },
+  "known_issues": [
+    {
+      "id": "PRE-EXISTING-DEVSTACK",
+      "what": "dev-stack test suite fails on this box",
+      "status": "environmental — needs a live Postgres on :15432, and this box's .agentspace/secrets lacks critical keys so the secret-coverage pre-flight aborts before the N-guard. Identical at v2.2 and M217.",
+      "m218_effect": "none — M218 does not touch dev-stack/",
+      "action": "flagged in the Gate Outcome Ledger for user sign-off; NOT an M218 regression"
+    }
+  ],
+  "notes": "The defining finding of the close: the hardening ledger MISCLASSIFIED an M218 regression as 'pre-existing, M217 footprint' because it used f296e5e — M218's OWN iter-05 commit — as the 'baseline'. Re-measured against the true pre-M218 ref (cue-to-cue-m217), stack-injection::test_next_web_block_shape PASSES there and FAILS at HEAD: iter-03's own fix added WUNDERGRAPH_SSR_ENDPOINT and left the exact-shape fence pinned to the old block. 'Reproduced at baseline => pre-existing' is only sound if the baseline predates the milestone. That is D17 (the stale-verdict hazard) surfacing inside the pass convened to name it — the sixth instance in one milestone. Three further false-greens (MF-1/2/3) were the same class, and MF-3 sat directly on the gate path: a SKIPPED demo-patch wrote nothing to demopatch.log, so a stack running WITHOUT the headline SSR fix would have printed '✓ demo-patches: none refused', graded green, and been measured by run-latency.sh."
+}

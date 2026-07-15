@@ -5,6 +5,8 @@
 stakeholder lands on a real, clickable, Clerk-free UI, not just a running backend. This is the v1.3b M19
 deliverable that completes the [demo family](README.md): up → snapshot → seed → **see it in a browser** → down.
 
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Read [`../safety.md`](../safety.md) first** for *why* this is safe, and [`../rosetta_demo.md`](../rosetta_demo.md)
 > for the stack lifecycle this extends. This page is the **frontend-specific** "how the UI tier is built and run".
 
@@ -19,9 +21,99 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
 | **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
-| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | Keyless via the `e2e_persona` bypass (`BENCHMARK_VISUAL_BYPASS` + `NEXT_PUBLIC_E2E_AUTH`); the cockpit [Academy] link lands a hero **authenticated as a member** (M53 F6) |
+| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | **Clerkenstein-wired (v2.3 M220)** — the demo's minted pk + the disarmed fake BAPI, read from `<stack>/.env.demo-N`. It **shares the demo's session**: a hero who clicks through from next-web arrives at the academy **signed in as herself**. *Was keyless via the `e2e_persona` bypass — see the box below; that is now removed.* |
 
 Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
+
+> ### 🔴 The academy used to **POISON the demo session** — and one click destroyed a live demo (v2.3 M220 S5/i)
+>
+> This is the single most damaging defect the demo family has shipped, and it hid behind *"the port answers"*
+> for four releases.
+>
+> `ant-academy.sh` built the academy's `.env.local` by **grepping `platform/.env`** for `CLERK_*`. That file
+> carries **11 matching lines**; all 11 were written, and in a dotenv file **the last one wins** — and it is not
+> the demo's minted key. So `@clerk/nextjs` found **no usable publishable key** and fell into **keyless mode**,
+> whose middleware answered every request on `:3077+offset` with:
+>
+> ```
+> Set-Cookie: __session=;     Expires=Thu, 01 Jan 1970 00:00:00 GMT    ← DELETES the demo's session
+> Set-Cookie: __client_uat=0; Domain=<tailnet>                         ← DOMAIN-wide, not port-scoped
+> ```
+>
+> **Cookies scope by HOST, not by PORT.** The academy on `:3077+offset` therefore **clobbered the session
+> next-web holds on `:3000+offset`**. Two measured consequences:
+>
+> 1. **A presenter who clicked "AI Academy" was LOGGED OUT of their own live demo**, into
+>    `ERR_TOO_MANY_REDIRECTS`. The blank academy page was the *lesser* half of the bug.
+> 2. **Every employee coverage sweep aborted** at that link — so the employee vantage had **no runnable sweep
+>    at all**, which is itself an absence-read-as-success risk.
+>
+> It was also a **safety** defect of the `DIRECTUS_TOKEN` fix16/17 class: the grep copied the **REAL Clerk app's
+> `CLERK_SECRET_KEY`** — a production secret — into a demo process, which [`safety.md`](../safety.md) forbids
+> outright.
+>
+> **The fix: wire the academy to Clerkenstein**, exactly as studio-desk has been since v1.10. It reads the demo's
+> minted pk + the disarmed fake BAPI + the fixed RS256 public key out of `<stack>/.env.demo-N` (never
+> `platform/.env`), so keyless mode never engages, **no cookie is ever deleted, and the academy SHARES the demo's
+> session** — the hero arrives signed in as herself.
+>
+> **The `e2e_persona` bypass (`BENCHMARK_VISUAL_BYPASS` + `NEXT_PUBLIC_E2E_AUTH`) is REMOVED.** It existed only to
+> fake an authenticated session on a *keyless* academy. Kept alongside real keys it is worse than either alone:
+> `proxy.js` short-circuits on the persona cookie **before** it resolves the real session, so the academy would
+> render a generic **"E2E Member"** to a presenter logged in as **Maya** — a persona self-consistency defect
+> shipped by our own launcher.
+>
+> **The fake BAPI is now published on `127.0.0.1:5401+offset`** — the demo's **first loopback-bound** port. The
+> academy is the demo's one **host-native** frontend (`next dev`, never dockerized), so it cannot use the compose
+> alias `api.clerk.com` every container reaches the BAPI through; without a published port its only reachable
+> `CLERK_API_URL` would be the default — **real `api.clerk.com`**. Loopback, not `0.0.0.0`: its only consumer is
+> a process on the same box, and a disarmed BAPI (it ignores the bearer entirely) is the last thing that should
+> be ambient on a tailnet.
+>
+> **The DoD is not "it paints".** It is the controlled A/B — *log in → click the academy → go back → **still
+> logged in***. Proven on `billion` from a tailnet peer in a real browser: `__session` present throughout,
+> `__client_uat` a live timestamp (never `0`), and `/profile` still rendering **"Maya Chen"** after the visit.
+> Direct `curl` at `:13077` now returns **zero `Set-Cookie` headers**.
+
+> ### ⚠️ A **stale academy from a previous demo** can keep serving on your port (v2.3 M220)
+>
+> Measured on `billion`, on M220's own bring-up: an academy `next dev` from an earlier demo — started **11½
+> hours** before — was **still bound to `:13077`**. Teardown reaps the academy (by pidfile *and* by port), but
+> **nothing reaped before a LAUNCH**. So the freshly-wired academy died instantly with
+> `EADDRINUSE 0.0.0.0:13077`, the bring-up moved on — **and the ORPHAN kept answering**.
+>
+> That is the worst possible shape of this bug: *the port answers*, so a render-probe polls the **orphan** and
+> can go green, and the presenter (and this milestone's own session-survival proof) would have been talking to
+> the **old, keyless** academy — the very process whose cookie deletion M220 exists to remove. **A stale artifact
+> outliving the thing it describes, then read as evidence.**
+>
+> `ant-academy.sh` now **reaps its own port before launching**, using the same identity-checked reaper teardown
+> uses (it refuses an empty pattern and matches the academy clone path / this stack's port / `next-server`, so a
+> co-resident demo's academy or an unrelated Next app is never touched).
+
+> ### ⚠️ ant-academy needs **Node ≥ 22**, and "started" must mean **the port answers** (F-13, M219)
+>
+> For four releases the bring-up reported the academy as **started** while the demo's **AI Academy** link served
+> a bare **502 for the entire life of the stack**. Two defects, both on the bring-up's *own reporting path*:
+>
+> 1. **The node check tested EXISTENCE, not the version.** `command -v node` passed on the demo VM — with
+>    **Node 18**. ant-academy declares `"engines": { "node": ">=22" }`, ships Next 16, and its toolchain imports
+>    `node:util`'s `styleText` (Node ≥ 20), so `next dev` died at import **every single time**:
+>    `SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'`.
+>    **A version requirement that is only checked for existence is not checked at all.** (The VM had v22.22.1
+>    installed under nvm and unused — a session-detached daemon never sources `nvm.sh`.) The launcher now
+>    resolves a satisfying node under `~/.nvm`, or **fails loud with the remedy**.
+> 2. **The liveness probe polled `kill -0 $pid` for 3 s**, then printed *"started (pid N)"*. The pid was alive at
+>    t=1 s and gone by t=5 s. **A probe that cannot outlive the thing it probes is not a probe.** It now polls the
+>    **port** (bounded by `ACADEMY_READY_TIMEOUT_S`, default **120 s** — `next dev` genuinely cold-compiles for
+>    30–60 s on a slow VM), watching the pid so a crash fails fast, and prints the log tail when the port never
+>    answers. The only success phrasing is **`started + SERVING on :PORT`**.
+>
+> The demo-coverage sweep catches this independently as a **cross-port failure** (`:3077+offset` → HTTP 502) —
+> which is how it was confirmed. **The launcher's own test fixtures were the bug**: the npm stub was
+> `run) exec sleep 30` (alive, serving nothing) and the node stub answered `-v` with silence, so the suite was
+> green *against the broken launcher*. The stubs now model a real academy, and both failure shapes are fenced
+> (the liveness one proven RED — the old check cheerfully printed "started" for a daemon serving nothing).
 
 > **studio-desk is single-port (M32).** The studio-desk image (`Dockerfile.dev`) is a **production build**
 > (`npm run build:server && build:frontend`, `CMD npm start`, and it even bakes `ENV NODE_ENV=production`): one
@@ -176,7 +268,7 @@ prints it); the build bakes that exact value, so the browser SDK talks to the de
 > line: a **tooling-owned demo-patch** (`rosetta-extensions/demo-stack/patches/demopatch` + a content-anchored
 > manifest) source-patches the demo's **EPHEMERAL gitignored next-web clone** to read `NEXT_PUBLIC_STUDIO_URL`
 > (a behavior-identical fallback ternary kept) **before** the image build, then **trap-reverts** after it bakes —
-> CANONICAL repos never touched (6 guards: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
+> CANONICAL repos never touched (**7** guards — G7, the apply post-condition, was made real at the M217 close: demo-clone-only path-assert, drift-refuse, never-commit, idempotent,
 > self-owned reversal, demo-only). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert, exactly
 > like the pk overlay), with the offset value `http://localhost:39000` in the `.env.local` overlay; default-on +
 > non-fatal (`DEMO_NO_PATCH=1` opts out). The Studio escape resolved demo-only (139→0); the served bundle carries

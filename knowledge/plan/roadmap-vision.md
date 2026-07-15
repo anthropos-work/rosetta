@@ -94,6 +94,37 @@ and a `release/{version}` branch is cut.
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
 > vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
+## v2.4 — carry-forward from v2.3 "cue to cue" (candidate scope, not yet designed)
+
+The four **non-gate tail carries** from v2.3's final milestone (M221), all
+**KEEP-DEFERRED-WITH-SIGNOFF → v2.4** — **user signed off 2026-07-15** at `/developer-kit:close-release`
+Phase 1b. None was a gate condition of v2.3 (whose proven scope is the DEMO path on `billion`, achieved 8/8);
+each has a concrete structural reason it could not land in-release (a **platform-repo** edit, or **live infra**),
+not "no time." Full disposition + per-item three-fate reasoning:
+[`releases/archive/02.30-cue-to-cue/m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md`](releases/archive/02.30-cue-to-cue/m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md)
++ the `RELEASE-SCOPE-DEFER` entries in each originating milestone's `decisions.md`.
+
+- **F4 — academy grid renders 0 cards** (DEF-M221-05, origin M221). The demo ant-academy home renders **0**
+  cards though the local catalog serves **2,705** entries (HTTP 200) — a client-side render defect. **The fix
+  lives in the `ant-academy` PLATFORM repo → out of v2.3's zero-platform-edit scope by definition.** Non-gate
+  (cockpit + next-web fully functional). v2.4: investigate the academy render path; likely a new rext-owned
+  sha-pinned demo-patch once understood. Documented known cosmetic gap.
+- **BURNIN-M221-dev-public-host** (DEF-M221-06, origin M221). The `/dev-up --public-host` flag (built M220,
+  consuming the retired M216) is fenced + mutation-proven byte-identical on the no-flag path but was **never
+  brought up as a real remote dev stack** for a live stability burn-in. **Needs live infra.** v2.4: cycle a real
+  remote dev stack.
+- **F-M220-4 — `ant-academy.sh` not re-runnable on a live public-host demo** (DEF-M221-07, origin M220). A
+  standalone academy re-run cannot bind because `tailscale serve` holds the port (first-boot ordering is correct;
+  only the out-of-band relaunch contends). **Needs live infra.** v2.4: re-derive the host from the registry +
+  cycle the serve proxy around the bind.
+- **PROBE-M218-c3-rerun — Cosmo federation cms/Directus 403 re-check** (DEF-M221-08, origin M218). The C-3
+  router-403 re-check on the content path was never re-run live. **Needs the live box.** v2.4: re-run against a
+  running federated stack. *(Naming: M218's close briefly wrote `PROBE-M221-c3-rerun`; canonical form is
+  `PROBE-M218-c3-rerun`.)*
+
+These four are **candidate scope**, not a designed release — a future `/developer-kit:design-roadmap` run decides
+whether v2.4 is these carries, a new user-driven theme, or both, and assigns `Mxyy` numbers at design time.
+
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
 The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night"
@@ -230,8 +261,25 @@ question (a UX nicety with no owner).
 - **v2.0 "opening night"** (IN DEVELOPMENT — chosen 2026-06-28, the **new-major** codename): the theatre lineage reaches its culmination — *opening night* is when the production is **proven before a live audience**, the moment the whole show must **actually work** end-to-end. Exactly v2.0's thesis: the **Playthroughs** pillar plays the platform's core user journeys through, start to finish, as a real person would, and proves they work. A fitting opener for the new major.
 - **v1.10b "fit-up"** (IN DEVELOPMENT — chosen 2026-06-29 by the user, theatre lineage): the *fit-up* (a.k.a. the get-in) is the technical work of **building and rigging the set correctly in the venue** before the show can run — the crew assembles the world so it holds together under the lights. Exactly this backfill's job: re-ground the demo to current prod and fix the bring-up so the environment stands up cleanly from cold — the technical preparation that must happen **before** v2.0 "opening night" can resume. Sits in the same field-hardening lineage as **v1.3b "dress rehearsal"** (the prior demo-up-issue backfill). Alternatives weighed: "tech rehearsal", "house notes".
 - **v2.2 "panorama"** (IN DEVELOPMENT — chosen 2026-07-11 by the user, over the proposed "on tour" / "road show" / "the transfer" / "guest house"): a *panorama* was a 19th-C immersive spectacle attraction — the whole scene, taken in from any vantage. Names the thesis directly: the whole environment made **viewable from anywhere on the tailnet**, no longer a single-seat show on the host's own `localhost`. Fits the spectacle/entertainment lineage even as it steps outside the strict backstage-of-a-play metaphor.
+- **v2.3 "cue to cue"** (IN DEVELOPMENT — chosen 2026-07-13, over "snap cue" / "stand by"): a *cue-to-cue* is the technical rehearsal where the company **skips straight from cue to cue**, cutting everything in between, purely to prove the transitions land cleanly and fast. Names the thesis exactly: a presenter must **swap from one hero to the next in seconds**, with nothing dead in between. Continues the theatre lineage; the speed sibling of v2.1 "quick change" (the costume change), which is why the codename deliberately echoes it.
 
-_Last updated: 2026-07-11 (**v2.2 "panorama" DESIGNED + PROMOTED to active development** — the **external-shareability
+## RETIRED reservations
+
+- **M216** (dev-path Tailscale parity + an operator surface) — reserved at the v2.2 design as that release's declared
+  scope-flex lever, **never scaffolded**. **CONSUMED 2026-07-13 by v2.3's M220(d)**: user decision **D-DESIGN-3**
+  (*remote access opt-out for `/demo-up`, **opt-in** for `/dev-up`*) requires the dev-side `--public-host` flag that
+  does not exist today — which **is** M216's scope. It ships inside M220 rather than as its own milestone, so the
+  `Mxyy` counter still resumes at **M217** and M216 is **retired as a reservation, not built**. (If M220 bloats, the
+  dev-side half drops back out — it is v2.3's declared scope-flex lever.)
+
+_Last updated: 2026-07-13 (**v2.3 "cue to cue" DESIGNED + PROMOTED to active development** — the **presenter-speed
+release**: a presenter swaps heroes in **under 5 s** on a demo that comes up **green, fully-loaded, and remotely
+reachable by default**. **5 milestones M217 → { M218 ∥ M219 ∥ M220 } → M221**, branch `release/02.30-cue-to-cue` cut
+from `main`, tag `v2.3`; tooling + docs only. A **field-hardening release** triggered by a live 1–2-minute
+cockpit-login defect; designed from the 10-agent research workflow `wf_e00a3a9c` + a dedicated residual-Clerk audit
+(full gap analysis: `.agentspace/scratch/roadmap-research-2026-07-13.md`). Takes **M217+**; **M216 RETIRED as a
+reservation** (consumed by M220(d)); reserved Playthroughs futures M205–M207 stay in vision. Prior: 2026-07-11
+(**v2.2 "panorama" DESIGNED + PROMOTED to active development** — the **external-shareability
 / Tailscale-serve release**: make dev/demo stacks reachable from other machines on a Tailscale tailnet; **4 milestones
 M212 → { M213 ∥ M214 } → M215** (+ opt M216), branch `release/02.20-panorama` cut from `main`, tag `v2.2`; opt-in
 default-off, HTTPS-everywhere, demo-first; tooling + docs + an opt-in flag only, the 2-item patch tail via the rext

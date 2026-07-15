@@ -4,6 +4,8 @@
 structural data from one declarative blueprint, the dependency order, and (most importantly) the
 **production-isolation boundary** that keeps a non-prod seeding run from polluting production.
 
+> **The demo-patch mechanism is specified in [`demo/demopatch-spec.md`](demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
 > **Scope.** This doc covers the **M7a framework**: the blueprint, the seeder contract, the dependency-DAG
 > orchestrator, the direct-Postgres perf path, and the isolation guard. The full **seeder fleet** (taxonomy,
 > content, sessions, backdated activity at scale) is M7c; the **data-DNA** schema-conformance/drift gate is
@@ -363,15 +365,26 @@ node-id), proven by the M42 coverage gate on the manifest STRENGTHENED to assert
 detail lives in [`profile-completeness-spec.md`](demo/profile-completeness-spec.md) §"the Talent-tab fill" + §"the
 shared per-member uuid-space". Code-of-record: `rosetta-extensions` @ tag `fit-up-m50`.
 **v1.10b "fit-up" M51** adds the **AI-readiness showcase org — a 3rd story** (org "Northwind Aviation", 200
-members, hero trio Aria COMPLETED / Ben STARTED / Dana manager), with three **net-new AI-readiness seeders**:
-**`OrgSettingsSeeder`** (the `organization_settings` `ai_readiness` enablement gate-row — nothing wrote that table
-before), **`AIReadinessConfigSeeder`** (`ai_readiness_cycles` **closed** + `ai_readiness_skills` with **real
-replayed-taxonomy node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), and **`AIReadinessFunnelSeeder`** (199
-frozen `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), DAG-ordered
-`config → funnel`. The milestone shipped the **closed-cycle / frozen-snapshot** strategy (the active-signals path
-was falsified — the live-recompute never completes in the coverage-harness budget) plus the
-**`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's whole-org
-`loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
+members, hero trio Aria COMPLETED / Ben STARTED / Dana manager), with **four net-new AI-readiness seeders**
+(**corrected v2.3 M219 — it was three**): **`OrgSettingsSeeder`** (the `organization_settings` `ai_readiness`
+enablement gate-row — nothing wrote that table before), **`AIReadinessConfigSeeder`** (`ai_readiness_cycles` —
+since M219 **BOTH a `closed` AND an `active` cycle** — + `ai_readiness_skills` with **real replayed-taxonomy
+node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), **`AIReadinessFunnelSeeder`** (199 frozen
+`ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), and — net-new at
+**M219** — the **interview-aggregated-report seeder** (`jobsimulation.interview_aggregated_reports`, flushed by
+the funnel seeder), **without which the manager's four interview-findings blocks render headings with no content**
+(no seeder had ever written that table). DAG-ordered `config → funnel`.
+
+> ⚠️ **M219 FALSIFIED M51's headline strategy claim.** This paragraph used to state that M51 shipped the
+> closed-cycle / frozen-snapshot strategy *"after the active-signals path was falsified — the live-recompute never
+> completes in the coverage-harness budget"*. **The live recompute completes in 2.09 s.** M219 measured it. The
+> demo now seeds **both** cycles: the **active** one is what the manager dashboard resolves and live-recomputes
+> (it is what fills Ben's funnel, Aria's full hero card, and the manager's `interview` / `diagnosis` / `sources`
+> sub-sections — all of which were NULL/absent under closed-only), while the **closed** one is retained as cycle
+> *history*. The `--reset` table list gains `jobsimulation.interview_aggregated_reports`.
+
+Plus the **`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's
+whole-org `loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
 `PerStackIsolated` + closure-GREEN across all 3 orgs, proven by the **M42 manager-vantage** coverage gate `(0,0)`.
 The detail lives in [`demo/stories-spec.md`](demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
 + the seeder contract [`../services/ai-readiness.md`](../services/ai-readiness.md). Code-of-record:

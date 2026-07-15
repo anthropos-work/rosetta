@@ -1,13 +1,74 @@
-# Remote demo access over Tailscale — the `--public-host` runbook
+# Remote stack access over Tailscale — the `--public-host` runbook
 
-**Make a demo stack reachable from another machine on your Tailscale tailnet** — run a demo on a Tailscale VM
+**Make a stack reachable from another machine on your Tailscale tailnet** — run it on a Tailscale VM
 (e.g. `billion.taildc510.ts.net` on the odyssey Proxmox host) and a teammate with Tailscale up browses the whole
 demo end-to-end, in their own browser, over HTTPS. This is the **external-shareability** surface of v2.2
 "panorama".
 
-It is **opt-in and default-off**: a plain `/demo-up N` is byte-identical to today (localhost only, no external
-listener). Remote reach is requested explicitly with **one flag** — `--public-host <magicdns>` — and **Tailscale
-itself is the access control** (only tailnet members can reach the host; there is no public internet exposure).
+> **Both stack families are covered here, with OPPOSITE defaults** (v2.3's D-DESIGN-3):
+> **`/demo-up` is DEFAULT-ON** (Steps 0–7 below — opt out with `--no-public-host`) and
+> **`/dev-up` is OPT-IN** (**[Step 8](#step-8--the-dev-path-same-reach-opposite-default-v23-m220-s7)** — opt in
+> with `--public-host auto`). The **capability ladder is one implementation shared by both**; only the default
+> differs. A dev box that passes no flag makes **zero** `tailscale` calls.
+
+> **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
+
+> ## ⚠️ v2.3 M220 S3 — THIS IS NOW **DEFAULT-ON** (opt-out), NOT OPT-IN
+>
+> This page was written for v2.2, where remote reach was **opt-in** behind `--public-host`. **As of v2.3 M220 S3
+> (D-DESIGN-3, superseding v2.2's D-DESIGN-1) a bare `/demo-up N` auto-discovers the host and brings the demo up
+> reachable.** The flag still works (it forces a host and skips discovery); the new thing is that you no longer
+> need it. Opt out with **`--no-public-host`** (or `DEMO_NO_PUBLIC_HOST=1`), which does not even probe.
+>
+> **Auto-discovery is capability-gated, never presence-probed** — six rungs: `tailscale` on PATH →
+> `BackendState == Running` → a **dotted** `.Self.DNSName` → `MagicDNSEnabled` → no operator/sudo denial on
+> `tailscale serve status` → **`tailscale cert` actually MINTS**. *"The binary exists" is not "it works."*
+>
+> **🔴 Any failed rung ⇒ an EMPTY host ⇒ the plain localhost demo, byte-identical to v2.2**, plus one loud line
+> naming the fix. Never a *partial* public path: `SCHEME` and `BIND_HOST` share the same `-n $STACK_PUBLIC_HOST`
+> predicate, so a half-satisfied public path bakes `https://` URLs against plain-HTTP listeners and the demo
+> **does not load at all**. Contract + rationale: [`../safety.md`](../safety.md) **§3.5**.
+>
+> Everything below — the topology, the cert, the serve proxies, the walkthrough — is **unchanged and still
+> correct**. Only the *trigger* changed: what you had to ask for, the bring-up now offers.
+
+> ### The co-derivation is a NAMED invariant, not a convention (M220 harden)
+>
+> The sentence above — *"`SCHEME` and `BIND_HOST` share the same predicate"* — is the load-bearing safety
+> argument for the whole default-on flip. It lives in **one function**, `derive_public_host_vars()` in
+> `up-injected.sh`, which is where both are derived and where the dotless-pk refusal and the FAPI topology
+> guard also sit. It is a function *specifically so the fence can call it*: it used to be straight-line
+> top-level code, and because the lib-only test seam executes that block at **source** time — before a test
+> can resolve a host — the fence **re-typed the three derivation lines inside the test**, beneath a docstring
+> claiming it did not. Mutating the shipped `SCHEME` to an unconditional `https` therefore left the entire
+> suite **green**: the test was comparing a copy of the predicate against itself.
+>
+> **If you change how `HOST` / `FAPI_HOST` / `SCHEME` / `BIND_HOST` are derived, change them inside that
+> function.** A second derivation site anywhere else re-creates the exact hole, and it is invisible to a
+> green suite. RED-proven by mutants D5/D6 in `stack-core/tests/test_m220_mutation_battery.py`.
+
+> ### The ladder ALWAYS exits 0 — which is why a broken `tailscale` cannot test the fallback (M220 harden)
+>
+> `tailscale_autohost.py`'s contract is **exit 0, always**: a failed rung is the *documented fallback*, not an
+> error, and the module converts every internal crash into the empty host. A direct consequence, and it is not
+> obvious: **a broken/absent `tailscale` binary can never make the ladder process exit non-zero.** So it can
+> never exercise the `|| true` on the caller's side.
+>
+> The `|| true` in `resolve_public_host` / `resolve_dev_public_host` is still **load-bearing** — with
+> `set -euo pipefail` and a bare `pub="$(resolve_… )"` assignment (which, unlike `local pub=$(…)`, does *not*
+> mask the exit status), a non-zero collapses the whole bring-up. But the only thing that can produce one is
+> the **ladder process itself** dying: a missing or broken `python3`, an OOM, or an `ImportError`/`SyntaxError`
+> raised at *import* time — i.e. before `main()`'s `try/except` exists to catch it.
+>
+> **A test that stubs a failing `tailscale` is therefore testing the rung ladder, not the fallback.** To test
+> the fallback you must break the *interpreter or the module*. The dev path shipped with only the former and
+> the `|| true` went unexercised (mutant V4 survived the whole suite).
+
+Historically (v2.2) this was **opt-in and default-off**: a plain `/demo-up N` was byte-identical to a localhost
+demo, and remote reach was requested explicitly with **one flag** — `--public-host <magicdns>`. In both eras
+**Tailscale itself is the access control** (only tailnet members can reach the host; there is no public internet
+listener) — and note that this was *never* what gated the container ports, which have always been published on
+`0.0.0.0` (see the correction at the bottom of this page, and `safety.md` §3.1).
 
 > **This is a PROVEN recipe, not a plan.** M215 executed it live on a real Linux VM (`billion`, odyssey Proxmox
 > host) on **2026-07-11**: a teammate on a **different** tailnet machine logged in as a seeded hero and completed
@@ -133,8 +194,19 @@ one-line tag string; `#`-comments + blank lines + CRLF tolerated), then check th
 mkdir -p <root>/stack-demo <root>/.agentspace
 echo "<panorama-tag>" > <root>/.agentspace/rext.tag       # the tag carrying M212–M215 + the F1–F8 fixes
 git clone https://github.com/anthropos-work/rosetta-extensions.git <root>/stack-demo/rosetta-extensions
-git -C <root>/stack-demo/rosetta-extensions checkout "$(cat <root>/.agentspace/rext.tag)"
+# M217: `git fetch --tags` is MANDATORY. A fresh clone does NOT necessarily carry the tag you are about to
+# check out, and a bare `checkout <tag>` then dies `pathspec did not match` — or, worse, silently leaves the
+# clone on a bare sha. THE OMISSION OF THIS LINE IS EXACTLY HOW `billion` ENDED UP ON AN UNTAGGED COMMIT
+# (panorama-m214-3-g41a28aa) that then warned about itself on every bring-up for a whole release.
+git -C <root>/stack-demo/rosetta-extensions fetch --tags origin
+git -C <root>/stack-demo/rosetta-extensions checkout -f "$(cat <root>/.agentspace/rext.tag)"
+git -C <root>/stack-demo/rosetta-extensions describe --tags --exact-match   # MUST print the pinned tag
 ```
+
+> **The pin is now enforced, not suggested.** Since M217 a mismatch between the clone's checkout and
+> `.agentspace/rext.tag` **aborts the bring-up** (`DEMO_ALLOW_UNPINNED_REXT=1` to override). Detached HEAD is the
+> correct end state — `ensure-clones.sh` keys on `git describe --tags --exact-match`, so leaving the clone on a
+> branch trips the guard even when the content is right.
 
 `.agentspace/rext.tag` is the single source-of-truth both `/demo-up` and `ensure-clones.sh` read (M49 #1). The
 consumed tag **must** carry the M215 host fixes — the pre-flights (F1/F2/F8), the auto ssh-agent (F4), the
@@ -204,9 +276,9 @@ cockpit → the non-fatal auto-verify on the offset ports. `/stack-list` then sh
 
 ## Step 6 — Verify (the exact curls + the cockpit login)
 
-Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet machine** (or the
-VM itself), the plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its
-own TLS — so **no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
+Offset ports are `base + N·10000`; for `demo-1` (N=1) the offset is `+10000`. From **any tailnet PEER**, the
+plaintext services are fronted by `tailscale serve` over the trusted cert, and the FAPI serves its own TLS — so
+**no `-k`/`--insecure`** is needed (the whole point: a genuinely trusted Let's Encrypt cert):
 
 ```bash
 HOST=billion.taildc510.ts.net
@@ -217,6 +289,32 @@ curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15400/v1/client    # FAPI
 
 All three answered `verify=0` (cert trusted, no CA install) from a **remote** Mac on the M215 run — the
 make-or-break proof that the M213/M214 remote-auth foundation works on a real Linux VM.
+
+> ### ⚠️ NOT from the VM itself — `tailscale serve` is bypassed on the loopback path (M219)
+>
+> This section used to read *"from any tailnet machine **(or the VM itself)**"*. **The parenthetical is false**,
+> and it cost M219 a full false-RED sweep before it was diagnosed.
+>
+> `docker-proxy` binds the demo's offset ports on **`0.0.0.0`**, which includes the VM's own `100.x` tailscale
+> address. A connection originating **on the VM** to `https://<magicdns>:<port>` therefore lands on the **kernel
+> socket** — the container, speaking plain HTTP — instead of being intercepted by `tailscaled`'s `serve` layer,
+> which is what terminates TLS. Plain HTTP answering a TLS handshake yields:
+>
+> ```
+> curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+> ```
+>
+> Measured on `billion`: **from the VM, https on `:13000`, `:15050` and `:18082` ALL fail TLS; from a tailnet
+> peer all three answer 307/200/200.** From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
+> the trusted cert — which is why `tailscale serve status` can list a mapping that nevertheless does not apply to
+> traffic you originate locally.
+>
+> **Consequence for testing.** A `--public-host` demo bakes the MagicDNS origin into the frontend build, so the
+> app's own GraphQL client calls `https://<magicdns>:15050/graphql`. Drive that app from a browser **on the VM**
+> and every GraphQL call dies `ERR_SSL_PROTOCOL_ERROR`, every page renders a permanent loading spinner, and every
+> content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
+> coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
+> [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at `http://$HOST:17700` (`7700+off`,
 plain HTTP — it is deliberately *not* fronted by `tailscale serve`; navigating from an http launcher page to the
@@ -261,6 +359,56 @@ bring-up and where `tailscale` is absent.
 > the `tailscale serve` config is **not** cleared — run **`tailscale serve reset`** before the next `--public-host`
 > deploy, or it will port-conflict. (`/demo-down` does this per-port for you; the blanket `reset` is the manual
 > catch-all.)
+
+---
+
+# Step 8 — The DEV path: same reach, opposite default (v2.3 M220 S7)
+
+Everything above is the **demo** path, where remote reach is **default-on**. A **dev** stack can be made
+reachable too — but you must **ask**:
+
+```bash
+DEV=stack-dev/rosetta-extensions/dev-stack
+
+"$DEV/dev-stack" up 2                              # ← nothing happens. No tailscale, no probe, no serve.
+"$DEV/dev-stack" up 2 --public-host auto           # ← opt IN: walk the ladder, adopt this box's MagicDNS host
+"$DEV/dev-stack" up 2 --public-host box.tail.ts.net  # ← ...or name it outright (no probe; you have spoken)
+DEV_PUBLIC_HOST=auto "$DEV/dev-stack" up 2         # ← the env form of the same opt-in
+
+"$DEV/dev-stack" down 2                            # ← clears this stack's serve ports, exactly like /demo-down
+```
+
+**Why the asymmetry** — it is **v2.3's D-DESIGN-3**, in the user's words: *"opt-out at build time for
+`demo-up`, **opt-in** at build time for `stack up`"*. A demo exists to be shown to someone else. A dev box does
+not, and — unlike a demo — **its content is not guaranteed synthetic** (a dev stack reads content live from prod
+by default). See [`../safety.md`](../safety.md) **§3.5.3**.
+
+| | remote reach | escape hatch | env form |
+|---|---|---|---|
+| **`/demo-up N`** | **DEFAULT-ON** | `--no-public-host` | `DEMO_NO_PUBLIC_HOST=1` |
+| **`/dev-up N`** | **OFF** | `--public-host auto` \| `<fqdn>` | `DEV_PUBLIC_HOST` |
+
+**What is shared, and what differs:**
+
+- **The ladder is the SAME code** — `demo-stack/tailscale_autohost.py`, all six rungs, reused cross-section
+  (not reimplemented). Same rungs, same order, same verdict, same fix-lines; only the words on stderr change
+  (`dev-up:` instead of `demo-up:`). **The one difference is the default, and it lives in the caller.**
+- **The fallback is the same and just as hard.** Any failed rung ⇒ an **empty host** ⇒ the localhost dev stack
+  that has always worked, plus one loud line naming the fix. Never a half-satisfied public path.
+- **Pass no flag ⇒ byte-identical to before the feature existed.** Zero `tailscale` invocations — it does not
+  probe and decline, it does not look. (Fenced with a tripwire stub that fails the test if `tailscale` is
+  called at all.)
+- **`DEV_PUBLIC_HOST`, not `STACK_PUBLIC_HOST`.** `up-injected.sh` *exports* the latter, so an inherited value
+  would otherwise flip a dev stack public with no flag on the command line. Dev has its own namespace.
+- **Only the ports your `--profile` actually publishes are fronted** (default `graphql` ⇒ backend API + Cosmo
+  GraphQL). The demo's fixed registry does not apply: `tailscale serve` **binds** what it fronts, so fronting a
+  port with no listener would hold it against the next bring-up.
+- **No cockpit, no Clerkenstein.** A dev stack authenticates against **real Clerk** and has no presenter
+  launcher. §3.2's *"unauthenticated, authz-weakened build"* is a description of a **demo**, not of this.
+
+> **The dev up-path pre-reset runs BEFORE `docker compose up`** — which the demo path (ADV-1) cannot do, since
+> it resolves its host later. So a stale serve listener from a previous dev stack is cleared *before* the
+> containers try to bind, rather than after.
 
 ---
 
@@ -311,17 +459,38 @@ localhost) so no site can drift:
 | **studio-desk redirects** (`CLERK_SIGN_IN_URL` / `WEB_APP_URL`) | `http://localhost:3000+off` | `https://$HOST:3000+off` | `gen_injected_override.py` (runtime env) |
 | **Baked browser URLs** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `_BACKEND_API_URL`, `_HOSTING_URL`, `_STUDIO_URL`, `_ACADEMY_URL`, `_PUBLIC_WEBSITE_URL`, `VITE_GRAPHQL_ENDPOINT`, `VITE_WEB_APP_URL`) | `http://localhost:…` | `https://$HOST:…` | `up-injected.sh` (`$SCHEME`) — the image cache-validators embed `$SCHEME` too, so an http-baked image is rebuilt under an https host |
 | **studio-desk SPA sign-in** (`VITE_CLERK_SIGN_IN_URL`) | *(was the un-offset `localhost:3000/login` default)* → now `http://localhost:3000+off/login` | `https://$HOST:3000+off/login` | `up-injected.sh` — baked via a gitignored `.env.production.local` overlay (no Dockerfile ARG; see §"The patch tail") |
-| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, loopback bind, hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
+| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **`127.0.0.1:13077` bind** (`-H 127.0.0.1` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
 | **FAPI cert** | `mkcert`/openssl (local trust) | `tailscale cert` (tailnet-wide trust) | `up-injected.sh` (M213) |
-| **Cockpit / academy bind** | loopback | `0.0.0.0` | `up-injected.sh` / `ant-academy.sh` (M212) |
+| **Cockpit bind** | `127.0.0.1` (loopback, `cockpit.py --host` default) | `0.0.0.0` | `up-injected.sh` (M212) |
+| **ant-academy bind** | **`127.0.0.1`** (loopback, `-H 127.0.0.1` — landed v2.3 M221 F-M220-5; was `*:13077` from `next dev`'s own `0.0.0.0` default) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
 | **Registry** | no interaction | records `external_host` for `/stack-list` | `up-injected.sh` (M212) |
 
 **Mixed-content clean.** With HTTPS-everywhere, no browser-facing call resolves to plain `http://` — the scheme
-flip covers every baked endpoint, redirect, and cross-surface link; the asset plane is already prod-HTTPS. The
-**one** deliberate plain-http surface is the **presenter cockpit's own page** (port `7700+off`): it is not in
-`tailscale serve`'s front list, so it serves plain HTTP — an http launcher page linking/POSTing to the https demo
-surfaces is fine (a navigation from http to https is not mixed content). Fronting the cockpit too is a live-
-acceptance polish left as an accepted future enhancement (M215 shipped with the cockpit deliberately plain-HTTP).
+flip covers every baked endpoint, redirect, and cross-surface link; the asset plane is already prod-HTTPS.
+
+> **v2.3 M220 S4 — the last plain-HTTP surface is gone.** This paragraph used to end: *"The **one** deliberate
+> plain-http surface is the **presenter cockpit's own page** (`7700+off`): it is not in `tailscale serve`'s front
+> list … fronting the cockpit too is a live-acceptance polish left as an accepted future enhancement."*
+>
+> **It is no longer a polish, and it is no longer excluded.** `gen_tailscale_serve.py` now carries
+> `('cockpit', 7700)` on its **own axis** (gated on `DEMO_STORIES`, *not* on `--no-ui` — the cockpit runs on a
+> `--no-ui` stories demo, so filing it under the UI tier would have left a **live** cockpit unfronted), and
+> `up-injected.sh` fronts it with the same trusted MagicDNS cert as every other browser-facing port.
+>
+> **Why it mattered enough to fix now:** S3 made remote reach **default-on**. Leaving the cockpit on plain HTTP
+> then becomes the worst possible combination — the demo's **entry point**, the *one* page a presenter actually
+> opens, is the *one* page not behind the trusted cert.
+>
+> **Ordering matters, and it is not cosmetic.** `tailscale serve` binds the tailnet IP `:<port>` as a **real
+> listener**, so fronting `:7700` *before* the cockpit binds makes the cockpit's own bind fail `EADDRINUSE` —
+> you would "fix" its exposure by killing it (the same contention M215 F12 hit for `ant-academy`). So the
+> bring-up's **first** serve apply passes `--no-cockpit`, and a **second**, idempotent apply fronts the cockpit
+> only after its `/healthz` answers. Bind first, front second. The **reset** plan, by contrast, always includes
+> `:7700` — otherwise a re-up over a stale serve config finds the port held and the cockpit cannot start at all.
+>
+> **This is transport, not authentication** — do not over-read it. The cockpit remains a one-click,
+> password-free *"become any seeded hero"* launcher; it is now behind the tailnet's TLS + device mesh rather than
+> in cleartext. See [`../safety.md`](../safety.md) **§3.5.2**.
 
 ## The tailscale-cert FAPI (the Clerk-free login over a real cert)
 
@@ -332,12 +501,32 @@ CA install**, exactly what `mkcert` cannot give a *remote* browser. The fake-FAP
 that cert on `5400+off` (so it is excluded from the `tailscale serve` proxy — double-fronting would double-TLS).
 The consumer mount is path-only (`<stack>/certs/fapi.{crt,key}`), so it is a drop-in at the same paths as the
 local mkcert/openssl cert. Falls back to the local mkcert/openssl path (local trust only) if `tailscaled` isn't
-up **or** the tailscale operator isn't set (F1 — set it, Step 0 #4). The LE cert is **90-day**; `tailscale cert`
-re-issues on re-run, and a long-lived stack needs a renew-then-reload step. Full cert story + caveats:
+up **or** the tailscale operator isn't set (F1 — set it, Step 0 #4). The LE cert is **90-day**, so a long-lived
+stack still needs a renew-then-reload step eventually.
+
+> **CORRECTION (M220 S3, measured).** This paragraph used to add: *"`tailscale cert` re-issues on re-run"*.
+> **It does not.** Two back-to-back mints on `billion` (2026-07-14) returned the **identical certificate serial**
+> (`05777C48…`) in **0.01 s** each, with **zero** new ACME orders in `tailscaled`'s journal. tailscaled serves
+> the cert from its own cache and only re-orders near expiry.
+>
+> **Why this was load-bearing, not trivia.** M220 S3 makes remote reach **default-on**, and its capability
+> ladder **mints a cert as rung 6 — on every bring-up**. If the old claim had been true, default-on would burn a
+> Let's Encrypt **duplicate-certificate** slot per `demo-up` — and since `ts.net` is a **PSL entry**, that bucket
+> is **per-tailnet**, shared by every box on it. A mint failure then silently degrades to a local-trust cert a
+> remote browser rejects. The flip was gated on **settling this empirically** rather than trusting the sentence.
+
+Full cert story + caveats:
 [`recipe-browser-login.md`](recipe-browser-login.md) §B step 2 and
 [`../../services/clerkenstein.md`](../../services/clerkenstein.md).
 
-## The patch tail — two platform-family files, both via the existing sha-pinned mechanism
+## The patch tail — THREE platform-family files, all via the existing sha-pinned mechanism
+
+> ⚠️ **M219 close: this section listed only TWO, and omitted the one patch that exists *because of* `--public-host`.**
+> **`next-web-ssr-graphql-origin`** (M218) is the fix for the **38-second login**: the SSR pass fetched the public
+> MagicDNS origin **from inside the container**, where the tailnet IP **blackholes** (ts-input drops the SYN-ACK on
+> the docker bridge) → ~37 s per authenticated render. That defect **only manifests on a `--public-host` demo** —
+> i.e. exactly the flow this runbook documents — and the remote-access runbook never mentioned it. See
+> [`demopatch-spec.md` § 5](demopatch-spec.md) for the row.
 
 Two files in the platform **family** aren't reachable by the pure config/env layer, so they ride the **existing
 rext sha-pinned patch mechanism** (drift-refuse, single-occurrence anchor, idempotent, non-fatal) applied to the
@@ -387,7 +576,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 | **F2** — the host needs Go for the rext tooling | no Go → secret provisioning skipped → `no usable platform .env` → abort | **pre-flight + prereq** — install Go 1.25.x (Step 0 #2) |
 | **F3** — `git tag --list \| head -1` SIGPIPE → 141 → `set -e` aborts | reproduces on a many-tag repo (`app` ~337 v-tags) | **rext fix (shipped)** — pipe-less `git for-each-ref --count=1` in `up-injected.sh` |
 | **F4** — buildx bake needs `SSH_AUTH_SOCK` (`ssh: default`) even though pulls use the PAT | a bare host with no ssh-agent fails at definition-load | **auto-handled** — the bring-up starts a **keyless** ssh-agent when absent (the PAT still does the real pulls) |
-| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | **known issue** — a demopatch re-anchor, separate from the remote story |
+| **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | ✅ **RESOLVED (M217 self-healing anchor gate).** *The anchor is the contract; the whole-file sha is only a baseline* — a drifted sha with an intact anchor now **self-heals** and applies (`demopatch-spec.md` §6). **Do not chase a re-pin; it no longer exists.** M219 (F-7) further confirmed the `loadmembers` patch is not dead. |
 | **F6** — Linux bind-mount data-dir perms (Bitnami UID 1001 can't write a root-owned host dir) | `mkdir: /bitnami/postgresql/data: Permission denied`; macOS Docker Desktop remaps, native Linux does not | **auto-handled** — the bring-up pre-creates the data dirs writable (manual fix was `sudo chmod -R 777 $STACK/data`) |
 | **F7/F8** — the host needs the `atlas` CLI; without it `migrate` creates 0 tables → every seeder fails | `migrate-demo.sh` treated `atlas`-missing as a non-fatal warning that masked a total migration failure | **pre-flight + prereq** — install atlas (Step 0 #3); the bring-up now fails loud on `atlas`-not-found |
 | **F9** — the taxonomy is set-dressed from the snapshot cache, not migrations | no `.agentspace/snapshots` on the VM → `public.skills=0`, sparse library/skills surfaces | **prereq (optional)** — scp/capture the cache (Step 4); identity/profile/dashboard work without it |
@@ -400,18 +589,61 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 
 ## Safety framing
 
-- **Opt-in, default-off.** No demo is externally reachable unless `--public-host` is passed. A bare `/demo-up N`
-  binds loopback only and is byte-identical to today.
-- **Tailscale is the access control.** The host is reachable **only** to members of your tailnet — there is no
-  public-internet exposure, no port-forward, no open 0.0.0.0-on-the-LAN surprise beyond the tailnet. Binding
-  `0.0.0.0` is gated on the knob precisely so it is never ambient. The teammate's client must keep Tailscale
+> ### 🔴 CORRECTION (v2.3 "cue to cue", M220) — this section used to state the opposite, and it was FALSE
+>
+> Until M220 this section read (quoted as a historical artifact — **do not treat as current**):
+>
+> ```text
+> RETRACTED — FALSE (shipped v2.2, corrected v2.3 M220):
+>   "Opt-in, default-off. … A bare `/demo-up N` binds loopback only and is byte-identical to today."
+>   "…no open 0.0.0.0-on-the-LAN surprise beyond the tailnet. Binding `0.0.0.0` is gated on the knob
+>    precisely so it is never ambient."
+> ```
+>
+> **Both sentences were false.** `stack-injection/gen_injected_override.py` emits **every** published port as
+> a bare `"<hostport>:<target>"` pair — with **no `127.0.0.1` prefix** — at all three emitters (`directus_lines`,
+> `frontend_lines`, `build_lines`). **Docker's default bind for a bare `host:container` mapping is `0.0.0.0`.**
+>
+> The doc had even said so itself, 200 lines above (§ "Why per-port `serve`…"): *"`docker-proxy` binds the demo's
+> offset ports on **`0.0.0.0`**."* The reassuring half is the one people quoted.
+>
+> **A shipped safety doc that understates real exposure is worse than no doc** — no doc at least prompts you to
+> go and look. The correction below is now fenced by `stack-injection/exposure_claim_guard.py`, which derives the
+> bind by *running* the emitters and fails if any doc denies it.
+
+- **⚠️ CONTAINER PORTS ARE PUBLISHED ON ALL INTERFACES — on EVERY `demo-up`, TODAY, flag or no flag.** Every
+  demo container's offset port is bound on **`0.0.0.0`**, with **or without** `--public-host`. This is **not**
+  introduced by remote access; it has been true of every demo since the injected override existed. Anyone who can
+  route to the host's IP can reach the demo's ports directly, bypassing `tailscale serve` entirely.
+  - **On Linux this bypasses your host firewall.** Docker installs its own iptables rules in the `DOCKER` chain,
+    which are consulted *before* `ufw`/`firewalld`'s. A `ufw deny` on the port does **not** block it.
+  - **What `--public-host` actually adds** is *not* the exposure — it is the **trusted-HTTPS origin** (a real
+    `tailscale cert`) and the per-port `tailscale serve` proxy that make the demo *usable* by a tailnet peer. The
+    ports were already reachable; the flag makes them *browsable* (Clerk needs a secure context).
+  - **Therefore the exposure delta of a default-on remote flip is far smaller than this doc used to imply** — the
+    LAN/tailnet-IP exposure is already there. See [`../safety.md`](../safety.md) **Part 3 — the exposure side**
+    for the full contract, and for what a demo actually *is* (an unauthenticated, authz-weakened build).
+- **`BIND_HOST` gates only the two HOST-NATIVE servers** — the presenter cockpit and ant-academy, which run as
+  plain host processes, not containers. `BIND_HOST` is `""` by default and `0.0.0.0` under a public host, and it
+  **does not touch a single container**. But `""` means *"pass no `-H` and let each server keep its own default"*,
+  and the two servers *used to* differ: the **cockpit** (`cockpit.py --host`) defaults to **`127.0.0.1`**
+  (loopback), while **ant-academy** (`next dev`) has an OWN default of **`0.0.0.0`** — so until M221 **the academy
+  was world-published on `*:13077` on every demo, flag or no flag**, exactly like the containers. **✅ LANDED v2.3
+  M221 (F-M220-5):** `ant-academy.sh` now passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` only under
+  a public host), so **both** host-native servers now bind loopback by default on a localhost demo (the
+  *"loopback by default"* framing is no longer cockpit-only — see [`../safety.md`](../safety.md) Part 3). The demo
+  **container** ports remain `0.0.0.0` by design — that half is unchanged.
+- **Tailscale is the access control for the *published origin*.** The MagicDNS host + `tailscale serve` listeners
+  are reachable **only** to members of your tailnet: no public-internet listener, no port-forward. This is a real
+  guarantee — it is just **narrower** than "nothing else is exposed". The teammate's client must keep Tailscale
   **MagicDNS on** (the default) for the `<magicdns>` name to resolve.
 - **Zero platform-repo edits.** The whole surface is rext tooling + this doc + the opt-in flag. The two
   platform-family patches touch only the demo's **ephemeral** clone via the sha-pinned mechanism (drift-refuse
   fails loud on an upstream change; reverted on teardown), never a canonical repo.
 - **The demo's data-isolation guarantees are unchanged.** Remote reach changes the *origin/scheme*, not the data
   plane: the tenant-data firewall, the per-stack isolated Postgres, and the never-write-prod boundary all hold
-  exactly as documented in [`../safety.md`](../safety.md).
+  exactly as documented in [`../safety.md`](../safety.md) (Parts 1 and 2). **This is the load-bearing mitigation:
+  the ports are open, and there is nothing real behind them.**
 
 ---
 
