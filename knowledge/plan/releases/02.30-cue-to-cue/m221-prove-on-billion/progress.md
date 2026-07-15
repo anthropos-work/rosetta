@@ -38,3 +38,107 @@ _(set by the previous iter's closeout)_
   client-side grid render defect), and the earlier-carried `BURNIN-M221-dev-public-host` / `F-M220-4` /
   `PROBE-M218-c3-rerun`. Next lifecycle step: `/developer-kit:harden-mstone-iters --final` then
   `/developer-kit:close-milestone`.
+
+## Gate Outcome Ledger
+
+_close-milestone Phase 9-iter · iterative shape · **closed-on-gate** · 2026-07-15_
+
+### Gate
+- **Target:** on `billion.taildc510.ts.net`, a DEFAULT `/demo-up N` (**no flags**) yields, reproducibly on a cold
+  reset-to-seed: (1) p95 click→ACCESS < 5 s for BOTH `maya-thriving` and `dan-manager` over the tailnet origin;
+  (2) full replayed catalog — taxonomy + directus + sim-embeddings, no skipped surface; (3) all 3 story orgs incl.
+  AI-readiness; (4) Dana sees a FILLED AI-readiness page; (5) Ben's from-scratch STARTED workflow visible; (6)
+  Aria's COMPLETED state renders; (7) remote access came up BY DEFAULT, no flag; (8) ZERO platform-repo edits.
+- **Achieved:** **8/8** on the iter-06 FINAL cold r4 cycle (a DEFAULT `up-injected.sh 1`, NO FLAGS), cold-proven
+  (PG_VERSION mtime inside the container > T0) + green (`autoverify green:true, warnings:0`), browser-graded from
+  a tailnet peer:
+  1. **Login p95 — maya-thriving 2.11 s / dan-manager 1.31 s** (both < 5 s; ACCESS 5/5 each; tailnet HTTPS origin).
+  2. Full catalog replayed — skills **42,790**, `directus_collections` **21**, sim-embeddings present (the F1
+     store-root fix, live-confirmed; was 0 in iter-04).
+  3. 3 orgs (Cervato / Solvantis / Northwind), cycles=2.
+  4. **Dana `/ai-readiness` browser 900-char check PASSED** — all 3 tabs >> 900 chars (1,745 / 1,629 / 2,305).
+  5. Ben STARTED on `/home`. 6. Aria COMPLETED (89/100). 7. remote-by-default auto-discovered, no flag. 8. zero
+     platform edits.
+  - **M219 readiness fold-in all MET** (0 junk of 132 distinct claimed skills; hero roles resolve; cycles=2;
+    interview report present; frozen 62 / live 66 agree — the single-round score fix holds). **F10 field-exercised**
+    (`assert_ports_free` + demopatch freshness G2-REFUSE abort). Seed isolation CLEAN (49 writes / 71,783 rows /
+    prod=false).
+- **Distance:** **gate met** (all 8 conditions hold).
+- **Status:** `closed-on-gate`.
+- **Reproducibility basis (disclosed):** the gate demands "reproducibly." Under the user's one-cycle pragmatic
+  mandate, "reproducibly" is evidenced by **two independent cold reset-to-seed r4 cycles**: iter-05's r4 cycle
+  (Maya p95 2.29 s / Dan 1.65 s, all 3 catalog surfaces, 3 orgs, Ben STARTED, Aria COMPLETED) **and** iter-06's
+  FINAL cold cycle (the numbers above), both at rext r4, both DEFAULT no-flag, both green. Not a 5×-battery
+  reproducibility (that would re-corrupt the single-host evidence the M219 lesson warns of and re-consume the
+  left-live demo); two clean cold cycles at the same code is the honest, mandate-scoped bar. The stack is **LEFT
+  LIVE** as the final deliverable (not torn down).
+
+### Iter ledger summary
+- **Total iters:** 6 — tiks: 5 (iter-02…06), toks: 1 (iter-01 bootstrap TOK-01).
+- **Duration:** 2026-07-15 (single-day direct-drive, per the M215 live-infra analogue).
+- **Decisions accumulated:** TOK-01 + per-iter D-M221-04b/05f/05g/06b/06d/06e (+ the reconciled orchestrator
+  fallback note) + 2 close-time decisions (D-M221-C1/C2) + the Phase 2c adversarial subsection.
+- **Hardening passes embedded:** the final `--final` harden pass (2 passes: continue → stabilized) —
+  `hardening-ledger.md`. Per-iter regression fences were RED/mutation-proven inline as each fix landed.
+
+### Routes carried forward — three-fate dispositions
+Most in-milestone routes **resolved as Fate 1 in this milestone**: F1 (iter-05 + harden depth-2 edge), F5/F5b
+(iter-05), F10 (iter-06 field-exercise), **F-M221-06b (this close's harden — `LATENCY_SCHEME`)**. The
+five-milestone `dev-stack`-suite chronic was LAND-NOW'd at M220 and is confirmed running (harden: 118 passed).
+Four **tail carries** remain — being at the FINAL milestone they cannot LAND-NEXT in-release:
+
+#### Escape-hatch — cross-release deferral (sign-off owed at close-release)
+- **F4** — academy grid renders 0 cards (catalog serves 2,705). Fix lives in the `ant-academy` **platform repo**;
+  v2.3's zero-platform-edit constraint forbids it → **v2.4** (documented known cosmetic gap). D-M221-06e / D-M221-C2.
+- **BURNIN-M221-dev-public-host** — live dev-path `--public-host` burn-in (non-gate; needs live cycling) → **v2.4**.
+- **F-M220-4** — ant-academy re-runnability on a live public-host demo (non-gate) → **v2.4**.
+- **PROBE-M218-c3-rerun** — router-403 re-check that needs the live box (non-gate) → **v2.4**.
+- All four are recorded with fresh reasons in `audit-deferrals/deferral-audit-2026-07-15-m221-close.md` (YELLOW);
+  their cross-release `RELEASE-SCOPE-DEFER` sign-off is `/developer-kit:close-release` Phase 1b's to obtain (it
+  runs next). This close does not fabricate that sign-off.
+
+### Dropped
+- None.
+
+### Protocol evolution
+- The milestone's `iteration_protocol_ref` (`corpus/ops/verification.md` + `coverage-protocol.md` +
+  `playthroughs.md`, the remote-origin cold reset-to-seed gates) held unchanged. M221's own contribution to the
+  protocol lineage: the **host-isolation lock** (`hostlock.sh`) makes the single-host live battery
+  self-non-corrupting (the M219 "two agents on one host corrupt the evidence" lesson, now fenced), and the D17
+  "loud-not-silent / a status artifact read as evidence" hazard was exercised end-to-end (the snapshot-cache
+  shadow, the M217 reap that ran in zero tests, the run-latency http scheme, and — a process instance — the
+  premature iter-05 close on a stale r3 snapshot, reconciled loudly in `3c64af1`).
+
+## M221: Final Review (close-milestone Phases 1–8)
+
+### Scope (iterative)
+- [x] Gate MET 8/8 (closed-on-gate); all 6 iters closed; every commit maps to an iter (iter-05 has the
+  reconciliation commit `3c64af1`). Carry-forward queue audited → 4 non-gate tail carries to v2.4.
+
+### Code Quality
+- [x] `go vet` clean; shellcheck clean on all 7 M221-touched shell scripts; all touched `.py` compile.
+- [x] Cross-cutting review done in the final-harden pass: consistent D17 "loud-not-silent / finding-not-pass"
+  discipline; no dead code (the one dead path — a mid-file `unittest.main()` — was caught + fixed).
+
+### Adversarial (Phase 2c)
+- [x] 2 scenarios recorded in `decisions.md` (depth-2 F1 shadow; direct-run suite false-green) — both fixed in harden.
+
+### Documentation
+- [x] [fixed] `hostlock.sh` indexed in `demo-stack/README.md` (was missing though the other 2 M221 tools were listed).
+- [x] [fixed] demo-stack test count reconciled 576 → 663 against the JUnit XML.
+- [x] No new top-level rext unit needs a handbook (M221 added files within existing sections, not a new package).
+
+### Tests & Benchmarks
+- [x] Full suites green (JUnit-authoritative): demo-stack 663 (659 pass/4 skip), dev-stack 122 (118/4),
+  stack-injection 260 (252/8), stack-core 182, stack-verify 114; Go all 13 stack-snapshot pkgs + 1831 funcs, 0 fail.
+- [x] Flake gate 3/3 on the new Go edge test + the reordered `test_reap.py`.
+- [x] Every M221 fence carries a RED/mutation regression test (audited in the hardening-ledger).
+
+### Decision Triage
+- [x] The durable mechanisms (host-lock, F1 store resolver, native/detached reap, host-native exposure guard,
+  backend-url server-reader guard) are documented in `demo-stack/README.md` + the tools' own header docstrings —
+  the rext section README IS their subsystem doc. No separate knowledge-doc blend needed beyond the README fixes.
+- [x] Close-time decisions D-M221-C1 (F-M221-06b landed Fate 1) + D-M221-C2 (4 tail carries → v2.4) recorded.
+
+### Deferral audit (Phase 1b)
+- [x] `/developer-kit:audit-deferrals --scope=milestone` → **YELLOW**, 0 blocking. Report in `audit-deferrals/`.

@@ -28,3 +28,30 @@ this code — the last real billion run (M215-era) skipped all three catalog sur
 M218/M219/M220. Phase C's first battery cycle establishes the baseline.
 **Next-tik direction:** iter-02 (first tik) = Phase A, land `GUARD-M221-host-isolation`. Off-box; RED-prove that
 a second concurrent cycle is refused with the holder's identity named.
+
+## Close-time decisions (close-milestone, 2026-07-15)
+
+| # | Decision | Rationale | Date |
+|---|----------|-----------|------|
+| D-M221-C1 | **F-M221-06b LANDED at close (Fate 1), not routed to v2.4.** `run-latency.sh` gains a backward-compatible `LATENCY_SCHEME` env (default `http`; `https` for the M220 HTTPS-fronted remote cockpit). | It fits the fixable-inline boundary (one env var, shellcheck-clean, construction-proven) and the task directed landing it in the harden pass if clean. Retires the iter-06 "drive the spec with https by hand" workaround. rext `a0f8615`. | 2026-07-15 |
+| D-M221-C2 | **Four tail carries KEEP-DEFERRED-WITH-SIGNOFF → v2.4, finalized at close-release.** F4 (academy grid render defect), BURNIN-M221-dev-public-host, F-M220-4, PROBE-M218-c3-rerun. | M221 is the FINAL milestone → no in-release LAND-NEXT target. Each is non-gate with a concrete reason: F4's fix lives in the `ant-academy` **platform repo** (v2.3's zero-platform-edit constraint forbids it — structurally un-landable, not "no time"); the other three need live infra (dev-stack burn-in / live public-host re-run / the box) that repo-side close work can't provide. The cross-release escape-hatch sign-off is owed at `/developer-kit:close-release` Phase 1b (release scope), which runs next. See `audit-deferrals/deferral-audit-2026-07-15-m221-close.md` (verdict YELLOW). | 2026-07-15 |
+
+## Adversarial review (close-milestone Phase 2c, 2026-07-15)
+
+Two adversarial scenarios were constructed against the milestone-touched code during the final-harden pass; both
+are recorded here as the *scenarios considered*, with their responses.
+
+1. **"Does the F1 `exists != populated` bug recur one directory level deeper?"** — `workspaceRootFrom`'s fix
+   requires a NON-EMPTY `snapshots/` dir, but its heuristic is `len(ReadDir(snapshots)) > 0`. **Scenario:** an
+   interrupted capture leaves `snapshots/<surface>/` present but empty — "populated" to the resolver, yet holding
+   no real cache. **Response:** the load-bearing property is not "the resolver is perfect at every depth" but "a
+   wrong/empty store can NEVER degrade the catalog SILENTLY." The replay-time `st.List()==0` net catches the
+   deeper shadow and emits the D17 loud wrong-root diagnostic (non-fatal). Pinned by
+   `TestReplay_StoreWithEmptySurfaceSubdirIsStillLoud` (rext `a0f8615`). A smarter recursive resolver would be a
+   design change with no field evidence — routed out of scope, the invariant is protected regardless.
+2. **"Does running a test suite directly actually run all its tests?"** — **Scenario:** `python3
+   tests/test_reap.py` printed "Ran 21 tests ... OK" while `pytest` collected 41 — a mid-file
+   `unittest.main()` silently omitted the 20 adversarial-error-path + suite-honesty classes defined below it (the
+   exact fences that guard this milestone's reap work). **Response:** a false all-clear is the release's own D17
+   signature hazard turned on the suite that fences it. Moved the block to EOF; direct run 21→41, pytest
+   unchanged. Fixed inline (rext `a0f8615`).

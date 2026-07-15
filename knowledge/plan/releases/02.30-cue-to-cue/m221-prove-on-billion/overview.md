@@ -3,9 +3,9 @@ milestone: M221
 slug: prove-on-billion
 version: v2.3 "cue to cue"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-13
-last_updated: 2026-07-13
+last_updated: 2026-07-15
 complexity: large
 depends_on: M217, M218, M219, M220
 exit_gate: "On billion.taildc510.ts.net, a DEFAULT /demo-up N (NO FLAGS) yields, reproducibly on a cold reset-to-seed: (1) p95 click→ACCESS < 5 s for BOTH maya-thriving and dan-manager, measured over the TAILNET origin; (2) the full replayed catalog — taxonomy + directus + sim-embeddings, NO SKIPPED surface; (3) all 3 story orgs seeded incl. AI-readiness; (4) Dana sees a FILLED AI-readiness page; (5) Ben's from-scratch STARTED workflow is visible on his dashboard; (6) Aria's COMPLETED state renders; (7) remote access came up BY DEFAULT, no flag passed; (8) ZERO platform-repo edits."
