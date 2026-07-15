@@ -25,4 +25,4 @@ _(set by the previous iter's closeout)_
   router-403 re-check (with F2); **F10** freshness-abort + `assert_ports_free` field-exercise. Not yet reached:
   `BURNIN-M221-dev-public-host`, `F-M220-4`. Full baseline capture: `iter-04/findings.md`.
 
-- iter-05 (tik): landed F1/F5/F5b (rext r3, RED-fenced) but the live re-prove FALSIFIED F1 — skills still 0 on billion, gate ~3/8; re-diagnosis → iter-06 — see iter-05/progress.md
+- iter-05 (tik): F1/F5/F5b landed; r3 cycle-1 falsified on the box → corrected r3→r4 in-tik → **r4 re-prove ≈ MET the gate on ONE cold cycle** (Maya p95 2.29s / Dan 1.65s, all 3 catalog surfaces, 3 orgs, Ben STARTED, Aria COMPLETED, no-flag) — PROVISIONAL (reproducibility remains) — see iter-05/progress.md
