@@ -224,11 +224,22 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
   drives the `[Log in as]` CTAs and stays served at `/manifest.json`.
 - **Staged login-progress overlay.** A small JS overlay (`_OVERLAY_JS`, a raw string — no manifest data is
   interpolated into the JS, so no injection surface) shows on `[Log in as]` click: *Signing you in… → Loading
-  your workspace… → Almost there…* on a deterministic timer with a generous final stage. `localStorage` carries
-  an "in-flight login" flag (with a 30s freshness window) across the cross-origin redirect, so a back-navigation
-  to the cockpit re-shows the overlay rather than a dead spinner. The overlay never `preventDefault`s the real
-  navigation — it is purely additive feedback over the login latency, which **M218 cut from ~39 s to ~1.4 s p95**
-  (see the correction above; this line used to call a never-measured "~2-5s" latency *unavoidable*).
+  your workspace… → Almost there…* on a deterministic timer with a generous final stage. It covers **only the
+  brief forward window** between the click and the browser leaving for next-web. The overlay never
+  `preventDefault`s the real navigation — it is purely additive feedback over the login latency, which **M218
+  cut from ~39 s to ~1.4 s p95** (see the correction above; this line used to call a never-measured "~2-5s"
+  latency *unavoidable*).
+  > #### ⚠ CORRECTION (v2.3.1 hotfix) — the overlay no longer re-shows on back/reload
+  > This doc used to say the `localStorage` "in-flight login" flag (a **30s** freshness window) made a
+  > **back-navigation to the cockpit re-show the overlay** rather than a dead spinner. That behavior was a
+  > **bug**: a presenter switches heroes well within 30 s, so on essentially every back/reload after a login the
+  > cockpit re-showed *"Loading your workspace…"* over an already-loaded workspace — defeating the panel's one
+  > job (an instant hero-switch). It is this release's own **D17 shape**: a status artifact (*"a login is in
+  > flight"*) outliving the thing it describes, read as evidence that something is loading when nothing is. The
+  > 30 s window only ever made sense when a login took ~39 s (pre-M218). **Fixed** (`cue-to-cue-v2.3.1`): any
+  > **return** to the cockpit — back button, reload, or bfcache restore — now **clears the flag and hides the
+  > overlay** (`resetOverlayOnReturn`, on both fresh load and `pageshow`); the overlay can no longer re-show on
+  > return. Gated by `stack-verify/e2e/tests/cockpit-overlay-return.spec.ts` (RED against the pre-fix cockpit).
 
 ### Served endpoints
 
