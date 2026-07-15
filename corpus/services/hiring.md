@@ -41,8 +41,8 @@ surface gated client-side on a Clerk org flag.
 
    ```ts
    // apps/web/src/hooks/useGetClerkOrganization.tsx:20-21
-   const isHiringOrg   = Boolean(organization.publicMetadata?.isHiring);
-   const organizationId = organization.publicMetadata?.eid;
+   const isHiringOrg    = Boolean(organization?.publicMetadata?.isHiring);
+   const organizationId = organization?.publicMetadata?.eid as string;
    ```
 
    So a demo org whose DB row says `is_hiring=true` but whose Clerk metadata omits `isHiring` renders as a **normal

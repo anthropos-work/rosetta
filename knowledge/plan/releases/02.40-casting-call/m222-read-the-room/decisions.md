@@ -118,3 +118,32 @@ edit.**
 **Consequence:** M223's "snapshot extension to REPLAY `directus.job_position`" (its Scope.In #4) is **removed** — the
 5 positions ARE 5 real HIRING sims. Recorded as a **Fate-3** refinement into M223's `overview.md` (Scope.In) and
 here. R7 (snapshot starvation) is retired — the pool is rich.
+
+---
+
+## Adversarial review (M222 close, Phase 2c)
+
+Scenarios considered against the `is_hiring` gate — the only executable surface this milestone shipped (the rest is
+docs). Recorded per the close-milestone Phase-2c contract: the *scenario*, and whether the code already handles it.
+
+1. **The manifest `omitempty` must actually drop a `false` `is_hiring` — else every existing preset's auditable
+   manifest DRIFTS (a honesty-gate break).** If `manifest.Org.IsHiring` were a pointer, or the yaml tag lacked
+   `omitempty`, a Workforce (non-hiring) org would serialize `is_hiring: false` and the checked-in preset manifests
+   would no longer be byte-identical — the exact silent-drift class the honesty gate exists to catch. **Handled:**
+   `manifest/hiring_test.go::TestBuildPopulation_ProjectsIsHiring` serializes a mixed population and asserts **exactly
+   one** `is_hiring:` key in the whole document (only the hiring org emits it; the Workforce org's `false` is dropped
+   by `omitempty`). A regression here fails at the serialization layer, not just the struct field.
+
+2. **The dual-signal OR (`IsHiringOrg() = IsHiring || Narrative == "hiring"`) resolves a contradictory input
+   `is_hiring: false` + `narrative: hiring` to TRUE.** An adversary sets the explicit flag false but leaves the
+   narrative discriminator — the OR makes it a hiring org anyway. **Intentional:** either signal is sufficient (the
+   comment "the two signals can never disagree" documents the design — the narrative is a strong signal, mirroring
+   the `aiReadinessNarrative` sibling). Presets never write contradictory signals; the recognition is deliberately
+   permissive so `narrative: hiring` alone (M223's path) suffices. Not a defect.
+
+3. **Exact-match narrative discriminator is case/whitespace-sensitive** (`Narrative == "hiring"`, so `"Hiring"` or
+   `"hiring "` would NOT be recognized). **Accepted / consistent:** identical to the established
+   `aiReadinessNarrative` convention; narrative values are authored in controlled presets, not free user input. No
+   new failure mode vs the existing discriminator pattern.
+
+All three are covered by existing tests or are intentional design — no Fate-1 code change required.

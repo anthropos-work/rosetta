@@ -1,0 +1,74 @@
+{
+  "milestone": "M222",
+  "slug": "read-the-room",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-15",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "is_final_milestone": false,
+  "rext": {
+    "code_of_record": "rosetta-extensions @ main (S2 gate 5e92826 + S5 README 5920d47)",
+    "tag": "DEFERRED — no rext tag cut at M222; the gate is tagged when M223 first consumes it (per stories-spec.md / seeding-spec.md registration). M222 is a foundation spike, not a stack-consumed release.",
+    "touched_module": "stack-seeding (the is_hiring gate: blueprint + stories + seeders/org.go + manifest)"
+  },
+  "deliverables": {
+    "corpus_doc": "corpus/services/hiring.md (190 lines — the BLIND-AREA hiring READ-model; every file:line claim spot-checked GREEN against the READ-ONLY platform clones at close)",
+    "is_hiring_gate": "blueprint.StoryOrg.IsHiring (yaml is_hiring) + HiringNarrative='hiring' + ResolvedStory.IsHiringOrg() + OrgSeeder writes st.IsHiringOrg() (was hardcoded false) + reserved HiringOrgID() + manifest.Org.IsHiring (omitempty)",
+    "go_no_go": "GO — the candidate-comparison surface (/enterprise/activity-dashboard) is in the dockerized apps/web, renders from seedable data, survives the is_hiring flip; BA-3 refuted (D1). Mirror-table contract recorded (D2).",
+    "registrations": "next-web-app.md (hiring.md index row) + seeding-spec.md (gate) + stories-spec.md (4th story) + rext stack-seeding README",
+    "no_seeder_no_funnel": "correctly deferred to M223 (Fate-2, planned) — M222 lands the GATE only"
+  },
+  "tests": {
+    "go_touched_module": "stack-seeding",
+    "go_module_suite": "965 pass / 0 fail / 0 skip (13 packages, go test ./... -count=1, subtests included)",
+    "go_test_funcs_all_6_modules": 1838,
+    "go_test_funcs_delta_vs_v23_close": "+7 (v2.3 close = 1831; the gate added 4 blueprint + 1 manifest + 2 seeders func Test)",
+    "go_counting_method": "grep -c '^func Test' across all 6 go.mod modules (playthroughs 102, clerkenstein 293, alignment 70, stack-secrets 163, stack-snapshot 380, stack-seeding 830) — the SAME like-for-like method M217-M221 used.",
+    "go_module_readme_count": "stack-seeding README quotes 832 test funcs = 830 func Test + 2 func Fuzz (reconciled accurate at close; 83 files / 13 packages both match)",
+    "go_failures": 0,
+    "go_vet": "clean",
+    "gofmt": "clean",
+    "go_race": "clean (seeders + blueprint + manifest run with -race)",
+    "gate_test": {
+      "name": "TestOrgSeeder_IsHiringGate",
+      "present": true,
+      "status": "GREEN",
+      "red_provable": "PROVEN at close — reverting seeders/org.go from st.IsHiringOrg() to hardcoded false fails it (Recruitco/Talentworks is_hiring = false, want true); restored, GREEN again. Not a string-fence.",
+      "companion": "TestOrgSeeder_LegacySingleOrgNotHiring (legacy single-org path stays is_hiring=false)"
+    },
+    "python": "NOT TOUCHED (M222 changed no Python) — carried from v2.3 close: 1341",
+    "ts_e2e": "NOT TOUCHED (M222 changed no TS/e2e) — carried from v2.3 close: 151"
+  },
+  "flake_count": 0,
+  "flake_gate": "5/5 green — stack-seeding go test ./... -count=1 -shuffle=<seed>, 5 sequential random-order runs.",
+  "adversarial_review": {
+    "scenarios_recorded": 3,
+    "highest_value": "manifest omitempty byte-identity (a preset-drift honesty-gate break) — already defended by manifest/hiring_test.go::TestBuildPopulation_ProjectsIsHiring (asserts exactly one is_hiring: key)",
+    "fate_1_code_changes_required": 0
+  },
+  "deferral_audit": {
+    "verdict": "GREEN",
+    "report": "audit-deferrals/deferral-audit-2026-07-15-m222-close.md",
+    "single_fate_3": "job_position replay dropped from M223 Scope.In (0 rows captured; scoreboard doesn't read it) — applied at build time in M223 overview.md + M222 D4"
+  },
+  "platform_repo_edits": 0,
+  "supply_chain": {
+    "verdict": "GREEN",
+    "net_new_direct_deps": 0,
+    "note": "no go.mod / package.json / requirements changes; the gate reuses existing blueprint/seeder/manifest machinery."
+  },
+  "bugs_fixed": {
+    "build": 0,
+    "close": 2,
+    "close_breakdown": "1 doc-fidelity fix (hiring.md useGetClerkOrganization optional-chaining aligned to source) + the required Phase-2c adversarial record. No code defects — the milestone shipped clean.",
+    "total": 2
+  },
+  "completeness": {
+    "fate_1_done": "S0-S5 (hiring.md, the is_hiring gate + tests, the render-probe GO/NO-GO, registrations)",
+    "fate_2_confirmed_covered": "the full seed / candidate funnel (M223), cockpit heroes + Clerkenstein publicMetadata.isHiring (M224), latency (M226) — all owned by named downstream milestones in the sequential v2.4 graph",
+    "fate_3_annotated": "1 (job_position replay drop -> M223 overview.md, applied)",
+    "dropped": 0,
+    "escape_hatch": 0
+  },
+  "notes": "M222 is the v2.4 go/no-go spike and is NOT the final milestone (M223-M226 remain) — no release->main merge, no v2.4 tag at this close. The make-or-break decision came back GO: the recruiter candidate-comparison surface is demo-servable from the dockerized apps/web and renders from seedable data, refuting BA-3. The milestone's headline finding is the MIRROR-TABLE TRAP (D2): the shown candidate score is public.local_jobsimulation_sessions.score, NOT jobsimulation.sessions.score — seeding the obvious table renders EMPTY (the M219 render-gate-bypasses-the-seed class). The gate lands foundation only (no HiringSeeder/funnel — correctly M223). Zero platform-clone edits; hiring.md's read-path was TRACED against the platform clones, not inferred, and re-verified file:line at close."
+}
