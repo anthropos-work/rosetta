@@ -1,0 +1,86 @@
+# dependencies.lock — v2.3 "cue to cue"
+
+Dependency snapshot of the rext code-of-record `cue-to-cue-m221-final` (rosetta-extensions), captured at
+release close 2026-07-15. Source of truth = each Go module's `go.mod`.
+
+## Change vs v2.2 "panorama"
+
+**The ONLY dependency change in the entire v2.3 range is one INDIRECT patch bump:**
+
+    golang.org/x/crypto  v0.51.0 → v0.52.0   (indirect, in clerkenstein; behaviour-neutral; landed at the M218 close)
+
+Zero net-new **direct** Go deps. Zero `package.json` / `requirements.txt` changes. `go.mod`/`go.sum` are otherwise
+byte-identical to v2.2. `govulncheck` = "No vulnerabilities found" on all 6 modules. All licenses permissive
+(MIT/BSD/Apache; no copyleft).
+
+## Go toolchain
+
+    go 1.25.0  (module directive, all 6 modules)
+    toolchain  go1.25.12  (all 6 modules)
+    CI/authoring box: go1.25.3
+
+## Go modules (6)
+
+### playthroughs — stdlib-only (no require block)
+### alignment — stdlib-only (no require block)
+### stack-secrets — stdlib-only (no require block)
+
+### clerkenstein
+direct:
+    github.com/anthropos-work/colony        v0.34.3
+    github.com/clerk/clerk-sdk-go/v2         v2.6.0
+    github.com/google/uuid                   v1.6.0
+    github.com/svix/svix-webhooks            v1.93.0
+indirect:
+    github.com/go-jose/go-jose/v3            v3.0.5
+    golang.org/x/crypto                      v0.52.0    # <-- the one bump (was v0.51.0)
+
+### stack-snapshot
+direct:
+    github.com/jackc/pgx/v5                  v5.9.2
+indirect:
+    github.com/jackc/pgpassfile              v1.0.0
+    github.com/jackc/pgservicefile           v0.0.0-20240606120523-5a60cdf6a761
+    github.com/jackc/puddle/v2               v2.2.2
+    golang.org/x/sync                        v0.17.0
+    golang.org/x/text                        v0.29.0
+
+### stack-seeding
+direct:
+    github.com/anthropos-work/ai             v1.40.1    # the deliberate v1.10/M45 dep (services/ai wrapper); unchanged in v2.3
+    github.com/jackc/pgx/v5                  v5.9.2
+    gopkg.in/yaml.v3                          v3.0.1
+indirect:
+    github.com/Azure/azure-sdk-for-go/sdk/azcore     v1.21.0
+    github.com/Azure/azure-sdk-for-go/sdk/internal    v1.12.0
+    github.com/avast/retry-go/v4             v4.7.0
+    github.com/dlclark/regexp2               v1.11.5
+    github.com/jackc/pgpassfile              v1.0.0
+    github.com/jackc/pgservicefile           v0.0.0-20240606120523-5a60cdf6a761
+    github.com/jackc/puddle/v2               v2.2.2
+    github.com/json-iterator/go              v1.1.12
+    github.com/modern-go/concurrent          v0.0.0-20180306012644-bacd9c7ef1dd
+    github.com/modern-go/reflect2            v1.0.2
+    github.com/openai/openai-go/v3           v3.31.0
+    github.com/rogpeppe/go-internal          v1.15.0
+    github.com/samber/go-gpt-3-encoder       v0.3.1
+    github.com/samber/lo                     v1.53.0
+    github.com/tidwall/gjson                 v1.18.0
+    github.com/tidwall/match                 v1.2.0
+    github.com/tidwall/pretty                v1.2.1
+    github.com/tidwall/sjson                 v1.2.5
+    golang.org/x/net                         v0.55.0
+    golang.org/x/sync                        v0.20.0
+    golang.org/x/text                        v0.37.0
+
+## Python (5 sections: demo-stack, stack-injection, stack-core, dev-stack, stack-verify)
+
+Standard-library-only test/tooling, plus the pre-existing PyYAML test dependency. Zero third-party runtime deps
+shipped by the rext Python sections. (The `pip-audit` "300 vulns" seen at review is the host's GLOBAL env, not
+this project.)
+
+## TypeScript e2e (dev/test-only)
+
+    @playwright/test    ^1.49.0   (stack-verify/e2e + playthroughs/e2e; the first non-Go rext dev dep, added v1.10 M42e)
+
+No change in v2.3.

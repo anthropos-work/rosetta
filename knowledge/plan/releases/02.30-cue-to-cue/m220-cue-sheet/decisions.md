@@ -63,3 +63,23 @@ _Implementation choices with rationale. One entry per decision; cite the code/do
 | **F-M220-6** | **`cue-to-cue-m220-r4` shipped 11 FAILING demo-stack tests** — the tag the demo host was pinned at. S5/S6 changed the code and left its tests asserting the **old** contract (the inverse D17): the S6/h `mkdir` broke the `TestReuseFlagArrayExpansion` harness PATH (`rc=127`, with the message blaming the wrong thing entirely); the docker stub answered *every* `--format` inspect with `$STALE_ENV`, so S6/g's `demo.patchset` label never matched and **all five REUSE tests silently exercised the REBUILD path**, asserting the opposite of their own names; and three `test_ant_academy` assertions still demanded the `e2e_persona` bypass S5/D10 deliberately **deleted**. A red suite is not just noise — my own 7 S3/S4 regressions landed on top and *"14 failures"* is indistinguishable from *"11 + 3"* until you baseline against `HEAD`. | **Fate 1** — landed | M220. All 18 green (569 + 214 + 129). |
 | **F-M220-1** | ~~**`dev-stack/tests/test_dev_stack.py` BUSY-SPINS forever**~~ — **THE DIAGNOSIS WAS WRONG, and it was wrong in the release's own signature way: it named one defect where there were two, and the one it named was not the one doing most of the damage.** Re-measured under S7 (which had to run this suite): the file was **NOT one hang**. It was (**a**) **6 FAILING tests + one class that merely *looked* like a hang**, all from a single cause — both subprocess harnesses ran the **real M28 secret pre-flight**, which **compiles a Go binary** (the "145 % CPU") and reads **the developer's own `.agentspace/secrets`**, dying `rc=1` on an incomplete source **before reaching the code under test**; and (**b**) **one genuinely slow class**, `DevSetdressLocalContent`. **(a) is FIXED here (Fate 1 — D29):** `DevStackGuard` 63 s FAILED → **3.8 s OK**, `DevStackRegistry` TIMEOUT → **10.8 s OK**, `DevStackSetdressWiring` FAILED → **OK**. **7 of the file's 8 classes now pass.** | **(a) Fate 1 — landed** · **(b) Fate 3** | M220 / **M221** |
 | **F-M220-1b** | ~~**`DevSetdressLocalContent` — the residue**~~ — **20 tests, 486 s, 19 FAILURES**, dialling a **real Postgres on `:15432`** and running the **real `stackseed`**, because its stub seam did not hold on the seed path. **RE-FATED AT THE CLOSE (Fate 1) AND LANDED — see D31.** The seam was **one missing env var** (`DEV_SETDRESS_USE_STUB_BINS=1`, which its sibling harness has always set). **20 passed / 28 s.** The whole `dev-stack` suite now runs (**116 passed / 127 s**, was `rc=124`) and the **whole rext Python suite completes for the first time (1208 tests, 0 failures)**. It was going to block `/developer-kit:close-release`. **The `/developer-kit:audit-deferrals` gate is what forced the second look** — the item had been re-deferred, under three different descriptions, across **5 milestones and 2 releases**. | **Fate 1** — LANDED | **M220** (was: Fate 3 → M221) |
+
+---
+
+## RELEASE-SCOPE-DEFER (v2.3 close-release Phase 1b — 2026-07-15)
+
+_Recorded at `/developer-kit:close-release`. **User signed off (2026-07-15): accept → v2.4.** This is the
+originating milestone for one of the four v2.3 tail carries; landing spot is `roadmap-vision.md` under v2.4. The
+full four-item disposition is in `m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md`._
+
+**RELEASE-SCOPE-DEFER: F-M220-4 — `ant-academy.sh` not re-runnable on a live public-host demo (DEF-M221-07).**
+Originating in M220 (routed Fate-3 → M221), inherited by M221, not reached. On a live `--public-host` demo, a
+**standalone** `ant-academy.sh N` re-run cannot bind because `tailscale serve` already holds the tailnet
+IPv4/IPv6 on the same port (bring-up ordering is correct; only the out-of-band relaunch contends). Worked around
+manually at M220 (`serve off` → launch → `serve` restore).
+- **Fate-1 (land now) FAILS.** Verifying/fixing the relaunch needs a **live public-host demo** to reproduce the
+  serve↔bind contention — live infra, not repo-side close work.
+- **Fate-2 (drop) FAILS.** A real operational rough edge on the remote path; worth a tracked fix.
+- **Fate-3 (defer) is correct.** Non-gate (the 8/8 gate uses the first-boot ordering, which is correct). →
+  **v2.4** (make `ant-academy.sh` re-runnable on a live public-host demo: re-derive the host from the registry,
+  cycle the serve proxy around the bind).

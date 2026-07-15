@@ -241,3 +241,21 @@ campaign — but the honest statement is *"behaviour-neutral by the alignment ga
 **Why that residual is acceptable:** **M221 "prove it on billion" re-runs the p95 gate on the VM, with no
 flags, by design.** The perturbed binary gets re-graded there as a matter of course. Leaving 13 open security
 alerts to avoid a rebuild that the next milestone re-measures anyway is the worse trade.
+
+---
+
+## RELEASE-SCOPE-DEFER (v2.3 close-release Phase 1b — 2026-07-15)
+
+_Recorded at `/developer-kit:close-release`. **User signed off (2026-07-15): accept → v2.4.** This is the
+originating milestone for one of the four v2.3 tail carries; landing spot is `roadmap-vision.md` under v2.4. The
+full four-item disposition is in `m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md`._
+
+**RELEASE-SCOPE-DEFER: PROBE-M218-c3-rerun — Cosmo federation cms/Directus 403 re-check (DEF-M221-08).**
+Originating in M218 (the C-3 router-403 re-check on the content path), inherited through to M221, not reached.
+(Naming note: M218's close briefly labelled it `PROBE-M221-c3-rerun`; the majority/canonical form used across
+M221 + `state.md` is **`PROBE-M218-c3-rerun`** — same item.)
+- **Fate-1 (land now) FAILS.** A router-403 re-check needs the **live box** (a running federated stack with the
+  cms/Directus content path exercised) — it cannot be discharged from the repo at close.
+- **Fate-2 (drop) FAILS.** A real verification still owed on the content path; worth keeping tracked.
+- **Fate-3 (defer) is correct.** Non-gate: the v2.3 headline gate is on click→ACCESS, independent of this
+  content-path probe. → **v2.4** (re-run the router-403 check against a live stack).

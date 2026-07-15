@@ -55,3 +55,38 @@ are recorded here as the *scenarios considered*, with their responses.
    exact fences that guard this milestone's reap work). **Response:** a false all-clear is the release's own D17
    signature hazard turned on the suite that fences it. Moved the block to EOF; direct run 21→41, pytest
    unchanged. Fixed inline (rext `a0f8615`).
+
+---
+
+## RELEASE-SCOPE-DEFER (v2.3 close-release Phase 1b — 2026-07-15)
+
+_Recorded at `/developer-kit:close-release`. The M221 milestone audit
+(`audit-deferrals/deferral-audit-2026-07-15-m221-close.md`) dispositioned four non-gate tail carries as
+KEEP-DEFERRED-WITH-SIGNOFF → v2.4 and explicitly handed the cross-release escape-hatch sign-off to this phase.
+**The user signed off (2026-07-15): accept all four → v2.4.** Two originate at M221; landing spot for all four is
+`roadmap-vision.md` under the v2.4 heading. The other two are recorded at their originating milestones (F-M220-4 →
+m220 `decisions.md`; PROBE-M218-c3-rerun → m218 `decisions.md`)._
+
+**RELEASE-SCOPE-DEFER: F4 — academy grid renders 0 cards (DEF-M221-05).** The demo's ant-academy home renders
+**0** skill-path/course cards even though the local catalog serves **2,705 entries** over HTTP 200 — a
+client-side render defect in the academy UI. Origin M221 iter-04, reconfirmed iter-06 (D-M221-06e).
+- **Fate-1 (land now) FAILS — structurally, not for lack of time.** The fix is a render-path change in the
+  `ant-academy` **platform repo**, and v2.3's HARD constraint is **zero platform-repo edits**. It is out of
+  bounds by release construction; a rext-owned demo-patch would first need an ant-academy render investigation
+  that has not been done.
+- **Fate-2 (drop) FAILS.** Real, reproducible, user-visible; a genuine (cosmetic) gap worth tracking — not
+  noise to discard.
+- **Fate-3 (defer) is correct.** Non-gate: the 8/8 headline gate is independent of it, and the demo's primary
+  surfaces (presenter cockpit + next-web) are fully functional. → **v2.4** (documented known cosmetic gap; likely
+  a new sha-pinned demo-patch once the render path is understood).
+
+**RELEASE-SCOPE-DEFER: BURNIN-M221-dev-public-host (DEF-M221-06).** The `/dev-up --public-host` flag (built at
+M220, consuming the retired M216 reservation) is fenced + mutation-proven byte-identical on the no-flag path, but
+was **never brought up as a real remote dev stack** for a live stability burn-in. Carried M220 → M221 (iters
+03–06); not reached.
+- **Fate-1 (land now) FAILS.** A burn-in requires **repeated live dev-stack `--public-host` cycles on real
+  infra** — not repo-side close work; there is no way to discharge it from the worktree.
+- **Fate-2 (drop) FAILS.** The dev-path parity is a shipped capability; leaving it entirely un-exercised live is
+  a real (if low) risk worth a tracked future check.
+- **Fate-3 (defer) is correct.** Non-gate: v2.3's proven scope is the DEMO path on `billion` (8/8). → **v2.4**
+  (live dev-path burn-in when infra is available).

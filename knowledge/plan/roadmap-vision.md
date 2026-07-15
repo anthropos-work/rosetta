@@ -94,6 +94,37 @@ and a `release/{version}` branch is cut.
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
 > vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
+## v2.4 — carry-forward from v2.3 "cue to cue" (candidate scope, not yet designed)
+
+The four **non-gate tail carries** from v2.3's final milestone (M221), all
+**KEEP-DEFERRED-WITH-SIGNOFF → v2.4** — **user signed off 2026-07-15** at `/developer-kit:close-release`
+Phase 1b. None was a gate condition of v2.3 (whose proven scope is the DEMO path on `billion`, achieved 8/8);
+each has a concrete structural reason it could not land in-release (a **platform-repo** edit, or **live infra**),
+not "no time." Full disposition + per-item three-fate reasoning:
+[`releases/archive/02.30-cue-to-cue/m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md`](releases/archive/02.30-cue-to-cue/m221-prove-on-billion/audit-deferrals/deferral-audit-2026-07-15-m221-close.md)
++ the `RELEASE-SCOPE-DEFER` entries in each originating milestone's `decisions.md`.
+
+- **F4 — academy grid renders 0 cards** (DEF-M221-05, origin M221). The demo ant-academy home renders **0**
+  cards though the local catalog serves **2,705** entries (HTTP 200) — a client-side render defect. **The fix
+  lives in the `ant-academy` PLATFORM repo → out of v2.3's zero-platform-edit scope by definition.** Non-gate
+  (cockpit + next-web fully functional). v2.4: investigate the academy render path; likely a new rext-owned
+  sha-pinned demo-patch once understood. Documented known cosmetic gap.
+- **BURNIN-M221-dev-public-host** (DEF-M221-06, origin M221). The `/dev-up --public-host` flag (built M220,
+  consuming the retired M216) is fenced + mutation-proven byte-identical on the no-flag path but was **never
+  brought up as a real remote dev stack** for a live stability burn-in. **Needs live infra.** v2.4: cycle a real
+  remote dev stack.
+- **F-M220-4 — `ant-academy.sh` not re-runnable on a live public-host demo** (DEF-M221-07, origin M220). A
+  standalone academy re-run cannot bind because `tailscale serve` holds the port (first-boot ordering is correct;
+  only the out-of-band relaunch contends). **Needs live infra.** v2.4: re-derive the host from the registry +
+  cycle the serve proxy around the bind.
+- **PROBE-M218-c3-rerun — Cosmo federation cms/Directus 403 re-check** (DEF-M221-08, origin M218). The C-3
+  router-403 re-check on the content path was never re-run live. **Needs the live box.** v2.4: re-run against a
+  running federated stack. *(Naming: M218's close briefly wrote `PROBE-M221-c3-rerun`; canonical form is
+  `PROBE-M218-c3-rerun`.)*
+
+These four are **candidate scope**, not a designed release — a future `/developer-kit:design-roadmap` run decides
+whether v2.4 is these carries, a new user-driven theme, or both, and assigns `Mxyy` numbers at design time.
+
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
 The Playthroughs capability has **graduated from spec-draft to active development** in v2.0 "opening night"
