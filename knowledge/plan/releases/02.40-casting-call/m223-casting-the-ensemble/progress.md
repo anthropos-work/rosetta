@@ -4,7 +4,7 @@ _Section checklist, derived from `overview.md` § Scope.In. To be worked by `/de
 
 ## Sections
 
-- [ ] **S0 — KB-fidelity gate** (pre-milestone; `/developer-kit:audit-kb-fidelity` — needs M222's `hiring.md`)
+- [x] **S0 — KB-fidelity gate** (pre-milestone; `/developer-kit:audit-kb-fidelity` — needs M222's `hiring.md`) — **GREEN** (`kb-fidelity-audit.md`; all topics PAIRED + ALIGNED)
 - [ ] **S1 — The 4th `stories[]` entry** (`narrative: hiring`, RoleMix ≈ 0.1 admin / 0.9 candidate, hero-trio
       placeholder)
 - [ ] **S2 — `HiringConfigSeeder`** (the 5 shared HIRING sims) + the **type-aware hiring-sim reader**
