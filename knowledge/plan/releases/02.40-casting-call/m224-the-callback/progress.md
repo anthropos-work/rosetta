@@ -20,23 +20,23 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 
 | iter-11 | tik E (TOK-02) | **THE TRIO IS COMPLETE — recruiter + 2 candidates.** Seeded 2 candidate heroes in Meridian (`vantage: end-user` → new `endUserHeroRole` fork → `role=candidate`): **Cara Nguyen (`cara-assessed`, Data Analyst)** = ASSESSED (5 scored HIRING sessions → ranks on the scoreboard + a COMPLETED assignment); **Cody Brenner (`cody-assigned`, Business Ops Analyst)** = ASSIGNED-ONLY (no sessions + a PENDING assignment). Cockpit routes all 3 → hiring base `:13001`. Both candidate `/profile` seats **faithfully redirect to `/home`** — apps/hiring `/profile*` is **admin-gated at platform source** (`role!==Admin → HOME_URL`), so a candidate lands on `/home` (the real candidate self-view): Cara "**Completed**", Cody "**Assigned**" — usable + differentiated, not blank/ejected. Rae's comparison intact (no regression). rext tag `casting-call-m224-iter10` (a3950cf); new regression spec `m224-candidate-heroes.spec.ts`; go test green. ZERO platform edits. | trio complete; candidate views usable on `/home` (faithful) | closed-fixed — rext `a3950cf` |
 
-## Next iter — the payoff + the trio are DONE; remaining = verification + one found bug
+| iter-12 | tik F (TOK-02) | **PROBE NOW TRUSTWORTHY + the shared assignments bug FIXED.** Fixed the render-probe R1–R4 (R3 derives the 5 SHARED hiring sims from the recruiter's own scoreboard [top-5 by count=44]; R2 real-clicks the drawer; R1 visits only the 5 — no timeout; R4 correct drawer-table selector). **`render-report.json`: all 5 sims rendered=20 / network-total=44 / scores 61–100 (14–18 distinct, non-degenerate) / junk=0 / 403=false / errors=false.** Fixed `assignments.go` enum (`"simulation"`→`"job_simulation"`, verified vs the app ent schema) → after cold reseed: 144 job_simulation + 160 skill_path, 0 invalid; Cody's `/home` "Assigned" card now RESOLVES (was NULL-bubbling); no Rae regression. + candidate-heroes spec serial-mode hardening. rext tag `casting-call-m224-iter11` (76f73af); go/vet/test/tsc green. ZERO platform edits. **The trustworthy probe SURFACED 1 prod-eject the broken one hid: `studio.anthropos.work` (the hiring nav's Studio link, baked `STUDIO_URL`) → iter-13.** | probe green (20/sim, 44-total, 0-junk, non-degenerate); 1 eject to fix | closed-fixed — rext `76f73af` |
 
-The recruiter comparison renders (D1: 20/page, 43 reachable) AND the full hero trio is seeded (Rae recruiter +
-Cara assessed + Cody assigned-only), all faithfully, zero platform edits. **What's left before M224 can close:**
+## Next iter — the LAST tik before harden + close
 
-1. **Render-probe fixes (R1–R4)** so the automated gate is trustworthy: R1 cap the drill-down visits to the 5 shared
-   sims (not all 22 → 300 s timeout); R2 CLICK the `[simId]` tab, don't hard-goto the intercepting route (renders
-   "Home"); R3 target the 5 SHARED sims, not first-discovered low-candidate ones; R4 fix the `ANT_ROWS` drawer-table
-   selector (network truth 20/sim is solid; the DOM selector missed it). Then the probe emits `render-report.json`.
-2. **Fix the found `AssignmentsSeeder` bug (Fate 1 — land now).** `seeders/assignments.go:26` `resourceTypes =
-   {"simulation", …}` uses the WRONG ent enum (`"simulation"`) → `getOrganizationAssignments` NULL-bubbles
-   (`unknown resource type: simulation`) → **every seeded member's `/home` assignments silently error, all orgs**.
-   The hero path was fixed inline (`hiring_funnel.go` uses `"job_simulation"`); the SHARED `assignments.go` fix
-   (verify the correct enum vs the ent schema + the resource-id pool logic) lands in the next tik. Believability bug.
-3. **Prove the (D1-re-interpreted) gate over ≥3 cold reset-to-seed runs** — 20/sim rendered + 43 reachable +
-   non-degenerate + closure-green + 0-eject + the trio's cockpit seats, reproducible cold. Then
-   `/developer-kit:harden-mstone-iters --final` + `/developer-kit:close-milestone`.
+Everything is green EXCEPT one thing the now-trustworthy probe surfaced: **1 prod-eject** — the Hiring app's nav
+links to `studio.anthropos.work` (the baked `STUDIO_URL` was never patched demo-local). The exit gate requires
+**0 prod-eject escapes**, so this must land.
+
+**iter-13 (tik G, under TOK-02) — kill the studio-eject + PROVE the gate over ≥3 cold runs.**
+1. **Chain the existing `next-web-studio-url` demo-patch onto the HIRING image build** (`build_frontend_hiring`), so
+   the Hiring app's Studio link points demo-local instead of `studio.anthropos.work` (precedent: apps/web already
+   carries `next-web-studio-url` + `next-web-public-website-url`). Confirm it's a clean chain (sha-pin, G1–G7).
+   **Rebuild the hiring image (~7 min)**, restart the container.
+2. **PROVE the D1-gate over ≥3 consecutive cold reset-to-seed runs:** each run = `stackseed --reset` → the fixed
+   probe → assert **rendered=20 / network-total≥43 per each of the 5 shared sims, scores non-degenerate, junk=0,
+   403=false, errors=false, 0 prod-eject**, + the trio's cockpit seats resolve. All 3 GREEN → gate MET.
+3. Then `/developer-kit:harden-mstone-iters --final` + `/developer-kit:close-milestone`.
 
 **Deferred (non-blocking):** 6 pre-existing `test_cockpit.py` failures (+ `test_purge`/`test_reap` — HEAD-identical,
 not this milestone's) → a future harden pass.
