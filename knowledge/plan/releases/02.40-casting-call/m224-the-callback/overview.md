@@ -3,7 +3,7 @@ milestone: M224
 slug: the-callback
 version: v2.4 "casting call"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-15
 depends_on: M222, M223
 exit_gate: "On a COLD reset-to-seed, the manager hero's comparison surface (/enterprise/activity-dashboard → AI-Simulations → [simId]) renders ≥40 comparable candidate rows per EACH of the 5 shared sims, with a realistic non-degenerate score distribution, 0 junk skills/roles/names (closure green), 0 prod-eject escapes, over ≥3 consecutive cold runs. Latency is REPORTED, not gated, here (gated at M226, per the v2.3 D-DESIGN-1 lineage)."
