@@ -44,3 +44,50 @@ All three sections proven live on a fresh `up-injected.sh 1 --no-public-host` (1
 
 _rext tag `casting-call-m225-sections` (moved to `b17756f` after the S2 live-calibration fix), pushed;
 consumption copy synced; `.agentspace/rext.tag` points at it. **ZERO platform-repo edits.**_
+
+## M225: Hardening
+
+### Pass 1 — 2026-07-17 (`/developer-kit:harden-milestone`)
+
+**Scope manifest (rext diff `66ed56d..HEAD`, 16 files):** the coverage manifest + `manifestFor` 3-arg
+dispatch + `profileGated` (`stack-verify/e2e/`), the autoverify hiring cheap-win (`stack-verify/live/` +
+`tests/test_verify.py`), the hiring playthrough (`playthroughs/manifest/hiring.yaml`, `HiringResultsPage`,
+`hiring-recruiter.spec.ts`, `stack-env.ts`, pt-world Org D seed + `corpus_test.go`). Coverage assessed by
+direct branch analysis (read every M225-touched fn + its tests) rather than an instrumented tool — the rext
+e2e module carries no line-coverage harness and wiring one for non-navigating Playwright specs is out of
+proportion for a section harden; the deterministic Go/Py/TS/bash suites already carry deep unit coverage
+(43 coverage-manifest + 6 autoverify + corpus pins + stack-env). The four task-flagged seams were the finder.
+
+**Tests added (10 fences, all Fate-1 LAND-NOW; 0 bugs surfaced — build shipped green):**
+- `coverage-manifest.unit.spec.ts` (+5): (1) **every hiring manifest page is `calibrated:true`** — the
+  pre-close "no untuned descriptor ships" gate covered only base+showcase manager manifests, leaving the
+  M225 `calibrated:false→true` flip (D2) UNGUARDED; (2) the recruiter **Results scoreboard pins the
+  5-shared-positions floor** (`reservedHiringSimRefs`; the generic loop only proved SOME floor); (3–5) the
+  **`profileGated` apps/hiring wiring** static-fence chain — `run-coverage.sh` forwards
+  `COVERAGE_PROFILE_GATED` + honors `COVERAGE_APP_PORT_BASE=3001`; `coverage.spec.ts` threads `profileGated`
+  into `runPersonaChecks` + lands on `seedPaths[0]` when gated; `persona-assert` threads `profileGated` to the
+  role-skills + avatar checks (the whole `/profile→/home` seam had zero deterministic coverage). Stale
+  `calibrated:false` build comment corrected.
+- `test_verify.py` (+4): the autoverify **(e) floor boundaries** — positions `==5` pass / `==4` warn, sessions
+  `==40` pass / `==39` warn (the build bracketed but never pinned the `-ge` edges).
+- `playthroughs/manifest/hiring_isolation_test.go` (new): the **pt-world Org D "test data ≠ demo data"
+  invariant (D3)** — reads the real `pt-world.seed.yaml` and pins Org D's hiring shape (Kestrel Hiring Group /
+  `narrative: hiring` / `is_hiring: true` / `pt-recruiter`) AND its distinctness (no pt-world org contains the
+  demo `HIRING_ORG` "Meridian Talent"; the hiring org is not a "Meridian" variant; Org D is the sole hiring
+  org in the world).
+
+**Bugs fixed inline:** none — the build shipped green; this pass added regression fences only.
+**Flakes stabilized:** none (all added tests are deterministic unit/static; no live-stack dependency).
+**Knowledge backfill:** no KB-worthy findings — every fence pins an already-documented invariant (decisions
+D2/D3; the autoverify (e) floors in `verification.md` / `demo-up-defaults.md`). No corpus edit warranted.
+
+**Verify:** `coverage-manifest.unit` 48 pass, `stack-env.unit` 13 pass, `test_verify.py` **124 OK** (incl
+`shellcheck`), playthroughs `go test ./...` all ok + `go vet` clean, both e2e `tsc --noEmit` clean.
+
+**Stop condition:** loop terminated after pass 1 — the six-dimension scan found nothing else worth adding
+(the browser-only `profileGated` runtime is now statically fenced; no untested public fn remains cheaply
+testable; no perf path — that's M226; no flake surface). Coverage delta negligible beyond the targeted fences.
+
+_rext harden commit `be431c3`, tag `casting-call-m225-harden`, pushed (authoring `main`). `.agentspace/rext.tag`
++ the consumption copy left at `casting-call-m225-sections` — the fences are test-only (no runtime tooling
+change), so the live demo-1 needs no re-sync. **ZERO platform-repo edits.**_
