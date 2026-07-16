@@ -4,8 +4,24 @@ _Iterative milestone: this file accumulates iteration-protocol-specific technica
 render-gap findings, demo-patch pin records). Per-iter detail lives in `iter-NN/`._
 
 ## Cockpit hero trio
-_1 recruiter/manager (`vantage: manager` → jump_to the comparison surface) + 2 candidate exemplars (one assessed,
-one only-assigned) → /profile. DeepLinkCatalog entries + labels._
+
+**Recruiter seat LANDED iter-03 (rext tag `casting-call-m224-iter03`)** — content for the `cockpit-spec.md` M224 delivery:
+
+- **Recruiter** (`rae-recruiter`, Rae Ramirez, Technical Recruiter, `vantage: manager` → admin, slot 1,
+  `jump_to: /enterprise/activity-dashboard`) — added to the Meridian Talent 4th story in `presets/stories.seed.yaml`.
+  Admin → inherits `org:feature:insights` (no net-new grant); slot 1 = admin band so the `HiringFunnelSeeder`
+  correctly skips her (recruiters read the scoreboard, they don't audition).
+- **A new manager hero role needs a curated skill family** (the iter-03 lesson): a manager renders a *modest
+  personal `/profile`* (persona.go gives a manager 3-8 verified + a claimed tail from her role's curated pool), so
+  her role must classify to a curated family or `TestShippedPresets_EveryHeroRoleClassifies` fails. iter-03 added
+  the `curatedTalent` (recruiting) family in `seeders/curated_pools.go`.
+- **`jump_to` is a raw path** (catalog membership cosmetic) — `/enterprise/activity-dashboard` works with a generic
+  label; a per-`[simId]` `NeedsID` DeepLinkCatalog entry is optional polish (decide in iter-04 once the seeded sim
+  ids are known — the real comparison view is per-position).
+- **The 2 candidate exemplars** (one assessed, one only-assigned → `/profile`) are a **post-gate tik** — they need
+  candidate-role + funnel-stage hero-awareness (a hero at an admin-band slot, end-user vantage, in a candidate-only
+  org — `roleForHero`/`hiringCandidateStage`/the funnel's candidate-detection all need hero-awareness). Not the
+  gate metric, so deferred until the recruiter render is proven.
 
 ## Clerkenstein isHiring wiring
 
