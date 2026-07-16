@@ -98,3 +98,21 @@ all 5** (`hiringAssignedOnlyShare ≈ 0.1` of candidates are assigned-not-taken 
 from the ranked list — the 2nd candidate hero's future state, M224). Closure is UNAFFECTED: the funnel
 writes zero skill refs (`measure-closure` only checks `user_skills`/`user_skill_evidences`/
 `validation_attempt_skill_results`).
+
+## Adversarial review (M223 close, 2026-07-16)
+
+**Scenario — the captured snapshot has 1–4 HIRING sims (a starved pool).** `hiringSimRefs` takes the first 5
+of the type-filtered `SIMULATION_TYPE_HIRING` pool; `HiringConfigSeeder` guards `len(positions)==0` (honest
+skip — the M20 graceful-degradation contract: no hiring content ⇒ structural-only, never abort/pad). The
+dangerous middle is **1–4**: the seeder would write fewer than 5 shared positions and the funnel would assess
+candidates on fewer than 5 — a silent incomplete comparison.
+**Verdict — handled by compensating controls, not a live risk:**
+1. M222 empirically measured **87** captured HIRING sims (published+public) — the pool is not starved today.
+2. The reader is **type-filtered + reserved-disjoint** — it can never pad from the generic pool (the M219
+   anti-pad discipline), so a short pool surfaces as *fewer real positions*, never as generic sessions
+   masquerading as hiring assessments.
+3. **The downstream render gate catches it loud:** M224/M226's exit gate requires **≥40 comparable rows per
+   EACH of the 5 sims** — a <5-position seed fails that gate at verification, on a cold reset-to-seed, before
+   any ship. So a starved re-capture cannot silently reach a demo.
+Recorded, not code-guarded: adding a fatal `<5` abort would regress the M20 graceful-degradation contract for
+a genuinely cold box; the render gate is the correct, already-planned control.

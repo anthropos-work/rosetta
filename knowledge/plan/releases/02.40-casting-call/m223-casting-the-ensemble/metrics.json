@@ -1,0 +1,41 @@
+{
+  "milestone": "M223",
+  "slug": "casting-the-ensemble",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-16",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "is_final_milestone": false,
+  "rext": {
+    "code_of_record": "rosetta-extensions @ main (M223 seeders: 4th story + HiringConfigSeeder + HiringFunnelSeeder + reset/closure/isolation wiring)",
+    "tag": "DEFERRED — rext tag cut when M224 first consumes the hiring seed on a stack (per the M222/M223 registration convention)",
+    "touched_module": "stack-seeding (seeders/hiring_config.go, seeders/hiring_funnel.go, presets/stories.seed.yaml 4th story, contentref hiring reader)"
+  },
+  "tests": {
+    "go_test_funcs_total": 1857,
+    "go_test_funcs_delta_vs_m222": "+19 (M222 1838 -> 1857; the 19 hiring test funcs)",
+    "hiring_test_funcs": 19,
+    "full_suite": "13 stack-seeding packages GREEN (-count=1), gofmt + go vet clean",
+    "flake_gate": "5/5 random-order (-shuffle=on) on the seeders pkg — 0 flakes",
+    "load_bearing_fence": "TestHiringFunnelSeeder_WritesMirrorPair — RED-provable (disabling the local_jobsimulation_sessions mirror write fails it with the M219-trap message)"
+  },
+  "flake_count": 0,
+  "deliverables": {
+    "fourth_story": "Meridian Talent (narrative: hiring, is_hiring: true, HiringOrgID(), 5 admin + 45 candidate, heroless — M224 seats)",
+    "hiring_config_seeder": "5 shared real SIMULATION_TYPE_HIRING sims via the type-aware readHiringSimPool, reserved DISJOINT in the tail (M219 R-3), written as organization_sim_invitation_links",
+    "hiring_funnel_seeder": "each candidate a scored HIRING session MIRROR PAIR (jobsimulation.sessions + public.local_jobsimulation_sessions — the score source); measured 43-on-all-5 + 2 assigned-only (215 pairs), scores [27,100] / 68 distinct (rankable spread, not flat), 0 junk (0 skill refs -> closure trivially green)",
+    "wiring": "hiring rows in resetTables (child-first) + closure gate + isolation audit"
+  },
+  "completeness": {
+    "done_fate1": ["S1 4th story", "S2 config seeder + reader + disjoint reservation", "S4 funnel mirror pair", "S5 reset/closure/isolation", "S6 invitation links (folded into S2)", "S7 docs"],
+    "confirmed_covered_fate2": ["render proof + cockpit heroes + Clerkenstein isHiring -> M224", "coverage/playthrough -> M225", "latency -> M226"],
+    "annotated_fate3": ["job_position replay drop -> M223 overview (the M222 BA-6 refinement)"],
+    "dropped": [],
+    "escape_hatch": []
+  },
+  "constraints": {
+    "platform_repo_edits": 0,
+    "billion_host_touched": false
+  },
+  "notes": "The recruiter candidate-comparison funnel. The single load-bearing risk (the M219 mirror-table trap) is fenced RED-provable. Scores are a differentiated spread (rankable), closure stays green (0 skill refs). The starved-pool adversarial scenario is handled by M222's measured-87 + the M224 render gate (decisions.md, 2026-07-16). Close driven inline after two close-agent stalls; every gate re-run by hand."
+}
