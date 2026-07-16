@@ -93,7 +93,7 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the **five** `next-web-app` patches | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **eight** `next-web-app` patches (6 × `apps/web` + 2 × `apps/hiring`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
 | **`stack-injection/apply-ant-academy-dev-origins.sh`** | `ant-academy-dev-origins` | ant-academy runs **natively** (`next dev`), not baked into an image → the patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop |
 
@@ -107,6 +107,13 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 `post_sha256`.** It must be applied **after** studio and reverted **before** it.
 
 > ⚠️ **It therefore reads "DRIFTED" against a pristine file BY DESIGN. Do not "fix" this.** A unit test fences it.
+
+**The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
+**and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
+so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. The apply-order (studio →
+public-website) and revert-order (LIFO) are identical on both; each build carries its own patch-set fingerprint
+(§5-bis) — next-web's over its manifest set, hiring's over the **4-manifest union** (the 2 `apps/hiring` patches +
+this shared pair). A test fences the hiring-side chain apply-order + LIFO revert + the 4-manifest fingerprint union.
 
 ### The `app` patches are never reverted — and that is correct
 
@@ -139,7 +146,24 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**8 patches: 5 × `next-web-app` · 2 × `app` · 1 × `ant-academy`.**
+**11 patches: 8 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring`) · 2 × `app` · 1 × `ant-academy`.**
+
+> **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
+> **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
+> genuine `apps/hiring` candidate-comparison Results screen instead of a re-skinned workforce fake. **The HIRING
+> image (`build_frontend_hiring`) bakes FOUR patches**, not two: the **2 net-new** `apps/hiring` patches
+> (`next-hiring-role-remap`, `next-hiring-members-pagination`) **plus the 2 chained shared `urls.ts`** patches
+> (`next-web-studio-url` → `next-web-public-website-url`), applied on the hiring build too because the Studio nav
+> link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
+> presenter to `studio.anthropos.work` exactly as `apps/web` did. Found + killed at iter-13 (the hiring image's
+> client chunks were `docker exec`-grep-verified to carry **0** `studio.anthropos.work`; the trustworthy render
+> probe of iter-12 had surfaced the eject the earlier broken probe hid). All four ride `build_frontend_hiring`'s
+> transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
+> rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
+> patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
+> hiring. *(The distinct-manifest total is unchanged at **11**: the chained `urls.ts` pair is shared — counted once
+> under the 6 × `apps/web` — and merely applied on **both** frontend builds. The prior count line read "8 patches /
+> 5 × next-web-app" — it undercounted by the `next-web-no-thirdparty` row; corrected here.)*
 
 | id | target | what it does |
 |----|--------|--------------|
@@ -151,6 +175,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `app-targetrole-authz-skip` | `app` · `internal/roles/roles.go` | short-circuits a per-member Sentinel RPC on the **read** path → members grid **76.7 s → 0.51 s**. Mutations still enforce |
 | `app-aireadiness-snapshot-loadmembers` | `app` · `internal/workforce/ai_readiness.go` | bounds the frozen-read member hydration to the ~199 snapshot users instead of the whole org → the **180 s** AI-readiness read completes. **Data-identical** |
 | `next-web-no-thirdparty` | `next-web-app` · `apps/web/src/app/layout.tsx` | **(M220 S6/g) stops the demo phoning home.** The root layout hardcodes **four** third-party scripts with **no env seam of any kind** — `plausible.io`, `analytics.bellasio.com`, `uptime.betterstack.com`, and `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` (which itself loads **Google Analytics, DoubleClick, Google Ads and LinkedIn Ads**). They fire on **every page load**, so a presenter demoing to a customer silently ships that customer's page views to **seven** third parties, from a demo the corpus calls self-contained. The patch wraps all four in one build-time env gate (`NEXT_PUBLIC_DISABLE_THIRD_PARTY_SCRIPTS`, baked to `1`); every tag is preserved byte-for-byte inside it, so the behaviour is **identical when the var is unset**. Targets its **own** file — no chain. *The plan named only the 4 GTM ad networks; reading the file found 3 more vendors on top — the D17 signature again.* |
+| `next-hiring-role-remap` | `next-web-app` · `apps/hiring/src/context/UserStatusContext.tsx` | **(M224 tik C) the recruiter reaches the hiring enterprise Results routes.** `apps/hiring` stores the Clerk org-role RAW (`role: userRole` = `org:admin`) where `apps/web` **remaps** it (`remapUserRole('org:admin') → 'admin'`). So an admin recruiter reads as **non-admin** in the hiring app, `EnterpriseWrapper` bounces her to the candidate Home, and **0 insights rows** render. The patch adds the same remap (nested, string-literal casts — `apps/hiring` imports `MembershipRoles` **type-only**). **NOT Clerkenstein** (`org:admin` is faithful to real Clerk RBAC), **NOT the seeder** (Rae is already `role='admin'`). Targets its **own** file — no chain |
+| `next-hiring-members-pagination` | `next-web-app` · `apps/hiring/src/context/InsightsContext.tsx` | **(M224 tik D) the Results dashboard stops hanging on the loading spinner.** The exact **mirror of `next-web-members-pagination`**: `apps/hiring`'s InsightsContext fetches `useGetOrganizationMembers({ limit: 1000 })` — an unbounded whole-org fetch the activity-dashboard layout **blocks** on (`if (loading) return <BaseLoading/>`), and its `GET_MEMBERS` query resolves `targetRole` **per row** — so the per-sim scoreboards never mount. Caps the fetch `1000 → 30`. The **per-member Sentinel authz half of the wall needed NO new patch**: the hiring app hits the **same shared `app` backend** that already bakes `app-targetrole-authz-skip`, so `targetRole`'s per-object RPC is already dropped for this path too. Targets its **own** file — no chain |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
 
 ---

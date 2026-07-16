@@ -7,11 +7,99 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 
 | iter | kind | what changed | gate metric | outcome |
 |------|------|--------------|-------------|---------|
-| _(none yet — scaffolded 2026-07-15; `/developer-kit:build-mstone-iters` opens iter-01)_ | | | | |
+| iter-01 | tok (bootstrap) | KB-fidelity GREEN (hiring.md FAPI-pointer fix inline); authored TOK-01 (recruiter-render-first) | baseline UNMEASURED (presumed 0 rows) | closed-fixed — see iter-01/progress.md |
+| iter-02 | tik | Clerkenstein org `publicMetadata.isHiring` wired end-to-end (seeder roster → FAPI); `/align-run` GREEN 100/100 ×2; rext tag `casting-call-m224-iter02` | UNCHANGED (fix-half/scaffold — no render yet) | closed-fixed — see iter-02/progress.md |
+| iter-03 | tik | recruiter cockpit seat (Rae Ramirez, manager→admin, slot-1, funnel-skipped) + `curatedTalent` skill family + manifest regenerated; rext tag `casting-call-m224-iter03` | UNCHANGED (scaffold — no render yet) | closed-fixed — see iter-03/progress.md |
+| iter-04 | tik | **FIRST GATE READING.** Baseline `min(rows/sim)=0` → attributed **SEED-GAP** (recruiter role `"Technical Recruiter"` unresolvable → hiring-seed cascade fail; M219 trap caught by measure-first). **Fixed** (role → `"Talent Acquisition Specialist"`). Cold reset → **Meridian 50 members; 5 sims × 43 candidates; scores 27–100** — DATA side MET. rext tag `casting-call-m224-iter04` | 0 (data now present; render still 0 — see iter-05) | closed-fixed — see iter-04/ |
+| iter-05 | tik | **DIAGNOSIS.** Data present but recruiter still can't reach the scoreboard: `apps/web` **ejects** an all-hiring-orgs user to the Hiring sub-app (`UserStatusContext.tsx:141-173`), not in the demo. Attribution = **product-boundary eject**, NOT a render-gate → falsifies M222's apps/web premise. Cheap fix: render-probe timeout 150s→300s (kept fullPage fix). rext tag `casting-call-m224-iter05`; rosetta `ae4974e` | render 0 (blocked on the eject; data side MET) | closed-fixed (attribution) — see iter-05/ |
+| iter-06 | tok (triggered) | **STRATEGY REVISION → TOK-02 "run-the-real-hiring-app".** iter-04/05 evidence + an adversarially-verified two-app feasibility workflow: the genuine comparison ships in `apps/hiring` and reads the SAME seeded `local_jobsimulation_sessions` via the SAME Cosmo backend. Pivot from "patch the eject + re-skin the workforce app" → **build the real Hiring app into the demo as a 2nd UI container.** More faithful; reuses existing data/backend; zero platform edits. | metric unchanged (render UNMEASURED in apps/hiring) | strategy-set — see **TOK-02** in decisions.md |
+| iter-07 | tik A (TOK-02) | **THE TWO-APP DEMO IS LIVE.** Built the REAL `apps/hiring` into demo-1 as a 2nd UI container: rext-owned `hiring.Dockerfile` (filter `@anthropos/hiring-app`, port 3001 → offset `:13001`), `up-injected.sh build_frontend_hiring`, a self-sufficient `gen_injected_override.py hiring_lines` block, exposure-guard update; tests green (injection 149, frontend-build 86, exposure 15/15). `demo-1-hiring-app-1` **Up** (17 containers, the 16 healthy ones untouched); `:13001 GET /` → 307 to the **FAKE FAPI** `:15400/sign-in` (Clerkenstein, NOT real Clerk — the app talks to the demo's mock login, unlike apps/web) + reaches Cosmo `:15050`. rext tag `casting-call-m224-iter06`; ZERO platform edits (clone git-clean post-build). | render not yet measured (iter-08) | closed-fixed — rext `c24bc2b` |
+| iter-08 | tik B (TOK-02) | **FIRST HIRING-APP RENDER READING: `min(rows/sim)=0` — but STRUCTURAL WINS.** Recruiter logs into the hiring app (`:13001`), **NOT ejected**, org **re-skins as HIRING** ("HIRING Meridian Talent"); the cockpit now routes her `[Log in as]` → the hiring Results page (Dan stays `:13000`). **Attribution = a platform-source role-remap ASYMMETRY** (not seed, not eject): `apps/hiring UserStatusContext:174` stores `role: userRole` raw (`org:admin`), lacking `apps/web`'s `remapUserRole` (`:77/198`, `org:admin→admin`) → she's treated non-admin → `EnterpriseWrapper` bounces her to candidate Home → 0 insights queries fire. DATA side still MET (43×5). rext tag `casting-call-m224-iter07` (373505c): cockpit `--hiring-base` + per-hero base + render-probe `--hiring` flag. ZERO platform edits. | render 0 (blocked on the role-remap wall; data MET) | closed-fixed (reading+attribution) — rext `373505c` |
+| iter-09 | tik C (TOK-02) | **ROLE-REMAP PATCH LANDED — recruiter now ON the Results page AS ADMIN, insights query FIRING.** Sha-pinned demo-patch `next-hiring-role-remap` on the ephemeral `apps/hiring/UserStatusContext.tsx` (adds `remapUserRole`, mirrors apps/web; G1–G7 verified, clone git-clean G5); hiring image rebuilt (`aaaa199f6403`, carries the patch). **Enterprise nav now renders** (Members / Assign / **Results** / Feedback / Settings — was "Home" only); backend authz passes `org:feature:insights`; `insightsJobSimulationByMemberships` **executing**. **NEW wall (not seed, not role): Results RENDER-LATENCY** — `apps/hiring InsightsContext:34 {limit:1000}` unbounded members fetch + per-member Sentinel authz (~28 s × 50) → spinner hangs → 300 s probe timeout → rows not yet counted. rext tag `casting-call-m224-iter08` (0a666e9); tests 146 OK; ZERO platform edits. | on Results as admin + query firing; rows blocked on render-latency | closed-fixed (role gate cleared) — rext `0a666e9` |
+| iter-10 | tik D (TOK-02) | **RENDER WALL CLEARED — the recruiter's Results scoreboard RENDERS real ranked candidates for all 5 shared sims.** Demo-patch `next-hiring-members-pagination` (`apps/hiring InsightsContext:34` limit 1000→30) UNBLOCKED the layout (the unbounded fetch hung it); per-member authz already covered by `app-targetrole-authz-skip` (shared backend, M46 short-circuit baked) — no new authz patch. `insightsJobSimulationByMemberships` 200 / 0-errors on all 5 shared sims; the drill-down drawer + candidate table paint. Shows **20/sim (page 1 of 43) — platform-native pagination** → **GATE-DECISION D1: keep 20/page (faithful, user-chosen)**. rext tag `casting-call-m224-iter09` (626ba12); rosetta `d753873` (demopatch-spec §5 → 11 patches); tests 95/95 focused; ZERO platform edits. | render 20/sim, 43 reachable — data + render MET (faithful) | closed-fixed — rext `626ba12` |
 
-## Next iter
+| iter-11 | tik E (TOK-02) | **THE TRIO IS COMPLETE — recruiter + 2 candidates.** Seeded 2 candidate heroes in Meridian (`vantage: end-user` → new `endUserHeroRole` fork → `role=candidate`): **Cara Nguyen (`cara-assessed`, Data Analyst)** = ASSESSED (5 scored HIRING sessions → ranks on the scoreboard + a COMPLETED assignment); **Cody Brenner (`cody-assigned`, Business Ops Analyst)** = ASSIGNED-ONLY (no sessions + a PENDING assignment). Cockpit routes all 3 → hiring base `:13001`. Both candidate `/profile` seats **faithfully redirect to `/home`** — apps/hiring `/profile*` is **admin-gated at platform source** (`role!==Admin → HOME_URL`), so a candidate lands on `/home` (the real candidate self-view): Cara "**Completed**", Cody "**Assigned**" — usable + differentiated, not blank/ejected. Rae's comparison intact (no regression). rext tag `casting-call-m224-iter10` (a3950cf); new regression spec `m224-candidate-heroes.spec.ts`; go test green. ZERO platform edits. | trio complete; candidate views usable on `/home` (faithful) | closed-fixed — rext `a3950cf` |
 
-**iter-01 (bootstrap tok):** stand up the hiring cockpit heroes + DeepLinkCatalog entries, seed a cold stack, log in
-as the recruiter hero, and **measure the comparison surface render** — how many comparable non-junk rows paint per
-each of the 5 sims — before writing any fix. Attribute the gap (seed-data vs render-gate vs Clerkenstein wiring)
-per the exit gate. **The render measurement is the first artifact; the fix strategy follows the attribution.**
+| iter-12 | tik F (TOK-02) | **PROBE NOW TRUSTWORTHY + the shared assignments bug FIXED.** Fixed the render-probe R1–R4 (R3 derives the 5 SHARED hiring sims from the recruiter's own scoreboard [top-5 by count=44]; R2 real-clicks the drawer; R1 visits only the 5 — no timeout; R4 correct drawer-table selector). **`render-report.json`: all 5 sims rendered=20 / network-total=44 / scores 61–100 (14–18 distinct, non-degenerate) / junk=0 / 403=false / errors=false.** Fixed `assignments.go` enum (`"simulation"`→`"job_simulation"`, verified vs the app ent schema) → after cold reseed: 144 job_simulation + 160 skill_path, 0 invalid; Cody's `/home` "Assigned" card now RESOLVES (was NULL-bubbling); no Rae regression. + candidate-heroes spec serial-mode hardening. rext tag `casting-call-m224-iter11` (76f73af); go/vet/test/tsc green. ZERO platform edits. **The trustworthy probe SURFACED 1 prod-eject the broken one hid: `studio.anthropos.work` (the hiring nav's Studio link, baked `STUDIO_URL`) → iter-13.** | probe green (20/sim, 44-total, 0-junk, non-degenerate); 1 eject to fix | closed-fixed — rext `76f73af` |
+
+| iter-13 | tik G (TOK-02) | **STUDIO PROD-EJECT KILLED + D1 GATE MET (reliably, independently verified).** Chained the shared `urls.ts` pair (`next-web-studio-url` → `next-web-public-website-url`, G1–G7) onto `build_frontend_hiring` (the eject source: `packages/ui` NavBar `key: STUDIO_URL`). Hiring image rebuilt (`73e42b8c`): 0 `studio.anthropos.work` in client chunks (verified via `docker exec` grep); clone git-clean (G5). rext `2d673d2`/`iter12`. **3-cold-run prove GREEN** (each: 5 sims × 20 rendered / 44 total / non-degenerate / junk=0 / 403=false / errors=false / 0 eject; trio 3-pass). **Independent orchestrator re-verify (D17 discipline) CAUGHT + FIXED a probe render-race (R5)**: the drawer-hydration poll sampled cells before they rendered → intermittent false-junk on the last sim (1/6 readings); added a bounded first-row-text wait. **Flake gate: 4/4 consecutive runs GREEN** post-fix. rext tag `casting-call-m224-iter13` (309a00e); tsc clean. ZERO platform edits. | **GATE MET** — reliably, independently re-verified | closed-fixed — rext `309a00e` |
+
+## Next — the exit gate is MET; the milestone is BUILD-COMPLETE → harden + close
+
+**The M224 exit gate is satisfied** (D1-re-interpreted): on a cold reset-to-seed the recruiter's Results
+comparison renders 20 candidates/sim (43+ reachable) on each of the 5 shared sims, non-degenerate scores, junk=0,
+0 prod-eject, over ≥3 consecutive cold runs — **reliably** (the probe render-race fix makes it non-flaky;
+independently re-verified 4/4 post-fix). The hero trio (Rae/Cara/Cody) resolves. **Zero platform-repo edits.**
+
+**Remaining = the close lifecycle:**
+1. ✅ **DONE** `/developer-kit:harden-mstone-iters --final` (2026-07-16) — cumulative-scope final sweep;
+   landed 3 regression fences for the only unfenced hiring seams (studio-url chain onto `build_frontend_hiring`,
+   `hiring_lines` structural shape, cockpit `CockpitHero.IsHiring` routing); every other focus area verified
+   already-covered. 0 product-code changes, all suites green, flake 3/3. rext `66ed56d`, tag
+   `casting-call-m224-harden`. See `hardening-ledger.md` (Pass 1 — final — stabilized).
+2. `/developer-kit:close-milestone` — review + Gate Outcome Ledger + merge `m224/the-callback` → `release/02.40-casting-call`.
+
+**Fold in at harden/close (deferrals):** (a) doc: `demopatch-spec.md` §4/§5 — note the shared `urls.ts` pair (+
+role-remap + members-pagination) now also bake into the hiring image (2 net-new + 2 chained hiring patches); (b)
+the 6 pre-existing `test_cockpit.py` failures (+ `test_purge`/`test_reap` — HEAD-identical, not this milestone's)
+→ resolve or formally carry. Both non-blocking to the gate.
+
+> **Note (bookkeeping):** iter-04/iter-05 were executed + committed (rext tags `…iter04`/`…iter05`; rosetta
+> `ae4974e`) during a driven build-iter leg; their ledger rows are reconciled here at the TOK-02 boundary. iter-04's
+> `overview.md` predates its close; its outcome is captured in this ledger + TOK-02's trigger section.
+
+---
+
+## M224: Final Review (`/developer-kit:close-milestone`, 2026-07-16)
+
+> Review found **6** findings: 0 scope-blocking · 0 code-quality (rext hardened + gate independently re-verified) ·
+> **4** docs (`Delivers →` gaps + a stale claim) · 0 tests-net-new · 1 decision-triage cluster · **1** inherited
+> known-issue carry. Addressed all fully (Fate-1) — no partial fixes.
+
+### Scope
+- [x] Gate MET (closed-on-gate); iter ledger complete (13 iters, no orphan commits); iter-04/05 reconciled at the TOK-02 boundary.
+- [x] DeepLinkCatalog `NeedsID` per-`[simId]` entry — consciously descoped as optional polish (raw `jump_to` suffices); recorded, not silently dropped (D-close/Gate Outcome Ledger).
+
+### Documentation (Delivers → knowledge/corpus)
+- [x] `demopatch-spec.md` §4 (chain runs on both builds) + §5 (hiring image bakes **4** patches) — **D2**.
+- [x] `cockpit-spec.md` § the hiring vantage — hero trio + `CockpitHero.IsHiring` two-app routing — **D3**.
+- [x] `clerkenstein.md` § roster `isHiring` threading — FAPI conditional-emit + `/align-run` record + BAPI-not-wired — **D4**.
+- [x] `hiring.md` § the render path (two-app TOK-02) + fixed the stale `apps/web`-only cross-ref — **D5**.
+
+### Tests & Benchmarks
+- [x] rext touched suites re-verified GREEN on the close HEAD (`66ed56d`, tag `casting-call-m224-harden`): clerkenstein `go test ./...` OK · stack-seeding `go test ./...` OK (all 13 pkgs) · demo-stack **650 passed / 8 pre-existing failed** · stack-injection **255 passed / 8 skipped** · stack-verify `tsc --noEmit` exit 0. Authoritative go test-funcs **1885**.
+- [x] The 8 demo-stack failures verified HEAD-identical (matched the harden-pass Phase-5 record byte-for-byte) → carried, not this milestone's — **D6**.
+
+### Decision Triage
+- [x] TOK-02 (two-app demo) → blended into `cockpit-spec.md` + `hiring.md` (#M224-D-TOK02).
+- [x] Clerkenstein conditional-emit align-lesson → blended into `clerkenstein.md` (#M224-D-align).
+- [x] GATE-DECISION D1 (faithful 20/page pagination) → blended into `hiring.md` render-path + `cockpit-spec.md` trio table.
+
+---
+
+## Gate Outcome Ledger
+
+### Gate
+- **Target:** On a COLD reset-to-seed, the manager (recruiter) hero's comparison surface renders **≥40 comparable candidate rows per EACH of the 5 shared sims**, realistic non-degenerate score distribution, **0 junk** (closure green), **0 prod-eject**, over **≥3 consecutive cold runs**. (Latency REPORTED, not gated — gated at M226.)
+- **Achieved:** For each of the 5 shared sims: **20 rendered / page 1** under the platform-native pagination (`useTablePagination` default 20), **43 comparable candidates present + reachable**, scores **61–100** on the probe read (14–18 distinct, non-degenerate), **junk = 0** (closure green), **403 = false / errors = false**, **0 prod-eject** (the Studio eject killed iter-13). Reproduced GREEN over **3 consecutive cold reset-to-seed runs** + an independent orchestrator re-verify that caught & fixed a probe render-race (R5), then **4/4 consecutive flake-gate runs**. The hero trio (Rae/Cara/Cody) resolves.
+- **Distance:** **gate met** (D1 re-interpretation: "≥40 comparable candidates seeded + reachable + rendering per sim, under the real 20/page pagination" — the faithful reading; the data sub-gates ≥43/non-degenerate/closure-green/0-eject are unchanged and met).
+- **Status:** `closed-on-gate` (2026-07-16).
+
+### Iter ledger summary
+- **Total iters:** 13 (tiks: 11, toks: 2 — iter-01 bootstrap + iter-06 triggered TOK-02).
+- **Duration:** 2026-07-16 (single-day driven milestone).
+- **Decisions accumulated:** 3 milestone-level (TOK-01, TOK-02, GATE-DECISION D1) + 5 close decisions (D2–D6) + per-iter records in `iter-NN/decisions.md`.
+- **Hardening passes embedded:** 1 (`hardening-ledger.md` Pass 1 — final — stabilized; 5 regression fences, 0 product-code changes).
+
+### Routes carried forward — three-fate dispositions
+`closed-on-gate` → the carry-forward *queue* is resolved (every M224 scope-delivery gap landed Fate-1 this close; no `carry-forward.md` deliverable). **One inherited known-issue is carried** for visibility:
+
+#### Carried known-issue (inherited, non-milestone — flagged for sign-off)
+- **8 pre-existing test failures** — 6 × `test_cockpit.py` (4 removed-academy-CTA + 2 v2.3.1 overlay-JS) + `test_purge` + `test_reap`. HEAD-identical, in files M224 never touched, predating v2.4. **→ standing test-debt backlog** (a future demo-stack test-debt harden pass). Non-blocking to the gate. Recorded: D6 + `state.md` standing backlog. *(Not an escape-hatch punt of desired M224 work — an inherited-failure carry.)*
+
+### Dropped (cut from goal entirely)
+- **DeepLinkCatalog per-`[simId]` `NeedsID` entry** — **descoped as optional polish**, not a punt: the recruiter's raw `jump_to` to `/enterprise/activity-dashboard` renders the scoreboard and the gate was met without it (spec-notes iter-03). A deliberate scope call.
+
+### Protocol evolution
+- **The measure→attribute→fix→re-measure spine held; the FIX target pivoted once.** TOK-01 (render-in-`apps/web` + a single eject demo-patch) was falsified at iter-05 (the eject is a *product boundary*, not a render-gate) → **TOK-02** "run the real `apps/hiring` as a second UI container." More faithful, reuses the same data/backend, zero platform edits.
+- **The render probe evolved R1→R5** (`stack-verify/e2e/`): a trustworthy probe (iter-12) derives the 5 shared sims from the recruiter's own scoreboard, real-clicks the drawer, and (iter-13, D17-discipline) adds a bounded first-row-text wait that killed an intermittent false-junk render-race — *only an executable probe binds; the seed writing the rows proves nothing* (the D17 keeper, applied).

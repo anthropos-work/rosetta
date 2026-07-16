@@ -201,6 +201,40 @@ the *individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, m
 succession / mobility — plus the talent pool). A hero's `jump_to` is matched against this catalog so the
 manifest can carry its label; an unrecognized `jump_to` still works (it's a raw path).
 
+### The hiring vantage — the recruiter + 2 candidate seats (v2.4 "casting call" M224)
+
+The **4th, HIRING** story org (**Meridian Talent**, `narrative: hiring`, `is_hiring=true` — M223's seed) gets a
+**hero trio** on the cockpit (M224), login-only like every other hero:
+
+| Hero (`key`) | Role | Vantage | `jump_to` lands on | What she demos |
+|---|---|---|---|---|
+| **Rae Ramirez** (`rae-recruiter`) | Talent Acquisition Specialist | `manager` → admin (slot-1, funnel-skipped) | `/enterprise/activity-dashboard` **on the hiring app** | the candidate-comparison Results scoreboard — 20/page × ~43 reachable candidates per each of the 5 shared sims |
+| **Cara Nguyen** (`cara-assessed`) | Data Analyst | `end-user` → candidate | `/home` (candidate self-view) | an **assessed** candidate — 5 scored HIRING sessions (ranks on Rae's scoreboard) + a **COMPLETED** assignment; `/home` reads "Completed" |
+| **Cody Brenner** (`cody-assigned`) | Business Ops Analyst | `end-user` → candidate | `/home` (candidate self-view) | an **assigned-only** candidate — no sessions + a **PENDING** assignment; `/home` reads "Assigned" |
+
+**The load-bearing cockpit mechanic is `CockpitHero.IsHiring` (a per-hero manifest flag).** A hiring hero's
+`[Log in as]` targets the **demo's real Hiring app base** (`--hiring-base`, offset `:13001`), **not** the workforce
+`apps/web` base (`:13000`) the other heroes use. The workforce heroes (Dan &c.) stay on `apps/web` unchanged; only
+`IsHiring` heroes route to the hiring container. `cockpit.go`'s `BuildCockpitManifest` emits the flag
+(`omitempty` — a workforce hero's manifest is byte-identical); `cockpit.py` reads it and picks the base.
+
+**Why a second app base at all — the two-app demo (TOK-02, #M224-D-TOK02).** On the *unmodified* platform an
+all-hiring-orgs user is **ejected out of `apps/web` to the standalone Hiring product** by a product-boundary
+redirect (`UserStatusContext`, by design) the moment her org reads as hiring (client `publicMetadata.isHiring=true`
+— which M224 deliberately wires, because the org must *genuinely read as hiring*). So "reads as hiring" and
+"reachable inside `apps/web`" are **mutually exclusive on the real platform**. Rather than fake it with a re-skin,
+the demo **runs the genuine `apps/hiring` as a second UI container** (built from the untouched clone, offset port,
+same fake FAPI + same Cosmo backend + same seeded Postgres). The platform's **own** symmetric guard keeps the
+recruiter *in* the hiring app; she reads the **same** seeded `local_jobsimulation_sessions` the scoreboard reads.
+No forcing, no fiction — see [`../../services/hiring.md`](../../services/hiring.md) § the render path and
+[`demopatch-spec.md`](demopatch-spec.md) § the four hiring-image patches.
+
+**DeepLinkCatalog note.** The recruiter's `jump_to` is a **raw path** (`/enterprise/activity-dashboard`); a
+dedicated per-`[simId]` `NeedsID` catalog entry was judged **optional polish** and **not** added — the raw jump
+suffices and the render gate was met without it (#M224-scope). The candidate heroes land on `/home` because
+`apps/hiring`'s `/profile*` is **admin-gated at platform source** (`role !== Admin → HOME_URL`), so a candidate's
+faithful landing is the real candidate self-view, differentiated per funnel state (Completed vs Assigned).
+
 ### The UI surface (v1.10 M43)
 
 The panel is a single static HTML page (`render_page()`), restyled and enriched:

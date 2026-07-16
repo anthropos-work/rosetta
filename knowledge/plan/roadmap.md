@@ -247,7 +247,25 @@ per-candidate score (a realistic spread, not a flat arc).
 **Demo-patch?** **Pure seeding** (+ a tooling-owned snapshot extension). If M222 found the read-path needs a
 per-session `validation_*`/eval row, that extra row is **added to the seeder (still data-only)**, not a patch.
 
-#### M224 — The callback  (`iterative`, large)
+#### M224 — The callback  (`iterative`, large) — ✅ **DONE 2026-07-16 (closed-on-gate)**
+
+> **CLOSED 2026-07-16 (closed-on-gate).** The render payoff: click **[Log in as]** the recruiter → the demo's
+> **real `apps/hiring`** Results scoreboard paints, for **each** of the 5 shared sims, **20 candidates/page-1**
+> (faithful platform-native pagination — **GATE-DECISION D1**) of **43 comparable + reachable**, scores 61–100
+> (non-degenerate), **0 junk** (closure green), **0 prod-eject**, over **3 cold reset-to-seed runs** + an
+> independent re-verify (caught + fixed a probe render-race **R5**) + **4/4 flake**. **The strategy pivoted once
+> (TOK-02):** iter-05 attribution resolved the render wall to a *product-boundary eject*, **not** a render-gate — so
+> instead of re-skinning `apps/web`, the demo **runs the genuine `apps/hiring` as a 2nd UI container** (same fake
+> FAPI + Cosmo + the seeded `local_jobsimulation_sessions` mirror table; the platform's own symmetric guard keeps
+> the recruiter *in*). The hero trio (**Rae** recruiter / **Cara** assessed / **Cody** assigned-only) resolves;
+> Clerkenstein emits org `publicMetadata.isHiring` (**conditional-emit**, `/align-run` 100/100 on clerk-js-5 +
+> clerk-multi-1). **4 hiring-image demo-patches** (2 net-new `apps/hiring` + the chained `urls.ts` pair killing the
+> Studio eject). **13 iters** (11 tik + 2 tok), single day. Go test-funcs 1857 → **1885**; **flake 0**; **0
+> platform-repo edits**. Deferral audit **GREEN**; the 4 corpus `Delivers →` sections landed at close
+> (`hiring.md` render-path · `cockpit-spec.md` hiring vantage · `clerkenstein.md` isHiring · `demopatch-spec.md`
+> §4/§5). **8 pre-existing, non-milestone test failures carried** to the standing test-debt backlog. rext
+> code-of-record: `casting-call-m224-harden` (`66ed56d`). **Not the final milestone — no main-merge/tag.**
+
 **Goal:** click **[Log in as]** the recruiter hero → land on `/enterprise/activity-dashboard` and see, for **each** of
 the 5 positions, **~45 rankable, comparable, non-junk** candidate rows; the org reads as hiring; a candidate hero
 renders a usable assessed `/profile`.

@@ -1,0 +1,53 @@
+{
+  "milestone": "M224",
+  "slug": "the-callback",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-16",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "is_final_milestone": false,
+  "gate": {
+    "target": "COLD reset-to-seed: recruiter comparison surface renders >=40 comparable rows per EACH of 5 shared sims, non-degenerate distribution, 0 junk (closure green), 0 prod-eject, over >=3 consecutive cold runs (latency reported, not gated)",
+    "achieved": "per sim: 20 rendered/page-1 (platform-native pagination, D1-faithful) of 43 comparable+reachable, scores 61-100 (14-18 distinct), junk=0, 403=false, errors=false, 0 prod-eject; 3 consecutive cold runs GREEN + independent re-verify (R5 probe-race fixed) + 4/4 flake gate; hero trio Rae/Cara/Cody resolves",
+    "status": "MET (D1 re-interpretation: >=40 comparable seeded+reachable+rendering per sim under the real 20/page pagination)"
+  },
+  "rext": {
+    "code_of_record": "rosetta-extensions @ 66ed56d002b3fe69c15e87ee93edd0cde2c819f8",
+    "tag": "casting-call-m224-harden",
+    "touched_modules": "clerkenstein (clerk-frontend isHiring FAPI), stack-seeding (roster/cockpit/hiring_funnel/curated_pools/users/assignments), demo-stack (hiring.Dockerfile + up-injected build_frontend_hiring + 2 apps/hiring patches), stack-injection (gen_injected_override hiring_lines + exposure guard), stack-verify (e2e hiring render probe + candidate-heroes spec)"
+  },
+  "tests": {
+    "go_test_funcs_total": 1885,
+    "go_test_funcs_delta_vs_m223": "+28 (M223 1857 -> 1885; M223's untagged seeder-test funcs now in rext main + M224 clerkenstein/cockpit/roster fences)",
+    "go_suites": "clerkenstein go test ./... OK (all pkgs); stack-seeding go test ./... OK (all 13 pkgs); gofmt + go vet clean",
+    "python_demo_stack": "650 passed / 8 pre-existing failed (4 removed-academy-CTA + 2 v2.3.1 overlay-JS in test_cockpit.py + test_purge + test_reap) / 9 subtests",
+    "python_stack_injection": "255 passed / 8 skipped",
+    "ts_tsc": "stack-verify/e2e tsc --noEmit exit 0",
+    "flake_gate": "live render probe 3 consecutive cold reset-to-seed GREEN + independent re-verify + 4/4 consecutive post-R5-fix; harden-pass unit flake 3/3",
+    "load_bearing_fence": "TestBuildCockpitManifest_HiringHeroIsFlagged (hiring->true/workforce->false + omitempty wire guard); TestDemoUser_orgMemberships_IsHiringConditional (both branches + byte-identical {eid} shape guard)"
+  },
+  "flake_count": 0,
+  "pre_existing_failures_carried": 8,
+  "deliverables": {
+    "hero_trio": "Rae Ramirez (rae-recruiter, Talent Acquisition Specialist, vantage manager->admin) + Cara Nguyen (cara-assessed, candidate, ASSESSED) + Cody Brenner (cody-assigned, candidate, ASSIGNED-ONLY)",
+    "clerkenstein_isHiring": "FAPI org public_metadata.isHiring emission (resources.go::orgMemberships <- RosterEntry.org_is_hiring <- ResolvedStory.IsHiringOrg); CONDITIONAL-EMIT (byte-identical {eid} for non-hiring); /align-run clerk-js-5 100/100 + clerk-multi-1 100/100; BAPI intentionally not wired",
+    "two_app_demo": "TOK-02 - the real apps/hiring built as a 2nd UI container (rext hiring.Dockerfile + build_frontend_hiring + gen_injected_override hiring_lines), offset :13001, same fake FAPI + Cosmo + Postgres; recruiter kept in by the platform's own symmetric guard",
+    "hiring_image_patches": "4 baked into build_frontend_hiring: next-hiring-role-remap + next-hiring-members-pagination (net-new) + the chained next-web-studio-url -> next-web-public-website-url urls.ts pair (Studio-eject kill via shared packages/ui NavBar); 4-manifest fingerprint union",
+    "cockpit_mechanic": "CockpitHero.IsHiring (omitempty manifest flag) routes a hiring hero's [Log in as] to the --hiring-base (:13001), not the ejecting apps/web (:13000)",
+    "corpus_docs": "demopatch-spec.md sec4/5 + cockpit-spec.md hiring vantage + clerkenstein.md isHiring FAPI + hiring.md render path (all landed Fate-1 at close)"
+  },
+  "completeness": {
+    "done_fate1": ["hero trio (recruiter + 2 candidates)", "Clerkenstein isHiring FAPI wiring + align-green", "two-app demo (real apps/hiring container)", "render loop driven to green (gate MET)", "4 corpus doc landings at close (D2-D5)"],
+    "carried_known_issue": ["8 pre-existing test failures (test_cockpit.py x6 + test_purge + test_reap) -> standing test-debt backlog (D6)"],
+    "confirmed_covered_fate2": ["coverage-sweep gate + hiring playthrough -> M225", "live billion proof + recruiter p95 access latency -> M226"],
+    "dropped": ["DeepLinkCatalog per-[simId] NeedsID entry -> descoped as optional polish (raw jump_to suffices; gate met without it)"],
+    "escape_hatch": []
+  },
+  "constraints": {
+    "platform_repo_edits": 0,
+    "billion_host_touched": false,
+    "supply_chain": "GREEN - 0 net-new direct deps"
+  },
+  "deferral_audit": "GREEN (audit-deferrals/deferral-audit-2026-07-16-m224-close.md; no repeat/chronic/aged-out)",
+  "notes": "The render-risk payoff milestone. The strategy pivoted once (TOK-01 apps/web re-skin -> TOK-02 run the real apps/hiring) when iter-05 attribution resolved the render wall to a product-boundary eject, not a render-gate. Gate met on the faithful platform-native 20/page pagination (GATE-DECISION D1). Independent orchestrator re-verify caught a probe render-race (R5) the 3-cold-run had passed - the D17 'only an executable probe binds' keeper, applied. Zero platform-repo edits throughout; code in the rext authoring clone (tag casting-call-m224-harden), docs in rosetta."
+}

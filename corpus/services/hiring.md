@@ -47,9 +47,18 @@ surface gated client-side on a Clerk org flag.
 
    So a demo org whose DB row says `is_hiring=true` but whose Clerk metadata omits `isHiring` renders as a **normal
    Workforce org** in the browser — the nav never relabels, the "Results" framing never appears. **⇒ M224 must
-   extend Clerkenstein's fake Clerk API to emit `publicMetadata.isHiring = true`** for the hiring org. Today
-   Clerkenstein emits `{eid}` only (`clerkenstein/clerk-backend/resources.go:38-47`). **This is a rext change (the
-   mock), NOT a platform edit.**
+   extend Clerkenstein's fake Clerk API to emit `publicMetadata.isHiring = true`** for the hiring org. This is a
+   rext change (the mock), **NOT a platform edit**.
+
+   > **The browser-visible emission is the FAPI, not the BAPI (M224 KB-fidelity correction).** Clerkenstein emits org
+   > `public_metadata.{eid}` **independently on both sides**, but the one the client re-skin above reads (`@clerk/clerk-js`
+   > `useOrganization().publicMetadata`) is the **fake FAPI**: `clerkenstein/clerk-frontend/resources.go` `orgMemberships()`
+   > builds `PublicMetadata:{eid}`, fed by the `RosterEntry`→`DemoUser` roster thread (the M39 `org_name`/`org_slug`
+   > precedent). **So `isHiring` slots into the FAPI roster+resource path** (`clerk-frontend/registry.go` `RosterEntry` +
+   > `clerk-frontend/resources.go` `orgMemberships()`), which trips the **BLOCKING `/align-run`** clerk-frontend guard. The
+   > server-side BAPI (`clerk-backend/resources.go` `organizationWithEid`) emits its own `{eid}` copy but is **not** what the
+   > re-skin reads (the server derives hiring from the `public.organizations.is_hiring` DB column) — a BAPI `isHiring` extension
+   > is optional, only if a server-side consumer reads `organization.publicMetadata.isHiring`.
 
 > **Both, or the demo is half-lit.** DB-only → the browser doesn't re-skin. Clerk-only → the insights read-path
 > won't treat the cohort as hiring. The seeder writes #1; the mock emits #2; M224 wires the pair.
@@ -186,10 +195,46 @@ row per candidate. The drill-down additionally needs the `jobsimulation.validati
 > M223 does NOT ship the render proof or the cockpit heroes (M224); the per-candidate drill-down `validation_*`
 > rows are also M224+ (the M223 scoreboard needs only the 2-table pair).
 
+## The render path (v2.4 "casting call" M224 — the two-app demo)
+
+**M224 proved the render — and it does NOT land in `apps/web`.** M222 traced the comparison scoreboard rendering
+in the dockerized `apps/web` `/enterprise` and concluded it was reachable by the recruiter. That held on the
+`billion` spike **only because that org had no client `publicMetadata.isHiring`** — client-side it read as a
+*workforce* org, so it never tripped the product-boundary guard. M224 **wired client `isHiring=true`** (D-DESIGN-1
+— the org must *genuinely read as hiring*), and that flips the calculus:
+
+- On the *unmodified* platform, a user whose memberships are **all hiring orgs** is **ejected out of `apps/web`**
+  to the standalone Hiring product (`apps/web/src/context/UserStatusContext.tsx` → `buildSwitchHandoffUrl({
+  targetProduct: 'hiring' })`, **by design** — a global guard that fires even on a direct navigation), and
+  `useGetClerkOrganization` filters hiring orgs out of the workforce list. **⇒ "reads as hiring in the browser"
+  and "scoreboard reachable in `apps/web`" are mutually exclusive on the real platform.** (This falsified M222's
+  `apps/web` premise — #M224-D-TOK02.)
+
+**Resolution — run the genuine `apps/hiring` as a second UI container (TOK-02).** The real candidate-comparison
+Results screen ships in `apps/hiring`
+(`.../enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx` → `InsightsByMembersContainer`), and it
+federates the **same** `insightsJobSimulationByMemberships` field (in the **app** subgraph SDL, **no feature
+gate**) over the **same** Cosmo router the demo already bakes, reading the **same** seeded
+`public.local_jobsimulation_sessions` M223 wrote. So the demo builds `apps/hiring` from the **untouched clone** as
+a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI + Cosmo
++ Postgres — **no re-skin, no new resolver, no data migration, zero platform-repo edits.** The recruiter logs in
+straight onto the hiring Results page (the cockpit's `CockpitHero.IsHiring` routes her to the hiring base); the
+platform's own symmetric guard keeps her *in*.
+
+**What renders (gate met, ≥3 cold runs, 4/4 flake).** For **each** of the 5 shared sims the scoreboard paints
+**20 candidates on page 1** (the platform-native pagination — `useTablePagination` default 20; **GATE-DECISION D1
+kept it faithful** rather than force ~43 onto one page), with **all 43** seeded candidates present, non-degenerate
+(scores 27–100), reachable by paging, **0 junk** (closure green), **0 prod-eject**. Four demo-patches on the
+hiring image make it land — 2 net-new (`next-hiring-role-remap`, `next-hiring-members-pagination`) + the 2 chained
+shared `urls.ts` patches (the Studio-eject kill) — see [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md)
+§ the four hiring-image patches, and the cockpit trio in
+[`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § the hiring vantage.
+
 ## Cross-references
 
 - The frontend split that hosts the surface: [`next-web-app.md`](next-web-app.md) (Workforce `apps/web` vs Hiring
-  `apps/hiring` — the scoreboard is in the **dockerized `apps/web`**, so the demo serves it without a platform edit).
+  `apps/hiring`). **⚠️ M222 inferred the scoreboard was reachable in `apps/web`; M224 rendering proved it is not for a
+  *genuine* hiring org — the demo serves the real `apps/hiring` as a second container (see § The render path above).**
 - The runtime that runs the sims + owns `jobsimulation.sessions` + the `validation_*` drill-down tables:
   [`jobsimulation.md`](jobsimulation.md).
 - The `app` service that owns the **mirror** table `public.local_jobsimulation_sessions` + the `IntelligenceManager`
