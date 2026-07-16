@@ -24,6 +24,23 @@ _Section checklist, derived from `overview.md` § Scope.In. To be worked by `/de
 - [x] **S4 — Docs:** the hiring sections of `coverage-protocol.md` (the hiring-vantage org/identity dispatch +
       apps/hiring targeting + profileGated persona) + `playthroughs.md` (the hiring product + Org D + count 14→15).
 
-_rext tagged `casting-call-m225-sections` (29ceae6), pushed; consumption copy synced; `.agentspace/rext.tag`
-bumped. Fresh LOCAL demo-1 bring-up in progress to prove the S1 guard + S2 coverage gate + S3 recruiter
-playthrough live (LOCAL only, never billion)._
+## Live proof (fresh LOCAL demo-1, cached images; never billion)
+
+All three sections proven live on a fresh `up-injected.sh 1 --no-public-host` (17 containers incl. the two-app
+`demo-1-hiring-app`):
+
+- **S1 guard LIVE-GREEN** — autoverify printed `✓ hiring org set-dressed: 5 shared positions + 294 candidate
+  HIRING sessions`. (The autoverify fake-FAPI curl WARN is a macOS-curl-vs-Go-TLS false-negative — a browser
+  reaches fake-FAPI `/v1/environment` 200 + hiring `/enterprise/activity-dashboard` 200/402ms.)
+- **S2 FULLY LIVE-GREEN — all 3 hiring seats GATE MET ✅** — rae-recruiter (manager @ Meridian Talent,
+  reachable=53/90, frontier EXHAUSTED) + cara-assessed + cody-assigned, each failingSections=0,
+  personaFailures=0 (profileGated), escapes=0. Live sweep surfaced + fixed one real bug (the crawler landed on
+  `/`, which apps/hiring's root won't route → land on the manifest's first seedPath). Manifests flipped
+  calibrated:true.
+- **S3 GATE MET ✅ (the milestone headline)** — `run-playthroughs.sh 1 --reset --grep pt-hiring-recruiter-compare`
+  → reset-to-seed pt-world (Org D Kestrel Hiring) + roster refresh + sentinel reload → `✓
+  @pt:pt-hiring-recruiter-compare … 1 passed (3.4s)`. The recruiter logs in → apps/hiring Results → the isHiring
+  re-skin + shared positions render with a candidate cohort.
+
+_rext tag `casting-call-m225-sections` (moved to `b17756f` after the S2 live-calibration fix), pushed;
+consumption copy synced; `.agentspace/rext.tag` points at it. **ZERO platform-repo edits.**_
