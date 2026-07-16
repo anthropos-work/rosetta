@@ -22,24 +22,23 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 
 | iter-12 | tik F (TOK-02) | **PROBE NOW TRUSTWORTHY + the shared assignments bug FIXED.** Fixed the render-probe R1–R4 (R3 derives the 5 SHARED hiring sims from the recruiter's own scoreboard [top-5 by count=44]; R2 real-clicks the drawer; R1 visits only the 5 — no timeout; R4 correct drawer-table selector). **`render-report.json`: all 5 sims rendered=20 / network-total=44 / scores 61–100 (14–18 distinct, non-degenerate) / junk=0 / 403=false / errors=false.** Fixed `assignments.go` enum (`"simulation"`→`"job_simulation"`, verified vs the app ent schema) → after cold reseed: 144 job_simulation + 160 skill_path, 0 invalid; Cody's `/home` "Assigned" card now RESOLVES (was NULL-bubbling); no Rae regression. + candidate-heroes spec serial-mode hardening. rext tag `casting-call-m224-iter11` (76f73af); go/vet/test/tsc green. ZERO platform edits. **The trustworthy probe SURFACED 1 prod-eject the broken one hid: `studio.anthropos.work` (the hiring nav's Studio link, baked `STUDIO_URL`) → iter-13.** | probe green (20/sim, 44-total, 0-junk, non-degenerate); 1 eject to fix | closed-fixed — rext `76f73af` |
 
-## Next iter — the LAST tik before harden + close
+| iter-13 | tik G (TOK-02) | **STUDIO PROD-EJECT KILLED + D1 GATE MET (reliably, independently verified).** Chained the shared `urls.ts` pair (`next-web-studio-url` → `next-web-public-website-url`, G1–G7) onto `build_frontend_hiring` (the eject source: `packages/ui` NavBar `key: STUDIO_URL`). Hiring image rebuilt (`73e42b8c`): 0 `studio.anthropos.work` in client chunks (verified via `docker exec` grep); clone git-clean (G5). rext `2d673d2`/`iter12`. **3-cold-run prove GREEN** (each: 5 sims × 20 rendered / 44 total / non-degenerate / junk=0 / 403=false / errors=false / 0 eject; trio 3-pass). **Independent orchestrator re-verify (D17 discipline) CAUGHT + FIXED a probe render-race (R5)**: the drawer-hydration poll sampled cells before they rendered → intermittent false-junk on the last sim (1/6 readings); added a bounded first-row-text wait. **Flake gate: 4/4 consecutive runs GREEN** post-fix. rext tag `casting-call-m224-iter13` (309a00e); tsc clean. ZERO platform edits. | **GATE MET** — reliably, independently re-verified | closed-fixed — rext `309a00e` |
 
-Everything is green EXCEPT one thing the now-trustworthy probe surfaced: **1 prod-eject** — the Hiring app's nav
-links to `studio.anthropos.work` (the baked `STUDIO_URL` was never patched demo-local). The exit gate requires
-**0 prod-eject escapes**, so this must land.
+## Next — the exit gate is MET; the milestone is BUILD-COMPLETE → harden + close
 
-**iter-13 (tik G, under TOK-02) — kill the studio-eject + PROVE the gate over ≥3 cold runs.**
-1. **Chain the existing `next-web-studio-url` demo-patch onto the HIRING image build** (`build_frontend_hiring`), so
-   the Hiring app's Studio link points demo-local instead of `studio.anthropos.work` (precedent: apps/web already
-   carries `next-web-studio-url` + `next-web-public-website-url`). Confirm it's a clean chain (sha-pin, G1–G7).
-   **Rebuild the hiring image (~7 min)**, restart the container.
-2. **PROVE the D1-gate over ≥3 consecutive cold reset-to-seed runs:** each run = `stackseed --reset` → the fixed
-   probe → assert **rendered=20 / network-total≥43 per each of the 5 shared sims, scores non-degenerate, junk=0,
-   403=false, errors=false, 0 prod-eject**, + the trio's cockpit seats resolve. All 3 GREEN → gate MET.
-3. Then `/developer-kit:harden-mstone-iters --final` + `/developer-kit:close-milestone`.
+**The M224 exit gate is satisfied** (D1-re-interpreted): on a cold reset-to-seed the recruiter's Results
+comparison renders 20 candidates/sim (43+ reachable) on each of the 5 shared sims, non-degenerate scores, junk=0,
+0 prod-eject, over ≥3 consecutive cold runs — **reliably** (the probe render-race fix makes it non-flaky;
+independently re-verified 4/4 post-fix). The hero trio (Rae/Cara/Cody) resolves. **Zero platform-repo edits.**
 
-**Deferred (non-blocking):** 6 pre-existing `test_cockpit.py` failures (+ `test_purge`/`test_reap` — HEAD-identical,
-not this milestone's) → a future harden pass.
+**Remaining = the close lifecycle:**
+1. `/developer-kit:harden-mstone-iters --final` — the final harden pass.
+2. `/developer-kit:close-milestone` — review + Gate Outcome Ledger + merge `m224/the-callback` → `release/02.40-casting-call`.
+
+**Fold in at harden/close (deferrals):** (a) doc: `demopatch-spec.md` §4/§5 — note the shared `urls.ts` pair (+
+role-remap + members-pagination) now also bake into the hiring image (2 net-new + 2 chained hiring patches); (b)
+the 6 pre-existing `test_cockpit.py` failures (+ `test_purge`/`test_reap` — HEAD-identical, not this milestone's)
+→ resolve or formally carry. Both non-blocking to the gate.
 
 > **Note (bookkeeping):** iter-04/iter-05 were executed + committed (rext tags `…iter04`/`…iter05`; rosetta
 > `ae4974e`) during a driven build-iter leg; their ledger rows are reconciled here at the TOK-02 boundary. iter-04's
