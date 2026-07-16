@@ -165,3 +165,31 @@ per each of 5 sims, non-degenerate, closure green, 0 ejects, ≥3 cold reset-to-
    --cockpit-export`) so the cockpit picks the hiring base for that hero; else she jumps to the web base and is
    ejected.
 
+---
+
+## GATE-DECISION D1: keep the platform-native 20-per-page (faithful pagination) — 2026-07-16
+
+**Context.** iter-07→iter-10 drove the two-app render loop to the payoff: the recruiter logs into the demo's real
+`apps/hiring`, is kept in (not ejected), reads as admin, and her Results scoreboard **renders real ranked
+candidates for ALL 5 shared sims** (`insightsJobSimulationByMemberships` 200, 0 errors, 0 403). Two sha-pinned
+demo-patches landed it — `next-hiring-role-remap` (iter-09, the admin remap) + `next-hiring-members-pagination`
+(iter-10, the unbounded-fetch unblock); the per-member authz was already covered by the existing
+`app-targetrole-authz-skip`. **Zero platform-repo edits.**
+
+**The 20-vs-43 finding.** Each of the 5 shared sims returns exactly **20 rows on page 1** — the platform's Results
+table paginates at 20 (`apps/hiring/.../InsightsByMembersContainer.tsx` `useTablePagination`, default 20). All **43**
+seeded candidates per sim EXIST, are non-degenerate (scores 27–100), and are **reachable by paging**; page 1 shows
+the platform-native 20. The exit gate's "≥40 rows per sim" was written assuming all candidates on one page — before
+we knew the scoreboard paginates at 20.
+
+**User decision (2026-07-16): keep the platform-native 20/page** — the faithful option (the real product paginates
+at 20; a page-size bump would diverge from production). **Rejected:** a `next-hiring-page-size` demo-patch to force
+~43 on one page.
+
+**Gate re-interpretation (consequent).** The exit gate is satisfied as **"≥40 comparable candidates seeded +
+reachable + rendering per sim, under the platform-native pagination (page 1 = 20)"** — NOT "≥40 rows painted on a
+single page." The data-completeness sub-gates are UNCHANGED and already met (≥43 comparable, non-degenerate,
+closure-green, 0-eject per sim); only the on-screen page-1 count reflects the real 20/page. This keeps TOK-02's
+faithfulness thesis intact (show the real product, real routing, real pagination). The **≥3-cold-run** requirement
+and the **render-probe fixes (R1–R4)** remain open iter-close work (below / carry-forward).
+
