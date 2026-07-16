@@ -57,3 +57,111 @@ closure/eject checks); (d) tag rext; (e) bring up a **LOCAL** demo consuming the
 **measure the baseline**, and **attribute** the per-sim gap — no fix before the attribution. If reaching/measuring
 is blocked on a missing probe capability, iter-03 becomes a **tooling-iter** (protocol refinement).
 
+---
+
+## TOK-02: run-the-real-hiring-app (two-app demo, not a workforce re-skin) — 2026-07-16
+
+**Tok type:** triggered — strategy revision (user-directed, after the iter-04/05 render evidence).
+
+**Trigger (what falsified TOK-01's fix path):** the render loop reached + measured + attributed, and the
+attribution pointed at a **product boundary, not a render-gate** — exactly the class TOK-01's fix ladder did not
+anticipate.
+- **iter-04 (first gate reading):** baseline `min(rows-per-sim) = 0`. Attribution = **SEED-GAP** (the M219 trap,
+  caught by measure-first): the recruiter hero's role `"Technical Recruiter"` did not resolve to a real public
+  `job_role` (no `job_role_skills`) → the users-seeder fail-fast killed the ENTIRE hiring seed (Meridian = 0
+  members, blast-radius to the other orgs). **Fixed** (role → `"Talent Acquisition Specialist"`, a real resolvable
+  role). After a cold reset-to-seed: **Meridian Talent = 50 members; each of the 5 shared sims = 43 comparable
+  candidates; scores 27–100, non-degenerate. The DATA side of the gate is MET.**
+- **iter-05 (diagnosis):** with the data present, the recruiter STILL cannot reach the scoreboard. **Root cause
+  (code-cited):** `apps/web/src/context/UserStatusContext.tsx:141-173` — a user whose memberships are ALL
+  hiring-orgs is **ejected out of the workforce app** to `hiring.anthropos.work` (`buildSwitchHandoffUrl`,
+  `targetProduct:'hiring'`), **by design** (the platform enforcing the product boundary); `useGetClerkOrganization`
+  filters hiring orgs out of the workforce list. The Hiring sub-app is **not in the demo**. So **"genuinely reads
+  as hiring"** (needed for the re-skin — Scope.In#3 / D-DESIGN-1) and **"scoreboard reachable in apps/web"** are
+  **mutually exclusive on the unmodified platform**. This **falsifies the M222 premise** (M222's "comparison lives
+  in apps/web, reachable by the recruiter" held only because that spike org lacked client `publicMetadata.isHiring`
+  — it read as workforce). Also landed a cheap probe fix (render-probe timeout 150s→300s; kept the fullPage-hang
+  fix).
+
+**Old strategy (TOK-01, superseded on the FIX target only):** render the comparison INSIDE `apps/web`, treating
+the eject as a render-gate to neutralize with a single sha-pinned demo-patch + **re-skin the workforce Results
+surface to imitate hiring**.
+
+**Why the old strategy is inferior — not merely harder:** it keeps the recruiter in the **workforce** app wearing
+hiring chrome — a **demo fiction** that actively suppresses the platform's real product routing. And most of its UI
+work is **wasted**: the genuine hiring candidate-comparison screen **already ships in `apps/hiring`**; the
+single-patch path rebuilds a fake of a screen that exists as-is.
+
+**New strategy (TOK-02) — run the REAL Hiring app in the demo (a two-app demo).** Build `apps/hiring` into the
+demo as a **second UI container** — the same recipe the demo already uses for `apps/web` + `studio-desk`, from the
+**untouched clone** — on its own offset port, wired to the **same** fake-Clerk FAPI, the **same** Cosmo backend,
+and the **same** seeded Postgres. The recruiter hero logs in via the cockpit **straight onto the Hiring app's
+Results page**. The platform's **own** routing then does the work: the workforce app ejects a hiring-org recruiter,
+and the Hiring app's **symmetric** guard (`apps/hiring/.../UserStatusContext.tsx:119-149`, `userHasAllWorkforceOrgs`
+short-circuit → no redirect) **keeps her in**. No forcing, no fiction.
+
+**Premise VERIFIED end-to-end (adversarial, against the demo clone — see the 2026-07-16 two-app feasibility
+workflow):**
+- **The comparison screen ships in `apps/hiring`:** route
+  `apps/hiring/src/app/(authenticated)/(verified)/enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx`
+  ("Enterprise Results | AI Simulations by Members") → `InsightsByMembersContainer` → a `Table` with
+  `simulationScoreColumn` rendering each candidate `{score}/100` (pass/fail colored), plus `CandidateSearchInput`,
+  sorting, and all/shortlisted/archived tabs — a genuine ranked candidate comparison per sim.
+- **Same data + backend, no new plumbing:** the `insightsJobSimulationByMemberships` field is in the **app
+  subgraph** SDL with **no feature gate** (`app/.../graphql/graph/schemas/queries.graphqls:188-192`), federates the
+  **same Cosmo router the demo already bakes**; the resolver (`intelligence.go:1681`) reads
+  `public.local_jobsimulation_sessions` filtered by `jobSimulationId` + org + memberships, default sort DESC by
+  score — **exactly where M223 seeded 5 sims × 43 candidates**. So: **no re-skin, no new resolver, no data
+  migration.**
+
+**Faithfulness:** materially MORE faithful than the patch — it shows the ACTUAL product (hiring recruiters really
+use the separate Hiring site) and exercises the platform's genuine routing.
+
+**Constraint compliance (zero platform-repo edits):** the Hiring app builds from the **untouched clone** (build
+context only). A **rext-owned** `hiring.Dockerfile` (the platform `Dockerfile.dev` hardcodes
+`--filter=@anthropos/web-app` / `start:web` / `EXPOSE 3000`, so the demo cannot reuse it verbatim) + the demo-stack
+tooling own everything. **At most ONE sanctioned demo-patch** (`core-js/src/constants/urls.ts` `HIRING_APP_URL`,
+**chained** onto the existing `studio-url`/`public-website-url` patch on that same shared file) to point the in-app
+"go to Hiring" link at the demo-local hiring app — **or bypass it entirely** via the cockpit deep-link.
+
+**Strategy class:** new-direction on the FIX target. The render-loop **measure → attribute → fix → re-measure**
+spine (TOK-01) is unchanged; TOK-02 changes only WHERE the fix lands, once the attribution resolved to a
+product-boundary eject rather than a render-gate.
+
+**Distance-to-gate context:** metric unchanged = `min(rows-painted across the 5 sims)` on the recruiter's Results
+scoreboard, now measured **in the Hiring app**. **Data side MET** (43 × 5 in `local_jobsimulation_sessions`, scores
+27–100). **Render side UNMEASURED** in `apps/hiring` (the app is not built into the demo yet). Gate unchanged: **≥40
+per each of 5 sims, non-degenerate, closure green, 0 ejects, ≥3 cold reset-to-seed runs.**
+
+**Next-tik direction (the build tiks under TOK-02):**
+- **tik A (iter-07) — the hiring-app UI container.** A rext-owned `hiring.Dockerfile` (filter the hiring package,
+  its `start` cmd + `EXPOSE`) + a `FRONTENDS` row in `demo-stack/…/gen_injected_override.py` (offset port,
+  fake-Clerk pk + FAPI URL bake, `CORS_EXTRA_ORIGINS`, `UI_BROWSER_FACING`). Bring up demo-1; confirm the hiring app
+  boots and reaches the same Cosmo backend + fake FAPI.
+- **tik B (iter-08) — cockpit + probe re-point + first Hiring-app render reading.** The recruiter seat gets a
+  hiring base + `jump_to` the Results page; confirm the cockpit login lands the recruiter **on** the Hiring Results
+  scoreboard (the platform's guards keep her in). Re-point the render-probe at the hiring app; **measure**
+  `min(rows-per-sim)`.
+- **tik C (iter-09+) — drive to green.** Attribute + fix any residual: the enterprise/admin role gate on the hiring
+  routes (confirm the seeded recruiter has an admin/appropriate role in the hiring org, not merely a member); the
+  optional `urls.ts HIRING_APP_URL` chain-patch (only if we want the in-app eject to land demo-local rather than
+  relying on the cockpit deep-link); a possible `hiring-layout no-thirdparty` patch for self-containment. Gate: ≥40
+  × 5 over ≥3 cold runs.
+- **Post-gate:** the 2 candidate `/profile` heroes (unchanged — still layered after the scoreboard is green).
+
+**Open risks carried (from the feasibility workflow):**
+1. **In-app eject target is baked** (`core-js/urls.ts HIRING_APP_URL` → prod `hiring.anthropos.work` or dev
+   `localhost:3001`; neither matches an offset/tailnet demo). Mitigation: the chained `urls.ts` demo-patch, OR steer
+   the presenter in via the cockpit deep-link (bypasses the eject).
+2. **Auth/role gate:** the hiring app's `enterprise`/Results routes likely require an enterprise/admin membership
+   (analogous to studio-desk's `checkEnterpriseAndAdmin`) — the seeded Meridian recruiter must hold an admin role in
+   the hiring org, not just be a member.
+3. **GraphQL resolver coverage:** confirm `insightsJobSimulationByMemberships` (+ `useGetSimulationDetails`) is in
+   the demo's running federated schema (same `@anthropos/graphql` + router the demo bakes — likely fine, verify).
+4. **Hiring layout third-party scripts:** `apps/hiring` has its own `layout.tsx`; if it loads egress scripts, a
+   self-contained demo may need a parallel `hiring-layout no-thirdparty` demo-patch (quick read to confirm).
+5. **Build residual:** a 2nd cached ~3-min frontend image per new demo-N (documented in `frontend-tier.md`).
+6. **Cockpit manifest:** the recruiter's `jump_to` + a hiring/vantage flag must be authored (`stackseed
+   --cockpit-export`) so the cockpit picks the hiring base for that hero; else she jumps to the web base and is
+   ejected.
+
