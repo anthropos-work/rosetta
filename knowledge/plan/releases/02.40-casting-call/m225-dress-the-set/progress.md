@@ -91,3 +91,67 @@ testable; no perf path — that's M226; no flake surface). Coverage delta neglig
 _rext harden commit `be431c3`, tag `casting-call-m225-harden`, pushed (authoring `main`). `.agentspace/rext.tag`
 + the consumption copy left at `casting-call-m225-sections` — the fences are test-only (no runtime tooling
 change), so the live demo-1 needs no re-sync. **ZERO platform-repo edits.**_
+
+## M225: Final Review (`/developer-kit:close-milestone`, 2026-07-17)
+
+Cross-cutting close review of the whole milestone. **0 findings requiring a fix** — the build shipped green, the
+harden pass added 10 regression fences (0 bugs), and this close's re-verification reproduced every deterministic
+suite GREEN at the merge base.
+
+### Scope — all Scope.In delivered Fate-1; 0 gaps
+- S1 bring-up guard + docs · S2 coverage manifest (3 seats GATE MET) + `manifestFor` 3-arg + `profileGated` ·
+  S3 `hiring.yaml` + pt-world Org D + one GREEN playthrough · S4 3 corpus docs. `overview.md` Out: (the live
+  cross-machine proof) is Fate-2 → M226. S3's candidate playthrough is a conscious pillar split (D3), not a gap.
+
+### Code Quality — N/A in this repo (docs only); rext reviewed at build+harden
+- The rosetta branch diff is docs only (3 corpus + plan docs). The tooling code lives in the rext authoring clone
+  (`be431c3`), reviewed per-section at build + across the harden pass; `go vet` clean, `tsc` clean, shellcheck clean.
+
+### Adversarial — covered by the D1/D2/D3 investigations + the harden fences
+- The cold-cache / starved-HIRING-pool silent-empty scenario (the milestone's real failure mode) is fenced at THREE
+  layers: the S1 autoverify bring-up guard (warns at the tail), the S2 coverage sweep (empty grid = FAIL), and the
+  S3 playthrough (empty scoreboard = FAIL). The pt-world Org D "test data ≠ demo data" invariant is pinned by
+  `hiring_isolation_test.go`.
+
+### Documentation — the S4 deliverable; accurate + house-style-consistent
+- The 3 corpus edits reviewed against D1/D2/D3 + KB-1: accurate, cross-referenced, and citation-consistent with
+  each doc's established style (inline milestone citation in coverage-protocol.md / playthroughs.md; the cheap-win
+  heading form in verification.md). No new top-level unit introduced in this repo → no per-unit handbook gap.
+
+### Tests & Benchmarks — re-verified GREEN at merge base
+- Go 1885→**1887** (+2) + vet clean · `test_verify.py` **124** (incl shellcheck) · TS unit **61** (stack-verify/e2e)
+  + **69** (playthroughs/e2e) · both `tsc` clean · **flake 5/5 clean** on the M225 deterministic fences · the live
+  hiring playthrough independently orchestrator-verified GREEN on a clean pt-world reset-to-seed. No benchmark
+  surface (perf is M226).
+
+### Decision Triage
+- **KB-1** → archive (maintainer-only plan-doc reconciliation).
+- **D1** → already blended into `verification.md` (the hiring set-dress cheap-win, S4) — accurate, cited inline.
+- **D2** → already blended into `coverage-protocol.md` (the hiring vantage dispatch + profileGated, S4) — accurate.
+- **D3** → already blended into `playthroughs.md` (the hiring product + Org D, S4) — accurate.
+- **D-AUDIT** (new this close) → archive (records the Phase-1b re-fate of the two inherited carries).
+
+## Completeness Ledger
+
+### Done (Fate 1 — landed in this milestone, properly and completely)
+- **S0** KB-fidelity gate (YELLOW; KB-1 reconciled the stale `job_position` premise) — `kb-fidelity-audit.md`
+- **S1** auto-set-dress hiring bring-up GUARD (autoverify cheap-win (e)) + docs — verified: `test_verify.py` 124 + live guard-green (`5 positions + 294 sessions`)
+- **S2** hiring coverage manifest (`manifestFor` 3-arg org/identity dispatch + `profileGated`) — verified: `coverage-manifest.unit` 48 + all 3 hiring seats GATE MET live (rae/cara/cody, failingSections=0, personaFailures=0, escapes=0)
+- **S3** `playthroughs/manifest/hiring.yaml` + pt-world Org D "Kestrel Hiring Group" + `pt-recruiter` — verified: `hiring_isolation_test.go` + `ptvalidate` GREEN + live `pt-hiring-recruiter-compare` GREEN (orchestrator-reverified on clean reset-to-seed)
+- **S4** the hiring sections of `coverage-protocol.md` + `playthroughs.md` + the hiring cheap-win in `verification.md` — verified in the branch diff
+
+### Confirmed-covered by another milestone in this release (Fate 2)
+- The **live cross-machine (billion/tailnet) proof** of the hiring vantage + the **recruiter p95 click→ACCESS < 5 s** 3rd vantage — **Owned by:** M226 opening-night → `roadmap.md` M226 exit-gate conditions (2)+(5) — **Decision:** `overview.md` §Scope.Out + roadmap M226. (No roadmap edit needed; M226's gate already owns it.)
+
+### Annotated to a milestone of this release (Fate 3)
+- None.
+
+### Dropped (cut from roadmap entirely)
+- None. (S3's candidate playthrough was non-committed "optional" scope covered on the presence side by S2 — a conscious pillar split per **D3**, not a drop.)
+
+### Carried known-issues (pre-existing / declared — flagged per Phase 4, not M225's work)
+- **8 pre-existing demo-stack test failures** (6× `test_cockpit.py` + `test_purge` + `test_reap`) — HEAD-identical, untouched by M225, outside the hiring domain → standing test-debt backlog / a future demo-stack test-debt harden pass — **Decision:** M224 D6 + M225 D-AUDIT; re-fate at v2.4 release close.
+- **M204 `assign-and-track.UC1` assign-WRITE TODO** — a declared in-manifest `unimplemented` build-reference gap (surfaced only in the `playthroughs.md` 14→15-live count) → its declared-TODO fate is a v2.4 release-close decision — **Decision:** M225 D-AUDIT.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.

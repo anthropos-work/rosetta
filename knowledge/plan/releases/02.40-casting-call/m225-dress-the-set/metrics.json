@@ -1,0 +1,50 @@
+{
+  "milestone": "M225",
+  "slug": "dress-the-set",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-17",
+  "shape": "section",
+  "close_status": "complete",
+  "is_final_milestone": false,
+  "sections": {
+    "S0": "KB-fidelity gate — YELLOW (KB-1: reconciled the stale job_position-replay premise in the plan docs; corpus already correct)",
+    "S1": "Auto-set-dress hiring bring-up GUARD (autoverify demo-only cheap-win (e): is_hiring-gated, >=5 positions + >=40 candidate sessions) + docs. D1: the hiring org already comes up real by default (M223+M224); no separate 5-sim capture / no job_position replay to fold in",
+    "S2": "Hiring coverage manifest wired into manifestFor(vantage, expectedOrg, identityKey) 3-arg dispatch (org/identity-conditional, the AI-readiness AB4 precedent) + profileGated persona mode (apps/hiring /home self-view) + COVERAGE_APP_PORT_BASE=3001; all 3 hiring seats GATE MET (rae-recruiter + cara-assessed + cody-assigned)",
+    "S3": "playthroughs/manifest/hiring.yaml (recruiter compares candidates) + pt-world Org D 'Kestrel Hiring Group' (distinct test data) + pt-recruiter hero; one GREEN playthrough (pt-hiring-recruiter-compare on apps/hiring)",
+    "S4": "corpus docs — the hiring sections of coverage-protocol.md (org/identity dispatch + apps/hiring targeting + profileGated) + playthroughs.md (the hiring product + Org D + count 14->15) + verification.md (the hiring set-dress cheap-win)"
+  },
+  "rext": {
+    "code_of_record": "rosetta-extensions @ be431c3 (casting-call-m225-harden)",
+    "sections_tag": "casting-call-m225-sections @ b17756f (the LIVE consumption tag; rext.tag points here)",
+    "harden_tag": "casting-call-m225-harden @ be431c3 (10 regression fences, test-only — no runtime tooling change, so the live demo-1 needs no re-sync)",
+    "touched_modules": "stack-verify/e2e (coverage-manifest.ts manifestFor 3-arg + hiring manifests + persona-assert profileGated + coverage.spec.ts + run-coverage.sh COVERAGE_APP_PORT_BASE/COVERAGE_PROFILE_GATED), stack-verify/live+tests (autoverify hiring cheap-win (e) + test_verify.py), playthroughs (manifest/hiring.yaml + corpus_test.go + hiring_isolation_test.go + e2e/lib/{stack-env,hiring-results-page}.ts + e2e/tests/hiring-recruiter.spec.ts + run-playthroughs.sh + seed/pt-world.seed.yaml Org D + seed/seed-worlds.yaml)"
+  },
+  "tests": {
+    "go_test_funcs_total": 1887,
+    "go_test_funcs_delta_vs_m224": "+2 (M224 1885 -> 1887; playthroughs/manifest corpus_test.go M225 pin + hiring_isolation_test.go pt-world Org D 'test data != demo data' isolation invariant)",
+    "go_suites": "playthroughs go test ./... OK (all 4 pkgs) + go vet clean",
+    "python_stack_verify": "test_verify.py 124 passed (incl shellcheck; +4 vs build 120 — the autoverify (e) floor boundaries: positions ==5 pass/==4 warn, sessions ==40 pass/==39 warn)",
+    "ts_unit_stack_verify_e2e": "coverage-manifest.unit 48 + section-assert.unit 13 = 61 passed (non-navigating; incl the 5 M225 hiring fences: calibrated:true gate, 5-shared-positions floor, profileGated wiring x3)",
+    "ts_unit_playthroughs_e2e": "url-shapes.unit 56 + stack-env.unit 13 = 69 passed (non-navigating)",
+    "ts_tsc": "stack-verify/e2e + playthroughs/e2e tsc --noEmit both exit 0",
+    "flake_gate": "5/5 clean consecutive runs on the M225-authored deterministic TS fences (61 + 69, sub-second, non-navigating); go cached-unchanged + vet clean; test_verify.py 124 green; live hiring playthrough independently re-verified GREEN by the orchestrator on a clean pt-world reset-to-seed",
+    "load_bearing_fence": "hiring_isolation_test.go (pt-world Org D distinctness: Kestrel Hiring Group / narrative:hiring / is_hiring / pt-recruiter, AND no pt-world org is the demo 'Meridian Talent'); coverage-manifest.unit 'every hiring manifest page is calibrated:true' (the pre-close no-untuned-descriptor gate, previously blind to the M225 flip)"
+  },
+  "flake_count": 0,
+  "pre_existing_failures_carried": 8,
+  "completeness": {
+    "done_fate1": ["S1 auto-set-dress hiring bring-up guard + docs", "S2 hiring coverage manifest (3 seats GATE MET) + manifestFor 3-arg + profileGated", "S3 hiring.yaml + pt-world Org D + one GREEN recruiter playthrough", "S4 3 corpus doc landings (coverage-protocol + playthroughs + verification)"],
+    "carried_known_issue": ["8 pre-existing demo-stack test failures (test_cockpit.py x6 + test_purge + test_reap) -> standing test-debt backlog (M224 D6 / M225 D-AUDIT)", "M204 assign-and-track.UC1 assign-WRITE declared in-manifest TODO -> v2.4 release-close fate (M225 D-AUDIT)"],
+    "confirmed_covered_fate2": ["the live cross-machine (billion/tailnet) proof of the hiring vantage incl recruiter p95 click->ACCESS < 5 s -> M226 opening-night"],
+    "scope_decision_not_deferral": ["candidate playthrough not built (recruiter playthrough = the S3 gate; candidate covered on the PRESENCE side by S2 coverage manifests) -> D3 pillar split"],
+    "dropped": [],
+    "escape_hatch": []
+  },
+  "constraints": {
+    "platform_repo_edits": 0,
+    "billion_host_touched": false,
+    "supply_chain": "GREEN - 0 net-new direct deps"
+  },
+  "deferral_audit": "YELLOW (audit-deferrals/deferral-audit-2026-07-17-m225-close.md; 0 new deferrals, 2 inherited carries re-fated fresh + routed to v2.4 release close; no repeat/chronic/blocking)",
+  "notes": "The demo-integration section milestone. Its S1 investigation (D1) found the hiring org was ALREADY end-to-end default-on (delivered incidentally by M223+M224), so S1's genuine deliverable became a bring-up-tail GUARD (the autoverify hiring cheap-win) + docs rather than new set-dress plumbing. S2/S3 reuse the M42 coverage + M202 playthrough machinery unchanged (org/identity dispatch + profileGated persona mode + Org D) — never forked. The recruiter surface is apps/hiring (the M224 two-app finding), offset :3001, not next-web. Harden landed 10 deterministic regression fences (0 bugs). Deterministic suites re-run GREEN at merge base; live gate independently orchestrator-verified. Zero platform-repo edits — code in the rext authoring clone (be431c3), docs in rosetta. Not the final v2.4 milestone (M226 opening-night remains) — release-branch merge only, no main-merge/tag."
+}

@@ -128,3 +128,27 @@ one GREEN live recruiter run lands at the shared bring-up.
 `e2e/tests/hiring-recruiter.spec.ts` · `e2e/run-playthroughs.sh` · doc: `corpus/ops/demo/playthroughs.md` (S4).
 
 ---
+
+## D-AUDIT — Close Phase 1b deferral re-audit: YELLOW (2 inherited carries, 0 new; both re-fated fresh, routed to release close)
+
+**Finding (close Phase 1b, 2026-07-17 — YELLOW).** The `/developer-kit:audit-deferrals --scope=milestone` pass
+found **M225 introduced ZERO new deferrals** (every Scope.In item landed Fate-1; the Out: live proof is Fate-2 to
+M226; S3's candidate-playthrough is a conscious pillar split per D3, not a defer). Two INHERITED carries remain, both
+consciously tracked with destinations + standing sign-off:
+
+- **DEF-CARRY-A — 8 pre-existing demo-stack test failures** (6× `test_cockpit.py` + `test_purge` + `test_reap`).
+  Inherited-failure carry from **M224 D6**; HEAD-identical, in files M225 never touched, outside the hiring domain.
+  **Fresh fate (today): KEEP-DEFERRED (carry)** → standing test-debt backlog / a future demo-stack test-debt harden
+  pass. Re-fate explicitly at v2.4 release close.
+- **DEF-CARRY-B — the M204 `assign-and-track.UC1` assign-WRITE TODO** (a declared in-manifest `unimplemented`
+  build-reference gap, carried since v2.0). Surfaced in M225's `playthroughs.md` count only (14→15 live, the same
+  1 TODO). **Fresh fate (today): KEEP-DEFERRED (declared TODO)** → its declared-TODO fate is a v2.4 **release-close**
+  decision.
+
+**No blocking items** (no repeat-deferral of promised milestone work). Verdict YELLOW → the milestone close proceeds;
+both carries inherit into the v2.4 close-release Phase 1b audit (release scope, extra-scrutiny).
+
+**Binds:** `audit-deferrals/deferral-audit-2026-07-17-m225-close.md` · M224 `decisions.md` D6 · `state.md` standing
+backlog · `corpus/ops/demo/playthroughs.md` (the "15 live, 1 TODO" line).
+
+---
