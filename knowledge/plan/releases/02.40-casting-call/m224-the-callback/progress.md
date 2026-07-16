@@ -32,7 +32,11 @@ comparison renders 20 candidates/sim (43+ reachable) on each of the 5 shared sim
 independently re-verified 4/4 post-fix). The hero trio (Rae/Cara/Cody) resolves. **Zero platform-repo edits.**
 
 **Remaining = the close lifecycle:**
-1. `/developer-kit:harden-mstone-iters --final` — the final harden pass.
+1. ✅ **DONE** `/developer-kit:harden-mstone-iters --final` (2026-07-16) — cumulative-scope final sweep;
+   landed 3 regression fences for the only unfenced hiring seams (studio-url chain onto `build_frontend_hiring`,
+   `hiring_lines` structural shape, cockpit `CockpitHero.IsHiring` routing); every other focus area verified
+   already-covered. 0 product-code changes, all suites green, flake 3/3. rext `66ed56d`, tag
+   `casting-call-m224-harden`. See `hardening-ledger.md` (Pass 1 — final — stabilized).
 2. `/developer-kit:close-milestone` — review + Gate Outcome Ledger + merge `m224/the-callback` → `release/02.40-casting-call`.
 
 **Fold in at harden/close (deferrals):** (a) doc: `demopatch-spec.md` §4/§5 — note the shared `urls.ts` pair (+
