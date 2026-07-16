@@ -7,11 +7,14 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 
 | iter | kind | what changed | gate metric | outcome |
 |------|------|--------------|-------------|---------|
-| _(none yet — scaffolded 2026-07-15; `/developer-kit:build-mstone-iters` opens iter-01)_ | | | | |
+| iter-01 | tok (bootstrap) | KB-fidelity GREEN (hiring.md FAPI-pointer fix inline); authored TOK-01 (recruiter-render-first) | baseline UNMEASURED (presumed 0 rows) | closed-fixed — see iter-01/progress.md |
 
 ## Next iter
 
-**iter-01 (bootstrap tok):** stand up the hiring cockpit heroes + DeepLinkCatalog entries, seed a cold stack, log in
-as the recruiter hero, and **measure the comparison surface render** — how many comparable non-junk rows paint per
-each of the 5 sims — before writing any fix. Attribute the gap (seed-data vs render-gate vs Clerkenstein wiring)
-per the exit gate. **The render measurement is the first artifact; the fix strategy follows the attribution.**
+**iter-02 (first tik, under TOK-01):** the **enabling-scaffold + baseline-render** tik. Add the recruiter
+(`vantage: manager`) hero seat to the Meridian Talent 4th story (`presets/stories.seed.yaml`, `jump_to` the
+comparison surface); wire Clerkenstein FAPI `isHiring` (roster+resource, M39 precedent) **+ the BLOCKING
+`/align-run`**; author a recruiter **render-probe** under `stack-verify/e2e/` (rows-per-sim + score distribution +
+closure/eject); tag rext; bring up a **LOCAL** demo at the tag; log in as the recruiter, **measure the baseline**,
+and **attribute** the per-sim gap (Clerkenstein-identity vs render-gate vs seed) — **no fix before the
+attribution** (the M219 trap). The 2 candidate `/profile` heroes route to a later tik (not the gate metric).

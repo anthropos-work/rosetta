@@ -47,9 +47,18 @@ surface gated client-side on a Clerk org flag.
 
    So a demo org whose DB row says `is_hiring=true` but whose Clerk metadata omits `isHiring` renders as a **normal
    Workforce org** in the browser — the nav never relabels, the "Results" framing never appears. **⇒ M224 must
-   extend Clerkenstein's fake Clerk API to emit `publicMetadata.isHiring = true`** for the hiring org. Today
-   Clerkenstein emits `{eid}` only (`clerkenstein/clerk-backend/resources.go:38-47`). **This is a rext change (the
-   mock), NOT a platform edit.**
+   extend Clerkenstein's fake Clerk API to emit `publicMetadata.isHiring = true`** for the hiring org. This is a
+   rext change (the mock), **NOT a platform edit**.
+
+   > **The browser-visible emission is the FAPI, not the BAPI (M224 KB-fidelity correction).** Clerkenstein emits org
+   > `public_metadata.{eid}` **independently on both sides**, but the one the client re-skin above reads (`@clerk/clerk-js`
+   > `useOrganization().publicMetadata`) is the **fake FAPI**: `clerkenstein/clerk-frontend/resources.go` `orgMemberships()`
+   > builds `PublicMetadata:{eid}`, fed by the `RosterEntry`→`DemoUser` roster thread (the M39 `org_name`/`org_slug`
+   > precedent). **So `isHiring` slots into the FAPI roster+resource path** (`clerk-frontend/registry.go` `RosterEntry` +
+   > `clerk-frontend/resources.go` `orgMemberships()`), which trips the **BLOCKING `/align-run`** clerk-frontend guard. The
+   > server-side BAPI (`clerk-backend/resources.go` `organizationWithEid`) emits its own `{eid}` copy but is **not** what the
+   > re-skin reads (the server derives hiring from the `public.organizations.is_hiring` DB column) — a BAPI `isHiring` extension
+   > is optional, only if a server-side consumer reads `organization.publicMetadata.isHiring`.
 
 > **Both, or the demo is half-lit.** DB-only → the browser doesn't re-skin. Clerk-only → the insights read-path
 > won't treat the cohort as hiring. The seeder writes #1; the mock emits #2; M224 wires the pair.
