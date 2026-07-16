@@ -108,6 +108,13 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 
 > ⚠️ **It therefore reads "DRIFTED" against a pristine file BY DESIGN. Do not "fix" this.** A unit test fences it.
 
+**The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
+**and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
+so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. The apply-order (studio →
+public-website) and revert-order (LIFO) are identical on both; each build carries its own patch-set fingerprint
+(§5-bis) — next-web's over its manifest set, hiring's over the **4-manifest union** (the 2 `apps/hiring` patches +
+this shared pair). A test fences the hiring-side chain apply-order + LIFO revert + the 4-manifest fingerprint union.
+
 ### The `app` patches are never reverted — and that is correct
 
 The `next-web` patches are reverted by a `RETURN` trap (LIFO) so the persistent clone is left git-clean. The `app`
@@ -141,13 +148,22 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 **11 patches: 8 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring`) · 2 × `app` · 1 × `ant-academy`.**
 
-> **The two `apps/hiring` patches are M224 "the callback" (v2.40 "casting-call").** The demo now runs the
+> **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
-> genuine `apps/hiring` candidate-comparison Results screen instead of a re-skinned workforce fake. Both are the
-> **same class as a known `apps/web` patch** — the same monorepo (`next-web-app`), the same defect the web app
-> already fixed, never mirrored onto hiring. They ride `build_frontend_hiring`'s transient apply/revert (same
-> vehicle + fingerprint fence as next-web). *(The prior count line read "8 patches / 5 × next-web-app" — it
-> undercounted by the `next-web-no-thirdparty` row; corrected here.)*
+> genuine `apps/hiring` candidate-comparison Results screen instead of a re-skinned workforce fake. **The HIRING
+> image (`build_frontend_hiring`) bakes FOUR patches**, not two: the **2 net-new** `apps/hiring` patches
+> (`next-hiring-role-remap`, `next-hiring-members-pagination`) **plus the 2 chained shared `urls.ts`** patches
+> (`next-web-studio-url` → `next-web-public-website-url`), applied on the hiring build too because the Studio nav
+> link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
+> presenter to `studio.anthropos.work` exactly as `apps/web` did. Found + killed at iter-13 (the hiring image's
+> client chunks were `docker exec`-grep-verified to carry **0** `studio.anthropos.work`; the trustworthy render
+> probe of iter-12 had surfaced the eject the earlier broken probe hid). All four ride `build_frontend_hiring`'s
+> transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
+> rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
+> patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
+> hiring. *(The distinct-manifest total is unchanged at **11**: the chained `urls.ts` pair is shared — counted once
+> under the 6 × `apps/web` — and merely applied on **both** frontend builds. The prior count line read "8 patches /
+> 5 × next-web-app" — it undercounted by the `next-web-no-thirdparty` row; corrected here.)*
 
 | id | target | what it does |
 |----|--------|--------------|

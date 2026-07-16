@@ -193,3 +193,24 @@ closure-green, 0-eject per sim); only the on-screen page-1 count reflects the re
 faithfulness thesis intact (show the real product, real routing, real pagination). The **≥3-cold-run** requirement
 and the **render-probe fixes (R1–R4)** remain open iter-close work (below / carry-forward).
 
+---
+
+## Close decisions (2026-07-16 — `/developer-kit:close-milestone`)
+
+Deferral re-audit `audit-deferrals/deferral-audit-2026-07-16-m224-close.md` → **GREEN** (no repeat/chronic/aged-out).
+Scope review surfaced three overlooked `Delivers → knowledge/corpus` sections in addition to the known demopatch
+fold-in; all landed **Fate-1** at close.
+
+| # | Decision | Fate | Rationale |
+|---|----------|------|-----------|
+| **D2** | **`demopatch-spec.md` §4/§5 fold-in landed.** The HIRING image (`build_frontend_hiring`) bakes **4** patches — 2 net-new `apps/hiring` (`next-hiring-role-remap`, `next-hiring-members-pagination`) + the 2 chained shared `urls.ts` (`next-web-studio-url` → `next-web-public-website-url`, the iter-13 Studio-eject kill via the shared `packages/ui` NavBar); the chain runs on **both** frontend builds; distinct-manifest total unchanged at 11. | **Fate-1** | The known progress.md fold-in (a); a small in-domain doc update done properly at close. |
+| **D3** | **`cockpit-spec.md` hiring-vantage section landed.** The hero trio (Rae/Cara/Cody), the `CockpitHero.IsHiring` two-app-base routing, the candidate `/home` faithful landing, and the optional-polish DeepLinkCatalog `NeedsID` call. | **Fate-1** | Named in `overview.md` `Delivers →` + the KB-fidelity audit; had **zero** M224 content pre-close — a silent `Delivers` gap, landed now. |
+| **D4** | **`clerkenstein.md` isHiring-FAPI section landed.** The org `public_metadata.isHiring` emission (`resources.go::orgMemberships` ← `RosterEntry.org_is_hiring`), the CONDITIONAL-EMIT align-safety rule, the `/align-run` 100/100 record, and the BAPI-intentionally-not-wired call. | **Fate-1** | The KB-fidelity audit named the clerkenstein FAPI org-publicMetadata BLIND-AREA an "M224 `Delivers →` deliverable"; content was verified in `spec-notes.md` — landed now. |
+| **D5** | **`hiring.md` render-path corrected.** Added § *The render path (M224 — the two-app demo)* (TOK-02: render lives in the real `apps/hiring`, not `apps/web`; same field/router/mirror-table) and fixed the stale "scoreboard is in the dockerized `apps/web`" cross-ref. | **Fate-1** | Phase-3 stale-claim fix; the shipped reality contradicted the doc (the milestone's own `Delivers → render-path into hiring.md`). |
+| **D6** | **8 pre-existing test failures CARRIED (not fixed).** 6 × `demo-stack/tests/test_cockpit.py` (4 removed-academy-CTA + 2 v2.3.1 overlay-JS) + `test_purge` + `test_reap`. Verified HEAD-identical (matched the harden-pass Phase-5 record byte-for-byte: `650 passed / 8 failed`), in files M224 never touched, predating v2.4 (v2.3.1/v2.3.2 cockpit hotfixes). | **Carry (inherited known-issue)** | Outside M224's hiring render-loop domain; fixing = scope-bleed. Routed to the standing test-debt backlog (a future demo-stack test-debt harden pass). Non-blocking to the gate (a live render probe, GREEN). Flagged in the Gate Outcome Ledger. |
+
+**DeepLinkCatalog `NeedsID` per-`[simId]` entry (scope sub-item, `overview.md` Scope.In #2).** Judged **optional
+polish** and consciously **not added** — the recruiter's raw `jump_to` to `/enterprise/activity-dashboard` suffices
+and the render gate was met without it (spec-notes iter-03). Not a silent drop: a deliberate scope call, recorded
+in the Gate Outcome Ledger.
+

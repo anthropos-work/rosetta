@@ -130,6 +130,31 @@ re-tagged as a whole:
 Alignment held: the **multi-identity** (`clerk-multi-1`) + **JS/FAPI** (`clerk-js-5`) surfaces stay **9/9,
 100%/100%** (the `DefaultDemoUser` goldens are unchanged — they take the default-name fallback).
 
+**Roster org `isHiring` threading (v2.4 "casting call" M224).** The same roster→FAPI thread extends to a hiring
+org's `public_metadata.isHiring`. The fake **FAPI** emits org `public_metadata.isHiring = true` in
+`clerk-frontend/resources.go::orgMemberships()` — the org resource `@clerk/clerk-js`'s
+`useOrganization().publicMetadata` reads — fed by `RosterEntry.org_is_hiring` → `DemoUser.OrgIsHiring`, produced by
+the seeder (`RosterIdentity.org_is_hiring` ← `ResolvedStory.IsHiringOrg()` in `BuildRoster`). Only a **hiring**
+story's heroes carry `true`. It is the client-side half of the `is_hiring` dual-write: the DB column
+(`public.organizations.is_hiring`, the seeder's write) drives the *server*; this FAPI field drives the *browser
+re-skin* (`useGetClerkOrganization` derives `isHiringOrg` from it → the "Results" nav framing / hiring cohort
+treatment). Without it a demo org whose DB row says `is_hiring=true` renders as a **normal Workforce org** in the
+browser. See [`hiring.md`](hiring.md) § `isHiringOrg`.
+
+- **The align-safety rule this pins — CONDITIONAL-EMIT (#M224-D-align).** A new FAPI field is emitted **only when
+  its non-default value applies** (`if u.OrgIsHiring { pm["isHiring"] = true }`, else omit). The goldens are
+  captured from the existing identities; adding a key to a `shape`-graded response (`Client/signed-in`,
+  `Me/universal-user`) for the *default* case would flag the gate or force a golden re-capture. Conditional-emit
+  keeps every non-hiring org's `public_metadata` **byte-identically `{eid}`** — generalizing the
+  `Picture`/`OrgLogo` `omitempty` pattern to non-string additions.
+- **`/align-run` record (BLOCKING for any `clerk-frontend/` change).** `clerk-js-5` **100.0%/100.0%** (9/9),
+  `clerk-multi-1` **100.0%/100.0%** (9/9, incl. Roster 2/2) — GREEN, no identity gene perturbed (the named
+  `SessionToken/decoded-identity` critical/exact gene unaffected).
+- **BAPI intentionally NOT wired (#M224-D-bapi).** The server derives hiring from the
+  `public.organizations.is_hiring` **DB column**, not Clerk BAPI metadata; a `clerk-backend` change would add
+  Go-SDK align surface for **no render benefit**. Optional, only if a server-side consumer ever reads
+  `organization.publicMetadata.isHiring`.
+
 **`@clerk/express` (M2c) added no new dir** — it's a *consumer* (a Node backend verifier we satisfy), so
 its support is **additive**: an RS256 path (RS256 minting in `shared/` + a real JWKS from `clerk-frontend/`
 + read endpoints in `clerk-backend/`), measured by the `alignment/cmd/expressrun` runner driving the
