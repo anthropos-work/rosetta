@@ -64,3 +64,67 @@ shellcheck-clean.
 value added is making it self-verifying (the guard) + documented.
 
 ---
+
+## D2 — S2: the hiring coverage manifest reuses `manifestFor` org/identity dispatch (the AB4 precedent); a `profileGated` persona mode adapts to apps/hiring (not a fork)
+
+**Decision:** extend the M42 coverage machinery (`coverage-manifest.ts` + `manifestFor` + `coverage.spec.ts` +
+`persona-assert.ts` + `run-coverage.sh`) with a HIRING vantage — **never forked**, only extended:
+- `MANAGER_MANIFEST_HIRING` (recruiter Rae): the compare surface `/enterprise/activity-dashboard` — the 5 shared
+  positions render as custom-tanstack-table rows (`tbody.tbody > tr.tr`, the M224 R4 selector, NOT AntD) + the
+  `isHiring` "Results" re-skin. The per-sim ranked-candidate DRAWER (0-junk + non-degenerate distribution — the
+  cohort-level role↔skills↔score self-consistency) stays with `render-hiring-comparison.spec.ts` (M224).
+- `EMPLOYEE_MANIFEST_HIRING_ASSESSED`/`_ASSIGNED` (Cara/Cody): the candidate `/home` self-views (apps/hiring
+  /profile is admin-gated → redirect to /home). Per-candidate role↔score self-consistency: assessed → a
+  completed+scored position; assigned-only → a pending position, no score.
+- `manifestFor` is now **manager-org-conditional** (Meridian Talent → hiring, else showcase/base) **and
+  employee-identity-conditional** (hiring candidate seats → their self-views), hiring checked FIRST. `HIRING_ORG`
+  substring-matched case-insensitively (the AB4 convention). No false-promotion: "Meridian Labs" (pt-world Org A) +
+  the showcase org + base orgs all stay put (unit-tested).
+
+**`profileGated` persona mode (not a fork).** `coverage.spec.ts` gates on `personaFailures===0` and runs
+`runPersonaChecks` unconditionally; persona-assert targets next-web `/profile/skills`, which apps/hiring
+admin-redirects. So `runPersonaChecks(…, {profileGated})` adapts: `roleSkillsCoherence` + `avatarConsistency` read
+the `/home` self-view (assert no-junk + real-photo) instead of the next-web `/profile*` pages. Wired via
+`COVERAGE_PROFILE_GATED` (`coverage.spec.ts`) + `COVERAGE_APP_PORT_BASE=3001` (`run-coverage.sh` → the hiring app).
+
+**calibrated:false during build.** The section floors/copy are AUTHORED from the M224 render evidence + the seed
+contract, and CALIBRATED against the live apps/hiring render at the M225 shared bring-up (the coverage-protocol
+discipline — never assert an unrendered string; the M219 "wrote-and-never-ran" trap). The pre-close gate flips them
+to true.
+
+**Binds:** rext `stack-verify/e2e/lib/coverage-manifest.ts` (`manifestFor` + hiring manifests) ·
+`coverage-manifest.unit.spec.ts` (dispatch tests) · `persona-assert.ts` (profileGated) · `coverage.spec.ts` ·
+`run-coverage.sh` · doc: `corpus/ops/demo/coverage-protocol.md` hiring section (S4).
+
+---
+
+## D3 — S3: the hiring playthrough reuses the M202 machinery; a DISTINCT pt-world hiring org (Org D); the recruiter surface is apps/hiring
+
+**Decision:** add the FOURTH product (Hiring) to the Playthroughs corpus — **never forked**, reusing
+`hero-login`/`resolveStackEnv`/`PageObject`/`ptvalidate`/`ptreport`/`run-playthroughs.sh`:
+- **pt-world Org D "Kestrel Hiring Group"** (`narrative: hiring` + `is_hiring: true`, size 40 → 4 admin + 36
+  candidates). **Deliberately distinct** from the demo's "Meridian Talent" AND this world's Org A "Meridian
+  Labs" (test data ≠ demo data; and no "Meridian" prefix collision with the S2 coverage `HIRING_ORG` gate). The
+  two `narrative`/`is_hiring` flags trigger the SAME `HiringConfig`/`HiringFunnel` seeders (no bespoke pt-only
+  seeder — the Org C ai-readiness precedent). Recruiter hero `pt-recruiter` (Quinn, **Talent Acquisition
+  Specialist** — a resolvable role with role-skills, the M224 iter-04 non-resolving-role lesson). Seed
+  validates: 5 orgs / 7 heroes / pop 190; cockpit export emits `is_hiring:true` → the two-app hiring-base route.
+- **The recruiter surface is apps/hiring, not next-web** (the M224 two-app finding). Added
+  `resolveStackEnv().hiringAppBaseUrl` (3001+offset, `PT_HIRING_BASE_URL` override) + `run-playthroughs.sh`
+  exports it; `HiringResultsPage` reuses the M224 render-probe's calibrated tanstack anchor
+  (`tbody.tbody > tr.tr` — NOT AntD); `hiring-recruiter.spec.ts` logs in on the hiring base + asserts the
+  isHiring "Results" re-skin + the shared positions render with a candidate cohort (an empty grid = a cold
+  cache / starved pool, a FAILURE).
+- **Scope: recruiter only** (one GREEN playthrough = the gate). The candidate is "optional" per the overview,
+  and is covered on the PRESENCE side by S2's candidate coverage manifests — a clean pillar split (S2 =
+  presence, S3 = function).
+
+**Deterministic gates all GREEN:** ptvalidate (7 products, 15 live Playthroughs + 1 TODO, both-way integrity +
+precondition-coverage) · `go test ./...` · tsc · 69 e2e unit tests · shellcheck · `stackseed --validate`. The
+one GREEN live recruiter run lands at the shared bring-up.
+
+**Binds:** rext `playthroughs/seed/pt-world.seed.yaml` (Org D) · `seed/seed-worlds.yaml` (roster + caps) ·
+`manifest/hiring.yaml` · `manifest/corpus_test.go` (M225 pin) · `e2e/lib/{stack-env,hiring-results-page}.ts` ·
+`e2e/tests/hiring-recruiter.spec.ts` · `e2e/run-playthroughs.sh` · doc: `corpus/ops/demo/playthroughs.md` (S4).
+
+---

@@ -250,6 +250,29 @@ terse exception). The manager vantage has **two manager-only fan-outs** (`/user/
 > both-vantage assertion. The page's real proof (the funnel renders from real seeded data) still holds on the
 > showcase org, so the split removes a false assertion, not a real one.
 
+> **The HIRING vantage — org/identity-conditional dispatch, on a SECOND app (v2.4 "casting call" M225).** The
+> recruiter/candidate hiring surfaces render in the demo's **second UI container — the real `apps/hiring` app**
+> (the M224 two-app demo, offset **3001**-port), NOT next-web: `apps/web` **ejects** an all-hiring-orgs recruiter
+> to the hiring app by design (`UserStatusContext`), and the hiring app's symmetric guard keeps her in. So
+> `manifestFor` gains, via the **same 3-arg org/identity dispatch as the AI-readiness precedent**:
+> - **manager @ the HIRING org** (`HIRING_ORG` = `'Meridian Talent'`, case-insensitive substring, checked
+>   **before** the showcase-org branch) → **`MANAGER_MANIFEST_HIRING`** (the recruiter Rae): the Results
+>   scoreboard `/enterprise/activity-dashboard` — the 5 shared positions render as **custom tanstack-table** rows
+>   (`tbody.tbody > tr.tr`, NOT AntD — the M224 render-probe R4 finding) + the `isHiring` **"Results" re-skin**.
+> - **the HIRING candidate seats** (`cara-assessed` / `cody-assigned`, employee vantage) →
+>   `EMPLOYEE_MANIFEST_HIRING_ASSESSED` / `_ASSIGNED`: the candidate **`/home` self-views** (apps/hiring `/profile`
+>   is admin-gated → the platform redirects a candidate to `/home`). Per-candidate role↔score self-consistency:
+>   the **assessed** candidate shows a completed+scored position; the **assigned-only** candidate a pending one.
+>
+> Two knobs point the sweep at the hiring app: **`COVERAGE_APP_PORT_BASE=3001`** (`run-coverage.sh` → the hiring
+> app base) + **`COVERAGE_PROFILE_GATED=1`**, which puts **`persona-assert` in `profileGated` mode**: because
+> apps/hiring's `/profile` family admin-redirects, the role-skills + avatar checks read the **`/home`** self-view
+> (assert **no flat-pool junk** + a **real-photo** avatar) instead of the next-web `/profile*` pages they would
+> otherwise false-fail on — a **shared-lib extension, not a fork**. The cohort-level role↔skills↔score
+> self-consistency (0 junk names + a non-degenerate score distribution across the ~43-candidate cohort) is proven
+> by the M224 `render-hiring-comparison.spec.ts` render probe; this manifest asserts the compare-surface LIST
+> believability + the candidate self-views. **0 prod-eject** is the sweep's own escape scan, unchanged.
+
 #### The documented-exception table (where 0/1 is legitimately correct)
 
 | Vantage | Page · section | Exception | Reason |
