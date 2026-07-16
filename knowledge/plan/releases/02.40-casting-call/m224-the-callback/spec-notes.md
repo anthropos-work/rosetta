@@ -8,7 +8,27 @@ _1 recruiter/manager (`vantage: manager` → jump_to the comparison surface) + 2
 one only-assigned) → /profile. DeepLinkCatalog entries + labels._
 
 ## Clerkenstein isHiring wiring
-_FAPI/BAPI emission of org `public_metadata.isHiring=true`; the `/align-run` record for the clerk-frontend change._
+
+**LANDED iter-02 (rext commit `d8d9846`, tag `casting-call-m224-iter02`).** The FAPI half of the `is_hiring`
+dual-write — content for the `clerkenstein.md` + `hiring.md` M224 delivery:
+
+- **Mechanism (the M224 delivery fills the clerkenstein.md BLIND-AREA):** org `public_metadata.isHiring` is emitted
+  by the **fake FAPI** in `clerk-frontend/resources.go::orgMemberships()` (the org resource `@clerk/clerk-js`
+  `useOrganization().publicMetadata` reads), fed by the roster thread `RosterEntry.org_is_hiring` →
+  `DemoUser.OrgIsHiring`. The seeder produces it: `RosterIdentity.org_is_hiring` ← `ResolvedStory.IsHiringOrg()` in
+  `BuildRoster`. Only a hiring story's heroes carry `true`.
+- **`/align-run` record (the clerk-frontend BLOCKING guard):** clerk-js-5 **100.0%/100.0%** (9/9), clerk-multi-1
+  **100.0%/100.0%** (9/9, incl. Roster 2/2). GREEN — no identity gene perturbed.
+- **The align-safety lesson (generalizes — for the clerkenstein.md doc):** when extending a Clerkenstein FAPI
+  resource, **emit a new field only when its non-default value applies** (omit it otherwise). The goldens are
+  captured from the existing identities; adding a key to a `shape`-graded response (`Client/signed-in`,
+  `Me/universal-user`) for the default case would flag the gate or force a golden re-capture. Conditional-emit
+  (`if u.OrgIsHiring { pm["isHiring"]=true }`) keeps every non-hiring org's public_metadata byte-identically
+  `{eid}`. Generalizes the `Picture`/`OrgLogo` `omitempty` pattern to non-string additions.
+- **BAPI (`clerk-backend`) — intentionally NOT wired** (D2): the server derives hiring from the
+  `public.organizations.is_hiring` DB column, not Clerk BAPI metadata; a BAPI change adds Go-SDK align surface for no
+  render benefit. Optional, only if a server-side consumer reads `organization.publicMetadata.isHiring`.
+- **Inert until iter-03:** `BuildRoster` emits identities only for heroes; Meridian Talent still has `heroes: []`.
 
 ## Render-gap attribution (the measure→attribute→fix loop)
 _Per-iter: what painted, what didn't, the attributed cause (seed-data vs render-gate vs Clerkenstein wiring), the
