@@ -1,10 +1,10 @@
 ---
 active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "M223 casting-the-ensemble (BUILT — S0-S7 done: the 4th hiring story + HiringConfigSeeder + HiringFunnelSeeder [the mirror pair] + reset/closure/isolation wiring; ready to close)"
-last_closed: "M222 — 2026-07-15"
-phase: "M223 BUILT (all sections S0-S7; 17 net-new tests, mirror-trap fence RED-proven, full suite green, 0 platform edits); NOT merged — ready for /developer-kit:close-milestone"
-last_updated: "2026-07-15"
+active_milestone: "M224 the-callback (planned — the render loop [iterative]: cockpit hero trio [1 manager + 2 candidates] + Clerkenstein publicMetadata.isHiring + the comparison paints ≥40 comparable rows per each of the 5 sims)"
+last_closed: "M223 — 2026-07-16"
+phase: "M223 CLOSED (merged into release/02.40-casting-call; the hiring seed — 45 candidates on 5 shared sims, mirror pair fenced); building M224 the-callback (iterative render loop)"
+last_updated: "2026-07-16"
 ---
 
 # State
@@ -14,9 +14,9 @@ last_updated: "2026-07-15"
 a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5
 positions and a manager compares them side by side**, distinct from the three workforce orgs. **M222 CLOSED
 2026-07-15 (GO — the go/no-go barrier cleared; BA-3 refuted; the mirror-table read-model + the `is_hiring` gate
-landed).** **M223 "casting the ensemble" BUILT 2026-07-15** (the 4th hiring story + the HiringConfig/HiringFunnel
+landed).** **M223 "casting the ensemble" CLOSED 2026-07-16** (the 4th hiring story + the HiringConfig/HiringFunnel
 seeders — the recruiter candidate-comparison funnel writing the `local_jobsimulation_sessions` MIRROR pair; all
-S0-S7). **Next: `/developer-kit:close-milestone` → M223.**
+S0-S7). **Next: `/developer-kit:build-milestone` → M224 the-callback (the iterative render loop — the payoff milestone where the comparison paints).**
 
 ## Active release — v2.4 "casting call"
 

@@ -216,7 +216,18 @@ build against (score from `sessions.score` alone, or a `validation_*`/eval row p
 **Demo-patch?** **No patch built here** — but M222 *decides whether one is needed downstream*. If BA-3 comes back
 "`apps/hiring`-only," **escalate — do not proceed.**
 
-#### M223 — Casting the ensemble  (`section`, medium→large)
+#### M223 — Casting the ensemble  (`section`, medium→large) — ✅ **DONE 2026-07-16**
+> **CLOSED 2026-07-16.** Built the hiring seed clean: the 4th story **Meridian Talent** (`is_hiring: true`,
+> 5 admin + 45 candidate), the **`HiringConfigSeeder`** (5 shared real `SIMULATION_TYPE_HIRING` sims, type-aware
+> reader, disjoint-reserved per the M219 R-3 fix), and the **`HiringFunnelSeeder`** — each candidate a scored
+> HIRING session written to the **`local_jobsimulation_sessions` MIRROR pair** the scoreboard reads (the M219
+> render-gate trap, fenced RED-provable). Measured: **43 assessed on all 5 + 2 assigned-only** (215 pairs),
+> scores **[27,100] / 68 distinct** (a rankable spread, not a flat arc), **0 junk** (0 skill refs → closure
+> trivially green). Full stack-seeding suite GREEN, flake 5/5, gofmt+vet clean; Go test funcs **1838 → 1857
+> (+19)**; **0 platform-repo edits**. Deferrals: none new (S3 = the M222 `job_position`-drop Fate-3; S6 folded
+> into S2). The starved-pool (<5 sims) adversarial scenario is handled by M222's measured-87 + the M224 render
+> gate. Close driven inline after two close-agent stalls (no work lost). rext code-of-record: `main` (tagged when
+> M224 consumes the seed on a stack).
 **Goal:** the hiring org exists in the seed: **exactly 5 `admin` + 45 `candidate`** (no `member`), distinct from the
 3 workforce orgs, with the **5 shared job positions** resolved to **real replayed content**.
 **Shape — section:** a direct M51 analog (1 preset org + narrative-gated seeders + reset/closure wiring + a content
