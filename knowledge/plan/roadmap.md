@@ -294,7 +294,24 @@ wiring first** (tooling, no patch); only if a surface *still* won't mount does i
 may defer to M226 (latency is not this milestone's gate). **A platform-repo edit is never in bounds; an un-patchable
 surface escalates.**
 
-#### M225 — Dress the set  (`section`, medium)
+#### M225 — Dress the set  (`section`, medium) — ✅ **DONE 2026-07-17**
+
+> **CLOSED 2026-07-17.** The hiring org comes up **auto-set-dressed on a default `/demo-up`** and is proven at three
+> layers. **S1** (D1): the org was ALREADY end-to-end default-on (M223+M224), so S1's deliverable became a
+> bring-up-tail **GUARD** — the `is_hiring`-gated autoverify cheap-win (≥5 positions + ≥40 candidate sessions), not
+> new plumbing; **no `job_position` replay** (0 rows, unread by the scoreboard — KB-1 reconciled the stale plan
+> premise). **S2**: the hiring **coverage manifest** wired into `manifestFor(vantage, expectedOrg, identityKey)` (the
+> AI-readiness 3-arg dispatch, never forked) + a `profileGated` persona mode for the second app (`apps/hiring`, offset
+> :3001) — **all 3 hiring seats GATE MET** (rae-recruiter + cara-assessed + cody-assigned; 0 failing sections, 0
+> persona failures, 0 prod-eject). **S3**: `hiring.yaml` + **pt-world Org D "Kestrel Hiring Group"** (distinct test
+> data) → **one GREEN playthrough** (`pt-hiring-recruiter-compare`, orchestrator-reverified on a clean reset-to-seed).
+> **S4**: the hiring sections of `coverage-protocol.md` + `playthroughs.md` + the cheap-win in `verification.md`.
+> Harden landed **10 regression fences (0 bugs)**. Go funcs 1885→**1887**; `test_verify.py` 124; TS unit 61+69; flake
+> **5/5**; **0 platform-repo edits**. Deferral audit **YELLOW** (0 new; 2 inherited carries — the 8 demo-stack
+> failures + the M204 assign-WRITE TODO — re-fated fresh + routed to the v2.4 release close). rext code-of-record
+> `casting-call-m225-harden` (`be431c3`); live consumption tag `casting-call-m225-sections`. **Not the final
+> milestone — no main-merge/tag.**
+
 **Goal:** the hiring org comes up **auto-set-dressed** on a default `/demo-up`, passes a **hiring-vantage coverage
 gate**, and has **one GREEN playthrough** proving the recruiter journey end-to-end.
 **Shape — section:** enumerable — extend the auto-set-dress bring-up to replay `job_position`, author a hiring

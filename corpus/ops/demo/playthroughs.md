@@ -100,9 +100,11 @@ validated by the same contract. **M203 (employee vantage) landed** the 3 employe
 roster / succession) + `assignment-monitoring.yaml` (the per-member activity-dashboard drill-down) — as **4 more
 live Playthroughs** (`pt-workforce-funnel`, `pt-workforce-roster`, `pt-workforce-succession`, `pt-activity-drilldown`).
 **M219 (v2.3 "cue to cue") landed `ai-readiness.yaml`** — the AI-readiness product, as **4 more live
-Playthroughs** (see below). The corpus now stands at **14 live Playthroughs, 1 TODO** — the sole TODO being the
-assign-WRITE half (`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared
-build-reference gap tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
+Playthroughs** (see below). **M225 (v2.4 "casting call") landed `hiring.yaml`** — the recruiter-vantage candidate
+comparison, as **1 more live Playthrough** (`pt-hiring-recruiter-compare`; see below). The corpus now stands at
+**15 live Playthroughs, 1 TODO** — the sole TODO being the assign-WRITE half
+(`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared build-reference gap
+tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
@@ -138,6 +140,28 @@ that names the route. The four Playthroughs cover both vantages and both cycle s
 > links). `url-shapes.ts` carries both as patterns — `AI_READINESS_URL` is **origin-anchored** (`://host/ai-readiness`)
 > precisely so it **refuses** the legacy `…/workforce/ai-readiness`; `LEGACY_AI_READINESS_URL` exists so a
 > Playthrough can assert the manager did **not** land there.
+
+### The `hiring` product (M225) — the recruiter journey, on a SECOND app
+
+**M225 landed `hiring.yaml`** — the recruiter-vantage candidate comparison, the FOURTH product and the first whose
+surface lives **in a different app**. The one Playthrough proves the recruiter journey end-to-end:
+
+| Playthrough | Hero (seat) | Surface | What it proves |
+|---|---|---|---|
+| `pt-hiring-recruiter-compare` | `pt-recruiter` | **apps/hiring `/enterprise/activity-dashboard`** | login → the Results scoreboard renders the org's **shared positions** with a real, comparable **candidate cohort** (not an empty grid), and the org reads as **HIRING** (the "Results" re-skin), never the workforce "Activity" view. |
+
+> **The recruiter surface is `apps/hiring`, not next-web (the M224 two-app demo).** `apps/web` **ejects** an
+> all-hiring-orgs recruiter to the hiring app by design (`UserStatusContext`); the hiring app's symmetric guard
+> keeps her in. So the recruiter Playthrough drives **`env.hiringAppBaseUrl`** (offset **3001**-port,
+> `PT_HIRING_BASE_URL` override; `run-playthroughs.sh` exports it), never `appBaseUrl`. `HiringResultsPage`
+> **reuses** the M224 render-probe's calibrated **tanstack-table** anchor (`tbody.tbody > tr.tr` — the scoreboard
+> is a custom react-table, NOT AntD; `.ant-table-tbody > tr` matched zero). An **empty scoreboard is a FAILURE**
+> (a cold snapshot cache / starved `SIMULATION_TYPE_HIRING` pool leaves `readHiringSimPool` empty — the same
+> silent-failure the M225 autoverify hiring cheap-win fences at bring-up), never a pass.
+>
+> **Scope: recruiter only** (one GREEN Playthrough = the milestone gate). The candidate is "optional" per the
+> milestone and is covered on the **presence** side by S2's candidate coverage manifests — the clean pillar
+> split (`coverage-protocol.md` = presence; this doc = function).
 
 ## The principles (the alignment contract)
 
@@ -283,10 +307,13 @@ fake-FAPI so dev-N gains the seat-switch is a carried open build item (spec §5.
 Test data ≠ demo data. The Playthrough world is a **dedicated preset decoupled from the demo seed**, built on
 the same seeding machinery **unchanged (M202-D3)** (a `stack.stories.yaml` consumed by `stackseed`):
 [`seed/pt-world.seed.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/seed/pt-world.seed.yaml). It
-seeds **three private orgs** distinct from the demo showcase orgs, spanning entitlement tiers +
+seeds **four orgs** distinct from the demo showcase orgs, spanning entitlement tiers +
 multi-org-private content — Org A (the enterprise employee + manager), Org B (the free-tier entitlement actor),
-and, from **M219**, **Org C** (`narrative: ai-readiness`, size 40 — the AI-readiness diagnostic org with a
-COMPLETED member, a STARTED member, and its manager). The `seed-worlds.yaml` index
+from **M219** **Org C** (`narrative: ai-readiness`, size 40 — the AI-readiness diagnostic org with a
+COMPLETED member, a STARTED member, and its manager), and from **M225** **Org D** ("Kestrel Hiring Group",
+`narrative: hiring` + `is_hiring`, size 40 → 4 admin + 36 candidates — the recruiter comparison org, distinct
+from the demo's "Meridian Talent" AND from this world's Org A "Meridian Labs" so the two worlds stay cleanly
+separable). The `seed-worlds.yaml` index
 ([`seed/seed-worlds.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/seed/seed-worlds.yaml)) is
 **single-sourced with the preset** — every world id / roster seat / tier / capability the validator resolves
 against is materialized by the seed. It is covered by the **same datadna conformance gate** as the demo seed
