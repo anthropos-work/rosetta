@@ -1,10 +1,10 @@
 ---
 active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "M225 dress-the-set (planned — section: auto-set-dress job_position replay + a hiring-vantage coverage gate + one GREEN hiring playthrough + pt-world wiring)"
-last_closed: "M224 — 2026-07-16"
-phase: "M224 CLOSED (closed-on-gate, merged --no-ff into release/02.40-casting-call; the render loop — the recruiter's real apps/hiring scoreboard paints 20/page × 43 per each of 5 sims via the TOK-02 two-app demo); next M225 dress-the-set"
-last_updated: "2026-07-16"
+active_milestone: "M226 opening-night (planned — iterative: prove the 7-condition hiring gate live on billion over the tailnet, default /demo-up, no flags — recruiter p95 click→ACCESS < 5 s as a 3rd measured vantage)"
+last_closed: "M225 — 2026-07-17"
+phase: "M225 CLOSED (section, complete; merged --no-ff into release/02.40-casting-call; the demo-integration milestone — hiring auto-set-dress guard + coverage gate [3 seats MET] + one GREEN recruiter playthrough + pt-world Org D); next M226 opening-night (the live billion proof)"
+last_updated: "2026-07-17"
 ---
 
 # State
@@ -19,8 +19,11 @@ HiringFunnel seeders → the `local_jobsimulation_sessions` MIRROR pair). **M224
 container), the recruiter's Results scoreboard paints **20/page × 43** comparable candidates per each of the 5
 shared sims (faithful pagination, GATE-DECISION D1), non-degenerate, 0 junk, 0 prod-eject, ≥3 cold runs + 4/4
 flake; the hero trio (Rae/Cara/Cody) resolves; Clerkenstein emits org `publicMetadata.isHiring` (conditional-emit,
-`/align-run` 100/100). **Next: `/developer-kit:build-milestone` → M225 dress-the-set (the hiring-vantage coverage
-gate + playthrough).**
+`/align-run` 100/100). **M225 "dress the set" CLOSED 2026-07-17** (section, complete) — the hiring org comes up
+**auto-set-dressed on a default `/demo-up`**: the S1 bring-up guard + the S2 coverage gate (**3 seats MET**,
+`manifestFor` 3-arg + `profileGated`) + **one GREEN recruiter playthrough** (`pt-hiring-recruiter-compare`) on
+**pt-world Org D "Kestrel Hiring Group"**; the S4 corpus docs. **Next: `/developer-kit:build-mstone-iters` → M226
+opening-night (prove the 7-condition hiring gate live on `billion`).**
 
 ## Active release — v2.4 "casting call"
 
@@ -55,8 +58,10 @@ section  section  iter     section  iter
   `apps/hiring` as a 2nd UI container). The recruiter's Results scoreboard paints **20/page × 43** per each of the
   5 sims (faithful pagination, D1), non-degenerate, 0 junk, 0 prod-eject, ≥3 cold + 4/4 flake. 4 hiring-image
   demo-patches; 0 platform edits.
-- **M225 dress-the-set** (`section`) — auto-set-dress `job_position` replay + a hiring coverage manifest + one GREEN
-  hiring playthrough + `pt-world`.
+- **M225 dress-the-set** (`section`) — ✅ **DONE 2026-07-17.** Hiring auto-set-dress bring-up GUARD + a hiring
+  coverage manifest (3 seats GATE MET, `manifestFor` 3-arg + `profileGated` on `apps/hiring`) + **one GREEN recruiter
+  playthrough** (`pt-hiring-recruiter-compare`) on **pt-world Org D "Kestrel Hiring Group"**. No `job_position` replay
+  (KB-1). 0 platform edits.
 - **M226 opening-night** (`iterative`) — prove the 7-condition gate live on `billion` over the tailnet, default
   `/demo-up`, no flags (recruiter p95 click→ACCESS < 5 s as a 3rd measured vantage).
 
@@ -94,18 +99,17 @@ Milestone contracts: [`releases/02.40-casting-call/`](releases/02.40-casting-cal
   stacks to the merged platform (skiller → `app`/`public`, RPC → backend, 4 subgraphs); proved dev-up + demo-up
   cold.
 
-## Headline numbers (v2.4 M224 close, 2026-07-16)
+## Headline numbers (v2.4 M225 close, 2026-07-17)
 - **p95 click→ACCESS (v2.3 headline gate):** **2.11 s** (employee) / **1.31 s** (manager) vs the **< 5000 ms** gate,
   on `billion` over the tailnet, cold reset-to-seed. v2.4 extends this to a **3rd (recruiter) vantage** at M226.
-- **Go test funcs:** **1885** (authoritative live count at M224 close; +28 vs M223's recorded 1857 — M223's
-  seeder-test funcs now in rext main + M224 clerkenstein/cockpit/roster fences; all 6 modules `go vet` clean, **0
-  Go failures**).
-- **Python tests (M224-touched suites at close):** demo-stack **650 pass / 8 pre-existing fail**, stack-injection
-  **255 pass / 8 skip**. The 8 demo-stack failures are inherited (non-milestone) → carried as test-debt (backlog).
-- **TS e2e:** **151+** (stack-verify/e2e + playthroughs/e2e; `tsc --noEmit` clean; +M224 hiring render probe +
-  candidate-heroes spec).
-- **Alignment (Clerkenstein):** **100% / 100% critical** — held under M224's `isHiring` FAPI extension
-  (conditional-emit → clerk-js-5 + clerk-multi-1 stayed 9/9, 100/100; the BLOCKING `/align-run` ran GREEN).
+- **Go test funcs:** **1887** (+2 vs M224's 1885 — the M225 playthroughs `corpus_test.go` pin + `hiring_isolation_test.go`
+  pt-world Org D isolation invariant; all modules `go vet` clean, **0 Go failures**).
+- **M225-touched suites (re-verified GREEN at merge base):** `test_verify.py` **124** (incl `shellcheck`; +4 autoverify
+  floor-boundary fences) · TS unit **61** (stack-verify/e2e) + **69** (playthroughs/e2e) · both `tsc --noEmit` clean ·
+  **flake 5/5** · the live hiring playthrough independently orchestrator-verified GREEN on a clean reset-to-seed.
+- **Inherited (non-milestone) carries:** demo-stack **650 pass / 8 pre-existing fail** (test-debt backlog) + the M204
+  assign-WRITE declared TODO → both re-fated to the v2.4 release close.
+- **Alignment (Clerkenstein):** **100% / 100% critical** — held since M224 (M225 touched no alignment surface).
 - **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0.** **Supply chain:** GREEN — 0 net-new direct deps.
 
 ## D17 — the carried-forward signature hazard (v2.4 discipline)
@@ -129,18 +133,22 @@ rows." Full arc: [`releases/archive/02.30-cue-to-cue/release-retro.md`](releases
   **platform repo**, out of zero-platform-edit scope) · **BURNIN-M221-dev-public-host** (dev-path live burn-in) ·
   **F-M220-4** (academy re-run on a live public-host demo) · **PROBE-M218-c3-rerun** (router-403 re-check) — the
   last three all need **live infra**. Parked or ride v2.4 as a side track; not folded into the milestone chain.
-- **Test-debt (v2.4 M224 close, non-gate; carried D6):** 8 pre-existing demo-stack failures — 6 × `test_cockpit.py`
-  (4 removed-academy-CTA + 2 v2.3.1 overlay-JS) + `test_purge` + `test_reap`; HEAD-identical, in files M224 never
-  touched, predating v2.4 (v2.3.1/v2.3.2 cockpit hotfixes). → a future demo-stack test-debt harden pass.
+- **Test-debt + declared TODO (carried, non-gate; M224 D6 + M225 D-AUDIT — both re-fated fresh 2026-07-17, routed to
+  the v2.4 release close):** (a) 8 pre-existing demo-stack failures — 6 × `test_cockpit.py` (4 removed-academy-CTA + 2
+  v2.3.1 overlay-JS) + `test_purge` + `test_reap`; HEAD-identical, in files M224/M225 never touched, predating v2.4 →
+  a future demo-stack test-debt harden pass; (b) the **M204 `assign-and-track.UC1` assign-WRITE** declared in-manifest
+  `unimplemented` build-reference gap → its declared-TODO fate at release close.
 - **Plan hygiene → next close-release:** `metrics-history.md` still lacks **v2.0 + v2.2** rows.
 - **Older, still unscheduled:** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01 (`replayCmd` hermetic
   test), CAVEAT-1 (clean-box literal full `/dev-up`), M314b (prod frozen-read hydration — a prod-team follow-up).
   Reserved **Playthroughs futures** M206–M207 stay in vision; **M205** is now CONSUMED-in-intent by v2.4 (recruiter/
   seeder half) with the tier-gate/ATS half residual. All tracked in [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-16 (**M224 "the callback" CLOSED** via /developer-kit:close-milestone — closed-on-gate,
-merged `--no-ff` into `release/02.40-casting-call`; the render payoff [the recruiter's real `apps/hiring` scoreboard
-paints 20/page × 43 per each of 5 sims via the TOK-02 two-app demo], Go funcs 1857→1885, flake 0, deferral audit
-GREEN, 8 pre-existing non-milestone failures carried, 0 platform-repo edits. Scope review landed 4 corpus
-`Delivers →` sections Fate-1 at close. M224 is NOT the final milestone — no main-merge/tag. **NEXT:
-/developer-kit:build-milestone → M225 dress-the-set.**)_
+_Last updated: 2026-07-17 (**M225 "dress the set" CLOSED** via /developer-kit:close-milestone — section, complete;
+merged `--no-ff` into `release/02.40-casting-call`. The demo-integration milestone: hiring auto-set-dress bring-up
+GUARD + a hiring coverage gate [**3 seats MET**, `manifestFor` 3-arg + `profileGated` on `apps/hiring`] + **one GREEN
+recruiter playthrough** [`pt-hiring-recruiter-compare` on pt-world Org D "Kestrel Hiring Group"] + the S4 corpus docs.
+Go funcs 1885→**1887**, `test_verify.py` 124, TS unit 61+69, flake **5/5**, **0 platform-repo edits**. Deferral audit
+**YELLOW** [0 new; 2 inherited carries re-fated + routed to release close]. rext code-of-record
+`casting-call-m225-harden` [`be431c3`]; live tag `casting-call-m225-sections`. M225 is NOT the final v2.4 milestone —
+no main-merge/tag. **NEXT: /developer-kit:build-mstone-iters → M226 opening-night.**)_

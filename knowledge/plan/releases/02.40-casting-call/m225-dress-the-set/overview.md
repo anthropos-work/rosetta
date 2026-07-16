@@ -3,7 +3,7 @@ milestone: M225
 slug: dress-the-set
 version: v2.4 "casting call"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-15
 depends_on: M223, M224
 delivers: the hiring sections of corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md (the hiring-vantage coverage manifest + the hiring playthrough)
