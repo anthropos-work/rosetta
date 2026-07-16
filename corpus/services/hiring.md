@@ -175,6 +175,17 @@ snapshot as the org's positions. The scoreboard then reads `insightsJobSimulatio
 row per candidate. The drill-down additionally needs the `jobsimulation.validation_attempt_results`/`_skill_results`/
 `_criterion_results` rows (the PersonaSeeder pattern).
 
+> **This is IMPLEMENTED as of v2.4 "casting call" M223** (`rosetta-extensions/stack-seeding`): the
+> `stories.seed.yaml` 4th story (Meridian Talent, `narrative: hiring`, 5 admins + 45 candidates) + two seeders —
+> **`HiringConfigSeeder`** (the 5 positions via the type-aware `readHiringSimPool`, written as
+> `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored `SIMULATION_TYPE_HIRING`
+> MIRROR pair on the 5 positions, MOST on all 5 / SOME assigned-only, a differentiated score spread). The
+> `OrgFeatureInsights` substrate needs **no net-new grant** — the org's `admin` members inherit `org:feature:insights`
+> from the global `p3` admin policy via their standard g2 grant. Seeder chain: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel)
+> + [`../ops/seeding-spec.md`](../ops/seeding-spec.md#the-recruiter-vantage--the-hiring-org--candidate-comparison-funnel-v24-casting-call-m223).
+> M223 does NOT ship the render proof or the cockpit heroes (M224); the per-candidate drill-down `validation_*`
+> rows are also M224+ (the M223 scoreboard needs only the 2-table pair).
+
 ## Cross-references
 
 - The frontend split that hosts the surface: [`next-web-app.md`](next-web-app.md) (Workforce `apps/web` vs Hiring

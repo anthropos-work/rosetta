@@ -3,7 +3,7 @@ milestone: M223
 slug: casting-the-ensemble
 version: v2.4 "casting call"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-15
 depends_on: M222
 delivers: a type-aware HIRING-sim reader (5 real captured SIMULATION_TYPE_HIRING sims — NO directus.job_position replay, per M222 BA-6/Fate-3) + updates to seeding-spec.md/stories-spec.md (the 4th HIRING story + the is_hiring gate + the candidate-assessment funnel)
