@@ -50,6 +50,71 @@ dual-write — content for the `clerkenstein.md` + `hiring.md` M224 delivery:
 _Per-iter: what painted, what didn't, the attributed cause (seed-data vs render-gate vs Clerkenstein wiring), the
 fix surface chosen._
 
+### iter-05 — THE ATTRIBUTION: a platform cross-product redirect ejects the recruiter (DESIGN WALL)
+
+**Symptom.** The `rae-recruiter` render-probe never settles — it hangs on the **real** Clerk sign-in
+(`app.anthropos.work`), whose after-sign-in target decodes to
+`hiring.anthropos.work/switch?to=hiring&org=org_8ff48bf32d61&next=/home`.
+
+**Isolation (empirical, on the warm demo-1 — both seats driven through the SAME `loginAs`):**
+
+| Seat | Login lands | Direct `goto /enterprise/activity-dashboard` | External eject | Surface |
+|---|---|---|---|---|
+| `dan-manager` (workforce org) | `localhost:13000/home` | **STAYS local** — `localhost:13000/enterprise/activity-dashboard` | none (only a harmless `support.anthropos.work` **script** widget) | RENDERS (main len 469) |
+| `rae-recruiter` (all-hiring org) | briefly `/home`, then | **`document` nav to `hiring.anthropos.work/switch?...&org=org_8ff48bf32d61`** (aborted by the probe so it can't hang) | **top-frame document eject, fires TWICE** (post-login AND post-direct-goto) | **RENDERS NOTHING** (main len 0) |
+
+So the demo login + `apps/web /enterprise/activity-dashboard` **work in general** (dan proves it). The recruiter
+divergence is **NOT the seat, NOT Clerkenstein, NOT a seed gap** — the fake session IS established (the app knows
+`org_8ff48bf32d61` = Meridian and reads `isHiring=true`; the M224 iter-02 FAPI wiring WORKED).
+
+**Root cause (code-cited, `stack-demo/next-web-app`):** an all-hiring-orgs user is hard-redirected OUT of the
+Workforce app to the standalone Hiring product:
+
+- `apps/web/src/context/UserStatusContext.tsx:141-173` — a `useEffect` in `UserStatusProvider` (which wraps the
+  **entire** `(authenticated)/(verified)/` subtree, incl. `/enterprise/activity-dashboard`): if
+  `memberships.every(m => m.organization.publicMetadata.isHiring)` → `window.location.href =
+  buildSwitchHandoffUrl({ targetProduct: 'hiring', … })`. It has an explicit comment: *"this still redirects a
+  Workforce-less user to Hiring."* **A GLOBAL guard — direct-navigating to the scoreboard does NOT bypass it**
+  (empirically the eject fires on the direct goto too).
+- `apps/web/src/hooks/useGetClerkOrganization.tsx:16-18` — `regularOrganizationList = filter(!isHiring)`, so a
+  hiring org is also **excluded from the Workforce org list** (the verified layout would treat it as foreign for a
+  mixed user).
+
+**The M222-premise tension (the crux).** M222 traced the scoreboard rendering in `apps/web /enterprise` and wrote
+*"survives the `is_hiring` flip, no route guard."* That held on the **billion** substrate **only because the org
+had NO client `publicMetadata.isHiring`** — client-side it was a *workforce* org (`isHiring=false`), stayed active,
+never tripped the all-hiring eject; the scoreboard rendered because the **server** derives the hiring cohort from
+the `public.organizations.is_hiring` **DB column**, independent of Clerk. **M224 Scope.In #3 wired client
+`isHiring=true` (required for the "Results" re-skin / "reads as hiring end-to-end") — the SAME flag the platform
+uses to eject the user.** ⇒ **On the unmodified platform, "reads as hiring in the browser" and "scoreboard
+reachable in apps/web" are MUTUALLY EXCLUSIVE.** The milestone wants both.
+
+**Attribution class:** RENDER-GATE / platform routing wall (R1 realized), **NOT** seed-gap. The M223 data side is
+MET (Meridian `is_hiring=true`, 50 members, 5 sims × 43 candidates, scores 27–100). The block is 100% the
+cross-product redirect.
+
+## Demo-patch pins (if any)
+_`next-web-hiring-flag-gate` and/or a perf patch — the sha-pin + the anchor record._
+
+### iter-05 — RECOMMENDED (escalated, NOT yet applied — needs a ~20-min next-web rebuild)
+
+**`next-web-hiring-cross-product-redirect`** — a sha-pinned demo-patch (per `corpus/ops/demo/demopatch-spec.md`)
+that neutralizes the `userHasAllHiringOrgs` eject in the demo's OWN ephemeral `apps/web/src/context/
+UserStatusContext.tsx` clone (early-return before the `window.location.href` hop), so an all-hiring recruiter STAYS
+in the demo's `apps/web`. **A SINGLE file suffices** — verified by reading the downstream guards:
+`useResolveActiveOrg` early-returns on an empty workforce list (never auto-picks; `:93-97`) and
+`isActiveOrgForeign(Meridian, [])` returns `false` (empty `orgIds` short-circuits `:99-104`), so with only the
+redirect removed the verified layout becomes ready, `isHiringOrg=true` drives the "Results" re-skin, and the
+scoreboard query scopes to Meridian's `eid`. This keeps the M224 genuine-hiring-org requirement AND makes the
+surface reachable. **Cost: a next-web image REBUILD (~20 min) — the reason this was escalated, not auto-applied.**
+This is exactly the D-DESIGN-2 order-of-preference outcome (Clerkenstein-wiring-first was tried in iter-02 and is
+correct; the residual is a platform routing wall with no env/config/Clerkenstein seam → sha-pinned demo-patch).
+
+**Alternatives handed to the orchestrator** (see the iter-05 hand-off): (A) drop the client `isHiring` emit — no
+rebuild, scoreboard renders DB-driven, but LOSES the re-skin (regresses Scope.In #3 / D-DESIGN-1); (C) reframe the
+recruiter as a manager of a MIXED org set — does not work (a hiring org can never be the active org in apps/web, so
+the scoreboard can't scope to it). Option B (the demo-patch) is the only path that satisfies both halves.
+
 ## Demo-patch pins (if any)
 _`next-web-hiring-flag-gate` and/or a perf patch — the sha-pin + the anchor record._
 
