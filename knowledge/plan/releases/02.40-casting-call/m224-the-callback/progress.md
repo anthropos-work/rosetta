@@ -18,23 +18,25 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 | iter-09 | tik C (TOK-02) | **ROLE-REMAP PATCH LANDED — recruiter now ON the Results page AS ADMIN, insights query FIRING.** Sha-pinned demo-patch `next-hiring-role-remap` on the ephemeral `apps/hiring/UserStatusContext.tsx` (adds `remapUserRole`, mirrors apps/web; G1–G7 verified, clone git-clean G5); hiring image rebuilt (`aaaa199f6403`, carries the patch). **Enterprise nav now renders** (Members / Assign / **Results** / Feedback / Settings — was "Home" only); backend authz passes `org:feature:insights`; `insightsJobSimulationByMemberships` **executing**. **NEW wall (not seed, not role): Results RENDER-LATENCY** — `apps/hiring InsightsContext:34 {limit:1000}` unbounded members fetch + per-member Sentinel authz (~28 s × 50) → spinner hangs → 300 s probe timeout → rows not yet counted. rext tag `casting-call-m224-iter08` (0a666e9); tests 146 OK; ZERO platform edits. | on Results as admin + query firing; rows blocked on render-latency | closed-fixed (role gate cleared) — rext `0a666e9` |
 | iter-10 | tik D (TOK-02) | **RENDER WALL CLEARED — the recruiter's Results scoreboard RENDERS real ranked candidates for all 5 shared sims.** Demo-patch `next-hiring-members-pagination` (`apps/hiring InsightsContext:34` limit 1000→30) UNBLOCKED the layout (the unbounded fetch hung it); per-member authz already covered by `app-targetrole-authz-skip` (shared backend, M46 short-circuit baked) — no new authz patch. `insightsJobSimulationByMemberships` 200 / 0-errors on all 5 shared sims; the drill-down drawer + candidate table paint. Shows **20/sim (page 1 of 43) — platform-native pagination** → **GATE-DECISION D1: keep 20/page (faithful, user-chosen)**. rext tag `casting-call-m224-iter09` (626ba12); rosetta `d753873` (demopatch-spec §5 → 11 patches); tests 95/95 focused; ZERO platform edits. | render 20/sim, 43 reachable — data + render MET (faithful) | closed-fixed — rext `626ba12` |
 
-## Next iter — the payoff (recruiter comparison) is DONE; the remaining M224 scope
+| iter-11 | tik E (TOK-02) | **THE TRIO IS COMPLETE — recruiter + 2 candidates.** Seeded 2 candidate heroes in Meridian (`vantage: end-user` → new `endUserHeroRole` fork → `role=candidate`): **Cara Nguyen (`cara-assessed`, Data Analyst)** = ASSESSED (5 scored HIRING sessions → ranks on the scoreboard + a COMPLETED assignment); **Cody Brenner (`cody-assigned`, Business Ops Analyst)** = ASSIGNED-ONLY (no sessions + a PENDING assignment). Cockpit routes all 3 → hiring base `:13001`. Both candidate `/profile` seats **faithfully redirect to `/home`** — apps/hiring `/profile*` is **admin-gated at platform source** (`role!==Admin → HOME_URL`), so a candidate lands on `/home` (the real candidate self-view): Cara "**Completed**", Cody "**Assigned**" — usable + differentiated, not blank/ejected. Rae's comparison intact (no regression). rext tag `casting-call-m224-iter10` (a3950cf); new regression spec `m224-candidate-heroes.spec.ts`; go test green. ZERO platform edits. | trio complete; candidate views usable on `/home` (faithful) | closed-fixed — rext `a3950cf` |
 
-The two-app render loop reached its goal: the recruiter lands on the Results comparison in the real Hiring app and
-sees ranked candidates for all 5 shared positions, faithfully (D1: 20/page, 43 reachable), zero platform edits.
-**What's left before M224 can close:**
+## Next iter — the payoff + the trio are DONE; remaining = verification + one found bug
 
-1. **The 2 candidate cockpit heroes (IN-SCOPE, user-requested)** — "1 manager + 2 candidates: one assigned AND
-   assessed on a hiring sim, one only assigned." The recruiter (manager) is done; the 2 candidate exemplars + their
-   usable assessed `/profile` renders are **not built yet** (they were layered "post-scoreboard-green" per TOK-01/02
-   — that point is now reached). Candidate-role + funnel-stage hero-awareness in `stack-seeding` + cockpit seats.
-2. **Render-probe fixes (R1–R4)** so the automated gate is trustworthy: R1 cap the drill-down visits to the 5 shared
+The recruiter comparison renders (D1: 20/page, 43 reachable) AND the full hero trio is seeded (Rae recruiter +
+Cara assessed + Cody assigned-only), all faithfully, zero platform edits. **What's left before M224 can close:**
+
+1. **Render-probe fixes (R1–R4)** so the automated gate is trustworthy: R1 cap the drill-down visits to the 5 shared
    sims (not all 22 → 300 s timeout); R2 CLICK the `[simId]` tab, don't hard-goto the intercepting route (renders
    "Home"); R3 target the 5 SHARED sims, not first-discovered low-candidate ones; R4 fix the `ANT_ROWS` drawer-table
-   selector (network truth 20/sim is solid; the DOM selector missed it). Then the probe can emit `render-report.json`.
+   selector (network truth 20/sim is solid; the DOM selector missed it). Then the probe emits `render-report.json`.
+2. **Fix the found `AssignmentsSeeder` bug (Fate 1 — land now).** `seeders/assignments.go:26` `resourceTypes =
+   {"simulation", …}` uses the WRONG ent enum (`"simulation"`) → `getOrganizationAssignments` NULL-bubbles
+   (`unknown resource type: simulation`) → **every seeded member's `/home` assignments silently error, all orgs**.
+   The hero path was fixed inline (`hiring_funnel.go` uses `"job_simulation"`); the SHARED `assignments.go` fix
+   (verify the correct enum vs the ent schema + the resource-id pool logic) lands in the next tik. Believability bug.
 3. **Prove the (D1-re-interpreted) gate over ≥3 cold reset-to-seed runs** — 20/sim rendered + 43 reachable +
-   non-degenerate + closure-green + 0-eject, reproducible cold. Then `/developer-kit:harden-mstone-iters --final` +
-   `/developer-kit:close-milestone`.
+   non-degenerate + closure-green + 0-eject + the trio's cockpit seats, reproducible cold. Then
+   `/developer-kit:harden-mstone-iters --final` + `/developer-kit:close-milestone`.
 
 **Deferred (non-blocking):** 6 pre-existing `test_cockpit.py` failures (+ `test_purge`/`test_reap` — HEAD-identical,
 not this milestone's) → a future harden pass.
