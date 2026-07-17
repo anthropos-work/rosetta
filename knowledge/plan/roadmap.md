@@ -368,6 +368,54 @@ the 3 workforce orgs on the cockpit; **(7)** **0 platform-repo edits.**
 **Demo-patch?** Whatever M224 pinned, **re-proven live at final code** (the M221 `REPROVE-…-at-final-code`
 discipline); a live-only perf gap may pin a perf demo-patch here.
 
+#### M227 — The notes  (`section`, medium)
+
+> **Believability-hardening backfill** — 4 demo-data realism defects surfaced by live feedback AFTER M226 shipped
+> (the demo works, but doesn't fully *read* as real). v2.4 stays OPEN (not yet tagged) until the release reads right;
+> the user runs `/developer-kit:close-release` on **explicit sign-off**. **All fixes in the rext seed/content tooling
+> — 0 platform-repo edits.**
+
+**Goal:** the hiring demo reads as **believable** — the 4 fixes land + the compare gate retunes to the realistic
+per-position count, proven GREEN **locally**.
+**Shape — section:** 4 enumerable seed/content fixes + a gate retune + a local re-prove. Reuses the M223 funnel +
+M225 coverage/playthrough machinery (never forked).
+**In:**
+1. **Hiring-only content** — the hiring org (Meridian Talent) surfaces ONLY `SIMULATION_TYPE_HIRING` sims; the
+   training/assessment sims are scoped OUT of its library/content.
+2. **External candidate emails** — candidates are outside applicants → private/external domains (gmail/outlook/…),
+   NOT `@meridian-talent.com`; only employees (recruiters/admins) keep the org domain.
+3. **1 sim per candidate + gate retune** — each candidate does exactly **1** of the 5 hiring sims (the role applied
+   for), not all 5 → **~9 candidates/position** (from ~42, distributed evenly across the 5). Retune the compare gate
+   **≥40 → the realistic floor (≈8)** EVERYWHERE it is asserted: M224 GATE-DECISION D1, M226/M228 exit-gate cond (2),
+   the M225 coverage manifest + hiring playthrough, `corpus/services/hiring.md`, the render-probe `RENDER_GATE_FLOOR`
+   default.
+4. **Gender-consistent avatars** — every user's avatar matches the name's inferred gender, across ALL orgs.
+5. **Local re-prove** — render + coverage + playthrough GREEN on the corrected data.
+**Out:** the billion re-prove (M228).
+**Depends on:** M222–M226 (the shipped hiring demo).
+**KB-deps:** `hiring.md` · `stories-spec.md` · `seeding-spec.md` · `coverage-protocol.md` · `playthroughs.md`.
+**Delivers →** the believability corrections + retuned gate thresholds into `hiring.md` (+ the specs).
+**Demo-patch?** Pure tooling (seed + content-scope). No platform-render gap.
+
+#### M228 — Second night  (`iterative`, medium)
+
+**Goal:** the **corrected** demo re-proven **live on billion** — the M226 gate (retuned to ~9/position) holds on a
+default `/demo-up`, cold reset-to-seed.
+**Shape — iterative:** the M226 prove-on-billion pattern — the last breakages surface only on a live cross-machine
+run; the corrected data (1-sim/candidate, external emails, hiring-only content, matched avatars) is re-proven live.
+**Exit gate:** on `billion.taildc510.ts.net`, a default `/demo-up N` (no flags), cold reset-to-seed, reproducibly:
+(1) hiring org `is_hiring=true`, 5 managers + 45 candidates; (2) recruiter comparison **≥ the retuned floor (~8)
+comparable non-junk rows per each of the 5 positions**, each candidate on exactly 1 sim; (3) 2 candidate profiles
+usable (external emails, matched avatars); (4) reads as hiring, hiring-only content; (5) recruiter **p95 click→ACCESS
+< 5 s**; (6) coexists with the 3 workforce orgs; (7) **0 platform-repo edits**.
+**Iteration protocol:** `corpus/ops/verification.md` (+ `coverage-protocol.md` + `latency-budget.md`) — the M226
+remote-origin cold-reset acceptance run. Same billion-safety rules (one driver, no detached scripts on-host, assert
+from a tailnet peer, never kill a mid-build).
+**Depends on:** M227.
+**KB-deps:** `tailscale-serve.md` · `latency-budget.md` · `verification.md` · `safety.md`.
+**Delivers →** the corrected live-proof record.
+**Demo-patch?** Whatever M224/M226 pinned, re-proven live at final code. 0 platform edits.
+
 ### On the reserved M205
 
 The vision reserved **M205 "Hiring + tier gates"**. v2.4 **DISCHARGES the recruiter/seeder half** but **explicitly

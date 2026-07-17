@@ -1,9 +1,9 @@
 ---
-active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15; ALL 5 MILESTONES CLOSED 2026-07-17 — awaiting /developer-kit:close-release)"
+active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15; M222→M226 closed; RE-OPENED 2026-07-17 for M227/M228 believability fixes from live feedback — v2.4 stays OPEN until the demo reads right; the USER runs /developer-kit:close-release on explicit sign-off)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "(between milestones — v2.4 complete; awaiting /developer-kit:close-release [release→main merge + v2.4 tag])"
+active_milestone: "M227 the-notes (planned — section: 4 believability fixes [1 hiring-only sims in the hiring org; 2 external candidate emails not the org domain; 3 each candidate does 1 of 5 sims not all → ~9/position + retune the compare gate ≥40→~8 everywhere; 4 gender-matched avatars for all users all orgs] + a LOCAL re-prove). Then M228 second-night = the billion re-prove."
 last_closed: "M226 — 2026-07-17"
-phase: "v2.4 casting call — ALL 5 MILESTONES CLOSED (M222→M226). M226 opening-night closed-on-gate: the 7-condition hiring gate proven live on billion over the tailnet (default /demo-up, no flags, 2 cold cycles + orchestrator re-verify; recruiter p95 < 5 s = 3rd vantage). NEXT: /developer-kit:close-release."
+phase: "v2.4 RE-OPENED for believability. M222→M226 closed (the working hiring demo proven live on billion). NEXT: build M227 the-notes (the 4 live-feedback fixes + gate retune, local re-prove) → M228 second-night (billion re-prove) → then the USER's close-release. NOT tagged until user sign-off."
 last_updated: "2026-07-17"
 ---
 
