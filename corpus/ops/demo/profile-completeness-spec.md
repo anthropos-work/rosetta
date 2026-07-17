@@ -79,6 +79,16 @@ The manager's `/enterprise/members` roster must read as **real people**, not her
 > slots — is unchanged; the `/enterprise/members` assertion is the manager-manifest section's cardinality +
 > per-member avatar.)
 
+> **Gender-consistent avatars (v2.4 "casting call" M227 fix #4, #M227-D4 — ALL orgs, not just hiring).** The face
+> pick is now `photoAvatarDataURIForName(uid, firstName)`: the first name is run through a curated `inferGender`
+> dictionary (`gender.go`) and the face is drawn from the **gender-matching subset** of the 12 bundled photos
+> (F={0,2,4,6,9} / M={1,3,5,7,8,10,11}, fenced by a build-time test), so a "Sara" never renders a man's photo.
+> Deterministic + offline + $0 (no LLM re-generation); an **Unknown** name falls back to the **byte-identical** old
+> full-pool `photoAvatarDataURI(uid)` pick — honest degradation, never a forced wrong-gender face. Threaded at all
+> three avatar call sites (`users.go`, `generated_batch.go`, `roster.go`) with the same `(uid, firstName)` so
+> **menu == profile** survives. The whole seeded population has a write-path regression fence
+> (`users_m227_test.go` drives the real `UsersSeeder` and asserts every face ∈ the name's inferred-gender set).
+
 ## How M44 maps to the seeding surfaces (the build summary)
 
 - **§A trajectory-aware self-rating** — `PersonaSeeder` writes `user_skill_evidences.user_level` only for a

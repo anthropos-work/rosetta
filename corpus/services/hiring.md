@@ -142,10 +142,11 @@ true` (M224) + the **`OrgFeatureInsights` Casbin permission** substrate.
 **The machinery already exists — M223 is NOT net-new.** The current **`PersonaSeeder` already writes exactly this
 pair** — `rosetta-extensions/stack-seeding/seeders/persona_write.go:68-73` writes both `jobsimulation.sessions` and
 `public.local_jobsimulation_sessions` (col builders `sessionCols()` / `localSessionCols()` at `:125-141`). M223's
-candidate-assessment funnel is a **direct generalization** of the same fan-out across 45 candidates × 5 shared sims
-(the M51 `AIReadinessFunnelSeeder` shape, 2 shared sims → 5) — with the M219 anti-junk discipline (a realistic
-non-degenerate score DISTRIBUTION, every skill/role ref through the real resolvers, closure green, never
-fabricated), **not** a flat score grid.
+candidate-assessment funnel is a **direct generalization** of the same fan-out — each candidate on the **one**
+position they applied for (v2.4 "casting call" M227 fix #3; before M227 every candidate took all 5), round-robined
+evenly across the 5 shared sims so ~8 candidates rank per position (the M51 `AIReadinessFunnelSeeder` shape, 2 shared
+sims → 5) — with the M219 anti-junk discipline (a realistic non-degenerate score DISTRIBUTION, every skill/role ref
+through the real resolvers, closure green, never fabricated), **not** a flat score grid.
 
 ## `isHiringOrg`, the `isEnterprise` divergence, and the `is_hiring` blast radius
 
@@ -188,7 +189,8 @@ row per candidate. The drill-down additionally needs the `jobsimulation.validati
 > `stories.seed.yaml` 4th story (Meridian Talent, `narrative: hiring`, 5 admins + 45 candidates) + two seeders —
 > **`HiringConfigSeeder`** (the 5 positions via the type-aware `readHiringSimPool`, written as
 > `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored `SIMULATION_TYPE_HIRING`
-> MIRROR pair on the 5 positions, MOST on all 5 / SOME assigned-only, a differentiated score spread). The
+> MIRROR pair on the **one** position they applied for — round-robined evenly across the 5, ~8 per position (M227
+> fix #3) — SOME assigned-only, a differentiated score spread). The
 > `OrgFeatureInsights` substrate needs **no net-new grant** — the org's `admin` members inherit `org:feature:insights`
 > from the global `p3` admin policy via their standard g2 grant. Seeder chain: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel)
 > + [`../ops/seeding-spec.md`](../ops/seeding-spec.md#the-recruiter-vantage--the-hiring-org--candidate-comparison-funnel-v24-casting-call-m223).
@@ -221,14 +223,24 @@ a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), w
 straight onto the hiring Results page (the cockpit's `CockpitHero.IsHiring` routes her to the hiring base); the
 platform's own symmetric guard keeps her *in*.
 
-**What renders (gate met, ≥3 cold runs, 4/4 flake).** For **each** of the 5 shared sims the scoreboard paints
-**20 candidates on page 1** (the platform-native pagination — `useTablePagination` default 20; **GATE-DECISION D1
-kept it faithful** rather than force ~43 onto one page), with **all 43** seeded candidates present, non-degenerate
-(scores 27–100), reachable by paging, **0 junk** (closure green), **0 prod-eject**. Four demo-patches on the
+**What renders (gate met, ≥3 cold runs, 4/4 flake).** For **each** of the 5 shared sims the scoreboard paints its
+comparable-candidate cohort — **~8 candidates per position** since **v2.4 "casting call" M227 fix #3** (each
+candidate auditions on the ONE position they applied for, round-robined evenly across the 5; before M227 every
+candidate took all 5 → ~43 on each, paged at the platform-native `useTablePagination` default 20 — **GATE-DECISION
+D1**). With ~8 per position they all fit on page 1 (no pagination needed), non-degenerate (scores 27–100), **0 junk**
+(closure green), **0 prod-eject**. **The compare gate retuned `≥40 → ≥6` (M227 fix #3** — a small margin below the
+seeded min of ~8; `hiringComparableFloor` / the render-probe `RENDER_GATE_FLOOR`). Four demo-patches on the
 hiring image make it land — 2 net-new (`next-hiring-role-remap`, `next-hiring-members-pagination`) + the 2 chained
 shared `urls.ts` patches (the Studio-eject kill) — see [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md)
 § the four hiring-image patches, and the cockpit trio in
 [`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § the hiring vantage.
+
+**Believability (v2.4 M227 "the notes", seed-only).** The recruiter's AI-Simulations list reads **hiring-only** — the
+generic workforce activity seeders skip a hiring org (`hiring_scope.go` `IsHiringOrg()`, #M227-D1), so its whole sim
+footprint is these 5 HIRING sims (no training/assessment leakage into the mirror the list groups by). Candidates read
+as **outside applicants**: emails are keyed on **role** → an external consumer domain (gmail/outlook/…), only
+admins/recruiters keep `@meridian-talent.com` (#M227-D2). See
+[`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel).
 
 ## Cross-references
 

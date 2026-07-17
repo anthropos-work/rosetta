@@ -1,0 +1,79 @@
+{
+  "milestone": "M227",
+  "slug": "the-notes",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-17",
+  "shape": "section",
+  "close_status": "complete",
+  "is_final_milestone": false,
+  "summary": "Believability-hardening backfill — 4 demo-data realism fixes from live feedback after M226, all in the rext seed/content tooling, 0 platform-repo edits. Fix #1 hiring-only content (generic activity seeders skip a hiring org) · #2 external candidate emails (role-keyed, roster==users==login) · #3 1 sim per candidate (~8/position) + compare gate retuned >=40 -> >=6 EVERYWHERE (5+45 fence + mirror-pair preserved) · #4 gender-consistent avatars (all orgs). All 4 proven DETERMINISTICALLY by the unit+regression suite; the LOCAL live-render re-prove was environment-blocked -> Fate 2 -> M228 second-night (already planned; M228 exit gate covers the corrected-data live render).",
+  "sections": {
+    "S1": "Hiring-only content (#M227-D1): 6 generic activity seeders (persona/activity/jobsim/skillpath/assignments/hero-activity) skip a hiring org via the shared hiring_scope.go IsHiringOrg() guard -> the hiring org's whole sim footprint is HiringFunnel HIRING sims; regression test proves ZERO generic-activity rows for a hiring org, workforce orgs unchanged (rext 8ed8791)",
+    "S2": "External candidate emails (#M227-D2): email domain keyed on ROLE via single-sourced emailForMember (candidate -> external bank gmail/outlook/proton/...; else org domain); roster.go + users.go single-source so login == public.users.email == Clerkenstein roster; Cara/Cody heroes -> external + manifest regenerated (honesty gate green) (rext 9aa024b)",
+    "S3": "1 sim per candidate + gate retune (#M227-D3): HiringFunnelSeeder round-robins each assessed candidate onto exactly 1 position (43 assessed -> min 8 / max 9 per position) keeping the M219 mirror pair; compare gate retuned >=40 -> floor 6 (margin 2) EVERYWHERE: hiringComparableFloor, RENDER_GATE_FLOOR, run-hiring-render.sh, playthrough note, M224 GATE-DECISION D1, M226/M228 exit gates, hiring.md/seeding-spec/stories-spec, roadmap (rext 877b091 + rosetta docs)",
+    "S4": "Gender-consistent avatars (#M227-D4): assets gender partition (F={0,2,4,6,9} M={1,3,5,7,8,10,11}) + build-time fence; photoAvatarDataURIForName(seed, firstName) + curated inferGender dictionary; threaded at all 3 avatar call sites (users.go/generated_batch.go/roster.go); Unknown-name fallback byte-identical to the old full-pool pick (rext 63c3e8d)",
+    "S5": "Local re-prove: rext tagged (casting-call-m227-sections); DATA correctness of all 4 fixes proven DETERMINISTICALLY by the unit+regression suite; the LIVE full-stack render/coverage/playthrough re-prove was BLOCKED by the local Docker environment (ENOSPC + evicted build cache + buildx contention) -> routed to M228 (Fate 2, already planned)"
+  },
+  "close_findings": {
+    "total": 3,
+    "docs": [
+      "Fix #1 hiring-only mechanism (#M227-D1) was undocumented -> blended into stories-spec.md + seeding-spec.md + hiring.md",
+      "Fix #2 external candidate emails (#M227-D2) was undocumented -> blended into stories-spec.md + seeding-spec.md + hiring.md",
+      "Fix #4 gender-consistent avatars (#M227-D4) was undocumented -> blended into profile-completeness-spec.md (+ pointers)"
+    ],
+    "note": "Fix #3 gate retune (#M227-D3) was already documented across all specs during build; verified accurate at close. No code/test findings — build+harden delivered the 4 fixes correct + fenced."
+  },
+  "rext": {
+    "code_of_record": "rosetta-extensions @ casting-call-m227-sections (63c3e8d) — the 4-fix HEAD",
+    "sections_tag": "casting-call-m227-sections @ 63c3e8d (the LIVE consumption tag; rext.tag points here)",
+    "harden_head": "78a3cb2 (harden pass-1: UsersSeeder population write-path fence + score clamps + Go<->render-probe floor-drift fence; TEST-ONLY -> no new tag, the sections tag stays the consumption point)",
+    "touched_modules": "stack-seeding/seeders (hiring_scope.go + 6 gated seeders, userprofile.go/users.go/roster.go, hiring_funnel.go/contentref.go, gender.go/avatar.go/generated_batch.go), stack-seeding/assets (avatars.go), stack-seeding/presets (stories.seed.yaml + seed-generation-manifest.yaml), stack-verify/e2e (run-hiring-render.sh + render-hiring-comparison.spec.ts RENDER_GATE_FLOOR default), playthroughs/manifest/hiring.yaml (floor)"
+  },
+  "tests": {
+    "go_test_funcs_total": 1902,
+    "go_test_funcs_delta_vs_m226": "+14 (M226 1888 -> 1902; the M227 fences: hiring_scope_test, candidate_email_test, gender_test x2 [seeders + assets], hiring_funnel_test additions, and the 4 harden fences in users_m227_test.go + hiring_funnel_test.go)",
+    "go_suites": "stack-seeding go test ./... OK (13 packages) + go vet clean",
+    "ts_tsc_stack_verify_e2e": "tsc --noEmit exit 0 (render-hiring-comparison.spec.ts RENDER_GATE_FLOOR default 40 -> 6)",
+    "flake_gate": "5/5 clean — stack-seeding/seeders -count=1 -shuffle=on x5 (all M227 fences live here); deterministic seeders, no network/timing",
+    "harden_fences_red_proven": [
+      "TestUsersSeeder_PopulationEmailRoleKeyedAndAvatarGenderMatched — drives the REAL UsersSeeder over the whole population; a revert of the users.go call sites ships SILENTLY otherwise (the load-bearing gap harden found)",
+      "TestUsersSeeder_HeroSeededEmailAndAvatarEqualRoster — the login==postgres==menu triple across both real write paths",
+      "TestHiringComparableFloor_MatchesRenderProbeDefault — Go const <-> render-probe RENDER_GATE_FLOOR cross-surface drift fence",
+      "TestHiringSessionScore_ClampsBounds — the floor/ceiling clamp branches (hiringSessionScore 71.4% -> 100%)"
+    ],
+    "data_correctness_proven_deterministically": [
+      "fix#1 TestGenericActivitySeeders_SkipHiringOrg",
+      "fix#2 TestCandidateEmails_RosterMatchesSeed",
+      "fix#3 TestHiringFunnelSeeder_Funnel (1/candidate, ~8/position, min 8 >= floor 6)",
+      "fix#4 TestPhotoAvatarForName_GenderMatched + TestHeroAvatar_MenuMatchesProfileAndGender"
+    ]
+  },
+  "flake_count": 0,
+  "pre_existing_failures_carried": 8,
+  "completeness": {
+    "done_fate1": [
+      "S1 hiring-only content (generic seeders skip hiring org) + regression fence",
+      "S2 external candidate emails (role-keyed emailForMember; roster==users==login)",
+      "S3 1 sim/candidate (~8/position) + compare gate retuned >=40 -> >=6 everywhere",
+      "S4 gender-consistent avatars across all orgs",
+      "Close docs: fix #1/#2/#4 mechanisms blended into corpus (#M227-D1/#M227-D2/#M227-D4)"
+    ],
+    "confirmed_covered_fate2": [
+      "Section 5 LOCAL live full-stack render/coverage/playthrough re-prove on the corrected data -> M228 second-night (already planned; M228 exit gate covers the corrected-data live render: 1-sim/candidate >= floor 6, external emails, matched avatars, hiring-only content). Data correctness proven deterministically here."
+    ],
+    "carried_known_issue": [
+      "8 pre-existing demo-stack test failures (test_cockpit.py x6 + test_purge + test_reap) -> v2.4 release close (test-debt harden pass); HEAD-identical, in files M222-M227 never touched",
+      "M204 assign-and-track.UC1 assign-WRITE declared in-manifest TODO -> v2.4 release close (declared-TODO fate)"
+    ],
+    "dropped": [],
+    "escape_hatch": []
+  },
+  "constraints": {
+    "platform_repo_edits": 0,
+    "billion_host_touched": false,
+    "local_bring_up_attempted_at_close": false,
+    "supply_chain": "GREEN - 0 net-new direct deps"
+  },
+  "deferral_audit": "YELLOW (audit-deferrals/deferral-audit-2026-07-17-m227-close.md; 1 new single deferral [section-5 live re-prove -> M228, already planned, clean Fate-2] + 3 inherited/re-confirmed carries [2 -> release close, DEF-M226-01 -> M228]; no M227-native repeat, no chronic/blocking)",
+  "notes": "The believability-hardening section milestone (4 live-feedback fixes + a gate retune). All 4 fixes DETERMINISTICALLY PROVEN by the unit+regression suite (stronger than ad-hoc SQL) + write-path-fenced by harden. The one close finding was documentation: 3 of the 4 fix mechanisms (hiring-only, external emails, gender avatars) were undocumented in the corpus (fix #3 gate retune was already in) -> blended at Phase 5 with #M227-D refs. Section 5's LIVE render re-prove was environment-blocked (local Docker box wedged; now recovering) -> Fate 2 -> M228 (the billion re-prove, already planned; its exit gate covers the corrected-data render). Close operated on deterministic suites only (go/tsc) per the environment constraint: go vet clean + 13 pkgs green + flake 5/5 + tsc exit 0 = the close-time signal. Zero platform-repo edits; the pre-existing unrelated working-tree changes (.gitignore + _email-assets) never staged. Not the final v2.4 milestone (M228 second-night remains) -> release-branch merge only, NO main-merge, NO v2.4 tag, NO close-release."
+}

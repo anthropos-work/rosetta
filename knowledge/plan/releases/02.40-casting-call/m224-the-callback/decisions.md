@@ -193,6 +193,15 @@ closure-green, 0-eject per sim); only the on-screen page-1 count reflects the re
 faithfulness thesis intact (show the real product, real routing, real pagination). The **≥3-cold-run** requirement
 and the **render-probe fixes (R1–R4)** remain open iter-close work (below / carry-forward).
 
+> **SUPERSEDED by v2.4 M227 fix #3 (2026-07-17, live-feedback believability backfill).** The `≥40`-per-sim gate
+> assumed **every candidate auditioned on all 5 positions** (~43/position). Live feedback found that unbelievable —
+> a real applicant auditions for the ONE role they applied to. M227 changed the funnel so each candidate takes
+> **exactly one** position (round-robined evenly → **~8 per position**), and **retuned the compare gate `≥40 → ≥6`**
+> (`hiringComparableFloor` / the render-probe `RENDER_GATE_FLOOR`, a small margin below the seeded min of ~8). The
+> "page 1 = 20" pagination nuance of D1 is now moot for the demo (a ~8-candidate cohort fits on one page); the
+> platform still paginates at 20, so D1's faithfulness point stands. **M228 re-proves the retuned gate live on
+> billion.**
+
 ---
 
 ## Close decisions (2026-07-16 — `/developer-kit:close-milestone`)

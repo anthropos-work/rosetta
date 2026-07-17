@@ -358,12 +358,14 @@ Two things make it non-obvious — both are M222 findings the seeder is built to
   sims pool** (the M219 R-3 disjoint reservation) so a generic activity session can never collide with a
   position. (`directus.job_position` captured **0** rows and the scoreboard doesn't read it — M222 D4.)
 
-**The funnel shape** (deterministic, measured on the preset): **~90% of candidates are ASSESSED on all 5**
-positions (≈43 of 45 → the comparison is well-populated + comparable), the rest **assigned-not-taken** (no
-scored sessions → absent from the ranked list — the 2nd candidate hero's future state, M224). Each
-candidate has a base **aptitude spread across [30,95]** + a small per-position jitter, so within a position
-the ~43 candidates are **RANKABLE** (a differentiated spread — measured [27,100], 68 distinct values — NOT
-45 identical, the M219 anti-flat-arc lesson); `completition_status = passed` when score ≥ 60 else `failed`.
+**The funnel shape** (deterministic, measured on the preset): **~90% of candidates are ASSESSED on EXACTLY ONE
+position** — the role they applied for (**v2.4 "casting call" M227 fix #3**; before M227 every candidate took all
+5) — round-robined evenly across the 5 so each position ranks **~8 candidates** (43 assessed of 45 → min 8 / max 9
+per position), the rest **assigned-not-taken** (no scored sessions → absent from the ranked list — the 2nd candidate
+hero's future state, M224). Each candidate has a base **aptitude spread across [30,95]** + a small jitter, so within
+a position the ~8 candidates are **RANKABLE** (a differentiated spread, NOT identical — the M219 anti-flat-arc
+lesson); `completition_status = passed` when score ≥ 60 else `failed`. **The compare gate retuned `≥40 → ≥6`**
+(`hiringComparableFloor`, a small margin below the seeded min of ~8).
 Only `role=candidate` members audition (the 5 admins are recruiters — they read the scoreboard, they don't
 take assessments), and each admin inherits `org:feature:insights` from the **global `p3` admin Casbin
 policy** via its standard `admin` g2 grant (no net-new grant — M223 D1). The funnel writes **zero skill
@@ -457,7 +459,8 @@ story (Meridian Talent, 5 admins + 45 candidates)** + **two net-new seeders**: *
 org's 5 shared positions = 5 real captured `SIMULATION_TYPE_HIRING` sims via the type-aware `readHiringSimPool`,
 written as `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored
 `SIMULATION_TYPE_HIRING` session PAIR — `jobsimulation.sessions` + the `local_jobsimulation_sessions` **MIRROR**
-the scoreboard reads — on the 5 positions; MOST on all 5, SOME assigned-only, a differentiated score spread).
+the scoreboard reads — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
+SOME assigned-only, a differentiated score spread).
 The 5 positions are **disjoint-reserved** from the generic sims pool (M219 R-3); the funnel writes **0 skill
 refs** (closure green trivially); the admins inherit `org:feature:insights` from the global `p3` admin policy
 (no net-new grant). No `directus.job_position` replay (M222 D4 — 0 rows captured; the scoreboard doesn't read
@@ -465,3 +468,11 @@ it). DAG-ordered at level 2 (`hiring-config`/`hiring-funnel` after org/users/con
 render proof + cockpit heroes + the Clerkenstein `publicMetadata.isHiring` wiring are M224. 17 net-new unit
 tests (the mirror-trap fence RED-proven), full suite green, `go vet`/`gofmt` clean, 0 platform-repo edits.
 Code-of-record: `rosetta-extensions` @ `main` (tagged when v2.4 closes).
+**v2.4 "casting call" M227 "the notes" — believability corrections (seed/content only, 0 platform edits):** the
+hiring org reads **hiring-only** (the generic activity seeders skip a hiring org via `hiring_scope.go`'s
+`IsHiringOrg()` guard, #M227-D1), candidates get **external** consumer-domain emails keyed on **role** (only
+employees keep the org domain, single-sourced through `emailForMember` so login == `public.users` == roster,
+#M227-D2), each candidate auditions on **one** position (~8/position, the gate retuned `≥40 → ≥6`, #M227-D3), and
+avatars are **gender-consistent** across all orgs (#M227-D4). Detail:
+[`demo/stories-spec.md`](demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel) +
+[`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).
