@@ -7,14 +7,16 @@
   "gate": {
     "metric": "7-condition live billion proof (RETUNED for M227) on a default /demo-up cold reset-to-seed, reproducibly",
     "target": "7/7 across 2 clean cold cycles + the 4 M227-correction render checks GREEN",
-    "current": "0/7",
-    "distance": "not yet measured on billion at casting-call-m227-sections"
+    "current": "5/7 (C1,3,5,6,7 + fix#2 GREEN; C2/C4 blocked by F2/F3; F1 seed FK error)",
+    "distance": "C2 (1-sim/candidate) + C4 (hiring-only) blocked by F2/F3; F1 seed-error to fix; then warm re-measure + 2 clean cold cycles",
+    "recruiter_p95_ms": 1470
   },
   "iters": {
-    "total": 1,
-    "tiks": 0,
+    "total": 2,
+    "tiks": 1,
     "toks": 1
   },
+  "open_findings": ["F1-succession-fk-seed-error", "F2-hiring-only-training-leak", "F3-1sim-per-candidate-leak"],
   "rext_code_of_record": "casting-call-m227-sections",
   "platform_repo_edits": 0,
   "last_updated": "2026-07-17"
