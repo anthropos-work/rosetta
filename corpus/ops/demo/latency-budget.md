@@ -24,8 +24,19 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 ## The gate
 
-**p95 click→ACCESS < 5 s**, for **both** vantages — `maya-thriving` (employee → `/profile`) **and** `dan-manager`
-(manager → `/enterprise/…`) — over **5 consecutive cold reset-to-seed runs**.
+**p95 click→ACCESS < 5 s**, for **three** vantages — `maya-thriving` (employee → `/profile`), `dan-manager`
+(manager → `/enterprise/…`), **and** `rae-recruiter` (recruiter → the **apps/hiring** 2nd app
+`/enterprise/activity-dashboard`; the M226 "opening night" 3rd measured path, v2.4 "casting call") — over
+**5 consecutive cold reset-to-seed runs**.
+
+> **The recruiter vantage is a seat-key + a landing origin, not a new code path.** `measureLogin` is
+> vantage-agnostic: it follows the cockpit CTA's own `redirect_url`, and the `rae-recruiter` CTA lands on the
+> **hiring app** (`:3001+offset`, the TOK-02 two-app demo), which satisfies the same ACCESS predicate
+> (loader-gone + the hero's identity in the header/nav). Add a vantage by adding its `case` to `run-latency.sh`.
+> **Prerequisite (M226 Finding-1):** the hiring app port (`:3001+offset`) must be **fronted over `tailscale
+> serve`** for the recruiter to be reachable from a tailnet peer — it was added to `gen_tailscale_serve.py`'s
+> `UI_BROWSER_FACING` at M226 (it had been reachable only on localhost, so the recruiter vantage was dead
+> cross-machine until then — the M215/M221 "last breakage is cross-machine" lesson). See `tailscale-serve.md`.
 
 ## The per-leg attribution model
 
@@ -77,6 +88,41 @@ tailnet**, which is the presenter's actual vantage._
 | **manager** (`dan-manager` → `/enterprise/…`) | p95 **38.30 s** | **p95 1.40 s** (p50 1.12 s) | **27×** |
 
 **5/5 runs reached ACCESS on both vantages, gate armed.**
+
+**M226 "opening night" — the recruiter 3rd vantage (v2.4 "casting call"), measured live on `billion` from the
+tailnet peer, over 2 clean default cold reset-to-seed cycles:**
+
+| vantage | measured | |
+|---|---|---|
+| **recruiter** (`rae-recruiter` → apps/hiring `/enterprise/activity-dashboard`) | **p95 1.09 s** (cycle 1) / **2.36 s** (cycle 2), p50 ~0.66 s | ACCESS 5/5 both cycles |
+
+The recruiter shares next-web's fast authenticated-shell path — its p95 sits alongside employee/manager, well
+under the 5 s gate. (State the environment: measured from this Mac against `billion.taildc510.ts.net` HTTPS.)
+**Independently re-verified at M226 close** by the orchestrator from this Mac — a fresh recruiter-vantage run
+returned **p95 1.74 s** (< 5 s), corroborating the two-cycle numbers above.
+
+### R4 — the compare-drawer cold first render is a warm-up transient, NOT a gate violation
+
+R4 was carried from M224 as a **blocks-milestone** risk: *would the 45×5 whole-org hydration on the
+candidate-comparison drawer be too slow?* The M226 live finding on `billion`: the drawer's **COLD / idle first
+render is genuinely slow** — **~2.5 min for the first sim's drawer** on a stone-cold stack — but it **warms to
+~2.4 s** once the RSC/data path is hot, and it **does not violate any of the 7 gate conditions**:
+
+- **C2 (the render probe)** gates on **data-present-and-renders** — page-1 rows painted (20/sim), network total
+  ≥ 40, junk = 0, 0 prod-ejects — **not on render latency**. The cold transient is absorbed because the probe's
+  per-test budget is **env-tunable** (`RENDER_TEST_TIMEOUT_MS`, default 300 000; landed at M226 `19d1159`). A cold
+  or tailnet-fronted measurement needs a **cold-appropriate budget** so a slow-but-correct first render can't
+  **false-fail** the probe. Set it generously when measuring cold/remote; the default already carries the
+  documented headroom.
+- **C5 (the p95 < 5 s gate)** is on **login → ACCESS** (the recruiter reaching her authenticated Results shell),
+  **not** on the drawer drill-down. The slow compare-drawer cold render therefore does not count against C5.
+- The transient is **warm-up work the bring-up autoverify already absorbs** — the set-dress verify drives the
+  surfaces once during bring-up, so by the time a presenter clicks, the path is warm. R4 is a **cold-start
+  property of the first drill-down**, not a standing latency the gate measures.
+
+Net: R4 is **not** a milestone blocker — it is a documented cold-start transient with a probe budget wide enough
+to measure through it. (If a future release wants the drawer's *drill-down* render itself under a p95 gate, that
+is a **4th** measured path — a new vantage on the drawer, not the login — and would follow the same harness.)
 
 **State the environment with every number.** The *same* defect cost **~6 s on a laptop** and **~112 s on the
 tailnet VM** — which is precisely why four releases of local measurement never saw it. **A latency number without

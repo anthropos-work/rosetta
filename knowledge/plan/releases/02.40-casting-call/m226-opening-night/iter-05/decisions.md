@@ -1,0 +1,7 @@
+# iter-05 — intra-iter decisions
+
+| # | Decision | Rationale | Date |
+|---|----------|-----------|------|
+| D1 | **Finding-4 fix = poll for the `insightsByJobSimulations` LIST capture** after the DOM-rows poll, before deriving the 5 sims (bounded 30 s, non-fatal). | The DOM rows hydrate from SSR/RSC before the client insights POST fires, so deriving immediately raced the network capture (cold-stack ~3/5 lost). Polling for the capture is the minimal robust fix; non-fatal so a truly SSR-only render still falls through to the dom-links fallback. Validated: C2 3/3 (iter-04b demo) + 2/2 (iter-05 fresh stack). A harness fix, 0 product/platform change. | 2026-07-17 |
+| D2 | Consume the final tag `casting-call-m226-c2-race-fix` (4bd68ff) on billion as the code-of-record, even though the harness fix is client-side (run from this Mac). | Tooling tidiness: billion's `rext.tag` should name the milestone's final code-of-record. The bring-up behavior is identical to `count-5-45` (the harness fix touches only a client-side test), so the 2nd cold cycle is a faithful reproduction. | 2026-07-17 |
+| D3 | Declare the **gate MET** on 2 clean default cold cycles (iter-04b + iter-05), NOT a 3rd. | The M221 precedent: one cycle = provisional, a 2nd confirms "reproducibly." Both cycles hit 7/7 at the product level; the C2 measurement-harness flake that affected cycle-1's automation is fixed + validated across a warm demo + a fresh stack. A 3rd cycle would be gilding. | 2026-07-17 |

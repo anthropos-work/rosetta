@@ -85,7 +85,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
 | **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
-| **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 | 🔵 **IN DEVELOPMENT** (branch `release/02.40-casting-call`, designed 2026-07-15; 5 milestones — M222 spike [`section`] → M223 seeder [`section`] → M224 render [`iterative`] → M225 demo-integration [`section`] → M226 prove-on-billion [`iterative`]; **M222 is a HARD go/no-go barrier** — escalates if the comparison surface is `apps/hiring`-only; genuine `is_hiring=true`, real replayed positions + realistic funnel, cockpit heroes = 1 manager + 2 candidates; tooling + docs only, zero platform-repo edits) |
+| **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 | 🟢 **ALL MILESTONES DONE — awaiting `/developer-kit:close-release`** (branch `release/02.40-casting-call`, designed 2026-07-15; **all 5 milestones closed** — M222 spike [`section`, GO] → M223 seeder [`section`] → M224 render [`iterative`, closed-on-gate] → M225 demo-integration [`section`] → **M226 prove-on-billion [`iterative`, closed-on-gate 2026-07-17]**; the 7-condition hiring gate proven live on `billion` over the tailnet, default `/demo-up`, no flags, 2 cold cycles + orchestrator re-verify, recruiter p95 < 5 s as the 3rd vantage; genuine `is_hiring=true`, 5 admin + 45 candidate, cockpit heroes = 1 manager + 2 candidates; tooling + docs only, **zero platform-repo edits**. The `release → main` merge + `v2.4` tag remain close-release's job) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -329,7 +329,28 @@ M223 freezes the seed shape (partial overlap with M224); the coverage/playthroug
 **Delivers →** the hiring sections of `coverage-protocol.md` + `playthroughs.md`.
 **Demo-patch?** Pure tooling (manifests + seed + set-dress). No platform-render gap.
 
-#### M226 — Opening night  (`iterative`, large)
+#### M226 — Opening night  (`iterative`, large) — ✅ **DONE 2026-07-17 (closed-on-gate)**
+
+> **CLOSED 2026-07-17 (closed-on-gate — the FINAL v2.4 milestone).** The live-proof closer: on
+> `billion.taildc510.ts.net`, a **default `/demo-up 1` (no flags)** hit the **7-condition gate reproducibly across
+> 2 clean cold reset-to-seed cycles** (iter-04b + iter-05), measured from this Mac (the tailnet peer) + **independently
+> orchestrator-re-verified** — (1) hiring org `is_hiring=true`, **exactly 5 admin + 45 candidate**; (2) recruiter
+> comparison **42 comparable candidates × each of the 5 positions** (≥40), junk=0, ejects=0 (re-verify 5/5 sims × 42);
+> (3) both candidate heroes (Cara Completed / Cody Assigned) usable; (4) reads as hiring; (5) recruiter **p95
+> click→ACCESS 1.09 s / 2.36 s** (re-verify **1.74 s**) < 5 s — the **3rd measured vantage** (employee 2.11 s /
+> manager 1.31 s at v2.3); (6) coexists with the 3 workforce orgs (12 heroes / 4 orgs on the cockpit); (7) **0
+> platform-repo edits**. **5 cross-machine findings surfaced + fixed live** — F1 serve-hiring (`apps/hiring` :3001+off
+> not tailscale-fronted), F2 count 5+45 (`role_mix.admin 0.1→0.14`), F3 surgical-orphan (self-resolved), F4 C2
+> harness insights-capture race, F5 C2 cold/tailnet probe-budget (`RENDER_TEST_TIMEOUT_MS` env-tunable) — **all
+> tooling/harness/seed, 0 platform edits**. **R4 (compare-drawer cold render)** documented in `latency-budget.md` as a
+> **warm-up transient, NOT a gate violation** (C2 gates on data-present-and-renders; C5 on login→ACCESS). Go test funcs
+> 1887 → **1888** (+1 the RED-proven `hiring_count_harden_test.go` net-5+45 fence); deterministic suites (go/python/tsc)
+> GREEN + **5/5 flake**; **flake 0**. Close operated LOCAL/peer only — billion NOT re-brought-up, **LEFT UP** as the
+> live-proof artifact (the M221 precedent). Deferral audit **YELLOW** (Finding-3 Fate-3 forward-routed, non-gate-blocking;
+> 2 inherited carries re-confirmed → v2.4 release close). rext code-of-record `casting-call-m226-close` (`7032aea` — the
+> harden HEAD + a Phase-4 README count reconciliation). **Final v2.4 milestone → the `release/02.40-casting-call → main`
+> merge + `v2.4` tag are `/developer-kit:close-release`'s job.**
+
 **Goal:** every requirement of this release verified **on the remote VM, over the tailnet, default `/demo-up`, no
 flags.**
 **Shape — iterative:** the direct analogue is **M215 "prove-on-odyssey" / M221 "prove-on-billion"** — the last

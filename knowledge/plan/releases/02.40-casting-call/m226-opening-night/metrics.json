@@ -1,0 +1,85 @@
+{
+  "milestone": "M226",
+  "slug": "opening-night",
+  "version": "v2.4 casting call",
+  "closed": "2026-07-17",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "is_final_milestone": true,
+  "gate": {
+    "definition": "7-condition live billion proof: default /demo-up N (no flags), reproducibly on a cold reset-to-seed on billion.taildc510.ts.net",
+    "status": "MET",
+    "conditions_met": "7/7",
+    "reproducibility": "2 clean default cold reset-to-seed cycles (iter-04b + iter-05), both 7/7, measured from this Mac (the tailnet peer) + independently orchestrator-re-verified from this Mac",
+    "conditions": {
+      "C1": "hiring org present, is_hiring=true, EXACTLY 5 admin + 45 candidate",
+      "C2": "recruiter comparison 42 comparable candidates x each of the 5 positions (>=40), junk=0, prod-ejects=0 (orchestrator re-verify: 5/5 sims x 42, junk=0)",
+      "C3": "both candidate heroes (Cara Completed / Cody Assigned) render usable assessed profiles",
+      "C4": "org reads as hiring (nav 'Results', cockpit 'Hiring' label, roster org_is_hiring)",
+      "C5": "recruiter p95 click->ACCESS 1.09 s (cycle1) / 2.36 s (cycle2) < 5 s; orchestrator re-verify p95 1.74 s < 5 s (the 3rd measured vantage)",
+      "C6": "coexists with the 3 workforce orgs (12 heroes / 4 orgs on the cockpit)",
+      "C7": "0 platform-repo edits (demo clone left git-clean; cms '?? studio/' = disclosed M221 D-05h)"
+    }
+  },
+  "iters": {
+    "total": 5,
+    "tok": 1,
+    "tik": 4,
+    "ledger": {
+      "iter-01": "tok (bootstrap) — Phase 0b KB-fidelity GREEN; billion recon; authored TOK-01 reprove-hiring-on-billion",
+      "iter-02": "tik — teardown stale v2.3 + substrate cutover + first default cold bring-up GREEN + FIRST 7-condition measurement (3/7; C1 3+47, C2/3/5 blocked by :13001 serve gap)",
+      "iter-03": "tik — Finding-1 serve fix applied (:13001 peer-reachable) + measured recruiter vantage (6/7; C2 44x5 junk=0, C3 usable, C5 p95 1.50 s)",
+      "iter-04": "tik — Finding-2 fix (role_mix.admin 0.1->0.14 -> exactly 5+45) + full DEFAULT cold re-bring-up -> 7/7 GREEN (provisional); Findings 3+4 surfaced",
+      "iter-05": "tik — Finding-4 fix (C2 harness insights-capture race) + 2nd clean DEFAULT cold cycle -> GATE MET (7/7 reproducible)"
+    }
+  },
+  "findings_surfaced_and_fixed_live": {
+    "count": 5,
+    "all_tooling_harness_seed_zero_platform_edits": true,
+    "F1": "serve-hiring — apps/hiring :3001+off not tailscale-fronted -> recruiter/candidate conditions dead cross-machine; fix add ('hiring',3001) to gen_tailscale_serve.py UI_BROWSER_FACING",
+    "F2": "count 3+47 vs 5+45 (hero-slot displacement) -> one-line preset bump role_mix.admin 0.1->0.14 (band=7 -> 5 net admins survive the 2 candidate-hero overrides)",
+    "F3": "surgical-orphan :13001 bind-conflict — artifact of iter-03's surgical serve re-apply, NOT the default flow; self-resolves (default flow writes a reset plan incl :13001)",
+    "F4": "C2 harness insights-capture race on a cold stack -> poll for insightsByJobSimulations LIST capture (bounded 30 s, non-fatal); harness robustness, not a product change",
+    "F5": "C2 cold/tailnet probe-budget — a cold compare-drawer first render (~2.5 min/sim, the R4 hydration) blew the hardcoded 300 s per-test budget -> RENDER_TEST_TIMEOUT_MS env-tunable (default 300000) so a cold measurement can't false-fail"
+  },
+  "tests": {
+    "go_test_funcs_total": 1888,
+    "go_test_funcs_delta_vs_m225": "+1 (M225 1887 -> 1888; stack-seeding/seeders/hiring_count_harden_test.go — the gate-C1 NET 5-admin/45-candidate invariant, RED-proven against the old admin=0.10)",
+    "go_suites": "stack-seeding go test ./... OK (seeders + blueprint incl the hiring fence); go vet + gofmt clean",
+    "python_stack_injection": "test_injection.py 145 passed / 8 skipped (TestTailscaleServe 34; +1 vs harden-base: test_apps_hiring_is_fronted_and_rides_the_ui_tier_lifecycle — the M226 F1 attribution anchor)",
+    "ts_tsc_stack_verify_e2e": "tsc --noEmit exit 0 (M226 remote-capability env plumbing on m224-candidate-heroes.spec.ts + render-hiring-comparison.spec.ts: RENDER_TEST_TIMEOUT_MS / CANDIDATE_HOST/OFFSET/APP_SCHEME type-check)",
+    "ts_unit_unchanged": "stack-verify/e2e 61 + playthroughs/e2e 69 (M226 added no TS unit tests — only navigating/live e2e specs)",
+    "flake_gate": "5/5 clean — Go seeders suite -count=5 (incl the hiring_count_harden fence) + Python TestTailscaleServe 5 separate runs (34/34 each). All M226-touched deterministic tests are pure (no network/timing)",
+    "live_gate": "the 7-condition gate proven on billion over the tailnet, 2 cold cycles + orchestrator independent re-verify (C2 5/5 sims x 42 candidates junk=0; C5 recruiter p95 1.74 s < 5 s) — the deterministic suites are the close-time signal; the live gate was NOT re-brought-up at close (billion left UP)"
+  },
+  "benchmarks": {
+    "recruiter_p95_click_to_access_ms": {"cycle1": 1090, "cycle2": 2360, "orchestrator_reverify": 1740, "gate_ms": 5000, "vantage": "3rd measured (employee 2.11 s / manager 1.31 s at v2.3)"}
+  },
+  "flake_count": 0,
+  "pre_existing_failures_carried": 8,
+  "completeness": {
+    "gate_conditions_done_fate1": ["C1 count 5+45", "C2 comparison >=40 x 5 junk=0", "C3 candidate profiles usable", "C4 reads as hiring", "C5 recruiter p95 < 5 s", "C6 coexists with 3 workforce orgs", "C7 0 platform edits"],
+    "delivered_knowledge": ["latency-budget.md — R4 warm-up-transient (the milestone's declared delivers) + recruiter 3rd vantage + orchestrator re-verify", "tailscale-serve.md — apps/hiring :3001+off serve front (Finding-1)"],
+    "routed_forward_fate3": ["Finding-3 (DEF-M226-01) — pre-bind serve reap: a live-only bring-up-path change needing a live re-prove (forbidden at close; billion left UP); self-resolves in the default flow -> follow-up build-iter / next prove-on-<VM> milestone"],
+    "carried_known_issue": ["8 pre-existing demo-stack test failures (6x test_cockpit.py + test_purge + test_reap) -> v2.4 release close (Phase 1b) -> future demo-stack test-debt harden pass", "M204 assign-and-track.UC1 assign-WRITE declared in-manifest TODO -> v2.4 release close"],
+    "dropped": [],
+    "escape_hatch": []
+  },
+  "constraints": {
+    "platform_repo_edits": 0,
+    "billion_host_touched_at_close": false,
+    "billion_demo_state": "LEFT UP intentionally as the live-proof artifact (the M221 precedent)",
+    "supply_chain": "GREEN - 0 net-new direct deps"
+  },
+  "rext": {
+    "code_of_record": "rosetta-extensions @ casting-call-m226-close (7032aea) — the harden HEAD (casting-call-m226-harden, c99a65e) + the close-phase README count reconciliation",
+    "milestone_tags": ["casting-call-m226-serve-hiring", "casting-call-m226-c3-remote", "casting-call-m226-count-5-45", "casting-call-m226-c2-race-fix", "casting-call-m226-c2-budget", "casting-call-m226-harden", "casting-call-m226-close"],
+    "consumed_on_billion": "casting-call-m226-c2-race-fix (4bd68ff) — the client-side harness fix runs from this Mac; the bring-up behavior is identical to count-5-45"
+  },
+  "deferral_audit": "YELLOW (audit-deferrals/deferral-audit-2026-07-17-m226-close.md; 1 new single deferral [Finding-3, Fate 3, self-resolving, non-gate-blocking] + 2 inherited carries re-confirmed + routed to v2.4 release close; no repeat/chronic/blocking)",
+  "close_findings": {
+    "total": 1,
+    "docs_tests": ["stack-seeding README test-func count drift 832->855 (13 pkgs, 83->86 files) — Phase 4 handbook reconciliation, fixed in-place (rext 7032aea); stale since the v2.1 roll, drifted across the whole v2.4 release"]
+  },
+  "notes": "The acceptance-closer / prove-on-billion milestone (the M215/M221 lineage applied to the hiring release) and the FINAL v2.4 milestone. All 7 gate conditions were built + local-proven at M222-M225; M226's only new information was what breaks on a live cross-machine cold run — 5 findings surfaced + fixed live, all tooling/harness/seed, 0 platform edits. Gate MET reproducibly (2 cold cycles + orchestrator independent re-verify from this Mac). R4 (compare-drawer cold render) documented in latency-budget.md as a warm-up transient, not a gate violation. Close operated LOCAL/peer only: deterministic suites (go/python/tsc) re-run GREEN + 5/5 flake gate = the close-time signal; billion was NOT re-brought-up and is LEFT UP as the live-proof artifact. Zero platform-repo edits throughout. Since M226 is the final v2.4 milestone, the release-branch merge is the only merge here (no main-merge, no v2.4 tag) -> suggest /developer-kit:close-release."
+}
