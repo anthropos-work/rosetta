@@ -7,11 +7,14 @@ entry per iter and creates `iter-NN/` dirs as it goes. iter-01 is the BOOTSTRAP 
 
 | iter | kind | what changed | gate metric | outcome |
 |------|------|--------------|-------------|---------|
-| _(none yet — scaffolded 2026-07-15; `/developer-kit:build-mstone-iters` opens iter-01)_ | | | | |
+| iter-01 | tok (bootstrap) | Phase 0b KB-fidelity GREEN; billion recon (stale v2.3 demo up, prereqs green, C-6 mem risk, rext cutover needed); authored TOK-01 `reprove-hiring-on-billion` | 0/7 (no lift — tok) | closed-fixed — see iter-01/progress.md |
 
 ## Next iter
 
-**iter-01 (bootstrap tok):** bring a default `/demo-up N` (no flags) up on `billion` over the tailnet from a **cold
-reset-to-seed**, and measure the 7-condition gate end-to-end — including the recruiter-vantage p95 click→ACCESS.
-Attribute any failing condition (seed / render / Clerkenstein wiring / latency) and pick the fix surface. The
-M215/M221 lesson: the last breakages surface only on the live cross-machine run.
+**iter-02 (tik, under TOK-01):** the substrate cutover + first default `/demo-up 1` on billion + first 7-condition
+measurement from this Mac. Handler `PROVE-M226-iter02-first-cold-bringup`. Steps: cold-teardown the stale v2.3.2
+`demo-1` (serve reset + academy respawner reap, M221 F5/F5b/F12; verify base ports freed + no survivor from this
+Mac) → cut billion's rext (+ platform) over to `casting-call-m225-harden` (confirm `sections`↔`harden` test-only)
+→ run a default cold `up-injected.sh 1` synchronously (NO FLAGS; ~15–25 min 2-app rebuild; never detach) → measure
+the 7-condition gate FROM THIS MAC. Attribute every failing condition (R1 render re-surface / R4 45×5 hydration
+latency / Clerkenstein-seed wiring / OOM) to its surface before any fix.
