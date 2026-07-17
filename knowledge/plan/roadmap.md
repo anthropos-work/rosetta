@@ -385,8 +385,9 @@ M225 coverage/playthrough machinery (never forked).
 2. **External candidate emails** — candidates are outside applicants → private/external domains (gmail/outlook/…),
    NOT `@meridian-talent.com`; only employees (recruiters/admins) keep the org domain.
 3. **1 sim per candidate + gate retune** — each candidate does exactly **1** of the 5 hiring sims (the role applied
-   for), not all 5 → **~9 candidates/position** (from ~42, distributed evenly across the 5). Retune the compare gate
-   **≥40 → the realistic floor (≈8)** EVERYWHERE it is asserted: M224 GATE-DECISION D1, M226/M228 exit-gate cond (2),
+   for), not all 5 → **~8 candidates/position** (43 assessed of 45, round-robined evenly across the 5 → min 8 / max
+   9). Retune the compare gate **≥40 → the realistic floor `≥6`** (a small margin below the seeded ~8) EVERYWHERE it
+   is asserted: M224 GATE-DECISION D1, M226/M228 exit-gate cond (2),
    the M225 coverage manifest + hiring playthrough, `corpus/services/hiring.md`, the render-probe `RENDER_GATE_FLOOR`
    default.
 4. **Gender-consistent avatars** — every user's avatar matches the name's inferred gender, across ALL orgs.
@@ -404,8 +405,9 @@ default `/demo-up`, cold reset-to-seed.
 **Shape — iterative:** the M226 prove-on-billion pattern — the last breakages surface only on a live cross-machine
 run; the corrected data (1-sim/candidate, external emails, hiring-only content, matched avatars) is re-proven live.
 **Exit gate:** on `billion.taildc510.ts.net`, a default `/demo-up N` (no flags), cold reset-to-seed, reproducibly:
-(1) hiring org `is_hiring=true`, 5 managers + 45 candidates; (2) recruiter comparison **≥ the retuned floor (~8)
-comparable non-junk rows per each of the 5 positions**, each candidate on exactly 1 sim; (3) 2 candidate profiles
+(1) hiring org `is_hiring=true`, 5 managers + 45 candidates; (2) recruiter comparison **≥ the retuned floor (`≥6`,
+a small margin below the seeded ~8/position) comparable non-junk rows per each of the 5 positions**, each candidate
+on exactly 1 sim; (3) 2 candidate profiles
 usable (external emails, matched avatars); (4) reads as hiring, hiring-only content; (5) recruiter **p95 click→ACCESS
 < 5 s**; (6) coexists with the 3 workforce orgs; (7) **0 platform-repo edits**.
 **Iteration protocol:** `corpus/ops/verification.md` (+ `coverage-protocol.md` + `latency-budget.md`) — the M226

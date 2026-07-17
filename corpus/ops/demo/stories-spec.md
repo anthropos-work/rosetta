@@ -668,11 +668,12 @@ seeders build the recruiter surface (both DAG level 2, `depends=[org users conte
   `ai_readiness_snapshots`). The recruiter scoreboard reads the score from the mirror, so skipping it renders an
   EMPTY comparison — a test **RED-proves** the fence. Per (candidate × position) it co-writes the pair,
   org-scoped, `sim_type='SIMULATION_TYPE_HIRING'`, G14-valid enums. **The funnel shape** (measured on the
-  preset): **~90% of candidates ASSESSED on all 5** (≈43 of 45 → populated + comparable), the rest
-  **assigned-not-taken** (no scored sessions — the 2nd candidate hero's future state, M224). Each candidate has
-  a base **aptitude ∈ [30,95]** + per-position jitter, so within a position the ~43 candidates are **RANKABLE**
-  (measured range [27,100], 68 distinct — NOT 45 identical, the M219 anti-flat-arc lesson); `passed` when score
-  ≥ 60 else `failed`. Only `role=candidate` members audition; the funnel writes **0 skill refs** (closure green
+  preset): **~90% of candidates ASSESSED on EXACTLY ONE position** — the role applied for (**M227 fix #3**; before
+  M227 every candidate took all 5) — round-robined evenly across the 5 so each ranks **~8 candidates** (43 assessed
+  of 45 → min 8 / max 9 per position), the rest **assigned-not-taken** (no scored sessions — the 2nd candidate
+  hero's future state, M224). Each candidate has a base **aptitude ∈ [30,95]** + jitter, so within a position the ~8
+  candidates are **RANKABLE** (NOT identical, the M219 anti-flat-arc lesson); `passed` when score ≥ 60 else
+  `failed`. **The compare gate retuned `≥40 → ≥6`** (a small margin below the seeded min of ~8). Only `role=candidate` members audition; the funnel writes **0 skill refs** (closure green
   trivially). The 5 admins inherit `org:feature:insights` from the **global `p3` admin Casbin policy** via their
   standard `admin` g2 grant — no net-new grant (M223 D1). New reset surface:
   `organization_sim_invitation_links` (child-first); the session pair reuses the already-reset

@@ -29,6 +29,12 @@ reset-to-seed**:
 6. **coexists with the 3 workforce orgs** on the cockpit;
 7. **0 platform-repo edits.**
 
+> **Condition (2) retuned by v2.4 M227 fix #3 (2026-07-17).** M226 proved `≥40 comparable rows per position` under
+> the old "every candidate on all 5 positions" funnel — the historical record above stands. Live feedback then found
+> that unbelievable; **M227 changed the funnel to 1 position per candidate** (round-robined → **~8 per position**)
+> and **retuned the gate `≥40 → ≥6`**. **M228 "second night" re-proves the corrected gate live on billion** at the
+> retuned floor.
+
 ## Why iterative
 The direct analogue is **M215 "prove-on-odyssey"** and **M221 "prove-on-billion"** — the last breakages only surface
 on a live cross-machine run over the tailnet; the path is discovered, not enumerated.

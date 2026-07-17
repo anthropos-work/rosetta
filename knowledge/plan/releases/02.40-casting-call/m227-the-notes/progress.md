@@ -2,28 +2,28 @@
 
 Section checklist. Check off tasks as they land; commit after each section.
 
-## Section 1 — Hiring-only content
-- [ ] Trace + confirm the non-hiring-sim surface (recruiter AI-Sim list reads the mirror; PersonaSeeder pollutes it)
-- [ ] Gate the generic workforce activity seeders on `st.IsHiringOrg()` (Persona + JobsimSessions + Skillpath + Assignments + Activity + HeroActivity; verify which write jobsim/mirror rows)
-- [ ] Shared, documented guard helper (single source of the rule)
-- [ ] Unit/regression tests: a hiring org writes ZERO non-hiring mirror/session rows; workforce orgs unchanged
-- [ ] `go test ./...` (stack-seeding) + vet green
-- [ ] Commit
+## Section 1 — Hiring-only content ✅
+- [x] Trace + confirm the non-hiring-sim surface (recruiter AI-Sim list reads the mirror; PersonaSeeder pollutes it)
+- [x] Gate the generic workforce activity seeders on `st.IsHiringOrg()` (Persona + JobsimSessions + Skillpath + Assignments + Activity + HeroActivity)
+- [x] Shared, documented guard helper (`hiring_scope.go` `skipGenericActivityForHiringOrg`)
+- [x] Regression tests: a hiring org writes ZERO generic-activity rows; workforce orgs unchanged
+- [x] `go test ./...` (stack-seeding) + vet green
+- [x] Commit (rext 8ed8791)
 
-## Section 2 — External candidate emails
-- [ ] Key email domain on ROLE (candidate → external bank; else org domain) in `users.go` + a `userprofile.go` helper
-- [ ] Preserve Clerkenstein roster email == seeded user email == login (trace roster.go + cockpit + preset `login:`)
-- [ ] Cara/Cody heroes → external addresses, consistent end-to-end
-- [ ] Tests: candidate emails external, employee emails org-domain, roster==user==login
-- [ ] Commit
+## Section 2 — External candidate emails ✅
+- [x] Key email domain on ROLE via single-sourced `emailForMember` (candidate → external bank; else org domain)
+- [x] Preserve Clerkenstein roster email == seeded user email == login (roster.go + users.go single-source; `login:` is a display hint, auth uses the key)
+- [x] Cara/Cody heroes → external addresses; manifest regenerated (honesty gate green, header preserved)
+- [x] Tests: candidate emails external, employee emails org-domain, roster==user email
+- [x] Commit (rext 9aa024b)
 
-## Section 3 — 1 sim per candidate + gate retune
-- [ ] `HiringFunnelSeeder`: each assessed candidate → exactly 1 position (even deterministic split); mirror pair kept
-- [ ] Assessed candidate hero pinned to a known position (assignment + scored session agree)
-- [ ] Compute exact per-position distribution (test) → set the floor with a safety margin
-- [ ] Retune the gate EVERYWHERE `≥40` is asserted (D1, exit gates M226/M228, coverage manifest, playthrough, hiring.md, RENDER_GATE_FLOOR)
-- [ ] Tests: 1 session/candidate, ~8/position, closure green
-- [ ] Commit
+## Section 3 — 1 sim per candidate + gate retune ✅
+- [x] `HiringFunnelSeeder`: each assessed candidate → exactly 1 position (round-robin even split); mirror pair kept
+- [x] Assessed candidate hero's assignment + scored session on the SAME position
+- [x] Computed per-position distribution (43 assessed → min 8 / max 9) → floor 6 (margin 2)
+- [x] Retuned the gate EVERYWHERE: `hiringComparableFloor`, RENDER_GATE_FLOOR, run-hiring-render.sh, playthrough note, D1, M226/M228 exit gates, hiring.md/seeding-spec/stories-spec, roadmap
+- [x] Tests: 1 session/candidate, even split, minPos>=floor, closure green
+- [x] Commit (rext 877b091 + rosetta docs)
 
 ## Section 4 — Gender-consistent avatars
 - [ ] `assets/avatars.go`: gender partition of the 12 faces (F={0,2,4,6,9} M={1,3,5,7,8,10,11}) + a test
