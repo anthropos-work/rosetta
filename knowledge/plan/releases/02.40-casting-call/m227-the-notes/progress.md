@@ -33,12 +33,19 @@ Section checklist. Check off tasks as they land; commit after each section.
 - [x] Tests: name→gender→face-subset (200 seeds); heroes matched; menu==profile; Unknown byte-identical
 - [x] Commit (rext 63c3e8d)
 
-## Section 5 — Local re-prove
-- [ ] Tag the M227 rext; bump `.agentspace/rext.tag`; sync consumption
-- [ ] Fresh LOCAL demo (offset ports), cold reset-to-seed, consuming the M227 tag
-- [ ] Assert from this Mac: ≥floor per each of 5 positions; 1 sim/candidate; hiring-only; external emails; matched avatars
-- [ ] Hiring coverage sweep GREEN + hiring playthrough GREEN
-- [ ] Commit the re-prove record
+## Section 5 — Local re-prove (partial — data proven; live render env-blocked → M228)
+- [x] Tag the M227 rext (`casting-call-m227-sections`, pushed origin); bump `.agentspace/rext.tag`; sync consumption clone
+- [x] **DATA correctness of all 4 fixes proven DETERMINISTICALLY** by the unit + regression suite (exact invariants):
+      fix#1 `TestGenericActivitySeeders_SkipHiringOrg` · fix#2 `TestCandidateEmails_RosterMatchesSeed` ·
+      fix#3 `TestHiringFunnelSeeder_Funnel` (1/candidate, ~8/position, min 8 >= floor 6) ·
+      fix#4 `TestPhotoAvatarForName_GenderMatched` + `TestHeroAvatar_MenuMatchesProfileAndGender`
+- [~] Fresh LOCAL demo bring-up — **BLOCKED by the local Docker environment** (`--purge` removed the working demo's
+      images → cold full rebuild → ENOSPC → `builder prune` evicted the go-build cache → ~35-min cold recompiles +
+      `buildx` wedges under host CPU contention). Root-caused + fixed the demopatch **G6 refusal** (consumption clone
+      + registry `type:demo` row). Bring-up re-run in progress from the consumption clone @ M227.
+- [ ] Hiring coverage sweep + playthrough GREEN — **routed to M228 "second night"** (the billion live-render
+      re-prove on a clean VM; Fate-2, already planned). See decisions.md D5.
+- [x] Commit the re-prove record (docs + decisions)
 
 ## Cross-cutting
 - [ ] Docs: `corpus/services/hiring.md` + specs updated (Phase 5)
