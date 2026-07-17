@@ -679,6 +679,21 @@ seeders build the recruiter surface (both DAG level 2, `depends=[org users conte
   `organization_sim_invitation_links` (child-first); the session pair reuses the already-reset
   `jobsimulation.sessions` + `local_jobsimulation_sessions`.
 
+**Hiring-org believability (v2.4 "casting call" M227 "the notes" — seed/content only, 0 platform edits).** Three
+corrections make the hiring org *read* as real: **(#M227-D1) hiring-only content** — the generic workforce activity
+seeders (`PersonaSeeder`, `ActivitySeeder`, `JobsimSessionsSeeder`, `SkillpathSessionsSeeder`, `AssignmentsSeeder`,
+`HeroActivitySeeder`) **skip a hiring org** via the shared `hiring_scope.go` `IsHiringOrg()` guard, so its *entire*
+simulation footprint is the HiringFunnel's HIRING-typed sims and the recruiter's AI-Simulations list (fed by the
+`local_jobsimulation_sessions` mirror) shows **hiring-only** rows — no training/assessment leakage. The candidate
+heroes' usable profile then comes from the HiringFunnel `/home` assignment + scored positions, not the (admin-gated,
+unreachable) verified-skill chain, so the skip loses nothing visible. **(#M227-D2) external candidate emails** — the
+email domain is keyed on **role**, not story: a `candidate` gets a deterministic **external** consumer domain
+(gmail/outlook/proton/icloud/…), only employees (admins/recruiters) keep `@meridian-talent.com`. Single-sourced
+through `emailForMember` (called by both `users.go` and `roster.go`) so the invariant **login email ==
+`public.users.email` == Clerkenstein roster email** holds by construction (heroes Cara/Cody included). **(#M227-D4)
+gender-consistent avatars** apply to **all** orgs — see
+[`profile-completeness-spec.md`](profile-completeness-spec.md#how-m44-maps-to-the-seeding-surfaces-the-build-summary).
+
 ## The presenter cockpit (M38)
 
 > **The cockpit UX is now specced standalone in [`cockpit-spec.md`](cockpit-spec.md) (v1.10 "method acting"

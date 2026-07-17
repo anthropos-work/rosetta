@@ -468,3 +468,11 @@ it). DAG-ordered at level 2 (`hiring-config`/`hiring-funnel` after org/users/con
 render proof + cockpit heroes + the Clerkenstein `publicMetadata.isHiring` wiring are M224. 17 net-new unit
 tests (the mirror-trap fence RED-proven), full suite green, `go vet`/`gofmt` clean, 0 platform-repo edits.
 Code-of-record: `rosetta-extensions` @ `main` (tagged when v2.4 closes).
+**v2.4 "casting call" M227 "the notes" — believability corrections (seed/content only, 0 platform edits):** the
+hiring org reads **hiring-only** (the generic activity seeders skip a hiring org via `hiring_scope.go`'s
+`IsHiringOrg()` guard, #M227-D1), candidates get **external** consumer-domain emails keyed on **role** (only
+employees keep the org domain, single-sourced through `emailForMember` so login == `public.users` == roster,
+#M227-D2), each candidate auditions on **one** position (~8/position, the gate retuned `≥40 → ≥6`, #M227-D3), and
+avatars are **gender-consistent** across all orgs (#M227-D4). Detail:
+[`demo/stories-spec.md`](demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel) +
+[`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).

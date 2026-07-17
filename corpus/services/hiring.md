@@ -235,6 +235,13 @@ shared `urls.ts` patches (the Studio-eject kill) — see [`../ops/demo/demopatch
 § the four hiring-image patches, and the cockpit trio in
 [`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § the hiring vantage.
 
+**Believability (v2.4 M227 "the notes", seed-only).** The recruiter's AI-Simulations list reads **hiring-only** — the
+generic workforce activity seeders skip a hiring org (`hiring_scope.go` `IsHiringOrg()`, #M227-D1), so its whole sim
+footprint is these 5 HIRING sims (no training/assessment leakage into the mirror the list groups by). Candidates read
+as **outside applicants**: emails are keyed on **role** → an external consumer domain (gmail/outlook/…), only
+admins/recruiters keep `@meridian-talent.com` (#M227-D2). See
+[`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel).
+
 ## Cross-references
 
 - The frontend split that hosts the surface: [`next-web-app.md`](next-web-app.md) (Workforce `apps/web` vs Hiring

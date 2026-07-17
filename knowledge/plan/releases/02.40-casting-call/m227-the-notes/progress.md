@@ -48,9 +48,81 @@ Section checklist. Check off tasks as they land; commit after each section.
 - [x] Commit the re-prove record (docs + decisions)
 
 ## Cross-cutting
-- [ ] Docs: `corpus/services/hiring.md` + specs updated (Phase 5)
-- [ ] 0 platform-repo edits verified
-- [ ] Pre-existing unrelated working-tree changes untouched
+- [x] Docs: `corpus/services/hiring.md` + specs updated — fix #3 (gate retune) landed during build; **fixes #1/#2/#4
+      mechanisms blended at close Phase 5** (hiring-only #M227-D1 + external emails #M227-D2 into `stories-spec.md`
+      + `seeding-spec.md` + `hiring.md`; gender avatars #M227-D4 into `profile-completeness-spec.md`)
+- [x] 0 platform-repo edits verified (all branch changes under `corpus/` or `knowledge/`; rext tooling in its own repo)
+- [x] Pre-existing unrelated working-tree changes untouched (`.gitignore` + `_email-assets/*.png` never staged)
+
+## M227: Final Review
+
+_Close-milestone review (2026-07-17). Deterministic suites GREEN; build+harden already did the deep code/test review._
+
+### Scope
+- [x] Section 5 live re-prove → **Fate 2 → M228 "second night"** (already planned; M228 exit gate covers the
+      corrected-data live render). Deferral audit **YELLOW** — `audit-deferrals/deferral-audit-2026-07-17-m227-close.md`.
+
+### Code Quality
+- [x] go vet clean (stack-seeding); 13 packages green; no dead code / boundary issues beyond harden's documented residuals.
+
+### Documentation (Phase 3/5 — the one real finding)
+- [x] Fix #1 hiring-only scoping (#M227-D1) blended → `stories-spec.md` + `seeding-spec.md` + `hiring.md`
+- [x] Fix #2 external candidate emails (#M227-D2) blended → `stories-spec.md` + `seeding-spec.md` + `hiring.md`
+- [x] Fix #4 gender-consistent avatars (#M227-D4) blended → `profile-completeness-spec.md` (+ pointers)
+- [x] Cross-ref anchors verified resolvable
+
+### Tests & Benchmarks
+- [x] Flake gate 5/5 (seeders pkg, shuffle, `-count=1`); tsc `stack-verify/e2e` exit 0. Harden added 4 RED-proven fences.
+
+### Decision Triage
+- [x] D1 → blend into `stories-spec.md`/`seeding-spec.md`/`hiring.md` (hiring-only mechanism) — DONE
+- [x] D2 → blend into `stories-spec.md`/`seeding-spec.md`/`hiring.md` (role-keyed external email) — DONE
+- [x] D3 → already blended during build (gate retune, all specs) — verified accurate
+- [x] D4 → blend into `profile-completeness-spec.md` (gender avatars) — DONE
+- [x] D5 (open) → archive as the Fate-2 record (live re-prove → M228); recorded in the deferral audit
+
+## Completeness Ledger (section variant)
+
+Every scope item placed into exactly one three-fate category. No "backlog / follow-up / later" — those aren't fates.
+
+### Done (Fate 1 — landed in this milestone)
+- **S1 — Hiring-only content** (#M227-D1): 6 generic activity seeders skip a hiring org (`hiring_scope.go`);
+  regression-fenced (ZERO generic-activity rows for a hiring org). rext `8ed8791`.
+- **S2 — External candidate emails** (#M227-D2): role-keyed `emailForMember`; login == `public.users` == roster;
+  Cara/Cody external + manifest regenerated. rext `9aa024b`.
+- **S3 — 1 sim per candidate + gate retune** (#M227-D3): round-robin 1 position/candidate (~8/position); compare
+  gate retuned `≥40 → ≥6` EVERYWHERE (Go const · render-probe · playthrough · D1 · M226/M228 gates · 3 corpus docs ·
+  roadmap); mirror pair + closure kept green. rext `877b091` + rosetta docs.
+- **S4 — Gender-consistent avatars** (#M227-D4): name→gender→face-subset, all orgs; Unknown → byte-identical old pick.
+  rext `63c3e8d`.
+- **Close docs (Phase 5)**: fix #1/#2/#4 mechanisms blended into `stories-spec.md` + `seeding-spec.md` + `hiring.md`
+  + `profile-completeness-spec.md` (fix #3 was already documented; verified accurate).
+- **Harden**: 4 RED-proven fences (the load-bearing UsersSeeder population write-path + score clamps + Go↔probe
+  floor-drift). rext `78a3cb2` (test-only).
+
+### Confirmed-covered (Fate 2 — already owned by another milestone of this release)
+- **Section 5 — the LOCAL live full-stack render/coverage/playthrough re-prove on the corrected data → M228
+  "second night"** (already planned in `roadmap.md`; M228's exit gate explicitly covers the corrected-data live
+  render — 1-sim/candidate ≥ floor 6, external emails, matched avatars, hiring-only content). The DATA correctness
+  of all 4 fixes is proven DETERMINISTICALLY here; only the live full-stack render is routed (env-blocked local box).
+  No plan edit needed — M228 owns it. See `audit-deferrals/deferral-audit-2026-07-17-m227-close.md` (DEF-M227-01).
+
+### Annotated (Fate 3 — attached to a release-milestone at close)
+- None new. (Inherited DEF-M226-01 — pre-bind serve reap — was already annotated to the next prove-on-VM run at M226.)
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch — requires user sign-off)
+- None.
+
+### Carried known issues (inherited, out of M227 scope → v2.4 RELEASE close)
+- 8 pre-existing demo-stack test failures (6× `test_cockpit.py` + `test_purge` + `test_reap`) — HEAD-identical,
+  predate v2.4, in files M222–M227 never touched → the release close (test-debt harden pass). Re-confirmed fresh.
+- M204 `assign-and-track.UC1` assign-WRITE declared in-manifest TODO → the release close (declared-TODO fate).
+
+> **Ledger verdict: clean.** All in-scope items landed Fate 1; Section 5's live render is a clean Fate 2 to an
+> already-planned M228. **Zero escape-hatch deferrals → no user sign-off required.** Deferral audit YELLOW.
 
 ## M227: Hardening
 
