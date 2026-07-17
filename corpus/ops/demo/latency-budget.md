@@ -24,8 +24,19 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 ## The gate
 
-**p95 click→ACCESS < 5 s**, for **both** vantages — `maya-thriving` (employee → `/profile`) **and** `dan-manager`
-(manager → `/enterprise/…`) — over **5 consecutive cold reset-to-seed runs**.
+**p95 click→ACCESS < 5 s**, for **three** vantages — `maya-thriving` (employee → `/profile`), `dan-manager`
+(manager → `/enterprise/…`), **and** `rae-recruiter` (recruiter → the **apps/hiring** 2nd app
+`/enterprise/activity-dashboard`; the M226 "opening night" 3rd measured path, v2.4 "casting call") — over
+**5 consecutive cold reset-to-seed runs**.
+
+> **The recruiter vantage is a seat-key + a landing origin, not a new code path.** `measureLogin` is
+> vantage-agnostic: it follows the cockpit CTA's own `redirect_url`, and the `rae-recruiter` CTA lands on the
+> **hiring app** (`:3001+offset`, the TOK-02 two-app demo), which satisfies the same ACCESS predicate
+> (loader-gone + the hero's identity in the header/nav). Add a vantage by adding its `case` to `run-latency.sh`.
+> **Prerequisite (M226 Finding-1):** the hiring app port (`:3001+offset`) must be **fronted over `tailscale
+> serve`** for the recruiter to be reachable from a tailnet peer — it was added to `gen_tailscale_serve.py`'s
+> `UI_BROWSER_FACING` at M226 (it had been reachable only on localhost, so the recruiter vantage was dead
+> cross-machine until then — the M215/M221 "last breakage is cross-machine" lesson). See `tailscale-serve.md`.
 
 ## The per-leg attribution model
 
@@ -77,6 +88,16 @@ tailnet**, which is the presenter's actual vantage._
 | **manager** (`dan-manager` → `/enterprise/…`) | p95 **38.30 s** | **p95 1.40 s** (p50 1.12 s) | **27×** |
 
 **5/5 runs reached ACCESS on both vantages, gate armed.**
+
+**M226 "opening night" — the recruiter 3rd vantage (v2.4 "casting call"), measured live on `billion` from the
+tailnet peer, over 2 clean default cold reset-to-seed cycles:**
+
+| vantage | measured | |
+|---|---|---|
+| **recruiter** (`rae-recruiter` → apps/hiring `/enterprise/activity-dashboard`) | **p95 1.09 s** (cycle 1) / **2.36 s** (cycle 2), p50 ~0.66 s | ACCESS 5/5 both cycles |
+
+The recruiter shares next-web's fast authenticated-shell path — its p95 sits alongside employee/manager, well
+under the 5 s gate. (State the environment: measured from this Mac against `billion.taildc510.ts.net` HTTPS.)
 
 **State the environment with every number.** The *same* defect cost **~6 s on a laptop** and **~112 s on the
 tailnet VM** — which is precisely why four releases of local measurement never saw it. **A latency number without
