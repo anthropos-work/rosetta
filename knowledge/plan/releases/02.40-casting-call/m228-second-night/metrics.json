@@ -7,16 +7,18 @@
   "gate": {
     "metric": "7-condition live billion proof (RETUNED for M227) on a default /demo-up cold reset-to-seed, reproducibly",
     "target": "7/7 across 2 clean cold cycles + the 4 M227-correction render checks GREEN",
-    "current": "5/7 (C1,3,5,6,7 + fix#2 GREEN; C2/C4 blocked by F2/F3; F1 seed FK error)",
-    "distance": "C2 (1-sim/candidate) + C4 (hiring-only) blocked by F2/F3; F1 seed-error to fix; then warm re-measure + 2 clean cold cycles",
+    "current": "F1/F2/F3 FIXED + DB-verified on a live default cold bring-up (casting-call-m228-hiring-scope-fix); UI render re-measure of C2/C3/C4/C5 pending (resume)",
+    "distance": "data-level 7/7 achievable (F1 seed clean, F2 hiring-only 5 sims, F3 1-sim/candidate 8-9/position, C1 5+45); needs UI render re-measure (iter-03 resume) + a 2nd cold cycle (iter-04) for reproducibility",
     "recruiter_p95_ms": 1470
   },
   "iters": {
-    "total": 2,
-    "tiks": 1,
+    "total": 3,
+    "tiks": 2,
     "toks": 1
   },
-  "open_findings": ["F1-succession-fk-seed-error", "F2-hiring-only-training-leak", "F3-1sim-per-candidate-leak"],
+  "rext_code_of_record": "casting-call-m228-hiring-scope-fix",
+  "fixed_findings_db_verified": ["F1-succession-fk-seed-error", "F2-hiring-only-training-leak", "F3-1sim-per-candidate-leak"],
+  "open_render_remeasure": ["C2-ui-render", "C3-ui-render", "C4-reads-hiring", "C5-recruiter-p95-warm"],
   "rext_code_of_record": "casting-call-m227-sections",
   "platform_repo_edits": 0,
   "last_updated": "2026-07-17"

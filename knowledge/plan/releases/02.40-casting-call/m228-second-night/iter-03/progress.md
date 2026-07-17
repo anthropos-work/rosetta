@@ -19,13 +19,23 @@ coverage-protocol.md + latency-budget.md.
 4. **Default cold re-bring-up at the fixed tag** — teardown --purge (RC=0) + rext cutover → `casting-call-m228-hiring-scope-fix`
    (1d97861) + `up-injected.sh 1` (NO FLAGS). **IN PROGRESS at wind-down** (Directus-provision/seed phase).
 
-## Re-measurement — PENDING (resume step)
-The default cold re-bring-up at the fixed tag was launched; the warm re-measure of C2 (1-sim/candidate + hiring-only)
-+ C3 + C4 + C5 + the seed-succeeded (F1) check is the resume step. **This iter is NOT yet closed** (no close section
-until the re-measure lands). See the journal RESUME block.
+## Re-measurement — DB/seed-level VERIFIED; UI render re-measure PENDING (resume step)
 
-## Expected result (the fix's prediction, to verify on resume)
-- **F1:** the seed completes with NO "dev-setdress: seed failed" (succession skips hiring → no FK crash).
-- **F2:** the recruiter's list is HIRING-only (no training sims; the 2 leaked training sims gone).
-- **F3:** each candidate on exactly 1 sim (~8/position); the 17 extra sessions gone → ~40 candidate sessions (down from 62).
-- C1/C3/C5/C6/C7 + fix#2 hold (unchanged by the seed-guard fix).
+**The default cold re-bring-up at `casting-call-m228-hiring-scope-fix` came up GREEN (UP_RC=0, autoverify OK).** All 3
+findings are VERIFIED FIXED at the DB + seed-log level (measured from this Mac against billion's demo postgres):
+
+| finding | iter-02 (broken) | iter-03 (fixed) | verdict |
+|---|---|---|---|
+| **F1** succession FK seed error | `succession rows=0 ERROR FK violation → "seed failed"` | **`succession rows=165 ok`** — clean seed, no "seed failed" | ✅ FIXED |
+| **F2** hiring-only | 7 HIRING + **2 TRAINING** sims (leak) | **SIMULATION_TYPE_HIRING ONLY, 5 sims, 42 sessions** | ✅ FIXED |
+| **F3** 1-sim/candidate | 26×1 + **17×2** sims | **1 sim for ALL 42 candidates**; per-position **8,8,8,9,9** (5 positions, all ≥6) | ✅ FIXED |
+| **C1** counts | 5+45 | **5 admins + 45 candidates** (holds) | ✅ |
+
+`hiring org set-dressed: 5 shared positions + 42 candidate HIRING sessions` (was 62 — the ~20 leaked feedback-mirror
+sessions gone).
+
+**PENDING (resume step):** the WARM UI render re-measure of C2 (recruiter list renders hiring-only ~8/position),
+C3 (Cara/Cody/Rae usable), C4 (reads-as-hiring), C5 (recruiter p95 < 5 s) from this Mac — cold-tailnet-slow, launched
+best-effort at wind-down (see `render-iter03.log`), warm-before-gate per M226 F5. **This iter is NOT yet closed** (no
+close section until the UI render re-measure lands). Then iter-04 = a 2nd clean cold cycle for reproducibility → gate.
+See the journal RESUME block.
