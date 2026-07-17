@@ -3,8 +3,9 @@ milestone: M226
 slug: opening-night
 version: v2.4 "casting call"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-15
+last_updated: 2026-07-17
 depends_on: M222, M223, M224, M225
 exit_gate: "On billion.taildc510.ts.net, a default /demo-up N (no flags) yields, reproducibly on a cold reset-to-seed: (1) the hiring org present, is_hiring=true, exactly 5 managers + 45 candidates; (2) the recruiter hero lands on the comparison surface and sees ≥40 comparable non-junk rows per EACH of the 5 positions; (3) the 2 candidate heroes render usable assessed profiles; (4) the org reads as hiring; (5) p95 click→ACCESS < 5 s for the recruiter vantage (v2.3's gate extended to a 3rd measured path); (6) coexists with the 3 workforce orgs on the cockpit; (7) 0 platform-repo edits."
 iteration_protocol_ref: corpus/ops/verification.md (+ corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/latency-budget.md — a remote-origin cold-reset-to-seed acceptance run, the M215/M221 prove-on-billion lineage)
