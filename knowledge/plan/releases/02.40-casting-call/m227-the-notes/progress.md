@@ -25,13 +25,13 @@ Section checklist. Check off tasks as they land; commit after each section.
 - [x] Tests: 1 session/candidate, even split, minPos>=floor, closure green
 - [x] Commit (rext 877b091 + rosetta docs)
 
-## Section 4 — Gender-consistent avatars
-- [ ] `assets/avatars.go`: gender partition of the 12 faces (F={0,2,4,6,9} M={1,3,5,7,8,10,11}) + a test
-- [ ] `avatar.go`: `photoAvatarDataURIForName(seed, firstName)` + `inferGender` dictionary/heuristic
-- [ ] Thread `firstName` at both call sites (`users.go`, `generated_batch.go`)
-- [ ] Determinism/idempotency preserved; unknown-name fallback honest
-- [ ] Tests: name→gender→face-subset; heroes matched; re-seed byte-identical
-- [ ] Commit
+## Section 4 — Gender-consistent avatars ✅
+- [x] `assets/avatars.go`: gender partition of the 12 faces (F={0,2,4,6,9} M={1,3,5,7,8,10,11}) + build-time fence + test
+- [x] `avatar.go`: `photoAvatarDataURIForName(seed, firstName)` + `gender.go` curated `inferGender` dictionary
+- [x] Thread `firstName` at ALL 3 call sites (`users.go`, `generated_batch.go`, `roster.go`)
+- [x] Determinism preserved; Unknown-name fallback byte-identical to the old full-pool pick
+- [x] Tests: name→gender→face-subset (200 seeds); heroes matched; menu==profile; Unknown byte-identical
+- [x] Commit (rext 63c3e8d)
 
 ## Section 5 — Local re-prove
 - [ ] Tag the M227 rext; bump `.agentspace/rext.tag`; sync consumption
