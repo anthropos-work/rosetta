@@ -3,7 +3,7 @@ milestone: M227
 slug: the-notes
 version: v2.4 "casting call"
 milestone_shape: section
-status: in-progress
+status: archived
 created: 2026-07-17
 last_updated: 2026-07-17
 depends_on: M222, M223, M224, M225, M226
