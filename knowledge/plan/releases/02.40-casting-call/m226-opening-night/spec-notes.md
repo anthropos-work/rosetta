@@ -21,6 +21,16 @@ reads-as-hiring; recruiter p95 click→ACCESS; coexistence with 3 workforce orgs
 ## Latency — the recruiter 3rd vantage
 _p95 click→ACCESS measurement over the tailnet origin; the latency-budget.md fold-in._
 
+**iter-03 (from this Mac → billion, HTTPS, 5 cold runs, gated on fresh-green autoverify.json):**
+- **recruiter (`rae-recruiter` → apps/hiring `/enterprise/activity-dashboard`): reached ACCESS 5/5, p50 0.44 s,
+  p95 1.50 s < 5.0 s gate.** The 3rd measured access path (v2.3: employee 1.46 s / manager 1.40 s).
+- Harness: `run-latency.sh 1 recruiter` — the new `recruiter` vantage (rext `casting-call-m226-serve-hiring`,
+  ee1bdf2). measureLogin is vantage-agnostic; the recruiter's cockpit CTA lands on the hiring app (:3001+offset),
+  and the same ACCESS predicate (loader-gone + hero identity in header/nav) is satisfied by the hiring shell.
+- **Prerequisite (Finding-1):** the hiring app (:3001+offset) had NO `tailscale serve` HTTPS front → the recruiter
+  was unreachable from the peer until `gen_tailscale_serve.py` was taught `("hiring", 3001)`. The latency-budget.md
+  fold-in should note that the recruiter vantage requires the hiring port to be fronted (a demo-path prerequisite).
+
 ## Demo-patch re-prove-at-final-code
 _Whatever M224 pinned, re-proven live (the M221 discipline); any live-only perf pin._
 
