@@ -1,0 +1,21 @@
+{
+  "milestone": "M228",
+  "slug": "second-night",
+  "shape": "iterative",
+  "version": "v2.4 casting call",
+  "status": "in-progress",
+  "gate": {
+    "metric": "7-condition live billion proof (RETUNED for M227) on a default /demo-up cold reset-to-seed, reproducibly",
+    "target": "7/7 across 2 clean cold cycles + the 4 M227-correction render checks GREEN",
+    "current": "0/7",
+    "distance": "not yet measured on billion at casting-call-m227-sections"
+  },
+  "iters": {
+    "total": 1,
+    "tiks": 0,
+    "toks": 1
+  },
+  "rext_code_of_record": "casting-call-m227-sections",
+  "platform_repo_edits": 0,
+  "last_updated": "2026-07-17"
+}
