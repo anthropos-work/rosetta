@@ -329,6 +329,50 @@ Four extensions, all in `stack-seeding/seeders/`:
 - Everything stays `PerStackIsolated` + closure-GREEN. Full reference + the per-vantage rubric:
   [`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).
 
+### The recruiter vantage — the hiring org + candidate-comparison funnel (v2.4 "casting call" M223)
+
+The Stories & Heroes preset ships a **4th org** — a genuine **RECRUITING** org (`narrative: hiring` +
+`is_hiring: true`, story id `hiring` → `blueprint.HiringOrgID()`) distinct from the three Workforce orgs.
+It is the **recruiter vantage**: **5 admins + 45 candidates** (`role_mix ≈ 0.1 admin / 0.9 candidate`,
+size 50, no `member`) audition on the **same 5 positions**, and a recruiter lines them up side by side,
+ranked by score, on the dockerized `apps/web` `/enterprise/activity-dashboard` scoreboard. It is heroless
+at M223 (the recruiter + 2 candidate cockpit seats are M224). Full read-model contract:
+[`../services/hiring.md`](../services/hiring.md).
+
+Two things make it non-obvious — both are M222 findings the seeder is built to honor:
+
+- **The score is a MIRROR table, not `jobsimulation.sessions`.** The scoreboard reads
+  `public.local_jobsimulation_sessions.score` (the `app` IntelligenceManager mirror), NOT
+  `jobsimulation.sessions.score`. So the `HiringFunnelSeeder` writes the **co-written PAIR** per
+  (candidate × position) — `jobsimulation.sessions` (the federated non-null `Session!`) **and** its
+  `public.local_jobsimulation_sessions` mirror (the score source) — exactly like the `PersonaSeeder`'s
+  chain, **not** like the `AIReadinessFunnelSeeder` (which deliberately skips the mirror and scores off
+  frozen snapshots). Seeding only `jobsimulation.sessions` renders an **EMPTY** comparison — the M219/M222
+  render-gate trap. A test RED-proves it (disabling the mirror write fails the fence).
+- **The 5 "positions" are 5 REAL captured `SIMULATION_TYPE_HIRING` sims — no `directus.job_position`
+  replay.** A dedicated **type-aware reader** (`readHiringSimPool`: `directus.simulations WHERE
+  type='SIMULATION_TYPE_HIRING'`) resolves them (the generic `contentref` pool is type-blind); the shared
+  `hiringSimRefs` takes the first 5, used by **both** the `HiringConfigSeeder` (which writes them as the
+  org's `organization_sim_invitation_links` positions — one per (org,sim), bounded) **and** the funnel
+  (candidate session sim_ids), so positions and scores co-derive. The 5 are **withheld from the generic
+  sims pool** (the M219 R-3 disjoint reservation) so a generic activity session can never collide with a
+  position. (`directus.job_position` captured **0** rows and the scoreboard doesn't read it — M222 D4.)
+
+**The funnel shape** (deterministic, measured on the preset): **~90% of candidates are ASSESSED on EXACTLY ONE
+position** — the role they applied for (**v2.4 "casting call" M227 fix #3**; before M227 every candidate took all
+5) — round-robined evenly across the 5 so each position ranks **~8 candidates** (43 assessed of 45 → min 8 / max 9
+per position), the rest **assigned-not-taken** (no scored sessions → absent from the ranked list — the 2nd candidate
+hero's future state, M224). Each candidate has a base **aptitude spread across [30,95]** + a small jitter, so within
+a position the ~8 candidates are **RANKABLE** (a differentiated spread, NOT identical — the M219 anti-flat-arc
+lesson); `completition_status = passed` when score ≥ 60 else `failed`. **The compare gate retuned `≥40 → ≥6`**
+(`hiringComparableFloor`, a small margin below the seeded min of ~8).
+Only `role=candidate` members audition (the 5 admins are recruiters — they read the scoreboard, they don't
+take assessments), and each admin inherits `org:feature:insights` from the **global `p3` admin Casbin
+policy** via its standard `admin` g2 grant (no net-new grant — M223 D1). The funnel writes **zero skill
+refs**, so `datadna measure-closure` stays green trivially. New reset surface:
+`public.organization_sim_invitation_links` (child-first in `resetTables`); the session pair reuses the
+already-reset `jobsimulation.sessions` + `public.local_jobsimulation_sessions`.
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),
@@ -397,3 +441,38 @@ generated data excluded**. It is a PROJECTION of the canonical presets (honesty-
 emitted by `stackseed --manifest-export`, and served by the presenter cockpit's **[Download seed manifest]**.
 Full reference: [`demo/seed-manifest-spec.md`](demo/seed-manifest-spec.md). Code-of-record:
 `rosetta-extensions` @ tag `fit-up-m52`.
+**v2.4 "casting call" M222 "read the room"** lands the **`is_hiring` gate** — the foundation for a **4th story: a
+genuine recruiting org** (the M223 candidate seeder builds on it). The blueprint's `StoryOrg` gains an **`IsHiring
+bool` (yaml `is_hiring`)** field + a **`narrative: hiring`** discriminator, unified through
+`ResolvedStory.IsHiringOrg()` (`= IsHiring || Narrative == "hiring"` — the two signals can't disagree); the
+`OrgSeeder` now threads it into `public.organizations.is_hiring` (**was hardcoded `false`**), the hiring org's
+deterministic id is reserved (`blueprint.HiringOrgID()` = `StoryOrgID("hiring")`), and the org-type is surfaced in
+the auditable manifest (`manifest.Org.IsHiring`, `omitempty` — so every existing preset stays byte-identical). **The
+GATE only** — no HiringSeeder/funnel (M223), no cockpit hero + no Clerkenstein `publicMetadata.isHiring` wiring
+(M224). Why it matters: the recruiter **candidate-comparison read-model** requires `is_hiring=true`, and its score
+renders from the MIRROR table **`public.local_jobsimulation_sessions.score`**, NOT `jobsimulation.sessions.score`
+(the M219-class render-gate trap). The full model — the dual-write, the read-path, the seeder-output write-set —
+is [`../services/hiring.md`](../services/hiring.md). Code-of-record: `rosetta-extensions` @ `main` (the M222 S2
+gate commit; tagged when M223 consumes it).
+**v2.4 "casting call" M223 "casting the ensemble"** builds the recruiter vantage on the M222 gate — the **4th
+story (Meridian Talent, 5 admins + 45 candidates)** + **two net-new seeders**: **`HiringConfigSeeder`** (the
+org's 5 shared positions = 5 real captured `SIMULATION_TYPE_HIRING` sims via the type-aware `readHiringSimPool`,
+written as `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored
+`SIMULATION_TYPE_HIRING` session PAIR — `jobsimulation.sessions` + the `local_jobsimulation_sessions` **MIRROR**
+the scoreboard reads — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
+SOME assigned-only, a differentiated score spread).
+The 5 positions are **disjoint-reserved** from the generic sims pool (M219 R-3); the funnel writes **0 skill
+refs** (closure green trivially); the admins inherit `org:feature:insights` from the global `p3` admin policy
+(no net-new grant). No `directus.job_position` replay (M222 D4 — 0 rows captured; the scoreboard doesn't read
+it). DAG-ordered at level 2 (`hiring-config`/`hiring-funnel` after org/users/content). **Seeder only** — the
+render proof + cockpit heroes + the Clerkenstein `publicMetadata.isHiring` wiring are M224. 17 net-new unit
+tests (the mirror-trap fence RED-proven), full suite green, `go vet`/`gofmt` clean, 0 platform-repo edits.
+Code-of-record: `rosetta-extensions` @ `main` (tagged when v2.4 closes).
+**v2.4 "casting call" M227 "the notes" — believability corrections (seed/content only, 0 platform edits):** the
+hiring org reads **hiring-only** (the generic activity seeders skip a hiring org via `hiring_scope.go`'s
+`IsHiringOrg()` guard, #M227-D1), candidates get **external** consumer-domain emails keyed on **role** (only
+employees keep the org domain, single-sourced through `emailForMember` so login == `public.users` == roster,
+#M227-D2), each candidate auditions on **one** position (~8/position, the gate retuned `≥40 → ≥6`, #M227-D3), and
+avatars are **gender-consistent** across all orgs (#M227-D4). Detail:
+[`demo/stories-spec.md`](demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel) +
+[`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).

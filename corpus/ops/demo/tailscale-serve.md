@@ -416,19 +416,27 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
 
 ## The topology — HTTPS everywhere, one MagicDNS host, per offset port
 
-A demo runs its browser-facing services on **offset ports** (`base + N*10000`): next-web `3000+off`, the Cosmo
-GraphQL router `5050+off`, the backend REST `8082+off`, studio-desk `9000+off`, ant-academy `3077+off`, and the
-fake Clerk FAPI `5400+off`. Under `--public-host`, each is reached over **HTTPS on the MagicDNS host at the same
-offset port**:
+A demo runs its browser-facing services on **offset ports** (`base + N*10000`): next-web `3000+off`, **the
+apps/hiring 2nd app `3001+off`** (the TOK-02 two-app hiring demo — v2.4 "casting call"), the Cosmo GraphQL router
+`5050+off`, the backend REST `8082+off`, studio-desk `9000+off`, ant-academy `3077+off`, and the fake Clerk FAPI
+`5400+off`. Under `--public-host`, each is reached over **HTTPS on the MagicDNS host at the same offset port**:
 
 ```
-teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tailscale serve ──▶ http://127.0.0.1:13000  (next-web)
+teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tailscale serve ──▶ http://127.0.0.1:13000  (next-web / apps/web)
+                   ── https://billion.taildc510.ts.net:13001 ──▶  tailscale serve ──▶ http://127.0.0.1:13001  (apps/hiring — the recruiter's 2nd app)
                    ── https://billion.taildc510.ts.net:15050 ──▶  tailscale serve ──▶ http://127.0.0.1:15050  (cosmo)
                    ── https://billion.taildc510.ts.net:18082 ──▶  tailscale serve ──▶ http://127.0.0.1:18082  (backend)
                    ── https://billion.taildc510.ts.net:19000 ──▶  tailscale serve ──▶ http://127.0.0.1:19000  (studio-desk)
                    ── https://billion.taildc510.ts.net:13077 ──▶  tailscale serve ──▶ http://127.0.0.1:13077  (ant-academy, native)
                    ── https://billion.taildc510.ts.net:15400 ──▶  fake-FAPI's OWN TLS (tailscale cert)          (Clerkenstein)
 ```
+
+> **The apps/hiring port (`3001+off`) joined the serve front at M226 "opening night" (Finding-1).** It was added
+> to `gen_tailscale_serve.py`'s `UI_BROWSER_FACING` registry (same UI-tier lifecycle as next-web, dropped under
+> `--no-ui`). Before M226 the hiring 2nd app (added at M224) was **reachable only on localhost** — a recruiter's
+> cockpit CTA lands on `https://<host>:3001+off`, which had **no HTTPS listener over the tailnet**, so the
+> recruiter vantage worked on the dev box yet was **dead cross-machine**. The billion proof surfaced it (the
+> M215/M221 "last breakage is cross-machine" lesson); the default demo bring-up now fronts it.
 
 **Why HTTPS everywhere?** Clerk's `clerk-js` needs a **secure context** (Web Crypto) — a plain-`http://` MagicDNS
 origin is not one, so HTTPS on the app origin is effectively required, not cosmetic (M213-D-SCHEME-1).

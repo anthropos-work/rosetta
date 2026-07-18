@@ -83,6 +83,18 @@ and a `release/{version}` branch is cut.
 > **M212+**, the next free band after v2.1's M211 (reserved Playthroughs futures M205–M207 untouched in vision).
 > Designed from the user's Tailscale-serve briefing + the 5-agent feasibility workflow `wf_bea3be47` (config-only
 > core confirmed).
+> **v2.3 "cue to cue"** → 2026-07-13 (SHIPPED 2026-07-15, tag `v2.3`; the **presenter-speed** field-hardening
+> release — click→ACCESS < 5 s, proven live 8/8 on `billion`; **5 milestones M217 → { M218 ∥ M219 ∥ M220 } → M221**;
+> tooling + docs only). Its **D-DESIGN-4** (*"no hiring org, none will be built"*) is REVERSED by v2.4.
+> **v2.4 "casting call"** → 2026-07-15 (IN DEVELOPMENT, branch `release/02.40-casting-call`; the **recruiter-vantage
+> / hiring-org release** — a **NET-NEW** 4th, HIRING demo org on the cockpit where 45 candidates audition on the
+> same 5 positions and a manager compares them side by side. **5 milestones M222 → M223 → M224 → M225 → M226**,
+> largely sequential; M222 is a HARD go/no-go barrier [escalates if the comparison surface is `apps/hiring`-only];
+> genuine `is_hiring=true`, real replayed positions + realistic funnel, cockpit heroes 1 manager + 2 candidates;
+> tooling + docs only, zero platform-repo edits). **Reverses v2.3's D-DESIGN-4**; **consumes the recruiter/seeder
+> half of the reserved M205**. Designed from a 3-report research workflow; the full proposal is preserved at
+> `releases/archive/02.40-casting-call/design-notes.md`. Takes **M222+**; reserved Playthroughs futures **M206–M207** stay
+> in vision, **M205** consumed-in-intent (tier-gate/ATS half residual).
 
 ---
 
@@ -94,10 +106,17 @@ and a `release/{version}` branch is cut.
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
 > vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
-## v2.4 — carry-forward from v2.3 "cue to cue" (candidate scope, not yet designed)
+## v2.4 "casting call" tail-carry SIDE-TRACK (the 4 v2.3 carries — NOT the hiring theme)
+
+> **v2.4 is now DESIGNED + IN DEVELOPMENT as the recruiter-vantage / hiring-org release** (promoted to
+> [`roadmap.md`](roadmap.md) § Active, 2026-07-15; 5 milestones **M222 → M226**, branch
+> `release/02.40-casting-call`). The hiring theme is **not** carry-forward — it is net-new work that reverses v2.3's
+> D-DESIGN-4. The four items below are a **SEPARATE side-track** that rides the v2.4 window: they **do NOT overlap
+> the hiring theme** and are **not folded into the M222→M226 milestone chain**. They can ride v2.4 as a side track
+> or stay parked for a later release.
 
 The four **non-gate tail carries** from v2.3's final milestone (M221), all
-**KEEP-DEFERRED-WITH-SIGNOFF → v2.4** — **user signed off 2026-07-15** at `/developer-kit:close-release`
+**KEEP-DEFERRED-WITH-SIGNOFF** — **user signed off 2026-07-15** at `/developer-kit:close-release`
 Phase 1b. None was a gate condition of v2.3 (whose proven scope is the DEMO path on `billion`, achieved 8/8);
 each has a concrete structural reason it could not land in-release (a **platform-repo** edit, or **live infra**),
 not "no time." Full disposition + per-item three-fate reasoning:
@@ -122,8 +141,9 @@ not "no time." Full disposition + per-item three-fate reasoning:
   running federated stack. *(Naming: M218's close briefly wrote `PROBE-M221-c3-rerun`; canonical form is
   `PROBE-M218-c3-rerun`.)*
 
-These four are **candidate scope**, not a designed release — a future `/developer-kit:design-roadmap` run decides
-whether v2.4 is these carries, a new user-driven theme, or both, and assigns `Mxyy` numbers at design time.
+These four are a **side-track**, not part of the designed v2.4 hiring release — they ride the v2.4 window as
+opportunistic follow-ups or stay parked; three of the four need **live infra** and one needs a **platform-repo** fix
+(out of the zero-platform-edit wall). They are **not** on the M222→M226 gate path.
 
 ## Future v2 milestones (Playthroughs pillar — NOT yet clustered into a minor version)
 
@@ -133,11 +153,17 @@ real future work, **not** pre-assigned to a minor version (per the `Mxyy` rule, 
 its number at *design* time, not before). They are governed by the same capability spec
 [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md).
 
-- **M205 — Hiring + tier gates.** The **recruiter** vantage: candidate-pipeline journeys (post a role → review
-  applicants → advance a candidate) + the **free→paid entitlement gates** (a flow that's gated by tier proves the
-  gate fires). Needs a **new `HiringSeeder`** (a recruiter persona + a candidate pipeline the seed populates) +
-  a **Stripe test-mode / assertion-boundary** for the paid-tier gate (Stripe is one of the integration third
-  parties with no mirror today — spec §5.8; test-mode is the likely mirror).
+- **M205 — Hiring + tier gates → recruiter/seeder half CONSUMED by v2.4 "casting call" (2026-07-15); the
+  tier-gate + ATS-pipeline half is the RESIDUAL reservation.** The reserved M205 bundled three things: (1) the
+  **recruiter vantage** + a **new `HiringSeeder`**, (2) the **free→paid Stripe entitlement gates**, and (3) an
+  **ATS-style candidate pipeline** (post a role → review applicants → advance a candidate). **v2.4 discharges (1)** —
+  a genuine `is_hiring` org + a `HiringSeeder` (5 admins + 45 candidates on 5 shared positions) + the recruiter
+  comparison vantage in the dockerized `apps/web`. **What STAYS reserved here:** (2) the **Stripe tier gates** (no
+  mirror engine exists — spec §5.8; Stripe test-mode is the likely mirror) and (3) the **ATS candidate-pipeline**,
+  which the platform **deliberately does not model** (*"Applicant Tracking: NOT job posting management… we integrate
+  with ATS"*). v2.4's hiring org is a **comparison-of-assessed-candidates** demo, **not** a hiring-*product* build,
+  so the tier-gate/pipeline half remains genuinely future work (rename candidate: **M205-residual — Tier gates +
+  ATS pipeline**).
 - **M206 — AI-sim mirror tier.** The signature **voice / recording** AI-simulation journey — **voice (LiveKit)**
   + **recording (Chime)** — driven at the **launch / completion assertion boundary** (the flow launched, reached
   an interactive state, the outcome artifact materialized), NOT turn-by-turn. Needs **mirror engines**:
@@ -262,6 +288,7 @@ question (a UX nicety with no owner).
 - **v1.10b "fit-up"** (IN DEVELOPMENT — chosen 2026-06-29 by the user, theatre lineage): the *fit-up* (a.k.a. the get-in) is the technical work of **building and rigging the set correctly in the venue** before the show can run — the crew assembles the world so it holds together under the lights. Exactly this backfill's job: re-ground the demo to current prod and fix the bring-up so the environment stands up cleanly from cold — the technical preparation that must happen **before** v2.0 "opening night" can resume. Sits in the same field-hardening lineage as **v1.3b "dress rehearsal"** (the prior demo-up-issue backfill). Alternatives weighed: "tech rehearsal", "house notes".
 - **v2.2 "panorama"** (IN DEVELOPMENT — chosen 2026-07-11 by the user, over the proposed "on tour" / "road show" / "the transfer" / "guest house"): a *panorama* was a 19th-C immersive spectacle attraction — the whole scene, taken in from any vantage. Names the thesis directly: the whole environment made **viewable from anywhere on the tailnet**, no longer a single-seat show on the host's own `localhost`. Fits the spectacle/entertainment lineage even as it steps outside the strict backstage-of-a-play metaphor.
 - **v2.3 "cue to cue"** (IN DEVELOPMENT — chosen 2026-07-13, over "snap cue" / "stand by"): a *cue-to-cue* is the technical rehearsal where the company **skips straight from cue to cue**, cutting everything in between, purely to prove the transitions land cleanly and fast. Names the thesis exactly: a presenter must **swap from one hero to the next in seconds**, with nothing dead in between. Continues the theatre lineage; the speed sibling of v2.1 "quick change" (the costume change), which is why the codename deliberately echoes it.
+- **v2.4 "casting call"** (IN DEVELOPMENT — chosen 2026-07-15, alternates "open call" / "final callback" / "the shortlist"): a *casting call* is the theatre event where **many candidates audition for the same roles and the director compares them side by side** — a near-exact metaphor for the release (45 candidates, the same 5 positions, a manager comparing them). Continues the stagecraft lineage (body double → set dressing → dress rehearsal → quick change → cue to cue → casting call).
 
 ## RETIRED reservations
 
@@ -272,7 +299,18 @@ question (a UX nicety with no owner).
   `Mxyy` counter still resumes at **M217** and M216 is **retired as a reservation, not built**. (If M220 bloats, the
   dev-side half drops back out — it is v2.3's declared scope-flex lever.)
 
-_Last updated: 2026-07-13 (**v2.3 "cue to cue" DESIGNED + PROMOTED to active development** — the **presenter-speed
+_Last updated: 2026-07-15 (**v2.4 "casting call" DESIGNED + PROMOTED to active development** — the
+**recruiter-vantage / hiring-org release**: a **NET-NEW** 4th, HIRING demo org on the presenter cockpit where 45
+candidates audition on the same 5 positions and a manager compares them side by side. **5 milestones M222 → M223 →
+M224 → M225 → M226**, largely sequential; branch `release/02.40-casting-call` cut from `main`, tag `v2.4`; tooling +
+docs only, zero platform-repo edits. **Reverses v2.3's D-DESIGN-4** (the comparison surface ships in the dockerized
+`apps/web`, not the Vercel-only `apps/hiring`); **consumes the recruiter/seeder half of the reserved M205** (tier-gate
++ ATS-pipeline half residual). Binding user decisions: genuine `is_hiring=true`, real replayed positions + a
+realistic non-degenerate funnel, cockpit heroes 1 manager + 2 candidates (login-only). M222 is a HARD go/no-go
+barrier (escalates if the comparison surface is `apps/hiring`-only). Designed from a 3-report research workflow; full
+proposal preserved at `releases/archive/02.40-casting-call/design-notes.md`. The 4 v2.3 tail carries (F4, BURNIN, F-M220-4,
+PROBE-M218-c3-rerun) ride v2.4 as a **separate side-track**, not the hiring theme. Takes M222+; reserved Playthroughs
+futures M206–M207 stay in vision. Prior: 2026-07-13 (**v2.3 "cue to cue" DESIGNED + PROMOTED to active development** — the **presenter-speed
 release**: a presenter swaps heroes in **under 5 s** on a demo that comes up **green, fully-loaded, and remotely
 reachable by default**. **5 milestones M217 → { M218 ∥ M219 ∥ M220 } → M221**, branch `release/02.30-cue-to-cue` cut
 from `main`, tag `v2.3`; tooling + docs only. A **field-hardening release** triggered by a live 1–2-minute

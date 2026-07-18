@@ -1,87 +1,108 @@
 ---
-active_release: "(between releases) — v2.3 «cue to cue» SHIPPED 2026-07-15 (tag v2.3). The next release awaits /developer-kit:design-roadmap."
-active_branch: "release/02.30-cue-to-cue (release→main merge + the v2.3 tag = /developer-kit:close-release Phase 11, pending)"
+active_release: "(between releases) — v2.4 «casting call» SHIPPED 2026-07-18 (tag v2.4). The next release awaits /developer-kit:design-roadmap."
+active_branch: "main (release/02.40-casting-call merged + deleted; v2.4 tagged)"
 active_milestone: "(between releases)"
-last_closed: "v2.3 «cue to cue» — 2026-07-15 (M221 was the final milestone; the release is closed)"
+last_closed: "M228 — 2026-07-18"
 phase: "between releases — awaiting /developer-kit:design-roadmap"
-last_updated: "2026-07-15"
+last_updated: "2026-07-18"
 ---
 
 # State
 
-**Between releases.** **v2.3 "cue to cue" is CLOSED** (release-level review done, fixes applied, metrics +
-retro + changelog written, deferrals signed off, roadmap rotated). The only step left is the mechanical
-**`release/02.30-cue-to-cue → main` merge + the `v2.3` tag** — **`/developer-kit:close-release` Phase 11's job,
-pending**. No milestone or release is active. **Next: `/developer-kit:design-roadmap`** decides + cuts the next
-release (it owns `active_release`).
+**v2.4 "casting call" SHIPPED 2026-07-18 (tag `v2.4`).** The **recruiter-vantage / hiring-org release** — a NET-NEW
+4th hiring org on the cockpit (Meridian Talent: 45 candidates auditioning on 5 shared positions, compared side by
+side), proven **live on `billion`** (M228 7/7, recruiter p95 click→ACCESS 1.27 s), reading believably (hiring-only,
+external emails, 1-sim/candidate, gender-matched avatars). 7 milestones M222→M228; tooling + docs only, **0
+platform-repo edits**. Full narrative: `roadmap.md` § Done — v2.4.
 
-**Next up:** **`/developer-kit:design-roadmap`** — design the next release (candidate scope: the 4 v2.3 tail
-carries → v2.4, and/or a new user-driven theme). See [`roadmap-vision.md`](roadmap-vision.md) § v2.4.
+## Between releases — awaiting `/developer-kit:design-roadmap`
+
+**No release or milestone is active.** v2.4 is merged to `main` + tagged. **Next: `/developer-kit:design-roadmap`**
+decides + cuts the next release (candidate scope: the v2.4 rext demo-stack tooling-test carries → a hardening pass,
+and/or a new user-driven theme). It owns `active_release`.
+
+## Recently closed (milestones, newest first — max 5)
+
+- **M228 second-night** — 2026-07-18 (iterative, closed-on-gate). The corrected demo re-proven live on `billion`:
+  7/7 conditions, render 5/5 per-sim (8,8,9,9,8, each ≥ floor 6, junk=0), 2 candidate heroes usable, recruiter p95
+  click→ACCESS **1.27 s**, hiring-only, 4 orgs coexist. iter-03 fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder
+  guard gap the deterministic M227 test missed — caught by the LIVE re-prove) + hardened the render probe for the
+  intercepting-route drawer (`RENDER_ONLY_SIM`). rext seeders 96.8% cov, flake 3/3; **0 platform edits**.
+- **M227 the-notes** — 2026-07-17 (section, complete). 4 believability seed/content fixes deterministically proven +
+  write-path-fenced: hiring-only content, external candidate emails, 1-sim/candidate (~8/position, gate retuned
+  `≥40→≥6` everywhere), gender-matched avatars. Fix #1/#2/#4 mechanisms blended into corpus at close. Go funcs
+  1888→**1902**; flake 5/5; 0 platform edits. Live re-prove → M228 (Fate-2). Deferral audit YELLOW.
+- **M226 opening-night** — 2026-07-17 (closed-on-gate). 7-condition hiring gate proven live on `billion`; recruiter
+  p95 1.74 s < 5 s; 5 findings fixed live; Go funcs 1887→1888; 0 platform edits.
+- **M225 dress-the-set** — 2026-07-17 (section, complete). Auto-set-dress guard + coverage gate (3 seats) + 1
+  recruiter playthrough on pt-world Org D.
+- **M224 the-callback** — 2026-07-16 (closed-on-gate). Two-app `apps/hiring` demo; 20/page × 43 comparable; `isHiring`.
 
 ## Recently shipped (releases, newest first — max 3)
 
-- **v2.3 "cue to cue"** — 2026-07-15 (tag `v2.3`). The **presenter-speed** release: **click→ACCESS < 5 s proven
-  live 8/8 on `billion`** over the tailnet, no flags — **login p95 2.11 s / 1.31 s** vs a ~39/38 s baseline (~18×).
-  Demo comes up green, full, remote-default-on; AI-readiness renders filled; `safety.md` Part 3; the ~24-instance
-  **D17** thread told honestly. 5 milestones M217→{M218∥M219∥M220}→M221; tooling + docs only, 0 platform edits.
-  The `billion` demo is **LEFT LIVE**.
-- **v2.2 "panorama"** — 2026-07-12 (tag `v2.2`). External-shareability / Tailscale-serve: dev/demo stacks
-  reachable from another machine on a tailnet over one trusted HTTPS origin. Opt-in default-off (flipped to
-  demo-default-on at v2.3 M220). First live remote Linux-VM deploy.
-- **v2.1 "quick change"** — 2026-07-09 (tag `v2.1`). The skiller-in-app re-ground: re-fit tooling + corpus +
-  stacks to the merged platform (skiller → `app`/`public`, RPC → backend, 4 subgraphs); proved dev-up + demo-up
-  cold.
+- **v2.4 "casting call"** — 2026-07-18 (tag `v2.4`). The **recruiter-vantage / hiring-org** release: a 4th hiring org
+  on the cockpit (45 candidates on 5 shared positions, compared side by side), proven live on `billion` (M228 7/7,
+  recruiter p95 1.27 s), reads believably (hiring-only, external emails, 1-sim/candidate, matched avatars). 7
+  milestones M222→M228; tooling + docs only, **0 platform edits**.
+- **v2.3 "cue to cue"** — 2026-07-15 (tag `v2.3`). The **presenter-speed** release: click→ACCESS < 5 s proven live 8/8
+  on `billion`, no flags — login p95 2.11 s / 1.31 s vs a ~39/38 s baseline (~18×). Demo comes up green, full,
+  remote-default-on. 5 milestones; tooling + docs only, 0 platform edits. The `billion` demo LEFT LIVE.
+- **v2.2 "panorama"** — 2026-07-12 (tag `v2.2`). External-shareability / Tailscale-serve: stacks reachable from another
+  tailnet machine over one trusted HTTPS origin. First live remote Linux-VM deploy.
 
-## Headline numbers (v2.3 close, 2026-07-15)
-- **p95 click→ACCESS (the release's headline gate, set M218, re-proven live at M221 with NO flags):** **2.11 s**
-  (employee `maya-thriving`) / **1.31 s** (manager `dan-manager`) vs the **< 5000 ms** gate, on `billion` over the
-  tailnet, cold reset-to-seed. **Baseline 39.45 s / 38.30 s** (~18×). *A latency number without its environment is
-  not a measurement:* Linux VM, 7.3 GiB RAM, tailnet origin.
-- **Go test funcs:** **1831** (+82 vs v2.2's 1749 by the same `grep -c '^func Test'` method; 0 failures across all
-  6 modules; `go vet` clean).
-- **Python tests:** **1341** (0 fail, 16 skip) via JUnit XML — demo-stack 663 · stack-injection 260 · stack-core
-  182 · dev-stack 122 · stack-verify 114. v2.2 was 668 across 3 sections (the whole tree completes for the first
-  time as of M220).
-- **TS e2e:** **151** (69 stack-verify/e2e + 82 playthroughs/e2e via `playwright test --list`; +27 vs v2.2's 124 —
-  M219's differently-measured 94 is NOT used, so no false 124→94 regression).
-- **Alignment (Clerkenstein Go surface):** **100% / 100% critical (27/27)** — held.
-- **Flake:** **0** (close-release triple-clean 3/3, randomized order). **Platform-repo edits:** **0** (rosetta diff
-  108 files, all docs/planning). **Supply chain:** GREEN — 0 net-new direct deps; the only change is `x/crypto
-  v0.51.0 → v0.52.0` (indirect, landed M218); `govulncheck` clean all 6.
+## Headline numbers (v2.4 M227 close, 2026-07-17)
+- **Go test funcs:** **1902** (+14 vs M226's 1888 — the M227 fences across `hiring_scope_test`, `candidate_email_test`,
+  `gender_test` ×2, `hiring_funnel_test`, and the 4 harden fences in `users_m227_test.go`; all modules `go vet` clean).
+- **M227-touched deterministic suites (re-run GREEN at close):** stack-seeding `go test ./...` OK (13 pkgs) · tsc
+  `stack-verify/e2e` exit 0 · **flake 5/5** (seeders, shuffle, `-count=1`). The 4 fixes are proven DETERMINISTICALLY;
+  the LOCAL live render was env-blocked → M228.
+- **p95 click→ACCESS (the standing gate):** recruiter 1.74 s (M226, 3rd vantage) · employee 2.11 s / manager 1.31 s
+  (v2.3), all vs the < 5000 ms gate. (M228 re-proves it on the corrected demo.)
+- **Inherited (non-milestone) carries:** demo-stack **8 pre-existing fail** (test-debt backlog) + the M204 assign-WRITE
+  declared TODO → both routed to the v2.4 **release close**.
+- **Alignment (Clerkenstein):** **100% / 100% critical** (M227 touched no alignment surface).
+- **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0.** **Supply chain:** GREEN — 0 net-new direct deps.
 
-## D17 — the release's signature hazard (carried into the next release's discipline)
+## D17 — the carried-forward signature hazard (v2.4 discipline)
 
-**D17: *a status artifact that outlives the thing it describes, and is then read as evidence.*** Named at the M218
-close; it bit **~24 times across M217→M221** — and it kept turning inward, **the fences catching themselves**
-(a torn-down stack still reporting "green"; a test named for a check it wasn't running; the exposure fence blind to
-host-native listeners; `run-coverage.sh` re-printing the previous run's numbers; the dev-stack suite's
-"environmental" excuse sitting in this file's own headline numbers for four releases with **one missing env var**
-underneath). **The keeper:** ***a named hazard is not a fence; only an executable probe binds.*** Full arc:
+**D17: *a status artifact that outlives the thing it describes, and is then read as evidence.*** **The keeper:** ***a
+named hazard is not a fence; only an executable probe binds.*** M227 lived it again: the 4 fixes are proven by
+deterministic executable fences (incl. the load-bearing real-`UsersSeeder` population write-path fence that catches a
+silent revert), never by "the seed wrote the rows." Full arc:
 [`releases/archive/02.30-cue-to-cue/release-retro.md`](releases/archive/02.30-cue-to-cue/release-retro.md).
 
 ## Branch model / shipped tags
-**v2.3 CLOSED (awaiting the Phase-11 merge+tag):** `release/02.30-cue-to-cue` cut from `main` (2026-07-13); all 5
-milestone branches `m217/clean-stage … m221/prove-on-billion` merged `--no-ff` and deleted. The `release → main`
-merge + the `v2.3` tag are `/developer-kit:close-release` Phase 11 (pending). **Shipped tags:** **v2.2** `v2.2` ·
-**v2.1** `v2.1` · **v2.0** `v2.0` · **v1.10b** `v1.10.1` · **v1.10** `v1.10` · **v1.9** `v1.9` · **v1.8** `v1.8` ·
-**v1.7** `v1.7` · **v1.6** `v1.6` · **v1.5** `v1.5` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` ·
-**v1.1** `v1.1` · **v1.0** `v1.0`. (Full detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
+**v2.4 M222→M227 CLOSED; M228 REMAINS:** `release/02.40-casting-call` (cut from `main` 2026-07-15); milestone branches
+`m222/read-the-room … m227/the-notes` all merged `--no-ff` into the release branch. **M228 second-night is the last
+milestone; then the `release → main` merge + the `v2.4` tag are `/developer-kit:close-release` Phase 11's job** (the
+USER runs it). rext code-of-record `casting-call-m227-sections` (`63c3e8d`); the `billion` demo LEFT UP. **Shipped
+tags:** **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1** `v2.1` · **v2.0** `v2.0` · **v1.10b** `v1.10.1` · **v1.10**
+`v1.10` · **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.3b** `v1.3.1` · **v1.3** `v1.3`
+· **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`. (Full detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
 ## Standing backlog (unscheduled, cross-release)
-- **v2.3 tail carries → v2.4 (non-gate; user signed off 2026-07-15 at close-release; landing spot
-  [`roadmap-vision.md`](roadmap-vision.md) § v2.4):** **F4** (academy grid renders 0 cards — fix is in the
-  `ant-academy` **platform repo**, out of zero-platform-edit scope) · **BURNIN-M221-dev-public-host** (dev-path
-  live burn-in) · **F-M220-4** (academy re-run on a live public-host demo) · **PROBE-M218-c3-rerun** (router-403
-  re-check) — the last three all need **live infra**.
-- **Plan hygiene → next close-release:** `metrics-history.md` still lacks **v2.0 + v2.2** rows (the v2.3 row landed
-  at this close); no release-scope deferral audit exists for v2.1 or v2.2.
+- **Test-debt + declared TODO (carried, non-gate; routed to the v2.4 RELEASE close):** (a) **8 pre-existing demo-stack
+  failures** — 6 × `test_cockpit.py` (4 removed-academy-CTA + 2 v2.3.1 overlay-JS) + `test_purge` + `test_reap`;
+  HEAD-identical, in files M222–M227 never touched, predating v2.4 → a future demo-stack test-debt harden pass; (b) the
+  **M204 `assign-and-track.UC1` assign-WRITE** declared in-manifest `unimplemented` build-reference gap → its
+  declared-TODO fate at release close. Re-confirmed fresh at M225 + M226 + M227.
+- **M226 Finding-3 (Fate 3, non-gate-blocking):** the **pre-bind serve reap** (clear stale `tailscale serve` fronts on
+  offset ports before bind) — a bring-up-path change on a **live-only** surface needing a live re-prove;
+  **self-resolves in the default flow** → a follow-up build-iter / **M228** (the next prove-on-VM). DEF-M226-01.
+- **v2.3 tail carries → v2.4 side track (non-gate; signed off at v2.3 close-release):** **F4** (academy grid renders 0
+  cards — fix is in the `ant-academy` **platform repo**, out of zero-edit scope) · **BURNIN-M221-dev-public-host** ·
+  **F-M220-4** · **PROBE-M218-c3-rerun** (the last three need live infra). Parked; not folded into a milestone chain.
+- **Plan hygiene → next close-release:** `metrics-history.md` still lacks **v2.0 + v2.2** rows.
 - **Older, still unscheduled:** DEF-M10-01 (cloud SnapshotStore / S3 blob bytes), DEF-M21-01 (`replayCmd` hermetic
-  test), CAVEAT-1 (clean-box literal full `/dev-up`), M314b (prod frozen-read hydration — a prod-team follow-up).
-  Reserved **Playthroughs futures** M205–M207 stay in vision. All tracked in
+  test), CAVEAT-1 (clean-box literal full `/dev-up`), M314b (prod frozen-read hydration). Reserved **Playthroughs
+  futures** M206–M207 stay in vision; **M205**'s tier-gate/ATS half is a residual vision reservation. All tracked in
   [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-15 (v2.3 "cue to cue" CLOSED via /developer-kit:close-release — docs re-synced [academy
-loopback-bind LANDED, remote-flip contradiction fixed], 4 tail carries signed off → v2.4, release metrics + retro +
-dependencies.lock + CHANGELOG written, triple-clean 3/3, roadmap rotated to Done + release dir archived, state
-rotated to between-releases. The release→main merge + the `v2.3` tag remain /developer-kit:close-release Phase 11.
-The `billion` demo is LEFT LIVE. **NEXT: /developer-kit:design-roadmap.**)_
+_Last updated: 2026-07-17 (**M227 "the notes" CLOSED** via /developer-kit:close-milestone — section; merged `--no-ff`
+into `release/02.40-casting-call`. The 4 believability seed/content fixes + gate retune `≥40→≥6`, all proven
+DETERMINISTICALLY + write-path-fenced; fix #1/#2/#4 mechanisms blended into corpus at close [#M227-D1/#M227-D2/#M227-D4].
+Go funcs 1888→**1902**, flake **5/5**, tsc exit 0, **0 platform-repo edits**. Deferral audit **YELLOW** [1 new single
+Fate-2: the LOCAL live-render re-prove → M228; 2 inherited carries → release close]. Section 5's live render was
+environment-blocked → **M228 "second night"** (the corrected-demo billion re-prove, already planned). rext
+code-of-record `casting-call-m227-sections` [`63c3e8d`]; the `billion` demo LEFT UP. **NEXT: M228 second-night → then
+the USER's /developer-kit:close-release** — the `release → main` merge + `v2.4` tag are the USER's to run.)_

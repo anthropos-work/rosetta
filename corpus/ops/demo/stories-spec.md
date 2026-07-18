@@ -624,6 +624,76 @@ persona green, frontier-exhausted, on a fresh `/demo-up` (rext `fit-up-m51`). Cl
 AI-readiness skills resolve through the same taxonomy resolver, so the seed-side closure gene proves 0 dangling
 refs across all 3 orgs.
 
+## The hiring org — the 4th story (v2.4 "casting call" M222 gate / M223 seed)
+
+The 4th story is a **genuine recruiting org** (`is_hiring=true`) that demonstrates the **recruiter
+candidate-comparison scoreboard** — `/enterprise/activity-dashboard → AI-Simulations → [simId]`, one row per
+candidate who took a hiring simulation, ranked by a comparable score. Unlike the three Workforce orgs
+(admin/member), it is **~5 `admin` + 45 `candidate`, no `member`**; its "positions" are **5 real captured
+`SIMULATION_TYPE_HIRING` sims** (real content, zero synth — **no `directus.job_position` replay**, per M222 BA-6).
+
+**M222 "read the room" lands the GATE only**: the blueprint's `StoryOrg.IsHiring` (yaml
+`is_hiring`) field + the **`narrative: hiring`** discriminator (unified through `ResolvedStory.IsHiringOrg()`), the
+`OrgSeeder` thread into `public.organizations.is_hiring` (was hardcoded `false`), and the reserved deterministic
+`blueprint.HiringOrgID()` (`= StoryOrgID("hiring")`). **M223 "casting the ensemble" (this milestone)** adds the
+4th story + the two seeders below. **M224 "the callback"** adds the cockpit hero seat (1 recruiter + 2
+candidates) + the Clerkenstein `publicMetadata.isHiring` wiring (the browser re-skin's client-side half of the
+dual-write).
+
+> **The render-gate trap (why the read-model is documented before the seeder).** The scoreboard's score renders
+> from the MIRROR table **`app.public.local_jobsimulation_sessions.score`**, **NOT** `jobsimulation.sessions.score`.
+> Seeding only `jobsimulation.sessions` yields a scoreboard that renders its chrome with every score blank — the
+> same **render-gate-bypasses-the-seed** class M219 hit with AI-readiness. Full read-model + write-set contract:
+> [`../../services/hiring.md`](../../services/hiring.md).
+
+### The M223 hiring chain — two seeders (`hiring-config` + `hiring-funnel`)
+
+The 4th story is **heroless at M223** (`stories.seed.yaml` `id: hiring`, Meridian Talent, size 50, `role_mix
+0.1 admin / 0.9 candidate` → 5 admins + 45 candidates); its cockpit trio materializes at M224. Two net-new
+seeders build the recruiter surface (both DAG level 2, `depends=[org users content]`):
+
+- **`HiringConfigSeeder`** — resolves the org's **5 shared positions** and writes them as
+  `organization_sim_invitation_links` (one per (org, sim); the table's `UNIQUE(simulation_id,
+  organization_id)` makes it a bounded 5/org, no balloon — folding in the "optional invitation links" scope).
+  The positions are **5 REAL captured `SIMULATION_TYPE_HIRING` sims**, resolved by a **type-aware reader**
+  `readHiringSimPool` (`directus.simulations WHERE type='SIMULATION_TYPE_HIRING'` — the generic `contentref`
+  pool is type-blind; the `readAIReadinessSkillPool` precedent). The shared `hiringSimRefs` takes the first 5
+  and is used by **both** seeders so positions and scored sessions **co-derive**. The 5 are **withheld from the
+  generic sims pool** (`withoutIDs`, before the reserve tail) so no generic activity session can collide with a
+  position (the M219 R-3 disjoint reservation). No `directus.job_position` replay — 0 rows captured, unread by
+  the scoreboard (M222 D4).
+- **`HiringFunnelSeeder`** — the candidate-assessment funnel. **CRITICAL: it writes the MIRROR pair like the
+  `PersonaSeeder` does (`persona.go` — `jobsimulation.sessions` + the `public.local_jobsimulation_sessions`
+  mirror), NOT the `AIReadinessFunnelSeeder` shape** (which deliberately skips the mirror and scores off frozen
+  `ai_readiness_snapshots`). The recruiter scoreboard reads the score from the mirror, so skipping it renders an
+  EMPTY comparison — a test **RED-proves** the fence. Per (candidate × position) it co-writes the pair,
+  org-scoped, `sim_type='SIMULATION_TYPE_HIRING'`, G14-valid enums. **The funnel shape** (measured on the
+  preset): **~90% of candidates ASSESSED on EXACTLY ONE position** — the role applied for (**M227 fix #3**; before
+  M227 every candidate took all 5) — round-robined evenly across the 5 so each ranks **~8 candidates** (43 assessed
+  of 45 → min 8 / max 9 per position), the rest **assigned-not-taken** (no scored sessions — the 2nd candidate
+  hero's future state, M224). Each candidate has a base **aptitude ∈ [30,95]** + jitter, so within a position the ~8
+  candidates are **RANKABLE** (NOT identical, the M219 anti-flat-arc lesson); `passed` when score ≥ 60 else
+  `failed`. **The compare gate retuned `≥40 → ≥6`** (a small margin below the seeded min of ~8). Only `role=candidate` members audition; the funnel writes **0 skill refs** (closure green
+  trivially). The 5 admins inherit `org:feature:insights` from the **global `p3` admin Casbin policy** via their
+  standard `admin` g2 grant — no net-new grant (M223 D1). New reset surface:
+  `organization_sim_invitation_links` (child-first); the session pair reuses the already-reset
+  `jobsimulation.sessions` + `local_jobsimulation_sessions`.
+
+**Hiring-org believability (v2.4 "casting call" M227 "the notes" — seed/content only, 0 platform edits).** Three
+corrections make the hiring org *read* as real: **(#M227-D1) hiring-only content** — the generic workforce activity
+seeders (`PersonaSeeder`, `ActivitySeeder`, `JobsimSessionsSeeder`, `SkillpathSessionsSeeder`, `AssignmentsSeeder`,
+`HeroActivitySeeder`) **skip a hiring org** via the shared `hiring_scope.go` `IsHiringOrg()` guard, so its *entire*
+simulation footprint is the HiringFunnel's HIRING-typed sims and the recruiter's AI-Simulations list (fed by the
+`local_jobsimulation_sessions` mirror) shows **hiring-only** rows — no training/assessment leakage. The candidate
+heroes' usable profile then comes from the HiringFunnel `/home` assignment + scored positions, not the (admin-gated,
+unreachable) verified-skill chain, so the skip loses nothing visible. **(#M227-D2) external candidate emails** — the
+email domain is keyed on **role**, not story: a `candidate` gets a deterministic **external** consumer domain
+(gmail/outlook/proton/icloud/…), only employees (admins/recruiters) keep `@meridian-talent.com`. Single-sourced
+through `emailForMember` (called by both `users.go` and `roster.go`) so the invariant **login email ==
+`public.users.email` == Clerkenstein roster email** holds by construction (heroes Cara/Cody included). **(#M227-D4)
+gender-consistent avatars** apply to **all** orgs — see
+[`profile-completeness-spec.md`](profile-completeness-spec.md#how-m44-maps-to-the-seeding-surfaces-the-build-summary).
+
 ## The presenter cockpit (M38)
 
 > **The cockpit UX is now specced standalone in [`cockpit-spec.md`](cockpit-spec.md) (v1.10 "method acting"
@@ -720,7 +790,8 @@ label; an unrecognized `jump_to` still works (it's a raw path) with a generic la
 ### Bring it up
 
 ```bash
-# A storytelling demo: DEMO_STORIES=1 seeds the 3-org hero trios, wires the multi-identity fake-fapi, and
+# A storytelling demo: DEMO_STORIES=1 seeds the 4-org world (3 Workforce/AI-readiness hero trios + the M223
+# hiring org), wires the multi-identity fake-fapi, and
 # serves the cockpit. Default-off keeps every existing demo byte-identical (structural seed, single-identity).
 DEMO_STORIES=1 /demo-up 3
 # → the cockpit serves on http://localhost:37700 (7700 + 3·10000). Pick a hero → [Log in as] → her per-role screen.
@@ -739,7 +810,7 @@ stacksnap replay --surface directus --stack demo-N   # the sim templates the ses
 
 # 2. Seed the world. The M34 vertical slice (one hero):
 stackseed --stack demo-N --seed presets/stories-maya.seed.yaml
-#    …or the full multi-org roster (3 orgs × the thriving/struggling/manager trio — M35 two + the M51 AI-readiness org):
+#    …or the full multi-org roster (4 orgs: M35's two Workforce trios + the M51 AI-readiness org + the M223 hiring org):
 stackseed --stack demo-N --seed presets/stories.seed.yaml
 
 # 3. Prove closure (every seeded skill ref resolves in the replayed taxonomy — all orgs):

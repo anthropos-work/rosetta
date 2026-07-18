@@ -1,0 +1,7 @@
+# iter-03 — decisions (intra-iter)
+
+| # | Decision | Rationale | Date |
+|---|----------|-----------|------|
+| D1 | F1, F2, F3 are ONE root-cause class: two Workforce-Intelligence dashboard seeders (Feedback, Succession) write jobsimulation/mirror rows but were left unguarded by M227 fix#1. Fix = add the `skipGenericActivityForHiringOrg` guard to both. | FeedbackSeeder writes `local_jobsimulation_sessions` mirror rows (since M42m) → F2/F3 leak; SuccessionSeeder writes `jobsimulation.interview_extraction_results` FKing JobsimSessionsSeeder's now-skipped hiring sessions → F1 FK crash. M227 fix#1's comment wrongly claimed both "write no jobsimulation/mirror rows". The other WI seeders (MembershipSkills/Tags/TargetRoles/PopulationEvidence) genuinely don't, and MembershipSkills feeds candidate profiles → leave them. | 2026-07-17 |
+| D2 | Skip the FeedbackSeeder ENTIRELY for hiring (not just the mirror write). | The feedback rows FK the mirror session; skipping only the mirror would re-break the M42m org-feedback JOIN. The hiring "Candidates Feedback" surface is not a gate condition, and its M226 data was on WRONG (generic) sims anyway — so skipping is the clean, fix#1-consistent choice. | 2026-07-17 |
+| D3 | Build the fix on authoring HEAD (78a3cb2, the M227 harden) not the consumed tag (63c3e8d). | The harden commit is TEST-ONLY (confirmed: `git diff --name-only 63c3e8d 78a3cb2` = 2 `_test.go` files, no runtime). So HEAD and the consumed tag are runtime-identical; the fix's only runtime delta vs iter-02's billion is the 2 guard lines. | 2026-07-17 |

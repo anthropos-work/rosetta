@@ -1,0 +1,20 @@
+{
+  "release": "v2.4",
+  "codename": "casting call",
+  "closed": "2026-07-18",
+  "milestones": ["M222","M223","M224","M225","M226","M227","M228"],
+  "milestone_close_status": {
+    "M222": "complete", "M223": "complete", "M224": "closed-on-gate",
+    "M225": "complete", "M226": "closed-on-gate", "M227": "complete", "M228": "closed-on-gate"
+  },
+  "platform_repo_edits": 0,
+  "supply_chain": { "npm_vulnerabilities": 0, "new_deps": 0, "verdict": "GREEN" },
+  "tests": {
+    "rext_stack_seeding": { "status": "pass", "coverage_stmts_pct": 96.8 },
+    "rext_playthroughs": { "status": "pass" },
+    "rext_e2e_tsc": "clean",
+    "rext_demo_stack": { "passed": 644, "failed": 14, "note": "14 pre-existing/env-gated carries (6 against-absent-live-clone [M219-era logic] + 6 test_cockpit academy/overlay + test_purge + test_host_prereqs_m215 [M218/M220-era]); NONE v2.4 regressions; rext repo unaffected by the rosetta docs merge+tag" }
+  },
+  "flake_count": 0,
+  "headline": "The recruiter-vantage / hiring-org demo — 45 candidates auditioning on 5 shared positions, compared side-by-side — proven live on billion (M228 7/7, recruiter p95 click->ACCESS 1.27s), reads believably (hiring-only, external emails, 1-sim/candidate, gender-matched avatars). 0 platform-repo edits."
+}

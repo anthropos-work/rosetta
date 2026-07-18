@@ -1,0 +1,27 @@
+{
+  "milestone": "M228",
+  "title": "Second night",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "closed": "2026-07-18",
+  "gate": { "target": "7-condition live billion proof (M227-retuned)", "achieved": "7/7", "distance": 0 },
+  "iters": { "total": 3, "tok": 1, "tik": 2 },
+  "tests": {
+    "rext_stack_seeding_seeders": { "runner": "go test", "status": "pass", "coverage_stmts_pct": 96.8 },
+    "render_probe_tsc": "clean",
+    "flake_gate": "3/3 clean"
+  },
+  "live_proof": {
+    "host": "billion.taildc510.ts.net",
+    "render_gated": "5/5 per-sim (8,8,9,9,8; each >= floor 6; junk=0; 0 eject)",
+    "candidate_heroes": "3/3 (cara-assessed, cody-assigned, rae-recruiter; none ejected)",
+    "recruiter_p95_click_to_access_ms": 1270,
+    "hiring_sessions": 42,
+    "non_hiring_leak": 0,
+    "seed_fk_crash": false
+  },
+  "coverage": { "stack-seeding/seeders": 96.8 },
+  "flake_count": 0,
+  "platform_repo_edits": 0,
+  "notes": "Live-prove milestone. The 4 M227 believability corrections confirmed rendering on billion. C2 render was defeated by a Next.js intercepting-route drawer (only the first sim per page-load is cleanly detected); the probe was hardened to prove each sim as 'the first' (RENDER_ONLY_SIM) for a clean 5/5. iter-03 also fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder guard gap the deterministic M227 test missed, caught by the live re-prove). Reproducibility accepted on tik/tok evidence per user mandate."
+}
