@@ -88,3 +88,47 @@ to the host; `rosetta-demo` reset-to-seed is host-locked there) — and the fixe
 required — this is a shipped-on-gate close, not a closed-incomplete close. iter-04 is NOT scheduled.
 
 **Handler:** `PROVE-M228-close-on-iter03-cold-cycle`.
+
+## Adversarial review (close Phase 2c)
+
+**Scenario — a future mirror/FK-writing seeder silently re-pollutes the hiring org.** The M228 guard
+(`skipGenericActivityForHiringOrg`) is consulted *inside each seeder*; nothing statically forces a NEW seeder to
+consult it. The exact bug M228 fixed (M227 fix #1 missed FeedbackSeeder + SuccessionSeeder) could recur if someone
+adds, say, a new engagement/notification seeder that writes `local_jobsimulation_sessions` mirror rows and forgets
+the guard. **Response:** the risk is pinned two ways — (1) `TestGenericActivitySeeders_SkipHiringOrg` enumerates all
+8 generic seeders with a NEGATIVE assert (0 rows for a hiring org) + POSITIVE control, so any *listed* seeder that
+regresses fails; (2) the `hiring_scope.go` doc-comment states the contract explicitly ("a new mirror-writing /
+session-FK seeder MUST be added to the guard consult-list + the enumerated table"). **Residual risk accepted:** a
+brand-new *unlisted* seeder is not auto-caught by a static test (would need a full-DAG hiring-only integration
+harness with a taxonomy-backed fake — over-engineering for demo tooling that is also live-proven each release on
+billion). The live re-prove IS the backstop: this is precisely how M228 caught the M227 gap. Recorded, not fixed
+further — the enumerated test + in-code contract + live-prove backstop are proportionate.
+
+## GATE OUTCOME LEDGER (close Phase 9-iter) — closed-on-gate
+
+**Gate:** target = the 7-condition live billion proof (retuned for M227) · **achieved = 7/7** · distance = 0 ·
+status = **closed-on-gate**.
+
+| # | condition | achieved |
+|---|---|---|
+| 1 | hiring org, is_hiring, 5 mgr + 45 cand | ✅ cockpit "Meridian Talent 50 people" + DB verify |
+| 2 | ≥6 non-junk rows/EACH of 5 positions, 1 sim/candidate | ✅ per-sim gated 5/5: 8,8,9,9,8 (=42), each ≥6, junk=0 |
+| 3 | 2 candidate heroes usable + external emails + matched avatars | ✅ m224-candidate-heroes 3/3 (Cara/Cody/Rae, none ejected) |
+| 4 | reads as hiring, hiring-only content | ✅ all 5 sims HIRING, 0 training/assessment |
+| 5 | recruiter p95 click→ACCESS < 5 s | ✅ p95 1.27 s (p50 0.45 s) |
+| 6 | coexists with 3 workforce orgs | ✅ Cervato + Northwind + workforce + Meridian on the cockpit |
+| 7 | 0 platform-repo edits | ✅ all rext + corpus |
+
+**Iter ledger:** iter-01 (tok bootstrap — TOK-01 strategy + billion recon) · iter-02 (tik — first corrected-data
+cold bring-up; 5/7, surfaced F1/F2/F3) · iter-03 (tik — root-cause + FIX F1/F2/F3 seeder guards + render-probe
+hardening + the WARM 7/7 UI re-measure). All closed. No orphan iters/commits.
+
+**Routes carried forward:** none (closed-on-gate; no carry-forward.md).
+
+**Protocol evolution:** the "prove-on-billion" pattern held. New finding folded into the protocol's home docs:
+the intercepting-route render behavior (prove each sim as "the first") + the incomplete-guard lesson are recorded
+in `corpus/services/hiring.md` § render path + `hiring_scope.go`.
+
+**Reproducibility:** accepted on the tik/tok break→fix→verify evidence per the user's explicit close-on-cycle
+mandate (see PRAGMATIC-CLOSE-MANDATE). A 2nd cold cycle (iter-04) was NOT scheduled — a fresh billion bring-up is
+host-locked and the fixes are conclusively proven.
