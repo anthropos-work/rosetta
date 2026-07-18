@@ -70,3 +70,21 @@ data (~8/position, external emails, matched avatars, hiring-only) live.
 devops) + verify clean from this Mac, cut billion's rext → `casting-call-m227-sections`, run a default cold
 `up-injected.sh 1` synchronously, then take the FIRST retuned-7-condition + 4-M227-render-check measurement from this
 Mac. Attribute every failing condition to its surface before any fix. Handler: `PROVE-M228-iter02-first-corrected-cold-bringup`.
+
+## PRAGMATIC-CLOSE-MANDATE — 2026-07-18 — close on iter-03's single cold cycle
+
+**Decision (user, explicit via AskUserQuestion):** Close M228 on iter-03's cold-cycle 7/7 proof. Do NOT require
+a 2nd independent cold reset-to-seed (iter-04) for the gate's "reproducibly" clause.
+
+**Rationale.** All 7 gate conditions are MET on the cold-seed billion instance (tag
+`casting-call-m228-hiring-scope-fix`), and all four M227 believability corrections are confirmed rendering live
+(hiring-only 5 sims · external emails · 1-sim/candidate 8,8,9,9,8 · gender-matched avatars). The tik/tok loop
+ALREADY exercised reproducibility in the strongest sense: iter-02's cold bring-up BROKE (F1 FK-crash + F2/F3
+leak), iter-03 FIXED it and the fix was re-verified on a fresh cold bring-up + the full 7/7 UI re-measure. A 2nd
+identical cold cycle (iter-04) would need a bring-up ON the billion VM, which the driver cannot trigger (no ssh
+to the host; `rosetta-demo` reset-to-seed is host-locked there) — and the fixes are conclusively proven.
+
+**Gate status:** MET (7/7 on 1 cold cycle; reproducibility accepted on tik/tok evidence). No `carry-forward.md`
+required — this is a shipped-on-gate close, not a closed-incomplete close. iter-04 is NOT scheduled.
+
+**Handler:** `PROVE-M228-close-on-iter03-cold-cycle`.

@@ -42,6 +42,9 @@ See the journal RESUME block.
 
 ## CLOSE — iter-03 closed-fixed: the WARM UI render re-measure LANDED (7/7 on the cold-seed billion instance)
 
+**Gate:** MET (all 7 conditions on the cold-seed billion instance; the "reproducibly" clause accepted on the
+tik/tok evidence — iter-02 broke, iter-03 fixed + verified — per the user's explicit close-on-this-cycle mandate).
+
 The pending WARM UI re-measure completed from this Mac against the billion cold-reset-to-seed instance
 (tag `casting-call-m228-hiring-scope-fix`), after a render-probe hardening pass (rext
 `casting-call-m228-render-probe-fix`, commit `0670a47`). **All 7 conditions MET:**
