@@ -1,37 +1,30 @@
 ---
-active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15; M222→M226 closed; RE-OPENED 2026-07-17 for M227/M228 believability fixes from live feedback — v2.4 stays OPEN until the demo reads right; the USER runs /developer-kit:close-release on explicit sign-off)"
+active_release: "v2.4 casting call — the recruiter-vantage / hiring-org release (designed 2026-07-15; ALL milestones M222→M228 CLOSED 2026-07-18 — v2.4 is CODE-COMPLETE; the release→main merge + the v2.4 tag are /developer-kit:close-release's job, which the USER runs on explicit sign-off)"
 active_branch: "release/02.40-casting-call"
-active_milestone: "M228 second-night (planned — iterative: the CORRECTED demo re-proven LIVE on billion. M226's 7-condition gate holds on a default /demo-up cold reset-to-seed with the M227 corrections: 1-sim/candidate ≥ retuned floor 6 per position, external candidate emails, gender-matched avatars, hiring-only content)"
-last_closed: "M227 — 2026-07-17"
-phase: "v2.4 RE-OPENED. M222→M227 closed. M228 second-night IN PROGRESS + PAUSED 2026-07-17 (user paused the computer). M228 iter-01 tok + iter-02 (first corrected-data cold bring-up on billion = 5/7 GREEN; fix#2 external emails ✓ live, C1/C3/C5/C6/C7 ✓) + iter-03 FIX committed+tagged (rext 1d97861 / casting-call-m228-hiring-scope-fix): the live run CAUGHT that M227 fix#1 missed 2 seeders (FeedbackSeeder + SuccessionSeeder also write mirror/FK rows) → training-sim leak (F2) + a 2nd session/candidate (F3) + a seed FK crash (F1); both now guarded on skipGenericActivityForHiringOrg, RED-proven. RESUME: default cold re-bring-up on billion at casting-call-m228-hiring-scope-fix → re-measure the 7 conditions FROM THIS MAC (RENDER_GATE_FLOOR=6, warm before gate, billion-safety: one driver/assert-from-peer/never-kill-mid-build) → expect 7/7 → harden-mstone-iters --final → close-milestone M228 → then the USER's /developer-kit:close-release. NOT tagged until user sign-off. Re-invoke: /developer-kit:work-mstone-iters M228."
-last_updated: "2026-07-17"
+active_milestone: "(between milestones — v2.4 code-complete; all milestones M222→M228 closed; awaiting the USER's /developer-kit:close-release)"
+last_closed: "M228 — 2026-07-18"
+phase: "v2.4 CODE-COMPLETE. All 7 milestones M222→M228 closed + merged into release/02.40-casting-call. M228 second-night closed-on-gate 2026-07-18: the corrected (M227) hiring demo re-proven LIVE on billion, 7/7 conditions — render 5/5 per-sim (8,8,9,9,8, each ≥ floor 6, junk=0), 2 candidate heroes usable, recruiter p95 click→ACCESS 1.27 s, hiring-only, 4 orgs coexist, 0 platform edits. iter-03 also fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder guard gap the deterministic M227 test missed — caught by the live re-prove). NEXT: the USER runs /developer-kit:close-release (release→main merge + v2.4 tag) on explicit sign-off. NOT tagged until then."
+last_updated: "2026-07-18"
 ---
 
 # State
 
-**v2.4 "casting call" — M222→M227 CLOSED; M228 "second night" REMAINS, then `/developer-kit:close-release`**
+**v2.4 "casting call" — ALL milestones M222→M228 CLOSED; v2.4 CODE-COMPLETE, awaiting `/developer-kit:close-release`**
 (designed 2026-07-15 via `/developer-kit:design-roadmap`; branch `release/02.40-casting-call` cut from `main`; tag
 will be `v2.4`). The **recruiter-vantage / hiring-org release**: a **NET-NEW** 4th, **HIRING** demo org on the
 presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**,
 distinct from the three workforce orgs. **RE-OPENED 2026-07-17** for believability fixes from live feedback (the demo
-worked on `billion` but didn't fully *read* as real). **M227 "the notes" CLOSED 2026-07-17 (section)**: the **4
-seed/content believability fixes + a gate retune**, all **proven DETERMINISTICALLY** by the unit+regression suite,
-write-path-fenced by harden, **0 platform-repo edits**. **M228 "second night" (iterative) remains** = the corrected
-demo re-proven LIVE on `billion`. **v2.4 stays OPEN until the demo reads right — the `release → main` merge + the
-`v2.4` tag remain `/developer-kit:close-release`'s job; the USER runs it on explicit sign-off.**
+worked on `billion` but didn't fully *read* as real), then **CLOSED OUT 2026-07-18**: **M227 "the notes"** landed the
+4 seed/content believability fixes + gate retune (deterministic), and **M228 "second night"** re-proved the corrected
+demo **LIVE on `billion`** — 7/7 conditions, closed-on-gate. **v2.4 is now code-complete — the `release → main` merge +
+the `v2.4` tag remain `/developer-kit:close-release`'s job; the USER runs it on explicit sign-off.**
 
-## Active milestone — M228 "second night" (planned, iterative)
+## Between milestones — v2.4 code-complete, awaiting `/developer-kit:close-release`
 
-**Goal.** The **corrected** demo re-proven **live on `billion`** — the M226 7-condition gate (now retuned to the
-believable per-position count) holds on a **default `/demo-up N`, no flags, cold reset-to-seed**, with the M227
-corrections rendering: (2) recruiter comparison **≥ the retuned floor (`≥6`, a margin below the seeded ~8/position),
-each candidate on exactly 1 sim**; (3) 2 candidate profiles usable (**external emails, matched avatars**); (4) reads
-as hiring, **hiring-only content**; (5) recruiter p95 click→ACCESS < 5 s; (6) coexists with the 3 workforce orgs; (7)
-0 platform edits. Same billion-safety rules (one driver, no detached on-host scripts, assert from a tailnet peer,
-never kill a mid-build). Iteration protocol: `verification.md` + `coverage-protocol.md` + `latency-budget.md`.
-
-**Depends on M227** (the corrected seed/content, rext tag `casting-call-m227-sections`). The `billion` demo from
-M226 was LEFT UP as the prior live-proof artifact.
+All 7 v2.4 milestones (M222→M228) are closed and merged into `release/02.40-casting-call`. **No milestone is active.**
+The believability re-open is resolved: the corrected hiring demo reads right AND is proven live on `billion` (M228,
+7/7, closed-on-gate 2026-07-18). **Next: the USER runs `/developer-kit:close-release`** — it reviews the full release,
+merges `release/02.40-casting-call → main`, and tags `v2.4`. NOT tagged until then.
 
 ## Active release — v2.4 "casting call" (M222→M227 closed; M228 remains, then close-release)
 
@@ -40,7 +33,7 @@ side, distinct from the three workforce orgs on the cockpit.* **Reverses v2.3's 
 will be built"*): the comparison surface ships in the **dockerized `apps/web`/`apps/hiring`** the demo already builds,
 not a Vercel-only app. **Consumes the recruiter/seeder half of the reserved vision M205.**
 
-**Shape — 7 milestones (RE-OPENED); M222→M227 CLOSED, M228 REMAINS:**
+**Shape — 7 milestones (RE-OPENED); ALL M222→M228 CLOSED:**
 
 - **M222 read-the-room** (`section`) — ✅ DONE 2026-07-15 (GO). Hiring-model spike + `hiring.md` + the `is_hiring`
   gate; the mirror-table trap named (score = `local_jobsimulation_sessions`).
@@ -54,7 +47,9 @@ not a Vercel-only app. **Consumes the recruiter/seeder half of the reserved visi
   default `/demo-up`, no flags; recruiter p95 < 5 s (3rd vantage). The `billion` demo LEFT UP.
 - **M227 the-notes** (`section`) — ✅ DONE 2026-07-17. 4 believability seed/content fixes + gate retune `≥40→≥6`,
   deterministically proven; live re-prove → M228. **0 platform edits.**
-- **M228 second-night** (`iterative`) — ⏭️ **NEXT.** The corrected demo re-proven live on billion (the M226 pattern).
+- **M228 second-night** (`iterative`) — ✅ DONE 2026-07-18 (closed-on-gate). The corrected demo re-proven live on
+  `billion`: 7/7 conditions, render 5/5 per-sim (8,8,9,9,8), 2 heroes usable, recruiter p95 1.27 s. iter-03 also
+  fixed the F1/F2/F3 seeder-guard gap the deterministic M227 test missed (caught by the live re-prove). **0 platform edits.**
 
 **Hard constraints (carried, unchanged):** **zero platform-repo edits** — a platform-source render gate routes to a
 sha-pinned `demopatch` or escalates; all stack-operating tooling lives in `rosetta-extensions` (authored in
@@ -65,6 +60,11 @@ Milestone contracts: [`releases/02.40-casting-call/`](releases/02.40-casting-cal
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M228 second-night** — 2026-07-18 (iterative, closed-on-gate). The corrected demo re-proven live on `billion`:
+  7/7 conditions, render 5/5 per-sim (8,8,9,9,8, each ≥ floor 6, junk=0), 2 candidate heroes usable, recruiter p95
+  click→ACCESS **1.27 s**, hiring-only, 4 orgs coexist. iter-03 fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder
+  guard gap the deterministic M227 test missed — caught by the LIVE re-prove) + hardened the render probe for the
+  intercepting-route drawer (`RENDER_ONLY_SIM`). rext seeders 96.8% cov, flake 3/3; **0 platform edits**.
 - **M227 the-notes** — 2026-07-17 (section, complete). 4 believability seed/content fixes deterministically proven +
   write-path-fenced: hiring-only content, external candidate emails, 1-sim/candidate (~8/position, gate retuned
   `≥40→≥6` everywhere), gender-matched avatars. Fix #1/#2/#4 mechanisms blended into corpus at close. Go funcs
@@ -74,7 +74,6 @@ Milestone contracts: [`releases/02.40-casting-call/`](releases/02.40-casting-cal
 - **M225 dress-the-set** — 2026-07-17 (section, complete). Auto-set-dress guard + coverage gate (3 seats) + 1
   recruiter playthrough on pt-world Org D.
 - **M224 the-callback** — 2026-07-16 (closed-on-gate). Two-app `apps/hiring` demo; 20/page × 43 comparable; `isHiring`.
-- **M223 casting-the-ensemble** — 2026-07-16 (section). 4th hiring story + HiringConfig/HiringFunnel seeders.
 
 ## Recently shipped (releases, newest first — max 3)
 

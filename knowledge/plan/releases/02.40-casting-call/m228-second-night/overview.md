@@ -3,9 +3,9 @@ milestone: M228
 slug: second-night
 version: v2.4 "casting call"
 milestone_shape: iterative
-status: in-progress
+status: archived
 created: 2026-07-17
-last_updated: 2026-07-17
+last_updated: 2026-07-18
 depends_on: M222, M223, M224, M225, M226, M227
 exit_gate: "On billion.taildc510.ts.net, a default /demo-up N (no flags) yields, reproducibly on a cold reset-to-seed, with the M227 corrections rendering: (1) the hiring org present, is_hiring=true, exactly 5 managers + 45 candidates; (2) the recruiter hero lands on the comparison surface and sees ≥ the retuned floor (≥6, a small margin below the seeded ~8/position) comparable non-junk rows per EACH of the 5 positions, each candidate on exactly 1 sim; (3) the 2 candidate heroes render usable assessed profiles with external emails + gender-matched avatars visible; (4) the org reads as hiring, hiring-only content (no training/assessment sims in its surfaces); (5) p95 click→ACCESS < 5 s for the recruiter vantage; (6) coexists with the 3 workforce orgs; (7) 0 platform-repo edits."
 iteration_protocol_ref: corpus/ops/verification.md (+ corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/latency-budget.md — the M226 remote-origin cold-reset-to-seed acceptance run, re-run on the M227-corrected data)
