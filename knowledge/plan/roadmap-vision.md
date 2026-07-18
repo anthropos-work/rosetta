@@ -93,7 +93,7 @@ and a `release/{version}` branch is cut.
 > genuine `is_hiring=true`, real replayed positions + realistic funnel, cockpit heroes 1 manager + 2 candidates;
 > tooling + docs only, zero platform-repo edits). **Reverses v2.3's D-DESIGN-4**; **consumes the recruiter/seeder
 > half of the reserved M205**. Designed from a 3-report research workflow; the full proposal is preserved at
-> `releases/02.40-casting-call/design-notes.md`. Takes **M222+**; reserved Playthroughs futures **M206–M207** stay
+> `releases/archive/02.40-casting-call/design-notes.md`. Takes **M222+**; reserved Playthroughs futures **M206–M207** stay
 > in vision, **M205** consumed-in-intent (tier-gate/ATS half residual).
 
 ---
@@ -308,7 +308,7 @@ docs only, zero platform-repo edits. **Reverses v2.3's D-DESIGN-4** (the compari
 + ATS-pipeline half residual). Binding user decisions: genuine `is_hiring=true`, real replayed positions + a
 realistic non-degenerate funnel, cockpit heroes 1 manager + 2 candidates (login-only). M222 is a HARD go/no-go
 barrier (escalates if the comparison surface is `apps/hiring`-only). Designed from a 3-report research workflow; full
-proposal preserved at `releases/02.40-casting-call/design-notes.md`. The 4 v2.3 tail carries (F4, BURNIN, F-M220-4,
+proposal preserved at `releases/archive/02.40-casting-call/design-notes.md`. The 4 v2.3 tail carries (F4, BURNIN, F-M220-4,
 PROBE-M218-c3-rerun) ride v2.4 as a **separate side-track**, not the hiring theme. Takes M222+; reserved Playthroughs
 futures M206–M207 stay in vision. Prior: 2026-07-13 (**v2.3 "cue to cue" DESIGNED + PROMOTED to active development** — the **presenter-speed
 release**: a presenter swaps heroes in **under 5 s** on a demo that comes up **green, fully-loaded, and remotely

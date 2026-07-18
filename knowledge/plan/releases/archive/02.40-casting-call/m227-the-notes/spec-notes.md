@@ -119,7 +119,7 @@ categorized): **female = face-01,03,05,07,10 (5); male = face-02,04,06,08,09,11,
 
 ## Pre-flight audits — Hiring-only content (section 1)
 **Phase 0b KB-fidelity (audit-kb-fidelity --milestone=M227): GREEN** (2026-07-17). Report:
-`knowledge/plan/releases/02.40-casting-call/m227-the-notes/kb-fidelity-audit.md`. All 6 topics PAIRED, all audited
+`knowledge/plan/releases/archive/02.40-casting-call/m227-the-notes/kb-fidelity-audit.md`. All 6 topics PAIRED, all audited
 claims ALIGNED with current code; no blind areas, no stale load-bearing claims. The `≥40 / all-5 / gender-blind
 avatar / org-domain email` descriptions correctly document TODAY's behavior — M227 revises them as deliverables
 (`overview.md` `Delivers →`). Triples recorded in the Topic Inventory table of the report. Reused for all sections

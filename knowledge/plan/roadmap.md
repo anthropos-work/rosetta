@@ -101,7 +101,7 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## Active — v2.4 "casting call" (IN DEVELOPMENT, designed 2026-07-15, tag `v2.4`)
+## Done — v2.4 "casting call" (SHIPPED 2026-07-18, tag `v2.4`)
 
 **Theme.** *The recruiter's vantage — a 4th, HIRING org where 45 candidates audition on the same 5 positions and a
 manager compares them side by side, distinct from the three workforce orgs on the cockpit.*
@@ -109,7 +109,7 @@ manager compares them side by side, distinct from the three workforce orgs on th
 **Trigger.** A user ask (2026-07-15) to add a **genuine hiring demo org** to the presenter cockpit. Designed from a
 3-report research workflow (platform hiring model · rext Stories & Heroes seeder · cockpit/enterprise integration);
 the full file:line-cited proposal is preserved at
-[`releases/02.40-casting-call/design-notes.md`](releases/02.40-casting-call/design-notes.md).
+[`releases/archive/02.40-casting-call/design-notes.md`](releases/archive/02.40-casting-call/design-notes.md).
 
 ### What the research found
 

@@ -2,6 +2,43 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.4] "casting call" — 2026-07-18
+
+**The recruiter-vantage / hiring-org release.** The presenter cockpit gains a **4th, hiring org** (Meridian Talent)
+where **45 candidates audition on the same 5 positions and a recruiter compares them side-by-side, ranked by score** —
+distinct from the three workforce orgs. Proven **live on `billion`** over the tailnet, and — after a mid-release
+re-open from live feedback — the demo now not only *works* but *reads* as real. Tooling + docs only — **zero
+platform-repo edits.**
+
+### Added
+- A hiring demo org on the cockpit: a recruiter hero (Rae) + 2 candidate heroes (Cara assessed, Cody assigned-only),
+  50 people (5 admins + 45 candidates), the side-by-side candidate-comparison scoreboard (M222–M224).
+- The genuine `apps/hiring` runs as a second offset-port UI container alongside `apps/web` — the real Results
+  comparison surface, no re-skin, 0 platform edits (M224 "two-app demo").
+- A recruiter playthrough + hiring coverage gate on `pt-world` (M225); the 7-condition live billion proof incl.
+  recruiter **p95 click→ACCESS < 5 s** as a 3rd measured vantage (M226).
+
+### Changed
+- **Believability fixes (M227, from live feedback):** the hiring org shows **hiring-only** sims (no training/assessment
+  leak); candidates use **external emails** (gmail/outlook/…) not the org domain; **each candidate auditions on ONE**
+  of the 5 positions (~8/position, was all-5); **avatars are gender-matched** to names. The comparison gate retuned
+  `≥40 → ≥6` rows/position to match the realistic count.
+
+### Fixed
+- **A seed crash + content leak the deterministic tests missed (M228, caught by the live re-prove):** two dashboard
+  seeders (Feedback, Succession) also wrote hidden mirror/FK rows into a hiring org → a training-sim leak + a seed FK
+  crash. Both now skip a hiring org; the regression enumerates all 8 generic seeders.
+- The render probe is now intercepting-route-aware (proves each of the 5 positions independently) — the recruiter
+  scoreboard renders 5/5, 8,8,9,9,8, junk-free, on a cold reset-to-seed.
+
+### Supply chain
+- No new dependencies. `github.com/anthropos-work/ai v1.40.1` unchanged. npm audit: 0 vulnerabilities.
+
+### Known limitations
+- The rext `demo-stack` tooling test suite carries 14 pre-existing/environment-gated failures (need a staged local
+  platform clone; pre-existing academy/overlay/purge tests) — rext tooling debt, not user-facing, routed to a future
+  rext hardening. The delivered v2.4 tooling (seeders, probes) is green + live-proven.
+
 ## [v2.3] "cue to cue" — 2026-07-15
 
 **The presenter-speed release.** A presenter can now **swap from one hero to the next in seconds** — click a

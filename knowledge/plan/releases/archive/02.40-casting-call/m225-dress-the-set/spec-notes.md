@@ -3,7 +3,7 @@
 _Technical detail accumulated during the milestone: file:line maps, command transcripts, measured numbers._
 
 ## Pre-flight audits — S1/S2/S3 (2026-07-16)
-KB-fidelity audit: `knowledge/plan/releases/02.40-casting-call/m225-dress-the-set/kb-fidelity-audit.md` — **YELLOW**
+KB-fidelity audit: `knowledge/plan/releases/archive/02.40-casting-call/m225-dress-the-set/kb-fidelity-audit.md` — **YELLOW**
 (corpus fully aligned; one stale PLAN-doc premise reconciled inline, KB-1). Topic → doc → code triples (for reuse):
 
 | Topic | Knowledge doc | Code path | Status |

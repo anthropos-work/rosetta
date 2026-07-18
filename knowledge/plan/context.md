@@ -93,8 +93,8 @@ the realistic funnel] → **M224** the-callback [`iterative` — cockpit heroes 
 `isHiring` wiring + drive the comparison render to green: ≥40 comparable non-junk rows per each of 5 sims] → **M225**
 dress-the-set [`section` — auto-set-dress `job_position` replay + a hiring coverage manifest + a hiring playthrough]
 → **M226** opening-night [`iterative` — the 7-condition gate live on `billion`, default `/demo-up`, no flags].
-Records under [`releases/02.40-casting-call/`](releases/02.40-casting-call/); full proposal at
-`releases/02.40-casting-call/design-notes.md`. **Next:** **`/developer-kit:build-milestone`** → **M222**.
+Records under [`releases/archive/02.40-casting-call/`](releases/archive/02.40-casting-call/); full proposal at
+`releases/archive/02.40-casting-call/design-notes.md`. **Next:** **`/developer-kit:build-milestone`** → **M222**.
 _Prior:_ **v2.3 "cue to cue" SHIPPED 2026-07-15** (branch `release/02.30-cue-to-cue`, tag `v2.3`). The
 **presenter-speed release** — *a presenter swaps heroes in under 5 seconds, on a demo that
 comes up green, fully-loaded, and remotely reachable by default.* **5 milestones:** **M217** clean-stage [`section`
