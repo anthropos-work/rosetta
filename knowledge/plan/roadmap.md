@@ -5,6 +5,26 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-19** via `/developer-kit:design-roadmap`. **v2.5 "the playbill"** is the **content-vantage
+> release** — two threads on the same mature demo/cockpit machinery, shipped together. **THREAD A** finally fills the
+> **empty ant-academy** grid: it renders 0 cards on a demo not because of a platform bug but because the catalog is
+> **DB-authoritative** (queries the academy subgraph over GraphQL) and a demo neither sets the endpoint nor holds
+> academy rows → `emptyCatalogView()`; the corpus even mis-documented this (`ant-academy.md` still claims *"Backend
+> services: None / static JSON"*), which mis-routed the year-old **F4** carry into the wrong repo. **THREAD B** adds a
+> **2nd "Content stories" cockpit tab** beside "Org stories": sections per **content product** (Simulation · Skill-path
+> legacy · Skill-path new [ant-academy] · AI-labs), each a list of **played sessions** with two login-and-land actions —
+> **as-player** and **as-manager** (where a manager view exists). Sessions are **cloned from real production sessions,
+> anonymized where possible, non-manager-played, re-tenanted into an existing manifest org, and source-pinned by prod
+> session-id** (deterministic — no random-per-reseed). **User decisions (2026-07-19):** the **real customer-session**
+> sourcing is accepted as the user's data-controller call — demos stay **VPN/tailnet-scoped** (not open-internet), and
+> the release **amends `safety.md` Part 3** to document the new posture honestly (anonymized-real, VPN-bounded — no
+> longer a blanket "nothing behind the door"); academy fill is **production-faithful** (no "Draft" chip); AI-labs + the
+> academy content-product section are **scoped by the M231 spike** (likely presence-only / deep-link, given labs' nil
+> client + academy's absent server session store). **8 milestones M229 → M230 → M231 (HARD go/no-go) → M232 → M233 →
+> M234 → M235 → M236**, spike-first; tag **`v2.5`**; branch `release/02.50-the-playbill`. **Tooling + docs only — zero
+> platform-repo edits** (a runtime-computed result page that won't render from a seeded row routes to a sha-pinned
+> demo-patch or escalates). Continues the v2.x `M2xx` scheme at M229.
+>
 > **Designed 2026-07-15** via `/developer-kit:design-roadmap`. **v2.4 "casting call"** is the
 > **recruiter-vantage / hiring-org release** — a **NET-NEW** release that adds a **4th, HIRING demo org** to the
 > presenter cockpit, where **45 candidates audition on the same 5 positions and a manager compares them side by
@@ -85,7 +105,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.2** | **panorama** | The **external-shareability release** — make dev/demo stacks reachable over a **Tailscale** tailnet (run on a Tailscale VM; a teammate browses the demo end-to-end over its MagicDNS name), via a single opt-in host knob + the tailscale-cert HTTPS surface. The re-proposal of the dropped v1.4 Tailscale/ingress seed | M212 ✅ → { M213 ✅ ∥ M214 ✅ } → M215 ✅ (+ opt M216) | ✅ **SHIPPED 2026-07-12 (tag `v2.2`)** (branch `release/02.20-panorama`, designed 2026-07-11; all 4 core milestones done — opt-in default-off, HTTPS-everywhere, demo-first; tooling + docs only, zero platform edits, 0 net-new deps; rext code-of-record `v2.2` = `39e8013`). **M215 proved it live:** the first remote Linux-VM demo over Tailscale, both vantages green from a 2nd machine on a trusted cert, reproducibly on a cold reset-to-seed |
 
 | **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
-| **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 → **M227 → M228** (RE-OPENED for believability) | 🟢 **CODE-COMPLETE — all M222→M228 closed; awaiting `/developer-kit:close-release`** (branch `release/02.40-casting-call`, designed 2026-07-15; **RE-OPENED 2026-07-17** for believability fixes from live feedback). M222 spike [`section`, GO] → M223 seeder [`section`] → M224 render [`iterative`, closed-on-gate] → M225 demo-integration [`section`] → **M226 prove-on-billion [`iterative`, closed-on-gate 2026-07-17]** (the 7-condition hiring gate proven live on `billion`, default `/demo-up`, recruiter p95 < 5 s as the 3rd vantage) → **M227 the-notes [`section`, closed 2026-07-17]** (4 believability seed/content fixes deterministically proven + gate retuned `≥40→≥6`; live re-prove → M228). **M228 second-night [`iterative`, closed-on-gate 2026-07-18]** = the corrected-demo billion re-prove, 7/7 live (render 5/5, heroes 3/3, recruiter p95 1.27 s). Tooling + docs only, **zero platform-repo edits**. v2.4 is now CODE-COMPLETE; the `release → main` merge + `v2.4` tag remain close-release's job (the USER runs it on explicit sign-off) |
+| **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 → **M227 → M228** (RE-OPENED for believability) | 🟢 **CODE-COMPLETE — all M222→M228 closed; awaiting `/developer-kit:close-release`** (branch `release/02.40-casting-call`, designed 2026-07-15; **RE-OPENED 2026-07-17** for believability fixes from live feedback). M222 spike [`section`, GO] → M223 seeder [`section`] → M224 render [`iterative`, closed-on-gate] → M225 demo-integration [`section`] → **M226 prove-on-billion [`iterative`, closed-on-gate 2026-07-17]** (the 7-condition hiring gate proven live on `billion`, default `/demo-up`, recruiter p95 < 5 s as the 3rd vantage) → **M227 the-notes [`section`, closed 2026-07-17]** (4 believability seed/content fixes deterministically proven + gate retuned `≥40→≥6`; live re-prove → M228). **M228 second-night [`iterative`, closed-on-gate 2026-07-18]** = the corrected-demo billion re-prove, 7/7 live (render 5/5, heroes 3/3, recruiter p95 1.27 s). Tooling + docs only, **zero platform-repo edits**. ✅ **SHIPPED 2026-07-18 (tag `v2.4`)** — merged to `main`; the corrected hiring demo proven live 7/7 on `billion` (recruiter p95 click→ACCESS 1.27 s) |
+| **v2.5** | **the playbill** | The **content-vantage release** — TWO threads on the same demo/cockpit machinery. **A:** fill the empty **ant-academy** grid (DB-authoritative catalog; production-faithful demo-fill; corrects the false `ant-academy.md`). **B:** a 2nd **"Content stories"** cockpit tab — sections per content product (Simulation · Skill-path legacy · Skill-path new · AI-labs), each a list of **played sessions** with **as-player / as-manager** login-and-land actions; sessions **cloned from anonymized real prod sessions, non-manager-played, re-tenanted, source-pinned by prod session-id** | M229 → M230 → **M231 (HARD go/no-go)** → M232 → M233 → M234 → M235 → M236 | 🟢 **IN DEVELOPMENT** (branch `release/02.50-the-playbill`, designed 2026-07-19). Spike-first; one combined release. Real-customer-session sourcing accepted (data-controller call); demos **VPN/tailnet-scoped**; **amends `safety.md` Part 3** (anonymized-real, VPN-bounded). Tooling + docs only, **zero platform-repo edits** |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -100,6 +121,177 @@ consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation +
 the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
+
+## Active — v2.5 "the playbill" (IN DEVELOPMENT, designed 2026-07-19, tag `v2.5`)
+
+**Theme.** *Show the platform's content, played.* Two threads on the same mature machinery (the M35 Stories & Heroes
+seeder fleet + the M43 cockpit + the M45 AI-fill engine + the M46 Directus serve-grants + the M202 Playthrough/coverage
+proof harnesses): **A —** fill the empty ant-academy grid so it renders real content the way taxonomy/skill-path do;
+**B —** a 2nd "Content stories" cockpit tab listing **played sessions** per content product, each with a login-and-land
+**as-player** and **as-manager** action, cloned from **anonymized real production sessions**, source-pinned deterministically.
+
+**User decisions baked in (2026-07-19):** one combined release · **real customer-session sourcing** accepted as the
+data-controller's call, demos kept **VPN/tailnet-scoped** (not open-internet), release **amends `safety.md` Part 3** to
+the honest posture (anonymized-real, VPN-bounded) · academy fill **production-faithful** (no "Draft" chip) · AI-labs +
+the academy content-product section **scoped by the M231 spike**.
+
+**Hard constraint (carried, unchanged):** **zero platform-repo edits** — a runtime-computed result page that won't
+render from a seeded row routes to a sha-pinned `demopatch` or **escalates**; all stack-operating tooling lives in
+`rosetta-extensions`.
+
+**Shape — 8 milestones, spike-first, largely sequential:**
+```
+M229 ──→ M230 ──→ M231 (HARD go/no-go) ──→ M232 ──→ M233 ──→ M234 ──→ M235 ──→ M236
+(A: academy)         (B: barrier)          (B: seeder→manifest→tab→prove→prove-live)
+  M229 ∥ M231 research can overlap; M230 must land before M235's academy section
+```
+
+#### M229 — academy content-model re-ground  (`section`, small)
+**Status:** `planned`
+**Goal:** Correct the materially-stale, actively-misleading `ant-academy.md` — document the true DB-authoritative catalog
+model + the demo empty-render root cause — BEFORE any fill code (the KB-fidelity prerequisite that mis-routed F4 for a
+whole release when wrong).
+**Scope — In:** rewrite `corpus/services/ant-academy.md` (remove *"Backend services: None / no GraphQL / static JSON"*;
+document the v0.5.1 M7 DB-authoritative path `page.jsx → resolveCatalogView → getBackendCatalogView → academy subgraph`);
+document WHY a demo grid renders 0 cards (unset `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` + empty app academy tables →
+`emptyCatalogView()`); disambiguate the two "catalog" paths (grid READS app `internal/academy` via GraphQL; `build-catalog.mjs`
+WRITES the unrelated `public/catalog.json` FS index); note the `ACADEMY_SHOW_DRAFTS`/`NODE_ENV=development → mergeDrafts()`
+draft layer; correct the F4 mis-attribution in `frontend-tier.md`.
+**Out:** any code/env change (M230); the Content-stories tab (Thread B).
+**Depends on:** none.  **Parallel with:** M231.  **Complexity:** small.
+**Delivers → `corpus/services/ant-academy.md`** (corrected, DB-authoritative).
+**Open questions:** should `ant-academy.sh` wire `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` to the demo offset router regardless
+of fill strategy? Is the academy subgraph even composed into the demo's offset Cosmo router?
+
+#### M230 — academy demo-fill (production-faithful)  (`iterative`, medium)
+**Status:** `planned`
+**Goal:** Make the demo (and dev) ant-academy home grid render REAL academy content the way taxonomy/skill-path do —
+**production-faithful, no "Draft" chip** (user decision) — closing the year-old F4 carry inside the zero-platform-edit wall.
+**Exit gate:** on a cold `/demo-up`, the academy home grid renders real cards (count ≥ floor) for the employee vantage,
+**no "Draft" chip**, via the real DB-authoritative GraphQL path (or a faithful equivalent), 0 prod-ejects, verified by the
+coverage sweep on a **rendered-card count** (not the M53 port-serves + SSR-title check that let F4 slip).
+**Iteration protocol:** `corpus/ops/verification.md` + `coverage-protocol.md`. The first tik decides the faithful path:
+**Option C** (sha-pinned rext demo-patch restoring the M7 FS-as-published fallback on the ephemeral clone — `demopatch-spec.md`)
+vs **Option B** (a net-new firewalled academy-content snapshot surface, capture→replay the public academy catalog rows into
+the demo app DB + wire the endpoint + compose the subgraph). Draft-layer Option A is **rejected** (visible chip).
+**Out:** any ant-academy platform-repo edit (routes to a demo-patch or escalates); an academy SESSION/progress model
+(does not exist server-side — a Thread-B concern).
+**Depends on:** M229.  **Complexity:** medium (large if Option B forced).
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (corrected F4 attribution + the shipped academy-fill mechanism); +
+(conditional, Option B only) a new academy-content surface in `corpus/ops/snapshot-spec.md`.
+**Open questions:** does prod academy content live in app `internal/academy` as firewallable public rows (needed for Option
+B), and what is its public predicate? Is a demo-patch (Option C) sufficient + revert-clean?
+
+#### M231 — content-stories feasibility spike + result-route map  (`section`, medium — HARD go/no-go)
+**Status:** `planned`
+**Goal:** HARD go/no-go barrier (mirrors v2.4's M222): before building anything, discover the exact per-product player+manager
+result routes, PROVE-BY-RENDER which land from seedable rows vs are runtime-computed-blank, confirm the **prod-session
+sourcing mechanism** (read → pick interesting → pin by prod session-id), catalog public sims by modality, and rule
+AI-labs + the academy section in/out.
+**Scope — In:** enumerate per (product × {player, manager}) the exact result route (sim player `/sim/<slug>/result/<sessionId>`;
+manager `/enterprise/activity-dashboard/<kind>/<id>/<userId>`; hiring `apps/hiring` scoreboard; interview `user_report`/`manager_report`;
+skillpath legacy) + classify each by probe render (renders-from-seed | runtime-computed-blank | needs-demo-patch | no-surface);
+confirm the **db-access read path** can select interesting real prod sessions per type + the **anonymization surface**
+(which fields scrub cleanly, which free-text needs handling) + how to **pin by prod session-id**; catalog captured public
+sims by task modality (confirm ≥2 voice + 1 code + 1 document assessment SOURCES exist); assess AI-labs feasibility (labs-api
+nil) + the ant-academy "session" question.
+**Out:** building the seeder/manifest/tab (M232–M234); any platform edit to make a runtime page render (routes to a demo-patch
+or escalates — decided here).
+**Depends on:** none (parallel to M229/M230).  **Complexity:** medium.
+**Delivers → `corpus/ops/demo/content-stories-routes.md`** (manager-view eligibility matrix + per-product result-route map +
+public-sim-by-modality catalog + AI-labs feasibility verdict + the prod-session sourcing+anonymization contract).
+**Open questions:** does `/sim/.../result/<sessionId>` recompute live (unseedable) or read a persisted row a clone could seed?
+which products actually HAVE a manager result route? is invoking the platform's own session-clone subcommand in-stack acceptable?
+
+#### M232 — session-clone / sourcing seeder  (`section`, large)
+**Status:** `planned`
+**Goal:** Build the seeder that **copies real production sessions, anonymized where possible, re-tenanted into a manifest
+org, non-manager-played, and source-pinned by prod session-id** — the deterministic realization of "clone real sessions."
+**Scope — In:** read the selected real prod sessions (via the `db-access` read path, at authoring time) and reconstruct the
+full seedable result substrate per session in the target org (`jobsimulation.sessions` + `public.local_jobsimulation_sessions`
+mirror + `validation_attempt_results`/`_skill_results`/`_criterion_results` + `actors`/`interactions` transcript +
+`interview_extraction_results.user_report`/`manager_report`), **passed + not-passed** via completion/score bands, all G14-valid
+enums; **anonymize where possible** (structured fields scrubbed; free-text handled per M231's contract); net-new **code**
+(roadrunner) + **document** (upload/PDF) assessment modalities; enforce **owner-is-player-vantage, never a manager seat**;
+**pin the prod source session-id + the anonymization transform** in `seed-generation-manifest.yaml` (deterministic reseed);
+**amend `corpus/ops/safety.md` Part 3** to the honest posture (content-story demos carry anonymized-real session data,
+**VPN/tailnet-scoped**, source-pinned — the "nothing behind the door" guarantee gains a documented, bounded exception).
+**Out:** the manifest projection + cockpit tab (M233/M234); playable voice/Chime/LiveKit recording artifacts (transcript-only,
+assert at boundary); AI-labs sessions unless M231 ruled them feasible; opening demos wider than VPN/tailnet.
+**Depends on:** M231.  **Complexity:** large.
+**Delivers → `corpus/ops/demo/session-clone-spec.md`** (the copy+anonymize sourcing pattern, the VPN-scoped safety argument,
+the source-pin contract, the no-manager-played rule, the type × modality × passed/not-passed matrix) + the `safety.md` Part 3 amendment.
+**Open questions:** reuse existing hero seats as players or mint per-session anonymized player seats (brief leans mint; each
+must map to a real seeded `public.users` row)? are a synthesized/scrubbed transcript + code-submission + document sufficient,
+or must a real recording be playable (blob-mirroring is deferred, DEF-M10-01)?
+
+#### M233 — content-stories manifest + honesty gate  (`section`, medium)
+**Status:** `planned`
+**Goal:** Project a second, auditable `content_products[]` manifest block (peer to `population.orgs[]`) that pins each
+session's prod source deterministically and is honesty-gated so it cannot drift from the seeded sessions.
+**Scope — In:** a `content_products[]` projection (Simulation / Skill-path legacy / Skill-path new / AI-labs) each listing
+pinned sessions with player+manager seat keys, result paths, `has_manager_view`, per-product app-base, and a per-type icon
+key; project it from a preset via `stackseed --content-export` (or a 2nd block in `BuildCockpitManifest`), guarded by a
+`CanonicalFileMatchesProjection`-style test (the D9 single-source discipline); fail-closed resolver when a pinned prod-source
+id doesn't resolve in the replay (no-fabrication); fold pinned sources into the downloadable `seed-generation-manifest.yaml`.
+**Out:** the cockpit render (M234); the seeder (M232).
+**Depends on:** M232.  **Complexity:** medium.
+**Delivers → `corpus/ops/demo/content-stories-spec.md`** (the manifest-schema half).
+**Open questions:** one manifest with a 2nd block + client tab, or a separate `content-manifest.json` + endpoint (better
+preserves D9 + the non-fatal bring-up)?
+
+#### M234 — content-stories cockpit tab  (`section`, medium)
+**Status:** `planned`
+**Goal:** Add the 2nd "Content stories" tab to `cockpit.py` beside "Org stories" — sections-per-content-product, a list of
+played sessions each with per-type icons and TWO login-and-land CTAs (as-player / as-manager, manager omitted where
+`has_manager_view=false`).
+**Scope — In:** a client-side tab toggle in `render_page()` (reuse the shipped `_OVERLAY_JS` pattern; stdlib-only,
+standalone-served); per-product sections rendering the M233 manifest; per-session rows with per-type FontAwesome icons; two
+fake-FAPI deep-link CTAs per session (`?__clerk_identity=<seat>&redirect_url=<base><result-path>`), the `.actions` two-button
+layout + `has_manager_view` omitempty; per-product app-base routing generalizing the `is_hiring`/`hiring_base` switch
+(next-web :3000, apps/hiring :3001, academy :3077); mint/resolve per-session player seats via `roster.go` + Clerkenstein.
+**Out:** any platform/next-web edit; making a runtime-computed result page render (M231's demo-patch/escalation decision).
+**Depends on:** M233.  **Complexity:** medium.
+**Delivers → `corpus/ops/demo/content-stories-spec.md`** (the cockpit-UX half: tabbed model, two-action contract, icon map, base routing).
+**Open questions:** does the academy section deep-link to a content page (post-M230), map onto a skillpath session, or render
+presence-only? confirm the per-(simId,userId) manager drill-down deep-link (M224 deferred it as "optional polish").
+
+#### M235 — prove-it-lands: interesting sessions, player + manager  (`iterative`, large)
+**Status:** `planned`
+**Goal:** Populate the tab with INTERESTING (not boring) real-shaped sessions per the brief and prove every cockpit action
+lands on a non-empty, believable result page.
+**Exit gate:** on a cold reset-to-seed, every in-scope (session × action) logs in on the correct org and lands on a NON-EMPTY
+result page for BOTH player and manager vantages, 0 ejects, with the assessment **2-voice / 1-code / 1-document PASSED** set
+present and each type present in **passed AND not-passed** states; each product either passes or is declared with a documented
+fate (AI-labs feasibility answered explicitly).
+**Iteration protocol:** `corpus/ops/demo/playthroughs.md` + `coverage-protocol.md` — a Playthrough per (session × action) +
+a coverage descriptor asserting non-zero rendered values (turns a blank clone RED — the M219/M222 mirror-table-vs-base-session
+trap). Triage each blank landing to its true read-model; fix in seeder/manifest or route to a demo-patch / escalate.
+**Out:** live-on-billion proof (M236); products M231 ruled out.
+**Depends on:** M234 (+ M230 for the academy section).  **Complexity:** large.
+**Delivers →** none (proof milestone; extends the coverage/playthrough manifests).
+**Open questions:** if `/sim/.../result/<sessionId>` is runtime-blank, is landing "as player" on the seedable
+`/profile/activities`|`/profile/skills` composed outcome acceptable, or is a demo-patch authorized? does not-passed render a
+meaningful result page or blocked/empty?
+
+#### M236 — prove-on-billion  (`iterative`, medium)
+**Status:** `planned`
+**Goal:** Re-prove the whole feature live on the `billion` Tailscale VM (the house pattern that closed M215/M221/M226/M228) —
+both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed, **VPN-scoped**.
+**Exit gate:** both tabs work live on `billion` — Content-stories sessions render real content for player + manager vantages,
+the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click→ACCESS < 5 s, 0 platform edits,
+demo reachable only over the tailnet.
+**Iteration protocol:** `corpus/ops/verification.md` + `tailscale-serve.md`. Same billion-safety rules (one driver, no detached
+on-host scripts, assert from a tailnet peer, never kill a mid-build).
+**Out:** new feature work (built by M235).
+**Depends on:** M235.  **Complexity:** medium.
+**Delivers →** none.
+**Open questions:** none blocking.
+
+### On the reserved M205 (updated 2026-07-19)
+v2.4 discharged the recruiter/seeder half of vision **M205 "Hiring + tier gates."** v2.5 does NOT touch M205's residual
+half (Stripe tier gates + ATS candidate-pipeline) — those stay a vision reservation. v2.5's Content-stories is a **NET-NEW**
+content-vantage pillar, not part of M205.
 
 ## Done — v2.4 "casting call" (SHIPPED 2026-07-18, tag `v2.4`)
 

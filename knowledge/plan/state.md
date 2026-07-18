@@ -1,25 +1,39 @@
 ---
-active_release: "(between releases) — v2.4 «casting call» SHIPPED 2026-07-18 (tag v2.4). The next release awaits /developer-kit:design-roadmap."
-active_branch: "main (release/02.40-casting-call merged + deleted; v2.4 tagged)"
-active_milestone: "(between releases)"
-last_closed: "M228 — 2026-07-18"
-phase: "between releases — awaiting /developer-kit:design-roadmap"
-last_updated: "2026-07-18"
+active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
+active_branch: "release/02.50-the-playbill"
+active_milestone: "M229 academy-content-model-re-ground (planned — section: correct the stale/misleading ant-academy.md to the DB-authoritative catalog model + the demo empty-render root cause, the KB-fidelity prerequisite before any Thread-A code)"
+last_closed: "M228 — 2026-07-18 (v2.4 shipped)"
+phase: "v2.5 designed 2026-07-19 via /developer-kit:design-roadmap; branch release/02.50-the-playbill cut from main; milestone scaffolds created. NEXT: /developer-kit:build-milestone → M229 (∥ M231 spike research can overlap). One combined release, spike-first, 0 platform edits."
+last_updated: "2026-07-19"
 ---
 
 # State
 
-**v2.4 "casting call" SHIPPED 2026-07-18 (tag `v2.4`).** The **recruiter-vantage / hiring-org release** — a NET-NEW
-4th hiring org on the cockpit (Meridian Talent: 45 candidates auditioning on 5 shared positions, compared side by
-side), proven **live on `billion`** (M228 7/7, recruiter p95 click→ACCESS 1.27 s), reading believably (hiring-only,
-external emails, 1-sim/candidate, gender-matched avatars). 7 milestones M222→M228; tooling + docs only, **0
-platform-repo edits**. Full narrative: `roadmap.md` § Done — v2.4.
+**v2.5 "the playbill" — IN DEVELOPMENT** (designed 2026-07-19 via `/developer-kit:design-roadmap`; branch
+`release/02.50-the-playbill` cut from `main`; tag will be `v2.5`). The **content-vantage release** — two threads on the
+mature demo/cockpit machinery: **A** fills the empty **ant-academy** grid (it renders 0 cards because the catalog is
+DB-authoritative and a demo neither sets the GraphQL endpoint nor holds academy rows → `emptyCatalogView()`; the corpus
+mis-documented this); **B** adds a 2nd **"Content stories"** cockpit tab listing **played sessions** per content product
+(Simulation · Skill-path legacy · Skill-path new · AI-labs), each with **as-player / as-manager** login-and-land actions,
+cloned from **anonymized real production sessions**, non-manager-played, re-tenanted, **source-pinned by prod session-id**.
+**User decisions (2026-07-19):** real customer-session sourcing accepted (data-controller call) · demos **VPN/tailnet-scoped**,
+release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
++ academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Between releases — awaiting `/developer-kit:design-roadmap`
+## Active milestone — M229 "academy content-model re-ground" (planned, section)
 
-**No release or milestone is active.** v2.4 is merged to `main` + tagged. **Next: `/developer-kit:design-roadmap`**
-decides + cuts the next release (candidate scope: the v2.4 rext demo-stack tooling-test carries → a hardening pass,
-and/or a new user-driven theme). It owns `active_release`.
+**Goal.** Correct the materially-stale, actively-misleading `corpus/services/ant-academy.md` (it still claims *"Backend
+services: None / static JSON"* — false since v0.5.1 M7, which mis-routed the F4 empty-grid carry into the wrong repo) →
+document the DB-authoritative catalog model + the demo empty-render root cause + the draft-layer mechanism, BEFORE any
+Thread-A fill code. **Delivers →** the corrected `ant-academy.md`. **Parallel with M231** (both research/doc-first, no
+shared code). Next: `/developer-kit:build-milestone` → M229.
+
+## Active release — v2.5 "the playbill" (8 milestones, spike-first)
+
+**Shape:** `M229 → M230 → M231 (HARD go/no-go) → M232 → M233 → M234 → M235 → M236`. M229 ∥ M231 research overlaps;
+M230 (academy fill) must land before M235's academy section. Full milestone designs + the safety/decision record:
+`roadmap.md` § Active — v2.5. **Hard constraint:** zero platform-repo edits (a runtime-computed result page that won't
+render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
