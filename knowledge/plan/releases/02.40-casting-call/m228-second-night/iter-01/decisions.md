@@ -1,0 +1,7 @@
+# iter-01 — decisions (intra-iter)
+
+| # | Decision | Rationale | Date |
+|---|----------|-----------|------|
+| D1 | The billion demo operator is the **devops** user (`ssh devops@billion.taildc510.ts.net`) — docker + sudo groups; the demo workspace is `/home/devops/panorama/stack-demo`. Run all teardown/bring-up tooling as devops; assert from THIS Mac (peer). | `docker ps` as marco returns 0 (no docker-group access — a false "demo down" signal); `docker ps -a` as root/devops shows the 17-container M226 demo UP. The M226 bring-up logs + rext.tag live under `/home/devops/panorama`. | 2026-07-17 |
+| D2 | The substrate cutover is **rext-only** (`casting-call-m226-c2-race-fix` → `casting-call-m227-sections`); no platform-clone / image changes. The 20 cached demo-1-* images stay valid; a re-seed at the new tag applies the 4 fixes. | M227 is pure seed/content tooling (Go seeders run at seed time) — no new demo-patch, no platform-repo edit, no image-baked change. Confirmed by the M227 overview ("Pure tooling; 0 platform-repo edits") + the m227-sections diff being seeders/harness only. | 2026-07-17 |
+| D3 | **NEVER `docker builder prune`** on billion (nor any image/cache prune beyond the demo's own `--purge`). | The M227 LOCAL environment disaster was caused by `docker builder prune` evicting the go-build cache mount → every backend rebuild became a ~35-min cold compile. billion's warm buildkit cache keeps the post-`--purge` rebuild ~10 min (the M226 iter-02 measurement). | 2026-07-17 |

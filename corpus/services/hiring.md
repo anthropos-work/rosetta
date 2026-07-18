@@ -242,6 +242,25 @@ as **outside applicants**: emails are keyed on **role** → an external consumer
 admins/recruiters keep `@meridian-talent.com` (#M227-D2). See
 [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel).
 
+**The M227 fix-#1 guard was INCOMPLETE — caught by the M228 live re-prove.** M227's "skip the generic seeders for a
+hiring org" listed the obvious activity seeders but **missed two mirror/FK writers**, and the gap only surfaced when
+the corrected seed actually ran on `billion` (the deterministic unit test had simply omitted them). **FeedbackSeeder**
+has written `public.local_jobsimulation_sessions` MIRROR rows on GENERIC sims since v1.10 M42m → unguarded it leaked a
+training sim + a 2nd session per candidate into the recruiter's list; **SuccessionSeeder** FKs each member's first
+population session (now skipped for the hiring org) → the FK VIOLATED and the whole seed reported *"failed"*. Both now
+consult `skipGenericActivityForHiringOrg`; the regression enumerates **all 8** generic seeders (#M228 F1/F2/F3). The
+lesson is in-code: **a new mirror-writing / session-FK seeder MUST be added to the guard's consult-list AND the
+enumerated `TestGenericActivitySeeders_SkipHiringOrg` table.**
+
+**The render probe is intercepting-route-aware (M228).** The recruiter comparison drawer
+(`…/@tabs/(.)ai-simulations/[simId]`) is a **Next.js intercepting route**: it mounts as a detectable `.ant-drawer` —
+firing its client `insightsJobSimulationByMemberships` POST + becoming DOM-visible — **only for the FIRST sim clicked
+per page-load**. Later sims in the same session *do* render (server-path RSC, screenshot-proven) but aren't cleanly
+detected. So the render gate proves each of the 5 positions in its **own** run (`RENDER_ONLY_SIM`, each sim as "the
+first") rather than clicking all 5 in one session — a clean automated **5/5** (Talent-Mgr 8, BD-Lead 8, Inside-Sales
+9, Project-Mgr 9, AWS-Security 8; each ≥ floor 6, junk=0, 0 eject). Proven live on `billion` with recruiter p95
+click→ACCESS **1.27 s**. (#M228, render-probe `stack-verify/e2e/tests/render-hiring-comparison.spec.ts`.)
+
 ## Cross-references
 
 - The frontend split that hosts the surface: [`next-web-app.md`](next-web-app.md) (Workforce `apps/web` vs Hiring

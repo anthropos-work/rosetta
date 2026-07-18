@@ -1,0 +1,7 @@
+# iter-02 — decisions (intra-iter)
+
+| # | Decision | Rationale | Date |
+|---|----------|-----------|------|
+| D4 | F2 (hiring-only) + F3 (1-sim/candidate) share a root: a **2nd session-writing path leaks into the hiring org** beyond the HiringFunnelSeeder's 1-session/candidate. Attributed to surface here; the EXACT seeder is iter-03 root-cause. | The 6 obvious generic seeders call `skipGenericActivityForHiringOrg` (guarded); GeneratedBatchSeeder writes profiles but no jobsim sessions; the funnel writes exactly 1/candidate. So a 7th path writes the 17 extra sessions (7 training-typed = F2, 10 hiring-typed = F3's 2nd). Likely pre-existing, EXPOSED by fix#3's 1-per-candidate funnel (M226's 5-per masked it). | 2026-07-17 |
+| D5 | F5 (render C2 5th-sim timeout + C5 first-cold-run miss) is the M226 F5 **cold-tailnet warm-before-gate** class, NOT a demo defect. | The warm C5 re-run reached ACCESS 5/5 at p95 1.47 s; the render C2's first 4 sims rendered clean (9,9,8,8, junk=0). The cold compare-drawer first render (R4 hydration) over the tailnet is slow; the gate reads must be taken WARM (M226 discipline) + with RENDER_TEST_TIMEOUT_MS headroom. | 2026-07-17 |
+| D6 | F1 (succession/interview_extraction_results FK) is a real seed defect to fix, even though hiring seeded fine. | The default cold reset-to-seed must SUCCEED ("dev-setdress: seed failed for demo-1" is a cleanliness defect); the AI-readiness Org C (Northwind) interview surfaces are part of condition 6 "coexists with 3 workforce orgs." Was GREEN at M226. | 2026-07-17 |
