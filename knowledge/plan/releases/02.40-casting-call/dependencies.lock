@@ -1,0 +1,20 @@
+# v2.4 "casting call" — dependency lockfile (close-release Phase 0)
+# Docs+tooling release, 0 platform-repo edits. Surface = rext tooling (Go + TS dev-only).
+# Captured 2026-07-18 at release/02.40-casting-call tip.
+
+## rosetta (this repo)
+# No code dependencies — documentation corpus only (111 files changed, 100% docs).
+
+## rext tooling (anthropos-work/rosetta-extensions @ casting-call-m228-render-probe-fix)
+### Go modules (touched by v2.4)
+stack-seeding: github.com/anthropos-work/ai v1.40.1   # M45 (v1.10) — UNCHANGED in v2.4
+# playthroughs, demo-stack helpers: stdlib + internal modules only
+
+### npm (stack-verify/e2e — DEV-ONLY, no prod deps)
+@playwright/test  ^1.49.0
+@types/node       ^20.19.43
+typescript        ^5.9.3
+# npm audit: 0 vulnerabilities (prod + all)
+
+## Supply-chain verdict: GREEN — 0 CVEs, 0 new deps in v2.4, no license concerns
+##   (dev-only TS toolchain; the single Go third-party dep predates this release).

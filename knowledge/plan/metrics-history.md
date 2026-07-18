@@ -21,3 +21,4 @@ One row per shipped release (newest first). Aggregated at `/developer-kit:close-
 | v1.0 | body double | 2026-06-03 | 43 test + 3 fuzz (stdlib-only) | 123 test + 6 fuzz / 8 pkg / 3 DNAs | Go 22/22 · JS 9/9 · express 9/9 · drift 9/9 (all 100/100; triple-clean 3/3) | 0 | GREEN (zero external modules) |
 
 _v1.0 "body double" is the baseline release — no prior to regress against._
+| v2.4 casting call | 2026-07-18 | 7 (M222-M228) | 0 platform edits · rext seeders 96.8% cov · supply-chain GREEN · 14 demo-stack pre-existing/env-gated carries | M228 live 7/7, recruiter p95 1.27s |
