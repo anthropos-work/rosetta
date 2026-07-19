@@ -27,7 +27,7 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
   - [x] Rule the ant-academy section: **IN** — backend-authoritative since v0.5 M2; academy_chapter_progress seedable via app/cmd/academy-seed. Depends on M230 catalog fill.
   - [x] Record each verdict with the code-cite that decides it (§5, §6)
 
-- [ ] **S5 — Deliverable consolidation**
-  - [ ] Assemble the manager-view eligibility matrix (which products HAVE a manager result route)
-  - [ ] Finalize `corpus/ops/demo/content-stories-routes.md` (route map + modality catalog + AI-labs verdict + sourcing/anonymization contract)
-  - [ ] Wire discoverability (index the new doc from demo/README.md + parent pointers); go/no-go verdict + three-fate routing for un-renderable surfaces
+- [x] **S5 — Deliverable consolidation**
+  - [x] Assemble the manager-view eligibility matrix (§2 + §7; has_manager_view per product)
+  - [x] Finalize `corpus/ops/demo/content-stories-routes.md` (route map + modality catalog + AI-labs verdict + sourcing/anonymization contract + go/no-go synthesis) — all cross-links validated
+  - [x] Wire discoverability (indexed from demo/README.md + CLAUDE.md); go/no-go verdict + three-fate routing (D3→M232, D4→M234 via overview edits)

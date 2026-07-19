@@ -145,7 +145,7 @@ skill-path-legacy-in-`apps/web`; FALSE (omit the CTA) for academy + AI-labs.
 
 ## 3. Prod-session sourcing + anonymization contract
 
-The spike CONFIRMS the mechanism; the actual copy + anonymize + re-tenant is **M232** ([`session-clone-spec.md`](session-clone-spec.md)).
+The spike CONFIRMS the mechanism; the actual copy + anonymize + re-tenant is **M232** (`session-clone-spec.md`, forthcoming).
 
 ### 3.1 The read path + pin-by-id (CONFIRMED viable)
 
@@ -313,3 +313,37 @@ deep-link only). **Dependency:** progress is keyed by `chapter_slug` and is deco
 chapters it points at need CATALOG rows to render → the academy content-story **depends on M230's demo-fill** (the
 catalog; Fate-2, already in the release). (`ant-academy.md`'s "no backend writes" framing was corrected in this
 milestone — KB-7.)
+
+## 7. Go/no-go synthesis — what each downstream milestone inherits
+
+**GO.** The Thread-B build chain (M232→M236) is feasible with zero platform-repo edits. The load-bearing premise
+holds: content-product result pages read PERSISTED rows a clone can seed. Per-product dispositions:
+
+| Product | Disposition | Inherits |
+|---|---|---|
+| Sim TRAINING / ASSESSMENT | **GO** — seed the result fan-out + the manager mirror | M232 seeder; M234 both CTAs |
+| Sim HIRING | **GO** — same, in `apps/hiring` (the M224 two-app pattern) | M232 + M234 (hiring base) |
+| Sim INTERVIEW | **GO w/ demo-patch** — seed `interview_extraction_results`; **enable `flag_interview_{player,manager}_report`** in the demo | M232 (flag-enablement, D3) |
+| Skill-path legacy | **GO** — seed skillpath runtime rows (player) + `local_skill_path_session` mirror (manager, `apps/web` only) | M232 + M234 (no manager CTA in hiring app) |
+| Skill-path new (academy) | **GO (presence + progress)** — seed `academy_chapter_progress`; depends on M230 catalog | M234 (player CTA only; no manager surface) |
+| **AI-labs** | **OUT (presence-only)** — no seedable result surface; list as activity/spend line | M234 (presence-only section, D4) |
+
+**Nothing escalated to a platform edit.** The two runtime-blank/gated surfaces (INTERVIEW flag-gate, skill-path
+player get-or-create) are handled by a demo-patch/flag-enablement or by seeding the runtime's own rows — both inside
+the tooling envelope. AI-labs is ruled OUT (not deferred): its only paths to a rendered result are a live worker or
+a GraphQL schema change, both out of scope.
+
+**The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the manager MIRROR row**
+(`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager scoreboard is blank; (2) **source only
+public-anchored sessions** (`sim_id` ∈ public-published) or the demo can't resolve the sim; (3) **enable the
+interview PostHog flags** or the interview report hides. Plus the standing rules: owner-is-player-vantage (never a
+manager seat), all G14-valid enums, `OrgFeatureInsights` grant for the manager scoreboards.
+
+## See also
+- `session-clone-spec.md` (**M232, forthcoming**) — the copy+anonymize+re-tenant seeder this doc's contract feeds (the write side).
+- [`db-access.md`](../db-access.md) — the read foundation + the public-vs-customer boundary the sourcing read honors.
+- [`safety.md`](../safety.md) — the tooling safety contract; §3.5's VPN/tailnet scope + the Part-3 amendment M232 lands for anonymized-real session data.
+- [`../seeding-spec.md`](../seeding-spec.md) + [`stories-spec.md`](stories-spec.md) — the seeding framework + the 7-table verified-skill fan-out the session substrate extends; the `local_jobsimulation_sessions` MIRROR trap origin (M219/M222).
+- [`../../services/hiring.md`](../../services/hiring.md) — the M224 two-app manager/player render path + the comparison MIRROR read-model.
+- [`../../services/jobsimulation.md`](../../services/jobsimulation.md) · [`../../services/skillpath.md`](../../services/skillpath.md) · [`../../services/ai-readiness.md`](../../services/ai-readiness.md) — the runtime engines + read-models.
+- [`cockpit-spec.md`](cockpit-spec.md) — the presenter cockpit the M234 "Content stories" tab extends.
