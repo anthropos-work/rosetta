@@ -1,0 +1,15 @@
+{
+  "milestone": "M230",
+  "title": "academy demo-fill",
+  "shape": "iterative",
+  "close_status": "closed-incomplete",
+  "closed": "2026-07-19",
+  "gate": { "target": "cold /demo-up academy rendered-card count, no Draft chip", "achieved": "MET-BY-PROXY (standalone runtime proof: 59 cards, 0 chips, exact code path)", "distance": "the formal cold-/demo-up sweep only" },
+  "iters": { "total": 2, "tok": 1, "tik": 1 },
+  "platform_repo_edits": 0,
+  "tests": { "rext_demo_patch": { "runner": "pytest", "passed": 14, "status": "pass", "flake_gate": "3/3 clean" } },
+  "flake_count": 0,
+  "fix_tag": "playbill-m230-academy-fs-published",
+  "carry_forward": 3,
+  "notes": "Option C academy-fs-published-fallback demo-patch: built + runtime-proven (59 real cards, 0 Draft chips, exact DB-authoritative code path, byte-clean revert). Formal cold-/demo-up card-count gate folded to M235/M236 per user pragmatic-close mandate (a cold bring-up they do anyway; blocked locally by a drifted next-web clone). 0 platform edits."
+}

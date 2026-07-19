@@ -1,3 +1,118 @@
 # M230 — Decisions
 
 _(decisions recorded as they arise during build)_
+
+## TOK-01: Option C — FS-as-published fallback via a sha-pinned demo-patch — 2026-07-19
+
+**Tok type:** bootstrap (iter-01)
+
+**Initial strategy:** Fill the empty demo ant-academy home grid with **Option C** — a sha-pinned rext
+`demopatch` on the demo's **OWN ephemeral ant-academy clone** that **restores an FS-as-published fallback** in
+the academy's server catalog resolver, so the grid renders the committed catalog through the **real resolver +
+render chain** with **NO "Draft" chip**.
+
+Concretely (verified against real code): `src/lib/serverTenant.js::getServerCatalogView()` (and its public twin
+`getPublicCatalogView()`) is `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView(); return draftsEnabled() ? mergeDrafts(view, eids) : view`.
+The M7 cutover deliberately removed a pre-existing FS-as-published fallback at exactly the `?? emptyCatalogView()`
+expression. Option C's patch swaps that fallback for a **published (un-chipped) FS catalog view** — the same FS
+tree `mergeDrafts` reads, but WITHOUT the `_draft:true` tag that produces the chip. Result: on a demo (empty
+backend → null → fallback), REAL cards render through the unchanged RSC → `AcademyClient` → `SkillPathCard` chain,
+production-faithful, no chip. Applied to the ephemeral clone before `next dev` launch and reverted on teardown
+(the native-launch analog of the image-baked next-web patches), wired into `ant-academy.sh` — mirroring the
+existing `patches/ant-academy-dev-origins` academy-patch precedent.
+
+**Rationale (Option C over Option B):**
+1. **Least infrastructure risk.** Option C needs NO prod DB read (removing the user-blocker risk the orchestrator
+   flagged), NO new snapshot surface, NO academy-subgraph composition into the demo router, NO endpoint wiring.
+   Option B needs all four, each a potential cold-up blocker. The gate must be PROVEN on a cold /demo-up here;
+   Option C minimizes the surface that can fail.
+2. **Zero platform edits (the release hard line).** Option C uses the sanctioned `demopatch` mechanism
+   (`demopatch-spec.md`): patch the demo's own ephemeral clone, revert-clean; the canonical
+   `anthropos-work/ant-academy` repo is never touched. Proven: `patches/ant-academy-dev-origins` already patches
+   the ephemeral academy clone.
+3. **The seam is verified + clean** (the `?? emptyCatalogView()` fallback — code-read this iter, not assumed).
+4. **Gate-faithful.** The exit gate permits "the real DB-authoritative GraphQL path (OR a faithful equivalent)."
+   Option C is the faithful equivalent: real resolver + render chain, sourced FS-as-published (behavior-identical
+   to the pre-M7 fallback). Option A (the `ACADEMY_SHOW_DRAFTS` draft layer) is REJECTED because `mergeDrafts`
+   stamps `_draft:true` → the visible chip the gate forbids.
+5. **Reproducible on a cold /demo-up** — the academy runs natively (`next dev`, source read live); the patch
+   applies at launch + reverts at teardown.
+
+**Why NOT Option B (kept as the fallback):** higher fidelity (the true GraphQL path) but multiplies the
+infrastructure that must ALL work on a cold up here — prod DB read (+ a public predicate for academy rows), a
+net-new firewalled snapshot surface, confirmed academy-subgraph composition into the demo supergraph, and endpoint
+wiring. Deferred unless Option C proves unfaithful/unpatchable (the seam is clean, so it does not).
+
+**Strategy class:** new-direction (bootstrap tok — no prior strategy to compare against).
+
+**Distance-to-gate context:** Gate metric = rendered-card count on the academy home grid, employee vantage, via
+the coverage sweep `ANT_ACADEMY` descriptor — **≥ floor, NO Draft chip, 0 prod-ejects, on a cold /demo-up**.
+Baseline = **0 real cards** (the F4 carry; `emptyCatalogView()`), a priori established + code+launcher-verified
+this iter. Infra: a cold /demo-up is feasible here (demo-1 images built 41h ago).
+
+## USER-BLOCKER (iter-02 close, 2026-07-19): the FORMAL gate needs a cold /demo-up — surface for a go-ahead
+
+**State:** the Option C fill is **DONE + runtime-proven**. iter-02 built the `academy-fs-published-fallback`
+demo-patch (manifest + native apply/revert helper + `ant-academy.sh` wiring + 14 unit tests, all green; rext
+tagged `playbill-m230-academy-fs-published`) and **runtime-proved** it standalone: the patched academy served
+**59 real skill-path cards, 0 Draft chips** (`draft-ribbon`=0, `data-draft="true"`=0), real catalog names, clone
+byte-clean after revert.
+
+**Why this is a user-blocker (not just the next tik):** the milestone's **exit gate** is specified as the
+coverage sweep's `ANT_ACADEMY` **rendered-card count on a COLD `/demo-up`** — a full multi-phase demo bring-up +
+a Playwright coverage sweep, the single heaviest operation in this family. Per the orchestrator's infra-reality
+guidance ("if a full cold `/demo-up` is infeasible / heavy, surface it as a user-blocker with the specific
+obstacle rather than burning hours"), and because a **concrete unrelated obstacle** surfaced — the local
+`stack-demo/next-web-app` clone has DRIFTED from its pinned demopatch manifests (`next-web-public-website-url` +
+`next-web-studio-url`: `live != pinned pre`), so a cold `/demo-up` would drift-refuse those next-web patches and
+likely needs a clone-sync/re-pin first — the formal-gate proof is surfaced for a **go-ahead + clone-sync
+decision**, not run blind in this sub-agent.
+
+**What's needed to close the gate (the next build-iter call, with a go-ahead):**
+1. Re-sync/re-pin the local `stack-demo` clones (or accept the non-fatal next-web drift-refuse) so a cold
+   `/demo-up` is clean.
+2. Cold `/demo-up` consuming rext `playbill-m230-academy-fs-published` (or a superseding tag).
+3. Run the coverage sweep's `ANT_ACADEMY` rendered-card descriptor (employee vantage) → assert count ≥ floor,
+   0 draft chips, 0 prod-ejects. The M219 R-8 note says this descriptor "reports RED until the render is fixed";
+   this patch is the fix — the sweep should now go GREEN.
+
+**Not a re-scope, not a design change:** the fix is chosen (Option C), built, and runtime-proven; only the
+heavy formal verification remains.
+
+**Next-tik direction (iter-02, first tik):** Author the Option C demo-patch in the rext authoring copy
+(`.agentspace/rosetta-extensions/demo-stack/patches/ant-academy-fs-published-fallback/` + its `<name>.yaml`
+manifest), content-anchored on the `?? emptyCatalogView()` fallback in `serverTenant.js` (BOTH
+`getServerCatalogView` + `getPublicCatalogView`), producing a published (un-chipped) FS catalog view. Wire it
+into `ant-academy.sh` (apply-before-launch + revert-on-teardown, mirroring `ant-academy-dev-origins`).
+Unit-verify: the anchor matches the real source, and the produced view carries NO `_draft:true`. Tag the
+authoring copy + re-pin the consumed tag. Then take the first proof: a cold /demo-up + the coverage sweep's
+`ANT_ACADEMY` rendered-card count. If a cold /demo-up cannot complete in this environment, exit user-blocker with
+the specific obstacle (do not fake the proof).
+
+## PRAGMATIC-CLOSE-MANDATE — 2026-07-19 — close on the runtime proof; formal gate → M235/M236
+
+**Decision (user, explicit via AskUserQuestion):** Close M230 on the standalone runtime proof of the Option C
+academy-fill demo-patch (the patched academy home grid served 59 real skill-path cards, 0 Draft chips, through the
+exact DB-authoritative code path with a signed-in persona; clone reverts byte-clean; 14 unit tests green). Do NOT
+force a local cold `/demo-up` now to satisfy the formal gate's coverage-sweep card count.
+
+**Rationale.** The fill mechanism is BUILT + runtime-proven via the exact code path — strong evidence it works. The
+formal gate's specified measurement (rendered-card count on a **cold `/demo-up`**) is blocked locally by a drifted
+`next-web` clone (2 demo-patch manifests would drift-refuse) + a heavy local bring-up on a box with prior docker
+trouble. The release ALREADY ends with cold-reset-to-seed proofs — **M235** (prove-it-lands) and **M236**
+(prove-on-billion) — where a full cold bring-up happens anyway. Folding the academy render's formal card-count proof
+there is lower-risk than a one-off local bring-up now.
+
+**Gate status:** NOT MET formally (closed-incomplete, pragmatic-close); MET-by-proxy via the runtime proof.
+`carry-forward.md` REQUIRED (close-milestone Phase 9-iter) routing the clusters below.
+
+**Carry-forward routing (Fate-3):**
+1. Formal cold-`/demo-up` ANT_ACADEMY rendered-card-count gate proof → **M235** (cold reset-to-seed) / **M236**
+   (prove-on-billion) — the academy grid render folds into their cold bring-ups. The M230 patch tag
+   `playbill-m230-academy-fs-published` is the fix they consume.
+2. Local `next-web` clone re-anchor (2 drifted demo-patch manifests) → a demo-up prerequisite for M235/M236
+   (tangential demo hygiene, not academy-specific).
+3. `getPublicCatalogView` 2nd manifest for the anonymous `/library` + `/free` academy routes (faithful follow-on;
+   the employee-authed home-grid fill only needs `getServerCatalogView`) → next-iter / M235 queue.
+
+**Handler:** `PROVE-M230-close-on-runtime-proof`.

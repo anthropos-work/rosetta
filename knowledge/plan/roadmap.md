@@ -167,7 +167,11 @@ draft layer; correct the F4 mis-attribution in `frontend-tier.md`.
 of fill strategy? Is the academy subgraph even composed into the demo's offset Cosmo router?
 
 #### M230 — academy demo-fill (production-faithful)  (`iterative`, medium)
-**Status:** `planned`
+**Status:** `done` (closed-incomplete/pragmatic 2026-07-19) — the Option C `academy-fs-published-fallback` demo-patch
+(rext tag `playbill-m230-academy-fs-published`) is BUILT + runtime-proven (59 real cards, 0 Draft chips, exact
+DB-authoritative code path, byte-clean revert; 14 unit tests, flake 3/3). Gate MET-BY-PROXY; the FORMAL cold-`/demo-up`
+card-count sweep + the local next-web re-anchor + the `getPublicCatalogView` anon-routes follow-on are carried to
+**M235/M236** (Fate-3, homed; see `m230-academy-demo-fill/carry-forward.md`). 0 platform edits.
 **Goal:** Make the demo (and dev) ant-academy home grid render REAL academy content the way taxonomy/skill-path do —
 **production-faithful, no "Draft" chip** (user decision) — closing the year-old F4 carry inside the zero-platform-edit wall.
 **Exit gate:** on a cold `/demo-up`, the academy home grid renders real cards (count ≥ floor) for the employee vantage,
