@@ -3,7 +3,7 @@ active_release: "v2.5 «the playbill» — the content-vantage release (designed
 active_branch: "release/02.50-the-playbill"
 active_milestone: "M229 academy-content-model-re-ground (planned — section: correct the stale/misleading ant-academy.md to the DB-authoritative catalog model + the demo empty-render root cause, the KB-fidelity prerequisite before any Thread-A code)"
 last_closed: "M228 — 2026-07-18 (v2.4 shipped)"
-phase: "v2.5 designed 2026-07-19 via /developer-kit:design-roadmap; branch release/02.50-the-playbill cut from main; milestone scaffolds created. NEXT: /developer-kit:build-milestone → M229 (∥ M231 spike research can overlap). One combined release, spike-first, 0 platform edits."
+phase: "v2.5 in development. M229 academy-content-model-re-ground BUILT 2026-07-19 (both sections: ant-academy.md re-grounded to the DB-authoritative catalog model + the demo empty-render root cause; frontend-tier.md F4 mis-attribution fixed; all code-verified; 0 platform edits) — ready for /developer-kit:close-milestone. NEXT after close: M230 academy demo-fill (∥ M231 spike). One combined release, spike-first, 0 platform edits."
 last_updated: "2026-07-19"
 ---
 
