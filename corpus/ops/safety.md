@@ -53,7 +53,9 @@ is instantly "signed in" as that person. It also means **anyone who can reach a 
 can do the same**, with no password. The tooling does **not** claim otherwise, and — contrary to what one of our
 own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
 machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
-data and cannot write to production.** There is nothing behind the door. See **Part 3**.
+data and cannot write to production.** There is nothing behind the door — **with one bounded, disclosed
+exception (v2.5): a "content-story" demo carries session data SOURCED from real production sessions, anonymized
+by construction and VPN/tailnet-scoped (§3.8).**  See **Part 3**.
 
 ---
 
@@ -671,10 +673,62 @@ above.** The check asserts it captured traffic at all — an empty scan is a FIN
 
 ### 3.7 What this does NOT change
 
-Parts 1 and 2 hold **exactly** as written. Remote reach changes the *origin and scheme* a browser uses; it does
-not touch the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the
-3-layer write-isolation guard, the never-write-prod boundary, and the values-blind secret contract are all
-unaffected — and they are precisely what makes §3.3's argument work. **Part 3 is a debt that Parts 1 and 2 pay.**
+Parts 1 and 2 hold **exactly** as written **for every demo the tooling built before v2.5, and for every demo
+that is not a content-story demo.** Remote reach changes the *origin and scheme* a browser uses; it does not touch
+the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the 3-layer
+write-isolation guard, the never-write-prod boundary, and the values-blind secret contract are all unaffected —
+and they are precisely what makes §3.3's argument work. **Part 3 is a debt that Parts 1 and 2 pay.** The one place
+Part 1's "nothing behind the door" gains a bounded, disclosed exception is §3.8 (content-story demos); Part 2
+(never-write-prod) is untouched there too.
+
+### 3.8 The content-story exception — anonymized-real session data (v2.5 "the playbill", M232)
+
+Until v2.5 the read side promised the strongest possible thing: **a demo carries only synthetic + public-snapshot
+data; no customer datum, public or private, that a person authored is ever in it.** The v2.5 "Content stories"
+feature adds a demo tab of **played sessions a presenter logs into** — and to make those believable, the tooling
+**clones real production job-simulation sessions** into the demo. That is a deliberate, **user-accepted
+(data-controller) decision**, and it is a genuine — if narrow — softening of the promise above. This section
+records it honestly rather than letting the doc keep asserting something the tooling no longer does.
+
+**What is actually cloned — anonymize BY CONSTRUCTION (the bound that keeps it defensible).** The clone is of the
+real session's *structure*, not its *content*. The tooling (`rosetta-extensions/stack-seeding`, the
+`ContentStorySeeder`, driven by the checked-in `contentsession` fixture) sources, at **authoring time** via the
+read-only `postgres` MCP (`db-access.md`), **only the non-PII skeleton** of each pinned session:
+
+- the prod **source session-id** (the provenance pin), the **real public sim_id**, the `sim_type`, the task
+  **modality**, the **score**, **pass/fail**, the **duration**, and the **actor/interaction counts**.
+
+Every **free-text** facet — the LLM feedback, the transcript, the candidate's submission, the actor names, the
+interview report — is **SYNTHESIZED at seed time, never copied** from the customer. So the checked-in fixture and
+the seeded demo are **provably PII-free by construction**: no customer's authored words, name, or work-product is
+read into the fixture or written into the demo. The word "anonymized-real" is precise — the *shape* is real
+(sourced), the *content* is synthetic.
+
+**The three bounds that make it acceptable** (all structural, none dependent on an operator remembering a flag):
+
+1. **Anonymize by construction** — the strongest form: the PII is never *sourced*, so there is nothing to leak,
+   not even transiently through the fixture. (Contrast a redaction approach, which reads-then-scrubs.)
+2. **Source-pinned + disclosed** — every cloned session's prod source-id + its non-PII descriptor is recorded in
+   `seed-generation-manifest.yaml` (the `content_sessions` block, honesty-gated), so an auditor reads *exactly*
+   which real sessions a content-story demo is sourced from, in one file, without reading Go.
+3. **VPN/tailnet-scoped** — a content-story demo is exposed under the Part-3 posture (unauthenticated,
+   authz-weakened, world-published on its host's interfaces) **only over a Tailscale tailnet / VPN**
+   (`tailscale-serve.md`), never the public internet. The reach bound is the same as every other demo; what §3.8
+   adds is that behind this particular door there is now *anonymized-real* data, not *purely synthetic* data.
+
+**Public-anchored + non-manager-played** (two more structural properties, from the M231 sourcing contract): a
+cloned session references only a **public-published** sim (so it resolves in the demo's replayed catalog, and no
+customer-private sim content is pulled), and it is re-owned to a **player-vantage** seeded member (never a manager
+seat) — so the clone is a player's own session, re-tenanted into the demo org.
+
+**Part 2 is untouched.** The write side never changes: the `ContentStorySeeder` writes only to the per-stack
+Postgres (PerStackIsolated), audited, n=0-guarded — it can no more write prod than any other seeder. The exception
+is entirely on the read side, and it is bounded to the non-PII skeleton.
+
+**The full contract:** [`demo/session-clone-spec.md`](demo/session-clone-spec.md) (the sourcing pattern, the
+firewall-safety argument, the source-pin contract, the no-manager-played rule, the anonymization-by-construction
+mechanism) + [`demo/content-stories-routes.md`](demo/content-stories-routes.md) §3.5 (the M231 spike that authored
+the posture this section lands).
 
 ---
 

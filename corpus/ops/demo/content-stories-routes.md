@@ -340,7 +340,7 @@ interview PostHog flags** or the interview report hides. Plus the standing rules
 manager seat), all G14-valid enums, `OrgFeatureInsights` grant for the manager scoreboards.
 
 ## See also
-- `session-clone-spec.md` (**M232, forthcoming**) — the copy+anonymize+re-tenant seeder this doc's contract feeds (the write side).
+- [`session-clone-spec.md`](session-clone-spec.md) (**M232**) — the copy+anonymize+re-tenant seeder this doc's contract feeds (the write side): the sourcing pattern, the anonymize-by-construction mechanism, the source-pin contract, the interview flag-gate demopatches.
 - [`db-access.md`](../db-access.md) — the read foundation + the public-vs-customer boundary the sourcing read honors.
 - [`safety.md`](../safety.md) — the tooling safety contract; §3.5's VPN/tailnet scope + the Part-3 amendment M232 lands for anonymized-real session data.
 - [`../seeding-spec.md`](../seeding-spec.md) + [`stories-spec.md`](stories-spec.md) — the seeding framework + the 7-table verified-skill fan-out the session substrate extends; the `local_jobsimulation_sessions` MIRROR trap origin (M219/M222).

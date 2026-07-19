@@ -56,3 +56,34 @@ replayed taxonomy). This keeps a demo box prod-access-free and the read boundary
   "triages each blank landing to its true read-model; fix in seeder/manifest or route to a demo-patch". So
   the interview page's plan-section match is exactly what M235's iteration surfaces + fixes — Fate-2 (no
   plan edit needed, no M232 scope deferred). (The two interview PostHog flags are enabled in S4.)
+
+## D7 (S4) — Interview flags via a two-part sha-pinned demopatch (not a PostHog bootstrap)
+The interview flags are enabled by TWO sha-pinned demopatches (the M219 `next-web-aireadiness-flag-gate`
+twin), NOT a PostHog bootstrap. Rationale (agent-verified): a demo bakes no PostHog key, so `posthog.init()`
+never runs and a `bootstrap.featureFlags` block is unreachable; baking a key would query a real/absent PostHog
+(still undefined/false) AND re-open the third-party egress `next-web-no-thirdparty` closed (safety §3.6). The
+flags are compiled-in client source → the demopatch ladder's sanctioned case. TWO patches because the two
+flags feed ONE combined gate per file, in TWO shared `packages/ui` files: `next-web-interview-flag-container`
+(the FETCH gate, `AISimulationResultContainer.tsx`) + `next-web-interview-flag-result` (the RENDER gate,
+`AISimulationResult.tsx`). Single-line anchors (no chaining — each own file). Wired into `up-injected.sh`'s
+BOTH frontend builds (packages/ui is shared → apps/web + apps/hiring) + the patchset fingerprint + LIFO revert.
+Verified: load + apply + idempotent-reapply + revert-clean against a git working tree; the pin test
+(`test_interview_flag_patch_m232.py`, 11 cases) fences shape + wiring + a live-anchor drift pin.
+
+## D8 (S4) — demo-stack suite: 4 self-caused (FIXED) + 14 pre-existing (NOT M232 scope)
+`python3 -m unittest discover -s demo-stack/tests` = 683 tests, 18 failures. Triaged:
+- **4 SELF-CAUSED → FIXED.** `test_frontend_build` tag-guard tests: my adding the 2 interview manifests to
+  `next_web_patchset_fp` correctly changed the `demo.patchset` fingerprint, so the guard rebuilt an image the
+  test had labeled with the OLD fingerprint. The tag-guard behaviour is CORRECT (a new patch must invalidate a
+  cached image — the §5-bis "applied != shipped" fence); the FIX was to sync the test harness's hardcoded
+  `_PATCHSET_MANIFESTS` list (add the 2 interview ids). `test_frontend_build` now GREEN (89/89).
+- **14 PRE-EXISTING, out of M232 scope** (subsystems M232 never touches): SSR + studio/pubweb urls.ts patches'
+  pinned `pre_sha256` drifted vs the current `stack-demo/next-web-app` clone (it's at a NEWER next-web tag; e.g.
+  studio pin `0d4c37902…` vs stack-demo `d92fa701…`; the tests say "re-anchor needed #8") = 6
+  (`test_ssr_origin_chain` 4 + `test_demopatch` 2); plus `test_cockpit` academy-link/overlay 6,
+  `test_host_prereqs_m215` 1, `test_purge` 1 — all unrelated pre-existing failures on this box.
+- **My work is CLEAN.** Interview manifests match stack-demo BYTE-FOR-BYTE (verified), so they PASS the
+  live-clone checks; my new pin test (11) + aireadiness (9) + frontend_build (89) all green; 0 interview-related
+  failures. The 14 pre-existing failures (demo-stack hygiene: the urls.ts/SSR re-anchor + the cockpit/host/purge
+  reds) are a Fate-3 candidate for the v2.5 release close, not M232 work. (Self-healing anchor, demopatch-spec
+  §6: the drifted patches still APPLY at demo-up; only the whole-file sha baseline drifted.)

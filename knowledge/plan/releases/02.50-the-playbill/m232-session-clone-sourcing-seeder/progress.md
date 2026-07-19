@@ -27,7 +27,7 @@
   (CollaborativeAsset / storage_upload); INTERVIEW full `interview_extraction_results.user_report` +
   `manager_report` JSON (believable report, not the minimal `{}` the SuccessionSeeder writes).
 
-- [ ] **S4 — Interview render flags + manifest source-pin + docs.**
+- [x] **S4 — Interview render flags + manifest source-pin + docs.** ✅ rext `4e4add6`
   Enable `flag_interview_{player,manager}_report` in the demo (a sha-pinned `demopatch` on the demo's
   own ephemeral clone, or a demo PostHog bootstrap — D3); fold the pinned prod sources into the
   `seed-generation-manifest.yaml` projection (source-pin contract, deterministic reseed); AMEND
