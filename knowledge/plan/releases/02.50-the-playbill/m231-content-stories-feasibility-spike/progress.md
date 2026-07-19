@@ -31,3 +31,26 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
   - [x] Assemble the manager-view eligibility matrix (§2 + §7; has_manager_view per product)
   - [x] Finalize `corpus/ops/demo/content-stories-routes.md` (route map + modality catalog + AI-labs verdict + sourcing/anonymization contract + go/no-go synthesis) — all cross-links validated
   - [x] Wire discoverability (indexed from demo/README.md + CLAUDE.md); go/no-go verdict + three-fate routing (D3→M232, D4→M234 via overview edits)
+
+## M231: Final Review — Completeness Ledger (section, spike)
+
+**Done (Fate 1):** S1 result-route map + prove-by-render classification · S2 prod-session sourcing + anonymization
+contract · S3 public-sim-by-modality catalog (77 voice / 65 code / 30 document) · S4 AI-labs (OUT) + academy (IN)
+verdicts · S5 go/no-go synthesis + discoverability wiring. Deliverable `corpus/ops/demo/content-stories-routes.md`
+(349 lines, 23 code-citations, 0 broken links). Inline KB-fidelity fixes: hiring.md (intercepting-route→plain Drawer),
+skillpath.md (manager mirror), ant-academy.md (backend read/WRITE). All ✅.
+
+**Confirmed-covered (Fate 2):** D5 academy content-story depends on M230 (already landed). D4 AI-labs-out aligns with
+the roadmap's conditional framing.
+
+**Annotated (Fate 3) — user-accepted 2026-07-19:** D3 interview PostHog-flag-enablement → **M232** (overview In edited)
+· D4 AI-labs presence-only section → **M234** (overview In edited) · D5 academy real-progress form → **M234** (overview
+In edited). M232 also gained the public-anchored-sourcing rule + the code/document modality seeders.
+
+**Tracked (Fate-3, arch-doc pass):** KB-2/KB-5/KB-6/KB-8 (jobsimulation.md ports; roadrunner-retired; backend.md labs
+path) — tangential doc-accuracy fixes recorded in decisions.md; the deliverable carries the correct facts.
+
+**Dropped:** none. **Escape-hatch:** none.
+
+**Verdict:** Thread B is a GO. All scope delivered; Fate-3 routings user-accepted; deferral audit GREEN (0 repeat-defer,
+0 escape-hatch). KB-fidelity YELLOW (the milestone delivers the consolidation doc — no blind area). Clean close.
