@@ -1,0 +1,16 @@
+{
+  "milestone": "M231",
+  "title": "content-stories feasibility spike",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-19",
+  "verdict": "GO",
+  "platform_repo_edits": 0,
+  "tests": { "note": "research/doc spike — no code surface; correctness via prove-by-render (billion) + code-citation (23 in the deliverable) + read-only prod DB scouting (postgres MCP)" },
+  "flake_count": 0,
+  "deliverable": "corpus/ops/demo/content-stories-routes.md",
+  "kb_fidelity": "YELLOW (8 findings; KB-3/4/7 fixed inline, KB-2/5/6/8 tracked)",
+  "modality_catalog": { "voice": 77, "code": 65, "document": 30 },
+  "fate3_routings": ["D3 interview-flags → M232", "D4 ai-labs presence-only → M234", "D5 academy real-progress → M234"],
+  "notes": "The hard go/no-go barrier for Thread B: GO. Central unknown resolved — the sim result page reads a persisted DB row (plain SELECTs, no live recompute), so a cloned session renders a full result. Sim + Skill-path GO; Interview GO behind a PostHog-flag demo-patch; AI-labs OUT (presence-only); Academy IN (seedable chapter progress). 0 platform edits; nothing escalated."
+}

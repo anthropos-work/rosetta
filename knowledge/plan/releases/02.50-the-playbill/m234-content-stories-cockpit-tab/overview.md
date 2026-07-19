@@ -23,6 +23,8 @@ Add the 2nd 'Content stories' tab to cockpit.py beside 'Org stories' — section
 - Per-product sections rendering the M233 manifest; per-session rows with per-type FontAwesome icons
 - Two fake-FAPI deep-link CTAs per session (?__clerk_identity=<seat>&redirect_url=<base><result-path>), the .actions two-button layout + has_manager_view omitempty
 - Per-product app-base routing generalizing the is_hiring/hiring_base switch (next-web :3000, apps/hiring :3001, academy :3077); mint/resolve per-session player seats via roster.go + Clerkenstein
+- **AI-labs section is PRESENCE-ONLY (added M231 D4, Fate-3):** M231 ruled AI-labs OUT for a played result — a seeded `lab_sessions` row has no result-render surface (`grade_result` isn't GraphQL-exposed; `/labs/[id]` reads live from labs-api and throws without `LABS_API_URL`). So render the AI-labs section as a **presence-only activity/spend listing** (the `/labs` + `/enterprise/labs` dashboards show the seeded row as a status/spend line), NOT a played-result list with as-player/as-manager CTAs. See `content-stories-routes.md` § AI-labs.
+- **Academy section renders REAL seeded progress, not presence-only (added M231 D5):** answers the open question below — the academy "session" = seedable `academy_chapter_progress`/`academy_last_activity` rows (`app/cmd/academy-seed`), so the academy CTA deep-links to the chapter with real progress; depends on M230's catalog fill for the chapters to render.
 
 ### Out
 - Any platform/next-web edit
