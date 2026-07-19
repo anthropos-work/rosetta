@@ -27,10 +27,10 @@ The 2nd "Content stories" tab beside "Org stories": per-product sections renderi
 - [x] Serve `/content-manifest.json` endpoint
 - [x] Python unit tests: 23 new — dispositions, CTA hrefs, omission, presence-only, academy origin, tab toggle, served endpoint, shape validation, escaping; 0 new failures (106 tests, 6-fail baseline unchanged)
 
-### §3 — Bring-up wiring (up-injected.sh)
-- [ ] Export `content-manifest.json` via `stackseed --content-export` at bring-up (non-fatal, parallel to `--cockpit-export`)
-- [ ] Thread `--content-manifest` into the `cockpit.py` launch
-- [ ] Verify the export + launch wiring (fake-server / dry assertion — no live browser)
+### §3 — Bring-up wiring (up-injected.sh) ✅ (rext 7f55eb4)
+- [x] Export `content-manifest.json` via `stackseed --content-export` at bring-up (non-fatal, parallel to `--cockpit-export`; fail-closed export just drops the tab)
+- [x] Thread `--content-manifest` into the `cockpit.py` launch (+alt guard, set -u safe)
+- [x] Verify the export + launch wiring — new `StorytellingCockpitWiring` test (10/10) + proven end-to-end (real export → cockpit → probe: tab renders 9 sessions × 2 CTAs, `/content-manifest.json` served)
 
 ### Docs (Phase 5, folded)
 - [ ] Extend `corpus/ops/demo/content-stories-spec.md` with the render half (tabbed model, two-action contract, icon map, base routing, seat registration)
