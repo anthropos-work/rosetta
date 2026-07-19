@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M233 content-stories-manifest (planned — section, medium: project a 2nd auditable content_products[] manifest block [peer to population.orgs] that pins each cloned session's prod source-id deterministically + is honesty-gated [CanonicalFileMatchesProjection] so it can't drift from the seeded sessions; fail-closed resolver on unresolved pins; fold source-pins into the downloadable seed-generation-manifest.yaml. Consumes M232's ContentStorySeeder)."
+active_milestone: "M233 content-stories-manifest (BUILT — section, medium; ready for /developer-kit:close-milestone: projected the content_products[] manifest [content-manifest.json] the 2nd Content stories cockpit tab reads — per product, played sessions each with player+manager seat keys + result paths + has_manager_view + app-base + per-type icon; single-sourced from the same fixture the ContentStorySeeder seeds from; honesty-gated [CanonicalFileMatchesProjection + teeth]; fail-closed resolver [drop-with-reason, ValidateContentManifest fails loud, no fabrication]; stackseed --content-export verb. Resolved the open question: SEPARATE content-manifest.json [cockpit reads JSON not YAML], M232 content_sessions source-pins stay in seed-generation-manifest.yaml. rext tag playbill-m233-content-manifest @ 9f0ab1c. Consumes M232's ContentStorySeeder)."
 last_closed: "M232 — 2026-07-19"
-phase: "v2.5 in development. M229–M232 CLOSED 2026-07-19. M232 session-clone seeder CLOSED-COMPLETE: the ContentStorySeeder COPIES real prod sessions (feedback/transcript/submission/interview report/node-ids) + best-effort PII scrub + re-tenant + source-pin (rext tag playbill-m232-sections-copyreal); a synthesize-first build was REWORKED to copy-real per the user's explicit decision; residual re-id risk data-controller-accepted (safety.md §3.8), VPN-scoped; guardrails flake 5/5; 0 platform edits. NEXT: /developer-kit:work-milestone → M233 content-stories-manifest (section — the honesty-gated content_products[] source-pin projection). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
+phase: "v2.5 in development. M229–M232 CLOSED 2026-07-19. M233 content-stories-manifest BUILT (not yet closed) 2026-07-19: content_products[] projection + honesty-gated content-manifest.json + fail-closed resolver + stackseed --content-export; 8 pinned sim slugs resolved into the fixture (sim_slug, public/non-PII); 11 net-new tests GREEN, full stack-seeding module green incl. both honesty gates; 0 platform edits; rext tag playbill-m233-content-manifest @ 9f0ab1c. NEXT: /developer-kit:close-milestone M233 → then M234 (the cockpit tab render + player-seat registration). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
 last_updated: "2026-07-19"
 ---
 
@@ -20,15 +20,18 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M233 "content-stories-manifest" (planned, section — medium)
+## Active milestone — M233 "content-stories-manifest" (BUILT — section, medium; ready to close)
 
-**Goal.** Project a **second, auditable `content_products[]` manifest block** (peer to `population.orgs[]`) that pins
-each cloned session's **prod source-id deterministically** and is **honesty-gated** (a `CanonicalFileMatchesProjection`-
-style test — the D9 single-source discipline) so it cannot drift from the seeded sessions; a **fail-closed resolver**
-when a pinned prod-source id doesn't resolve in the replay (no-fabrication); fold the pinned sources into the
-downloadable `seed-generation-manifest.yaml`. **Consumes M232's** ContentStorySeeder + its source-pins. Open question:
-one manifest with a 2nd block + client tab, or a separate `content-manifest.json` + endpoint (better preserves D9 +
-the non-fatal bring-up). Next: `/developer-kit:work-milestone` → M233.
+**Goal (delivered).** Projected the **`content_products[]` manifest** the 2nd "Content stories" cockpit tab reads —
+per content product, the played sessions each with **player+manager seat keys + result paths + has_manager_view +
+app-base + per-type icon** — single-sourced from the SAME content-session fixture the `ContentStorySeeder` seeds from
+(the player seat OWNS the seeded session; the path names the seeder's derived session id — no drift). **Honesty-gated**
+(`CanonicalFileMatchesProjection` + a teeth test) so it can't drift; **fail-closed** (`ValidateContentManifest` drops
+a session that can't form a real link with a recorded reason + fails loud — no fabrication); emitted by
+`stackseed --content-export`. **Open question RESOLVED (`#D-M233-1`):** a **SEPARATE `content-manifest.json`** (not a
+YAML block) because the cockpit reads JSON, not YAML; the M232 `content_sessions` source-pins stay folded in
+`seed-generation-manifest.yaml`. The player route resolves by text slug → the fixture gained a public `sim_slug` (8
+resolved read-only). rext tag `playbill-m233-content-manifest` @ 9f0ab1c. Next: `/developer-kit:close-milestone` → M234.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
