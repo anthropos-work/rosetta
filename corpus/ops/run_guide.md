@@ -223,7 +223,7 @@ Open http://localhost:9100 in your browser.
 
 ## 5.1 Start Ant Academy (Optional — Internal Learning Portal)
 
-Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.work` employees. It runs **natively only** — no docker-compose profile. It does not depend on any backend service to function (it only needs Clerk).
+Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.work` employees. It runs **natively only** — no docker-compose profile. It authenticates via **Clerk** and — since v0.5.1 — **reads its course catalog from the platform academy subgraph over GraphQL** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`); without that backend it still boots but the catalog grid **renders empty** (see [`../services/ant-academy.md` § The Content Model](../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7)).
 
 ### Navigate
 
