@@ -244,7 +244,21 @@ must map to a real seeded `public.users` row)? are a synthesized/scrubbed transc
 or must a real recording be playable (blob-mirroring is deferred, DEF-M10-01)?
 
 #### M233 — content-stories manifest + honesty gate  (`section`, medium)
-**Status:** `planned`
+**Status:** `done` (closed-complete 2026-07-19) — merged `--no-ff` into `release/02.50-the-playbill`. Delivered the
+**`content_products[]` projection** (`BuildContentProducts`, rext `stack-seeding/seeders/content_manifest.go`): per
+content product, the played sessions each with **player+manager seat keys + result paths + `has_manager_view` +
+per-product app_base + per-type icon** — SINGLE-SOURCED from the SAME content-session fixture the M232 seeder seeds
+from (the player seat OWNS the seeded session by construction, D9). **Honesty-gated** (`CanonicalFileMatchesProjection`
++ a `HasTeeth` meta-test) so the checked-in `content-manifest.json` can't drift; **fail-closed** (`ValidateContentManifest`
+drops-with-reason + fails loud — no fabricated links); emitted by **`stackseed --content-export`**. **Open question
+RESOLVED (`#D-M233-1`):** a SEPARATE `content-manifest.json` (the stdlib-Python cockpit reads JSON, not YAML); the M232
+source-pins stay folded in `seed-generation-manifest.yaml`'s `content_sessions` block. The load-bearing
+flat-index-survives-drops seat single-source invariant is verified at both ends + pinned by
+`TestContentProducts_FlatIndexSurvivesDrops`. Deliverable `content-stories-spec.md` (the manifest-schema half). rext tags
+`playbill-m233-content-manifest` @ 9f0ab1c (build) + `playbill-m233-content-manifest-hardened` @ c30fee3 (harden — 100%
+function coverage on the projector). Close review near-clean (1 fix: the `#D-M233-3` back-ref tag); deferral audit YELLOW/
+0 blockers; flake 5/5; **0 platform edits.** The bring-up export wiring + cockpit render + `content-player-<idx>` seat
+registration + non-simulation player-path builders are M234 (Fate-2, confirmed in M234's `In:` list).
 **Goal:** Project a second, auditable `content_products[]` manifest block (peer to `population.orgs[]`) that pins each
 session's prod source deterministically and is honesty-gated so it cannot drift from the seeded sessions.
 **Scope — In:** a `content_products[]` projection (Simulation / Skill-path legacy / Skill-path new / AI-labs) each listing

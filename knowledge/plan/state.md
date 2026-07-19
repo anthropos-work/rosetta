@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M233 content-stories-manifest (planned — section, medium: project a 2nd auditable content_products[] manifest block [peer to population.orgs] that pins each cloned session's prod source-id deterministically + is honesty-gated [CanonicalFileMatchesProjection] so it can't drift from the seeded sessions; fail-closed resolver on unresolved pins; fold source-pins into the downloadable seed-generation-manifest.yaml. Consumes M232's ContentStorySeeder)."
-last_closed: "M232 — 2026-07-19"
-phase: "v2.5 in development. M229–M232 CLOSED 2026-07-19. M232 session-clone seeder CLOSED-COMPLETE: the ContentStorySeeder COPIES real prod sessions (feedback/transcript/submission/interview report/node-ids) + best-effort PII scrub + re-tenant + source-pin (rext tag playbill-m232-sections-copyreal); a synthesize-first build was REWORKED to copy-real per the user's explicit decision; residual re-id risk data-controller-accepted (safety.md §3.8), VPN-scoped; guardrails flake 5/5; 0 platform edits. NEXT: /developer-kit:work-milestone → M233 content-stories-manifest (section — the honesty-gated content_products[] source-pin projection). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
+active_milestone: "M234 content-stories-cockpit-tab (PLANNED — section, medium; depends on M233): add the 2nd «Content stories» tab to cockpit.py beside «Org stories» — sections per content product, played sessions each with per-type FontAwesome icons + TWO login-and-land CTAs (as-player / as-manager, manager omitted where has_manager_view=false); reads the M233 content-manifest.json; wires up-injected.sh to --content-export at bring-up; mints/resolves the content-player-<idx> seats via roster.go + Clerkenstein; AI-labs section presence-only (M231 D4), academy renders real seeded progress (M231 D5). Delivers the cockpit-UX half of content-stories-spec.md. Zero platform-repo edits."
+last_closed: "M233 — 2026-07-19"
+phase: "v2.5 in development. M229–M233 CLOSED 2026-07-19. M233 content-stories-manifest CLOSED (section, closed-complete): content_products[] projection + honesty-gated content-manifest.json + fail-closed resolver + stackseed --content-export, single-sourced from the M232 fixture; flat-index-survives-drops seat invariant pinned; deliverable content-stories-spec.md. Close near-clean (1 fix: #D-M233-3 back-ref tag), deferral audit YELLOW/0-blockers, flake 5/5, 0 platform edits; rext tags playbill-m233-content-manifest @ 9f0ab1c + -hardened @ c30fee3. NEXT: M234 (the cockpit tab render + content-player seat registration). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
 last_updated: "2026-07-19"
 ---
 
@@ -20,15 +20,18 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M233 "content-stories-manifest" (planned, section — medium)
+## Active milestone — M234 "content-stories-cockpit-tab" (PLANNED — section, medium; depends on M233)
 
-**Goal.** Project a **second, auditable `content_products[]` manifest block** (peer to `population.orgs[]`) that pins
-each cloned session's **prod source-id deterministically** and is **honesty-gated** (a `CanonicalFileMatchesProjection`-
-style test — the D9 single-source discipline) so it cannot drift from the seeded sessions; a **fail-closed resolver**
-when a pinned prod-source id doesn't resolve in the replay (no-fabrication); fold the pinned sources into the
-downloadable `seed-generation-manifest.yaml`. **Consumes M232's** ContentStorySeeder + its source-pins. Open question:
-one manifest with a 2nd block + client tab, or a separate `content-manifest.json` + endpoint (better preserves D9 +
-the non-fatal bring-up). Next: `/developer-kit:work-milestone` → M233.
+**Goal.** Add the 2nd **"Content stories"** tab to `cockpit.py` beside "Org stories" — **sections per content
+product**, a list of played sessions each with per-type FontAwesome icons and **TWO login-and-land CTAs** (as-player /
+as-manager, the manager omitted where `has_manager_view=false`). Reads the **M233 `content-manifest.json`** (wiring
+`up-injected.sh` to `--content-export` at bring-up, as it already does for `cockpit-manifest.json`); a client-side tab
+toggle reusing the shipped `_OVERLAY_JS` pattern (stdlib-only, standalone-served); per-product app-base routing
+(next-web :3000 / apps/hiring :3001 / academy :3077); **mints/resolves the `content-player-<idx>` player seats via
+`roster.go` + Clerkenstein** so the as-player CTA logs in. **AI-labs section presence-only** (M231 D4 — no seedable
+result surface); **academy renders real seeded progress** (M231 D5). Delivers the cockpit-UX half of
+`content-stories-spec.md`. **Out:** any platform/next-web edit; making a runtime-computed result page render. **0
+platform-repo edits.**
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -39,6 +42,13 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M233 content-stories-manifest** — 2026-07-19 (section, closed-complete). The **manifest half** of Content
+  stories: `BuildContentProducts` projects a `content_products[]` menu (per product, played sessions with
+  player+manager seats + result paths + `has_manager_view` + app_base + icon) SINGLE-SOURCED from the M232 fixture;
+  honesty-gated (`CanonicalFileMatchesProjection` + teeth) so `content-manifest.json` can't drift; fail-closed
+  (drop-with-reason, fails loud). Emitted by `stackseed --content-export`; open question resolved (separate JSON,
+  `#D-M233-1`). Flat-index-survives-drops seat invariant pinned. rext tags `playbill-m233-content-manifest` @ 9f0ab1c
+  + `-hardened` @ c30fee3. Close near-clean (1 fix), deferral audit YELLOW, flake 5/5, 0 platform edits.
 - **M232 session-clone-sourcing-seeder** — 2026-07-19 (section, closed-complete). The ContentStorySeeder
   **COPIES real prod sessions** (feedback/transcript/submission/interview report/node-ids) + best-effort PII
   scrub (names/org→placeholders, emails/phones/urls redacted) + re-tenant + source-pin (rext tag
@@ -58,12 +68,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   + `frontend-tier.md` + `run_guide.md` + `CLAUDE.md`) from the false "no backend / static JSON / only Clerk" model to
   the DB-authoritative catalog (grid → academy subgraph over GraphQL → `emptyCatalogView()` on failure) + fixed the F4
   mis-attribution. The KB-fidelity prerequisite for the v2.5 academy thread. Code-verified; 0 platform edits.
-- **M228 second-night** — 2026-07-18 (iterative, closed-on-gate). The corrected demo re-proven live on `billion`:
-  7/7 conditions, render 5/5 per-sim (8,8,9,9,8, each ≥ floor 6, junk=0), 2 candidate heroes usable, recruiter p95
-  click→ACCESS **1.27 s**, hiring-only, 4 orgs coexist. iter-03 fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder
-  guard gap the deterministic M227 test missed — caught by the LIVE re-prove) + hardened the render probe for the
-  intercepting-route drawer (`RENDER_ONLY_SIM`). rext seeders 96.8% cov, flake 3/3; **0 platform edits**.
-
 ## Recently shipped (releases, newest first — max 3)
 
 - **v2.4 "casting call"** — 2026-07-18 (tag `v2.4`). The **recruiter-vantage / hiring-org** release: a 4th hiring org
@@ -76,17 +80,17 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 - **v2.2 "panorama"** — 2026-07-12 (tag `v2.2`). External-shareability / Tailscale-serve: stacks reachable from another
   tailnet machine over one trusted HTTPS origin. First live remote Linux-VM deploy.
 
-## Headline numbers (v2.4 M227 close, 2026-07-17)
-- **Go test funcs:** **1902** (+14 vs M226's 1888 — the M227 fences across `hiring_scope_test`, `candidate_email_test`,
-  `gender_test` ×2, `hiring_funnel_test`, and the 4 harden fences in `users_m227_test.go`; all modules `go vet` clean).
-- **M227-touched deterministic suites (re-run GREEN at close):** stack-seeding `go test ./...` OK (13 pkgs) · tsc
-  `stack-verify/e2e` exit 0 · **flake 5/5** (seeders, shuffle, `-count=1`). The 4 fixes are proven DETERMINISTICALLY;
-  the LOCAL live render was env-blocked → M228.
-- **p95 click→ACCESS (the standing gate):** recruiter 1.74 s (M226, 3rd vantage) · employee 2.11 s / manager 1.31 s
-  (v2.3), all vs the < 5000 ms gate. (M228 re-proves it on the corrected demo.)
-- **Inherited (non-milestone) carries:** demo-stack **8 pre-existing fail** (test-debt backlog) + the M204 assign-WRITE
-  declared TODO → both routed to the v2.4 **release close**.
-- **Alignment (Clerkenstein):** **100% / 100% critical** (M227 touched no alignment surface).
+## Headline numbers (v2.5 M233 close, 2026-07-19)
+- **Go test funcs (whole rext repo):** **1954** (+52 vs v2.4 M227's 1902, across M229–M233; M233 added ~23 in
+  stack-seeding — `content_manifest` + `contentsession` + `stackseed`). `go vet` clean; `content_manifest.go` at
+  **100% function coverage** after harden.
+- **M233-touched suites (re-run GREEN at close):** stack-seeding `go test ./...` OK (16 pkgs) · **flake 5/5**
+  (`seeders` + `contentsession` + `cmd/stackseed`, shuffle, `-count=1`). Docs-only close fix; no rext code change.
+- **p95 click→ACCESS (the standing gate, carried — M233 touched no perf surface):** recruiter 1.27 s (M228) ·
+  employee 2.11 s / manager 1.31 s (v2.3), all vs the < 5000 ms gate.
+- **Inherited (non-milestone) carries:** demo-stack **14 pre-existing fail** (test-debt backlog, REPEAT v2.4→v2.5) +
+  the M204 assign-WRITE declared TODO → both routed to the v2.5 **release close** re-anchor.
+- **Alignment (Clerkenstein):** **100% / 100% critical** (M233 touched no alignment surface).
 - **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0.** **Supply chain:** GREEN — 0 net-new direct deps.
 
 ## D17 — the carried-forward signature hazard (v2.4 discipline)
@@ -124,11 +128,12 @@ tags:** **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1** `v2.1` · **v2.0** `v2.0`
   futures** M206–M207 stay in vision; **M205**'s tier-gate/ATS half is a residual vision reservation. All tracked in
   [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-17 (**M227 "the notes" CLOSED** via /developer-kit:close-milestone — section; merged `--no-ff`
-into `release/02.40-casting-call`. The 4 believability seed/content fixes + gate retune `≥40→≥6`, all proven
-DETERMINISTICALLY + write-path-fenced; fix #1/#2/#4 mechanisms blended into corpus at close [#M227-D1/#M227-D2/#M227-D4].
-Go funcs 1888→**1902**, flake **5/5**, tsc exit 0, **0 platform-repo edits**. Deferral audit **YELLOW** [1 new single
-Fate-2: the LOCAL live-render re-prove → M228; 2 inherited carries → release close]. Section 5's live render was
-environment-blocked → **M228 "second night"** (the corrected-demo billion re-prove, already planned). rext
-code-of-record `casting-call-m227-sections` [`63c3e8d`]; the `billion` demo LEFT UP. **NEXT: M228 second-night → then
-the USER's /developer-kit:close-release** — the `release → main` merge + `v2.4` tag are the USER's to run.)_
+_Last updated: 2026-07-19 (**M233 "content-stories-manifest" CLOSED** via /developer-kit:close-milestone — section,
+closed-complete; merged `--no-ff` into `release/02.50-the-playbill`. The `content_products[]` projection + honesty-gated
+`content-manifest.json` + fail-closed resolver + `stackseed --content-export`, single-sourced from the M232 fixture;
+the flat-index-survives-drops seat invariant verified both ends + pinned. Close near-clean [1 fix: the `#D-M233-3`
+back-ref tag], deferral audit **YELLOW**/0-blockers [flagged the 14-fail demo-stack test-debt CHRONIC repeat → v2.5
+release close], flake **5/5**, **0 platform edits**. rext tags `playbill-m233-content-manifest` @ 9f0ab1c +
+`-hardened` @ c30fee3; whole-rext go funcs 1902→**1954**. The bring-up export wiring + cockpit tab render +
+`content-player-<idx>` seat registration are **M234** [Fate-2, confirmed in M234's `In:` list]. **NEXT: M234
+content-stories-cockpit-tab.**)_

@@ -219,6 +219,16 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
   aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8
   records. (M232)
+- [`content-stories-spec.md`](content-stories-spec.md) — the **content_products manifest + honesty gate** (v2.5
+  "the playbill" M233 — the manifest half of the content-stories feature). `stackseed --content-export` PROJECTS a
+  **`content-manifest.json`** (the content analog of `cockpit-manifest.json`) the 2nd "Content stories" cockpit tab
+  reads: per content product, the played sessions each with a **player + manager seat key**, a **result path**,
+  `has_manager_view`, a per-product **app-base**, and a per-type **icon**. Single-sourced from the SAME
+  content-session fixture the seeder seeds from (the player seat OWNS the seeded session; the path names the seeded
+  session id — no drift), **honesty-gated** (a checked-in canonical + a `CanonicalFileMatchesProjection`-style test,
+  with teeth), and **fail-closed** (a session that can't form a real link is DROPPED with a reason + the export
+  fails loud — never a fabricated CTA). Separate JSON (not a YAML block) because the cockpit reads JSON, not YAML.
+  (M233 — M234 = the cockpit tab render + player-seat registration, M235 = prove-it-lands)
 - [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
   (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
   per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +
