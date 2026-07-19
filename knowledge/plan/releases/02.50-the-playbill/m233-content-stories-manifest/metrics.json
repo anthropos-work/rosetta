@@ -1,0 +1,22 @@
+{
+  "milestone": "M233", "title": "content-stories manifest", "shape": "section",
+  "close_status": "closed-complete", "closed": "2026-07-19",
+  "platform_repo_edits": 0,
+  "deliverable": "corpus/ops/demo/content-stories-spec.md (the content_products[] manifest schema + honesty gate + fail-closed resolver + --content-export)",
+  "tests": {
+    "rext_go": "GREEN (full stack-seeding suite, 16 pkgs)",
+    "m233_touched_suite": "GREEN (seeders + contentsession + cmd/stackseed)",
+    "net_new_tests_m233": 23,
+    "content_manifest_test_funcs": 17,
+    "coverage_note": "content_manifest.go at 100% function coverage after harden (Pass 1+2, 12 tests); seeders pkg 96.2%, contentsession 93.7%",
+    "flake_gate": "5/5 clean (go test -count=1 -shuffle=on on the 3 M233-touched packages)"
+  },
+  "flake_count": 0,
+  "test_basis_note": "whole-rext-repo go test funcs 1902 (v2.4 M227) -> 1954 (v2.5 through M233); the state.md headline snapshot is v2.4-scoped and left intact per the M229-M232 pattern (per-milestone status recorded here, not in the headline)",
+  "fix_tag": "playbill-m233-content-manifest-hardened",
+  "rext_tags": ["playbill-m233-content-manifest @ 9f0ab1c (build)", "playbill-m233-content-manifest-hardened @ c30fee3 (harden)"],
+  "close_fixes": ["decision-triage: added the missing (#D-M233-3) back-ref tag to content-stories-spec.md §3"],
+  "deferral_audit": "YELLOW (0 blockers); milestone-scope; flags the cross-release demo-stack test-debt CHRONIC repeat (14 fails) -> v2.5 release-close re-anchor, out of M233 scope",
+  "carry_forward": ["bring-up export wiring + cockpit tab render + content-player-<idx> seat registration -> M234 (Fate-2, verified in M234 In:)", "non-simulation product player-path builders (skill-path/academy) -> M234/M235 (Fate-2)", "14 pre-existing demo-stack test failures -> v2.5 release close (REPEAT pattern, inherited)"],
+  "notes": "The manifest half of Content stories: BuildContentProducts projects a content_products[] menu from the SAME content-session fixture the M232 seeder seeds from (single-source/D9) — per product, played sessions with player+manager seat keys + result paths + has_manager_view + app_base + per-type icon. Honesty-gated (CanonicalFileMatchesProjection + a teeth test) so the checked-in content-manifest.json can't drift; fail-closed (drop-with-reason, ValidateContentManifest fails loud, no fabrication). Emitted by stackseed --content-export. Open question resolved (D-M233-1): a SEPARATE content-manifest.json (the cockpit reads JSON, not YAML). The load-bearing flat-index-survives-drops seat single-source invariant is verified at both ends + pinned by TestContentProducts_FlatIndexSurvivesDrops. 0 platform edits."
+}
