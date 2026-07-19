@@ -88,3 +88,31 @@ Unit-verify: the anchor matches the real source, and the produced view carries N
 authoring copy + re-pin the consumed tag. Then take the first proof: a cold /demo-up + the coverage sweep's
 `ANT_ACADEMY` rendered-card count. If a cold /demo-up cannot complete in this environment, exit user-blocker with
 the specific obstacle (do not fake the proof).
+
+## PRAGMATIC-CLOSE-MANDATE — 2026-07-19 — close on the runtime proof; formal gate → M235/M236
+
+**Decision (user, explicit via AskUserQuestion):** Close M230 on the standalone runtime proof of the Option C
+academy-fill demo-patch (the patched academy home grid served 59 real skill-path cards, 0 Draft chips, through the
+exact DB-authoritative code path with a signed-in persona; clone reverts byte-clean; 14 unit tests green). Do NOT
+force a local cold `/demo-up` now to satisfy the formal gate's coverage-sweep card count.
+
+**Rationale.** The fill mechanism is BUILT + runtime-proven via the exact code path — strong evidence it works. The
+formal gate's specified measurement (rendered-card count on a **cold `/demo-up`**) is blocked locally by a drifted
+`next-web` clone (2 demo-patch manifests would drift-refuse) + a heavy local bring-up on a box with prior docker
+trouble. The release ALREADY ends with cold-reset-to-seed proofs — **M235** (prove-it-lands) and **M236**
+(prove-on-billion) — where a full cold bring-up happens anyway. Folding the academy render's formal card-count proof
+there is lower-risk than a one-off local bring-up now.
+
+**Gate status:** NOT MET formally (closed-incomplete, pragmatic-close); MET-by-proxy via the runtime proof.
+`carry-forward.md` REQUIRED (close-milestone Phase 9-iter) routing the clusters below.
+
+**Carry-forward routing (Fate-3):**
+1. Formal cold-`/demo-up` ANT_ACADEMY rendered-card-count gate proof → **M235** (cold reset-to-seed) / **M236**
+   (prove-on-billion) — the academy grid render folds into their cold bring-ups. The M230 patch tag
+   `playbill-m230-academy-fs-published` is the fix they consume.
+2. Local `next-web` clone re-anchor (2 drifted demo-patch manifests) → a demo-up prerequisite for M235/M236
+   (tangential demo hygiene, not academy-specific).
+3. `getPublicCatalogView` 2nd manifest for the anonymous `/library` + `/free` academy routes (faithful follow-on;
+   the employee-authed home-grid fill only needs `getServerCatalogView`) → next-iter / M235 queue.
+
+**Handler:** `PROVE-M230-close-on-runtime-proof`.
