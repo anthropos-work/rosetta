@@ -21,7 +21,7 @@
   idempotent, PerStackIsolated + audited, registered in the seeder set. Closure stays green
   (resolve-or-drop skill node-ids, never fabricate).
 
-- [ ] **S3 — Modality substrate: transcript + CODE + DOCUMENT + INTERVIEW reports.**
+- [x] **S3 — Modality substrate: transcript + CODE + DOCUMENT + INTERVIEW reports.** ✅ rext `bea0324`
   `actors` (PII names → anon identity) + `interactions` transcript (action_type real, action_payload
   synthesized); CODE modality (CodeSubmission / code criterion input_format); DOCUMENT modality
   (CollaborativeAsset / storage_upload); INTERVIEW full `interview_extraction_results.user_report` +
