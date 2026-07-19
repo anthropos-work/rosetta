@@ -29,6 +29,11 @@ On a cold reset-to-seed, every in-scope (session x action) logs in on the correc
 - Pick interesting source sims per type; seed the full required set: training/assessment/hiring/interview each full+complete with PASSED and NOT-PASSED, assessment passed = 2 voice + 1 code + 1 document
 - Drive every (session x action) end-to-end via a Playthrough (reuse hero-login.ts) + a coverage descriptor asserting the result page renders real content with non-zero values
 - Triage each blank/wrong landing to its true read-model (the M219/M222 mirror-table-vs-base-session trap) and fix in seeder/manifest, or route to a demo-patch / escalate; verify no manager-played, deterministic reseed, 0 prod-ejects
+- **Inherited from M230 (carry-forward, Fate-3):** on the cold reset-to-seed, also run the **`ANT_ACADEMY`** coverage
+  descriptor (rendered-card count, no Draft chip) consuming rext tag `playbill-m230-academy-fs-published` — the FORMAL
+  academy-fill gate M230 proved by-proxy; and **re-anchor the drifted local `next-web` clone** (2 demopatch manifests)
+  as a cold-`/demo-up` prerequisite. Plus the `getPublicCatalogView` 2nd-manifest anonymous-routes follow-on. See
+  `../m230-academy-demo-fill/carry-forward.md`.
 
 ### Out
 - Live-on-billion proof (M236)
