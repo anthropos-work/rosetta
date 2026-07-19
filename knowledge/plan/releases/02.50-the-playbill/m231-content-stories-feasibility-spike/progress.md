@@ -12,11 +12,11 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
   - [x] Classify each route: renders-from-seed | runtime-computed-blank | needs-demo-patch | no-surface
   - [x] Prove-by-render: code+DB proof (resolver SELECTs + prod persisted score/result_status/fan-out + `seed-verified-skill` precedent). Live billion render corroboration deferred to M235 prove-it-lands (no content-story sessions seeded on billion yet — that's the M232+ build)
 
-- [ ] **S2 — Prod-session sourcing + anonymization mechanism**
-  - [ ] Confirm the `/db-query` read path selects interesting real prod sessions per type (honor db-access boundary)
-  - [ ] Identify which fields scrub cleanly vs which free-text needs handling
-  - [ ] Confirm how to pin a source by prod session-id (deterministic reseed)
-  - [ ] Author the sourcing + anonymization contract (mechanism only; the copy is M232)
+- [x] **S2 — Prod-session sourcing + anonymization mechanism**
+  - [x] Confirm the `/db-query` read path selects interesting real prod sessions per type (confirmed live; ASSESSMENT 5,172 / TRAINING 1,799 / HIRING 1,679 / INTERVIEW 488 completed)
+  - [x] Identify which fields scrub cleanly vs which free-text needs handling (structured IDs/enums/numerics keep; free-text = actor names + LLM feedback + input_data + transcript + interview reports)
+  - [x] Confirm how to pin a source by prod session-id (`sessions.id` uuid) + the public-anchoring inner-join rule
+  - [x] Author the sourcing + anonymization contract (§3; mechanism only; copy is M232) + resolved the clone-session-subcommand open question
 
 - [ ] **S3 — Public-sim-by-modality catalog**
   - [ ] Confirm ≥2 voice + 1 code + 1 document-assessment SOURCES exist to pin (modality = LiveKit/Chime voice, Judge0/Roadrunner code, Gotenberg document)

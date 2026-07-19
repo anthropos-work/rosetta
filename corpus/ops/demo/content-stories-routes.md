@@ -142,3 +142,91 @@ milestone.)
 
 → For the cockpit's per-session `as-manager` CTA, honor `has_manager_view`: TRUE for the four sim manager routes +
 skill-path-legacy-in-`apps/web`; FALSE (omit the CTA) for academy + AI-labs.
+
+## 3. Prod-session sourcing + anonymization contract
+
+The spike CONFIRMS the mechanism; the actual copy + anonymize + re-tenant is **M232** ([`session-clone-spec.md`](session-clone-spec.md)).
+
+### 3.1 The read path + pin-by-id (CONFIRMED viable)
+
+The `/db-query` read path (the wired read-only `postgres` MCP, `marco_read` / RDS `10.2.22.13`; the two hard rules
+of [`db-access.md`](../db-access.md) — read-only, low-impact, public-vs-customer boundary) can select interesting
+real prod sessions per type. Confirmed live (catalog + bounded reads, no bulk dump):
+
+| sim_type | completed (prod) | pending | notes |
+|---|---|---|---|
+| SIMULATION_TYPE_ASSESSMENT | 5,172 | 2,756 | biggest pool; all carry persisted score |
+| SIMULATION_TYPE_TRAINING | 1,799 | 3,839 | |
+| SIMULATION_TYPE_HIRING | 1,679 | 2,989 | |
+| SIMULATION_TYPE_INTERVIEW | 488 | 2 | + 367 `interview_extraction_results` rows |
+
+Also present (conversation modalities, mostly `result_status=pending`): CHAT_CONVERSATION 1,001 · EMAIL_CONVERSATION
+57 · FASHION_STORE_CONVERSATION 61. **Every completed session carries a persisted `score` + `result_status` +
+`ended_at`.** `passed` vs `not-passed` is selectable by score band / `evaluation_status`.
+
+**The source-pin is `jobsimulation.sessions.id` (uuid)** — the deterministic identifier M232 records in
+`seed-generation-manifest.yaml` so a reseed is byte-reproducible. Select interesting candidates with a bounded
+query (e.g. `WHERE result_status='completed' AND is_test IS NULL AND sim_type=… ORDER BY … LIMIT n`), inspect
+score/skill shape, then pin the chosen ids.
+
+### 3.2 The public-anchoring rule (load-bearing)
+
+A cloned session's `sim_id` must resolve in the demo. The demo already holds the **public** simulation catalog
+(snapshot-replayed). So **source only sessions whose `sim_id` is a public-published sim** — inner-join
+`directus.simulations` on the public predicate (`private=false AND tenant_id IS NULL AND status='published'`).
+Ample public-anchored real sessions exist per product:
+
+| sim_type | completed org-scoped | `sim_id` is public-published | distinct public sims |
+|---|---|---|---|
+| ASSESSMENT | 5,064 | 2,427 | 79 |
+| TRAINING | 1,707 | 549 | 66 |
+| HIRING | 1,679 | 395 | 36 |
+| INTERVIEW | 488 | 41 | **1** (the sole public interview sim — the interview story must pin it) |
+
+(A session on a customer-private sim would additionally require cloning that private sim's content — out of the
+public-only snapshot envelope; prefer public-anchored sources.)
+
+### 3.3 The anonymization surface — what scrubs cleanly vs what needs handling
+
+Classified from `information_schema` **without reading any customer value** (shape-only, honoring the read boundary):
+
+- **Scrub-clean structured — re-key / re-tenant deterministically:** every `*_id`
+  (`owner_id`, `organization_id`, `tenant_id`, `sim_id`, `session_id`, `target_id`/`source_id`, `timer_id`, …),
+  and `sessions.token` (regenerate). These carry no PII in themselves; the re-tenant maps them into the manifest org
+  + a minted anonymized player seat.
+- **Keep as-is (non-PII structured):** enums (`sim_type`, `status`, `completion_status`, `result_status`,
+  `acceptance_status`, `evaluation_status`, `chime_status`, `language`, criterion `type`/`input_format`), numerics
+  (`score`, `success_threshold`, `competency_level_score`, `interactions_progress`, `validation_version`,
+  `criterion_index`), timestamps (shift consistently to backdate), booleans, skill NodeIDs, `role_key`.
+- **FREE-TEXT needing handling (LLM feedback + candidate work-product + transcript + names):**
+  | field | table | risk |
+  |---|---|---|
+  | `username`, `alias` | `actors` | **direct-PII names** (candidate + stakeholders) → replace with the anon player identity |
+  | `explanation_summary`, `personal_explanation_summary`, `quick_summary` | `validation_attempt_results` | LLM feedback (`personal_*` addresses the user) |
+  | `strengths_feedback`, `weaknesses_feedback`, `personal_*_feedback`, `quick_summary` | `validation_attempt_skill_results` | LLM feedback |
+  | `title`, `*_summary`, `*_feedback`, **`input_data`**, `skills` | `validation_criterion_results` | `input_data` (jsonb) = **the candidate's raw submission** — the sharpest edge |
+  | `action_payload` | `interactions` | **the transcript** (candidate's own words) — highest PII risk; 284 MB table |
+  | `user_report`, `manager_report`, `summary` | `interview_extraction_results` | LLM reports (may name/quote the candidate) |
+  | `anticheat_summary`, `anticheat_tagline` | `public.local_jobsimulation_sessions` | free-text anticheat |
+
+  M232 handles free-text per this contract: scrub/replace names structurally; for the LLM narrative + submission +
+  transcript, either synthesize a scrubbed replacement or redact — the choice is M232's (the brief leans on
+  synthesized/scrubbed transcript + submission; a *playable* recording is DEF-M10-01, out of scope, assert
+  transcript-only at the boundary).
+
+### 3.4 The platform's own `clone-session` subcommand (open question resolved)
+
+`jobsimulation cmd/clone_session.go` exposes `clone-session --session-id --user-id` → `CloneSession(ctx, sessionId,
+userId)`, a platform-native cloner that re-players a session to a **new userId**. **Running the built binary
+in-stack is within the zero-platform-edit wall** (using the tool, not editing the repo). BUT it only re-players to
+a new userId — it does **not** anonymize free-text or re-tenant `organization_id`, and it needs heavy client wiring
+(DB + CMS + Storage + AI + Auth). So M232's rext seeder still owns anonymize + re-tenant + the mirror co-write; the
+subcommand is a candidate primitive, not a complete solution.
+
+### 3.5 Safety posture (the amendment M232 lands)
+
+Sourcing anonymized **real customer** sessions is a deliberate, user-accepted (data-controller) exception to
+[`safety.md`](../safety.md)'s "nothing behind the door" (a demo carries synthetic + public-snapshot data only).
+The bound that keeps it defensible: content-story demos are **VPN/tailnet-scoped** (Part 3's exposure posture),
+carry **anonymized** session data, and are **source-pinned**. **M232 amends `safety.md` Part 3** to record this
+honest, bounded exception. This spike only CONFIRMS the mechanism + authors this contract; it copies nothing.
