@@ -12,7 +12,7 @@
   `content-sessions` fixture + the blueprint `ContentSession`/`ContentProduct` model + loader.
   Assessment set = 2 voice + 1 code + 1 document; + training passed/not-passed; + hiring; + interview.
 
-- [ ] **S2 — Anonymization layer + ContentStorySeeder core fan-out.**
+- [x] **S2 — Anonymization layer + ContentStorySeeder core fan-out.** ✅ rext `3a2b61e`
   The anonymize-by-construction transform (structured-id re-key/re-tenant, token regen, timestamp
   shift, minted anonymized player seat → owner-is-player-vantage, free-text SYNTHESIZED never copied)
   + the seeder reconstructing per pinned session: `jobsimulation.sessions` + the
