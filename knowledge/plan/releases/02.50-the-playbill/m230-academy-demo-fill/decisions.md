@@ -50,6 +50,35 @@ the coverage sweep `ANT_ACADEMY` descriptor — **≥ floor, NO Draft chip, 0 pr
 Baseline = **0 real cards** (the F4 carry; `emptyCatalogView()`), a priori established + code+launcher-verified
 this iter. Infra: a cold /demo-up is feasible here (demo-1 images built 41h ago).
 
+## USER-BLOCKER (iter-02 close, 2026-07-19): the FORMAL gate needs a cold /demo-up — surface for a go-ahead
+
+**State:** the Option C fill is **DONE + runtime-proven**. iter-02 built the `academy-fs-published-fallback`
+demo-patch (manifest + native apply/revert helper + `ant-academy.sh` wiring + 14 unit tests, all green; rext
+tagged `playbill-m230-academy-fs-published`) and **runtime-proved** it standalone: the patched academy served
+**59 real skill-path cards, 0 Draft chips** (`draft-ribbon`=0, `data-draft="true"`=0), real catalog names, clone
+byte-clean after revert.
+
+**Why this is a user-blocker (not just the next tik):** the milestone's **exit gate** is specified as the
+coverage sweep's `ANT_ACADEMY` **rendered-card count on a COLD `/demo-up`** — a full multi-phase demo bring-up +
+a Playwright coverage sweep, the single heaviest operation in this family. Per the orchestrator's infra-reality
+guidance ("if a full cold `/demo-up` is infeasible / heavy, surface it as a user-blocker with the specific
+obstacle rather than burning hours"), and because a **concrete unrelated obstacle** surfaced — the local
+`stack-demo/next-web-app` clone has DRIFTED from its pinned demopatch manifests (`next-web-public-website-url` +
+`next-web-studio-url`: `live != pinned pre`), so a cold `/demo-up` would drift-refuse those next-web patches and
+likely needs a clone-sync/re-pin first — the formal-gate proof is surfaced for a **go-ahead + clone-sync
+decision**, not run blind in this sub-agent.
+
+**What's needed to close the gate (the next build-iter call, with a go-ahead):**
+1. Re-sync/re-pin the local `stack-demo` clones (or accept the non-fatal next-web drift-refuse) so a cold
+   `/demo-up` is clean.
+2. Cold `/demo-up` consuming rext `playbill-m230-academy-fs-published` (or a superseding tag).
+3. Run the coverage sweep's `ANT_ACADEMY` rendered-card descriptor (employee vantage) → assert count ≥ floor,
+   0 draft chips, 0 prod-ejects. The M219 R-8 note says this descriptor "reports RED until the render is fixed";
+   this patch is the fix — the sweep should now go GREEN.
+
+**Not a re-scope, not a design change:** the fix is chosen (Option C), built, and runtime-proven; only the
+heavy formal verification remains.
+
 **Next-tik direction (iter-02, first tik):** Author the Option C demo-patch in the rext authoring copy
 (`.agentspace/rosetta-extensions/demo-stack/patches/ant-academy-fs-published-fallback/` + its `<name>.yaml`
 manifest), content-anchored on the `?? emptyCatalogView()` fallback in `serverTenant.js` (BOTH

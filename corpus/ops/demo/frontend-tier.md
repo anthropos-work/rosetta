@@ -371,6 +371,46 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > it can't map the Clerk session to a seeded platform user) — the F6 bar is "authenticated, not anonymous", which
 > `member` (signed-in + org + entitled) satisfies.
 
+### The empty grid is FILLED — the `academy-fs-published-fallback` demo-patch (v2.5 "the playbill" M230)
+
+The F4 carry — a demo academy grid rendering **0 cards** — is closed by **Option C**: a sha-pinned rext
+demo-patch (`demo-stack/patches/academy-fs-published-fallback`) on the demo's **own ephemeral ant-academy clone**
+that restores an **FS-as-PUBLISHED catalog fallback**. **Zero canonical-repo edits.** (Option B — a firewalled
+academy-content snapshot surface: prod-capture the public academy rows + replay into the demo app DB + wire
+`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` + compose the academy subgraph into the demo router — was weighed and NOT
+chosen: it needs a prod-DB read + a new snapshot surface + subgraph composition, i.e. far more cold-`/demo-up`
+infra risk. Option C is the least-infra-risk path to the gate.)
+
+**Why the grid was empty (the F4 root cause, code-confirmed — NOT a client render defect).** Since ant-academy
+v0.5.1 (M7) the home grid's catalog is DB-authoritative: `serverTenant.js::getServerCatalogView()` is
+`const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView(); return draftsEnabled() ? mergeDrafts(view, eids) : view`.
+A demo sets **no** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (`ant-academy.sh` sets it **0×**) and the demo app DB holds
+no academy rows, so `getBackendCatalogView` returns null → the grid resolves to `emptyCatalogView()` → 0 cards.
+The M7 cutover deliberately **removed** a pre-existing FS-as-published fallback at exactly the `?? emptyCatalogView()`
+expression.
+
+**The fill.** The demo-patch restores that fallback, **env-gated on `ACADEMY_DEMO_FS_PUBLISHED`** so it is
+behavior-identical to pristine when unset (safe even if upstreamed). When set, the fallback reuses the
+already-tested `mergeDrafts(emptyCatalogView(), eids)` — which returns the full public FS catalog — and **strips
+the `_draft`/`_origin` tags** from chapters/series/skillPaths, so the cards render through the **unchanged** RSC →
+`AcademyClient` → `SkillPathCard` chain as **PUBLISHED — NO "Draft" chip** (the chip is `skillPath?._draft === true`;
+Option A — the `ACADEMY_SHOW_DRAFTS` draft layer — was REJECTED precisely because it stamps that chip). This is the
+gate's sanctioned **"faithful equivalent"** of the DB-authoritative GraphQL path.
+
+**How it's applied** — like `ant-academy-dev-origins`, by a native rext helper
+(`stack-injection/apply-academy-fs-published.sh apply|revert`), **NOT** the image-baked `demopatch` tool, because
+ant-academy runs natively via `next dev`: **apply-before-launch, revert-on-`--stop`**, idempotent + drift-refuse +
+single-occurrence + post-condition re-check. **Default-on** for every demo; **`DEMO_NO_ACADEMY_FILL=1`** opts out;
+**non-fatal** (a refused patch leaves the grid empty — the documented residual). The canonical
+`anthropos-work/ant-academy` repo is never touched (only the demo's ephemeral gitignored clone). Shipped in rext
+at tag `playbill-m230-academy-fs-published`.
+
+**Proof.** Runtime-proven standalone (M230 iter-02): the patched academy served the home grid with **59
+skill-path cards** (real catalog names — Claude Code, AI Foundations, Agent SDK, AI Engineering, Business, …),
+**0 `draft-ribbon` / 0 `data-draft="true"`**, and the clone reverted **byte-clean**. The **formal gate** — the
+coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`coverage-protocol.md`](coverage-protocol.md))
+— is the remaining release-close verification.
+
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
 > per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —
