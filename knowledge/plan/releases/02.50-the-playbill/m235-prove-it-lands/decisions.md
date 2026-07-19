@@ -48,3 +48,40 @@ both vantages, 0 ejects. Current live-proven = 0 (no stack). Fixture readiness �
 not-passed; 3 product sections absent). Track A drives readiness → 100%; Track B is the live measurement.
 **Next-tik direction:** iter-02 = the fixture matrix closure (the 4 missing simulation sessions + KB-1 fix +
 seeder/fixture-cleanliness/closure unit proofs).
+
+## USER-BLOCKER-M235-01: the anonymization scrub removes ZERO names — decide before extending the fixture — 2026-07-19
+
+**Surfaced by:** iter-02 (tik) Phase 1 Step 0 re-survey, before any new capture ran. **EXIT_REASON: user-blocker.**
+
+**The finding (rigorously verified, read-only):** the content-story anonymization scrub is systematically NOT
+removing personal names from the shipped M232 fixtures:
+- **0** `<<ACTOR_i>>`/`<<ORG>>` placeholder tokens exist in ANY of the 9 `contentsession/fixture/content/*.json`
+  (so the seeder's `fillPlaceholders` fills nothing).
+- **8 of 9** fixtures ship a real customer FIRST NAME in the copied LLM feedback (Filippo, Raffaele ×24,
+  Madelynn, Simone, Cristian, Marco, Henry, Tram — each "{Name} ha/showed/demonstrated…").
+
+**Root cause (code-cited):** `cmd/content-capture/main.go:94-116` builds the scrub replacement map ONLY from
+`jobsimulation.actors.username`/`.alias` (both empty — `coalesce(...,'')` — for these sessions). The candidate's
+real first name appears throughout the LLM feedback because it comes from the session owner's **`public.users`
+identity**, which the capture never sources into the replacement map. The scrub therefore has no knowledge of
+the name that is actually in the text.
+
+**Posture:** `session-clone-spec.md` §6 + `safety.md` §3.8 document a data-controller-ACCEPTED "best-effort
+scrub / residual re-identification risk, VPN/tailnet-scoped." The **material new fact** is that the scrub
+removed **zero** names (systematic, every session), not the "occasional residual" the acceptance was premised on.
+
+**Why it blocks M235:** the milestone's central Track-A task is to capture **4 more** real prod sessions into
+this exact fixture (+~44% footprint). Whether to **(a)** harden the scrub (source the owner's real name + strip
+first/last name tokens) + re-capture the existing 9, **(b)** re-affirm the accepted-residual + VPN-scope posture
+and proceed to capture, or **(c)** narrow the sourcing — is a data-controller decision that changes what code
+lands (and may rework the closed M232 deliverable + its shipped fixtures). Expanding the real-PII footprint
+before the user rules is the wrong default. No fake proof; no platform edit.
+
+**Recommendation:** harden the scrub before extending — source `public.users.first_name`/`name` for the session
+owner into the `repl` map AND token-split every actor/owner name (scrub each token ≥3 chars), add a name-leak
+regression test, re-capture all 9 fixtures, THEN proceed to the 4 new captures. (The `git`-diffable fixtures make
+a re-capture auditable.) The user may instead re-affirm accept-as-is given the VPN-scope control.
+
+**Not blocked (available next session regardless of the ruling):** the Playthrough + coverage descriptors for
+the existing sessions, the non-simulation product player-path builders (`content-stories-spec.md` §6), and the
+M230 clone re-anchor — none touch the scrub or add PII.
