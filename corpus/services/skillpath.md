@@ -81,6 +81,17 @@ erDiagram
 - `completed`: All steps finished
 - `archived`: Old version, superseded by upgrade
 
+> **The manager view reads an `app`-side MIRROR, not this runtime (added v2.5 M231).** The player skill-path page
+> reads this runtime session (`getOrCreateSkillPathSession` — a **get-OR-create** that auto-materializes a blank
+> `pending` session on first read, so an unseeded skill path renders empty, not 404). But the **manager insights**
+> surface (`insightsSkillPathByMemberships`, the `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]`
+> scoreboard in `apps/web`) does **not** read this runtime at all — it reads the `app`-side MIRROR table
+> `public.local_skill_path_session` (`app/internal/organization/intelligence.go:997/1142`; Ent schema
+> `app/internal/data/ent/schema/local_skill_path_session.go` — `progress` 0-100, `status`, no `score`), the exact
+> analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the `skillpath.*` runtime rows renders an
+> empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab (no-surface).
+> Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+
 ## Interface Discovery
 
 ### GraphQL API

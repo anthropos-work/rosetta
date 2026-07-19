@@ -60,7 +60,7 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 ### How It Fits Into the Platform
 
-Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** but does not call backend services.
+Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progress` / `academy_last_activity` / … in `app`. This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`).
 
 ```mermaid
 graph LR
@@ -305,7 +305,8 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
   queries `academyCatalogSeries` + `academyCatalogSkillPaths`, tenant-filtered server-side. This is the catalog source of
   truth since v0.5.1 (M7); on failure the grid degrades to `emptyCatalogView()` (0 cards). See
   [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7). *(No Connect-RPC and no Redis events — the
-  academy is a GraphQL **read client** of the academy subgraph, nothing more.)* The reverse ingest also exists: per a
+  academy talks to the backend over GraphQL only: it **reads** the catalog AND **writes** per-user progress via
+  `upsertChapterProgress`/`setLastActivity` mutations since v0.5 M2 — see § How It Fits Into the Platform.)* The reverse ingest also exists: per a
   comment in `proxy.js`, the platform backend's Talk-to-Data indexer pulls Academy's **separate** public `/catalog.json`
   (an FS-derived, metadata-only, per-chapter × language index — **not** the grid's source).
 
