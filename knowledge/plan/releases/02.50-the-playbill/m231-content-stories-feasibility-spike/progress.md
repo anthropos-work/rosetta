@@ -18,9 +18,9 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
   - [x] Confirm how to pin a source by prod session-id (`sessions.id` uuid) + the public-anchoring inner-join rule
   - [x] Author the sourcing + anonymization contract (§3; mechanism only; copy is M232) + resolved the clone-session-subcommand open question
 
-- [ ] **S3 — Public-sim-by-modality catalog**
-  - [ ] Confirm ≥2 voice + 1 code + 1 document-assessment SOURCES exist to pin (modality = LiveKit/Chime voice, Judge0/Roadrunner code, Gotenberg document)
-  - [ ] Map each modality to a concrete pinnable public simulation source
+- [x] **S3 — Public-sim-by-modality catalog**
+  - [x] Confirm ≥2 voice + 1 code + 1 document-assessment SOURCES: **GO 77 voice / 65 code / 30 document** public sims
+  - [x] Map each modality to a concrete pinnable public simulation source (`directus.sim_tasks.task_type` ∈ {call, code, collaborative_doc/send_attachment, chat}; already snapshot-replayable)
 
 - [ ] **S4 — AI-labs feasibility + academy "session" verdict**
   - [ ] Rule AI-labs in/out (labs-api client wired nil?)

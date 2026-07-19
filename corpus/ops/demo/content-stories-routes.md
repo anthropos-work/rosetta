@@ -230,3 +230,36 @@ Sourcing anonymized **real customer** sessions is a deliberate, user-accepted (d
 The bound that keeps it defensible: content-story demos are **VPN/tailnet-scoped** (Part 3's exposure posture),
 carry **anonymized** session data, and are **source-pinned**. **M232 amends `safety.md` Part 3** to record this
 honest, bounded exception. This spike only CONFIRMS the mechanism + authors this contract; it copies nothing.
+
+## 4. Public-sim-by-modality catalog — GO with huge margin
+
+The content-story set wants ≥2 **voice** + 1 **code** + 1 **document** assessment SOURCES to pin. A source = a
+public simulation whose blueprint has a task of that modality. **Confirmed — satisfied with a large margin.**
+
+**Where modality lives.** Not in a single `task_type` enum. In code it is `SimFeature{Chat, Voice, Code, Doc,
+CollaborativeDoc}` booleans + an `InteractionMode{chat, call, code, send_attachment, collaborative_doc}` enum (proto
+`cms/v1/…/job_simulations.go`) + a per-interaction `ActionType{email, chat_message, storage_upload,
+validation_request, call}`. (`SimTask.TaskType` is a free string.) In the **content DB** the modality is carried on
+`directus.sim_tasks.task_type`, whose values coincide with the `InteractionMode` tokens — so the catalog query is
+valid.
+
+**The catalog** (distinct public-published source sims per modality — predicate `private=false AND tenant_id IS NULL
+AND status='published'`):
+
+| `sim_tasks.task_type` | modality | distinct public sims | engine / backing jobsim entity |
+|---|---|---|---|
+| `call` | **VOICE** | **77** | LiveKit realtime + AWS Chime recording → `RealtimeCall` + `ChimeRecording` |
+| `code` | **CODE** | **65** | **in-process Judge0** (`jobsimulation/internal/runner/`; the standalone roadrunner service is retired) → `CodeSubmission` |
+| `collaborative_doc` (+ `send_attachment` 1) | **DOCUMENT** | **30** | `CollaborativeAsset` + `storage_upload`; Gotenberg office→PDF is a backend-side converter (`app/internal/converter/gotenberg.go`), not the jobsim doc-task path |
+| `chat` | chat / text | 307 | `Interaction` / `ai_interaction` |
+
+**Requirement vs reality:** voice **77 ≥ 2** ✅ · code **65 ≥ 1** ✅ · document **30 ≥ 1** ✅. Public sim catalog by
+purpose-`type`: TRAINING 121 · ASSESSMENT 98 · HIRING 87 · **INTERVIEW 1**. The one scarcity is INTERVIEW (a single
+public interview sim) — the interview content-story must pin that one sim (and its 41 public-anchored real completed
+sessions). `directus.sim_tasks` is snapshot-captured (public predicate + parent-scope), so these public sim SOURCES
+are **already replayable** into a demo — no new capture needed.
+
+Session-side confirmation (`validation_criterion_results.input_format` over real played criteria): `chat` 61,714 ·
+`collaborative_asset` 8,501 · `text_document` 5,838 · `ai_assistant` 1,151 · `call` 6 — voice is graded via the
+`interview_extraction_results` path (not criterion `input_format`), which is why `call` criteria are rare while
+77 public voice sims exist.
