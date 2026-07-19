@@ -32,6 +32,7 @@ The 2nd "Content stories" tab beside "Org stories": per-product sections renderi
 - [x] Thread `--content-manifest` into the `cockpit.py` launch (+alt guard, set -u safe)
 - [x] Verify the export + launch wiring — new `StorytellingCockpitWiring` test (10/10) + proven end-to-end (real export → cockpit → probe: tab renders 9 sessions × 2 CTAs, `/content-manifest.json` served)
 
-### Docs (Phase 5, folded)
-- [ ] Extend `corpus/ops/demo/content-stories-spec.md` with the render half (tabbed model, two-action contract, icon map, base routing, seat registration)
-- [ ] Note in `cockpit-spec.md` (the 2nd tab) + update roadmap/state at close-of-milestone
+### Docs (Phase 5, folded) ✅
+- [x] Extend `corpus/ops/demo/content-stories-spec.md` with the render half — new §7 (tabbed model, two-action contract, per-type icon map, per-product base routing, AI-labs presence-only, academy origin, seat registration, bring-up wiring, unit-vs-M235 boundary); header + §6 updated
+- [x] Note in `cockpit-spec.md` — the `/content-manifest.json` endpoint row + the "2nd tab (M234)" section pointing to `content-stories-spec.md` §7
+- [ ] roadmap/state at close-of-milestone (deferred to `/developer-kit:close-milestone` per its contract)
