@@ -1,0 +1,13 @@
+{
+  "milestone": "M229",
+  "title": "academy content-model re-ground",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-19",
+  "platform_repo_edits": 0,
+  "tests": { "note": "docs-only milestone — no test suite; correctness verified by spot-checking every code claim against stack-demo/ant-academy/code/ + demo-stack/ant-academy.sh" },
+  "flake_count": 0,
+  "docs_corrected": 4,
+  "docs": ["corpus/services/ant-academy.md", "corpus/ops/demo/frontend-tier.md", "corpus/ops/run_guide.md", "CLAUDE.md"],
+  "notes": "The KB-fidelity prerequisite for the v2.5 academy thread. Corrected the false 'Backend services: None / no GraphQL / static JSON / only Clerk' claims (which mis-routed the F4 empty-grid carry into the platform repo for a whole release) to the true DB-authoritative catalog model + the demo empty-render root cause. All Fate-1."
+}

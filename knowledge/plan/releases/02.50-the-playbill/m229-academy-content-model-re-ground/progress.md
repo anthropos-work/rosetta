@@ -19,3 +19,15 @@
   getBackendCatalogView; draftMode.js draftsEnabled; graphql/server.js NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT)
   and `demo-stack/ant-academy.sh` (endpoint NOT set) + `.env.example` (endpoint shipped empty).
 - No stale "static JSON / no backend / Backend services: None" claims remain (grep-verified).
+
+## M229: Final Review — Completeness Ledger (section, all Fate-1)
+
+**Done (Fate 1):**
+- S1 — `corpus/services/ant-academy.md` re-grounded to the DB-authoritative catalog model (new § The Content Model + 4 corrected claims + diagram edge). ✅
+- S2 — `corpus/ops/demo/frontend-tier.md` F4 mis-attribution + "no platform-backend link" nuance corrected. ✅
+- **Phase-7 extension (same false claim, found in Phase 3 review):** `corpus/ops/run_guide.md` + `CLAUDE.md` corrected to the DB-authoritative model. ✅
+
+**Confirmed-covered (Fate 2):** M230 owns the actual fill (production-faithful); M231 owns the content-stories spike. No M229 work routed there — those are already-planned siblings.
+**Annotated (Fate 3):** none. **Dropped:** none. **Escape-hatch (release-scope-breaking):** none.
+
+**Verdict:** All scope items delivered in this milestone (plus 2 sibling-doc corrections of the same claim). Nothing routed, dropped, or escape-hatch-deferred. Clean close. Deferral audit: GREEN for M229 (introduced no deferrals; the v2.4 rext demo-stack test carries are a separate release's ledger).
