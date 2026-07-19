@@ -3,7 +3,7 @@ milestone: M230
 slug: academy-demo-fill
 version: v2.5 "the playbill"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-19
 depends_on: M229
@@ -14,7 +14,7 @@ delivers: corpus/ops/demo/frontend-tier.md
 
 # M230 — academy demo fill
 
-**Status:** `planned`  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M229
+**Status:** `archived` (completed 2026-07-19, closed-incomplete/pragmatic)  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M229
 
 ## Goal
 Make the demo (and dev) ant-academy home grid render REAL academy content the way taxonomy/skill-path do — PRODUCTION-FAITHFUL, no 'Draft' chip (user decision) — closing the year-old F4 carry inside the zero-platform-edit wall.

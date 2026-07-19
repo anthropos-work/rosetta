@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M230 academy-demo-fill (planned — iterative: make the demo ant-academy grid render REAL academy content PRODUCTION-FAITHFULLY, no Draft chip; first tik decides Option C sha-pinned demo-patch vs Option B firewalled academy-snapshot surface). ∥ M231 content-stories spike."
-last_closed: "M229 — 2026-07-19"
-phase: "v2.5 in development. M229 academy-content-model-re-ground CLOSED 2026-07-19 (section, closed-complete; 4 docs re-grounded to the DB-authoritative catalog model, code-verified, all Fate-1, 0 platform edits; merged into release/02.50-the-playbill). NEXT: /developer-kit:build-milestone → M230 academy demo-fill (iterative, production-faithful) ∥ the M231 content-stories spike. One combined release, spike-first, 0 platform edits."
+active_milestone: "M231 content-stories-feasibility-spike (planned — section, HARD go/no-go: discover per-product player+manager result routes + prove-by-render which land from seedable rows vs runtime-blank; confirm the prod-session sourcing+anonymization mechanism; catalog public sims by modality; rule AI-labs + the academy section in/out — the barrier before the whole Thread-B build chain)."
+last_closed: "M230 — 2026-07-19"
+phase: "v2.5 in development. M229 (doc re-ground) + M230 (academy demo-fill) CLOSED 2026-07-19. M230 closed-incomplete/pragmatic: the Option C academy-fs-published-fallback demo-patch (rext tag playbill-m230-academy-fs-published) is built + runtime-proven (59 cards, 0 chips); the formal cold-/demo-up card-count gate + next-web re-anchor folded to M235/M236 (Fate-3, homed). NEXT: /developer-kit:build-milestone → M231 content-stories feasibility spike (HARD go/no-go — the barrier for Thread B; wants prod DB read access). 0 platform edits."
 last_updated: "2026-07-19"
 ---
 
@@ -20,16 +20,16 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M230 "academy demo-fill" (planned, iterative)
+## Active milestone — M231 "content-stories feasibility spike" (planned, section — HARD go/no-go)
 
-**Goal.** Make the demo (and dev) ant-academy home grid render REAL academy content **production-faithfully — no
-"Draft" chip** (user decision) — closing the year-old F4 carry inside the zero-platform-edit wall. **Exit gate:** on a
-cold `/demo-up`, the grid renders real cards (≥ floor) for the employee vantage, no Draft chip, via the real
-DB-authoritative GraphQL path (or a faithful equivalent), 0 ejects, verified by a rendered-card count. **First tik
-decides:** Option C (sha-pinned rext demo-patch restoring the M7 FS-as-published fallback on the ephemeral clone) vs
-Option B (a firewalled academy-content snapshot surface + wire the endpoint + compose the subgraph). **Parallel with
-M231** (the content-stories spike). M229 (the content-model re-ground) is the landed KB prerequisite. Next:
-`/developer-kit:build-milestone` (M230 is iterative → `/developer-kit:build-mstone-iters`) — but M231's spike can start first/concurrently.
+**Goal.** The barrier before the whole Thread-B build chain (mirrors v2.4's M222): BEFORE building anything, discover
+the exact per-product **player + manager result routes** and **prove-by-render** which land from seedable rows vs are
+runtime-computed-blank; confirm the **prod-session sourcing + anonymization** mechanism (read → pick interesting → pin
+by prod session-id); catalog captured public sims by **modality** (confirm ≥2 voice + 1 code + 1 document assessment
+sources exist); and rule **AI-labs + the academy content-product section** in or out. **Delivers →**
+`corpus/ops/demo/content-stories-routes.md` (the manager-view eligibility matrix + result-route map + modality catalog
++ AI-labs verdict + the sourcing/anonymization contract). **Needs prod DB read access** (`/db-query`) for the
+route/session scouting. M230 landed the academy fill (Thread A). Next: `/developer-kit:build-milestone` → M231.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -40,6 +40,10 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M230 academy-demo-fill** — 2026-07-19 (iterative, closed-incomplete/pragmatic). The Option C
+  `academy-fs-published-fallback` demo-patch (rext tag `playbill-m230-academy-fs-published`) built + runtime-proven
+  (59 real cards, 0 Draft chips, exact DB-authoritative code path, byte-clean revert; 14 unit tests, flake 3/3). Gate
+  MET-BY-PROXY; the formal cold-`/demo-up` card-count sweep + next-web re-anchor folded to M235/M236 (Fate-3, homed). 0 platform edits.
 - **M229 academy-content-model-re-ground** — 2026-07-19 (section, closed-complete). Corrected 4 docs (`ant-academy.md`
   + `frontend-tier.md` + `run_guide.md` + `CLAUDE.md`) from the false "no backend / static JSON / only Clerk" model to
   the DB-authoritative catalog (grid → academy subgraph over GraphQL → `emptyCatalogView()` on failure) + fixed the F4
@@ -55,8 +59,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   1888→**1902**; flake 5/5; 0 platform edits. Live re-prove → M228 (Fate-2). Deferral audit YELLOW.
 - **M226 opening-night** — 2026-07-17 (closed-on-gate). 7-condition hiring gate proven live on `billion`; recruiter
   p95 1.74 s < 5 s; 5 findings fixed live; Go funcs 1887→1888; 0 platform edits.
-- **M225 dress-the-set** — 2026-07-17 (section, complete). Auto-set-dress guard + coverage gate (3 seats) + 1
-  recruiter playthrough on pt-world Org D.
 
 ## Recently shipped (releases, newest first — max 3)
 
