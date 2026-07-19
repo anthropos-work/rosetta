@@ -85,3 +85,40 @@ a re-capture auditable.) The user may instead re-affirm accept-as-is given the V
 **Not blocked (available next session regardless of the ruling):** the Playthrough + coverage descriptors for
 the existing sessions, the non-simulation product player-path builders (`content-stories-spec.md` §6), and the
 M230 clone re-anchor — none touch the scrub or add PII.
+
+## RESOLUTION of USER-BLOCKER-M235-01 — user ruled "Fix scrub + re-capture" (2026-07-19, iter-03)
+
+**User ruling (2026-07-19):** "Fix scrub + re-capture." Landed in iter-03 (tik under TOK-01, Track A) as a
+prerequisite hardening of the fixture substrate before extending it.
+
+**What changed (rext `stack-seeding`, tag `playbill-m235-scrub-fix`):**
+- **`cmd/content-capture/main.go`** now sources the **session owner's real identity** from `public.users`
+  (`sessions.owner_id` → `firstname`/`lastname` + email local-part) into the scrub `repl` map, mapped to the
+  **player placeholder `<<ACTOR_0>>`**. This is the name that was leaking (threaded through the LLM feedback);
+  it was never in `jobsimulation.actors` (whose `username`/`alias` are empty for these sessions), which is why
+  the original scrub removed zero names.
+- **`scrub` package**: `NameTokens` (full name + each ≥3-char whitespace token) + `AddNameReplacements`
+  (first-writer-wins) so a **bare first-name** mention is caught; matching is now **word-boundary-aware**
+  (a short token never corrupts a common word — "Ann" ≠ "announce"). `SurvivingToken` is the new leak probe.
+- **Capture-time fail-closed post-condition (G-post)**: after scrubbing a session the capture asserts **no
+  sourced name token survives** any free-text leaf and **refuses to write the fixture** if one does (prints
+  only the field name + token length — never a value). This is the name-leak gate the offline test cannot be
+  (it can't know arbitrary names); the names are known in-process and never persisted.
+- **Offline cleanliness gate** (`TestEmbeddedContent_NoStructuralPII`) extended: still fails on structural PII,
+  now **also asserts the set carries the `<<ACTOR_0>>` placeholder** — the "sourced zero names → zero
+  placeholders" regression tripwire (it went RED on the buggy fixtures, GREEN after re-capture).
+- **Re-captured all 9 fixtures** through the fixed path (read-only prod, marco_read, counts-only).
+
+**Verified clean (counts/exit-codes only, no content read into context):**
+- `<<ACTOR_0>>` placeholders present in **9/9** fixtures (**545** total, was **0**); per-file 44–107,
+  correlating with transcript length → no over-redaction explosion.
+- The **8 flagged first names** (Filippo/Raffaele/Madelynn/Simone/Cristian/Marco/Henry/Tram): **0** matches
+  across all 9 fixtures (was 8/9 leaking).
+- Full unit gate GREEN (contentsession + scrub + seeders content-story); module-wide `go vet`/`go test` clean;
+  existing scrub regression tests still pass (word-boundary change is backward-compatible).
+
+**Posture (unchanged, now honestly described):** still **best-effort, NOT provably clean** — a name never
+*sourced* (a third party mentioned in passing) can still survive; residual re-identification risk remains
+**ACCEPTED by the data-controller, VPN/tailnet-scoped**. What changed is the *what-gets-scrubbed* description:
+the owner-identity name is now removed, and a *sourced* name can no longer be silently written. Docs corrected:
+`session-clone-spec.md` §3+§6, `safety.md` §3.8, and the KB-1 stale `content-sessions.yaml` header.

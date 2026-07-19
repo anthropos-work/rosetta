@@ -699,21 +699,29 @@ feedback, the real submission, the real interview report. So the tooling **copie
 Tailscale — `db-access.md`; it `SET`s the session read-only and only `SELECT`s), COPIES each pinned session's
 result-fan-out content, and **SCRUBS the detectable PII** before writing the checked-in fixture:
 
-- the source session's real **actor names** → `<<ACTOR_i>>` placeholders and the **source org name** → `<<ORG>>`
-  (the seeder fills these with the demo persona/org); **emails, URLs, and long digit-runs** → redaction markers.
+- the source session's real person-names — the transcript **actors AND the session OWNER's real identity**
+  (`sessions.owner_id` → `public.users.firstname`/`lastname` + the email local-part; the candidate's first name is
+  threaded through the LLM feedback and comes from HERE, not from the empty `jobsimulation.actors` names) →
+  `<<ACTOR_i>>` placeholders, **token-split** so a bare first-name mention is caught; the **source org name** →
+  `<<ORG>>` (the seeder fills these with the demo persona/org); **emails, URLs, and long digit-runs** → redaction
+  markers. *(M235 leak fix, 2026-07-19: the original capture sourced only the empty actor names → removed **zero**
+  names → 8/9 fixtures shipped a real first name. The owner-identity path + a **capture-time fail-closed
+  post-condition** — the capture refuses to write a fixture in which a **sourced** name survives — closed it.)*
 
-**This is NOT "provably clean".** Free-text scrubbing is imperfect: a name the pass does not know, an unusual
-identifier format, a company mentioned in passing can survive. Raw customer content is streamed prod → scrub →
-fixture (it never enters an agent's context, and `content-capture` prints counts only), and the shipped fixture
-is re-scanned for structural PII (emails/URLs/phones) by a test gate — but **residual re-identification risk is
-real and was ACCEPTED by the data-controller.** The word "anonymized-real" is precise the honest way: the content
-is real, anonymized *where detectable*, not guaranteed anonymous.
+**This is NOT "provably clean".** Free-text scrubbing is imperfect: a name the pass never *sourced* (a third party
+mentioned in passing), an unusual identifier format, a company mentioned in passing can survive. Raw customer
+content is streamed prod → scrub → fixture (it never enters an agent's context, and `content-capture` prints
+counts only, never content — a leak error prints only the field name + token length), and the shipped fixture is
+re-scanned for structural PII (emails/URLs/phones) by a test gate — but **residual re-identification risk is real
+and was ACCEPTED by the data-controller.** The word "anonymized-real" is precise the honest way: the content is
+real, anonymized *where detectable*, not guaranteed anonymous.
 
 **The bounds that make it acceptable:**
 
-1. **Best-effort scrub** — the detectable identifiers (known names, org, emails/phones/URLs) are removed;
-   `TestEmbeddedContent_NoStructuralPII` re-scans every shipped blob and fails on any surviving structural PII.
-   It is a diligent pass, **not a guarantee**.
+1. **Best-effort scrub** — the detectable identifiers (known names — actors **+ the session owner's real
+   identity**, token-split — org, emails/phones/URLs) are removed; the capture **fails closed** if a *sourced*
+   name survives, and `TestEmbeddedContent_NoStructuralPII` re-scans every shipped blob for structural PII + the
+   name-scrub-fired tripwire. It is a diligent pass, **not a guarantee**.
 2. **Residual risk ACCEPTED, VPN/tailnet-scoped** — the data-controller accepted the residual re-identification
    risk (2026-07-19); the CONTROL on it is that a content-story demo is exposed under the Part-3 posture
    (unauthenticated, authz-weakened, world-published on its host's interfaces) **only over a Tailscale tailnet /

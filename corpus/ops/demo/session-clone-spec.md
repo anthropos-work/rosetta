@@ -73,21 +73,38 @@ session — passed AND not-passed both. The list is `contentsession/fixture/cont
 
 | copied facet | table.column | scrub |
 |---|---|---|
-| LLM feedback | `validation_attempt_results.*_summary`, `validation_attempt_skill_results.*_feedback`, `validation_check_results.feedback` | names→placeholders, emails/phones/urls redacted |
+| LLM feedback | `validation_attempt_results.*_summary`, `validation_attempt_skill_results.*_feedback`, `validation_check_results.feedback` | names (actors **+ the session owner's real name**)→placeholders, emails/phones/urls redacted |
 | criterion title + candidate submission | `validation_criterion_results.title`, `.input_data` (jsonb) | ScrubJSON every string leaf |
 | the transcript | `interactions.action_payload` (jsonb, capped ≤ 12 turns) | ScrubJSON |
 | the code / document work-product | `code_submissions`, `collaborative_assets.content` | scrub stdout/content; base64 source left (technical) |
 | the interview report | `interview_extraction_results.user_report`/`manager_report` (jsonb) | ScrubJSON |
 | the real skill node-ids | `validation_attempt_skill_results.skill`, `.criterion.skills` | kept as-is (public taxonomy, non-PII) |
 
-**The scrub** (`package scrub`, tested): the source session's real **actor names** → `<<ACTOR_i>>` placeholders,
+**The scrub** (`package scrub`, tested): the source session's real person-names → `<<ACTOR_i>>` placeholders,
 the **source org name** → `<<ORG>>`, and **emails / URLs / long digit-runs** → redaction markers. The real
-names are used only as scrub targets and are **dropped** — the fixture stores placeholders, not names. What the
-fixture ships is real content minus the detectable identifiers; the **fixture-cleanliness gate**
-(`TestEmbeddedContent_NoStructuralPII`) re-scans every shipped blob and fails on any surviving email/URL/phone.
-It cannot know arbitrary names — that is the accepted residual (§6). The scrub is **deterministic**: same
-session + same scrub → byte-identical fixture (the source-pin reseed contract). The pins are disclosed in
-`seed-generation-manifest.yaml`'s `content_sessions` block (honesty-gated).
+names are used only as scrub targets and are **dropped** — the fixture stores placeholders, not names.
+
+> **The names it sources (M235 leak fix, 2026-07-19).** The candidate's real first name is threaded all through
+> the LLM feedback, and it comes from the **session OWNER's `public.users` identity** (`sessions.owner_id` →
+> `firstname`/`lastname` + the email local-part) — **not** from `jobsimulation.actors` (whose `username`/`alias`
+> are empty for these sessions). The original capture sourced only the (empty) actor names, so it removed **zero**
+> names and 8/9 fixtures shipped a real first name (USER-BLOCKER-M235-01). The capture now sources the owner's
+> real identity → the **player placeholder `<<ACTOR_0>>`**, and **token-splits every person-name** (full name +
+> each ≥3-char whitespace token, word-boundary-matched) so a **bare first-name** mention is caught. Word-boundary
+> matching means a short token never corrupts a common word ("Ann" ≠ "announce").
+
+Two gates guard the fixture, complementary:
+1. **Capture-time leak post-condition** (`scrub.SurvivingToken`, in `cmd/content-capture`) — the *name-leak* gate.
+   The capture knows the sourced names in-process, so after scrubbing a session it asserts **no sourced name token
+   survives** any free-text leaf and **refuses to write the fixture** if one does (it prints only the field name +
+   token length, never the value). This catches the arbitrary-first-name leak the offline gate cannot.
+2. **Offline fixture-cleanliness gate** (`TestEmbeddedContent_NoStructuralPII`) — re-scans every shipped blob and
+   fails on any surviving email/URL/phone, **and asserts the set carries the `<<ACTOR_0>>` placeholder** (the
+   "sourced zero names → zero placeholders" regression tripwire). It cannot know arbitrary names offline — that is
+   the accepted residual (§6), which the capture-time gate above closes for the *sourced* identity.
+
+The scrub is **deterministic**: same session + same scrub → byte-identical fixture (the source-pin reseed
+contract). The pins are disclosed in `seed-generation-manifest.yaml`'s `content_sessions` block (honesty-gated).
 
 ## 4. Stage 3 — replay (the seeder)
 
@@ -155,8 +172,11 @@ platform-repo edits.**
 Copying real customer sessions is a user-accepted (data-controller, 2026-07-19) softening of `safety.md`'s
 "nothing behind the door", bounded three ways:
 
-1. **Best-effort scrub** — the detectable PII (known names, org, emails/phones/urls) is removed; the fixture is
-   re-scanned for structural PII at test time. It is NOT a guarantee — residual names/identifiers can survive.
+1. **Best-effort scrub** — the detectable PII (known names — **actors + the session owner's real identity**,
+   token-split so a bare first name is caught — org, emails/phones/urls) is removed; the capture **fails closed**
+   if a *sourced* name survives (`scrub.SurvivingToken`), and the fixture is re-scanned for structural PII + the
+   name-scrub-fired tripwire at test time. It is NOT a guarantee — a name the pass never *sourced* (e.g. a third
+   party mentioned in passing in the free-text) can still survive.
 2. **Residual risk ACCEPTED, VPN/tailnet-scoped** — the data-controller accepted the residual re-identification
    risk; the control is that content-story demos are reachable **only over a Tailscale tailnet/VPN** (the Part-3
    exposure posture), never the public internet.
