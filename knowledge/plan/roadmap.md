@@ -147,7 +147,10 @@ M229 ──→ M230 ──→ M231 (HARD go/no-go) ──→ M232 ──→ M233
 ```
 
 #### M229 — academy content-model re-ground  (`section`, small)
-**Status:** `planned`
+**Status:** `done` (closed-complete 2026-07-19) — corrected `ant-academy.md` (+ `frontend-tier.md`, `run_guide.md`,
+`CLAUDE.md`) from the false "no backend / static JSON / only Clerk" model to the DB-authoritative catalog (grid →
+academy subgraph over GraphQL → `emptyCatalogView()` on failure), added § The Content Model, and fixed the F4
+mis-attribution. All code-verified. 4 docs, 0 platform edits, all Fate-1.
 **Goal:** Correct the materially-stale, actively-misleading `ant-academy.md` — document the true DB-authoritative catalog
 model + the demo empty-render root cause — BEFORE any fill code (the KB-fidelity prerequisite that mis-routed F4 for a
 whole release when wrong).

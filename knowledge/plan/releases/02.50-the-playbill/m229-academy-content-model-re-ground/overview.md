@@ -3,7 +3,7 @@ milestone: M229
 slug: academy-content-model-re-ground
 version: v2.5 "the playbill"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-19
 depends_on: none
@@ -12,7 +12,7 @@ delivers: corpus/services/ant-academy.md
 
 # M229 — academy content model re ground
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** small  ·  **Depends on:** none
+**Status:** `archived` (completed 2026-07-19)  ·  **Shape:** `section`  ·  **Complexity:** small  ·  **Depends on:** none
 
 ## Goal
 Correct the stale/misleading ant-academy.md to the true DB-authoritative catalog model + the demo empty-render root cause, BEFORE any Thread-A fill code (the KB-fidelity prerequisite that mis-routed F4 for a whole release when wrong).

@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M229 academy-content-model-re-ground (planned — section: correct the stale/misleading ant-academy.md to the DB-authoritative catalog model + the demo empty-render root cause, the KB-fidelity prerequisite before any Thread-A code)"
-last_closed: "M228 — 2026-07-18 (v2.4 shipped)"
-phase: "v2.5 in development. M229 academy-content-model-re-ground BUILT 2026-07-19 (both sections: ant-academy.md re-grounded to the DB-authoritative catalog model + the demo empty-render root cause; frontend-tier.md F4 mis-attribution fixed; all code-verified; 0 platform edits) — ready for /developer-kit:close-milestone. NEXT after close: M230 academy demo-fill (∥ M231 spike). One combined release, spike-first, 0 platform edits."
+active_milestone: "M230 academy-demo-fill (planned — iterative: make the demo ant-academy grid render REAL academy content PRODUCTION-FAITHFULLY, no Draft chip; first tik decides Option C sha-pinned demo-patch vs Option B firewalled academy-snapshot surface). ∥ M231 content-stories spike."
+last_closed: "M229 — 2026-07-19"
+phase: "v2.5 in development. M229 academy-content-model-re-ground CLOSED 2026-07-19 (section, closed-complete; 4 docs re-grounded to the DB-authoritative catalog model, code-verified, all Fate-1, 0 platform edits; merged into release/02.50-the-playbill). NEXT: /developer-kit:build-milestone → M230 academy demo-fill (iterative, production-faithful) ∥ the M231 content-stories spike. One combined release, spike-first, 0 platform edits."
 last_updated: "2026-07-19"
 ---
 
@@ -20,13 +20,16 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M229 "academy content-model re-ground" (planned, section)
+## Active milestone — M230 "academy demo-fill" (planned, iterative)
 
-**Goal.** Correct the materially-stale, actively-misleading `corpus/services/ant-academy.md` (it still claims *"Backend
-services: None / static JSON"* — false since v0.5.1 M7, which mis-routed the F4 empty-grid carry into the wrong repo) →
-document the DB-authoritative catalog model + the demo empty-render root cause + the draft-layer mechanism, BEFORE any
-Thread-A fill code. **Delivers →** the corrected `ant-academy.md`. **Parallel with M231** (both research/doc-first, no
-shared code). Next: `/developer-kit:build-milestone` → M229.
+**Goal.** Make the demo (and dev) ant-academy home grid render REAL academy content **production-faithfully — no
+"Draft" chip** (user decision) — closing the year-old F4 carry inside the zero-platform-edit wall. **Exit gate:** on a
+cold `/demo-up`, the grid renders real cards (≥ floor) for the employee vantage, no Draft chip, via the real
+DB-authoritative GraphQL path (or a faithful equivalent), 0 ejects, verified by a rendered-card count. **First tik
+decides:** Option C (sha-pinned rext demo-patch restoring the M7 FS-as-published fallback on the ephemeral clone) vs
+Option B (a firewalled academy-content snapshot surface + wire the endpoint + compose the subgraph). **Parallel with
+M231** (the content-stories spike). M229 (the content-model re-ground) is the landed KB prerequisite. Next:
+`/developer-kit:build-milestone` (M230 is iterative → `/developer-kit:build-mstone-iters`) — but M231's spike can start first/concurrently.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -37,6 +40,10 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M229 academy-content-model-re-ground** — 2026-07-19 (section, closed-complete). Corrected 4 docs (`ant-academy.md`
+  + `frontend-tier.md` + `run_guide.md` + `CLAUDE.md`) from the false "no backend / static JSON / only Clerk" model to
+  the DB-authoritative catalog (grid → academy subgraph over GraphQL → `emptyCatalogView()` on failure) + fixed the F4
+  mis-attribution. The KB-fidelity prerequisite for the v2.5 academy thread. Code-verified; 0 platform edits.
 - **M228 second-night** — 2026-07-18 (iterative, closed-on-gate). The corrected demo re-proven live on `billion`:
   7/7 conditions, render 5/5 per-sim (8,8,9,9,8, each ≥ floor 6, junk=0), 2 candidate heroes usable, recruiter p95
   click→ACCESS **1.27 s**, hiring-only, 4 orgs coexist. iter-03 fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder
@@ -50,7 +57,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   p95 1.74 s < 5 s; 5 findings fixed live; Go funcs 1887→1888; 0 platform edits.
 - **M225 dress-the-set** — 2026-07-17 (section, complete). Auto-set-dress guard + coverage gate (3 seats) + 1
   recruiter playthrough on pt-world Org D.
-- **M224 the-callback** — 2026-07-16 (closed-on-gate). Two-app `apps/hiring` demo; 20/page × 43 comparable; `isHiring`.
 
 ## Recently shipped (releases, newest first — max 3)
 
