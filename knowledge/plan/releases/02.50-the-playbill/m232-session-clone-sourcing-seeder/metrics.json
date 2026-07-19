@@ -1,0 +1,11 @@
+{
+  "milestone": "M232", "title": "session-clone sourcing seeder", "shape": "section",
+  "close_status": "closed-complete", "closed": "2026-07-19",
+  "platform_repo_edits": 0,
+  "content_approach": "COPY real prod session content + best-effort PII scrub (user data-controller decision 2026-07-19; superseded the sub-agent's initial synthesize-by-construction design)",
+  "tests": { "rext_go": "GREEN (full suite)", "python": "GREEN (interview + frontend_build, 100)", "flake_gate": "5/5 clean on scrub + copies-real + placeholders-filled + no-structural-PII guardrails" },
+  "flake_count": 0, "fix_tag": "playbill-m232-sections-copyreal",
+  "safety": "residual re-identification risk documented + data-controller-accepted (safety.md §3.8); best-effort scrub; VPN/tailnet-scoped as the control",
+  "carry_forward": ["interview render fidelity → M235", "14 pre-existing demo-stack test failures → v2.5 release close (REPEAT pattern)", "per-session player seats → M234"],
+  "notes": "The session-clone seeder: copies each pinned public-anchored prod session's REAL result fan-out (feedback/transcript/submission/interview report/node-ids) + scrubs detectable PII (names/org→placeholders, emails/phones/urls redacted) + re-tenants, non-manager-played, source-pinned. Interview flags via 2 sha-pinned demopatches. A synthesize-first build was reworked to copy-real per explicit user decision (weekly-limit interruption recovered cleanly, no work lost). 0 platform edits."
+}

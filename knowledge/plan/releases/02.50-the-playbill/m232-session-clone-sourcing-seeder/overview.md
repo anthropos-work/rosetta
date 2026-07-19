@@ -3,7 +3,7 @@ milestone: M232
 slug: session-clone-sourcing-seeder
 version: v2.5 "the playbill"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-19
 depends_on: M231
@@ -12,7 +12,7 @@ delivers: corpus/ops/demo/session-clone-spec.md
 
 # M232 — session clone sourcing seeder
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** large  ·  **Depends on:** M231
+**Status:** `archived` (completed 2026-07-19, copy-real)  ·  **Shape:** `section`  ·  **Complexity:** large  ·  **Depends on:** M231
 
 ## Goal
 Build the seeder that COPIES real production sessions, anonymized where possible, re-tenanted into a manifest org, non-manager-played, and source-pinned by prod session-id — the deterministic realization of 'clone real sessions'.

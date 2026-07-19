@@ -216,7 +216,13 @@ public-sim-by-modality catalog + AI-labs feasibility verdict + the prod-session 
 which products actually HAVE a manager result route? is invoking the platform's own session-clone subcommand in-stack acceptable?
 
 #### M232 — session-clone / sourcing seeder  (`section`, large)
-**Status:** `planned`
+**Status:** `done` (closed-complete 2026-07-19) — the ContentStorySeeder **COPIES real prod sessions** (feedback/
+transcript/submission/interview report/skill node-ids) with a **best-effort PII scrub** (names/org→placeholders,
+emails/phones/urls redacted), re-tenanted, non-manager-played, **source-pinned by prod session-id** (rext tag
+`playbill-m232-sections-copyreal`); interview render flags via 2 sha-pinned demopatches; `safety.md` §3.8 amended to
+the honest copy+scrub / **data-controller-accepted residual-risk** / VPN-scoped posture; deliverable `session-clone-spec.md`.
+**A synthesize-first build was reworked to copy-real per the user's explicit decision** (weekly-limit interruption
+recovered cleanly, no work lost). Guardrails flake 5/5, full suite GREEN. 0 platform edits.
 **Goal:** Build the seeder that **copies real production sessions, anonymized where possible, re-tenanted into a manifest
 org, non-manager-played, and source-pinned by prod session-id** — the deterministic realization of "clone real sessions."
 **Scope — In:** read the selected real prod sessions (via the `db-access` read path, at authoring time) and reconstruct the
