@@ -113,3 +113,37 @@ re-audit (Phase 1b) YELLOW, 0 blockers — see `audit-deferrals/deferral-audit-2
 ### Tests & Benchmarks
 - [x] No gaps. Full rext `stack-seeding go test ./...` GREEN (16 pkgs); harden already reached 100% function
       coverage on the primary file. Flake gate run at Phase 8.
+
+## M233: Completeness Ledger (section variant)
+
+Every `overview.md` `In:` scope item placed into exactly one three-fate category. **Zero escape-hatch deferrals.**
+
+### Done (Fate 1 — landed in M233)
+- **`content_products[]` projection** (all 4 products — simulation / skill-path-legacy / skill-path-new / ai-labs —
+  schema-complete registry; each session with player+manager seat keys + result paths + `has_manager_view` +
+  per-product app_base + per-type icon). Fixture carries `simulation` (projected); the other 3 are schema-ready.
+- **`stackseed --content-export`** emitting the checked-in `content-manifest.json`, guarded by
+  `CanonicalFileMatchesProjection` + a `HasTeeth` meta-test (the D9 single-source discipline).
+- **Fail-closed / no-fabrication resolver** (`BuildContentProducts` drop-with-reason + `ValidateContentManifest`
+  fails loud). The M232 source-pins stay folded in `seed-generation-manifest.yaml`'s `content_sessions` block
+  (D-M233-1 — the render surface is a separate JSON; the pins stay in the yaml; documented spec §5 + seed-manifest §8).
+- **Deliverable** `corpus/ops/demo/content-stories-spec.md` authored + cross-refs + indexed (README + CLAUDE.md).
+- **Close fix:** the missing `(#D-M233-3)` back-ref tag.
+
+### Confirmed-covered (Fate 2 — already owned by a milestone of this release; no plan edit)
+- **Bring-up export wiring + cockpit tab render + `content-player-<idx>` seat registration** → **M234**. RE-VERIFIED
+  present in M234's `overview.md` `In:` list ("Per-product sections rendering the M233 manifest" + "mint/resolve
+  per-session player seats via roster.go + Clerkenstein"). These are M233's `Out:` items — correct scope boundary.
+- **Non-simulation product player-path builders (skill-path / academy)** → **M234/M235**. M234's `In:` covers the
+  academy section (D5, real progress) + AI-labs (D4, presence-only); the skill-path builder lands with M234/M235's
+  fixture route-field additions. `playerResultPath` fail-closes on them until then (no stub, no fabrication).
+
+### Annotated (Fate 3 — plan edited at close): none.
+### Dropped: none.
+### Release-scope-breaking deferral (escape hatch): none.
+
+**Inherited context (not an M233 scope item):** the 14 pre-existing demo-stack test failures are a release-scoped
+CHRONIC carry (v2.4→v2.5), homed at the v2.5 release-close re-anchor — see `audit-deferrals/deferral-audit-2026-07-19.md`.
+Out of M233's scope (M233 touched zero demo-stack test files).
+
+**Verdict:** all M233 scope items delivered as Fate 1; the 2 `Out:` items confirmed-covered in M234. Clean close.
