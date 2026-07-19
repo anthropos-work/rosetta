@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M231 content-stories-feasibility-spike (planned — section, HARD go/no-go: discover per-product player+manager result routes + prove-by-render which land from seedable rows vs runtime-blank; confirm the prod-session sourcing+anonymization mechanism; catalog public sims by modality; rule AI-labs + the academy section in/out — the barrier before the whole Thread-B build chain)."
-last_closed: "M230 — 2026-07-19"
-phase: "v2.5 in development. M229 (doc re-ground) + M230 (academy demo-fill) CLOSED 2026-07-19. M230 closed-incomplete/pragmatic: the Option C academy-fs-published-fallback demo-patch (rext tag playbill-m230-academy-fs-published) is built + runtime-proven (59 cards, 0 chips); the formal cold-/demo-up card-count gate + next-web re-anchor folded to M235/M236 (Fate-3, homed). M231 content-stories feasibility spike (HARD go/no-go) BUILT 2026-07-19 on branch m231/content-stories-feasibility-spike (5 sections; deliverable corpus/ops/demo/content-stories-routes.md): Thread B is GO — sim result = persisted read (seedable); Sim+Skill-path GO, Interview GO behind a PostHog-flag demo-patch (D3→M232), AI-labs OUT (presence-only, D4→M234), Academy IN. KB-fidelity YELLOW. 0 platform edits. NEXT: harden + /developer-kit:close-milestone M231."
+active_milestone: "M232 session-clone-sourcing-seeder (planned — section, large: the seeder that COPIES real prod sessions [anonymize where possible, re-tenant, non-manager-played, source-pinned by prod session-id]; reconstructs the seedable result fan-out per type; net-new code + document modality seeders; enables the interview PostHog flags [D3]; sources only public-anchored sessions [D6]; amends safety.md Part 3. Consumes the M231 route/sourcing contract)."
+last_closed: "M231 — 2026-07-19"
+phase: "v2.5 in development. M229 + M230 + M231 CLOSED 2026-07-19. M231 content-stories feasibility spike CLOSED-COMPLETE: Thread B is a GO — the sim result page reads a PERSISTED DB row (seedable), so a cloned session renders; Sim+Skill-path GO, Interview GO behind a PostHog-flag demo-patch (D3→M232), AI-labs OUT/presence-only (D4→M234), Academy IN (D5→M234); deliverable content-stories-routes.md; 0 platform edits. NEXT: /developer-kit:work-milestone → M232 session-clone-sourcing-seeder (section, large — the real prod-session copy+anonymize+re-tenant seeder; consumes M231's route/sourcing contract; needs prod DB read access)."
 last_updated: "2026-07-19"
 ---
 
@@ -20,16 +20,16 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M231 "content-stories feasibility spike" (planned, section — HARD go/no-go)
+## Active milestone — M232 "session-clone-sourcing-seeder" (planned, section — large)
 
-**Goal.** The barrier before the whole Thread-B build chain (mirrors v2.4's M222): BEFORE building anything, discover
-the exact per-product **player + manager result routes** and **prove-by-render** which land from seedable rows vs are
-runtime-computed-blank; confirm the **prod-session sourcing + anonymization** mechanism (read → pick interesting → pin
-by prod session-id); catalog captured public sims by **modality** (confirm ≥2 voice + 1 code + 1 document assessment
-sources exist); and rule **AI-labs + the academy content-product section** in or out. **Delivers →**
-`corpus/ops/demo/content-stories-routes.md` (the manager-view eligibility matrix + result-route map + modality catalog
-+ AI-labs verdict + the sourcing/anonymization contract). **Needs prod DB read access** (`/db-query`) for the
-route/session scouting. M230 landed the academy fill (Thread A). Next: `/developer-kit:build-milestone` → M231.
+**Goal.** Build the seeder that **copies real production sessions**, anonymized where possible, re-tenanted into a
+manifest org, **non-manager-played**, **source-pinned by prod session-id** — the safety-honoring realization of "clone
+real sessions." Reconstruct the seedable result substrate per type (`jobsimulation.sessions` + the
+`local_jobsimulation_sessions` MIRROR + validation/skill/criterion results + actors/interactions transcript +
+interview reports), passed + not-passed. **Consumes M231's contract:** source only **public-anchored** sessions (D6);
+net-new **code** (in-process Judge0) + **document** (upload/PDF) modality seeders; **enable the interview PostHog flags**
+(D3, bootstrap or sha-pinned demopatch). **Amends `corpus/ops/safety.md` Part 3** to the honest posture (anonymized-real,
+VPN-scoped). **Needs prod DB read access** (the postgres MCP, confirmed working). Next: `/developer-kit:work-milestone` → M232.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -40,6 +40,11 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M231 content-stories-feasibility-spike** — 2026-07-19 (section, closed-complete, **GO**). The Thread-B
+  go/no-go barrier: delivered `content-stories-routes.md` (result-route map + prove-by-render + sourcing/anon
+  contract + modality catalog). Central risk resolved — sim result page reads a persisted DB row (seedable).
+  Sim+Skill-path GO, Interview GO w/ flag demo-patch (D3→M232), AI-labs OUT/presence-only (D4→M234), Academy IN
+  (D5→M234). Fixed 3 stale corpus claims inline. 0 platform edits.
 - **M230 academy-demo-fill** — 2026-07-19 (iterative, closed-incomplete/pragmatic). The Option C
   `academy-fs-published-fallback` demo-patch (rext tag `playbill-m230-academy-fs-published`) built + runtime-proven
   (59 real cards, 0 Draft chips, exact DB-authoritative code path, byte-clean revert; 14 unit tests, flake 3/3). Gate
@@ -57,8 +62,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   write-path-fenced: hiring-only content, external candidate emails, 1-sim/candidate (~8/position, gate retuned
   `≥40→≥6` everywhere), gender-matched avatars. Fix #1/#2/#4 mechanisms blended into corpus at close. Go funcs
   1888→**1902**; flake 5/5; 0 platform edits. Live re-prove → M228 (Fate-2). Deferral audit YELLOW.
-- **M226 opening-night** — 2026-07-17 (closed-on-gate). 7-condition hiring gate proven live on `billion`; recruiter
-  p95 1.74 s < 5 s; 5 findings fixed live; Go funcs 1887→1888; 0 platform edits.
 
 ## Recently shipped (releases, newest first — max 3)
 

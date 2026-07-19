@@ -190,7 +190,12 @@ the demo app DB + wire the endpoint + compose the subgraph). Draft-layer Option 
 B), and what is its public predicate? Is a demo-patch (Option C) sufficient + revert-clean?
 
 #### M231 — content-stories feasibility spike + result-route map  (`section`, medium — HARD go/no-go)
-**Status:** `planned`
+**Status:** `done` (closed-complete 2026-07-19) — **Thread B is a GO.** Delivered `content-stories-routes.md` (result-route
+map + prove-by-render classification + sourcing/anonymization contract + modality catalog + verdicts). Central risk
+resolved: the sim result page reads a **persisted DB row** (plain SELECTs, no live recompute) → a cloned session
+renders. Sim + Skill-path GO; **Interview GO behind a PostHog-flag demo-patch (D3→M232)**; **AI-labs OUT** (presence-only,
+D4→M234); **Academy IN** (seedable chapter progress, D5→M234). Fixed 3 stale corpus claims inline (incl. the M228
+intercepting-route misdiagnosis). 0 platform edits.
 **Goal:** HARD go/no-go barrier (mirrors v2.4's M222): before building anything, discover the exact per-product player+manager
 result routes, PROVE-BY-RENDER which land from seedable rows vs are runtime-computed-blank, confirm the **prod-session
 sourcing mechanism** (read → pick interesting → pin by prod session-id), catalog public sims by modality, and rule

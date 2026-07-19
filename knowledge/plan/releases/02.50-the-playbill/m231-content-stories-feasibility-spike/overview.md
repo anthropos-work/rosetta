@@ -3,7 +3,7 @@ milestone: M231
 slug: content-stories-feasibility-spike
 version: v2.5 "the playbill"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-19
 depends_on: none
@@ -12,7 +12,7 @@ delivers: corpus/ops/demo/content-stories-routes.md
 
 # M231 — content stories feasibility spike
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** none
+**Status:** `archived` (completed 2026-07-19, GO)  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** none
 
 ## Goal
 HARD go/no-go barrier (mirrors v2.4's M222): discover per-product player+manager result routes, prove-by-render which land from seedable rows vs runtime-computed-blank, confirm the prod-session sourcing+anonymization mechanism, catalog public sims by modality, rule AI-labs + the academy section in/out.
