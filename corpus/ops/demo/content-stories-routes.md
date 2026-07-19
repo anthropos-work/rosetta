@@ -263,3 +263,53 @@ Session-side confirmation (`validation_criterion_results.input_format` over real
 `collaborative_asset` 8,501 · `text_document` 5,838 · `ai_assistant` 1,151 · `call` 6 — voice is graded via the
 `interview_extraction_results` path (not criterion `input_format`), which is why `call` criteria are rare while
 77 public voice sims exist.
+
+## 5. AI-labs feasibility — VERDICT: OUT (no seedable result-render surface)
+
+You can seed a `lab_sessions` row, but you cannot make it render a **result** today:
+
+- **Client is nil.** `LabsAPIClient` is nil whenever `LABS_API_URL` is unset (`app/main.go:462-465`; the comment
+  is explicit: *"labsAPI stays nil — the in-memory idGen path runs"*). Create then persists a `lab_sessions` row
+  via `idGen()` (a fake 12-char hex, **no VM booted**, `status` defaults `"booting"`, no `ide_url`/`preview_url`) —
+  `app/internal/labs/session/manager.go:164-219`.
+- **No grade without a live worker.** `grade_result` (Ent col `lab_session.go:122-127`) is written ONLY by
+  `ReportEvent("grade")`, which is a Connect-RPC call **from labs-api back to app** — nil client → no VM → never
+  graded.
+- **`grade_result` is not even exposed by GraphQL.** The `LabSession` GraphQL type (`labs.graphqls:10-24`) lists
+  `id/userId/organizationId/template/model/status/budgetUsd/spendUsd/totalTokens/timestamps` — **no grade field**.
+  `grade_result`/`gradeResult` appears nowhere in `next-web-app`/`packages/graphql`. So even a hand-set DB grade is
+  unreachable by the front-end.
+- **The only per-session page reads LIVE.** `next-web-app/…/labs/[id]/page.tsx` calls `getSession(id)` from
+  `lib/labs-api.ts`, which reads from the **live labs-api worker** and **throws** when `LABS_API_URL` is unset
+  (`lib/labs-api.ts:81-83`). No worker → no page.
+
+**Verdict: rule AI-labs OUT of the played-result matrix.** Rendering a lab result would require either wiring a
+live labs-api worker into the demo (a new subsystem, out of the zero-edit envelope) or adding a `gradeResult`
+GraphQL field (a **platform edit** → would ESCALATE). Neither is in scope. **What the content-stories tab CAN do
+(M234, presence-only):** list the seeded `lab_sessions` row as a **status/spend line** in the `/labs` +
+`/enterprise/labs` dashboards (`mySessions`/`labSessions` GraphQL), with **no** as-player/as-manager result CTAs.
+(Note: `backend.md` says the package is `internal/labsession`; the actual path is `internal/labs/session` — KB-8.)
+
+## 6. The academy "session" question — VERDICT: IN (backend-authoritative, seedable)
+
+The older corpus premise ("ant-academy is Clerk-only, calls no backend at runtime") is **stale**. Since ant-academy
+**v0.5 "direct line" M2** the academy is **backend-authoritative**: it WRITES progress to the platform `app`
+academy backend over GraphQL.
+
+- **Write path:** `ant-academy/code/app/api/academy/beacon/route.js` posts `UPSERT_CHAPTER_PROGRESS` /
+  `SET_LAST_ACTIVITY` mutations to `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (the `app` academy subgraph).
+- **Store (in platform `app`, NOT in the DB-less academy repo):** Ent schemas
+  `app/internal/data/ent/schema/academy_chapter_progress.go` (unique `user_id + chapter_slug`, "the FE upserts it
+  on every module/section completion and reads it back to render the chapter UI"), plus `academy_last_activity`,
+  `academy_chapter_time`, `academy_bookmark`, `academy_certificate`, `academy_feedback`. GraphQL: `academyProgress`
+  / `academyLastActivity` queries; `upsertChapterProgress[Batch]` / `setLastActivity` mutations.
+- **Purpose-built to seed:** `app/cmd/academy-seed/main.go` seeds realistic academy state (chapter progress +
+  last-activity) for one user (fixtures `starter` / `in-progress` / `completed`, `--user-email`/`--user-id`,
+  idempotent, seeds THROUGH the academy Manager).
+
+**Verdict: the academy "session" = the per-user `academy_chapter_progress` + `academy_last_activity` rows** — a
+**seedable server row**, so the academy content-product section renders REAL played progress (NOT presence-only /
+deep-link only). **Dependency:** progress is keyed by `chapter_slug` and is decoupled from the catalog rows, so the
+chapters it points at need CATALOG rows to render → the academy content-story **depends on M230's demo-fill** (the
+catalog; Fate-2, already in the release). (`ant-academy.md`'s "no backend writes" framing was corrected in this
+milestone — KB-7.)

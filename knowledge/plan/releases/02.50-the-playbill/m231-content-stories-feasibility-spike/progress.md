@@ -22,10 +22,10 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
   - [x] Confirm ≥2 voice + 1 code + 1 document-assessment SOURCES: **GO 77 voice / 65 code / 30 document** public sims
   - [x] Map each modality to a concrete pinnable public simulation source (`directus.sim_tasks.task_type` ∈ {call, code, collaborative_doc/send_attachment, chat}; already snapshot-replayable)
 
-- [ ] **S4 — AI-labs feasibility + academy "session" verdict**
-  - [ ] Rule AI-labs in/out (labs-api client wired nil?)
-  - [ ] Rule the ant-academy content-product section in/out (is there a server session store post-M230?)
-  - [ ] Record each verdict with the code-cite that decides it
+- [x] **S4 — AI-labs feasibility + academy "session" verdict**
+  - [x] Rule AI-labs: **OUT** — nil client persists a booting row but no VM/grade; grade_result not GraphQL-exposed; /labs/[id] reads live from labs-api. Presence-only in M234.
+  - [x] Rule the ant-academy section: **IN** — backend-authoritative since v0.5 M2; academy_chapter_progress seedable via app/cmd/academy-seed. Depends on M230 catalog fill.
+  - [x] Record each verdict with the code-cite that decides it (§5, §6)
 
 - [ ] **S5 — Deliverable consolidation**
   - [ ] Assemble the manager-view eligibility matrix (which products HAVE a manager result route)
