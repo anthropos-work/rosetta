@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M232 session-clone-sourcing-seeder (planned — section, large: the seeder that COPIES real prod sessions [anonymize where possible, re-tenant, non-manager-played, source-pinned by prod session-id]; reconstructs the seedable result fan-out per type; net-new code + document modality seeders; enables the interview PostHog flags [D3]; sources only public-anchored sessions [D6]; amends safety.md Part 3. Consumes the M231 route/sourcing contract)."
-last_closed: "M231 — 2026-07-19"
-phase: "v2.5 in development. M229 + M230 + M231 CLOSED 2026-07-19. M231 content-stories feasibility spike CLOSED-COMPLETE: Thread B is a GO — the sim result page reads a PERSISTED DB row (seedable), so a cloned session renders; Sim+Skill-path GO, Interview GO behind a PostHog-flag demo-patch (D3→M232), AI-labs OUT/presence-only (D4→M234), Academy IN (D5→M234); deliverable content-stories-routes.md; 0 platform edits. NEXT: /developer-kit:work-milestone → M232 session-clone-sourcing-seeder (section, large — the real prod-session copy+anonymize+re-tenant seeder; consumes M231's route/sourcing contract; needs prod DB read access)."
+active_milestone: "M233 content-stories-manifest (planned — section, medium: project a 2nd auditable content_products[] manifest block [peer to population.orgs] that pins each cloned session's prod source-id deterministically + is honesty-gated [CanonicalFileMatchesProjection] so it can't drift from the seeded sessions; fail-closed resolver on unresolved pins; fold source-pins into the downloadable seed-generation-manifest.yaml. Consumes M232's ContentStorySeeder)."
+last_closed: "M232 — 2026-07-19"
+phase: "v2.5 in development. M229–M232 CLOSED 2026-07-19. M232 session-clone seeder CLOSED-COMPLETE: the ContentStorySeeder COPIES real prod sessions (feedback/transcript/submission/interview report/node-ids) + best-effort PII scrub + re-tenant + source-pin (rext tag playbill-m232-sections-copyreal); a synthesize-first build was REWORKED to copy-real per the user's explicit decision; residual re-id risk data-controller-accepted (safety.md §3.8), VPN-scoped; guardrails flake 5/5; 0 platform edits. NEXT: /developer-kit:work-milestone → M233 content-stories-manifest (section — the honesty-gated content_products[] source-pin projection). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
 last_updated: "2026-07-19"
 ---
 
@@ -20,16 +20,15 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M232 "session-clone-sourcing-seeder" (planned, section — large)
+## Active milestone — M233 "content-stories-manifest" (planned, section — medium)
 
-**Goal.** Build the seeder that **copies real production sessions**, anonymized where possible, re-tenanted into a
-manifest org, **non-manager-played**, **source-pinned by prod session-id** — the safety-honoring realization of "clone
-real sessions." Reconstruct the seedable result substrate per type (`jobsimulation.sessions` + the
-`local_jobsimulation_sessions` MIRROR + validation/skill/criterion results + actors/interactions transcript +
-interview reports), passed + not-passed. **Consumes M231's contract:** source only **public-anchored** sessions (D6);
-net-new **code** (in-process Judge0) + **document** (upload/PDF) modality seeders; **enable the interview PostHog flags**
-(D3, bootstrap or sha-pinned demopatch). **Amends `corpus/ops/safety.md` Part 3** to the honest posture (anonymized-real,
-VPN-scoped). **Needs prod DB read access** (the postgres MCP, confirmed working). Next: `/developer-kit:work-milestone` → M232.
+**Goal.** Project a **second, auditable `content_products[]` manifest block** (peer to `population.orgs[]`) that pins
+each cloned session's **prod source-id deterministically** and is **honesty-gated** (a `CanonicalFileMatchesProjection`-
+style test — the D9 single-source discipline) so it cannot drift from the seeded sessions; a **fail-closed resolver**
+when a pinned prod-source id doesn't resolve in the replay (no-fabrication); fold the pinned sources into the
+downloadable `seed-generation-manifest.yaml`. **Consumes M232's** ContentStorySeeder + its source-pins. Open question:
+one manifest with a 2nd block + client tab, or a separate `content-manifest.json` + endpoint (better preserves D9 +
+the non-fatal bring-up). Next: `/developer-kit:work-milestone` → M233.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -40,6 +39,12 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M232 session-clone-sourcing-seeder** — 2026-07-19 (section, closed-complete). The ContentStorySeeder
+  **COPIES real prod sessions** (feedback/transcript/submission/interview report/node-ids) + best-effort PII
+  scrub (names/org→placeholders, emails/phones/urls redacted) + re-tenant + source-pin (rext tag
+  `playbill-m232-sections-copyreal`); interview flags via 2 demopatches; `safety.md` §3.8 = data-controller-
+  accepted residual-risk, VPN-scoped. A synthesize-first build was REWORKED to copy-real per user decision.
+  Guardrails flake 5/5. 0 platform edits.
 - **M231 content-stories-feasibility-spike** — 2026-07-19 (section, closed-complete, **GO**). The Thread-B
   go/no-go barrier: delivered `content-stories-routes.md` (result-route map + prove-by-render + sourcing/anon
   contract + modality catalog). Central risk resolved — sim result page reads a persisted DB row (seedable).
@@ -58,10 +63,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   click→ACCESS **1.27 s**, hiring-only, 4 orgs coexist. iter-03 fixed F1/F2/F3 (FeedbackSeeder + SuccessionSeeder
   guard gap the deterministic M227 test missed — caught by the LIVE re-prove) + hardened the render probe for the
   intercepting-route drawer (`RENDER_ONLY_SIM`). rext seeders 96.8% cov, flake 3/3; **0 platform edits**.
-- **M227 the-notes** — 2026-07-17 (section, complete). 4 believability seed/content fixes deterministically proven +
-  write-path-fenced: hiring-only content, external candidate emails, 1-sim/candidate (~8/position, gate retuned
-  `≥40→≥6` everywhere), gender-matched avatars. Fix #1/#2/#4 mechanisms blended into corpus at close. Go funcs
-  1888→**1902**; flake 5/5; 0 platform edits. Live re-prove → M228 (Fate-2). Deferral audit YELLOW.
 
 ## Recently shipped (releases, newest first — max 3)
 
