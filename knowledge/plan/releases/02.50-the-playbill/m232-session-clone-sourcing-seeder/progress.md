@@ -33,3 +33,30 @@
   `seed-generation-manifest.yaml` projection (source-pin contract, deterministic reseed); AMEND
   `corpus/ops/safety.md` Part 3 to the honest posture (anonymized-real, VPN/tailnet-scoped,
   source-pinned bounded exception); author `corpus/ops/demo/session-clone-spec.md` (the deliverable).
+
+## M232: Final Review — Completeness Ledger (section)
+
+**Done (Fate 1):** S1 sourcing + source-pinned fixture · S2 ContentStorySeeder core fan-out (session + mirror co-write
++ attempt/skill/criterion/check, G14 enums, re-tenant, non-manager) · S3 modality substrate (transcript + code +
+document + interview report) · S4 interview flag-gate demopatches + manifest source-pin projection + `safety.md` §3.8
+amendment + `session-clone-spec.md`. **+ the REWORK (user decision 2026-07-19): synthesize → COPY-THE-REAL-CONTENT +
+best-effort scrub** — new `scrub/` pkg, `cmd/content-capture` (prod read-only, streams prod→scrub→fixture, raw never
+in agent context, ran once → 9 real scrubbed sessions), `contentsession/` model+embed, replay seeder; docs flipped to
+the honest copy+scrub / residual-risk-accepted / VPN-scoped posture. Guardrail tests: CopiesRealContent (byte-copied),
+PlaceholdersFilled (no source name/org survives), NoStructuralPII (re-scans the shipped fixture), scrub (no
+email/phone/url survives). rext tag `playbill-m232-sections-copyreal`. All ✅.
+
+**Confirmed-covered (Fate 2):** INTERVIEW report exact plan-section render fidelity → **M235** (prove-it-lands — its
+coverage gate owns "every session×action lands on a non-empty result page"; M232 seeds the REAL copied report).
+
+**Annotated (Fate 3):** dedicated minted per-session player seats → **M234** (D2, handoff; reuse-a-member baseline
+renders). The **14 pre-existing demo-stack test failures** (SSR + studio/pubweb `urls.ts` pins drifted vs the newer
+`stack-demo` clone; + cockpit/host/purge) → **v2.5 release close** (D8) — subsystems M232 never touched; M232's own
+files match `stack-demo` byte-for-byte + pass. **⚠ REPEAT pattern:** this same drifted-clone test-failure class
+recurred at v2.4 close-release — worth a dedicated re-anchor bugfix at the v2.5 release close.
+
+**Dropped:** none. **Escape-hatch:** none.
+
+**Verdict:** M232 delivers the copy-real session-clone seeder the user asked for. The residual re-identification risk
+is documented + **data-controller-accepted** (`safety.md` §3.8), best-effort-scrubbed, VPN/tailnet-scoped. Deferral
+audit YELLOW (the recurring 14-test carry flagged for release-close re-anchor; 0 escape-hatch). KB-fidelity GREEN.

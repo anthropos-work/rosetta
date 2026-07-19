@@ -733,9 +733,10 @@ authoring-time read is read-only. The exception is entirely on the read side, an
 VPN scope, not eliminated.
 
 **The full contract:** [`demo/session-clone-spec.md`](demo/session-clone-spec.md) (the sourcing pattern, the
-firewall-safety argument, the source-pin contract, the no-manager-played rule, the anonymization-by-construction
-mechanism) + [`demo/content-stories-routes.md`](demo/content-stories-routes.md) §3.5 (the M231 spike that authored
-the posture this section lands).
+firewall-safety argument, the source-pin contract, the no-manager-played rule, and the **copy-real + best-effort-scrub**
+mechanism — the real content is copied, detectable PII scrubbed, residual re-identification risk accepted by the
+data-controller, VPN/tailnet-scoped) + [`demo/content-stories-routes.md`](demo/content-stories-routes.md) §3.5 (the
+M231 spike that authored the posture this section lands).
 
 ---
 
