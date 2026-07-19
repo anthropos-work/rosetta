@@ -120,8 +120,9 @@ INTERVIEW `comments`.
   hero — never a promise without a seat.
 - **player_result_path** — `/sim/<slug>/result/<sessionId>`. The `[slug]` segment resolves by
   `jobSimulationBySlug` (a **text slug, not the sim uuid**), so the fixture carries a per-session **`sim_slug`**
-  (the public sim's slug, resolved read-only from the public catalog at authoring time — public + non-PII).
-  `<sessionId>` is the seeder's own derived id (`contentStorySessionID`), so the link names the seeded row.
+  (the public sim's slug, resolved read-only from the public catalog at authoring time — public + non-PII;
+  `#D-M233-3`). `<sessionId>` is the seeder's own derived id (`contentStorySessionID`), so the link names the
+  seeded row.
 - **manager_result_path** — `/enterprise/activity-dashboard/<kind>/<simId>/<userId>` where `<kind>` ∈
   {`ai-simulations`, `interviews`, `skill-paths`}, `<simId>` is the sim uuid, `<userId>` is the player member's
   id. Fully offline-derivable (no slug).

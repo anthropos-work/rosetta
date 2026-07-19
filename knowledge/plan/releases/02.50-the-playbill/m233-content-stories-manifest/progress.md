@@ -75,3 +75,41 @@ Stopped after Pass 2 (2 passes): the primary file `content_manifest.go` reached 
 Pass-2 statement delta was < 2%, and the Step-2b scan found nothing new worth adding (the sole remaining gap is
 the defensive `Embedded()` panic on a compile-time invariant — a contrived test there is a disguised deferral).
 12 tests added, 0 bugs, 0 flakes. rext test commit + re-tag; no source change.
+
+## M233: Final Review
+
+Cross-cutting close review (Phases 1–5). The build+harden already reviewed per-section and drove
+`content_manifest.go` to 100% function coverage, so the close review surfaced almost nothing new. Deferral
+re-audit (Phase 1b) YELLOW, 0 blockers — see `audit-deferrals/deferral-audit-2026-07-19.md`.
+
+### Scope
+- [x] All 3 sections checked; no TODO/FIXME/HACK in the M233 code. The 2 Fate-2 handoffs (bring-up export +
+      cockpit render + `content-player-<idx>` seat registration; non-simulation player-path builders) RE-VERIFIED
+      present in M234's `overview.md` `In:` list — no Fate-3 roadmap edit needed.
+
+### Code Quality
+- [x] No findings. `content_manifest.go` is consistent with `cockpit.go` (dual json+yaml tags, fail-closed
+      philosophy, `Validate*Manifest` guard). `go vet ./seeders/... ./contentsession/... ./cmd/stackseed/...` exit 0.
+
+### Adversarial (Phase 2c)
+- [x] Failure mode considered — the flat session index must stay aligned with the seeder's `Sessions()` index
+      *through drops*, or every CTA after the first drop re-owns the wrong seat (dead links). VERIFIED single-sourced
+      at both ends (seeder `content_stories.go:80` `owners[idx%len]` over `Embedded().Sessions()`; projector flat
+      `idx++` before the drop check; `Set.Sessions()` flattens Products→Sessions in the same declaration order).
+      Already pinned by `TestContentProducts_FlatIndexSurvivesDrops`. No new test needed.
+
+### Documentation
+- [x] `content-stories-spec.md` accurate; all 5 cross-refs resolve; indexed in `demo/README.md` + `CLAUDE.md`.
+      No new top-level unit (a new file in the existing `seeders` package) → no per-unit handbook owed.
+
+### Decision Triage
+- [x] D-M233-3 (slug resolved at authoring time) → blended in §3 but was MISSING its `(#D-M233-3)` back-ref tag
+      (D-M233-1/2/4 all had theirs). Added the tag. FIXED.
+- [x] D-M233-1 / D-M233-2 / D-M233-4 → already blended + tagged in `content-stories-spec.md` (§1/§3/§4). Verified.
+- [x] KB-1 → already addressed at build (seed-manifest-spec.md §8 backfill). Archive.
+- [x] Cross-milestone handoff decisions (M234-owns-*) → archive (maintainer-only; the scope boundary is already
+      documented in spec §6).
+
+### Tests & Benchmarks
+- [x] No gaps. Full rext `stack-seeding go test ./...` GREEN (16 pkgs); harden already reached 100% function
+      coverage on the primary file. Flake gate run at Phase 8.

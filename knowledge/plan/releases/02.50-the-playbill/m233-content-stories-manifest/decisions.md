@@ -55,3 +55,20 @@
   (which need route fields — skillPathId, chapter slug — not yet in the fixture) land with M234/M235's fixture
   additions. `playerResultPath` returns a clear fail-closed reason for a non-simulation link-bearing session until
   then (no fabrication, no stub). Covered by M234's `In:` list.
+
+## Adversarial review (close Phase 2c)
+
+- **Scenario: the projector's flat session index silently de-syncs from the seeder's, re-owning every session
+  after a drop.** The projected `player_seat` must OWN the seeded session, which holds only if the projector's
+  flat index (`buildContentProductsFromSet`) advances in lock-step with the seeder's `for idx, cs := range
+  Embedded().Sessions()`. The subtle failure: if the projector reset its index per-product, or skipped the
+  increment on a dropped/unknown-product session, then the first drop would shift every subsequent owner by one
+  — the manifest would compile, the honesty gate (which re-projects the SAME code) would still pass, and yet
+  every CTA after the first drop would log in as the wrong member and land on a session that member never took.
+  A byte-clean manifest with universally dead CTAs — invisible to any self-consistent test.
+  - **Verification:** the projector increments `flat` BEFORE the known/drop checks
+    (`content_manifest.go:222-231`), so drops consume their slot; `Set.Sessions()` flattens Products→Sessions in
+    the exact declaration order the projector's nested loop walks; both `owners` (seeder) and `slots` (projector)
+    derive from `eligiblePlayerOwnerSlots`. The invariant is pinned by `TestContentProducts_FlatIndexSurvivesDrops`
+    (M233 harden), which feeds a drop-bearing set and asserts a later product's owner is unchanged. Handled; no
+    new fix. (Recorded so a future editor who "tidies" the loop into a per-product index reset sees the landmine.)
