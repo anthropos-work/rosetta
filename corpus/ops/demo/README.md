@@ -206,16 +206,19 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   (pin by `sessions.id`, public-anchored, the free-text scrub surface) the M232 seeder feeds, the **public-sim-by-
   modality catalog** (77 voice / 65 code / 30 document), and the generalized **manager-view MIRROR trap**. (M231)
 - [`session-clone-spec.md`](session-clone-spec.md) — the **session-clone / sourcing seeder** (v2.5 "the playbill"
-  M232 — the write side of the content-stories feature). The `ContentStorySeeder` **clones real production
-  job-simulation sessions** into a demo org: **anonymize BY CONSTRUCTION** (only the non-PII skeleton — source
-  session-id pin, real public sim_id, sim_type, modality, score, pass/fail, duration, actor/interaction counts —
-  is sourced; every free-text facet is SYNTHESIZED at seed time, never copied → provably PII-free),
-  **re-tenanted**, **non-manager-played** (owner = a seeded player member), **source-pinned** (deterministic
-  reseed; disclosed in the `content_sessions` manifest block). The full result fan-out (session + the
-  `local_jobsimulation_sessions` MIRROR + attempt/skill/criterion/check results + transcript actors/interactions
-  + the net-new **CODE**/**DOCUMENT** substrate + the **INTERVIEW** report), all G14-valid; plus the two
-  sha-pinned interview-flag-gate **demopatches** (the M219 aireadiness twin — no PostHog on a demo ⇒ no rollout
-  gate) that make the interview report fetch + render. The bounded read-side exception `safety.md` §3.8 records. (M232)
+  M232 — the write side of the content-stories feature). The `ContentStorySeeder` **COPIES real production
+  job-simulation sessions** into a demo org: the REAL result-fan-out CONTENT (LLM feedback, transcript,
+  submission, interview report — the interesting free-text) is **copied** from the pinned session (authoring-time,
+  `cmd/content-capture` reads prod read-only) and **SCRUBBED best-effort** of detectable PII (real actor names +
+  source org → placeholders the seeder fills with the demo persona/org; emails/phones/urls redacted). **NOT
+  provably clean** — residual re-identification risk is real and **ACCEPTED by the data-controller (2026-07-19)**;
+  the control is the **VPN/tailnet scope**. **Re-tenanted**, **non-manager-played** (owner = a seeded player
+  member), **source-pinned** (deterministic reseed; disclosed in the `content_sessions` manifest block). The full
+  result fan-out (session + the `local_jobsimulation_sessions` MIRROR + attempt/skill/criterion/check results +
+  transcript actors/interactions + the net-new **CODE**/**DOCUMENT** substrate + the **INTERVIEW** report), all
+  G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
+  aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8
+  records. (M232)
 - [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
   (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
   per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +

@@ -1,54 +1,55 @@
-# Session-Clone Spec — cloning anonymized real prod sessions into a demo
+# Session-Clone Spec — copying anonymized real prod sessions into a demo
 
 **The M232 deliverable (v2.5 "the playbill", Thread B — the write side).** Where
 [`content-stories-routes.md`](content-stories-routes.md) (M231) DISCOVERED + PROVED that a content-product
 result page reads a persisted DB row a clone could seed, THIS doc specifies the tooling that actually does the
-cloning: the `ContentStorySeeder` in `rosetta-extensions/stack-seeding`, which **copies real production
-job-simulation sessions — anonymized by construction, re-tenanted, non-manager-played, source-pinned** — into a
-demo org so a presenter can open each one's result page as the player who took it and as the manager who reviews
-it.
+cloning: the `ContentStorySeeder` in `rosetta-extensions/stack-seeding`, which **COPIES real production
+job-simulation sessions — the real content, scrubbed of detectable PII — re-tenanted, non-manager-played,
+source-pinned** — into a demo org so a presenter can open each one's result page as the player who took it and
+as the manager who reviews it.
 
-> **Headline — the safety property is ANONYMIZE BY CONSTRUCTION.** The clone is of a real session's
-> *structure*, not its *content*. Only the **non-PII skeleton** (the prod source-session-id, the real public
-> sim_id, the sim_type, the modality, the score, pass/fail, the duration, the actor/interaction counts) is
-> ever *sourced* from production. Every **free-text** facet — LLM feedback, transcript, the candidate's
-> submission, actor names, the interview report — is **SYNTHESIZED at seed time, never copied.** So the
-> checked-in fixture and the seeded demo are **provably PII-free**: there is nothing to leak, not even
-> transiently. This is the bounded exception [`safety.md`](../safety.md) §3.8 records.
+> **Headline — COPY THE REAL CONTENT, scrub best-effort (data-controller decision, 2026-07-19).** The
+> interesting part of a played session IS its free-text — the real conversation, the real LLM feedback, the
+> real submission, the real interview report. So the tooling **copies that real content** and **scrubs the
+> detectable PII** (real actor names + the source org → placeholders the seeder fills with the demo
+> persona/org; emails/phones/urls redacted). This is **NOT "provably clean"**: free-text scrubbing is
+> imperfect — a name the pass does not know, an unusual identifier, a company mentioned in passing can
+> survive. That **residual re-identification risk is real and was ACCEPTED by the data-controller**; the
+> control on it is the **VPN/tailnet scope** of the demo ([`safety.md`](../safety.md) §3.8), not the scrub.
 
 ## For PMs — one paragraph
 
 A "content story" is a real, played session a presenter can log into and see the result of. To make those
-believable we clone real production sessions into the demo — but we clone their *shape*, not their *words*. The
-tooling reads only the non-identifying skeleton of a real session (its score, how long it took, what kind of
-simulation it was, how many turns it had) and then writes a demo session with the same shape but **freshly
-made-up** feedback, transcript, and names. No customer's actual words, name, or work ever enters the demo. Each
-clone records exactly which real session it was shaped from (an auditable pin), references only a **public**
-simulation everyone can see, is owned by a **synthetic employee** (never a manager), and is reachable **only over
-our VPN** — the same access bound as every other demo.
+believable we copy real production sessions into the demo — the real conversation, the real feedback, the real
+work — and scrub the personal details we can detect (names, emails, phone numbers, the company name). The scrub
+is best-effort: it catches the obvious identifiers but cannot guarantee a name buried in a sentence is gone. We
+accepted that residual risk deliberately, and the control is that these demos are reachable **only over our
+VPN**, never the open internet. Each clone records exactly which real session it came from (an auditable pin),
+references only a **public** simulation, and is owned by a **synthetic employee** (never a manager).
 
 ---
 
-## 1. The pipeline — three stages, one of them offline
+## 1. The pipeline — capture+scrub at authoring time, replay offline at seed time
 
 ```
-  AUTHORING TIME (once, by a human, against read-only prod)          SEED TIME (offline, on the demo box)
+  AUTHORING TIME (once, reads prod READ-ONLY)                        SEED TIME (offline, on the demo box)
   ┌───────────────────────────────────────────────┐                ┌──────────────────────────────────┐
-  │ 1. SOURCE  (contentsession/sourcing.go)        │                │ 3. RECONSTRUCT                     │
-  │   the public-anchored + non-manager + per-cell │   the fixture  │   (ContentStorySeeder)            │
-  │   selection query → pick INTERESTING sessions  │  ───────────▶  │   replay the skeleton + SYNTHESIZE │
-  │ 2. PIN     (contentsession/fixture/*.yaml)     │   (go:embed)   │   the free-text into the demo org  │
-  │   freeze the NON-PII skeleton + the source-id  │                │   (owner = a seeded player member) │
+  │ cmd/content-capture --dsn <marco_read>         │                │ ContentStorySeeder                │
+  │   for each pinned session:                     │   the fixture  │   for each pin: load the copied    │
+  │     COPY the real fan-out content              │  ───────────▶  │   content, FILL <<ACTOR_i>>/<<ORG>>│
+  │     SCRUB it (package scrub) → placeholders     │  (go:embed)    │   with the demo persona/org, write │
+  │     write fixture/content/<key>.json (scrubbed) │                │   the fan-out rows (re-tenanted)   │
   └───────────────────────────────────────────────┘                └──────────────────────────────────┘
-        │ discloses the pins into ─────────────────────────────────────────┐
-        ▼                                                                   ▼
-  seed-generation-manifest.yaml (content_sessions block)          the demo's per-stack Postgres
+        │ the YAML pin list (content-sessions.yaml) drives both, + is disclosed in ──┐
+        ▼                                                                             ▼
+  seed-generation-manifest.yaml (content_sessions block)                    the demo's per-stack Postgres
 ```
 
-**The seeder never touches production.** Sourcing (stages 1–2) is an **authoring-time** activity a human runs
-once, against the read-only `postgres` MCP ([`db-access.md`](../db-access.md)); its output is a checked-in
-fixture. The seeder (stage 3) is fully **offline** — it reads only the go:embed'd fixture + the stack's own
-replayed public taxonomy. A demo box needs no prod access.
+**Raw customer content never enters an agent's context.** `cmd/content-capture` connects to production
+**read-only** (`marco_read` via `~/.pgpass` over Tailscale — [`db-access.md`](../db-access.md); it `SET`s the
+session read-only and only `SELECT`s), streams each session's content through the scrub, and writes the
+**scrubbed** result to the checked-in fixture. It prints **counts only**, never content. The seeder (seed time)
+is fully **offline** — it reads only the go:embed'd fixture. A demo box needs no prod access.
 
 ## 2. Stage 1 — sourcing (the reproducible selection)
 
@@ -57,141 +58,120 @@ sessions were chosen. Two load-bearing predicates:
 
 - **Public-anchoring (M231 D6).** A cloned session's `sim_id` must resolve in the demo, which holds only the
   **public** (snapshot-replayed) simulation catalog. So the query INNER-JOINs `directus.simulations` on the
-  public predicate — the single-sourced constant `PublicSimPredicate = "d.private = false AND d.tenant_id IS
-  NULL AND d.status = 'published'"` — and sources ONLY sessions on a public-published sim. A session on a
-  customer-private sim is excluded (its content is outside the public snapshot envelope).
-- **Non-manager-played.** The owner must be a player-vantage member — a manager reviews, she does not play.
-  (Belt-and-braces: the seeder re-owns every clone to a seeded player member anyway — §4.)
+  public predicate — `PublicSimPredicate = "d.private = false AND d.tenant_id IS NULL AND d.status =
+  'published'"` — and sources ONLY sessions on a public-published sim.
+- **Non-manager-played.** The owner must be a player-vantage member (belt-and-braces: the seeder re-owns every
+  clone to a seeded player member anyway — §4).
 
-The query reads **only non-PII columns** (id, sim_id, sim_type, score, completion_status, timing, and fan-out
-COUNTS) — never a free-text value — honoring the read boundary. Modality is derived by joining
-`directus.sim_tasks.task_type` (`call`→voice, `code`→code, `collaborative_doc`/`send_attachment`→document, else
-chat). Ordering surfaces the richest-fan-out candidate first, so a human pins an *interesting* session.
+**What was pinned (v2.5):** 9 real sessions covering type × modality × pass/fail — the assessment set **2 voice
++ 2 code + 1 document**, plus training doc/chat, hiring voice, and the **one public interview sim's** voice
+session — passed AND not-passed both. The list is `contentsession/fixture/content-sessions.yaml`.
 
-**What was pinned (v2.5):** 9 real sessions covering the type × modality × pass/fail matrix — the assessment set
-**2 voice + 2 code + 1 document** (satisfies "2 voice + 1 code + 1 document"), plus training doc/chat, hiring
-voice, and the **one public interview sim's** voice session — with **passed AND not-passed** both represented.
-The list is `contentsession/fixture/content-sessions.yaml`.
+## 3. Stage 2 — capture + scrub (the copied fixture)
 
-## 3. Stage 2 — the source-pin fixture (anonymize by construction)
+`cmd/content-capture` copies, per pinned session, the REAL result-fan-out content and scrubs it:
 
-The checked-in `content-sessions.yaml` stores, per session, ONLY the non-PII skeleton:
-
-| field | source | PII? |
+| copied facet | table.column | scrub |
 |---|---|---|
-| `source_session_id` | the prod `jobsimulation.sessions.id` (the provenance pin) | no — an opaque uuid, identifies nothing without prod access |
-| `sim_id` | the REAL public sim | no — public catalog |
-| `sim_type` · `modality` · `passed` · `score` · `duration_seconds` | the session's non-PII descriptor | no |
-| `actor_count` · `interaction_count` | the transcript cardinalities | no |
+| LLM feedback | `validation_attempt_results.*_summary`, `validation_attempt_skill_results.*_feedback`, `validation_check_results.feedback` | names→placeholders, emails/phones/urls redacted |
+| criterion title + candidate submission | `validation_criterion_results.title`, `.input_data` (jsonb) | ScrubJSON every string leaf |
+| the transcript | `interactions.action_payload` (jsonb, capped ≤ 12 turns) | ScrubJSON |
+| the code / document work-product | `code_submissions`, `collaborative_assets.content` | scrub stdout/content; base64 source left (technical) |
+| the interview report | `interview_extraction_results.user_report`/`manager_report` (jsonb) | ScrubJSON |
+| the real skill node-ids | `validation_attempt_skill_results.skill`, `.criterion.skills` | kept as-is (public taxonomy, non-PII) |
 
-**No free-text is stored.** The fixture is validated at load (`contentsession.Load`): uuid pins, **unique keys +
-unique source pins** (the source-pin contract admits no duplicate clone of one real session), valid
-sim_type/modality, sane score band — fail loud on any violation. It is `go:embed`'d (the exhibit set is a fixed,
-code-owned artifact, like the AI-readiness prompts — not per-stack config), so the seeder is self-contained.
+**The scrub** (`package scrub`, tested): the source session's real **actor names** → `<<ACTOR_i>>` placeholders,
+the **source org name** → `<<ORG>>`, and **emails / URLs / long digit-runs** → redaction markers. The real
+names are used only as scrub targets and are **dropped** — the fixture stores placeholders, not names. What the
+fixture ships is real content minus the detectable identifiers; the **fixture-cleanliness gate**
+(`TestEmbeddedContent_NoStructuralPII`) re-scans every shipped blob and fails on any surviving email/URL/phone.
+It cannot know arbitrary names — that is the accepted residual (§6). The scrub is **deterministic**: same
+session + same scrub → byte-identical fixture (the source-pin reseed contract). The pins are disclosed in
+`seed-generation-manifest.yaml`'s `content_sessions` block (honesty-gated).
 
-**Source-pin disclosure.** The pins are projected into `seed-generation-manifest.yaml`'s `content_sessions`
-block (`manifest.buildContentSessions`, honesty-gated by `TestManifest_CanonicalFileMatchesProjection` — a
-single source, cannot drift), so an auditor reads *exactly* which real sessions a content-story demo is sourced
-from, in one file, with the anonymization posture stated once at the block level.
-
-## 4. Stage 3 — reconstruction (the seeder)
+## 4. Stage 3 — replay (the seeder)
 
 `ContentStorySeeder` (surface `content-stories`; `DependsOn` users + taxonomy + content; `PerStackIsolated`)
-iterates the embedded fixture and reconstructs each session's full result substrate into the **first non-hiring
-(Workforce) story org**, owned by a **distinct non-hero, MEMBER-role** population slot (resolved via
-`roleForIndex` — the same single-source role fn the UsersSeeder wrote) → **owner-is-player-vantage by
-construction, never a manager seat**. It writes, in FK order, all idempotent on `id` (deterministic keys →
-byte-reproducible reseed):
+iterates the pins and REPLAYS the copied content into the **first non-hiring (Workforce) story org**, owned by a
+**distinct non-hero, MEMBER-role** slot (via `roleForIndex`) → **owner-is-player-vantage, never a manager
+seat**. It fills the `<<ACTOR_i>>` placeholders with a minted synthetic display name per actor slot and `<<ORG>>`
+with the demo org name, then writes, in FK order, all idempotent on `id`:
 
 ```
-jobsimulation.sessions                               (ended, completed, passed/failed — G14-valid enums, org-scoped)
-  ├─ validation_attempt_results                      (evaluation_status = THE gate; success_threshold, score)
-  │    ├─ validation_attempt_skill_results           (skill = a REAL public node-id, resolve-or-drop; competency_level_score)
-  │    │    └─ validation_criterion_results           (type=evaluation; input_format per modality)
-  │    │         └─ validation_check_results          (engine llm|text_diff; success; essential)   [NET-NEW]
-  ├─ actors                                          (player = the owner; AI stakeholders; SYNTHETIC names)   [NET-NEW]
-  ├─ interactions                                    (transcript; action_type ∈ {email,call} ONLY; SYNTHETIC payload)  [NET-NEW]
-  ├─ code_submissions + collaborative_assets         (the CODE / DOCUMENT work-product; SYNTHETIC)   [NET-NEW]
-  └─ interview_extraction_results                    (user_report + manager_report; SYNTHETIC plan-shaped envelope)  [INTERVIEW]
+jobsimulation.sessions                               (ended, completed, passed/failed — G14 enums, org-scoped)
+  ├─ validation_attempt_results                      (the REAL summaries, filled; evaluation_status = the gate)
+  │    ├─ validation_attempt_skill_results           (the REAL skill node-ids + the REAL feedback)
+  │    │    └─ validation_criterion_results           (the REAL titles/input_data; input_format per capture)
+  │    │         └─ validation_check_results          (the REAL grader feedback)
+  ├─ actors                                          (player = the owner; the copied roles; minted names)
+  ├─ interactions                                    (the REAL transcript; action_type ∈ {email,call}; filled payload)
+  ├─ code_submissions + collaborative_assets         (the REAL code / document work-product)
+  └─ interview_extraction_results                    (the REAL user_report + manager_report, filled)
 public.local_jobsimulation_sessions                  ← THE MIRROR (the score source the manager scoreboard reads)
 ```
 
 ### The three seeding landmines it honors (M231 §7)
 
-1. **Co-write the manager MIRROR** (`public.local_jobsimulation_sessions`) or the manager scoreboard is blank
-   (the M219/M222 trap — the scoreboard reads the app-side event-populated mirror, not the runtime table).
-2. **Reference only public-anchored sims** — the pinned `sim_id` IS a public-published sim, so it resolves in
-   the replayed catalog and the result page renders the real sim.
+1. **Co-write the manager MIRROR** (`public.local_jobsimulation_sessions`) or the manager scoreboard is blank.
+2. **Reference only public-anchored sims** — the pinned `sim_id` IS public-published, so it resolves.
 3. **Enable the interview PostHog flags** — §5.
 
-Plus the standing rules: owner-is-player-vantage (never a manager seat), all G14-valid enums, closure stays
-green (skill node-ids are drawn from the replayed taxonomy, **resolve-or-drop — never fabricated**).
+Plus: owner-is-player-vantage; the copied enums are real (G14-valid) with a clamp for a rare non-terminal
+value; the skill node-ids are the REAL ones the candidate was assessed on (real public taxonomy → resolve).
 
-### Anonymization surface — what is synthesized (per M231's contract)
+### It COPIES, it never fabricates
 
-| real facet (PII risk) | how M232 anonymizes |
-|---|---|
-| structured ids (`owner_id`, `organization_id`, `session_id`, tokens, …) | **re-keyed** (deterministic per content-story key) + **re-tenanted** into the manifest org; tokens regenerated |
-| timestamps | **shifted** to backdate (the real duration is preserved) |
-| actor `username`/`alias` (direct-PII names) | **synthesized** from a clearly-synthetic roster (no real person) |
-| LLM feedback (`*_summary`, `*_feedback`) | **synthesized** from pass/fail + score band |
-| criterion `input_data` / the candidate's submission | **synthesized** (code snippet / document text) |
-| `action_payload` (the transcript, highest PII risk) | **synthesized** turns (bounded ≤ 12), never the real payload |
-| `interview_extraction_results.user_report`/`manager_report` | **synthesized** plan-shaped `{"results":{…}}` envelope |
+Every free-text row is the customer's content, scrubbed + placeholder-filled — proven by
+`TestContentStorySeeder_CopiesRealContent` (the seeded `quick_summary` equals the captured content with
+placeholders filled, byte-for-byte). `TestContentStorySeeder_PlaceholdersFilled` proves no placeholder token
+survives; `TestContentStorySeeder_ReTenantsNoSourcePins` proves the prod source-session-id is provenance-only
+(never a live id — every live id is re-keyed off the content-story key + re-tenanted to the demo org).
 
-**The re-key is provable.** `TestContentStorySeeder_AnonymizeNoSourcePins` asserts the raw prod
-`source_session_id` never appears as a live id in any written row — every live id is derived from the
-content-story key, so the source pin is provenance-only.
+### Net-new modality substrate
 
-### Net-new modality substrate (the M232 build)
-
-- **Transcript** (`actors` + `interactions`): the DB enum admits **only** `email` + `call` action_types (a COPY
-  bypasses Ent, so an invalid value would insert-but-be-invisible — the G14 class); VOICE→`call`,
-  everything else→`email`. `source_id`/`target_id` FK actors, `source_id <> target_id` (the DB CHECK).
-- **CODE**: a completed `code_submissions` row (runtime `py`, language_id 71, base64 synthetic source) + the
-  `collaborative_assets` the code criterion (`input_format=collaborative_asset`) grades. (There is no `code`
-  input_format value — code grades via the editor diff.)
-- **DOCUMENT**: the authored `collaborative_assets` row.
-- **INTERVIEW**: `interview_extraction_results.user_report`/`manager_report` as the plan-shaped
-  `{"results":{…}}` `ExtractionData` envelope with the `score_grade` (A/C) session-quality section (the header
-  quality badge) + narrative sections; the manager report adds `attention_points` + a recommendation. The
-  backend stores the report bytes opaquely (no struct enforcement), so the row is insertable; **exact
-  plan-section-id alignment for FULL render fidelity is M235's ("prove-it-lands") concern** — its coverage
-  iteration triages any blank landing to its read-model.
+- **Transcript** (`actors` + `interactions`): action_type ∈ {`email`,`call`} only (the DB enum; a COPY bypasses
+  Ent, so an invalid value would insert-but-be-invisible — the G14 class). `source_id <> target_id` (the CHECK).
+- **CODE / DOCUMENT**: the copied `code_submissions` / `collaborative_assets`.
+- **INTERVIEW**: the copied `interview_extraction_results.user_report`/`manager_report`. (Render fidelity of the
+  interview surface — the exact plan-section match — is M235's "prove-it-lands" concern.)
 
 ## 5. The interview render flags — a sha-pinned demopatch (M231 D3)
 
 The interview result surfaces gate on `posthog.isFeatureEnabled('flag_interview_{player,manager}_report')`, and
-a demo bakes **no PostHog** (`Analytics.provider` inits it only when both `NEXT_PUBLIC_POSTHOG_KEY` + `_HOST` are
-present), so the flags resolve `undefined` forever and the report never fetches or renders. A seeded row is
-**necessary but not sufficient**. Two sha-pinned `demopatch`es on the demo's OWN ephemeral clone
-([`demopatch-spec.md`](demopatch-spec.md)) — **the interview twin of the M219 `next-web-aireadiness-flag-gate`** —
-widen the two gates ONLY when PostHog is entirely unconfigured (i.e. exactly a demo), behaviour-identical
-off-demo:
+a demo bakes **no PostHog**, so the flags resolve `undefined` forever. Two sha-pinned `demopatch`es on the demo's
+OWN ephemeral clone — **the interview twin of the M219 `next-web-aireadiness-flag-gate`** — widen the two gates
+ONLY when PostHog is entirely unconfigured (behaviour-identical off-demo):
 
-- `next-web-interview-flag-container` — the report **FETCH** gate (`AISimulationResultContainer.tsx`,
-  `isExtractionEnabled`).
-- `next-web-interview-flag-result` — the report **RENDER** gate (`AISimulationResult.tsx`). Both are needed;
-  both live in the SHARED `packages/ui`, so they bake into BOTH the apps/web and apps/hiring images (wired into
-  `up-injected.sh`'s both frontend builds + the patchset fingerprint + the LIFO revert trap;
-  `tests/test_interview_flag_patch_m232.py` fences the manifest shape + the wiring + a live-anchor drift pin).
+- `next-web-interview-flag-container` — the report **FETCH** gate (`AISimulationResultContainer.tsx`).
+- `next-web-interview-flag-result` — the report **RENDER** gate (`AISimulationResult.tsx`).
 
-**Zero platform-repo edits:** the patches touch the demo's ephemeral clone before the image build and revert
-after (the demopatch 7-guard contract); the canonical `anthropos-work` repos are never touched.
+Both live in the SHARED `packages/ui`, so they bake into BOTH the apps/web and apps/hiring images (wired into
+`up-injected.sh`'s both frontend builds + the patchset fingerprint + the LIFO revert trap;
+`tests/test_interview_flag_patch_m232.py` fences the manifest shape + wiring + a live-anchor drift pin). **Zero
+platform-repo edits.**
 
-## 6. Safety — the read-side exception, bounded
+## 6. Safety — the read-side exception, honestly bounded
 
-Sourcing anonymized-real sessions is a user-accepted (data-controller) softening of `safety.md`'s "nothing
-behind the door", bounded three ways: **anonymize by construction** (PII never sourced), **source-pinned +
-disclosed** (`content_sessions` manifest block), **VPN/tailnet-scoped** (the Part-3 exposure posture). **Part 2
-(never-write-prod) is untouched** — the seeder writes only per-stack Postgres, audited, n=0-guarded. See
-[`safety.md`](../safety.md) §3.8 (the amendment this milestone lands).
+Copying real customer sessions is a user-accepted (data-controller, 2026-07-19) softening of `safety.md`'s
+"nothing behind the door", bounded three ways:
+
+1. **Best-effort scrub** — the detectable PII (known names, org, emails/phones/urls) is removed; the fixture is
+   re-scanned for structural PII at test time. It is NOT a guarantee — residual names/identifiers can survive.
+2. **Residual risk ACCEPTED, VPN/tailnet-scoped** — the data-controller accepted the residual re-identification
+   risk; the control is that content-story demos are reachable **only over a Tailscale tailnet/VPN** (the Part-3
+   exposure posture), never the public internet.
+3. **Source-pinned + disclosed** — every clone's prod source-id + the copy+scrub posture is recorded in the
+   `content_sessions` manifest block.
+
+**Part 2 (never-write-prod) is untouched** — the seeder writes only per-stack Postgres, audited, n=0-guarded.
+The read (`content-capture`) is read-only. See [`safety.md`](../safety.md) §3.8 (the amendment this milestone
+lands).
 
 ## See also
 - [`content-stories-routes.md`](content-stories-routes.md) — the M231 spike (the read/route/sourcing contract this realizes).
-- [`safety.md`](../safety.md) §3.8 — the anonymized-real read-side exception this milestone discloses.
-- [`../db-access.md`](../db-access.md) — the read foundation + the public-vs-customer boundary the sourcing honors.
+- [`safety.md`](../safety.md) §3.8 — the copy+scrub read-side exception + the accepted residual risk.
+- [`../db-access.md`](../db-access.md) — the read foundation + the public-vs-customer boundary the capture honors.
 - [`seed-manifest-spec.md`](seed-manifest-spec.md) — the `seed-generation-manifest.yaml` the `content_sessions` pins fold into.
 - [`stories-spec.md`](stories-spec.md) + [`../seeding-spec.md`](../seeding-spec.md) — the 7-table fan-out + the mirror-pair the substrate extends.
 - [`demopatch-spec.md`](demopatch-spec.md) — the demo-patch mechanism the interview flag-gates use.
-- The manifest / cockpit halves: **M233** (`content-stories-spec.md`, the manifest projection) + **M234** (the cockpit tab) + **M235** (prove-it-lands render proof).
+- The manifest / cockpit halves: **M233** (`content-stories-spec.md`) + **M234** (the cockpit tab) + **M235** (prove-it-lands render proof).

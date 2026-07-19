@@ -87,3 +87,28 @@ Verified: load + apply + idempotent-reapply + revert-clean against a git working
   failures. The 14 pre-existing failures (demo-stack hygiene: the urls.ts/SSR re-anchor + the cockpit/host/purge
   reds) are a Fate-3 candidate for the v2.5 release close, not M232 work. (Self-healing anchor, demopatch-spec
   §6: the drifted patches still APPLY at demo-up; only the whole-file sha baseline drifted.)
+
+## D9 (REWORK 2026-07-19) — COPY the real content + best-effort scrub (SUPERSEDES D1's anonymize-by-construction)
+User decision, explicit: the anonymize-by-construction / synthesize-free-text design (D1) was NOT what was
+asked. The interesting part of a played session IS its free-text (real conversation, real feedback, real
+submission), which synthesis fabricated. **REWORKED the CONTENT layer to COPY the real free-text + scrub PII
+where detectable.** The INFRASTRUCTURE is unchanged (fan-out, mirror co-write, G14 enums, source-pin,
+public-anchored D6, non-manager, re-tenant, the two interview flag-gate demopatches, the manifest projection).
+- **New `scrub` package** (tested): redact emails/phones/urls + replace known names/org → placeholders.
+- **New `cmd/content-capture`**: reads prod **read-only** (marco_read via ~/.pgpass over Tailscale, `SET`
+  read-only, SELECTs only), COPIES each pinned session's real fan-out content, SCRUBS it, writes the checked-in
+  `contentsession/fixture/content/<key>.json`. Raw content streams prod→scrub→fixture — never enters an agent's
+  context (prints counts only). Ran once → 9 real scrubbed blobs.
+- **New `contentsession/content.go`**: the captured-content model + go:embed loader.
+- **Reworked seeder**: `content_stories_{write,modality}.go` now REPLAY the copied content (fill
+  `<<ACTOR_i>>`/`<<ORG>>` placeholders with the demo persona/org), not synthesize. Copies the REAL skill node-ids
+  the candidate was assessed on. `resolveTaxonomyRefs` draw removed (node-ids copied, not drawn).
+- **HONEST posture** (docs updated): safety.md §3.8 + session-clone-spec.md flipped from "provably PII-free by
+  construction" to "real content COPIED, best-effort scrubbed, NOT guaranteed clean — residual re-identification
+  risk ACCEPTED by the data-controller (2026-07-19), VPN/tailnet-scoped as the control." manifest
+  anonymization_transform, README, CLAUDE.md all reworded.
+- **Tests**: scrub unit (no email/phone/url/name/org survives); `TestEmbeddedContent_NoStructuralPII` (fixture
+  cleanliness re-scan); `TestContentStorySeeder_CopiesRealContent` (seeded free-text == captured, filled,
+  byte-for-byte → proves COPIED not synthesized); `PlaceholdersFilled`; kept fan-out/enum/mirror/determinism/
+  public-anchored/non-manager. D1's synth-specific tests (NoTaxonomyDropsSkills, CriterionInputFormat) removed.
+- Zero platform-repo edits still holds (interview flags stay demopatches; the prod read is authoring-time read-only).
