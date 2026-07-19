@@ -1,12 +1,13 @@
-# Content-Stories Spec — the content_products manifest + honesty gate
+# Content-Stories Spec — the content_products manifest + honesty gate + the cockpit render
 
-**The M233 deliverable (v2.5 "the playbill", Thread B — the manifest half).** Where
+**The M233 + M234 deliverable (v2.5 "the playbill", Thread B — the manifest half + the render half).** Where
 [`session-clone-spec.md`](session-clone-spec.md) (M232) COPIES real production sessions into a demo org, and
 [`content-stories-routes.md`](content-stories-routes.md) (M231) proved each result page reads a seedable row,
-THIS doc specifies the **manifest** that turns those seeded sessions into a cockpit menu: a
-**`content_products[]` projection** — per content product, the list of played sessions each with an
-**as-player** and an **as-manager** login-and-land action — projected from the same fixture the seeder seeds
-from, honesty-gated so it can never drift, and fail-closed so it never fabricates a link.
+THIS doc specifies **(M233)** the **manifest** that turns those seeded sessions into a cockpit menu — a
+**`content_products[]` projection** (§1–§6) — and **(M234)** the **cockpit render** that turns that manifest
+into the 2nd "Content stories" tab + the `content-player-<idx>` seat registration that makes its as-player
+CTAs log in (§7). The manifest is a projection from the same fixture the seeder seeds from, honesty-gated so
+it can never drift, and fail-closed so it never fabricates a link.
 
 > **Headline — the content menu is a PROJECTION, not hand-authored, and it can't drift.** The cockpit's
 > "Content stories" tab reads a `content-manifest.json` that `stackseed --content-export` PROJECTS from the
@@ -170,17 +171,85 @@ is the `content_sessions` block. The two are distinct projections of the same fi
 (`content-manifest.json`) and the audit DISCLOSURE (`content_sessions`) — exactly as `cockpit-manifest.json`
 (the stories menu) is distinct from `seed-generation-manifest.yaml` (the seed intent).
 
-## 6. Scope boundary — what M233 is NOT
+## 6. Scope boundary — the manifest (M233) vs the render (M234) vs prove-it-lands (M235)
 
-M233 delivers the **manifest** (the schema + the projection + the honesty gate + the fail-closed resolver + the
-`--content-export` verb). It does **not** render the tab or wire the bring-up:
+M233 delivered the **manifest** (the schema + the projection + the honesty gate + the fail-closed resolver + the
+`--content-export` verb). **M234 (§7) delivers the render half** — the cockpit tab + the seat registration + the
+bring-up wiring. Still ahead:
 
-- **The cockpit tab render + the bring-up export + the player-seat REGISTRATION** are **M234** (the cockpit-UX
-  half of this doc): a client-side tab toggle in `cockpit.py`, per-product sections, the two-CTA rows, and
-  `roster.go` minting the `content-player-<idx>` seats so the as-player CTA logs in.
-- **The non-simulation product player-path builders** (skill-path / academy) land with M234/M235's fixture
-  additions (their route fields aren't in the fixture yet; the resolver fail-closes on them until then).
-- **Proving every CTA lands on a non-empty result page** is **M235** (prove-it-lands).
+- **The non-simulation product player-path builders + their fixture sessions** (skill-path / academy / ai-labs)
+  land with **M235**'s fixture additions (their route fields aren't in the fixture yet; the resolver fail-closes
+  on them until then, and the renderer handles them the moment they appear — §7). **Today's fixture is
+  simulation-only**, so a real demo renders only the Simulation section.
+- **Proving every CTA lands on a non-empty result page** is **M235** (prove-it-lands) — including the academy
+  section's exact deep-link + the specific-member academy landing (which also depends on M230's catalog fill).
+
+## 7. The cockpit render — the 2nd "Content stories" tab (M234)
+
+M234 turns the manifest into a **2nd cockpit tab** beside "Org stories" (`cockpit.py`, still stdlib-only,
+standalone-served — the [`cockpit-spec.md`](cockpit-spec.md) panel). It is **the render half of this doc**.
+
+### 7.1 The tabbed model
+`cockpit.py --content-manifest <content-manifest.json>` (threaded by the bring-up — §7.5) adds a **client-side
+tab toggle** (`_TAB_JS`, a raw string with no manifest data interpolated — the `_OVERLAY_JS` injection-safe
+discipline) with two panels: **Org stories** (the heroes menu, default-on) and **Content stories** (the
+`content_products[]` render). **Absent or empty `--content-manifest` ⇒ NO tab bar** — the page is
+byte-identical to a pre-M234 single-panel cockpit, so an old bring-up is unchanged. The content menu is also
+served at **`GET /content-manifest.json`**.
+
+### 7.2 The per-session row + the two-action contract
+Each product is a section (product FontAwesome icon + name); each played session is a row: a **per-`sim_type`
+FontAwesome icon** (`clipboard-check`/`dumbbell`/`user-tie`/`comments`) + a descriptor (modality pill +
+passed/not-passed pill) + **up to two login-and-land CTAs**:
+
+- **As-player** — a fake-FAPI handshake `…/handshake?__clerk_identity=<player_seat>&redirect_url=<base><player_result_path>`,
+  rendered iff the session carries a `player_result_path`. `<player_seat>` is the `content-player-<idx>` seat
+  M234 registered (§7.4), so the presenter logs in as the exact seeded member who owns the session.
+- **As-manager** — the same handshake with the manager hero seat landing on the activity-dashboard result
+  surface, **omitted where `has_manager_view=false`** (the `.actions`/two-button layout with omitempty). The
+  manager CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
+
+### 7.3 Per-product app-base routing + the two special sections
+The per-product `app_base` resolves the CTA origin, generalizing the M224 `is_hiring`/`hiring_base` switch
+(`content_base`): **`web`→`--app-base` :3000 · `hiring`→`--hiring-base` :3001 · `academy`→`--academy-base`
+:3077** (an unset hiring/academy base falls back to `--app-base` — never a dead link). The two M231 special
+dispositions:
+
+- **AI-labs = PRESENCE-ONLY (M231 D4).** A session with no result surface (no `player_result_path`, no manager
+  view) renders a **muted "Activity & spend only" status note — no CTA** (never a dead button). Data-driven:
+  the disposition falls out of the manifest fields, not a flag (#M234-D5).
+- **Academy (M231 D5).** app_base `academy` → the as-player CTA is a **direct academy-origin link** carrying the
+  M53 `e2e_persona=member` cookie seam — the academy is a **separate origin with its own auth, NOT behind the
+  fake FAPI** (a FAPI handshake redirect would establish a next-web session the academy can't see) (#M234-D4). No
+  manager CTA (no academy manager route). The **specific-member** academy landing + the exact chapter route are
+  finalized in **M235** (depends on M230). *Today's fixture carries no academy session; this path is
+  unit-proven and lights up when M235 adds the fixture.*
+
+### 7.4 The seat registration — `content-player-<idx>` in the roster (`roster.go`)
+The as-player CTA passes `?__clerk_identity=content-player-<idx>`, so that seat MUST resolve in Clerkenstein's
+registry. Pre-M234 the exported roster carried **only heroes**; M234 **appends one identity per DISTINCT
+content-player owner slot the projection references** (`contentPlayerSeatsUsed(BuildContentProducts)`) — no
+dead seat, no unresolvable CTA. Each identity's claims (auth_id / eid / email / name / picture / org / role)
+are derived with the **UsersSeeder's own functions** — the member NAME via the new single-source
+`storyPopulationNames` (the UsersSeeder consumes it too, so the exported login identity is **byte-identical to
+the seeded `public.users` row**) (#M234-D1). The seats append **after all heroes**, so `roster[0]` (the default active
+seat) stays the first hero (#M234-D2). The existing `--roster-export` at bring-up carries them automatically (the roster
+is a pure function of the blueprint — no bring-up change beyond §7.5). *The manager seat is the host org's
+manager hero (`dan-manager`), already a roster seat — no new registration.*
+
+### 7.5 The bring-up wiring (`up-injected.sh`)
+The DEMO_STORIES cockpit block exports `content-manifest.json` via `stackseed --content-export` (a peer of
+`--cockpit-export`/`--manifest-export`) and threads it into the cockpit launch as `--content-manifest`.
+**NON-FATAL:** a failed or fail-closed export just drops the 2nd tab; the cockpit still serves "Org stories"
+(the M18/M19 pattern). No new `/demo-up` flag or `DEMO_*` knob — the content tab is on whenever the storytelling
+demo + cockpit are (the existing `DEMO_STORIES` / `DEMO_NO_COCKPIT` gates).
+
+### 7.6 What's proven at M234 (unit) vs left to M235 (runtime)
+M234 is **unit-proven, not browser-proven**: `cockpit.py` renders the manifest to correct HTML (per-product
+sections, per-session rows, the two CTA hrefs with the right `__clerk_identity`/`redirect_url`, `has_manager_view`
+omission, AI-labs presence-only, academy origin), the seats resolve through `roster.go` byte-identically to the
+seed, and the export→render pipeline runs end-to-end. **Proving every CTA lands on a non-empty result page (a
+live browser on a cold reset-to-seed) is M235; proving it on `billion` is M236.**
 
 ## See also
 - [`session-clone-spec.md`](session-clone-spec.md) (**M232**) — the seeder that COPIES the real sessions this menu points at + the `content_sessions` source-pins.

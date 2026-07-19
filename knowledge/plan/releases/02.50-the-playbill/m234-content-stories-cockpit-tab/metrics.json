@@ -1,0 +1,30 @@
+{
+  "milestone": "M234", "title": "content-stories cockpit tab", "shape": "section",
+  "close_status": "closed-complete", "closed": "2026-07-19",
+  "platform_repo_edits": 0,
+  "deliverable": "corpus/ops/demo/content-stories-spec.md §7 (the cockpit-UX render half: tabbed model, two-action contract, per-type icon map, per-product base routing, AI-labs presence-only, academy origin, content-player seat registration, bring-up wiring) + cockpit-spec.md 2nd-tab note",
+  "tests": {
+    "rext_go": "GREEN (full stack-seeding suite, 16 pkgs; go build + go vet clean)",
+    "m234_touched_go_suite": "GREEN (seeders + contentsession + cmd/stackseed)",
+    "python_demo_stack": "249 passed / 6 pre-existing failed / 0 new (test_cockpit.py + test_tooling.py, 255 collected)",
+    "net_new_tests_m234": "22 harden (19 python test_cockpit + 1 test_tooling + 2 go content_player_roster) atop the section-phase tests (§1 6 go seat tests, §2 23 python, §3 10 go wiring)",
+    "go_test_funcs_reproducible": "git grep '^func Test' whole rext repo: 1931 (M233 @ c30fee3) -> 1939 (M234 @ fd457bf), +8",
+    "coverage_note": "cockpit.py statements 92% -> 96% (harden); Go 100% function coverage on all M234-touched files except users.go Seed (97%, pre-existing DB-write path)",
+    "flake_gate": "GREEN — Go 5/5 clean (-count=1 -shuffle=on on seeders + contentsession + cmd/stackseed); Python 5/5 stable (identical 6-fail/249-pass every run, 0 inconsistent = 0 flakes)"
+  },
+  "flake_count": 0,
+  "test_basis_note": "Whole-rext-repo Go test funcs re-anchored to the REPRODUCIBLE method `git grep -E '^func Test' -- '*.go'`: 1931 at M233's tag c30fee3, 1939 at M234's tag fd457bf (+8 from content_player_roster_test.go/cockpit_test.go/roster_test.go/main_test.go). NOTE: M233's headline quoted 1954 via a non-reproducible count; M234 re-anchors to the git-grep method (the v1.11 incident-#6 counting-hazard discipline). M234 added Go code (roster.go/userprofile.go/content_manifest.go/users.go/stackseed) + Python cockpit-tab render code — the Python suite is the primary M234 gate (render half).",
+  "code_of_record_tag": "playbill-m234-content-tab-hardened @ fd457bf (harden); playbill-m234-content-tab @ 7f55eb4 (build)",
+  "close_fixes": [
+    "adversarial-review (Phase 2c): added an `Adversarial review` subsection to decisions.md recording the 7 harden-exercised scenarios (manager-view-without-seat, academy+manager-view routing, --no-ui base fallback, empty/all-empty product, manifest injection, non-fatal broken manifest, structural-org roster-inflation)",
+    "decision-triage (Phase 5): added 5 (#M234-D1/D2/D4) back-ref tags to content-stories-spec.md §7 where D-M234-1/2/4/5 are blended"
+  ],
+  "close_code_changes": "none — all close fixes are docs/records in the rosetta repo; the rext code-of-record (fd457bf) is unchanged, no new rext commit/tag",
+  "deferral_audit": "YELLOW (0 blockers); milestone-scope; one CHRONIC repeat (14 pre-existing demo-stack fails) already user-dispositioned + homed at the v2.5 release-close re-anchor (not re-woken); single Fate-2/3 carries (M234->M235 fixtures, M230/M231->M235/M236) all homed. Report: audit-deferrals/deferral-audit-2026-07-19-m234-close.md",
+  "carry_forward": [
+    "non-simulation product fixtures (ai-labs/academy/skill-path) + prove-every-CTA-lands live -> M235 (Fate-2, verified in M235 In: + exit_gate; renderer already handles all dispositions, unit-proven)",
+    "specific-member academy landing + exact chapter route -> M235 (depends on M230)",
+    "14 pre-existing demo-stack test failures (6 in test_cockpit.py) -> v2.5 release close (REPEAT/CHRONIC, inherited; M234 adds 0 new)"
+  ],
+  "notes": "The render half of Content stories: cockpit.py gains a 2nd 'Content stories' tab (client-side toggle, stdlib-only, no manifest data in JS) reading the M233 content-manifest.json — per-product sections, per-session rows with per-sim_type FontAwesome icons + up to two login-and-land CTAs (as-player fake-FAPI handshake iff player_result_path; as-manager omitted where has_manager_view=false), per-product app-base routing (web:3000/hiring:3001/academy:3077 with app-base fallback), AI-labs presence-only (no CTA), academy direct-origin link (M53 cookie seam, not FAPI). Absent/empty manifest => byte-identical pre-M234 single-panel page. roster.go appends content-player-<idx> seats (one per distinct owner slot the projection references) after all heroes, claims single-sourced with UsersSeeder via the new storyPopulationNames; the --roster-export warning re-keyed on RosterHeroCount. up-injected.sh wires --content-export + --content-manifest (non-fatal). Unit-proven, not browser-proven — live prove-it-lands is M235, prove-on-billion M236. 0 platform edits."
+}

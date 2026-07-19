@@ -283,7 +283,17 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 | `GET /healthz` | `200 "ok"` (a liveness probe) |
 | `GET /seed-generation-manifest.yaml` | (v1.10b M52) The **consolidated** seed+generation manifest as a download (`Content-Disposition: attachment`, verbatim YAML) — the footer **[Download seed manifest]** target, when served (`--seed-manifest`) |
 | `GET /manifest.json` | The **menu** manifest (stories→heroes projection) as a download (`Content-Disposition: attachment`, pretty JSON) — the `[Log in as]` source + the fallback download |
+| `GET /content-manifest.json` | (v2.5 M234) The **content-stories** menu (the M233 `content_products[]` projection) as a download — the 2nd "Content stories" tab's source. Served only when `--content-manifest` was passed (a `404` otherwise) |
 | anything else | `404` |
+
+### The 2nd tab — "Content stories" (v2.5 "the playbill" M234)
+
+When the cockpit is launched with `--content-manifest <content-manifest.json>` (the bring-up threads it when
+the storytelling demo is up), the panel renders a **client-side tab toggle** with a 2nd **"Content stories"**
+tab beside "Org stories": per content product, a list of **played sessions** each with **as-player /
+as-manager** login-and-land CTAs (the `content-player-<idx>` seats are registered in the same roster the
+`[Log in as]` heroes come from). Absent `--content-manifest` ⇒ no tab bar (byte-identical to today). The full
+render + seat + routing contract is [`content-stories-spec.md` §7](content-stories-spec.md#7-the-cockpit-render--the-2nd-content-stories-tab-m234).
 
 ### Bring it up
 
