@@ -1,0 +1,14 @@
+{
+  "milestone": "M230",
+  "gate": "cold /demo-up: academy home grid renders real cards (>= floor) for employee vantage, NO Draft chip, via a faithful equivalent, 0 prod-ejects, verified by a RENDERED-CARD COUNT",
+  "metric_name": "academy-home rendered-card count (coverage ANT_ACADEMY descriptor)",
+  "baseline_cards": 0,
+  "gate_floor_cards": "TBD (calibrated at first sweep; >= 1 real card + NO _draft chip + 0 ejects)",
+  "current_cards": 0,
+  "gate_met": false,
+  "iters_closed": 1,
+  "tiks_closed": 0,
+  "toks_closed": 1,
+  "active_strategy": "TOK-01 (Option C — FS-as-published fallback demo-patch)",
+  "last_updated": "2026-07-19"
+}
