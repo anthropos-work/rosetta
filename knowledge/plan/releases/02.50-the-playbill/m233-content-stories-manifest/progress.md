@@ -22,3 +22,56 @@
 - [x] Tag the rext authoring clone (`playbill-m233-content-manifest` @ 9f0ab1c)
 
 ## Status: all sections complete. rext tag `playbill-m233-content-manifest` (9f0ab1c). Ready for `/developer-kit:close-milestone`.
+
+## M233: Hardening
+
+### Pass 1 — 2026-07-19
+**Scope manifest (milestone-touched Go, rext `stack-seeding`):** `seeders/content_manifest.go` (primary,
+355 L — projector `BuildContentProducts`/`buildContentProductsFromSet`/`resolveSession`/`playerResultPath`/
+`ValidateContentManifest`/`WriteContentManifest` + `simTypeIcon`/`managerHeroKey`/registry) · its
+`content_manifest_test.go` · `contentsession/contentsession.go` (M233 `sim_slug` + `slugRE` + `Validate`) ·
+`cmd/stackseed/main.go` `doContentExport` + `main_test.go` honesty gate · `seeders/content_stories{,_write}.go`
+M233 single-source additions (`ownerSlot`/`eligiblePlayerOwnerSlots`/`contentStorySessionID` — already 100%).
+The M232 validators in `content_stories_write.go` (`validTerminalEval` etc.) are adjacent (M232 code) — out of
+M233 harden scope.
+
+**Coverage delta (milestone-touched packages, statements):**
+- seeders: 96.0% → 96.2% (+0.2) — but the signal is per-function: `content_manifest.go` went from six
+  sub-100% functions to **100% across every function** (simTypeIcon 83.3→100, managerHeroKey 83.3→100,
+  playerResultPath 80→100, isSimulationType 66.7→100, buildContentProductsFromSet 94.6→100, WriteContentManifest 83.3→100).
+- contentsession: 91.6% → 93.7% (+2.1) — `Validate` 96.6→100, `ProductFor` 80→100 (`Embedded` stays 75% = the
+  defensive panic on an invalid go:embed, a compile-time invariant with no runtime input path — not chased).
+- cmd/stackseed: 64.3% → 64.5% — `doContentExport` 70.8→75 (the `--seed` guard).
+
+**Tests added (Pass 1, 10):**
+- `content_manifest_test.go`: +7 — presence-only AI-labs disposition (row without player path, NOT a drop);
+  non-simulation link-bearing drop (the M234-deferred `playerResultPath` reason path); **flat-index-survives-drops**
+  (the load-bearing seat single-source: the projection's flat session index advances through dropped/unknown-product
+  sessions, staying aligned with the seeder's `Sessions()` index — a regression = dead CTAs); simTypeIcon fallback;
+  managerHeroKey blank-hero skip; WriteContentManifest fail-closed on no-host-org (writes nothing); the M217
+  wire-format lesson applied — empty projection marshals `"products":[]` never `null`.
+- `contentsession_test.go`: +1 — `sim_slug` validation (malformed uppercase/underscore/edge-hyphen rejected,
+  omitted allowed, valid round-trips) + `ProductFor` not-found branch.
+- `cmd/stackseed/main_test.go`: +1 — `--content-export` requires `--seed` guard.
+
+### Pass 2 — 2026-07-19
+Closed the two remaining branches on the projector's export entry.
+**Coverage delta:** seeders 96.1% → 96.2%; `content_manifest.go` now **100% across all functions**.
+**Tests added (Pass 2, 2):**
+- `TestContentProducts_NoEligiblePlayerOwner` — the third fail-closed drop-path: a non-hiring host org exists but
+  is degenerate (Size==heroCount → no member slot), every session drops with "no eligible player owner", guard
+  fails loud. (Distinct from no-host-org.)
+- `TestWriteContentManifest_EncodeError` — a failing writer surfaces the wrapped encode error with 0 sessions
+  reported (the I/O error path, previously unexercised).
+
+**Bugs fixed inline:** none — the projector held under every drop-path, disposition, and wire-format probe.
+
+**Flakes stabilized:** none observed (all new tests deterministic; 3 consecutive clean sequential runs).
+
+**Knowledge backfill:** see the `**Knowledge backfill:**` note below.
+
+### Stop condition
+Stopped after Pass 2 (2 passes): the primary file `content_manifest.go` reached 100% function coverage, the
+Pass-2 statement delta was < 2%, and the Step-2b scan found nothing new worth adding (the sole remaining gap is
+the defensive `Embedded()` panic on a compile-time invariant — a contrived test there is a disguised deferral).
+12 tests added, 0 bugs, 0 flakes. rext test commit + re-tag; no source change.

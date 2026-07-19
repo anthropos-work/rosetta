@@ -108,6 +108,13 @@ INTERVIEW `comments`.
   seeder uses (`eligiblePlayerOwnerSlots` + the flat-index `slots[idx % len]` assignment), so the projected
   seat OWNS the exact seeded session. M234 REGISTERS these seats in the roster + Clerkenstein (the roster
   today carries only heroes — the non-hero player seats are M234's `roster.go` extension).
+  - **The flat index advances through DROPPED sessions** (it is incremented *before* the known-product / drop
+    check), so a session in a later product keeps the exact owner the seeder assigned it — the seeder iterates
+    the same flattened `Set.Sessions()` and seeds **every** session regardless of product, so the projection's
+    index and the seeder's index only agree if drops still consume their slot. A per-product index reset here
+    would silently re-own every session after the first drop → dead CTAs. This survives-drops invariant is
+    pinned by `TestContentProducts_FlatIndexSurvivesDrops` (M233 harden) — **preserve it when M234 adds
+    non-simulation products to the fixture.**
 - **manager_seat** — the **host org's manager-vantage hero** (e.g. `dan-manager`), already a roster seat.
   `has_manager_view` follows the M231 matrix, **downgraded to false (fail-closed)** if the org has no manager
   hero — never a promise without a seat.
@@ -143,6 +150,14 @@ org (`firstNonHiringStory`), so they render in apps/web regardless of the source
   dropped exhibit — "a refusal nobody sees never happened" (the D17 / cockpit-guard philosophy). A
   **presence-only** product (AI-labs — no seedable result page) is PROJECTED without a player link, a
   legitimate disposition, not a drop.
+
+- **Empty collections marshal as `[]`, never `null` (the M217 wire-format contract).** The projection
+  initializes `products` (and every product's `sessions`) as an empty slice, so an honest empty section
+  marshals `"products": []` — the stdlib-Python cockpit reads `products` via `dict.get("products", [])`, and a
+  JSON `null` there is `len(None)` → the M217 cockpit-crash class (exit 1). Pinned by
+  `TestContentProducts_EmptyMarshalsProductsAsArray` (M233 harden). (`WriteContentManifest` also fails-closed on
+  any drop, so an emitted file is never silently holed — but the array-not-null contract is what keeps a valid
+  empty projection safe for the JSON consumer.)
 
 ## 5. Provenance — the source-pins stay in the seed-generation manifest
 
