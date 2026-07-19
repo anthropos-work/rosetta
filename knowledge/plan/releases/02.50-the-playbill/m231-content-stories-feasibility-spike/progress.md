@@ -5,12 +5,12 @@ each records findings in `spec-notes.md` + writes its portion of the deliverable
 
 ## Sections
 
-- [ ] **S1 — Per-product result-route map + prove-by-render classification**
-  - [ ] Enumerate result routes per (product × {player, manager}) for: Simulation {training/assessment/hiring/interview}, Skill-path legacy, Skill-path new (ant-academy), AI-labs
-  - [ ] Cite the render path in platform code (player route + manager route) per product
-  - [ ] Answer the central unknown: does `/sim/<slug>/result/<sessionId>` recompute `evaluationStatus` live (unseedable) vs read a persisted row a clone could seed
-  - [ ] Classify each route: renders-from-seed | runtime-computed-blank | needs-demo-patch | no-surface
-  - [ ] Prove-by-render against the billion demo where a surface exists
+- [x] **S1 — Per-product result-route map + prove-by-render classification**
+  - [x] Enumerate result routes per (product × {player, manager}) for: Simulation {training/assessment/hiring/interview}, Skill-path legacy, Skill-path new (ant-academy), AI-labs
+  - [x] Cite the render path in platform code (player route + manager route) per product
+  - [x] Answer the central unknown: **RESOLVED — persisted read** (`queries.resolvers.go:70` plain SELECTs, no recompute)
+  - [x] Classify each route: renders-from-seed | runtime-computed-blank | needs-demo-patch | no-surface
+  - [x] Prove-by-render: code+DB proof (resolver SELECTs + prod persisted score/result_status/fan-out + `seed-verified-skill` precedent). Live billion render corroboration deferred to M235 prove-it-lands (no content-story sessions seeded on billion yet — that's the M232+ build)
 
 - [ ] **S2 — Prod-session sourcing + anonymization mechanism**
   - [ ] Confirm the `/db-query` read path selects interesting real prod sessions per type (honor db-access boundary)
