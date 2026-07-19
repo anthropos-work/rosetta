@@ -353,7 +353,11 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > > **login-only** (one `[Log in as]` CTA per hero, per user request). So the cockpit **no longer sets the
 > > `e2e_persona` cookie**; the paragraph below describes how the academy behaved when reached *via* that
 > > (now-removed) link. Reaching the demo academy as a signed-in member now requires the cookie set by other
-> > means, or it lands anonymous. (The academy grid's empty-catalog render defect is a v2.4 carry, **F4**.)
+> > means, or it lands anonymous. (The academy grid rendering **empty** in a demo is the v2.4 **F4** carry — **NOT** a
+> > client-side render defect: the catalog is **DB-authoritative** [read from the platform academy subgraph over
+> > GraphQL], and a demo neither sets `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`
+> > = 0 cards. Root-cause + read-chain: [`../../services/ant-academy.md` § The Content Model](../../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7).
+> > **v2.5 M230 fills it production-faithfully, zero academy-repo edits.**)
 >
 > The `e2e_persona=member` cookie (formerly set browser-side by the cockpit's [Academy] link before it
 > navigated to the academy origin) drove the authenticated context. Cookies on `localhost` are
@@ -363,8 +367,9 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > as an anonymous visitor. Without
 > the cookie the portal still opens for anonymous browse (the flags enable the bypass; the cookie chooses the
 > persona). The academy identity is the synthetic `E2E Member`, **not** the exact seeded platform hero (the
-> academy runs standalone with no platform-backend link, so it can't resolve the platform user) — the F6 bar is
-> "authenticated, not anonymous", which `member` (signed-in + org + entitled) satisfies.
+> academy's only platform-backend link is the **GraphQL catalog read** — tenant-filtered, not identity-resolving — so
+> it can't map the Clerk session to a seeded platform user) — the F6 bar is "authenticated, not anonymous", which
+> `member` (signed-in + org + entitled) satisfies.
 
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a

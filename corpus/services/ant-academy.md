@@ -9,7 +9,7 @@ Think of it as **the company's training app**:
 - A companion **iOS / Android app** (Expo / React Native) that bundles the same content for offline reading
 - Authored content lives **inside the repo** as JSON, so curriculum changes ship through normal PRs
 
-It is **not** a platform microservice. It is a standalone product that *uses* the platform's identity provider (Clerk) but does not depend on the backend Go services to function.
+It is **not** a platform microservice. It is a standalone product that *uses* the platform's identity provider (Clerk) — and, since **v0.5.1**, **reads its course catalog from the platform's academy backend over GraphQL**. Without that backend it still boots and authenticates, but the catalog **degrades to empty**: the home grid renders **0 cards**. (This is exactly why the academy looks blank in a demo — see [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7) below.)
 
 ## Technical Deep Dive (For Engineers)
 
@@ -82,6 +82,7 @@ graph LR
     end
 
     Academy --> Clerk
+    Academy -->|catalog: GraphQL academy subgraph| App
     Academy -.->|direct, no platform proxy| OpenAI
     Academy ==> Vercel
     Desk --> Clerk
@@ -89,12 +90,71 @@ graph LR
 ```
 
 **Key contrasts** with the core Go services:
-- No PostgreSQL schema, no Atlas migrations
+- No PostgreSQL schema of its own, no Atlas migrations
 - No Connect-RPC, no Redis Streams
-- No GraphQL subgraph (does not federate into Cosmo Router)
-- Content is **static JSON in the repo**, not in Directus
+- **Provides** no GraphQL subgraph (it doesn't federate INTO Cosmo Router) — but it **consumes** the platform's
+  **academy subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL"
+- Its rendered catalog is **NOT static repo JSON** — since v0.5.1 it is **DB-authoritative**, read from the platform
+  academy backend over GraphQL. The committed JSON is the *authoring source* + the dev *draft* layer + a separate
+  machine index — not what the authenticated grid renders
 
-The only platform-shared concern is **Clerk** — Ant Academy reuses the platform's Clerk app so engineers log in with the same identity they use elsewhere.
+The platform-shared concerns are **Clerk** (identity — Ant Academy reuses the platform's Clerk app so engineers log
+in with the same identity) **and the academy backend** (`app internal/academy`, queried over GraphQL for the course
+catalog).
+
+### The Content Model — DB-authoritative catalog (v0.5.1 M7)
+
+**The home grid does NOT read the committed JSON.** Since ant-academy **v0.5.1 (M7)** the catalog the portal renders is
+**DB-authoritative** — queried from the **platform academy subgraph** (served by `app`'s `internal/academy`) over
+GraphQL, not from the repo's JSON files. This is the most load-bearing fact about the academy and the root of the demo
+"empty grid" symptom below.
+
+**The read chain** (all under `code/`):
+
+```
+app/(authed)/page.jsx  →  resolveCatalogView()
+    ├─ signed-in → getServerCatalogView()   (src/lib/serverTenant.js)
+    └─ anonymous → getPublicCatalogView()    (empty-eid variant)
+         ▼
+getBackendCatalogView(eids)   (src/lib/backendContent.js)
+    →  createServerGraphQLClient()   (src/graphql/server.js — endpoint = NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT)
+    →  query academyCatalogSeries + academyCatalogSkillPaths   (tenant-filtered server-side by the user's eids)
+```
+
+`getServerCatalogView()` is literally `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, so on
+**any** failure the catalog becomes `emptyCatalogView() = { chapters: [], skillPaths: {}, series: [] }` → **0 cards**.
+Three failure legs collapse to the same empty grid:
+1. **Endpoint unset** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` empty → `createServerGraphQLClient()` throws → `makeClient()`
+   returns `null` → `getBackendCatalogView()` returns `null`.
+2. **Query error** — network/schema failure → `catch → return null`.
+3. **Empty DB** — the query succeeds but the app academy tables have no rows → `[]`.
+
+**Two DIFFERENT "catalog" data paths — do not confuse them:**
+- **The grid READS** the catalog from `app internal/academy` **via GraphQL** (the DB-authoritative chain above).
+- **`build-catalog.mjs` WRITES** a separate, unauthenticated `code/public/catalog.json` (~2,667 entries) — an
+  FS-derived machine index built from the committed content tree, served at `/catalog.json` **for the platform
+  backend's Talk-to-Data indexer** (the reverse-ingest noted in `proxy.js`). The grid never reads it. This is why the
+  academy can serve `/catalog.json` HTTP 200 with thousands of entries **while the grid renders 0 cards** — unrelated
+  sources.
+
+**The committed JSON** (`code/public/content/<series>/<skill-path>/*.json`) is the **authoring source** (published into
+the app academy DB via the repo's export path), the input to `build-catalog.mjs`, and the input to the dev **draft**
+layer — but it is **not** what the authenticated grid renders.
+
+**The dev DRAFT layer** (`src/lib/draftMode.js` + `src/lib/draftCatalog.js`): `draftsEnabled()` is
+`NODE_ENV === 'development' && ACADEMY_SHOW_DRAFTS ∈ {1,true}` — a production **hard-block** (whitelisted on
+`'development'`, so it can never leak into a deployed build). When on, `getServerCatalogView()` calls
+`mergeDrafts(view, eids)`, which merges the **entire committed FS catalog** into the (possibly empty) backend view and
+serves FS chapter bodies unlocked. It is the lightest possible demo-fill lever — but it stamps a visible **"Draft"**
+chip on cards, so **v2.5 M230 deliberately chose the production-faithful path instead** (see
+[`../ops/demo/frontend-tier.md`](../ops/demo/frontend-tier.md)).
+
+**Why a demo grid is empty** (the v2.4 **F4** carry — long mis-attributed as an ant-academy-repo "client-side render
+defect"): the demo launcher `demo-stack/ant-academy.sh` **never sets `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`** (`.env.example`
+ships it empty), the demo runs via `next dev` (so `NODE_ENV=development`) with drafts **off**, and the demo app DB holds
+no academy rows — so **failure legs 1 and 3 both hold** and the grid resolves to `emptyCatalogView()`. It is **not** a
+render bug in the academy repo; it is the DB-authoritative catalog with **no reachable, populated source**. Filling it
+(M230) is a demo-tooling concern — **zero academy-repo edits** (env / a sha-pinned demo-patch on the ephemeral clone).
 
 ### Tech Stack
 
@@ -144,9 +204,11 @@ git clone git@github.com:anthropos-work/ant-academy.git
 > sets the `e2e_persona` cookie**. Formerly, that link set the cookie browser-side (cookies on `localhost` are
 > port-agnostic, so the cockpit origin's cookie was read by the academy origin) then navigated in, and a hero
 > landed **authenticated**; reaching the demo academy as a member now needs the cookie set by other means (and
-> the academy grid's empty-catalog render defect remains a v2.4 carry, **F4**). The **Cosmo AI
-> assistant stays absent** in a demo (its flag + OpenAI key are deliberately not provisioned — the AI-keys
-> policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
+> the academy grid renders **empty** in a demo — the v2.4 **F4** carry, **NOT** a client-side render defect: the
+> catalog is [DB-authoritative](#the-content-model--db-authoritative-catalog-v051-m7) and the demo neither sets
+> `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`. v2.5 **M230** fills it
+> production-faithfully, zero academy-repo edits). The **Cosmo AI assistant stays absent** in a demo (its flag +
+> OpenAI key are deliberately not provisioned — the AI-keys policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
 > standalone cockpit panel. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
 
 #### 2. Configure env
@@ -238,7 +300,14 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 - **OpenAI (direct, browser, opt-in)**: The in-app "Cosmo" assistant — gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default OFF) — calls the **OpenAI Responses API** (`gpt-5.2`, `https://api.openai.com/v1/responses`) directly from the browser using a per-user `localStorage('openai_api_key')`. It is OpenAI-only and does **not** route through the platform's shared `ai` library or the `/api/ai/chat` route. (The separate server-side `/api/ai/chat` route handler does support both OpenAI and Anthropic with server keys, but Cosmo does not use it.)
 - **Studio Desk (loose link)**: `NEXT_PUBLIC_STUDIO_URL` can deep-link from the academy to the Studio Desk UI; nothing required at runtime.
 - **next-web-app (iframe embed):** the Workforce app loads Academy in an iframe with `?embed=anthropos`; `proxy.js` detects this server-side (`Sec-Fetch-Dest=iframe` + an `embed-mode` cookie, or an explicit `?embed=anthropos`), stamps an `x-embed-mode` request header, persists the cookie, and SSRs a light-themed, topbar-less variant (`data-embed` + `data-theme=light`). No data flows back — it is a presentation/cookie coupling only.
-- **Backend services**: **None.** No GraphQL calls, no Connect-RPC, no Redis events. (Academy initiates no backend calls. The reverse exists: per a comment in `proxy.js`, the platform backend's Talk-to-Data indexer pulls Academy's public `/catalog.json` — a metadata-only, per-chapter × language index.)
+- **Platform academy backend (GraphQL, load-bearing):** the home grid **reads its course catalog** from the platform
+  **academy subgraph** (`app internal/academy`) over GraphQL at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — `getBackendCatalogView()`
+  queries `academyCatalogSeries` + `academyCatalogSkillPaths`, tenant-filtered server-side. This is the catalog source of
+  truth since v0.5.1 (M7); on failure the grid degrades to `emptyCatalogView()` (0 cards). See
+  [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7). *(No Connect-RPC and no Redis events — the
+  academy is a GraphQL **read client** of the academy subgraph, nothing more.)* The reverse ingest also exists: per a
+  comment in `proxy.js`, the platform backend's Talk-to-Data indexer pulls Academy's **separate** public `/catalog.json`
+  (an FS-derived, metadata-only, per-chapter × language index — **not** the grid's source).
 
 ### Why It's Not in `docker-compose.yml`
 
