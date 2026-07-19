@@ -3,7 +3,7 @@ milestone: M234
 slug: content-stories-cockpit-tab
 version: v2.5 "the playbill"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-19
 depends_on: M233
@@ -12,7 +12,7 @@ delivers: corpus/ops/demo/content-stories-spec.md
 
 # M234 — content stories cockpit tab
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M233
+**Status:** `archived` (completed 2026-07-19)  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M233
 
 ## Goal
 Add the 2nd 'Content stories' tab to cockpit.py beside 'Org stories' — sections-per-content-product, a list of played sessions each with per-type icons and TWO login-and-land CTAs (as-player / as-manager, manager omitted where has_manager_view=false).
