@@ -206,7 +206,8 @@ passed/not-passed pill) + **up to two login-and-land CTAs**:
   rendered iff the session carries a `player_result_path`. `<player_seat>` is the `content-player-<idx>` seat
   M234 registered (§7.4), so the presenter logs in as the exact seeded member who owns the session.
 - **As-manager** — the same handshake with the manager hero seat landing on the activity-dashboard result
-  surface, **omitted where `has_manager_view=false`** (the `.actions`/two-button layout with omitempty).
+  surface, **omitted where `has_manager_view=false`** (the `.actions`/two-button layout with omitempty). The
+  manager CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
 
 ### 7.3 Per-product app-base routing + the two special sections
 The per-product `app_base` resolves the CTA origin, generalizing the M224 `is_hiring`/`hiring_base` switch
@@ -216,11 +217,11 @@ dispositions:
 
 - **AI-labs = PRESENCE-ONLY (M231 D4).** A session with no result surface (no `player_result_path`, no manager
   view) renders a **muted "Activity & spend only" status note — no CTA** (never a dead button). Data-driven:
-  the disposition falls out of the manifest fields, not a flag.
+  the disposition falls out of the manifest fields, not a flag (#M234-D5).
 - **Academy (M231 D5).** app_base `academy` → the as-player CTA is a **direct academy-origin link** carrying the
   M53 `e2e_persona=member` cookie seam — the academy is a **separate origin with its own auth, NOT behind the
-  fake FAPI** (a FAPI handshake redirect would establish a next-web session the academy can't see). No manager
-  CTA (no academy manager route). The **specific-member** academy landing + the exact chapter route are
+  fake FAPI** (a FAPI handshake redirect would establish a next-web session the academy can't see) (#M234-D4). No
+  manager CTA (no academy manager route). The **specific-member** academy landing + the exact chapter route are
   finalized in **M235** (depends on M230). *Today's fixture carries no academy session; this path is
   unit-proven and lights up when M235 adds the fixture.*
 
@@ -231,8 +232,8 @@ content-player owner slot the projection references** (`contentPlayerSeatsUsed(B
 dead seat, no unresolvable CTA. Each identity's claims (auth_id / eid / email / name / picture / org / role)
 are derived with the **UsersSeeder's own functions** — the member NAME via the new single-source
 `storyPopulationNames` (the UsersSeeder consumes it too, so the exported login identity is **byte-identical to
-the seeded `public.users` row**). The seats append **after all heroes**, so `roster[0]` (the default active
-seat) stays the first hero. The existing `--roster-export` at bring-up carries them automatically (the roster
+the seeded `public.users` row**) (#M234-D1). The seats append **after all heroes**, so `roster[0]` (the default active
+seat) stays the first hero (#M234-D2). The existing `--roster-export` at bring-up carries them automatically (the roster
 is a pure function of the blueprint — no bring-up change beyond §7.5). *The manager seat is the host org's
 manager hero (`dan-manager`), already a roster seat — no new registration.*
 

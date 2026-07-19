@@ -101,3 +101,68 @@ reach pre-existing M217 / boilerplate lines, out of scope), coverage on touched 
 flake gate is clean (3/3). Not chased (documented pre-existing, release-close re-anchor): the 6 `test_cockpit.py`
 failures (removed academy CTA ×4 + overlay-JS ×2) + the pre-existing `_validate_manifest_shape` / bind-error
 coverage gaps. `/developer-kit:close-milestone` Phase 4 runs independently as defense-in-depth.
+
+## M234: Final Review
+
+Consolidated findings from `/developer-kit:close-milestone` Phases 1–5 (2026-07-19). Near-clean close:
+harden Pass 1 already deepened coverage (22 tests, 0 bugs) and the cross-cutting review surfaced only two
+record-level items (no code change). Deferral re-audit (Phase 1b) **YELLOW / 0 blockers** — see
+`audit-deferrals/deferral-audit-2026-07-19-m234-close.md`.
+
+### Scope
+- [x] All `overview.md` In: items delivered (§1 seat registration / §2 tab render / §3 bring-up wiring); the only
+      unchecked progress box (`roadmap/state at close`) is Phase 10's own job — not a gap.
+- [x] Both open questions resolved: academy deep-link disposition → D-M234-4 (direct academy-origin link; specific-member
+      landing finalized in M235); manager drill-down → D-M234-4 (manager CTA = FAPI handshake on the manifest's manager result path).
+- [x] 0 TODO/FIXME/HACK in any M234-touched file.
+
+### Code Quality
+- [x] [confirmed] `go build ./...` + `go vet ./...` clean (stack-seeding); harden cross-cutting review found 0 bugs; consistent with existing seeder/cockpit patterns; no dead code / no new unit-without-handbook.
+
+### Documentation
+- [x] `content-stories-spec.md` §7 (render half) accurate vs the shipped `cockpit.py`; §6 M234/M235 boundary correct.
+- [x] `cockpit-spec.md` `/content-manifest.json` endpoint row + "2nd tab (M234)" section present + accurate.
+- [x] No new top-level unit introduced → per-unit-handbook contract N/A.
+
+### Tests & Benchmarks
+- [x] Go stack-seeding: all pkgs OK, build+vet clean.
+- [x] Python demo-stack: 249 pass / **6 pre-existing fail** (removed-academy-CTA ×4 + overlay-30s ×2) / **0 new** — the M234 contract held. The 6 are the chronic-carry subset homed at v2.5 release-close.
+- [x] Handbook test-count reconciliation: no handbook quotes a drifted M234 count (counts live in progress.md's hardening table, matched to runner output).
+
+### Adversarial review (Phase 2c)
+- [x] Record the harden-exercised adversarial scenarios in `decisions.md` under an `Adversarial review` subsection (scenario, not just the test) — **fixed** (see decisions.md).
+
+### Decision Triage
+- [x] D-M234-1/2/4/5 → blended into `content-stories-spec.md` §7 (single-source seat, append-after-heroes, two-action/academy contract, presence-only-is-data-driven); add `(#M234-DK)` back-ref tags — **fixed**.
+- [x] D-M234-3 (hero-scoped `--roster-export` warning) → archive (maintainer-only CLI detail; stays in decisions.md).
+
+## Completeness Ledger (Phase 9 — section variant)
+
+Every `overview.md` `In:` scope item placed into exactly one three-fate category. **Zero escape-hatch deferrals.**
+
+### Done (Fate 1 — delivered in M234)
+- Client-side tab toggle in `render_page()` (`_TAB_JS`, stdlib-only, no manifest data in JS) — §2.
+- Per-product sections rendering the M233 manifest; per-session rows with per-`sim_type` FontAwesome icons — §2.
+- Two fake-FAPI deep-link CTAs per session + `.actions` two-button layout + `has_manager_view` omitempty — §2.
+- Per-product app-base routing generalizing the `is_hiring`/`hiring_base` switch (web:3000/hiring:3001/academy:3077 + app-base fallback) — §2.
+- Mint/resolve `content-player-<idx>` player seats via `roster.go` + Clerkenstein (single-sourced with UsersSeeder via `storyPopulationNames`) — §1.
+- AI-labs section = PRESENCE-ONLY, no CTA (M231 D4) — the RENDER disposition — §2.
+- Academy section RENDER disposition = player CTA to the academy origin (M53 cookie seam, not FAPI), no manager CTA (M231 D5 / D-M234-4) — §2.
+- Bring-up wiring: `up-injected.sh` `--content-export` + `--content-manifest` (non-fatal) — §3.
+- Docs deliverable: `content-stories-spec.md` §7 (render half) + `cockpit-spec.md` 2nd-tab note.
+
+### Confirmed-covered (Fate 2 — already owned by a milestone of this release)
+- Non-simulation product **fixtures** (ai-labs / academy / skill-path) + **prove-every-CTA-lands live** → **M235** (`In:` + exit_gate; the renderer already handles all dispositions at M234, unit-proven — so nothing is stranded).
+- **Specific-member** academy landing + exact chapter route → **M235** (depends on M230's catalog fill). This is literally M234's overview open question; D-M234-4 records the handoff.
+
+### Annotated (Fate 3 — attached to a release-milestone at close)
+- None. M235's `In:` + exit_gate already own the carried items; no roadmap edit required.
+
+### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch)
+- None.
+
+### Cross-reference (inherited, non-M234-In: — release-level)
+- 14 pre-existing demo-stack test failures (6 in `test_cockpit.py`) → v2.5 **release-close** re-anchor (REPEAT/CHRONIC; M234 added 0; user-dispositioned — `audit-deferrals/deferral-audit-2026-07-19-m234-close.md`).

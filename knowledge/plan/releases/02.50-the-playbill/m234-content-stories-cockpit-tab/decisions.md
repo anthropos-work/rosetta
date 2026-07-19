@@ -61,3 +61,33 @@ the disposition falls out of the manifest fields.
 ×2) — stale tests for intentionally-removed/changed behavior, part of the documented "14 pre-existing
 demo-stack failures" standing carry routed to the **v2.5 release close** test-debt re-anchor. M234 adds **0**
 new failures (verified: 106 tests, still exactly those 6). Not touched here — release-close scoped, Fate-2.
+
+## Adversarial review (close Phase 2c)
+
+The scenarios an external reviewer would probe against the render half + the seat registration — each was
+exercised by the harden Pass 1 tests (progress.md § M234: Hardening) and the code handled it correctly. Recorded
+here as the *scenarios considered* (not the fixes) so a future reviewer sees the threat model.
+
+- **Manifest promises a manager view but no manager seat resolves.** A `has_manager_view=true` session whose
+  manager seat is absent could render a dead `[Log in as manager]`. → `TestContentTabRenderEdges` proves the
+  manager CTA is **omitted** when the seat is missing, not stranded. The renderer keys the CTA on seat presence,
+  not the flag alone.
+- **An academy session that also carries a manager view.** The academy as-player CTA is a direct academy-origin
+  link (D-M234-4), but a manager CTA on the same row must NOT go to the academy origin (no academy manager
+  route). → the manager CTA routes to `app_base` (web/hiring), academy origin only for the player CTA.
+- **`--no-ui` / unset content base.** A hiring/academy `content_base` key with no base set could produce a
+  malformed/dead href. → falls back to `--app-base`; never a dead link.
+- **Empty product section / all-empty manifest.** An empty `content_products[]` entry, or a manifest with every
+  product empty, could render a blank panel that reads as broken. → empty products are skipped (siblings still
+  render); an all-empty manifest renders a friendly note, never a blank panel.
+- **Injection via manifest data.** Manifest strings flow into HTML/JS. → `_TAB_JS`/`_OVERLAY_JS` are raw
+  constants with NO manifest data interpolated; per-field values are escaped (`TestContentTab*` escaping cases).
+- **A broken / fail-closed content manifest at bring-up.** A malformed `content-manifest.json` must not abort the
+  cockpit. → non-fatal: the 2nd tab drops, "Org stories" still serves, `/content-manifest.json` 404s
+  (`TestContentTabMainWiring` + the `test_tooling.py` non-fatal-export case). Byte-identical to the pre-M234
+  single-panel page when absent (`TestContentTabByteIdenticalFallback`).
+- **A structural (0-hero) org inflating the roster.** Content-player seats append to the roster, so a hero-less
+  structural org could mask the "0 heroes" CLI signal behind a non-zero total. → the `--roster-export` warning
+  keys on `RosterHeroCount` (D-M234-3), pinned by `content_player_roster_test.go`.
+
+No scenario required a code change at close — all were already handled; recording completes the Phase 2c audit trail.
