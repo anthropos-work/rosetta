@@ -245,6 +245,128 @@ agent cannot manufacture. Choosing either unilaterally would be exactly the sile
 repeat-deferral in the first place. **Required before v2.5 can close: re-baseline the set against HEAD, then
 an explicit user fate (LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF).**
 
+### **RESOLUTION** (2026-07-20, user-authorized)
+
+**Fate chosen by the user: RE-BASELINE NOW, fate decided at the v2.5 release close.** Explicitly *not*
+LAND-NOW (do not fix them in this milestone), *not* DROP, and *not* another silent roll-forward. The
+re-baseline is the deliverable of this close; the LAND/DROP/DEFER decision is handed to
+`/developer-kit:close-release` with a real, dated characterisation attached instead of a stale count.
+
+**The user attached a measurement condition, verbatim:**
+
+> "make sure to bring up a fresh demo (if you didn't) .. meaning all repo of the stack should point to their
+> stable main... i still see an old next-web-app left menu. if no stable repo is visible, use directly main."
+
+**Why the condition is technically load-bearing, not ceremonial.** CLOSE-D2 §3 diagnoses 6 of the failures as
+`pre_sha256` **pin drift** — and a demopatch `pre_sha256` is a hash of a *platform source file in the demo's
+own clone*. Measuring pin drift on a stack built from stale clones re-measures the staleness, not the
+failures. A stable-`main` clone set is therefore a **precondition for the reading to mean anything**, and the
+re-baseline below is measured against one.
+
+**Ref-selection rule applied:** every platform repo pinned to its stable `main`; no repo exposes a distinct
+"stable" ref, so `main` was used directly for all of them. The exact resolved repo → branch → sha set is
+recorded in the re-baseline artifact so the reading is reproducible.
+
+**Sub-item — the stale left-menu symptom.** The user reports still seeing an **old next-web-app left menu**
+on the demo. Carried as a **named finding to be root-caused**, not merely as a motivation to rebuild. Result:
+**F-M236-CLOSE-1** (below) — the symptom is real evidence of a real defect, but *not* of the defect it looks
+like.
+
+## F-M236-CLOSE-1 — `/demo-up` rebuilds images from clones it never updates — 2026-07-20
+
+Root-causing the stale-left-menu report produced a finding that is **more general than the symptom**, and one
+no existing doc states.
+
+**The defect.** `ensure-clones.sh` populates a demo's clone set via `make init`, described in its own header
+comment as *"the canonical, idempotent clone loop … **skip-if-present**"*. There is **no fetch, no pull, and
+no checkout step for the platform repos anywhere in the bring-up.** Once `stack-demo/<repo>` exists, it is
+never advanced again. Every subsequent `/demo-up` — including a full cold teardown-and-rebuild — recompiles
+**fresh images from stale source**. The clone set on `billion` was created 2026-07-03…07 and had never moved.
+
+**The bring-up log says so in the product's own words.** `coldup-m236.log`, the M236 cold run, contains for
+every single repo:
+
+```
+Cloning missing repos...
+  app already exists, skipping
+  cms already exists, skipping
+  … next-web-app already exists, skipping …
+Done. All repos are available in /home/devops/panorama/stack-demo/
+```
+
+*"All repos are available"* is true and *"all repos are current"* is what a reader takes from it. Those are
+not the same claim, and nothing in the bring-up ever checks the second.
+
+**Measured drift** (both boxes, 2026-07-20, against a *verified* fetch — see the methodology warning below).
+Images on `billion` were all built 2026-07-20 07:54–10:11, i.e. genuinely fresh **images** compiled from
+**up-to-13-day-old source**:
+
+| repo | clone head | `origin/main` | behind |
+|---|---|---|---|
+| `app` | `c3c45e01e` (07-07) | `aa2574541` (07-20) | **249** |
+| `next-web-app` | `23bdbb5db` (07-07) | `61d72e24d` (07-20) | **202** |
+| `ant-academy` (local) | `2c6e0682c` (06-25) | `a43420bdd` (07-17) | **60** |
+| `messenger` | `57282400b` (06-22) | `d41029217` (07-20) | **28** |
+| `graphql-wundergraph` | `c284453b4` (07-03) | `5d9c7568e` (07-17) | **6** |
+| `cms` | `770ec3aac` (07-03) | `93e6aa354` (07-17) | **4** |
+| `jobsimulation`, `platform`, `roadrunner`, `sentinel`, `skillpath`, `storage`, `studio-desk` | — | — | 0 |
+
+Both boxes showed **identical** drift, so this is a property of the mechanism, not of one machine.
+
+**⚠ Methodology warning — how this was nearly mis-diagnosed.** The first pass measured drift on `billion` and
+read **12** commits for `next-web-app` (not 202) and **20** for `app` (not 249). Cause: `git fetch` as `root`
+there dies with *"Host key verification failed"* (root has no GitHub host key; the tree is `devops`-owned),
+and the survey ran it with `2>/dev/null`. The fetch failed **silently**, so `origin/main` resolved to a
+remote-tracking ref last updated days earlier, and the comparison **measured stale-vs-stale**. That produced
+a confident, wrong conclusion (below). **Never measure drift through a suppressed-stderr fetch** — assert the
+fetch succeeded, or the reading is worthless.
+
+**The wrong conclusion it produced, recorded because the near-miss is the lesson.** Against the bad refs,
+`git diff HEAD origin/main -- packages/ui/src/NavBar/` was **empty**, and `navbarMenuItems.tsx` last changed
+2025-08-26 — so the first pass concluded the menu was *not* explained by the drift and must be runtime
+(role/flag) determined. Against the **true** refs the same diff is **not** empty: `NavbarItems.tsx`,
+`NavbarTop.tsx`, `OrganizationNav.tsx` and `navbarStyles.ts` — the actual left-menu components — **all changed
+in the 202-commit gap.** Only `navbarMenuItems.tsx` (the per-item *renderer*) was unchanged, which is exactly
+the file the first pass happened to check.
+
+**So: the stale left menu IS the stale clone.** The user's instinct was right and their prescribed remedy —
+point every repo at stable `main` — was the correct one.
+
+**A real secondary effect, still worth keeping.** The nav is also assembled at runtime from `isEnterprise` /
+`isAdmin` / `role` / `organizationSettings` / `useTalkToDataAccess()` / `posthog.isFeatureEnabled(...)`, and a
+demo has **no PostHog**, so flag-gated entries evaluate false. A demo menu is therefore legitimately a
+*subset* of what the same commit renders in production. This does **not** explain the reported symptom, but it
+means a stable-`main` demo menu still will not match production exactly — expected, not a regression.
+
+**The provenance record cannot detect any of this.** `clones.lock.json` stores `ref` as
+`git rev-parse --abbrev-ref HEAD`, which for these detached clones is the literal string **`"HEAD"`** — for
+*every* repo. The lockfile faithfully records the sha while being structurally incapable of distinguishing
+*"deliberately pinned"* from *"stale by neglect"*. A reviewer reading it sees provenance and infers freshness;
+the file does not carry the fact needed to refute that.
+
+## F-M236-CLOSE-2 — the "pristine" safety net sweeps 3 manifests out of ~15 — 2026-07-20
+
+Found while root-causing the re-baseline. `ensure-clones.sh`'s **R1** rung reverts *"any stale patch left by a
+crashed prior build"* via `demopatch revert --force-pristine` — the mechanism that guarantees a demo clone is
+pristine before a build. Its manifest list is hard-coded and contains **three** entries:
+`next-web-studio-url`, `next-web-members-pagination`, `app-targetrole-authz-skip`. The `patches/` directory
+carries **15**.
+
+Consequence: a patch outside those three, left applied by an interrupted build, is **never swept** — it
+survives every subsequent `/demo-up`, including a full cold teardown-and-rebuild. Both boxes were carrying
+exactly that, in disjoint sets:
+
+- **local workspace** — 5 leftover applied patches in `next-web-app` (`server.graphql.ts`,
+  `useAiReadinessActive.ts`, `layout.tsx`, `urls.ts`, `InsightsContext.tsx`). Only the last two are in R1's
+  list; the other three had persisted indefinitely.
+- **`billion`** — `next-web-app` clean, but `ant-academy` carrying leftover `ant-academy-dev-origins`
+  (`code/next.config.js`) and `academy-fs-published-fallback` (`code/src/lib/serverTenant.js`). Neither is in
+  R1's list.
+
+This is the mechanism that generated the entire clone-dependent half of the 14-failure set (see the
+re-baseline artifact). Both were reverted via the tool's own `revert --force-pristine` — never a raw
+`git checkout`.
+
 ## CLOSE-D3 — the harness changed after the gate was proven; the reading is NOT re-proven live — 2026-07-20
 
 The gate (29/29 cold on `billion`) was measured with the harness at `playbill-m236-hardened`. This close then
