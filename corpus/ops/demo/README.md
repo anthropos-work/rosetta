@@ -138,7 +138,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
 - [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
-  knob and flag that controls a bring-up — **all 25 env knobs + 9 CLI flags**, with real defaults and the exact
+  knob and flag that controls a bring-up — **all 27 env knobs + 10 CLI flags**, with real defaults and the exact
   `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
   doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
   *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
@@ -201,8 +201,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   O(tests)), the dedicated decoupled seed (`pt-world`, test data ≠ demo data) + the reset-to-seed lifecycle
   (the real `--reset`, additive-re-seed FORBIDDEN), the serial-default runner, and the 4-state reporting map
   (`passing`/`failing`/`unimplemented`/`unimplementable-without-platform-edit`). Also **the iteration protocol
-  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed — the corpus now
-  stands at **10 live Playthroughs, 1 TODO**). Section `rext playthroughs/`. (v2.0 M202–M204)
+  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed at v2.0 with 10
+  live Playthroughs; M219 added the 4 AI-readiness ones and M225 the recruiter compare — the corpus now stands
+  at **15 live Playthroughs, 1 TODO**, the count `playthroughs.md` owns). Section `rext playthroughs/`.
+  (v2.0 M202–M204 · v2.3 M219 · v2.4 M225)
 - [`content-stories-routes.md`](content-stories-routes.md) — the **content-stories feasibility spike + result-route
   map** (v2.5 "the playbill" M231, HARD go/no-go — the barrier before the Thread-B build chain). For each content
   product × {player, manager} it enumerates the exact result route and **classifies it by prove-by-render**

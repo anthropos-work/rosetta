@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: '[N] [--public-host <magicdns>] [--no-public-host] — up-injected.sh takes ONLY these three and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Remote reach is DEFAULT-ON (auto-discovered; --no-public-host opts out). Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_PUBLIC_HOST=1 — all 26 in corpus/ops/demo/demo-up-defaults.md)'
+argument-hint: '[N] [--public-host <magicdns>] [--no-public-host] — up-injected.sh takes ONLY these three and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Remote reach is DEFAULT-ON (auto-discovered; --no-public-host opts out). Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_PUBLIC_HOST=1 — all 27 env knobs + 10 CLI flags enumerated in corpus/ops/demo/demo-up-defaults.md, which is fenced against the parsers in both directions)'
 ---
 
 # Demo Up — spin up an isolated demo stack
