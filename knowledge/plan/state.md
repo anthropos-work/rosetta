@@ -1,9 +1,9 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M236 prove-on-billion (PLANNED — iterative, medium; depends on M235): re-prove the whole content-vantage feature LIVE on the billion Tailscale VM — both cockpit tabs usable end-to-end from a 2nd tailnet machine on a cold reset-to-seed (Content-stories sessions render real content for player + manager; the academy grid renders real cards), p95 click→ACCESS < 5 s, 0 platform edits, VPN-scoped. AUTHORS the new content-stories seat-login coverage/Playthrough plumbing (M235's USER-BLOCKER-M235-02 — the exact-path/hero-crawl harness can't reach the dynamic-URL cockpit-seat-reached result pages) + works the M235 per-section live-calibration checklists + the M230 carry-forward live items. THE FINAL v2.5 milestone."
-last_closed: "M235 — 2026-07-20"
-phase: "v2.5 in development. M229–M235 CLOSED. M235 prove-it-lands CLOSED (iterative, closed-incomplete/pragmatic — the LIVE (session×action)-lands gate routes to M236 by design). Built + unit-proven, 0 platform edits: the provably-clean 13-session simulation matrix + all 3 non-simulation sections (skill-path real progress + mirror; ai-labs presence-only; academy /library/<slug> CTA) via content_nonsim.go → manifest 4 products/18 sessions, honesty gates GREEN. 2 user-blockers resolved (M235-01 scrub-leaked-zero-names → hardened+re-captured provably-clean; M235-02 coverage-descriptor-missing → 'build non-sim, then close'). rext playbill-m235-hardened @ 60eff14; Go 1939→1974, flake 5/5. carry-forward 3 clusters all Fate-3→M236 (applied 54eaefe). NEXT: M236 prove-on-billion (FINAL v2.5). Standing carry: 14 pre-existing demo-stack fails (REPEAT) → v2.5 release-close."
+active_milestone: "(between milestones — v2.5 M229→M236 all closed AND MERGED; NEXT is /developer-kit:close-release, UNBLOCKED)"
+last_closed: "M236 — 2026-07-20"
+phase: "v2.5 COMPLETE — all 8 milestones M229→M236 closed. M236 prove-on-billion gate MET cold on billion (29/29 landable pairs both vantages · 65 academy cards, 0 Draft chips · hero p95 1.22/1.51 s vs 5 s · cold reset-to-seed, no intervention · 0 platform edits). Denominator CORRECTED 31→29 (2 skill-path manager pairs target a next-web surface that renders 'Coming soon'), which also exposed a false PASS. Close fixed 39 findings incl. 5 unnamed stack-core doc-truth-guard failures + a tautological membership-key test. rext playbill-m236-close-fixes. ✅ M236 MERGED 2026-07-20 after the close continuation discharged the deferral RED: user fate = RE-BASELINE the standing test-debt carry now, decide at release close. Re-baselined — the carried 14 reproduces exactly, falls to 8 on a clean stable-main clone set, 0 are real defects and 0 are pin drift (that diagnosis is REFUTED; 6 were a dirty clone carrying leftover demo patches, and the remedy the old label implied would have re-pinned 5 manifests to patched content). See m236/rebaseline-standing-failures.md + carry-forward.md. Two upstream findings raised: F-M236-CLOSE-1 — /demo-up rebuilds images from clones it NEVER updates (make init is skip-if-present; app was 249 commits behind main, next-web-app 202, identically on both boxes; this was the user-reported stale left menu and the generator of the whole pin-drift-looking class) and F-M236-CLOSE-2 — the R1 pristine sweep covers 3 manifests of ~15. Cold bring-up at stable main on billion: autoverify GREEN, 0 patches refused. Deferral audit now YELLOW."
 last_updated: "2026-07-20"
 ---
 
@@ -20,17 +20,20 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M236 "prove-on-billion" (PLANNED — iterative, medium; depends on M235) · **FINAL v2.5 milestone**
+## Between milestones — v2.5 is feature-COMPLETE; the release close is BLOCKED
 
-**Goal.** Re-prove the whole content-vantage feature **LIVE on the `billion` Tailscale VM** (the house pattern that
-closed M215/M221/M226/M228). **Exit gate:** both cockpit tabs work live on `billion` — Content-stories sessions render
-real content for player + manager, the academy grid renders real cards — cold reset-to-seed, **p95 click→ACCESS < 5 s,
-0 platform edits, tailnet-only**. **Iterative** (`verification.md` + `tailscale-serve.md`). It **AUTHORS the new
-content-stories seat-login coverage/Playthrough plumbing** (M235's USER-BLOCKER-M235-02 — the exact-path/hero-crawl
-harness can't reach the dynamic-URL, cockpit-seat-reached result pages; author + calibrate live), works the **M235
-per-section live-calibration checklists**, and lands the **M230 carry-forward live items** — all Fate-3 from M235's
-`carry-forward.md`. Then the `release → main` merge + `v2.5` tag are `/developer-kit:close-release`'s job. **0 platform
-edits.**
+All 8 milestones (M229→M236) are closed. **M236 met its gate cold on `billion`** and is the final one.
+**It has not merged.** `/developer-kit:audit-deferrals` returned **RED**: the standing **14 pre-existing
+demo-stack test failures** are a genuine repeat-deferral across **10 milestones and 2 releases**, and their
+declared destination — the **v2.4 release close** — already fired once without landing them (an AGED_OUT
+trigger no audit had recorded). There is no further milestone to defer into. **Blocked pending an explicit
+user fate: LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF (fresh dated decision).** The set must be
+**re-baselined** first — it drifted 8 → 14 under a fixed label and the class changed (stale tests →
+`pre_sha256` pin drift), so 14 is wrong in both directions. See
+`releases/02.50-the-playbill/m236-prove-on-billion/decisions.md` **CLOSE-D2**.
+
+Once fated: merge `m236/prove-on-billion` → `release/02.50-the-playbill`, then `/developer-kit:close-release`
+does the `release → main` merge + the `v2.5` tag.
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -41,39 +44,30 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
-- **M235 prove-it-lands** — 2026-07-20 (iterative, closed-incomplete/pragmatic; LIVE gate → M236 by design). Built +
-  unit-proven, **0 platform edits**: the provably-clean **13-session simulation matrix** + all **3 non-simulation
-  sections** (skill-path real progress + mirror; ai-labs presence-only; academy `/library/<slug>` CTA) via a code-owned
-  registry `content_nonsim.go` → manifest **4 products / 18 sessions**, honesty gates GREEN. 2 user-blockers resolved
-  (**M235-01** scrub-leaked-zero-names → hardened+re-captured provably-clean; **M235-02** coverage-descriptor-missing
-  → "build non-sim, then close"). rext `playbill-m235-hardened @ 60eff14`; Go **1939→1974**, flake 5/5. Deferral audit
-  YELLOW/0-blockers. **carry-forward.md** 3 clusters all Fate-3 → M236 (applied, `54eaefe`). Full narrative: roadmap `### M235`.
-- **M234 content-stories-cockpit-tab** — 2026-07-19 (section, closed-complete). The **render half** of Content
-  stories: `cockpit.py`'s 2nd "Content stories" tab reads the M233 `content-manifest.json` (per-product sections,
-  per-session rows, two login-and-land CTAs, AI-labs presence-only, academy direct-origin link); `roster.go` appends
-  `content-player-<idx>` seats single-sourced via the new `storyPopulationNames`; `up-injected.sh` wires
-  `--content-export`/`--content-manifest` (non-fatal). Renderer handles ALL dispositions, **unit-proven** (Python
-  249/6-pre-existing/0-new; Go +8 1931→1939; flake 5/5 both stacks). rext tags `playbill-m234-content-tab` @ 7f55eb4
-  + `-hardened` @ fd457bf. Close near-clean (2 record fixes), deferral audit YELLOW/0-blockers, 0 platform edits;
-  non-sim fixtures + prove-it-lands = M235 (Fate-2, homed).
-- **M233 content-stories-manifest** — 2026-07-19 (section, closed-complete). The **manifest half** of Content
-  stories: `BuildContentProducts` projects a `content_products[]` menu (per product, played sessions with
-  player+manager seats + result paths + `has_manager_view` + app_base + icon) SINGLE-SOURCED from the M232 fixture;
-  honesty-gated (`CanonicalFileMatchesProjection` + teeth) so `content-manifest.json` can't drift; fail-closed
-  (drop-with-reason, fails loud). Emitted by `stackseed --content-export`; open question resolved (separate JSON,
-  `#D-M233-1`). Flat-index-survives-drops seat invariant pinned. rext tags `playbill-m233-content-manifest` @ 9f0ab1c
-  + `-hardened` @ c30fee3. Close near-clean (1 fix), deferral audit YELLOW, flake 5/5, 0 platform edits.
-- **M232 session-clone-sourcing-seeder** — 2026-07-19 (section, closed-complete). The ContentStorySeeder
-  **COPIES real prod sessions** (feedback/transcript/submission/interview report/node-ids) + best-effort PII
-  scrub (names/org→placeholders, emails/phones/urls redacted) + re-tenant + source-pin (rext tag
-  `playbill-m232-sections-copyreal`); interview flags via 2 demopatches; `safety.md` §3.8 = data-controller-
-  accepted residual-risk, VPN-scoped. A synthesize-first build was REWORKED to copy-real per user decision.
-  Guardrails flake 5/5. 0 platform edits.
-- **M231 content-stories-feasibility-spike** — 2026-07-19 (section, closed-complete, **GO**). The Thread-B
-  go/no-go barrier: delivered `content-stories-routes.md` (result-route map + prove-by-render + sourcing/anon
-  contract + modality catalog). Central risk resolved — sim result page reads a persisted DB row (seedable).
-  Sim+Skill-path GO, Interview GO w/ flag demo-patch (D3→M232), AI-labs OUT/presence-only (D4→M234), Academy IN
-  (D5→M234). Fixed 3 stale corpus claims inline. 0 platform edits.
+- **M236 prove-on-billion** — 2026-07-20 (iterative, **closed-on-gate**; merge HELD on the audit RED above).
+  **FINAL v2.5 milestone.** 10 iters (1 bootstrap tok + 9 tiks, one day). Gate MET cold on `billion`:
+  **29/29** landable (session × action) pairs both vantages · **65** academy cards, 0 Draft chips · hero p95
+  **1.22 s / 1.51 s** vs 5 s · cold reset-to-seed, no intervention · **0 platform edits**. **Denominator
+  CORRECTED 31 → 29** — the 2 skill-path manager pairs target a next-web surface that renders "Coming soon"
+  (table commented out, `userData` null); the correction also exposed a **false PASS** off a definition-only
+  header. Close fixed 39 findings, incl. **5 unnamed stack-core failures** (both cross-repo doc-truth guards
+  — 4-orgs-since-M223 and the Thread-A-gating `DEMO_NO_ACADEMY_FILL` knob — red and *correct* for 3
+  milestones) and a **tautological** membership-key test that could not fail. rext
+  `playbill-m236-close-fixes`. Full narrative: roadmap `### M236`.
+- **M235 prove-it-lands** — 2026-07-20 (iterative, closed-incomplete/pragmatic; LIVE gate → M236 by design).
+  Built + unit-proven, **0 platform edits**: the 13-session simulation matrix + all 3 non-simulation sections
+  via `content_nonsim.go` → manifest **4 products / 18 sessions**, honesty gates GREEN. 2 user-blockers
+  resolved. rext `playbill-m235-hardened @ 60eff14`; Go 1939→1974. carry-forward 3 clusters all Fate-3 → M236.
+- **M234 content-stories-cockpit-tab** — 2026-07-19 (section, closed-complete). The **render half**: the 2nd
+  "Content stories" tab reads the M233 manifest (per-product sections, two login-and-land CTAs, AI-labs
+  presence-only); `roster.go` appends `content-player-<idx>` seats. Python 249, Go +8, flake 5/5.
+- **M233 content-stories-manifest** — 2026-07-19 (section, closed-complete). The **manifest half**:
+  `BuildContentProducts` projects `content_products[]` single-sourced from the M232 fixture, honesty-gated so
+  it can't drift, **fail-closed** (drop-with-reason, fails loud). Emitted by `stackseed --content-export`.
+- **M232 session-clone-sourcing-seeder** — 2026-07-19 (section, closed-complete). The `ContentStorySeeder`
+  **copies real prod sessions** + best-effort PII scrub + re-tenant + source-pin; interview flags via 2
+  demopatches; `safety.md` §3.8 = data-controller-accepted residual risk, VPN-scoped.
+
 ## Recently shipped (releases, newest first — max 3)
 
 - **v2.4 "casting call"** — 2026-07-18 (tag `v2.4`). The **recruiter-vantage / hiring-org** release: a 4th hiring org
@@ -86,20 +80,23 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 - **v2.2 "panorama"** — 2026-07-12 (tag `v2.2`). External-shareability / Tailscale-serve: stacks reachable from another
   tailnet machine over one trusted HTTPS origin. First live remote Linux-VM deploy.
 
-## Headline numbers (v2.5 M235 close, 2026-07-20)
-- **Go test funcs (whole rext repo, `git grep '^func Test'`):** **1974** (M235 +35 vs M234's fd457bf **1939**;
-  the REPRODUCIBLE method — v1.11 incident-#6 counting discipline). `go build`+`go vet` clean.
-- **M235-touched suites (re-run GREEN at close):** Go `scrub`+`contentsession`+`seeders`+`cmd/content-capture`+
-  `cmd/stackseed` honesty gates OK · **flake 5/5** (Go shuffle `-count=1`). Harden Pass 1+2 `--final` stabilized
-  (scrub 94.6→100%, contentsession 93.7→94.7%, seeders 95.9→96.1%, content-capture 0→28.7%; 0 bugs). Close fixes
-  docs/records only — **no rext code change** (code-of-record `60eff14` unchanged).
-- **p95 click→ACCESS (the standing gate, carried — M235 touched no perf surface):** recruiter 1.27 s (M228) ·
-  employee 2.11 s / manager 1.31 s (v2.3), all vs the < 5000 ms gate.
-- **Inherited (non-milestone) carries:** demo-stack **14 pre-existing fail** (test-debt backlog, REPEAT v2.4→v2.5;
-  M235's slice = 6 `test_cockpit.py`, added 0 NEW) + the M204 assign-WRITE declared TODO → both routed to the v2.5
-  **release close** re-anchor.
-- **Alignment (Clerkenstein):** **100% / 100% critical** (M235 touched no alignment surface).
-- **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0.** **Supply chain:** GREEN — 0 net-new direct deps.
+## Headline numbers (v2.5 M236 close, 2026-07-20)
+- **Go test funcs (whole rext repo, `git grep '^func Test'`):** **1976** (M236 +2 vs M235's **1974** — the
+  membership-key contract pins). Full Go suite **2459 pass / 0 fail** across 6 modules / 58 packages.
+- **Python:** **1391 pass / 2 fail / 8 skip.** stack-verify **132 → 141** (+6 runner/networkidle pins, +3
+  e2e collection-integrity guards). stack-core **147/5 → 150/2** — the 5 doc-truth-guard failures FIXED at
+  the M236 close; the 2 remaining (`test_m220_mutation_battery`) verified pre-existing at
+  `playbill-m236-hardened` via a detached worktree.
+- **TypeScript/Playwright:** stack-verify e2e **127** unit + playthroughs e2e **69**, `tsc` clean both.
+  M236 harness specs **0 → 66**. Live-stack specs (24 + 15) not run without a demo up.
+- **p95 click→ACCESS (the standing gate):** employee **1.22 s** · manager **1.51 s** (M236, COLD on
+  `billion`) · recruiter 1.27 s (M228), all vs the < 5000 ms gate. *The cold stack measured ~2× faster than
+  the warm one it replaced — iter-09's 3.15/2.71 s are the pessimistic pair; 1.2 s is not steady state.*
+- **Alignment (Clerkenstein):** **100% / 100% critical.**
+- **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0** (verified per-clone). **Supply chain:**
+  GREEN — 0 net-new direct deps.
+- **Standing carry (MEASURED, not copied):** **14** pre-existing demo-stack failures. Briefed as 14, measured
+  as **19**, of which **5 were fixed** at the M236 close → back to exactly 14. **REPEAT-DEFERRAL, escalated.**
 
 ## D17 — the carried-forward signature hazard (v2.4 discipline)
 
@@ -110,20 +107,33 @@ silent revert), never by "the seed wrote the rows." Full arc:
 [`releases/archive/02.30-cue-to-cue/release-retro.md`](releases/archive/02.30-cue-to-cue/release-retro.md).
 
 ## Branch model / shipped tags
-**v2.4 M222→M227 CLOSED; M228 REMAINS:** `release/02.40-casting-call` (cut from `main` 2026-07-15); milestone branches
-`m222/read-the-room … m227/the-notes` all merged `--no-ff` into the release branch. **M228 second-night is the last
-milestone; then the `release → main` merge + the `v2.4` tag are `/developer-kit:close-release` Phase 11's job** (the
-USER runs it). rext code-of-record `casting-call-m227-sections` (`63c3e8d`); the `billion` demo LEFT UP. **Shipped
-tags:** **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1** `v2.1` · **v2.0** `v2.0` · **v1.10b** `v1.10.1` · **v1.10**
-`v1.10` · **v1.9** `v1.9` · **v1.8** `v1.8` · **v1.7** `v1.7` · **v1.6** `v1.6` · **v1.3b** `v1.3.1` · **v1.3** `v1.3`
-· **v1.2** `v1.2` · **v1.1** `v1.1` · **v1.0** `v1.0`. (Full detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
+**v2.5 M229→M235 merged** `--no-ff` into `release/02.50-the-playbill` (cut from `main` 2026-07-19).
+**M236 is CLOSED-ON-GATE but NOT MERGED** — held on the deferral-audit RED above; its branch
+`m236/prove-on-billion` is intact. Then `release → main` + the `v2.5` tag are `/developer-kit:close-release`
+Phase 11's job (the USER runs it). rext code-of-record **`playbill-m236-close-fixes`** (pushed to origin —
+note M217's FATAL pin guard means a tag is only consumable once it is **on origin**, not merely created).
+The `billion` demo LEFT UP. **Shipped tags:** **v2.4** `v2.4` · **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1**
+`v2.1` · **v2.0** `v2.0` · **v1.10b** `v1.10.1` · **v1.10** `v1.10` · **v1.9** `v1.9` · **v1.8** `v1.8` ·
+**v1.7** `v1.7` · **v1.6** `v1.6` · **v1.3b** `v1.3.1` · **v1.3** `v1.3` · **v1.2** `v1.2` · **v1.1** `v1.1`
+· **v1.0** `v1.0`. (Full detail: [`roadmap-legacy.md`](roadmap-legacy.md).)
 
 ## Standing backlog (unscheduled, cross-release)
-- **Test-debt + declared TODO (carried, non-gate; routed to the v2.4 RELEASE close):** (a) **8 pre-existing demo-stack
-  failures** — 6 × `test_cockpit.py` (4 removed-academy-CTA + 2 v2.3.1 overlay-JS) + `test_purge` + `test_reap`;
-  HEAD-identical, in files M222–M227 never touched, predating v2.4 → a future demo-stack test-debt harden pass; (b) the
-  **M204 `assign-and-track.UC1` assign-WRITE** declared in-manifest `unimplemented` build-reference gap → its
-  declared-TODO fate at release close. Re-confirmed fresh at M225 + M226 + M227.
+- **⛔ Test-debt (REPEAT-DEFERRAL — BLOCKS the v2.5 release close; needs a USER fate):** **14 pre-existing
+  demo-stack failures** — 6 × `test_cockpit.py` + 2 × `test_demopatch.py` + 4 × `test_ssr_origin_chain.py` +
+  `test_host_prereqs_m215` + `test_purge`; all environment-dependent (need a live clone tree / a
+  container-owned data dir), in files M229–M236 never touched. **First seen M224 (2026-07-17) as *8*;
+  carried through 10 milestones and 2 releases.** Its declared destination — *the v2.4 release close* —
+  **fired on 2026-07-18 without landing it** (shipped as a known issue, re-anchored on v2.5). The set drifted
+  8 → 14 under a fixed label and the *class* changed (stale-tests → `pre_sha256` pin drift, 6 of them), so
+  **re-baseline against HEAD before choosing a fate.** Also folded in: `test_m220_mutation_battery` (2, the
+  unmutated subject fails its own suite). Fate required: LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF.
+  → `m236-prove-on-billion/decisions.md` **CLOSE-D2**.
+- **v2.5 close queue (Fate 3, non-blocking):** `ACADEMY-M236-iter08-public-catalog-twin` (anonymous
+  `/library` + `/free` render 0 cards) + the `apps/web` non-offset `:5050` client GraphQL endpoint — batch
+  both into one next-web rebuild + one live re-prove; the **M204 assign-WRITE** declared in-manifest TODO;
+  and a live re-run of the content-stories sweep against the close-modified harness (**CLOSE-D3** — the
+  29/29 reading was taken on `playbill-m236-hardened`, before 10 close fixes landed in that harness;
+  unit-proven, not live-re-proven).
 - **M226 Finding-3 (Fate 3, non-gate-blocking):** the **pre-bind serve reap** (clear stale `tailscale serve` fronts on
   offset ports before bind) — a bring-up-path change on a **live-only** surface needing a live re-prove;
   **self-resolves in the default flow** → a follow-up build-iter / **M228** (the next prove-on-VM). DEF-M226-01.
@@ -136,12 +146,4 @@ tags:** **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1** `v2.1` · **v2.0** `v2.0`
   futures** M206–M207 stay in vision; **M205**'s tier-gate/ATS half is a residual vision reservation. All tracked in
   [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-20 (**M235 "prove-it-lands" CLOSED** via /developer-kit:close-milestone — iterative,
-closed-incomplete/pragmatic; merged `--no-ff` into `release/02.50-the-playbill`. Built + unit-proven, **0 platform
-edits**: the provably-clean 13-session simulation matrix + all 3 non-simulation sections (`content_nonsim.go`) →
-manifest 4 products/18 sessions, both honesty gates GREEN. 2 user-blockers resolved [M235-01 scrub-leaked-zero-names
-→ hardened+re-captured; M235-02 coverage-descriptor-doesn't-exist → build-non-sim-then-close]. Go **1939→1974**, flake
-**5/5**, harden Pass1+2 stabilized. Close near-clean [adversarial subsection + 2 `(#M235-B1/B2)` back-refs, no rext code
-change; `60eff14`], deferral audit **YELLOW**/0-blockers. carry-forward.md 3 clusters all **Fate-3 → M236** (applied,
-`54eaefe`). The LIVE `(session×action)`-lands gate is **M236 by design**. **NEXT: M236 prove-on-billion — the FINAL
-v2.5 milestone; then `/developer-kit:close-release`.**)_
+_Last updated: 2026-07-20 — M236 closed-on-gate (merge held on the deferral-audit RED); v2.5 feature-complete._

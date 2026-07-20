@@ -136,12 +136,12 @@ milestone.)
 | Sim TRAINING / ASSESSMENT | ✅ yes | `local_jobsimulation_sessions` mirror | `apps/web` activity-dashboard → ai-simulations tab |
 | Sim HIRING | ✅ yes | same mirror | `apps/hiring` only (a genuine hiring org **ejects** from `apps/web` → `apps/hiring`, `UserStatusContext.tsx:168-169`, M224) |
 | Sim INTERVIEW | ✅ yes (flag+admin-gated) | `interview_extraction_results.manager_report` | admin gate `OrgActionAssignmentsWrite`; PostHog `flag_interview_manager_report` |
-| Skill-path legacy | ✅ yes (`apps/web` only) | `local_skill_path_session` mirror | `apps/hiring` = **no-surface** (no skill-paths tab) |
+| Skill-path legacy | ❌ **no** (~~✅ yes, `apps/web` only~~ — **REFUTED M236 iter-07**) | — | The resolver exists; the **page does not render it** — `InsightsBySkillPathStudentSimulationsContainer` shows "Coming soon", table commented out, `userData` null. Not landable. |
 | Skill-path new (academy) | ❌ no manager result route today | — | academy has no manager review surface (workforce academy insights TBD) |
 | AI-labs | ❌ no (activity/spend listing only) | — | `grade_result` not GraphQL-exposed (§5) |
 
-→ For the cockpit's per-session `as-manager` CTA, honor `has_manager_view`: TRUE for the four sim manager routes +
-skill-path-legacy-in-`apps/web`; FALSE (omit the CTA) for academy + AI-labs.
+→ For the cockpit's per-session `as-manager` CTA, honor `has_manager_view`: TRUE for the four sim manager routes
+**only**; FALSE (omit the CTA) for skill-path-legacy (M236 iter-07), academy, and AI-labs.
 
 ## 3. Prod-session sourcing + anonymization contract
 
@@ -305,14 +305,17 @@ academy backend over GraphQL.
   / `academyLastActivity` queries; `upsertChapterProgress[Batch]` / `setLastActivity` mutations.
 - **Purpose-built to seed:** `app/cmd/academy-seed/main.go` seeds realistic academy state (chapter progress +
   last-activity) for one user (fixtures `starter` / `in-progress` / `completed`, `--user-email`/`--user-id`,
-  idempotent, seeds THROUGH the academy Manager).
+  idempotent, seeds THROUGH the academy Manager). **⚠ MOOT ON A DEMO STACK — see the verdict correction below.**
 
-**Verdict: the academy "session" = the per-user `academy_chapter_progress` + `academy_last_activity` rows** — a
-**seedable server row**, so the academy content-product section renders REAL played progress (NOT presence-only /
-deep-link only). **Dependency:** progress is keyed by `chapter_slug` and is decoupled from the catalog rows, so the
-chapters it points at need CATALOG rows to render → the academy content-story **depends on M230's demo-fill** (the
-catalog; Fate-2, already in the release). (`ant-academy.md`'s "no backend writes" framing was corrected in this
-milestone — KB-7.)
+**Verdict (M231, ~~as written~~ — CORRECTED at M236 iter-08): the academy "session" = the per-user
+`academy_chapter_progress` + `academy_last_activity` rows** — a **seedable server row**. ~~so the academy
+content-product section renders REAL played progress~~ — **this half does not hold on a demo.** A demo academy
+runs with **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so it never queries the academy subgraph and instead serves
+its **committed FS catalog**; the seeded rows have **no reader**. The demo academy content-story is therefore a
+real **`/courses/<slug>`** CTA into that FS catalog (verified cold on `billion`: 65 cards, 483 chapter links, 0
+Draft chips). The seeding path above stays correct for a **dev/prod-wired** stack. **Dependency:** the catalog
+still comes from M230's demo-fill (Fate-2, already in the release). (`ant-academy.md`'s "no backend writes"
+framing was corrected in this milestone — KB-7.)
 
 ## 7. Go/no-go synthesis — what each downstream milestone inherits
 
@@ -324,8 +327,8 @@ holds: content-product result pages read PERSISTED rows a clone can seed. Per-pr
 | Sim TRAINING / ASSESSMENT | **GO** — seed the result fan-out + the manager mirror | M232 seeder; M234 both CTAs |
 | Sim HIRING | **GO** — same, in `apps/hiring` (the M224 two-app pattern) | M232 + M234 (hiring base) |
 | Sim INTERVIEW | **GO w/ demo-patch** — seed `interview_extraction_results`; **enable `flag_interview_{player,manager}_report`** in the demo | M232 (flag-enablement, D3) |
-| Skill-path legacy | **GO** — seed skillpath runtime rows (player) + `local_skill_path_session` mirror (manager, `apps/web` only) | M232 + M234 (no manager CTA in hiring app) |
-| Skill-path new (academy) | **GO (presence + progress)** — seed `academy_chapter_progress`; depends on M230 catalog | M234 (player CTA only; no manager surface) |
+| Skill-path legacy | **GO, PLAYER-ONLY** — seed skillpath runtime rows (player). ~~+ `local_skill_path_session` mirror (manager)~~ **REFUTED at M236 iter-07: there is no working manager surface** (below) | M232 + M234 (player CTA only) |
+| Skill-path new (academy) | **GO (presence + progress)** — ~~seed `academy_chapter_progress`~~ **REFUTED at M236 iter-08: `academy-seed` is moot in a demo** (below); the CTA is a real `/courses/<slug>` link into the FS catalog | M234 (player CTA only; no manager surface) |
 | **AI-labs** | **OUT (presence-only)** — no seedable result surface; list as activity/spend line | M234 (presence-only section, D4) |
 
 **Nothing escalated to a platform edit.** The two runtime-blank/gated surfaces (INTERVIEW flag-gate, skill-path
@@ -337,10 +340,32 @@ a GraphQL schema change, both out of scope.
 > unit-proven** as a separate code-owned registry (`seeders/content_nonsim.go`, `ContentStoryNonSimSeeder`;
 > [`content-stories-spec.md`](content-stories-spec.md) §6): **skill-path-legacy** (`skill_path_sessions` +
 > the `local_skill_path_sessions` mirror), **ai-labs** (a `lab_sessions` presence/spend row, no CTA), and
-> **academy** (a real public `/library/<slug>` course CTA; the `academy_chapter_progress` write is the live
-> `app/cmd/academy-seed` binary). rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`. The LIVE
+> **academy** (a real `/courses/<slug>` course CTA — **not** `/library/<slug>`, which is not a route in
+> ant-academy). rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`. The LIVE
 > (session × action)-lands proof + the per-section live calibration (skill-path version/status/mirror; the
-> exact `lab_sessions` DDL; academy progress-write/route + the M230 catalog fill) is **M236 (prove-on-billion)**.
+> exact `lab_sessions` DDL; academy route + the M230 catalog fill) was executed at **M236 (prove-on-billion)**.
+
+> ### ⚠ Two M236 corrections to this map (2026-07-20, proven live on `billion`)
+>
+> This document is the **M231 feasibility spike**. Two of its verdicts were refuted when the surfaces were
+> actually driven, and the corrections are load-bearing — the first is what produced an inflated gate
+> denominator (31) that had to be corrected to **29** mid-milestone.
+>
+> **1. Skill-path legacy has NO manager result surface** (iter-07). §2's eligibility matrix marked it
+> `✅ yes … local_skill_path_session mirror`. The *resolver* (`insightsSkillPathByMemberships`) does exist —
+> but the **page that would render it does not**: next-web's `InsightsBySkillPathStudentSimulationsContainer`
+> hardcodes `userData = null`, has its results table **commented out**, and renders the literal string
+> **"Coming soon"**. No query touches the seeded session, so the page is byte-identical whether or not
+> anything was seeded. Under M233's fail-closed rule the 2 skill-path manager pairs are **not landable** —
+> the same ground that already excludes AI-labs. `has_manager_view` is FALSE for skill-path-legacy, and
+> `<kind>` ∈ {`ai-simulations`, `interviews`} only. *A resolver existing is not a surface existing.*
+>
+> **2. `app/cmd/academy-seed` is MOOT in a demo** (iter-08). §6's verdict — "a seedable server row, so the
+> academy section renders REAL played progress" — assumes a reader for those rows. A demo academy runs with
+> **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so it serves its **committed FS catalog** and never queries the
+> academy subgraph; seeded `academy_chapter_progress` rows have no reader. The academy content-story is a
+> real `/courses/<slug>` CTA into that FS catalog (65 cards, 0 Draft chips, verified cold). The binary
+> remains correct for a *dev/prod-wired* stack — it is the **demo** configuration that makes it inert.
 
 **The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the manager MIRROR row**
 (`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager scoreboard is blank; (2) **source only

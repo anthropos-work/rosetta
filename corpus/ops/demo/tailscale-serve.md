@@ -673,7 +673,14 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 - [`../setup_github_guide.md`](../setup_github_guide.md) — the canonical SSH GitHub path (the alternative to the
   PAT-over-HTTPS clone in Step 1).
 - [`coverage-protocol.md`](coverage-protocol.md) — the 0-prod-eject believability gate (the evidence base for the
-  `urls.ts` residual decision).
+  `urls.ts` residual decision), **and the content-stories `(session × action)` LANDS sweep (v2.5 M236)**, which
+  is driven ACROSS the tailnet: the harness runs locally and only the stack is remote
+  (`run-content-stories.sh <N> --host <magicdns>`). Two host-path rules M236 established — the fake FAPI is
+  **always** `https` even when the app origin is not, and a `--public-host` stack must be measured with
+  `LATENCY_SCHEME=https` or the latency runner grades the wrong origin.
+- **v2.5 M236 — the second live proof on `billion`.** The whole content-vantage feature (both cockpit tabs,
+  29/29 landable pairs, 65 academy cards, hero p95 1.22 s / 1.51 s) was proven end-to-end from a second
+  tailnet machine on a cold reset-to-seed. The remote-reach recipe in this doc is the one it used, unchanged.
 - Design decisions: `knowledge/plan/releases/archive/02.20-panorama/` — M212 (the knob), M213 (TLS/proxy/pk, D-PROXY-2 /
   M213-D-SCHEME-1), M214 (origins & links, M214-D-SCHEME-1 / D-VITE-SIGNIN-1 / D-URLS-1), M215 (the live
   acceptance — the full finding ledger F1–F13 at `m215-prove-on-odyssey/iter-01/findings.md`; F13 = the

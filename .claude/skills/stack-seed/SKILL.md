@@ -47,7 +47,7 @@ shared/prod store). Source of truth: [`corpus/ops/seeding-spec.md`](../../../cor
 
    Presets: `dev-min` (~1 org / ~10 users — the dev default), `small-200` (quick), `mid-500` (the default
    "looks real"), `large-1k` (scale), `stories-maya` (one org + one hero — the M34 vertical slice),
-   `stories` (the **M35 multi-org Stories & Heroes** world — **3 orgs** (Cervato Systems / Solvantis /
+   `stories` (the **M35 multi-org Stories & Heroes** world, grown to **4 orgs** (Cervato Systems / Solvantis /
    Northwind Aviation) × a thriving/struggling/manager trio,
    the believable demo-narrative default; **replay the taxonomy first** so heroes get role-coherent skills).
 4. **Verify** — the run prints per-surface row counts + `isolation: clean`; a browser/API login (the seeded

@@ -153,10 +153,27 @@ faithful" — it is **inconsistent**, and the platform cross-checks the surfaces
 ```bash
 cd <stack>/rosetta-extensions/stack-verify/e2e
 LATENCY_HOST=billion.taildc510.ts.net \
+LATENCY_SCHEME=https \                           # REQUIRED for a --public-host demo (see below)
 LATENCY_AUTOVERIFY_JSON=/tmp/autoverify.json \   # a copy of the REAL remote verdict — never a bypass
 LATENCY_RUNS=5 LATENCY_GATE_MS=5000 \            # gate armed
   ./run-latency.sh 1 employee                     # …and: manager
 ```
+
+> **`LATENCY_SCHEME=https` is not optional here** (added M236 iter-09; the block above omitted it and was
+> wrong for the exact scenario this section is about). The runner defaults to `http`, but a `--public-host`
+> demo is HTTPS-fronted by `tailscale serve`, so the default gets a 400/redirect and fails at
+> `readCockpitCta`. Localhost stays `http`.
+>
+> **Producing the remote verdict:** `autoverify.sh` only writes `autoverify.json` when **`STACK_DIR` is set
+> in its environment**. Run without it and it prints a full green report and writes nothing — which looks
+> exactly like success:
+> ```bash
+> ssh <box> 'STACK_DIR=<stack>/rosetta-extensions/demo-stack/stacks/demo-1 \
+>   <stack>/rosetta-extensions/stack-verify/live/autoverify.sh --project demo-1 --offset 10000'
+> ```
+>
+> **Run it from a second machine on the tailnet, not on the demo host.** The gate is a *presenter-vantage*
+> number; measuring on the box measures something nobody experiences.
 
 Contract:
 
@@ -166,6 +183,33 @@ Contract:
   noise. For a remote stack, point `LATENCY_AUTOVERIFY_JSON` at a **copy of the real remote verdict** — the gate
   still grades the real stack. *A safety gate that is inconvenient in the exact situation it exists for will be
   switched off — so make it work there instead.*
+- **It ages the verdict** (4 h window) so a verdict cannot outlive its subject — the F-6 hazard, where a
+  nine-hour-old verdict graded a Clerkenstein-dewired stack green.
+  > **M236 iter-09 found that age check reading UTC as local time.** `autoverify.sh` writes `ts` in UTC with
+  > a trailing `Z`; the BSD (`date -jf`) fallback parses in the **local** zone, so on macOS the age was off
+  > by exactly the UTC offset — a verdict **121 s** old aged as **7321 s** on a UTC+2 grader. East of UTC
+  > that fails closed; **west of UTC it inflates the window and reads a STALE verdict as FRESH**, which is
+  > the very hazard the check exists to prevent. Fixed with `TZ=UTC` on that branch.
+  >
+  > The general lesson is worth more than the fix: **a freshness guard that fails open is worse than no
+  > guard, because everything downstream trusts it** — and this one was itself introduced by a hardening
+  > pass (M218 F-10). Code written to close a hazard is not exempt from that hazard.
+  >
+  > **Now regression-tested** (M236 final harden): `stack-verify/tests/test_green_gate_age.py` extracts the
+  > shipped `v_epoch=` line and evaluates it under five zones spanning both sides of UTC — including a
+  > **half-hour offset**, which a "subtract whole hours" patch would still get wrong — asserting the parsed
+  > epoch is identical **and** equals the true UTC instant. Zone-independence alone would be satisfied by a
+  > consistently *wrong* constant, so both halves are needed. It also sweeps the whole `e2e/` section for
+  > any **unpinned `date -jf`**, because the bug is a class, not an instance. **Mutation-verified:**
+  > removing `TZ=UTC` turns 5 of the 6 guards red. *The fix shipped without a test; a fix to a guard is
+  > exactly where a test is least optional.*
+- **It refuses a stack number it cannot trust.** `OFFSET=$(( N * 10000 ))` and bash evaluates a non-numeric
+  `N` to **0, silently** — so `./run-latency.sh abc` pointed every probe at offset 0, the **dev stack's**
+  ports, and would have reported those timings as demo-N's. A grader whose premise is *refuse to measure a
+  stack that is not what it claims to be* must not be able to measure a **different** stack without saying
+  so. Non-integer `N` now exits 2 (M236 final harden). `run-coverage.sh` and `run-hiring-render.sh` share
+  the arithmetic and were **guarded at the M236 close** — all four runners now refuse a non-integer `N`
+  rather than silently sweeping the DEV stack at offset 0.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
 - **It clears cookies per sample**, so each click is a genuine cold login.

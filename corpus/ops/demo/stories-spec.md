@@ -318,7 +318,7 @@ stories:
     heroes: [ … Sara·thriving / Nick·struggling / Leah·manager … ]
 ```
 
-The shipped `presets/stories.seed.yaml` is the runnable **3-stories × 3-heroes** roster (the M35 two stories +
+The shipped `presets/stories.seed.yaml` is the runnable **4-org** roster — 3 workforce stories × 3 heroes plus the v2.4 M223 hiring org (the M35 two stories +
 the M51 AI-readiness showcase org — see [The AI-readiness showcase org](#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)).
 
 ### Vantage & trajectory (the two hero axes)
@@ -433,7 +433,7 @@ demo-patch**.
 
 ### The story
 
-A 3rd `stories[]` entry in `presets/stories.seed.yaml` (so the roster is now **3 stories × 3 heroes**, not the
+A 3rd `stories[]` entry in `presets/stories.seed.yaml` (making it **3 workforce stories × 3 heroes**; v2.4 M223 later added a 4th org, the Meridian Talent hiring org — so the preset ships **4 orgs** today, not the
 former 2×3): org **Northwind Aviation** (200 members, `narrative: ai-readiness`), with a hero trio —
 
 | Hero | Vantage / trajectory | AI-readiness state |
@@ -622,7 +622,7 @@ still hydrates the whole org and would need `loadMembers` bounded / a `frozen_ta
 Proven by the **M42 semantic coverage gate, manager vantage**, on Northwind: `(failingSections, escapes) = (0, 0)`,
 persona green, frontier-exhausted, on a fresh `/demo-up` (rext `fit-up-m51`). Closure stays measured — the
 AI-readiness skills resolve through the same taxonomy resolver, so the seed-side closure gene proves 0 dangling
-refs across all 3 orgs.
+refs across all 3 orgs. (*3* is the count **as of that gate**; v2.4 M223 added a 4th — the Meridian Talent hiring org.)
 
 ## The hiring org — the 4th story (v2.4 "casting call" M222 gate / M223 seed)
 

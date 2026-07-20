@@ -3,26 +3,42 @@ milestone: M236
 slug: prove-on-billion
 version: v2.5 "the playbill"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-20
 depends_on: M235
-exit_gate: "Both tabs work live on billion — Content-stories sessions render real content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s, 0 platform edits, demo reachable only over the tailnet."
-iteration_protocol_ref: corpus/ops/verification.md + corpus/ops/demo/tailscale-serve.md
+exit_gate: "Both tabs work live on billion — all 31 landable (session x action) pairs render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s for the HERO vantages only (content-seat latency out of scope for v2.5), 0 platform edits."
+iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md
 delivers: none
 ---
 
 # M236 — prove on billion
 
-**Status:** `planned`  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M235
+**Status:** `gate-met`  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M235
 
 ## Goal
 Re-prove the whole feature live on the billion Tailscale VM (the house pattern that closed M215/M221/M226/M228) — both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed, VPN-scoped.
 
 ## Exit gate
-Both tabs work live on billion — Content-stories sessions render real content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s, 0 platform edits, demo reachable only over the tailnet.
+Both tabs work live on billion — **all 31 landable (session × action) pairs** render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, **p95 click→ACCESS < 5 s for the HERO vantages only**, 0 platform edits.
 
-**Iteration protocol:** `corpus/ops/verification.md + corpus/ops/demo/tailscale-serve.md`
+**Gate denominator: ~~31~~ → 29 landable (session × action) pairs** — 26 simulation + 2 skill-path-legacy + 1 academy; ai-labs is presence-only (no landable action). `has_manager_view` is **per-SESSION, not per-product** — reading it at product level silently under-counts to 18.
+
+> **Denominator corrected 31 → 29 at iter-07 (evidence in `iter-07/decisions.md` D2).** The 2 skill-path
+> **manager** pairs point at a surface the platform **has not built**: next-web's
+> `InsightsBySkillPathStudentSimulationsContainer` hardcodes `userData = null`, has its results table
+> **commented out**, and renders the literal string **"Coming soon"** — no query touches the seeded
+> session, so the page is identical whether or not anything was seeded. Under M233's fail-closed rule
+> (*a session that cannot form a real link is dropped with a reason, never linked anyway*) those pairs are
+> **not landable**, on exactly the ground that already excludes ai-labs. 31 was never a count of *provable*
+> pairs — it assumed a surface that does not exist. The correction also exposed a **false PASS**: the
+> lighter of the two had been scoring green off a definition-only "Results for" header.
+
+**Re-scoped 2026-07-20 (user-authorized; see `decisions.md` → USER-BLOCKER-M236-01 → RESOLUTION):**
+- The former *"demo reachable only over the tailnet"* clause is **DROPPED**. Security is not a concern for this milestone; reaching the right people is the VM + VPN's job, not the demo stack's — the stack need only *permit* VPN access. No off-tailnet probe deliverable. `safety.md` §3 Part 3's disclosure stands as-is.
+- The **p95 < 5 s** clause is scoped to the **HERO vantages only**, where `run-latency.sh` already works. **Content-seat latency is explicitly OUT OF SCOPE for v2.5** — the cockpit CTA and `run-latency.sh` are NOT extended to content seats. The 31 content actions are proven for **CONTENT** (real, non-empty results), not formally timed.
+
+**Iteration protocol:** `corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md` (repointed from the hollow `verification.md` ref — B5; their content-stories sections are backfilled by this milestone)
 
 ## Scope
 ### In
@@ -34,8 +50,13 @@ Both tabs work live on billion — Content-stories sessions render real content 
   cockpit-seat-reached, not hero-linked). M236 must AUTHOR it — a spec that logs in as each
   `content-player-<idx>` seat (the Playthroughs-style cockpit seat-switch, `playthroughs/e2e/lib/hero-login.ts`)
   + resolves each session's EXACT `/sim/<slug>/result/<sessionId>` URL from the seeded `content-manifest.json`
-  + reuses the shared `AISimulationResultContainer` page-object — and CALIBRATE it against a LIVE seeded
-  render (authoring it blind ships an INCORRECT descriptor into a load-bearing harness).
+  — and CALIBRATE it against a LIVE seeded render (authoring it blind ships an INCORRECT descriptor into a
+  load-bearing harness). **The result page-object does NOT exist in rext and must be authored from scratch**
+  (`AISimulationResultContainer` is a next-web `.tsx` component, not a harness object — B3); and
+  `VantageManifest.identityKey` is **singular**, so this is **13 seats → 13 manifests**, not one sweep.
+- **AMEND `corpus/ops/demo/coverage-protocol.md`** in the same change that reverses its `skipPaths`
+  `/\/result\/[0-9a-f-]{8,}/` exclusion (per the protocol-evolution rule — B4), and **backfill the
+  content-stories sections** of `coverage-protocol.md` + `playthroughs.md` (the repointed protocol refs — B5).
 - **Prove EVERY (session × action) lands on a non-empty result — the SIMULATION sessions AND the M235 NON-sim
   sections (all built offline + unit-proven at M235, tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`).**
   Work the per-section M235 live-calibration checklists (M235 iter-05/06/07 decisions.md): **skill-path**
@@ -52,6 +73,21 @@ Both tabs work live on billion — Content-stories sessions render real content 
   demopatch manifests) as a cold-`/demo-up` prerequisite; the **`getPublicCatalogView` 2nd-manifest**
   anonymous-routes follow-on.
 
+> **⚠ Two items above were written from diagnoses this milestone's own Phase-0b audit then FALSIFIED.**
+> Recorded here rather than edited away, because the In-list is the record of what M236 was *told* to do.
+> - **The "2 drifted demopatch manifests" were not drifted** (audit F20): clone HEAD matched the pin exactly;
+>   the working tree was merely left-patched by an un-reverted run, which classifies `ALREADY_PATCHED` → an
+>   idempotent no-op. The real fix was one `git checkout --`. The cold bring-up then passed with all patches
+>   applied, none refused. **M230 carry-forward cluster 2 is DISCHARGED** (iter-10) — it had no closing entry
+>   anywhere until this close.
+> - **The ANT_ACADEMY coverage descriptor did not exist as described** (audit F21): the shipped one is a
+>   text-marker + length floor that **would pass on a zero-card grid** — i.e. it could not detect the exact
+>   Thread-A failure it was cited to catch. It had to be AUTHORED, which iter-08 did as the sixth render
+>   shape (`player-academy`, asserting course/chapter structure **and 0 Draft chips**).
+> - Relatedly, the **academy** bullet above is superseded: `app/cmd/academy-seed` is **moot on a demo**
+>   (iter-08) — no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` means the seeded rows have no reader — and
+>   `/library/<slug>` is **not a route** in ant-academy. The CTA is `/courses/<slug>` into the FS catalog.
+
 ### Out
 - New feature work (the SEEDERS + the manifest sections are built + unit-proven by M235 — M236 CALIBRATES +
   PROVES them live, it does not re-build them)
@@ -66,3 +102,16 @@ Both tabs work live on billion — Content-stories sessions render real content 
 
 ## Full design
 See `knowledge/plan/roadmap.md` § Active — v2.5 "the playbill" for the authoritative milestone design + the release-level decisions/risks (research provenance: `.agentspace/scratch/roadmap-research-2026-07-19` via the design-content-stories-research workflow).
+
+## Gate outcome — MET (2026-07-20, cold on billion)
+
+| component | status |
+|---|---|
+| all landable (session × action) pairs render real content, both vantages | **MET** — 29/29 |
+| the academy grid renders real cards (Thread A) | **MET** — 65 course links, 483 chapter links, 0 Draft chips |
+| p95 click→ACCESS < 5 s, HERO vantages only (B2) | **MET** — employee 1.22 s · manager 1.51 s, 5/5 ACCESS |
+| reproducible on a cold reset-to-seed | **MET** — all of the above on a stack built from nothing, no intervention |
+| 0 platform-repo edits | **MET** — canonical `anthropos-work` repos untouched (verified per-clone) |
+
+10 iters (1 bootstrap tok + 9 tiks). Primary metric 0/31 → **29/29** on the corrected denominator.
+Full ledger in `progress.md`; per-iter evidence in `iter-NN/`.

@@ -87,7 +87,7 @@ feedback, not a progress bar — there's no real signal from the cross-origin ha
 
 **Grab the seed manifest.** A footer **Download seed manifest** link saves the **consolidated
 `seed-generation-manifest.yaml`** (v1.10b M52) — the single auditable file inlining the whole seed+generation
-intent (all 3 orgs' population + the mother prompt + batch config + snapshot sources; cache/generated data
+intent (all 4 orgs' population + the mother prompt + batch config + snapshot sources; cache/generated data
 excluded), so a presenter or auditor can read the entire demo-world direction in one place. (An old bring-up
 with no manifest wired falls back to saving the cockpit's JSON menu.) See
 [`seed-manifest-spec.md`](seed-manifest-spec.md).
@@ -298,7 +298,7 @@ render + seat + routing contract is [`content-stories-spec.md` §7](content-stor
 ### Bring it up
 
 ```bash
-# A storytelling demo is the DEFAULT: /demo-up N seeds the 3-org hero trio, wires the multi-identity
+# A storytelling demo is the DEFAULT: /demo-up N seeds the 4-org world (3 hero trios + the hiring org), wires the multi-identity
 # fake-fapi, and serves the cockpit on http://localhost:$((7700 + N*10000)).
 /demo-up 3
 # → the cockpit serves on http://localhost:37700. Pick a hero → [Log in as] → land on her per-role screen.
