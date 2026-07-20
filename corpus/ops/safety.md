@@ -590,6 +590,15 @@ inherited. It is **strictly narrower**, and it should feel narrower:
    > protects them.*
 2. **Ambient means the operator did not choose.** A default-on surface is reachable by people who never decided
    to publish it — including on a laptop that joins a corporate tailnet later.
+
+   > **Which layer owns this, and what nothing measures (v2.5 M236).** The decision on record is a **layering**
+   > one: *restricting who can reach a demo is the VM's and the VPN's job, not the demo stack's* — the stack's
+   > only obligation is to **permit** VPN access. It is a scoping stance about ownership, **not** a safety
+   > claim, and it leaves this document's Part 3 disclosure untouched. See
+   > [`verification.md` § What this doc does NOT verify — reach](verification.md). **The consequence to hold
+   > alongside it:** no gate anywhere measures reach, so for a **content-story** demo — where §3.3.1 makes the
+   > VPN scope *the* control rather than a comfort — that control is **operator-maintained and unattested**.
+   > It is exactly as strong as the network the box is on, and nothing will tell you if it is weaker.
 3. **The cockpit is the sharpest edge.** It is the one surface whose *entire purpose* is to hand out sessions
    without credentials.
 
