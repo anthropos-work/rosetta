@@ -117,3 +117,33 @@ and ready.
 **Not blocked by this:** the publish itself (verified: 13 tags ancestors of `main`, clean fast-forward, 0
 collisions, 16/16 packages green) and the completed host prune (109 GB reclaimed, `billion` 40 G → 139 G
 free).
+
+### **RESOLUTION** (2026-07-20, user-authorized)
+
+The orchestrator obtained the user's decision interactively. All five sub-findings are **decided and
+closed**; none may be re-raised.
+
+- **B1 — DROP THE CLAUSE.** Security is not a concern for this milestone; the demo may be publicly
+  accessible. Making it reachable by the *right* people is the job of the VM + VPN, **not** of the demo
+  stack — the demo stack's only obligation is to *permit* VPN access. **No off-tailnet probe deliverable.**
+  The clause is removed from the exit gate. `safety.md` §3 Part 3's existing disclosure stands **as-is** and
+  needs no amendment for this.
+- **B2 — OPTION (b): scope the p95 gate to the existing HERO vantages only,** where `run-latency.sh`
+  already works. **Content-seat latency is explicitly OUT OF SCOPE for v2.5.** Do **not** extend the cockpit
+  CTA or `run-latency.sh` to content seats. The 31 content actions are proven for **CONTENT** (they render
+  real, non-empty results), not formally timed.
+- **B3 — ACCEPT the enlarged Cluster 1** (the content-stories seat-login coverage harness authored from
+  scratch, **13 seats → 13 manifests**) as the milestone's real centre of gravity.
+- **B4 — AMEND `corpus/ops/demo/coverage-protocol.md` explicitly** in the same change that reverses its
+  `skipPaths` `/result/` exclusion, per the protocol-evolution rule.
+- **B5 — REPOINT `iteration_protocol_ref`** at `corpus/ops/demo/coverage-protocol.md` +
+  `corpus/ops/demo/playthroughs.md` (the docs that actually carry a measure→triage→fix loop), and backfill
+  their content-stories sections.
+
+**Publish authorized.** The user was told iter-02 will push the 13 `playbill-*` tags + `main` of
+`rosetta-extensions` to origin and re-pin billion's `rext.tag`, and did not object. Phase P proceeds as
+planned (verified safe by iter-02's pre-flight).
+
+**Gate denominator preserved: 31 landable (session × action) pairs** — 26 simulation + 4
+skill-path-legacy + 1 academy; ai-labs is presence-only. `has_manager_view` is **per-SESSION, not
+per-product** — a product-level read silently under-counts 31 → 18.

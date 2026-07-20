@@ -6,7 +6,7 @@
   "primary_metric": {
     "name": "landed-non-empty (session x action) pairs, live on billion, cold reset-to-seed",
     "denominator": 31,
-    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session",
+    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session. CONFIRMED 2026-07-20 against the PUBLISHED artifact on billion @ playbill-m235-hardened: 18 sessions / 15 manager views = 33 raw pairs, minus 2 ai-labs presence-only = 31 landable. Naive read gives 33; product-level has_manager_view read gives 18.",
     "denominator_breakdown": {
       "simulation": 26,
       "skill-path-legacy": 4,
@@ -28,34 +28,36 @@
     },
     "p95_click_to_access_ms": {
       "gate": 5000,
-      "current": null
+      "current": null,
+      "scope": "HERO vantages only (user decision B2, 2026-07-20); content-seat latency OUT OF SCOPE for v2.5"
     },
     "platform_repo_edits": {
       "gate": 0,
       "current": 0
-    },
-    "reach_scope": {
-      "gate": "tailnet-only",
-      "current": "tailnet-only"
     }
   },
   "iters": {
     "total": 2,
-    "tiks": 0,
+    "tiks": 1,
     "toks": 1,
-    "in_flight": 1
+    "in_flight": 0
   },
-  "last_iter": "iter-02 (in-flight, not closed)",
+  "last_iter": "iter-02 (closed-fixed)",
   "last_updated": "2026-07-20",
-  "blocked": {
-    "id": "USER-BLOCKER-M236-01",
-    "reason": "exit gate contains unprovable/unmeasurable clauses; Phase 0b audit-kb-fidelity verdict RED",
-    "raised": "iter-02",
-    "report": "kb-fidelity-audit.md"
-  },
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
-    "tooling_published": false
-  }
+    "tooling_published": true,
+    "billion_rext_pin": "playbill-m235-hardened",
+    "m217_pin_guard": "PASS"
+  },
+  "resolved_blockers": [
+    {
+      "id": "USER-BLOCKER-M236-01",
+      "resolved": "2026-07-20",
+      "by": "user (orchestrator-obtained)",
+      "decisions": "B1 drop tailnet-only clause; B2 p95 hero-only; B3 accept enlarged Cluster 1; B4 amend coverage-protocol.md; B5 repoint iteration_protocol_ref",
+      "phase_0b_reverdict": "RED -> discharged (proceed as YELLOW)"
+    }
+  ]
 }

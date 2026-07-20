@@ -2,10 +2,10 @@
 iter: 2
 milestone: M236
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 date: 2026-07-20
 metric_pre: "0/31"
-metric_post: "TBD (expected 0/31 — reachability precondition, not gate progress)"
+metric_post: "0/31 (unchanged — reachability precondition, as designed)"
 ---
 
 # iter-02 — tik: Phase P, publish the v2.5 tooling and re-pin billion

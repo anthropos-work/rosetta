@@ -114,3 +114,49 @@ name collisions** on origin — so the publish is purely additive.
 cannot be run locally as a pre-publish check. Go side was verified instead: `stack-seeding` builds clean
 and **16 packages pass, 0 fail**; `stack-snapshot` / `stack-secrets` / `alignment` all build. The Python
 surfaces are exercised on `billion` at bring-up. Routed as an observation, not an iter.
+
+---
+
+## Pre-flight audits — iter-02 RE-VERDICT (2026-07-20, post-user-resolution)
+
+**Standing verdict: RED → DISCHARGED (proceed as YELLOW).**
+
+The iter-01 audit's RED rested on **five blocker classes, all of which were spec-scope** — they asserted
+that M236's *declared gate and method* were wrong, not that its *code or knowledge* was defective. The
+user resolved all five on 2026-07-20 (see `decisions.md` → USER-BLOCKER-M236-01 → **RESOLUTION**). Class
+by class:
+
+| # | Blocker class | Disposition |
+|---|---|---|
+| 1 | cited page-object doesn't exist | **ACCEPTED as scope** (B3) — harness authored from scratch, 13 seats → 13 manifests; `overview.md` In-list amended |
+| 2 | "tailnet-only" unprovable | **CLAUSE DROPPED** (B1) — removed from the gate; `safety.md` §3 Part 3 disclosure stands as-is |
+| 3 | p95 unmeasurable for content seats | **GATE SCOPED to HERO vantages** (B2) — content-seat latency explicitly out of scope for v2.5 |
+| 4 | must reverse a documented `skipPaths` rule | **AMENDMENT IS NOW IN-SCOPE WORK** (B4) — `coverage-protocol.md` amended in the same change as the reversal |
+| 5 | hollow `iteration_protocol_ref` | **REPOINTED** (B5) → `coverage-protocol.md` + `playthroughs.md`; their content-stories sections backfilled by this milestone |
+
+The systemic finding (six method docs describe a v2.4 world) is **not discharged** — it is **converted into
+milestone deliverables** under B4/B5. It remains true, and M236 now owns closing it. That is a YELLOW
+posture, not a RED one: the gaps are known, named, assigned, and in-scope, which is exactly Phase 0b's
+YELLOW definition ("proceed; the gaps become the iter's known-context").
+
+**Nothing in the audit's remaining 19 fidelity findings blocks Phase P**, which touches no knowledge doc
+and no platform repo. Phase P resumed and completed under this re-verdict.
+
+### Independent denominator confirmation (unplanned, valuable)
+
+Phase P's verification step read the **published** `content-manifest.json` on `billion` at
+`playbill-m235-hardened` and recomputed the gate denominator from the artifact itself:
+
+```
+products: 4
+  simulation          sessions=13  manager_views=13  -> 26
+  skill-path-legacy   sessions= 2  manager_views= 2  ->  4
+  ai-labs             sessions= 2  manager_views= 0  ->  0  (presence-only, not landable)
+  skill-path-new      sessions= 1  manager_views= 0  ->  1
+TOTAL sessions 18 | manager views 15 | raw pairs 33 | LANDABLE 31
+```
+
+**31 confirmed against the shipped artifact**, matching `metrics.json` exactly. Note the arithmetic that
+makes the trap concrete: a naive read gives **33** (counting ai-labs' 2 presence-only player actions) and a
+product-level `has_manager_view` read gives **18**. Only the per-SESSION read with ai-labs excluded yields
+**31**.
