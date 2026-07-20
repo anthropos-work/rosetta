@@ -1,12 +1,26 @@
 # The demo-coverage protocol — the Playwright sweep + triage + fix loop
 
-**The iteration protocol for the 100%-coverage milestones (v1.10 "method acting" M42e employee, M42m
-manager).** A coverage milestone proves that a hero of a given **vantage** (employee/member, or manager),
-logged into a demo stack via the presenter cockpit, sees **100% of the pages that vantage can reach** rendered
-with **real semantic content** and **zero out-of-demo escapes**. The page set and the failure modes are
-**discovered by the sweep**, not enumerable up front — so the milestone is `iterative`: each iter **measures**
+**The iteration protocol for the demo's prove-by-render gates.** Both are `iterative`: each iter **measures**
 (run the sweep) → **triages** the failures → **fixes** them in `rosetta-extensions` (or a corpus doc) →
-**re-sweeps**, until the gate is GREEN.
+**re-sweeps**, until the gate is GREEN. The page set and the failure modes are **discovered by the sweep**,
+not enumerable up front, which is why the milestone shape is iterative rather than sectioned.
+
+**This doc governs TWO sweeps.** They share the loop, the harness foundation, the fix-surface routing table,
+and the measurement conventions; they differ in what they enumerate and how a page is reached:
+
+| | **Sweep 1 — hero vantage coverage** | **Sweep 2 — content stories (session × action)** |
+|---|---|---|
+| **added by** | v1.10 "method acting" M42e (employee) + M42m (manager) | v2.5 "the playbill" M236 |
+| **proves** | *a vantage's pages are full* | *every seeded content story lands on a real result* |
+| **unit** | a **page**, reached by BFS crawl from the hero's landing | a **(seat × exact URL)** pair — never crawled |
+| **actor** | a roster **hero** (Maya, Dan) | a non-hero **MEMBER** seat (`content-player-<idx>`) + a manager hero |
+| **enumerated by** | the sweep itself (discovered frontier) | the seeded `content-manifest.json` (a fixed denominator) |
+| **section** | [Sweep 1](#for-pms--what-100-coverage-means) below | [Sweep 2](#sweep-2--content-stories-the-session--action-lands-sweep-v25-the-playbill-m236) below |
+
+**Read them in order.** Sweep 1 establishes the loop, the gate vocabulary, and the harness; Sweep 2 assumes
+all of it and documents only where a fixed-denominator, exact-path sweep diverges from a crawl. The
+[cross-cutting protocol](#cross-cutting-protocol--rules-both-sweeps-owe-to-hard-experience) at the end holds
+the rules that outlived either one.
 
 > **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -23,6 +37,12 @@ with **real semantic content** and **zero out-of-demo escapes**. The page set an
 > real journey end-to-end and asserts the outcome (function); this sweep proves presence. Playthroughs extend
 > this same M42 Playwright foundation (the `cockpit-login` handshake + the centralized-anchor discipline) into a
 > mutating, reset-to-seed, serial suite with its own manifest + four-state map.
+
+# Sweep 1 — hero vantage coverage (v1.10 "method acting" M42e / M42m)
+
+**A coverage milestone proves that a hero of a given vantage** (employee/member, or manager), logged into a
+demo stack via the presenter cockpit, **sees 100% of the pages that vantage can reach** rendered with **real
+semantic content** and **zero out-of-demo escapes**.
 
 ## For PMs — what "100% coverage" means
 
@@ -693,13 +713,9 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   When driving the sweep, line-buffer (`stdbuf -oL`) + `tee` so each line reaches stdout, and append a journal
   heartbeat every few minutes; never run the sweep as a silent foreground call.
 
-## Related
-- [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
-- [Demo lifecycle](../rosetta_demo.md) · [Browser login recipe](recipe-browser-login.md) · [Stories & heroes](stories-spec.md)
-
 ---
 
-## Content stories — the (session × action) LANDS sweep (v2.5 "the playbill" M236)
+# Sweep 2 — Content stories: the (session × action) LANDS sweep (v2.5 "the playbill" M236)
 
 **The second sweep this protocol governs.** The hero sweep above proves *a vantage's pages are full*. This
 one proves *every seeded content story actually lands on a real result* — the Thread-B half of v2.5.
@@ -840,6 +856,10 @@ A test that encodes a **route** or a **contract** is only as good as the last ti
 live probe contradicts a green test, the test is the prime suspect — and the fix is to invert it so it
 fails loudly if the defect is ever restored.
 
+**This is a defect class with a name — *offline-authored, never driven* — and a fourth instance (the skill-path
+version `"2"` guess) sits outside this table.** The standing form, **unit-proven ≠ route-proven**, is
+[cross-cutting rule 3](#3-offline-authored-never-driven--unit-proven--route-proven).
+
 ### Running it
 
 ```bash
@@ -897,6 +917,34 @@ on** — and there it went unnoticed through all ten iters:
 > scoring green off a subject that proved nothing*. That is not a property of render shapes — it is a
 > property of **every layer that reports a number**. Ask of each one: *what does it print when nothing
 > happened?* If the answer is anything other than a loud failure, the gate can certify a vacuum.
+>
+> **Promoted to a standing rule** — see [Cross-cutting rule 1](#1-a-check-can-report-success-while-proving-nothing),
+> which carries all nine instances and the pair-every-shape discipline that catches them.
+
+*(The last bullet is [cross-cutting rule 2](#2-prose-does-not-propagate--only-a-shared-definition-or-an-executable-fence-does)
+in miniature: a lesson written in one runner does not reach its siblings. Four runners, one fence.)*
+
+### The directional rule for tuning a grader
+
+> **A fix for a false-FAIL that creates a false-PASS is a net loss.**
+
+**The two errors are not symmetric, and a grader author must hold that asymmetry explicitly.** A false-FAIL is
+loud, lands in front of a human, and costs an investigation. A false-PASS is silent, certifies a vacuum, and
+is discovered — if ever — releases later by something else entirely. **Trading one for the other is not
+neutral even at one-for-one**, and a grader is *always* tuned under pressure from the false-FAIL side, because
+that is the side that is currently shouting at you.
+
+**The live instance.** `settle()` counts `main + body` so it can see antd-`Drawer` surfaces mounted through a
+portal, while the length floors read `main.length` — so a portal-rendered page settles correctly and then
+fails *"too short (0 chars)"*. A real false-FAIL. The obvious repair — `readable = main.length + body.length`
+— **double-counts**, because `<main>` is a descendant of `<body>`. That silently **halves every floor**, and a
+blank page carrying only nav chrome clears a 300-char gate: the exact false-PASS class six iters had been
+spent eliminating. The landed fix is `main || body`.
+
+**The check to run before any grader loosening:** *if this change is wrong, which way does it fail?* If the
+answer is "it passes something it shouldn't", the change needs a **negative test proving the specifically-broken
+page still grades not-ok** before it lands — not after. Loosening a floor is a false-PASS risk in every case;
+loosening it to fix a false-FAIL is exactly when that risk is easiest to overlook.
 
 ### Prove the test fails (mutation, not coverage)
 
@@ -919,3 +967,134 @@ Go side throws nothing, fails no Go test and no TS test, and just grades every a
 wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
 `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
 asserts the grader understands every route in it — including that the landable count is still **29**.
+
+---
+
+# Cross-cutting protocol — rules both sweeps owe to hard experience
+
+_These four outlived the milestone that found them. They are stated here as standing rules because each was
+first learned as a one-off, written down in one place, and then **recurred** — which is itself the subject of
+the second rule._
+
+## 1. A check can report success while proving nothing
+
+**The single most transferable finding of v2.5.** Nine distinct instances landed across M235–M236, and they
+share no code:
+
+| the layer | what it reported | what it had proved |
+|---|---|---|
+| a PII scrub | every test green | it had removed **zero** names |
+| three route tests | green, three consecutive iters | they asserted the **defect** they should catch |
+| the aggregator | `LANDED 0 / 0`, **exit 0** | nothing executed; 0/0 is also 100% |
+| a test suite | passing | it collected **0 tests** — 61 offline for 8 iters |
+| a grader | green on every page | it had **no negative test**; `return true` would score identically |
+| a regression test | green | it was a **self-consistent tautology** (`len(x) != len(x)`) |
+
+> **The rule, in the form worth memorizing:** **ask of every layer that reports a number — *what does it print
+> when nothing happened?*** If the answer is anything other than a loud failure, that layer can certify a
+> vacuum, and everything downstream of it inherits the certification.
+
+**This is not a property of render shapes or of Playwright.** It is a property of **any layer that reports a
+number**: a grader, an aggregator, a runner's exit code, a coverage floor, a manifest projection, a scrub. Each
+needs the question asked of it separately — closing it in one layer says nothing about its siblings.
+
+**The practical discipline that catches it: every shape gets a PAIR.** A good subject graded ok, and a
+specifically-broken subject graded **not** ok. A happy-path-only test cannot distinguish a working check from
+one that passes unconditionally — which is precisely what kept being found. Where a check is load-bearing, go
+further and **reintroduce the bug to confirm the test goes red** (dropping `TZ=UTC` turns 5 of 6 green-gate
+guards red; renaming `/courses/` turns 2 of 8 route-contract tests red). **A regression test nobody has ever
+seen fail is a hypothesis, not a guard.**
+
+## 2. Prose does not propagate — only a shared definition or an executable fence does
+
+**The best available predictor of where the next defect lands.** A lesson written into one file does not reach
+its siblings, however well written, however prominent:
+
+- the **non-integer-`N` guard** was added to 2 of 4 runners during the milestone; the other two carried the
+  identical hazard until the close;
+- the **`networkidle` rule** was *already written down* in [`latency-budget.md`](latency-budget.md) — and the
+  new sweep inherited the bad default anyway, producing a 180 s "hang" on a page that painted in ~1 s;
+- **doc corrections** followed the same shape: each iter fixed the doc it touched, leaving three siblings
+  asserting the claim just refuted — including the one that produced the inflated denominator;
+- the **membership key** was a bare literal at **9 sites** — one writes the row, eight merely hope to match it.
+
+> **The rule:** when a correction has more than one site, **do not fix the sites** — replace them with a single
+> definition, or add a fence that fails when they disagree. A sweep that fixes N places leaves place N+1
+> unfound, and the next reader cannot tell which places were swept.
+
+**The class recurs during the very work that names it, so assume it is live.** v2.5's own close is the example:
+the `/demo-up` knob count was corrected to **27 env knobs + 10 CLI flags** in `demo-up-defaults.md` and
+`CLAUDE.md`, while [`README.md`](README.md) still said 25 + 9 and the `demo-up` skill still said 26. A second
+instance in the same close: a correction sweep that covered `corpus/ops/**` and **no file under
+`corpus/services/`**.
+
+**An executable fence already exists for that particular claim** — `rext stack-core/demo_knob_guard.py` checks
+the defaults table against the parsers **in both directions** (a doc-promised flag with no parser entry is a
+*false promise*; a parser flag with no doc row is *undiscoverable*). Its scope is `demo-up-defaults.md` only.
+**Every other doc restating the count is unfenced prose, and drifted for exactly that reason.** Prefer citing
+`demo-up-defaults.md` over restating the number; if you must restate it, get it from the guard:
+
+```bash
+python3 rosetta-extensions/stack-core/demo_knob_guard.py <rosetta-root>
+# demo-knob-guard: parsers expose 27 env knob(s) + 10 cli flag(s) across 2 entry point(s)
+```
+
+## 3. Offline-authored, never driven — **unit-proven ≠ route-proven**
+
+**A defect class, not a run of bad luck.** Four artifacts shipped wrong for one reason — each was *authored
+against a reading of the code* rather than *driven against the running system* — and **each was defended by a
+green test**, because the test encoded the same reading:
+
+| the artifact | the assumption | reality when driven |
+|---|---|---|
+| a manager route | built from a **user** id | the route takes a **membership** id — the query nulled |
+| the academy CTA | `/library/<slug>` starts a path | **no such route exists** — 404, every time |
+| `managerKind: skill-paths` | a manager surface exists | the page renders the literal **"Coming soon"** |
+| a skill-path version | `"2"` looked right | a guess; never checked against a row |
+
+**Why a test cannot save you here.** Unit tests prove the code does what the author *believed*. When the belief
+is about an **external contract** — a route, a column set, an id's meaning, a rendered surface's existence —
+the test inherits the belief and confirms it. The green is real; it is answering a different question.
+
+> **The rule:** an assertion about a **route, an id's meaning, a schema, or a surface's existence** is not
+> knowledge until it has been **driven live once**. Until then, mark it in the code as uncalibrated. When a
+> live probe contradicts a green test, **the test is the prime suspect** — and the fix is to invert it so it
+> fails loudly if the defect returns.
+
+**Corollary for planning:** offline iters produce *risk*, not *score*. M236 iter-03 found the full seeded
+substrate present — up to 26 pairs' worth of data — and still recorded the metric as **0/31**, because the gate
+measures *renders live* and no render had been proven. Recording 26 would have been the same failure in the
+opposite direction. **Read a substrate reading as "the remaining work is render work, not seed work" — never
+as partial credit.**
+
+## 4. Measurement hygiene — four ways a measurement lies
+
+Each of these produced a confident number that was about something other than its subject:
+
+- **A suppressed error channel measures the wrong thing silently.** A `git fetch` with stderr suppressed failed;
+  the freshness check then compared **stale against stale** and reported agreement. *Never suppress the error
+  channel of a command whose failure changes the meaning of the result.*
+- **A guard that fails OPEN is worse than no guard**, because everything downstream trusts it. The verdict-age
+  check parsed a UTC timestamp as local time: east of UTC it failed closed, but **west of UTC it inflated the
+  window and read a STALE verdict as FRESH** — the exact hazard it existed to prevent, inverted, for half the
+  world. *(It was itself introduced by a hardening pass. Code written to close a hazard is not exempt from it.)*
+- **A denominator counted from survivors flatters every score.** A pair the manifest cannot form writes no
+  ledger line, so counting "rows in the ledger" silently shrinks the denominator and every remaining pair
+  landing reads as a clean sweep. **Pin the denominator from outside the thing being measured**, and make a
+  drop fail the run.
+- **A probe intended to discriminate between two hypotheses must not be constructed from the artifact under
+  suspicion.** If the artifact is wrong, the probe is wrong in the same direction, and the run confirms the
+  hypothesis it inherited rather than testing it.
+
+> **The unifying question, and it is the same one as rule 1 from a different side:** *if the thing I am
+> measuring were broken in the way I suspect, would this measurement look any different?* If not, you have
+> built a mirror, not a probe.
+
+---
+
+## Related
+- [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
+- [Demo lifecycle](../rosetta_demo.md) · [Browser login recipe](recipe-browser-login.md) · [Stories & heroes](stories-spec.md)
+- [Latency budget](latency-budget.md) — the perf gate beside these render gates (and the arithmetic-signature model)
+- [Content stories spec](content-stories-spec.md) — the `content-manifest.json` Sweep 2 reads
+- [Demo-up defaults](demo-up-defaults.md) — the fenced knob/flag contract rule 2 cites
