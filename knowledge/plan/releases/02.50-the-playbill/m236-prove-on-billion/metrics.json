@@ -154,14 +154,20 @@
       "note": "24 of stack-verify's 151 collected tests and 15 of playthroughs' 84 require a live demo stack and were not executed."
     },
     "python": {
-      "passed": 1391,
+      "passed": 1397,
       "failed": 2,
+      "failed_note": "'failed' excludes the standing pre-existing demo-stack carry, which is reported separately in by_section + standing_carry_correction",
       "skipped": 8,
+      "corrected": "2026-07-20 (v2.5 release close, finding T-2). This file originally recorded demo-stack 716 passed / 14 failed -- the DIRTY-CLONE reading taken BEFORE the re-baseline documented in rebaseline-standing-failures.md. Superseded by the clean-clone reading below; the python total moves 1391 -> 1397 accordingly. The 716/14 figure is preserved here as the audit trail, not as a measurement.",
       "by_section": {
         "demo-stack": {
-          "passed": 716,
-          "failed": 14,
-          "note": "the standing pre-existing carry"
+          "passed": 722,
+          "failed": 8,
+          "total": 730,
+          "host": "macOS (Darwin 25.1.0)",
+          "expected_on_linux": 7,
+          "superseded_dirty_clone_reading": "716 passed / 14 failed",
+          "note": "the standing pre-existing carry, CLEAN-CLONE reading. Host-dependent: 8 on macOS, 7 expected on Linux -- always state the host. The 6 clone-dependent failures of the carried 14 do not reproduce on a pristine stack-demo clone set."
         },
         "stack-core": {
           "passed": 150,
@@ -199,7 +205,11 @@
     "briefed_as": 14,
     "measured": 19,
     "resolved_at_close": 5,
-    "remaining": 14,
+    "remaining_dirty_clone": 14,
+    "remaining": 8,
+    "remaining_host": "macOS (Darwin 25.1.0)",
+    "remaining_expected_on_linux": 7,
+    "authoritative_note": "AUTHORITATIVE as re-measured at the v2.5 release close (2026-07-20): 8 on macOS / 7 expected on Linux, host-dependent. 14 is the DIRTY-clone reading; 19 folded in the 5 stack-core doc-truth-guard failures that were FIXED at this close. Both are preserved as audit trail, neither is the standing count. Source: rebaseline-standing-failures.md + the release metrics.json standing_failures block.",
     "detail": "The carry was briefed as '14 pre-existing demo-stack failures'. A full-suite sweep found 19: the 14 demo-stack ones PLUS 5 in stack-core that no ledger named -- the story-org-count guard (the preset has shipped 4 orgs since v2.4 M223 while docs and the guard's own test still said 3) and the demo-knob guard (DEMO_NO_ACADEMY_FILL, the knob that GATES Thread A, undocumented). Both guards were red and CORRECT. Fixed at this close, so the standing carry is back to exactly 14 -- and is now a measured number rather than a copied one."
   },
   "close": {

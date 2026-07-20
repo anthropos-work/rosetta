@@ -7,7 +7,9 @@ status: archived
 created: 2026-07-19
 last_updated: 2026-07-20
 depends_on: M235
-exit_gate: "Both tabs work live on billion — all 31 landable (session x action) pairs render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s for the HERO vantages only (content-seat latency out of scope for v2.5), 0 platform edits."
+exit_gate: "Both tabs work live on billion — all 29 landable (session x action) pairs render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s for the HERO vantages only (content-seat latency out of scope for v2.5), 0 platform edits."
+exit_gate_denominator: 29
+exit_gate_denominator_history: "AUTHORED as 31; CORRECTED to 29 at iter-07 (2026-07-20) on product-source evidence — the 2 skill-path MANAGER pairs target next-web's InsightsBySkillPathStudentSimulationsContainer, which hardcodes userData=null, has its results table commented out, and renders the literal string 'Coming soon'. Under M233's fail-closed rule those pairs are not landable, on exactly the ground that already excludes ai-labs. 31 was never a count of provable pairs. Argued inline with file-level evidence at overview.md 'Gate denominator' + iter-07/decisions.md D2 so a reviewer can reject the correction; the struck-through prose trail is deliberate and must not be flattened."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md
 delivers: none
 ---
@@ -20,7 +22,7 @@ delivers: none
 Re-prove the whole feature live on the billion Tailscale VM (the house pattern that closed M215/M221/M226/M228) — both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed, VPN-scoped.
 
 ## Exit gate
-Both tabs work live on billion — **all 31 landable (session × action) pairs** render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, **p95 click→ACCESS < 5 s for the HERO vantages only**, 0 platform edits.
+Both tabs work live on billion — **all ~~31~~ → 29 landable (session × action) pairs** render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, **p95 click→ACCESS < 5 s for the HERO vantages only**, 0 platform edits.
 
 **Gate denominator: ~~31~~ → 29 landable (session × action) pairs** — 26 simulation + 2 skill-path-legacy + 1 academy; ai-labs is presence-only (no landable action). `has_manager_view` is **per-SESSION, not per-product** — reading it at product level silently under-counts to 18.
 
@@ -36,7 +38,7 @@ Both tabs work live on billion — **all 31 landable (session × action) pairs**
 
 **Re-scoped 2026-07-20 (user-authorized; see `decisions.md` → USER-BLOCKER-M236-01 → RESOLUTION):**
 - The former *"demo reachable only over the tailnet"* clause is **DROPPED**. Security is not a concern for this milestone; reaching the right people is the VM + VPN's job, not the demo stack's — the stack need only *permit* VPN access. No off-tailnet probe deliverable. `safety.md` §3 Part 3's disclosure stands as-is.
-- The **p95 < 5 s** clause is scoped to the **HERO vantages only**, where `run-latency.sh` already works. **Content-seat latency is explicitly OUT OF SCOPE for v2.5** — the cockpit CTA and `run-latency.sh` are NOT extended to content seats. The 31 content actions are proven for **CONTENT** (real, non-empty results), not formally timed.
+- The **p95 < 5 s** clause is scoped to the **HERO vantages only**, where `run-latency.sh` already works. **Content-seat latency is explicitly OUT OF SCOPE for v2.5** — the cockpit CTA and `run-latency.sh` are NOT extended to content seats. The ~~31~~ **29** content actions are proven for **CONTENT** (real, non-empty results), not formally timed.
 
 **Iteration protocol:** `corpus/ops/demo/coverage-protocol.md + corpus/ops/demo/playthroughs.md` (repointed from the hollow `verification.md` ref — B5; their content-stories sections are backfilled by this milestone)
 

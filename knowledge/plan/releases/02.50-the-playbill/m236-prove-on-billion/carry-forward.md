@@ -3,7 +3,9 @@ title: "M236 Carry-Forward — Routes from prove-on-billion"
 date: 2026-07-20
 status: archived
 close_status: closed
-gate_target: "Both tabs work live on billion — all 31 landable (session x action) pairs render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s for the HERO vantages only, 0 platform edits."
+gate_target: "Both tabs work live on billion — all 29 landable (session x action) pairs render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click->ACCESS < 5 s for the HERO vantages only, 0 platform edits."
+gate_target_denominator: 29
+gate_target_denominator_history: "AUTHORED 31, CORRECTED to 29 at iter-07 on product-source evidence (the skill-path manager surface renders 'Coming soon'); see overview.md 'Gate denominator' + iter-07/decisions.md D2. The struck-through prose trail is the deliberate audit record."
 gate_achieved: "gate-met — 29/29 cold on billion (see overview.md + decisions.md CLOSE-D3 for the harness-changed-after-measurement residual)"
 routes_to: "v2.5 release close (/developer-kit:close-release) — M236 is the FINAL v2.5 milestone; there is no further milestone to route into"
 ---
@@ -29,10 +31,19 @@ not taken here.**
 
 **What the release close needs to know before it decides:**
 
+> **AUTHORITATIVE COUNT (re-measured at the v2.5 release close, 2026-07-20): 8 on macOS · 7 expected on
+> Linux.** The count is **host-dependent** — always state the host OS with it. The 6 clone-dependent
+> failures of the carried 14 **did not reproduce** at the close, which independently confirms the
+> `stack-demo` clone set is pristine. `14` is the DIRTY-clone reading and is superseded everywhere;
+> `19` (M236's own full-suite sweep) folded in 5 stack-core doc-truth-guard failures that were FIXED at
+> the M236 close and are therefore not part of the standing set. See the release `metrics.json`
+> → `standing_failures`.
+
 | | |
 |---|---|
-| Count reproduced before any change | **14** — the carried count was accurate |
-| Count on a clean, stable-`main` clone set | **8** |
+| Count reproduced before any change (dirty clone) | **14** — the carried count was accurate *for that clone state* |
+| Count on a clean, stable-`main` clone set | **8 (macOS) · 7 expected (Linux)** ← **authoritative** |
+| Re-measured at the v2.5 release close | **8 observed, macOS** — clone set confirmed clean |
 | Real product/tooling defects among them | **0** |
 | `pre_sha256` pin drift among them | **0 — the carried diagnosis is refuted** |
 
