@@ -432,6 +432,32 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page whose data is a structural row → `stack-seeding` (fix it); an empty page whose data is
   a runtime computation → crawl-scope (exclude it), or escalate as a re-scope-trigger **only if** the link is a
   load-bearing part of the vantage's demo and a platform change is the sole filler.
+
+  > **⚠ CORRECTION (v2.5 "the playbill" M236 — the premise above is REFUTED for sim results).** The rule
+  > survives; **its stated reason does not.** A `/sim/<slug>/result/<sessionId>` page is **NOT** a
+  > runtime-computed artifact — **M231 established it is a PERSISTED READ**
+  > (`jobsimulation/internal/graph/queries.resolvers.go:70` does plain Ent SELECTs of
+  > `validation_attempt_results`; no engine/LLM recompute on render). **M232** writes that fan-out from
+  > cloned real sessions, and **M236 proved it live on `billion`**: **13/13** seeded player results render a
+  > real score, a real LLM feedback paragraph and the real evaluated skills.
+  >
+  > So *"a seeded demo cannot populate such a surface"* was wrong, and any future triage that cites this
+  > bullet to skip a result page is citing a refuted premise. **What actually justifies the `skipPaths` rule
+  > is CRAWL SCOPE alone:** a hero's BFS should not dive into arbitrary historical session deep-links. The
+  > rule is therefore KEPT in `tests/coverage.spec.ts` (`RESULT_DEEP_LINK_SKIP`) with its comment corrected —
+  > **not deleted**, because deleting it proves nothing extra and merely makes the hero sweep re-walk pages
+  > that are already asserted far more precisely elsewhere.
+  >
+  > **Where result pages ARE proven: `tests/content-stories.spec.ts`** (the M236 content-stories sweep,
+  > §"Content stories — the (session × action) LANDS sweep" below). It reaches them the only way they can be
+  > reached — the exact session URLs from the seeded `content-manifest.json`, each entered through its own
+  > owning cockpit seat — which is precisely why the crawl cannot and should not be the tool for the job.
+  >
+  > **The generalizable lesson:** this bullet stood unchallenged for four releases because it was written as
+  > a *fact about the platform* ("an AI evaluation … never written by a seed") when it was really an
+  > *inference from one observation* (a seeded session's result page was empty — because nothing had seeded
+  > the result rows yet). When you record a skip, record **what you observed**, separately from **why you
+  > think it happens** — the observation stays true, the explanation is what rots.
 - **An entitlement-gated empty page is SEEDABLE, not runtime-computed — seed the entitlement, don't skip the
   page (M42e iter-09 lesson; corrects the iter-08 sim-start mis-triage).** Not every empty `/start`-style
   launch surface is runtime-computed. The per-sim `/sim/<slug>/start` page renders the **org-member deny
@@ -670,3 +696,96 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
 ## Related
 - [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
 - [Demo lifecycle](../rosetta_demo.md) · [Browser login recipe](recipe-browser-login.md) · [Stories & heroes](stories-spec.md)
+
+---
+
+## Content stories — the (session × action) LANDS sweep (v2.5 "the playbill" M236)
+
+**The second sweep this protocol governs.** The hero sweep above proves *a vantage's pages are full*. This
+one proves *every seeded content story actually lands on a real result* — the Thread-B half of v2.5.
+
+### Why it is NOT a `VantageManifest` crawl
+
+A content-story result page is reached by **cockpit seat + an exact URL**, never by crawling:
+
+- the URL carries a **session uuid that only the seeded manifest knows** (`/sim/<slug>/result/<sessionId>`);
+- the seat that owns it is a **non-hero MEMBER** (`content-player-<idx>`), not a roster hero;
+- `VantageManifest.identityKey` is **singular**, so a manifest-per-seat model would mean **13 seats → 13
+  manifests** for what is really one uniform assertion.
+
+`cockpit-login.loginAs()` already accepts a **`landingPath`**, so the whole sweep is an **exact-path visit
+per (seat × path)**. The BFS crawl machinery is simply the wrong tool and is deliberately unused. *(This
+also shrinks the harness M235's carry-forward described: the work is a page-object + a runner, not 13
+manifests.)*
+
+### The pieces
+
+| Piece | Path (in `rosetta-extensions`) | Role |
+|---|---|---|
+| Page object + assertions | `stack-verify/e2e/lib/content-result-page.ts` | Models the result surfaces; **authored from scratch** (see below) |
+| The sweep | `stack-verify/e2e/tests/content-stories.spec.ts` | Enumerates landable pairs from the manifest, visits each |
+| Runner | `stack-verify/e2e/run-content-stories.sh` | Resolves offset ports, fetches the **served** manifest, runs + aggregates |
+| Aggregator | `stack-verify/e2e/aggregate-content.py` | Turns the per-pair ledger into the reading |
+
+> **The `AISimulationResultContainer` trap.** M235's carry-forward said the harness would "reuse the shared
+> `AISimulationResultContainer`". **It does not exist as a harness object** — it is a next-web `.tsx`
+> component. The nearest harness object (`playthroughs/e2e/lib/simulation-page.ts`) stops at the *launch*
+> boundary with no `/result/` locator. The result surface had **never** been modelled harness-side; M236
+> authored it, **calibrated against a live seeded render** rather than blind.
+
+### The four render shapes (calibrate; do not assume)
+
+A single "is it long enough?" check is wrong here — it both false-fails and false-passes:
+
+| Shape | Surface | What it looks like live | Assert on |
+|---|---|---|---|
+| `player-scored` | `/sim/<slug>/result/<id>` | ~1.9k chars: score, LLM feedback paragraph, "Evaluated Skills" | feedback **or** evaluated-skills present, `<main>` ≥ 300 |
+| `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
+| `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
+| `manager-dashboard` | `/enterprise/activity-dashboard/<kind>/<simId>/<userId>` | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+
+> **Two calibration lessons, both learned the hard way in M236 iter-04:**
+> 1. **A terse page can be correct.** The interview player result is ~205 chars *and right*. A length floor
+>    tuned to the scored shape reports a correct page as empty.
+> 2. **A false PASS is worse than a false fail.** Grading skill-path pages with the scored-sim shape passed
+>    the *completed* path — not because it rendered a report, but because 11k chars of legitimate content
+>    happened to contain the word "feedback". Shape selection is by **route**
+>    (`/skill-path/` → `player-skillpath`), which cannot drift the way keyword-sniffing does.
+
+### The denominator (get this wrong and the gate lies)
+
+**`has_manager_view` is per-SESSION, not per-product.** Reading it at product level silently under-counts
+**31 → 18**. And **ai-labs is presence-only** (nil client, `grade_result` not GraphQL-exposed — M231): its
+sessions have **no landable result surface**, so its player actions are **excluded from the denominator**
+rather than counted as failures. On the shipped manifest:
+
+```
+18 sessions + 15 manager views = 33 raw pairs
+                       − 2 ai-labs presence-only player actions
+                       = 31 LANDABLE
+```
+
+State which of **33 / 31 / 18** a number is, every time.
+
+### Running it
+
+```bash
+cd rosetta-extensions/stack-verify/e2e
+./run-content-stories.sh 1                                   # a local demo-1
+./run-content-stories.sh 1 --host billion.taildc510.ts.net   # a REMOTE stack over the tailnet
+```
+
+The runner fetches the manifest **from the cockpit the stack is actually serving**, not from the checked-in
+preset — a sweep that read the preset would pass while the live cockpit served something else. Output lands
+in `content-out/demo-<N>/` (`content-stories.json`, `pairs.jsonl`, `content-manifest.used.json`).
+
+### Two harness invariants that are easy to get wrong
+
+- **Not `mode: 'serial'`.** Serial makes tests *dependent*: the first failure **skips all the rest**, turning
+  "how many of 31 land?" into "did pair #2 fail?". The pairs must be independent; the single-worker
+  constraint the shared fake-FAPI seat needs comes from `--workers=1`, which serializes **without** coupling
+  outcomes.
+- **Persist per-pair results to disk, don't accumulate in memory.** Playwright **restarts its worker after
+  every failure**, re-importing the spec module — so a module-level array resets and an `afterAll` summary
+  fires once per restart seeing only a fragment. The first version of this sweep printed `LANDED 1 / 31`
+  once per failure for exactly that reason. The spec appends to `pairs.jsonl`; the **runner** aggregates.

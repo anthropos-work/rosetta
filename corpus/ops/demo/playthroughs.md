@@ -488,3 +488,35 @@ DB grant.
 - **Production-safe + isolated.** The dedicated seed rides the seeding isolation guard (structurally impossible
   for a non-prod stack to write a shared/prod store) and the reset-to-seed path honors the `--reset` contract +
   the N=0 guard. See [`../safety.md`](../safety.md).
+
+
+---
+
+## Content stories — where the (session × action) proof lives (v2.5 "the playbill" M236)
+
+**Not a Playthrough, and deliberately so.** A Playthrough *plays a journey* — it logs in as a hero and
+performs the actions that produce an outcome. A **content story** is the opposite direction: the session
+was **already played** (cloned from a real production session by the M232 `ContentStorySeeder`), and what
+must be proven is that its **result surface renders real content** for the player and manager vantages.
+
+There is nothing to play, so there is no Playthrough. The proof lives in the **content-stories sweep**,
+specified in [`coverage-protocol.md` § "Content stories — the (session × action) LANDS sweep"]
+(coverage-protocol.md):
+
+| | Playthroughs (this doc) | Content stories |
+|---|---|---|
+| Question | *can the hero DO the thing?* | *does the already-played story SHOW real content?* |
+| Actor | a roster **hero**, playing forward | a non-hero **`content-player-<idx>`** seat, landing on a result |
+| Entry | a journey's first surface | an **exact URL** from the seeded `content-manifest.json` |
+| Harness | `playthroughs/e2e/` | `stack-verify/e2e/{tests/content-stories.spec.ts, lib/content-result-page.ts}` |
+| Data | the decoupled `pt-world` seed, reset-to-seed | the demo's own content-story seed (source-pinned) |
+
+**What IS shared:** the M37 cockpit seat-switch (`lib/cockpit-login.ts`) — the content-stories sweep uses
+the same `loginAs()`, exploiting its **`landingPath`** option to enter directly on the result URL. As with
+Playthroughs, the seat-switch was **reused, never forked**.
+
+**Where they meet:** the manager-view MIRROR trap. Both suites depend on `local_jobsimulation_sessions` /
+`local_skill_path_session` being seeded — a manager scoreboard reads the mirror, not the source table
+(`content-stories-routes.md`). M236 found the mirror correctly populated (13/13) while the manager
+scoreboard still rendered `No data` + `undefined undefined`, proving the mirror is **necessary but not
+sufficient** for the manager vantage.
