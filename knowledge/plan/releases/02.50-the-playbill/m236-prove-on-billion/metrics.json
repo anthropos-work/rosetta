@@ -5,17 +5,17 @@
   "shape": "iterative",
   "primary_metric": {
     "name": "landed-non-empty (session x action) pairs, live on billion, cold reset-to-seed",
-    "denominator": 31,
-    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session. CONFIRMED 2026-07-20 against the PUBLISHED artifact on billion @ playbill-m235-hardened: 18 sessions / 15 manager views = 33 raw pairs, minus 2 ai-labs presence-only = 31 landable. Naive read gives 33; product-level has_manager_view read gives 18. THIRD independent derivation 2026-07-20: the iter-04 harness enumerated 31 landable pairs from the SERVED manifest (18 sessions, 2 ai-labs presence-only excluded, 0 dropped).",
+    "denominator": 29,
+    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session. CORRECTED at M236 iter-07 from 31 to 29: driving the skill-path manager route live showed the platform surface is UNIMPLEMENTED (InsightsBySkillPathStudentSimulationsContainer renders 'Coming soon' with its results table commented out and userData hardcoded null -- no query reads the seeded session), so its 2 manager pairs are NOT LANDABLE and leave the denominator under the same fail-closed rule that already excludes ai-labs. Arithmetic on the corrected SERVED manifest: 18 sessions + 13 manager views = 31 raw pairs, minus 2 ai-labs presence-only = 29 landable. 31 was never a count of provable pairs -- it assumed a surface that does not exist.",
     "denominator_breakdown": {
       "simulation": 26,
-      "skill-path-legacy": 4,
+      "skill-path-legacy": 2,
       "ai-labs": 0,
       "skill-path-new": 1
     },
     "baseline": 0,
-    "current": 29,
-    "gate": 31
+    "current": 28,
+    "gate": 29
   },
   "secondary_gate_components": {
     "ai_labs_presence_rows": {
@@ -39,23 +39,24 @@
     }
   },
   "iters": {
-    "total": 6,
-    "tiks": 5,
+    "total": 7,
+    "tiks": 6,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-06 (closed-fixed)",
+  "last_iter": "iter-07 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
-    "billion_rext_pin": "playbill-m236-manager-membership-id (clone); tooling published through playbill-m236-interview-shape",
+    "billion_rext_pin": "playbill-m236-skillpath-nomanager",
     "m217_pin_guard": "PASS",
     "stack": "demo-1 UP at playbill-m235-hardened",
     "autoverify": "fresh green",
-    "cockpit_content_manifest": "HTTP 200, 4 products / 18 sessions",
-    "platform_repo_edits": 0
+    "cockpit_content_manifest": "HTTP 200, 4 products / 18 sessions / 13 manager views (skill-path manager views removed, iter-07)",
+    "platform_repo_edits": 0,
+    "cockpit_bind": "127.0.0.1 (tailscale serve had claimed :17700 by restart time; a cold bring-up restores 0.0.0.0 ordering -- tailnet path unaffected either way)"
   },
   "resolved_blockers": [
     {
@@ -75,17 +76,16 @@
     "lab_sessions": 2
   },
   "reading": {
-    "as_of": "iter-06 (2026-07-20, live on billion)",
-    "landed": 29,
-    "denominator": 31,
+    "as_of": "iter-07 (2026-07-20, live on billion)",
+    "landed": 28,
+    "denominator": 29,
     "by_product": {
       "simulation": "26/26 COMPLETE",
-      "skill-path-legacy": "3/4",
+      "skill-path-legacy": "2/2 COMPLETE (player-only; no manager surface exists)",
       "skill-path-new": "0/1",
       "ai-labs": "presence-only, excluded"
     },
     "residual_causes": {
-      "skill-path manager route HANGS >180s (heavy 13-chapter instance; light sibling passes)": 1,
       "academy route not-found (catalog unseeded)": 1
     }
   },
