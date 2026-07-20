@@ -26,30 +26,38 @@
     "academy_grid_real_cards": {
       "target": "non-zero, no Draft chip",
       "current": 65,
-      "note": "MET \u2014 measured live on billion in a browser as a member: academy home grid renders 65 course links / 483 chapter links / 0 Draft chips. Discharges M230 carry-forward cluster 1 (the rendered-card count M230 closed incomplete without). NOTE: the ANONYMOUS /library + /free routes still render 0 (M230 cluster 3, getPublicCatalogView's new Set() branch is uncovered by the M230 patch) \u2014 out of this gate, routed as ACADEMY-M236-iter08-public-catalog-twin."
+      "chapter_links": 483,
+      "draft_chips": 0,
+      "status": "MET (cold, iter-10; discharges M230 carry-forward cluster 1)",
+      "note": "The ANONYMOUS /library + /free routes still render 0 \u2014 M230 cluster 3, getPublicCatalogView's new Set() branch is uncovered by the M230 patch. Out of gate; handler ACADEMY-M236-iter08-public-catalog-twin -> release close."
     },
     "p95_click_to_access_ms": {
       "gate": 5000,
-      "employee_p95_ms": 3150,
-      "manager_p95_ms": 2710,
+      "cold_employee_p95_ms": 1220,
+      "cold_manager_p95_ms": 1510,
       "reached_access": "5/5 both vantages",
-      "status": "MET",
-      "scope": "HERO vantages only (user decision B2, 2026-07-20); content-seat latency OUT OF SCOPE for v2.5",
-      "conditions": "tailnet-remote from a 2nd machine, WARM stack on billion, HTTPS --public-host origins. NOT comparable to M218's laptop-local cold baseline (2413/1767 ms). Repeat batteries: employee 1670/2850/3150 ms, manager 2900/2710 ms \u2014 every battery inside budget.",
-      "green_gate": "graded against billion's OWN fresh autoverify verdict via the documented LATENCY_AUTOVERIFY_JSON seam (never LATENCY_NO_GREEN_GATE)"
+      "status": "MET (cold, iter-10)",
+      "warm_readings_iter09": {
+        "employee_p95_ms": 3150,
+        "manager_p95_ms": 2710
+      },
+      "scope": "HERO vantages only (user decision B2); content-seat latency OUT OF SCOPE for v2.5",
+      "note": "The COLD stack measured ~2x faster than the warm one it replaced (which had been up for hours across 3 cockpit restarts + 2 re-pins). iter-09's numbers are the PESSIMISTIC pair; do not treat 1.2 s as expected steady state."
     },
     "platform_repo_edits": {
       "gate": 0,
-      "current": 0
+      "current": 0,
+      "status": "MET",
+      "note": "Verified per-clone (iter-10): platform/next-web-app/app/jobsimulation/skillpath/sentinel/storage/graphql-wundergraph all 0 modified. cms shows an untracked studio/ (the make init-studio clone, no tracked file modified). ant-academy shows 4 modified \u2014 serverTenant.js (M230 fs-published patch) + next.config.js (M212-215 allowedDevOrigins patch) + 2 build-generated public/ files \u2014 the SANCTIONED live-patch mechanism on the demo's ephemeral gitignored clone, reverted on --stop. The canonical anthropos-work repos were never touched."
     }
   },
   "iters": {
-    "total": 9,
-    "tiks": 8,
+    "total": 10,
+    "tiks": 9,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-09 (closed-fixed)",
+  "last_iter": "iter-10 (closed-fixed) \u2014 GATE MET",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
@@ -81,13 +89,13 @@
     "lab_sessions": 2
   },
   "reading": {
-    "as_of": "iter-08 (2026-07-20, live on billion)",
+    "as_of": "iter-10 (2026-07-20, COLD reset-to-seed on billion)",
     "landed": 29,
     "denominator": 29,
     "by_product": {
-      "simulation": "26/26 COMPLETE",
-      "skill-path-legacy": "2/2 COMPLETE (player-only; no manager surface exists)",
-      "skill-path-new": "1/1 COMPLETE (academy /courses/ai-foundations)",
+      "simulation": "26/26",
+      "skill-path-legacy": "2/2 (player-only; no manager surface exists)",
+      "skill-path-new": "1/1 (academy /courses/ai-foundations)",
       "ai-labs": "presence-only, excluded"
     },
     "residual_causes": {}
@@ -109,5 +117,15 @@
       "manager-interview"
     ]
   },
-  "gate_status": "primary metric MET (29/29); academy grid MET (65 cards, 0 chips); p95 MET (employee 3.15s / manager 2.71s). OUTSTANDING: the cold reset-to-seed reproduction."
+  "gate_status": "MET \u2014 all components, reproduced on a cold reset-to-seed (iter-10)",
+  "cold_cycle": {
+    "as_of": "2026-07-20",
+    "tag": "playbill-m236-latency-tz-fix",
+    "intervention_required": "none",
+    "autoverify": "green on the bring-up's own tail",
+    "demo_patches": "all applied (none refused, none skipped)",
+    "frontend_builds": "ok (the running images are this run's)",
+    "cockpit_bind": "0.0.0.0:17700 (iter-07's 127.0.0.1 was a restart-in-place artifact, as that iter predicted)",
+    "served_manifest": "18 sessions / 13 manager views = 31 raw - 2 presence-only = 29 landable; the iter-07 + iter-08 corrections arrived from published tooling with no hand-editing"
+  }
 }

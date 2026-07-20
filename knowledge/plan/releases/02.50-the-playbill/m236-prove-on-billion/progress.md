@@ -20,40 +20,40 @@
 
 - iter-09 (tik): **closed-fixed** — the **p95 click→ACCESS** gate component, measured from the tailnet (the presenter's real vantage) against `billion`: employee **3.15 s**, manager **2.71 s**, 5/5 ACCESS each, against a 5 s gate — **MET**. Graded against billion's own fresh green verdict via the runner's already-documented remote seam (never the override). Side-deliverable: the green gate's age check parsed a UTC `ts` as **local** time on BSD — a verdict 121 s old aged as 7321 s; **west** of UTC that reads a STALE verdict as FRESH, the exact F-6 hazard the check exists to prevent, so the guard failed OPEN for half the world — see iter-09/progress.md
 
-## Next-iter queue
+- iter-10 (tik): **closed-fixed — GATE MET.** The cold reset-to-seed reproduction. Re-pinned to the final tooling tag, `down --purge`, cold `/demo-up` — **no intervention required**. The corrected manifest arrived from published tooling with no hand-editing, and all three components reproduced: **29/29** pairs · **65** academy cards, 0 Draft chips · hero p95 **1.22 s / 1.51 s**. 0 platform edits verified per-clone. iter-07's cockpit-bind prediction confirmed (cold restores `0.0.0.0`). Also landed the protocol-evolution backfill owed by iters 05–09 — see iter-10/progress.md
 
-**Gate status — 3 of 4 components MET:**
-- primary metric **29/29** landable (session × action) pairs rendering real content live on `billion` ✅
-- academy grid renders real cards — **65 cards, 0 Draft chips** (Thread A) ✅
-- **p95 click→ACCESS** hero vantages — employee **3.15 s**, manager **2.71 s** vs a 5 s gate ✅
-- 0 platform-repo edits ✅
-- **cold reset-to-seed reproduction — OUTSTANDING** ⬅ the only remaining component
+## Gate — MET (2026-07-20, cold on billion)
 
-**Next iter:**
-- **The cold reset-to-seed reproduction** (handler `REPRO-M236-iterTBD-cold-cycle`). The gate requires
-  reproducibility, and the current stack has had its manifest re-exported and its cockpit restarted in
-  place across iters 07–08. Re-pin `billion` to the final tag, tear down, cold `/demo-up` with public-host
-  default-on, then re-run the content-stories sweep + a latency battery against the fresh stack.
-  Success = stack UP, fresh-green `autoverify.json`, cockpit serving `content-manifest.json` with all 4
-  products, sweep 29/29, hero p95 < 5 s. **Expect 30–45 min** for the bring-up itself.
-  *Note:* the cockpit currently binds `127.0.0.1` because `tailscale serve` had claimed `:17700` by
-  restart time (iter-07); a cold bring-up restores the normal `0.0.0.0` ordering.
+| component | status |
+|---|---|
+| all landable (session × action) pairs render real content, both vantages | **MET** — 29/29 |
+| the academy grid renders real cards (Thread A) | **MET** — 65 cards, 483 chapter links, 0 Draft chips |
+| p95 click→ACCESS < 5 s, HERO vantages only (B2) | **MET** — employee 1.22 s · manager 1.51 s, 5/5 ACCESS |
+| reproducible on a cold reset-to-seed | **MET** — all of the above on a stack built from nothing |
+| 0 platform-repo edits | **MET** — canonical `anthropos-work` repos untouched |
 
-**Carried to release close (not gate-blocking):**
+**Next:** `/developer-kit:harden-mstone-iters --final`, then `/developer-kit:close-milestone`.
+
+## Carried forward (none gate-blocking)
+
 - **M230 carry-forward cluster 3** — the anonymous `/library` + `/free` academy routes render 0 cards
-  (`getPublicCatalogView` takes the `new Set()` branch the M230 patch does not cover; the patch manifest
-  names the gap itself). Handler `ACADEMY-M236-iter08-public-catalog-twin` — a twin manifest of the same
-  FS-published transform. M230 cluster 1 is **discharged** (iter-08).
+  (`getPublicCatalogView`'s `new Set()` branch is uncovered by the M230 patch; the patch manifest names
+  the gap itself). Handler `ACADEMY-M236-iter08-public-catalog-twin` → v2.5 release close.
+  *(M230 cluster 1 — the rendered-card count — is **discharged** by iters 08/10.)*
 - **`apps/web` client GraphQL endpoint** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:5050/graphql`,
-  the **non-offset** port, while `apps/hiring` carries the correct offset origin. Did not manifest on any
-  measured path (SSR uses `WUNDERGRAPH_SSR_ENDPOINT`); a demo-hygiene item. From iter-08 D5.
+  the non-offset port, while `apps/hiring` carries the correct offset origin. Never manifested on a measured
+  path (SSR uses `WUNDERGRAPH_SSR_ENDPOINT`). Demo-hygiene → release close. From iter-08 D5.
+- **Remaining v2.4-era method docs** flagged YELLOW by the KB-fidelity audit (F3/F4/F6/F7/F10 —
+  `verification.md`, `demo-up-defaults.md`, `tailscale-serve.md`, `session-clone-spec.md`). Backfilled this
+  milestone: `coverage-protocol.md`, `playthroughs.md`, `content-stories-spec.md`, `latency-budget.md`
+  → the rest to release close.
 - **Standing carry:** 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release close.
 
-**Resolved:**
-- **USER-BLOCKER-M236-01: RESOLVED** 2026-07-20 (B1–B5). Gate re-scoped in `overview.md`; Phase 0b
-  re-verdicted RED → discharged (`spec-notes.md`).
-- **`ACADEMY-M236-iterTBD-catalog-fill`** — closed by iter-08 (the CTA named a nonexistent route; the
-  catalog was never the problem, and `academy-seed` is moot in a demo).
-- **`SKILLPATH-M236-iter07-manager-hang`** — closed by iter-07 (a `networkidle` wait, over an
-  unimplemented platform surface).
-- **`LATENCY-M236-iterTBD-hero-p95`** — closed by iter-09.
+## Resolved handlers
+
+- `SKILLPATH-M236-iter07-manager-hang` — iter-07 (a `networkidle` wait over an unimplemented surface).
+- `ACADEMY-M236-iterTBD-catalog-fill` — iter-08 (the CTA named a nonexistent route; the catalog was never
+  the problem, and `academy-seed` is moot in a demo).
+- `LATENCY-M236-iterTBD-hero-p95` — iter-09.
+- `REPRO-M236-iterTBD-cold-cycle` — iter-10.
+- **USER-BLOCKER-M236-01: RESOLVED** 2026-07-20 (B1–B5).
