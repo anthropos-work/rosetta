@@ -97,7 +97,7 @@
     "baseline_ref": "knowledge/plan/releases/02.50-the-playbill/m236-prove-on-billion/rebaseline-standing-failures.md",
     "note": "M236's own metrics.json recorded demo-stack 716 passed / 14 failed — that was the DIRTY-clone reading taken before the re-baseline. The clean-clone reading is 8, and that is what reproduces here."
   },
-  "flake_count": 2,
+  "flake_count": 0,
   "flakes": [
     {
       "id": "FLAKE-v2.5-01",
