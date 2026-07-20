@@ -88,9 +88,11 @@ blocks the cockpit.
 
 ### The per-product registry (schema-complete; the fixture drives what's projected)
 
-`contentProductRegistry()` covers all four products the feature spans; the fixture today carries only
-`simulation`, so only it projects (an empty product section is never fabricated). The others are schema-ready
-for M234/M235's fixture additions.
+`contentProductRegistry()` covers all four products the feature spans. The **simulation** section projects
+from the `contentsession` fixture (M232–M234); the three **non-simulation** sections (skill-path-legacy /
+skill-path-new academy / ai-labs) project from a **separate code-owned registry** `nonSimExhibits()`
+(`seeders/content_nonsim.go`, M235) appended by `BuildContentProducts` — so the simulation fixture + seeder
+stay simulation-shaped and untouched. An empty product section is never fabricated.
 
 | product id | app_base | section icon | player link? | manager surface |
 |---|---|---|---|---|
@@ -175,14 +177,27 @@ is the `content_sessions` block. The two are distinct projections of the same fi
 
 M233 delivered the **manifest** (the schema + the projection + the honesty gate + the fail-closed resolver + the
 `--content-export` verb). **M234 (§7) delivers the render half** — the cockpit tab + the seat registration + the
-bring-up wiring. Still ahead:
+bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** (#M235-B2) — built + unit-proven:
 
-- **The non-simulation product player-path builders + their fixture sessions** (skill-path / academy / ai-labs)
-  land with **M235**'s fixture additions (their route fields aren't in the fixture yet; the resolver fail-closes
-  on them until then, and the renderer handles them the moment they appear — §7). **Today's fixture is
-  simulation-only**, so a real demo renders only the Simulation section.
-- **Proving every CTA lands on a non-empty result page** is **M235** (prove-it-lands) — including the academy
-  section's exact deep-link + the specific-member academy landing (which also depends on M230's catalog fill).
+- **The three non-simulation product sections** (skill-path-legacy / ai-labs / academy) are built as a
+  **separate CODE-OWNED exhibit registry** (`seeders/content_nonsim.go` — `nonSimExhibits()` +
+  `ContentStoryNonSimSeeder` + `buildNonSimProducts` appended by `BuildContentProducts`), NOT added to the
+  simulation fixture (whose validator + seeder are simulation-shaped). Each has its OWN self-contained
+  flat-index owner pairing (single-sourced with the seeder, exactly as the simulation projection). **Skill-path**
+  — real progress: a seeded `skillpath.skill_path_sessions` row + the `local_skill_path_sessions` mirror
+  (owned by a `content-player` seat, pinned to a REAL public `skill_path_id`), the `/skill-path/<id>` + mirror-
+  manager routes. **AI-labs** — presence-only (M231 §5): a `lab_sessions` status/spend row, NO CTA. **Academy**
+  — app_base=academy, a real public `/library/<slug>` course CTA (direct origin, e2e_persona seam), no manager
+  view; the `academy_chapter_progress` write is the live `app/cmd/academy-seed` platform binary (M236). A
+  `Label` field carries the believable row title (real course/lab names). Today's demo now renders all four
+  product sections. rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`.
+- **Proving every CTA lands on a non-empty result page (a LIVE browser on a cold reset-to-seed) is M236**
+  (prove-on-billion) — M235 unit-proves the seeders + the manifest projection (the sections resolve + the
+  cockpit renders them); the live proof needs a running stack. M236 also AUTHORS the new content-stories
+  seat-login coverage/Playthrough plumbing (M235's USER-BLOCKER-M235-02: the exact-path/hero-crawl harness
+  can't reach the dynamic-URL, cockpit-seat-reached result pages — it must be authored + calibrated live) and
+  works the per-section live-calibration checklists (skill-path version-match/status/mirror; ai-labs
+  lab_sessions DDL; academy progress-write/route + M230 catalog fill).
 
 ## 7. The cockpit render — the 2nd "Content stories" tab (M234)
 

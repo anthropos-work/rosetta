@@ -3,9 +3,9 @@ milestone: M235
 slug: prove-it-lands
 version: v2.5 "the playbill"
 milestone_shape: iterative
-status: planned
+status: archived
 created: 2026-07-19
-last_updated: 2026-07-19
+last_updated: 2026-07-20
 depends_on: M234 (+ M230 for the academy section)
 exit_gate: "On a cold reset-to-seed, every in-scope (session x action) logs in on the correct org and lands on a NON-EMPTY result page for BOTH player and manager vantages, 0 ejects, with the assessment 2-voice / 1-code / 1-document PASSED set present and each type present in passed AND not-passed states; each product either passes or is declared with a documented fate (AI-labs feasibility answered explicitly)."
 iteration_protocol_ref: corpus/ops/demo/playthroughs.md + corpus/ops/demo/coverage-protocol.md
@@ -14,7 +14,7 @@ delivers: none
 
 # M235 — prove it lands
 
-**Status:** `planned`  ·  **Shape:** `iterative`  ·  **Complexity:** large  ·  **Depends on:** M234 (+ M230 for the academy section)
+**Status:** `archived` (completed 2026-07-20)  ·  **Shape:** `iterative`  ·  **Complexity:** large  ·  **Depends on:** M234 (+ M230 for the academy section)
 
 ## Goal
 Populate the tab with INTERESTING (not boring) real-shaped sessions per the brief and prove every cockpit action lands on a non-empty, believable result page.

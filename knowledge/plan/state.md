@@ -1,10 +1,10 @@
 ---
 active_release: "v2.5 «the playbill» — the content-vantage release (designed 2026-07-19): fill the empty ant-academy (Thread A) + a 2nd «Content stories» cockpit tab of played sessions per content product with as-player/as-manager login-and-land, cloned from anonymized real prod sessions, VPN-scoped, source-pinned. 8 milestones M229→M236, spike-first. Branch release/02.50-the-playbill; tag will be v2.5."
 active_branch: "release/02.50-the-playbill"
-active_milestone: "M235 prove-it-lands (PLANNED — iterative, large; depends on M234 [+ M230 for academy]): populate the M234 «Content stories» tab with INTERESTING real-shaped sessions per content product (fixture additions — assessment 2-voice/1-code/1-document PASSED + each type in passed AND not-passed; ai-labs/academy/skill-path) and PROVE every cockpit action (session × as-player/as-manager) logs in on the correct org and lands on a NON-EMPTY believable result page, 0 ejects, on a cold reset-to-seed. Iterative: a Playthrough per (session × action) + a coverage descriptor asserting non-zero rendered values (the M219/M222 mirror-table trap). Inherits the M230 academy card-count gate + next-web re-anchor. Zero platform-repo edits."
-last_closed: "M234 — 2026-07-19"
-phase: "v2.5 in development. M229–M234 CLOSED 2026-07-19. M234 content-stories-cockpit-tab CLOSED (section, closed-complete): the render half — cockpit.py's 2nd «Content stories» tab reading the M233 content-manifest.json (per-product sections, two login-and-land CTAs, AI-labs presence-only, academy direct-origin link) + content-player-<idx> roster seats single-sourced via storyPopulationNames + up-injected.sh --content-export/--content-manifest wiring. Renderer handles ALL dispositions, unit-proven (Python 249/6-pre-existing/0-new, Go +8 1931→1939, flake 5/5 both stacks). Close near-clean (2 record fixes), deferral audit YELLOW/0-blockers, 0 platform edits; rext tags playbill-m234-content-tab @ 7f55eb4 + -hardened @ fd457bf. NEXT: M235 prove-it-lands (fixtures + prove-every-CTA-lands live). Standing carry: 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release-close re-anchor."
-last_updated: "2026-07-19"
+active_milestone: "M236 prove-on-billion (PLANNED — iterative, medium; depends on M235): re-prove the whole content-vantage feature LIVE on the billion Tailscale VM — both cockpit tabs usable end-to-end from a 2nd tailnet machine on a cold reset-to-seed (Content-stories sessions render real content for player + manager; the academy grid renders real cards), p95 click→ACCESS < 5 s, 0 platform edits, VPN-scoped. AUTHORS the new content-stories seat-login coverage/Playthrough plumbing (M235's USER-BLOCKER-M235-02 — the exact-path/hero-crawl harness can't reach the dynamic-URL cockpit-seat-reached result pages) + works the M235 per-section live-calibration checklists + the M230 carry-forward live items. THE FINAL v2.5 milestone."
+last_closed: "M235 — 2026-07-20"
+phase: "v2.5 in development. M229–M235 CLOSED. M235 prove-it-lands CLOSED (iterative, closed-incomplete/pragmatic — the LIVE (session×action)-lands gate routes to M236 by design). Built + unit-proven, 0 platform edits: the provably-clean 13-session simulation matrix + all 3 non-simulation sections (skill-path real progress + mirror; ai-labs presence-only; academy /library/<slug> CTA) via content_nonsim.go → manifest 4 products/18 sessions, honesty gates GREEN. 2 user-blockers resolved (M235-01 scrub-leaked-zero-names → hardened+re-captured provably-clean; M235-02 coverage-descriptor-missing → 'build non-sim, then close'). rext playbill-m235-hardened @ 60eff14; Go 1939→1974, flake 5/5. carry-forward 3 clusters all Fate-3→M236 (applied 54eaefe). NEXT: M236 prove-on-billion (FINAL v2.5). Standing carry: 14 pre-existing demo-stack fails (REPEAT) → v2.5 release-close."
+last_updated: "2026-07-20"
 ---
 
 # State
@@ -20,18 +20,17 @@ cloned from **anonymized real production sessions**, non-manager-played, re-tena
 release **amends `safety.md` Part 3** to the honest posture · academy fill **production-faithful** (no "Draft" chip) · AI-labs
 + academy section **scoped by the M231 spike**. Tooling + docs only, **0 platform-repo edits**.
 
-## Active milestone — M235 "prove-it-lands" (PLANNED — iterative, large; depends on M234 [+ M230 for academy])
+## Active milestone — M236 "prove-on-billion" (PLANNED — iterative, medium; depends on M235) · **FINAL v2.5 milestone**
 
-**Goal.** Populate the M234 **"Content stories"** tab with INTERESTING (not boring) real-shaped sessions per content
-product and **prove every cockpit action lands** on a non-empty, believable result page. **Exit gate:** on a cold
-reset-to-seed, every in-scope **(session × action)** logs in on the correct org and lands on a **NON-EMPTY** result
-page for BOTH player and manager vantages, **0 ejects**, with the assessment **2-voice / 1-code / 1-document PASSED**
-set present and each type in **passed AND not-passed** states; each product either passes or is declared with a
-documented fate (**AI-labs feasibility answered explicitly**). **Iterative** (`playthroughs.md` +
-`coverage-protocol.md`): a Playthrough per (session × action) + a coverage descriptor asserting non-zero rendered
-values (turns a blank clone RED — the M219/M222 mirror-table trap). Inherits the M230 academy card-count gate +
-next-web re-anchor (Fate-3, `m230-academy-demo-fill/carry-forward.md`). **Out:** live-on-billion proof (M236). **0
-platform-repo edits.**
+**Goal.** Re-prove the whole content-vantage feature **LIVE on the `billion` Tailscale VM** (the house pattern that
+closed M215/M221/M226/M228). **Exit gate:** both cockpit tabs work live on `billion` — Content-stories sessions render
+real content for player + manager, the academy grid renders real cards — cold reset-to-seed, **p95 click→ACCESS < 5 s,
+0 platform edits, tailnet-only**. **Iterative** (`verification.md` + `tailscale-serve.md`). It **AUTHORS the new
+content-stories seat-login coverage/Playthrough plumbing** (M235's USER-BLOCKER-M235-02 — the exact-path/hero-crawl
+harness can't reach the dynamic-URL, cockpit-seat-reached result pages; author + calibrate live), works the **M235
+per-section live-calibration checklists**, and lands the **M230 carry-forward live items** — all Fate-3 from M235's
+`carry-forward.md`. Then the `release → main` merge + `v2.5` tag are `/developer-kit:close-release`'s job. **0 platform
+edits.**
 
 ## Active release — v2.5 "the playbill" (8 milestones, spike-first)
 
@@ -42,6 +41,13 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M235 prove-it-lands** — 2026-07-20 (iterative, closed-incomplete/pragmatic; LIVE gate → M236 by design). Built +
+  unit-proven, **0 platform edits**: the provably-clean **13-session simulation matrix** + all **3 non-simulation
+  sections** (skill-path real progress + mirror; ai-labs presence-only; academy `/library/<slug>` CTA) via a code-owned
+  registry `content_nonsim.go` → manifest **4 products / 18 sessions**, honesty gates GREEN. 2 user-blockers resolved
+  (**M235-01** scrub-leaked-zero-names → hardened+re-captured provably-clean; **M235-02** coverage-descriptor-missing
+  → "build non-sim, then close"). rext `playbill-m235-hardened @ 60eff14`; Go **1939→1974**, flake 5/5. Deferral audit
+  YELLOW/0-blockers. **carry-forward.md** 3 clusters all Fate-3 → M236 (applied, `54eaefe`). Full narrative: roadmap `### M235`.
 - **M234 content-stories-cockpit-tab** — 2026-07-19 (section, closed-complete). The **render half** of Content
   stories: `cockpit.py`'s 2nd "Content stories" tab reads the M233 `content-manifest.json` (per-product sections,
   per-session rows, two login-and-land CTAs, AI-labs presence-only, academy direct-origin link); `roster.go` appends
@@ -68,10 +74,6 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
   contract + modality catalog). Central risk resolved — sim result page reads a persisted DB row (seedable).
   Sim+Skill-path GO, Interview GO w/ flag demo-patch (D3→M232), AI-labs OUT/presence-only (D4→M234), Academy IN
   (D5→M234). Fixed 3 stale corpus claims inline. 0 platform edits.
-- **M230 academy-demo-fill** — 2026-07-19 (iterative, closed-incomplete/pragmatic). The Option C
-  `academy-fs-published-fallback` demo-patch (rext tag `playbill-m230-academy-fs-published`) built + runtime-proven
-  (59 real cards, 0 Draft chips, exact DB-authoritative code path, byte-clean revert; 14 unit tests, flake 3/3). Gate
-  MET-BY-PROXY; the formal cold-`/demo-up` card-count sweep + next-web re-anchor folded to M235/M236 (Fate-3, homed). 0 platform edits.
 ## Recently shipped (releases, newest first — max 3)
 
 - **v2.4 "casting call"** — 2026-07-18 (tag `v2.4`). The **recruiter-vantage / hiring-org** release: a 4th hiring org
@@ -84,19 +86,19 @@ render from a seeded row routes to a sha-pinned `demopatch` or escalates).
 - **v2.2 "panorama"** — 2026-07-12 (tag `v2.2`). External-shareability / Tailscale-serve: stacks reachable from another
   tailnet machine over one trusted HTTPS origin. First live remote Linux-VM deploy.
 
-## Headline numbers (v2.5 M234 close, 2026-07-19)
-- **Go test funcs (whole rext repo, `git grep '^func Test'`):** **1939** (M234 +8 vs M233's c30fee3 **1931**;
-  re-anchored to this REPRODUCIBLE method — M233's "1954" headline used a non-reproducible count; the v1.11
-  incident-#6 counting discipline). `go build`+`go vet` clean.
-- **M234-touched suites (re-run GREEN at close):** Python demo-stack `test_cockpit.py`+`test_tooling.py` **249 pass /
-  6 pre-existing fail / 0 new** (the render half's primary gate) · Go `seeders`+`contentsession`+`cmd/stackseed` OK ·
-  **flake 5/5 both stacks** (Go shuffle `-count=1`; Python 5× identical 6-fail baseline = 0 flakes). Close fixes
-  docs/records only — **no rext code change** (code-of-record fd457bf unchanged).
-- **p95 click→ACCESS (the standing gate, carried — M234 touched no perf surface):** recruiter 1.27 s (M228) ·
+## Headline numbers (v2.5 M235 close, 2026-07-20)
+- **Go test funcs (whole rext repo, `git grep '^func Test'`):** **1974** (M235 +35 vs M234's fd457bf **1939**;
+  the REPRODUCIBLE method — v1.11 incident-#6 counting discipline). `go build`+`go vet` clean.
+- **M235-touched suites (re-run GREEN at close):** Go `scrub`+`contentsession`+`seeders`+`cmd/content-capture`+
+  `cmd/stackseed` honesty gates OK · **flake 5/5** (Go shuffle `-count=1`). Harden Pass 1+2 `--final` stabilized
+  (scrub 94.6→100%, contentsession 93.7→94.7%, seeders 95.9→96.1%, content-capture 0→28.7%; 0 bugs). Close fixes
+  docs/records only — **no rext code change** (code-of-record `60eff14` unchanged).
+- **p95 click→ACCESS (the standing gate, carried — M235 touched no perf surface):** recruiter 1.27 s (M228) ·
   employee 2.11 s / manager 1.31 s (v2.3), all vs the < 5000 ms gate.
 - **Inherited (non-milestone) carries:** demo-stack **14 pre-existing fail** (test-debt backlog, REPEAT v2.4→v2.5;
-  M234 added 0) + the M204 assign-WRITE declared TODO → both routed to the v2.5 **release close** re-anchor.
-- **Alignment (Clerkenstein):** **100% / 100% critical** (M234 touched no alignment surface).
+  M235's slice = 6 `test_cockpit.py`, added 0 NEW) + the M204 assign-WRITE declared TODO → both routed to the v2.5
+  **release close** re-anchor.
+- **Alignment (Clerkenstein):** **100% / 100% critical** (M235 touched no alignment surface).
 - **Flake:** **0** (milestone-owned). **Platform-repo edits:** **0.** **Supply chain:** GREEN — 0 net-new direct deps.
 
 ## D17 — the carried-forward signature hazard (v2.4 discipline)
@@ -134,13 +136,12 @@ tags:** **v2.3** `v2.3` · **v2.2** `v2.2` · **v2.1** `v2.1` · **v2.0** `v2.0`
   futures** M206–M207 stay in vision; **M205**'s tier-gate/ATS half is a residual vision reservation. All tracked in
   [`roadmap-vision.md`](roadmap-vision.md).
 
-_Last updated: 2026-07-19 (**M234 "content-stories-cockpit-tab" CLOSED** via /developer-kit:close-milestone — section,
-closed-complete; merged `--no-ff` into `release/02.50-the-playbill`. The **render half** — `cockpit.py`'s 2nd "Content
-stories" tab reading the M233 `content-manifest.json` (per-product sections, two login-and-land CTAs, AI-labs
-presence-only, academy direct-origin link), `content-player-<idx>` roster seats single-sourced via
-`storyPopulationNames`, `up-injected.sh` `--content-export`/`--content-manifest` wiring. Renderer handles ALL
-dispositions, **unit-proven** [Python 249/6-pre-existing/0-new; Go +8 **1931→1939** via `git grep '^func Test'`; flake
-**5/5** both stacks]. Close near-clean [2 record fixes: an `Adversarial review` decisions subsection + 5 `(#M234-DK)`
-back-ref tags], deferral audit **YELLOW**/0-blockers [14-fail demo-stack chronic homed at release-close, not re-woken],
-**0 platform edits**. rext tags `playbill-m234-content-tab` @ 7f55eb4 + `-hardened` @ fd457bf. **NEXT: M235
-prove-it-lands** — fixtures + prove-every-CTA-lands live [Fate-2, homed in M235's `In:` + exit_gate].)_
+_Last updated: 2026-07-20 (**M235 "prove-it-lands" CLOSED** via /developer-kit:close-milestone — iterative,
+closed-incomplete/pragmatic; merged `--no-ff` into `release/02.50-the-playbill`. Built + unit-proven, **0 platform
+edits**: the provably-clean 13-session simulation matrix + all 3 non-simulation sections (`content_nonsim.go`) →
+manifest 4 products/18 sessions, both honesty gates GREEN. 2 user-blockers resolved [M235-01 scrub-leaked-zero-names
+→ hardened+re-captured; M235-02 coverage-descriptor-doesn't-exist → build-non-sim-then-close]. Go **1939→1974**, flake
+**5/5**, harden Pass1+2 stabilized. Close near-clean [adversarial subsection + 2 `(#M235-B1/B2)` back-refs, no rext code
+change; `60eff14`], deferral audit **YELLOW**/0-blockers. carry-forward.md 3 clusters all **Fate-3 → M236** (applied,
+`54eaefe`). The LIVE `(session×action)`-lands gate is **M236 by design**. **NEXT: M236 prove-on-billion — the FINAL
+v2.5 milestone; then `/developer-kit:close-release`.**)_

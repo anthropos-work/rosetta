@@ -333,6 +333,15 @@ player get-or-create) are handled by a demo-patch/flag-enablement or by seeding 
 the tooling envelope. AI-labs is ruled OUT (not deferred): its only paths to a rendered result are a live worker or
 a GraphQL schema change, both out of scope.
 
+> **Build status (v2.5 M235, run 3).** The three NON-simulation sections this map specifies are **built +
+> unit-proven** as a separate code-owned registry (`seeders/content_nonsim.go`, `ContentStoryNonSimSeeder`;
+> [`content-stories-spec.md`](content-stories-spec.md) §6): **skill-path-legacy** (`skill_path_sessions` +
+> the `local_skill_path_sessions` mirror), **ai-labs** (a `lab_sessions` presence/spend row, no CTA), and
+> **academy** (a real public `/library/<slug>` course CTA; the `academy_chapter_progress` write is the live
+> `app/cmd/academy-seed` binary). rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`. The LIVE
+> (session × action)-lands proof + the per-section live calibration (skill-path version/status/mirror; the
+> exact `lab_sessions` DDL; academy progress-write/route + the M230 catalog fill) is **M236 (prove-on-billion)**.
+
 **The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the manager MIRROR row**
 (`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager scoreboard is blank; (2) **source only
 public-anchored sessions** (`sim_id` ∈ public-published) or the demo can't resolve the sim; (3) **enable the
