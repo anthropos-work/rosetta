@@ -14,7 +14,7 @@
       "skill-path-new": 1
     },
     "baseline": 0,
-    "current": 28,
+    "current": 29,
     "gate": 29
   },
   "secondary_gate_components": {
@@ -25,8 +25,8 @@
     },
     "academy_grid_real_cards": {
       "target": "non-zero, no Draft chip",
-      "current": 0,
-      "note": "academy_chapters/skill_paths/chapter_progresses all 0 on the cold bring-up; academy-seed not yet wired (in-scope, routed to the academy arm)"
+      "current": 65,
+      "note": "MET \u2014 measured live on billion in a browser as a member: academy home grid renders 65 course links / 483 chapter links / 0 Draft chips. Discharges M230 carry-forward cluster 1 (the rendered-card count M230 closed incomplete without). NOTE: the ANONYMOUS /library + /free routes still render 0 (M230 cluster 3, getPublicCatalogView's new Set() branch is uncovered by the M230 patch) \u2014 out of this gate, routed as ACADEMY-M236-iter08-public-catalog-twin."
     },
     "p95_click_to_access_ms": {
       "gate": 5000,
@@ -39,18 +39,18 @@
     }
   },
   "iters": {
-    "total": 7,
-    "tiks": 6,
+    "total": 8,
+    "tiks": 7,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-07 (closed-fixed)",
+  "last_iter": "iter-08 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
-    "billion_rext_pin": "playbill-m236-skillpath-nomanager",
+    "billion_rext_pin": "playbill-m236-academy-course-route (clone); tooling published through playbill-m236-academy-shape",
     "m217_pin_guard": "PASS",
     "stack": "demo-1 UP at playbill-m235-hardened",
     "autoverify": "fresh green",
@@ -76,18 +76,16 @@
     "lab_sessions": 2
   },
   "reading": {
-    "as_of": "iter-07 (2026-07-20, live on billion)",
-    "landed": 28,
+    "as_of": "iter-08 (2026-07-20, live on billion)",
+    "landed": 29,
     "denominator": 29,
     "by_product": {
       "simulation": "26/26 COMPLETE",
       "skill-path-legacy": "2/2 COMPLETE (player-only; no manager surface exists)",
-      "skill-path-new": "0/1",
+      "skill-path-new": "1/1 COMPLETE (academy /courses/ai-foundations)",
       "ai-labs": "presence-only, excluded"
     },
-    "residual_causes": {
-      "academy route not-found (catalog unseeded)": 1
-    }
+    "residual_causes": {}
   },
   "harness": {
     "tag": "playbill-m236-interview-shape",
@@ -105,5 +103,6 @@
       "manager-dashboard",
       "manager-interview"
     ]
-  }
+  },
+  "gate_status": "primary metric MET (29/29). Outstanding gate components: p95 click\u2192ACCESS (hero vantages, B2) + the cold reset-to-seed reproduction."
 }
