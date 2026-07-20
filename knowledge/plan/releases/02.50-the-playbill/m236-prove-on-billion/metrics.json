@@ -1,0 +1,34 @@
+{
+  "milestone": "M236",
+  "slug": "prove-on-billion",
+  "release": "v2.5 the playbill",
+  "shape": "iterative",
+  "primary_metric": {
+    "name": "landed-non-empty (session x action) pairs, live on billion, cold reset-to-seed",
+    "denominator": 31,
+    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session",
+    "denominator_breakdown": {
+      "simulation": 26,
+      "skill-path-legacy": 4,
+      "ai-labs": 0,
+      "skill-path-new": 1
+    },
+    "baseline": 0,
+    "current": 0,
+    "gate": 31
+  },
+  "secondary_gate_components": {
+    "ai_labs_presence_rows": { "target": 2, "current": 0 },
+    "academy_grid_real_cards": { "target": "non-zero, no Draft chip", "current": "not measured" },
+    "p95_click_to_access_ms": { "gate": 5000, "current": null },
+    "platform_repo_edits": { "gate": 0, "current": 0 },
+    "reach_scope": { "gate": "tailnet-only", "current": "tailnet-only" }
+  },
+  "iters": {
+    "total": 1,
+    "tiks": 0,
+    "toks": 1
+  },
+  "last_iter": "iter-01",
+  "last_updated": "2026-07-20"
+}
