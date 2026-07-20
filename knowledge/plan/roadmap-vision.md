@@ -108,6 +108,12 @@ and a `release/{version}` branch is cut.
 
 ## v2.5 → v2.6 carry (signed off at the v2.5 close-release, 2026-07-20)
 
+> ✅ **CONSUMED by v2.6 "sound check" (designed 2026-07-20 — now IN DEVELOPMENT in [`roadmap.md`](roadmap.md) § Active).**
+> The two reserved milestones below are **realized** — RENUMBERED to read in execution order (the archived
+> `release-deferrals.md` reservations explicitly permit this): **reserved `M237` (re-prove-on-billion) → realized as
+> `M244`** (v2.6's iterative closer), and **reserved `M238` (assign-WRITE) → realized as `M243`**. This section is kept
+> as the **historical destination record** with the remap note; the live milestone design is in `roadmap.md` § Active — v2.6.
+
 > **The full per-item ledger — with each item's concrete "why Fate 1/2/3 failed", its named handler, and a
 > destination-still-valid check — is
 > [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md).**
@@ -122,11 +128,16 @@ class: ***"an arch-doc pass" is not a milestone — neither is "a sweep", "the n
 build-iter", or "standing backlog". A fate needs a MILESTONE.*** Three of v2.5's eight aged-out items
 failed exactly that way, and `DEF-M226-01` aged out **twice** against the phrase *"the next prove-on-VM"*.
 
-### **M237 — re-prove-on-billion** — v2.6's declared FIRST work
+### **M237 — re-prove-on-billion** — v2.6's declared FIRST work  → ✅ REALIZED as **M244** (2026-07-20)
 
-**One live bring-up on `billion` discharges eight carries** — and `M237` **opens with a read-only
-`ORG-CLEAN` settling check** (below) before that bring-up. Reserved as v2.6's opening milestone because the
-release it closes (v2.5) **ships its headline metric unverified-live** — see `CLOSE-D3` below.
+> ✅ **REALIZED as `M244` "prove on billion"** in v2.6 (design 2026-07-20). The reserved `M237` number is now the v2.6
+> **`M237` "clean stage"** barrier (clone-freshness), and the *re-prove* content it named moved to the iterative closer
+> **`M244`** — its multi-part exit gate (a–h) inlines the carries below. The `ORG-CLEAN` settling check opens the
+> release at **`M237`** (still the FIRST task, before the fixes), with the live re-prove itself at `M244`.
+
+**One live bring-up on `billion` discharges eight carries** — and (per the remap) the release **opens with a read-only
+`ORG-CLEAN` settling check** (below) at `M237` before the live re-prove at `M244`. Reserved as v2.6's opening scope
+because the release it closes (v2.5) **ships its headline metric unverified-live** — see `CLOSE-D3` below.
 
 - **`ORG-CLEAN` — `M237`'s FIRST task, before the live re-prove.** The **13 copied content-session
   exhibits** are **not yet proven free of source-company names**. M235's scrub fix structurally prevents
@@ -168,7 +179,10 @@ release it closes (v2.5) **ships its headline metric unverified-live** — see `
   `closed-incomplete` and its covering gate never ran, and M236's live gate measured a **weaker** property
   (non-empty, not plan-section-id alignment). **M237 must add the specific alignment assertion.**
 
-### **M238 — playthrough-assign-write**
+### **M238 — playthrough-assign-write**  → ✅ REALIZED as **M243** (2026-07-20)
+
+> ✅ **REALIZED as `M243` "assign-WRITE Playthrough"** in v2.6 (design 2026-07-20) — renumbered to read in execution
+> order (it fans out in parallel off the `M237` barrier, not last). Scope unchanged: the net-new assign-WRITE half.
 
 - **`DEF-M235-03` / M204 assign-WRITE** — the declared in-manifest TODO half of the M204 assign flow.
   Honest and tracked in-manifest since v2.0, but **~10 routings across 5 releases**; its declared
@@ -271,12 +285,14 @@ its number at *design* time, not before). They are governed by the same capabili
 
 Genuinely-deferred work, no target version, not scheduled:
 
-- **DEF-M10-01 — cloud `SnapshotStore` backend + S3 media blob bytes.** Today the cache is the local
-  `.agentspace/snapshots/` store and media replays **refs-only**. **Re-signed → backlog at v1.5 design (2026-06-11)**
-  after its v1.4 destination was removed; its **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane
-  on prod public links so demos show **real images** without the blob-byte work. Real blob mirroring + the cloud
-  store stay gated on **eu-west-1 S3 read access actually landing** (verified not wired). Replay-only to a per-stack
-  isolated bucket, never the shared prod S3.
+- **DEF-M10-01 — cloud `SnapshotStore` backend + S3 media blob bytes.** ⚠️ **LIKELY CONSUMED by v2.6 `M240`
+  (content-stories fidelity — media porting, 2026-07-20).** User decision 2 (media → PORT IT) has `M240` **capture +
+  re-host the Chime/S3 voice recording + document blobs**, which pulls in the S3 read access this item was gated on;
+  if `M240` lands it, DEF-M10-01 is discharged. Today the cache is the local `.agentspace/snapshots/` store and media
+  replays **refs-only**. **Re-signed → backlog at v1.5 design (2026-06-11)** after its v1.4 destination was removed; its
+  **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane on prod public links so demos show **real
+  images** without the blob-byte work. Real blob mirroring + the cloud store stay gated on **eu-west-1 S3 read access
+  actually landing** (verified not wired). Replay-only to a per-stack isolated bucket, never the shared prod S3.
 - **`DEF-M215-03(a)` / `F11` — seed hero identity-key vs generated profile display-name mismatch (cosmetic).**
   The seed identity key (`maya-thriving`) does not match the generated profile display name; login and render
   both work, zero functional impact across three releases of live demos. Routed at the **v2.2 close
@@ -392,7 +408,14 @@ question (a UX nicety with no owner).
   `Mxyy` counter still resumes at **M217** and M216 is **retired as a reservation, not built**. (If M220 bloats, the
   dev-side half drops back out — it is v2.3's declared scope-flex lever.)
 
-_Last updated: 2026-07-15 (**v2.4 "casting call" DESIGNED + PROMOTED to active development** — the
+_Last updated: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** — the
+**reliability / field-hardening release**: make everything that's built actually get built + provisioned.
+**8 milestones M237 → M244**, branch `release/02.60-sound-check` cut from **local** `main`, tag `v2.6`; barrier →
+parallel fixes → prove-on-billion; tooling + docs only, zero platform-repo edits. The **v2.5 → v2.6 carry** section
+above is now CONSUMED: reserved **`M237` re-prove → realized as `M244`**, reserved **`M238` assign-WRITE → realized as
+`M243`**; DEF-M10-01 (S3 media blobs) likely consumed by `M240` media porting. 3 binding user decisions: talk-to-data
+FULL (real AWS Bedrock creds via `/stack-secrets` + secret-DNA extension) · media PORTED behind a HARD data-controller
+PII gate · language EN-only fallback per tuple. Prior: 2026-07-15 (**v2.4 "casting call" DESIGNED + PROMOTED to active development** — the
 **recruiter-vantage / hiring-org release**: a **NET-NEW** 4th, HIRING demo org on the presenter cockpit where 45
 candidates audition on the same 5 positions and a manager compares them side by side. **5 milestones M222 → M223 →
 M224 → M225 → M226**, largely sequential; branch `release/02.40-casting-call` cut from `main`, tag `v2.4`; tooling +
