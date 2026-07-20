@@ -97,9 +97,28 @@ stay simulation-shaped and untouched. An empty product section is never fabricat
 | product id | app_base | section icon | player link? | manager surface |
 |---|---|---|---|---|
 | `simulation` | `web` | `flask` | yes — `/sim/<slug>/result/<sessionId>` | `ai-simulations` (or `interviews` for an interview sim_type) |
-| `skill-path-legacy` | `web` | `diagram-project` | yes (M234) | `skill-paths` |
-| `skill-path-new` (academy) | `academy` | `graduation-cap` | yes (M234) | — (no academy manager route, M231) |
+| `skill-path-legacy` | `web` | `diagram-project` | yes (M234) | **— none** (the platform surface is unimplemented — M236 iter-07) |
+| `skill-path-new` (academy) | `academy` | `graduation-cap` | yes — `/courses/<slug>` (**M236 iter-08**) | — (no academy manager route, M231) |
 | `ai-labs` | `web` | `vials` | **no — presence-only** (M231 §5) | — |
+
+> **Two entries in this table were corrected at M236 by driving the routes live; both had been asserted
+> offline and defended by green unit tests.**
+>
+> - **`skill-path-legacy` has no manager surface.** `managerKind` was `skill-paths` through M235. The route
+>   renders the literal string **"Coming soon"**: next-web's `InsightsBySkillPathStudentSimulationsContainer`
+>   hardcodes `userData = null` and its results table is **commented out**, so no query touches the seeded
+>   session. Projecting a CTA there is a fabricated CTA, which §"fail-closed" forbids. Restore `managerKind`
+>   the day the platform builds the surface — nothing else needs to change.
+> - **The academy player route is `/courses/<slug>`, not `/library/<slug>`.** ant-academy has **no
+>   `/library/[slug]` route at all** (only `app/(public)/library/page.jsx`, the index), and the slug M235
+>   pinned was not in its catalog either — so that CTA 404'd on every visit. The slug must come from the
+>   catalog the **demo** academy serves: its committed **FS** content, because a demo academy runs with
+>   `ACADEMY_DEMO_FS_PUBLISHED=1` and **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so `getBackendCatalogView`
+>   always returns null.**
+>
+> That same missing endpoint is why **`app/cmd/academy-seed` is moot in a demo**: with no backend
+> connection, academy progress rows written to the demo DB have nothing that can read them. A
+> progress-bearing academy CTA requires wiring the academy to the demo's GraphQL first.
 
 Per-**sim_type** row icons: ASSESSMENT `clipboard-check` · TRAINING `dumbbell` · HIRING `user-tie` ·
 INTERVIEW `comments`.
@@ -126,9 +145,15 @@ INTERVIEW `comments`.
   (the public sim's slug, resolved read-only from the public catalog at authoring time — public + non-PII;
   `#D-M233-3`). `<sessionId>` is the seeder's own derived id (`contentStorySessionID`), so the link names the
   seeded row.
-- **manager_result_path** — `/enterprise/activity-dashboard/<kind>/<simId>/<userId>` where `<kind>` ∈
-  {`ai-simulations`, `interviews`, `skill-paths`}, `<simId>` is the sim uuid, `<userId>` is the player member's
-  id. Fully offline-derivable (no slug).
+- **manager_result_path** — `/enterprise/activity-dashboard/<kind>/<simId>/<membershipId>` where `<kind>` ∈
+  {`ai-simulations`, `interviews`} (**`skill-paths` was removed at M236 iter-07** — see the table above),
+  `<simId>` is the sim uuid. Fully offline-derivable (no slug).
+
+  > **The last segment is a MEMBERSHIP id, not a user id** (M236 iter-05). The page calls
+  > `GetMembership(membershipsID)`; hand it a user id and it returns `ent: membership not found` and the
+  > whole query **nulls**. It fails *silently*, because the page header is served by a **different** query
+  > and renders fine either way — so the scoreboard looks populated while proving nothing. If a manager
+  > pair "passes" but you have not seen its **table rows**, assume this bug.
 
 **app_base is `web`, not hiring** (`#D-M233-2`). Content-story sessions are re-tenanted into a **Workforce**
 org (`firstNonHiringStory`), so they render in apps/web regardless of the source sim's `sim_type` — M231's

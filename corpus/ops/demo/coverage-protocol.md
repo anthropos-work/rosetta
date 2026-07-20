@@ -733,39 +733,106 @@ manifests.)*
 > boundary with no `/result/` locator. The result surface had **never** been modelled harness-side; M236
 > authored it, **calibrated against a live seeded render** rather than blind.
 
-### The four render shapes (calibrate; do not assume)
+### The SIX render shapes (calibrate; do not assume)
 
-A single "is it long enough?" check is wrong here — it both false-fails and false-passes:
+The roadmap called this "the result page." It is **six distinct surfaces across two apps**, and a single
+"is it long enough?" check is wrong on all of them — it both false-fails and false-passes:
 
 | Shape | Surface | What it looks like live | Assert on |
 |---|---|---|---|
 | `player-scored` | `/sim/<slug>/result/<id>` | ~1.9k chars: score, LLM feedback paragraph, "Evaluated Skills" | feedback **or** evaluated-skills present, `<main>` ≥ 300 |
 | `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
 | `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
-| `manager-dashboard` | `/enterprise/activity-dashboard/<kind>/<simId>/<userId>` | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `player-academy` | `/courses/<slug>` (**ant-academy**, a different app) | ~3.7k chars: `COURSE · 12 CHAPTERS`, title, chapter list | course/chapter structure **and 0 Draft chips** |
+| `manager-dashboard` | `/enterprise/activity-dashboard/{ai-simulations,skill-paths}/<simId>/<membershipId>` | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `manager-interview` | `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` | ~590 chars: breadcrumb naming the player over an attempts table with "View Report" — **no `Results for` header at all** | an attempt row |
 
-> **Two calibration lessons, both learned the hard way in M236 iter-04:**
+**Shape selection is by ROUTE, never by sniffing content.** Every shape after the first was discovered by
+driving a route and *reading* it; every mis-grade came from inferring shape from keywords. In a system whose
+surfaces share a design language, the URL is the only cheap, stable discriminator.
+
+> **The calibration lessons, in the order they were paid for (M236 iters 04–08):**
 > 1. **A terse page can be correct.** The interview player result is ~205 chars *and right*. A length floor
 >    tuned to the scored shape reports a correct page as empty.
 > 2. **A false PASS is worse than a false fail.** Grading skill-path pages with the scored-sim shape passed
 >    the *completed* path — not because it rendered a report, but because 11k chars of legitimate content
->    happened to contain the word "feedback". Shape selection is by **route**
->    (`/skill-path/` → `player-skillpath`), which cannot drift the way keyword-sniffing does.
+>    happened to contain the word "feedback".
+> 3. **A different surface is not a broken surface.** The interview *manager* view has no `Results for`
+>    header, so `manager-dashboard` graded a perfectly-rendering page as broken (iter-06).
+> 4. **A header can render from a different query than the payload.** The manager scoreboard's header comes
+>    from the sim definition, so it populates even when the payload query has nulled entirely — which is how
+>    a membership-id defect hid for an iter (iter-05), and how an *unimplemented* surface passed for two
+>    (iter-07).
+> 5. **A different app is a different shape.** The academy course page has no score and no feedback;
+>    falling through to `player-scored` reported a correct 3.7k-char render as a failure (iter-08).
+>
+> **Running score across the milestone: five wrong assertions to one real product bug.** When a gate is new,
+> disbelieve the gate first — probe the page before triaging the product.
+
+### Two traps that make a working page look broken
+
+- **Never let `loginAs` take its `networkidle` default on these routes.** next-web holds long-poll
+  connections open, so `networkidle` resolves late or never; on the enterprise activity-dashboard it never
+  resolves at all. The pair recorded `page.goto: Test timeout of 180000ms exceeded` for two iters and was
+  read as a product **hang** — a heavy instance "hanging" while a lighter sibling passed, which is exactly
+  the per-item fan-out signature `latency-budget.md` teaches. It was neither: instrumenting the navigation
+  showed **134 completed legs, 0 pending, none over 800 ms, page painted in ~1 s**. Navigate with `commit`
+  and let the page object's `settle()` own the wait. *(The rule was already written down in two places and
+  still got inherited by default — hence `waitUntil` is now explicit at the call site.)*
+  **Diagnostic:** `stack-verify/e2e/tests/probe-navigation.spec.ts` prints per-request wall times and
+  everything still in flight at a deadline. Run it before ever blaming a route for hanging.
+- **Read `body`, not just `<main>` — portals mount outside it.** The activity-dashboard drawers are antd
+  `Drawer`s rendered through a **portal**, so `main.innerText` is the **empty string** on a fully-populated
+  page. `main.length === 0` on a rendered page is a modal/drawer signature, not an empty one.
 
 ### The denominator (get this wrong and the gate lies)
 
 **`has_manager_view` is per-SESSION, not per-product.** Reading it at product level silently under-counts
 **31 → 18**. And **ai-labs is presence-only** (nil client, `grade_result` not GraphQL-exposed — M231): its
 sessions have **no landable result surface**, so its player actions are **excluded from the denominator**
-rather than counted as failures. On the shipped manifest:
+rather than counted as failures.
+
+**A pair is landable only if the platform has BUILT the surface it points at.** M236 iter-07 drove the
+skill-path manager route live and found it renders the literal string **"Coming soon"**: in
+`InsightsBySkillPathStudentSimulationsContainer.tsx`, `userData` is hardcoded `null` and the results table
+is **commented out**, so **no query touches the seeded session** and the page is identical whether or not
+anything was seeded. Its 2 manager pairs are therefore **not landable** — the same ground on which
+ai-labs is already excluded — and `skill-path-legacy` is projected **player-link-only**. On the corrected
+manifest:
 
 ```
-18 sessions + 15 manager views = 33 raw pairs
+18 sessions + 13 manager views = 31 raw pairs
                        − 2 ai-labs presence-only player actions
-                       = 31 LANDABLE
+                       = 29 LANDABLE      (was 31 before iter-07)
 ```
 
-State which of **33 / 31 / 18** a number is, every time.
+State which of **31 / 29 / 18** a number is, every time.
+
+> **Correcting a denominator is not moving the goalposts — but it must be argued, never quietly applied.**
+> 31 was never a count of *provable* pairs; it assumed a surface that does not exist. The controlling rule
+> is M233's fail-closed projection contract: *a session that cannot form a real link is dropped with a
+> reason, never linked anyway.* A CTA onto "Coming soon" is a fabricated CTA. Record the product-source
+> evidence in the iter's `decisions.md` and surface the change in the close — the danger is not the
+> correction, it is a correction nobody can audit later.
+>
+> **This one also hid a false PASS.** The lighter of the two skill-path sessions had scored as passing for
+> two iters, because the definition-only header contains "Results for" and a "Coming soon" body contains
+> no "No data". The false fail cost an investigation; the false pass would have hidden a missing surface
+> indefinitely.
+
+### A green unit test can defend a broken path
+
+Three separate tests in three consecutive iters were found asserting the defect they should have caught:
+
+| Iter | The test required… | Reality |
+|---|---|---|
+| 05 | the manager route built from a **user** id | the route takes a **membership** id — the query nulled |
+| 07 | `has_manager_view` **true** for skill-path | the manager surface is unimplemented |
+| 08 | the academy CTA to start `/library/` | **there is no `/library/[slug]` route** — it 404'd every time |
+
+A test that encodes a **route** or a **contract** is only as good as the last time someone drove it. When a
+live probe contradicts a green test, the test is the prime suspect — and the fix is to invert it so it
+fails loudly if the defect is ever restored.
 
 ### Running it
 
