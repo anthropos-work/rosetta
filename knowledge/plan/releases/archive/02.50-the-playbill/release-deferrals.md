@@ -28,7 +28,7 @@ release close.
 > renumbered at the v2.6 `/developer-kit:design-roadmap` run, but the **destination is a milestone with a
 > declared scope**, not a vibe. This is deliberate: *"the next prove-on-VM"* is precisely the phrasing that
 > let `DEF-M226-01` age out twice. Both reservations are recorded in
-> [`roadmap-vision.md`](../../roadmap-vision.md) § v2.5 → v2.6 carry.
+> [`roadmap-vision.md`](../../../roadmap-vision.md) § v2.5 → v2.6 carry.
 
 ## Release-tag decision (2026-07-20) — tag as clean `v2.5`
 
@@ -233,7 +233,7 @@ Not a rubber-stamp of the prior sign-off; the prior destination is void.
 - **Why Fate 3 failed:** no v2.5 milestone owned playthroughs coverage; M236 was the last.
 
 **Handler:** release owner (user), via reserved **`M238`**, alongside the reserved Playthroughs futures
-`M206`/`M207` in [`roadmap-vision.md`](../../roadmap-vision.md).
+`M206`/`M207` in [`roadmap-vision.md`](../../../roadmap-vision.md).
 **Destination-still-valid check:** ✅ valid — `M238` is newly declared at this close and has not yet fired.
 **Expiry condition:** if `M238` is not designed into v2.6 or v2.7, this item is **DROPPED**, not
 re-anchored a sixth time. Ten routings is the limit.
@@ -450,4 +450,4 @@ is the finding.
   plan-section assertion.
 - **`M238 — playthrough-assign-write`** — `DEF-M235-03` / M204 assign-WRITE, with a drop-expiry.
 
-Both recorded in [`roadmap-vision.md`](../../roadmap-vision.md) § v2.5 → v2.6 carry.
+Both recorded in [`roadmap-vision.md`](../../../roadmap-vision.md) § v2.5 → v2.6 carry.

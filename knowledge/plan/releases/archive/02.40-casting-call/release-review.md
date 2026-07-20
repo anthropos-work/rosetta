@@ -7,7 +7,7 @@
 >
 > **Nothing below is edited.** The false greens are left visible on purpose: *how* a close issued them is
 > itself the finding (`DC-P5`, recorded in
-> [`../../02.50-the-playbill/release-deferrals.md`](../../02.50-the-playbill/release-deferrals.md)).
+> [`../02.50-the-playbill/release-deferrals.md`](../02.50-the-playbill/release-deferrals.md)).
 > Read the ✅s below as **claims of this review**, not as facts.
 >
 > **Four corrections, all verified at the v2.5 close:**

@@ -110,7 +110,7 @@ and a `release/{version}` branch is cut.
 
 > **The full per-item ledger — with each item's concrete "why Fate 1/2/3 failed", its named handler, and a
 > destination-still-valid check — is
-> [`releases/02.50-the-playbill/release-deferrals.md`](releases/02.50-the-playbill/release-deferrals.md).**
+> [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md).**
 > This section is the *destination* record: the two reserved v2.6 milestones the carries route into. It
 > exists because **v2.5's close found that no v2.5 carry section existed** — the four v2.3 tail carries had
 > been reading as "v2.4 work" for two releases after v2.4 shipped and archived without them.
@@ -137,7 +137,7 @@ release it closes (v2.5) **ships its headline metric unverified-live** — see `
   (**no re-capture, no company name in any transcript**). Acceptance: **0 surviving source-org tokens** (or
   each dispositioned). The residual — a detectable source-company name may survive until the check runs —
   is **VPN/tailnet-scoped** (`safety.md` §3.8) and **data-controller-accepted** (2026-07-20). Full item:
-  [`release-deferrals.md`](releases/02.50-the-playbill/release-deferrals.md) § `ORG-CLEAN`.
+  [`release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md) § `ORG-CLEAN`.
 - **`CLOSE-D3` — the shipped harness has no live green.** v2.5's headline **`29/29`** landable
   (session × action) pairs was measured live on `billion` at rext tag `playbill-m236-hardened`; the close
   then fixed **~10 defects in that same harness**, and the close-review Phase 7 fixed more — including a
@@ -189,7 +189,7 @@ release it closes (v2.5) **ships its headline metric unverified-live** — see `
 > — the signed-in half genuinely LANDED at v2.5 M230/M236, the anonymous half survives as
 > `ACADEMY-M236-iter08-public-catalog-twin` → `M237`; **the other three are reclassified `DRIFT_DEFER`**
 > (their *"needs live infra"* rationale is now false) **→ `M237`**. Full reasoning:
-> [`releases/02.50-the-playbill/release-deferrals.md`](releases/02.50-the-playbill/release-deferrals.md) § S-6/S-7.
+> [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md) § S-6/S-7.
 
 > **v2.4 is now DESIGNED + IN DEVELOPMENT as the recruiter-vantage / hiring-org release** (promoted to
 > [`roadmap.md`](roadmap.md) § Active, 2026-07-15; 5 milestones **M222 → M226**, branch

@@ -21,7 +21,7 @@ M236's gate was met cold on `billion` (**29/29** landable pairs both vantages ·
 > LIVE-RE-PROVEN** — the harness was fixed ~10 times *after* the measurement — and **39 live-browser specs went
 > unexecuted at the close**. The live re-prove is deferred to **v2.6 as its first work** (reserved **`M237`**) by
 > explicit user decision. Full ledger:
-> [`releases/02.50-the-playbill/release-deferrals.md`](releases/02.50-the-playbill/release-deferrals.md).
+> [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md).
 
 _Prior:_ **v2.4 "casting call" SHIPPED 2026-07-18** (tag `v2.4`) — the **recruiter-vantage / hiring-org release**: a
 4th, **HIRING** demo org (45 candidates auditioning on the same 5 positions, compared side by side), reversing v2.3's
@@ -61,7 +61,7 @@ were split out to [`roadmap-archive-v2.0-v2.4.md`](roadmap-archive-v2.0-v2.4.md)
   the v2.0 opening when the v1.x major retired
 - [`roadmap-vision.md`](roadmap-vision.md) — future versions + future v2 milestones + proposals not yet in active development
 - [`state.md`](state.md) — current/next milestone, last update
-- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _The **ACTIVE v2.5 dirs** are [`releases/02.50-the-playbill/`](releases/02.50-the-playbill/) (`m229-academy-content-model-re-ground/` … `m236-prove-on-billion/`), scaffolded by the 2026-07-19 `/developer-kit:design-roadmap` run, plus the release-root artifacts `metrics.json`, `dependencies.lock`, `release-review.md`, **`release-deferrals.md`** (the per-item deferral ledger, new at this close) and `audit-deferrals/`. Every SHIPPED release's dirs live under [`releases/archive/`](releases/archive/) — `02.40-casting-call/`, `02.30-cue-to-cue/`, `02.20-panorama/`, `02.10-quick-change/`, `02.00-opening-night/`, `01.10b-fit-up/`, and `01.{00..10}-{codename}/` for the v1.x major, each with overview/progress/decisions/retro/metrics. **They are archived at release close** — if a version's dirs are still under `releases/` it has not shipped._
+- `releases/{VV.VV}-{codename}/m{N}-{slug}/overview.md` (active version) → `releases/archive/{VV.VV}-{codename}/…` (shipped). _There is **no active release directory** currently (between releases — v2.5 shipped 2026-07-20). Every SHIPPED release's dirs live under [`releases/archive/`](releases/archive/) — the newest is [`02.50-the-playbill/`](releases/archive/02.50-the-playbill/) (v2.5, `m229-academy-content-model-re-ground/` … `m236-prove-on-billion/`, plus the release-root artifacts `metrics.json`, `dependencies.lock`, `release-review.md`, `release-deferrals.md`, `release-retro.md`, and `audit-deferrals/`), then `02.40-casting-call/`, `02.30-cue-to-cue/`, `02.20-panorama/`, `02.10-quick-change/`, `02.00-opening-night/`, `01.10b-fit-up/`, and `01.{00..10}-{codename}/` for the v1.x major, each with overview/progress/decisions/retro/metrics. **They are archived at release close** — if a version's dirs are still under `releases/` (not `releases/archive/`) it has not shipped._
 - [`roadmap-archive-v2.0-v2.4.md`](roadmap-archive-v2.0-v2.4.md) — the shipped `## Done` sections for **v1.10b + v2.0 → v2.4**, split out of `roadmap.md` at the v2.5 close (2026-07-20) under the `roadmap-legacy.md` precedent, when `roadmap.md` had reached 2,079 lines / 203 KB with ~77% of it shipped history
 
 ## Conventions
@@ -98,7 +98,7 @@ content-stories-cockpit-tab [`section` — the render half + `content-player-<id
 [`iterative`, closed-incomplete/pragmatic — LIVE gate → M236 by design] → **M236** prove-on-billion [`iterative`,
 closed-on-gate — **29/29** landable pairs cold on `billion`, denominator corrected 31 → 29]. All 8 **closed and
 MERGED**; `/developer-kit:close-release` is running. Records under
-[`releases/02.50-the-playbill/`](releases/02.50-the-playbill/).
+[`releases/archive/02.50-the-playbill/`](releases/archive/02.50-the-playbill/).
 **Next:** **`/developer-kit:close-release` Phase 11** — the `release → main` merge + the `v2.5` tag (**the USER runs
 it**), then `/developer-kit:design-roadmap` for **v2.6**, whose **declared first work** is the reserved **`M237 —
 re-prove-on-billion`** (the deferred live re-prove of v2.5's headline number + the 39 unexecuted live-browser specs +

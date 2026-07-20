@@ -206,7 +206,7 @@ next close: refuse to emit a review containing a forward reference to a section 
 
 ## Metrics delta
 
-Sources: [`metrics.json`](metrics.json) vs [`../archive/02.40-casting-call/metrics.json`](../archive/02.40-casting-call/metrics.json).
+Sources: [`metrics.json`](metrics.json) vs [`../02.40-casting-call/metrics.json`](../02.40-casting-call/metrics.json).
 
 | | v2.4 "casting call" | **v2.5 "the playbill"** | Δ / note |
 |---|---|---|---|
@@ -223,8 +223,8 @@ Sources: [`metrics.json`](metrics.json) vs [`../archive/02.40-casting-call/metri
 
 ## Stats delta (Phase 8c snapshot)
 
-**Snapshot:** [`../../../journal/stats/2026-07-20.json`](../../../journal/stats/2026-07-20.json) · **prior:**
-[`../../../journal/stats/2026-07-09.json`](../../../journal/stats/2026-07-09.json) (captured mid-v2.4, so this
+**Snapshot:** [`../../../../journal/stats/2026-07-20.json`](../../../../journal/stats/2026-07-20.json) · **prior:**
+[`../../../../journal/stats/2026-07-09.json`](../../../../journal/stats/2026-07-09.json) (captured mid-v2.4, so this
 window spans the v2.4 tail + all of v2.5 — not a clean per-release cut).
 
 | | 2026-07-09 | **2026-07-20** | Δ |
