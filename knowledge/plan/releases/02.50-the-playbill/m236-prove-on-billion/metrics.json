@@ -18,17 +18,44 @@
     "gate": 31
   },
   "secondary_gate_components": {
-    "ai_labs_presence_rows": { "target": 2, "current": 0 },
-    "academy_grid_real_cards": { "target": "non-zero, no Draft chip", "current": "not measured" },
-    "p95_click_to_access_ms": { "gate": 5000, "current": null },
-    "platform_repo_edits": { "gate": 0, "current": 0 },
-    "reach_scope": { "gate": "tailnet-only", "current": "tailnet-only" }
+    "ai_labs_presence_rows": {
+      "target": 2,
+      "current": 0
+    },
+    "academy_grid_real_cards": {
+      "target": "non-zero, no Draft chip",
+      "current": "not measured"
+    },
+    "p95_click_to_access_ms": {
+      "gate": 5000,
+      "current": null
+    },
+    "platform_repo_edits": {
+      "gate": 0,
+      "current": 0
+    },
+    "reach_scope": {
+      "gate": "tailnet-only",
+      "current": "tailnet-only"
+    }
   },
   "iters": {
-    "total": 1,
+    "total": 2,
     "tiks": 0,
-    "toks": 1
+    "toks": 1,
+    "in_flight": 1
   },
-  "last_iter": "iter-01",
-  "last_updated": "2026-07-20"
+  "last_iter": "iter-02 (in-flight, not closed)",
+  "last_updated": "2026-07-20",
+  "blocked": {
+    "id": "USER-BLOCKER-M236-01",
+    "reason": "exit gate contains unprovable/unmeasurable clauses; Phase 0b audit-kb-fidelity verdict RED",
+    "raised": "iter-02",
+    "report": "kb-fidelity-audit.md"
+  },
+  "host_state": {
+    "billion_disk_free_gb": 139,
+    "billion_build_cache_pruned_gb": 109,
+    "tooling_published": false
+  }
 }

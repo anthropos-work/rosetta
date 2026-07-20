@@ -2,23 +2,73 @@
 
 ## Pre-flight audits — iter-01
 
-**`/developer-kit:audit-kb-fidelity --milestone=M236`: INVOKED (delegated sub-agent), verdict NOT RETURNED
-within the iter-01 window.**
+**`/developer-kit:audit-kb-fidelity --milestone=M236`: VERDICT = RED (blocker).**
+Report: [`kb-fidelity-audit.md`](kb-fidelity-audit.md) — 224 lines; 24 fidelity findings (5 blocker-class),
+4 completeness gaps (2 critical), 2 blind areas.
 
-Recorded honestly rather than assumed: the audit was dispatched at iter-01 open against the milestone's
-load-bearing doc set (`tailscale-serve.md`, `verification.md`, `content-stories-routes.md`,
-`session-clone-spec.md`, `content-stories-spec.md`, `cockpit-spec.md`, `coverage-protocol.md`,
-`playthroughs.md`, `latency-budget.md`, `ant-academy.md`, `demo-up-defaults.md`, `demopatch-spec.md`,
-`safety.md`) and had not reported a verdict when iter-01 closed. **No verdict was inferred.**
+The audit was dispatched at iter-01 open and returned mid-iter-02. Its verdict **blocks** per Phase 0b, and
+iter-02 was stopped **before** its publish step executed (see `iter-02/decisions.md` INCOMPLETE-EXIT).
 
-**Judgment recorded for audit:** iter-01 is a strategy tok that ships no code, and iter-02's planned scope
-(publish the `rosetta-extensions` tags to origin, re-pin `billion`'s `.agentspace/rext.tag`, prune the
-host build cache) is **provably insensitive to knowledge-doc fidelity** — it is a git/host operation whose
-correctness is established by the tag graph and the pin guard, not by any corpus claim. So the milestone
-proceeds into iter-02 with the gate open, and the verdict is consumed before the first
-knowledge-doc-dependent iter (Phase L, which triages render failures against the route/spec docs).
+### The systemic finding
 
-If the audit returns RED, it surfaces as a critical decision at that point per Phase 0b.
+All six "method" docs — `tailscale-serve.md`, `verification.md`, `coverage-protocol.md`, `playthroughs.md`,
+`latency-budget.md`, `demo-up-defaults.md` — contain **zero** mentions of content-stories,
+`content_products`, `content-manifest`, or `content-player`. Both docs M236 declares as its
+`iteration_protocol_ref` were last edited 2026-07-16/17 (M225/M226). **M236's declared method describes a
+v2.4 world**; the feature it must prove is v2.5.
+
+### The five blocker classes (each changes M236's shape)
+
+1. **`overview.md:37` cites a page-object that does not exist.** "Reuses the shared
+   `AISimulationResultContainer`" — zero hits in `rosetta-extensions`; it is a **next-web `.tsx` component**
+   (`content-stories-routes.md:52`), not a harness object. The nearest harness object
+   (`simulation-page.ts:9-10`) stops at the *launch* boundary and has no `/result/` locator. It must be
+   **authored**, not reused — so Cluster 1 is larger than M235's carry-forward described.
+2. **The exit gate contains an unprovable clause.** "Demo reachable only over the tailnet" contradicts
+   `safety.md:405` ("every demo container is published on `0.0.0.0` — all interfaces — on EVERY `demo-up`,
+   flag or no flag"; `:413` measured 14 ports → `0.0.0.0`) and `tailscale-serve.md:626-627` (on Linux this
+   bypasses the host firewall — `ufw deny` does **not** block it). Provable only as a property of
+   `billion`'s **network placement**, and only via an explicit **off-tailnet probe** — never as an assertion.
+3. **Half the gate is unmeasurable with today's harness.** The content-player CTA
+   (`cockpit.py:421-425`) emits **no `data-login-as`** attribute — and that attribute *is* the ACCESS
+   predicate: `latency.ts:123-127` throws without it, before t0. Additionally `run-latency.sh:42-47`
+   hard-rejects non-hero vantages (`exit 2`). So "p95 click→ACCESS < 5 s" cannot currently be measured for
+   any of the 31 content-story actions.
+4. **Two inherited carry-forward tasks are misdescribed.** The "2 drifted demopatch manifests" are **not
+   drifted** — clone HEAD matches the pin exactly; the working tree is merely left-patched from an
+   un-reverted run, which classifies `ALREADY_PATCHED` → idempotent no-op. Fix is a one-line
+   `git checkout -- packages/core-js/src/constants/urls.ts`. And the ANT_ACADEMY "rendered-card count"
+   descriptor M236 is told to **run** does not exist — the shipped one
+   (`coverage-manifest.ts:709-713`) is a text-marker + length floor that **would pass on a zero-card grid**,
+   i.e. it cannot detect the exact Thread-A failure it is cited to catch. It must be authored.
+5. **The declared `iteration_protocol_ref` is hollow.** `verification.md` (335 lines) contains no
+   measure→triage→fix loop and no gate — it supplies a gate *input*, not a protocol.
+
+### Additional finding that reverses a documented rule
+
+`coverage-protocol.md:421-431` mandates **excluding** the exact pages M236 must prove
+(`skipPaths` contains `/\/result\/[0-9a-f-]{8,}/`). M236 must consciously **reverse** a documented rule —
+that is a spec decision, not an implementation detail.
+
+### Notable stale claims (non-blocking but live-risk)
+
+- **`demo-up-defaults.md:146`** claims the host pre-flight is "non-fatal, never blocks" — it **`exit 1`s**
+  (`up-injected.sh:345-347`). Highest-risk row for a cold `billion` bring-up.
+- **24 of 28 line anchors in `demo-up-defaults.md` are stale** (e.g. `DEMO_NO_VERIFY` documented at `:1594`,
+  actually `:2110`). Its own guard exists and was run: it flags 1 real disagreement
+  (**`DEMO_NO_ACADEMY_FILL` undocumented — and it gates Thread A**) but has **no line-anchor check**.
+- **Seats are `content-player-23` … `content-player-35`**, not 0-indexed as `overview.md:36` implies;
+  unknown seat keys return 400.
+- `session-clone-spec.md:66` says 9 sessions / 2-2-1; actual is **13** and 3-2-2. The manifest's real shape
+  (4 products / 18 sessions) is stated **nowhere** in the corpus.
+- `safety.md:424` ("no `127.0.0.1` prefix anywhere") is **false** — `gen_injected_override.py:577`.
+
+### Scope-back (the audit also found work is cheaper than planned)
+
+`hero-login.ts` already accepts arbitrary seat keys (no allowlist); `player_result_path` /
+`manager_result_path` are **pre-resolved strings** (no runtime URL derivation needed); no new tailnet port
+is required; both new ant-academy demopatches verified sha-current. **Hidden cost:**
+`VantageManifest.identityKey` is **singular** — 13 seats means **13 manifests**, not one sweep.
 
 ### Standing finding fed INTO the audit (established live at iter-01, B2)
 
