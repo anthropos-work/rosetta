@@ -14,7 +14,7 @@
       "skill-path-new": 1
     },
     "baseline": 0,
-    "current": 16,
+    "current": 27,
     "gate": 31
   },
   "secondary_gate_components": {
@@ -39,18 +39,18 @@
     }
   },
   "iters": {
-    "total": 4,
-    "tiks": 3,
+    "total": 5,
+    "tiks": 4,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-04 (closed-fixed)",
+  "last_iter": "iter-05 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
-    "billion_rext_pin": "playbill-m235-hardened",
+    "billion_rext_pin": "playbill-m236-manager-membership-id",
     "m217_pin_guard": "PASS",
     "stack": "demo-1 UP at playbill-m235-hardened",
     "autoverify": "fresh green",
@@ -75,24 +75,23 @@
     "lab_sessions": 2
   },
   "reading": {
-    "as_of": "iter-04 (2026-07-20, live on billion, cold stack)",
-    "landed": 16,
+    "as_of": "iter-05 (2026-07-20, live on billion)",
+    "landed": 27,
     "denominator": 31,
     "by_product": {
-      "simulation": "13/26 (all 13 PLAYER; 0 manager)",
+      "simulation": "24/26",
       "skill-path-legacy": "3/4",
-      "skill-path-new": "0/1 (academy unseeded)",
+      "skill-path-new": "0/1",
       "ai-labs": "presence-only, excluded"
     },
     "residual_causes": {
-      "manager No data + undefined-undefined": 11,
-      "manager no header (interview)": 2,
-      "manager route timeout (skill-path)": 1,
-      "academy route not-found": 1
+      "interview manager: no header": 2,
+      "skill-path manager: route timeout": 1,
+      "academy: route not-found": 1
     }
   },
   "harness": {
-    "tag": "playbill-m236-content-sweep",
+    "tag": "playbill-m236-manager-membership-id",
     "files": [
       "stack-verify/e2e/lib/content-result-page.ts",
       "stack-verify/e2e/tests/content-stories.spec.ts",
