@@ -84,7 +84,7 @@ session — passed AND not-passed both. The list is `contentsession/fixture/cont
 the **source org name** → `<<ORG>>`, and **emails / URLs / long digit-runs** → redaction markers. The real
 names are used only as scrub targets and are **dropped** — the fixture stores placeholders, not names.
 
-> **The names it sources (M235 leak fix, 2026-07-19).** The candidate's real first name is threaded all through
+> **The names it sources (M235 leak fix, 2026-07-19; #M235-B1).** The candidate's real first name is threaded all through
 > the LLM feedback, and it comes from the **session OWNER's `public.users` identity** (`sessions.owner_id` →
 > `firstname`/`lastname` + the email local-part) — **not** from `jobsimulation.actors` (whose `username`/`alias`
 > are empty for these sessions). The original capture sourced only the (empty) actor names, so it removed **zero**

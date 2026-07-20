@@ -86,7 +86,7 @@ a re-capture auditable.) The user may instead re-affirm accept-as-is given the V
 the existing sessions, the non-simulation product player-path builders (`content-stories-spec.md` §6), and the
 M230 clone re-anchor — none touch the scrub or add PII.
 
-## RESOLUTION of USER-BLOCKER-M235-01 — user ruled "Fix scrub + re-capture" (2026-07-19, iter-03)
+## RESOLUTION of USER-BLOCKER-M235-01 — user ruled "Fix scrub + re-capture" (2026-07-19, iter-03) {#M235-B1}
 
 **User ruling (2026-07-19):** "Fix scrub + re-capture." Landed in iter-03 (tik under TOK-01, Track A) as a
 prerequisite hardening of the fixture substrate before extending it.
@@ -170,7 +170,7 @@ run-2 budget without a half-iter. No blind descriptors; no platform edit.
 **Not blocked / already delivered this run:** the scrub fix + the 4-cell fixture-matrix closure + both
 regenerated honesty manifests are landed, committed, tagged, unit-proven, and provably leak-clean.
 
-## RESOLUTION of USER-BLOCKER-M235-02 — user ruled "Build non-sim seeders, then close" (2026-07-20, run 3)
+## RESOLUTION of USER-BLOCKER-M235-02 — user ruled "Build non-sim seeders, then close" (2026-07-20, run 3) {#M235-B2}
 
 **User ruling (2026-07-20):** "Build non-sim seeders, then close." Landed across run-3 iters 05–08 under
 TOK-01 Track A step 2, all Fate-1 (offline-buildable + unit-provable). The LIVE proof legitimately routes to
@@ -207,3 +207,32 @@ built + unit-proven; the live proof legitimately routes to M236). The milestone 
 user's "then close" mandate — the actual `/developer-kit:close-milestone` merge is a separate step the
 orchestrator/user drives. No live gate was faked; no platform-repo edit. EXIT_REASON for the run:
 protocol-stop (offline clusters exhausted; live proof routed to M236).
+
+## Adversarial review (close Phase 2c) — 2026-07-20
+
+The close's external-perspective pass on the milestone's one non-trivial new module
+(`seeders/content_nonsim.go`). Scenario recorded (not the fix — the scenario), per the Phase 2c contract.
+
+**Scenario: projection/seeder drop-divergence on a malformed exhibit.** `buildNonSimProducts` (the manifest
+projection) FAIL-CLOSES an exhibit whose `resolveNonSimSession` returns a drop reason (e.g. a skill-path exhibit
+with an empty `SkillPathID`, or an academy exhibit with an empty `AcademySlug`) — it emits NO manifest section
+for it, so no `player_seat` is named. But `ContentStoryNonSimSeeder.Seed` does NOT re-run `resolveNonSimSession`;
+its `switch` writes the runtime row from the raw exhibit fields. So a *malformed* skill-path exhibit would produce
+a seeded `skill_path_sessions` row with a blank `skill_path_id` that the projection dropped — an orphan row no
+manifest section references (a silent divergence between what's SEEDED and what's SHOWN).
+
+**Why the code handles it (verified, not risk-accepted).** The divergence requires a *malformed* exhibit, and
+the exhibit registry `nonSimExhibits()` is a **compile-time constant** in which every skill-path exhibit carries a
+non-empty `SkillPathID` and every academy exhibit a non-empty `AcademySlug` (asserted by
+`TestResolveNonSimSession_FailClosedDrops` for the drop paths and by the fixtures for the well-formed set). The
+projection and seeder iterate that same constant registry in the same order with the same flat-index owner
+assignment, and `TestContentStoryNonSim_OwnerConsistencyAcrossAllArms` pins that — for the shipped registry — each
+SEEDED row's `user_id` equals the projection's `player_seat` owner across all three arms. The divergent input
+therefore **cannot occur** with the current code-owned registry; the scenario is unreachable by construction.
+
+**Response.** No code change: guarding an unreachable path here is the shallow coverage-gaming the final harden
+pass (`hardening-ledger.md` Pass 2) explicitly declined for the sibling defensive arms. The scenario is recorded
+so a future change that makes the registry **non-static / config-driven** (the one way to reach it) knows to route
+the seeder through the SAME `resolveNonSimSession` drop-gate the projection uses — the fix is then one shared call,
+not a re-derivation. Filed as a live-calibration note alongside the M236 handoff; no user risk-acceptance required
+(the risk is not present in the shipped code).

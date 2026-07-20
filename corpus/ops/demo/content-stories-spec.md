@@ -177,7 +177,7 @@ is the `content_sessions` block. The two are distinct projections of the same fi
 
 M233 delivered the **manifest** (the schema + the projection + the honesty gate + the fail-closed resolver + the
 `--content-export` verb). **M234 (§7) delivers the render half** — the cockpit tab + the seat registration + the
-bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** — built + unit-proven:
+bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** (#M235-B2) — built + unit-proven:
 
 - **The three non-simulation product sections** (skill-path-legacy / ai-labs / academy) are built as a
   **separate CODE-OWNED exhibit registry** (`seeders/content_nonsim.go` — `nonSimExhibits()` +
