@@ -362,6 +362,58 @@ family is about artifacts that lie about the past; this is about artifacts that 
 produce results confidently attributed to the wrong code, which is precisely how the perf-patch rot went
 unnoticed for four releases.
 
+### Drive every remote bring-up through a LOGIN shell (v2.5 M236 iter-03)
+
+**`ssh host '<cmd>'` is not the same shell your operator gets.** A non-interactive `ssh host 'cmd'` sources
+**no login profile**, so anything the profile puts on `PATH` is simply absent — and the host pre-flight then
+fails in a way that **perfectly mimics a missing prerequisite**.
+
+**Always:**
+
+```bash
+ssh <host> 'bash -lc "<the bring-up command>"'     # -l = login shell; sources the profile
+```
+
+**The concrete trap, because the shape is what makes it costly.** M236's `up-injected.sh` host pre-flight
+reported *"Go NOT on PATH … install Go 1.25.x"* on `billion`. Go was installed and was the exact pinned
+`go1.25.12` — at `/usr/local/go/bin/go`, a directory the **login profile** adds to `PATH`. What makes this a
+trap rather than a footnote:
+
+- **The two prereqs behave differently under the same invocation.** `atlas` lives in `/usr/local/bin`, already
+  on the default non-login `PATH`, so it **passed**. One prereq green and one red reads as *prereq-specific*
+  ("Go is missing") rather than *shell-specific* ("nothing from the profile is on `PATH`").
+- **The remedy text reinforces the wrong reading.** The pre-flight recommends installing Go — so the operator
+  installs a second Go, or edits `PATH` in a config file, and the real cause is never seen. A pre-flight that
+  names a *remedy* rather than a *symptom* narrows the operator's hypothesis space, sometimes wrongly.
+- **A partial-green pre-flight is weaker evidence than a fully-red one.** All-red would have been read as
+  environmental in seconds.
+
+**The cheap disproof is one command** — run it before believing any "prereq missing" verdict from a remote
+pre-flight:
+
+```bash
+ssh <host> 'bash -lc "go version"'                 # green here + red in pre-flight ⇒ PATH, not prereqs
+```
+
+> **The general rule:** *when a check reports a missing dependency on a remote host, first prove the check and
+> the operator are running in the same environment.* A tool's absence and a tool's **invisibility** produce
+> identical output, and only one of them is fixed by installing anything.
+
+## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
+
+**Restricting *who can reach* a demo is the VM's and the VPN's job, not the demo stack's.** The stack's only
+obligation on this axis is to **permit** VPN access; it does not enforce, narrow, or attest reach, and **no
+gate here measures it.** v2.5 M236 opened with an exit-gate clause requiring the demo to be *"reachable only
+over the tailnet"* and **dropped it** on that basis, with no off-tailnet probe deliverable.
+
+**Why this is a scoping stance and not a safety claim.** It says which *layer* owns the control, not that the
+control is unnecessary. The reason the demo stack can decline the job is the structural one
+[`safety.md`](safety.md) Part 3 argues at length: a demo contains **no customer data** and **cannot write
+prod**, so reach is a network-perimeter concern rather than a data-exposure one. That disclosure — including
+the fact that **every demo container publishes on `0.0.0.0`, flag or no flag** — stands **as-is** and needed
+no amendment for this decision. Read `safety.md` §3 Part 3 for the exposure picture; read this line only as
+*the demo stack is not the layer that verifies it.*
+
 ## Cross-references
 
 - [`rosetta_demo.md`](rosetta_demo.md) — the demo lifecycle + the unified registry whose **recorded ports**
