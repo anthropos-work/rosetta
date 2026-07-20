@@ -30,6 +30,20 @@ release close.
 > let `DEF-M226-01` age out twice. Both reservations are recorded in
 > [`roadmap-vision.md`](../../roadmap-vision.md) § v2.5 → v2.6 carry.
 
+## Release-tag decision (2026-07-20) — tag as clean `v2.5`
+
+**The release is tagged `v2.5`, not `v2.5-incomplete`. The user consciously chose the clean tag** at the
+release close (2026-07-20). The rationale, recorded so the choice is auditable:
+
+- **Every escape-hatch item in this ledger has a named destination milestone with an acceptance condition**
+  (`M237` / `M238` / the standing backlog). Tracking is therefore honest *even under a clean tag* — an
+  unfinished-but-fully-fated release is not an "incomplete" one; it is a release whose remainder is
+  scheduled and owned.
+- **The headline caveat is written where the number is** (§A `CLOSE-D3`: the `29/29` is unit-proven, not
+  live-re-proven), so a clean tag hides nothing a reader who quotes the number would miss.
+- **Semver:** v2.4 → v2.5 is a **minor** bump — additive features (the academy fill + the content-stories
+  tab), backward-compatible, no breaking change to any public surface. The tag `v2.5` matches.
+
 ---
 
 ## A. The headline escape hatch — the release ships a number it did not re-prove live
@@ -105,9 +119,46 @@ has no green either.
 **Handler:** release owner (user), via **`M237`** — the same single bring-up that discharges `CLOSE-D3`.
 **Destination-still-valid check:** ✅ valid (same live host).
 
+### `ORG-CLEAN` — the 13 copied session exhibits are not yet proven free of source-company names
+
+**Fate: KEEP-DEFERRED-WITH-SIGNOFF → `M237` as its FIRST task, run alongside the live re-prove. Signed off
+by the user, 2026-07-20.**
+
+The `ContentStorySeeder` copies **13 real production job-simulation sessions** into a demo org. M235's
+`USER-BLOCKER-M235-01` fix bound a capture-time fail-closed `SurvivingToken` post-condition + a standing CI
+tripwire, so **recurrence is now structurally prevented** for any *newly* captured fixture. But the **13
+already-committed exhibits** were captured before that gate hardened, and their status against the *source
+company* names (as distinct from the actor first-names the scrub now catches) is **UNKNOWN** — this is real
+customer content, and free-text scrubbing is imperfect by construction (`safety.md` §3.8).
+
+**The settling check (M237's first task):** one **read-only** prod query resolving the **13 source-org
+names** by their pinned `sessions.id`, then an **offline** `scrub.OrgTokens` / `SurvivingToken` pass over
+the already-committed fixtures. **No re-capture, and no org/company name enters any agent transcript** — the
+prod read stays inside `~/.pgpass`-scoped tooling and the offline pass reports pass/fail counts only.
+
+- **Why Fate 1 (land now) failed:** it needs the prod read path + an offline sweep run **on the box that
+  holds the fixtures**, batched with the `M237` live bring-up; and it is a *settling* check on shipped
+  content, not a blocker of the tag (the residual is accepted — below).
+- **Why Fate 2 failed:** nothing else in v2.5 re-checks the committed fixtures' org-cleanliness; the M235
+  tripwire guards *future* captures only.
+- **Why Fate 3 failed:** M236 was the last v2.5 milestone.
+
+**The residual, stated plainly:** the 13 exhibits **may** carry a detectable source-company name until the
+settling check runs. This is **ACCEPTED by the data-controller (user, 2026-07-19 / re-confirmed 2026-07-20)**,
+and the governing control is the **VPN/tailnet scope** (`safety.md` §3.8) — a content-story demo is never
+open-internet. The clean `v2.5` tag ships on that basis.
+
+**Handler:** release owner (user), via **`M237`** (its first task). **Destination-still-valid check:** ✅
+valid — `billion` and the fixtures are on this workstation; the prod read path is `~/.pgpass`-scoped and
+live. **Acceptance condition for `M237` on this item:** the offline `SurvivingToken` pass over all 13
+fixtures reports **0 surviving source-org tokens** (or each survivor is explicitly dispositioned), with no
+company name written to any transcript.
+
 > **One live bring-up discharges eight items** (`CLOSE-D3` · `T-3` · `S-1` · the `apps/web` `:5050`
 > endpoint · `DEF-M226-01` · `BURNIN-M221-dev-public-host` · `F-M220-4` · `PROBE-M218-c3-rerun`). That is
-> the whole argument for `M237` being one milestone and not eight backlog rows.
+> the whole argument for `M237` being one milestone and not eight backlog rows. **`M237`'s FIRST task,
+> before that bring-up, is the `ORG-CLEAN` settling check above** — a read-only prod query + an offline
+> sweep, not part of the bring-up itself.
 
 ---
 
@@ -391,10 +442,12 @@ is the finding.
 
 ### Reservation trail
 
-- **`M237 — re-prove-on-billion`** — v2.6's declared FIRST work. Discharges: `CLOSE-D3` · `T-3` (39 live
-  specs) · `S-1` (anon academy twin, = surviving `F4`) · the `apps/web` non-offset `:5050` client GraphQL
-  endpoint · `DEF-M226-01` (with a TEST of the self-resolution claim) · `BURNIN-M221-dev-public-host` ·
-  `F-M220-4` · `PROBE-M218-c3-rerun` · the S-8 interview plan-section assertion.
+- **`M237 — re-prove-on-billion`** — v2.6's declared FIRST work. **FIRST task:** the `ORG-CLEAN` settling
+  check (read-only prod query + offline `SurvivingToken` sweep over the 13 committed exhibits). Then
+  discharges: `CLOSE-D3` · `T-3` (39 live specs) · `S-1` (anon academy twin, = surviving `F4`) · the
+  `apps/web` non-offset `:5050` client GraphQL endpoint · `DEF-M226-01` (with a TEST of the self-resolution
+  claim) · `BURNIN-M221-dev-public-host` · `F-M220-4` · `PROBE-M218-c3-rerun` · the S-8 interview
+  plan-section assertion.
 - **`M238 — playthrough-assign-write`** — `DEF-M235-03` / M204 assign-WRITE, with a drop-expiry.
 
 Both recorded in [`roadmap-vision.md`](../../roadmap-vision.md) § v2.5 → v2.6 carry.

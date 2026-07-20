@@ -124,9 +124,20 @@ failed exactly that way, and `DEF-M226-01` aged out **twice** against the phrase
 
 ### **M237 — re-prove-on-billion** — v2.6's declared FIRST work
 
-**One live bring-up on `billion` discharges eight carries.** Reserved as v2.6's opening milestone because
-the release it closes (v2.5) **ships its headline metric unverified-live** — see `CLOSE-D3` below.
+**One live bring-up on `billion` discharges eight carries** — and `M237` **opens with a read-only
+`ORG-CLEAN` settling check** (below) before that bring-up. Reserved as v2.6's opening milestone because the
+release it closes (v2.5) **ships its headline metric unverified-live** — see `CLOSE-D3` below.
 
+- **`ORG-CLEAN` — `M237`'s FIRST task, before the live re-prove.** The **13 copied content-session
+  exhibits** are **not yet proven free of source-company names**. M235's scrub fix structurally prevents
+  *recurrence* (a capture-time `SurvivingToken` fail-closed gate + a CI tripwire), but the
+  **already-committed** fixtures' status is UNKNOWN — real customer content, and free-text scrubbing is
+  imperfect. M237 runs one **read-only** prod query resolving the 13 source-org names by pinned
+  `sessions.id` + an **offline** `scrub.OrgTokens` / `SurvivingToken` pass over the committed fixtures
+  (**no re-capture, no company name in any transcript**). Acceptance: **0 surviving source-org tokens** (or
+  each dispositioned). The residual — a detectable source-company name may survive until the check runs —
+  is **VPN/tailnet-scoped** (`safety.md` §3.8) and **data-controller-accepted** (2026-07-20). Full item:
+  [`release-deferrals.md`](releases/02.50-the-playbill/release-deferrals.md) § `ORG-CLEAN`.
 - **`CLOSE-D3` — the shipped harness has no live green.** v2.5's headline **`29/29`** landable
   (session × action) pairs was measured live on `billion` at rext tag `playbill-m236-hardened`; the close
   then fixed **~10 defects in that same harness**, and the close-review Phase 7 fixed more — including a
