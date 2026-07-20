@@ -63,9 +63,15 @@ sessions were chosen. Two load-bearing predicates:
 - **Non-manager-played.** The owner must be a player-vantage member (belt-and-braces: the seeder re-owns every
   clone to a seeded player member anyway — §4).
 
-**What was pinned (v2.5):** 9 real sessions covering type × modality × pass/fail — the assessment set **2 voice
-+ 2 code + 1 document**, plus training doc/chat, hiring voice, and the **one public interview sim's** voice
-session — passed AND not-passed both. The list is `contentsession/fixture/content-sessions.yaml`.
+**What was pinned (v2.5):** **13** real sessions covering type × modality × pass/fail — the assessment set
+**3 voice + 2 code + 2 document** (7), **training** document + chat (2), **hiring** voice passed + not-passed (2),
+and the **one public interview sim's** voice sessions, passed + not-passed (2). The list is
+`contentsession/fixture/content-sessions.yaml`, one `contentsession/fixture/content/<key>.json` per pin.
+
+> *The set was pinned at **9** when this section was first written and grew to **13** at M235 (rext `590082a`)
+> — 1 assessment voice, 1 assessment document, and the second hiring and interview sessions, so that every
+> product carries a passed **and** a not-passed story. This doc is the only place the inventory is stated;
+> keep it in step with the fixture, which is the source of truth.*
 
 ## 3. Stage 2 — capture + scrub (the copied fixture)
 
@@ -88,7 +94,8 @@ names are used only as scrub targets and are **dropped** — the fixture stores 
 > the LLM feedback, and it comes from the **session OWNER's `public.users` identity** (`sessions.owner_id` →
 > `firstname`/`lastname` + the email local-part) — **not** from `jobsimulation.actors` (whose `username`/`alias`
 > are empty for these sessions). The original capture sourced only the (empty) actor names, so it removed **zero**
-> names and 8/9 fixtures shipped a real first name (USER-BLOCKER-M235-01). The capture now sources the owner's
+> names and **8 of the then-9** fixtures shipped a real first name (USER-BLOCKER-M235-01; the pinned set is
+> **13** today — §2). The capture now sources the owner's
 > real identity → the **player placeholder `<<ACTOR_0>>`**, and **token-splits every person-name** (full name +
 > each ≥3-char whitespace token, word-boundary-matched) so a **bare first-name** mention is caught. Word-boundary
 > matching means a short token never corrupts a common word ("Ann" ≠ "announce").
@@ -149,8 +156,12 @@ survives; `TestContentStorySeeder_ReTenantsNoSourcePins` proves the prod source-
 - **Transcript** (`actors` + `interactions`): action_type ∈ {`email`,`call`} only (the DB enum; a COPY bypasses
   Ent, so an invalid value would insert-but-be-invisible — the G14 class). `source_id <> target_id` (the CHECK).
 - **CODE / DOCUMENT**: the copied `code_submissions` / `collaborative_assets`.
-- **INTERVIEW**: the copied `interview_extraction_results.user_report`/`manager_report`. (Render fidelity of the
-  interview surface — the exact plan-section match — is M235's "prove-it-lands" concern.)
+- **INTERVIEW**: the copied `interview_extraction_results.user_report`/`manager_report`.
+  > ⚠️ **Render fidelity of the interview surface — the exact plan-section match — is still UNPROVEN.** It was
+  > routed to M235's "prove-it-lands" gate; **M235 closed `closed-incomplete` and that gate never ran.** M236's
+  > live sweep does drive these routes, but it measures a **weaker** property — that the report renders
+  > non-empty — not that each plan section matches the copied report. Treat the exact-section match as
+  > unverified, not as covered.
 
 ## 5. The interview render flags — a sha-pinned demopatch (M231 D3)
 
@@ -194,4 +205,7 @@ lands).
 - [`seed-manifest-spec.md`](seed-manifest-spec.md) — the `seed-generation-manifest.yaml` the `content_sessions` pins fold into.
 - [`stories-spec.md`](stories-spec.md) + [`../seeding-spec.md`](../seeding-spec.md) — the 7-table fan-out + the mirror-pair the substrate extends.
 - [`demopatch-spec.md`](demopatch-spec.md) — the demo-patch mechanism the interview flag-gates use.
-- The manifest / cockpit halves: **M233** (`content-stories-spec.md`) + **M234** (the cockpit tab) + **M235** (prove-it-lands render proof).
+- The manifest / cockpit halves: **M233** (`content-stories-spec.md`) + **M234** (the cockpit tab) + **M235**
+  (the seeders and the manifest projection, **unit**-proven) + **M236** (**prove-it-lands** — the live browser
+  sweep on `billion` that proves every projected CTA actually lands on a non-empty result page, on a cold
+  reset-to-seed). *M235 closed `closed-incomplete`; the render proof is M236's, not M235's.*
