@@ -7,10 +7,22 @@ result page, does it render from a PERSISTED row a clone could seed, or recomput
 
 > **Verdict headline — Thread B is a GO** (conditional per product). The simulation result page reads a
 > **persisted DB row**, not a live recompute — so a clone that INSERTs the persisted result fan-out renders a
-> full result. Simulation (training/assessment/hiring) + Skill-path are GO; **Interview** is GO behind a
-> PostHog-flag demo-patch; **AI-labs is OUT** (no seedable result-render surface); **Academy is IN** (backend-
-> authoritative progress, seedable). All discovery is code-cited against the local platform checkout + prod-DB
-> reads (read-only, public-vs-customer boundary honored — [`db-access.md`](../db-access.md)).
+> full result. Simulation (training/assessment/hiring) is GO; **Interview** is GO behind a PostHog-flag
+> demo-patch; **AI-labs is OUT** (no seedable result-render surface); **Skill-path** is GO **player-side only**;
+> **Academy is IN, but *not* via seeded progress**. All discovery is code-cited against the local platform
+> checkout + prod-DB reads (read-only, public-vs-customer boundary honored — [`db-access.md`](../db-access.md)).
+
+> 🔴 **TWO of this spike's verdicts were REFUTED when the surfaces were actually driven (M236).** They are
+> corrected inline at each site below and in full at
+> [§ Two M236 corrections to this map](#m236-corrections). **Read those before acting on any verdict in this
+> document.**
+> 1. **Skill-path legacy has NO manager result surface.** The resolver exists; the page renders the literal
+>    string **"Coming soon"**. Its 2 manager pairs are **not landable** — this is what corrected the gate
+>    denominator **31 → 29**. *A resolver existing is not a surface existing.*
+> 2. **Academy is IN, but `app/cmd/academy-seed` is MOOT on a demo.** A demo academy runs with **no**
+>    `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it serves its **committed FS catalog** and never reads the seeded
+>    `academy_chapter_progress` rows. The academy content-story is a real **`/courses/<slug>`** CTA into that
+>    catalog — **not** rendered played progress. The seeding path stays correct for a *dev/prod-wired* stack.
 
 ## For PMs — one paragraph
 
@@ -21,8 +33,19 @@ result in the database (the score, the skill breakdown, the feedback, the interv
 just **reads** those stored rows — it does not re-run the AI grader when you open the page. So a seeder that writes
 the same rows produces the same result screen. The exceptions: **AI-labs** has no result screen to render at all
 today (its grade isn't even exposed to the front-end), and **Interview** needs two feature-flags turned on in the
-demo. **Academy** turned out to be seedable too — contrary to older docs, the academy now saves your progress to
-the platform backend, so a "played" academy state is just a set of rows.
+demo.
+
+**Two things this spike got wrong, found later when we actually opened the pages (M236) — they matter to what a
+presenter can be shown:**
+
+- **Skill-path has no manager view.** The manager page exists as a route, but it renders the words *"Coming
+  soon"* — there is nothing to seed into it. Only the player side of skill-path is showable. (This is why the
+  number of demonstrable player/manager pairs dropped from 31 to **29**.)
+- **The academy shows a real course, not your played progress.** The academy *does* save progress to the
+  platform backend — that part was right — but a **demo** academy is not wired to that backend, so it serves its
+  own built-in course catalog and never reads the progress we seed. The academy content story is therefore a
+  real link into a real course, not a "here's how far I got" screen. On a normal dev or production environment
+  the progress-seeding does work; it is the demo configuration that makes it inert.
 
 ---
 
@@ -45,8 +68,8 @@ the platform backend, so a "played" academy state is just a set of rows.
 | **Sim ASSESSMENT** | same as TRAINING | renders-from-seed | same as TRAINING | renders-from-seed |
 | **Sim HIRING** | `apps/hiring/…/sim/[slug]/result/[sessionId]/page.tsx` (`isHiring`, `HiringResult` gate) | renders-from-seed | `apps/hiring/…/@tabs/ai-simulations/[simId]/page.tsx` (+`[userId]`) | renders-from-seed |
 | **Sim INTERVIEW** | `apps/{web,hiring}/…/sim/[slug]/result/[sessionId]` → `interviewExtractionUserReport` | **needs-demo-patch** (flag) | `…/@tabs/interviews/[simId]/[userId]/page.tsx` → `interviewExtractionManagerReport` (admin-gated) | **needs-demo-patch** (flag) |
-| **Skill-path legacy** | `apps/web/…/skill-path/[skillPathId]/page.tsx` → `getOrCreateSkillPathSession` | **runtime-computed-blank** | `apps/web/…/@tabs/skill-paths/[skillPathId]/page.tsx` (+`[userId]`) | renders-from-seed |
-| **Skill-path new (academy)** | `aiacademy.anthropos.work` chapter page (progress-driven) — see §6 | renders-from-seed (progress rows) | — (no academy manager result route today) | no-surface |
+| **Skill-path legacy** | `apps/web/…/skill-path/[skillPathId]/page.tsx` → `getOrCreateSkillPathSession` | **runtime-computed-blank** | `apps/web/…/@tabs/skill-paths/[skillPathId]/page.tsx` (+`[userId]`) | ~~renders-from-seed~~ → **no-surface** (**REFUTED M236 iter-07**: renders literal "Coming soon") |
+| **Skill-path new (academy)** | `aiacademy.anthropos.work` chapter page (progress-driven) — see §6 | ~~renders-from-seed (progress rows)~~ → **renders-from-seed, but NOT from progress** (**REFUTED M236 iter-08**: a demo academy has no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so the seeded rows have no reader; the real surface is the FS-catalog `/courses/<slug>` page) | — (no academy manager result route today) | no-surface |
 | **AI-labs** | `apps/web/…/labs/[id]/page.tsx` (reads LIVE from labs-api) — see §5 | **no-surface** (for a seeded result) | `apps/web/…/enterprise/labs` (activity/spend listing only) | no-surface (for a result) |
 
 All simulation surfaces render through one shared component: `next-web-app/packages/ui/src/AISimulation/AISimulationResultContainer.tsx`.
@@ -145,7 +168,8 @@ milestone.)
 
 ## 3. Prod-session sourcing + anonymization contract
 
-The spike CONFIRMS the mechanism; the actual copy + anonymize + re-tenant is **M232** (`session-clone-spec.md`, forthcoming).
+The spike CONFIRMS the mechanism; the actual copy + anonymize + re-tenant **shipped at M232** —
+[`session-clone-spec.md`](session-clone-spec.md).
 
 ### 3.1 The read path + pin-by-id (CONFIRMED viable)
 
@@ -288,9 +312,13 @@ live labs-api worker into the demo (a new subsystem, out of the zero-edit envelo
 GraphQL field (a **platform edit** → would ESCALATE). Neither is in scope. **What the content-stories tab CAN do
 (M234, presence-only):** list the seeded `lab_sessions` row as a **status/spend line** in the `/labs` +
 `/enterprise/labs` dashboards (`mySessions`/`labSessions` GraphQL), with **no** as-player/as-manager result CTAs.
-(Note: `backend.md` says the package is `internal/labsession`; the actual path is `internal/labs/session` — KB-8.)
 
-## 6. The academy "session" question — VERDICT: IN (backend-authoritative, seedable)
+## 6. The academy "session" question — VERDICT: IN, but NOT via seeded progress on a demo
+
+> 🔴 **Heading corrected at the M236 close.** It read *"VERDICT: IN (backend-authoritative, seedable)"*. The
+> backend-authoritative half is **confirmed**; the *"seedable ⇒ the demo renders played progress"* half is
+> **REFUTED (iter-08)** — `app/cmd/academy-seed` is **moot on a demo**. The detail is in the verdict paragraph
+> at the end of this section; the summary is at [§ Two M236 corrections](#m236-corrections).
 
 The older corpus premise ("ant-academy is Clerk-only, calls no backend at runtime") is **stale**. Since ant-academy
 **v0.5 "direct line" M2** the academy is **backend-authoritative**: it WRITES progress to the platform `app`
@@ -344,6 +372,8 @@ a GraphQL schema change, both out of scope.
 > ant-academy). rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`. The LIVE
 > (session × action)-lands proof + the per-section live calibration (skill-path version/status/mirror; the
 > exact `lab_sessions` DDL; academy route + the M230 catalog fill) was executed at **M236 (prove-on-billion)**.
+
+<a id="m236-corrections"></a>
 
 > ### ⚠ Two M236 corrections to this map (2026-07-20, proven live on `billion`)
 >
