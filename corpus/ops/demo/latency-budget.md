@@ -18,16 +18,54 @@ grades it. Authored by **M218 "seat change"** (v2.3 "cue to cue") — before it,
 Not "the document responded". Not "the page painted". The presenter is **in**, as the hero.
 
 **In-page data-completion** (the 200-member grid finishing its fan-out) is a **separate, secondary** metric —
-**REPORTED, never gated** (**D-DESIGN-1**). It sits behind a platform-side DataLoader defect
+**REPORTED, never gated**. This is **v2.3's `D-DESIGN-1`**, whose canonical statement is *"the < 5 s gate is on
+**ACCESS**, not full first-page render"* — the clause above is its corollary, not a second decision.
+
+> ⚠️ **Cite it as "v2.3's D-DESIGN-1", never bare.** v2.2 has its **own** `D-DESIGN-1` (*"public reach is never
+> default-on"*, itself superseded by v2.3's D-DESIGN-3). The ids collide across releases; a bare reference
+> resolves to the wrong decision. See [`../safety.md`](../safety.md) §3.5, which owns both glosses.
+
+It sits behind a platform-side DataLoader defect
 (`GetOrganizationTargetRole` ≈ 3 RPCs/member) that **cannot** be fixed under the zero-platform-edit constraint.
 Gating on it would have made the milestone unwinnable for a reason that has nothing to do with login.
 
 ## The gate
 
-**p95 click→ACCESS < 5 s**, for **three** vantages — `maya-thriving` (employee → `/profile`), `dan-manager`
-(manager → `/enterprise/…`), **and** `rae-recruiter` (recruiter → the **apps/hiring** 2nd app
-`/enterprise/activity-dashboard`; the M226 "opening night" 3rd measured path, v2.4 "casting call") — over
-**5 consecutive cold reset-to-seed runs**.
+**p95 click→ACCESS < 5 s**, measured over **HERO vantages** — `maya-thriving` (employee → `/profile`),
+`dan-manager` (manager → `/enterprise/…`), and `rae-recruiter` (recruiter → the **apps/hiring** 2nd app
+`/enterprise/activity-dashboard`; the M226 "opening night" 3rd measured path, v2.4 "casting call").
+
+### What the gate covers, and what a release must state (v2.5 M236, user-authorized)
+
+**The gate is scoped to HERO vantages only. Non-hero seats are out of scope, structurally — not by omission.**
+
+`measureLogin` begins by reading the cockpit's real CTA, and the ACCESS predicate's second half ("the user menu
+shows the hero") is resolved from the CTA's **`data-login-as`** attribute. The cockpit emits that attribute on
+**hero cards only** (`cockpit.py:618`); the Content-stories tab's seat CTAs (`:423`) carry a bare `href`. So
+`readCockpitCta` (`e2e/lib/latency.ts:115-127`) **throws before t0** for a content seat — there is no clock to
+start. `run-latency.sh:53-59` independently hard-rejects any vantage outside `employee|manager|recruiter`
+(`exit 2`). **A content-seat number cannot be produced by this harness at all**, so its absence is a property
+of the instrument, not a gap in a run.
+
+> **v2.5 "the playbill" scoping (user decision B2, 2026-07-20).** Content-seat latency is **explicitly OUT OF
+> SCOPE for v2.5**. The cockpit CTA and `run-latency.sh` were deliberately **not** extended to content seats.
+> The 31→29 content actions v2.5 shipped are proven for **CONTENT** — they render real, non-empty results —
+> and are **not formally timed**. Do not read "v2.5 met the p95 gate" as covering the content seats.
+
+**Two run-shape variables are per-release, and a release must state both with its number:**
+
+| variable | what varies | v2.5 M236 |
+|---|---|---|
+| **vantages measured** | which of the three hero seats a release actually drove | **2** — employee + manager (the recruiter vantage was last measured at M226) |
+| **cold cycles** | how many *distinct cold reset-to-seed stacks* the samples came from | **1** cold stack, **5** login samples within it (`LATENCY_RUNS=5`) |
+
+**These are not the same axis, and conflating them is how a gate silently weakens.** M218 armed the gate on
+**5 consecutive cold reset-to-seed runs** — five separate cold stacks. M236 measured **5 login samples inside
+one cold stack**, which is a weaker claim: it samples login variance, not bring-up variance. Both are legitimate
+readings; only one of them is the M218 standard. **A release claiming "gate MET" must say which it did.**
+
+> **Standing rule:** *"5 runs" is ambiguous and must never appear unqualified.* Say **cold cycles × samples per
+> cycle**. A number that does not name its cold-cycle count cannot be compared to one that does.
 
 > **The recruiter vantage is a seat-key + a landing origin, not a new code path.** `measureLogin` is
 > vantage-agnostic: it follows the cockpit CTA's own `redirect_url`, and the `rae-recruiter` CTA lands on the
@@ -77,6 +115,39 @@ M218's two defects were each identifiable **from their cost alone**, before any 
 Both fall out of next-web's `prefetchUserStatus`: `retry: 2`, `retryDelay = min(2000 × 2^n, 20000)` → **2 s → 4 s**.
 A blackhole and a refusal are **six seconds apart in signature**. Learn to read the ladder.
 
+#### The per-item fan-out signature — cost that scales with CONTENT, not a broken route
+
+The retry ladders above are **fixed** costs: the same number whatever the page holds. The third signature in
+this family is the one that **varies with the item count of the thing being rendered**:
+
+> **Two instances of the same route, one slow and one fast, differing only in item count ⇒ a per-item fan-out.**
+> Not a broken route, not a dead seat, not a wrong id — the surface and the credentials demonstrably work,
+> because the light sibling renders on them.
+
+The diagnostic is a **contrast**, not a measurement: find the *sibling*. M236 iter-06 hit a skill-path manager
+route exceeding a 180 s navigation timeout while `sp-genai-in-progress` rendered fine on the **same route
+family with the same seat** — the two differed only in weight (a completed **13-chapter** path vs a 3-chapter
+path at 45%). That contrast alone says *look for a query issued per chapter*, and rules out the three
+hypotheses an operator reaches for first.
+
+**Read it against the fixed-cost ladders above:**
+
+| shape of the number | what it can only be |
+|---|---|
+| a **constant** ~37.5 s / ~6.1 s regardless of page content | a **retry ladder** — blackholing vs fast-failing (above) |
+| **scales with the item count** on the page; a light sibling passes | a **per-item fan-out** — a query inside a loop |
+| **large and cold, small and warm**, same page | a **warm-up transient** — see R4 below, not a gate violation |
+
+**The order matters: name the arithmetic signature *before* reading code.** All three are distinguishable from
+the number and one contrast, and each sends you to a different file.
+
+> ⚠️ **But first, disbelieve the clock.** A per-item fan-out and a **mis-instrumented wait** produce the same
+> reading. The same M236 pair later turned out to be *neither* — instrumenting the navigation showed **134
+> completed legs, 0 pending, none over 800 ms, page painted in ~1 s**. The "hang" was `networkidle` never
+> resolving against next-web's long-polls (see the rule above: *never gate on `networkidle`*). **Prove the
+> page is actually slow before attributing the slowness** — a probe that measures the wrong event reports an
+> arithmetic signature it invented. `coverage-protocol.md` records that pair's full triage.
+
 ## The measured baseline (and what M218 did to it)
 
 _`billion` tailnet demo · `demo-1` · **cold** reset-to-seed · `autoverify.json` green · measured **from the
@@ -100,6 +171,38 @@ The recruiter shares next-web's fast authenticated-shell path — its p95 sits a
 under the 5 s gate. (State the environment: measured from this Mac against `billion.taildc510.ts.net` HTTPS.)
 **Independently re-verified at M226 close** by the orchestrator from this Mac — a fresh recruiter-vantage run
 returned **p95 1.74 s** (< 5 s), corroborating the two-cycle numbers above.
+
+**M236 "prove on billion" (v2.5 "the playbill") — the gate re-measured on the tailnet, and the COLD/WARM pair:**
+
+| vantage | **cold** (iter-10) | **warm** (iter-09) | ratio |
+|---|---|---|---|
+| **employee** (`maya-thriving` → `/profile`) | **p95 1.22 s** | p95 **3.15 s** | 2.6× |
+| **manager** (`dan-manager` → `/enterprise/…`) | **p95 1.51 s** | p95 **2.71 s** | 1.8× |
+
+_Scope: **1 cold reset-to-seed cycle × 5 login samples**, HERO vantages only (B2). ACCESS 5/5 both vantages.
+Environment: measured from this Mac against `billion.taildc510.ts.net` over HTTPS — the presenter's vantage._
+
+### ⚠ The COLD stack was the FAST one — the intuition is backwards here
+
+**Do not read 1.22 s as expected steady state, and do not treat "warm" as a synonym for "fast".** The warm
+readings came from a stack that had been **up for hours across 3 cockpit restarts and 2 re-pins**; the cold
+ones from a stack built from nothing. Cold measured **~2× faster**.
+
+Long-lived demo state **accumulates cost** — restarted cockpits, re-pinned tooling, and hours of accreted
+process state are not a neutral background. So the two readings measure genuinely different subjects:
+
+- **the cold number is the gate number** — it is what a presenter meets on a freshly brought-up demo, and it
+  is the reproducible one;
+- **the warm number is the PESSIMISTIC bound** — carry it as the ceiling a long-running demo can drift to.
+
+Both are far inside the 5 s gate, which is the substantive result: **the gate holds at either end of the
+range, so the cold/warm question does not change the verdict** — it only changes which number you quote.
+
+> **This pair is the doc's own rule paying out.** *State the environment with every number* (below) is not
+> bookkeeping: absent the environment, "p95 1.22 s" and "p95 3.15 s" look like a regression or a fix. They are
+> neither — they are **two different stacks**. Every latency row in this doc names cold/warm, the vantage, the
+> measuring host, and the cold-cycle count for exactly this reason. A row missing any of them is not
+> comparable to the rows around it.
 
 ### R4 — the compare-drawer cold first render is a warm-up transient, NOT a gate violation
 
@@ -155,9 +258,15 @@ cd <stack>/rosetta-extensions/stack-verify/e2e
 LATENCY_HOST=billion.taildc510.ts.net \
 LATENCY_SCHEME=https \                           # REQUIRED for a --public-host demo (see below)
 LATENCY_AUTOVERIFY_JSON=/tmp/autoverify.json \   # a copy of the REAL remote verdict — never a bypass
-LATENCY_RUNS=5 LATENCY_GATE_MS=5000 \            # gate armed
-  ./run-latency.sh 1 employee                     # …and: manager
+LATENCY_RUNS=5 LATENCY_GATE_MS=5000 \            # gate armed — 5 SAMPLES, not 5 cold cycles
+  ./run-latency.sh 1 employee                     # vantages: employee | manager | recruiter
 ```
+
+> **`LATENCY_RUNS=5` buys 5 login samples on ONE stack — it is not the "5 cold runs" of the M218 standard.**
+> Cold cycles are the *outer* loop and the harness does not own it: to measure N cold cycles you tear the
+> stack down and bring it up N times, running this command once per cycle. Whichever you do, **state it with
+> the number** (see *What the gate covers* above). `run-latency.sh` accepts exactly the three hero vantages
+> and exits 2 on anything else — content seats are not measurable here by construction.
 
 > **`LATENCY_SCHEME=https` is not optional here** (added M236 iter-09; the block above omitted it and was
 > wrong for the exact scenario this section is about). The runner defaults to `http`, but a `--public-host`
