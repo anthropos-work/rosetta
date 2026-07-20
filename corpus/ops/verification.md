@@ -407,12 +407,24 @@ gate here measures it.** v2.5 M236 opened with an exit-gate clause requiring the
 over the tailnet"* and **dropped it** on that basis, with no off-tailnet probe deliverable.
 
 **Why this is a scoping stance and not a safety claim.** It says which *layer* owns the control, not that the
-control is unnecessary. The reason the demo stack can decline the job is the structural one
-[`safety.md`](safety.md) Part 3 argues at length: a demo contains **no customer data** and **cannot write
-prod**, so reach is a network-perimeter concern rather than a data-exposure one. That disclosure — including
-the fact that **every demo container publishes on `0.0.0.0`, flag or no flag** — stands **as-is** and needed
-no amendment for this decision. Read `safety.md` §3 Part 3 for the exposure picture; read this line only as
+control is unnecessary — and **not** that there is nothing to protect. That disclosure — including the fact
+that **every demo container publishes on `0.0.0.0`, flag or no flag** — stands **as-is** and needed no
+amendment for this decision. Read `safety.md` §3 Part 3 for the exposure picture; read this line only as
 *the demo stack is not the layer that verifies it.*
+
+> 🔴 **The rationale is demo-shape-dependent — do not generalize it.** For a **synthetic** demo the stack can
+> decline the job cheaply, because [`safety.md`](safety.md) §3.3 argument 1 holds: no customer data **can** be
+> in it, so reach is a network-perimeter concern rather than a data-exposure one. **For a content-story demo
+> (§3.8) that premise is false** — it carries best-effort-scrubbed **real production session content**, and
+> §3.3 marks argument 1 as not holding for that shape. Reach there **is** a data-exposure concern.
+>
+> **The layering decision is unchanged** (it is a statement about *ownership* of the control), but the weight
+> it carries is not. Per [`safety.md` §3.3.1](safety.md), the VPN/tailnet scope is promoted from a supporting
+> comfort to **the** control for that shape — the one the data-controller acceptance was explicitly
+> conditioned on. So *"no gate here measures it"* is a **materially heavier gap for a content-story demo**:
+> the control the acceptance rests on is **operator-maintained and unattested**, as strong as the network the
+> box is on, and nothing in this document will tell you if it is weaker. `safety.md` §3.4 residual #2 records
+> the same consequence from the other side.
 
 ## Cross-references
 
