@@ -304,9 +304,31 @@ layout + `has_manager_view` omitempty; per-product app-base routing generalizing
 presence-only? confirm the per-(simId,userId) manager drill-down deep-link (M224 deferred it as "optional polish").
 
 #### M235 — prove-it-lands: interesting sessions, player + manager  (`iterative`, large)
-**Status:** `planned`
+**Status:** `done` (closed-incomplete 2026-07-20 — pragmatic-close mandate; the LIVE `(session × action)`-lands gate routes to M236 by design)
 **Goal:** Populate the tab with INTERESTING (not boring) real-shaped sessions per the brief and prove every cockpit action
 lands on a non-empty, believable result page.
+
+**Closure narrative (2026-07-20).** Iterative, **closed-incomplete** under the user's pragmatic-close mandate ("build
+non-sim seeders, then close"). Everything the live proof *depends on* is built + unit-proven, **0 platform-repo edits**,
+all in rext `stack-seeding` + the rosetta corpus. **Two user-blockers surfaced + resolved:** (1) **M235-01** — the
+anonymization scrub removed **zero** names (8/9 fixtures leaked a real first name) because the capture sourced only the
+empty `jobsimulation.actors` names, not the session owner's `public.users` identity where the candidate's first name
+actually lives → hardened (owner-identity sourcing → `<<ACTOR_0>>`, token-split, word-boundary, a capture-time
+`SurvivingToken` fail-closed post-condition) + re-captured 9 fixtures **provably clean** (0 leaked names, 545
+placeholders) + a standing CI cleanliness tripwire (`#M235-B1`); (2) **M235-02** — the planned "coverage descriptor"
+mechanism doesn't exist (dynamic-URL, cockpit-seat-reached result pages need NEW seat-login sweep plumbing authored +
+calibrated against a live render) → user ruled "build non-sim seeders, then close" (`#M235-B2`). **Delivered:** the full
+13-session simulation matrix (assessment PASSED = 2 voice / 1 code / 1 document; every type passed AND not-passed) + all
+3 non-simulation sections (skill-path-legacy real progress + `local_skill_path_sessions` mirror; ai-labs presence-only;
+academy `/library/<slug>` CTA) via a separate code-owned registry (`seeders/content_nonsim.go`) → the manifest projects
+all **4 products / 18 sessions**, both honesty gates GREEN. rext code-of-record `playbill-m235-hardened @ 60eff14` (build
+tags `-scrub-fix` / `-fixture-matrix` / `-nonsim-{skillpath,ailabs,academy}`). Whole-rext Go test funcs **1939 → 1974**
+(+35, `git grep '^func Test'`); touched-pkg suites + honesty gates GREEN, `go vet` clean, **flake 5/5**; harden Pass 1+2
+`--final` stabilized (0 bugs). Close near-clean (adversarial subsection + 2 back-ref tags, no rext code change), deferral
+audit **YELLOW / 0 blockers** (chronic 14-fail demo-stack carry — M235's slice 6 `test_cockpit.py` — user-dispositioned →
+v2.5 release-close; not re-woken). **carry-forward.md:** 3 clusters (LIVE proof + new seat-login plumbing · per-section
+live-calibration checklists · M230 carry-forward live items), **all Fate-3 → M236, already applied** to M236's `In:`
+(iter-08, commit `54eaefe`, user-authorized). No live proof faked; no platform edit.
 **Exit gate:** on a cold reset-to-seed, every in-scope (session × action) logs in on the correct org and lands on a NON-EMPTY
 result page for BOTH player and manager vantages, 0 ejects, with the assessment **2-voice / 1-code / 1-document PASSED** set
 present and each type present in **passed AND not-passed** states; each product either passes or is declared with a documented
