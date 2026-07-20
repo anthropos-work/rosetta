@@ -73,6 +73,21 @@ Both tabs work live on billion — **all 31 landable (session × action) pairs**
   demopatch manifests) as a cold-`/demo-up` prerequisite; the **`getPublicCatalogView` 2nd-manifest**
   anonymous-routes follow-on.
 
+> **⚠ Two items above were written from diagnoses this milestone's own Phase-0b audit then FALSIFIED.**
+> Recorded here rather than edited away, because the In-list is the record of what M236 was *told* to do.
+> - **The "2 drifted demopatch manifests" were not drifted** (audit F20): clone HEAD matched the pin exactly;
+>   the working tree was merely left-patched by an un-reverted run, which classifies `ALREADY_PATCHED` → an
+>   idempotent no-op. The real fix was one `git checkout --`. The cold bring-up then passed with all patches
+>   applied, none refused. **M230 carry-forward cluster 2 is DISCHARGED** (iter-10) — it had no closing entry
+>   anywhere until this close.
+> - **The ANT_ACADEMY coverage descriptor did not exist as described** (audit F21): the shipped one is a
+>   text-marker + length floor that **would pass on a zero-card grid** — i.e. it could not detect the exact
+>   Thread-A failure it was cited to catch. It had to be AUTHORED, which iter-08 did as the sixth render
+>   shape (`player-academy`, asserting course/chapter structure **and 0 Draft chips**).
+> - Relatedly, the **academy** bullet above is superseded: `app/cmd/academy-seed` is **moot on a demo**
+>   (iter-08) — no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` means the seeded rows have no reader — and
+>   `/library/<slug>` is **not a route** in ant-academy. The CTA is `/courses/<slug>` into the FS catalog.
+
 ### Out
 - New feature work (the SEEDERS + the manifest sections are built + unit-proven by M235 — M236 CALIBRATES +
   PROVES them live, it does not re-build them)

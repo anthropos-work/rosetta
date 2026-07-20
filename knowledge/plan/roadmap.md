@@ -344,17 +344,72 @@ trap). Triage each blank landing to its true read-model; fix in seeder/manifest 
 meaningful result page or blocked/empty?
 
 #### M236 — prove-on-billion  (`iterative`, medium)
-**Status:** `planned`
+**Status:** `done` — **gate MET 2026-07-20** (closed-on-gate; **merge held pending a user fate on the standing
+test-debt carry — see "Close blocker" below**)
 **Goal:** Re-prove the whole feature live on the `billion` Tailscale VM (the house pattern that closed M215/M221/M226/M228) —
-both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed, **VPN-scoped**.
-**Exit gate:** both tabs work live on `billion` — Content-stories sessions render real content for player + manager vantages,
-the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, p95 click→ACCESS < 5 s, 0 platform edits,
-demo reachable only over the tailnet.
-**Iteration protocol:** `corpus/ops/verification.md` + `tailscale-serve.md`. Same billion-safety rules (one driver, no detached
-on-host scripts, assert from a tailnet peer, never kill a mid-build).
-**Out:** new feature work (built by M235).
+both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed.
+**Exit gate (as re-scoped by USER-BLOCKER-M236-01):** both tabs work live on `billion` — all **landable** (session × action)
+pairs render real content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a
+cold reset-to-seed, p95 click→ACCESS < 5 s **for the HERO vantages only**, 0 platform edits.
+**Iteration protocol:** `corpus/ops/demo/coverage-protocol.md` + `playthroughs.md` (repointed from the hollow `verification.md`
+ref — B5). Same billion-safety rules (one driver, no detached on-host scripts, assert from a tailnet peer, never kill a mid-build).
+**Out:** new feature work (built by M235); content-seat latency (B2, out of scope for v2.5).
 **Depends on:** M235.  **Complexity:** medium.
 **Delivers →** none.
+
+**Closure narrative (2026-07-20).** Iterative, **closed-on-gate** in **10 iters** (1 bootstrap tok + 9 tiks, single day).
+**Gate MET cold on `billion`:** **29/29** landable (session × action) pairs render real content both vantages · **65** academy
+course cards / 483 chapter links / **0** Draft chips · hero p95 **1.22 s** employee / **1.51 s** manager vs a 5 s budget, 5/5
+ACCESS · reproduced on a cold reset-to-seed **with no intervention** · **0 platform-repo edits**, verified per-clone.
+
+**The denominator was CORRECTED 31 → 29 mid-milestone (iter-07) — the target SHRANK, and this is not 31/31.** The 2
+skill-path **manager** pairs point at a surface next-web **has not built** (`InsightsBySkillPathStudentSimulationsContainer`
+renders the literal string "Coming soon", results table commented out, `userData` hardcoded null — no query touches the
+seeded session), so under M233's fail-closed rule they are **not landable**, on the same ground that excludes AI-labs. *31 was
+never a count of provable pairs.* The correction is argued inline in `overview.md` with the 31 struck through, not rewritten.
+It also exposed a **false PASS**: the lighter of the two had been scoring green off a definition-only "Results for" header
+(chrome served by a different query than the one that failed) — so the pre-correction reading was wrong in **both** directions
+at once. Chain: `18 sessions + 15 manager views = 33 raw` → −2 skill-path → `31` → −2 ai-labs → **29 landable**.
+
+**USER-BLOCKER-M236-01 (5 sub-findings, all user-resolved 2026-07-20):** the Phase-0b KB-fidelity audit returned **RED** on
+spec grounds — the declared gate contained an unprovable clause ("tailnet-only" is false by construction: every demo publishes
+on `0.0.0.0`), half the gate was unmeasurable (the content CTA emits no `data-login-as`, which *is* the ACCESS predicate), the
+cited page-object did not exist (it is a next-web `.tsx` component, so the harness had to be **authored from scratch**), the
+milestone had to consciously **reverse** a documented `skipPaths` rule, and its declared `iteration_protocol_ref` was hollow.
+Resolved B1 drop-the-clause / B2 hero-only p95 / B3 accept the enlarged cluster / B4 amend the protocol / B5 repoint the refs.
+
+**The milestone's most transferable finding — five wrong test assertions per one real product bug.** Of the defects that cost
+iters, the majority were *the test being wrong*, not the product: a manager test that asserted the defective contract (which is
+why it shipped), an interview manager view graded as a false FAIL against the wrong shape, a skill-path page graded as a scored
+sim, an academy CTA whose unit test *required* a route that does not exist and so defended it. The final harden then found
+**three more checks passing against a broken subject**: an aggregator reporting success on an empty run (0/0 is also
+arithmetically 100%), the whole e2e suite passing by **collecting 0 tests** after a module-scope throw — silently taking **61
+tests offline for 8 iters** — and a grader with **no negative tests at all**. Backfilled into `coverage-protocol.md`,
+`latency-budget.md`, `content-stories-spec.md`. The rule: *ask of every layer that reports a number what it prints when
+nothing happened.*
+
+**Close (2026-07-20).** Review found 17 doc + 16 code + 6 test-coverage findings; **all fixed**. Notably: three docs still
+asserted the skill-path manager surface exists (the claim that produced the 31) and two still routed the academy through
+`app/cmd/academy-seed`, which iter-08 proved **moot on a demo** (no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` ⇒ the seeded rows have
+no reader); `CLAUDE.md` asserted the manager route takes a `<userId>` when it takes a **membership** id — the exact defect
+iter-05 spent an iter on. A full-suite sweep found the standing carry is **19, not 14**: five *unnamed* stack-core failures
+were the two cross-repo **doc-truth guards** (org-count: the preset has shipped **4** orgs since v2.4 M223 while docs, source,
+and the guard's own test still said 3; and `DEMO_NO_ACADEMY_FILL` — the knob that **gates Thread A** — undocumented). Both
+guards were red and **correct**, and had been read as noise for three milestones. Fixed → stack-core 5 → 0. Also centralized
+the membership-key derivation (a bare literal at **9** sites, one of which writes the row and eight of which merely hope to
+match it) after finding M236's own regression test for that defect was a **self-consistent tautology** — it derived the
+expected value from the expression under test, so it could not fail. Both new pins mutation-verified. rext code-of-record
+**`playbill-m236-close-fixes`**, pushed. Go **1974 → 1976**; stack-verify python **132 → 141**; harness specs **64 → 66**.
+
+**Close blocker (why the merge is held).** `/developer-kit:audit-deferrals` returned **RED**. The standing **14 pre-existing
+demo-stack failures** are a genuine repeat-deferral across **10 milestones and 2 releases**, and their declared destination —
+*the v2.4 release close* — **already fired once without landing them** (v2.4 shipped them as a known issue and re-anchored on
+v2.5), an **AGED_OUT** trigger no audit had recorded. M236 is the FINAL v2.5 milestone, so there is nowhere left to defer to;
+the next event *is* the release close. The set has also drifted materially under a fixed label (8 → 14, and the *class*
+changed from stale-tests to `pre_sha256` pin drift), so **14 is now wrong in both directions** and must be re-baselined before
+any fate is chosen. Per Phase 1b this requires an explicit **user** fate — LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF with a
+fresh dated decision. Recorded at `m236-prove-on-billion/decisions.md` **CLOSE-D2**.
+
 **Open questions:** none blocking.
 
 ### On the reserved M205 (updated 2026-07-19)

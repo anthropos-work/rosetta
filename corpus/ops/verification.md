@@ -371,3 +371,12 @@ unnoticed for four releases.
   store, never prod.
 - [`/test-platform`](../../.claude/skills/test-platform/SKILL.md) — the operator-driven, deeper
   verification surface this auto-run is a default-on, non-fatal smoke subset of.
+- [`demo/coverage-protocol.md`](demo/coverage-protocol.md) — the two Playwright sweeps that verify what a
+  bring-up actually RENDERS, where this doc verifies that it came UP: the v1.10 M42e hero-vantage coverage
+  sweep, and (v2.5 M236) the **content-stories `(session × action)` LANDS sweep**. The relationship matters
+  operationally: `run-content-stories.sh` **gates on this doc's `autoverify.json` being fresh AND green**
+  before it will trust its own reading, so a stale or red verify invalidates the render proof rather than
+  being worked around.
+- [`demo/content-stories-spec.md`](demo/content-stories-spec.md) — the `content-manifest.json` those sweeps
+  read. A cockpit brought up without `--content-manifest` serves **404** and the sweep fails closed; the
+  bring-up wires it via `--content-export` (non-fatal), logging to `$STACK/content-export.log`.

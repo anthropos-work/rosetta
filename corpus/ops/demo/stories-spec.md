@@ -318,7 +318,7 @@ stories:
     heroes: [ … Sara·thriving / Nick·struggling / Leah·manager … ]
 ```
 
-The shipped `presets/stories.seed.yaml` is the runnable **3-stories × 3-heroes** roster (the M35 two stories +
+The shipped `presets/stories.seed.yaml` is the runnable **4-org** roster — 3 workforce stories × 3 heroes plus the v2.4 M223 hiring org (the M35 two stories +
 the M51 AI-readiness showcase org — see [The AI-readiness showcase org](#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)).
 
 ### Vantage & trajectory (the two hero axes)
@@ -433,7 +433,7 @@ demo-patch**.
 
 ### The story
 
-A 3rd `stories[]` entry in `presets/stories.seed.yaml` (so the roster is now **3 stories × 3 heroes**, not the
+A 3rd `stories[]` entry in `presets/stories.seed.yaml` (making it **3 workforce stories × 3 heroes**; v2.4 M223 later added a 4th org, the Meridian Talent hiring org — so the preset ships **4 orgs** today, not the
 former 2×3): org **Northwind Aviation** (200 members, `narrative: ai-readiness`), with a hero trio —
 
 | Hero | Vantage / trajectory | AI-readiness state |

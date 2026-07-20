@@ -147,3 +147,126 @@ planned (verified safe by iter-02's pre-flight).
 **Gate denominator preserved: 31 landable (session × action) pairs** — 26 simulation + 4
 skill-path-legacy + 1 academy; ai-labs is presence-only. `has_manager_view` is **per-SESSION, not
 per-product** — a product-level read silently under-counts 31 → 18.
+
+---
+
+## Close review — Adversarial review (Phase 2c)
+
+Scenarios considered against the milestone's own code, and their responses.
+
+**S1 — the aggregator is handed a not-ok row with no `reason`.** REAL. The malformed-row guard validated
+`ok` and `product`; the failure summary indexes `reason`. The row raised `KeyError` **after**
+`content-stories.json` had already been written — "crashed but left a report", where the artifact outlives
+the run that produced it and is later read as evidence. That is D17's signature hazard inside the gate's own
+aggregator. **Fixed + regression-tested**, with a negative counterpart so the fix cannot over-correct into
+rejecting every not-ok row.
+
+**S2 — a result page renders entirely through a portal.** REAL-but-latent. `settle()` counts `main + body`
+to see antd-Drawer surfaces, but the length floors read `main.length`, so such a page could settle correctly
+and then fail "too short (0 chars)". **Fixed** — but note the *second-order* trap found while fixing it:
+the obvious repair (`readable = main.length + body.length`) **double-counts**, because `<main>` is a
+descendant of `<body>`. That silently HALVES every floor and would let a blank page carrying only nav chrome
+clear a 300-char gate — reintroducing the false-PASS class the milestone spent six iters eliminating. The
+landed fix is `main || body`. *A fix for a false-FAIL that creates a false-PASS is a net loss.*
+
+**S3 — the sweep is run with a mistyped stack number.** REAL for two of four runners. `$(( abc * 10000 ))`
+is 0 in bash, silently sweeping the DEV stack. **Fixed** across all four (see S6).
+
+**S4 — the sweep runs a SUBSET and reports green.** REAL. `EXPECTED_PAIRS` is the only guard against
+"ran 26 of 29 and landed all 26", and it was documented in two places and **set by nothing** — dark by
+default. **Fixed**: pinned from the SERVED manifest, computed by mirroring `buildPairs` exactly, failing
+loud rather than pinning 0.
+
+**S5 — a stray argument widens the run.** REAL. Positionals were forwarded into `playwright test` as a
+second filename filter. **Fixed** (refused). This is the M50 bug that `run-coverage.sh` already documents at
+length — the new runner simply did not adopt the guard.
+
+**S6 — a lesson is written in one file and not its siblings.** REAL, and the milestone's most recurrent
+meta-failure: it happened with the `N` guard (2 of 4 runners), with `networkidle` (documented in
+`latency-budget.md`, then inherited anyway by the new sweep), and with the doc corrections (iters fixed the
+docs they touched, not the docs carrying the same claim). Every instance is fixed; the pattern is carried
+into the retro because it is not fixable by any single fix.
+
+**S7 — the harness changed after the gate was proven.** ACCEPTED, disclosed. See CLOSE-D3 below.
+
+---
+
+## CLOSE-D1 — deferral audit returned **RED**; item 4 requires a USER fate — 2026-07-20
+
+`/developer-kit:audit-deferrals --scope=milestone` returned **RED / SEVERITY=blocker**. 9 items in scope.
+Eight are dispositioned below and were LANDED or correctly routed at this close. **One cannot be
+dispositioned by an agent** and is escalated to the user; the milestone therefore does **NOT** merge in this
+session.
+
+| # | Item | Fate at this close |
+|---|---|---|
+| 1 | `ACADEMY-M236-iter08-public-catalog-twin` (anon `/library` + `/free` render 0 cards) | **Fate 3 → v2.5 release close.** Needs a 2nd demopatch manifest + a next-web rebuild + a live re-prove — not agent-completable in a docs close. `frontend-tier.md`'s unqualified "the empty grid is FILLED" was **scoped** to signed-in at this close, so the doc no longer over-claims. |
+| 2 | `apps/web` client GraphQL endpoint on non-offset `:5050` | **Fate 3 → v2.5 release close**, batched with #1 (same rebuild, one re-prove). |
+| 3 | v2.4-era method docs (F3/F4/F6/F7/F10) | **LANDED (Fate 1).** `verification.md` + `tailscale-serve.md` + `demo-up-defaults.md` backfilled; `session-clone-spec.md` already had coverage. |
+| 4 | **14 pre-existing demo-stack test failures** | **ESCALATED — see CLOSE-D2. No agent-side fate is legitimate here.** |
+| 5 | `run-coverage.sh` / `run-hiring-render.sh` non-integer-`N` guard | **LANDED (Fate 1)**, committed AND published (see CLOSE-D4). |
+| 6a | Seed ships 4 orgs, docs say 3 | **LANDED (Fate 1)** — 20 places across 8 corpus docs, 2 shipped skills, and `CLAUDE.md`. |
+| 6b | `test_m220_mutation_battery.py` unmutated subject fails | **Folded into #4** — which means the standing set is **15+, not 14** (see CLOSE-D2). |
+| 7 | `DEF-M235-03` M204 assign-WRITE declared TODO | **Fate 3 → v2.5 release close** (inherited, correctly routed past M236). |
+| 8 | M230 carry-forward **cluster 2** (next-web clone re-anchor) | **DISCHARGED** — recorded in `overview.md` at this close. It was the one forward-routed item with **no closing entry anywhere**; the diagnosis was falsified (clone was not drifted) and the cold bring-up passed. |
+
+Also landed from the audit's queue: the **`DEMO_NO_ACADEMY_FILL` knob** — undocumented while **gating
+Thread A**. `stack-core/demo_knob_guard.py` was in **disagreement** before this close and now passes both
+directions.
+
+## CLOSE-D2 — the 14-failure carry is a genuine repeat-deferral; escalated, not renewed — 2026-07-20
+
+**This is the blocker.** The audit traced the item across **10 distinct milestones and 2 releases** (first
+seen M224, 2026-07-17, as *8* failures). Three facts make it an escalation rather than another YELLOW:
+
+1. **Its declared destination has already fired once without landing it.** M225–M227 routed it explicitly to
+   *"the v2.4 release close."* v2.4 closed 2026-07-18 and the item shipped as a known issue, re-anchored on
+   v2.5's close. That is a verbatim AGED_OUT trigger, and **no audit in the tree records it firing**. The
+   argument used at M235 to justify non-escalation — *"the destination has not yet closed, so the deferral
+   authority is intact"* — was equally true of v2.4's close, right up until it wasn't.
+2. **M236 is the FINAL v2.5 milestone.** There is no further milestone to defer into; the next event *is*
+   the release close. It cannot be renewed silently — only landed, dropped, or deferred cross-release with
+   explicit sign-off.
+3. **The item drifted materially under a fixed label.** The count went **8 → 14** at the v2.4 close with no
+   document treating growth as requiring re-decision, and the *nature* changed too: M224 called them stale
+   tests for intentionally-removed behaviour (semantic debt); M232 D8 diagnoses 6 of them as `pre_sha256`
+   **pin drift** (env debt) — a different class. It is growing again: this milestone's hardening ledger adds
+   the mutation battery and the org-count guard as "belonging to the set" while not re-routing them. So
+   **14 is now wrong in both directions** and must be re-baselined before any fate is chosen.
+
+Supporting evidence that this is a known local hazard: finding **F-M220-6** states the lesson verbatim —
+*"A red suite is not just noise … '14 failures' is indistinguishable from '11 + 3' until you baseline
+against HEAD."* That lesson was landed Fate-1 at M220 and the same hazard has since re-accumulated.
+
+**Why no agent-side fate was taken.** LAND-NOW is the three-fate default, and 6 of the failures are
+mechanical pin re-anchors — but re-anchoring `pre_sha256` requires a live next-web clone, and the set is not
+correctly enumerated today. KEEP-DEFERRED-WITH-SIGNOFF requires a **fresh dated user decision**, which an
+agent cannot manufacture. Choosing either unilaterally would be exactly the silent renewal that made this a
+repeat-deferral in the first place. **Required before v2.5 can close: re-baseline the set against HEAD, then
+an explicit user fate (LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF).**
+
+## CLOSE-D3 — the harness changed after the gate was proven; the reading is NOT re-proven live — 2026-07-20
+
+The gate (29/29 cold on `billion`) was measured with the harness at `playbill-m236-hardened`. This close then
+fixed 3 must-fix and 7 should-fix defects **in that same harness**, including two that alter grading
+semantics: the length floors (`main` → `main || body`) and the not-found guard (`main` → `main + body`).
+
+These are verified by **66 harness unit specs** (up from 64, incl. 2 new regression tests) and by the
+route-contract suite that independently asserts the 29-pair denominator from the canonical manifest — but
+they have **not been re-run against a live stack**. The honest statement is: *the gate reading stands on the
+harness as it was at the moment of measurement; the close fixes are unit-proven, not live-re-proven.*
+
+Recorded rather than papered over, because this milestone's own central finding is that a check can report
+success while proving nothing. A cheap live re-run of `run-content-stories.sh 1 --host billion...` at the
+v2.5 release close would discharge it; it is **not** gate-invalidating (every change is either strictly more
+conservative or covered by a regression test), but it is a real, named residual.
+
+## CLOSE-D4 — the close fixes were PUBLISHED, not just committed — 2026-07-20
+
+The audit caught that all close-review fixes were sitting **uncommitted** in the authoring copy, and that
+`playbill-m236-hardened` did not contain them. Because `billion` consumes `rosetta-extensions` only at a tag
+**fetched from origin** (M217 FATAL pin guard), that work was discharged in the working tree and undischarged
+in the product — the *exact* failure mode iter-01 found and that `verification.md`'s new PRE-FLIGHT RUNG ZERO
+now names (*"tagging is not publishing"*). Committed as `5c8d12e`, tagged **`playbill-m236-close-fixes`**,
+and **pushed to origin**. `billion`'s pin is unchanged (the gate reading belongs to the tag it was taken on —
+CLOSE-D3); re-pinning is a release-close action.

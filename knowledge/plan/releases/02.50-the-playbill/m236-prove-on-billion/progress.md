@@ -57,3 +57,104 @@
 - `LATENCY-M236-iterTBD-hero-p95` — iter-09.
 - `REPRO-M236-iterTBD-cold-cycle` — iter-10.
 - **USER-BLOCKER-M236-01: RESOLVED** 2026-07-20 (B1–B5).
+
+---
+
+## Gate Outcome Ledger (close, 2026-07-20)
+
+### Gate
+
+- **Target (as re-scoped by USER-BLOCKER-M236-01, 2026-07-20):** both cockpit tabs work live on `billion` —
+  all landable (session × action) pairs render real, non-empty content for player + manager vantages; the
+  academy grid renders real cards (Thread A); reproducibly on a **cold reset-to-seed**; **p95 click→ACCESS
+  < 5 s for the HERO vantages only**; **0 platform edits**.
+- **Achieved:** **29 / 29** landable pairs · academy **65 cards / 483 chapter links / 0 Draft chips** ·
+  hero p95 **1.22 s** (employee) / **1.51 s** (manager), 5/5 ACCESS both · reproduced cold with **no
+  intervention** · **0** platform-repo edits, verified per-clone.
+- **Distance:** **gate met**, every component.
+- **Status:** **`closed-on-gate`** — but the milestone **did not merge at this close**; see "Close blocker".
+
+> ### ⚠ The denominator was CORRECTED 31 → 29 mid-milestone. The target SHRANK.
+>
+> **This is not 31/31 achieved, and must never be reported as such.** The gate opened against **31**
+> landable pairs and closed against **29**, because at iter-07 the 2 skill-path **manager** pairs were shown
+> to point at a surface next-web **has not built**: `InsightsBySkillPathStudentSimulationsContainer`
+> hardcodes `userData = null`, has its results table **commented out**, and renders the literal string
+> **"Coming soon"**. No query touches the seeded session, so the page is byte-identical whether or not
+> anything was seeded. Under M233's fail-closed rule (*a session that cannot form a real link is dropped
+> with a reason, never linked anyway*) those pairs are **not landable** — on exactly the ground that already
+> excludes AI-labs.
+>
+> **31 was never a count of provable pairs; it assumed a surface that does not exist.** The correction is
+> argued inline in `overview.md` with product-source evidence and the 31 struck through rather than
+> rewritten, so the shrink stays auditable.
+>
+> **The correction also exposed a FALSE PASS.** The lighter of the two skill-path manager pairs had been
+> scoring **green** off a definition-only "Results for" header — chrome served by a *different* query than
+> the one that failed. So the pre-correction reading was not merely optimistic, it was **wrong in both
+> directions at once**: counting 2 pairs that could never land, while recording one of them as landed.
+> Numerator and denominator moved together (29 → 28 of 29) and the gap to gate went 2 → 1.
+>
+> Arithmetic chain, stated in full because `31` names two different quantities:
+> `18 sessions + 15 manager views = 33 raw` → −2 skill-path manager (unimplemented) → `31 raw` →
+> −2 ai-labs (presence-only) → **29 LANDABLE**.
+
+### Iter ledger summary
+
+- **Total iters:** 10 — **1 tok** (bootstrap, iter-01 "publish-then-prove") + **9 tiks**. No triggered tok.
+- **Duration:** 2026-07-20 (single day, 10 iters).
+- **Decisions accumulated:** 30 iter-level + 1 bootstrap tok strategy + 1 user-blocker (5 sub-findings,
+  all resolved) + 4 close decisions.
+- **Hardening:** final `--final` pass, **4 passes**, stabilized (coverage delta 0% across 3→4); 19 files in
+  scope, 7 defects fixed inline, harness unit tests **0 → 72**, both load-bearing fixes mutation-verified.
+- **Metric trajectory:** 0/31 → (reachability, +0 by design) → 16/31 → 27/31 → 29/31 → **28/29** (denominator
+  corrected) → **29/29** → reproduced cold.
+
+### Routes carried forward
+
+Gate met, so no carry-forward.md. Four items routed **Fate 3 → the v2.5 release close**, each with a named
+handler (see `decisions.md` CLOSE-D1 for the full audit disposition):
+
+- `ACADEMY-M236-iter08-public-catalog-twin` — anonymous `/library` + `/free` render 0 cards. Needs a 2nd
+  demopatch manifest + a next-web rebuild + a live re-prove. `frontend-tier.md`'s unqualified "the empty
+  grid is FILLED" was **scoped to signed-in** at this close so the doc no longer over-claims.
+- `apps/web` client GraphQL endpoint on the non-offset `:5050` — never manifested on a measured path
+  (SSR uses a different var). Batched with the above: same rebuild, one re-prove.
+- `DEF-M235-03` — the M204 assign-WRITE declared in-manifest TODO (inherited, routed past M236 by design).
+- The live re-prove of the harness as modified by this close (**CLOSE-D3**).
+
+**Discharged at this close:** M230 carry-forward **cluster 1** (rendered-card count — iters 08/10) and
+**cluster 2** (the next-web clone re-anchor), the latter having had **no closing entry anywhere** until now;
+its diagnosis was falsified by the milestone's own Phase-0b audit (the clone was never drifted).
+
+### Dropped
+
+- The **"demo reachable only over the tailnet"** gate clause — dropped by user decision B1, not by attrition.
+  It is false by construction (`safety.md`: every demo container publishes on `0.0.0.0` on every bring-up),
+  so it was only ever demonstrable via an off-tailnet probe. Reaching the right people is the VM + VPN's
+  job, not the demo stack's.
+- **Content-seat p95 latency** — explicitly out of scope for v2.5 (user decision B2). The content CTA emits
+  no `data-login-as`, which *is* the ACCESS predicate, and `run-latency.sh` hard-rejects non-hero vantages.
+  The 29 content actions are proven for **CONTENT**, not formally timed.
+
+### Protocol evolution
+
+- **`coverage-protocol.md`** — gained the content-stories sweep as the **second** sweep it governs, and had
+  its `skipPaths` `/result/` exclusion **deliberately reversed** (the pages M236 existed to prove were the
+  pages the rule excluded), amended in the same change per the protocol-evolution rule. Plus two new
+  subsections: *the reading must be fail-CLOSED* and *prove the test fails (mutation, not coverage)*.
+- **`playthroughs.md`** — gained the Playthrough-vs-content-story delineation: a Playthrough plays forward;
+  a content story is already played, so there is nothing to play and no Playthrough.
+- **`verification.md`** — gained **PRE-FLIGHT RUNG ZERO** (*"tagging is not publishing"*): a remote stack
+  consumes tooling only at a tag **fetched from origin**, so work that exists only in the authoring copy is
+  unreachable to it. iter-01 found `billion` unable to obtain the feature under test at all.
+- **`latency-budget.md`** — the green-gate age check, `LATENCY_SCHEME=https` for `--public-host`, and the
+  non-integer-`N` guard now propagated to all four runners.
+
+### Close blocker
+
+The deferral audit returned **RED**. The standing 14-failure demo-stack carry is a genuine repeat-deferral
+(**10 milestones, 2 releases**) whose declared destination — the v2.4 release close — **already fired once
+without landing it**, an AGED_OUT trigger no audit had recorded. M236 is the FINAL v2.5 milestone, so there
+is no further milestone to defer into. **Per Phase 1b, the milestone does not merge until the user records an
+explicit fate** (LAND-NOW / DROP / KEEP-DEFERRED-WITH-SIGNOFF). Full argument: `decisions.md` **CLOSE-D2**.

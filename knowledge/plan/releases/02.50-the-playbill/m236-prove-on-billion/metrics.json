@@ -58,7 +58,7 @@
     "in_flight": 0
   },
   "last_iter": "iter-10 (closed-fixed) \u2014 GATE MET",
-  "last_updated": "2026-07-20",
+  "last_updated": "2026-07-20 (close)",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
@@ -101,21 +101,24 @@
     "residual_causes": {}
   },
   "harness": {
-    "tag": "playbill-m236-interview-shape",
+    "tag": "playbill-m236-close-fixes",
     "files": [
       "stack-verify/e2e/lib/content-result-page.ts",
       "stack-verify/e2e/tests/content-stories.spec.ts",
       "stack-verify/e2e/run-content-stories.sh",
-      "stack-verify/e2e/aggregate-content.py"
+      "stack-verify/e2e/aggregate-content.py",
+      "stack-verify/e2e/lib/content-pairs.ts"
     ],
     "run": "./run-content-stories.sh 1 --host billion.taildc510.ts.net",
     "shapes": [
       "player-scored",
       "player-interview",
       "player-skillpath",
+      "player-academy",
       "manager-dashboard",
       "manager-interview"
-    ]
+    ],
+    "shapes_note": "SIX shapes. `player-academy` was added at iter-08 (the academy course page had been falling through to `player-scored`); the pre-close metrics file listed only five and named the iter-06 tag."
   },
   "gate_status": "MET \u2014 all components, reproduced on a cold reset-to-seed (iter-10)",
   "cold_cycle": {
@@ -127,5 +130,82 @@
     "frontend_builds": "ok (the running images are this run's)",
     "cockpit_bind": "0.0.0.0:17700 (iter-07's 127.0.0.1 was a restart-in-place artifact, as that iter predicted)",
     "served_manifest": "18 sessions / 13 manager views = 31 raw - 2 presence-only = 29 landable; the iter-07 + iter-08 corrections arrived from published tooling with no hand-editing"
+  },
+  "tests": {
+    "as_of": "M236 close (2026-07-20), full suites across every stack",
+    "go": {
+      "passed": 2459,
+      "failed": 0,
+      "modules": 6,
+      "packages": 58,
+      "whole_repo_test_funcs": 1976,
+      "delta_vs_M235": "1974 -> 1976 (+2: the membership-key contract tests)"
+    },
+    "typescript_playwright": {
+      "stack_verify_e2e_unit": {
+        "passed": 127,
+        "failed": 0
+      },
+      "playthroughs_e2e_unit": {
+        "passed": 69,
+        "failed": 0
+      },
+      "tsc": "clean both packages",
+      "note": "24 of stack-verify's 151 collected tests and 15 of playthroughs' 84 require a live demo stack and were not executed."
+    },
+    "python": {
+      "passed": 1391,
+      "failed": 2,
+      "skipped": 8,
+      "by_section": {
+        "demo-stack": {
+          "passed": 716,
+          "failed": 14,
+          "note": "the standing pre-existing carry"
+        },
+        "stack-core": {
+          "passed": 150,
+          "failed": 2,
+          "note": "was 147/5 at close open; the 5 doc-truth guard failures were FIXED at this close. The 2 remaining are test_m220_mutation_battery, verified identical at playbill-m236-hardened via a detached worktree -- pre-existing, not M236."
+        },
+        "stack-verify": {
+          "passed": 141,
+          "failed": 0,
+          "note": "132 -> 141: +6 runner/networkidle pins, +3 e2e collection-integrity guards"
+        },
+        "stack-injection + dev-stack": {
+          "passed": 384,
+          "failed": 0,
+          "skipped": 8
+        }
+      }
+    },
+    "m236_new_tests": {
+      "total": 83,
+      "breakdown": {
+        "aggregate-content.unit.spec.ts": 12,
+        "content-pairs.unit.spec.ts": 9,
+        "content-result-page.unit.spec.ts": 37,
+        "content-route-contract.unit.spec.ts": 8,
+        "test_green_gate_age.py": 8,
+        "test_e2e_collection_integrity.py": 3,
+        "content_stories_test.go (membership contract)": 2,
+        "ContentStoriesRunnerContract + NoNetworkIdleOnLongPollingSurfaces": 4
+      },
+      "note": "The hardening ledger recorded 72; the true figure at the end of harden was 74, and the close added 9 more."
+    }
+  },
+  "standing_carry_correction": {
+    "briefed_as": 14,
+    "measured": 19,
+    "resolved_at_close": 5,
+    "remaining": 14,
+    "detail": "The carry was briefed as '14 pre-existing demo-stack failures'. A full-suite sweep found 19: the 14 demo-stack ones PLUS 5 in stack-core that no ledger named -- the story-org-count guard (the preset has shipped 4 orgs since v2.4 M223 while docs and the guard's own test still said 3) and the demo-knob guard (DEMO_NO_ACADEMY_FILL, the knob that GATES Thread A, undocumented). Both guards were red and CORRECT. Fixed at this close, so the standing carry is back to exactly 14 -- and is now a measured number rather than a copied one."
+  },
+  "close": {
+    "date": "2026-07-20",
+    "deferral_audit": "RED -- the 14-failure carry is a genuine repeat-deferral (10 milestones, 2 releases) whose declared destination (the v2.4 release close) already fired once without landing it. Escalated to the user; see decisions.md CLOSE-D2. The milestone did NOT merge.",
+    "code_of_record": "playbill-m236-close-fixes (pushed to origin)",
+    "gate_reading_provenance": "The 29/29 reading was taken on playbill-m236-hardened. The close then fixed 10 defects in that same harness, unit-proven (66 harness specs) but NOT re-run live -- see decisions.md CLOSE-D3."
   }
 }

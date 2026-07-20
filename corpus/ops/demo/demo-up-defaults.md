@@ -34,7 +34,7 @@ necessary.
 
 ---
 
-## Env knobs — all 25
+## Env knobs — all 27
 
 `0` = feature ON (the knob is an **opt-out**); `1` = disable it. Read the `DEMO_NO_*` names as *"do not…"*.
 
@@ -55,6 +55,7 @@ necessary.
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
 | `DEMO_NO_UI` | `0` | **full UI tier is ON** — next-web + studio-desk (containers) + ant-academy (native) | `up-injected.sh:114` |
+| `DEMO_NO_ACADEMY_FILL` | `0` | **the academy grid is FILLED** — applies the `academy-fs-published-fallback` demo-patch to the demo's own ant-academy clone before launch, so the home grid renders the committed FS catalog as **published** (production-faithful, **no "Draft" chip**). Default-on for EVERY demo (localhost + public-host); idempotent + drift-refuse + **NON-FATAL** — a refused patch just leaves the grid empty. **This is the knob that gates Thread A**: set it to `1` and the demo academy renders 0 cards. Both halves are required (the patched code reads `ACADEMY_DEMO_FS_PUBLISHED`, which is added to the launch env *only* when the patch actually applied) | `ant-academy.sh:368` |
 | `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:1483` |
 
 ### Demo-patches (platform-source fixes applied to the demo's own ephemeral clone)
@@ -168,6 +169,13 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 ---
 
 ## The shape of the defaults, in one sentence
+
+> **Not a knob, but part of every bring-up (v2.5 M233/M234):** the cockpit's 2nd **"Content stories"** tab is
+> wired by `up-injected.sh` running `stackseed --content-export` and passing `--content-manifest
+> $STACK/content-manifest.json` to the cockpit. It is **non-fatal** — on failure the cockpit simply serves
+> **404** for `/content-manifest.json` and the tab is absent, with the reason in
+> `$STACK/content-export.log`. There is no `DEMO_NO_CONTENT` opt-out; the surface it feeds is documented in
+> [`content-stories-spec.md`](content-stories-spec.md).
 
 **A bare `/demo-up N` gives you everything**: the 4-org Stories & Heroes world, the full UI tier, the presenter
 cockpit, self-contained content, every demo-patch, an auto-verify pass — and, **as of v2.3 M220 S3, remote
