@@ -2,6 +2,16 @@
 
 ## Role & Responsibility
 
+> **⚠️ ORPHANED — nothing calls this service any more (verified v2.5, M231 KB-6).** Code execution moved
+> **in-process into jobsimulation**: `jobsimulation/internal/runner/runner.go:3` is an in-process Judge0 client
+> whose own header comment reads *"formerly the standalone 'roadrunner' service"*. On `origin/main` there is **no
+> `ROADRUNNER_RPC_ADDR` read in any service's Go code** (jobsimulation's only hits are its CHANGELOG and a stale
+> in-repo knowledge row), and no other platform repo references roadrunner at all. `platform/docker-compose.yml`
+> still *starts* the container and still *sets* `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` in jobsimulation's
+> environment — but that variable is now dead config, and a live container is not a live caller. The repo exists
+> and builds; it is simply no longer on any request path. **Everything below describes the service as built, not
+> as used.** Treat retirement as pending, not done.
+
 Roadrunner is the **code-execution proxy** for the platform. When a simulation includes a coding task, jobsimulation hands the user's source code to Roadrunner, which forwards it to **Judge0** (a sandboxed code-execution API) and returns the results (stdout, stderr, status, time).
 
 Roadrunner exists for one reason: it gives the platform a clean, language-agnostic boundary for running untrusted code without ever executing it in our own services or on our own infrastructure.
@@ -60,7 +70,7 @@ On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carr
 
 ## Dependencies
 
-* **Upstream consumers**: jobsimulation (the only caller — `ROADRUNNER_RPC_ADDR=http://roadrunner:10401`)
+* **Upstream consumers**: **none (orphaned — see the banner at the top).** Historically jobsimulation was the only caller via `ROADRUNNER_RPC_ADDR=http://roadrunner:10401`; that env var is still set in compose but is no longer read by any Go code, code execution having moved in-process to `jobsimulation/internal/runner/`
 * **Downstream**: Judge0 at `JUDGE0_BASE_URL=http://52.48.139.23:2358` (default in compose), Redis (Asynq backend)
 * **No database** — roadrunner owns no Postgres schema and stores no persistent state of its own. Judge0 holds submission state by token.
 

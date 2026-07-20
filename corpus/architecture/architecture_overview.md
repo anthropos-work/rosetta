@@ -116,7 +116,7 @@ graph TD
     CMS_Service --> Directus
     JobSim --> CMS_Service
     JobSim --> Storage
-    JobSim --> Roadrunner
+    JobSim -.->|orphaned: code exec is now in-process<br/>jobsimulation/internal/runner| Roadrunner
     
     %% Data connections
     Gateway --> Postgres

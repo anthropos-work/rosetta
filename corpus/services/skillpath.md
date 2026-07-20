@@ -91,6 +91,19 @@ erDiagram
 > analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the `skillpath.*` runtime rows renders an
 > empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab (no-surface).
 > Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+>
+> **But the per-user drill-down one level deeper is UNIMPLEMENTED (M236 iter-07, verified against
+> `next-web-app` `origin/main`).** The mirror above powers the *cohort* scoreboard at
+> `…/skill-paths/[skillPathId]` (`InsightsBySkillPathStudentsContainer`) — that page renders a real table and the
+> mirror row genuinely is required for it. The **per-member** route
+> `…/skill-paths/[skillPathId]/[userId]` (`InsightsBySkillPathStudentSimulationsContainer`) is a different
+> component and is **not built**: `userData` is hardcoded `null`, its results table and totals block are
+> **commented out**, and the body renders the literal string **"Coming soon"**. Its only populated query is
+> `getSkillPathDetails` — the path *definition*, not the session. **No query touches the seeded session, so that
+> page is byte-identical whether or not you seed anything.** Do not build a seeder for it, and do not treat a
+> rendered "Results for <path>" header there as proof a session landed — the definition-only header satisfies that
+> check on an empty page. This is why the v2.5 content-stories gate is **player-link-only** for skill-path and its
+> denominator was corrected 31 → 29.
 
 ## Interface Discovery
 

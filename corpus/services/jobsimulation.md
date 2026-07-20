@@ -14,7 +14,7 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 * **Codebase**: `jobsimulation` (Local directory; repo `git@github.com:anthropos-work/jobsimulation`)
 * **Language**: Go
 * **Database**: PostgreSQL `jobsimulation` schema (via Ent + Atlas migrations)
-* **Ports**: 8400 (GraphQL/HTTP), 8401 (Connect-RPC)
+* **Ports**: 8400 (GraphQL/HTTP), 8401 (Connect-RPC) — **as deployed by the platform**, which sets `PORT=8400` / `RPC_PORT=8401` and publishes `8400:8400` / `8401:8401` (`platform/docker-compose.yml`). Note the **repo's own defaults differ**: with those env vars unset `cmd/root.go` falls back to `8080`/`8081` (and the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. Both are correct in their own context — use 8400/8401 for anything driven through `platform`, and add the stack offset for a `dev-N`/`demo-N`.
 * **Profile**: `graphql` (default) and `jobsimulation`
 
 ### Key directories
@@ -42,6 +42,16 @@ internal/
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). Federated into the platform schema by Cosmo Router.
 * **RPC**: `internal/rpcsrv` — consumed by Backend, Skillpath, Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
+
+> **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
+> played session render?" will not find here. (1) The **player** result page `/sim/<slug>/result/<sessionId>` is a
+> **persisted read**, not a live recompute — `internal/graph/queries.resolvers.go:70` does plain Ent SELECTs over
+> `validation_attempt_results`, so a seeded result fan-out renders a full result. (2) The **manager** view does
+> **not** read this service's `sessions` table at all — it reads an `app`-side MIRROR, `public.local_jobsimulation_sessions`
+> (the analog of skill-path's `local_skill_path_session`). Seed the runtime rows only and the manager scoreboard
+> is blank. Full route-by-route treatment lives in
+> [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md); the write side is
+> [`../ops/demo/session-clone-spec.md`](../ops/demo/session-clone-spec.md).
 
 ### Direct dependencies (from compose `depends_on` + env)
 
