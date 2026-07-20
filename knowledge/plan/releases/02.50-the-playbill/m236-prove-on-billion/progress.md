@@ -22,9 +22,38 @@
 
 ## Next-iter queue
 
-**Primary metric MET (29/29) · academy grid MET (65 cards, 0 chips) · p95 MET (3.15 s / 2.71 s).** ONE gate component remains:: wire `app/cmd/academy-seed --user-id <the academy content-player owner> --fixture …` into the cold bring-up, then re-point the CTA from the anonymous `/library/<slug>` preview to the authed chapter route.
-- **p95 click→ACCESS, HERO vantages only** (per the user's B2 scoping; content-seat latency is OUT of scope for v2.5) — a gate component not yet measured. Handler `LATENCY-M236-iterTBD-hero-p95`.
-- **A final cold reset-to-seed reproduction** — the gate requires reproducibility, and the current stack has had its manifest re-exported + cockpit restarted in place. Handler `REPRO-M236-iterTBD-cold-cycle`. at `playbill-m235-hardened`, public-host default-on. Success = stack UP, fresh-green `autoverify.json`, cockpit serving a non-404 `content-manifest.json` with all 4 products. Handler `PHASE-C-M236-iter03-cold-bringup`. **Expect 30–45 min** — the host build cache was pruned, so this is a genuinely cold UI-tier rebuild.
-- **Phase L (iters 4+):** land the arms in descending evidence density — simulation (26) → skill-path-legacy (4) → skill-path-new/academy (1) → ai-labs (0 landable, prove 2 presence rows).
-- **Phase H (interleaved, after the first live render):** author the content-stories seat-login coverage harness (13 seats → 13 manifests, page-object from scratch) + the B4/B5 doc work — `coverage-protocol.md` `skipPaths` `/result/` reversal WITH its amendment, and the content-stories backfill of `coverage-protocol.md` + `playthroughs.md`. Handler `DOC-M236-iterTBD-protocol-backfill`.
-- **USER-BLOCKER-M236-01: RESOLVED** 2026-07-20 (B1–B5). Gate re-scoped in `overview.md`; Phase 0b re-verdicted RED → discharged (`spec-notes.md`).
+**Gate status — 3 of 4 components MET:**
+- primary metric **29/29** landable (session × action) pairs rendering real content live on `billion` ✅
+- academy grid renders real cards — **65 cards, 0 Draft chips** (Thread A) ✅
+- **p95 click→ACCESS** hero vantages — employee **3.15 s**, manager **2.71 s** vs a 5 s gate ✅
+- 0 platform-repo edits ✅
+- **cold reset-to-seed reproduction — OUTSTANDING** ⬅ the only remaining component
+
+**Next iter:**
+- **The cold reset-to-seed reproduction** (handler `REPRO-M236-iterTBD-cold-cycle`). The gate requires
+  reproducibility, and the current stack has had its manifest re-exported and its cockpit restarted in
+  place across iters 07–08. Re-pin `billion` to the final tag, tear down, cold `/demo-up` with public-host
+  default-on, then re-run the content-stories sweep + a latency battery against the fresh stack.
+  Success = stack UP, fresh-green `autoverify.json`, cockpit serving `content-manifest.json` with all 4
+  products, sweep 29/29, hero p95 < 5 s. **Expect 30–45 min** for the bring-up itself.
+  *Note:* the cockpit currently binds `127.0.0.1` because `tailscale serve` had claimed `:17700` by
+  restart time (iter-07); a cold bring-up restores the normal `0.0.0.0` ordering.
+
+**Carried to release close (not gate-blocking):**
+- **M230 carry-forward cluster 3** — the anonymous `/library` + `/free` academy routes render 0 cards
+  (`getPublicCatalogView` takes the `new Set()` branch the M230 patch does not cover; the patch manifest
+  names the gap itself). Handler `ACADEMY-M236-iter08-public-catalog-twin` — a twin manifest of the same
+  FS-published transform. M230 cluster 1 is **discharged** (iter-08).
+- **`apps/web` client GraphQL endpoint** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:5050/graphql`,
+  the **non-offset** port, while `apps/hiring` carries the correct offset origin. Did not manifest on any
+  measured path (SSR uses `WUNDERGRAPH_SSR_ENDPOINT`); a demo-hygiene item. From iter-08 D5.
+- **Standing carry:** 14 pre-existing demo-stack test failures (REPEAT) → v2.5 release close.
+
+**Resolved:**
+- **USER-BLOCKER-M236-01: RESOLVED** 2026-07-20 (B1–B5). Gate re-scoped in `overview.md`; Phase 0b
+  re-verdicted RED → discharged (`spec-notes.md`).
+- **`ACADEMY-M236-iterTBD-catalog-fill`** — closed by iter-08 (the CTA named a nonexistent route; the
+  catalog was never the problem, and `academy-seed` is moot in a demo).
+- **`SKILLPATH-M236-iter07-manager-hang`** — closed by iter-07 (a `networkidle` wait, over an
+  unimplemented platform surface).
+- **`LATENCY-M236-iterTBD-hero-p95`** — closed by iter-09.
