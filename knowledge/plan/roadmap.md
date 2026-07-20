@@ -730,7 +730,12 @@ The complete earlier shipped history — **v1.0 "body double"** (2026-06-03, tag
   governing spec is [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md), graduated to a corpus
   runbook (`corpus/ops/demo/playthroughs.md`) by M202.
 
-_Last updated: 2026-06-29 (**v1.10b "fit-up" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — an
+_Last updated: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** via
+`/developer-kit:design-roadmap` — the **reliability / field-hardening release** [the v1.3b / v1.10b / v2.1 / v2.3
+lineage]: *make everything that's built actually get built + provisioned.* **8 milestones M237 → M244**, barrier →
+parallel fixes → prove-on-billion; branch `release/02.60-sound-check` cut from **local** `main`; tag `v2.6`; realizes
+reserved M237→M244 + M238→M243; tooling + docs only, zero platform-repo edits. See § Active — v2.6. Prior:
+2026-06-29 (**v1.10b "fit-up" DESIGNED + PROMOTED** via `/developer-kit:design-roadmap` — an
 interposed **field-hardening backfill** [the v1.3b "dress rehearsal" lineage]; **7 milestones M47 → { M48 ∥ M49 } →
 M50 → M51 → M52 → M53** re-opening the v1.x flat counter; branch `release/01.10b-fit-up` cut from `main`; tag
 `v1.10.1`. Designed from the field review `.agentspace/annotation.md` + the M201 stale-clone finding [3 research
