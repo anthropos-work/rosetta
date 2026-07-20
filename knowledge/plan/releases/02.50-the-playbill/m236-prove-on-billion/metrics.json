@@ -30,8 +30,13 @@
     },
     "p95_click_to_access_ms": {
       "gate": 5000,
-      "current": null,
-      "scope": "HERO vantages only (user decision B2, 2026-07-20); content-seat latency OUT OF SCOPE for v2.5"
+      "employee_p95_ms": 3150,
+      "manager_p95_ms": 2710,
+      "reached_access": "5/5 both vantages",
+      "status": "MET",
+      "scope": "HERO vantages only (user decision B2, 2026-07-20); content-seat latency OUT OF SCOPE for v2.5",
+      "conditions": "tailnet-remote from a 2nd machine, WARM stack on billion, HTTPS --public-host origins. NOT comparable to M218's laptop-local cold baseline (2413/1767 ms). Repeat batteries: employee 1670/2850/3150 ms, manager 2900/2710 ms \u2014 every battery inside budget.",
+      "green_gate": "graded against billion's OWN fresh autoverify verdict via the documented LATENCY_AUTOVERIFY_JSON seam (never LATENCY_NO_GREEN_GATE)"
     },
     "platform_repo_edits": {
       "gate": 0,
@@ -39,18 +44,18 @@
     }
   },
   "iters": {
-    "total": 8,
-    "tiks": 7,
+    "total": 9,
+    "tiks": 8,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-08 (closed-fixed)",
+  "last_iter": "iter-09 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
-    "billion_rext_pin": "playbill-m236-academy-course-route (clone); tooling published through playbill-m236-academy-shape",
+    "billion_rext_pin": "playbill-m236-academy-course-route (clone); tooling published through playbill-m236-latency-tz-fix",
     "m217_pin_guard": "PASS",
     "stack": "demo-1 UP at playbill-m235-hardened",
     "autoverify": "fresh green",
@@ -104,5 +109,5 @@
       "manager-interview"
     ]
   },
-  "gate_status": "primary metric MET (29/29). Outstanding gate components: p95 click\u2192ACCESS (hero vantages, B2) + the cold reset-to-seed reproduction."
+  "gate_status": "primary metric MET (29/29); academy grid MET (65 cards, 0 chips); p95 MET (employee 3.15s / manager 2.71s). OUTSTANDING: the cold reset-to-seed reproduction."
 }
