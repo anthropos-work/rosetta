@@ -14,7 +14,7 @@
       "skill-path-new": 1
     },
     "baseline": 0,
-    "current": 27,
+    "current": 29,
     "gate": 31
   },
   "secondary_gate_components": {
@@ -39,18 +39,18 @@
     }
   },
   "iters": {
-    "total": 5,
-    "tiks": 4,
+    "total": 6,
+    "tiks": 5,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-05 (closed-fixed)",
+  "last_iter": "iter-06 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
-    "billion_rext_pin": "playbill-m236-manager-membership-id",
+    "billion_rext_pin": "playbill-m236-manager-membership-id (clone); tooling published through playbill-m236-interview-shape",
     "m217_pin_guard": "PASS",
     "stack": "demo-1 UP at playbill-m235-hardened",
     "autoverify": "fresh green",
@@ -75,29 +75,35 @@
     "lab_sessions": 2
   },
   "reading": {
-    "as_of": "iter-05 (2026-07-20, live on billion)",
-    "landed": 27,
+    "as_of": "iter-06 (2026-07-20, live on billion)",
+    "landed": 29,
     "denominator": 31,
     "by_product": {
-      "simulation": "24/26",
+      "simulation": "26/26 COMPLETE",
       "skill-path-legacy": "3/4",
       "skill-path-new": "0/1",
       "ai-labs": "presence-only, excluded"
     },
     "residual_causes": {
-      "interview manager: no header": 2,
-      "skill-path manager: route timeout": 1,
-      "academy: route not-found": 1
+      "skill-path manager route HANGS >180s (heavy 13-chapter instance; light sibling passes)": 1,
+      "academy route not-found (catalog unseeded)": 1
     }
   },
   "harness": {
-    "tag": "playbill-m236-manager-membership-id",
+    "tag": "playbill-m236-interview-shape",
     "files": [
       "stack-verify/e2e/lib/content-result-page.ts",
       "stack-verify/e2e/tests/content-stories.spec.ts",
       "stack-verify/e2e/run-content-stories.sh",
       "stack-verify/e2e/aggregate-content.py"
     ],
-    "run": "./run-content-stories.sh 1 --host billion.taildc510.ts.net"
+    "run": "./run-content-stories.sh 1 --host billion.taildc510.ts.net",
+    "shapes": [
+      "player-scored",
+      "player-interview",
+      "player-skillpath",
+      "manager-dashboard",
+      "manager-interview"
+    ]
   }
 }
