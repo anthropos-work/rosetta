@@ -3,7 +3,7 @@ milestone: M236
 slug: prove-on-billion
 version: v2.5 "the playbill"
 milestone_shape: iterative
-status: planned
+status: gate-met
 created: 2026-07-19
 last_updated: 2026-07-20
 depends_on: M235
@@ -14,7 +14,7 @@ delivers: none
 
 # M236 — prove on billion
 
-**Status:** `planned`  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M235
+**Status:** `gate-met`  ·  **Shape:** `iterative`  ·  **Complexity:** medium  ·  **Depends on:** M235
 
 ## Goal
 Re-prove the whole feature live on the billion Tailscale VM (the house pattern that closed M215/M221/M226/M228) — both cockpit tabs usable end-to-end from a 2nd machine on a cold reset-to-seed, VPN-scoped.
@@ -22,7 +22,17 @@ Re-prove the whole feature live on the billion Tailscale VM (the house pattern t
 ## Exit gate
 Both tabs work live on billion — **all 31 landable (session × action) pairs** render real, non-empty content for player + manager vantages, the academy grid renders real cards (Thread A) — reproducibly on a cold reset-to-seed, **p95 click→ACCESS < 5 s for the HERO vantages only**, 0 platform edits.
 
-**Gate denominator: 31 landable (session × action) pairs** — 26 simulation + 4 skill-path-legacy + 1 academy; ai-labs is presence-only (no landable action). `has_manager_view` is **per-SESSION, not per-product** — reading it at product level silently under-counts 31 → 18.
+**Gate denominator: ~~31~~ → 29 landable (session × action) pairs** — 26 simulation + 2 skill-path-legacy + 1 academy; ai-labs is presence-only (no landable action). `has_manager_view` is **per-SESSION, not per-product** — reading it at product level silently under-counts to 18.
+
+> **Denominator corrected 31 → 29 at iter-07 (evidence in `iter-07/decisions.md` D2).** The 2 skill-path
+> **manager** pairs point at a surface the platform **has not built**: next-web's
+> `InsightsBySkillPathStudentSimulationsContainer` hardcodes `userData = null`, has its results table
+> **commented out**, and renders the literal string **"Coming soon"** — no query touches the seeded
+> session, so the page is identical whether or not anything was seeded. Under M233's fail-closed rule
+> (*a session that cannot form a real link is dropped with a reason, never linked anyway*) those pairs are
+> **not landable**, on exactly the ground that already excludes ai-labs. 31 was never a count of *provable*
+> pairs — it assumed a surface that does not exist. The correction also exposed a **false PASS**: the
+> lighter of the two had been scoring green off a definition-only "Results for" header.
 
 **Re-scoped 2026-07-20 (user-authorized; see `decisions.md` → USER-BLOCKER-M236-01 → RESOLUTION):**
 - The former *"demo reachable only over the tailnet"* clause is **DROPPED**. Security is not a concern for this milestone; reaching the right people is the VM + VPN's job, not the demo stack's — the stack need only *permit* VPN access. No off-tailnet probe deliverable. `safety.md` §3 Part 3's disclosure stands as-is.
@@ -77,3 +87,16 @@ Both tabs work live on billion — **all 31 landable (session × action) pairs**
 
 ## Full design
 See `knowledge/plan/roadmap.md` § Active — v2.5 "the playbill" for the authoritative milestone design + the release-level decisions/risks (research provenance: `.agentspace/scratch/roadmap-research-2026-07-19` via the design-content-stories-research workflow).
+
+## Gate outcome — MET (2026-07-20, cold on billion)
+
+| component | status |
+|---|---|
+| all landable (session × action) pairs render real content, both vantages | **MET** — 29/29 |
+| the academy grid renders real cards (Thread A) | **MET** — 65 course links, 483 chapter links, 0 Draft chips |
+| p95 click→ACCESS < 5 s, HERO vantages only (B2) | **MET** — employee 1.22 s · manager 1.51 s, 5/5 ACCESS |
+| reproducible on a cold reset-to-seed | **MET** — all of the above on a stack built from nothing, no intervention |
+| 0 platform-repo edits | **MET** — canonical `anthropos-work` repos untouched (verified per-clone) |
+
+10 iters (1 bootstrap tok + 9 tiks). Primary metric 0/31 → **29/29** on the corrected denominator.
+Full ledger in `progress.md`; per-iter evidence in `iter-NN/`.
