@@ -169,3 +169,41 @@ run-2 budget without a half-iter. No blind descriptors; no platform edit.
 
 **Not blocked / already delivered this run:** the scrub fix + the 4-cell fixture-matrix closure + both
 regenerated honesty manifests are landed, committed, tagged, unit-proven, and provably leak-clean.
+
+## RESOLUTION of USER-BLOCKER-M235-02 — user ruled "Build non-sim seeders, then close" (2026-07-20, run 3)
+
+**User ruling (2026-07-20):** "Build non-sim seeders, then close." Landed across run-3 iters 05–08 under
+TOK-01 Track A step 2, all Fate-1 (offline-buildable + unit-provable). The LIVE proof legitimately routes to
+M236 (Fate-3, user-authorized).
+
+**What landed (rext `stack-seeding`, tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`):**
+- **iter-05 — skill-path-legacy (real progress).** A separate code-owned non-sim exhibit registry
+  (`seeders/content_nonsim.go`) + `ContentStoryNonSimSeeder` writing `skillpath.skill_path_sessions` (real
+  progress) + the `public.local_skill_path_sessions` MIRROR (non-blank manager scoreboard, the M219/M222
+  trap), owned by `content-player-<idx>` seats, pinned to REAL public `skill_path_id`s sourced OFFLINE from
+  the captured snapshot; the `/skill-path/<id>` + mirror-manager routes project; version "2" collision-safe.
+- **iter-06 — ai-labs (presence-only, M231 §5).** The presence projection arm (label + seat, NO CTA) + the
+  `public.lab_sessions` status/spend seeder arm (12-char hex id) surfaced on `/labs` + `/enterprise/labs`.
+- **iter-07 — academy (skill-path-new).** app_base=academy, a REAL public `/library/<slug>` course CTA
+  (direct academy-origin + e2e_persona seam), no manager view. The `academy_chapter_progress` write is the
+  live `app/cmd/academy-seed` platform binary (M236), not an in-process rext write.
+- A believable `Label` field (real course/lab titles) renders in the cockpit; the honesty gate regenerated to
+  18 sessions (all 4 products resolve); all Go + 47 Python render tests GREEN, 6 pre-existing failures
+  unchanged. Deterministic + idempotent + audited + fail-closed + n=0-guarded, single-sourced with the
+  projection (the owner↔seat invariant is unit-proven).
+
+**What is UNIT-PROVEN here vs ROUTED to M236 (Fate-3, user-authorized 2026-07-20).** Unit-proven = the
+seeders write structurally-correct rows + the manifest sections RESOLVE + the cockpit renders them. The LIVE
+(session × action)-lands proof needs a running stack → **M236** (its `In:` list is EDITED to own it). The
+Fate-3 handoff M236 now carries: (1) the NEW content-stories seat-login coverage/Playthrough plumbing
+(USER-BLOCKER-M235-02's core finding — the exact-path/hero-crawl harness can't reach the dynamic-URL,
+cockpit-seat-reached result pages; it must be authored + CALIBRATED against a live render); (2) the per-section
+live-calibration checklists (skill-path version-match/status/mirror — iter-05 decisions.md; ai-labs
+lab_sessions DDL — iter-06; academy progress-write/route/catalog — iter-07); (3) the M230 carry-forward live
+items (ANT_ACADEMY coverage descriptor + next-web clone re-anchor + getPublicCatalogView 2nd manifest).
+
+**Milestone disposition.** After iter-08 the OFFLINE-buildable scope is EXHAUSTED (all 3 non-sim sections
+built + unit-proven; the live proof legitimately routes to M236). The milestone PRAGMATIC-CLOSES per the
+user's "then close" mandate — the actual `/developer-kit:close-milestone` merge is a separate step the
+orchestrator/user drives. No live gate was faked; no platform-repo edit. EXIT_REASON for the run:
+protocol-stop (offline clusters exhausted; live proof routed to M236).
