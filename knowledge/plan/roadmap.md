@@ -111,6 +111,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.3** | **cue to cue** | The **presenter-speed release** — a presenter swaps heroes in **under 5 seconds** on a demo that comes up **green, fully-loaded, and remotely reachable by default**. Field-hardening lineage, triggered by a live 1–2-minute cockpit-login defect whose root causes were **already measured in-repo** and **silently rotting** (two dead perf demo-patches, a refusal piped to `/dev/null`, a 4-place false latency claim in the corpus) | M217 → { M218 ∥ M219 ∥ M220 } → M221 | ✅ **SHIPPED 2026-07-15 (tag `v2.3`)** (branch `release/02.30-cue-to-cue`, designed 2026-07-13; all 5 milestones done — the headline **click→ACCESS < 5 s** gate set at M218 and **re-proven live 8/8 on `billion`** over the tailnet with no flags: 2.11 s / 1.31 s vs a ~39/38 s baseline; 3 orgs, AI-readiness filled, remote default-on; tooling + docs only, zero platform edits, 0 net-new direct deps). rext code-of-record `cue-to-cue-m221-final`; the `billion` demo LEFT LIVE |
 | **v2.4** | **casting call** | The **recruiter-vantage / hiring-org release** — a **NET-NEW** 4th, **HIRING** demo org on the presenter cockpit where **45 candidates audition on the same 5 positions and a manager compares them side by side**, distinct from the three workforce orgs. Reverses v2.3's D-DESIGN-4 (the comparison surface ships in the dockerized `apps/web`, not the Vercel-only `apps/hiring`); consumes the recruiter/seeder half of the reserved vision M205 | M222 → M223 → M224 → M225 → M226 → **M227 → M228** (RE-OPENED for believability) | ✅ **SHIPPED 2026-07-18 (tag `v2.4`)** (branch `release/02.40-casting-call`, designed 2026-07-15; **RE-OPENED 2026-07-17** for believability fixes from live feedback). M222 spike [`section`, GO] → M223 seeder [`section`] → M224 render [`iterative`, closed-on-gate] → M225 demo-integration [`section`] → **M226 prove-on-billion [`iterative`, closed-on-gate 2026-07-17]** (the 7-condition hiring gate proven live on `billion`, default `/demo-up`, recruiter p95 < 5 s as the 3rd vantage) → **M227 the-notes [`section`, closed 2026-07-17]** (4 believability seed/content fixes deterministically proven + gate retuned `≥40→≥6`; live re-prove → M228). **M228 second-night [`iterative`, closed-on-gate 2026-07-18]** = the corrected-demo billion re-prove, 7/7 live (render 5/5, heroes 3/3, recruiter p95 1.27 s). Tooling + docs only, **zero platform-repo edits** — merged to `main`; the corrected hiring demo proven live 7/7 on `billion` (recruiter p95 click→ACCESS 1.27 s) |
 | **v2.5** | **the playbill** | The **content-vantage release** — TWO threads on the same demo/cockpit machinery. **A:** fill the empty **ant-academy** grid (DB-authoritative catalog; production-faithful demo-fill; corrects the false `ant-academy.md`). **B:** a 2nd **"Content stories"** cockpit tab — sections per content product (Simulation · Skill-path legacy · Skill-path new · AI-labs), each a list of **played sessions** with **as-player / as-manager** login-and-land actions; sessions **cloned from anonymized real prod sessions, non-manager-played, re-tenanted, source-pinned by prod session-id** | M229 → M230 → **M231 (HARD go/no-go)** → M232 → M233 → M234 → M235 → M236 | ✅ **SHIPPED 2026-07-20 (tag `v2.5`)** (branch `release/02.50-the-playbill`, designed 2026-07-19; all 8 milestones M229–M236 closed + merged). Spike-first; one combined release. **29/29** landable (session × action) pairs live on `billion` both vantages + academy grid filled (65 cards); real-customer-session sourcing accepted (data-controller call); demos **VPN/tailnet-scoped**; **amends `safety.md` Part 3** (anonymized-real, VPN-bounded). Tooling + docs only, **zero platform-repo edits**. ⚠️ 29/29 is unit-proven, not live-re-proven — live re-prove is v2.6/M237 |
+| **v2.6** | **sound check** | The **reliability / field-hardening release** — *make everything that's built actually get built + provisioned.* Triggered by live demo defects ("still not all gets built and provisioned as expected"). Barrier → parallel fixes → prove-on-billion: fix clone-freshness + re-triage the ambiguous UI defects on a fresh build, then fix academy reliability · enterprise surfaces (talk-to-data live via real AWS Bedrock creds) · content-stories fidelity (media ported) · language toggle · cockpit UX · the assign-WRITE Playthrough — then re-prove the whole feature (v2.5's headline **and** every v2.6 fix) live on `billion`, cold reset-to-seed | M237 (HARD go/no-go) → { M238 ∥ M239 ∥ M240 → M241 → M242 ∥ M243 } → M244 | 🟡 **IN DEVELOPMENT** (branch `release/02.60-sound-check`, designed 2026-07-20; 8 milestones M237 → M244; realizes the reserved M237/M238; tooling + docs only, **zero platform-repo edits**; tag will be `v2.6`) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -123,6 +124,242 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Active — v2.6 "sound check" (IN DEVELOPMENT, designed 2026-07-20, tag will be v2.6)
+
+> **Designed 2026-07-20** via `/developer-kit:design-roadmap`. **v2.6 "sound check"** is a **reliability /
+> field-hardening release** (the v1.3b "dress rehearsal" / v1.10b "fit-up" / v2.1 "quick change" / v2.3 "cue to cue"
+> lineage), triggered by **live demo defects** — *"still not all gets built and provisioned as expected."* A sound check
+> is the pre-show pass where every input is proven to actually reach the desk before the audience arrives: the release's
+> whole job is to make everything that is *built* actually *build and provision* on a fresh box. The house shape is
+> **barrier → parallel fixes → prove-on-billion** (v2.3/v1.10b): a **HARD go/no-go barrier (M237)** first fixes
+> **clone-freshness** (the demo was building from **stale platform source** — only defect #1 was clone-staleness; #2–#5
+> each reproduce on `origin/main`) and re-triages the ambiguous UI defects on a *correct* build, so every downstream fix
+> is scoped against reality; then a **parallel fix fan-out (M238–M243)**; then an **iterative closer (M244)** re-proves
+> the whole feature — v2.5's headline `29/29` **and** every v2.6 fix — live on `billion`, cold reset-to-seed (this
+> realizes the reserved `M237` re-prove that v2.5 shipped un-live-proven, and the reserved `M238` assign-WRITE). **3
+> binding user decisions (2026-07-20):** **(1) talk-to-data → FULL** — real AWS Bedrock creds provisioned via
+> `/stack-secrets` + a secret-coverage DNA extension for `app` (not just a flag); **(2) media → PORT IT** — capture +
+> re-host the Chime/S3 voice recording + document blobs, behind a **HARD internal PII gate** (fresh data-controller
+> sign-off + a `safety.md` raw-media amendment + a voice/document anonymization decision — a voice cannot be
+> token-scrubbed); **(3) language → EN-only fallback per tuple** — M241 opens with a read-only pool-count go/no-go query,
+> IT where it exists, EN-only where absent. **8 milestones M237 → M244**; tag **`v2.6`**; branch
+> `release/02.60-sound-check`. **Tooling + docs only — zero platform-repo edits** (a dead platform surface routes to a
+> sha-pinned `demopatch` or **escalates**, never a repo edit). Continues the v2.x `M2xx` scheme at **M237**.
+
+**Theme.** *Make everything that's built actually get built + provisioned.* A field-hardening release on the mature
+demo/cockpit/content-stories machinery: the v2.5 features are real, but a fresh bring-up doesn't reliably *build* + *provision*
+all of them. Fix the build-freshness barrier, fan out the confirmed defects in parallel, then re-prove the whole thing live.
+
+**User decisions baked in (2026-07-20):**
+1. **Talk-to-data → FULL** — wire **real AWS Bedrock creds** via the `/stack-secrets` provisioning mechanism (key set
+   `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN`/`AWS_REGION` + `CLAUDE_CODE_USE_BEDROCK`, referencing
+   `../hyper-studio/.env.example`) + extend the secret-coverage DNA for the `app` service. Not just a flag. (M239)
+2. **Media → PORT IT** — capture + re-host the Chime/S3 voice recording + document blobs so the manager can hear the
+   call / see the document. This **expands the customer-PII surface to raw audio + full documents** → M240 carries a
+   **HARD internal gate**: fresh data-controller sign-off + a `safety.md` amendment for raw media + a voice/document
+   anonymization decision **before any customer audio lands in a demo**. Likely consumes **DEF-M10-01** (S3 read). (M240)
+3. **Language → EN-only fallback per tuple** — M241 opens with a **read-only prod pool-count query** (IT sessions per
+   requirement tuple); toggle where IT exists, EN-only where absent. No blocking. (M241)
+
+**Hard constraint (carried, unchanged):** **zero platform-repo edits** — a dead platform surface routes to a sha-pinned
+`demopatch` or **escalates**; all stack-operating tooling lives in `rosetta-extensions` (authored + tagged, consumed per-stack).
+
+**Shape — 8 milestones, barrier → parallel fixes → prove-on-billion:**
+```
+M237 clean stage (HARD go/no-go barrier)
+  ├─▶ M238 academy ─────────────┐
+  ├─▶ M239 enterprise ──────────┤
+  ├─▶ M240 content-fidelity ─┐  │
+  │      └─▶ M241 language ─┐ │  │
+  │            └─▶ M242 cockpit-UX
+  ├─▶ M243 assign-WRITE ────────┤
+  └────────────────────────────▶ M244 prove-on-billion (closer)
+```
+
+#### M237 — clean stage  (`section`, HARD go/no-go barrier)
+**Goal:** The demo builds from CURRENT platform source, and the ambiguous UI defects are re-triaged on a correct build —
+so every downstream fix is scoped against reality, not stale code.
+**Shape:** `section` — HARD go/no-go barrier (the M217/M222 "clean stage" pattern). Any UI-defect triage on a stale-clone
+demo is untrustworthy.
+**Scope — In:**
+- Fix clone-freshness in `rext demo-stack/ensure-clones.sh`: a **fetch-verified** freshness assertion (never
+  suppressed-stderr — the billion `root` host-key failure that produced the 12-vs-202 mismatch) + an opt-in
+  advance-to-`origin/main`-or-pinned-tag path + a **real pin model** so "pinned" vs "stale-by-neglect" is distinguishable
+  (today both read `ref:"main"`/`"HEAD"`).
+- Fix **F-M236-CLOSE-2**: the R1 pristine sweep enumerates all **14** patch manifests, not the hard-coded 3.
+- Bring up a **fresh-clone demo on billion**; produce a **confirmed-defect ledger**: verify #1 menu now hierarchical for
+  managers; RE-TRIAGE #2 academy-language + #4 library-empty on the fresh build (which survive a correct build?).
+**Out:** any downstream fix (routed to M238–M243 by the re-triage); any platform-repo edit.
+**Depends on:** none (opens the release).  **Parallel:** none (gates everything).  **Complexity:** medium.
+**KB deps:** `corpus/ops/rosetta_demo.md` (§Clone freshness, anchored v2.5), `corpus/ops/demo/demopatch-spec.md`.
+**Delivers →** `corpus/ops/rosetta_demo.md` (the clone-freshness mechanism) + `corpus/ops/demo/demopatch-spec.md` (R1 all-14-manifests).
+**Open questions:** which of #2/#4 survive a fresh build (decided by the re-triage — it routes the downstream fix scope).
+
+#### M238 — ant-academy reliability  (`section`)
+**Goal:** A hero can follow a course and actually consume a chapter; the language switch works.
+**Shape:** `section`.
+**Scope — In:**
+- Fix **#3 (Start→404)**: the demo academy chapter-body path is unwired (bodies are backend-authoritative, no FS
+  fallback; the catalog demopatch covers only the catalog). Wire a chapter-body demo path — a chapter-body FS-fallback
+  demopatch analogous to `academy-fs-published-fallback`, OR wire the academy backend for the demo.
+- Fix **#2 (language error** — re-triaged in M237; likely the same backend-null path).
+- Extend the **academy presence/coverage sweep**.
+**Out:** the enterprise-surface / talk-to-data fixes (M239); content-stories (M240+).
+**Depends on:** M237.  **Parallel with:** M239, M240, M243.  **Complexity:** medium.
+**KB deps:** `corpus/services/ant-academy.md`, `corpus/ops/demo/demopatch-spec.md`, `corpus/ops/demo/coverage-protocol.md`.
+**Delivers →** `corpus/services/ant-academy.md` + `corpus/ops/demo/frontend-tier.md` (the chapter-body demo path + the extended academy sweep).
+**Open questions:** chapter-body FS-fallback demopatch vs wiring the academy backend for the demo — which is revert-clean + sufficient?
+
+#### M239 — enterprise surfaces  (`section`)
+**Goal:** talk-to-data works live; the library grid loads first-time; the hierarchical manager menu is confirmed.
+**Shape:** `section`.
+**Scope — In:**
+- talk-to-data **(a)** flag enablement (`NEXT_PUBLIC_DEMO_FLAGS_ALL` or a flag-gate demopatch, the M219/M232 pattern) +
+  **(b) real AWS Bedrock creds** provisioned via `/stack-secrets` + the **secret-coverage DNA extension for `app`** (the
+  `../hyper-studio/.env.example` template: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN`/`AWS_REGION` +
+  `CLAUDE_CODE_USE_BEDROCK`) + mounted/env-wired into the `app` compose service. **(user decision 1)**
+- Fix **#4 (library empty-first-load)**: the client-fetch race + the open non-offset `:5050` `apps/web` endpoint carry.
+- Confirm **#1 hierarchical menu** renders for managers (presence sweep).
+**Out:** the media-porting content-fidelity work (M240); academy (M238).
+**Depends on:** M237.  **Parallel with:** M238, M240, M243.  **Complexity:** medium (large if the Bedrock wiring balloons).
+**KB deps:** `corpus/ops/secrets-spec.md`, `corpus/ops/safety.md`, `corpus/architecture/ai_architecture.md`.
+**Delivers →** `corpus/ops/secrets-spec.md` (the Bedrock cred class for `app`) + a `safety.md` secrets-posture note.
+**Open questions:** the demo secrets-posture for AWS creds (safety.md note — same class as AI-provider keys, now
+present-not-absent for `app`).
+
+#### M240 — content-stories fidelity  (`section`, HARD media-safety gate)
+**Goal:** the cockpit's claim matches the session — right type, playable call, visible document — at a believable pass rate.
+**Shape:** `section` — with a HARD internal media-safety gate (R1).
+**Scope — In:**
+- **Defect 1 (selection):** tighten `rext stack-seeding sourcing.go` to constrain the public sim's type to the cell type
+  (exclude the interview sim from non-interview cells); re-pin `content-sessions.yaml`.
+- **Defect 3 (document):** write the dropped `input_data` at seed time (`content_stories_write.go` / a content-specific
+  criterion column set); + **port the document blob** if the body is a `storage_upload` (per user decision 2).
+- **Defect 2 (voice):** **port the Chime/S3 recording** — capture the recording reference + re-host the audio in the demo
+  storage tier + flip `chime_status` to available (per user decision 2).
+- **Pass-rate (#4-feature):** add a score-band to `SelectionSpec` (`AND s.score BETWEEN 70 AND 95`), flip the tiebreak to
+  `score ASC` (prefer lower), 100% only as fallback; re-capture.
+- **HARD internal gate (before any customer media lands in a demo):** fresh data-controller sign-off + a `safety.md`
+  amendment covering raw audio + full documents + a voice/document anonymization decision (a voice cannot be
+  token-scrubbed). Likely consumes **DEF-M10-01** (S3 read access).
+**Out:** the language toggle (M241); the cockpit-UX regroup (M242).
+**Depends on:** M237.  **Parallel with:** M238, M239, M243.  **Complexity:** large. **Note:** the re-capture needs prod
+read (`~/.pgpass`).
+**KB deps:** `corpus/ops/demo/session-clone-spec.md`, `corpus/ops/safety.md`, `corpus/architecture/ai_architecture.md`
+(Chime/LiveKit), `corpus/ops/demo/content-stories-routes.md`.
+**Delivers →** a **new media-substrate spec** under `corpus/ops/demo/` + a `corpus/ops/safety.md` §3.8 amendment (raw media).
+**Open questions / HARD gate:** raw-media PII is a larger data-controller call than v2.5's scrubbed text; the internal
+gate (sign-off + safety amendment + anonymization decision) **must clear before any customer audio lands in a demo**.
+
+#### M241 — content-stories language  (`section`, opens with a pool-count go/no-go)
+**Goal:** each session is consumed in its intended language, with an EN/IT cockpit toggle.
+**Shape:** `section` — opens with a read-only pool-count go/no-go query (R2).
+**Scope — In:**
+- **Read-only prod pool-count query FIRST** (IT sessions per requirement tuple — the interview-scarcity go/no-go). **(user decision 3)**
+- add `s.language` to `sourcing.go` SELECT + optional filter; add a `language` field to the fixture +
+  `content_manifest.go` projection (re-touch the `CanonicalFileMatchesProjection` honesty gate); use `cs.Language`
+  instead of the hard-coded `sessLanguageEnglish`.
+- source EN+IT pairs per tuple where IT exists; **EN-only fallback per tuple** where absent (toggle hidden/disabled
+  there); cockpit toggle swaps the login-and-land target.
+- Extend the **content-stories sweep** for language (assert structure/presence, **never** the translated value — P2
+  forbids copy assertions).
+**Out:** the row-layout/tab-selector cockpit-UX (M242).
+**Depends on:** M240 (shares `stack-seeding` + the re-capture).  **Parallel:** none (serial after M240).  **Complexity:** medium.
+**KB deps:** `corpus/ops/demo/session-clone-spec.md`, `corpus/ops/demo/content-stories-spec.md`, `corpus/ops/demo/coverage-protocol.md`.
+**Delivers →** `corpus/ops/demo/content-stories-spec.md` (the language field + EN/IT toggle + the re-touched honesty gate).
+**Open questions:** IT interview sessions may not exist (R2) — the pool query decides per-tuple coverage; EN-only fallback where absent.
+
+#### M242 — cockpit UX  (`section`)
+**Goal:** the Content-stories tab reads clearly and the heroes are legible by role.
+**Shape:** `section`.
+**Scope — In:**
+- **(1) row layout** — regroup by requirement tuple `(sim_type, modality)` → `target | passed login options | not-passed
+  login options` on one row (render-only; fields exist).
+- **(2) tab selector** — move into the white header, right, vertically centered (restructure `cockpit.py` header to
+  flex; **preserve the byte-identical-when-no-content-manifest invariant**).
+- **(3) hero icon bg by user-type** (manager = orange / employee = indigo, reuse the badge palette; derive a candidate
+  color = `is_hiring && vantage != manager`).
+- Extend the **cockpit specs**.
+**Out:** any data/seed change (M240/M241); platform edits.
+**Depends on:** M240 + M241 (the row regroup wants the pass/fail variants + the language axis).  **Parallel:** none.  **Complexity:** medium.
+**KB deps:** `corpus/ops/demo/cockpit-spec.md`, `corpus/ops/demo/content-stories-spec.md`.
+**Delivers →** `corpus/ops/demo/cockpit-spec.md` + `corpus/ops/demo/content-stories-spec.md` (the row-regroup + header layout + role-color).
+**Open questions:** none blocking.
+
+#### M243 — assign-WRITE Playthrough  (`section`)  [realizes reserved M238]
+**Goal:** the one net-new hero journey — a manager assigns content with a deadline and it lands.
+**Shape:** `section`.
+**Scope — In:**
+- `playthroughs/manifest/assignment-monitoring.yaml` UC1 (`assign-and-track.UC1`, currently `TODO`).
+- a new `/enterprise/assignments` page object.
+- possibly a `pt-world` precondition (assignable content + target member) in lockstep with `seed-worlds.yaml`.
+- the spec `e2e/tests/assignment-assign.spec.ts` tagged `@pt:...UC1`. Takes the corpus **15 → 16** live Playthroughs, 0 TODO.
+**Out:** the re-prove-on-billion live drive (M244 executes it).
+**Depends on:** M237 (fresh demo).  **Parallel with:** M238/M239/M240.  **Complexity:** medium. **Note:** needs a live
+browser drive against a running demo.
+**KB deps:** `corpus/ops/demo/playthroughs.md`.
+**Delivers →** `corpus/ops/demo/playthroughs.md` (15 → 16 live Playthroughs; the assign-WRITE half of the M204 flow closes the ~10-routing DEF-M235-03/M204 carry).
+**Open questions:** does the `assign` WRITE need a `pt-world` precondition co-authored with `seed-worlds.yaml`?
+
+#### M244 — prove on billion  (`iterative`, the closer)  [realizes reserved M237]
+**Goal:** re-prove the whole feature — v2.5's headline AND every v2.6 fix — live on `billion`, cold reset-to-seed.
+**Shape:** `iterative` — live-proof is measurement-driven (the M221/M236 lineage); iters until the gate.
+**Exit gate:** on a cold reset-to-seed on `billion`: **(a)** `ORG-CLEAN` reports **0** surviving source-org tokens (or
+each dispositioned) — **RUN FIRST**, read-only, before the bring-up; **(b)** content-stories `run-content-stories.sh`
+green at the shipped harness with the CQ-1 grader fix + CQ-2 runner wiring + externally-sourced `EXPECTED_PAIRS`
+(discharges CLOSE-D3); **(c)** the **39 live-browser specs** execute green (T-3); **(d)** the anonymous academy
+`/library`+`/free` twin renders real cards (S-1); **(e)** `DEF-M226-01` — the serve-reap self-resolution claim is
+**actively tested or DROPPED**; **(f)** the 3 v2.3 drift-carries burned-in live (`BURNIN-M221` / `F-M220-4` /
+`PROBE-M218-c3`); **(g)** the interview plan-section-id **alignment assertion** added + green (S-8/S-9); **(h)** every
+v2.6 fix (academy course-start, talk-to-data live answer, library, content fidelity incl. media, language toggle,
+cockpit UX) proven live; **p95 click→ACCESS < 5 s** hero vantages. **0 platform edits.**
+**Iteration protocol:** `corpus/ops/verification.md` + `corpus/ops/demo/tailscale-serve.md` + `coverage-protocol.md` + `playthroughs.md`.
+**Re-scope trigger:** 5 consecutive toks without a viable strategy → user-strategic-replan.
+**Out:** new feature work (all built by M238–M243); content-seat latency (out of scope, per the v2.5 M236 precedent).
+**Depends on:** M238, M239, M240, M241, M242, M243 (all fixes).  **Parallel:** none (terminal).  **Complexity:** medium (iterative).
+**KB deps:** `corpus/ops/verification.md`, `corpus/ops/demo/tailscale-serve.md`, `corpus/ops/demo/coverage-protocol.md`, `corpus/ops/demo/playthroughs.md`.
+**Delivers →** none (proof milestone; extends the coverage/playthrough manifests + burns in the carries).
+**Open questions:** none blocking (the multi-part exit gate is the spec).
+
+### Version plan (v2.6)
+
+| Version | Codename | Theme | Milestones | Status |
+|---------|----------|-------|------------|--------|
+| **v2.6** | **sound check** | Reliability / field-hardening — *make everything that's built actually get built + provisioned.* Barrier → parallel fixes → prove-on-billion; talk-to-data live via real AWS Bedrock creds; media ported behind a HARD PII gate; EN/IT language toggle; cockpit UX; the net-new assign-WRITE Playthrough | M237 (HARD go/no-go) → { M238 ∥ M239 ∥ M240 → M241 → M242 ∥ M243 } → M244 | 🟡 **IN DEVELOPMENT** (branch `release/02.60-sound-check`, designed 2026-07-20; realizes reserved M237/M238; tooling + docs only, zero platform-repo edits; tag will be `v2.6`) |
+
+### Execution graph
+```
+M237 clean stage (HARD go/no-go barrier — fix clone-freshness, re-triage on a fresh build)
+  ├─▶ M238 academy reliability ──────┐
+  ├─▶ M239 enterprise surfaces ──────┤
+  ├─▶ M240 content-stories fidelity ─┐  │   (HARD media-safety gate)
+  │      └─▶ M241 language ─────────┐ │  │
+  │            └─▶ M242 cockpit-UX ─┤ │  │
+  ├─▶ M243 assign-WRITE Playthrough ┼─┤
+  └─────────────────────────────────▶ M244 prove-on-billion (iterative closer)
+```
+M238 ∥ M239 ∥ M240 ∥ M243 fan out off the M237 barrier; M241 is serial after M240 (shares `stack-seeding` + the
+re-capture), M242 serial after M241 (wants the pass/fail variants + language axis). M244 is terminal — depends on all fixes.
+
+### Risk map
+- **R1 (blocks-quality) — raw-media PII.** Porting real customer voice + documents is a larger data-controller call than
+  v2.5's scrubbed text; a voice cannot be token-scrubbed. **Mitigation:** M240's HARD internal gate (fresh sign-off + a
+  `safety.md` raw-media amendment + a voice/document anonymization decision) **must clear before any customer audio lands
+  in a demo**; the standing control is the VPN/tailnet scope (`safety.md` §3.8).
+- **R2 (blocks-scope) — language scarcity.** IT interview sessions may not exist. **Mitigation:** M241 opens with a
+  read-only pool-count query that decides per-tuple coverage; **EN-only fallback per tuple** where IT is absent (toggle
+  hidden/disabled there). No blocking.
+- **R3 (degrades-quality) — AWS Bedrock creds in the demo.** A new present-not-absent secret class for `app`.
+  **Mitigation:** provision via `/stack-secrets` + extend the secret-coverage DNA; a secrets-posture note in `safety.md`
+  (same class as the AI-provider keys, now present-not-absent for `app`).
+- **R4 (dependency) — prod read + live billion.** M240/M241 re-capture + M244 re-prove need `~/.pgpass` prod read + a
+  reachable `billion`. **Mitigation:** both confirmed available at the v2.5 close (`billion` up + reachable).
+- **R5 (process) — v2.5 not pushed to origin.** The v2.6 branch was cut from **local** `main`; `main` + the `v2.5` tag
+  are still local-only. **Mitigation:** flag to the user — do **not** auto-push; the user runs the v2.5 origin push +
+  the v2.6 origin publish on their own cadence.
 
 ---
 
