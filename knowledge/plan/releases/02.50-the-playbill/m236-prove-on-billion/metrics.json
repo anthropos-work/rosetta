@@ -20,11 +20,13 @@
   "secondary_gate_components": {
     "ai_labs_presence_rows": {
       "target": 2,
-      "current": 0
+      "current": 2,
+      "status": "MET (verified live on billion, iter-03)"
     },
     "academy_grid_real_cards": {
       "target": "non-zero, no Draft chip",
-      "current": "not measured"
+      "current": 0,
+      "note": "academy_chapters/skill_paths/chapter_progresses all 0 on the cold bring-up; academy-seed not yet wired (in-scope, routed to the academy arm)"
     },
     "p95_click_to_access_ms": {
       "gate": 5000,
@@ -37,19 +39,23 @@
     }
   },
   "iters": {
-    "total": 2,
-    "tiks": 1,
+    "total": 3,
+    "tiks": 2,
     "toks": 1,
     "in_flight": 0
   },
-  "last_iter": "iter-02 (closed-fixed)",
+  "last_iter": "iter-03 (closed-fixed)",
   "last_updated": "2026-07-20",
   "host_state": {
     "billion_disk_free_gb": 139,
     "billion_build_cache_pruned_gb": 109,
     "tooling_published": true,
     "billion_rext_pin": "playbill-m235-hardened",
-    "m217_pin_guard": "PASS"
+    "m217_pin_guard": "PASS",
+    "stack": "demo-1 UP at playbill-m235-hardened",
+    "autoverify": "fresh green",
+    "cockpit_content_manifest": "HTTP 200, 4 products / 18 sessions",
+    "platform_repo_edits": 0
   },
   "resolved_blockers": [
     {
@@ -59,5 +65,13 @@
       "decisions": "B1 drop tailnet-only clause; B2 p95 hero-only; B3 accept enlarged Cluster 1; B4 amend coverage-protocol.md; B5 repoint iteration_protocol_ref",
       "phase_0b_reverdict": "RED -> discharged (proceed as YELLOW)"
     }
-  ]
+  ],
+  "substrate_readings": {
+    "as_of": "iter-03 (2026-07-20, live on billion)",
+    "note": "DATA present, RENDER not yet proven \u2014 deliberately NOT counted toward the primary metric (see iter-03/decisions.md D2)",
+    "simulation_sessions_in_db": "13/13",
+    "with_attempt_results": "13/13",
+    "in_manager_mirror": "13/13",
+    "lab_sessions": 2
+  }
 }
