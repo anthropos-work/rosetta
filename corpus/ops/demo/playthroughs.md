@@ -500,8 +500,7 @@ was **already played** (cloned from a real production session by the M232 `Conte
 must be proven is that its **result surface renders real content** for the player and manager vantages.
 
 There is nothing to play, so there is no Playthrough. The proof lives in the **content-stories sweep**,
-specified in [`coverage-protocol.md` § "Content stories — the (session × action) LANDS sweep"]
-(coverage-protocol.md):
+specified in [`coverage-protocol.md` § "Content stories — the (session × action) LANDS sweep"](coverage-protocol.md):
 
 | | Playthroughs (this doc) | Content stories |
 |---|---|---|

@@ -42,7 +42,7 @@ necessary.
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_STORIES` | `1` | **Stories & Heroes seed is ON.** Seeds the **3-org** roster (Cervato Systems / Solvantis / Northwind Aviation), each with a thriving/struggling/manager hero trio | `up-injected.sh:145` |
+| `DEMO_STORIES` | `1` | **Stories & Heroes seed is ON.** Seeds the **4-org** roster — Cervato Systems / Solvantis / Northwind Aviation, each with a thriving/struggling/manager hero trio, **plus Meridian Talent**, the v2.4 M223 HIRING org (recruiter vantage, `is_hiring: true`) | `up-injected.sh:145` |
 | `DEMO_NO_STORIES` | `0` | (opt-out of the above) `=1` restores the legacy structural **`small-200`** single-identity seed | `up-injected.sh:146` |
 | `DEMO_STORIES_PRESET` | `stack-seeding/presets/stories.seed.yaml` | the preset the stories seed reads | `up-injected.sh:148` |
 | `DEMO_NO_SETDRESS` | `0` | **set-dress is ON** — cache-first snapshot replay (taxonomy + directus + sim-embeddings) then the seed | `up-injected.sh:120` |
@@ -169,7 +169,7 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 
 ## The shape of the defaults, in one sentence
 
-**A bare `/demo-up N` gives you everything**: the 3-org Stories & Heroes world, the full UI tier, the presenter
+**A bare `/demo-up N` gives you everything**: the 4-org Stories & Heroes world, the full UI tier, the presenter
 cockpit, self-contained content, every demo-patch, an auto-verify pass — and, **as of v2.3 M220 S3, remote
 reachability over the tailnet** — because **every feature knob is an opt-OUT (`DEMO_NO_*`, default `0`)**.
 
@@ -179,7 +179,7 @@ reachability over the tailnet** — because **every feature knob is an opt-OUT (
 > a summary line that outlives the behaviour it summarises is this release's signature hazard — it is how the
 > *"2 orgs"* lie survived four releases.)
 
-So *"make `/demo-up` pull all the data and seed the 3 orgs"* was **already the default**. The failures people
+So *"make `/demo-up` pull all the data and seed the orgs"* was **already the default**. The failures people
 attribute to a missing default are almost always a **cold snapshot cache** (replay is cache-first and never
 captures — see [`../snapshot-cold-start.md`](../snapshot-cold-start.md)), not a knob.
 

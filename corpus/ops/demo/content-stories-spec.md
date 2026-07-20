@@ -226,10 +226,15 @@ bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** 
   simulation fixture (whose validator + seeder are simulation-shaped). Each has its OWN self-contained
   flat-index owner pairing (single-sourced with the seeder, exactly as the simulation projection). **Skill-path**
   — real progress: a seeded `skillpath.skill_path_sessions` row + the `local_skill_path_sessions` mirror
-  (owned by a `content-player` seat, pinned to a REAL public `skill_path_id`), the `/skill-path/<id>` + mirror-
-  manager routes. **AI-labs** — presence-only (M231 §5): a `lab_sessions` status/spend row, NO CTA. **Academy**
-  — app_base=academy, a real public `/library/<slug>` course CTA (direct origin, e2e_persona seam), no manager
-  view; the `academy_chapter_progress` write is the live `app/cmd/academy-seed` platform binary (M236). A
+  (owned by a `content-player` seat, pinned to a REAL public `skill_path_id`), the `/skill-path/<id>` route —
+  **player-link-only**: M236 iter-07 proved the per-user *manager* drill-down is UNIMPLEMENTED in next-web
+  ("Coming soon", results table commented out, `userData` hardcoded null), so `has_manager_view` is FALSE and
+  the mirror row buys no manager surface. **AI-labs** — presence-only (M231 §5): a `lab_sessions` status/spend
+  row, NO CTA. **Academy** — app_base=academy, a real `/courses/<slug>` course CTA (direct origin, e2e_persona
+  seam; **not** `/library/<slug>` — that route does not exist in ant-academy, M236 iter-08), no manager view.
+  **`app/cmd/academy-seed` is MOOT in a demo** (see the §"academy" note above): with no
+  `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` the demo academy serves its committed FS catalog, so a seeded
+  `academy_chapter_progress` row has no reader. A
   `Label` field carries the believable row title (real course/lab names). Today's demo now renders all four
   product sections. rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`.
 - **Proving every CTA lands on a non-empty result page (a LIVE browser on a cold reset-to-seed) is M236**

@@ -744,7 +744,7 @@ The roadmap called this "the result page." It is **six distinct surfaces across 
 | `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
 | `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
 | `player-academy` | `/courses/<slug>` (**ant-academy**, a different app) | ~3.7k chars: `COURSE · 12 CHAPTERS`, title, chapter list | course/chapter structure **and 0 Draft chips** |
-| `manager-dashboard` | `/enterprise/activity-dashboard/{ai-simulations,skill-paths}/<simId>/<membershipId>` | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `manager-dashboard` | `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` (`skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
 | `manager-interview` | `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` | ~590 chars: breadcrumb naming the player over an attempts table with "View Report" — **no `Results for` header at all** | an attempt row |
 
 **Shape selection is by ROUTE, never by sniffing content.** Every shape after the first was discovered by
@@ -801,12 +801,18 @@ ai-labs is already excluded — and `skill-path-legacy` is projected **player-li
 manifest:
 
 ```
-18 sessions + 13 manager views = 31 raw pairs
-                       − 2 ai-labs presence-only player actions
-                       = 29 LANDABLE      (was 31 before iter-07)
+ 18 sessions + 15 manager views = 33 raw pairs        (the manifest BEFORE iter-07)
+                     − 2 skill-path manager views     (surface unimplemented — iter-07)
+ 18 sessions + 13 manager views = 31 raw pairs        (the CORRECTED manifest)
+                     − 2 ai-labs presence-only player actions
+                              = 29 LANDABLE
 ```
 
-State which of **31 / 29 / 18** a number is, every time.
+**Show the whole chain, because `31` names two different quantities.** It is both the *pre-iter-07 landable*
+count and the *post-iter-07 raw* total — a coincidence, not a correspondence. A reader who subtracts the 2
+skill-path manager pairs from the landable 31 gets 27 and concludes the doc is wrong; the 2 that leave the
+landable count are the **ai-labs** pair, and the 2 skill-path pairs leave one line earlier, out of the *raw*
+total. State which of **33 / 31 / 29 / 18** a number is, every time.
 
 > **Correcting a denominator is not moving the goalposts — but it must be argued, never quietly applied.**
 > 31 was never a count of *provable* pairs; it assumed a surface that does not exist. The controlling rule
@@ -849,7 +855,7 @@ in `content-out/demo-<N>/` (`content-stories.json`, `pairs.jsonl`, `content-mani
 ### Two harness invariants that are easy to get wrong
 
 - **Not `mode: 'serial'`.** Serial makes tests *dependent*: the first failure **skips all the rest**, turning
-  "how many of 31 land?" into "did pair #2 fail?". The pairs must be independent; the single-worker
+  "how many of 29 land?" into "did pair #2 fail?". The pairs must be independent; the single-worker
   constraint the shared fake-FAPI seat needs comes from `--workers=1`, which serializes **without** coupling
   outcomes.
 - **Persist per-pair results to disk, don't accumulate in memory.** Playwright **restarts its worker after
@@ -884,7 +890,8 @@ on** — and there it went unnoticed through all ten iters:
 - **Name the stack, or measure the wrong one.** Every runner computes `OFFSET=$(( N * 10000 ))`, and bash
   evaluates a non-numeric `N` to **0 with no error** — pointing the whole sweep at the **dev stack's** ports
   and reporting what it finds there as demo-N's. Both content-stories and latency runners now reject a
-  non-integer `N`. `run-coverage.sh` / `run-hiring-render.sh` share the hazard and are **not yet guarded**.
+  non-integer `N`. `run-coverage.sh` / `run-hiring-render.sh` shared the hazard and were **guarded at the
+  M236 close** — the lesson is now propagated to all four runners, not written in one and left in the others.
 
 > **The generalisation worth carrying to the next gate:** the milestone's signature failure was *a check
 > scoring green off a subject that proved nothing*. That is not a property of render shapes — it is a

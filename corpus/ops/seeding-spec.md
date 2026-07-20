@@ -430,11 +430,12 @@ the funnel seeder), **without which the manager's four interview-findings blocks
 Plus the **`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's
 whole-org `loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
 `PerStackIsolated` + closure-GREEN across all 3 orgs, proven by the **M42 manager-vantage** coverage gate `(0,0)`.
+(*3* is the org count **as of M42**; v2.4 M223 added a 4th, the Meridian Talent hiring org — see `stories-spec.md`.)
 The detail lives in [`demo/stories-spec.md`](demo/stories-spec.md#the-ai-readiness-showcase-org--the-3rd-story-v110b-fit-up-m51)
 + the seeder contract [`../services/ai-readiness.md`](../services/ai-readiness.md). Code-of-record:
 `rosetta-extensions` @ tag `fit-up-m51`.
 **v1.10b "fit-up" M52** consolidates the whole seed+generation intent into **one auditable file**
-(`presets/seed-generation-manifest.yaml`): the population (all 3 orgs + heroes), the **file-resident** mother
+(`presets/seed-generation-manifest.yaml`): the population (all 4 orgs + heroes), the **file-resident** mother
 prompt (extracted from the Go const to `blueprint/prompts/default_batch_prompt.tmpl`), the batch config (the
 MANDATORY `max_cost_usd` ceiling + concurrency + re-roll rules), and the snapshot sources — **cache +
 generated data excluded**. It is a PROJECTION of the canonical presets (honesty-gated so it can't drift),

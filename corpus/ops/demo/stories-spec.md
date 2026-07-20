@@ -622,7 +622,7 @@ still hydrates the whole org and would need `loadMembers` bounded / a `frozen_ta
 Proven by the **M42 semantic coverage gate, manager vantage**, on Northwind: `(failingSections, escapes) = (0, 0)`,
 persona green, frontier-exhausted, on a fresh `/demo-up` (rext `fit-up-m51`). Closure stays measured — the
 AI-readiness skills resolve through the same taxonomy resolver, so the seed-side closure gene proves 0 dangling
-refs across all 3 orgs.
+refs across all 3 orgs. (*3* is the count **as of that gate**; v2.4 M223 added a 4th — the Meridian Talent hiring org.)
 
 ## The hiring org — the 4th story (v2.4 "casting call" M222 gate / M223 seed)
 

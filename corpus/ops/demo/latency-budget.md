@@ -208,7 +208,8 @@ Contract:
   ports, and would have reported those timings as demo-N's. A grader whose premise is *refuse to measure a
   stack that is not what it claims to be* must not be able to measure a **different** stack without saying
   so. Non-integer `N` now exits 2 (M236 final harden). `run-coverage.sh` and `run-hiring-render.sh` share
-  the arithmetic and are **not yet guarded**.
+  the arithmetic and were **guarded at the M236 close** — all four runners now refuse a non-integer `N`
+  rather than silently sweeping the DEV stack at offset 0.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
 - **It clears cookies per sample**, so each click is a genuine cold login.

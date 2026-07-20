@@ -373,6 +373,12 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 
 ### The empty grid is FILLED — the `academy-fs-published-fallback` demo-patch (v2.5 "the playbill" M230)
 
+> **⚠ Scope of this closure (M236, proven live).** The **authenticated** grid is filled and verified cold on
+> `billion`: **65 course cards, 483 chapter links, 0 Draft chips**. The **anonymous** `/library` and `/free`
+> routes still render **0 cards** — `getPublicCatalogView`'s `new Set()` branch is not covered by this patch
+> (the patch manifest names the gap itself). Tracked as `ACADEMY-M236-iter08-public-catalog-twin` → v2.5
+> release close. Read "the empty grid is FILLED" as *signed-in*, not *everywhere*.
+
 The F4 carry — a demo academy grid rendering **0 cards** — is closed by **Option C**: a sha-pinned rext
 demo-patch (`demo-stack/patches/academy-fs-published-fallback`) on the demo's **own ephemeral ant-academy clone**
 that restores an **FS-as-PUBLISHED catalog fallback**. **Zero canonical-repo edits.** (Option B — a firewalled

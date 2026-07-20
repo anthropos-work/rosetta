@@ -37,7 +37,7 @@ substantive blocks:
 
 | Block | What it carries | Source |
 |---|---|---|
-| `population.orgs[]` | every seeded org (name/slug/industry/narrative/size) + its `heroes[]` (key, name, role, vantage, trajectory, annotation, login, jump_to) | projected from the Stories & Heroes blueprint (`stories.seed.yaml`) — all 3 orgs incl. the M51 AI-readiness org (Northwind Aviation) |
+| `population.orgs[]` | every seeded org (name/slug/industry/narrative/size) + its `heroes[]` (key, name, role, vantage, trajectory, annotation, login, jump_to) | projected from the Stories & Heroes blueprint (`stories.seed.yaml`) — all 4 orgs incl. the M51 AI-readiness org (Northwind Aviation) + the v2.4 M223 hiring org (Meridian Talent) |
 | `generation.prompt_template` | the per-member **MOTHER PROMPT** verbatim — the exact instruction the cheap model gets | the file-resident `blueprint/prompts/default_batch_prompt.tmpl` (M52 S1) |
 | `generation.config` | the batch RUN config: `model`, the **MANDATORY** `max_cost_usd` ceiling, `max_concurrent`, `max_rerolls`, `call_timeout` | the `gen-batch` CLI defaults, made file-resident |
 | `generation.batches[]` | the batch descriptors (per `story_id`): `count`/`fill`, `roles`, `seniority`, `industry`, `narrative`, `bias_mix` | the generation preset (`gen-batch-org-fill.seed.yaml`) |
@@ -67,7 +67,7 @@ The manifest is **not hand-authored** — it is **projected** from the canonical
 
 ```bash
 stackseed --manifest-export \
-  --seed presets/stories.seed.yaml \                    # population (all 3 orgs + heroes)
+  --seed presets/stories.seed.yaml \                    # population (all 4 orgs + heroes)
   --gen-seed presets/gen-batch-org-fill.seed.yaml \     # generation batches (merged by story id)
   --manifest-out presets/seed-generation-manifest.yaml
 ```
@@ -167,6 +167,6 @@ is the one auditable YAML.
   file (§6).
 - [`../seeding-spec.md`](../seeding-spec.md) — the seeding blueprint + the Stories & Heroes population the
   manifest projects.
-- [`stories-spec.md`](stories-spec.md) — the 3-org Stories & Heroes world (incl. the M51 AI-readiness org).
+- [`stories-spec.md`](stories-spec.md) — the 4-org Stories & Heroes world (incl. the M51 AI-readiness org + the M223 hiring org).
 - [`content-stories-spec.md`](content-stories-spec.md) — the `content_products[]` render menu
   (`content-manifest.json`) this manifest's `content_sessions` block pairs with (§8).
