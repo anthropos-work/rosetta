@@ -23,8 +23,9 @@ exception**:
 3. **Who can REACH a demo, and what they get if they do** (**[Part 3](#part-3--the-exposure-side-who-can-reach-a-demo-and-what-they-get-if-they-do)**).
    A demo is an **unauthenticated, authz-weakened build**, and its container ports are published on **all
    interfaces** on **every** bring-up — today, flag or no flag. That cannot be promised away. What makes it
-   defensible is guarantees 1 and 2: **there is nothing behind the door.** Read Part 3 before exposing a demo,
-   and before trusting any sentence in this corpus that says a demo binds loopback.
+   defensible is guarantees 1 and 2: **there is nothing behind the door** — **except on a content-story demo,
+   where there is** (§3.8), and where the VPN/tailnet scope becomes the control instead (§3.3.1). Read Part 3
+   before exposing a demo, and before trusting any sentence in this corpus that says a demo binds loopback.
 
 > **Scope.** This doc is the consolidated safety contract over the v1.2 snapshot mechanism + the v1.1 seeding
 > framework, as they stand at v1.3 "stack party" (dev stacks are now first-class peers of demo stacks; both
@@ -80,7 +81,7 @@ a data-controller decision; §3.8).**  See **Part 3**.
 
 ---
 
-## Part 1 — The read side: never reads private/customer data
+## Part 1 — The read side: the snapshot capture never reads private/customer data
 
 A snapshot **capture** is the **firewalled** production read, and everything that protects it lives in
 `stack-snapshot/`. It was the **only** operation that read production until v2.5; it is now one of **two**.
