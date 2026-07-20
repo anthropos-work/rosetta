@@ -252,10 +252,12 @@ consult `skipGenericActivityForHiringOrg`; the regression enumerates **all 8** g
 lesson is in-code: **a new mirror-writing / session-FK seeder MUST be added to the guard's consult-list AND the
 enumerated `TestGenericActivitySeeders_SkipHiringOrg` table.**
 
-**The render probe is intercepting-route-aware (M228).** The recruiter comparison drawer
-(`…/@tabs/(.)ai-simulations/[simId]`) is a **Next.js intercepting route**: it mounts as a detectable `.ant-drawer` —
-firing its client `insightsJobSimulationByMemberships` POST + becoming DOM-visible — **only for the FIRST sim clicked
-per page-load**. Later sims in the same session *do* render (server-path RSC, screenshot-proven) but aren't cleanly
+**The render probe is drawer-aware (M228; mechanism corrected v2.5 M231).** The recruiter comparison drawer is a
+**plain Ant `<Drawer>`** rendered by `InsightsByMembersContainer` (`InsightsByMembersContainer.tsx:359`) on the
+ordinary `@tabs/ai-simulations/[simId]` leaf route — **NOT** a Next.js intercepting route (verified M231: zero
+`(.)`/`(..)`-prefixed dirs exist anywhere in `apps/`; the earlier `…/@tabs/(.)ai-simulations/[simId]` intercepting-route
+description was wrong). It still mounts as a detectable `.ant-drawer` — firing its client
+`insightsJobSimulationByMemberships` POST + becoming DOM-visible — **only for the FIRST sim clicked per page-load**. Later sims in the same session *do* render (server-path RSC, screenshot-proven) but aren't cleanly
 detected. So the render gate proves each of the 5 positions in its **own** run (`RENDER_ONLY_SIM`, each sim as "the
 first") rather than clicking all 5 in one session — a clean automated **5/5** (Talent-Mgr 8, BD-Lead 8, Inside-Sales
 9, Project-Mgr 9, AWS-Security 8; each ≥ floor 6, junk=0, 0 eject). Proven live on `billion` with recruiter p95

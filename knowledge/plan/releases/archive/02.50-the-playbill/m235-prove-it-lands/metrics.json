@@ -1,0 +1,42 @@
+{
+  "milestone": "M235",
+  "title": "prove-it-lands",
+  "shape": "iterative",
+  "close_status": "closed-incomplete",
+  "closed": "2026-07-20",
+  "gate": {
+    "target": "on a cold reset-to-seed, every in-scope (session x action) logs in on the correct org and lands on a NON-EMPTY result page for BOTH player and manager vantages, 0 ejects; assessment 2-voice/1-code/1-document PASSED present + each type in passed AND not-passed; each product passes or declared with a documented fate (AI-labs feasibility answered)",
+    "achieved": "OFFLINE-BUILDABLE scope EXHAUSTED + unit-proven: 13-session simulation matrix (assessment PASSED = 2 voice/1 code/1 doc, every type passed AND not-passed) + all 3 non-simulation sections (skill-path-legacy real progress + mirror; ai-labs presence-only; academy /library/<slug> CTA); manifest projects all 4 products / 18 sessions, both honesty gates GREEN; AI-labs feasibility answered (presence-only, M231 §5). The LIVE (session x action)-lands browser proof is NOT run here (needs a running stack).",
+    "distance": "the LIVE cold-reset-to-seed (session x action) render proof for both vantages — routed to M236 by design (needs a running stack + Playwright); NOT a build gap",
+    "status": "closed-incomplete (user pragmatic-close mandate 2026-07-20: 'build non-sim seeders, then close')"
+  },
+  "iters": { "total": 8, "tok": 1, "tik": 7, "user_blockers": 2, "note": "iter-01 bootstrap tok (TOK-01 two-track); iter-02 + iter-05-planning surfaced USER-BLOCKER-M235-01/02; iter-03/04/05/06/07 tiks; iter-08 cleanup tik (M236 Fate-3 handoff)" },
+  "platform_repo_edits": 0,
+  "tests": {
+    "rext_go_touched": "GREEN (scrub + contentsession + seeders + cmd/content-capture + cmd/stackseed honesty gates); go vet clean",
+    "go_test_funcs_reproducible": "git grep '^func Test' whole rext repo: 1939 (M234 @ fd457bf) -> 1974 (M235 @ 60eff14), +35",
+    "net_new_tests_m235": "+35 across the run + harden: scrub_test (+~9), cmd/content-capture/main_test (8 NEW), contentsession/cleanliness_test (3 NEW), seeders/content_nonsim_test (+~13 incl the cross-arm owner-consistency integration proof), content_manifest/content_stories test updates",
+    "coverage_delta_harden": "scrub 94.6%->100.0%; contentsession 93.7%->94.7%; seeders 95.9%->96.1%; cmd/content-capture 0%->28.7% (pure helpers; captureSession/main are the M236 DB-bound live surface). Residual uncovered = genuinely-unreachable defensive arms.",
+    "python_demo_stack": "128 tests, 6 stale pre-existing failures unchanged (M218 overlay / M53 academy-link assertions) — the chronic release-close carry; M235 added 0 NEW failures",
+    "flake_gate": "GREEN — Go 5/5 clean (-count=1 -shuffle=on on scrub + contentsession + seeders + cmd/content-capture + cmd/stackseed)"
+  },
+  "flake_count": 0,
+  "code_of_record_tag": "playbill-m235-hardened @ 60eff14 (final harden); build tags playbill-m235-scrub-fix @ 25a5459, playbill-m235-fixture-matrix @ 590082a, playbill-m235-nonsim-{skillpath,ailabs,academy}",
+  "hardening": "1 pass (Pass 1 + Pass 2, both --final, same-day 2026-07-20; stabilized, 0 bugs, 0 flakes) — see hardening-ledger.md",
+  "close_fixes": [
+    "adversarial-review (Phase 2c): Adversarial review subsection in decisions.md recording the projection/seeder drop-divergence scenario (unreachable with the compile-time exhibit registry; owner-consistency invariant pinned; no user risk-acceptance — risk not present in shipped code)",
+    "decision-triage (Phase 5): (#M235-B1) leak-fix + (#M235-B2) non-sim-registry back-ref tags in session-clone-spec.md + content-stories-spec.md, anchored to the two USER-BLOCKER resolutions in decisions.md"
+  ],
+  "close_code_changes": "none in rext — all close fixes are docs/records in the rosetta repo; the rext code-of-record (60eff14) is unchanged, no new rext commit/tag",
+  "deferral_audit": "YELLOW (0 blockers); milestone-scope; one CHRONIC repeat (14 pre-existing demo-stack fails, M235's slice = 6 test_cockpit.py) already user-dispositioned + homed at the v2.5 release-close re-anchor (not re-woken); M235's own routes Fate-3 -> M236 already applied (iter-08, commit 54eaefe). Report: audit-deferrals/deferral-audit-2026-07-20-m235-close.md",
+  "carry_forward": {
+    "artifact": "carry-forward.md",
+    "clusters": 3,
+    "summary": [
+      "LIVE (session x action)-lands proof + the NEW content-stories seat-login coverage/Playthrough plumbing (USER-BLOCKER-M235-02 finding: the exact-path/hero-crawl harness can't reach the dynamic-URL cockpit-seat-reached result pages) -> M236 (Fate-3, applied)",
+      "per-section live-calibration checklists (skill-path version-match/status/mirror; ai-labs lab_sessions DDL; academy progress-write via academy-seed + route + M230 catalog fill) -> M236 (Fate-3, applied)",
+      "M230 carry-forward live items (ANT_ACADEMY coverage descriptor + next-web clone re-anchor + getPublicCatalogView 2nd manifest) -> M236 (Fate-3, applied)"
+    ]
+  },
+  "notes": "M235 built + unit-proved everything the live proof depends on, 0 platform edits, all in rext stack-seeding + the rosetta corpus. USER-BLOCKER-M235-01: the anonymization scrub removed ZERO names (8/9 fixtures leaked a real first name) because the capture sourced only the empty jobsimulation.actors names, not the session owner's public.users identity where the candidate's first name actually lives -> hardened (owner-identity sourcing into <<ACTOR_0>>, token-split, word-boundary, a capture-time SurvivingToken fail-closed post-condition) + re-captured 9 fixtures provably clean (0 leaked names, 545 placeholders) + a standing CI-time cleanliness tripwire. USER-BLOCKER-M235-02: the planned coverage descriptor mechanism doesn't exist (dynamic-URL, cockpit-seat-reached result pages need new seat-login sweep plumbing authored + calibrated against a live render) -> user ruled 'build non-sim seeders, then close'; the non-sim sections landed (skill-path/ai-labs/academy) and the live proof + new plumbing route to M236. The gate is NOT met by design — the milestone pragmatic-closes; no live proof faked, no platform edit."
+}

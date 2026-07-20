@@ -11,10 +11,10 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **Backend** (`app`) | Sentinel, CMS, Skillpath, Storage (compose `depends_on`); Gotenberg (runtime HTTP, no startup-order dep) | Postgres (with `pgvector` in `extensions` schema — embeddings of the merged skiller domain), Redis, **Clerk**, **AI Providers** (embeddings + skill matching) |
 | **CMS** | Sentinel, Storage; Backend (skiller RPC surface via `SKILLER_RPC_ADDR=http://backend:8083`) | Postgres, Redis, **Directus**, **AI Providers** (Anthropic, OpenAI, Mistral — via embedded studio-room) |
 | **Sentinel** | - | Postgres |
-| **Jobsimulation** | Sentinel, Backend (user context + the skiller RPC surface since the merge), CMS (simulation *definitions* by ID via `cms.GetSimulation` RPC), Roadrunner, Storage | Postgres, Redis, **LiveKit**, **AWS Chime**, **AI Providers** |
+| **Jobsimulation** | Sentinel, Backend (user context + the skiller RPC surface since the merge), CMS (simulation *definitions* by ID via `cms.GetSimulation` RPC), Storage (~~Roadrunner~~ — code execution is now **in-process** in `internal/runner/`; see [`../services/roadrunner.md`](../services/roadrunner.md)) | Postgres, Redis, **Judge0**, **LiveKit**, **AWS Chime**, **AI Providers** |
 | **Skillpath** | Sentinel, CMS (skill-path *content* structure by ID via `CMS_RPC_ADDR`), Jobsimulation (RPC + Redis Stream) | Postgres, Redis |
 | **Storage** | - | Postgres, Redis, **S3** |
-| **Roadrunner** | - | Redis, **Judge0** (code execution) |
+| **Roadrunner** | - (**orphaned** — no service calls it; see [`../services/roadrunner.md`](../services/roadrunner.md)) | Redis, **Judge0** (code execution) |
 | **Gotenberg** | - | - (stateless conversion service) |
 | **Messenger** (opt-in profile) | Backend, CMS, Jobsimulation, Skillpath | Postgres, Redis, **Brevo** (email delivery) |
 | **CustomerIO Sync** (opt-in profile) | Postgres | **Customer.io** |
@@ -54,7 +54,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 | `jobsimulation` | Jobsimulation | Skillpath, App, Messenger (if running) | Session completed, insights generated |
 | `cms` | CMS | Jobsimulation, Skillpath, Backend | Content published |
 | `skillpath` | Skillpath | App | Session updated, chapters completed |
-| `roadrunner` | Roadrunner | Jobsimulation | `RoadrunnerSubmissionCompleted` (code execution finished; carries the Judge0 token) |
+| `roadrunner` | Roadrunner | ~~Jobsimulation~~ (**no live consumer** — roadrunner is orphaned; jobsimulation runs Judge0 in-process and never subscribes) | `RoadrunnerSubmissionCompleted` (code execution finished; carries the Judge0 token) |
 | `AI` | (multiple) | (multiple) | AI usage / cost telemetry — see `AI_USAGE_STREAM=AI` env var |
 
 > **Note**: The `chronos` stream was previously used by Chronos for timer events but is gone with the chronos service removal. Jobsimulation no longer has chronos as a dependency.

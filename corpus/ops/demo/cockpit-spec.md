@@ -87,7 +87,7 @@ feedback, not a progress bar — there's no real signal from the cross-origin ha
 
 **Grab the seed manifest.** A footer **Download seed manifest** link saves the **consolidated
 `seed-generation-manifest.yaml`** (v1.10b M52) — the single auditable file inlining the whole seed+generation
-intent (all 3 orgs' population + the mother prompt + batch config + snapshot sources; cache/generated data
+intent (all 4 orgs' population + the mother prompt + batch config + snapshot sources; cache/generated data
 excluded), so a presenter or auditor can read the entire demo-world direction in one place. (An old bring-up
 with no manifest wired falls back to saving the cockpit's JSON menu.) See
 [`seed-manifest-spec.md`](seed-manifest-spec.md).
@@ -283,12 +283,22 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 | `GET /healthz` | `200 "ok"` (a liveness probe) |
 | `GET /seed-generation-manifest.yaml` | (v1.10b M52) The **consolidated** seed+generation manifest as a download (`Content-Disposition: attachment`, verbatim YAML) — the footer **[Download seed manifest]** target, when served (`--seed-manifest`) |
 | `GET /manifest.json` | The **menu** manifest (stories→heroes projection) as a download (`Content-Disposition: attachment`, pretty JSON) — the `[Log in as]` source + the fallback download |
+| `GET /content-manifest.json` | (v2.5 M234) The **content-stories** menu (the M233 `content_products[]` projection) as a download — the 2nd "Content stories" tab's source. Served only when `--content-manifest` was passed (a `404` otherwise) |
 | anything else | `404` |
+
+### The 2nd tab — "Content stories" (v2.5 "the playbill" M234)
+
+When the cockpit is launched with `--content-manifest <content-manifest.json>` (the bring-up threads it when
+the storytelling demo is up), the panel renders a **client-side tab toggle** with a 2nd **"Content stories"**
+tab beside "Org stories": per content product, a list of **played sessions** each with **as-player /
+as-manager** login-and-land CTAs (the `content-player-<idx>` seats are registered in the same roster the
+`[Log in as]` heroes come from). Absent `--content-manifest` ⇒ no tab bar (byte-identical to today). The full
+render + seat + routing contract is [`content-stories-spec.md` §7](content-stories-spec.md#7-the-cockpit-render--the-2nd-content-stories-tab-m234).
 
 ### Bring it up
 
 ```bash
-# A storytelling demo is the DEFAULT: /demo-up N seeds the 3-org hero trio, wires the multi-identity
+# A storytelling demo is the DEFAULT: /demo-up N seeds the 4-org world (3 hero trios + the hiring org), wires the multi-identity
 # fake-fapi, and serves the cockpit on http://localhost:$((7700 + N*10000)).
 /demo-up 3
 # → the cockpit serves on http://localhost:37700. Pick a hero → [Log in as] → land on her per-role screen.

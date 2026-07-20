@@ -22,7 +22,7 @@ It also hosts a growing number of cross-cutting features that don't fit neatly i
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
 * **Bootstrap & admin** (`internal/admin`, `internal/bootstrap`, `cmd/bootstrap-org`) — provisioning utilities
 * **Copilot** (`internal/copilot`) — internal assistant flows
-* **AI Labs LabSession** (`internal/labsession`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is currently wired as nil, so Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions).
+* **AI Labs LabSession** (`internal/labs/session`; siblings `internal/labs/labsapi`, `internal/labs/adapter`, `internal/labs/catalog`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is currently wired as nil, so Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions).
 * **Document → PDF conversion** (`internal/converter/gotenberg.go`) — via the Gotenberg service
 
 ## Skiller-in-app merge — fact-sheet (v2.1 "quick change")
@@ -106,7 +106,7 @@ internal/
   experiencepoint/          User XP tracking
   jobsimfeedback/           Post-session signal routing
   jobsimulations/           Backend's view of jobsim data
-  labsession/               AI Labs LabSession RPC handlers
+  labs/session/             AI Labs LabSession RPC handlers (+ labs/labsapi, labs/adapter, labs/catalog)
   linkedin/                 LinkedIn import / profile sync
   meta/                     Metadata utilities
   organization/             Org domain logic

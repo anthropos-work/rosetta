@@ -82,7 +82,7 @@ listener) — and note that this was *never* what gated the container ports, whi
 > **Part 2 — how it works:** the topology, what `--public-host` flips, the tailscale-cert FAPI, the CORS +
 > cross-surface-link tail, and the safety framing. The knob plumbing is M212, the TLS/proxy/pk is M213, the
 > origins-and-links layer is M214, and the **live cross-machine acceptance** is M215. Zero platform-repo edits
-> throughout — tooling + docs + the opt-in flag only (two platform-family files ride the **existing** rext
+> throughout — tooling + docs + the opt-in flag only (**three** platform-family files ride the **existing** rext
 > sha-pinned patch mechanism; see §"The patch tail").
 
 ---
@@ -121,7 +121,7 @@ steps run on the **host**. Then it's clone → secrets → bring up → verify.
 | # | Prereq | Why | Install | Finding |
 |---|--------|-----|---------|---------|
 | 1 | **Docker + Compose** | builds + runs the whole stack | present on the odyssey VMs | — |
-| 2 | **Go 1.25.x** (matches rext's `toolchain go1.25.12`) | the host rext tooling is Go; without it secret provisioning is skipped → `no usable platform .env` → abort | `curl -sSfL https://go.dev/dl/go1.25.12.linux-amd64.tar.gz \| sudo tar -C /usr/local -xz` then add `/usr/local/go/bin` to `PATH` | **F2** |
+| 2 | **Go 1.25.x** (matches rext's `toolchain go1.25.12`) | the host rext tooling is Go; without it secret provisioning is skipped → `no usable platform .env` → abort | `curl -sSfL https://go.dev/dl/go1.25.12.linux-amd64.tar.gz \| sudo tar -C /usr/local -xz` (the standard install; `/usr/local/go/bin` is added to `PATH` by the login profile). **Before installing anything, see F2b below — a "Go NOT on PATH" pre-flight failure is usually a LOGIN-SHELL problem, not a missing Go** | **F2**, **F2b** |
 | 3 | **atlas CLI** | `migrate-demo.sh` runs `atlas migrate apply`; without it the schema is created with **0 tables** and every seeder fails `relation public.X does not exist` | `curl -sSfL https://release.ariga.io/atlas/atlas-linux-amd64-latest -o atlas && sudo install -m755 atlas /usr/local/bin` | **F8** |
 | 4 | **Tailscale operator** | so the bring-up's un-sudo'd `tailscale cert` / `tailscale serve` run as the deploy user; else the cert falls back to `mkcert` = **local-trust-only** and a remote browser distrusts it | one-time `sudo tailscale set --operator=<deploy-user>` | **F1** |
 | 5 | **An ssh-agent** | the platform compose declares `ssh: default`, so `buildx bake` needs `SSH_AUTH_SOCK` at definition-load — even though the private-module pulls use the `GH_PAT`, not the agent. A **keyless** agent suffices | the bring-up **auto-starts one if absent** (`eval "$(ssh-agent -s)"`); no key needed | **F4** |
@@ -129,6 +129,30 @@ steps run on the **host**. Then it's clone → secrets → bring up → verify.
 
 The canonical prereq list + these install commands also live in
 [`../setup_guide.md`](../setup_guide.md) §"Linux host prerequisites (for a remote/VM demo over Tailscale)".
+
+> ### 🔴 Run every remote bring-up through a LOGIN shell — or this table will lie to you (F2b, M236 iter-03)
+>
+> ```bash
+> ssh <host> 'bash -lc "<the bring-up command>"'     # -l = login shell; sources the profile
+> ```
+>
+> A non-interactive `ssh host 'cmd'` sources **no login profile**, so everything the profile puts on `PATH` —
+> including `/usr/local/go/bin` — is simply absent. The host pre-flight then reports **"Go NOT on PATH …
+> install Go 1.25.x"** on a box where Go *is* installed at the exact pinned version.
+>
+> **Why this is a trap and not a footnote:** `atlas` (prereq #3) lives in `/usr/local/bin`, which *is* on the
+> default non-login `PATH`, so it **passes**. One prereq green and one red reads as *prereq-specific* ("Go is
+> missing") rather than *shell-specific* ("nothing from the profile is on `PATH`") — so a **shell** problem
+> presents as a **prereq** problem, and row #2's install command is exactly the wrong next step. **Disprove it
+> in one command before installing anything:**
+>
+> ```bash
+> ssh <host> 'bash -lc "go version"'                 # green here + red in pre-flight ⇒ PATH, not prereqs
+> ```
+>
+> Full write-up, including the general rule (*a tool's absence and a tool's invisibility produce identical
+> output, and only one is fixed by installing anything*):
+> [`../verification.md` § Drive every remote bring-up through a LOGIN shell](../verification.md#pre-flight-rung-zero--can-the-host-even-obtain-the-thing-under-test-v25-m236).
 
 **What the tooling now does for you** (so a bare VM doesn't re-trip the M215 findings):
 
@@ -316,10 +340,16 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 > coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
 > [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
 
-**The cockpit login (the interactive proof).** Open the presenter cockpit at `http://$HOST:17700` (`7700+off`,
-plain HTTP — it is deliberately *not* fronted by `tailscale serve`; navigating from an http launcher page to the
-https demo surfaces is not mixed content). It lists the seeded heroes; each **[Log in as]** is a link to the FAPI
-handshake:
+**The cockpit login (the interactive proof).** Open the presenter cockpit at **`https://$HOST:17700`**
+(`7700+off`) — on a `--public-host` demo it is fronted by `tailscale serve` behind the **same trusted MagicDNS
+cert** as every other browser-facing port (M220 S4; see the correction at § "the last plain-HTTP surface is
+gone" below). It lists the seeded heroes; each **[Log in as]** is a link to the FAPI handshake:
+
+> ⚠️ **This step previously read `http://$HOST:17700` — "deliberately *not* fronted by `tailscale serve`".**
+> That was true up to v2.3 M220 S3 and is **false now**: `gen_tailscale_serve.py` carries `('cockpit', 7700)`
+> on its own `DEMO_STORIES`-gated axis and `up-injected.sh` fronts it. Following the old text verbatim points
+> the operator at the wrong scheme on the demo's **entry point** — the one page a presenter actually opens.
+> On a **localhost** demo (no `--public-host`) the cockpit is plain `http://localhost:17700`, as it always was.
 
 ```
 https://$HOST:15400/v1/client/handshake?__clerk_identity=<hero>&redirect_url=https://$HOST:13000/<jump>
@@ -536,9 +566,9 @@ Full cert story + caveats:
 > i.e. exactly the flow this runbook documents — and the remote-access runbook never mentioned it. See
 > [`demopatch-spec.md` § 5](demopatch-spec.md) for the row.
 
-Two files in the platform **family** aren't reachable by the pure config/env layer, so they ride the **existing
-rext sha-pinned patch mechanism** (drift-refuse, single-occurrence anchor, idempotent, non-fatal) applied to the
-demo's **ephemeral clone** — **never a checked-in platform clone, never a canonical repo edit**:
+**Three** files in the platform **family** aren't reachable by the pure config/env layer, so they ride the
+**existing rext sha-pinned patch mechanism** (drift-refuse, single-occurrence anchor, idempotent, non-fatal)
+applied to the demo's **ephemeral clone** — **never a checked-in platform clone, never a canonical repo edit**:
 
 1. **ant-academy `allowedDevOrigins` (required).** `next dev` blocks cross-origin dev requests from a host not in
    `code/next.config.js` `allowedDevOrigins` — which hardcodes a *different* tailnet host. The
@@ -556,6 +586,20 @@ demo's **ephemeral clone** — **never a checked-in platform clone, never a cano
    `$SCHEME://$HOST:3000+off/login`, admitted past the `.env*` exclusion by a *transient* `!.env.production.local`
    re-include — both reverted on the build's trap (clone left git-clean). This fixes the un-offset `:3000` default
    for **every** demo, and is https for a public host.
+
+3. **next-web SSR GraphQL origin (`next-web-ssr-graphql-origin`, M218) — the one that exists *because of*
+   `--public-host`.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` is a single build-time constant serving two consumers
+   with **incompatible** reachability: the **browser** needs the public origin
+   (`https://<public-host>:15050+off/graphql`), the **SSR pass** needs the container origin
+   (`http://graphql:8080/graphql`). Because `NEXT_PUBLIC_*` is build-inlined into the *server* bundle too, the
+   SSR pass fetched the public URL **from inside the container**, where the tailnet IP **blackholes** (ts-input
+   drops the SYN-ACK on the docker bridge) → undici's 10 s connect timeout × 3 attempts + 6 s backoff
+   ≈ **37.5 s per authenticated render**, on both vantages (they block on the same shared authenticated layout).
+   Measured on `billion`: employee p95 **39.45 s**, manager **38.30 s**, against a 5 s gate. The patch gives the
+   server-side client its own container origin. **This defect manifests *only* on a `--public-host` demo** — the
+   exact flow this runbook documents. Manifest:
+   `rosetta-extensions/demo-stack/patches/next-web-ssr-graphql-origin/`; budget + attribution model:
+   [`latency-budget.md`](latency-budget.md).
 
 The **two already-shipped demopatches** — `next-web-studio-url` + `next-web-public-website-url` — carry the
 MagicDNS baked value cleanly: their values are baked by `up-injected.sh` as `$SCHEME://$HOST:…`, so under a public
@@ -581,7 +625,8 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 | Finding | What it was | Resolution class |
 |---|---|---|
 | **F1** — `tailscale cert` needs elevation; the tooling calls it un-sudo'd | else the cert silently falls back to `mkcert` (local-trust-only) and a remote browser distrusts it | **pre-flight + prereq** — set the tailscale operator (Step 0 #4) |
-| **F2** — the host needs Go for the rext tooling | no Go → secret provisioning skipped → `no usable platform .env` → abort | **pre-flight + prereq** — install Go 1.25.x (Step 0 #2) |
+| **F2** — the host needs Go for the rext tooling | no Go → secret provisioning skipped → `no usable platform .env` → abort | **pre-flight + prereq** — install Go 1.25.x (Step 0 #2). ⚠️ **Confirm it is genuinely missing first — see F2b**; the same symptom is produced by a non-login shell |
+| **F2b** — a remote bring-up run over a **non-login** shell reports a **false "Go NOT on PATH"** | `ssh host 'cmd'` sources no profile, so `/usr/local/go/bin` is absent while `atlas` (in `/usr/local/bin`) passes — a **shell** problem presenting as a **prereq** problem, and F2's remedy text pushes the operator into installing a second Go | **protocol (documented)** — always `ssh <host> 'bash -lc "…"'`; disprove with `ssh <host> 'bash -lc "go version"'` before believing any remote "prereq missing" verdict. See Step 0's login-shell callout + [`../verification.md` § PRE-FLIGHT RUNG ZERO](../verification.md#pre-flight-rung-zero--can-the-host-even-obtain-the-thing-under-test-v25-m236) *(handler `DOC-M236-iterTBD-protocol-backfill`)* |
 | **F3** — `git tag --list \| head -1` SIGPIPE → 141 → `set -e` aborts | reproduces on a many-tag repo (`app` ~337 v-tags) | **rext fix (shipped)** — pipe-less `git for-each-ref --count=1` in `up-injected.sh` |
 | **F4** — buildx bake needs `SSH_AUTH_SOCK` (`ssh: default`) even though pulls use the PAT | a bare host with no ssh-agent fails at definition-load | **auto-handled** — the bring-up starts a **keyless** ssh-agent when absent (the PAT still does the real pulls) |
 | **F5** — two `app` demopatches refused (target-role authz-skip, ai-readiness loadMembers) | sha-drift on the current `app` tag; **non-fatal** (demo works, slower per-member fan-out) | ✅ **RESOLVED (M217 self-healing anchor gate).** *The anchor is the contract; the whole-file sha is only a baseline* — a drifted sha with an intact anchor now **self-heals** and applies (`demopatch-spec.md` §6). **Do not chase a re-pin; it no longer exists.** M219 (F-7) further confirmed the `loadmembers` patch is not dead. |
@@ -645,13 +690,20 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   are reachable **only** to members of your tailnet: no public-internet listener, no port-forward. This is a real
   guarantee — it is just **narrower** than "nothing else is exposed". The teammate's client must keep Tailscale
   **MagicDNS on** (the default) for the `<magicdns>` name to resolve.
-- **Zero platform-repo edits.** The whole surface is rext tooling + this doc + the opt-in flag. The two
-  platform-family patches touch only the demo's **ephemeral** clone via the sha-pinned mechanism (drift-refuse
-  fails loud on an upstream change; reverted on teardown), never a canonical repo.
+- **Zero platform-repo edits.** The whole surface is rext tooling + this doc + the opt-in flag. The **three**
+  platform-family patches (§"The patch tail") touch only the demo's **ephemeral** clone via the sha-pinned
+  mechanism (drift-refuse fails loud on an upstream change; reverted on teardown), never a canonical repo.
 - **The demo's data-isolation guarantees are unchanged.** Remote reach changes the *origin/scheme*, not the data
   plane: the tenant-data firewall, the per-stack isolated Postgres, and the never-write-prod boundary all hold
   exactly as documented in [`../safety.md`](../safety.md) (Parts 1 and 2). **This is the load-bearing mitigation:
   the ports are open, and there is nothing real behind them.**
+  > 🔴 **Except on a CONTENT-STORY demo (v2.5) — where that last sentence is false.** A content-story demo
+  > carries the copied, best-effort-scrubbed free-text of **real production sessions**; there *is* something
+  > real behind the ports. The never-write-prod boundary is untouched, but *"nothing behind the door"* is not
+  > available as a mitigation there, and the **VPN/tailnet scope becomes THE control rather than a comfort** —
+  > which is precisely what this runbook provides. See [`../safety.md` §3.8](../safety.md) (the exception) and
+  > **§3.3.1** (what carries the exposure argument once it applies). **Do not expose a content-story demo
+  > outside a tailnet/VPN.**
 
 ---
 
@@ -673,7 +725,14 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 - [`../setup_github_guide.md`](../setup_github_guide.md) — the canonical SSH GitHub path (the alternative to the
   PAT-over-HTTPS clone in Step 1).
 - [`coverage-protocol.md`](coverage-protocol.md) — the 0-prod-eject believability gate (the evidence base for the
-  `urls.ts` residual decision).
+  `urls.ts` residual decision), **and the content-stories `(session × action)` LANDS sweep (v2.5 M236)**, which
+  is driven ACROSS the tailnet: the harness runs locally and only the stack is remote
+  (`run-content-stories.sh <N> --host <magicdns>`). Two host-path rules M236 established — the fake FAPI is
+  **always** `https` even when the app origin is not, and a `--public-host` stack must be measured with
+  `LATENCY_SCHEME=https` or the latency runner grades the wrong origin.
+- **v2.5 M236 — the second live proof on `billion`.** The whole content-vantage feature (both cockpit tabs,
+  29/29 landable pairs, 65 academy cards, hero p95 1.22 s / 1.51 s) was proven end-to-end from a second
+  tailnet machine on a cold reset-to-seed. The remote-reach recipe in this doc is the one it used, unchanged.
 - Design decisions: `knowledge/plan/releases/archive/02.20-panorama/` — M212 (the knob), M213 (TLS/proxy/pk, D-PROXY-2 /
   M213-D-SCHEME-1), M214 (origins & links, M214-D-SCHEME-1 / D-VITE-SIGNIN-1 / D-URLS-1), M215 (the live
   acceptance — the full finding ledger F1–F13 at `m215-prove-on-odyssey/iter-01/findings.md`; F13 = the

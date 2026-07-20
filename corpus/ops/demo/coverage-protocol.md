@@ -1,12 +1,26 @@
 # The demo-coverage protocol — the Playwright sweep + triage + fix loop
 
-**The iteration protocol for the 100%-coverage milestones (v1.10 "method acting" M42e employee, M42m
-manager).** A coverage milestone proves that a hero of a given **vantage** (employee/member, or manager),
-logged into a demo stack via the presenter cockpit, sees **100% of the pages that vantage can reach** rendered
-with **real semantic content** and **zero out-of-demo escapes**. The page set and the failure modes are
-**discovered by the sweep**, not enumerable up front — so the milestone is `iterative`: each iter **measures**
+**The iteration protocol for the demo's prove-by-render gates.** Both are `iterative`: each iter **measures**
 (run the sweep) → **triages** the failures → **fixes** them in `rosetta-extensions` (or a corpus doc) →
-**re-sweeps**, until the gate is GREEN.
+**re-sweeps**, until the gate is GREEN. The page set and the failure modes are **discovered by the sweep**,
+not enumerable up front, which is why the milestone shape is iterative rather than sectioned.
+
+**This doc governs TWO sweeps.** They share the loop, the harness foundation, the fix-surface routing table,
+and the measurement conventions; they differ in what they enumerate and how a page is reached:
+
+| | **Sweep 1 — hero vantage coverage** | **Sweep 2 — content stories (session × action)** |
+|---|---|---|
+| **added by** | v1.10 "method acting" M42e (employee) + M42m (manager) | v2.5 "the playbill" M236 |
+| **proves** | *a vantage's pages are full* | *every seeded content story lands on a real result* |
+| **unit** | a **page**, reached by BFS crawl from the hero's landing | a **(seat × exact URL)** pair — never crawled |
+| **actor** | a roster **hero** (Maya, Dan) | a non-hero **MEMBER** seat (`content-player-<idx>`) + a manager hero |
+| **enumerated by** | the sweep itself (discovered frontier) | the seeded `content-manifest.json` (a fixed denominator) |
+| **section** | [Sweep 1](#for-pms--what-100-coverage-means) below | [Sweep 2](#sweep-2--content-stories-the-session--action-lands-sweep-v25-the-playbill-m236) below |
+
+**Read them in order.** Sweep 1 establishes the loop, the gate vocabulary, and the harness; Sweep 2 assumes
+all of it and documents only where a fixed-denominator, exact-path sweep diverges from a crawl. The
+[cross-cutting protocol](#cross-cutting-protocol--rules-both-sweeps-owe-to-hard-experience) at the end holds
+the rules that outlived either one.
 
 > **The demo-patch mechanism is specified in [`demopatch-spec.md`](demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -23,6 +37,12 @@ with **real semantic content** and **zero out-of-demo escapes**. The page set an
 > real journey end-to-end and asserts the outcome (function); this sweep proves presence. Playthroughs extend
 > this same M42 Playwright foundation (the `cockpit-login` handshake + the centralized-anchor discipline) into a
 > mutating, reset-to-seed, serial suite with its own manifest + four-state map.
+
+# Sweep 1 — hero vantage coverage (v1.10 "method acting" M42e / M42m)
+
+**A coverage milestone proves that a hero of a given vantage** (employee/member, or manager), logged into a
+demo stack via the presenter cockpit, **sees 100% of the pages that vantage can reach** rendered with **real
+semantic content** and **zero out-of-demo escapes**.
 
 ## For PMs — what "100% coverage" means
 
@@ -432,6 +452,32 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page whose data is a structural row → `stack-seeding` (fix it); an empty page whose data is
   a runtime computation → crawl-scope (exclude it), or escalate as a re-scope-trigger **only if** the link is a
   load-bearing part of the vantage's demo and a platform change is the sole filler.
+
+  > **⚠ CORRECTION (v2.5 "the playbill" M236 — the premise above is REFUTED for sim results).** The rule
+  > survives; **its stated reason does not.** A `/sim/<slug>/result/<sessionId>` page is **NOT** a
+  > runtime-computed artifact — **M231 established it is a PERSISTED READ**
+  > (`jobsimulation/internal/graph/queries.resolvers.go:70` does plain Ent SELECTs of
+  > `validation_attempt_results`; no engine/LLM recompute on render). **M232** writes that fan-out from
+  > cloned real sessions, and **M236 proved it live on `billion`**: **13/13** seeded player results render a
+  > real score, a real LLM feedback paragraph and the real evaluated skills.
+  >
+  > So *"a seeded demo cannot populate such a surface"* was wrong, and any future triage that cites this
+  > bullet to skip a result page is citing a refuted premise. **What actually justifies the `skipPaths` rule
+  > is CRAWL SCOPE alone:** a hero's BFS should not dive into arbitrary historical session deep-links. The
+  > rule is therefore KEPT in `tests/coverage.spec.ts` (`RESULT_DEEP_LINK_SKIP`) with its comment corrected —
+  > **not deleted**, because deleting it proves nothing extra and merely makes the hero sweep re-walk pages
+  > that are already asserted far more precisely elsewhere.
+  >
+  > **Where result pages ARE proven: `tests/content-stories.spec.ts`** (the M236 content-stories sweep,
+  > §"Content stories — the (session × action) LANDS sweep" below). It reaches them the only way they can be
+  > reached — the exact session URLs from the seeded `content-manifest.json`, each entered through its own
+  > owning cockpit seat — which is precisely why the crawl cannot and should not be the tool for the job.
+  >
+  > **The generalizable lesson:** this bullet stood unchallenged for four releases because it was written as
+  > a *fact about the platform* ("an AI evaluation … never written by a seed") when it was really an
+  > *inference from one observation* (a seeded session's result page was empty — because nothing had seeded
+  > the result rows yet). When you record a skip, record **what you observed**, separately from **why you
+  > think it happens** — the observation stays true, the explanation is what rots.
 - **An entitlement-gated empty page is SEEDABLE, not runtime-computed — seed the entitlement, don't skip the
   page (M42e iter-09 lesson; corrects the iter-08 sim-start mis-triage).** Not every empty `/start`-style
   launch surface is runtime-computed. The per-sim `/sim/<slug>/start` page renders the **org-member deny
@@ -667,6 +713,388 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   When driving the sweep, line-buffer (`stdbuf -oL`) + `tee` so each line reaches stdout, and append a journal
   heartbeat every few minutes; never run the sweep as a silent foreground call.
 
+---
+
+# Sweep 2 — Content stories: the (session × action) LANDS sweep (v2.5 "the playbill" M236)
+
+**The second sweep this protocol governs.** The hero sweep above proves *a vantage's pages are full*. This
+one proves *every seeded content story actually lands on a real result* — the Thread-B half of v2.5.
+
+### Why it is NOT a `VantageManifest` crawl
+
+A content-story result page is reached by **cockpit seat + an exact URL**, never by crawling:
+
+- the URL carries a **session uuid that only the seeded manifest knows** (`/sim/<slug>/result/<sessionId>`);
+- the seat that owns it is a **non-hero MEMBER** (`content-player-<idx>`), not a roster hero;
+- `VantageManifest.identityKey` is **singular**, so a manifest-per-seat model would mean **13 seats → 13
+  manifests** for what is really one uniform assertion.
+
+`cockpit-login.loginAs()` already accepts a **`landingPath`**, so the whole sweep is an **exact-path visit
+per (seat × path)**. The BFS crawl machinery is simply the wrong tool and is deliberately unused. *(This
+also shrinks the harness M235's carry-forward described: the work is a page-object + a runner, not 13
+manifests.)*
+
+### The pieces
+
+| Piece | Path (in `rosetta-extensions`) | Role |
+|---|---|---|
+| Page object + assertions | `stack-verify/e2e/lib/content-result-page.ts` | Models the result surfaces; **authored from scratch** (see below) |
+| The sweep | `stack-verify/e2e/tests/content-stories.spec.ts` | Enumerates landable pairs from the manifest, visits each |
+| Runner | `stack-verify/e2e/run-content-stories.sh` | Resolves offset ports, fetches the **served** manifest, runs + aggregates |
+| Aggregator | `stack-verify/e2e/aggregate-content.py` | Turns the per-pair ledger into the reading |
+
+> **The `AISimulationResultContainer` trap.** M235's carry-forward said the harness would "reuse the shared
+> `AISimulationResultContainer`". **It does not exist as a harness object** — it is a next-web `.tsx`
+> component. The nearest harness object (`playthroughs/e2e/lib/simulation-page.ts`) stops at the *launch*
+> boundary with no `/result/` locator. The result surface had **never** been modelled harness-side; M236
+> authored it, **calibrated against a live seeded render** rather than blind.
+
+### The SIX render shapes (calibrate; do not assume)
+
+The roadmap called this "the result page." It is **six distinct surfaces across two apps**, and a single
+"is it long enough?" check is wrong on all of them — it both false-fails and false-passes:
+
+| Shape | Surface | What it looks like live | Assert on |
+|---|---|---|---|
+| `player-scored` | `/sim/<slug>/result/<id>` | ~1.9k chars: score, LLM feedback paragraph, "Evaluated Skills" | feedback **or** evaluated-skills present, `<main>` ≥ 300 |
+| `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
+| `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
+| `player-academy` | `/courses/<slug>` (**ant-academy**, a different app) | ~3.7k chars: `COURSE · 12 CHAPTERS`, title, chapter list | course/chapter structure **and 0 Draft chips** |
+| `manager-dashboard` | `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` (`skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `manager-interview` | `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` | ~590 chars: breadcrumb naming the player over an attempts table with "View Report" — **no `Results for` header at all** | an attempt row |
+
+**Shape selection is by ROUTE, never by sniffing content.** Every shape after the first was discovered by
+driving a route and *reading* it; every mis-grade came from inferring shape from keywords. In a system whose
+surfaces share a design language, the URL is the only cheap, stable discriminator.
+
+> **The calibration lessons, in the order they were paid for (M236 iters 04–08):**
+> 1. **A terse page can be correct.** The interview player result is ~205 chars *and right*. A length floor
+>    tuned to the scored shape reports a correct page as empty.
+> 2. **A false PASS is worse than a false fail.** Grading skill-path pages with the scored-sim shape passed
+>    the *completed* path — not because it rendered a report, but because 11k chars of legitimate content
+>    happened to contain the word "feedback".
+> 3. **A different surface is not a broken surface.** The interview *manager* view has no `Results for`
+>    header, so `manager-dashboard` graded a perfectly-rendering page as broken (iter-06).
+> 4. **A header can render from a different query than the payload.** The manager scoreboard's header comes
+>    from the sim definition, so it populates even when the payload query has nulled entirely — which is how
+>    a membership-id defect hid for an iter (iter-05), and how an *unimplemented* surface passed for two
+>    (iter-07).
+> 5. **A different app is a different shape.** The academy course page has no score and no feedback;
+>    falling through to `player-scored` reported a correct 3.7k-char render as a failure (iter-08).
+>
+> **Running score across the milestone: five wrong assertions to one real product bug.** When a gate is new,
+> disbelieve the gate first — probe the page before triaging the product.
+
+### Two traps that make a working page look broken
+
+- **Never let `loginAs` take its `networkidle` default on these routes.** next-web holds long-poll
+  connections open, so `networkidle` resolves late or never; on the enterprise activity-dashboard it never
+  resolves at all. The pair recorded `page.goto: Test timeout of 180000ms exceeded` for two iters and was
+  read as a product **hang** — a heavy instance "hanging" while a lighter sibling passed, which is exactly
+  the per-item fan-out signature `latency-budget.md` teaches. It was neither: instrumenting the navigation
+  showed **134 completed legs, 0 pending, none over 800 ms, page painted in ~1 s**. Navigate with `commit`
+  and let the page object's `settle()` own the wait. *(The rule was already written down in two places and
+  still got inherited by default — hence `waitUntil` is now explicit at the call site.)*
+  **Diagnostic:** `stack-verify/e2e/tests/probe-navigation.spec.ts` prints per-request wall times and
+  everything still in flight at a deadline. Run it before ever blaming a route for hanging.
+- **Read `body`, not just `<main>` — portals mount outside it.** The activity-dashboard drawers are antd
+  `Drawer`s rendered through a **portal**, so `main.innerText` is the **empty string** on a fully-populated
+  page. `main.length === 0` on a rendered page is a modal/drawer signature, not an empty one.
+
+### The denominator (get this wrong and the gate lies)
+
+**`has_manager_view` is per-SESSION, not per-product.** Reading it at product level silently under-counts
+**31 → 18**. And **ai-labs is presence-only** (nil client, `grade_result` not GraphQL-exposed — M231): its
+sessions have **no landable result surface**, so its player actions are **excluded from the denominator**
+rather than counted as failures.
+
+**A pair is landable only if the platform has BUILT the surface it points at.** M236 iter-07 drove the
+skill-path manager route live and found it renders the literal string **"Coming soon"**: in
+`InsightsBySkillPathStudentSimulationsContainer.tsx`, `userData` is hardcoded `null` and the results table
+is **commented out**, so **no query touches the seeded session** and the page is identical whether or not
+anything was seeded. Its 2 manager pairs are therefore **not landable** — the same ground on which
+ai-labs is already excluded — and `skill-path-legacy` is projected **player-link-only**. On the corrected
+manifest:
+
+```
+ 18 sessions + 15 manager views = 33 raw pairs        (the manifest BEFORE iter-07)
+                     − 2 skill-path manager views     (surface unimplemented — iter-07)
+ 18 sessions + 13 manager views = 31 raw pairs        (the CORRECTED manifest)
+                     − 2 ai-labs presence-only player actions
+                              = 29 LANDABLE
+```
+
+**Show the whole chain, because `31` names two different quantities.** It is both the *pre-iter-07 landable*
+count and the *post-iter-07 raw* total — a coincidence, not a correspondence. A reader who subtracts the 2
+skill-path manager pairs from the landable 31 gets 27 and concludes the doc is wrong; the 2 that leave the
+landable count are the **ai-labs** pair, and the 2 skill-path pairs leave one line earlier, out of the *raw*
+total. State which of **33 / 31 / 29 / 18** a number is, every time.
+
+> **Correcting a denominator is not moving the goalposts — but it must be argued, never quietly applied.**
+> 31 was never a count of *provable* pairs; it assumed a surface that does not exist. The controlling rule
+> is M233's fail-closed projection contract: *a session that cannot form a real link is dropped with a
+> reason, never linked anyway.* A CTA onto "Coming soon" is a fabricated CTA. Record the product-source
+> evidence in the iter's `decisions.md` and surface the change in the close — the danger is not the
+> correction, it is a correction nobody can audit later.
+>
+> **This one also hid a false PASS.** The lighter of the two skill-path sessions had scored as passing for
+> two iters, because the definition-only header contains "Results for" and a "Coming soon" body contains
+> no "No data". The false fail cost an investigation; the false pass would have hidden a missing surface
+> indefinitely.
+
+### A green unit test can defend a broken path
+
+Three separate tests in three consecutive iters were found asserting the defect they should have caught:
+
+| Iter | The test required… | Reality |
+|---|---|---|
+| 05 | the manager route built from a **user** id | the route takes a **membership** id — the query nulled |
+| 07 | `has_manager_view` **true** for skill-path | the manager surface is unimplemented |
+| 08 | the academy CTA to start `/library/` | **there is no `/library/[slug]` route** — it 404'd every time |
+
+A test that encodes a **route** or a **contract** is only as good as the last time someone drove it. When a
+live probe contradicts a green test, the test is the prime suspect — and the fix is to invert it so it
+fails loudly if the defect is ever restored.
+
+**This is a defect class with a name — *offline-authored, never driven* — and a fourth instance (the skill-path
+version `"2"` guess) sits outside this table.** The standing form, **unit-proven ≠ route-proven**, is
+[cross-cutting rule 3](#3-offline-authored-never-driven--unit-proven--route-proven).
+
+### Running it
+
+```bash
+cd rosetta-extensions/stack-verify/e2e
+./run-content-stories.sh 1                                   # a local demo-1
+./run-content-stories.sh 1 --host billion.taildc510.ts.net   # a REMOTE stack over the tailnet
+```
+
+The runner fetches the manifest **from the cockpit the stack is actually serving**, not from the checked-in
+preset — a sweep that read the preset would pass while the live cockpit served something else. Output lands
+in `content-out/demo-<N>/` (`content-stories.json`, `pairs.jsonl`, `content-manifest.used.json`).
+
+### Two harness invariants that are easy to get wrong
+
+- **Not `mode: 'serial'`.** Serial makes tests *dependent*: the first failure **skips all the rest**, turning
+  "how many of 29 land?" into "did pair #2 fail?". The pairs must be independent; the single-worker
+  constraint the shared fake-FAPI seat needs comes from `--workers=1`, which serializes **without** coupling
+  outcomes.
+- **Persist per-pair results to disk, don't accumulate in memory.** Playwright **restarts its worker after
+  every failure**, re-importing the spec module — so a module-level array resets and an `afterAll` summary
+  fires once per restart seeing only a fragment. The first version of this sweep printed `LANDED 1 / 31`
+  once per failure for exactly that reason. The spec appends to `pairs.jsonl`; the **runner** aggregates.
+
+### The reading must be fail-CLOSED (M236 final harden)
+
+The five-wrong-assertions-to-one-real-bug score above is a statement about the **grader**. The same defect
+class lives one layer up, in the thing that turns per-pair verdicts into **the number the gate is graded
+on** — and there it went unnoticed through all ten iters:
+
+- **`0 / 0` is not a pass.** `aggregate-content.py` computed its denominator as "rows in the ledger" and
+  **always exited 0**. A run in which nothing executed — playwright collecting no tests, a manifest fetch
+  that produced an empty sweep — printed `LANDED 0 / 0` and reported **success**. Arithmetically that is
+  also 100%. An empty ledger is now a **failed run**.
+- **A dropped pair must stay in the denominator.** A pair the manifest cannot form writes no ledger line, so
+  a denominator counted from survivors **silently shrinks and flatters the score**: every remaining pair
+  landing reads as a clean sweep. The spec's own comment promised this could not happen — true of its
+  console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
+- **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
+  and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
+- **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
+  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
+  *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what
+  let a failed sweep exit 0 for four releases" — and the newer runner reintroduced it anyway. A lesson
+  written down in one runner does not propagate to its siblings by itself.)*
+- **A truncated ledger line must not cost the whole reading.** A run killed mid-append leaves a partial last
+  line; bare `json.loads` threw before any report was written, so the operator got a traceback instead of
+  "*29 rows read, 1 truncated*". Bad lines are now counted and reported — still fail-closed, but legibly.
+- **Name the stack, or measure the wrong one.** Every runner computes `OFFSET=$(( N * 10000 ))`, and bash
+  evaluates a non-numeric `N` to **0 with no error** — pointing the whole sweep at the **dev stack's** ports
+  and reporting what it finds there as demo-N's. Both content-stories and latency runners now reject a
+  non-integer `N`. `run-coverage.sh` / `run-hiring-render.sh` shared the hazard and were **guarded at the
+  M236 close** — the lesson is now propagated to all four runners, not written in one and left in the others.
+
+> **The generalisation worth carrying to the next gate:** the milestone's signature failure was *a check
+> scoring green off a subject that proved nothing*. That is not a property of render shapes — it is a
+> property of **every layer that reports a number**. Ask of each one: *what does it print when nothing
+> happened?* If the answer is anything other than a loud failure, the gate can certify a vacuum.
+>
+> **Promoted to a standing rule** — see [Cross-cutting rule 1](#1-a-check-can-report-success-while-proving-nothing),
+> which carries all nine instances and the pair-every-shape discipline that catches them.
+
+*(The last bullet is [cross-cutting rule 2](#2-prose-does-not-propagate--only-a-shared-definition-or-an-executable-fence-does)
+in miniature: a lesson written in one runner does not reach its siblings. Four runners, one fence.)*
+
+### The directional rule for tuning a grader
+
+> **A fix for a false-FAIL that creates a false-PASS is a net loss.**
+
+**The two errors are not symmetric, and a grader author must hold that asymmetry explicitly.** A false-FAIL is
+loud, lands in front of a human, and costs an investigation. A false-PASS is silent, certifies a vacuum, and
+is discovered — if ever — releases later by something else entirely. **Trading one for the other is not
+neutral even at one-for-one**, and a grader is *always* tuned under pressure from the false-FAIL side, because
+that is the side that is currently shouting at you.
+
+**The live instance.** `settle()` counts `main + body` so it can see antd-`Drawer` surfaces mounted through a
+portal, while the length floors read `main.length` — so a portal-rendered page settles correctly and then
+fails *"too short (0 chars)"*. A real false-FAIL. The obvious repair — `readable = main.length + body.length`
+— **double-counts**, because `<main>` is a descendant of `<body>`. That silently **halves every floor**, and a
+blank page carrying only nav chrome clears a 300-char gate: the exact false-PASS class six iters had been
+spent eliminating. The landed fix is `main || body`.
+
+**The check to run before any grader loosening:** *if this change is wrong, which way does it fail?* If the
+answer is "it passes something it shouldn't", the change needs a **negative test proving the specifically-broken
+page still grades not-ok** before it lands — not after. Loosening a floor is a false-PASS risk in every case;
+loosening it to fix a false-FAIL is exactly when that risk is easiest to overlook.
+
+### Prove the test fails (mutation, not coverage)
+
+The harden pass added ~70 pure-logic tests over the grader, the denominator, and the reading — driven
+through a scripted fake `Page`, no browser, no stack. The discipline that makes them worth having is not
+line coverage; it is that **every shape gets a PAIR**: a good page graded `ok`, and a specifically-broken
+page graded **not** `ok`. A happy-path-only test cannot tell a working grader from one that returns `true`
+unconditionally — which is exactly what this milestone kept finding.
+
+Where a fix is load-bearing, the harden pass **reintroduced the bug and confirmed the tests went red**,
+then restored it: dropping `TZ=UTC` from the green gate turns 5 of 6 guards red; renaming `/courses/` in
+`shapeFor` turns 2 of 8 route-contract tests red. **A regression test nobody has ever seen fail is a
+hypothesis, not a guard.**
+
+**The cross-language contract nobody was testing.** The Go projection (`content_manifest.go`,
+`content_nonsim.go` — iters 05/07/08) and the TS grader (`shapeFor` — iters 04/06/07/08) agree on these
+routes by **bare string prefix**. Four iters touched each side; no test touched the join. And `shapeFor`
+**falls through to `player-scored`** for any prefix it does not recognise — so renaming `/courses/` on the
+Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
+wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
+`stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
+asserts the grader understands every route in it — including that the landable count is still **29**.
+
+---
+
+# Cross-cutting protocol — rules both sweeps owe to hard experience
+
+_These four outlived the milestone that found them. They are stated here as standing rules because each was
+first learned as a one-off, written down in one place, and then **recurred** — which is itself the subject of
+the second rule._
+
+## 1. A check can report success while proving nothing
+
+**The single most transferable finding of v2.5.** Nine distinct instances landed across M235–M236, and they
+share no code:
+
+| the layer | what it reported | what it had proved |
+|---|---|---|
+| a PII scrub | every test green | it had removed **zero** names |
+| three route tests | green, three consecutive iters | they asserted the **defect** they should catch |
+| the aggregator | `LANDED 0 / 0`, **exit 0** | nothing executed; 0/0 is also 100% |
+| a test suite | passing | it collected **0 tests** — 61 offline for 8 iters |
+| a grader | green on every page | it had **no negative test**; `return true` would score identically |
+| a regression test | green | it was a **self-consistent tautology** (`len(x) != len(x)`) |
+
+> **The rule, in the form worth memorizing:** **ask of every layer that reports a number — *what does it print
+> when nothing happened?*** If the answer is anything other than a loud failure, that layer can certify a
+> vacuum, and everything downstream of it inherits the certification.
+
+**This is not a property of render shapes or of Playwright.** It is a property of **any layer that reports a
+number**: a grader, an aggregator, a runner's exit code, a coverage floor, a manifest projection, a scrub. Each
+needs the question asked of it separately — closing it in one layer says nothing about its siblings.
+
+**The practical discipline that catches it: every shape gets a PAIR.** A good subject graded ok, and a
+specifically-broken subject graded **not** ok. A happy-path-only test cannot distinguish a working check from
+one that passes unconditionally — which is precisely what kept being found. Where a check is load-bearing, go
+further and **reintroduce the bug to confirm the test goes red** (dropping `TZ=UTC` turns 5 of 6 green-gate
+guards red; renaming `/courses/` turns 2 of 8 route-contract tests red). **A regression test nobody has ever
+seen fail is a hypothesis, not a guard.**
+
+## 2. Prose does not propagate — only a shared definition or an executable fence does
+
+**The best available predictor of where the next defect lands.** A lesson written into one file does not reach
+its siblings, however well written, however prominent:
+
+- the **non-integer-`N` guard** was added to 2 of 4 runners during the milestone; the other two carried the
+  identical hazard until the close;
+- the **`networkidle` rule** was *already written down* in [`latency-budget.md`](latency-budget.md) — and the
+  new sweep inherited the bad default anyway, producing a 180 s "hang" on a page that painted in ~1 s;
+- **doc corrections** followed the same shape: each iter fixed the doc it touched, leaving three siblings
+  asserting the claim just refuted — including the one that produced the inflated denominator;
+- the **membership key** was a bare literal at **9 sites** — one writes the row, eight merely hope to match it.
+
+> **The rule:** when a correction has more than one site, **do not fix the sites** — replace them with a single
+> definition, or add a fence that fails when they disagree. A sweep that fixes N places leaves place N+1
+> unfound, and the next reader cannot tell which places were swept.
+
+**The class recurs during the very work that names it, so assume it is live.** v2.5's own close is the example:
+the `/demo-up` knob count was corrected to **27 env knobs + 10 CLI flags** in `demo-up-defaults.md` and
+`CLAUDE.md`, while [`README.md`](README.md) still said 25 + 9 and the `demo-up` skill still said 26. A second
+instance in the same close: a correction sweep that covered `corpus/ops/**` and **no file under
+`corpus/services/`**.
+
+**An executable fence already exists for that particular claim** — `rext stack-core/demo_knob_guard.py` checks
+the defaults table against the parsers **in both directions** (a doc-promised flag with no parser entry is a
+*false promise*; a parser flag with no doc row is *undiscoverable*). Its scope is `demo-up-defaults.md` only.
+**Every other doc restating the count is unfenced prose, and drifted for exactly that reason.** Prefer citing
+`demo-up-defaults.md` over restating the number; if you must restate it, get it from the guard:
+
+```bash
+python3 rosetta-extensions/stack-core/demo_knob_guard.py <rosetta-root>
+# demo-knob-guard: parsers expose 27 env knob(s) + 10 cli flag(s) across 2 entry point(s)
+```
+
+## 3. Offline-authored, never driven — **unit-proven ≠ route-proven**
+
+**A defect class, not a run of bad luck.** Four artifacts shipped wrong for one reason — each was *authored
+against a reading of the code* rather than *driven against the running system* — and **each was defended by a
+green test**, because the test encoded the same reading:
+
+| the artifact | the assumption | reality when driven |
+|---|---|---|
+| a manager route | built from a **user** id | the route takes a **membership** id — the query nulled |
+| the academy CTA | `/library/<slug>` starts a path | **no such route exists** — 404, every time |
+| `managerKind: skill-paths` | a manager surface exists | the page renders the literal **"Coming soon"** |
+| a skill-path version | `"2"` looked right | a guess; never checked against a row |
+
+**Why a test cannot save you here.** Unit tests prove the code does what the author *believed*. When the belief
+is about an **external contract** — a route, a column set, an id's meaning, a rendered surface's existence —
+the test inherits the belief and confirms it. The green is real; it is answering a different question.
+
+> **The rule:** an assertion about a **route, an id's meaning, a schema, or a surface's existence** is not
+> knowledge until it has been **driven live once**. Until then, mark it in the code as uncalibrated. When a
+> live probe contradicts a green test, **the test is the prime suspect** — and the fix is to invert it so it
+> fails loudly if the defect returns.
+
+**Corollary for planning:** offline iters produce *risk*, not *score*. M236 iter-03 found the full seeded
+substrate present — up to 26 pairs' worth of data — and still recorded the metric as **0/31**, because the gate
+measures *renders live* and no render had been proven. Recording 26 would have been the same failure in the
+opposite direction. **Read a substrate reading as "the remaining work is render work, not seed work" — never
+as partial credit.**
+
+## 4. Measurement hygiene — four ways a measurement lies
+
+Each of these produced a confident number that was about something other than its subject:
+
+- **A suppressed error channel measures the wrong thing silently.** A `git fetch` with stderr suppressed failed;
+  the freshness check then compared **stale against stale** and reported agreement. *Never suppress the error
+  channel of a command whose failure changes the meaning of the result.*
+- **A guard that fails OPEN is worse than no guard**, because everything downstream trusts it. The verdict-age
+  check parsed a UTC timestamp as local time: east of UTC it failed closed, but **west of UTC it inflated the
+  window and read a STALE verdict as FRESH** — the exact hazard it existed to prevent, inverted, for half the
+  world. *(It was itself introduced by a hardening pass. Code written to close a hazard is not exempt from it.)*
+- **A denominator counted from survivors flatters every score.** A pair the manifest cannot form writes no
+  ledger line, so counting "rows in the ledger" silently shrinks the denominator and every remaining pair
+  landing reads as a clean sweep. **Pin the denominator from outside the thing being measured**, and make a
+  drop fail the run.
+- **A probe intended to discriminate between two hypotheses must not be constructed from the artifact under
+  suspicion.** If the artifact is wrong, the probe is wrong in the same direction, and the run confirms the
+  hypothesis it inherited rather than testing it.
+
+> **The unifying question, and it is the same one as rule 1 from a different side:** *if the thing I am
+> measuring were broken in the way I suspect, would this measurement look any different?* If not, you have
+> built a mirror, not a probe.
+
+---
+
 ## Related
 - [Demo family index](README.md) · [Frontend tier](frontend-tier.md) · [Verification net](../verification.md)
 - [Demo lifecycle](../rosetta_demo.md) · [Browser login recipe](recipe-browser-login.md) · [Stories & heroes](stories-spec.md)
+- [Latency budget](latency-budget.md) — the perf gate beside these render gates (and the arithmetic-signature model)
+- [Content stories spec](content-stories-spec.md) — the `content-manifest.json` Sweep 2 reads
+- [Demo-up defaults](demo-up-defaults.md) — the fenced knob/flag contract rule 2 cites

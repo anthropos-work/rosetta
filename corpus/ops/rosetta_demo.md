@@ -46,7 +46,7 @@
   control plane. Server-authoritative, so every surface resolves the same hero. Measured by the `clerk-multi-1`
   Alignment DNA (9 genes, 100%/100%) — see [clerkenstein.md](../services/clerkenstein.md) § Multi-identity.
 - **Stories & cockpit are the DEFAULT (post-v1.9 demo-hardening):** a bare `/demo-up N` now seeds the
-  multi-org **Stories & Heroes** world (**3 orgs** × a thriving/struggling/manager hero trio — Cervato
+  multi-org **Stories & Heroes** world (**4 orgs** — 3 workforce × a thriving/struggling/manager hero trio, plus the v2.4 M223 HIRING org Meridian Talent — Cervato
   Systems / Solvantis / Northwind Aviation) **and** serves the
   presenter cockpit **by default** — the M38-D4 opt-in flipped to opt-**out**. `DEMO_NO_STORIES=1` (or the
   explicit `DEMO_STORIES=0`) restores the legacy structural **small-200** + single-identity fake-fapi +
@@ -67,8 +67,12 @@
      `stack-dev` **skips this non-fatally** — `/stack-secrets` (M30) provisions the real `.env` from
      `.agentspace/secrets`. This `.env` copy is the **sole** sanctioned `stack-dev` read;
    - `make -C stack-demo/platform init` clones every `repos.yml` repo as a sibling into `stack-demo/`
-     (skip-if-present — the platform's own idempotent clone loop), plus `make init-studio` for `cms`;
-   - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json`.
+     (**skip-if-present, and skip means SKIP — it never fetches, pulls, or checks out an existing clone**;
+     see [§ Clone freshness](#clone-freshness--skip-if-present-never-updates-f-m236-close-1) below, which you
+     should read before trusting a bring-up to be building current code), plus `make init-studio` for `cms`;
+   - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json` — **provenance of what was
+     built, NOT a freshness signal**: `ref` is the local branch name and `sha` the local `HEAD`, neither of
+     which is compared to the remote (§ Clone freshness).
 2. **secret pre-flight + provision** (the M28/M30 step, before the heavy build): the demo-aware
    coverage pre-flight reads the secret source (`.agentspace/secrets`) **directly** (it needs no `.env`
    present yet), then `/stack-secrets` **provisions** `stack-demo`'s per-repo `.env` from it (values-blind)
@@ -90,6 +94,66 @@
 > **The manual `rosetta-demo up` verb** is the minimal/infra-only path — it does **not** call
 > `ensure-clones.sh` (the auto `/demo-up` path does). It presupposes a populated `stack-demo` (run
 > `up-injected.sh` / a prior `ensure-clones.sh` to bootstrap the peer clone set + seed the shared `.env`).
+
+## Clone freshness — skip-if-present never updates (`F-M236-CLOSE-1`)
+
+🔴 **A demo bring-up builds whatever the clone already contains. It does not make the clone current, and
+nothing in the bring-up will tell you it is not.** This is the single most consequential thing to know about
+step 1, and until v2.5 the corpus described the mechanism approvingly without ever stating its consequence.
+
+**The mechanism.** `make init` (in the `platform` repo's own Makefile) is a pure existence check:
+
+```make
+if [ ! -d "$(PARENT_DIR)/$$repo" ]; then git clone …; else echo "  $$repo already exists, skipping"; fi
+```
+
+There is **no `git fetch`, `git pull`, or `git checkout` anywhere in the demo bring-up** — measured: zero hits
+across all of `demo-stack/`. A `pull` target exists in the same Makefile (`make pull`), and the bring-up
+**never calls it**. So a clone created once is frozen at that moment, and every subsequent `/demo-up` — however
+"clean", however cold a reset-to-seed — rebuilds that same frozen source. **`--reset`, teardown, and re-`up` do
+not help**: they discard *stacks*, not the shared `stack-demo/<repo>` clones the stacks build FROM.
+
+**The measurement (2026-07-20, both boxes, identical).** The clone set had last been advanced on 2026-07-08:
+
+| repo | commits behind `origin/main` | clone last advanced |
+|---|---|---|
+| `app` | **249** | 2026-07-08 |
+| `next-web-app` | **202** | 2026-07-08 |
+
+Twelve days of platform `main` were invisible to every demo built on those boxes, on both machines, with no
+warning at any point in the bring-up.
+
+**Why the lockfile does not catch it.** `stack-demo/clones.lock.json` is written by `ensure-clones.sh` on every
+run and records, per repo, `ref` = `git rev-parse --abbrev-ref HEAD` and `sha` = `git rev-parse HEAD`. Both are
+**purely local**: nothing is ever compared against the remote. A clone 249 commits behind `origin/main` records
+`{"ref": "main", "sha": "<the old sha>"}` — **structurally indistinguishable from a fresh one**, because
+freshness is not a dimension the file has. (`ref` also degrades to the literal string `"HEAD"` on a detached
+clone, which is a *second* reason not to read it as a pin — but the common case is a branch name that looks
+perfectly healthy.) The lockfile is honest provenance of **what was built**; it is not, and was never, a
+freshness signal.
+
+**Operator consequence — what this actually looks like.** It presents as a *product* defect, not a tooling one,
+which is why it cost this release a milestone: a demo renders a **stale UI** (the user-reported stale left menu
+was exactly this), a fix "that definitely landed" is absent, a seeder writes a column the built binary does not
+have. Every one of those reads as pin drift, injection drift, or a bad patch, and sends you into the wrong
+subsystem. **Before debugging any demo behaviour that contradicts current `main`, check the clone set first:**
+
+```bash
+cd stack-demo && for r in app next-web-app cms platform; do
+  git -C "$r" fetch -q origin main
+  printf '%-16s %s behind\n' "$r" "$(git -C "$r" rev-list --count HEAD..origin/main)"
+done
+```
+
+Non-zero on any row means the demo you are debugging was **not built from the code you are reading**. Bring the
+clone set current with `make -C stack-demo/platform pull` (which stashes dirty trees) — or a per-repo
+`git pull` — and rebuild. **There is no automatic freshness rung today**; the check above is manual by
+necessity, and `F-M236-CLOSE-1` is the finding that owns closing that gap.
+
+> **Deliberate staleness is legitimate — that is why this is not simply a bug to auto-fix.** Reproducing a
+> demo at a known-good revision is a real use case, and an unconditional `pull` in the bring-up would destroy
+> it (and could break a demo mid-presentation). What is *not* legitimate is staleness the operator did not
+> choose and cannot see. The gap to close is **visibility**, not automatic mutation.
 
 > **Remote reach over Tailscale — `--public-host <magicdns>` (v2.2 "panorama", opt-in, default-off).**
 > `/demo-up N --public-host billion.taildc510.ts.net` (or `STACK_PUBLIC_HOST=<magicdns>`) makes the demo

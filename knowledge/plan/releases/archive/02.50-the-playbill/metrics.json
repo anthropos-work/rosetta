@@ -1,0 +1,182 @@
+{
+  "release": "v2.5",
+  "codename": "the playbill",
+  "closed": "2026-07-20",
+  "milestones": ["M229", "M230", "M231", "M232", "M233", "M234", "M235", "M236"],
+  "milestone_close_status": {
+    "M229": "complete",
+    "M230": "closed-incomplete",
+    "M231": "complete",
+    "M232": "complete",
+    "M233": "complete",
+    "M234": "complete",
+    "M235": "closed-incomplete",
+    "M236": "closed-on-gate (gate MET 29/29; deferral-audit RED escalated at close, see CLOSE-D2)"
+  },
+  "platform_repo_edits": 0,
+  "supply_chain": {
+    "npm_vulnerabilities": 0,
+    "new_deps": 0,
+    "verdict": "GREEN",
+    "note": "npm audit clean on both TS packages (stack-verify/e2e, playthroughs/e2e); no new Go module added across the release"
+  },
+  "measurement_method": {
+    "as_of": "2026-07-20, release close Phase 4",
+    "host": "macOS (Darwin 25.1.0), rosetta-extensions @ 08badf1",
+    "go": "gotestsum --junitfile, tallied from parsed JUnit XML (testcase elements, includes subtests + fuzz seeds)",
+    "go_reproducible_funcs": "git grep -E '^func Test' -- '*.go' — the cross-release like-for-like method re-anchored at M234",
+    "python": "pytest --junit-xml, tallied from parsed JUnit XML (testcase elements; pytest subtests are NOT separate testcase elements)",
+    "typescript": "playwright test --reporter=junit on the *.unit.spec.ts subset, tallied from parsed XML; live-browser specs enumerated via playwright test --list",
+    "counting_hazard": "v2.3's Python figures counted pytest SUBTESTS into the section totals (stack-core 182 = 152 testcases + 30 subtests). This release's Python figures are JUnit testcase counts only. The apparent stack-core 182 -> 152 is a METHOD ARTIFACT, not a regression — the D17 / incident-#6 counting hazard. Do not file it as a test-count decrease."
+  },
+  "tests": {
+    "go": {
+      "runner": "gotestsum (JUnit XML)",
+      "modules": 6,
+      "testcases": 2461,
+      "passed": 2461,
+      "failed": 0,
+      "whole_repo_test_funcs": 1976,
+      "by_module": {
+        "alignment": 126,
+        "clerkenstein": 405,
+        "playthroughs": 131,
+        "stack-secrets": 193,
+        "stack-seeding": 1134,
+        "stack-snapshot": 472
+      },
+      "status": "GREEN"
+    },
+    "python": {
+      "runner": "pytest (JUnit XML)",
+      "sections": 5,
+      "testcases": 1409,
+      "passed": 1399,
+      "failed": 10,
+      "skipped": 8,
+      "deterministic_failures": 8,
+      "flaky_failures": 2,
+      "by_section": {
+        "demo-stack": { "testcases": 730, "failed": 8, "note": "the standing carry, clean-clone macOS reading — matches the M236 re-baseline exactly" },
+        "stack-core": { "testcases": 152, "failed": 0, "note": "152/152 on 2 of 3 full-suite runs; 1 flaky failure — see flakes" },
+        "stack-verify": { "testcases": 141, "failed": 0 },
+        "stack-injection": { "testcases": 264, "failed": 0, "skipped": 8 },
+        "dev-stack": { "testcases": 122, "failed": 0 }
+      },
+      "status": "YELLOW — 8 standing test-side debt failures (0 real defects) + 2 flakes"
+    },
+    "typescript_playwright": {
+      "runner": "playwright (JUnit XML)",
+      "unit_executed": 196,
+      "unit_passed": 196,
+      "unit_failed": 0,
+      "collected_total": 235,
+      "by_package": {
+        "stack-verify/e2e": { "collected": 151, "unit_executed": 127, "live_only_not_run": 24 },
+        "playthroughs/e2e": { "collected": 84, "unit_executed": 69, "live_only_not_run": 15 }
+      },
+      "note": "39 live-browser specs require a running demo stack and were NOT executed at release close. The e2e collection-integrity guards added at M236 (test_e2e_collection_integrity.py) confirm the suite registers a real test count — the M236 zero-collection defect cannot silently recur.",
+      "status": "GREEN (unit)"
+    },
+    "totals": {
+      "executed_testcases": 4066,
+      "passed": 4056,
+      "failed": 10,
+      "skipped": 8
+    }
+  },
+  "standing_failures": {
+    "observed": 8,
+    "expected_on_this_host": 8,
+    "host": "macOS (Darwin 25.1.0)",
+    "expected_on_linux": 7,
+    "clone_state": "CLEAN — the 6 clone-dependent failures of the carried 14 did not reproduce, confirming the stack-demo clone set is pristine",
+    "real_defects": 0,
+    "pin_drift": 0,
+    "composition": "7 stale assertions against deliberately-changed behaviour (4 M53 academy-link, 2 M218 overlay, 1 M215 browser-port list) + 1 macOS environment-conditional test missing a skipUnless(Linux) guard",
+    "baseline_ref": "knowledge/plan/releases/archive/02.50-the-playbill/m236-prove-on-billion/rebaseline-standing-failures.md",
+    "note": "M236's own metrics.json recorded demo-stack 716 passed / 14 failed — that was the DIRTY-clone reading taken before the re-baseline. The clean-clone reading is 8, and that is what reproduces here."
+  },
+  "flake_count": 0,
+  "flakes": [
+    {
+      "id": "FLAKE-v2.5-01",
+      "test": "demo-stack/tests/test_host_isolation.py::TestReleaseOnExit::test_released_on_sigterm",
+      "observed": "1 failure in 3 isolated runs",
+      "cause": "timing — polls a 2 s budget (100 x 0.02 s) for the SIGTERM trap handler to unlink the lockfile; loses the race under CPU contention",
+      "v2_5_code": false,
+      "note": "pre-existing host-isolation test; not named in any prior ledger, so it is a NEWLY-SURFACED flake, not a newly-introduced one"
+    },
+    {
+      "id": "FLAKE-v2.5-02",
+      "test": "stack-core/tests/test_m220_mutation_battery.py::DevWiringMutationBattery::test_the_dev_fences_are_red_proven",
+      "observed": "1 failure in 3 full-suite runs; 6/6 green in 3 isolated runs of the file",
+      "cause": "the battery spawns a nested pytest over an unmutated subject and asserts it is GREEN before reading mutants; under full-suite load one of 3 inner dev-wiring tests fails, tripping the harness self-check",
+      "v2_5_code": false,
+      "note": "M236 recorded these as '2 pre-existing failures'; they are in fact non-deterministic — 0 deterministic failures observed across 2 subsequent full-suite runs"
+    }
+  ],
+  "coverage": {
+    "as_of": "release close, measured directly (go test -cover)",
+    "stack_seeding_module_stmts_pct": 87.6,
+    "by_package": {
+      "seeders": 96.1,
+      "contentsession": 94.7,
+      "scrub": 100.0,
+      "cmd/stackseed": 64.6,
+      "cmd/datadna": 51.0,
+      "cmd/content-capture": 28.7
+    },
+    "cockpit_py_stmts_pct": 96,
+    "vs_v2_4": "seeders 96.8 -> 96.1 (-0.7pp, within the 2pp tolerance)",
+    "note": "cmd/content-capture is deliberately low — captureSession/main are the DB-bound live prod-read surface; only pure helpers are unit-reachable (M235 record)."
+  },
+  "benchmarks": {
+    "metric": "p95 click -> ACCESS (authenticated shell rendered + interactive)",
+    "gate_ms": 5000,
+    "environment": "billion.taildc510.ts.net (Tailscale Linux VM), COLD reset-to-seed, M236 iter-10",
+    "cold_employee_p95_ms": 1220,
+    "cold_manager_p95_ms": 1510,
+    "warm_employee_p95_ms": 3150,
+    "warm_manager_p95_ms": 2710,
+    "reached_access": "5/5 both vantages",
+    "status": "MET",
+    "vs_v2_4": "v2.4 M228 recruiter p95 1270 ms; v2.5 employee 1220 ms / manager 1510 ms — same order, all far inside the 5000 ms gate. Vantages differ, so this is not a strict like-for-like.",
+    "scope_note": "HERO vantages only (user decision B2). Content-seat latency is OUT OF SCOPE for v2.5."
+  },
+  "primary_gate": {
+    "name": "landed-non-empty (session x action) pairs, live on billion, cold reset-to-seed",
+    "baseline": 0,
+    "achieved": 29,
+    "denominator": 29,
+    "status": "MET",
+    "by_product": {
+      "simulation": "26/26",
+      "skill-path-legacy": "2/2 (player-only; no manager surface exists on the platform)",
+      "skill-path-new": "1/1",
+      "ai-labs": "presence-only, excluded fail-closed"
+    },
+    "provenance_caveat": "The 29/29 reading was taken on playbill-m236-hardened. The M236 close then fixed 10 harness defects, unit-proven (66 harness specs) but NOT re-run live — see M236 decisions.md CLOSE-D3."
+  },
+  "net_new_tests": {
+    "m230": 14,
+    "m233": 23,
+    "m234": 22,
+    "m235": 35,
+    "m236": 83,
+    "note": "per-milestone as recorded; not summable into the Go func delta, which spans different languages and counting bases"
+  },
+  "go_test_func_delta": {
+    "v2_4_close": 1879,
+    "v2_5_close": 1976,
+    "delta": 97,
+    "method": "git grep -E '^func Test' -- '*.go' at casting-call-m228-render-probe-fix vs 08badf1",
+    "note": "M233's metrics.json quoted 1902 for v2.4 M227 via a non-reproducible method; M234 re-anchored to the git-grep method. 1879 is the git-grep reading at the final v2.4 tag and is the correct like-for-like baseline."
+  },
+  "suites_not_run": [
+    "stack-verify/e2e live-browser specs (24) — require a running demo stack",
+    "playthroughs/e2e live Playthroughs (15) — require a running demo stack",
+    "the content-stories live sweep (run-content-stories.sh) — requires billion + a cold reset-to-seed"
+  ],
+  "headline": "Content stories — real production job-simulation sessions, scrubbed and re-tenanted into a demo org, projected into a cockpit tab, and PROVEN to land non-empty for both player and manager vantages: 29/29 live on billion on a cold reset-to-seed, p95 click->ACCESS 1.22 s employee / 1.51 s manager. 0 platform-repo edits across all 8 milestones."
+}

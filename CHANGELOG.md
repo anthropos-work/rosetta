@@ -2,6 +2,55 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.5] "the playbill" — 2026-07-20
+
+**The content-vantage release.** The demo now shows the platform's **content, played** — real learning and
+assessment sessions a presenter can step into as either the person who did them or their manager. Two threads: the
+empty **AI Academy** grid finally fills with real course cards, and a new **"Content stories"** cockpit tab lists
+played sessions per content product, each with one-click *log in as the player* / *log in as the manager*. The
+sessions are **cloned from real production sessions**, anonymized best-effort and re-tenanted into a demo org, kept
+**VPN/tailnet-scoped**. Tooling + docs only — **zero platform-repo edits** across all 8 milestones.
+
+### Added
+- **The AI Academy grid renders real course cards on a demo.** It used to come up empty (the catalog is
+  database-authoritative and a demo held no academy rows); a demo now shows **65 real skill-path course cards** (483
+  chapter links), production-faithful, **no "Draft" chip**, through the real catalog path — proven live on `billion`.
+- **A second "Content stories" cockpit tab.** Beside "Org stories", the presenter cockpit now lists **played
+  sessions** grouped by content product (Simulation · Skill-path · AI-labs), each row with up to two login-and-land
+  actions — **as the player** and **as the manager** (where a manager view exists) — that log in and drop you
+  straight onto that session's result page. AI-labs is presence-only (no seedable result surface).
+- **The sessions are real, anonymized production sessions.** Each content-story session is copied from a pinned real
+  production job-simulation session — the actual LLM feedback, transcript, code/document submission, and interview
+  report — best-effort scrubbed of detectable personal data, re-tenanted into a demo org, and source-pinned so a
+  reseed is deterministic.
+
+### Changed
+- **`safety.md` Part 3 amended to the honest posture.** A content-story demo can now carry **scrubbed real customer
+  content** (anonymized where detectable, not provably clean), so the safety contract no longer claims a blanket
+  "nothing behind the door." The control is **scope**: content-story demos stay **VPN/tailnet-bounded**, never
+  open-internet, and the residual re-identification risk is a recorded, data-controller-accepted decision
+  (`safety.md` §3.8).
+
+### Fixed
+- No user-facing platform fixes — this release is tooling + docs only (**0 platform-repo edits**). The corrections
+  landed in the demo tooling and the documentation corpus (e.g. `ant-academy.md` corrected from a false "no backend
+  / static JSON" model to the true database-authoritative catalog — the wrong claim that had mis-routed the
+  empty-grid fix into the platform repo for a full release).
+
+### Supply chain
+- **No new dependencies.** 0 net-new Go modules; npm audit clean on both TypeScript packages. Alignment
+  (Clerkenstein) unchanged at 100% / 100% critical.
+
+### Known limitations
+- **The headline "29/29 sessions land" number is unit-proven, not live-re-proven.** It was measured live on
+  `billion`, but the test harness was then fixed ~10 times after that measurement; a live re-prove at the shipped
+  harness is **v2.6's first work** (milestone M237). Quote it as verified-in-principle, not verified-at-tag.
+- **The AI Academy still renders 0 cards on the *anonymous* (signed-out) routes** (`/library`, `/free`). The
+  signed-in grid is filled; the public/anonymous twin is deferred to M237.
+- **The 13 copied session exhibits are not yet proven free of the source companies' names.** Recurrence is now
+  structurally prevented, but the already-shipped fixtures are checked first thing in M237 (a read-only prod query +
+  an offline scrub sweep). The residual is **VPN-scoped** and data-controller-accepted.
+
 ## [v2.4] "casting call" — 2026-07-18
 
 **The recruiter-vantage / hiring-org release.** The presenter cockpit gains a **4th, hiring org** (Meridian Talent)

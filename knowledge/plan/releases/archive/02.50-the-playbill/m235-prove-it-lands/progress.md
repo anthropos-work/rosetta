@@ -1,0 +1,41 @@
+# M235 — Progress
+
+## Running ledger
+
+- iter-01 (tok/bootstrap): TOK-01 authored (two-track: build+unit-prove readiness here / route the live browser proof); KB-fidelity YELLOW; both overview open questions resolved — see iter-01/progress.md
+- iter-02 (tik, IN-FLIGHT/BLOCKED): re-survey found the anonymization scrub removes ZERO names (8/9 fixtures leak a real first name); EXIT_REASON user-blocker (USER-BLOCKER-M235-01) — decide before capturing 4 more sessions — see iter-02/progress.md
+- iter-03 (tik): resolved USER-BLOCKER-M235-01 — hardened the scrub (owner-identity sourcing + token-split + word-boundary + capture-time fail-closed post-condition), re-captured 9 fixtures provably clean (0 leaked names, 545 placeholders), docs+KB-1 fixed; rext tag playbill-m235-scrub-fix @ 25a5459 — see iter-03/progress.md
+- iter-04 (tik): fixture-matrix closure — +4 sessions (2nd asmt-voice-pass, asmt-doc-pass, hiring-fail, interview-fail) → 13 total, assessment PASSED = 2 voice/1 code/1 doc, all types passed+failed; fixed a SurvivingToken word-boundary mismatch (fail-closed gate fired); regenerated both honesty manifests; rext tag playbill-m235-fixture-matrix @ 590082a — see iter-04/progress.md
+- iter-05 (NOT OPENED): pre-flight against the coverage harness found TOK-01 Track-A step-3's "coverage descriptor" can't be expressed in the exact-path/hero-crawl coverage model — content-stories result pages are dynamic-URL + cockpit-seat-reached, needing NEW seat-login sweep plumbing authored against a LIVE render (M236). Recorded USER-BLOCKER-M235-02 (scope/sequencing decision); EXIT_REASON user-blocker. No code/dir opened.
+
+## Run 3 — after USER-BLOCKER-M235-02 resolved ("build non-sim seeders, then close"); iter-05 re-opened as a tik
+- iter-05 (tik, closed-fixed): the skill-path-legacy content-story section + shared non-sim projection/seeder infra (`seeders/content_nonsim.go`) — `ContentStoryNonSimSeeder` writes real skill-path progress + the `local_skill_path_sessions` mirror (owned by content-player seats, pinned to real public skill_path_ids sourced offline), the `/skill-path/<id>` + mirror-manager routes project, a believable `Label` renders in the cockpit; 15-session honesty manifest regenerated, all Go + 45 Python render tests GREEN; version-2 collision-safe; 3 M236 live-calibration items documented. Readiness 1/3 non-sim sections. rext tag `playbill-m235-nonsim-skillpath` — see iter-05/progress.md
+- iter-06 (tik, closed-fixed): the ai-labs presence-only section — the ai-labs projection arm (presence row: label + seat, NO player/manager CTA, M231 §5) + the `lab_sessions` status/spend seeder arm (12-char hex id, /labs + /enterprise/labs activity). 17-session honesty manifest; all Go + 46 Python render tests GREEN. Readiness 2/3 non-sim sections. rext tag `playbill-m235-nonsim-ailabs`; lab_sessions-DDL is an M236 live-seed-calibration item — see iter-06/progress.md
+- iter-07 (tik, closed-fixed): the academy (skill-path-new) section — the most live-coupled: app_base=academy, a REAL public `/library/<slug>` course CTA (direct academy-origin, e2e_persona seam), no manager view. Seeder academy arm is a documented no-op (`academy_chapter_progress` is the live `academy-seed` platform binary → M236). 18-session honesty manifest (ALL 4 products resolve); all Go + 47 Python render tests GREEN, 6 pre-existing failures unchanged. **Readiness 3/3 non-sim sections — offline-buildable scope complete.** rext tag `playbill-m235-nonsim-academy` — see iter-07/progress.md
+- iter-08 (tik, cleanup, closed-fixed): the M236 Fate-3 handoff (user-authorized) — EDITED `m236/overview.md` `In:` to own the new seat-login coverage/Playthrough plumbing + the (session×action) live proof + the M230 carry-forward live items + the per-section live-calibration checklists; RECORDED USER-BLOCKER-M235-02's resolution in the milestone decisions.md; corpus doc sync (`content-stories-spec.md` §2/§6, `content-stories-routes.md` §7). 0 production code (rosetta-only). **Offline scope EXHAUSTED → EXIT_REASON protocol-stop; milestone pragmatic-closes per the "then close" mandate.** — see iter-08/progress.md
+
+## M235: Final Review (close)
+
+Iterative / **closed-incomplete** (pragmatic-close mandate; live `(session × action)`-lands gate routed to M236 by design). Review found little — a same-day final harden pass (Pass 1 + Pass 2, both stabilized, 0 bugs) preceded close, and the milestone is docs + rext-tooling (0 platform edits). Findings:
+
+### Scope
+- [x] Gate NOT met by design (live proof needs a running stack → M236); offline-buildable scope EXHAUSTED + unit-proven — Gate Outcome Ledger below; carry-forward.md authored.
+- [x] All 8 iters accounted (iter-01 bootstrap tok, iter-02/05 user-blockers, iter-03/04/05/06/07/08 tiks); M235's own routes Fate-3 → M236 already applied (iter-08, commit 54eaefe).
+
+### Code Quality
+- [x] [nice-to-have] `content_nonsim.go` cross-cutting review — clean; correct reuse of sibling-seeder shared helpers; no dead reachable code; no TODO/FIXME in source.
+
+### Documentation
+- [x] 4 corpus diffs (session-clone-spec §3+§6, safety §3.8, content-stories-spec §2/§6/§7, content-stories-routes) reviewed — accurate, internally consistent, cross-refs resolve.
+- [x] Add M235 back-ref tags to the 2 primary blended insertions (leak-fix note; non-sim registry note) — the `(#M{N}-…)` convention M234 established.
+
+### Tests & Benchmarks
+- [x] 4 touched Go packages + honesty gates GREEN; `go vet` clean; flake gate (Phase 8) 5×.
+
+### Decision Triage
+- [x] Scrub owner-identity leak fix → already blended (session-clone-spec §3, safety §3.8); add back-ref.
+- [x] Non-sim code-owned registry / single-source flat-index → already blended (content-stories-spec §6, content-stories-routes); add back-ref.
+- [x] version-"2" collision-safety + status-enum + mirror-shape → maintainer/live-calibration detail → archive in decisions.md + code comment (routed to M236 live-calibration).
+
+### Adversarial (Phase 2c)
+- [x] Record the projection/seeder drop-divergence scenario in decisions.md (unreachable with the hardcoded registry; owner-consistency invariant pinned).

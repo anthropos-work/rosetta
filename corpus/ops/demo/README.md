@@ -31,7 +31,8 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 ```
 
 > **The storytelling demo + the presenter cockpit (v1.9 "storytelling" M34–M38) — now the DEFAULT.** A bare
-> `/demo-up N` set-dress seeds the locked **3-orgs × 3-heroes** Stories & Heroes world (Cervato Systems ·
+> `/demo-up N` set-dress seeds the locked **4-org** Stories & Heroes world — 3 workforce orgs × 3 heroes plus the
+> v2.4 M223 hiring org **Meridian Talent** (Cervato Systems ·
 > Solvantis · Northwind Aviation — each org a
 > thriving/struggling/manager trio), runs a **multi-identity** fake-fapi (a `FAKE_FAPI_ROSTER` of the seeded
 > heroes' exact ids), and serves a **presenter cockpit** on an offset port (`7700 + N·10000`). The cockpit is
@@ -50,7 +51,7 @@ dev stack. If you just need the *dev* environment, see `../setup_guide.md` / `..
 > [`stories-spec.md` § The presenter cockpit](stories-spec.md#the-presenter-cockpit-m38).
 >
 > ```
-> /demo-up 3                   →  default: seed the 3-org hero trio + multi-identity fake-fapi + serve the cockpit
+> /demo-up 3                   →  default: seed the 4-org world (3 hero trios + the hiring org) + multi-identity fake-fapi + serve the cockpit
 >   …present it…              →  open http://localhost:37700 → pick a hero → [Log in as] → her per-role screen
 > DEMO_NO_STORIES=1 /demo-up 3 →  fallback: structural small-200 seed + single-identity fake-fapi, no cockpit
 > /demo-down 3                →  tears down the stack AND reaps the native cockpit process
@@ -137,14 +138,14 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
 - [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
-  knob and flag that controls a bring-up — **all 25 env knobs + 9 CLI flags**, with real defaults and the exact
+  knob and flag that controls a bring-up — **all 27 env knobs + 10 CLI flags**, with real defaults and the exact
   `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
   doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
   *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
   `up-injected.sh` takes only `<N>` + `--public-host` and **hard-errors on anything else**, while
   `--profile`/`--services` belong to the separate `rosetta-demo` wrapper. And the shape of the whole surface:
-  **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 3-org world, the full UI
-  tier, the cockpit, and set-dress — *"pull all the data + seed the 3 orgs" was always the default; the usual
+  **every feature knob is an opt-OUT**, so a bare `/demo-up N` already gives you the 4-org world, the full UI
+  tier, the cockpit, and set-dress — *"pull all the data + seed the orgs" was always the default; the usual
   culprit is a cold snapshot cache, not a knob.*
 - [`tailscale-serve.md`](tailscale-serve.md) — the **remote-access recipe** (v2.2 "panorama"; remote reach
   flipped **default-on for the demo path** at v2.3 M220 — D-DESIGN-3): remote reach is **default-on for `/demo-up`,
@@ -185,6 +186,12 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   serve-grant; out-of-demo link → injection link-rewriting; runtime-computed surface → crawl-scope), and the
   disclosed-presenter-note allow-rule for legitimate external citations. The harness lives in rext
   `stack-verify/e2e/`. (v1.10 M42e)
+  **Now governs a SECOND sweep (v2.5 M236): the content-stories `(session × action)` LANDS sweep** — an
+  exact-path visit per (cockpit seat × manifest result path), with **six** render shapes selected **by route,
+  never by keyword** (`player-{scored,interview,skillpath,academy}`, `manager-{dashboard,interview}`), a
+  fail-CLOSED reading (an empty ledger is a FAILURE, not a 0/0 pass), and the `EXPECTED_PAIRS` denominator pin.
+  This sweep deliberately **REVERSES** the protocol's own `skipPaths` `/result/` exclusion — the pages it
+  exists to prove were the pages the rule excluded. **29/29 landable pairs, proven cold on `billion`.**
 - [`playthroughs.md`](playthroughs.md) — the **functional-flow e2e runbook** (the Playthroughs pillar, v2.0
   "opening night" M202): a **Playthrough is an automated actor that IS the user** — it logs in as a seeded hero,
   plays a real journey, and proves the platform delivered the outcome. Proves **function** (the hero can *do* the
@@ -194,8 +201,47 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   O(tests)), the dedicated decoupled seed (`pt-world`, test data ≠ demo data) + the reset-to-seed lifecycle
   (the real `--reset`, additive-re-seed FORBIDDEN), the serial-default runner, and the 4-state reporting map
   (`passing`/`failing`/`unimplemented`/`unimplementable-without-platform-edit`). Also **the iteration protocol
-  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed — the corpus now
-  stands at **10 live Playthroughs, 1 TODO**). Section `rext playthroughs/`. (v2.0 M202–M204)
+  the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed at v2.0 with 10
+  live Playthroughs; M219 added the 4 AI-readiness ones and M225 the recruiter compare — the corpus now stands
+  at **15 live Playthroughs, 1 TODO**, the count `playthroughs.md` owns). Section `rext playthroughs/`.
+  (v2.0 M202–M204 · v2.3 M219 · v2.4 M225)
+- [`content-stories-routes.md`](content-stories-routes.md) — the **content-stories feasibility spike + result-route
+  map** (v2.5 "the playbill" M231, HARD go/no-go — the barrier before the Thread-B build chain). For each content
+  product × {player, manager} it enumerates the exact result route and **classifies it by prove-by-render**
+  (renders-from-seed | runtime-computed-blank | needs-demo-patch | no-surface). The central finding: the simulation
+  result page reads a **PERSISTED row** (resolver does plain SELECTs, no live recompute) → **seedable**. Simulation +
+  skill-path GO; **Interview** GO behind a PostHog-flag demo-patch; **AI-labs OUT** (no seedable result surface);
+  **Academy IN** (backend-authoritative progress). **⚠ Two verdicts were refuted live at M236** — skill-path is
+  **player-only** (the manager page renders "Coming soon"; gate denominator corrected 31 → 29) and
+  `academy-seed` is **moot on a demo** (no GraphQL endpoint ⇒ the seeded rows have no reader). See the
+  correction block in that doc. Plus the **prod-session sourcing + anonymization contract**
+  (pin by `sessions.id`, public-anchored, the free-text scrub surface) the M232 seeder feeds, the **public-sim-by-
+  modality catalog** (77 voice / 65 code / 30 document), and the generalized **manager-view MIRROR trap**. (M231)
+- [`session-clone-spec.md`](session-clone-spec.md) — the **session-clone / sourcing seeder** (v2.5 "the playbill"
+  M232 — the write side of the content-stories feature). The `ContentStorySeeder` **COPIES real production
+  job-simulation sessions** into a demo org: the REAL result-fan-out CONTENT (LLM feedback, transcript,
+  submission, interview report — the interesting free-text) is **copied** from the pinned session (authoring-time,
+  `cmd/content-capture` reads prod read-only) and **SCRUBBED best-effort** of detectable PII (real actor names +
+  source org → placeholders the seeder fills with the demo persona/org; emails/phones/urls redacted). **NOT
+  provably clean** — residual re-identification risk is real and **ACCEPTED by the data-controller (2026-07-19)**;
+  the control is the **VPN/tailnet scope**. **Re-tenanted**, **non-manager-played** (owner = a seeded player
+  member), **source-pinned** (deterministic reseed; disclosed in the `content_sessions` manifest block). The full
+  result fan-out (session + the `local_jobsimulation_sessions` MIRROR + attempt/skill/criterion/check results +
+  transcript actors/interactions + the net-new **CODE**/**DOCUMENT** substrate + the **INTERVIEW** report), all
+  G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
+  aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8
+  records. (M232)
+- [`content-stories-spec.md`](content-stories-spec.md) — the **content_products manifest + honesty gate** (v2.5
+  "the playbill" M233 — the manifest half of the content-stories feature). `stackseed --content-export` PROJECTS a
+  **`content-manifest.json`** (the content analog of `cockpit-manifest.json`) the 2nd "Content stories" cockpit tab
+  reads: per content product, the played sessions each with a **player + manager seat key**, a **result path**,
+  `has_manager_view`, a per-product **app-base**, and a per-type **icon**. Single-sourced from the SAME
+  content-session fixture the seeder seeds from (the player seat OWNS the seeded session; the path names the seeded
+  session id — no drift), **honesty-gated** (a checked-in canonical + a `CanonicalFileMatchesProjection`-style test,
+  with teeth), and **fail-closed** (a session that can't form a real link is DROPPED with a reason + the export
+  fails loud — never a fabricated CTA). Separate JSON (not a YAML block) because the cockpit reads JSON, not YAML.
+  (M233 — M234 = the cockpit tab render + player-seat registration, M235 = prove-it-lands,
+  M236 = prove-on-billion, the live proof)
 - [`ai-generation-spec.md`](ai-generation-spec.md) — the **generation-engine** + **gen-acceptance protocol**
   (v1.10 "method acting" M45): how a cheap LLM (gpt-4o-mini) turns a YAML **batch descriptor** into realistic
   per-member profiles — the `services/ai/` wrapper (EU-first routing + cost tracking), `blueprint.Batch` +
@@ -212,7 +258,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   an unchanged batch descriptor **re-seeds byte-identical at $0**. Pairs with `ai-generation-spec.md`. (v1.10 M45)
 - [`seed-manifest-spec.md`](seed-manifest-spec.md) — the **consolidated single-auditable seed+generation
   manifest** (v1.10b "fit-up" M52): ONE checked-in `seed-generation-manifest.yaml` inlining the whole demo-data
-  intent — the population (all 3 orgs + heroes), the file-resident **mother prompt** (extracted from the Go
+  intent — the population (all 4 orgs + heroes), the file-resident **mother prompt** (extracted from the Go
   const to `blueprint/prompts/default_batch_prompt.tmpl`), the batch config (the MANDATORY `max_cost_usd`
   ceiling + concurrency + re-roll rules), and the snapshot sources; **cache + generated data EXCLUDED**. A
   PROJECTION of the canonical presets (honesty-gated so it can't drift), emitted by `stackseed

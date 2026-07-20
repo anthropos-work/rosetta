@@ -106,7 +106,90 @@ and a `release/{version}` branch is cut.
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
 > vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
-## v2.4 "casting call" tail-carry SIDE-TRACK (the 4 v2.3 carries — NOT the hiring theme)
+## v2.5 → v2.6 carry (signed off at the v2.5 close-release, 2026-07-20)
+
+> **The full per-item ledger — with each item's concrete "why Fate 1/2/3 failed", its named handler, and a
+> destination-still-valid check — is
+> [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md).**
+> This section is the *destination* record: the two reserved v2.6 milestones the carries route into. It
+> exists because **v2.5's close found that no v2.5 carry section existed** — the four v2.3 tail carries had
+> been reading as "v2.4 work" for two releases after v2.4 shipped and archived without them.
+
+**Milestone-number reservations.** `M237` and `M238` are **reservations** under the same precedent as
+`M205`–`M207` and the retired `M216`; they may be renumbered at the v2.6 `/developer-kit:design-roadmap`
+run. What is **not** negotiable is that they are milestones with declared scope. The v2.5 close named the
+class: ***"an arch-doc pass" is not a milestone — neither is "a sweep", "the next close", "a future
+build-iter", or "standing backlog". A fate needs a MILESTONE.*** Three of v2.5's eight aged-out items
+failed exactly that way, and `DEF-M226-01` aged out **twice** against the phrase *"the next prove-on-VM"*.
+
+### **M237 — re-prove-on-billion** — v2.6's declared FIRST work
+
+**One live bring-up on `billion` discharges eight carries** — and `M237` **opens with a read-only
+`ORG-CLEAN` settling check** (below) before that bring-up. Reserved as v2.6's opening milestone because the
+release it closes (v2.5) **ships its headline metric unverified-live** — see `CLOSE-D3` below.
+
+- **`ORG-CLEAN` — `M237`'s FIRST task, before the live re-prove.** The **13 copied content-session
+  exhibits** are **not yet proven free of source-company names**. M235's scrub fix structurally prevents
+  *recurrence* (a capture-time `SurvivingToken` fail-closed gate + a CI tripwire), but the
+  **already-committed** fixtures' status is UNKNOWN — real customer content, and free-text scrubbing is
+  imperfect. M237 runs one **read-only** prod query resolving the 13 source-org names by pinned
+  `sessions.id` + an **offline** `scrub.OrgTokens` / `SurvivingToken` pass over the committed fixtures
+  (**no re-capture, no company name in any transcript**). Acceptance: **0 surviving source-org tokens** (or
+  each dispositioned). The residual — a detectable source-company name may survive until the check runs —
+  is **VPN/tailnet-scoped** (`safety.md` §3.8) and **data-controller-accepted** (2026-07-20). Full item:
+  [`release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md) § `ORG-CLEAN`.
+- **`CLOSE-D3` — the shipped harness has no live green.** v2.5's headline **`29/29`** landable
+  (session × action) pairs was measured live on `billion` at rext tag `playbill-m236-hardened`; the close
+  then fixed **~10 defects in that same harness**, and the close-review Phase 7 fixed more — including a
+  **grader that mis-shapes one of the 29 pairs** (an ASSESSMENT graded down the interview branch, which has
+  no length/score/feedback floor) and **four unit-spec files that no runner executes** (among them the only
+  literal pin of `29`). **The number is UNIT-PROVEN, NOT LIVE-RE-PROVEN.** This is a conscious user
+  decision — tag now, re-prove as v2.6's first work — **not** an impossibility: `billion` is up and
+  reachable, and v2.5 ran ten live iters against it.
+- **The 39 unexecuted live-browser specs** (24 `stack-verify` + 15 `playthroughs`). The **entire
+  prove-by-render layer is unverified** in the v2.5 close.
+- **`ACADEMY-M236-iter08-public-catalog-twin`** — anonymous academy `/library` + `/free` render 0 cards
+  (`getPublicCatalogView`'s `new Set()` branch). Needs a 2nd demopatch manifest + a next-web rebuild + the
+  live re-prove. **This is the surviving half of the v2.3-era `F4`** — the signed-in half genuinely landed
+  at v2.5 M230/M236 (65 cards, 0 Draft chips, cold on `billion`), so `F4` is retired as an id and only this
+  remainder is owed.
+- **The `apps/web` non-offset `:5050` client GraphQL endpoint** — same rebuild, same re-prove.
+- **`DEF-M226-01` — the pre-bind serve reap.** **AGED OUT TWICE** (M228 fired 2026-07-18; M236 fired
+  2026-07-20), because its destination was the phrase *"the next prove-on-VM"*. **M237 must TEST the
+  standing *"self-resolves in the default flow"* justification, not restate it** — it has excused three
+  passes and has never been checked. **Expiry: if M237 completes without testing it, the item is DROPPED
+  at the v2.6 close.**
+- **`BURNIN-M221-dev-public-host` · `F-M220-4` · `PROBE-M218-c3-rerun`** — the three surviving v2.3 tail
+  carries, **reclassified `DRIFT_DEFER`**. Their stated rationale (*"needs live infra"*) was true when
+  written 2026-07-15 and is **FALSE now**: `billion` is up and reachable. *"Needs live infra"* had silently
+  become *"nobody batched it"*.
+- **The M232 interview plan-section render-fidelity assertion** — a Fate-2 *"confirmed-covered"* routed to
+  **two different milestones** (`M234` in `spec-notes.md`, `M235` in `progress.md`); M235 closed
+  `closed-incomplete` and its covering gate never ran, and M236's live gate measured a **weaker** property
+  (non-empty, not plan-section-id alignment). **M237 must add the specific alignment assertion.**
+
+### **M238 — playthrough-assign-write**
+
+- **`DEF-M235-03` / M204 assign-WRITE** — the declared in-manifest TODO half of the M204 assign flow.
+  Honest and tracked in-manifest since v2.0, but **~10 routings across 5 releases**; its declared
+  destination (the v2.4 close) fired 2026-07-18 with no fate taken, and **both v2.5 milestone audits
+  recorded it as "correctly routed"** — true of the routing, false of the destination. **Fresh dated
+  KEEP-DEFERRED-WITH-SIGNOFF 2026-07-20**, deliberately **not** folded into `M237` (which is a *re-prove of
+  what shipped*; assign-WRITE is *net-new coverage*, and folding net-new work into a re-prove milestone is
+  how a re-prove becomes a bucket and stops firing). Sits alongside the reserved Playthroughs futures
+  `M206`/`M207` below. **Expiry: if `M238` is not designed into v2.6 or v2.7, DROP it — ten routings is
+  the limit.**
+
+## v2.4 "casting call" tail-carry SIDE-TRACK (the 4 v2.3 carries — NOT the hiring theme) — **SUPERSEDED 2026-07-20**
+
+> ⚠️ **SUPERSEDED by the v2.5 → v2.6 carry section above (2026-07-20).** This section is kept for the audit
+> trail; **do not read its destinations as live.** v2.4 **shipped 2026-07-18 without landing any of the four
+> and without running a release-scope deferral audit** — so every *"v2.4: investigate…"* below fired
+> unchecked, and the four kept reading as v2.4 work for two releases. Current disposition: **`F4` is SPLIT**
+> — the signed-in half genuinely LANDED at v2.5 M230/M236, the anonymous half survives as
+> `ACADEMY-M236-iter08-public-catalog-twin` → `M237`; **the other three are reclassified `DRIFT_DEFER`**
+> (their *"needs live infra"* rationale is now false) **→ `M237`**. Full reasoning:
+> [`releases/archive/02.50-the-playbill/release-deferrals.md`](releases/archive/02.50-the-playbill/release-deferrals.md) § S-6/S-7.
 
 > **v2.4 is now DESIGNED + IN DEVELOPMENT as the recruiter-vantage / hiring-org release** (promoted to
 > [`roadmap.md`](roadmap.md) § Active, 2026-07-15; 5 milestones **M222 → M226**, branch
@@ -194,6 +277,16 @@ Genuinely-deferred work, no target version, not scheduled:
   on prod public links so demos show **real images** without the blob-byte work. Real blob mirroring + the cloud
   store stay gated on **eu-west-1 S3 read access actually landing** (verified not wired). Replay-only to a per-stack
   isolated bucket, never the shared prod S3.
+- **`DEF-M215-03(a)` / `F11` — seed hero identity-key vs generated profile display-name mismatch (cosmetic).**
+  The seed identity key (`maya-thriving`) does not match the generated profile display name; login and render
+  both work, zero functional impact across three releases of live demos. Routed at the **v2.2 close
+  (2026-07-11) to "standing backlog"** — and then **never written into any backlog**, so it was absent from
+  `state.md` for three releases and invisible to every audit until the v2.5 close found it. Half **(b)** (the
+  committed remote-origin Playwright gate) **was** genuinely discharged at M218/M221; only (a) survives.
+  **Re-signed KEEP-DEFERRED-WITH-SIGNOFF 2026-07-20**, now enumerated **by id** so it is findable. Pick up at
+  the next `stack-seeding` build-iter. **This is a deliberate exception to the "a fate needs a milestone"
+  rule** for a verified-cosmetic item — **if it survives another release un-landed it should be DROPPED**
+  rather than carried, because a cosmetic item nobody will schedule is a drop wearing a carry's clothes.
 - **DEF-M21-01 — `replayCmd` conn-seam hermetic test.** A hermetic `replayCmd`-wiring test needs an injectable
   connector seam (>50 lines, touches the load-bearing replay path). Tracked KEEP across the M21→M25 close-audits;
   **landed here at v1.5 close-release (2026-06-14)** so it survives the release-branch merge. Pick up in a future

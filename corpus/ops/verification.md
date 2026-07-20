@@ -324,6 +324,108 @@ regression tests do this — see `test_verdict_lifecycle.py`'s `checked > 0` gua
 > mirror scored **100%**. A documented guarantee with no enforcement behind it is a stale verdict about your
 > own tooling. See [`alignment_testing.md`](../architecture/alignment_testing.md#the-capability-coverage-check--what-it-actually-guarantees).
 
+## PRE-FLIGHT RUNG ZERO — can the host even OBTAIN the thing under test? (v2.5 M236)
+
+**Before verifying that a stack *works*, verify the stack can *get* the code you think you are testing.**
+This rung sits upstream of every check on this page: all of them measure a running stack, and none of them
+can tell you the stack is running **different tooling than you believe**.
+
+**The shape.** A milestone whose gate is *"prove feature X live on host H"* implicitly assumes H can obtain
+X. When X is delivered as a `rosetta-extensions` tag, that assumption has a step in it that is easy to skip
+and invisible when skipped: **tagging is not publishing.**
+
+M236 opened with the entire v2.5 tooling — M230, M232, M233, M234, M235; 20 commits and **13
+`playbill-*` tags** — present only in the `.agentspace/rosetta-extensions/` **authoring copy**. `origin/main`
+was still the M228 commit, and **zero** of the 13 tags existed on origin. `billion` consumes tooling only at
+the tag named in `.agentspace/rext.tag`, so the host could not have obtained the feature under test by any
+route. Nothing in the milestone plan named publication as a step, because `CLAUDE.md` and
+[`rosetta_demo.md`](rosetta_demo.md) both describe the path as *"built and tested in the authoring copy and
+tagged, then consumed per-stack via a pinned-tag clone"* — which reads as though tagging alone makes a tag
+consumable. It does not. M230–M235 all ran offline, so the publish half was simply never exercised.
+
+**Why the existing guards do not catch it.** The M217 rext-pin guard
+(`demo-stack/ensure-clones.sh`) is FATAL and does exactly its job — it compares the *consumption clone's
+checkout* against `.agentspace/rext.tag`. Both can agree perfectly on a **stale** tag. The guard answers
+*"is this clone at the tag we pinned?"*, never *"is the tag we pinned the one carrying the work?"*
+
+**The rung.** Before the first bring-up of any *prove-it-live* milestone, assert all four — each is one
+command, and any one failing makes every downstream measurement a measurement of the wrong code:
+
+1. The work is committed and **tagged** in the authoring copy.
+2. The tag is **on origin** — `git ls-remote --tags origin | grep <tag>`. Local-only is the default failure.
+3. `.agentspace/rext.tag` on the **target host** names that tag.
+4. The host's consumption clone is **checked out** at it (what the M217 guard then re-asserts at bring-up).
+
+**The generalization, and it is the point:** *a verdict must not outlive its subject* (the hazard above) has
+a twin — **a precondition must not be assumed satisfied because it was satisfied locally.** The stale-verdict
+family is about artifacts that lie about the past; this is about artifacts that lie about **reach**. Both
+produce results confidently attributed to the wrong code, which is precisely how the perf-patch rot went
+unnoticed for four releases.
+
+### Drive every remote bring-up through a LOGIN shell (v2.5 M236 iter-03)
+
+**`ssh host '<cmd>'` is not the same shell your operator gets.** A non-interactive `ssh host 'cmd'` sources
+**no login profile**, so anything the profile puts on `PATH` is simply absent — and the host pre-flight then
+fails in a way that **perfectly mimics a missing prerequisite**.
+
+**Always:**
+
+```bash
+ssh <host> 'bash -lc "<the bring-up command>"'     # -l = login shell; sources the profile
+```
+
+**The concrete trap, because the shape is what makes it costly.** M236's `up-injected.sh` host pre-flight
+reported *"Go NOT on PATH … install Go 1.25.x"* on `billion`. Go was installed and was the exact pinned
+`go1.25.12` — at `/usr/local/go/bin/go`, a directory the **login profile** adds to `PATH`. What makes this a
+trap rather than a footnote:
+
+- **The two prereqs behave differently under the same invocation.** `atlas` lives in `/usr/local/bin`, already
+  on the default non-login `PATH`, so it **passed**. One prereq green and one red reads as *prereq-specific*
+  ("Go is missing") rather than *shell-specific* ("nothing from the profile is on `PATH`").
+- **The remedy text reinforces the wrong reading.** The pre-flight recommends installing Go — so the operator
+  installs a second Go, or edits `PATH` in a config file, and the real cause is never seen. A pre-flight that
+  names a *remedy* rather than a *symptom* narrows the operator's hypothesis space, sometimes wrongly.
+- **A partial-green pre-flight is weaker evidence than a fully-red one.** All-red would have been read as
+  environmental in seconds.
+
+**The cheap disproof is one command** — run it before believing any "prereq missing" verdict from a remote
+pre-flight:
+
+```bash
+ssh <host> 'bash -lc "go version"'                 # green here + red in pre-flight ⇒ PATH, not prereqs
+```
+
+> **The general rule:** *when a check reports a missing dependency on a remote host, first prove the check and
+> the operator are running in the same environment.* A tool's absence and a tool's **invisibility** produce
+> identical output, and only one of them is fixed by installing anything.
+
+## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
+
+**Restricting *who can reach* a demo is the VM's and the VPN's job, not the demo stack's.** The stack's only
+obligation on this axis is to **permit** VPN access; it does not enforce, narrow, or attest reach, and **no
+gate here measures it.** v2.5 M236 opened with an exit-gate clause requiring the demo to be *"reachable only
+over the tailnet"* and **dropped it** on that basis, with no off-tailnet probe deliverable.
+
+**Why this is a scoping stance and not a safety claim.** It says which *layer* owns the control, not that the
+control is unnecessary — and **not** that there is nothing to protect. That disclosure — including the fact
+that **every demo container publishes on `0.0.0.0`, flag or no flag** — stands **as-is** and needed no
+amendment for this decision. Read `safety.md` §3 Part 3 for the exposure picture; read this line only as
+*the demo stack is not the layer that verifies it.*
+
+> 🔴 **The rationale is demo-shape-dependent — do not generalize it.** For a **synthetic** demo the stack can
+> decline the job cheaply, because [`safety.md`](safety.md) §3.3 argument 1 holds: no customer data **can** be
+> in it, so reach is a network-perimeter concern rather than a data-exposure one. **For a content-story demo
+> (§3.8) that premise is false** — it carries best-effort-scrubbed **real production session content**, and
+> §3.3 marks argument 1 as not holding for that shape. Reach there **is** a data-exposure concern.
+>
+> **The layering decision is unchanged** (it is a statement about *ownership* of the control), but the weight
+> it carries is not. Per [`safety.md` §3.3.1](safety.md), the VPN/tailnet scope is promoted from a supporting
+> comfort to **the** control for that shape — the one the data-controller acceptance was explicitly
+> conditioned on. So *"no gate here measures it"* is a **materially heavier gap for a content-story demo**:
+> the control the acceptance rests on is **operator-maintained and unattested**, as strong as the network the
+> box is on, and nothing in this document will tell you if it is weaker. `safety.md` §3.4 residual #2 records
+> the same consequence from the other side.
+
 ## Cross-references
 
 - [`rosetta_demo.md`](rosetta_demo.md) — the demo lifecycle + the unified registry whose **recorded ports**
@@ -333,3 +435,12 @@ regression tests do this — see `test_verdict_lifecycle.py`'s `checked > 0` gua
   store, never prod.
 - [`/test-platform`](../../.claude/skills/test-platform/SKILL.md) — the operator-driven, deeper
   verification surface this auto-run is a default-on, non-fatal smoke subset of.
+- [`demo/coverage-protocol.md`](demo/coverage-protocol.md) — the two Playwright sweeps that verify what a
+  bring-up actually RENDERS, where this doc verifies that it came UP: the v1.10 M42e hero-vantage coverage
+  sweep, and (v2.5 M236) the **content-stories `(session × action)` LANDS sweep**. The relationship matters
+  operationally: `run-content-stories.sh` **gates on this doc's `autoverify.json` being fresh AND green**
+  before it will trust its own reading, so a stale or red verify invalidates the render proof rather than
+  being worked around.
+- [`demo/content-stories-spec.md`](demo/content-stories-spec.md) — the `content-manifest.json` those sweeps
+  read. A cockpit brought up without `--content-manifest` serves **404** and the sweep fails closed; the
+  bring-up wires it via `--content-export` (non-fatal), logging to `$STACK/content-export.log`.

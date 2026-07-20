@@ -1,11 +1,20 @@
 # Rosetta Tooling — Safety & Security Contract
 
-**The authoritative statement of how the `rosetta-extensions` stack tooling stays safe.** Two inviolable
-guarantees, proven in code and tested:
+**The authoritative statement of how the `rosetta-extensions` stack tooling stays safe.** Two structural
+guarantees, proven in code and tested — the first of which, **since v2.5, carries one bounded, disclosed
+exception**:
 
-1. **It never reads private/customer data.** Anything that *leaves* production (a snapshot capture) is **public
-   reference data only** — enforced by a tenant-data firewall that hard-fails on a single customer-scoped row.
-2. **It never touches production data or services.** Anything a non-prod stack *writes* is confined to that
+1. **The snapshot path never reads private/customer data.** Anything that *leaves* production through a
+   **snapshot capture** is **public reference data only** — enforced by a tenant-data firewall that hard-fails on
+   a single customer-scoped row.
+   > 🔴 **This is no longer the only production read (v2.5).** `cmd/content-capture` — the content-story
+   > authoring tool — is a **second, deliberately customer-scoped** prod read: it copies the real free-text of a
+   > pinned list of production job-simulation sessions, scrubs detectable PII best-effort, and sits **outside**
+   > this firewall **by design** (it does not import it; there is nothing public about a played session's
+   > transcript). It is read-only, authoring-time, source-pinned, and disclosed — but it is **not** covered by
+   > the sentence above. **§3.8 is its contract.** Read it before citing any unqualified *"the tooling never
+   > reads customer data"* claim from this corpus — including older sentences in this file.
+2. **It never touches production data or services** *(no exception — this one is unqualified)*. Anything a non-prod stack *writes* is confined to that
    stack's own isolated stores — enforced by a 3-layer write-isolation guard that makes a shared/prod write
    **structurally impossible** on a non-prod target, and an audit log that *proves* nothing leaked.
 
@@ -14,8 +23,9 @@ guarantees, proven in code and tested:
 3. **Who can REACH a demo, and what they get if they do** (**[Part 3](#part-3--the-exposure-side-who-can-reach-a-demo-and-what-they-get-if-they-do)**).
    A demo is an **unauthenticated, authz-weakened build**, and its container ports are published on **all
    interfaces** on **every** bring-up — today, flag or no flag. That cannot be promised away. What makes it
-   defensible is guarantees 1 and 2: **there is nothing behind the door.** Read Part 3 before exposing a demo,
-   and before trusting any sentence in this corpus that says a demo binds loopback.
+   defensible is guarantees 1 and 2: **there is nothing behind the door** — **except on a content-story demo,
+   where there is** (§3.8), and where the VPN/tailnet scope becomes the control instead (§3.3.1). Read Part 3
+   before exposing a demo, and before trusting any sentence in this corpus that says a demo binds loopback.
 
 > **Scope.** This doc is the consolidated safety contract over the v1.2 snapshot mechanism + the v1.1 seeding
 > framework, as they stand at v1.3 "stack party" (dev stacks are now first-class peers of demo stacks; both
@@ -36,7 +46,18 @@ The tooling that builds demo and dev environments has to do two dangerous-soundi
 production database (to copy the public catalog), and it **writes** a lot of data into local stacks (to populate
 them). Both are fenced. On the read side, only **public reference data** — the same skills/roles/templates every
 customer sees — can ever leave production; a firewall checks every row twice and aborts the whole capture if it
-finds even one customer-owned row, so **no customer's private data can be copied**. On the write side, a small
+finds even one customer-owned row, so **no customer's private data can be copied by a snapshot**.
+
+**Since v2.5 there is exactly one deliberate exception to that, and this is it.** To make "content stories"
+believable, a *separate* authoring-time tool copies the real text of a short, hand-picked list of production
+sessions — the conversation, the AI feedback, the report — scrubs the names, emails and identifiers it can
+detect, and ships the scrubbed result as a checked-in fixture. That is **real customer-authored content,
+best-effort anonymized — not provably anonymous.** The data-controller accepted the residual re-identification
+risk (2026-07-19) on the condition that such demos are reachable only over a VPN/tailnet. It is source-pinned and
+auditable in one file, and it changes nothing on the write side. See **§3.8** — and do not repeat the
+unqualified promise above without it.
+
+On the write side, a small
 set of stores are *shared* with the live product (the content system, one storage bucket, the login system);
 the tooling **blocks every write to those from a non-production stack**, repairs the environment before it
 starts, and produces an **audit log that proves** nothing leaked. Neither promise depends on the operator
@@ -53,14 +74,24 @@ is instantly "signed in" as that person. It also means **anyone who can reach a 
 can do the same**, with no password. The tooling does **not** claim otherwise, and — contrary to what one of our
 own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
 machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
-data and cannot write to production.** There is nothing behind the door. See **Part 3**.
+data and cannot write to production.** There is nothing behind the door — **with one bounded, disclosed
+exception (v2.5): a "content-story" demo carries the REAL content of production sessions, COPIED and scrubbed of
+detectable PII best-effort (not guaranteed clean — residual re-identification risk is accepted, VPN/tailnet-scoped,
+a data-controller decision; §3.8).**  See **Part 3**.
 
 ---
 
-## Part 1 — The read side: never reads private/customer data
+## Part 1 — The read side: the snapshot capture never reads private/customer data
 
-A snapshot **capture** is the only operation that reads production. Everything that protects that read lives in
-`stack-snapshot/`.
+A snapshot **capture** is the **firewalled** production read, and everything that protects it lives in
+`stack-snapshot/`. It was the **only** operation that read production until v2.5; it is now one of **two**.
+
+> ⚠️ **The second read is `cmd/content-capture` (v2.5), and it is deliberately outside this Part.** It is
+> customer-scoped on purpose — a played session's transcript, feedback and report have no public subset to
+> filter to — so it does not, and cannot, run under `AssertPublicOnly`. Its fences are different in kind
+> (source-pinning, a best-effort scrub with a fail-closed post-condition, a checked-in auditable fixture, and a
+> VPN/tailnet exposure scope) and are contracted in **§3.8**. **Everything in Part 1 describes the snapshot
+> read only.** It must not be cited to vouch for the content-story read.
 
 ### 1.1 The tenant-data firewall (`AssertPublicOnly`)
 
@@ -490,12 +521,22 @@ That is the true statement of the risk. It is not softened anywhere below.
 
 Recorded honestly, as the argument that actually carries the decision:
 
-1. **There is nothing behind the door.** This is the load-bearing mitigation, and it is exactly what **Parts 1
-   and 2 already guarantee, unchanged**: a demo's data is **synthetic + public-snapshot-only**. The tenant-data
-   firewall means **no customer data can be in a demo** — not "should not", *cannot*, or the capture aborts. The
-   3-layer write guard means a demo **cannot write prod**. An attacker who fully owns a demo obtains: a generated
-   population, the public skills taxonomy every customer already sees, and public Directus content. **The
-   authz-weakening is only alarming if there is something to protect, and there is not.**
+1. **There is nothing behind the door — for a demo that is not a content-story demo.** This was the load-bearing
+   mitigation when D-DESIGN-3 was taken (v2.3), and for the demo shape that existed then it is exactly what
+   **Parts 1 and 2 guarantee, unchanged**: that demo's data is **synthetic + public-snapshot-only**. The
+   tenant-data firewall means **no customer data can be in it** — not "should not", *cannot*, or the capture
+   aborts. The 3-layer write guard means a demo **cannot write prod**. An attacker who fully owns one obtains: a
+   generated population, the public skills taxonomy every customer already sees, and public Directus content.
+   **The authz-weakening is only alarming if there is something to protect, and for that demo shape there is
+   not.**
+
+   > 🔴 **v2.5 NARROWS this argument, and the narrowing is real — do not read past it.** A **content-story**
+   > demo (§3.8) carries the copied, best-effort-scrubbed free-text of **real production sessions**: real
+   > customer-authored content, anonymized where detectable, **not provably anonymous**. For that demo shape the
+   > sentence above is **false** — there *is* something behind the door. Argument 1 therefore does **not** carry
+   > default-on remote reach for a content-story demo. **Argument 2 does**, promoted from a supporting comfort
+   > to *the* control. What actually carries the weight there is stated separately in **§3.3.1**, because a
+   > narrower argument deserves to be read as a narrower argument rather than inherited from this one.
 2. **A tailnet is not the open internet.** It is an **authenticated WireGuard device mesh** — per-device keys,
    ACL-gated, **no public listener**. Reaching a `*.ts.net` MagicDNS name requires already being an enrolled
    device on that tailnet. "Ambient on the tailnet" means ambient *to colleagues who are already inside*.
@@ -504,6 +545,34 @@ Recorded honestly, as the argument that actually carries the decision:
 4. **The failure mode it removes is real.** Opt-in remote reach means the presenter discovers, at demo time, that
    the demo is unreachable. That is the defect v2.3 exists to fix.
 
+#### 3.3.1 What carries the weight for a CONTENT-STORY demo (v2.5)
+
+Argument 1 does not hold for this demo shape, so the justification is restated here in full rather than
+inherited. It is **strictly narrower**, and it should feel narrower:
+
+1. **The tailnet scope is THE control, not a convenience.** For a synthetic demo, *"a tailnet is not the open
+   internet"* (argument 2) is a supporting comfort — that demo would be defensible on a LAN too, because there is
+   nothing in it. For a content-story demo it is **the** mitigation, and it is the one the data-controller
+   acceptance was explicitly conditioned on (§3.8, bound 2): an authenticated WireGuard device mesh, per-device
+   keys, ACL-gated, **no public listener**. **A content-story demo outside a VPN/tailnet is outside the accepted
+   posture** — not merely less tidy.
+2. **The scrub reduces the risk; it does not eliminate it.** Detectable identifiers are removed and the capture
+   **fails closed** if a *sourced* name survives — but residual re-identification risk is **real and ACCEPTED**
+   (2026-07-19), not engineered away. Argument 1's *cannot* has no counterpart here.
+3. **The exposure is bounded by CONTENT, not by access.** What is in the demo is exactly the pinned sessions in
+   the checked-in fixture — a hand-picked, source-pinned, auditable list (`seed-generation-manifest.yaml`), not a
+   slice of the production database. An attacker who fully owns a content-story demo obtains *those* sessions'
+   scrubbed text, and nothing else. This bound is what keeps the blast radius finite once *cannot* is gone.
+4. **Part 2 is untouched.** No demo — content-story or not — can write production. The write-side guarantee
+   carries exactly as much weight here as it does anywhere else in this document.
+
+> ⚠️ **The consequence for §3.1's already-world-published ports, stated plainly.** For a synthetic demo, the
+> LAN/host-IP exposure §3.1 documents is near-harmless *because* there is nothing behind the door — that is why
+> §3.1 concludes the exposure delta "cuts in the flip's favour". For a **content-story** demo that conclusion
+> **does not transfer**: those same always-open ports carry scrubbed-real customer content to anyone on the
+> host's network, tailnet or not. **Do not bring a content-story demo up on a network you do not trust**, and do
+> not cite §3.1's delta argument for one.
+
 ### 3.4 The case AGAINST — the residual, stated not dismissed
 
 1. **"Nothing behind the door" is a property of the SEED, not of the BUILD.** It holds because Parts 1-2 hold.
@@ -511,8 +580,26 @@ Recorded honestly, as the argument that actually carries the decision:
    silently converted an authz-free build into a data-bearing one, and Part 3's whole argument evaporates. The
    capture-source policy (§1.4) is what keeps this honest; **it is now also load-bearing for exposure**, which it
    was not before.
+
+   > 🔴 **v2.5 did exactly this — deliberately. It is §3.8.** The content-story feature points a demo at a
+   > **non-synthetic data source** (copied real production sessions) *on purpose*. So this residual is no longer
+   > hypothetical on the demo path either: it is a **shipped, disclosed, controller-accepted instance** of the
+   > very thing it warns about. The difference between §3.8 and the failure mode described above is
+   > **governance, not mechanism** — source-pinned, scrubbed, auditable, and VPN-scoped, versus ad-hoc and
+   > undisclosed. §3.3.1 states what carries the exposure argument once it has happened. *An operator who
+   > hand-loads a prod dump into a demo gets the mechanism without any of the governance, and none of §3.3
+   > protects them.*
 2. **Ambient means the operator did not choose.** A default-on surface is reachable by people who never decided
    to publish it — including on a laptop that joins a corporate tailnet later.
+
+   > **Which layer owns this, and what nothing measures (v2.5 M236).** The decision on record is a **layering**
+   > one: *restricting who can reach a demo is the VM's and the VPN's job, not the demo stack's* — the stack's
+   > only obligation is to **permit** VPN access. It is a scoping stance about ownership, **not** a safety
+   > claim, and it leaves this document's Part 3 disclosure untouched. See
+   > [`verification.md` § What this doc does NOT verify — reach](verification.md). **The consequence to hold
+   > alongside it:** no gate anywhere measures reach, so for a **content-story** demo — where §3.3.1 makes the
+   > VPN scope *the* control rather than a comfort — that control is **operator-maintained and unattested**.
+   > It is exactly as strong as the network the box is on, and nothing will tell you if it is weaker.
 3. **The cockpit is the sharpest edge.** It is the one surface whose *entire purpose* is to hand out sessions
    without credentials.
 
@@ -631,7 +718,8 @@ was there before you ever heard of this flag. The opt-in governs **reachability 
 machine** — not reachability at all.
 
 ⚠️ **And the residual that does NOT go away: §3.4's residual #1 is a LIVE risk on dev, not a hypothetical one.**
-A demo's content is synthetic + public-snapshot-only by construction (Parts 1–2). **A dev stack has no such
+A demo's content is synthetic + public-snapshot-only by construction (Parts 1–2; the one bounded exception is a
+content-story demo's copied+scrubbed real session content, §3.8). **A dev stack has no such
 guarantee** — it is a working environment, an engineer may point it at anything, and `/dev-up`'s own default is
 to read content **live from prod**. That is the entire reason dev is opt-in and demo is not, and it is why this
 flag asks you to say so out loud. As on the demo path, what you are turning on is **transport, not
@@ -671,10 +759,76 @@ above.** The check asserts it captured traffic at all — an empty scan is a FIN
 
 ### 3.7 What this does NOT change
 
-Parts 1 and 2 hold **exactly** as written. Remote reach changes the *origin and scheme* a browser uses; it does
-not touch the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the
-3-layer write-isolation guard, the never-write-prod boundary, and the values-blind secret contract are all
-unaffected — and they are precisely what makes §3.3's argument work. **Part 3 is a debt that Parts 1 and 2 pay.**
+Parts 1 and 2 hold **exactly** as written **for every demo the tooling built before v2.5, and for every demo
+that is not a content-story demo.** Remote reach changes the *origin and scheme* a browser uses; it does not touch
+the data plane. The tenant-data firewall, the public-only predicates, the read-only capture policy, the 3-layer
+write-isolation guard, the never-write-prod boundary, and the values-blind secret contract are all unaffected —
+and they are precisely what makes §3.3's argument work. **Part 3 is a debt that Parts 1 and 2 pay.** The one place
+Part 1's "nothing behind the door" gains a bounded, disclosed exception is §3.8 (content-story demos); Part 2
+(never-write-prod) is untouched there too.
+
+### 3.8 The content-story exception — anonymized-real session data (v2.5 "the playbill", M232)
+
+Until v2.5 the read side promised the strongest possible thing: **a demo carries only synthetic + public-snapshot
+data; no customer datum, public or private, that a person authored is ever in it.** The v2.5 "Content stories"
+feature adds a demo tab of **played sessions a presenter logs into** — and to make those believable, the tooling
+**clones real production job-simulation sessions** into the demo. That is a deliberate, **user-accepted
+(data-controller) decision**, and it is a genuine — if narrow — softening of the promise above. This section
+records it honestly rather than letting the doc keep asserting something the tooling no longer does.
+
+**What is actually cloned — the REAL content, COPIED and best-effort SCRUBBED (2026-07-19 data-controller
+decision).** The interesting part of a played session IS its free-text — the real conversation, the real LLM
+feedback, the real submission, the real interview report. So the tooling **copies that real content**. At
+**authoring time**, `cmd/content-capture` reads production **read-only** (`marco_read` via `~/.pgpass` over
+Tailscale — `db-access.md`; it `SET`s the session read-only and only `SELECT`s), COPIES each pinned session's
+result-fan-out content, and **SCRUBS the detectable PII** before writing the checked-in fixture:
+
+- the source session's real person-names — the transcript **actors AND the session OWNER's real identity**
+  (`sessions.owner_id` → `public.users.firstname`/`lastname` + the email local-part; the candidate's first name is
+  threaded through the LLM feedback and comes from HERE, not from the empty `jobsimulation.actors` names) →
+  `<<ACTOR_i>>` placeholders, **token-split** so a bare first-name mention is caught; the **source org name** →
+  `<<ORG>>` (the seeder fills these with the demo persona/org); **emails, URLs, and long digit-runs** → redaction
+  markers. *(M235 leak fix, 2026-07-19: the original capture sourced only the empty actor names → removed **zero**
+  names → 8/9 fixtures shipped a real first name. The owner-identity path + a **capture-time fail-closed
+  post-condition** — the capture refuses to write a fixture in which a **sourced** name survives — closed it.)*
+
+**This is NOT "provably clean".** Free-text scrubbing is imperfect: a name the pass never *sourced* (a third party
+mentioned in passing), an unusual identifier format, a company mentioned in passing can survive. Raw customer
+content is streamed prod → scrub → fixture (it never enters an agent's context, and `content-capture` prints
+counts only, never content — a leak error prints only the field name + token length), and the shipped fixture is
+re-scanned for structural PII (emails/URLs/phones) by a test gate — but **residual re-identification risk is real
+and was ACCEPTED by the data-controller.** The word "anonymized-real" is precise the honest way: the content is
+real, anonymized *where detectable*, not guaranteed anonymous.
+
+**The bounds that make it acceptable:**
+
+1. **Best-effort scrub** — the detectable identifiers (known names — actors **+ the session owner's real
+   identity**, token-split — org, emails/phones/URLs) are removed; the capture **fails closed** if a *sourced*
+   name survives, and `TestEmbeddedContent_NoStructuralPII` re-scans every shipped blob for structural PII + the
+   name-scrub-fired tripwire. It is a diligent pass, **not a guarantee**.
+2. **Residual risk ACCEPTED, VPN/tailnet-scoped** — the data-controller accepted the residual re-identification
+   risk (2026-07-19); the CONTROL on it is that a content-story demo is exposed under the Part-3 posture
+   (unauthenticated, authz-weakened, world-published on its host's interfaces) **only over a Tailscale tailnet /
+   VPN** (`tailscale-serve.md`), never the public internet. The scrub reduces the risk; the VPN scope contains it.
+3. **Source-pinned + disclosed** — every cloned session's prod source-id + the copy+scrub posture is recorded in
+   `seed-generation-manifest.yaml` (the `content_sessions` block, honesty-gated), so an auditor reads *exactly*
+   which real sessions a content-story demo was copied from, in one file, without reading Go.
+
+**Public-anchored + non-manager-played** (two more structural properties, from the M231 sourcing contract): a
+cloned session references only a **public-published** sim (so it resolves in the demo's replayed catalog, and no
+customer-private sim content is pulled), and it is re-owned to a **player-vantage** seeded member (never a manager
+seat) — so the clone is a player's own session, re-tenanted into the demo org.
+
+**Part 2 is untouched.** The write side never changes: the `ContentStorySeeder` writes only to the per-stack
+Postgres (PerStackIsolated), audited, n=0-guarded — it can no more write prod than any other seeder; and the
+authoring-time read is read-only. The exception is entirely on the read side, and it is bounded by the scrub + the
+VPN scope, not eliminated.
+
+**The full contract:** [`demo/session-clone-spec.md`](demo/session-clone-spec.md) (the sourcing pattern, the
+firewall-safety argument, the source-pin contract, the no-manager-played rule, and the **copy-real + best-effort-scrub**
+mechanism — the real content is copied, detectable PII scrubbed, residual re-identification risk accepted by the
+data-controller, VPN/tailnet-scoped) + [`demo/content-stories-routes.md`](demo/content-stories-routes.md) §3.5 (the
+M231 spike that authored the posture this section lands).
 
 ---
 

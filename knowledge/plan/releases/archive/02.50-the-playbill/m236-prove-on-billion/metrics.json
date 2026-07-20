@@ -1,0 +1,221 @@
+{
+  "milestone": "M236",
+  "slug": "prove-on-billion",
+  "release": "v2.5 the playbill",
+  "shape": "iterative",
+  "primary_metric": {
+    "name": "landed-non-empty (session x action) pairs, live on billion, cold reset-to-seed",
+    "denominator": 29,
+    "denominator_source": "rosetta-extensions/stack-seeding/presets/content-manifest.json (M233 canonical projection); has_manager_view is per-session. CORRECTED at M236 iter-07 from 31 to 29: driving the skill-path manager route live showed the platform surface is UNIMPLEMENTED (InsightsBySkillPathStudentSimulationsContainer renders 'Coming soon' with its results table commented out and userData hardcoded null -- no query reads the seeded session), so its 2 manager pairs are NOT LANDABLE and leave the denominator under the same fail-closed rule that already excludes ai-labs. Arithmetic on the corrected SERVED manifest: 18 sessions + 13 manager views = 31 raw pairs, minus 2 ai-labs presence-only = 29 landable. 31 was never a count of provable pairs -- it assumed a surface that does not exist.",
+    "denominator_breakdown": {
+      "simulation": 26,
+      "skill-path-legacy": 2,
+      "ai-labs": 0,
+      "skill-path-new": 1
+    },
+    "baseline": 0,
+    "current": 29,
+    "gate": 29
+  },
+  "secondary_gate_components": {
+    "ai_labs_presence_rows": {
+      "target": 2,
+      "current": 2,
+      "status": "MET (verified live on billion, iter-03)"
+    },
+    "academy_grid_real_cards": {
+      "target": "non-zero, no Draft chip",
+      "current": 65,
+      "chapter_links": 483,
+      "draft_chips": 0,
+      "status": "MET (cold, iter-10; discharges M230 carry-forward cluster 1)",
+      "note": "The ANONYMOUS /library + /free routes still render 0 \u2014 M230 cluster 3, getPublicCatalogView's new Set() branch is uncovered by the M230 patch. Out of gate; handler ACADEMY-M236-iter08-public-catalog-twin -> release close."
+    },
+    "p95_click_to_access_ms": {
+      "gate": 5000,
+      "cold_employee_p95_ms": 1220,
+      "cold_manager_p95_ms": 1510,
+      "reached_access": "5/5 both vantages",
+      "status": "MET (cold, iter-10)",
+      "warm_readings_iter09": {
+        "employee_p95_ms": 3150,
+        "manager_p95_ms": 2710
+      },
+      "scope": "HERO vantages only (user decision B2); content-seat latency OUT OF SCOPE for v2.5",
+      "note": "The COLD stack measured ~2x faster than the warm one it replaced (which had been up for hours across 3 cockpit restarts + 2 re-pins). iter-09's numbers are the PESSIMISTIC pair; do not treat 1.2 s as expected steady state."
+    },
+    "platform_repo_edits": {
+      "gate": 0,
+      "current": 0,
+      "status": "MET",
+      "note": "Verified per-clone (iter-10): platform/next-web-app/app/jobsimulation/skillpath/sentinel/storage/graphql-wundergraph all 0 modified. cms shows an untracked studio/ (the make init-studio clone, no tracked file modified). ant-academy shows 4 modified \u2014 serverTenant.js (M230 fs-published patch) + next.config.js (M212-215 allowedDevOrigins patch) + 2 build-generated public/ files \u2014 the SANCTIONED live-patch mechanism on the demo's ephemeral gitignored clone, reverted on --stop. The canonical anthropos-work repos were never touched."
+    }
+  },
+  "iters": {
+    "total": 10,
+    "tiks": 9,
+    "toks": 1,
+    "in_flight": 0
+  },
+  "last_iter": "iter-10 (closed-fixed) \u2014 GATE MET",
+  "last_updated": "2026-07-20 (close)",
+  "host_state": {
+    "billion_disk_free_gb": 139,
+    "billion_build_cache_pruned_gb": 109,
+    "tooling_published": true,
+    "billion_rext_pin": "playbill-m236-academy-course-route (clone); tooling published through playbill-m236-latency-tz-fix",
+    "m217_pin_guard": "PASS",
+    "stack": "demo-1 UP at playbill-m235-hardened",
+    "autoverify": "fresh green",
+    "cockpit_content_manifest": "HTTP 200, 4 products / 18 sessions / 13 manager views (skill-path manager views removed, iter-07)",
+    "platform_repo_edits": 0,
+    "cockpit_bind": "127.0.0.1 (tailscale serve had claimed :17700 by restart time; a cold bring-up restores 0.0.0.0 ordering -- tailnet path unaffected either way)"
+  },
+  "resolved_blockers": [
+    {
+      "id": "USER-BLOCKER-M236-01",
+      "resolved": "2026-07-20",
+      "by": "user (orchestrator-obtained)",
+      "decisions": "B1 drop tailnet-only clause; B2 p95 hero-only; B3 accept enlarged Cluster 1; B4 amend coverage-protocol.md; B5 repoint iteration_protocol_ref",
+      "phase_0b_reverdict": "RED -> discharged (proceed as YELLOW)"
+    }
+  ],
+  "substrate_readings": {
+    "as_of": "iter-03 (2026-07-20, live on billion)",
+    "note": "DATA present, RENDER not yet proven \u2014 deliberately NOT counted toward the primary metric (see iter-03/decisions.md D2)",
+    "simulation_sessions_in_db": "13/13",
+    "with_attempt_results": "13/13",
+    "in_manager_mirror": "13/13",
+    "lab_sessions": 2
+  },
+  "reading": {
+    "as_of": "iter-10 (2026-07-20, COLD reset-to-seed on billion)",
+    "landed": 29,
+    "denominator": 29,
+    "by_product": {
+      "simulation": "26/26",
+      "skill-path-legacy": "2/2 (player-only; no manager surface exists)",
+      "skill-path-new": "1/1 (academy /courses/ai-foundations)",
+      "ai-labs": "presence-only, excluded"
+    },
+    "residual_causes": {}
+  },
+  "harness": {
+    "tag": "playbill-m236-close-fixes",
+    "files": [
+      "stack-verify/e2e/lib/content-result-page.ts",
+      "stack-verify/e2e/tests/content-stories.spec.ts",
+      "stack-verify/e2e/run-content-stories.sh",
+      "stack-verify/e2e/aggregate-content.py",
+      "stack-verify/e2e/lib/content-pairs.ts"
+    ],
+    "run": "./run-content-stories.sh 1 --host billion.taildc510.ts.net",
+    "shapes": [
+      "player-scored",
+      "player-interview",
+      "player-skillpath",
+      "player-academy",
+      "manager-dashboard",
+      "manager-interview"
+    ],
+    "shapes_note": "SIX shapes. `player-academy` was added at iter-08 (the academy course page had been falling through to `player-scored`); the pre-close metrics file listed only five and named the iter-06 tag."
+  },
+  "gate_status": "MET \u2014 all components, reproduced on a cold reset-to-seed (iter-10)",
+  "cold_cycle": {
+    "as_of": "2026-07-20",
+    "tag": "playbill-m236-latency-tz-fix",
+    "intervention_required": "none",
+    "autoverify": "green on the bring-up's own tail",
+    "demo_patches": "all applied (none refused, none skipped)",
+    "frontend_builds": "ok (the running images are this run's)",
+    "cockpit_bind": "0.0.0.0:17700 (iter-07's 127.0.0.1 was a restart-in-place artifact, as that iter predicted)",
+    "served_manifest": "18 sessions / 13 manager views = 31 raw - 2 presence-only = 29 landable; the iter-07 + iter-08 corrections arrived from published tooling with no hand-editing"
+  },
+  "tests": {
+    "as_of": "M236 close (2026-07-20), full suites across every stack",
+    "go": {
+      "passed": 2459,
+      "failed": 0,
+      "modules": 6,
+      "packages": 58,
+      "whole_repo_test_funcs": 1976,
+      "delta_vs_M235": "1974 -> 1976 (+2: the membership-key contract tests)"
+    },
+    "typescript_playwright": {
+      "stack_verify_e2e_unit": {
+        "passed": 127,
+        "failed": 0
+      },
+      "playthroughs_e2e_unit": {
+        "passed": 69,
+        "failed": 0
+      },
+      "tsc": "clean both packages",
+      "note": "24 of stack-verify's 151 collected tests and 15 of playthroughs' 84 require a live demo stack and were not executed."
+    },
+    "python": {
+      "passed": 1397,
+      "failed": 2,
+      "failed_note": "'failed' excludes the standing pre-existing demo-stack carry, which is reported separately in by_section + standing_carry_correction",
+      "skipped": 8,
+      "corrected": "2026-07-20 (v2.5 release close, finding T-2). This file originally recorded demo-stack 716 passed / 14 failed -- the DIRTY-CLONE reading taken BEFORE the re-baseline documented in rebaseline-standing-failures.md. Superseded by the clean-clone reading below; the python total moves 1391 -> 1397 accordingly. The 716/14 figure is preserved here as the audit trail, not as a measurement.",
+      "by_section": {
+        "demo-stack": {
+          "passed": 722,
+          "failed": 8,
+          "total": 730,
+          "host": "macOS (Darwin 25.1.0)",
+          "expected_on_linux": 7,
+          "superseded_dirty_clone_reading": "716 passed / 14 failed",
+          "note": "the standing pre-existing carry, CLEAN-CLONE reading. Host-dependent: 8 on macOS, 7 expected on Linux -- always state the host. The 6 clone-dependent failures of the carried 14 do not reproduce on a pristine stack-demo clone set."
+        },
+        "stack-core": {
+          "passed": 150,
+          "failed": 2,
+          "note": "was 147/5 at close open; the 5 doc-truth guard failures were FIXED at this close. The 2 remaining are test_m220_mutation_battery, verified identical at playbill-m236-hardened via a detached worktree -- pre-existing, not M236."
+        },
+        "stack-verify": {
+          "passed": 141,
+          "failed": 0,
+          "note": "132 -> 141: +6 runner/networkidle pins, +3 e2e collection-integrity guards"
+        },
+        "stack-injection + dev-stack": {
+          "passed": 384,
+          "failed": 0,
+          "skipped": 8
+        }
+      }
+    },
+    "m236_new_tests": {
+      "total": 83,
+      "breakdown": {
+        "aggregate-content.unit.spec.ts": 12,
+        "content-pairs.unit.spec.ts": 9,
+        "content-result-page.unit.spec.ts": 37,
+        "content-route-contract.unit.spec.ts": 8,
+        "test_green_gate_age.py": 8,
+        "test_e2e_collection_integrity.py": 3,
+        "content_stories_test.go (membership contract)": 2,
+        "ContentStoriesRunnerContract + NoNetworkIdleOnLongPollingSurfaces": 4
+      },
+      "note": "The hardening ledger recorded 72; the true figure at the end of harden was 74, and the close added 9 more."
+    }
+  },
+  "standing_carry_correction": {
+    "briefed_as": 14,
+    "measured": 19,
+    "resolved_at_close": 5,
+    "remaining_dirty_clone": 14,
+    "remaining": 8,
+    "remaining_host": "macOS (Darwin 25.1.0)",
+    "remaining_expected_on_linux": 7,
+    "authoritative_note": "AUTHORITATIVE as re-measured at the v2.5 release close (2026-07-20): 8 on macOS / 7 expected on Linux, host-dependent. 14 is the DIRTY-clone reading; 19 folded in the 5 stack-core doc-truth-guard failures that were FIXED at this close. Both are preserved as audit trail, neither is the standing count. Source: rebaseline-standing-failures.md + the release metrics.json standing_failures block.",
+    "detail": "The carry was briefed as '14 pre-existing demo-stack failures'. A full-suite sweep found 19: the 14 demo-stack ones PLUS 5 in stack-core that no ledger named -- the story-org-count guard (the preset has shipped 4 orgs since v2.4 M223 while docs and the guard's own test still said 3) and the demo-knob guard (DEMO_NO_ACADEMY_FILL, the knob that GATES Thread A, undocumented). Both guards were red and CORRECT. Fixed at this close, so the standing carry is back to exactly 14 -- and is now a measured number rather than a copied one."
+  },
+  "close": {
+    "date": "2026-07-20",
+    "deferral_audit": "RED -- the 14-failure carry is a genuine repeat-deferral (10 milestones, 2 releases) whose declared destination (the v2.4 release close) already fired once without landing it. Escalated to the user; see decisions.md CLOSE-D2. The milestone did NOT merge.",
+    "code_of_record": "playbill-m236-close-fixes (pushed to origin)",
+    "gate_reading_provenance": "The 29/29 reading was taken on playbill-m236-hardened. The close then fixed 10 defects in that same harness, unit-proven (66 harness specs) but NOT re-run live -- see decisions.md CLOSE-D3."
+  }
+}

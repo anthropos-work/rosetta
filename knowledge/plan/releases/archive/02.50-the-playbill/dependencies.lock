@@ -1,0 +1,360 @@
+# v2.5 "the playbill" — dependency lockfile (close-release Phase 0: supply-chain audit)
+# Generated 2026-07-20.
+#
+# ============================================================================
+# PROVENANCE — which repo + sha each section came from
+# ============================================================================
+#   Section 1  rosetta (the documentation corpus)
+#              repo  github.com/<org>/rosetta
+#              branch release/02.50-the-playbill
+#              sha    2d3dd106dba370c351e19ad3299a9a69e3038350
+#              (sha as of audit start, BEFORE this lockfile commit)
+#
+#   Section 2  rosetta-extensions (the executable tooling monorepo — the real
+#              dependency surface of this release)
+#              repo  github.com/anthropos-work/rosetta-extensions  (private)
+#              branch main
+#              sha    08badf1abef6feaf8701f35c36b141bdc12dde48
+#              tag    playbill-m236-close-fixes  (tag at HEAD)
+#              authoring copy: rosetta/.agentspace/rosetta-extensions (gitignored
+#              from rosetta; its own git repo)
+#
+# Integrity hashes are verbatim from the committed lockfiles:
+#   Go   -> go.sum  (dirhash "h1:" = SHA-256 of the module zip's file tree)
+#   npm  -> package-lock.json  ("integrity" = SRI sha512 of the tarball)
+#   vendored assets -> SHA-256 of the checked-in file bytes
+#
+# Scope note: the Go sections list the ACTUAL BUILD CLOSURE
+# (`go list -json -deps ./...`), not the full module graph. Module-graph-only
+# entries (test deps of deps, e.g. golang.org/x/exp, gopkg.in/check.v1) are
+# never compiled into a shipped artifact and are excluded by design.
+#
+# ============================================================================
+# AUDIT RESULT SUMMARY
+# ============================================================================
+#   Go   (6 modules, 28 build-closure entries)  govulncheck v1.6.0 / DB 2026-07-08
+#                                               -> 0 critical, 0 high, 0 any severity
+#   npm  (2 packages, 7 resolved, all dev-only) npm audit --omit=dev AND full
+#                                               -> 0 critical, 0 high, 0 any severity
+#   Python (0 dependency manifests)             -> NOT AUDITABLE BY TOOL; see note
+#   Licenses: MIT / Apache-2.0 / BSD-3-Clause only. Zero GPL / AGPL / LGPL / MPL.
+#   Verdict: GREEN.
+#
+############################################################################
+## SECTION 1 — rosetta  @ 2d3dd106dba370c351e19ad3299a9a69e3038350
+############################################################################
+#
+# NO DEPENDENCY MANIFESTS EXIST IN THIS REPO. This is a documentation corpus.
+# Tracked file inventory: 1199 .md, 115 .json, 17 .lock, 3 .sql, 3 .html,
+# 2 .txt, 1 .yaml. Zero .go / .py / .js / .ts source files, zero go.mod,
+# package.json, requirements.txt, or pyproject.toml.
+# Therefore: nothing to lock, nothing to audit. Not a gap — an absence.
+#
+# The only external references anywhere in the corpus are Google Fonts
+# stylesheet <link>s in three illustrative spec-draft HTML examples:
+#   knowledge/plan/spec-drafts/path-migration/examples/{legacy-skill-path,
+#   migrated-path,new-academy-path}.html
+#   -> https://fonts.googleapis.com , https://fonts.gstatic.com
+# These are inert documentation samples, never served or executed. Not deps.
+
+############################################################################
+## SECTION 2 — rosetta-extensions @ 08badf1abef6feaf8701f35c36b141bdc12dde48
+##             (tag playbill-m236-close-fixes)
+############################################################################
+
+## ---------------------------------------------------------------------------
+## 2a. Go modules  — source: each module's go.sum
+## ---------------------------------------------------------------------------
+# Six tracked Go modules. Two have NO third-party dependencies at all and
+# therefore no go.sum:
+#     alignment/      build closure = itself only  (stdlib only)
+#     stack-secrets/  build closure = itself only  (stdlib only)
+# The remaining four are enumerated below.
+
+### module: clerkenstein/  (go.sum — 67 lines; build closure = 3 third-party modules)
+github.com/anthropos-work/colony v0.34.3
+    resolved  direct via GOPRIVATE (git+ssh, no public proxy)
+    integrity h1:y/T9ceL8LaFLfBHWgXOcjzMFXWOdLBq6XzDWR1MX56g=
+    license   PROPRIETARY (anthropos-work, first-party)
+github.com/google/uuid v1.6.0
+    resolved  https://proxy.golang.org/github.com/google/uuid/@v/v1.6.0.zip
+    integrity h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+    license   BSD-3-Clause
+github.com/svix/svix-webhooks v1.93.0
+    resolved  https://proxy.golang.org/github.com/svix/svix-webhooks/@v/v1.93.0.zip
+    integrity h1:B62I/AKg9dWs1ERgDdiJF3M8XbFbY1SSrBKRaORauLw=
+    license   MIT
+
+### module: playthroughs/  (go.sum — 4 lines; build closure = 1 third-party modules)
+gopkg.in/yaml.v3 v3.0.1
+    resolved  https://proxy.golang.org/gopkg.in/yaml.v3/@v/v3.0.1.zip
+    integrity h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+    license   MIT
+
+### module: stack-seeding/  (go.sum — 108 lines; build closure = 23 third-party modules)
+github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.0
+    resolved  https://proxy.golang.org/github.com/!azure/azure-sdk-for-go/sdk/azcore/@v/v1.21.0.zip
+    integrity h1:fou+2+WFTib47nS+nz/ozhEBnvU96bKHy6LjRsY4E28=
+    license   MIT
+github.com/Azure/azure-sdk-for-go/sdk/internal v1.12.0
+    resolved  https://proxy.golang.org/github.com/!azure/azure-sdk-for-go/sdk/internal/@v/v1.12.0.zip
+    integrity h1:fhqpLE3UEXi9lPaBRpQ6XuRW0nU7hgg4zlmZZa+a9q4=
+    license   MIT
+github.com/anthropos-work/ai v1.40.1
+    resolved  direct via GOPRIVATE (git+ssh, no public proxy)
+    integrity h1:AhgWrXYJxB9jUFFrisr6FPjJL2SO0ebD05Uq4rhIoEo=
+    license   PROPRIETARY (anthropos-work, first-party)
+github.com/avast/retry-go/v4 v4.7.0
+    resolved  https://proxy.golang.org/github.com/avast/retry-go/v4/@v/v4.7.0.zip
+    integrity h1:yjDs35SlGvKwRNSykujfjdMxMhMQQM0TnIjJaHB+Zio=
+    license   MIT
+github.com/dlclark/regexp2 v1.11.5
+    resolved  https://proxy.golang.org/github.com/dlclark/regexp2/@v/v1.11.5.zip
+    integrity h1:Q/sSnsKerHeCkc/jSTNq1oCm7KiVgUMZRDUoRu0JQZQ=
+    license   MIT
+github.com/jackc/pgpassfile v1.0.0
+    resolved  https://proxy.golang.org/github.com/jackc/pgpassfile/@v/v1.0.0.zip
+    integrity h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
+    license   MIT
+github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+    resolved  https://proxy.golang.org/github.com/jackc/pgservicefile/@v/v0.0.0-20240606120523-5a60cdf6a761.zip
+    integrity h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
+    license   MIT
+github.com/jackc/pgx/v5 v5.9.2
+    resolved  https://proxy.golang.org/github.com/jackc/pgx/v5/@v/v5.9.2.zip
+    integrity h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+    license   MIT
+github.com/jackc/puddle/v2 v2.2.2
+    resolved  https://proxy.golang.org/github.com/jackc/puddle/v2/@v/v2.2.2.zip
+    integrity h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
+    license   MIT
+github.com/json-iterator/go v1.1.12
+    resolved  https://proxy.golang.org/github.com/json-iterator/go/@v/v1.1.12.zip
+    integrity h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
+    license   MIT
+github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+    resolved  https://proxy.golang.org/github.com/modern-go/concurrent/@v/v0.0.0-20180306012644-bacd9c7ef1dd.zip
+    integrity h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
+    license   Apache-2.0
+github.com/modern-go/reflect2 v1.0.2
+    resolved  https://proxy.golang.org/github.com/modern-go/reflect2/@v/v1.0.2.zip
+    integrity h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
+    license   Apache-2.0
+github.com/openai/openai-go/v3 v3.31.0
+    resolved  https://proxy.golang.org/github.com/openai/openai-go/v3/@v/v3.31.0.zip
+    integrity h1:3KxL3H+gw6vBkBW6dmcwhbFqP4kyMgmaWTsuRheyF8w=
+    license   Apache-2.0
+github.com/samber/go-gpt-3-encoder v0.3.1
+    resolved  https://proxy.golang.org/github.com/samber/go-gpt-3-encoder/@v/v0.3.1.zip
+    integrity h1:YWb9GsGYUgSX/wPtsEHjyNGRQXsQ9vDCg9SU2x9uMeU=
+    license   MIT
+github.com/samber/lo v1.53.0
+    resolved  https://proxy.golang.org/github.com/samber/lo/@v/v1.53.0.zip
+    integrity h1:t975lj2py4kJPQ6haz1QMgtId2gtmfktACxIXArw3HM=
+    license   MIT
+github.com/tidwall/gjson v1.18.0
+    resolved  https://proxy.golang.org/github.com/tidwall/gjson/@v/v1.18.0.zip
+    integrity h1:FIDeeyB800efLX89e5a8Y0BNH+LOngJyGrIWxG2FKQY=
+    license   MIT
+github.com/tidwall/match v1.2.0
+    resolved  https://proxy.golang.org/github.com/tidwall/match/@v/v1.2.0.zip
+    integrity h1:0pt8FlkOwjN2fPt4bIl4BoNxb98gGHN2ObFEDkrfZnM=
+    license   MIT
+github.com/tidwall/pretty v1.2.1
+    resolved  https://proxy.golang.org/github.com/tidwall/pretty/@v/v1.2.1.zip
+    integrity h1:qjsOFOWWQl+N3RsoF5/ssm1pHmJJwhjlSbZ51I6wMl4=
+    license   MIT
+github.com/tidwall/sjson v1.2.5
+    resolved  https://proxy.golang.org/github.com/tidwall/sjson/@v/v1.2.5.zip
+    integrity h1:kLy8mja+1c9jlljvWTlSazM7cKDRfJuR/bOJhcY5NcY=
+    license   MIT
+golang.org/x/net v0.55.0
+    resolved  https://proxy.golang.org/golang.org/x/net/@v/v0.55.0.zip
+    integrity h1:bcvxaJn3e1U6InsFWt1JUq1aSjnRxLzT2rtD2KfkDF8=
+    license   BSD-3-Clause
+golang.org/x/sync v0.20.0
+    resolved  https://proxy.golang.org/golang.org/x/sync/@v/v0.20.0.zip
+    integrity h1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=
+    license   BSD-3-Clause
+golang.org/x/text v0.37.0
+    resolved  https://proxy.golang.org/golang.org/x/text/@v/v0.37.0.zip
+    integrity h1:Cqjiwd9eSg8e0QAkyCaQTNHFIIzWtidPahFWR83rTrc=
+    license   BSD-3-Clause
+gopkg.in/yaml.v3 v3.0.1
+    resolved  https://proxy.golang.org/gopkg.in/yaml.v3/@v/v3.0.1.zip
+    integrity h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+    license   MIT
+
+### module: stack-snapshot/  (go.sum — 30 lines; build closure = 6 third-party modules)
+github.com/jackc/pgpassfile v1.0.0
+    resolved  https://proxy.golang.org/github.com/jackc/pgpassfile/@v/v1.0.0.zip
+    integrity h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
+    license   MIT
+github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+    resolved  https://proxy.golang.org/github.com/jackc/pgservicefile/@v/v0.0.0-20240606120523-5a60cdf6a761.zip
+    integrity h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
+    license   MIT
+github.com/jackc/pgx/v5 v5.9.2
+    resolved  https://proxy.golang.org/github.com/jackc/pgx/v5/@v/v5.9.2.zip
+    integrity h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+    license   MIT
+github.com/jackc/puddle/v2 v2.2.2
+    resolved  https://proxy.golang.org/github.com/jackc/puddle/v2/@v/v2.2.2.zip
+    integrity h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
+    license   MIT
+golang.org/x/sync v0.17.0
+    resolved  https://proxy.golang.org/golang.org/x/sync/@v/v0.17.0.zip
+    integrity h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=
+    license   BSD-3-Clause
+golang.org/x/text v0.29.0
+    resolved  https://proxy.golang.org/golang.org/x/text/@v/v0.29.0.zip
+    integrity h1:1neNs90w9YzJ9BocxfsQNHKuAT4pkghyXc4nhZ6sJvk=
+    license   BSD-3-Clause
+
+## ---------------------------------------------------------------------------
+## 2b. npm packages — source: each package's package-lock.json
+## ---------------------------------------------------------------------------
+# Both packages declare devDependencies ONLY — there is no production npm
+# surface in this release. `npm audit --omit=dev` consequently audits an empty
+# prod tree; the meaningful number is the full `npm audit`, also 0.
+# Both lockfiles resolve to a byte-identical dependency set.
+
+### package: stack-verify/e2e/  (package-lock.json v3; 7 resolved packages — ALL dev-only, 0 prod deps)
+@playwright/test 1.61.1
+    resolved  https://registry.npmjs.org/@playwright/test/-/test-1.61.1.tgz
+    integrity sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==
+    license   Apache-2.0   dev=True
+@types/node 20.19.43
+    resolved  https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz
+    integrity sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==
+    license   MIT   dev=True
+fsevents 2.3.2
+    resolved  https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz
+    integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
+    license   MIT   dev=True
+playwright 1.61.1
+    resolved  https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz
+    integrity sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==
+    license   Apache-2.0   dev=True
+playwright-core 1.61.1
+    resolved  https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz
+    integrity sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==
+    license   Apache-2.0   dev=True
+typescript 5.9.3
+    resolved  https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz
+    integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+    license   Apache-2.0   dev=True
+undici-types 6.21.0
+    resolved  https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz
+    integrity sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
+    license   MIT   dev=True
+
+### package: playthroughs/e2e/  (package-lock.json v3; 7 resolved packages — ALL dev-only, 0 prod deps)
+@playwright/test 1.61.1
+    resolved  https://registry.npmjs.org/@playwright/test/-/test-1.61.1.tgz
+    integrity sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==
+    license   Apache-2.0   dev=True
+@types/node 20.19.43
+    resolved  https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz
+    integrity sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==
+    license   MIT   dev=True
+fsevents 2.3.2
+    resolved  https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz
+    integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
+    license   MIT   dev=True
+playwright 1.61.1
+    resolved  https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz
+    integrity sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==
+    license   Apache-2.0   dev=True
+playwright-core 1.61.1
+    resolved  https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz
+    integrity sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==
+    license   Apache-2.0   dev=True
+typescript 5.9.3
+    resolved  https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz
+    integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+    license   Apache-2.0   dev=True
+undici-types 6.21.0
+    resolved  https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz
+    integrity sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
+    license   MIT   dev=True
+
+## ---------------------------------------------------------------------------
+## 2c. Python — NO DEPENDENCY MANIFEST EXISTS
+## ---------------------------------------------------------------------------
+# 58 tracked .py files (demo-stack/, dev-stack/, stack-core/, stack-injection/,
+# stack-verify/) and there is NO requirements.txt, requirements-*.txt,
+# pyproject.toml, Pipfile, or setup.py anywhere in the tracked tree.
+#
+# An import sweep across all 58 files shows every import resolves to the Python
+# standard library, with exactly ONE exception:
+#
+#   PyYAML  (import yaml)  — UNPINNED, UNDECLARED
+#     sole call site: stack-injection/tests/test_injection.py:8
+#     guarded: wrapped in try/except so the structural-parse tests SKIP CLEANLY
+#              when PyYAML is absent. Test-only; no runtime/production path.
+#     version: whatever the ambient interpreter happens to have. Not lockable
+#              from this repo as it stands.
+#
+# pip-audit was therefore NOT run: with no manifest there is no dependency set
+# for it to resolve. This is an ADMITTED GAP, not a clean result. See finding 1.
+#
+# (demo-stack/stacks/demo-1/clones/cms/studio/requirements.txt exists on disk
+#  but is INSIDE an ephemeral, gitignored demo clone of a platform repo —
+#  demo-stack/.gitignore:8 ignores stacks/. It is not rosetta-extensions code
+#  and is not part of this release's surface.)
+
+## ---------------------------------------------------------------------------
+## 2d. Vendored third-party assets — source: SHA-256 of checked-in bytes
+## ---------------------------------------------------------------------------
+# The ONLY vendored third-party material in either tree. No vendored source
+# code exists: zero vendor/ directories, zero third-party copyright headers,
+# zero minified/bundled JS or CSS.
+#
+# stack-seeding/assets/avatars/ — 12 synthetic face JPEGs, go:embed-ed into the
+# seeder and emitted as offline data: URIs (zero network fetch at render).
+# Provenance + licensing rationale: stack-seeding/assets/avatars/LICENSE.md
+#   class:    StyleGAN2 / "this-person-does-not-exist" synthetic portraits
+#   captured: 2026-06-25 (25 days old at audit — well inside the 12-month bar)
+#   license:  license-clean. No real person -> no consent/privacy/publicity
+#             right. No human authorship of output pixels -> no copyright
+#             subsists. No rights-holder to license from.
+#
+face-01.jpg  sha256:6f839b5d8ae141b6a74e85d2a5cc1045503c436c3e4d5b07cd8982b8764ab652
+face-02.jpg  sha256:d3db95eeeb382948dacd09ede6e55f340560b3ba66e7df727a5c5d85c290b3d7
+face-03.jpg  sha256:110c25fa55286466025adf2b86e9fe51c5b5885ef13be303e45af0b25e4d96ea
+face-04.jpg  sha256:39c7edd205b3e5ec96fe11200e0006d586ff0a4b89319a901e302fa26bfe52a8
+face-05.jpg  sha256:de51c6a1e9c54e0e5799626470742130743b221f345df8a6d3d12357ca902655
+face-06.jpg  sha256:e6cb1f9f209a61ff133db2816cd790d67a543a47dd38baa141baf99051147bb2
+face-07.jpg  sha256:9d80baced2f74823460a5e81f61953a91a4a2a4d9736ec37c469428453f1c3d4
+face-08.jpg  sha256:cb64c914dd107b21e7878f7d91b9f6513e8c34f59fad9838125bd759718bcf0f
+face-09.jpg  sha256:bf2d93d0e6a491c960644d4d761685c22e8a53bc9dcad43f835e8ef71fa5152b
+face-10.jpg  sha256:b564e037d9553d9e771ea3c4178007510cc5cefbf9c3e46f7ed7024c9828063d
+face-11.jpg  sha256:949b8737b90da17a4a32ef88b342a01e67fa9717755aed206e50116fc0dc6070
+face-12.jpg  sha256:384b8233d99bb687bdb5dd869be9073982f5bbba382d415f2010bb1a5726616d
+LICENSE.md   sha256:4ebba1c1f47af29d736a98bed0860687be8279d5bdee814cc862fad03c4bc9f3
+
+## ---------------------------------------------------------------------------
+## 2e. Runtime CDN dependencies (not installed deps — fetched by the browser)
+## ---------------------------------------------------------------------------
+# FontAwesome Free 6.5.2 — presenter cockpit stylesheet
+#   site:      demo-stack/cockpit.py:521-526 (_FA_CDN)
+#   resolved   https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css
+#   integrity  sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==
+#   hardening  SRI-pinned + crossorigin="anonymous" + referrerpolicy="no-referrer";
+#              enforced by demo-stack/tests/test_cockpit.py:825 (asserts the
+#              integrity= and crossorigin= attributes are present).
+#   license    FontAwesome Free: icons CC BY 4.0, fonts SIL OFL 1.1, code MIT.
+#              All commercially compatible. No GPL.
+#   age        6.5.2 released ~2024-02 -> ~29 months old. See finding 2.
+#
+# clerk-js browser bundle — Clerkenstein fake-FAPI
+#   host       https://cdn.jsdelivr.net
+#   status     served FROM DISK since v2.3 M220; the CDN is a BOUNDED fallback
+#              only. A non-fatal egress pre-check runs on the public path, with
+#              operator override FAKE_FAPI_CLERKJS_CDN.
+#   not SRI-pinned (it is a proxied JS bundle, not a <link>). See finding 3.
+
+############################################################################
+## END
+############################################################################

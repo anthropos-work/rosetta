@@ -353,7 +353,11 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > > **login-only** (one `[Log in as]` CTA per hero, per user request). So the cockpit **no longer sets the
 > > `e2e_persona` cookie**; the paragraph below describes how the academy behaved when reached *via* that
 > > (now-removed) link. Reaching the demo academy as a signed-in member now requires the cookie set by other
-> > means, or it lands anonymous. (The academy grid's empty-catalog render defect is a v2.4 carry, **F4**.)
+> > means, or it lands anonymous. (The academy grid rendering **empty** in a demo is the v2.4 **F4** carry — **NOT** a
+> > client-side render defect: the catalog is **DB-authoritative** [read from the platform academy subgraph over
+> > GraphQL], and a demo neither sets `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`
+> > = 0 cards. Root-cause + read-chain: [`../../services/ant-academy.md` § The Content Model](../../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7).
+> > **v2.5 M230 fills it production-faithfully, zero academy-repo edits.**)
 >
 > The `e2e_persona=member` cookie (formerly set browser-side by the cockpit's [Academy] link before it
 > navigated to the academy origin) drove the authenticated context. Cookies on `localhost` are
@@ -363,8 +367,55 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > as an anonymous visitor. Without
 > the cookie the portal still opens for anonymous browse (the flags enable the bypass; the cookie chooses the
 > persona). The academy identity is the synthetic `E2E Member`, **not** the exact seeded platform hero (the
-> academy runs standalone with no platform-backend link, so it can't resolve the platform user) — the F6 bar is
-> "authenticated, not anonymous", which `member` (signed-in + org + entitled) satisfies.
+> academy's only platform-backend link is the **GraphQL catalog read** — tenant-filtered, not identity-resolving — so
+> it can't map the Clerk session to a seeded platform user) — the F6 bar is "authenticated, not anonymous", which
+> `member` (signed-in + org + entitled) satisfies.
+
+### The empty grid is FILLED — the `academy-fs-published-fallback` demo-patch (v2.5 "the playbill" M230)
+
+> **⚠ Scope of this closure (M236, proven live).** The **authenticated** grid is filled and verified cold on
+> `billion`: **65 course cards, 483 chapter links, 0 Draft chips**. The **anonymous** `/library` and `/free`
+> routes still render **0 cards** — `getPublicCatalogView`'s `new Set()` branch is not covered by this patch
+> (the patch manifest names the gap itself). Tracked as `ACADEMY-M236-iter08-public-catalog-twin` → v2.5
+> release close. Read "the empty grid is FILLED" as *signed-in*, not *everywhere*.
+
+The F4 carry — a demo academy grid rendering **0 cards** — is closed by **Option C**: a sha-pinned rext
+demo-patch (`demo-stack/patches/academy-fs-published-fallback`) on the demo's **own ephemeral ant-academy clone**
+that restores an **FS-as-PUBLISHED catalog fallback**. **Zero canonical-repo edits.** (Option B — a firewalled
+academy-content snapshot surface: prod-capture the public academy rows + replay into the demo app DB + wire
+`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` + compose the academy subgraph into the demo router — was weighed and NOT
+chosen: it needs a prod-DB read + a new snapshot surface + subgraph composition, i.e. far more cold-`/demo-up`
+infra risk. Option C is the least-infra-risk path to the gate.)
+
+**Why the grid was empty (the F4 root cause, code-confirmed — NOT a client render defect).** Since ant-academy
+v0.5.1 (M7) the home grid's catalog is DB-authoritative: `serverTenant.js::getServerCatalogView()` is
+`const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView(); return draftsEnabled() ? mergeDrafts(view, eids) : view`.
+A demo sets **no** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (`ant-academy.sh` sets it **0×**) and the demo app DB holds
+no academy rows, so `getBackendCatalogView` returns null → the grid resolves to `emptyCatalogView()` → 0 cards.
+The M7 cutover deliberately **removed** a pre-existing FS-as-published fallback at exactly the `?? emptyCatalogView()`
+expression.
+
+**The fill.** The demo-patch restores that fallback, **env-gated on `ACADEMY_DEMO_FS_PUBLISHED`** so it is
+behavior-identical to pristine when unset (safe even if upstreamed). When set, the fallback reuses the
+already-tested `mergeDrafts(emptyCatalogView(), eids)` — which returns the full public FS catalog — and **strips
+the `_draft`/`_origin` tags** from chapters/series/skillPaths, so the cards render through the **unchanged** RSC →
+`AcademyClient` → `SkillPathCard` chain as **PUBLISHED — NO "Draft" chip** (the chip is `skillPath?._draft === true`;
+Option A — the `ACADEMY_SHOW_DRAFTS` draft layer — was REJECTED precisely because it stamps that chip). This is the
+gate's sanctioned **"faithful equivalent"** of the DB-authoritative GraphQL path.
+
+**How it's applied** — like `ant-academy-dev-origins`, by a native rext helper
+(`stack-injection/apply-academy-fs-published.sh apply|revert`), **NOT** the image-baked `demopatch` tool, because
+ant-academy runs natively via `next dev`: **apply-before-launch, revert-on-`--stop`**, idempotent + drift-refuse +
+single-occurrence + post-condition re-check. **Default-on** for every demo; **`DEMO_NO_ACADEMY_FILL=1`** opts out;
+**non-fatal** (a refused patch leaves the grid empty — the documented residual). The canonical
+`anthropos-work/ant-academy` repo is never touched (only the demo's ephemeral gitignored clone). Shipped in rext
+at tag `playbill-m230-academy-fs-published`.
+
+**Proof.** Runtime-proven standalone (M230 iter-02): the patched academy served the home grid with **59
+skill-path cards** (real catalog names — Claude Code, AI Foundations, Agent SDK, AI Engineering, Business, …),
+**0 `draft-ribbon` / 0 `data-draft="true"`**, and the clone reverted **byte-clean**. The **formal gate** — the
+coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`coverage-protocol.md`](coverage-protocol.md))
+— is the remaining release-close verification.
 
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
@@ -395,6 +446,15 @@ and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo 
 > `repos.yml` repo dir with no `.git`) before `make init`, and `ant-academy.sh` **auto-runs `npm install`** (no
 > token) when `node_modules` is absent — so a fresh `/demo-up` now brings ant-academy up **automatically** (proven
 > live on `:33077`).
+>
+> ⚠️ **This closed ONE failure of skip-if-present, not the class — do not read it as "skip-if-present is now
+> safe" (`F-M236-CLOSE-1`, v2.5).** The stub-sweep fixes the case where a repo dir exists with **no `.git`**
+> (nothing was ever cloned). The far commoner case — a **complete, healthy clone that is simply months out of
+> date** — passes the sweep untouched, because `make init` never fetches, pulls, or checks out an existing clone
+> and the bring-up never calls `make pull`. Measured 2026-07-20, identically on both boxes: `app` **249**
+> commits behind `origin/main`, `next-web-app` **202**. See
+> [`../rosetta_demo.md` § Clone freshness](../rosetta_demo.md#clone-freshness--skip-if-present-never-updates-f-m236-close-1)
+> — **that half is open**, and it is what a stale-looking demo usually is.
 
 **Default-on + non-fatal + degrades to a documented step.** A fresh `/demo-up` clones the academy (via the
 `storytelling-postfix-2` stub-sweep) and auto-runs the token-less `npm install` (see above), so it comes up

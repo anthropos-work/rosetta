@@ -37,11 +37,12 @@ substantive blocks:
 
 | Block | What it carries | Source |
 |---|---|---|
-| `population.orgs[]` | every seeded org (name/slug/industry/narrative/size) + its `heroes[]` (key, name, role, vantage, trajectory, annotation, login, jump_to) | projected from the Stories & Heroes blueprint (`stories.seed.yaml`) — all 3 orgs incl. the M51 AI-readiness org (Northwind Aviation) |
+| `population.orgs[]` | every seeded org (name/slug/industry/narrative/size) + its `heroes[]` (key, name, role, vantage, trajectory, annotation, login, jump_to) | projected from the Stories & Heroes blueprint (`stories.seed.yaml`) — all 4 orgs incl. the M51 AI-readiness org (Northwind Aviation) + the v2.4 M223 hiring org (Meridian Talent) |
 | `generation.prompt_template` | the per-member **MOTHER PROMPT** verbatim — the exact instruction the cheap model gets | the file-resident `blueprint/prompts/default_batch_prompt.tmpl` (M52 S1) |
 | `generation.config` | the batch RUN config: `model`, the **MANDATORY** `max_cost_usd` ceiling, `max_concurrent`, `max_rerolls`, `call_timeout` | the `gen-batch` CLI defaults, made file-resident |
 | `generation.batches[]` | the batch descriptors (per `story_id`): `count`/`fill`, `roles`, `seniority`, `industry`, `narrative`, `bias_mix` | the generation preset (`gen-batch-org-fill.seed.yaml`) |
 | `snapshot_sources` | the taxonomy + Directus **capture versions** the world is set-dressed from + the cache key is extended with | provenance (unpinned by default → "the capture the stack replays at bring-up") |
+| `content_sessions` (v2.5 M232) | the **source-pins** for the "Content stories" clones — the anonymization posture + one pin per cloned real production session (its `source_session_id`, the public `sim_id`, `sim_type`, `modality`, `passed`) | projected from the SAME embedded content-session fixture the `ContentStorySeeder` seeds from — see §8 |
 
 Plus a top `format_version` / `stack` / `description` header and a self-documenting `excludes:` block (§2).
 
@@ -66,7 +67,7 @@ The manifest is **not hand-authored** — it is **projected** from the canonical
 
 ```bash
 stackseed --manifest-export \
-  --seed presets/stories.seed.yaml \                    # population (all 3 orgs + heroes)
+  --seed presets/stories.seed.yaml \                    # population (all 4 orgs + heroes)
   --gen-seed presets/gen-batch-org-fill.seed.yaml \     # generation batches (merged by story id)
   --manifest-out presets/seed-generation-manifest.yaml
 ```
@@ -132,6 +133,28 @@ M52 only **EXPRESSES** the existing seed+generation behavior auditably — it ad
 behavior** (M50/M51 own the seeders; M45/M46 own the generation engine). The manifest is a read-only
 projection + a served download, not a new seed path.
 
+### 8. The `content_sessions` block + the `content-manifest.json` peer (v2.5 "the playbill", M232 + M233)
+
+Two v2.5 additions extend the manifest family for the "Content stories" cockpit tab, both single-sourced from
+the same embedded content-session fixture (`contentsession.Embedded()`) so neither can drift:
+
+- **`content_sessions` (M232) — the SOURCE-PIN block, folded INTO this manifest.** The auditable disclosure of
+  the one bounded exception to "a demo carries only synthetic + public-snapshot data" ([`safety.md`](../safety.md)
+  §3.8): which real production session each content-story exhibit was **copied** from, and the copy+scrub
+  anonymization posture. `buildContentSessions` projects it from the fixture, so the disclosed pins can never
+  drift from what the `ContentStorySeeder` actually seeds. Details: [`session-clone-spec.md`](session-clone-spec.md).
+
+- **`content-manifest.json` (M233) — the render MENU, a SEPARATE peer file.** The `content_products[]`
+  projection the cockpit's 2nd tab reads (per content product, the played sessions each with player+manager
+  seat keys + result paths). It is a **separate JSON**, not a block here, because the cockpit reads JSON not
+  YAML (no PyYAML) — the exact reason `cockpit-manifest.json` is separate. It is honesty-gated by its own
+  checked-in canonical + a `CanonicalFileMatchesProjection`-style test. Full schema:
+  [`content-stories-spec.md`](content-stories-spec.md).
+
+The split mirrors the existing one: the render MENUs (`cockpit-manifest.json`, `content-manifest.json`) are
+separate JSON the cockpit reads; the audit INTENT (`seed-generation-manifest.yaml`, incl. `content_sessions`)
+is the one auditable YAML.
+
 ---
 
 ## See also
@@ -144,4 +167,6 @@ projection + a served download, not a new seed path.
   file (§6).
 - [`../seeding-spec.md`](../seeding-spec.md) — the seeding blueprint + the Stories & Heroes population the
   manifest projects.
-- [`stories-spec.md`](stories-spec.md) — the 3-org Stories & Heroes world (incl. the M51 AI-readiness org).
+- [`stories-spec.md`](stories-spec.md) — the 4-org Stories & Heroes world (incl. the M51 AI-readiness org + the M223 hiring org).
+- [`content-stories-spec.md`](content-stories-spec.md) — the `content_products[]` render menu
+  (`content-manifest.json`) this manifest's `content_sessions` block pairs with (§8).
