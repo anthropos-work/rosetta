@@ -194,6 +194,21 @@ Contract:
   > The general lesson is worth more than the fix: **a freshness guard that fails open is worse than no
   > guard, because everything downstream trusts it** — and this one was itself introduced by a hardening
   > pass (M218 F-10). Code written to close a hazard is not exempt from that hazard.
+  >
+  > **Now regression-tested** (M236 final harden): `stack-verify/tests/test_green_gate_age.py` extracts the
+  > shipped `v_epoch=` line and evaluates it under five zones spanning both sides of UTC — including a
+  > **half-hour offset**, which a "subtract whole hours" patch would still get wrong — asserting the parsed
+  > epoch is identical **and** equals the true UTC instant. Zone-independence alone would be satisfied by a
+  > consistently *wrong* constant, so both halves are needed. It also sweeps the whole `e2e/` section for
+  > any **unpinned `date -jf`**, because the bug is a class, not an instance. **Mutation-verified:**
+  > removing `TZ=UTC` turns 5 of the 6 guards red. *The fix shipped without a test; a fix to a guard is
+  > exactly where a test is least optional.*
+- **It refuses a stack number it cannot trust.** `OFFSET=$(( N * 10000 ))` and bash evaluates a non-numeric
+  `N` to **0, silently** — so `./run-latency.sh abc` pointed every probe at offset 0, the **dev stack's**
+  ports, and would have reported those timings as demo-N's. A grader whose premise is *refuse to measure a
+  stack that is not what it claims to be* must not be able to measure a **different** stack without saying
+  so. Non-integer `N` now exits 2 (M236 final harden). `run-coverage.sh` and `run-hiring-render.sh` share
+  the arithmetic and are **not yet guarded**.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
 - **It clears cookies per sample**, so each click is a genuine cold login.

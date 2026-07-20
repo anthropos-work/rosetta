@@ -188,6 +188,22 @@ org (`firstNonHiringStory`), so they render in apps/web regardless of the source
   any drop, so an emitted file is never silently holed — but the array-not-null contract is what keeps a valid
   empty projection safe for the JSON consumer.)
 
+- **The route prefixes are a CROSS-LANGUAGE contract, and they are pinned (M236 final harden).** The
+  projection emits `player_result_path` / `manager_result_path` as plain strings; the sweep's grader
+  (`shapeFor`, in `stack-verify/e2e/lib/content-result-page.ts`) picks which render shape to assert by
+  matching **prefixes of those strings**. Nothing else joins them — different language, different section,
+  no shared constant. Worse, `shapeFor` **falls through to `player-scored`** for any prefix it does not
+  recognise, so renaming `/courses/` here throws nothing, fails no Go test and no TS test, and merely grades
+  every academy page against a scored-report shape — reporting a correct render as a failure. That *is* the
+  M236 iter-08 defect, and after iter-08 nothing prevented its return: four iters changed this side, four
+  changed the grader, and no test covered the join.
+  `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` closes it by reading **this checked-in
+  canonical manifest** and asserting the grader understands every route in it — per-product expected shape,
+  no unexplained fall-through, interview vs simulation manager surfaces kept distinct, manager paths still
+  uuid-terminated — and that the projection still yields the **29 landable pairs** M236 was graded on.
+  Mutation-verified: a one-character prefix change turns it red. **If you change a route in
+  `contentProductRegistry`, expect that spec to fail — updating it is part of the change, not collateral.**
+
 ## 5. Provenance — the source-pins stay in the seed-generation manifest
 
 The prod **source-pins** (which real session each exhibit was cloned from + the anonymization posture) live in

@@ -856,3 +856,59 @@ in `content-out/demo-<N>/` (`content-stories.json`, `pairs.jsonl`, `content-mani
   every failure**, re-importing the spec module — so a module-level array resets and an `afterAll` summary
   fires once per restart seeing only a fragment. The first version of this sweep printed `LANDED 1 / 31`
   once per failure for exactly that reason. The spec appends to `pairs.jsonl`; the **runner** aggregates.
+
+### The reading must be fail-CLOSED (M236 final harden)
+
+The five-wrong-assertions-to-one-real-bug score above is a statement about the **grader**. The same defect
+class lives one layer up, in the thing that turns per-pair verdicts into **the number the gate is graded
+on** — and there it went unnoticed through all ten iters:
+
+- **`0 / 0` is not a pass.** `aggregate-content.py` computed its denominator as "rows in the ledger" and
+  **always exited 0**. A run in which nothing executed — playwright collecting no tests, a manifest fetch
+  that produced an empty sweep — printed `LANDED 0 / 0` and reported **success**. Arithmetically that is
+  also 100%. An empty ledger is now a **failed run**.
+- **A dropped pair must stay in the denominator.** A pair the manifest cannot form writes no ledger line, so
+  a denominator counted from survivors **silently shrinks and flatters the score**: every remaining pair
+  landing reads as a clean sweep. The spec's own comment promised this could not happen — true of its
+  console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
+- **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
+  and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
+- **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
+  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
+  *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what
+  let a failed sweep exit 0 for four releases" — and the newer runner reintroduced it anyway. A lesson
+  written down in one runner does not propagate to its siblings by itself.)*
+- **A truncated ledger line must not cost the whole reading.** A run killed mid-append leaves a partial last
+  line; bare `json.loads` threw before any report was written, so the operator got a traceback instead of
+  "*29 rows read, 1 truncated*". Bad lines are now counted and reported — still fail-closed, but legibly.
+- **Name the stack, or measure the wrong one.** Every runner computes `OFFSET=$(( N * 10000 ))`, and bash
+  evaluates a non-numeric `N` to **0 with no error** — pointing the whole sweep at the **dev stack's** ports
+  and reporting what it finds there as demo-N's. Both content-stories and latency runners now reject a
+  non-integer `N`. `run-coverage.sh` / `run-hiring-render.sh` share the hazard and are **not yet guarded**.
+
+> **The generalisation worth carrying to the next gate:** the milestone's signature failure was *a check
+> scoring green off a subject that proved nothing*. That is not a property of render shapes — it is a
+> property of **every layer that reports a number**. Ask of each one: *what does it print when nothing
+> happened?* If the answer is anything other than a loud failure, the gate can certify a vacuum.
+
+### Prove the test fails (mutation, not coverage)
+
+The harden pass added ~70 pure-logic tests over the grader, the denominator, and the reading — driven
+through a scripted fake `Page`, no browser, no stack. The discipline that makes them worth having is not
+line coverage; it is that **every shape gets a PAIR**: a good page graded `ok`, and a specifically-broken
+page graded **not** `ok`. A happy-path-only test cannot tell a working grader from one that returns `true`
+unconditionally — which is exactly what this milestone kept finding.
+
+Where a fix is load-bearing, the harden pass **reintroduced the bug and confirmed the tests went red**,
+then restored it: dropping `TZ=UTC` from the green gate turns 5 of 6 guards red; renaming `/courses/` in
+`shapeFor` turns 2 of 8 route-contract tests red. **A regression test nobody has ever seen fail is a
+hypothesis, not a guard.**
+
+**The cross-language contract nobody was testing.** The Go projection (`content_manifest.go`,
+`content_nonsim.go` — iters 05/07/08) and the TS grader (`shapeFor` — iters 04/06/07/08) agree on these
+routes by **bare string prefix**. Four iters touched each side; no test touched the join. And `shapeFor`
+**falls through to `player-scored`** for any prefix it does not recognise — so renaming `/courses/` on the
+Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
+wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
+`stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
+asserts the grader understands every route in it — including that the landable count is still **29**.
