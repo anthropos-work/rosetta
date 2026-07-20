@@ -3,7 +3,7 @@ milestone: M236
 slug: prove-on-billion
 version: v2.5 "the playbill"
 milestone_shape: iterative
-status: gate-met
+status: archived
 created: 2026-07-19
 last_updated: 2026-07-20
 depends_on: M235
