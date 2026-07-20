@@ -214,7 +214,7 @@ is the `content_sessions` block. The two are distinct projections of the same fi
 (`content-manifest.json`) and the audit DISCLOSURE (`content_sessions`) — exactly as `cockpit-manifest.json`
 (the stories menu) is distinct from `seed-generation-manifest.yaml` (the seed intent).
 
-## 6. Scope boundary — the manifest (M233) vs the render (M234) vs prove-it-lands (M235)
+## 6. Scope boundary — the manifest (M233) vs the render (M234) vs prove-it-lands (M236)
 
 M233 delivered the **manifest** (the schema + the projection + the honesty gate + the fail-closed resolver + the
 `--content-export` verb). **M234 (§7) delivers the render half** — the cockpit tab + the seat registration + the
@@ -283,8 +283,14 @@ dispositions:
   M53 `e2e_persona=member` cookie seam — the academy is a **separate origin with its own auth, NOT behind the
   fake FAPI** (a FAPI handshake redirect would establish a next-web session the academy can't see) (#M234-D4). No
   manager CTA (no academy manager route). The **specific-member** academy landing + the exact chapter route are
-  finalized in **M235** (depends on M230). *Today's fixture carries no academy session; this path is
-  unit-proven and lights up when M235 adds the fixture.*
+  finalized in **M235** (depends on M230), and the CTA went **live at M236 iter-08** as a real
+  **`/courses/<slug>`** link into the demo academy's committed FS catalog (see §4 + §7.1).
+
+  > *This previously read: "Today's fixture carries no academy session; this path is unit-proven and lights up
+  > when M235 adds the fixture." **Stale** — the academy CTA is live, and it is **not** fixture-driven. A demo
+  > academy has no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it serves its committed FS catalog and never reads a
+  > seeded session; the CTA resolves against that catalog. There is no academy content-session fixture to wait
+  > for, and `app/cmd/academy-seed` is moot on a demo.*
 
 ### 7.4 The seat registration — `content-player-<idx>` in the roster (`roster.go`)
 The as-player CTA passes `?__clerk_identity=content-player-<idx>`, so that seat MUST resolve in Clerkenstein's
@@ -305,12 +311,16 @@ The DEMO_STORIES cockpit block exports `content-manifest.json` via `stackseed --
 (the M18/M19 pattern). No new `/demo-up` flag or `DEMO_*` knob — the content tab is on whenever the storytelling
 demo + cockpit are (the existing `DEMO_STORIES` / `DEMO_NO_COCKPIT` gates).
 
-### 7.6 What's proven at M234 (unit) vs left to M235 (runtime)
+### 7.6 What's proven at M234 (unit) vs left to M236 (runtime)
 M234 is **unit-proven, not browser-proven**: `cockpit.py` renders the manifest to correct HTML (per-product
 sections, per-session rows, the two CTA hrefs with the right `__clerk_identity`/`redirect_url`, `has_manager_view`
 omission, AI-labs presence-only, academy origin), the seats resolve through `roster.go` byte-identically to the
-seed, and the export→render pipeline runs end-to-end. **Proving every CTA lands on a non-empty result page (a
-live browser on a cold reset-to-seed) is M235; proving it on `billion` is M236.**
+seed, and the export→render pipeline runs end-to-end. **Proving every CTA lands on a non-empty result page — a
+live browser on a cold reset-to-seed — is M236** (the "prove-it-lands" milestone, run on `billion`). **M235
+unit-proves the seeders + the manifest projection**; it does not drive a browser. *(This line previously read
+"…is M235; proving it on `billion` is M236", which split one gate across two milestones and credited M235 with a
+render proof it did not perform — M235 closed `closed-incomplete`. §4's statement of the same split is the
+correct one.)*
 
 ## See also
 - [`session-clone-spec.md`](session-clone-spec.md) (**M232**) — the seeder that COPIES the real sessions this menu points at + the `content_sessions` source-pins.
