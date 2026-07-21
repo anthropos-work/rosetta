@@ -417,6 +417,34 @@ skill-path cards** (real catalog names — Claude Code, AI Foundations, Agent SD
 coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`coverage-protocol.md`](coverage-protocol.md))
 — is the remaining release-close verification.
 
+### The BODY half — `academy-fs-published-chapter-body` (v2.6 "sound check" M238)
+
+The catalog patch above got the **grid + course landing** to render, but clicking **"Start the course"** still
+**404'd** — because chapter **bodies** are backend-authoritative too, and the catalog patch only touches
+`serverTenant.js` (the catalog), not `serverChapterBody.js` (the body). A demo's null backend → `notFound()` → the
+"You wandered off the trail" 404 (see [`../../services/ant-academy.md`](../../services/ant-academy.md) §"The chapter
+BODY is backend-authoritative too"). **M238 adds the BODY half:** the `academy-fs-published-chapter-body` demopatch
+serves the committed FS chapter body (locale-aware, unlocked, un-chipped) at the backend-null branch — gated on the
+**same** `ACADEMY_DEMO_FS_PUBLISHED` env var + **same** `DEMO_NO_ACADEMY_FILL` opt-out, applied together by
+`ant-academy.sh` via the sibling native helper `stack-injection/apply-academy-fs-published-body.sh`
+(apply-before-launch / revert-on-`--stop`; behavior-identical when the env is unset). So the two halves are one
+coherent FS-as-published behavior: **the grid renders FS cards, and clicking one renders the FS body.** Shipped in
+rext at tag `sound-check-m238-ant-academy-reliability`. **Proven live on `billion`** (demo-1): a chapter that
+returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter title + body, and
+`/chapters/<slug>/?lang=it` also renders (the language switch on a chapter reader — the same backend-null path). The
+coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
+[`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
+
+> **Known limitation — the three native-run academy patches share one clone (concurrent-demo teardown).** All three
+> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`)
+> are applied to the **shared** `stack-demo/ant-academy` working tree — its path is `N`-independent (only the port +
+> pidfile are per-`demo-N`). So `ant-academy.sh N --stop` reverts the shared source files unconditionally: tearing
+> down `demo-1` while `demo-2`'s native `next dev` is still live reverts the patched files out from under `demo-2`,
+> and its next HMR recompile re-404s the chapter route. This is a **pre-existing property of the native-run academy
+> pattern** (not introduced by M238 — the M238 body patch merely follows it); it only bites when **multiple demos run
+> concurrently against the same box**, the uncommon case. A proper fix (per-demo academy clone, or an applied-refcount
+> before revert) is routed to the standing backlog (M238-D6); the single-demo path is unaffected.
+
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
 > per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —

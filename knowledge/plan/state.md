@@ -1,9 +1,9 @@
 ---
 active_release: "v2.6 «sound check» — the reliability / field-hardening release (designed 2026-07-20): make everything that's built actually get built + provisioned. Barrier→parallel-fixes→prove-on-billion, 8 milestones M237→M244. Branch release/02.60-sound-check; tag will be v2.6."
 active_branch: "release/02.60-sound-check"
-active_milestone: "M238 ∥ M239 ∥ M240 ∥ M243 — the post-barrier fix fan-out (M237 barrier CLOSED 2026-07-21); M238 ant-academy reliability leads"
-last_closed: "M237 — 2026-07-21 (v2.6 clean-stage barrier)"
-phase: "v2.6 in development — M237 (HARD go/no-go barrier) CLOSED: fetch-verified clone-freshness + 7-state pin model + R1-all-14, both dogfooded on billion; the '202-behind' premise REFUTED (clones 0-2 behind, frontend current). Fan-out M238∥M239∥M240∥M243 now unblocked; #2 academy-language→M238, #4 library-flash→M239 (Fate-2 owned)."
+active_milestone: "M239 ∥ M240 ∥ M243 — the post-barrier fix fan-out (M237 barrier + M238 academy reliability CLOSED 2026-07-21); M239 enterprise surfaces next"
+last_closed: "M238 — 2026-07-21 (ant-academy reliability)"
+phase: "v2.6 in development — M237 barrier + M238 academy reliability CLOSED: #3 Start→404 AND #2 language both fixed by ONE chapter-body FS-published demopatch (proven live on billion; #2 was not a distinct code bug), academy coverage sweep extended (mutation-verified RED). Fan-out continues: M239 enterprise ∥ M240 content-fidelity ∥ M243 assign-WRITE; the 8 standing demo-stack test failures re-fated Fate-2 → M244."
 last_updated: "2026-07-21"
 ---
 
@@ -30,8 +30,11 @@ M237 clean stage (HARD go/no-go barrier)
   `ensure-clones.sh` (never suppressed-stderr; a real 7-state pin model) + F-M236-CLOSE-2 (R1 sweeps all 14 manifests);
   fresh-clone demo dogfooded on `billion` + a confirmed-defect ledger (#1 RESOLVED, #4→M239 re-scoped, #2→M238). The
   "202-behind" premise REFUTED — clones were 0-2 behind, frontend current.
-- **M238 academy reliability** · **M239 enterprise surfaces** · **M240 content-stories fidelity** · **M243 assign-WRITE
-  Playthrough** — the parallel fix fan-out off M237.
+- **M238 academy reliability** [`section`] — ✅ **CLOSED 2026-07-21.** ONE chapter-body FS-published demopatch fixed
+  **both #3 (Start→404) and #2 (language)** — #2 was not a distinct code bug — proven live on `billion`; academy
+  coverage sweep extended (mutation-verified RED) + a directory-driven demopatch-inventory fence (exact 15).
+- **M239 enterprise surfaces** · **M240 content-stories fidelity** · **M243 assign-WRITE Playthrough** — the remaining
+  parallel fix fan-out off M237.
 - **M241 language** (serial after M240) · **M242 cockpit UX** (serial after M241).
 - **M244 prove-on-billion** [`iterative`, terminal] — re-prove v2.5's headline `29/29` AND every v2.6 fix live on
   `billion`, cold reset-to-seed. Multi-part exit gate (a–h), opens with the read-only `ORG-CLEAN` settling check.
@@ -43,10 +46,11 @@ a secret-coverage DNA extension for `app` (not just a flag; `../hyper-studio/.en
 cannot be token-scrubbed — **before any customer audio lands in a demo**) [M240]; **(3) language → EN-only fallback per
 tuple** — M241 opens with a read-only IT-session pool-count go/no-go query [M241].
 
-**Next:** the **post-barrier fix fan-out**, now unblocked by the M237 close — **M238 ant-academy reliability ∥ M239
-enterprise surfaces ∥ M240 content-stories fidelity ∥ M243 assign-WRITE Playthrough** (M241 serial after M240, M242 after
-M241). Each fix is now scoped against the fresh, correctly-built demo M237 established. The v2.5 headline live re-prove
-stays reserved for the terminal **M244** (which opens with the read-only `ORG-CLEAN` settling check, standing backlog below).
+**Next:** the **post-barrier fix fan-out** continues (M238 academy reliability done) — **M239 enterprise surfaces ∥ M240
+content-stories fidelity ∥ M243 assign-WRITE Playthrough** (M241 serial after M240, M242 after M241). Each fix is scoped
+against the fresh, correctly-built demo M237 established. The v2.5 headline live re-prove stays reserved for the terminal
+**M244** (which opens with the read-only `ORG-CLEAN` settling check, standing backlog below) — and now also owns the
+re-fated **8 standing demo-stack test failures** (M238-D5).
 
 ## ⚠️ The v2.5 headline shipped UNIT-PROVEN, not LIVE-RE-PROVEN — v2.6/M244 re-proves it
 
@@ -59,6 +63,11 @@ is up and reachable. Ledger: `CLOSE-D3` + `T-3`.
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M238 ant-academy reliability** — 2026-07-21 (section; first post-barrier fix). ONE chapter-body FS-published
+  demopatch fixed **both #3 (Start→404) and #2 (language)** — #2 was not a distinct code bug (locale is `?lang=`, no
+  `/[locale]` route) — proven live on `billion`. Academy coverage sweep extended (mutation-verified RED) + a
+  directory-driven demopatch-inventory fence (exact 15). Deferral audit YELLOW: the 8 standing demo-stack fails
+  re-fated Fate-2 → M244 (D5). Touched suites green (Py 183, TS 147), 0 platform edits.
 - **M237 clean stage** — 2026-07-21 (section, HARD go/no-go barrier; **opens v2.6**). Fetch-verified clone-freshness +
   7-state pin model + R1-all-14-manifests (F-M236-CLOSE-1/-2), dogfooded on `billion`. The **"202-behind" premise
   REFUTED** — clones 0-2 behind, frontend current. Ledger: #1 RESOLVED, #4→M239, #2→M238. 160 tests, 0 platform edits.
@@ -70,8 +79,6 @@ is up and reachable. Ledger: `CLOSE-D3` + `T-3`.
   13-session simulation matrix + all 3 non-sim sections → manifest **4 products / 18 sessions**, honesty gates GREEN.
 - **M234 content-stories-cockpit-tab** — 2026-07-19 (section). The 2nd "Content stories" tab reads the M233
   manifest; `roster.go` appends `content-player-<idx>` seats.
-- **M233 content-stories-manifest** — 2026-07-19 (section). `BuildContentProducts` projects `content_products[]`,
-  honesty-gated, fail-closed. Emitted by `stackseed --content-export`.
 
 ## Recently shipped (releases, newest first — max 3)
 
@@ -116,7 +123,10 @@ code-of-record at v2.5 close **`playbill-m236-close-fixes`** (on origin). The `b
 
 - **Standing demo-stack test debt — RE-BASELINED.** **8 on macOS · 7 expected on Linux** (clean stable-`main` clone
   set), **0 real defects**, **0 pin drift**. **Host-dependent — always state the host.** →
-  `releases/archive/02.50-the-playbill/m236-prove-on-billion/rebaseline-standing-failures.md`.
+  `releases/archive/02.50-the-playbill/m236-prove-on-billion/rebaseline-standing-failures.md`. **Re-confirmed at M238
+  close 2026-07-21** — the harden full-sweep re-surfaced the *identical* 8 (0 M238 regressions), re-fated Fate-2 →
+  M244 (M238-D5); M244 should discharge them by **editing the tests** (cheap; 6 of 8 need no live stack), not only via
+  a live bring-up. **Now ridden ≥3 v2.6-adjacent milestones — M244 is the expiry point.**
 - **→ `M244` (v2.6's live closer — one live bring-up discharges most of these).** `M237` opens with the read-only
   **`ORG-CLEAN`** settling check (13 copied session exhibits — resolve source-org names via one prod query + an offline
   `scrub.OrgTokens`/`SurvivingToken` pass over the committed fixtures; 0 surviving tokens or each dispositioned;
@@ -136,4 +146,4 @@ code-of-record at v2.5 close **`playbill-m236-close-fixes`** (on origin). The `b
   Playthroughs futures **M206–M207** stay in vision.
 
 _Last updated: 2026-07-21 — v2.6 "sound check" IN DEVELOPMENT (branch `release/02.60-sound-check`); the **M237
-clean-stage barrier is CLOSED**, the M238∥M239∥M240∥M243 fix fan-out is unblocked._
+clean-stage barrier + M238 ant-academy reliability are CLOSED**, the M239∥M240∥M243 fix fan-out continues._

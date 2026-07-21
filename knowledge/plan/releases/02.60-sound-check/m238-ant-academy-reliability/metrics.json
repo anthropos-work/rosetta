@@ -1,0 +1,40 @@
+{
+  "milestone": "M238",
+  "title": "ant-academy reliability",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-21",
+  "platform_repo_edits": 0,
+  "tests": {
+    "python_demo_stack_full": "778/786 passed (the 8 known standing fails, 0 M238 regressions); collection clean",
+    "python_m238_touched": "183/183 — test_academy_fs_published_body.py 18 (+2 harden Pass 2: revert-drift-refuse + locale-thread), test_patch_inventory.py 5 (NEW directory-driven inventory fence), test_tooling.py 160 (R1 fence comment de-staled, count unchanged)",
+    "ts_e2e_unit": "147/147 unit specs (M238 added firstChapterSlug degradation-matrix + mustNotInclude polarity + the SHIPPED-descriptor floor-vs-mustNotInclude mutation-verify); tsc --noEmit clean",
+    "go_touched": "none — M238 touched no Go (bash apply-*.sh + Python demo-stack harness + TS e2e only)",
+    "mutation_verified": "the shipped ANT_ACADEMY_CHAPTER_SECTION run through the assertion engine goes RED on a broken academy (patch ABSENT: short-404 fails floor, padded-404 fails mustNotInclude naming the phrase) vs GREEN (real >=400-char body); the demopatch revert-DRIFT-REFUSE leaves a non-pristine file byte-untouched (exit-7)",
+    "flake_gate": "GREEN — M238-touched suites 5/5 sequential: Python touched 183 passed x5, TS unit 147 passed x5"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "qualitative / behavior-path + static-fence (no line-coverage tool wired in this rext repo — its convention is targeted behavior + static-fence tests; instrumenting nyc/coverage.py is a repo-wide toolchain decision beyond M238; same stop as M237)",
+    "surface": "every touched function has a behavior or static-fence test: the demopatch G1-G7 ladder (apply + revert-drift-refuse + locale-thread), firstChapterSlug slug-selection (it-overlay prefer / EN fallback / null-on-malformed), mustNotInclude both polarities, the directory-driven exact-15 + per-repo inventory fence",
+    "residual_uncovered": "probeAcademyChapter I/O orchestration + onCrossPortFollow academy glue (heavy Page-mock surfaces; pieces covered by the Pass-1 unit tests + the live billion premise); the full live coverage.spec.ts browser sweep -> M244 (D4, Fate-2)"
+  },
+  "code_of_record_tag": "sound-check-m238-ant-academy-reliability @ 3482a77 (re-pinned at close from the pre-harden 5b13ec4 to the hardened HEAD; force-pushed to origin — a milestone-internal consumption-tag advance, not a released-version tag; the M237 precedent)",
+  "build_commits_rext": "be481bf (S1 academy-fs-published chapter-body demopatch, fix #3 Start->404) + 5b13ec4 (S3 academy coverage sweep — chapter-body + language fence)",
+  "harden_commits_rext": "c10413d (Pass 1 — mutation-verify the sweep goes RED on a broken academy) + 3482a77 (Pass 2 — demopatch revert-clean + locale-thread coverage + directory-driven inventory fence)",
+  "hardening": "2 passes (2026-07-21) — stabilized; 0 bugs fixed inline (the subject was already correct; the value is deepened fences + a caught doc contradiction). See progress.md '## M238: Hardening'",
+  "deferral_audit": "YELLOW — the 8 standing demo-stack failures re-surfaced by the harden full-sweep are the identical v2.5/M236 re-baselined set (0 M238 regressions, all test-side debt) -> re-fated Fate-2 -> M244, fresh dated D5; D4 (billion coverage sweep) + inherited #4 (library) confirmed Fate-2-owned. 0 blockers. Report: audit-deferrals/deferral-audit-2026-07-21.md",
+  "close_fixes": [
+    "docs (Phase 3/7): demopatch-spec.md inventory reconcile to disk — §5 header '6 x apps/web' -> '3 x apps/web + 2 packages/core-js + 1 packages/graphql'; §4 'eight next-web-app' -> ten + all 3 native-run academy helpers; the stale present-tense '11' scoped as M224-era + cross-ref the directory-fenced 15 (repo-level pin unchanged, TestPatchInventory intact)",
+    "docs (Phase 2c/7): documented the inherited shared-clone concurrent-revert limitation in frontend-tier.md",
+    "code-review (Phase 2c): D6 — 0 must-fix; 3 nice-to-have defensive edges (empty-slug false-pass, mustNotInclude['' ] footgun, non-atomic write) + the shared-clone fix routed forward (not re-opening the tagged rext code-of-record); adversarial scenarios A/B/C recorded",
+    "decision-triage (Phase 5): D1/D2/D3 confirmed already-blended + (#M238-Dx) ref-tagged; KB-1 fence landed (harden Pass 2)"
+  ],
+  "close_code_changes": "none in rext — all close fixes are docs/records in the rosetta repo; the sole rext op at close was the consumption-tag re-pin (5b13ec4 -> 3482a77), no new rext commit",
+  "delivered": {
+    "hash_3_start_404": "FIXED — the academy-fs-published-chapter-body FS-as-published demopatch serves the locale-aware FS chapter body at the backend-null branch, gated on ACADEMY_DEMO_FS_PUBLISHED; proven live on billion (chapter 404->200, real title/body)",
+    "hash_2_language": "VERDICT (not a code bug) — locale is a ?lang= query param (no /[locale] route; /it 404 is expected), the switcher is a sound EN<->IT toggle, and the one actionable defect (chapter-language 404) is the SAME backend-null path as #3, fixed by the #3 patch (locale-aware FS body renders the it/ overlay); confirmed live on billion (?lang=it -> 200)",
+    "coverage_sweep": "EXTENDED — ANT_ACADEMY_CHAPTER_SECTION + a general mustNotInclude negative marker + the academy-chapter probe (catalog.json slug -> chapter -> ?lang=it re-render); mutation-verified RED on a broken academy; full live billion sweep -> M244 exit gate (c)"
+  },
+  "notes": "First of the v2.6 post-barrier fix fan-out. One chapter-body FS-published demopatch fixed BOTH #3 (Start->404) and #2 (the 'lesson in Italian errors' symptom — same dead-backend path, NOT a separate code bug; the '/it' was a mistyped non-route), both proven live on billion. Extended the academy coverage sweep (mutation-verified to go RED on a broken academy) + built a directory-driven demopatch-inventory fence (exact 15 + per-repo). Tooling + docs only, 0 ant-academy platform-repo edits."
+}
