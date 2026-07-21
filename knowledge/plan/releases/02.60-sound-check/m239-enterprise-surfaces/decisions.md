@@ -34,3 +34,19 @@ _(implementation choices with rationale accumulate here during build)_
 ## Live-verify finding — the demo-full-build disk exhaustion (a confusing-symptom class)
 
 - **F1 — a full cold demo build can exhaust the Docker VM disk, and it surfaces as a CRYPTIC `redis exited (1)`, NOT a loud build failure.** The first demo-1 bring-up ran all 6 Go image builds + 3× ~3.7 GB frontend builds (next-web + studio-desk + hiring) — the frontend builds alone left **>16 GB of build cache** on top of ~13 GB of images. On a 59 GB Docker VM that pushed the disk to 100%, and the FIRST container that needed to write (redis, its `appendonlydir`) failed with `No space left on device` → `demo-1-redis-1 exited (1)` → the whole compose `up` aborted (every app/frontend container stuck `Created`, depending on a healthy redis). The symptom (`redis exited 1`) reads like a redis/port problem; the cause is disk. **Root-caused via `docker logs demo-1-redis-1` (the explicit `No space left on device` line), not guessed.** Recovery: `docker builder prune -af` reclaimed ~25 GB (the frontend build cache is pure overhead once the images exist), clean teardown + re-up reused the cached images (no rebuild) and completed. **Observation worth carrying:** the bring-up has a 12 GB VM-memory pre-flight but **no free-DISK headroom pre-flight for the full 3-frontend build**, and the failure it produces is mis-attributable. A candidate hardening (out of M239 scope; belongs to a demo-reliability milestone if pursued): pre-flight the build-phase disk headroom, or fail the BUILD loudly on ENOSPC rather than letting a downstream container be the messenger.
+
+  - **F1 RESOLUTION (harden pass, LANDED — Fate-1, rext `053db23`).** The "pre-flight the build-phase disk
+    headroom" candidate above was **imprecise**: a disk pre-flight ALREADY exists (`preflight_disk_headroom`,
+    M49 #6) and runs BEFORE the frontend build. The genuine defect the harden pass found: it measured host `/`
+    via `df -Pk /`, which on **Docker Desktop is a different, usually-huge filesystem that does NOT reflect the
+    VM's own virtual disk** — the fs that actually ENOSPCs. So it read ~200 GB "free" on the host while the
+    VM's disk filled, staying **GREEN through the exact failure**, which then surfaced as the cryptic `redis
+    exited (1)`. **Landed fix:** probe the VM's internal disk via a throwaway `busybox df` (the container root
+    == the VM overlay), fall back to host `/` only when Docker/df is unreachable, and **name the redis
+    mis-attribution** in the warn (so a full VM reads as *disk*, not *redis*). Kept **non-fatal** (the
+    thrice-stated pre-flight contract — never block a working bring-up on a soft heuristic). +4 unit tests via
+    a busybox-df stub branch; the `DEMO_DISK_AVAIL_KB` seam still short-circuits. **Live-proof on this box: 25
+    GiB VM-disk free vs 212 GiB host-`/` free** — the exact blind spot. `frontend-tier.md` corrected. The
+    second candidate ("fail the BUILD loudly on ENOSPC") is NOT taken — it touches the build/compose error
+    handling (higher risk, out of harden scope); the corrected pre-flight closes the misattribution at the
+    front instead.
