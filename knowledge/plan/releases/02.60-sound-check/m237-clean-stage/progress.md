@@ -72,3 +72,29 @@ twice; the remainder is defensive `|| true` / `2>/dev/null` branches (pin.json p
 checkout-fail warn, dirty-stash, `ref=unknown`) that are non-fatal by construction — testing them would need
 stub surgery for near-zero real-world value (the "shallow test to bump a number" the skill forbids). Recorded,
 not shallow-tested. `/developer-kit:close-milestone` Phase 4 re-audits independently.
+
+## M237: Final Review
+
+Close review (2026-07-21). Full `test_tooling.py` 160 pass; M237-touched 46 pass; shellcheck rc0;
+demo_knob_guard OK both-directions (29 knobs incl. the 2 new). Deferral re-audit GREEN. 2 actionable findings.
+
+### Scope
+- [x] All 5 sections delivered (Fate-1). #2→M238 / #4→M239 confirmed Fate-2 (owned in their In-lists). No gaps.
+
+### Code Quality
+- [x] `ensure-clones.sh` d3/e/f — consistent (inline-python heredocs, if-then-else, bash-3.2 safe), shellcheck clean, no dead code, no TODO/FIXME. (Inline-python pin-parse appears in d3+e — idiomatic + intentional per this codebase's convention; no change.)
+
+### Documentation
+- [x] [must-fix] `frontend-tier.md` clone-freshness callout (L450-457) — broken anchor link (heading renamed by M237) + stale "app 249 / next-web 202 behind, that half is open" (M237 CLOSED F-M236-CLOSE-1 + REFUTED the figures). Corrected to match `rosetta_demo.md`.
+
+### Tests & Benchmarks
+- [x] 160 pass; honesty invariants mutation-verified (999/888 anti-fabrication); all 3 strict-fatal classes, pin-drift, pin-by-sha covered. No gaps.
+
+### Decision Triage
+- [x] D1 (visibility-not-mutation) → already blended in `rosetta_demo.md` §Clone freshness (traceable via `F-M236-CLOSE-1`). Confirmed.
+- [x] D2 (7-state pin model) → already blended in `rosetta_demo.md`. Confirmed.
+- [x] D3 (R1 directory-driven) → already blended in `demopatch-spec.md` §2.1 (traceable via `F-M236-CLOSE-2`). Confirmed.
+- [x] D-HARDEN-1 (branch-enum coverage) → archive (maintainer-only test-strategy).
+- [x] D-HARDEN-2 (fetch-ok-uncountable=fresh) → archive; **acceptance CONFIRMED sound at close** (reclassifying = 7-state design change not a hardening fix; prod clones always have a countable upstream; the honesty invariant "never fabricate a number" holds — behind=null, pinned by test; no downstream owner needed).
+- [x] Adversarial scenario (behind-count `2>&1` stderr-merge) → recorded in `decisions.md` (code handles it: `set -euo pipefail` → loud abort, never a fabricated number).
+- [x] Confirmed-defect ledger → archive (milestone finding record; its load-bearing correction — the 202-refutation — is blended into `rosetta_demo.md`).

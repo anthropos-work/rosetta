@@ -70,3 +70,25 @@ So the frontend was **already current** — the "202-behind" reading was the con
 - §1 freshness assertion RAN live on billion (`ensure-clones.sh` standalone): verified fetch SUCCEEDED for all repos (`fetch_ok: true`), new schema written, "all clones provably fresh-or-pinned" — and it SURFACED the true freshness (refuting 202-behind).
 - §2 R1 swept **14** manifests live ("demopatch R1: swept 14 manifest(s) … directory-driven — F-M236-CLOSE-2").
 - rext consumed at tag `sound-check-m237-clean-stage` (re-pinned + `.agentspace/rext.tag` updated); both the authoring copy and the billion consumption clone left git-clean.
+
+---
+
+# Adversarial review (close, 2026-07-21)
+
+The module reviewed is `ensure-clones.sh` phases d3/e/f (the only non-trivial code M237 touched). One scenario
+considered beyond the harden pass's branch enumeration:
+
+## AR-1 — the behind-count capture merges stderr into the value (`_behind="$(… 2>&1)"`)
+**Scenario.** Phase (e) captures the divergence with `_behind="$(git … rev-list --count "HEAD..origin/$ref" 2>&1)"`.
+The `2>&1` is there so a failure message rides into the log. But on the SUCCESS branch it means any stderr git
+emits *while succeeding* (e.g. an advisory config warning) would be concatenated with the integer — `_behind`
+becomes a multi-line non-integer.
+**Does the code handle it?** Yes — and it fails toward honesty, not toward a fabricated number. (a) The
+classifier guards the arithmetic with `[ "$_behind" -gt 0 ] 2>/dev/null`, so a non-integer can never be read as
+"behind>0". (b) The lockfile writer does `int(behind) if behind != ""`; a non-integer raises `ValueError`, and
+the script runs under `set -euo pipefail` (line 27), so the run **aborts loudly** rather than persisting a wrong
+`clones.lock.json`. The honesty invariant that matters — *never write a fabricated behind-count* — holds by
+construction: a garbage value aborts the bring-up, it is never recorded as truth.
+**Trigger probability:** very low (`rev-list --count` on a valid range emits only the count on success). Left
+as-is: the current form is loud-not-silent and consistent with the release's honesty spine. Recorded so a future
+reviewer sees it was considered.
