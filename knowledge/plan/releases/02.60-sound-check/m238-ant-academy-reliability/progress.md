@@ -4,7 +4,7 @@ Section milestone. Checklist stub from the roadmap In-list.
 
 ## Sections
 
-- [x] **#3 Start→404** — wire a chapter-body demo path. **DONE:** the FS-as-published `academy-fs-published-chapter-body` demopatch (rext `demo-stack/patches/` + `apply-academy-fs-published-body.sh` + `ant-academy.sh` wiring), gated on the same `ACADEMY_DEMO_FS_PUBLISHED` env var as the catalog patch. 16 tests green. **Proven live on billion**: a chapter 404→200 (real title/body). (decision D1)
+- [x] **#3 Start→404** — wire a chapter-body demo path. **DONE:** the FS-as-published `academy-fs-published-chapter-body` demopatch (rext `demo-stack/patches/` + `apply-academy-fs-published-body.sh` + `ant-academy.sh` wiring), gated on the same `ACADEMY_DEMO_FS_PUBLISHED` env var as the catalog patch. 18 tests green (16 at §1 + 2 harden Pass 2 revert-drift/locale). **Proven live on billion**: a chapter 404→200 (real title/body). (decision D1)
 - [x] **#2 language error** — **DONE (verdict, not a code fix):** NOT a distinct code bug. Locale is a `?lang=` query param (no `/it` route); the switcher is a sound EN↔IT toggle; the chapter-language 404 is the SAME backend-null path as #3, **fixed by the #3 patch** (locale-aware FS body). Confirmed fresh + live on billion (`?lang=it` chapter → 200). (decision D2)
 - [x] **Academy presence/coverage sweep** — extend to assert chapter-body render. **DONE:** `ANT_ACADEMY_CHAPTER_SECTION` + a general `mustNotInclude` negative marker + the academy-chapter probe (catalog.json slug → chapter → `?lang=it` re-render) in `coverage.spec.ts`; 139 e2e unit tests green; live premise validated on billion. Full billion sweep run → M244 (Fate 2, D4). (decision D3)
 - [x] **Delivers** — `corpus/services/ant-academy.md` (chapter-body demo path + #2 language verdict) + `corpus/ops/demo/frontend-tier.md` (the BODY half) + `corpus/ops/demo/demopatch-spec.md` (KB-1: the 2 academy-fs-published rows, inventory 11→13) + `corpus/ops/demo/coverage-protocol.md` (the chapter-body + language sweep extension) updated.
@@ -49,3 +49,29 @@ Two passes, then stabilized: the six-dimension Step-2b re-scan found no new high
 
 ### Pre-existing baseline note (out of M238 scope — for close)
 A full `demo-stack/tests` run (779 tests) surfaced **8 pre-existing failures, all in files M238 never touched**, so they are NOT M238 regressions and NOT harden-scope: `test_cockpit.py` ×6 (the M218 overlay-JS rewrite removed the "30000" 30s-window; the M234 cockpit academy-link render — stale-test drift), `test_host_prereqs_m215.py` ×1 (the serve-reset generator now emits port `13001`/hiring — M224 — but the test's `_UI_PORTS` wasn't updated), `test_purge.py` ×1 (self-documented macOS-environmental — the container-owned-0700 bug can't reproduce on Docker Desktop). Surfaced for close/re-fate; the M238-touched suites are all green.
+
+## M238: Final Review
+
+Close review (2026-07-21). Three parallel scans (code / docs / full test run) + the Phase 1b deferral re-audit.
+Test run at close: **Python demo-stack 778/786** (the 8 known standing fails; **0 M238 regressions** — touched
+files 183/183: `test_academy_fs_published_body.py` 18 · `test_patch_inventory.py` 5 · `test_tooling.py` 160);
+**TS e2e unit 147/147**; **`tsc` clean**.
+
+### Scope
+- [x] All 4 In-list items delivered (#3 D1, #2 verdict D2, sweep D3, Delivers docs). No gaps; 0 TODO/FIXME in touched code.
+
+### Code Quality
+- [x] [should-fix, INHERITED — not an M238 regression] Shared-clone concurrent revert: all 3 native-run academy patches share `stack-demo/ant-academy`; a `demo-1 --stop` reverts the shared file while `demo-2` is live → documented as a known limitation (`frontend-tier.md`) + code fix routed to standing backlog (D6).
+- [x] [nice-to-have] `firstChapterSlug` admits empty-string slug (theoretical false-pass); [nice-to-have] `mustNotInclude: ['']` footgun (author-error); [nice-to-have] non-atomic patch write (shared w/ siblings) → the 3 low-severity defensive edges in M238's own new rext code routed to the next `stack-verify`/`stack-injection` rext build-iter (D6) — NOT re-opening the finalized+flake-gated+live-proven code-of-record (tag pinned at hardened `3482a77`) for theoretical edges.
+- [x] Adversarial scenarios A/B/C recorded in `decisions.md` (D6 § Adversarial review).
+
+### Documentation
+- [x] [should-fix] `demopatch-spec.md` §5 header "6 × apps/web" overcounted apps/web by 3 → corrected sub-split (3 apps/web · 2 apps/hiring · 2 packages/ui · 2 packages/core-js · 1 packages/graphql = 10; repo-level 10 next-web-app unchanged, test-pin intact).
+- [x] [should-fix] `demopatch-spec.md` §5-bis stale present-tense "11" contradicted the 15 header → scoped as the M224-era figure + cross-ref the directory-fenced 15.
+- [x] [nice-to-have] Added `(#M238-D1/D2/D3)` back-ref tags to the primary mechanism mentions.
+
+### Tests & Benchmarks
+- [x] No coverage gaps — touched surfaces have behavior/mutation/static-fence tests (2 harden passes). No benchmark surface (docs+tooling milestone). Handbook/progress count reconciled (§1 "16"→18).
+
+### Decision Triage
+- [x] D1/D2/D3 confirmed already-blended into `ant-academy.md`/`frontend-tier.md`/`coverage-protocol.md`/`demopatch-spec.md` (build §4) + ref-tagged. KB-1 fence landed (harden). D4/D5/D6 archive (planning) — stay in `decisions.md`.

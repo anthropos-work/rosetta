@@ -141,9 +141,9 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the **eight** `next-web-app` patches (6 × `apps/web` + 2 × `apps/hiring`) | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **ten** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
-| **`stack-injection/apply-ant-academy-dev-origins.sh`** | `ant-academy-dev-origins` | ant-academy runs **natively** (`next dev`), not baked into an image → the patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop |
+| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **three** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
 
 **Exit codes differ by vehicle.** `demopatch` uses `1` (guard refuse) and `2` (manifest/OS error). The shell helpers
 use a richer space: `0` applied-or-already-patched · `1` manifest/target missing · `2` **pre-sha drift** · `3` anchor
@@ -194,7 +194,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**15 patches: 10 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui`) · 2 × `app` · 3 × `ant-academy`.**
+**15 patches: 10 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 3 × `ant-academy`.**
 
 > **Inventory reconciled to the 15 manifests on disk (v2.6 M238).** This table had drifted from the
 > `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
@@ -227,9 +227,12 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
 > rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
 > patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
-> hiring. *(The distinct-manifest total is unchanged at **11**: the chained `urls.ts` pair is shared — counted once
-> under the 6 × `apps/web` — and merely applied on **both** frontend builds. The prior count line read "8 patches /
-> 5 × next-web-app" — it undercounted by the `next-web-no-thirdparty` row; corrected here.)*
+> hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
+> M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
+> counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
+> directory-fenced total is 15**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
+> M224 corrected it to 11 with the `next-web-no-thirdparty` row, and M238 reconciled the whole table to the 15 on
+> disk.)*
 
 | id | target | what it does |
 |----|--------|--------------|

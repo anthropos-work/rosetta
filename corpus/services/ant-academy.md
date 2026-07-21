@@ -198,7 +198,7 @@ is **not a code bug** — it decomposes into:
   `?lang=` via `localeFromSearchParams` and threads the locale) → in a demo that hit the **same backend-null 404** as
   #3. So it is **fixed by the M238 chapter-body patch**, which serves the locale-aware FS body (the `it/` overlay
   where present, else the canonical-EN fall-through). Confirmed live on `billion`: `/chapters/<slug>/?lang=it` → HTTP
-  200, real chapter content.
+  200, real chapter content. (#M238-D2)
 
 ### Tech Stack
 

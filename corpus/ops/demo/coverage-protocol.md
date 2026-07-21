@@ -226,7 +226,7 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
 > `not-found.jsx` `<h1>` **plus** a 400-char floor; **either** fails the 404 (an empty/blank render fails the floor;
 > a padded-404 variant fails `mustNotInclude`). ⚠ **Note:** "You wandered off the trail" lives in Next's RSC flight
 > `<script>` data even on a 200 chapter render — a raw-HTML `grep` false-positives; the sweep reads Playwright
-> `innerText` (visible, hydrated), which is clean. Proven live on `billion` (a chapter 404→200; `?lang=it` 200).
+> `innerText` (visible, hydrated), which is clean. Proven live on `billion` (a chapter 404→200; `?lang=it` 200). (#M238-D3)
 
 > **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
 > asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers

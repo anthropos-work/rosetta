@@ -84,3 +84,71 @@ and added all missing rows. Also noted the standing hygiene gap: no directory-dr
 inventory (a `demo_knob_guard`-style sweep would prevent this class of drift). That fence is a tooling task beyond
 M238's academy subject — **surfaced, not built here** (no milestone currently owns a demopatch-inventory fence; a
 low-priority hygiene item, not release-scope-breaking).
+**Fate update at close (D5):** the harden Pass 2 **BUILT the fence** (`demo-stack/tests/test_patch_inventory.py`) —
+KB-1's "surfaced, not built" hygiene gap **converted deferred → LAND-NOW (done)**. No longer a deferral.
+
+## D5 — Close-time deferral re-audit (Phase 1b): the standing-8 demo-stack failures re-fated Fate 2 → M244
+The M238 harden full-sweep (779 demo-stack tests) re-surfaced **8 pre-existing failures**, all in files M238 never
+touched → **0 M238 regressions**. The deferral re-audit (`audit-deferrals/deferral-audit-2026-07-21.md`, **YELLOW**)
+re-fated every close-time deferral:
+
+- **The standing 8** = the SAME set characterised at v2.5/M236 (`releases/archive/02.50-the-playbill/
+  m236-prove-on-billion/rebaseline-standing-failures.md`, 2026-07-20) — composition UNCHANGED: `test_cockpit.py`
+  ×6 (4 M234-academy-link-semantics + 2 M218 overlay-JS 30 s-window), `test_host_prereqs_m215.py` ×1 (M224 hiring
+  port 13001 absent from `_UI_PORTS`), `test_purge.py` ×1 (macOS-environmental, self-documented). **All test-side
+  debt, 0 product defects, 0 pin drift.** REPEAT/AGED-OUT (ridden M236→M237→M238; demo-stack test area touched by
+  M238). **Re-fated Fate 2 → M244** (state.md standing backlog already owns it; M244 runs the full suite live).
+  Landing them in M238 would be scope-bleed (unrelated to ant-academy). **Elevated note for M244:** these are cheap
+  LAND-able TEST edits — discharge by EDITING the tests, not only "via a live bring-up"; they have now ridden three
+  v2.6-adjacent milestones and M244 is the expiry point. **Fresh dated re-confirmation: 2026-07-21.** NOT
+  release-scope-breaking → not an escape-hatch, no user wake (YELLOW, surfaced to orchestrator).
+- **D4** (full `coverage.spec.ts` billion sweep) → **Fate 2 confirmed** — owned by M244 exit gate (c). No edit.
+- **Inherited #4** (library-flash) → **Fate 2 confirmed still owned by M239** (open). No M238 action.
+
+**Verdict:** YELLOW, `SEVERITY=warning` → close proceeds. Blocking items: none.
+
+## D6 — Close code-review fates (Phase 2/2c): 1 inherited should-fix + 3 nice-to-have defensive edges
+The cross-cutting code review found **0 must-fix**. The rext code-of-record is finalized + flake-gated + live-proven
+and pinned at the hardened HEAD `3482a77` (the sole sanctioned close-time force op was the consumption-tag re-pin).
+Re-opening it for the low-severity defensive edges below would exceed that op + require re-running the flake gate on
+new code — disproportionate for theoretical/author-error edges in already-proven tooling. Fates:
+
+- **[should-fix, INHERITED] Shared-clone concurrent revert.** All 3 native-run academy patches share the
+  `stack-demo/ant-academy` clone (path is `demo-N`-independent); `ant-academy.sh N --stop` reverts the shared files
+  unconditionally → tearing down `demo-1` while `demo-2` is live re-404s `demo-2`'s chapter route on its next HMR.
+  **Pre-existing** (M238's body patch follows the pattern, doesn't introduce it); bites only on concurrent demos on
+  one box. **Fate:** DOCUMENTED as a known limitation now (`frontend-tier.md` §"The BODY half"); the code fix
+  (per-demo academy clone / applied-refcount before revert) → **standing backlog** (low-priority hygiene; not
+  release-scope-breaking; no milestone owns demo-clone topology).
+- **[nice-to-have] `firstChapterSlug` admits empty-string slug** → `/chapters//` theoretical false-pass. Unreachable
+  from the real FS-derived `catalog.json` (an empty slug needs an empty chapter dir); the function already
+  null-guards every other malformed shape. **Fate:** → next `stack-verify` rext build-iter (tighten to
+  `.length > 0` + a unit case).
+- **[nice-to-have] `mustNotInclude: ['']` footgun** — an empty forbidden entry makes `includes('')` always-true →
+  unconditional `error`. Author-error only; no shipped descriptor triggers it. **Fate:** → same build-iter (guard/validate).
+- **[nice-to-have] Non-atomic patch write** (`open("w")`, no `.tmp`→rename). Shared with both sibling `apply-*.sh`
+  helpers; the clone is ephemeral so impact is bounded (worst case a re-clone). Fixing only M238's helper would break
+  the byte-identical-siblings consistency the review praised. **Fate:** → the next `stack-injection` rext build-iter,
+  fixed across all three helpers together (out of M238's academy-body scope).
+
+None re-touch the tagged rext code-of-record at close. All are precisely recorded so they're findable by the owning
+build-iter. Not disguised deferrals of the deliverable (the deliverable — #3 fix, #2 verdict, sweep — is DONE +
+live-proven); these are polish on already-working code.
+
+### Adversarial review (Phase 2c — scenarios considered)
+Three non-trivial modules, one non-obvious failure mode each (recorded per the Phase 2c contract — the scenario, not
+just the fix):
+
+- **A — `apply-academy-fs-published-body.sh`, concurrent-teardown state.** demo-1 + demo-2 both up (idempotent
+  second apply = correct no-op → both patched); `demo-1 --stop` reverts the **shared** clone file while demo-2 serves.
+  The file-level guard ladder (G1–G7) is individually correct + idempotent, but there is **no cross-demo
+  coordination** → **GAP (real, inherited)**. Same for all 3 native-run academy patches; M238 adds no new instance.
+  Response: documented limitation + backlog (D6 above).
+- **B — `firstChapterSlug`, input beyond bounds (empty-string slug).** `[{ slug: '', language: 'en' }]` → returns
+  `''` (does NOT throw — the cross-port follow stays protected), yielding `/chapters//`, a theoretical false-pass on
+  the catalog index. **GAP (low, unreachable from real data).** Every other malformed shape is handled + unit-fenced.
+  Response: routed to next build-iter (D6).
+- **C — `section-assert.ts` `mustNotInclude`, missing/empty list.** No `mustNotInclude` / `[]` → `(… ?? [])` →
+  no-fail: **HANDLED** (unit-fenced + the shipped-descriptor floor-vs-`mustNotInclude` mutation-verify). The
+  non-obvious edge — an empty-string *entry* `['']` → unconditional `error` — is a **GAP (footgun, author-error
+  only)**. Response: routed to next build-iter (D6).

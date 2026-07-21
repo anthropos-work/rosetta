@@ -433,7 +433,17 @@ rext at tag `sound-check-m238-ant-academy-reliability`. **Proven live on `billio
 returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter title + body, and
 `/chapters/<slug>/?lang=it` also renders (the language switch on a chapter reader — the same backend-null path). The
 coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
-[`coverage-protocol.md`](coverage-protocol.md)), not just the home grid.
+[`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
+
+> **Known limitation — the three native-run academy patches share one clone (concurrent-demo teardown).** All three
+> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`)
+> are applied to the **shared** `stack-demo/ant-academy` working tree — its path is `N`-independent (only the port +
+> pidfile are per-`demo-N`). So `ant-academy.sh N --stop` reverts the shared source files unconditionally: tearing
+> down `demo-1` while `demo-2`'s native `next dev` is still live reverts the patched files out from under `demo-2`,
+> and its next HMR recompile re-404s the chapter route. This is a **pre-existing property of the native-run academy
+> pattern** (not introduced by M238 — the M238 body patch merely follows it); it only bites when **multiple demos run
+> concurrently against the same box**, the uncommon case. A proper fix (per-demo academy clone, or an applied-refcount
+> before revert) is routed to the standing backlog (M238-D6); the single-demo path is unaffected.
 
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
