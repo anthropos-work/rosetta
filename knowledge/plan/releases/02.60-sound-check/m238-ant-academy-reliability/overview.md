@@ -3,16 +3,16 @@ milestone: M238
 slug: ant-academy-reliability
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 depends_on: M237
 delivers: corpus/services/ant-academy.md + corpus/ops/demo/frontend-tier.md
 ---
 
 # M238 — ant-academy reliability
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M237
+**Status:** `archived` (completed 2026-07-21)  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M237
 
 ## Goal
 A hero can follow a course and actually consume a chapter; the language switch works.
