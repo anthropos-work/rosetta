@@ -49,17 +49,17 @@ unnamed until this spec.
 | **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target is a no-op, exit 0. **"Already patched" is G2's COHERENCE probe** — *the whole replacement present **and** the anchor gone* — **not a post-sha match.** <br>⚠️ *This row used to read "post-sha **and** marker", i.e. exactly the whole-file-sha check that §6 spends a section explaining ROTS. It contradicted G2 in the same table. Corrected at the M219 close; the two rows now describe one mechanism.* |
-| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps ALL 14 manifests since v2.6 M237 (was a hardcoded 3). See §2.1.** |
+| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 15 today; was a hardcoded 3). See §2.1.** |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
 | **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
 > **No write path bypasses G1 + G2.** `apply` runs both before it writes anything.
 
-### 2.1 The R1 recovery rung sweeps all 14 manifests (`F-M236-CLOSE-2`, closed v2.6 M237)
+### 2.1 The R1 recovery rung sweeps every manifest on disk (`F-M236-CLOSE-2`, closed v2.6 M237)
 
 **Read this before adding a patch.** G5 above describes what `revert` *can* do. The rung that actually runs it
 unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — is now **directory-driven**: it
-iterates **every** `patches/<name>/<name>.yaml` (all 14), not a hand-maintained list:
+iterates **every** `patches/<name>/<name>.yaml` (all 15 today), not a hand-maintained list:
 
 ```sh
 for _mf in "$HERE"/patches/*/*.yaml; do
@@ -79,7 +79,7 @@ trap. If a run dies **after apply but before the trap** (`Ctrl-C`, an OOM, a fai
 clone is left **carrying the patch**. R1 is the next-bring-up sweep that restores pristine. Without it, the
 leftover persists — and because G2's anchor gate then finds the anchor **gone**, the next apply is *correctly*
 refused, so it surfaces as a **silently skipped patch** rather than a loud failure. `revert --force-pristine`
-only restores-to-pristine (a no-op on a clean path; it **never applies**), so sweeping all 14 is safe by
+only restores-to-pristine (a no-op on a clean path; it **never applies**), so sweeping every manifest is safe by
 construction; a manifest `demopatch` legitimately refuses (e.g. an `app` patch whose real vehicle is a
 `stack-injection` shell helper on the build-scratch clone — §4) logs a **non-fatal skip**.
 
@@ -94,7 +94,9 @@ construction; a manifest `demopatch` legitimately refuses (e.g. an `app` patch w
 **Consequences for an author adding a patch (v2.6+):**
 
 1. **Nothing to wire.** A new `patches/<name>/<name>.yaml` is swept by R1 automatically — the directory *is* the
-   list. (`TestR1SweepM237` fences the glob against the real `patches/` count so a naming break is caught.)
+   list. (`TestR1SweepM237` fences the R1 glob against the real `patches/` count so a naming break is caught;
+   **`TestPatchInventory` (v2.6 M238) additionally pins the EXACT inventory total + per-repo breakdown against §5**
+   so an add/remove/mis-file drift goes RED until the doc and the fence's constants move together.)
 2. **`--force-pristine` is invoked for every manifest.** Recovery is unattended for all patches; the manual
    `demopatch revert … --force-pristine` (or `git checkout -- <path>` in the demo clone) remains available.
 3. **When a patch appears not to have applied, check for a stranded prior apply first** — `demopatch status
@@ -206,8 +208,11 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 >    [`frontend-tier.md`](frontend-tier.md) and [`../../services/ant-academy.md`](../../services/ant-academy.md).
 > 2. **The 2 M232 `next-web-interview-flag-*` patches** (`packages/ui`, the interview-report flag gate — the M219
 >    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
->    *(A directory-driven fence would prevent this class of drift; the `demo_knob_guard`-style sweep that catches
->    knob drift does not yet cover the patch-manifest inventory — a standing hygiene gap.)*
+>    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
+>    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**15**) AND
+>    the per-repo breakdown (`10 next-web-app · 2 app · 3 ant-academy`) against this §5 table — so adding, removing,
+>    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
@@ -376,8 +381,11 @@ file **byte-for-byte**. Only then does it write the pin.
 5. Pick the vehicle (§4) by where the target lives: inside the demo workspace → `demopatch`; the build-scratch clone
    → a `stack-injection/apply-*.sh` helper; a natively-run app → the apply/revert helper form.
 6. **Add a live-clone pin test.** The absence of one for the two `app` patches is precisely what let the drift ship.
-7. **Register the manifest in R1's `PATCH_MANIFESTS` array** (`demo-stack/ensure-clones.sh`) — see **§2.1**.
-   Nothing does this for you and no test fences the array against the `patches/` directory, so an unregistered
-   patch has **no unattended recovery**: a run that dies between apply and the `RETURN` trap strands it applied,
-   and every later build then *correctly* refuses to re-apply it (G2 finds the anchor gone). It presents as a
-   patch that silently stopped working. **3 of 14 manifests are registered today** — assume yours is not.
+7. **Nothing to register — R1 is directory-driven** (`demo-stack/ensure-clones.sh`) — see **§2.1**. Since v2.6
+   M237 the old hand-maintained `PATCH_MANIFESTS` array is **gone**: R1 iterates `patches/*/*.yaml`, so a new
+   `patches/<name>/<name>.yaml` gets unattended recovery **automatically** (the directory *is* the list) — the
+   pre-M237 hazard (a run dying between apply and the `RETURN` trap strands the patch applied; every later build
+   then *correctly* refuses to re-apply it because G2 finds the anchor gone; it presents as a patch that silently
+   stopped working) no longer needs a manual registration step to avoid. Two tests fence it: `TestR1SweepM237`
+   pins the R1 glob against the real `patches/` count, and `TestPatchInventory` (v2.6 M238) pins the EXACT
+   inventory total + per-repo breakdown against §5.
