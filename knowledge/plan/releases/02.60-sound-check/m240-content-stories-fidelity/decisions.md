@@ -18,6 +18,14 @@ The HARD internal media-safety gate (R1) is **CLEARED** by the following explici
 - **KB-2** — `session-clone-spec.md §2` documents only public-anchoring + non-manager-played; no cell-type-match predicate → the interview sim leaks into non-interview voice cells (CQ-1). Resolved by **Defect 1** + a doc bump.
 - **KB-3** — media substrate (voice recording + document blob) is a BLIND-AREA, PROMOTED to the overview `Delivers` line (new media-substrate spec + `safety.md §3.8` raw-media amendment). Acceptable per the gate rule.
 
+## Defect 3 investigation — the document body is NOT an S3 blob (2026-07-21)
+- Prod-verified (non-PII structural): the three DOCUMENT pins are all `collaborative_doc`. Their body lives in `validation_criterion_results.input_data` under the `text_document` key (input_format `text_document`): asmt-doc-pass **6226 chars** (a real body), asmt-doc-fail 57, train-doc-pass 21. All three have **ZERO `collaborative_assets`**, and jobsimulation has **no `storage_upload`/attachment/file table** — the only doc-blob table is `collaborative_assets`.
+- **CONSEQUENCE: Defect 3 is FULLY landable on prod-read alone — no S3 blob to port.** The overview's "if the body is a storage_upload" speculation does NOT apply. The fix is purely the seed-time write (content-specific `contentCriterionResultCols()` + write the placeholder-filled `input_data`), which content-capture already captured + scrubbed. Landed; `TestContentStorySeeder_WritesInputData` fences it. This RESOLVES the "unreachable doc blob" blocker candidate — it is not a blob.
+
+## Defect 1 + pass-rate prod checks (2026-07-21, non-PII)
+- Interview-sim discriminator: `directus.simulations.type` = the sim's OWN type; interview sim is the sole `type='SIMULATION_TYPE_INTERVIEW'` (n=1). Fix = `AND d.type = <cell sim_type>` (robust, not slug).
+- **Pass-rate 70–95 band is POPULATED for every passed cell** (assessment 253, code 31, doc 12, hiring 31, interview 28, training-doc 4) → the "empty pass band" blocker does NOT fire; the pass-rate feature is landable.
+
 ## Environment: S3 media-read UNAVAILABLE (2026-07-21) — DEF-M10-01 is LIVE here
 - `~/.aws/credentials` is 0 bytes; no AWS env/profile; `aws sts get-caller-identity` → "Unable to locate credentials." Prod-read (`marco_read`) IS available.
 - Consequence: the **media-blob PORT** (Defect 2 voice audio bytes; Defect 3 doc body IF an S3 `storage_upload`) is **BLOCKED — the user must provide eu-west-1 S3 read creds**. This is the genuine blocker the roadmap pre-flagged (R1's likely DEF-M10-01 consumption), NOT the safety gate (which the 2026-07-21 decisions CLEAR). Everything else (safety amendment, Defect 1, Defect 3 seed-time write, pass-rate) is landable on prod-read alone and WILL be landed this session.

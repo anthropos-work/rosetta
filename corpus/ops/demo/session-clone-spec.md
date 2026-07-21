@@ -139,7 +139,7 @@ with the demo org name, then writes, in FK order, all idempotent on `id`:
 jobsimulation.sessions                               (ended, completed, passed/failed — G14 enums, org-scoped)
   ├─ validation_attempt_results                      (the REAL summaries, filled; evaluation_status = the gate)
   │    ├─ validation_attempt_skill_results           (the REAL skill node-ids + the REAL feedback)
-  │    │    └─ validation_criterion_results           (the REAL titles/input_data; input_format per capture)
+  │    │    └─ validation_criterion_results           (the REAL titles + input_data; input_format per capture)
   │    │         └─ validation_check_results          (the REAL grader feedback)
   ├─ actors                                          (player = the owner; the copied roles; minted names)
   ├─ interactions                                    (the REAL transcript; action_type ∈ {email,call}; filled payload)
@@ -156,6 +156,18 @@ public.local_jobsimulation_sessions                  ← THE MIRROR (the score s
 
 Plus: owner-is-player-vantage; the copied enums are real (G14-valid) with a clamp for a rare non-terminal
 value; the skill node-ids are the REAL ones the candidate was assessed on (real public taxonomy → resolve).
+
+> **The document body IS `input_data`, written at seed time (M240 Defect 3).** A `text_document`
+> (collaborative_doc) criterion stores the candidate's **whole document** in
+> `validation_criterion_results.input_data` under the `text_document` key (a real one runs to thousands of
+> chars) — **not** in `collaborative_assets`, which is empty for these sessions, and **not** an S3
+> `storage_upload` blob (the pinned document sims are all `collaborative_doc`, so there is no uploaded file to
+> port). `cmd/content-capture` already copies + `ScrubJSON`-scrubs `input_data`, but before M240 the seeder
+> reused the shared `criterionResultCols()` — which has **no `input_data` column** — so the body was DROPPED
+> at seed time and the manager saw no document. The fix is a **content-specific** `contentCriterionResultCols()`
+> (= the shared set **+ `input_data` appended last**; a separate set, because the PersonaSeeder synthesizes
+> criteria and has no submission to carry — widening the shared set would be a landmine), with the seed-time
+> row appending the placeholder-filled `input_data`. `TestContentStorySeeder_WritesInputData` fences it.
 
 ### It COPIES, it never fabricates
 
