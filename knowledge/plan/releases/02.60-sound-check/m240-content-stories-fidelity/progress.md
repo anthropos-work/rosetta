@@ -4,9 +4,9 @@ Section milestone. Checklist stub from the roadmap In-list.
 
 ## Sections
 
-- [ ] **⚠️ HARD media-safety gate (R1) — MUST clear first** — fresh data-controller sign-off + `safety.md` §3.8 raw-media amendment + a voice/document anonymization decision, BEFORE any customer audio lands in a demo
-- [ ] **Defect 1 (selection)** — constrain the public sim's type to the cell type in `sourcing.go`; re-pin `content-sessions.yaml`
-- [ ] **Defect 3 (document)** — write the dropped `input_data` at seed time + port the document blob if `storage_upload`
-- [ ] **Defect 2 (voice)** — port the Chime/S3 recording + re-host audio in the demo storage tier + flip `chime_status` available
+- [x] **⚠️ HARD media-safety gate (R1) — MUST clear first** — fresh data-controller sign-off + `safety.md` §3.8 raw-media amendment + a voice/document anonymization decision, BEFORE any customer audio lands in a demo — LANDED (§3.8.1; voice unscrubbable→VPN-scope-only, docs→scrub, sign-off 2026-07-21, gender-coherence; commit 7020c3f)
+- [x] **Defect 1 (selection)** — constrain the public sim's type to the cell type in `sourcing.go`; re-pin `content-sessions.yaml` — LANDED: `d.type = <cell sim_type>` predicate (robust, not slug); re-pinned asmt-voice-pass to a real assessment-voice session (address-underperformance…, score 70); `--only` surgical re-capture; canonical presets regenerated (rext 9e8305a, corpus 7226a3c)
+- [x] **Defect 3 (document)** — write the dropped `input_data` at seed time + port the document blob if `storage_upload` — LANDED (seed-time write via content-specific `contentCriterionResultCols`). **Blob investigation: the body is `input_data.text_document` (collaborative_doc), NOT a storage_upload/S3 blob → NO blob to port, fully landable.** (rext cb64ccd, corpus 92ae3ed)
+- [~] **Defect 2 (voice)** — port the Chime/S3 recording + re-host audio in the demo storage tier + flip `chime_status` available — **BLOCKED (genuine, deeper than S3).** The 7 pinned voice sessions have NO recording (faithful `not_available`); recordings live on **Bunny.net** CDN (not S3) & almost only on HIRING sessions; render gate is `chime_status='completed'` + a resolvable `bunny_video_id`. **Needs user-provided media access (Bunny.net API and/or eu-west-1 S3) + a decision to re-pin voice cells to recorded hiring sessions (real interview video).** Safety posture + gender-coherence contract LANDED (§3.8.1 + media-substrate spec); port code deliberately NOT scaffolded against unreadable media. See decisions.md.
 - [ ] **Pass-rate (#4)** — score-band in `SelectionSpec` + tiebreak `score ASC`; re-capture
 - [ ] **Delivers** — a new media-substrate spec under `corpus/ops/demo/` + a `safety.md` §3.8 raw-media amendment
