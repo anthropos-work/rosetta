@@ -51,15 +51,29 @@ session read-only and only `SELECT`s), streams each session's content through th
 **scrubbed** result to the checked-in fixture. It prints **counts only**, never content. The seeder (seed time)
 is fully **offline** — it reads only the go:embed'd fixture. A demo box needs no prod access.
 
+> **Surgical re-capture — `--only <key[,key…]>` (M240).** A re-pin of one cell should not re-capture all 13
+> sessions against a possibly-drifted prod. `content-capture --only asmt-voice-pass` captures **just** the named
+> key(s), leaving the deterministic unchanged fixtures byte-identical; an unknown `--only` key **fails loud**
+> (a typo can't masquerade as a successful no-op). Empty `--only` = capture all (the original behaviour).
+
 ## 2. Stage 1 — sourcing (the reproducible selection)
 
 `contentsession/sourcing.go` BUILDS (never runs) the selection SQL — the reproducible record of *how* the pinned
-sessions were chosen. Two load-bearing predicates:
+sessions were chosen. **Three** load-bearing predicates:
 
 - **Public-anchoring (M231 D6).** A cloned session's `sim_id` must resolve in the demo, which holds only the
   **public** (snapshot-replayed) simulation catalog. So the query INNER-JOINs `directus.simulations` on the
   public predicate — `PublicSimPredicate = "d.private = false AND d.tenant_id IS NULL AND d.status =
   'published'"` — and sources ONLY sessions on a public-published sim.
+- **Sim-TYPE match (M240 Defect 1, CQ-1).** The public sim's OWN type (`directus.simulations.type`) must EQUAL
+  the cell's `sim_type` — `AND d.type = '<cell sim_type>'` — not merely the SESSION's `s.sim_type`. Prod carries
+  sessions whose `s.sim_type` disagrees with the sim's `d.type`: the sole public **interview** sim
+  (`ai-readiness-interview-d62`, `d.type=SIMULATION_TYPE_INTERVIEW`) has a `call` task, so before this predicate
+  it qualified for the ASSESSMENT-**voice** cell and an assessment-labelled session on it got pinned there
+  (`asmt-voice-pass`) — the cockpit then rendered an interview sim under an "Assessment" story. The type-match
+  forces the sim definition and the session record to agree, so the interview sim can only ever be sourced for
+  the interview cell (a robust fix, not a fragile slug exclusion). The query also surfaces `pub.slug AS sim_slug`
+  so the reproducible record yields the pin's public slug.
 - **Non-manager-played.** The owner must be a player-vantage member (belt-and-braces: the seeder re-owns every
   clone to a seeded player member anyway — §4).
 
