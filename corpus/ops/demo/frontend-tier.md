@@ -448,13 +448,17 @@ coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`c
 > live on `:33077`).
 >
 > ⚠️ **This closed ONE failure of skip-if-present, not the class — do not read it as "skip-if-present is now
-> safe" (`F-M236-CLOSE-1`, v2.5).** The stub-sweep fixes the case where a repo dir exists with **no `.git`**
-> (nothing was ever cloned). The far commoner case — a **complete, healthy clone that is simply months out of
-> date** — passes the sweep untouched, because `make init` never fetches, pulls, or checks out an existing clone
-> and the bring-up never calls `make pull`. Measured 2026-07-20, identically on both boxes: `app` **249**
-> commits behind `origin/main`, `next-web-app` **202**. See
-> [`../rosetta_demo.md` § Clone freshness](../rosetta_demo.md#clone-freshness--skip-if-present-never-updates-f-m236-close-1)
-> — **that half is open**, and it is what a stale-looking demo usually is.
+> safe" (`F-M236-CLOSE-1`).** The stub-sweep fixes the case where a repo dir exists with **no `.git`**
+> (nothing was ever cloned). The far commoner case — a **complete, healthy clone that is simply out of
+> date** — still passes the sweep untouched, because `make init` never fetches, pulls, or checks out an existing
+> clone and the bring-up never calls `make pull` unless you opt in. **What changed at v2.6 M237:** the bring-up
+> now runs a **fetch-verified freshness assertion** that MEASURES this and warns loud (advisory; `DEMO_FRESHNESS_STRICT=1`
+> escalates to fatal), and an opt-in `DEMO_ADVANCE_CLONES` advances the clones — so the visibility gap is closed.
+> (The v2.5 draft cited `app` **249** / `next-web-app` **202** commits behind "identically on both boxes" — that
+> reading was itself the **suppressed-fetch artifact** M237 eliminated; the verified measurement on `billion` was
+> 0–2 behind, frontend current.) See
+> [`../rosetta_demo.md` § Clone freshness](../rosetta_demo.md#clone-freshness--the-fetch-verified-assertion-f-m236-close-1-closed-v26-m237)
+> — **that gap is now closed** (visibility, not auto-advance), and a stale-looking demo is what an un-advanced clone usually is.
 
 **Default-on + non-fatal + degrades to a documented step.** A fresh `/demo-up` clones the academy (via the
 `storytelling-postfix-2` stub-sweep) and auto-runs the token-less `npm install` (see above), so it comes up

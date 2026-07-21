@@ -67,12 +67,13 @@
      `stack-dev` **skips this non-fatally** — `/stack-secrets` (M30) provisions the real `.env` from
      `.agentspace/secrets`. This `.env` copy is the **sole** sanctioned `stack-dev` read;
    - `make -C stack-demo/platform init` clones every `repos.yml` repo as a sibling into `stack-demo/`
-     (**skip-if-present, and skip means SKIP — it never fetches, pulls, or checks out an existing clone**;
-     see [§ Clone freshness](#clone-freshness--skip-if-present-never-updates-f-m236-close-1) below, which you
-     should read before trusting a bring-up to be building current code), plus `make init-studio` for `cms`;
-   - record per-repo `{ref,sha}` provenance into `stack-demo/clones.lock.json` — **provenance of what was
-     built, NOT a freshness signal**: `ref` is the local branch name and `sha` the local `HEAD`, neither of
-     which is compared to the remote (§ Clone freshness).
+     (**skip-if-present** — `init` never advances an existing clone; freshness is handled by the M237 assertion,
+     see [§ Clone freshness](#clone-freshness--the-fetch-verified-assertion-f-m236-close-1-closed-v26-m237)
+     below), plus `make init-studio` for `cms`;
+   - record per-repo `{ref, sha, pin_state, behind, fetch_ok, pinned_at}` into `stack-demo/clones.lock.json` —
+     provenance of what was built **plus** a **fetch-verified freshness signal** (M237): `behind` is the
+     verified commit-count vs `origin/<branch>` and `pin_state` distinguishes deliberate pins from
+     stale-by-neglect (§ Clone freshness).
 2. **secret pre-flight + provision** (the M28/M30 step, before the heavy build): the demo-aware
    coverage pre-flight reads the secret source (`.agentspace/secrets`) **directly** (it needs no `.env`
    present yet), then `/stack-secrets` **provisions** `stack-demo`'s per-repo `.env` from it (values-blind)
@@ -95,11 +96,12 @@
 > `ensure-clones.sh` (the auto `/demo-up` path does). It presupposes a populated `stack-demo` (run
 > `up-injected.sh` / a prior `ensure-clones.sh` to bootstrap the peer clone set + seed the shared `.env`).
 
-## Clone freshness — skip-if-present never updates (`F-M236-CLOSE-1`)
+## Clone freshness — the fetch-verified assertion (`F-M236-CLOSE-1`, closed v2.6 M237)
 
-🔴 **A demo bring-up builds whatever the clone already contains. It does not make the clone current, and
-nothing in the bring-up will tell you it is not.** This is the single most consequential thing to know about
-step 1, and until v2.5 the corpus described the mechanism approvingly without ever stating its consequence.
+🔴 **A demo bring-up builds whatever the clone already contains. It does not, by default, make the clone
+current — but as of v2.6 M237 it MEASURES freshness with a fetch-verified assertion and warns loud.** This is
+the single most consequential thing to know about step 1. Until v2.5 the corpus described the `make init`
+mechanism approvingly without stating its consequence; M237 closed the visibility gap.
 
 **The mechanism.** `make init` (in the `platform` repo's own Makefile) is a pure existence check:
 
@@ -107,53 +109,76 @@ step 1, and until v2.5 the corpus described the mechanism approvingly without ev
 if [ ! -d "$(PARENT_DIR)/$$repo" ]; then git clone …; else echo "  $$repo already exists, skipping"; fi
 ```
 
-There is **no `git fetch`, `git pull`, or `git checkout` anywhere in the demo bring-up** — measured: zero hits
-across all of `demo-stack/`. A `pull` target exists in the same Makefile (`make pull`), and the bring-up
-**never calls it**. So a clone created once is frozen at that moment, and every subsequent `/demo-up` — however
-"clean", however cold a reset-to-seed — rebuilds that same frozen source. **`--reset`, teardown, and re-`up` do
-not help**: they discard *stacks*, not the shared `stack-demo/<repo>` clones the stacks build FROM.
+`make init` still never advances an existing clone (that is correct — see the deliberate-staleness note below).
+A `pull` target exists in the same Makefile (`make pull` = stash → checkout main → pull --rebase); the bring-up
+does not call it **unless you opt in** (`DEMO_ADVANCE_CLONES`, below). So a clone created once stays at that rev
+until an operator advances it, and `--reset`/teardown/re-`up` discard *stacks*, not the shared
+`stack-demo/<repo>` clones the stacks build FROM. What M237 added is that **the bring-up now tells you** when a
+clone is stale, instead of building old code silently.
 
-**The measurement (2026-07-20, both boxes, identical).** The clone set had last been advanced on 2026-07-08:
+**The freshness assertion (M237, `ensure-clones.sh` phase e).** After `make init`, for `platform` + every
+`repos.yml` repo, the tooling runs a **FETCH-VERIFIED** freshness check and records it in
+`stack-demo/clones.lock.json`:
 
-| repo | commits behind `origin/main` | clone last advanced |
-|---|---|---|
-| `app` | **249** | 2026-07-08 |
-| `next-web-app` | **202** | 2026-07-08 |
+- **The fetch's rc is CHECKED and its stderr is NEVER suppressed.** This is the crux of the fix. The earlier
+  "measurement" that reported clones ~200 commits behind came from a fetch whose stderr a `2>/dev/null` hid — on
+  `billion` as `root`, a *"Host key verification failed"* — so the behind-count was computed off a **stale local
+  `origin/main` ref the failed fetch never updated**, producing a confident-wrong reading. A behind-count is only
+  trustworthy AFTER a confirmed-successful fetch. A **failed fetch records `fetch_ok: false` + `behind: null`
+  (UNKNOWN) and warns loud — it never fabricates a number.**
+- **A real pin model** replaces the old `{ref, sha}` (which read `ref: "main"` for BOTH a fresh main and a
+  200-behind main, and `"HEAD"` for any detached clone — pinned-deliberately and stale-by-neglect were
+  indistinguishable). Each repo now records `{ref, sha, pin_state, behind, fetch_ok, pinned_at}` with `pin_state`
+  one of: `pinned-tag` (at an exact tag — deliberate), `pinned-detached` (detached HEAD — deliberate),
+  `pinned` (on a branch, matches a `stack-demo/clones.pin.json` declaration — deliberate), `pin-drift` (branch ≠
+  declaration — LOUD), `fresh` (0-behind), `stale-by-neglect` (behind>0, undeclared — LOUD), `unknown` (fetch
+  failed — LOUD). The optional operator file `stack-demo/clones.pin.json` = `{"<repo>": "<tag-or-branch-or-sha>"}`
+  is what makes "pinned deliberately" distinguishable from "stale main".
+- **Aggregate verdict**: the run prints `freshness: all clones provably fresh-or-pinned` or a loud per-repo
+  warning naming each stale/drifted/unmeasurable repo. Advisory + **non-fatal by default** (the load-bearing
+  build-SOURCE gate is the clone bootstrap, phase a). `DEMO_FRESHNESS_STRICT=1` escalates any not-provably-fresh
+  clone to a **fatal abort** — for a CI / HARD go/no-go bring-up that must build current code.
 
-Twelve days of platform `main` were invisible to every demo built on those boxes, on both machines, with no
-warning at any point in the bring-up.
+**Opt-in advance — `DEMO_ADVANCE_CLONES` (default `0`).** The bring-up never auto-advances (deliberate staleness
+is legitimate). To advance: `DEMO_ADVANCE_CLONES=main` (or `=1`) brings every clone to `origin/main` via the
+Makefile `pull` primitive (+ `platform` itself); `DEMO_ADVANCE_CLONES=pinned` checks each clone out at its
+`stack-demo/clones.pin.json` ref (the advance-to-pinned-tag path). Both knobs are in
+[`demo/demo-up-defaults.md`](demo/demo-up-defaults.md) (fenced by `demo_knob_guard.py`).
 
-**Why the lockfile does not catch it.** `stack-demo/clones.lock.json` is written by `ensure-clones.sh` on every
-run and records, per repo, `ref` = `git rev-parse --abbrev-ref HEAD` and `sha` = `git rev-parse HEAD`. Both are
-**purely local**: nothing is ever compared against the remote. A clone 249 commits behind `origin/main` records
-`{"ref": "main", "sha": "<the old sha>"}` — **structurally indistinguishable from a fresh one**, because
-freshness is not a dimension the file has. (`ref` also degrades to the literal string `"HEAD"` on a detached
-clone, which is a *second* reason not to read it as a pin — but the common case is a branch name that looks
-perfectly healthy.) The lockfile is honest provenance of **what was built**; it is not, and was never, a
-freshness signal.
+**⚠️ The "~200 commits behind" reading was itself the bug (corrected v2.6 M237).** The v2.5 draft of this section
+tabled `app` **249** / `next-web-app` **202** behind "on both boxes, 2026-07-20". The M237 fetch-verified
+assertion — **independently confirmed by raw `git rev-parse HEAD == origin/main`** — measured `billion`'s clones
+at **0–2 commits behind** (platform 0, next-web-app 0 at tag `v2.113.1` == origin/main, app 2), most sitting at
+their latest release tags. `demo-1`'s frontend image was built from the exact current `next-web-app` commit. The
+one genuinely-stale surface was **`ant-academy` (5 behind**, cloned separately, not in `repos.yml`). So the
+frontend was current all along; the "202-behind" figure was the confident-wrong **suppressed-fetch artifact** the
+fix eliminates. *Take the lesson, not the number: a freshness reading is trustworthy only when the fetch that
+produced it is confirmed to have succeeded.* (Measured on `billion`; a different box's clone set can differ —
+run the assertion, read `clones.lock.json`.)
 
-**Operator consequence — what this actually looks like.** It presents as a *product* defect, not a tooling one,
-which is why it cost this release a milestone: a demo renders a **stale UI** (the user-reported stale left menu
-was exactly this), a fix "that definitely landed" is absent, a seeder writes a column the built binary does not
-have. Every one of those reads as pin drift, injection drift, or a bad patch, and sends you into the wrong
-subsystem. **Before debugging any demo behaviour that contradicts current `main`, check the clone set first:**
+**Operator consequence.** A genuinely-stale clone presents as a *product* defect, not a tooling one — a stale UI,
+a fix "that definitely landed" absent, a seeder writing a column the built binary lacks — each of which reads as
+pin drift / injection drift / a bad patch and sends you into the wrong subsystem. The freshness assertion now
+surfaces it at bring-up; you can also check by hand or read the lockfile:
 
 ```bash
+# by hand (a verified fetch first — never trust a behind-count without it):
 cd stack-demo && for r in app next-web-app cms platform; do
-  git -C "$r" fetch -q origin main
+  git -C "$r" fetch -q origin main && \
   printf '%-16s %s behind\n' "$r" "$(git -C "$r" rev-list --count HEAD..origin/main)"
 done
+# or just read the assertion's output:
+python3 -c 'import json;[print(k,v["pin_state"],v["behind"]) for k,v in json.load(open("stack-demo/clones.lock.json")).items()]'
 ```
 
-Non-zero on any row means the demo you are debugging was **not built from the code you are reading**. Bring the
-clone set current with `make -C stack-demo/platform pull` (which stashes dirty trees) — or a per-repo
-`git pull` — and rebuild. **There is no automatic freshness rung today**; the check above is manual by
-necessity, and `F-M236-CLOSE-1` is the finding that owns closing that gap.
+Bring a stale set current with `DEMO_ADVANCE_CLONES=main` on the next bring-up (or `make -C stack-demo/platform
+pull`) and rebuild.
 
-> **Deliberate staleness is legitimate — that is why this is not simply a bug to auto-fix.** Reproducing a
-> demo at a known-good revision is a real use case, and an unconditional `pull` in the bring-up would destroy
+> **Deliberate staleness is legitimate — that is why the bring-up asserts but never auto-advances.** Reproducing
+> a demo at a known-good revision is a real use case, and an unconditional `pull` in the bring-up would destroy
 > it (and could break a demo mid-presentation). What is *not* legitimate is staleness the operator did not
-> choose and cannot see. The gap to close is **visibility**, not automatic mutation.
+> choose and cannot see. M237 closed exactly that: the gap was **visibility**, not automatic mutation — so the
+> fix is an assertion + an opt-in advance, not a forced pull.
 
 > **Remote reach over Tailscale — `--public-host <magicdns>` (v2.2 "panorama", opt-in, default-off).**
 > `/demo-up N --public-host billion.taildc510.ts.net` (or `STACK_PUBLIC_HOST=<magicdns>`) makes the demo

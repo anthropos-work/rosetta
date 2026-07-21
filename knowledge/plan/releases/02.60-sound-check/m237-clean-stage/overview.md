@@ -3,16 +3,16 @@ milestone: M237
 slug: clean-stage
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 depends_on: none
 delivers: corpus/ops/rosetta_demo.md + corpus/ops/demo/demopatch-spec.md
 ---
 
 # M237 — clean stage
 
-**Status:** `planned`  ·  **Shape:** `section` (HARD go/no-go barrier)  ·  **Complexity:** medium  ·  **Depends on:** none (opens the release)
+**Status:** `archived` (completed 2026-07-21)  ·  **Shape:** `section` (HARD go/no-go barrier)  ·  **Complexity:** medium  ·  **Depends on:** none (opens the release)
 
 ## Goal
 The demo builds from CURRENT platform source, and the ambiguous UI defects are re-triaged on a correct build — so every downstream fix (M238–M243) is scoped against reality, not stale code. The M217/M222 "clean stage" pattern: any UI-defect triage on a stale-clone demo is untrustworthy. Only defect #1 (menu) was clone-staleness; #2–#5 each reproduce on `origin/main` — this milestone confirms that on a fresh build before the fixes fan out.
