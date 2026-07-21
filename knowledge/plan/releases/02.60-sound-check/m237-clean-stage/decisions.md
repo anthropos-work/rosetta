@@ -6,6 +6,29 @@ The clone-freshness fix asserts + warns loud + records a pin model; it never aut
 ## D2 — Real pin model: 7 distinguishable states (§1)
 `clones.lock.json` now records `{ref, sha, pin_state, behind, fetch_ok, pinned_at}`. `pin_state` ∈ {`pinned-tag` (at an exact tag), `pinned-detached` (detached HEAD), `pinned` (branch matches `clones.pin.json` declaration), `pin-drift` (branch ≠ declaration — LOUD), `fresh` (0-behind), `stale-by-neglect` (behind>0, undeclared — LOUD), `unknown` (fetch failed — LOUD)}. The optional operator declaration `stack-demo/clones.pin.json` = `{"<repo>": "<ref>"}` is what makes "pinned deliberately" distinguishable from "stale main" (today both read `ref:"main"`).
 
+## D-HARDEN-1 — shell coverage = explicit branch/path enumeration (no kcov/bashcov)
+The M237 harden measured coverage as **branch/path enumeration** of `ensure-clones.sh`'s assertion +
+pin-state + advance + sweep logic, not a coverage-tool percentage. Rationale: the touched code is a bash
+script exercised via a Python subprocess harness; `kcov` needs Linux/DWARF (does not instrument bash on
+macOS) and `bashcov` needs a Ruby toolchain — neither is installed, and this 730-test suite has *always*
+used branch-mapping. Instrumenting a new shell-coverage stack for one 427-line script is disproportionate;
+the compensating strategy is the enumerated branch table in `progress.md`'s hardening section (each pin
+state + advance arm + R1 error path mapped to a named test, two of them mutation-verified). Aligns with the
+harden-milestone "compensating test strategy" clause.
+
+## D-HARDEN-2 — fetch-OK-but-uncountable classifies as `fresh` (observed edge-semantic; ACCEPTED)
+A **successful** fetch whose `rev-list --count HEAD..origin/<ref>` cannot compute a count (no matching
+upstream branch — e.g. a local-only branch) records `behind=null` and classifies the repo **`fresh`**
+(pinned by `test_fetch_ok_but_uncountable_leaves_behind_unknown_never_fabricated`). This asserts a green
+"fresh" without a positive behind==0 measurement — a mild tension with the milestone's honesty spine.
+**Fate:** ACCEPTED as current behavior, **not** changed in this harden pass. Rationale: (a) reclassifying
+would change the 7-state model (a design decision, not a hardening fix); (b) in production every demo clone
+tracks a branch with a real `origin/<ref>`, so a *successful* fetch yields a countable divergence — the
+edge needs a branchless/upstreamless clone to trigger, which the bring-up does not produce; (c) the honesty
+invariant that actually matters (never fabricate a *number*) IS upheld — `behind` is null, never guessed.
+Pinned by a test so any future change is deliberate + visible. Flagged for `/developer-kit:close-milestone`
+review; no downstream milestone owns it (not a defect, an accepted semantic).
+
 ## D3 — R1 directory-driven, not a hand array (§2)
 R1 (`ensure-clones.sh`) now iterates `patches/*/*.yaml` (all 14) instead of a hard-coded 3-entry array. `revert --force-pristine` only restores-to-pristine (never applies), so sweeping all is safe by construction; a manifest demopatch refuses logs a non-fatal skip. Test harness refactored into `EnsureClonesHarness` mixin so the §1/§2 suites reuse it without re-running the functional suite (no triple-execution).
 
