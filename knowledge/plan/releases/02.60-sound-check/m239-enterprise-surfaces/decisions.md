@@ -50,3 +50,78 @@ _(implementation choices with rationale accumulate here during build)_
     second candidate ("fail the BUILD loudly on ENOSPC") is NOT taken — it touches the build/compose error
     handling (higher risk, out of harden scope); the corrected pre-flight closes the misattribution at the
     front instead.
+
+## Close review — decisions (M239 close, 2026-07-21)
+
+The close code-quality + adversarial reviews of the M239 rext change set (`443a365^..053db23`) found **two real
+defects in M239's own new code**, both landed Fate-1 (rext `cf89365`, main re-pushed + the 3 consumption tags
+re-pinned to it). Values-blind held throughout; zero platform-repo edits.
+
+- **D10 — [Fate-1, LANDED] the VM-disk pre-flight could ABORT the whole bring-up (the F1 fix had a regression).**
+  `_vm_disk_avail_kb`'s `docker run --rm busybox df | awk` pipeline had no `|| true`. Under the script's
+  `set -euo pipefail`, a **daemon-present-but-unreachable/wedged** run (or a box that can't pull busybox) makes
+  the pipeline exit nonzero, and the caller's bare `avail_kb="$(_vm_disk_avail_kb)"` then trips errexit and
+  **kills the bring-up before the host-`/` fallback ever runs** — defeating the probe's own non-fatal contract
+  and re-introducing the ISSUE-7 errexit class the same file warns about. Confirmed REAL on bash 3.2 (`x=$(f)`
+  under a bare `set -e` genuinely exits) and mutation-verified the fix's regression test is non-vacuous. Fix:
+  `|| true` on the pipeline (empty-on-failure → caller falls back). Regression test invoked as a BARE command
+  under `set -e` (an `if (...)` subshell is an "-e is ignored" context → would be vacuous) via a new
+  `VM_PROBE_RC` stub seam.
+
+- **D11 — [Fate-1, LANDED] `bridge_bedrock_creds` lacked a trailing-newline guard.** A base env whose last line
+  had no trailing newline would concatenate the first bridged key onto it (`GH_PAT=…AWS_ACCESS_KEY_ID=…` on one
+  line) — corrupting BOTH keys AND breaking the `^KEY=` idempotency match (re-append every re-up). Fix: a
+  once-before-first-append leading-`\n` guard, mirroring provision's own `io.go` guard; values-blind (the last
+  byte is tested, never emitted). +2 tests (concat-prevented + idempotent-on-newline-less-base).
+
+### Adversarial review (Phase 2c) — scenarios considered
+
+Recorded per the close contract (the scenario, not just the fix). Two became D10/D11 (fixed); three are
+**accepted** with rationale:
+
+- **AR-1 — credential ROTATION / `AWS_SESSION_TOKEN` expiry does not re-propagate on a re-up (copy-if-absent).**
+  The bridge skips any key already in the base env, so a rotated value in `app/.env` never overwrites the stale
+  line in `platform/.env`, and the log says "wired (idempotent)". **Accepted:** a demo is disposable +
+  VPN-scoped, and the sanctioned hyper-studio template uses **permanent** IAM creds (no session token), so the
+  expiry path is off the documented flow. Remediation if ever needed: delete the key from both `.env`s (or
+  purge the stack-demo workspace) and re-up. Not a code change — a value-diff detector would fight values-blind
+  for a case the intended creds don't hit.
+- **AR-2 — the busybox probe can't run on the exact condition it targets (offline / VM-so-full-a-4MB-pull-ENOSPCs)
+  → silent host-`/` fallback → GREEN through a full VM.** **Accepted by design:** you cannot measure the VM disk
+  without running a container; falling back to a possibly-misleading host reading beats aborting or blocking a
+  soft, non-fatal heuristic. The operator-visible signal is the `host /` vs `Docker VM disk` log label. (The
+  ABORT half of this scenario WAS a real bug — fixed as D10.)
+- **AR-3 — the two required cred genes are scored independently (no both-or-neither invariant), so a half-present
+  pair reads ~50% coverage while 0% functional.** **Accepted:** a both-or-neither operator is a framework-wide
+  scoring-engine change (affects every DNA class, higher risk), out of a docs+tooling fix milestone's altitude;
+  the **Critical-gate neutrality** and **demo-overlay-doesn't-satisfy-AWS** properties ARE solid and tested
+  (`bedrock_measure_test.go`). The half-present state is gate-neutral (nothing blocks); it only makes a coverage
+  number optimistic — a soft, non-fatal signal.
+
+### Scope re-fates (from the Phase 1b deferral audit — YELLOW)
+
+- **D12 — DEF-M239-01: the second F1 candidate ("fail the BUILD loudly on ENOSPC") → Fate-3 → M244.** The F1
+  RESOLUTION note above recorded it as "NOT taken" (a passive observation). Given a proper fate at close: it is a
+  **distinct** build/compose error-handling change to `up-injected.sh` (higher-risk, outside this milestone's
+  altitude), and the *actual* observed defect (measuring host `/` not the VM disk) already LANDED. Home = **M244
+  prove-on-billion** (the terminal reliability closer that runs full cold builds on `billion`, where a
+  build-phase ENOSPC recurs) as an OPTIONAL build-robustness hardening item; standing backlog is the acceptable
+  alternative if M244's tooling surface shouldn't widen. Not blocking (single, first appearance).
+
+- **D13 — the 9th demo-stack test failure (`test_reap.py::…::test_a_RACED_listener_exits_silently`) → Fate-3 →
+  M244, with root cause + fix recipe.** The close full-suite sweep surfaced ONE failure beyond the documented
+  standing-8: **root-caused to a test-isolation collision, NOT an M239 regression and NOT a reap.sh defect.**
+  The RACED test calls `_reap_with_stubs(stubs)` with no port arg → the default `port=17700`; reap.sh
+  (correctly, per its M217/M221 design) establishes real `/dev/tcp` occupancy BEFORE attribution, so on a box
+  where a **live demo-1 cockpit is actually listening on 17700** (this box: PID 42277) it finds the port held,
+  the stubbed `_listener_pids`/`_cmd_of` can't attribute it, and reap returns 1 ("cannot introspect / refusing
+  to kill") — the correct behaviour, proven by its sibling `test_BUG_a_HELD_port_with_NO_attributable_pid…`. A
+  clean box (no cockpit on 17700) passes it. Same host-state class as the standing-8 (0 product defect). **Fix
+  recipe for M244:** give the RACED test (and any sibling that relies on the hardcoded 17700 default) a
+  guaranteed-free `_free_port()` like the rest of the suite, so it is isolated from ambient infrastructure. Not
+  blocking; not in the durable standing-8 (it only manifests with a live cockpit up).
+
+- **STANDING-8 → M244 (confirm Fate-2, no new decision).** The close full sweep re-surfaced the identical
+  documented 8 (`test_cockpit.py` ×6, `test_host_prereqs_m215.py` ×1, `test_purge.py` ×1) — 0 M239 regressions,
+  already re-fated Fate-2 → M244 at the M238 close (M238-D5, one day old). Legitimate YELLOW repeat pattern,
+  already fated; no new decision.

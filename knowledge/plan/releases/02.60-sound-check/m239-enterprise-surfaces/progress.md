@@ -74,3 +74,60 @@ bedrock-bridge[10], sequential); both live-proof specs GREEN in hardened state.
 [N/A] · F1 disk pre-flight LANDED); the Step-2b scan surfaced nothing new worth adding; flake gate clean.
 harden commits live in **rosetta-extensions** (`0a59673`, `21444bb`, `053db23`) — close-milestone should re-pin
 the consumed tags to the hardened HEAD (the M237/M238 precedent).
+
+## M239: Final Review (close, 2026-07-21)
+
+Review found 4 substantive items (2 code must/should-fix + 2 scope re-fates) + 3 recorded adversarial scenarios;
+all addressed fully (no partial fixes).
+
+### Code Quality
+- [x] [must-fix] Disk-probe errexit abort — `_vm_disk_avail_kb` `docker|awk` had no `|| true`; a wedged/offline
+  daemon aborted the whole bring-up before the host-/ fallback under `set -euo pipefail`. Fixed (rext cf89365,
+  D10) + non-vacuous regression test (VM_PROBE_RC seam, mutation-verified on bash 3.2).
+- [x] [should-fix] Bridge trailing-newline guard — a newline-less base env would concat the first key + break
+  idempotency. Fixed (rext cf89365, D11) + 2 tests.
+- [x] Values-blind property — verified HOLDS across the whole change set (bridge counts-only logs; DNA schema-only;
+  Go tests name-only; the sentinel regression fence). No credential value surfaces anywhere.
+
+### Adversarial (Phase 2c)
+- [x] AR-1 rotation/session-token-not-re-propagated — recorded + accepted (disposable demo + permanent creds).
+- [x] AR-2 busybox-can't-pull → host-/ fallback — recorded + accepted-by-design (abort half was D10).
+- [x] AR-3 credential-pair scored independently — recorded + accepted (framework-wide scoring change; gate-neutrality solid).
+
+### Scope
+- [x] DEF-M239-01 (2nd F1 candidate "fail the BUILD loudly on ENOSPC") → Fate-3 → M244 (D12).
+- [x] 9th demo-stack failure `test_reap…test_a_RACED_listener_exits_silently` → root-caused (test-isolation:
+  hardcoded 17700 vs a live cockpit; reap.sh correct) → Fate-3 → M244 with fix recipe (D13).
+- [x] Standing-8 demo-stack test debt → confirm Fate-2 → M244 (no new decision; M238-D5).
+
+### Tests & Docs
+- [x] Flake gate GREEN (touched suites 5/5 sequential; 0 flakes).
+- [x] Docs reconciled — secrets-spec 61-gene map + version `sound-check-m239` match the committed DNA exactly;
+  safety §2.10 + frontend-tier F1 accurate; no count drift. D2/D3/D4/F1 confirmed already-blended.
+- [x] metrics.json emitted.
+
+## M239: Completeness Ledger (section variant, close 2026-07-21)
+
+**Done (Fate-1 — landed in M239):**
+- talk-to-data FULL — flag (env-var, folded into fingerprint) + real Bedrock creds (5-gene class, R3 not-critical)
+  + values-blind bridge; LIVE-proven ("Cervato Systems has 51 members", ~7 s Bedrock round-trip).
+- #4 library empty-first-load — no-defect verdict (offset endpoint already baked); live GREEN.
+- #1 hierarchical manager menu — confirmed rendering; live presence-verify + coverage assertion.
+- Delivers — secrets-spec.md (Bedrock cred class + 61-gene map) + safety.md §2.10 + frontend-tier.md F1 correction.
+- Harden — flag-gate strengthen (near-vacuity) + Bedrock measure-layer tests + F1 disk pre-flight (VM disk, not host /).
+- Close fixes — D10 disk-probe errexit fallback + D11 bridge newline guard (both rext cf89365, regression-tested).
+
+**Confirmed-covered (Fate-2 — already planned in another release-milestone):**
+- Standing-8 demo-stack test debt → M244 (M238-D5; identical set re-surfaced, 0 M239 regressions).
+- DEF-M238-D4 full billion coverage.spec.ts sweep → M244 exit gate (c).
+
+**Annotated (Fate-3 — attached to a release-milestone at close):**
+- DEF-M239-01 "fail the BUILD loudly on ENOSPC" → M244 (D12) as optional build-robustness hardening.
+- D13 reap `test_a_RACED…` 17700 test-isolation collision → M244 (test-side fix: use `_free_port()`).
+
+**Dropped:** none.
+**Release-scope-breaking deferral (escape hatch):** none.
+
+_All In-list scope items delivered in this milestone. The four routed items are demo-stack test-debt +
+build-robustness that genuinely belong to the terminal M244 reliability closer's domain; none is an escape-hatch
+deferral. No sign-off required._
