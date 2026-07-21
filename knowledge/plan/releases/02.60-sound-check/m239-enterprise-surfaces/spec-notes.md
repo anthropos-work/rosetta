@@ -46,4 +46,12 @@ Verdict **GREEN**. Report: `kb-fidelity-audit.md`. Sha at audit: `06250dd` (rele
 ### §3 #1 hierarchical menu
 - M237-resolved (renders grouped Organization structure for managers on a fresh build). §3 = live presence-verify + a coverage-sweep assertion authored against the live manager render (coverage-manifest.ts SectionDescriptor: region selector + realContent text/count). Manager descriptors need live calibration (manifest note) — hence author against the live render, not blind.
 
+### LIVE VERIFY — demo-1 localhost, cold reset-to-seed (2026-07-21) — ALL GREEN
+- Backend container `demo-1-backend-1`: all 4 Bedrock keys PRESENT (values-blind masked `<set>`). Bridge worked live.
+- talk-to-data: manager `dan-manager` → `/enterprise/talk-to-data` → asked member count → **"Cervato Systems has 51 members"** (backend `ask.stream`: tool_use → `query_postgres` SELECT COUNT(*) → end_turn, ~7 s). `talk-to-data-m239.spec.ts` GREEN 11.7 s.
+- #4 library: `/library/skill-paths` populates first-load (offset endpoint `:15050` baked, not `:5050`). GREEN.
+- #1 menu: grouped Organization nav renders for the manager. GREEN. (`enterprise-surfaces-m239.spec.ts`, both GREEN 7.5 s.)
+- Infra finding: first bring-up crashed `redis exited(1)` = Docker VM disk FULL (`No space left on device` on redis appendonlydir) from 3× 3.7 GB frontend builds. Recovery: `docker builder prune -af` (~25 GB) → cold rebuild → up. See decisions.md F1.
+- rext test specs live at tag `sound-check-m239-live-proof`; the flag+DNA+bridge at `sound-check-m239-enterprise-surfaces`; the bridge log-truthfulness fix at `sound-check-m239-bridge-log-fix`.
+
 _(will accumulate more topic → doc → code triples during build)_
