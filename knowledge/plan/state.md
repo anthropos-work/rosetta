@@ -1,10 +1,10 @@
 ---
 active_release: "v2.6 «sound check» — the reliability / field-hardening release (designed 2026-07-20): make everything that's built actually get built + provisioned. Barrier→parallel-fixes→prove-on-billion, 8 milestones M237→M244. Branch release/02.60-sound-check; tag will be v2.6."
 active_branch: "release/02.60-sound-check"
-active_milestone: "M237 — clean stage (clone-freshness barrier, HARD go/no-go) — NEXT"
+active_milestone: "M237 — clean stage (clone-freshness barrier, HARD go/no-go) — BUILT, pending close"
 last_closed: "M236 — 2026-07-20 (v2.5 final)"
-phase: "v2.6 in development — M237 the clean-stage barrier is the entry point (fix clone-freshness, then re-triage the ambiguous UI defects on a fresh build)"
-last_updated: "2026-07-20"
+phase: "v2.6 in development — M237 BUILT: fetch-verified clone-freshness + R1-all-14 + billion re-triage. Ledger: #1 RESOLVED, #4 no-repro (→M239), #2 survives (→M238). HEADLINE: the '202-behind' premise REFUTED — billion's clones were 0-2 behind (frontend current); the suppressed-fetch reading was the bug. Pending close-milestone."
+last_updated: "2026-07-21"
 ---
 
 # State
