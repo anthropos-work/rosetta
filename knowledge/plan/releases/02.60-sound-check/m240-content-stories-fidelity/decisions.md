@@ -26,6 +26,19 @@ The HARD internal media-safety gate (R1) is **CLEARED** by the following explici
 - Interview-sim discriminator: `directus.simulations.type` = the sim's OWN type; interview sim is the sole `type='SIMULATION_TYPE_INTERVIEW'` (n=1). Fix = `AND d.type = <cell sim_type>` (robust, not slug).
 - **Pass-rate 70–95 band is POPULATED for every passed cell** (assessment 253, code 31, doc 12, hiring 31, interview 28, training-doc 4) → the "empty pass band" blocker does NOT fire; the pass-rate feature is landable.
 
+## Pass-rate re-pin picks (identified 2026-07-21; RESUME here — re-pin YAML + `content-capture --only <keys>` + regenerate presets)
+CODE landed (rext 0753e48). The fixture re-pin was reverted (machine paused before re-capture). The 5 remaining still-100 passed cells re-pin to these prod-verified 70-95 distinct sessions (non-PII; all richer/believable). `asmt-doc-pass` is already 84 (no re-pin). `asmt-voice-pass` already re-pinned in Defect 1 (score 70).
+
+| key | source_session_id | sim_id | sim_slug | score | dur | actors | inter |
+|---|---|---|---|---|---|---|---|
+| asmt-voice-pass-2 | e0507f81-e0cb-4075-aded-5d953ccf5fe5 | cbe85f54-68ae-4f4e-bc8c-62f7ffe31705 | rebuild-manager-trust-after-customer-mistake-69f | 74 | 1678 | 3 | 52 |
+| asmt-code-pass | e70c5935-2f6a-4b58-bc85-a83a59ae2e73 | 634b9ffd-a6a8-444a-a585-1867c1dc61f4 | who-can-see-this-document-fc0 | 72 | 2650 | 3 | 32 |
+| train-doc-pass | 5ef46e63-a1e3-4c14-a601-cd3d878c7173 | 55014cca-6b86-464f-ad3b-9ed501e1e29e | manage-the-migration-to-microsoft-azure-of-a-global-ecommerce | 82 | 5013 | 5 | 167 |
+| hire-voice-pass | dbedcc6b-8505-4cf6-a826-ca9cb4bd183f | cfc8f8c6-5973-4414-b2b6-5b5a98e1ce15 | marketing-performance-analysis-and-strategy-proposal-exp-53b | 83 | 445 | 3 | 20 |
+| intv-voice-pass | cba53b09-5a94-4adf-850f-c0e54aafbc82 | 6d6cdf39-e043-4f94-8a5c-e97116bfe1b2 | ai-readiness-interview-d62 | 81 | 424 | 2 | 1 |
+
+Resume steps: (1) apply these 5 pins to `content-sessions.yaml`; (2) `go run ./cmd/content-capture --dsn "postgres://marco_read@<pgpass-host>:5432/postgres?sslmode=require" --only asmt-voice-pass-2,asmt-code-pass,train-doc-pass,hire-voice-pass,intv-voice-pass` (counts-only; leak post-condition must pass — if a session leaks, pick the next candidate via the sourcing query); (3) regenerate BOTH canonical presets (`--content-export` → content-manifest.json; `--manifest-export --gen-seed …` → seed-generation-manifest.yaml, preserving the leading comment header); (4) update the `content_manifest_test.go` asmt-voice-pass expectations if any projected path changed; (5) run seeders+contentsession+stackseed suites. Then the media-substrate spec (§Delivers) remains.
+
 ## Defect 2 (voice recording) — GENUINE BLOCKER, and the diagnosis is DEEPER than "S3 creds" (2026-07-21)
 Prod-verified (non-PII structural), the media port is blocked for THREE independent reasons:
 1. **The 7 pinned voice sessions have NO recording.** All have `chime_status='not_available'`, zero `chime_recordings` rows, no `bunny_video_id`, no `media_pipeline_id`. The demo's `not_available` is **FAITHFUL to the source** — there is no code defect for the current pins, and nothing to port.
