@@ -75,6 +75,12 @@ confirmation (build-milestone three-fate rule).
 The KB-fidelity audit (`kb-fidelity-audit.md`, 2026-07-21, YELLOW) found `corpus/ops/demo/demopatch-spec.md`
 inventories "11 patches … 1 × ant-academy" listing only `ant-academy-dev-origins`, while
 `academy-fs-published-fallback` is a real, wired native-run patch (14 patch dirs on disk).
-**Fate:** fix the academy portion in Phase 5 when M238 adds the chapter-body patch (making it 3 academy patches:
-`ant-academy-dev-origins`, `academy-fs-published-fallback`, + the new chapter-body one). The non-academy count
-drift (next-web/hiring) is out of M238's subject area — noted, not fixed here.
+**Fate (revised at §4):** fully reconciled the inventory to the **15 manifests on disk** — not just the academy
+portion. A directory-vs-table sweep found the table stale in TWO ways: (a) the 3 native-run `ant-academy` patches
+(`ant-academy-dev-origins` + the 2 `academy-fs-published-*`), and (b) the 2 M232 `next-web-interview-flag-*` patches
+(`packages/ui`) — both classes were missing. Since I was already asserting a count, shipping a partial "13" would
+have been a knowingly-wrong number, so I set it to the true **15** (10 × next-web-app · 2 × app · 3 × ant-academy)
+and added all missing rows. Also noted the standing hygiene gap: no directory-driven fence guards the patch-manifest
+inventory (a `demo_knob_guard`-style sweep would prevent this class of drift). That fence is a tooling task beyond
+M238's academy subject — **surfaced, not built here** (no milestone currently owns a demopatch-inventory fence; a
+low-priority hygiene item, not release-scope-breaking).
