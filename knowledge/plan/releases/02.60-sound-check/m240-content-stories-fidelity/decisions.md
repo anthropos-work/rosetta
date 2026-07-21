@@ -50,3 +50,39 @@ Prod-verified (non-PII structural), the media port is blocked for THREE independ
 ## Environment: S3 media-read UNAVAILABLE (2026-07-21) — DEF-M10-01 is LIVE here
 - `~/.aws/credentials` is 0 bytes; no AWS env/profile; `aws sts get-caller-identity` → "Unable to locate credentials." Prod-read (`marco_read`) IS available.
 - Consequence: the **media-blob PORT** (Defect 2 voice audio bytes; Defect 3 doc body IF an S3 `storage_upload`) is **BLOCKED — the user must provide eu-west-1 S3 read creds**. This is the genuine blocker the roadmap pre-flagged (R1's likely DEF-M10-01 consumption), NOT the safety gate (which the 2026-07-21 decisions CLEAR). Everything else (safety amendment, Defect 1, Defect 3 seed-time write, pass-rate) is landable on prod-read alone and WILL be landed this session.
+
+## RESUME DECISIONS (2026-07-21) — AUTHORITATIVE, hand-made by the user via orchestrator
+
+The Defect-2 voice blocker is **RESOLVED** by explicit user decisions. The prior "genuine blocker" framing (needs-user-input) is superseded — the user chose the media path and asserts the key exists in the platform dev-stack.
+
+**1. VOICE (Defect 2) → SERVE REAL INTERVIEW VIDEO (not audio-only, not presence-only).**
+- Recorded media is on **Bunny.net CDN** (`bunny_video_id`); recorded sessions are almost all **HIRING interview VIDEO of real candidates** (face + voice). Render gate = `chime_status='completed'` + resolvable `bunny_video_id`.
+- **Find the Bunny.net API key/creds in the platform dev-stack** (`app` + `next-web-app` repos' dev-stack config/env — `stack-dev/platform/.env`, the dev-stack compose, app/next env). The real platform serves these videos ⇒ the key exists. Locate it **VALUES-BLIND** (find KEY NAME + location; never echo the value).
+- **Provision it into the demo values-blind** (M239 Bedrock-creds pattern — extend the secret-coverage DNA / demo env bridge so the demo backend/frontend resolve `bunny_video_id`).
+- **Re-pin the voice content-story cells to recorded hiring sessions** (real `chime_status='completed'` + `bunny_video_id`); **port** the recording reference (+ wire CDN access) + flip `chime_status`→`completed`.
+- **Gender-coherence (HARD):** ported recording's apparent gender MUST match the demo persona owning the session. Derive gender via the tool (a label, not by viewing media).
+- **Fresh dated sign-off (2026-07-21) EXPLICITLY covering real candidate interview VIDEO** — extend `safety.md` §3.8.1 to name VIDEO of real candidates specifically (weightier than the audio-only call). Record video-PII posture + VPN/tailnet scope as the control + honest re-identification risk.
+- **Genuine blocker ONLY if the Bunny key is truly ABSENT** from the platform dev-stack (search thoroughly: `grep -ri bunny` across `stack-dev/`, app/next env+config, dev-stack compose). Do NOT fabricate a key.
+
+**2. PASS-RATE fixture swap → DO NOW.** Re-pin the 5 still-100% cells to the 70–95% picks above ("pass-rate re-pin picks"), run `content-capture --only …` (prod read `~/.pgpass` marco_read, values-blind, media never in context), regenerate both canonical presets, confirm the honesty gate (`CanonicalFileMatchesProjection`) stays green.
+
+**3. Delivers media-substrate spec** under `corpus/ops/demo/` — reconcile/complete (checklist shows partial).
+
+**Discipline unchanged:** customer media (video/audio/docs) NEVER enters agent context — orchestrate the tool (M232 `content-capture` pattern: read-only source → scrub-where-applicable → fixture/demo storage, never printed). All creds values-blind. Zero platform-repo edits (READ app/next dev-stack for the key; do NOT edit them; fix = demo-env/secret wiring). Verify video plays via headless/tool check, never by viewing.
+
+## Bunny-key search result (2026-07-21 resume) — GENUINELY ABSENT from this box's dev-stack → video PORT is a SEVERITY=blocker
+
+Per the user's resume decision, searched thoroughly for the Bunny.net recording key VALUES-BLIND (key names + presence/populated counts only, never a value). The render path (verified in source):
+- `next-web-app apps/web/src/app/api/bunny/recording/[sessionId]/route.ts` → GraphQL `jobSimulationChimeRecording(sessionId,userId)` returns the DB `bunnyVideoId` (a portable reference, no bytes) → `getBunnyRecordingDownloadUrl(bunnyVideoId)` (`packages/core-js/src/functions/bunny-thumbnail.server.ts`) SIGNS a Bunny CDN URL with **`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`** (lines 66-67), then the **next-web-app server** fetches + streams the MP4. Absent those signing keys the route returns HTTP 500 "Bunny signing not configured".
+
+**The signing-key VALUES are absent from every location in this box's dev-stack:**
+- `stack-dev/platform/.env` (the live dev config, 940 B) — no BUNNY key at all (the platform-side names `BUNNY_STREAM_API_KEY`/`BUNNY_REC_STREAM_API_KEY`/`BUNNY_TOKEN_HASH_KEY` appear only in `platform/.env_example`; the frontend names `BUNNY_RECORDING_*`/`BUNNY_*` not present).
+- EVERY real `.env` under `stack-dev/` (platform, studio-desk, next-web-app, app worktree, ant-academy) — zero populated BUNNY values (only `.env.example`/`.env_example` TEMPLATES carry key NAMES).
+- `.agentspace/secrets/` (the M239 secret-provisioning SOURCE, incl. `next-web-app/apps/web/.env`) — no BUNNY/CHIME/REC key, so provision-from-source can't supply it either.
+- Both platform compose files — no BUNNY reference. Shell env — none. Terraform — variable DECLARATIONS only (no values/tfvars).
+
+**Consequence — the video PORT is BLOCKED (SEVERITY=blocker).** The seeder writing `bunny_video_id` + flipping `chime_status='completed'` is trivial DB work, BUT without the signing keys the demo's manager clicks play → 500 → a BROKEN player, which is strictly WORSE than the current faithful `chime_status='not_available'`. Re-pinning voice cells to recorded hiring sessions without the key would REGRESS the demo. Building the port code against a key that cannot be provisioned or playback-verified is untestable scaffolding the three-fate rule forbids. So the port is held as one atomic blocked unit.
+
+**Also (Defect 1 interaction):** the `d.type = <cell sim_type>` predicate means only the HIRING-voice cell could ever source a recorded session anyway — recorded voice sessions are almost exclusively HIRING; assessment/training/interview voice = 0 recordings. So even with the key, only `hire-voice-*` cells can serve video.
+
+**What the user must provide to unblock:** the Bunny.net recording signing-key pair (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`), or the platform-side equivalent, from a real source (prod/vault/1Password). The moment it arrives the port is PRE-BLESSED: safety §3.8.1 (video amendment) + the media-substrate spec + the gender-coherence contract are landed this session, so only the provision + re-pin + verify remain. Fallback if the key never comes: voice presence-only (faithful `not_available`), which is the current honest state.
