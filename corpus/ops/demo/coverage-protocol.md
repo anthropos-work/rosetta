@@ -213,6 +213,21 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
 > very `textLen>40` density check this protocol claims to have superseded) now assert the **render**. They report
 > **RED until the render is fixed in M220 — which is intended.** An accurate red beats a comfortable green.
 
+> **The home grid is only half the academy story — the CHAPTER BODY + language switch (v2.6 "sound check" M238).**
+> `ANT_ACADEMY_HOME_SECTION` proves the catalog GRID renders, but a hero *consumes* a chapter — and a demo's
+> backend-null chapter path 404'd ("You wandered off the trail") until M238 wired the FS-published body. So the
+> academy cross-port follow (`coverage.spec.ts onCrossPortFollow`) now, **after** the home renders, runs a
+> **chapter probe**: fetch the public FS-derived `/catalog.json` for a real chapter slug (deterministic — no
+> fragile DOM course-card discovery; prefer a slug with an `it` overlay), load `/chapters/<slug>/`, assert the new
+> **`ANT_ACADEMY_CHAPTER_SECTION`**, then re-load the SAME chapter under **`?lang=it`** and re-assert — the second
+> proves the **language switch on a chapter reader** renders (locale is a `?lang=` query param, not a `/[locale]`
+> route). The chapter descriptor uses a new general **`mustNotInclude`** negative marker (the honest "this is NOT
+> the 404" — `isErrorText`'s sentinels don't cover the academy's whimsical copy) pinned to the exact
+> `not-found.jsx` `<h1>` **plus** a 400-char floor; **either** fails the 404 (an empty/blank render fails the floor;
+> a padded-404 variant fails `mustNotInclude`). ⚠ **Note:** "You wandered off the trail" lives in Next's RSC flight
+> `<script>` data even on a 200 chapter render — a raw-HTML `grep` false-positives; the sweep reads Playwright
+> `innerText` (visible, hydrated), which is clean. Proven live on `billion` (a chapter 404→200; `?lang=it` 200).
+
 > **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
 > asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers
 > behind them are `1,284` or `0`. So a section can clear a `mustInclude` + length floor while every value in it

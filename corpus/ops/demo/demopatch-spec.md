@@ -192,7 +192,16 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**11 patches: 8 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring`) · 2 × `app` · 1 × `ant-academy`.**
+**13 patches: 8 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring`) · 2 × `app` · 3 × `ant-academy`.**
+
+> **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
+> from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
+> `apply-academy-fs-*.sh` shell helper (apply-before-launch / revert-on-`--stop`), re-implementing the guard ladder
+> against the same canonical manifest (see §4 "Three apply vehicles"). This is why they were historically absent
+> from this inventory (which grew around the image-baked `demopatch` tool) — **corrected v2.6 M238**, adding the two
+> **`academy-fs-published-*`** rows: `-fallback` (the catalog, M230) and `-chapter-body` (the body, M238). The two
+> are one FS-as-published behavior, gated on the same `ACADEMY_DEMO_FS_PUBLISHED` env var (+ `DEMO_NO_ACADEMY_FILL`
+> opt-out); see [`frontend-tier.md`](frontend-tier.md) and [`../../services/ant-academy.md`](../../services/ant-academy.md).
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
@@ -224,6 +233,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `next-hiring-role-remap` | `next-web-app` · `apps/hiring/src/context/UserStatusContext.tsx` | **(M224 tik C) the recruiter reaches the hiring enterprise Results routes.** `apps/hiring` stores the Clerk org-role RAW (`role: userRole` = `org:admin`) where `apps/web` **remaps** it (`remapUserRole('org:admin') → 'admin'`). So an admin recruiter reads as **non-admin** in the hiring app, `EnterpriseWrapper` bounces her to the candidate Home, and **0 insights rows** render. The patch adds the same remap (nested, string-literal casts — `apps/hiring` imports `MembershipRoles` **type-only**). **NOT Clerkenstein** (`org:admin` is faithful to real Clerk RBAC), **NOT the seeder** (Rae is already `role='admin'`). Targets its **own** file — no chain |
 | `next-hiring-members-pagination` | `next-web-app` · `apps/hiring/src/context/InsightsContext.tsx` | **(M224 tik D) the Results dashboard stops hanging on the loading spinner.** The exact **mirror of `next-web-members-pagination`**: `apps/hiring`'s InsightsContext fetches `useGetOrganizationMembers({ limit: 1000 })` — an unbounded whole-org fetch the activity-dashboard layout **blocks** on (`if (loading) return <BaseLoading/>`), and its `GET_MEMBERS` query resolves `targetRole` **per row** — so the per-sim scoreboards never mount. Caps the fetch `1000 → 30`. The **per-member Sentinel authz half of the wall needed NO new patch**: the hiring app hits the **same shared `app` backend** that already bakes `app-targetrole-authz-skip`, so `targetRole`'s per-object RPC is already dropped for this path too. Targets its **own** file — no chain |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
+| `academy-fs-published-fallback` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M230, native-run)** the empty demo home GRID renders REAL cards via an FS-as-published catalog fallback (no "Draft" chip), gated on `ACADEMY_DEMO_FS_PUBLISHED`. Applied by `apply-academy-fs-published.sh` |
+| `academy-fs-published-chapter-body` | `ant-academy` · `code/src/lib/serverChapterBody.js` | **(M238, native-run)** the BODY half — clicking "Start the course" renders the FS chapter body (locale-aware, unlocked, un-chipped) instead of the "You wandered off the trail" 404. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-body.sh` |
 
 ---
 

@@ -417,6 +417,24 @@ skill-path cards** (real catalog names — Claude Code, AI Foundations, Agent SD
 coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`coverage-protocol.md`](coverage-protocol.md))
 — is the remaining release-close verification.
 
+### The BODY half — `academy-fs-published-chapter-body` (v2.6 "sound check" M238)
+
+The catalog patch above got the **grid + course landing** to render, but clicking **"Start the course"** still
+**404'd** — because chapter **bodies** are backend-authoritative too, and the catalog patch only touches
+`serverTenant.js` (the catalog), not `serverChapterBody.js` (the body). A demo's null backend → `notFound()` → the
+"You wandered off the trail" 404 (see [`../../services/ant-academy.md`](../../services/ant-academy.md) §"The chapter
+BODY is backend-authoritative too"). **M238 adds the BODY half:** the `academy-fs-published-chapter-body` demopatch
+serves the committed FS chapter body (locale-aware, unlocked, un-chipped) at the backend-null branch — gated on the
+**same** `ACADEMY_DEMO_FS_PUBLISHED` env var + **same** `DEMO_NO_ACADEMY_FILL` opt-out, applied together by
+`ant-academy.sh` via the sibling native helper `stack-injection/apply-academy-fs-published-body.sh`
+(apply-before-launch / revert-on-`--stop`; behavior-identical when the env is unset). So the two halves are one
+coherent FS-as-published behavior: **the grid renders FS cards, and clicking one renders the FS body.** Shipped in
+rext at tag `sound-check-m238-ant-academy-reliability`. **Proven live on `billion`** (demo-1): a chapter that
+returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter title + body, and
+`/chapters/<slug>/?lang=it` also renders (the language switch on a chapter reader — the same backend-null path). The
+coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
+[`coverage-protocol.md`](coverage-protocol.md)), not just the home grid.
+
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
 > per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —

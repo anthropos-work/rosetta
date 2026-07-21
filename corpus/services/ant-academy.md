@@ -161,6 +161,45 @@ no academy rows — so **failure legs 1 and 3 both hold** and the grid resolves 
 render bug in the academy repo; it is the DB-authoritative catalog with **no reachable, populated source**. Filling it
 (M230) is a demo-tooling concern — **zero academy-repo edits** (env / a sha-pinned demo-patch on the ephemeral clone).
 
+### The chapter BODY is backend-authoritative too — the demo needs a SECOND FS-published fallback (v2.6 M238)
+
+The catalog is only half the read path. **Chapter BODIES are backend-authoritative with NO FS fallback**, exactly like
+the catalog. `src/lib/serverChapterBody.js::resolveServerChapterBody(slug, locale)` is
+`const body = await getBackendChapterBody(slug, locale)`; a **null** backend result → the dev-only draft path
+(`maybeResolveDraftBody`, gated on `draftsEnabled() ∧ isFsDraftSlug` — off in a demo) → else `return { notFound: true }`
+→ the caller `notFound()`s → the 404 whose `<h1>` reads **"You wandered off the trail."** (`app/not-found.jsx`). In a
+demo the backend is null for **every** chapter (no endpoint, empty DB), so **clicking "Start the course" 404'd** even
+after M230 made the grid + course landing render — the catalog patch (`academy-fs-published-fallback`) patches only
+`serverTenant.js` (the catalog `getServerCatalogView`), not the body.
+
+**The fix (M238) is the BODY half of the same FS-as-published behavior:** the
+[`academy-fs-published-chapter-body`](../ops/demo/demopatch-spec.md) demopatch adds, at that backend-null branch, an
+env-gated FS-as-published body fallback — when `getBackendChapterBody` returns null **and**
+`ACADEMY_DEMO_FS_PUBLISHED === '1'` (the **same** env var + `DEMO_NO_ACADEMY_FILL` opt-out the catalog patch uses),
+serve the committed FS chapter shape (`safeLoadFsShape → loadChapterShape`, locale-aware) **unlocked + un-chipped**
+(`draft:false`) — production-faithful, mirroring the dev-only draft path but without the draft predicate/chip.
+**Behavior-identical when the env is unset** (the pristine 404 stands — safe even if upstreamed). So the grid renders
+FS cards (catalog patch) and clicking one renders the FS body (this patch), both gated together. **Zero academy-repo
+edits** — a native-run `apply-academy-fs-published-body.sh` patches the demo's ephemeral clone, reverted on teardown.
+Proven live on `billion`: a chapter that returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real
+chapter title + body.
+
+### The language switch is a `?lang=` query param, not a `/it` route (the #2 verdict, v2.6 M238)
+
+The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code this
+is **not a code bug** — it decomposes into:
+- **Locale is a `?lang=<code>` QUERY PARAM only** (`src/i18n/locale.js` — explicit by-design; there is **no
+  `/[locale]` path-prefix route**). A bare `/it` URL 404s because it was never a route. `coerceLocale` falls back to
+  `en` for anything unsupported.
+- **The switcher (`src/i18n/LocaleSwitch.jsx`) is a 2-way EN↔IT toggle `<Link>`** that sets `?lang=it` on the current
+  path (mounted in the public header), **not a dropdown menu**. `src/i18n/translate.js` returns the inline-English
+  `defaultEn` on any key miss, so a switch can't error — it degrades to English.
+- **Switching language on a CHAPTER reader** re-runs `resolveServerChapterBody(slug, 'it')` (the chapter RSC reads
+  `?lang=` via `localeFromSearchParams` and threads the locale) → in a demo that hit the **same backend-null 404** as
+  #3. So it is **fixed by the M238 chapter-body patch**, which serves the locale-aware FS body (the `it/` overlay
+  where present, else the canonical-EN fall-through). Confirmed live on `billion`: `/chapters/<slug>/?lang=it` → HTTP
+  200, real chapter content.
+
 ### Tech Stack
 
 | Layer | Technology |
