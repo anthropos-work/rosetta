@@ -413,6 +413,39 @@ And the **demo-aware coverage check** never weakens the safety posture: on a dem
 Clerk keys as satisfied (they are minted at bring-up, not sourced), values-blind, by NAME only — a dev stack still
 requires the real keys. (#M27 #M28)
 
+### 2.10 A demo's app holds real AWS Bedrock creds (v2.6 M239)
+
+**A disclosed secrets-posture shift, not a new hole.** Until v2.6, the demo's AI-provider keys were
+**absent-by-design** (M50, [`secrets-spec.md`](secrets-spec.md#the-bedrock-cred-class-for-app-v26-m239-talk-to-data)):
+a demo's believability renders from seeded structural data, so no live model key was ever provisioned. **Talk
+to Data** (`/enterprise/talk-to-data` → `app/internal/askengine`) breaks that — it is a *live-inference*
+feature that cannot answer without a real model call — so the user decided (2026-07-20) to wire **real AWS
+Bedrock creds** into the demo's `app`. This is the **first present-not-absent cloud credential a demo's `app`
+carries**, and it is recorded here honestly rather than left implicit.
+
+**What the credential can and cannot do (the blast radius).** The demo **uses** it only for **Bedrock runtime
+inference** — `askengine/bedrock.go` calls `InvokeModel` on `eu.anthropic.claude-sonnet-4-6` in `eu-west-1`
+and nothing else. It is **not** wired to any data plane: the demo's `app` reads no customer data with it
+(Parts 1+2 already make customer data unreachable from a demo), writes nothing to prod, and touches no S3 /
+Directus / DB through it. Its worst-case *within the demo* is model-inference spend, not data exposure — a
+different, far smaller risk class than the tenant-data and prod-write vectors Parts 1+2 close. **The one caveat
+worth stating plainly:** the *credential itself* has whatever permissions its IAM principal was granted, which
+the **operator** controls when they provision it — the tooling neither creates nor scopes it. So the operator
+**should provision a minimally-scoped, inference-only IAM principal** (ideally `bedrock:InvokeModel*` on the EU
+inference profile, nothing more), so that even the worst case — an attacker who reaches the demo and exfiltrates
+the env — inherits only Bedrock inference, not a broad AWS key. That scoping is an operator responsibility this
+doc names, not a tooling guarantee.
+
+**How it is fenced.** (1) **Operator-provisioned, never minted or fabricated** — the tooling provisions
+*nothing* on its own; the creds only exist in a demo if an operator drops them into the (gitignored) secret
+source (`.agentspace/secrets/app/.env`), values-blind (the §2.9 provisioner never reads/echoes a value; the
+`bridge_bedrock_creds` copy that lands them in the container is file→file, never surfaced). (2) **Deliberately
+NOT critical** (R3) — the two cred genes are `required`·`standard`, so a box **without** them still brings a
+demo up cleanly (Talk to Data merely inert), and no coverage gate is weakened. (3) **VPN/tailnet-scoped
+exposure** — a demo is an unauthenticated, authz-weakened build published on all interfaces (§3, Part 3); the
+control on *who can reach it* is the same VPN/tailnet scope (§3.8) that bounds every other demo surface, and it
+bounds this one too. The credential rides inside that same perimeter — it does not widen it.
+
 ---
 
 ## Part 3 — The exposure side: who can REACH a demo, and what they get if they do

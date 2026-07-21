@@ -3,16 +3,16 @@ milestone: M239
 slug: enterprise-surfaces
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 depends_on: M237
 delivers: corpus/ops/secrets-spec.md + corpus/ops/safety.md
 ---
 
 # M239 — enterprise surfaces
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium (large if the Bedrock wiring balloons)  ·  **Depends on:** M237
+**Status:** `archived` (completed 2026-07-21)  ·  **Shape:** `section`  ·  **Complexity:** medium (large if the Bedrock wiring balloons)  ·  **Depends on:** M237
 
 ## Goal
 talk-to-data works live; the library grid loads first-time; the hierarchical manager menu is confirmed.

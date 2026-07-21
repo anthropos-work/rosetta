@@ -91,26 +91,28 @@ alias (a family id — genes sharing ONE underlying value), source_hint, note
 
 The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are unique across the DNA.
 
-**The 6-repo / 56-gene map** (the committed `secret-dna.json`, version `stage-door-m30`, profile `graphql`):
+**The 6-repo / 61-gene map** (the committed `secret-dna.json`, version `sound-check-m239`, profile `graphql`):
 
 | Repo | Target file | Genes | Notable keys |
 |---|---|---|---|
 | **platform** | `.env` | 29 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants, `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
-| **app** | `.env` | 5 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) |
+| **app** | `.env` | 10 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) + **the M239 Bedrock cred class** (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` + `AWS_REGION`/`AWS_SESSION_TOKEN`/`CLAUDE_CODE_USE_BEDROCK` — Talk to Data, see below) |
 | **sentinel** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example` |
 | **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
 
-Status split: **40 required · 8 optional · 8 waived**. Of the required genes, **13 are `critical`** (the
-gate denominator) and 27 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
+Status split: **42 required · 11 optional · 8 waived**. Of the required genes, **13 are `critical`** (the
+gate denominator) and 29 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
 no required+critical gene is rejected at load (else `Critical` would score a hollow 100% over zero genes),
 the same defence the data-DNA + alignment frameworks carry. (The M30 field-bake reclassified
 `sentinel/DB_CONNECTION` from critical/required to `waived-config` — it is compose-injected, never read from
 a `.env`; this shifted the split from 40/8/7 + 13-critical to 39/8/8 + 12-critical. **M49 #4** then added
 `platform/INVITATION_HMAC_SECRET` as critical/required — the `app` exits early when it is unset
 (`invitations.NewTokenManager` errors and `main` returns: the silent `app Exited (0)` class) — landing the
-split at **40/8/8 + 13-critical**; the anti-vacuous guard still holds.)
+split at 40/8/8 + 13-critical. **M239** then added the 5-gene **Bedrock cred class** for `app` (2 required-`standard`
++ 3 optional; deliberately **NOT** critical — see below), landing the split at **42/11/8 + 13-critical**;
+the anti-vacuous guard still holds.)
 
 ### The per-repo target-file map (where `provision` writes)
 
@@ -274,6 +276,48 @@ real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-fligh
 > both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
 > demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
 > the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
+
+### The Bedrock cred class for app (v2.6 M239, Talk to Data)
+
+**The one AI-provider secret a demo now DOES carry — by operator provision, not by minting.** The M50 policy
+above kept AI-provider keys **absent-by-design** because no *believability* surface needs a live model. **Talk
+to Data** (`/enterprise/talk-to-data` → `app/internal/askengine`) is the exception the user decided (v2.6,
+2026-07-20) to make **FULL**: it is a live-inference feature — natural-language Q&A over the org's data —
+that literally cannot answer without a real model call. Its backend (`bedrock.go`) routes through **AWS
+Bedrock** (SigV4 over the default AWS credential chain → model `eu.anthropic.claude-sonnet-4-6`, region
+`eu-west-1`), so the demo's `app` must hold real AWS creds. This is the **first present-not-absent AWS/cloud
+credential class for `app`** — recorded as a secrets-posture shift in [`safety.md` §2.10](safety.md#210-a-demos-app-holds-real-aws-bedrock-creds-v26-m239) below.
+
+**The 5 genes** (all on the `app` repo, target `app/.env`; the `../hyper-studio/.env.example` template):
+
+| Key | Status · criticality | Why |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | **required · standard** | the access-key half the default chain signs SigV4 with |
+| `AWS_SECRET_ACCESS_KEY` | **required · standard** | the secret half — a credential **pair** (two distinct values), never an alias family |
+| `AWS_REGION` | optional | `bedrock.go` defaults to `eu-west-1` when unset — config with a code default, not a secret |
+| `AWS_SESSION_TOKEN` | optional | STS session token — present only with **temporary** creds; absent with permanent IAM keys (the hyper-studio template uses permanent) |
+| `CLAUDE_CODE_USE_BEDROCK` | optional | a Claude Code CLI convention — **NOT read** by `askengine/bedrock.go` (which always routes Bedrock); provisioned for parity, inert for the app |
+
+**Why required-`standard`, deliberately NOT `critical` (the R3 decision).** The two real creds are `required`
+(the `check` counts them + flags them missing) but **`standard`, so their absence never fails the `Critical
+== 100%` gate**. A box without Bedrock creds still brings a demo up cleanly — Talk to Data just stays
+**inert** (the SSE stream opens, but the agentic loop fails with `no EC2 IMDS role found`), the same graceful
+degradation as any absent AI-provider key. Making them `critical` would break every creds-less demo's gate,
+which is exactly the R3 risk the release design flagged. They are also **NOT** in the `demoSatisfied` set —
+unlike the minted Clerk family or the auto-generated `INVITATION_HMAC_SECRET`, they are **operator-provided
+from the source**, so a creds-less demo legitimately *warns* (standard, non-fatal) rather than being treated
+as satisfied.
+
+**The bridge — provision writes `app/.env`, but the containerised backend reads `platform/.env`.** The DNA
+targets `app/.env` (where the operator drops the creds, mirroring the native-dev backend env). But the demo's
+**backend (`app`) container** reads its env from `env_file: .env` = the demo's **`platform/.env`** — *not*
+`app/.env`, which is the repo-local native-dev env the container never mounts. And the M217 override **drops
+the `~/.aws` mount** for a demo (the empty-dir `EISDIR` bug), so **env vars — not a mount — are the only
+vehicle to the container.** So `up-injected.sh`'s `bridge_bedrock_creds()` copies exactly the Bedrock class
+`app/.env → platform/.env` right after provision: **values-blind** (bytes move file→file via `>>`, never
+surfaced), **idempotent** (copy-if-absent — a re-run adds nothing), and **non-fatal** (a creds-less
+`app/.env` just logs an inert-note). Proven live 2026-07-21: the provisioned creds get a real Bedrock answer
+from `eu.anthropic.claude-sonnet-4-6` (`converse` → `pong`, `end_turn`, eu-west-1).
 
 ### The values-blind safety statement (the inviolable invariant)
 

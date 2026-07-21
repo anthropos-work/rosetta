@@ -229,12 +229,22 @@ never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, t
 services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
 used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
 
-> **Below ~20 GB host disk free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
-> `DEMO_DISK_MIN_GIB=N`; the free-space signal is `df` on the filesystem backing Docker's data — host root as
-> the portable proxy). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
+> **Below ~20 GB free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
+> `DEMO_DISK_MIN_GIB=N`). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
 > removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
 > tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
 > re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
+
+> **The free-space signal measures the Docker VM's INTERNAL disk, not host `/` (v2.6 M239-F1 correction).**
+> On Docker Desktop the engine runs in a Linux VM with its **own fixed-size virtual disk** — the filesystem a
+> full-cold build actually `ENOSPC`s. Host root `/` is a *different*, usually-huge filesystem that does **not**
+> reflect it. The original pre-flight `df -Pk /`'d host root and so read ~200 GB "free" while the VM's ~59 GB
+> disk filled and the build died — staying **GREEN through the exact failure it exists to catch**, which then
+> surfaced as a **cryptic downstream `redis exited (1)`** (redis was just the first container to write). It now
+> probes the VM disk via a throwaway `busybox df` (the container root == the VM overlay), falls back to host
+> `/` only when Docker/`df` is unreachable, and the warn **names the redis mis-attribution** so the cause reads
+> as *disk*, not *redis*. (Measured live: 25 GiB VM-disk free vs 212 GiB host-`/` free on the same box — the
+> old proxy's blind spot.) `DEMO_DISK_AVAIL_KB` still short-circuits the probe (test/operator override).
 
 ## How the pk + URLs are baked (zero platform edit)
 

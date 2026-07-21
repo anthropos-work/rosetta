@@ -1,9 +1,9 @@
 ---
 active_release: "v2.6 «sound check» — the reliability / field-hardening release (designed 2026-07-20): make everything that's built actually get built + provisioned. Barrier→parallel-fixes→prove-on-billion, 8 milestones M237→M244. Branch release/02.60-sound-check; tag will be v2.6."
 active_branch: "release/02.60-sound-check"
-active_milestone: "M239 ∥ M240 ∥ M243 — the post-barrier fix fan-out (M237 barrier + M238 academy reliability CLOSED 2026-07-21); M239 enterprise surfaces next"
-last_closed: "M238 — 2026-07-21 (ant-academy reliability)"
-phase: "v2.6 in development — M237 barrier + M238 academy reliability CLOSED: #3 Start→404 AND #2 language both fixed by ONE chapter-body FS-published demopatch (proven live on billion; #2 was not a distinct code bug), academy coverage sweep extended (mutation-verified RED). Fan-out continues: M239 enterprise ∥ M240 content-fidelity ∥ M243 assign-WRITE; the 8 standing demo-stack test failures re-fated Fate-2 → M244."
+active_milestone: "M240 ∥ M243 — the post-barrier fix fan-out (M237 + M238 + M239 CLOSED 2026-07-21); M240 content-stories fidelity ∥ M243 assign-WRITE next (M241 serial after M240)"
+last_closed: "M239 — 2026-07-21 (enterprise surfaces)"
+phase: "v2.6 in development — M237 + M238 + M239 CLOSED. M239: talk-to-data FULL (real AWS Bedrock creds provisioned values-blind, proven live — a manager asked member count → 'Cervato Systems has 51 members' via a real Bedrock round-trip); #4 library + #1 menu were no-defect verdicts; F1 disk pre-flight landed (measures the Docker VM disk, not host /); the close found + fixed 2 own-code defects (a bring-up-aborting disk probe + an env-corrupting bridge append). Fan-out continues: M240 content-stories fidelity ∥ M243 assign-WRITE; M244 owns the standing-8 + the 9th reap test-isolation collision + DEF-M239-01."
 last_updated: "2026-07-21"
 ---
 
@@ -33,8 +33,13 @@ M237 clean stage (HARD go/no-go barrier)
 - **M238 academy reliability** [`section`] — ✅ **CLOSED 2026-07-21.** ONE chapter-body FS-published demopatch fixed
   **both #3 (Start→404) and #2 (language)** — #2 was not a distinct code bug — proven live on `billion`; academy
   coverage sweep extended (mutation-verified RED) + a directory-driven demopatch-inventory fence (exact 15).
-- **M239 enterprise surfaces** · **M240 content-stories fidelity** · **M243 assign-WRITE Playthrough** — the remaining
-  parallel fix fan-out off M237.
+- **M239 enterprise surfaces** [`section`] — ✅ **CLOSED 2026-07-21.** talk-to-data **FULL** — a real AWS Bedrock cred
+  class (values-blind, R3 not-critical) provisioned + bridged into the demo backend, **proven live** (manager Q&A → "51
+  members" via a real Bedrock round-trip); #4 library + #1 menu were **no-defect verdicts**; F1 disk pre-flight landed
+  (VM disk, not host `/`); the close fixed **2 own-code defects** (a bring-up-aborting disk probe + an env-corrupting
+  bridge append), mutation-verified. YELLOW audit: DEF-M239-01 + a 9th reap test-isolation collision → Fate-3 → M244.
+- **M240 content-stories fidelity** · **M243 assign-WRITE Playthrough** — the remaining parallel fix fan-out off M237
+  (M241 serial after M240 → M242).
 - **M241 language** (serial after M240) · **M242 cockpit UX** (serial after M241).
 - **M244 prove-on-billion** [`iterative`, terminal] — re-prove v2.5's headline `29/29` AND every v2.6 fix live on
   `billion`, cold reset-to-seed. Multi-part exit gate (a–h), opens with the read-only `ORG-CLEAN` settling check.
@@ -46,11 +51,12 @@ a secret-coverage DNA extension for `app` (not just a flag; `../hyper-studio/.en
 cannot be token-scrubbed — **before any customer audio lands in a demo**) [M240]; **(3) language → EN-only fallback per
 tuple** — M241 opens with a read-only IT-session pool-count go/no-go query [M241].
 
-**Next:** the **post-barrier fix fan-out** continues (M238 academy reliability done) — **M239 enterprise surfaces ∥ M240
+**Next:** the **post-barrier fix fan-out** continues (M238 academy + M239 enterprise surfaces done) — **M240
 content-stories fidelity ∥ M243 assign-WRITE Playthrough** (M241 serial after M240, M242 after M241). Each fix is scoped
 against the fresh, correctly-built demo M237 established. The v2.5 headline live re-prove stays reserved for the terminal
 **M244** (which opens with the read-only `ORG-CLEAN` settling check, standing backlog below) — and now also owns the
-re-fated **8 standing demo-stack test failures** (M238-D5).
+re-fated **8 standing demo-stack test failures** (M238-D5), the **9th** reap `test_a_RACED…` 17700 test-isolation
+collision (M239-D13, fix recipe recorded), and **DEF-M239-01** ("fail the BUILD loudly on ENOSPC", M239-D12).
 
 ## ⚠️ The v2.5 headline shipped UNIT-PROVEN, not LIVE-RE-PROVEN — v2.6/M244 re-proves it
 
@@ -63,6 +69,13 @@ is up and reachable. Ledger: `CLOSE-D3` + `T-3`.
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M239 enterprise surfaces** — 2026-07-21 (section; second post-barrier fix). talk-to-data **FULL** — a real AWS
+  Bedrock cred class (values-blind, R3 not-critical) provisioned + bridged into the demo backend, **proven live** (a
+  manager asked member count → "Cervato Systems has 51 members" via a real ~7 s Bedrock round-trip). #4 library + #1 menu
+  were **no-defect verdicts**; F1 disk pre-flight landed (Docker VM disk, not host `/`). The close found + fixed **2
+  own-code defects** (a bring-up-aborting disk probe + an env-corrupting bridge append), mutation-verified. Deferral audit
+  YELLOW: DEF-M239-01 + a 9th reap `test_a_RACED…` 17700 test-isolation collision → Fate-3 → M244. Touched suites green
+  (Py 106, Go secretdna PASS), flake 5/5, 0 platform edits.
 - **M238 ant-academy reliability** — 2026-07-21 (section; first post-barrier fix). ONE chapter-body FS-published
   demopatch fixed **both #3 (Start→404) and #2 (language)** — #2 was not a distinct code bug (locale is `?lang=`, no
   `/[locale]` route) — proven live on `billion`. Academy coverage sweep extended (mutation-verified RED) + a
