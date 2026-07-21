@@ -53,9 +53,13 @@ believable, a *separate* authoring-time tool copies the real text of a short, ha
 sessions — the conversation, the AI feedback, the report — scrubs the names, emails and identifiers it can
 detect, and ships the scrubbed result as a checked-in fixture. That is **real customer-authored content,
 best-effort anonymized — not provably anonymous.** The data-controller accepted the residual re-identification
-risk (2026-07-19) on the condition that such demos are reachable only over a VPN/tailnet. It is source-pinned and
-auditable in one file, and it changes nothing on the write side. See **§3.8** — and do not repeat the
-unqualified promise above without it.
+risk (2026-07-19) on the condition that such demos are reachable only over a VPN/tailnet. **v2.6 "sound check"
+widens that exception to the two MEDIA facets — the raw call audio recording and the full document body — so a
+manager can actually hear the call and read the document (§3.8.1).** A recorded voice **cannot** be scrubbed the
+way text can, so the audio is copied whole and the VPN scope is its *only* control; the data-controller signed off
+**afresh (2026-07-21)** for raw voice + full documents on that same VPN-only condition. It is source-pinned and
+auditable in one file, and it changes nothing on the write side. See **§3.8 / §3.8.1** — and do not repeat the
+unqualified promise above without them.
 
 On the write side, a small
 set of stores are *shared* with the live product (the content system, one storage bucket, the login system);
@@ -75,9 +79,10 @@ can do the same**, with no password. The tooling does **not** claim otherwise, a
 own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
 machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
 data and cannot write to production.** There is nothing behind the door — **with one bounded, disclosed
-exception (v2.5): a "content-story" demo carries the REAL content of production sessions, COPIED and scrubbed of
+exception (v2.5, WIDENED v2.6): a "content-story" demo carries the REAL content of production sessions, COPIED and scrubbed of
 detectable PII best-effort (not guaranteed clean — residual re-identification risk is accepted, VPN/tailnet-scoped,
-a data-controller decision; §3.8).**  See **Part 3**.
+a data-controller decision; §3.8) — and since v2.6 also the REAL call audio + full documents, the audio
+UNSCRUBBABLE and VPN-scope-only, signed off afresh 2026-07-21 (§3.8.1).**  See **Part 3**.
 
 ---
 
@@ -862,6 +867,70 @@ firewall-safety argument, the source-pin contract, the no-manager-played rule, a
 mechanism — the real content is copied, detectable PII scrubbed, residual re-identification risk accepted by the
 data-controller, VPN/tailnet-scoped) + [`demo/content-stories-routes.md`](demo/content-stories-routes.md) §3.5 (the
 M231 spike that authored the posture this section lands).
+
+### 3.8.1 The raw-media extension — voice recordings + full documents (v2.6 "sound check", M240)
+
+Until v2.6 the content-story exception (§3.8) copied only a played session's **free-text** — the transcript, the
+LLM feedback, the submission text, the interview report — each **token-scrubbed** best-effort. v2.6 "sound check"
+extends the copy to the two **media** facets that make a played session actually playable: the **call's raw audio
+recording** (the Chime/S3 recording, re-hosted in the demo storage tier so the manager can press play and hear it,
+with `chime_status` flipped to available) and the **full document body** a document session produced (beyond the
+small `validation_criterion_results.input_data` reference, whose ~35-char payload is a pointer, not the body). This
+is a **strictly larger customer-PII surface than v2.5's scrubbed text**, and the two facets are NOT symmetric —
+they carry two different postures, recorded here honestly.
+
+**Voice audio → PORTED AS-IS. A voice is not token-scrubbable, so the scrub bound of §3.8 does NOT extend to it.**
+There is no "anonymized-real audio": a recorded human voice is inherently identifying (it carries the speaker's
+timbre, accent, cadence, and often their spoken name) and cannot be redacted the way a name-token in text can. So
+for the audio facet, §3.8's **bound 1 (best-effort scrub)** has **no counterpart** — the tooling does not, and
+cannot, claim to anonymize the audio. The audio is copied whole. Its **only** control is §3.8's **bound 2 (the
+VPN/tailnet scope)** — which for the free-text facet was a reinforcing comfort but for the audio facet is **the
+entire control**, exactly as §3.3.1 already elevated it to be for the content-story demo shape. Two operational
+constraints attach:
+
+- **The bytes never enter an agent's context.** The port streams the recording **prod-S3 → demo storage tier**
+  entirely inside the capture tool — it is never printed, cat'd, decoded, transcribed, or read into any agent's
+  reasoning, the same counts-only discipline `cmd/content-capture` applies to text (§3.8). An operator orchestrates
+  the port; no one listens to the audio in-context.
+- **Gender coherence (a believability constraint, NOT a safety one).** The `ContentStorySeeder` re-tenants a real
+  session onto a synthetic player persona; when that session carries a voice recording, the **owning persona's
+  apparent gender must match the voice's** — a persona minted as "Maria" must not front a male-voiced call. The
+  source voice's gender is **labeled at capture time, values-blind** — derived in-tool from the session owner's
+  sourced identity (which the scrub already reads and drops), never by an agent listening to the audio — and the
+  persona pairing is constrained so the two align. A gender label (`m`/`f`/`unknown`) is not the class of PII the
+  scrub removes; the owner's name that produced it never leaves the tool.
+
+**Documents → PORTED + SCRUBBED (bound 1 applies unchanged).** The full document body IS text, so it runs through
+the **same** best-effort `scrub` pass the transcripts use (names → placeholders, org → `<<ORG>>`, emails / phones /
+URLs redacted), with the same fail-closed capture-time leak post-condition. Its residual is identical to the
+free-text residual §3.8 already accepted: best-effort, **not provably clean**.
+
+**Fresh data-controller sign-off (2026-07-21).** The 2026-07-19 acceptance in §3.8 covered scrubbed **free-text**.
+Raw customer **voice** is a materially larger call — it is unanonymizable, so the residual re-identification risk
+is higher and of a different kind (a colleague could recognize a real voice the scrub cannot touch). The
+data-controller therefore signed off **afresh, dated 2026-07-21**, specifically for **raw customer voice recordings
++ full customer documents in a demo**, on the **same condition** that bounds §3.8: such a demo is reachable **only
+over a Tailscale tailnet / VPN**, never the public internet, and the pinned session list stays source-pinned +
+disclosed. The residual re-identification risk for the audio facet is **real and ACCEPTED (2026-07-21)**; the
+control is the VPN scope, not a scrub.
+
+**The gate ordering — posture documented BEFORE any media lands.** No customer audio or document blob is copied
+into a demo until this amendment and the 2026-07-21 sign-off are in place. This section IS that gate; it landed
+before the seeder's media-port code did.
+
+**Part 2 (never-write-prod) is untouched.** The audio re-host and the document-blob write target only the
+**per-stack demo storage tier** (`PerStackIsolated`) — a demo can no more write prod S3 than any other seeder — and
+the authoring-time read stays read-only. The extension is entirely on the read side, bounded by the (text-only)
+scrub + the VPN scope; for the audio facet, by the VPN scope alone.
+
+> **Current status (M240, honest).** The media-port **tooling** is specified and the posture above is signed off,
+> but the actual byte-port depends on **eu-west-1 S3 read access to the recording/media bucket** (the long-standing
+> `DEF-M10-01`), which is **not wired in the authoring environment as of 2026-07-21**. Until an operator provisions
+> that read access, a content-story demo ships **without** ported audio (`chime_status` stays `not_available`) and
+> without any S3-resident document body — exactly the pre-v2.6 state, degraded honestly, never a broken "play"
+> button over a blob that isn't there. The posture is documented **ahead of** the capability, by design (the gate
+> ordering above). See [`demo/media-substrate-spec.md`](demo/media-substrate-spec.md) for the full mechanism +
+> the S3-blocked residual.
 
 ---
 
