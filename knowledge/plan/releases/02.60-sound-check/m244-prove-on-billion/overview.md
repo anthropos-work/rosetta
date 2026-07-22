@@ -7,7 +7,7 @@ status: planned
 created: 2026-07-20
 last_updated: 2026-07-20
 depends_on: M238, M239, M240, M241, M242, M243
-exit_gate: "On a cold reset-to-seed on billion: (a) ORG-CLEAN reports 0 surviving source-org tokens (or each dispositioned) — RUN FIRST, read-only, before the bring-up; (b) content-stories run-content-stories.sh green at the shipped harness with the CQ-1 grader fix + CQ-2 runner wiring + externally-sourced EXPECTED_PAIRS (discharges CLOSE-D3); (c) the 39 live-browser specs execute green (T-3); (d) the anonymous academy /library+/free twin renders real cards (S-1); (e) DEF-M226-01 — the serve-reap self-resolution claim is actively tested or DROPPED; (f) the 3 v2.3 drift-carries burned-in live (BURNIN-M221 / F-M220-4 / PROBE-M218-c3); (g) the interview plan-section-id alignment assertion added + green (S-8/S-9); (h) every v2.6 fix (academy course-start, talk-to-data live answer, library, content fidelity incl. media, language toggle, cockpit UX) proven live; p95 click->ACCESS < 5 s hero vantages. 0 platform edits."
+exit_gate: "On a cold reset-to-seed on billion: (a) ORG-CLEAN reports 0 surviving source-org tokens (or each dispositioned) — RUN FIRST, read-only, before the bring-up; (b) content-stories run-content-stories.sh green at the shipped harness with the CQ-1 grader fix + CQ-2 runner wiring + externally-sourced EXPECTED_PAIRS (discharges CLOSE-D3); (c) the 40 live-browser specs (24 stack-verify + 16 Playthroughs, incl. M243's assign-WRITE) execute green (T-3); (d) the anonymous academy /library+/free twin renders real cards (S-1); (e) DEF-M226-01 — the serve-reap self-resolution claim is actively tested or DROPPED; (f) the 3 v2.3 drift-carries burned-in live (BURNIN-M221 / F-M220-4 / PROBE-M218-c3); (g) the interview plan-section-id alignment assertion added + green (S-8/S-9); (h) every v2.6 fix (academy course-start, talk-to-data live answer, library, content fidelity incl. media, language toggle, cockpit UX) proven live; p95 click->ACCESS < 5 s hero vantages. 0 platform edits."
 iteration_protocol_ref: corpus/ops/verification.md + corpus/ops/demo/tailscale-serve.md + coverage-protocol.md + playthroughs.md
 delivers: none
 ---
@@ -23,7 +23,7 @@ Re-prove the whole feature — v2.5's headline `29/29` AND every v2.6 fix — li
 On a cold reset-to-seed on `billion`:
 - **(a)** `ORG-CLEAN` reports **0** surviving source-org tokens (or each dispositioned) — **RUN FIRST**, read-only, before the bring-up.
 - **(b)** content-stories `run-content-stories.sh` green at the shipped harness with the CQ-1 grader fix + CQ-2 runner wiring + externally-sourced `EXPECTED_PAIRS` (discharges CLOSE-D3).
-- **(c)** the **39 live-browser specs** execute green (T-3).
+- **(c)** the **40 live-browser specs** execute green (T-3) — **24 stack-verify + 16 Playthroughs** (was 39 = 24 + 15; M243 added the 16th Playthrough spec, `assignment-assign.spec.ts` / `pt-assignment-assign`, whose cold re-drive on `billion` M244 owns — proven GREEN + DB-verified at build on demo-1).
 - **(d)** the anonymous academy `/library`+`/free` twin renders real cards (S-1).
 - **(e)** `DEF-M226-01` — the serve-reap self-resolution claim is **actively tested or DROPPED**.
 - **(f)** the 3 v2.3 drift-carries burned-in live (`BURNIN-M221` / `F-M220-4` / `PROBE-M218-c3`).

@@ -1,9 +1,9 @@
 ---
 active_release: "v2.6 «sound check» — the reliability / field-hardening release (designed 2026-07-20): make everything that's built actually get built + provisioned. Barrier→parallel-fixes→prove-on-billion, 8 milestones M237→M244. Branch release/02.60-sound-check; tag will be v2.6."
 active_branch: "release/02.60-sound-check"
-active_milestone: "M243 assign-WRITE Playthrough — the last of the post-barrier fan-out (M237–M242 CLOSED)"
-last_closed: "M242 — 2026-07-22 (cockpit UX)"
-phase: "v2.6 in development — M237–M242 CLOSED. M242 cockpit UX: render/CSS-only in the presenter cockpit — tuple-regrouped content rows (target | passed | not-passed) + header-resident tab selector (byte-identical-no-content invariant held) + role-tinted hero avatars (manager/employee/candidate, AA); harden fixed 2 toothless tests + an AA-contrast pin; the close's adversarial pass landed 1 latent D3-invariant fix (empty marker under the M241 language toggle, _LANG_JS.syncEmpty). 0 platform edits. Next: M243 assign-WRITE (last fix); M244 prove-on-billion (terminal) owns the standing-9 + DEF-M239-01/M240-01."
+active_milestone: "M244 prove-on-billion — the iterative terminal closer (M237–M243 CLOSED; only M244 remains)"
+last_closed: "M243 — 2026-07-22 (assign-WRITE Playthrough)"
+phase: "v2.6 in development — M237–M243 CLOSED, only the terminal M244 remains. M243 assign-WRITE: the FIRST MUTATING Playthrough (pt-assignment-assign) — a manager assigns a skill path with a deadline → a real organization_assignments row written + read back (the affordance-count FLIP, not a closed modal); closed the ~10-routing DEF-M235-03/M204 carry (5 releases) as Fate-1; 16 live / 0 TODO. Clean close, 0 code fixes, 0 platform edits. Next: M244 prove-on-billion — ORG-CLEAN first + the 40 live-browser specs + standing-9 + DEF-M239-01/M240-01."
 last_updated: "2026-07-22"
 ---
 
@@ -30,22 +30,18 @@ M237 clean stage (HARD go/no-go barrier)
   7-state pin model + R1-all-14-manifests, dogfooded on `billion`; "202-behind" REFUTED. (Detail: roadmap.md M237.)
 - **M238 academy reliability** [`section`] — ✅ **CLOSED 2026-07-21.** ONE chapter-body FS-published demopatch fixed
   **both #3 (Start→404) and #2 (language)** live on `billion`; academy sweep extended. (Detail: roadmap.md M238.)
-- **M239 enterprise surfaces** [`section`] — ✅ **CLOSED 2026-07-21.** talk-to-data **FULL** — a real AWS Bedrock cred
-  class (values-blind, R3) bridged into the demo backend, **proven live** ("51 members"); the close fixed 2 own-code
-  defects. DEF-M239-01 + a 9th reap 17700 → M244. (Detail: roadmap.md M239.)
-- **M240 content-stories fidelity** [`section`, HARD media-safety gate] — ✅ **CLOSED 2026-07-22.** 5 fixes (selection
-  type-match · document `input_data` · pass-rate 70–95 band · media-substrate + §3.8.1 VIDEO) + **voice presence-only**
-  (the faithful `not_available` IS the deliverable); the real-video exhibit → M244 (`DEF-M240-01`). (Detail: roadmap.md M240.)
-- **M241 content-stories language** [`section`, pool-count go/no-go] — ✅ **CLOSED 2026-07-22.** The EN/IT axis: real
-  per-session language (`cs.Language`, was hard-coded `english` — the core bug the pool query exposed: 11 of 13 pins were
-  Italian) + the cockpit **EN|IT toggle** (11/12 tuples bilingual; INTERVIEW Italian-only per R2) + a fail-closed
-  `ValidateLanguageConsistency` gate. Fixture 13→23, denominator 29→49. **3 harden passes** closed the core-bug
-  write-side test gap (`TestContentStorySeeder_WritesRealLanguage`). rext tag `sound-check-m241…` @ `17beede`.
-- **M242 cockpit-UX** [`section`] — ✅ **CLOSED 2026-07-22.** Render/CSS only in the cockpit: tuple-regrouped
-  content rows (`target | passed | not-passed`) + header-resident tab selector (byte-identical invariant held) +
-  role-tinted hero avatars (manager orange / employee indigo / candidate teal, AA). The close's adversarial pass
-  landed 1 latent D3-invariant fix (empty marker under the M241 language toggle). (Detail: roadmap.md M242.)
-- **M243 assign-WRITE Playthrough** — the last of the post-barrier fan-out (realizes reserved M238).
+- **M239 enterprise surfaces** [`section`] — ✅ **CLOSED 2026-07-21.** talk-to-data **FULL** (real AWS Bedrock cred
+  class, values-blind), proven live ("51 members"); DEF-M239-01 + reap-17700 → M244. (Detail: roadmap.md M239.)
+- **M240 content-stories fidelity** [`section`, HARD media gate] — ✅ **CLOSED 2026-07-22.** 5 fidelity fixes + **voice
+  presence-only** (`not_available` IS the deliverable); real-video exhibit → M244 (`DEF-M240-01`). (Detail: roadmap.md M240.)
+- **M241 content-stories language** [`section`, pool-count go/no-go] — ✅ **CLOSED 2026-07-22.** Real per-session
+  `cs.Language` (was hard-coded `english`; 11/13 pins Italian) + cockpit **EN|IT toggle** + fail-closed gate. (Detail: roadmap.md M241.)
+- **M242 cockpit-UX** [`section`] — ✅ **CLOSED 2026-07-22.** Render/CSS only: tuple-regrouped content rows + header-resident
+  tab selector (byte-identical invariant held) + role-tinted hero avatars (AA); close landed 1 latent D3 fix. (Detail: roadmap.md M242.)
+- **M243 assign-WRITE Playthrough** [`section`, realizes reserved M238] — ✅ **CLOSED 2026-07-22.** The FIRST MUTATING
+  Playthrough (`pt-assignment-assign`): a manager assigns a skill path with a deadline → a real `organization_assignments`
+  row written + read back (the affordance-count FLIP). Closed the ~10-routing `DEF-M235-03`/M204 carry as Fate-1; 15→16
+  live / 0 TODO. (Detail: roadmap.md M243.)
 - **M244 prove-on-billion** [`iterative`, terminal] — re-prove v2.5's headline `29/29` AND every v2.6 fix live on
   `billion`, cold reset-to-seed. Multi-part exit gate (a–h), opens with the read-only `ORG-CLEAN` settling check.
 
@@ -55,23 +51,28 @@ Chime/S3 voice recording + document blobs behind a **HARD internal PII gate** (f
 amendment + a voice/document anonymization decision — a voice cannot be token-scrubbed) [M240]; **(3) language → EN-only
 fallback per tuple** — M241 opened with a read-only IT-session pool-count go/no-go query [M241].
 
-**Next:** the **post-barrier fix fan-out** nears done (M237–M242 done) — only **M243 assign-WRITE Playthrough**
-remains. Each fix is scoped against the fresh, correctly-built demo M237 established. The v2.5 headline
-live re-prove stays reserved for the terminal **M244** (which opens with the read-only `ORG-CLEAN` settling check,
-standing backlog below) — M244 also owns **DEF-M240-01** (the content-stories real-video exhibit, Fate-3, user
-pre-approved), the **standing 9 demo-stack test failures** (M238-D5 / M239-D13 reap-17700), and **DEF-M239-01**
-("fail the BUILD loudly on ENOSPC", M239-D12).
+**Next:** the **post-barrier fix fan-out is DONE** (M237–M243 all closed) — only the terminal **M244
+prove-on-billion** remains. It opens with the read-only `ORG-CLEAN` settling check, then re-proves the v2.5 headline
++ every v2.6 fix live on `billion` (the **40 live-browser specs** = 24 stack-verify + 16 Playthroughs, incl. M243's
+assign-WRITE), and owns **DEF-M240-01** (real-video exhibit, Fate-3, pre-approved), the **standing 9 demo-stack test
+failures** (M238-D5 / M239-D13 reap-17700), and **DEF-M239-01** (ENOSPC loud-build-fail, M239-D12).
 
 ## ⚠️ The v2.5 headline shipped UNIT-PROVEN, not LIVE-RE-PROVEN — v2.6/M244 re-proves it
 
 **`29/29` is UNIT-PROVEN, NOT LIVE-RE-PROVEN.** It was measured live on `billion` at `playbill-m236-hardened`; the close
 then fixed **~10 defects in that same harness** (incl. a grader that mis-shapes one of the 29 pairs + four unit-spec files
 no runner executes — among them the only literal pin of `29`). The measuring instrument changed after the measurement.
-Also unverified: **39 live-browser specs** (24 stack-verify + 15 playthroughs). **This is v2.6's `M244` job** (the realized
-reserved `M237`): `billion` is up + reachable. Ledger: `CLOSE-D3` + `T-3`.
+Also unverified: **40 live-browser specs** (24 stack-verify + 16 playthroughs, incl. M243's assign-WRITE). **This is
+v2.6's `M244` job** (the realized reserved `M237`): `billion` is up + reachable. Ledger: `CLOSE-D3` + `T-3`.
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M243 assign-WRITE Playthrough** — 2026-07-22 (section, realizes reserved M238; sixth + last fix). The FIRST
+  MUTATING Playthrough (`pt-assignment-assign`): a manager assigns a skill path with a deadline → a real
+  `organization_assignments` row written + **read back** (the affordance-count FLIP, not a closed modal; fail-closed).
+  Closed the ~10-routing `DEF-M235-03`/M204 carry (5 releases) as Fate-1; **15→16 live / 0 TODO**. Live GREEN +
+  DB-verified at build; cold re-drive is M244's. rext tag `sound-check-m243…` @ `2ef5962`. flake 0 (77 5/5); YELLOW
+  (0 new); clean close, 0 code fixes, 0 platform edits. (Detail: roadmap.md M243.)
 - **M242 cockpit UX** — 2026-07-22 (section; fifth fix). Render/CSS-only in the presenter cockpit: tuple-regrouped
   Content-stories rows (`target | passed | not-passed`) + header-resident tab selector (byte-identical-no-content
   invariant held) + role-tinted hero avatars (manager orange / employee indigo / candidate teal, AA). 2 harden
@@ -95,9 +96,6 @@ reserved `M237`): `billion` is up + reachable. Ledger: `CLOSE-D3` + `T-3`.
   class (values-blind) bridged into the demo backend, **proven live** ("Cervato Systems has 51 members", ~7 s
   round-trip); #4 library + #1 menu no-defect; F1 VM-disk pre-flight; close fixed 2 own-code defects. DEF-M239-01 +
   reap-17700 → M244. flake 5/5, 0 platform edits. (Detail: roadmap.md M239.)
-- **M238 ant-academy reliability** — 2026-07-21 (section; first fix). ONE chapter-body FS-published demopatch fixed
-  both #3 (Start→404) + #2 (language, `?lang=`) live on `billion`; academy sweep + demopatch-inventory fence;
-  standing-8 → M244 (D5). 0 platform edits. (Detail: roadmap.md M238.)
 
 ## Recently shipped (releases, newest first — max 3)
 
@@ -111,13 +109,13 @@ reserved `M237`): `billion` is up + reachable. Ledger: `CLOSE-D3` + `T-3`.
   8/8 on `billion` — login p95 2.11 s / 1.31 s vs a ~39/38 s baseline. Remote default-on.
 
 ## Headline numbers (v2.5, as measured at close 2026-07-20 — the v2.6 baseline; re-measured at the M244/release close)
-- **Go:** **1976** test funcs at the v2.5 baseline → **2005** now (release-cumulative M237–M242; M242 Python-only). **2461 testcases / 0
-  failed** across 6 modules at baseline.
+- **Go:** **1976** test funcs at the v2.5 baseline → **2005** now (release-cumulative M237–M243; M242 Python-only, M243
+  modified a manifest test in place +0 func). **2461 testcases / 0 failed** across 6 modules at baseline.
 - **Python:** **1409 testcases** — 1399 pass / 8 deterministic / 2 flake / 8 skip (v2.5 baseline). demo-stack full suite
   at M242 close: **839 pass / 9 fail** (848 collected; the standing set, 0 new from M242 → M244). `test_cockpit.py`
   164 (158 pass / 6 standing); M242 net-new +22.
-- **TypeScript/Playwright:** **196 unit specs / 0 failed** at baseline; **39 live-browser specs (24 + 15) NOT executed**
-  (v2.6/M244 executes them).
+- **TypeScript/Playwright:** **196 unit specs / 0 failed** at baseline (+M243: playthroughs unit 73→77); **40 live-browser
+  specs (24 + 16, +M243 assign-WRITE) NOT executed** (v2.6/M244 executes them).
 - **p95 click→ACCESS:** employee **1.22 s** · manager **1.51 s** (M236, COLD on `billion`), vs the < 5000 ms gate.
 - **Flake:** **0.** **Alignment (Clerkenstein):** **100% / 100% critical**. **Platform-repo edits:** **0**. **Supply
   chain:** GREEN — 0 net-new deps (v2.6 M239 adds a Bedrock **secret class**, not a dep).
@@ -154,8 +152,8 @@ code-of-record at v2.5 close **`playbill-m236-close-fixes`** (on origin). The `b
   **`DEF-M226-01`** (pre-bind serve reap — AGED OUT TWICE; **TEST or DROP**) · **`BURNIN-M221` / `F-M220-4` /
   `PROBE-M218-c3`** (the v2.3 `DRIFT_DEFER` tail) · the M232 interview plan-section alignment assertion ·
   **DEF-M239-01** (ENOSPC loud-build-fail) · **DEF-M240-01** (the real-video exhibit, user pre-approved).
-- **→ `M243` (assign-WRITE):** **`DEF-M235-03`** / M204 **assign-WRITE** in-manifest TODO — ~10 routings across 5
-  releases; **fresh dated KEEP-DEFERRED-WITH-SIGNOFF 2026-07-20**. **Expiry: if `M243` does not land it, DROP.**
+- **✅ RESOLVED (M243, 2026-07-22):** **`DEF-M235-03`** / M204 **assign-WRITE** in-manifest TODO — rode ~10 routings
+  across 5 releases; **LANDED as `pt-assignment-assign`** (Fate-1), the expiry condition met by landing it, not DROP.
 - **→ next `stack-seeding` build-iter:** **`DEF-M215-03(a)` / `F11`** — seed hero identity-key vs generated profile
   display-name mismatch (cosmetic). Enumerated by id so it stays findable.
 - **Older, still unscheduled (re-confirmed 2026-07-20):** **DEF-M10-01** (S3 blob bytes — **CONSUMED by M240** for the
@@ -163,5 +161,5 @@ code-of-record at v2.5 close **`playbill-m236-close-fixes`** (on origin). The `b
   test), CAVEAT-1 (clean-box literal full `/dev-up`), M314b (prod frozen-read hydration), **M205**-residual (tier gates +
   ATS). Playthroughs futures **M206–M207** stay in vision.
 
-_Last updated: 2026-07-22 — v2.6 "sound check" IN DEVELOPMENT (branch `release/02.60-sound-check`); **M237–M242
-CLOSED**, only M243 assign-WRITE remains in the post-barrier fan-out before the terminal M244._
+_Last updated: 2026-07-22 — v2.6 "sound check" IN DEVELOPMENT (branch `release/02.60-sound-check`); **M237–M243
+CLOSED** — the post-barrier fan-out is DONE, only the terminal M244 prove-on-billion remains._
