@@ -68,3 +68,24 @@ coverage of those fixes there and consumes them via the pinned tag
 **Knowledge backfill:** none (the denominator cross-check + disclosure invariant are already documented in coverage-protocol.md / session-clone-spec.md; no protocol-level truth surfaced).
 
 **Stop condition:** continue-to-next-pass — pass 2 fixed 2 more gaps (dimension scan still found items), so not yet stabilized; a confirmation pass is needed to measure the delta and verify the scan is clean.
+
+## Pass 3 — 2026-07-22 — incremental
+
+**Iters hardened this pass:** confirmation pass over the iter-02..11 scope (no new tests written).
+**Tiks covered since prior pass:** same batch.
+
+**Dimension scan (the stabilization check):** nothing new to fix. The remaining un-swept iter surface is iter-03's `content-result-page.ts` (`SETTLE_MS` env-override) + the per-pair warm-retry in `content-stories.spec.ts` — both are config/live-sweep robustness whose CORE (`settle()`) is already covered by the content-result-page settle tests; a unit test of the env parse or the tailnet retry would be gold-plating (the retry only exercises over a live `--host` sweep). The six named probes + the two pass-2 gaps + the iter-07 error path are all covered and mutation-verified.
+
+**Field validation (unplanned):** this box is running a LIVE ambient demo-1 presenter cockpit on :17700 (pid 42277, detached since 2026-07-21). That is exactly the ambient infrastructure iter-10's test-isolation fix exists to coexist with — its live presence independently confirms the fix's necessity (and its teeth were mutation-verified against a held :17700 in pass 1). Left running (legitimate; never touched).
+
+**Coverage delta on touched files:** 0% vs pass 2 (no new tests) — stack-seeding/contentsession 93.6%, seeders 96.1%, stack-snapshot/directus 99.3%; TS 63 content unit specs + tsc clean.
+
+**Tests added:** none.
+
+**Bugs surfaced + fixed inline:** none.
+
+**Flakes stabilized:** none surfaced. Flake gate: 3 consecutive clean runs of every newly-added test (Go schema-col + Validate; TS precedence + 3× denominator; Python strengthened-scope + cockpit-guard) — 3/3 green on all.
+
+**Final green:** Go stack-seeding + stack-snapshot green + vet clean; 63 TS content unit specs + tsc clean; demo-stack reap 41/41, interview-flag 12/12, cockpit 160 pass. The 6 cockpit failures are the inherited pre-M244 academy/overlay stale tests (rext 04babf8, the "159/6" notation) — out of the iter-02..11 diff scope, unchanged by this harden.
+
+**Stop condition:** stabilized — coverage delta < 2% (0% this pass) AND the dimension scan found nothing new; all six named-probe fixes mutation-verified to bite (3 already-toothed confirmed, 1 toothless test + 4 gaps fixed across passes 1–2), flake gate clean.
