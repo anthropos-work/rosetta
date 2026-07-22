@@ -87,6 +87,28 @@ and the **one public interview sim's** voice sessions, passed + not-passed (2). 
 > product carries a passed **and** a not-passed story. This doc is the only place the inventory is stated;
 > keep it in step with the fixture, which is the source of truth.*
 
+### 2.1 The language axis + the pool query (M241 — v2.6 "sound check")
+
+The pre-M241 sourcing was **language-blind**, which is why the 13 pins turned out **11 italian / 2 english by
+accident** — while the seeder (`content_stories_write.go`) hard-coded every clone's session row to
+`language='english'`, so an Italian-played session rendered under an English label. M241 fixes both ends:
+
+- **Sourcing.** `SelectionSpec` gains an optional `Language` filter → `AND s.language = '<lang>'` (english |
+  italian, validated; empty = no filter, backward-compatible), and the SELECT now surfaces `s.language` (a
+  non-PII enum label, honoring the read boundary). A **fourth** predicate, opt-in.
+- **The pool query FIRST (the go/no-go, user decision 2026-07-20).** M241 opened with a **read-only prod
+  pool-count query** (`marco_read`, counts + labels only, no content) that counts, per requirement tuple
+  `(sim_type × modality × pass/fail)`, how many sessions exist in each language — the interview-scarcity
+  go/no-go. Verdict **GO**: 11 of 12 tuples carry both languages; **INTERVIEW is Italian-only** (no believable
+  English interview session — EN interview passes all out-of-band under the 70–95 believable band, EN interview
+  fails = 0 — release risk **R2**). Where a tuple has both, an **EN+IT counterpart** is pinned so the cockpit's
+  EN/IT toggle can swap it; where it does not, the cell stays single-language (the toggle is hidden — the
+  user-decision fallback). The fixture grew **13 → 23** (the 13 base pins re-labeled + 10 counterparts).
+- **The write.** `content_stories_write.go` writes `cs.Language` (the pin's real language), not the hard-coded
+  constant, so every clone is seeded in its intended language. The manifest projection carries `language` +
+  the derived `lang_toggle`; the cockpit EN/IT toggle and the fail-closed language honesty gate are in
+  [`content-stories-spec.md`](content-stories-spec.md) §2/§4/§7.6.
+
 ## 3. Stage 2 — capture + scrub (the copied fixture)
 
 `cmd/content-capture` copies, per pinned session, the REAL result-fan-out content and scrubs it:
