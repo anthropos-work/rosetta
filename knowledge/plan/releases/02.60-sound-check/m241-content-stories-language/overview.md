@@ -3,16 +3,16 @@ milestone: M241
 slug: content-stories-language
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-22
 depends_on: M240
 delivers: corpus/ops/demo/content-stories-spec.md
 ---
 
 # M241 — content-stories language
 
-**Status:** `planned`  ·  **Shape:** `section` (opens with a pool-count go/no-go)  ·  **Complexity:** medium  ·  **Depends on:** M240
+**Status:** `archived` (completed 2026-07-22)  ·  **Shape:** `section` (opens with a pool-count go/no-go)  ·  **Complexity:** medium  ·  **Depends on:** M240
 
 ## Goal
 Each session is consumed in its intended language, with an EN/IT cockpit toggle.

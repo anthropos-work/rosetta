@@ -1,0 +1,47 @@
+{
+  "milestone": "M241",
+  "title": "content-stories language",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-22",
+  "platform_repo_edits": 0,
+  "tests": {
+    "go_stack_seeding_full": "full stack-seeding module GREEN — 16 ok packages / 0 fail (go test ./...); go vet ./... clean",
+    "go_repo_test_funcs": "2005 (git grep '^func Test', whole rext repo) — up from M240's 1999 (release-cumulative across M237-M241); +6 net-new from M241",
+    "m241_go_tests_added": "6: TestSelectionSQL_LanguageFilter (contentsession/sourcing); TestBuildContentProducts_LangToggle + TestValidateLanguageConsistency + TestBilingualTuples (seeders/content_manifest); TestContentStorySeeder_WritesRealLanguage + TestContentStorySeeder_BlankLanguageFallsBackToEnglish (seeders/content_stories — the CORE-BUG write-side regression + the empty-language fallback branch, harden pass)",
+    "python_cockpit": "test_cockpit.py 142 tests — 136 pass / 6 pre-existing academy+overlay failures (M218/M238/M239, 0 new from M241, Fate-2 -> M244). +9 from M241: TestContentLanguageToggle + TestContentToggleLangs + TestLangJsStructure",
+    "python_full_demostack": "full suite 808 passed / 9 failed (817 collected, 263s) — the 9 = the standing set (6 academy+overlay test_cockpit.py + test_host_prereqs_m215 + test_purge + test_reap's reap-17700 collision), ALL already fated Fate-2/Fate-3 -> M244, 0 NEW from M241 (matches the M239-close 9-fail baseline; the pass count grew as M240/M241 added tests)",
+    "ts_unit_specs": "151 unit specs executed / 0 failed (run-unit.sh, all 7 rostered *.unit.spec.ts); +4 from M241: content-language.unit.spec.ts",
+    "mutation_verified": "all M241 fail-closed gates + plumbing mutation-verified at harden (broken -> RED -> restored byte-identical): ValidateLanguageConsistency (Go, phantom toggle); content-language.unit.spec.ts (TS mirror, phantom toggle -> 2 RED); TestContentManifest_CanonicalFileMatchesProjection (honesty gate, canonical drift -> RED); sourcing.go language filter (TestSelectionSQL_LanguageFilter RED when disabled); LangToggle projection (TestBuildContentProducts_LangToggle RED when forced solo); cockpit per-row data-lang emission (toggle behaviour tests RED)",
+    "core_bug_regression": "TestContentStorySeeder_WritesRealLanguage — the guard the milestone lacked: before M241 no test asserted the seeded jobsimulation.sessions.language column carries cs.Language, so reverting the write to the hard-coded 'english' passed EVERY Go suite. The new test resolves the column by NAME, asserts language == the pin's real language, a valid non-blank label, AND that the set spans BOTH languages (can't pass vacuously). Mutation-verified RED against the revert, GREEN restored. This is the exact defect v2.6 'sound check' kills.",
+    "flake_gate": "GREEN — touched suites 5/5 sequential: Go (go test -count=1 -shuffle=on ./...) 5/5 PASS; TS run-unit.sh 5/5 (151); Python test_cockpit.py 5/5 stable (136 pass / same 6 pre-existing fail, deterministic, not flaky)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "qualitative / behavior-path + mutation-verified (no line-coverage tool wired in this rext repo — same convention as M237-M240)",
+    "touched_language_fns": "SelectionSQL 100%, bilingualTuples 100%, resolveSession 100%, ValidateLanguageConsistency 96%, seedContentStorySession 91.3% (the language write now covered) — as measured at harden",
+    "surface": "the EN/IT language axis end-to-end: the sourcing language filter + s.language SELECT; the fixture Language field + Validate; the cs.Language write (+ empty->english belt-and-braces); the LangToggle projection (bilingualTuples over the fixture); the fail-closed ValidateLanguageConsistency gate (both directions); the cockpit EN/IT toggle render + _LANG_JS filter",
+    "residual_uncovered": "the live click-swap is pure DOM (_LANG_JS, raw-string, injection-free) — proven structurally, exercised live by content-stories.spec.ts (both-language result pages) at M244; the 6 pre-existing academy+overlay cockpit failures -> M244"
+  },
+  "code_of_record_tag": "sound-check-m241-content-stories-language @ 17beede (created + pushed at close; a fresh annotated create, NOT a force-repin — the build/harden did not tag)",
+  "build_commits_rext": "e6f6804 (§2 language plumbing: cs.Language write + fixture/sourcing/manifest language field) + dfa894d (§3 EN/IT counterparts + cockpit language toggle) + 48bd086 (§4 language sweep + fail-closed honesty gate)",
+  "harden_commits_rext": "ae2c876 (pass-1: write-side language regression + mutation-verify the gates have teeth) + 0ea0264 (pass-2: deepen the cockpit EN/IT toggle behaviour tests) + 17beede (pass-3: cover the blank-language write fallback)",
+  "close_commits_rext": "none (0 fix-required findings in rext; the code was correct + hardened at build/harden)",
+  "build_commits_corpus": "c3ba981 (§5 Delivers: EN/IT axis in content-stories-spec + session-clone-spec) + 6196170 (plan) + 7439305 (harden record)",
+  "hardening": "3 passes (2026-07-22) — mutation-verified every gate has teeth AND closed the core-bug write-side gap inline (no seeder test asserted the seeded language column; TestContentStorySeeder_WritesRealLanguage closes it). See progress.md '## M241: Hardening'",
+  "deferral_audit": "YELLOW — 0 new M241 deferrals (clean complete section close). The 6 pre-existing test_cockpit.py failures are a subset of the standing demo-stack test debt, already Fate-2 -> M244 (named expiry, re-confirmed with fresh dates at M238/M239/M240 closes). No RED, no new user decision. Report: audit-deferrals/deferral-audit-2026-07-22.md",
+  "close_fixes": [
+    "docs (Phase 3/7): content-stories-spec.md:237 stale '29 landable pairs' -> the pinned count (49 since M241's EN/IT counterparts grew the fixture 13->23; 29 at M236) — the route-contract spec reads content-denominator.json=49",
+    "adversarial (Phase 2c): 2 scenarios recorded in decisions.md (AR-1 two-point LangToggle derivation under a projection drop -> fail-closed by the gate's solo+toggle teeth; AR-2 cockpit hard-coded English default vs adaptive toggle default -> unreachable by the closed {english,italian} set, latent-coupling note for a future 3rd language) — both handled, no new code",
+    "scope/code/tests (Phase 1/2/4): 0 fix-required findings — go vet + tsc clean, module green, all 5 sections delivered, 0 TODO, KB-1 landed at build"
+  ],
+  "delivered": {
+    "language_axis": "LANDED — each session carries its REAL played language (english|italian, from jobsimulation.sessions.language), copied onto the pin + written to the clone's session row (cs.Language, not the pre-M241 hard-coded english); the pool query found 11 of the 13 base pins were actually Italian and mislabeled",
+    "pool_query_go_no_go": "GO — read-only prod pool-count query (marco_read, counts+labels only) per requirement tuple: 11 of 12 tuples have both languages -> toggle viable; INTERVIEW/voice is Italian-only (EN interview passes all out-of-band, EN interview fails = 0 -> release risk R2, EN-only-fallback-per-tuple user decision realized)",
+    "counterparts": "fixture grew 13 -> 23 (the 13 base pins re-labeled to their real language + 10 EN/IT counterparts sourced via the existing SelectionSQL predicates, captured values-blind); denominator 29 -> 49",
+    "cockpit_toggle": "the EN|IT segmented switch (render_content_tab prepends it when >= 2 toggle-able languages), per-row language pill (solo rows tagged '<lang> only'), data-lang filter (_LANG_JS, raw-string injection-free), server-side lhide default so no flash; byte-clean when the manifest has no language axis",
+    "fail_closed_gate": "ValidateLanguageConsistency (Go, wired into WriteContentManifest) + the TS mirror (content-language.unit.spec.ts) refuse a manifest whose lang_toggle disagrees with its own coverage (solo-marked-toggle / bilingual-marked-solo / invalid-language all FAIL --content-export), with teeth",
+    "delivers_docs": "content-stories-spec.md (§2 language/lang_toggle schema + the language-axis section, §4 fail-closed both sides, §7.6 the EN/IT toggle + §7.6->§7.7 renumber) + session-clone-spec.md §2.1 (the pool query + cs.Language write)"
+  },
+  "notes": "Fourth of the v2.6 post-barrier fix fan-out (content-stories language), serial after M240 (shares stack-seeding + the re-capture). A clean complete section close — all 5 sections landed + 3 harden passes mutation-verified every gate and closed the core-bug write-side gap (the exact defect v2.6 'sound check' kills: the seeder hard-coded 'english' and no test caught it). The close found 1 doc fix (a stale denominator) + recorded 2 adversarial scenarios (both handled). PII discipline: customer content never entered agent context; scrubbed fixtures only; values-blind captures; assertions are STRUCTURE/PRESENCE/language-LABEL only, never a translated value (P2 copy-immunity). 0 platform-repo edits."
+}
