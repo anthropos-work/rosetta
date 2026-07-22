@@ -50,3 +50,31 @@ removed by M218/v2.3.1 (both changes already in the docs) — a DIFFERENT cockpi
 milestone prompt). M242 ended with **0 NEW** failures. The only test churn M242 made is **Fate-1**: 3 stale
 `<div class="stitle">` title asserts updated to `<div class="cttitle">` — the exact title container the tuple
 regroup moved, in the surface M242 rewrote.
+
+## D8 — the language toggle now maintains the empty-column marker (close Phase 2c fix)
+The M242 verdict-column split (§(1)) crosses the M241 per-cell EN/IT toggle. `_content_tuple_row` renders the
+"No passing / No failing run" marker **only for a column that is cell-less at RENDER time** — but the toggle
+hides cells at VIEW time. So an **unbalanced bilingual tuple** (a verdict present in only one language — e.g. a
+requirement passed only in english, failed only in italian, with no english-fail / italian-pass counterpart)
+would, when toggled to the other language, leave a verdict column showing its header over a **blank body with
+no marker** — the exact "misread as broken" failure **D3** forbids. **Fix:** `_LANG_JS.syncEmpty()` recomputes
+per-`.ctcol` emptiness after every `apply()` and once on load, injecting a `ctempty-dyn` "No passing/failing
+run" marker into any column whose cells are all language-hidden (and removing it when re-filled). **Pure
+client-side — zero server-markup change**, so every existing render test (byte-identical header, the exact
+static empty-marker asserts, the placement + coexist tests) stays green. Guarded by
+`test_lang_toggle_syncs_empty_column_marker_for_unbalanced_bilingual_tuple` (render-shape + call-site ordering,
+mutation-verified: dropping either call site → RED).
+
+### Adversarial review (close Phase 2c)
+- **Scenario considered:** the column split × the per-cell language toggle on an UNBALANCED bilingual tuple →
+  a language-emptied verdict column with no marker (D3 violation). **Reachable by design** (the pass/fail and
+  language axes are independent), but the **canonical `content-manifest.json` seed is currently BALANCED** —
+  every cross-verdict bilingual tuple carries both verdicts in both languages, so the precise phantom-empty
+  condition has **0 live occurrences** today. Classified as a **latent robustness gap** M242's split
+  introduced, not a live demo defect. Landed the fix (D8) rather than accept-with-risk: the risk is in
+  just-shipped render code and the guard is cheap + self-contained. Live browser proof rides M244's e2e
+  execution (the language-toggle spec is already in `stack-verify/e2e/`, unexecuted this release).
+- **Other angles checked (no change needed):** `_content_tuple_row(sessions[0])` — `sessions` is always ≥1
+  (built via `dict.setdefault`, keyed per appended session). All manifest free-text (title/label/modality/
+  icon_key/language) routes through `html.escape` (the harden pass pinned the two previously-unpinned paths).
+  `_avatar_class` missing-key defaults are safe (absent `vantage_label`/`is_hiring` → employee default).

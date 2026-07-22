@@ -1,0 +1,43 @@
+{
+  "milestone": "M242",
+  "title": "cockpit UX",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-22",
+  "platform_repo_edits": 0,
+  "tests": {
+    "python_cockpit": "test_cockpit.py 164 tests — 158 pass / 6 pre-existing academy+overlay failures (M218/M238, 0 new from M242, Fate-2 -> M244). +22 from M242: +16 build (5 tuple-regroup, 3 header-placement, 8 avatar-by-role) + 5 harden (only-failing marker, presence-in-verdict-group, non-sim title escape, tuple icon escape, candidate-AA-contrast) + 1 close/adversarial (test_lang_toggle_syncs_empty_column_marker)",
+    "python_full_demostack": "full suite 839 passed / 9 failed (848 collected incl. subtests, 258s; junit-authoritative) — the 9 = the standing set (6 academy+overlay test_cockpit.py + test_host_prereqs_m215 F12 serve-reset + test_purge THE_BUG + test_reap reap-17700), ALL already fated Fate-2/Fate-3 -> M244, 0 NEW from M242 (matches the M241-close 9-fail baseline; pass count grew 838->839 by the one close/adversarial test)",
+    "go_repo_test_funcs": "2005 (unchanged — M242 is Python-render-only; touched only cockpit.py + test_cockpit.py)",
+    "ts_unit_specs": "151 (unchanged — M242 touched no TS)",
+    "mutation_verified": "the close/adversarial guard mutation-verified: dropping either syncEmpty() call site (the apply()-tail call or the on-load call) flips test_lang_toggle_syncs_empty_column_marker RED (call-site ordering asserts). The build+harden render branches were already mutation-verified at harden (the byte-identical-no-content invariant STRONG; role-color manager-wins precedence + candidate branch caught; row-regroup verdict->column placement + non-sim title/icon escaping pinned after 2 toothless-test fixes; candidate-avatar AA contrast pinned)",
+    "flake_gate": "GREEN — test_cockpit.py 5/5 sequential identical (158 pass / same 6 pre-existing fail, deterministic, not flaky). Python-only milestone; no Go/TS touched. pytest-randomly not installed -> default-order 5x (these are pure render/string tests with no shared mutable state)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "qualitative / branch-path + mutation-verified (no line-coverage tool wired in this rext demo-stack section — stdlib-only, same convention as M237-M241; harden used stdlib `trace` + a temp-dir mutation harness)",
+    "touched_language_fns": "the M242 render branches: _content_tuple_key / _content_tuple_title / _content_tuple_row (verdict partition + column placement + presence-below-columns + empty markers) / _content_login_cell / _avatar_class (manager-wins) / render_page header two-branch (byte-identical-no-content) / _LANG_JS.syncEmpty (close) — all branch-covered + mutation-verified at harden+close",
+    "surface": "the 3 M242 UX changes end-to-end: (1) tuple-regrouped content rows (group by (sim_type,modality) | label fallback; passed|not-passed columns; symmetric empty markers; presence-only inline) (2) header-resident tab selector (flex .hwrap with content, byte-identical else-branch without) (3) role-tinted hero avatars (manager orange / employee indigo / candidate teal, manager-wins, AA-contrast). Plus the close fix: the empty-column marker maintained under the M241 EN/IT toggle (_LANG_JS.syncEmpty)",
+    "residual_uncovered": "the live click behaviour of _LANG_JS.syncEmpty (per-column marker inject on toggle) is pure DOM, proven structurally + by render-shape here; the live browser proof rides M244's e2e execution (the language-toggle spec is already in stack-verify/e2e/, unexecuted this release). The 6 pre-existing academy+overlay cockpit failures -> M244"
+  },
+  "code_of_record_tag": "sound-check-m242-cockpit-ux @ 73d37d5 (re-pinned at close to the close-fix HEAD; build/harden HEAD was b0e76b3, advanced by the close Phase-2c fix commit 73d37d5)",
+  "build_commits_rext": "df82fea (1: regroup Content-stories rows by (sim_type,modality) tuple) + a5f96e8 (2: move tab selector into the white header) + ccc13f3 (3: tint hero avatar by user-type) + bcbec32 (review: columns are flex-with-gap so a language-hidden cell leaves no phantom gap)",
+  "harden_commits_rext": "db9e229 (pass 1: deepen render tests — verdict->column placement + symmetric empty marker + presence-in-verdict-group + non-sim title/icon escaping; 2 toothless tests fixed) + b0e76b3 (pass 2: pin the candidate-avatar AA contrast claim)",
+  "close_commits_rext": "73d37d5 (close Phase 2c/7: keep the empty-column marker under the language toggle — _LANG_JS.syncEmpty + mutation-verified test)",
+  "build_commits_corpus": "2399ae9 (docs: cockpit UX — header-resident tabs + role-tinted avatars + tuple-regrouped rows) + 758fdc1 (plan: KB-fidelity GREEN + decisions + progress) + 6050be5 (harden: record hardening passes)",
+  "hardening": "2 passes (2026-07-22) — mutation-verified every M242 render branch; found + closed 2 toothless tests (a wrong-column mutant + an unescaped-non-sim-title mutant) + added a WCAG AA contrast pin; 0 production bugs, 0 new failures. See progress.md '## M242: Hardening'",
+  "deferral_audit": "YELLOW — 0 new M242 deferrals (clean complete 3-section close). The 6 pre-existing test_cockpit.py failures are a subset of the standing demo-stack test debt, already Fate-2 -> M244 (named expiry, re-confirmed with fresh dates at M238-M241 closes; now ridden >=5 v2.6 milestones). No RED, no new user decision. Report: audit-deferrals/deferral-audit-2026-07-22.md",
+  "close_fixes": [
+    "adversarial (Phase 2c/7): 1 finding LANDED (D8) — the M242 verdict-column split x the M241 per-cell EN/IT toggle leaves an unbalanced-bilingual-tuple verdict column blank with no marker (violates D3). Fix: _LANG_JS.syncEmpty() re-derives the per-column empty marker on toggle + on load (pure client-side, 0 server-markup change). Guard mutation-verified. Seed currently balanced -> 0 live occurrences; latent-regression guard",
+    "docs (Phase 3/7): added content-stories-spec.md 7.2 note that the toggle maintains the empty marker (#M242-D8); verified all doc-cited test names exist, the .sactions class-name correction matches code, and both content-stories-spec anchor cross-refs resolve",
+    "scope/code/tests (Phase 1/2/4): 0 fix-required findings — py_compile clean, no dead code (removed _content_session_row/.sbody/.stitle/.desc have 0 orphan refs), all 3 sections + spec + delivers checked, 0 TODO"
+  ],
+  "delivered": {
+    "row_layout": "LANDED — Content-stories rows regrouped by requirement tuple (sim_type, modality) | label fallback for non-sim; one row per tuple: target label (+ modality pill) | passed login options | not-passed login options side by side; symmetric 'No passing/failing run' empty markers; presence-only (ai-labs) inline. render-layer only, no manifest schema change",
+    "tab_selector": "LANDED — the .tabs bar moved out of main_body into the white <header> (flex .hwrap, right, vertically centered); _TAB_JS placement-agnostic (no JS change); the byte-identical-when-no-content-manifest invariant preserved via a separate else-branch (verbatim pre-M242 header), mutation-STRONG",
+    "hero_avatar_by_role": "LANDED — _avatar_class(hero): manager=orange (.b-manager palette) / employee=indigo (default) / hiring candidate=net-new teal (--cand #0f766e / --cand-soft #ccfbf1, ~4.86:1 AA); manager-wins order (a hiring recruiter reads as manager, not candidate)",
+    "empty_marker_under_toggle": "LANDED at close (D8) — _LANG_JS.syncEmpty() keeps the D3 'never a blank misread as broken' invariant true under the M241 language toggle",
+    "delivers_docs": "cockpit-spec.md (the v2.6 UX pass section: header layout + role-color + row-regroup, + the avatar-by-role glance note) + content-stories-spec.md (7.2 tuple-regrouped row + the render-helpers note + the empty-marker-under-toggle note; 7.6 M242-delivered coexistence)"
+  },
+  "notes": "Fifth of the v2.6 post-barrier fix fan-out (cockpit UX), serial after M241 (wanted the pass/fail + language variants). A clean complete 3-section close — render/CSS only in the presenter cockpit, no data/seed change, no manifest schema change, 0 platform-repo edits. Harden found + fixed 2 toothless tests + added a WCAG contrast pin; the close's adversarial pass found + landed 1 latent D3-invariant gap (the empty column under the language toggle). All assertions are STRUCTURE / PRESENCE / class-placement, never manifest copy. The rext consumption tag was re-pinned twice this milestone: first at ACTION-1 to the harden HEAD (b0e76b3), then at close to the close-fix HEAD (73d37d5, the final code-of-record)."
+}

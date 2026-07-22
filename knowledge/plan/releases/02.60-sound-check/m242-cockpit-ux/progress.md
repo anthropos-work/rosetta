@@ -74,3 +74,44 @@ Final: **157 pass / 6 standing** (`test_cockpit.py`), **+5 net-new harden tests*
 pre-harden), **0 NEW failures** (the 6 standing = academy-link + overlay-JS, owned by M244). rext harden
 commits: `db9e229` (pass 1) + `b0e76b3` (pass 2) on `main` — **the tag `sound-check-m242-cockpit-ux`
 must be re-pinned to the hardened HEAD at close** (M237–M241 precedent).
+
+## M242: Final Review
+
+Cross-cutting close review (scope · code · adversarial · docs · tests · decisions). Default-proactive: every
+finding fixed in full.
+
+### Scope
+- [x] All 3 UX sections + spec extension + Delivers checked off; overview In-list fully delivered; 0 silent drops.
+- [x] No TODO/FIXME/HACK in the M242-touched files (`cockpit.py`, `tests/test_cockpit.py`).
+
+### Code Quality
+- [x] `cockpit.py` decomposition clean (`_content_session_row` → `_content_login_cell` + `_content_tuple_row`;
+      `_avatar_class` manager-first). No dead code — the removed `_content_session_row`/`.sbody`/`.stitle`/`.desc`
+      symbols have 0 orphan refs; `py_compile` clean; all manifest free-text `html.escape`-routed.
+
+### Adversarial (Phase 2c)
+- [x] [must-fix] **Language-toggle empties a verdict column with no marker** (unbalanced bilingual tuple) →
+      violates D3. FIXED: `_LANG_JS.syncEmpty()` re-derives the per-column empty marker on toggle + on load
+      (pure client-side, 0 server-markup change). Guarded by
+      `test_lang_toggle_syncs_empty_column_marker_for_unbalanced_bilingual_tuple` (mutation-verified). See D8.
+      Seed is currently balanced → 0 live occurrences; latent-regression guard.
+
+### Documentation
+- [x] `cockpit-spec.md` + `content-stories-spec.md` accurate; all doc-cited test names exist; anchors resolve;
+      `.sactions` class-name correction verified against code. Added §7.2 note: the toggle maintains the empty
+      marker (#M242-D8).
+
+### Tests & Benchmarks
+- [x] `test_cockpit.py`: **158 pass / 6 standing** (164 total; +1 net-new adversarial test). Full demo-stack
+      suite: **839 pass / 9 standing** — the 9 are the M238-D5/M239-D13 standing set (academy/overlay + host-prereqs
+      + purge + reap-17700), **0 new from M242**. No benchmarks in scope (render-layer only).
+
+### Decision Triage
+- [x] D1–D7 → maintainer-only implementation choices, archive in `decisions.md`. The user-facing ones
+      (role-color D5, header layout D4, tuple regroup D1/D2, empty-marker D3) were already blended into
+      `cockpit-spec.md` + `content-stories-spec.md` during build.
+- [x] D8 (empty-marker-under-toggle) → blended into `content-stories-spec.md §7.2` this close (#M242-D8).
+
+### Deferral audit
+- [x] `/developer-kit:audit-deferrals --scope=milestone` → **YELLOW** (0 new; standing debt already Fate-2 → M244,
+      named expiry). Report: `audit-deferrals/deferral-audit-2026-07-22.md`. No blocking items.

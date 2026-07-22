@@ -338,6 +338,12 @@ header; the modality from the desc to the tuple title.** The two actions per cel
 > (icon + title + columns) → `_content_login_cell` (the per-session cell: language pill + the two CTAs,
 > carrying `data-lang`/`lhide` for the toggle). The regroup is **render-layer only — no manifest schema
 > change** (every session still carries `sim_type`/`modality`/`passed`/`language` as before).
+>
+> The "No passing / No failing run" empty marker is rendered server-side for a column that is cell-less at
+> render time; because the EN/IT toggle hides cells at *view* time, `_LANG_JS.syncEmpty()` also re-derives the
+> marker per column on every toggle (and on load), so an **unbalanced bilingual tuple** (a verdict present in
+> only one language) never shows a verdict header over a blank body — the D3 "never a blank misread as broken"
+> invariant holds under the toggle too (#M242-D8).
 
 ### 7.3 Per-product app-base routing + the two special sections
 The per-product `app_base` resolves the CTA origin, generalizing the M224 `is_hiring`/`hiring_base` switch
