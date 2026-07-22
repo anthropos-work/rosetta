@@ -3,16 +3,16 @@ milestone: M240
 slug: content-stories-fidelity
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-22
 depends_on: M237
 delivers: corpus/ops/demo/ (new media-substrate spec) + corpus/ops/safety.md §3.8 (raw-media amendment)
 ---
 
 # M240 — content-stories fidelity
 
-**Status:** `planned`  ·  **Shape:** `section` (with a HARD media-safety gate)  ·  **Complexity:** large  ·  **Depends on:** M237
+**Status:** `archived` (completed 2026-07-22)  ·  **Shape:** `section` (with a HARD media-safety gate)  ·  **Complexity:** large  ·  **Depends on:** M237
 
 ## Goal
 The cockpit's claim matches the session — right type, playable call, visible document — at a believable pass rate.
