@@ -4,7 +4,10 @@
   "primary_metric": "exit-gate parts (a-h) discharged green live on billion",
   "gate_parts_total": 8,
   "gate_parts_discharged": 2,
-  "gate_parts_discharged_list": ["a: ORG-CLEAN (23 fixtures, 0 tokens)", "e: DEF-M226-01 serve-reap (7->0 ports)"],
+  "gate_parts_discharged_list": [
+    "a: ORG-CLEAN (23 fixtures, 0 tokens)",
+    "e: DEF-M226-01 serve-reap (7->0 ports)"
+  ],
   "gate_b_status": "46/49 reliable (flakiness fixed 37->46; 3 deterministic voice/interview-render residuals -> gate g + voice-presence-only decision)",
   "inherited_defers_total": 3,
   "inherited_defers_dispositioned": 0,
@@ -13,10 +16,11 @@
   "rext_pin": "sound-check-m243-assign-write-playthrough",
   "rext_m244_tag": "sound-check-m244-content-sweep-robustness -> 01206e7 (on origin)",
   "billion_stack": "demo-1 GREEN cold reset-to-seed, autoverify 2026-07-22T12:51:20Z green/0-warn",
-  "iters_closed": 3,
-  "tiks": 2,
+  "iters_closed": 4,
+  "tiks": 3,
   "toks": 1,
-  "last_iter": "iter-03",
+  "last_iter": "iter-04",
   "gate_met": false,
-  "updated": "2026-07-22"
+  "updated": "2026-07-22",
+  "gate_g_status": "LIVE RED \u2014 interview report renders empty on billion (seeded sections absent); alignment assertion would be RED; fix routed forward (seed-plan vs flag-demopatch)"
 }

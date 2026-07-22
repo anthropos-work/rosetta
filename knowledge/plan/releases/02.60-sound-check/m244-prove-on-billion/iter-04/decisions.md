@@ -1,0 +1,4 @@
+# iter-04 — decisions (local)
+
+- **D1 — gate (g) is a LIVE RED, not merely "unproven."** M235 deferred the interview plan-section match as unproven; M236's sweep only checked "renders non-empty" on the attempt-list view. Driving the actual report surface (behind "View Report") on billion proves it renders EMPTY — the seeded depth/adoption/sentiment do not appear. So the gate-(g) assertion, once added, is RED; the fix (seed-plan vs flag-demopatch, 0 platform edits) is the real deliverable, routed forward. The intv-voice-pass gate-(b) residual is the same defect.
+- **INCOMPLETE-vs-CLOSED note:** this iter did a COMPLETE investigation cycle ending in characterization (a first-class closed-no-lift), NOT a budget-exhausted mid-phase stop — so it closes cleanly with a commit (trees clean), per the user-requested pause. The next run resumes on the fix, not on re-investigation.
