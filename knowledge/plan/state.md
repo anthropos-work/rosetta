@@ -1,10 +1,10 @@
 ---
 active_release: "v2.6 «sound check» — the reliability / field-hardening release (designed 2026-07-20): make everything that's built actually get built + provisioned. Barrier→parallel-fixes→prove-on-billion, 8 milestones M237→M244. Branch release/02.60-sound-check; tag will be v2.6."
 active_branch: "release/02.60-sound-check"
-active_milestone: "M240 ∥ M243 — the post-barrier fix fan-out (M237 + M238 + M239 CLOSED 2026-07-21); M240 content-stories fidelity ∥ M243 assign-WRITE next (M241 serial after M240)"
-last_closed: "M239 — 2026-07-21 (enterprise surfaces)"
-phase: "v2.6 in development — M237 + M238 + M239 CLOSED. M239: talk-to-data FULL (real AWS Bedrock creds provisioned values-blind, proven live — a manager asked member count → 'Cervato Systems has 51 members' via a real Bedrock round-trip); #4 library + #1 menu were no-defect verdicts; F1 disk pre-flight landed (measures the Docker VM disk, not host /); the close found + fixed 2 own-code defects (a bring-up-aborting disk probe + an env-corrupting bridge append). Fan-out continues: M240 content-stories fidelity ∥ M243 assign-WRITE; M244 owns the standing-8 + the 9th reap test-isolation collision + DEF-M239-01."
-last_updated: "2026-07-21"
+active_milestone: "M241 ∥ M243 — the post-barrier fix fan-out (M237–M240 CLOSED); M241 language (serial after M240) ∥ M243 assign-WRITE; M242 after M241"
+last_closed: "M240 — 2026-07-22 (content-stories fidelity)"
+phase: "v2.6 in development — M237–M240 CLOSED. M240 content-stories fidelity: 5 fixes (selection type-match, document input_data, pass-rate believable band, media-substrate + §3.8.1 VIDEO Delivers) + voice presence-only (the faithful chime_status='not_available' state IS the deliverable, user decision 2026-07-22); the real-video exhibit is Bunny-recording-key-blocked → M244 (DEF-M240-01, Fate-3, user pre-approved). Next: M241 language ∥ M243 assign-WRITE (M242 after M241); M244 owns the standing-8/9 + DEF-M239-01."
+last_updated: "2026-07-22"
 ---
 
 # State
@@ -38,9 +38,11 @@ M237 clean stage (HARD go/no-go barrier)
   members" via a real Bedrock round-trip); #4 library + #1 menu were **no-defect verdicts**; F1 disk pre-flight landed
   (VM disk, not host `/`); the close fixed **2 own-code defects** (a bring-up-aborting disk probe + an env-corrupting
   bridge append), mutation-verified. YELLOW audit: DEF-M239-01 + a 9th reap test-isolation collision → Fate-3 → M244.
-- **M240 content-stories fidelity** · **M243 assign-WRITE Playthrough** — the remaining parallel fix fan-out off M237
-  (M241 serial after M240 → M242).
-- **M241 language** (serial after M240) · **M242 cockpit UX** (serial after M241).
+- **M240 content-stories fidelity** [`section`, HARD media-safety gate] — ✅ **CLOSED 2026-07-22.** 5 fixes (selection
+  `d.type` type-match · document `input_data` at seed · pass-rate 70–95 band · media-substrate + §3.8.1 VIDEO Delivers)
+  + **voice presence-only** (the faithful `not_available` state IS the deliverable, user decision 2026-07-22); the
+  real-video exhibit is Bunny-recording-key-blocked → M244 (`DEF-M240-01`, Fate-3, user pre-approved). 0 platform edits.
+- **M241 language ∥ M243 assign-WRITE Playthrough** — the remaining fan-out (M241 serial after M240 → M242).
 - **M244 prove-on-billion** [`iterative`, terminal] — re-prove v2.5's headline `29/29` AND every v2.6 fix live on
   `billion`, cold reset-to-seed. Multi-part exit gate (a–h), opens with the read-only `ORG-CLEAN` settling check.
 
@@ -51,12 +53,12 @@ a secret-coverage DNA extension for `app` (not just a flag; `../hyper-studio/.en
 cannot be token-scrubbed — **before any customer audio lands in a demo**) [M240]; **(3) language → EN-only fallback per
 tuple** — M241 opens with a read-only IT-session pool-count go/no-go query [M241].
 
-**Next:** the **post-barrier fix fan-out** continues (M238 academy + M239 enterprise surfaces done) — **M240
-content-stories fidelity ∥ M243 assign-WRITE Playthrough** (M241 serial after M240, M242 after M241). Each fix is scoped
-against the fresh, correctly-built demo M237 established. The v2.5 headline live re-prove stays reserved for the terminal
-**M244** (which opens with the read-only `ORG-CLEAN` settling check, standing backlog below) — and now also owns the
-re-fated **8 standing demo-stack test failures** (M238-D5), the **9th** reap `test_a_RACED…` 17700 test-isolation
-collision (M239-D13, fix recipe recorded), and **DEF-M239-01** ("fail the BUILD loudly on ENOSPC", M239-D12).
+**Next:** the **post-barrier fix fan-out** continues (M237–M240 done) — **M241 language ∥ M243 assign-WRITE
+Playthrough** (M242 after M241). Each fix is scoped against the fresh, correctly-built demo M237 established. The v2.5
+headline live re-prove stays reserved for the terminal **M244** (which opens with the read-only `ORG-CLEAN` settling
+check, standing backlog below) — and now also owns **DEF-M240-01** (the content-stories real-video exhibit, Fate-3,
+user pre-approved), the **8/9 standing demo-stack test failures** (M238-D5 / M239-D13 reap-17700), and **DEF-M239-01**
+("fail the BUILD loudly on ENOSPC", M239-D12).
 
 ## ⚠️ The v2.5 headline shipped UNIT-PROVEN, not LIVE-RE-PROVEN — v2.6/M244 re-proves it
 
@@ -69,6 +71,13 @@ is up and reachable. Ledger: `CLOSE-D3` + `T-3`.
 
 ## Recently closed (milestones, newest first — max 5)
 
+- **M240 content-stories fidelity** — 2026-07-22 (section, HARD media-safety gate; third post-barrier fix). 5 fixes
+  (selection `d.type` type-match · document `input_data` at seed [inline text, no S3 blob] · pass-rate 70–95 band · the
+  media-substrate + `safety.md` §3.8.1 VIDEO Delivers) + **voice presence-only** — the faithful
+  `chime_status='not_available'` IS the deliverable (user decision 2026-07-22); the real-video exhibit is
+  Bunny-recording-key-blocked → M244 (`DEF-M240-01`, Fate-3, user pre-approved). rext tag `sound-check-m240…` @
+  `ae0e869`. Full stack-seeding module green, harden mutation-verified 3 fixes + 6 tests, flake 5/5; deferral
+  audit YELLOW; PII held (by-reference video); 0 platform edits.
 - **M239 enterprise surfaces** — 2026-07-21 (section; second post-barrier fix). talk-to-data **FULL** — a real AWS
   Bedrock cred class (values-blind, R3 not-critical) provisioned + bridged into the demo backend, **proven live** (a
   manager asked member count → "Cervato Systems has 51 members" via a real ~7 s Bedrock round-trip). #4 library + #1 menu
@@ -84,14 +93,8 @@ is up and reachable. Ledger: `CLOSE-D3` + `T-3`.
 - **M237 clean stage** — 2026-07-21 (section, HARD go/no-go barrier; **opens v2.6**). Fetch-verified clone-freshness +
   7-state pin model + R1-all-14-manifests (F-M236-CLOSE-1/-2), dogfooded on `billion`. The **"202-behind" premise
   REFUTED** — clones 0-2 behind, frontend current. Ledger: #1 RESOLVED, #4→M239, #2→M238. 160 tests, 0 platform edits.
-- **M236 prove-on-billion** — 2026-07-20 (iterative, closed-on-gate). **FINAL v2.5 milestone.** Gate MET cold on
-  `billion`: **29/29** landable (session × action) pairs both vantages · **65** academy cards, 0 Draft chips · hero
-  p95 **1.22 / 1.51 s** vs 5 s · cold reset-to-seed, no intervention · **0 platform edits**. Denominator CORRECTED
-  31 → 29.
-- **M235 prove-it-lands** — 2026-07-20 (iterative, closed-incomplete/pragmatic; LIVE gate → M236 by design). The
-  13-session simulation matrix + all 3 non-sim sections → manifest **4 products / 18 sessions**, honesty gates GREEN.
-- **M234 content-stories-cockpit-tab** — 2026-07-19 (section). The 2nd "Content stories" tab reads the M233
-  manifest; `roster.go` appends `content-player-<idx>` seats.
+- **M236 prove-on-billion** — 2026-07-20 (iterative, closed-on-gate; **FINAL v2.5 milestone**). Gate MET cold on
+  `billion`: **29/29** landable pairs both vantages · 65 academy cards · hero p95 1.22/1.51 s vs 5 s · 0 platform edits.
 
 ## Recently shipped (releases, newest first — max 3)
 
@@ -158,5 +161,5 @@ code-of-record at v2.5 close **`playbill-m236-close-fixes`** (on origin). The `b
   (clean-box literal full `/dev-up`), M314b (prod frozen-read hydration), **M205**-residual (tier gates + ATS).
   Playthroughs futures **M206–M207** stay in vision.
 
-_Last updated: 2026-07-21 — v2.6 "sound check" IN DEVELOPMENT (branch `release/02.60-sound-check`); the **M237
-clean-stage barrier + M238 ant-academy reliability are CLOSED**, the M239∥M240∥M243 fix fan-out continues._
+_Last updated: 2026-07-22 — v2.6 "sound check" IN DEVELOPMENT (branch `release/02.60-sound-check`); **M237–M240
+CLOSED**, the M241 ∥ M243 fix fan-out continues (M242 after M241)._
