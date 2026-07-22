@@ -234,8 +234,9 @@ org (`firstNonHiringStory`), so they render in apps/web regardless of the source
   `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` closes it by reading **this checked-in
   canonical manifest** and asserting the grader understands every route in it — per-product expected shape,
   no unexplained fall-through, interview vs simulation manager surfaces kept distinct, manager paths still
-  uuid-terminated — and that the projection still yields the **29 landable pairs** M236 was graded on.
-  Mutation-verified: a one-character prefix change turns it red. **If you change a route in
+  uuid-terminated — and that the projection still yields the pinned landable-pair count (read from
+  `content-denominator.json` — **49** since M241's EN/IT counterparts grew the fixture 13 → 23; it was 29 at
+  M236). Mutation-verified: a one-character prefix change turns it red. **If you change a route in
   `contentProductRegistry`, expect that spec to fail — updating it is part of the change, not collateral.**
 
 - **The LANGUAGE axis is fail-closed on BOTH sides (M241).** `ValidateLanguageConsistency`
