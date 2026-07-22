@@ -42,3 +42,29 @@ coverage of those fixes there and consumes them via the pinned tag
 **Out-of-scope observation (routed, not fixed):** demo-stack/tests/test_cockpit.py carries **6 inherited pre-M244 failures** (academy-link + overlay-JS stale tests — the overlay `resetOverlayOnReturn` change landed in rext 04babf8 on 2026-07-15, an ancestor of the M243 end; the tests still assert the removed 30s window / old academy link shape). They predate iter-02 and are outside the iter-02..11 diff scope, and are already tracked by the iter-07 "cockpit 159/6" notation. Not fixed here (would expand harden scope past the iter-diff manifest + root cause is pre-M244 territory — Fate 3 by the fixable-inline boundary).
 
 **Stop condition:** continue-to-next-pass — pass 1 surfaced + fixed 3 toothless/gap items (dimension scan found NEW findings), so the stop condition (delta < 2% AND scan clean) is not yet met; iter-11's bash denominator cross-check (the embedded-Python mirror of buildPairs) still lacks a lockstep-drift regression test.
+
+## Pass 2 — 2026-07-22 — incremental
+
+**Iters hardened this pass:** iter-07, iter-11 (the two gaps pass 1 routed forward).
+**Tiks covered since prior pass:** same batch (iters 02–11); pass 2 continues pass 1's scope.
+
+**Mutation-verification outcomes:**
+- iter-11 bash denominator cross-check (`run-content-stories.sh` embedded `_PIN_PY`) — **GAP → FIXED.** The embedded Python that cross-checks the denominator is a hand-copy of `buildPairs()` and hand-copies DRIFT — this WAS the iter-11 bug (the presence-only branch wasn't mirrored → over-counted 49 vs 47). The runtime cross-check catches it only during a LIVE sweep. New `tests/content-denominator.unit.spec.ts` EXTRACTS the real `_PIN_PY` out of the shell heredoc (never a re-typed copy) and runs it: a presence-only cell counts as its MANAGER pair only, an over-count exit-2s, a 0/absent pin is refused. Mutation: strip the `not player_presence_only` guard from the embedded program → count becomes 2 → RED.
+- iter-07 disclosure invariant (ERROR path) — **GAP → FIXED.** `contentsession.Validate()` rejects `player_result_unavailable` with no `player_unavailable_reason`; iter-07 added the rule but nothing drove it. New `TestValidate_PlayerResultUnavailableRequiresReason` exercises both sides. Mutation: remove the check → RED.
+
+**Coverage delta on touched files:**
+- stack-seeding/contentsession: 93.0% → **93.6%** stmts (+0.6% — the Validate error-path branch is now exercised).
+- stack-seeding/seeders 96.1%, stack-snapshot/directus 99.3% — unchanged.
+- stack-verify/e2e: +3 specs (content-denominator.unit.spec.ts); 56 → 59 content unit specs; tsc clean.
+
+**Tests added:**
+- iter-11 → stack-verify/e2e/tests/content-denominator.unit.spec.ts: +3 unit (presence-only excluded; over-count exit-2; 0/absent pin refused).
+- iter-07 → stack-seeding/contentsession/contentsession_test.go: +1 unit (Validate reason-required, both sides).
+
+**Bugs surfaced + fixed inline:** none new (both items were coverage gaps on correct code — the fix is the test that pins it).
+
+**Flakes stabilized:** none.
+
+**Knowledge backfill:** none (the denominator cross-check + disclosure invariant are already documented in coverage-protocol.md / session-clone-spec.md; no protocol-level truth surfaced).
+
+**Stop condition:** continue-to-next-pass — pass 2 fixed 2 more gaps (dimension scan still found items), so not yet stabilized; a confirmation pass is needed to measure the delta and verify the scan is clean.
