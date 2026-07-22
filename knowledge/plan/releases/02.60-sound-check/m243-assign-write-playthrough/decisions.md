@@ -53,3 +53,40 @@ demo-1 was up on the demo SHOWCASE roster (maya-thriving, …), so a `pt-manager
 `unknown_identity`. Fixed by re-exporting the pt-world roster to the fake-FAPI mount + restarting the
 fake services — exactly what `run-playthroughs.sh --reset` does (M211 iter-16). A run-environment step,
 not a harness change. The canonical gate is `run-playthroughs.sh N --reset`.
+
+## Adversarial review (close Phase 2c)
+
+The reviewer probed the one novel construct M243 introduced — an **exact count-delta** read-back
+(`expect.poll(() => assignableCount()).toBe(before - 1)`) over a **live members table** — for ways the
+delta could read `before - 1` while proving the wrong thing, or fail to reach it while a write DID land.
+Scenarios considered (recorded per the Phase 2c contract — the scenario, not just the fix):
+
+- **S1 — table pagination / re-sort moves the assigned row off the visible page (the sharpest one).**
+  `assignSkillPathButtons()` counts only affordances in the **currently rendered** `table tbody tr` set. If
+  the Skill Paths tab paginated at, say, 20 rows and Org A has 40 members, or if the post-write refetch
+  re-sorted assignable rows to a different page, the page-scoped count could drop by ≠ 1 (a previously
+  off-page row shifting in, or the assigned row leaving), yielding a false RED **or** a coincidental
+  `before - 1` that isn't the target's flip. **Response — verified handled, no code change:** the surface
+  lists **members**, not affordances — each member row renders **either** an assigned-title link **or** the
+  "Assign Skill Path" affordance in its Skill Path cell. A single assign flips **one cell in place** within
+  the **same row set**; the row does not leave the table (it is still that member's row, now with a link
+  cell), and react-query re-renders the **same page param** on the `['assignments']` invalidation. So the
+  rendered row set and its order are unchanged and exactly one affordance becomes a link ⇒ `before - 1`
+  holds. This was **exercised live on the real 40-member Org A roster** (build: GREEN + DB `organization_
+  assignments` 6→7) — precisely the population where pagination, if present, would bite; it did not. The
+  reinforcing `memberRow(targetName)` no-affordance check (P2, best-effort) pins that the delta is the
+  **target's** flip, not an unrelated row's.
+- **S2 — the poll observes a transient `before` during the refetch and passes early.** It cannot: `expect
+  .poll` only settles when it **observes** `before - 1`; the `keepPreviousData` transient shows the OLD
+  count (`before`), which is never the asserted value, so a transient can only delay, never falsely pass. A
+  write that silently failed leaves the count at `before` ⇒ the 20 s poll times out **RED** (fail-closed).
+- **S3 — the antd keyboard-pick selects nothing (`ArrowDown`+`Enter` lands on a search box, not an
+  option).** A no-selection leaves `selectedAssignment` falsy ⇒ the modal "Assign" stays **disabled** ⇒ the
+  spec's `expect(submitButton()).toBeEnabled()` fails **RED** before any confirm. A mis-pick surfaces as a
+  red enabled-assertion, never a false pass. (Live-proven; the keyboard path is D4's deliberate choice.)
+
+**Outcome:** no code change required — the count-delta read-back is fail-closed under all three vectors and
+the pagination vector is empirically clean on the real roster. The teeth were additionally mutation-verified
+at harden (host-anchoring `ASSIGNMENTS_URL` reddened exactly the new path-relative test; the two Go
+honesty-teeth reddened on seed-rename / TODO-flip). No "accept with documented risk" outcome — the risks
+resolve to fail-closed behavior, not tolerated gaps.

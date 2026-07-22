@@ -96,3 +96,49 @@ One pass. The Step 2b scan found a single genuine gap (the `isOnAssignments` ort
 parity) — closed. Go coverage was already 100% (the substantive work was proving the honesty-teeth
 bite, done empirically). A second pass would only add shallow line-bumps — stopped to avoid
 gold-plating.
+
+## M243: Final Review
+
+Clean close — a small, well-hardened section milestone whose code lives entirely in `rext
+playthroughs/` (Go manifest + TS e2e) with a docs-only corpus side. The review found **zero
+fix-required findings**; no code fix commits were made at close. Full ledger:
+
+### Scope
+- [x] All 5 sections + supporting items checked; the sole in-manifest `TODO` M243 was chartered to
+      fill is filled — `ptvalidate` reports **7 products / 16 use cases / 16 live / 0 TODO**; 16 `@pt:`
+      spec files, 16 distinct tags. Counts consistent across `playthroughs.md` / `README.md` / `CLAUDE.md`
+      (15→16, 1→0 TODO). 0 TODO/FIXME/HACK in the touched files. No scope gaps.
+
+### Code Quality
+- [x] No must/should/nice findings. `AssignmentsPage` follows the established `PageObject` discipline
+      (find-only landmarks; `<main>`-scoped `table tbody tr`; role/visible-text anchors; no CSS/testid);
+      `ASSIGNMENTS_URL` correctly segment-anchors so it excludes an `/enterprise/assignments-report`
+      look-alike (the M203 `-`-boundary hazard). No dead code. `targetMemberName` is best-effort
+      non-blocking (P2). `go vet` + `gofmt` + `tsc --noEmit` all clean.
+
+### Adversarial (Phase 2c)
+- [x] One scenario cluster recorded in `decisions.md` (count-delta read-back vs table pagination/re-sort
+      [S1], refetch-transient [S2], antd keyboard mis-pick [S3]) — all verified **fail-closed**, S1
+      empirically clean on the real 40-member Org A roster. No code change.
+
+### Documentation
+- [x] No gaps. D2 (anti-toothless read-back) / D3 (precondition lockstep) / D4 (antd-v6 Select lesson)
+      already blended into `playthroughs.md` at build (verified accurate). No new top-level unit →
+      per-unit handbook contract N/A. Doc house-style uses no `(#M-D)` reference tags.
+
+### Tests & Benchmarks
+- [x] Go `manifest` fresh-pass (`TestRealCorpus_*` green; 100% stmts, already maximal); TS unit **77**
+      (73→77, the +4 `isOnAssignments` parity block); typecheck clean; `ptvalidate` static gate green.
+      **Flake gate:** TS unit **77 passed 5/5** sequential (deterministic). The live-browser spec
+      (`assignment-assign.spec.ts`) is proven GREEN + DB-verified at build; its cold re-drive on `billion`
+      is **M244's declared scope** (roadmap `Out:` + M244 exit-gate (h)) — not a close gap.
+
+### Decision Triage
+- [x] D2 / D3 / D4 → already blended into `playthroughs.md` (verified). D1 (assign surface/flow) / D5
+      (corpus-pin reversal) / D6 (dev-run roster refresh) / Adversarial subsection → archive
+      (maintainer-only). No new blending.
+
+### Deferrals (Phase 1b)
+- [x] Audit **YELLOW** — 0 new; `DEF-M235-03` assign-WRITE **RESOLVED Fate-1** (the standing-backlog carry
+      M243 was chartered to land); 4 inherited items already fated → M244 (now-adjacent terminal expiry).
+      No blockers. Report: `audit-deferrals/deferral-audit-2026-07-22.md`.
