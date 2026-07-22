@@ -101,10 +101,10 @@ roster / succession) + `assignment-monitoring.yaml` (the per-member activity-das
 live Playthroughs** (`pt-workforce-funnel`, `pt-workforce-roster`, `pt-workforce-succession`, `pt-activity-drilldown`).
 **M219 (v2.3 "cue to cue") landed `ai-readiness.yaml`** — the AI-readiness product, as **4 more live
 Playthroughs** (see below). **M225 (v2.4 "casting call") landed `hiring.yaml`** — the recruiter-vantage candidate
-comparison, as **1 more live Playthrough** (`pt-hiring-recruiter-compare`; see below). The corpus now stands at
-**15 live Playthroughs, 1 TODO** — the sole TODO being the assign-WRITE half
-(`assignment-monitoring.assign-and-track.UC1`, a two-backend org-admin WRITE flow), a declared build-reference gap
-tracked in the manifest (reports `unimplemented`, out of M204's declared 3 manager journeys).
+comparison, as **1 more live Playthrough** (`pt-hiring-recruiter-compare`; see below). **M243 (v2.6 "sound check")
+landed the assign-WRITE half** — `assignment-monitoring.assign-and-track.UC1` (`pt-assignment-assign`), the one
+net-new journey, which flips the last in-manifest `TODO`. The corpus now stands at **16 live Playthroughs, 0 TODO**
+(see the assign-WRITE note below).
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
@@ -162,6 +162,36 @@ surface lives **in a different app**. The one Playthrough proves the recruiter j
 > **Scope: recruiter only** (one GREEN Playthrough = the milestone gate). The candidate is "optional" per the
 > milestone and is covered on the **presence** side by S2's candidate coverage manifests — the clean pillar
 > split (`coverage-protocol.md` = presence; this doc = function).
+
+### The assign-WRITE Playthrough (M243) — the first MUTATING manager journey, proven to LAND
+
+**M243 (v2.6 "sound check") landed the sole remaining in-manifest `TODO`** — the WRITE half of the
+assign-and-track story. It is the FIRST Playthrough whose action-under-test **mutates real state**, so it is
+where the release's anti-toothlessness thesis is sharpest: a test that merely closes a modal proves nothing;
+the assignment must be shown to actually **LAND**.
+
+| Playthrough | Hero (seat) | Surface | What it proves |
+|---|---|---|---|
+| `pt-assignment-assign` | `pt-manager` | **`/enterprise/assignments` (Skill Paths tab)** | login → the manager assigns a skill path to a member with a deadline → the assignment is **written and read back**: the target member's inline "Assign Skill Path" affordance FLIPS to the assigned title, so the assignable-affordance count drops by exactly ONE. |
+
+> **The read-back IS the proof (the anti-toothless bar).** The final assertion is the affordance-count delta,
+> not a closed modal. The members table query is keyed `['assignments', …]` and the org-assign mutation
+> (`app.createOrganizationAssignments` → `public.organization_assignments`) invalidates `['assignments']`, so the
+> table **refetches from the backend** and the target member's cell flips from "Assign Skill Path" to the assigned
+> title. That count can only drop if a real `organization_assignments` row landed AND is read back through the
+> real members query — a write that silently failed leaves the modal open (a red `confirmAssign` hidden-wait) or
+> the count unchanged (a red poll). **No new seed data was needed:** Org A (Meridian Labs, 40 members) pre-assigns
+> skill paths to only a handful, so ~34 members are deterministic assign TARGETS; the backend **refuses a
+> duplicate active assignment**, which is exactly why the target must be an unassigned member. The precondition is
+> DECLARED + enforced — UC1 names `seed.preconditions: [public-catalog, org-unassigned-member]`, the latter added
+> to `seed-worlds.yaml`'s pt-world capabilities in lockstep (so a future "assign to everyone" seed change trips
+> `ptvalidate`, not a mystery SETUP failure).
+>
+> **antd-v6 Select lesson (page-object layer).** The catalog picker is an antd `rc-virtual-list` Select whose
+> `role="option"` nodes carry the raw VALUE (a uuid) as their accessible name and are treated as **non-visible**
+> by Playwright (the visible title/image render in separate child nodes). `getByRole('option').click()` is
+> therefore unreliable; the page object commits the first real option by **keyboard** (`ArrowDown`+`Enter`) —
+> robust to the virtual list and genuinely user-driven (P1). Recorded for any future antd-Select surface.
 
 ## The principles (the alignment contract)
 
@@ -287,6 +317,13 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   `ACTIVITY_DRILLDOWN_URL`, `SUCCESSION_URL` — each with a symmetric `isOn*`/`isIn*` predicate pinned by the
   single-source-agreement block). All four extend `PageObject` and use only find-only landmarks (`<main>`,
   headings, visible stat labels, scoped `svg`/`table tbody tr`), identical in shape to the M203 trio.
+- **M243 adds the assign-WRITE surface**: `assignments-page.ts` (`AssignmentsPage` — the `/enterprise/assignments`
+  Skill-Paths assign builder), with `ASSIGNMENTS_URL` + `isOnAssignments` single-sourced in `url-shapes.ts` under
+  the same anchored-segment discipline. It carries the only MUTATING page-object methods so far (open the
+  builder → keyboard-pick a catalog skill path → confirm) plus the read-back accessor (the assignable-affordance
+  count). Same find-only landmark discipline: `<main>`, the "Assign Skill Paths" heading, the antd
+  `dialog`/`combobox` roles, visible button text ("Assign Skill Path" / "Assign"), and a text-filtered
+  `table tbody tr` row — no CSS/testid.
 
 ### Named-hero login — the cockpit seat-switch, reused
 
