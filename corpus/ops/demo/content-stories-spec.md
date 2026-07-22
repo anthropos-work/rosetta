@@ -306,17 +306,38 @@ discipline) with two panels: **Org stories** (the heroes menu, default-on) and *
 byte-identical to a pre-M234 single-panel cockpit, so an old bring-up is unchanged. The content menu is also
 served at **`GET /content-manifest.json`**.
 
-### 7.2 The per-session row + the two-action contract
-Each product is a section (product FontAwesome icon + name); each played session is a row: a **per-`sim_type`
-FontAwesome icon** (`clipboard-check`/`dumbbell`/`user-tie`/`comments`) + a descriptor (modality pill +
-passed/not-passed pill) + **up to two login-and-land CTAs**:
+### 7.2 The tuple-regrouped row + the two-action contract (M234 contract, M242 layout)
+Each product is a section (product FontAwesome icon + name). **The rows are REGROUPED by requirement tuple
+(v2.6 "sound check" M242):** a product's played sessions group by **`(sim_type, modality)`** — a
+non-simulation product (skill-path / academy / ai-labs, empty `sim_type` AND `modality`) falls back to
+grouping by **`label`** — and each group renders as **ONE row**:
+
+> **`target label` (+ modality pill)  |  passed login options  |  not-passed login options`**
+
+a **per-`sim_type` FontAwesome icon** (`clipboard-check`/`dumbbell`/`user-tie`/`comments`) + the target label
+(the sim_type human label, or the believable `label` for a non-sim) + the modality as a title pill, then **two
+side-by-side columns** — the `passed:true` session's login options in one, the `passed:false` session's in the
+other — so a presenter reads the passing run and the failing run of a requirement *next to each other* instead
+of hunting two rows apart. An empty column reads an explicit **"No passing / No failing run"** (a distinct
+marker, never a blank cell misread as broken). A **presence-only** group (ai-labs — no result surface, hence no
+pass/fail verdict) renders a single inline cells slot, no columns.
+
+Each column holds one **login-options cell** per session of that verdict — the **two-action contract**, and the
+atomic unit the M241 EN/IT toggle filters (an EN/IT tuple contributes one cell per language into the same
+column; the toggle shows one, hides the other). **The pass/fail moved from a per-session pill to the column
+header; the modality from the desc to the tuple title.** The two actions per cell (unchanged from M234):
 
 - **As-player** — a fake-FAPI handshake `…/handshake?__clerk_identity=<player_seat>&redirect_url=<base><player_result_path>`,
   rendered iff the session carries a `player_result_path`. `<player_seat>` is the `content-player-<idx>` seat
   M234 registered (§7.4), so the presenter logs in as the exact seeded member who owns the session.
 - **As-manager** — the same handshake with the manager hero seat landing on the activity-dashboard result
-  surface, **omitted where `has_manager_view=false`** (the `.actions`/two-button layout with omitempty). The
+  surface, **omitted where `has_manager_view=false`** (the `.sactions`/two-button layout with omitempty). The
   manager CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
+
+> **Render helpers (M242).** `render_content_tab` groups by `_content_tuple_key` → `_content_tuple_row`
+> (icon + title + columns) → `_content_login_cell` (the per-session cell: language pill + the two CTAs,
+> carrying `data-lang`/`lhide` for the toggle). The regroup is **render-layer only — no manifest schema
+> change** (every session still carries `sim_type`/`modality`/`passed`/`language` as before).
 
 ### 7.3 Per-product app-base routing + the two special sections
 The per-product `app_base` resolves the CTA origin, generalizing the M224 `is_hiring`/`hiring_base` switch
@@ -380,8 +401,10 @@ The mechanics:
 - **Proven (unit).** `demo-stack/tests/test_cockpit.py::TestContentLanguageToggle` render-proves the toggle
   structure + the default + the language labels + the solo-row-always-visible rule (STRUCTURE / LABEL only,
   never a translated value). The live click-swap is pure DOM (`_LANG_JS`); the live sweep proves both languages'
-  result pages render (§4). *(M242 owns the row-REGROUP by tuple that will pair the EN/IT variants onto one
-  row; M241 delivers the language axis + the global toggle it consumes.)*
+  result pages render (§4). *(M242 **delivered** the row-REGROUP by tuple (§7.2): the EN/IT variants of a
+  `(sim_type, modality, pass/fail)` cell now share ONE column of ONE tuple row, the toggle filtering between
+  them — `TestContentTabTupleRegroup::test_regroup_coexists_with_language_toggle_variants_in_one_column` pins
+  the coexistence. M241 delivered the language axis + the global toggle the regroup consumes.)*
 
 ### 7.7 What's proven at M234 (unit) vs left to M236 (runtime)
 M234 is **unit-proven, not browser-proven**: `cockpit.py` renders the manifest to correct HTML (per-product
