@@ -3,16 +3,16 @@ milestone: M242
 slug: cockpit-ux
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-22
 depends_on: M240 + M241
 delivers: corpus/ops/demo/cockpit-spec.md + corpus/ops/demo/content-stories-spec.md
 ---
 
 # M242 — cockpit UX
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M240 + M241
+**Status:** `archived` (completed 2026-07-22)  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M240 + M241
 
 ## Goal
 The Content-stories tab reads clearly and the heroes are legible by role.
