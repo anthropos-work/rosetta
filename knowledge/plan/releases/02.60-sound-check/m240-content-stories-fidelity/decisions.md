@@ -86,3 +86,39 @@ Per the user's resume decision, searched thoroughly for the Bunny.net recording 
 **Also (Defect 1 interaction):** the `d.type = <cell sim_type>` predicate means only the HIRING-voice cell could ever source a recorded session anyway — recorded voice sessions are almost exclusively HIRING; assessment/training/interview voice = 0 recordings. So even with the key, only `hire-voice-*` cells can serve video.
 
 **What the user must provide to unblock:** the Bunny.net recording signing-key pair (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`), or the platform-side equivalent, from a real source (prod/vault/1Password). The moment it arrives the port is PRE-BLESSED: safety §3.8.1 (video amendment) + the media-substrate spec + the gender-coherence contract are landed this session, so only the provision + re-pin + verify remain. Fallback if the key never comes: voice presence-only (faithful `not_available`), which is the current honest state.
+
+## M240 CLOSE (2026-07-22) — voice → PRESENCE-ONLY is the v2.6 deliverable; video exhibit → M244 (Fate-3, user pre-approved)
+
+**User decision (2026-07-22, via orchestrator):** the voice section closes as **DELIVERED = voice presence-only**,
+NOT a blocker and NOT an incomplete section. The faithful `chime_status='not_available'` state IS the v2.6
+deliverable: a content-story demo ships an honest "recording not available" rather than a broken 500 player over
+a recording it cannot sign for. The safety posture (`safety.md` §3.8.1 — the 2026-07-21 VIDEO sign-off +
+gender-coherence contract), the media-substrate spec, and the seed-side reference-port design all landed this
+milestone, so the real exhibit is fully documented and **pre-blessed** — only the Bunny-key provision + re-pin +
+live playback verify remain, and those depend on keys genuinely absent from this box's dev-stack.
+
+**M240 is a COMPLETE section close:** all 6 sections resolved — 5 fixed (media-safety gate, Defect 1, Defect 3,
+pass-rate, Delivers) + voice-presence-only.
+
+**DEF-M240-01 → M244 (Fate-3, user pre-approved 2026-07-22).** The real-video content-stories exhibit routes to
+M244 "prove on billion": re-pin a hiring-voice cell to a recorded session + provision the Bunny.net recording
+signing keys (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`) + wire the exhibit-by-reference
+render; land it live IF the keys are reachable on billion, else keep voice presence-only. Zero byte-port
+(sign-a-Bunny-URL-at-render). Applied at close: added to M244 `overview.md` In-list. This is a normal
+user-pre-approved Fate-3, NOT an escape-hatch — recorded here for audit trail. See
+`audit-deferrals/deferral-audit-2026-07-22-m240-close.md`.
+
+## Adversarial review (M240 close)
+
+- **Scenario (sourcing / Defect 1):** could the `d.type = <cell sim_type>` predicate ever admit a session whose
+  `s.sim_type` disagrees with the sim's `d.type`, re-leaking the interview sim into a voice cell? Considered: the
+  predicate binds the PUBLIC-sim CTE's `d.type`, not the session's `s.sim_type` — `TestSelectionSQL_TypeMatchScopedToPublicCTE`
+  fences that the constraint lives inside the public CTE (harden pass). Handled.
+- **Scenario (Defect 3 col-set aliasing):** `append(criterionResultCols(), "input_data")` could alias the shared
+  slice if it ever gained spare capacity, silently corrupting the PersonaSeeder's criterion writes. Considered:
+  not a live bug today (fresh literal, cap==len) but pinned by the append-aliasing probe
+  (`TestCriterionColSets_ContentExtendsSharedNoRegression`, harden pass). Handled.
+- **Scenario (media honesty):** could a future re-pin flip `chime_status='completed'` without a resolvable
+  `bunny_video_id` and ship a broken player? Considered: the exhibit is held atomic (spec §6 + safety §3.8.1);
+  the close records voice as presence-only and routes the port to M244 as one atomic unit — no partial flip lands.
+  Handled by disposition, not code (no media-write code shipped this milestone).

@@ -40,6 +40,7 @@ On a cold reset-to-seed on `billion`:
 - Run the multi-part gate (a–h) above; `ORG-CLEAN` runs FIRST (read-only, before the bring-up).
 - Same billion-safety rules (one driver, no detached on-host scripts, assert from a tailnet peer, never kill a mid-build).
 - **Inherited from M239 close (2026-07-21, Fate-3):** `DEF-M239-01` — make the demo build **fail loudly on ENOSPC** (the disk-full class that surfaced as a cryptic `redis exited(1)`; M239 fixed the pre-flight to measure the Docker-VM disk, this is the build-time loud-abort follow-on). **9th standing failure** — `test_a_RACED…` hardcodes cockpit port 17700 and collides with a live demo-1; a clean reset-to-seed resolves it, but land the test-isolation fix (fix recipe in M239 `decisions.md` D13). Both non-blocking; discharge during the live re-prove.
+- **Inherited from M240 (2026-07-22, Fate-3, user pre-approved):** the content-stories VIDEO exhibit — re-pin a hiring-voice cell to a recorded session + provision the Bunny.net recording signing keys (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`, absent from the local dev-stack) + wire the exhibit-by-reference render; the posture + gender-coherence contract are pre-blessed (safety.md §3.8.1); land the exhibit live IF the keys are reachable on billion, else keep voice presence-only. Zero byte-port (sign-a-Bunny-URL-at-render).
 
 ### Out
 - New feature work (all built by M238–M243 — M244 CALIBRATES + PROVES live, it does not re-build).

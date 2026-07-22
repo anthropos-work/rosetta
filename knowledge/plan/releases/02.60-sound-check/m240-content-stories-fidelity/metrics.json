@@ -1,0 +1,44 @@
+{
+  "milestone": "M240",
+  "title": "content-stories fidelity",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-22",
+  "platform_repo_edits": 0,
+  "tests": {
+    "go_stack_seeding_full": "full stack-seeding module GREEN — 16 ok packages / 0 fail (go test ./...); go vet + go build ./... clean",
+    "go_touched_packages": "contentsession 22 test funcs, seeders (fleet) test files green, cmd/content-capture 15, cmd/stackseed 49, scrub 16 — all GREEN",
+    "go_repo_test_funcs": "1999 (git grep '^func Test', whole rext repo) — up from the v2.5 baseline 1976 (release-cumulative across M237-M240)",
+    "m240_tests_added": "6 (harden pass, rext ae0e869): TestSelectionSQL_TypeMatchScopedToPublicCTE + TestPassedFixtureScoresAreBelievable (contentsession); TestCriterionColSets_ContentExtendsSharedNoRegression + TestContentStorySeeder_DocumentBodyReachesManager (seeders); TestUnknownOnlyKeys + TestPinnedKeys (cmd/content-capture)",
+    "mutation_verified": "all 3 fixes mutation-verified at harden (guards go RED against the original bug, restored byte-clean via Edit): Defect 1 (drop d.type CTE predicate -> 3 tests RED), pass-rate (drop score band / flip ASC->DESC -> RED), Defect 3 (drop input_data col / value / null body -> 2 tests RED)",
+    "honesty_scrub_gates": "GREEN — TestManifest_CanonicalFileMatchesProjection + TestContentManifest_CanonicalFileMatchesProjection + the scrub leak gates (TestEmbeddedContent_NoStructuralPII) regression-run green with the re-captured fixtures + regenerated presets",
+    "flake_gate": "GREEN — touched suites 5/5 sequential shuffled (go test -count=1 -shuffle=on ./contentsession ./seeders ./cmd/content-capture ./cmd/stackseed ./scrub)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "qualitative / behavior-path + mutation-verified (no line-coverage tool wired in this rext repo — same convention as M237-M239)",
+    "surface": "the 3 fixes each fenced: the d.type CTE-scoped type-match predicate (Defect 1); the score-band + score-ASC tiebreak (pass-rate); the content-specific contentCriterionResultCols input_data seed-time write + the append-aliasing probe (Defect 3); the --only surgical re-capture fail-loud-on-typo guard",
+    "residual_uncovered": "the live-DSN content-capture path + os.Exit main (not unit-testable, documented in main_test.go); the real-video media exhibit (Bunny-key-blocked; presence-only shipped) -> M244"
+  },
+  "code_of_record_tag": "sound-check-m240-content-stories-fidelity @ ae0e869 (created + pushed at close; a fresh annotated create, NOT a force-repin — the build did not tag)",
+  "build_commits_rext": "9e8305a (Defect 1 d.type predicate + re-pin + --only) + cb64ccd (Defect 3 input_data seed-time write) + 0753e48 (pass-rate score-band + score-ASC code) + 3e9696c (pass-rate fixture re-pin 5 cells to 70-95%)",
+  "harden_commits_rext": "ae0e869 (mutation-verify the 3 fixes + 6 deepening tests)",
+  "close_commits_rext": "none (0 fix-required findings; the code was correct + hardened at build)",
+  "build_commits_corpus": "7020c3f (safety.md §3.8.1 gate + sign-off) + 7226a3c (session-clone-spec §2) + 92ae3ed (session-clone-spec §4) + 37a47a0 (media-substrate-spec + §3.8.1 VIDEO amendment) + a383791 (record) + 7f9e0a1 (harden record)",
+  "hardening": "1 pass (2026-07-22) — mutation-verified 3 fixes + 6 deepening tests; 0 bugs found inline (all 3 fixes already correct); the one latent risk (append-aliasing) pinned by a probe, not a live bug. See progress.md '## M240: Hardening'",
+  "deferral_audit": "YELLOW — DEF-M240-01 (the real-video content-stories exhibit) -> Fate-3 -> M244 (user pre-approved 2026-07-22, added to M244 In-list); DEF-M239-01 + the reap-13 collision already homed in M244; the standing-8/9 = tracked Fate-2 repeat -> M244 (named expiry). 0 RED blockers, no sign-off. Report: audit-deferrals/deferral-audit-2026-07-22-m240-close.md",
+  "close_fixes": [
+    "scope (Phase 1/7): voice (Defect 2) resolved as DELIVERED = voice presence-only (user decision 2026-07-22) — the faithful chime_status='not_available' state IS the v2.6 deliverable; not a blocker, not incomplete. Complete 6-section close.",
+    "scope (Phase 1/7): DEF-M240-01 the real-video exhibit -> Fate-3 -> M244 (user pre-approved); M244 overview.md In-list edited + handoff recorded in decisions.md",
+    "adversarial (Phase 2c): 3 scenarios recorded in decisions.md (d.type CTE-scope re-leak; input_data append-aliasing; media honesty atomic-hold) — all handled, no new code",
+    "code/docs/tests (Phase 2/3/4): 0 fix-required findings — rext vet+build clean, full module green, docs honest+accurate+indexed, 0 TODO"
+  ],
+  "delivered": {
+    "defect_1_selection": "LANDED — the public sim's d.type = <cell sim_type> predicate (robust, not slug); the interview sim can no longer leak into non-interview voice cells (CQ-1 root cause); asmt-voice-pass re-pinned to a real assessment-voice session (score 70)",
+    "defect_3_document": "LANDED — the dropped input_data written at seed time via a content-specific contentCriterionResultCols; the document body is input_data.text_document (collaborative_doc), NOT an S3 blob -> no blob to port, fully landed",
+    "pass_rate": "LANDED — ScoreMin/ScoreMax band + score-ASC tiebreak (100% only fallback); the 5 still-100% passed cells re-pinned to real 70-95% sessions (74/72/82/83/81), re-captured values-blind via content-capture --only, both canonical presets regenerated, honesty gate green",
+    "voice": "DELIVERED = voice presence-only (faithful chime_status='not_available'); the real-video exhibit is documented + pre-blessed + routed to M244 (DEF-M240-01)",
+    "delivers_docs": "new media-substrate-spec.md (Bunny-CDN reference substrate + render path + seed-side exhibit + values-blind Bunny-key provisioning + honest Bunny-key-blocked status; indexed in demo/README.md) + safety.md §3.8.1 (raw-media/VIDEO amendment, fresh 2026-07-21 data-controller VIDEO sign-off, reference-not-bytes, gender-coherence, document=inline-text) + session-clone-spec.md §2/§4 doc bumps"
+  },
+  "notes": "Third of the v2.6 post-barrier fix fan-out (content-stories fidelity), with a HARD media-safety gate cleared first. 5 of 6 sections fixed (selection type-match, document input_data, pass-rate believable band, the media-substrate + video-safety Delivers) + voice resolved as presence-only (user decision 2026-07-22): the faithful not_available state IS the deliverable, and the real-video exhibit — fully documented + pre-blessed (safety §3.8.1) but Bunny-recording-key-blocked on this box's dev-stack — routes to M244. Harden mutation-verified all 3 fixes + added 6 tests, 0 bugs, 0 regressions. PII discipline: customer media never entered agent context; the video exhibit is by-reference (no byte-port); creds handled values-blind; 0 platform-repo edits."
+}
