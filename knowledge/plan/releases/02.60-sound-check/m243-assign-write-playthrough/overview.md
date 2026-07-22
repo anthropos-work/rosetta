@@ -3,16 +3,16 @@ milestone: M243
 slug: assign-write-playthrough
 version: v2.6 "sound check"
 milestone_shape: section
-status: planned
+status: archived
 created: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-22
 depends_on: M237
 delivers: corpus/ops/demo/playthroughs.md
 ---
 
 # M243 — assign-WRITE Playthrough  [realizes reserved M238]
 
-**Status:** `planned`  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M237
+**Status:** `archived` (completed 2026-07-22)  ·  **Shape:** `section`  ·  **Complexity:** medium  ·  **Depends on:** M237
 
 ## Goal
 The one net-new hero journey — a manager assigns content with a deadline and it lands. Realizes the reserved `M238` (assign-WRITE); closes the ~10-routing `DEF-M235-03` / M204 in-manifest TODO.
