@@ -1,0 +1,18 @@
+{
+  "milestone": "M244",
+  "shape": "iterative",
+  "primary_metric": "exit-gate parts (a-h) discharged green live on billion",
+  "gate_parts_total": 8,
+  "gate_parts_discharged": 0,
+  "inherited_defers_total": 3,
+  "inherited_defers_dispositioned": 0,
+  "content_stories_denominator": 49,
+  "live_browser_specs": 40,
+  "rext_pin": "sound-check-m243-assign-write-playthrough",
+  "iters_closed": 1,
+  "tiks": 0,
+  "toks": 1,
+  "last_iter": "iter-01",
+  "gate_met": false,
+  "updated": "2026-07-22"
+}
