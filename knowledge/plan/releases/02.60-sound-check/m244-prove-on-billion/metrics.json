@@ -3,24 +3,26 @@
   "shape": "iterative",
   "primary_metric": "exit-gate parts (a-h) discharged green live on billion",
   "gate_parts_total": 8,
-  "gate_parts_discharged": 2,
+  "gate_parts_discharged": 3,
   "gate_parts_discharged_list": [
     "a: ORG-CLEAN (23 fixtures, 0 tokens)",
-    "e: DEF-M226-01 serve-reap (7->0 ports)"
+    "e: DEF-M226-01 serve-reap (7->0 ports)",
+    "g: interview plan-section-id alignment assertion (added + green + pushed; real v1.3->v1.4 drift defect caught + fixed via intv-voice-fail re-pin; live-confirmed on billion)"
   ],
-  "gate_b_status": "46/49 reliable (flakiness fixed 37->46; 3 deterministic voice/interview-render residuals -> gate g + voice-presence-only decision)",
+  "gate_b_status": "46/49 reliable; residuals routed = 2 voice cells -> presence-only (denom 49->47) + intv-voice-pass/player ack-page fix",
   "inherited_defers_total": 3,
   "inherited_defers_dispositioned": 0,
   "content_stories_denominator": 49,
+  "content_stories_denominator_target": 47,
   "live_browser_specs": 40,
-  "rext_pin": "sound-check-m243-assign-write-playthrough",
-  "rext_m244_tag": "sound-check-m244-content-sweep-robustness -> e74e563 (on origin)",
+  "rext_pin": "sound-check-m243-assign-write-playthrough (billion consumes; m244 tag ready for gate-h re-pin)",
+  "rext_m244_tag": "sound-check-m244-content-sweep-robustness -> 70d75cb (on origin; alignment assertion + intv-voice-fail v1.4 re-pin)",
   "billion_stack": "demo-1 GREEN cold reset-to-seed, autoverify 2026-07-22T12:51:20Z green/0-warn",
-  "iters_closed": 5,
-  "tiks": 4,
+  "iters_closed": 6,
+  "tiks": 5,
   "toks": 1,
-  "last_iter": "iter-05",
+  "last_iter": "iter-06",
   "gate_met": false,
   "updated": "2026-07-22",
-  "gate_g_status": "root cause = directus.simulations_extraction not captured (0 rows) -> null interview plan -> empty report. FIX committed+tested+pushed (add table to directus capture surface, rext e74e563). Plan load -> render 0->520 (load-bearing). Full green (section render + assertion + live capture-path) routed. intv-voice-pass/player is a SEPARATE ack-page issue."
+  "gate_g_status": "DISCHARGED. TestInterviewPlanSectionAlignment + golden interview-plan-sections.json + TestOrphanKeysDetectsV13Drift added + green + pushed. Caught real plan-version drift (intv-voice-fail on v1.3-era session vs sim v1.4 plan); fixed by re-pin 43a92fc0->05dae0f7 (v1.4-clean failed interview) via content-capture --only. Live DB proof on billion: pass clone 97f3f681 0-orphans; fail clone ace3b54e (m243 seed) orphans={breadth,context_fit,frequency} caught by assertion, resolved by re-pin on cold reset-to-seed."
 }
