@@ -12,6 +12,18 @@ Run through this guide when:
 - You see dependency errors or schema mismatches
 - Before starting work on a new feature
 
+> **⚠️ Consolidation re-sync (v2.7 "july jitter", M246) — skillpath is decommissioned into `app`.**
+> The skiller→app merge (v2.1) was one step of a program that consolidates every runtime engine into
+> `app`. As of current `origin/main`, **`skillpath` is fully decommissioned**: it is gone from
+> `repos.yml`, from `docker-compose.yml` (no skillpath service/container), and from the GraphQL
+> federation — the router now composes **3 subgraphs** (app/backend, cms, jobsimulation), not 4. The
+> skill-path **runtime session** table moved schemas: writes now go to **`public.skill_path_sessions`**,
+> not `skillpath.skill_path_sessions` (the old schema table survives as an empty legacy husk).
+> A `/stack-update` that crosses this consolidation is expected; the rext seeder tooling was re-pointed
+> to `public.skill_path_sessions` in the same release so seeding a freshly-updated stack does not break.
+> (The full corpus reconciliation of skillpath→app across all service docs is M247.) Proven green by a
+> cold `/demo-up` on the consolidated platform at M246.
+
 ---
 
 ## Update Execution Guidelines (UPDATE STEP)
@@ -164,7 +176,7 @@ cd stack-dev/platform
 make migrate
 ```
 
-This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skillpath).
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation — **skillpath is decommissioned into `app`** as of v2.7; see the consolidation re-sync note above).
 
 ### Apply Single Service Migration
 

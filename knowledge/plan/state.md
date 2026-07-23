@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "(none started — next: M246 re-sync & re-point, the HARD go/no-go barrier)"
+active_milestone: "M246 re-sync & re-point — BUILT (go/no-go barrier PASSED 2026-07-23); awaiting harden/close. Seeder re-pointed skillpath.*→public.*, demo clone pins bumped to current origin/main, injection/bring-up path de-skillpathed; cold demo-2 came up GREEN (561 rows in public.skill_path_sessions, 3 subgraphs, 0 skillpath). rext tag july-jitter-m246-re-sync-repoint on origin."
 last_closed: "M244 — 2026-07-23 (v2.6 prove-on-billion, closed-on-gate 8/8); v2.6 «sound check» SHIPPED + merged to main 2026-07-23"
-phase: "designed — awaiting first milestone build (/developer-kit:build-milestone M246)"
+phase: "M246 built (barrier PASSED) — awaiting /developer-kit:close-milestone M246; then M247–M254 fan out off post-M246 HEAD"
 last_updated: "2026-07-23"
 ---
 

@@ -50,3 +50,20 @@ bring-up on the consolidated platform); the barrier exists precisely to surface 
 `INJECTED`-dict/`test_injection.py`/`exposure_claim_guard._cfg` skillpath residue is NOT required for
 green (inert without a skillpath compose service) → ledgered for M247 (the designed handoff), NOT a
 disguised deferral (it has a documented home).
+
+## D-4 — Go/no-go PASS: the consolidated platform builds + comes up green (2026-07-23)
+**Decision.** The HARD go/no-go barrier **PASSES**. One cold `/demo-up` (demo-2, `DEMO_ADVANCE_CLONES=pinned
+DEMO_FRESHNESS_STRICT=1 --no-public-host`) on the consolidated platform came up GREEN on every load-bearing
+axis: build exit 0 (16 services), the re-pointed seeder wrote **561 rows to `public.skill_path_sessions`**
+(legacy `skillpath.skill_path_sessions` = 0-row husk), **3 subgraph images + 0 skillpath**, health 200 +
+casbin 1250 + all liveness/readiness probes pass. The ~386-commit `app` bump did **not** surface a
+migration/schema/subgraph break — so downstream milestones (M247–M254) are safe to scope against this
+proven topology; no re-scope needed (overview Open-question #2 → answered NO).
+**The 3 autoverify warnings are non-firing** (drift/probe-artifact, not platform breaks): D-07 AI-readiness
+`loadMembers` demopatch anchor went stale (file moved in the bump; non-fatal perf; → M250); D-08 fake-FAPI
+"not answering" is an http-vs-TLS cheap-win probe artifact (container up + roster-loaded; → M251/M254);
+D-09 academy peripheral (missing keys; non-fatal by design). All ledgered (`drift-ledger.md` §4).
+**Environment (billion-last honored).** LOCAL demo-2 on this box; the stale demo-1 was torn down first to
+free resources; the dev native worktrees + the `billion` VM were untouched. Zero platform-repo edits.
+**Rung-zero.** The demo consumed rext at tag `july-jitter-m246-re-sync-repoint` fetched from origin (on
+origin @ `44f1049`) — one tag covering the three rext commits 97585f5 / ee44b9a / 88bcdb8.

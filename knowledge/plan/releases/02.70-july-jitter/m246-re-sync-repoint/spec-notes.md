@@ -62,4 +62,22 @@ skillpath as a live service; whether the bring-up trips on that is a go/no-go su
 ledger.
 
 ## Cold `/demo-up` GREEN prove + M247 drift ledger
-_(TBD during build.)_
+
+**GO/NO-GO: PASS** (cold demo-2, consolidated platform, 2026-07-23). Full evidence in `drift-ledger.md`
+§4. rext consumed at tag `july-jitter-m246-re-sync-repoint` (on origin, `44f1049`).
+
+Invocation: `DEMO_ADVANCE_CLONES=pinned DEMO_FRESHNESS_STRICT=1 bash "$DEMO/up-injected.sh" 2 --no-public-host`
+(local demo-2; stale demo-1 torn down first to free the box; billion untouched).
+
+Load-bearing proofs (all GREEN): build exit 0 · 16 services Up · **561 rows in `public.skill_path_sessions`**
+(legacy `skillpath.skill_path_sessions` = 0 rows, empty husk) · **3 subgraph images, 0 skillpath** ·
+health 200 · casbin 1250 · all liveness/readiness probes pass · schemas present · taxonomy 42790.
+
+3 autoverify warnings, all non-firing → ledger D-07 (AI-readiness demopatch anchor stale → M250),
+D-08 (fake-FAPI http-vs-TLS probe artifact → M251/M254), D-09 (academy peripheral). demo-2 left UP
+as the proof artifact.
+
+## Delivers — update_guide.md consolidation re-sync note
+Added to `corpus/ops/update_guide.md`: the "skillpath decommissioned into app" re-sync note (the seeder
+re-point + the demo clone-pin bump + the 3-subgraph reality), so a `/stack-update` crossing platform
+M507 knows the seeder writes `public.skill_path_sessions` now.
