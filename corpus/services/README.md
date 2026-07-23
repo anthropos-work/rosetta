@@ -16,7 +16,6 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`cms.md`](cms.md) | CMS | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline |
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content |
-| [`skillpath.md`](skillpath.md) | Skillpath | The **runtime/session engine** tracking per-user progression *state*. The skill-path content lives in CMS |
 | [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
 | [`roadrunner.md`](roadrunner.md) | Roadrunner | Code-execution proxy to the Judge0 sandbox. **⚠️ ORPHANED** — execution moved in-process to `jobsimulation/internal/runner/`; nothing calls it |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
@@ -50,6 +49,7 @@ These describe services that no longer run. They stay because many docs still li
 | Doc | Fate |
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
+| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph (→ 3 subgraphs). Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
 | [`chronos.md`](chronos.md) | **Archived** — removed from compose + `repos.yml` (platform `045857c`). Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 
