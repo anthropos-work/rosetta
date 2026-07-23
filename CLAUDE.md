@@ -30,6 +30,7 @@ This is NOT the Anthropos platform source code - it's the documentation about it
 | `/stack-seed` | Seed a stack (`dev-N` or `demo-N`) with realistic structural data (presets or `stack.seed.yaml`) | `corpus/ops/seeding-spec.md` |
 | `/stack-snapshot` | Set-dress a stack (`dev-N` or `demo-N`) — replay the real public taxonomy + Directus content into it (or capture/status) | `corpus/ops/snapshot-spec.md` |
 | `/stack-update` | Sync a stack's code, deps, and schemas (the dev side — demo = teardown + bring-up at a tag) | `corpus/ops/update_guide.md` |
+| `/demo-update` | Refresh a running `demo-N` to prod-latest IN PLACE (no teardown-reseed) — pull new SHAs, re-inject Clerkenstein, rolling-rebuild, migrate, replay, additive seed, then a **fatal 3-tier verify gate** with section→seeder routing; `--rollback` re-checks pre-update SHAs | `corpus/ops/demo-update.md` |
 | `/align-dna` | Build/update an Alignment DNA for a mirror engine + capture goldens | `corpus/architecture/alignment_testing.md` |
 | `/align-run` | Measure a mirror's alignment score vs a source engine | `corpus/architecture/alignment_testing.md` |
 
@@ -456,6 +457,8 @@ These files must be maintained together:
 9. `.claude/skills/update-knowledge/SKILL.md`: Corpus documentation skill
 10. `corpus/ops/secrets-spec.md`: The secret-provisioning spec (the source-of-truth `/stack-secrets` reads) — paired with `setup_guide.md` (which now points to `/stack-secrets` instead of the manual `.env` hand-copy) and `safety.md` (the values-blind / `DIRECTUS_TOKEN`-non-rearm clause)
 11. `.claude/skills/stack-secrets/SKILL.md`: The values-blind secret-provisioning skill (drives the `stacksecrets` CLI at its pinned tag)
+12. `corpus/ops/demo-update.md`: The `/demo-update` operator guide (phase pipeline, fatal 3-tier verify, section→seeder routing, rollback + `--snapshot-db-first`) — paired with `rosetta_demo.md` (demo lifecycle context), `verification.md` (shared verify contract T1/T2 build on), `demo/coverage-protocol.md` (T3's sweep), and `safety.md` (family-wide safety contract)
+13. `.claude/skills/demo-update/SKILL.md`: The refresh-a-running-demo-N-in-place skill (drives `rosetta-demo update N`)
 
 **When to use update-knowledge**: After discovering new platform elements, receiving setup feedback, or finding documentation gaps. The skill performs a corpus-wide sweep to ensure all relevant sections are updated.
 
