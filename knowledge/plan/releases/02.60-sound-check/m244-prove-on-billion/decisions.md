@@ -82,3 +82,41 @@ surface sail through green and make the whole live proof toothless.
   two harden sessions (Passes 1–9); the operative signal is mutation-verify (no line-cov tool wired). The one
   un-swept surface (`pickFirstSkillPath` live-tailnet retry timing) has no pure-logic seam and is gold-plating.
   No un-mitigated false-pass scenario remains. The gate's teeth stand.
+
+## D2 (close-release): DROP DEF-M239-01 (ENOSPC loud-build-fail) — 2026-07-23
+
+**Context:** the release-close deferral audit
+(`../audit-deferrals/deferral-audit-2026-07-23-release-close.md`, verdict **RED** — AGED_OUT). User
+fate-decision 2026-07-23: **"Tag now, carry to v2.7."**
+
+**Decision:** **DROP** `DEF-M239-01` — "make the demo build FAIL LOUDLY on ENOSPC."
+
+**Rationale:** the disk-full failure class is **ALREADY caught** by M239's pre-flight Docker-VM disk-measure
+(the demo aborts before the build when the VM is low on space). The build-time loud-abort is redundant
+belt-and-braces of marginal residual value, and it is **un-validatable** without inducing a real ENOSPC on a
+build box — not reproducible in a clean docs-only close. Cutting it retires an aged item honestly rather than
+parking un-validatable code. **NOT carried to v2.7** (a DROP, not a defer). Recorded as DROPPED in
+`roadmap-vision.md`.
+
+## D3 (close-release): RELEASE-SCOPE-DEFER standing-8 + roster-nit → v2.7 test-health — 2026-07-23
+
+**Context:** the same release-close deferral audit (**RED** — CHRONIC + AGED_OUT). User fate-decision
+2026-07-23: **"Tag now, carry to v2.7"** — the fallback path (no late-merge branch opened; the whole set → a
+**named** v2.7 milestone, per the v2.5-close rule *a fate needs a MILESTONE, not a sweep/standing-backlog*).
+
+**Decision:** **KEEP-DEFERRED-WITH-SIGNOFF → v2.7 "test-health" (a NAMED milestone):**
+- **STANDING-DEMOSTACK-TESTDEBT (8 fails)** — pre-M244 inherited (rext `04babf8`, 2026-07-15), **0 real
+  product defects**, host-dependent: 6 `test_cockpit` academy/overlay (stale academy-shape /
+  removed-30 s-window assertions vs deliberately-changed M218/M238/M220 behaviour) + `test_public_host`
+  (port-13001 hiring-app drift) + `test_purge` (docker-integration, needs a live docker box).
+- **rext `stack-verify/e2e/run-unit.sh` roster nit** (same test-health class) — the canonical runner's
+  `UNIT_SPECS` roster is missing the 2 specs the M244 final-harden added (`content-denominator`,
+  `run-discrete`), so the runner exits 2 and its `test_e2e_collection_integrity::UnitSpecsAreExecuted` guard is
+  RED. **All 9 specs pass when run directly** (172) — a roster-drift nit, not a product defect.
+
+**Why Fate-1 (land-now) was DECLINED:** the user chose **tag-now for a proof-complete release** — v2.6's
+charter was proving the whole feature live on `billion`, which is MET (exit gate 8/8, content-stories 47/47, 16/16
+Playthroughs, p95 1.46/1.31 s, flake 0). These items are **non-defects** (0 real product impact): the standing-8
+splits into a mechanical test-assertion subset + a docker/live-gated residue that can only be validated on a live
+box, and the roster nit is a 2-line rext edit — all better batched into a dedicated v2.7 test-health pass than
+bolted onto a proof close. Recorded under the v2.6 → v2.7 carry in `roadmap-vision.md`.

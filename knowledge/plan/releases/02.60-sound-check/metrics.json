@@ -1,0 +1,141 @@
+{
+  "release": "v2.6",
+  "codename": "sound check",
+  "closed": "2026-07-23",
+  "milestones": ["M237", "M238", "M239", "M240", "M241", "M242", "M243", "M244"],
+  "milestone_close_status": {
+    "M237": "closed-complete (HARD go/no-go barrier — opened the release)",
+    "M238": "closed-complete",
+    "M239": "closed-complete",
+    "M240": "closed-complete",
+    "M241": "closed-complete",
+    "M242": "closed-complete",
+    "M243": "closed-complete (landed the sole in-manifest Playthrough TODO — DEF-M235-03 / M204 assign-WRITE, Fate-1)",
+    "M244": "closed-on-gate (iterative terminal closer; exit-gate parts a-h 8/8 discharged live on billion, cold reset-to-seed, 0 platform edits; deferral-audit YELLOW re-fated 2 carries to close-release)"
+  },
+  "platform_repo_edits": 0,
+  "supply_chain": {
+    "verdict": "GREEN",
+    "note": "The rosetta corpus is a DOCS repo — no package.json / go.mod / requirements.txt / lockfile anywhere in it, so there is nothing to audit corpus-side. All tooling code + deps live in the separate rosetta-extensions repo (authoring copy .agentspace/rosetta-extensions @ 498b1a5), audited per-milestone; v2.6 added no new third-party dependency (docs + tooling-test + render/bash-only release). npm_vulnerabilities not re-run at release close (0 new deps; per-milestone audits stand)."
+  },
+  "measurement_method": {
+    "as_of": "2026-07-23, release close Phase 4/4b",
+    "host": "macOS (Darwin 25.1.0), rosetta-extensions @ 498b1a5 (final consumption tag sound-check-m244-content-sweep-robustness)",
+    "go_reproducible_funcs": "git grep -E '^func Test' -- '*.go' over the whole rext repo — the cross-release like-for-like anchor re-anchored at v2.5 M234. 2010 at HEAD 498b1a5.",
+    "go_func_snapshot_note": "per-milestone metrics recorded 2005 at M241-M243; the +5 to 2010 came from M244 iters/harden (contentsession iter-06 + denominator fences). 2010 is the authoritative final-tag reading.",
+    "typescript": "playwright test on the *.unit.spec.ts subset, tallied from the runner's own pass line; live-browser specs enumerated but NOT executed at close (need a running demo).",
+    "python": "per-milestone JUnit/pytest tallies; the demo-stack section is documented HOST-SENSITIVE (pass/skip counts vary with ambient stack state) so its full-suite number drifts across milestones as tests were added.",
+    "coverage": "no line-coverage tool is wired in the rext repo (behaviour-path + mutation-verify convention, same as v2.5's non-Go sections); the one numeric anchor is the Go stack-seeding module. Touched packages re-measured directly at close (go test -cover)."
+  },
+  "tests": {
+    "go_whole_repo_test_funcs": {
+      "method": "git grep '^func Test' (reproducible cross-release anchor)",
+      "v2_5_close": 1976,
+      "v2_6_close": 2010,
+      "delta": 34,
+      "status": "GREEN (increase)"
+    },
+    "typescript_unit_specs": {
+      "runner": "playwright (*.unit.spec.ts)",
+      "v2_5_close_executed": 196,
+      "v2_6_close_executed": 257,
+      "delta": 61,
+      "by_package": {
+        "stack-verify/e2e": { "unit_specs": 172, "note": "all 9 unit spec files pass green when run directly (172); the canonical run-unit.sh runner's explicit roster lists only 7 of the 9 (=162) — see close_findings.stack_verify_roster_drift" },
+        "playthroughs/e2e": { "unit_specs": 85, "note": "spot-confirmed green at close (85 passed, 684ms)" }
+      },
+      "status": "GREEN (increase); counts reproduce — one enforcement-wiring caveat, see close_findings"
+    },
+    "python_demo_stack": {
+      "note": "host-sensitive section; end-of-release readings below",
+      "v2_5_close_testcases": 730,
+      "v2_6_close_full_suite_passed": 839,
+      "v2_6_close_broad_collected": 865,
+      "standing_failures_at_close": 8,
+      "real_defects": 0,
+      "status": "GREEN (increase in passed count; the 8 fails are documented standing debt, 0 real defects)"
+    },
+    "totals_note": "The full cross-section Python total (v2.5 = 1409 across 5 sections) was NOT re-tallied section-by-section at v2.6 close: this was a docs/render/tooling-test release (0 platform edits), and the untouched Python sections (stack-core, stack-verify py, stack-injection, dev-stack) are unchanged. The demo-stack + cockpit sections (the ones v2.6 grew) are reported above.",
+    "suites_not_run": [
+      "stack-verify/e2e live-browser specs — require a running demo stack",
+      "playthroughs/e2e live @pt: Playthroughs (16) — require a running demo stack (all 16 proven GREEN live on billion at M244 gate-met, iter-27, 96 passed)",
+      "content-stories live sweep (run-content-stories.sh) — requires billion + cold reset-to-seed (proven at M244 gate-met)"
+    ]
+  },
+  "net_new_tests_per_milestone": {
+    "m237": "+14 (demo-stack test_tooling 146->160)",
+    "m238": "+ test_patch_inventory (NEW, 5) + test_academy_fs (+2) + TS e2e specs",
+    "m239": "+ test_bedrock_bridge_m239 (12) + test_frontend_build (+1) + Go bedrock_measure/secret_dna fences",
+    "m240": "+6 Go (contentsession + seeders + cmd/content-capture)",
+    "m241": "+6 Go + 9 python cockpit + 4 TS",
+    "m242": "+22 python cockpit (render/UX)",
+    "m243": "+4 TS unit + 1 TS live @pt spec (assign-WRITE)",
+    "m244": "+6 (final harden: python +1 preflight-anchor, TS +5 ai-readiness locators)",
+    "note": "Bases differ across languages/sections and are NOT summable; the reproducible additive anchors are go_whole_repo_test_funcs (+34) and typescript_unit_specs (+61)."
+  },
+  "standing_failures": {
+    "count_at_close": 8,
+    "composition": "6 test_cockpit academy/overlay (stale assertions vs deliberately-changed M218/M238/M220 behaviour + academy live-premise) + test_public_host (port-13001 hiring-app expectation, M220) + test_purge (docker-integration, needs a live docker box)",
+    "origin": "pre-M244 inherited (rext 04babf8, 2026-07-15); carried M238->M244; re-baselined at v2.5 close",
+    "real_defects": 0,
+    "pin_drift": 0,
+    "delta_vs_v2_5": "9 during v2.6 -> 8 at M244 close (the M215 no-pipe fence, M244-introduced by the iter-25 describe-form change, was reconciled inline in final-harden Pass 8)",
+    "disposition": "CHRONIC + AGED_OUT -> release-close deferral audit (BLOCKING; requires fresh user fate) — see audit-deferrals/deferral-audit-2026-07-23-release-close.md"
+  },
+  "flake_count": 0,
+  "flakes": [],
+  "flake_note": "Every milestone recorded flake_count 0; M244 final-harden flake gate 3/3 clean on all touched tests. Release flake_count = 0.",
+  "coverage": {
+    "method": "go test -cover on the touched stack-seeding packages, measured directly at close (no module-wide re-measure — docs/render/tooling-test release)",
+    "touched_packages_v2_6_close": {
+      "scrub": 100.0,
+      "seeders": 96.1,
+      "contentsession": 93.6
+    },
+    "vs_v2_5": {
+      "scrub": "100.0 -> 100.0 (flat)",
+      "seeders": "96.1 -> 96.1 (flat)",
+      "contentsession": "94.7 -> 93.6 (-1.1pp, within the 2pp tolerance)"
+    },
+    "status": "GREEN — no touched package dropped >2pp; largest delta contentsession -1.1pp",
+    "note": "v2.5 recorded the whole stack-seeding Go module at 87.6%; v2.6 was docs/render-heavy and did not re-measure the module. The M241-M242 non-Go milestones use behaviour-path + mutation-verify (no line-cov tool wired), which is the established rext convention."
+  },
+  "regression_gate": {
+    "as_of": "2026-07-23, release close Phase 4b",
+    "conditions": {
+      "test_count_decrease": "NONE — Go funcs +34, TS unit +61, python demo-stack passed-count up; gate not tripped",
+      "coverage_drop_gt_2pp": "NONE — largest touched-package drop is contentsession -1.1pp; gate not tripped",
+      "flake_gt_0": "NO — flake_count 0; gate not tripped"
+    },
+    "verdict": "GREEN",
+    "note": "All three hard regression conditions pass. Two YELLOW annotations recorded (not gate-blockers, do not trip any of the three conditions): (1) the 8 standing demo-stack failures are documented chronic test-side debt (0 real defects) routed to the BLOCKING release-close deferral audit; (2) a net-new enforcement-wiring finding at the final tag — run-unit.sh's roster + its UnitSpecsAreExecuted guard are RED because 2 harden-added unit specs were not rostered (the tests themselves pass). See close_findings."
+  },
+  "close_findings": {
+    "stack_verify_roster_drift": {
+      "severity": "YELLOW (real, 0 product impact, trivially fixable — NOT a gate condition)",
+      "what": "At the final consumption tag 498b1a5, run-unit.sh's explicit UNIT_SPECS roster lists 7 of the 9 *.unit.spec.ts files on disk. The 2 unrostered specs (content-denominator.unit.spec.ts, run-discrete.unit.spec.ts) were ADDED by the M244 final harden (passes 2 & 5) but never added to the roster.",
+      "consequence": "run-unit.sh refuses (exit 2) and its own integrity guard test_e2e_collection_integrity.py::UnitSpecsAreExecuted is RED (2 sub-tests: the on-disk-but-unrostered name-check + the execute-for-real). This is the exact 'a pin nobody runs is not a pin' defect that guard was built to catch, reintroduced by the harden that added the specs.",
+      "impact": "The recorded 172 green count is ACCURATE — all 9 specs pass when invoked directly (172; the 7 rostered alone = 162). No product/tooling behaviour is wrong; the tests pass. Only the canonical rostered runner + guard are out of sync.",
+      "fix": "Add the 2 spec filenames to run-unit.sh's UNIT_SPECS array (2-line change). Orchestrator Phase 7.",
+      "distinct_from_standing_8": true
+    }
+  },
+  "primary_gate": {
+    "name": "v2.6 exit — everything built + provisioned as expected, proven live on billion",
+    "m244_exit_gate_parts": "8/8 (a-h) discharged GREEN live on billion, cold reset-to-seed, 0 platform edits",
+    "content_stories_denominator": "47 (was 49; DEF-M240-01 dispositioned 2 voice cells to player-presence-only)",
+    "playthroughs": "16 live @pt Playthroughs GREEN in one clean full billion run (96 passed, iter-27)",
+    "status": "MET"
+  },
+  "deferrals": {
+    "release_close_audit": "audit-deferrals/deferral-audit-2026-07-23-release-close.md",
+    "verdict": "RED (chronic + aged-out) -> requires fresh user fate at close",
+    "open_at_close": 2,
+    "resolved_during_release": ["reap-17700 / M239-D13 (Fate-1 LANDED, M244 iter-10)", "DEF-M240-01 real-video exhibit (dispositioned player-presence-only, M244 iter-07)", "DEF-M235-03 / M204 assign-WRITE (Fate-1 LANDED at M243)"],
+    "blocking_items": [
+      "STANDING demo-stack test debt (8) — CHRONIC + AGED_OUT — recommend: LAND-NOW the ~6 mechanical stale-assertion fixes on a late-merge branch + KEEP-DEFERRED-WITH-SIGNOFF the ~2 docker/live-gated -> v2.7 named milestone",
+      "DEF-M239-01 ENOSPC loud-build-fail — AGED_OUT — recommend: DROP (disk-full class already covered by M239 pre-flight disk-measure), fallback KEEP-DEFERRED-WITH-SIGNOFF -> v2.7 named milestone"
+    ]
+  },
+  "headline": "v2.6 'sound check' — the reliability / field-hardening release: make everything that's built actually get built + provisioned, proven live on billion. 8 milestones (M237 barrier -> M238-M243 parallel fixes -> M244 prove-on-billion), 0 platform-repo edits. Exit gate 8/8 discharged live on billion cold reset-to-seed; 16 live Playthroughs GREEN; content-stories both vantages land non-empty. Tests: Go funcs 1976->2010 (+34), TS unit 196->257 (+61), flake 0, touched coverage flat/in-tolerance. Regression gate GREEN. Two items to the terminal deferral audit (chronic standing-8 + DEF-M239-01) + one net-new roster-drift finding for close-fix."
+}
