@@ -305,7 +305,7 @@ directus-set-dress (net-new file) → evidence-distribution (behind both). The i
 **Open questions:** how to write `directus.simulations.skills` in the per-stack Directus (net-new set-dress — snapshot replay is replay-only)? the tech/business track↔audience label mapping (the platform pins the *opposite* of the annotation's framing — confirm at live render); re-derive the M219 arithmetic fences + the "Champion 30/30" beat at 31 skills.
 
 #### M251 — test-health  (`section`)  [realizes the reserved v2.6→v2.7 carry]
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-23)
 **Goal:** The standing demo-stack test debt is discharged — the mechanical failures re-pointed, the `run-unit.sh` roster fixed.
 **Shape:** `section`.
 **Scope — In:**
@@ -319,6 +319,19 @@ directus-set-dress (net-new file) → evidence-distribution (behind both). The i
 **KB deps:** `corpus/ops/verification.md`, `corpus/ops/demo/coverage-protocol.md`.
 **Delivers →** (optional) a `corpus/ops/verification.md` anchor indexing the demo-stack python suite + the run-unit roster.
 **Open questions:** none blocking (the composition is confirmed against disk).
+**Closure (2026-07-23):** Section close — **all sections delivered as Fate 1.** Rostered the 2 orphan unit specs
+(run-unit 7→9 specs, 172 tests, exit 0; `UnitSpecsAreExecuted` GREEN) and re-pointed the 7 mechanical assertions
+(6 `test_cockpit` overlay/academy + `test_public_host` port-13001) at the **deliberately-changed** M218 /
+2026-07-15 / M226 behaviour as **removal-guards** — mutation-verified **4/4** (each goes RED when the removed
+behaviour is re-introduced, git-clean restored after). **Verified:** `test_cockpit`+`test_host_prereqs_m215`
+207/207 · `test_e2e_collection_integrity` 8/8 · run-unit 172/172; full demo-stack suite **861 pass / 8 fail**
+(the 8 are the live/env/docker-gated carry → M254; **0 M251 regressions** — none in M251's touched files); flake
+**5/5**; lint clean (shellcheck + py_compile + bash -n). Close review **0 must-fix**; deferral audit **GREEN** (6
+single deferrals, all Fate-2 → M247/M254; 0 repeat/aged-out/blocking). **Flag → M254:** the real live-gated
+failing set on a stackless box is **8**, not the "~2" M254's overview estimates (`test_purge` +
+`test_ant_academy*` launcher/reap + `test_ant_academy_clerk_wiring`; the host-sensitive members swap but the
+count holds) — M254's overview to be corrected when M254 runs. Code-of-record: **rext tag
+`july-jitter-m251-test-health` @ `e9e29a1`** (on origin; rung-zero verified). **0 platform-repo edits.**
 
 #### M252 — studio-desk builder enablement  (`section`)
 **Status:** `planned`
@@ -389,7 +402,7 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 1 of 9 milestones closed — M246 barrier PASSED go/no-go; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 2 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health; tooling + docs only, zero platform-repo edits) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 
