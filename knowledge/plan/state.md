@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "v2.7 M247–M254 fan-out (built concurrently in worktrees; closes serializing — M251 closed first)"
-last_closed: "M251 — 2026-07-23 (v2.7 test-health; section close, all-Fate-1 — run-unit roster 7→9 + 7 mechanical re-points as removal-guards, mutation-verified 4/4; demo-stack 861 pass / 8 live-gated fail → M254; deferral audit GREEN; rext tag july-jitter-m251-test-health @ e9e29a1 on origin)"
-phase: "M251 closed (test-health, merged to release/02.70-july-jitter) — M247–M254 fan-out closes serializing"
+active_milestone: "v2.7 M247–M254 fan-out (closes serializing — M246+M251+M247 CLOSED; M248/M249/M250/M252/M253 → M254 remain)"
+last_closed: "M247 — 2026-07-23 (v2.7 corpus re-ground; section close, DOC-ONLY — skillpath→app redirect + 3-subgraph reclassification (~30 files) + 4 net-new app-domain fact sheets (coursebuilder/ai-labs/askengine/academy-backend) + ai-readiness refresh + roadrunner stays-ORPHANED; fidelity GREEN, 0 broken links; deferral audit YELLOW (0 blockers); 0 platform edits, no rext/code-of-record)"
+phase: "M247 closed (corpus re-ground, merged to release/02.70-july-jitter) — M247–M254 fan-out closes serializing (M246+M251+M247 done)"
 last_updated: "2026-07-23"
 ---
 
@@ -18,8 +18,12 @@ HARD go/no-go re-sync barrier) is CLOSED — go/no-go PASS** (cold demo GREEN on
 rows in `public.skill_path_sessions`, 3 subgraphs, 0 skillpath; the seeder re-point + demo clone-pin bump
 landed; 9-row drift ledger → M247). **M251 (test-health) is CLOSED** — the standing demo-stack test debt
 discharged (run-unit roster 7→9 + 7 mechanical `test_cockpit`/`test_public_host` re-points as removal-guards,
-mutation-verified 4/4; the 8 live/env/docker-gated failures → M254). The **M247–M254 fan-out** continues off
-post-M246 HEAD (closes serializing).
+mutation-verified 4/4; the 8 live/env/docker-gated failures → M254). **M247 (corpus re-ground) is CLOSED** —
+the corpus re-grounded to the consolidated platform (skillpath→app **redirect** + the **3-subgraph**
+reclassification across ~30 files + **4 net-new app-domain fact sheets** [coursebuilder/ai-labs/askengine/
+academy-backend] + `ai-readiness.md` refresh + roadrunner stays-ORPHANED; doc-only, no rext, 0 platform edits).
+The **M247–M254 fan-out** continues off post-M246 HEAD (closes serializing; **M248/M249/M250/M252/M253 → M254**
+remain).
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -85,4 +89,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-23 — M251 (test-health) CLOSED + merged to release/02.70-july-jitter (section close, all-Fate-1; demo-stack test debt discharged, 8 live-gated → M254). The M247–M254 fan-out closes serializing off post-M246 HEAD._
+_Last updated: 2026-07-23 — M247 (corpus re-ground) CLOSED + merged to release/02.70-july-jitter (section close, doc-only; skillpath→app redirect + 3-subgraph reclassification + 4 net-new fact sheets + ai-readiness refresh; fidelity GREEN, 0 platform edits, no rext code-of-record; deferral audit YELLOW). The M248/M249/M250/M252/M253 → M254 fan-out closes serializing off post-M246 HEAD._
