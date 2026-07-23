@@ -74,6 +74,15 @@ presenter can be shown:**
 
 All simulation surfaces render through one shared component: `next-web-app/packages/ui/src/AISimulation/AISimulationResultContainer.tsx`.
 
+> **M248 (v2.7) — the content-stories manager CTA is routed by sim_type.** For a **NON-interview** sim
+> (assessment / training / hiring) the cockpit's `as-manager` CTA lands on the per-session manager result view
+> **`/sim/<slug>/<userId>/result/<sessionId>`** — the SAME `AISimulationResultContainer` as the player, with
+> `isManagerView=true`, reading the persisted result by `sessionId` (the "PERSISTED READ" resolved just below).
+> An **INTERVIEW** keeps its dedicated `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` route:
+> verified LIVE that the `/sim` interview manager report is flag/data-gated and renders "Coming Soon" on a demo,
+> whereas the interviews route lands reliably (M236). See §2's M248 callout +
+> [`content-stories-spec.md`](content-stories-spec.md) §3.
+
 ### The central unknown — RESOLVED: simulation result = a PERSISTED READ, not a live recompute
 
 - The render query is `GET_SIMULATION_RESULT` / `jobSimulationResult(sessionId)`, resolved in the **jobsimulation**
@@ -165,6 +174,18 @@ milestone.)
 
 → For the cockpit's per-session `as-manager` CTA, honor `has_manager_view`: TRUE for the four sim manager routes
 **only**; FALSE (omit the CTA) for skill-path-legacy (M236 iter-07), academy, and AI-labs.
+
+> **M248 (v2.7) — the CTA target changed, routed by sim_type.** For a **NON-interview** sim (assessment /
+> training / hiring) the content-stories `as-manager` CTA lands on the **per-session manager RESULT view**
+> `/sim/<slug>/<userId>/result/<sessionId>` (`isManagerView=true`; `<userId>` = the seeded owner user id; reads
+> the persisted result by `sessionId`), **not** the `/enterprise/activity-dashboard/ai-simulations/…` scoreboard.
+> Its `layout.tsx` admits an **admin** viewer to any user's result, and `dan-manager` is seeded admin — so the
+> manager sees the player's result (SUPERSEDING the membership-id trap for this route). An **INTERVIEW** keeps
+> its dedicated `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` route (last segment = the
+> membership id): verified LIVE that the `/sim` interview manager report is flag/data-gated and renders "Coming
+> Soon" on a demo, whereas the interviews route lands reliably (M236). The milestone's explicit conditional —
+> "keep interview split IF verify-interview says so" — resolves to KEEP. `has_manager_view` still gates the CTA
+> (TRUE for the four sim manager surfaces only). See [`content-stories-spec.md`](content-stories-spec.md) §3.
 
 ## 3. Prod-session sourcing + anonymization contract
 
