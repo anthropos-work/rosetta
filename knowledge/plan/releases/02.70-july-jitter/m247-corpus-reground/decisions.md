@@ -63,3 +63,39 @@ Per the M247 charter, the `corpus/ops/demo/` spec docs owned by the CODE milesto
 **left untouched by M247** — their not-yet-written deltas belong to M248/M249/M250/M252/M253. The
 cross-milestone consistency pass over those docs is a **Fate-2 release-close item** (M247-reconcile → final
 release-close pass).
+
+## D-audit — close-Phase-1b deferral re-audit (2026-07-23)
+
+Report: `audit-deferrals/deferral-audit-2026-07-23-m247-close.md`. **Verdict YELLOW**, 0 blockers. Two
+re-fates supersede earlier routings that went stale when M251 closed:
+
+- **Rext-hygiene inert set (D0's D-02/D-03/D-04/D-06) — re-fated away from the now-closed M251.** D0
+  routed them to "M251 / rext-hygiene", but **M251 CLOSED 2026-07-23 without owning them** (M251's Deferred
+  ledger = only the optional verification.md anchor + the 8 live-gated failures → M254). That is the
+  "destination-milestone-closed" aging trigger → a fresh decision is required, and this is it:
+  **KEEP as a documented-inert standing rext-hygiene note.** Justification (fresh, dated today): (1) all four
+  are rext files — **0 tracked in the rosetta corpus repo** — so doc-only M247 has no surface to land them;
+  (2) they are **inert** — the load-bearing stale comment (`gen_injected_override.py:16`) was already
+  corrected in M246; what remains is a dormant/never-consumed `skillpath` INJECTED key, `test_injection.py`
+  fixtures that still pass, an `exposure_claim_guard.py:124` `skillpath:8095` fixture, and one
+  `up-injected.sh:458` audit-prose line — **0 functional impact, nothing red**. To be swept opportunistically
+  by whichever rext milestone next edits those files (M249 owns `up-injected.sh`; M252 edits
+  `gen_injected_override.py`) — **no sibling `overview.md` edit is made** (the orchestrator constraint holds;
+  the sweep is optional cosmetic hygiene, not a promised deliverable). Not a blocker (not a functional promise).
+- **Inherited optional `verification.md` anchor — re-fated to release-close.** M251 punted an optional
+  `corpus/ops/verification.md` demo-stack-suite + run-unit-roster index anchor **to M247** (lane-collision
+  avoidance). M247 **did not land it** — it is outside the consolidation charter and is a test-health
+  indexing concern (M251's domain), and the concurrent-lane collision that motivated the punt is now moot.
+  It is explicitly **OPTIONAL + non-blind** ("the code it would index exists + is exercised"), so declining
+  it leaves no blind area. **Fate-2 → the release-close consistency pass** (same bucket as D-fate-2). Not a blocker.
+
+## Adversarial review
+
+_(Phase-2c — the scenario considered, not just the fix.)_
+
+- **`.gitignore` over-match (the one non-prose change).** The milestone added a bare `/stack-*` pattern (no
+  trailing slash) beside the existing `/stack-*/`, to catch the **symlink** form of a stack workspace (git
+  treats a symlink-to-dir as a file, so the trailing-slash dir pattern misses it). **Failure mode considered:**
+  could `/stack-*` over-match and silently stop tracking a legitimately-tracked path at repo root named
+  `stack-*`? **Checked:** `git ls-files | grep '^stack-'` → **0 tracked paths** — the pattern removes nothing
+  from tracking today; it only pre-empts an untracked symlink from being accidentally added. Safe as written.
