@@ -221,3 +221,37 @@ harden made for the iter-03 `SETTLE_MS` env parse). No further meaningful unit s
 
 **Stop condition:** continue-to-next-pass — Pass 5 added 1 test (the scan found one more gap), so a confirmation
 pass is needed to measure the delta as < 2% and run the flake gate on the whole batch of newly-added tests.
+
+## Pass 6 — 2026-07-23 — incremental
+
+**Iters hardened this pass:** confirmation pass over the iter-13..24 scope (no new tests written).
+**Tiks covered since prior pass:** same batch.
+
+**Dimension scan (the stabilization check):** nothing new to fix. Every in-scope fix with hardenable code is
+covered and mutation-verified — iter-13 (settle, teeth confirmed), iter-15 (public demopatch: chain + scope +
+ladder-on-real-clone; + the inventory-drift bug), iter-16 (home card-floor behaviour vs the old token marker),
+iter-18 (runner guards + offset mapping + spec-path normalization), iter-23 (goto never-networkidle incl. the
+real polling surfaces). iter-14/17/20/21/22/24 shipped no hardenable code (proof / live-infra). The only
+un-swept surface is live-sweep-only config robustness (gold-plating, per Pass 5).
+
+**Coverage delta on touched files:** 0% vs Pass 5 (no new tests). stack-verify unit suite **172** + tsc clean;
+playthroughs unit **3** + tsc clean; demo-stack python **225** green (incl. the reconciled inventory fence).
+
+**Tests added:** none.
+
+**Bugs surfaced + fixed inline:** none.
+
+**Flakes stabilized:** none surfaced. **Flake gate: 3 consecutive clean runs** of every newly-added test —
+stack-verify run-discrete (7) + the section-assert academy-home block (4); playthroughs page-object (3); python
+test_academy_fs_published_public (19) + the reconciled test_patch_inventory (5). 3/3 green on all.
+
+**Final green:** stack-verify 172 unit specs + tsc clean; playthroughs 3 unit specs + tsc clean; demo-stack
+python 225 green + `test_tooling` green (the patch-set enumerator). Both e2e TS projects typecheck clean.
+
+**Session totals (Passes 4–6):** +33 tests (Python +19 academy-public; TS +4 home card-floor, +7 run-discrete,
++3 page-object) + the inventory fence RED→GREEN; 1 bug fixed inline (iter-15 inventory drift); 6 fixes
+mutation-verified to bite (1 already-toothed confirmed, 4 coverage gaps + the drift bug fixed). rext HEAD advanced
+`dddef18` → `5d96a57` (3 commits); consumption tag `sound-check-m244-content-sweep-robustness` moved + pushed.
+
+**Stop condition:** stabilized — coverage delta < 2% (0% this pass) AND the dimension scan found nothing new;
+every in-scope fix with hardenable code mutation-verified to bite, flake gate 3/3 clean.
