@@ -1,7 +1,7 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "v2.7 M247–M254 fan-out (closes serializing — M246+M251+M247 CLOSED; M248/M249/M250/M252/M253 → M254 remain)"
+active_milestone: "M248 content-stories manager result-link (demo-gated fan-out, serial on the single local stack; build in main)"
 last_closed: "M247 — 2026-07-23 (v2.7 corpus re-ground; section close, DOC-ONLY — skillpath→app redirect + 3-subgraph reclassification (~30 files) + 4 net-new app-domain fact sheets (coursebuilder/ai-labs/askengine/academy-backend) + ai-readiness refresh + roadrunner stays-ORPHANED; fidelity GREEN, 0 broken links; deferral audit YELLOW (0 blockers); 0 platform edits, no rext/code-of-record)"
 phase: "M247 closed (corpus re-ground, merged to release/02.70-july-jitter) — M247–M254 fan-out closes serializing (M246+M251+M247 done)"
 last_updated: "2026-07-23"
