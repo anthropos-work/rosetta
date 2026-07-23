@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "(none started — next: M246 re-sync & re-point, the HARD go/no-go barrier)"
-last_closed: "M244 — 2026-07-23 (v2.6 prove-on-billion, closed-on-gate 8/8); v2.6 «sound check» SHIPPED + merged to main 2026-07-23"
-phase: "designed — awaiting first milestone build (/developer-kit:build-milestone M246)"
+active_milestone: "(between milestones — M246 barrier CLOSED + merged to release/02.70-july-jitter; the M247–M252 fan-out branches from post-M246 HEAD, merge order M251 → {M248,M250} → M249 → M253 → M252 → M247-reconcile → M254)"
+last_closed: "M246 — 2026-07-23 (v2.7 re-sync & re-point barrier; go/no-go PASS — seeder re-pointed to public.skill_path_sessions, cold demo GREEN on the consolidated platform [561 rows, 3 subgraphs, 0 skillpath], 9-row drift ledger → M247; rext tag july-jitter-m246-harden on origin)"
+phase: "M246 closed (barrier PASSED + merged to release/02.70-july-jitter) — M247–M254 fan out off post-M246 HEAD"
 last_updated: "2026-07-23"
 ---
 
@@ -13,8 +13,10 @@ last_updated: "2026-07-23"
 from `.agentspace/annotation.md` field notes + 3 research workflows). The **re-ground + fidelity +
 field-hardening** release (the v1.3b / v2.1 / v2.3 / v2.6 lineage): *realign the demo + corpus to the
 platform's true current state, and fix what drifted.* **9 milestones M246 → M254**, tooling + docs only,
-**0 platform-repo edits**. Branch `release/02.70-july-jitter` cut from `main`; tag will be `v2.7`. No milestone
-started yet — next is **M246** (the HARD go/no-go re-sync barrier).
+**0 platform-repo edits**. Branch `release/02.70-july-jitter` cut from `main`; tag will be `v2.7`. **M246 (the
+HARD go/no-go re-sync barrier) is CLOSED — go/no-go PASS** (cold demo GREEN on the consolidated platform, 561
+rows in `public.skill_path_sessions`, 3 subgraphs, 0 skillpath; the seeder re-point + demo clone-pin bump
+landed; 9-row drift ledger → M247). The **M247–M252 fan-out** now branches from post-M246 HEAD.
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -80,4 +82,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-23 — v2.7 "july jitter" DESIGNED + PROMOTED to active development; branch cut, milestone dirs scaffolded; next is /developer-kit:build-milestone M246._
+_Last updated: 2026-07-23 — M246 (the HARD go/no-go re-sync barrier) CLOSED + merged to release/02.70-july-jitter (go/no-go PASS); next is the M247–M252 fan-out off post-M246 HEAD._

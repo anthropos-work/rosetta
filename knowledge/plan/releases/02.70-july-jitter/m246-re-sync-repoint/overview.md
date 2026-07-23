@@ -2,12 +2,13 @@
 milestone_shape: section
 milestone: M246
 title: "re-sync & re-point (clean-stage barrier, HARD go/no-go)"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 depends_on: []
 parallel_with: []
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-23
 ---
 
 # M246 — re-sync & re-point (clean-stage barrier, HARD go/no-go)

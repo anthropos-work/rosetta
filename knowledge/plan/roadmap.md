@@ -191,7 +191,7 @@ M247/M248/M249/M250/M251/M252 fan out off the M246 barrier; **M253 is serial aft
 `build_frontend_studio_desk` studio patch ladder M249 creates). M254 is terminal — depends on all fixes.
 
 #### M246 — re-sync & re-point  (`section`, HARD go/no-go barrier)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-23)
 **Goal:** The demo builds + comes up GREEN from the CONSOLIDATED platform (current `origin/main`, 3 subgraphs,
 skillpath-in-app), and the rext seeder writes to `public.skill_path_sessions` — so every downstream fix is scoped
 against reality and the imminent seeder break is defused. Emits a confirmed-drift ledger for M247.
@@ -214,6 +214,7 @@ skillpath_sessions).
 **KB deps:** `corpus/ops/update_guide.md`, `corpus/ops/rosetta_demo.md`, `corpus/ops/demo/demopatch-spec.md`, `corpus/services/skiller.md` (the redirect pattern).
 **Delivers →** `corpus/ops/update_guide.md` (the consolidation re-sync note) + a confirmed-drift ledger artifact for M247.
 **Open questions:** dual-schema-tolerant during the transition, or hard-cut to `public` + bump pins in the same milestone (the deprecation alias suggests a clean window)? does the 386-commit bump surface a migration/subgraph break that re-scopes downstream?
+**Closure (2026-07-23):** GO/NO-GO **PASS**. Both open questions answered: **hard-cut to `public`** (D-1 — the demo builds from a single pinned clone set; version skew handled by the per-stack rext tag pin, not seeder branching), and the ~386-commit `app` bump surfaced **NO** migration/subgraph break (D-4 → downstream milestones scope safely against this topology). Delivered: the seeder re-point (`skillpath.*`→`public.skill_path_sessions`, 8 live sites + DNA + ~16 test assertions), a durable canonical `clones.pin.json` (12 repos @ current origin/main; skillpath excluded) + copy-if-absent seam, the de-skillpathed LIVE bring-up path (§3 Fate-1 expansion, D-3), and the `update_guide.md` consolidation re-sync note. **Proven:** one cold `/demo-up` (LOCAL demo-2; billion untouched) came up GREEN — **561 rows in `public.skill_path_sessions`**, 3 subgraphs + 0 skillpath, health 200 + casbin 1250, all probes pass. 3 autoverify warnings all non-firing (D-07 AI-readiness perf-patch anchor→M250 · D-08 fake-FAPI http-vs-TLS probe artifact→M251/M254 · D-09 academy peripheral). Emitted the **9-row confirmed-drift ledger** (D-01..D-09) → M247's triage. Close review clean (0 must-fix); deferral audit GREEN; tests green (Go stack-seeding + test_tooling 168/168 + frontend_build 94/94 + stack-injection 264/9-skipped); flake 5/5. Code-of-record: rext tag `july-jitter-m246-harden` @ `9b29f3a` (on origin). **0 platform-repo edits.**
 
 #### M247 — corpus re-ground  (`section`, doc-only)
 **Status:** `planned`
@@ -388,7 +389,7 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 0 of 9 milestones built; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 1 of 9 milestones closed — M246 barrier PASSED go/no-go; tooling + docs only, zero platform-repo edits) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 
