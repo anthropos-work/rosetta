@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M251 (fan-out lane; building in an isolated worktree off post-M246 HEAD)"
-last_closed: "M246 — 2026-07-23 (v2.7 re-sync & re-point barrier; go/no-go PASS — seeder re-pointed to public.skill_path_sessions, cold demo GREEN on the consolidated platform [561 rows, 3 subgraphs, 0 skillpath], 9-row drift ledger → M247; rext tag july-jitter-m246-harden on origin)"
-phase: "M246 closed (barrier PASSED + merged to release/02.70-july-jitter) — M247–M254 fan out off post-M246 HEAD"
+active_milestone: "v2.7 M247–M254 fan-out (built concurrently in worktrees; closes serializing — M251 closed first)"
+last_closed: "M251 — 2026-07-23 (v2.7 test-health; section close, all-Fate-1 — run-unit roster 7→9 + 7 mechanical re-points as removal-guards, mutation-verified 4/4; demo-stack 861 pass / 8 live-gated fail → M254; deferral audit GREEN; rext tag july-jitter-m251-test-health @ e9e29a1 on origin)"
+phase: "M251 closed (test-health, merged to release/02.70-july-jitter) — M247–M254 fan-out closes serializing"
 last_updated: "2026-07-23"
 ---
 
@@ -16,7 +16,10 @@ platform's true current state, and fix what drifted.* **9 milestones M246 → M2
 **0 platform-repo edits**. Branch `release/02.70-july-jitter` cut from `main`; tag will be `v2.7`. **M246 (the
 HARD go/no-go re-sync barrier) is CLOSED — go/no-go PASS** (cold demo GREEN on the consolidated platform, 561
 rows in `public.skill_path_sessions`, 3 subgraphs, 0 skillpath; the seeder re-point + demo clone-pin bump
-landed; 9-row drift ledger → M247). The **M247–M252 fan-out** now branches from post-M246 HEAD.
+landed; 9-row drift ledger → M247). **M251 (test-health) is CLOSED** — the standing demo-stack test debt
+discharged (run-unit roster 7→9 + 7 mechanical `test_cockpit`/`test_public_host` re-points as removal-guards,
+mutation-verified 4/4; the 8 live/env/docker-gated failures → M254). The **M247–M254 fan-out** continues off
+post-M246 HEAD (closes serializing).
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -66,14 +69,14 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 
 ## Headline numbers (inherited from v2.6 close, 2026-07-23 — reset at v2.7 close)
 - **Go:** **2010** reproducible platform test funcs. 2461 testcases / 0 failed, 6 modules.
-- **TypeScript (unit):** **257** `*.unit.spec.ts` + 40 live-browser specs (24 stack-verify + 16 Playthroughs).
-- **Python (rext demo-stack):** **839 pass / 8 standing fail** (host-sensitive; 0 real defects — the M251 target).
+- **TypeScript (unit):** **257** `*.unit.spec.ts` + 40 live-browser specs (24 stack-verify + 16 Playthroughs). (run-unit executed-spec roster 7→9 at M251 — the 2 M244 orphans rostered; total case count unchanged, they were already collected.)
+- **Python (rext demo-stack):** **861 pass / 8 fail** (869 collected) — M251 landed the 7 mechanical re-points; the remaining **8 are live/env/docker-gated → M254** (`test_purge` + `test_ant_academy*` launcher/reap + clerk-wiring; host-sensitive, 0 real defects).
 - **content-stories:** 47/47 landed of the 49-pair denominator. **p95 click→ACCESS:** employee 1.46 s · manager 1.31 s.
 - **Flake: 0.** **Alignment (Clerkenstein): 100% / 100% critical.** **Supply chain: GREEN.** **Platform-repo edits: 0.**
 - rext code-of-record @ v2.6: `498b1a5` (tag `sound-check-m244-content-sweep-robustness`).
 
 ## Standing backlog carried INTO v2.7 (fated destinations)
-- **→ M251 (NAMED milestone):** the 8 standing demo-stack test failures (6 mechanical `test_cockpit`/overlay + `test_public_host` port-13001; ~2 docker/live-gated `test_purge` ride M254) + the `run-unit.sh` `UNIT_SPECS` roster nit (2 unrostered M244-harden specs → runner exit 2).
+- **→ M251 ✅ CLOSED (2026-07-23):** the `run-unit.sh` `UNIT_SPECS` roster nit (2 orphan specs rostered → runner exit 0) + the 7 mechanical `test_cockpit`/`test_public_host` re-points — **LANDED** (mutation-verified 4/4). The **8** live/env/docker-gated failures (`test_purge` + `test_ant_academy*` launcher/reap + clerk-wiring — 8, not the "~2" M254's overview names) ride **M254** (gate g+h).
 - **DROPPED at v2.7 design:** **DEF-M215-03(a)/F11** (cosmetic hero identity-key vs display-name) — tripped its drop-if-survives condition; **DEF-M239-01** (ENOSPC loud-build) — dropped at v2.6 close (disk-full class already covered).
 - **Still unscheduled (vision):** DEF-M10-01 (S3 media — the document facet was consumed by v2.6 M240; voice presence-only) · DEF-M21-01 · CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS) · Playthroughs futures **M206–M207**.
 
@@ -82,4 +85,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-23 — M246 (the HARD go/no-go re-sync barrier) CLOSED + merged to release/02.70-july-jitter (go/no-go PASS); next is the M247–M252 fan-out off post-M246 HEAD._
+_Last updated: 2026-07-23 — M251 (test-health) CLOSED + merged to release/02.70-july-jitter (section close, all-Fate-1; demo-stack test debt discharged, 8 live-gated → M254). The M247–M254 fan-out closes serializing off post-M246 HEAD._
