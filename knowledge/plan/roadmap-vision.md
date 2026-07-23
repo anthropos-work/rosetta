@@ -106,6 +106,53 @@ and a `release/{version}` branch is cut.
 > **not** a Playthroughs release — it took **M208+**, so the reserved Playthroughs futures **M205–M207 below stay in
 > vision** for the next release to design. The unscheduled backlog below is likewise unscheduled.
 
+## v2.6 → v2.7 carry (signed off at the v2.6 close-release, 2026-07-23)
+
+> **Signed off 2026-07-23** at the v2.6 "sound check" close-release. User fate on the terminal deferral
+> audit
+> ([`releases/archive/02.60-sound-check/audit-deferrals/deferral-audit-2026-07-23-release-close.md`](releases/archive/02.60-sound-check/audit-deferrals/deferral-audit-2026-07-23-release-close.md),
+> verdict **RED** — CHRONIC + AGED_OUT): **"Tag now, carry to v2.7."** v2.6 shipped **proof-complete** (exit
+> gate 8/8 live on `billion`, 0 platform edits, 0 real defects, flake 0); the outstanding items are
+> **test-health non-defects** batched to a single NAMED v2.7 milestone rather than fixed under a proof-only
+> close.
+
+**Milestone-number note.** v2.7 is **NOT yet designed** — it graduates from vision into `roadmap.md` § Active
+at the next `/developer-kit:design-roadmap` run, where "test-health" may be renamed or renumbered. What is
+**not** negotiable is that these carries land in a milestone with declared scope — the v2.5-close rule: *a
+fate needs a MILESTONE, not "a sweep", "the next close", or "standing backlog".*
+
+### **v2.7 — "test-health"** (proposal — the sole escape-hatch carry out of v2.6)
+
+**KEEP-DEFERRED-WITH-SIGNOFF 2026-07-23** (M244 close-release `decisions.md` D3). Every item is **0 real
+product defect**, host-dependent, and best batched into one dedicated test-health pass. **Why Fate-1
+(land-now) was declined:** the user chose **tag-now for a proof-complete release** — v2.6's charter (prove the
+whole feature live on `billion`) is MET (gate 8/8, 47/47 content-stories, 16/16 Playthroughs); these are
+non-defects, and the audit's split-and-land-the-mechanical-subset option was declined in favour of one clean
+v2.7 milestone (no late-merge branch opened).
+
+- **The 8 standing demo-stack test failures.** Pre-M244 inherited (rext `04babf8`, 2026-07-15), ridden ≥5
+  v2.6 milestones; carried through every milestone close as Fate-2/3, named expiry always "the release
+  close." Two subsets:
+  - **~6 mechanical:** the 6 `test_cockpit` academy/overlay failures + the `test_public_host` port-13001
+    reconcile — **stale test assertions** re-pointed at the deliberately-changed M218/M238/M220 behaviour
+    (academy live-premise shape, removed 30 s window, hiring-app port). Pure rext test-edit work, 0 platform
+    edits, mechanical.
+  - **~2 host/docker-gated:** `test_purge` (docker-integration) + any live-serve-gated assertion —
+    validatable only on a live docker box / running demo; land them where a live box is available.
+- **The rext `stack-verify/e2e/run-unit.sh` roster nit** (same test-health class). The canonical runner's
+  `UNIT_SPECS` roster lists 7 of the 9 `*.unit.spec.ts` on disk; the 2 the M244 final-harden added
+  (`content-denominator`, `run-discrete`) were never rostered, so the runner exits 2 and its
+  `test_e2e_collection_integrity::UnitSpecsAreExecuted` guard is RED — the exact "a pin nobody runs is not a
+  pin" defect that guard exists to catch, reintroduced by the harden that added the specs. **All 9 specs pass
+  when run directly** (172). A 2-line rext edit (add the two filenames to `UNIT_SPECS`). NOTE: the rext repo
+  is **NOT touched at the v2.6 close** — this fix is deferred to v2.7, not done now.
+
+**DROPPED (not carried to v2.7):** `DEF-M239-01` — "make the demo build **FAIL LOUDLY on ENOSPC**." The
+disk-full failure class is **already caught** by M239's pre-flight Docker-VM disk-measure (the demo aborts
+before the build when the VM is low). The build-time loud-abort is redundant belt-and-braces of marginal
+value and **un-validatable** without inducing a real ENOSPC. Retired honestly (M244 close-release
+`decisions.md` D2) rather than parked as un-validatable code — **a DROP, not a defer.**
+
 ## v2.5 → v2.6 carry (signed off at the v2.5 close-release, 2026-07-20)
 
 > ✅ **CONSUMED by v2.6 "sound check" (designed 2026-07-20 — now IN DEVELOPMENT in [`roadmap.md`](roadmap.md) § Active).**
