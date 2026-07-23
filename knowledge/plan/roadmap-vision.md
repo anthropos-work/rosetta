@@ -108,6 +108,13 @@ and a `release/{version}` branch is cut.
 
 ## v2.6 → v2.7 carry (signed off at the v2.6 close-release, 2026-07-23)
 
+> ✅ **CONSUMED by v2.7 "july jitter" (designed 2026-07-23 — now IN DEVELOPMENT in [`roadmap.md`](roadmap.md)
+> § Active — v2.7).** The reserved **"test-health"** carry is **realized as milestone `M251`** — a NAMED
+> milestone with declared scope (the 8 standing demo-stack failures + the `run-unit.sh` roster nit), exactly the
+> v2.5-close rule (*a fate needs a MILESTONE*). The ~2 docker/live-gated failures (`test_purge` + a live-serve
+> assertion) ride the v2.7 iterative closer **`M254`** where a live box is available. `DEF-M239-01` stays
+> **DROPPED**. This section is kept as the historical destination record; the live design is in `roadmap.md`.
+
 > **Signed off 2026-07-23** at the v2.6 "sound check" close-release. User fate on the terminal deferral
 > audit
 > ([`releases/archive/02.60-sound-check/audit-deferrals/deferral-audit-2026-07-23-release-close.md`](releases/archive/02.60-sound-check/audit-deferrals/deferral-audit-2026-07-23-release-close.md),
@@ -121,7 +128,12 @@ at the next `/developer-kit:design-roadmap` run, where "test-health" may be rena
 **not** negotiable is that these carries land in a milestone with declared scope — the v2.5-close rule: *a
 fate needs a MILESTONE, not "a sweep", "the next close", or "standing backlog".*
 
-### **v2.7 — "test-health"** (proposal — the sole escape-hatch carry out of v2.6)
+### **v2.7 — "test-health"** (proposal) → ✅ REALIZED as **M251** in v2.7 "july jitter" (2026-07-23)
+
+> ✅ **REALIZED as `M251` "test-health"** in v2.7 (design 2026-07-23), renumbered to read in execution order (it
+> fans out in parallel off the `M246` re-sync barrier). Scope unchanged: the mechanical subset lands in `M251`;
+> the ~2 docker/live-gated tests ride the iterative closer `M254`. v2.7 is much larger than this carry — it is a
+> full re-ground + fidelity release (`M246`→`M254`), of which test-health is one milestone.
 
 **KEEP-DEFERRED-WITH-SIGNOFF 2026-07-23** (M244 close-release `decisions.md` D3). Every item is **0 real
 product defect**, host-dependent, and best batched into one dedicated test-health pass. **Why Fate-1
@@ -340,16 +352,16 @@ Genuinely-deferred work, no target version, not scheduled:
   **user-facing sting is gone** — v1.5 "prop room" keeps the asset plane on prod public links so demos show **real
   images** without the blob-byte work. Real blob mirroring + the cloud store stay gated on **eu-west-1 S3 read access
   actually landing** (verified not wired). Replay-only to a per-stack isolated bucket, never the shared prod S3.
-- **`DEF-M215-03(a)` / `F11` — seed hero identity-key vs generated profile display-name mismatch (cosmetic).**
-  The seed identity key (`maya-thriving`) does not match the generated profile display name; login and render
-  both work, zero functional impact across three releases of live demos. Routed at the **v2.2 close
-  (2026-07-11) to "standing backlog"** — and then **never written into any backlog**, so it was absent from
-  `state.md` for three releases and invisible to every audit until the v2.5 close found it. Half **(b)** (the
-  committed remote-origin Playwright gate) **was** genuinely discharged at M218/M221; only (a) survives.
-  **Re-signed KEEP-DEFERRED-WITH-SIGNOFF 2026-07-20**, now enumerated **by id** so it is findable. Pick up at
-  the next `stack-seeding` build-iter. **This is a deliberate exception to the "a fate needs a milestone"
-  rule** for a verified-cosmetic item — **if it survives another release un-landed it should be DROPPED**
-  rather than carried, because a cosmetic item nobody will schedule is a drop wearing a carry's clothes.
+- **`DEF-M215-03(a)` / `F11` — seed hero identity-key vs generated profile display-name mismatch (cosmetic) →
+  ❌ DROPPED at v2.7 design (2026-07-23).** The seed identity key (`maya-thriving`) does not match the generated
+  profile display name; login and render both work, zero functional impact across **four** releases of live
+  demos. Half **(b)** (the committed remote-origin Playwright gate) was genuinely discharged at M218/M221; only
+  (a) survived. It was **re-signed KEEP-DEFERRED-WITH-SIGNOFF at the v2.5 close (2026-07-20) with an EXPLICIT
+  condition: *"if it survives another release un-landed it should be DROPPED."*** **v2.6 "sound check" has now
+  shipped (2026-07-23) without landing it — the condition is TRIPPED.** **User fate at the v2.7
+  design-roadmap (2026-07-23): DROP.** Retired honestly rather than carried a fifth time — a verified-cosmetic
+  item nobody will schedule is a drop wearing a carry's clothes. (If it ever matters, it is a fresh
+  `stack-seeding` build-iter item, re-proposed from scratch.)
 - **DEF-M21-01 — `replayCmd` conn-seam hermetic test.** A hermetic `replayCmd`-wiring test needs an injectable
   connector seam (>50 lines, touches the load-bearing replay path). Tracked KEEP across the M21→M25 close-audits;
   **landed here at v1.5 close-release (2026-06-14)** so it survives the release-branch merge. Pick up in a future
@@ -455,7 +467,15 @@ question (a UX nicety with no owner).
   `Mxyy` counter still resumes at **M217** and M216 is **retired as a reservation, not built**. (If M220 bloats, the
   dev-side half drops back out — it is v2.3's declared scope-flex lever.)
 
-_Last updated: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** — the
+_Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** — the **re-ground +
+fidelity + field-hardening release**: realign the demo + corpus to the platform's TRUE current state (the
+skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully
+decommissioned into app, jobsim mid-merge, net-new app domains) and fix what drifted. **9 milestones M246 →
+M254**, barrier → 7-lane worktree fan-out → prove-on-billion; branch `release/02.70-july-jitter` cut from `main`,
+tag `v2.7`; tooling + docs only, zero platform-repo edits. Designed from `.agentspace/annotation.md` + 3 research
+workflows. **Consumes the v2.6→v2.7 "test-health" carry as `M251`; DROPS `DEF-M215-03(a)/F11`** (tripped its
+survive-another-release condition). 4 binding user decisions: full re-ground bump + new fact sheets · M250
+AI-readiness `iterative` · codename "july jitter". Prior: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** — the
 **reliability / field-hardening release**: make everything that's built actually get built + provisioned.
 **8 milestones M237 → M244**, branch `release/02.60-sound-check` cut from **local** `main`, tag `v2.6`; barrier →
 parallel fixes → prove-on-billion; tooling + docs only, zero platform-repo edits. The **v2.5 → v2.6 carry** section
