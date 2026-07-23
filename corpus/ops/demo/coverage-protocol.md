@@ -914,6 +914,9 @@ on** — and there it went unnoticed through all ten iters:
   console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
 - **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
   and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
+  *(The concrete value grows with the content pool — `content-denominator.json` pins `expected_pairs=49`
+  since M241's EN/IT growth; M244's live `billion` sweep landed **47/47**, the 2 Bunny-absent voice **player**
+  cells held presence-only. The `29` here is the M236-era illustration, not the current denominator.)*
 - **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
   result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
   *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what

@@ -1,0 +1,16 @@
+# iter-11 — decisions
+
+## D1 — cold reset-to-seed sequence (re-pin → teardown → bring-up)
+Re-pinned the rext clone to `sound-check-m244-content-sweep-robustness` (b38ad75) FROM ORIGIN (git fetch --tags --force + checkout -f; `git describe --exact-match` prints the tag; HEAD peels to b38ad75), updated `.agentspace/rext.tag`, THEN teardown demo-1 `--purge`, THEN `up-injected.sh 1 --public-host`. Checkout-before-teardown is safe (no m243→m244 commit touched `rosetta-demo down`; the deltas are demopatch/seeders/snapshot/content-runner). Mirrors iter-02's proven Foundation sequence at the new pin.
+
+## D2 — build under setsid nohup + peer-side supervising poller
+Launched `up-injected.sh` under `setsid nohup` on billion (teed to `~/m244-iter11-bringup.log`, `BRINGUP_EXIT=$?` sentinel + `~/m244-iter11.done` marker) so the build survives any SSH hiccup — honoring "never kill a mid-build" (an attached ssh would SIGHUP-kill a 30-min build on disconnect). Supervision runs from THIS workstation (a background poller sshing in periodically for heartbeats + the completion verdict) — NOT a detached decision-making script on billion, so billion-safety "no detached on-host scripts / one driver / assert from peer" holds. This is the sanctioned long-build pattern.
+
+## D3 — teardown re-confirmed gate (e) serve-reap
+The --purge teardown moved serve ports 7→0 and containers 17→0 (data purged, hostlock released) — gate (e) DEF-M226-01 serve-reap re-confirmed live on the fresh cycle (already discharged iter-02; this is a re-confirmation, not new metric).
+
+## D4 — cross-check must mirror buildPairs (the denominator gate)
+`run-content-stories.sh`'s inline python cross-check re-implements buildPairs()'s landable-pair count but drifted when iter-07 added `player_presence_only` (it kept counting every session as a player pair → 49 vs buildPairs()'s 47). It exits 2 on the SERVED-vs-pin mismatch BEFORE sweeping, so the sweep was UNRUNNABLE on the first live m244 seed. Fixed to mirror buildPairs precisely (skip `player_presence_only`; require player/manager path+seat). This is LOAD-BEARING — without it gate (b) cannot be measured at all. Verified against billion's live manifest (=47) + 77/77 unit specs.
+
+## D5 — interview-player residual: root cause = slow render vs early settle (NOT a platform edit)
+The 2 interview-player pairs render `mainLen:0`. A probe (settle + 25 s wait) showed the ack renders fully after ~25 s, in the USER's EN locale ("Interview completed"/"responses have been recorded"/"Thank you for your time", mainLen 332) — the ORIGINAL English regex matches it. So the defect is NOT language/measurement: the player interview result paints `<main>` ~25 s late (likely the `next-web-interview-flag-container` FETCH-gate widening making the player block on a slow extraction fetch it doesn't need), while `settle()` returns early on the 126-char nav-shell body. No SSR/client error. Routed to iter-12 with two fix options (preferred: scope the container demopatch to isManagerScope like iter-08; fallback: shape-aware settle). CRITICALLY this is a rext/demopatch fix, NOT a platform-repo edit — so NOT a user-blocker. The grader EN+IT change (fix #2) was authored on the wrong "Italian ack" hypothesis and is kept only as defensive multilingual robustness, not as this residual's fix.
