@@ -2,15 +2,20 @@
 
 ## Role & Responsibility
 
-> **⚠️ ORPHANED — nothing calls this service any more (verified v2.5, M231 KB-6).** Code execution moved
-> **in-process into jobsimulation**: `jobsimulation/internal/runner/runner.go:3` is an in-process Judge0 client
-> whose own header comment reads *"formerly the standalone 'roadrunner' service"*. On `origin/main` there is **no
-> `ROADRUNNER_RPC_ADDR` read in any service's Go code** (jobsimulation's only hits are its CHANGELOG and a stale
-> in-repo knowledge row), and no other platform repo references roadrunner at all. `platform/docker-compose.yml`
-> still *starts* the container and still *sets* `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` in jobsimulation's
-> environment — but that variable is now dead config, and a live container is not a live caller. The repo exists
-> and builds; it is simply no longer on any request path. **Everything below describes the service as built, not
-> as used.** Treat retirement as pending, not done.
+> **⚠️ ORPHANED — nothing calls this service any more (verified v2.5 M231 KB-6; re-verified v2.7 "july jitter"
+> M247 against the CONSOLIDATED platform — the ~386-commit `app` bump).** Code execution moved **in-process into
+> jobsimulation**: `jobsimulation/internal/runner/runner.go` is an in-process Judge0 client whose own header comment
+> reads *"formerly the standalone 'roadrunner' service"*. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
+> / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
+> on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
+>
+> **ORPHANED, but NOT archived — a deliberate M247 resolution.** Unlike chronos / intelligence / skiller (which were
+> *removed* from `repos.yml` + `docker-compose.yml` → archived/merged), roadrunner is **still in `repos.yml` (1 of
+> the 10 repos) and still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
+> `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` is still *set* in jobsimulation's environment — but that variable is
+> now dead config, and a live container is not a live caller). It is **built + started but off every request path** —
+> so it stays classified **ORPHANED (Tier-1, running-but-unused)**, not ARCHIVED. **Everything below describes the
+> service as built, not as used.** Treat retirement as pending, not done.
 
 Roadrunner is the **code-execution proxy** for the platform. When a simulation includes a coding task, jobsimulation hands the user's source code to Roadrunner, which forwards it to **Judge0** (a sandboxed code-execution API) and returns the results (stdout, stderr, status, time).
 

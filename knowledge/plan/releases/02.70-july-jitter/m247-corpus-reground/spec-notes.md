@@ -129,4 +129,12 @@ Refreshed for the platform-side refactor (app v1.351.1, commit `4c28365f`, 2026-
 FILLED-ness sections) + their 4 bare-filename compute line-anchors — see decisions.md D1.
 
 ## roadrunner ORPHANED→ARCHIVED resolution
-_(TBD during build.)_
+
+**Resolution: stays ORPHANED, NOT ARCHIVED.** roadrunner is orphaned (no caller — verified this milestone against
+the CONSOLIDATED source: `grep ROADRUNNER_RPC_ADDR|RoadRunnerService|roadrunner:10401` over `stack-demo/{app,jobsimulation}`
+Go = **0 hits** outside CHANGELOG; execution stays in `jobsimulation/internal/runner/runner.go`). But it is **NOT
+dead** — still in `repos.yml` (1 of 10 repos) + `docker-compose.yml` (`roadrunner:` service, dep, profile `graphql`,
+`ROADRUNNER_RPC_ADDR` still set). ARCHIVE in this corpus's taxonomy = *removed from compose+repos.yml* (chronos/
+intelligence/skiller); roadrunner is still built + started → the ORPHANED-but-present classification is correct.
+Updated `roadrunner.md` banner with the M247 re-verification (survived the ~386-commit app bump). README keeps
+roadrunner in the Tier-1 table with the ⚠️ ORPHANED flag (NOT moved to archived/merged) — correct as-is.

@@ -8,7 +8,7 @@
 - [x] Fact sheet — `askengine.md` (Talk-to-Data)
 - [x] Fact sheet — `academy-backend.md` (app-owned academy domain)
 - [x] Refresh `ai-readiness.md` (aireadiness-package refactor)
-- [ ] roadrunner ORPHANED→ARCHIVED resolution (if dead)
+- [x] roadrunner ORPHANED→ARCHIVED resolution — RESOLVED: stays ORPHANED (still in repos.yml+compose, not dead), NOT archived
 
 ## Completeness Ledger
 
