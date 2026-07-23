@@ -984,7 +984,8 @@ routes by **bare string prefix**. Four iters touched each side; no test touched 
 Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
 wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
 `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
-asserts the grader understands every route in it — including that the landable count is still **29**.
+asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08;
+reconciled to **49** since M241's EN/IT growth — see the denominator note above).
 
 ---
 
