@@ -1,7 +1,7 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M249/M250/M252/M253 fan-out (building off post-M246 HEAD; closes serializing — next close M250, then M249 → M253 → M252 → M247-reconcile → M254)"
+active_milestone: "M249 cross-app navigation (Back-to-Cockpit x4 apps + studio prod-eject fix; demo-gated, serial on the single stack; owns the first studio-desk patch ladder)"
 last_closed: "M248 — 2026-07-23 (v2.7 content-stories manager result-link; section close — sim_type-routed CTA re-point after a LIVE verify-interview pivot: non-interview → /sim manager result view, interview KEEPS activity-dashboard; manager grader keys on score; 47/47 manifest pairs, honesty gate GREEN; rext code-of-record july-jitter-m248-harden @ 6e0ed2c [176 unit+Go GREEN, mutation-verified]; deferral audit YELLOW; 0 platform edits)"
 phase: "M248 closed (content-mgr-link, merged to release/02.70-july-jitter) — M249/M250/M252/M253 → M254 fan-out closes serializing (M246+M251+M247+M248 done)"
 last_updated: "2026-07-23"
