@@ -59,7 +59,7 @@ unnamed until this spec.
 
 **Read this before adding a patch.** G5 above describes what `revert` *can* do. The rung that actually runs it
 unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — is now **directory-driven**: it
-iterates **every** `patches/<name>/<name>.yaml` (all 15 today), not a hand-maintained list:
+iterates **every** `patches/<name>/<name>.yaml` (all 21 today), not a hand-maintained list:
 
 ```sh
 for _mf in "$HERE"/patches/*/*.yaml; do
@@ -141,9 +141,9 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the **ten** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **eleven** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) **+ the three `studio-desk` patches** (M249 — the FIRST studio-desk source patches; `stack-demo/studio-desk/…` is inside `DEMO_WS`, image-baked by `build_frontend_studio_desk`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
-| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **four** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`, `academy-fs-published-chapter-body`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
+| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **five** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`, `academy-fs-published-chapter-body`, **`ant-academy-back-to-cockpit`** — M249, `apply-ant-academy-back-to-cockpit.sh`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
 
 **Exit codes differ by vehicle.** `demopatch` uses `1` (guard refuse) and `2` (manifest/OS error). The shell helpers
 use a richer space: `0` applied-or-already-patched · `1` manifest/target missing · `2` **pre-sha drift** · `3` anchor
@@ -194,9 +194,11 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**16 patches: 10 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 4 × `ant-academy`.**
+**21 patches: 11 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 5 × `ant-academy` · 3 × `studio-desk`.**
 
-> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`).** This table had drifted from the
+> **v2.7 "july jitter" M249 adds FIVE — the cross-app "Back to Cockpit" family + the FIRST-EVER `studio-desk` SOURCE patches:** `next-web-back-to-cockpit` (a `packages/ui` NavbarTop item — SHARED, so it bakes into BOTH the web and hiring images; `packages/ui` goes 2 → 3); the **three** `studio-desk` patches (`studio-desk-back-to-cockpit` + `studio-desk-logout-url` + `studio-desk-logo-url` — a NEW repo in this inventory, image-baked via a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint, §5-bis); and `ant-academy-back-to-cockpit` (native-run, `ant-academy` goes 4 → 5). See §"Additive-UI injection" for the pattern the four "Back to Cockpit" items share.
+
+> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`; 21 at v2.7 M249, adding the 5 cross-app "Back to Cockpit" patches).** This table had drifted from the
 > `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
 > 1. **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
 >    from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
@@ -211,8 +213,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 >    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
 >    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
 >    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
->    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**16**) AND
->    the per-repo breakdown (`10 next-web-app · 2 app · 4 ant-academy`) against this §5 table — so adding, removing,
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**21** at v2.7 M249) AND
+>    the per-repo breakdown (`11 next-web-app · 2 app · 5 ant-academy · 3 studio-desk`) against this §5 table — so adding, removing,
 >    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
@@ -253,6 +255,11 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `academy-fs-published-fallback` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M230, native-run)** the empty demo home GRID renders REAL cards via an FS-as-published catalog fallback (no "Draft" chip), gated on `ACADEMY_DEMO_FS_PUBLISHED`. Applied by `apply-academy-fs-published.sh` |
 | `academy-fs-published-public` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M244, native-run)** the ANONYMOUS-view half — /library, /free/*, and the cross-port academy home (:3077) render REAL cards via the same FS-as-published fallback on `getPublicCatalogView` (`getBackendCatalogView(new Set())` — the public/empty eid set, so no tenant content leaks onto an anon route). **CHAINED** on `serverTenant.js` (its `pre_sha256` **is** `-fallback`'s `post_sha256`): applied AFTER `-fallback`, reverted BEFORE it. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-public.sh` |
 | `academy-fs-published-chapter-body` | `ant-academy` · `code/src/lib/serverChapterBody.js` | **(M238, native-run)** the BODY half — clicking "Start the course" renders the FS chapter body (locale-aware, unlocked, un-chipped) instead of the "You wandered off the trail" 404. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-body.sh` |
+| `next-web-back-to-cockpit` | `next-web-app` · `packages/ui/src/NavBar/NavbarTop.tsx` | **(M249)** a fail-closed **"Back to Cockpit"** item in the desktop account dropdown (reads `NEXT_PUBLIC_COCKPIT_URL` = 7700+OFFSET — a DIFFERENT port from the web app; renders only when set). **SHARED `packages/ui`, so it bakes into BOTH the web + hiring images.** The **additive-UI injection** pattern (a NEW menu element, not a URL rewrite — see the section below). Targets its own file — no chain |
+| `studio-desk-back-to-cockpit` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249, the FIRST-EVER studio-desk SOURCE patch)** rewrites the user-menu **"Back"** control to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL`, killing the `app.anthropos.work` prod-eject) **and** ADDS a fail-closed **"Back to Cockpit"** sibling (reads `VITE_COCKPIT_URL`). Image-baked via `build_frontend_studio_desk` (net-new patch ladder). **CHAINED** with `studio-desk-logout-url` (same `userProfile.js`; that patch's `pre_sha256` **is** this one's `post_sha256`) — applied FIRST, reverted LAST |
+| `studio-desk-logout-url` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249)** rewrites `handleLogout()`'s hardcoded `app.anthropos.work/logout` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). **CHAINED** on `studio-desk-back-to-cockpit` (same file) — reads DRIFTED against a pristine `userProfile.js` BY DESIGN |
+| `studio-desk-logo-url` | `studio-desk` · `app/core/scaffold/pageWrapper.js` | **(M249)** rewrites the header **logo** link's hardcoded `app.anthropos.work` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). Standalone file — no chain |
+| `ant-academy-back-to-cockpit` | `ant-academy` · `code/src/components/UserMenu.jsx` | **(M249, native-run)** a fail-closed **"Back to Cockpit"** `<a href>` in the academy user menu (reads `process.env.NEXT_PUBLIC_COCKPIT_URL`, baked by `ant-academy.sh` `write_env_local`). Applied by `apply-ant-academy-back-to-cockpit.sh` (apply-before-launch / revert-on-`--stop`). Targets its own file — no chain |
 
 ---
 
@@ -394,3 +401,64 @@ file **byte-for-byte**. Only then does it write the pin.
    stopped working) no longer needs a manual registration step to avoid. Two tests fence it: `TestR1SweepM237`
    pins the R1 glob against the real `patches/` count, and `TestPatchInventory` (v2.6 M238) pins the EXACT
    inventory total + per-repo breakdown against §5.
+
+---
+
+## 8. Additive-UI injection — patching in a NEW UI element (v2.7 M249)
+
+**Every patch above §7 REWRITES a value** — a URL, a flag predicate, a fetch limit. The value is already in the
+source; the patch replaces it with an env-gated form. The M249 "Back to Cockpit" family is the **first** class
+that **ADDS a new element to the rendered UI** (a menu item that did not exist), and the anchor/replacement/
+fail-closed rules bend differently for it. This section is the pattern reference so the next additive patch does
+not re-derive it (a genuine blind area before M249).
+
+### The shape of the problem
+
+A demo runs each sub-app (Workforce, Hiring, Studio, Academy) behind the presenter cockpit's *"become any
+hero"* launcher, but once inside an app there was **no way back to the cockpit** — the account/user menu offered
+only Settings + Log out. The fix injects a **"Back to Cockpit"** item into each app's menu, pointing at the
+per-stack cockpit (`…_COCKPIT_URL` = **7700+OFFSET**, a *different* port from the app itself). There is no config
+seam for "add a menu item", so it is a demo-patch (§1 ladder exhausted) — but an **additive** one.
+
+### The four rules an additive-UI patch adds to §7
+
+1. **Anchor on the ASSEMBLY point, not a value.** A rewrite anchors on the string it replaces; an additive
+   patch anchors on the **list/markup where sibling items are assembled** (the account-menu array, the menu-
+   options `innerHTML` block, the JSX above the logout row) and re-emits it with one new sibling spliced in. The
+   anchor must still occur **exactly once** (G2) — pick the assembly point that is unique (e.g. the *desktop*
+   `!hiddenSidebar` return block, not a `logOut` line that recurs in both the desktop and mobile branches).
+
+2. **Fail-closed is a CONDITIONAL RENDER, not an `env || original`.** A rewrite stays behaviour-identical by
+   keeping the original value as the `env || …` fallback. An additive element has no "original" — so it must
+   render **only when its env var is set**, collapsing to *nothing* when unset, so an un-baked build (and any
+   world where the patch were ever upstreamed) is **byte-identical** to today. Each framework has its idiom:
+   - **React + antd (`next-web` NavbarTop):** build the item only when the env is set, and let the existing
+     `lodash/_compact([...])` **drop the `null` slot** — `backToCockpitItem ? mapItem(backToCockpitItem, 0) :
+     null`. Unset ⇒ `null` ⇒ dropped ⇒ identical array.
+   - **Vanilla-JS template string (`studio-desk` userProfile):** a **nested** template that collapses to the
+     empty string — `${import.meta.env.VITE_COCKPIT_URL ? \`<button …>…</button>\` : ''}`. Unset ⇒ `''`.
+   - **React JSX (`ant-academy` UserMenu):** a ternary to `null` — `{process.env.NEXT_PUBLIC_COCKPIT_URL ? (<a
+     …/>) : null}`. Unset ⇒ `null` ⇒ nothing.
+
+3. **No new import, no new i18n key.** The replacement must compile with **only what is already in scope** — a
+   demo-patch that adds an `import` line needs a *second* anchor (the import block), and one that adds a
+   translation key would touch platform **message JSONs** (a platform edit the whole mechanism forbids). So:
+   reuse an in-scope symbol (next-web spreads the in-scope `logOutMenuItem` for a valid `IconDefinition`), use a
+   plain **string literal** label (`'Back to Cockpit'` — a demo affordance, never shipped to real users, so an
+   un-i18n'd string is correct here), and a FontAwesome class already loaded by the app.
+
+4. **The env value is baked by the CALLER, offset-templated.** The manifest's `build_env` **documents** the
+   line (`…_COCKPIT_URL=$SCHEME://$HOST:$((7700+OFFSET))`), but the bring-up bakes it explicitly into the app's
+   env overlay (`up-injected.sh` → `apps/web`/`apps/hiring/.env.local`; the `.env.production.local` overlay for
+   `studio-desk`'s `VITE_COCKPIT_URL`, since it is **not** a declared Dockerfile ARG; `ant-academy.sh`
+   `write_env_local` → `code/.env.local`). The item is **inert without the bake, and the bake is inert without
+   the item** — the same two-part contract as `next-web-no-thirdparty`.
+
+### The rewrite half rides along (studio-desk)
+
+The `studio-desk` lane is a hybrid: `studio-desk-back-to-cockpit` is *additive* (rules 1–4), but it **also**
+rewrites the existing "Back" control's `app.anthropos.work` prod-eject to `import.meta.env.VITE_WEB_APP_URL || …`
+(a §7-style rewrite), and its siblings `studio-desk-logout-url` / `studio-desk-logo-url` are **pure** rewrites.
+Reading `import.meta.env.VITE_WEB_APP_URL` directly (not `config.WEBAPP_URL`) is deliberate — it keeps the
+**original `app.anthropos.work` fallback** (so it is behaviour-identical when unset, per §7-4) and needs no
+`config` import (rule 3), while reading the *same* env var `config.WEBAPP_URL` reads.
