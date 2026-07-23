@@ -115,6 +115,29 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > green *against the broken launcher*. The stubs now model a real academy, and both failure shapes are fenced
 > (the liveness one proven RED — the old check cheerfully printed "started" for a daemon serving nothing).
 
+> ### ⚠️ The academy demo-config must survive the LIFECYCLE, not just a fresh up (M245, v2.6 "sound check")
+>
+> A **fresh `/demo-up` always** brings the academy up fully configured — `ant-academy.sh` writes `code/.env.local`
+> (minted pk + `REQUIRE_ORGANIZATION_MEMBERSHIP=0`), applies the four FS-published/dev-origins demo-patches to the
+> **ephemeral clone**, and launches `next dev` with `ACADEMY_DEMO_FS_PUBLISHED=1`. But that config lives **in-process
+> and in-clone**, and on `billion` (M244) a re-up left the academy **alive but serving a stock, empty, Clerk-gated
+> catalog** — **0 course cards on `/library`** over an HTTP 200. Two lifecycle vectors, both leaving the pid alive:
+> 1. **`.env.local` dewire.** `stacksecrets provision` also targets `ant-academy/code/.env.local` and runs on **every**
+>    `/demo-up` (before the academy launch), copy-if-absent-**appending** the **real** Clerk app's keys. A fresh up's
+>    truncating write beats them; the old **"already running" early-exit** skipped that write on a re-up, so the
+>    appended real key sat **last** and — dotenv last-wins — **dewired** Clerkenstein.
+> 2. **Clone-patch revert.** A `--stop` / reset-to-seed reverts the FS patches from the clone; next dev recompiles the
+>    pristine (empty) resolver, and no re-up re-applied them.
+>
+> **The fix (tooling-only):** `ant-academy.sh`'s "already running" branch no longer early-exits — it **reconciles the
+> durable config in place on every invocation** (rewrites `.env.local` authoritatively — it is the single authoritative
+> writer, always beating a stacksecrets append — and re-applies the clone patches, idempotent; next dev HMR heals a
+> reverted clone), then **verifies the running process actually renders `/library`**, keeping it (no cold restart) if
+> so or relaunching if not. And a **standing check** — demo autoverify assert *(f)* now asserts the academy renders its
+> catalog at the bring-up tail — so this **regresses loudly** next time instead of silently serving an empty portal.
+> Proven on `billion`: reverting the patches + polluting `.env.local` (0 cards reproduced), then one re-run healed it
+> back to a rendering catalog with **no restart**.
+
 > **studio-desk is single-port (M32).** The studio-desk image (`Dockerfile.dev`) is a **production build**
 > (`npm run build:server && build:frontend`, `CMD npm start`, and it even bakes `ENV NODE_ENV=production`): one
 > node process serves the built SPA *and* the API on **9000** — the `9100` Vite dev port exists only under

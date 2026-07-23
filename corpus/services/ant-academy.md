@@ -184,6 +184,31 @@ edits** — a native-run `apply-academy-fs-published-body.sh` patches the demo's
 Proven live on `billion`: a chapter that returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real
 chapter title + body.
 
+### The demo-config is applied at bring-up and must survive the demo LIFECYCLE — the durability fix (v2.6 M245)
+
+The academy's entire demo-config — the four bring-up patches (`academy-fs-published-fallback` + `-public` + `-chapter-body`
++ `ant-academy-dev-origins`) applied to the **ephemeral clone**, plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
++ the **minted** Clerkenstein publishable key + `ACADEMY_DEMO_FS_PUBLISHED=1` in the launch env) — is written and applied by
+`demo-stack/ant-academy.sh` at bring-up. But that config lives **in-process and in-clone**, and a **fresh `/demo-up` was the
+only path that reliably established it**: `ant-academy.sh`'s old "already running" branch **early-exited doing nothing** when it
+found a live pid, so a re-up over a drifted academy never re-provisioned. Two lifecycle events could leave the academy **ALIVE
+but serving a stock, EMPTY, Clerk-gated catalog** (0 course cards on `/library` over an HTTP 200 — the **billion M244 regression**):
+1. **`.env.local` dewire.** `stacksecrets provision` targets `ant-academy/code/.env.local` too and runs on **every** `/demo-up`
+   (before the academy launch), copy-if-absent-**appending** the **real** Clerk app's keys. On a fresh up `ant-academy.sh`'s
+   truncating write overwrites them; on a re-up the early-exit skipped that write, so the appended real key sat **last** and —
+   dotenv last-wins — **dewired** Clerkenstein (keyless / sign-in wall).
+2. **Clone-patch revert.** A teardown `--stop` or a reset-to-seed cycle reverts the FS-published patches from the clone; next
+   dev's watcher recompiles the pristine (empty) resolver, and no re-up re-applied them.
+
+**The fix (M245, tooling-only — zero academy-repo edits):** `ant-academy.sh` now **reconciles the durable config on every
+invocation**. The "already running" branch rewrites `.env.local` authoritatively (truncating — it is the single authoritative
+writer, always beating a stacksecrets append) and re-applies the clone patches (idempotent; next dev HMR heals a reverted
+clone), then **verifies the running process actually renders the catalog** (`/library` has real course cards, not keyless-bounced)
+— keeping it if so (no costly cold restart) or relaunching if not. Plus a **standing check**: the demo autoverify
+(`stack-verify/live/autoverify.sh`, assert *(f)*) now asserts the academy renders its catalog at the bring-up tail, so a
+lifecycle regression fails **loudly** instead of silently serving an empty portal. So: a **fresh** `/demo-up` always brings the
+academy up fully configured (it always did); the M245 change makes that config **durable across re-ups and out-of-band restarts**.
+
 ### The language switch is a `?lang=` query param, not a `/it` route (the #2 verdict, v2.6 M238)
 
 The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code this
