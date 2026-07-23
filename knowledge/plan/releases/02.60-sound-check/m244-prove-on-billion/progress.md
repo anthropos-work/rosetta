@@ -72,3 +72,39 @@ Iterative milestone (the closer). Primary metric: the multi-part exit gate (a–
 - (c) 40 specs: **stack-verify half DONE (iter-16/18) + 12/16 Playthroughs green cold on billion (iter-23; 89/93 cases)**. REMAINING for the gate-(c) tick: the **4 ai-readiness Playthroughs** (zero-state render — `ai_readiness_live_snapshots=0` on pt-world; seed/recompute fix routed). NOT ticked. Networkidle harness deadlock fixed (rext dddef18). · **(f) DISCHARGED ✅ (iter-24): PROBE-M218-c3 + F-M220-4 (iter-21) + BURNIN-M221 (iter-24 — `/dev-up --public-host` graphql dev-2 live-cycled + tailnet-reachable 200; 7 dev-build walls resolved).** · **(h) DISCHARGED ✅ (iter-20)** — all 6 v2.6 fixes proven live on billion (talk-to-data/library/cockpit/content-fidelity iter-18 + academy course-start + `?lang=it` fresh sweep + M241 EN/IT toggle) + **p95<5s both heroes** (employee 1.46s / manager 1.31s). **6/8 discharged.**
 - Inherited: **reap-17700 ✅ LANDED (iter-10)**. **DEF-M240-01 ✅ dispositioned (iter-07)**. DEF-M239-01 (ENOSPC loud-build-fail) OPEN. Durable standing-8 (M238-D5) still Fate-2.
 - Enabling foundation: **billion demo-1 GREEN at the m244 pin (iter-11)**. rext consumption tag `sound-check-m244-content-sweep-robustness` → **2a71e08** (iter-16 coverage marker recalibration + iter-15 academy anon-view demopatch + iter-13 shape-aware settle; peels `^{}` → 2a71e08 on origin). Billion's rext clone at **8391843** (re-pinned iter-15 for the academy fix; the iter-16 coverage-marker + iter-13 settle fixes are HARNESS-only, run from the local authoring copy → not billion build inputs, so the clone stays at 8391843). The academy clone's serverTenant.js at post2 (FSPUBLIC applied, native, no re-bake).
+
+## M244: Final Review (close, 2026-07-23)
+
+Iterative milestone, **closed-on-gate** (exit gate 8/8 MET live on `billion`, iter-27). Proof milestone
+(`delivers: none`, 0 platform edits) — nearly all code lived in the `rosetta-extensions` authoring copy and was
+hardened across 6 pre-close passes (2 harden-iters sessions, mutation-verify the operative signal). Review found
+**2 documentation reconciliations** + the standard triage; **0 scope gaps, 0 code-quality issues, 0 test gaps**.
+
+### Scope
+- [x] Gate met 8/8; 27/27 iters have close docs; 3 toks recorded (TOK-01/02/03); no orphan iters/commits. No gaps.
+
+### Code Quality
+- [x] No issues. Touched suites re-confirmed green (Go contentsession ok · playthroughs 85 unit + tsc · stack-verify
+  172 unit + tsc · python 288/1). The 1 python fail = the pre-M244 standing-8 `test_public_host` port-13001
+  (M220-origin expectation, SUT untouched by M244) — routed Fate-3 → close-release (audit D1).
+
+### Adversarial (Phase 2c)
+- [x] Anti-toothlessness scenarios (locator false-pass / early settle) recorded in `decisions.md` → Adversarial
+  review; both were surfaced + mutation-verified-fixed during the harden passes. No un-mitigated false-pass remains.
+
+### Documentation
+- [x] KB-1: `coverage-protocol.md` denominator lesson stated `EXPECTED_PAIRS=29` (M236-era) — added the current
+  value note (`content-denominator.json` pins 49; M244 landed 47/47, 2 voice player presence-only).
+- [x] Phase-5 blend: `verification.md` PRE-FLIGHT RUNG ZERO gained the iter-25 finding — the image must be compiled
+  from the PINNED ref, not the highest fetched tag (the `launched_by` version-skew; rext c755370). (#M244 iter-25)
+- [x] KB-2 + 29/29: `roadmap.md` M244 block (39→40 specs + closure narrative) and `state.md` (full rewrite,
+  correct numbers) — landed in Phase 10.
+
+### Tests & Benchmarks
+- [x] No gaps. Final harden added +6 mutation-verified tests (Passes 7–9); flake-gated 3/3 at HEAD; no code changed
+  at close, so the harden's green + flake gate stand.
+
+### Decision Triage
+- [x] TOK-01/02/03 → archive (strategy records, maintainer-only).
+- [x] iter-25 pinned-ref-build finding → blend into `verification.md` (#M244 iter-25). Done.
+- [x] D1 (deferral re-audit) recorded in `decisions.md`; audit report filed under `audit-deferrals/`.

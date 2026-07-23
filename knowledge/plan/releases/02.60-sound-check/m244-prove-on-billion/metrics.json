@@ -40,5 +40,28 @@
   "gate_met": true,
   "gate_met_iter": "iter-27 (run 10, tik 1) — 2026-07-23: gate (c) 16/16 Playthroughs GREEN in one clean full billion run (96 passed) → all 8 exit-gate parts a-h discharged live on billion, 0 platform edits. rext consumption tag sound-check-m244-content-sweep-robustness moved to 6feae20 (peels ^{} -> 6feae201 on origin; harness runs from the LOCAL authoring copy so billion needs no re-pin/re-seed).",
   "updated": "2026-07-23T08:05Z",
-  "gate_g_status": "DISCHARGED. TestInterviewPlanSectionAlignment + golden interview-plan-sections.json + TestOrphanKeysDetectsV13Drift added + green + pushed. Caught real plan-version drift (intv-voice-fail on v1.3-era session vs sim v1.4 plan); fixed by re-pin 43a92fc0->05dae0f7 (v1.4-clean failed interview) via content-capture --only. Live DB proof on billion: pass clone 97f3f681 0-orphans; fail clone ace3b54e (m243 seed) orphans={breadth,context_fit,frequency} caught by assertion, resolved by re-pin on cold reset-to-seed."
+  "gate_g_status": "DISCHARGED. TestInterviewPlanSectionAlignment + golden interview-plan-sections.json + TestOrphanKeysDetectsV13Drift added + green + pushed. Caught real plan-version drift (intv-voice-fail on v1.3-era session vs sim v1.4 plan); fixed by re-pin 43a92fc0->05dae0f7 (v1.4-clean failed interview) via content-capture --only. Live DB proof on billion: pass clone 97f3f681 0-orphans; fail clone ace3b54e (m243 seed) orphans={breadth,context_fit,frequency} caught by assertion, resolved by re-pin on cold reset-to-seed.",
+  "tests": {
+    "note": "M244 is a proof milestone (delivers: none); its 'code' is the rext harness/tooling hardened across 2 harden-iters sessions (Passes 1-9). Counts below are milestone-touched suites re-confirmed green at close (rext HEAD 498b1a5). No line-cov tool wired; mutation-verify is the operative teeth signal.",
+    "go_contentsession": "ok (iter-06 plan-alignment + iter-07 presence-only)",
+    "ts_playthroughs_unit": 85,
+    "ts_stack_verify_unit": 172,
+    "python_touched_subset": "288 passed / 1 failed",
+    "python_1_fail": "test_public_host_emits_per_port_off_for_all_browser_ports (port 13001 hiring-app absent from serve-reset) = the pre-M244 standing-8 'test_public_host port-13001'; 13001 expectation added by M220 (cf11a1c), SUT untouched by M244; routed Fate-3 -> close-release (audit D1)",
+    "final_harden_added": 6,
+    "final_harden_note": "Passes 7-9: +6 mutation-verified tests (Python +1 preflight-anchor gap-fill; TS +5 ai-readiness locators) + 2 inline fixes (dueDate month-constraint toothlessness; M215 no-pipe fence reconcile, 9->8 standing)"
+  },
+  "flake_count": 0,
+  "flake_note": "Final harden flake gate 3/3 clean on all touched tests; no code changed at close so it stands. The 1 python fail is deterministic (fixed assertion mismatch), inherited pre-M244, not a flake.",
+  "platform_repo_edits": 0,
+  "rext_consumption_tag_final": "sound-check-m244-content-sweep-robustness -> peels to 498b1a5 on origin (final-harden HEAD; +2 commits over iter-27's 6feae20 for the Pass 7-9 test pins + M215 reconcile). origin/main synced to 498b1a5. Billion's build clone stays at 8391843 (harness runs from the local authoring copy; not a billion build input).",
+  "close": {
+    "close_status": "closed-on-gate",
+    "verdict": "gate MET 8/8 live on billion, 0 platform edits",
+    "deferral_audit": "YELLOW (SEVERITY=warning) — standing-8 demo-stack test debt (chronic) + DEF-M239-01 re-fated Fate-3 -> close-release; 2 carries resolved (reap-17700 LANDED iter-10, DEF-M240-01 dispositioned iter-07)",
+    "close_doc_fixes": 2,
+    "close_code_fixes": 0,
+    "closed_on": "2026-07-23"
+  },
+  "close_updated": "2026-07-23"
 }

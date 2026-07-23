@@ -36,3 +36,49 @@ _(implementation choices with rationale accumulate here during the iter loop)_
 **Distance-to-gate context:** 5/8. Three buckets remain (h → f → c-playthroughs), each now a clear single-focus tik. Diminishing RISK, not diminishing returns — the hard clusters (foundation, gate-b diagnosis, gate-d academy, gate-c retrofit + the Bedrock defect) are all behind us.
 **Cross-refs to prior TOKs:** TOK-02 consolidated after the foundation + the gate-b diagnosis; TOK-03 consolidates after the gate-c stack-verify half + the Bedrock provisioning fix, with the final push fully sequenced. Both are the same coarse-metric-artifact re-affirmation — TOK-01 is the sound spine throughout.
 **Next-tik direction:** run 8 iter-20 (fresh tik) = **gate (h) completion**: refresh billion's autoverify (STACK_DIR set), run-latency.sh both hero vantages for p95<5s (LATENCY_SCHEME=https, M236 UTC age-check), + live-check academy course-start + the EN/IT language toggle → tick 6/8.
+
+## D1 (close): Deferral re-audit — 2 inherited carries re-fated Fate-3 → close-release — 2026-07-23
+
+**Context:** Phase 1b deferral re-audit at milestone close (report:
+`audit-deferrals/deferral-audit-2026-07-23-m244-close.md`, verdict **YELLOW**).
+
+**Decision:** the two remaining open, pre-M244-inherited carries are re-fated **LAND-NEXT (Fate-3) →
+`/developer-kit:close-release`**:
+- **M238-D5 — standing demo-stack test debt (8 fails)** (6 `test_cockpit` academy/overlay + `test_public_host`
+  port-13001 + `test_purge` docker-integration). Chronic (ridden ≥5 v2.6 milestones). Was 9; the M244 final
+  harden fixed the ONE M244-introduced fence (M215 no-pipe, iter-25 describe-form reconcile, Pass 8, Fate-1) →
+  8, all provably pre-M244 (SUT untouched by M244).
+- **DEF-M239-01 — ENOSPC loud-build-fail** (a build-path change validatable only by inducing a real ENOSPC).
+
+**Rationale:** M244 is a **proof milestone** (`delivers: none`, 0 platform edits) — its charter is driving +
+asserting a cold billion bring-up, not authoring demo-stack test fixes or an un-validatable build-path change.
+The named expiry across the M238–M243 closes was "M244"; now that M244 closes proof-only, the genuine final
+expiry for release-wide test debt is the **release-level deferral audit** (close-release Phase 1b, release
+scope, extra scrutiny), which is the very next step. Both resolved carries — **reap-17700 LANDED** (Fate-1,
+iter-10) and **DEF-M240-01 dispositioned** (voice player-presence-only, the pre-approved else-branch, iter-07)
+— leave the ledger. Not a silent auto-accept: an explicit Fate-3 re-fate with a filed report + a chronic-pattern
+flag for close-release. No blocker raised.
+
+## Adversarial review (close) — 2026-07-23
+
+The release thesis is **anti-toothlessness**, so the central adversarial question for a proof milestone whose
+"code" is a browser harness is: **could an assertion false-PASS — report a page as rendered/correct when it is
+not?** A locator that matches chrome/boilerplate, or a settle that returns on the nav shell, would let a broken
+surface sail through green and make the whole live proof toothless.
+
+- **Scenario — a locator matches non-content and false-passes.** iter-27 is itself the proof this risk is real:
+  it FALSIFIED iter-26's seed-gap story — the 3 ai-readiness "failures" were HARNESS locator mismatches against
+  a **correctly-rendering** v1.341.0 UI (byTeam "Team" not "Tag" / interview panel scoped to a 24-char heading
+  span not the findings card / dueDate short-date with no 4-digit year). The mirror risk is the opposite: a
+  locator loose enough to pass on an EMPTY page. Pass 7's harden surfaced exactly that — the year-less
+  `\w{3,9}` dueDate matcher matched "24 hours"/"5 days" (would false-pass a page with no real deadline) and was
+  **month-constrained + mutation-verified RED-on-break**. The iter-16 academy-home marker was likewise moved
+  from a `<title>`-only token (false-passed an empty grid) to a card-count floor, mutation-verified.
+- **Scenario — settle returns before content paints.** gate (b)'s interview-player residual: `settle()`
+  early-exited on the 126–128-char nav shell (cleared `MIN_SETTLED_CHARS=120`) before the ack painted → a false
+  `mainLen 0`. Fixed with shape-aware `contentReady(shape)` gating player-interview on the ack in `<body>`, +4
+  mutation-verified specs.
+- **Response:** every M244 harness assertion with a pure-logic surface was mutation-verified to bite across the
+  two harden sessions (Passes 1–9); the operative signal is mutation-verify (no line-cov tool wired). The one
+  un-swept surface (`pickFirstSkillPath` live-tailnet retry timing) has no pure-logic seam and is gold-plating.
+  No un-mitigated false-pass scenario remains. The gate's teeth stand.
