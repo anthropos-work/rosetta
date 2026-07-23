@@ -30,6 +30,17 @@ false-FAIL a fully-rendered result — `manager-scored` therefore keys on the **
 and collapse-proof (`hasScore || hasSkills`, readable ≥ 400, not "undefined undefined"). `gradeScored` stays the
 PLAYER-scored gate only (unchanged, proven). Pair count unchanged (47) — `buildPairs` is route-shape-agnostic.
 
+## D4 (close-time, from the Phase-1b deferral audit) — CARRY-M248-01 is Fate-2, not Fate-3
+The one deferral M248 introduces — re-confirm the content-stories manager pairs land on the FRESH `billion`
+reset-to-seed — is **Fate-2 (confirmed-covered by a future milestone of this release)**, not Fate-3
+(annotate-attach). M254's exit gate ALREADY names it: part **(b)** "the content-stories manager CTA lands on the
+/sim per-session manager result view (non-empty) for sim products" + part **(h)** the live content-stories sweep.
+No `overview.md` edit to M254 is required (it already owns the coverage). The build-time `progress.md` label
+("Fate-3") was imprecise and is reconciled to Fate-2 at close. The 3 demo-2 header-only-shell renders + 1 academy
+`:23077` env failure are demo-2 (M246-era warm seed / host state) environmentals, not M248 code defects — same
+Fate-2 → M254 fresh-seed re-confirm. Audit report:
+`audit-deferrals/deferral-audit-2026-07-23-m248-close.md` (verdict YELLOW, 0 blockers).
+
 ## KB items (from the Phase 0b KB-fidelity audit — YELLOW, tracked)
 - **KB-1** — Neither `content-stories-spec.md` nor `content-stories-routes.md` documents the
   `/sim/<slug>/<userId>/result/<sessionId>` manager surface (both name only the activity-dashboard scoreboard).

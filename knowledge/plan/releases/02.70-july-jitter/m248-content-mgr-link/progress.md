@@ -26,13 +26,44 @@ player env failure (ant-academy `:23077` down on demo-2).
 ## Completeness Ledger
 
 ### Deferred
-- **CARRY-M248-01 → M254 (Fate-3):** re-confirm the content-stories manager pairs land on the FRESH billion
-  reset-to-seed. 3 non-interview manager `/sim` pages rendered a header-only shell on demo-2's (M246-era, warm)
-  seed at a 20 s settle; the route is proven to render full results, so this is a per-session warmth/seed-data
-  artifact to re-check on a cold fresh seed — not an M248 projection/grader defect. (Also the academy `:23077`
-  env failure is a demo-2 host state, re-checked on billion.)
+- **CARRY-M248-01 → M254 (Fate-2, already-planned coverage):** re-confirm the content-stories manager pairs land
+  on the FRESH billion reset-to-seed. M254's exit gate ALREADY owns this — part **(b)** "the content-stories
+  manager CTA lands on the /sim per-session manager result view (non-empty) for sim products" + part **(h)** the
+  live content-stories sweep — so it is confirmed-covered (Fate-2), NOT annotate-attach (no M254 `overview.md`
+  edit needed; re-fated from the imprecise "Fate-3" at M248 close per the Phase-1b deferral audit). 3 non-interview
+  manager `/sim` pages rendered a header-only shell on demo-2's (M246-era, warm) seed at a 20 s settle; the route
+  is proven to render full results (direct drives: asmt 4516 · train 5406 · asmt-voice-fail 2981 chars, score
+  present), so this is a per-session warmth/seed-data artifact to re-check on a cold fresh seed — not an M248
+  projection/grader defect. (Also the academy `:23077` env failure is a demo-2 host state, re-checked on billion.)
 
 ### Dropped
+
+## M248: Final Review
+
+Review found **1 finding** (1 scope · 0 code-quality · 0 docs · 0 tests · 0 decision-triage). Code lives in the
+gitignored rext authoring copy (already committed + tagged + hardened @ `6e0ed2c`, 176 unit specs + Go GREEN,
+tsc clean, mutation-verified, 3× flake-clean); the rosetta half is docs + plan only.
+
+### Scope
+- [x] CARRY-M248-01 reconciled Fate-3 → **Fate-2** (M254 exit gate (b)+(h) already own the fresh-seed re-confirm;
+  no M254 `overview.md` edit) — recorded in `decisions.md` D4 + the Phase-1b deferral-audit report.
+
+### Code Quality
+- [x] No rosetta code (docs-only); rext code reviewed per-section at build + hardened. Consistency / dead-code /
+  boundary-safety / cross-module all covered by the Go routing tests + TS grader specs. 0 must-fix.
+
+### Documentation
+- [x] `content-stories-spec.md` + `content-stories-routes.md` re-pointed to the sim_type mixed routing; cross-refs
+  resolve; no stale manager-path claim (residual `activity-dashboard/ai-simulations` mentions are deliberate
+  "NOT the scoreboard" contrasts). KB-1/KB-3/KB-4 resolved in the rewrite, KB-2 mitigated + live-confirmed.
+
+### Tests & Benchmarks
+- [x] rext suite 176/176 unit + Go seeders GREEN (harden +2 mutation-style manager-scored tests); honesty gate
+  GREEN; 47/47 manifest pairs; live sweep 43/47 warm on demo-2 (residual → CARRY-M248-01). No rosetta test suite.
+
+### Decision Triage
+- [x] D1 (superseded static read) → archive; D2 (grader shapes) + D3 (interview split) + KB-3 (admin gate) already
+  blended into `content-stories-spec.md` §3 callouts; D4 (close-time re-fate) recorded. No net-new blend owed.
 
 ## M248: Hardening
 
