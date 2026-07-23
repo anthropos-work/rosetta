@@ -85,3 +85,33 @@ fallback; (b) the seam runs before the advance gate, so shipping the canonical p
 a default/main `/demo-up` into a pinned checkout (the deliberate-staleness contract). Flake gate 3/3;
 full `test_tooling.py` 168/168; Go package green.
 **Fate.** All Fate-1 (landed now). No deferrals; the M247 drift ledger is unchanged by this pass.
+
+## Adversarial review (close, 2026-07-23)
+
+**Scenario — pin/tag skew silently mis-schemas the skill-path runtime writes.** The hard-cut re-point
+(D-1) removed the dual-schema fallback: the seeder now writes `skill_path_sessions` to `public`
+unconditionally. Two non-obvious skew states exist. (a) A stack on the NEW platform pin consuming an OLD
+rext tag (pre-re-point) writes to `skillpath.skill_path_sessions` — the 0-row husk the consolidated
+platform keeps — so the app (reading `public`) shows 0 skill-paths-completed even though seeding
+"succeeded". (b) A stack on an OLD platform pin consuming the NEW rext tag hits a COPY error
+(`public.skill_path_sessions` absent).
+**Verdict — handled by design, no code change.** The per-stack tag-pin contract (D-1/D-2) is the guard: a
+stack consumes rext at a tag matched to its platform pin, and the canonical `clones.pin.json` +
+copy-if-absent seam make the matched topology the default on a fresh box. The hard-cut deliberately makes
+the dangerous direction (b) fail LOUDLY (visible COPY error) rather than silently; the silent direction (a)
+is a deliberate operator mispin that the autoverify seeded-content asserts would surface (a hero-seeded
+stack rendering 0 completed paths). The harden pass's 2 seam tests pin the ordering invariant (a shipped
+canonical pin must not turn a `=main` advance into a surprise pinned checkout) + the no-pin no-op — the two
+branches where a skew could originate silently. Recorded, not fixed: the risk lives in operator pin
+discipline (documented), not in the shipped seeder/seam code.
+
+## Close review note — considered, not a defect (2026-07-23)
+
+`up-injected.sh:2-9` header: M246 correctly flipped "the 4 Go services … (app, cms, jobsimulation,
+skillpath)" → "the 3 Go services … (app, cms, jobsimulation)" with an explicit M246 annotation, but left
+the trailing v2.1-M209 historical parenthetical "(… skiller merged into app … so 4 services not 5)". This
+is a correctly-scoped HISTORICAL note describing what M209 did (5→4), not a claim about the current count —
+which is stated authoritatively as "3 Go services" directly above with the M246 annotation. NOT a
+reader-facing incorrectness. Deliberately NOT re-tagged: minting a third rext code-of-record tag for a
+defensible layered historical annotation would only muddy the clean "harden tag @ `9b29f3a` = code of
+record, live-green-proof holds" state. Left as-is.

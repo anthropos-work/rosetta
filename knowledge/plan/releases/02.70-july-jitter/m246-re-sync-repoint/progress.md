@@ -37,8 +37,54 @@ Section milestone. Checklist from the roadmap In-list. **HARD go/no-go barrier �
 ### Stop condition
 ONE pass — right-sized per the milestone's nature. The re-point is a MECHANICAL schema qualifier flip, already asserted at every write-site and LIVE-PROVEN (561 rows in `public.skill_path_sessions` on cold demo-2). The only genuinely under-tested surface — the 2 residual copy-if-absent seam branches — was closed. Full Step-2b scan surfaced nothing else worth adding; the loop terminates (scan clean).
 
+## M246: Final Review
+
+Cross-cutting close review (2026-07-23). Real code = rext `stack-seeding` + `demo-stack` +
+`stack-injection` at tag `july-jitter-m246-harden` @ `9b29f3a` (on origin); rosetta branch carries plan
+artifacts + the `update_guide.md` re-sync note.
+
+### Scope
+- [x] All 4 declared sections delivered (Fate 1); the §3 expansion (de-skillpath the LIVE bring-up path) is Fate-1, recorded D-3. No scope gaps.
+
+### Code Quality
+- [x] [clean] Seeder re-point uniform across all 8 write-sites (schema `skillpath`→`public` for `skill_path_sessions` only); comments follow code; mirror `public.local_skill_path_sessions` + surface name `skillpath-sessions` correctly untouched. gofmt/vet/build clean.
+- [x] [clean] Copy-if-absent clone-pin seam defensive (never clobbers an operator pin; non-fatal on cp failure) with clear provenance. `clones.pin.json` = 12 repos @ current origin/main, skillpath correctly excluded.
+- [x] [clean] `gen_injected_override.py` inert skillpath key carries an honest comment routing full removal to the M247 drift ledger.
+- [x] [note] `up-injected.sh` header's trailing v2.1-M209 historical parenthetical ("4 services not 5") considered — a correctly-scoped history note, not a current-count claim; the authoritative "3 Go services" is stated above with the M246 annotation. Not a defect; not re-tagged (see decisions.md close note).
+
+### Documentation
+- [x] `corpus/ops/update_guide.md` re-sync note accurate (3 subgraphs; `public.skill_path_sessions`; migrate roster app/cms/jobsimulation) — matches drift-ledger ground truth. No new top-level unit ⇒ no handbook needed.
+- [x] roadmap.md + state.md consistent with the built reality (updated in Phase 10).
+
+### Tests & Benchmarks
+- [x] All touched-stack suites green: Go `stack-seeding` (all pkgs ok), `test_tooling.py` 168/168, `test_frontend_build.py` 94/94, `stack-injection` 264 (9 skipped). Flake gate 5/5 on TestCloneFreshnessM237 (incl. the 2 new seam tests). Re-point asserted at every write-site + live-proven (561 rows). No gaps.
+- [x] [note] pre-existing `ResourceWarning` in `TestMigrateRaceGuard` (test_tooling.py:1413) is not M246-touched; benign (unclosed file in an unrelated test) — carried, not a failure.
+
+### Decision Triage
+- [x] D-1 consolidation fact (skillpath→`public`, 3 subgraphs) → already blended into `corpus/ops/update_guide.md` (M246 reference tag present). No new blend.
+- [x] D-2/D-3/D-4/D-5 + KB-1..KB-5 → archive (rext-internal / maintainer-only); no knowledge home warranted.
+
+### Adversarial
+- [x] One scenario recorded in decisions.md (pin/tag skew silently mis-schemas skill-path writes) — handled by the tag-pin contract + the harden seam tests; the dangerous direction fails loudly by design.
+
 ## Completeness Ledger
 
-### Deferred
+### Done (Fate 1 — delivered in M246)
+- Seeder re-point `skillpath.*` → `public.skill_path_sessions` (8 live sites + DNA + comments + ~16 test assertions) — rext `97585f5`.
+- Durable canonical `clones.pin.json` (12 repos @ current origin/main) + copy-if-absent seam — rext `ee44b9a`.
+- De-skillpath the LIVE bring-up path (`gen_injected_override.py` comment + `up-injected.sh` INJECT_SVCS/verify_svcs) — rext `88bcdb8` (§3 Fate-1 expansion, D-3).
+- Cold `/demo-up` GREEN go/no-go PASS (561 rows in `public.skill_path_sessions`, 3 subgraphs, 0 skillpath) + drift ledger emitted.
+- `corpus/ops/update_guide.md` consolidation re-sync note.
+- Harden: 2 copy-if-absent seam tests (branch coverage 2/4→4/4) — rext `c9fbf6b`.
+
+### Confirmed-covered (Fate 2 — owned by a sibling milestone / the drift-ledger handoff)
+- D-01 corpus skillpath→app reconciliation → M247 (explicit In-list). D-06 audit-prose → M247. D-07 AI-readiness perf-patch anchor → M250 (its domain). D-08 login re-prove → M254 gate (h) / probe-fix M251. D-02/D-03/D-04 inert rext hygiene → M247's triage of the durable drift ledger. All tracked in `drift-ledger.md` + `audit-deferrals/deferral-audit-2026-07-23-m246-close.md` (verdict GREEN).
+
+### Annotated (Fate 3 — roadmap mutation)
+- None. No sibling `overview.md` `In:` list was edited.
 
 ### Dropped
+- None.
+
+### Release-scope-breaking deferral (escape hatch)
+- None.

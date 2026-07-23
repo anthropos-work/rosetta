@@ -1,0 +1,42 @@
+{
+  "milestone": "M246",
+  "title": "re-sync & re-point",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-23",
+  "barrier": "HARD go/no-go — opens v2.7 'july jitter'; gates the M247-M254 fan-out",
+  "platform_repo_edits": 0,
+  "tests": {
+    "go_stack_seeding": "all packages ok (cmd/stackseed, seeders, dna, cmd/content-capture, cmd/datadna, cmd/gen-batch) — the re-point asserted at every write-site (reset list + FK-order in main_test.go; findCopy(t,'public',...) in the seeder tests; failTable:'public.skill_path_sessions' copy-error paths)",
+    "python_demo_stack_test_tooling": "168/168 full test_tooling.py; all pass at close",
+    "m246_touched_surface": "TestCloneFreshnessM237 26/26 (incl. the 2 new M246 copy-if-absent seam tests: no-pin-anywhere clean no-op + canonical-pin-seeded-does-not-check-out ordering invariant)",
+    "python_demo_stack_test_frontend_build": "94/94; all pass",
+    "python_stack_injection": "264 tests OK (9 skipped, docker/live-gated)",
+    "live_proof": "cold demo-2 on the CONSOLIDATED platform wrote 561 rows to public.skill_path_sessions (legacy skillpath.skill_path_sessions = 0-row husk) — the strongest possible proof of the re-point target",
+    "flake_gate": "GREEN — TestCloneFreshnessM237 5/5 sequential (26 passed each run)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "explicit branch enumeration (no line-coverage tool wired for the small bash/python seam — the go/no-go seam is fully enumerable; D-5)",
+    "surface": "copy-if-absent clone-pin seam branch coverage 2/4 -> 4/4 (harden added: pinned-mode-no-pin-anywhere no-op + seam-runs-before-advance-gate ordering); the Go re-point asserted per-write-site + live-proven (561 rows)",
+    "residual_uncovered": "none load-bearing — the mechanical schema-qualifier flip is asserted at every site; a 'no-skillpath-schema-anywhere' grep-guard was REJECTED as fragile (the surface NAME skillpath-sessions, Go symbols, skillpath_sessions.go legitimately keep the word; D-5)"
+  },
+  "code_of_record_tag": "july-jitter-m246-harden @ 9b29f3a (commit c9fbf6b) — supersedes the build tag july-jitter-m246-re-sync-repoint @ 44f1049; the harden tag adds only tests (no behavior change), so the cold-demo-2 live green proof still holds. Both tags on origin (rung-zero verified).",
+  "build_commits_rext": "97585f5 (S1 seeder re-point skillpath.*->public.skill_path_sessions: 8 live sites + DNA + comments + ~16 test assertions) + ee44b9a (S2 durable canonical clones.pin.json 12 repos @ current origin/main + copy-if-absent seam) + 88bcdb8 (S3 de-skillpath the LIVE bring-up path: gen_injected_override.py comment + up-injected.sh INJECT_SVCS/verify_svcs)",
+  "harden_commits_rext": "c9fbf6b (1 pass — 2 copy-if-absent seam tests; no behavior change)",
+  "deferral_audit": "GREEN (0 repeats, 0 aged-out, 0 blockers) — M246 opens the release so no inherited deferrals; the 9 confirmed-drift rows (D-01..D-09) are M246's DESIGNED output, all Fate-2-routed via the durable drift-ledger handoff (D-01 explicitly M247-In-list; D-07 M250 domain; D-08 M254 gate-h; D-02/03/04 M247 triage). No sibling overview.md edited (0 Fate-3 mutations). Report: audit-deferrals/deferral-audit-2026-07-23-m246-close.md",
+  "close_fixes": [
+    "adversarial (Phase 2c): the pin/tag-skew silently-mis-schemas-skill-path-writes scenario recorded in decisions.md — handled by the tag-pin contract + the harden seam tests; the dangerous direction fails loudly by design",
+    "code-review (Phase 2): up-injected.sh header's trailing v2.1-M209 historical parenthetical ('4 services not 5') considered — a correctly-scoped history note, not a current-count claim (authoritative '3 Go services' stated above with the M246 annotation); NOT a defect, NOT re-tagged (keeps the harden tag the clean code-of-record). Recorded in decisions.md close note",
+    "decision-triage (Phase 5): D-1 consolidation fact already blended into corpus/ops/update_guide.md (M246 ref tag present); D-2..D-5 + KB-1..KB-5 archive (rext-internal/maintainer-only)"
+  ],
+  "close_code_changes": "none in rext — all close records are docs in the rosetta repo (decisions.md adversarial + close note, progress.md Final Review + Completeness Ledger, the deferral-audit report, metrics/retro, roadmap/state). No rext commit and NO rext re-pin at close: the code-of-record stays the harden tag @ 9b29f3a.",
+  "barrier_result": {
+    "verdict": "GO/NO-GO PASS — the ~386-commit app bump did NOT break bring-up",
+    "green_axes": "build exit 0 (16 services Up) · 561 rows public.skill_path_sessions (re-point proven) · 3 subgraph images + 0 skillpath · health 200 · casbin 1250 · all schemas present · public.skills 42790 · per-stack Directus (21 collections) · cockpit + hiring org set-dressed · all 16 liveness + all readiness probes pass",
+    "environment": "LOCAL demo-2 (billion-last honored — dev native worktrees + the billion VM untouched); stale demo-1 torn down first to free the box",
+    "autoverify_warnings": "3, all non-firing (drift/probe-artifact, not platform breaks): D-07 AI-readiness loadMembers demopatch anchor stale -> M250; D-08 fake-FAPI http-vs-TLS cheap-win probe artifact -> M251/M254; D-09 academy peripheral -> standing"
+  },
+  "drift_ledger": "9 confirmed-drift rows (D-01..D-09) emitted for M247's triage — the barrier's designed payoff; scopes M247-M254 against the proven-green consolidated topology, not the pre-consolidation corpus prose",
+  "notes": "The FIRST milestone of v2.7 'july jitter' — the HARD go/no-go re-sync barrier (the M237/M222 clean-stage lineage). Re-pointed the load-bearing seeder (skillpath.*->public.skill_path_sessions) to defuse the imminent break, bumped the demo clone pins to the CONSOLIDATED platform (skillpath decommissioned into app, 3 subgraphs), de-skillpathed the live bring-up path, and proved ONE cold /demo-up GREEN — 561 rows to public.skill_path_sessions. The CODE-of-record lives in the rosetta-extensions authoring copy (a SEPARATE git repo) at tag july-jitter-m246-harden; this close merges ONLY the rosetta doc-half (plan artifacts + the update_guide.md re-sync note) into release/02.70-july-jitter. Tooling + docs only, 0 platform-repo edits. Overview open-question #2 answered NO — no migration/subgraph break from the bump; downstream milestones safe to scope against this topology."
+}
