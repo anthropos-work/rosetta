@@ -143,7 +143,7 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 |---------|---------|-----|
 | **`demopatch`** (the tool) | the **ten** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
-| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **three** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
+| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **four** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`, `academy-fs-published-chapter-body`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
 
 **Exit codes differ by vehicle.** `demopatch` uses `1` (guard refuse) and `2` (manifest/OS error). The shell helpers
 use a richer space: `0` applied-or-already-patched · `1` manifest/target missing · `2` **pre-sha drift** · `3` anchor
@@ -194,24 +194,25 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**15 patches: 10 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 3 × `ant-academy`.**
+**16 patches: 10 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 4 × `ant-academy`.**
 
-> **Inventory reconciled to the 15 manifests on disk (v2.6 M238).** This table had drifted from the
+> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`).** This table had drifted from the
 > `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
 > 1. **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
 >    from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
 >    `apply-academy-fs-*.sh` shell helper (apply-before-launch / revert-on-`--stop`), re-implementing the guard
 >    ladder against the same canonical manifest (see §4 "Three apply vehicles"). This is why they were historically
->    absent from this inventory (which grew around the image-baked `demopatch` tool) — added the two
->    **`academy-fs-published-*`** rows: `-fallback` (the catalog, M230) and `-chapter-body` (the body, M238), one
+>    absent from this inventory (which grew around the image-baked `demopatch` tool) — added the
+>    **`academy-fs-published-*`** rows: `-fallback` (the catalog, M230), `-chapter-body` (the body, M238), and
+>    `-public` (the anon /library + /free + home view, M244), one
 >    FS-as-published behavior gated on `ACADEMY_DEMO_FS_PUBLISHED` (+ `DEMO_NO_ACADEMY_FILL` opt-out); see
 >    [`frontend-tier.md`](frontend-tier.md) and [`../../services/ant-academy.md`](../../services/ant-academy.md).
 > 2. **The 2 M232 `next-web-interview-flag-*` patches** (`packages/ui`, the interview-report flag gate — the M219
 >    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
 >    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
 >    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
->    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**15**) AND
->    the per-repo breakdown (`10 next-web-app · 2 app · 3 ant-academy`) against this §5 table — so adding, removing,
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**16**) AND
+>    the per-repo breakdown (`10 next-web-app · 2 app · 4 ant-academy`) against this §5 table — so adding, removing,
 >    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
@@ -230,7 +231,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
 > M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
 > counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
-> directory-fenced total is 15**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
+> directory-fenced total is 16**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
 > M224 corrected it to 11 with the `next-web-no-thirdparty` row, and M238 reconciled the whole table to the 15 on
 > disk.)*
 
@@ -250,6 +251,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `next-hiring-members-pagination` | `next-web-app` · `apps/hiring/src/context/InsightsContext.tsx` | **(M224 tik D) the Results dashboard stops hanging on the loading spinner.** The exact **mirror of `next-web-members-pagination`**: `apps/hiring`'s InsightsContext fetches `useGetOrganizationMembers({ limit: 1000 })` — an unbounded whole-org fetch the activity-dashboard layout **blocks** on (`if (loading) return <BaseLoading/>`), and its `GET_MEMBERS` query resolves `targetRole` **per row** — so the per-sim scoreboards never mount. Caps the fetch `1000 → 30`. The **per-member Sentinel authz half of the wall needed NO new patch**: the hiring app hits the **same shared `app` backend** that already bakes `app-targetrole-authz-skip`, so `targetRole`'s per-object RPC is already dropped for this path too. Targets its **own** file — no chain |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
 | `academy-fs-published-fallback` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M230, native-run)** the empty demo home GRID renders REAL cards via an FS-as-published catalog fallback (no "Draft" chip), gated on `ACADEMY_DEMO_FS_PUBLISHED`. Applied by `apply-academy-fs-published.sh` |
+| `academy-fs-published-public` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M244, native-run)** the ANONYMOUS-view half — /library, /free/*, and the cross-port academy home (:3077) render REAL cards via the same FS-as-published fallback on `getPublicCatalogView` (`getBackendCatalogView(new Set())` — the public/empty eid set, so no tenant content leaks onto an anon route). **CHAINED** on `serverTenant.js` (its `pre_sha256` **is** `-fallback`'s `post_sha256`): applied AFTER `-fallback`, reverted BEFORE it. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-public.sh` |
 | `academy-fs-published-chapter-body` | `ant-academy` · `code/src/lib/serverChapterBody.js` | **(M238, native-run)** the BODY half — clicking "Start the course" renders the FS chapter body (locale-aware, unlocked, un-chipped) instead of the "You wandered off the trail" 404. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-body.sh` |
 
 ---
