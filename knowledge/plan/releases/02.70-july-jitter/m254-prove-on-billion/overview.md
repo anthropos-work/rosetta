@@ -4,7 +4,7 @@ milestone: M254
 title: "prove on billion (the closer)"
 status: planned
 release: v2.7 "july jitter"
-exit_gate: "Cold reset-to-seed on billion, driven from a tailnet peer, 0 platform edits: (a) the re-grounded stack builds + comes up GREEN on the consolidated platform (3 subgraphs, skillpath-in-app); (b) the content-stories manager CTA lands on the /sim per-session manager result view (non-empty) for sim products; (c) Back-to-Cockpit works in all 4 apps + studio logo/back/logout resolve to the stack app (0 prod-ejects); (d) the AI-readiness page faithful per M250 gate, live, both vantages; (e) the studio sim-builders generate (builder Playthrough green); (f) studio first-paint < 1 s cold p95; (g) the ~2 docker/live-gated test-health tests green; (h) the live-browser specs + content-stories sweep + Playthroughs green; p95 click-to-ACCESS < 5 s hero vantages."
+exit_gate: "Cold reset-to-seed on billion, driven from a tailnet peer, 0 platform edits: (a) the re-grounded stack builds + comes up GREEN on the consolidated platform (3 subgraphs, skillpath-in-app); (b) the content-stories manager CTA lands on the /sim per-session manager result view (non-empty) for sim products; (c) Back-to-Cockpit works in all 4 apps + studio logo/back/logout resolve to the stack app (0 prod-ejects); (d) the AI-readiness page faithful per M250 gate, live, both vantages; (e) the studio sim-builders generate (builder Playthrough green); (f) studio first-paint < 1 s cold p95; (g) the 8 live/docker-gated demo-stack test-health tests green (count confirmed 8 at M251/M247 close, host-sensitive membership — NOT the earlier ~2 estimate); (h) the live-browser specs + content-stories sweep + Playthroughs green; p95 click-to-ACCESS < 5 s hero vantages."
 iteration_protocol_ref: corpus/ops/verification.md
 re_scope_trigger: "5 consecutive toks without a viable strategy -> user-strategic-replan"
 depends_on: [M247, M248, M249, M250, M251, M252, M253]
@@ -85,7 +85,7 @@ Cold reset-to-seed on `billion`, driven from a tailnet peer, **0 platform edits*
 - **(d)** the **AI-readiness page faithful** per M250's gate, **live, both vantages** — (← M250);
 - **(e)** the studio **sim-builders generate** (the **builder Playthrough green**) — (← M252);
 - **(f)** studio **first-paint < 1 s cold p95** — (← M253);
-- **(g)** the **~2 docker/live-gated test-health tests green** — (← M251);
+- **(g)** the **8 live/docker-gated demo-stack test-health tests green** (count confirmed 8 at M251 close, host-sensitive membership — `test_purge` + the `test_ant_academy` launcher/reap set + a host-isolation/clerk-wiring assertion; NOT the earlier ~2 estimate) — (← M251);
 - **(h)** the **live-browser specs + content-stories sweep + Playthroughs green**; **p95 click→ACCESS < 5 s** hero
   vantages — (M254 itself, the overall live re-prove).
 

@@ -326,7 +326,7 @@ directus-set-dress (net-new file) → evidence-distribution (behind both). The i
   `stack-verify/e2e/run-unit.sh` (clears the `UnitSpecsAreExecuted` guard, currently RED / runner exit 2).
 - Re-point the ~6 mechanical `test_cockpit` academy/overlay assertions + `test_public_host` port-13001 at the
   deliberately-changed M218/M238/M220 behaviour.
-**Out:** the ~2 docker/live-gated tests (`test_purge` + a live-serve assertion) — they ride the M254 closer (need a live box).
+**Out:** the **8** live/docker-gated demo-stack tests (count confirmed 8 at M251 close, host-sensitive membership — `test_purge` + the `test_ant_academy` launcher/reap set + a host-isolation/clerk-wiring assertion; not the earlier ~2 estimate) — they ride the M254 closer (need a live box).
 **Depends on:** M246.  **Parallel with:** M247/M248/M249/M250/M252.  **Complexity:** small.
 **Parallel lanes (intra):** ~1× — 2 disjoint lanes but tiny; **a single agent is the pragmatic default**.
 **KB deps:** `corpus/ops/verification.md`, `corpus/ops/demo/coverage-protocol.md`.
@@ -397,7 +397,7 @@ re-grounded stack builds + comes up GREEN on the consolidated platform (3 subgra
 content-stories **manager CTA lands on the `/sim` per-session manager result view** (non-empty) for the sim products;
 **(c)** "← Back to Cockpit" works in all 4 apps + the studio logo/back/logout resolve to the stack app (0 prod-ejects);
 **(d)** the AI-readiness page faithful per M250's gate, live, both vantages; **(e)** the studio **sim-builders generate**
-(the builder Playthrough green); **(f)** studio **first-paint < 1 s** cold p95; **(g)** the ~2 docker/live-gated
+(the builder Playthrough green); **(f)** studio **first-paint < 1 s** cold p95; **(g)** the 8 live/docker-gated
 test-health tests green; **(h)** the live-browser specs + content-stories sweep + Playthroughs green; **p95 click→ACCESS
 < 5 s** hero vantages.
 **Iteration protocol:** `corpus/ops/verification.md` + `corpus/ops/demo/tailscale-serve.md` + `coverage-protocol.md` + `playthroughs.md`.
