@@ -57,3 +57,32 @@ removal in-code at `cockpit.py:858-862`). Nothing new about the system surfaced.
 Stopped after pass 1: the six-dimension scan found nothing new worth adding (the touched code is test code
 whose robustness is proven by mutation-verify, 4/4 green), no coverage delta applies, and the flake gate is
 3/3 clean. Further passes would add ceremony, not signal.
+
+## M251: Final Review
+
+Close review of a small, already-hardened milestone. Every review phase confirmed a clean deliverable;
+no Fate-1 code fixes were owed. The rext code-of-record is frozen at tag `july-jitter-m251-test-health`
+@ `e9e29a1` (on origin) — no rext commits were made during close (correct: the milestone shipped clean).
+
+### Scope
+- [x] Both declared sections delivered as Fate 1 (run-unit roster 7→9; the 7 mechanical `test_cockpit`/`test_public_host` re-points). No silently-dropped scope; no TODO/FIXME/HACK in any touched file.
+- [x] Deferral re-audit (Phase 1b) GREEN — 6 single deferrals, all Fate 2 to already-planned M247/M254; 0 repeat, 0 aged-out, 0 blocking. Report: `audit-deferrals/deferral-audit-2026-07-23-m251-close.md`.
+
+### Code Quality
+- [x] [confirmed] Diff (3 files, +81/−52, all TEST code) is consistent, well-documented (each re-point narrates the change + `file:line`), no dead code, no cross-module reach. 0 must-fix.
+- [x] [confirmed] Lint clean: `shellcheck` run-unit.sh CLEAN · `bash -n` CLEAN · `py_compile` touched python CLEAN.
+
+### Documentation
+- [x] KB-fidelity GREEN (`kb-fidelity-audit.md`) — cockpit-spec.md:271-277 (overlay removal), tailscale-serve.md (hiring 13001), in-code academy removal all describe current truth; no new mechanism/unit → no handbook owed.
+- [x] Optional `corpus/ops/verification.md` demo-stack-suite anchor → deferred to M247 (owns the ops-doc reground; Fate 2). No corpus edit from this lane (M247 closing concurrently).
+- [x] [noted, routed] demo-stack README quotes "730 tests" vs actual collected **869** — a PRE-EXISTING, self-documented, machine-UNGUARDED drift (the README itself flags "this line drifted by 306"). NOT M251-caused (its re-points are count-neutral renames) and NOT in a file M251 touched → rext-hygiene housekeeping, not a re-tag of M251's frozen code-of-record. The guarded GUIDE count ("47 unit tests", `TestGuideDocTruth`) is accurate + passing.
+
+### Tests & Benchmarks
+- [x] Milestone-touched suites green: `test_cockpit`+`test_host_prereqs_m215` **207/207** · `test_e2e_collection_integrity` **8/8** (incl. `UnitSpecsAreExecuted`) · run-unit.sh **172/172** (9 specs, exit 0).
+- [x] Full demo-stack suite: **861 passed / 8 failed** (869 collected) — the 8 are the live/env/docker-gated carry → M254 (`test_purge` + `test_ant_academy*` launcher/reap ×6 + clerk-wiring); NONE in M251's touched files → 0 M251 regressions.
+- [x] Flake gate **5/5 clean** (all three touched suites, sequential): 207 / 8 / 172 every run.
+- [x] Benchmarks: N/A (no perf-sensitive code; M251 is test-file re-points).
+
+### Decision Triage
+- [x] D-1..D-4 → **archive** (maintainer-only rext-test implementation mechanics). The current behaviour each pins is already in knowledge (overlay removal cockpit-spec.md:271-277; hiring fronting tailscale-serve.md; academy removal in-code) — nothing to blend, per the KB-fidelity audit.
+- [x] Adversarial-review scenario (the vacuous removal-guard) recorded in `decisions.md § Adversarial review`; response = the 4/4 mutation-verify.

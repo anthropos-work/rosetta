@@ -74,3 +74,45 @@ The optional `corpus/ops/verification.md` demo-stack-python-suite + run-unit-ros
 (overview.md "Delivers →") is DEFERRED to M247, which owns the corpus reground and `verification.md` edits —
 authoring it here would collide with M247's concurrent lane on the same doc. Not a blind area (the code it
 would index exists + is exercised).
+
+## Adversarial review (M251 close, Phase 2c — 2026-07-23)
+**Scenario — the vacuous removal-guard.** A removal-guard (`assertNotIn('class="btn academy"', page)`,
+`assertNotIn("30000", js)`) can pass for the WRONG reason: if a later refactor renamed the token, moved the
+render behind a flag these tests don't set, or the assertion targets a string that is trivially absent
+regardless of the behaviour, the test stays GREEN while silently no longer guarding the removal it was
+re-pointed to protect. A re-added per-hero academy link (or a re-added 30s stale-window) would then slip in
+un-caught — the exact failure mode these re-points exist to prevent, inverted into a false sense of safety.
+**Response — mutation-verify (recorded in `progress.md § M251: Hardening`).** Each removal-guard was proven
+to be a *live* guard: the removed behaviour was temporarily re-introduced in the SOURCE (`cockpit.py`,
+`gen_tailscale_serve.py`), the re-pointed test re-run, and confirmed to go **RED**, then the source
+guaranteed-restored (git-clean asserted after). **4/4 guards fire:** overlay 30s window re-added → RED; the
+`removeItem` try/catch stripped → RED; the per-hero `class="btn academy"` render re-added → all 4 academy
+guards RED; the hiring `("hiring", 3001)` dropped from the generator → the port-13001 assertion RED. A guard
+that goes RED when its target behaviour returns is not vacuous — it is exactly the check it claims to be.
+The remaining live/env/docker-gated demo-stack failures are NOT M251's surface (→ M254, Fate 2) and were not
+introduced by these re-points (full-suite run confirms M251's touched files are 207/207 green; the 8
+failures live in `test_purge`/`test_ant_academy*`, untouched by M251).
+
+## Inherited-deferral re-audit (M251 close, Phase 1b — 2026-07-23)
+The milestone-scope deferral audit re-fated the four M246 drift-ledger rows that named M251 as a *possible*
+("/") destination. **None land in M251** — M251's design-confirmed In-list is the run-unit roster + the
+`test_cockpit`/`test_public_host` re-points only; each inherited row's authoritative destination is a
+DIFFERENT open milestone, and M251 was only ever a secondary "or rext-hygiene / or M254" option (never a
+sole commitment). All Fate 2, all confirmed-covered, no sibling-plan edit:
+- **DEF-M246-03 / D-03** (`test_injection.py` pins skillpath-as-injected + models already-merged skiller) →
+  **Fate 2, M247** — M246's own recommendation routes it through the durable `drift-ledger.md` handoff that
+  M247 formally consumes (`depends_on: [M246]`); it lives in `stack-injection/tests/` (a module M251 does
+  NOT own — coordination guardrail: M249 owns the demo-stack *patch* tests, M251 the *health/inventory*
+  tests, and injection is neither). Inert (no compose service matches → green now).
+- **DEF-M246-04 / D-04** (`exposure_claim_guard.py` `_cfg` lists skillpath:8095) → **Fate 2, M247** — mirrors
+  D-03 ("update both together"); same drift-ledger→M247 triage. Test-only fixture, inert.
+- **DEF-M246-08 / D-08** (fake-FAPI http-vs-TLS cheap-win probe artifact + end-to-end login not re-run) →
+  **Fate 2, M254** — gate part (h) owns the live-browser + login re-prove; the http-vs-TLS probe-fix is only
+  *verifiable* against a live fake-FAPI container (a live box M251, gated on a stackless local box,
+  structurally lacks), so it correctly rides the M254 live billion prove rather than landing blind here.
+- **DEF-M246-09 / D-09** (AI Academy peripheral, 2/6 env keys short, not serving) → **Fate 2, M254 /
+  standing** — benign peripheral (non-fatal by design); the academy surface is a M254 gate concern.
+
+**Aging check:** all four first-deferred 2026-07-23 (today), across 0 prior milestones; both authoritative
+destinations (M247 drift-triage, M254 gate) are OPEN. Not repeat, not aged-out, not chronic. Verdict GREEN.
+Full record: `audit-deferrals/deferral-audit-2026-07-23-m251-close.md`.

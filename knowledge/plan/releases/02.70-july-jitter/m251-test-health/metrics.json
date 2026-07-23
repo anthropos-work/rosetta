@@ -1,0 +1,37 @@
+{
+  "milestone": "M251",
+  "title": "test-health",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-23",
+  "realizes": "the reserved v2.6->v2.7 'test-health' carry (the standing demo-stack test debt)",
+  "platform_repo_edits": 0,
+  "tests": {
+    "run_unit_ts": "run-unit.sh 172/172 pass, exit 0 — roster 7 -> 9 specs (added content-denominator.unit.spec.ts + run-discrete.unit.spec.ts, previously COLLECTED-not-EXECUTED)",
+    "test_e2e_collection_integrity": "8/8 pass incl. UnitSpecsAreExecuted (the two-way disk<->roster fence, now GREEN)",
+    "demo_stack_touched": "test_cockpit.py + test_host_prereqs_m215.py 207/207 pass (0 failed) — the 6 cockpit academy/overlay re-points + the test_public_host port-13001 re-point",
+    "demo_stack_full_suite": "861 passed / 8 failed (869 collected) — the 8 are the live/env/docker-gated carry -> M254 (test_purge + test_ant_academy launcher/reap x6 + test_ant_academy_clerk_wiring overlay); NONE in M251's touched files (0 M251 regressions). Host-sensitive: test_host_isolation mutant passed this run, academy reap x6 (vs the x5 + host-isolation enumeration in decisions.md) — count holds at 8.",
+    "delta_vs_prior": "the 7 mechanical demo-stack failures M251 owned (6 cockpit/overlay + 1 public-host) flipped FAIL -> PASS; run-unit executed-spec roster 7 -> 9 (the 2 orphan specs were already collected, so total test count is count-neutral)",
+    "flake_gate": "GREEN — 5/5 sequential on all three touched suites (207 / 8 / 172 every run)",
+    "lint": "shellcheck run-unit.sh CLEAN; bash -n CLEAN; py_compile touched python CLEAN"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "mutation-testing (not line coverage) — every milestone-touched file is TEST code; the applicable robustness metric for a re-pointed removal-guard is whether it goes RED when the removed behaviour is re-introduced",
+    "surface": "the 4 removal-guard families: overlay-30s-window, overlay-localStorage-guard, per-hero-academy-render, hiring-13001-front",
+    "result": "4/4 guards fire (RED on re-add, git-clean restored after); documented in progress.md § M251: Hardening + decisions.md § Adversarial review",
+    "residual_uncovered": "none load-bearing — the re-points ARE the guards; the Section-1 roster is additionally fenced by the pre-existing UnitSpecsAreExecuted two-way disk<->roster check"
+  },
+  "code_of_record_tag": "july-jitter-m251-test-health @ e9e29a1 (peeled) — on origin (rung-zero verified: git ls-remote --tags origin shows refs/tags/july-jitter-m251-test-health -> e9e29a1). rext HEAD == tag, tree clean.",
+  "build_commits_rext": "cf53426 (S1 roster the 2 orphan unit specs -> run-unit 9/9) + e9e29a1 (S2 re-point 6 cockpit + 1 public-host stale assertions truthful)",
+  "harden_commits_rext": "none — the harden pass was mutation-verify (temporary source re-introduction, reverted git-clean); no committed rext change owed (the re-points ARE self-regression-testing removal-guards)",
+  "deferral_audit": "GREEN (0 repeats, 0 aged-out, 0 blockers) — 6 single deferrals: M251's own 2 (8 live-gated -> M254 gate g+h; optional verification.md anchor -> M247) + 4 inherited M246 rows that named M251 as a possible dest (D-03/D-04 -> M247 drift-ledger triage; D-08/D-09 -> M254), all Fate-2, all confirmed-covered, 0 sibling overview.md edits. Report: audit-deferrals/deferral-audit-2026-07-23-m251-close.md",
+  "close_fixes": [
+    "adversarial (Phase 2c): the vacuous-removal-guard scenario recorded in decisions.md — response = the 4/4 mutation-verify (a guard that goes RED when its target behaviour returns is not vacuous)",
+    "code-review (Phase 2): 3-file diff (+81/-52, all TEST code) confirmed consistent, well-documented, no dead code, no cross-module reach; 0 must-fix",
+    "docs (Phase 3): KB-fidelity GREEN; optional verification.md anchor -> M247; NOTED a pre-existing self-documented demo-stack README count drift (730 quoted vs 869 collected) -> rext-hygiene (not M251-caused, count-neutral re-points, not a re-tag)",
+    "decision-triage (Phase 5): D-1..D-4 archive (rext-test implementation mechanics; the behaviour each pins is already in knowledge)"
+  ],
+  "close_code_changes": "none in rext — all close records are docs in the rosetta repo (decisions.md adversarial + inherited-deferral re-audit, progress.md Final Review, the deferral-audit report, metrics/retro, roadmap/state). No rext commit and NO rext re-pin at close: the code-of-record stays july-jitter-m251-test-health @ e9e29a1.",
+  "notes": "The M251 test-health fan-out lane of v2.7 'july jitter' — realizes the reserved v2.6->v2.7 test-health carry. Discharged the STANDING demo-stack test debt without a live box: rostered the 2 orphan unit specs (clearing the RED UnitSpecsAreExecuted guard / runner exit 2) and re-pointed the 7 mechanical assertions (overlay 30s-window removal @ M218; per-hero academy link removal 2026-07-15; hiring 3001->13001 UI-tier fronting @ M226) at the DELIBERATELY-CHANGED behaviour as removal-guards (mutation-verified 4/4). The 8 live/env/docker-gated failures ride M254 (they need a live billion box). The CODE-of-record lives in the rosetta-extensions authoring copy (a SEPARATE gitignored git repo) at tag july-jitter-m251-test-health @ e9e29a1; this close merges ONLY the rosetta doc-half (plan artifacts) into release/02.70-july-jitter. Tooling + docs only, 0 platform-repo edits. Merge/close order: M251 closes FIRST in the release fan-out."
+}
