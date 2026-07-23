@@ -25,3 +25,28 @@ the tag pin, not by seeder branching. Commit `97585f5` (rext).
 **Empirical dependency.** Correctness of the target (`public.skill_path_sessions` existing) is proven
 by the cold `/demo-up` — the seeder COPY to public succeeds only if the consolidated migrations create
 it there. That is the go/no-go, not an assumption baked in here.
+
+## D-2 — Clone pins: durable canonical pin in rext + copy-if-absent seam (2026-07-23)
+**Decision.** The `DEMO_ADVANCE_CLONES=pinned` consume path was already wired (M237). Rather than
+author an ephemeral workspace-only pin, ship a DURABLE canonical `demo-stack/clones.pin.json` in rext
+(12 repos @ current origin/main HEAD shas; skillpath EXCLUDED — absent from current repos.yml) + a
+copy-if-absent seam in `ensure-clones.sh` that seeds it into the git-ignored `stack-demo/` workspace,
+never clobbering an operator's own pin. Commit `ee44b9a` (rext).
+**Rationale.** The barrier's payoff is a REPRODUCIBLE consolidated topology that M247-M254 all build
+against. An ephemeral pin evaporates on `/demo-down`+`/demo-up` (demos are disposable). A canonical
+pin consumed at the pinned rext tag makes the topology reproducible on a fresh box. A SHA pin lands
+`pinned-detached` → the freshness gate treats it as fresh → `DEMO_FRESHNESS_STRICT=1` passes for the
+HARD go/no-go.
+
+## D-3 — Section 3 scope expansion: de-skillpath the LIVE bring-up path (2026-07-23)
+**Decision.** The declared Lane-D scope was "fix the gen_injected_override.py:16 comment." The compose
+check (current origin/main `docker-compose.yml`) proved skillpath has **no service** — so
+`up-injected.sh` would (a) BUILD `demo-N-skillpath:injected` from the stale skillpath clone and (b)
+VERIFY a skillpath container that can't exist. Both BLOCK a green bring-up. So I expanded section 3 to
+drop skillpath from `up-injected.sh` `INJECT_SVCS` + `verify_svcs` (rext tooling — **zero
+platform-repo edits**). Commit `88bcdb8` (rext).
+**Why Fate-1, not scope-creep.** These are REQUIRED for the milestone's core deliverable (green
+bring-up on the consolidated platform); the barrier exists precisely to surface + fix such drift. The
+`INJECTED`-dict/`test_injection.py`/`exposure_claim_guard._cfg` skillpath residue is NOT required for
+green (inert without a skillpath compose service) → ledgered for M247 (the designed handoff), NOT a
+disguised deferral (it has a documented home).
