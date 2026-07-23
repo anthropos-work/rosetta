@@ -1,0 +1,42 @@
+{
+  "milestone": "M239",
+  "title": "enterprise surfaces",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-21",
+  "platform_repo_edits": 0,
+  "tests": {
+    "python_demo_stack_full": "794 passed / 9 failed post-fix (9 host-state fails: the documented 8 standing [cockpit x6, host_prereqs_m215 x1, purge x1] + 1 reap-17700 test-isolation collision from a live demo-1 cockpit on this box; 0 M239 regressions); the demo-stack suite is documented host-sensitive so pass/skip counts vary with ambient state; collection clean when scoped to demo-stack/tests/",
+    "python_m239_touched": "106/106 — test_bedrock_bridge_m239.py 12 (10 build + 2 close: trailing-newline concat-prevented + idempotent-on-newline-less-base) + test_frontend_build.py 94 (93 + 1 close: disk-preflight non-fatal when the VM probe exits nonzero, via a new VM_PROBE_RC stub seam)",
+    "go_touched": "stack-secrets/secretdna full package PASS (70 test funcs); M239 added bedrock_measure_test.go (measure-level: R3 gate-neutrality + minted-vs-operator-provided contrast) + secret_dna_json_test.go structure fences; go vet clean",
+    "ts_e2e_live_proof": "2 live-proof specs (talk-to-data-m239.spec.ts 11.7s + enterprise-surfaces-m239.spec.ts 7.5s) GREEN on demo-1 cold reset-to-seed 2026-07-21; require a live demo (not run in the close unit sweep)",
+    "mutation_verified": "the disk-probe close fix (|| true) — its regression test invoked as a BARE command under set -e goes RED without the fix on bash 3.2 (x=$(failing_fn) genuinely exits; an if(...) subshell would be an '-e is ignored' context and vacuous), GREEN with it. The M239 harden Pass-1 flag-gate strengthen + Pass-3 F1 VM-vs-host measurement also mutation-verified.",
+    "flake_gate": "GREEN — touched suites 5/5 sequential: Python touched 106 passed x5, Go secretdna PASS x5"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "qualitative / behavior-path + static-fence + measure-level (no line-coverage tool wired in this rext repo — same convention + stop as M237/M238)",
+    "surface": "every touched function has a behavior/measure test: bridge_bedrock_creds (present/idempotent/skip-in-base/values-blind/missing-app-env/partial/already-wired-log/genuinely-inert + the 2 close newline-guard tests); the disk pre-flight (VM-disk measured / VM-OK / host-/ fallback-empty / seam-wins / + the close non-fatal-on-nonzero-exit); the Bedrock cred class measure layer (missing-cred-caught-never-blocks-gate + demo-does-not-satisfy) + structure fences; the demo flag baked-in-both + folded-into-fingerprint",
+    "residual_uncovered": "the 2 live-proof e2e specs (require a live demo) -> executed live on demo-1 at close + carried to the M244 billion live sweep; the AR-3 credential-pair both-or-neither invariant NOT modeled (accepted, framework-wide scoring change)"
+  },
+  "code_of_record_tag": "sound-check-m239-enterprise-surfaces + -bridge-log-fix + -live-proof, all three re-pinned at close to the reviewed HEAD cf89365 (from the pre-close-fix 053db23; force-pushed to origin — milestone-internal consumption-tag advances, not released-version tags; the M237/M238 precedent)",
+  "build_commits_rext": "443a365 (talk-to-data FULL: flag enable + real Bedrock creds, demo-stack + stack-secrets) + a18fac3 (bridge log idempotent-truth fix) + bd7e8db (live-proof specs)",
+  "harden_commits_rext": "0a59673 (Pass 1 — strengthen the near-vacuous flag-gate assertion + answer-matcher honesty note) + 21444bb (Pass 2 — Bedrock DNA measure-layer tests, values-blind) + 053db23 (Pass 3 — F1 disk pre-flight measures the Docker VM disk, not host /)",
+  "close_commits_rext": "cf89365 (close review fixes — disk-probe errexit fallback + bridge trailing-newline guard + non-vacuous regression tests)",
+  "hardening": "3 passes (2026-07-21) — stabilized; 2 bugs fixed inline (flag-gate near-vacuity; F1 host-vs-VM-disk misattribution). See progress.md '## M239: Hardening'",
+  "deferral_audit": "YELLOW — DEF-M239-01 (2nd F1 candidate 'fail the BUILD loudly on ENOSPC') -> Fate-3 -> M244 (D12); the standing-8 re-surfaced identical (0 M239 regressions) -> confirm Fate-2 -> M244 (no new decision); the close-surfaced 9th reap failure -> Fate-3 -> M244 with root-cause + fix recipe (D13). 0 blockers, no sign-off.",
+  "close_fixes": [
+    "code (Phase 2/7, Fate-1): D10 — the VM-disk pre-flight aborted the whole bring-up when Docker is present-but-unreachable (no || true on the docker|awk pipeline under set -euo pipefail) -> || true + a non-vacuous regression test (VM_PROBE_RC seam, bare-command-under-set-e); rext cf89365",
+    "code (Phase 2c/7, Fate-1): D11 — bridge_bedrock_creds lacked a trailing-newline guard (a newline-less base env would concat + break idempotency) -> once-before-first-append leading-\\n guard, values-blind; +2 tests; rext cf89365",
+    "adversarial (Phase 2c): AR-1 (rotation/session-token not re-propagated) + AR-2 (busybox-can't-pull -> host-/ fallback) + AR-3 (credential-pair scored independently) recorded + accepted; the abort half of AR-2 WAS D10",
+    "scope (Phase 1/7): D12 DEF-M239-01 -> Fate-3 M244; D13 reap 9th-failure -> Fate-3 M244 (test-isolation, root-caused + fix recipe); standing-8 -> confirm Fate-2 M244",
+    "decision-triage (Phase 5): D2/D3/D4/F1 confirmed already-blended into secrets-spec.md + safety.md §2.10 + frontend-tier.md and accurate (the D10/D11 fixes make the documented non-fatal-fallback + values-blind-idempotent-bridge claims more robustly true); no re-blend needed"
+  ],
+  "delivered": {
+    "talk_to_data_full": "LIVE — real AWS Bedrock creds provisioned values-blind via /stack-secrets + the app Bedrock cred class (5 genes, 2 required-standard + 3 optional, R3 not-critical) + bridge_bedrock_creds app/.env->platform/.env; a manager asked 'how many members?' -> live Bedrock round-trip -> 'Cervato Systems has 51 members' (backend agentic loop tool_use->SQL->end_turn, ~7s)",
+    "library_4": "VERDICT no-defect — the :5050 carry is already resolved (offset endpoint baked at up-injected.sh:744/1023); no client-fetch race remains; live-verified GREEN on demo-1 (endpoint :15050)",
+    "menu_1": "CONFIRMED — the grouped Organization manager nav renders (M237-resolved); live presence-verify + coverage assertion calibrated against the live manager render",
+    "delivers_docs": "secrets-spec.md (the Bedrock cred class for app + the 61-gene map) + safety.md §2.10 (secrets-posture shift: a demo's app holds real Bedrock creds — blast radius + operator-scope caveat) + frontend-tier.md F1 correction (VM-disk vs host-/)"
+  },
+  "notes": "Second of the v2.6 post-barrier fix fan-out (enterprise surfaces). talk-to-data went FULL: a real Bedrock credential class provisioned values-blind, proven end-to-end live (manager Q&A -> live Bedrock). #4 library + #1 menu were no-defect verdicts, not manufactured fixes. Harden landed F1 (the disk pre-flight now measures the Docker VM disk, not host /). The close found + fixed 2 real defects in M239's own new code (a bring-up-aborting disk probe + an env-corrupting bridge append) with mutation-verified regression tests. Values-blind throughout, 0 platform-repo edits."
+}

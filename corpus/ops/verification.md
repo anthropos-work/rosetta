@@ -362,6 +362,19 @@ family is about artifacts that lie about the past; this is about artifacts that 
 produce results confidently attributed to the wrong code, which is precisely how the perf-patch rot went
 unnoticed for four releases.
 
+### The image must be compiled from the PINNED ref, not the highest fetched tag (v2.6 M244 iter-25)
+
+The rung above (and the M217 clone guard) prove the consumption *clone* is checked out at the pinned tag. A
+**third** copy of the code slips past both: the demo *image build*. `up-injected.sh` builds each service
+`:injected` image from a **build-scratch checkout** it materializes from the fetched refs — and M244 found it
+resolving the **highest fetched v-tag** (`v1.351.0`) instead of the source clone's **pinned checkout**
+(`v1.341.0`). The two schemas differed by one column (`ai_readiness_cycles.launched_by`): the binary `SELECT`ed
+a column the migrated schema never created, so the cycles endpoint 500'd and every ai-readiness surface rendered
+the **zero-state** — a failure that reads as a *seed gap*, not a *build skew*. The clone was at the right tag,
+the guard was green, and the image was still wrong. Fixed durably (build-scratch resolves the pinned ref + an
+M217-style preflight; rext `c755370`, +3 regression tests). The invariant: **clone-at-tag is necessary but not
+sufficient — the image the container runs must be compiled from that same ref.** (#M244 iter-25)
+
 ### Drive every remote bring-up through a LOGIN shell (v2.5 M236 iter-03)
 
 **`ssh host '<cmd>'` is not the same shell your operator gets.** A non-interactive `ssh host 'cmd'` sources

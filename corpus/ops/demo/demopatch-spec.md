@@ -49,55 +49,59 @@ unnamed until this spec.
 | **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target is a no-op, exit 0. **"Already patched" is G2's COHERENCE probe** — *the whole replacement present **and** the anchor gone* — **not a post-sha match.** <br>⚠️ *This row used to read "post-sha **and** marker", i.e. exactly the whole-file-sha check that §6 spends a section explaining ROTS. It contradicted G2 in the same table. Corrected at the M219 close; the two rows now describe one mechanism.* |
-| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung that invokes it covers 3 of the 14 manifests. See §2.1.** |
+| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 15 today; was a hardcoded 3). See §2.1.** |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
 | **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
 > **No write path bypasses G1 + G2.** `apply` runs both before it writes anything.
 
-### 2.1 The G5 recovery rung covers 3 of 14 manifests (`F-M236-CLOSE-2`, v2.5)
+### 2.1 The R1 recovery rung sweeps every manifest on disk (`F-M236-CLOSE-2`, closed v2.6 M237)
 
 **Read this before adding a patch.** G5 above describes what `revert` *can* do. The rung that actually runs it
-unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — iterates a **hardcoded
-three-entry list**, not the manifest directory:
+unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — is now **directory-driven**: it
+iterates **every** `patches/<name>/<name>.yaml` (all 15 today), not a hand-maintained list:
 
 ```sh
-PATCH_MANIFESTS=(
-  "$HERE/patches/next-web-studio-url/next-web-studio-url.yaml"
-  "$HERE/patches/next-web-members-pagination/next-web-members-pagination.yaml"
-  "$HERE/patches/app-targetrole-authz-skip/app-targetrole-authz-skip.yaml"
-)
+for _mf in "$HERE"/patches/*/*.yaml; do
+  [ -f "$_mf" ] || continue
+  "$DEMOPATCH" revert "$DEMO" --manifest "$_mf" --force-pristine …
+done
+log "demopatch R1: swept $_r1_swept manifest(s) from $HERE/patches/ (directory-driven — F-M236-CLOSE-2)"
 ```
 
-There are **14 manifests under `demo-stack/patches/`**. R1 covers **3** — about 20%. The list has not grown as
-patches were added; the other **11** have no unattended recovery at all.
+**What this fixed.** Through v2.5, R1 iterated a **hardcoded three-entry array** (`next-web-studio-url`,
+`next-web-members-pagination`, `app-targetrole-authz-skip`) — about 20% of the 14 manifests under
+`demo-stack/patches/`. The list never grew as patches were added, so the other **11** had **no unattended
+recovery at all**.
 
-**What R1 exists to catch, and therefore what the other 11 do not get.** A patch is applied just before an
-image build and reverted by the build's `RETURN` trap. If a run dies **after apply but before the trap**
-(`Ctrl-C`, an OOM, a failed build that exits hard), the clone is left **carrying the patch**. R1 is the
-next-bring-up sweep that restores pristine. Without it, the leftover simply persists — and because G2's anchor
-gate then finds the anchor **gone**, the next apply is *correctly* refused, which is why this surfaces as a
-**silently skipped patch** rather than a loud failure.
+**What R1 exists to catch.** A patch is applied just before an image build and reverted by the build's `RETURN`
+trap. If a run dies **after apply but before the trap** (`Ctrl-C`, an OOM, a failed build that exits hard), the
+clone is left **carrying the patch**. R1 is the next-bring-up sweep that restores pristine. Without it, the
+leftover persists — and because G2's anchor gate then finds the anchor **gone**, the next apply is *correctly*
+refused, so it surfaces as a **silently skipped patch** rather than a loud failure. `revert --force-pristine`
+only restores-to-pristine (a no-op on a clean path; it **never applies**), so sweeping every manifest is safe by
+construction; a manifest `demopatch` legitimately refuses (e.g. an `app` patch whose real vehicle is a
+`stack-injection` shell helper on the build-scratch clone — §4) logs a **non-fatal skip**.
 
 > 🔴 **This is not hypothetical, and it is the failure mode that costs the most to diagnose.** Measured
 > 2026-07-20: both boxes were carrying leftover patches, in **disjoint** sets — **5** in the local
 > `next-web-app` clone, **2** in `billion`'s `ant-academy` clone. Two boxes, two different sets, neither
 > detected by anything. A silently-refused perf patch on exactly this path shipped a **76 s members grid for
 > four releases** (§6). *A patch that is refused because a previous crash left it applied looks identical to a
-> patch that was never wired.*
+> patch that was never wired.* Since M237, a stranded patch **outside** the old three is swept too. Proven live
+> on `billion` (2026-07-21): `demopatch R1: swept 14 manifest(s) … directory-driven`.
 
-**Consequences for an author adding a patch:**
+**Consequences for an author adding a patch (v2.6+):**
 
-1. **Add your manifest to `PATCH_MANIFESTS` in `ensure-clones.sh`.** Nothing does this for you, and no test
-   fences the list against the directory — the omission is invisible until a crash strands your patch.
-2. **`--force-pristine` is only a "working safety net" where it is invoked.** Where the rung does not reach,
-   recovery is a manual `demopatch revert … --force-pristine` (or a `git checkout -- <path>` in the demo clone).
+1. **Nothing to wire.** A new `patches/<name>/<name>.yaml` is swept by R1 automatically — the directory *is* the
+   list. (`TestR1SweepM237` fences the R1 glob against the real `patches/` count so a naming break is caught;
+   **`TestPatchInventory` (v2.6 M238) additionally pins the EXACT inventory total + per-repo breakdown against §5**
+   so an add/remove/mis-file drift goes RED until the doc and the fence's constants move together.)
+2. **`--force-pristine` is invoked for every manifest.** Recovery is unattended for all patches; the manual
+   `demopatch revert … --force-pristine` (or `git checkout -- <path>` in the demo clone) remains available.
 3. **When a patch appears not to have applied, check for a stranded prior apply first** — `demopatch status
    <workspace> --manifest <m.yaml>` reports `pristine | patched | drifted | absent`. `patched` before the build
-   means R1 never reached it.
-
-The structural fix — driving R1 from the manifest directory rather than a hand-maintained array — is
-`F-M236-CLOSE-2` and is **not** in v2.5.
+   means it was stranded (R1 should now have swept it — check the `swept N manifest(s)` line).
 
 ---
 
@@ -137,9 +141,9 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the **eight** `next-web-app` patches (6 × `apps/web` + 2 × `apps/hiring`) | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **ten** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
-| **`stack-injection/apply-ant-academy-dev-origins.sh`** | `ant-academy-dev-origins` | ant-academy runs **natively** (`next dev`), not baked into an image → the patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop |
+| **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **four** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`, `academy-fs-published-chapter-body`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
 
 **Exit codes differ by vehicle.** `demopatch` uses `1` (guard refuse) and `2` (manifest/OS error). The shell helpers
 use a richer space: `0` applied-or-already-patched · `1` manifest/target missing · `2` **pre-sha drift** · `3` anchor
@@ -190,7 +194,26 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**11 patches: 8 × `next-web-app` (6 × `apps/web` + 2 × `apps/hiring`) · 2 × `app` · 1 × `ant-academy`.**
+**16 patches: 10 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 2 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 4 × `ant-academy`.**
+
+> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`).** This table had drifted from the
+> `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
+> 1. **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
+>    from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
+>    `apply-academy-fs-*.sh` shell helper (apply-before-launch / revert-on-`--stop`), re-implementing the guard
+>    ladder against the same canonical manifest (see §4 "Three apply vehicles"). This is why they were historically
+>    absent from this inventory (which grew around the image-baked `demopatch` tool) — added the
+>    **`academy-fs-published-*`** rows: `-fallback` (the catalog, M230), `-chapter-body` (the body, M238), and
+>    `-public` (the anon /library + /free + home view, M244), one
+>    FS-as-published behavior gated on `ACADEMY_DEMO_FS_PUBLISHED` (+ `DEMO_NO_ACADEMY_FILL` opt-out); see
+>    [`frontend-tier.md`](frontend-tier.md) and [`../../services/ant-academy.md`](../../services/ant-academy.md).
+> 2. **The 2 M232 `next-web-interview-flag-*` patches** (`packages/ui`, the interview-report flag gate — the M219
+>    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
+>    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
+>    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**16**) AND
+>    the per-repo breakdown (`10 next-web-app · 2 app · 4 ant-academy`) against this §5 table — so adding, removing,
+>    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
@@ -205,9 +228,12 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
 > rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
 > patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
-> hiring. *(The distinct-manifest total is unchanged at **11**: the chained `urls.ts` pair is shared — counted once
-> under the 6 × `apps/web` — and merely applied on **both** frontend builds. The prior count line read "8 patches /
-> 5 × next-web-app" — it undercounted by the `next-web-no-thirdparty` row; corrected here.)*
+> hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
+> M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
+> counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
+> directory-fenced total is 16**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
+> M224 corrected it to 11 with the `next-web-no-thirdparty` row, and M238 reconciled the whole table to the 15 on
+> disk.)*
 
 | id | target | what it does |
 |----|--------|--------------|
@@ -220,8 +246,13 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `app-aireadiness-snapshot-loadmembers` | `app` · `internal/workforce/ai_readiness.go` | bounds the frozen-read member hydration to the ~199 snapshot users instead of the whole org → the **180 s** AI-readiness read completes. **Data-identical** |
 | `next-web-no-thirdparty` | `next-web-app` · `apps/web/src/app/layout.tsx` | **(M220 S6/g) stops the demo phoning home.** The root layout hardcodes **four** third-party scripts with **no env seam of any kind** — `plausible.io`, `analytics.bellasio.com`, `uptime.betterstack.com`, and `<GoogleTagManager gtmId='GTM-PXRTBZK'/>` (which itself loads **Google Analytics, DoubleClick, Google Ads and LinkedIn Ads**). They fire on **every page load**, so a presenter demoing to a customer silently ships that customer's page views to **seven** third parties, from a demo the corpus calls self-contained. The patch wraps all four in one build-time env gate (`NEXT_PUBLIC_DISABLE_THIRD_PARTY_SCRIPTS`, baked to `1`); every tag is preserved byte-for-byte inside it, so the behaviour is **identical when the var is unset**. Targets its **own** file — no chain. *The plan named only the 4 GTM ad networks; reading the file found 3 more vendors on top — the D17 signature again.* |
 | `next-hiring-role-remap` | `next-web-app` · `apps/hiring/src/context/UserStatusContext.tsx` | **(M224 tik C) the recruiter reaches the hiring enterprise Results routes.** `apps/hiring` stores the Clerk org-role RAW (`role: userRole` = `org:admin`) where `apps/web` **remaps** it (`remapUserRole('org:admin') → 'admin'`). So an admin recruiter reads as **non-admin** in the hiring app, `EnterpriseWrapper` bounces her to the candidate Home, and **0 insights rows** render. The patch adds the same remap (nested, string-literal casts — `apps/hiring` imports `MembershipRoles` **type-only**). **NOT Clerkenstein** (`org:admin` is faithful to real Clerk RBAC), **NOT the seeder** (Rae is already `role='admin'`). Targets its **own** file — no chain |
+| `next-web-interview-flag-container` | `next-web-app` · `packages/ui/src/AISimulation/AISimulationResultContainer.tsx` | **(M232)** turns the INTERVIEW report **FETCH** on for a demo — a demo bakes no PostHog, so `posthog.isFeatureEnabled('flag_interview_*_report')` is falsy forever and the two report GraphQL fetches never fire. The M219 aireadiness-flag twin, for content-stories interview sessions. Applied on both frontend builds |
+| `next-web-interview-flag-result` | `next-web-app` · `packages/ui/src/AISimulation/AISimulationResult/AISimulationResult.tsx` | **(M232)** turns the INTERVIEW report **RENDER** on — the render gate is a SEPARATE component that independently recomputes the same flag booleans (chained with the FETCH patch above). Same PostHog-unconfigured root cause |
 | `next-hiring-members-pagination` | `next-web-app` · `apps/hiring/src/context/InsightsContext.tsx` | **(M224 tik D) the Results dashboard stops hanging on the loading spinner.** The exact **mirror of `next-web-members-pagination`**: `apps/hiring`'s InsightsContext fetches `useGetOrganizationMembers({ limit: 1000 })` — an unbounded whole-org fetch the activity-dashboard layout **blocks** on (`if (loading) return <BaseLoading/>`), and its `GET_MEMBERS` query resolves `targetRole` **per row** — so the per-sim scoreboards never mount. Caps the fetch `1000 → 30`. The **per-member Sentinel authz half of the wall needed NO new patch**: the hiring app hits the **same shared `app` backend** that already bakes `app-targetrole-authz-skip`, so `targetRole`'s per-object RPC is already dropped for this path too. Targets its **own** file — no chain |
 | `ant-academy-dev-origins` | `ant-academy` · `code/next.config.js` | admits a `--public-host` demo's MagicDNS origin to `next dev` |
+| `academy-fs-published-fallback` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M230, native-run)** the empty demo home GRID renders REAL cards via an FS-as-published catalog fallback (no "Draft" chip), gated on `ACADEMY_DEMO_FS_PUBLISHED`. Applied by `apply-academy-fs-published.sh` |
+| `academy-fs-published-public` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M244, native-run)** the ANONYMOUS-view half — /library, /free/*, and the cross-port academy home (:3077) render REAL cards via the same FS-as-published fallback on `getPublicCatalogView` (`getBackendCatalogView(new Set())` — the public/empty eid set, so no tenant content leaks onto an anon route). **CHAINED** on `serverTenant.js` (its `pre_sha256` **is** `-fallback`'s `post_sha256`): applied AFTER `-fallback`, reverted BEFORE it. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-public.sh` |
+| `academy-fs-published-chapter-body` | `ant-academy` · `code/src/lib/serverChapterBody.js` | **(M238, native-run)** the BODY half — clicking "Start the course" renders the FS chapter body (locale-aware, unlocked, un-chipped) instead of the "You wandered off the trail" 404. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-body.sh` |
 
 ---
 
@@ -355,8 +386,11 @@ file **byte-for-byte**. Only then does it write the pin.
 5. Pick the vehicle (§4) by where the target lives: inside the demo workspace → `demopatch`; the build-scratch clone
    → a `stack-injection/apply-*.sh` helper; a natively-run app → the apply/revert helper form.
 6. **Add a live-clone pin test.** The absence of one for the two `app` patches is precisely what let the drift ship.
-7. **Register the manifest in R1's `PATCH_MANIFESTS` array** (`demo-stack/ensure-clones.sh`) — see **§2.1**.
-   Nothing does this for you and no test fences the array against the `patches/` directory, so an unregistered
-   patch has **no unattended recovery**: a run that dies between apply and the `RETURN` trap strands it applied,
-   and every later build then *correctly* refuses to re-apply it (G2 finds the anchor gone). It presents as a
-   patch that silently stopped working. **3 of 14 manifests are registered today** — assume yours is not.
+7. **Nothing to register — R1 is directory-driven** (`demo-stack/ensure-clones.sh`) — see **§2.1**. Since v2.6
+   M237 the old hand-maintained `PATCH_MANIFESTS` array is **gone**: R1 iterates `patches/*/*.yaml`, so a new
+   `patches/<name>/<name>.yaml` gets unattended recovery **automatically** (the directory *is* the list) — the
+   pre-M237 hazard (a run dying between apply and the `RETURN` trap strands the patch applied; every later build
+   then *correctly* refuses to re-apply it because G2 finds the anchor gone; it presents as a patch that silently
+   stopped working) no longer needs a manual registration step to avoid. Two tests fence it: `TestR1SweepM237`
+   pins the R1 glob against the real `patches/` count, and `TestPatchInventory` (v2.6 M238) pins the EXACT
+   inventory total + per-repo breakdown against §5.

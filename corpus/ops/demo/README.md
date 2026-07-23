@@ -202,9 +202,9 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   (the real `--reset`, additive-re-seed FORBIDDEN), the serial-default runner, and the 4-state reporting map
   (`passing`/`failing`/`unimplemented`/`unimplementable-without-platform-edit`). Also **the iteration protocol
   the coverage milestones followed** (M203 employee-vantage + M204 manager-vantage, both landed at v2.0 with 10
-  live Playthroughs; M219 added the 4 AI-readiness ones and M225 the recruiter compare — the corpus now stands
-  at **15 live Playthroughs, 1 TODO**, the count `playthroughs.md` owns). Section `rext playthroughs/`.
-  (v2.0 M202–M204 · v2.3 M219 · v2.4 M225)
+  live Playthroughs; M219 added the 4 AI-readiness ones, M225 the recruiter compare, and M243 the assign-WRITE
+  half — the corpus now stands at **16 live Playthroughs, 0 TODO**, the count `playthroughs.md` owns). Section
+  `rext playthroughs/`. (v2.0 M202–M204 · v2.3 M219 · v2.4 M225 · v2.6 M243)
 - [`content-stories-routes.md`](content-stories-routes.md) — the **content-stories feasibility spike + result-route
   map** (v2.5 "the playbill" M231, HARD go/no-go — the barrier before the Thread-B build chain). For each content
   product × {player, manager} it enumerates the exact result route and **classifies it by prove-by-render**
@@ -231,6 +231,16 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
   aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8
   records. (M232)
+- [`media-substrate-spec.md`](media-substrate-spec.md) — the **media half of Content stories** (v2.6 "sound check"
+  M240): the two media facets that make a played session *playable*. The recorded call is a real candidate's
+  **interview VIDEO** exhibited **by REFERENCE** (`sessions.chime_status='completed'` + a `ChimeRecording.bunny_video_id`
+  the demo's next-web-app **server** signs against the **Bunny.net CDN** with `BUNNY_RECORDING_CDN_TOKEN_KEY` +
+  `BUNNY_RECORDING_PULL_ZONE_HOST` and streams — **no media byte ever moves**, and only hiring-voice cells can source
+  the recorded pool). The document body is inline **`input_data.text_document`** (Defect 3 — NOT an S3 blob, fully
+  landed). Gender-coherence (values-blind label) + the values-blind Bunny-key provisioning (the M239 Bedrock pattern).
+  **Current status: Bunny-key-blocked** — the recording signing keys are absent from the authoring dev-stack, so a
+  demo ships faithful `not_available` (no broken player); the posture (safety §3.8.1, the 2026-07-21 VIDEO sign-off)
+  lands ahead of the capability. (M240)
 - [`content-stories-spec.md`](content-stories-spec.md) — the **content_products manifest + honesty gate** (v2.5
   "the playbill" M233 — the manifest half of the content-stories feature). `stackseed --content-export` PROJECTS a
   **`content-manifest.json`** (the content analog of `cockpit-manifest.json`) the 2nd "Content stories" cockpit tab

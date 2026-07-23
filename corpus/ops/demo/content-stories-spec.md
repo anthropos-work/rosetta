@@ -9,6 +9,14 @@ into the 2nd "Content stories" tab + the `content-player-<idx>` seat registratio
 CTAs log in (§7). The manifest is a projection from the same fixture the seeder seeds from, honesty-gated so
 it can never drift, and fail-closed so it never fabricates a link.
 
+> **v2.6 "sound check" M241 — the EN/IT language axis.** Each session now carries the REAL language it was
+> played in (`language` ∈ english|italian), and the cockpit gains an **EN/IT toggle** that swaps which
+> language's session each requirement cell logs-in-and-lands on. The pre-M241 seeder hard-coded every clone to
+> `english` even though 11 of the 13 pinned sessions were actually Italian; §2's `language` field fixes that
+> (each session is consumed in its intended language). The `language`/`lang_toggle` schema is §2, the
+> fail-closed language honesty gate is §4, the cockpit toggle is §7.6, and the per-tuple coverage (which cells
+> got both languages) is set by a read-only prod pool query — see `session-clone-spec.md` §2.1.
+
 > **Headline — the content menu is a PROJECTION, not hand-authored, and it can't drift.** The cockpit's
 > "Content stories" tab reads a `content-manifest.json` that `stackseed --content-export` PROJECTS from the
 > exact content-session fixture the `ContentStorySeeder` seeds from + the blueprint that re-tenants it. So the
@@ -73,6 +81,8 @@ blocks the cockpit.
           "source_session_id": "…",  // the prod pin, folded into the render projection (auditable)
           "sim_id": "…", "sim_type": "SIMULATION_TYPE_ASSESSMENT",
           "modality": "voice", "passed": true,
+          "language": "italian",                 // M241: the REAL language the session was played in (english|italian)
+          "lang_toggle": true,                   // M241: true IFF this cell's tuple has BOTH languages (omitempty; solo→absent)
           "icon_key": "clipboard-check",         // per-sim_type row icon
           "player_seat": "content-player-23",    // the owner-member seat key (M234 registers it)
           "player_result_path": "/sim/<slug>/result/<sessionId>",
@@ -122,6 +132,30 @@ stay simulation-shaped and untouched. An empty product section is never fabricat
 
 Per-**sim_type** row icons: ASSESSMENT `clipboard-check` · TRAINING `dumbbell` · HIRING `user-tie` ·
 INTERVIEW `comments`.
+
+### The language axis (M241 — v2.6 "sound check")
+
+Every SIMULATION row carries two language fields (the non-simulation exhibits carry neither — they are not
+real played sessions):
+
+- **`language`** ∈ `english | italian` — the REAL language the source session was played in (the source's
+  `jobsimulation.sessions.language`, copied onto the pin and written to the clone's session row so the demo
+  renders the story in its intended language). The fixture `Validate` requires a valid language on every pin
+  (a missing/unknown one fails loud at load — the seeder never falls back to a wrong label). Before M241 the
+  seeder hard-coded every clone to `english`, mislabeling the 11-of-13 Italian pins.
+- **`lang_toggle`** (`omitempty`; a missing value = solo/not-toggle-able) — **true IFF the row's requirement
+  tuple `(sim_type × modality × pass/fail)` has BOTH an english AND an italian variant in the fixture**, so the
+  cockpit's EN/IT switch can actually swap this cell between languages. It is **DERIVED** (`bilingualTuples`
+  over the fixture), never hand-authored, so it cannot lie about coverage. A **single-language** cell projects
+  `lang_toggle=false`: its row always renders and the toggle is not offered for it (the user-decision
+  "toggle hidden/disabled for that tuple" fallback). The one single-language product in the shipped fixture is
+  **INTERVIEW** — both interview cells are Italian-only (no believable English interview session exists; the
+  pool query found EN interview passes all out-of-band and EN interview fails = 0 — release risk R2).
+
+**Coverage (shipped fixture):** 23 simulation sessions = the 13 base pins (11 italian + 2 english, now
+correctly labeled) + 10 EN/IT counterparts, so 11 of the 12 requirement tuples carry both languages; only
+INTERVIEW stays Italian-only. The landable-pair denominator moved **29 → 49** accordingly
+(`stack-verify/e2e/content-denominator.json`).
 
 ## 3. The seat + route model (single-sourced with the seeder)
 
@@ -200,9 +234,23 @@ org (`firstNonHiringStory`), so they render in apps/web regardless of the source
   `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` closes it by reading **this checked-in
   canonical manifest** and asserting the grader understands every route in it — per-product expected shape,
   no unexplained fall-through, interview vs simulation manager surfaces kept distinct, manager paths still
-  uuid-terminated — and that the projection still yields the **29 landable pairs** M236 was graded on.
-  Mutation-verified: a one-character prefix change turns it red. **If you change a route in
+  uuid-terminated — and that the projection still yields the pinned landable-pair count (read from
+  `content-denominator.json` — **49** since M241's EN/IT counterparts grew the fixture 13 → 23; it was 29 at
+  M236). Mutation-verified: a one-character prefix change turns it red. **If you change a route in
   `contentProductRegistry`, expect that spec to fail — updating it is part of the change, not collateral.**
+
+- **The LANGUAGE axis is fail-closed on BOTH sides (M241).** `ValidateLanguageConsistency`
+  (`content_manifest.go`, wired into `WriteContentManifest`) refuses to export a manifest whose `lang_toggle`
+  disagrees with its own coverage: a **solo cell marked toggle-able** (the cockpit would offer a switch that
+  swaps to nothing) or a **bilingual cell marked solo** (a language silently un-reachable) or an **invalid
+  language** all FAIL `--content-export`. A `HasTeeth` test mutates each case and asserts the gate bites. The
+  TS side mirrors it over the checked-in canonical (`stack-verify/e2e/tests/content-language.unit.spec.ts`):
+  valid language label per row, the toggle-able set spans both languages, the same `lang_toggle ⟺ coverage`
+  invariant, and the interview cells are Italian-only solo — so a language drift that slips one language is
+  caught by the other (the `content-route-contract` cross-language-contract pattern, applied to the language
+  axis). The live sweep (`content-stories.spec.ts`) additionally guards that **both** an English and an Italian
+  result page are exercised. All assert STRUCTURE / PRESENCE / the language **LABEL** — never a translated
+  content **value** (P2 copy-immunity: the test locale is pinned; copy/AI output is forbidden in assertions).
 
 ## 5. Provenance — the source-pins stay in the seed-generation manifest
 
@@ -258,17 +306,44 @@ discipline) with two panels: **Org stories** (the heroes menu, default-on) and *
 byte-identical to a pre-M234 single-panel cockpit, so an old bring-up is unchanged. The content menu is also
 served at **`GET /content-manifest.json`**.
 
-### 7.2 The per-session row + the two-action contract
-Each product is a section (product FontAwesome icon + name); each played session is a row: a **per-`sim_type`
-FontAwesome icon** (`clipboard-check`/`dumbbell`/`user-tie`/`comments`) + a descriptor (modality pill +
-passed/not-passed pill) + **up to two login-and-land CTAs**:
+### 7.2 The tuple-regrouped row + the two-action contract (M234 contract, M242 layout)
+Each product is a section (product FontAwesome icon + name). **The rows are REGROUPED by requirement tuple
+(v2.6 "sound check" M242):** a product's played sessions group by **`(sim_type, modality)`** — a
+non-simulation product (skill-path / academy / ai-labs, empty `sim_type` AND `modality`) falls back to
+grouping by **`label`** — and each group renders as **ONE row**:
+
+> **`target label` (+ modality pill)  |  passed login options  |  not-passed login options`**
+
+a **per-`sim_type` FontAwesome icon** (`clipboard-check`/`dumbbell`/`user-tie`/`comments`) + the target label
+(the sim_type human label, or the believable `label` for a non-sim) + the modality as a title pill, then **two
+side-by-side columns** — the `passed:true` session's login options in one, the `passed:false` session's in the
+other — so a presenter reads the passing run and the failing run of a requirement *next to each other* instead
+of hunting two rows apart. An empty column reads an explicit **"No passing / No failing run"** (a distinct
+marker, never a blank cell misread as broken). A **presence-only** group (ai-labs — no result surface, hence no
+pass/fail verdict) renders a single inline cells slot, no columns.
+
+Each column holds one **login-options cell** per session of that verdict — the **two-action contract**, and the
+atomic unit the M241 EN/IT toggle filters (an EN/IT tuple contributes one cell per language into the same
+column; the toggle shows one, hides the other). **The pass/fail moved from a per-session pill to the column
+header; the modality from the desc to the tuple title.** The two actions per cell (unchanged from M234):
 
 - **As-player** — a fake-FAPI handshake `…/handshake?__clerk_identity=<player_seat>&redirect_url=<base><player_result_path>`,
   rendered iff the session carries a `player_result_path`. `<player_seat>` is the `content-player-<idx>` seat
   M234 registered (§7.4), so the presenter logs in as the exact seeded member who owns the session.
 - **As-manager** — the same handshake with the manager hero seat landing on the activity-dashboard result
-  surface, **omitted where `has_manager_view=false`** (the `.actions`/two-button layout with omitempty). The
+  surface, **omitted where `has_manager_view=false`** (the `.sactions`/two-button layout with omitempty). The
   manager CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
+
+> **Render helpers (M242).** `render_content_tab` groups by `_content_tuple_key` → `_content_tuple_row`
+> (icon + title + columns) → `_content_login_cell` (the per-session cell: language pill + the two CTAs,
+> carrying `data-lang`/`lhide` for the toggle). The regroup is **render-layer only — no manifest schema
+> change** (every session still carries `sim_type`/`modality`/`passed`/`language` as before).
+>
+> The "No passing / No failing run" empty marker is rendered server-side for a column that is cell-less at
+> render time; because the EN/IT toggle hides cells at *view* time, `_LANG_JS.syncEmpty()` also re-derives the
+> marker per column on every toggle (and on load), so an **unbalanced bilingual tuple** (a verdict present in
+> only one language) never shows a verdict header over a blank body — the D3 "never a blank misread as broken"
+> invariant holds under the toggle too (#M242-D8).
 
 ### 7.3 Per-product app-base routing + the two special sections
 The per-product `app_base` resolves the CTA origin, generalizing the M224 `is_hiring`/`hiring_base` switch
@@ -311,7 +386,33 @@ The DEMO_STORIES cockpit block exports `content-manifest.json` via `stackseed --
 (the M18/M19 pattern). No new `/demo-up` flag or `DEMO_*` knob — the content tab is on whenever the storytelling
 demo + cockpit are (the existing `DEMO_STORIES` / `DEMO_NO_COCKPIT` gates).
 
-### 7.6 What's proven at M234 (unit) vs left to M236 (runtime)
+### 7.6 The EN/IT language toggle (M241 — v2.6 "sound check")
+When the content manifest carries **≥ 2 toggle-able languages**, `render_content_tab` prepends an **EN | IT
+segmented switch** (`_content_lang_toggle`) above the product sections, and emits `_LANG_JS` — a **raw-string,
+injection-free** client filter, exactly the `_TAB_JS`/`_OVERLAY_JS` discipline (no manifest data interpolated).
+The mechanics:
+
+- **Per-row surfaces.** Every simulation row shows a **language pill** (`English` / `Italiano`; a solo row is
+  tagged `<lang> only`). A **toggle-able** row (`lang_toggle=true`) additionally carries a `data-lang` attribute
+  the filter keys on; a **solo** row (the Italian-only interview) carries **no** `data-lang`, so it always
+  renders — the toggle skips it (the fallback: a single-language cell is not language-filtered).
+- **The swap.** Clicking a language button shows `.session[data-lang=<lang>]` and hides the others (`lhide`) —
+  so each bilingual cell's as-player / as-manager CTA re-targets that language's session. The tab opens on the
+  **default (English)**: italian toggle-able rows start hidden server-side (`lhide`), so there's no flash before
+  `_LANG_JS` runs. English is always present among toggle-able rows (a bilingual tuple has both), so the default
+  always has rows.
+- **Byte-clean when absent.** A manifest with **no** language axis (a pre-M241 bring-up, or a single-language
+  fixture) renders **neither** the toggle **nor** `_LANG_JS` — the tab is unchanged. The cockpit stays
+  stdlib-only (no new dep).
+- **Proven (unit).** `demo-stack/tests/test_cockpit.py::TestContentLanguageToggle` render-proves the toggle
+  structure + the default + the language labels + the solo-row-always-visible rule (STRUCTURE / LABEL only,
+  never a translated value). The live click-swap is pure DOM (`_LANG_JS`); the live sweep proves both languages'
+  result pages render (§4). *(M242 **delivered** the row-REGROUP by tuple (§7.2): the EN/IT variants of a
+  `(sim_type, modality, pass/fail)` cell now share ONE column of ONE tuple row, the toggle filtering between
+  them — `TestContentTabTupleRegroup::test_regroup_coexists_with_language_toggle_variants_in_one_column` pins
+  the coexistence. M241 delivered the language axis + the global toggle the regroup consumes.)*
+
+### 7.7 What's proven at M234 (unit) vs left to M236 (runtime)
 M234 is **unit-proven, not browser-proven**: `cockpit.py` renders the manifest to correct HTML (per-product
 sections, per-session rows, the two CTA hrefs with the right `__clerk_identity`/`redirect_url`, `has_manager_view`
 omission, AI-labs presence-only, academy origin), the seats resolve through `roster.go` byte-identically to the

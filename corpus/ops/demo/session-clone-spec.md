@@ -51,15 +51,29 @@ session read-only and only `SELECT`s), streams each session's content through th
 **scrubbed** result to the checked-in fixture. It prints **counts only**, never content. The seeder (seed time)
 is fully **offline** — it reads only the go:embed'd fixture. A demo box needs no prod access.
 
+> **Surgical re-capture — `--only <key[,key…]>` (M240).** A re-pin of one cell should not re-capture all 13
+> sessions against a possibly-drifted prod. `content-capture --only asmt-voice-pass` captures **just** the named
+> key(s), leaving the deterministic unchanged fixtures byte-identical; an unknown `--only` key **fails loud**
+> (a typo can't masquerade as a successful no-op). Empty `--only` = capture all (the original behaviour).
+
 ## 2. Stage 1 — sourcing (the reproducible selection)
 
 `contentsession/sourcing.go` BUILDS (never runs) the selection SQL — the reproducible record of *how* the pinned
-sessions were chosen. Two load-bearing predicates:
+sessions were chosen. **Three** load-bearing predicates:
 
 - **Public-anchoring (M231 D6).** A cloned session's `sim_id` must resolve in the demo, which holds only the
   **public** (snapshot-replayed) simulation catalog. So the query INNER-JOINs `directus.simulations` on the
   public predicate — `PublicSimPredicate = "d.private = false AND d.tenant_id IS NULL AND d.status =
   'published'"` — and sources ONLY sessions on a public-published sim.
+- **Sim-TYPE match (M240 Defect 1, CQ-1).** The public sim's OWN type (`directus.simulations.type`) must EQUAL
+  the cell's `sim_type` — `AND d.type = '<cell sim_type>'` — not merely the SESSION's `s.sim_type`. Prod carries
+  sessions whose `s.sim_type` disagrees with the sim's `d.type`: the sole public **interview** sim
+  (`ai-readiness-interview-d62`, `d.type=SIMULATION_TYPE_INTERVIEW`) has a `call` task, so before this predicate
+  it qualified for the ASSESSMENT-**voice** cell and an assessment-labelled session on it got pinned there
+  (`asmt-voice-pass`) — the cockpit then rendered an interview sim under an "Assessment" story. The type-match
+  forces the sim definition and the session record to agree, so the interview sim can only ever be sourced for
+  the interview cell (a robust fix, not a fragile slug exclusion). The query also surfaces `pub.slug AS sim_slug`
+  so the reproducible record yields the pin's public slug.
 - **Non-manager-played.** The owner must be a player-vantage member (belt-and-braces: the seeder re-owns every
   clone to a seeded player member anyway — §4).
 
@@ -72,6 +86,28 @@ and the **one public interview sim's** voice sessions, passed + not-passed (2). 
 > — 1 assessment voice, 1 assessment document, and the second hiring and interview sessions, so that every
 > product carries a passed **and** a not-passed story. This doc is the only place the inventory is stated;
 > keep it in step with the fixture, which is the source of truth.*
+
+### 2.1 The language axis + the pool query (M241 — v2.6 "sound check")
+
+The pre-M241 sourcing was **language-blind**, which is why the 13 pins turned out **11 italian / 2 english by
+accident** — while the seeder (`content_stories_write.go`) hard-coded every clone's session row to
+`language='english'`, so an Italian-played session rendered under an English label. M241 fixes both ends:
+
+- **Sourcing.** `SelectionSpec` gains an optional `Language` filter → `AND s.language = '<lang>'` (english |
+  italian, validated; empty = no filter, backward-compatible), and the SELECT now surfaces `s.language` (a
+  non-PII enum label, honoring the read boundary). A **fourth** predicate, opt-in.
+- **The pool query FIRST (the go/no-go, user decision 2026-07-20).** M241 opened with a **read-only prod
+  pool-count query** (`marco_read`, counts + labels only, no content) that counts, per requirement tuple
+  `(sim_type × modality × pass/fail)`, how many sessions exist in each language — the interview-scarcity
+  go/no-go. Verdict **GO**: 11 of 12 tuples carry both languages; **INTERVIEW is Italian-only** (no believable
+  English interview session — EN interview passes all out-of-band under the 70–95 believable band, EN interview
+  fails = 0 — release risk **R2**). Where a tuple has both, an **EN+IT counterpart** is pinned so the cockpit's
+  EN/IT toggle can swap it; where it does not, the cell stays single-language (the toggle is hidden — the
+  user-decision fallback). The fixture grew **13 → 23** (the 13 base pins re-labeled + 10 counterparts).
+- **The write.** `content_stories_write.go` writes `cs.Language` (the pin's real language), not the hard-coded
+  constant, so every clone is seeded in its intended language. The manifest projection carries `language` +
+  the derived `lang_toggle`; the cockpit EN/IT toggle and the fail-closed language honesty gate are in
+  [`content-stories-spec.md`](content-stories-spec.md) §2/§4/§7.6.
 
 ## 3. Stage 2 — capture + scrub (the copied fixture)
 
@@ -125,7 +161,7 @@ with the demo org name, then writes, in FK order, all idempotent on `id`:
 jobsimulation.sessions                               (ended, completed, passed/failed — G14 enums, org-scoped)
   ├─ validation_attempt_results                      (the REAL summaries, filled; evaluation_status = the gate)
   │    ├─ validation_attempt_skill_results           (the REAL skill node-ids + the REAL feedback)
-  │    │    └─ validation_criterion_results           (the REAL titles/input_data; input_format per capture)
+  │    │    └─ validation_criterion_results           (the REAL titles + input_data; input_format per capture)
   │    │         └─ validation_check_results          (the REAL grader feedback)
   ├─ actors                                          (player = the owner; the copied roles; minted names)
   ├─ interactions                                    (the REAL transcript; action_type ∈ {email,call}; filled payload)
@@ -142,6 +178,18 @@ public.local_jobsimulation_sessions                  ← THE MIRROR (the score s
 
 Plus: owner-is-player-vantage; the copied enums are real (G14-valid) with a clamp for a rare non-terminal
 value; the skill node-ids are the REAL ones the candidate was assessed on (real public taxonomy → resolve).
+
+> **The document body IS `input_data`, written at seed time (M240 Defect 3).** A `text_document`
+> (collaborative_doc) criterion stores the candidate's **whole document** in
+> `validation_criterion_results.input_data` under the `text_document` key (a real one runs to thousands of
+> chars) — **not** in `collaborative_assets`, which is empty for these sessions, and **not** an S3
+> `storage_upload` blob (the pinned document sims are all `collaborative_doc`, so there is no uploaded file to
+> port). `cmd/content-capture` already copies + `ScrubJSON`-scrubs `input_data`, but before M240 the seeder
+> reused the shared `criterionResultCols()` — which has **no `input_data` column** — so the body was DROPPED
+> at seed time and the manager saw no document. The fix is a **content-specific** `contentCriterionResultCols()`
+> (= the shared set **+ `input_data` appended last**; a separate set, because the PersonaSeeder synthesizes
+> criteria and has no submission to carry — widening the shared set would be a landmine), with the seed-time
+> row appending the placeholder-filled `input_data`. `TestContentStorySeeder_WritesInputData` fences it.
 
 ### It COPIES, it never fabricates
 

@@ -1,0 +1,42 @@
+{
+  "milestone": "M237",
+  "title": "clean stage",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-21",
+  "barrier": "HARD go/no-go — opens v2.6 'sound check'; gates the M238-M243 fan-out",
+  "platform_repo_edits": 0,
+  "tests": {
+    "python_demo_stack_test_tooling": "146 -> 160 (+14) full test_tooling.py; all pass at close",
+    "m237_touched_surface": "TestCloneFreshnessM237 12->22, TestR1SweepM237 4->7, TestEnsureClonesFunctional 16->17 (the c-pre sweep) = 46 tests on the ensure-clones surface, all pass",
+    "go_touched": "none — M237 touched no Go (bash demo-stack/ensure-clones.sh + its python subprocess harness only)",
+    "honesty_invariants_mutation_verified": "the 12-vs-202 anti-regression (behind off a failed fetch never fabricated, stub 999 never written) + the Pass-2 log-honesty fix (old 'skipping R1/R2' wording -> test red) — both mutation-verified twice",
+    "fences": "shellcheck ensure-clones.sh rc0; demo_knob_guard.py OK both-directions (29 env knobs incl. the 2 new DEMO_ADVANCE_CLONES + DEMO_FRESHNESS_STRICT)",
+    "flake_gate": "GREEN — M237-touched suites 5/5 sequential (46 passed each run)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "explicit branch/path enumeration (no kcov/bashcov — neither instruments bash on macOS; D-HARDEN-1)",
+    "surface": "all 7 pin states, both fetch-honesty sides, all 3 strict-fatal classes, every DEMO_ADVANCE_CLONES arm, every R1 error path, multi-repo aggregation, the c-pre stub-sweep",
+    "residual_uncovered": "defensive || true / 2>/dev/null non-fatal arms (pin.json parse-error, per-repo checkout-fail warn, dirty-stash, ref=unknown) — recorded, not shallow-tested (stop condition, 3 harden passes)"
+  },
+  "code_of_record_tag": "sound-check-m237-clean-stage @ 533c489 (re-pinned at close from the pre-harden 7847473 to the hardened HEAD; force-pushed to origin — a milestone-internal consumption-tag advance, not a released-version tag)",
+  "build_commits_rext": "8661444 (S1 fetch-verified freshness + pin model + opt-in advance) + 7847473 (S2 R1 all-14 sweep)",
+  "harden_commits_rext": "ed9a6e1 (Pass 1) + 2ef8f43 (Pass 2, log-honesty fix) + 533c489 (Pass 3, harness-fidelity fix); +14 tests",
+  "hardening": "3 passes (2026-07-21) — stabilized; 2 bugs fixed inline (Pass 2 R2-skip log honesty; Pass 3 grep/sed-absent inert c-pre phase); see progress.md '## M237: Hardening'",
+  "deferral_audit": "GREEN (0 deferrals; 0 blockers) — M237 opens the release so no inherited deferrals; #2->M238 / #4->M239 confirmed Fate-2-owned in their In-lists. Report: audit-deferrals/deferral-audit-2026-07-21.md",
+  "close_fixes": [
+    "docs (Phase 3/7): frontend-tier.md clone-freshness callout — broken anchor (heading renamed) + stale refuted 249/202-behind figures + 'that half is open' (M237 CLOSED F-M236-CLOSE-1 + REFUTED the figures); now consistent with rosetta_demo.md",
+    "adversarial (Phase 2c): AR-1 recorded in decisions.md (behind-count 2>&1 stderr-merge -> handled by set -euo pipefail loud-abort; never a fabricated number)",
+    "decision-triage (Phase 5): D1/D2/D3 confirmed already-blended (traceable via F-M236-CLOSE-1/-2); D-HARDEN-2 acceptance confirmed sound; ledger + D-HARDEN-1 archive"
+  ],
+  "close_code_changes": "none in rext — all close fixes are docs/records in the rosetta repo; the sole rext op at close was the consumption-tag re-pin (7847473 -> 533c489), no new rext commit",
+  "confirmed_defect_ledger": {
+    "note": "the S3/S4 deliverable (decisions.md) — fresh-build re-triage on billion",
+    "headline": "the '202-behind' premise REFUTED — verified measurement (independently confirmed by raw git rev-parse) showed billion's clones 0-2 behind, frontend current; ant-academy the lone 5-behind surface. The suppressed-fetch reading was itself the bug the S1 fix eliminates.",
+    "hash_1_menu": "RESOLVED — hierarchical for managers on the fresh build (does not reproduce); also discharges M239's hierarchical-menu check",
+    "hash_4_library": "does NOT reproduce as empty (populated 'Public Content (22)', 7->29 cards, 0 gql/http errors) -> M239, re-scoped down to the cold-first-load flash/client-race question",
+    "hash_2_academy_language": "SURVIVES (real academy-surface defect: /it 404, flag menu non-functional on the 5-behind academy) -> M238"
+  },
+  "notes": "The clean-stage barrier: the stage was cleaner than believed — pervasive-staleness was itself the bug. Delivered the fetch-verified freshness assertion + 7-state pin model + opt-in DEMO_ADVANCE_CLONES/DEMO_FRESHNESS_STRICT (F-M236-CLOSE-1) and the R1 directory-driven all-14-manifest sweep (F-M236-CLOSE-2), both dogfooded live on billion, plus the confirmed-defect ledger that scopes M238/M239 against reality. Tooling + docs only, 0 platform edits."
+}

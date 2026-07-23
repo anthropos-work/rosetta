@@ -2,6 +2,67 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.6] "sound check" — 2026-07-23
+
+**The reliability / field-hardening release.** A sound check is the pre-show pass where every input is proven
+to actually reach the desk before the audience arrives — and that is the whole job here: make everything the
+demo is *built* to do actually **build, provision, and work** on a fresh box, then **prove the entire release
+live** on the `billion` Tailscale VM, cold reset-to-seed. Shape: a hard barrier that first fixes the demo
+building from **stale source**, then six parallel fixes, then a live re-prove. The whole feature set — v2.5's
+headline **and** every v2.6 fix — was discharged **8/8 on `billion`**, and this also cleared v2.5's
+outstanding debt (its "sessions land" number had been unit-proven, never live-re-proven). Tooling + docs
+only — **zero platform-repo edits** across all 8 milestones.
+
+### Added
+- **Talk to Data answers live from your real org data on a demo.** A manager can ask *"how many members?"*
+  and get a real, data-grounded answer (e.g. *"Cervato Systems has 51 members"*) — wired through real AWS
+  Bedrock credentials, provisioned values-blind, proven end-to-end live.
+- **A manager can assign a skill path to a member, end-to-end.** The first fully **mutating** journey is now
+  proven: open the assign builder, pick a public-catalog skill path, set a deadline, Assign — and the
+  assignment is really written and reflected back. Takes the demo to **16 proven end-to-end journeys, 0 TODO**.
+- **The "Content stories" cockpit tab gains an EN | IT language toggle.** Each played session now carries its
+  **real** language (many are Italian), and the presenter can switch the content-stories view between English
+  and Italian per row where both exist.
+- **Content stories now carry real media fidelity.** The document-based sessions show the real submitted
+  document body, and the recorded-call facet is wired **by reference** (bytes stream from the CDN at play
+  time, never copied) — with a faithful "no recording available" state where a real recording is not present.
+
+### Changed
+- **The demo now builds from CURRENT platform source.** The bring-up used to silently rebuild images from
+  **stale local clones** (the cause of the reported "stale left menu"), because a clone that was hundreds of
+  commits behind looked identical to a fresh one. A fetch-verified freshness check + a real pin model now
+  tell a deliberate pin apart from a stale-by-neglect clone, with an opt-in advance-to-latest.
+- **A cleaner presenter cockpit.** Content-stories rows regroup by requirement into a clearer
+  passed / not-passed layout, the tab selector moved into the header, and hero avatars are tinted by role
+  (manager / employee / candidate) at accessible contrast.
+- **The AI Academy "Start" now opens the lesson.** Starting a course used to 404; the course body now renders
+  (including the Italian view) through a demo-only content patch.
+
+### Fixed
+- **AI Academy Start → 404** and the **"lesson in Italian errors"** symptom — one fix, because they were the
+  same dead-backend content path (not two separate bugs).
+- **Content-stories believability** — the cockpit's claim now matches the session: no interview sim leaking
+  into non-interview voice cells, a realistic mix of pass/fail scores (not everything at 100%), and the full
+  document body rendered.
+- No user-facing *platform* fixes — this release is **tooling + docs only (0 platform-repo edits)**. The
+  corrections landed in the demo tooling and the documentation corpus.
+
+### Supply chain
+- **No new dependencies.** 0 net-new Go modules; the corpus itself has no lockfile to audit. Alignment
+  (Clerkenstein) unchanged at 100% / 100% critical. (The M239 AWS Bedrock access is a provisioned *secret*,
+  not a code dependency.)
+
+### Known limitations
+- **8 demo-stack tooling tests are failing — non-defect, host-dependent.** They are stale test assertions
+  against deliberately-changed behaviour (6 cockpit academy/overlay) plus a hiring-port expectation and a
+  docker-integration test that needs a live docker box — **0 real product defects, 0 pin drift**. Batched to a
+  named **v2.7 "test-health"** milestone rather than fixed under a proof-only close.
+- **2 voice content-story cells are presence-only.** Where no recorded call is available on the box, the demo
+  faithfully shows the "not available" state rather than a broken player — the honest deliverable, not a gap.
+- **The "fail the build loudly on disk-full" guard was dropped**, not shipped. The disk-full failure class is
+  already caught earlier by the pre-flight disk-space check, so the extra loud-abort was redundant and
+  un-validatable without inducing a real out-of-space condition.
+
 ## [v2.5] "the playbill" — 2026-07-20
 
 **The content-vantage release.** The demo now shows the platform's **content, played** — real learning and

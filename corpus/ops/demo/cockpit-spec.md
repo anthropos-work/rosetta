@@ -50,6 +50,10 @@ Presenter Cockpit — demo-3
 (The `◍`/`🏢`/`⇥` glyphs above are stand-ins for the FontAwesome icons the real panel renders:
 `fa-circle-user` per hero, `fa-building` per org, `fa-arrow-right-to-bracket` on the CTA.)
 
+**Each hero's avatar is tinted by her role (v2.6 "sound check" M242)** so a presenter reads the trio at a
+glance: a **manager** avatar is **orange**, an **employee** is **indigo**, and a hiring **candidate** is a
+distinct **teal**. Same icon, different colour — the role is legible before you read the badge.
+
 **Login is the only action.** Earlier cockpits (M38) had two buttons per hero — `[Login as]` (landed on the app
 root) and `[Jump to section]` (landed on the hero's deep-link). M43 **unified** them: the single **Log in as**
 both logs the presenter in as the hero **and** lands her on a sensible per-role screen (an end-user on her
@@ -275,6 +279,36 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
   > overlay** (`resetOverlayOnReturn`, on both fresh load and `pageshow`); the overlay can no longer re-show on
   > return. Gated by `stack-verify/e2e/tests/cockpit-overlay-return.spec.ts` (RED against the pre-fix cockpit).
 
+### The v2.6 "sound check" UX pass (M242)
+
+Three render-layer changes make the cockpit read more clearly — **pure `cockpit.py` render/CSS, no data/seed
+change, no manifest schema change, zero platform-repo edits:**
+
+1. **The tab selector lives in the white header, on the right, vertically centered.** The `.tabs` bar moved
+   out of the main body and into the `<header>`: the header is now a flex row (`.hwrap` —
+   `justify-content: space-between; align-items: center`) with the title/subtitle group (`.hgroup`) on the
+   left and the tab bar on the right. `main_body` holds only the two tabpanels. The tab-toggle JS (`_TAB_JS`)
+   is placement-agnostic (it queries `.tab[data-tab]` globally), so the move needed **no JS change**. **The
+   byte-identical-when-no-content invariant holds:** with no `--content-manifest` there is no tab bar, and the
+   header is emitted **byte-identical to the pre-M242 single-panel cockpit** (a separate branch reproduces the
+   exact today header; `test_cockpit.py::TestHeaderTabPlacement::test_no_content_header_is_byte_identical_to_today`).
+
+2. **The hero avatar is tinted by user-type.** `_avatar_class(hero)` returns the avatar modifier: a **manager**
+   (`vantage_label == "MANAGER"`) reads **orange** (the existing `.b-manager` palette `#fef3e2`/`#b45309`), a
+   hiring **candidate** — a non-manager hiring hero (`is_hiring` + an EMPLOYEE seat) — reads a **net-new,
+   accessible teal** (`--cand #0f766e` / `--cand-soft #ccfbf1`, ~4.8:1 AA), and a workforce **employee** keeps
+   the default indigo (`--accent-soft`/`--accent`). **Order matters:** the manager branch wins first, so a
+   hiring **recruiter** (a `MANAGER` seat with `is_hiring` set — Rae) reads as a manager, not a candidate. The
+   content-tab `.sicon` (the per-`sim_type` content icon) stays uniform — it reads by content type, not
+   user-type.
+
+3. **The Content-stories rows are regrouped by requirement tuple.** See
+   [`content-stories-spec.md` §7.2](content-stories-spec.md#72-the-tuple-regrouped-row--the-two-action-contract-m234-contract-m242-layout):
+   a product's played sessions group by `(sim_type, modality)` (non-sim products by `label`) and render one
+   row per tuple — `target label | passed login options | not-passed login options` side by side — coexisting
+   with the M241 EN/IT toggle (the EN/IT variants of a cell share one column, the toggle filtering between
+   them).
+
 ### Served endpoints
 
 | Path | Response |
@@ -290,9 +324,11 @@ The panel is a single static HTML page (`render_page()`), restyled and enriched:
 
 When the cockpit is launched with `--content-manifest <content-manifest.json>` (the bring-up threads it when
 the storytelling demo is up), the panel renders a **client-side tab toggle** with a 2nd **"Content stories"**
-tab beside "Org stories": per content product, a list of **played sessions** each with **as-player /
-as-manager** login-and-land CTAs (the `content-player-<idx>` seats are registered in the same roster the
-`[Log in as]` heroes come from). Absent `--content-manifest` ⇒ no tab bar (byte-identical to today). The full
+tab beside "Org stories": per content product, the **played sessions regrouped by requirement tuple**
+(`(sim_type, modality)`, M242) — one row each, `target | passed logins | not-passed logins` side by side —
+with **as-player / as-manager** login-and-land CTAs (the `content-player-<idx>` seats are registered in the
+same roster the `[Log in as]` heroes come from). The tab bar sits in the white header (M242). Absent
+`--content-manifest` ⇒ no tab bar (byte-identical to today). The full
 render + seat + routing contract is [`content-stories-spec.md` §7](content-stories-spec.md#7-the-cockpit-render--the-2nd-content-stories-tab-m234).
 
 ### Bring it up

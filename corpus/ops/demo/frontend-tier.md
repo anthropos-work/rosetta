@@ -229,12 +229,22 @@ never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, t
 services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
 used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
 
-> **Below ~20 GB host disk free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
-> `DEMO_DISK_MIN_GIB=N`; the free-space signal is `df` on the filesystem backing Docker's data — host root as
-> the portable proxy). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
+> **Below ~20 GB free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
+> `DEMO_DISK_MIN_GIB=N`). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
 > removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
 > tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
 > re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
+
+> **The free-space signal measures the Docker VM's INTERNAL disk, not host `/` (v2.6 M239-F1 correction).**
+> On Docker Desktop the engine runs in a Linux VM with its **own fixed-size virtual disk** — the filesystem a
+> full-cold build actually `ENOSPC`s. Host root `/` is a *different*, usually-huge filesystem that does **not**
+> reflect it. The original pre-flight `df -Pk /`'d host root and so read ~200 GB "free" while the VM's ~59 GB
+> disk filled and the build died — staying **GREEN through the exact failure it exists to catch**, which then
+> surfaced as a **cryptic downstream `redis exited (1)`** (redis was just the first container to write). It now
+> probes the VM disk via a throwaway `busybox df` (the container root == the VM overlay), falls back to host
+> `/` only when Docker/`df` is unreachable, and the warn **names the redis mis-attribution** so the cause reads
+> as *disk*, not *redis*. (Measured live: 25 GiB VM-disk free vs 212 GiB host-`/` free on the same box — the
+> old proxy's blind spot.) `DEMO_DISK_AVAIL_KB` still short-circuits the probe (test/operator override).
 
 ## How the pk + URLs are baked (zero platform edit)
 
@@ -417,6 +427,34 @@ skill-path cards** (real catalog names — Claude Code, AI Foundations, Agent SD
 coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`coverage-protocol.md`](coverage-protocol.md))
 — is the remaining release-close verification.
 
+### The BODY half — `academy-fs-published-chapter-body` (v2.6 "sound check" M238)
+
+The catalog patch above got the **grid + course landing** to render, but clicking **"Start the course"** still
+**404'd** — because chapter **bodies** are backend-authoritative too, and the catalog patch only touches
+`serverTenant.js` (the catalog), not `serverChapterBody.js` (the body). A demo's null backend → `notFound()` → the
+"You wandered off the trail" 404 (see [`../../services/ant-academy.md`](../../services/ant-academy.md) §"The chapter
+BODY is backend-authoritative too"). **M238 adds the BODY half:** the `academy-fs-published-chapter-body` demopatch
+serves the committed FS chapter body (locale-aware, unlocked, un-chipped) at the backend-null branch — gated on the
+**same** `ACADEMY_DEMO_FS_PUBLISHED` env var + **same** `DEMO_NO_ACADEMY_FILL` opt-out, applied together by
+`ant-academy.sh` via the sibling native helper `stack-injection/apply-academy-fs-published-body.sh`
+(apply-before-launch / revert-on-`--stop`; behavior-identical when the env is unset). So the two halves are one
+coherent FS-as-published behavior: **the grid renders FS cards, and clicking one renders the FS body.** Shipped in
+rext at tag `sound-check-m238-ant-academy-reliability`. **Proven live on `billion`** (demo-1): a chapter that
+returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter title + body, and
+`/chapters/<slug>/?lang=it` also renders (the language switch on a chapter reader — the same backend-null path). The
+coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
+[`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
+
+> **Known limitation — the three native-run academy patches share one clone (concurrent-demo teardown).** All three
+> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`)
+> are applied to the **shared** `stack-demo/ant-academy` working tree — its path is `N`-independent (only the port +
+> pidfile are per-`demo-N`). So `ant-academy.sh N --stop` reverts the shared source files unconditionally: tearing
+> down `demo-1` while `demo-2`'s native `next dev` is still live reverts the patched files out from under `demo-2`,
+> and its next HMR recompile re-404s the chapter route. This is a **pre-existing property of the native-run academy
+> pattern** (not introduced by M238 — the M238 body patch merely follows it); it only bites when **multiple demos run
+> concurrently against the same box**, the uncommon case. A proper fix (per-demo academy clone, or an applied-refcount
+> before revert) is routed to the standing backlog (M238-D6); the single-demo path is unaffected.
+
 > **The academy AI chat (Cosmo) is absent in the demo — by design (M53 F6, per the AI-keys policy).** The
 > academy's Cosmo assistant is gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default **OFF**) **and** a
 > per-user `localStorage('openai_api_key')`. The demo launcher sets **neither** the flag nor any OpenAI key —
@@ -448,13 +486,17 @@ coverage sweep's `ANT_ACADEMY` rendered-card count on a **cold `/demo-up`** ([`c
 > live on `:33077`).
 >
 > ⚠️ **This closed ONE failure of skip-if-present, not the class — do not read it as "skip-if-present is now
-> safe" (`F-M236-CLOSE-1`, v2.5).** The stub-sweep fixes the case where a repo dir exists with **no `.git`**
-> (nothing was ever cloned). The far commoner case — a **complete, healthy clone that is simply months out of
-> date** — passes the sweep untouched, because `make init` never fetches, pulls, or checks out an existing clone
-> and the bring-up never calls `make pull`. Measured 2026-07-20, identically on both boxes: `app` **249**
-> commits behind `origin/main`, `next-web-app` **202**. See
-> [`../rosetta_demo.md` § Clone freshness](../rosetta_demo.md#clone-freshness--skip-if-present-never-updates-f-m236-close-1)
-> — **that half is open**, and it is what a stale-looking demo usually is.
+> safe" (`F-M236-CLOSE-1`).** The stub-sweep fixes the case where a repo dir exists with **no `.git`**
+> (nothing was ever cloned). The far commoner case — a **complete, healthy clone that is simply out of
+> date** — still passes the sweep untouched, because `make init` never fetches, pulls, or checks out an existing
+> clone and the bring-up never calls `make pull` unless you opt in. **What changed at v2.6 M237:** the bring-up
+> now runs a **fetch-verified freshness assertion** that MEASURES this and warns loud (advisory; `DEMO_FRESHNESS_STRICT=1`
+> escalates to fatal), and an opt-in `DEMO_ADVANCE_CLONES` advances the clones — so the visibility gap is closed.
+> (The v2.5 draft cited `app` **249** / `next-web-app` **202** commits behind "identically on both boxes" — that
+> reading was itself the **suppressed-fetch artifact** M237 eliminated; the verified measurement on `billion` was
+> 0–2 behind, frontend current.) See
+> [`../rosetta_demo.md` § Clone freshness](../rosetta_demo.md#clone-freshness--the-fetch-verified-assertion-f-m236-close-1-closed-v26-m237)
+> — **that gap is now closed** (visibility, not auto-advance), and a stale-looking demo is what an un-advanced clone usually is.
 
 **Default-on + non-fatal + degrades to a documented step.** A fresh `/demo-up` clones the academy (via the
 `storytelling-postfix-2` stub-sweep) and auto-runs the token-less `npm install` (see above), so it comes up

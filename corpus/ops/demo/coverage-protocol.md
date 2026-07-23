@@ -213,6 +213,21 @@ replaces the old text-density floor with **per-page, per-section DESCRIPTORS**. 
 > very `textLen>40` density check this protocol claims to have superseded) now assert the **render**. They report
 > **RED until the render is fixed in M220 — which is intended.** An accurate red beats a comfortable green.
 
+> **The home grid is only half the academy story — the CHAPTER BODY + language switch (v2.6 "sound check" M238).**
+> `ANT_ACADEMY_HOME_SECTION` proves the catalog GRID renders, but a hero *consumes* a chapter — and a demo's
+> backend-null chapter path 404'd ("You wandered off the trail") until M238 wired the FS-published body. So the
+> academy cross-port follow (`coverage.spec.ts onCrossPortFollow`) now, **after** the home renders, runs a
+> **chapter probe**: fetch the public FS-derived `/catalog.json` for a real chapter slug (deterministic — no
+> fragile DOM course-card discovery; prefer a slug with an `it` overlay), load `/chapters/<slug>/`, assert the new
+> **`ANT_ACADEMY_CHAPTER_SECTION`**, then re-load the SAME chapter under **`?lang=it`** and re-assert — the second
+> proves the **language switch on a chapter reader** renders (locale is a `?lang=` query param, not a `/[locale]`
+> route). The chapter descriptor uses a new general **`mustNotInclude`** negative marker (the honest "this is NOT
+> the 404" — `isErrorText`'s sentinels don't cover the academy's whimsical copy) pinned to the exact
+> `not-found.jsx` `<h1>` **plus** a 400-char floor; **either** fails the 404 (an empty/blank render fails the floor;
+> a padded-404 variant fails `mustNotInclude`). ⚠ **Note:** "You wandered off the trail" lives in Next's RSC flight
+> `<script>` data even on a 200 chapter render — a raw-HTML `grep` false-positives; the sweep reads Playwright
+> `innerText` (visible, hydrated), which is clean. Proven live on `billion` (a chapter 404→200; `?lang=it` 200). (#M238-D3)
+
 > **The ZERO-CELL blind spot — and the assert that closes it (M219, v2.3 "cue to cue").** A `text` descriptor
 > asserts the section's **labels**. But a KPI tile's labels are **chrome**: they render whether the numbers
 > behind them are `1,284` or `0`. So a section can clear a `mustInclude` + length floor while every value in it
@@ -899,6 +914,9 @@ on** — and there it went unnoticed through all ten iters:
   console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
 - **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
   and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
+  *(The concrete value grows with the content pool — `content-denominator.json` pins `expected_pairs=49`
+  since M241's EN/IT growth; M244's live `billion` sweep landed **47/47**, the 2 Bunny-absent voice **player**
+  cells held presence-only. The `29` here is the M236-era illustration, not the current denominator.)*
 - **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
   result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
   *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what
@@ -966,7 +984,8 @@ routes by **bare string prefix**. Four iters touched each side; no test touched 
 Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
 wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
 `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
-asserts the grader understands every route in it — including that the landable count is still **29**.
+asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08;
+reconciled to **49** since M241's EN/IT growth — see the denominator note above).
 
 ---
 

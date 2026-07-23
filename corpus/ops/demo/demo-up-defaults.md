@@ -138,6 +138,8 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | `DEMO_SECRET_SRC` | `$REPO_ROOT/.agentspace/secrets` | where `/stack-secrets` reads the secret source from | `up-injected.sh:53` |
 | `DEMO_NO_SECRET_PREFLIGHT` | `0` | the secret-coverage pre-flight runs (a CRITICAL miss is fatal) | `up-injected.sh:677` |
 | `DEMO_ALLOW_UNPINNED_REXT` | `0` | the rext **tag-pin guard ABORTS** if the clone drifts from `.agentspace/rext.tag`. `=1` permits deliberate un-pinned authoring work | `ensure-clones.sh:85` |
+| `DEMO_ADVANCE_CLONES` | `0` | **OFF — no auto-advance** (deliberate staleness at a known-good rev is legitimate; an unconditional pull could break a demo mid-presentation). `=main`/`=1` brings every clone to `origin/main` (the platform `make pull` primitive); `=pinned` checks each out at its `stack-demo/clones.pin.json` ref | `ensure-clones.sh:183` |
+| `DEMO_FRESHNESS_STRICT` | `0` | **advisory — a stale/pin-drift/fetch-failed clone WARNS loud but does not block** (the build-SOURCE gate is elsewhere). `=1` escalates any not-provably-fresh clone to a FATAL abort (for a CI / HARD go/no-go bring-up that must build current code) | `ensure-clones.sh:354` |
 | `DEMO_REUSE_DEV_IMAGES` | `0` | **OFF — full independence.** The demo builds from its **own** `stack-demo/` clones; dev's images are never reused | `up-injected.sh:1008` |
 
 ### Host pre-flight & verification
