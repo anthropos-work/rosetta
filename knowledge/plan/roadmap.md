@@ -255,7 +255,23 @@ touched docs. **DOC-ONLY: zero rext, zero platform-repo edits, no code-of-record
 spec-doc reconcile → the code milestones + release-close consistency pass. Merged to `release/02.70-july-jitter`.
 
 #### M248 — content-stories manager result-link  (`section`, small)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-23)
+**Closure:** Re-pointed the content-stories MANAGER CTA off the org activity-dashboard scoreboard. The one genuine
+unknown — does the interview manager report live on the unified `/sim` route? — was discharged as a rung-0
+verify-interview read that a **LIVE demo-2 render OVERTURNED** (D1 static → D3 live): the `/sim` interview manager
+surface is flag/data-gated and renders **"Coming Soon"** on a demo, so the CTA is **routed by `sim_type`** —
+the NON-interview family (assessment/training/hiring, 21 of 23 manager pairs) moves to
+`/sim/<slug>/<userId>/result/<sessionId>` (the real `isManagerView` result view, persisted read via
+`JobSimulationResult(sessionId)`, `dan-manager` admin-gated), while **INTERVIEW keeps** its dedicated
+`/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` route (M236). The manager grader keys on the
+**SCORE** (language-agnostic + collapse-proof) after the same live pass showed Italian renders + collapsed
+Evaluated-Skills. `presets/content-manifest.json` regenerated (honesty gate GREEN, 47/47 pairs); both
+`content-stories-spec.md` + `content-stories-routes.md` re-pointed. rext code-of-record
+`july-jitter-m248-harden @ 6e0ed2c` (176 unit + Go GREEN, mutation-verified, 3× flake-clean; on origin,
+rung-zero verified). Live: demo-2 warm sweep 43/47 (direct drives prove the `/sim` manager route renders full
+scored results); the 3 header-only-shell renders + 1 academy env failure are demo-2 warm-seed/host artifacts →
+**CARRY-M248-01 (Fate-2 → M254** gate (b)+(h) fresh-seed re-confirm). Deferral audit YELLOW (0 blockers). 0
+platform-repo edits.
 **Goal:** The content-stories manager CTA jumps to the **per-session manager result view** (`/sim/<slug>/<userId>/result/<sessionId>`), not the org activity-dashboard scoreboard.
 **Shape:** `section`.
 **Scope — In:**
@@ -415,7 +431,7 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 3 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health + M247 corpus-reground; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 4 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health + M247 corpus-reground + M248 content-mgr-link; tooling + docs only, zero platform-repo edits) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 

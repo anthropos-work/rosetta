@@ -2,12 +2,13 @@
 milestone_shape: section
 milestone: M248
 title: "content-stories manager result-link"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 depends_on: [M246]
 parallel_with: [M247, M249, M250, M251, M252]
 complexity: small
 created: 2026-07-23
+last_updated: 2026-07-23
 ---
 
 # M248 — content-stories manager result-link

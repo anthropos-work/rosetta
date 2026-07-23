@@ -1,0 +1,43 @@
+{
+  "milestone": "M248",
+  "title": "content-stories manager result-link",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-23",
+  "realizes": "re-point the content-stories manager CTA from the org activity-dashboard scoreboard to the per-session /sim manager RESULT view (isManagerView, persisted read) — routed by sim_type after a LIVE verify-interview pivot",
+  "platform_repo_edits": 0,
+  "deliverable": "rext code (stack-seeding ManagerResultPath router + stack-verify content-result-page grader) + rosetta docs (content-stories-spec.md + content-stories-routes.md). The CODE-of-record lives in the gitignored rosetta-extensions authoring copy; this close merges ONLY the rosetta doc + plan half.",
+  "tests": {
+    "run_unit_ts": "176/176 pass, tsc clean — the content-result-page + content-route-contract unit specs re-pointed to the sim_type mixed routing; harden added 2 mutation-style manager-scored tests (hasSkills-only expanded-render acceptor + the 400-char floor)",
+    "go_seeders": "content_manifest_test.go GREEN — TestBuildContentProducts_SimulationProjection (asmt/interview/hire) + TestBuildContentProducts_SeatAndSessionSingleSource (per-session drift both directions, interview-membership-not-userid + non-interview-not-activity-dashboard regression guards)",
+    "honesty_gate": "GREEN — CanonicalFileMatchesProjection + ValidateContentManifest; presets/content-manifest.json regenerated via stackseed --content-export (21 non-interview -> /sim, 2 interview -> activity-dashboard)",
+    "manifest_pairs": "47 landable pairs, 0 dropped (denominator pin held; buildPairs is route-shape-agnostic so the re-point adds/drops no pair)",
+    "live_render_confirm": "demo-2 warm content-stories sweep LANDED 43/47; direct browser drives prove the /sim manager route renders the full scored result (asmt 4516 · train 5406 · asmt-voice-fail 2981 chars, score present). Residual 3 header-only-shell renders (per-session warm-seed state) + 1 academy :23077 env failure -> CARRY-M248-01 (Fate-2 -> M254 fresh-seed re-confirm).",
+    "delta_vs_prior": "unit-spec suite 174 (M248 build re-points + cases) -> 176 (M248 harden +2 mutation-style); from the M251 baseline of 172 that is +4 across M248 build+harden. No new spec FILES (existing content-result-page + content-route-contract specs re-pointed); harden cases added to content-result-page.unit.spec.ts.",
+    "flake_gate": "GREEN — 3x flake-clean at build + 3x at harden (176 every run); Go + tsc deterministic",
+    "lint": "tsc clean; Go vet/build clean (seeders GREEN)"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "mutation-testing (the milestone-touched surface is the sim_type router + the manager grader) — the applicable robustness metric is whether the grader/routing goes RED when a branch's behaviour is inverted",
+    "surface": "the manager-scored grader (hasScore || hasSkills, readable >= 400) + the sim_type routing branch (non-interview -> /sim, interview -> activity-dashboard)",
+    "result": "harden found exactly one mutation-surviving branch (the hasSkills-only acceptor + the 400 floor), now pinned; both verified RED on mutation (drop !hasSkills; 400->300) and reverted. Go routing + honesty gate exhaustively + live-covered.",
+    "residual_uncovered": "none load-bearing — the routing/honesty layers are exhaustively pinned in Go + TS and live-verified on demo-2"
+  },
+  "benchmarks": {
+    "applicable": false,
+    "reason": "no perf-sensitive code — a projection/grader/doc re-point"
+  },
+  "code_of_record_tag": "july-jitter-m248-harden @ 6e0ed2c — on origin (rung-zero verified: git ls-remote --tags origin shows refs/tags/july-jitter-m248-harden -> 6e0ed2c). Supersedes the build tag july-jitter-m248-content-mgr-link @ c0ec407 (harden added 2 tests, no behaviour change). rext authoring HEAD == tag, tree clean.",
+  "build_commits_rext": "2 commits -> tag july-jitter-m248-content-mgr-link @ c0ec407 (the sim_type ManagerResultPath router + the grader/manifest revision after the LIVE verify-interview pivot)",
+  "harden_commits_rext": "6e0ed2c (pin the two un-covered manager-scored grader branches) -> tag july-jitter-m248-harden",
+  "deferral_audit": "YELLOW (0 blockers) — 5 single deferrals: M248's own CARRY-M248-01 (fresh-billion re-confirm -> M254 gate (b)+(h), Fate-2 confirmed-covered) + 4 inherited (all freshly re-fated at M247 close today: rext-hygiene inert set, ai-readiness -> M250, ops/demo reconcile -> release-close, verification.md anchor -> release-close). No chronic pattern; no aged-out (all fresh today). Report: audit-deferrals/deferral-audit-2026-07-23-m248-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral audit + 1 close-time re-fate (D4) — CARRY-M248-01 reconciled from the imprecise 'Fate-3' to Fate-2 (M254 exit gate (b)+(h) already owns the coverage; no M254 overview.md edit)",
+    "Phase 2c adversarial: the LIVE verify-interview pivot (D1 static read overturned by D3 live evidence) IS the adversarial scenario for this milestone — the 'interview renders on /sim' assumption failed against the demo's Coming-Soon flag/data gate; interview kept on its dedicated route. Recorded in decisions.md D1/D3.",
+    "Phase 3 docs: content-stories-spec.md + content-stories-routes.md re-pointed to the sim_type mixed routing; cross-refs resolve; no stale manager-path claim (the residual activity-dashboard/ai-simulations mentions are deliberate 'NOT the scoreboard' contrasts). KB-1/KB-3/KB-4 resolved in the rewrite; KB-2 mitigated + live-confirmed.",
+    "Phase 5 decision-triage: D1 (superseded static read) archive; D2 (grader shapes) + D3 (interview split) + KB-3 (admin gate) already blended into content-stories-spec.md §3 callouts; no net-new knowledge blend owed."
+  ],
+  "close_code_changes": "none in rext — all close records are docs in the rosetta repo (progress.md Deferred re-fate + Final Review, decisions.md D4, the deferral-audit report, this metrics.json, retro.md, roadmap/state Phase-10). No rext commit and NO rext re-pin at close: the code-of-record stays july-jitter-m248-harden @ 6e0ed2c.",
+  "notes": "The M248 content-mgr-link lane of v2.7 'july jitter'. Re-pointed the content-stories MANAGER CTA from the org activity-dashboard scoreboard to the per-session /sim manager RESULT view (isManagerView, persisted read via JobSimulationResult(sessionId) — no recompute). The one genuine unknown (does the interview manager report live on /sim?) was discharged as a rung-0 verify-interview read that a LIVE demo-2 render OVERTURNED (D1 static -> D3 live): the /sim interview manager surface is flag/data-gated and renders 'Coming Soon' on a demo, so INTERVIEW keeps its dedicated /enterprise/activity-dashboard/interviews route while the NON-interview family (21 of 23 manager pairs) moves to /sim. The manager grader keys on the SCORE (language-agnostic + collapse-proof) after the same live pass showed Italian renders + collapsed Evaluated-Skills. Tooling + docs only, 0 platform-repo edits."
+}
