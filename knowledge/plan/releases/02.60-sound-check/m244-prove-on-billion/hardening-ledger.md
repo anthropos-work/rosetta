@@ -89,3 +89,101 @@ coverage of those fixes there and consumes them via the pinned tag
 **Final green:** Go stack-seeding + stack-snapshot green + vet clean; 63 TS content unit specs + tsc clean; demo-stack reap 41/41, interview-flag 12/12, cockpit 160 pass. The 6 cockpit failures are the inherited pre-M244 academy/overlay stale tests (rext 04babf8, the "159/6" notation) — out of the iter-02..11 diff scope, unchanged by this harden.
 
 **Stop condition:** stabilized — coverage delta < 2% (0% this pass) AND the dimension scan found nothing new; all six named-probe fixes mutation-verified to bite (3 already-toothed confirmed, 1 toothless test + 4 gaps fixed across passes 1–2), flake gate clean.
+
+---
+
+# Second incremental harden — iters 13–24 (toks 12/19 excluded)
+
+The 2nd incremental harden, scoped to the 11 tik iters closed since Pass 3 (last-harden terminating
+commit `51ebd76`). M244's fixes' CODE lives in `rosetta-extensions` (rext, main), so the harden deepens
+the UNIT/mutation coverage of those fixes there and consumes them via the pinned tag
+`sound-check-m244-content-sweep-robustness`; the rosetta-side commits are the ledger + one paired doc fix.
+
+The hardenable code surface is 5 rext commits: iter-13 `2bb0473` (shape-aware settle), iter-15 `8391843`
+(academy anon-view public demopatch), iter-16 `2a71e08` (coverage marker recalibration), iter-18 `6aacc32`
+(run-discrete.sh runner), iter-23 `dddef18` (PageObject.goto networkidle→domcontentloaded). iter-14, iter-17,
+iter-20, iter-21, iter-22, iter-24 landed **no new hardenable code** — they are live-prove / live-infra iters
+(gate-c measure, discrete-spec mapping [became iter-18], gate-h proof on the pre-existing latency harness, the
+3 drift-carry burn-ins, and the BURNIN dev-up cycle); noted honestly, no coverage fabricated.
+
+## Pass 4 — 2026-07-23 — incremental
+
+**Iters hardened this pass:** iter-13, iter-15, iter-16, iter-18, iter-23 (the 5 with hardenable code).
+**Tiks covered since prior pass:** 11 (iters 13–24; toks 12/19 excluded).
+
+**Thesis probed (anti-toothlessness):** MUTATION-VERIFY each fix — break the subject, confirm the test goes
+RED, restore. Result: iter-13 already toothed (confirmed, no change); iter-15/16/18/23 each had a UNIT-coverage
+GAP (the fix was correct but nothing pinned it below the live billion sweep) → all filled + mutation-verified;
+and iter-15 surfaced a real **bug** (the inventory fence RED on committed main), fixed inline (Fate 1).
+
+**Mutation-verification outcomes (the crux):**
+- iter-13 shape-aware settle — **TEETH CONFIRMED (no change).** Neutralized `contentReady` (→ always true, the
+  "settle early-exits on the nav-shell chrome plateau" mutation) → exactly **2 of 4** shape-aware settle tests
+  RED ("does NOT early-exit on the 128-char plateau" + "ack-never-paints polls to the deadline"), matching the
+  iter-13 commit's own claim. The blast-radius pin (player-scored settles ack-blind) + the fast-path stay green.
+- iter-15 academy anon-view public demopatch — **GAP (ZERO coverage) → FIXED.** The `-public` variant had **no
+  test at all** (the sibling test never touched it). New `demo-stack/tests/test_academy_fs_published_public.py`
+  (19): THE CHAIN (`public.pre_sha256 == sibling.post_sha256`; distinct `new Set()`/`eids` anchors), THE
+  PUBLIC-ONLY SCOPE (`new Set()` never `eids` → no tenant leak; draft-strip → no chip), the apply/revert LADDER
+  (the pinned clone IS present here, so it ran for real: chain realized, roundtrip, idempotent, the **chain-order
+  guard REFUSES** applying `-public` on a pristine/unchained file, drift-refuse), and the ant-academy.sh ordering
+  (apply AFTER / revert BEFORE FSPUB). Mutation: corrupt `pre_sha256` → TestChain RED; swap `new Set()`→`eids` in
+  the replacement → TestScope RED (2 assertions).
+- iter-15 inventory drift — **BUG (RED on committed main) → FIXED INLINE.** iter-15 added the **16th** patch
+  manifest (`academy-fs-published-public`) but never bumped the mirrored inventory count, so
+  `test_patch_inventory` (`EXPECTED_TOTAL`/`EXPECTED_BY_REPO`) had been RED since dddef18 (16≠15; ant-academy
+  4≠3). This is exactly the drift the fence exists to catch; the iter loop's per-symptom tests never swept it.
+  Reconciled the rext constants (16 / 4 ant-academy) **and** `corpus/ops/demo/demopatch-spec.md` §5 (the fence
+  mandates the two move together) — header count, apply-vehicle table, reconciliation blockquote, live-fence
+  parenthetical, current-total line, + a new inventory-table row. The fence is the regression pin (RED→GREEN).
+- iter-16 academy-home card-floor marker — **GAP (behaviour un-pinned) → FIXED.** The iter-16 unit test pinned
+  the descriptor SHAPE only; nothing proved the recalibrated `ANT_ACADEMY_HOME_SECTION` is *stronger* — i.e. that
+  it FAILs a page the OLD token marker PASSED. New section-assert block (4) runs the SHIPPED descriptor through
+  the SHIPPED `assertSection`: a 0-card "AI Academy" header FAILs (the exact gate-(d) false-empty), a real 12-card
+  grid PASSES, an 11-card thin catalog FAILs (the floor is a real threshold), a wordmark-less grid FAILs (the
+  both-kind text half). Mutation: revert the descriptor to the old `{kind:'text', mustInclude:['AI Academy']}`
+  form → **3 of 4** RED, incl. the load-bearing 0-card false-empty flipping to a (wrong) PASS.
+- iter-18 run-discrete.sh runner — **GAP (ZERO coverage) → FIXED.** The runner had no test. New
+  `run-discrete.unit.spec.ts` (6, subprocess-driven — no re-implementation): the N-integer guard (non-numeric →
+  exit 2, the wrong-stack guard the runner's own comment calls out), the SCHEME guard, and the OFFSET/port
+  composition (N*10000 + per-surface ports, npm/npx PATH-stubbed to read the banner without a real browser run).
+  Mutation: `3000 + OFFSET`→`3000 + N` → mapping test RED; neutralize the N-guard case pattern → guard test RED.
+- iter-23 PageObject.goto — **GAP (doctrine un-pinned) → FIXED.** Only a comment stood between a revert to
+  `networkidle` and the tailnet re-deadlock iter-23 already paid for once. New playthroughs
+  `page-object.unit.spec.ts` (3): the base goto passes `domcontentloaded`, NEVER `networkidle`, and composes the
+  URL — plus the REAL AI-readiness polling surfaces (`/home`, `/ai-readiness`, the ones that deadlocked) inherit
+  it. Mutation: revert goto to `networkidle` → 2 RED.
+
+**Coverage delta on touched files:** no line-coverage tool wired for TS/Python this batch (as the prior passes);
+mutation-verification is the operative signal per the release thesis. Concrete additions: **+32 tests** — Python
++19 (academy public demopatch) + inventory fence RED→GREEN; TS +4 (section-assert home block) +6 (run-discrete)
++3 (playthroughs page-object). Full stack-verify unit suite 165→**171** + tsc clean; demo-stack python **225**
+green (was 2 RED on the inventory fence).
+
+**Tests added:**
+- iter-15 → demo-stack/tests/test_academy_fs_published_public.py: +19 (manifest/chain/scope/ladder/wiring).
+- iter-15 → demo-stack/tests/test_patch_inventory.py + corpus/ops/demo/demopatch-spec.md §5: inventory reconcile.
+- iter-16 → stack-verify/e2e/tests/section-assert.unit.spec.ts: +4 (shipped-descriptor home card-floor behaviour).
+- iter-18 → stack-verify/e2e/tests/run-discrete.unit.spec.ts: +6 (guards + offset/port mapping).
+- iter-23 → playthroughs/e2e/tests/page-object.unit.spec.ts: +3 (goto never-networkidle contract).
+
+**Bugs surfaced + fixed inline:**
+- iter-15 inventory count drift: `test_patch_inventory` RED on committed main (16 patches, doc/constants said 15).
+  Reconciled rext constants + demopatch-spec.md §5 (rext a0eb684 + rosetta 770b595). Fate 1.
+
+**Flakes stabilized:** none surfaced (flake gate at Pass 6).
+
+**Out-of-scope observation (routed, not fixed):** `playthroughs/e2e/lib/skill-path-page.ts::gotoPath` and
+`simulation-page.ts::gotoSim` STILL use a blocking `waitUntil:'networkidle'` — the same class iter-23 fixed on
+the base goto. They are OUTSIDE the iter-23 diff (page-object.ts only), and iter-23's live billion re-drive did
+NOT find them deadlocking (skillpath-legacy + aisim-chat-launch were among the 12/16 GREEN), so changing them
+would be speculative scope-expansion that risks currently-green specs. Noted for a future iter (Fate 3 by the
+fixable-inline boundary), not fixed here. (The activity-dashboard/assignments/profile `waitForLoadState(
+'networkidle').catch(()=>{})` calls are NON-blocking — the `.catch` bounds them — so they are safe by construction.)
+
+**Knowledge backfill:** demopatch-spec.md §5 updated as part of the Fate-1 inventory fix (the lock-step fence
+demands it). No protocol-level truth surfaced.
+
+**Stop condition:** continue-to-next-pass — Pass 4 filled 4 coverage gaps + fixed 1 inline bug across 5 iters
+(the dimension scan found NEW findings), so the stop condition (delta < 2% AND scan clean) is not yet met; the
+run-discrete spec-path normalization branch (`tests/*` vs `*.spec.ts` vs bare) is still un-swept → Pass 5.
