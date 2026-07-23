@@ -187,3 +187,37 @@ demands it). No protocol-level truth surfaced.
 **Stop condition:** continue-to-next-pass — Pass 4 filled 4 coverage gaps + fixed 1 inline bug across 5 iters
 (the dimension scan found NEW findings), so the stop condition (delta < 2% AND scan clean) is not yet met; the
 run-discrete spec-path normalization branch (`tests/*` vs `*.spec.ts` vs bare) is still un-swept → Pass 5.
+
+## Pass 5 — 2026-07-23 — incremental
+
+**Iters hardened this pass:** iter-18 (the one gap Pass 4 routed forward).
+**Tiks covered since prior pass:** same batch (iters 13–24); Pass 5 continues Pass 4's scope.
+
+**Mutation-verification outcome:**
+- iter-18 run-discrete spec-path normalization — **GAP → FIXED.** Pass 4 covered the guards + the offset/port
+  mapping but not the three-branch spec-name normalization (`tests/*` pass-through | bare `*.spec.ts` → `tests/`
+  prefix | bare name → `tests/<name>.spec.ts`). A wrong prefix is silent poison: playwright matches 0 specs and
+  the discrete sweep reports GREEN over nothing. The `npx` stub now echoes its args, so the composed
+  `playwright test <SPEC_PATHS…>` invocation is observable; +1 test asserts all three forms resolve + no doubled
+  prefix/suffix. Mutation: drop `.spec.ts` from the bare-name branch → RED.
+
+**Coverage delta on touched files:** stack-verify run-discrete.unit.spec.ts 6 → **7** specs; full stack-verify
+unit suite 171 → **172** + tsc clean. No line-coverage tool wired (mutation-verify is the signal).
+
+**Tests added:**
+- iter-18 → stack-verify/e2e/tests/run-discrete.unit.spec.ts: +1 (spec-path normalization, all three forms).
+
+**Bugs surfaced + fixed inline:** none new.
+
+**Dimension scan (remaining surface):** the scan is now clean for the hardenable in-scope surface. What is left
+un-swept is config/live-sweep robustness whose CORE is already covered: `run-discrete.sh`'s `DISCRETE_STUDIO_BASE`
+override + the `render-hiring-comparison` per-spec env defaults (`RENDER_EXPECTED_SIMS`/`COVERAGE_RENDER_GATE`) only
+exercise over a LIVE `--public-host` remote sweep — a unit test of those would be gold-plating (same call the prior
+harden made for the iter-03 `SETTLE_MS` env parse). No further meaningful unit surface across iter-13/15/16/18/23.
+
+**Flakes stabilized:** none surfaced (flake gate at Pass 6).
+
+**Knowledge backfill:** none (the runner's env contract is documented in its own header + coverage-protocol.md).
+
+**Stop condition:** continue-to-next-pass — Pass 5 added 1 test (the scan found one more gap), so a confirmation
+pass is needed to measure the delta as < 2% and run the flake gate on the whole batch of newly-added tests.
