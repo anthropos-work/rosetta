@@ -139,9 +139,8 @@ You will end up with this layout:
 ```
 /home/<you>/
 ├── platform/                      # orchestrator (Makefile, docker-compose.yml, .env)
-├── app/                           # Go backend (CORS, GraphQL gateway)
+├── app/                           # Go backend (CORS, GraphQL gateway; hosts the skill-path engine since "skillpath-in-app")
 ├── cms/                           # Go content management
-├── skillpath/                     # Go skill-path runtime
 ├── jobsimulation/                 # Go AI simulations service
 ├── sentinel/                      # Go authz (casbin)
 ├── storage/                       # Go S3-shim

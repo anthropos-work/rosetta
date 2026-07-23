@@ -2,12 +2,13 @@
 milestone_shape: section
 milestone: M247
 title: "corpus re-ground"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 depends_on: [M246]
 parallel_with: [M248, M249, M250, M251, M252]
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-23
 ---
 
 # M247 — corpus re-ground

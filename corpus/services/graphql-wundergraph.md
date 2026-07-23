@@ -6,12 +6,14 @@
 
 ## Role & Responsibility
 
-* **Primary Goal**: Federate the platform's four Go GraphQL subgraphs into a single
+* **Primary Goal**: Federate the platform's three Go GraphQL subgraphs into a single
   Apollo Federation v2 **supergraph**, served by a WunderGraph **Cosmo Router** at one endpoint.
-  (The former `skiller` subgraph was removed when skiller merged into `app`, July 2026 — the
-  `backend` subgraph now serves the taxonomy types/queries.)
+  (The former `skiller` subgraph was removed when skiller merged into `app`, July 2026, and the
+  former `skillpath` subgraph was removed when skillpath merged into `app`, "skillpath-in-app"
+  M502→M507 — the `backend` subgraph now serves both the taxonomy types/queries and the
+  skill-path session types/queries.)
 * **Key Functions**:
-  * Compose `app` (subgraph name `backend`), `jobsimulation`, `cms`, and `skillpath` into one schema.
+  * Compose `app` (subgraph name `backend`), `jobsimulation`, and `cms` into one schema.
   * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to (host `:5050` locally).
   * Carry `jobsimulation` GraphQL **subscriptions** over Server-Sent Events (`sse_post`).
   * Provide a GraphQL **playground + introspection** in dev/compose; both are disabled in production.
@@ -42,7 +44,7 @@ Dockerfile                              Prod build: composes from the committed 
 config.compose.yaml / .dev / .prod      Router runtime config (playground/introspection/CORS/35MB body)
 supergraph-config-compose.yaml / .dev / .prod   Subgraph routing URLs per environment
 subgraphs.conf                          Per-subgraph version pins consumed by CI (GitHub Releases path)
-schemas/                                Committed concatenated SDL (backend|cms|jobsimulation|skillpath).graphqls
+schemas/                                Committed concatenated SDL (backend|cms|jobsimulation).graphqls
 ci/                                     update-subgraph.sh (gh release download), release-supergraph.sh, utils.sh
 terraform/                              ECS service "wundergraph" (eu-west-1, port 8080, /health)
 .github/workflows/                      release.yml (tag → ECR → infra dispatch), supergraph-update.yml
@@ -86,8 +88,11 @@ Routing URLs use Docker **service names** on `app-network` (deliberately avoidin
 | `backend` (the `app` service) | `http://backend:8082/graphql/query` | subgraph named `backend`, maps to repo/service `app` (includes the taxonomy queries absorbed from the former `skiller` subgraph) |
 | `jobsimulation` | `http://jobsimulation:8400/query` | **subscriptions** via `sse_post` |
 | `cms` | `http://cms:8090/query` | |
-| `skillpath` | `http://skillpath:8100/query` | |
 
+> The `skillpath` subgraph was removed when the skillpath service merged into `app`
+> ("skillpath-in-app", M502→M507); the `backend` subgraph now serves the skill-path
+> session types/queries. Only 3 subgraphs remain.
+>
 > `dev` mode uses `host.docker.internal:<port>`; `prod` uses AWS service-discovery
 > DNS where all subgraphs share container port **8080**. Use the `-compose` config
 > for local dev (there is **no** `-local` variant).
@@ -95,9 +100,9 @@ Routing URLs use Docker **service names** on `app-network` (deliberately avoidin
 ## Dependencies
 
 * **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile — hits the router at `:5050/graphql`.
-* **Downstream (composed subgraphs)**: `app` (as `backend`), `jobsimulation`, `cms`, `skillpath`.
-* **Compose `depends_on`** (all `service_started`): `backend`, `jobsimulation`, `cms`, `skillpath`, **`storage`** — note `storage` is **not** a GraphQL subgraph but is in the startup-order list.
-* **CI/prod**: GitHub Releases on `anthropos-work/{app,jobsimulation,cms,skillpath}` (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`.
+* **Downstream (composed subgraphs)**: `app` (as `backend`), `jobsimulation`, `cms`.
+* **Compose `depends_on`** (all `service_started`): `backend`, `jobsimulation`, `cms`, **`storage`** — note `storage` is **not** a GraphQL subgraph but is in the startup-order list.
+* **CI/prod**: GitHub Releases on `anthropos-work/{app,jobsimulation,cms}` (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`.
 
 ## Local Development
 

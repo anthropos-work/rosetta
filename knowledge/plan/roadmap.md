@@ -217,7 +217,7 @@ skillpath_sessions).
 **Closure (2026-07-23):** GO/NO-GO **PASS**. Both open questions answered: **hard-cut to `public`** (D-1 — the demo builds from a single pinned clone set; version skew handled by the per-stack rext tag pin, not seeder branching), and the ~386-commit `app` bump surfaced **NO** migration/subgraph break (D-4 → downstream milestones scope safely against this topology). Delivered: the seeder re-point (`skillpath.*`→`public.skill_path_sessions`, 8 live sites + DNA + ~16 test assertions), a durable canonical `clones.pin.json` (12 repos @ current origin/main; skillpath excluded) + copy-if-absent seam, the de-skillpathed LIVE bring-up path (§3 Fate-1 expansion, D-3), and the `update_guide.md` consolidation re-sync note. **Proven:** one cold `/demo-up` (LOCAL demo-2; billion untouched) came up GREEN — **561 rows in `public.skill_path_sessions`**, 3 subgraphs + 0 skillpath, health 200 + casbin 1250, all probes pass. 3 autoverify warnings all non-firing (D-07 AI-readiness perf-patch anchor→M250 · D-08 fake-FAPI http-vs-TLS probe artifact→M251/M254 · D-09 academy peripheral). Emitted the **9-row confirmed-drift ledger** (D-01..D-09) → M247's triage. Close review clean (0 must-fix); deferral audit GREEN; tests green (Go stack-seeding + test_tooling 168/168 + frontend_build 94/94 + stack-injection 264/9-skipped); flake 5/5. Code-of-record: rext tag `july-jitter-m246-harden` @ `9b29f3a` (on origin). **0 platform-repo edits.**
 
 #### M247 — corpus re-ground  (`section`, doc-only)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-23)
 **Goal:** The corpus describes the CONSOLIDATED platform: skillpath is merged-into-app (not a live service), the
 gateway is **3 subgraphs**, and the new `app` domains have fact sheets.
 **Shape:** `section` — internal two-phase: **core-lanes (concurrent)** + **reconcile-tail**.
@@ -240,6 +240,19 @@ code milestones also touch) folds into the **serial integration tail** after the
 **KB deps:** `corpus/services/README.md`, `corpus/services/skiller.md`, `corpus/services/backend.md`, `corpus/services/TEMPLATE.md`.
 **Delivers →** the above corpus docs (4 new fact sheets + the skillpath redirect + the 3-subgraph reconciliation).
 **Open questions:** `coursebuilder` + `credits` sources are ABSENT from the stale clone → those 2 fact-sheet lanes need a fresh `app` pull (M246's bump makes them present). The reclassification is semantically heavier than a digit swap (skillpath is described as a runtime engine in ~37 files).
+**Closure (2026-07-23):** Delivered all 8 sections. `skillpath.md` → a merged-into-app **redirect** (mirrors
+`skiller.md`) + moved to the README **archived/merged** table; the **4→3 subgraph** reclassification across ~30 echo
+files (each mention re-read in context, not blind-sed — grep-verified 0 residual "4 subgraphs" except the intentional
+historical note in `backend.md`, 0 stale live-skillpath-as-service claims); **4 net-new app-domain fact sheets**
+(`coursebuilder` · `ai-labs` [+ the load-bearing "shared-purse UNBUILT" caveat] · `askengine` · `academy-backend`,
+all `TEMPLATE.md`-shaped, indexed in `services/README.md` + `CLAUDE.md`, count 23→27); `ai-readiness.md` refreshed for
+the **aireadiness-package refactor** (platform-facts only — the demo-seeder fidelity deltas + the D-07 re-pin are
+**M250's**, recorded D1); roadrunner resolved to the **negative** (stays ORPHANED, not archived — still in
+repos.yml+compose). **Fidelity GREEN** (0 corrections vs `stack-demo/app` @ `v1.351.1`); **0 broken links** across 30
+touched docs. **DOC-ONLY: zero rext, zero platform-repo edits, no code-of-record tag.** Deferral audit **YELLOW**
+(0 blockers) — re-fated the aged-out rext-hygiene inert set (M251 destination closed → documented-inert standing note)
++ the inherited optional `verification.md` anchor (→ release-close); ai-readiness demo fidelity → M250; ops/demo
+spec-doc reconcile → the code milestones + release-close consistency pass. Merged to `release/02.70-july-jitter`.
 
 #### M248 — content-stories manager result-link  (`section`, small)
 **Status:** `planned`

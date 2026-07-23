@@ -548,7 +548,7 @@ This is the part that must be said plainly, because every mitigation below is ju
 
 | Weakening | Mechanism | Default |
 |---|---|---|
-| **Clerk token verification is disarmed** in `app`, `cms`, `jobsimulation`, `skillpath` | `stack-injection/apply-authn.sh` vendors a **disarmed colony** into the demo's clone — `authn/provider/clerk` is replaced by a twin that verifies with a **universal HS256 key** (`INJECTED` in `gen_injected_override.py`) | **always, by construction** |
+| **Clerk token verification is disarmed** in `app`, `cms`, `jobsimulation` (`skillpath` is decommissioned into `app` — the injection still carries a dormant, inert `skillpath` entry pending rext cleanup) | `stack-injection/apply-authn.sh` vendors a **disarmed colony** into the demo's clone — `authn/provider/clerk` is replaced by a twin that verifies with a **universal HS256 key** (`INJECTED` in `gen_injected_override.py`) | **always, by construction** |
 | **Authorization is short-circuited** on the per-member target-role write path | the `app-targetrole-authz-skip` **demo-patch** | **ON** (`DEMO_NO_AUTHZ_SKIP=0`) |
 | **The presenter cockpit is a password-free "become any seeded hero" launcher** | a **bare GET** to `<fapi>/v1/client/handshake?__clerk_identity=<key>&redirect_url=<jump_to>` — the fake FAPI selects the seat and *establishes the session*. No credential is presented at any point | **ON** (served whenever `DEMO_STORIES=1`) |
 

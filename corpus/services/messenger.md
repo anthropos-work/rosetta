@@ -80,7 +80,7 @@ make up PROFILE=messenger
 docker compose --profile graphql --profile messenger up --build -d
 ```
 
-Messenger depends on `backend`, `cms`, `jobsimulation`, `skillpath` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack.
+Messenger depends on `backend`, `cms`, `jobsimulation` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack. (skillpath was removed from this `depends_on` list when it merged into `app`.)
 
 ### Run natively
 
@@ -107,7 +107,7 @@ For local development, set `BREVO_KEY=""` to route through the **console sender*
 | `CMS_RPC_ADDR` | `http://cms:8091` | CMS RPC |
 | `JOBSIMULATION_RPC_ADDR` | `http://jobsimulation:8401` | Jobsimulation RPC |
 | `SKILLER_RPC_ADDR` | `http://backend:8083` | Skiller RPC surface — served by `backend` since the skiller→app merge |
-| `SKILLPATH_RPC_ADDR` | `http://skillpath:8101` | Set in docker-compose but NOT read by the code — messenger has no Skillpath RPC client; skill-path data is read via the CMS client (`internal/flow/assignments.go:815`). |
+| ~~`SKILLPATH_RPC_ADDR`~~ | *(removed)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:815`). |
 
 > Values shown are what docker-compose injects. The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).
 
