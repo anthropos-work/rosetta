@@ -2,7 +2,7 @@
 
 ## Role & Responsibility
 
-Sentinel is the **centralized authorization service** of the platform. Every other service (`app`, `jobsimulation`, `cms`, `skillpath`, `messenger`) calls Sentinel via Connect-RPC to check permissions before executing operations. It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+Sentinel is the **centralized authorization service** of the platform. Every other service (`app`, `jobsimulation`, `cms`, `messenger`) calls Sentinel via Connect-RPC to check permissions before executing operations. It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
 
 Sentinel does **not** handle authentication — that's Clerk's job. It also does not validate JWTs (the shared `authn` library does that in each consuming service). Sentinel only answers *"is this subject allowed to perform this action on this object?"*.
 
@@ -79,7 +79,7 @@ Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087` in every other service
 
 ## Dependencies
 
-* **Upstream consumers**: every other Anthropos service that gates requests (`app`, `cms`, `skillpath`, `jobsimulation`, `messenger`)
+* **Upstream consumers**: every other Anthropos service that gates requests (`app`, `cms`, `jobsimulation`, `messenger`)
 * **Downstream**: PostgreSQL (`sentinel` schema, table `casbin_rules`)
 * **No outbound RPC** to other platform services
 

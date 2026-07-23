@@ -11,8 +11,8 @@ The CMS service is the **content layer of the platform** — it owns the authore
 This last point is the structural shift: **studio-room is no longer a standalone deployable**. It lives inside the cms container and runs as a subprocess invoked by the Go service.
 
 > [!IMPORTANT]
-> **CMS owns content; the like-named runtime services own state.** Do not conflate the **`skillpath`** service with skill-path content, or the **`jobsimulation`** service with simulation content. Those are **runtime/session engines** that hold *no* content and reference CMS artifacts **by ID**:
-> - **[`skillpath`](./skillpath.md)** tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %); it fetches the skill-path *structure* it tracks against from this CMS service over Connect-RPC (`CMS_RPC_ADDR`).
+> **CMS owns content; the runtime engines own state.** Do not conflate the **skill-path engine** with skill-path content, or the **`jobsimulation`** service with simulation content. Those are **runtime/session engines** that hold *no* content and reference CMS artifacts **by ID**:
+> - **The [skill-path engine](./skillpath.md)** (merged into `app` — "skillpath-in-app", M502→M507; formerly the standalone `skillpath` service) tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %); it fetches the skill-path *structure* it tracks against from this CMS service over Connect-RPC (`CMS_RPC_ADDR`).
 > - **[`jobsimulation`](./jobsimulation.md)** runs the interactive simulation *session*; it fetches the simulation *definition* it runs from this CMS service over Connect-RPC (`cms.GetSimulation`) — it has no `DIRECTUS_BASE_ADDR` of its own, so all its content reads go *through* CMS.
 >
 > So **content = CMS/Directus; the like-named service = the state machine over that content.** This split is the source of a recurring naming confusion — see the [Service Taxonomy](../architecture/service_taxonomy.md) and [Architecture Overview](../architecture/architecture_overview.md) content-vs-runtime callouts.
@@ -100,13 +100,13 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. GraphQL API served at `:8090/query`; Apollo Sandbox playground at `:8090/` when running locally. (There is also a Directus webhook receiver at `:8090/webhooks/`.)
-* **RPC**: `internal/rpcsrv` — used by Backend, Jobsimulation, Skillpath via `CMS_RPC_ADDR=http://cms:8091`.
-* **Federation**: CMS is one of the 4 subgraphs federated by Cosmo Router (`backend`, `jobsimulation`, `cms`, `skillpath`).
+* **RPC**: `internal/rpcsrv` — used by Backend (incl. the in-process skill-path engine) and Jobsimulation via `CMS_RPC_ADDR=http://cms:8091`.
+* **Federation**: CMS is one of the 3 subgraphs federated by Cosmo Router (`backend`, `jobsimulation`, `cms`) — the former `skillpath` subgraph was folded into `backend` when skillpath merged into `app`.
 
 ### Upstream consumers
 * Next Web App (GraphQL)
 * Studio-Desk (GraphQL for studio entities)
-* Backend, Jobsimulation, Skillpath (RPC + Redis Streams)
+* Backend (incl. the in-process skill-path engine), Jobsimulation (RPC + Redis Streams)
 
 ### Downstream dependencies
 * Directus (content storage)
@@ -173,7 +173,7 @@ cd studio && pytest      # Python tests (requires `pip install -r requirements.t
 
 ## Related Documentation
 
-* [Skillpath](./skillpath.md) — the runtime/session service that tracks progress against CMS-owned skill-path content (the content-vs-runtime split)
+* [Skillpath](./skillpath.md) — the skill-path runtime engine (merged into `app`, M502→M507) that tracks progress against CMS-owned skill-path content (the content-vs-runtime split)
 * [Jobsimulation](./jobsimulation.md) — the runtime service that *runs* simulations defined as CMS content
 * [AI Architecture](../architecture/ai_architecture.md) — model routing, generation slots
 * [Service Taxonomy](../architecture/service_taxonomy.md) — orchestration profile + the content-vs-runtime callout

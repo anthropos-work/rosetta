@@ -39,7 +39,7 @@ third-party dependency. This keeps the services consistent and small.
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
 | **Version pin** | `v0.34.3` across all live services (archived `chronos` pins `v0.30.1`) |
-| **Imported by** | **Every** Go service: app, cms, jobsimulation, skillpath, sentinel, storage, messenger, roadrunner |
+| **Imported by** | **Every** live Go service: app, cms, jobsimulation, sentinel, storage, messenger, roadrunner (the decommissioned skillpath's usage is now folded into app) |
 
 The platform framework. Each service composes its server out of colony packages:
 
@@ -67,7 +67,7 @@ colony does **not** actually enforce GraphQL rate limiting today.
 | **Module** | `github.com/anthropos-work/proto` |
 | **Language** | Go (`go 1.25.0`); tooling: `buf` (CI pins `v1.57.0`), protoc-gen-go, protoc-gen-connect-go, goverter |
 | **Version pin** | mostly `v1.196.0`; **cms & jobsimulation are ahead at `v1.198.0`** (real version skew) |
-| **Imported by** | every Go service that does RPC (app, cms, jobsimulation, skillpath, sentinel, storage, messenger, roadrunner) |
+| **Imported by** | every live Go service that does RPC (app, cms, jobsimulation, sentinel, storage, messenger, roadrunner; the decommissioned skillpath's RPC is now served in-process by app) |
 
 The **single source of truth for RPC contracts**. Two layers:
 
@@ -75,7 +75,8 @@ The **single source of truth for RPC contracts**. Two layers:
 * **Hand-written** — `go/domain/<svc>/` idiomatic Go types (string enums, `time.Time`) plus **goverter**-generated converters. goverter fails codegen if a proto enum value has no matching domain const — the "three-file rule" (proto + domain const + `make gen`).
 
 12 Connect-RPC services are defined: `UsersService`, `OrganizationsService`,
-`CMSService`, `JobSimulationService`, `SkillerService`, `SkillPathSessionService`,
+`CMSService`, `JobSimulationService`, `SkillerService` (served by app since the skiller merge),
+`SkillPathSessionService` (served by app since the skillpath merge, M502→M507),
 `AuthorizationService` (Sentinel), `MessengerService`, `RoadRunnerService`,
 `RealtimeService`, `ChronosService` (archived service, contract still present). Plus
 `events`/`flags`/`ai` message-only protos used over Redis Streams pub/sub.
@@ -139,7 +140,7 @@ the response (parse accordingly). Retry policy: 10 attempts, exponential backoff
 |:---------|:------|
 | **Module (standalone)** | `github.com/anthropos-work/authn` — **legacy** (tag `v1.7.0`) |
 | **Live form** | `github.com/anthropos-work/colony/authn` (absorbed into colony) |
-| **Imported by** | via colony: app (heaviest), cms, jobsimulation, skillpath |
+| **Imported by** | via colony: app (heaviest), cms, jobsimulation (former skillpath usage now folded into app) |
 
 Provider-agnostic authentication: verifies bearer tokens (Clerk JWTs in practice) and
 injects a typed `User`/`Organization` into request context for `net/http`, Echo, and
@@ -175,7 +176,7 @@ GraphQL servers.
 | **Module** | `github.com/anthropos-work/taxonomy` (README title: **"nodeid"**) |
 | **Language** | Go (`go 1.21.0`), **zero external dependencies** (stdlib only) |
 | **Version pin** | `v1.2.0` |
-| **Imported by** | directly: app, cms, jobsimulation, messenger; indirectly: skillpath, storage, sentinel (**7 total**) |
+| **Imported by** | directly: app, cms, jobsimulation, messenger; indirectly: storage, sentinel (**6 total** live services; the decommissioned skillpath's usage is now folded into app) |
 
 > ### ⚠️ Major correction: taxonomy is a LIBRARY, not data
 > Multiple corpus docs called this "Skills taxonomy data (60K skills, 18K roles)". That

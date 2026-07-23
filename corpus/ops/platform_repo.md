@@ -56,19 +56,21 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **12 app services**: `graphql`, `sentinel`, `backend`,
-`jobsimulation`, `cms`, `skillpath`, `storage`, `customerio-sync`,
+`docker-compose.yml` defines **11 app services**: `graphql`, `sentinel`, `backend`,
+`jobsimulation`, `cms`, `storage`, `customerio-sync`,
 `messenger`, `roadrunner`, `studio-desk`, `next-web-app` — plus the third-party
 `gotenberg` image and the two base services from `common.yml`. (The former `skiller`
 service was merged into `app`/`backend` in July 2026 — its RPC surface is now served
-by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose.)
+by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose. The former `skillpath`
+service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→M507 — and is
+**gone from compose**; only the residual `SKILLPATH_STREAM=skillpath` env plumbing remains.)
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, jobsimulation, cms, skillpath, storage, roadrunner, gotenberg, **graphql** |
+| `graphql` *(default)* | backend, jobsimulation, cms, storage, roadrunner, gotenberg, **graphql** |
 | `backend` | backend, gotenberg |
-| `jobsimulation` / `cms` / `skillpath` / `storage` / `roadrunner` | **only that one service** |
-| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation/skillpath) |
+| `jobsimulation` / `cms` / `storage` / `roadrunner` | **only that one service** |
+| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation) |
 | `customerio-sync` | customerio-sync |
 | `frontend` | next-web-app (containerized Workforce) |
 | `studio-desk` | studio-desk (containerized) |
@@ -87,7 +89,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
 
-* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation), `skillpath` (skillpath) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`.
+* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`. (`skillpath` is decommissioned — no longer in `repos.yml`; its migrations/schema folded into `app`'s `public`.)
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm), `ant-academy` (node-npm), `graphql-wundergraph` (node-npm).
 
 > `ant-academy` is cloned but has **no compose service** (runs natively / Vercel). The
@@ -102,7 +104,6 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 | backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface) |
 | sentinel | 8087 |
 | cms | 8090, 8091 (RPC) |
-| skillpath | 8100, 8101 (RPC) |
 | messenger | 8200, 8201 (RPC) |
 | storage | 8300, 8301 (RPC) |
 | jobsimulation | 8400 (`PORT`), 8401 (RPC) |

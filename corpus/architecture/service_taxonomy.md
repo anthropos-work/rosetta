@@ -52,10 +52,9 @@ graph TB
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Backend/App** | 8081-8083 | Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)) | graphql, backend | Local `../app` |
+| **Backend/App** | 8081-8083 | Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)), the **skill-path progression engine** (merged skillpath, "skillpath-in-app" M502→M507 — [→](../services/skillpath.md)), plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine, academy store) | graphql, backend | Local `../app` |
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
 | **CMS** | 8090-8091 | **Content layer** — owns CONTENT / DEFINITIONS (skill paths, simulation blueprints, library) via Directus Proxy, **+ embedded studio-room AI generation pipeline** | graphql, cms | Local `../cms` (+ `cms/studio/` = `anthropos-studio-room`, cloned via `make init-studio`, gitignored) |
-| **Skillpath** | 8100-8101 | **Runtime** — per-user skill-path progression *state* (the path *content* lives in CMS) | graphql, skillpath | Local `../skillpath` |
 | **Jobsimulation** | 8400-8401 | **Runtime** — runs simulation *sessions* (the simulation *definition* lives in CMS) | graphql, jobsimulation | Local `../jobsimulation` |
 | **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
 | **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | graphql, roadrunner | Local `../roadrunner` |
@@ -82,6 +81,7 @@ graph TB
 | **Chronos** | Removed from local dev orchestration | Platform commit `045857c` |
 | **Intelligence** | Removed from local dev orchestration | Platform commit `fdfa189` |
 | **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned | [skiller.md](../services/skiller.md) |
+| **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507); session state → `public.skill_path_sessions`; no container/subgraph; repo legacy | [skillpath.md](../services/skillpath.md) |
 
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
@@ -109,9 +109,9 @@ make dev S=cms         # Stop Docker container, develop natively
 > [!IMPORTANT]
 > **Content layer vs. runtime-state services.** Within Tier 1 there is a split-ownership model that's easy to miss because two services share a name with their content:
 > - **CMS is the content layer** — it owns the authored CONTENT / DEFINITIONS (skill-path content: chapters → steps, curators, skills-to-verify, settings; job-simulation *blueprints*; the content library) by wrapping Directus with business logic + a Redis cache.
-> - **`skillpath` and `jobsimulation` are runtime/session engines** — they own RUNTIME / SESSION / PROGRESS state and reference CMS content **by ID only**. `skillpath` fetches the path structure from CMS via `CMS_RPC_ADDR` and tracks `SkillPathSession → ChapterSession → StepSession`; `jobsimulation` fetches the simulation definition from CMS (`cms.GetSimulation` Connect-RPC) and runs the session.
+> - **The skill-path engine (now in `app`) and `jobsimulation` are runtime/session engines** — they own RUNTIME / SESSION / PROGRESS state and reference CMS content **by ID only**. The skill-path engine fetches the path structure from CMS via `CMS_RPC_ADDR` and tracks `SkillPathSession → ChapterSession → StepSession` (it merged from the standalone `skillpath` service into `app` — "skillpath-in-app", M502→M507 — with session state now in `public.skill_path_sessions`); `jobsimulation` fetches the simulation definition from CMS (`cms.GetSimulation` Connect-RPC) and runs the session (still standalone; the next runtime engine slated for the same in-app consolidation).
 >
-> So **the `skillpath` service ≠ skill-path content, and the `jobsimulation` service ≠ simulation content.** Content = CMS/Directus; the like-named service = the state machine over it. See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).
+> So **skill-path *content* ≠ the skill-path *engine*, and the `jobsimulation` service ≠ simulation content.** Content = CMS/Directus; the engine = the state machine over it (the skill-path engine now inside `app`). See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).
 
 ---
 
@@ -285,12 +285,12 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 | **Port** | 5050 |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
-| **Subgraphs** | app, jobsimulation, cms, skillpath |
+| **Subgraphs** | backend/app, jobsimulation, cms (3 — skillpath's subgraph was folded into `backend` when skillpath merged into `app`, M505) |
 
 > Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
 
 **Aggregates**:
-- Backend (app), CMS, Jobsimulation, Skillpath services
+- Backend (app), CMS, Jobsimulation services
 
 **Consumed By**:
 - Next.js frontend applications
@@ -358,10 +358,10 @@ go run .               # Run natively
 | Profile | Services started |
 |---------|------------------|
 | (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, skillpath, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
+| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
-| `skillpath` / `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
-| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation/skillpath — bring those up too) |
+| `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
+| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation — bring those up too) |
 | `customerio-sync` | postgresql, redis, sentinel, customerio-sync |
 | `frontend` | + next-web-app (containerized) |
 | `studio-desk` | + studio-desk (containerized) |
@@ -381,5 +381,5 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
-| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026) | Go | Removed from local orchestration | GitHub repos still exist |
+| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026), Skillpath (merged into app, M502→M507) | Go | Removed from local orchestration | GitHub repos still exist |
 | **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

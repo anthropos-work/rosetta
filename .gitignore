@@ -22,6 +22,10 @@
 # lives separately under .agentspace/ — see the AGENTSPACE block below.
 # -----------------------------------------------------------------------------
 /stack-*/
+# Also ignore the SYMLINK form: a worktree may symlink `stack-demo`/`stack-dev`
+# to the main checkout's workspaces (git treats a symlink-to-dir as a file, so the
+# trailing-slash pattern above does not match it).
+/stack-*
 
 # -----------------------------------------------------------------------------
 # ENVIRONMENT & SECRETS

@@ -290,7 +290,6 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 | `app` | Go backend | Yes (public schema) |
 | `cms` | Go backend | Yes (cms schema) |
 | `jobsimulation` | Go backend | Yes (jobsimulation schema) |
-| `skillpath` | Go backend | Yes (skillpath schema) |
 | `sentinel` | Go backend | No |
 | `storage` | Go backend | No |
 | `messenger` | Go backend | No |
@@ -440,7 +439,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router.
+    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -485,7 +484,7 @@ After the first startup, apply database schemas:
 ```bash
 make migrate
 ```
-This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation, skillpath).
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation — skillpath is decommissioned into `app`, "skillpath-in-app" M502→M507, so its migrations folded into `app`'s `public` schema).
 
 *Verification*: Commands should complete without errors.
 
@@ -682,9 +681,9 @@ This removes PostgreSQL data, restarts the container, and re-runs all migrations
 >
 > **One-command alternative (v2.1 M211): `dev-stack/migrate-dev.sh`.** The rext hook
 > `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh` automates this whole cold DB-init in one call —
-> `wait_pg` → create schemas (`extensions`/`sentinel`/`cms`/`jobsimulation`/`skillpath`) + `CREATE EXTENSION
-> vector/pgcrypto/pg_trgm SCHEMA extensions` → atlas-migrate the 4 merged services (`app:public` / `cms` /
-> `jobsimulation` / `skillpath`) → load the global Sentinel casbin policy (guarded on empty) → restart
+> `wait_pg` → create schemas (`extensions`/`sentinel`/`cms`/`jobsimulation`) + `CREATE EXTENSION
+> vector/pgcrypto/pg_trgm SCHEMA extensions` → atlas-migrate the 3 migrating services (`app:public` / `cms` /
+> `jobsimulation`) → load the global Sentinel casbin policy (guarded on empty) → restart
 > sentinel+backend. It **mirrors `demo-stack/migrate-demo.sh`** for the main dev stack (project `anthropos`,
 > postgres `:5432`), so a cold dev DB-init is reproducible instead of hand-run. Prefer it over the manual block
 > above; use `make migrate` directly only when the schemas + extensions already exist.

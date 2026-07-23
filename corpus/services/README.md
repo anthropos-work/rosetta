@@ -27,7 +27,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 4 subgraphs (app, jobsimulation, cms, skillpath) |
+| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 3 subgraphs (backend/app, jobsimulation, cms) |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the cms container** as `cms/studio/` |
