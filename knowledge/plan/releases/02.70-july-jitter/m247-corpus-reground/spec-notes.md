@@ -107,7 +107,26 @@ reads via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. Backend-authoritative since app "v
 Additive-only, UserMixin owner-only privacy. GraphQL + REST (no RPC).
 
 ## ai-readiness.md refresh (aireadiness-package refactor)
-_(TBD during build.)_
+
+Refreshed for the platform-side refactor (app v1.351.1, commit `4c28365f`, 2026-07-22):
+- **Top ⚠️ package-refactor callout**: `internal/workforce/` → `internal/aireadiness/` (package `aireadiness`);
+  file-rename table (`ai_readiness.go`→`readiness.go`, `_v2`→`scoring.go`, `_csv`→`csv.go`, `readiness_steps`→
+  `steps.go`, `readiness_narrative`→`narrative.go`, `how_we_measure_v2`→folded into `how_we_measure.go`);
+  `WorkforceDirectory` the only remaining workforce dep (LoadMembers impl stays in `workforce/members.go`); the
+  **D-07** demopatch re-anchor to `aireadiness/readiness.go` `m.workforce.LoadMembers` (owned by M250).
+- **Corrected scoring bands** (load-bearing): band-based Champion ≥75 both axes / Standby ≤50; buckets None 0-24 /
+  Low 25-50 / Medium 51-74 / High 75-100 (was threshold-50 + none 0-10/low 11-40/medium 41-70/high 71-100).
+- **Track-awareness** (cycles + sims carry `track` tech/business/both; `resolveUserTrack`; `launched_by`).
+- **3 net-new tables** (`ai_readiness_email_overrides` M408, `_notification_log` + `_notification_optout` M400/M403).
+- **New REST endpoints** (`/setup` GET+POST, `/cycles/{id}` GET, `/cycles/{id}/close` POST, email preview/override).
+- **New "Platform refresh" section**: notifications lifecycle, email override/preview, one-click provisioning,
+  auto-close scheduler (`CloseDueAIReadinessCycles`), recommendation engine, compare-fully-built, CSV-15, Manager
+  wiring, and the **platform-default 31-skill** fact (19 core + 12 enabling) distinguished from the demo seeder.
+- Path anchors updated in the platform-fact regions (Role, enablement gate, scoring engine, narrative, tests,
+  cross-ref, queryActiveCycleEndDate, the D-07 loadMembers anchor).
+
+**LEFT for M250** (which also `Delivers → ai-readiness.md`): the demo-seeder fidelity counts (Seeding/CYCLE-STATE/
+FILLED-ness sections) + their 4 bare-filename compute line-anchors — see decisions.md D1.
 
 ## roadrunner ORPHANED→ARCHIVED resolution
 _(TBD during build.)_

@@ -1,10 +1,46 @@
 # AI Readiness (Workforce) — service documentation
 
-> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48 — corpus re-ground); **re-verified GREEN against `app` code
-> 2026-06-30** (M51 iter-01 pre-flight KB-fidelity gate — all behavioral claims ALIGNED, incl. the load-bearing
-> cycle-state read-path). The feature ships in **`app` v1.315+** (backend) + **`next-web-app` v2.89.0+** (UI) and had
-> **no prior corpus coverage** (it was invisible to the ~1-month-stale clones, which is why M201's verify reported it
-> as a false-negative). This doc is the contract the v1.10b **M51** AI-readiness showcase-org seeder builds against.
+> **Status:** documented 2026-06-29 (v1.10b "fit-up" M48); **re-verified GREEN 2026-06-30** (M51). **Package-refactor
+> refresh 2026-07-23 (v2.7 "july jitter" M247)** — see the ⚠️ callout below: the domain moved out of
+> `app/internal/workforce/` into its own **`app/internal/aireadiness/`** package (app `v1.351.1`), the archetype
+> **scoring bands changed**, and several net-new subsystems landed (notifications, email overrides, one-click
+> provisioning, auto-close, a recommendation engine). The feature ships in **`app` v1.315+** (backend) +
+> **`next-web-app` v2.89.0+** (UI). This doc is the contract the v1.10b **M51** AI-readiness showcase-org seeder
+> builds against; the **demo-seeder fidelity deltas** (the 31-skill default set, track-keyed named sims,
+> evaluated-skills set-dress) are owned by **v2.7 M250 (AI-readiness fidelity)** — this refresh covers the
+> platform-side package refactor only.
+
+> ### ⚠️ Package refactor — `internal/workforce/` → `internal/aireadiness/` (app v1.351.1, M247 refresh)
+>
+> The whole AI-Readiness domain moved out of `app/internal/workforce/` into a **new package
+> `app/internal/aireadiness/`** (package name `aireadiness`) — commit `4c28365f` ("Refactor AI Readiness domain:
+> migrate workforce dependencies to aireadiness package", 2026-07-22). `workforce` keeps the org-analytics KPIs;
+> `aireadiness` owns everything readiness-scoped. **The only remaining dependency on `workforce` is the member
+> directory** (the `WorkforceDirectory` interface — `LoadMembers`/`LoadMembersByUserIDs`, whose implementations
+> **stayed** in `app/internal/workforce/members.go`).
+>
+> **File renames** (older `app/internal/workforce/…` anchors elsewhere in this doc refer to the pre-refactor
+> location — resolve them under `internal/aireadiness/`):
+>
+> | Old (`internal/workforce/`) | New (`internal/aireadiness/`) |
+> |---|---|
+> | `ai_readiness.go` | **`readiness.go`** (the scoring engine + read entrypoints) |
+> | `ai_readiness_v2.go` | `scoring.go` (archetype/axis math + bands) |
+> | `ai_readiness_csv.go` | `csv.go` |
+> | `readiness_steps.go` | `steps.go` |
+> | `readiness_narrative.go` | `narrative.go` |
+> | `how_we_measure_v2.go` | folded into `how_we_measure.go` (`computeInterviewInsightsV2`) |
+> | `cycles.go`/`compare.go`/`diagnosis.go`/`provision.go`/`defaults.go`/… | same names under `internal/aireadiness/` |
+> | `emailoverride/`, `emailpreview/`, `notifications/` | same, under `internal/aireadiness/` |
+> | `*_test.go` (scoring/steps/cycle suites) | moved with the package; harness `testdb_test.go` (pgtest) |
+>
+> **D-07 demopatch re-anchor (load-bearing).** The `app-aireadiness-snapshot-loadmembers` demo-patch anchored on
+> `app/internal/workforce/ai_readiness.go` at the `buildResponseFromSnapshots → loadMembers(orgID,"")` call. That
+> file no longer exists — the call is now at **`app/internal/aireadiness/readiness.go`**, `buildResponseFromSnapshots`,
+> as **`m.workforce.LoadMembers(ctx, orgID, "")`** *through the `WorkforceDirectory` interface* (the bounded swap
+> `LoadMembers → LoadMembersByUserIDs` is now expressible at that interface call site, since `WorkforceDirectory`
+> already exposes `LoadMembersByUserIDs`). The patch **must re-anchor** — this is the M246 drift-ledger **D-07**
+> item, owned by **v2.7 M250**.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -13,7 +49,8 @@
 **AI Readiness** is an org-level **AI-capability diagnostic**: each member runs a **3-step onboarding/evaluation**,
 which produces a per-member readiness **score (0–100)** + an **archetype**, rolled up into a **manager dashboard**
 (a funnel + a Knowledge×Usage archetype matrix + per-team/per-person drill-down). It is a subsystem of the **`app`
-(backend) service** — `app/internal/workforce/` — not a standalone microservice. It is **org-gated** (off by default)
+(backend) service** — its own package **`app/internal/aireadiness/`** (split out of `internal/workforce/`; see the
+⚠️ package-refactor callout above) — not a standalone microservice. It is **org-gated** (off by default)
 and **member-facing** for the onboarding flow + **manager/analytics-facing** for the dashboard.
 
 ## Org enablement (the gate)
@@ -22,7 +59,8 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 
 1. **Org setting** — a row in `organization_settings` with `setting = 'ai_readiness'`, `is_enabled = true`
    (`app/internal/data/ent/enum/organization_settings.go:47` → `OrganizationSettingAIReadiness = "ai_readiness"`;
-   checked by `WorkforceManager.isAIReadinessEnabled`, `app/internal/workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
+   checked by `isAIReadinessEnabled` in `app/internal/aireadiness/steps.go` — formerly
+   `workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
    off. Exposed to the FE as the GraphQL query `aiReadinessEnabled: Boolean!`
    (`resolver_ai_readiness.go` — returns `false`, not an error, for non-enabled orgs).
 2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
@@ -77,7 +115,8 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 
 The evaluation is a fixed **3-step** framework (per-org orderable, canonical default below), each step a scoring
 axis (`enum.AIReadinessStepType` defined in `app/internal/data/ent/enum/ai_readiness.go` — `StepSkillMapping` /
-`StepSimulation` / `StepInterview`; consumed + scored in `app/internal/workforce/ai_readiness.go:173-229`):
+`StepSimulation` / `StepInterview`; consumed + scored in `app/internal/aireadiness/readiness.go`, formerly
+`workforce/ai_readiness.go`):
 
 | # | Step (`step_type`) | Method | Max pts | Signal that completes it |
 |---|--------------------|--------|---------|--------------------------|
@@ -86,9 +125,19 @@ axis (`enum.AIReadinessStepType` defined in `app/internal/data/ent/enum/ai_readi
 | 3 | `interview`        | an interview (a sim, different config) | **30** | best ended/scored session whose sim_id ∈ `ai_readiness_sims` (`step_type='interview'`); `(raw_score/100)×30` |
 
 **Composite scores (0–100):** `score = step1+step2+step3` (max 100) · `knowledge = (step1+step2)/70×100` (axis X) ·
-`usage = step3 scaled` (axis Y). **Archetype** (2×2, threshold 50 per axis): **Champion** (hi knowledge, hi usage) ·
-**Hidden Talent** (hi/lo) · **Explorer** (lo/hi) · **Standby** (lo/lo). Buckets/bands: none(0-10)/low(11-40)/
-medium(41-70)/high(71-100).
+`usage = step3 scaled` (axis Y). **Archetype** (the math lives in `aireadiness/scoring.go::classifyArchetype`) — as
+of the M247-refresh refactor this is **band-based, not a flat threshold-50 split** (`archetypeHighBand = 75`,
+`archetypeLowCeil = 50`): **Champion** = knowledge ≥ 75 AND usage ≥ 75 · **Standby** = both ≤ 50 · else usage ≥
+knowledge → **Explorer**, knowledge > usage → **Hidden Talent** (exact tie → Explorer). **Buckets/bands** likewise
+changed: **None 0–24 / Low 25–50 / Medium 51–74 / High 75–100** (was none 0-10 / low 11-40 / medium 41-70 /
+high 71-100 — the ≥75 Champion requirement deflated the Champion population materially; re-derive any "Champion
+30/30" demo beat against these bands).
+
+> **Track-awareness (net-new at the M247-refresh refactor).** Cycles and sims now carry a **`track`**
+> (`tech` | `business` | `both`). The Step-2 sim resolves per-user by track (`resolveUserTrack`, business-wins);
+> the interview (Step-3) is shared across tracks (`track = "both"`). `defaultReadinessSims` is 3 entries:
+> `{simulation, "tech", …}`, `{simulation, "business", …}`, `{interview, "both", …}`. Cycles also gained a
+> `launched_by`. (The demo's track↔audience mapping + the named track-keyed sims are v2.7 **M250** fidelity work.)
 
 **Started vs completed (the funnel):** a member carries a `stage` ∈ {1,2,3} (0 = none/done) and a `score` (null =
 not-completed). Per-step status lives in `ai_readiness_user_step_progresses` (`not_started`/`in_progress`/`completed`,
@@ -111,6 +160,9 @@ All tables live in `app` (`public` schema); ent schemas under `app/internal/data
 | `ai_readiness_diagnose_narratives` | persisted per-member LLM narrative | keyed `(org,user,cycle_ref,lang)` + `signals_hash` |
 | `ai_readiness_text_translations` | content-addressed translation cache | `source_hash`+`lang` |
 | `ai_readiness_recommendations` | per-member recommended actions (the What-to-do-next drawer's "Recommended actions") | **was missing from this doc until M219**; the demo seeds **0 rows** — the live read derives `people[].diagnosis.recommendations` instead |
+| `ai_readiness_email_overrides` (**net-new, M408**) | per-org email-copy override | one row per `(organization, email_type)`; `OrganizationMixin`-scoped; backs the workforce-admin email PUT/GET/DELETE + the preview renderer |
+| `ai_readiness_notification_log` (**net-new, M400**) | notification send log | the invitation/reminder/launch/digest lifecycle audit |
+| `ai_readiness_notification_optout` (**net-new, M400/M403**) | per-member unsubscribe | the reminder-cadence opt-out |
 | `organization_settings` (existing) | the enablement gate | `setting='ai_readiness'`, `is_enabled` |
 | **`jobsimulation.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
 
@@ -124,8 +176,9 @@ the seeder fills the blocks.
 **It was blamed on the wrong table.** The milestone's own DB corroboration pointed at
 `jobsimulation.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
 counts and *nothing on this surface reads it*. `interview_extraction_results` (165 rows, written by the
-`SuccessionSeeder`) feeds a **different** surface. `app/internal/workforce/how_we_measure_v2.go`
-(`computeInterviewInsightsV2`) reads **exactly one table**, and decodes its `report` JSONB:
+`SuccessionSeeder`) feeds a **different** surface. `app/internal/aireadiness/how_we_measure.go`
+(`computeInterviewInsightsV2` — formerly `workforce/how_we_measure_v2.go`, folded in at the M247-refresh refactor)
+reads **exactly one table**, and decodes its `report` JSONB:
 
 | `report` key | → renders | Notes |
 |---|---|---|
@@ -151,18 +204,56 @@ aggregation LLM would have synthesised. Fenced by `ai_readiness_interview_report
 seeded row **through the platform's own contract** (transcribed structs), because *"the seeder wrote a row"* is
 not the proposition that matters — *"the row makes the four blocks render"* is.
 
-Scoring engine: `app/internal/workforce/ai_readiness.go` (`computeAIReadiness`, `GetAIReadinessWithOptions`,
-`computeOrgBreakdowns`). Steps/progress: `readiness_steps.go`. Cycles: `cycles.go`. Narrative: `readiness_narrative.go`.
+Scoring engine: `app/internal/aireadiness/readiness.go` (`computeAIReadiness`, `GetAIReadinessWithOptions`,
+`computeOrgBreakdowns`; formerly `workforce/ai_readiness.go`). Archetype/axis math + bands: `aireadiness/scoring.go`.
+Steps/progress: `aireadiness/steps.go`. Cycles + auto-close: `aireadiness/cycles.go`. Narrative:
+`aireadiness/narrative.go`. Compare: `aireadiness/compare.go`. CSV: `aireadiness/csv.go`. One-click provisioning:
+`aireadiness/provision.go`. (All formerly `internal/workforce/…` — see the ⚠️ package-refactor callout.)
 
 ## Interface
 
 - **GraphQL** (`app/internal/web/backend/graphql/graph/schemas/ai_readiness.graphqls`; resolver
   `resolver_ai_readiness.go`): `aiReadinessEnabled`, `aiReadinessUserPlanProgress` (member step status + deadline),
   `aiReadinessSkills` (skills to map), mutation `completeAiReadinessSkillMapping`.
-- **REST/workforce API** (`app/internal/web/backend/api/api.go`): `GET /api/workforce/ai-readiness` (→ the
-  `AIReadinessResponse` aggregate the manager dashboard consumes), `/cycles` (GET/POST), `/steps-completion`,
-  `/narrative` (POST, LLM diagnosis), `/compare`, `/export.csv`.
-- **Background:** `app/internal/worker/tasks/ai_readiness_refresh.go` re-materializes live snapshots.
+- **REST/workforce API** (`app/internal/web/backend/api/`): `GET /api/workforce/ai-readiness` (→ the
+  `AIReadinessResponse` aggregate the manager dashboard consumes), `/cycles` (GET/POST) **+ `/cycles/{cycleID}`
+  (GET) + `/cycles/{cycleID}/close` (POST)**, `/steps-completion`, `/narrative` (POST, LLM diagnosis), `/compare`,
+  `/export.csv`, and **net-new at the M247-refresh refactor: `/setup` (GET status + POST one-click provision)** plus
+  the **M407/M408 email-preview + email-override admin** endpoints.
+- **Background:** live-snapshot refresh (`RefreshLiveSnapshots`, worker task) **+ the net-new auto-close scheduler
+  `CloseDueAIReadinessCycles`** (sweeps active cycles past `end_date`) + the notification workers (reminder/digest).
+
+## Platform refresh — net-new subsystems (aireadiness-package refactor, app v1.351.1, M247)
+
+The refactor did more than move files — it consolidated several net-new platform subsystems that had **no prior
+corpus coverage**. Documented here as platform facts; the demo-seeder consequences are v2.7 **M250** work.
+
+- **The platform DEFAULT provisioning is 31 readiness skills** (`aireadiness/defaults.go` `defaultReadinessSkills` =
+  **19 core @ weight 1.0 + 12 enabling @ 0.5**) + **3 default sims** (2 track-keyed simulations + 1 shared
+  interview). **Do not conflate this with the demo seeder's config** — the M51 demo seeder wrote a much smaller
+  set (~5 core + a few enabling), which is exactly the gap v2.7 **M250** closes (bring the demo to the platform's
+  31-skill repertoire). The "Seeding contract (demo/M51)" section below describes the *demo seeder*, not the
+  platform default.
+- **One-click self-service provisioning** — `aireadiness/provision.go` `ProvisionAIReadiness` (+ `GetAIReadinessSetupStatus`)
+  seeds the 31-skill default + 3 sims + the 3-step plan idempotently, behind the new `/setup` GET/POST endpoints.
+- **The notifications lifecycle** — `aireadiness/notifications/` (invitation fan-out, a 5-slot reminder cadence +
+  unsubscribe, launch confirmation, the weekly manager digest), backed by the `ai_readiness_notification_log` +
+  `ai_readiness_notification_optout` tables, emitting proto events consumed by the messenger service.
+- **Email overrides + preview** (M407/M408) — `aireadiness/emailoverride/` + `emailpreview/`: per-org email-copy
+  overrides (`ai_readiness_email_overrides`) validated against `messenger/pkg/aireadinessemail` placeholders, with
+  an admin preview renderer.
+- **Cross-cycle Compare is a fully-built backend** — `aireadiness/compare.go` `CompareCycles` → a 6-section
+  `AIReadinessCompareResponse` (Topline / Archetypes / a 4×4 Transitions matrix / TeamDelta / SkillCoverage /
+  ThemesShift); both cycles must be `closed`. (The FE Compare tab is still hard-gated off — see § Surfaces.)
+- **The auto-close scheduler** — `CloseDueAIReadinessCycles` sweeps active cycles past `end_date` (cross-org under
+  `privacy.Allow`).
+- **The personalized Academy recommendation engine** — `aireadiness/recommendation_engine.go` + `recommendation_signals.go`,
+  embeddings-based via `academy.EmbeddingsManager` (see [Academy backend](./academy-backend.md)), frozen at cycle
+  completion.
+- **CSV export is now 15 columns** (`aireadiness/csv.go` `ExportAIReadinessCSV`; the recommendation columns were
+  dropped from the earlier 19), UTF-8 BOM, formula-injection-neutralized.
+- **Manager wiring** — `aireadiness.Manager` (`aireadiness/manager.go`) is constructed with `db`, `ent`, `orgRepo`,
+  `ai.AI`, a pub `EventPublisher`, the `academy.EmbeddingsManager`, and the `WorkforceDirectory` (member directory).
 
 ## Surfaces (UI) — **current vs legacy** (M219, v2.3 "cue to cue")
 
@@ -205,7 +296,8 @@ gained the **missing** end-user readiness entry) · `stack-verify/e2e/lib/covera
 
 ## Narrative generation
 
-Per-member manager-facing narratives are **persisted, not regenerated per read** (`readiness_narrative.go:60-98`):
+Per-member manager-facing narratives are **persisted, not regenerated per read** (`aireadiness/narrative.go`,
+formerly `workforce/readiness_narrative.go`):
 a sha256 of the member's signals keys a read-through cache in `ai_readiness_diagnose_narratives`; on a miss/stale
 hash it calls the LLM (GPT-5-Mini) and upserts. On AI error it returns empty + the FE falls back to static
 per-archetype guidance — **so a demo with no AI key still renders** (narratives just show the static fallback).
@@ -215,7 +307,8 @@ per-archetype guidance — **so a demo with no AI key still renders** (narrative
 Enable for an org by inserting the `organization_settings` row (`setting='ai_readiness', is_enabled=true`) +
 `flag_ai_readiness` on in PostHog (or the local flag shim). The member flow then needs `ai_readiness_skills` +
 `ai_readiness_sims` config + an active cycle; the dashboard reads `GET /api/workforce/ai-readiness`. Tests:
-`app/internal/workforce/*_test.go` (the scoring/steps/cycle suites).
+`app/internal/aireadiness/*_test.go` (the scoring/steps/cycle suites moved with the package; Postgres harness
+`testdb_test.go` via `internal/testsupport/pgtest`).
 
 ## Seeding contract (demo / M51)
 
@@ -291,7 +384,9 @@ decision):**
 
   **⚠⚠ M51 iter-08/09 — the frozen READ is ITSELF org-scale-slow ("frozen" froze the SCORES, not the RESPONSE).**
   Even when the frozen branch IS selected (a direct `?cycle=<closed>` GET), `buildResponseFromSnapshots`
-  (`ai_readiness.go:512`) reads the frozen scores fast but then calls **`loadMembers(orgID, "")`** — an
+  (now `aireadiness/readiness.go`, formerly `workforce/ai_readiness.go:512`) reads the frozen scores fast but then
+  calls **`m.workforce.LoadMembers(ctx, orgID, "")`** *through the `WorkforceDirectory` interface* (the `LoadMembers`
+  implementation stayed in `workforce/members.go`) — an
   **unbounded whole-org member hydration** (`hydrateMembers` over ~200 members) to re-join current tags/name/role
   onto each snapshot. At 200 members that member-load is the **same org-scale wall** as the live path: the
   `?cycle=<closed>` GET timed out at 180 s (iter-08's authenticated dual-endpoint probe). It is NOT the
@@ -313,7 +408,8 @@ index permits it).
 
 **Why an ACTIVE cycle is mandatory — the member surface does not exist without one.** `AIReadinessHero` is gated
 on `deadline`, and the backend derives `deadline` **only** from an active cycle
-(`readiness_steps.go:291-313` `queryActiveCycleEndDate` → `StatusEQ(active)` → `IsNotFound` → `nil`).
+(`aireadiness/steps.go` `queryActiveCycleEndDate` → `StatusEQ(active)` → `IsNotFound` → `nil`; formerly
+`workforce/readiness_steps.go`).
 `deriveMode` (`useAIReadiness.ts:48-62`) then treats a **null deadline as "deadline passed"**. So against a
 **closed-only** org:
 
@@ -413,7 +509,8 @@ the manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md
   there; per-topic docs under `app/knowledge/ai-readiness/`) — the 2-axis/4-archetype model, the 3-step plan, the
   scoring engine, live-vs-frozen cycles, compare, CSV, Talk-to-Data. This corpus doc *summarizes* for the rosetta
   reader + the M51 seeder; that KB is the source of truth for deep work.
-- Backend service: [`backend.md`](backend.md) (AI Readiness is an `app/internal/workforce/` subsystem).
+- Backend service: [`backend.md`](backend.md) (AI Readiness is the `app/internal/aireadiness/` package, split out of
+  `internal/workforce/` at app v1.351.1 — see the ⚠️ package-refactor callout).
 - The seeded demo world it plugs into: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md) (the Stories &
   Heroes model — M51 adds the AI-readiness showcase org as a 3rd story).
 - Verified-skill chain the Step-1 signal reuses: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md)

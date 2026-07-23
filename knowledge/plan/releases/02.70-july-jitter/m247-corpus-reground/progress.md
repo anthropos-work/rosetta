@@ -7,7 +7,7 @@
 - [x] Fact sheet — `ai-labs.md` (AI Labs + credits / v6.0 shared purse)
 - [x] Fact sheet — `askengine.md` (Talk-to-Data)
 - [x] Fact sheet — `academy-backend.md` (app-owned academy domain)
-- [ ] Refresh `ai-readiness.md` (aireadiness-package refactor)
+- [x] Refresh `ai-readiness.md` (aireadiness-package refactor)
 - [ ] roadrunner ORPHANED→ARCHIVED resolution (if dead)
 
 ## Completeness Ledger

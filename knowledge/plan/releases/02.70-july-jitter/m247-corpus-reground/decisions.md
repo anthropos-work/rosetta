@@ -34,6 +34,27 @@ charter)**. These stay out and route to already-planned / better-fit siblings:
 Recorded here (not a new deferral ledger row) — the work has a real home in the release plan. Flagged as a
 **Fate-2 release-close reconcile item** for the ops/demo spec docs the CODE milestones own (see below).
 
+## D1 — ai-readiness.md refresh scoped to the PACKAGE REFACTOR; fidelity deltas are M250's
+
+M247 refreshed `ai-readiness.md` for the **aireadiness-package refactor** (the platform-fact deltas): the
+`internal/workforce/` → `internal/aireadiness/` move + file-rename table + D-07 demopatch re-anchor (top ⚠️
+callout); the corrected archetype **scoring bands** (≥75 Champion; None 0-24/Low 25-50/Medium 51-74/High 75-100);
+the net-new subsystems (notifications, email override/preview, one-click provisioning, auto-close scheduler,
+recommendation engine, compare-built) + their tables + REST endpoints; track-awareness; CSV-15; and the
+**platform-default 31-skill** fact (19 core + 12 enabling, distinct from the demo seeder's smaller set).
+
+**Deliberately LEFT for v2.7 M250 (AI-readiness fidelity — which also `Delivers → ai-readiness.md`):**
+- The **demo-seeder fidelity counts** — the "Seeding contract (demo/M51)", "CYCLE-STATE contract", and
+  "FILLED-ness contract" sections describe the *demo seeder* (~5+3 skills, the 30/30 beat, the named sims). M250's
+  exit gate brings the demo to the 31-skill repertoire + track-keyed named sims + evaluated-skills set-dress. This
+  refresh added a pointer distinguishing platform-default-31 from the demo seeder, but did NOT rewrite those
+  seeder sections.
+- The **4 bare-filename compute line-anchors** in those M250 sections (`computeOrgBreakdowns ai_readiness.go:283-343`,
+  `GetAIReadinessWithOptions ai_readiness.go:283-301`, `computeTier1 ai_readiness.go:133-170`,
+  `computeCycleTotals how_we_measure.go:253-261`) — the top ⚠️ callout maps `ai_readiness.go → readiness.go`; M250
+  re-anchors them precisely at its fidelity re-verify (prefer symbol anchors over numeric per audit-kb-fidelity).
+- The **D-07 demopatch re-pin** itself (rext/demo work) — documented here; owned by M250.
+
 ## D-fate-2 — ops/demo spec-doc reconcile deferred to release close
 
 Per the M247 charter, the `corpus/ops/demo/` spec docs owned by the CODE milestones
