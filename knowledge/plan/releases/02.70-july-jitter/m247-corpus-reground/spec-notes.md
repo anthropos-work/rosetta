@@ -67,17 +67,44 @@ Tier-1 table to the archived/merged table. Inbound links (7 files, all plain no-
 `test_injection.py`/`exposure_claim_guard.py` fixtures, `up-injected.sh` audit prose, and the dev-stack
 `migrate-dev.sh`'s skillpath schema-creation — all rext files → M251/rext-hygiene (recorded in decisions.md D0).
 
+All 4 fact sheets authored from CURRENT source (`stack-demo/app` @ origin/main `v1.351.1`), following
+`TEMPLATE.md` (Role · Architecture & Code Map · Interface Discovery · Local Development · Testing). Each opens
+with a "not a standalone service — an `app` domain" banner. Sourced via 4 parallel read-only research agents +
+app CHANGELOG. Added all 4 to `README.md`'s Cross-cutting table; CLAUDE.md service-doc count 23 → **27**. All
+cross-references verified resolving.
+
 ## Fact sheet — coursebuilder.md
-_(TBD during build.)_
+`app/internal/coursebuilder/` (+ `web/backend/coursebuilder/`). Author→benchmark→refine pipeline → Academy
+chapters; Bedrock Opus 4.8 author (`CB_AUTHOR_MODEL`) + Sonnet 4.6 grader (`CB_GRADER_MODEL`), ≥90 gate. Table
+`course_builder_sessions` (public). HTTP+SSE only (no subgraph/RPC); `/coursebuilder` Echo group, org-admin-gated,
+unmounted w/o Bedrock creds. Dedicated Asynq worker. Publishes into `academy_*`. Credits `course.build`=5/chapter.
+Waves 1→24, GA (not flagged).
 
 ## Fact sheet — ai-labs.md (AI Labs + credits / v6.0 shared purse)
-_(TBD during build.)_
+`app/internal/{labs,credits,payments,subscriptions}/` + `app/stripe/`. **Load-bearing caveat DOCUMENTED**: the
+credit ledger IS built but wired ONLY to Course Builder; the AI-Labs self-serve "v6.0 shared purse" is
+**DESIGNED/QUEUED NOT BUILT** (app `knowledge/plan/releases/06.00-shared-purse/`, no `checkout.session.completed`,
+`/credits/purchase` removed Wave 13; v6.0 = plan release # not app SemVer). AI Labs = catalog (`labs`/`lab_bodies`)
++ session runtime (`lab_sessions`, string id from `labs-api` control plane, `lab.v1.LabSessionService` RPC + spend
+reconciler). Credit ledger `organization_credits`/`credit_transactions` ($0.45/credit, 1.40 markup). Stripe
+payments/subscriptions (`subscriptions`/`stripe_customers`/`org_subscriptions`). GraphQL (labs) + RPC (labs) +
+REST (credits/webhook).
 
 ## Fact sheet — askengine.md (Talk-to-Data)
-_(TBD during build.)_
+`app/internal/askengine/` (+ `web/backend/ask/`). NL analytics copilot: agentic Bedrock Sonnet 4.6 writes SQL →
+org-scoped read-only CTE sandbox (`sandbox.go` = security boundary, ~60-table allowlist `registry.go`) → explains.
+HTTP+SSE only (`/ask` Echo group, Clerk auth, 15-turn detached-goroutine loop, stream-reattach). Tools:
+query_postgres/render_chart/course_builder. Tables `ask_conversations`/`ask_messages`/`ask_query_examples`(pgvector
+RAG)/`ask_query_lessons`/`ask_auto_rules`. Dedicated `COPILOT_DB_CONN` pool. Shipped v1.267.0; author-mode v1.340.0.
 
 ## Fact sheet — academy-backend.md (app-owned academy domain)
-_(TBD during build.)_
+`app/internal/academy/`. **Distinct from the ant-academy FRONTEND doc** — this is the server-authoritative owner
+of the catalog (`academy_series`/`_skill_paths`/`_chapter`/`_chapter_bodies`) + per-user study state
+(`_chapter_progress`/`_last_activity`/`_chapter_time`/`_certificate`/`_bookmark`/`_feedback`) + `_path_embeddings`
+(pgvector → aireadiness recommender). Served over the **`app` subgraph** (NO separate "academy subgraph"); frontend
+reads via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. Backend-authoritative since app "v1.0 ground truth" (PR #903,
+2026-06-05; killed legacy `aiacademy`). `cmd/academy-seed` moot on a demo (no WUNDERGRAPH endpoint → FS catalog).
+Additive-only, UserMixin owner-only privacy. GraphQL + REST (no RPC).
 
 ## ai-readiness.md refresh (aireadiness-package refactor)
 _(TBD during build.)_

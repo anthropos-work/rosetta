@@ -348,7 +348,7 @@ Usage: `make up PROFILE=cms`
 - `corpus/architecture/alignment_testing.md`: The alignment test class + framework (`rosetta-extensions/alignment/`) — measuring how faithfully a mirror engine (e.g. Clerkenstein) reproduces a source engine as a 0–100% score
 
 ### Service Documentation
-- **`corpus/services/README.md`: the enumerated index of all 23 service docs** — start here rather than guessing a filename. Grouped into core backend (Tier 1), frontends & gateway, cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and archived/merged redirects (`skiller`, `chronos`, `intelligence`)
+- **`corpus/services/README.md`: the enumerated index of all 27 service docs** — start here rather than guessing a filename. Grouped into core backend (Tier 1), frontends & gateway, cross-cutting subsystems / `app`-owned domains (AI-readiness, Course Builder, AI Labs + credits, Ask/Talk-to-Data, Academy backend, hiring, Clerk, Clerkenstein), and archived/merged redirects (`skiller`, `skillpath`, `chronos`, `intelligence`)
 - `corpus/services/TEMPLATE.md`: the pattern each doc follows — Role, Architecture & Code Map, Interface Discovery, Local Development, Testing
 - `corpus/ops/platform_repo.md`: The `platform` orchestrator repo (Make targets, profiles, compose, repos.yml)
 

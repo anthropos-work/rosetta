@@ -37,7 +37,11 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Subject | One-liner |
 |---|---|---|
-| [`ai-readiness.md`](ai-readiness.md) | AI Readiness | Org-level AI-capability diagnostics inside `app` — the cycle/funnel model, the gate-by-surface rules, and the demo seeder contract |
+| [`ai-readiness.md`](ai-readiness.md) | AI Readiness | Org-level AI-capability diagnostics inside `app` (the `internal/aireadiness/` package) — the cycle/funnel model, the gate-by-surface rules, and the demo seeder contract |
+| [`coursebuilder.md`](coursebuilder.md) | Course Builder | `app` domain — the in-process author→benchmark→refine AI pipeline that generates Academy chapters/skill-paths (Bedrock Opus author + Sonnet grader, ≥90 gate). HTTP+SSE, no subgraph |
+| [`ai-labs.md`](ai-labs.md) | AI Labs + Credits | `app` domains — the hosted AI coding-lab product (catalog + sandbox sessions via the `labs-api` control plane) **and** the credit ledger ("shared purse", live for Course Builder) + Stripe payments/subscriptions |
+| [`askengine.md`](askengine.md) | Ask Engine / Talk-to-Data | `app` domain — the NL analytics copilot: an agentic Bedrock LLM writes SQL, runs it in an org-scoped read-only sandbox, explains results. HTTP+SSE, no subgraph |
+| [`academy-backend.md`](academy-backend.md) | Academy Backend | `app` domain — the server-authoritative owner of the Academy catalog + per-user study state, served to the [ant-academy frontend](ant-academy.md) over the `app` subgraph (distinct from the frontend doc) |
 | [`hiring.md`](hiring.md) | Hiring | The recruiting **org-type** (`is_hiring`) + the candidate-comparison read-model. Authored from a live render-probe, not inferred |
 | [`clerk-integration.md`](clerk-integration.md) | Clerk | The cross-cutting single source of truth for how the platform uses Clerk (vs. per-service mentions elsewhere) |
 | [`clerkenstein.md`](clerkenstein.md) | Clerkenstein | The **Clerk mock** that makes demo stacks Clerk-free — a `rosetta-extensions` section, consumed per-stack at a pinned tag |
