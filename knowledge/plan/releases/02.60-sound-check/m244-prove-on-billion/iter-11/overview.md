@@ -2,7 +2,7 @@
 iter: 11
 milestone: M244
 iteration_type: tik
-status: planned
+status: closed-fixed-partial
 created: 2026-07-22
 ---
 

@@ -2,7 +2,7 @@
 iter: 06
 milestone: M244
 iteration_type: tik
-status: planned
+status: closed-fixed
 active_strategy: TOK-01
 created: 2026-07-22
 ---
