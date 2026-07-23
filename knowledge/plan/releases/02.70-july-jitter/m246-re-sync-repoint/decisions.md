@@ -67,3 +67,21 @@ D-09 academy peripheral (missing keys; non-fatal by design). All ledgered (`drif
 free resources; the dev native worktrees + the `billion` VM were untouched. Zero platform-repo edits.
 **Rung-zero.** The demo consumed rext at tag `july-jitter-m246-re-sync-repoint` fetched from origin (on
 origin @ `44f1049`) — one tag covering the three rext commits 97585f5 / ee44b9a / 88bcdb8.
+
+## D-5 — Harden: right-sized to ONE pass; deepen the seam, not the mechanical re-point (2026-07-23)
+**Decision.** One honest hardening pass. Add NOTHING to the Go schema re-point (it is mechanical +
+already asserted per-site + live-proven at 561 rows); deepen ONLY the 2 genuinely-untested branches of
+the copy-if-absent clone-pin seam. Rext commit `c9fbf6b`; new consumption tag `july-jitter-m246-harden`
+@ `9b29f3a` **on origin**.
+**Rationale.** The re-point flips one schema qualifier (`skillpath`→`public`) for `skill_path_sessions`.
+Every write-site's test already asserts the `public` target (reset list + FK-order in `main_test.go`;
+`findCopy(t,"public",…)` in the seeder tests; `failTable:"public.skill_path_sessions"` in the copy-error
+paths), and the barrier's cold demo-2 wrote 561 rows to `public.skill_path_sessions` — the strongest
+possible proof. Forcing more passes there would be shallow-test throughput, not robustness. A
+"no-`skillpath`-schema-anywhere" grep-guard was REJECTED (fragile: the surface NAME `skillpath-sessions`,
+Go symbols, and `skillpath_sessions.go` legitimately keep the word). The 2 new seam tests close real
+behavioral contracts the shipped land-tests miss: (a) pinned mode with NO pin anywhere → clean no-op
+fallback; (b) the seam runs before the advance gate, so shipping the canonical pin must not silently turn
+a default/main `/demo-up` into a pinned checkout (the deliberate-staleness contract). Flake gate 3/3;
+full `test_tooling.py` 168/168; Go package green.
+**Fate.** All Fate-1 (landed now). No deferrals; the M247 drift ledger is unchanged by this pass.
