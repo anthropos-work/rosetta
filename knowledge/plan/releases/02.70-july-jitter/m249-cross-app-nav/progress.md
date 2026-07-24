@@ -22,3 +22,52 @@
 - **D5 (found at the live-confirm):** studio `.env.production.local` overlay now always-overwritten — a stranded leftover was silently defeating the bake. rext `bcbb779`; regression-fenced.
 - 2 pre-existing `test_ant_academy*` failures (launcher/reap flakiness + clerk-wiring extraction bug) — confirmed identical on committed HEAD, M251 domain, NOT M249 regressions (see decisions.md).
 - rext consumption tag: `july-jitter-m249-cross-app-nav` → moved to the final code-of-record `bcbb779` (pushed + verified on origin).
+
+## M249: Hardening
+
+### Pass 1 — 2026-07-24
+No coverage tool for the demo-stack python (unittest, no coverage plugin in this tooling); coverage used as a
+manual finder over the 4 harden focus areas — (a) manifest round-trip / apply-revert cleanliness, (b)
+fail-closed-when-env-unset, (c) patch-set fingerprint forces a rebuild, (d) the D5 overlay-overwrite fix.
+Findings: (c) and (d) are already **deeply + dynamically** covered (`test_patchset_fingerprint.py` proves add /
+re-pin / missing / DEMO_NO_PATCH each move the fp AND that every applied manifest — incl. the net-new studio-desk
+trio — is in some fp call; `test_frontend_build.py::test_studio_desk_overwrites_a_stranded_overlay` + the
+failed-build trap test fence D5). (a)/(b) had **3 genuine gaps**, all closed as pure-unit, clone-independent
+tests (no demo/docker needed):
+
+**Tests added (7, all unit):**
+- `test_back_to_cockpit_m249.py::TestManifestShape.test_studio_chain_is_sha_linked` — the studio
+  back-to-cockpit → logout-url CHAIN: asserts `logout.pre_sha256 == back.post_sha256` (same file). A half re-pin
+  was caught only at live apply-time (which SKIPS without a clone); now a loud unit failure.
+- `test_back_to_cockpit_m249.py::TestFailClosedMechanism` (2 tests) — the DEEP fail-closed fence. The pre-existing
+  `test_fail_closed_env_gate` only checked the env NAME appears; these pin the actual guard (conditional render →
+  null/'' for additive items; `env || <original-prod-url>` fallback for prod-eject rewrites), whitespace-normalized.
+  Catches a bare unguarded read (dead item off-demo) and a fallback-stripped rewrite (href=""/prod re-eject off-demo).
+- `test_back_to_cockpit_m249.py::TestNativeHelperApplyRevert` (4 tests) — the ant-academy native helper
+  HAND-RE-IMPLEMENTS the demopatch guard ladder; only its exit-0 happy path was tested (and it SKIPS without the
+  real clone). Added clone-independent REFUSE/error-path tests against synthetic targets: apply-drift-refuse
+  (exit 2, file untouched), revert-drift-refuse (exit 7, file untouched), unknown-verb (exit 1), missing-target
+  (exit 1). The load-bearing invariant — a REFUSE never writes — is asserted byte-for-byte.
+
+**Teeth verified:** each static assertion mutation-proofed (broken chain / stripped fallback / dropped ternary /
+bare `${env}` rewrite each fail the check); the helper error-path tests bite by construction (drive the real
+helper against drifted/missing inputs → exact REFUSE exit codes).
+
+**Bugs fixed inline:** none — the M249 code was already correct + LIVE-verified GREEN on demo-2; this pass is
+pure test-depth (the docstring-vs-assertion gap in fail-closed, the unit gap in chain-linkage, the untested
+REFUSE ladder in the native helper).
+
+**Flakes stabilized:** none — 3 consecutive clean sequential runs (32 tests each); deterministic.
+
+**Coverage delta:** `test_back_to_cockpit_m249.py` 25 → 32 tests (+7); full M249-touched suite 131 → 138 GREEN.
+
+**Knowledge backfill:** none warranted — all 3 deepenings fence invariants ALREADY documented in
+`demopatch-spec.md` (the chain `pre==post` rule; the behaviour-identical-when-unset rule; the 7-guard ladder the
+native helper re-implements) + `decisions.md` D1/D2/D4. No new system truths surfaced.
+
+### Stop condition
+Stopped after Pass 1 — the full 6-dimension scan over the 4 focus areas found the 3 gaps above and nothing else;
+(c)/(d) already deeply covered; 0 bugs; 0 flakes. A 2nd pass would only pad. Right-sized per the harden brief
+(deepen genuine gaps; do NOT force 5 passes on live-verified code).
+
+rext code-of-record: **`july-jitter-m249-harden`** (test-only commit atop `bcbb779`; pushed + verified on origin).
