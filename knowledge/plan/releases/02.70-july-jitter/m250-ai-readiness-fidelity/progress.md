@@ -15,7 +15,9 @@ are NO iter dirs at scaffold.)_
 
 - iter-05 (tik): evidence-distribution build LANDED — new ai_readiness_evidence.go (validation_attempt_results + skill_results + session-backed verified user_skill_evidences for completed members' evaluated node-ids, closure-safe read from directus); re-seed demo-2 → gate part 3 PASS (var 5→345, vasr 897, session-backed verified evidence 787) + part 4 PASS (manager dots render, avg 73-74); all 3 build lanes complete — gate ~4.5/5 (browser-render 0-invented/0-prod-eject confirmation remains) — see iter-05/progress.md
 
+- iter-06 (tik, render-measure): coverage-protocol Playwright sweep BOTH vantages on demo-2 — employee aria-completed GREEN (failingSections=0, escapes=0); manager dana-manager escapes=0/personaFailures=0 but 3 failing sections all on /ai-readiness (by-tag, interview-findings, handled-for-you). M250-fidelity manager sections PASS (matrix=31 skills, how-we-measure=named sims+evaluated skills+dots). Gate 4/5: parts 1,2,3,5 PASS on render (0 prod-ejects, closure 31/31); part 4 = 3 adjacent manager sections — see iter-06/progress.md
+
 ## Next-iter queue
 - iter-05 (tik): evidence-distribution build — validation fan-out (validation_attempt_results + skill_results + verified user_skill_evidences) for completed members' step-2 sim evaluated node-ids (reuse content_stories_write helpers); flips part 3 + part 4 dots.
-- iter-06 (tik): browser-render confirmation of all 5 parts (player + manager, 0 invented, 0 prod-ejects) per coverage-protocol.md — the final gate item.
+- iter-07 (tik): the 3 adjacent manager sections — (a) by-tag empty-despite-tags debug, (b) interview-findings finding-structure seed, (c) handled-for-you coverage-manifest phrasing reconcile (data is correct).
 - iter-05+ (tik): live reset-to-seed render loop on demo-2, measure 5 gate parts.
