@@ -289,8 +289,30 @@ docker compose up -d graphql
 
 **Copilot not working**: Check that `AI_PROVIDER_CHAIN` is set and the corresponding provider key(s) exist (`AI_OPENAI_API_KEY`/`OPENAI_KEY`, `AI_AZURE_KEY`, or `AI_ANTHROPIC_API_KEY`).
 
+### In a demo — the prod-eject fix + the "Back to Cockpit" item (v2.7 "july jitter" M249)
+
+> _Authored here in M249; the studio spec docs are reconciled in the M247-tail._
+
+Studio-Desk's scaffold hardcoded the production app host `https://app.anthropos.work` in **three** places —
+the header **logo** link (`app/core/scaffold/pageWrapper.js`), the user-menu **"Back"** control and the
+**logout** redirect (`app/core/scaffold/userProfile.js`). In a **demo**, clicking any of them **ejected the
+presenter to production** (the studio prod-eject). M249 rewrites all three to read **this stack's app**
+(`import.meta.env.VITE_WEB_APP_URL` — the same value `config.WEBAPP_URL` reads, already baked at the offset by
+the demo build — with the original prod host kept as the `|| …` fallback, so the change is behaviour-identical
+off-demo). The same lane **adds** a fail-closed **"Back to Cockpit"** item to the user menu, reading
+`import.meta.env.VITE_COCKPIT_URL` (the per-stack presenter cockpit at `7700+OFFSET`).
+
+These are the **FIRST-EVER studio-desk SOURCE demo-patches** — `studio-desk-back-to-cockpit` (chained with
+`studio-desk-logout-url` on `userProfile.js`) + `studio-desk-logo-url` — image-baked into the demo's studio
+image by a **net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint**. They touch only the
+demo's ephemeral, gitignored clone; the canonical repo is never edited. `VITE_COCKPIT_URL` rides a
+`.env.production.local` overlay (it is not a declared Dockerfile ARG — #M249-D3). Full mechanism:
+[`demopatch-spec.md` §8 (additive-UI injection)](../ops/demo/demopatch-spec.md) and
+[`frontend-tier.md`](../ops/demo/frontend-tier.md).
+
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
 - [Studio-Room](./studio-room.md) - AI generation pipeline
 - [CMS Service](./cms.md) - Data storage backend
 - [External Services](../architecture/external_services.md) - Clerk and Directus details
+- [demopatch-spec §8](../ops/demo/demopatch-spec.md) - the studio-desk source patches (additive-UI injection)

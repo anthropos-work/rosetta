@@ -205,6 +205,29 @@ the *individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, m
 succession / mobility — plus the talent pool). A hero's `jump_to` is matched against this catalog so the
 manifest can carry its label; an unrecognized `jump_to` still works (it's a raw path).
 
+### Return navigation — "Back to Cockpit" (v2.7 "july jitter" M249)
+
+The deep-link catalog is the **outbound** leg: cockpit → a hero's landing surface. Until M249 there was **no
+inbound leg** — once `[Log in as]` dropped the presenter into a sub-app, the only way back to the cockpit to pick
+a *different* hero was to hand-edit the URL back to the cockpit port. M249 closes the loop with a fail-closed
+**"Back to Cockpit"** item in **all four** sub-app menus:
+
+| App | Menu | Reads | Renders |
+|---|---|---|---|
+| **next-web** (Workforce) | the desktop account dropdown (shared `packages/ui` NavbarTop) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
+| **hiring** | the *same* shared account dropdown (one `packages/ui` patch covers both) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
+| **studio-desk** | the user-profile dropdown (`app/core/scaffold/userProfile.js`) | `VITE_COCKPIT_URL` | when set |
+| **ant-academy** | the user menu (`code/src/components/UserMenu.jsx`) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
+
+**The cockpit URL is a *different port* from the app.** Each item points at **`7700 + OFFSET`** — the cockpit's
+own offset port (`:17700` for `demo-1`, `:27700` for `demo-2`), distinct from the web app (`3000+OFFSET`), studio
+(`9000+OFFSET`), and academy (`3077+OFFSET`). The bring-up bakes the value into each app's env overlay
+(`up-injected.sh` for next-web/hiring/studio, `ant-academy.sh` `write_env_local` for the academy); the menu item
+**renders only when the env is set**, so a build without it is byte-identical to production. Delivered as four
+demo-patches via the **additive-UI injection** pattern — see
+[`demopatch-spec.md` §8](demopatch-spec.md). The same M249 studio lane also fixes the studio **logo / back /
+logout** controls that hardcoded `app.anthropos.work` (they now read this stack's app) — the studio prod-eject.
+
 ### The hiring vantage — the recruiter + 2 candidate seats (v2.4 "casting call" M224)
 
 The **4th, HIRING** story org (**Meridian Talent**, `narrative: hiring`, `is_hiring=true` — M223's seed) gets a

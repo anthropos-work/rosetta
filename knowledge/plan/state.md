@@ -1,10 +1,10 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M249/M250/M252/M253 fan-out (building off post-M246 HEAD; closes serializing — next close M250, then M249 → M253 → M252 → M247-reconcile → M254)"
-last_closed: "M248 — 2026-07-23 (v2.7 content-stories manager result-link; section close — sim_type-routed CTA re-point after a LIVE verify-interview pivot: non-interview → /sim manager result view, interview KEEPS activity-dashboard; manager grader keys on score; 47/47 manifest pairs, honesty gate GREEN; rext code-of-record july-jitter-m248-harden @ 6e0ed2c [176 unit+Go GREEN, mutation-verified]; deferral audit YELLOW; 0 platform edits)"
-phase: "M248 closed (content-mgr-link, merged to release/02.70-july-jitter) — M249/M250/M252/M253 → M254 fan-out closes serializing (M246+M251+M247+M248 done)"
-last_updated: "2026-07-23"
+active_milestone: "(fan-out closes serializing) — M250 ai-readiness ∥ M252 studio-builder ∥ M253 studio-first-paint (now unblocked, extends M249's studio patch ladder) → M254 prove-on-billion (M246+M251+M247+M248+M249 done)"
+last_closed: "M249 — 2026-07-24 (v2.7 cross-app navigation; section close — a fail-closed '← Back to Cockpit' item in all 4 sub-app menus [1 shared packages/ui patch covers web+hiring; the FIRST-EVER studio-desk SOURCE patch trio image-baked via a net-new build_frontend_studio_desk ladder + patch-set fingerprint; a native-run ant-academy helper] reading a per-stack COCKPIT_URL @ 7700+OFFSET, + the studio logo/back/logout prod-eject fix; inventory 16→21; LIVE-verified GREEN on demo-2; rext code-of-record july-jitter-m249-harden @ 8ab5192 [138 tests GREEN, flake 5/5]; deferral audit GREEN; 0 platform edits)"
+phase: "M249 closed (cross-app-nav, merged to release/02.70-july-jitter) — M250/M252/M253 → M254 fan-out closes serializing (M246+M251+M247+M248+M249 done); M253 now unblocked"
+last_updated: "2026-07-24"
 ---
 
 # State
@@ -27,7 +27,15 @@ scoreboard, **routed by `sim_type`** after a LIVE verify-interview pivot (D1 sta
 (21/23 pairs) → the `/sim/<slug>/<userId>/result/<sessionId>` manager result view; **interview KEEPS** its
 activity-dashboard route (its `/sim` report renders "Coming Soon" on a demo); manager grader keys on the score;
 47/47 manifest pairs, honesty gate GREEN; rext `july-jitter-m248-harden @ 6e0ed2c`; deferral audit YELLOW.
-The **M249/M250/M252/M253 → M254** fan-out continues off post-M246 HEAD (closes serializing; those remain).
+**M249 (cross-app navigation) is CLOSED** — a fail-closed "← Back to Cockpit" item in all **4** sub-app menus
+(one shared `packages/ui` patch covers web+hiring; the **first-ever studio-desk SOURCE patch trio** image-baked
+via a net-new `build_frontend_studio_desk` ladder + patch-set fingerprint; a native-run ant-academy helper)
+reading a per-stack `COCKPIT_URL` @ 7700+OFFSET, **plus the studio logo/back/logout prod-eject fix** (read this
+stack's app, prod host kept as the `||` fallback → behaviour-identical off-demo); patch inventory 16→**21**;
+introduced the **additive-UI injection** pattern (`demopatch-spec.md` §8). LIVE-verified GREEN on demo-2 (4/4
+menus @ `:27700`; studio `:23000` baked, 0 effective ejects); rext `july-jitter-m249-harden @ 8ab5192` (138
+tests GREEN, flake 5/5); deferral audit GREEN. **M253 now unblocked** (extends this studio patch ladder).
+The **M250/M252/M253 → M254** fan-out continues off post-M246 HEAD (closes serializing; those remain).
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -93,4 +101,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-23 — M248 (content-stories manager result-link) CLOSED + merged to release/02.70-july-jitter (section close; sim_type-routed CTA re-point after a LIVE verify-interview pivot — non-interview → /sim manager result view, interview keeps activity-dashboard; 47/47 manifest pairs, honesty gate GREEN; rext code-of-record july-jitter-m248-harden @ 6e0ed2c; deferral audit YELLOW, 0 platform edits). The M249/M250/M252/M253 → M254 fan-out closes serializing off post-M246 HEAD._
+_Last updated: 2026-07-24 — M249 (cross-app navigation) CLOSED + merged to release/02.70-july-jitter (section close; a fail-closed "← Back to Cockpit" item in all 4 sub-app menus + the first-ever studio-desk source patch trio + the studio prod-eject fix; inventory 16→21; the additive-UI injection pattern; LIVE-verified GREEN on demo-2; rext code-of-record july-jitter-m249-harden @ 8ab5192; deferral audit GREEN, 0 platform edits). M253 now unblocked. The M250/M252/M253 → M254 fan-out closes serializing off post-M246 HEAD._
