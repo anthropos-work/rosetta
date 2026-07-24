@@ -323,7 +323,26 @@ pre-existing `test_ant_academy*` failures = Fate-2 confirmed → M254). 0 platfo
 is now unblocked** (extends this studio patch ladder).
 
 #### M250 — AI-readiness fidelity  (`iterative`, marquee)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-24 — closed-incomplete on user pragmatic-close mandate)
+**Closed 2026-07-24 (iterative; 1 tok + 6 tiks, single-day serial render loop):** core gate parts **1/2/3/5 +
+the core part-4 fidelity sections LIVE-GREEN both vantages** (employee `aria-completed` + manager `dana-manager`,
+Northwind, demo-2, cold reset-to-seed, escapes=0). TOK-01 (arithmetic-spine → set-dress → distribute → render
+loop) drove: iter-02 the **8→31 arithmetic spine** (the platform's real 31 defaults = 19 core @1.0 + 12 enabling
+@0.5, denom 25.0; 3 track-keyed named sims with the `track` column; all fences re-derived — Champion 30/30,
+started hero 9 core → 11/30; the double-round divergence made a live invariant); iter-03 the **net-new Directus
+set-dress** (`AIReadinessSimSkillsSeeder` → `directus.simulations.skills` → evaluated-skills list); iter-05 the
+**net-new evidence distribution** (`ai_readiness_evidence.go` → `validation_attempt_results` 5→345 + 897
+skill-results + 787 session-backed verified `user_skill_evidences`); iter-06 the render-measure sweep; iter-07
+reconciled **3 post-M246 platform DRIFTS** in adjacent manager sections (`by-tag`="…by Team",
+`handled-for-you`="Hours saved" coverage-manifest phrasing + `interview-findings` 5 current `usageDimSpecs` KPI
+ids) — fixed + committed + data-confirmed + unit-green; their **live** ~150-page manager sweep → **M254**
+(CARRY-M250-01, Fate 2; M254 exit gate (d)+(h) re-run it on billion). **Delivers landed:**
+`corpus/services/ai-readiness.md` + `corpus/ops/seeding-spec.md` — the 31-default + track-keyed-sims +
+evaluated-skills set-dress + skill-distribution seeding contract. Decisions D1–D18 (D18 DROP `participants_filter`
+routing as moot; D17 the drift reconciliation). Deferral audit GREEN (0 repeats, 0 escape-hatch). rext
+code-of-record **`july-jitter-m250-iter07` @ 584f1fe** (on origin — rung-zero verified; seeders + dna closure
+unit-GREEN; supersedes `july-jitter-m250-ai-readiness`). **0 platform-repo edits.** carry-forward.md + Gate
+Outcome Ledger emitted; retro at `m250-ai-readiness-fidelity/retro.md`.
 **Goal:** The `/ai-readiness` page renders the platform's real fidelity: the 31 canonical mapping skills, the 2
 track-keyed named sims + interview, a non-empty evaluated-skills list, and the completed sim's verified skills
 distributed to the employee — faithful for player AND manager.

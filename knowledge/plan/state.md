@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "(fan-out closes serializing) — M250 ai-readiness ∥ M252 studio-builder ∥ M253 studio-first-paint (now unblocked, extends M249's studio patch ladder) → M254 prove-on-billion (M246+M251+M247+M248+M249 done)"
-last_closed: "M249 — 2026-07-24 (v2.7 cross-app navigation; section close — a fail-closed '← Back to Cockpit' item in all 4 sub-app menus [1 shared packages/ui patch covers web+hiring; the FIRST-EVER studio-desk SOURCE patch trio image-baked via a net-new build_frontend_studio_desk ladder + patch-set fingerprint; a native-run ant-academy helper] reading a per-stack COCKPIT_URL @ 7700+OFFSET, + the studio logo/back/logout prod-eject fix; inventory 16→21; LIVE-verified GREEN on demo-2; rext code-of-record july-jitter-m249-harden @ 8ab5192 [138 tests GREEN, flake 5/5]; deferral audit GREEN; 0 platform edits)"
-phase: "M249 closed (cross-app-nav, merged to release/02.70-july-jitter) — M250/M252/M253 → M254 fan-out closes serializing (M246+M251+M247+M248+M249 done); M253 now unblocked"
+active_milestone: "M253 studio-desk first-paint (ITERATIVE, deps M249; shell-before-awaits + no-thirdparty demopatches, <1s FCP gate; can bootstrap its FCP loop on a LOCAL demo, cold-p95 re-confirmed at M254)"
+last_closed: "M250 — 2026-07-24 (v2.7 AI-readiness fidelity; ITERATIVE marquee, closed-incomplete on user pragmatic-close mandate — core gate parts 1/2/3/5 + core part-4 LIVE-GREEN both vantages [employee aria-completed + manager dana-manager, Northwind, demo-2, escapes=0]: demo seeder brought to the platform's real 31-skill default [19 core + 12 enabling, denom 25.0, closure 31/31] + 3 track-keyed named sims + net-new Directus set-dress [evaluated-skills] + net-new evidence-distribution fan-out; arithmetic re-derived [Champion 30/30, started hero 9 core → 11/30]; 3 adjacent manager sections [by-tag/interview-findings/handled-for-you] were post-M246 drift, fixed + data-confirmed + unit-green, live sweep → M254 [CARRY-M250-01, Fate 2]; rext code-of-record july-jitter-m250-iter07 @ 584f1fe; deferral audit GREEN; 0 platform edits)"
+phase: "M250 closed (AI-readiness fidelity, merged to release/02.70-july-jitter) — M252 + M253 → M254 fan-out closes serializing (M246+M247+M248+M249+M250+M251 done); M253 next (unblocked, iterative — local-demo bootstrap)"
 last_updated: "2026-07-24"
 ---
 
@@ -34,8 +34,18 @@ reading a per-stack `COCKPIT_URL` @ 7700+OFFSET, **plus the studio logo/back/log
 stack's app, prod host kept as the `||` fallback → behaviour-identical off-demo); patch inventory 16→**21**;
 introduced the **additive-UI injection** pattern (`demopatch-spec.md` §8). LIVE-verified GREEN on demo-2 (4/4
 menus @ `:27700`; studio `:23000` baked, 0 effective ejects); rext `july-jitter-m249-harden @ 8ab5192` (138
-tests GREEN, flake 5/5); deferral audit GREEN. **M253 now unblocked** (extends this studio patch ladder).
-The **M250/M252/M253 → M254** fan-out continues off post-M246 HEAD (closes serializing; those remain).
+tests GREEN, flake 5/5); deferral audit GREEN. **M250 (AI-readiness fidelity, `iterative` marquee) is CLOSED**
+— on a user **pragmatic-close mandate**: core gate parts **1/2/3/5 + core part-4 LIVE-GREEN both vantages**
+(employee `aria-completed` + manager `dana-manager`, Northwind, demo-2, escapes=0). The demo seeder was brought
+to the platform's **real 31-skill default** (19 core + 12 enabling, denom 25.0, closure 31/31) + **3 track-keyed
+named sims** + a **net-new Directus set-dress** (evaluated-skills) + a **net-new evidence-distribution** fan-out
+(`validation_attempt_results` 5→345, verified `user_skill_evidences` 787); arithmetic re-derived green (Champion
+30/30, started hero 9 core → 11/30). **3 adjacent** manager-dashboard sections
+(`by-tag`/`interview-findings`/`handled-for-you`) were **post-M246 drift**, fixed + data-confirmed + unit-green;
+their **live** sweep → **M254** (CARRY-M250-01, Fate 2). Delivers landed: `ai-readiness.md` + `seeding-spec.md`
+31-skill seeding contract. rext `july-jitter-m250-iter07 @ 584f1fe`; deferral audit GREEN. **M253 now unblocked**
+(extends the M249 studio patch ladder). The **M252 + M253 → M254** fan-out continues off post-M246 HEAD (closes
+serializing; those remain).
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -101,4 +111,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-24 — M249 (cross-app navigation) CLOSED + merged to release/02.70-july-jitter (section close; a fail-closed "← Back to Cockpit" item in all 4 sub-app menus + the first-ever studio-desk source patch trio + the studio prod-eject fix; inventory 16→21; the additive-UI injection pattern; LIVE-verified GREEN on demo-2; rext code-of-record july-jitter-m249-harden @ 8ab5192; deferral audit GREEN, 0 platform edits). M253 now unblocked. The M250/M252/M253 → M254 fan-out closes serializing off post-M246 HEAD._
+_Last updated: 2026-07-24 — M250 (AI-readiness fidelity, `iterative` marquee) CLOSED + merged to release/02.70-july-jitter (pragmatic-close mandate; core gate 1/2/3/5 + core part-4 LIVE-GREEN both vantages; demo seeder brought to the real 31-skill default + track-keyed sims + Directus set-dress + evidence distribution; 3 adjacent manager sections drift-fixed → M254 live sweep [CARRY-M250-01]; Delivers KB landed; rext july-jitter-m250-iter07 @ 584f1fe; deferral audit GREEN; 0 platform edits). M253 next (unblocked). The M252 + M253 → M254 fan-out closes serializing off post-M246 HEAD._
