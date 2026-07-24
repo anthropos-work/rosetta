@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M252 studio-desk builder enablement (section; wire the studio AI key into the demo container [demo-wiring gap] + DNA hardening + builder Playthrough; demo-gated, single stack)"
-last_closed: "M250 — 2026-07-24 (v2.7 AI-readiness fidelity; ITERATIVE marquee, closed-incomplete on user pragmatic-close mandate — core gate parts 1/2/3/5 + core part-4 LIVE-GREEN both vantages [employee aria-completed + manager dana-manager, Northwind, demo-2, escapes=0]: demo seeder brought to the platform's real 31-skill default [19 core + 12 enabling, denom 25.0, closure 31/31] + 3 track-keyed named sims + net-new Directus set-dress [evaluated-skills] + net-new evidence-distribution fan-out; arithmetic re-derived [Champion 30/30, started hero 9 core → 11/30]; 3 adjacent manager sections [by-tag/interview-findings/handled-for-you] were post-M246 drift, fixed + data-confirmed + unit-green, live sweep → M254 [CARRY-M250-01, Fate 2]; rext code-of-record july-jitter-m250-iter07 @ 584f1fe; deferral audit GREEN; 0 platform edits)"
-phase: "M250 closed (AI-readiness fidelity, merged to release/02.70-july-jitter) — M252 + M253 → M254 fan-out closes serializing (M246+M247+M248+M249+M250+M251 done); M253 next (unblocked, iterative — local-demo bootstrap)"
+active_milestone: "M253 studio-desk first-paint (iterative; shell-before-awaits + no-thirdparty demopatches → <1s FCP gate; extends the M249 studio patch ladder; deps M249)"
+last_closed: "M252 — 2026-07-24 (v2.7 studio-desk builder enablement; section — the demo studio container now carries the studio's OWN AI-provider keys via an env_file-ONLY wire [gen_injected_override.py; NO MOCK_CLERK, NO provider-chain pin; studio stays Clerkenstein-authed, 2 pinned regression tests], root cause FIXED [base-compose studio-desk inherited only platform/.env → /api/ai/completion 500'd] + PROVEN live [op1 demo-2: ProviderHealth chain azure-openai->openai->anthropic]; demo-aware/non-fatal/values-blind autoverify (g) container-key assert; studio-desk's FIRST Playthroughs-manifest entry [Product Studio, 2 builder-GENERATE PTs pt-studio-advanced/guided-generate → 16→18 live/0 TODO]; talk-to-data M239 Bedrock re-confirmed COMPLETE; rext july-jitter-m252-studio-builder @ d80db9f; deferral audit GREEN [CARRY-M252-01 academy-autoverify + CARRY-M252-02 live-builder-drive, both Fate-2 → M254]; 0 platform edits)"
+phase: "M252 closed (studio-builder enablement, merged to release/02.70-july-jitter) — M253 the sole remaining build lane (unblocked, iterative — studio first-paint, extends M249's ladder) → M254 closer; M246+M247+M248+M249+M250+M251+M252 done"
 last_updated: "2026-07-24"
 ---
 
@@ -43,9 +43,16 @@ named sims** + a **net-new Directus set-dress** (evaluated-skills) + a **net-new
 30/30, started hero 9 core → 11/30). **3 adjacent** manager-dashboard sections
 (`by-tag`/`interview-findings`/`handled-for-you`) were **post-M246 drift**, fixed + data-confirmed + unit-green;
 their **live** sweep → **M254** (CARRY-M250-01, Fate 2). Delivers landed: `ai-readiness.md` + `seeding-spec.md`
-31-skill seeding contract. rext `july-jitter-m250-iter07 @ 584f1fe`; deferral audit GREEN. **M253 now unblocked**
-(extends the M249 studio patch ladder). The **M252 + M253 → M254** fan-out continues off post-M246 HEAD (closes
-serializing; those remain).
+31-skill seeding contract. rext `july-jitter-m250-iter07 @ 584f1fe`; deferral audit GREEN. **M252 (studio-desk
+builder enablement) is CLOSED** — the demo studio container now carries the studio's OWN AI keys via an
+**`env_file`-ONLY** wire (`gen_injected_override.py`; **NO `MOCK_CLERK`, NO chain-pin** — the studio stays
+Clerkenstein-authed, test-enforced), root cause FIXED (base-compose studio-desk inherited only `platform/.env`)
++ **PROVEN live** (op1: `ProviderHealth` chain `azure-openai->openai->anthropic`); a demo-aware autoverify (g)
+container-key assert; **studio-desk's FIRST Playthroughs-manifest entry** (Product Studio, 2 builder-GENERATE PTs
+→ **16→18 live / 0 TODO**); talk-to-data (M239 Bedrock) re-confirmed COMPLETE; rext
+`july-jitter-m252-studio-builder @ d80db9f`; deferral audit GREEN (CARRY-M252-01 + CARRY-M252-02, both Fate-2 →
+M254). **M253 is now the sole remaining build lane** (unblocked, `iterative` — studio first-paint, extends the
+M249 ladder) → **M254** the closer.
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -111,4 +118,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-24 — M250 (AI-readiness fidelity, `iterative` marquee) CLOSED + merged to release/02.70-july-jitter (pragmatic-close mandate; core gate 1/2/3/5 + core part-4 LIVE-GREEN both vantages; demo seeder brought to the real 31-skill default + track-keyed sims + Directus set-dress + evidence distribution; 3 adjacent manager sections drift-fixed → M254 live sweep [CARRY-M250-01]; Delivers KB landed; rext july-jitter-m250-iter07 @ 584f1fe; deferral audit GREEN; 0 platform edits). M253 next (unblocked). The M252 + M253 → M254 fan-out closes serializing off post-M246 HEAD._
+_Last updated: 2026-07-24 — M252 (studio-desk builder enablement, `section`) CLOSED + merged to release/02.70-july-jitter (the demo studio container carries its own AI keys via an env_file-ONLY wire — NO MOCK_CLERK/chain-pin, studio stays Clerkenstein-authed; root cause FIXED + PROVEN live op1; autoverify (g) container-key assert; studio-desk's FIRST Playthroughs-manifest entry, 16→18 live/0 TODO; talk-to-data M239 Bedrock re-confirmed COMPLETE; rext july-jitter-m252-studio-builder @ d80db9f; deferral audit GREEN — CARRY-M252-01 + CARRY-M252-02 both Fate-2 → M254; 0 platform edits). M253 the sole remaining build lane (unblocked, iterative) → M254 closer._
