@@ -6,4 +6,4 @@ p95 over 5 consecutive cold loads on a cold demo (state the environment — lapt
 
 ## Running ledger
 
-_(iter-NN/ directories are created by `/developer-kit:build-mstone-iters` on its first invocation — no iter dirs exist at scaffold time. Per-iter entries accumulate here during the iter loop.)_
+- iter-01 (tok/bootstrap): authored TOK-01 (shell-before-awaits + no-thirdparty demopatches + FCP runner); baseline skeleton-visible 4669 ms (demo-2, laptop); dominant await = canAccess (~3.9 s), not clerk.load — see iter-01/progress.md
