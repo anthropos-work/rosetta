@@ -325,6 +325,82 @@ Contract:
 - **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
   next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
 
+## The studio-desk first-paint budget (v2.7 "july jitter" M253)
+
+The login budget above is next-web/hiring **ACCESS**. **studio-desk has its own, separate first-paint budget** —
+authored by **M253** because `run-latency.sh` measures ACCESS on the two React apps and there was **no** studio
+first-paint harness at all.
+
+> **The gate (M253):** on a cold demo (**state the environment — laptop vs tailnet**), **first-meaningful-paint
+> < 1000 ms** — the `.page-skeleton` header+sidemenu shell **visible** — **AND no blank > 1 s**, p95 over **5
+> consecutive cold loads**, gated on a fresh-green `autoverify.json`. FMP here is defined as the **shell being
+> visible**, not the browser's `first-contentful-paint` entry.
+
+### Why studio blanks where next-web streams
+
+studio-desk is **not** an SSR React app — it is an **empty-body MPA** (per HTML page: `home.html`, the builders,
+…) whose `core/main.ts` builds the whole visible shell (`new PageWrapper()`) **only after three sequential
+blocking `await`s**: `clerk.load()` → `l12nService.init()` → `userService.canAccess()`. Until `PageWrapper` runs,
+the `<body>` is empty. So the blank is not a slow *render* — it is a **paint-ordering** defect: the shell is
+built behind the boot awaits.
+
+**The per-leg baseline (demo-2, LOCAL LAPTOP, authenticated as `maya-thriving`, t0 = studio navigation):**
+
+| leg | cost | note |
+|---|---|---|
+| `clerk.load()` | **~140 ms** | NOT the 10 s timeout — cheap vs Clerkenstein (the milestone's stated worry, refuted) |
+| `l12nService.init()` | **~12 ms** | cheap |
+| **`userService.canAccess()`** | **~3.9 s** | the dominant leg — its GraphQL org-memberships check **404s** and burns a 3-attempt retry ladder (1776 + 2102 ms backoff) |
+| `new PageWrapper()` (shell) | — | runs only AFTER the three awaits → skeleton visible at **~4669 ms** |
+
+**Read the arithmetic** (per this doc's rule): the ~3.9 s is a `retry: 2` ladder on a **fast-failing** fetch (a
+404, not a blackhole) — the same signature family as the login budget's ~6.1 s. But the fix is NOT to chase the
+404: it is to **paint the shell ahead of the await**.
+
+### The fix — paint the shell before the awaits (two demopatches on the M249 studio ladder)
+
+- **`studio-desk-shell-first-paint`** — inject the `.page-skeleton` DOM (header + sidemenu + content)
+  **synchronously right after `preloadCriticalCSS()`** (main.ts ~L97), **before** Sentry/posthog/clerk.load/
+  l12n/canAccess. The CSS for those classes is already injected by `preloadCriticalCSS`, so the dark shell
+  paints from **CSS+DOM with zero network**. **De-dup is automatic:** `PageWrapper#init` wipes
+  `document.body.innerHTML` then rebuilds its own skeleton, so the early shell is seamlessly replaced (no double
+  skeleton). Auth-independent: it paints before `canAccess`, so the blank is closed regardless of the 404.
+- **`studio-desk-no-thirdparty`** — no-op `Sentry.init` + `posthog.init` on the demo (no reachable GlitchTip / no
+  PostHog project on a Clerk-free demo; the imports stay referenced by the later `captureException`/`identify`).
+
+Both are sha-pinned demopatches on M249's `build_frontend_studio_desk` ladder (`demopatch-spec.md` §5); the
+patch-set fingerprint grows 3 → **5**, forcing a studio rebuild. Zero platform-repo edits.
+
+### The result (demo-2, LOCAL LAPTOP)
+
+| | baseline | **post-M253** |
+|---|---|---|
+| skeleton-visible p95 (5 cold loads) | **4669 ms** | **817 ms** (p50 743, max 817) |
+
+5/5 cold loads painted the shell, 0 login bounces — **numerically MEETS the < 1000 ms gate** (~5.7× faster).
+**Per coordination rule 9, the fully-green COLD-p95 confirmation is chartered to M254 (prove-on-billion)** — a
+warm, partially-set-dressed local demo cannot produce a fully-green `autoverify.json` for reasons unrelated to
+studio (M253 iter-02 D5). State the environment with the number: this is a **local laptop demo-2**, not the
+tailnet.
+
+### The harness
+
+`rext stack-verify/e2e/run-studio-fcp.sh` — a studio sibling of `run-latency.sh`:
+
+```bash
+cd <stack>/rosetta-extensions/stack-verify/e2e
+STUDIO_FCP_RUNS=5 STUDIO_FCP_GATE_MS=1000 \
+  ./run-studio-fcp.sh 2 maya-thriving        # demo N, seat that can reach studio
+```
+
+- **Establishes a Clerkenstein session first** (a studio page 302-redirects an unauthenticated visitor to
+  next-web `/login`) by navigating the **real cockpit [Log in as] CTA** — the same handshake `measureLogin` uses;
+  the `__session` cookie is set on `localhost`, shared with studio's offset port.
+- **Each sample is a fresh context** (cold cache + cookies ⇒ a genuine cold login).
+- **Gates on `skeleton-visible`** (the shell's `.skeleton-header` + `.skeleton-sidemenu`): p95 < gate **AND**
+  max ≤ gate (the "no blank > 1 s" clause is a per-sample max, not a percentile).
+- Same green-gate + non-integer-`N` guard as `run-latency.sh`; **never** gates on `networkidle`.
+
 ## See also
 
 - [`cockpit-spec.md`](cockpit-spec.md) — the presenter cockpit (and the corrected M43-D5 claim)
