@@ -1,0 +1,47 @@
+{
+  "milestone": "M250",
+  "title": "AI-readiness fidelity",
+  "shape": "iterative",
+  "close_status": "closed-incomplete",
+  "close_mandate": "user pragmatic-close mandate 2026-07-24 — core gate met + live-confirmed; residual is a slow local manager sweep M254 re-runs on billion by design",
+  "closed": "2026-07-24",
+  "realizes": "the /ai-readiness page renders the platform's real fidelity for the Northwind showcase org: the 31 canonical mapping skills (19 core @1.0 + 12 enabling @0.5, denominator 25.0), the 2 track-keyed named sims + interview with a non-empty evaluated-skills list, and the completed sim's verified skills distributed to the employee — faithful for player AND manager (core sections).",
+  "platform_repo_edits": 0,
+  "deliverable": "rext code (stack-seeding: rewritten ai_readiness_config.go 31-default arithmetic spine + 3 track-keyed sims; net-new AIReadinessSimSkillsSeeder Directus set-dress; net-new ai_readiness_evidence.go validation fan-out; iter-07 interview-findings 5-KPI-id + 2 coverage-manifest phrasing reconciles; all fences re-derived at 25.0) + rosetta docs (corpus/services/ai-readiness.md 31-skill seeding contract + corpus/ops/seeding-spec.md v2.7 M250 changelog). The CODE-of-record lives in the gitignored rosetta-extensions authoring copy; this close merges ONLY the rosetta doc + plan half.",
+  "gate": {
+    "target": "cold reset-to-seed, completed Northwind AI-readiness member: (1) 31 default readiness skills; (2) track-keyed named sim + interview + non-empty evaluated-skills; (3) profile carries distributed verified skills; (4) manager view faithful; (5) 0 invented, 0 prod-ejects, closure green, frozen-vs-live arithmetic agrees at 31",
+    "achieved": "parts 1/2/3/5 LIVE-GREEN both vantages (employee aria-completed + manager dana-manager, Northwind, demo-2, escapes=0); part 4 core fidelity sections (31-skill matrix + how-we-measure named-sims/evaluated-skills/dots) LIVE-GREEN; 3 ADJACENT manager sections (by-tag/interview-findings/handled-for-you) drift-fixed + committed + data-confirmed + unit-green, LIVE manager-sweep confirmation routed to M254",
+    "distance": "core gate MET; residual = live confirmation sweep of 3 adjacent drift-fix sections (CARRY-M250-01 -> M254, Fate 2)",
+    "status": "closed-incomplete"
+  },
+  "tests": {
+    "rext_seeders_pkg": "go test ./seeders/ GREEN at code-of-record tag (532 test funcs in the package)",
+    "rext_dna_closure": "go test ./dna/... GREEN — closure 31/31 (the 31 defaults resolve in the captured taxonomy)",
+    "ai_readiness_suite": "52 AI-readiness test funcs across 7 files: ai_readiness_config_test.go (5) + ai_readiness_evidence_test.go (4, net-new iter-05) + ai_readiness_funnel_test.go (4) + ai_readiness_harden_test.go (16) + ai_readiness_interview_report_test.go (7, iter-07 KPI-id fix) + ai_readiness_m219_test.go (12, re-derived 6.5->25.0) + ai_readiness_sim_skills_test.go (4, net-new iter-03)",
+    "delta_vs_prior": "net-new arithmetic-spine + 2 net-new seeders (sim-skills +4, evidence +4); the m219/harden/interview fences RE-DERIVED at 25.0 (not new count, changed expectations). Iterative milestone — no single prior baseline.",
+    "flake_gate": "rext seeders+dna deterministic (unit tests, no live deps); iter-07 unit-green. Milestone-level flake risk lives in the LIVE render sweep, gated by fresh-green autoverify per coverage-protocol.md.",
+    "lint": "n/a for the merged rosetta half (docs); rext go builds green (go build ./...). 0 broken markdown links across the 2 touched corpus docs."
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "the iterative render->measure->fix loop (coverage-protocol.md + verification.md): unit fences (arithmetic + closure) at each build lane, then a live reset-to-seed Playwright coverage sweep both vantages on demo-2",
+    "surface": "the arithmetic spine (config + funnel + M219 fences), the net-new Directus set-dress seeder, the net-new evidence-distribution seeder, and the live /ai-readiness render (employee + manager)",
+    "result": "parts 1/2/3/5 + core part-4 proven LIVE-GREEN both vantages (escapes=0, closure 31/31, arithmetic re-derived green); the 3 adjacent manager sections were falsified as post-M246 DRIFT (not data gaps), fixed + data-confirmed + unit-green",
+    "residual_uncovered": "the LIVE (browser) confirmation of the 3 adjacent drift-fix manager sections — a ~150-page manager crawl that times out locally; routed to M254 (its exit gate (d)+(h) re-run the same sweep on billion). NOT a fidelity gap — the fixes are data-confirmed + unit-green."
+  },
+  "benchmarks": {
+    "applicable": false,
+    "reason": "no perf-sensitive code — seeders + Directus set-dress + docs. (The AI-readiness manager data-load latency is reported, not gated, by ai-readiness.md; login p95 is a different milestone.)"
+  },
+  "code_of_record_tag": "july-jitter-m250-iter07 @ 584f1fe — on origin (rung-zero verified: git ls-remote --tags origin shows refs/tags/july-jitter-m250-iter07 -> 584f1fee AND the superseded july-jitter-m250-ai-readiness -> 2a5c4f4). rext authoring HEAD == 584f1fe, tree clean. seeders + dna closure re-run GREEN at close.",
+  "build_commits_rext": "iter-02 arithmetic spine (8->31 defaults + 3 track-keyed sims, fences re-derived at 25.0) + iter-03 net-new AIReadinessSimSkillsSeeder Directus set-dress + iter-05 net-new ai_readiness_evidence.go validation fan-out -> the milestone build; iter-07 reconciled 3 post-M246 drifts (interview 5-KPI-id seeder + 2 coverage-manifest phrasing) -> tag july-jitter-m250-iter07",
+  "deferral_audit": "GREEN (0 blockers) — 2 items: DEF-M250-01 (participants_filter/business-sim routing) DROPPED as moot for the gate (D18); CARRY-M250-01 (live manager-sweep of 3 adjacent sections) Fate-2 confirmed-covered by M254 exit gate (d)+(h), no sibling overview edit. 0 repeats, 0 chronic, 0 aged-out, 0 escape-hatch. Report: audit-deferrals/deferral-audit-2026-07-24-m250-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral re-audit GREEN.",
+    "Phase 3/5/7 (Fate-1 Delivers): corpus/services/ai-readiness.md seeding contract updated to the platform's real 31-skill default + net-new Directus set-dress + evidence distribution + arithmetic re-derived (Champion 30/30, started hero 9 core -> 11/30) + interview-findings 5-KPI-id; corpus/ops/seeding-spec.md v2.7 M250 changelog paragraph.",
+    "Phase 5 decision-triage: D1/D2/D4/D14-16/D17 blended into ai-readiness.md; D5/D6 arithmetic blended; D11/D12/D13 archived (iter-loop mechanics).",
+    "Phase 9-iter: Gate Outcome Ledger (progress.md) + carry-forward.md (CARRY-M250-01 -> M254, Fate 2)."
+  ],
+  "close_code_changes": "none in rext — the code-of-record stays july-jitter-m250-iter07 @ 584f1fe (NO re-pin at close). All close records are docs in the rosetta repo (Delivers KB, decisions D17/D18, deferral-audit report, Gate Outcome Ledger, carry-forward.md, this metrics.json, retro.md, roadmap/state Phase-10). A minor stale band-label doc-comment in the rext funnel seeder (aiReadinessHeldSkills lines 439-443 still show pre-M250 8-skill Step-1 labels; the constants + line 517-519 are correctly re-derived) is NOT re-tagged at close — disproportionate to churn the M254 re-pin target for a comment; it will reconcile when M254 next touches the funnel seeder.",
+  "notes": "The M250 AI-readiness fidelity marquee of v2.7 'july jitter'. Iterative: 1 tok (bootstrap TOK-01) + 6 tiks (iter-02 arithmetic spine -> iter-03 Directus set-dress -> iter-04 measure-first -> iter-05 evidence distribution -> iter-06 render-measure -> iter-07 drift reconciliation). Brought the Northwind AI-readiness demo seeder from an invented 8-skill/6.5-weight set to the platform's real 31-skill/25.0-weight default + 3 real track-keyed sims + a net-new Directus set-dress (evaluated-skills) + a net-new evidence-distribution fan-out (validation_attempt_results 5->345, verified user_skill_evidences 787). Proven LIVE-GREEN both vantages on cold reset-to-seed (escapes=0) for the core gate; 3 adjacent manager-dashboard sections found to be post-M246 platform drift, fixed + data-confirmed + unit-green, live-sweep confirmation -> M254. Tooling + docs only, 0 platform-repo edits."
+}
