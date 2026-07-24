@@ -1,7 +1,7 @@
 ---
 iteration_type: tik
-status: in-progress
-gate: PENDING
+status: archived
+gate: "part-4 3 adjacent sections drift-fixed + data-confirmed + unit-green; live sweep → M254 (CARRY-M250-01). Core gate met at milestone close (pragmatic mandate)."
 ---
 
 # iter-07 — tik: close the 3 adjacent manager sections (part 4 → gate 5/5)

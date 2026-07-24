@@ -2,7 +2,8 @@
 milestone_shape: iterative
 milestone: M250
 title: "AI-readiness fidelity"
-status: planned
+status: archived
+last_updated: 2026-07-24
 release: v2.7 "july jitter"
 exit_gate: "On a cold reset-to-seed, for a completed Northwind AI-readiness member: (1) step-1 AI Skill Mapping renders the platform 31 default readiness skills (19 core + 12 enabling), not invented; (2) step-2 AI Simulation shows the correct track-keyed named sim (tech=who-can-see-this-document-fc0 / business=use-ai-to-turn-survey-data-into-a-leadership-email) + interview, with a non-empty evaluated-skills list of that sim real evaluated node-ids; (3) the member profile carries the completed sim distributed verified skills (validation fan-out + user_skill_evidences); (4) the manager AI-readiness view shows the same faithfully; (5) 0 invented values, 0 prod-ejects, closure green, frozen-vs-live arithmetic agrees at the 31-skill repertoire."
 iteration_protocol_ref: corpus/ops/demo/coverage-protocol.md
@@ -14,7 +15,7 @@ created: 2026-07-23
 
 # M250 — AI-readiness fidelity  (`iterative`, marquee)
 
-**Status:** `planned`  ·  **Shape:** `iterative`  ·  **Complexity:** large  ·  **Release:** v2.7 "july jitter"  ·  **Depends on:** M246
+**Status:** `archived` (completed 2026-07-24)  ·  **Shape:** `iterative`  ·  **Complexity:** large  ·  **Release:** v2.7 "july jitter"  ·  **Depends on:** M246
 
 ## Goal
 The `/ai-readiness` page renders the platform's real fidelity: the **31 canonical mapping skills**, the **2
