@@ -9,7 +9,8 @@ are NO iter dirs at scaffold.)_
 - iter-01 (tok/bootstrap): authored TOK-01 (arithmetic-spine → set-dress → distribute → render loop) — gate 0/5 baseline — see iter-01/progress.md
 - iter-02 (tik): Lane A — arithmetic-spine atomic edit landed (config 31 defaults + 3 track-keyed sims; funnel pool + pinned refs; started-hero 3→9; ALL fences re-derived green at 25.0) — full stack-seeding module GREEN — gate at live render still 0/5 (render deferred to iter-05) — see iter-02/progress.md
 
+- iter-03 (tik): Lane B — net-new Directus set-dress seeder (`AIReadinessSimSkillsSeeder`) landed + registered + 4 tests green + LIVE-validated on demo-2 (3 sims resolve real evaluated-skill names; track heuristic → tech/business correct) — gate at full render still 0/5 — see iter-03/progress.md
+
 ## Next-iter queue
-- iter-03 (tik): Lane B — net-new Directus set-dress (`directus.simulations.skills` for the 3 sim uuids).
 - iter-04 (tik): evidence-distribution join (validation fan-out + user_skill_evidences for evaluated node-ids).
 - iter-05+ (tik): live reset-to-seed render loop on demo-2, measure 5 gate parts.
