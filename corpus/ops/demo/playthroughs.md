@@ -49,7 +49,7 @@ Playthroughs are declared in a manifest with a four-level hierarchy, deliberatel
 **stories** model so the two share vocabulary and substrate:
 
 ```
-Product             a platform product / capability area  (Profile, Hiring, Workforce, Skill Paths, Academy, …)
+Product             a platform product / capability area  (Profile, Hiring, Workforce, Skill Paths, Academy, Studio, …)
 └─ Story            an interconnected flow of product use — a coherent journey (may span products)
    └─ Use Case      one GOAL + the platform FLOW that serves it + the INTERMEDIATE & FINAL expectations
       └─ Playthrough the deterministic e2e test that PLAYS the use case as a human and ASSERTS its expectations
@@ -103,8 +103,11 @@ live Playthroughs** (`pt-workforce-funnel`, `pt-workforce-roster`, `pt-workforce
 Playthroughs** (see below). **M225 (v2.4 "casting call") landed `hiring.yaml`** — the recruiter-vantage candidate
 comparison, as **1 more live Playthrough** (`pt-hiring-recruiter-compare`; see below). **M243 (v2.6 "sound check")
 landed the assign-WRITE half** — `assignment-monitoring.assign-and-track.UC1` (`pt-assignment-assign`), the one
-net-new journey, which flips the last in-manifest `TODO`. The corpus now stands at **16 live Playthroughs, 0 TODO**
-(see the assign-WRITE note below).
+net-new journey, which flips the last in-manifest `TODO`. **M252 (v2.7 "july jitter") added `studio-builders.yaml`**
+— Product **"Studio"**, studio-desk's FIRST-EVER manifest entry, as **2 more** Playthroughs
+(`pt-studio-advanced-generate` + `pt-studio-guided-generate`; see below). The corpus now stands at **18 live
+Playthroughs, 0 TODO** — the 2 studio-builder journeys added to the manifest at M252 (proven live-GREEN at the
+M252 verify).
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
@@ -192,6 +195,34 @@ the assignment must be shown to actually **LAND**.
 > by Playwright (the visible title/image render in separate child nodes). `getByRole('option').click()` is
 > therefore unreliable; the page object commits the first real option by **keyboard** (`ArrowDown`+`Enter`) —
 > robust to the virtual list and genuinely user-driven (P1). Recorded for any future antd-Select surface.
+
+### The `studio` product (M252) — studio-desk's FIRST manifest entry, the builder GENERATE
+
+**M252 (v2.7 "july jitter") added `studio-builders.yaml`** — Product **"Studio"**, the FIRST time **studio-desk**
+enters the Playthroughs manifest. The surface is the demo's own studio-desk (`9000+offset`), and both journeys are
+driven by the **org-admin manager hero** (`pt-manager`), who alone clears the studio role gate. The two
+Playthroughs prove the two builder GENERATE flows reach their **completion boundary** — a real result rendered, no
+`500`:
+
+| Playthrough | Hero (seat) | Surface | What it proves |
+|---|---|---|---|
+| `pt-studio-advanced-generate` | `pt-manager` | **studio-desk `sim-advanced-builder`** | login → the **advanced** builder GENERATE runs to its completion boundary — the generated result renders, `POST /api/ai/completion` returns (no 500). |
+| `pt-studio-guided-generate` | `pt-manager` | **studio-desk `sim-guided-builder`** | login → the **guided** (interview-flow) builder GENERATE runs to its completion boundary — the same completion assertion. |
+
+> **GENERATE is a real `/api/ai/completion` call — a live LLM at the assertion boundary.** So, per **P2**
+> (functional truth, not pixel truth) and the integration-dependent assertion-boundary rule (§ "The iteration
+> protocol"), the Playthrough asserts the flow **reached completion** (result rendered / no 500), never the
+> model's generated *text*. Two M252 facts make this possible on a demo: (1) the studio backend actually holds an
+> AI provider key — the studio-desk clone's `.env` is now wired into the container via the injected-override
+> `env_file` (see [`../../services/studio-desk.md`](../../services/studio-desk.md) § Demo AI wiring +
+> [`frontend-tier.md`](frontend-tier.md)); and (2) the studio surface is reached by a
+> **Clerkenstein-authenticated** hero — the **org-admin manager** logs in via the cockpit handshake and passes
+> studio-desk's `checkEnterpriseAndAdmin` gate (the studio is **not** auth-disarmed; there is **no** `MOCK_CLERK`).
+>
+> **Surface base URL.** The studio Playthroughs drive **`env.studioBaseUrl`** — studio-desk's single-port
+> `9000+offset` (`PT_STUDIO_BASE_URL` override; the runner exports it), never `appBaseUrl`. Same pattern as the
+> M225 recruiter's `hiringAppBaseUrl` — a product on its own app/port gets its own base URL, single-sourced in
+> the env layer.
 
 ## The principles (the alignment contract)
 

@@ -31,7 +31,7 @@ Studio-Desk is a **full-stack TypeScript application** with:
    - Hot Module Replacement (HMR) for rapid development
    - Clerk.js for authentication
    - GraphQL client for data fetching
-   - Separate per-feature HTML entry points (`home.html`, `designer-sim.html`, `builder-skill-path.html`, `generation.html`, `catalog.html`, `academy.html`, `skills.html`), each loading `app/core/main.ts` which bootstraps Clerk auth + scaffold (header/sidemenu/footer) + the page module
+   - Separate per-feature HTML entry points (`home.html`, `simulation-builder.html`, `sim-advanced-builder.html`, `sim-guided-builder.html`, `builder-skill-path.html`, `generation.html`, `catalog.html`, `academy.html`, `skills.html` — the prod set declared in `vite.config.ts` `rollupOptions.input`; `dev-accept.html` is dev-only), each loading `app/core/main.ts` which bootstraps Clerk auth + scaffold (header/sidemenu/footer) + the page module. **The simulation-builder family:** `simulation-builder` is the "Start Composer" (compose intent once; one seed feeds both builders) that fans out to `sim-advanced-builder` (the full designer) and `sim-guided-builder` (the interview flow); each has its own backend prompt dir under `src/prompts/`
 
 2. **Backend**: Express.js API server
    - Clerk middleware for route protection
@@ -285,7 +285,7 @@ docker compose up -d graphql
 
 **Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match.
 
-**Local dev without real Clerk**: Set `MOCK_CLERK=true` (backend) and `VITE_MOCK_CLERK=true` (frontend) in `.env` to bypass Clerk auth — do not use in production. With real auth, all `/api/ai`, `/api/skillpath` and `/api/youtube` routes (and the designer/catalog/skills pages) require the Clerk user to belong to an organization AND have an org admin role (`admin` / `org:admin`); non-admin or non-org users are redirected to `WEB_APP_URL`.
+**Local dev without real Clerk**: Set `MOCK_CLERK=true` (backend) and `VITE_MOCK_CLERK=true` (frontend) in `.env` to bypass Clerk auth — do not use in production. With real auth, all `/api/ai`, `/api/skillpath` and `/api/youtube` routes (and the builder/catalog/skills pages) require the Clerk user to belong to an organization AND hold a **Studio-eligible role**. The gate (`checkEnterpriseAndAdmin`, `src/index.ts`) reads `STUDIO_ACCESS_ROLES = ['admin', 'org:admin', 'content_creator', 'org:content_creator']` — so **content creators, not only org admins**, pass; both the bare and `org:`-prefixed key forms are accepted. Non-eligible or non-org users are redirected to `WEB_APP_URL`.
 
 **Copilot not working**: Check that `AI_PROVIDER_CHAIN` is set and the corresponding provider key(s) exist (`AI_OPENAI_API_KEY`/`OPENAI_KEY`, `AI_AZURE_KEY`, or `AI_ANTHROPIC_API_KEY`).
 
@@ -309,6 +309,55 @@ demo's ephemeral, gitignored clone; the canonical repo is never edited. `VITE_CO
 `.env.production.local` overlay (it is not a declared Dockerfile ARG — #M249-D3). Full mechanism:
 [`demopatch-spec.md` §8 (additive-UI injection)](../ops/demo/demopatch-spec.md) and
 [`frontend-tier.md`](../ops/demo/frontend-tier.md).
+
+### Demo AI wiring — the container reads its OWN clone `.env` (v2.7 "july jitter" M252)
+
+> _Authored here in M252 (docs lane C)._
+
+**PM view.** In a demo, the studio's AI copilot / builder GENERATE returned a **500 on `POST /api/ai/completion`**
+— the studio backend held **no AI-provider key**. M252 fixes it with one wire: the demo studio container now
+**also reads studio-desk's own clone `.env`**, which carries the studio's AI-provider keys. The **auth model is
+unchanged** — the demo studio stays the **Clerkenstein-authenticated hero** (a logged-in org-admin hero passes
+the studio's `checkEnterpriseAndAdmin` gate); M252 touches **only** the AI-provider wiring.
+
+**Engineer view — the base-compose root cause.** studio-desk is a **base-compose** service (declared in the
+platform `docker-compose.yml`), so in a demo it inherits **only `platform/.env`** — the single centralized
+platform env, which carries **no AI-provider keys** (those live in the studio-desk clone's own `.env`, per
+Environment Configuration above). So the containerised backend booted with an empty provider chain and 500'd the
+first `/api/ai/completion`.
+
+**The fix (M252) — `env_file` only.** The studio-desk overlay in `stack-injection/gen_injected_override.py`
+(`frontend_lines()`) now emits an **existence-guarded `env_file: ["<abs>/studio-desk/.env"]`** on the studio
+service (the studio-desk clone is a sibling of `platform/`). That layers the clone's `.env` on top of the
+inherited `platform/.env`, mounting the clone's own **`AI_OPENAI_API_KEY` + `AI_ANTHROPIC_API_KEY`** into the
+container. **Compose precedence is preserved:** the explicit `environment:` block still wins (the Clerkenstein
+`CLERK_*`, the stripped `DIRECTUS_TOKEN=""`, `NODE_ENV=production`), and `env_file` lists **concatenate** so the
+clone's keys win over `platform/.env` — additive, not a clobber. **No provider-chain pin is needed:**
+`aiService.getCompletion` loops **every** configured provider within one request, so even though `platform/.env`'s
+azure is tried first (the legacy fallback), it fast-fails on its non-studio key and falls through to the clone's
+real openai key in the **same** request — the `env_file` alone makes the builder work.
+
+**Auth is unchanged — Clerkenstein, NOT `MOCK_CLERK`.** The M252 fix is deliberately **`env_file` only**: it adds
+**no `MOCK_CLERK`** line. The demo studio authenticates through **Clerkenstein** exactly like every Go service —
+under prod `NODE_ENV`, `clerkMiddleware()` 302s an *unauthenticated* browser into the fake-FAPI
+`/v1/client/handshake` (a `__clerk_handshake` token verified **networklessly** via `CLERK_JWT_KEY`, the RS256
+public key), then `requireAuth` + `checkEnterpriseAndAdmin` (which reads the fake-BAPI
+`getOrganizationMembershipList` and requires an admin/content_creator org membership — the manager hero
+qualifies). So a **logged-in org-admin hero reaches the studio**; a raw *unauthenticated* `curl` 302ing to
+`/login` is that middleware behaving exactly as designed, **not** an unreachable studio. Adding `MOCK_CLERK=true`
+would **regress** the "actual logged-in hero" demo to the legacy bypass and **fail** the pinned regression tests
+(`stack-injection/gen_injected_override.py`'s `test_studio_desk_env_clerkenstein_no_mock_and_offset_sign_in` /
+`test_studio_desk_block_shape_single_port_clerkenstein_wired`, which assert there is **no** `MOCK_CLERK` line in
+the studio-desk block) — the auth model already worked; M252 only fixes the AI-provider wiring. The
+Clerkenstein-authenticated studio surface is documented in
+[`frontend-tier.md`](../ops/demo/frontend-tier.md) (the studio-desk block).
+
+**DNA / verify.** The studio AI keys are already **DNA genes** — `studio-desk/AI_OPENAI_API_KEY` +
+`AI_ANTHROPIC_API_KEY`, **required · standard** (warn, not waived; see
+[`secrets-spec.md`](../ops/secrets-spec.md)). The `stack-secrets` DNA is **source-vs-DNA only** (no container
+inspection). The new **container-side** proof — a **demo-aware, non-fatal, values-blind** assertion that the
+studio-desk **container** actually carries a provider key — lives in the live-verify layer
+(`stack-verify/live/autoverify.sh`), mirroring its existing directus `DB_CONNECTION_STRING` container check.
 
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview

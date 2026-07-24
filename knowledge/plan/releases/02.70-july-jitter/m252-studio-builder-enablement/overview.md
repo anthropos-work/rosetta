@@ -2,12 +2,13 @@
 milestone_shape: section
 milestone: M252
 title: "studio-desk builder enablement"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 depends_on: [M246]
 parallel_with: [M247, M248, M249, M250, M251]
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-24
 ---
 
 # M252 — studio-desk builder enablement

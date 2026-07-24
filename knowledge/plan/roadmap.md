@@ -396,7 +396,26 @@ count holds) — M254's overview to be corrected when M254 runs. Code-of-record:
 `july-jitter-m251-test-health` @ `e9e29a1`** (on origin; rung-zero verified). **0 platform-repo edits.**
 
 #### M252 — studio-desk builder enablement  (`section`)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-24)
+**Closure:** The demo studio-desk container now carries the studio's own AI-provider keys — root cause FIXED (a
+base-compose studio-desk inherits ONLY `platform/.env`, which has no AI keys, so `/api/ai/completion` 500'd).
+The fix is **`env_file`-ONLY** at an existence-guarded absolute `<clone>/studio-desk/.env` in
+`gen_injected_override.py` `frontend_lines()` (`platform_dir` threaded, default `None` → `exposure_claim_guard`
+byte-identical): **NO `MOCK_CLERK`, NO provider-chain pin** — the studio stays Clerkenstein-authenticated
+(two pinned regression tests assert no `MOCK_CLERK`), and `aiService` loops every provider within one request
+so the clone's real openai key is used after azure fast-fails. **PROVEN live** (op1, demo-2: the container
+carries the keys + boots `ProviderHealth Initialized with chain: azure-openai->openai->anthropic`). Added a
+demo-aware, non-fatal, values-blind **autoverify (g)** container-key assert (mirrors the directus DSN check).
+studio-desk enters the **Playthroughs manifest for the first time** — Product "Studio", 2 builder-GENERATE
+Playthroughs (`pt-studio-advanced-generate` + `pt-studio-guided-generate`) driven by the org-admin manager
+hero, asserted at the completion boundary (P2); count **16 → 18 live / 0 TODO**. Talk-to-data (M239 Bedrock)
+re-confirmed **COMPLETE, no work owed**. Docs: `studio-desk.md` (Demo-AI-wiring) + `secrets-spec.md` (the
+studio-desk AI class incl. the KB-1 correction: the studio AI genes are required·standard, not waived) +
+`frontend-tier.md` (the F8 env_file note) + `playthroughs.md` (the builder Playthrough + count). Code-of-record
+**`july-jitter-m252-studio-builder` @ `d80db9f`** (on origin; rung-zero verified). Deferral audit **GREEN** —
+2 Fate-2 carries to M254: **CARRY-M252-01** (5 pre-existing academy autoverify stub failures, M245 root cause,
+byte-identical pre/post M252) → gate (g); **CARRY-M252-02** (the ~10-min async live builder-generate RUN,
+centralized at M254 by the billion-last design) → gate (e)+(h). **0 platform-repo edits.**
 **Goal:** The studio `sim-advanced-builder` + `sim-guided-builder` work (the AI key reaches the demo container), proven by a Playthrough.
 **Shape:** `section`.
 **Scope — In:**
@@ -464,7 +483,7 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 5 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 7 of 9 milestones closed — M246 barrier PASSED go/no-go + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav + M250 ai-readiness-fidelity + M251 test-health + M252 studio-builder-enable; M253 + M254 remain; tooling + docs only, zero platform-repo edits) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 

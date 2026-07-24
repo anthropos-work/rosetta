@@ -185,6 +185,23 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 > > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
 > > bake; the roster-aware BAPI re-seeds on every re-up.
 
+> **v2.7 "july jitter" M252 — the AI-provider `env_file` (the auth model is UNCHANGED).** M252 did **not** touch
+> the auth posture above: the demo studio stays the **Clerkenstein-authenticated hero** — a logged-in org-admin
+> hero (the manager) 302s through the fake-FAPI handshake and passes `checkEnterpriseAndAdmin` exactly as
+> described. (A raw *unauthenticated* `curl` 302s to `/login` — that is the production `clerkMiddleware()`
+> catch-all behaving as designed for a browser with **no** session, **not** an unreachable studio.) What M252
+> fixes is a distinct **AI-provider** gap: studio-desk is a **base-compose** service, so in a demo it inherited
+> **only `platform/.env`** — which carries **no AI-provider keys** — so `POST /api/ai/completion` 500'd. M252
+> wires the studio-desk clone's own `.env` into the container via an existence-guarded `env_file` (the
+> `gen_injected_override.py` bullet in §"Where the tooling lives" below), supplying the studio's own AI-provider
+> keys (`AI_OPENAI_API_KEY` + `AI_ANTHROPIC_API_KEY`). **No `MOCK_CLERK`, no auth change** — a `MOCK_CLERK=true`
+> line would regress the demo to the legacy bypass and **fail** the pinned regression tests
+> (`test_studio_desk_env_clerkenstein_no_mock_and_offset_sign_in` /
+> `test_studio_desk_block_shape_single_port_clerkenstein_wired`, which assert **no** `MOCK_CLERK` line in the
+> studio-desk block). This is what makes `/api/ai/completion` callable **by the logged-in hero** in a Playthrough
+> ([`playthroughs.md`](playthroughs.md): `pt-studio-advanced-generate` / `pt-studio-guided-generate`) — see
+> [`../../services/studio-desk.md`](../../services/studio-desk.md) § Demo AI wiring.
+
 > **Browser-trusted FAPI cert (M31; M213 remote path).** The Clerk-free login routes the browser through
 > Clerkenstein's fake FAPI over **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it. For a **local**
 > demo (default) that's `mkcert` (idempotent `-install` + a leaf for `127.0.0.1 localhost ::1`), degrading to an
@@ -563,7 +580,17 @@ landed at `storytelling-postfix-2`:
   service to the offset frontend origins (see §"Offset-origin CORS"), and **strips the inherited prod
   `DIRECTUS_TOKEN`** (`DIRECTUS_TOKEN=`) on **every** emitted service + both frontends — no prod credential rides
   in a demo container, and studio-desk's prod-Directus *write* path is disarmed (fix16/fix17; see
-  [`../safety.md`](../safety.md) §2.3 + §2.2).
+  [`../safety.md`](../safety.md) §2.3 + §2.2). **(v2.7 M252, the F8 gap.)** studio-desk is a **base-compose**
+  service, so in a demo it inherits **only `platform/.env`** — which carries **no AI-provider keys**, so the
+  studio backend 500'd `POST /api/ai/completion`. `frontend_lines()` now also emits an **existence-guarded
+  `env_file: [<clone>/studio-desk/.env]`** on the studio service (the studio-desk clone sits beside `platform/`),
+  layering the clone's own `.env` over `platform/.env` to supply the studio's own **AI-provider keys**
+  (`AI_OPENAI_API_KEY` + `AI_ANTHROPIC_API_KEY`) so `/api/ai/completion` no longer 500s. **No `MOCK_CLERK`, no
+  auth change** — the demo studio's auth model is unchanged (Clerkenstein; the injected override even asserts the
+  studio-desk block carries **no** `MOCK_CLERK` line — see the studio-desk block above). Precedence is
+  preserved: the explicit `environment:` block still wins (the Clerkenstein `CLERK_*`, the stripped
+  `DIRECTUS_TOKEN`, `NODE_ENV=production`); `env_file` lists **concatenate**, so studio-desk/.env keys win over
+  platform/.env.
 - `demo-stack/up-injected.sh` — the per-demo serial-before-up frontend build (offset URLs + minted pk +
   tag-guard), the 12 GB VM pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, the scoped verify.
 - `demo-stack/frontend/next-web.dockerignore` — the tooling-owned context trim for next-web.

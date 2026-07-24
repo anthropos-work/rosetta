@@ -1,0 +1,41 @@
+{
+  "milestone": "M252",
+  "title": "studio-desk builder enablement",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-24",
+  "realizes": "the demo studio-desk container now carries the studio's own AI-provider keys, so the sim-advanced/guided builders' /api/ai/completion no longer 500s — PROVEN live (op1, demo-2: ProviderHealth boots azure-openai->openai->anthropic). A container-side (autoverify) provider-key assert closes the .env-vs-container gap, and studio-desk enters the Playthroughs manifest for the first time (2 builder-GENERATE Playthroughs).",
+  "platform_repo_edits": 0,
+  "deliverable": "rext code (stack-injection env_file wiring in gen_injected_override.py + stack-verify autoverify (g) container-key assert + playthroughs studio-builders.yaml/page-object/studioBaseUrl/hero-login) + rosetta docs (studio-desk.md Demo-AI-wiring + secrets-spec.md studio-desk AI class incl. the KB-1 correction + frontend-tier.md F8 env_file note + playthroughs.md the builder Playthrough + count 16->18). The CODE-of-record lives in the gitignored rosetta-extensions authoring copy; this close merges ONLY the rosetta doc + plan half.",
+  "tests": {
+    "injection": "test_injection 156 OK (+3 env_file cases); exposure_claim_guard 49 OK (frontend_lines(n,offset) byte-identical via platform_dir=None default)",
+    "autoverify": "8 net-new studio autoverify (g) container-key tests green; shellcheck clean",
+    "playthroughs_unit": "2 net-new unit spec files (studio-builder-locators.unit.spec.ts +184, url-shapes.unit.spec.ts +62) + extended stack-env.unit.spec.ts (+24) — unit-green (playthroughs module's own e2e/ unit tier; NOT the M251-owned demo-stack run-unit roster, so no collision)",
+    "ptvalidate": "18 live Playthroughs / 0 TODO (the manifest validator authority: playthroughs.md:105) — studio-builders.yaml adds pt-studio-advanced-generate + pt-studio-guided-generate (16->18); both-way id integrity + precondition-coverage + datadna closure gate GREEN",
+    "delta_vs_prior": "playthrough count 16 (M243) -> 18 (M252, +2 studio); +2 net-new unit spec files in the playthroughs module. The studio-builder.spec.ts (+115) is the e2e Playthrough (RUN gated at M254, see CARRY-M252-02).",
+    "flake_gate": "rext injection + autoverify + playthroughs-unit are deterministic (no live deps); recorded green at code-of-record. The milestone's live risk (the ~10-min async builder GENERATE) is centralized at M254 by the release's billion-last design, gated on fresh-green autoverify.",
+    "lint": "n/a for the merged rosetta half (docs corpus, no linter); shellcheck clean on autoverify; 0 broken markdown links across the 4 touched corpus docs"
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "section milestone — build -> verify-once -> document. The wiring was verified LIVE (op1, demo-2 container-env + ProviderHealth boot); the DNA assert + Playthrough artifacts are unit-covered; the ~10-min async live RUN is M254's chartered domain.",
+    "surface": "the env_file wiring (existence-guarded, values-blind, byte-identical backcompat), the autoverify (g) container-key assert (demo-aware, non-fatal, presence-of-NAME-only), and the 2 builder Playthrough definitions + page-object/locators",
+    "result": "wiring PROVEN live op1 (container carries AI keys, ProviderHealth chain up, /api/ai/completion no longer 500s); DNA assert + Playthrough statics unit-green; ptvalidate 18 live/0 TODO",
+    "residual_uncovered": "the live end-to-end builder-generate RUN (CARRY-M252-02 -> M254 exit gate (e)+(h)) + the 5 pre-existing academy autoverify stub failures (CARRY-M252-01 -> M254 (g)); neither introduced by M252"
+  },
+  "benchmarks": {
+    "applicable": false,
+    "reason": "no perf-sensitive code — a compose env_file wire + a non-fatal container assert + Playthrough definitions + docs. (studio first-paint perf is M253's domain.)"
+  },
+  "code_of_record_tag": "july-jitter-m252-studio-builder @ d80db9f — on origin (rung-zero verified: git ls-remote --tags origin -> refs/tags/july-jitter-m252-studio-builder -> d80db9fb741b0c10392120c416ea55f8f3886a65). rext authoring HEAD == d80db9f, tree clean. Two build commits: 4486cdd (Lane A env_file wiring + autoverify (g) assert) + d80db9f (Lane B builder Playthrough).",
+  "build_commits_rext": "4486cdd (wire studio-desk AI keys into the demo container via env_file + demo-aware autoverify (g) container-key assert; NO MOCK_CLERK, NO provider-chain pin) + d80db9f (studio-builders.yaml + studio-builder-page.ts + studioBaseUrl + Clerkenstein hero-login + url-shapes + 2 unit spec files -> studio-desk's first manifest entry)",
+  "deferral_audit": "GREEN (0 blockers) — 2 open carries, both Fate-2 -> M254: CARRY-M252-01 (5 pre-existing academy autoverify stub failures, M245 root cause, byte-identical pre/post M252) -> M254 exit gate (g); CARRY-M252-02 (the live builder-generate Playthrough RUN) -> M254 exit gate (e)+(h). KB-1 landed as Fate-1 (the secrets-spec.md studio-desk AI carve-out). 0 repeats, 0 chronic, 0 aged-out, 0 escape-hatch. Report: audit-deferrals/deferral-audit-2026-07-24-m252-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral re-audit GREEN; recorded CARRY-M252-02 (live builder-generate drive -> M254 (e)+(h)).",
+    "Phase 2/2c: rext code-of-record reviewed (env_file existence-guarded + values-blind + byte-identical backcompat via platform_dir=None; autoverify (g) demo-aware/non-fatal/values-blind). Adversarial: the shipped fix is env_file-ONLY and the studio stays Clerkenstein-authed (2 pinned regression tests assert no MOCK_CLERK) — verified against the tag.",
+    "Phase 3 docs: 4 corpus docs accurate + internally consistent with shipped code; all cross-refs resolve. 2 stale count-mirrors (README.md:206, CLAUDE.md:321 '16 live') routed Fate-2 to the M247-reconcile tail / close-release Phase 3b (D5) — CLAUDE.md is M247-sole-owned (rule #5).",
+    "Phase 5 decision-triage: D1/D2/D3 already blended into the corpus docs during build; D4 (Bedrock complete) + D5/D6 archive (maintainer/tracking). D6 records that cedde09's commit-message 'MOCK_CLERK/overlay' phrasing is imprecise (docs are correct; no rewrite)."
+  ],
+  "close_code_changes": "none in rext — all close records are docs in the rosetta repo (progress.md Final Review + Completeness Ledger, decisions.md D5/D6 + CARRY-M252-02, the deferral-audit report, this metrics.json, retro.md, roadmap/state Phase-10). No rext commit and NO rext re-pin at close: the code-of-record stays july-jitter-m252-studio-builder @ d80db9f.",
+  "notes": "The M252 studio-builder-enablement lane of v2.7 'july jitter'. Wired the studio-desk clone's own .env into the demo container via an existence-guarded env_file (root cause: base-compose studio-desk inherits ONLY platform/.env, which carries no AI keys -> /api/ai/completion 500s). NO MOCK_CLERK, NO provider-chain pin: the studio stays Clerkenstein-authenticated (test-enforced) and aiService loops every provider within one request. Added a demo-aware container-side provider-key assert to autoverify. studio-desk enters the Playthroughs manifest for the first time (Product Studio, 2 builder-GENERATE Playthroughs driven by the org-admin manager hero, asserted at the completion boundary per P2). Talk-to-data (M239 Bedrock) confirmed COMPLETE, no work owed. Wiring PROVEN live op1 on demo-2; the ~10-min async live RUN centralized at M254 by design. Tooling + docs only, 0 platform-repo edits."
+}
