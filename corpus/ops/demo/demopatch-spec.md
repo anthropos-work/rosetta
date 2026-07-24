@@ -59,7 +59,7 @@ unnamed until this spec.
 
 **Read this before adding a patch.** G5 above describes what `revert` *can* do. The rung that actually runs it
 unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — is now **directory-driven**: it
-iterates **every** `patches/<name>/<name>.yaml` (all 21 today), not a hand-maintained list:
+iterates **every** `patches/<name>/<name>.yaml` (all 23 today), not a hand-maintained list:
 
 ```sh
 for _mf in "$HERE"/patches/*/*.yaml; do
