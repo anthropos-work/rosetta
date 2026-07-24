@@ -306,7 +306,7 @@ These are the **FIRST-EVER studio-desk SOURCE demo-patches** — `studio-desk-ba
 `studio-desk-logout-url` on `userProfile.js`) + `studio-desk-logo-url` — image-baked into the demo's studio
 image by a **net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint**. They touch only the
 demo's ephemeral, gitignored clone; the canonical repo is never edited. `VITE_COCKPIT_URL` rides a
-`.env.production.local` overlay (it is not a declared Dockerfile ARG). Full mechanism:
+`.env.production.local` overlay (it is not a declared Dockerfile ARG — #M249-D3). Full mechanism:
 [`demopatch-spec.md` §8 (additive-UI injection)](../ops/demo/demopatch-spec.md) and
 [`frontend-tier.md`](../ops/demo/frontend-tier.md).
 

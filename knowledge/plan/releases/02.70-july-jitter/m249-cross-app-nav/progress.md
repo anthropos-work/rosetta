@@ -71,3 +71,37 @@ Stopped after Pass 1 — the full 6-dimension scan over the 4 focus areas found 
 (deepen genuine gaps; do NOT force 5 passes on live-verified code).
 
 rext code-of-record: **`july-jitter-m249-harden`** (test-only commit atop `bcbb779`; pushed + verified on origin).
+
+## M249: Final Review
+
+Close review found a near-clean milestone (docs deliverable; code-of-record hardened + LIVE-verified in rext).
+Full accounting:
+
+### Scope
+- [x] All 5 sections checked; `overview.md` Open questions all resolved (rewrite+add per D2/D5; no
+  `DEMO_NO_BACK_TO_COCKPIT` knob — the fail-closed conditional render IS the opt-out; demo-path only). 0 gaps.
+
+### Code Quality
+- [x] [verify] 4 touched corpus docs consistent (voice, cross-refs, version-tagging); 0 broken relative links
+  (all 4 docs swept). Markdown tables well-formed. No dead cross-refs.
+- [x] [adversarial] The load-bearing §5 inventory count (21 = 11+2+5+3) ground-truthed against the real rext
+  `patches/` dir at the code-of-record tag — EXACT match; also fenced by `test_patch_inventory.py`. Recorded in
+  `decisions.md` § Adversarial review.
+
+### Documentation
+- [x] `demopatch-spec.md` §5/§4/§8, `cockpit-spec.md`, `frontend-tier.md`, `studio-desk.md` accurate vs the
+  shipped rext code. CLAUDE.md untouched (its demopatch bullet is M247's sole-owner domain per the guardrail).
+- [x] [nice-to-have] Added `(#M249-D{K})` decision trace tags at the 3 spots where a doc states a specific
+  non-obvious choice (D1 spread-in-scope-symbol · D2 read import.meta.env directly · D3 overlay-not-build-arg).
+
+### Tests & Benchmarks
+- [x] 138 M249-touched tests GREEN at code-of-record `july-jitter-m249-harden`; flake gate 5/5 clean
+  (varied order). No new gaps beyond the 3 the harden pass already deepened (+7 unit tests). No benchmarks
+  apply (docs + demo-patch tooling).
+
+### Decision Triage
+- [x] D1-D4 → already blended into `demopatch-spec.md` §8 (additive-UI injection) + `frontend-tier.md` +
+  `studio-desk.md` during build; trace tags added at close.
+- [x] D5 (studio `.env.production.local` always-overwritten) → archive (maintainer-only rext-internal bug fix;
+  fully recorded in `decisions.md` + fenced by `test_studio_desk_overwrites_a_stranded_overlay`).
+- [x] Pre-existing test-failure item → Fate-2 confirm → M254 (recorded; deferral audit GREEN).

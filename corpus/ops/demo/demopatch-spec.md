@@ -443,9 +443,9 @@ seam for "add a menu item", so it is a demo-patch (§1 ladder exhausted) — but
 3. **No new import, no new i18n key.** The replacement must compile with **only what is already in scope** — a
    demo-patch that adds an `import` line needs a *second* anchor (the import block), and one that adds a
    translation key would touch platform **message JSONs** (a platform edit the whole mechanism forbids). So:
-   reuse an in-scope symbol (next-web spreads the in-scope `logOutMenuItem` for a valid `IconDefinition`), use a
-   plain **string literal** label (`'Back to Cockpit'` — a demo affordance, never shipped to real users, so an
-   un-i18n'd string is correct here), and a FontAwesome class already loaded by the app.
+   reuse an in-scope symbol (next-web spreads the in-scope `logOutMenuItem` for a valid `IconDefinition` —
+   #M249-D1), use a plain **string literal** label (`'Back to Cockpit'` — a demo affordance, never shipped to
+   real users, so an un-i18n'd string is correct here), and a FontAwesome class already loaded by the app.
 
 4. **The env value is baked by the CALLER, offset-templated.** The manifest's `build_env` **documents** the
    line (`…_COCKPIT_URL=$SCHEME://$HOST:$((7700+OFFSET))`), but the bring-up bakes it explicitly into the app's
@@ -459,6 +459,6 @@ seam for "add a menu item", so it is a demo-patch (§1 ladder exhausted) — but
 The `studio-desk` lane is a hybrid: `studio-desk-back-to-cockpit` is *additive* (rules 1–4), but it **also**
 rewrites the existing "Back" control's `app.anthropos.work` prod-eject to `import.meta.env.VITE_WEB_APP_URL || …`
 (a §7-style rewrite), and its siblings `studio-desk-logout-url` / `studio-desk-logo-url` are **pure** rewrites.
-Reading `import.meta.env.VITE_WEB_APP_URL` directly (not `config.WEBAPP_URL`) is deliberate — it keeps the
-**original `app.anthropos.work` fallback** (so it is behaviour-identical when unset, per §7-4) and needs no
-`config` import (rule 3), while reading the *same* env var `config.WEBAPP_URL` reads.
+Reading `import.meta.env.VITE_WEB_APP_URL` directly (not `config.WEBAPP_URL`) is deliberate (#M249-D2) — it
+keeps the **original `app.anthropos.work` fallback** (so it is behaviour-identical when unset, per §7-4) and
+needs no `config` import (rule 3), while reading the *same* env var `config.WEBAPP_URL` reads.
