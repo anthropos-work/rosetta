@@ -230,10 +230,11 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 
 - **The platform DEFAULT provisioning is 31 readiness skills** (`aireadiness/defaults.go` `defaultReadinessSkills` =
   **19 core @ weight 1.0 + 12 enabling @ 0.5**) + **3 default sims** (2 track-keyed simulations + 1 shared
-  interview). **Do not conflate this with the demo seeder's config** — the M51 demo seeder wrote a much smaller
-  set (~5 core + a few enabling), which is exactly the gap v2.7 **M250** closes (bring the demo to the platform's
-  31-skill repertoire). The "Seeding contract (demo/M51)" section below describes the *demo seeder*, not the
-  platform default.
+  interview). **v2.7 M250 brought the demo seeder up to this platform default** — it now seeds the full
+  **31-skill repertoire** (19 core + 12 enabling, denominator **25.0**) + the **3 real track-keyed default sims**,
+  replacing the M51 demo seeder's much smaller *invented* set (~5 core + a few enabling, denominator 6.5). The
+  "Seeding contract" section below describes the *demo seeder as it stands after M250*; the platform default it
+  now mirrors is described here.
 - **One-click self-service provisioning** — `aireadiness/provision.go` `ProvisionAIReadiness` (+ `GetAIReadinessSetupStatus`)
   seeds the 31-skill default + 3 sims + the 3-step plan idempotently, behind the new `/setup` GET/POST endpoints.
 - **The notifications lifecycle** — `aireadiness/notifications/` (invitation fan-out, a 5-slot reminder cadence +
@@ -310,7 +311,7 @@ Enable for an org by inserting the `organization_settings` row (`setting='ai_rea
 `app/internal/aireadiness/*_test.go` (the scoring/steps/cycle suites moved with the package; Postgres harness
 `testdb_test.go` via `internal/testsupport/pgtest`).
 
-## Seeding contract (demo / M51)
+## Seeding contract (demo / M51 → 31-skill fidelity, v2.7 M250)
 
 To make a **200-person demo org** show the AI-readiness manager dashboard **enabled**, with **78.4% (≈156 of the
 199 frozen snapshots) having completed all 3 steps** (the shipped figure — see `seeding-spec.md`; this supersedes
@@ -320,9 +321,21 @@ seeder writes:
 **Org config (≈10 rows):**
 1. `organization_settings` (`setting='ai_readiness'`, `is_enabled=true`) — the gate.
 2. `ai_readiness_steps` × 3 (skill_mapping/simulation/interview, positions 0/1/2) — optional (canonical default if absent).
-3. `ai_readiness_skills` × ~5 core (weight 1.0) + a few enabling (0.5), `node_id` = **real taxonomy node-ids** (route
-   through the existing seeding resolvers — never fabricate, per the closure gate).
-4. `ai_readiness_sims` × 2 (`step_type` simulation + interview, `sim_ref` = a real Directus sim id or a `PLACEHOLDER-` ref).
+3. `ai_readiness_skills` × **31 — 19 core (weight 1.0) + 12 enabling (0.5)** (M250; was ~5 core + a few enabling),
+   the platform's own `aireadiness/defaults.go` `defaultReadinessSkills` mirrored **verbatim**. `node_id` = **real
+   taxonomy node-ids** (route through the existing seeding resolvers — never fabricate, per the closure gate; here
+   they are the platform's real defaults, so it is no-fabrication-*by-construction*, and the config seeder writes
+   the 31 unconditionally as `provision.go` does).
+4. `ai_readiness_sims` × **3 track-keyed** (M250; was 2) — **two distinct-track simulations**
+   (tech=`who-can-see-this-document-fc0`, business=`use-ai-to-turn-survey-data-into-a-leadership-email`) **+ one
+   shared interview** (`ai-readiness-interview-d62`), each pinned to the platform's real default sim uuid, with the
+   `track` column WRITTEN (the schema's `UNIQUE(org, step_type, track)` requires the tech+business pair — both
+   `step_type=simulation` — to carry DISTINCT tracks). **Plus a net-new Directus set-dress**
+   (`AIReadinessSimSkillsSeeder`) that resolves each wired sim's `directus.sequences.evaluation_skills` node-ids →
+   `public.skills.name` and UPDATEs `directus.simulations.skills` for the 3 uuids — this is what fills step-2's
+   **evaluated-skills list** and drives the tech/business label **name-heuristic** (`directus.simulations.skills`
+   is genuinely NULL in capture, so replay alone leaves it empty — snapshot replay is replay-only, hence a net-new
+   write step).
 5. `ai_readiness_cycles` **× 2 — one `closed` AND one `active`** (v2.3 M219; see § *The CYCLE-STATE contract —
    seed BOTH cycles* below, which this line used to contradict). The **active** cycle (future `end_date`,
    `participants_filter {"all":true}`) is the one the manager dashboard resolves and LIVE-recomputes — it is what
@@ -450,21 +463,26 @@ mis-seeds into defects. Each is a **seeder** contract, and each is now fenced by
 **proven RED against the pre-fix code**.
 
 **1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`ai_readiness.go:133-170`) divides the
-member's **held** skill-weight by the org's **entire configured repertoire** (5 core @ 1.0 + 3 enabling @ 0.5 =
-**6.5**), normalized to 30. So *one* core skill is `round(1.0/6.5*30)` = **5/30**, and one *enabling* skill is
-**2/30**. The seeder wrote exactly one evidence row per member — so the COMPLETED hero, the org's showcase
-**"Champion"**, scored **5/30** on Step 1, and the STARTED hero **2/30**. Non-empty, and not believable.
+member's **held** skill-weight by the org's **entire configured repertoire** — **since M250 the platform's real 31
+defaults: 19 core @ 1.0 + 12 enabling @ 0.5 = `25.0`** (was the invented 8-skill / `6.5` set) — normalized to 30.
+So *one* core skill alone is `round(1.0/25.0*30)` = **1/30**, and one *enabling* skill is also **1/30**: the
+single-skill floor. A seeder that wrote exactly one evidence row per member would score the COMPLETED hero, the
+org's showcase **"Champion"**, at that **1/30** floor. Non-empty, and not believable.
 
 > **Full marks require holding EVERY configured skill.** The denominator is the whole repertoire, by design —
 > "a larger configured set makes a full score harder to reach" (the platform's own comment). A seeder that
 > ignores this produces a technically-populated, semantically-broken funnel.
 
-The held-count is now **stage- and hero-aware**: the COMPLETED hero maps the full repertoire (**30/30**), the
-STARTED hero the 3 core skills (**14/30**), and the population spreads by funnel stage (stage 3: 5…all;
-stage 2: 3…5; stage 1: 1…3). Heroes start core-first (deterministic — a hero's score is a story beat, not a
-sample); the population rotates its window so the org's per-skill strengths spread across the repertoire.
-The **frozen snapshot's `frozen_step1` is now COMPUTED from the same held weight** (it was a flat constant 5) —
-so a frozen row and a live recompute of the same member finally agree.
+The held-count is now **stage- and hero-aware** (re-derived at the 31-skill / 25.0-weight repertoire — M250): the
+COMPLETED hero maps the full repertoire (**30/30**), the STARTED hero **9** of the 19 core skills
+(`round(9.0/25.0*30)` = **11/30** — visibly behind the Champion, well clear of the 1/30 floor; was 3 core → 14/30
+at the old 8-skill set), and the population spreads by funnel stage (stage 3: 19…31; stage 2: 3…19; stage 1:
+1…3). Heroes start core-first (deterministic — a hero's score is a story beat, not a sample); the population
+rotates its window so the org's per-skill strengths spread across the repertoire. The **frozen snapshot's
+`frozen_step1` is now COMPUTED from the same held weight** (it was a flat constant 5) — so a frozen row and a live
+recompute of the same member finally agree. (The double-round divergence the old 6.5 denominator could trip is
+**arithmetically unreachable at 25.0** — held/25×100 = held×4 is always integral for half-step weights — so
+M250 converted that stale hardcoded fence-triple into a live invariant.)
 
 **2. The readiness sims must be RESERVED — or an unrelated session silently scores a member.** The platform
 scores Steps 2/3 from **any** ended session whose `sim_id` is in the org's `ai_readiness_sims` set. It does
@@ -497,11 +515,36 @@ the member — the interaction FKs *require* them, and the DB enforces `source_i
 **presence-preserving** — on a conflict with a row the verified-skill chain already wrote it asserts only that
 the row exists and is verified, and leaves `level` / `anthropos_level` / `user_level` alone. Step 1 is
 presence-based (`queryUserAISkills` selects only `user_id, skill_id, is_verified`), so preserving is both
-correct and safer: with a member now mapping up to 8 skills, the old clobbering upsert would have let the
-readiness seeder quietly restate a hero's claimed-vs-verified gap.
+correct and safer: with a member now mapping up to **31** skills (M250), the old clobbering upsert would have let
+the readiness seeder quietly restate a hero's claimed-vs-verified gap.
 
-**End-to-end proof:** the AI-readiness journeys are now covered by **4 Playthroughs** (both member vantages +
-the manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+**4. Evidence distribution — the completed sim's verified skills must reach the profile (M250).** Step-1
+presence is not enough; the member's profile and the manager's per-skill dots read a **validation fan-out** off
+the completed Step-2/3 sessions. A net-new `ai_readiness_evidence.go` seeder distributes each completed member's
+sim **evaluated** node-ids as: one `validation_attempt_results` + one `validation_attempt_skill_results` per
+evaluated node-id (the score `computePerformanceBySkill` reads for the manager's dot ratings) + one
+**session-backed verified** `user_skill_evidences` per node-id (the profile's verified skill). The evaluated
+node-ids are read **closure-safe** from `directus.sequences.evaluation_skills` JOINed to `public.skills`
+(unresolved ids drop, never fabricated — the same truthful source as the set-dress). On a cold reset-to-seed this
+moved AI-sim `validation_attempt_results` **5 → 345** (+ 897 `validation_attempt_skill_results`, 787
+session-backed verified evidences), flipping both the member-profile verified-skill distribution AND the manager
+per-skill dots to render real.
+
+**5. Interview-findings must key on the CURRENT KPI ids (M250 iter-07).** The manager's "interview findings"
+tiles key on the platform's live `usageDimSpecs` — **avg_adoption / avg_transformation / avg_originality /
+avg_depth / avg_ownership** (Adoption / Transformation / Originality / Depth·Creation / Critical ownership). The
+M219 seeder wrote the now-retired ids `avg_frequency / avg_breadth / avg_context_fit`; only `avg_depth` survived
+the post-M246 platform rename, so 4 of 5 tiles rendered empty. The seeder now emits the 5 current ids (spread
+across bands). One of three **post-M246 drifts** the M250 fidelity sweep caught (the other two — the
+`by-tag`/`handled-for-you` coverage-manifest phrasing — were manifest-copy reconciles); their **live**
+manager-sweep confirmation is a slow ~150-page crawl routed to **M254** (its exit gate re-runs the same sweep on
+billion by design).
+
+**End-to-end proof:** the AI-readiness journeys are covered by **4 Playthroughs** (both member vantages + the
+manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-completed` + manager `dana-manager`,
+Northwind, cold reset-to-seed, escapes=0) for parts 1/2/3/5 + the core part-4 sections. Code-of-record:
+`rosetta-extensions` @ `july-jitter-m250-iter07`.
 
 ## Cross-references
 

@@ -52,3 +52,38 @@ config 8→31 replacement + funnel re-derivation + both fence-test files, landed
 (`go build ./... && go test ./seeders/ -run AIReadiness`). Cheapest measurable gate progress (parts 1 + 5 at the
 config/arithmetic level), and it unblocks Lanes B + join.
 
+## Close decisions (2026-07-24) — pragmatic-close mandate
+
+**INFERRED-SHAPE: iterative** (declared `milestone_shape: iterative` in overview.md — no inference needed; recorded for dispatch trail).
+
+**D17 — iter-07 reconciled 3 post-M246 platform DRIFTS, not data gaps.** iter-06's part-4 gate distance was 3
+failing manager-dashboard sections on `/ai-readiness` (`by-tag`, `interview-findings`, `handled-for-you`). Re-survey
+at source found all three were **post-M246 vocabulary/KPI drift**, not seeding gaps: (a) `handled-for-you` — the
+coverage-manifest regex asserted the dead literal "minutes saved"; the tile renders `minutesToHours(...)` under the
+"Hours saved" label (data confirmed non-zero: skillsMapped 4272 · handsOnMinutes 91h · interviewMinutes 80h) → fix
+= manifest label; (b) `by-tag` — the manifest asserted a stale "…by Tag" title; the tile is "AI Readiness by Team"
+and the table is populated (199 tagged members → 13 team rows) → fix = manifest title (the feared team-tag/
+`participants_filter` lane was MOOT); (c) `interview-findings` — the M219 seeder wrote the retired `usageDimSpecs`
+ids `avg_frequency`/`avg_breadth`/`avg_context_fit`; the platform renamed to `avg_adoption`/`avg_transformation`/
+`avg_originality`/`avg_depth`/`avg_ownership` → fix = seeder emits the 5 current ids + manifest asserts three. All
+three fixed + committed + data-confirmed + unit-green (rext @ `july-jitter-m250-iter07` 584f1fe). Their **live**
+manager-sweep confirmation (a slow ~150-page crawl that times out locally) is routed to **M254** (CARRY-M250-01,
+Fate 2 — M254 exit gate (d)+(h) re-run this sweep on billion by design). Core gate parts 1/2/3/5 + the core part-4
+fidelity sections are LIVE-GREEN both vantages; the milestone closes on the user's pragmatic-close mandate.
+
+**D18 — DROP the deferred `participants_filter` track-tagging + per-member business-sim session routing
+(DEF-M250-01).** Deferred iter-to-iter (iter-02 D7 → iter-06) as "non-blocking; revisit if the render shows a
+gap". iter-07 falsified its only gate-relevant suspicion: the empty `by-tag` region was a one-word manifest copy
+drift, not the missing team-tag lane, and the tech/business track LABEL is driven by the landed name-heuristic
+Directus set-dress (`AIReadinessSimSkillsSeeder`), not `participants_filter`. It is a non-gate believability nicety
+whose gate concern is resolved → dropped (per the M250 close deferral audit, GREEN).
+
+### Decision triage — blended into knowledge (Delivers)
+- D1/D4 (31 real defaults, denominator 25.0) + Lane B set-dress (D2) + evidence distribution (D14/D15/D16) + D17
+  interview KPI ids → **blended into `corpus/services/ai-readiness.md`** § "Seeding contract … 31-skill fidelity,
+  v2.7 M250" + the FILLED-ness contract items 1/3/4/5, and a v2.7 M250 changelog paragraph in
+  `corpus/ops/seeding-spec.md`. (#M250-D1, #M250-D2, #M250-D14..16, #M250-D17)
+- D5 (started-hero 9 → 11/30), D6 (double-round unreachable at 25.0 → live invariant) → blended into the
+  FILLED-ness contract arithmetic in `ai-readiness.md`. (#M250-D5, #M250-D6)
+- D11/D12/D13 (measure-first re-survey; local-demo consumes authoring code sans tag-dance; SQL-read-path proxy)
+  → **archive** (maintainer-only iter-loop mechanics; no knowledge home).

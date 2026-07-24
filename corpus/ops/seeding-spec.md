@@ -477,3 +477,21 @@ employees keep the org domain, single-sourced through `emailForMember` so login 
 avatars are **gender-consistent** across all orgs (#M227-D4). Detail:
 [`demo/stories-spec.md`](demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel) +
 [`demo/profile-completeness-spec.md`](demo/profile-completeness-spec.md).
+
+**v2.7 "july jitter" M250 "AI-readiness fidelity"** brings the Northwind AI-readiness seeder up to the platform's
+**real 31-skill default** (was an invented 8-skill / 6.5-weight set). `AIReadinessConfigSeeder` now writes **31
+`ai_readiness_skills` — 19 core @ 1.0 + 12 enabling @ 0.5, denominator 25.0** — mirrored **verbatim** from
+`aireadiness/defaults.go`, plus **3 track-keyed default sims** (tech=`who-can-see-this-document-fc0` /
+business=`use-ai-to-turn-survey-data-into-a-leadership-email` + a shared interview) with the **`track` column
+written** (the schema's `UNIQUE(org, step_type, track)` needs the tech+business pair to carry distinct tracks).
+Two **net-new** pieces: a **Directus set-dress seeder** (`AIReadinessSimSkillsSeeder`) that populates
+`directus.simulations.skills` for the 3 sim uuids so step-2's **evaluated-skills list** renders (replay is
+replay-only — the column is NULL in capture, so this is a net-new write step), and an **evidence-distribution**
+step (`ai_readiness_evidence.go`) that fans each completed member's sim evaluated node-ids into
+`validation_attempt_results` + `validation_attempt_skill_results` + session-backed verified `user_skill_evidences`
+(member profile verified-skill distribution + manager per-skill dots). All arithmetic fences re-derived at 25.0
+(Champion 30/30, started hero 9 core → 11/30); every surface `PerStackIsolated` + closure-GREEN (the 31 are the
+platform's own real defaults — **no-fabrication *by construction***). Proven LIVE-GREEN both vantages
+(employee `aria-completed` + manager `dana-manager`, Northwind) on a cold reset-to-seed, escapes=0. Seeder-contract
+detail: [`../services/ai-readiness.md`](../services/ai-readiness.md) (§ "Seeding contract … 31-skill fidelity,
+v2.7 M250"). Code-of-record: `rosetta-extensions` @ `july-jitter-m250-iter07`.
