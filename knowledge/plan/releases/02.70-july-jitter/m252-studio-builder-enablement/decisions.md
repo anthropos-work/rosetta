@@ -65,6 +65,20 @@ _(Implementation decisions with rationale, D-numbered, recorded during build.)_
   contained academy-harness reconciliation that belongs there, not smuggled into the studio-builder milestone
   (out-of-subject; the cross-class stub gating carries its own risk). Recorded so it is not lost.
 
+- **CARRY-M252-02 (Fate 2 — the live builder-generate drive, covered by M254 gate (e)+(h)).** M252's residual
+  after the user close-mandate (2026-07-24): the **LIVE end-to-end builder-generate Playthrough drive** (the
+  ~10-min async Generate). The **wiring is PROVEN live** (op1 on demo-2: the studio-desk container carries the
+  real AI keys + boots `ProviderHealth Initialized with chain: azure-openai->openai->anthropic`), and the two
+  builder Playthroughs are **AUTHORED + committed + statically valid** (`studio-builders.yaml`, page-object,
+  hero-login, `studioBaseUrl`; `ptvalidate` **18 live / 0 TODO**, unit-green). The ONLY thing not done is the
+  live RUN of the ~10-min async Generate (flaky locally). Fate 2: **M254 "prove on billion"** is the release's
+  terminal, single-driver live-prove milestone (the M221/M236/M244 "billion-last" design centralizes ALL
+  cold-reset-to-seed live-proof there); its exit gate **already** commits — part **(e)** "the studio
+  sim-builders generate (the builder Playthrough green)" + part **(h)** "the live-browser specs +
+  content-stories sweep + Playthroughs green." Already-planned coverage; no M254 `overview.md` edit needed.
+  (Id `-02` because the build sub-agent already used `CARRY-M252-01` for the autoverify carry above; both are
+  Fate-2 → M254. See `audit-deferrals/deferral-audit-2026-07-24-m252-close.md`.)
+
 - **D2 — the container-carries-provider-key assertion lives in `stack-verify/live/autoverify.sh`, not
   `stack-secrets`.** The roadmap phrased it as "DNA hardening (rext stack-secrets)", but `stack-secrets` is a pure
   **source-dir vs DNA** harness — VALUES-BLIND, zero docker — and adding container inspection would violate its
@@ -87,3 +101,25 @@ _(Implementation decisions with rationale, D-numbered, recorded during build.)_
   `AWS_SESSION_TOKEN` + `CLAUDE_CODE_USE_BEDROCK` optional·config), provenance line records M239 explicitly,
   structure + behaviour pinned by `secret_dna_json_test.go:175-222` + `bedrock_measure_test.go`, provisioned +
   bridged by `bridge_bedrock_creds()` (`up-injected.sh:1244-1271`, called `:1420`). Recorded for the audit trail.
+
+## Close-time decisions (close-milestone, 2026-07-24)
+
+- **D5 (close-time) — the two stale playthrough-count MIRRORS route to the M247-reconcile tail (Fate 2), not
+  fixed in M252.** M252's authority doc (`playthroughs.md`, the count owner) correctly reads **18 live / 0 TODO**.
+  Two count-MIRRORS still read the pre-M252 "16 live": `corpus/ops/demo/README.md:206` and `CLAUDE.md:321`.
+  `CLAUDE.md` is **M247-sole-owned** (roadmap coordination rule #5 — "every other milestone defers its one-line
+  bullet to M247"), and rule #8 routes the studio index/spec reconciliation to the **M247-tail** (the merge order's
+  explicit "… → M252 → **M247-reconcile** → M254" step); close-release Phase 3b (KB Consolidation) is the guaranteed
+  backstop before v2.7 tags. Routing **both** mirrors there (rather than fixing README now) keeps them in lockstep
+  and respects rule #5 — a split-brain 18(README)/16(CLAUDE) would be worse than a tracked, in-lockstep lag behind an
+  already-correct authority. Fate 2: confirmed covered; no sibling `overview.md` edit.
+
+- **D6 (close-time) — the shipped fix is `env_file`-ONLY; the cedde09 commit-message "MOCK_CLERK/AI_PROVIDER_CHAIN
+  overlay" phrasing is imprecise (recorded so the git log doesn't mislead).** The code-of-record
+  (rext tag `july-jitter-m252-studio-builder` @ `d80db9f`, on origin; Lane-A commit `4486cdd`) is **env_file-only —
+  "No MOCK_CLERK, no provider-chain pin"** (the commit body says so verbatim), which MATCHES D1 and all four corpus
+  docs. The live boot line `ProviderHealth Initialized with chain: azure-openai->openai->anthropic` is env_file
+  mounting the clone's openai+anthropic keys alongside platform's azure — **not** a pinned chain. The rosetta docs
+  commit `cedde09`'s summary ("+ MOCK_CLERK/AI_PROVIDER_CHAIN overlay") overstates the fix; the durable artifacts
+  (the corpus docs) are correct, so the message is left as historical record (no rewrite — the content that matters
+  is right). D1's "ready fallback if live shows an azure hang" was **not** needed — env_file alone worked live.
