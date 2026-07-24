@@ -11,6 +11,9 @@ are NO iter dirs at scaffold.)_
 
 - iter-03 (tik): Lane B — net-new Directus set-dress seeder (`AIReadinessSimSkillsSeeder`) landed + registered + 4 tests green + LIVE-validated on demo-2 (3 sims resolve real evaluated-skill names; track heuristic → tech/business correct) — gate at full render still 0/5 — see iter-03/progress.md
 
+- iter-04 (tik, measure-first): first live reset-to-seed of demo-2 with Lanes A+B — parts 1+2 PASS (data), part 5 largely green (closure 31/31), part 3 FAIL (345 AI-sim sessions, only 5 with validation fan-out → the evidence-distribution gap), part 4 partial — see iter-04/progress.md
+
 ## Next-iter queue
-- iter-04 (tik): evidence-distribution join (validation fan-out + user_skill_evidences for evaluated node-ids).
+- iter-05 (tik): evidence-distribution build — validation fan-out (validation_attempt_results + skill_results + verified user_skill_evidences) for completed members' step-2 sim evaluated node-ids (reuse content_stories_write helpers); flips part 3 + part 4 dots.
+- iter-06 (tik): re-seed + browser-render confirmation of all 5 parts (0 invented, 0 prod-ejects).
 - iter-05+ (tik): live reset-to-seed render loop on demo-2, measure 5 gate parts.
