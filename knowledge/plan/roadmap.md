@@ -437,7 +437,22 @@ centralized at M254 by the billion-last design) → gate (e)+(h). **0 platform-r
 **Open questions:** `env_file` vs a bridge (values-out-of-a-mounted-file)? which provider (`AI_PROVIDER_CHAIN`) for cost/latency? a real-LLM Playthrough needs a cost ceiling; default-on vs a `DEMO_NO_*` knob?
 
 #### M253 — studio-desk first-paint  (`iterative`)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-24)
+**Closure:** studio-desk first-meaningful-paint dropped **4669 ms → p95 817 ms** (p50 743, max 817; 5/5 cold
+loads painted the `.page-skeleton` shell, 0 login bounces) on demo-2 (**local laptop**) — decisively under the
+< 1000 ms gate, no blank > 1 s, ~5.7× faster. Root cause corrected mid-milestone: the dominant boot leg is
+`userService.canAccess()` (~3.9 s GraphQL-404 retry ladder), **NOT** clerk.load's 10 s timeout (140 ms actual) —
+so the fix paints the shell **ahead** of that await rather than fixing the 404 (out of scope). The fix is **two
+sha-pinned demopatches on the M249 `build_frontend_studio_desk` ladder** — `studio-desk-shell-first-paint`
+(inject the `.page-skeleton` DOM synchronously after `preloadCriticalCSS()`, before the awaits; de-dup automatic
+via `PageWrapper#init`'s body-wipe) **chained** with `studio-desk-no-thirdparty` (no-op `Sentry.init` +
+`posthog.init`), the 5-manifest patch-set fingerprint forcing a studio rebuild — plus a **net-new studio-FCP
+runner** (`stack-verify/e2e/run-studio-fcp.sh`). Docs: `latency-budget.md` (the studio first-paint budget +
+per-leg model), `demopatch-spec.md` (the 2 patches; inventory 21 → 23), `studio-desk.md` (the MPA / empty-body
+boot model). Code-of-record **`july-jitter-m253-studio-first-paint` @ `b8969c0`** (on origin; rung-zero verified).
+Deferral audit **GREEN** — 1 Fate-2 carry to M254: **CARRY-M253-01** (the fully-green COLD-p95 confirmation on
+billion, the deliberate coordination-rule-9 split) → M254 exit gate **(f)** "studio first-paint < 1 s cold p95".
+Iterative: 1 tok (bootstrap) + 2 tiks. **0 platform-repo edits.**
 **Goal:** studio-desk paints page content in **< 1 second** (no multi-second blank; data streams in after).
 **Shape:** `iterative` — perf, measure→patch→re-measure (the M218/M244 latency-budget pattern).
 **Exit gate:** on a cold demo (state the environment — laptop vs tailnet), **first-meaningful-paint < 1000 ms** (the

@@ -1,9 +1,9 @@
 ---
 active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
 active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M253 studio-desk first-paint (ITERATIVE; paint the shell BEFORE clerk.load/i18n/data awaits + no-thirdparty demopatch; extends M249 studio patch ladder; <1s FCP gate; demo-heavy single stack)"
-last_closed: "M252 — 2026-07-24 (v2.7 studio-desk builder enablement; section — the demo studio container now carries the studio's OWN AI-provider keys via an env_file-ONLY wire [gen_injected_override.py; NO MOCK_CLERK, NO provider-chain pin; studio stays Clerkenstein-authed, 2 pinned regression tests], root cause FIXED [base-compose studio-desk inherited only platform/.env → /api/ai/completion 500'd] + PROVEN live [op1 demo-2: ProviderHealth chain azure-openai->openai->anthropic]; demo-aware/non-fatal/values-blind autoverify (g) container-key assert; studio-desk's FIRST Playthroughs-manifest entry [Product Studio, 2 builder-GENERATE PTs pt-studio-advanced/guided-generate → 16→18 live/0 TODO]; talk-to-data M239 Bedrock re-confirmed COMPLETE; rext july-jitter-m252-studio-builder @ d80db9f; deferral audit GREEN [CARRY-M252-01 academy-autoverify + CARRY-M252-02 live-builder-drive, both Fate-2 → M254]; 0 platform edits)"
-phase: "M252 closed (studio-builder enablement, merged to release/02.70-july-jitter) — M253 the sole remaining build lane (unblocked, iterative — studio first-paint, extends M249's ladder) → M254 closer; M246+M247+M248+M249+M250+M251+M252 done"
+active_milestone: "M254 prove-on-billion (ITERATIVE, the closer; re-prove the whole v2.7 release live on billion — cold reset-to-seed, driven from a tailnet peer, 0 platform edits; multi-part exit gate a–h; p95 click→ACCESS < 5 s + studio first-paint < 1 s cold p95)"
+last_closed: "M253 — 2026-07-24 (v2.7 studio-desk first-paint; iterative, closed-on-gate — first-meaningful-paint 4669 ms → p95 817 ms [p50 743, max 817; 5/5 cold loads painted the .page-skeleton shell, 0 login bounces] on demo-2 laptop, ~5.7× under the <1s gate; fix = 2 sha-pinned demopatches on the M249 build_frontend_studio_desk ladder [studio-desk-shell-first-paint paints the skeleton synchronously BEFORE the boot awaits, CHAINED with studio-desk-no-thirdparty no-op Sentry/posthog] + net-new stack-verify/e2e/run-studio-fcp.sh; root cause corrected: dominant leg is userService.canAccess ~3.9 s GraphQL-404 retry, NOT clerk.load [140 ms actual]; docs latency-budget.md + demopatch-spec.md [inventory 21→23] + studio-desk.md MPA boot model; rext july-jitter-m253-studio-first-paint @ b8969c0; deferral audit GREEN [CARRY-M253-01 fresh-green COLD-p95 on billion → M254 gate (f), Fate-2, the coordination-rule-9 split]; 0 platform edits)"
+phase: "M253 closed (studio-desk first-paint, iterative closed-on-gate, merged to release/02.70-july-jitter) — M254 (prove-on-billion, iterative closer) the SOLE remaining lane; M246+M247+M248+M249+M250+M251+M252+M253 done"
 last_updated: "2026-07-24"
 ---
 
@@ -35,24 +35,27 @@ stack's app, prod host kept as the `||` fallback → behaviour-identical off-dem
 introduced the **additive-UI injection** pattern (`demopatch-spec.md` §8). LIVE-verified GREEN on demo-2 (4/4
 menus @ `:27700`; studio `:23000` baked, 0 effective ejects); rext `july-jitter-m249-harden @ 8ab5192` (138
 tests GREEN, flake 5/5); deferral audit GREEN. **M250 (AI-readiness fidelity, `iterative` marquee) is CLOSED**
-— on a user **pragmatic-close mandate**: core gate parts **1/2/3/5 + core part-4 LIVE-GREEN both vantages**
-(employee `aria-completed` + manager `dana-manager`, Northwind, demo-2, escapes=0). The demo seeder was brought
-to the platform's **real 31-skill default** (19 core + 12 enabling, denom 25.0, closure 31/31) + **3 track-keyed
-named sims** + a **net-new Directus set-dress** (evaluated-skills) + a **net-new evidence-distribution** fan-out
-(`validation_attempt_results` 5→345, verified `user_skill_evidences` 787); arithmetic re-derived green (Champion
-30/30, started hero 9 core → 11/30). **3 adjacent** manager-dashboard sections
-(`by-tag`/`interview-findings`/`handled-for-you`) were **post-M246 drift**, fixed + data-confirmed + unit-green;
-their **live** sweep → **M254** (CARRY-M250-01, Fate 2). Delivers landed: `ai-readiness.md` + `seeding-spec.md`
-31-skill seeding contract. rext `july-jitter-m250-iter07 @ 584f1fe`; deferral audit GREEN. **M252 (studio-desk
-builder enablement) is CLOSED** — the demo studio container now carries the studio's OWN AI keys via an
-**`env_file`-ONLY** wire (`gen_injected_override.py`; **NO `MOCK_CLERK`, NO chain-pin** — the studio stays
-Clerkenstein-authed, test-enforced), root cause FIXED (base-compose studio-desk inherited only `platform/.env`)
-+ **PROVEN live** (op1: `ProviderHealth` chain `azure-openai->openai->anthropic`); a demo-aware autoverify (g)
-container-key assert; **studio-desk's FIRST Playthroughs-manifest entry** (Product Studio, 2 builder-GENERATE PTs
-→ **16→18 live / 0 TODO**); talk-to-data (M239 Bedrock) re-confirmed COMPLETE; rext
-`july-jitter-m252-studio-builder @ d80db9f`; deferral audit GREEN (CARRY-M252-01 + CARRY-M252-02, both Fate-2 →
-M254). **M253 is now the sole remaining build lane** (unblocked, `iterative` — studio first-paint, extends the
-M249 ladder) → **M254** the closer.
+(user pragmatic-close) — core gate **LIVE-GREEN both vantages** (Northwind, demo-2, escapes=0): the demo seeder
+brought to the platform's **real 31-skill default** (denom 25.0, closure 31/31) + 3 track-keyed named sims +
+net-new Directus set-dress + evidence-distribution fan-out; 3 adjacent manager sections were **post-M246 drift**,
+fixed + unit-green, live sweep → **M254** (CARRY-M250-01, Fate 2). rext `july-jitter-m250-iter07 @ 584f1fe`;
+audit GREEN. **M252 (studio-desk builder enablement) is CLOSED** — the demo studio container carries its OWN AI
+keys via an **`env_file`-ONLY** wire (**NO `MOCK_CLERK`/chain-pin** — studio stays Clerkenstein-authed), root
+cause FIXED + **PROVEN live** (op1); autoverify (g) container-key assert; **studio-desk's FIRST Playthroughs
+entry** (16→18 live/0 TODO); talk-to-data (M239 Bedrock) COMPLETE; rext `july-jitter-m252-studio-builder @
+d80db9f`; audit GREEN (CARRY-M252-01+02 Fate-2 → M254). *(Full M250/M252 detail: roadmap `### M250`/`### M252`.)*
+**M253 (studio-desk first-paint, `iterative`) is CLOSED — closed-on-gate** — first-meaningful-paint
+**4669 ms → p95 817 ms** (p50 743, max 817; 5/5 cold loads painted the `.page-skeleton` shell, 0 login bounces)
+on demo-2 (**local laptop**), ~5.7× under the < 1 s gate. A pure **zero-platform-edit paint-ordering** demopatch
+pair on the M249 `build_frontend_studio_desk` ladder — `studio-desk-shell-first-paint` (inject the skeleton DOM
+synchronously **before** the boot awaits; de-dup via `PageWrapper#init`'s body-wipe) **chained** with
+`studio-desk-no-thirdparty` (no-op `Sentry.init`/`posthog.init`) — plus a **net-new studio-FCP runner**
+(`run-studio-fcp.sh`). Root cause corrected: the dominant leg is `userService.canAccess()` (~3.9 s GraphQL-404
+retry), **NOT** clerk.load (140 ms actual). Docs: `latency-budget.md` + `demopatch-spec.md` (inventory 21→23) +
+`studio-desk.md` (MPA boot model). rext `july-jitter-m253-studio-first-paint @ b8969c0`; deferral audit GREEN
+(**CARRY-M253-01** fresh-green COLD-p95 on billion → **M254** gate (f), Fate-2 — the coordination-rule-9 split).
+**M254 (prove-on-billion, `iterative` closer) is now the SOLE remaining lane** — re-prove the whole release live
+on `billion`, cold reset-to-seed, driven from a tailnet peer.
 
 > **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
 > into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
@@ -118,4 +121,4 @@ M246 re-sync & re-point (HARD go/no-go barrier)
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
 - The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-24 — M252 (studio-desk builder enablement, `section`) CLOSED + merged to release/02.70-july-jitter (the demo studio container carries its own AI keys via an env_file-ONLY wire — NO MOCK_CLERK/chain-pin, studio stays Clerkenstein-authed; root cause FIXED + PROVEN live op1; autoverify (g) container-key assert; studio-desk's FIRST Playthroughs-manifest entry, 16→18 live/0 TODO; talk-to-data M239 Bedrock re-confirmed COMPLETE; rext july-jitter-m252-studio-builder @ d80db9f; deferral audit GREEN — CARRY-M252-01 + CARRY-M252-02 both Fate-2 → M254; 0 platform edits). M253 the sole remaining build lane (unblocked, iterative) → M254 closer._
+_Last updated: 2026-07-24 — M253 (studio-desk first-paint, `iterative`) CLOSED-on-gate + merged to release/02.70-july-jitter (first-meaningful-paint 4669 ms → p95 817 ms, 5/5 cold, 0 bounce, demo-2 laptop, ~5.7× under the <1s gate; 2 demopatches on the M249 ladder + net-new run-studio-fcp.sh; root cause = userService.canAccess, not clerk.load; rext july-jitter-m253-studio-first-paint @ b8969c0; audit GREEN — CARRY-M253-01 → M254 gate (f), Fate-2; 0 platform edits). M254 (prove-on-billion, closer) the SOLE remaining lane._
