@@ -13,7 +13,9 @@ are NO iter dirs at scaffold.)_
 
 - iter-04 (tik, measure-first): first live reset-to-seed of demo-2 with Lanes A+B — parts 1+2 PASS (data), part 5 largely green (closure 31/31), part 3 FAIL (345 AI-sim sessions, only 5 with validation fan-out → the evidence-distribution gap), part 4 partial — see iter-04/progress.md
 
+- iter-05 (tik): evidence-distribution build LANDED — new ai_readiness_evidence.go (validation_attempt_results + skill_results + session-backed verified user_skill_evidences for completed members' evaluated node-ids, closure-safe read from directus); re-seed demo-2 → gate part 3 PASS (var 5→345, vasr 897, session-backed verified evidence 787) + part 4 PASS (manager dots render, avg 73-74); all 3 build lanes complete — gate ~4.5/5 (browser-render 0-invented/0-prod-eject confirmation remains) — see iter-05/progress.md
+
 ## Next-iter queue
 - iter-05 (tik): evidence-distribution build — validation fan-out (validation_attempt_results + skill_results + verified user_skill_evidences) for completed members' step-2 sim evaluated node-ids (reuse content_stories_write helpers); flips part 3 + part 4 dots.
-- iter-06 (tik): re-seed + browser-render confirmation of all 5 parts (0 invented, 0 prod-ejects).
+- iter-06 (tik): browser-render confirmation of all 5 parts (player + manager, 0 invented, 0 prod-ejects) per coverage-protocol.md — the final gate item.
 - iter-05+ (tik): live reset-to-seed render loop on demo-2, measure 5 gate parts.
