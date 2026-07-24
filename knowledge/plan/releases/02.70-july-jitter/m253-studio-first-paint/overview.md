@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M253
 title: "studio-desk first-paint"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 exit_gate: "On a cold demo (state the environment - laptop vs tailnet), first-meaningful-paint < 1000 ms (the .page-skeleton header+sidemenu shell visible) AND no blank > 1 s, p95 over 5 consecutive cold loads; never gate on networkidle; always gate on a fresh-green autoverify.json."
 iteration_protocol_ref: corpus/ops/demo/latency-budget.md
@@ -10,11 +10,12 @@ re_scope_trigger: "5 consecutive toks without a viable strategy -> user-strategi
 depends_on: [M249]
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-24
 ---
 
 # M253 — studio-desk first-paint
 
-**Status:** `planned`  ·  **Shape:** `iterative` (perf, measure→patch→re-measure)  ·  **Complexity:** medium  ·  **Depends on:** M249
+**Status:** `archived` (completed 2026-07-24)  ·  **Shape:** `iterative` (perf, measure→patch→re-measure)  ·  **Complexity:** medium  ·  **Depends on:** M249
 
 ## Goal
 studio-desk paints page content in **< 1 second** — no multi-second blank on a cold demo load; the `.page-skeleton`

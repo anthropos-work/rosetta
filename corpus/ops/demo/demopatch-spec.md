@@ -59,7 +59,7 @@ unnamed until this spec.
 
 **Read this before adding a patch.** G5 above describes what `revert` *can* do. The rung that actually runs it
 unattended — **R1**, the pristine-ing pass in `demo-stack/ensure-clones.sh` — is now **directory-driven**: it
-iterates **every** `patches/<name>/<name>.yaml` (all 21 today), not a hand-maintained list:
+iterates **every** `patches/<name>/<name>.yaml` (all 23 today), not a hand-maintained list:
 
 ```sh
 for _mf in "$HERE"/patches/*/*.yaml; do
@@ -194,11 +194,13 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**21 patches: 11 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 5 × `ant-academy` · 3 × `studio-desk`.**
+**23 patches: 11 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 5 × `ant-academy` · 5 × `studio-desk`.**
 
 > **v2.7 "july jitter" M249 adds FIVE — the cross-app "Back to Cockpit" family + the FIRST-EVER `studio-desk` SOURCE patches:** `next-web-back-to-cockpit` (a `packages/ui` NavbarTop item — SHARED, so it bakes into BOTH the web and hiring images; `packages/ui` goes 2 → 3); the **three** `studio-desk` patches (`studio-desk-back-to-cockpit` + `studio-desk-logout-url` + `studio-desk-logo-url` — a NEW repo in this inventory, image-baked via a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint, §5-bis); and `ant-academy-back-to-cockpit` (native-run, `ant-academy` goes 4 → 5). See §"Additive-UI injection" for the pattern the four "Back to Cockpit" items share.
 
-> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`; 21 at v2.7 M249, adding the 5 cross-app "Back to Cockpit" patches).** This table had drifted from the
+> **v2.7 "july jitter" M253 adds TWO more `studio-desk` patches (3 → 5) — the first-paint pair on `app/core/main.ts`:** `studio-desk-shell-first-paint` (paint the `.page-skeleton` shell BEFORE the boot awaits) **CHAINED** with `studio-desk-no-thirdparty` (no-op `Sentry.init`/`posthog.init`). They ride the SAME `build_frontend_studio_desk` ladder M249 built; the patch-set fingerprint grows 3 → 5 manifests, so a pre-M253 studio image is detected stale + rebuilt. See [`latency-budget.md` §"studio-desk first-paint budget"](latency-budget.md).
+
+> **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`; 21 at v2.7 M249, adding the 5 cross-app "Back to Cockpit" patches; 23 at v2.7 M253, adding the 2 `studio-desk` first-paint `main.ts` patches).** This table had drifted from the
 > `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
 > 1. **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
 >    from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
@@ -259,6 +261,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `studio-desk-back-to-cockpit` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249, the FIRST-EVER studio-desk SOURCE patch)** rewrites the user-menu **"Back"** control to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL`, killing the `app.anthropos.work` prod-eject) **and** ADDS a fail-closed **"Back to Cockpit"** sibling (reads `VITE_COCKPIT_URL`). Image-baked via `build_frontend_studio_desk` (net-new patch ladder). **CHAINED** with `studio-desk-logout-url` (same `userProfile.js`; that patch's `pre_sha256` **is** this one's `post_sha256`) — applied FIRST, reverted LAST |
 | `studio-desk-logout-url` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249)** rewrites `handleLogout()`'s hardcoded `app.anthropos.work/logout` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). **CHAINED** on `studio-desk-back-to-cockpit` (same file) — reads DRIFTED against a pristine `userProfile.js` BY DESIGN |
 | `studio-desk-logo-url` | `studio-desk` · `app/core/scaffold/pageWrapper.js` | **(M249)** rewrites the header **logo** link's hardcoded `app.anthropos.work` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). Standalone file — no chain |
+| `studio-desk-shell-first-paint` | `studio-desk` · `app/core/main.ts` | **(M253, v2.7 "july jitter")** injects the `.page-skeleton` header+sidemenu DOM **synchronously right after `preloadCriticalCSS()` (~L97), BEFORE the boot awaits** (`clerk.load`/`l12nService.init`/`userService.canAccess`), so the shell paints from CSS+DOM with zero network instead of after a ~4.7 s blank. De-dup is automatic (`PageWrapper#init` wipes `document.body.innerHTML` then rebuilds). **CHAINED** with `studio-desk-no-thirdparty` (same `main.ts`; that patch's `pre_sha256` **is** this one's `post_sha256`) — applied FIRST, reverted LAST. Cuts skeleton-visible p95 4669 → 817 ms (demo-2 local). See `latency-budget.md` |
+| `studio-desk-no-thirdparty` | `studio-desk` · `app/core/main.ts` | **(M253)** no-ops `Sentry.init` + `posthog.init` on the demo host (no reachable GlitchTip / no PostHog project on a Clerk-free demo; the imports stay referenced by later `captureException`/`identify`). **CHAINED** on `studio-desk-shell-first-paint` (same `main.ts`) — reads DRIFTED against a pristine `main.ts` BY DESIGN |
 | `ant-academy-back-to-cockpit` | `ant-academy` · `code/src/components/UserMenu.jsx` | **(M249, native-run)** a fail-closed **"Back to Cockpit"** `<a href>` in the academy user menu (reads `process.env.NEXT_PUBLIC_COCKPIT_URL`, baked by `ant-academy.sh` `write_env_local`). Applied by `apply-ant-academy-back-to-cockpit.sh` (apply-before-launch / revert-on-`--stop`). Targets its own file — no chain |
 
 ---

@@ -359,6 +359,44 @@ inspection). The new **container-side** proof — a **demo-aware, non-fatal, val
 studio-desk **container** actually carries a provider key — lives in the live-verify layer
 (`stack-verify/live/autoverify.sh`), mirroring its existing directus `DB_CONNECTION_STRING` container check.
 
+### The MPA / empty-body boot model — and the demo first-paint reorder (v2.7 "july jitter" M253)
+
+studio-desk is **not** an SSR React app. It is an **empty-body multi-page app** (one HTML entry per feature —
+`home.html`, the builders, `catalog.html`, …), and **every page's `<body>` starts empty**. `core/main.ts`
+(imported by each page's entry) builds the **entire visible shell** — the header, the sidemenu, the content
+frame — inside `new PageWrapper()`. Crucially, `PageWrapper` runs **only after three sequential blocking
+`await`s** in `initializeApp()`:
+
+```
+preloadCriticalCSS()            // L97 — injects the .page-skeleton CSS (classes only, no DOM)
+  → Sentry.init / posthog.init  // (production-gated / non-localhost-gated)
+  → await clerk.load()          // ~140 ms vs Clerkenstein (NOT its 10 s timeout)
+  → await l12nService.init()    // ~12 ms
+  → await userService.canAccess()  // ~3.9 s on the demo — a GraphQL 404 → 3-attempt retry ladder
+  → new PageWrapper()           // L206 — builds the skeleton DOM + the real shell, only NOW
+```
+
+So the multi-second blank a presenter saw on a demo was **not** a slow render — it was **paint ordering**: the
+shell is built *behind* the awaits, and the dominant await (`canAccess`) 404s and burns ~3.9 s retrying. **This
+is NOT a dev-vs-prod build issue** (the demo already serves a production build) and **code-splitting does not
+fix it** (the cost is the runtime awaits, not the bundle size).
+
+**The M253 fix (demo only, zero platform edits):** two sha-pinned demopatches on the M249
+`build_frontend_studio_desk` ladder —
+
+- **`studio-desk-shell-first-paint`** injects the `.page-skeleton` DOM (header + sidemenu + content)
+  **synchronously right after `preloadCriticalCSS()`**, *before* any await, so the dark shell paints from
+  **CSS+DOM with zero network**. It is **auth-independent** (it paints before `canAccess`), and **de-dups
+  automatically**: `PageWrapper#init` wipes `document.body.innerHTML` and rebuilds its own skeleton, so the
+  early shell is seamlessly replaced — no double skeleton.
+- **`studio-desk-no-thirdparty`** no-ops `Sentry.init` + `posthog.init` on the demo host (no reachable
+  GlitchTip / no PostHog project on a Clerk-free demo).
+
+Result on demo-2 (local laptop): **skeleton-visible p95 4669 ms → 817 ms** (5/5 cold loads, gate < 1000 ms).
+Measured by the net-new `rext stack-verify/e2e/run-studio-fcp.sh`. Full budget + per-leg model:
+[`latency-budget.md` §"studio-desk first-paint budget"](../ops/demo/latency-budget.md); the patch mechanism:
+[`demopatch-spec.md` §5](../ops/demo/demopatch-spec.md).
+
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
 - [Studio-Room](./studio-room.md) - AI generation pipeline
