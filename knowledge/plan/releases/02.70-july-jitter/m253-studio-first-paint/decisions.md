@@ -32,3 +32,26 @@ laptop): skeleton-visible **4669 ms** (single confirming cold load). Need to cut
 ahead of the awaits.
 **Next-tik direction:** iter-02 — author both demopatch manifests + the FCP runner, extend the ladder +
 fingerprint, rebuild the studio image on demo-2 with the patches baked, and measure 5-cold-load p95 FCP.
+
+## Close-time decisions (2026-07-24)
+
+### D-close-1 — FCP runner secondary `browser FCP` field reads `n/a` → Fate-3 (future harden, not blocking)
+The `run-studio-fcp.sh` harness gates on the PRIMARY metric — skeleton-visible **wall-clock** time (works,
+5/5 cold, p95 817 ms). Its secondary `browser FCP` field (chromium First-Contentful-Paint) reads `n/a`
+because paint-timing isn't populated in the measure path. This is a nice-to-have hardening candidate
+(a `PerformanceObserver` in the page-context probe), **not** a gate defect — the primary metric is
+authoritative and passes. **Fate-3 / future harden**; owed to no current milestone. Recorded so the note
+survives the close.
+
+### D-close-2 — decision triage: all M253 decisions → archive (maintainer-only)
+iter-01 D1 (inline KB-fidelity verdict) · D2 (dominant-await = canAccess) · iter-02 D3 (chained-manifest
+sha generator) · D4 (lib-only rebuild vehicle) · D5 (green-gate non-achievable on warm demo-2 → M254) ·
+TOK-01 (bootstrap strategy) → **archive**. Their load-bearing platform facts (the per-leg boot baseline,
+the paint-reorder fix, the chained patch pair, the MPA/empty-body boot model) were already blended into the
+3 corpus doc Delivers during iter-03 (`latency-budget.md` / `demopatch-spec.md` / `studio-desk.md`) — verified
+accurate + non-duplicated at close.
+
+### D-close-3 — close docs fix: demopatch-spec.md §2.1 stale count 21 → 23
+M253's canonical §5 inventory reconcile (21 → 23) left an earlier illustrative present-tense count in §2.1
+("R1 sweep iterates … all 21 today") stale. Fixed to "all 23 today". Historical counts (14 / "the other 11" /
+"swept 14 manifest(s)") are dated evidence and correctly unchanged.
