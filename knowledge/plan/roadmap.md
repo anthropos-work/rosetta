@@ -288,7 +288,7 @@ platform-repo edits.
 **Open questions:** does the interview manager report render on the unified `/sim` route (else keep interview split)? confirm `user.externalId` == the seeded `ownerSlot.UserID` at a live render.
 
 #### M249 — cross-app navigation  (`section`)
-**Status:** `planned`
+**Status:** `done` (completed 2026-07-24)
 **Goal:** A "← Back to Cockpit" item in all 4 sub-app menus, and the studio logo/back/logout stop ejecting to production.
 **Shape:** `section`. **Owns the first-ever studio-desk source demopatch machinery.**
 **Scope — In:**
@@ -307,6 +307,20 @@ studio apply/revert). Lane C (ant-academy) is fully self-contained via `ant-acad
 **KB deps:** `corpus/ops/demo/demopatch-spec.md`, `corpus/ops/demo/cockpit-spec.md`, `corpus/ops/demo/frontend-tier.md`.
 **Delivers →** `corpus/ops/demo/cockpit-spec.md` (return-nav) + `demopatch-spec.md` (additive-UI pattern + the 3 patch rows + studio-desk as the first source patch) + `frontend-tier.md`/`studio-desk.md` (the offset-URL fix).
 **Open questions:** rewrite studio's existing hardcoded back-to-prod item vs add a sibling (rewriting fixes the prod-eject too)? add a `DEMO_NO_BACK_TO_COCKPIT` opt-out knob? demo-path only (the cockpit is demo-only)?
+**Closure (2026-07-24):** DELIVERED all 3 scope items as Fate 1 — the cross-app "Back to Cockpit" family (5 new
+demopatches, inventory 16→21: `next-web-back-to-cockpit` shared `packages/ui` covers web+hiring · the **first-ever
+studio-desk SOURCE patch trio** `studio-desk-back-to-cockpit`/`-logout-url`/`-logo-url` image-baked via the net-new
+`build_frontend_studio_desk` ladder + patch-set fingerprint · `ant-academy-back-to-cockpit` native-run) + the
+up-injected.sh/ant-academy.sh wiring (offset-URL bake, fail-closed when unset) + docs (`demopatch-spec.md` §8
+additive-UI injection pattern + §4/§5 inventory, `cockpit-spec.md` return-nav, `frontend-tier.md`, `studio-desk.md`
+prod-eject). Open questions resolved: studio REWRITES the back item + ADDS a cockpit sibling (fixes the prod-eject
+too, D2/D5); NO `DEMO_NO_BACK_TO_COCKPIT` knob — the fail-closed conditional render IS the opt-out; demo-path only.
+**LIVE-verified GREEN on demo-2**: 4/4 app menus carry Back-to-Cockpit @ `:27700`; studio prod-eject fixed (`:23000`
+baked, 0 effective ejects). D5 (studio `.env.production.local` always-overwritten — a stranded-leftover hazard found
+at the live confirm) regression-fenced. rext code-of-record **`july-jitter-m249-harden` @ 8ab5192** (on origin;
+138 M249-touched tests GREEN, flake gate 5/5, +7 harden unit tests). Deferral audit GREEN (0 own deferrals; the 2
+pre-existing `test_ant_academy*` failures = Fate-2 confirmed → M254). 0 platform-repo edits. **M253 (studio-first-paint)
+is now unblocked** (extends this studio patch ladder).
 
 #### M250 — AI-readiness fidelity  (`iterative`, marquee)
 **Status:** `planned`
@@ -431,7 +445,7 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 4 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health + M247 corpus-reground + M248 content-mgr-link; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 5 of 9 milestones closed — M246 barrier PASSED go/no-go + M251 test-health + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav; tooling + docs only, zero platform-repo edits) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 

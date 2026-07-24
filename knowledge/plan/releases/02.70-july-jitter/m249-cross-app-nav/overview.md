@@ -2,12 +2,13 @@
 milestone_shape: section
 milestone: M249
 title: "cross-app navigation (Back-to-Cockpit + studio prod-eject fix)"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 depends_on: [M246]
 parallel_with: [M247, M248, M250, M251, M252]
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-24
 ---
 
 # M249 — cross-app navigation (Back-to-Cockpit + studio prod-eject fix)
