@@ -103,6 +103,27 @@ consolidated app** (the iter-02 drift class that cost a bring-up). Two iters wer
 `EXPECTED_TOTAL=21` vs the real **23** manifests. **Root cause = M253** (`b8969c0` added 2 studio-desk patches
 without bumping the fence); RED since the M253 tip, orthogonal to M254. The fix spans a rext constant + the
 `demopatch-spec.md §5` corpus table (cross-subsystem + sibling-milestone + corpus-doc). Per the harden
-fixable-inline boundary → `FIX-M254-h-patch-inventory-drift` (carry-forward.md). **Fate: 3.** Precise fix
+fixable-inline boundary → `FIX-M254-h-patch-inventory-drift` (carry-forward.md). Precise fix
 recorded (a trivial mechanical bump). **Ledger:** `hardening-ledger.md` (Pass 1-3, final, **stabilized**) —
 satisfies close-milestone's iterative-milestone final-harden gate.
+
+**Close-time re-fate → LANDED (Fate 1), 2026-07-25.** The harden pass correctly routed this forward (out of a
+harden pass's rext-test scope), but a **RED-at-HEAD must not ship**, so the close's deferral audit re-fated it
+Fate-3 → **Fate-1 LAND-NOW** and landed it in full: rext fence `EXPECTED_TOTAL 21→23` +
+`EXPECTED_BY_REPO["studio-desk"] 3→5` (commit `02ac973`, tag `july-jitter-m254-patch-inventory-fence` on
+origin, rung-zero) + the `corpus/ops/demo/demopatch-spec.md §5` reconciliation (the header was already 23 from
+M253; three secondary references still read 21/3/16 → 23/5/23, lines 144/218-219/238). `test_patch_inventory`
+5/5 green; full demo-stack suite 909 tests / 900 pass (the 8+1 remaining = the `FIX-M254-g-testhealth`
+host-sensitive carry, 0 milestone regressions). See carry-forward.md "LANDED at close".
+
+## Adversarial review (Phase 2c, close)
+
+- **Scenario — does bumping the inventory fence 21→23 MASK a spuriously-added patch** (is one of the 23
+  `patches/` dirs an accidental/orphan manifest the fence should have caught, rather than a legitimate ship)?
+  **Verified handled, not masked.** The 2 net-new manifests over the old 21 are `studio-desk-shell-first-paint`
+  + `studio-desk-no-thirdparty` — both M253's real, shipped, sha-pinned first-paint patches on the M249
+  `build_frontend_studio_desk` ladder (documented in `demopatch-spec.md §5` rows + `latency-budget.md`,
+  live-proven at gate (f)). The fence's SIBLING tests corroborate legitimacy independently of the count:
+  `test_every_manifest_loads_valid_and_id_matches_dirname` (all 23 load valid, `scope=demo`, `id==dirname`) and
+  `test_non_manifest_dirs_are_only_the_known_tooling` (nothing else lurks in `patches/`) — both green. So the
+  count bump reconciles a **true** inventory; it does not paper over an orphan. Recorded per Phase 2c.

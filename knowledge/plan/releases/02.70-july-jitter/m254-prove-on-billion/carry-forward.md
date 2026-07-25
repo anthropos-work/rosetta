@@ -24,20 +24,26 @@ Playthrough suite + the 3 coordinator-approved dispositions below).
   serves 200). Route: per-test disentangle + fix in rext `demo-stack` (a fix-iter's work), 0 platform edits.
   **Fate 3** (carry-forward).
 
-## Harden-surfaced (final harden pass, routed forward)
+## Harden-surfaced (final harden pass) — LANDED at close
 
-- **`FIX-M254-h-patch-inventory-drift` — the demopatch inventory fence is RED at HEAD** (surfaced by the
-  final harden pass, 2026-07-25). `demo-stack/tests/test_patch_inventory.py` asserts `EXPECTED_TOTAL=21` /
-  `EXPECTED_BY_REPO["studio-desk"]=3`, but `patches/` now holds **23** manifests (studio-desk **5**), so 2
-  tests fail on any host. **Root cause = M253** (`b8969c0`) added `studio-desk-shell-first-paint` +
-  `studio-desk-no-thirdparty` without bumping the fence — RED since the M253 tip; **NOT an M254 change** (M254
-  only changed the aireadiness patch's content, not the patch count). The fix moves a rext constant AND the
-  `corpus/ops/demo/demopatch-spec.md §5` table together (the fence's contract) → cross-subsystem +
-  sibling-milestone + a corpus-doc edit, outside a harden pass's rext-test scope. Per the harden fixable-inline
-  boundary (sibling-milestone root cause + "final-mode reveals a regression → surface, don't auto-fix"): routed
-  forward, NOT fixed in the harden pass. **Precise fix (verified against the real tree):** `EXPECTED_TOTAL
-  21→23`, `EXPECTED_BY_REPO["studio-desk"] 3→5`, + the `§5` inventory table. Trivial + mechanical (the fence
-  scripts it) — a close-milestone or a short M253-reconcile fix. **Fate 3** (carry-forward; a fast fix).
+- **`FIX-M254-h-patch-inventory-drift` — the demopatch inventory fence RED at HEAD — ✅ LANDED (Fate 1) at
+  the M254 close (2026-07-25).** Surfaced by the final harden pass: `demo-stack/tests/test_patch_inventory.py`
+  asserted `EXPECTED_TOTAL=21` / `EXPECTED_BY_REPO["studio-desk"]=3`, but `patches/` holds **23** manifests
+  (studio-desk **5**), so 2 tests failed on any host. **Root cause = M253** (`b8969c0`) added
+  `studio-desk-shell-first-paint` + `studio-desk-no-thirdparty` without bumping the fence — RED since the M253
+  tip; **NOT an M254 change** (M254 only changed the aireadiness patch's content, not the patch count). A
+  RED-at-HEAD must not ship, so the close re-fated this from the harden pass's Fate-3 to **Fate-1 LAND-NOW**
+  and landed it in full:
+  - **rext:** `EXPECTED_TOTAL 21→23`, `EXPECTED_BY_REPO["studio-desk"] 3→5`, history comment updated →
+    `test_patch_inventory` 5/5 green; commit `02ac973`, tag **`july-jitter-m254-patch-inventory-fence`** ON
+    ORIGIN (rung-zero verified).
+  - **corpus:** `corpus/ops/demo/demopatch-spec.md §5` reconciled — the §5 header was already 23 (M253), but
+    three secondary fence-description references still read 21/3/16: line 144 "three → **five** studio-desk",
+    the fence-contract line "total 21→**23** / studio-desk 3→**5**", and the self-contradicting "current
+    directory-fenced total is 16 → **23**".
+  - **verification:** full demo-stack suite 909 tests, 900 pass; the 8+1 remaining are all the
+    `FIX-M254-g-testhealth` host-sensitive carry (0 milestone regressions). Test-only; no demo re-pin; 0
+    platform-repo edits.
 
 ## Prior-iter follow-ups (non-blocking)
 

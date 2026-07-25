@@ -88,3 +88,79 @@ All parts (a–h) MET live on billion (cold reset-to-seed, driven/asserted from 
   (iter-05 latency p95 1.43/1.41 s < 5 s; iter-04 content-stories 45/45; iter-10 Playthroughs **18/18**).
 
 **→ Effective gate-met.** Next: `/developer-kit:harden-mstone-iters --final` then `/developer-kit:close-milestone`.
+
+---
+
+## M254: Final Review (close, 2026-07-25)
+
+Proof milestone (`Delivers: none`); code-of-record is rext (6 tags on origin, all rung-zero-verified). The
+rosetta-side footprint is plan docs + one corpus reconciliation. Review found **1 Fate-1 LAND-NOW** (a
+RED-at-HEAD) + confirmed the coordinator-approved dispositions/carries. All addressed fully.
+
+### Scope
+- [x] Gate a–h MET live on billion (cold reset-to-seed, tailnet peer, 0 platform edits) — Playthroughs 18/18,
+  latency p95 1.43/1.41 s, studio builders green, content-stories 45/45 landable, AI-readiness both vantages.
+- [x] Iter-ledger clean: 10 iters (iter-01..10) all closed, 1 commit/iter + 1 harden commit, 0 orphans.
+- [x] **FIX-M254-h-patch-inventory-drift — LANDED (Fate 1).** Deferral audit re-fated Fate-3 → Fate-1
+  (a RED-at-HEAD must not ship). See Documentation + Tests below.
+
+### Code Quality
+- [x] rext code-of-record already reviewed per-iter + final-harden stabilized (Pass 1-3, +22 tests, 3× flake
+  gate). No new cross-cutting issues; proof milestone carries no rosetta source.
+
+### Adversarial (Phase 2c)
+- [x] Scenario "does the 21→23 fence bump mask a spurious patch?" — verified NOT masked (the 2 additions are
+  M253's real shipped studio-desk first-paint patches; sibling validity + no-orphan tests green). Recorded in
+  decisions.md.
+
+### Documentation
+- [x] `corpus/ops/demo/demopatch-spec.md §5` reconciled to 23/5 — 3 secondary fence-description refs the M253
+  header-only update missed (line 144 three→five studio-desk; the fence-contract line 21→23 / 3→5; the
+  self-contradicting "total is 16"→23). No stale inventory counts elsewhere in corpus/CLAUDE.md.
+
+### Tests & Benchmarks
+- [x] `test_patch_inventory` 5/5 green post-fix (was 2 RED at HEAD).
+- [x] Full demo-stack suite: **909 tests, 900 pass**; the 8 fail + 1 error are ALL the documented
+  `FIX-M254-g-testhealth` host-sensitive carry (test_ant_academy launcher/reap set + clerk-wiring overlay +
+  Linux-only test_purge + docker image-guard) — 0 milestone-touched regressions, 0 demo-runtime impact.
+- [x] playthroughs e2e `tsc --noEmit` clean; demopatch-family + M254 aireadiness regression 65 offline green.
+
+### Decision Triage
+- [x] All M254 decisions (TOK-01, D-iter10-1..4, D-harden-1, adversarial) → maintainer-archive; operational
+  knowledge already lives in `latency-budget.md` + `demopatch-spec.md §5` — no new knowledge blend.
+
+---
+
+## M254: Gate Outcome Ledger (close, 2026-07-25)
+
+**Close shape:** `closed-on-gate` (gate MET; no carry-forward required as a new deliverable — the existing
+carry-forward.md documents the coordinator-approved follow-ups + the LANDED FIX-M254-h).
+
+### Gate
+- **Target:** cold reset-to-seed on billion, tailnet peer, 0 platform edits — the multi-part a–h exit gate.
+- **Achieved:** all 8 parts MET live on billion (a autoverify green:true/0 warn · b 45/45 landable + 4 voice
+  presence-only · c 4/4 apps + prod-eject side, 0 escapes · d both vantages 8/8 sections + 3 drift-fixes ·
+  e both studio builders green · f app-side paint p50 637–726 ms < 1 s · g 2/8-class fixed live · h latency
+  p95 1.43/1.41 s < 5 s + Playthroughs 18/18).
+- **Distance:** 0 (with 3 coordinator-approved dispositions on residuals).
+- **Status:** `closed-on-gate`.
+
+### Iter ledger summary
+10 iters (iter-01 bootstrap tok + iter-02..10 tiks), all closed; 1 commit/iter + 1 harden commit; 0 orphans.
+Gate progression: 0/8 (iter-01) → a MET (iter-03) → a,b,d + c-prod-eject (iter-04) → +h-latency (iter-05) →
++f-session-carry, c-studio (iter-06) → g-2/8 (iter-07) → c 4/4 + a re-confirm (iter-08) → e+h proven-to-run
+(iter-09) → **e+h MET, effective gate-met** (iter-10) → final harden stabilized.
+
+### Routes carried forward (Fate 2/3) — non-blocking, coordinator-approved
+- **Fate 1 (LANDED at close):** FIX-M254-h-patch-inventory-drift (rext fence 21→23 + corpus §5) — see carry-forward.md.
+- **Fate 1 (disposition):** (f)-FCP-p95 = ACCEPTED environmental tailnet-RTT jitter (p50 < 1 s holds).
+- **Fate 3 (follow-ups):** FIX-M254-c-academy-durable · FIX-M254-g-testhealth (6 host-sensitive tests) ·
+  (b)-voice manager_presence_only flag · verify.sh stale skillpath default · studio-desk billion re-pin note.
+- **Discharged (inherited-to-M254):** CARRY-M248/250/252/253-01 — all resolved by this live gate proof.
+
+### Dropped
+None.
+
+### Protocol evolution
+1 bootstrap tok (TOK-01: cluster-per-tik live re-prove); 0 triggered toks (no 3-consecutive-no-progress
+stall). The M221/M236/M244 prove-on-billion shape held end-to-end.
