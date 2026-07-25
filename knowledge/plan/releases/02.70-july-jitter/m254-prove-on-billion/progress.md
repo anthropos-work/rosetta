@@ -42,3 +42,10 @@ there are NO iter dirs at scaffold.)_
   `july-jitter-m254-academy-nonode-hostrobust` on origin). **Routed** the remaining 6 as `FIX-M254-g-testhealth`
   (intra-run `:23077` port-leak + M245 reconcile drift · next.config sha re-pin · 2 mutation-meta · overlay-127)
   → coordinator fate (chronic host-sensitive tests). 0 platform edits, 0 demo-runtime impact. see iter-07/progress.md
+- iter-08 (tik, closed-fixed-partial): a (c)-academy re-heal attempt CASCADED into a self-inflicted demo
+  disruption (crashed academy → `fuser -k` killed tailscaled [systemd-recovered] → mis-killed the web+hiring
+  CONTAINER procs → lost port mappings). **Recovered via a full cold reset-to-seed re-bring-up** (GREEN, up_rc=0,
+  autoverify green:true/0 warnings/ts 08:16:34Z; re-pin dfdd9bc + rext.tag bump past the M217 guard) — net-
+  positive: a fresh demo. **(a) re-confirmed green**; **(c)-academy renders on the fresh demo** → **(c) MET
+  (4/4 apps render LIVE + prod-eject)**. Gate **~6/8** (a,b,c,d + f-session-carry). (e)+(h) → iter-09. 0 platform
+  edits. see iter-08/progress.md
