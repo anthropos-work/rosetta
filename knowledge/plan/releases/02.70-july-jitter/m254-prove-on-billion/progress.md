@@ -36,3 +36,9 @@ there are NO iter dirs at scaffold.)_
   studio shell). FCP shell paint p50 637-726 ms < 1 s (M253 fix holds) but p95 tailnet-jitter → **disposition-
   pending**. Also LIVE-confirmed **(c)-studio render** (unblocked): item renders + 0 prod-eject → **(c) render
   side now 3/4 LIVE**; unblocked **(e)**. Gate **~5/8**. see iter-06/progress.md
+- iter-07 (tik, closed-fixed-partial): **(g)** — captured the exact live failures on billion (10 fail + 1 err /
+  159; ~7 unique + 1 err). Root causes DIVERSE. **FIXED** the nvm/node host-robustness of
+  `test_missing_node_documents` ×2 (node-free bindir + clean HOME; verified live; rext `dfdd9bc`, tag
+  `july-jitter-m254-academy-nonode-hostrobust` on origin). **Routed** the remaining 6 as `FIX-M254-g-testhealth`
+  (intra-run `:23077` port-leak + M245 reconcile drift · next.config sha re-pin · 2 mutation-meta · overlay-127)
+  → coordinator fate (chronic host-sensitive tests). 0 platform edits, 0 demo-runtime impact. see iter-07/progress.md
