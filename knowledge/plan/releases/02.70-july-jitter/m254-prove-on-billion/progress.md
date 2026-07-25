@@ -29,3 +29,10 @@ there are NO iter dirs at scaffold.)_
   the native academy** (Back-to-Cockpit item reverted out-of-band; `UserMenu.jsx` = pristine; heal only on
   `ant-academy.sh` re-invoke) → routed to fix-iter. (c)-studio render (f)-coupled. Gate **~4.5/8** (h-latency
   banked; c partial). see iter-05/progress.md
+- iter-06 (tik, closed-fixed): **(f) is NOT a defect** — it was a measurement artifact (FCP probe defaulted to
+  `maya-thriving`, an employee studio's `checkEnterpriseAndAdmin` bounces by design). Shipped the tooling fix
+  (default identity → `dan-manager`, studio-eligible admin; rext `cbe9256`, tag
+  `july-jitter-m254-studio-fcp-identity` on origin). **(f) session-carry MET** (live: admin heroes reach the
+  studio shell). FCP shell paint p50 637-726 ms < 1 s (M253 fix holds) but p95 tailnet-jitter → **disposition-
+  pending**. Also LIVE-confirmed **(c)-studio render** (unblocked): item renders + 0 prod-eject → **(c) render
+  side now 3/4 LIVE**; unblocked **(e)**. Gate **~5/8**. see iter-06/progress.md
