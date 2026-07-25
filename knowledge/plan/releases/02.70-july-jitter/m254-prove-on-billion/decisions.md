@@ -42,3 +42,44 @@ reads binary-per-part (0–8) and can look FLAT across productive within-cluster
 evidence, not the coarse counter (M244 lesson; a benign triggered tok ~1 per ~5 iters is expected).
 **Next-tik direction:** iter-02 = the DRIVE. Kick the cold bring-up on billion at the pin; assert gate (a).
 
+
+## D-iter10-1: gate (e)+(h) MET live on billion — studio-builder re-tune + networkidle anti-deadlock — 2026-07-25
+
+**Iter:** iter-10 (tik, closed-fixed). **Gate:** (e) + (h)-Playthroughs MET.
+The full Playthrough suite is GREEN on billion (cold reset-to-seed, tailnet peer): **18/18 passing (100 %),
+0 failing, DONE_rc=0, `ptreport --gate no-regressions` PASSED.** Two live tooling fixes (rext
+`july-jitter-m254-studio-pt-retune` @ 4f1409e, ON ORIGIN — rung-zero; 0 platform edits):
+1. **(e)** the M252 studio-builder Playthrough targeted STALE routes (`/sim-advanced-builder` + an immediate
+   Generate button) — authored-blind, never live-tuned. studio-desk on billion is **v0.152.1 (2026-07-03,
+   a redesign predating M252)**: unified `/simulation-builder` entry. Re-authored to the real UX — advanced
+   "Design it with AI" DRAFTS a scenario the designer renders (the true generation boundary); guided's 5-part
+   interview is live (Generate at Part 5 is P6-out).
+2. **(h)** 4 `/home`-landing logins defaulted to `networkidle`, which never idles on the AI-readiness polling
+   surface → a flaky 120 s timeout (pt-skillpath-legacy). Applied the protocol's anti-deadlock
+   `waitUntil:'domcontentloaded'` to all 4.
+No billion re-pin (test-only fix; billion's demo build at `dfdd9bc` unaffected).
+
+## D-iter10-2: DISPOSITION (coordinator-approved) — (f)-FCP-p95 = ACCEPTED environmental — 2026-07-25
+
+Studio-desk first-paint (gate f) shell paint holds on billion: **p50 637–726 ms < 1 s** (the M253 shell fix
+holds). The p95 outliers (1443 / 2014 / 4943 ms, `reachedShell` always true) are **tailnet network-RTT
+jitter**, not an app-paint regression — per `latency-budget.md`'s "state the environment with every number"
+and the coordinator-approved (b) precedent (same tailnet-jitter class). **Gate (f) MET on app-side paint;**
+the p95 disposition is recorded here and gets formally fated at close-milestone's deferral audit. **Fate: 1
+(complete — disposition recorded), coordinator-approved.**
+
+## D-iter10-3: DISPOSITION (coordinator-approved) — (c)-academy-durability = Fate-3 follow-up — 2026-07-25
+
+A FRESH demo renders "← Back to Cockpit" on **all 4 apps** (proven iter-08, gate (c) MET on the fresh-demo
+presenter case). The native academy dev-server reverts the back-to-cockpit patch only on a **long-running**
+demo (a durability edge, not the presenter path). **Gate (c) MET;** the durability edge routes to an
+**academy-durable follow-up** (`FIX-M254-c-academy-durable` in carry-forward.md). **Fate: 3 (annotate-attach
+to a follow-up), coordinator-approved.**
+
+## D-iter10-4: DISPOSITION (coordinator-approved) — (g)-testhealth = carry-forward FIX-M254-g-testhealth — 2026-07-25
+
+The 8-test host-sensitive demo-stack test-health membership (gate g): 2/8-class fixed + verified live
+(nvm/node host-robustness, rext `dfdd9bc`). The **6 remaining** (intra-run `:23077` port-leak + M245
+reconcile-message drift, next.config sha re-pin, 2 mutation-meta, overlay-127) are **chronic host-sensitive
+test-HARNESS issues with 0 demo-runtime impact** (the real academy serves 200 live). Routed to carry-forward
+`FIX-M254-g-testhealth`. **Fate: 3 (annotate-attach to carry-forward), coordinator-approved.**

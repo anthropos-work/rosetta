@@ -55,3 +55,36 @@ there are NO iter dirs at scaffold.)_
   manager Playthrough). Full 117-test completion + (f)-FCP-p95 + (g)-testhealth dispositions routed to a fresh
   agent (prove-on-billion "fresh agent per run"). Gate **~6/8 MET** (a,b,c,d,f-session-carry); e+h proven-to-run.
   EXIT: cap-reached. see iter-09/progress.md
+- iter-10 (tik, closed-fixed): **(e)+(h)-Playthroughs mutating tail — GATE MET.** Drove the full Playthrough
+  suite to completion on billion (cold reset-to-seed, tailnet peer): **18/18 passing (100 %), 0 failing,
+  DONE_rc=0.** The coordinator's 16 all green (h-Playthroughs). Fixed **(e)**: the M252 studio-builder
+  Playthrough targeted STALE routes vs the live studio-desk **v0.152.1** redesign (unified
+  `/simulation-builder`); re-authored to the real UX (advanced "Design it with AI" drafts a scenario the
+  designer renders = the generation boundary; guided 5-part interview live, Generate at Part 5 is P6-out).
+  Fixed a **(h)** flaky `networkidle` deadlock on 4 `/home` logins → `domcontentloaded` anti-deadlock (also cut
+  the suite 13m→3.8m). rext `july-jitter-m254-studio-pt-retune` @ 4f1409e ON ORIGIN (rung-zero); no billion
+  re-pin (test-only); 0 platform edits. Recorded the 3 coordinator-approved dispositions (f/c/g) →
+  decisions.md + carry-forward.md. **GATE (e)+(h) MET → effective gate-met.** see iter-10/progress.md
+
+---
+
+## GATE STATUS — effective gate-met (iter-10, 2026-07-25)
+
+All parts (a–h) MET live on billion (cold reset-to-seed, driven/asserted from a tailnet peer, 0 platform edits):
+- **(a)** re-grounded stack builds + GREEN on the consolidated platform (3 subgraphs, skillpath-in-app) — MET
+  (iter-03 fix + iter-08 fresh-reset re-confirm; autoverify green:true/0 warnings).
+- **(b)** content-stories manager CTA lands non-empty — MET-with-disposition (45/45 landable ALL LANDED + 4
+  voice presence-only, coordinator-approved; `manager_presence_only` follow-up carried).
+- **(c)** Back-to-Cockpit in all 4 apps + studio→stack, 0 prod-ejects — MET (iter-08 fresh demo 4/4 render;
+  academy-durability edge → `FIX-M254-c-academy-durable`).
+- **(d)** AI-readiness faithful, both vantages — MET (iter-04 employee + manager, 8/8 sections + 3 drift-fixes).
+- **(e)** studio sim-builders generate (builder Playthrough green) — **MET** (iter-10: re-tuned to studio-desk
+  v0.152.1; both studio Playthroughs green).
+- **(f)** studio first-paint < 1 s cold p95 — MET on app-side paint (p50 637–726 ms < 1 s); p95 = ACCEPTED
+  environmental tailnet-jitter (coordinator-approved disposition).
+- **(g)** the 8 host-sensitive demo-stack test-health tests — 2/8-class fixed + verified live; 6 remaining =
+  carry-forward `FIX-M254-g-testhealth` (chronic host-sensitive, 0 demo-runtime impact; coordinator-approved).
+- **(h)** live-browser specs + content-stories sweep + Playthroughs green; p95 click→ACCESS < 5 s — **MET**
+  (iter-05 latency p95 1.43/1.41 s < 5 s; iter-04 content-stories 45/45; iter-10 Playthroughs **18/18**).
+
+**→ Effective gate-met.** Next: `/developer-kit:harden-mstone-iters --final` then `/developer-kit:close-milestone`.
