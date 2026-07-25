@@ -83,3 +83,26 @@ The 8-test host-sensitive demo-stack test-health membership (gate g): 2/8-class 
 reconcile-message drift, next.config sha re-pin, 2 mutation-meta, overlay-127) are **chronic host-sensitive
 test-HARNESS issues with 0 demo-runtime impact** (the real academy serves 200 live). Routed to carry-forward
 `FIX-M254-g-testhealth`. **Fate: 3 (annotate-attach to carry-forward), coordinator-approved.**
+
+## D-harden-1: final harden pass — stabilized; +22 tests; 1 sibling-milestone red routed forward — 2026-07-25
+
+**Pass:** `/developer-kit:harden-mstone-iters --final` (the milestone's single, final-mode harden pass —
+0 prior passes, 9 tiks). Cumulative-scope sweep across the 4 rext milestone commits.
+
+Added **22 tests** (14 TS + 8 Python), all green, 3-consecutive-clean flake gate; landed in rext (commits
+`f9ff4af` playthroughs + `4c1fd90` demo-stack, tag **`july-jitter-m254-harden-final`** ON ORIGIN — rung-zero;
+test-only, no billion re-pin, 0 platform-repo edits). What got pinned: the 5 UNPINNED studio-desk v0.152.1
+unified-entry locators the iter-10 re-tune shipped (+ a cross-surface separation matrix); the unified-entry
+route classification ↔ the page-object route constants (cross-iter integration); a **spec-level** `/home`
+networkidle invariant (the twin of the existing `PageObject.goto` guard — the iter-10 gate-(h) fix was
+protected only by comments); and a regression fence for the aireadiness demopatch **re-point to the
+consolidated app** (the iter-02 drift class that cost a bring-up). Two iters were legitimate **carve-outs**
+(studio-FCP identity = no offline surface; academy no-node = cross-host verified, inline helper).
+
+**Surfaced (routed forward, NOT fixed in the harden pass):** `test_patch_inventory` is RED at HEAD —
+`EXPECTED_TOTAL=21` vs the real **23** manifests. **Root cause = M253** (`b8969c0` added 2 studio-desk patches
+without bumping the fence); RED since the M253 tip, orthogonal to M254. The fix spans a rext constant + the
+`demopatch-spec.md §5` corpus table (cross-subsystem + sibling-milestone + corpus-doc). Per the harden
+fixable-inline boundary → `FIX-M254-h-patch-inventory-drift` (carry-forward.md). **Fate: 3.** Precise fix
+recorded (a trivial mechanical bump). **Ledger:** `hardening-ledger.md` (Pass 1-3, final, **stabilized**) —
+satisfies close-milestone's iterative-milestone final-harden gate.

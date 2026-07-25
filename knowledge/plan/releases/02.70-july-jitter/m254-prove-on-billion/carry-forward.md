@@ -24,6 +24,21 @@ Playthrough suite + the 3 coordinator-approved dispositions below).
   serves 200). Route: per-test disentangle + fix in rext `demo-stack` (a fix-iter's work), 0 platform edits.
   **Fate 3** (carry-forward).
 
+## Harden-surfaced (final harden pass, routed forward)
+
+- **`FIX-M254-h-patch-inventory-drift` — the demopatch inventory fence is RED at HEAD** (surfaced by the
+  final harden pass, 2026-07-25). `demo-stack/tests/test_patch_inventory.py` asserts `EXPECTED_TOTAL=21` /
+  `EXPECTED_BY_REPO["studio-desk"]=3`, but `patches/` now holds **23** manifests (studio-desk **5**), so 2
+  tests fail on any host. **Root cause = M253** (`b8969c0`) added `studio-desk-shell-first-paint` +
+  `studio-desk-no-thirdparty` without bumping the fence — RED since the M253 tip; **NOT an M254 change** (M254
+  only changed the aireadiness patch's content, not the patch count). The fix moves a rext constant AND the
+  `corpus/ops/demo/demopatch-spec.md §5` table together (the fence's contract) → cross-subsystem +
+  sibling-milestone + a corpus-doc edit, outside a harden pass's rext-test scope. Per the harden fixable-inline
+  boundary (sibling-milestone root cause + "final-mode reveals a regression → surface, don't auto-fix"): routed
+  forward, NOT fixed in the harden pass. **Precise fix (verified against the real tree):** `EXPECTED_TOTAL
+  21→23`, `EXPECTED_BY_REPO["studio-desk"] 3→5`, + the `§5` inventory table. Trivial + mechanical (the fence
+  scripts it) — a close-milestone or a short M253-reconcile fix. **Fate 3** (carry-forward; a fast fix).
+
 ## Prior-iter follow-ups (non-blocking)
 
 - **`(b)-voice manager_presence_only`** — the content-stories denominator: gate (b) = 45/45 landable ALL
