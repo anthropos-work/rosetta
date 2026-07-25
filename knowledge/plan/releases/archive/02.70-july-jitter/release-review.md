@@ -16,8 +16,8 @@ All 6 field defects + the full re-ground **delivered and live-proven on billion*
 ---
 
 ## Code Quality (Phase 2)
-- [ ] **[should-fix / rext / RUNG-ZERO] `demo-stack/tests/test_frontend_build.py:46`** — `_STUDIO_PATCHSET_MANIFESTS` still lists **3** studio-desk manifests vs the real **5** (`up-injected.sh:830` fingerprints 5). Deterministic failure (stubbed docker), *mis-classified* as host-sensitive. FIX-M254-h fixed the twin fence in `test_patch_inventory.py` but missed this one. 1-line fix (append the 2 M253 manifests) → land like the patch-inventory fence.
-- [ ] **[nice / rext] gofmt** — 5 v2.7-touched Go files unformatted (comment-column alignment only; `go vet` clean): `stackseed/main.go`, `seeders/ai_readiness_config_test.go`, `ai_readiness_evidence_test.go`, `ai_readiness_funnel.go`, `ai_readiness_m219_test.go`, `ai_readiness_sim_skills_test.go`.
+- [x] **[should-fix / rext / RUNG-ZERO] `demo-stack/tests/test_frontend_build.py:46`** — `_STUDIO_PATCHSET_MANIFESTS` 3→5. **LANDED** (tag `july-jitter-v27-close-rext-cleanup @ e61b604`, on origin); `test_frontend_build` now green, demo-stack 910/0-fail confirms.
+- [x] **[nice / rext] gofmt** — the 6 v2.7-touched stack-seeding Go files reformatted (same tag). `gofmt -l` clean, `go vet`/`go build` clean (verified triple-clean). Residual: `playthroughs/manifest/hiring_isolation_test.go` cosmetic drift is **pre-existing (M225/v2.4)**, out of v2.7 scope — left as-is.
 
 ## Documentation (Phases 3 + 3b) — MUST-FIX
 - [x] `CLAUDE.md:321` — "16 live Playthroughs … `playthroughs.md:105`" → **18** (`playthroughs.md:108`) + add M252's studio pair.

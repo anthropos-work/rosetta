@@ -2,6 +2,38 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.7] "july jitter" — 2026-07-25
+
+**The re-ground + fidelity + field-hardening release.** Realign the demo + corpus to the platform's true
+current state — the runtime-engine consolidation (skillpath fully merged into `app` → 3 GraphQL subgraphs,
+jobsim mid-merge, four new `app` domains) — and fix six field defects, all proven live on the `billion`
+Tailscale VM (cold reset-to-seed). Tooling + docs only; **zero platform-repo edits**; zero carry-forward.
+
+### Added
+- Four net-new service fact sheets: course-builder, AI Labs + credits, ask-engine (Talk-to-Data), and the server-owned academy backend (M247).
+- "← Back to Cockpit" navigation in all four demo sub-apps — next-web, hiring, studio-desk, ant-academy (M249).
+- Studio sim-builders enabled in the demo (AI keys wired via `env_file`), with two new builder Playthroughs → **18 live Playthroughs** (M252/M254).
+
+### Changed
+- Corpus + demo re-grounded to the consolidated platform: `skillpath` decommissioned into `app` (3 subgraphs; sessions in `public.skill_path_sessions`); the demo seeder re-pointed off `skillpath.*` before it broke (M246/M247).
+- Content-stories manager CTA now lands on the per-session `/sim/<slug>/<userId>/result/<sessionId>` result view for simulation products (M248).
+- AI-readiness demo fidelity: the real 31-skill default set + track-keyed sims + Directus set-dress, faithful across both vantages (M250).
+
+### Fixed
+- Studio-desk logo / back / logout no longer eject the presenter to production (M249).
+- Studio-desk first-paint: 4669 ms → p50 637–726 ms (p95 <1 s) (M253).
+- Demo-stack test-health: the standing host-sensitive test-harness failures fixed (identity-scoped reaper, Linux-only `test_purge` skip, overlay/mutation-meta) — the carry eliminated (M251/M254/close).
+- Demopatch inventory fence + corpus count/reference drift reconciled (M254 + close-release).
+
+### Deprecated / Removed
+- The standalone `skillpath` service/subgraph (decommissioned into `app`); stale `skillpath` references removed from tooling defaults + docs.
+
+### Supply chain
+- No new third-party dependencies.
+
+### Known limitations
+- Voice result cells (player + manager) render presence-only on a Bunny-keyless demo box — recorded interview video is Bunny-CDN-hosted (DEF-M240-01).
+
 ## [v2.6] "sound check" — 2026-07-23
 
 **The reliability / field-hardening release.** A sound check is the pre-show pass where every input is proven

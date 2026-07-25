@@ -108,8 +108,8 @@ and a `release/{version}` branch is cut.
 
 ## v2.6 → v2.7 carry (signed off at the v2.6 close-release, 2026-07-23)
 
-> ✅ **CONSUMED by v2.7 "july jitter" (designed 2026-07-23 — now IN DEVELOPMENT in [`roadmap.md`](roadmap.md)
-> § Active — v2.7).** The reserved **"test-health"** carry is **realized as milestone `M251`** — a NAMED
+> ✅ **CONSUMED + SHIPPED in v2.7 "july jitter" (2026-07-25, tag `v2.7`; see [`roadmap.md`](roadmap.md)
+> § Done — v2.7).** The reserved **"test-health"** carry was **realized as milestone `M251`** — a NAMED
 > milestone with declared scope (the 8 standing demo-stack failures + the `run-unit.sh` roster nit), exactly the
 > v2.5-close rule (*a fate needs a MILESTONE*). The ~2 docker/live-gated failures (`test_purge` + a live-serve
 > assertion) ride the v2.7 iterative closer **`M254`** where a live box is available. `DEF-M239-01` stays
