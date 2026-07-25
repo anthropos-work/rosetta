@@ -141,7 +141,7 @@ Not every patch is applied by `demopatch` itself, and this surprises people.
 
 | Vehicle | Patches | Why |
 |---------|---------|-----|
-| **`demopatch`** (the tool) | the **eleven** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) **+ the three `studio-desk` patches** (M249 — the FIRST studio-desk source patches; `stack-demo/studio-desk/…` is inside `DEMO_WS`, image-baked by `build_frontend_studio_desk`) | the target lives **inside** the demo workspace → G1/G6 pass |
+| **`demopatch`** (the tool) | the **eleven** `next-web-app` patches (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) **+ the five `studio-desk` patches** (M249's back-to-cockpit/logout/logo trio — the FIRST studio-desk source patches — + M253's first-paint pair; `stack-demo/studio-desk/…` is inside `DEMO_WS`, image-baked by `build_frontend_studio_desk`) | the target lives **inside** the demo workspace → G1/G6 pass |
 | **`stack-injection/apply-app-*.sh`** | the two `app` patches | the target is the **build-scratch** clone (`stacks/demo-N/clones/app`), which is **outside** the demo workspace → **`demopatch`'s own G1/G6 correctly REFUSE it**. The shell helpers re-implement the same guard ladder against **the same canonical manifest** — the manifest stays the single source of truth; only the vehicle differs |
 | **`stack-injection/apply-ant-academy-*.sh`** / **`apply-academy-fs-published*.sh`** | the **five** `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`, `academy-fs-published-chapter-body`, **`ant-academy-back-to-cockpit`** — M249, `apply-ant-academy-back-to-cockpit.sh`) | ant-academy runs **natively** (`next dev`), not baked into an image → each patch must **persist for the process lifetime** → apply-before-launch, revert-on-stop (one shell helper each, same guard ladder, same canonical manifest) |
 
@@ -215,8 +215,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 >    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
 >    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
 >    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
->    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**21** at v2.7 M249) AND
->    the per-repo breakdown (`11 next-web-app · 2 app · 5 ant-academy · 3 studio-desk`) against this §5 table — so adding, removing,
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**23** at v2.7 M253) AND
+>    the per-repo breakdown (`11 next-web-app · 2 app · 5 ant-academy · 5 studio-desk`) against this §5 table — so adding, removing,
 >    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
@@ -235,7 +235,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
 > M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
 > counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
-> directory-fenced total is 16**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
+> directory-fenced total is 23**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
 > M224 corrected it to 11 with the `next-web-no-thirdparty` row, and M238 reconciled the whole table to the 15 on
 > disk.)*
 

@@ -1,124 +1,77 @@
 ---
-active_release: "v2.7 «july jitter» — IN DEVELOPMENT (designed 2026-07-23). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (the skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully decommissioned into app, jobsim mid-merge), and fix what drifted (content-stories manager link · cross-app Back-to-Cockpit · studio logo prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; tag will be v2.7."
-active_branch: "release/02.70-july-jitter (cut from main 2026-07-23)"
-active_milestone: "M254 prove-on-billion (ITERATIVE, the closer; re-prove the whole v2.7 release live on billion — cold reset-to-seed, driven from a tailnet peer, 0 platform edits; multi-part exit gate a–h; p95 click→ACCESS < 5 s + studio first-paint < 1 s cold p95)"
-last_closed: "M253 — 2026-07-24 (v2.7 studio-desk first-paint; iterative, closed-on-gate — first-meaningful-paint 4669 ms → p95 817 ms [p50 743, max 817; 5/5 cold loads painted the .page-skeleton shell, 0 login bounces] on demo-2 laptop, ~5.7× under the <1s gate; fix = 2 sha-pinned demopatches on the M249 build_frontend_studio_desk ladder [studio-desk-shell-first-paint paints the skeleton synchronously BEFORE the boot awaits, CHAINED with studio-desk-no-thirdparty no-op Sentry/posthog] + net-new stack-verify/e2e/run-studio-fcp.sh; root cause corrected: dominant leg is userService.canAccess ~3.9 s GraphQL-404 retry, NOT clerk.load [140 ms actual]; docs latency-budget.md + demopatch-spec.md [inventory 21→23] + studio-desk.md MPA boot model; rext july-jitter-m253-studio-first-paint @ b8969c0; deferral audit GREEN [CARRY-M253-01 fresh-green COLD-p95 on billion → M254 gate (f), Fate-2, the coordination-rule-9 split]; 0 platform edits)"
-phase: "M253 closed (studio-desk first-paint, iterative closed-on-gate, merged to release/02.70-july-jitter) — M254 (prove-on-billion, iterative closer) the SOLE remaining lane; M246+M247+M248+M249+M250+M251+M252+M253 done"
-last_updated: "2026-07-24"
+active_release: "v2.7 «july jitter» — FULLY BUILT (designed 2026-07-23; all 9 milestones M246→M254 closed 2026-07-23..25). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into app → 3 subgraphs; jobsim mid-merge; net-new app domains; the rext seeder re-pointed off skillpath.*) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane fan-out → prove-on-billion. Branch release/02.70-july-jitter; **awaiting the user's /developer-kit:close-release** (release→main merge + tag v2.7)."
+active_branch: "release/02.70-july-jitter (cut from main 2026-07-23) — all 9 milestones merged in"
+active_milestone: "(between milestones — v2.7 fully built; awaiting /developer-kit:close-release)"
+last_closed: "M254 — 2026-07-25 (prove-on-billion; iterative, closed-on-gate)"
+phase: "v2.7 fully built — all 9 milestones M246→M254 closed + merged to release/02.70-july-jitter; awaiting the user's /developer-kit:close-release (release→main merge + v2.7 tag). Do NOT auto-merge or auto-tag."
+last_updated: "2026-07-25"
 ---
 
 # State
 
-**v2.7 "july jitter" — DESIGNED + IN DEVELOPMENT** (designed 2026-07-23 via `/developer-kit:design-roadmap`
-from `.agentspace/annotation.md` field notes + 3 research workflows). The **re-ground + fidelity +
-field-hardening** release (the v1.3b / v2.1 / v2.3 / v2.6 lineage): *realign the demo + corpus to the
-platform's true current state, and fix what drifted.* **9 milestones M246 → M254**, tooling + docs only,
-**0 platform-repo edits**. Branch `release/02.70-july-jitter` cut from `main`; tag will be `v2.7`. **M246 (the
-HARD go/no-go re-sync barrier) is CLOSED — go/no-go PASS** (cold demo GREEN on the consolidated platform, 561
-rows in `public.skill_path_sessions`, 3 subgraphs, 0 skillpath; the seeder re-point + demo clone-pin bump
-landed; 9-row drift ledger → M247). **M251 (test-health) is CLOSED** — the standing demo-stack test debt
-discharged (run-unit roster 7→9 + 7 mechanical `test_cockpit`/`test_public_host` re-points as removal-guards,
-mutation-verified 4/4; the 8 live/env/docker-gated failures → M254). **M247 (corpus re-ground) is CLOSED** —
-the corpus re-grounded to the consolidated platform (skillpath→app **redirect** + the **3-subgraph**
-reclassification across ~30 files + **4 net-new app-domain fact sheets** [coursebuilder/ai-labs/askengine/
-academy-backend] + `ai-readiness.md` refresh + roadrunner stays-ORPHANED; doc-only, no rext, 0 platform edits).
-**M248 (content-stories manager result-link) is CLOSED** — the manager CTA re-pointed off the activity-dashboard
-scoreboard, **routed by `sim_type`** after a LIVE verify-interview pivot (D1 static → D3 live): non-interview
-(21/23 pairs) → the `/sim/<slug>/<userId>/result/<sessionId>` manager result view; **interview KEEPS** its
-activity-dashboard route (its `/sim` report renders "Coming Soon" on a demo); manager grader keys on the score;
-47/47 manifest pairs, honesty gate GREEN; rext `july-jitter-m248-harden @ 6e0ed2c`; deferral audit YELLOW.
-**M249 (cross-app navigation) is CLOSED** — a fail-closed "← Back to Cockpit" item in all **4** sub-app menus
-(one shared `packages/ui` patch covers web+hiring; the **first-ever studio-desk SOURCE patch trio** image-baked
-via a net-new `build_frontend_studio_desk` ladder + patch-set fingerprint; a native-run ant-academy helper)
-reading a per-stack `COCKPIT_URL` @ 7700+OFFSET, **plus the studio logo/back/logout prod-eject fix** (read this
-stack's app, prod host kept as the `||` fallback → behaviour-identical off-demo); patch inventory 16→**21**;
-introduced the **additive-UI injection** pattern (`demopatch-spec.md` §8). LIVE-verified GREEN on demo-2 (4/4
-menus @ `:27700`; studio `:23000` baked, 0 effective ejects); rext `july-jitter-m249-harden @ 8ab5192` (138
-tests GREEN, flake 5/5); deferral audit GREEN. **M250 (AI-readiness fidelity, `iterative` marquee) is CLOSED**
-(user pragmatic-close) — core gate **LIVE-GREEN both vantages** (Northwind, demo-2, escapes=0): the demo seeder
-brought to the platform's **real 31-skill default** (denom 25.0, closure 31/31) + 3 track-keyed named sims +
-net-new Directus set-dress + evidence-distribution fan-out; 3 adjacent manager sections were **post-M246 drift**,
-fixed + unit-green, live sweep → **M254** (CARRY-M250-01, Fate 2). rext `july-jitter-m250-iter07 @ 584f1fe`;
-audit GREEN. **M252 (studio-desk builder enablement) is CLOSED** — the demo studio container carries its OWN AI
-keys via an **`env_file`-ONLY** wire (**NO `MOCK_CLERK`/chain-pin** — studio stays Clerkenstein-authed), root
-cause FIXED + **PROVEN live** (op1); autoverify (g) container-key assert; **studio-desk's FIRST Playthroughs
-entry** (16→18 live/0 TODO); talk-to-data (M239 Bedrock) COMPLETE; rext `july-jitter-m252-studio-builder @
-d80db9f`; audit GREEN (CARRY-M252-01+02 Fate-2 → M254). *(Full M250/M252 detail: roadmap `### M250`/`### M252`.)*
-**M253 (studio-desk first-paint, `iterative`) is CLOSED — closed-on-gate** — first-meaningful-paint
-**4669 ms → p95 817 ms** (p50 743, max 817; 5/5 cold loads painted the `.page-skeleton` shell, 0 login bounces)
-on demo-2 (**local laptop**), ~5.7× under the < 1 s gate. A pure **zero-platform-edit paint-ordering** demopatch
-pair on the M249 `build_frontend_studio_desk` ladder — `studio-desk-shell-first-paint` (inject the skeleton DOM
-synchronously **before** the boot awaits; de-dup via `PageWrapper#init`'s body-wipe) **chained** with
-`studio-desk-no-thirdparty` (no-op `Sentry.init`/`posthog.init`) — plus a **net-new studio-FCP runner**
-(`run-studio-fcp.sh`). Root cause corrected: the dominant leg is `userService.canAccess()` (~3.9 s GraphQL-404
-retry), **NOT** clerk.load (140 ms actual). Docs: `latency-budget.md` + `demopatch-spec.md` (inventory 21→23) +
-`studio-desk.md` (MPA boot model). rext `july-jitter-m253-studio-first-paint @ b8969c0`; deferral audit GREEN
-(**CARRY-M253-01** fresh-green COLD-p95 on billion → **M254** gate (f), Fate-2 — the coordination-rule-9 split).
-**M254 (prove-on-billion, `iterative` closer) is now the SOLE remaining lane** — re-prove the whole release live
-on `billion`, cold reset-to-seed, driven from a tailnet peer.
+**v2.7 "july jitter" — FULLY BUILT, awaiting close-release.** All **9 milestones M246 → M254** are closed and
+merged into `release/02.70-july-jitter` (tooling + docs only, **0 platform-repo edits**). The
+**re-ground + fidelity + field-hardening** release (the v1.3b / v2.1 / v2.3 / v2.6 lineage): *realign the demo +
+corpus to the platform's true current state, and fix what drifted.* The terminal milestone **M254
+(prove-on-billion, `iterative`) closed `closed-on-gate` 2026-07-25** — the whole release re-proven live on the
+`billion` Tailscale VM, cold reset-to-seed, driven + asserted from a tailnet peer: all 8 exit-gate parts (a–h)
+MET (Playthroughs 18/18, latency p95 1.43/1.41 s < 5 s, studio first-paint p50 < 1 s, content-stories 45/45
+landable, AI-readiness both vantages, 4/4 Back-to-Cockpit, 0 platform edits). **Next step is the user's**
+`/developer-kit:close-release` (the release-level review + `release→main` merge + `v2.7` tag).
 
-> **The headline finding:** the skiller→app merge (v2.1) was **one step of a "consolidate every runtime engine
-> into app" program.** `app` is **~386 commits** ahead of the stack pin; **skillpath is now FULLY decommissioned
-> into `app`** (M501–M507: gone from `repos.yml`/compose/subgraphs → **3 subgraphs**, sessions →
-> `public.skill_path_sessions`); **jobsimulation is mid-merge** (dormant, the next shoe); and `app` grew
-> undocumented domains (coursebuilder, AI Labs + credits/stripe, askengine, a server-owned academy). The corpus
-> asserts skillpath as live Tier-1 in ~30 files, and **rext `stack-seeding` writes to `skillpath.skill_path_sessions`
-> in live seeder code** → breaks the instant a stack-update crosses M507 (the v2.1 class, repeating).
+> **The headline finding (release thesis):** the skiller→app merge (v2.1) was **one step of a "consolidate every
+> runtime engine into app" program.** `app` is **~386 commits** ahead of the old stack pin; **skillpath is now
+> FULLY decommissioned into `app`** (M501–M507: gone from `repos.yml`/compose/subgraphs → **3 subgraphs**,
+> sessions → `public.skill_path_sessions`); **jobsimulation is mid-merge** (dormant, the next shoe); and `app`
+> grew undocumented domains (coursebuilder, AI Labs + credits/stripe, askengine, a server-owned academy). v2.7
+> re-grounded the corpus + demo to this topology and re-pointed the rext seeder off `skillpath.*` before it broke.
 
-## v2.7 shape — barrier → 7-lane fan-out → prove-on-billion
+## v2.7 shape — barrier → 7-lane fan-out → prove-on-billion  (all 9 done)
 
 ```
-M246 re-sync & re-point (HARD go/no-go barrier)
-  ├─▶ M247 corpus re-ground ────────┐
-  ├─▶ M248 content-mgr-link ────────┤
-  ├─▶ M249 cross-app-nav ───────────┼──▶ M253 studio-first-paint (extends M249's studio patch ladder)
-  ├─▶ M250 ai-readiness (iterative) ┤
-  ├─▶ M251 test-health ─────────────┤
-  ├─▶ M252 studio-builder-enable ───┤
-  └────────────────────────────────────▶ M254 prove-on-billion (iterative closer)
+M246 re-sync & re-point (HARD go/no-go barrier)  ✅
+  ├─▶ M247 corpus re-ground ─────────┐ ✅
+  ├─▶ M248 content-mgr-link ─────────┤ ✅
+  ├─▶ M249 cross-app-nav ────────────┼──▶ M253 studio-first-paint ✅
+  ├─▶ M250 ai-readiness (iterative) ─┤ ✅
+  ├─▶ M251 test-health ──────────────┤ ✅
+  ├─▶ M252 studio-builder-enable ────┤ ✅
+  └─────────────────────────────────────▶ M254 prove-on-billion (iterative closer) ✅
 ```
 
-- **M246** re-sync & re-point (`section`, HARD go/no-go) — re-point rext seeder `skillpath.*→public.*`, bump the
-  **demo** clone pins to current `origin/main`, prove `/demo-up` green on the consolidated platform, emit a drift ledger.
-- **M247** corpus re-ground (`section`) — skillpath→app redirect + **3-subgraph** truth + 4 new fact sheets
-  (coursebuilder / AI Labs+credits / askengine / academy-backend) + refresh `ai-readiness.md`. Internal: core-lanes ∥ + reconcile-tail.
-- **M248** content-stories manager result-link (`section`, small) — manager CTA → `/sim/<slug>/<userId>/result/<sessionId>` (the real built manager view).
-- **M249** cross-app navigation (`section`) — "← Back to Cockpit" ×4 apps + studio logo/prod-eject fix. **Owns the first-ever studio-desk source patch machinery.**
-- **M250** AI-readiness fidelity (**`iterative`**, marquee) — 31 canonical skills + 2 track-keyed named sims + evaluated-skills directus set-dress + skill distribution.
-- **M251** test-health (`section`, the reserved v2.6→v2.7 carry) — `run-unit.sh` roster + ~6 mechanical `test_cockpit`/`test_public_host` re-points.
-- **M252** studio-desk builder enablement (`section`) — AI-key **demo-wiring** (not a DNA/secrets gap) + DNA hardening + builder Playthrough. (talk-to-data Bedrock double-checked → COMPLETE.)
-- **M253** studio-desk first-paint (**`iterative`**, deps M249) — shell-before-awaits + no-thirdparty demopatches, **<1s FCP** gate.
-- **M254** prove-on-billion (**`iterative`**, closer) — re-prove the whole release live on `billion`, cold reset-to-seed, p95 < 5 s.
+Full per-milestone closure narratives (decisions, deliverables, test deltas, code-of-record tags) live in
+`roadmap.md`'s `### M{N}` blocks — NOT here (state.md contract).
 
 ## Binding decisions (2026-07-23)
 1. **Scope + codename** — expanded beyond the pre-reserved "test-health" to a full re-ground + fidelity release; codename **"july jitter"** (departs the stagecraft lineage, user's explicit choice).
-2. **Re-ground depth** — **full bump to current `origin/main` + prove + author the 4 new fact sheets** (per "update repo to the new status quo").
-3. **M250 shape → `iterative`** — the 8→31 arithmetic re-derivation + net-new directus-write set-dress + live-render believability make the path exploratory.
-4. **DEF-M215-03(a)/F11 → DROPPED** — tripped its own drop-if-survives-another-release condition (v2.6 shipped without it).
+2. **Re-ground depth** — **full bump to current `origin/main` + prove + author the 4 new fact sheets**.
+3. **M250 shape → `iterative`** — the 8→31 re-derivation + net-new directus-write set-dress + live-render believability made the path exploratory.
+4. **DEF-M215-03(a)/F11 → DROPPED** — tripped its own drop-if-survives-another-release condition.
 
-## Parallel-build strategy (baked into each milestone's overview)
-- **7-lane worktree fan-out** off M246: M247-core ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252. Run builds concurrently as `work-milestone --worktree=<path>`; **serialize the closes**.
-- **All fan-out worktrees branch from post-M246 HEAD.** Merge order: M251 → {M248, M250} → M249 → M253 → M252 → M247-reconcile → M254.
-- **9 coordination rules** (shared files: `cmd/stackseed/main.go` M248∥M250 · `run-unit.sh` roster M248→M251 · `CLAUDE.md` sole-owner M247 · `up-injected.sh build_frontend_studio_desk` M249→M253 · studio spec docs reconciled M247-tail · rung-zero every push).
-- **Honest speedup:** ~3–4× on the build phase; ~1.5–2× end-to-end (the live proofs M246/M250/M253/M254 are the serial floor). Full detail in each `overview.md` + `roadmap.md § Active — v2.7`.
-- **Environment (billion-last):** M246→M253 build + meet their gates on a **LOCAL `demo-N`** (this box); **`billion` stays untouched** (its v2.6 demo left up) until **M254**, the closer. Caveat: M253's <1 s FCP is tailnet-sensitive → its local gate is provisional, re-confirmed on billion at M254.
-
-## Headline numbers (inherited from v2.6 close, 2026-07-23 — reset at v2.7 close)
-- **Go:** **2010** reproducible platform test funcs. 2461 testcases / 0 failed, 6 modules.
-- **TypeScript (unit):** **257** `*.unit.spec.ts` + 40 live-browser specs (24 stack-verify + 16 Playthroughs). (run-unit executed-spec roster 7→9 at M251 — the 2 M244 orphans rostered; total case count unchanged, they were already collected.)
-- **Python (rext demo-stack):** **861 pass / 8 fail** (869 collected) — M251 landed the 7 mechanical re-points; the remaining **8 are live/env/docker-gated → M254** (`test_purge` + `test_ant_academy*` launcher/reap + clerk-wiring; host-sensitive, 0 real defects).
-- **content-stories:** 47/47 landed of the 49-pair denominator. **p95 click→ACCESS:** employee 1.46 s · manager 1.31 s.
+## Headline numbers (v2.7 close-of-M254, 2026-07-25 — reset at the v2.7 close-release)
+- **Go:** **2010** reproducible platform test funcs (unchanged; v2.7 is tooling + docs only).
+- **TypeScript (unit):** **271** `*.unit.spec.ts` (257 at v2.6 + 14 from the M254 harden) + 40 live-browser specs (24 stack-verify + 16 Playthroughs).
+- **Python (rext demo-stack):** **909 collected / 900 pass** — the 8 fail + 1 error are the `FIX-M254-g-testhealth` host-sensitive test-harness carry (test_ant_academy launcher/reap + clerk-wiring overlay + Linux-only test_purge + docker image-guard); **0 milestone regressions, 0 demo-runtime impact** (real academy serves 200).
+- **Playthroughs:** **18/18** live on billion. **content-stories:** 45/45 landable ALL LANDED + 4 voice presence-only (Bunny-keyless demo box, `DEF-M240-01`). **p95 click→ACCESS (billion):** employee 1.43 s · manager 1.41 s. **studio first-paint (billion):** p50 637–726 ms < 1 s.
 - **Flake: 0.** **Alignment (Clerkenstein): 100% / 100% critical.** **Supply chain: GREEN.** **Platform-repo edits: 0.**
-- rext code-of-record @ v2.6: `498b1a5` (tag `sound-check-m244-content-sweep-robustness`).
+- rext code-of-record (M254): tag `july-jitter-m254-patch-inventory-fence @ 02ac973` (all 6 M254 tags on origin, rung-zero).
 
-## Standing backlog carried INTO v2.7 (fated destinations)
-- **→ M251 ✅ CLOSED (2026-07-23):** the `run-unit.sh` `UNIT_SPECS` roster nit (2 orphan specs rostered → runner exit 0) + the 7 mechanical `test_cockpit`/`test_public_host` re-points — **LANDED** (mutation-verified 4/4). The **8** live/env/docker-gated failures (`test_purge` + `test_ant_academy*` launcher/reap + clerk-wiring — 8, not the "~2" M254's overview names) ride **M254** (gate g+h).
-- **DROPPED at v2.7 design:** **DEF-M215-03(a)/F11** (cosmetic hero identity-key vs display-name) — tripped its drop-if-survives condition; **DEF-M239-01** (ENOSPC loud-build) — dropped at v2.6 close (disk-full class already covered).
-- **Still unscheduled (vision):** DEF-M10-01 (S3 media — the document facet was consumed by v2.6 M240; voice presence-only) · DEF-M21-01 · CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS) · Playthroughs futures **M206–M207**.
+## Recently closed (max 5; older → roadmap.md ### M{N} blocks)
+- **M254 — 2026-07-25** (prove-on-billion, `iterative`, closed-on-gate) — v2.7 re-proven live on billion, a–h MET (Playthroughs 18/18, p95 1.43/1.41 s, studio p50 <1 s, content-stories 45/45, AI-readiness both vantages, 0 platform edits); close landed FIX-M254-h (demopatch inventory fence 21→23); audit YELLOW.
+- **M253 — 2026-07-24** (studio-desk first-paint, `iterative`, closed-on-gate) — first-meaningful-paint 4669 → p95 817 ms (demo-2 laptop, ~5.7× under <1 s); 2 demopatches on the M249 ladder; rext `july-jitter-m253-studio-first-paint @ b8969c0`.
+- **M252 — 2026-07-24** (studio-builder enablement) — demo studio carries its own AI keys via `env_file`-only wire; studio-desk's first Playthroughs entry (16→18); rext `july-jitter-m252-studio-builder @ d80db9f`.
+- **M250 — 2026-07-24** (AI-readiness fidelity, `iterative`) — real 31-skill default + track-keyed sims + directus set-dress; live-green both vantages; rext `july-jitter-m250-iter07 @ 584f1fe`.
+- **M249 — 2026-07-24** (cross-app navigation) — "← Back to Cockpit" ×4 apps + studio prod-eject fix; first-ever studio-desk source patch trio; rext `july-jitter-m249-harden @ 8ab5192`.
+
+## Standing backlog carried INTO / OUT OF v2.7 (fated destinations)
+- **v2.7-originated follow-ups (rext tooling, non-blocking, 0 platform edits):** `FIX-M254-c-academy-durable` (make the native-academy Back-to-Cockpit patch durable across the dev-server lifecycle) · `FIX-M254-g-testhealth` (6 host-sensitive demo-stack test-harness tests) · `(b)-voice manager_presence_only` (content denominator 47→45 + flag + re-seed) · verify.sh stale `skillpath` default drop · studio-desk billion re-pin → `july-jitter-m254-studio-pt-retune` on the next full cold re-prove. All Fate-3, coordinator-approved (see M254 carry-forward.md).
+- **DROPPED at v2.7 design:** **DEF-M215-03(a)/F11** (cosmetic hero identity-key) — tripped its drop-if-survives condition; **DEF-M239-01** (ENOSPC loud-build) — dropped at v2.6 close.
+- **Still unscheduled (vision):** DEF-M10-01 (S3/Bunny voice media — voice presence-only; document facet consumed by v2.6 M240) · DEF-M21-01 · CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS) · Playthroughs futures **M206–M207**.
 
 ## Process flags (do NOT auto-push)
+- **v2.7 is FULLY BUILT but NOT closed as a release.** `/developer-kit:close-milestone` merged M254 → `release/02.70-july-jitter`; it did **NOT** merge `release → main` or tag `v2.7` — that is the user's separate `/developer-kit:close-release` step.
 - **v2.5's** `release→main` merge + `v2.5` tag are **LOCAL-ONLY**, not pushed to origin (R5).
-- **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering starts at **M246** to skip it.
-- The user runs the v2.5/v2.6/v2.7 origin publishes on their own cadence.
+- **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering started at **M246** to skip it.
+- The user runs the v2.5 / v2.6 / v2.7 origin publishes on their own cadence.
 
-_Last updated: 2026-07-24 — M253 (studio-desk first-paint, `iterative`) CLOSED-on-gate + merged to release/02.70-july-jitter (first-meaningful-paint 4669 ms → p95 817 ms, 5/5 cold, 0 bounce, demo-2 laptop, ~5.7× under the <1s gate; 2 demopatches on the M249 ladder + net-new run-studio-fcp.sh; root cause = userService.canAccess, not clerk.load; rext july-jitter-m253-studio-first-paint @ b8969c0; audit GREEN — CARRY-M253-01 → M254 gate (f), Fate-2; 0 platform edits). M254 (prove-on-billion, closer) the SOLE remaining lane._
+_Last updated: 2026-07-25 — M254 (prove-on-billion, `iterative`) CLOSED-on-gate + merged to release/02.70-july-jitter (a–h MET live on billion; Playthroughs 18/18, p95 1.43/1.41 s, studio p50 <1 s; close landed FIX-M254-h fence 21→23, audit YELLOW; 0 platform edits). **v2.7 fully built — all 9 milestones M246→M254 closed; awaiting the user's /developer-kit:close-release.**_

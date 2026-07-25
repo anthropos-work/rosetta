@@ -472,7 +472,7 @@ next-web/hiring ACCESS only). NOT a dev-vs-prod build issue (refuted — the dem
 **Open questions:** which await dominates on the tailnet (`clerk.load` 10 s timeout vs l12n/canAccess) — the bootstrap per-leg measurement decides before pinning the patch sha; de-dupe the injected skeleton vs PageWrapper's own.
 
 #### M254 — prove on billion  (`iterative`, the closer)
-**Status:** `planned`
+**Status:** `done` (closed 2026-07-25, `closed-on-gate`)
 **Goal:** Re-prove the whole release live on `billion`, cold reset-to-seed.
 **Shape:** `iterative` — live-proof is measurement-driven (the M221/M236/M244 lineage); iters until the gate.
 **Exit gate:** cold reset-to-seed on `billion`, driven from a tailnet peer, **0 platform edits:** **(a)** the
@@ -494,11 +494,34 @@ drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on
 **Delivers →** none (proof milestone).
 **Open questions:** none blocking (the multi-part gate is the spec).
 
+**Closure (2026-07-25):** `closed-on-gate` — **all 8 exit-gate parts (a–h) MET live on `billion`** (cold
+reset-to-seed, driven + asserted from a tailnet peer, **0 platform edits**), the M221/M236/M244 prove-on-billion
+lineage. 10 iters (1 bootstrap tok + 9 tiks) + 1 final harden pass. **Gate:** (a) autoverify `green:true`/0
+warnings on the consolidated platform (3 subgraphs, skillpath-in-app) after the **aireadiness demopatch re-point**
+that unblocked it (iter-03; the patch's target had moved to `internal/aireadiness/readiness.go` in the app
+consolidation) + a fresh-reset re-confirm (iter-08); (b) content-stories **45/45 landable ALL LANDED** + 4 voice
+presence-only (coordinator disposition, symmetric extension of `DEF-M240-01`); (c) **4/4 apps** render "← Back to
+Cockpit" + the studio prod-eject side, **0 escapes**; (d) AI-readiness faithful **both vantages** (8/8 sections +
+3 drift-fixes); (e) **both studio builders green** after re-tuning the M252 Playthrough to the live studio-desk
+**v0.152.1** redesign (unified `/simulation-builder`); (f) studio first-paint **p50 637–726 ms < 1 s** (p95
+outliers = ACCEPTED environmental tailnet-RTT jitter, disposition); (g) **2/8-class fixed** live (nvm/node
+host-robustness), 6 host-sensitive test-harness tests carried; (h) **latency p95 1.43 s employee / 1.41 s manager
+< 5 s** + **Playthroughs 18/18** (100%). **Code-of-record:** 6 rext tags on origin (rung-zero) —
+`july-jitter-m254-{aireadiness-repoint 997272b, studio-fcp-identity cbe9256, academy-nonode-hostrobust dfdd9bc
+[billion demo pin], studio-pt-retune 4f1409e, harden-final 4c1fd90, patch-inventory-fence 02ac973}`. Final harden
+**stabilized** (+22 tests, 3× flake gate). **Close review:** deferral audit **YELLOW** (0 blockers) — the RED-at-HEAD
+`FIX-M254-h-patch-inventory-drift` (the demopatch inventory fence lagged M253's header-only 21→23 bump) re-fated
+Fate-3 → **Fate-1 LANDED** (fence 21→23 / studio-desk 3→5 + `demopatch-spec.md §5` reconciliation); 3
+coordinator-approved dispositions (f-p95 environmental · `FIX-M254-c-academy-durable` · `FIX-M254-g-testhealth`)
++ 5 inherited carries (CARRY-M248/250/252/253-01) **discharged** by the live proof. Full demo-stack suite 909/900
+pass (the 8+1 = the g-testhealth host-sensitive carry, 0 regressions). **0 platform-repo edits.** Terminal
+milestone — **v2.7 is now fully built, awaiting the user's `/developer-kit:close-release`.**
+
 ### Version plan (v2.7)
 
 | Version | Codename | Theme | Milestones | Status |
 |---------|----------|-------|------------|--------|
-| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | 🔨 **IN DEVELOPMENT** (branch `release/02.70-july-jitter`, designed 2026-07-23; 7 of 9 milestones closed — M246 barrier PASSED go/no-go + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav + M250 ai-readiness-fidelity + M251 test-health + M252 studio-builder-enable; M253 + M254 remain; tooling + docs only, zero platform-repo edits) |
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **FULLY BUILT — awaiting `/developer-kit:close-release`** (branch `release/02.70-july-jitter`, designed 2026-07-23; **all 9 milestones closed** — M246 barrier PASSED go/no-go + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav + M250 ai-readiness-fidelity + M251 test-health + M252 studio-builder-enable + M253 studio-first-paint + **M254 prove-on-billion** [`closed-on-gate`, a–h live on billion]; tooling + docs only, zero platform-repo edits; tag will be `v2.7` at close-release) |
 
 ### Parallel-build strategy (baked in — the "build it faster" plan)
 
