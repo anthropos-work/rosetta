@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M254
 title: "prove on billion (the closer)"
-status: planned
+status: archived
 release: v2.7 "july jitter"
 exit_gate: "Cold reset-to-seed on billion, driven from a tailnet peer, 0 platform edits: (a) the re-grounded stack builds + comes up GREEN on the consolidated platform (3 subgraphs, skillpath-in-app); (b) the content-stories manager CTA lands on the /sim per-session manager result view (non-empty) for sim products; (c) Back-to-Cockpit works in all 4 apps + studio logo/back/logout resolve to the stack app (0 prod-ejects); (d) the AI-readiness page faithful per M250 gate, live, both vantages; (e) the studio sim-builders generate (builder Playthrough green); (f) studio first-paint < 1 s cold p95; (g) the 8 live/docker-gated demo-stack test-health tests green (count confirmed 8 at M251/M247 close, host-sensitive membership — NOT the earlier ~2 estimate); (h) the live-browser specs + content-stories sweep + Playthroughs green; p95 click-to-ACCESS < 5 s hero vantages."
 iteration_protocol_ref: corpus/ops/verification.md
@@ -10,11 +10,12 @@ re_scope_trigger: "5 consecutive toks without a viable strategy -> user-strategi
 depends_on: [M247, M248, M249, M250, M251, M252, M253]
 complexity: medium
 created: 2026-07-23
+last_updated: 2026-07-25
 ---
 
 # M254 — prove on billion  (`iterative`, the closer)
 
-**Status:** `planned`  ·  **Shape:** `iterative` (the closer)  ·  **Complexity:** medium (iterative)  ·  **Release:** v2.7 "july jitter"  ·  **Depends on:** M247, M248, M249, M250, M251, M252, M253 (all fixes)
+**Status:** `archived` (completed 2026-07-25)  ·  **Shape:** `iterative` (the closer)  ·  **Complexity:** medium (iterative)  ·  **Release:** v2.7 "july jitter"  ·  **Depends on:** M247, M248, M249, M250, M251, M252, M253 (all fixes)
 
 ## Goal
 Re-prove the whole release **live on `billion`**, cold reset-to-seed. Every v2.7 fix — the re-ground, the
