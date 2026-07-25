@@ -49,3 +49,9 @@ there are NO iter dirs at scaffold.)_
   positive: a fresh demo. **(a) re-confirmed green**; **(c)-academy renders on the fresh demo** → **(c) MET
   (4/4 apps render LIVE + prod-eject)**. Gate **~6/8** (a,b,c,d + f-session-carry). (e)+(h) → iter-09. 0 platform
   edits. see iter-08/progress.md
+- iter-09 (tik 5/cap, closed-fixed-partial): **(e)+(h) mutating tail** — pt-world reset-to-seed LANDED on billion
+  (`--reset-only`: TRUNCATE + pt-world seed, roster re-exported, fake services restarted, fake-FAPI 200). The
+  browser Playthrough suite **PROVEN to run + pass** from this peer (117 tests serial, first 6 green incl a
+  manager Playthrough). Full 117-test completion + (f)-FCP-p95 + (g)-testhealth dispositions routed to a fresh
+  agent (prove-on-billion "fresh agent per run"). Gate **~6/8 MET** (a,b,c,d,f-session-carry); e+h proven-to-run.
+  EXIT: cap-reached. see iter-09/progress.md
