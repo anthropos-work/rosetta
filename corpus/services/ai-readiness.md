@@ -182,7 +182,7 @@ reads **exactly one table**, and decodes its `report` JSONB:
 
 | `report` key | → renders | Notes |
 |---|---|---|
-| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (4 tiles) | ids `avg_frequency` / `avg_breadth` / `avg_depth` / `avg_context_fit`, each a **0-100 cohort average**. `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all four is why the tile row did not render at all**, rather than rendering empty. |
+| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (5 tiles) | ids `avg_adoption` / `avg_transformation` / `avg_originality` / `avg_depth` / `avg_ownership` (Adoption / Transformation / Originality / Depth·Creation / Critical ownership), each a **0-100 cohort average** (the M219 ids `avg_frequency` / `avg_breadth` / `avg_context_fit` were retired in the post-M246 platform rename — see part 5 at `:533`). `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all of them is why the tile row did not render at all**, rather than rendering empty. |
 | `narrative.patterns[]` | **Strengths** | `evidence[0]` **IS** the rendered verbatim quote; `source_session_id` is what `resolveSessionAuthors` joins (`sessions → memberships`) to hydrate the quote's **author name + job role**. |
 | `narrative.unexpected[]` | **Unexpected angles** | **NO chart fallback exists** — the narrative is the only way this column can *ever* render. |
 | `narrative.insights[]` where `category` contains **`"risk"`** | **What holds them back** | The category string is **load-bearing**: `holdsBackFromInsights` filters on it. Get it wrong and the column silently empties again. |
@@ -544,7 +544,8 @@ billion by design).
 manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
 The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-completed` + manager `dana-manager`,
 Northwind, cold reset-to-seed, escapes=0) for parts 1/2/3/5 + the core part-4 sections. Code-of-record:
-`rosetta-extensions` @ `july-jitter-m250-iter07`.
+`rosetta-extensions` @ `july-jitter-m250-iter07`. **Re-proven LIVE on billion at M254 (gate (d)):** both
+vantages, 8/8 AI-readiness sections + the 3 M250 drift-fixes confirmed cold on the consolidated platform.
 
 ## Cross-references
 

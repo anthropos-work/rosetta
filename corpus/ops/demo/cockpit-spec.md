@@ -223,8 +223,9 @@ a *different* hero was to hand-edit the URL back to the cockpit port. M249 close
 own offset port (`:17700` for `demo-1`, `:27700` for `demo-2`), distinct from the web app (`3000+OFFSET`), studio
 (`9000+OFFSET`), and academy (`3077+OFFSET`). The bring-up bakes the value into each app's env overlay
 (`up-injected.sh` for next-web/hiring/studio, `ant-academy.sh` `write_env_local` for the academy); the menu item
-**renders only when the env is set**, so a build without it is byte-identical to production. Delivered as four
-demo-patches via the **additive-UI injection** pattern — see
+**renders only when the env is set**, so a build without it is byte-identical to production. Delivered as three
+demo-patches (the shared `next-web` `packages/ui` patch covers both the Workforce and hiring menus) via the
+**additive-UI injection** pattern — see
 [`demopatch-spec.md` §8](demopatch-spec.md). The same M249 studio lane also fixes the studio **logo / back /
 logout** controls that hardcoded `app.anthropos.work` (they now read this stack's app) — the studio prod-eject.
 

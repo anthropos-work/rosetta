@@ -49,7 +49,7 @@ unnamed until this spec.
 | **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target is a no-op, exit 0. **"Already patched" is G2's COHERENCE probe** — *the whole replacement present **and** the anchor gone* — **not a post-sha match.** <br>⚠️ *This row used to read "post-sha **and** marker", i.e. exactly the whole-file-sha check that §6 spends a section explaining ROTS. It contradicted G2 in the same table. Corrected at the M219 close; the two rows now describe one mechanism.* |
-| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 15 today; was a hardcoded 3). See §2.1.** |
+| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 23 today; was a hardcoded 3). See §2.1.** |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
 | **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
@@ -89,7 +89,7 @@ construction; a manifest `demopatch` legitimately refuses (e.g. an `app` patch w
 > detected by anything. A silently-refused perf patch on exactly this path shipped a **76 s members grid for
 > four releases** (§6). *A patch that is refused because a previous crash left it applied looks identical to a
 > patch that was never wired.* Since M237, a stranded patch **outside** the old three is swept too. Proven live
-> on `billion` (2026-07-21): `demopatch R1: swept 14 manifest(s) … directory-driven`.
+> on `billion` (2026-07-21): `demopatch R1: swept 14 manifest(s) … directory-driven` (a v2.6-era count; 23 today — see §5).
 
 **Consequences for an author adding a patch (v2.6+):**
 
@@ -202,7 +202,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 > **Inventory reconciled to the `demo-stack/patches/` directory (15 manifests at v2.6 M238; 16 at M244, adding the anon-view `academy-fs-published-public`; 21 at v2.7 M249, adding the 5 cross-app "Back to Cockpit" patches; 23 at v2.7 M253, adding the 2 `studio-desk` first-paint `main.ts` patches).** This table had drifted from the
 > `demo-stack/patches/` directory in **two** ways, both fixed here after a directory-vs-table sweep:
-> 1. **The 3 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
+> 1. **The 5 `ant-academy` patches are NATIVE-RUN, not `demopatch`-tool patches** — ant-academy runs via `next dev`
 >    from its clone (not an image), so each is applied by its **own** `stack-injection/apply-ant-academy-*.sh` /
 >    `apply-academy-fs-*.sh` shell helper (apply-before-launch / revert-on-`--stop`), re-implementing the guard
 >    ladder against the same canonical manifest (see §4 "Three apply vehicles"). This is why they were historically
@@ -218,6 +218,19 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 >    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**23** at v2.7 M253) AND
 >    the per-repo breakdown (`11 next-web-app · 2 app · 5 ant-academy · 5 studio-desk`) against this §5 table — so adding, removing,
 >    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
+
+> **Mirrored-count discipline (v2.7 release-level note, C1).** v2.7 shipped **three** count-drifts: the
+> patch-inventory total shipped RED at HEAD (M253 updated this table's header but not the fence's constants —
+> caught at close, FIX-M254-h), the "live Playthroughs" count (16 → 18), and the AI-readiness KPI-tile count
+> (4 → 5). **Rule:** any count mirrored in more than one doc, or backed by a test fence, must move with **all**
+> its mirrors **and** its fence in the **same** commit — never header-only.
+
+> **studio-desk is a first-class demopatch target now (v2.7 release-level note, C2).** Before v2.7, studio-desk
+> carried **no** source patches. It graduated across three milestones: **M249** built the net-new
+> `build_frontend_studio_desk` patch ladder + patch-set fingerprint (the first-ever studio-desk source patches —
+> the "Back to Cockpit" + prod-eject trio); **M252** wired the studio backend's AI-provider `.env` into the demo
+> container (enabling the studio-builder Playthroughs — see [`playthroughs.md`](playthroughs.md)); **M253** added
+> the first-paint `main.ts` pair. studio-desk now holds **5** of the 23 patches.
 
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the

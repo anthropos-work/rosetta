@@ -35,7 +35,7 @@ The current sync **force-resets every repo to `origin/main` every run, no except
 
 | Cadence              | Script                                                | What it does                                                                                                                                                                                                            |
 | -------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 15 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
+| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 14 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
 | Daily<br>06:00 UTC   | `~/.local/bin/anthropos-staging-sync.sh`              | Full sync: per-repo safety patch → `git checkout main; git reset --hard origin/main` → re-apply skip-worktree → `docker compose build` + `up -d` for each changed service → Playwright smoke test. ~10-60 min wall. |
 
 Both run as systemd **user** units. `loginctl enable-linger $USER` is required so they fire even when no SSH session is attached.
@@ -189,7 +189,7 @@ Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Bui
 
 ### Atlas migrations are NOT run by sync
 
-The daily sync pulls new source and rebuilds containers, but it does **not** run `atlas migrate apply`. The Go services boot fine against an out-of-date schema; the breakage only surfaces the first time code paths reach a missing table or column (e.g., `ask_conversations does not exist` for Talk to Data, `skill_translations does not exist` for the skiller subgraph). On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
+The daily sync pulls new source and rebuilds containers, but it does **not** run `atlas migrate apply`. The Go services boot fine against an out-of-date schema; the breakage only surfaces the first time code paths reach a missing table or column (e.g., `ask_conversations does not exist` for Talk to Data, `skill_translations does not exist` for the merged skiller domain, now served by `app`'s `backend` subgraph). On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
 
 **This is an operator responsibility, not a sync-routine job.** Reasons sync doesn't run Atlas itself:
 

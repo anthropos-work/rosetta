@@ -283,7 +283,7 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
-This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-05:
+This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-07:
 
 | Repo | Type | Has Migrations |
 |------|------|---------------|
@@ -299,7 +299,7 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 | `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
 | `graphql-wundergraph` | Node.js (npm) | No |
 
-> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`), and `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned). Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
+> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`); `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned); and `skillpath` was likewise merged into `app` ("skillpath-in-app", M502→M507) and decommissioned — its skill-path session state now lives in `app`'s `public.skill_path_sessions`, so it is no longer in `repos.yml` and no longer has its own migration/schema. Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
 ### Initialize CMS Studio Submodule
 

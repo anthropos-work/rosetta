@@ -49,7 +49,7 @@ of the instrument, not a gap in a run.
 
 > **v2.5 "the playbill" scoping (user decision B2, 2026-07-20).** Content-seat latency is **explicitly OUT OF
 > SCOPE for v2.5**. The cockpit CTA and `run-latency.sh` were deliberately **not** extended to content seats.
-> The 31→29 content actions v2.5 shipped are proven for **CONTENT** — they render real, non-empty results —
+> The 31→29 content actions v2.5 shipped (later grown to 49 landable at v2.6 M241) are proven for **CONTENT** — they render real, non-empty results —
 > and are **not formally timed**. Do not read "v2.5 met the p95 gate" as covering the content seats.
 
 **Two run-shape variables are per-release, and a release must state both with its number:**
@@ -378,10 +378,11 @@ patch-set fingerprint grows 3 → **5**, forcing a studio rebuild. Zero platform
 | skeleton-visible p95 (5 cold loads) | **4669 ms** | **817 ms** (p50 743, max 817) |
 
 5/5 cold loads painted the shell, 0 login bounces — **numerically MEETS the < 1000 ms gate** (~5.7× faster).
-**Per coordination rule 9, the fully-green COLD-p95 confirmation is chartered to M254 (prove-on-billion)** — a
-warm, partially-set-dressed local demo cannot produce a fully-green `autoverify.json` for reasons unrelated to
-studio (M253 iter-02 D5). State the environment with the number: this is a **local laptop demo-2**, not the
-tailnet.
+State the environment with the number: the table above is a **local laptop demo-2**, not the tailnet.
+**Confirmed LIVE on billion (M254 gate (f), tailnet peer, cold reset-to-seed):** app-side first-paint **p50
+637–726 ms < 1 s** — the M253 fix holds. The cold p95 outliers (1443 / 2014 / 4943 ms, `reachedShell` always
+true) were a coordinator-accepted **environmental tailnet-RTT jitter** disposition (the (b) precedent + the
+"state the environment" rule), not a studio regression.
 
 ### The harness
 

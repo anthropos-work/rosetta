@@ -128,8 +128,8 @@ non-obvious ones are pinned because the runtime reads a specific file:
 
 ### The hybrid `introspect` source + the keep-listed gate (`diff`)
 
-The required-key set is **not** a uniform per-repo `.env.example` — verified on stack-dev, **8 of 9 Go repos
-ship none** (only `sentinel` does). So `introspect` (`secretdna.ReadDeclaredKeys` over
+The required-key set is **not** a uniform per-repo `.env.example` — verified on stack-dev, **7 of 8 Go repos
+ship none** (only `sentinel` does; the count dropped from 8-of-9 when `skillpath` — a Go repo that shipped no `.env.example` — was decommissioned into `app`). So `introspect` (`secretdna.ReadDeclaredKeys` over
 `DefaultHybridSources`) rebuilds the required set from the **union** of:
 
 - `platform/.env_example` — the documented backend wishlist baseline (59 keys);
@@ -390,7 +390,7 @@ non-prod stack, values-blind.
 
 ## Status
 
-M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/56-gene map)
+M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/61-gene map)
 + the two-tier keep-listed `diff` gate, **113 Go tests** (hermetic, `-race` clean). M28 adds the `provision`
 engine (alias-mapped per-file writes, copy-if-absent + `--force`, N=0-guarded, the `DIRECTUS_TOKEN`
 non-rearm regression pinned) + the demo-aware `check`, wired non-fatally into `/dev-up` + `/demo-up`

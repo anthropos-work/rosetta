@@ -141,6 +141,6 @@ go test ./...   # currently no tests defined
 
 ## Related Documentation
 
-* [Jobsimulation Service](./jobsimulation.md) — the only consumer
+* [Jobsimulation Service](./jobsimulation.md) — the historical (now severed) consumer; code execution moved in-process into jobsimulation (M247), so nothing calls roadrunner today
 * [Dependency Map](../architecture/dependency_map.md)
 * [Service Taxonomy](../architecture/service_taxonomy.md)

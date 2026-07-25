@@ -60,7 +60,7 @@ internal/
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
-* **Roadrunner** — code execution sandboxing (for code-task simulations)
+* **Roadrunner** — **ORPHANED, no longer called** (v2.7 M247). Code execution moved **in-process into jobsimulation** (`internal/runner/runner.go`, an in-process Judge0 client — its header reads *"formerly the standalone 'roadrunner' service"*); `ROADRUNNER_RPC_ADDR` is dead config. See [`roadrunner.md`](roadrunner.md).
 * **PostgreSQL**, **Redis** — base infra
 
 ### External integrations
@@ -76,7 +76,7 @@ internal/
 ### Redis Streams
 
 * Producer: `jobsimulation` stream (session completed, insights generated)
-* Consumer (subscribes to): `cms` (content events) and `roadrunner` (code-execution events)
+* Consumer (subscribes to): `cms` (content events). (The former `roadrunner` code-execution stream is orphaned — code execution is now in-process; see [`roadrunner.md`](roadrunner.md).)
 
 Redis Streams consumption is handled by the colony pubsub `SubscriberServer` wired up in `cmd/root.go`, not by `internal/worker/` (which is Asynq-only).
 

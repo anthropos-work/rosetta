@@ -64,9 +64,9 @@ presenter can be shown:**
 
 | Product | Player route | Player class | Manager route | Manager class |
 |---|---|---|---|---|
-| **Sim TRAINING** | `apps/web/…/sim/[slug]/result/[sessionId]/page.tsx` | renders-from-seed | `apps/web/…/enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx` (+`[userId]`) | renders-from-seed |
+| **Sim TRAINING** | `apps/web/…/sim/[slug]/result/[sessionId]/page.tsx` | renders-from-seed | **M248:** `apps/web/…/sim/[slug]/[userId]/result/[sessionId]/page.tsx` (`isManagerView`, persisted read via `JobSimulationResult(sessionId)`) — the content-story CTA re-pointed off the `activity-dashboard/ai-simulations` scoreboard, which still exists for org aggregates | renders-from-seed |
 | **Sim ASSESSMENT** | same as TRAINING | renders-from-seed | same as TRAINING | renders-from-seed |
-| **Sim HIRING** | `apps/hiring/…/sim/[slug]/result/[sessionId]/page.tsx` (`isHiring`, `HiringResult` gate) | renders-from-seed | `apps/hiring/…/@tabs/ai-simulations/[simId]/page.tsx` (+`[userId]`) | renders-from-seed |
+| **Sim HIRING** | `apps/hiring/…/sim/[slug]/result/[sessionId]/page.tsx` (`isHiring`, `HiringResult` gate) | renders-from-seed | **M248:** `apps/hiring/…/sim/[slug]/[userId]/result/[sessionId]/page.tsx` (`isManagerView`; scoreboard still exists for org aggregates) | renders-from-seed |
 | **Sim INTERVIEW** | `apps/{web,hiring}/…/sim/[slug]/result/[sessionId]` → `interviewExtractionUserReport` | **needs-demo-patch** (flag) | `…/@tabs/interviews/[simId]/[userId]/page.tsx` → `interviewExtractionManagerReport` (admin-gated) | **needs-demo-patch** (flag) |
 | **Skill-path legacy** | `apps/web/…/skill-path/[skillPathId]/page.tsx` → `getOrCreateSkillPathSession` | **runtime-computed-blank** | `apps/web/…/@tabs/skill-paths/[skillPathId]/page.tsx` (+`[userId]`) | ~~renders-from-seed~~ → **no-surface** (**REFUTED M236 iter-07**: renders literal "Coming soon") |
 | **Skill-path new (academy)** | `aiacademy.anthropos.work` chapter page (progress-driven) — see §6 | ~~renders-from-seed (progress rows)~~ → **renders-from-seed, but NOT from progress** (**REFUTED M236 iter-08**: a demo academy has no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so the seeded rows have no reader; the real surface is the FS-catalog `/courses/<slug>` page) | — (no academy manager result route today) | no-surface |
@@ -130,11 +130,15 @@ The manager scoreboards do **NOT** read the runtime tables — they read an **`a
 - **Skill-path manager** (`insightsSkillPathByMemberships`, `resolver_queries.go:977`, same gate) reads
   `app.public.local_skill_path_session.progress` (`intelligence.go:997/1142`), the exact analog.
 
-**⇒ seeding only the runtime rows renders an EMPTY manager scoreboard.** Every manager-visible result MUST co-write
-the mirror row. In prod the mirror is ~1:1 with the source (`local_jobsimulation_sessions` 19,870 ≈
-`jobsimulation.sessions` 19,873). This is the single sharpest seeding landmine for the manager vantage. (The
-mirror trap is a **different surface** from the player result page in §1's proof — the player page reads
-jobsimulation's own tables directly and needs no mirror row.)
+**⇒ seeding only the runtime rows renders an EMPTY manager SCOREBOARD.** The org aggregate views
+(`activity-dashboard`, workforce insights) MUST co-write the mirror row. In prod the mirror is ~1:1 with the
+source (`local_jobsimulation_sessions` 19,870 ≈ `jobsimulation.sessions` 19,873). This is the single sharpest
+seeding landmine for the manager **scoreboard** vantage. (The mirror trap is a **different surface** from the
+player result page in §1's proof — the player page reads jobsimulation's own tables directly and needs no mirror
+row.) **Scope note (M248):** the content-story manager **RESULT** CTA no longer touches the mirror — the
+non-interview family reads `jobsimulation.sessions` directly by `sessionId` on the `/sim/[slug]/[userId]/result/[sessionId]`
+route (`isManagerView`, persisted read). The mirror is still required for the org **scoreboard/aggregate** surfaces
+described here.
 
 ### INTERVIEW is flag-gated → needs-demo-patch
 
@@ -151,8 +155,9 @@ bootstrap, or a sha-pinned `demopatch` forcing `isFeatureEnabled` true). This do
 `skill-path/[skillPathId]/page.tsx` → `getOrCreateSkillPathSession` (`packages/graphql/src/query/skill-path.ts:404`)
 is a **get-OR-create** that federates to the skillpath runtime; on read with no session it **auto-materializes a
 fresh `pending` session at progress 0**. So an unseeded skill path renders *blank*, not 404. To show a meaningful
-player result, seed the persisted skillpath runtime rows (`skillpath.skill_path_session` / `chapter_session` /
-`step_session`) — progression state IS persisted; the read path just fabricates a blank one if absent.
+player result, seed the persisted skill-path runtime rows — now in `app`'s **`public.skill_path_sessions`** /
+`public.chapter_sessions` / `public.step_sessions` (the standalone `skillpath` schema is a legacy husk since the
+skillpath→app merge) — progression state IS persisted; the read path just fabricates a blank one if absent.
 
 ### Structural correction — there are NO Next.js intercepting routes
 
@@ -165,8 +170,8 @@ milestone.)
 
 | Product | Manager result route? | Read-model | Notes |
 |---|---|---|---|
-| Sim TRAINING / ASSESSMENT | ✅ yes | `local_jobsimulation_sessions` mirror | `apps/web` activity-dashboard → ai-simulations tab |
-| Sim HIRING | ✅ yes | same mirror | `apps/hiring` only (a genuine hiring org **ejects** from `apps/web` → `apps/hiring`, `UserStatusContext.tsx:168-169`, M224) |
+| Sim TRAINING / ASSESSMENT | ✅ yes | per-session result: `jobsimulation.sessions` by `sessionId` (M248); scoreboard aggregates: `local_jobsimulation_sessions` mirror | **M248:** content-story CTA → `apps/web` `/sim/[slug]/[userId]/result/[sessionId]` (persisted read). The `activity-dashboard` → ai-simulations scoreboard still exists (org aggregates, mirror-backed) |
+| Sim HIRING | ✅ yes | same (per-session jobsim by `sessionId`; mirror for scoreboard aggregates) | **M248:** content-story CTA → `apps/hiring` `/sim/[slug]/[userId]/result/[sessionId]`. `apps/hiring` only (a genuine hiring org **ejects** from `apps/web` → `apps/hiring`, `UserStatusContext.tsx:168-169`, M224) |
 | Sim INTERVIEW | ✅ yes (flag+admin-gated) | `interview_extraction_results.manager_report` | admin gate `OrgActionAssignmentsWrite`; PostHog `flag_interview_manager_report` |
 | Skill-path legacy | ❌ **no** (~~✅ yes, `apps/web` only~~ — **REFUTED M236 iter-07**) | — | The resolver exists; the **page does not render it** — `InsightsBySkillPathStudentSimulationsContainer` shows "Coming soon", table commented out, `userData` null. Not landable. |
 | Skill-path new (academy) | ❌ no manager result route today | — | academy has no manager review surface (workforce academy insights TBD) |
@@ -376,7 +381,7 @@ holds: content-product result pages read PERSISTED rows a clone can seed. Per-pr
 | Sim TRAINING / ASSESSMENT | **GO** — seed the result fan-out + the manager mirror | M232 seeder; M234 both CTAs |
 | Sim HIRING | **GO** — same, in `apps/hiring` (the M224 two-app pattern) | M232 + M234 (hiring base) |
 | Sim INTERVIEW | **GO w/ demo-patch** — seed `interview_extraction_results`; **enable `flag_interview_{player,manager}_report`** in the demo | M232 (flag-enablement, D3) |
-| Skill-path legacy | **GO, PLAYER-ONLY** — seed skillpath runtime rows (player). ~~+ `local_skill_path_session` mirror (manager)~~ **REFUTED at M236 iter-07: there is no working manager surface** (below) | M232 + M234 (player CTA only) |
+| Skill-path legacy | **GO, PLAYER-ONLY** — seed the skill-path runtime rows (player), now in `app`'s `public.skill_path_sessions`. ~~+ `local_skill_path_session` mirror (manager)~~ **REFUTED at M236 iter-07: there is no working manager surface** (below) | M232 + M234 (player CTA only) |
 | Skill-path new (academy) | **GO (presence + progress)** — ~~seed `academy_chapter_progress`~~ **REFUTED at M236 iter-08: `academy-seed` is moot in a demo** (below); the CTA is a real `/courses/<slug>` link into the FS catalog | M234 (player CTA only; no manager surface) |
 | **AI-labs** | **OUT (presence-only)** — no seedable result surface; list as activity/spend line | M234 (presence-only section, D4) |
 
@@ -419,7 +424,9 @@ a GraphQL schema change, both out of scope.
 > remains correct for a *dev/prod-wired* stack — it is the **demo** configuration that makes it inert.
 
 **The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the manager MIRROR row**
-(`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager scoreboard is blank; (2) **source only
+(`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager **scoreboard/aggregate** views are blank —
+note (M248) the per-session manager RESULT CTA reads `jobsimulation.sessions` by `sessionId` and does **not** need the
+mirror; the mirror is for the org scoreboards; (2) **source only
 public-anchored sessions** (`sim_id` ∈ public-published) or the demo can't resolve the sim; (3) **enable the
 interview PostHog flags** or the interview report hides. Plus the standing rules: owner-is-player-vantage (never a
 manager seat), all G14-valid enums, `OrgFeatureInsights` grant for the manager scoreboards.

@@ -158,7 +158,7 @@ pip3 install -r requirements.txt --upgrade
 Go modules update automatically on build, but you can force an update:
 
 ```bash
-cd stack-dev/backend
+cd stack-dev/app
 go mod download
 go mod tidy
 ```

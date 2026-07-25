@@ -8,7 +8,7 @@
 ## Role & Responsibility
 
 `platform` is **not a deployed service**. It is the dev-environment control plane: a
-**Makefile + Docker Compose** orchestrator that clones the ~13 sibling repos and
+**Makefile + Docker Compose** orchestrator that clones the 10 sibling repos and
 builds/runs the microservices locally **from source**. It is the one repo you `cd` into to
 operate everything else.
 
@@ -20,7 +20,7 @@ operate everything else.
 
 ```
 Makefile            Single entry point for all dev ops (parses repos.yml with awk — no yq/python)
-docker-compose.yml  12 app service definitions; `include: [common.yml]`
+docker-compose.yml  11 app service definitions; `include: [common.yml]`
 common.yml          Base infra: postgresql + redis (always-on, no profile); declares app-network
 repos.yml           Manifest of repos `make init` clones (name / type / migrations / schema)
 postgresql/         Custom Postgres image (Dockerfile: compiles pgvector v0.4.4 onto bitnamilegacy/postgresql:15)
@@ -41,7 +41,7 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make up-frontend` | Start `next-web-app` together with the graphql backend stack |
 | `make down` / `make ps` | Stop all services / list containers |
 | `make logs [S=svc]` | Tail compose logs, optionally one service |
-| `make migrate [S=svc]` | `atlas migrate apply --env local` across the 5 migration repos, or a single repo via `S=` |
+| `make migrate [S=svc]` | `atlas migrate apply --env local` across the 3 migration repos (`app`, `cms`, `jobsimulation`), or a single repo via `S=` |
 | `make dev S=svc` | Stop a service container and print native-run instructions (`cd ../svc && go run .`) |
 | `make build-frontend` | `pnpm install && pnpm build` in `../next-web-app` |
 | `make reset-db` | **Confirm-gated** wipe of `data/postgresql/`, restart Postgres, re-migrate (waits on `pg_isready`) |
@@ -101,7 +101,7 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface) |
+| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface **and** the merged skillpath `SkillPathSessionService` RPC, since "skillpath-in-app" M502→M507) |
 | sentinel | 8087 |
 | cms | 8090, 8091 (RPC) |
 | messenger | 8200, 8201 (RPC) |

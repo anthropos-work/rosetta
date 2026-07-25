@@ -104,6 +104,11 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 > the *shared Clerk identity* (sessions for a shared login leaked via shared auth) — **not** a shared skillpath
 > DB (skillpath data is per-stack Postgres). Clerkenstein isolates identity per stack, so this is already
 > neutralized; the seeder just declares each surface's isolation class correctly.
+>
+> **Schema re-point (skillpath→app).** Since the skillpath→app merge ("skillpath-in-app", M502→M507), skill-path
+> session state lives in `app`'s **`public.skill_path_sessions`** — there is no standalone `skillpath` schema any
+> more. The session seeder writes there (the `skill_path_sessions` table in the FK-safe truncation chain below is
+> the `public`-schema table).
 
 The guard is **three layers** (`rosetta-extensions/stack-seeding/isolation/`):
 

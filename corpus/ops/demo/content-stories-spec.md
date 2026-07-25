@@ -106,7 +106,7 @@ stay simulation-shaped and untouched. An empty product section is never fabricat
 
 | product id | app_base | section icon | player link? | manager surface |
 |---|---|---|---|---|
-| `simulation` | `web` | `flask` | yes — `/sim/<slug>/result/<sessionId>` | `ai-simulations` (or `interviews` for an interview sim_type) |
+| `simulation` | `web` | `flask` | yes — `/sim/<slug>/result/<sessionId>` | **M248:** `/sim/<slug>/<userId>/result/<sessionId>` (`isManagerView`, non-interview family) — re-pointed off the `ai-simulations` scoreboard; **interview** sim_type keeps its dedicated `interviews`/activity-dashboard route (D3) |
 | `skill-path-legacy` | `web` | `diagram-project` | yes (M234) | **— none** (the platform surface is unimplemented — M236 iter-07) |
 | `skill-path-new` (academy) | `academy` | `graduation-cap` | yes — `/courses/<slug>` (**M236 iter-08**) | — (no academy manager route, M231) |
 | `ai-labs` | `web` | `vials` | **no — presence-only** (M231 §5) | — |
@@ -290,7 +290,7 @@ bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** 
   `ContentStoryNonSimSeeder` + `buildNonSimProducts` appended by `BuildContentProducts`), NOT added to the
   simulation fixture (whose validator + seeder are simulation-shaped). Each has its OWN self-contained
   flat-index owner pairing (single-sourced with the seeder, exactly as the simulation projection). **Skill-path**
-  — real progress: a seeded `skillpath.skill_path_sessions` row + the `local_skill_path_sessions` mirror
+  — real progress: a seeded `public.skill_path_sessions` row (in `app`, since the skillpath→app merge) + the `local_skill_path_sessions` mirror
   (owned by a `content-player` seat, pinned to a REAL public `skill_path_id`), the `/skill-path/<id>` route —
   **player-link-only**: M236 iter-07 proved the per-user *manager* drill-down is UNIMPLEMENTED in next-web
   ("Coming soon", results table commented out, `userData` hardcoded null), so `has_manager_view` is FALSE and

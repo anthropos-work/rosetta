@@ -77,6 +77,7 @@ The **single source of truth for RPC contracts**. Two layers:
 12 Connect-RPC services are defined: `UsersService`, `OrganizationsService`,
 `CMSService`, `JobSimulationService`, `SkillerService` (served by app since the skiller merge),
 `SkillPathSessionService` (served by app since the skillpath merge, M502→M507),
+`LabSessionService` (served by app — the AI Labs domain, see `../services/ai-labs.md`),
 `AuthorizationService` (Sentinel), `MessengerService`, `RoadRunnerService`,
 `RealtimeService`, `ChronosService` (archived service, contract still present). Plus
 `events`/`flags`/`ai` message-only protos used over Redis Streams pub/sub.

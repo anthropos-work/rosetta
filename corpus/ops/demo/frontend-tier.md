@@ -178,9 +178,11 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 >   **own offset** next-web (`:3000+offset`, which HAS a `/login` route) — so the unauthenticated/non-admin
 >   fallbacks land somewhere **live**, never the dead un-offset `:3000` (`ERR_TOO_MANY_REDIRECTS`).
 >
-> > **No source patch, no mock bundle.** studio-desk needs **no demopatch** — the auth path is the unmodified
+> > **The auth path needs no demopatch, no mock bundle.** studio-desk's **auth** is the unmodified
 > > production code, driven entirely by the **runtime** `CLERK_*` env + the baked pk + the roster-aware fake
-> > BAPI. (Clerkenstein itself — the fake FAPI/BAPI in `rosetta-extensions` — is tooling-owned and freely
+> > BAPI. (Scoped to auth: studio-desk **is** a first-class demopatch target now — the **5** M249+M253 source
+> > patches for "Back to Cockpit" / prod-eject / first-paint; see the bake table below + [`demopatch-spec.md`](demopatch-spec.md).)
+> > (Clerkenstein itself — the fake FAPI/BAPI in `rosetta-extensions` — is tooling-owned and freely
 > > edited; the platform repos are untouched.) A `demo-N-studio-desk` image with a **stale pk/offset** is
 > > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
 > > bake; the roster-aware BAPI re-seeds on every re-up.
@@ -291,7 +293,7 @@ used to leave their images behind, so a box could slowly fill until a build hit 
 | App | URLs | Clerk pk | Context trim |
 |-----|------|----------|--------------|
 | **next-web** | `--build-arg NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `_BACKEND_API_URL` / `_HOSTING_URL` (offset) — ARGs the Dockerfile already declares | **no pk ARG exists** → dropped into a **gitignored `apps/web/.env.local`** in the build context, read by `next build`, removed by a trap after | the repo ships **no** `.dockerignore`, so a **tooling-owned** one (`rosetta-extensions/demo-stack/frontend/next-web.dockerignore`) is applied **transiently** (never clobbers a repo one; trap-removed) to trim the 2.8 GB context (2.5 GB `node_modules`) to <100 MB |
-| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` + `VITE_WEB_APP_URL` (offset) — the canonical ARGs; auth is via Clerkenstein at **runtime**, not a baked mock. **v2.7 M249: THREE source patches now bake in too** (the FIRST-EVER studio-desk source patches — a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint): a fail-closed **"Back to Cockpit"** item + the **prod-eject fix** (logo / back / logout stop ejecting to `app.anthropos.work` → this stack's app). `VITE_COCKPIT_URL` (7700+OFFSET) rides the **`.env.production.local` overlay** — it is NOT a declared Dockerfile ARG, so it cannot be a `--build-arg`. See [`demopatch-spec.md` §8](demopatch-spec.md). | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → the minted pk passed straight as a build-arg (so the SPA derives the same fake-FAPI host the backend talks to) | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched (the `.env.production.local` overlay gets a transient `!`-re-include past its `.env*` exclusion) |
+| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` + `VITE_WEB_APP_URL` (offset) — the canonical ARGs; auth is via Clerkenstein at **runtime**, not a baked mock. **v2.7 M249+M253: FIVE source patches now bake in too** (the FIRST-EVER studio-desk source patches — a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint): the **M249 trio** — a fail-closed **"Back to Cockpit"** item + the **prod-eject fix** (logo / back / logout stop ejecting to `app.anthropos.work` → this stack's app) — plus the **M253 pair** of first-paint `main.ts` patches. `VITE_COCKPIT_URL` (7700+OFFSET) rides the **`.env.production.local` overlay** — it is NOT a declared Dockerfile ARG, so it cannot be a `--build-arg`. See [`demopatch-spec.md` §8](demopatch-spec.md). | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → the minted pk passed straight as a build-arg (so the SPA derives the same fake-FAPI host the backend talks to) | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched (the `.env.production.local` overlay gets a transient `!`-re-include past its `.env*` exclusion) |
 
 The split — next-web's pk via the gitignored `.env.local` (its Dockerfile declares no pk ARG) vs studio-desk's
 pk straight as a build-arg (its Dockerfile *does*) — is dictated by the real, unmodified Dockerfiles (#M19-D3).
@@ -485,8 +487,9 @@ returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter
 coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
 [`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
 
-> **Known limitation — the three native-run academy patches share one clone (concurrent-demo teardown).** All three
-> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`)
+> **Known limitation — the five native-run academy patches share one clone (concurrent-demo teardown).** All five
+> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`,
+> `academy-fs-published-chapter-body`, `ant-academy-back-to-cockpit`)
 > are applied to the **shared** `stack-demo/ant-academy` working tree — its path is `N`-independent (only the port +
 > pidfile are per-`demo-N`). So `ant-academy.sh N --stop` reverts the shared source files unconditionally: tearing
 > down `demo-1` while `demo-2`'s native `next dev` is still live reverts the patched files out from under `demo-2`,
