@@ -16,7 +16,6 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`cms.md`](cms.md) | CMS | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline |
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content |
-| [`skillpath.md`](skillpath.md) | Skillpath | The **runtime/session engine** tracking per-user progression *state*. The skill-path content lives in CMS |
 | [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
 | [`roadrunner.md`](roadrunner.md) | Roadrunner | Code-execution proxy to the Judge0 sandbox. **⚠️ ORPHANED** — execution moved in-process to `jobsimulation/internal/runner/`; nothing calls it |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
@@ -28,7 +27,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 4 subgraphs (app, jobsimulation, cms, skillpath) |
+| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 3 subgraphs (backend/app, jobsimulation, cms) |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the cms container** as `cms/studio/` |
@@ -38,7 +37,11 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Subject | One-liner |
 |---|---|---|
-| [`ai-readiness.md`](ai-readiness.md) | AI Readiness | Org-level AI-capability diagnostics inside `app` — the cycle/funnel model, the gate-by-surface rules, and the demo seeder contract |
+| [`ai-readiness.md`](ai-readiness.md) | AI Readiness | Org-level AI-capability diagnostics inside `app` (the `internal/aireadiness/` package) — the cycle/funnel model, the gate-by-surface rules, and the demo seeder contract |
+| [`coursebuilder.md`](coursebuilder.md) | Course Builder | `app` domain — the in-process author→benchmark→refine AI pipeline that generates Academy chapters/skill-paths (Bedrock Opus author + Sonnet grader, ≥90 gate). HTTP+SSE, no subgraph |
+| [`ai-labs.md`](ai-labs.md) | AI Labs + Credits | `app` domains — the hosted AI coding-lab product (catalog + sandbox sessions via the `labs-api` control plane) **and** the credit ledger ("shared purse", live for Course Builder) + Stripe payments/subscriptions |
+| [`askengine.md`](askengine.md) | Ask Engine / Talk-to-Data | `app` domain — the NL analytics copilot: an agentic Bedrock LLM writes SQL, runs it in an org-scoped read-only sandbox, explains results. HTTP+SSE, no subgraph |
+| [`academy-backend.md`](academy-backend.md) | Academy Backend | `app` domain — the server-authoritative owner of the Academy catalog + per-user study state, served to the [ant-academy frontend](ant-academy.md) over the `app` subgraph (distinct from the frontend doc) |
 | [`hiring.md`](hiring.md) | Hiring | The recruiting **org-type** (`is_hiring`) + the candidate-comparison read-model. Authored from a live render-probe, not inferred |
 | [`clerk-integration.md`](clerk-integration.md) | Clerk | The cross-cutting single source of truth for how the platform uses Clerk (vs. per-service mentions elsewhere) |
 | [`clerkenstein.md`](clerkenstein.md) | Clerkenstein | The **Clerk mock** that makes demo stacks Clerk-free — a `rosetta-extensions` section, consumed per-stack at a pinned tag |
@@ -50,6 +53,7 @@ These describe services that no longer run. They stay because many docs still li
 | Doc | Fate |
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
+| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph (→ 3 subgraphs). Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
 | [`chronos.md`](chronos.md) | **Archived** — removed from compose + `repos.yml` (platform `045857c`). Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 

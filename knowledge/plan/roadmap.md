@@ -5,6 +5,28 @@ builder skills). This file holds the **active major** only; the retired **v1.x**
 SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + the unscheduled backlog live in
 [`roadmap-vision.md`](roadmap-vision.md). The live source of truth for *current/next* is [`state.md`](state.md).
 
+> **Designed 2026-07-23** via `/developer-kit:design-roadmap`. **v2.7 "july jitter"** is the **re-ground +
+> fidelity + field-hardening release** (the v1.3b / v2.1 / v2.3 / v2.6 lineage), designed from
+> `.agentspace/annotation.md` field notes + 3 research workflows. Its thesis: *realign the demo + corpus to the
+> platform's TRUE current state, and fix what drifted.* **The headline finding:** the v2.1 skiller→app merge was
+> **one step of a "consolidate every runtime engine into `app`" program** — `app` is **~386 commits** ahead of the
+> pin, **skillpath is now FULLY decommissioned into `app`** (M501–M507 → **3 subgraphs**, sessions →
+> `public.skill_path_sessions`), **jobsimulation is mid-merge** (the next shoe), and `app` grew undocumented
+> domains (coursebuilder · AI Labs + credits/stripe · askengine · a server-owned academy). The corpus asserts
+> skillpath as live Tier-1 in ~30 files, and **rext `stack-seeding` writes to `skillpath.skill_path_sessions`** →
+> breaks the instant a stack-update crosses M507 (the v2.1 class, repeating). Plus six field defects: the
+> content-stories **manager link** jumps to the scoreboard not the per-session manager result view; **no cross-app
+> "← Back to Cockpit"**; the **studio logo/back/logout eject to production**; **AI-readiness** shows invented
+> skills/sims (not the platform's 31 defaults + the 2 named sims), empty evaluated-skills, no skill distribution;
+> the **studio sim-builders 500** (AI key never reaches the demo container — a wiring gap, not a DNA gap); and
+> **studio blanks for seconds** (the shell is render-blocked behind clerk.load + i18n + a data fetch).
+> **9 milestones M246 → M254**, barrier → **7-lane worktree fan-out** → iterative prove-on-billion; tag **`v2.7`**;
+> branch `release/02.70-july-jitter`. **Tooling + docs only — zero platform-repo edits** (a platform-source wall
+> routes to a sha-pinned `demopatch`, never a repo edit). 4 binding user decisions (2026-07-23): full re-ground
+> bump + new fact sheets · M250 AI-readiness `iterative` · `DEF-M215-03(a)/F11` DROPPED · codename "july jitter".
+> Consumes the reserved v2.6→v2.7 **"test-health"** carry as `M251`. Continues the v2.x `M2xx` scheme at **M246**
+> (the stray `(M245)` docs commit on `main` is skipped).
+>
 > **Designed 2026-07-19** via `/developer-kit:design-roadmap`. **v2.5 "the playbill"** is the **content-vantage
 > release** — two threads on the same mature demo/cockpit machinery, shipped together. **THREAD A** finally fills the
 > **empty ant-academy** grid: it renders 0 cards on a demo not because of a platform bug but because the catalog is
@@ -113,6 +135,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 | **v2.5** | **the playbill** | The **content-vantage release** — TWO threads on the same demo/cockpit machinery. **A:** fill the empty **ant-academy** grid (DB-authoritative catalog; production-faithful demo-fill; corrects the false `ant-academy.md`). **B:** a 2nd **"Content stories"** cockpit tab — sections per content product (Simulation · Skill-path legacy · Skill-path new · AI-labs), each a list of **played sessions** with **as-player / as-manager** login-and-land actions; sessions **cloned from anonymized real prod sessions, non-manager-played, re-tenanted, source-pinned by prod session-id** | M229 → M230 → **M231 (HARD go/no-go)** → M232 → M233 → M234 → M235 → M236 | ✅ **SHIPPED 2026-07-20 (tag `v2.5`)** (branch `release/02.50-the-playbill`, designed 2026-07-19; all 8 milestones M229–M236 closed + merged). Spike-first; one combined release. **29/29** landable (session × action) pairs live on `billion` both vantages + academy grid filled (65 cards); real-customer-session sourcing accepted (data-controller call); demos **VPN/tailnet-scoped**; **amends `safety.md` Part 3** (anonymized-real, VPN-bounded). Tooling + docs only, **zero platform-repo edits**. ⚠️ 29/29 is unit-proven, not live-re-proven — live re-prove is v2.6/M237 |
 | **v2.6** | **sound check** | The **reliability / field-hardening release** — *make everything that's built actually get built + provisioned.* Triggered by live demo defects ("still not all gets built and provisioned as expected"). Barrier → parallel fixes → prove-on-billion: fix clone-freshness + re-triage the ambiguous UI defects on a fresh build, then fix academy reliability · enterprise surfaces (talk-to-data live via real AWS Bedrock creds) · content-stories fidelity (media ported) · language toggle · cockpit UX · the assign-WRITE Playthrough — then re-prove the whole feature (v2.5's headline **and** every v2.6 fix) live on `billion`, cold reset-to-seed | M237 (HARD go/no-go) → { M238 ∥ M239 ∥ M240 → M241 → M242 ∥ M243 } → M244 | ✅ **SHIPPED 2026-07-23 (tag `v2.6`)** (branch `release/02.60-sound-check`, designed 2026-07-20; 8 milestones M237 → M244 — **M237 barrier + M238 academy reliability + M239 enterprise surfaces + M240 content-stories fidelity + M241 content-stories language + M242 cockpit UX + M243 assign-WRITE Playthrough** (M237–M239 2026-07-21, M240–M243 2026-07-22) + **M244 prove-on-billion (gate MET 8/8 live on `billion`, cold reset-to-seed, closed-on-gate, 0 platform edits, 2026-07-23)** — all 8 CLOSED; realizes the reserved M237/M238; tooling + docs only, **zero platform-repo edits**. release→main merge + `v2.6` tag = close Phase 11) |
 
+| **v2.7** | **july jitter** | The **re-ground + fidelity + field-hardening release** — realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into `app` → **3 subgraphs**; jobsim mid-merge; net-new `app` domains; the rext seeder about to break on `skillpath.*`) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane worktree fan-out → prove-on-billion | M246 → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; 9 milestones M246→M254 — M246 barrier [`section`, HARD go/no-go] · M247 corpus-reground · M248 content-mgr-link · M249 cross-app-nav · M250 ai-readiness [`iterative`] · M251 test-health · M252 studio-builder-enable · M253 studio-first-paint [`iterative`] · M254 prove-on-billion [`iterative` closer, a–h live on `billion`]; tooling + docs only, **0 platform-repo edits**; close-release landed all 5 terminal follow-ups → **zero carry-forward**) |
+
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
 
@@ -124,6 +148,428 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Done — v2.7 "july jitter" (SHIPPED 2026-07-25, tag v2.7)
+
+**Theme.** *Realign the demo + corpus to the platform's TRUE current state, and fix what drifted.* A re-ground +
+fidelity + field-hardening release on the mature demo/cockpit/content-stories/seeding machinery. The platform has
+consolidated its runtime engines into `app` (skiller → v2.1; **skillpath → done**, M501–M507; **jobsim → mid-merge**)
+and grown new domains, while the corpus + rext tooling still describe the pre-consolidation topology and the seeder
+is one `stack-update` away from breaking on `skillpath.skill_path_sessions`. On top of the re-ground, six live field
+defects (below) degrade the demo. Fix the drift, fix the defects, re-prove live — **zero platform-repo edits.**
+
+**User decisions baked in (2026-07-23):**
+1. **Scope + codename** — expand beyond the pre-reserved "test-health" carry to a full re-ground + fidelity release;
+   codename **"july jitter"** (the July stability pass that shakes the jitter out of the field build — the user's
+   explicit choice; departs the stagecraft lineage).
+2. **Re-ground depth → FULL** — bump the demo clone pins to current `origin/main`, prove `/demo-up` green on the
+   consolidated platform, AND author the 4 net-new fact sheets (per "update repo to the new status quo").
+3. **M250 AI-readiness → `iterative`** — the 8→31 arithmetic re-derivation across ~200 members + a net-new
+   directus-write set-dress + live-render believability make the path exploratory.
+4. **`DEF-M215-03(a)/F11` → DROPPED** — tripped its own drop-if-survives-another-release condition (v2.6 shipped
+   without it).
+
+**Hard constraint (carried, unchanged):** **zero platform-repo edits** — a platform-source wall routes to a
+sha-pinned `demopatch` (patches the demo's own ephemeral clone, reverts after) or **escalates**; all stack-operating
+tooling lives in `rosetta-extensions` (authored + tagged, consumed per-stack at a pinned tag; **rung-zero: tags on
+origin before a stack consumes them**).
+
+**Shape — 9 milestones, barrier → 7-lane worktree fan-out → prove-on-billion:**
+```
+M246 re-sync & re-point (HARD go/no-go barrier)
+  ├─▶ M247 corpus re-ground ────────┐
+  ├─▶ M248 content-mgr-link ────────┤
+  ├─▶ M249 cross-app-nav ───────────┼──▶ M253 studio-first-paint (extends M249's studio patch ladder)
+  ├─▶ M250 ai-readiness (iterative) ┤
+  ├─▶ M251 test-health ─────────────┤
+  ├─▶ M252 studio-builder-enable ───┤
+  └────────────────────────────────────▶ M254 prove-on-billion (iterative closer)
+```
+M247/M248/M249/M250/M251/M252 fan out off the M246 barrier; **M253 is serial after M249** (both extend the
+`build_frontend_studio_desk` studio patch ladder M249 creates). M254 is terminal — depends on all fixes.
+
+#### M246 — re-sync & re-point  (`section`, HARD go/no-go barrier)
+**Status:** `done` (completed 2026-07-23)
+**Goal:** The demo builds + comes up GREEN from the CONSOLIDATED platform (current `origin/main`, 3 subgraphs,
+skillpath-in-app), and the rext seeder writes to `public.skill_path_sessions` — so every downstream fix is scoped
+against reality and the imminent seeder break is defused. Emits a confirmed-drift ledger for M247.
+**Shape:** `section` — HARD go/no-go (the M237/M222 clean-stage pattern). Any fidelity fix on stale pins is untrustworthy.
+**Scope — In:**
+- Re-point rext `stack-seeding` writes `skillpath.skill_path_sessions → public.skill_path_sessions` in **live** seeder
+  code + tests (`cmd/stackseed/main.go:97`, `seeders/hero_activity.go:180`, `skillpath_sessions.go`, `content_nonsim.go`,
+  `dna/data-dna.json`, + the in-package test assertions). Leave surface **names** (`skillpath-sessions`) and the mirror
+  `public.local_skill_path_sessions` untouched.
+- Author `stack-demo/clones.pin.json` + wire the `DEMO_ADVANCE_CLONES=pinned` advance path; bump the **demo** clone
+  pins to current `origin/main` (jobsimulation stays standalone — still live).
+- Fix the stale `stack-injection/gen_injected_override.py:16` skillpath comment (3 subgraphs).
+- Prove ONE cold `/demo-up` GREEN on the consolidated platform; transcribe observed drift into the M247 ledger.
+**Out:** the corpus doc reconciliation (M247); any fidelity fix; any platform edit; **touching the dev native worktrees**.
+**Depends on:** none (opens the release).  **Parallel with:** none (gates everything).  **Complexity:** medium.
+**Parallel lanes (intra):** 4 concurrent prep lanes (seeder-repoint-core ∥ driver+DNA ∥ pin-mechanism ∥
+injection-comment+ledger-scaffold — all disjoint files), then the **single serial `/demo-up` prove** (~1.3–1.5×;
+the gate cannot be sharded). Seeder split is core-vs-driver only (`activity_seeders_test.go` couples hero_activity +
+skillpath_sessions).
+**KB deps:** `corpus/ops/update_guide.md`, `corpus/ops/rosetta_demo.md`, `corpus/ops/demo/demopatch-spec.md`, `corpus/services/skiller.md` (the redirect pattern).
+**Delivers →** `corpus/ops/update_guide.md` (the consolidation re-sync note) + a confirmed-drift ledger artifact for M247.
+**Open questions:** dual-schema-tolerant during the transition, or hard-cut to `public` + bump pins in the same milestone (the deprecation alias suggests a clean window)? does the 386-commit bump surface a migration/subgraph break that re-scopes downstream?
+**Closure (2026-07-23):** GO/NO-GO **PASS**. Both open questions answered: **hard-cut to `public`** (D-1 — the demo builds from a single pinned clone set; version skew handled by the per-stack rext tag pin, not seeder branching), and the ~386-commit `app` bump surfaced **NO** migration/subgraph break (D-4 → downstream milestones scope safely against this topology). Delivered: the seeder re-point (`skillpath.*`→`public.skill_path_sessions`, 8 live sites + DNA + ~16 test assertions), a durable canonical `clones.pin.json` (12 repos @ current origin/main; skillpath excluded) + copy-if-absent seam, the de-skillpathed LIVE bring-up path (§3 Fate-1 expansion, D-3), and the `update_guide.md` consolidation re-sync note. **Proven:** one cold `/demo-up` (LOCAL demo-2; billion untouched) came up GREEN — **561 rows in `public.skill_path_sessions`**, 3 subgraphs + 0 skillpath, health 200 + casbin 1250, all probes pass. 3 autoverify warnings all non-firing (D-07 AI-readiness perf-patch anchor→M250 · D-08 fake-FAPI http-vs-TLS probe artifact→M251/M254 · D-09 academy peripheral). Emitted the **9-row confirmed-drift ledger** (D-01..D-09) → M247's triage. Close review clean (0 must-fix); deferral audit GREEN; tests green (Go stack-seeding + test_tooling 168/168 + frontend_build 94/94 + stack-injection 264/9-skipped); flake 5/5. Code-of-record: rext tag `july-jitter-m246-harden` @ `9b29f3a` (on origin). **0 platform-repo edits.**
+
+#### M247 — corpus re-ground  (`section`, doc-only)
+**Status:** `done` (completed 2026-07-23)
+**Goal:** The corpus describes the CONSOLIDATED platform: skillpath is merged-into-app (not a live service), the
+gateway is **3 subgraphs**, and the new `app` domains have fact sheets.
+**Shape:** `section` — internal two-phase: **core-lanes (concurrent)** + **reconcile-tail**.
+**Scope — In:**
+- Convert `corpus/services/skillpath.md` → a merged-into-app REDIRECT (mirror `skiller.md`); move it to the README
+  archived/merged table.
+- Re-point every "4 subgraphs" → "3 (backend/app, jobsimulation, cms)" + reclassify skillpath as not-a-live-service
+  across the ~30 echo files (`architecture_overview.md`, `service_taxonomy.md`, `graphql-wundergraph.md`, `backend.md`,
+  `cms.md`, `dependency_map.md`, `external_services.md`, ops docs, `CLAUDE.md`); note **jobsim-in-app coming**.
+- **Author 4 net-new fact sheets:** `coursebuilder.md`, `ai-labs.md` (AI Labs + credits / v6.0 shared purse),
+  `askengine.md` (Talk-to-Data), `academy-backend.md` (the app-owned academy domain); refresh `ai-readiness.md` for the
+  aireadiness-package refactor. Resolve roadrunner ORPHANED→ARCHIVED if dead.
+**Out:** any rext/code change; the seeder re-point (M246).
+**Depends on:** M246 (the drift ledger).  **Parallel with:** M248/M249/M250/M251/M252 (M247-core lane).  **Complexity:** medium.
+**Parallel lanes (intra):** **~4–5× — the biggest intra-milestone win.** 8 concurrent doc lanes (4 fact-sheets ∥
+skillpath-redirect ∥ ai-readiness-refresh ∥ arch-sweep ∥ ops-sweep) + a small serial README/CLAUDE reconcile +
+grep-verify tail. **Split:** **M247-core** (`CLAUDE.md` + README indices + `architecture/**` + `tools/**` — disjoint
+from every other milestone) runs as a true concurrent fan-out lane; **M247-reconcile** (the `ops/demo` spec docs the
+code milestones also touch) folds into the **serial integration tail** after they land their deltas.
+**KB deps:** `corpus/services/README.md`, `corpus/services/skiller.md`, `corpus/services/backend.md`, `corpus/services/TEMPLATE.md`.
+**Delivers →** the above corpus docs (4 new fact sheets + the skillpath redirect + the 3-subgraph reconciliation).
+**Open questions:** `coursebuilder` + `credits` sources are ABSENT from the stale clone → those 2 fact-sheet lanes need a fresh `app` pull (M246's bump makes them present). The reclassification is semantically heavier than a digit swap (skillpath is described as a runtime engine in ~37 files).
+**Closure (2026-07-23):** Delivered all 8 sections. `skillpath.md` → a merged-into-app **redirect** (mirrors
+`skiller.md`) + moved to the README **archived/merged** table; the **4→3 subgraph** reclassification across ~30 echo
+files (each mention re-read in context, not blind-sed — grep-verified 0 residual "4 subgraphs" except the intentional
+historical note in `backend.md`, 0 stale live-skillpath-as-service claims); **4 net-new app-domain fact sheets**
+(`coursebuilder` · `ai-labs` [+ the load-bearing "shared-purse UNBUILT" caveat] · `askengine` · `academy-backend`,
+all `TEMPLATE.md`-shaped, indexed in `services/README.md` + `CLAUDE.md`, count 23→27); `ai-readiness.md` refreshed for
+the **aireadiness-package refactor** (platform-facts only — the demo-seeder fidelity deltas + the D-07 re-pin are
+**M250's**, recorded D1); roadrunner resolved to the **negative** (stays ORPHANED, not archived — still in
+repos.yml+compose). **Fidelity GREEN** (0 corrections vs `stack-demo/app` @ `v1.351.1`); **0 broken links** across 30
+touched docs. **DOC-ONLY: zero rext, zero platform-repo edits, no code-of-record tag.** Deferral audit **YELLOW**
+(0 blockers) — re-fated the aged-out rext-hygiene inert set (M251 destination closed → documented-inert standing note)
++ the inherited optional `verification.md` anchor (→ release-close); ai-readiness demo fidelity → M250; ops/demo
+spec-doc reconcile → the code milestones + release-close consistency pass. Merged to `release/02.70-july-jitter`.
+
+#### M248 — content-stories manager result-link  (`section`, small)
+**Status:** `done` (completed 2026-07-23)
+**Closure:** Re-pointed the content-stories MANAGER CTA off the org activity-dashboard scoreboard. The one genuine
+unknown — does the interview manager report live on the unified `/sim` route? — was discharged as a rung-0
+verify-interview read that a **LIVE demo-2 render OVERTURNED** (D1 static → D3 live): the `/sim` interview manager
+surface is flag/data-gated and renders **"Coming Soon"** on a demo, so the CTA is **routed by `sim_type`** —
+the NON-interview family (assessment/training/hiring, 21 of 23 manager pairs) moves to
+`/sim/<slug>/<userId>/result/<sessionId>` (the real `isManagerView` result view, persisted read via
+`JobSimulationResult(sessionId)`, `dan-manager` admin-gated), while **INTERVIEW keeps** its dedicated
+`/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` route (M236). The manager grader keys on the
+**SCORE** (language-agnostic + collapse-proof) after the same live pass showed Italian renders + collapsed
+Evaluated-Skills. `presets/content-manifest.json` regenerated (honesty gate GREEN, 47/47 pairs); both
+`content-stories-spec.md` + `content-stories-routes.md` re-pointed. rext code-of-record
+`july-jitter-m248-harden @ 6e0ed2c` (176 unit + Go GREEN, mutation-verified, 3× flake-clean; on origin,
+rung-zero verified). Live: demo-2 warm sweep 43/47 (direct drives prove the `/sim` manager route renders full
+scored results); the 3 header-only-shell renders + 1 academy env failure are demo-2 warm-seed/host artifacts →
+**CARRY-M248-01 (Fate-2 → M254** gate (b)+(h) fresh-seed re-confirm). Deferral audit YELLOW (0 blockers). 0
+platform-repo edits.
+**Goal:** The content-stories manager CTA jumps to the **per-session manager result view** (`/sim/<slug>/<userId>/result/<sessionId>`), not the org activity-dashboard scoreboard.
+**Shape:** `section`.
+**Scope — In:**
+- Change the sim `ManagerResultPath` builder (`content_manifest.go:411-423`) to `/sim/<slug>/<userId>/result/<sessionId>`
+  (`owner.UserID` already on the ownerSlot; the per-`sim_type` kind branching collapses); **verify-interview first**
+  (rung-0 read: does the interview manager report surface on the `/sim` route, or stay on `/activity-dashboard/interviews`?).
+- Update the e2e grader `content-result-page.ts:459` shape + the `content-route-contract.unit.spec.ts` prefixes;
+  regenerate `presets/content-manifest.json` via `stackseed --content-export` (honesty gate); update `content-stories-spec.md` + `content-stories-routes.md`.
+**Out:** any platform/next-web edit (the `/sim` manager view already exists, reads the persisted row the seeder plants).
+**Depends on:** M246.  **Parallel with:** M247/M249/M250/M251/M252.  **Complexity:** small.
+**Parallel lanes (intra):** low (~1.2×) — verify-interview (serial rung-0) → core-projection ∥ grader ∥ docs. Small enough that a single agent is defensible.
+**KB deps:** `corpus/ops/demo/content-stories-spec.md`, `corpus/ops/demo/content-stories-routes.md`.
+**Delivers →** `corpus/ops/demo/content-stories-spec.md` + `content-stories-routes.md` (the per-session manager result route as the correct CTA).
+**Open questions:** does the interview manager report render on the unified `/sim` route (else keep interview split)? confirm `user.externalId` == the seeded `ownerSlot.UserID` at a live render.
+
+#### M249 — cross-app navigation  (`section`)
+**Status:** `done` (completed 2026-07-24)
+**Goal:** A "← Back to Cockpit" item in all 4 sub-app menus, and the studio logo/back/logout stop ejecting to production.
+**Shape:** `section`. **Owns the first-ever studio-desk source demopatch machinery.**
+**Scope — In:**
+- 3 new demopatches adding a `NEXT_PUBLIC_COCKPIT_URL`/`VITE_COCKPIT_URL` (7700+OFFSET) "Back to Cockpit" item:
+  (A) `next-web-back-to-cockpit` (shared `packages/ui/NavbarTop` → covers **both** web + hiring), (B)
+  `studio-desk-back-to-cockpit` (+ fix the `pageWrapper.js:149` logo / `userProfile.js:147,302` back+logout prod-ejects
+  — the same scaffold), (C) `ant-academy-back-to-cockpit` (`UserMenu.jsx:143`).
+- Wire the offset-URL bake + apply/revert into `up-injected.sh` (both next-web overlays + **net-new**
+  `build_frontend_studio_desk` patch machinery) + `ant-academy.sh` (self-contained). Fail-closed when the env is unset.
+- Author the additive-UI injection pattern doc + the cockpit-spec return-nav section.
+**Out:** any platform edit; the studio blank-page (M253); the builder keys (M252).
+**Depends on:** M246.  **Parallel with:** M247/M248/M250/M251/M252 (M253 is serial after it).  **Complexity:** medium.
+**Parallel lanes (intra):** high (~2×; 3–4× on authoring) — 3 disjoint patch lanes (next-web ∥ studio-desk ∥ ant-academy)
++ 1 doc lane; then the **serial `up-injected.sh` integration** (the one shared file — env bake + patch-set fingerprint +
+studio apply/revert). Lane C (ant-academy) is fully self-contained via `ant-academy.sh`.
+**KB deps:** `corpus/ops/demo/demopatch-spec.md`, `corpus/ops/demo/cockpit-spec.md`, `corpus/ops/demo/frontend-tier.md`.
+**Delivers →** `corpus/ops/demo/cockpit-spec.md` (return-nav) + `demopatch-spec.md` (additive-UI pattern + the 3 patch rows + studio-desk as the first source patch) + `frontend-tier.md`/`studio-desk.md` (the offset-URL fix).
+**Open questions:** rewrite studio's existing hardcoded back-to-prod item vs add a sibling (rewriting fixes the prod-eject too)? add a `DEMO_NO_BACK_TO_COCKPIT` opt-out knob? demo-path only (the cockpit is demo-only)?
+**Closure (2026-07-24):** DELIVERED all 3 scope items as Fate 1 — the cross-app "Back to Cockpit" family (5 new
+demopatches, inventory 16→21: `next-web-back-to-cockpit` shared `packages/ui` covers web+hiring · the **first-ever
+studio-desk SOURCE patch trio** `studio-desk-back-to-cockpit`/`-logout-url`/`-logo-url` image-baked via the net-new
+`build_frontend_studio_desk` ladder + patch-set fingerprint · `ant-academy-back-to-cockpit` native-run) + the
+up-injected.sh/ant-academy.sh wiring (offset-URL bake, fail-closed when unset) + docs (`demopatch-spec.md` §8
+additive-UI injection pattern + §4/§5 inventory, `cockpit-spec.md` return-nav, `frontend-tier.md`, `studio-desk.md`
+prod-eject). Open questions resolved: studio REWRITES the back item + ADDS a cockpit sibling (fixes the prod-eject
+too, D2/D5); NO `DEMO_NO_BACK_TO_COCKPIT` knob — the fail-closed conditional render IS the opt-out; demo-path only.
+**LIVE-verified GREEN on demo-2**: 4/4 app menus carry Back-to-Cockpit @ `:27700`; studio prod-eject fixed (`:23000`
+baked, 0 effective ejects). D5 (studio `.env.production.local` always-overwritten — a stranded-leftover hazard found
+at the live confirm) regression-fenced. rext code-of-record **`july-jitter-m249-harden` @ 8ab5192** (on origin;
+138 M249-touched tests GREEN, flake gate 5/5, +7 harden unit tests). Deferral audit GREEN (0 own deferrals; the 2
+pre-existing `test_ant_academy*` failures = Fate-2 confirmed → M254). 0 platform-repo edits. **M253 (studio-first-paint)
+is now unblocked** (extends this studio patch ladder).
+
+#### M250 — AI-readiness fidelity  (`iterative`, marquee)
+**Status:** `done` (completed 2026-07-24 — closed-incomplete on user pragmatic-close mandate)
+**Closed 2026-07-24 (iterative; 1 tok + 6 tiks, single-day serial render loop):** core gate parts **1/2/3/5 +
+the core part-4 fidelity sections LIVE-GREEN both vantages** (employee `aria-completed` + manager `dana-manager`,
+Northwind, demo-2, cold reset-to-seed, escapes=0). TOK-01 (arithmetic-spine → set-dress → distribute → render
+loop) drove: iter-02 the **8→31 arithmetic spine** (the platform's real 31 defaults = 19 core @1.0 + 12 enabling
+@0.5, denom 25.0; 3 track-keyed named sims with the `track` column; all fences re-derived — Champion 30/30,
+started hero 9 core → 11/30; the double-round divergence made a live invariant); iter-03 the **net-new Directus
+set-dress** (`AIReadinessSimSkillsSeeder` → `directus.simulations.skills` → evaluated-skills list); iter-05 the
+**net-new evidence distribution** (`ai_readiness_evidence.go` → `validation_attempt_results` 5→345 + 897
+skill-results + 787 session-backed verified `user_skill_evidences`); iter-06 the render-measure sweep; iter-07
+reconciled **3 post-M246 platform DRIFTS** in adjacent manager sections (`by-tag`="…by Team",
+`handled-for-you`="Hours saved" coverage-manifest phrasing + `interview-findings` 5 current `usageDimSpecs` KPI
+ids) — fixed + committed + data-confirmed + unit-green; their **live** ~150-page manager sweep → **M254**
+(CARRY-M250-01, Fate 2; M254 exit gate (d)+(h) re-run it on billion). **Delivers landed:**
+`corpus/services/ai-readiness.md` + `corpus/ops/seeding-spec.md` — the 31-default + track-keyed-sims +
+evaluated-skills set-dress + skill-distribution seeding contract. Decisions D1–D18 (D18 DROP `participants_filter`
+routing as moot; D17 the drift reconciliation). Deferral audit GREEN (0 repeats, 0 escape-hatch). rext
+code-of-record **`july-jitter-m250-iter07` @ 584f1fe** (on origin — rung-zero verified; seeders + dna closure
+unit-GREEN; supersedes `july-jitter-m250-ai-readiness`). **0 platform-repo edits.** carry-forward.md + Gate
+Outcome Ledger emitted; retro at `m250-ai-readiness-fidelity/retro.md`.
+**Goal:** The `/ai-readiness` page renders the platform's real fidelity: the 31 canonical mapping skills, the 2
+track-keyed named sims + interview, a non-empty evaluated-skills list, and the completed sim's verified skills
+distributed to the employee — faithful for player AND manager.
+**Shape:** `iterative` — the 8→31 arithmetic re-derivation across ~200 members + a net-new directus-write set-dress +
+live-render believability make the path exploratory.
+**Exit gate:** on a cold reset-to-seed, for a completed Northwind AI-readiness member: **(1)** step-1 "AI Skill Mapping"
+renders the platform's **31 default readiness skills** (19 core + 12 enabling), not invented ones; **(2)** step-2
+"AI Simulation" shows the correct **track-keyed named sim** (tech=`who-can-see-this-document-fc0` /
+business=`use-ai-to-turn-survey-data-into-a-leadership-email`) + interview, with a **non-empty evaluated-skills list**
+of that sim's real evaluated node-ids; **(3)** the member's profile carries the completed sim's **distributed verified
+skills** (validation fan-out + `user_skill_evidences`); **(4)** the **manager** AI-readiness view shows the same
+faithfully; **(5)** 0 invented values, 0 prod-ejects, closure green, and the frozen-vs-live arithmetic agrees at the
+31-skill repertoire.
+**Iteration protocol:** `corpus/ops/demo/coverage-protocol.md` + `corpus/ops/verification.md` (measure→triage→fix→re-render); contract `corpus/services/ai-readiness.md`.
+**Re-scope trigger:** 5 consecutive toks without a viable strategy → user-strategic-replan.
+**Out:** any platform edit (the fill routes through the existing resolvers / a directus set-dress).
+**Depends on:** M246.  **Parallel with:** M247/M248/M249/M251/M252 (live-iteration contends with M253 for the box — see strategy).  **Complexity:** large.
+**Parallel lanes (intra):** ~1.6× on iter-01 only — arithmetic-spine (config+funnel+M219 fences, one atomic edit) ∥
+directus-set-dress (net-new file) → evidence-distribution (behind both). The iterative loop after iter-01 is serial.
+**KB deps:** `corpus/services/ai-readiness.md`, `corpus/ops/seeding-spec.md`, `corpus/ops/demo/stories-spec.md`.
+**Delivers →** `corpus/services/ai-readiness.md` + `corpus/ops/seeding-spec.md` (the 31-default + 2-named-sim + track + evaluated-skills set-dress + skill-distribution seeding contract).
+**Open questions:** how to write `directus.simulations.skills` in the per-stack Directus (net-new set-dress — snapshot replay is replay-only)? the tech/business track↔audience label mapping (the platform pins the *opposite* of the annotation's framing — confirm at live render); re-derive the M219 arithmetic fences + the "Champion 30/30" beat at 31 skills.
+
+#### M251 — test-health  (`section`)  [realizes the reserved v2.6→v2.7 carry]
+**Status:** `done` (completed 2026-07-23)
+**Goal:** The standing demo-stack test debt is discharged — the mechanical failures re-pointed, the `run-unit.sh` roster fixed.
+**Shape:** `section`.
+**Scope — In:**
+- Add `content-denominator.unit.spec.ts` + `run-discrete.unit.spec.ts` to the `UNIT_SPECS` roster in
+  `stack-verify/e2e/run-unit.sh` (clears the `UnitSpecsAreExecuted` guard, currently RED / runner exit 2).
+- Re-point the ~6 mechanical `test_cockpit` academy/overlay assertions + `test_public_host` port-13001 at the
+  deliberately-changed M218/M238/M220 behaviour.
+**Out:** the **8** live/docker-gated demo-stack tests (count confirmed 8 at M251 close, host-sensitive membership — `test_purge` + the `test_ant_academy` launcher/reap set + a host-isolation/clerk-wiring assertion; not the earlier ~2 estimate) — they ride the M254 closer (need a live box).
+**Depends on:** M246.  **Parallel with:** M247/M248/M249/M250/M252.  **Complexity:** small.
+**Parallel lanes (intra):** ~1× — 2 disjoint lanes but tiny; **a single agent is the pragmatic default**.
+**KB deps:** `corpus/ops/verification.md`, `corpus/ops/demo/coverage-protocol.md`.
+**Delivers →** (optional) a `corpus/ops/verification.md` anchor indexing the demo-stack python suite + the run-unit roster.
+**Open questions:** none blocking (the composition is confirmed against disk).
+**Closure (2026-07-23):** Section close — **all sections delivered as Fate 1.** Rostered the 2 orphan unit specs
+(run-unit 7→9 specs, 172 tests, exit 0; `UnitSpecsAreExecuted` GREEN) and re-pointed the 7 mechanical assertions
+(6 `test_cockpit` overlay/academy + `test_public_host` port-13001) at the **deliberately-changed** M218 /
+2026-07-15 / M226 behaviour as **removal-guards** — mutation-verified **4/4** (each goes RED when the removed
+behaviour is re-introduced, git-clean restored after). **Verified:** `test_cockpit`+`test_host_prereqs_m215`
+207/207 · `test_e2e_collection_integrity` 8/8 · run-unit 172/172; full demo-stack suite **861 pass / 8 fail**
+(the 8 are the live/env/docker-gated carry → M254; **0 M251 regressions** — none in M251's touched files); flake
+**5/5**; lint clean (shellcheck + py_compile + bash -n). Close review **0 must-fix**; deferral audit **GREEN** (6
+single deferrals, all Fate-2 → M247/M254; 0 repeat/aged-out/blocking). **Flag → M254:** the real live-gated
+failing set on a stackless box is **8**, not the "~2" M254's overview estimates (`test_purge` +
+`test_ant_academy*` launcher/reap + `test_ant_academy_clerk_wiring`; the host-sensitive members swap but the
+count holds) — M254's overview to be corrected when M254 runs. Code-of-record: **rext tag
+`july-jitter-m251-test-health` @ `e9e29a1`** (on origin; rung-zero verified). **0 platform-repo edits.**
+
+#### M252 — studio-desk builder enablement  (`section`)
+**Status:** `done` (completed 2026-07-24)
+**Closure:** The demo studio-desk container now carries the studio's own AI-provider keys — root cause FIXED (a
+base-compose studio-desk inherits ONLY `platform/.env`, which has no AI keys, so `/api/ai/completion` 500'd).
+The fix is **`env_file`-ONLY** at an existence-guarded absolute `<clone>/studio-desk/.env` in
+`gen_injected_override.py` `frontend_lines()` (`platform_dir` threaded, default `None` → `exposure_claim_guard`
+byte-identical): **NO `MOCK_CLERK`, NO provider-chain pin** — the studio stays Clerkenstein-authenticated
+(two pinned regression tests assert no `MOCK_CLERK`), and `aiService` loops every provider within one request
+so the clone's real openai key is used after azure fast-fails. **PROVEN live** (op1, demo-2: the container
+carries the keys + boots `ProviderHealth Initialized with chain: azure-openai->openai->anthropic`). Added a
+demo-aware, non-fatal, values-blind **autoverify (g)** container-key assert (mirrors the directus DSN check).
+studio-desk enters the **Playthroughs manifest for the first time** — Product "Studio", 2 builder-GENERATE
+Playthroughs (`pt-studio-advanced-generate` + `pt-studio-guided-generate`) driven by the org-admin manager
+hero, asserted at the completion boundary (P2); count **16 → 18 live / 0 TODO**. Talk-to-data (M239 Bedrock)
+re-confirmed **COMPLETE, no work owed**. Docs: `studio-desk.md` (Demo-AI-wiring) + `secrets-spec.md` (the
+studio-desk AI class incl. the KB-1 correction: the studio AI genes are required·standard, not waived) +
+`frontend-tier.md` (the F8 env_file note) + `playthroughs.md` (the builder Playthrough + count). Code-of-record
+**`july-jitter-m252-studio-builder` @ `d80db9f`** (on origin; rung-zero verified). Deferral audit **GREEN** —
+2 Fate-2 carries to M254: **CARRY-M252-01** (5 pre-existing academy autoverify stub failures, M245 root cause,
+byte-identical pre/post M252) → gate (g); **CARRY-M252-02** (the ~10-min async live builder-generate RUN,
+centralized at M254 by the billion-last design) → gate (e)+(h). **0 platform-repo edits.**
+**Goal:** The studio `sim-advanced-builder` + `sim-guided-builder` work (the AI key reaches the demo container), proven by a Playthrough.
+**Shape:** `section`.
+**Scope — In:**
+- Wire the provisioned studio-desk AI key into the demo container at runtime — add `env_file: <clone>/studio-desk/.env`
+  to the studio-desk service block in `gen_injected_override.py` (mirrors hiring-app), OR a `bridge_studio_ai_creds()`
+  in `up-injected.sh` mirroring `bridge_bedrock_creds()`. **Not a DNA gap** (the `AI_OPENAI_API_KEY`/`AI_ANTHROPIC_API_KEY`
+  genes exist + are provisioned) — a demo-**wiring** gap (the backend `/api/ai/completion` 500s with no provider).
+- DNA hardening: a demo-aware assertion that the studio-desk **container** carries a provider key (close the
+  .env-vs-container gap).
+- A builder **Playthrough**: `studio-builder-page.ts` page-object + `studioBaseUrl(9000+offset)` + studio Clerkenstein
+  hero-login + `manifest/studio-builders.yaml` + an admin/content_creator precondition (studio-desk is NOT in the
+  playthroughs manifest today).
+- Double-check talk-to-data (M239 Bedrock) — **confirmed COMPLETE, no gap** (recorded, no work owed).
+**Out:** the studio blank-page (M253); the studio nav/logo (M249).
+**Depends on:** M246.  **Parallel with:** M247/M248/M249/M250/M251.  **Complexity:** medium.
+**Parallel lanes (intra):** 3 disjoint lanes — wiring-fix + DNA-hardening ∥ builder-Playthrough ∥ docs; verification serial (the Playthrough proves the fix + needs a demo bring-up).
+**KB deps:** `corpus/services/studio-desk.md`, `corpus/ops/secrets-spec.md`, `corpus/ops/demo/frontend-tier.md`, `corpus/ops/demo/playthroughs.md`.
+**Delivers →** `corpus/services/studio-desk.md` + `corpus/ops/secrets-spec.md` (demo-aware studio-desk AI note) + `corpus/ops/demo/playthroughs.md` (the builder Playthrough + count).
+**Open questions:** `env_file` vs a bridge (values-out-of-a-mounted-file)? which provider (`AI_PROVIDER_CHAIN`) for cost/latency? a real-LLM Playthrough needs a cost ceiling; default-on vs a `DEMO_NO_*` knob?
+
+#### M253 — studio-desk first-paint  (`iterative`)
+**Status:** `done` (completed 2026-07-24)
+**Closure:** studio-desk first-meaningful-paint dropped **4669 ms → p95 817 ms** (p50 743, max 817; 5/5 cold
+loads painted the `.page-skeleton` shell, 0 login bounces) on demo-2 (**local laptop**) — decisively under the
+< 1000 ms gate, no blank > 1 s, ~5.7× faster. Root cause corrected mid-milestone: the dominant boot leg is
+`userService.canAccess()` (~3.9 s GraphQL-404 retry ladder), **NOT** clerk.load's 10 s timeout (140 ms actual) —
+so the fix paints the shell **ahead** of that await rather than fixing the 404 (out of scope). The fix is **two
+sha-pinned demopatches on the M249 `build_frontend_studio_desk` ladder** — `studio-desk-shell-first-paint`
+(inject the `.page-skeleton` DOM synchronously after `preloadCriticalCSS()`, before the awaits; de-dup automatic
+via `PageWrapper#init`'s body-wipe) **chained** with `studio-desk-no-thirdparty` (no-op `Sentry.init` +
+`posthog.init`), the 5-manifest patch-set fingerprint forcing a studio rebuild — plus a **net-new studio-FCP
+runner** (`stack-verify/e2e/run-studio-fcp.sh`). Docs: `latency-budget.md` (the studio first-paint budget +
+per-leg model), `demopatch-spec.md` (the 2 patches; inventory 21 → 23), `studio-desk.md` (the MPA / empty-body
+boot model). Code-of-record **`july-jitter-m253-studio-first-paint` @ `b8969c0`** (on origin; rung-zero verified).
+Deferral audit **GREEN** — 1 Fate-2 carry to M254: **CARRY-M253-01** (the fully-green COLD-p95 confirmation on
+billion, the deliberate coordination-rule-9 split) → M254 exit gate **(f)** "studio first-paint < 1 s cold p95".
+Iterative: 1 tok (bootstrap) + 2 tiks. **0 platform-repo edits.**
+**Goal:** studio-desk paints page content in **< 1 second** (no multi-second blank; data streams in after).
+**Shape:** `iterative` — perf, measure→patch→re-measure (the M218/M244 latency-budget pattern).
+**Exit gate:** on a cold demo (state the environment — laptop vs tailnet), **first-meaningful-paint < 1000 ms** (the
+`.page-skeleton` header+sidemenu shell visible) AND **no blank > 1 s**, p95 over **5 consecutive cold** loads; never
+gate on `networkidle`; always gate on a fresh-green `autoverify.json`.
+**Iteration protocol:** `corpus/ops/demo/latency-budget.md` + `corpus/ops/demo/coverage-protocol.md`.
+**Re-scope trigger:** 5 consecutive toks without a viable strategy → user-strategic-replan.
+**Scope — In:** a sha-pinned demopatch reordering `core/main.ts` to paint the skeleton DOM **synchronously before**
+`clerk.load()`/`l12nService.init()`/`userService.canAccess()`; a `studio-desk-no-thirdparty` twin (no-op posthog/Sentry
+remote calls on the demo host); a **net-new** studio-desk FCP runner in `stack-verify/e2e/` (`run-latency.sh` covers
+next-web/hiring ACCESS only). NOT a dev-vs-prod build issue (refuted — the demo already serves a production build).
+**Out:** the studio builder keys (M252); the studio nav (M249).
+**Depends on:** **M249** (extends the `build_frontend_studio_desk` studio patch ladder M249 creates).  **Parallel with:** M247/M248/M250/M251/M252 (authoring).  **Complexity:** medium.
+**Parallel lanes (intra):** shell+no-thirdparty demopatches ∥ net-new FCP runner ∥ docs; the measure→patch→re-measure loop is serial. Can bootstrap the FCP loop on a **local** demo; cold-p95 confirmed on billion in M254.
+**KB deps:** `corpus/ops/demo/latency-budget.md`, `corpus/ops/demo/demopatch-spec.md`, `corpus/ops/demo/frontend-tier.md`, `corpus/services/studio-desk.md`.
+**Delivers →** `corpus/ops/demo/latency-budget.md` (a studio-desk first-paint budget) + `demopatch-spec.md` (the 2 studio patches) + `corpus/services/studio-desk.md` (the MPA/empty-body boot model).
+**Open questions:** which await dominates on the tailnet (`clerk.load` 10 s timeout vs l12n/canAccess) — the bootstrap per-leg measurement decides before pinning the patch sha; de-dupe the injected skeleton vs PageWrapper's own.
+
+#### M254 — prove on billion  (`iterative`, the closer)
+**Status:** `done` (closed 2026-07-25, `closed-on-gate`)
+**Goal:** Re-prove the whole release live on `billion`, cold reset-to-seed.
+**Shape:** `iterative` — live-proof is measurement-driven (the M221/M236/M244 lineage); iters until the gate.
+**Exit gate:** cold reset-to-seed on `billion`, driven from a tailnet peer, **0 platform edits:** **(a)** the
+re-grounded stack builds + comes up GREEN on the consolidated platform (3 subgraphs, skillpath-in-app); **(b)** the
+content-stories **manager CTA lands on the `/sim` per-session manager result view** (non-empty) for the sim products;
+**(c)** "← Back to Cockpit" works in all 4 apps + the studio logo/back/logout resolve to the stack app (0 prod-ejects);
+**(d)** the AI-readiness page faithful per M250's gate, live, both vantages; **(e)** the studio **sim-builders generate**
+(the builder Playthrough green); **(f)** studio **first-paint < 1 s** cold p95; **(g)** the 8 live/docker-gated
+test-health tests green; **(h)** the live-browser specs + content-stories sweep + Playthroughs green; **p95 click→ACCESS
+< 5 s** hero vantages.
+**Iteration protocol:** `corpus/ops/verification.md` + `corpus/ops/demo/tailscale-serve.md` + `coverage-protocol.md` + `playthroughs.md`.
+**Re-scope trigger:** 5 consecutive toks without a viable strategy → user-strategic-replan.
+**Out:** new feature work (all built by M247–M253).
+**Depends on:** M247, M248, M249, M250, M251, M252, M253.  **Parallel with:** none (terminal).  **Complexity:** medium (iterative).
+**Parallel lanes (intra):** the DRIVE is single-driver serial; the **read-only** confirmation sweeps (content-stories ∥
+coverage ∥ probes) fan out as concurrent tailnet peers against ONE bring-up (latency solo, quiet system). The mutating
+drift-carries + seed-destroying Playthroughs stay a serial tail. ~1.4–1.8× on the confirmation window only.
+**KB deps:** `corpus/ops/verification.md`, `corpus/ops/demo/tailscale-serve.md`, `corpus/ops/demo/coverage-protocol.md`, `corpus/ops/demo/playthroughs.md`.
+**Delivers →** none (proof milestone).
+**Open questions:** none blocking (the multi-part gate is the spec).
+
+**Closure (2026-07-25):** `closed-on-gate` — **all 8 exit-gate parts (a–h) MET live on `billion`** (cold
+reset-to-seed, driven + asserted from a tailnet peer, **0 platform edits**), the M221/M236/M244 prove-on-billion
+lineage. 10 iters (1 bootstrap tok + 9 tiks) + 1 final harden pass. **Gate:** (a) autoverify `green:true`/0
+warnings on the consolidated platform (3 subgraphs, skillpath-in-app) after the **aireadiness demopatch re-point**
+that unblocked it (iter-03; the patch's target had moved to `internal/aireadiness/readiness.go` in the app
+consolidation) + a fresh-reset re-confirm (iter-08); (b) content-stories **45/45 landable ALL LANDED** + 4 voice
+presence-only (coordinator disposition, symmetric extension of `DEF-M240-01`); (c) **4/4 apps** render "← Back to
+Cockpit" + the studio prod-eject side, **0 escapes**; (d) AI-readiness faithful **both vantages** (8/8 sections +
+3 drift-fixes); (e) **both studio builders green** after re-tuning the M252 Playthrough to the live studio-desk
+**v0.152.1** redesign (unified `/simulation-builder`); (f) studio first-paint **p50 637–726 ms < 1 s** (p95
+outliers = ACCEPTED environmental tailnet-RTT jitter, disposition); (g) **2/8-class fixed** live (nvm/node
+host-robustness), 6 host-sensitive test-harness tests carried; (h) **latency p95 1.43 s employee / 1.41 s manager
+< 5 s** + **Playthroughs 18/18** (100%). **Code-of-record:** 6 rext tags on origin (rung-zero) —
+`july-jitter-m254-{aireadiness-repoint 997272b, studio-fcp-identity cbe9256, academy-nonode-hostrobust dfdd9bc
+[billion demo pin], studio-pt-retune 4f1409e, harden-final 4c1fd90, patch-inventory-fence 02ac973}`. Final harden
+**stabilized** (+22 tests, 3× flake gate). **Close review:** deferral audit **YELLOW** (0 blockers) — the RED-at-HEAD
+`FIX-M254-h-patch-inventory-drift` (the demopatch inventory fence lagged M253's header-only 21→23 bump) re-fated
+Fate-3 → **Fate-1 LANDED** (fence 21→23 / studio-desk 3→5 + `demopatch-spec.md §5` reconciliation); 3
+coordinator-approved dispositions (f-p95 environmental · `FIX-M254-c-academy-durable` · `FIX-M254-g-testhealth`)
++ 5 inherited carries (CARRY-M248/250/252/253-01) **discharged** by the live proof. Full demo-stack suite 909/900
+pass (the 8+1 = the g-testhealth host-sensitive carry, 0 regressions). **0 platform-repo edits.** Terminal
+milestone — **v2.7 is now fully built, awaiting the user's `/developer-kit:close-release`.**
+
+### Version plan (v2.7)
+
+| Version | Codename | Theme | Milestones | Status |
+|---------|----------|-------|------------|--------|
+| **v2.7** | **july jitter** | Re-ground + fidelity + field-hardening — realign the demo + corpus to the consolidated platform (skillpath→app, 3 subgraphs, jobsim coming, new domains, the seeder re-point) + fix 6 field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page) | M246 (HARD go/no-go) → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; **all 9 milestones closed** — M246 barrier PASSED go/no-go + M247 corpus-reground + M248 content-mgr-link + M249 cross-app-nav + M250 ai-readiness-fidelity + M251 test-health + M252 studio-builder-enable + M253 studio-first-paint + **M254 prove-on-billion** [`closed-on-gate`, a–h live on billion]; tooling + docs only, 0 platform-repo edits; close-release landed all 5 terminal follow-ups → zero carry-forward) |
+
+### Parallel-build strategy (baked in — the "build it faster" plan)
+
+**Run the fan-out builds concurrently as `work-milestone --worktree=<path>` agents; SERIALIZE the closes.** All
+fan-out worktrees **branch from post-M246 HEAD**. Realistic speedup: **~3–4× on the build phase, ~1.5–2× end-to-end**
+(the live proofs M246/M250/M253/M254 are the serial floor).
+
+**Environment strategy (billion-last).** M246 → M253 are built **and meet their gates on a LOCAL `demo-N` stack** on
+this box — the `billion` tailnet VM stays **untouched** (its v2.6 demo is left up) until **M254**, whose sole job is
+the live re-prove. Every fix (seeder re-point, demopatches, AI-readiness fill, studio wiring) verifies identically on
+a local demo; the one heavy local step is M246's cold build of the consolidated platform (the 12 GB Docker VM).
+**Residual risk:** M253's <1 s FCP is environment-sensitive (clerk.load over the tailnet is slower than a laptop), so
+its local gate is **provisional** and re-confirmed cold on billion at M254 — a fix iteration may surface there. This is
+the deliberate cost of billion-last; it does not change any milestone's scope.
+
+**Merge/close order:** M251 → { M248, M250 } → M249 → M253 → M252 → M247-reconcile → M254.
+
+**Coordination rules (the "don't clobber each other" guardrails):**
+1. All fan-out worktrees branch from **post-M246 HEAD** (M246 touches `up-injected.sh` + the seeder package).
+2. `cmd/stackseed/main.go` — the single seeder registry, touched by **both M248 + M250**; each edits only its own
+   `MustRegister`/truncate hunk → clean hand-merge.
+3. `run-unit.sh` roster — **M251 owns it**; if M248/M252 add a `*.unit.spec.ts` it must be rostered (coordinate the line).
+4. `demo-stack/tests/*.py` — M249 owns the *patch* tests, M251 owns the *health/inventory* tests; no overlap.
+5. `CLAUDE.md` — **sole owner M247**; every other milestone defers its one-line bullet to M247.
+6. `up-injected.sh build_frontend_studio_desk` — **M249 owns** the first-ever studio patch ladder; **M253 extends it**
+   (branch post-M249). M252's env wiring lives in `gen_injected_override.py` (disjoint function).
+7. Rung-zero every time — rext tags pushed to **origin** before billion re-pins (M236 lost an iter to an unpushed tag).
+8. Studio spec docs (`studio-desk.md`, `frontend-tier.md`) — written by M249/M252/M253 in their own subsections, reconciled in the **M247-tail**.
+9. Live-box contention — M250 + M253 (both live-measured iteratives) serialize on one billion demo (RAM won't hold two);
+   M253 can bootstrap its FCP loop on a **local** demo, cold-p95 confirmed in M254.
+
+### Risk map
+- **R1 (blocks-quality) — the 386-commit bump.** Bumping to current (skillpath decommissioned, jobsim mid-merge) may
+  break bring-up. *Mitigation:* M246 is a HARD barrier that proves bring-up first + does the load-bearing seeder
+  re-point; scoped to the **disposable demo clone set — the dev native worktrees are never touched**. If jobsim forces a
+  change, re-scope.
+- **R2 (blocks-scope) — AI-readiness.** 8→31 re-derives the funnel arithmetic across ~200 members + a net-new
+  directus-write set-dress. *Mitigation:* reuse `content_stories_write.go`'s verified-skill fan-out; `iterative` shape;
+  re-derive the M219 fences + the "Champion 30/30" beat.
+- **R3 (dependency) — live billion + prod read.** M246/M250/M253/M254 need a reachable `billion` + `~/.pgpass`.
+  *Mitigation:* `billion` confirmed reachable.
+- **R4 (scope) — first studio-desk patch + additive-UI.** M249 authors the first-ever studio source patch machinery +
+  an undocumented additive-UI pattern; M253 extends it. *Mitigation:* the demopatch anchor→replace mechanism supports
+  insertion (confirmed); M249 authors the pattern doc; M253 serializes after M249.
+- **R5 (process) — origin is behind.** v2.5's `release→main` + `v2.5` tag are **local-only**; a stray `(M245)` commit
+  sits on `main`. *Mitigation:* flag only — the user runs the origin publishes; v2.7 numbering starts at M246.
+- **R6 (dependency) — studio builder cost.** The builder Playthrough (M252) makes real LLM calls. *Mitigation:* a cost
+  ceiling + a provider pin; the fix is a wiring gap, so the key already exists once wired.
 
 ---
 
@@ -893,7 +1339,15 @@ The complete earlier shipped history — **v1.0 "body double"** (2026-06-03, tag
   governing spec is [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md), graduated to a corpus
   runbook (`corpus/ops/demo/playthroughs.md`) by M202.
 
-_Last updated: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** via
+_Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** via
+`/developer-kit:design-roadmap` — the **re-ground + fidelity + field-hardening release** [the v1.3b / v2.1 / v2.3 /
+v2.6 lineage]: *realign the demo + corpus to the platform's TRUE current state, and fix what drifted.* Headline: the
+skiller→app merge was one step of a consolidate-every-runtime-engine-into-`app` program — skillpath now fully
+decommissioned into `app` [3 subgraphs], jobsim mid-merge, net-new `app` domains, and the rext seeder one
+`stack-update` from breaking on `skillpath.*`. **9 milestones M246 → M254**, barrier → 7-lane worktree fan-out →
+prove-on-billion; branch `release/02.70-july-jitter` cut from `main`, tag `v2.7`; designed from
+`.agentspace/annotation.md` + 3 research workflows; consumes the v2.6→v2.7 "test-health" carry as M251, DROPS
+`DEF-M215-03(a)/F11`. See § Active — v2.7. Prior: 2026-07-20 (**v2.6 "sound check" DESIGNED + PROMOTED to active development** via
 `/developer-kit:design-roadmap` — the **reliability / field-hardening release** [the v1.3b / v1.10b / v2.1 / v2.3
 lineage]: *make everything that's built actually get built + provisioned.* **8 milestones M237 → M244**, barrier →
 parallel fixes → prove-on-billion; branch `release/02.60-sound-check` cut from **local** `main`; tag `v2.6`; realizes

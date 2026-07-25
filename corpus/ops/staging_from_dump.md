@@ -19,7 +19,7 @@ It is the bridge between "the stack starts" and "I can log in as my own admin ac
 ## Prerequisites
 
 You should already have, per `setup_guide.md`:
-- `platform/`, `app/`, `cms/`, `jobsimulation/`, `skillpath/`, `sentinel/`, `storage/`, `messenger/`, `roadrunner/`, `next-web-app/`, `studio-desk/`, `graphql-wundergraph/` cloned as siblings.
+- `platform/`, `app/`, `cms/`, `jobsimulation/`, `sentinel/`, `storage/`, `messenger/`, `roadrunner/`, `next-web-app/`, `studio-desk/`, `graphql-wundergraph/` cloned as siblings. (`skillpath` is decommissioned into `app` — no longer cloned.)
 - `platform/.env` with `GH_PAT`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` filled in.
 - `make up postgresql` succeeds and Postgres is healthy.
 
@@ -292,7 +292,7 @@ return ""
 
 `authn/provider/clerk/clerk_user.go` `GetOrganization()` — fall back to v2 claim names + lazy-fetch `public_metadata.eid` via Clerk API with a process-wide cache (Clerk rate-limits otherwise).
 
-Each consuming service (`app`, `cms`, `jobsimulation`, `skillpath`, `messenger`, `storage`, `sentinel`) needs:
+Each consuming service (`app`, `cms`, `jobsimulation`, `messenger`, `storage`, `sentinel`) needs:
 
 1. `cp -r <patched-colony> <service>/vendor-colony`
 2. Append to `<service>/go.mod`:
@@ -320,7 +320,7 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see ~15 services running. If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
+You should see ~14 services running (was ~15 before `skillpath` was decommissioned into `app`). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
 
 ---
 

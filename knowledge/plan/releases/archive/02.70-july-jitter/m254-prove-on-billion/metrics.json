@@ -1,0 +1,55 @@
+{
+  "milestone": "M254",
+  "title": "prove on billion (the closer)",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "closed": "2026-07-25",
+  "realizes": "the terminal live re-prove of v2.7 'july jitter' — the whole release (re-ground + content-stories manager link + cross-app Back-to-Cockpit + AI-readiness fidelity + studio builder keys + studio first-paint) proven together on the billion Tailscale VM, cold reset-to-seed, driven and asserted from a tailnet peer, 0 platform edits (the M221/M236/M244 prove-on-billion lineage).",
+  "platform_repo_edits": 0,
+  "deliverable": "None (proof milestone — Delivers: none). It re-proves the release live, extends the coverage/Playthrough manifests, and burns in the confirmation. Code-of-record is the rext tags on origin (6 M254 tags: aireadiness-repoint 997272b, studio-fcp-identity cbe9256, academy-nonode-hostrobust dfdd9bc [billion demo pin], studio-pt-retune 4f1409e, harden-final 4c1fd90, patch-inventory-fence 02ac973). The rosetta-side close merges plan docs + one corpus reconciliation (demopatch-spec.md §5).",
+  "gate": {
+    "target": "Cold reset-to-seed on billion, driven from a tailnet peer, 0 platform edits: (a) stack builds + comes up GREEN on the consolidated platform (3 subgraphs, skillpath-in-app); (b) content-stories manager CTA lands non-empty on the /sim per-session manager result view; (c) Back-to-Cockpit in all 4 apps + studio resolve-to-stack, 0 prod-ejects; (d) AI-readiness faithful both vantages; (e) studio sim-builders generate (builder Playthrough green); (f) studio first-paint < 1 s cold p95; (g) the 8 host-sensitive demo-stack test-health tests; (h) live-browser specs + content-stories sweep + Playthroughs green, p95 click->ACCESS < 5 s hero vantages.",
+    "achieved": "All parts a-h MET live on billion (cold reset-to-seed, tailnet peer, 0 platform edits): (a) autoverify green:true/0 warnings on the consolidated platform after the aireadiness demopatch re-point (iter-03) + fresh-reset re-confirm (iter-08); (b) content-stories 45/45 landable ALL LANDED + 4 voice presence-only (disposition); (c) 4/4 apps render Back-to-Cockpit + prod-eject side, 0 escapes; (d) both vantages, 8/8 AI-readiness sections + 3 drift-fixes; (e) both studio builders green (v0.152.1 re-tune); (f) app-side paint p50 637-726 ms < 1 s (p95 environmental-jitter disposition); (g) 2/8-class fixed live, 6 host-sensitive carried; (h) latency p95 1.43 s employee / 1.41 s manager < 5 s, Playthroughs 18/18.",
+    "distance": "0 — gate MET (all 8 parts, with 3 coordinator-approved dispositions on the p95/academy-durability/test-health residuals).",
+    "status": "closed-on-gate"
+  },
+  "tests": {
+    "demo_stack_full_suite": "909 tests, 900 pass (8 fail + 1 error). The 8+1 are ALL the FIX-M254-g-testhealth host-sensitive carry: test_ant_academy launcher/reap set (second_launch/stop_kills/a_stale/MUTATION-reap), test_ant_academy_clerk_wiring overlay error, Linux-only test_purge THE_BUG (self-documented meaningful-on-Linux-host), test_frontend_build studio-desk image-guard. 0 milestone-touched regressions; 0 demo-runtime impact (real academy serves 200 live).",
+    "patch_inventory_fence": "test_patch_inventory 5/5 green post-fix (was 2 RED at HEAD — EXPECTED_TOTAL 21->23 + studio-desk 3->5).",
+    "milestone_touched_offline": "demopatch-family + test_patch_inventory + test_aireadiness_snapshot_loadmembers_m254 = 65 tests, green 3/3 (flake gate).",
+    "playthroughs_ts": "playthroughs e2e tsc --noEmit clean; the harden pass +14 TS unit specs (studio-builder-locators, url-shapes, home-login-networkidle) green with a 3x flake gate.",
+    "playthroughs_live": "full Playthrough suite on billion (cold reset-to-seed, tailnet peer): 18/18 passing (100%), 0 failing, ptreport no-regressions PASSED.",
+    "latency_live": "p95 click->ACCESS employee 1.43 s / manager 1.41 s (< 5 s gate), 5/5 ACCESS, solo.",
+    "content_stories_live": "45/47 landed (the 2 non-landing = manager voice cells, symmetric extension of DEF-M240-01 Bunny-keyless demo box; 45/45 landable ALL LANDED + 4 voice presence-only, disposition).",
+    "delta_vs_prior": "demo-stack Python 869 collected (M251) -> 909 (M254, +40: the M254 harden +8 aireadiness-regression + prior fan-out growth); pass 861 -> 900. TypeScript +14 unit specs (harden). Go playthroughs packages green (ptvalidate on the re-tuned studio-builders.yaml).",
+    "flake_gate": "milestone-touched offline set 3/3 clean; the fence is a deterministic directory-count comparison (no flake surface); the harden pass ran the TS/Go 3x flake gate. The live-box residuals (f-FCP-p95) are environmental tailnet-RTT jitter, dispositioned.",
+    "lint": "tsc --noEmit clean (playthroughs e2e); rext python unittest (no separate linter wired)."
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "the iterative cluster-per-tik live re-prove loop (TOK-01): DRIVE (cold reset-to-seed on billion) -> read-only confirmation sweeps (content-stories || coverage || probes) -> latency solo -> mutating/seed-destroying tail (Playthroughs). measure->confirm->fix-forward per gate part, all asserted from a tailnet peer.",
+    "surface": "the a-h exit gate over the whole consolidated-platform demo on billion.",
+    "result": "all 8 gate parts MET cold on billion; 6 rext fix commits (aireadiness re-point, studio-FCP identity, academy no-node host-robustness, studio-builder v0.152.1 re-tune + networkidle anti-deadlock, harden-final, patch-inventory-fence), all tags on origin (rung-zero).",
+    "residual_uncovered": "3 coordinator-approved dispositions (non-gate-blocking): (f)-FCP-p95 environmental (p50 < 1 s holds); FIX-M254-c-academy-durable (a fresh demo renders Back-to-Cockpit; long-running-demo edge); FIX-M254-g-testhealth (6 host-sensitive test-harness tests, 0 demo-runtime impact). Plus 3 prior-iter Fate-3 follow-ups (b-voice manager_presence_only flag, verify.sh stale skillpath default, studio-desk billion re-pin note)."
+  },
+  "benchmarks": {
+    "applicable": true,
+    "threshold": "p95 click->ACCESS < 5 s hero vantages; studio first-paint < 1 s cold p95",
+    "result": "click->ACCESS p95 1.43 s (employee) / 1.41 s (manager) — PASS. studio first-paint p50 637-726 ms < 1 s (app-side paint PASS); p95 outliers (1443/2014/4943 ms, reachedShell always true) = ACCEPTED environmental tailnet-RTT jitter (coordinator disposition, the (b) precedent + latency-budget.md 'state the environment').",
+    "harness": "rext stack-verify/e2e/run-latency.sh + run-studio-fcp.sh (LATENCY_SCHEME=https, gate on fresh-green autoverify.json, never networkidle) + playthroughs e2e suite."
+  },
+  "code_of_record_tag": "july-jitter-m254-patch-inventory-fence @ 02ac973 — on origin (rung-zero verified: git ls-remote --tags origin). All 6 M254 tags on origin. billion demo pinned july-jitter-m254-academy-nonode-hostrobust @ dfdd9bc (the last full cold reset-to-seed build; the pt-retune + fence commits are test-only, no demo re-pin needed for the current proof).",
+  "build_commits_rext": "997272b (aireadiness demopatch re-point to consolidated app -> gate a) -> cbe9256 (studio-FCP default identity maya->dan, gate f measurement artifact) -> dfdd9bc (ant-academy no-node test host-robustness, gate g 2/8) -> 4f1409e (studio-builder Playthrough re-tune to studio-desk v0.152.1 + /home networkidle anti-deadlock, gate e+h) -> f9ff4af + 4c1fd90 (harden-final, +22 tests) -> 02ac973 (close: patch-inventory-fence 21->23).",
+  "harden_commits_rext": "f9ff4af (playthroughs: pin the v0.152.1 re-tune + /home networkidle invariant) + 4c1fd90 (demo-stack: regression-pin the aireadiness demopatch re-point to the consolidated app). +22 tests (14 TS + 8 Python), 3-consecutive-clean flake gate, tag july-jitter-m254-harden-final on origin.",
+  "deferral_audit": "YELLOW (0 blockers) — 7 M254-originated single deferrals (1 re-fated Fate-3 -> Fate-1 LAND-NOW + landed: FIX-M254-h-patch-inventory-drift; 2 Fate-1 dispositions: f-FCP-p95 environmental; 4 Fate-3 follow-ups: c-academy-durable, g-testhealth, b-voice manager_presence_only, verify.sh skillpath) + 5 inherited carries (CARRY-M248/250/252/253-01) ALL DISCHARGED by the live gate proof. 0 repeats, 0 aged-out, 0 chronic, 0 escape-hatch. Report: audit-deferrals/deferral-audit-2026-07-25-m254-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral re-audit YELLOW (0 blockers); re-fated FIX-M254-h Fate-3 -> Fate-1.",
+    "Phase 2c adversarial: recorded the 'does 21->23 mask a spurious patch?' scenario -> verified NOT masked (the 2 additions are M253's real studio-desk first-paint patches; sibling validity/no-orphan tests green).",
+    "Phase 3 (docs): reconciled demopatch-spec.md §5 to 23/5 — 3 secondary fence-description refs M253's header-only update missed (line 144 three->five studio-desk; the fence-contract 21->23 / 3->5; the self-contradicting 'total is 16' -> 23). No stale counts elsewhere in corpus/CLAUDE.md.",
+    "Phase 5 decision-triage: all M254 decisions -> maintainer-archive; operational knowledge already in latency-budget.md + demopatch-spec.md §5.",
+    "Phase 7 (LAND-NOW): FIX-M254-h landed in full — rext fence bump (commit 02ac973, tag on origin, rung-zero) + corpus §5 reconciliation; test_patch_inventory 5/5 green.",
+    "Phase 9-iter: Gate Outcome Ledger (progress.md) + carry-forward.md updated (FIX-M254-h -> LANDED)."
+  ],
+  "close_code_changes": "one rext commit at close: 02ac973 (test_patch_inventory fence 21->23 / studio-desk 3->5), tag july-jitter-m254-patch-inventory-fence on origin. Test-only; no billion demo re-pin (the demo build stays dfdd9bc). All other close records are docs in the rosetta repo. 0 platform-repo edits.",
+  "notes": "The terminal closer of v2.7 'july jitter'. 10 iters (1 bootstrap tok + 9 tiks) + 1 final harden pass, gate-met (a-h) cold on billion driven from a tailnet peer. Highlights: iter-02/03 caught + fixed the aireadiness demopatch drift into the consolidated app (path moved to internal/aireadiness/readiness.go) that blocked gate (a); iter-06 found gate (f) 'session-carry' was a measurement artifact (FCP probe defaulted to a non-studio-eligible employee hero); iter-08 recovered cleanly from a self-inflicted demo disruption via a full cold reset-to-seed (net-positive: a fresh demo re-confirmed a+c); iter-10 drove Playthroughs to 18/18 after re-tuning the studio-builder Playthrough to the live studio-desk v0.152.1 redesign + a /home networkidle anti-deadlock. The close landed FIX-M254-h (a RED-at-HEAD demopatch inventory fence, root-caused to M253's header-only inventory update). Tooling + docs only, 0 platform-repo edits. Terminal milestone — leaves v2.7 fully built, awaiting the user's /developer-kit:close-release."
+}

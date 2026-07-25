@@ -5,7 +5,7 @@
 
 ## Role & Responsibility
 
-Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation **definitions** from CMS (the content layer), hosts the interactive **session** (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to Skillpath and the App. Its own `jobsimulation` DB schema holds the **run/session state** (sessions, interactions, recordings, validation/anti-cheat results) — never the definition.
+Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation **definitions** from CMS (the content layer), hosts the interactive **session** (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to the App (which now hosts the in-process skill-path engine, formerly the standalone skillpath service). Its own `jobsimulation` DB schema holds the **run/session state** (sessions, interactions, recordings, validation/anti-cheat results) — never the definition.
 
 This is the user-facing "experience" service. Everything else (skills, content, auth, scoring) feeds it or consumes its outputs.
 
@@ -41,7 +41,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). Federated into the platform schema by Cosmo Router.
-* **RPC**: `internal/rpcsrv` — consumed by Backend, Skillpath, Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
+* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
 > played session render?" will not find here. (1) The **player** result page `/sim/<slug>/result/<sessionId>` is a
@@ -60,7 +60,7 @@ internal/
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
-* **Roadrunner** — code execution sandboxing (for code-task simulations)
+* **Roadrunner** — **ORPHANED, no longer called** (v2.7 M247). Code execution moved **in-process into jobsimulation** (`internal/runner/runner.go`, an in-process Judge0 client — its header reads *"formerly the standalone 'roadrunner' service"*); `ROADRUNNER_RPC_ADDR` is dead config. See [`roadrunner.md`](roadrunner.md).
 * **PostgreSQL**, **Redis** — base infra
 
 ### External integrations
@@ -76,7 +76,7 @@ internal/
 ### Redis Streams
 
 * Producer: `jobsimulation` stream (session completed, insights generated)
-* Consumer (subscribes to): `cms` (content events) and `roadrunner` (code-execution events)
+* Consumer (subscribes to): `cms` (content events). (The former `roadrunner` code-execution stream is orphaned — code execution is now in-process; see [`roadrunner.md`](roadrunner.md).)
 
 Redis Streams consumption is handled by the colony pubsub `SubscriberServer` wired up in `cmd/root.go`, not by `internal/worker/` (which is Asynq-only).
 
@@ -129,8 +129,8 @@ an unreadable file. That error propagates out of `ai.NewAIManager` → the root 
 > survives. Only the `!reset` / `!override` tags remove it. Verified against the compose binary.
 
 **Downstream while it is dead:** the AI-Simulations surface is gone; its GraphQL subgraph errors; the
-`pt-aisim-chat-launch` playthrough cannot pass; no session-completed events reach the Redis stream, so Skillpath
-progression never sees completions. And it is the service behind the nameless *"1 check(s) FAILED"* the
+`pt-aisim-chat-launch` playthrough cannot pass; no session-completed events reach the Redis stream, so the
+skill-path engine (now in `app`) never sees completions. And it is the service behind the nameless *"1 check(s) FAILED"* the
 bring-up's autoverify used to report.
 
 ## Local Development

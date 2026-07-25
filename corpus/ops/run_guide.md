@@ -85,7 +85,7 @@ This starts all backend services + GraphQL router (default `graphql` profile):
 make up
 ```
 
-This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Skillpath, Storage, Jobsimulation, Roadrunner, Gotenberg, and GraphQL/Cosmo Router.
+This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 

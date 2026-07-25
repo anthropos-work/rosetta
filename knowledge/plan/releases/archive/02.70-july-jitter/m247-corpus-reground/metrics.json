@@ -1,0 +1,48 @@
+{
+  "milestone": "M247",
+  "title": "corpus re-ground",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-23",
+  "realizes": "the v2.7 corpus re-ground — realign the corpus to the CONSOLIDATED platform (skillpath merged into app -> 3 subgraphs) + author the net-new app-domain fact sheets",
+  "platform_repo_edits": 0,
+  "deliverable": "documentation (corpus/*.md) — this is a DOC-ONLY milestone with NO rext code-of-record and NO source stack",
+  "diff": {
+    "files_changed": 36,
+    "corpus_md_files": 30,
+    "new_fact_sheets": 4,
+    "non_prose_changes": ".gitignore (worktree-symlink /stack-* pattern) — the only non-.md change; +1229/-427 lines total",
+    "range": "99d597c..HEAD (build ed4f046 + close 4d3e7e0)"
+  },
+  "tests": {
+    "applicable": false,
+    "reason": "Project Rosetta is a documentation repository — no package.json / go.mod / pyproject.toml / test runner / coverage tool. Code-shaped review dimensions (unit/integration/e2e, coverage, fuzzing, benchmarks) are N/A: there is no source stack. Not a coverage-unavailable deferral.",
+    "doc_robustness_analog": {
+      "fidelity_spotcheck": "GREEN, 0 corrections vs current stack-demo/app @ v1.351.1 (all 5 sheets: coursebuilder / ai-labs / askengine / academy-backend / ai-readiness ent+migration+model+band facts confirmed against source)",
+      "cross_reference_integrity": "0 broken relative .md links across 30 M247-touched docs (re-confirmed at close)",
+      "grep_verify": "0 residual '4 subgraphs' (except the intentional historical note in backend.md:67); 0 stale live-skillpath-as-service claims",
+      "per_unit_handbook_contract": "all 4 new fact sheets indexed in services/README.md AND CLAUDE.md; CLAUDE.md service-doc count 23 -> 27",
+      "internal_consistency": "'3 subgraphs' propagated across 9 docs; skillpath moved Tier-1 -> archived/merged table; roadrunner correctly kept ORPHANED (still in repos.yml+compose, not archived)"
+    }
+  },
+  "flake_count": 0,
+  "coverage": {
+    "applicable": false,
+    "reason": "no source stack — see tests.applicable"
+  },
+  "benchmarks": {
+    "applicable": false,
+    "reason": "no perf-sensitive code"
+  },
+  "code_of_record_tag": "N/A — M247 is DOC-ONLY. No rext change, no rext tag, no re-pin. All deliverables are corpus/*.md in the rosetta repo.",
+  "build_commits": "85e5b09 (S1 skillpath redirect) + 9f34146 (S2 3-subgraph sweep) + fb16e9a (S3-6 4 fact sheets) + 46cc66a (S7 ai-readiness refresh) + 75d2f5f (S8 roadrunner resolution) + ed4f046 (harden: fidelity+integrity GREEN)",
+  "close_commits": "4d3e7e0 (Phase 1b/2c/6/7 review + re-fates)",
+  "deferral_audit": "YELLOW (0 blockers) — 4 deferrals: 1 AGED_OUT re-fated (rext-hygiene inert set — M251 destination closed -> documented-inert standing note, 0 functional impact, 0 files tracked in rosetta repo) + 3 Fate-2 (ai-readiness demo-seeder fidelity -> M250; ops/demo spec-doc reconcile -> code milestones + release-close; inherited optional verification.md anchor -> release-close). Report: audit-deferrals/deferral-audit-2026-07-23-m247-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral audit + 2 close-time re-fates (D-audit) superseding the now-stale D0 'M251/rext-hygiene' routing",
+    "Phase 2c adversarial: .gitignore /stack-* over-match cleared (0 tracked root paths named stack-*) — recorded in decisions.md",
+    "Phase 6 Final Review: recorded (doc-only; code phases N/A; docs GREEN)"
+  ],
+  "close_code_changes": "none — all close records are docs (progress.md Final Review + Deferred re-fate, decisions.md D-audit + Adversarial review, the deferral-audit report, this metrics.json, retro.md, roadmap/state Phase-10). No source stack to touch.",
+  "notes": "The M247 corpus-reground lane of v2.7 'july jitter'. Re-grounded the corpus to the consolidated platform M246 proved live: skillpath.md -> a merged-into-app redirect (mirroring skiller.md) + moved to the README archived/merged table; the 4->3 subgraph reclassification across ~30 echo files (each mention re-read in context, not blind-sed); 4 net-new app-domain fact sheets (coursebuilder / ai-labs [+ the load-bearing 'shared purse UNBUILT' caveat] / askengine / academy-backend); ai-readiness.md refreshed for the aireadiness-package refactor (platform-facts only — demo-seeder fidelity deltas + the D-07 re-pin are M250's, recorded in decisions.md D1); roadrunner resolved to the NEGATIVE (stays ORPHANED, not archived). DOC-ONLY: zero rext, zero platform-repo edits, no code-of-record. Merge/close order: M247-reconcile lands late (after the code milestones), but this close merges the M247-core corpus half into release/02.70-july-jitter; the ops/demo spec-doc reconcile stays a Fate-2 release-close item."
+}

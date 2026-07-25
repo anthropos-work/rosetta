@@ -1,0 +1,48 @@
+{
+  "milestone": "M253",
+  "title": "studio-desk first-paint",
+  "shape": "iterative",
+  "close_status": "closed-on-gate",
+  "closed": "2026-07-24",
+  "realizes": "studio-desk paints its .page-skeleton header+sidemenu shell in < 1 s on a cold demo load instead of blanking for ~4.7 s behind the boot awaits — closing the studio blank-page field defect, the last of the six v2.7 studio-surface field defects.",
+  "platform_repo_edits": 0,
+  "deliverable": "rext code (2 sha-pinned demopatches on the M249 build_frontend_studio_desk ladder: studio-desk-shell-first-paint [inject .page-skeleton DOM synchronously after preloadCriticalCSS, before Sentry/posthog/clerk.load/l12n/canAccess] CHAINED with studio-desk-no-thirdparty [no-op Sentry.init + posthog.init]; the 5-manifest patch-set fingerprint forcing a studio rebuild; net-new stack-verify/e2e/run-studio-fcp.sh + tests/studio-fcp.spec.ts + lib/studio-fcp.ts FCP runner) + rosetta docs (latency-budget.md studio first-paint budget, demopatch-spec.md 2 patches [count 21->23], studio-desk.md MPA boot model). The CODE-of-record lives in the gitignored rosetta-extensions authoring copy; this close merges ONLY the rosetta doc + plan half.",
+  "gate": {
+    "target": "cold demo (state environment), first-meaningful-paint < 1000 ms (the .page-skeleton header+sidemenu shell visible) AND no blank > 1 s, p95 over 5 consecutive cold loads; never gate on networkidle; always gate on a fresh-green autoverify.json",
+    "achieved": "skeleton-visible p95 817 ms (p50 743, max 817; samples 817/795/480/539/743 ms) over 5 consecutive cold loads on demo-2 (LOCAL LAPTOP), 5/5 reached the shell, 0 login bounces; baseline was 4669 ms (~5.7x faster)",
+    "distance": "numerical gate MET (p95 817 ms < 1000 ms, max <= 1000 ms) on the local-bootstrap charter; the fully-green COLD-p95 confirmation on billion (fresh-green autoverify.json) is chartered to M254 by coordination rule 9 (two live-measured iteratives can't share billion RAM)",
+    "status": "closed-on-gate"
+  },
+  "tests": {
+    "rext_fcp_runner": "net-new run-studio-fcp.sh + tests/studio-fcp.spec.ts + lib/studio-fcp.ts at the code-of-record tag; green-gate + non-integer-N guard mirror run-latency; never gates on networkidle",
+    "rext_demopatch_check": "demopatch check PASS on both new manifests; round-trip validated; bash -n clean on the extended build_frontend_studio_desk ladder; TestPatchInventory (rext) re-pinned to the 23-total / 5-studio-desk breakdown",
+    "rosetta_suite": "n/a — no rosetta test suite (docs + plan only, per M248/M251 close). 0 broken markdown links across the 3 touched corpus docs.",
+    "delta_vs_prior": "iterative milestone — no single prior baseline. Net-new FCP runner (3 files) + 2 net-new demopatch manifests.",
+    "flake_gate": "the demopatch machinery is deterministic (unit-fenced in rext); milestone-level flake risk lives in the LIVE FCP sweep, gated by fresh-green autoverify per latency-budget.md — the COLD confirmation is M254's charter.",
+    "lint": "n/a for the merged rosetta half (markdown). rext bash -n clean; demopatch check PASS."
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "the iterative measure->patch->re-measure loop (latency-budget.md): bootstrap per-leg instrumentation (iter-01), pin the 2 demopatches + FCP runner (iter-02), re-measure 5-cold-load p95 (iter-02)",
+    "surface": "the studio-desk main.ts boot ordering (the .page-skeleton shell paint) + the run-studio-fcp.sh harness",
+    "result": "skeleton-visible p95 4669 ms -> 817 ms on demo-2 (local laptop), 5/5 cold loads, 0 login bounce; numerical gate MET",
+    "residual_uncovered": "the fully-green COLD-p95 confirmation on billion (fresh autoverify.json green) — CARRY-M253-01 -> M254 exit gate (f), by design (coordination rule 9). NOT a fix gap — the number is met on the local bootstrap charter."
+  },
+  "benchmarks": {
+    "applicable": true,
+    "threshold": "first-meaningful-paint (.page-skeleton visible) < 1000 ms, p95 over 5 consecutive cold loads, no blank > 1 s",
+    "result": "PASS on demo-2 (local laptop): p95 817 ms, max 817 ms, p50 743 ms",
+    "harness": "rext stack-verify/e2e/run-studio-fcp.sh (measure-only mode); the formal fresh-green cold-on-billion assertion is M254's exit gate (f)"
+  },
+  "code_of_record_tag": "july-jitter-m253-studio-first-paint @ b8969c0 — on origin (rung-zero verified: git ls-remote --tags origin shows refs/tags/july-jitter-m253-studio-first-paint -> b8969c06). rext authoring HEAD == b8969c0.",
+  "build_commits_rext": "iter-01 bootstrap TOK-01 (baseline 4669 ms; dominant await = userService.canAccess ~3.9 s, not clerk.load) -> iter-02 the 2 demopatches + extended ladder + FCP runner (skeleton p95 4669 -> 817 ms on demo-2) -> the tag july-jitter-m253-studio-first-paint. iter-03 was rosetta docs-only (the 3 Delivers), no rext change.",
+  "deferral_audit": "GREEN (0 blockers) — 1 item: CARRY-M253-01 (fresh-green COLD-p95 confirmation on billion) Fate-2 confirmed-covered by M254 exit gate (f), no sibling overview edit. 0 repeats, 0 chronic, 0 aged-out, 0 escape-hatch. Report: audit-deferrals/deferral-audit-2026-07-24-m253-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral re-audit GREEN.",
+    "Phase 3 (docs): fixed a stale illustrative count in demopatch-spec.md 2.1 (R1 sweep 'all 21 today' -> 'all 23 today') left behind by M253's canonical 21->23 inventory reconcile; historical counts (14, 'the other 11', 'swept 14') correctly unchanged. Verified the 3 doc Delivers accurate + the latency-budget<->demopatch-spec<->studio-desk cross-ref triangle resolves.",
+    "Phase 5 decision-triage: iter-01 D1/D2, iter-02 D3/D4/D5, TOK-01 -> archive (maintainer-only rext mechanism + bootstrap strategy); their load-bearing platform facts (per-leg baseline, the reorder fix, the chained patch pair, the MPA boot model) were already blended into the 3 corpus doc Delivers during iter-03.",
+    "Phase 9-iter: Gate Outcome Ledger (progress.md) + carry-forward.md (CARRY-M253-01 -> M254, Fate 2)."
+  ],
+  "close_code_changes": "none in rext — the code-of-record stays july-jitter-m253-studio-first-paint @ b8969c0 (NO re-pin at close). All close records are docs in the rosetta repo (the one Phase-3 doc fix, deferral-audit report, Gate Outcome Ledger, carry-forward.md, this metrics.json, retro.md, roadmap/state Phase-10).",
+  "notes": "Iterative: 1 tok (bootstrap TOK-01) + 2 tiks (iter-02 the fix + FCP runner, iter-03 the 3 docs Delivers). Cut studio-desk first-meaningful-paint from ~4669 ms to p95 817 ms (~5.7x) with a pure zero-platform-edit paint-ordering demopatch pair on the M249 ladder. Root cause corrected mid-milestone: the dominant boot leg is userService.canAccess() (~3.9 s GraphQL-404 retry ladder), NOT clerk.load's 10 s timeout (140 ms actual) — the fix paints the shell AHEAD of that await rather than fixing the 404 (out of M253 scope). Gate met on the local-bootstrap charter; the cold-on-billion confirmation is M254's exit gate (f) by coordination rule 9. Tooling + docs only, 0 platform-repo edits."
+}

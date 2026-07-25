@@ -1,252 +1,90 @@
 # Skillpath Service
 
-> [!IMPORTANT]
-> **This service holds NO content.** "Skillpath" the *service* ≠ skill-path *content*. It is a **runtime/session engine** that tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path **content** it tracks against — title, cover, curators, library categories, **chapters → steps**, the job-simulation steps, skills-to-verify, versioning — is **owned by the CMS service** (the `skill_paths` Directus collection) and fetched **by ID** over Connect-RPC via `CMS_RPC_ADDR`. See **[CMS](./cms.md)** for the content side. (This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).)
-
-## Role & Responsibility
-*   **Primary Goal**: Manages user session **state** through skill progression paths, tracking progress as users complete chapters and steps within learning paths. **It owns the progression state, not the path content** (see the note above + [CMS](./cms.md)).
-*   **Key Functions**:
-    *   **Session Management**: Creates and manages `SkillPathSession` records that track a user's journey through a skill path
-    *   **Progress Tracking**: Records completion status for chapters and individual steps within a path
-    *   **Version Upgrades**: Handles migration of user sessions when skill path content is updated
-    *   **Event Subscription**: Listens to Jobsimulation events to update step completion when simulations finish
-
-## Architecture & Code Map
-*   **Codebase**: `stack-dev/skillpath` (repo `git@github.com:anthropos-work/skillpath`)
-*   **Language**: Go 1.25
-*   **Frameworks**: gqlgen (GraphQL Federation v2), Connect-RPC, Ent ORM, goverter (Ent → domain converters)
-*   **Database**: PostgreSQL (`search_path=skillpath`); migrations live in `terraform/migrations/` (Atlas, applied via Terraform/Atlas provider)
-*   **Ports**: 8100 (HTTP/GraphQL), 8101 (Connect-RPC) — same port on host and inside container per `platform/docker-compose.yml`
-*   **Profile**: `graphql` (default) and `skillpath`
-*   **Key Directories**:
-    *   `main.go`: Application entry point, server initialization
-    *   `rpc.go`: RPC server implementation (`GetSkillPathSession`)
-    *   `internal/ent/schema/`: **Ent Entity Definitions** (Source of Truth)
-        *   `skillpathsession.go`: Main session entity
-        *   `chaptersession.go`: Chapter progress entity
-        *   `stepsession.go`: Step progress entity
-    *   `internal/graph/`: **GraphQL Implementation** (gqlgen)
-        *   `schemas/schema.graphqls`: Type definitions
-        *   `schemas/queries.graphqls`: Query operations
-        *   `schemas/mutations.graphqls`: Mutation operations
-    *   `internal/session/`: Session manager business logic + pub/sub handlers
-
-## Data Model
-
-The service uses a hierarchical session model to track user progress:
-
-```mermaid
-erDiagram
-    SkillPathSession ||--o{ ChapterSession : contains
-    ChapterSession ||--o{ StepSession : contains
-
-    SkillPathSession {
-        uuid id PK
-        uuid user_id
-        uuid skillpath_id "CMS SkillPath reference"
-        uuid tenant_id "optional, multi-tenancy (set when skill path is private)"
-        int progress "0-100"
-        enum status "pending|active|completed|archived"
-        string version
-        timestamp started_at
-        timestamp ended_at
-        timestamp archived_at
-    }
-
-    ChapterSession {
-        uuid id PK
-        uuid user_id
-        uuid chapter_id "CMS Chapter reference"
-        int progress
-        int duration "seconds"
-        enum status
-    }
-
-    StepSession {
-        uuid id PK
-        uuid user_id
-        uuid step_id "CMS Step reference"
-        uuid last_simulation_session "JobSim session reference"
-        int progress
-        int duration
-        enum status
-    }
-```
-
-> Note: `duration` (int64), `progress`, `status`, `version`, `started_at`, `ended_at`, `archived_at`, `created_at`, and `updated_at` are shared across all three entities via `PathMixin` — so `SkillPathSession` also carries `duration` and `archived_at` (the diagram previously showed `duration` only on `ChapterSession`/`StepSession`).
-
-**Status Enum** (`internal/ent/enum/status.go`):
-- `pending`: Session created but not started
-- `active`: User currently working through content
-- `completed`: All steps finished
-- `archived`: Old version, superseded by upgrade
-
-> **The manager view reads an `app`-side MIRROR, not this runtime (added v2.5 M231).** The player skill-path page
-> reads this runtime session (`getOrCreateSkillPathSession` — a **get-OR-create** that auto-materializes a blank
-> `pending` session on first read, so an unseeded skill path renders empty, not 404). But the **manager insights**
-> surface (`insightsSkillPathByMemberships`, the `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]`
-> scoreboard in `apps/web`) does **not** read this runtime at all — it reads the `app`-side MIRROR table
-> `public.local_skill_path_session` (`app/internal/organization/intelligence.go:997/1142`; Ent schema
-> `app/internal/data/ent/schema/local_skill_path_session.go` — `progress` 0-100, `status`, no `score`), the exact
-> analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the `skillpath.*` runtime rows renders an
-> empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab (no-surface).
-> Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+> ## ⚠️ Merged into `app` — no longer a standalone service
 >
-> **But the per-user drill-down one level deeper is UNIMPLEMENTED (M236 iter-07, verified against
-> `next-web-app` `origin/main`).** The mirror above powers the *cohort* scoreboard at
-> `…/skill-paths/[skillPathId]` (`InsightsBySkillPathStudentsContainer`) — that page renders a real table and the
-> mirror row genuinely is required for it. The **per-member** route
-> `…/skill-paths/[skillPathId]/[userId]` (`InsightsBySkillPathStudentSimulationsContainer`) is a different
-> component and is **not built**: `userData` is hardcoded `null`, its results table and totals block are
-> **commented out**, and the body renders the literal string **"Coming soon"**. Its only populated query is
-> `getSkillPathDetails` — the path *definition*, not the session. **No query touches the seeded session, so that
-> page is byte-identical whether or not you seed anything.** Do not build a seeder for it, and do not treat a
-> rendered "Results for <path>" header there as proof a session landed — the definition-only header satisfies that
-> check on an empty page. This is why the v2.5 content-stories gate is **player-link-only** for skill-path and its
-> denominator was corrected 31 → 29.
+> As of the **"skillpath-in-app"** program (platform milestones **M502 → M507**), the standalone `skillpath` Go
+> microservice has been **merged into the `app` monolith** (the service the platform calls "backend") and then
+> **decommissioned**. Skillpath no longer runs as a separate service — not in the local compose, not in the
+> supergraph, not in production. This is the same pattern as the earlier [skiller-in-app merge](./skiller.md);
+> skillpath was the next runtime engine consolidated into `app`.
+>
+> **Skillpath was always a runtime/session engine, never a content store** — it tracks per-user progression
+> *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path **content**
+> it tracks against (title, cover, curators, chapters → steps, skills-to-verify, versioning) **remains owned by
+> [CMS](./cms.md)** and is fetched by ID over Connect-RPC (`CMS_RPC_ADDR`). The consolidation moved the *engine*
+> into `app`; it did not touch the content-vs-runtime split.
+>
+> Where everything went:
+>
+> * **Domain / engine** — the session manager + repository (`SessionManager`, the get-or-create + version-upgrade
+>   logic, the jobsimulation-event subscriber) now live inside `app`: `app/internal/skillpath/`
+>   (`session.go`, `session_domain.go`, `repository/`) and `app/internal/skillpaths/`. Ported at **M502/M503**
+>   (manager port, dormant) and the subscriber merged at **M504**.
+> * **Data** — runtime session state now lives in the **`public` schema** of the shared PostgreSQL database:
+>   `public.skill_path_sessions` (Ent schema `app/internal/data/ent/schema/skill_path_session.go` +
+>   `skillpath_mixins.go`). The old `skillpath` DB schema is **legacy — a decommissioned empty husk** (the table
+>   was kept but holds 0 rows; runtime state is authoritative in `public`). `askengine` and every other reader was
+>   re-pointed `skillpath.skill_path_sessions → public.skill_path_sessions`.
+> * **RPC** — the `SkillPathSessionService` surface (`GetSkillPathSession`) is served by `app`; callers were cut
+>   over to read sessions **in-process** and the `SKILLPATH_RPC_ADDR` was dropped from terraform (**M506** caller
+>   cutover).
+> * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
+>   now **3 subgraphs** (backend/app, jobsimulation, cms). The skill-path session types/queries/mutations
+>   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
+>   `completeSkillPathStep`, `uncompleteSkillPathStep`, `upgradeSkillPathSessionToLatest`,
+>   `upgradeAllSkillPathSessionsToLatest`, and the deprecated `createSkillPathSession`) are **folded into `app`'s
+>   `backend` subgraph** (`app/internal/web/backend/graphql/graph/schemas/skillpath_sessions.graphqls`). The fold
+>   landed dormant at **M505**; the router owner-swap that routes `SkillPathSession` to `app` was the atomic
+>   **M506** cutover.
+> * **Infrastructure** — skillpath was removed from `repos.yml` (now **10 repos**, 0 skillpath) and from
+>   docker-compose (no skillpath service); the standalone service + its terraform module were decommissioned at
+>   **M507**. Only residual env plumbing remains (e.g. the `SKILLPATH_STREAM=skillpath` Redis-stream name).
+> * **Repo** — the `skillpath` git repo still exists but is **legacy/decommissioned**, no longer deployed or
+>   cloned by `make init`.
+>
+> For current documentation of this domain, see [Backend (`app`)](./backend.md).
 
-## Interface Discovery
+## Still-true domain knowledge
 
-### GraphQL API
+* **Content-vs-runtime split (unchanged).** "Skillpath" the engine ≠ skill-path *content*. The content it runs
+  against — chapters → steps, curators, the job-simulation steps, skills-to-verify, versioning — is owned by
+  **[CMS](./cms.md)** (the `skill_paths` Directus collection) and fetched by ID over Connect-RPC (`CMS_RPC_ADDR`).
+  This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).
 
-Access the **GraphQL Playground** (Apollo Sandbox) at `http://localhost:8100/` when running locally (the GraphQL endpoint is `http://localhost:8100/query`).
+* **Session model.** The engine owns a hierarchical session: `SkillPathSession → ChapterSession → StepSession`,
+  each carrying `progress` (0–100), `status` (`pending|active|completed|archived`), `duration`, `version`, and
+  `*_at` timestamps (shared via `SkillPathMixin`). The player skill-path page reads this runtime via
+  `getOrCreateSkillPathSession` — a **get-OR-create** that auto-materializes a blank `pending` session on first
+  read, so an unseeded skill path renders empty, not 404.
 
-**Queries** (`internal/graph/schemas/queries.graphqls`):
-```graphql
-type Query {
-  # Get or create a session for a user on a skill path
-  getOrCreateSkillPathSession(userId: ID!, skillPathId: ID!, version: String): SkillPathSession!
+* **Event-driven step completion (unchanged).** The engine subscribes to the **jobsimulation Redis stream**
+  (start/end events) to update `StepSession` status when a simulation completes, and additionally calls
+  jobsimulation over Connect-RPC (`GetSessions`) on session create/upgrade to reconcile already-completed
+  simulations. It publishes `EventSkillPathSessionUpdated` + `EventChapterStepSessionCompleted` to the
+  `skillpath` Redis stream (consumed by `app`). All of this now runs in-process inside `app`.
 
-  # List all active (in-progress) sessions for a user
-  skillPathActiveSessions(userId: ID!): [SkillPathSession!]!
+* **The manager view reads an `app`-side MIRROR, not this runtime.** The **manager insights** surface
+  (`insightsSkillPathByMemberships`, the `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]`
+  scoreboard in `apps/web`) does **not** read the runtime session — it reads the `app`-side mirror table
+  **`public.local_skill_path_session`** (`app/internal/organization/intelligence.go`; Ent schema
+  `app/internal/data/ent/schema/local_skill_path_session.go` — `progress` 0-100, `status`, no `score`), the
+  analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the runtime session rows renders an
+  empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab
+  (no-surface). Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
-  # List all completed sessions for a user
-  skillPathCompletedSessions(userId: ID!): [SkillPathSession!]!
-}
-```
+* **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app` `origin/main`).
+  The mirror above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
+  (`InsightsBySkillPathStudentsContainer`) — a real table that genuinely requires the mirror row. The
+  **per-member** route `…/skill-paths/[skillPathId]/[userId]`
+  (`InsightsBySkillPathStudentSimulationsContainer`) is **not built**: `userData` is hardcoded `null`, its
+  results table and totals block are commented out, and the body renders the literal string **"Coming soon"**.
+  No query touches the seeded session there, so the page is byte-identical whether or not you seed. This is why
+  the v2.5 content-stories gate is **player-link-only** for skill-path (denominator corrected 31 → 29).
 
-**Mutations** (`internal/graph/schemas/mutations.graphqls`):
-```graphql
-type Mutation {
-  # Mark a step as completed
-  completeSkillPathStep(userId: ID!, skillPathSessionId: ID!, stepId: ID!): Boolean!
+## Related Documentation
 
-  # Revert step completion
-  uncompleteSkillPathStep(userId: ID!, skillPathSessionId: ID!, stepId: ID!): Boolean!
-
-  # Upgrade user's session to latest skill path version
-  upgradeSkillPathSessionToLatest(userId: ID!, skillPathId: ID!): SkillPathSession!
-
-  # Bulk upgrade all users on a skill path (admin)
-  upgradeAllSkillPathSessionsToLatest(skillPathId: ID!, userId: ID!): UpgradeAllSkillPathSessionsResult!
-
-  # (Deprecated) Create a session directly — use upgradeSkillPathSessionToLatest instead
-  createSkillPathSession(userId: ID!, skillPathId: ID!, version: String): SkillPathSession! @deprecated(reason: "Use upgradeSkillPathSessionToLatest instead")
-}
-```
-
-### RPC API
-
-**Service**: `SkillPathSessionService` (Connect RPC)
-
-**Operations** (`rpc.go`):
-```go
-// GetSkillPathSession retrieves a session with chapters and steps
-GetSkillPathSession(ctx, req *skillpathv1.GetSkillPathSessionRequest) (*skillpathv1.GetSkillPathSessionResponse, error)
-```
-
-### Dependencies
-
-*   **Upstream Consumers**:
-    *   Cosmo Router (federated queries — skillpath is one of the 4 subgraphs)
-    *   Backend (`app`) — depends on skillpath at compose startup
-*   **Downstream Dependencies**:
-    *   **Sentinel** (Connect-RPC): authorization (manager + admin checks)
-    *   **CMS** (Connect-RPC): skill path content structure on session creation (`CMS_RPC_ADDR=http://cms:8091`)
-    *   **Jobsimulation** (Redis Streams, consumed): simulation step completion events
-    *   **Jobsimulation** (Connect-RPC, `GetSessions`): reconcile already-completed simulations on session create/upgrade
-    *   **PostgreSQL** (`skillpath` schema), **Redis** (Watermill subscriber)
-
-> Note: skillpath both consumes the jobsimulation Redis stream (start/end events, via `JOBSIMULATION_STREAM`) AND calls jobsimulation via Connect-RPC (`GetSessions`) when (re)building sessions (during `getOrCreateSkillPathSession` / `CreateSession` and version migration) to reconcile already-completed simulations.
-
-## Event-Driven Architecture
-
-Skillpath subscribes to the **Jobsimulation Redis Stream** to react when users complete simulations:
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant JobSim as Jobsimulation
-    participant Redis as Redis Stream
-    participant Skillpath
-    participant DB as PostgreSQL
-
-    User->>JobSim: Complete simulation
-    JobSim->>Redis: Publish simulation_completed event
-    Redis->>Skillpath: Deliver event (subscriber)
-    Skillpath->>DB: Update StepSession status
-    Skillpath->>DB: Recalculate chapter/path progress
-```
-
-**Subscription Handler** (`internal/session/session.go`):
-- Listens to `JOBSIMULATION_STREAM` environment variable
-- Processes events via `SessionManager.JobSimulationSubscriber()`
-- Updates step completion status based on simulation results
-
-**Published events**:
-- skillpath publishes to its own `skillpath` Redis stream (consumed by App):
-    - `EventSkillPathSessionUpdated` (on session create, step complete/uncomplete, and session archive/migration)
-    - `EventChapterStepSessionCompleted` (on step completion, carrying skill-path/chapter/step IDs and `completedAt`)
-
-## Local Development
-
-### 1. Running Standalone
-*   **Prerequisites**:
-    *   PostgreSQL running with `skillpath` schema
-    *   Redis available for pub/sub
-    *   CMS and Jobsimulation services running (for RPC calls)
-    *   Environment variables: `DB_CONNECTION`, `REDIS_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`, `CLERK_SECRET_KEY`
-*   **Setup**:
-    ```bash
-    cd stack-dev/skillpath
-    make setup    # Install tools (ent, atlas, gqlgen, goverter)
-    make gen      # Generate Ent code
-    atlas migrate apply --env local  # Apply migrations
-    ```
-*   **Run**:
-    ```bash
-    go run .
-    ```
-
-### 2. Running in Docker
-*   **Service Name**: `skillpath`
-*   **Command**:
-    ```bash
-    cd platform
-    docker compose up -d skillpath
-    ```
-
-### 3. Testing
-```bash
-cd stack-dev/skillpath
-go test ./...
-
-# With coverage
-go test -cover ./internal/session/...
-```
-
-## Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PORT` | Container HTTP/GraphQL port | `8100` |
-| `RPC_PORT` | Container Connect-RPC port | `8101` |
-| `DB_CONNECTION` | PostgreSQL connection string | `postgres://...?search_path=skillpath` |
-| `REDIS_ADDR` | Redis server address | `redis:6379` |
-| `REDIS_STREAMS_INDEX` | Redis DB index for streams | `4` |
-| `CMS_RPC_ADDR` | CMS service RPC address | `http://cms:8091` |
-| `JOBSIMULATION_RPC_ADDR` | Jobsimulation service RPC address (GetSessions reconciliation) | `http://jobsimulation:8401` |
-| `JOBSIMULATION_STREAM` | Redis stream to subscribe | `jobsimulation` |
-| `AUTHORIZATION_ADDRESS` | Sentinel service address | `http://sentinel:8087` |
-
-> ⚠️ The default platform `docker-compose.yml` skillpath service block does NOT set `JOBSIMULATION_RPC_ADDR` (nor is it in `platform/.env`), and the block does not `depends_on` jobsimulation. Until it is added to the skillpath service environment, simulation-step reconciliation via `GetSessions` (called during session create/upgrade) will fail.
+* [Backend (`app`)](./backend.md) — where the skillpath engine now lives
+* [CMS](./cms.md) — the content side of the content-vs-runtime split (owns the skill-path definitions)
+* [Jobsimulation](./jobsimulation.md) — the peer runtime engine whose completion events drive step completion
+* [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md) — the manager-mirror + player-link-only treatment
+* [Service Taxonomy](../architecture/service_taxonomy.md) · [Dependency Map](../architecture/dependency_map.md)

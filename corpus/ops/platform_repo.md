@@ -8,7 +8,7 @@
 ## Role & Responsibility
 
 `platform` is **not a deployed service**. It is the dev-environment control plane: a
-**Makefile + Docker Compose** orchestrator that clones the ~13 sibling repos and
+**Makefile + Docker Compose** orchestrator that clones the 10 sibling repos and
 builds/runs the microservices locally **from source**. It is the one repo you `cd` into to
 operate everything else.
 
@@ -20,7 +20,7 @@ operate everything else.
 
 ```
 Makefile            Single entry point for all dev ops (parses repos.yml with awk — no yq/python)
-docker-compose.yml  12 app service definitions; `include: [common.yml]`
+docker-compose.yml  11 app service definitions; `include: [common.yml]`
 common.yml          Base infra: postgresql + redis (always-on, no profile); declares app-network
 repos.yml           Manifest of repos `make init` clones (name / type / migrations / schema)
 postgresql/         Custom Postgres image (Dockerfile: compiles pgvector v0.4.4 onto bitnamilegacy/postgresql:15)
@@ -41,7 +41,7 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make up-frontend` | Start `next-web-app` together with the graphql backend stack |
 | `make down` / `make ps` | Stop all services / list containers |
 | `make logs [S=svc]` | Tail compose logs, optionally one service |
-| `make migrate [S=svc]` | `atlas migrate apply --env local` across the 5 migration repos, or a single repo via `S=` |
+| `make migrate [S=svc]` | `atlas migrate apply --env local` across the 3 migration repos (`app`, `cms`, `jobsimulation`), or a single repo via `S=` |
 | `make dev S=svc` | Stop a service container and print native-run instructions (`cd ../svc && go run .`) |
 | `make build-frontend` | `pnpm install && pnpm build` in `../next-web-app` |
 | `make reset-db` | **Confirm-gated** wipe of `data/postgresql/`, restart Postgres, re-migrate (waits on `pg_isready`) |
@@ -56,19 +56,21 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **12 app services**: `graphql`, `sentinel`, `backend`,
-`jobsimulation`, `cms`, `skillpath`, `storage`, `customerio-sync`,
+`docker-compose.yml` defines **11 app services**: `graphql`, `sentinel`, `backend`,
+`jobsimulation`, `cms`, `storage`, `customerio-sync`,
 `messenger`, `roadrunner`, `studio-desk`, `next-web-app` — plus the third-party
 `gotenberg` image and the two base services from `common.yml`. (The former `skiller`
 service was merged into `app`/`backend` in July 2026 — its RPC surface is now served
-by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose.)
+by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose. The former `skillpath`
+service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→M507 — and is
+**gone from compose**; only the residual `SKILLPATH_STREAM=skillpath` env plumbing remains.)
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, jobsimulation, cms, skillpath, storage, roadrunner, gotenberg, **graphql** |
+| `graphql` *(default)* | backend, jobsimulation, cms, storage, roadrunner, gotenberg, **graphql** |
 | `backend` | backend, gotenberg |
-| `jobsimulation` / `cms` / `skillpath` / `storage` / `roadrunner` | **only that one service** |
-| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation/skillpath) |
+| `jobsimulation` / `cms` / `storage` / `roadrunner` | **only that one service** |
+| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation) |
 | `customerio-sync` | customerio-sync |
 | `frontend` | next-web-app (containerized Workforce) |
 | `studio-desk` | studio-desk (containerized) |
@@ -87,7 +89,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
 
-* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation), `skillpath` (skillpath) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`.
+* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`. (`skillpath` is decommissioned — no longer in `repos.yml`; its migrations/schema folded into `app`'s `public`.)
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm), `ant-academy` (node-npm), `graphql-wundergraph` (node-npm).
 
 > `ant-academy` is cloned but has **no compose service** (runs natively / Vercel). The
@@ -99,10 +101,9 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface) |
+| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface **and** the merged skillpath `SkillPathSessionService` RPC, since "skillpath-in-app" M502→M507) |
 | sentinel | 8087 |
 | cms | 8090, 8091 (RPC) |
-| skillpath | 8100, 8101 (RPC) |
 | messenger | 8200, 8201 (RPC) |
 | storage | 8300, 8301 (RPC) |
 | jobsimulation | 8400 (`PORT`), 8401 (RPC) |

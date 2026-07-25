@@ -178,12 +178,31 @@ Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy
 >   **own offset** next-web (`:3000+offset`, which HAS a `/login` route) — so the unauthenticated/non-admin
 >   fallbacks land somewhere **live**, never the dead un-offset `:3000` (`ERR_TOO_MANY_REDIRECTS`).
 >
-> > **No source patch, no mock bundle.** studio-desk needs **no demopatch** — the auth path is the unmodified
+> > **The auth path needs no demopatch, no mock bundle.** studio-desk's **auth** is the unmodified
 > > production code, driven entirely by the **runtime** `CLERK_*` env + the baked pk + the roster-aware fake
-> > BAPI. (Clerkenstein itself — the fake FAPI/BAPI in `rosetta-extensions` — is tooling-owned and freely
+> > BAPI. (Scoped to auth: studio-desk **is** a first-class demopatch target now — the **5** M249+M253 source
+> > patches for "Back to Cockpit" / prod-eject / first-paint; see the bake table below + [`demopatch-spec.md`](demopatch-spec.md).)
+> > (Clerkenstein itself — the fake FAPI/BAPI in `rosetta-extensions` — is tooling-owned and freely
 > > edited; the platform repos are untouched.) A `demo-N-studio-desk` image with a **stale pk/offset** is
 > > reused by the tag-guard, so clearing it (`docker image rm demo-N-studio-desk`) forces a fresh Clerkenstein
 > > bake; the roster-aware BAPI re-seeds on every re-up.
+
+> **v2.7 "july jitter" M252 — the AI-provider `env_file` (the auth model is UNCHANGED).** M252 did **not** touch
+> the auth posture above: the demo studio stays the **Clerkenstein-authenticated hero** — a logged-in org-admin
+> hero (the manager) 302s through the fake-FAPI handshake and passes `checkEnterpriseAndAdmin` exactly as
+> described. (A raw *unauthenticated* `curl` 302s to `/login` — that is the production `clerkMiddleware()`
+> catch-all behaving as designed for a browser with **no** session, **not** an unreachable studio.) What M252
+> fixes is a distinct **AI-provider** gap: studio-desk is a **base-compose** service, so in a demo it inherited
+> **only `platform/.env`** — which carries **no AI-provider keys** — so `POST /api/ai/completion` 500'd. M252
+> wires the studio-desk clone's own `.env` into the container via an existence-guarded `env_file` (the
+> `gen_injected_override.py` bullet in §"Where the tooling lives" below), supplying the studio's own AI-provider
+> keys (`AI_OPENAI_API_KEY` + `AI_ANTHROPIC_API_KEY`). **No `MOCK_CLERK`, no auth change** — a `MOCK_CLERK=true`
+> line would regress the demo to the legacy bypass and **fail** the pinned regression tests
+> (`test_studio_desk_env_clerkenstein_no_mock_and_offset_sign_in` /
+> `test_studio_desk_block_shape_single_port_clerkenstein_wired`, which assert **no** `MOCK_CLERK` line in the
+> studio-desk block). This is what makes `/api/ai/completion` callable **by the logged-in hero** in a Playthrough
+> ([`playthroughs.md`](playthroughs.md): `pt-studio-advanced-generate` / `pt-studio-guided-generate`) — see
+> [`../../services/studio-desk.md`](../../services/studio-desk.md) § Demo AI wiring.
 
 > **Browser-trusted FAPI cert (M31; M213 remote path).** The Clerk-free login routes the browser through
 > Clerkenstein's fake FAPI over **HTTPS**; the bring-up mints a **browser-trusted** TLS cert for it. For a **local**
@@ -274,7 +293,7 @@ used to leave their images behind, so a box could slowly fill until a build hit 
 | App | URLs | Clerk pk | Context trim |
 |-----|------|----------|--------------|
 | **next-web** | `--build-arg NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `_BACKEND_API_URL` / `_HOSTING_URL` (offset) — ARGs the Dockerfile already declares | **no pk ARG exists** → dropped into a **gitignored `apps/web/.env.local`** in the build context, read by `next build`, removed by a trap after | the repo ships **no** `.dockerignore`, so a **tooling-owned** one (`rosetta-extensions/demo-stack/frontend/next-web.dockerignore`) is applied **transiently** (never clobbers a repo one; trap-removed) to trim the 2.8 GB context (2.5 GB `node_modules`) to <100 MB |
-| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` + `VITE_WEB_APP_URL` (offset) — the canonical ARGs (no source patch; auth is via Clerkenstein at **runtime**, not a baked mock) | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → the minted pk passed straight as a build-arg (so the SPA derives the same fake-FAPI host the backend talks to) | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched |
+| **studio-desk** | `--build-arg VITE_GRAPHQL_ENDPOINT` + `VITE_WEB_APP_URL` (offset) — the canonical ARGs; auth is via Clerkenstein at **runtime**, not a baked mock. **v2.7 M249+M253: FIVE source patches now bake in too** (the FIRST-EVER studio-desk source patches — a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint): the **M249 trio** — a fail-closed **"Back to Cockpit"** item + the **prod-eject fix** (logo / back / logout stop ejecting to `app.anthropos.work` → this stack's app) — plus the **M253 pair** of first-paint `main.ts` patches. `VITE_COCKPIT_URL` (7700+OFFSET) rides the **`.env.production.local` overlay** — it is NOT a declared Dockerfile ARG, so it cannot be a `--build-arg`. See [`demopatch-spec.md` §8](demopatch-spec.md). | **`VITE_CLERK_PUBLISHABLE_KEY` IS a declared ARG** → the minted pk passed straight as a build-arg (so the SPA derives the same fake-FAPI host the backend talks to) | the repo **already ships** a `.dockerignore` excluding `node_modules`/`dist`/`.git` — left untouched (the `.env.production.local` overlay gets a transient `!`-re-include past its `.env*` exclusion) |
 
 The split — next-web's pk via the gitignored `.env.local` (its Dockerfile declares no pk ARG) vs studio-desk's
 pk straight as a build-arg (its Dockerfile *does*) — is dictated by the real, unmodified Dockerfiles (#M19-D3).
@@ -468,8 +487,9 @@ returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter
 coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
 [`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
 
-> **Known limitation — the three native-run academy patches share one clone (concurrent-demo teardown).** All three
-> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-chapter-body`)
+> **Known limitation — the five native-run academy patches share one clone (concurrent-demo teardown).** All five
+> `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`,
+> `academy-fs-published-chapter-body`, `ant-academy-back-to-cockpit`)
 > are applied to the **shared** `stack-demo/ant-academy` working tree — its path is `N`-independent (only the port +
 > pidfile are per-`demo-N`). So `ant-academy.sh N --stop` reverts the shared source files unconditionally: tearing
 > down `demo-1` while `demo-2`'s native `next dev` is still live reverts the patched files out from under `demo-2`,
@@ -563,7 +583,17 @@ landed at `storytelling-postfix-2`:
   service to the offset frontend origins (see §"Offset-origin CORS"), and **strips the inherited prod
   `DIRECTUS_TOKEN`** (`DIRECTUS_TOKEN=`) on **every** emitted service + both frontends — no prod credential rides
   in a demo container, and studio-desk's prod-Directus *write* path is disarmed (fix16/fix17; see
-  [`../safety.md`](../safety.md) §2.3 + §2.2).
+  [`../safety.md`](../safety.md) §2.3 + §2.2). **(v2.7 M252, the F8 gap.)** studio-desk is a **base-compose**
+  service, so in a demo it inherits **only `platform/.env`** — which carries **no AI-provider keys**, so the
+  studio backend 500'd `POST /api/ai/completion`. `frontend_lines()` now also emits an **existence-guarded
+  `env_file: [<clone>/studio-desk/.env]`** on the studio service (the studio-desk clone sits beside `platform/`),
+  layering the clone's own `.env` over `platform/.env` to supply the studio's own **AI-provider keys**
+  (`AI_OPENAI_API_KEY` + `AI_ANTHROPIC_API_KEY`) so `/api/ai/completion` no longer 500s. **No `MOCK_CLERK`, no
+  auth change** — the demo studio's auth model is unchanged (Clerkenstein; the injected override even asserts the
+  studio-desk block carries **no** `MOCK_CLERK` line — see the studio-desk block above). Precedence is
+  preserved: the explicit `environment:` block still wins (the Clerkenstein `CLERK_*`, the stripped
+  `DIRECTUS_TOKEN`, `NODE_ENV=production`); `env_file` lists **concatenate**, so studio-desk/.env keys win over
+  platform/.env.
 - `demo-stack/up-injected.sh` — the per-demo serial-before-up frontend build (offset URLs + minted pk +
   tag-guard), the 12 GB VM pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, the scoped verify.
 - `demo-stack/frontend/next-web.dockerignore` — the tooling-owned context trim for next-web.

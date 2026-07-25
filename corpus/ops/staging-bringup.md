@@ -37,7 +37,7 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 +------------------ <yourhost>.taildc510.ts.net (Tailscale) ------------------+
 |                                                                            |
 |  /home/<you>/platform/        docker compose orchestrator                  |
-|  /home/<you>/{app,cms,...}    15 service-repo sibling clones (always main) |
+|  /home/<you>/{app,cms,...}    14 service-repo sibling clones (always main) |
 |  /home/<you>/rosetta/         this corpus                                  |
 |  /home/<you>/ant-singularity/ agent fleet & operations docs                |
 |                                                                            |
@@ -139,9 +139,8 @@ You will end up with this layout:
 ```
 /home/<you>/
 ├── platform/                      # orchestrator (Makefile, docker-compose.yml, .env)
-├── app/                           # Go backend (CORS, GraphQL gateway)
+├── app/                           # Go backend (CORS, GraphQL gateway; hosts the skill-path engine since "skillpath-in-app")
 ├── cms/                           # Go content management
-├── skillpath/                     # Go skill-path runtime
 ├── jobsimulation/                 # Go AI simulations service
 ├── sentinel/                      # Go authz (casbin)
 ├── storage/                       # Go S3-shim
@@ -244,7 +243,7 @@ cat ~/prod_dump.sql | docker compose exec -T postgresql psql -U postgres -d post
 
 ### Sanity-check the restore
 
-**Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `cms`, `skillpath`, `jobsimulation` — plus the legacy `skiller` schema older dumps carry, pre-dating the skiller→app merge) all sit *inside* `postgres`. Running `docker compose exec -T postgresql psql -U postgres -c '\l'` listing only `postgres / template0 / template1` is the **expected** post-restore shape — it is **not** evidence that the restore failed. The 2026-05-14 Ithaca repair burned an hour on this misread; don't repeat it.
+**Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `cms`, `jobsimulation` — plus the legacy `skillpath` and `skiller` schemas older dumps carry, pre-dating the skillpath→app and skiller→app merges) all sit *inside* `postgres`. Running `docker compose exec -T postgresql psql -U postgres -c '\l'` listing only `postgres / template0 / template1` is the **expected** post-restore shape — it is **not** evidence that the restore failed. The 2026-05-14 Ithaca repair burned an hour on this misread; don't repeat it.
 
 To actually sanity-check the data, you must query *inside* the `postgres` DB (note the `-d postgres`):
 
@@ -310,7 +309,6 @@ Per-service `<schema>` values (this is the `search_path` Atlas writes the `atlas
 | ----------------- | -------------- | ------------------------------------------------------------ |
 | `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs — plus the merged skiller taxonomy (skills, job roles, translations, embeddings) since July 2026 |
 | `cms`             | `cms`          | Directus / content schema                                    |
-| `skillpath`       | `skillpath`    | Skill-path runtime                                           |
 | `jobsimulation`   | `jobsimulation`| Job sims, interview extraction results                       |
 
 Apply in any order — schemas don't cross-reference at the migration level. `sentinel` is not in the table because it uses raw Casbin schema management, not Atlas.
@@ -369,7 +367,7 @@ cd ~/platform
 docker compose --profile all up --build -d
 ```
 
-Wait 5-15 min for all 15 services to report healthy:
+Wait 5-15 min for all 14 services to report healthy:
 
 ```bash
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
@@ -596,7 +594,7 @@ These are *expected* failures on a current staging — they're not bringup mista
 
 | Drift                                                                       | Symptom                                                                                                              | Backend response                                                                                                            | First seen   |
 | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `Membership.jobRole` / `Membership.targetRole` / `Info.jobRole` / `Query.recapUserSkills` pass a `language: ContentLanguage` argument the backend doesn't expose | Members page renders "0 / 50 — No data" despite 47+ active members in the DB; Workforce Intelligence is unaffected | `Unknown argument "language" on field …` from Wundergraph; some skillpath subgraph queries also return 422 (`Failed to fetch from Subgraph 'skillpath'`) | 2026-05-14   |
+| `Membership.jobRole` / `Membership.targetRole` / `Info.jobRole` / `Query.recapUserSkills` pass a `language: ContentLanguage` argument the backend doesn't expose | Members page renders "0 / 50 — No data" despite 47+ active members in the DB; Workforce Intelligence is unaffected | `Unknown argument "language" on field …` from Wundergraph | 2026-05-14   |
 
 **Do not patch this locally.** Resolving it means regenerating `next-web-app/packages/graphql/` against the current backend schema (a frontend team change) or extending the schema to accept the arg (a backend team change) — neither is a staging-local edit. If Members 0/50 is blocking demo work *today*, you can either (a) demo a different surface (Workforce Intelligence renders fine), or (b) check out matching versions of `next-web-app` and `app` from before the drift on a non-staging workspace (NOT on a staging clone — see [`staging-sync.md` § What if I want to test a feature branch](./staging-sync.md#what-if-i-want-to-test-a-feature-branch-with-prod-shape-data)).
 

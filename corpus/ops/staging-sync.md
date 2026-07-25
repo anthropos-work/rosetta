@@ -35,7 +35,7 @@ The current sync **force-resets every repo to `origin/main` every run, no except
 
 | Cadence              | Script                                                | What it does                                                                                                                                                                                                            |
 | -------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 15 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
+| Hourly               | `~/.local/bin/anthropos-staging-drift.sh`             | Parallel `git fetch --prune` across 14 repos (~10s wall). Writes `drift.json` + `drift.summary` to `~/.local/state/anthropos-staging-sync/`. Surfaces drift + flags feature-branched repos as **WARN**.                 |
 | Daily<br>06:00 UTC   | `~/.local/bin/anthropos-staging-sync.sh`              | Full sync: per-repo safety patch → `git checkout main; git reset --hard origin/main` → re-apply skip-worktree → `docker compose build` + `up -d` for each changed service → Playwright smoke test. ~10-60 min wall. |
 
 Both run as systemd **user** units. `loginctl enable-linger $USER` is required so they fire even when no SSH session is attached.
@@ -96,9 +96,9 @@ In practice this almost never fires — the rule is "no WIP on staging clones". 
 
 ## Repo scope
 
-The 15 repos the routine covers (same on every staging host):
+The 14 repos the routine covers (same on every staging host; was 15 before `skillpath` was decommissioned into `app`):
 
-**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`.
+**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
 
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
@@ -114,7 +114,7 @@ The 15 repos the routine covers (same on every staging host):
 
 ## Skip-worktree handling
 
-The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
+The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
 
 ### Apply once per staging clone (idempotent)
 
@@ -141,7 +141,7 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, `internal/cors/cors.go`, `internal/web/backend/graphql/graph/handler.go`       |
 | `cms`                      | `Dockerfile.dev`, `go.mod`                                                                                           |
-| `skillpath`, `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
+| `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
 | `next-web-app`             | `Dockerfile.dev`                                                                                                     |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
 
@@ -174,7 +174,6 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | `app`               | `backend`              |
 | `next-web-app`      | `next-web-app`         |
 | `cms`               | `cms`                  |
-| `skillpath`         | `skillpath`            |
 | `jobsimulation`     | `jobsimulation`        |
 | `storage`           | `storage`              |
 | `sentinel`          | `sentinel`             |
@@ -190,7 +189,7 @@ Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Bui
 
 ### Atlas migrations are NOT run by sync
 
-The daily sync pulls new source and rebuilds containers, but it does **not** run `atlas migrate apply`. The Go services boot fine against an out-of-date schema; the breakage only surfaces the first time code paths reach a missing table or column (e.g., `ask_conversations does not exist` for Talk to Data, `skill_translations does not exist` for the skiller subgraph). On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
+The daily sync pulls new source and rebuilds containers, but it does **not** run `atlas migrate apply`. The Go services boot fine against an out-of-date schema; the breakage only surfaces the first time code paths reach a missing table or column (e.g., `ask_conversations does not exist` for Talk to Data, `skill_translations does not exist` for the merged skiller domain, now served by `app`'s `backend` subgraph). On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
 
 **This is an operator responsibility, not a sync-routine job.** Reasons sync doesn't run Atlas itself:
 
@@ -206,7 +205,7 @@ command -v atlas >/dev/null || curl -sSf https://atlasgo.sh | sh
 
 # Check + apply per service. Schemas per service in
 # staging-bringup.md § 4.5.
-for svc_schema in "app:public" "jobsimulation:jobsimulation" "cms:cms" "skillpath:skillpath"; do
+for svc_schema in "app:public" "jobsimulation:jobsimulation" "cms:cms"; do
   svc="${svc_schema%%:*}"; schema="${svc_schema##*:}"
   echo "=== $svc → $schema ==="
   (cd ~/$svc && atlas migrate status --env local \

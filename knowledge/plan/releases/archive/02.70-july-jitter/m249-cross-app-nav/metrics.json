@@ -1,0 +1,43 @@
+{
+  "milestone": "M249",
+  "title": "cross-app navigation (Back-to-Cockpit + studio prod-eject fix)",
+  "shape": "section",
+  "close_status": "closed-complete",
+  "closed": "2026-07-24",
+  "realizes": "a fail-closed '← Back to Cockpit' item in all 4 sub-app menus (next-web, hiring, studio-desk, ant-academy) reading a per-stack COCKPIT_URL (7700+OFFSET), plus the studio-desk logo/back/logout prod-eject fix (stop ejecting the presenter to app.anthropos.work -> this stack's app). Owns the FIRST-EVER studio-desk source demopatch ladder (build_frontend_studio_desk + patch-set fingerprint).",
+  "platform_repo_edits": 0,
+  "deliverable": "rext code (5 new demopatch manifests + 1 native apply helper + up-injected.sh/ant-academy.sh wiring + the net-new build_frontend_studio_desk ladder + tests) + rosetta docs (demopatch-spec §8 additive-UI injection + §4/§5 inventory 16->21, cockpit-spec return-nav section, frontend-tier studio row, studio-desk.md prod-eject subsection). The CODE-of-record lives in the gitignored rosetta-extensions authoring copy; this close merges ONLY the rosetta doc + plan half.",
+  "tests": {
+    "run_unit_py": "138/138 pass at the code-of-record tag (demo-stack python unittest: test_back_to_cockpit_m249 + test_patch_inventory + test_patchset_fingerprint + test_frontend_build)",
+    "back_to_cockpit_suite": "test_back_to_cockpit_m249.py 32 tests GREEN — manifest shape + fail-closed mechanism (deep guard fence) + LIVE apply/revert round-trip (tool + native helper) + up-injected.sh/ant-academy.sh wiring + the studio back->logout CHAIN sha-linkage",
+    "inventory_fence": "test_patch_inventory.py GREEN — pins the EXACT total (21) AND per-repo breakdown (11 next-web-app · 2 app · 5 ant-academy · 3 studio-desk) against demopatch-spec §5; ground-truthed against the real patches/ dir at close (EXACT match)",
+    "fingerprint_fence": "test_patchset_fingerprint.py GREEN — add / re-pin / missing / DEMO_NO_PATCH each move the fp, and every applied manifest (incl. the net-new studio-desk trio) is in some fp call",
+    "overlay_fence": "test_frontend_build.py::test_studio_desk_overwrites_a_stranded_overlay + the failed-build trap GREEN — fences the D5 always-overwrite fix",
+    "delta_vs_prior": "test_back_to_cockpit_m249.py 25 -> 32 (+7 at harden: chain sha-linkage + deep fail-closed guard + native-helper REFUSE ladder); full M249-touched suite 131 -> 138. Net-new milestone (no prior baseline for this feature).",
+    "flake_gate": "GREEN — 5x flake-clean at close (138 every run, varied module order), 3x at harden; deterministic",
+    "lint": "n/a for the merged rosetta half (docs); rext py is unittest-only (no linter in this tooling). 0 broken markdown links across the 4 touched corpus docs."
+  },
+  "flake_count": 0,
+  "coverage": {
+    "method": "manual-finder over the 4 harden focus areas (no coverage plugin in the demo-stack python tooling) — (a) manifest round-trip/apply-revert, (b) fail-closed-when-env-unset, (c) patch-set fingerprint forces rebuild, (d) the D5 overlay-overwrite fix",
+    "surface": "the 5 demopatch manifests (4 additive-UI + 3 rewrite, some shared) + the native apply helper's guard ladder + the up-injected.sh/ant-academy.sh wiring",
+    "result": "harden found 3 genuine gaps (chain sha-linkage; docstring-vs-assertion gap in fail-closed; untested native-helper REFUSE ladder), all closed as pure-unit clone-independent tests (+7); teeth mutation-proofed (broken chain / stripped fallback / dropped ternary / bare-env-rewrite each fail; helper error-paths bite by construction). (c)/(d) already deeply + dynamically covered.",
+    "residual_uncovered": "the responsive MOBILE account-menu branch of next-web NavbarTop (hiddenSidebar) is not covered by the additive item — a presenter demos on desktop; disclosed in the manifest DISCLOSED note (D1)"
+  },
+  "benchmarks": {
+    "applicable": false,
+    "reason": "no perf-sensitive code — demo-patch manifests + bring-up wiring + docs"
+  },
+  "code_of_record_tag": "july-jitter-m249-harden @ 8ab5192 — on origin (rung-zero verified: git ls-remote --tags origin shows refs/tags/july-jitter-m249-harden -> 8ab5192). Test-only commit atop the build tag july-jitter-m249-cross-app-nav @ bcbb779 (also on origin). rext authoring HEAD == tag, tree clean.",
+  "build_commits_rext": "the 5-manifest cross-app Back-to-Cockpit family + the net-new build_frontend_studio_desk ladder + patch-set fingerprint + up-injected.sh/ant-academy.sh wiring -> tag july-jitter-m249-cross-app-nav @ bcbb779 (incl. the D5 overlay always-overwrite fix found at live render-confirm)",
+  "harden_commits_rext": "8ab5192 (deepen back-to-cockpit tests: chain sha-linkage + deep fail-closed + native-helper REFUSE ladder, +7 unit) -> tag july-jitter-m249-harden",
+  "deferral_audit": "GREEN (0 blockers) — 0 M249 own deferrals (progress ledger: Deferred none / Dropped none). The 2 pre-existing test_ant_academy* failures M249 re-observed are a subset of the 8 live/docker-gated demo-stack failures M251 close already fated Fate-2 -> M254 (M254 gate parts (g)+(h)); NOT M249 regressions (verified identical on committed rext HEAD). No repeat, no chronic, no aged-out. Report: audit-deferrals/deferral-audit-2026-07-24-m249-close.md",
+  "close_fixes": [
+    "Phase 1b: deferral re-audit GREEN; recorded the 2 test_ant_academy* failures as Fate-2 confirmed-covered by M254 (no sibling overview edit).",
+    "Phase 2c adversarial: ground-truthed the load-bearing demopatch-spec §5 inventory count (21 = 11+2+5+3) against the real rext patches/ dir at the code-of-record tag — EXACT match, also fenced by test_patch_inventory.py. Recorded in decisions.md.",
+    "Phase 5 decision-triage: D1-D4 already blended into demopatch-spec §8 + frontend-tier + studio-desk.md during build; added (#M249-D1/D2/D3) trace tags at close. D5 -> archive (rext-internal bug fix, test-fenced).",
+    "Phase 6/7: 1 nice-to-have (trace tags); 0 must-fix, 0 scope gaps, 0 escape-hatch deferrals."
+  ],
+  "close_code_changes": "none in rext — all close records are docs in the rosetta repo (progress.md Final Review, decisions.md Fate-2 record + Adversarial review, the deferral-audit report, 3 trace tags in corpus docs, this metrics.json, retro.md, roadmap/state Phase-10). No rext commit and NO rext re-pin at close: the code-of-record stays july-jitter-m249-harden @ 8ab5192.",
+  "notes": "The M249 cross-app-nav lane of v2.7 'july jitter'. Added a fail-closed 'Back to Cockpit' item to all 4 sub-app menus (one shared packages/ui patch covers web+hiring; the FIRST-EVER studio-desk source patch trio image-baked via a net-new build_frontend_studio_desk ladder + patch-set fingerprint; a native-run ant-academy helper) reading a per-stack COCKPIT_URL at 7700+OFFSET, and fixed the studio logo/back/logout prod-ejects (read this stack's VITE_WEB_APP_URL, original prod host kept as the || fallback so behaviour-identical off-demo). Introduced the additive-UI injection pattern (a NEW menu element vs a URL rewrite) as a demopatch-spec §8 reference. LIVE-verified GREEN on demo-2: 4/4 app menus carry Back-to-Cockpit @ :27700; studio prod-eject fixed (:23000 baked, 0 effective ejects). D5 (studio .env.production.local always-overwritten) was found at the live confirm and regression-fenced. Tooling + docs only, 0 platform-repo edits."
+}

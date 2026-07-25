@@ -128,8 +128,8 @@ non-obvious ones are pinned because the runtime reads a specific file:
 
 ### The hybrid `introspect` source + the keep-listed gate (`diff`)
 
-The required-key set is **not** a uniform per-repo `.env.example` — verified on stack-dev, **8 of 9 Go repos
-ship none** (only `sentinel` does). So `introspect` (`secretdna.ReadDeclaredKeys` over
+The required-key set is **not** a uniform per-repo `.env.example` — verified on stack-dev, **7 of 8 Go repos
+ship none** (only `sentinel` does; the count dropped from 8-of-9 when `skillpath` — a Go repo that shipped no `.env.example` — was decommissioned into `app`). So `introspect` (`secretdna.ReadDeclaredKeys` over
 `DefaultHybridSources`) rebuilds the required set from the **union** of:
 
 - `platform/.env_example` — the documented backend wishlist baseline (59 keys);
@@ -276,6 +276,12 @@ real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-fligh
 > both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
 > demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
 > the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
+>
+> **The studio-desk AI keys are the exception (v2.7 "july jitter" M252 — the KB-1 correction).** The blanket
+> above is **imprecise**: `studio-desk/AI_OPENAI_API_KEY` + `studio-desk/AI_ANTHROPIC_API_KEY` do **not** remain
+> in the waived/optional class — they are **required · standard** (warn, not waived), the **same** posture as the
+> M239 Bedrock class below, because the studio **builder GENERATE** (`/api/ai/completion`) is a live-inference
+> surface a demo now drives. See "The studio-desk AI class" below.
 
 ### The Bedrock cred class for app (v2.6 M239, Talk to Data)
 
@@ -319,6 +325,39 @@ surfaced), **idempotent** (copy-if-absent — a re-run adds nothing), and **non-
 `app/.env` just logs an inert-note). Proven live 2026-07-21: the provisioned creds get a real Bedrock answer
 from `eu.anthropic.claude-sonnet-4-6` (`converse` → `pong`, `end_turn`, eu-west-1).
 
+### The studio-desk AI class (v2.7 "july jitter" M252, the studio builders)
+
+**A demo's third live-AI-in-demo surface — after Talk to Data.** M239 (above) made **Talk to Data** a demo's
+first present-not-absent live-inference surface. **M252** does the same for **studio-desk's builder GENERATE**:
+the advanced + guided simulation builders `POST /api/ai/completion` through the studio Copilot's multi-provider
+chain (Azure OpenAI / OpenAI / Anthropic), which cannot answer without a real model call — so a demo's
+studio-desk must hold a real provider key. Like the M239 Bedrock pair, it is an **operator-provisioned** AI
+credential class (never minted, never demo-generated). The GENERATE surface itself is reached by the
+**Clerkenstein-authenticated org-admin hero** (the manager, who passes studio-desk's `checkEnterpriseAndAdmin`
+gate) — M252 routes the AI keys into that already-reachable container via `env_file`; it does **not** disarm auth
+(there is **no** `MOCK_CLERK`, and the demo studio is **not** a "server is open" surface).
+
+**These keys were ALWAYS required · standard — not the waived class above (the KB-1 correction).** The studio AI
+keys have been **DNA genes** since the coverage DNA existed — `studio-desk/AI_OPENAI_API_KEY` +
+`studio-desk/AI_ANTHROPIC_API_KEY`, **required · standard**: the `check` counts them and **warns** when a source
+omits them, but their absence never fails the `Critical == 100%` gate — the **same R3 posture as the M239 Bedrock
+pair**, not the M50 waived/optional class. A key-less demo legitimately *warns* (and the studio GENERATE 500s /
+stays inert — the same graceful degradation as any absent AI-provider key), rather than being treated as
+satisfied. They are **not** in `demoSatisfied` — operator-provided from the source, not minted like the Clerk
+family nor auto-generated like `INVITATION_HMAC_SECRET`.
+
+**Source coverage vs container coverage — the DNA proves one, autoverify the other.** The `stack-secrets` DNA is
+**source-vs-DNA only**: it scores whether the *source* provisions the gene into `studio-desk/.env`; it never
+inspects a running container. That is necessary but not *sufficient* here, because studio-desk is a
+**base-compose** service — in a demo it inherits only `platform/.env` (which carries no AI keys), so the value
+must actually be routed **into the container**. M252 does that with the injected-override
+**`env_file: <clone>/studio-desk/.env`** (see [`demo/frontend-tier.md`](demo/frontend-tier.md) +
+[`../services/studio-desk.md`](../services/studio-desk.md) § Demo AI wiring), and adds the missing
+**container-side** proof: a **demo-aware, non-fatal, values-blind** assertion in the **live-verify layer**
+(`stack-verify/live/autoverify.sh`) that the studio-desk **container** actually carries a provider key —
+mirroring autoverify's existing directus `DB_CONNECTION_STRING` container check. **The DNA proves source
+coverage; autoverify proves the container carries it.**
+
 ### The values-blind safety statement (the inviolable invariant)
 
 **No verb ever reads, echoes, logs, or persists a secret VALUE** — not in stdout, stderr, an error, or any
@@ -351,7 +390,7 @@ non-prod stack, values-blind.
 
 ## Status
 
-M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/56-gene map)
+M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/61-gene map)
 + the two-tier keep-listed `diff` gate, **113 Go tests** (hermetic, `-race` clean). M28 adds the `provision`
 engine (alias-mapped per-file writes, copy-if-absent + `--force`, N=0-guarded, the `DIRECTUS_TOKEN`
 non-rearm regression pinned) + the demo-aware `check`, wired non-fatally into `/dev-up` + `/demo-up`

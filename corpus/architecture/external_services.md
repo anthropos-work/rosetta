@@ -304,12 +304,12 @@ Directus can trigger webhooks on content changes:
 | **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
 | **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
 | **Port** | 5050 (host) → 8080 (container) |
-| **Purpose** | Federated GraphQL API gateway over 4 subgraphs |
+| **Purpose** | Federated GraphQL API gateway over 3 subgraphs |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
 ### What the gateway provides
 
-- **Federation v2**: Composes four subgraphs (`backend`, `jobsimulation`, `cms`, `skillpath`) into one supergraph (the former `skiller` subgraph was removed when skiller merged into `app`, July 2026)
+- **Federation v2**: Composes three subgraphs (`backend`, `jobsimulation`, `cms`) into one supergraph (the former `skiller` subgraph was removed when skiller merged into `app`, July 2026; the `skillpath` subgraph was removed when skillpath merged into `app` — "skillpath-in-app", platform M502→M507 — its session types/queries now served by the `backend` subgraph)
 - **Subscriptions** for `jobsimulation` over SSE POST (`subscription.protocol: sse_post`)
 - **Apollo-compatibility flags** enabled for stricter validation behavior
 - **Playground** at `/graphql` for local development
@@ -329,9 +329,8 @@ graph TB
         WG[Cosmo Router :5050]
     end
 
-    subgraph Subgraphs[4 GraphQL Subgraphs]
+    subgraph Subgraphs[3 GraphQL Subgraphs]
         Backend[backend :8082]
-        Skillpath[skillpath :8100]
         Jobsim[jobsimulation :8400]
         CMS[cms :8090]
     end
@@ -340,7 +339,6 @@ graph TB
     Hiring --> WG
     Desk --> WG
     WG --> Backend
-    WG --> Skillpath
     WG --> Jobsim
     WG --> CMS
 ```
@@ -351,7 +349,6 @@ From `docker-compose.yml`, the gateway `depends_on`:
 - backend
 - jobsimulation
 - cms
-- skillpath
 - storage
 
 It starts after these services have reported "started" (not necessarily healthy — there are no per-subgraph healthchecks). The composed `config.json` is generated at image build time, so adding a new subgraph means rebuilding the gateway.
@@ -367,7 +364,6 @@ COPY graphql-wundergraph/config.compose.yaml ./config.yaml
 COPY app/internal/web/backend/graphql/graph/schemas/ /tmp/schemas/backend/
 COPY cms/internal/graph/schemas/ /tmp/schemas/cms/
 COPY jobsimulation/internal/graph/schemas/ /tmp/schemas/jobsimulation/
-COPY skillpath/internal/graph/schemas/ /tmp/schemas/skillpath/
 RUN awk ... /tmp/schemas/backend/* > ./schemas/backend.graphqls && ...
 RUN wgc router compose -i supergraph-config.yaml -o config.json
 ```
@@ -385,7 +381,6 @@ From `graphql-wundergraph/supergraph-config-compose.yaml`:
 | backend | `http://backend:8082/graphql/query` |
 | jobsimulation | `http://jobsimulation:8400/query` (SSE POST for subscriptions) |
 | cms | `http://cms:8090/query` |
-| skillpath | `http://skillpath:8100/query` |
 
 ### Configuration
 
@@ -641,7 +636,7 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 docker compose ps graphql
 
 # Check dependent services are up
-docker compose ps backend cms jobsimulation skillpath storage
+docker compose ps backend cms jobsimulation storage
 ```
 
 **Schema outdated**:

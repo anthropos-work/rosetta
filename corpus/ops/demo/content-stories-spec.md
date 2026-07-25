@@ -88,7 +88,7 @@ blocks the cockpit.
           "player_result_path": "/sim/<slug>/result/<sessionId>",
           "has_manager_view": true,
           "manager_seat": "dan-manager",         // the host org's manager hero (omitted if no manager view)
-          "manager_result_path": "/enterprise/activity-dashboard/ai-simulations/<simId>/<userId>"
+          "manager_result_path": "/sim/<slug>/<userId>/result/<sessionId>"  // M248: the per-session manager RESULT view (isManagerView), NOT the activity-dashboard scoreboard
         }
       ]
     }
@@ -106,7 +106,7 @@ stay simulation-shaped and untouched. An empty product section is never fabricat
 
 | product id | app_base | section icon | player link? | manager surface |
 |---|---|---|---|---|
-| `simulation` | `web` | `flask` | yes — `/sim/<slug>/result/<sessionId>` | `ai-simulations` (or `interviews` for an interview sim_type) |
+| `simulation` | `web` | `flask` | yes — `/sim/<slug>/result/<sessionId>` | **M248:** `/sim/<slug>/<userId>/result/<sessionId>` (`isManagerView`, non-interview family) — re-pointed off the `ai-simulations` scoreboard; **interview** sim_type keeps its dedicated `interviews`/activity-dashboard route (D3) |
 | `skill-path-legacy` | `web` | `diagram-project` | yes (M234) | **— none** (the platform surface is unimplemented — M236 iter-07) |
 | `skill-path-new` (academy) | `academy` | `graduation-cap` | yes — `/courses/<slug>` (**M236 iter-08**) | — (no academy manager route, M231) |
 | `ai-labs` | `web` | `vials` | **no — presence-only** (M231 §5) | — |
@@ -179,15 +179,32 @@ INTERVIEW stays Italian-only. The landable-pair denominator moved **29 → 49** 
   (the public sim's slug, resolved read-only from the public catalog at authoring time — public + non-PII;
   `#D-M233-3`). `<sessionId>` is the seeder's own derived id (`contentStorySessionID`), so the link names the
   seeded row.
-- **manager_result_path** — `/enterprise/activity-dashboard/<kind>/<simId>/<membershipId>` where `<kind>` ∈
-  {`ai-simulations`, `interviews`} (**`skill-paths` was removed at M236 iter-07** — see the table above),
-  `<simId>` is the sim uuid. Fully offline-derivable (no slug).
+- **manager_result_path** — routed by **sim_type** (**M248**):
+  - **A NON-interview sim** (assessment / training / hiring) → `/sim/<slug>/<userId>/result/<sessionId>`, the
+    per-session **manager RESULT view** (not the org activity-dashboard scoreboard). It shares the player
+    path's `<slug>` (the public sim slug) and `<sessionId>` (`contentStorySessionID`), inserting the owner's
+    **user id** (`owner.UserID` = the seeded `public.users.id`) as the `<userId>` segment. It renders through
+    the SAME `AISimulationResultContainer` as the player, with `isManagerView=true`, reading the persisted
+    result by `sessionId` (`JobSimulationResult(sessionId)` — a plain Ent SELECT, no recompute). **Verified
+    live** on demo-2: renders the full scored result (score + performance narrative; the "Evaluated Skills"
+    detail is collapsed behind a "Show Details" toggle, feedback in the session's language).
+  - **An INTERVIEW** keeps its **dedicated** `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>`
+    route (last segment = the owner's **membership id**, the `GetMembership(membershipsID)` resolver, M236
+    iter-05). **Why the split stays (verify-interview, resolved LIVE):** the `/sim` interview manager surface
+    renders the `interviewExtractionManagerReport` ONLY when `flag_interview_manager_report` is effective AND
+    the report is fetched; on a demo it falls through to a **"Coming Soon"** placeholder
+    (`interviewExtractionData` null), so the report does NOT reliably render there — whereas the dedicated
+    interviews route lands reliably (M236, no flag dependency). The milestone's explicit conditional — "keep
+    interview split IF verify-interview says so" — therefore resolves to KEEP.
 
-  > **The last segment is a MEMBERSHIP id, not a user id** (M236 iter-05). The page calls
-  > `GetMembership(membershipsID)`; hand it a user id and it returns `ent: membership not found` and the
-  > whole query **nulls**. It fails *silently*, because the page header is served by a **different** query
-  > and renders fine either way — so the scoreboard looks populated while proving nothing. If a manager
-  > pair "passes" but you have not seen its **table rows**, assume this bug.
+  `has_manager_view` is per-session and downgrades to false with no manager hero.
+
+  > **Access + why `<userId>` renders on the `/sim` route (M248).** The route's `layout.tsx` gate admits
+  > `MembershipRoles.Admin` (ANY user's result) or `ContentCreator` (own only); the manager seat
+  > (`dan-manager`) is seeded **admin**, so the admin branch grants it the player's result. The result renders
+  > by `sessionId`, so it is robust to `<userId>`; and because the seeder re-owns the cloned session's
+  > `owner_id` to `owner.UserID`, the session-scoping queries match too. (For the NON-interview `/sim` route
+  > this SUPERSEDES the pre-M248 membership-id trap; the interview route still ends in the membership id.)
 
 **app_base is `web`, not hiring** (`#D-M233-2`). Content-story sessions are re-tenanted into a **Workforce**
 org (`firstNonHiringStory`), so they render in apps/web regardless of the source sim's `sim_type` — M231's
@@ -273,7 +290,7 @@ bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** 
   `ContentStoryNonSimSeeder` + `buildNonSimProducts` appended by `BuildContentProducts`), NOT added to the
   simulation fixture (whose validator + seeder are simulation-shaped). Each has its OWN self-contained
   flat-index owner pairing (single-sourced with the seeder, exactly as the simulation projection). **Skill-path**
-  — real progress: a seeded `skillpath.skill_path_sessions` row + the `local_skill_path_sessions` mirror
+  — real progress: a seeded `public.skill_path_sessions` row (in `app`, since the skillpath→app merge) + the `local_skill_path_sessions` mirror
   (owned by a `content-player` seat, pinned to a REAL public `skill_path_id`), the `/skill-path/<id>` route —
   **player-link-only**: M236 iter-07 proved the per-user *manager* drill-down is UNIMPLEMENTED in next-web
   ("Coming soon", results table commented out, `userData` hardcoded null), so `has_manager_view` is FALSE and
@@ -330,9 +347,11 @@ header; the modality from the desc to the tuple title.** The two actions per cel
 - **As-player** — a fake-FAPI handshake `…/handshake?__clerk_identity=<player_seat>&redirect_url=<base><player_result_path>`,
   rendered iff the session carries a `player_result_path`. `<player_seat>` is the `content-player-<idx>` seat
   M234 registered (§7.4), so the presenter logs in as the exact seeded member who owns the session.
-- **As-manager** — the same handshake with the manager hero seat landing on the activity-dashboard result
-  surface, **omitted where `has_manager_view=false`** (the `.sactions`/two-button layout with omitempty). The
-  manager CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
+- **As-manager** — the same handshake with the manager hero seat (an admin) landing on the manager result
+  surface (M248: a NON-interview sim → the per-session `/sim/<slug>/<userId>/result/<sessionId>` result view;
+  an INTERVIEW → its dedicated `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` route),
+  **omitted where `has_manager_view=false`** (the `.sactions`/two-button layout with omitempty). The manager
+  CTA is **always** a FAPI handshake (manager surfaces are next-web/hiring, never academy) (#M234-D4).
 
 > **Render helpers (M242).** `render_content_tab` groups by `_content_tuple_key` → `_content_tuple_row`
 > (icon + title + columns) → `_content_login_cell` (the per-session cell: language pill + the two CTAs,
