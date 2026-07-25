@@ -23,3 +23,9 @@ there are NO iter dirs at scaffold.)_
   host-sensitive test fails (2 nvm env-artifact + 7 to fix) → fix-iter. **PENDING:** (c) Back-to-Cockpit render,
   (e) builder Playthrough, (h) latency solo. Gate **~4/8 MET** (a,b,d + a-reconfirm). cap-reached → fresh agent.
   see iter-04/progress.md
+- iter-05 (tik/measurement-cluster, closed-fixed-partial): banked **(h)-latency MET both vantages** (employee
+  p95 1.43 s / manager 1.41 s, gate < 5 s, 5/5 ACCESS, solo) + **(c)-render LIVE on 2/4 apps** (next-web +
+  hiring; all 4 patch-applied@build + :17700 baked → resolve-to-stack). Found a **real (c) fragility defect on
+  the native academy** (Back-to-Cockpit item reverted out-of-band; `UserMenu.jsx` = pristine; heal only on
+  `ant-academy.sh` re-invoke) → routed to fix-iter. (c)-studio render (f)-coupled. Gate **~4.5/8** (h-latency
+  banked; c partial). see iter-05/progress.md
