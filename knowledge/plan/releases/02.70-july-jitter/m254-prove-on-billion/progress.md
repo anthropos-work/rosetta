@@ -16,3 +16,10 @@ there are NO iter dirs at scaffold.)_
   (path/anchor/shas), 52/52 tests green, rext tag july-jitter-m254-aireadiness-repoint on origin, re-pinned
   billion, cold reset-to-seed → autoverify green:true/0 warnings. **GATE (a) MET.** Gate **1/8** —
   see iter-03/progress.md
+- iter-04 (tik/measurement-cluster, closed-fixed-partial): measured b/c/d/f/g + re-confirmed a live. **MET:**
+  (a) re-confirmed green, (b) MET-with-disposition (45/45 + 4 voice presence-only, coordinator-approved),
+  (d) MET both vantages (8/8 sections + 3 drift-fixes), (c) prod-eject side proven (0 escapes/133 pages).
+  **RESIDUAL:** (f) studio-desk session-carry on --public-host (FCP lands on web app) → fix-iter; (g) 9
+  host-sensitive test fails (2 nvm env-artifact + 7 to fix) → fix-iter. **PENDING:** (c) Back-to-Cockpit render,
+  (e) builder Playthrough, (h) latency solo. Gate **~4/8 MET** (a,b,d + a-reconfirm). cap-reached → fresh agent.
+  see iter-04/progress.md
