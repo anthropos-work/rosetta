@@ -4,7 +4,7 @@ milestone: M257
 title: "first-light build"
 status: planned
 release: v2.8 "fast build"
-exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on billion (baseline: measured 672 s — a 46% cut), 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
+exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on billion (baseline: the M255-measured n=3 p50 666.29 s — a 46% cut), 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
 re_scope_trigger: "If after L1 + L2 + L3 the p50 is still > 480 s, the remaining cost is structural (host I/O or the containerd snapshotter) — escalate rather than grind."
 depends_on: [M256]
@@ -30,15 +30,29 @@ last_updated: 2026-07-27
 Collapse the cold demo bring-up so going live is a coffee, not a lunch — **spending the machine deliberately,
 never exhausting it**, and without weakening a single safety guard.
 
-## Baseline (measured, n=1, `billion` 8 vCPU / 7.3 GiB / x86_64, cold-images + warm layer cache)
+## Baseline (`billion` 8 vCPU / 7.3 GiB / x86_64, cold-images + warm layer cache)
 
-| | |
-|---|---|
-| Total cycle | **672.4 s (11 m 12 s)** |
-| Bring-up | 650.7 s (96.8 %) |
-| **UI-tier image builds (3)** | **446.4 s — 66.4 %** |
-| **Image export/unpack alone** | **288.4 s — 42.9 %** |
-| peak load1 | **4.90 of 8 cores** · avg 2.26 · peak RAM 74 % |
+**The gate measures against the M255 `n=3` campaign, not the `n=1` annotation.** Both are listed because the
+annotation is where the lever ranking comes from; the campaign is what the exit gate is a percentage of.
+
+| | **n=3 p50 — THE BASELINE** | n=1 annotation |
+|---|---|---|
+| Total cycle | **666.29 s (11 m 06 s)** | 672.4 s (11 m 12 s) |
+| Bring-up | 633.15 s (95.0 %) | 650.7 s (96.8 %) |
+| **UI-tier image builds (3)** | **436.1 s — 65.5 %** | 446.4 s — 66.4 % |
+| **Image export/unpack alone** | **307.5 s — 46.2 %** | 288.4 s — 42.9 % |
+| peak load1 | **4.06 / 4.56 / 4.22 of 8** | 4.90 of 8 · avg 2.26 · peak RAM 74 % |
+
+The two agree to **0.9 %**. Campaign artefacts: `billion:/home/devops/panorama/m255/campaign/`; the protocol,
+the reclaim caveat and the per-sub-phase table are in
+[`corpus/ops/demo/build-budget.md`](../../../../corpus/ops/demo/build-budget.md).
+
+> **Two M255 findings this milestone must carry.** (1) **`turbo --env-mode=loose` is mandatory** — Turbo 2
+> defaults to `strict` and filters `NEXT_PRIVATE_STANDALONE` out before `next build` sees it, so the flag
+> silently no-ops and the build stays green with the old 4.84 GB image. (2) **L2 is re-priced down to ≲45 s and
+> sequenced AFTER L1** (L1 deletes the two export legs L2 existed to overlap), and **the hiring recruiter
+> Playthrough must be re-verified after union-apply is flipped on** — D-v28-7's "inert outlier" premise was
+> false; hiring's behaviour does change.
 
 **This is not a CPU problem.** It is serialised I/O (writing 9.4 GB of Next.js image to disk) plus a
 **deliberate serialisation**: `build_frontends()` has exactly one conditional (`NO_UI`); the RAM pre-flight it

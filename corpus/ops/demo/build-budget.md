@@ -108,9 +108,12 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 **`billion.taildc510.ts.net`** — 8 vCPU · 7.3 GiB RAM · 15 GiB swap · x86_64 · Linux 6.8.0-134 · Docker 29.6.2
 with the **containerd image store** · demo-1 at offset 10000 with `--public-host`.
 
+First, the **instrumented `n=1` anatomy** — the run every lever in this release was ranked from. **It is not
+the gated number**; the `n=3` campaign below is, and it lands within 0.9 % of this.
+
 | | |
 |---|---|
-| **Total cycle** | **672.4 s — 11 m 12 s** *(n = 1, 2026-07-27)* |
+| **Total cycle** | **672.4 s — 11 m 12 s** *(n = 1, 2026-07-27 — superseded as the baseline by the 666.29 s p50 below)* |
 | teardown | 19.7 s (2.9 %) |
 | bring-up | 650.7 s (96.8 %) |
 | **UI-tier image builds (3)** | **446.4 s — 66.4 % of the cycle** |
@@ -124,14 +127,107 @@ not compilation — it is writing the image to disk.**
 Full anatomy, including the ranked lever table: `releases/02.80-fast-build/evidence/build-annotation.md`
 in the plan tree.
 
-### The n ≥ 3 campaign
+### The n ≥ 3 campaign — **the gated baseline**
 
-<!-- M255-CAMPAIGN-RESULTS -->
+**`buildbench run 1 --reps 3 --profile billion --public-host billion.taildc510.ts.net --label m255-baseline`**,
+2026-07-27, same host as above. Artefacts: `billion:/home/devops/panorama/m255/campaign/`. **All three reps
+`rc=0`, `autoverify green: true, warnings: 0`, `phases_complete: true`, zero missing anchors, headroom assert
+OK.**
+
+> **The baseline is `n=3 p50 = 666.29 s (11 m 06 s)`.** It supersedes the annotation's **672.4 s** — which
+> was `n=1` and, it turns out, an unusually representative one: the two differ by **0.9 %**. **Every v2.8
+> reduction target is measured against 666.29 s.**
+
+| | p50 | min | max |
+|---|---|---|---|
+| **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
+| teardown (P1) | 28.08 s | 24.99 s | 33.17 s |
+| bring-up (P4) | 633.15 s | 633.11 s | 852.92 s |
+
+Per sub-phase, p50 (rep-01 / rep-02 / rep-03):
+
+| sub-phase | p50 | share | reps |
+|---|---|---|---|
+| `ui_next_web` | **216.47 s** | 32.5 % | 214.06 / 249.89 / 216.47 |
+| `ui_hiring` | **207.26 s** | 31.1 % | 207.26 / 204.65 / 209.12 |
+| `set_dress` | 97.07 s | 14.6 % | 97.07 / 97.37 / 96.46 |
+| `compose_up` | 36.26 s | 5.4 % | 36.26 / 44.40 / 35.78 |
+| `backend_builds` | 25.42 s | 3.8 % | 25.42 / 30.32 / 24.59 |
+| `serve_and_egress` | 18.73 s | 2.8 % | 18.85 / 18.73 / 18.09 |
+| `host_preflight` | 14.63 s | 2.2 % | 14.63 / 15.52 / 14.47 |
+| `ui_studio_desk` | 12.41 s | 1.9 % | 12.41 / **185.27** / 12.13 |
+| `clones_and_inject` | 2.42 s | 0.4 % | 2.37 / 2.48 / 2.42 |
+| `autoverify` | 2.12 s | 0.3 % | 2.20 / 2.12 / 2.09 |
+| `seed_tooling` | 1.01 s | 0.2 % | 1.70 / 1.01 / 0.74 |
+| `secrets_provision` | 0.88 s | 0.1 % | 0.88 / 1.16 / 0.79 |
+
+**The n=1 headlines all survive n=3, and two get sharper:**
+
+- **UI-tier image builds** = **436.1 s — 65.5 %** of the cycle (n=1 said 446.4 s / 66.4 %).
+- **Export + unpack alone** = **307.5 s — 46.2 %** at p50, summed across all nine built images
+  (305.9 / 359.6 / 307.5 per rep; n=1 said 288.4 s / 42.9 %). Nearly half the cycle is still *writing images
+  to disk*, and n=3 puts that share **higher**, not lower.
+- **Peak `load1` 4.06 / 4.56 / 4.22** — every rep well under the clause-1 limit of `cores − 2 = 6`, and all
+  three **below** the n=1 figure of 4.90. Spike (d)'s "not a CPU plateau" reading holds at n=3.
+
+**The headroom model was validated, not just applied.** The assert predicted
+`heap_commitment = 1 lane × 3900 MiB + 1500 MiB idle = 5400 MiB`. The three reps peaked at **5446 / 5579 /
+5398 MB** — within **~3 %**. `lane_heap_measured_peak_mib = 3900` now rests on a campaign, not on one run.
+
+> **One honest caveat on spike (d).** 1 of 221 samples reached **100 % disk `%util`** (rep-03). Average util
+> stayed 20.8–23.9 %, so the "not an I/O ceiling" conclusion stands — but *"zero samples ≥ 90 %"* is an **n=1**
+> claim and must not be restated at n=3.
+
+#### rep-02 is the finding, not the outlier to discard
+
+rep-02 cost **881.01 s — 32 % above p50** — and 206 s of that 215 s excess sits in two sub-phases:
+`ui_studio_desk` went **12.41 s → 185.27 s** (+173 s) and `ui_next_web` **216.5 s → 249.9 s** (+33 s).
+Studio-desk's cache chain broke
+at step 2 of 6 (`WORKDIR /app` uncached, 1 of 11 steps cached against 5 in the neighbouring reps), so it paid a
+full **`npm ci` of 136.5 s** that the other two reps got for free.
+
+**The cause is the reclaim step, and it refuted this doc's own first draft of the reasoning for it.** That
+draft justified `--filter until=24h` on the grounds that *"the base-image and CACHED-step records are touched
+by every rep, so their last-used clock keeps resetting and they survive."* Measured:
+
+| | records | build cache pruned |
+|---|---|---|
+| reclaim after **rep-01** | 546 → **539** (−7) | **356.8 MB** |
+| reclaim after **rep-02** | 581 → **581** (−0) | **0 B** |
+
+rep-01 *did* serve studio-desk's chain from cache — and the first reclaim evicted it anyway. **Being served
+from cache does not reliably refresh a BuildKit record's last-used clock.** Seven records and 356.8 MB bought
++173 s of wall clock.
+
+Three consequences, all of which are why the campaign protocol reads the way it does:
+
+1. **Report `p50`, never the mean.** The mean of these three reps is 735.2 s — **10 % high**, describing a
+   cache eviction rather than a bring-up.
+2. **`n ≥ 3` is a floor, not a nicety.** At `n=2` this campaign would have reported **~773 s** and every v2.8
+   lever would have been priced against a number that does not exist.
+3. **The eviction is one-off, not per-rep.** It clears the *pre-campaign-age* records; from rep 3 on the
+   campaign is in steady state (rep-01 658–666 s ≈ rep-03). **Budget a warm-up rep** — or read `min` alongside
+   `p50`, which here agree to within 1.2 %.
 
 ### The informational laptop run
 
 **M1 Pro · macOS 25.1 · Docker Desktop 28.5.1 · 10 VM CPUs · 9,937 MiB VM RAM · 58 GiB VM disk · arm64 ·
 overlay2 · BuildKit cache EMPTY (truly cold).** Not gated — every v2.8 gate is measured on `billion`.
+
+> **What was measured, and what was not — because the assert said no.** The intent was a full `n=1` cycle
+> here. It did not run: `buildbench assert-headroom --profile laptop` **FAILED clause 1** —
+> `peak load1 10.69 exceeded cores-2 (8)` — because the workstation was doing other work at the time. Disk
+> and memory were fine (25.3 GiB free against a 19 GiB requirement).
+>
+> **That is the assert working, on its first live outing, and the result is reported rather than overridden.**
+> A cycle measured on a host at load 10.7/10 would have produced a number whose slowness says nothing about
+> the bring-up — precisely the class of number D-M255-1 exists to refuse. The lesson generalises: **a
+> developer workstation is not a bench.** It has other jobs. `billion` is the gate host because it does not.
+>
+> What *is* measured below is one real `hiring.Dockerfile` build taken on a quiet box — the dominant leg, and
+> enough to fix the laptop profile's per-lane memory peak and to expose three host-shape differences that
+> matter more than a wall-clock total would have. The one field this leaves derived rather than measured is
+> the profile's `projected_image_gib`, and it is labelled as such in `laptop.json`.
 
 One real `hiring.Dockerfile` build, 2026-07-27:
 
@@ -172,6 +268,11 @@ against a 7,500 MiB budget, a ceiling-based test would "prove" that `billion` ca
 demonstrably runs every day. The profiles therefore record both, and the assert uses the measured one —
 **3,900 MiB** on billion, **4,223 MiB** on the laptop.
 
+**And the measured one held up.** Clause 2's arithmetic predicts a whole-host commitment of **5,400 MiB** for
+one lane on billion; the n=3 campaign peaked at **5,446 / 5,579 / 5,398 MB**. A headroom model that is right
+to ~3 % across three independent cycles is a model, not a guess — which is what makes the *refusals* it issues
+(the laptop, below) worth honouring rather than overriding.
+
 **The derived consequence M257 has to price in:**
 
 > `max_parallel_ui_lanes = floor((0.8 × budget − idle) / measured-lane-peak)` = **1 on billion**, **1 on the
@@ -200,8 +301,11 @@ measured on a host without headroom is not a number. So the identical assert **h
 
 ## The campaign protocol
 
-A rep leaks **~2 GiB** of resident disk and orphans **~11.6 GiB** of BuildKit cache. Against 38–44 GiB free
-that is a **~4–5 cycle runway** — so a three-rep campaign is *just* inside it, and a careless one is not.
+**The binding constraint is the TRANSIENT, not the net.** A steady rep nets only **~1.7–2.1 GiB** of resident
+disk (measured across the campaign: 38.85 → 36.23 GiB free over three reps and two reclaims), but *mid-cycle*
+it swings roughly **18 GiB** — `--purge` frees the old images, the rebuild re-writes them, and the export leg
+stages layers before unpacking them. Clause 3 is sized against that swing, which is why 36–42 GiB of free disk
+is comfortable and 25 GiB is the floor.
 
 1. **Declare the starting state.** Every ledger records `docker system df` before and after, plus the Docker
    VM's free disk and the host's.
@@ -211,12 +315,24 @@ that is a **~4–5 cycle runway** — so a three-rep campaign is *just* inside i
    ```bash
    docker builder prune -f --filter until=24h
    ```
-   `until=<duration>` prunes records **not used within** that window. That distinction is the whole point: the
-   base-image and CACHED-step records are touched by every rep, so their last-used clock keeps resetting and
-   they **survive**, while the once-only `pnpm install` / `COPY . .` records age out. There are **16** of the
-   former at **4.029 GB each = 64.46 GB — 61 % of the entire cache** — every one with `Usage count: 1`.
-   `prune -af` instead would make the next rep **truly cold** and silently break comparability.
-4. **Never prune before the baseline.** (Restated because it is the mistake that costs a whole campaign.)
+   `until=<duration>` prunes records **not used within** that window, where `prune -af` would make the next rep
+   **truly cold** and silently break comparability. That much is the reason for the filter and it holds.
+
+   > **⚠️ But `until=24h` is NOT a guarantee that rep-touched records survive — measured, and it cost 173 s.**
+   > The reasoning this step used to carry — *"CACHED-step records are touched by every rep, so their
+   > last-used clock keeps resetting and they survive"* — is **false as stated**. In the n=3 campaign, rep-01
+   > served studio-desk's whole chain from cache, and the reclaim immediately after it **evicted that chain
+   > anyway** (7 records, 356.8 MB), so rep-02 paid a full 136.5 s `npm ci`. Being *served* from cache does not
+   > reliably refresh a BuildKit record's last-used clock.
+   >
+   > It is a **one-off**, not a per-rep tax — it clears the pre-campaign-age records, and the next reclaim
+   > pruned **0 B / 0 records**. Plan for it: **budget a warm-up rep, report `p50`, and read `min` beside it.**
+
+4. **Expect the reclaim's value to come from the IMAGE prune, not the cache prune.** After rep-01: **5.321 GB**
+   of dangling images against **356.8 MB** of build cache. After rep-02: **0 B** and **0 B**. Build-cache growth
+   per steady rep is **+1.7 to +2.2 GB** (the rebuild rep: +4.4 GB) — an order of magnitude less than the
+   ~11.6 GiB/rep this doc previously claimed.
+5. **Never prune before the baseline.** (Restated because it is the mistake that costs a whole campaign.)
 
 ### ⚠️ A mid-campaign ENOSPC does not look like ENOSPC
 
@@ -303,6 +419,11 @@ not evidence.
 
 **Exit codes** follow the `stack-core` guard convention: `0` ok · `1` a rep failed or the assert fired ·
 `2` the harness could not run. An empty campaign directory reports as a **FINDING**, never as a pass.
+
+A campaign writes `campaign.json` plus a `rep-NN/` per rep holding `ledger.json` (the full phase/build/sample
+ledger), `samples.tsv`, and `cycle.log`. **The M255 baseline lives at
+`billion:/home/devops/panorama/m255/campaign/`** and is what every v2.8 comparison re-derives from — re-read it
+with `buildbench report`, don't re-type numbers out of this doc.
 
 ### Rung zero applies here too
 

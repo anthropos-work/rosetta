@@ -137,7 +137,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.7** | **july jitter** | The **re-ground + fidelity + field-hardening release** — realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into `app` → **3 subgraphs**; jobsim mid-merge; net-new `app` domains; the rext seeder about to break on `skillpath.*`) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane worktree fan-out → prove-on-billion | M246 → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; 9 milestones M246→M254 — M246 barrier [`section`, HARD go/no-go] · M247 corpus-reground · M248 content-mgr-link · M249 cross-app-nav · M250 ai-readiness [`iterative`] · M251 test-health · M252 studio-builder-enable · M253 studio-first-paint [`iterative`] · M254 prove-on-billion [`iterative` closer, a–h live on `billion`]; tooling + docs only, **0 platform-repo edits**; close-release landed all 5 terminal follow-ups → **zero carry-forward**) |
 
-| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**672 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → M257 → M258 | 🚧 **IN DEVELOPMENT** (branch `release/02.80-fast-build`, designed 2026-07-27; adversarially plan-reviewed + revised same day → D-v28-6 … D-v28-11) |
+| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → M257 → M258 | 🚧 **IN DEVELOPMENT** (branch `release/02.80-fast-build`, designed 2026-07-27; adversarially plan-reviewed + revised same day → D-v28-6 … D-v28-11) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -193,7 +193,7 @@ M255 build-bench & host-headroom ── HARD BARRIER (section)
        ▼
 M256 playthrough sharpening (iterative)      faster · effective · covered
        ▼
-M257 first-light build (iterative)           672 s → ≤ 360 s p50, cold, on billion
+M257 first-light build (iterative)           666 s → ≤ 360 s p50, cold, on billion
        ▼
 M258 proven-live build (iterative, closer)   up AND self-proven, ≤ 480 s p50
 ```
@@ -436,7 +436,8 @@ re-scoped)
 deliberately, never exhausting it, and without weakening a single safety guard.
 
 **Exit gate:** a cold-images `demo-down --purge` + `demo-up` reaches **`autoverify green:true / 0 warnings`**
-in **p50 ≤ 360 s across 3 consecutive cycles on `billion`** (from the measured **672 s** — a 46 % cut), **0
+in **p50 ≤ 360 s across 3 consecutive cycles on `billion`** (from the **M255-measured n=3 p50 666.29 s** — a
+46 % cut), **0
 platform-repo edits**, **all 7 demopatch guards (G1–G7) passing**, and two **falsifiable** asserts (D-v28-6,
 D-v28-11) — *the gate FAILS if either trips*:
 - **headroom:** peak load1 ≤ cores − 2 **and** peak summed heap commitment ≤ 80 % of the host budget **and**

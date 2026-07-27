@@ -2,7 +2,7 @@
 
 ## Section checklist
 
-- [x] 1. `buildbench` harness (rext `stack-core`) — n≥3 on billion, **cold-images variant only**; JSON phase ledger + 10 s sampler; **every entry records the invocation + full `DEMO_*` env snapshot**; one informational n=1 laptop run
+- [x] 1. `buildbench` harness (rext `stack-core`) — n≥3 on billion, **cold-images variant only**; JSON phase ledger + 10 s sampler; **every entry records the invocation + full `DEMO_*` env snapshot**; one informational n=1 laptop run — **campaign RUN and LANDED: `n=3 p50 666.29 s`, 3/3 green** (see § the baseline, below)
 - [x] 2. Campaign protocol + reclaim — hard-failing pre-rep disk/cache assert · reclaim step between reps (**L6 promoted here**) · per-rep `docker system df` declaration · **`DEMO_DISK_MIN_GIB` re-sized** · ENOSPC→"redis exited (1)" signature noted
 - [x] 3. Host profiles + headroom assert — `stack-core/hostprofiles/{billion,laptop}.json` measured + checked in; a **failing** sampler assert (load1 / summed heap / free disk); decision recorded reconciling "fail loudly" vs the never-block-a-bring-up pre-flight contract
 - [x] 4. The **union-apply** parallelism rule + guard test (shared members byte-identical; non-shared under disjoint `apps/*` or waived inert). "Separate clones" option deleted
@@ -12,6 +12,51 @@
 - [x] 6. `corpus/ops/demo/build-budget.md` (net-new; the blind area)
 - [x] 7. Security + cert hazard (**non-gating**) — expiry-aware re-mint + the paired `corpus/ops/safety.md` §3 amendment
 - [x] **BARRIER VERDICT** recorded — **GO**
+
+---
+
+## The baseline — **`n=3 p50 = 666.29 s`** (2026-07-27)
+
+The milestone's other deliverable: v2.8 now has a **measurement floor**, where before it had one `n=1` number
+from a one-off shell script that lived on a single box and was never in version control.
+
+`buildbench run 1 --reps 3 --profile billion --public-host billion.taildc510.ts.net --label m255-baseline`.
+**3/3 reps `rc=0`, `autoverify green / 0 warnings`, `phases_complete`, zero missing anchors, headroom OK.**
+Artefacts: `billion:/home/devops/panorama/m255/campaign/`.
+
+| | p50 | min | max |
+|---|---|---|---|
+| **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
+| UI-tier image builds (3) | **436.1 s — 65.5 %** | | |
+| image export + unpack alone | **307.5 s — 46.2 %** | | |
+
+**It supersedes the n=1 672.4 s, which it lands within 0.9 % of** — so no lever was mis-ranked, and **M257's
+exit gate is now a percentage of a real number** (re-pinned in its `overview.md`, along with the roadmap,
+`state.md`, `context.md`, `demo/README.md` and `CLAUDE.md`).
+
+**The headroom model was validated, not just applied.** Clause 2 predicted `1 × 3900 + 1500 = 5400 MiB`; the
+reps peaked at **5446 / 5579 / 5398 MB** — inside **~3 %**. `lane_heap_measured_peak_mib = 3900` now rests on
+a campaign rather than on the single annotated run, and that is recorded in `billion.json` itself.
+
+### The campaign found a fifth wrong corpus claim — this doc's own reclaim reasoning
+
+rep-02 cost **881.01 s (32 % above p50)**, and 206 s of the 215 s excess is one thing: studio-desk's cache
+chain was **evicted by the reclaim step**, so it paid a full 136.5 s `npm ci` the neighbouring reps got free.
+The protocol justified `--filter until=24h` on the grounds that *"CACHED-step records are touched by every rep,
+so their last-used clock keeps resetting and they survive."* Measured, that is **false**: rep-01 served that
+chain from cache and the very next reclaim evicted it anyway (**7 records, 356.8 MB → +173 s**).
+
+It is a **one-off**, not a per-rep tax (the following reclaim pruned **0 B / 0 records**), which is why the
+corrected protocol now says: **budget a warm-up rep, report `p50`, never the mean** (the mean here is 735.2 s
+— 10 % high, describing an eviction rather than a bring-up), and **`n ≥ 3` is a floor**: at `n = 2` this
+campaign would have reported **~773 s** and every v2.8 lever would have been priced against a number that does
+not exist. Two further protocol figures were corrected the same way: per-rep cache growth is **+1.7–2.2 GB**,
+not the claimed ~11.6 GiB, and the binding disk constraint is the **~18 GiB mid-cycle transient**, not the
+~2 GiB a steady rep nets.
+
+One honest caveat entered alongside: **1 of 221 samples hit 100 % disk `%util`**. Average util stayed
+20.8–23.9 %, so spike (d)'s "not an I/O ceiling" reading stands — but *"zero samples ≥ 90 %"* is an `n=1`
+claim and is now marked as one.
 
 ---
 
@@ -69,6 +114,22 @@ And one bug of our own making, caught live: `buildbench`'s sampler stored its st
 shadowing `threading.Thread._stop`, so a campaign ran the full bring-up and then died writing the ledger. It
 cost one 11-minute cycle — whose numbers were recovered with `buildbench parse`, and which turned out to be
 the run that answers spike (d).
+
+Plus one fake fence found in our own new code: `union_apply_guard`'s clause (i) shipped as
+`_sha(p) != _sha(p)` — a tautology that could never fire. Replaced with the proposition it was reaching for
+(a shared member must be **one** manifest file, and both builds must resolve the slug to the same path),
+RED-proven.
+
+## Shipped
+
+- **rext** `fast-build-m255-buildbench-2` — **pushed to origin and rung-zero verified** by a fresh
+  `git clone --branch <tag>` from origin carrying the new tooling. `buildbench.py`, both measured host
+  profiles, `union_apply_guard.py`, the `demo_knob_guard.py` anchor fence (`--fix`). **226 stack-core tests
+  pass**; full tooling suite green at **1418 passed / 2 skipped**.
+- **corpus** `corpus/ops/demo/build-budget.md` (net-new) + the `safety.md` §3.5.4 cert amendment, and the
+  baseline re-pinned across `demo/README.md`, `CLAUDE.md`, `roadmap.md`, `context.md`, `state.md` and M257's
+  `overview.md`.
+- **0 platform-repo edits.**
 
 ## Cut from the first draft (see roadmap.md § design decisions)
 

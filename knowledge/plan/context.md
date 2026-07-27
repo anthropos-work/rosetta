@@ -10,7 +10,7 @@ M255 (HARD barrier) → M256 → M257 → M258**, strictly serial; tag will be `
 provably live, fast.* Measure the machine and spend it deliberately — a build bench + a **host-capacity
 profiler** that computes a build plan from real cores/RAM/disk under an explicit **headroom reserve contract**
 — then sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up
-(**672 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and proves
+(**666 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and proves
 itself**. Designed from [`.agentspace/build-annotation.md`](../../.agentspace/build-annotation.md) (a measured
 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8)
 + [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md) (18/18 green, **1 of 18 proves a

@@ -1,17 +1,30 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 672 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M255 — build-bench & host-headroom (section, HARD go/no-go barrier) — planned, not started"
+active_milestone: "M255 — build-bench & host-headroom (section, HARD go/no-go barrier) — BUILT; all 10 checklist items closed; BARRIER VERDICT = GO; n=3 baseline measured. Ready for /developer-kit:close-milestone."
 last_closed: "M254 — 2026-07-25 (prove-on-billion; iterative, closed-on-gate); v2.7 release closed 2026-07-25"
-phase: "v2.8 designed + scaffolded + plan-reviewed (23-agent adversarial review, 11 binding decisions); next step is /developer-kit:work-milestone (or :build-milestone) on M255"
+phase: "M255 built on branch m255/build-bench-host-headroom — BARRIER PASSED (spike (a): export 146.8 s -> 2.9 s, image 4.84 GB -> 379 MB) and the GATED BASELINE MEASURED: n=3 p50 666.29 s on billion, 3/3 green, superseding the n=1 672.4 s. buildbench + measured host profiles + the union-apply fence shipped in rext at tag fast-build-m255-buildbench-2 (on origin); build-budget.md + safety.md §3.5.4 landed. Next: /developer-kit:close-milestone M255, then M256."
 last_updated: "2026-07-27"
 ---
 
 # State
 
 **v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27 via `/developer-kit:design-roadmap`, branch
-`release/02.80-fast-build` cut from `main`, all 4 milestone dirs scaffolded. **No milestone has started.**
-Next step: **M255**, the HARD go/no-go barrier.
+`release/02.80-fast-build` cut from `main`, all 4 milestone dirs scaffolded.
+
+**M255 — the HARD barrier — is BUILT and PASSED.** Verdict **GO**: the multi-stage `.next/standalone`
+prototype takes the hiring image **4.84 GB → 379 MB** and its export step **146.8 s → 2.9 s**, so L1 does not
+collapse. Two riders for M257, both measured rather than assumed: `turbo --env-mode=loose` is mandatory (the
+private flag silently no-ops without it), and **L2 must be re-priced from ~200 s to ≲45 s and sequenced after
+L1** — the export leg is serial and single-stream (peak load1 3.75/8, peak disk `%util` 63.4 %), and neither
+host fits two concurrent Next.js build lanes. Next step: **`/developer-kit:close-milestone M255`**, then M256.
+
+**And the measurement floor exists now.** The `n=3` campaign ran green on `billion` (3/3 `rc=0`,
+`autoverify green / 0 warnings`, headroom OK): **the gated baseline is `p50 = 666.29 s`** (min 658.15, max
+881.01), which supersedes the `n=1` **672.4 s** it lands within **0.9 %** of. UI-tier builds **65.5 %**,
+export+unpack alone **46.2 %** — both n=1 headlines survive. The headroom model was *validated*, not merely
+applied: it predicted 5,400 MiB of commitment and the reps peaked at 5,446 / 5,579 / 5,398 MB (**~3 %**).
+The campaign also produced its own finding — see the reclaim correction below.
 
 > **The release thesis.** Two standing problems, one spine — *time to ready*.
 >
@@ -36,12 +49,12 @@ Next step: **M255**, the HARD go/no-go barrier.
 ## v2.8 shape — barrier → strictly serial → self-proving closer
 
 ```
-M255 build-bench & host-headroom ── HARD BARRIER (section)   ⬅ NEXT
-       │   measurement floor · headroom assert · union-apply rule · 3 spikes
+M255 build-bench & host-headroom ── HARD BARRIER (section)   ✅ BUILT · GO   ⬅ AWAITING CLOSE
+       │   measurement floor (n=3 p50 666.29 s) · headroom assert · union-apply rule · 3 spikes
        ▼
 M256 playthrough sharpening (iterative)      faster · effective · covered
        ▼
-M257 first-light build (iterative)           672 s → ≤ 360 s p50, cold, on billion
+M257 first-light build (iterative)           666 s → ≤ 360 s p50, cold, on billion
        ▼
 M258 proven-live build (iterative, closer)   up AND self-proven, ≤ 480 s p50
 ```
@@ -77,6 +90,13 @@ recorded in [`roadmap.md`](roadmap.md) § "Design decisions from the adversarial
 - **D-v28-7** — the shared-clone patch race **downgraded from `blocks-release` to a paragraph + a guard test**:
   of 11 manifests, 5 are byte-identical shared, 5 target disjoint `apps/*` trees, and the 1 outlier is inert by
   its own header. Rule: **union-apply once, build parallel, revert once LIFO.**
+  > **M255 CORRECTED both italicised claims.** The outlier is **not inert** — `WUNDERGRAPH_SSR_ENDPOINT` *is*
+  > set on the hiring container and `apps/hiring` *does* import the patched module, so union-apply changes
+  > hiring's behaviour (for the better: it inherits the M218 SSR fix). **M257 must re-verify the hiring
+  > recruiter Playthrough after flipping it on.** And **neither build reverts in strict LIFO**, nor do their
+  > two revert orders match — so "revert once LIFO" is not the invariant. The narrower one that *is* true is
+  > now machine-fenced in both builds and both phases: the `urls.ts` chain applies studio→pubweb and reverts
+  > pubweb→studio.
 - **D-v28-8** — the truly-cold bench variant **CUT** (12 cold cycles ≈ 2.5–3 h on a ~4–5 cycle disk runway,
   testing the wrong hypothesis) → replaced by a **15-minute experiment on the rext-owned `hiring.Dockerfile`**.
 - **D-v28-9** — M256's speed clause **re-cut**: `≤ 120 s` was arithmetically impossible (the suite is dominated
@@ -107,7 +127,7 @@ files are cited as source-of-record from six sites.
 
 | | Baseline | v2.8 target |
 |---|---|---|
-| Cold `--purge` + `demo-up` cycle (billion) | **672 s** | **≤ 360 s p50** (M257) · stretch 300 s |
+| Cold `--purge` + `demo-up` cycle (billion) | **666.29 s p50** (M255, n=3, 3/3 green; supersedes the n=1 672.4 s) | **≤ 360 s p50** (M257) · stretch 300 s |
 | Playthrough suite wall-clock (billion) | **228 s** (3.8 min), **dominated by one ~120 s LLM-bound test** | **median per-PT ≤ 5 s** + **post-coverage suite p50 ≤ 200 s**, LLM lane budgeted separately, 0 flake ×3 (M256) |
 | Mutating Playthroughs (mutate **and read back**) | **1** of 18 (17 UNCLASSIFIED, ≥1 demonstrably mutates) | **≥ 5** (M256) |
 | `blocked` / `error` outcomes | **0** | **≥ 1 `blocked`** (M256) |
@@ -132,10 +152,15 @@ files are cited as source-of-record from six sites.
 - **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
   on their own cadence. **v2.5**'s and **v2.6**'s merges + tags are likewise local-only.
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan).
-- rext code-of-record: the authoring copy is at `july-jitter-v27-close-followups @ a5b1288`, on origin. The
-  `fix/studio` studio-FAPI fix is at `rosetta-extensions@bc65850`.
+- rext code-of-record: the authoring copy is on `main`, and M255's tooling ships at
+  **`fast-build-m255-buildbench-2`** (buildbench + both measured host profiles + the union-apply fence + the
+  `Read at` anchor fence) — **pushed to origin**. The earlier `-1`/unsuffixed tags are on origin too.
 - **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
   prove-it-live step.
 
-_Last updated: 2026-07-27 — v2.8 "fast build" DESIGNED + scaffolded + adversarially plan-reviewed and revised
-(branch cut, 4 milestone dirs, evidence committed, 11 binding decisions). Next: M255, the barrier._
+_Last updated: 2026-07-27 — **M255 BUILT, barrier verdict GO**, on `m255/build-bench-host-headroom`. The
+measurement floor exists: `buildbench` + two measured host profiles + a hard headroom assert + the union-apply
+fence, shipped in rext at `fast-build-m255-buildbench-2` (on origin), and the **n=3 gated baseline p50
+666.29 s**. Four corpus claims corrected along the way (D-v28-7's "inert" premise, `demopatch-spec.md` §4's
+LIFO/4-manifest facts, `frontend-tier.md`'s argument against the barrier's own build shape, and the reclaim
+protocol's `until=24h` reasoning). Next: `/developer-kit:close-milestone M255`, then M256._
