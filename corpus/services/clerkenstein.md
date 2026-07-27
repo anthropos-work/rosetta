@@ -98,6 +98,40 @@ The browser-login → backend-verify coherence chain runs through `shared`: `cle
 HS256 universal-key JWT, `authn` verifies that exact token — pinned by the JS DNA's
 `SessionToken/decoded-identity` gene (operator `exact`).
 
+### BAPI ≠ FAPI — both twins must exist (`fix/studio`, 2026-07-27)
+
+**A route registered on the BAPI is NOT reachable by the browser, and vice versa.** The two dirs mock two
+different callers: `clerk-backend/` answers **server-to-server** SDK calls (`@clerk/express`, next-web SSR);
+`clerk-frontend/` answers **clerk-js in the browser**. A membership list exists on *both* sides of real Clerk
+under different paths, and Clerkenstein shipped only one of them for four releases:
+
+| caller | route | dir |
+|---|---|---|
+| `@clerk/express` · next-web SSR | `GET /v1/users/{userID}/organization_memberships` | `clerk-backend/` (registered since M2) |
+| **clerk-js** (`clerk.user.getOrganizationMemberships()`) | **`GET /v1/me/organization_memberships`** | `clerk-frontend/` (**added `fix/studio`**) |
+
+The missing FAPI twin 404'd, clerk-js's `const { data } = response` threw, and studio-desk's boot burned a
+**~4.05 s** 3-attempt retry ladder on **every** load (`latency-budget.md` §"Time-to-usable"). Three properties
+make the route correct, each pinned by a test in `clerk-frontend/meorgmemberships_test.go`:
+
+- **The paginated envelope, not a bare array** — a `?paginated=true` request answers
+  `{"response":{"data":[…],"total_count":N},…}`, because clerk-js destructures `{ data, total_count }`
+  straight off it. A bare array **is** the *"Cannot destructure property 'data'"* throw.
+- **`limit`/`offset` are honoured** — clerk-js sends `limit=10&offset=0` and pages when `total_count` exceeds
+  what it received, so serving the full list against `limit=10` makes it chase a second page that disagrees
+  with the first. `total_count` always reports the **true** total; an offset past the end is an empty **array**
+  (never `null` — clerk-js maps over it).
+- **Unauthenticated ⇒ 401, never 404** — a 404 is what clerk-js *retries*; a clean 401 it handles. A signed-in
+  user with **no** memberships gets an empty list at 200 (mirroring the BAPI contract).
+
+The data needed no new assembly: `/v1/me` already returns `userRes.OrganizationMemberships`. The role keeps
+Clerk's **prefixed** form (`org:admin`) — studio-desk's `STUDIO_ACCESS_ROLES` gate reads it, so dropping the
+prefix would bounce every hero.
+
+> **Not yet a measured gene.** `alignment/dna/clerk-js-5.json` has a `Me` capability for `GET /v1/me` but
+> **no** gene for this route, so alignment scoring does not cover it — the unit tests do. Adding one needs a
+> real-Clerk golden capture (`/align-dna`), i.e. a milestone, not a patch. Tracked as a known DNA gap.
+
 ### Multi-identity
 
 **(v1.9 M37)** — `clerk-frontend` now holds a **users/orgs registry** (replacing the single

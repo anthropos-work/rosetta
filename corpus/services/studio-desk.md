@@ -372,7 +372,7 @@ preloadCriticalCSS()            // L97 — injects the .page-skeleton CSS (class
   → Sentry.init / posthog.init  // (production-gated / non-localhost-gated)
   → await clerk.load()          // ~140 ms vs Clerkenstein (NOT its 10 s timeout)
   → await l12nService.init()    // ~12 ms
-  → await userService.canAccess()  // ~3.9 s on the demo — a GraphQL 404 → 3-attempt retry ladder
+  → await userService.canAccess()  // ~3.9 s on the demo — a Clerk FAPI 404 → 3-attempt retry ladder
   → new PageWrapper()           // L206 — builds the skeleton DOM + the real shell, only NOW
 ```
 
@@ -396,6 +396,19 @@ Result on demo-2 (local laptop): **skeleton-visible p95 4669 ms → 817 ms** (5/
 Measured by the net-new `rext stack-verify/e2e/run-studio-fcp.sh`. Full budget + per-leg model:
 [`latency-budget.md` §"studio-desk first-paint budget"](../ops/demo/latency-budget.md); the patch mechanism:
 [`demopatch-spec.md` §5](../ops/demo/demopatch-spec.md).
+
+**And the `canAccess` 404 itself — fixed at the source (`fix/studio`, 2026-07-27).** M253 painted the shell
+*over* the 4 s wait; it did not remove it, and the skeleton gate was **blind** to the remaining 4.8 s
+time-to-usable gap. The 404 was never GraphQL: `canAccess()` calls
+`clerk.user.getOrganizationMemberships()`, so **clerk-js** requests the Clerk **FAPI** route
+`GET /v1/me/organization_memberships` — which **Clerkenstein had never registered** (only the BAPI's
+server-side `/v1/users/{userID}/organization_memberships` existed). Serving it in the paginated envelope
+clerk-js destructures cuts the `canAccess` leg **4049 → 38 ms** and browser FCP **6936 → 2152 ms** (billion,
+tailnet, `dan-manager`, cold). Note this also makes the client gate **enforce** instead of failing open
+(`catch → return true`) — no reachable outcome changes, because the **server-side** `checkEnterpriseAndAdmin`
+already 303s non-admin seats to the web app first. Detail + the measured table:
+[`latency-budget.md` §"Time-to-usable"](../ops/demo/latency-budget.md); the route:
+[`clerkenstein.md`](clerkenstein.md).
 
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
