@@ -1,9 +1,9 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + host-capacity profiler under an explicit headroom reserve contract), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 672 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 672 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M255 — build-bench & host-profiler (section, HARD go/no-go barrier) — planned, not started"
+active_milestone: "M255 — build-bench & host-headroom (section, HARD go/no-go barrier) — planned, not started"
 last_closed: "M254 — 2026-07-25 (prove-on-billion; iterative, closed-on-gate); v2.7 release closed 2026-07-25"
-phase: "v2.8 designed + scaffolded; next step is /developer-kit:work-milestone (or :build-milestone) on M255"
+phase: "v2.8 designed + scaffolded + plan-reviewed (23-agent adversarial review, 11 binding decisions); next step is /developer-kit:work-milestone (or :build-milestone) on M255"
 last_updated: "2026-07-27"
 ---
 
@@ -16,7 +16,7 @@ Next step: **M255**, the HARD go/no-go barrier.
 > **The release thesis.** Two standing problems, one spine — *time to ready*.
 >
 > **(1) A `/demo-down --purge` + `/demo-up` cycle takes 11 m 12 s.** Measured and instrumented on `billion`
-> ([`.agentspace/build-annotation.md`](../../.agentspace/build-annotation.md), 2026-07-27, n=1):
+> ([`evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md), 2026-07-27, n=1):
 > **UI-tier image builds are 66.4 % of the cycle and image export/unpack ALONE is 42.9 %** — while the box
 > **never exceeded load 4.90 of 8 cores** with RAM at 74 %. This is **not** a CPU problem. It is serialised I/O
 > (writing 9.4 GB of Next.js image to disk) plus a **deliberate serialisation whose stated reason no longer
@@ -31,13 +31,13 @@ Next step: **M255**, the HARD go/no-go barrier.
 > journey stops at a boundary. Every actor is `entitlement: enterprise`; **outcome `blocked`: 0, outcome
 > `error`: 0** — nothing proves the platform correctly says *no*. Whole surfaces sit at zero: **ant-academy 0,
 > onboarding 0, org-admin 0, talk-to-data 0**. Of the M201 curated 28 use cases, **16 are uncovered and 12 have
-> no milestone home anywhere**. Full map: [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md).
+> no milestone home anywhere**. Full map: [`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md).
 
 ## v2.8 shape — barrier → strictly serial → self-proving closer
 
 ```
-M255 build-bench & host-profiler ── HARD BARRIER (section)   ⬅ NEXT
-       │   measurement floor · headroom contract · safe-parallelism contract · 4 spikes
+M255 build-bench & host-headroom ── HARD BARRIER (section)   ⬅ NEXT
+       │   measurement floor · headroom assert · union-apply rule · 3 spikes
        ▼
 M256 playthrough sharpening (iterative)      faster · effective · covered
        ▼
@@ -65,6 +65,35 @@ benefit; the rext authoring copy is also a singleton. Full milestone detail, par
 - **D-v28-5** — the **cockpit logout / Back-to-Cockpit double-click defect is FIXED** in M256 (same seat-switch
   machinery every Playthrough drives) and **deliberately gets NO Playthrough** (user's call).
 
+## Plan review (2026-07-27) — 23 agents, 7 lenses, 35 findings, 14 adversarially verified
+
+**Verdict: APPROVE WITH REQUIRED EDITS — all applied.** No blocking defect survived verification; 10 findings
+were refuted (several with useful residue, folded in). Six design decisions followed — **D-v28-6 … D-v28-11**,
+recorded in [`roadmap.md`](roadmap.md) § "Design decisions from the adversarial plan review":
+
+- **D-v28-6** — `hostprofile` the auto-planner **CUT** → two checked-in measured host profiles + one **failing**
+  assert, **wired into M257's gate**. It had *no consumer anywhere downstream* and M257's clause read "sampled,
+  not asserted" — i.e. it measured and changed nothing, **the exact defect this release retracts**.
+- **D-v28-7** — the shared-clone patch race **downgraded from `blocks-release` to a paragraph + a guard test**:
+  of 11 manifests, 5 are byte-identical shared, 5 target disjoint `apps/*` trees, and the 1 outlier is inert by
+  its own header. Rule: **union-apply once, build parallel, revert once LIFO.**
+- **D-v28-8** — the truly-cold bench variant **CUT** (12 cold cycles ≈ 2.5–3 h on a ~4–5 cycle disk runway,
+  testing the wrong hypothesis) → replaced by a **15-minute experiment on the rext-owned `hiring.Dockerfile`**.
+- **D-v28-9** — M256's speed clause **re-cut**: `≤ 120 s` was arithmetically impossible (the suite is dominated
+  by one irreducible ~2–3 min live-LLM test) and measured the wrong denominator.
+- **D-v28-10** — the §8.5 retraction **moved to M257** (one rewrite, achieved numbers), mirror set
+  **enumerated**, gated by a **grep assertion** — `demo_knob_guard.py` cannot see prose numbers.
+- **D-v28-11** — **"keep it secure" now has three clauses and an owner**; the word appeared nowhere in the draft.
+
+**Two findings survived verification and are now written into the milestones:** the **fake-FAPI global seat**
+(one active seat / `signedIn` / `sessID` per stack, no cookie scoping — so M256's parallel lane needs an enabler
+built, and `storageState` reuse does not isolate it), and **M258's missing world contract** (the naive
+composition leaves a test world behind a presenter cockpit full of dead CTAs — exactly the state M254 left
+`billion` in — and the first-draft gate passed anyway).
+
+**Evidence base committed** to `releases/02.80-fast-build/evidence/` — `.agentspace/` is git-ignored, and both
+files are cited as source-of-record from six sites.
+
 ## Headline numbers (inherited from the v2.7 close, 2026-07-25 — the v2.8 baseline)
 
 - **Go:** **2019** rext test funcs. Runtime: stack-seeding 1192 pass / playthroughs 131 pass / 0 fail.
@@ -79,8 +108,8 @@ benefit; the rext authoring copy is also a singleton. Full milestone detail, par
 | | Baseline | v2.8 target |
 |---|---|---|
 | Cold `--purge` + `demo-up` cycle (billion) | **672 s** | **≤ 360 s p50** (M257) · stretch 300 s |
-| Playthrough suite wall-clock (billion) | **228 s** (3.8 min) | **≤ 120 s p50**, 0 flake ×3 (M256) |
-| Mutating Playthroughs | **1** of 18 | **≥ 5** (M256) |
+| Playthrough suite wall-clock (billion) | **228 s** (3.8 min), **dominated by one ~120 s LLM-bound test** | **median per-PT ≤ 5 s** + **post-coverage suite p50 ≤ 200 s**, LLM lane budgeted separately, 0 flake ×3 (M256) |
+| Mutating Playthroughs (mutate **and read back**) | **1** of 18 (17 UNCLASSIFIED, ≥1 demonstrably mutates) | **≥ 5** (M256) |
 | `blocked` / `error` outcomes | **0** | **≥ 1 `blocked`** (M256) |
 | Curated UCs with no milestone home | **12** | **0** — landed or written verdict (M256) |
 | Composed up-and-proven cycle | *does not exist* | **≤ 480 s p50**, zero standing red (M258) |
@@ -108,5 +137,5 @@ benefit; the rext authoring copy is also a singleton. Full milestone detail, par
 - **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
   prove-it-live step.
 
-_Last updated: 2026-07-27 — v2.8 "fast build" DESIGNED + scaffolded (branch cut, 4 milestone dirs, 5 binding
-decisions). Next: M255, the barrier._
+_Last updated: 2026-07-27 — v2.8 "fast build" DESIGNED + scaffolded + adversarially plan-reviewed and revised
+(branch cut, 4 milestone dirs, evidence committed, 11 binding decisions). Next: M255, the barrier._

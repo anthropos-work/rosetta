@@ -4,7 +4,7 @@ milestone: M257
 title: "first-light build"
 status: planned
 release: v2.8 "fast build"
-exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on billion (baseline: measured 672 s — a 46% cut), with the M255 headroom reserve contract never breached (sampled, not asserted), 0 platform-repo edits, and all 7 demopatch guards (G1-G7) still passing. Stretch: <= 300 s."
+exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on billion (baseline: measured 672 s — a 46% cut), 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
 re_scope_trigger: "If after L1 + L2 + L3 the p50 is still > 480 s, the remaining cost is structural (host I/O or the containerd snapshotter) — escalate rather than grind."
 depends_on: [M256]
@@ -18,6 +18,12 @@ last_updated: 2026-07-27
 
 **Status:** `planned` · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
 **Depends on:** M256 (sharpen the detector before changing what it detects)
+
+> **Revised 2026-07-27** after the adversarial plan review: the gate's headroom clause became **falsifiable**
+> (it read "sampled, not asserted" — i.e. it measured and changed nothing, the exact defect this release
+> retracts), an **image-isolation assert** was added, the **§8.5 corpus retraction moved here** from M255, L6
+> moved **out** to M255, and the dev-path rationale was corrected. See [`roadmap.md`](../../../roadmap.md)
+> § "Design decisions from the adversarial plan review" (D-v28-6, D-v28-10, D-v28-11).
 
 ## Goal
 
@@ -45,15 +51,18 @@ and the seed **idle for ~7.5 minutes**.
 
 | | Lever | Est. saving | Shape |
 |---|---|---|---|
-| **L1** | Multi-stage the two Next images — ship `.next/standalone` + static instead of the full build tree with dev deps. 4.77 GB → a few hundred MB collapses the 141.9 s + 136.7 s export **and** the 85.7 s unconditional unpack leg (L9) | **~200–250 s** | demopatch / rext-owned Dockerfile. **M255 spike (a)** may make it a *selection* change |
-| **L2** | Build `next-web` ∥ `hiring` **and** reorder the UI tier to overlap `compose up` | **~200 s** | rext `up-injected.sh` + the M255 safe-parallelism contract |
+| **L1** | Multi-stage the two Next images — ship `.next/standalone` + static instead of the full build tree with dev deps. 4.77 GB → a few hundred MB collapses the 141.9 s + 136.7 s export **and** the 85.7 s unconditional unpack leg (L9) | **~200–250 s** | rext-owned Dockerfile. **No config edit and no demopatch needed**: `ENV NEXT_PRIVATE_STANDALONE=1` flips Next 16's frozen `defaultConfig` (`output: !!process.env.NEXT_PRIVATE_STANDALONE ? \'standalone\' : undefined`) because **no app `next.config` sets `output`** (verified ×4). Private Next API; fallback = a `next.config.mjs` demopatch per app |
+| **L2** | Build `next-web` ∥ `hiring` **and** reorder the UI tier to overlap `compose up` | **~200 s** | rext `up-injected.sh` under M255's **union-apply rule** (D-v28-7): apply the union of both manifest sets once, build both in parallel from the one clone, revert once LIFO |
 | **L3** | Manifests-first `COPY` so the `pnpm install` layer survives a source-only change (every demopatch is one). The layer has **never once been reused** — 16 entries × 4.029 GB = **61 % of the whole build cache**, every one `Usage count: 1` | **~55 s** + an ~8 GB/cycle leak | demopatch / rext Dockerfile. Must copy root `package.json` + `pnpm-lock.yaml` + `pnpm-workspace.yaml` **plus all 16 workspace `package.json`s** — a naive `COPY package*.json ./` breaks `--frozen-lockfile` |
-| **L4** | Drop `--concurrency=1` from `pnpm turbo build` on an 8-core host | ~20–35 s | build-arg or demopatch |
-| **L5** | Speed the taxonomy replay (78.0 s / 330,261 rows + 2 pgvector reindexes): index-after-COPY in one pass, `UNLOGGED`-then-`SET LOGGED`, or a pre-built PG data dir. **Also the main `/dev-up` win** | ~30–50 s | rext `stack-snapshot` |
+| **L4** | Drop `--concurrency=1` from `pnpm turbo build` — the value comes **from the checked-in host profile**, not a hardcoded 8-core assumption (D-v28-6) | ~20–35 s | build-arg or demopatch |
+| **L5** | Speed the taxonomy replay (78.0 s / 330,261 rows + 2 pgvector reindexes): index-after-COPY in one pass, `UNLOGGED`-then-`SET LOGGED`, or a pre-built PG data dir. **The chief win on the `/dev-up` path** (`dev-setdress.sh:299`/`:357` run the same `stacksnap replay`) | ~30–50 s | rext `stack-snapshot` |
 | **L7** | Multi-stage `studio-desk` — 1.71 GB shipping a full dev toolchain (32,568 JS/CSS files, 266 MB) to serve a Vite bundle | ~8 s | demopatch / rext Dockerfile |
 | **L8** | Cache the Directus bootstrap + restart — 15.6 s of pure container-boot latency, the most compressible slice of set-dress | ~15 s | rext |
 | **L10** | Serial fat: ~12 serial `git fetch`es · 23 serial `demopatch revert` shells · Go tooling compiled 4–5×/bring-up (`stacksecrets` into a throwaway `mktemp -d`, `stackseed` **twice**) · 4 independent `atlas migrate apply` targets run serially · the entire tailscale-serve plan re-emitted to add one port | ~20–50 s | rext |
-| **L6** | Prune BuildKit on a schedule. **Not a time win** — the documented ENOSPC failure mode surfaces as a cryptic *"redis exited (1)"* (M239-F1), and with L3's leak the real runway is **~4–5 cycles**, not 15–20 | 0 s (risk) | ops / rext teardown |
+
+*(**L6** — scheduled BuildKit prune — **moved to M255** as campaign hygiene: M255's own bench campaign is the
+first thing that would exhaust the ~4–5 cycle disk runway. **L9** — the 85.7 s unconditional unpack leg — is
+folded into L1; it is not a build flag.)*
 
 > **L1 + L2 + L3 plausibly take the cycle from ~11 m to ~4–5 m** — they attack the same 446 s block from three
 > angles (smaller images to export, exported concurrently, with dependency layers that actually survive).
@@ -67,16 +76,35 @@ cache-reuse checks (`:562`, `:849`, `:1077`) can **never** hit on a purge cycle.
 (no `--purge`) keeps the images and makes a re-up cost seconds — the fast-cycle option whenever a wiped DB is
 not required. **Document it; do not make it the default** (a wiped DB is usually the point).
 
+## Also in scope — the §8.5 corpus retraction (D-v28-10, moved here from M255)
+
+Landing **once**, with the *achieved* numbers, so `frontend-tier.md` is rewritten a single time.
+**Enumerated** mirror set (the first draft said "all four docs" and named none):
+`corpus/ops/demo/frontend-tier.md` **×4 sites** — `:231`, `:249`, `:262`, `:271` — plus
+`corpus/ops/demo/README.md:139` and `CLAUDE.md:318`.
+**Gated by a grep assertion** for the retracted strings: the first draft cited
+`stack-core/demo_knob_guard.py` as the machine fence, but that guard matches `${DEMO_*:-default}` knobs and
+`case` arms and **structurally cannot see prose numbers**. `demo-up-defaults.md` carries none of these claims
+and is **not** in the set. The claims:
+*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off) · *"~3 min per frontend"* → right for the two Next apps,
+**~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" zero times in 623 lines** ·
+*"~3.7 GB first build"* (`up-injected.sh:794`) → measured **4.77 / 4.67 GB** · studio *"pure memory
+starvation, not a slow build"* → refuted (export/unpack is 288.4 s; the box never exceeded load 4.90/8).
+
 ## Dev path
 
-`/dev-up` shares **L5 / L6 / L10** (set-dress + tooling, not the UI tier). **Measured and reported at each
-iter; not separately gated** — the demo path is where 96.8 % of the wall-clock is.
+`/dev-up` shares **L5 / L10** (set-dress + tooling, not the UI tier). **Measured and reported at each iter;
+not separately gated** — **because the UI tier has no dev counterpart**: the main dev stack runs next-web
+**natively** (`dev-up` SKILL.md:69-76) and `dev-N` defaults to the frontend-free `graphql` profile, so the
+446 s / 66.4 % block simply does not exist there. *(The first draft justified this with "the demo path is
+where 96.8 % of the wall-clock is" — a misuse: 96.8 % is bring-up as a share of the **demo** cycle, which says
+nothing about demo-vs-dev.)*
 
 ## Shape (why iterative)
 
-L1's cost depends entirely on M255 spike (a) · L2's real win depends on spike (d) · L3's value depends on
-spike (b). The path is measurement-driven by construction: measure → attribute → one lever → re-measure at
-n ≥ 3.
+L1's cost depends on M255 spike (a) · L2's real win depends on spike (d) · L3's value is bounded by the
+measured 61 %-of-cache figure. The path is measurement-driven by construction: measure → attribute → one lever
+→ re-measure at n ≥ 3.
 
 ## Hard constraints
 
@@ -84,8 +112,12 @@ n ≥ 3.
   sha-pinned `demopatch` or an **rext-owned Dockerfile** in the shape `hiring.Dockerfile` already sanctions.
 - **All 7 demopatch guards (G1–G7) still pass** after every lever.
 - **Per-stack image isolation** — cache **layers**, never **images**. A reused image would carry another
-  stack's baked publishable key and offset origin.
-- **The M255 headroom contract is never breached**, sampled during every gate run.
+  stack's baked publishable key and offset origin. **Now a falsifiable gate clause** (D-v28-11): asserted by
+  post-build image inspect, because L1/L3 change exactly the layers that carry them.
+- **The M255 headroom assert is a gate clause, not an observation** (D-v28-6) — peak load1, peak summed heap
+  commitment and free disk are read from the sampler and **FAIL** the gate when breached.
+- **`ENV NODE_OPTIONS` is not a usable seam** for a per-lane V8 ceiling: `apps/web/package.json:98` and
+  `apps/hiring/package.json:92` re-assign `--max_old_space_size=8192` **inline** for the `next build` child.
 - `git push --tags` is part of shipping a tool (rung zero).
 
 ## KB dependencies
@@ -94,6 +126,6 @@ n ≥ 3.
 `corpus/ops/demo/demopatch-spec.md` · `corpus/ops/demo/demo-up-defaults.md` · `corpus/ops/rosetta_demo.md` ·
 `corpus/ops/idempotency.md` · `corpus/ops/safety.md` · `corpus/ops/snapshot-spec.md` (L5)
 
-**Delivers → `corpus/ops/demo/frontend-tier.md`** (substantially revised: real image anatomy, the multi-stage
-shape, hiring's existence)
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (rewritten **once**, with achieved numbers: real image
+anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
 **Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
