@@ -23,8 +23,10 @@ single-identity demo — see the toggle list below.) Source of truth:
 2. **Resource check** — a full stack is ~10–12 GB at runtime; the **frontend build** spikes to ~3.7 GB. Set
    the **Docker VM to 12 GB / swap 3 GB** (Settings → Resources) so the per-demo next-web build doesn't
    swap-thrash. `up-injected.sh` runs a **non-fatal** 12 GB pre-flight assert (warns, never blocks;
-   `DEMO_VM_MIN_GIB=N` overrides) **plus a disk-headroom assert** (M49 #6 — warns below ~20 GB host free +
-   offers `docker system prune`; `DEMO_DISK_MIN_GIB=N` overrides). For a tight box or an API-only demo, use
+   `DEMO_VM_MIN_GIB=N` overrides) **plus a disk-headroom assert** (M49 #6 — warns below **25 GiB** free on the
+   Docker VM's own disk + offers a reclaim; `DEMO_DISK_MIN_GIB=N` overrides). The 25 GiB is measured, not
+   guessed: one cold-images cycle peaks at 18 GiB of consumption plus a 7 GiB reserve — see
+   `corpus/ops/demo/build-budget.md`. For a tight box or an API-only demo, use
    `--no-ui` (`DEMO_NO_UI=1`) or a reduced `--services` set. **Never** exceed the box. Reclaim a dead demo's
    disk with `/demo-down N --purge` (M49 #6: it now removes that stack's images too).
 3. **Bring it up** via the tooling. The demo stack consumes `demo-stack` tooling from its **OWN**

@@ -158,10 +158,38 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
-so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. The apply-order (studio →
-public-website) and revert-order (LIFO) are identical on both; each build carries its own patch-set fingerprint
-(§5-bis) — next-web's over its manifest set, hiring's over the **4-manifest union** (the 2 `apps/hiring` patches +
-this shared pair). A test fences the hiring-side chain apply-order + LIFO revert + the 4-manifest fingerprint union.
+so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
+own patch-set fingerprint (§5-bis): next-web's over **9** manifests, hiring's over **7** (`up-injected.sh:1071-1075`
+— the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared interview flag-gate pair + the shared
+Back-to-Cockpit item). A test fences the hiring-side chain apply-order and the fingerprint union.
+
+> **⚠️ Corrected at v2.8 M255** (pre-milestone KB-fidelity audit). This paragraph previously said hiring's
+> fingerprint was over a **"4-manifest union"** — a C1 mirrored-count that drifted at **M232** (the interview
+> pair) and again at **M249** (Back-to-Cockpit) — and that the apply and revert orders *"are identical on
+> both"*, with revert being **LIFO**. Derived from the source, **neither half is true**:
+>
+> | build | apply order | revert order | strict LIFO? |
+> |---|---|---|---|
+> | `next-web` (9) | studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result · back-to-cockpit | pubweb · studio · pagination · ssr-origin · aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit | **no** |
+> | `hiring` (7) | studio · pubweb · rolemap · pagination · interview-container · interview-result · back-to-cockpit | interview-result · interview-container · pagination · rolemap · pubweb · studio · back-to-cockpit | **no** |
+>
+> **And it does not need to be.** The only order-sensitive relationship in either set is the `urls.ts`
+> chain — *pubweb must revert before studio* — and **both builds get that right**. Every other manifest
+> targets a file no other manifest in its set touches, so its position is free. The real invariant is
+> therefore **"the chain reverts in the right order"**, not "the whole list is LIFO", and that is what
+> `rosetta-extensions/stack-core/union_apply_guard.py` now asserts, in both builds, in both directions.
+>
+> This matters beyond pedantry: v2.8's **union-apply** parallelism rule (see
+> [`build-budget.md`](build-budget.md)) is stated as *"apply the union once, build both in parallel, revert
+> once LIFO"* — and it was about to inherit a "LIFO" that had no referent in the code.
+
+> **A related sharp edge, worth knowing before you rely on revert.** G5 (self-revert) compares the file
+> against the manifest's **recorded** `post_sha256`, while apply may have written a **recomputed** post when
+> the self-healing freshness gate fired (§ *the anchor is the contract; the whole-file sha is only a
+> baseline*). So **whenever the freshness gate fires, the paired revert refuses** — and the `RETURN` traps
+> redirect it to `/dev/null`, so it refuses silently. The clone is then left dirty rather than git-clean.
+> It is not currently harmful (the ephemeral clone is force-checked-out on the next bring-up), but it means
+> **"the trap left it clean" is an assumption, not a guarantee** — verify with `git status` if it matters.
 
 ### The `app` patches are never reverted — and that is correct
 

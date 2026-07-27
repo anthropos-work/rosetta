@@ -53,8 +53,8 @@ exit gate before answering it would be guessing.
 
 2. **Campaign protocol + reclaim.** The first draft's campaign was **not executable**: each rep leaks ~2 G of
    disk and orphans ~11.6 G of cache, against a **~4–5 cycle runway** on billion's 38–40 G free — while the
-   guard that should catch it (`DEMO_DISK_MIN_GIB=20`, `up-injected.sh:298`) is **both mis-sized and
-   non-fatal** (`:319` "non-fatal: continuing"), and a mid-campaign ENOSPC presents as the cryptic
+   guard that should catch it (`DEMO_DISK_MIN_GIB=20`, `up-injected.sh:277` at design time) is **both
+   mis-sized and non-fatal** ("non-fatal: continuing"), and a mid-campaign ENOSPC presents as the cryptic
    *"redis exited (1)"* (M239-F1) — i.e. it looks like a lever broke something. Deliver:
    - a **hard-failing** pre-rep disk/cache assert (`floor + projected image bytes`);
    - an explicit **reclaim step between reps** — **L6 (scheduled BuildKit prune) is promoted from M257's lever
@@ -69,7 +69,7 @@ exit gate before answering it would be guessing.
    - **One assert** in buildbench's existing sampler that **FAILS** when: peak load1 > cores − 2, **or** peak
      summed heap commitment > 80 % of the host budget, **or** free disk < floor + projected image bytes.
    - **Record a decision** in `decisions.md` reconciling *"fail loudly"* against the codebase's standing
-     **never-block-a-bring-up** pre-flight contract (`up-injected.sh:279`): the assert gates **buildbench and
+     **never-block-a-bring-up** pre-flight contract: the assert gates **buildbench and
      the M257 gate**, it does **not** block an operator's bring-up. Those are different contracts and the
      first draft conflated them.
    - **Note the seam that does NOT work:** `ENV NODE_OPTIONS` cannot lower the per-lane V8 ceiling —
@@ -120,7 +120,7 @@ exit gate before answering it would be guessing.
    every number** rule.
 
 7. **Security (D-v28-11) + the §8.6 cert hazard — explicitly NON-GATING hygiene.** `$STACK/certs` **survives
-   `--purge`** and the whole mint block is guarded on `[ ! -f $CERTS/fapi.crt ]` (`up-injected.sh:1851-1859`),
+   `--purge`** and the whole mint block is guarded on `[ ! -f $CERTS/fapi.crt ]` alone,
    so billion's `tailscale cert` minted **2026-07-11** has never been re-minted. A 90-day cert silently expires
    around **2026-10-09** — and the failure path drops to `gen_local_fapi_cert` with **only a warning**, so a
    remote browser silently loses trust. Ship:

@@ -766,6 +766,53 @@ to read content **live from prod**. That is the entire reason dev is opt-in and 
 flag asks you to say so out loud. As on the demo path, what you are turning on is **transport, not
 authentication** (§3.5.2): the tailnet's TLS + device mesh, not a password.
 
+#### 3.5.4 The cert has an expiry, and the failure is SILENT (v2.8 "fast build", M255)
+
+Everything in §3.5.1–§3.5.3 rests on one artefact: the **Let's Encrypt cert `tailscale cert` mints for the
+MagicDNS host**, which is what makes the fake FAPI (and therefore Clerk's secure-context requirement) trusted
+by a *remote* browser with no per-machine CA install. Rung 6 of the capability ladder mints it.
+
+**It was minted once per host, ever.** `$STACK/certs` **survives `--purge`** — teardown removes a stack's
+images and its data dir, not its certs — and the mint block was guarded on **file absence alone**. So the
+first bring-up on a box minted a cert and every subsequent bring-up, for the life of that box, skipped the
+mint. On `billion` the cert minted **2026-07-11 09:43:27Z** had never been re-minted, and a Let's Encrypt cert
+is **90 days**: it would have stopped being trusted around **2026-10-09**.
+
+**Why this belongs in the safety contract and not just in a changelog: nothing fails.** The file is present,
+the fake FAPI serves it, `autoverify` greens (it does not validate certificate chains), the Playthroughs pass
+from the host over loopback. The *only* observer is a remote tailnet browser — i.e. **the presenter, in front
+of an audience**. An expired cert on a `--public-host` demo is a **transport-integrity failure that the
+tooling's own verification cannot see**, and §3.5.2's claim ("the cockpit is behind the tailnet's TLS")
+silently stops being true.
+
+**The renewal path (M255).** The mint is now guarded by a predicate over the certificate rather than over the
+filesystem, and re-mints when the cert is:
+
+| trigger | why it is the same failure |
+|---|---|
+| **absent** | (the original case) |
+| **expiring inside `DEMO_CERT_RENEW_DAYS`** (default **30**) | a 90-day cert on a long-lived box |
+| **issued for a DIFFERENT host** than this bring-up's FAPI host | an `--public-host` flip leaves a *valid* cert with the wrong CN/SAN, which fails hostname verification exactly as hard as an expired one |
+
+`openssl` absent ⇒ the expiry is unreadable ⇒ **re-mint, fail-safe**. That is close to free: `tailscale cert`
+serves its own cached certificate and only re-orders near expiry — **measured at 0.01 s with an identical
+serial and zero new ACME orders** (M220 S3) — so a needless call neither adds latency nor burns a Let's
+Encrypt duplicate-certificate slot (and `ts.net` is a PSL entry, so that bucket is **per-tailnet**, shared by
+every box on it).
+
+**The second half: the silent DOWNGRADE.** When `tailscale cert` fails — tailscaled down, not logged in, no
+cert capability, offline — the bring-up falls back to `gen_local_fapi_cert`, a **mkcert/openssl LOCAL-trust**
+cert. That is correct behaviour (never abort a good bring-up), but until M255 it was recorded as **one warning
+line in a thousand-line log**, and the demo then came up *looking* healthy while serving a certificate only
+the build host trusts. A failed mint now also writes machine-readable evidence to **`$STACK/certwarn.log`** —
+the same shape as `demopatch.log` and `buildfail.log`. **If that file exists, remote reach is degraded**, and
+the fix is `tailscale cert <magicdns-host>` on the host followed by a re-up.
+
+> **Operationally:** treat `certwarn.log` the way you treat `buildfail.log` — a demo that has one is not
+> presentation-ready over the tailnet, however green `autoverify.json` reads. See
+> [`tailscale-serve.md`](demo/tailscale-serve.md) for the mint mechanics and
+> [`demo/build-budget.md`](demo/build-budget.md) for the M255 milestone that found it.
+
 ### 3.6 The EGRESS half — what a demo sends OUT (v2.3 M220 S5/S6)
 
 §3.1–3.5 are about who can reach **in**. The mirror question went unasked for the whole demo family: **what does

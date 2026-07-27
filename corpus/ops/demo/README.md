@@ -137,8 +137,19 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
   offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
   the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+- [`build-budget.md`](build-budget.md) — **the bring-up build budget** (v2.8 "fast build" M255): what *fast*
+  means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it. Defines **READY**
+  (exit 0 **and** a green `autoverify.json`), the per-phase attribution model, the measured baseline
+  (**672 s**, of which **66 % is UI-tier image builds and 43 % is image export/unpack alone**), the
+  **headroom contract** (three clauses against a *measured, checked-in* host profile — and the derived fact
+  that neither host fits two concurrent Next.js build lanes), the **campaign protocol** (a rep leaks ~2 GiB
+  and orphans ~11.6 GiB against a ~4–5 cycle runway, so reclaim is explicit and the pre-rep assert
+  hard-fails), and the **union-apply** parallelism rule. Carries two things worth knowing before you debug
+  anything: **a mid-campaign ENOSPC presents as the cryptic `redis exited (1)`, not as a disk error**, and
+  **state the environment with every number** — the same Dockerfile yields a 4.84 GB image on `billion` and
+  2.88 GB on an arm64 laptop, which also pays no unpack leg at all.
 - [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
-  knob and flag that controls a bring-up — **all 27 env knobs + 10 CLI flags**, with real defaults and the exact
+  knob and flag that controls a bring-up — **all 30 env knobs + 10 CLI flags**, with real defaults and the exact
   `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
   doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
   *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —

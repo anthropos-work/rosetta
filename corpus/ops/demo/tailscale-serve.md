@@ -339,6 +339,33 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 > content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
 > coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
 > [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
+>
+> #### The mechanism is a BIND COLLISION, not an unavoidable property of the loopback path (v2.8 M255)
+>
+> The description above — *"lands on the kernel socket instead of being intercepted by `tailscaled`"* — is
+> right about **what happens** and slightly off about **why**, and the difference is the whole fix. A wildcard
+> `0.0.0.0:P` bind **prevents `tailscaled` from creating its own `100.x:P` listener at all**; you cannot bind a
+> specific address on a port a wildcard already holds. So `serve` keeps working for **peers** (their traffic
+> arrives through the WireGuard tunnel and never consults the host's port table) while the node has no local
+> listener to reach.
+>
+> **Controlled A/B on `billion`** — two identical HTTP servers differing only in bind address, each fronted by
+> `tailscale serve`:
+>
+> | backend bind | `tailscaled` listener? | node-local `https://<magicdns>:<port>/` |
+> |---|---|---|
+> | `127.0.0.1:14998` | **yes** — `100.110.136.3:14998` | **HTTP 200, `ssl_verify=0` (trusted), 40 ms** |
+> | `0.0.0.0:14997` | **no** (IPv4) | fails — `wrong version number`, `ssl_verify=1` |
+>
+> **So the node CAN browse its own trusted `serve` origin** — provided nothing else holds the wildcard bind.
+> The seam is one line, `up-injected.sh:146`
+> (`if [ -n "$STACK_PUBLIC_HOST" ]; then BIND_HOST="0.0.0.0"; else BIND_HOST=""; fi`), and publishing on
+> loopback instead would **also remove the non-tailnet LAN exposure** that [`../safety.md`](../safety.md) §3.1
+> discloses. Two riders: it makes `serve` load-bearing for *all* off-box access (a serve failure becomes
+> "unreachable" rather than "reachable over plain HTTP"), and `tailscaled` binds the v6 address even in the
+> wildcard case, so the v4/v6 behaviours differ. **Not changed here** — it is scoped to **M258**, whose
+> *"one cold command on billion"* gate depends on it. Evidence:
+> `knowledge/plan/releases/02.80-fast-build/evidence/m255-spikes.md` § spike (e).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at **`https://$HOST:17700`**
 (`7700+off`) — on a `--public-host` demo it is fronted by `tailscale serve` behind the **same trusted MagicDNS

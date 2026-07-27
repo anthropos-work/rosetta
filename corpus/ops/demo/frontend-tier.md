@@ -11,9 +11,33 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 > for the stack lifecycle this extends. This page is the **frontend-specific** "how the UI tier is built and run".
 
 > **The hard line (non-negotiable).** **Zero platform-repo edits.** next-web-app, studio-desk, and ant-academy
-> stay **byte-for-byte pristine** — their repos are used only as a Docker **build context** (their Dockerfiles
-> consumed UNMODIFIED), and every per-demo difference rides a **gitignored** overlay (`.env.local`) or a
-> tooling-owned file in `rosetta-extensions`. Nothing the demo tooling does touches a tracked platform file.
+> stay **byte-for-byte pristine** — their repos are used only as a Docker **build context**, and every
+> per-demo difference rides a **gitignored** overlay (`.env.local`), a **sha-pinned demo-patch** applied to the
+> demo's own ephemeral clone and reverted after ([`demopatch-spec.md`](demopatch-spec.md)), or a
+> **tooling-owned file in `rosetta-extensions`**. Nothing the demo tooling does touches a tracked platform file.
+
+> ### There are THREE build shapes, not two — and the third is already in production
+>
+> This page used to say the platform Dockerfiles are *"consumed UNMODIFIED"*, full stop, which reads as an
+> exhaustive statement and is not one. **A tooling-owned Dockerfile in `rosetta-extensions` is a fully
+> sanctioned third shape, and the demo has shipped one since M224:**
+> `rosetta-extensions/demo-stack/frontend/hiring.Dockerfile` builds `apps/hiring` from the **same unmodified
+> next-web-app clone** the web app builds from, because the platform's `Dockerfile.dev` hardcodes the WEB app
+> end-to-end (`--filter=@anthropos/web-app`, `start:web`, `EXPOSE 3000`) and cannot be reused verbatim.
+>
+> | shape | who owns the Dockerfile | platform repo is | example |
+> |---|---|---|---|
+> | 1 | the platform | build context, Dockerfile consumed as-is | `next-web` (`Dockerfile.dev`), `studio-desk` |
+> | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the 11 demo-patches |
+> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`) |
+>
+> Shape 3 is *stronger* on the hard line than shape 2, not weaker: nothing in the platform repo is touched at
+> all, not even transiently. It is the shape v2.8's largest speed lever (L1, the multi-stage
+> `.next/standalone` image) will use — see [`build-budget.md`](build-budget.md). **The
+> "out of scope / forbidden upstream PR" section at the end of this page predates shape 3 and lists
+> `output:'standalone'` among the things only an upstream PR could deliver. That is no longer true** —
+> M255 proved it needs **zero** source edits and **zero** demo-patches, via `ENV NEXT_PRIVATE_STANDALONE=1`
+> in a tooling-owned Dockerfile. That section is rewritten with achieved numbers in **M257**.
 
 ## What `/demo-up` brings up (UI tier)
 
@@ -267,15 +291,29 @@ image. The tooling makes this cheap-where-it-can:
 ### Disk headroom — a second non-fatal pre-flight (v1.10b M49 #6)
 
 Alongside the RAM check, `/demo-up` runs a **disk-headroom pre-flight** (mirrors the RAM assert: a warning,
-never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, the `demo-N-<svc>:injected` Go
-services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
-used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
+never a gate). Each demo's images — `demo-N-next-web`, `demo-N-hiring`, `demo-N-studio-desk`, the
+`demo-N-<svc>:injected` Go services, `demo-N-fake-fapi`/`-fake-bapi` — plus the BuildKit layer cache
+**accumulate**, and dead demo stacks used to leave their images behind, so a box could slowly fill until a
+build hit `ENOSPC` mid-stream.
 
-> **Below ~20 GB free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
-> `DEMO_DISK_MIN_GIB=N`). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
-> removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
-> tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
-> re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
+> **⚠️ v2.8 M255 re-sized the floor, because the numbers it was reasoned from were an order of magnitude
+> stale.** This section used to say *"the ~3.7 GB build cache"* and set the floor at ~20 GB. **Measured on
+> `billion`, 2026-07-27: the build cache is 105.4 GB**, one cold-images cycle **peaks at 18 GiB of
+> consumption** (the export leg stages layers before it unpacks them, so peak ≫ the ~12.6 GiB of resident
+> image bytes) and leaves **~2 GiB** behind. The floor is now **25 GiB** = the measured 18 GiB + a 7 GiB
+> reserve, and `stack-core/hostprofiles/billion.json` carries the same arithmetic
+> (`projected_image_gib` 18 + `disk_floor_gib` 7) so the operator warning and the release gate cannot drift.
+> Full derivation + the campaign protocol: [`build-budget.md`](build-budget.md).
+
+> **Below 25 GiB free, `/demo-up` warns + offers a reclaim** (override the floor with `DEMO_DISK_MIN_GIB=N`).
+> It never blocks the bring-up. Prefer `docker builder prune -f --filter until=24h` over
+> `docker system prune -af`: `until=` drops the cache records **not used within** the window — which is
+> exactly the once-only `pnpm install` / `COPY . .` entries (16 of them, 4.029 GB each, **61 % of the whole
+> cache**) — while keeping the base layers every build reuses. **The companion fix:
+> `rosetta-demo down <N> --purge` removes that stack's images** (`demo-N-*`, scoped so it never touches
+> another demo or a dev/base image) — so tearing a demo down with `--purge` reclaims its disk. A **plain
+> `down`** still *keeps* the images (a fast re-up); `--purge` is the "I'm done, reclaim everything" path (it
+> already dropped volumes + the data dir).
 
 > **The free-space signal measures the Docker VM's INTERNAL disk, not host `/` (v2.6 M239-F1 correction).**
 > On Docker Desktop the engine runs in a Linux VM with its **own fixed-size virtual disk** — the filesystem a
@@ -612,11 +650,26 @@ landed at `storytelling-postfix-2`:
 
 **True zero-rebuild** — one frontend image that serves every stack with the port/pk switched at *runtime* —
 would require **platform-source changes** (runtime rewrites in `next.config.mjs`, an absolute internal origin for
-SSR `fetch` in `server.graphql.ts`, a `window.__ENV` shim + explicit `publishableKey` on `<ClerkProvider>`,
-optionally `output:'standalone'`). Those are real platform edits with PR/review/prod risk — **forbidden** for the
-demo tooling to make locally. It's documented here as an **optional upstream PR you own** (a deferred/unscheduled deploy-CI
-precedent), **not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted
-cost of staying tooling-only.
+SSR `fetch` in `server.graphql.ts`, a `window.__ENV` shim + explicit `publishableKey` on `<ClerkProvider>`).
+Those are real platform edits with PR/review/prod risk — **forbidden** for the demo tooling to make locally.
+It's documented here as an **optional upstream PR you own** (a deferred/unscheduled deploy-CI precedent),
+**not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted cost of
+staying tooling-only.
+
+> **⚠️ Two of the four items above have since been delivered WITHOUT an upstream PR, and the list is being
+> re-cut.**
+> - **The SSR origin** landed at v2.3 **M218** as the sha-pinned `next-web-ssr-graphql-origin` demo-patch —
+>   shape 2, not a PR. It was worth 37.5 s of every authenticated render.
+> - **`output:'standalone'`** was listed here as PR-only. It is not: Next 16's frozen `defaultConfig` reads
+>   `output: !!process.env.NEXT_PRIVATE_STANDALONE ? 'standalone' : undefined`, and no app `next.config` sets
+>   `output` — so **`ENV NEXT_PRIVATE_STANDALONE=1` in a tooling-owned Dockerfile (shape 3) is sufficient**,
+>   with zero source edits and zero demo-patches. **Measured at v2.8 M255** on `hiring.Dockerfile`: the image
+>   goes **4.84 GB → 379 MB** and the export leg **146.8 s → 2.9 s**, and the resulting image boots and
+>   Clerkenstein-redirects correctly. (One gotcha: turbo 2 defaults to `--env-mode=strict`, which filters the
+>   variable out before `next build` sees it, so the flag silently no-ops without `--env-mode=loose`.)
+>
+> This whole section is rewritten with achieved numbers in **M257** (D-v28-10). See
+> [`build-budget.md`](build-budget.md) for the measurement and the budget it feeds.
 
 ## Related
 - [Demo family index](README.md) · [Lifecycle](../rosetta_demo.md) · [Safety contract](../safety.md) · [Verification](../verification.md)

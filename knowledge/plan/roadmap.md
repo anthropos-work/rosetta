@@ -239,12 +239,28 @@ and a simplification lens) ran against the first draft of this section. Its mate
   rated this `blocks-release` and asked M255 to choose between two architectures. Inspection settles it: the
   two builds apply **11 distinct manifests** (`up-injected.sh:496-509` next-web ×9, `:1020-1047` hiring ×7);
   **5 are the same manifests on the same shared files**, **5 target disjoint trees** (`apps/web/**` ×3 vs
-  `apps/hiring/**` ×2), and the one shared-package outlier (`next-web-ssr-graphql-origin` →
-  `packages/graphql/src/server/server.graphql.ts`) is **inert for the hiring image by its own manifest header**
-  (behaviour-identical when `WUNDERGRAPH_SSR_ENDPOINT` is unset — it only prepends to an existing `||` chain).
-  Rule: **apply the union once, build both images in parallel from the single clone, revert once LIFO** (which
-  preserves the studio→pubweb `urls.ts` chain and removes one apply/revert cycle of the chained pair — exactly
-  where G2 drift-refusals historically bite). Backed by a guard test, not by an architecture.
+  `apps/hiring/**` ×2), and one shared-package outlier — `next-web-ssr-graphql-origin` →
+  `packages/graphql/src/server/server.graphql.ts`. Rule: **apply the union once, build both images in parallel
+  from the single clone, revert once** (preserving the studio→pubweb `urls.ts` chain and removing one
+  apply/revert cycle of the chained pair — exactly where G2 drift-refusals historically bite). Backed by a
+  guard test, not by an architecture.
+
+  > **⚠️ CORRECTED at M255 (build), on two points the decision got wrong.**
+  > **(1) The outlier is NOT "inert".** This decision said it was *"inert for the hiring image by its own
+  > manifest header (behaviour-identical when `WUNDERGRAPH_SSR_ENDPOINT` is unset)"*. The manifest header says
+  > nothing about hiring — it says the patch is inert **when the variable is unset** — and the variable **is
+  > set on the hiring container** (`stack-injection/gen_injected_override.py:367`), whose app really does import
+  > the patched module (`apps/hiring/src/app/api/bunny/recording/[sessionId]/route.ts` →
+  > `createServerGraphQLClient`). Under union-apply hiring's behaviour **changes** — for the *better* (it
+  > inherits the M218 SSR fix, worth 37.5 s on that route), but "beneficial" is not "inert", and M257 must
+  > **re-verify the hiring recruiter Playthrough** after flipping union-apply on. The waiver in
+  > `stack-core/union_apply_guard.py` now records the corrected, evidenced reason.
+  > **(2) "revert once LIFO" had no referent in the code.** `demopatch-spec.md` claimed both builds revert
+  > LIFO and in the same order; derived from source, **neither is strict LIFO and the two orders differ**. It
+  > does not matter — every manifest except the `urls.ts` pair owns a file no sibling touches — so the real
+  > invariant is narrower: **studio applies first, pubweb reverts first**. That is what the guard asserts, in
+  > both builds and in both phases. `demopatch-spec.md` §4 is corrected (it also said hiring's fingerprint was
+  > over a "4-manifest union"; it is **7**, a C1 mirrored count that drifted at M232 and M249).
 - **D-v28-8 — the truly-cold bench variant is CUT from the barrier.** It doubled the campaign
   (n≥3 × 2 variants × 2 hosts = **12 cold cycles ≈ 2.5–3 h**, on a box with a **~4–5 cycle disk runway**) and
   tested the wrong hypothesis. The warm run already yields three (size, unpack) points — **8.03 / 8.05 / 5.73 s
@@ -294,7 +310,7 @@ lever is judged against.
    were in scope). One **informational n=1** laptop run — not gated.
 2. **Campaign protocol + reclaim** — the draft's campaign was not executable: reps leak ~2 G disk and orphan
    ~11.6 G cache each, against a **~4–5 cycle runway** on 38–40 G free, with the guard
-   (`DEMO_DISK_MIN_GIB=20`, `up-injected.sh:298`) both **mis-sized** and **non-fatal** (`:319`). Deliver: a
+   (`DEMO_DISK_MIN_GIB=20`, `up-injected.sh:277` at design time) both **mis-sized** and **non-fatal**. Deliver: a
    pre-rep **hard-failing** disk/cache assert, an explicit reclaim step between reps, per-rep declaration of
    the starting `docker system df`, **L6 (scheduled prune) promoted here as campaign hygiene**, and
    `DEMO_DISK_MIN_GIB` re-sized in the same commit. Note in `build-budget.md` that a mid-campaign ENOSPC
@@ -303,8 +319,7 @@ lever is judged against.
    checked in; plus one assert in the sampler that **fails** when peak load1 > cores − 2, or peak summed heap
    commitment > 80 % of the Docker-VM/host budget, or free disk < floor + projected image bytes. Record a
    decision reconciling *"fail loudly"* against the codebase's standing **never-block-a-bring-up** pre-flight
-   contract (`up-injected.sh:279`) — the assert gates **buildbench and the M257 gate**, not an operator's
-   bring-up.
+   contract — the assert gates **buildbench and the M257 gate**, not an operator's bring-up.
 4. **The union-apply parallelism rule** (D-v28-7) — one paragraph + a guard test asserting (i) the two manifest
    lists' shared members are byte-identical and (ii) every non-shared member's `path:` is under a disjoint
    `apps/*` tree or explicitly waived as inert. Plus the per-stack image-isolation invariant.
@@ -324,7 +339,7 @@ lever is judged against.
    per-phase attribution model, the baseline, the gate, the headroom contract. Modelled on `latency-budget.md`
    (including **state the environment with every number**).
 7. **Security (D-v28-11) + the §8.6 cert hazard — explicitly NON-GATING hygiene.** `$STACK/certs` **survives
-   `--purge`** and the mint block is guarded on `[ ! -f $CERTS/fapi.crt ]` (`up-injected.sh:1859`), so
+   `--purge`** and the mint block was guarded on `[ ! -f $CERTS/fapi.crt ]` alone, so
    billion's `tailscale cert` minted **2026-07-11** has never been re-minted; a 90-day cert silently expires
    around **2026-10-09**, and the failure path drops to `gen_local_fapi_cert` with only a warning — a remote
    browser silently loses trust. Ship the expiry-aware re-mint **and** the paired `safety.md` §3 amendment

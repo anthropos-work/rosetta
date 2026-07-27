@@ -34,7 +34,7 @@ necessary.
 
 ---
 
-## Env knobs — all 27
+## Env knobs — all 30
 
 `0` = feature ON (the knob is an **opt-out**); `1` = disable it. Read the `DEMO_NO_*` names as *"do not…"*.
 
@@ -42,21 +42,21 @@ necessary.
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_STORIES` | `1` | **Stories & Heroes seed is ON.** Seeds the **4-org** roster — Cervato Systems / Solvantis / Northwind Aviation, each with a thriving/struggling/manager hero trio, **plus Meridian Talent**, the v2.4 M223 HIRING org (recruiter vantage, `is_hiring: true`) | `up-injected.sh:145` |
-| `DEMO_NO_STORIES` | `0` | (opt-out of the above) `=1` restores the legacy structural **`small-200`** single-identity seed | `up-injected.sh:146` |
-| `DEMO_STORIES_PRESET` | `stack-seeding/presets/stories.seed.yaml` | the preset the stories seed reads | `up-injected.sh:148` |
-| `DEMO_NO_SETDRESS` | `0` | **set-dress is ON** — cache-first snapshot replay (taxonomy + directus + sim-embeddings) then the seed | `up-injected.sh:120` |
-| `DEMO_NO_LOCAL_CONTENT` | `0` | **per-stack Directus is ON** — content is self-contained. `=1` reads content **live from prod** (the documented fallback) | `up-injected.sh:126` |
-| `DEMO_NO_DIRECTUS_DRIFT_FIX` | `0` | the local-content Directus drift fix runs (only when local content is on) | `up-injected.sh:1421` |
-| `DEMO_NO_CONTENT_URL_REWRITE` | `0` | the `demo_web` content-URL rewrite runs (only when local content is on) | `up-injected.sh:1458` |
+| `DEMO_STORIES` | `1` | **Stories & Heroes seed is ON.** Seeds the **4-org** roster — Cervato Systems / Solvantis / Northwind Aviation, each with a thriving/struggling/manager hero trio, **plus Meridian Talent**, the v2.4 M223 HIRING org (recruiter vantage, `is_hiring: true`) | `up-injected.sh:222` |
+| `DEMO_NO_STORIES` | `0` | (opt-out of the above) `=1` restores the legacy structural **`small-200`** single-identity seed | `up-injected.sh:223` |
+| `DEMO_STORIES_PRESET` | `stack-seeding/presets/stories.seed.yaml` | the preset the stories seed reads | `up-injected.sh:225` |
+| `DEMO_NO_SETDRESS` | `0` | **set-dress is ON** — cache-first snapshot replay (taxonomy + directus + sim-embeddings) then the seed | `up-injected.sh:197` |
+| `DEMO_NO_LOCAL_CONTENT` | `0` | **per-stack Directus is ON** — content is self-contained. `=1` reads content **live from prod** (the documented fallback) | `up-injected.sh:203` |
+| `DEMO_NO_DIRECTUS_DRIFT_FIX` | `0` | the local-content Directus drift fix runs (only when local content is on) | `up-injected.sh:2267` |
+| `DEMO_NO_CONTENT_URL_REWRITE` | `0` | the `demo_web` content-URL rewrite runs (only when local content is on) | `up-injected.sh:2304` |
 
 ### The UI tier & the presenter cockpit
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_NO_UI` | `0` | **full UI tier is ON** — next-web + studio-desk (containers) + ant-academy (native) | `up-injected.sh:114` |
-| `DEMO_NO_ACADEMY_FILL` | `0` | **the academy grid is FILLED** — applies the `academy-fs-published-fallback` demo-patch to the demo's own ant-academy clone before launch, so the home grid renders the committed FS catalog as **published** (production-faithful, **no "Draft" chip**). Default-on for EVERY demo (localhost + public-host); idempotent + drift-refuse + **NON-FATAL** — a refused patch just leaves the grid empty. **This is the knob that gates Thread A**: set it to `1` and the demo academy renders 0 cards. Both halves are required (the patched code reads `ACADEMY_DEMO_FS_PUBLISHED`, which is added to the launch env *only* when the patch actually applied) | `ant-academy.sh:368` |
-| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:1483` |
+| `DEMO_NO_UI` | `0` | **full UI tier is ON** — next-web + studio-desk (containers) + ant-academy (native) | `up-injected.sh:191` |
+| `DEMO_NO_ACADEMY_FILL` | `0` | **the academy grid is FILLED** — applies the `academy-fs-published-fallback` demo-patch to the demo's own ant-academy clone before launch, so the home grid renders the committed FS catalog as **published** (production-faithful, **no "Draft" chip**). Default-on for EVERY demo (localhost + public-host); idempotent + drift-refuse + **NON-FATAL** — a refused patch just leaves the grid empty. **This is the knob that gates Thread A**: set it to `1` and the demo academy renders 0 cards. Both halves are required (the patched code reads `ACADEMY_DEMO_FS_PUBLISHED`, which is added to the launch env *only* when the patch actually applied) | `ant-academy.sh:159` |
+| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:2329` |
 
 ### Demo-patches (platform-source fixes applied to the demo's own ephemeral clone)
 
@@ -64,19 +64,19 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_NO_PATCH` | `0` | **all demo-patches applied** | `up-injected.sh:469` |
-| `DEMO_NO_AUTHZ_SKIP` | `0` | ⚠️ **the `app-targetrole-authz-skip` patch is APPLIED** — authorization is short-circuited on the per-member target-role write path. Part of what makes a demo an **authz-weakened build** ([`../safety.md`](../safety.md) §3.2) | `up-injected.sh:792` |
-| `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND` | `0` | the `app-aireadiness-snapshot-loadmembers` read-path patch is applied | `up-injected.sh:793` |
-| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:1380` |
-| `DEMO_NO_SENTINEL_RELOAD` | `0` | the sentinel casbin-policy reload runs (the silent-403 catcher) | `up-injected.sh:1350` |
+| `DEMO_NO_PATCH` | `0` | **all demo-patches applied** | `up-injected.sh:495` |
+| `DEMO_NO_AUTHZ_SKIP` | `0` | ⚠️ **the `app-targetrole-authz-skip` patch is APPLIED** — authorization is short-circuited on the per-member target-role write path. Part of what makes a demo an **authz-weakened build** ([`../safety.md`](../safety.md) §3.2) | `up-injected.sh:1570` |
+| `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND` | `0` | the `app-aireadiness-snapshot-loadmembers` read-path patch is applied | `up-injected.sh:1571` |
+| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:2226` |
+| `DEMO_NO_SENTINEL_RELOAD` | `0` | the sentinel casbin-policy reload runs (the silent-403 catcher) | `up-injected.sh:2196` |
 
 ### Remote access
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `STACK_PUBLIC_HOST` | `""` → **auto-discovered** | **v2.3 M220 S3 — THE FLIP.** Empty no longer means *"localhost"*; it means *"go find out"*. On a bare `/demo-up N` the bring-up walks a **6-rung capability ladder** and, if every rung passes, adopts this box's own MagicDNS FQDN — so the demo is **remotely reachable by default**. Any failed rung ⇒ **empty ⇒ the localhost demo, byte-identical to v2.2**. Setting it explicitly (or `--public-host`) skips discovery. **A dotless host is hard-refused** — `@clerk/backend`'s `assertValidPublishableKey` rejects it | `up-injected.sh:41`, discovery at `:106` |
-| `DEMO_NO_PUBLIC_HOST` | `0` | **the opt-OUT for the flip** (flag form: `--no-public-host`). `1` ⇒ do not even *probe*: no `tailscale` calls, no cert mint, forced localhost demo | `up-injected.sh:35` |
-| `DEMO_NO_MKCERT` | `0` | the local-trust cert is minted (the localhost path) | `up-injected.sh:132` |
+| `STACK_PUBLIC_HOST` | `""` → **auto-discovered** | **v2.3 M220 S3 — THE FLIP.** Empty no longer means *"localhost"*; it means *"go find out"*. On a bare `/demo-up N` the bring-up walks a **6-rung capability ladder** and, if every rung passes, adopts this box's own MagicDNS FQDN — so the demo is **remotely reachable by default**. Any failed rung ⇒ **empty ⇒ the localhost demo, byte-identical to v2.2**. Setting it explicitly (or `--public-host`) skips discovery. **A dotless host is hard-refused** — `@clerk/backend`'s `assertValidPublishableKey` rejects it | `up-injected.sh:43`, discovery at `:108` |
+| `DEMO_NO_PUBLIC_HOST` | `0` | **the opt-OUT for the flip** (flag form: `--no-public-host`). `1` ⇒ do not even *probe*: no `tailscale` calls, no cert mint, forced localhost demo | `up-injected.sh:37` |
+| `DEMO_NO_MKCERT` | `0` | the local-trust cert is minted (the localhost path) | `up-injected.sh:209` |
 
 > ### ⚠️ This table is the **demo** contract. The **dev** contract is its MIRROR IMAGE.
 >
@@ -134,22 +134,23 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_NO_PROVISION` | `0` | **secrets are provisioned** into the stack's `.env` (values-blind) | `up-injected.sh:52` |
-| `DEMO_SECRET_SRC` | `$REPO_ROOT/.agentspace/secrets` | where `/stack-secrets` reads the secret source from | `up-injected.sh:53` |
-| `DEMO_NO_SECRET_PREFLIGHT` | `0` | the secret-coverage pre-flight runs (a CRITICAL miss is fatal) | `up-injected.sh:677` |
+| `DEMO_NO_PROVISION` | `0` | **secrets are provisioned** into the stack's `.env` (values-blind) | `up-injected.sh:73` |
+| `DEMO_SECRET_SRC` | `$REPO_ROOT/.agentspace/secrets` | where `/stack-secrets` reads the secret source from | `up-injected.sh:74` |
+| `DEMO_NO_SECRET_PREFLIGHT` | `0` | the secret-coverage pre-flight runs (a CRITICAL miss is fatal) | `up-injected.sh:1448` |
 | `DEMO_ALLOW_UNPINNED_REXT` | `0` | the rext **tag-pin guard ABORTS** if the clone drifts from `.agentspace/rext.tag`. `=1` permits deliberate un-pinned authoring work | `ensure-clones.sh:85` |
-| `DEMO_ADVANCE_CLONES` | `0` | **OFF — no auto-advance** (deliberate staleness at a known-good rev is legitimate; an unconditional pull could break a demo mid-presentation). `=main`/`=1` brings every clone to `origin/main` (the platform `make pull` primitive); `=pinned` checks each out at its `stack-demo/clones.pin.json` ref | `ensure-clones.sh:183` |
-| `DEMO_FRESHNESS_STRICT` | `0` | **advisory — a stale/pin-drift/fetch-failed clone WARNS loud but does not block** (the build-SOURCE gate is elsewhere). `=1` escalates any not-provably-fresh clone to a FATAL abort (for a CI / HARD go/no-go bring-up that must build current code) | `ensure-clones.sh:354` |
-| `DEMO_REUSE_DEV_IMAGES` | `0` | **OFF — full independence.** The demo builds from its **own** `stack-demo/` clones; dev's images are never reused | `up-injected.sh:1008` |
+| `DEMO_ADVANCE_CLONES` | `0` | **OFF — no auto-advance** (deliberate staleness at a known-good rev is legitimate; an unconditional pull could break a demo mid-presentation). `=main`/`=1` brings every clone to `origin/main` (the platform `make pull` primitive); `=pinned` checks each out at its `stack-demo/clones.pin.json` ref | `ensure-clones.sh:200` |
+| `DEMO_FRESHNESS_STRICT` | `0` | **advisory — a stale/pin-drift/fetch-failed clone WARNS loud but does not block** (the build-SOURCE gate is elsewhere). `=1` escalates any not-provably-fresh clone to a FATAL abort (for a CI / HARD go/no-go bring-up that must build current code) | `ensure-clones.sh:371` |
+| `DEMO_REUSE_DEV_IMAGES` | `0` | **OFF — full independence.** The demo builds from its **own** `stack-demo/` clones; dev's images are never reused | `up-injected.sh:1792` |
 
 ### Host pre-flight & verification
 
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
-| `DEMO_NO_HOST_PREFLIGHT` | `0` | the host pre-flight runs (non-fatal — warns, never blocks) | `up-injected.sh:232` |
-| `DEMO_VM_MIN_GIB` | `12` | Docker-VM RAM floor asserted by the pre-flight | `up-injected.sh:181` |
-| `DEMO_DISK_MIN_GIB` | `20` | free-disk floor asserted by the pre-flight | `up-injected.sh:204` |
-| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:1594` |
+| `DEMO_NO_HOST_PREFLIGHT` | `0` | the host pre-flight runs (non-fatal — warns, never blocks) | `up-injected.sh:359` |
+| `DEMO_VM_MIN_GIB` | `12` | Docker-VM RAM floor asserted by the pre-flight | `up-injected.sh:258` |
+| `DEMO_DISK_MIN_GIB` | `25` | free-disk floor asserted by the pre-flight. **Re-sized from `20` at v2.8 M255** — the old value was reasoned from a "~3.7 GB frontend build / ~3.7 GB build cache" that is stale by an order of magnitude. It is now **derived from measurement**: one cold-images cycle peaks at **18 GiB** of consumption and leaves ~2 GiB behind, + a 7 GiB reserve. Same arithmetic as `stack-core/hostprofiles/billion.json` (`projected_image_gib` 18 + `disk_floor_gib` 7), fenced by a test. Still **non-fatal** — the hard-failing twin lives in `buildbench` (see [`build-budget.md`](build-budget.md)) | `up-injected.sh:316` |
+| `DEMO_CERT_RENEW_DAYS` | `30` | the FAPI TLS cert is **re-minted when it expires inside this window** (also when absent, or minted for a different host). **Net-new at v2.8 M255:** `$STACK/certs` survives `--purge` and the mint used to be guarded on file-absence alone, so the first bring-up on a host was the only one that ever minted — a 90-day Let's Encrypt cert then silently expired and only a *remote* browser noticed. See [`../safety.md`](../safety.md) §3.5.4 | `up-injected.sh:1353` |
+| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:2492` |
 
 ---
 
