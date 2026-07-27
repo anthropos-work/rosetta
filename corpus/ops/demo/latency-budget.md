@@ -350,12 +350,20 @@ built behind the boot awaits.
 |---|---|---|
 | `clerk.load()` | **~140 ms** | NOT the 10 s timeout — cheap vs Clerkenstein (the milestone's stated worry, refuted) |
 | `l12nService.init()` | **~12 ms** | cheap |
-| **`userService.canAccess()`** | **~3.9 s** | the dominant leg — its GraphQL org-memberships check **404s** and burns a 3-attempt retry ladder (1776 + 2102 ms backoff) |
+| **`userService.canAccess()`** | **~3.9 s** | the dominant leg — its org-memberships check **404s** and burns a 3-attempt retry ladder (1776 + 2102 ms backoff). **NB: M253 recorded this as a "GraphQL" 404 — that attribution is WRONG.** It is a **Clerk FAPI** 404 on `GET /v1/me/organization_memberships`, a route Clerkenstein never registered. Corrected + fixed at the source in `fix/studio` — see §"Time-to-usable" below |
 | `new PageWrapper()` (shell) | — | runs only AFTER the three awaits → skeleton visible at **~4669 ms** |
 
 **Read the arithmetic** (per this doc's rule): the ~3.9 s is a `retry: 2` ladder on a **fast-failing** fetch (a
 404, not a blackhole) — the same signature family as the login budget's ~6.1 s. But the fix is NOT to chase the
 404: it is to **paint the shell ahead of the await**.
+
+> **⚠️ SUPERSEDED (`fix/studio`, 2026-07-27) — the 404 WAS worth chasing.** Painting the shell ahead of the
+> await was necessary but **not sufficient**: it moved the *paint*, not the *wait*. The 404 kept costing
+> **~4.05 s of time-to-usable on every load**, and the skeleton merely covered it. Both are now true — the
+> shell paints early **and** the ladder is gone. Read the sentence above as *"first paint the shell, THEN
+> chase the 404"*, never as a reason to leave it. **This is the fourth iteration of this doc's own recurring
+> failure** (see the ~2–5 s "which we can't shorten" story): a metric that looked green because it measured
+> the wrong thing.
 
 ### The fix — paint the shell before the awaits (two demopatches on the M249 studio ladder)
 
@@ -384,6 +392,49 @@ State the environment with the number: the table above is a **local laptop demo-
 true) were a coordinator-accepted **environmental tailnet-RTT jitter** disposition (the (b) precedent + the
 "state the environment" rule), not a studio regression.
 
+### Time-to-usable — what the skeleton gate does NOT measure (`fix/studio`, 2026-07-27)
+
+**The M253 gate measures a static DOM+CSS paint with zero network.** It is green whether the app becomes
+*usable* in 200 ms or 20 s. That is not a nitpick — it was **structurally blind to a 4.8 s regression**: the
+skeleton metric barely moved (p50 **1819 → 1102 ms**) while the real shell arrived **4.8 s** later.
+
+> **The rule this establishes: a first-paint gate is not a performance gate.** `.page-skeleton` is a
+> *placeholder*; the presenter is waiting on `PageWrapper`. Always pair a paint metric with a **time-to-usable**
+> metric, or the paint metric will hide exactly the regression it appears to guard.
+
+**Root cause (the real one).** studio-desk's `core/main.ts` awaits `userService.canAccess()`, which calls
+`clerk.user.getOrganizationMemberships()` — so **clerk-js (the BROWSER)** issues
+`GET /v1/me/organization_memberships?paginated=true&limit=10&offset=0`. Clerkenstein had registered only the
+**BAPI's** server-side twin (`GET /v1/users/{userID}/organization_memberships`), never the **FAPI** route the
+browser calls. The FAPI 404'd → clerk-js's `const { data } = response` threw *"Cannot destructure property
+'data' of undefined"* → `withClerkErrorHandling` burned its full 3-attempt ladder (**1606 + 2265 ms** backoff)
+→ `canAccess()` fell into `catch → return true`. Because `PageWrapper` — and therefore `body.page-loaded`,
+which **every** studio page waits on — is built only *after* that await, the whole app sat behind a 404 retry
+ladder on **every** load.
+
+**The fix** (rext `clerkenstein/clerk-frontend`, zero platform edits): serve the FAPI route. The data was
+already assembled — `/v1/me` returns `userRes.OrganizationMemberships` — so the route just serves it in the
+**paginated envelope** clerk-js destructures (`{response:{data,total_count}}`, **not** a bare array) and
+honours `limit`/`offset` so clerk-js's paging terminates.
+
+**Measured on billion** (tailnet VM, demo-1, seat `dan-manager`, cold loads):
+
+| | before | **after** |
+|---|---|---|
+| `canAccess` leg | 4049 ms | **38 ms** (−99%) |
+| browser FCP | 6936 ms | **2152 ms** (−69%) |
+| 404s per load | 3 | **0** |
+| retry backoff | 1606 + 2265 ms | **none** |
+
+> **Side effect — the client access gate now actually enforces.** The 404 made `canAccess()` fail **OPEN**
+> (`catch → return true`). It now evaluates the real membership role against studio's
+> `STUDIO_ACCESS_ROLES` (`{admin, org:admin, content_creator, org:content_creator}`). **No reachable outcome
+> changes**: studio-desk's *server-side* `checkEnterpriseAndAdmin` already 303s non-admin seats to the web app
+> before `main.ts` runs, and every tooling seat is an admin (`run-studio-fcp.sh` defaults to `dan-manager`;
+> the M252 studio Playthroughs drive `pt-manager`). Two consequences worth pinning: the role must keep Clerk's
+> **prefixed** form (`org:admin` — a bare `admin` also passes, `basic_member` does not), and `total_count`
+> must be present, because `!memberships?.total_count` redirects the seat to the web app.
+
 ### The harness
 
 `rext stack-verify/e2e/run-studio-fcp.sh` — a studio sibling of `run-latency.sh`:
@@ -401,6 +452,20 @@ STUDIO_FCP_RUNS=5 STUDIO_FCP_GATE_MS=1000 \
 - **Gates on `skeleton-visible`** (the shell's `.skeleton-header` + `.skeleton-sidemenu`): p95 < gate **AND**
   max ≤ gate (the "no blank > 1 s" clause is a per-sample max, not a percentile).
 - Same green-gate + non-integer-`N` guard as `run-latency.sh`; **never** gates on `networkidle`.
+
+**And its time-to-usable sibling — `rext stack-verify/e2e/tests/studio-ttu.spec.ts`** (`fix/studio`), the probe
+that would have caught the above. It records the **real boot waterfall** rather than the injected shell:
+
+```
+nav commit → skeleton (the M253 metric) → clerk.load → l12n → canAccess → PageWrapper (the REAL shell)
+```
+
+- Reads `core/main.ts`'s **own console markers** (`"Initialize clerk"` / `"Initialize l12n service"` /
+  `"Initialize user service"` / `"Initialize content service"`) as leg boundaries — no instrumentation patch.
+- Records **every** request with status + duration, so a retry ladder is **visible rather than inferred**
+  (`nonOk` + a `slowest` top-12 per run). This is what turned "studio feels slow" into a named 404 route.
+- Reports **`dead_shell_gap_ms`** — real-shell minus skeleton — *the* number the M253 gate cannot see.
+- Knobs: `STUDIO_TTU_{HOST,SCHEME,N,RUNS,IDENTITY,OUT}`. Read-only, zero platform edits.
 
 ## See also
 
