@@ -7,6 +7,15 @@ and it is load-bearing here: two of the three spikes produced host-specific answ
 **Raw artefacts:** `billion:/home/devops/panorama/m255/spike-a/{spike-a.log,build-A.log,build-B.log}` ·
 laptop `.agentspace/scratch/work-m255/laptop/{run.log,build.log,samples.tsv}`.
 
+> 📌 **Provenance.** All three spikes ran **09:59–11:37Z on 2026-07-27**, on an otherwise-idle `billion`.
+> Possible third-party activity on the host was reported from **~13:11Z — 94 minutes after the last
+> measurement completed** — so no figure here is contaminated (user-confirmed 2026-07-27). **`billion` is
+> under a user freeze until ~2026-07-29**; do not re-run any of this without explicit per-occasion permission
+> (see [`../../../state.md`](../../../state.md) § Process flags). On the first post-freeze campaign, re-confirm
+> the two **timing**-derived results — spike (a)'s `146.8 s → 2.9 s` export leg and spike (d)'s disk-bound
+> attribution. Spike (a)'s **verdict** is not at risk either way: `4.84 GB → 379 MB` is bytes on disk, not a
+> stopwatch reading.
+
 ---
 
 ## Spike (a) — the L1 multi-stage experiment · **THE BARRIER DECIDER** · verdict **GO**

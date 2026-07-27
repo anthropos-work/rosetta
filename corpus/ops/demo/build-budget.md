@@ -138,6 +138,21 @@ OK.**
 > was `n=1` and, it turns out, an unusually representative one: the two differ by **0.9 %**. **Every v2.8
 > reduction target is measured against 666.29 s.**
 
+> 📌 **Provenance — read before quoting or re-deriving these numbers.** The campaign ran **09:59–11:37Z on
+> 2026-07-27** (reps completed 11:11 / 11:26 / 11:37; `campaign.json` written 11:37), on an otherwise-idle
+> `billion`. Possible **third-party activity on the host was reported from ~13:11Z** — **94 minutes after the
+> last rep finished**, so there is no overlap and none of these figures is contaminated (user-confirmed
+> 2026-07-27). Two corroborations, both independent of that question: three totals across two separate
+> sessions cluster within 2 % (**658 / 666 / 672 s**), and rep-02's 881 s outlier is *causally* attributed —
+> 206 s of its 215 s excess sits in two sub-phases, matched to a reclaim that evicted 7 cache records /
+> 356.8 MB. Host contention smears across sub-phases; it does not concentrate like that.
+>
+> **Re-confirm on the first post-freeze campaign** (`billion` is under a user freeze until ~2026-07-29, see
+> [`state.md`](../../../knowledge/plan/state.md) § Process flags): the **n=3 p50**, spike (a)'s
+> **146.8 s → 2.9 s** export cut, and spike (d)'s **disk-bound** attribution — the three timing-derived claims.
+> The **barrier verdict needs no re-confirmation**: `4.84 GB → 379 MB` is bytes on disk, not a stopwatch, and
+> a 50× export reduction cannot be produced by host contention.
+
 | | p50 | min | max |
 |---|---|---|---|
 | **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
