@@ -309,6 +309,21 @@ real future work, **not** pre-assigned to a minor version (per the `Mxyy` rule, 
 its number at *design* time, not before). They are governed by the same capability spec
 [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md).
 
+> ⚠️ **M206 + M207 are RE-FATED by v2.8 "fast build" `M256` (2026-07-27) — this is their last reservation.**
+> They have been re-reserved across **five consecutive releases** (v2.1 → v2.7) without ever being designed —
+> the textbook repeat-deferral signal the Phase-0a audit exists to catch. Under **D-v28-4**, `M256`'s coverage
+> clause requires a **written verdict** on every uncovered curated use case: a **named future milestone** or a
+> **drop**. M206's 3 in-corpus UCs (`ai-simulations.code`, `ai-simulations.interview`,
+> `profile-skills.self-evaluation`) and M207's 1 (`skill-paths.academy`) are in that set. Whatever `M256`
+> decides supersedes the text below. **Do not re-reserve them a sixth time.**
+>
+> Context for that decision — the measured state of the pillar as of 2026-07-27
+> ([`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md)): **18 live Playthroughs, 18/18
+> green, and 1 of them proves a WRITE.** Of the M201 curated 28 UCs, **16 are uncovered**; M206 reserves 3,
+> M207 reserves 1, and **12 have no milestone home at all** — onboarding ×5, org-admin ×4,
+> `workforce.organization-feedback`, `profile-skills.import`, `talk-to-data.query`. `M256` lands onboarding +
+> org-admin and verdicts the rest.
+
 - **M205 — Hiring + tier gates → recruiter/seeder half CONSUMED by v2.4 "casting call" (2026-07-15); the
   tier-gate + ATS-pipeline half is the RESIDUAL reservation.** The reserved M205 bundled three things: (1) the
   **recruiter vantage** + a **new `HiringSeeder`**, (2) the **free→paid Stripe entitlement gates**, and (3) an

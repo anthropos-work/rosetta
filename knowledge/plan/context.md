@@ -4,7 +4,21 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-07-20):** **v2.5 "the playbill" FEATURE-COMPLETE, IN RELEASE CLOSE** — the **content-vantage
+**Status (2026-07-27):** **v2.8 "fast build" IN DEVELOPMENT** — the **time-to-ready release** (branch
+`release/02.80-fast-build`, designed 2026-07-27 via `/developer-kit:design-roadmap`; **4 milestones
+M255 (HARD barrier) → M256 → M257 → M258**, strictly serial; tag will be `v2.8`). *From nothing, to live, to
+provably live, fast.* Measure the machine and spend it deliberately — a build bench + a **host-capacity
+profiler** that computes a build plan from real cores/RAM/disk under an explicit **headroom reserve contract**
+— then sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up
+(**672 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and proves
+itself**. Designed from [`.agentspace/build-annotation.md`](../../.agentspace/build-annotation.md) (a measured
+11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8)
++ [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md) (18/18 green, **1 of 18 proves a
+WRITE**, 12 curated use cases with no milestone home). Binding decisions **D-v28-1 … D-v28-5** are recorded in
+[`roadmap.md`](roadmap.md) § Active — v2.8 and mirrored in [`state.md`](state.md). Tooling + docs only —
+**zero platform-repo edits**.
+
+_Prior status (2026-07-20):_ **v2.5 "the playbill" FEATURE-COMPLETE, IN RELEASE CLOSE** — the **content-vantage
 release** (branch `release/02.50-the-playbill`, designed 2026-07-19 via `/developer-kit:design-roadmap`; **8 milestones
 M229 → M230 → M231 (HARD go/no-go) → M232 → M233 → M234 → M235 → M236**, spike-first; tag will be `v2.5`). All 8 are
 **closed and MERGED**; `/developer-kit:close-release` is running (the `release → main` merge + tag are its Phase 11,

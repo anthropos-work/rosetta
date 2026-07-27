@@ -137,6 +137,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.7** | **july jitter** | The **re-ground + fidelity + field-hardening release** — realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into `app` → **3 subgraphs**; jobsim mid-merge; net-new `app` domains; the rext seeder about to break on `skillpath.*`) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane worktree fan-out → prove-on-billion | M246 → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; 9 milestones M246→M254 — M246 barrier [`section`, HARD go/no-go] · M247 corpus-reground · M248 content-mgr-link · M249 cross-app-nav · M250 ai-readiness [`iterative`] · M251 test-health · M252 studio-builder-enable · M253 studio-first-paint [`iterative`] · M254 prove-on-billion [`iterative` closer, a–h live on `billion`]; tooling + docs only, **0 platform-repo edits**; close-release landed all 5 terminal follow-ups → **zero carry-forward**) |
 
+| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + a host-capacity profiler that computes a build plan from real cores/RAM/disk **with an explicit headroom reserve**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**672 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by `.agentspace/build-annotation.md` (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap | M255 (HARD barrier) → M256 → M257 → M258 | 🚧 **IN DEVELOPMENT** (branch `release/02.80-fast-build`, designed 2026-07-27) |
+
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
 
@@ -148,6 +150,280 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Active — v2.8 "fast build" (IN DEVELOPMENT, branch `release/02.80-fast-build`)
+
+**Theme.** *From nothing, to live, to provably live — fast.* A **time-to-ready** release on the mature
+demo/dev bring-up + Playthrough machinery. Two standing problems, one spine:
+
+1. **A `/demo-down --purge` + `/demo-up` cycle takes 11 m 12 s** — measured, instrumented, on `billion`
+   ([`.agentspace/build-annotation.md`](../../.agentspace/build-annotation.md)). **UI-tier image builds are
+   66 % of it and image export/unpack ALONE is 43 %** — and the box **never exceeded load 4.90 of 8 cores**
+   with RAM at 74 %. This is **not** a CPU problem. It is serialised I/O (writing 9.4 GB of Next.js image to
+   disk) plus a **deliberate serialisation** whose stated reason no longer applies: `build_frontends()` has
+   exactly one conditional (`NO_UI`), the RAM pre-flight it cites is **cosmetic** (declares its vars `local`,
+   returns no verdict, nothing branches on it), and the Go builds it was meant to avoid overlapping finish
+   **1.1 s before the UI tier starts**. Meanwhile the UI tier runs *before* `compose up`, so postgres boot,
+   4 atlas migrations, snapshot replay and the seed **idle for ~7.5 minutes**.
+2. **The Playthrough suite is 18/18 green while the demo still has things that don't work.** Not a paradox —
+   a structural property: **1 of 18 Playthroughs proves a WRITE**; the other 17 are render-presence proofs.
+   No Playthrough has a negative control (proven to go RED when its outcome is absent). Every journey stops at
+   a boundary (`/start`, "the completion control exists", "the draft rendered"). Every actor is
+   `entitlement: enterprise`. **Outcome `blocked`: 0. Outcome `error`: 0** — nothing proves the platform
+   correctly says *no*. And whole surfaces sit at zero: **ant-academy 0, onboarding 0, org-admin 0,
+   talk-to-data 0**. Full map: [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md).
+
+**The machine question, answered as a deliverable.** The release does not hand-tune constants — it ships a
+**host-capacity profiler** that measures the box it is on and computes the build plan, under an explicit
+**headroom reserve contract** (never consume the machine). Two very different hosts are in scope and both are
+measured: `billion` (8 vCPU / 7.3 GiB / x86_64 / 40 G free) and the M1 Pro laptop (10 cores / 16 GiB / arm64,
+where the **Docker VM allocation** — not host totals — is the real budget).
+
+**Shape.** `M255` is a **HARD go/no-go barrier**: everything after it is a number, and today there is exactly
+**one measurement at n=1**. Then the user's stated order, strictly serial — sharpen the detector *before*
+changing the thing it detects.
+
+```
+M255 build-bench & host-profiler ── HARD BARRIER (section)
+       │   measurement floor · headroom contract · safe-parallelism contract · 4 spikes
+       ▼
+M256 playthrough sharpening (iterative)      faster · effective · covered
+       ▼
+M257 first-light build (iterative)           672 s → ≤ 360 s p50, cold, on billion
+       ▼
+M258 proven-live build (iterative, closer)   up AND self-proven, ≤ 480 s p50
+```
+
+> **2-host parallel option (not assumed).** M256 needs a *stable* demo; M257 needs *repeated* bring-ups. On one
+> box they conflict. With `billion` holding a stable demo for M256 while M257 iterates locally, `M256 ∥ M257` is
+> viable — but it forfeits the "sharpen the detector first" benefit and the rext authoring copy is a singleton.
+> Default is serial; the user may flip it.
+
+**Hard constraints (carried over).** **Zero platform-repo edits** — every Dockerfile lever (L1/L3/L4/L7) lands
+as a sha-pinned `demopatch` or an **rext-owned Dockerfile** in the shape `hiring.Dockerfile` already sanctions.
+All tooling in `rosetta-extensions`, tagged, **pushed to origin** (rung zero). Per-stack image isolation is
+non-negotiable — cache *layers*, never *images*.
+
+### Binding user decisions (2026-07-27)
+
+- **D-v28-1 — codename "fast build".** User's call, overriding the proposed "call time".
+- **D-v28-2 — `M255` stays a `section` barrier** (design call). Three iterative milestones chasing time targets
+  with one n=1 measurement between them would be guessing, and `M255`'s deliverables are enumerable today.
+- **D-v28-3 — batch-gate semantics: no accumulating red.** A run always drives the **full batch to
+  completion** — it never stops at a step and never retries to hide a flake. At **batch end**, a non-empty red
+  set **escalates to the user for renegotiation** (fix, or an explicit written disposition). **Zero standing
+  red** is the invariant; nothing carries across runs. This replaces the strict-vs-non-fatal question for
+  `M258`: the bring-up **always runs the full suite and always reports the whole red set at once**.
+- **D-v28-4 — coverage scope: land onboarding (5) + org-admin (4)** (design call). The remaining 3 un-homed
+  UCs plus the 5-release-old `M206`/`M207` reservations each get a **written verdict** — a named future
+  milestone or a drop. No silent gaps, bounded scope.
+- **D-v28-5 — the cockpit logout / Back-to-Cockpit double-click defect is FIXED, and deliberately gets NO
+  Playthrough.** User's call. Logging out to the cockpit takes two-or-more clicks; it is the same seat-switch
+  machinery every Playthrough drives, so it is fixed in `M256` — but it is **not** added to the manifest.
+  (Should the user later want it covered, it is a one-liner against the existing `hero-login` page object.)
+
+### M255: Build-bench & host-profiler
+
+**Status:** `planned` · **Shape:** `section` · **HARD go/no-go barrier**
+**Goal:** Establish the measurement floor and the safety contract that every later speed lever is judged
+against — including the profiler that reads the machine and decides how much of it to use.
+
+**Scope — In:**
+- **`buildbench`** (rext `stack-core`) — generalize the one-off `reset-clean-build.sh` into a repeatable,
+  instrumented harness: **n ≥ 3**, both the **cold-images** variant (`--purge`, layer cache warm — the
+  sanctioned path the annotation measured) and the **truly-cold** variant (`docker builder prune -af` first,
+  never yet measured), machine-readable per-phase ledger + resource sampler, runs on **billion and the laptop**.
+- **`hostprofile`** (rext `stack-core`) — probe cores / RAM / swap / free disk / IO and emit a **build plan**:
+  UI-tier lane count, `turbo --concurrency`, per-lane V8 heap ceiling, BuildKit parallelism. Under a written
+  **headroom reserve contract**: hold back **≥ 2 cores or 20 %, whichever is greater**; keep total RAM
+  commitment **≤ 80 %** *counting the summed `--max-old-space-size` ceilings*, not just current usage; refuse
+  (downshift, loudly) rather than over-subscribe; abort if free disk < floor + projected image bytes; on macOS
+  read the **Docker VM allocation**, never host totals.
+- **The safe-parallelism contract** — the written rules any speed lever must satisfy (see Risks: the shared
+  `$DEMO/next-web-app` clone race is the load-bearing one).
+- **Four spikes**, each answered with evidence:
+  **(a)** does `next-web` already have a **multi-stage / production Dockerfile sibling** upstream? *(If yes, L1
+  — the single biggest lever — is a selection change, not a new Dockerfile.)*
+  **(b)** the **truly-cold** baseline; **(c)** the **laptop** baseline; **(d)** is peak load1 4.90 a plateau or
+  an **I/O ceiling**? *(If BuildKit is I/O-throttled, L2's parallel win is smaller than the naive 200 s and
+  M257's gate must be re-cut.)*
+- **`corpus/ops/demo/build-budget.md`** — the missing doc anchor (§0b blind area): what "fast" means for a
+  bring-up, the per-phase attribution model, the baseline, the gate, and the headroom contract.
+- **The §8.5 corpus retraction**, under the v2.7 **C1 mirrored-count rule** (all four docs in one commit;
+  `demo-up-defaults.md` is machine-fenced both ways): *"the ~3.7 GB build cache"* (**actual 105.4 GB — ~28×
+  off**, and `DEMO_DISK_MIN_GIB=20` is sized against the wrong number) · *"~3 min per frontend"* (right for the
+  two Next apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" zero times in 623
+  lines**, so the total undercounts by a whole 208 s image) · *"~3.7 GB first build"* (measured 4.77 / 4.67 GB)
+  · the studio *"pure memory starvation, not a slow build"* claim (refuted).
+- **The §8.6 cert hazard** — `$STACK/certs` **survives `--purge`** and the mint block is guarded on
+  `[ ! -f fapi.crt ]`, so billion's `tailscale cert` minted **2026-07-11** has never been re-minted. A 90-day
+  cert silently expires around **2026-10-09**. Add an expiry-aware re-mint.
+
+**Out:** any actual speed lever (that is M257) · host `daemon.json` changes (disabling the containerd
+snapshotter would orphan all 26 existing images — a bad trade) · dev-path-specific work.
+
+**Barrier condition:** if the truly-cold measurement shows export/unpack cost is **not** image-size-driven,
+**L1 collapses** and M257's exit gate must be re-cut with the user before M257 starts.
+
+**Depends on:** — · **Parallel with:** none (it is the barrier)
+**Estimated complexity:** large
+**KB dependencies:** `corpus/ops/demo/frontend-tier.md` · `corpus/ops/demo/demopatch-spec.md` ·
+`corpus/ops/demo/demo-up-defaults.md` · `corpus/ops/demo/latency-budget.md` (the precedent for a budget doc) ·
+`corpus/ops/verification.md` · `corpus/ops/safety.md`
+**Delivers → `corpus/ops/demo/build-budget.md`** (net-new; the §0b blind area)
+
+### M256: Playthrough sharpening
+
+**Status:** `planned` · **Shape:** `iterative`
+**Goal:** Make the Playthrough suite a detector you can trust and afford — individually faster, actually
+proving function rather than presence, and covering the journeys that are silently unwatched.
+
+**Exit gate** (three clauses, all objective, all measured on `billion` cold reset-to-seed):
+1. **Faster** — full live suite **p50 ≤ 120 s** (from 228 s), **0 flake across 3 consecutive runs**.
+2. **Effective** — **every** Playthrough passes a **negative control** (demonstrably RED when its outcome is
+   absent) · **≥ 5 mutating Playthroughs** (from 1) · **≥ 1 `blocked` outcome** (from 0).
+3. **Covered** — **onboarding (5) + org-admin (4) LANDED**, and every remaining uncovered curated UC carries a
+   **written verdict** (named future milestone or drop). **Zero silent gaps.**
+
+Plus **D-v28-5**: the cockpit logout / Back-to-Cockpit **double-click defect is fixed** (no Playthrough added).
+
+**Iteration protocol:** [`corpus/ops/demo/playthroughs.md`](../../corpus/ops/demo/playthroughs.md) — the
+M203/M204 coverage-iteration protocol (manifest → validator → page-object → drive live → triage → fix-surface
+routing), with the **4-state reporting map** (`passing` / `failing` / `unimplemented` /
+`unimplementable-without-platform-edit`, the last escalating).
+
+**Bootstrap tok (iter-01) — already seeded.** [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md),
+compiled 2026-07-27 and reviewed by the user: the 18 live Playthroughs by product × stream × **proof depth**,
+the 28-UC curated-corpus gap, the **12 un-homed** use cases, and the two speed levers visible from the config
+alone. iter-01 extends it into a ranked triage + the first strategy.
+
+**Why iterative (not section):** the coverage clusters are unpriced until driven live — onboarding may need
+seed states that do not exist (`pt-world` seeds *post*-onboarding users), and org-admin is four WRITE surfaces
+that may hit zero-edit walls. A fixed `In:` list would be speculative.
+
+**Two levers already identified** (from the map, not yet committed to):
+- **The serial default is over-broad.** `workers: 1` exists because "a Playthrough MUTATES real state against a
+  single shared `organization_id`-scoped Postgres" — but **17 of 18 mutate nothing**. A read-only lane at
+  `workers: N` + a serial mutating lane is safe under the *existing* rationale, with no seed partitioning.
+- **Per-seat `storageState` reuse** — all 18 log in from scratch across **6 distinct seats**; reuse pays the
+  cockpit handshake ~6× instead of ~18×, with `pt-profile-identity` retained as the one test that proves the
+  handshake itself.
+
+**Depends on:** M255 · **Parallel with:** none by default (see the 2-host note)
+**Estimated complexity:** very-large
+**Re-scope trigger:** if **> 3** of the un-homed UCs prove `unimplementable-without-platform-edit`, escalate —
+that is a platform conversation, not a test one.
+**Open questions:** does `pt-world` support a pre-onboarding user state at all? · do the org-admin writes have
+a read-back surface, or only a toast?
+**KB dependencies:** `corpus/ops/demo/playthroughs.md` · `corpus/ops/demo/coverage-protocol.md` ·
+`corpus/ops/demo/cockpit-spec.md` · `corpus/ops/seeding-spec.md` · `knowledge/plan/spec-drafts/playthroughs/spec.md`
+**Delivers → `corpus/ops/demo/playthroughs.md`** (the count, the streams, the negative-control contract, the
+batch-gate rule D-v28-3)
+
+### M257: First-light build
+
+**Status:** `planned` · **Shape:** `iterative`
+**Goal:** Collapse the cold demo bring-up so going live is a coffee, not a lunch — spending the machine
+deliberately, never exhausting it, and without weakening a single safety guard.
+
+**Exit gate:** a cold-images `demo-down --purge` + `demo-up` reaches **`autoverify green:true / 0 warnings`**
+in **p50 ≤ 360 s across 3 consecutive cycles on `billion`** (from the measured **672 s** — a 46 % cut), with
+**the M255 headroom contract never breached** (sampled, not asserted), **0 platform-repo edits**, and **all 7
+demopatch guards (G1–G7) still passing**. *Stretch: ≤ 300 s.*
+
+**Iteration protocol:** `corpus/ops/demo/build-budget.md` (authored at M255) — measure → attribute → one lever
+→ re-measure at n ≥ 3, the `latency-budget.md` discipline applied to build time (**state the environment with
+every number**).
+
+**Levers, ranked by measured seconds recoverable** (annotation §7; `ESTIMATE` where not yet demonstrated):
+| | Lever | Est. |
+|---|---|---|
+| **L1** | Multi-stage the two Next images — ship `.next/standalone`, collapse the 141.9 s + 136.7 s export **and** the 85.7 s unconditional unpack leg (L9) | **~200–250 s** |
+| **L2** | Build `next-web` ∥ `hiring` **and** overlap the UI tier with `compose up` (postgres + 4 atlas migrations + replay + seed idle ~7.5 min) | **~200 s** |
+| **L3** | Manifests-first `COPY` so the `pnpm install` layer survives a source-only change — it has **never once been reused** (16 entries × 4.029 GB = **61 % of the whole build cache**, every one `Usage count: 1`) | **~55 s** + an ~8 GB/cycle leak |
+| **L4** | Drop `--concurrency=1` from `pnpm turbo build` on an 8-core host | ~20–35 s |
+| **L5** | Speed the taxonomy replay (78.0 s / 330 k rows + 2 pgvector reindexes) — index-after-COPY, `UNLOGGED`-then-`SET LOGGED`, or a pre-built PG data dir. **Also the main `/dev-up` win** | ~30–50 s |
+| **L7** | Multi-stage `studio-desk` (1.71 GB shipping a full dev toolchain for a Vite bundle) | ~8 s |
+| **L8** | Cache the Directus bootstrap + restart (15.6 s of pure container-boot latency) | ~15 s |
+| **L10** | Serial fat: ~12 serial `git fetch`es, 23 serial `demopatch revert` shells, Go tooling compiled 4–5×/bring-up (`stackseed` **twice**), 4 independent `atlas migrate apply` targets run serially, a whole tailscale-serve plan re-emitted to add one port | ~20–50 s |
+| **L6** | Prune BuildKit on a schedule — **not a time win**: the documented ENOSPC failure mode surfaces as a cryptic *"redis exited (1)"* (M239-F1), and with L3's leak the real runway is **~4–5 cycles**, not 15–20 | 0 s (risk) |
+
+**Dev path.** `/dev-up` shares L5 / L6 / L10 (set-dress + tooling, not the UI tier). Measured and reported at
+each iter; **not** separately gated — the demo path is where 96.8 % of the wall-clock is.
+
+**Why iterative:** L1's cost depends entirely on M255 spike (a) · L2's real win depends on spike (d) · L3's
+value depends on spike (b). The path is measurement-driven by construction.
+
+**Depends on:** M256 (sharpen the detector before changing what it detects) · **Parallel with:** none by default
+**Estimated complexity:** very-large
+**Re-scope trigger:** if after L1 + L2 + L3 the p50 is still > 480 s, the remaining cost is structural (host I/O
+or the containerd snapshotter) — escalate rather than grind.
+**KB dependencies:** `corpus/ops/demo/build-budget.md` (M255) · `corpus/ops/demo/frontend-tier.md` ·
+`corpus/ops/demo/demopatch-spec.md` · `corpus/ops/demo/demo-up-defaults.md` · `corpus/ops/rosetta_demo.md` ·
+`corpus/ops/idempotency.md` · `corpus/ops/safety.md`
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (substantially revised: the real image anatomy, the
+multi-stage shape, hiring's existence) **+ `corpus/ops/demo/build-budget.md`** (the achieved numbers)
+
+### M258: Proven-live build
+
+**Status:** `planned` · **Shape:** `iterative` · **the closer**
+**Goal:** A demo stack comes up **and proves itself** — one cold command, and what you get is not "UP" but
+"UP and every journey verified".
+
+**Exit gate:** one cold command on `billion` brings the stack up **and** drives the **full Playthrough batch to
+completion** with **zero standing red**, at **total p50 ≤ 480 s across 3 consecutive cold reset-to-seed
+cycles**, reproducible, **0 platform-repo edits**.
+
+**Batch-gate behaviour (D-v28-3), the design's core:** the suite **always runs to completion** — never halts at
+the first red, never retries to mask a flake. At batch end it emits **one consolidated red set**. An empty red
+set is the gate. A non-empty red set **escalates to the user for renegotiation** — each item either fixed or
+given an explicit written disposition — so red **never accumulates silently across runs**. The stack itself is
+**left up** regardless (the `autoverify` precedent: a test bug must never cost a good demo), but the bring-up
+**exits non-zero and says so loudly** when the red set is non-empty.
+
+**Iteration protocol:** the M254/M244/M236 **prove-on-billion** protocol (fresh agent per run; sub-agents
+**foreground-poll** long operations — never background-and-yield; the coordinator watchdog is never stood down)
++ `corpus/ops/verification.md` **pre-flight rung zero** (*tagging is not publishing* — verify the rext tag is on
+**origin** before any live prove; M236 lost its whole first iteration to this).
+
+**Why iterative:** the composition is the unknown — a bring-up that has just been restructured for speed
+(M257) meeting a suite that has just been restructured for parallelism (M256), on a box whose headroom is now
+budgeted. Interactions surface only live.
+
+**Depends on:** M256, M257 · **Parallel with:** none
+**Estimated complexity:** large
+**Re-scope trigger:** if the composed p50 exceeds 600 s after 3 tiks, split the suite into a fast smoke lane
+gating the bring-up + a full lane run after, and renegotiate the gate.
+**Open questions:** does the batch run on the demo host or from a tailnet peer? (A `--public-host` demo can only
+be *browsed* from a peer; `--reset-only` already splits the DB half from the browser half.)
+**KB dependencies:** `corpus/ops/verification.md` · `corpus/ops/demo/playthroughs.md` ·
+`corpus/ops/demo/build-budget.md` · `corpus/ops/demo/tailscale-serve.md` · `corpus/ops/rosetta_demo.md`
+**Delivers → `corpus/ops/verification.md`** (the bring-up now ends in a functional batch gate, not only
+`autoverify`) **+ `corpus/ops/demo/playthroughs.md`** (the baked-in lifecycle)
+
+### v2.8 — parallelism matrix
+
+| Pair | Can parallelize | Shared surface | Merge risk | Note |
+|---|---|---|---|---|
+| M255 ∥ anything | **no** | — | — | It is the barrier; every downstream gate is a number it produces |
+| **M256 ∥ M257** | **yes-with-caveats** | `playthroughs/e2e/*` vs `demo-stack/up-injected.sh` — **disjoint files** | low | Blocked not by code but by **resource**: M256 needs a *stable* demo, M257 tears one down repeatedly. Viable only 2-host (billion stable + laptop iterating), and it forfeits sharpen-the-detector-first. **Default: serial** |
+| M257 ∥ M258 | **no** | M258 composes M257's output | — | |
+| M256 ∥ M258 | **no** | M258 runs M256's suite | — | |
+
+### v2.8 — risk map
+
+| Risk | Severity | Mitigation |
+|---|---|---|
+| **Parallel `next-web` ∥ `hiring` races the shared clone.** §8.3: both build from `ctx=$DEMO/next-web-app` (`up-injected.sh:490`, `:1008`) with **different demopatch sets**. Naive parallelism races patch apply/revert and defeats **G2** drift-refuse / **G4** idempotency / **G5** self-revert | **blocks-release** | **M255 settles it in writing** before M257 touches L2: separate build-scratch clones, or a patch-set superset with per-image filtering. **This is the one place "faster" can silently become "wrong"** |
+| L1 / L3 / L4 / L7 all touch Dockerfiles in canonical platform repos | degrades-quality | Zero-platform-edit holds: sha-pinned `demopatch` or an **rext-owned Dockerfile** — `hiring.Dockerfile` already sanctions the shape. M255 spike (a) may make L1 a mere *selection* change |
+| Cross-stack image reuse would leak a baked pk / offset origin between demos | **blocks-release** | Per-stack image isolation is non-negotiable. Cache **layers**, never **images**. `--purge` removing images stays correct |
+| The 46 % cut may be unreachable if BuildKit is I/O-throttled | degrades-quality | M255 spike (d) answers *plateau or ceiling* **before** M257's gate is fixed; M257 carries an explicit re-scope trigger |
+| Headroom contract slows the build on a small box vs today | nice-to-resolve | Correct by design — the contract is the point. Report the trade explicitly per host in `build-budget.md` |
+| Onboarding Playthroughs may have no seedable pre-onboarding state | degrades-quality | M256 open question, answered in an early tik; falls to a written disposition under D-v28-4 rather than blocking |
+| Red-set renegotiation could become a per-run interrupt | nice-to-resolve | **D-v28-3** is explicit: full batch to completion, **one** consolidated escalation at batch end, never per-step |
+| Cert silently expires ~2026-10-09 mid-release | blocks-release *(if it fires)* | M255 ships the expiry-aware re-mint |
 
 ---
 
