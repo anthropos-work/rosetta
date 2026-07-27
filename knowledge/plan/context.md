@@ -5,18 +5,41 @@ on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.m
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
 **Status (2026-07-27):** **v2.8 "fast build" IN DEVELOPMENT** — the **time-to-ready release** (branch
-`release/02.80-fast-build`, designed 2026-07-27 via `/developer-kit:design-roadmap`; **4 milestones
-M255 (HARD barrier) → M256 → M257 → M258**, strictly serial; tag will be `v2.8`). *From nothing, to live, to
-provably live, fast.* Measure the machine and spend it deliberately — a build bench + a **host-capacity
-profiler** that computes a build plan from real cores/RAM/disk under an explicit **headroom reserve contract**
-— then sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up
-(**666 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and proves
-itself**. Designed from [`.agentspace/build-annotation.md`](../../.agentspace/build-annotation.md) (a measured
-11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8)
-+ [`.agentspace/playthrough-map.md`](../../.agentspace/playthrough-map.md) (18/18 green, **1 of 18 proves a
-WRITE**, 12 curated use cases with no milestone home). Binding decisions **D-v28-1 … D-v28-5** are recorded in
-[`roadmap.md`](roadmap.md) § Active — v2.8 and mirrored in [`state.md`](state.md). Tooling + docs only —
-**zero platform-repo edits**.
+`release/02.80-fast-build`, designed 2026-07-27 via `/developer-kit:design-roadmap`, then **adversarially
+plan-reviewed and revised the same day**; **4 milestones M255 (HARD barrier) → M256 → M257 → M258**, strictly
+serial; tag will be `v2.8`). *From nothing, to live, to provably live, fast.* Measure the machine and spend it
+deliberately — a **build bench** (`buildbench`, `n ≥ 3` campaigns with a machine-readable phase ledger) plus
+**two measured, checked-in host profiles** (`billion`, `laptop`) and **one hard-failing headroom assert**
+against them — then sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev
+bring-up (**666 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and
+proves itself**.
+
+> **The plan review CUT the auto-planner.** The first draft proposed *a host-capacity profiler that computes a
+> build plan from real cores/RAM/disk under a headroom reserve contract*; **D-v28-6 replaced it** with the two
+> measured profiles + the single assert above — measurement over inference. This paragraph described the cut
+> deliverable for the whole of M255 and was corrected at that milestone's harden; **read
+> [`roadmap.md`](roadmap.md) and [`state.md`](state.md) first when they disagree with this file.**
+
+Designed from
+[`releases/02.80-fast-build/evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md)
+(a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above
+load 4.90/8 — **superseded as the BASELINE by M255's `n=3 p50 666.29 s`**, which it lands within 0.9 % of) +
+[`releases/02.80-fast-build/evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md)
+(18/18 green, **1 of 18 proves a WRITE**, 12 curated use cases with no milestone home), joined at M255 by
+[`releases/02.80-fast-build/evidence/m255-spikes.md`](releases/02.80-fast-build/evidence/m255-spikes.md).
+**These were moved into the release directory precisely because `.agentspace/` is git-ignored**
+(`.gitignore:138`) — an evidence link that points there is a dangling link for every other reader and for
+`close-release`'s archive. Binding decisions **D-v28-1 … D-v28-11** are recorded in
+[`roadmap.md`](roadmap.md) § Active — v2.8 and mirrored in [`state.md`](state.md); **D-v28-6 … D-v28-11 were
+added by the adversarial plan review**, so any citation of the range that stops at D-v28-5 predates it.
+Tooling + docs only — **zero platform-repo edits**.
+
+> ⚠️ **Operational freeze (2026-07-27 → ~2026-07-29): `billion` is OFF LIMITS by user instruction** — no ssh,
+> no demo bring-up/teardown, no `buildbench` campaign, no reads, and roadmap work is halted for the duration.
+> Noted here only because it changes what "IN DEVELOPMENT" means above; **[`state.md`](state.md) § Process
+> flags OWNS it** — the scope, the per-milestone gate impact and the leftover on the box are recorded there,
+> and this file must not restate status it does not own. M255's `n=3` baseline was measured and committed
+> *before* the freeze, so v2.8's measurement floor does not depend on lifting it.
 
 _Prior status (2026-07-20):_ **v2.5 "the playbill" FEATURE-COMPLETE, IN RELEASE CLOSE** — the **content-vantage
 release** (branch `release/02.50-the-playbill`, designed 2026-07-19 via `/developer-kit:design-roadmap`; **8 milestones

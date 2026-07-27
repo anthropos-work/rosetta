@@ -138,3 +138,110 @@ RED-proven.
   truly-cold data point arrived anyway, informationally: the laptop run had an empty BuildKit cache.*
 - ~~§8.5 prose retraction~~ → moved to M257 so `frontend-tier.md` moves once (D-v28-10). *Annotated in place
   so M257 rewrites the model, not just the numbers.*
+
+---
+
+## M255: Hardening
+
+### Pass 1 — 2026-07-27  (single pass; **halted early at the user's 48 h `billion` freeze**, see Stop condition)
+
+**Scope manifest** (milestone-touched, for `/developer-kit:close-milestone` Phase 4 to reuse):
+
+| module | files | tests |
+|---|---|---|
+| rext `stack-core` | `buildbench.py` · `union_apply_guard.py` · `demo_knob_guard.py` · `hostprofiles/{billion,laptop}.json` · `README.md` | `tests/test_buildbench.py` · `tests/test_union_apply_guard.py` · `tests/test_demo_knob_guard.py` · **`tests/test_m255_mutation_battery.py` (net-new)** |
+| rext `demo-stack` | `up-injected.sh` | `tests/test_tooling.py` · `tests/test_frontend_build.py` · `tests/test_cert_remint_m255.py` |
+| corpus | `build-budget.md` (net-new) · `safety.md` · `demopatch-spec.md` · `frontend-tier.md` · `demo-up-defaults.md` · `demo/README.md` · `CLAUDE.md` · `tailscale-serve.md` | the 5 corpus guards |
+| plan | `context.md` · `roadmap.md` · `state.md` · M255 + M257 dirs | — |
+
+**Coverage delta (milestone-touched rext modules):**
+
+| file | statements | stmts total | newly covered |
+|---|---|---|---|
+| `buildbench.py` | **71 % → 74 %** | 597 → 694 | the whole report/verdict/headroom-refusal path, previously unexercised |
+| `union_apply_guard.py` | **90 % → 92 %** | 134 → 150 | clause 0 + the divergent-declaration path |
+| `demo_knob_guard.py` | 93 % (unchanged — nothing new landed here) | 193 | — |
+| **total** | **78 % → 80 %** | 924 → 1037 | |
+
+**Read the denominator, not just the percentage.** buildbench gained **97 statements** of new fail-closed
+logic in this pass, so +3 points of coverage is ~110 newly-covered statements, not 18. The single largest
+remaining gap is unchanged and is listed under Stop condition: the non-dry-run rep body.
+
+**stack-core tests: 226 → 272.**
+
+**Bugs fixed inline — the theme is `an empty result reported as a pass`:**
+
+1. **`buildbench report` exited 0 on a campaign that measured nothing.** Three ABORTED reps still write
+   ledgers, so `reps == 3`, and `return 0 if rep.get("reps") else 2` handed back **success** for a campaign
+   whose `p50` was literally `None` — from the harness whose entire purpose is to refuse un-measured
+   numbers, and in violation of its own documented exit-code contract (*"1 = … the campaign report is
+   red"*). `build_report` now computes `ok` + an enumerated `red[]`, and the CLI returns 0/1/2 accordingly.
+2. **The headroom assert SKIPPED any clause whose input was `None`.** A rep whose sampler died wrote zero
+   samples, handed `peak_load1=None` in, and got `ok=True` — a green headroom verdict on a host nothing had
+   measured. Added `require_measured`, so a caller declares which inputs are mandatory and a `None` becomes
+   a failure. (`pre_rep_assert` legitimately cannot measure load1 *yet*; that is a different fact from
+   unmeasured-because-broken, and only the caller knows which.)
+3. **`docker_vm_disk_avail_gib() or host_disk_avail_gib()` — and `0.0` is falsy.** A Docker VM with **zero**
+   bytes free is the exact ENOSPC state clause 3 exists to catch, and it fell through to host `/`, which has
+   plenty; the assert PASSED on a full engine disk. Two call sites; both now go through one
+   `effective_disk_avail_gib()` that distinguishes `None` (probe failed) from `0.0` (probe answered).
+4. **A stale `autoverify.json` was read as a fresh green.** `autoverify.sh:376-381` writes `ts` and says in
+   as many words that it exists so *a grader can SEE that the verdict predates the stack it describes* —
+   buildbench IS that grader and never looked. A rep whose bring-up dies before autoverify runs is exactly
+   the path that inherits the previous rep's green. `read_verdict()` is fail-closed on missing / unparseable
+   / undatable / predating, and `parse_verdict_ts` is **explicitly UTC** (M236's green-gate bug was this
+   same string parsed as LOCAL, failing OPEN west of UTC).
+5. **`phases_complete` was printed as a warning and then ignored.** The rep still counted toward the
+   campaign, contradicting this module's own fail-closed contract. Extracted `rep_is_ok()` — six clauses,
+   each a way for a rep to look fine and mean nothing.
+6. **`union_apply_guard`'s "DIVERGENT PATH" clause was the `_sha(p) != _sha(p)` tautology again.** It
+   compared `web_decls[slug]` against `str(_manifest_path(slug))` where `web_decls` was built as
+   `{s: str(_manifest_path(s))}` — *the same tautology, one indirection longer, shipped by the pass whose
+   purpose was to delete tautologies.* The captured `file` group was being discarded, so a per-image variant
+   that is **actually wired in** (`patches/<slug>/<slug>.hiring.yaml`) was invisible: every other clause
+   re-derives `<slug>.yaml` by construction and would have audited a file the build does not use. Added
+   `_manifest_decls()` (parses the filename) + clause 0 (canonical-filename) + DIVERGENT DECLARATION.
+7. **`reclaim()`'s docstring still carried the claim the campaign REFUTED** — *"CACHED-step records are
+   touched by every rep, so their clock keeps resetting and they survive"*. Measured: rep-01 served
+   studio-desk's chain from cache and the next reclaim evicted it anyway (7 records, 356.8 MB → +173 s).
+   Rewritten around what is actually true (one-off, not a per-rep tax → warm-up rep → p50, never the mean →
+   `n ≥ 3` is a floor), and `parse_reclaimed_bytes()` + `_reclaim_attribution()` now make the link
+   mechanical: the report NAMES the reclaim that explains an outlier, or says the outlier is **unexplained**.
+8. **`load_host_profile` accepted a profile with no provenance.** A test spot-checked the two shipped files
+   for `measured`; nothing stopped a third arriving without it, or with `cores: "eight"`. D-v28-6 cut the
+   auto-planner precisely so no number in a profile is a guess — the loader now requires `measured` +
+   `budget_source` and type-checks the five numerics.
+
+**Tests added: 46** (7 rep-ok · 8 report/gateability · 3 reclaim-attribution · 3 byte-parsing ·
+7 verdict-freshness incl. the TZ regression · 5 headroom-unmeasured · 4 falsy-zero disk · 6 profile
+validation · 2 union-apply · 1 mutation battery [3 cases, 10 mutants]).
+
+**The mutation battery is the pass's real deliverable.** `tests/test_m255_mutation_battery.py` reverts each
+fix to its pre-fix form in a staged copy and asserts the suite goes RED — carrying M220's three anti-theatre
+assertions (baseline GREEN · every mutant changes bytes · signatures not all identical) plus a **fourth**:
+mutants reverting *different* fences must produce *different* signatures, while two halves of the *same*
+fence may coincide. **It caught two bugs in itself on its first two runs** — a signature parser that returned
+the literal string `"FAILED"` for every mutant (so all ten looked identical), and an over-strict uniqueness
+rule that demanded a test which cannot exist. A fence nobody has watched go red is not a fence; that now
+includes this one.
+
+**Knowledge backfill:** the `stack-core/README.md` guard index gains a row for the battery. No corpus doc
+needed a change — every finding was in rext code or its own docstrings, and the two corpus-facing facts
+(the refuted reclaim reasoning; `p50`-never-mean) were **already** correct in `build-budget.md`, which is
+what let the code's stale docstring be spotted as a divergence.
+
+**Flakes stabilized:** none observed — 3 consecutive clean runs of the new tests.
+
+### Stop condition
+
+**Halted after pass 1 by explicit user instruction** (a 48 h operational freeze on `billion`, 2026-07-27 →
+~2026-07-29, halting roadmap work), not by the stabilization rule. Coverage signal was still meaningful when
+the pass stopped. Remaining work is recorded as **Fate 3 → M255 harden resume**:
+
+| item | what it would do |
+|---|---|
+| `run_campaign` rep-body coverage | the non-dry-run block (`buildbench.py` ~763-850) is still the largest uncovered region; drive it with a faked `Popen`/`Sampler`/docker probe set so the staleness, unmeasured-sampler and phase-table paths are proven end-to-end and not only unit-wise |
+| a plan-number mirror fence | `666.29` is mirrored in 8 prose sites and the `D-v28-N` range in 5; the range had **already** rotted in 4 of them (fixed here by hand). Derive the baseline from `hostprofiles/billion.json` and the range from `roadmap.md`, and fence both — the C1 mirrored-count class, which this release has now paid for twice |
+| `demo_knob_guard` anchor-fence mutants | the `Read at` fence is the third M255 guard and has **no** battery entry; add mutants for the anchor comparison and the `--fix` regenerator |
+| `_manifest_lists` body extraction | `text.find("\n}\n")` truncates a build function at the first column-0 `}`; currently masked by the pinned 11/5/6 count test, but the truncation would be silent |
+| the `laptop` profile's provisional field | `projected_image_gib` is the one non-measured number in either profile and says so only in prose; make it a machine-declared `provisional_fields` list the loader can surface |

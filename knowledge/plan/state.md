@@ -149,6 +149,31 @@ files are cited as source-of-record from six sites.
   CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS).
 
 ## Process flags (do NOT auto-push)
+- 🚫 **`billion` IS OFF LIMITS — user-imposed freeze from 2026-07-27 ~14:00Z, ~48 h (until ~2026-07-29).**
+  No ssh, no demo bring-up/teardown/purge, no `buildbench` campaign, no reads. **No agent, skill or milestone
+  may touch `billion.taildc510.ts.net` without EXPLICIT per-occasion user permission** — this overrides any
+  gate, protocol or default in this plan, including `verification.md`'s prove-on-billion lineage.
+  **Impact on the v2.8 gates** (all three are billion-measured, so none can FIRE during the freeze):
+  **M256** clause 1 (suite p50 on billion) · **M257**'s whole exit gate (p50 ≤ 360 s ×3 cold cycles on billion)
+  · **M258**'s composed cold cycle. **M255 is unaffected** — its barrier verdict (GO) and the n=3 p50
+  **666.29 s** were measured and committed *before* the freeze; harden + close are local.
+  **Local work that remains available:** M256's entire code half (the fake-FAPI seat-isolation enabler, the
+  `MUTATES`/`READ-ONLY`/`UNKNOWN` per-spec classification, the negative-control mechanism, authoring the
+  onboarding ×5 + org-admin ×4 Playthroughs, the coverage verdicts) and M257's lever *implementation*
+  (Dockerfile shapes, `up-injected.sh`, rext code) — only their **measurement** needs the host.
+  **Known leftover on the box:** the M255 campaign's final rep (rep-03, ended 11:37Z) ends with a demo-1 stack
+  UP. It has NOT been torn down — doing so would itself be a touch. Ask before reclaiming it.
+- 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z on 2026-07-27, PRE-freeze.**
+  The user reported possible third-party activity on the box "in the last hour" as of ~14:11Z — i.e. from
+  **~13:11Z**, which is **94 minutes after our last measurement completed** (reps finished 11:11 / 11:26 /
+  11:37; `campaign.json` written 11:37). **No overlap, so nothing we measured is contaminated** — user-confirmed
+  2026-07-27. Three independent totals across two sessions cluster within 2 % (**658 / 666 / 672 s**), and
+  rep-02's 881 s outlier is causally attributed, not assumed: 206 s of its 215 s excess sits in two sub-phases,
+  matched to a reclaim that evicted 7 cache records / 356.8 MB (contention would smear across sub-phases, not
+  concentrate). **Action on the first post-freeze campaign:** re-confirm the three timing-derived claims —
+  the n=3 p50, spike (a)'s 146.8 s → 2.9 s export, and spike (d)'s disk-bound attribution. The barrier verdict
+  needs no re-confirmation: **4.84 GB → 379 MB is bytes on disk, not a stopwatch**, and a 50× export cut cannot
+  be produced by host contention.
 - **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
   on their own cadence. **v2.5**'s and **v2.6**'s merges + tags are likewise local-only.
 - **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan).
