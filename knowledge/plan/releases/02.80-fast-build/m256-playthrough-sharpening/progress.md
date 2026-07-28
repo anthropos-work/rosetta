@@ -23,6 +23,14 @@
   had written off and de-scoping `storageState` reuse (~200 ms, plus a false-green hazard). A latent hydration
   flake the removed settle had been masking was surfaced and fixed semantically. rext tag
   `fast-build-m256-networkidle-fence`, **on origin**. — see `iter-03/progress.md`
+- iter-04 (tik, `closed-fixed-partial`): **the org-admin product exists** — the 9th product and one of the
+  M201 corpus's un-homed clusters for five releases, from **0 of 4** covered to **4 declared / 2 landed
+  GREEN** (`pt-orgadmin-tag-create`, `pt-orgadmin-setting-toggle` — both mutate **and** read back through a
+  full reload). The milestone's open question is **answered: all four surfaces have real read-back surfaces**,
+  none `unimplementable`. The other 2 are declared **`TODO`** with written diagnoses + named handlers and
+  their specs parked in `e2e/drafts/` (**zero standing red**, D-v28-3). Clause 1 **re-verified on the grown
+  denominator: 0.5434x**, with an original-16 honesty cross-check at 0.5347x. Clause 2's mutating count
+  **1 -> 3** of 5. rext tag `fast-build-m256-orgadmin`, **on origin**. — see `iter-04/progress.md`
 
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
@@ -38,8 +46,12 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-03 (provisional — must be re-measured on the post-coverage suite):** median per non-studio
-Playthrough **2.014 s** = **0.6055x** of baseline; suite wall-clock median **52.0 s**; 0 flake over 3 runs.
+**Post-iter-04 (re-measured on the GROWN denominator, 18 non-studio):** median per non-studio Playthrough
+**1.808 s = 0.5434x** of baseline — gate `<= 0.79x` **MET**; **honesty cross-check** over the ORIGINAL 16
+only: **1.778 s = 0.5347x**, so the gain is in the existing tests, not an artifact of adding fast ones (the
+two new Playthroughs are *slower* than the median). Suite wall-clock median **44.5 s** (reported, not gated).
+**0 flake** over 3 consecutive runs (`136 passed` x3). `ptreport`: **20/22 passing, 2 `[TODO]`, 0 failing.**
+(Post-iter-03 was 2.014 s = 0.6055x on the 16-test denominator.)
 
 **Environment:** `Kirality-Mac-Pro-6.local`, darwin 25.1.0, Docker VM **9.70 GiB** (vs the 12 GB floor);
 `demo-2` offset 20000, **localhost/http**, `--no-public-host`. **Per D-v28-12 no number here may be quoted
@@ -54,6 +66,8 @@ Fate-3 items land here.
 | `FIX-M256-autoverify-fapi-libressl` | `autoverify.sh` check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → warns *"NOBODY CAN LOG IN"* on a working stack (iter-01 D5). Give it a probe independent of the host TLS stack. | a later tik of M256 |
 | `DOC-M256-ptworld-reset-comment` | `playthroughs/seed/pt-world.seed.yaml`'s header claims the showcase world is "not touched by pt-world's reset". `doReset` takes **no org filter** — it is (audit F6). | a later tik of M256 |
 | `PERF-M256-parallel-lane` | The cookie/`__client`-scoped Clerkenstein registry **or** one fake-FAPI per worker. Both priced in iter-01 D1. A **wall-clock** lever, not a median one — no M256 gate clause needs it. | a future release milestone |
+| `PT-M256-orgadmin-role-create` | **Gate-critical for clause 2.** The platform's create-role `Save` appears to NO-OP (enabled; no HTTP >=400, no console error, no navigation, no new row; `alert` region EMPTY). Try the "Suggest skills" prefill path. If it really is a silent platform no-op, that is a finding to report and clause 2's mutating count must come from another write surface. Spec: `e2e/drafts/orgadmin-role-create.spec.ts.draft` | iter-05 |
+| `PT-M256-orgadmin-member-tag` | **Gate-critical for clause 2.** The bulk-action dropdown intercepted pointer events over its own modal (454 click retries to the 240 s budget — invisible to actionability checks); `Escape` fixed that leg, then `checkbox.check()` still timed out. Needs the modal's filter box / scroll container. Spec: `e2e/drafts/orgadmin-member-tag.spec.ts.draft` | iter-05 |
 | `FIX-M256-studio-false-green` | `advancedDesignerRendered()` matches the route's own `Simulation Advanced Builder` header, so `pt-studio-advanced-generate` passes ~1.3 s before the generation completes (iter-02 D6). Assert a post-draft-only landmark and prove it RED with no generation. **This IS a clause-2 negative control**, not a side errand. | the clause-2 tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. | the same tik |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |
