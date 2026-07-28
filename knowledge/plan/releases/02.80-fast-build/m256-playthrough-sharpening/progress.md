@@ -103,6 +103,20 @@
   `ptreport` 23/30 passing, 0 failing. rext tag `fast-build-m256-verdicts`, **on origin**. — see
   `iter-09/progress.md`
 
+- iter-10 (tik, `closed-no-lift`): **D-v28-5 could not be measured, and finding out why exposed a worse,
+  previously unrecorded defect.** Driving the presenter's real clicks on the cockpit never switched hero at all —
+  because **`cockpit-manifest.json` and `fake-fapi-roster.json` have drifted completely apart**:
+  `run-playthroughs.sh --reset` re-exports the **roster** (30 `pt-*` keys — which is why 23 Playthroughs are
+  green) but **never the cockpit manifest** (still `maya-thriving`, `tom-struggling`, … baked at bring-up). So the
+  cockpit renders **35 `[Log in as]` buttons naming heroes that no longer exist**, and the handshake's
+  *deliberate* best-effort tolerance for an unknown `__clerk_identity` (`server.go:347-349` — right for a
+  malformed deep-link) turns that into a **successful-looking WRONG login**: the presenter gets whoever was last
+  active, with no error in the UI and none in the log. That is very likely the substrate of D-v28-5's
+  "two-or-more clicks" symptom — **recorded as a hypothesis, not a finding**, because it cannot be isolated until
+  the cockpit can select a hero that exists. **No code shipped, deliberately** (iter-07 D31's lesson: an
+  unverified lifecycle fix that closes a handler and changes nothing is the worst outcome available). Suite
+  untouched and green. — see `iter-10/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -174,7 +188,8 @@ Fate-3 items land here.
 | `PT-M256-resume-fixture-pair` | `profile-skills.import.UC1` + `onboarding.enterprise-workforce-standard.UC1` share **one** blocker: a checked-in **résumé fixture**. `playthroughs/fixtures/` has been reserved and EMPTY since spec §5.4 — **no shipped Playthrough has ever exercised a file upload** — so the first pays the fixture *and* the real-file-chooser pattern. Land them **together** so that cost is paid once. | a later tik of M256 |
 | `PT-M257-self-evaluation` | **Re-home recommendation (iter-09 D39).** `profile-skills.self-evaluation.UC1`'s M206 reservation is WEAK: its curated final is persist-then-observe (`user_skill_evidences.user_level`), needing no LLM, no integration, no fixture — exactly the MUTATING shape clause 2 hunted for four iters. Re-homing a reservation is a **roadmap decision**, so it is recorded as a recommendation, not actioned. | M257 (user/roadmap call) |
 | `PT-M257-talk-to-data` | `talk-to-data.query.UC1` — real + wired (`app/internal/askengine`), but needs the `ask_*` tables migrated on the demo **and live Bedrock credentials**. An unavailable credential is not something an iter can fix; it also belongs in the separately-budgeted integration lane, not the timed median. | M257+ |
-| `D-v28-5-cockpit-logout` | **A gate clause in its own right, still UNSTARTED across 8 iters.** The cockpit logout / Back-to-Cockpit double-click defect. Same seat-switch machinery every Playthrough drives (`hero-login.ts` / the M37 handshake); by the user's explicit call it gets **no Playthrough**. | next iter |
+| `FIX-M256-cockpit-manifest-drift` | **NEW (iter-10 D41), and it BLOCKS D-v28-5.** `run-playthroughs.sh --reset` re-exports `fake-fapi-roster.json` (M211 iter-16) but **not** `cockpit-manifest.json`, so on any Playthrough-reset demo the cockpit lists heroes that no longer exist and every seat selection **silently** falls back to the last-active seat (`clerk-frontend/server.go:347-349`). 23 Playthroughs stay green while the human-facing cockpit is entirely stale. Fix shape: re-export the cockpit manifest alongside the roster so the two artifacts move together — **verify on a live bring-up**, and do not regress the roster refresh. Separately consider making the unknown-key fallback **loud** on a demo. | **next iter** |
+| `D-v28-5-cockpit-logout` | **BLOCKED on the above (iter-10 D42).** A gate clause in its own right, still unfixed after 10 iters — but no longer merely unstarted: it is **not measurable** until the cockpit can select a current hero. The double-click symptom is plausibly a *consequence* of the drift (a presenter who does not get the hero they clicked clicks again) — plausible, **unmeasured**. Re-measure on a cockpit whose manifest matches its roster BEFORE designing a fix. By the user's explicit call it gets **no Playthrough**. | after the drift fix |
 | `BLOCKED-M256-refusal-surface` | Clause 2's `>= 1 blocked` outcome, still **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
 | `FENCE-M256-bounded-interaction` | Generalise iter-06 D25: a source-scan fence asserting no unbounded `click`/`press` sits inside a retry loop in the harness. The defect class is real (a 245 s in-suite timeout that passed in 6.0 s alone) and the fix was per-site; the fence is what stops the next one. | a later tik of M256 |
