@@ -115,8 +115,8 @@ presenter cockpit of dead CTAs — the state M254 left `billion` in — and the 
   billion-measured and therefore **cannot fire without sign-off** — but the *code half* of each is local and
   unblocked (M256's seat-isolation enabler + mutation classification + negative controls + the onboarding ×5 /
   org-admin ×4 Playthroughs; M257's lever implementation). Only their measurement needs the host.
-  **Last known state (2026-07-28, do not re-probe):** demo-1 up, 16 containers, cockpit serving the deeplink
-  build at `https://demo1.anthropos.work:17700`, rext pinned `cockpit-deeplinks-v1`.
+  **Last known state (2026-07-28, do not re-probe):** demo-1 up, cockpit serving the deeplink build at
+  `https://demo1.anthropos.work:17700`, rext pinned `cockpit-deeplinks-v1`.
 - 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z 2026-07-27, PRE-freeze.** Reported
   third-party activity starts **~13:11Z — 94 min after the last rep** (reps 11:11/11:26/11:37), so there is no
   overlap and nothing is contaminated (user-confirmed). Corroborated twice: three totals across two sessions
