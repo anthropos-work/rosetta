@@ -301,3 +301,14 @@ so a seed wall cannot starve the clauses org-admin already discharges.
 
 _Compiled 2026-07-28 (M256 iter-01, bootstrap tok). Extends §1–§7; supersedes §7's "read-only parallel
 lane" recommendation per §8.1._
+
+### 8.7 OUTCOME of §8.3 (M256 iter-03) — L1/L2 landed, L3 de-scoped on measurement
+
+`networkidle` is now **banned across the whole harness** (20 sites: 12 login, 2 `goto` overrides, 6
+unbounded settles), fenced by `tests/networkidle-fence.unit.spec.ts` (renamed from
+`home-login-networkidle.unit.spec.ts`, whose scope was one route). Measured leg cost that justified it:
+`goto /profile` **2854 ms** on `networkidle` vs **423 ms** on `domcontentloaded`.
+
+**Median per non-studio Playthrough 3.326 s → 2.014 s = 0.6055×** (gate ≤ 0.79×), 0 flake over 3 runs.
+**L3 (`storageState` reuse) is de-scoped**: it saved only ~200 ms beyond the fix and would manufacture the
+single-global-seat false-green hazard §8.1 describes. rext tag `fast-build-m256-networkidle-fence`, on origin.

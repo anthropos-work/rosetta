@@ -15,6 +15,14 @@
   the suite ended) so the gate's "irreducible LLM lane" has no referent; and the median's driver is the
   **per-test login handshake**, not the `networkidle` inheritance — iter-03 re-targets to seat-grouped
   `storageState` reuse. — see `iter-02/progress.md`
+- iter-03 (tik): **clause 1's speed half MET** — median per non-studio Playthrough **3.326 s -> 2.014 s =
+  0.6055x** (gate <= 0.79x), 0 flake over 3 runs, by banning `networkidle` at **20 harness sites** (12 login
+  call sites inheriting the default + 2 per-surface `goto` overrides + 6 unbounded settles) and widening its
+  fence from one route to the whole harness (`networkidle-fence.unit.spec.ts`, mutation-verified). Phase A's
+  leg probe (2854 ms vs 423 ms) **falsified iter-02 D8 before any code was written**, rescuing the lever D8
+  had written off and de-scoping `storageState` reuse (~200 ms, plus a false-green hazard). A latent hydration
+  flake the removed settle had been masking was surfaced and fixed semantically. rext tag
+  `fast-build-m256-networkidle-fence`, **on origin**. — see `iter-03/progress.md`
 
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
@@ -29,6 +37,9 @@
 **Pinned statistic (D7)** — recompute identically or the ratio is meaningless: the median across the 16
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
+
+**Post-iter-03 (provisional — must be re-measured on the post-coverage suite):** median per non-studio
+Playthrough **2.014 s** = **0.6055x** of baseline; suite wall-clock median **52.0 s**; 0 flake over 3 runs.
 
 **Environment:** `Kirality-Mac-Pro-6.local`, darwin 25.1.0, Docker VM **9.70 GiB** (vs the 12 GB floor);
 `demo-2` offset 20000, **localhost/http**, `--no-public-host`. **Per D-v28-12 no number here may be quoted

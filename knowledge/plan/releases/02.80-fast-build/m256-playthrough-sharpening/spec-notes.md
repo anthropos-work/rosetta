@@ -42,7 +42,7 @@ Code paths are relative to `.agentspace/rosetta-extensions/` unless noted. Full 
 | `pt-world` seed + reset-to-seed | `playthroughs.md` §The Playthrough world · `corpus/ops/seeding-spec.md` §Re-run safe | `playthroughs/seed/pt-world.seed.yaml` · `seed/seed-worlds.yaml` · `manifest/seed_worlds.go` · `stack-seeding/cmd/stackseed/main.go` §`resetTables`/`doReset` · `playthroughs/e2e/run-playthroughs.sh` |
 | Seeded hero fan-out | `corpus/ops/demo/stories-spec.md` | `stack-seeding/seeders/persona.go`, `persona_write.go` (the 7-table flush) |
 | Presence sweep (reused foundation) | `corpus/ops/demo/coverage-protocol.md` | `stack-verify/e2e/` (`playwright.config.ts`, `lib/crawl.ts`, `lib/section-assert.ts`, `lib/coverage-manifest.ts`) |
-| `networkidle` doctrine | `coverage-protocol.md` §Never wait on networkidle · `corpus/ops/demo/latency-budget.md` | `playthroughs/e2e/lib/page-object.ts` §`goto` · fences: `tests/page-object.unit.spec.ts`, `tests/home-login-networkidle.unit.spec.ts` |
+| `networkidle` doctrine | `coverage-protocol.md` §Never wait on networkidle · `corpus/ops/demo/latency-budget.md` | `playthroughs/e2e/lib/page-object.ts` §`goto` · fences: `tests/page-object.unit.spec.ts`, `tests/networkidle-fence.unit.spec.ts` (renamed + widened at M256 iter-03 — it now bans networkidle across the WHOLE harness, floor 18 login sites) |
 | Studio (LLM-bound) lane | `playthroughs.md` §the `studio` product | `playthroughs/e2e/tests/studio-builder.spec.ts` (`test.setTimeout(300_000)` @ :45, `180_000` @ :91) · `lib/studio-builder-page.ts` |
 
 ## KB prerequisites still open (audit Phase 4 — need a user call)
