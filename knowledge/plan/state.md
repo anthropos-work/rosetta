@@ -145,10 +145,9 @@ LRU reclaim** and a **`build_cache_cap_gib` profile field** (recorded by name; r
 **Process note:** the sweep destroys artifacts a closed milestone's docs point to; "preserved under
 `.agentspace/scratch/`" and the sweep cannot both be right.
 
-> **The interlude:** while M255 was paused, a cockpit **story-deeplink** feature was built and shipped to
-> `main` in both repos (rext `c755214`, tag `cockpit-deeplinks-v1` on origin; rosetta `bf3f9bc`). It is live on
-> billion's demo1 cockpit and on a local `demo-2`. It is **not** part of v2.8's scope and owes M255 nothing —
-> noted here only so the merge commits on this branch are not mistaken for milestone work.
+> **The interlude:** a cockpit **story-deeplink** feature shipped to `main` in both repos during the pause
+> (rext `c755214` + tag `cockpit-deeplinks-v1`; rosetta `bf3f9bc`), live on billion's demo1 cockpit. **Not** part
+> of v2.8's scope — noted so this branch's merge commits are not mistaken for milestone work.
 
 
 
