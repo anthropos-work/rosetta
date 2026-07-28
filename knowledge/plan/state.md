@@ -121,7 +121,6 @@ total 78→80 % (denominator +97 statements); final green **1198 pass / 1 skip**
   needs no re-confirmation** — `4.84 GB → 379 MB` is bytes on disk, not a stopwatch.
 - **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
   on their own cadence. **v2.5**'s and **v2.6**'s merges + tags are likewise local-only.
-- **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan).
 - rext code-of-record: the authoring copy is on `main`, and M255's tooling ships at
   **`fast-build-m255-buildbench-2`** (buildbench + both measured host profiles + the union-apply fence + the
   `Read at` anchor fence) — **pushed to origin**. The earlier `-1`/unsuffixed tags are on origin too.
