@@ -140,8 +140,13 @@ branches `release/02.80-fast-build` + `m255/build-bench-host-headroom` and the `
 both repos had **never been pushed** and existed only on the laptop; they are pushed now. `main` was merged
 into both branches, so the cockpit-deeplink work done during the pause is here too (the deeplink spec + the
 re-pinned `latency-budget.md` citations). M255's claims were re-verified against the
-code: **10/10 checklist items, every deliverable present**. **No work was lost** — the zombie-session
-artifacts remain under `.agentspace/scratch/work-m255/conflict-preserve/`.
+code: **10/10 checklist items, every deliverable present**. **No committed work was lost.** ⚠️ Correction (2026-07-28): the M256 startup's archived-milestone sweep
+deleted `work-m255/` including `conflict-preserve/`. The reverted cockpit commit is still a reachable git
+object (`git show 37260f1` in rext) — but the zombie's *uncommitted* buildbench patches are gone, and with
+them its two unevaluated salvage ideas: a **need-based LRU reclaim** and a **`build_cache_cap_gib` profile
+field**. Neither is in any commit. They are recorded here by name so they can be re-derived if wanted; the
+implementation sketch is not recoverable. **Process note:** the archived-milestone sweep destroys artifacts
+that a closed milestone's own docs point to — the sweep and the "preserved under …" claim are incompatible.
 
 > **The interlude:** while M255 was paused, a cockpit **story-deeplink** feature was built and shipped to
 > `main` in both repos (rext `c755214`, tag `cockpit-deeplinks-v1` on origin; rosetta `bf3f9bc`). It is live on
