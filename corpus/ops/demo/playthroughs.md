@@ -112,9 +112,22 @@ net-new journey, which flips the last in-manifest `TODO`. **M252 (v2.7 "july jit
 `org-admin` product** — one of the M201 curated corpus's four un-homed clusters for five releases — as **2 more**
 live Playthroughs (`pt-orgadmin-tag-create` + `pt-orgadmin-setting-toggle`, both WRITES read back through a full
 reload) with 2 declared `TODO` carrying written diagnoses, and **added `skill-paths.save-for-later`** as **1 more**
-(`pt-skillpath-bookmark`, a write + a delete, both read back). The corpus now stands at **21 live Playthroughs,
-2 TODO** (23 use cases), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold
-reset-to-seed runs.
+(`pt-skillpath-bookmark`, a write + a delete, both read back), and **opened the `onboarding` product** — the
+LAST whole surface in the M201 curated corpus that no e2e suite had ever touched, *the first thing every real
+user does* — as **1 more** live Playthrough (`pt-onboarding-complete`) with **all 5 curated onboarding use cases
+declared and carrying written verdicts**. The corpus now stands at **22 live Playthroughs, 7 TODO** (29 use
+cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
+runs.
+
+> **Onboarding was thought unseedable, and it was a schema misreading (v2.8 M256 iter-07/08).** The milestone's
+> own KB-fidelity audit concluded there was **no pre-onboarding state and none could be declared**, reasoning
+> from `UsersSeeder` writing a membership for every seeded user. **Membership is not onboarding.** Onboarding
+> completion lives in **`public.user_params.onboarding`** (a `jsonb` column — there is no onboarding table), and
+> it is **NULL for all 191 seeded users**: the pre-onboarding state is the **DEFAULT**, already present for every
+> hero, and `/onboarding` drives as-is. Had the audit's claim stood, 5 un-homed use cases would have been
+> `unimplementable` and the milestone's re-scope trigger would have fired. **The general lesson: a
+> "no pre-X state exists" claim is usually a claim about the wrong column — check the writer, then check the
+> column, before pricing a cluster as impossible.**
 
 > The 2 `TODO`s are `org-admin.roles.UC1` + `org-admin.members.UC1`. Both are **diagnosed, not merely unbuilt**
 > — their specs are parked in `playthroughs/e2e/drafts/*.spec.ts.draft` (the `.draft` suffix keeps Playwright
@@ -597,6 +610,22 @@ worked example (above): declared in every world, materialized by nothing, and gr
 an iter plans a Playthrough around a precondition, the evidence it needs is **the seeder line that writes the
 column**, not the capability entry that names it. A capability with no writer is a fail-open, and it surfaces
 as a Playthrough asserting a behaviour the platform has no reason to exhibit.
+
+**A route that gates on state is a FREE read-back — look for one first (v2.8 M256 iter-08).** The cheapest
+mutating proof shape in the suite is not a label flip or a list delta; it is a route that **serves-or-redirects**
+on the very state the Playthrough writes. `/onboarding` SERVES the first-run flow while
+`user_params.onboarding` is unset and **REDIRECTS to `/home`** once it is set, so one URL supplies *both* halves —
+the pre-state absence (which is the negative control, per the pattern below) and the persisted post-state — each
+read on a fresh navigation, with no second surface, no toast, and no DB assert. When such a route exists, prefer
+it. Corollary that bit once: if you assert the same pattern in **both** directions, its **segment anchoring is
+load-bearing** — an `/onboarding-tour` look-alike match would make the "it persisted" half pass on the wrong
+route, so the pin test asserts the rejection explicitly.
+
+**Choose the seat for a persistent mutation; do not inherit it (v2.8 M256 iter-08).** Completing onboarding
+cannot be undone through the UI, so driving it on `pt-employee` would have coupled that Playthrough to every
+other one asserting on that hero. `pt-free` was registered in `seed-worlds.yaml` and driven by **0** use cases —
+the pre-flight audit had recorded that as a *gap*, and it turned out to be the asset that makes an irreversible
+write safe. Before writing an irreversible mutation, ask which seat nothing else reads.
 
 **A mutating Playthrough's PRE-STATE read is its negative control — for free (v2.8 M256 iter-06).** A negative
 control is the demand that a Playthrough be *demonstrably RED when its outcome is absent*, and the instinct is to

@@ -74,6 +74,20 @@
   across every file in `tests/`. rext tag `fast-build-m256-negctl-falsified`, **on origin**. — see
   `iter-07/progress.md`
 
+- iter-08 (tik, `closed-fixed`): **the ONBOARDING product exists** — the last whole surface in the M201 curated
+  corpus that no e2e suite had ever touched (*the first thing every real user does*), un-homed for five releases,
+  and the one the milestone's own audit had priced as impossible. **1 live Playthrough**
+  (`pt-onboarding-complete`, mutating **#6**) + **all 5 curated onboarding UCs declared with written verdicts** —
+  every verdict **harness/seed work, 0 `unimplementable`**, which is the concrete reason the re-scope trigger
+  never fired. The proof shape is the cheapest in the suite: **`/onboarding` is its own read-back** (it SERVES
+  the flow while incomplete and REDIRECTS to `/home` once complete), so one route gives both the pre-state
+  absence (the negative control) and the persisted post-state. Seat choice was load-bearing — `pt-free` is
+  driven by **0** other use cases, so an irreversible write cannot perturb another Playthrough. Clause 1
+  improved to **0.5950×**, and the original-16 cross-check (1.772 s = 0.5328×) **retires iter-06's suspected
+  regression as run-to-run variance**. `145 passed` ×3, 0 flake; `ptreport` 22/29 passing, 0 failing.
+  `@pt-mutation` registry: **MUTATES=6 READ-ONLY=14 UNKNOWN=2**. rext tag `fast-build-m256-onboarding`, **on
+  origin**. — see `iter-08/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -88,7 +102,16 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-06 (re-measured on the GROWN denominator, 19 non-studio) — the current figure:** median per
+**Post-iter-08 (re-measured on the GROWN denominator, 20 non-studio) — THE CURRENT FIGURE:** median per
+non-studio Playthrough **1.979 s = 0.5950×** of baseline — gate `<= 0.79×` **MET**; **honesty cross-check** over
+the ORIGINAL 16 only: **1.772 s = 0.5328×**. Suite wall-clock median **55.3 s** (reported, not gated). **0 flake**
+over 3 consecutive cold reset-to-seed runs (`145 passed` ×3). `ptreport`: **22/29 passing, 7 `[TODO]`, 0
+failing.** `@pt-mutation` registry, computed: **MUTATES=6 READ-ONLY=14 UNKNOWN=2**. *This retires iter-06's
+suspected regression:* its original-16 cross-check read 2.006 s and the drift from iter-04's 0.5347× was
+attributed to laptop variance rather than asserted as a regression — the same cross-check now reads 0.5328×,
+within noise of iter-04, so variance it was.
+
+**Post-iter-06 (superseded; on the 19-non-studio denominator):** median per
 non-studio Playthrough **2.077 s = 0.6245×** of baseline — gate `<= 0.79×` **MET**; **honesty cross-check** over
 the ORIGINAL 16 only: **2.006 s = 0.6033×**. Suite wall-clock median **53.5 s** (reported, not gated). **0 flake**
 over 3 consecutive cold reset-to-seed runs (`141 passed` ×3). `ptreport`: **21/23 passing, 2 `[TODO]`, 0 failing.**
@@ -124,7 +147,10 @@ Fate-3 items land here.
 | `NEGCTL-M256-cross-vantage` | **Gate-critical, replaces the above (iter-07 D30).** Clause 2's negative controls stand at **5 of 21**; the 5 mutating ones get it free from their pre-state read (D22), and the **16 non-writing** ones need a different mechanism. Run each Playthrough's **own final locator against a contrast vantage** — a hero/org for whom the outcome legitimately does not exist. Real absence, app stays alive, and it proves **WHICH** data not merely **THAT** data (the M219 lesson, per-Playthrough). Cost stated honestly: **O(tests), not O(surfaces)** — budget it across more than one tik. | **iter-08+** |
 | `FIX-M256-studio-false-green` | **RE-AIMED (iter-07 D31) — the old diagnosis was FALSE.** iter-02 blamed the route's `Simulation Advanced Builder` header; a 5-minute poll of the real journey shows that string **NEVER renders**. The matcher actually fires on the designer's **empty section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft populates it. **Deleting the header alternative is a NO-OP — do not ship it as a fix.** Assert a **POPULATED** section instead (a character card / a non-zero `designer.actors.counter.label` count). Evidence is attached to the locator in `studio-builder-page.ts`. Until it lands, both studio Playthroughs stay `@pt-mutation: UNKNOWN`, never `MUTATES`. | a later tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. **Still not dischargeable (iter-07):** a section *heading*'s presence does not answer *"did the generation complete on this host?"*. Measuring section **CONTENT** answers the fix and the doc premise together — keep them one piece of work. | the same tik as the fix |
-| `ONBOARD-M256-build` | **Now known BUILDABLE (iter-07 D28) — the audit's F5 was wrong.** `public.user_params.onboarding` is `jsonb` and **NULL for all 191 seeded users**, so the pre-onboarding state is the DEFAULT; `/onboarding` drives for both seats (`Upload`/`Skip`/`Next`). **5 of clause 3's 9 UCs.** No seeder work needed for the entry state. | **iter-08** |
+| ~~`ONBOARD-M256-build`~~ | **DONE (iter-08).** The onboarding product exists: `pt-onboarding-complete` live (mutating #6) + **all 5 curated onboarding UCs declared with written verdicts**, every verdict harness/seed work and **0 `unimplementable`**. | closed iter-08 |
+| `ONBOARD-M256-import-path` | The **4 remaining** onboarding UCs, each with its specific missing piece already written into `manifest/onboarding.yaml`: a **résumé fixture** (spec §5.4's `fixtures/` dir is still EMPTY — this would be the suite's FIRST file-upload Playthrough) + an async LLM import; the **org-prepared trigger condition**, not yet identified (iter-08 measured the *import form* for a hero WITH a populated profile); an **org-less actor** (F5's one kernel of truth — needs a member-less user + a roster seat); an **Org C stage-0** seat; a **day-0 hiring-org** seat (the only onboarding UC whose final spans two apps). | a later tik of M256 |
+| `VERDICT-M256-remaining-uncovered` | **Clause 3's other half.** Written verdicts still owed for `workforce.organization-feedback`, `profile-skills.import`, `talk-to-data.query`, plus the 5-release-old **M206/M207** reservations. `manifest/onboarding.yaml`'s TODO block is the template — a verdict names the specific missing piece, which is what proves it is not `unimplementable`. | next iter |
+| `D-v28-5-cockpit-logout` | **A gate clause in its own right, still UNSTARTED across 8 iters.** The cockpit logout / Back-to-Cockpit double-click defect. Same seat-switch machinery every Playthrough drives (`hero-login.ts` / the M37 handshake); by the user's explicit call it gets **no Playthrough**. | next iter |
 | `BLOCKED-M256-refusal-surface` | Clause 2's `>= 1 blocked` outcome, still **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
 | `FENCE-M256-bounded-interaction` | Generalise iter-06 D25: a source-scan fence asserting no unbounded `click`/`press` sits inside a retry loop in the harness. The defect class is real (a 245 s in-suite timeout that passed in 6.0 s alone) and the fix was per-site; the fence is what stops the next one. | a later tik of M256 |
