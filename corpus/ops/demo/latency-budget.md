@@ -41,7 +41,7 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 `measureLogin` begins by reading the cockpit's real CTA, and the ACCESS predicate's second half ("the user menu
 shows the hero") is resolved from the CTA's **`data-login-as`** attribute. The cockpit emits that attribute on
-**hero cards only** (`cockpit.py:618`); the Content-stories tab's seat CTAs (`:423`) carry a bare `href`. So
+**hero cards only** (`cockpit.py:1214`); the Content-stories tab's seat CTAs (`:882`) carry a bare `href`. So
 `readCockpitCta` (`e2e/lib/latency.ts:115-127`) **throws before t0** for a content seat — there is no clock to
 start. `run-latency.sh:53-59` independently hard-rejects any vantage outside `employee|manager|recruiter`
 (`exit 2`). **A content-seat number cannot be produced by this harness at all**, so its absence is a property
