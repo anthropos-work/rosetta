@@ -135,18 +135,15 @@ presenter cockpit of dead CTAs — the state M254 left `billion` in — and the 
 
 ## ▶ RESUME HERE (paused 2026-07-27 ~14:40Z · resumed + re-synced 2026-07-28 — read this first)
 
-**2026-07-28 re-sync (all local, no remote host touched):** everything is now **on origin** — the roadmap
-branches `release/02.80-fast-build` + `m255/build-bench-host-headroom` and the `wip/v2.8-m255-paused` tags in
-both repos had **never been pushed** and existed only on the laptop; they are pushed now. `main` was merged
-into both branches, so the cockpit-deeplink work done during the pause is here too (the deeplink spec + the
-re-pinned `latency-budget.md` citations). M255's claims were re-verified against the
-code: **10/10 checklist items, every deliverable present**. **No committed work was lost.** ⚠️ Correction (2026-07-28): the M256 startup's archived-milestone sweep
-deleted `work-m255/` including `conflict-preserve/`. The reverted cockpit commit is still a reachable git
-object (`git show 37260f1` in rext) — but the zombie's *uncommitted* buildbench patches are gone, and with
-them its two unevaluated salvage ideas: a **need-based LRU reclaim** and a **`build_cache_cap_gib` profile
-field**. Neither is in any commit. They are recorded here by name so they can be re-derived if wanted; the
-implementation sketch is not recoverable. **Process note:** the archived-milestone sweep destroys artifacts
-that a closed milestone's own docs point to — the sweep and the "preserved under …" claim are incompatible.
+**2026-07-28 re-sync + M255 close (all local).** The roadmap branches and `wip` tags had never been pushed
+and existed only on the laptop — all on origin now. `main` merged into both branches, so the cockpit-deeplink
+work done during the pause is here. M255's claims re-verified against the code: 10/10, every deliverable
+present. **No committed work was lost.** ⚠️ Correction: the M256 startup's archived-milestone sweep deleted
+`work-m255/conflict-preserve/`. The reverted cockpit commit is still reachable (`git show 37260f1` in rext),
+but the zombie's *uncommitted* buildbench patches are gone with their two unevaluated ideas — a **need-based
+LRU reclaim** and a **`build_cache_cap_gib` profile field** (recorded by name; re-derivable, sketch is not).
+**Process note:** the sweep destroys artifacts a closed milestone's docs point to; "preserved under
+`.agentspace/scratch/`" and the sweep cannot both be right.
 
 > **The interlude:** while M255 was paused, a cockpit **story-deeplink** feature was built and shipped to
 > `main` in both repos (rext `c755214`, tag `cockpit-deeplinks-v1` on origin; rosetta `bf3f9bc`). It is live on
