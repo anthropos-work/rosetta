@@ -61,22 +61,20 @@ benefit; the rext authoring copy is also a singleton. Full milestone detail, par
 - **D-v28-5** — the **cockpit logout / Back-to-Cockpit double-click defect is FIXED** in M256 (same seat-switch
   machinery every Playthrough drives) and **deliberately gets NO Playthrough** (user's call).
 
-## Plan review (2026-07-27) — 23 agents, 7 lenses, 35 findings, 14 adversarially verified
+## Plan review (2026-07-27) — 23 agents, 7 lenses, 35 findings, 14 verified
 
-**Verdict: APPROVE WITH REQUIRED EDITS — all applied.** No blocking defect survived; 10 findings refuted
-(useful residue folded in). Six decisions followed — **D-v28-6 … D-v28-11** — held in full in
-[`roadmap.md`](roadmap.md) § "Design decisions from the adversarial plan review". Headlines: the `hostprofile`
-auto-planner **CUT** (no downstream consumer; it measured and changed nothing — the exact defect this release
-retracts) → two measured host profiles + one failing assert wired into M257's gate; the shared-clone race
-**downgraded** to union-apply + a guard test; the truly-cold bench variant **CUT**; M256's speed clause re-cut
-(120 s was arithmetically impossible — one LLM-bound test is ~120 s of the 228 s); the §8.5 retraction moved to
-M257; and "keep it secure" given three clauses and an owner.
+**APPROVE WITH REQUIRED EDITS — all applied.** No blocking defect survived; 10 refuted. Six decisions
+followed, **D-v28-6 … D-v28-11**, held in full in [`roadmap.md`](roadmap.md) § "Design decisions from the
+adversarial plan review": the `hostprofile` auto-planner **CUT** (no downstream consumer — it measured and
+changed nothing, the very defect this release retracts) → two measured host profiles + one failing assert wired
+into M257's gate · the shared-clone race **downgraded** to union-apply + a guard test · the truly-cold bench
+variant **CUT** · M256's speed clause re-cut (120 s was impossible — one LLM-bound test is ~120 s of the 228 s)
+· the §8.5 retraction moved to M257 · "keep it secure" given three clauses and an owner.
 
-**Two findings survived verification** and are written into the milestones: the **fake-FAPI global seat** (one
-active seat / `signedIn` / `sessID` per stack, no cookie scoping — M256's parallel lane needs an enabler built,
-and `storageState` reuse does not isolate it), and **M258's missing world contract** (the naive composition
-leaves a test world behind a presenter cockpit of dead CTAs — the state M254 left `billion` in — and the
-first-draft gate passed anyway).
+**Two findings survived and are written into the milestones:** the **fake-FAPI global seat** (one active seat
+per stack, no cookie scoping — M256's parallel lane needs an enabler built, and `storageState` reuse does not
+isolate it), and **M258's missing world contract** (the naive composition leaves a test world behind a
+presenter cockpit of dead CTAs — the state M254 left `billion` in — and the first-draft gate passed anyway).
 
 ## Headline numbers
 
@@ -138,7 +136,23 @@ total 78→80 % (denominator +97 statements); final green **1198 pass / 1 skip**
 - **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
   prove-it-live step.
 
-## ▶ RESUME HERE (paused 2026-07-27 ~14:40Z — read this first)
+## ▶ RESUME HERE (paused 2026-07-27 ~14:40Z · resumed + re-synced 2026-07-28 — read this first)
+
+**2026-07-28 re-sync (all local, no remote host touched):** everything is now **on origin** — the roadmap
+branches `release/02.80-fast-build` + `m255/build-bench-host-headroom` and the `wip/v2.8-m255-paused` tags in
+both repos had **never been pushed** and existed only on the laptop; they are pushed now. `main` was merged
+into both branches, so the cockpit-deeplink work done during the pause is here too (the deeplink spec + the
+re-pinned `latency-budget.md` citations). M255's claims were re-verified against the code: **10/10 checklist
+items done, every deliverable present** (`buildbench.py`, `union_apply_guard.py`, both host profiles, the
+10-mutant battery, `build-budget.md`, the spike evidence). **No work was lost** — the zombie-session artifacts
+are still preserved under `.agentspace/scratch/work-m255/conflict-preserve/`.
+
+> **The interlude:** while M255 was paused, a cockpit **story-deeplink** feature was built and shipped to
+> `main` in both repos (rext `c755214`, tag `cockpit-deeplinks-v1` on origin; rosetta `bf3f9bc`). It is live on
+> billion's demo1 cockpit and on a local `demo-2`. It is **not** part of v2.8's scope and owes M255 nothing —
+> noted here only so the merge commits on this branch are not mistaken for milestone work.
+
+
 
 **Stable resting point.** Both trees committed and clean; rext tagged **and pushed to origin**; suites green.
 Nothing is half-written. **M255 is BUILT + HARDENED but deliberately NOT CLOSED** — the user halted roadmap
