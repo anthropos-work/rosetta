@@ -31,6 +31,16 @@
   their specs parked in `e2e/drafts/` (**zero standing red**, D-v28-3). Clause 1 **re-verified on the grown
   denominator: 0.5434x**, with an original-16 honesty cross-check at 0.5347x. Clause 2's mutating count
   **1 -> 3** of 5. rext tag `fast-build-m256-orgadmin`, **on origin**. — see `iter-04/progress.md`
+- iter-05 (tik, `closed-no-lift`): both parked journeys' hypotheses **tested and REFUTED**, with better
+  evidence than a pass would have given. The create-role dialog has a **hidden mandatory step** — "Suggest
+  skills" transforms it and the primary button becomes **`Generate`** (a live-LLM leg, so the journey belongs
+  with the studio lane, not the median) — which confirms the enabled-`Save`-with-an-EMPTY-alert as a **real
+  product defect**. The assign-tags modal is unreachable through **four** measured routes, including a
+  refutation of **iter-04's own `Escape` fix** (it closes the MODAL, not the dropdown) and the finding that
+  **`check({force:true})` flips the DOM but not antd's React state** — `isChecked()` true, submit disabled,
+  nothing assigned. *`force: true` can manufacture a control the application does not know about.* Suite
+  unchanged and green (136 passed, 20/22, 0 failing). rext tag `fast-build-m256-orgadmin-diagnoses`, **on
+  origin**. — see `iter-05/progress.md`
 
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
@@ -66,8 +76,9 @@ Fate-3 items land here.
 | `FIX-M256-autoverify-fapi-libressl` | `autoverify.sh` check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → warns *"NOBODY CAN LOG IN"* on a working stack (iter-01 D5). Give it a probe independent of the host TLS stack. | a later tik of M256 |
 | `DOC-M256-ptworld-reset-comment` | `playthroughs/seed/pt-world.seed.yaml`'s header claims the showcase world is "not touched by pt-world's reset". `doReset` takes **no org filter** — it is (audit F6). | a later tik of M256 |
 | `PERF-M256-parallel-lane` | The cookie/`__client`-scoped Clerkenstein registry **or** one fake-FAPI per worker. Both priced in iter-01 D1. A **wall-clock** lever, not a median one — no M256 gate clause needs it. | a future release milestone |
-| `PT-M256-orgadmin-role-create` | **Gate-critical for clause 2.** The platform's create-role `Save` appears to NO-OP (enabled; no HTTP >=400, no console error, no navigation, no new row; `alert` region EMPTY). Try the "Suggest skills" prefill path. If it really is a silent platform no-op, that is a finding to report and clause 2's mutating count must come from another write surface. Spec: `e2e/drafts/orgadmin-role-create.spec.ts.draft` | iter-05 |
-| `PT-M256-orgadmin-member-tag` | **Gate-critical for clause 2.** The bulk-action dropdown intercepted pointer events over its own modal (454 click retries to the 240 s budget — invisible to actionability checks); `Escape` fixed that leg, then `checkbox.check()` still timed out. Needs the modal's filter box / scroll container. Spec: `e2e/drafts/orgadmin-member-tag.spec.ts.draft` | iter-05 |
+| `PT-M256-orgadmin-role-create` | **SHARPENED (iter-05 D18).** "Suggest skills" transforms the dialog and the primary button becomes **`Generate`** — "Core skills" is a MANDATORY step, so drive that path and assert at its **completion boundary**, budgeting the journey with the **studio lane, not the median** (it is live-LLM). Separately: **report the product defect** — `Save` is enabled with the form incomplete and fails silently with an EMPTY `alert` region. | next iter |
+| `PT-M256-orgadmin-member-tag` | **SHARPENED (iter-05 D19).** Unreachable through 4 measured routes: dropdown intercepts pointer events over its own modal (invisible to actionability checks); `Escape` closes the MODAL not the dropdown; an in-modal outside-click leaves 9 menuitems open; `check({force:true})` flips the DOM but not antd's React state (submit stays disabled, tally stays 0). Untried: the `<label for=…>` element; a route that never opens a dropdown. If both fail, declare **`unimplementable-without-platform-edit`** with the four-attempt evidence. | next iter |
+| `PT-M256-clause2-fifth-write` | **Gate-critical (iter-05 D20).** Clause 2 needs >= 5 mutating and stands at 3, with both org-admin candidates blocked on platform behaviour. Choose the 5th/6th deliberately: the `Remove Tags` bulk action (may avoid the modal entirely), the profile self-evaluation write (also needs a clause-3 verdict), or an onboarding completion. | next iter |
 | `FIX-M256-studio-false-green` | `advancedDesignerRendered()` matches the route's own `Simulation Advanced Builder` header, so `pt-studio-advanced-generate` passes ~1.3 s before the generation completes (iter-02 D6). Assert a post-draft-only landmark and prove it RED with no generation. **This IS a clause-2 negative control**, not a side errand. | the clause-2 tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. | the same tik |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |
