@@ -100,15 +100,17 @@ total 78→80 % (denominator +97 statements); final green **1198 pass / 1 skip**
   CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS).
 
 ## Process flags (do NOT auto-push)
-- 🚫 **`billion` IS OFF LIMITS — user freeze from 2026-07-27 ~14:00Z, ~48 h (until ~2026-07-29).** No ssh,
-  no demo up/down/purge, no `buildbench` campaign, no reads. **No agent, skill or milestone may touch
-  `billion.taildc510.ts.net` without EXPLICIT per-occasion user permission** — this overrides every gate and
-  default here, including `verification.md`'s prove-on-billion lineage. **All three remaining v2.8 gates are
-  billion-measured, so none can FIRE during the freeze** (M256 clause 1 · M257's whole gate · M258's composed
-  cycle). **M255 is unaffected** — measured and committed pre-freeze; close is local. **Still available:**
-  M256's entire code half and M257's lever *implementation* — only their measurement needs the host.
-  **Leftover on the box:** the campaign's rep-03 (ended 11:37Z) leaves a demo-1 stack UP; NOT torn down,
-  since that is itself a touch. **Ask before reclaiming it.**
+- 🚫 **`billion` — STANDING RULE (user, 2026-07-28; supersedes the dated 48 h freeze).** **Do not touch it, and
+  do not even probe its status, until there is a real need for that environment.** Using it requires the
+  **user's sign-off, per occasion** — and only when the work genuinely cannot be done locally. **Try locally
+  first**, accepting this laptop's limits (Docker VM ~9.7 GiB vs the documented 12 GB UI-tier floor). This
+  overrides every gate, protocol and default here, including `verification.md`'s prove-on-billion lineage.
+  **Consequence for v2.8:** M256's suite-p50 clause, M257's whole exit gate and M258's composed cycle are all
+  billion-measured and therefore **cannot fire without sign-off** — but the *code half* of each is local and
+  unblocked (M256's seat-isolation enabler + mutation classification + negative controls + the onboarding ×5 /
+  org-admin ×4 Playthroughs; M257's lever implementation). Only their measurement needs the host.
+  **Last known state (2026-07-28, do not re-probe):** demo-1 up, 16 containers, cockpit serving the deeplink
+  build at `https://demo1.anthropos.work:17700`, rext pinned `cockpit-deeplinks-v1`.
 - 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z 2026-07-27, PRE-freeze.** Reported
   third-party activity starts **~13:11Z — 94 min after the last rep** (reps 11:11/11:26/11:37), so there is no
   overlap and nothing is contaminated (user-confirmed). Corroborated twice: three totals across two sessions
