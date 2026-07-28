@@ -88,7 +88,7 @@ product-file; `LoadDir` reads a directory of them and merges in sorted (determin
 | `seed.world` + `seed.preconditions[]` | The named seeded world (`pt-world`) + extra named world-state the Playthrough seed provides (the validator resolves both — no silent "ideally"). |
 | `engine` | For surfaces mid-migration, the engine this UC targets — `legacy` or `new-academy`. Omitted where there is one engine. |
 | `flow` | The high-level steps that serve the goal — *what the user does*, not *which selectors*. |
-| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. **⚠️ Coverage of the non-`success` half is ZERO (v2.8 M256 pre-flight):** all 18 live use cases declare `outcome: success`. The vocabulary is implemented (`manifest/manifest.go` §outcome) but `blocked` and `error` are **unexercised**, so nothing proves the platform correctly says *no*. |
+| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. **⚠️ Coverage of the non-`success` half is ZERO (v2.8 M256 pre-flight, still true at M256 iter-06):** all 23 declared use cases declare `outcome: success`. The vocabulary is implemented (`manifest/manifest.go` §outcome) but `blocked` and `error` are **unexercised**, so nothing proves the platform correctly says *no*. The M256 pre-flight also established that `actor.entitlement` is **declared-only** (no seeder writes a tier, and `ptvalidate`'s precondition check fail-opens on it), so a `blocked` outcome must come from a **real refusal surface** — an RBAC/Sentinel deny, a cross-org access attempt, or a validation error — not from an entitlement tier. |
 | `expectations.intermediate[]` | Ordered, **labelled** outcome checkpoints along the flow; `intermediate[i]` binds 1:1 to the i-th asserted checkpoint, reported individually. |
 | `expectations.final` | The goal achieved (or the correct refusal landed), observable to the user. |
 | `playthrough` | The id of the test that proves it, OR the sentinel `TODO` while it is still a build-reference gap. |
@@ -108,9 +108,18 @@ comparison, as **1 more live Playthrough** (`pt-hiring-recruiter-compare`; see b
 landed the assign-WRITE half** — `assignment-monitoring.assign-and-track.UC1` (`pt-assignment-assign`), the one
 net-new journey, which flips the last in-manifest `TODO`. **M252 (v2.7 "july jitter") added `studio-builders.yaml`**
 — Product **"Studio"**, studio-desk's FIRST-EVER manifest entry, as **2 more** Playthroughs
-(`pt-studio-advanced-generate` + `pt-studio-guided-generate`; see below). The corpus now stands at **18 live
-Playthroughs, 0 TODO** — the 2 studio-builder journeys added to the manifest at M252 (proven live-GREEN at the
-M252 verify).
+(`pt-studio-advanced-generate` + `pt-studio-guided-generate`; see below). **M256 (v2.8 "fast build") opened the
+`org-admin` product** — one of the M201 curated corpus's four un-homed clusters for five releases — as **2 more**
+live Playthroughs (`pt-orgadmin-tag-create` + `pt-orgadmin-setting-toggle`, both WRITES read back through a full
+reload) with 2 declared `TODO` carrying written diagnoses, and **added `skill-paths.save-for-later`** as **1 more**
+(`pt-skillpath-bookmark`, a write + a delete, both read back). The corpus now stands at **21 live Playthroughs,
+2 TODO** (23 use cases), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold
+reset-to-seed runs.
+
+> The 2 `TODO`s are `org-admin.roles.UC1` + `org-admin.members.UC1`. Both are **diagnosed, not merely unbuilt**
+> — their specs are parked in `playthroughs/e2e/drafts/*.spec.ts.draft` (the `.draft` suffix keeps Playwright
+> from collecting them, so diagnosed work is preserved **without a red suite**), and `e2e/drafts/README.md`
+> carries the measured evidence. See the org-admin manifest header for the surfaces probed live.
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
@@ -588,6 +597,49 @@ worked example (above): declared in every world, materialized by nothing, and gr
 an iter plans a Playthrough around a precondition, the evidence it needs is **the seeder line that writes the
 column**, not the capability entry that names it. A capability with no writer is a fail-open, and it surfaces
 as a Playthrough asserting a behaviour the platform has no reason to exhibit.
+
+**A mutating Playthrough's PRE-STATE read is its negative control — for free (v2.8 M256 iter-06).** A negative
+control is the demand that a Playthrough be *demonstrably RED when its outcome is absent*, and the instinct is to
+reach for a second stack, a mock, or a DOM ablation. None of that is needed for a Playthrough that WRITES. Read
+the target state **before** the action and make the final assertion a **strict inequality or a strict negation**
+against that reading — `.toBe(!before)`, `.toBe(before - 1)`, `toHaveCount(0)` before / non-zero after,
+`progressAfter > progressBefore`. Such a predicate is **false by construction at the pre-state**, so the run
+itself demonstrates the assertion discriminates the outcome rather than matching page chrome — against *real*
+product state, not a simulated absence, and inside the same run. Prefer the delta form over the absolute
+("the label is not yet `Continue (N%)`"): the absolute form false-REDs on a re-run against a world that was not
+reset, and **a false red is exactly as dishonest as a false green**. iter-06 found all three pre-existing mutating
+Playthroughs already had this property, unnamed — so the pattern was ratified, not invented.
+
+**The mutation class of a Playthrough is a MEASUREMENT, not a reading (v2.8 M256 iter-06).** Every Playthrough
+spec now carries a machine-checked `@pt-mutation: MUTATES | READ-ONLY | UNKNOWN` tag, plus a
+`@pt-negative-control:` line whenever the class is `MUTATES`, fenced by
+`playthroughs/e2e/tests/mutation-class-fence.unit.spec.ts` (one class **per `@pt:` id**, not per file — one spec
+file holds two Playthroughs). `MUTATES` carries the strict definition: mutates state **AND reads it back**. A
+spec that writes and only checks a toast, a closed modal, or in-page client state is `UNKNOWN` — which is why
+that state exists and why it is not a synonym for "probably fine". The fence exists because the count was wrong
+in **both** directions when it was merely read off the specs:
+- `pt-aisim-chat-launch` was assumed to mutate ("clicks Start Simulation"). It writes **nothing**: reaching
+  `/sim/<slug>/start` and rendering the launch confirmation created **0** `jobsimulation.sessions` rows. The
+  session is written past the welcome dialog, on the far side of the §5.8 live-AI boundary.
+- `pt-skillpath-legacy` does mutate, but not observably where its own comment implied: `Start` writes a
+  `public.skill_path_sessions` row that lands `progress=0, started_at=NULL`, and next-web's CTA needs one of
+  those two to render anything but "Start". So the *enrolment* is invisible and the **step-completion** is the
+  write worth reading back.
+Neither correction was findable by reading. **Also**: the tag grammar is deliberately disjoint from `@pt:` —
+`cmd/ptvalidate/discover.go` scans `@pt:(...)` and rejects any hit with no manifest use case as an ORPHAN, so a
+first draft using `@pt:mutation` **failed validation**. The fence pins that disjointness against its own copy of
+the Go regex.
+
+**Bound every interaction inside a retry loop, or the loop is decoration (v2.8 M256 iter-06).** A Playwright
+action with no `timeout` inherits the **test** budget. `pt-assignment-assign` wrapped its antd-Select interaction
+in a 3-attempt retry loop whose first `combobox.click()` was unbounded — so when the Modal's open animation and
+its async option load kept re-mounting the inner `<input>` ("element is not stable" → "element was detached from
+the DOM, retrying"), Playwright retried *silently for the full 240 s* and `attempt` never reached 1. Measured:
+**245 s timeout inside the suite, 6.0 s green on an immediate solo re-run** — the signature of a retry loop whose
+first attempt can eat the whole budget. Two-part fix: wait for the **form** to have mounted (the submit button
+attaching is the cheapest semantic signal that the dialog body is rendered, not mid-animation), and give every
+interaction an explicit `timeout` so a stuck attempt yields to the next one. Under `retries: 0` a flaky
+Playthrough is a **defect**, so this class gets fixed, never re-run.
 
 **Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
 (a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via
