@@ -133,10 +133,9 @@ total 78→80 % (denominator +97 statements); final green **1198 pass / 1 skip**
 branches `release/02.80-fast-build` + `m255/build-bench-host-headroom` and the `wip/v2.8-m255-paused` tags in
 both repos had **never been pushed** and existed only on the laptop; they are pushed now. `main` was merged
 into both branches, so the cockpit-deeplink work done during the pause is here too (the deeplink spec + the
-re-pinned `latency-budget.md` citations). M255's claims were re-verified against the code: **10/10 checklist
-items done, every deliverable present** (`buildbench.py`, `union_apply_guard.py`, both host profiles, the
-10-mutant battery, `build-budget.md`, the spike evidence). **No work was lost** — the zombie-session artifacts
-are still preserved under `.agentspace/scratch/work-m255/conflict-preserve/`.
+re-pinned `latency-budget.md` citations). M255's claims were re-verified against the
+code: **10/10 checklist items, every deliverable present**. **No work was lost** — the zombie-session
+artifacts remain under `.agentspace/scratch/work-m255/conflict-preserve/`.
 
 > **The interlude:** while M255 was paused, a cockpit **story-deeplink** feature was built and shipped to
 > `main` in both repos (rext `c755214`, tag `cockpit-deeplinks-v1` on origin; rosetta `bf3f9bc`). It is live on
@@ -165,12 +164,13 @@ work for the `billion` freeze, so `/developer-kit:close-milestone` was not run.
 3. **After the freeze lifts (~2026-07-29):** re-confirm the three timing-derived claims (see the Provenance
    flag above), then M256's gate → M257 → M258.
 
-**Five Fate-3 items routed to "M255 harden resume"** — `run_campaign` rep-body coverage · **a plan-number
-mirror fence** (`666.29` is mirrored in 8 prose sites and `D-v28-N` in 5; the range had already rotted in 4 —
-the one machine fence the harden pass could not land) · `demo_knob_guard` anchor-fence mutants ·
-`_manifest_lists` silent truncation · the `laptop` profile's provisional field. Full detail + what harden found
-(six defects, all *an empty result reported as a pass*, now fenced by a 10-mutant RED-proof battery):
-`m255-build-bench-host-headroom/progress.md`.
+**M255's five harden items were re-fated at its close (2026-07-28)** — "M255 harden resume" was not a named
+milestone and could not survive the close. **Landed (Fate 1):** the plan-number mirror
+fence (`stack-core/tests/test_baseline_mirror_fence.py`) — `billion.json`'s `gated_baseline.total_p50_s` is now
+the single source, 8 prose mirrors fenced against it, RED-proven. **Fate 3 → M257** (recorded in its
+`overview.md` § Inherited from the M255 close): `run_campaign` rep-body coverage · `demo_knob_guard` anchor
+mutants · `_manifest_lists` silent truncation · the `laptop` profile's provisional field. Each attaches to M257
+because M257 is the milestone that exercises it.
 
 ⚠️ **M257 is tighter than first drafted.** Its `re_scope_trigger` was re-derived **480 → 420 s**: at 480 it
 would only have fired if L1+L2+L3 returned under 186 s, so a 60 s gate miss could never have tripped it.

@@ -127,6 +127,29 @@ L1's cost depends on M255 spike (a) · L2's real win depends on spike (d) · L3'
 measured 61 %-of-cache figure. The path is measurement-driven by construction: measure → attribute → one lever
 → re-measure at n ≥ 3.
 
+## Inherited from the M255 close (Fate 3, 2026-07-28)
+
+M255's harden pass was halted early by a user stop and routed five items to "M255 harden resume" — which
+is **not a named milestone**, so it could not survive M255's close. Re-fated at that close: one landed
+(the plan-number mirror fence, now `stack-core/tests/test_baseline_mirror_fence.py`), and these four
+attach **here**, because M257 is the milestone that actually exercises each of them — it runs the
+campaigns, edits the knobs, and flips union-apply on.
+
+- **`run_campaign` rep-body coverage.** `buildbench.py`'s largest uncovered region (~763-850). Drive it
+  with a faked `Popen`/`Sampler`/docker-probe set so the staleness, dead-sampler and phase-table paths
+  are proven end-to-end, not only unit-wise. **M257 runs this code on every gate cycle** — it should not
+  be the least-tested part of the harness measuring the gate.
+- **`demo_knob_guard` anchor-fence mutants.** The third M255 guard has no entry in the 10-mutant
+  battery. Add mutants for the anchor comparison and the `--fix` regenerator. Relevant here because
+  M257's levers add/rename `DEMO_*` knobs, which is exactly when that guard must not silently pass.
+- **`_manifest_lists` body extraction.** `text.find("\n}\n")` truncates a build function at the first
+  column-0 `}`; currently masked by the pinned 11/5/6 count test, but the truncation would be **silent**.
+  **M257 is the first milestone to depend on that parse being right** — the union-apply rule (D-v28-7)
+  reads those manifest lists to decide what to apply to which image.
+- **The `laptop` profile's `projected_image_gib`.** The one non-measured number in either host profile,
+  declared only in prose. Make it a machine-declared `provisional_fields` list the loader surfaces, so
+  a provisional number cannot be quoted as measured.
+
 ## Hard constraints
 
 - **Zero platform-repo edits.** L1/L3/L4/L7 all touch Dockerfiles in canonical repos → each lands as a
