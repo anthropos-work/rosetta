@@ -11,9 +11,12 @@ v0.3) into an operational corpus reference: the model, the vocabulary, the per-s
 dedicated-seed + reset-to-seed lifecycle, the serial-default runner, and the four-state reporting map — as they
 are actually built, in the rext **`playthroughs` section** (v2.0 "opening night" M202 "Foundation"). It is also
 **the iteration protocol the coverage milestones followed** (M203 employee-vantage ∥ M204 manager-vantage — the
-`iterative` milestones that grew the real journey coverage against this foundation to 10 live Playthroughs; see
-§ "The iteration protocol" below). It is the *function* sibling of [`coverage-protocol.md`](coverage-protocol.md)'s
-*presence* sweep.
+`iterative` milestones that grew the real journey coverage against this foundation to 10 live Playthroughs, and
+then M219 `ai-readiness` → M225 `hiring` → M243 the assign-WRITE → M252 `studio` took it to the **18 live
+Playthroughs, 0 TODO** the corpus stands at today; see § "The iteration protocol" below). It is the *function*
+sibling of [`coverage-protocol.md`](coverage-protocol.md)'s *presence* sweep. **The `spec.md` v0.3 draft it
+graduates is FROZEN at 2026-06-28** (pre-M219): where the two disagree — notably §5.7's serial-concurrency
+rationale — **this runbook wins**.
 
 > **Read alongside:** [`coverage-protocol.md`](coverage-protocol.md) (the M42 Playwright sweep this is built
 > on + the presence-vs-function split), [`stories-spec.md`](stories-spec.md) (the Stories & Heroes seed model +
@@ -81,11 +84,11 @@ product-file; `LoadDir` reads a directory of them and merges in sorted (determin
 | `id` | Stable identifier; the 1:1 link to its Playthrough. |
 | `goal` | The user-meaningful outcome being pursued ("a hero logs in and sees her own identity"). |
 | `actor.hero` | The seeded roster seat the actor logs in as (reuses the seeding roster), OR a free-form descriptor for a not-yet-seeded actor (a build-reference gap). |
-| `actor.entitlement` | The actor's tier — anon / free / paying / enterprise / expired — a *declared* precondition (reachable surface is tier-gated). |
+| `actor.entitlement` | The actor's tier — anon / free / paying / enterprise / expired — a *declared* precondition (reachable surface is tier-gated). **⚠️ DECLARED-ONLY — no seeder materializes a tier (v2.8 M256 pre-flight).** The validator only checks the string is one of the world's declared `tiers:`; `blueprint.TierMix` is parsed, defaulted (`blueprint/stories.go` §`DefaultStoryTierMix`) and validated but **consumed by no seeder** — it never reaches a DB column, and `pt-world.seed.yaml` declares no `tier_mix` at all. So an entitlement **gate cannot be exercised today**, and a `blocked` outcome cannot be produced by a tier. All **18** live use cases are `entitlement: enterprise`. |
 | `seed.world` + `seed.preconditions[]` | The named seeded world (`pt-world`) + extra named world-state the Playthrough seed provides (the validator resolves both — no silent "ideally"). |
 | `engine` | For surfaces mid-migration, the engine this UC targets — `legacy` or `new-academy`. Omitted where there is one engine. |
 | `flow` | The high-level steps that serve the goal — *what the user does*, not *which selectors*. |
-| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. |
+| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. **⚠️ Coverage of the non-`success` half is ZERO (v2.8 M256 pre-flight):** all 18 live use cases declare `outcome: success`. The vocabulary is implemented (`manifest/manifest.go` §outcome) but `blocked` and `error` are **unexercised**, so nothing proves the platform correctly says *no*. |
 | `expectations.intermediate[]` | Ordered, **labelled** outcome checkpoints along the flow; `intermediate[i]` binds 1:1 to the i-th asserted checkpoint, reported individually. |
 | `expectations.final` | The goal achieved (or the correct refusal landed), observable to the user. |
 | `playthrough` | The id of the test that proves it, OR the sentinel `TODO` while it is still a build-reference gap. |
@@ -275,6 +278,13 @@ at validate-time (never a runtime surprise), three checks:
    every e2e test tagged `@pt:<id>` maps back to a use case (**no orphan tests**, no double-tagged id). Direction
    (b) is enabled by discovering the live registry of `@pt:` tags from the e2e specs
    ([`cmd/ptvalidate/discover.go`](../../../.agentspace/rosetta-extensions/playthroughs/cmd/ptvalidate/discover.go)).
+   **The tag grammar is `@pt:([a-z0-9][a-z0-9._-]*)` and it lives in TWO places by necessity** — `ptvalidate`'s
+   `discover.go` and `report/playwright.go` each carry a copy, because the Go sections don't import each other.
+   A **twin lockstep test** in each package (`cmd/ptvalidate/pttag_lockstep_test.go` and
+   `report/pttag_lockstep_test.go`) pins both copies to one canonical literal + a shared match corpus, so
+   *change one → change both* is enforced rather than commented (M203 close TEST-G1). **Any new greppable
+   per-spec tag must follow this pattern** — one canonical literal, fenced from both sides — not a third
+   unfenced regex.
 3. **Precondition-coverage** — every use case's `seed.world`, `actor.hero`, `actor.entitlement`, and
    `seed.preconditions[]` resolves to something the dedicated seed **actually provides** (the `seed-worlds.yaml`
    index below), so a UC can never name a precondition the seed lacks and fail at *setup*, masquerading as a
@@ -387,6 +397,27 @@ separable). The `seed-worlds.yaml` index
 against is materialized by the seed. It is covered by the **same datadna conformance gate** as the demo seed
 (above).
 
+> **⚠️ Three corrections to the paragraph above (v2.8 M256 pre-flight).**
+> 1. **"spanning entitlement tiers" is a DECLARATION, not seeded state.** `seed-worlds.yaml` declares
+>    `tiers: [anon, free, paying, enterprise, expired]` and the capability `entitlement-gated`, and annotates
+>    the `pt-free` seat "*entitlement-gate use cases — outcome: blocked*" — but **no seeder writes a tier**
+>    (see `actor.entitlement` above). The `pt-free` seat *is* seeded as a user; it is simply **not tier-gated**,
+>    and it is referenced by **0** of the 18 use cases. `ptvalidate`'s precondition-coverage check resolves
+>    `entitlement-gated` against the declared list, so it **passes without the gate existing** — a fail-open
+>    in the one check that is supposed to forbid a silent "ideally".
+> 2. **There is NO pre-onboarding user state.** `UsersSeeder` writes a `public.memberships` row for **every**
+>    seeded user unconditionally, and no onboarding flag/field exists anywhere in `stack-seeding/`. Every
+>    `pt-world` actor is a *post*-onboarding org member. An onboarding journey therefore needs a **net-new
+>    seed capability** (a seeder + a `capabilities:` entry + a roster seat), not just a new Playthrough.
+> 3. **`--reset` is whole-stack, not org-scoped.** `stackseed --reset` (`cmd/stackseed/main.go` §`doReset`)
+>    takes **no org filter**: it `TRUNCATE … CASCADE`s each of the ~28 `resetTables` — `public.organizations`
+>    and `public.users` included — for that stack's Postgres, guarded only by `--stack` + the N=0 `--force`
+>    rule. It does **not** spare the demo's showcase orgs. (`pt-world.seed.yaml`'s own header comment claims
+>    the opposite — "*not touched by pt-world's reset*" — and is **wrong**; the claim in this doc's lifecycle
+>    section, "full FK-ordered TRUNCATE, per-stack only", is the accurate one.) Practical consequence: a
+>    `--reset` Playthrough run on a shared demo **destroys the showcase world**; re-run that demo's own preset
+>    to get it back.
+
 > **Layering finding (M202-D4).** Seeding `pt-world` onto an *already-seeded* demo-1 collided: the stories model
 > forces the FIRST story onto `LegacyOrgID` (the Clerkenstein default org), which on a seeded demo IS the
 > showcase's default org — so a pt-org merged into it and duplicate-keyed on the showcase's pre-existing
@@ -438,9 +469,33 @@ a **per-suite reset-to-seed** on `--reset`:
 - **Serial by default.** The runtime is a single shared `organization_id`-scoped Postgres, so two mutating
   Playwright workers would interfere — and Playwright defaults to *parallel*. The config
   ([`e2e/playwright.config.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/playwright.config.ts))
-  therefore pins **`workers: 1`, `fullyParallel: false`, `retries: 0`** (a retry that masks a flake hides a
-  Playthrough defect). The sanctioned throughput-reclaim paths — **stack-per-worker** (a stack each) or per-worker
-  org/hero partitions in the seed — are opt-in via `PW_WORKERS`, never the day-one default.
+  therefore pins **`fullyParallel: false`, `retries: 0`** (a retry that masks a flake hides a
+  Playthrough defect) and resolves `workers` through `resolveWorkers()` (`e2e/lib/stack-env.ts` §resolveWorkers)
+  — **default 1**, overridable only by a `PW_WORKERS` that is a positive integer (a `0`/negative/NaN override
+  **fails loud** rather than silently going parallel). The sanctioned throughput-reclaim paths —
+  **stack-per-worker** (a stack each) or per-worker org/hero partitions in the seed — are opt-in via
+  `PW_WORKERS`, never the day-one default.
+
+  > **⚠️ Postgres is NOT the binding shared surface — the fake-FAPI seat is (v2.8 M256 pre-flight).** The
+  > paragraph above is the *original* rationale and it is incomplete in a way that matters the moment anyone
+  > tries to reclaim throughput. **Clerkenstein holds ONE active seat for the whole stack**: a single registry
+  > `activeKey` (`clerkenstein/clerk-frontend/registry.go` §`Registry.activeKey` / `active()` / `Select()`),
+  > one `signedIn`, one `sessID` (`clerk-frontend/server.go` §`type Server`). Every Playthrough login routes
+  > through `hero-login.ts` → the shared `stack-verify/e2e/lib/cockpit-login.ts` §`selectSeat` →
+  > `POST /v1/demo/select` → `handleSelectIdentity`, which re-points the seat **and** sets
+  > `s.signedIn = false; s.sessID = ""` **globally**. The read path (`handleMe`, `handleToken`, `handleClient`,
+  > `handleMeOrganizationMemberships`) **discards the `*http.Request`** and answers from `activeUserLocked()`
+  > with **no cookie or token input** — so **`storageState` reuse does not isolate two seats either**, and
+  > `handleSignOut` is stack-wide. Consequences, both load-bearing: (1) **per-worker org/hero seed partitions
+  > alone are NOT sufficient** — worker 2's login signs worker 1's browser out mid-journey and its `/v1/me`
+  > 401s; only **stack-per-worker** (a fake FAPI each) is safe today. (2) Any *third* parallelism path must
+  > first make the seat per-client (a cookie/`__client`-scoped registry or one fake FAPI per worker) — a
+  > Clerkenstein auth-model change with an alignment-DNA consequence, not a config flip. Two in-repo comments
+  > already record this verdict (`stack-verify/e2e/tests/m224-candidate-heroes.spec.ts` §serial-mode preamble;
+  > `stack-verify/e2e/tests/content-stories.spec.ts` §"SERIAL BY NECESSITY"), and the same limitation is
+  > disclosed from the presenter side in [`cockpit-spec.md`](cockpit-spec.md) § *Limitation — one seat per
+  > stack*. The frozen `spec.md` v0.3 draft (§5.7) carries the Postgres-only rationale and is **superseded on
+  > this point by this section**.
 - **The runner reconciles inline** (M204 iter-02). After the Playwright run it invokes `ptreport` over the
   manifest + this run's fresh JSON results and prints the four-state map — so a single `run-playthroughs.sh`
   invocation both *runs* and *reconciles*. The reconciliation is non-fatal (it never masks Playwright's own
@@ -524,6 +579,15 @@ inside the widget. It asserts at the **launch / completion boundary** (the flow 
 interactive state, the outcome artifact materialized), which is the only thing provable under P6 with a live LLM
 in the loop. Chat / code / document sim modalities are playable as-is. The mirror engines for the other legs are
 carried as `later — needs a mirror engine` items (spec §5.8).
+
+**Read the WRITER, not the declaration, before an iter commits to a precondition (v2.8 M256 iter-01).**
+`ptvalidate`'s precondition-coverage check resolves a use case's `seed.world` / `actor.hero` /
+`actor.entitlement` / `seed.preconditions[]` against the **names** `seed-worlds.yaml` declares — so it can
+only catch a precondition the *index* omits, never one the *seeder* never writes. `actor.entitlement` is the
+worked example (above): declared in every world, materialized by nothing, and green in the validator. So when
+an iter plans a Playthrough around a precondition, the evidence it needs is **the seeder line that writes the
+column**, not the capability entry that names it. A capability with no writer is a fail-open, and it surfaces
+as a Playthrough asserting a behaviour the platform has no reason to exhibit.
 
 **Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
 (a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via

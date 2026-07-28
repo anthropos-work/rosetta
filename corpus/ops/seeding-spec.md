@@ -190,6 +190,21 @@ organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2
 the sentinel schema with `init_policy.sql`'s global policy). Full per-component re-run contract:
 [`idempotency.md`](idempotency.md).
 
+> **The chain above is ILLUSTRATIVE, not the list (clarified v2.8 M256 pre-flight).** `resetTables`
+> (`stack-seeding/cmd/stackseed/main.go` §`resetTables`) is **~28 relations**, not the 14 named here — later
+> additions include the AI-readiness fleet, `interview_extraction_results` /
+> `interview_aggregated_reports`, `organization_assignment_sessions`, `local_skill_path_sessions`,
+> `job_simulation_feedbacks`, `membership_tags` / `tags`, `organization_target_roles` / `user_target_roles`,
+> `membership_skills`, `organization_sim_invitation_links`, and `jobsimulation.{actors,interactions}`. **Read
+> `resetTables` for the authoritative set.** Two further properties worth stating plainly: `doReset` takes **no
+> org filter** — it is whole-stack (guarded by `--stack` + the N=0 `--force` rule), so it does **not** spare a
+> co-resident seeded world; and it **probes `to_regclass` and skips** relations absent from that stack's schema
+> rather than aborting.
+>
+> **`--reset` also serves the Playthrough world.** The dedicated `pt-world` Playthrough seed (test data ≠ demo
+> data) is a `stackseed` preset consumed by exactly this `--reset` → re-seed lifecycle; it is specified in
+> [`demo/playthroughs.md`](demo/playthroughs.md) § *The Playthrough world*, not here.
+
 **The n=0-dev guard, two layers (M13).** `--reset` already refuses N=0 (the main `anthropos` dev stack) unless
 `--force`. M13's **auto-seed on dev build** adds a second, earlier guard in the bring-up's set-dressing pass
 (`dev-setdress.sh`): it **refuses to auto-set-dress N=0 without `--force`**, so an automatic dev seed can never

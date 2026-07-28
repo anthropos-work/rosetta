@@ -143,6 +143,30 @@ token mint, and the handshake cookies all resolve the same hero): `?__clerk_iden
 path is byte-identical (a one-member registry). Measured by the `clerk-multi-1` DNA (`alignment/cmd/multirun`,
 9 genes, 100%/100%) — a *new measured surface* that holds while the existing four stay green.
 
+> **⚠️ "Server-authoritative" means SINGLE-TENANT: one active seat per stack, no client scoping** (documented
+> v2.8 M256 pre-flight; the same limitation is disclosed from the presenter side in
+> [`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § *Limitation — one seat per stack*). The
+> coherence the paragraph above sells is bought by holding the seat **process-wide**, not per client:
+> `clerk-frontend/registry.go` keeps a single `activeKey` (`Registry.active()` / `Registry.Select()`), and
+> `clerk-frontend/server.go`'s `type Server` keeps **one** `signedIn`, **one** `clientID`
+> (`"client_clerkenstein"`, a constant) and **one** `sessID` (`"sess_clerkenstein"`, also a constant, minted in
+> `establishLocked`). Three consequences a consumer must design around:
+> - **`POST /v1/demo/select` (`handleSelectIdentity`) is destructive to the current session.** It re-points the
+>   seat **and** sets `signedIn = false; sessID = ""` — globally. A second seat-switch anywhere on the stack
+>   signs the first browser out.
+> - **The read path takes NO request input.** `handleMe`, `handleToken`, `handleClient` and
+>   `handleMeOrganizationMemberships` all discard (or ignore) the `*http.Request` and answer from
+>   `activeUserLocked()`. `r.Cookie(...)` is called **nowhere** in `clerkenstein/` — cookies are only ever
+>   *emitted*. So **per-browser `storageState` cannot isolate two identities**, and a token refresh silently
+>   re-mints whoever the *current* seat is. `handleSignOut` likewise ignores its `{id}` route param and logs the
+>   whole stack out.
+> - **Therefore: concurrency is one-identity-at-a-time per stack.** Two people on two deeplinks, or two
+>   parallel Playwright workers, will swap identities mid-flight. The sanctioned workaround is **a stack each**
+>   (a fake FAPI each). Making the seat per-client — keying the registry by `__client`/cookie and threading it
+>   through the `/v1/me`, token-mint, client-view and handshake surfaces — is an **auth-model change with an
+>   alignment-DNA consequence** (the `clerk-multi-1` DNA has no gene for concurrent-seat isolation), not a
+>   config knob.
+
 **Roster org-name threading (v1.10 M39).** The roster now carries each hero's **story org name + slug**, so a
 logged-in hero's **top bar reads her real company** (e.g. "Cervato Systems") instead of the hardcoded
 "Clerkenstein Demo Org". The thread is a **paired change** kept in lockstep by the roster's

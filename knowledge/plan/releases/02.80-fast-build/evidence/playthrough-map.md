@@ -199,3 +199,105 @@ Three axes, matching the ask:
   *"things not working but built up"*.
 
 _Compiled 2026-07-27. Live-state anchor: M254 iter-10, billion, 18/18 GREEN._
+
+---
+
+## 8. The ranked triage (M256 iter-01, the bootstrap tok)
+
+This section **extends** §1–§7 — it does not re-derive them. It converts the map into an execution order
+by pricing each lever against the **re-cut** gate (D-v28-12), and it records one finding that changes the
+milestone's shape.
+
+### 8.1 ⚠️ The re-cut DISSOLVED the parallelism requirement — clause 1 is a PER-TEST metric
+
+The overview's open question reads *"What does the parallel-lane enabler cost? … without it, gate clause 1
+is unreachable."* **That is a leftover from the pre-re-cut gate and it is now false.**
+
+D-v28-12 re-expressed clause 1 as **median per-Playthrough ≤ 0.79× baseline**, and made the **suite
+wall-clock REPORTED, not gated**. Worker count does not change how long an individual test takes — it
+changes how many run at once. Adding workers leaves the median flat at best and *raises* it under
+contention (shared CPU, shared Postgres, one browser per worker on a 9.7 GiB box).
+
+**Consequence:** the cookie-scoped Clerkenstein registry / one-fake-FAPI-per-worker enabler — the most
+expensive and highest-risk item in the plan, a refactor of the mirror engine that an Alignment DNA gates —
+is **NOT on the critical path for any gate clause.** It is priced below, and routed forward.
+
+What survives from the parallelism thread as a **cheap, in-scope** deliverable: the machine-checked
+per-spec **`MUTATES` / `READ-ONLY` / `UNKNOWN`** tag the overview asks for. It costs little, it makes the
+partition honest (see §8.2), and it is the artifact any future lane would consume.
+
+### 8.2 The mutation partition, measured (the 18 browser specs)
+
+Grepped from `playthroughs/e2e/tests/*.spec.ts` — this confirms the plan-review count exactly:
+
+| Class | Count | Specs |
+|---|---|---|
+| **Explicit "(no mutation)"** | **10** | `activity-drilldown` · `aireadiness-manager-dashboard` · `aireadiness-manager-howwemeasure` · `aireadiness-member-done` · `aireadiness-member-progress` · `hiring-recruiter` · `profile-growth` · `workforce-funnel` · `workforce-roster` · `workforce-succession` |
+| **Explicit MUTATES** | **2** | `skillpath-legacy` (`:21` — `getOrCreateSkillPathSession`) · `assignment-assign` (`:18` — the WRITE Playthrough) |
+| **UNCLASSIFIED** | **6** | `profile-identity` · `profile-timeline` · `profile-verified` · `aisim-chat-launch` · `studio-builder` ×2 |
+
+The tag replaces prose with a fenced artifact: a per-spec header tag + a unit test that fails on an
+untagged or mis-tagged spec, so `UNKNOWN` is a visible state rather than an absence.
+
+### 8.3 Speed — the levers that move a PER-TEST median, ranked
+
+Ranked by (expected per-test saving) ÷ (risk × effort). All are rext-owned, zero platform edits.
+
+| # | Lever | Why it moves the median | Evidence |
+|---|---|---|---|
+| **L1** | **Kill the residual `networkidle` on login.** 12 of 18 browser specs omit `waitUntil` on `loginAsHero`, inheriting the cockpit-login **`'networkidle'` default**. | next-web holds **never-idle long-poll** connections, so `networkidle` "resolves late and for the wrong reason" — the helper's own doc says so, and M254 iter-10 measured 13 min → 3.8 min from exactly this class of fix. Every one of those 12 logins pays it. | `stack-verify/e2e/lib/cockpit-login.ts` §`waitUntil` + `:…` default `?? 'networkidle'`; `playthroughs/e2e/lib/hero-login.ts:51` forwards only when set |
+| **L2** | **Two unfenced `networkidle` gotos in the page-object layer.** `skill-path-page.ts:31` and `simulation-page.ts:36` still pass `waitUntil: 'networkidle'` — while the *base* `PageObject.goto` uses `domcontentloaded` and is fenced by a unit test. | Same mechanism as L1; these two are holes the existing fence cannot see (it guards the base class, not per-surface overrides). | `playthroughs/e2e/lib/page-object.ts:48` (fenced, correct) vs `skill-path-page.ts:31`, `simulation-page.ts:36` |
+| **L3** | **Per-seat `storageState` reuse.** 18 logins across **6** distinct seats → pay the handshake ~6×. | Real but smaller than L1/L2, and it interacts with Clerkenstein's single global seat: a reused `storageState` does **not** re-point the server-side seat, so reuse must stay **within** a seat-grouped serial order. Keep `pt-profile-identity` proving the handshake itself. | `clerkenstein/clerk-frontend/server.go` `handleMe` reads `activeUserLocked()` with no cookie input |
+| **L4** | Per-spec dead-wait audit (over-long explicit `timeout:` waits that fire on the happy path). | Bounded, incremental. | `hiring-recruiter.spec.ts:57,65` two 60 s waits; `aisim-chat-launch.spec.ts:67` 20 s |
+| — | ~~Parallel read-only lane~~ | **Not a clause-1 lever** (§8.1). Priced, routed forward. | — |
+
+**The fence L1/L2 need.** `tests/home-login-networkidle.unit.spec.ts` already scans specs for the
+`/home`-landing case and fails closed. Widen its scope from `/home`-landing to **every** `loginAsHero`
+call site and **every** page-object `goto`, so the whole class is fenced rather than one route.
+
+### 8.4 Effectiveness — the two clauses collapse into one body of work
+
+Clause 2 needs **≥ 5 mutating** Playthroughs (mutate **and** read back) and **≥ 1 `blocked`** outcome.
+Clause 3 needs **org-admin ×4**. Reading the curated corpus, those are the *same* work:
+
+| Curated UC | Route | Final expectation (curated) | Serves |
+|---|---|---|---|
+| `org-admin-settings.roles.UC1` | `/enterprise/roles` | "the role **persists** and appears in the org roles list with its configured skills" | clause 2 **and** 3 |
+| `org-admin-settings.members.UC1` | `/enterprise/members` | "the assignment **persists** and reflects on the member" | clause 2 **and** 3 |
+| `org-admin-settings.tags.UC1` | `/enterprise/tags` | "the tag/team **persists** with its members" | clause 2 **and** 3 |
+| `org-admin-settings.feature-config.UC1` | `/enterprise/settings` | "the setting **persists**" | clause 2 **and** 3 |
+
+All four are **write-then-read-back by their own declared final** — the `pt-assignment-assign` shape.
+4 + `pt-assignment-assign` = **5 mutating**, which is exactly clause 2's floor. **So org-admin is the
+highest-value cluster in the milestone and goes first.**
+
+The `blocked` outcome is **already seeded**: `seed/seed-worlds.yaml` declares hero **`pt-free`**, the
+`free` entitlement, and the `entitlement-gated` capability — a free-tier actor refused paid content needs
+no seed extension, only a use case and a spec.
+
+### 8.5 Coverage — onboarding is the risky half, and the risk is named in the corpus
+
+The curated corpus annotates `onboarding.individual.UC1` and both
+`onboarding.enterprise-workforce-standard` UCs with **`# SEED GAP: fresh pre-onboarding actor`**, and
+`onboarding.enterprise-workforce-ai-readiness.UC1` carries the M201 verify note **"no member-facing
+AI-readiness flow exists (manager-only)"**. `pt-world` seeds *post*-onboarding users.
+
+So onboarding is priced as: **1 seed question (can a pre-onboarding actor be seeded at all?) gates up to 5
+UCs**, and one of the 5 may be `unimplementable` on the platform's own terms. It runs **after** org-admin
+so a seed wall cannot starve the clauses org-admin already discharges.
+
+### 8.6 The execution order this triage implies
+
+1. **Baseline** — the denominator, n=3, environment stated. Nothing changes before it exists.
+2. **Speed L1+L2 (+ the widened fence) + the MUTATES/READ-ONLY/UNKNOWN tag** — cheap, low-risk, and every
+   later iter's runs get faster.
+3. **Org-admin ×4** — discharges clause 2's mutating floor *and* half of clause 3.
+4. **Onboarding ×5** — the seed question first; an honest `unimplementable`/verdict where the platform says no.
+5. **Negative controls + the `blocked` outcome (`pt-free`) + D-v28-5** (the cockpit Back-to-Cockpit /
+   logout double-click).
+6. **Written verdicts** for every remaining uncovered curated UC, including the M206/M207 reservations.
+7. **Final re-measure on the post-coverage suite** — report the median on the **original 18** *and* on the
+   full suite, so a lower median cannot be an artifact of adding fast tests.
+
+_Compiled 2026-07-28 (M256 iter-01, bootstrap tok). Extends §1–§7; supersedes §7's "read-only parallel
+lane" recommendation per §8.1._

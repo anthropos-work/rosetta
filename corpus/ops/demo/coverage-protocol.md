@@ -430,8 +430,10 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   A crawl that navigates with `waitUntil: 'networkidle'` eats the full per-page timeout on **every** page,
   exhausts the test budget, and false-scores perfectly-good `http=200` pages as empty/error (the M42e baseline
   reported 44 "failures" that were all this flake — the true count was 8). The harness navigates with
-  `waitUntil: 'domcontentloaded'`, then races a **short bounded** `networkidle` settle (`.catch(()=>{})` on a
-  ~1.5 s ceiling) for hydration + first data paint, and never blocks on never-idle. Screenshots are captured
+  `waitUntil: 'domcontentloaded'`, then races a **bounded** `networkidle` settle (`.catch(()=>{})` on the
+  `SETTLE_CEILING_MS` ceiling — **4 s**, raised from the original ~1.5 s at iter-09 because 1.5 s collapsed the
+  BFS frontier; see the iter-09 note below) for hydration + first data paint, and never blocks on never-idle.
+  Screenshots are captured
   **inline** (an `onPage` hook in the crawl, while the page is already loaded) — never a 2nd full re-navigation
   pass, which would re-introduce the timeout and double the nav count. The crawl also guards every assert
   against a **closed page** (the test-timeout race can close the page mid-assert): `page.isClosed()` is checked
@@ -660,8 +662,9 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     org-scale-slow and its cost is NOT a demo-patchable authz gate, the remaining zero-edit path is the
     disclosed-presenter-note (data proven-correct in the DB, slow-only) — which needs the user's EXPLICIT
     sign-off; a platform fix (bound `loadMembers` in the snapshot path / a frozen_tags column so it needn't
-    re-join live members) is the Re-scope trigger. Reusable diagnostic:
-    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts`.**
+    re-join live members) is the Re-scope trigger. **The "reusable diagnostic"
+    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts` was never committed — the file does not exist
+    (corrected v2.8 M256 pre-flight). Reproduce with `probe-empty.spec.ts` against the deep-link instead.**
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and
@@ -775,7 +778,7 @@ The roadmap called this "the result page." It is **six distinct surfaces across 
 | `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
 | `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
 | `player-academy` | `/courses/<slug>` (**ant-academy**, a different app) | ~3.7k chars: `COURSE · 12 CHAPTERS`, title, chapter list | course/chapter structure **and 0 Draft chips** |
-| `manager-dashboard` | `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` (`skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `manager-scored` (was `manager-dashboard` pre-M248) | **`/sim/<slug>/<userId>/result/<sessionId>` with `isManagerView=true`** — the real per-session manager result view (**M248 moved it**; the pre-M248 `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` scoreboard is no longer the graded surface. `skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | the shared `AISimulationResultContainer`: a persisted score + a performance narrative, in the **session's language** (EN or IT), with "Evaluated Skills" **collapsed** behind a Show-Details toggle the sweep never clicks | a **persisted `N/100` score** on a substantial (`readable ≥ 400`) page — language-agnostic + collapse-proof; the old attempts-table/`Results for` header anchors are the WRONG gate here (an Italian 5406-char render has neither). `evaluated skills` / `skills measured` is kept as an additional acceptor; `undefined undefined` fails |
 | `manager-interview` | `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` | ~590 chars: breadcrumb naming the player over an attempts table with "View Report" — **no `Results for` header at all** | an attempt row |
 
 **Shape selection is by ROUTE, never by sniffing content.** Every shape after the first was discovered by
@@ -914,11 +917,16 @@ on** — and there it went unnoticed through all ten iters:
   console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
 - **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
   and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
-  *(The concrete value grows with the content pool — `content-denominator.json` pins `expected_pairs=49`
-  since M241's EN/IT growth; M244's live `billion` sweep landed **47/47**, the 2 Bunny-absent voice **player**
-  cells held presence-only. The `29` here is the M236-era illustration, not the current denominator.)*
+  *(The concrete value tracks the content pool and the presence-only withholdings — M241's EN/IT growth took it
+  to **49**, M244's live `billion` sweep landed **47/47** (the 2 Bunny-absent voice **player** cells held
+  presence-only), and the **M254 close** moved the same 2 voice cells to **manager**-presence-only as well, so
+  `content-denominator.json` now pins `expected_pairs=`**45** — 24 player + 21 manager. The `29` here is the
+  M236-era illustration, not the current denominator; **read the pin file, never a number in this doc**.)*
 - **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
-  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
+  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now runs the aggregator as its
+  **last statement and forwards its status verbatim** (`python3 aggregate-content.py "$OUT"; exit $?`) —
+  deliberately **not** `exec`, because `exec` would replace the shell and the `EXIT` trap that removes the
+  temporary manifest would never fire.
   *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what
   let a failed sweep exit 0 for four releases" — and the newer runner reintroduced it anyway. A lesson
   written down in one runner does not propagate to its siblings by itself.)*
@@ -984,8 +992,11 @@ routes by **bare string prefix**. Four iters touched each side; no test touched 
 Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
 wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
 `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
-asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08;
-reconciled to **49** since M241's EN/IT growth — see the denominator note above).
+asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08; **49**
+after M241's EN/IT growth; **45** since the M254 close moved the 2 voice cells to manager-presence-only too).
+The test reads `expected_pairs` **from `content-denominator.json`** and asserts `buildPairs()` over the canonical
+preset equals it — it hard-codes no number, so the pin file is the only place a denominator lives. See the
+denominator note above.
 
 ---
 
