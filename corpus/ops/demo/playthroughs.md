@@ -84,11 +84,11 @@ product-file; `LoadDir` reads a directory of them and merges in sorted (determin
 | `id` | Stable identifier; the 1:1 link to its Playthrough. |
 | `goal` | The user-meaningful outcome being pursued ("a hero logs in and sees her own identity"). |
 | `actor.hero` | The seeded roster seat the actor logs in as (reuses the seeding roster), OR a free-form descriptor for a not-yet-seeded actor (a build-reference gap). |
-| `actor.entitlement` | The actor's tier — anon / free / paying / enterprise / expired — a *declared* precondition (reachable surface is tier-gated). **⚠️ DECLARED-ONLY — no seeder materializes a tier (v2.8 M256 pre-flight).** The validator only checks the string is one of the world's declared `tiers:`; `blueprint.TierMix` is parsed, defaulted (`blueprint/stories.go` §`DefaultStoryTierMix`) and validated but **consumed by no seeder** — it never reaches a DB column, and `pt-world.seed.yaml` declares no `tier_mix` at all. So an entitlement **gate cannot be exercised today**, and a `blocked` outcome cannot be produced by a tier. All **18** live use cases are `entitlement: enterprise`. |
+| `actor.entitlement` | The actor's tier — anon / free / paying / enterprise / expired — a *declared* precondition (reachable surface is tier-gated). **⚠️ DECLARED-ONLY — no seeder materializes a tier (v2.8 M256 pre-flight).** The validator only checks the string is one of the world's declared `tiers:`; `blueprint.TierMix` is parsed, defaulted (`blueprint/stories.go` §`DefaultStoryTierMix`) and validated but **consumed by no seeder** — it never reaches a DB column, and `pt-world.seed.yaml` declares no `tier_mix` at all. So an entitlement **gate cannot be exercised today**, and a `blocked` outcome cannot be produced by a tier — which is exactly why M256 iter-11's `blocked` Playthrough is gated on an **org feature grant** (a real Casbin g3 row) instead. All live use cases were `entitlement: enterprise` until iter-11 declared one `entitlement: free`; that string still reaches no DB column, so it documents intent and nothing more. |
 | `seed.world` + `seed.preconditions[]` | The named seeded world (`pt-world`) + extra named world-state the Playthrough seed provides (the validator resolves both — no silent "ideally"). |
 | `engine` | For surfaces mid-migration, the engine this UC targets — `legacy` or `new-academy`. Omitted where there is one engine. |
 | `flow` | The high-level steps that serve the goal — *what the user does*, not *which selectors*. |
-| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. **⚠️ Coverage of the non-`success` half is ZERO (v2.8 M256 pre-flight, still true at M256 iter-06):** all 23 declared use cases declare `outcome: success`. The vocabulary is implemented (`manifest/manifest.go` §outcome) but `blocked` and `error` are **unexercised**, so nothing proves the platform correctly says *no*. The M256 pre-flight also established that `actor.entitlement` is **declared-only** (no seeder writes a tier, and `ptvalidate`'s precondition check fail-opens on it), so a `blocked` outcome must come from a **real refusal surface** — an RBAC/Sentinel deny, a cross-org access attempt, or a validation error — not from an entitlement tier. |
+| `outcome` | `success` (default) · `blocked` (a correct refusal — a gate / deny) · `error` (a correct validation failure). A `blocked`/`error` UC asserts the *refusal* is functional truth. **`blocked` is EXERCISED since v2.8 M256 iter-11** — `ai-simulations.access-denied.UC1` (`pt-aisim-org-feature-blocked`), the first and so far only one; see § "The `blocked` outcome" below for how a real refusal was produced. `error` is **still at ZERO**. Note the M256 pre-flight's finding still stands and is why the refusal is not tier-based: `actor.entitlement` is **declared-only** (no seeder writes a tier, and `ptvalidate`'s precondition check fail-opens on it), so a `blocked` outcome must come from a **real refusal surface** — an RBAC/Sentinel deny, a cross-org access attempt, or a validation error — never from an entitlement tier. |
 | `expectations.intermediate[]` | Ordered, **labelled** outcome checkpoints along the flow; `intermediate[i]` binds 1:1 to the i-th asserted checkpoint, reported individually. |
 | `expectations.final` | The goal achieved (or the correct refusal landed), observable to the user. |
 | `playthrough` | The id of the test that proves it, OR the sentinel `TODO` while it is still a build-reference gap. |
@@ -115,7 +115,11 @@ reload) with 2 declared `TODO` carrying written diagnoses, and **added `skill-pa
 (`pt-skillpath-bookmark`, a write + a delete, both read back), and **opened the `onboarding` product** — the
 LAST whole surface in the M201 curated corpus that no e2e suite had ever touched, *the first thing every real
 user does* — as **1 more** live Playthrough (`pt-onboarding-complete`) with **all 5 curated onboarding use cases
-declared and carrying written verdicts**. The corpus now stands at **22 live Playthroughs, 7 TODO** (29 use
+declared and carrying written verdicts**, and **added `workforce-intelligence.organization-feedback`** as **1
+more** (`pt-workforce-org-feedback` — un-homed for five releases until pricing it revealed its data was already
+seeded), and **opened the `ai-simulations.access-denied` story** as **1 more** (`pt-aisim-org-feature-blocked`) —
+**the suite's FIRST `outcome: blocked`**, i.e. the first Playthrough that proves the platform correctly says *no*
+(see § below). The corpus now stands at **24 live Playthroughs, 7 TODO** (31 use
 cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
 runs.
 
@@ -424,7 +428,10 @@ against is materialized by the seed. It is covered by the **same datadna conform
 >    `tiers: [anon, free, paying, enterprise, expired]` and the capability `entitlement-gated`, and annotates
 >    the `pt-free` seat "*entitlement-gate use cases — outcome: blocked*" — but **no seeder writes a tier**
 >    (see `actor.entitlement` above). The `pt-free` seat *is* seeded as a user; it is simply **not tier-gated**,
->    and it is referenced by **0** of the 18 use cases. `ptvalidate`'s precondition-coverage check resolves
+>    and it was referenced by **0** of the 18 use cases. **RESOLVED DIFFERENTLY at M256 iter-11:** `pt-free` now
+>    drives two Playthroughs (onboarding, and the `blocked` refusal) and **its gate is real** — but the gate is
+>    an **org feature grant** (`sim_feature_disabled: true` → no g3 casbin row), not a tier. The tier remains
+>    declaration-only; the seat finally has an enforced refusal behind it. `ptvalidate`'s precondition-coverage check resolves
 >    `entitlement-gated` against the declared list, so it **passes without the gate existing** — a fail-open
 >    in the one check that is supposed to forbid a silent "ideally".
 > 2. **There is NO pre-onboarding user state.** `UsersSeeder` writes a `public.memberships` row for **every**
@@ -639,6 +646,51 @@ product state, not a simulated absence, and inside the same run. Prefer the delt
 reset, and **a false red is exactly as dishonest as a false green**. iter-06 found all three pre-existing mutating
 Playthroughs already had this property, unnamed — so the pattern was ratified, not invented.
 
+### The `blocked` outcome — proving the platform correctly says *no* (v2.8 M256 iter-11)
+
+For 23 Playthroughs across five releases the suite had **zero** non-`success` outcomes. That was not an oversight
+in the specs — **it was a property of the SEED**. AI-Simulations access is a per-membership **g3
+`FEATURE_JOB_SIMULATIONS`** grouping row in Sentinel's Casbin policy, added by an org-admin action
+(`OrgAllowUserToUseFeature` → `AddNamedGroupingPolicy("g3", org, membership)`) and **never a default** — but the
+`UsersSeeder` had written it for **every** membership since M42e iter-09, because a demo whose members cannot
+launch a sim is a broken demo. Measured on `demo-2`: 20/20 · 40/40 · 40/40 · 40/40. **There was no refusal
+anywhere in the world to drive**, so `blocked` was 0 by construction, and no amount of spec-writing could have
+changed it.
+
+**The fix is a seed opt-out, not a harness trick.** `StoryOrg.sim_feature_disabled: true` withholds the g3 grant
+for one org (`blueprint` → `ResolvedStory.SimFeatureEnabled()` → the `UsersSeeder` guard), and Org B of
+`pt-world` declares it. The refusal then comes out of the **running enforcer**: clicking *Start Simulation*
+opens the deny dialog *"You cannot start AI Simulations in this organization / Please contact your administrator
+at **Halcyon Retail** to request access."* and the URL **never advances** to `/sim/<slug>/start`. Nothing is
+stubbed, intercepted, or faked. **A refusal faked in the harness proves nothing about the platform.**
+
+**Assert a refusal from more than one direction.** A `blocked` outcome is the easiest outcome to satisfy by
+accident: a page that failed to load also fails to show a launch confirmation. So the Playthrough pins four
+things — the deny dialog is PRESENT, it **names the member's own organization** (so the assertion proves *which*
+tenant was denied, not merely that something was denied — the M219 lesson in the negative direction), the launch
+confirmation is ABSENT, and the URL is still the detail route. **A dead page satisfies exactly one of those.**
+
+**The refusal and the launch are each other's negative control.** `pt-aisim-chat-launch` (Org A, granted) asserts
+that same deny locator **ABSENT**; `pt-aisim-org-feature-blocked` (Org B, withheld) asserts it **PRESENT**. One
+locator, two orgs, opposite verdicts, both live on every run — which is what makes the launch Playthrough's
+`toHaveCount(0)` meaningful rather than vacuous: a locator that silently stopped matching anything would still
+pass there, and the paired Playthrough is what goes red for it. This is the **cross-vantage** negative-control
+mechanism, and it costs a manifest story plus a seed flag when the two vantages differ by **seeded state** rather
+than by test code.
+
+> **⚠️ `--reset` was not resetting the authz grants, and only a test that needed a grant to be ABSENT could see
+> it (v2.8 M256 iter-11).** The first live run of the refusal Playthrough went **RED against a world that was
+> never in its declared state**: `stackseed --reset` deleted only `g2` rows, so **`g3` accumulated forever** —
+> 731 rows for 140 memberships on `demo-2`, **540 of them orphaned** from worlds already truncated. And because
+> seeded membership ids are **deterministic**, a stale g3 row from a previous seed **silently re-granted** the
+> feature to the freshly-seeded world: the org declared as *not* having AI Simulations came up granted **20/20**.
+> The reset now deletes the seeded grouping policies **as a class** (`g2` + `g3`, pinned by
+> `cmd/stackseed/reset_casbin_test.go`, never a `TRUNCATE` — the table also holds `init_policy.sql`'s global
+> policy). **The general lesson: an additive leftover in a reset path is invisible for as long as every test
+> wants the thing to be PRESENT.** The suite was green for five releases *because* every assertion was a success
+> assertion — the first negative assertion found the leak on its first run. That is the argument for negative
+> controls stated as a measurement rather than a principle.
+
 **The mutation class of a Playthrough is a MEASUREMENT, not a reading (v2.8 M256 iter-06).** Every Playthrough
 spec now carries a machine-checked `@pt-mutation: MUTATES | READ-ONLY | UNKNOWN` tag, plus a
 `@pt-negative-control:` line whenever the class is `MUTATES`, fenced by
@@ -658,6 +710,16 @@ Neither correction was findable by reading. **Also**: the tag grammar is deliber
 `cmd/ptvalidate/discover.go` scans `@pt:(...)` and rejects any hit with no manifest use case as an ORPHAN, so a
 first draft using `@pt:mutation` **failed validation**. The fence pins that disjointness against its own copy of
 the Go regex.
+
+**The negative-control COUNT is computed too (v2.8 M256 iter-11).** The same fence now reports
+`@pt-negative-control registry: N of M Playthroughs carry a negative control` and names the uncovered ids, with a
+no-regression floor. It exists for the reason iter-06's header already gives — *a gate whose metric is a prose
+claim is not a gate* — applied to the figure that was the milestone's largest remaining gap: through iter-10 the
+negative-control count was a prose number quoted from iter to iter. The floor is a floor and not an equality on
+purpose: the target is *every* Playthrough, the count climbs across iters, and a fence that had to be edited on
+every increment would be edited without being read. What it cannot do is go quietly backwards. Note a
+**cross-vantage pair contributes two** — the relation is symmetric (each member asserts the same locator in the
+opposite direction), so both sides carry the tag.
 
 **Bound every interaction inside a retry loop, or the loop is decoration (v2.8 M256 iter-06).** A Playwright
 action with no `timeout` inherits the **test** budget. `pt-assignment-assign` wrapped its antd-Select interaction

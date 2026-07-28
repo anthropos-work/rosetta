@@ -117,6 +117,33 @@
   unverified lifecycle fix that closes a handler and changes nothing is the worst outcome available). Suite
   untouched and green. — see `iter-10/progress.md`
 
+- iter-11 (tik, `closed-fixed`): **clause 2's `blocked` sub-clause is DISCHARGED — 0 → 1 — and the Playthrough
+  that discharged it paid for itself on its first run.** `blocked` had been 0 for 23 Playthroughs not because
+  nobody wrote the test but because **the seeded world contained no refusal**: the g3 `FEATURE_JOB_SIMULATIONS`
+  grant was written for *every* membership (20/20 · 40/40 · 40/40 · 40/40, measured). So the deliverable is a
+  **seed** change — `StoryOrg.sim_feature_disabled` → the single recognition point `SimFeatureEnabled()` → the
+  `UsersSeeder` guard, an **opt-OUT** because the granted default is load-bearing for every existing world — plus
+  `pt-aisim-org-feature-blocked`, which asserts the refusal from **four** directions (the deny dialog PRESENT, the
+  **org NAMED** — *"contact your administrator at Halcyon Retail"*, so it proves WHICH tenant was refused — the
+  launch confirmation ABSENT, and the URL still on the detail route; *a dead page satisfies exactly one*). Phase A
+  probed first and was right to: two in-repo comments described the deny surface incompatibly ("deny modal" vs
+  "empty `<main>`"), and the "empty main" reading would have shipped a spec that passes for any broken page.
+  **`NEGCTL-M256-cross-vantage` is now LIVE on its first pair** — the same locator asserted ABSENT by
+  `pt-aisim-chat-launch` (Org A, granted) and PRESENT here (Org B, withheld), so each is the other's control:
+  negative controls **6 → 8 of 24**, and the count is now **computed by the fence** (uncovered ids named, floor
+  pinned) instead of narrated. **The RED was worth more than the green:** the new Playthrough failed its first
+  live run because `stackseed --reset` deleted only `g2` grants — **`g3` had accumulated for four releases (731
+  rows for 140 memberships, 540 ORPHANED)** and, ids being deterministic, a stale row **silently re-granted** the
+  feature, so the withheld org came up 20/20 and the world was never in its declared state. Fixed as a class
+  (`resetCasbinPTypes = {g2,g3}`, exact-set pinned, never a TRUNCATE). *An additive leftover in a reset path is
+  invisible for exactly as long as every test wants the thing PRESENT.* Also caught in-iter: the seed's new field
+  made the stack's **pinned** `stackseed` hard-fail the reset *after* truncating — so the tag was pushed and
+  `stack-demo/rosetta-extensions` re-pinned + rebuilt, and run 4 is that binary. **148 passed ×4** consecutive
+  reset-to-seed runs, 0 flake; `ptreport` **24/31 passing, 0 failing, 0 unimplementable**. Clause 1 re-verified
+  **0.6863×** — the drift from iter-09's 0.5652× is the MACHINE, proven by the untouched-original-16 cross-check
+  moving with it (0.5284× → 0.6055×). rext tag `fast-build-m256-blocked-outcome`, **on origin**. — see
+  `iter-11/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -131,7 +158,19 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-09 (re-measured on the GROWN denominator, 21 non-studio) — THE CURRENT FIGURE:** median per
+**Post-iter-11 (re-measured on the GROWN denominator, 22 non-studio) — THE CURRENT FIGURE:** median per
+non-studio Playthrough **2.282 s = 0.6863×** of baseline — gate `<= 0.79×` **MET**; **honesty cross-check** over
+the ORIGINAL 16 only: **2.014 s = 0.6055×**. **0 flake** over **4** consecutive reset-to-seed runs (`148 passed`
+×4 — the 4th on the stack's own re-pinned `stackseed`). Suite wall-clock 56.1 / 71.9 / 74.2 s (reported, not
+gated). `ptreport`: **24/31 passing, 7 `[TODO]`, 0 failing, 0 unimplementable.** `@pt-mutation` registry,
+computed: **MUTATES=6 READ-ONLY=16 UNKNOWN=2**. `@pt-negative-control` registry, computed (net-new): **8 of 24**.
+**`blocked` outcomes: 1** (was 0). *On the drift from iter-09's 0.5652×:* the cross-check over the 16 specs this
+iter did not touch moved by the same factor (0.5284× → 0.6055×), and a subset with zero code change cannot
+regress from code — so it is the environment (four back-to-back suite runs on a 9.70 GiB Docker VM against the
+documented 12 GB floor), reported as variance with the control shown, exactly as iter-08 did in the opposite
+direction. Clause 1 holds with margin either way.
+
+**Post-iter-09 (superseded; 21 non-studio):** median per
 non-studio Playthrough **1.880 s = 0.5652×** of baseline — gate `<= 0.79×` **MET**; **honesty cross-check** over
 the ORIGINAL 16 only: **1.757 s = 0.5284×**. **0 flake** over 3 consecutive cold reset-to-seed runs (`146
 passed` ×3). `ptreport`: **23/30 passing, 7 `[TODO]`, 0 failing, 0 unimplementable.** `@pt-mutation` registry,
@@ -179,7 +218,8 @@ Fate-3 items land here.
 | `PT-M256-orgadmin-member-tag` | **SHARPENED (iter-05 D19).** Unreachable through 4 measured routes: dropdown intercepts pointer events over its own modal (invisible to actionability checks); `Escape` closes the MODAL not the dropdown; an in-modal outside-click leaves 9 menuitems open; `check({force:true})` flips the DOM but not antd's React state (submit stays disabled, tally stays 0). Untried: the `<label for=…>` element; a route that never opens a dropdown. If both fail, declare **`unimplementable-without-platform-edit`** with the four-attempt evidence. | next iter |
 | ~~`PT-M256-clause2-fifth-write`~~ | **DONE (iter-06 D24).** Answered differently than D20 framed it — not from a new surface but from **writes the suite already made**: `pt-skillpath-legacy` extended by one click + the net-new `pt-skillpath-bookmark`. Mutating **5**, machine-counted by the `@pt-mutation` fence. | closed iter-06 |
 | ~~`NEGCTL-M256-ablation-harness`~~ | **REFUTED (iter-07 D29).** GraphQL outcome-ablation yields a **dead page, not an empty surface** (`bodyLen 2147 → 24`, 0 nav, 0 buttons) — the control would pass for any Playthrough including one asserting pure chrome, so it cannot discriminate. A gentler ablation needs per-operation shapes: **O(queries), not O(surfaces)**. Do not re-try verbatim. | closed iter-07 |
-| `NEGCTL-M256-cross-vantage` | **Gate-critical, replaces the above (iter-07 D30).** Clause 2's negative controls stand at **5 of 21**; the 5 mutating ones get it free from their pre-state read (D22), and the **16 non-writing** ones need a different mechanism. Run each Playthrough's **own final locator against a contrast vantage** — a hero/org for whom the outcome legitimately does not exist. Real absence, app stays alive, and it proves **WHICH** data not merely **THAT** data (the M219 lesson, per-Playthrough). Cost stated honestly: **O(tests), not O(surfaces)** — budget it across more than one tik. | **iter-08+** |
+| `NEGCTL-M256-cross-vantage` | **MECHANISM PROVEN LIVE (iter-11); still the last open item in clause 2.** Negative controls **8 of 24**, and the count is now **computed by the mutation fence**, which names the 16 uncovered ids on every run. The reference implementation is the `pt-aisim-chat-launch` ∥ `pt-aisim-org-feature-blocked` pair: one locator, two orgs, opposite verdicts, both live. **What it teaches about cost:** that pair was cheap because the two vantages differ by **seeded state** (a withheld g3 grant), and a symmetric pair contributes **two** controls. A pair that differs only by test code is the O(tests) case below. So triage the remaining 16 by *"is there a hero/org for whom this outcome legitimately does not exist in the seed?"* first — the seed-state cases are the cheap tail. | **iter-12+** |
+| ~~`NEGCTL-M256-cross-vantage` (original framing)~~ | **(iter-07 D30, superseded by the row above.)** Clause 2's negative controls stood at **5 of 21**; the 5 mutating ones get it free from their pre-state read (D22), and the **16 non-writing** ones need a different mechanism. Run each Playthrough's **own final locator against a contrast vantage** — a hero/org for whom the outcome legitimately does not exist. Real absence, app stays alive, and it proves **WHICH** data not merely **THAT** data (the M219 lesson, per-Playthrough). Cost stated honestly: **O(tests), not O(surfaces)** — budget it across more than one tik. | **iter-08+** |
 | `FIX-M256-studio-false-green` | **RE-AIMED (iter-07 D31) — the old diagnosis was FALSE.** iter-02 blamed the route's `Simulation Advanced Builder` header; a 5-minute poll of the real journey shows that string **NEVER renders**. The matcher actually fires on the designer's **empty section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft populates it. **Deleting the header alternative is a NO-OP — do not ship it as a fix.** Assert a **POPULATED** section instead (a character card / a non-zero `designer.actors.counter.label` count). Evidence is attached to the locator in `studio-builder-page.ts`. Until it lands, both studio Playthroughs stay `@pt-mutation: UNKNOWN`, never `MUTATES`. | a later tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. **Still not dischargeable (iter-07):** a section *heading*'s presence does not answer *"did the generation complete on this host?"*. Measuring section **CONTENT** answers the fix and the doc premise together — keep them one piece of work. | the same tik as the fix |
 | ~~`ONBOARD-M256-build`~~ | **DONE (iter-08).** The onboarding product exists: `pt-onboarding-complete` live (mutating #6) + **all 5 curated onboarding UCs declared with written verdicts**, every verdict harness/seed work and **0 `unimplementable`**. | closed iter-08 |
@@ -190,7 +230,10 @@ Fate-3 items land here.
 | `PT-M257-talk-to-data` | `talk-to-data.query.UC1` — real + wired (`app/internal/askengine`), but needs the `ask_*` tables migrated on the demo **and live Bedrock credentials**. An unavailable credential is not something an iter can fix; it also belongs in the separately-budgeted integration lane, not the timed median. | M257+ |
 | `FIX-M256-cockpit-manifest-drift` | **NEW (iter-10 D41), and it BLOCKS D-v28-5.** `run-playthroughs.sh --reset` re-exports `fake-fapi-roster.json` (M211 iter-16) but **not** `cockpit-manifest.json`, so on any Playthrough-reset demo the cockpit lists heroes that no longer exist and every seat selection **silently** falls back to the last-active seat (`clerk-frontend/server.go:347-349`). 23 Playthroughs stay green while the human-facing cockpit is entirely stale. Fix shape: re-export the cockpit manifest alongside the roster so the two artifacts move together — **verify on a live bring-up**, and do not regress the roster refresh. Separately consider making the unknown-key fallback **loud** on a demo. | **next iter** |
 | `D-v28-5-cockpit-logout` | **BLOCKED on the above (iter-10 D42).** A gate clause in its own right, still unfixed after 10 iters — but no longer merely unstarted: it is **not measurable** until the cockpit can select a current hero. The double-click symptom is plausibly a *consequence* of the drift (a presenter who does not get the hero they clicked clicks again) — plausible, **unmeasured**. Re-measure on a cockpit whose manifest matches its roster BEFORE designing a fix. By the user's explicit call it gets **no Playthrough**. | after the drift fix |
-| `BLOCKED-M256-refusal-surface` | Clause 2's `>= 1 blocked` outcome, still **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
+| ~~`BLOCKED-M256-refusal-surface`~~ | **DONE (iter-11) — clause 2's `blocked` sub-clause MET, 0 → 1.** Answered exactly as the routing predicted the *surface* but not the *mechanism*: the deny modal was right, and the way to reach it was a **seed** change, not a test one — `sim_feature_disabled: true` on `pt-world` Org B withholds the g3 grant so Sentinel's own enforcer refuses (`pt-aisim-org-feature-blocked`). It also exposed that `--reset` had been leaking g3 grants for four releases. Original note kept for the record: | closed iter-11 |
+| ~~(original)~~ | Clause 2's `>= 1 blocked` outcome, then **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
 | `FENCE-M256-bounded-interaction` | Generalise iter-06 D25: a source-scan fence asserting no unbounded `click`/`press` sits inside a retry loop in the harness. The defect class is real (a 245 s in-suite timeout that passed in 6.0 s alone) and the fix was per-site; the fence is what stops the next one. | a later tik of M256 |
+| `FLAKE-M256-assign-under-bloated-policy` | **NEW (iter-11), a HYPOTHESIS not a finding.** `pt-assignment-assign` timed out at 240 s on the one run made against the bloated pre-fix casbin policy (731 g3 rows / 540 orphans) and in **none** of the four runs after the fix. A policy set 5x the size of the world is a plausible authz-latency contributor. If it ever recurs, **measure the enforcer's policy size before reading the spec**. | if it recurs |
+| `DOC-M256-claudemd-pt-count` | **NEW (iter-11), housekeeping.** `CLAUDE.md` still reads "18 live Playthroughs"; it points at `playthroughs.md` as authoritative, which now reads **24**. Reconcile ONCE at milestone close rather than on every increment (the count has moved five times inside this milestone). | milestone close |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |

@@ -515,3 +515,17 @@ platform's own real defaults — **no-fabrication *by construction***). Proven L
 (employee `aria-completed` + manager `dana-manager`, Northwind) on a cold reset-to-seed, escapes=0. Seeder-contract
 detail: [`../services/ai-readiness.md`](../services/ai-readiness.md) (§ "Seeding contract … 31-skill fidelity,
 v2.7 M250"). Code-of-record: `rosetta-extensions` @ `july-jitter-m250-iter07`.
+**v2.8 "fast build" M256 iter-11 "the refusal"** adds the seed's **first deliberate ABSENCE**: `StoryOrg`
+gains **`SimFeatureDisabled bool` (yaml `sim_feature_disabled`)**, unified through
+**`ResolvedStory.SimFeatureEnabled()`** (`= !SimFeatureDisabled` — the single recognition point, the same shape as
+`IsHiringOrg()`), and the `UsersSeeder` guards the per-membership **g3 `FEATURE_JOB_SIMULATIONS`** casbin grant on
+it. It is an **opt-OUT** on purpose: the grant has been unconditional since M42e iter-09 because a demo whose
+members cannot launch a sim is a broken demo, so the default is unchanged and only an org that asks is withheld.
+Why a seed flag rather than a test fixture: the Playthrough exit gate needs a journey proving the platform
+correctly says **no**, and a refusal faked in the harness proves nothing about the platform — this one comes out
+of Sentinel's own Casbin enforcer (`pt-world` Org B → the deny dialog naming the org, and the launch route never
+reached). **It also exposed that `--reset` was leaking g3 grants** — 540 orphans on `demo-2`, and because seeded
+ids are deterministic, stale rows silently RE-GRANTED the feature to the new world, so the withheld org came up
+granted 20/20; `resetCasbin` now deletes the seeded grouping policies as a class (`g2` + `g3`). The reset half is
+[`idempotency.md`](idempotency.md) §"seed … the fixed `--reset`" #4; the Playthrough half is
+[`demo/playthroughs.md`](demo/playthroughs.md) §"The `blocked` outcome".
