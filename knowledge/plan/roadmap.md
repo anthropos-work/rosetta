@@ -284,6 +284,20 @@ and a simplification lens) ran against the first draft of this section. Its mate
   `0.0.0.0`-published stack in three ways. See the security row in each milestone; `corpus/ops/safety.md` is
   now a **Delivers** target of M255.
 
+- **D-v28-12 — M256's gate is re-cut for a LOCAL host; clause 1 becomes RELATIVE** (user, 2026-07-28). The
+  gate opened *"On billion, cold reset-to-seed"*, but `billion` moved to a **standing sign-off rule** the same
+  day, so the gate **could not fire** — M256 could progress forever and never close. Rather than leave an
+  unreachable gate or spend host time before there is anything worth measuring, clause 1 is re-expressed as a
+  **relative** target: **median per-Playthrough ≤ 0.79× a same-stack pre-work baseline the first tik measures.**
+  That ratio is not invented — billion's 228 s / 18 tests with ~120 s in the LLM-bound studio lane gives
+  **6.4 s** per non-LLM test, so the original `≤ 5 s` encoded exactly a **21 % cut**. The ambition transfers to
+  any machine; the absolute number does not. Two consequences recorded deliberately: the **suite wall-clock is
+  now REPORTED, not gated** (the denominator grows 18 → ~27 inside the milestone, so an absolute ceiling would
+  measure coverage growth and would get harder to pass the better clause 3 did — a gate punishing its own
+  sibling), and a **comparable absolute billion measurement is routed forward to M258** (Fate 3), which already
+  runs a composed cold cycle on a host. **Until that lands, no M256 number may be quoted as comparable to
+  billion's 228 s.**
+
 **Also corrected from the review, without a decision (facts the draft got wrong or thin):**
 `NEXT_PRIVATE_STANDALONE=1` in an rext-owned Dockerfile enables `.next/standalone` with **zero** config edits
 and **zero** demopatches — Next 16's frozen `defaultConfig` reads

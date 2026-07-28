@@ -4,7 +4,7 @@ milestone: M256
 title: "playthrough sharpening"
 status: planned
 release: v2.8 "fast build"
-exit_gate: "On billion, cold reset-to-seed, ALL MEASURED ON THE POST-COVERAGE SUITE (denominator pinned, D-v28-9): (1) FASTER — median per-Playthrough <= 5 s AND full post-coverage suite p50 <= 200 s wall-clock, 0 flake across 3 consecutive runs; the irreducibly LLM-bound studio lane is budgeted separately and excluded from the median (pt-studio-advanced-generate is a real ~2-3 min live-LLM round-trip, studio-builder.spec.ts:45 sets a 300 s timeout); negative-control runs are a SEPARATE execution and do not count toward the timed p50. (2) EFFECTIVE — every Playthrough passes a negative control (demonstrably RED when its outcome is absent) AND >= 5 mutating Playthroughs, where MUTATING means mutates state AND reads it back (the playthroughs.md:169-172 sense, which is what makes the 'from 1' baseline true) AND >= 1 `blocked` outcome (from 0). (3) COVERED — onboarding (5 UCs) + org-admin (4 UCs) LANDED, and every remaining uncovered curated UC carries a written verdict (named future milestone or drop) — zero silent gaps. Plus D-v28-5: the cockpit logout / Back-to-Cockpit double-click defect FIXED (no Playthrough added)."
+exit_gate: "On a LOCAL demo stack (re-cut 2026-07-28, D-v28-12 — billion is under a standing sign-off rule; the environment MUST be stated with every number). ALL clauses measured on the post-coverage suite. (1) FASTER, RELATIVE not absolute — median per-Playthrough <= 0.79x the SAME-STACK pre-work baseline (the 21% cut the billion-derived 5 s implied against its 6.4 s baseline), with the irreducibly LLM-bound studio lane excluded from the median and budgeted separately; 0 flake across 3 consecutive runs. The suite wall-clock is REPORTED, NOT GATED: the denominator grows 18 -> ~27 inside this milestone, so an absolute ceiling would measure coverage growth rather than speed. (2) EFFECTIVE — every Playthrough passes a negative control (demonstrably RED when its outcome is absent) AND >= 5 mutating Playthroughs, where MUTATING means mutates state AND reads it back, AND >= 1 `blocked` outcome (from 0). (3) COVERED — onboarding (5 UCs) + org-admin (4 UCs) LANDED, and every remaining uncovered curated UC carries a written verdict — zero silent gaps. Plus D-v28-5: the cockpit logout / Back-to-Cockpit double-click defect FIXED (no Playthrough added). A comparable ABSOLUTE billion measurement is routed forward to M258 (Fate 3)."
 iteration_protocol_ref: corpus/ops/demo/playthroughs.md
 re_scope_trigger: "If > 3 of the un-homed curated UCs prove `unimplementable-without-platform-edit`, OR a negative control proves unimplementable for > 3 Playthroughs, escalate — that is a platform conversation, not a test one."
 depends_on: [M255]
@@ -44,6 +44,40 @@ structural property, and it has five independent causes:
 4. **One entitlement, one org shape.** Every actor is `entitlement: enterprise` on `pt-world`.
    **Outcome `blocked`: 0. Outcome `error`: 0** — nothing proves the platform correctly says *no*.
 5. **Whole surfaces at zero.** ant-academy **0**, onboarding **0**, org-admin **0**, talk-to-data **0**.
+
+## The gate was re-cut for a local host (2026-07-28, D-v28-12)
+
+The gate as designed opened *"On billion, cold reset-to-seed"*. `billion` is now under a **standing sign-off
+rule** (don't touch, don't probe, per-occasion approval, local-first), so **the gate as written could not fire**
+— the milestone could progress indefinitely and never close. The user elected to re-cut it for a local host.
+
+**What changed, and why it is not a weakening:**
+
+- **Clause 1 became RELATIVE.** Copying billion's `≤ 5 s` onto a 9.7 GiB laptop would measure the *machine*,
+  not the work: this box is slower, so a flat threshold could fail for reasons unrelated to parallelising the
+  suite. Instead the *ambition* transfers. billion's baseline was 228 s / 18 tests with ~120 s of it in the
+  LLM-bound studio lane → **6.4 s** per non-LLM test, so the `≤ 5 s` gate encoded a **21 % relative cut**
+  (0.79×). That ratio is what the milestone must achieve **against a same-stack pre-work baseline it measures
+  first**.
+- **The suite wall-clock is now REPORTED, not GATED.** The denominator grows **18 → ~27** inside this milestone
+  (clause 3 lands 9 new Playthroughs). An absolute suite ceiling would measure coverage growth, and it would get
+  *harder* to pass the better clause 3 does — a gate that punishes its own sibling clause.
+- **Clauses 2 and 3 are unchanged**, but note they also need a live stack: a negative control and a new
+  Playthrough only count once they have actually *run*. The same local demo serves all three.
+
+**The first tik must establish the baseline before changing anything.** A relative gate with no measured
+starting point is unfalsifiable. Measure the current suite on the local stack, n=3, and record it in
+`progress.md` with the environment stated — that number is the denominator every later claim divides by.
+
+**Routed forward (Fate 3 → M258):** a comparable **absolute** measurement on `billion`. M258 already runs a
+composed cold cycle on a host, so the re-measure costs it one extra suite run rather than a dedicated trip.
+Until it lands, **no M256 number may be quoted as comparable to billion's 228 s** — different machine, and the
+doc says so.
+
+> ⚠️ **Local-host caveat, stated once so it is not rediscovered:** this laptop's Docker VM is ~9.7 GiB against
+> the documented 12 GB UI-tier floor, and M255's headroom assert **refused** a laptop *build* cycle as too busy.
+> That assert gates `buildbench` campaigns, not Playwright runs, so it does not block this milestone — but a
+> local demo bring-up will warn, and the warning is expected, not a failure.
 
 ## Shape (why iterative)
 

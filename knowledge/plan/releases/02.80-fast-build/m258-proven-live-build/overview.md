@@ -109,6 +109,19 @@ only if M257 lands nearer its own ~240–300 s estimate, spending part of the **
 **Do not read 480 s as expected — read it as the target.** Also: M256 must **measure and report the
 reset-to-seed leg**, so this composition arithmetic has a third real number instead of two.
 
+## Inherited from M256's gate re-cut (Fate 3, 2026-07-28)
+
+**Re-measure M256's speed clause on this host for a comparable ABSOLUTE number.** M256's clause 1 was re-cut to
+a *relative* target (≤ 0.79× a local-stack baseline) because `billion` is under a standing sign-off rule and the
+original `≤ 5 s` was billion-derived — see **D-v28-12**. A relative local number proves the *work* but is not
+comparable to billion's 228 s baseline.
+
+M258 already drives the full Playthrough batch on a host as part of its own gate, so this costs **one extra
+suite timing**, not a dedicated trip: record the median per-Playthrough (LLM lane excluded) and the suite
+wall-clock, with the environment stated, and note whether the original `≤ 5 s` / `≤ 200 s` intent was met in
+absolute terms. **Reporting only — this does NOT become a fourth M258 gate clause.** If it misses, that is a
+finding about the machine or the suite, not an M258 failure.
+
 ## Iteration protocol
 
 The **prove-on-billion** lineage (M221 → M236 → M244 → M254):
