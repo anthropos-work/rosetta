@@ -74,6 +74,11 @@ changed what M257 will do, before M257 started.
   sites while living only inside a prose evidence string in `billion.json` — no comparable source at all. Three
   separate count-drift incidents surfaced in a single day (the directus 14/15, the 28 drifted citations, the
   27-vs-30 knob count) before the fence was written.
+- **The first flake-gate result was reported green off the wrong exit code.** The wrapper was
+  `pytest | tail -1`, so the captured status was `tail`'s, not pytest's, and the summary lines had been eaten
+  by interleaved progress dots. Caught on inspection and redone properly with explicit exit-code capture (3×
+  green, 276 passed each). Recording it because it is *exactly* the defect class this milestone spent the day
+  fixing — a check that reports success without having checked — committed inside the close that fixed it.
 - **"M255 harden resume" was accepted as a Fate-3 destination.** It is not a named milestone, so four items
   were routed somewhere that could not survive the close. Caught at close and re-fated to M257; should have
   been rejected when written.
@@ -101,10 +106,10 @@ demo bring-up path, not to v2.8's scope. Left as a named observation rather than
 
 | | v2.7 close | M255 close | Δ |
 |---|---|---|---|
-| Python (rext) | — | **1505 pass / 2 skip / 0 fail** (1507 tests) | stack-core alone **226 → 272** |
+| Python (rext) | — | **1505 pass / 2 skip / 0 fail** (1507 tests) | stack-core alone **226 → 276** |
 | Go test funcs (rext) | 2019 | **2023** | +4 |
 | Go modules failing | (not measured) | **0 of 6** | — |
-| Flake count | 0 | **0** (3 sequential runs) | — |
+| Flake count | 0 | **0** — 3 sequential stack-core runs, 276 passed each, exit codes captured | — |
 | Platform-repo edits | 0 | **0** | — |
 | Net-new deps | 0 | **0** | — |
 
