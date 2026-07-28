@@ -298,7 +298,7 @@ tier has no dev counterpart** (the main dev stack runs next-web natively; `dev-N
 
 ### M255: Build-bench & host-headroom
 
-**Status:** `planned` · **Shape:** `section` · **HARD go/no-go barrier**
+**Status:** `done` (2026-07-28) · **Shape:** `section` · **HARD go/no-go barrier** — **VERDICT: GO**
 **Goal:** Establish the measurement floor, the headroom assert, and the parallelism rule that every later speed
 lever is judged against.
 
@@ -359,6 +359,49 @@ starts.
 `corpus/ops/demo/tailscale-serve.md`
 **Delivers → `corpus/ops/demo/build-budget.md`** (net-new) **+ `corpus/ops/safety.md`** (§3 cert-renewal
 amendment)
+
+#### Closure (2026-07-28)
+
+**Barrier PASSED — GO.** Spike (a), a ~15-minute experiment on the rext-owned `hiring.Dockerfile`, took the
+image **4.84 GB → 379 MB** and its export leg **146.8 s → 2.9 s** (build wall 225 s → 49 s). L1 does not
+collapse; it is if anything *conservative*. Enabled by `ENV NEXT_PRIVATE_STANDALONE=1` — no config edit, no
+demopatch (D-M255-2).
+
+**The measurement floor exists.** `buildbench` + two measured host profiles + a hard headroom assert + the
+union-apply fence + a `Read at` anchor fence, shipped in rext (tags `fast-build-m255-buildbench`, `-1`, `-2`,
+`-3` on origin). **Gated baseline: n=3 p50 `666.29 s`** (min 658.15, max 881.01), 3/3 reps green, superseding
+the n=1 672.4 s it agrees with to **0.9 %**. The headroom model was *validated*, not merely applied: predicted
+5,400 MiB, reps peaked 5,446 / 5,579 / 5,398 MB (~3 %).
+
+**Three findings reshaped the release rather than merely satisfying the milestone:**
+- **L2 re-priced from ~200 s to ≲45 s and re-sequenced AFTER L1** (D-M255-6) — L1 deletes the export legs L2
+  existed to overlap, and the headroom assert derives `max_parallel_ui_lanes = 1` on both hosts. Spike (d)
+  refuted *both* standing hypotheses. M257's `re_scope_trigger` was re-derived 480 → 420 s as a consequence,
+  and its margin is now openly thin: 666.29 → 360 needs 306 s against 300–350 s of levers.
+- **D-v28-7's "inert outlier" premise is REFUTED** (D-M255-3) — `WUNDERGRAPH_SSR_ENDPOINT` *is* set on
+  hiring-app and there is a real one-hop import chain, so union-apply is a real (beneficial) change for hiring.
+  **M257 must re-verify the hiring recruiter Playthrough** once it flips union-apply on.
+- **The corpus argued against the barrier's own build shape** (D-M255-5) — `frontend-tier.md` presented
+  "Dockerfiles consumed UNMODIFIED" as exhaustive and listed `output:'standalone'` under *forbidden*. The
+  rext-owned-Dockerfile third shape is now documented.
+
+**Also delivered:** net-new `corpus/ops/demo/build-budget.md` (the §0b blind area), the `safety.md` §3.5.4
+cert-renewal amendment, the campaign/reclaim protocol (the draft's campaign was not executable — ~2 G/cycle
+leak against a ~4–5 cycle runway), and the §8.5-class corpus corrections.
+
+**Found and fixed at close:** `stack-snapshot`'s directus-surface test had been **RED since v2.6** (M244's
+`e74e563` added a 15th table without moving a hardcoded 14) — missed by the v2.6 *and* v2.7 closes because
+their test rosters never named `stack-snapshot`. Plus a gofmt-dirty file, and the **plan-number mirror fence**
+landed (the one item the harden pass could not) — `billion.json` now carries `gated_baseline.total_p50_s` as a
+number, 8 prose mirrors are fenced against it, and the fence is RED-proven.
+
+**Deferrals:** 3 Fate-1 landed · **4 Fate-3 → M257** (the harden pass had routed five to "M255 harden resume",
+which is not a named milestone and could not survive the close) · 0 dropped · **0 escape-hatch**.
+
+**Tests:** Python **1505 pass / 2 skip / 0 fail** (stack-core alone 226 → 272); Go **2023** test funcs (+4),
+**0 of 6** modules failing; flake **0**. **0 platform-repo edits, 0 net-new deps.**
+Retro: [`retro.md`](releases/02.80-fast-build/m255-build-bench-host-headroom/retro.md) ·
+Metrics: [`metrics.json`](releases/02.80-fast-build/m255-build-bench-host-headroom/metrics.json)
 
 ### M256: Playthrough sharpening
 

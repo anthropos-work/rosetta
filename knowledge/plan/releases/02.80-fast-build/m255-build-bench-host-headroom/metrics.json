@@ -1,0 +1,86 @@
+{
+  "milestone": "M255",
+  "title": "build-bench & host-headroom (the barrier)",
+  "release": "v2.8 fast build",
+  "shape": "section",
+  "barrier": true,
+  "closed": "2026-07-28",
+  "close_status": "closed-complete",
+
+  "tests": {
+    "python_rext": {
+      "tests": 1507,
+      "passed": 1505,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2,
+      "scope": "stack-core + demo-stack + stack-injection",
+      "source": ".agentspace/test-results/junit-python.xml (JUnit XML, not grepped stdout)",
+      "delta_note": "stack-core alone went 226 -> 272 during M255's harden pass (+46)."
+    },
+    "go_rext_test_funcs": {
+      "count": 2023,
+      "previous": 2019,
+      "delta": 4,
+      "source": "git grep -E '^func Test' -- '*_test.go', excluding platform clones under stacks/",
+      "note": "v2.7 close reported 2019. M255 is a tooling+docs milestone; most of its test growth is Python (stack-core), not Go."
+    },
+    "go_modules": {
+      "total": 6,
+      "failing": 0,
+      "modules": ["playthroughs", "clerkenstein", "alignment", "stack-secrets", "stack-snapshot", "stack-seeding"],
+      "note": "rext is NOT a single Go module; each section has its own go.mod, so './...' from the root fails. All six run clean individually."
+    }
+  },
+
+  "flake_count": 0,
+  "flake_note": "Phase 8 gate: 3 sequential full runs of the milestone-touched suites (stack-core + demo-stack), byte-identical results.",
+
+  "barrier": {
+    "verdict": "GO",
+    "decider": "spike (a) — multi-stage .next/standalone prototype on the rext-owned hiring.Dockerfile",
+    "image_gb_before": 4.84,
+    "image_mb_after": 379,
+    "export_leg_s_before": 146.8,
+    "export_leg_s_after": 2.9,
+    "build_wall_s_before": 225,
+    "build_wall_s_after": 49
+  },
+
+  "gated_baseline": {
+    "total_p50_s": 666.29,
+    "total_min_s": 658.15,
+    "total_max_s": 881.01,
+    "reps": 3,
+    "host": "billion (8 vCPU / 7.3 GiB / x86_64)",
+    "supersedes_n1_s": 672.4,
+    "agreement_pct": 0.9,
+    "provenance": "measured 09:59-11:37Z 2026-07-27, PRE-freeze; third-party host activity was reported from ~13:11Z, 94 min after the last rep. Uncontaminated, user-confirmed.",
+    "authoritative_field": "rext stack-core/hostprofiles/billion.json -> gated_baseline.total_p50_s"
+  },
+
+  "fixes_at_close": [
+    "stack-snapshot directus-surface test: hardcoded 14 tables vs 15 actual — RED since v2.6 (M244 e74e563 added simulations_extraction without moving the count). Missed by the v2.6 AND v2.7 closes because their test rosters never named stack-snapshot.",
+    "playthroughs/manifest/hiring_isolation_test.go: gofmt-dirty.",
+    "LANDED the plan-number mirror fence (test_baseline_mirror_fence.py) — the one item M255's harden pass could not. Went RED on first run, flagged 4 legitimate sites, rule narrowed, then RED-proven against injected drift."
+  ],
+
+  "deferrals": {
+    "fate_1_landed": 3,
+    "fate_2_confirmed": 0,
+    "fate_3_annotated": 4,
+    "fate_3_target": "M257",
+    "dropped": 0,
+    "escape_hatch": 0,
+    "note": "M255's harden pass routed five items to 'M255 harden resume' — not a named milestone, so an invalid Fate-3 destination that could not survive this close. One landed; four re-attached to M257's overview.md because M257 exercises each."
+  },
+
+  "constraints": {
+    "platform_repo_edits": 0,
+    "net_new_deps": 0,
+    "remote_hosts_touched_at_close": 0,
+    "note": "The whole close ran locally. billion is under a standing sign-off rule."
+  },
+
+  "notes": "M255 is v2.8's HARD go/no-go barrier and it PASSED. Two deliverables: the measurement floor (buildbench + two measured host profiles + a hard headroom assert, n=3 baseline 666.29 s) and the barrier verdict (GO — L1 does not collapse). Three findings reshaped the release rather than merely satisfying it: L2 re-priced from ~200 s down to <=45 s and re-sequenced after L1; D-v28-7's 'inert outlier' premise refuted (hiring's behaviour DOES change under union-apply, so M257 must re-verify the hiring recruiter Playthrough); and the corpus was found arguing against the barrier's own build shape. The headroom model was validated rather than merely applied — predicted 5,400 MiB, reps peaked 5,446 / 5,579 / 5,398 MB (~3 %)."
+}
