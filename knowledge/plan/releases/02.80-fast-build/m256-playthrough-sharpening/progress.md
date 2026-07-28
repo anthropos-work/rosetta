@@ -144,6 +144,38 @@
   moving with it (0.5284× → 0.6055×). rext tag `fast-build-m256-blocked-outcome`, **on origin**. — see
   `iter-11/progress.md`
 
+- iter-12 (tik, `closed-fixed`): **negative controls 8 → 13 of 24 — and the mechanism's LIMIT was measured,
+  which matters more than the six it covered.** A cross-vantage control now lives in its own file class
+  (`negative-controls.spec.ts`, **no `@pt:` id** — not a Playthrough, not reconciled, **never in the gated
+  median**, batched by vantage so N absences cost ONE login), asserts **liveness before absence** (polled — a
+  bare `.count()` after a `domcontentloaded` nav reads the pre-hydration DOM and calls a working app dead),
+  and its coverage is a **machine-checked fail-closed LINK** (a control naming an id no Playthrough declares,
+  or a token that is not id-shaped, fails the fence). **The limit:** a contrast vantage discriminates only an
+  **org- or hero-specific** outcome; a **structural** final (a stat label, a chart, a table's first row)
+  renders for any populated org — measured, Org A's manager reads `verifiedSkillsStat` 1 / `skillCharts` 10 /
+  `workSection` 1 — so **9 of the remaining 11 cannot have one** and must instead have their finals sharpened
+  to name real seeded data. Writing them anyway would have re-introduced **the exact vacuity iter-07
+  refuted**, through the mechanism adopted to replace it. Two vantages rejected on measurement: the hiring one
+  **ejects the browser to PRODUCTION** (`app.anthropos.work/login`, bodyLen 162), and a Playthrough on a known
+  false green must not be given a control (it would certify it). **A control earned its keep on its first
+  run:** `pt-aireadiness-manager-howwemeasure`'s step-name asserts **match on a non-readiness org**, because
+  `/ai-readiness` without the feature renders a live *upsell* panel naming the steps. Two self-inflicted
+  defects caught while building the guards, both repeats: the fence **harvested its own prose** (iter-07's
+  phantom-comment class, one grammar later) and its detector reused a `/g` regex whose `lastIndex` would have
+  halved the control set. Side: `assignments-page.ts`'s last **unbounded `waitFor`** bounded — it turned a
+  legible failure into an opaque 240 s hang, twice.
+  **AND THE HEADLINE, which is an escalation: clause 1 is NOT DECIDABLE at n=3 on this host.** Six full-suite
+  runs, same box, **the original 16 specs unchanged since iter-03**: the control subset spans **0.5281× →
+  1.0762× (2.04×)** with **no trend** (newest 0.529×, oldest 0.528×, the extreme in between). The gated figure
+  at **n=6 is 0.8129× — OUTSIDE the `≤ 0.79×` gate**; the flattering denominator (original-16, 0.7063×) is
+  inside it, and picking that one would be the dishonesty this milestone has refused for eleven iters. So the
+  MET readings from iter-03 onward were **favourable samples, not verdicts** — *a relative gate needs its
+  noise floor published next to it or it is not falsifiable.* Every remedy (raise n + publish the spread ·
+  pair the baseline · normalise within-run · a stable host) changes **D-v28-12**, so it is escalated, not
+  actioned. `150 passed`, `ptreport` **24/31 passing, 0 failing, 0 unimplementable**; 1 flake in the batch
+  (the now-bounded 240 s hang). rext tag `fast-build-m256-negctl-crossvantage`, **on origin**. — see
+  `iter-12/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -158,7 +190,26 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-11 (re-measured on the GROWN denominator, 22 non-studio) — THE CURRENT FIGURE:** median per
+**Post-iter-12 — THE CURRENT FIGURE, and it is a NON-VERDICT (see iter-12 D60).** Six full-suite runs across
+iters 11–12 on the same host, with the ORIGINAL 16 specs unchanged since iter-03:
+
+| statistic | min | max | spread | median (n=6) | gate |
+|---|---:|---:|---:|---:|---:|
+| all 22 non-studio (**the GATED figure**) | 0.5701× | 1.1121× | 1.95× | **0.8129×** | ≤ 0.79× → **OUTSIDE** |
+| ORIGINAL 16 only (**the control subset**) | 0.5281× | 1.0762× | **2.04×** | 0.7063× | — |
+
+**Clause 1 cannot be declared MET.** The control subset is code no iter touched and it varies by 2.04× with
+no trend, so the pinned statistic (median of 3 consecutive runs, against a baseline measured in a *different*
+batch) does not absorb this host's variance — a batch of 3 lands anywhere from ~0.53× to ~1.08×. The readings
+below are retained as the per-batch record, but each must now be read as **one sample of a distribution**, not
+as a verdict. **Escalated as `MEASURE-M256-clause1-sampling`** (a D-v28-12 decision). Nothing here retracts
+iter-03's speed work, which was measured **directly at the leg** (2854 ms → 423 ms for the same navigation),
+not as a suite ratio.
+`ptreport`: **24/31 passing, 7 `[TODO]`, 0 failing, 0 unimplementable.** `@pt-mutation` registry, computed:
+**MUTATES=6 READ-ONLY=16 UNKNOWN=2**. `@pt-negative-control` registry, computed: **13 of 24** (8 self-declared
++ 5 via the control spec). **`blocked` outcomes: 1.**
+
+**Post-iter-11 (one batch of 3; 22 non-studio):** median per
 non-studio Playthrough **2.282 s = 0.6863×** of baseline — gate `<= 0.79×` **MET**; **honesty cross-check** over
 the ORIGINAL 16 only: **2.014 s = 0.6055×**. **0 flake** over **4** consecutive reset-to-seed runs (`148 passed`
 ×4 — the 4th on the stack's own re-pinned `stackseed`). Suite wall-clock 56.1 / 71.9 / 74.2 s (reported, not
@@ -218,7 +269,10 @@ Fate-3 items land here.
 | `PT-M256-orgadmin-member-tag` | **SHARPENED (iter-05 D19).** Unreachable through 4 measured routes: dropdown intercepts pointer events over its own modal (invisible to actionability checks); `Escape` closes the MODAL not the dropdown; an in-modal outside-click leaves 9 menuitems open; `check({force:true})` flips the DOM but not antd's React state (submit stays disabled, tally stays 0). Untried: the `<label for=…>` element; a route that never opens a dropdown. If both fail, declare **`unimplementable-without-platform-edit`** with the four-attempt evidence. | next iter |
 | ~~`PT-M256-clause2-fifth-write`~~ | **DONE (iter-06 D24).** Answered differently than D20 framed it — not from a new surface but from **writes the suite already made**: `pt-skillpath-legacy` extended by one click + the net-new `pt-skillpath-bookmark`. Mutating **5**, machine-counted by the `@pt-mutation` fence. | closed iter-06 |
 | ~~`NEGCTL-M256-ablation-harness`~~ | **REFUTED (iter-07 D29).** GraphQL outcome-ablation yields a **dead page, not an empty surface** (`bodyLen 2147 → 24`, 0 nav, 0 buttons) — the control would pass for any Playthrough including one asserting pure chrome, so it cannot discriminate. A gentler ablation needs per-operation shapes: **O(queries), not O(surfaces)**. Do not re-try verbatim. | closed iter-07 |
-| `NEGCTL-M256-cross-vantage` | **MECHANISM PROVEN LIVE (iter-11); still the last open item in clause 2.** Negative controls **8 of 24**, and the count is now **computed by the mutation fence**, which names the 16 uncovered ids on every run. The reference implementation is the `pt-aisim-chat-launch` ∥ `pt-aisim-org-feature-blocked` pair: one locator, two orgs, opposite verdicts, both live. **What it teaches about cost:** that pair was cheap because the two vantages differ by **seeded state** (a withheld g3 grant), and a symmetric pair contributes **two** controls. A pair that differs only by test code is the O(tests) case below. So triage the remaining 16 by *"is there a hero/org for whom this outcome legitimately does not exist in the seed?"* first — the seed-state cases are the cheap tail. | **iter-12+** |
+| `NEGCTL-M256-cross-vantage` | **13 of 24 (iter-12). The mechanism is now BOUNDED, which re-shapes what remains into two classes with different costs.** (a) **9 STRUCTURAL** finals — `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-profile-{verified,growth,timeline}`, `pt-hiring-recruiter-compare` — have **NO contrast vantage** (a stat label / chart / first table row renders for any populated org; measured: Org A's manager reads `verifiedSkillsStat` 1, `skillCharts` 10, `workSection` 1). Their route is to **sharpen the final to name real seeded data** — O(tests), and it strengthens the Playthrough regardless. Writing contrast controls for them would re-introduce iter-07's refuted vacuity. (b) **2 STUDIO** are blocked behind `FIX-M256-studio-false-green` — a control on a known false green would certify it. | **iter-13+** |
+| `PT-M256-readiness-step-asserts` | **NEW (iter-12), found by a control on its first run.** `pt-aireadiness-manager-howwemeasure`'s `MANAGER_STEP_NAMES` assertions match **page-wide** and are satisfied by the **not-enabled upsell panel** on `/ai-readiness` (which names the very steps). Re-scope them inside the method panel. The Playthrough is still covered via `methodHeading()`, which does discriminate. | a later tik of M256 |
+| `MEASURE-M256-clause1-sampling` | **NEW (iter-12 D60) — ESCALATED, and it gates the milestone's own verdict.** Clause 1's pinned statistic is not robust to this host's variance: over 6 runs the CONTROL subset (unchanged since iter-03) spans **0.5281×–1.0762× (2.04×)** with no trend, and the gated figure at n=6 is **0.8129×, outside the `≤ 0.79×` gate**. The MET readings from iter-03 on were favourable samples. Remedies, all **D-v28-12** decisions: raise n + publish the spread · make the measurement **paired** (baseline in the same batch) · normalise within-run against an invariant leg · move it to a stable host. `pt-assignment-assign` is the largest single contributor to both the median and its variance — a lever aimed at it would cut both. | **user / roadmap call** |
+| ~~`NEGCTL-M256-cross-vantage` (iter-11 framing)~~ | **MECHANISM PROVEN LIVE (iter-11).** Negative controls **8 of 24**, and the count is now **computed by the mutation fence**, which names the 16 uncovered ids on every run. The reference implementation is the `pt-aisim-chat-launch` ∥ `pt-aisim-org-feature-blocked` pair: one locator, two orgs, opposite verdicts, both live. **What it teaches about cost:** that pair was cheap because the two vantages differ by **seeded state** (a withheld g3 grant), and a symmetric pair contributes **two** controls. A pair that differs only by test code is the O(tests) case below. So triage the remaining 16 by *"is there a hero/org for whom this outcome legitimately does not exist in the seed?"* first — the seed-state cases are the cheap tail. | **iter-12+** |
 | ~~`NEGCTL-M256-cross-vantage` (original framing)~~ | **(iter-07 D30, superseded by the row above.)** Clause 2's negative controls stood at **5 of 21**; the 5 mutating ones get it free from their pre-state read (D22), and the **16 non-writing** ones need a different mechanism. Run each Playthrough's **own final locator against a contrast vantage** — a hero/org for whom the outcome legitimately does not exist. Real absence, app stays alive, and it proves **WHICH** data not merely **THAT** data (the M219 lesson, per-Playthrough). Cost stated honestly: **O(tests), not O(surfaces)** — budget it across more than one tik. | **iter-08+** |
 | `FIX-M256-studio-false-green` | **RE-AIMED (iter-07 D31) — the old diagnosis was FALSE.** iter-02 blamed the route's `Simulation Advanced Builder` header; a 5-minute poll of the real journey shows that string **NEVER renders**. The matcher actually fires on the designer's **empty section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft populates it. **Deleting the header alternative is a NO-OP — do not ship it as a fix.** Assert a **POPULATED** section instead (a character card / a non-zero `designer.actors.counter.label` count). Evidence is attached to the locator in `studio-builder-page.ts`. Until it lands, both studio Playthroughs stay `@pt-mutation: UNKNOWN`, never `MUTATES`. | a later tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. **Still not dischargeable (iter-07):** a section *heading*'s presence does not answer *"did the generation complete on this host?"*. Measuring section **CONTENT** answers the fix and the doc premise together — keep them one piece of work. | the same tik as the fix |
@@ -233,7 +287,7 @@ Fate-3 items land here.
 | ~~`BLOCKED-M256-refusal-surface`~~ | **DONE (iter-11) — clause 2's `blocked` sub-clause MET, 0 → 1.** Answered exactly as the routing predicted the *surface* but not the *mechanism*: the deny modal was right, and the way to reach it was a **seed** change, not a test one — `sim_feature_disabled: true` on `pt-world` Org B withholds the g3 grant so Sentinel's own enforcer refuses (`pt-aisim-org-feature-blocked`). It also exposed that `--reset` had been leaking g3 grants for four releases. Original note kept for the record: | closed iter-11 |
 | ~~(original)~~ | Clause 2's `>= 1 blocked` outcome, then **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
-| `FENCE-M256-bounded-interaction` | Generalise iter-06 D25: a source-scan fence asserting no unbounded `click`/`press` sits inside a retry loop in the harness. The defect class is real (a 245 s in-suite timeout that passed in 6.0 s alone) and the fix was per-site; the fence is what stops the next one. | a later tik of M256 |
+| `FENCE-M256-bounded-interaction` | **SHARPENED + now evidence-backed (iter-12).** The class has cost **two** 240 s hangs (iter-11 run 1, iter-12 run 1), both from `assignments-page.ts`'s exhausted-retries `waitFor`, now bounded. **Four unbounded `waitFor` calls remain** — `assignments-page.ts:62,115`, `activity-dashboard-page.ts:71`, `org-admin-page.ts:51`; none is inside a retry loop, so none is proven harmful. The fence is a source scan → **the harden pass is its natural home.** Original note: Generalise iter-06 D25: a source-scan fence asserting no unbounded `click`/`press` sits inside a retry loop in the harness. The defect class is real (a 245 s in-suite timeout that passed in 6.0 s alone) and the fix was per-site; the fence is what stops the next one. | a later tik of M256 |
 | `FLAKE-M256-assign-under-bloated-policy` | **NEW (iter-11), a HYPOTHESIS not a finding.** `pt-assignment-assign` timed out at 240 s on the one run made against the bloated pre-fix casbin policy (731 g3 rows / 540 orphans) and in **none** of the four runs after the fix. A policy set 5x the size of the world is a plausible authz-latency contributor. If it ever recurs, **measure the enforcer's policy size before reading the spec**. | if it recurs |
 | `DOC-M256-claudemd-pt-count` | **NEW (iter-11), housekeeping.** `CLAUDE.md` still reads "18 live Playthroughs"; it points at `playthroughs.md` as authoritative, which now reads **24**. Reconcile ONCE at milestone close rather than on every increment (the count has moved five times inside this milestone). | milestone close |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |

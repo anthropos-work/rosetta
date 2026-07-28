@@ -711,6 +711,46 @@ Neither correction was findable by reading. **Also**: the tag grammar is deliber
 first draft using `@pt:mutation` **failed validation**. The fence pins that disjointness against its own copy of
 the Go regex.
 
+**A cross-vantage negative control lives OUTSIDE the Playthrough it covers, and it discriminates ONLY an
+org- or hero-SPECIFIC outcome (v2.8 M256 iter-12).** A mutating Playthrough gets its control free from its
+pre-state read (above); a READ-ONLY one cannot, because its outcome is already present when it starts. The
+control therefore comes from a **contrast vantage** — a hero or org for whom the asserted outcome
+*legitimately does not exist* — with the Playthrough's **own final locator** run against it and required to
+find nothing. Three properties make it honest, and each was learned the hard way:
+
+- **It is not inside the Playthrough.** A second login roughly doubles that Playthrough's duration, and
+  clause 1 gates the *median per Playthrough* — 16 in-test controls would break the speed clause in order to
+  satisfy the honesty clause. So `playthroughs/e2e/tests/negative-controls.spec.ts` declares **no `@pt:` id**:
+  not a Playthrough, not reconciled by `ptreport`, never in the median, and batched by vantage so N absences
+  cost ONE login.
+- **It asserts LIVENESS before absence, polled.** A dead page satisfies *every* absence assertion (iter-07's
+  ablation: `bodyLen` 2147 → 24), so an absence is evidence only once the app is proven up. Polled because a
+  bare `.count()` right after a `domcontentloaded` navigation reads the pre-hydration DOM and reports a
+  working app as dead — a false RED inside the mechanism built to prevent false greens.
+- **The coverage link is machine-checked and fail-closed.** The control file declares which Playthroughs it
+  covers; the fence unions those links with the specs' own `@pt-negative-control:` lines, and **rejects** a
+  link naming an id no Playthrough declares (phantom coverage — a rename is the easy way to create it) or a
+  token that does not look like an id (a typo, or the tag written in prose).
+
+**The limit is the load-bearing part.** A **structural** final — a stat label, a chart, a table's first row —
+renders for *any* populated org or *any* seeded member, so no contrast vantage exists for it: measured,
+Org A's manager reads `verifiedSkillsStat` 1, `skillCharts` 10, `workSection` 1, because the M44
+profile-completeness seeder gives every member a career and skills. Writing contrast controls for those would
+produce assertions that pass for any org — **re-introducing the exact vacuity iter-07 refuted, via the
+mechanism adopted to replace it.** Their fix is instead to **sharpen the final to name real seeded data**,
+which strengthens the Playthrough whether or not a control follows. Two vantages were also rejected outright
+on measurement, recorded so they are not re-tried: the hiring Results view for a Workforce-org manager
+**ejects the browser to production** (`app.anthropos.work/login`, `bodyLen` 162 — "absent" while not even in
+the demo), and a Playthrough sitting on a known false green must not be given a control at all (it would
+certify it).
+
+> **A negative control does not only confirm an absence — it finds assertions that prove less than they
+> appear to.** On its first run, the readiness control caught that
+> `pt-aireadiness-manager-howwemeasure`'s step-name assertions **match on a non-readiness org**, because
+> `/ai-readiness` without the feature renders a live **upsell** panel that names the very steps. Those
+> sub-assertions are satisfiable by the not-enabled state — so a Playthrough that looked like it proved the
+> method panel was partly proving the marketing copy.
+
 **The negative-control COUNT is computed too (v2.8 M256 iter-11).** The same fence now reports
 `@pt-negative-control registry: N of M Playthroughs carry a negative control` and names the uncovered ids, with a
 no-regression floor. It exists for the reason iter-06's header already gives — *a gate whose metric is a prose
