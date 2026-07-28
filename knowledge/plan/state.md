@@ -29,22 +29,12 @@ peaked 5,446 / 5,579 / 5,398 MB). **Work is PAUSED for the `billion` freeze — 
 > home**. Evidence: [`build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md) ·
 > [`playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md).
 
-## v2.8 shape — barrier → strictly serial → self-proving closer
+## v2.8 shape
 
-```
-M255 build-bench & host-headroom ── HARD BARRIER (section)   ✅ BUILT · GO   ⬅ AWAITING CLOSE
-       │   measurement floor (n=3 p50 666.29 s) · headroom assert · union-apply rule · 3 spikes
-       ▼
-M256 playthrough sharpening (iterative)      faster · effective · covered
-       ▼
-M257 first-light build (iterative)           666 s → ≤ 360 s p50, cold, on billion
-       ▼
-M258 proven-live build (iterative, closer)   up AND self-proven, ≤ 480 s p50
-```
-
-Serial by the user's explicit order — **sharpen the detector before changing the thing it detects**. A 2-host
-`M256 ∥ M257` option exists (billion holding a stable demo while M257 iterates locally) but forfeits that
-benefit; the rext authoring copy is also a singleton. Full milestone detail, parallelism matrix and risk map:
+**M255 build-bench & host-headroom** (section, HARD barrier) ✅ BUILT · GO · **awaiting close** →
+**M256 playthrough sharpening** → **M257 first-light build** (666 s → ≤ 360 s p50) → **M258 proven-live build**
+(up AND self-proven, ≤ 480 s p50) — all iterative, strictly serial by the user's order (*sharpen the detector
+before changing what it detects*). Execution graph, parallelism matrix and risk map:
 [`roadmap.md`](roadmap.md) § Active — v2.8.
 
 ## Binding user decisions (2026-07-27)
@@ -174,22 +164,12 @@ work for the `billion` freeze, so `/developer-kit:close-milestone` was not run.
 3. **After the freeze lifts (~2026-07-29):** re-confirm the three timing-derived claims (see the Provenance
    flag above), then M256's gate → M257 → M258.
 
-**Five Fate-3 items routed to "M255 harden resume"** (stopped by the user halt, all scoped and ready to start;
-detail in `m255-build-bench-host-headroom/progress.md`):
-`run_campaign` rep-body coverage (largest uncovered region; needs faked `Popen`/`Sampler`/docker probes) ·
-**a plan-number mirror fence** (`666.29` is mirrored in 8 prose sites and `D-v28-N` in 5; the range had already
-rotted in 4 and was fixed by hand — this is the one machine fence the harden pass could not land) ·
-`demo_knob_guard` anchor-fence mutants (the third guard has no battery entry) · `_manifest_lists` body
-extraction (`text.find("\n}\n")` truncates silently at the first column-0 `}`) · the `laptop` profile's
-`projected_image_gib` provisional field.
-
-**What harden found.** Six live defects, all one sentence — *an empty result reported as a pass*: a report
-exiting 0 on three aborted reps with a `None` p50; the headroom assert **skipping** any clause whose input was
-`None`; `0.0` treated as falsy so the exact ENOSPC state clause 3 exists to catch **passed**; a stale
-`autoverify.json` read as fresh green; `phases_complete` ignored; and `union_apply_guard`'s DIVERGENT-PATH
-clause being **the `_sha(p) != _sha(p)` tautology again**, one indirection longer. All fixed and fenced by
-`tests/test_m255_mutation_battery.py` — **10 mutants, each RED-proven**, which caught two bugs in itself on its
-first two runs. Full detail: `m255-build-bench-host-headroom/progress.md`.
+**Five Fate-3 items routed to "M255 harden resume"** — `run_campaign` rep-body coverage · **a plan-number
+mirror fence** (`666.29` is mirrored in 8 prose sites and `D-v28-N` in 5; the range had already rotted in 4 —
+the one machine fence the harden pass could not land) · `demo_knob_guard` anchor-fence mutants ·
+`_manifest_lists` silent truncation · the `laptop` profile's provisional field. Full detail + what harden found
+(six defects, all *an empty result reported as a pass*, now fenced by a 10-mutant RED-proof battery):
+`m255-build-bench-host-headroom/progress.md`.
 
 ⚠️ **M257 is tighter than first drafted.** Its `re_scope_trigger` was re-derived **480 → 420 s**: at 480 it
 would only have fired if L1+L2+L3 returned under 186 s, so a 60 s gate miss could never have tripped it.
