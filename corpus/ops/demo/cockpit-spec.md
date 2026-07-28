@@ -205,6 +205,11 @@ the *individual* surfaces an end-user hero demos (`/profile`, Skill Spotlight, m
 succession / mobility — plus the talent pool). A hero's `jump_to` is matched against this catalog so the
 manifest can carry its label; an unrecognized `jump_to` still works (it's a raw path).
 
+> ⚠️ **The "deep-link catalog" is a LABEL table, not a link mechanism** — and it is not what § Deeplinks
+> below is built on. It is a 14-row id/path/label/vantage/validation list; its `jump_label` is projected into
+> the manifest and **never rendered** by `cockpit.py`. Read the name as *"the catalog of routes a hero may
+> jump to"*, not *"the catalog of shareable links"*. The two are unrelated.
+
 ### Return navigation — "Back to Cockpit" (v2.7 "july jitter" M249)
 
 The deep-link catalog is the **outbound** leg: cockpit → a hero's landing surface. Until M249 there was **no
@@ -342,7 +347,81 @@ change, no manifest schema change, zero platform-repo edits:**
 | `GET /seed-generation-manifest.yaml` | (v1.10b M52) The **consolidated** seed+generation manifest as a download (`Content-Disposition: attachment`, verbatim YAML) — the footer **[Download seed manifest]** target, when served (`--seed-manifest`) |
 | `GET /manifest.json` | The **menu** manifest (stories→heroes projection) as a download (`Content-Disposition: attachment`, pretty JSON) — the `[Log in as]` source + the fallback download |
 | `GET /content-manifest.json` | (v2.5 M234) The **content-stories** menu (the M233 `content_products[]` projection) as a download — the 2nd "Content stories" tab's source. Served only when `--content-manifest` was passed (a `404` otherwise) |
+| `GET /go?…` | **The deeplink** — resolve one story to its target, authenticate as its seat, `302` there. See § Deeplinks |
+| `GET /deeplinks.json` | **The deeplink index** — every LANDABLE deeplink on this stack, machine-readable (so automation reads JSON instead of scraping HTML) |
 | anything else | `404` |
+
+> **The router parses the path before matching** (it used to compare the raw `self.path`, so *any* URL with a
+> query string `404`'d — and `/go` is made of query). A side effect worth knowing: `GET /?utm=deck` now serves
+> the page instead of 404ing.
+
+### Deeplinks — one shareable URL per story (org **and** content)
+
+**What it is.** Beside every login CTA — on **both** tabs — sits a **[Copy link]** button. It **copies a URL to
+the clipboard; it never navigates.** Opening that URL (anyone, anywhere with access to the stack) joins the
+cockpit, authenticates as that story's seat, and lands on that story's exact target page. It is "a link that
+clicks that story for you", so deeplinks to stories can be produced and shared centrally.
+
+**The URL contract.** Keys only — never a resolved path, never an identity:
+
+```
+<cockpit-origin>/go?hero=<hero_key>[&story=<story_id>]                          # Org stories
+<cockpit-origin>/go?session=<session_key>&as=player|manager[&product=<id>]      # Content stories
+```
+
+`&as=` is **required** for a content story and is never defaulted: a session has two distinct result surfaces
+and guessing one would land you on the wrong story.
+
+**Resolution happens at REQUEST time, against the manifests the serving cockpit loaded — never baked into the
+link.** That is deliberate and it is what makes central automation possible: the *keys* are preset-declared and
+stable across re-seeds and across stacks, while the ids and ports inside a target path are per-stack (a content
+session's manager path embeds a stack-dependent membership id). So the same `?hero=maya-thriving` works against
+any stack serving that story, and each lands on **its own** stack. A deeplink therefore does **not** pin a
+stack — the origin does.
+
+**The origin is the one that actually worked.** The copy button resolves a *relative* path against
+`location.href`, so the copied URL carries whatever host the presenter reached the cockpit on. Server-side the
+same thing happens for the redirect target: every base is re-based onto the request's `Host` (and
+`X-Forwarded-Proto`), **keeping its port** — ports identify which app (3000 next-web, 3001 hiring, 3077
+academy, 5400 FAPI). A cockpit answers on several names at once; handing out the name baked at launch sends
+browsers to an origin they may not be able to complete a TLS handshake with.
+
+**It fails CLOSED, and that is the load-bearing property.** `/go` resolves against the manifest first and
+dead-ends on anything it cannot resolve to a real target:
+
+| Status | When |
+|---|---|
+| `302` | resolved — `Location` is the FAPI handshake (or, for the academy, its origin plus a `Set-Cookie: e2e_persona=member`) |
+| `400` | malformed — missing/duplicated/conflicting params, or a bad `as` |
+| `404` | unknown key, or a real key with **no landable surface at that vantage** (the message quotes the manifest's own `*_unavailable_reason`) |
+| `409` | ambiguous key across stories/products — lists the disambiguating tuples |
+
+> **Why fail-closed is not optional here.** The fake FAPI **ignores an unknown `__clerk_identity` and
+> establishes a session anyway** — `_ = s.reg.Select(key)` in `clerk-frontend/server.go`'s `handleHandshake`,
+> commented *"unknown key keeps the current seat"*. So a typo'd or stale link that reached the FAPI would
+> silently sign the recipient in **as whoever was last active on the stack**. The cockpit's `404` is the only
+> thing standing between a bad link and a confidently wrong identity.
+
+Non-landable vantages are **omitted** from `/deeplinks.json` and get **no copy button**, rather than being
+offered as links that 404 — the same fail-closed posture the content-manifest projection already takes.
+
+**Clipboard fallback ladder.** `navigator.clipboard` is undefined outside a secure context.
+`http://localhost:<port>` is secure and an https MagicDNS origin is secure, but a **plain-http dotted host** —
+the `tailscale serve` fallback path — is not, and that is exactly the box this feature exists for. Three rungs:
+`navigator.clipboard` → a hidden textarea + `execCommand('copy')` → `window.prompt` with the URL pre-selected.
+**The button never silently does nothing.**
+
+**⚠️ Limitation — one seat per stack.** Deeplinks are shareable, but Clerkenstein holds **one active seat for
+the whole stack**: a single registry `activeKey`, one `signedIn`, one `sessID`. Two people opening two
+different deeplinks against the same stack will **swap identities** — the initial landing is correct for both,
+but the first token refresh re-mints from the single active seat, so one of them silently becomes the other.
+Logout is stack-wide too. Fixing this is a Clerkenstein auth-model change (per-client seat keying threaded
+through the token/me/client surfaces plus the alignment DNA), not a cockpit change — it is deliberately **not**
+attempted here, and the cockpit footer discloses it. For a shared session, give each viewer their own stack.
+
+**Not a liveness signal.** The manifests are pure no-DB projections, so `/go` resolves happily for a stack that
+was never seeded. A clean resolve says the *story is declared*, not that its rows exist — liveness stays with
+`/healthz` and `autoverify`.
 
 ### The 2nd tab — "Content stories" (v2.5 "the playbill" M234)
 
