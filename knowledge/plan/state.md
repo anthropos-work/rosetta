@@ -64,10 +64,8 @@ into M257's gate · the shared-clone race **downgraded** to union-apply + a guar
 variant **CUT** · M256's speed clause re-cut (120 s was impossible — one LLM-bound test is ~120 s of the 228 s)
 · the §8.5 retraction moved to M257 · "keep it secure" given three clauses and an owner.
 
-**Two findings survived and are written into the milestones:** the **fake-FAPI global seat** (one active seat
-per stack, no cookie scoping — M256's parallel lane needs an enabler built, and `storageState` reuse does not
-isolate it), and **M258's missing world contract** (the naive composition leaves a test world behind a
-presenter cockpit of dead CTAs — the state M254 left `billion` in — and the first-draft gate passed anyway).
+**Two findings survived** and are written into the milestones: the **fake-FAPI global seat** (M256's parallel
+lane needs an enabler built) and **M258's missing world contract**. Detail in each milestone's `overview.md`.
 
 ## Headline numbers (M255 close, 2026-07-28)
 
