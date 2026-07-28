@@ -2,19 +2,19 @@
 milestone_shape: section
 milestone: M255
 title: "build-bench & host-headroom (the barrier)"
-status: planned
+status: archived
 release: v2.8 "fast build"
 depends_on: []
 parallel_with: []
 complexity: medium-large
 barrier: true
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-07-28
 ---
 
 # M255 — build-bench & host-headroom  (`section`, HARD go/no-go barrier)
 
-**Status:** `planned` · **Shape:** `section` · **Complexity:** medium-large · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-07-28) · **Shape:** `section` · **Complexity:** medium-large · **Release:** v2.8 "fast build"
 **Depends on:** — (it is the barrier)
 
 > **Revised 2026-07-27** after a 23-agent adversarial plan review. Three deliverables were **cut or replaced**
