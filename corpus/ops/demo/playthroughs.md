@@ -735,6 +735,45 @@ their place on measurement:
   first alone can demonstrate healthy controls over still-vacuous Playthroughs, which is a green test about
   a green test.
 
+**When a Playthrough RESISTS a negative control, suspect the ASSERTION before you suspect the world (v2.8
+M256 iter-19 — the third instance, so it is now the rule).** iter-12 recorded three profile finals as
+uncontrollable and iter-13 refuted it; iter-14 took the same move up to the tenant; iter-19 closed the last
+non-studio gap the same way. `pt-hiring-recruiter-compare` had been priced for four iters as *"needs a
+same-vantage control whose absence half is unmeasured"* — and the real situation was that its final,
+`positionRows().count() > 0`, was **VACUOUS**: measured, the *identical* row anchor renders **20 rows** for
+another tenant's manager on a **different app**, several of them badged the very type under test. A live,
+in-demo, fully-populated page satisfied it. **Finding the control and finding the defect were one
+measurement**, which is why the probe comes before the assertion every time.
+
+Two refinements iter-19 adds to the recipe above:
+
+- **A recorded rejection can be right and still be the wrong QUESTION.** The control file already recorded
+  the obvious vantage as rejected — a Workforce-org manager driven at the hiring base **ejects the browser to
+  production**, so the absence is true and meaningless — and iter-19 re-confirmed it. Keeping that note was
+  correct; it was also why the gap survived four iters. What unlocked it was not overturning the rejection
+  but **inverting the question**: not *"what does a non-recruiter see on the hiring board?"* but *"what does
+  the hiring board's own locator set find on a non-hiring tenant's own grid?"* Same locators, live page,
+  outcome legitimately absent.
+- **Define a complement by EXCLUSION, never by enumeration.** The type-purity half asserts "no row badge is
+  anything other than Hiring" (`hasNotText`), not `/^(Assessment|Training|Interview)$/`. An enumerated
+  "everything else" is an assertion with an expiry date — it silently stops discriminating the day a new
+  variant ships, which is the quietly-matches-nothing shape this milestone found 17+ times.
+- **And a seed fact whose home is another MODULE still gets fenced.** The asserted shared-position count is
+  not in the seed YAML at all — it is a code-owned Go constant in `stack-seeding`. That is the *easiest* kind
+  of fact to leave dangling, because nothing in the consuming module's own directory changes when it drifts.
+  The fence parses that file directly, fail-closed on a rename. Extend the reconciliation to the fact's real
+  source; do not downgrade the assertion because the source is inconvenient.
+
+**A styled string and a DOM string are different strings — `innerText` applies CSS `text-transform`,
+`textContent` does not, and Playwright matches `textContent` (v2.8 M256 iter-19).** A type badge that
+*renders* `HIRING` holds `Hiring` in the DOM, uppercased purely by `text-transform: uppercase`. iter-19's
+probes read `innerText`, so the locator built from that reading was `getByText(/^HIRING$/)` — plausible on
+screen, **impossible in the DOM** — and it failed the sharpened final *and its own negative control* on the
+first live run. The general form: **a probe must read the same property the locator will match.** `innerText`
+is the right tool for "what does the user see" and the wrong one for "what will my selector find"; the two
+diverge on `text-transform`, `::before`/`::after` content, and visibility-collapsed whitespace. Match
+case-insensitively when a badge's case is a styling decision.
+
 **Two stat cards in the same app can have OPPOSITE shapes — measure, don't infer from the sibling page object
 (v2.8 M256 iter-14).** The profile stat card renders label-and-value as one element (`"Verified Skills\n8"`),
 so its accessor matches the label and parses the number from the same node. The Workforce dashboard's card is

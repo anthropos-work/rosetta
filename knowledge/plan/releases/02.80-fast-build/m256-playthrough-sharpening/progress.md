@@ -340,6 +340,26 @@
   real. 5 mutants RED; 178 passed ×3 cold reset-to-seed, 0 flake; controls 22 of 25 unchanged — see
   [`iter-18/progress.md`](iter-18/progress.md)
 
+- iter-19 (tik, `closed-fixed`): **negative controls 22 → 23 of 25 — the TERMINAL value** — and the last
+  uncontrolled non-studio Playthrough turned out not to be merely uncontrolled but **VACUOUS**.
+  `pt-hiring-recruiter-compare`'s final was `positionRows().count() > 0`, and Phase A measured **20 rows
+  through the IDENTICAL `tbody.tbody > tr.tr` anchor** for Org A's manager on the WORKFORCE app — several of
+  them badged Hiring. A live, in-demo, different-tenant, different-app page satisfied it, so **finding the
+  control and finding the defect were the same measurement** (D91) — the third time in this milestone
+  (iter-13 profiles, iter-14 tenants, here). Re-aimed at three facts together — the recruiter's own org
+  identity, exactly the seeder's `reservedHiringSimRefs` (5) shared positions, and **type PURITY** (every row
+  Hiring, none Assessment/Training) — a non-hiring tenant's activity grid falsifies all three at once. The
+  vantage matters: the obvious one was **already recorded as rejected** (a Workforce manager on the hiring base
+  ejects to production — re-confirmed), and what unlocked it was not overturning that but **inverting the
+  question it answered** (D92). One defect of my own, caught by the stack rather than review: the type badge
+  *renders* `HIRING` but its DOM text is `Hiring` — CSS `text-transform` — and **Playwright matches
+  `textContent`, not `innerText`**, so the first live run failed both the final and its own control on a
+  matcher that could never match (D93). `HIRING_SHARED_POSITIONS` is fenced against a **Go constant in another
+  rext module**, fail-closed (D95), and the registry floor is finally raised 20 → **23 and stated as terminal**
+  (D96) — the remaining 2 are the studio pair, correctly withheld behind `FIX-M256-studio-false-green`, since a
+  control over a known false green would certify it. 7 mutants RED; 181 passed ×3 cold reset-to-seed, 0 flake
+  — see [`iter-19/progress.md`](iter-19/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
