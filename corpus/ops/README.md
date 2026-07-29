@@ -2,6 +2,29 @@
 
 This directory contains guides for operating the Anthropos platform locally.
 
+> ## ⚠️ Monolith merge — read before following any stack runbook
+>
+> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms`
+> (cms-in-app v8.0, app v1.360.0) are all **folded into `app`** and run in-process as the
+> single `backend` service. What that changes for ops:
+>
+> * There is **no `cms`, `jobsimulation`, `skiller`, `skillpath` or `roadrunner` container**,
+>   profile, port, or subgraph. Use `backend` for all of them (`make logs S=backend`,
+>   `make dev S=backend`).
+> * The federation composes **one** subgraph. Compose builds `graphql` from the **production**
+>   `graphql-wundergraph/Dockerfile`, so it uses the committed `schemas/backend.graphqls`.
+> * `app` is the **only** repo with migrations. All application tables — taxonomy, skill-path
+>   sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables — live in
+>   **`public`**. The old per-service schemas are legacy and non-authoritative.
+> * The in-process cms activates on `DIRECTUS_BASE_ADDR`; `DIRECTUS_WEBHOOK_SECRET` is now
+>   **required** (the Directus webhook fails closed without it). The Directus cache lives in
+>   `REDIS_CMS_CACHE_INDEX` (5). Judge0 is called directly via `JUDGE0_BASE_URL`.
+>
+> **The stack runbooks in this directory have NOT all been re-verified against the merged
+> stack.** Where one names a per-service container, port, or profile for a folded service,
+> read it as `backend`. See [`../services/backend.md`](../services/backend.md) for the
+> current shape.
+
 > **Corpus vs. extensions boundary:** rosetta is a read-only doc corpus + dev-env skills; ALL executable tooling that operates a spawned stack lives in rosetta-extensions — authored in `.agentspace/rosetta-extensions/`, tagged, and consumed per-stack via a pinned-tag clone.
 
 ## Available Operations

@@ -2,10 +2,12 @@
 
 ## Role & Responsibility
 
-> **⚠️ ORPHANED — nothing calls this service any more (verified v2.5 M231 KB-6; re-verified v2.7 "july jitter"
+> **⚠️ MERGED INTO `app` / ORPHANED — nothing calls this service any more (verified v2.5 M231 KB-6; re-verified v2.7 "july jitter"
 > M247 against the CONSOLIDATED platform — the ~386-commit `app` bump).** Code execution moved **in-process into
-> jobsimulation**: `jobsimulation/internal/runner/runner.go` is an in-process Judge0 client whose own header comment
-> reads *"formerly the standalone 'roadrunner' service"*. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
+> jobsimulation** (`jobsimulation/internal/runner/runner.go`, an in-process Judge0 client whose own header comment
+> reads *"formerly the standalone 'roadrunner' service"*) — and with the **jobsim-in-app** merge that runner now
+> lives inside **`app`**. `backend` reads `JUDGE0_BASE_URL` and calls Judge0 directly; there is no roadrunner
+> service in production and it is not part of the platform stack. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
 > / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
 > on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
 >

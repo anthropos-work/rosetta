@@ -30,7 +30,7 @@ customer-scoped rows as if they were shareable reference data.**
 1. **Read-only + low-impact.** SELECT only; schema-qualified; always `LIMIT`. For sizing/shape prefer
    **catalog-only** queries — `pg_class.reltuples`, `pg_total_relation_size(oid)`, `information_schema.columns` —
    which are instant and scan nothing. Avoid `COUNT(*)` / full scans on the GB tables (`public.skill_embeddings`,
-   `public.skills`, `public.ai_usages`, `jobsimulation.interactions/validation_*/activity_events`). The snapshot
+   `public.skills`, `public.ai_usages`, `public.interactions/validation_*/activity_events` — the former `jobsimulation` tables). The snapshot
    **capture-source policy** ([`snapshot-spec.md`](snapshot-spec.md)) generalizes this with a source-pluggable
    precedence (M9a-D3): **ingest an existing prod `pg_dump` [default, zero new prod load]** → **safe throttled
    primary read [fallback]** (MVCC means a read-only `SELECT`/`COPY` never blocks writers — off-peak + chunked +
@@ -43,7 +43,11 @@ customer-scoped rows as if they were shareable reference data.**
 
 ### The public-vs-customer split (prod-verified 2026-06-06, catalog-grounded)
 
-> *(Note: with the July 2026 skiller→app merge the taxonomy tables moved to the `public` schema — same table names, same split; the old `skiller` schema is legacy, no longer authoritative. Counts below are the 2026-06-06 verification.)*
+> *(Note: the monolith merges moved **every** application table into the `public` schema — same table names, same
+> public/customer split. Taxonomy came in with skiller→app (July 2026); skill-path sessions with skillpath-in-app;
+> the 23 simulation run-state tables with jobsim-in-app; the similarity + Studio tables with cms-in-app v8.0. The
+> old `skiller`, `skillpath`, `jobsimulation` and `cms` schemas are legacy and no longer authoritative. Counts below
+> are the 2026-06-06 verification.)*
 
 | Surface | public (`org_id IS NULL`) | customer (`org_id` set) | snapshot rule |
 |---|---|---|---|
@@ -52,12 +56,12 @@ customer-scoped rows as if they were shareable reference data.**
 | `public.specializations` | 1,442 | 154 | capture public |
 | `public.categories` | 22 | 42 | capture public |
 | `public.{skill,job_role}_embeddings` | — (no org col) | — | via public parent; rebuild index on replay |
-| `cms.studio_documents` | **0** | 3,060 | **exclude (all customer)** |
-| `cms.studio_tasks` | **0** | 2,353 | **exclude (all customer)** |
-| `cms.similarities` | 274 | 733 | public only |
+| `public.studio_documents` *(was `cms.`)* | **0** | 3,060 | **exclude (all customer)** |
+| `public.studio_tasks` *(was `cms.`)* | **0** | 2,353 | **exclude (all customer)** |
+| `public.similarities` *(was `cms.`)* | 274 | 733 | public only |
 
-The **public content template library** (global simulations/skill-paths) is **not** in the app-Postgres `cms`
-schema — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
+The **public content template library** (global simulations/skill-paths) is **not** in any of the merged app
+tables — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
 `content.anthropos.work`, but its rows are reachable read-only via the wired `postgres` MCP / `marco_read`, NOT a
 separate Postgres — M10-D2 corrected the spike's "separate store" inference). That `directus` schema's public subset
 (predicate `private=false AND tenant_id IS NULL AND status='published'`) is the v1.2 M10 content-snapshot source —
@@ -77,7 +81,7 @@ ORDER BY pg_total_relation_size(c.oid) DESC;
 
 Prod headline (2026-06-06, measured pre-merge in the then-live `skiller` schema; the same tables now live in `public`): the taxonomy surface ≈ **2.1 GB** (the v1.2 taxonomy snapshot surface) — `skill_embeddings` 692 MB
 (but heap only 3.3 MB → ~689 MB is the **pgvector index** → rebuild on replay, don't transport it), `skills`
-436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The `cms` content tables are tens of MB.
+436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The former-`cms` content tables (now in `public`) are tens of MB.
 
 ## See also
 - [`safety.md`](safety.md) — the tooling's consolidated read-side + write-side safety contract (this public-vs-customer

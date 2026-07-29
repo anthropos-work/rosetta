@@ -8,16 +8,21 @@ For the *categorised* view (tiers, ports, profiles, which repos are cloned where
 [`../architecture/service_taxonomy.md`](../architecture/service_taxonomy.md); for how the
 services talk to each other see [`../architecture/dependency_map.md`](../architecture/dependency_map.md).
 
+> **⚠️ `app` is the backend monolith.** Five services in this index — skiller, skillpath,
+> roadrunner, jobsimulation and cms — are **folded into `app`** and no longer deploy
+> separately. Their docs are kept for domain knowledge and carry a merge banner at the top.
+> Read [`backend.md`](backend.md) for the current shape.
+
 ## Core backend services (Tier 1 — Go)
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`backend.md`](backend.md) | Backend (`app`) | The main API gateway + user/org management. **Also owns the skills domain** (taxonomy, assessment, matching, embeddings) since the July 2026 skiller merge, the **AI-readiness** workforce subsystem, the academy store, and AI Labs LabSession |
-| [`cms.md`](cms.md) | CMS | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline |
+| [`backend.md`](backend.md) | Backend (`app`) | **The monolith.** Main API gateway + user/org management, **plus** the folded skiller (taxonomy, matching, embeddings), skillpath, jobsimulation, cms and roadrunner domains — and the AI-readiness subsystem, academy store, AI Labs LabSession |
+| [`cms.md`](cms.md) | CMS — **merged into `app`** | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline. Folded in at cms-in-app v8.0 (app v1.360.0); teardown **M810** |
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
-| [`jobsimulation.md`](jobsimulation.md) | Jobsimulation | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content |
+| [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; teardown **M810** |
 | [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
-| [`roadrunner.md`](roadrunner.md) | Roadrunner | Code-execution proxy to the Judge0 sandbox. **⚠️ ORPHANED** — execution moved in-process to `jobsimulation/internal/runner/`; nothing calls it |
+| [`roadrunner.md`](roadrunner.md) | Roadrunner — **merged into `app`** | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine; `backend` calls Judge0 directly via `JUDGE0_BASE_URL` |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
 | [`messenger.md`](messenger.md) | Messenger | Centralized transactional email via Brevo + Liquid templates. Opt-in `messenger` profile; other services fire an RPC rather than calling Brevo |
 | [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync | One-directional background pipeline, Postgres `public` → Customer.io, for marketing automation. Opt-in profile; built from a GitHub URL, not cloned |
@@ -27,10 +32,10 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 3 subgraphs (backend/app, jobsimulation, cms) |
+| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — **one** subgraph (`backend`) since cms-in-app |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
-| [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the cms container** as `cms/studio/` |
+| [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the `app` (backend) container** since cms-in-app |
 | [`ant-academy.md`](ant-academy.md) | Ant Academy | Internal Next.js 16 + Expo learning portal for `@anthropos.work` staff. Vercel-deployed, native-only, DB-authoritative catalog |
 
 ## Cross-cutting subsystems & domains

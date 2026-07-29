@@ -1,14 +1,52 @@
 # CMS Service
 
+> ## ⚠️ Merged into `app` — no longer a standalone service
+>
+> As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
+> **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
+> separate service — not in the local compose, not in the supergraph. It is the fourth and last engine
+> consolidated into `app`, after [skiller](./skiller.md), [skillpath](./skillpath.md) and
+> [jobsimulation](./jobsimulation.md).
+>
+> **The Directus content edge stays external.** The merge moved the *Go service*; the authored content still
+> lives in Directus at `content.anthropos.work`, which `app` reads over HTTP.
+>
+> Where everything went:
+>
+> * **Domain** — `app/internal/cms/` (directus, similarity, studio, library, importer/exporter, aivideo,
+>   contentread, jobsimimport, rpcsrv, worker, …), wired from `app/internal/cms/wiring.go`.
+> * **Data** — `similarities`, `similarity_categories`, `similarity_features`, `similarity_skills`,
+>   `studio_documents`, `studio_tasks` were re-created in the **`public` schema** by
+>   `app/terraform/migrations/20260724132049_cms_data_model.sql`, with the **same table names**. The old `cms`
+>   DB schema is **legacy — no longer authoritative**.
+> * **RPC** — `CMSService` is served on `app`'s single RPC mux. `messenger` reaches it at
+>   `CMS_RPC_ADDR=http://backend:8083` locally / `http://backend.internal.anthropos:8081` in production. `app`
+>   itself makes **no** outbound cms RPC.
+> * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph, taking the **supergraph from 2
+>   subgraphs to 1**. Public (unauthenticated) library content queries are preserved — see app v1.360.2/v1.360.3.
+> * **Events** — `app` owns the `CMS_STREAM` subscriber. The folded similarity re-index + Studio handlers are
+>   merged onto app's **existing** CMS subscriber via `.AddHandler(...)`; they act on disjoint rows, so they
+>   compose. Directus webhooks land on `POST /api/webhook/directus`, which now **fails closed** without
+>   `DIRECTUS_WEBHOOK_SECRET` (the standalone webhook was unauthenticated).
+> * **Caching** — the Directus item cache still lives in its own Redis DB, `REDIS_CMS_CACHE_INDEX` (5).
+> * **Studio** — the Python `anthropos-studio-room` project is now pulled into the **`app`** image via the CI
+>   `additional_repo` mechanism (app v1.360.1), the same way `cms` used to do it.
+> * **Infrastructure** — `module.cms_euwest1` is **still declared** in
+>   `infrastructure/terraform/production/services.tf` as the **rollback path** and takes no traffic. Teardown
+>   is **M810**.
+> * **Repo** — the `cms` git repo still exists but is **frozen/legacy**; make changes in `app`.
+>
+> For current documentation of this domain, see [Backend (`app`)](./backend.md).
+
 ## Role & Responsibility
 
 The CMS service is the **content layer of the platform** — it owns the authored, versioned, published **CONTENT / DEFINITIONS** and serves them to everyone else. It does three things:
 
 1. **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — **skill paths** (title, description, cover/video, curators a.k.a. "Meet the Experts", library categories, **chapters → steps**, the job-simulation steps inside a chapter, skills-to-verify, settings, versioning — the `skill_paths` Directus collection), **job-simulation blueprints** (the `simulations` collection + `sequences`, roles, tasks, validation criteria), and the **content library** (`library_categories`, `library_macro_categories`, `resource`) — all proxied through Directus with Anthropos-specific business logic on top.
 2. **Owns the Studio data model** — `StudioDocument` (simulation blueprints), `StudioTask` (generation jobs), and related entities for the content-authoring workflow.
-3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is cloned into `cms/studio/` and baked into the cms Docker image. The Go service dispatches generation work; the Python code executes it against OpenAI / Anthropic / Mistral.
+3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against OpenAI / Anthropic / Mistral.
 
-This last point is the structural shift: **studio-room is no longer a standalone deployable**. It lives inside the cms container and runs as a subprocess invoked by the Go service.
+This last point was the first structural shift: **studio-room is not a standalone deployable**. Since cms-in-app it rides in the **`app`** image rather than the cms one.
 
 > [!IMPORTANT]
 > **CMS owns content; the runtime engines own state.** Do not conflate the **skill-path engine** with skill-path content, or the **`jobsimulation`** service with simulation content. Those are **runtime/session engines** that hold *no* content and reference CMS artifacts **by ID**:
