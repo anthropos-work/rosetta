@@ -280,6 +280,37 @@
   *investigate-or-verdict*) is **routed forward with its shape priced**, which is why this closes
   `-partial`. — see `iter-15/progress.md`
 
+- iter-16 (tik, `closed-fixed-partial`): **D-v28-5 is root-caused and half-fixed — and the cause was a mock
+  listening on a path its client never uses, with a unit test drilling the same unused path.** Reading the
+  surface first narrowed it in ten minutes: the cockpit has **no logout affordance at all**, so "logout to
+  cockpit" is the app's `/logout` (`useClerk().signOut()` → `router.replace('/login')`). Then measured in a
+  real browser, four steps: after `/logout` the browser lands on **`/home`** (not `/login`), **every** Clerk
+  cookie is still present, `/v1/me` still answers **200**, and re-visiting `/profile` serves the
+  logged-out hero's own profile (`"Pat Ellis"`=1) — the user's report, reproduced. The request trace named the
+  cause: **clerk-js 5.127.1 signs out with `POST /v1/client/sessions?_method=DELETE`** (the method-override
+  convention it also uses for `/v1/environment?_method=PATCH`), the mock registered sign-out on
+  `POST /v1/client/sessions/{id}/remove`, that collection pattern **was not on the mux**, there is **no
+  catch-all**, and **nothing in the server read `_method`** — so the request 404'd and `handleSignOut`, which
+  is correct code, **never ran**. And `TestServer_signOutClearsSession` had been driving that same unused path
+  since the mock was written: *a green test about the mock talking to itself, on the one behaviour a user
+  complained about* — the **18th** could-not-fail check of this milestone and the first inside Clerkenstein,
+  where the class is structurally easiest to commit because both ends of the conversation are ours (D79).
+  Fixed **failing-test-first** (RED at 404 before a line of fix), additively (the legacy route kept; Go 1.22's
+  mux prefers the specific `/{id}/…` patterns), with a **second** test pinning that `_method` is a DISPATCH
+  KEY so a bare `POST /v1/client/sessions` does **not** sign out — otherwise "register the path" becomes "any
+  POST logs you out" (D80). **Stated honestly as HALF a fix:** the same trace shows clerk-js clears `__session`
+  but leaves `__client_uat`, so the middleware bounces to the handshake
+  (`__clerk_hs_reason=client-uat-but-no-session-token`) and `handleHandshake` calls `establishLocked()`
+  **unconditionally** — the session returns regardless. The remaining half is **specified, not open-ended**
+  (D81: *an explicit sign-out is sticky until an explicit login* — a handshake with `__clerk_identity` always
+  establishes; a bare one must not resurrect an ended session) and is routed to be proven **together** with
+  this half on one `fake-fapi` rebuild, because iter-07 D31's rule stands: an unverified lifecycle fix on a
+  handler that sits under every login in the suite is the worst outcome available. Also recorded: the suite was
+  **deliberately not run as evidence** — `demo-2`'s container is the previously-pinned binary, so it would have
+  gone green and proven nothing (D82) — and **no `alignment/` gene references sign-out**, so the mock's
+  measured fidelity is untouched (checked, not assumed). `clerkenstein` all packages ok / 0 FAIL, `alignment`
+  and `playthroughs` 0 FAIL, gofmt + build clean. — see `iter-16/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -450,7 +481,8 @@ Fate-3 items land here.
 | `PT-M257-self-evaluation` | **Re-home recommendation (iter-09 D39).** `profile-skills.self-evaluation.UC1`'s M206 reservation is WEAK: its curated final is persist-then-observe (`user_skill_evidences.user_level`), needing no LLM, no integration, no fixture — exactly the MUTATING shape clause 2 hunted for four iters. Re-homing a reservation is a **roadmap decision**, so it is recorded as a recommendation, not actioned. | M257 (user/roadmap call) |
 | `PT-M257-talk-to-data` | `talk-to-data.query.UC1` — real + wired (`app/internal/askengine`), but needs the `ask_*` tables migrated on the demo **and live Bedrock credentials**. An unavailable credential is not something an iter can fix; it also belongs in the separately-budgeted integration lane, not the timed median. | M257+ |
 | `FIX-M256-cockpit-manifest-drift` | **NEW (iter-10 D41), and it BLOCKS D-v28-5.** `run-playthroughs.sh --reset` re-exports `fake-fapi-roster.json` (M211 iter-16) but **not** `cockpit-manifest.json`, so on any Playthrough-reset demo the cockpit lists heroes that no longer exist and every seat selection **silently** falls back to the last-active seat (`clerk-frontend/server.go:347-349`). 23 Playthroughs stay green while the human-facing cockpit is entirely stale. Fix shape: re-export the cockpit manifest alongside the roster so the two artifacts move together — **verify on a live bring-up**, and do not regress the roster refresh. Separately consider making the unknown-key fallback **loud** on a demo. | **next iter** |
-| `D-v28-5-cockpit-logout` | **BLOCKED on the above (iter-10 D42).** A gate clause in its own right, still unfixed after 10 iters — but no longer merely unstarted: it is **not measurable** until the cockpit can select a current hero. The double-click symptom is plausibly a *consequence* of the drift (a presenter who does not get the hero they clicked clicks again) — plausible, **unmeasured**. Re-measure on a cockpit whose manifest matches its roster BEFORE designing a fix. By the user's explicit call it gets **no Playthrough**. | after the drift fix |
+| `D-v28-5-cockpit-logout` | **HALF DONE (iter-16), and the remaining half is SPECIFIED.** Root cause: clerk-js 5.127.1 signs out via `POST /v1/client/sessions?_method=DELETE`; the mock registered `/{id}/remove`, the collection pattern was not on the mux, there was no catch-all and nothing read `_method` — so `handleSignOut` was dead code and `/v1/me` stayed 200 through a whole logout, while the unit test drove the same unused path (D79). **Fixed + test-proven RED→GREEN.** Remaining: implement **D81** — `handleHandshake` must not auto-establish on a *bare* handshake after an explicit sign-out (a handshake carrying `__clerk_identity` always establishes, which is the cockpit's and every Playthrough's path). Then prove BOTH halves on **one** rebuild: push the tag, re-pin `stack-demo/rosetta-extensions`, rebuild the `fake-fapi` container (the iter-11 precedent), and re-run iter-16's four-step browser measurement — step 3 must bounce to `/login`, step 4 must name the right hero on the FIRST click. Watch `autoverify`, which may handshake bare. **Still no Playthrough** (the user's explicit call). | **iter-17+** |
+| ~~`D-v28-5-cockpit-logout` (iter-10 framing)~~ | **(Superseded by the row above.)** **BLOCKED on the above (iter-10 D42).** A gate clause in its own right, still unfixed after 10 iters — but no longer merely unstarted: it is **not measurable** until the cockpit can select a current hero. The double-click symptom is plausibly a *consequence* of the drift (a presenter who does not get the hero they clicked clicks again) — plausible, **unmeasured**. Re-measure on a cockpit whose manifest matches its roster BEFORE designing a fix. By the user's explicit call it gets **no Playthrough**. | after the drift fix |
 | ~~`BLOCKED-M256-refusal-surface`~~ | **DONE (iter-11) — clause 2's `blocked` sub-clause MET, 0 → 1.** Answered exactly as the routing predicted the *surface* but not the *mechanism*: the deny modal was right, and the way to reach it was a **seed** change, not a test one — `sim_feature_disabled: true` on `pt-world` Org B withholds the g3 grant so Sentinel's own enforcer refuses (`pt-aisim-org-feature-blocked`). It also exposed that `--reset` had been leaking g3 grants for four releases. Original note kept for the record: | closed iter-11 |
 | ~~(original)~~ | Clause 2's `>= 1 blocked` outcome, then **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
