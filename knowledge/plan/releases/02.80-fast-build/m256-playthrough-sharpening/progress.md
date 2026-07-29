@@ -360,6 +360,23 @@
   control over a known false green would certify it. 7 mutants RED; 181 passed ×3 cold reset-to-seed, 0 flake
   — see [`iter-19/progress.md`](iter-19/progress.md)
 
+- iter-20 (tik, `closed-no-lift`): **`org-admin.roles.UC1`'s fifteen-iter-old diagnosis was wrong, and the
+  real cause is AUTHORIZATION.** iter-05 parked it on the FORM (*"`Save` is enabled with the form incomplete
+  and fails silently with an EMPTY alert region"*) behind an LLM `Generate` leg. Nobody had looked at the
+  network. Driven: `createJobRole` **IS SENT** and comes back **`200` with `"unauthorized: forbidden"`** —
+  and `resolver_skiller_taxonomy_authz.go:75` names the permission, `OrgFeatureTaxonomyWrite`, which the
+  running Sentinel policy grants to **NO role at all** while granting its `:read` counterpart to four
+  (**D97**). Two of iter-05's claims are retracted: `Save` disables correctly when empty, and the LLM route
+  was never needed — the "Start from scratch" mode is **already selected on open** (its own inline style says
+  so, before and after clicking it). Independently, **a user-facing product defect (D98): a refused mutation
+  renders as absolutely nothing** — no alert, no toast, dialog just stays open — which is precisely why the
+  form got blamed for fifteen iters. **NOT landed, deliberately (D99):** the mechanical fix is one policy row
+  and the seeder could write it, but a Playthrough that passes only because we granted ourselves the
+  permission under test proves nothing about the product — iter-07's rule as sharpened by iter-17, one layer
+  below the DOM. Escalated with both options, their gate consequences, and the single missing fact (does a
+  production org carry `org:feature:taxonomy:write`?). No shipped code changed; 181 passed, 0 failing on a
+  confirming cold run — see [`iter-20/progress.md`](iter-20/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |

@@ -81,3 +81,42 @@ from the authoring copy with `stack-demo/rosetta-extensions/demo-stack/stacks/de
 durations from `report/last-run.json`, the median over the **non-LLM** subset, the studio lane separately,
 the suite wall-clock, and the environment. Do **not** change harness code in iter-02 — a baseline measured
 on already-modified code is not a baseline.
+
+---
+
+## USER-BLOCKER — 2026-07-29 (iter-20): `org-admin.roles.UC1` needs a disposition, not more debugging
+
+Surfaced per Phase 5 § 4 (*"an architectural question whose answer changes the iter's planned fix shape"* —
+its canonical example is literally *"is this a documented divergence or a real bug?"*). Full evidence in
+[`iter-20/decisions.md`](iter-20/decisions.md) D97–D99.
+
+**The finding.** The create-role `Save` was recorded for fifteen iters as a form/no-op defect. It is an
+**authorization denial**: `createJobRole` is sent and Sentinel returns `unauthorized: forbidden` inside an
+HTTP **200** GraphQL error body. The resolver checks `permission.OrgFeatureTaxonomyWrite`; the running policy
+grants `org:feature:taxonomy:read` to **four** roles and `org:feature:taxonomy:write` to **none**.
+
+**Why it is not simply fixed.** One policy row would land the Playthrough, and the seeder is already the
+right place to write per-membership feature grants. But granting ourselves the permission whose enforcement
+is the thing under test **manufactures the capability** — iter-07's rule as sharpened at iter-17, one layer
+below the DOM. A green there would be a green about our own grant.
+
+**The two options, and what each costs the gate:**
+
+| | consequence for the exit gate |
+|---|---|
+| **(a) platform authorization gap** — report it; the UC becomes the milestone's **first** `unimplementable-without-platform-edit` | clause 3's landed half tops out at **org-admin 3 of 4** with a written verdict; `unimplementable` 0 → 1 (the re-scope trigger is **> 3**, so it does **not** fire) |
+| **(b) the demo's policy is incomplete** and production grants it another way | the seeder writes the grant; the UC lands as an **8th** mutating Playthrough and org-admin completes **4 of 4** |
+
+**The single fact that decides it:** does a real production org carry an `org:feature:taxonomy:write` grant?
+One Sentinel policy read — which is a **production** read and therefore behind the standing sign-off rule, so
+it was not taken.
+
+**Recommendation, held loosely:** (a). The product ships a "New Role" button, a create dialog and a
+`createJobRole` mutation that no role in the policy can execute, and the refusal is invisible in the UI —
+which reads like a gap rather than a demo artefact. It is circumstantial, and this milestone's record is full
+of confident readings that measurement overturned (two of them inside iter-20 itself), so it is put to the
+user rather than assumed.
+
+**Separately and unconditionally: `DEFECT-M256-silent-forbidden-mutation`** (D98) should be reported whichever
+option is chosen — a refused mutation rendering as no user-visible error at all is a defect on its own terms,
+and worth sweeping across the other org-admin writes.
