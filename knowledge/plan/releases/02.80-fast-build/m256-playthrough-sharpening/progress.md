@@ -176,6 +176,44 @@
   (the now-bounded 240 s hang). rext tag `fast-build-m256-negctl-crossvantage`, **on origin**. — see
   `iter-12/progress.md`
 
+- iter-13 (tik, `closed-fixed`): **negative controls 13 → 16 of 24 — by refuting the premise that the nine
+  structural finals could not have one.** iter-12's measurement was right (a stat LABEL / a chart count / a
+  "Work" section renders for every member, so no vantage can falsify it, and no suppression switch can exist);
+  the *reading* of it was wrong. Those finals were structural **because they were written structurally**. Phase
+  A measured three independent hero-specific facts on the same two surfaces, each reading **0** for the same
+  contrast seat that could not falsify the structural version: the rendered `Verified Skills` stat equals the
+  seeded `skills.verified` **exactly** (8 / 3 / 2 across the three seats) and `All Skills` equals seeded
+  `verified + mapped` **exactly** (8+12=20, 2+8=10 — two heroes, independently); the `"<role> at <org>"`
+  context line; the `My Closest Roles` recommendation, which renders only once the matcher has enough VERIFIED
+  evidence (present for the 8-verified hero, absent for the 3- and 2-verified seats). So the three finals were
+  re-aimed — the old structural ones **retained as intermediates** — and the numbers are **machine-linked to
+  the seed** by a net-new `lib/seed-facts.ts` + a **fail-closed** `seed-facts-fence.unit.spec.ts` (its FIRST
+  test asserts the parse is not vacuous, because a reconciliation over an empty regex parse passes every
+  comparison silently — the milestone's signature defect). **10 mutants RED**, including each Playthrough
+  driven on the contrast seat and each control assertion individually. **The iter shipped a false RED and
+  caught it by watching:** `\b` in a `hasText` regex is unreliable because `textContent` concatenates sibling
+  nodes with no separator (`…Meridian LabsFeb 2024 - Present…`), so both new conjunction locators read 0 on a
+  page that plainly rendered the thing — the same constant is safe under `getByText` and broken under
+  `hasText`, now documented at both constants and pinned by a test that holds the bug.
+  **AND the `pt-assignment-assign` flake is ROOT-CAUSED AND FIXED, so clause 1's flake half is met by a fix
+  rather than a favourable batch.** The pre-fix batch was `165 passed` ×2 then **1 failure on run 3**. Three
+  hypotheses were refuted by measurement — iter-11's bloated policy (`g3 = 171` for 191 memberships, **0
+  orphans**, exactly as designed), the antd `maskClosable` re-click (it *throws* on the mask; the modal
+  survives), and `press('Enter')` with the dropdown closed (`aria-expanded` stays true) — plus the modal
+  **surviving 151 s unattended**. The trace named the real one: the modal is **ROW-SCOPED** (*"Assign Skill
+  Path to `<member>`"*, rendered by the row's action cell), it opened 2.2 s after the first row painted while
+  the table was still settling, the settling re-render detached the Select's input and **took the modal with
+  it**, and the remaining time decomposes exactly as the ladder's own bounds — 3 × 15 s + 20 s + 15 s = **84 s,
+  the reported duration**. *Every bound in that ladder was correct; bounding makes a stuck attempt yield, it
+  does not make a **dead subject** detectable.* Fixed in three parts (a `dialogIsOpen()` re-open guard at the
+  top of every attempt; `waitForMembersTableSettled()` so it does not race; and `openBuilderAndPickSkillPath()`,
+  because once a modal can be re-opened the target must be read from the builder that **accepted** the pick or
+  the read-back can assert the wrong row). Recovery proven **deterministically** — the exact failing state
+  reached with a real user action (the modal's own Cancel; `Escape` is disabled, measured), then the ladder
+  re-opened the builder and the pick took. **Post-fix gate: `166 passed` ×3 consecutive cold reset-to-seed
+  runs, rc 0, `ptreport` 24 passing / 0 failing / 7 TODO / 0 unimplementable, 0 flake**; the assign Playthrough
+  6.9–11.5 s where it had spiked to 84 s. — see `iter-13/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -190,7 +228,27 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-12 — THE CURRENT FIGURE, and it is a NON-VERDICT (see iter-12 D60).** Six full-suite runs across
+**Post-iter-13 — THE CURRENT FIGURE.** Post-fix batch, n=3, same host, cold reset-to-seed each:
+
+| statistic | run 4 | run 5 | run 6 | median (n=3) | range |
+|---|---:|---:|---:|---:|---:|
+| all 22 non-studio (**REPORTED, per D-v28-13**) | 1.2327× | 1.1124× | 0.8419× | **1.0523×** | 1.46× |
+| ORIGINAL 16 only (**the control subset**) | — | — | — | 0.9321× | — |
+
+`166 passed` ×3, **0 flake**, rc 0 ×3. Suite wall-clock 2.1 / 1.9 / 1.5 m. The pre-fix batch (runs 1–3, which
+carried the assign flake) read median **0.9170×**, range 0.8118×–1.1425×, original-16 **0.7517×**.
+
+**This is more evidence for the D-v28-13 recut, not against it.** The ORIGINAL-16 control subset — code no
+iter has touched since iter-03 — has now been observed at **0.5281× · 1.0762× · 0.7517× · 0.9321×** across
+batches on one host. A gate at 0.79× sits inside its own noise floor, exactly as D-v28-13 recorded. **iter-13
+landed no speed mechanism, so clause 1's leg half has nothing new to measure**; its flake half is **MET** —
+and met because the flake was diagnosed and fixed (iter-13 D65), not re-rolled.
+
+`ptreport`: **24/31 passing, 7 `[TODO]`, 0 failing, 0 unimplementable.** `@pt-mutation` registry, computed:
+**MUTATES=6 READ-ONLY=16 UNKNOWN=2**. `@pt-negative-control` registry, computed: **16 of 24** (8 self-declared
++ 8 via the control spec). **`blocked` outcomes: 1.**
+
+**Post-iter-12 (superseded as the current figure; the escalation it raised still stands) — a NON-VERDICT (see iter-12 D60).** Six full-suite runs across
 iters 11–12 on the same host, with the ORIGINAL 16 specs unchanged since iter-03:
 
 | statistic | min | max | spread | median (n=6) | gate |
@@ -269,7 +327,8 @@ Fate-3 items land here.
 | `PT-M256-orgadmin-member-tag` | **SHARPENED (iter-05 D19).** Unreachable through 4 measured routes: dropdown intercepts pointer events over its own modal (invisible to actionability checks); `Escape` closes the MODAL not the dropdown; an in-modal outside-click leaves 9 menuitems open; `check({force:true})` flips the DOM but not antd's React state (submit stays disabled, tally stays 0). Untried: the `<label for=…>` element; a route that never opens a dropdown. If both fail, declare **`unimplementable-without-platform-edit`** with the four-attempt evidence. | next iter |
 | ~~`PT-M256-clause2-fifth-write`~~ | **DONE (iter-06 D24).** Answered differently than D20 framed it — not from a new surface but from **writes the suite already made**: `pt-skillpath-legacy` extended by one click + the net-new `pt-skillpath-bookmark`. Mutating **5**, machine-counted by the `@pt-mutation` fence. | closed iter-06 |
 | ~~`NEGCTL-M256-ablation-harness`~~ | **REFUTED (iter-07 D29).** GraphQL outcome-ablation yields a **dead page, not an empty surface** (`bodyLen 2147 → 24`, 0 nav, 0 buttons) — the control would pass for any Playthrough including one asserting pure chrome, so it cannot discriminate. A gentler ablation needs per-operation shapes: **O(queries), not O(surfaces)**. Do not re-try verbatim. | closed iter-07 |
-| `NEGCTL-M256-cross-vantage` | **13 of 24 (iter-12). The mechanism is now BOUNDED, which re-shapes what remains into two classes with different costs.** (a) **9 STRUCTURAL** finals — `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-profile-{verified,growth,timeline}`, `pt-hiring-recruiter-compare` — have **NO contrast vantage** (a stat label / chart / first table row renders for any populated org; measured: Org A's manager reads `verifiedSkillsStat` 1, `skillCharts` 10, `workSection` 1). Their route is to **sharpen the final to name real seeded data** — O(tests), and it strengthens the Playthrough regardless. Writing contrast controls for them would re-introduce iter-07's refuted vacuity. (b) **2 STUDIO** are blocked behind `FIX-M256-studio-false-green` — a control on a known false green would certify it. | **iter-13+** |
+| `NEGCTL-M256-cross-vantage` | **16 of 24 (iter-13) — and the "9 STRUCTURAL" class below was NOT a wall.** iter-12's measurement was right and its conclusion was too strong: those finals were structural *because they were written structurally*, and the mechanism's limit was the ASSERTION, not the vantage. Three are now covered (`pt-profile-{verified,growth,timeline}`) by re-aiming each final at the hero's own seeded data — magnitudes machine-linked to the seed by `lib/seed-facts.ts` + a fail-closed fence — after which the SAME contrast seat falsifies all three. **The remaining 6 of that class are reachable by the same move:** `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-hiring-recruiter-compare`. ⚠ The hiring one needs care — iter-12 measured that its contrast vantage **ejects the browser to PRODUCTION**, so its control must come from a sharpened final on the *same* vantage, never a contrast org. The 2 STUDIO remain blocked behind `FIX-M256-studio-false-green`. | **iter-14+** |
+| ~~`NEGCTL-M256-cross-vantage` (iter-12 framing)~~ | **(Superseded by the row above.)** (a) **9 STRUCTURAL** finals — `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-profile-{verified,growth,timeline}`, `pt-hiring-recruiter-compare` — have **NO contrast vantage** (a stat label / chart / first table row renders for any populated org; measured: Org A's manager reads `verifiedSkillsStat` 1, `skillCharts` 10, `workSection` 1). Their route is to **sharpen the final to name real seeded data** — O(tests), and it strengthens the Playthrough regardless. Writing contrast controls for them would re-introduce iter-07's refuted vacuity. (b) **2 STUDIO** are blocked behind `FIX-M256-studio-false-green` — a control on a known false green would certify it. | **iter-13+** |
 | `PT-M256-readiness-step-asserts` | **NEW (iter-12), found by a control on its first run.** `pt-aireadiness-manager-howwemeasure`'s `MANAGER_STEP_NAMES` assertions match **page-wide** and are satisfied by the **not-enabled upsell panel** on `/ai-readiness` (which names the very steps). Re-scope them inside the method panel. The Playthrough is still covered via `methodHeading()`, which does discriminate. | a later tik of M256 |
 | `MEASURE-M256-clause1-sampling` | **NEW (iter-12 D60) — ESCALATED, and it gates the milestone's own verdict.** Clause 1's pinned statistic is not robust to this host's variance: over 6 runs the CONTROL subset (unchanged since iter-03) spans **0.5281×–1.0762× (2.04×)** with no trend, and the gated figure at n=6 is **0.8129×, outside the `≤ 0.79×` gate**. The MET readings from iter-03 on were favourable samples. Remedies, all **D-v28-12** decisions: raise n + publish the spread · make the measurement **paired** (baseline in the same batch) · normalise within-run against an invariant leg · move it to a stable host. `pt-assignment-assign` is the largest single contributor to both the median and its variance — a lever aimed at it would cut both. | **user / roadmap call** |
 | ~~`NEGCTL-M256-cross-vantage` (iter-11 framing)~~ | **MECHANISM PROVEN LIVE (iter-11).** Negative controls **8 of 24**, and the count is now **computed by the mutation fence**, which names the 16 uncovered ids on every run. The reference implementation is the `pt-aisim-chat-launch` ∥ `pt-aisim-org-feature-blocked` pair: one locator, two orgs, opposite verdicts, both live. **What it teaches about cost:** that pair was cheap because the two vantages differ by **seeded state** (a withheld g3 grant), and a symmetric pair contributes **two** controls. A pair that differs only by test code is the O(tests) case below. So triage the remaining 16 by *"is there a hero/org for whom this outcome legitimately does not exist in the seed?"* first — the seed-state cases are the cheap tail. | **iter-12+** |
@@ -288,6 +347,6 @@ Fate-3 items land here.
 | ~~(original)~~ | Clause 2's `>= 1 blocked` outcome, then **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
 | ~~`ONBOARD-M256-assessment`~~ | **DONE (iter-07 D28) — trigger NOT tripped.** The audit's F5 conflated org membership with onboarding completion. Onboarding is **UNBUILT, not impossible**; clause 3 keeps its full scope. Build routed as `ONBOARD-M256-build`. | closed iter-07 |
 | ~~`FENCE-M256-bounded-interaction`~~ | **DONE (harden pass 1, commit `cfaa1a9`).** `playthroughs/e2e/tests/bounded-interaction-fence.unit.spec.ts` + **6 sites bounded**. **iter-12's framing was wrong in both clauses, and measurement says so:** it counted *"four unbounded `waitFor` calls … none inside a retry loop, so none proven harmful"* — but D25's root cause was a **`click()`**, not a `waitFor`, and **two of those four ARE the guard of a retry loop**, which is the same unreachability through a different door. Playwright's action default is `0` (no timeout), so both loops written *after* D25 (`openAssignBuilderForFirstAssignable`, iter-03; `clickUntilDialog`, iter-04) reproduced D25's shape exactly — unbounded click inside, unbounded wait guarding, only `dialog().waitFor` bounded — each declaring a 30 s budget enforceable from neither position. **A fence scoped to the spelling of the bug you already found is the mistake iter-03 corrected for `networkidle`.** Clicks moved INSIDE the `try` (D25's yield-to-next remedy; a bounded click outside it aborts the loop on first detach — same outcome, third road). Exception boundary **enumerated**: 28 straight-line sites deliberately out of scope, with the reason. RED-proven twice — D25's historical snippet (both shapes, not one) and a live revert of the org-admin click. | closed harden-1 |
-| `FLAKE-M256-assign-under-bloated-policy` | **NEW (iter-11), a HYPOTHESIS not a finding.** `pt-assignment-assign` timed out at 240 s on the one run made against the bloated pre-fix casbin policy (731 g3 rows / 540 orphans) and in **none** of the four runs after the fix. A policy set 5x the size of the world is a plausible authz-latency contributor. If it ever recurs, **measure the enforcer's policy size before reading the spec**. | if it recurs |
+| ~~`FLAKE-M256-assign-under-bloated-policy`~~ | **CLOSED (iter-13 D65) — and the hypothesis was WRONG, which is why measuring it first was right.** It recurred on iter-13's Phase-D run 3. The policy was measured **clean**: `g2 = 191`, `g3 = 171` for 191 memberships (Org B's 20 correctly withheld), **0 orphans**. Two more plausible mechanisms were also refuted by probe (the antd `maskClosable` re-click *throws* on the mask and the modal survives; `press('Enter')` with the dropdown closed leaves `aria-expanded` true and `dialogCount` 1), plus the modal **surviving 151 s unattended**. **The trace named the real cause:** the assign modal is **ROW-SCOPED** (*"Assign Skill Path to `<member>`"*, rendered by the member row's action cell), so a members-table re-render **unmounts** it — and it opened 2.2 s after the first row painted, while the table was still settling. The remaining time decomposes exactly as the retry ladder's own bounds: 3 × 15 s + 20 s + 15 s = **84 s, the reported duration**. *Every bound was correct; bounding makes a stuck attempt yield, it does not make a **dead subject** detectable.* Fixed three ways (a `dialogIsOpen()` re-open guard per attempt · `waitForMembersTableSettled()` · `openBuilderAndPickSkillPath()` so the member named is the one the ACCEPTED builder targets), recovery proven deterministically, regression-pinned in the bounded-interaction fence, and the 3× gate re-run **0 flake**. | closed iter-13 |
 | `DOC-M256-claudemd-pt-count` | **NEW (iter-11), housekeeping.** `CLAUDE.md` still reads "18 live Playthroughs"; it points at `playthroughs.md` as authoritative, which now reads **24**. Reconcile ONCE at milestone close rather than on every increment (the count has moved five times inside this milestone). | milestone close |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |

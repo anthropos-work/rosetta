@@ -646,6 +646,76 @@ product state, not a simulated absence, and inside the same run. Prefer the delt
 reset, and **a false red is exactly as dishonest as a false green**. iter-06 found all three pre-existing mutating
 Playthroughs already had this property, unnamed — so the pattern was ratified, not invented.
 
+**A STRUCTURAL final has no contrast vantage — so sharpen the final, don't hunt for a vantage (v2.8 M256
+iter-13).** A read-only Playthrough's negative control comes from a **contrast vantage** — a hero or org for
+whom the asserted outcome legitimately does not exist. iter-12 measured that this mechanism **cannot** apply to
+a *structural* final: "a stat label is visible", "a chart count ≥ 1", "a Work section exists" are all satisfied
+for **every** seeded member, because M44's profile-completeness seeder gives every member a career and skills
+(measured: the manager reads `verifiedSkillsStat` 1 / `skillCharts` 10 / `workSection` 1 on her own profile).
+That is correct, and it means **no suppression switch can exist** — do not go looking for one.
+
+But the limit is on the **assertion**, not on the Playthrough. Those finals were structural *because they were
+written structurally*, and the same surfaces carry hero-specific facts the seed pins deterministically. Re-aim
+the final at the hero's own seeded data and the contrast vantage that could not falsify the structural version
+falsifies the specific one. iter-13's three worked examples, all measured on both vantages first:
+
+- **A seeded magnitude.** The rendered `Verified Skills` stat equals the hero's seeded `skills.verified`
+  *exactly*, and `All Skills` equals seeded `verified + mapped` *exactly* (confirmed on two heroes
+  independently) — so the claimed-vs-verified GAP itself is assertable, where "two stat labels rendered" was not.
+- **A seeded identity in context.** The `"<role> at <org>"` line names two authored seed fields, so it is false
+  for a different person in the same org *and* for the same role in a different org.
+- **A COMPUTED outcome that needs the seeded history.** The closest-role recommendation renders only once a
+  hero has enough *verified* evidence for the matcher to produce candidates — present for an 8-verified hero,
+  absent for 3- and 2-verified ones. That proves the surface computed something from *her* history, where a
+  chart count proves only that a chart drew.
+
+Keep the old structural assertions as **intermediates**: they establish that the surface is there; they never
+established whose it is. And **machine-link every number to the seed** — a magic `8` in a spec is a claim about
+the seed file with no link to it, so a renumbered seed turns three Playthroughs RED naming a product regression
+that never happened. A declared facts module plus a fence that PARSES the seed and reconciles is the pattern
+(`playthroughs/e2e/lib/seed-facts.ts` + `tests/seed-facts-fence.unit.spec.ts`); the fence's **first** assertion
+must be that the parse is not vacuous, because a reconciliation over an empty parse passes every comparison
+silently. This does not violate P2: authored seed literals under reset-to-seed do not "vary across captures" —
+what P2 forbids is generated content (bios, generated employer history, computed match percentages), and none
+of that is asserted.
+
+**`\b` in a `hasText` regex is unreliable — `textContent` concatenates sibling nodes (v2.8 M256 iter-13).**
+Playwright's `hasText` filter matches against an element's **`textContent`**, which joins sibling text nodes
+with **no separator**. A work-timeline card therefore reads `…Meridian LabsFeb 2024 - Present (2 years)…`, in
+which "Feb" is preceded by the "s" of "Labs" — so a pattern anchored `\b\w{3} \d{4}…` has no word boundary to
+find and matches **nothing**. The identical constant is safe when consumed through `getByText`, which resolves
+to leaf-ish elements whose text is not a concatenation. **Same regex, different consumer, different rules.**
+iter-13 shipped this and caught it in the same hour, as a **false RED** on a page that plainly rendered the
+element — a false red is exactly as dishonest as a false green, and it was caught only because the sharpened
+finals were run and *watched*. When a landmark pattern is used as a container filter, drop the boundaries and
+pin the concatenated shape in a unit test.
+
+**A BOUND is not a RECOVERY — a retry loop over a mounted UI object needs both (v2.8 M256 iter-13).** M256's
+harden pass established that every interaction inside a retry loop must carry an explicit timeout, so a stuck
+attempt *yields to the next* (Playwright's action default is `0` — no timeout — bounded only by the test
+budget). Necessary, and not sufficient. `pt-assignment-assign` then failed with every bound correct: the assign
+modal is **ROW-SCOPED** (its title is *"Assign Skill Path to `<member>`"*, rendered by the member row's action
+cell), so a members-table re-render **unmounts** it — and the modal had been opened 2.2 s after the first row
+painted, while the table was still settling. From the trace: healthy at t+3.79 s, the Select's inner input
+"not stable" ×3 then "detached from the DOM" at t+4.15 s, and **the dialog never returned**. The remaining time
+decomposes exactly as the ladder's own bounds — 3 × 15 s of clicks against a locator that cannot resolve + a
+20 s diagnostic + the spec's 15 s expect = **84 s**, the reported duration — reported as *"element(s) not
+found"* on the submit button, three layers from the cause. **Bounding makes a stuck attempt yield; it does not
+make a dead subject detectable.** So: check the subject still exists at the top of every attempt and
+**re-establish it**; prefer not racing at all (a semantic settle — e.g. two equal reads of a row count ~1 s
+apart — never a banned `networkidle` one); and note that recovery creates a *correctness* obligation, because a
+re-opened modal may target a different row, so any identifier the assertion depends on must be read from the
+instance that **accepted** the action, not from the one that was first opened.
+
+Two method notes worth as much as the fix. **Read the artifact the failure already produced before proposing a
+mechanism:** three plausible causes (a bloated Casbin policy — measured clean at `g3 = 171` for 191 memberships
+with 0 orphans; an antd `maskClosable` re-click — it *throws* on the mask and the modal survives; an `Enter`
+keypress with the dropdown closed — `aria-expanded` stays true) were each refuted by a bounded probe, and the
+trace's own arithmetic handed over the fourth. **And prove a recovery deterministically rather than fishing for
+the flake:** drive the exact failing state with a *real* user action (here the modal's own Cancel — `Escape` is
+disabled on it, measured) and show the ladder recovers. Never manufacture the state by deleting DOM nodes —
+iter-07's rule is that a control the application never learns about proves nothing.
+
 ### The `blocked` outcome — proving the platform correctly says *no* (v2.8 M256 iter-11)
 
 For 23 Playthroughs across five releases the suite had **zero** non-`success` outcomes. That was not an oversight
