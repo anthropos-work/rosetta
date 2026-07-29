@@ -298,6 +298,20 @@ and a simplification lens) ran against the first draft of this section. Its mate
   runs a composed cold cycle on a host. **Until that lands, no M256 number may be quoted as comparable to
   billion's 228 s.**
 
+- **D-v28-13 — clause 1 gates the LEG, not the suite ratio** (user, 2026-07-29). D-v28-12's relative
+  `≤ 0.79×` was undecidable: iter-12 measured the statistic's noise floor at **2.04×**
+  (0.5281×–1.0762×, six runs, untouched code, no trend), so the threshold sat *inside* its own spread,
+  and at n=6 the figure read **0.8129× — outside the gate**. **The two prior "clause 1 MET" readings
+  are retracted** as favourable samples; the flattering original-16 denominator (0.7063×, inside the
+  gate) was available and **refused**. **No speed work is retracted** — iter-03's `networkidle`
+  removal was measured *at the leg*, **2854 ms → 423 ms**, which suite-ratio variance cannot fake.
+  Clause 1 now requires a **direct before/after measurement of the leg each mechanism targets**; the
+  suite median is reported with its n and range, never gated. **Standing rule, now in
+  `latency-budget.md`: never gate a relative statistic without first measuring its variance.**
+  D-v28-12 derived its threshold carefully and never asked how noisy the measured thing was — a gate
+  tighter than its own noise floor is unfalsifiable, which is this release's own hunted defect class
+  committed in the gate rather than the code.
+
 **Also corrected from the review, without a decision (facts the draft got wrong or thin):**
 `NEXT_PRIVATE_STANDALONE=1` in an rext-owned Dockerfile enables `.next/standalone` with **zero** config edits
 and **zero** demopatches — Next 16's frozen `defaultConfig` reads
