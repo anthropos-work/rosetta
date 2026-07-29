@@ -412,6 +412,53 @@ ssh <host> 'bash -lc "go version"'                 # green here + red in pre-fli
 > the operator are running in the same environment.* A tool's absence and a tool's **invisibility** produce
 > identical output, and only one of them is fixed by installing anything.
 
+## A SUITE NOBODY RUNS IS A SUITE THAT IS RED (v2.8 M256 harden pass)
+
+Two findings from the same pass, both about the tooling's own tests rather than the stack's, and both worth
+stating here because this is the *is-it-actually-working* doc.
+
+**1. Enumerated test rosters go stale silently — and the roster is where the rot hides.** M255's close recorded
+*"Python 1505 pass / 2 skip / 0 fail across **stack-core + demo-stack + stack-injection**"*. `stack-verify/tests`
+is not in that list. Run at the M256 harden pass, it had **5 failures**, all from one cause: `autoverify.sh` grew
+check (f) — the ant-academy `/library/` catalog probe — at M245, and of the four fixtures in `test_verify.py` that
+stub `curl`, exactly **one** was taught about it. The others returned nothing, the probe warned, autoverify
+reported *"N check(s) FAILED"*, and five tests went red — **none of them about the academy**. They also each paid
+the probe's 3×3 s retry, so the suite ran 313 s instead of 163 s.
+
+This is the *same* blind spot M255's own close found for `stack-snapshot`'s Go suite, one directory over: a suite
+outside the roster had been red since v2.6 and two consecutive release closes missed it. **The lesson is not "add
+stack-verify to the list."** It is that *an enumerated roster is a claim that needs its own fence* — the safe form
+is "every section that has tests", discovered, with the count asserted, not a hand-maintained list of the sections
+someone remembered. Until that exists, a close's Python verdict should be read as *"the sections we named are
+green"*, which is a weaker statement than it looks.
+
+**2. A test file can hide tests from the runner it invites you to use.** In six rext modules, a
+`unittest.TestCase` subclass was defined **below** the module's `if __name__ == "__main__": unittest.main()`
+guard. Python executes top to bottom, so the class does not exist when the guard runs: it is never registered,
+never collected, and the run still prints **OK**. Measured — **15 classes / 76 tests**:
+
+```
+python3 demo-stack/tests/test_roster_invariant.py         ->  Ran 22 tests ... OK
+python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
+```
+
+The five silent tests included that file's own RED-proof for the live 12-dead-buttons cockpit defect — the class
+its docstring calls *"the primary user-visible surface, and the one the defect is actually about."* Worst case:
+`stack-injection/tests/test_apply_patch_selfheal.py`, **11 of 27**.
+
+CI was never wrong — every runner uses pytest, which collects by inspection and ignores statement order. What was
+broken is the loop a human or an agent actually uses: `python3 <the one file I am editing>` is what the file's own
+`__main__` block invites, and it skips the part you just wrote. Appending a new hardening class to the bottom of a
+file is the path of least resistance and the guard is already sitting there, which is why six files drifted the
+same way across releases. Guards relocated to end-of-file; fenced repo-wide by
+`stack-core/tests/test_test_collection_fence.py`.
+
+> **The general rule behind both:** *a green verdict is only as wide as the set of things the runner actually
+> looked at.* Both defects produced a confident PASS over an unexamined set — one because a roster did not name a
+> directory, one because a file did not define a class yet. Neither is detectable from the verdict; both are
+> detectable by asserting the **denominator**, which is why every fence this pass landed is fail-closed on how
+> much it scanned.
+
 ## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
 
 **Restricting *who can reach* a demo is the VM's and the VPN's job, not the demo stack's.** The stack's only

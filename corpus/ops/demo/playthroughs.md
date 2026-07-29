@@ -761,6 +761,17 @@ every increment would be edited without being read. What it cannot do is go quie
 **cross-vantage pair contributes two** — the relation is symmetric (each member asserts the same locator in the
 opposite direction), so both sides carry the tag.
 
+> **…and coverage is credited PER PLAYTHROUGH, not per file (v2.8 M256 harden pass).** The count read its
+> `@pt-negative-control:` tag with a non-global regex — *first hit only* — and then credited **every** `@pt:` id in
+> that file. iter-06 closed exactly this per-file-vs-per-ID hole for `@pt-mutation:`, one field over, and left it
+> open on the number **clause 2 is scored by**. It survived twelve iters because it is *latent*:
+> `studio-builder.spec.ts` is the only file holding two Playthroughs and it declares no control yet — so the very
+> edit that closes those two controls is the edit that would have inflated the count by two and cleared the floor
+> on one declaration. Now arity-checked and fail-closed: a file declaring fewer controls than it holds Playthroughs
+> credits **none** (crediting one would pick a Playthrough arbitrarily), and the mismatch is its own named failure.
+> **The general rule: when a count feeds a gate, the unit the parser credits must be the unit the gate counts.**
+> Verified by injecting one tag into the two-Playthrough spec — the count held at 13, where the old parser read 15.
+
 **Bound every interaction inside a retry loop, or the loop is decoration (v2.8 M256 iter-06).** A Playwright
 action with no `timeout` inherits the **test** budget. `pt-assignment-assign` wrapped its antd-Select interaction
 in a 3-attempt retry loop whose first `combobox.click()` was unbounded — so when the Modal's open animation and
@@ -771,6 +782,41 @@ first attempt can eat the whole budget. Two-part fix: wait for the **form** to h
 attaching is the cheapest semantic signal that the dialog body is rendered, not mid-animation), and give every
 interaction an explicit `timeout` so a stuck attempt yields to the next one. Under `retries: 0` a flaky
 Playthrough is a **defect**, so this class gets fixed, never re-run.
+
+> **The class outlived its first fix, and the fence is what ends it (v2.8 M256 harden pass,
+> `bounded-interaction-fence.unit.spec.ts`).** iter-06 fixed the *site*. The two retry loops written after it —
+> `assignments-page.ts:openAssignBuilderForFirstAssignable` (iter-03) and `org-admin-page.ts:clickUntilDialog`
+> (iter-04) — reproduced the shape exactly: an unbounded `click()` **inside** the loop and an unbounded `waitFor`
+> **guarding** it, with only the inner `dialog().waitFor` bounded. Each declared a 30 s budget that could not be
+> enforced from either position, and the class went on to cost **two more 240 s hangs** (iter-11 run 1, iter-12
+> run 1).
+>
+> It stayed open partly because it was counted by the **spelling of the symptom**. iter-12 recorded "four unbounded
+> `waitFor` calls remain … none is inside a retry loop, so none is proven harmful" — but D25's root cause was a
+> `click()`, not a `waitFor`, and two of those four are the *guard* of a retry loop, which is the same
+> unreachability through a different door. **A fence scoped to the spelling of the bug you already found is the
+> mistake iter-03 corrected for `networkidle`** — the same lesson, one subsystem over.
+>
+> The fence's invariant is the loop's own contract: inside a `for(;;)`/`while` block that re-checks a deadline, and
+> on the wait immediately guarding it, every interaction carries an explicit `timeout`. The bounded click sits
+> **inside the `try`**, because D25's remedy is that a stuck attempt *yields to the next* — a bounded click outside
+> the try aborts the loop on the first detach, which is the same unreachable-loop outcome by yet another road.
+>
+> **The exception boundary is enumerated, deliberately:** straight-line interactions elsewhere in the harness (28
+> sites) are **out of scope** — there is no loop deadline for them to falsify, the test budget *is* their intended
+> ceiling, and a blanket rule would be 28 edits with no evidence behind any of them. D25's sentence "give **every**
+> interaction an explicit timeout" was scoped to the interactions *in that loop*; reading it harness-wide is how a
+> fence becomes noise and then gets switched off. If a straight-line site ever produces an opaque hang, that is
+> evidence and the boundary moves — with the measurement recorded, as D25's was. *A fence with known exceptions
+> that are not written down is a fence that will rot.*
+
+**A source-scan fence must report the right LINE, not just the right verdict (v2.8 M256 harden pass).** Both
+Playthrough source-scan fences stripped comments by **deleting** block comments before scanning. Every offender's
+line number was therefore shifted by the length of the file's own prose — and these files carry 70–90-line
+headers. The fences were correct about *whether* and wrong about *where*: a live mutation at
+`org-admin-page.ts:62` was reported as line 24, sending the reader to an innocent line. Blank block comments **in
+place** (`m.replace(/[^\n]/g, ' ')`) rather than removing them. Cheap, and it is the difference between a fence
+that is trusted and one that is argued with.
 
 **Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
 (a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via

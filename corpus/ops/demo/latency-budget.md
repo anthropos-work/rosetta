@@ -321,6 +321,27 @@ Contract:
   rather than silently sweeping the DEV stack at offset 0.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
+- **…and the ban on it must be a TOKEN scan, not a list of spellings (v2.8 M256 harden pass).** M256 iter-03
+  widened the Playthrough harness's ban from "the four `/home` logins" to "the whole harness" and encoded it as
+  two tightly-anchored regexes: `waitUntil:\s*['"]networkidle['"]` and
+  `waitForLoadState\(\s*['"]networkidle['"]\s*\)`. Measured at the harden pass, **four plausible shapes score zero
+  hits against that pair**, and two of the four are not hypothetical:
+  - `waitUntil: opts.waitUntil ?? 'networkidle'` — the **coalesced default**, which is
+    `stack-verify/e2e/lib/cockpit-login.ts:87` *verbatim*: the single line that is the **root cause of the whole
+    class**. The pattern required a quote immediately after `waitUntil:`; a `??` default puts an identifier there,
+    so the ban was blind to the origin of the bug it was banning.
+  - `waitForLoadState('networkidle', { timeout: 4_000 })` — the **bounded settle**, ~20 occurrences one directory
+    away (`persona-assert.ts`, `section-assert.ts`, `crawl.ts`, four `calibrate-*` specs). The pattern required
+    `)` immediately after the closing quote, so **any** second argument disabled it — and `hero-login.ts` forwards
+    into that very tree, so the two directories are one copy-paste apart.
+  - plus double-quoted spellings and `const w = 'networkidle'` indirection.
+
+  The ban is now a **token scan of comment-stripped code** — no arity, argument order or quote style to get wrong —
+  with exactly **one enumerated allowance**: a `waitUntil?:` optional-property *type* declaration, which `?:` makes
+  provably impossible to execute as a gate. **The general rule: ban the token, not the two spellings you happened
+  to find** — a spelling list is a fence around the instances you already fixed. The scope exception
+  (`stack-verify/e2e/**`, the coverage sweep, which uses a *ceiling-bounded* networkidle as one input to a presence
+  heuristic **by design**) is now written down rather than implied by which directories the scanner happens to read.
 - **It clears cookies per sample**, so each click is a genuine cold login.
 - **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
   next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
