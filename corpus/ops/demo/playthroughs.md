@@ -679,6 +679,48 @@ silently. This does not violate P2: authored seed literals under reset-to-seed d
 what P2 forbids is generated content (bios, generated employer history, computed match percentages), and none
 of that is asserted.
 
+**The contrast vantage follows the SUBJECT of the final, not the product (v2.8 M256 iter-14).** iter-13's
+worked examples are all about a **person**, so their contrast is another person in the same org. Applied one
+product over, that seat is *wrong*: the four Workforce-Intelligence finals are read BY the manager and are
+about **her org's aggregates**, so she cannot falsify her own dashboard. An org-aggregate final needs a
+manager of a **second seeded TENANT**. Name what the final is *about* before hunting a vantage — measured
+first, this is one line; discovered afterwards it is a wasted iter.
+
+The same widening applies to what a spec may name. Alongside the per-hero facts, pin the **org's** authored
+identity (`org.name`, `org.slug`, `org.size`) and reconcile it with the same fence. Three properties earned
+their place on measurement:
+
+- **A per-row org anchor beats a single row.** A roster renders 20 of 40 members, so *any* one member's row
+  is a bet on sort order; the **org email domain** (`@<org.slug>.com`) is on every org-member row and holds
+  on any page. Bound it honestly — 15 of 20 rows carry it, the rest being `Candidate`-role members on
+  external addresses — so assert *present among the rows*, never *all rows*.
+- **Say whether a magnitude is a strengthening or a discriminator, at the assertion.** "Overall Members
+  equals the seeded `org.size`" catches a stat card rendering a constant and an accessor reading the wrong
+  card — real value a visible LABEL cannot give — but if both seeded orgs are `size: 40` it discriminates
+  **nothing**. Write which it is, or a reader banks the wrong one.
+- **Mutate the FINAL as well as the control.** Two mutant groups: re-aim each control's absence assertion at
+  the contrast vantage's own data (proves the *control* can fire), **and** drive each sharpened Playthrough
+  on the contrast vantage (proves the *final* discriminates). The second group is the one that matters — the
+  first alone can demonstrate healthy controls over still-vacuous Playthroughs, which is a green test about
+  a green test.
+
+**Two stat cards in the same app can have OPPOSITE shapes — measure, don't infer from the sibling page object
+(v2.8 M256 iter-14).** The profile stat card renders label-and-value as one element (`"Verified Skills\n8"`),
+so its accessor matches the label and parses the number from the same node. The Workforce dashboard's card is
+the reverse: the label is its own `<span>` carrying **no number**, and the parent's `textContent` is
+`"40Overall Members40 active"` — value first, label second, a *second* number after it, and no whitespace
+anywhere. An accessor copied from the profile one returns `null` against a page that plainly renders the
+stat, and the Playthrough fails on a working surface.
+
+**A settle predicate the empty state satisfies is not a settle predicate (v2.8 M256 iter-14).** A probe that
+waited for `table tbody tr > 5` reported a grid as *populated* while it was rendering **20 rows with no cell
+content**, and the conclusion drawn from that — a permanently empty surface, i.e. a free contrast vantage —
+was wrong in the direction that ships. **The instrument is part of the measurement:** this is the same defect
+as an assertion that cannot fail, committed in the probe rather than in the test. A settle predicate must be
+FALSE in the state it is waiting to leave. (The finding that survived the retraction is worth keeping: an
+`await expect(rows.first()).toBeVisible()` + `count() > 0` pair is satisfied by a skeleton grid, so assert
+rows that carry **text**.)
+
 **`\b` in a `hasText` regex is unreliable — `textContent` concatenates sibling nodes (v2.8 M256 iter-13).**
 Playwright's `hasText` filter matches against an element's **`textContent`**, which joins sibling text nodes
 with **no separator**. A work-timeline card therefore reads `…Meridian LabsFeb 2024 - Present (2 years)…`, in

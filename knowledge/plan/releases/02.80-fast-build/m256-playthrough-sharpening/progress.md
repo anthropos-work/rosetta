@@ -214,6 +214,39 @@
   runs, rc 0, `ptreport` 24 passing / 0 failing / 7 TODO / 0 unimplementable, 0 flake**; the assign Playthrough
   6.9–11.5 s where it had spiked to 84 s. — see `iter-13/progress.md`
 
+- iter-14 (tik, `closed-fixed`): **negative controls 16 → 20 of 24 — the same move as iter-13, one level up,
+  and the level is what mattered.** iter-13's contrast for a *person* final is another person; reused here it
+  would have been wrong, because the four Workforce-Intelligence finals are read BY `pt-manager` and are about
+  **her org's aggregates** — she cannot falsify her own dashboard. **The contrast vantage follows the SUBJECT
+  of the final** (D68), so an org-aggregate final needs a manager of a **second seeded TENANT**
+  (`pt-ai-manager`, Org C), and Phase A qualified her on measurement rather than convenience: her org renders
+  all four surfaces *completely* (40 members, 109 mapped, 88 verified, 182 sims, 20 roster rows, a full
+  succession projection, 20 feedback rows), so the ONLY thing absent is Org A's data. The four finals —
+  a Role column · two stat LABELS + an `<svg>` · `/ready/i` + `/at.?risk/i` · a recap label + both polarity
+  words, each with `rows > 0` — were **measurably true of that other tenant too**, i.e. all four would have
+  passed if the manager had been served a different customer's workforce. They now name the seed's own org
+  facts: the **org email domain** (`@<org.slug>.com`, the **pagination-proof** anchor — a roster shows 20 of
+  40, so any one row is a bet on sort order, while the domain is on every org-member row; bounded honestly at
+  15 of 20, the rest being `Candidate`-role members on external addresses), `Overall Members` == the seeded
+  `org.size`, and the seeded hero with her seeded role. **11 mutants RED**, in two deliberate groups (D73):
+  each control's absence re-aimed at Org C's own data (the control can fire) **and each sharpened Playthrough
+  driven on Org C** (the final discriminates) — the second group being the one that matters, since the first
+  alone can certify healthy controls over still-vacuous Playthroughs. The seed link was mutated three ways
+  (size, slug, and a parse-emptying rename → the fail-closed non-vacuous test fires). **Two self-inflicted
+  errors caught by measurement, both instructive:** `readOrgStat` was written as a copy of
+  `ProfilePage.readSkillStat` and returned `null` against a dashboard that plainly renders `40` — the two
+  cards have **opposite shapes** (`"Verified Skills\n8"` vs a bare label `<span>` whose parent reads
+  `"40Overall Members40 active"`, value first and no whitespace, because `textContent` concatenates) — and
+  **the Phase A probe's own settle predicate certified a hydrating grid as populated** (`rows > 5` is
+  satisfied by 20 content-free skeleton rows), which nearly banked a permanent absence that does not exist;
+  *a settle predicate the empty state satisfies is not a settle predicate* (D71), the same could-not-fail
+  defect committed in the instrument. What survived that retraction is real and routed:
+  `pt-activity-drilldown`'s `rows > 0` **is** satisfied by the skeleton, and its control is available from the
+  drill-down, which names members with their roles. `170 passed` ×3 consecutive cold reset-to-seed runs, rc 0,
+  **0 flake**, `ptreport` 24 passing / 0 failing / 7 TODO / 0 unimplementable; the four sharpened Playthroughs
+  run **1.4–1.9 s**, all below the suite median, so a tenancy proof is no more expensive than a structural
+  one. — see `iter-14/progress.md`
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -228,7 +261,29 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-13 — THE CURRENT FIGURE.** Post-fix batch, n=3, same host, cold reset-to-seed each:
+**Post-iter-14 — THE CURRENT FIGURE.** n=3, same host, cold reset-to-seed each:
+
+| statistic | run 1 | run 2 | run 3 | median (n=3) | range |
+|---|---:|---:|---:|---:|---:|
+| all 22 non-studio (**REPORTED, per D-v28-13**) | 0.6013× | 0.6164× | 0.6464× | **0.6314×** | 1.075× |
+| ORIGINAL 16 only (**the control subset**) | — | — | — | 0.5562× | — |
+
+`170 passed` ×3, **0 flake**, rc 0 ×3. Suite wall-clock 1.2 / 1.2 / 1.3 m. The four sharpened Playthroughs
+read **1.4–1.9 s** each — all *below* the suite median, so sharpening a READ costs nothing measurable (the
+opposite of iter-06's finding that proving a WRITE costs more than proving a render).
+
+**Still more evidence for the D-v28-13 recut.** The ORIGINAL-16 control subset — code no iter has touched
+since iter-03 — has now been observed at **0.5281× · 1.0762× · 0.7517× · 0.9321× · 0.5562×** across five
+batches on one host. A gate at 0.79× sits inside its own noise floor. **iter-14 landed no speed mechanism, so
+clause 1's leg half has nothing new to measure**; its flake half is **MET** (0 flake ×3).
+
+`ptreport`: **24/31 passing, 7 `[TODO]`, 0 failing, 0 unimplementable.** `@pt-mutation` registry, computed:
+**MUTATES=6 READ-ONLY=16 UNKNOWN=2**. `@pt-negative-control` registry, computed: **20 of 24** (8
+self-declared + 12 via the control spec); named uncovered: `pt-activity-drilldown`,
+`pt-hiring-recruiter-compare`, `pt-studio-advanced-generate`, `pt-studio-guided-generate`. **`blocked`
+outcomes: 1.**
+
+**Post-iter-13 (superseded as the current figure).** Post-fix batch, n=3, same host, cold reset-to-seed each:
 
 | statistic | run 4 | run 5 | run 6 | median (n=3) | range |
 |---|---:|---:|---:|---:|---:|
@@ -327,9 +382,10 @@ Fate-3 items land here.
 | `PT-M256-orgadmin-member-tag` | **SHARPENED (iter-05 D19).** Unreachable through 4 measured routes: dropdown intercepts pointer events over its own modal (invisible to actionability checks); `Escape` closes the MODAL not the dropdown; an in-modal outside-click leaves 9 menuitems open; `check({force:true})` flips the DOM but not antd's React state (submit stays disabled, tally stays 0). Untried: the `<label for=…>` element; a route that never opens a dropdown. If both fail, declare **`unimplementable-without-platform-edit`** with the four-attempt evidence. | next iter |
 | ~~`PT-M256-clause2-fifth-write`~~ | **DONE (iter-06 D24).** Answered differently than D20 framed it — not from a new surface but from **writes the suite already made**: `pt-skillpath-legacy` extended by one click + the net-new `pt-skillpath-bookmark`. Mutating **5**, machine-counted by the `@pt-mutation` fence. | closed iter-06 |
 | ~~`NEGCTL-M256-ablation-harness`~~ | **REFUTED (iter-07 D29).** GraphQL outcome-ablation yields a **dead page, not an empty surface** (`bodyLen 2147 → 24`, 0 nav, 0 buttons) — the control would pass for any Playthrough including one asserting pure chrome, so it cannot discriminate. A gentler ablation needs per-operation shapes: **O(queries), not O(surfaces)**. Do not re-try verbatim. | closed iter-07 |
-| `NEGCTL-M256-cross-vantage` | **16 of 24 (iter-13) — and the "9 STRUCTURAL" class below was NOT a wall.** iter-12's measurement was right and its conclusion was too strong: those finals were structural *because they were written structurally*, and the mechanism's limit was the ASSERTION, not the vantage. Three are now covered (`pt-profile-{verified,growth,timeline}`) by re-aiming each final at the hero's own seeded data — magnitudes machine-linked to the seed by `lib/seed-facts.ts` + a fail-closed fence — after which the SAME contrast seat falsifies all three. **The remaining 6 of that class are reachable by the same move:** `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-hiring-recruiter-compare`. ⚠ The hiring one needs care — iter-12 measured that its contrast vantage **ejects the browser to PRODUCTION**, so its control must come from a sharpened final on the *same* vantage, never a contrast org. The 2 STUDIO remain blocked behind `FIX-M256-studio-false-green`. | **iter-14+** |
+| `NEGCTL-M256-cross-vantage` | **20 of 24 (iter-14) — 4 remain, and BOTH of the reachable two are now priced.** iter-14 took the four workforce finals by the same move as iter-13's profile three, with one generalisation that is the reusable part: **the contrast vantage follows the SUBJECT of the final** (D68) — a person-final needs another person, an ORG-aggregate final needs a second seeded **TENANT** (`pt-ai-manager`, Org C, measured to render all four surfaces completely). **`pt-activity-drilldown`** is next and both halves are measured: (a) its `contentRows().first()` visible + `count() > 0` pair **is satisfied by 20 content-free skeleton rows** (measured live; not a false green, because the drill step needs a row `<a>`, but a weak assertion) → assert rows that carry TEXT; (b) its control comes from the **drill-down**, which names members WITH their roles — Org A's first content drills to `Pat Ellis / DevOps Engineer`, the SAME content id on Org C drills to `Mei Costa` / `Theo Lindqvist`; the first row is deterministically a hero-session one (the grid sorts by most-recent and hero sessions are seeded at reset). **`pt-hiring-recruiter-compare`** still needs a **same-vantage** control (its contrast vantage ejects the browser to production, iter-12); Org D's authored facts give a seed-pinned cardinality final (`size: 40`, `role_mix 0.1/0.9` → 5 shared positions / ~36 candidates), but where the ABSENCE comes from is the open question — and a written verdict is the honest fallback, never a manufactured control. The 2 STUDIO remain blocked behind `FIX-M256-studio-false-green`. | **iter-15+** |
+| ~~`NEGCTL-M256-cross-vantage` (iter-13 framing)~~ | **(Superseded by the row above.)** **16 of 24 (iter-13) — and the "9 STRUCTURAL" class below was NOT a wall.** iter-12's measurement was right and its conclusion was too strong: those finals were structural *because they were written structurally*, and the mechanism's limit was the ASSERTION, not the vantage. Three are now covered (`pt-profile-{verified,growth,timeline}`) by re-aiming each final at the hero's own seeded data — magnitudes machine-linked to the seed by `lib/seed-facts.ts` + a fail-closed fence — after which the SAME contrast seat falsifies all three. **The remaining 6 of that class are reachable by the same move:** `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-hiring-recruiter-compare`. ⚠ The hiring one needs care — iter-12 measured that its contrast vantage **ejects the browser to PRODUCTION**, so its control must come from a sharpened final on the *same* vantage, never a contrast org. The 2 STUDIO remain blocked behind `FIX-M256-studio-false-green`. | **iter-14+** |
 | ~~`NEGCTL-M256-cross-vantage` (iter-12 framing)~~ | **(Superseded by the row above.)** (a) **9 STRUCTURAL** finals — `pt-workforce-{roster,funnel,succession,org-feedback}`, `pt-activity-drilldown`, `pt-profile-{verified,growth,timeline}`, `pt-hiring-recruiter-compare` — have **NO contrast vantage** (a stat label / chart / first table row renders for any populated org; measured: Org A's manager reads `verifiedSkillsStat` 1, `skillCharts` 10, `workSection` 1). Their route is to **sharpen the final to name real seeded data** — O(tests), and it strengthens the Playthrough regardless. Writing contrast controls for them would re-introduce iter-07's refuted vacuity. (b) **2 STUDIO** are blocked behind `FIX-M256-studio-false-green` — a control on a known false green would certify it. | **iter-13+** |
-| `PT-M256-readiness-step-asserts` | **NEW (iter-12), found by a control on its first run.** `pt-aireadiness-manager-howwemeasure`'s `MANAGER_STEP_NAMES` assertions match **page-wide** and are satisfied by the **not-enabled upsell panel** on `/ai-readiness` (which names the very steps). Re-scope them inside the method panel. The Playthrough is still covered via `methodHeading()`, which does discriminate. | a later tik of M256 |
+| `PT-M256-readiness-step-asserts` | **STILL OPEN after iter-14 — unstarted, and it should ride with the iter-15 sharpening batch** (same defect shape: an assertion satisfied by the wrong state). **NEW (iter-12), found by a control on its first run.** `pt-aireadiness-manager-howwemeasure`'s `MANAGER_STEP_NAMES` assertions match **page-wide** and are satisfied by the **not-enabled upsell panel** on `/ai-readiness` (which names the very steps). Re-scope them inside the method panel. The Playthrough is still covered via `methodHeading()`, which does discriminate. | a later tik of M256 |
 | `MEASURE-M256-clause1-sampling` | **NEW (iter-12 D60) — ESCALATED, and it gates the milestone's own verdict.** Clause 1's pinned statistic is not robust to this host's variance: over 6 runs the CONTROL subset (unchanged since iter-03) spans **0.5281×–1.0762× (2.04×)** with no trend, and the gated figure at n=6 is **0.8129×, outside the `≤ 0.79×` gate**. The MET readings from iter-03 on were favourable samples. Remedies, all **D-v28-12** decisions: raise n + publish the spread · make the measurement **paired** (baseline in the same batch) · normalise within-run against an invariant leg · move it to a stable host. `pt-assignment-assign` is the largest single contributor to both the median and its variance — a lever aimed at it would cut both. | **user / roadmap call** |
 | ~~`NEGCTL-M256-cross-vantage` (iter-11 framing)~~ | **MECHANISM PROVEN LIVE (iter-11).** Negative controls **8 of 24**, and the count is now **computed by the mutation fence**, which names the 16 uncovered ids on every run. The reference implementation is the `pt-aisim-chat-launch` ∥ `pt-aisim-org-feature-blocked` pair: one locator, two orgs, opposite verdicts, both live. **What it teaches about cost:** that pair was cheap because the two vantages differ by **seeded state** (a withheld g3 grant), and a symmetric pair contributes **two** controls. A pair that differs only by test code is the O(tests) case below. So triage the remaining 16 by *"is there a hero/org for whom this outcome legitimately does not exist in the seed?"* first — the seed-state cases are the cheap tail. | **iter-12+** |
 | ~~`NEGCTL-M256-cross-vantage` (original framing)~~ | **(iter-07 D30, superseded by the row above.)** Clause 2's negative controls stood at **5 of 21**; the 5 mutating ones get it free from their pre-state read (D22), and the **16 non-writing** ones need a different mechanism. Run each Playthrough's **own final locator against a contrast vantage** — a hero/org for whom the outcome legitimately does not exist. Real absence, app stays alive, and it proves **WHICH** data not merely **THAT** data (the M219 lesson, per-Playthrough). Cost stated honestly: **O(tests), not O(surfaces)** — budget it across more than one tik. | **iter-08+** |
