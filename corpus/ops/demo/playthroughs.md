@@ -284,6 +284,23 @@ one is wrong even if it passes.
   result. The seed must carry no live-LLM content (or be fully cache-pinned) and be pinned to a taxonomy capture
   version. When a Playthrough mutates the world, P6 holds **only if state is reset to the known seed between
   runs** (§ reset-to-seed below). A flaky Playthrough is a defect in the Playthrough.
+
+  > **P6 can forbid a journey that demonstrably WORKS — and the test to apply is misattribution, not novelty**
+  > (v2.8 M256 iter-18). Onboarding's self-import use case was recorded as blocked on a missing résumé fixture.
+  > Driven, the blocker was false: the LinkedIn source needs no fixture and the import genuinely completes on a
+  > demo in ~15 s, populating a real career profile — and it even arrives with a same-surface negative control
+  > (a non-resolving profile URL reaches the identical step and the forward control never enables). It was still
+  > **refused**, because what makes it green is a scrape of a live third-party site that blocks automation. The
+  > day that site says no, the Playthrough goes RED reading like a product regression. **That is misattribution
+  > — the same defect class [`seed-facts-fence.unit.spec.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/tests/seed-facts-fence.unit.spec.ts)
+  > exists to prevent, sourced from outside the building.**
+  >
+  > The distinction that decides it is **not** "does it touch the network" — the suite already runs a live-LLM
+  > studio lane at a 300 s budget. It is **whose refusal produces the RED**: a metered API called with our own
+  > credentials, designed to be called, is a dependency; a site that actively refuses automated clients is a
+  > coin-flip wearing a dependency's clothes. When a journey is only reachable through the second kind, the
+  > deliverable is a **verdict built on the measurement** — plus the working journey preserved as a
+  > `.draft` so the next attempt starts from evidence rather than re-deriving it — not a shipped test.
 - **P7 — Stories compose; use cases prove independently.** A story's use cases may chain, but each must still be
   independently verifiable from a declared seed.
 - **P8 — The spec is the alignment contract.** New products / stories / use cases extend the manifest under these
@@ -358,6 +375,20 @@ Playthrough files** — re-pinning is **O(surfaces), not O(tests)**.
   Results" heading, and the detail carries exactly one `<table>`). Still within §5.2 ("scope within a named
   *surface*, disambiguate by a visible landmark") — the discipline is surface-scoping, and `<main>` is only the
   most common surface, not the only one.
+- **A control can RELABEL, so name the accessor for the INTENT, not the label you last saw** (v2.8 M256 iter-18).
+  Onboarding's import step has one forward button that reads **`Next` and is DISABLED** while no import source is
+  supplied and becomes **`Import` and ENABLED** the moment a URL is typed. A `/^Next$/` locator therefore matches
+  an element that is *permanently disabled* on that path, so any wait on it can only time out — and the timeout
+  says nothing about the label. iter-18 concluded *"Next is disabled, the import path is not drivable"* across
+  **four consecutive probe passes**, one of which sat on it for **6.9 minutes**, before dumping every button's
+  label and finding `"Import"|en` sitting right there. The fix is an intent-named accessor spanning both states
+  (`forwardControl()` → `/^(Next|Import)$/`) with the label-specific ones kept for assertions that deliberately
+  name one state; the fence is
+  [`onboarding-locators.unit.spec.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/tests/onboarding-locators.unit.spec.ts),
+  which **captures the shipped matcher** and executes it against both strings, so re-narrowing it goes RED.
+  **The generalisation: when a wait on a control times out, dump every candidate's label before concluding the
+  path is closed** — the sibling of iter-17's *"when a wall has been measured four times, check whether every
+  attempt shared an assumption"* (there, four pointer attempts; here, four passes reading one label).
 - The **starting surface** (M202) was `/profile`:
   [`e2e/lib/profile-page.ts`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/lib/profile-page.ts)
   (`ProfilePage`) — it owns the "how do I find the hero's name on /profile" knowledge (`heroName(name)` scoped

@@ -40,22 +40,36 @@ every `pt-world` reset, so the sentiment recap and per-member table have real ag
 **Missing piece:** a page object + spec. No seeder work, no platform work. Named handler:
 `PT-M256-org-feedback`.
 
-### A2. `profile-skills.import.UC1` — **blocked on the empty `fixtures/` dir**
+### A2. `profile-skills.import.UC1` — ~~blocked on the empty `fixtures/` dir~~ → **blocked on the CV route itself** (re-cut, iter-18)
 
 *An already-onboarded user enriches their profile by importing a CV / LinkedIn profile.*
 
-**Verdict: buildable, blocked on a fixture, and it shares its blocker with onboarding's import UCs.** M201's
-adversarial verify resolved this **POSITIVE**: a real post-onboarding re-import surface exists and is wired
-(`/reimport-profile`, the `OnboardingUser` component with its `reimport` prop). Two paths exist and only one is
-P6-safe: the **LinkedIn** branch needs external CoreSignal plus an AI key (not deterministic, not available on a
-demo); the **résumé-fixture** branch is the safe one.
+**Verdict: buildable, and its blocker MOVED — measured, not reasoned (v2.8 M256 iter-18).** M201's adversarial
+verify resolved this **POSITIVE**: a real post-onboarding re-import surface exists and is wired
+(`/reimport-profile`, the `OnboardingUser` component with its `reimport` prop). Two paths exist. iter-18 drove
+both on `demo-2` — against the *onboarding* import step, which is the same component — and **both halves of
+this entry's original diagnosis need correcting:**
 
-**Missing piece:** a checked-in résumé fixture. `playthroughs/fixtures/` is **reserved and still EMPTY** — spec
-§5.4 set it aside for exactly this and *no shipped Playthrough has ever exercised a file-upload flow*. So the
-first Playthrough to use it pays a one-time cost: the fixture, plus the real-file-chooser interaction pattern.
-**Deliberately shared:** `onboarding.enterprise-workforce-standard.UC1` needs the same fixture and the same
-pattern, so the two should land together rather than paying the setup twice. Named handler:
-`PT-M256-resume-fixture-pair`.
+- **~~The fixture is missing.~~ RESOLVED.** `playthroughs/fixtures/` is no longer empty: it holds
+  `synthetic-cv-sre.pdf` + `.docx` (a wholly invented person, RFC-2606 `.example` domain, employer and school
+  names that occur nowhere in the seed or the taxonomy — so an assertion naming them can only be satisfied by
+  *that file having been imported*), plus a README stating the synthetic-only rule. The one-time cost this
+  entry priced has been paid, and the file-chooser pattern with it (`resumeFileInput()` — set files on the
+  input; the visible `Upload` button is only a trigger and vanishes once a file is attached).
+- **~~The LinkedIn branch is not available on a demo.~~ REFUTED.** It works. Measured: type a public profile
+  URL, the forward control relabels `Next` → `Import` and enables, the import runs (counter `5 → 8 → 50`) and
+  fills the preview with real career facts in **~15 s**. The *other* half of the original objection —
+  **not deterministic** — stands, and is now the whole reason it is refused: it scrapes a live third-party
+  site that blocks automation, so a RED would read as an Anthropos regression. That is misattribution.
+
+**The actual missing piece, and it is upstream of everything this entry used to name:** on the CV route the
+file attaches and uploads **`200 POST /api/resources/resume`** — and then the parse counter stays at `0` and
+the forward control stays `Next`/DISABLED for 100 s+, hidden DOM nodes included, on **both** formats. The
+deterministic route is blocked by the product, not by the harness. **PRODUCT-DEFECT CANDIDATE** — see
+`iter-18/decisions.md` D87. **Still deliberately shared** with
+`onboarding.enterprise-workforce-standard.UC1`: one fix unblocks both, and the fixture they were both waiting
+on now exists. Named handler: `PT-M256-resume-fixture-pair` (unchanged; its content is now "get the résumé
+parse running on a demo", not "check in a file").
 
 ### A3. `talk-to-data.query.UC1` — **blocked on a live Bedrock key (an integration boundary)**
 

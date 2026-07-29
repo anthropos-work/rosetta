@@ -311,6 +311,35 @@
   measured fidelity is untouched (checked, not assumed). `clerkenstein` all packages ok / 0 FAIL, `alignment`
   and `playthroughs` 0 FAIL, gofmt + build clean. — see `iter-16/progress.md`
 
+- iter-17 (tik, `closed-fixed`): **org-admin 2 of 4 → 3 of 4 — `pt-orgadmin-member-tag` is LIVE**, through the
+  one route iter-05's four pointer-based attempts never tried: **the keyboard**. A pointer-interception overlay
+  cannot block a KEY event, and `focus()` + `Space` ticked the antd checkbox where every click timed out — with
+  the *submit button's own tally* (`Assign Tags (1)`, enabled) as the proof the **application** registered it,
+  not `isChecked()`'s DOM opinion. Also a **retraction**: iter-05 D19's "`check({force:true})` cannot drive antd
+  state" **does not reproduce** — found by a mutant that PASSED when RED was expected, then confirmed by
+  repeating the original experiment (D84). The mutant was data, not a broken mutant. Keyboard still ships on the
+  argument that survives: `force: true` is the one interaction that can manufacture state the app never learns.
+  173 passed ×3 cold reset-to-seed, 0 flake; controls 22 of 25 (the new Playthrough arrived already covered, so
+  numerator and denominator both moved) — see [`iter-17/progress.md`](iter-17/progress.md)
+  *(ledger entry backfilled at iter-18: the iter-17 agent stalled before writing it.)*
+- iter-18 (tik, `closed-no-lift`): **no onboarding UC landed — and all four recorded blockers went from asserted
+  to MEASURED.** Six probe passes found iter-08's "UC1 needs a résumé fixture" **false** (the LinkedIn source
+  needs none — a `#linkedinUrl` textbox sits on the same step) and the import **really runs on a demo**: counter
+  `5 → 8 → 50`, a real career profile populated, forward control enabled in ~15 s, arriving with a same-surface
+  negative control (a non-resolving URL advances to the identical step and never enables, watched 120 s).
+  **It is deliberately NOT shipped (D88):** its green depends on scraping a site that blocks automation, so its
+  RED would read as an Anthropos regression — misattribution, against a gate that promises 0 flake. The
+  deterministic alternative is blocked **upstream of the fixture blamed for it**: the CV route attaches, uploads
+  **`200 POST /api/resources/resume`**, and the parse never starts — counter `0`, control disabled 100 s+, on a
+  real PDF and a `.docx` alike, hidden DOM nodes included (**D87**, product-defect candidate). Four of the six
+  passes cost eleven minutes of waiting on a control that had **relabelled** `Next` → `Import` (**D86** — locate
+  by intent, and dump every label before declaring a path closed). And **D89**: every seat is day-0 (Org A/C/D
+  all probed) but the first Playthrough to drive onboarding **consumes** it — demonstrated by this iter's own
+  probe locking itself out — so the next UC needs a seat *appended* (`personaUserIndexFor` indexes by
+  declaration order, so appending disturbs no existing hero). `fixtures/`, reserved and empty since M202, is now
+  real. 5 mutants RED; 178 passed ×3 cold reset-to-seed, 0 flake; controls 22 of 25 unchanged — see
+  [`iter-18/progress.md`](iter-18/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
