@@ -459,6 +459,87 @@ same way across releases. Guards relocated to end-of-file; fenced repo-wide by
 > detectable by asserting the **denominator**, which is why every fence this pass landed is fail-closed on how
 > much it scanned.
 
+### The third instance, and the biggest: `verify.sh` said "all live probes passed" over ZERO probes (v2.8 M256 harden pass 2)
+
+The rule above was written about the tooling's *own tests*. The second harden pass found it in **this doc's
+subject** — the live probe runner whose verdict everything downstream quotes.
+
+`live/verify.sh`'s success condition was `fail_count -eq 0`. That is equally true of *"every probe passed"* and
+*"no probe ran"*. Reproduced in one command:
+
+```
+STACK_SERVICES="skillpath" ./live/verify.sh
+  ▶ liveness (is each service reachable?)     # ...no rows
+  ▶ readiness (does each service answer correctly?)
+  ✓ all live probes passed                    # rc 0
+```
+
+`skillpath` was a real service name until **M247** decommissioned it into `app` and deleted its row from
+`lib/services.sh`'s `SERVICES` table. `target_service_selected()` returns 1 for an *unknown* name exactly as it
+does for a *deselected* one, and — the aggravating half — `lib/target.sh`'s own contract has promised since M18
+that *"A name not in the array is ignored **with a warning** (so a typo is visible, not silent)"*. **The warning
+was never implemented.** So a stale, misspelled, or decommissioned name in `STACK_SERVICES` selects nothing,
+silently, and the runner certifies it.
+
+**Why this one propagates further than any other false green in the tree.** `verify.sh`'s rc becomes
+`autoverify.sh`'s *"verify live"* verdict → `warnings=0` → `autoverify.json` `"green": true` → and that file is
+the gate input for `run-latency.sh`, `run-coverage.sh`, `run-studio-fcp.sh` and `buildbench.py`, and is rendered
+as `✓ pass` by `reports/generate.sh`. One unexamined set, five downstream consumers.
+
+Fixed by the same discipline as the two above — **assert the denominator, and state it**:
+
+- zero liveness probes is a hard refusal (`✗ NOTHING WAS PROBED`), naming `STACK_SERVICES`;
+- the success line now reads `✓ all live probes passed (13 liveness + 7 readiness; 0 readiness probe(s) out of
+  scope)`, so a reader sees the set without re-deriving it;
+- the promised unknown-name warning exists, non-fatally (a bring-up's compose scope may legitimately name
+  services this probe table does not model — the **zero** case is what fails).
+
+Live-verified on a local `demo-2`: 13 + 7 at full scope, 2 + 2 under a legitimate `"postgresql redis"` filter,
+refusal on the unknown name.
+
+### Absence of evidence is not evidence — the `-s` trap (v2.8 M256 harden pass 2)
+
+Two of `autoverify.sh`'s bring-up asserts keyed on `[ -s "$STACK_DIR/<log>" ]` and put the success message in the
+`else`. **`-s` is false for a file that does not exist just as it is for one that exists and is empty**, so a
+stack where the patch phase or the frontend-build phase never ran printed:
+
+```
+  ✓ demo-patches: all applied (none refused, none skipped)
+  ✓ frontend builds: ok (the running images are this run's)
+```
+
+The second claim is a **gate input** by `autoverify.sh`'s own comment (`run-latency.sh` refuses to measure without
+it), and it is exactly the claim an absent log cannot support. The distinction is decidable and free:
+`up-injected.sh` **truncates** each log as it enters the phase (`: > "$STACK/demopatch.log"`), so **the file's
+existence is the writer's receipt.** No receipt, no claim — absent is now its own branch and it warns.
+
+> **The generalization worth carrying:** when a check reads an artifact to decide, enumerate **three** states, not
+> two — *present-and-clean*, *present-and-dirty*, and *not-there-at-all*. Collapsing the third into the first is
+> how a phase that never ran becomes a phase that passed. The same shape appeared four times in one pass: `-s` on
+> two logs, a missing `generatedAt` in `run-coverage.sh`, and `EXPECTED_PAIRS` set-but-empty in
+> `aggregate-content.py`.
+
+### A guard that cannot find its subject must not exit 0 (v2.8 M256 harden pass 2)
+
+`rc 0` is what an `&&` chain and a CI step read; a `SKIP` line on stdout is not a signal. `stack-core`'s
+`dev_flag_guard.py` had **two** `SKIP → return 0` paths, so renaming `dev-stack/dev-stack` made the flag
+cross-check silently stop existing — in a file that already reasoned the principle out four lines lower (*"An
+empty result is a FINDING, not a pass"*) for its *empty*-result case but not its *missing-input* case.
+
+The resolution is not "fail on every skip" — it is that **the two skips are different things**:
+
+| situation | verdict | why |
+|---|---|---|
+| no rosetta root found | `rc 0`, and the message says **NOTHING WAS CHECKED** | rext can legitimately be cloned without rosetta beside it; failing a build for that is wrong |
+| `dev-stack/dev-stack` absent | `rc 2` | that file ships **inside rext** — its absence is a broken tree or a moved path, never a rosetta-less checkout |
+
+**`rc 2`, not `rc 1`:** *"could not run"* is a different diagnosis from *"found a problem"*, and collapsing them
+sends the reader in the wrong direction — the same split `ptvalidate` already makes for `datadna`'s exit 3.
+`corpus_index_guard.py` took the same treatment: it reported *"every doc has its directory-README index row"* from
+an empty violation list, which is equally true when **no** directory was index-bearing (rename every `README.md`
+and it sweeps zero docs and passes), so it now counts what it inspected and says so — *"all 82 doc(s) across 6
+index-bearing directory/ies"*.
+
 ## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
 
 **Restricting *who can reach* a demo is the VM's and the VPN's job, not the demo stack's.** The stack's only

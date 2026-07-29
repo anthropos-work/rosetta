@@ -257,6 +257,28 @@ from the **real replayed public taxonomy** (the `public`-schema skills/roles cat
 **seed-side closure gene** (`datadna measure-closure`) proves zero dangling skill refs after seeding. Every
 chain table is `PerStackIsolated`, so the same zero-pollution posture holds.
 
+> **The closure gene now states its own DENOMINATOR — because "0 dangling" used to be vacuous (v2.8 M256 harden
+> pass 2).** The gene read the dangling count alone, so an **unseeded** stack — nothing referenced, therefore
+> nothing dangling — passed with the detail *"every seeded verified-skill node-id resolves in the replayed
+> taxonomy"*, a sentence that is trivially true of an empty set. That mattered because `ptvalidate --stack` runs
+> this gate expressly *"so the seed is not a blind spot"*: a gate that passes on an empty seed makes the seed
+> exactly the blind spot it was added to remove. Measured live rather than argued — on `demo-2` the real seed's
+> query returns **(referenced 225, dangling 0)** and the same query with its four source tables emptied returns
+> **(0, 0)** with the same empty sample, i.e. an identical verdict. The probe now carries the **referenced
+> population** out with the dangling count, zero referenced **FAILS** ("the closure gene measured NOTHING, which
+> is not the same as a closed seed"), and a pass reads `all 225 seeded verified-skill node-id(s) resolve`. The
+> probe's docstring had already taken this position for a *missing* source schema (*"a partial seed is not
+> silently closed"*) — the hole was one step down, where the schemas exist and hold no rows.
+>
+> **The same shape, one file over:** `AuditLog.AssertClean` — the post-run **proof of zero pollution** whose
+> verdict is `isolation: clean (no shared/external writes landed)` — is a loop over the audit ledger, so an
+> **empty** ledger satisfies it. And recording an *allowed* write is **voluntary per-seeder** (`seeder/dag.go`
+> records only the BLOCKED path; each seeder calls `audit.Record` itself), so a seeder that omits its `Record`
+> writes rows the proof never sees. `AssertRecorded` now cross-checks the ledger against the **DAG's own
+> results** — a surface reporting rows with no ledger entry is an *unaudited write* and fails the run — and the
+> success line states how many write attempts the proof covers. Coverage is the invariant, not arithmetic
+> equality; a zero-row surface and a run with no surfaces still pass.
+
 **Full reference: [`demo/stories-spec.md`](demo/stories-spec.md)** — the 7-table chain, the DB-enforced vs
 inserted-but-invisible constraint landmines, the `user_level` (claimed side) requirement, and the
 declare-a-hero blueprint shape.

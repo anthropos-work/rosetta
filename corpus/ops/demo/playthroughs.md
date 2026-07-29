@@ -818,6 +818,41 @@ headers. The fences were correct about *whether* and wrong about *where*: a live
 place** (`m.replace(/[^\n]/g, ' ')`) rather than removing them. Cheap, and it is the difference between a fence
 that is trusted and one that is argued with.
 
+**One committed `.only` makes the whole suite report success on 1 of 18 (v2.8 M256 harden pass 2).** Both
+Playwright configs in rext set `forbidOnly: !!process.env.CI`, and **nothing that drives either harness sets
+`CI`** — not `run-playthroughs.sh`, not `run-coverage.sh`, not `run-latency.sh`. So a single `test.only` left in a
+committed spec silently reduces the run to that one test and exits **0**. Measured: a 20-test unit run plus
+`.only` on a third spec → `1 passed`, rc 0, no warning anywhere. For the Playthrough suite `ptreport` *would* flag
+the other 17 as *"did not run"* — but the runner swallows that reconciliation into a deliberate non-fatal
+`|| echo`, so the **run verdict** stays green having checked one Playthrough. For the `stack-verify` sweeps it is
+worse: their denominators (**29/29**, then **47/47** — figures this corpus quotes) are read from what ran, so a
+shrunken world reports as a complete one.
+
+> **A fence under `tests/` cannot close this**, and that is the interesting part: `.only` stops the fence from
+> running too. The guard has to live where Playwright evaluates it *before any test* — the config. Both are now
+> `forbidOnly` **default-ON**, with a named escape (`PT_ALLOW_ONLY=1` / `PW_ALLOW_ONLY=1`) for a deliberate local
+> focus run. **General rule: a check that lives inside the thing it checks cannot detect a failure mode that
+> suppresses execution.**
+
+**`ptreport` reconciled a run that never happened (v2.8 M256 harden pass 2).** `run-playthroughs.sh` handed
+`ptreport` a path — `e2e/report/last-run.json` — and nothing asked whether that file came from the run just made.
+Demonstrated: `npx playwright test --no-such-flag` exits 1 having written no report, and `ptreport` still printed a
+complete four-state map off the file already on disk and applied its gate to it.
+
+The runner's own history says this is not hypothetical: its **M204 iter-02** note records a CLI `--reporter=list`
+override *replacing* the config's reporter list, leaving `last-run.json` stale for a whole milestone and
+decoupling the four-state map — the map the milestone gate reads — from the actual run. **That fix removed the
+cause and added no check.** Now two mechanisms, because they fail differently:
+
+1. the runner **deletes** the results file before the run, so *"the reporter never fired"* is a loud missing-file
+   error rather than a silent read of last time;
+2. it records the run start and passes `ptreport --results-not-before <epoch>`, which **refuses** an older file.
+
+The refusal is **exit 3, not the gate exit**: a stale file does not mean the Playthroughs regressed, it means this
+reconciliation has no evidence, and sending the diagnosis the wrong way is the mistake `runDatadnaClosure`
+documents one binary over. The flag takes an **integer epoch** deliberately — M236 lost half the world to an age
+check that parsed a UTC timestamp as local time, and an integer has no timezone to get wrong.
+
 **Seed-then-reload for authz-gated features (M203 iter-05).** A feature whose access is gated by **Sentinel**
 (a casbin policy — e.g. `FEATURE_JOB_SIMULATIONS`, which the AI-sim launch reads via
 `userMembership.organizationFeatures` → the g3 grouping policy) is only effective **after the running Sentinel
