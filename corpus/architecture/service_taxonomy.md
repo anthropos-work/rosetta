@@ -346,9 +346,10 @@ make up-all
 ### Native Development (Single Service)
 ```bash
 cd platform
-make dev S=cms         # Stops Docker container
-cd ../cms
-go run .               # Run natively
+make dev S=backend     # Stops Docker container
+cd ../app
+go run .               # Run natively — this one process covers skiller,
+                       # skillpath, roadrunner, jobsimulation and cms too
 ```
 
 ### Profiles

@@ -87,11 +87,11 @@ Routing URLs use Docker **service names** on `app-network` (deliberately avoidin
 |----------|------------------------------|-------|
 | `backend` (the `app` service) | `http://backend:8082/graphql/query` | subgraph named `backend`, maps to repo/service `app` (includes the taxonomy queries absorbed from the former `skiller` subgraph) |
 | `jobsimulation` | `http://jobsimulation:8400/query` | **subscriptions** via `sse_post` |
-| `cms` | `http://cms:8090/query` | |
 
-> The `skillpath` subgraph was removed when the skillpath service merged into `app`
-> ("skillpath-in-app", M502→M507); the `backend` subgraph now serves the skill-path
-> session types/queries. Only 3 subgraphs remain.
+> All four non-`backend` subgraphs were removed as their services merged into `app`:
+> `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation`
+> ("jobsim-in-app"), and `cms` ("cms-in-app v8.0" — the 2→1 step). The `backend` subgraph
+> serves all of their types/queries. **Only 1 subgraph remains.**
 >
 > `dev` mode uses `host.docker.internal:<port>`; `prod` uses AWS service-discovery
 > DNS where all subgraphs share container port **8080**. Use the `-compose` config

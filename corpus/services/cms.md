@@ -137,9 +137,9 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 ## Interface Discovery
 
-* **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. GraphQL API served at `:8090/query`; Apollo Sandbox playground at `:8090/` when running locally. (There is also a Directus webhook receiver at `:8090/webhooks/`.)
-* **RPC**: `internal/rpcsrv` — used by Backend (incl. the in-process skill-path engine) and Jobsimulation via `CMS_RPC_ADDR=http://cms:8091`.
-* **Federation**: CMS is one of the 3 subgraphs federated by Cosmo Router (`backend`, `jobsimulation`, `cms`) — the former `skillpath` subgraph was folded into `backend` when skillpath merged into `app`.
+* **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
+* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger`, via `CMS_RPC_ADDR=http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production).
+* **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0, taking the supergraph from **2 subgraphs to 1**. Cosmo Router now composes `backend` alone.
 
 ### Upstream consumers
 * Next Web App (GraphQL)
@@ -178,9 +178,9 @@ make up PROFILE=cms
 
 ```bash
 cd platform
-make dev S=cms           # stops the docker container for cms
-cd ../cms
-go run .
+make dev S=backend       # stops the backend container
+cd ../app
+go run .                 # the cms domain runs inside this process
 ```
 
 For Python pipeline development:
