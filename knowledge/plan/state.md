@@ -1,10 +1,10 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M256 — playthrough sharpening (iterative) — PLANNED, not started. Bootstrap tok is pre-seeded: releases/02.80-fast-build/evidence/playthrough-map.md"
+active_milestone: "M256 — playthrough sharpening (iterative) — IN PROGRESS, 20 iters closed, 2 harden passes. PAUSED on iter-20 D99 (a user decision). Gate: clause 1 flake half MET; clause 2 controls 23/25 TERMINAL + mutating 7/5 + blocked 1/1; clause 3 org-admin 3/4, onboarding 1/5."
 last_closed: "M255 — 2026-07-28 (build-bench & host-headroom; section, HARD barrier, VERDICT GO)"
-phase: "M255 CLOSED + merged into release/02.80-fast-build. Next: M256 (iterative) via /developer-kit:work-mstone-iters or :build-mstone-iters. M256's code half is fully local; only its suite-p50 clause needs a host (billion = standing sign-off rule)."
-last_updated: "2026-07-28"
+phase: "M256 paused on a user decision (iter-20 D99). Both repos clean + pushed; rext tag fast-build-m256-iter-20 on origin; demo-2 up (16 containers, pt-world, drifted cockpit fixture sha 99e2f315). Resume: /developer-kit:work-mstone-iters --milestone=M256 after D99 is answered."
+last_updated: "2026-07-29"
 ---
 
 # State
