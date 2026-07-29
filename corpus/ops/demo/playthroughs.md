@@ -712,6 +712,46 @@ the reverse: the label is its own `<span>` carrying **no number**, and the paren
 anywhere. An accessor copied from the profile one returns `null` against a page that plainly renders the
 stat, and the Playthrough fails on a working surface.
 
+**An assertion that cannot tell "no data" from "a service is down" is the could-not-fail class wearing a
+different hat (v2.8 M256 iter-15).** `pt-activity-drilldown` asserted `contentRows().first()` visible then
+`count() > 0`. Measured: when the `jobsimulation` container is down, its grids render **20 `<tr>` whose
+`textContent` is empty** — *indefinitely* (watched 40 s), with **no empty state and no error anywhere in the
+UI** — and both assertions pass on that. The Playthrough still failed, three steps later, on a row-link wait,
+reporting a timeout that blamed a locator. The sharpened assertion (rows that **carry text**) failed
+immediately and named the real condition. A suite whose job is to detect breakage must not carry assertions
+that report the wrong *cause*; that is the same defect as one that cannot fire, just louder and wronger.
+
+Which leads to the operational half, worth knowing before you spend an hour on it: **a clean `Exited (0)` is
+not a healthy container.** After an un-clean Postgres restart, `jobsimulation` and `cms` **self-terminate by
+design** on their DB-health monitors (*"DB too many ping failures, shutting down"*) and nothing restarts
+them. `docker ps` then reads 14 of 16 "Up". Disk was fine — this is **not** the
+[`build-budget.md`](build-budget.md) M239-F1 ENOSPC trap, which is the first thing it resembles. Recovery is
+a `docker start` of the two containers (no build, no compose, no teardown). **Check container liveness before
+diagnosing a Playthrough**: the cheapest measurement, and it should be a bring-up cheap-win.
+
+**A fence that needs a human to find its own misses is not yet a fence — and the widening must be MEASURED
+(v2.8 M256 iter-15).** The bounded-interaction fence scoped itself to retry loops, enumerated its
+out-of-scope set, and stated its own trigger for growing: *"if a straight-line site ever produces an opaque
+hang, it becomes evidence and this boundary moves."* Its self-test proving it was **not** trigger-happy then
+quoted `getByText(/How we measure/i).first().click()` verbatim as an example of a *safe* site — and that line
+hung for **600 s** on a vantage where the tab does not exist (Playwright's action timeout defaults to `0`).
+
+Two transferable moves. First, **find the property that distinguishes the harmful sites**, rather than
+converting everything: here it is *the element may legitimately not exist on some vantage*, which is not
+statically decidable — but a method whose **name** declares intent (`open*` / `switchTo*` / `expand*` /
+`reveal*` / `drill*`) is exactly where that is true, so the author's own naming makes the rule decidable.
+Second, **measure the blast radius before adopting the rule**: this one flags **7** sites, where "bound
+everything in the page-object layer" would have been ~28 evidence-free edits. Seven is a boundary moving;
+twenty-eight is a fence rotting into noise and then being switched off. Keep the old self-test, correctly
+re-scoped, as the record of where the boundary was.
+
+**A probe must use the predicate the CODE uses (v2.8 M256 iter-15).** A probe that counted elements whose
+text *equalled* a step name read `0` on a surface where the accessor under test — which matches a **regex
+substring** — reads `1`, and that briefly looked like a refutation of a correct earlier finding. An
+exact-match probe over a substring accessor is not a stricter measurement, it is a **different question**.
+Sibling of iter-14's rule about DOM shape: what was inferred rather than measured here was the *matching
+semantics*.
+
 **A settle predicate the empty state satisfies is not a settle predicate (v2.8 M256 iter-14).** A probe that
 waited for `table tbody tr > 5` reported a grid as *populated* while it was rendering **20 rows with no cell
 content**, and the conclusion drawn from that — a permanently empty surface, i.e. a free contrast vantage —

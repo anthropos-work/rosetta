@@ -540,6 +540,35 @@ an empty violation list, which is equally true when **no** directory was index-b
 and it sweeps zero docs and passes), so it now counts what it inspected and says so — *"all 82 doc(s) across 6
 index-bearing directory/ies"*.
 
+### A CONTAINER-LIVENESS assert is the cheapest cheap-win there is, and the stack has no restart policy (v2.8 M256 iter-15)
+
+**A clean `Exited (0)` is not a healthy container, and nothing in the bring-up notices.** Measured on `demo-2`:
+Postgres restarted un-cleanly (*"database system was not properly shut down; automatic recovery in progress"*),
+and `jobsimulation` + `cms` **self-terminated by design** on their DB-health monitors — *"DB too many ping
+failures, shutting down"*, exit status **0**, a graceful shutdown working exactly as written. **Nothing restarts
+them.** The stack then sat at **14 of 16 containers "Up"** for an hour.
+
+What that looks like from the outside is the part worth internalising:
+
+- **The application surfaces no error at all.** Every `jobsimulation`-backed surface renders **20 table rows
+  with empty cells** — no empty state, no spinner, no toast, no console error. Held for 40 s of watching.
+- **A `rows > 0` assertion passes on it.** The Playthrough covering that surface failed only three steps
+  later, on a row-link wait, reporting a timeout that blamed a locator — three layers from the cause. An hour
+  went into disbelieving a correct new assertion before anyone read `docker ps -a`.
+- **It is NOT the ENOSPC trap.** Disk was 5 % used, 227 GiB free. [`demo/build-budget.md`](demo/build-budget.md)'s
+  M239-F1 records that a mid-campaign ENOSPC *presents* as `redis exited (1)`, and this looks like its cousin
+  and is not — so check disk, then stop, rather than assuming.
+- **Recovery is `docker start <container>`** — no build, no compose, no teardown. The same class of action
+  `run-playthroughs.sh --reset` already performs on the fake services every run.
+
+**The gap this names:** `autoverify` probes HTTP endpoints and DB state, and a dead subgraph's surfaces answer
+`200` with empty data, so nothing in the cheap-win set fires. A **container-liveness assert** — *the stack's
+declared container set is all running* — is one line, costs nothing, and would have named this instead of an
+hour of Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258.
+
+**The general rule: check container liveness BEFORE diagnosing a test.** It is the cheapest measurement
+available and it is the one that was taken fourth.
+
 ## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
 
 **Restricting *who can reach* a demo is the VM's and the VPN's job, not the demo stack's.** The stack's only
