@@ -157,3 +157,37 @@ production's entire `p3` surface, so there is no wider sweep hiding behind this.
 4. `DEFECT-M256-silent-forbidden-mutation` stands on its own and still routes to the platform: a
    refused mutation renders **no user-visible error**. That is a real product defect independent of
    who holds the grant, and the demo's missing grant is precisely what surfaced it.
+
+### D99 — CORRECTION to the mechanism (2026-07-30, from iter-21's measurement)
+
+**The verdict stands; my stated mechanism was wrong and is retracted.** I wrote that "the seeder
+replicated the four read grants and dropped the single write grant." **The seeding fleet has never
+written a `p3` row in its life.** All 17 come from the platform's `sentinel/init_policy.sql`.
+
+What is actually true, and it is a better justification than mine:
+
+- `init_policy.sql` **deliberately withholds** `taxonomy:write` — platform commit `c6096d1`, *"drop
+  default admin taxonomy:write, add on-demand grants file"* — and ships
+  `sentinel/local_superadmin_grants.sql` as the sanctioned way to add it, whose stated use case is
+  **verbatim** *"Testing flows that require taxonomy:write"*.
+- **Nothing has ever applied that file to a demo or dev stack.** So the demo was **faithful to
+  `init_policy.sql` and unfaithful to production**. Not a dropped row — an un-applied sanctioned file.
+
+**Why this matters beyond pedantry:** it removes the last doubt about iter-20's refusal. Applying the
+grant is *not* the manufactured-capability move it declined to make — **the row is the platform's own,
+the platform's own file names this exact use case, and production has it.** Under my wrong mechanism
+we would have been patching our seeder to paper over a divergence we invented; under the true one we
+are applying a grant the platform ships for precisely this purpose.
+
+**The generalisable finding also grew.** The blocked write was hiding two more, and #3 is the largest:
+replay does `TRUNCATE … RESTART IDENTITY` (deliberate — "so re-loaded rows keep stable ids") then
+COPYs rows back **with explicit ids**, and never puts the sequences back above them. Those two tables
+are the **only** identity columns in `public` and **both** were broken, so on **every demo ever built**
+every taxonomy write duplicate-keyed — creating a role and creating a custom skill alike. The fix
+discovers sequence-backed columns from the **target's live catalog** rather than a hardcoded list, so a
+future migration is covered without a re-capture.
+
+**And the fence is worth more than the UC:** `stackseed --policy-check` compares a stack's live `p3`
+surface against the expected set **in both directions** — MISSING is the under-grant that caused this,
+EXTRA is the over-grant, which is the mechanical form of the judgement iter-20 had to make by hand.
+*A Playthrough over a permission we granted ourselves is green about our own grant.*
