@@ -123,9 +123,11 @@ seeded), and **opened the `ai-simulations.access-denied` story** as **1 more** (
 `pt-orgadmin-role-create` at iter-22 — the latter's parked draft *could not have passed*: the app navigates to
 `/enterprise/roles/<serverAssignedId>?setup=true` after Save and the list paginates at 20/page, so the new role
 is not on page 1 even after a **successful** create), and **landed the onboarding product's second use case**
-(`pt-onboarding-aireadiness-guided` at iter-26 — see § "The day-0 readiness seat" below). The corpus now stands
-at **27 live Playthroughs, 4 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`,
-0 flake over 3 consecutive cold reset-to-seed runs.
+(`pt-onboarding-aireadiness-guided` at iter-26 — see § "The day-0 readiness seat" below) **and its third**
+(`pt-onboarding-hiring-candidate` at iter-27 — the suite's first Playthrough to drive an onboarding flow in the
+**hiring** app; see § "The hiring-org day-0 candidate" below). The corpus now stands at **28 live Playthroughs,
+3 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive
+cold reset-to-seed runs.
 
 > **Onboarding was thought unseedable, and it was a schema misreading (v2.8 M256 iter-07/08).** The milestone's
 > own KB-fidelity audit concluded there was **no pre-onboarding state and none could be declared**, reasoning
@@ -189,6 +191,52 @@ browser off `/home`*, which is why the read-back must re-navigate rather than re
 three steps" is not drivable inside a Playthrough budget. The use case is scoped to the flow being **entered from
 day-0** and its **first step completed and persisted** with the next step observably unlocked — the same
 discipline as `pt-aisim-chat-launch` (stops at `/start`).
+
+### The hiring-org day-0 candidate — *the routing claim we deliberately do not make*
+
+`onboarding.enterprise-hiring.UC1` is the only onboarding use case whose curated final spans two apps, and for
+two releases its manifest note carried a warning: a final observing *"the member is in the hiring app"* might be
+proving the **cockpit's** routing rather than **onboarding's**, and the discriminator had to be found before the
+use case could be honestly asserted.
+
+**iter-27 found it by reading the source, and the answer is worse than the warning.** The eject is
+`apps/web/src/context/UserStatusContext.tsx:142-173`, and it fires on **`userHasAllHiringOrgs` alone** — there is
+**no onboarding condition in it**. So the cross-app routing belongs to neither onboarding nor the cockpit: it is a
+membership-shape redirect that happens on any `apps/web` page load, for a member who has onboarded or not.
+Asserting it would put a green over a mechanism the use case is not about, so **the Playthrough does not assert
+it** — and says so, in the spec header and in the manifest, rather than dropping the intermediate silently.
+
+**What IS onboarding-owned is asserted.** The hiring app has its **own** onboarding route
+(`apps/hiring/src/app/(authenticated)/(signedup)/onboarding`) whose `onClose` is `router.replace('/home')`. The
+Playthrough drives the **hiring base** (3001+offset) — where the platform puts an all-hiring-org member anyway —
+and proves the half onboarding performs.
+
+**The seat needed no seeder change, and that is worth recording** because its routed blocker read as if it did.
+Day-0 onboarding is the **default** (completion lives in `public.user_params.onboarding`, NULL for every seeded
+user); an end-user hero in a hiring org is a **candidate**, not a member (`endUserHeroRole`, M224); and
+`heroHiringStage` already pins a **struggling** candidate hero to `assignedOnly` — *"a pending assignment, not yet
+on the scoreboard."* So `trajectory: struggling` on `pt-hiring-onboard` is load-bearing for its **hiring**
+meaning, not its skills arc: a *thriving* candidate hero arrives **assessed**, having already taken the positions
+— iter-26's stage-3 defect class in the hiring domain.
+
+**Three measured NON-facts, recorded so nobody adds the obvious assertion and watches it fail on a working
+product:**
+
+1. Revisiting `/onboarding` in the **hiring** app after completing it does **not** redirect — it serves the flow
+   again, unlike `apps/web`. `pt-onboarding-complete` proves persistence *by* that redirect; that read-back does
+   not exist here.
+2. **Her home is seed state.** The greeting, the tenant chrome and the assigned position are all present
+   *before* she onboards — measured as a mutant that **skipped the write entirely and still passed**. The fix
+   was to delete the spec's manual navigation and let the app's own `router.replace('/home')` be the
+   observation; that one line is now the only thing the write can satisfy.
+3. The surface does **not** distinguish taken from not-taken (an already-assessed candidate renders the identical
+   startable link). The final asserts the **affordance** — her position, in her tenant, with a real title; the
+   "not yet taken" half is a **seed guarantee**, true by construction and not a claim this surface supports.
+
+Point 2 is the general lesson and it is not specific to hiring: **on a seeded world, "the outcome is present
+after the action" is not evidence unless it was absent before.** The Playthrough that reads a page the write
+never touched is the same green-but-wrong shape as an assertion satisfied by an empty state, arriving through the
+seed instead of through the locator.
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
