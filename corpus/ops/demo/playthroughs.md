@@ -125,8 +125,10 @@ seeded), and **opened the `ai-simulations.access-denied` story** as **1 more** (
 is not on page 1 even after a **successful** create), and **landed the onboarding product's second use case**
 (`pt-onboarding-aireadiness-guided` at iter-26 — see § "The day-0 readiness seat" below) **and its third**
 (`pt-onboarding-hiring-candidate` at iter-27 — the suite's first Playthrough to drive an onboarding flow in the
-**hiring** app; see § "The hiring-org day-0 candidate" below). The corpus now stands at **28 live Playthroughs,
-3 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive
+**hiring** app; see § "The hiring-org day-0 candidate" below) **and its fourth**
+(`pt-onboarding-org-prepared` at iter-29 — the org-prepared variant; see § "The org-prepared onboarding
+variant"). Onboarding stands at **4 of its 5** curated use cases, and the corpus at **29 live Playthroughs,
+2 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive
 cold reset-to-seed runs.
 
 > **Onboarding was thought unseedable, and it was a schema misreading (v2.8 M256 iter-07/08).** The milestone's
@@ -293,6 +295,35 @@ worth carrying from building it:
    because that no-op presents as *"the product does not show the prepared summary."*
 2. **The missing `audit.Record` was caught by the isolation guard** on the first live run (*"surface reports 1
    row written but recorded NO audit entry"*). Two guards fired while building this and both were right.
+
+**The journey, measured (iter-29):** `/onboarding` serves the prepared summary and **no import form at all**;
+the relabelled **`Start`** control **confirms the role and advances** — `user_params.onboarding` goes
+`[{import}]` → `[{import},{role}]` — landing on the skills screen with the declared role's **real taxonomy
+skills** to keep or discard. `pt-onboarding-org-prepared` asserts exactly that, with the import form's absence
+as a cross-vantage control against every other seat in the world.
+
+### An absence assertion needs a companion that proves WHEN it was read — not only WHERE
+
+This is the **third** variation on one defect in this milestone, and the third confounder is the surprising one:
+
+| iter | the absence assertion was satisfied by | the confounder |
+|---|---|---|
+| **12** | a **dead page** (an ablated response: `bodyLen` 2147 → 24, 0 buttons) — which satisfies *every* absence | the page is broken |
+| **22** | a table reading *"No roles match your filters."* — the loading row **is** the empty row | the page is empty |
+| **29** | a page that **had not hydrated yet** — `toHaveCount(0)` immediately after a navigation | the page is **not there yet** |
+
+iter-29's case is the one most likely to recur, because the assertion *looked* like a textbook server-side
+read-back on a fresh navigation and its reasoning was **correct**: once a `role` step is persisted,
+`managerImport` cannot be true, so the route cannot re-open on the prepared summary. It was still worthless —
+iter-27's standing **Q1 mutant** (*delete the action and see whether anything fails*) left only that read-back
+and it **PASSED**.
+
+**It was removed, not weakened.** An absence assertion a mid-hydration page satisfies is worse than no
+assertion, because it reads as proof. The honest repair is a POSITIVE locator on the screen the reload actually
+lands on — and when nobody has driven that screen, the right move is to route the half, not to assert it.
+
+> **The rule, in one line: after a navigation, prove the page ARRIVED before you prove anything is missing from
+> it.** iter-12's liveness-before-absence has a temporal reading, and this is it.
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
