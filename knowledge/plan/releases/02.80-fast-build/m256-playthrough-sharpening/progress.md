@@ -414,6 +414,41 @@
   **24 of 26**, `MUTATES=8`. `--policy-check` green after all three resets. rext `90865c6`. — see
   [`iter-22/progress.md`](iter-22/progress.md)
 
+- iter-23 (tik, `closed-fixed`): **the milestone's one PRODUCT defect is captured — and it had to be
+  reproduced on purpose, because the fix that unblocked iter-22 destroyed its own evidence.**
+  `DEFECT-M256-silent-forbidden-mutation` was visible only while a demo *lacked* the taxonomy-write grant;
+  iter-21 seeded it, so the refusal path stopped being exercised. Reproduced deliberately (row backed up →
+  `DELETE` on **demo-2 only** → Sentinel reload → drive the journey → restore, `diff`-clean, `--policy-check`
+  rc 0), and — because the claim under test is a **NEGATIVE** — enumerated across **ten channels** rather
+  than checked in one. That enumeration produced the fact that reframed the whole report: **`[role=alert]`
+  is PRESENT and EMPTY.** The form is not missing error handling; it has **one** error surface and it
+  belongs to a *different* error (the duplicate warning), which is precisely why iter-05 recorded "an EMPTY
+  alert region" and the form was blamed for fifteen iters. Also measured: the dialog stays open with `Save`
+  still ENABLED (inviting a retry that fails identically), the catalog total reads **49 → 49**, nothing
+  lands, the console says nothing about it — and there **is** an uncaught page error, so the failure exists
+  as an unhandled rejection rather than as UI. **Two defects, one symptom:** `AddJobRole.tsx` rethrows every
+  non-duplicate error out of an `async` click handler (`onClose()` sits after the try/catch — hence the open
+  dialog), and that `throw error;` is **the only one in the whole `packages/ui` tree**, so the rethrow is
+  *not* the systemic part; the systemic part is that the app's global `mutations.onError` is
+  `captureException` + PostHog **only**, i.e. **no default user-visible failure surface for ANY mutation**.
+  **And a dead contract that makes it look handled:** six mutations across four `hooks/organization/*`
+  files declare `meta: { error: 'Failed to …' }` — human-readable failure sentences on exactly the
+  **org-admin write set**, including the mutation behind `pt-orgadmin-setting-toggle` — and **no handler
+  reads them**: there is **no `MutationCache`** anywhere (0 occurrences), and the only `meta.error` consumer
+  is `QueryCache.onError`, which uses it as a **Sentry tag**. *The most convincing evidence that something
+  is handled is code written to handle it and then wired to nothing.* The record lives at **milestone
+  level** ([`decisions.md`](decisions.md)) on purpose — a defect recorded inside the iter that found it,
+  or in the manifest comment beside a now-green UC, is a defect that closes with them; the generalised rule
+  is backfilled into `playthroughs.md` as **the fifth outcome the four-state map has no glyph for**. **Its
+  own limit is stated, not glossed:** only create-role was refused live; the three siblings' silence is
+  *inference* from the global handler, not measurement, and is routed as such. **Routes to the PLATFORM —
+  not fixed here** (zero platform edits is the release's hardest constraint). Side benefit: iter-21's
+  `--policy-check` fence was watched **RED against a live stack** for the first time (`rc 1`,
+  `live=17 expected=18`, naming `MISSING admin → org:feature:taxonomy:write`), having only ever been proven
+  against mutants — and its rc read `0` off a pipe and `1` into a variable, the milestone's own pipe rule
+  catching me in the act. No gate clause moves, by plan; confirming run **`187 passed`, rc 0**. — see
+  [`iter-23/progress.md`](iter-23/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -579,7 +614,8 @@ Fate-3 items land here.
 
 | Handler | What | Target |
 |---|---|---|
-| `DEFECT-M256-silent-forbidden-mutation` | **A REFUSED MUTATION RENDERS NOTHING AT ALL** (iter-20 D98) — no alert, no toast, no inline message; the dialog simply stays open and the count is unchanged. It is why `org-admin.roles.UC1` was blamed on its form for fifteen iters. **Routes to the PLATFORM; do not fix platform code.** Independent of who holds the grant. **Reproduce it deliberately** (revoke the `p3 admin → org:feature:taxonomy:write` row on demo-2, drive the create, observe, restore — a demo-DB write, permitted), record the shape, and **sweep the other org-admin writes** (tags, member-tag, settings) for the same pattern. Deliberately NOT opened at iter-22, whose planned scope it would have broken (the revoke disables the write path that iter landed). **Its evidence is reproducible on demand, not perishable** — we hold the grant. | **iter-23** |
+| ~~`DEFECT-M256-silent-forbidden-mutation`~~ | **CAPTURED (iter-23) — the full record is in [`decisions.md`](decisions.md) § DEFECT-M256-silent-forbidden-mutation, at MILESTONE level so it outlives the iter and the UC.** Reproduced deliberately (the grant revoked on demo-2, restored byte-identically, `--policy-check` rc 0 after) and enumerated across TEN channels, because the claim is a negative. The sharpest fact: **`[role=alert]` is PRESENT and EMPTY** — the form has one error surface and it belongs to a *different* error (the duplicate warning), which is why iter-05 read "an EMPTY alert region" and blamed the form for fifteen iters. Two defects, one symptom: `AddJobRole.tsx` rethrows every non-duplicate error out of an async click handler (the **only** `throw error;` in `packages/ui`), and the global `mutations.onError` is Sentry+PostHog **only** — no default user surface for ANY mutation. Plus a dead contract: **6 mutations in 4 `hooks/organization/*` files declare `meta: { error: … }` strings that no handler reads** (there is **no `MutationCache`**; the only consumer is `QueryCache`, as a Sentry *tag*) — i.e. the org-admin writes' authors wrote failure messages and the framework never wired them up. **Routes to the PLATFORM; not fixed here.** | **captured iter-23 → platform** |
+| ~~`DEFECT-M256-silent-forbidden-mutation` (original framing)~~ | **A REFUSED MUTATION RENDERS NOTHING AT ALL** (iter-20 D98) — no alert, no toast, no inline message; the dialog simply stays open and the count is unchanged. It is why `org-admin.roles.UC1` was blamed on its form for fifteen iters. **Routes to the PLATFORM; do not fix platform code.** Independent of who holds the grant. **Reproduce it deliberately** (revoke the `p3 admin → org:feature:taxonomy:write` row on demo-2, drive the create, observe, restore — a demo-DB write, permitted), record the shape, and **sweep the other org-admin writes** (tags, member-tag, settings) for the same pattern. Deliberately NOT opened at iter-22, whose planned scope it would have broken (the revoke disables the write path that iter landed). **Its evidence is reproducible on demand, not perishable** — we hold the grant. | **iter-23** |
 | `FIX-M256-autoverify-fapi-libressl` | `autoverify.sh` check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → warns *"NOBODY CAN LOG IN"* on a working stack (iter-01 D5). Give it a probe independent of the host TLS stack. | a later tik of M256 |
 | `DOC-M256-ptworld-reset-comment` | `playthroughs/seed/pt-world.seed.yaml`'s header claims the showcase world is "not touched by pt-world's reset". `doReset` takes **no org filter** — it is (audit F6). | a later tik of M256 |
 | `PERF-M256-parallel-lane` | The cookie/`__client`-scoped Clerkenstein registry **or** one fake-FAPI per worker. Both priced in iter-01 D1. A **wall-clock** lever, not a median one — no M256 gate clause needs it. | a future release milestone |

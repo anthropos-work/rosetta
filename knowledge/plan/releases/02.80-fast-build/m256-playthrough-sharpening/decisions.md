@@ -191,3 +191,110 @@ future migration is covered without a re-capture.
 surface against the expected set **in both directions** — MISSING is the under-grant that caused this,
 EXTRA is the over-grant, which is the mechanical form of the judgement iter-20 had to make by hand.
 *A Playthrough over a permission we granted ourselves is green about our own grant.*
+
+---
+
+## DEFECT-M256-silent-forbidden-mutation — CAPTURED (iter-23, 2026-07-30)
+
+**Routes to the PLATFORM (`next-web-app`). No platform code was edited. Read-only source reads only.**
+
+A mutation the backend REFUSES is, from the user's side, indistinguishable from a mutation that was never
+sent. iter-20 found this while root-causing `org-admin.roles.UC1` and recorded it in one paragraph; iter-21's
+fix then **removed the symptom from every demo**, so iter-23 reproduced it deliberately (revoke the
+`p3 admin → org:feature:taxonomy:write` row on **demo-2 only**, drive the journey, restore the row and
+re-verify) and enumerated every channel a user or operator could learn from.
+
+### What a refused `createJobRole` shows the user — MEASURED, all channels
+
+| channel | reading |
+|---|---|
+| HTTP status | **200** — the error rides inside it (`errors[].extensions.errors[].message = "unauthorized: forbidden"`, `code: DOWNSTREAM_SERVICE_ERROR`, `data: null`) |
+| `[role=alert]` | **count 1, text EMPTY** — the slot is mounted and says nothing |
+| `[role=status]` | none |
+| antd `message` / `notification` / `form-item-explain` | **all empty** |
+| the dialog | **stays open, `Save` still ENABLED** — it invites a retry that will fail identically |
+| the URL | unchanged |
+| the state | catalog total **49 → 49**, delta **0**, no row for the title |
+| the browser console | one unrelated Clerk dev-keys warning — **nothing about the failure** |
+| uncaught page error | **YES** — `Failed to fetch from Subgraph 'backend' … unauthorized: forbidden` |
+
+**So D98 is confirmed and sharpened.** It is not that the app has no error handling; it is that the app has
+**one** error surface here and it is reserved for a different error.
+
+### The line-level cause, and it is TWO defects with one symptom
+
+**(1) The form handles exactly one error code and rethrows the rest.**
+`packages/ui/src/JobRoles/Form/AddJobRole.tsx` `handleSubmit`:
+
+```ts
+} catch (error) {
+  const dup = duplicateJobRoleInfo(error);
+  if (dup) { setServerDuplicate(dup); return; }   // ← the ONLY handled shape
+  throw error;                                    // ← everything else, into the void
+}
+```
+
+`throw error` from an `async` function invoked by a click handler is an **unhandled promise rejection** —
+React renders nothing for it, which is exactly the `pageerror` above. `onClose()` sits *after* the try/catch,
+which is why the dialog stays open. And the empty `[role=alert]` is the **duplicate-warning slot**
+(`setServerDuplicate`), never populated. That is why iter-05 recorded *"an EMPTY alert region"* and why the
+form was blamed for fifteen iters: the alert element it saw belongs to a different error.
+
+Notably `throw error;` from a catch appears **exactly once** in the whole `packages/ui` tree — this form. The
+rethrow is not the systemic part.
+
+**(2) The systemic part: the app has NO default user-visible failure surface for any mutation.**
+`apps/web/src/providers/Query.provider.tsx`:
+
+```ts
+mutations: { onError: (error) => { captureException(error); PosthogClient.captureException(error); } }
+```
+
+Sentry and PostHog — **no user surface**. So every mutation in the app is silent to the user on failure
+unless it builds its own inline surface.
+
+**(3) And a dead contract that makes it look handled.** Six mutations across four `hooks/organization/*`
+files declare `meta: { error: 'Failed to enable organization setting' }` — human-readable failure sentences.
+**No handler reads them.** There is **no `MutationCache`** anywhere in the codebase (0 occurrences); the only
+`meta.error` consumer is `QueryCache.onError`, which reads `query.meta.error` and uses it **as a Sentry tag,
+not as a message**. So the strings are inert, and they are inert on precisely the **org-admin write set** —
+including `useUpdateOrganizationSetting`, the mutation behind `pt-orgadmin-setting-toggle`.
+
+### The sweep the route asked for
+
+All four org-admin writes share outcome (2). `useCreateJobRole`'s `onError` is Sentry-only; the other three go
+through the same global handler; and the settings write additionally carries one of the dead `meta.error`
+strings. **The authors of the org-admin writes wrote failure messages and the framework never wired them
+up** — which is a more useful bug report than "the create-role form is silent", because it names a fix that
+uses a convention the codebase already believes it has.
+
+### The limit of the sweep — stated, not glossed
+
+**Only `createJobRole` was refused LIVE.** The three sibling org-admin writes check different
+permissions, and revoking each would have meant three more revoke/restore cycles against a stack later
+iters depend on. So:
+
+- **Measured:** create-role's ten channels; the empty `[role=alert]`; the uncaught page error; the
+  49 → 49 no-op.
+- **Definitive by source:** the dead `meta.error` strings (a repo-wide search for `MutationCache` returns
+  **0**, so nothing can read a mutation's `meta`), and the global handler's Sentry-only body.
+- **Inference, NOT measurement:** that a refused tags-create / member-tag / settings-toggle would look
+  equally silent. The inference follows from the global handler, and it is still an inference.
+
+Whoever picks this up: driving one sibling refusal would close that gap in one revoke.
+
+### Suggested fix shape (for the platform team — NOT applied here)
+
+Add a `MutationCache` with an `onError` that reads `mutation.meta.error` and renders it (the convention six
+mutations already assume), and replace `AddJobRole`'s `throw error` with the same path. That turns six dead
+strings live and gives every future mutation a default surface. Both are platform edits and are out of scope
+for this milestone by its hardest constraint.
+
+### Safety
+
+Every write was to **demo-2's own Postgres**; production was not written and not read in this iter. The grant
+row was backed up before the revoke and **restored byte-identically** (`diff` clean), with
+`stackseed --policy-check --stack demo-2` returning **rc 0 · live=18 expected=18** afterwards. Side benefit:
+iter-21's `--policy-check` fence was watched **RED against a live stack** for the first time — `rc 1`,
+`live=17 expected=18`, naming `MISSING admin → org:feature:taxonomy:write (under-grant)`. It had previously
+only been proven against mutants.

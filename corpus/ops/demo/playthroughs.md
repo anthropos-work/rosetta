@@ -592,6 +592,30 @@ real semantic distinction. `Report.AllGreen()` (nothing failing/unimplementable/
 foundation-complete gate; `Report.NoRegressions()` (nothing `failing`) is the gate a *coverage* milestone runs —
 a build-reference `TODO` gap must not fail the suite. Coverage = passing ÷ total declared.
 
+### The fifth outcome the map has no glyph for — a PRODUCT DEFECT the suite finds (v2.8 M256 iter-23)
+
+The four states above all describe **the suite's relationship to a use case**. None of them describes the
+thing a Playthrough is ultimately for: *the product is broken, and here is the evidence.* That outcome has no
+row, no glyph and no ledger — so when M256 found one, it lived in a single paragraph attached to a use case
+that then went green, one manifest edit away from being deleted with the comment it sat in.
+
+**Record a product defect where it cannot be tidied away**: the milestone's `decisions.md` (which
+`/developer-kit:close-milestone` reads and routes) **and** its `progress.md` routing table, never only in the
+manifest comment beside the UC. A defect discovered while covering a use case outlives the coverage work.
+
+**And capture it while you can still reproduce it.** M256's case is the pattern: the defect was only visible
+because a demo was *missing* a grant; the fix that unblocked the use case also **removed the symptom from the
+demo**. Reproducing it deliberately (revoke on the demo DB → observe → restore, verifying the restore) is a
+sanctioned demo-DB write and is how the evidence gets taken before it is unreachable.
+
+**When the finding is a NEGATIVE — "nothing is surfaced" — enumerate the channels.** A probe that checks one
+place and finds nothing has not proven absence; it has failed to look. M256's capture enumerated the GraphQL
+response body, the dialog state, `role=alert`, `role=status`, antd `message`/`notification`/form-explain, the
+browser console, uncaught page errors, the URL, and the post-state — and the enumeration is what produced the
+sharpest single fact: **the `role=alert` region was PRESENT and EMPTY.** A form with a mounted, empty error
+slot is not a form with no error handling; it is a form whose error handling covers a different error, and
+that distinction is the whole bug report.
+
 ## The proof of life (M202)
 
 The trivial proof Playthrough
