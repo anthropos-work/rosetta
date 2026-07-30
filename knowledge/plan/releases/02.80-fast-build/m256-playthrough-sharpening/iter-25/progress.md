@@ -87,7 +87,16 @@ added, per the user's explicit call.
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: **y** — (6) protocol-stop: n — Outcome: exit-5
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: **y** — (5) cap-reached: n — (6) protocol-stop: n — Outcome: **exit-4**
+
+> **The grading is corrected, and the correction is the honest one.** This was first written as
+> `cap-reached / exit-5`. That is **wrong**: this session closed **4** tiks (iter-22, 23, 24, 25), not 5, so
+> the cap did not fire. What actually fires is § 4's rare-but-real clause — the session's context budget is
+> genuinely spent (8 full suite runs, 3 container rebuilds, ~20 mutants, four iters of records), and the
+> next routed item (`ONBOARD-M256-stage0-capability`) is a **seeder capability plus a live reseed plus a
+> full gate** that cannot be completed and verified in what remains. Starting it would leave exactly the
+> half-state the protocol forbids committing. Recorded rather than rounded up, because a milestone that
+> spent 25 iters removing checks that could not fail should not close a session on a mis-graded exit.
 **Decisions:** D81 implemented (specified at iter-16); the seat-select door recorded above.
 **Side-deliverables:** none.
 
