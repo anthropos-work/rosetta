@@ -122,6 +122,68 @@ wall-clock, with the environment stated, and note whether the original `≤ 5 s`
 absolute terms. **Reporting only — this does NOT become a fourth M258 gate clause.** If it misses, that is a
 finding about the machine or the suite, not an M258 failure.
 
+## Inherited from the M256 close (Fate 3, 2026-07-30)
+
+This milestone's claim is that a stack comes up **and proves itself**. That makes the *trustworthiness of the
+suite doing the proving* M258's business, not somebody else's — which is why these land here rather than in a
+milestone that merely happens to be next. Each names a way the suite can report success without having proven
+anything.
+
+- **The studio false-green bundle — `FIX-M256-studio-false-green` + `NEGCTL-M256-studio-pair` +
+  `DOC-M256-llm-lane-premise`.** `pt-studio-advanced-generate`'s matcher fires on the designer's **empty
+  section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft
+  populates it — so the Playthrough passes without the generation completing. **The old diagnosis was false and
+  must not be re-shipped:** iter-02 blamed the route's `Simulation Advanced Builder` header, and a 5-minute
+  poll shows that string **never renders**, so deleting the header alternative is a **no-op**. Assert a
+  POPULATED section instead (a character card, or a non-zero `designer.actors.counter.label`); evidence is
+  attached to the locator in `studio-builder-page.ts`. The two withheld negative controls follow the fix (**a
+  control over a known false green would certify the false green** — M256 `D103`), and `DOC-M256-llm-lane-premise`
+  corrects the *"reaches a generation completion boundary"* premise in `playthroughs.md` §the `studio` product
+  **once**, against the fixed behaviour, in the same tik. **This was M256's longest chronic — ~10 pushes across
+  25 iters** — and it is the reason clause 2 closed at 28 of 30 with a named carve-out rather than clean.
+- **The 9 remaining standing mutants (`PT-M256-standing-mutant-Q1`).** *"Delete the action and see whether
+  anything fails"*, asked of every mutating Playthrough. 3 of 12 were asked at harden-final (all RED);
+  **9 remain**, named Playthrough-by-Playthrough in M256's `hardening-ledger.md` §residuals:
+  `pt-onboarding-*` (×4), `pt-orgadmin-{member-tag,role-create,tag-create}`, `pt-onboarding-complete`,
+  `pt-skillpath-legacy`. Mechanical — ~30 min of machine time, no design decision — but **each needs its own
+  reset-to-seed**, because the write is irreversible and two of iter-32's mutant runs were confounded by
+  exactly that. On a seeded world the outcome is usually already present, which makes this the **cheapest
+  detector of the suite's signature defect**: Q1 found a green-without-the-write in a spec that had already
+  been written and reviewed once.
+- **The 11 lower-severity harden-3 scan findings.** Enumerated with file-level specificity at M256
+  `hardening-ledger.md:532-544` so **none needs re-discovery** — that enumeration is the promise
+  `HARDEN-CAP-ACCEPTED-D105` made when the user accepted the un-stabilized cap, and it is only kept by this
+  batch having a real owner. Highlights: `content_stories.go`'s `eligiblePlayerOwnerSlots` org-less guard is
+  **provably dead**; **8 of 16** org-less guard sites sit outside the fence's static signature with no
+  automated coverage; `TestResetMustNotDeleteP3PolicyRows` asserts tuple completeness rather than the reset
+  invariant its name promises; `WriteText` truncates a verdict at 80 **bytes** and drops `[measured by: …]`, so
+  the D117 mechanism never reaches the text report a human reads; a TODO also present in `unimplementable.yaml`
+  silently swallows its written verdict with nothing reconciling the two files; and **8 onboarding accessors
+  added in iters 28–32 are unenrolled** in the hand-maintained locator rosters.
+  ⚠️ **Stated risk rather than a silent assumption:** this milestone is `complexity: medium` and expects to
+  close in 1–2 iters. This batch may need **re-fating here** rather than being absorbed. It is written into
+  this `overview.md` precisely so that decision is taken in the open — M255's close routed four items to a
+  destination that was not a milestone, and its own retro says that should have been rejected when written.
+- **`FIX-M257-content-stories-pair-count`.** `run-content-stories.sh` re-implements `buildPairs()` inline,
+  omits `manager_presence_only`, computes **47** against the pinned **45** and `sys.exit(2)`s — so the
+  content-stories sweep **refuses to start** (M256 audit Gap 7). This milestone composes the verification
+  batch, so a sweep that cannot begin is its problem. The `FIX-M257-` prefix is an artifact of when it was
+  found, not a routing decision.
+- **`ptvalidate` is invoked nowhere outside its own tests** — and it is the honest home for the **permissive
+  half of the runner's gate** that the M256 close left open. That close made `run-playthroughs.sh`'s ptreport
+  gate **binding on a full run and advisory on a scoped one**, and fixed the false-RED direction (`-g`,
+  `--grep=`, `--grep-invert` and `-- --grep` all scoped the real run while the runner read it as full). The
+  remaining hole: a pattern broad enough to select the **whole** suite (`--grep '@pt'` matches all 30 tags) is
+  still graded advisory, so on such a run a deleted spec would be swallowed exactly as before. Closing it needs
+  the id-level question *"did the pattern SELECT this id?"* — Playwright's regex semantics, not reproducible in
+  shell. **`ptvalidate` already implements both-way id integrity**, so wiring it as a binding pre-flight closes
+  the hole and discharges this item at once. A bash approximation of a regex engine would itself be a check
+  that reports success without having checked, which is why M256 routed it instead of faking it.
+- **`BIND_HOST` / `D-M255-7`** — declared Fate 3 → M258 at the **M255** close and **never applied here**
+  (`grep BIND_HOST` in this file returned 0 hits until now). Recorded so the routing finally exists at its
+  destination: *a routing written in a closing milestone's decisions is not a routing until the target's own
+  doc says so.* See M255 `decisions.md:156` for the original.
+
 ## Iteration protocol
 
 The **prove-on-billion** lineage (M221 → M236 → M244 → M254):

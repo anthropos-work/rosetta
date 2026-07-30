@@ -143,6 +143,57 @@ token mint, and the handshake cookies all resolve the same hero): `?__clerk_iden
 path is byte-identical (a one-member registry). Measured by the `clerk-multi-1` DNA (`alignment/cmd/multirun`,
 9 genes, 100%/100%) — a *new measured surface* that holds while the existing four stay green.
 
+> **⚠️ "Server-authoritative" means SINGLE-TENANT: one active seat per stack, no client scoping** (documented
+> v2.8 M256 pre-flight; the same limitation is disclosed from the presenter side in
+> [`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § *Limitation — one seat per stack*). The
+> coherence the paragraph above sells is bought by holding the seat **process-wide**, not per client:
+> `clerk-frontend/registry.go` keeps a single `activeKey` (`Registry.active()` / `Registry.Select()`), and
+> `clerk-frontend/server.go`'s `type Server` keeps **one** `signedIn`, **one** `clientID`
+> (`"client_clerkenstein"`, a constant) and **one** `sessID` (`"sess_clerkenstein"`, also a constant, minted in
+> `establishLocked`). Three consequences a consumer must design around:
+> - **`POST /v1/demo/select` (`handleSelectIdentity`) is destructive to the current session.** It re-points the
+>   seat **and** sets `signedIn = false; sessID = ""` — globally. A second seat-switch anywhere on the stack
+>   signs the first browser out.
+> - **The read path takes NO request input.** `handleMe`, `handleToken`, `handleClient` and
+>   `handleMeOrganizationMemberships` all discard (or ignore) the `*http.Request` and answer from
+>   `activeUserLocked()`. `r.Cookie(...)` is called **nowhere** in `clerkenstein/` — cookies are only ever
+>   *emitted*. So **per-browser `storageState` cannot isolate two identities**, and a token refresh silently
+>   re-mints whoever the *current* seat is. `handleSignOut` likewise ignores its `{id}` route param and logs the
+>   whole stack out.
+> - **Therefore: concurrency is one-identity-at-a-time per stack.** Two people on two deeplinks, or two
+>   parallel Playwright workers, will swap identities mid-flight. The sanctioned workaround is **a stack each**
+>   (a fake FAPI each). Making the seat per-client — keying the registry by `__client`/cookie and threading it
+>   through the `/v1/me`, token-mint, client-view and handshake surfaces — is an **auth-model change with an
+>   alignment-DNA consequence** (the `clerk-multi-1` DNA has no gene for concurrent-seat isolation), not a
+>   config knob.
+
+> **⚠️ An explicit sign-out is STICKY until an explicit login — and a SEAT SWITCH is not a sign-out** (D81,
+> v2.8 M256 iter-16/iter-25). `Server` carries a **`signedOut`** flag alongside `signedIn`. Three rules:
+>
+> - **`POST /v1/client/sessions?_method=DELETE`** — what `@clerk/clerk-js`'s `signOut()` actually sends, a POST
+>   with a `_method` override and **not** a `DELETE` — sets it. Before the fix no `DELETE` route was registered
+>   and nothing read `_method`, so the request **404'd**, `handleSignOut` never ran, and the next handshake
+>   silently re-established the same seat. The user-visible symptom was *"I have to click logout twice"*.
+>   `_method` is a **dispatch whitelist**: an override the server does not understand is ignored, never obeyed.
+> - **While `signedOut` is set, a BARE handshake DECLINES** — it will not re-establish a session on its own.
+>   Every *explicit* establish path (a handshake carrying an identity, a sign-in form, `POST /v1/demo/select`)
+>   clears the flag, so a demo can always get back in; a missing clear on any ONE of them **strands the stack
+>   signed-out**, which is why there is a test per entry door rather than one per fix.
+> - **`/v1/demo/select` drops the session but must NOT set the flag** — it is a seat switch, and setting it
+>   would make the cockpit's own `[Log in as]` land on a signed-out browser. This was found by driving the
+>   cockpit live after five green unit tests had passed over the same code.
+>
+> **The guard is a FRONT-DOOR guard, not a revocation — stated because it is a real limitation.** Every test
+> observes it through `GET /v1/me`, which reads the server's in-memory flag; the browser's state comes from the
+> handshake cookies. A *declined* handshake still 303s back having minted an RS256 `__session`, and the only
+> differentiator is an **empty `sid`** claim. Nothing revokes an already-issued token either (no `jti`, no
+> denylist, 1 h `exp`), so a token captured before the sign-out keeps working. Acceptable for a deliberately
+> disarmed mock on a demo — see [`../ops/safety.md`](../ops/safety.md) §3 — but it means the flag governs
+> *establishment*, not *access*. Pinned by `clerk-frontend/server_test.go`:
+> `TestServer_signOutOnThePathClerkJSActuallySends`, `TestServer_signOutIgnoresAMethodOverrideItDoesNotUnderstand`,
+> `TestServer_seatSwitchIsNotASignOut`, `TestServer_signedOutFlagIsClearedByEveryEstablishPath`,
+> `TestServer_seatSelectAfterSignOutCanLogBackIn`.
+
 **Roster org-name threading (v1.10 M39).** The roster now carries each hero's **story org name + slug**, so a
 logged-in hero's **top bar reads her real company** (e.g. "Cervato Systems") instead of the hardcoded
 "Clerkenstein Demo Org". The thread is a **paired change** kept in lockstep by the roster's

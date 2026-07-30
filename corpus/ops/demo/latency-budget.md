@@ -321,6 +321,27 @@ Contract:
   rather than silently sweeping the DEV stack at offset 0.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
+- **…and the ban on it must be a TOKEN scan, not a list of spellings (v2.8 M256 harden pass).** M256 iter-03
+  widened the Playthrough harness's ban from "the four `/home` logins" to "the whole harness" and encoded it as
+  two tightly-anchored regexes: `waitUntil:\s*['"]networkidle['"]` and
+  `waitForLoadState\(\s*['"]networkidle['"]\s*\)`. Measured at the harden pass, **four plausible shapes score zero
+  hits against that pair**, and two of the four are not hypothetical:
+  - `waitUntil: opts.waitUntil ?? 'networkidle'` — the **coalesced default**, which is
+    `stack-verify/e2e/lib/cockpit-login.ts:87` *verbatim*: the single line that is the **root cause of the whole
+    class**. The pattern required a quote immediately after `waitUntil:`; a `??` default puts an identifier there,
+    so the ban was blind to the origin of the bug it was banning.
+  - `waitForLoadState('networkidle', { timeout: 4_000 })` — the **bounded settle**, ~20 occurrences one directory
+    away (`persona-assert.ts`, `section-assert.ts`, `crawl.ts`, four `calibrate-*` specs). The pattern required
+    `)` immediately after the closing quote, so **any** second argument disabled it — and `hero-login.ts` forwards
+    into that very tree, so the two directories are one copy-paste apart.
+  - plus double-quoted spellings and `const w = 'networkidle'` indirection.
+
+  The ban is now a **token scan of comment-stripped code** — no arity, argument order or quote style to get wrong —
+  with exactly **one enumerated allowance**: a `waitUntil?:` optional-property *type* declaration, which `?:` makes
+  provably impossible to execute as a gate. **The general rule: ban the token, not the two spellings you happened
+  to find** — a spelling list is a fence around the instances you already fixed. The scope exception
+  (`stack-verify/e2e/**`, the coverage sweep, which uses a *ceiling-bounded* networkidle as one input to a presence
+  heuristic **by design**) is now written down rather than implied by which directories the scanner happens to read.
 - **It clears cookies per sample**, so each click is a genuine cold login.
 - **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
   next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
@@ -466,6 +487,43 @@ nav commit → skeleton (the M253 metric) → clerk.load → l12n → canAccess 
   (`nonOk` + a `slowest` top-12 per run). This is what turned "studio feels slow" into a named 404 route.
 - Reports **`dead_shell_gap_ms`** — real-shell minus skeleton — *the* number the M253 gate cannot see.
 - Knobs: `STUDIO_TTU_{HOST,SCHEME,N,RUNS,IDENTITY,OUT}`. Read-only, zero platform edits.
+
+## ⚠ A relative gate needs its NOISE FLOOR published next to it, or it is not falsifiable (v2.8 M256 iter-12)
+
+M256's clause 1 was pinned as a **ratio**: the median per Playthrough must be **≤ 0.79×** a same-stack
+baseline measured earlier in the milestone. Eleven iters reported it as MET (0.5434× · 0.6245× · 0.5950× ·
+0.5652× · 0.6863×), each honestly reporting its own batch. **Nobody measured how much the number moves when
+nothing changes** — and iter-12 did:
+
+| statistic, six full-suite runs, one session, same host | min | max | spread | median (n=6) |
+|---|---:|---:|---:|---:|
+| the GATED figure (22 non-studio Playthroughs) | 0.5701× | 1.1121× | 1.95× | **0.8129×** |
+| the CONTROL subset (16 specs unchanged since iter-03) | 0.5281× | 1.0762× | **2.04×** | 0.7063× |
+
+The control subset is code **no iter touched**, and it varies by a factor of two. There is no trend — the
+most recent run reads 0.529× and the oldest 0.528×, with the 1.076× extreme in between — so this is not
+host degradation over a session but **variance the pinned statistic does not absorb**. A "median of 3
+consecutive runs" can land anywhere between ~0.53× and ~1.08× depending on which three runs it catches, which
+means the *verdict* was being sampled, not measured. At n=6 the gated figure is **0.8129× — outside the
+gate.**
+
+**Rules this produces, and they apply to every relative gate in the corpus:**
+
+1. **Publish the spread with the median.** A ratio without a noise floor is a number, not a verdict. State
+   min / max / n alongside it.
+2. **Keep an untouched CONTROL subset and report it every time.** It is the only thing that separates "the
+   work got faster" from "the box was quiet". M256's original-16 cross-check existed from iter-04 and is what
+   made this diagnosable at all — its value was in *having* it, not in the reassuring readings it gave.
+3. **Prefer a PAIRED measurement.** Measure the baseline in the **same batch** as the treatment. A baseline
+   fixed hours earlier silently turns the ratio into a measure of host state.
+4. **If n=3 cannot decide the gate, raise n or normalise within-run** (against an invariant leg such as the
+   login handshake) — do not re-run until a favourable batch appears. Choosing the flattering denominator
+   after the fact is the same defect as choosing the flattering run.
+
+This does **not** retract the underlying speed work: iter-03's `networkidle` removal was measured **directly**
+at the leg (2854 ms → 423 ms for the same navigation), not inferred from a suite ratio. Leg-level
+before/after on the same page in the same run is exactly the kind of measurement this variance cannot fake —
+which is the strongest argument for preferring it over suite-level ratios wherever it is available.
 
 ## See also
 

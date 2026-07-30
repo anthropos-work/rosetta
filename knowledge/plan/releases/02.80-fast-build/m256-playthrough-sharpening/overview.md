@@ -2,21 +2,21 @@
 milestone_shape: iterative
 milestone: M256
 title: "playthrough sharpening"
-status: planned
+status: archived
 release: v2.8 "fast build"
-exit_gate: "On a LOCAL demo stack (re-cut 2026-07-28, D-v28-12 — billion is under a standing sign-off rule; the environment MUST be stated with every number). ALL clauses measured on the post-coverage suite. (1) FASTER, RELATIVE not absolute — median per-Playthrough <= 0.79x the SAME-STACK pre-work baseline (the 21% cut the billion-derived 5 s implied against its 6.4 s baseline), with the irreducibly LLM-bound studio lane excluded from the median and budgeted separately; 0 flake across 3 consecutive runs. The suite wall-clock is REPORTED, NOT GATED: the denominator grows 18 -> ~27 inside this milestone, so an absolute ceiling would measure coverage growth rather than speed. (2) EFFECTIVE — every Playthrough passes a negative control (demonstrably RED when its outcome is absent) AND >= 5 mutating Playthroughs, where MUTATING means mutates state AND reads it back, AND >= 1 `blocked` outcome (from 0). (3) COVERED — onboarding (5 UCs) + org-admin (4 UCs) LANDED, and every remaining uncovered curated UC carries a written verdict — zero silent gaps. Plus D-v28-5: the cockpit logout / Back-to-Cockpit double-click defect FIXED (no Playthrough added). A comparable ABSOLUTE billion measurement is routed forward to M258 (Fate 3)."
+exit_gate: "On a LOCAL demo stack (D-v28-12; clause 1 RE-CUT AGAIN by D-v28-13 — the environment MUST be stated with every number). (1) FASTER, measured AT THE LEG: for every speed mechanism the milestone lands, a DIRECT before/after measurement of the leg that mechanism targets, on the same stack, showing it worked — the model is iter-03s login leg 2854 ms -> 423 ms. The suite median and its observed RANGE are REPORTED with n, never gated: at n=6 on untouched code that statistic spans 0.5281x-1.0762x (2.04x), so any threshold near 0.79x sits inside its own noise floor and can be neither passed nor failed. 0 flake across 3 consecutive runs still gates. (2) EFFECTIVE — every Playthrough passes a negative control (demonstrably RED when its outcome is absent) AND >= 5 mutating Playthroughs, where MUTATING means mutates state AND reads it back, AND >= 1 `blocked` outcome. (3) COVERED — onboarding (5 UCs) + org-admin (4 UCs) LANDED, and every remaining uncovered curated UC carries a written verdict — zero silent gaps. Plus D-v28-5: the cockpit logout double-click defect FIXED (no Playthrough added). A comparable ABSOLUTE billion measurement is routed to M258 (Fate 3)."
 iteration_protocol_ref: corpus/ops/demo/playthroughs.md
 re_scope_trigger: "If > 3 of the un-homed curated UCs prove `unimplementable-without-platform-edit`, OR a negative control proves unimplementable for > 3 Playthroughs, escalate — that is a platform conversation, not a test one."
 depends_on: [M255]
 parallel_with: []
 complexity: very-large
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-07-30
 ---
 
 # M256 — playthrough sharpening  (`iterative`)
 
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-07-30, `closed-on-gate`) · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
 **Depends on:** M255
 
 > **Revised 2026-07-27** after the adversarial plan review, which found the headline speed lever's premise
@@ -78,6 +78,36 @@ doc says so.
 > the documented 12 GB UI-tier floor, and M255's headroom assert **refused** a laptop *build* cycle as too busy.
 > That assert gates `buildbench` campaigns, not Playwright runs, so it does not block this milestone — but a
 > local demo bring-up will warn, and the warning is expected, not a failure.
+
+## Clause 1 was re-cut a SECOND time — gate the leg, not the suite (2026-07-29, D-v28-13)
+
+**The `≤ 0.79×` suite-median ratio could not be decided.** iter-12 measured the statistic's own noise
+floor: six full-suite runs, one host, the original 16 specs **unchanged since iter-03** — the control
+subset spans **0.5281× → 1.0762×**, a **2.04× range with no trend** (newest 0.529, oldest 0.528,
+extremes in between). A threshold at 0.79× sits **inside** that spread, so it can be neither passed nor
+failed. At n=6 the gated figure is **0.8129× — outside the gate.**
+
+**Two consequences, stated plainly:**
+
+- **iter-03's and run-2's "clause 1 MET" readings are RETRACTED** as favourable samples. They were
+  reported (by the orchestrator, to the user) as met. They were not.
+- **The flattering denominator was available and refused.** The original-16 subset reads 0.7063× —
+  inside the gate. Choosing it would have declared success on a hand-picked denominator, which is the
+  precise dishonesty this milestone spent eleven iters removing from the suite.
+
+**No speed work is retracted.** iter-03's `networkidle` removal was measured **at the leg**:
+**2854 ms → 423 ms**. Suite-ratio variance cannot fake a direct measurement of the mechanism. The
+improvement is real; the *statistic chosen to certify it* was not.
+
+**So clause 1 now gates the mechanism, not the aggregate.** For each speed change the milestone lands,
+measure the leg it targets, before and after, on the same stack. Report the suite median **with its n
+and its observed range** — as information, never as a gate.
+
+> **The general rule, and the reason this happened twice:** *never gate a relative statistic without
+> first measuring its variance.* D-v28-12 derived the threshold carefully (the 21 % implied by
+> billion's 6.4 s) and never asked how noisy the thing being thresholded was. A gate tighter than its
+> own noise floor is unfalsifiable — the same defect class this milestone hunts in code, committed in
+> the gate itself. Recorded in `latency-budget.md` as a standing rule for every relative gate.
 
 ## Shape (why iterative)
 

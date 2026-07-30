@@ -125,7 +125,7 @@ make initdb        # runs init_policy.sql via psql against a HARD-CODED local DS
 psql "$DB_URL" -f local_superadmin_grants.sql
 ```
 
-This grants org-scoped `taxonomy:write` (p3) to every org admin, and contains a commented-out block of global superadmin rules (p4: impersonation/cross-org reads, global content & taxonomy writes) that you uncomment after substituting a concrete user UUID. **Local-only — never run in staging or production.** After applying, restart sentinel or call the `Reload` RPC so the Casbin enforcer picks up the new rows.
+This grants org-scoped `taxonomy:write` (p3) to every org admin, and contains a commented-out block of global superadmin rules (p4: impersonation/cross-org reads, global content & taxonomy writes) that you uncomment after substituting a concrete user UUID. **Local-only — never run in staging or production.** After applying, restart sentinel or call the `Reload` RPC so the Casbin enforcer picks up the new rows. **No demo or dev stack ever had this file applied until v2.8 M256** — a demo therefore granted `taxonomy:write` to nobody while production grants it to `admin`; see [`../ops/seeding-spec.md`](../ops/seeding-spec.md) § Status (`PolicyGrantsSeeder` + `stackseed --policy-check`).
 
 ## Testing
 

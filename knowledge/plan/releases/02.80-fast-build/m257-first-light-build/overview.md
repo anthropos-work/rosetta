@@ -45,7 +45,7 @@ annotation is where the lever ranking comes from; the campaign is what the exit 
 
 The two agree to **0.9 %**. Campaign artefacts: `billion:/home/devops/panorama/m255/campaign/`; the protocol,
 the reclaim caveat and the per-sub-phase table are in
-[`corpus/ops/demo/build-budget.md`](../../../../corpus/ops/demo/build-budget.md).
+[`corpus/ops/demo/build-budget.md`](../../../../../corpus/ops/demo/build-budget.md).
 
 > **Two M255 findings this milestone must carry.** (1) **`turbo --env-mode=loose` is mandatory** — Turbo 2
 > defaults to `strict` and filters `NEXT_PRIVATE_STANDALONE` out before `next build` sees it, so the flag
@@ -149,6 +149,27 @@ campaigns, edits the knobs, and flips union-apply on.
 - **The `laptop` profile's `projected_image_gib`.** The one non-measured number in either host profile,
   declared only in prose. Make it a machine-declared `provisional_fields` list the loader surfaces, so
   a provisional number cannot be quoted as measured.
+
+## Inherited from the M256 close (Fate 3, 2026-07-30)
+
+Two items, and **both are gate-relevant rather than parked here for convenience** — each can make this
+milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report the wrong thing.
+
+- **`FIX-M256-demo2-service-self-termination` — a green gate on a half-dead stack.** After an un-clean
+  Postgres restart, `demo-2-jobsimulation-1` and `demo-2-cms-1` **self-terminate cleanly (`Exited 0`)** on
+  their DB-health monitors (*"DB too many ping failures, shutting down"*) and **nothing restarts them**.
+  `docker ps` then shows **14 of 16** containers "Up", the application surfaces **no error at all**, and every
+  jobsimulation surface renders **20 content-free table rows** — which a `rows > 0` assertion passes. It cost
+  M256 iter-15 an hour of Playthrough diagnosis spent disbelieving a correct assertion. Disk was fine (227 GiB
+  free), so this is **NOT** the M239-F1 ENOSPC trap; recovery is a non-destructive `docker start`. **Fix
+  shape:** a container-liveness cheap-win in `stack-verify`'s `autoverify` set — one line naming the dead
+  service. Until it exists, this gate cannot distinguish a healthy stack from this one.
+- **`FIX-M256-autoverify-fapi-libressl` — a warning this gate counts, on a working stack.** `autoverify.sh`
+  check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → it
+  warns *"NOBODY CAN LOG IN"* about a stack where everyone can (M256 iter-01 D5). Give it a probe independent
+  of the host TLS stack. **Deliberately not landed at the M256 close:** a TLS-probe fix that cannot be verified
+  against a real bring-up is a fix on trust, and this milestone brings stacks up repeatedly. Carried **31 iters
+  with its target never advancing** — one of the audit's named chronics, so it gets a real owner here.
 
 ## Hard constraints
 

@@ -1,0 +1,149 @@
+{
+  "milestone": "M256",
+  "title": "playthrough sharpening",
+  "release": "v2.8 fast build",
+  "shape": "iterative",
+  "closed": "2026-07-30",
+  "close_status": "closed-on-gate",
+  "gate": {
+    "clause_1_faster": {
+      "status": "MET",
+      "flake_half": "MET — 3 consecutive cold reset-to-seed runs, 209 passed each, rc captured per run into a variable (0/0/0), zero flake",
+      "leg_half": "N/A — no speed mechanism landed in the closing iters, so D-v28-13's per-leg measurement has nothing to measure",
+      "recut_count": 2,
+      "recut_refs": ["D-v28-12", "D-v28-13"],
+      "recut_reason": "the 0.79x suite-median threshold was measured to sit INSIDE its own noise floor: the untouched original-16 control subset spans 0.5281x-1.0762x (2.04x) across six batches on one host, with no trend",
+      "caveat": "PLATFORM-M256-keyrole-nondeterminism can still redden a batch. An earlier batch of three had exactly one such failure; it was reported and diagnosed rather than re-rolled away, and no timeout was bumped. The 3/3 is a clean batch, not a selected one."
+    },
+    "clause_2_effective": {
+      "status": "MET",
+      "negative_controls": {"covered": 28, "total": 30, "carve_out": "the studio pair, per D103 — a control over a known false green would certify the false green", "uncovered_ids": ["pt-studio-advanced-generate", "pt-studio-guided-generate"]},
+      "mutating_playthroughs": {"achieved": 12, "target": 5, "source": "@pt-mutation registry, machine-computed"},
+      "blocked_outcomes": {"achieved": 1, "target": 1}
+    },
+    "clause_3_covered": {
+      "status": "MET",
+      "org_admin": "4 of 4 landed",
+      "onboarding_curated": "4 landed + 1 written verdict of the CURATED 5 (D104)",
+      "onboarding_manifest": "6 declared / 5 live / 1 verdicted — a DIFFERENT denominator; M256 added one net-new non-curated use case. coverage-verdicts.md forbids conflating the two.",
+      "written_verdicts": {"count": 31, "of": 31, "unimplementable": 0}
+    },
+    "d_v28_5_cockpit_logout": "MET — fixed and proven live at iter-25, both halves on one rebuilt fake-FAPI, no Playthrough added per the user's explicit call",
+    "clauses_unmeetable_as_first_authored": 3,
+    "transferable_finding": "A gate authored before the work is a hypothesis about the work. All three clauses needed re-cutting or a named carve-out; the flattering reading was available each time and refused each time."
+  },
+  "iters": {
+    "total": 32,
+    "closed": 32,
+    "verdicts": {"closed-fixed": 22, "closed-fixed-partial": 6, "closed-no-lift": 4},
+    "toks": {"bootstrap": 1, "triggered": 0},
+    "harden_passes": {"incremental": 2, "final": 1, "final_stop_condition": "cap reached without stabilization — accepted by the user with residuals enumerated (HARDEN-CAP-ACCEPTED-D105)"},
+    "commits_rosetta": 44,
+    "orphans_found_at_close": 1,
+    "orphan_detail": "iter-21 had no running-ledger bullet (31 for 32). The iter was real and complete; it was closed by the coordinator by hand during API 529 spawn failures and the ledger line was what that step missed."
+  },
+  "tests": {
+    "python_rext": {
+      "tests": 1725,
+      "passed": 1723,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2,
+      "scope": "stack-core (287) + demo-stack (1000) + stack-verify (171) + stack-injection (267)",
+      "source": "JUnit XML per suite, parsed — never grepped from piped runner stdout (the v1.11 incident-#6 buffer-fragility class)",
+      "invocation_note": "one invocation per suite, rc captured into a variable each time, never off a pipe",
+      "delta_note": "M255 close reported 1505 passed over a THREE-suite scope (stack-core + demo-stack + stack-injection). Same-scope comparison for M256 is 1552 passed (1723 - 171 stack-verify), i.e. +47. The four-suite figure is not comparable to M255's headline and is not presented as such.",
+      "collection_trap": "a bare `pytest` from the demo-stack section root collects the ephemeral platform clones under stacks/ and exits rc 2 on ModuleNotFoundError. The suite must be scoped to tests/. Recorded because it reads as a failing suite."
+    },
+    "go_rext_test_funcs": {
+      "count": 2130,
+      "previous": 2023,
+      "delta": 107,
+      "source": "git grep -E '^func Test' -- '*_test.go', excluding platform clones under stacks/"
+    },
+    "go_modules": {
+      "total": 6,
+      "failing": 0,
+      "packages_ok": 58,
+      "modules": ["alignment", "clerkenstein", "playthroughs", "stack-secrets", "stack-seeding", "stack-snapshot"],
+      "note": "rext is NOT one Go module — `go test ./...` from the rext root FAILS BY DESIGN. Each section carries its own go.mod and must be run individually."
+    },
+    "playwright": {
+      "total_tests": 209,
+      "total_files": 43,
+      "previous_total": 204,
+      "delta": 5,
+      "unit_tests": 174,
+      "unit_previous": 169,
+      "playthrough_tests": 30,
+      "control_tests": 5,
+      "added_at_close": "3 source-scannability fence + 2 enrolled-hero-literal rule",
+      "source": "npx playwright test --list (exact, suite not run for the count)"
+    },
+    "ptvalidate": {
+      "verdict": "VALID",
+      "rc": 0,
+      "products": 10,
+      "use_cases": 31,
+      "live_playthroughs": 30,
+      "todo": 1,
+      "todo_id": "onboarding.enterprise-workforce-standard.UC1",
+      "todo_disposition": "will-not-build"
+    },
+    "ptreport": {"passing": 30, "failing": 0, "unimplemented": 1, "unimplementable": 0}
+  },
+  "flake_count": 0,
+  "flake_gate": {
+    "runs": 3,
+    "mode": "cold reset-to-seed each",
+    "rcs": [0, 0, 0],
+    "passed_per_run": 209,
+    "rc_capture": "captured into a variable per run, never read off a pipe",
+    "environment": "Kirality-Mac-Pro-6.local, darwin 25.1.0, Docker VM 9.70 GiB (vs the documented 12 GB UI-tier floor); demo-2 offset 20000, localhost/http, --no-public-host. Per D-v28-12 no number here may be quoted as comparable to billion's 228 s."
+  },
+  "lint": {
+    "gofmt": "clean across all six sections",
+    "go_vet": "clean across all six modules",
+    "tsc_noemit": "clean (playthroughs/e2e and stack-verify/e2e)",
+    "bash_n": "clean (run-playthroughs.sh)"
+  },
+  "close_review": {
+    "scans": 5,
+    "findings_total": 24,
+    "must_fix": 3,
+    "should_fix": 6,
+    "nice_to_have": 4,
+    "doc_fixes": 13,
+    "scope_findings": 4,
+    "all_addressed": true,
+    "reviewer_findings_refuted": 2,
+    "refuted_detail": "looksLikeCurrentPosition reported dead by two independent reviewers (false — grep was silently skipping the file that exercises it); and a proposed onboarding count fix that would have conflated the curated and manifest denominators.",
+    "commits": 4
+  },
+  "defect_class": {
+    "name": "checks that report success without having checked",
+    "total_found": 43,
+    "by_source": {"harden_pass_1": 6, "harden_pass_2": 11, "harden_pass_3_final": 9, "inside_iters": 9, "close_review": 8},
+    "yield_shape": "FLAT — 6/11/9 across three passes. A flat yield does not mean nearly done; it means the seam is broad, which is why the cap was accepted as un-stabilized with residuals enumerated rather than declared exhausted.",
+    "fences_that_were_instances": 2,
+    "fences_detail": "the liveness fence counted not.toBeVisible() as proof the page was alive; the bounded-interaction fence never scanned the retry loop it is named after"
+  },
+  "platform_edits": 0,
+  "net_new_deps": 0,
+  "platform_defects_routed": 4,
+  "platform_defect_register": "knowledge/plan/platform-defect-register.md (created at this close — there was no register anywhere in the repo, so all four defects lived only in a milestone decisions.md that archives)",
+  "deferrals": {
+    "audit_verdict": "RED",
+    "audit_grounds": ["8 items with a target that no longer exists", "10 repeat/chronic deferrals, one re-typed ~10 times", "4 items routed to destinations that cannot hold them"],
+    "land_now": 4,
+    "land_next": 10,
+    "land_next_targets": {"M258": 6, "M257": 2, "landed_at_close_instead": 2},
+    "drop": 1,
+    "fate_2_confirmed": 3,
+    "keep_deferred_with_signoff": 3,
+    "keep_deferred_items": ["PERF-M256-parallel-lane", "PT-M257-self-evaluation", "PT-M257-talk-to-data"],
+    "keep_deferred_note": "each is a ROADMAP decision rather than a routing one and awaits the user's signature; assigning this fate to a batch to clear the gate is the move the audit exists to catch",
+    "escape_hatch_to_a_future_release": 0
+  },
+  "notes": "Tooling + docs only; zero platform-repo edits held. The milestone's deliverable is a sharpened Playthrough suite: 18 -> 30 live Playthroughs, mutating 1 -> 12, negative controls 0 -> 28 of 30, blocked outcomes 0 -> 1, written verdicts 31/31 with 0 unimplementable, and two whole products (org-admin, onboarding) that no e2e suite had ever touched. The close's own highest-value finding is about measurement rather than code: a raw NUL byte made a 43 KB / 79-test file BINARY to grep, which then reported no matches with no error — and two independent reviewers concluded from that silence that a predicate the file exercises was dead code. Every 'nothing references this, so it is dead' conclusion in this project rests on grep reporting honestly."
+}

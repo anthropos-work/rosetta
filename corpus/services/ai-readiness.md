@@ -349,6 +349,31 @@ jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progresses` (3× `c
 `ai_readiness_live_snapshots` upsert (`score≈100, stage=3, archetype` per the score). The **"started" hero**: only
 the skill_mapping signal + a `stage=1`/`score≈30` live snapshot. The **"completed" hero**: all 3 + `stage=3`.
 
+**⚠️ A hero's stage is DERIVED FROM HER PERSONA KIND — and stage 0 was UNREACHABLE for an end-user until v2.8
+M256 iter-26.** `aiReadinessStageFor` maps a hero: **manager → 0** (she reads the dashboard, she is not a funnel
+row), **struggling → 1**, and **everything else → 3**. There is no "unspecified" middle: an end-user hero appended
+to a readiness org arrives **already COMPLETED**. That is a trap for test authorship rather than for the demo —
+a Playthrough built on such a seat drives its hero *past* the flow it means to watch her enter and can **PASS on
+the completed surface**. It is now declarable:
+
+- **`Persona.AIReadiness`** — `""` (derive from trajectory, unchanged) | **`"not_started"`** (funnel **stage 0**:
+  no evidence, no sessions, no progress row, no snapshot — `seedAIReadinessOrgFunnel` skips her entirely). Checked
+  **before** the derived default, read in **exactly one place**, and a **closed enum** (a typo would fall back to
+  stage 3, i.e. produce the very already-completed seat, so it fails the seed loudly).
+- It is deliberately **not** a third `trajectory` value: readiness stage is **orthogonal** to the life-arc — the
+  diagnostic is a time-boxed cycle, and a member who joined mid-cycle has verified skills, a career and an
+  activity history while having done none of its three steps. A new trajectory would additionally have claimed her
+  skills, level band, growth arc and succession signal were day-0 too, and would have rippled through the five
+  seeders that switch on `Trajectory` through a silent `default:` branch in each.
+- An end-user hero must still declare `verified > 0` (`blueprint.validate()`), which is the same point from the
+  other side: the field does not make a hero **blank**, it makes her **not-yet-diagnosed**.
+
+Fenced by `stack-seeding/seeders/seat_append_test.go` (the mapping, both directions) +
+`ai_readiness_funnel_test.go:TestAIReadinessFunnelSeeder_DayZeroHeroGetsNoSignals` (the consequence — she has
+zero rows *while the derived heroes still land 3 and 1*, so a seeder that wrote nothing cannot pass it). The
+consumer is the Playthrough seat `pt-ai-onboard`; see
+[`demo/playthroughs.md`](../ops/demo/playthroughs.md) § *The day-0 readiness seat*.
+
 **⚠️ Which table the dashboard reads depends on the cycle state — this dictates the seed strategy (an M51
 decision):**
 
@@ -540,8 +565,10 @@ across bands). One of three **post-M246 drifts** the M250 fidelity sweep caught 
 manager-sweep confirmation is a slow ~150-page crawl routed to **M254** (its exit gate re-runs the same sweep on
 billion by design).
 
-**End-to-end proof:** the AI-readiness journeys are covered by **4 Playthroughs** (both member vantages + the
-manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+**End-to-end proof:** the AI-readiness journeys are covered by **5 Playthroughs** (both member vantages + the
+manager — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap)
+— plus the **day-0 guided onboarding** journey `pt-onboarding-aireadiness-guided` on the `not_started` seat
+documented above, v2.8 M256 iter-26).
 The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-completed` + manager `dana-manager`,
 Northwind, cold reset-to-seed, escapes=0) for parts 1/2/3/5 + the core part-4 sections. Code-of-record:
 `rosetta-extensions` @ `july-jitter-m250-iter07`. **Re-proven LIVE on billion at M254 (gate (d)):** both
