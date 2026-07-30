@@ -127,9 +127,19 @@ is not on page 1 even after a **successful** create), and **landed the onboardin
 (`pt-onboarding-hiring-candidate` at iter-27 — the suite's first Playthrough to drive an onboarding flow in the
 **hiring** app; see § "The hiring-org day-0 candidate" below) **and its fourth**
 (`pt-onboarding-org-prepared` at iter-29 — the org-prepared variant; see § "The org-prepared onboarding
-variant"). Onboarding stands at **4 of its 5** curated use cases, and the corpus at **29 live Playthroughs,
-2 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive
-cold reset-to-seed runs.
+variant") **and its fifth** (`pt-onboarding-individual` at iter-32 — **the ORG-LESS user**, the LAST un-homed
+use case in the M201 curated corpus and the one this milestone's own pre-flight audit had priced as
+impossible; see § "The org-less seat" below). The corpus stands at **30 live Playthroughs, 1 TODO** (31 use
+cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
+runs.
+
+**Onboarding's fifth curated use case is a WRITTEN VERDICT, and that is a result rather than a shortfall.**
+`enterprise-workforce-standard.UC1` (the self-import journey) is `disposition: will-not-build`: its only
+advancing path scrapes a live public third-party profile from a site that blocks automation, so shipping it
+would make a real person's profile a permanent fixture and **its RED would read as a product regression when
+nothing about the product had changed**; the deterministic CV route is blocked by a measured product defect
+we do not own. See § "A `TODO` must carry a WRITTEN VERDICT" above — the position is now in the artifact the
+tooling reads, not only in prose.
 
 > **Onboarding was thought unseedable, and it was a schema misreading (v2.8 M256 iter-07/08).** The milestone's
 > own KB-fidelity audit concluded there was **no pre-onboarding state and none could be declared**, reasoning
@@ -301,6 +311,57 @@ the relabelled **`Start`** control **confirms the role and advances** — `user_
 `[{import}]` → `[{import},{role}]` — landing on the skills screen with the declared role's **real taxonomy
 skills** to keep or discard. `pt-onboarding-org-prepared` asserts exactly that, with the import form's absence
 as a cross-vantage control against every other seat in the world.
+
+### The org-less seat — *the actor the seeder could not express* (v2.8 M256 iter-32)
+
+`onboarding.individual.UC1` — *"a solo user with no organization completes first-run setup"* — was the **last
+un-homed use case in the M201 curated corpus**, and the one where the milestone's pre-flight audit had a
+kernel of truth: `UsersSeeder` wrote a `public.memberships` row for **every** seeded user unconditionally, so
+a genuinely org-less actor could not be expressed at all.
+
+**Price a capability by DELETING, not by building.** iter-30 answered the load-bearing question — *can the app
+even serve a user with no organization?* — by deleting a seeded hero's membership row on a demo (restored by
+`--reset`). She logs in, `/onboarding` serves the flow, `/home` renders. Five minutes, against a question that
+had been open for twenty-two iters, and the FK error the delete raised **named its own first four consumers**.
+
+**But a capability has as many halves as the platform reads.** That delete left Clerk still carrying her
+organization, so what it measured was *a user whose DB membership vanished*, not *a user who never had one*.
+The seeded state needs both: no membership row **and** no Clerk org claim in the exported roster — because the
+host page mounts `<OnboardingIndividual>` versus `<OnboardingUser>` off `useGetClerkOrganization`. A DB-only
+org-less hero is served the ENTERPRISE flow, and a Playthrough written for the individual journey would
+silently prove the ordinary one.
+
+**Make the blank state REQUIRED, not permitted.** The capability (`org_membership: none`) also *inverts* the
+end-user `verified > 0` rule: an org-less hero **must** declare `verified: 0`. A verified skill's fan-out is
+org-scoped, so a "verified org-less hero" writes rows tying her to an org she is not in — and requiring zero
+makes the whole persona/profile/activity chain skip her **because she declares nothing**, instead of because
+every seeder learned a special case. Likewise a manager is refused outright: the manager vantage IS the
+org-intelligence seat.
+
+**The FK list is the entry fee; the org-scoped tail is the work — and they need DIFFERENT guarantees.**
+
+| half | how it fails | how it is caught |
+|---|---|---|
+| **loud** — a row keyed on a membership that does not exist | the seed **stops** and names the constraint | a **source-scan fence**: membership ids are a deterministic `membershipUUID(prefix, i)`, so *the call sites ARE the FK surface* — enumerate them and require each to consult the org-less predicate |
+| **quiet** — an `organization_id`-bearing row for a user with no org | nothing at all; it is simply wrong | **measurement**: reseed, then sweep the live DB for her uuid across every uuid column |
+
+Both arrived inside one iter. The loud one was the succession seeder FK-ing a population session she no longer
+had. The quiet one was two `jobsimulation.sessions` rows carrying an `organization_id`, plus activity events,
+skill-path sessions, assignments and bookmarks that made a *day-0* user look like a returning one. **Say which
+half a fence covers.** A static scan cannot see an `organization_id` write, and a fence that implied otherwise
+would be more dangerous than none — the half it misses is the half that fails silently.
+
+**When a fence suggests a remedy, the remedy is still a judgement.** Two pre-existing fences refused this seat
+before it could ship: the curated-pool fence rejected its first role (no curated family → the taxonomy's
+alphabetical junk head), and the ladder-depth fence then rejected the replacement because a **65**-skill
+claimed tail would have drawn that family dry. The fence advised growing the allow-list. The real finding was
+that **an org-less day-0 user should claim nothing** — a hero with zero verified skills and 65 self-rated ones
+is not a coherent person. The footprint got smaller instead of the allow-list getting bigger.
+
+**For an irreversible write, reset before EVERY mutant.** Onboarding cannot be undone through the UI. Run
+against a world the green drive had already consumed, one mutant went red at the wrong line and another
+**PASSED** — a false pass indistinguishable from a weak assertion, caused entirely by state. The protocol is
+**reset → mutate → run**, every time.
 
 ### An absence assertion needs a companion that proves WHEN it was read — not only WHERE
 

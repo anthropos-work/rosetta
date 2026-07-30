@@ -15,7 +15,7 @@ UCs prove unimplementable"*) never fired.
 |---|---:|---|
 | M201 curated use cases | **28** | `knowledge/plan/releases/archive/02.00-opening-night/m201-manifest-corpus/manifest-draft.yaml` |
 | Covered before M256 | 12 | — |
-| Landed by M256 | **+4 org-admin** (iter-04 × 2 · iter-17 · iter-22 — the product is **4 of 4**) · **+1 onboarding** (`enterprise-workforce-ai-readiness.UC1`, iter-26) | `manifest/org-admin.yaml` · `manifest/onboarding.yaml` |
+| Landed by M256 | **+4 org-admin** (iter-04 × 2 · iter-17 · iter-22 — the product is **4 of 4**) · **+4 onboarding** (`enterprise-workforce-ai-readiness.UC1` iter-26 · `enterprise-hiring.UC1` iter-27 · `enterprise-workforce-standard.UC2` iter-29 · **`individual.UC1` iter-32, the LAST un-homed use case in the corpus**) | `manifest/org-admin.yaml` · `manifest/onboarding.yaml` |
 | Declared with verdicts by M256 | **+4 onboarding** (iter-08, re-priced iter-18/24/26) · **+7 here** | see below |
 | ↳ *superseded* | the 2 org-admin `TODO`s (iter-04/05) and the 5th onboarding verdict were **discharged by landing** | — |
 | Remaining with NO verdict | **0** | — |
@@ -182,7 +182,17 @@ byte-deterministically. It correctly names **no handler**: a refusal with an ass
 > a **result**, not a shortfall — and it is why clause 3's onboarding half is honestly **4 landed + 1 written
 > verdict** rather than 5 landed (`D104`, awaiting the user's ratification at close).
 
-### D2. `onboarding.individual.UC1` — `disposition: not-yet-built`, handler `ONBOARD-M256-orgless-seat`
+### D2. ~~`onboarding.individual.UC1` — `disposition: not-yet-built`~~ → **LANDED at iter-32**
+
+**Its verdict lasted one iter, and its removal was FORCED rather than remembered** — iter-31's fence is
+bidirectional, so landing a use case makes a leftover verdict a validation failure (watched RED live as
+mutant V7). That is the half of the fence that exists for drift, and this is the first time it fired on
+real work.
+
+The record below is kept as the verdict it was; the landing narrative is in the manifest's story note and
+in [`iter-32/progress.md`](iter-32/progress.md).
+
+#### (the verdict as written at iter-31)
 
 *A solo user with no organization completes first-run setup and reaches a usable home.*
 
