@@ -377,6 +377,43 @@
   production org carry `org:feature:taxonomy:write`?). No shipped code changed; 181 passed, 0 failing on a
   confirming cold run — see [`iter-20/progress.md`](iter-20/progress.md)
 
+- iter-22 (tik, `closed-fixed`): **the org-admin product is COMPLETE — 3 of 4 → 4 of 4** — and the spec
+  that had been sitting written in `drafts/` since iter-04, referenced by four later iters as ready,
+  **could not have passed on a working product.** One 9-second probe refuted every clause of its final:
+  the app does **not** stay on the list (it NAVIGATES to `/enterprise/roles/<serverAssignedId>?setup=true`
+  **1 526 ms** after Save), the list **paginates at 20/page** (41 roles) and the new role does **not** land
+  on page 1 (`titleRows=0` measured after a *successful* create), so the draft's "+1 row on page 1" would
+  have gone RED on a working feature — and, against a fifteen-iter-old belief that this form was broken,
+  that RED would have been believed (**D103**: *a parked spec is a hypothesis with good formatting*).
+  **The instrument's defect was the worse one.** The roles table's LOADING row and its EMPTY row are the
+  same `<tr>` carrying the same sentence — measured `t=0 rows=0 · t=500 rows=1 "No roles match your
+  filters." · t=1000 rows=20` — so `roleCount()` returned **1 against a catalog of 41**, and the
+  Playthrough's `roles-surface-populated` intermediate was satisfied by a table displaying *nothing*. That
+  is iter-14 **D71** and iter-15 **D76** committed in the harness, on a surface where a self-terminated
+  `jobsimulation`/`cms` renders exactly that row. **Proven live before the fix was written:** OLD predicate
+  `rows=1, first visible=true` → `> 0` **PASSES** on an empty catalog; NEW `rows=0` → correctly FAILS. Fixed
+  by subtracting the placeholder **by its text** (not `tr.ant-table-placeholder`, not `tr[data-row-key]` —
+  both available, both the class/attribute anchors this module forbids), and the same row is then reused
+  *positively* as the **liveness witness** iter-12's rule demands before any absence assertion (**D104**).
+  A third latent trap closed: **`ROLES_URL` matches the detail route too**, so "the admin is still on the
+  list" was satisfiable by a role page — latent until a journey first left the list (**D105**). The final
+  is now **three independent facts** (**D106**): the server assigned an id and a *fresh* navigation to
+  `/enterprise/roles/<id>` serves the entity under it · a full reload + the surface's own search names it in
+  exactly **one** row · the catalog **TOTAL** grew by exactly one — the last being what pagination forced
+  and the strongest of the three, with `totalRoles()` returning **`null`, never `0`**, because "the card did
+  not render" and "the org has zero roles" are different facts. The control is **in-line** and needs no
+  contrast tenant (**D107**): the outcome is newly *created*, so its absence is genuinely available on the
+  same vantage a moment earlier — liveness asserted first, then absence. **10 mutants watched** (**D108**),
+  of which the most informative green is M3 (`Expected 43, Received 44` — the whole claim as one integer)
+  and the most informative failure is M5, which is not a mutation of the subject at all but a measurement
+  of the instrument. Also caught: a stray unhandled rejection printing `1 error was not a part of any test`
+  beside `5 passed` (**D109**). Net-new `tests/orgadmin-locators.unit.spec.ts` (5 tests, fail-closed on a
+  vacuous capture) pins all of it. **`187 passed` ×3 consecutive cold reset-to-seed, rc 0 each, 0 flake**
+  (was 181); `ptreport` **26/31 passing, 0 failing, 0 unimplementable, 5 TODO — and all 5 are onboarding**,
+  which is the arithmetic statement that org-admin is done. Registries, computed: negative controls
+  **24 of 26**, `MUTATES=8`. `--policy-check` green after all three resets. rext `90865c6`. — see
+  [`iter-22/progress.md`](iter-22/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -391,7 +428,26 @@
 non-studio Playthroughs of each Playthrough's median across **3 consecutive `--reset` runs**, run 1 being
 the first (cold) run after bring-up and **included**.
 
-**Post-iter-15 — THE CURRENT FIGURE.** n=3, same host, cold reset-to-seed each:
+**Post-iter-22 — THE CURRENT FIGURE.** n=3, same host, cold reset-to-seed each:
+
+| statistic | median (n=3 runs, 24 non-studio ids) | ratio | range |
+|---|---:|---:|---:|
+| all 24 non-studio (**REPORTED, per D-v28-13**) | **2.500 s** | **0.7517×** | 1.300 s – 9.000 s |
+| the same **excluding** the new Playthrough (cross-check) | 2.500 s | 0.7517× | — |
+
+`187 passed` ×3, **0 flake**, rc 0 ×3 (captured per run into a variable, never off a pipe). Suite
+wall-clock **1.6 m** on all three runs. `pt-orgadmin-role-create` itself reads **9.0 / 9.0 / 8.6 s** —
+**the slowest non-studio Playthrough in the suite** (5 navigations plus a real backend write) — and it moved
+the median **not at all**, being one id in 24. `0.7517×` sits inside the spread D-v28-13 published
+(0.5281×–1.0762× on code untouched since iter-03), so it is **one sample, not a verdict**. **iter-22 landed
+no speed mechanism, so clause 1's leg half has nothing new to measure**; its flake half is **MET**.
+
+`ptreport`: **26/31 passing (83.9 %), 0 failing, 0 unimplementable, 5 `[TODO]` — all five onboarding.**
+`@pt-mutation` registry, computed: **MUTATES=8 READ-ONLY=16 UNKNOWN=2**. `@pt-negative-control` registry,
+computed: **24 of 26** (10 self-declared + 14 via the control spec); named uncovered: the studio pair only,
+correctly withheld behind `FIX-M256-studio-false-green`. **`blocked` outcomes: 1.**
+
+**Post-iter-15 (superseded as the current figure).** n=3, same host, cold reset-to-seed each:
 
 | statistic | run 1 | run 2 | run 3 | median (n=3) | range |
 |---|---:|---:|---:|---:|---:|
@@ -523,6 +579,7 @@ Fate-3 items land here.
 
 | Handler | What | Target |
 |---|---|---|
+| `DEFECT-M256-silent-forbidden-mutation` | **A REFUSED MUTATION RENDERS NOTHING AT ALL** (iter-20 D98) — no alert, no toast, no inline message; the dialog simply stays open and the count is unchanged. It is why `org-admin.roles.UC1` was blamed on its form for fifteen iters. **Routes to the PLATFORM; do not fix platform code.** Independent of who holds the grant. **Reproduce it deliberately** (revoke the `p3 admin → org:feature:taxonomy:write` row on demo-2, drive the create, observe, restore — a demo-DB write, permitted), record the shape, and **sweep the other org-admin writes** (tags, member-tag, settings) for the same pattern. Deliberately NOT opened at iter-22, whose planned scope it would have broken (the revoke disables the write path that iter landed). **Its evidence is reproducible on demand, not perishable** — we hold the grant. | **iter-23** |
 | `FIX-M256-autoverify-fapi-libressl` | `autoverify.sh` check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → warns *"NOBODY CAN LOG IN"* on a working stack (iter-01 D5). Give it a probe independent of the host TLS stack. | a later tik of M256 |
 | `DOC-M256-ptworld-reset-comment` | `playthroughs/seed/pt-world.seed.yaml`'s header claims the showcase world is "not touched by pt-world's reset". `doReset` takes **no org filter** — it is (audit F6). | a later tik of M256 |
 | `PERF-M256-parallel-lane` | The cookie/`__client`-scoped Clerkenstein registry **or** one fake-FAPI per worker. Both priced in iter-01 D1. A **wall-clock** lever, not a median one — no M256 gate clause needs it. | a future release milestone |
@@ -557,4 +614,5 @@ Fate-3 items land here.
 | `FIX-M256-demo2-service-self-termination` | **NEW (iter-15 D77), and it cost an hour of Playthrough diagnosis.** After an un-clean Postgres restart, `demo-2-jobsimulation-1` and `demo-2-cms-1` **self-terminate cleanly (`Exited 0`)** on their DB-health monitors (*"DB too many ping failures, shutting down"*) and **nothing restarts them**. `docker ps` then shows 14 of 16 containers "Up", the application surfaces **no error at all**, and every jobsimulation surface renders **20 content-free table rows** — which a `rows > 0` assertion passes. Disk was fine (227 GiB free), so this is **NOT** the M239-F1 ENOSPC trap. Recovery is a non-destructive `docker start`. Fix shape: a **container-liveness cheap-win** in `stack-verify`'s `autoverify` set — one line naming the dead service instead of an hour spent disbelieving a correct assertion. Not this milestone's target; **Fate 3 → M257/M258**, which compose the bring-up. | M257 / M258 |
 | `DOC-M256-claudemd-pt-count` | **NEW (iter-11), housekeeping.** `CLAUDE.md` still reads "18 live Playthroughs"; it points at `playthroughs.md` as authoritative, which now reads **24**. Reconcile ONCE at milestone close rather than on every increment (the count has moved five times inside this milestone). | milestone close |
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |
+| ~~`PT-M256-orgadmin-role-create` (the Playthrough half)~~ | **DONE (iter-22) — org-admin 4 of 4.** `pt-orgadmin-role-create` is live, with an in-line negative control, so clause 3 advanced without clause 2's denominator regressing (controls 23/25 → **24 of 26**; mutating 7 → **8**). The drafted spec **could not have passed**: the app navigates to `/enterprise/roles/<serverAssignedId>?setup=true` 1 526 ms after Save, the list paginates at 20/page and the new role is not on page 1 (measured after a *successful* create). The final is now three facts — the server-assigned id served on a fresh navigation, a full-reload search naming it once, and the catalog **TOTAL** +1 (pagination-proof). Page object rebuilt: content rows subtract the placeholder **by text** (it is both the loading row and the empty row, so the old `roleCount() > 0` was satisfied by an empty table — proven live), the same row reused as the liveness witness, `totalRoles()` returns `null` never `0`. `ROLE_DETAIL_URL` splits the detail route from the list, which `ROLES_URL` could not. 10 mutants RED; `187 passed` ×3 cold, 0 flake. | closed iter-22 |
 | ~~`PT-M256-orgadmin-role-create` (the config half)~~ | **THREE gaps, stacked behind one silent refusal (iter-21 D100/D101/D102), each measured by driving the write rather than reasoning about it.** **F1 `stack-snapshot`, the root cause and the generalisable one:** replay `TRUNCATE … RESTART IDENTITY`s (deliberately, so re-loaded rows keep stable ids) then COPYs rows back WITH explicit ids and never restored the sequences — `job_role_embeddings` 18 920 rows / max 21 274 / **sequence at 4**, `skill_embeddings` 42 790 / 43 583 / **at 1**. Those are the **only two identity columns in `public` and BOTH were broken**, so on **every demo ever built** every taxonomy write duplicate-keyed. New Phase 5 discovers sequence-backed columns from the **target's live catalog** (whole-class; a future migration needs no re-capture) and setvals `max+1, is_called=false`. **F2 `stack-seeding`:** the demo was faithful to `init_policy.sql` and **unfaithful to production** — platform `c6096d1` deliberately dropped the default grant and shipped `local_superadmin_grants.sql` for exactly this use case; **nobody ever applied it**. `PolicyGrantsSeeder` + **`stackseed --policy-check`, bidirectional** (MISSING = under-grant, EXTRA = over-grant — the mechanical form of the judgement iter-20 made by hand, because *a Playthrough over a permission we granted ourselves is green about our own grant*). **F3 `stack-secrets`:** three `SKILLER_AZURE_OPENAI_*` genes, `standard` **by measurement** (critical → 86.7% + a standing red D-v28-3 forbids). Write path proven end-to-end; **3× cold gate 181 passed / rc 0**, and `--policy-check` **re-run green after all three resets** — the grant survives because the seeder writes it. | closed iter-21 |
