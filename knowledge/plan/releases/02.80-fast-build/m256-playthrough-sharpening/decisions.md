@@ -409,3 +409,38 @@ screen the click reaches.
 
 **Not fixed here.** Both are platform edits, out of scope by this milestone's hardest constraint. **Zero platform
 files were modified** — the platform tree was read only.
+
+## HARDEN-CAP-ACCEPTED-D105 — the final harden's un-stabilized cap is accepted, residuals named (user, 2026-07-30)
+
+**The final pass stopped at `cap reached without stabilization`**, and the user was asked and chose
+**"accept and close, residuals named"** over spending a fourth pass.
+
+**The reasoning, recorded so the acceptance is legible later.** The class yield never dropped:
+
+| pass | found |
+|---|---|
+| harden-1 (incremental) | **6** |
+| harden-2 (incremental) | **11** → stabilized |
+| harden-3 (final) | **9** → cap, un-stabilized |
+| inside the iters themselves | **~9** more |
+
+**~35 checks that could not fail, and a flat yield.** A flat yield does not mean "nearly done" — it means
+the seam is **broad**, so a fourth pass would very likely find another handful and a fifth after that.
+There is no natural stopping point inside this milestone, and the milestone's actual deliverable — a
+sharpened Playthrough suite — is complete.
+
+**What makes the acceptance honest rather than a shrug:** the residuals are **enumerated, not implied.**
+9 standing mutants named Playthrough-by-Playthrough (mechanical, ~30 min of machine time, each needing
+its own reset because the write is irreversible) plus **11 lower-severity findings recorded with
+file-level specificity** so none needs re-discovery. The next milestone inherits a **list**, not a
+surprise.
+
+**The two findings that justify the whole exercise, and they are about the fixes themselves:** the
+**liveness fence counted `not.toBeVisible()` as proof the page was alive** — an absence assertion serving
+as the liveness witness, the exact defect it exists to prevent — and the **bounded-interaction fence had
+never scanned the retry loop it is named after**. Three capabilities' entire implementations could be
+deleted with the suite green, including **all of snapshot Phase 5 under the end-to-end test**, and a
+**declared Playthrough could be deleted story-and-spec without turning the run red — four ways at once**.
+
+*The fences built to catch the class were themselves instances of the class.* That is this milestone's
+most transferable finding, and it is why the honest stop condition was recorded rather than rounded up.
