@@ -592,6 +592,44 @@
   — see [`iter-27/progress.md`](iter-27/progress.md)
 
 
+- iter-28 (tik, `closed-fixed-partial`): **the milestone's last UNKNOWN blocker is closed — the org-prepared
+  onboarding trigger, found by READING the platform after a two-iter probe sweep could not find it.**
+  `standard.UC2` had read *"the trigger is not yet identified"* since iter-08; iter-18 drove heroes across FOUR
+  orgs and got the identical import form every time. It is one `useState` in the component **both apps mount**
+  (`OnboardingUser.tsx:135`): `managerImport = Boolean(lastStep === OnboardingStep.Import && organizationName &&
+  userStats)`. The host page always supplies the latter two, so the only missing input is `steps` — i.e.
+  `public.user_params.onboarding`, **NULL for every seeded user**. *Which is exactly why probing could not find
+  it: a four-org sweep was sampling a CONSTANT* (**D111**, the general rule: when a sweep returns the same
+  answer for every vantage, the input is not one of the axes you are varying). `managerImport` swaps
+  `<ImportStep>` for `<EnterpriseUser>` and relabels the forward control to *"Start"*. **Capability:**
+  `Persona.Onboarding` (`""` | `"org_prepared"`) + `OnboardingParamsSeeder` writing ONE jsonb row whose last
+  step is `import` — **not** `done`, which would complete onboarding and redirect. Closed enum (an unrecognised
+  value falls back to the day-0 default, so the seat would be served the plain form and the Playthrough would
+  fail *looking like a product regression*). 4 mutants RED. **And the insert alone SILENTLY DID NOTHING** —
+  `public.user_params` is populated **row-per-user at user-insert time** (191 rows within 300 ms of the users
+  COPY, all NULL, written by nothing in this fleet), so `ON CONFLICT (id) DO NOTHING` skipped it with no error
+  and the seat kept getting the plain form; now insert-then-**HEAL**, and it **fails the seed** if a declaring
+  hero's row cannot be reached, because that no-op presents as *"the product does not show the prepared
+  summary"* (**D112**). The missing `audit.Record` was caught by the isolation guard on the first live run —
+  two guards fired this iter and both were right. **Seat `pt-onboard-prepared` PROVEN LIVE**, and the
+  discrimination is total: same run, `linkedinUrlInput` / `importFromLinkedInLabel` / `uploadButton` read
+  **0 / 0 / 0** for her against **1 / 1 / 1** for `pt-free`, so every other seat in the world is a live
+  contrast vantage. **And she cost a RED gate to place (D114):** first appended to Org A, `pt-workforce-funnel`
+  went RED in **all three** runs — its iter-14 final asserts Pat Ellis's member-spotlight CARD carries her role,
+  and one extra Org A member displaced Pat from the spotlight. *That is D107 one axis over* (there a role's
+  occupancy perturbed a key-role card probabilistically; here an org's member SET perturbed a spotlight
+  deterministically), and the rule is now explicit: **before appending a hero, check whether `seed-facts.ts`
+  names her org** — Org B is the only pt org nothing anchors on, so she lives there. Re-proven on the SHIPPED
+  seat (the org changed, and `organizationName` is one of `managerImport`'s three inputs): import form 0/0/0,
+  the relabelled **Start** control present, and **her own name** on the summary. **The Playthrough is ROUTED,
+  not attempted (D113):** the UC's flow continues *"confirm the
+  pre-filled role, refine the suggested skills"*, and whether the relabelled *"Start"* control completes
+  onboarding or advances to the Role step is **unmeasured** — the iter's own escalation condition named that
+  stop, and writing the spec anyway would assert a multi-step journey nobody drove, which is the iter-22 failure
+  (a spec that *could not have passed*) and the iter-27 failure (a read-back that read the seed). The residual
+  is **one probe run wide**. **`196 passed` ×3 cold, rc 0, 0 flake** after the move; controls 26 of 28. rext `71a2d9f` + the close commit. — see [`iter-28/progress.md`](iter-28/progress.md)
+
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -779,6 +817,7 @@ Fate-3 items land here.
 | ~~`ONBOARD-M256-build`~~ | **DONE (iter-08).** The onboarding product exists: `pt-onboarding-complete` live (mutating #6) + **all 5 curated onboarding UCs declared with written verdicts**, every verdict harness/seed work and **0 `unimplementable`**. | closed iter-08 |
 | ~~`ONBOARD-M256-stage0-capability`~~ | **DONE (iter-26).** Discharged with a seeder capability, not a YAML append: `blueprint.Persona.AIReadiness` (`""` | `"not_started"`) declares funnel stage 0 explicitly, checked before the trajectory-derived default, read in exactly ONE place, and a CLOSED enum (an unrecognised value falls back to stage 3 = COMPLETED — a typo would produce the very already-finished seat the field removes). Not a third `trajectory` value (D104): readiness stage is orthogonal to the life-arc, and five seeders switch on `Trajectory` through a silent `default:` each. iter-24's held-gap test discharged per its own failure message and replaced by two tests pinning both sides + a seeder-level no-signals test with its own control. 5 mutants RED. Seat `pt-ai-onboard` appended last, reseeded, and PROVEN at stage 0 live (0 rows while Robin reads 3 and Theo 1). | closed iter-26 |
 | `PLATFORM-M256-keyrole-nondeterminism` | **NET-NEW (iter-26), routes to the PLATFORM.** A succession **key-role card**'s presence varies between page loads once its role has **2 occupants** — measured 4 of 5 loads at occupancy 2 against 5 of 5 at occupancy 1, most plausibly a top-N ranking with an unstable tiebreak. It cost two gate cycles: the iter-14 cross-tenant control anchors its LIVENESS floor on that card, so it went RED reading *"succession failed to compute for the contrast tenant"* — and a 45 s timeout did NOT fix it, because the cause was the seed's role occupancy, not the clock. Not a demo defect a presenter would see, and **zero platform edits** here. The suite is protected seed-side instead: hero roles must be pairwise distinct within a story (`seed-facts-fence.unit.spec.ts`, mutant N1 RED). | **captured iter-26 → platform** || ~~`ONBOARD-M256-seat-append`~~ | **RULE FENCED (iter-24).** `stack-seeding/seeders/seat_append_test.go` pins iter-18 D89 as a test: the baseline (1-based declaration order) **asserted rather than assumed**, no pre-existing index may move on an append, the appended seat takes the next free slot, and `personaIndexMapForStory` stays collision-free — plus a **self-test that performs the insertion**, so the fence is discriminating rather than trivially true. 3 mutants RED: insert-instead-of-append names the 2 renumbered personas; a reversed `personaUserIndexFor` fires the baseline assert *and* the self-test; a stage-0 default fires the held-gap test. The *use* of the mechanism belongs to whichever UC lands first. | closed iter-24 |
+| `ONBOARD-M256-prepared-playthrough` | **NET-NEW (iter-28).** The Playthrough for `standard.UC2`. Everything it needs is LANDED AND PROVEN: the `onboarding: org_prepared` capability (4 mutants RED), the seat `pt-onboard-prepared`, and a live measurement in which the import form is ENTIRELY ABSENT for her and present for every other seat (`linkedinUrlInput`/`importFromLinkedInLabel`/`uploadButton` = 0/0/0 vs 1/1/1 for `pt-free`). The residual is **one probe run**: drive the relabelled *"Start"* control and record whether it COMPLETES onboarding or ADVANCES to the Role step (`OnboardingUser.tsx:470`). Then the spec is that table as its pre-state + cross-vantage control, and the **revisit-redirects** read-back `onboarding.completion.UC1` already proves works in apps/web — which is also what answers the Q1 question (*which assertion fails if I delete the action?*). | **iter-29** |
 | `ONBOARD-M256-import-path` | **2 of the 5 onboarding UCs remain** (was 4 at iter-24; `enterprise-workforce-ai-readiness.UC1` landed iter-26, `enterprise-hiring.UC1` landed iter-27). `standard.UC2`'s org-prepared trigger is the cheapest remaining INVESTIGATION and iter-27 named the way in: both apps mount the SAME `OnboardingUser` component, so whatever selects the prepared variant is a prop or a query inside it — a SOURCE read, which is how D108 settled a question four orgs of probing could not. `individual.UC1` is the expensive one: a member-less user means excluding a hero's slot from every per-index seeder that writes org-scoped rows. | a later tik of M256 |
 | `PT-M256-standing-mutant-Q1` | **NET-NEW (iter-27).** Run *"delete the action and see whether anything fails"* against EVERY mutating Playthrough on this world, not just new ones. Q1 found a green-without-the-write in a spec that had already been written and reviewed once, and the check costs one edit plus one run. On a seeded world the outcome is usually already present, so this is the cheapest detector of the milestone's signature defect. | a later tik of M256 || ~~`VERDICT-M256-remaining-uncovered`~~ | **DONE (iter-09).** [`coverage-verdicts.md`](coverage-verdicts.md): all **28** curated UCs verdicted, **0 `unimplementable`**. Clause 3's verdict half is COMPLETE. | closed iter-09 |
 | `PT-M256-resume-fixture-pair` | `profile-skills.import.UC1` + `onboarding.enterprise-workforce-standard.UC1` share **one** blocker: a checked-in **résumé fixture**. `playthroughs/fixtures/` has been reserved and EMPTY since spec §5.4 — **no shipped Playthrough has ever exercised a file upload** — so the first pays the fixture *and* the real-file-chooser pattern. Land them **together** so that cost is paid once. | a later tik of M256 |

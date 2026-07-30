@@ -238,6 +238,62 @@ after the action" is not evidence unless it was absent before.** The Playthrough
 never touched is the same green-but-wrong shape as an assertion satisfied by an empty state, arriving through the
 seed instead of through the locator.
 
+### A seeded hero is part of the TEST SUITE's contract — twice paid for
+
+M256's iter-13/14 deliberately re-aimed the negative controls at seeded facts **by name**: the org's email
+domain, its member magnitude, a hero's name, a hero's **role**. That is what replaced the vacuous structural
+finals, and it worked. The price only became visible when the milestone started *adding* heroes:
+
+- **iter-26** gave a new Org C seat the role its COMPLETED hero already held. That made the role a two-member
+  role, and the org's succession **key-role card** for a two-member role turns out to be **non-deterministic**
+  (4 of 5 page loads at occupancy 2 against 5 of 5 at occupancy 1). The casualty was the cross-tenant control's
+  own **liveness floor**, reading as *"succession failed to compute for the contrast tenant"* — RED in 2 of 6
+  runs. A 45 s timeout was tried first, on a diagnosis of "host stall", and failed too. **Fenced:** hero roles
+  must be pairwise distinct within a story (`seed-facts-fence.unit.spec.ts`, self-test injects a collision).
+- **iter-28** appended a seat to Org A. `pt-workforce-funnel` went RED in **all three** runs: its sharpened
+  final asserts **Pat Ellis's member-spotlight card carries her seeded role**, and one extra Org A member
+  displaced Pat from the spotlight entirely. Deterministic, not flaky.
+
+**The rule, and it is cheap to follow: before appending a hero, check whether `e2e/lib/seed-facts.ts` names her
+org.** `SEEDED_ORGS = [PT_ORG_A, PT_ORG_C, PT_ORG_D]` — so **Org B (`pt-halcyon-retail`) is the one pt org
+nothing anchors on**, and it is the default host for a seat that exists to serve one Playthrough. Both
+regressions were caught by the 3× gate and in both cases the right fix was **the seat, not the assertion**: the
+assertions were sharp on purpose.
+
+### The org-prepared onboarding variant — *when a probe sweep samples a constant*
+
+`onboarding.enterprise-workforce-standard.UC2` needs a member whose org has already imported her profile, so
+onboarding opens on a prepared summary instead of an empty import form. Its trigger was *"not yet identified"*
+for two iters: iter-08 measured a hero with a populated profile, iter-18 measured heroes across **four** orgs
+(A, C, D) — every one served the identical import step.
+
+**It is one `useState` in the component both apps mount** (`packages/ui/src/Onboarding/OnboardingUser.tsx:135`):
+
+```ts
+const lastStep = reimport ? Import : steps?.[steps.length - 1]?.step;
+const [managerImport] = useState(
+  Boolean(lastStep === OnboardingStep.Import && organizationName && userStats));
+```
+
+`organizationName` and `userStats` are always supplied by the host page, so the only missing input is `steps` —
+i.e. **`public.user_params.onboarding`, NULL for every seeded user.** **Which is exactly why probing could not
+find it: every seat in the world has the same value for that column, so a four-org sweep was sampling a
+constant.** The general rule — *when a probe sweep returns the same answer for every vantage, the input is not
+one of the axes you are varying, and more vantages will not help* — is the sibling of the routing finding
+above, from the other side.
+
+Seeded by **`onboarding: org_prepared`** (`blueprint.Persona.Onboarding` + `OnboardingParamsSeeder`): one jsonb
+row whose last step is `import` — **not** `done`, which would complete onboarding and redirect. Two things
+worth carrying from building it:
+
+1. **The insert alone silently did nothing.** `public.user_params` is populated **row-per-user at user-insert
+   time** (191 rows within 300 ms of the users COPY, all NULL, written by nothing in the seeding fleet), so
+   `ON CONFLICT (id) DO NOTHING` skipped the row with no error and the seat kept getting the plain import form.
+   The seeder now **inserts-then-heals** and **fails the seed** if a declaring hero's row cannot be reached —
+   because that no-op presents as *"the product does not show the prepared summary."*
+2. **The missing `audit.Record` was caught by the isolation guard** on the first live run (*"surface reports 1
+   row written but recorded NO audit entry"*). Two guards fired while building this and both were right.
+
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 
 Until M219 the AI-readiness diagnostic — a shipped product, seeded into the demo since v1.10b — was covered by
