@@ -449,6 +449,35 @@
   catching me in the act. No gate clause moves, by plan; confirming run **`187 passed`, rc 0**. — see
   [`iter-23/progress.md`](iter-23/progress.md)
 
+- iter-24 (tik, `closed-fixed`): **the append-only seat rule is a FENCE instead of a comment — and the next
+  onboarding UC's blocker turned out to be MIS-STATED.** iter-18 D89 had established in prose that a new hero
+  must be **appended** and never inserted (`personaUserIndexFor` returns `i + 1` in **declaration order**, and
+  every seeded reference — the verified-skill fan-out, the profile timeline, the activity arc, the roster seat,
+  the cockpit manifest — derives from that index, so the failure mode is not an error but **a hero whose
+  profile belongs to somebody else**), while the natural place to add a hero is *next to the hero it relates
+  to*, which is precisely the edit that breaks it. Now pinned, with the **baseline asserted** first (a
+  comparison over a wrong baseline proves nothing), a collision check on the index map, and a **self-test that
+  performs the insertion** so the fence is discriminating rather than trivially true. **And the headline is
+  the measurement:** `onboarding.enterprise-workforce-ai-readiness.UC1`'s routed blocker reads *"needs an Org C
+  stage-0 seat"* — implying the seat is declarable and merely absent. It is **not declarable at all**.
+  `aiReadinessStageFor`'s hero branch is manager → **0**, struggling → **1**, everything else → **3**, so an
+  appended end-user hero arrives **COMPLETED**, and declaring her struggling is not a workaround either. The
+  only stage-0 seat in the system belongs to the **manager**, who is not an onboarding member actor. **The
+  dangerous version of that gap is not a failure but a PASS:** a Playthrough built on such a seat would drive
+  a hero *past* the flow it means to watch and could satisfy itself on the completed surface — the milestone's
+  signature defect class arriving through the **seed**, the fourth distinct door it has come through
+  (assertion · instrument · URL shape · seed). So the gap is **held by a test whose failure message carries
+  the discharge instruction** — when stage-0 support lands, test 3 SHOULD fail and tells whoever landed it to
+  discharge the UC's verdict and delete it. **Deliberately not done:** the seeder capability itself and any
+  `pt-world.seed.yaml` edit — both would have been started on a premise measured five minutes earlier, which
+  is what the Phase-A probe exists to prevent (iter-21's rule). 3 mutants RED, restores byte-identical;
+  `stack-seeding` `go test ./...` **rc 0**, 0 FAIL, 16 packages; **no live-stack change, so no gate run is
+  owed** — nothing shipped touches the harness, the seed or the demo. Side: **`gofmt -l` was NOT clean in the
+  committed tree** — three files, all iter-21's (Go 1.19+ rewrites a `''` pair inside a **doc** comment to a
+  Unicode `”`), fixed in their own commit with the two doc cases **reworded to ASCII**; *a verification claim
+  inherits the moment it was made.* rext `b0b9e43` + `b4c802d`, tag `fast-build-m256-iter-24` **on origin**.
+  — see [`iter-24/progress.md`](iter-24/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -634,6 +663,8 @@ Fate-3 items land here.
 | `FIX-M256-studio-false-green` | **RE-AIMED (iter-07 D31) — the old diagnosis was FALSE.** iter-02 blamed the route's `Simulation Advanced Builder` header; a 5-minute poll of the real journey shows that string **NEVER renders**. The matcher actually fires on the designer's **empty section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft populates it. **Deleting the header alternative is a NO-OP — do not ship it as a fix.** Assert a **POPULATED** section instead (a character card / a non-zero `designer.actors.counter.label` count). Evidence is attached to the locator in `studio-builder-page.ts`. Until it lands, both studio Playthroughs stay `@pt-mutation: UNKNOWN`, never `MUTATES`. | a later tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. **Still not dischargeable (iter-07):** a section *heading*'s presence does not answer *"did the generation complete on this host?"*. Measuring section **CONTENT** answers the fix and the doc premise together — keep them one piece of work. | the same tik as the fix |
 | ~~`ONBOARD-M256-build`~~ | **DONE (iter-08).** The onboarding product exists: `pt-onboarding-complete` live (mutating #6) + **all 5 curated onboarding UCs declared with written verdicts**, every verdict harness/seed work and **0 `unimplementable`**. | closed iter-08 |
+| `ONBOARD-M256-stage0-capability` | **NET-NEW (iter-24), and it REPLACES the "append a stage-0 seat" framing below.** `onboarding.enterprise-workforce-ai-readiness.UC1` was priced as *"needs an Org C stage-0 seat"*. **Measured: a stage-0 end-user seat cannot be DECLARED.** `aiReadinessStageFor`'s hero branch is manager → **0**, struggling → **1**, everything else → **3**, so an appended Org C end-user hero arrives **COMPLETED** — and a Playthrough on that seat would drive a hero *past* the flow it means to watch, and could **PASS** on the completed surface. Declaring her struggling is not a workaround (that is stage 1). The manager is the only stage-0 vantage and she is not an onboarding actor. So the work is a **seeder capability** (a stage-0 end-user vantage the AI-readiness funnel seeder can express), **not** a YAML append. The gap is held by `seat_append_test.go` test 3, whose failure message carries the discharge instruction — **when it fails, that is the signal, not a regression.** | **iter-25** |
+| ~~`ONBOARD-M256-seat-append`~~ | **RULE FENCED (iter-24).** `stack-seeding/seeders/seat_append_test.go` pins iter-18 D89 as a test: the baseline (1-based declaration order) **asserted rather than assumed**, no pre-existing index may move on an append, the appended seat takes the next free slot, and `personaIndexMapForStory` stays collision-free — plus a **self-test that performs the insertion**, so the fence is discriminating rather than trivially true. 3 mutants RED: insert-instead-of-append names the 2 renumbered personas; a reversed `personaUserIndexFor` fires the baseline assert *and* the self-test; a stage-0 default fires the held-gap test. The *use* of the mechanism belongs to whichever UC lands first. | closed iter-24 |
 | `ONBOARD-M256-import-path` | The **4 remaining** onboarding UCs, each with its specific missing piece already written into `manifest/onboarding.yaml`: a **résumé fixture** (spec §5.4's `fixtures/` dir is still EMPTY — this would be the suite's FIRST file-upload Playthrough) + an async LLM import; the **org-prepared trigger condition**, not yet identified (iter-08 measured the *import form* for a hero WITH a populated profile); an **org-less actor** (F5's one kernel of truth — needs a member-less user + a roster seat); an **Org C stage-0** seat; a **day-0 hiring-org** seat (the only onboarding UC whose final spans two apps). | a later tik of M256 |
 | ~~`VERDICT-M256-remaining-uncovered`~~ | **DONE (iter-09).** [`coverage-verdicts.md`](coverage-verdicts.md): all **28** curated UCs verdicted, **0 `unimplementable`**. Clause 3's verdict half is COMPLETE. | closed iter-09 |
 | `PT-M256-resume-fixture-pair` | `profile-skills.import.UC1` + `onboarding.enterprise-workforce-standard.UC1` share **one** blocker: a checked-in **résumé fixture**. `playthroughs/fixtures/` has been reserved and EMPTY since spec §5.4 — **no shipped Playthrough has ever exercised a file upload** — so the first pays the fixture *and* the real-file-chooser pattern. Land them **together** so that cost is paid once. | a later tik of M256 |
