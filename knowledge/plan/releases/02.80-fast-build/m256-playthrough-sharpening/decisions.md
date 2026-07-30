@@ -354,3 +354,58 @@ is itself the milestone's most transferable finding: *a gate authored before the
 the work.*
 
 **Flagged for ratification at close** — recorded so closure decides deliberately rather than inheriting it.
+
+## PLATFORM-M256-onboarding-step-not-resumed — the org-prepared onboarding flow cannot resume (iter-31, routes to the PLATFORM)
+
+**Recorded at MILESTONE level, per the `playthroughs.md` rule iter-23 wrote** (*a product defect the suite finds
+has no state, no glyph and no ledger — record it where it cannot be tidied away*), because its natural home
+would otherwise be a comment inside a spec that is green.
+
+**The symptom.** A member whose org pre-filled her profile confirms her role; the confirmation **persists**
+server-side (`public.user_params.onboarding` gains a `role` step — verified in the DB every time). She reloads
+`/onboarding` and is back on **step one**, progress `0`, `[Skip] [Start]`, with no trace of what she confirmed.
+The screen is **byte-identical to the pre-state**. Six fresh navigations across three browser sessions, hours
+apart, all agree. She can never advance past the first step across a page load.
+
+**The mechanism — one array, two consumers, opposite ends.** Read at source and corroborated by the six
+observations (a source read, so stated as such, not as a debugger session):
+
+```
+packages/graphql/src/hooks/onboarding/useGetOnboardingStatus.tsx:25-27
+    result.onboarding.steps?.sort((a, b) => sorterFn({ first: b.updatedAt, second: a.updatedAt }))
+    → the array handed to the component is sorted NEWEST-FIRST
+packages/ui/src/Onboarding/OnboardingUser.tsx:130-132
+    const lastStep = reimport ? Import : steps?.[steps.length - 1]?.step;
+    → takes the LAST element of a newest-first array, i.e. the OLDEST step ever taken
+```
+
+So `lastStep` is the *first* step the user ever completed. `managerImport` (`lastStep === Import && …`) is true
+again, and the initial step (`lastStep || Import`) is `Import` again — forever. The **host page reads the same
+array from index 0** (`const [firstStep] = onboardingSteps`, `apps/web/.../onboarding/page.tsx:141-143`) and is
+therefore *correct*, which is why completion (`done`) does redirect properly and nothing else looked wrong.
+
+**Why nobody had seen it, and the transferable part.** It is invisible for a NULL or single-element `steps`
+array — `length-1 == 0`, so both readings coincide — and that is **every one of the 191 seeded users** and every
+hero any earlier iter could reach. Only a **multi-step** array exposes it, and the only multi-step user in
+existence is the seat `pt-onboard-prepared` that **iter-28 minted to reach the surface in the first place**.
+*The seed capability built to reach a surface turned out to be the only way to see a defect on it* — the same
+shape as iter-11, where withholding one grant exposed four releases of leaked `g3` rows.
+
+**A second, independent defect on the same journey** (recorded here so it is not lost with the spec comment):
+the prepared flow **cannot be completed on a demo.** One `Next` past the skills screen reaches *"Add more
+skills"*, which renders **"We're having trouble loading your skills at the moment. You can skip this step and
+try re-importing your profile later."**, and its `Next` is **inert** — clicked five times, identical screen,
+progress stuck at 100. `useClusterizeSkills` is the surface behind it. Consequence for the suite: the
+`/onboarding` → `/home` completion read-back that `pt-onboarding-complete` relies on is **unreachable from this
+seat**, so no Playthrough should be written expecting it.
+
+**Consequence for clause 2, stated plainly.** `pt-onboarding-org-prepared`'s persistence half is **not
+assertable through the UI**, and the reason is this defect rather than a harness weakness. The routed handler
+`ONBOARD-M256-prepared-persistence` asked for *"a POSITIVE locator on the ROLE screen a reload lands on"* — there
+is no such screen. What ships instead is a positive, hydration-proof assertion labelled for exactly what it
+proves (the confirmation left her flow intact — it neither ejected her nor completed it), watched RED three ways,
+and explicitly **not** presented as the write's read-back. The write itself stays proven by mutant S1 against the
+screen the click reaches.
+
+**Not fixed here.** Both are platform edits, out of scope by this milestone's hardest constraint. **Zero platform
+files were modified** — the platform tree was read only.

@@ -152,6 +152,56 @@ demo-infrastructure work, correctly M207's. **Re-confirmed 2026-07-28** with the
 
 ---
 
+## D. The two remaining onboarding `TODO`s — now MACHINE-CHECKED, not prose (iter-31)
+
+The onboarding verdicts have always lived in `manifest/onboarding.yaml`, and until iter-31 they lived there as
+**prose in a story `note`** while the use cases themselves carried a bare `playthrough: TODO`. That mattered
+more than it sounds: `ptreport` rendered every uncovered use case with one generic sentence — *"declared use
+case, no Playthrough yet (build-reference gap)"* — so **the four-state map, which is what tooling and reviewers
+read, stated the wrong position** about the very use case this milestone's gate is closed around.
+
+Both now carry a machine-checked `verdict` block (schema + the bidirectional fence:
+`playthroughs/manifest/manifest.go` §`Verdict`, `validator.go` §`checkVerdicts`; rendered by
+`report.go` §`unimplementedDetail`; documented in `corpus/ops/demo/playthroughs.md`):
+
+### D1. `onboarding.enterprise-workforce-standard.UC1` — `disposition: will-not-build`
+
+*A new org member builds a career profile by importing a CV or LinkedIn profile (self-import).*
+
+**Measured, then deliberately refused — and the refusal has held for thirteen iters.** `measured_by:` iter-18's
+six live probe passes + **`D104`**. The journey is fully drivable and the whole measured version is preserved at
+`e2e/drafts/onboarding-self-import.spec.ts.draft`; what makes it un-shippable is that its only advancing path
+**scrapes a live public LinkedIn profile** on a site that blocks automation — a real person's profile would
+become a permanent test fixture, and **its RED would read as an Anthropos regression when nothing about the
+product had changed.** A test whose failure lies is worse than no test. The deterministic CV route is blocked by
+a **product defect we do not own** (upload POSTs `200` for a valid PDF *and* a docx while the forward control
+never enables, 100 s+ — A2 above, `iter-18` D87), and that single fix is what would make this land
+byte-deterministically. It correctly names **no handler**: a refusal with an assignee is a contradiction.
+
+> **This is the disposition the whole mechanism exists for.** *"We measured this and it should not be built"* is
+> a **result**, not a shortfall — and it is why clause 3's onboarding half is honestly **4 landed + 1 written
+> verdict** rather than 5 landed (`D104`, awaiting the user's ratification at close).
+
+### D2. `onboarding.individual.UC1` — `disposition: not-yet-built`, handler `ONBOARD-M256-orgless-seat`
+
+*A solo user with no organization completes first-run setup and reaches a usable home.*
+
+**LANDABLE, and priced from measurement** (`measured_by:` iter-30 **D116**). The blocker carried in prose since
+iter-08 read *"needs a seeder change (a member-less user + a roster seat)"*, and its load-bearing half — *can the
+app serve a user with no organization at all?* — had never been tested. Measured the cheap way (delete a seeded
+hero's membership row on `demo-2`, restored by `--reset`, rather than write a seeder to find out): **an org-less
+user reaches the app** — she logs in, `/onboarding` serves the flow, `/home` renders. So this is a build gap,
+never an unimplementable one, and the re-scope trigger moves *further away*.
+
+**And the cost was understated ~5×:** `memberships` carries **12 incoming FKs across 8 tables**; one hero's live
+dependents are `membership_skills` 7 · `membership_languages` 2 · `membership_tags` 1 ·
+`organization_target_roles` 1. So **≥ 5 seeders**, not one — *and the FK list is only the entry fee*: FK breakage
+fails loudly and names its consumer, while the persona/profile/activity seeders writing `organization_id`-bearing
+rows for a user with no membership do not break at all and are simply wrong invisibly (the iter-28 **D112**
+silence class).
+
+---
+
 ## Summary — the verdict distribution
 
 | Verdict | count | UCs |

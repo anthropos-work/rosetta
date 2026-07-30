@@ -771,13 +771,90 @@ AND the regression reference:
 |---|---|---|
 | **`passing`** | `[PASS]` | The Playthrough is green. |
 | **`failing`** | `[FAIL]` | The Playthrough is red — a capability failed (or, per P6, seed-vs-platform drift; diagnose). A declared-but-absent test is `failing`, never a silent pass. |
-| **`unimplemented`** | `[TODO]` | A declared use case with no Playthrough yet (`playthrough: TODO`) — the build-reference gap. |
+| **`unimplemented`** | `[TODO]` | A declared use case with no Playthrough yet (`playthrough: TODO`) — **and, since v2.8 M256 iter-31, one that MUST carry a written `verdict` block saying which kind of gap it is**; the detail line is that verdict, not a generic sentence (see § below). |
 | **`unimplementable-without-platform-edit`** | `[BLOCKED-PLATFORM]` | The surface cannot be driven without a platform edit (a hard zero-edit wall — e.g. a hardcoded URL with no override). It **escalates, it does not edit the platform** — the P3 escape valve, mirroring the coverage sweep's re-scope trigger. Declared deliberately (with a rationale) in [`report/unimplementable.yaml`](../../../.agentspace/rosetta-extensions/playthroughs/report/unimplementable.yaml), never inferred from a failure. |
 
 The four glyphs are deliberately **visually distinct** — a `pending`-vs-`unimplemented` ambiguity would hide a
 real semantic distinction. `Report.AllGreen()` (nothing failing/unimplementable/unimplemented) is the
 foundation-complete gate; `Report.NoRegressions()` (nothing `failing`) is the gate a *coverage* milestone runs —
 a build-reference `TODO` gap must not fail the suite. Coverage = passing ÷ total declared.
+
+### A `TODO` must carry a WRITTEN VERDICT — and the fence runs both ways (v2.8 M256 iter-31)
+
+`unimplemented` used to be one state wearing two completely different meanings, and the map could not tell them
+apart. Every use case without a Playthrough reported the **same sentence** — *"declared use case, no
+Playthrough yet (build-reference gap)"* — whether it was genuinely unbuilt or had been **measured and
+deliberately refused**. For M256's self-import use case that sentence was simply **false**: its only advancing
+path scrapes a live public third-party profile from a site that blocks automation, so shipping it would make a
+real person's profile a permanent fixture and **its RED would read as a product regression when nothing about
+the product had changed**. The reasoning existed — in prose, in a story `note`. The four-state map, which is
+what tooling and reviewers actually read, stated the wrong position about the one use case a release gate was
+being closed around.
+
+So a use case with no Playthrough now carries a **`verdict`** block, and `ptreport` renders it in place of the
+generic sentence:
+
+```yaml
+playthrough: TODO
+verdict:
+  disposition: will-not-build      # CLOSED enum: will-not-build | not-yet-built
+  measured_by: "M256 iter-18 (six probe passes, live) + D104"
+  rationale: >                     # >= 80 chars, no placeholder spellings
+    MEASURED then deliberately refused — the only advancing path scrapes a live third-party profile …
+```
+
+**`will-not-build`** is a measured refusal and MUST NOT name a handler; **`not-yet-built`** is a real gap and
+MUST name the routing handler that will close it. That asymmetry is what stops the two blurring into *"TODO
+with a paragraph attached"*. It is also the mechanical form of iter-30's **D117** — *a routed blocker must
+carry the measurement that produced it, or be marked an estimate* — which is what `measured_by` is for: three
+of one session's five iters found a routed blocker mis-stated, each written in good faith and each read as a
+measurement by the next iter.
+
+**The state model is UNCHANGED.** A `will-not-build` is not a fifth state and gets no new glyph — it is an
+`unimplemented` use case that now says which kind it is. A new glyph would imply a state the reconciler does
+not have.
+
+**Fence it in BOTH directions.** A `TODO` without a verdict fails; **a use case with a LIVE Playthrough that
+still carries one fails too.** The second half is not symmetry for its own sake: a verdict left behind on a use
+case that has since been proven is a stale claim with **no expiry** — nothing in the artifact tells a reader it
+is out of date, and it goes on asserting a blocker that no longer exists. (Same shape as M255's knob guard: a
+doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
+*undiscoverable*.) Landing a use case must therefore **force** the verdict's removal rather than leave it to
+diligence.
+
+**And fence it against being VACUOUS, or the schema just re-hosts the silence.** A presence check is satisfied
+by `rationale: TODO`. Hence the 80-character floor, the placeholder blacklist, and a **closed** disposition set
+with **no fallback member** — this milestone twice shipped a seed enum whose unrecognised value fell back to a
+permissive default, and in both cases the fallback would have produced a Playthrough that looked like a product
+regression. Prove the fence on the **shipped** manifest, not only on fixtures: five green unit tests once drove
+a mock path the real client never used (iter-16), and a fence proven only against fixtures is a fence proven
+against itself.
+
+### Liveness before absence — now machine-checked, because three iters fixed it by hand (v2.8 M256 iter-31)
+
+After a navigation, an absence assertion is **not evidence** until something positive has been observed on that
+page. `toHaveCount(0)` and `not.toBeVisible()` are satisfied by a page that is dead, empty, **or simply not
+there yet**. The rule is old; what iter-31 added is that a test now holds it
+(`playthroughs/e2e/tests/liveness-before-absence-fence.unit.spec.ts`), because the same defect arrived three
+times in three costumes:
+
+| iter | costume | what satisfied the absence |
+|---|---|---|
+| **07** | **dead** | an ablated GraphQL response — `bodyLen 24`, 0 nav, 0 buttons. The whole mechanism was refuted. |
+| **22** | **empty** | the roles table's placeholder row — its LOADING row and its EMPTY row are the same `<tr>` carrying the same sentence. *In this app the empty state occupies a row.* |
+| **29** | **not there YET** | a `domcontentloaded` navigation's pre-hydration DOM. Nothing was dead and nothing was empty — **TIME** was the confounder, which is exactly why the two earlier fixes did not prevent it. |
+
+*An absence assertion needs a companion that proves **when** it was read, not only **where**.* The witness can
+be a polled body-length/nav-chrome floor (`assertPageIsAlive`), an ordinary `toBeVisible()` on a landmark, a
+non-zero count, or a `waitForURL` — anything a dead, empty or unhydrated page could not satisfy. Note what does
+**not** count: `expect(landedUrl).not.toMatch(/\/login\b/)` reads a string the harness already returned and says
+nothing about whether the page rendered.
+
+**Measure a fence before adopting it** (iter-15 D74): the scan reported **29 files · 62 navigation sites · 184
+liveness witnesses · 37 absence assertions · 0 violations**, so the invariant was already true everywhere and
+cost **zero edits** — the fence buys the *next* spec, not this one. And make it **fail-closed** on floors for
+each of those counts: a scan that matches nothing passes every assertion, and a fence is the worst possible
+place to commit this milestone's signature defect.
 
 ### The fifth outcome the map has no glyph for — a PRODUCT DEFECT the suite finds (v2.8 M256 iter-23)
 
