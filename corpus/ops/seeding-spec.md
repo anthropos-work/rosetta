@@ -415,6 +415,38 @@ refs**, so `datadna measure-closure` stays green trivially. New reset surface:
 `public.organization_sim_invitation_links` (child-first in `resetTables`); the session pair reuses the
 already-reset `jobsimulation.sessions` + `public.local_jobsimulation_sessions`.
 
+### Insert-then-heal: test the statement that LANDS it, and count PER ROW (v2.8 M256 harden-final)
+
+Several tables here are populated by the platform **row-per-user at user-insert time** — `public.user_params`
+is one, `public.memberships.picture_url` another. A seeder writing to them uses the **insert-then-heal** shape:
+a `CopyRowsIdempotent` (`ON CONFLICT (id) DO NOTHING`) that creates the row when absent, then an `UPDATE` that
+sets the value on the row that already exists.
+
+**On a real stack the COPY is the no-op and the UPDATE is the whole capability.** Two failure modes follow, and
+`OnboardingParamsSeeder` shipped with both:
+
+1. **The tests watched the wrong statement.** Every test inspected the recorded COPY — precisely the statement
+   that writes nothing in production — and none ever looked at the recorded `Exec`s. Measured: **deleting the
+   entire heal loop left the whole `seeders` package green.** The seeder's own comment said *"The UPDATE below
+   is what actually lands it"*, and nothing tested the UPDATE. If a seeder's comment names the load-bearing
+   statement, that is the statement a test must observe.
+
+2. **The post-condition was aggregate.** The guard read `healed == 0`, which fires only when **every** declaring
+   hero fails. With two heroes, one landing and one silently missing gave `healed == 1` and a clean seed —
+   while the error text already claimed per-hero coverage. The predicate must be `healed < len(rows)`, and the
+   message must state **how many of how many** landed.
+
+> **The general rule: a heal's post-condition needs a DENOMINATOR.** "At least one row was touched" and "every
+> row I intended was touched" are different claims, and only the second is the one a seeder is making. Note the
+> sibling contrast — `users.go`'s `picture_url` backfill legitimately matches **0** on a re-seed because it
+> carries an `IS DISTINCT FROM` guard, so the correct predicate is genuinely different there. *Read the
+> statement's own idempotency semantics before choosing the count you assert.*
+
+**Related, same seeder:** its `if idx <= 0 { continue }` guard was unreachable — `personaUserIndexFor` never
+returns `<= 0`, it **falls back to slot 1, which is the story's ADMIN seat**. So the branch could not fire, and
+the failure it named would in fact have written the hero's row onto the org admin. A defensive guard against an
+impossible value is not defence; verify the resolved slot **belongs to the persona that resolved it**.
+
 ## Status
 
 M7a delivers the framework + the isolation guard + the reference seeders (`org`, `users`, `identity`),

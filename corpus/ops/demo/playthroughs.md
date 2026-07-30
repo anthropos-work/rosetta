@@ -917,6 +917,57 @@ cost **zero edits** — the fence buys the *next* spec, not this one. And make i
 each of those counts: a scan that matches nothing passes every assertion, and a fence is the worst possible
 place to commit this milestone's signature defect.
 
+> **⚠️ AND THEN THE FENCE ITSELF ENFORCED HALF OF WHAT IT ADVERTISED** (v2.8 M256 harden-final). `.toBeVisible(`
+> is a **substring of** `not.toBeVisible(`, and the LIVENESS branch was evaluated before ABSENCE and returned —
+> so a `not.toBeVisible()` line was scored as a positive **witness**, which *disarmed* the state machine and
+> licensed every absence after it on that navigation. The `not\.toBeVisible\s*\(` alternative in the ABSENCE
+> pattern was unreachable dead code, and *"0 violations across 29 specs"* was true only of the `toHaveCount(0)`
+> spelling. Separately, `toHaveCount\(\s*0\s*\)` required the `)` immediately after the zero, so
+> `toHaveCount(0, { timeout: … })` escaped entirely — while the comment above it claimed that spelling was
+> *"covered by the `0` alternative's tolerant whitespace"*. **Whitespace tolerance is not option-object
+> tolerance.**
+>
+> Widening to `[,)]` then drags in `not.toHaveCount(0, …)`, which is the **opposite** claim ("at least one") and
+> is spelled that way at three live sites — so **`not.` is the discriminator in BOTH directions**, and both
+> patterns carry a lookbehind. ABSENCE is now tested **first** (fail-closed: a line that could read either way is
+> an absence).
+>
+> **Both defects were LATENT in the corpus, and that is the transferable lesson.** Neither spelling appeared in
+> any spec, which is exactly why a fence that only ever runs over the corpus could not surface either one — it
+> was validated by whatever the corpus happened to contain. **Latent is not fixed; it is one ordinary edit away
+> from live.** A classifier now gets its own synthetic self-test alongside the corpus scan.
+
+### A fence must scan the thing it is NAMED for (v2.8 M256 harden-final)
+
+The bounded-interaction fence exists because of iter-06 **D25**, whose subject is `pickFirstSkillPath` in
+`assignments-page.ts` — written `for (let attempt = 0; attempt < 3; attempt++)`. Its loop pattern matched only
+`for(;;)` and `while(true)`, so **the fence built to prevent D25 recurring had never once looked at D25's own
+loop**. It was satisfied instead by an unrelated `for(;;)` two hundred lines above, in a different method.
+
+Its regression pin had the same disease one level up: it asserted a **per-file loop count `>= 1`**, which any
+loop in the file satisfies — so the D25 retry could be deleted outright with the pin green. *A per-file count
+cannot pin a per-method invariant.* The pin now names four loops **individually, by the method that owns each**,
+and checks the loop is inside that method.
+
+**The generalisable rule:** when a fence names a defect, make it assert that it is scanning **that defect's
+actual site**. A "not vacuous" floor that counts *anything* is satisfied by the wrong thing, and reads as
+coverage.
+
+### The standing mutant question, asked of the OLD Playthroughs too (v2.8 M256 harden-final)
+
+`PT-M256-standing-mutant-Q1` — *"delete the action; does anything fail?"* — had only ever been asked of the
+Playthroughs each iter had just written. Harden-final asked it of three **older, never-mutated** mutating
+Playthroughs, each on a **fresh reset-to-seed world** (mandatory: the write is irreversible, and iter-32 had two
+mutant runs confounded because the previous run had already consumed it):
+
+| Playthrough | action deleted | verdict |
+|---|---|---|
+| `pt-orgadmin-setting-toggle` | `settings.toggle(SETTING)` | **RED** — *"the switch flipped in the UI"* |
+| `pt-skillpath-bookmark` | the save click | **RED** — *"the save PERSISTED: after a full reload…"* |
+| `pt-assignment-assign` | `confirmAssign()` (the WRITE) | **RED** — *"the assignable-affordance count drops by exactly one"* |
+
+3 of 3 red. **9 of the 12 mutating Playthroughs remain unasked** — named, not implied.
+
 ### The fifth outcome the map has no glyph for — a PRODUCT DEFECT the suite finds (v2.8 M256 iter-23)
 
 The four states above all describe **the suite's relationship to a use case**. None of them describes the

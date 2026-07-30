@@ -540,6 +540,66 @@ an empty violation list, which is equally true when **no** directory was index-b
 and it sweeps zero docs and passes), so it now counts what it inspected and says so — *"all 82 doc(s) across 6
 index-bearing directory/ies"*.
 
+### A DELETED subject cannot fail a check that iterates the subjects (v2.8 M256 harden-final)
+
+This is the same shape as the casbin-list fence (pass 1) and the `safety_doc_drift` host loop (pass 2), and
+harden-final found it **four more times in one afternoon**. It is worth stating as a rule because it keeps
+arriving in new costumes:
+
+> **A check that RANGES OVER the thing it is checking cannot see a deletion.** The deleted item is absent from
+> the list it would have been compared against, so both sides stay balanced and the check passes over less.
+
+The four instances, and what each one measured:
+
+| Where | What it iterated | What a deletion did |
+|---|---|---|
+| `playthroughs/manifest` | `m.UseCases()` — in every check | Delete a use case **and its spec**: `ptvalidate` reports `manifest VALID`, 30 use cases ↔ 29 ids **balanced**, the Go suite green. A whole milestone deliverable vanishes silently. |
+| `seed-facts-fence` | `SEEDED_HEROES`, the module under test | 11 heroes seeded, **6 enrolled**. The 5 unenrolled were asserted by literal in the specs that play them; renaming one in the seed left the fence green and reddened the Playthrough instead, naming a product regression that had not happened. |
+| `orgless_writers_fence` | files matching `membershipUUID(prefix, i)` | The pattern's scope was a **naming convention**. Rename the call's identifiers and the file is not selected at all — so the fence reports green over a writer with no guard. |
+| `report.AllGreen` / `NoRegressions` | the `Summary` counters alone | Equally true of *"everything passed"* and *"nothing ran"* — and `report_edge_test.go` **asserted the vacuity as correct**, so writing the honest fence turned that test red. |
+
+**The fix is the same each time, and it is not "iterate harder":** add an **EXTERNAL** assertion that names what
+must exist, with a **denominator**. A presence pin that names ids (`pt-onboarding-individual`, …). A reverse
+direction (seed → facts, not only facts → seed) with an explicit, *justified* exemption set. A `Total > 0`
+clause. A floor set to the **measured** count, not comfortably below it — the org-less fence's floor of 6
+against a true count of 8 left room for exactly the two renames it existed to detect, and **slack in a floor
+permits the defect the floor is for**.
+
+**And the exemption must be a property, not a roster.** The citation fence added here excuses a comment block
+that *declares* a file absent (it is documenting an absence, not citing evidence) rather than keeping a list of
+excused filenames — because an enumerated roster is the process bug this milestone has hit repeatedly.
+
+### A citation is a claim about the repository, so it is checkable (v2.8 M256 harden-final)
+
+Two shipped comments in `stack-seeding/seeders` cited **`orgless_footprint_test.go`** as the compensating
+control for the half of the org-less capability no static fence can cover. **That file has never existed** —
+not on disk, not anywhere in git history. The underlying measurement was real (a live uuid sweep on a reseeded
+`demo-2`), but it lived in prose and the comments claimed a committed test.
+
+This is the `demo_knob_guard` `Read at` rot (**28 of 29** citations wrong, guard green) in source comments
+instead of a document — and that guard's fix was scoped to one document's citation format, so it generalised to
+nothing. **A wrong citation is worse than no citation:** it sends the reader somewhere confident and empty, and
+it makes an *unverified* property read as a verified one. Fence it where it lives.
+
+### A gate whose exit code is discarded is not a gate (v2.8 M256 harden-final)
+
+`run-playthroughs.sh` ran `ptreport --gate no-regressions` and threw the result away with `|| echo`, then exited
+with playwright's code. `report.go`'s `!ok` branch is the **only** mechanism that notices a declared Playthrough
+which never ran, and **playwright exits 0 when a spec file is simply absent** — so deleting a spec produced a
+fully green run. Measured: 203 passed, rc 0.
+
+The non-fatality was right for a `--grep` run (every un-grepped id correctly reports *"did not run"*), and the
+comment above it had always said so — *"the whole-suite gate is meaningful on a full (un-grepped) run"*. The
+**code collapsed both cases onto the permissive one**. Splitting them is the fix: binding on a full run,
+advisory with a stated reason on a scoped one.
+
+> **Then the fix itself taught the sharper lesson.** The first version went red live — but via `set -e`, which
+> aborts a bare failing command group before `PTREPORT_EXIT=$?` can run. The full-run case produced the right
+> exit code **by accident**, and the `--grep` case would have aborted with no explanation, silently destroying
+> the advisory path the change existed to preserve. **A right answer reached by the wrong mechanism is not a
+> right answer — it just fails somewhere else.** Put the invocation in an `if` condition (exempt from `set -e`)
+> so the code decides, and re-prove it live. It was caught only because the *diagnostic did not print*.
+
 ### A CONTAINER-LIVENESS assert is the cheapest cheap-win there is, and the stack has no restart policy (v2.8 M256 iter-15)
 
 **A clean `Exited (0)` is not a healthy container, and nothing in the bring-up notices.** Measured on `demo-2`:

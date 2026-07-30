@@ -831,6 +831,43 @@ The net effect: **dev and demo are now the same world built two ways** — the s
 `stack-seeding` machinery, the same per-stack Directus store fork, behind the same firewalls. M12 made dev a peer
 for **N-allocation** (the unified registry); M13 makes it a peer for **data**.
 
+## Phase 5 — the sequence advance, and how it was untestable by construction (v2.8 M256)
+
+After loading a table, replay re-points every **sequence-backed column** past the loaded ids
+(`setval(pg_get_serial_sequence(...), COALESCE(max(col),0)+1, false)`), so the next insert into a replayed
+surface does not collide with a replayed id. `is_called = false` is deliberate: on an empty table the next
+`nextval` is then **1**, not 2.
+
+**The whole of it could be deleted with the suite green** (harden-final). Three compounding causes, each worth
+carrying forward:
+
+**1. No seam, so no coverage.** `replayAdapter` took the **concrete** `*pg.Conn`, so its method bodies could not
+be exercised without a live database — and consequently never were. `AdvanceIdentitySequences` had **zero test
+call sites**; every Phase 5 test drove one of two fakes implementing the `Replayer` *interface*, which proves
+the orchestration calls the interface and nothing about the one real implementation. Replacing the body with
+`return nil, nil` left the pre-existing tests — **including the end-to-end test that runs the real taxonomy
+manifest** — at rc 0 with zero failures. The capture side had had a narrow `captureConn` interface for exactly
+this reason since it was written; the replay side now has `replayConn`.
+
+> **The two tests that looked like coverage pinned the SQL as STRINGS**, on the stated rationale that the
+> builders are *"pure functions, so the SQL shape is unit-pinned without a database"*. The shape was indeed
+> pinned. **That the SQL is ever SENT was not.** Correct text is not evidence of dispatch.
+
+**2. `setval`'s return value was discarded.** `setval(regclass, …)` is **STRICT**: when
+`pg_get_serial_sequence()` resolves to NULL it returns NULL, advances nothing, and **raises no error**. Under an
+`Exec` that is indistinguishable from success, and the column was appended to `SequencesAdvanced` anyway — so a
+replay could report every sequence advanced while advancing none. Aggravating: the qualified table name is
+spelled **twice and independently** (discovery passes raw identifiers into a server-side `quote_ident()`; the
+advance passes a pre-quoted string) and only the second was pinned, so a divergence between them would have
+presented as exactly this silent no-op. The result is now read; a NULL is a hard failure naming the table.
+
+**3. `SequencesAdvanced` had no readers.** Not printed, not asserted anywhere, so the operator's console was
+byte-identical whether two sequences advanced or none: *"discovery found nothing"* and *"discovery is broken"*
+were the same silence. A wrong `search_path`, a catalog predicate that quietly matches nothing, or a role that
+cannot resolve the sequence all read as *"this table has no sequence"*, exit 0. **Zero is a legitimate reading
+for a surface with no sequence-backed column — but it must be a STATED one**, so the count is now always
+printed.
+
 ## See also
 - [`snapshot-cold-start.md`](snapshot-cold-start.md) — the **cold-start runbook** (v1.3b M20): filling the cache once per release on a fresh box (the sanctioned DSN-export / dump-restore path over `--dsn`), why the wired `postgres` MCP is **not** a capture source, and how it slots into the auto-set-dress bring-up.
 - [`demo/README.md`](demo/README.md) — the **demo-env family index**: where the snapshot replay (`/stack-snapshot`) sits in the up→snapshot→seed→use→down flow.

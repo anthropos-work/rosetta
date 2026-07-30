@@ -372,3 +372,186 @@ Two independent lines of evidence, stated so the claim is checkable rather than 
 - **The 9 structural negative-control finals** remain build-iter scope, unchanged from pass 1 (iter-12 *measured*
   that no suppression mechanism can exist).
 - **The discovered-test-roster fix** remains release scope.
+
+---
+
+## Pass 3 — 2026-07-30 — final
+
+**Why this pass is `final`:** iter-32's `progress.md` records `**Gate:** MET`. Passes 1 and 2 (both dated
+2026-07-29) covered iters 01→12; **iters 13→32 — twenty tiks — had never been hardened.** Cumulative scope.
+
+**Iters hardened this pass:** all milestone-touched code, with the weight on iters 13→32
+**Footprint:** rext `58e08a6..HEAD` — **94 files, ~8,700 insertions** across `playthroughs/` (Go + TS),
+`stack-seeding/`, `stack-snapshot/`, `clerkenstein/`, plus `run-playthroughs.sh`.
+
+**Environment (stated with every number, per D-v28-13):** local laptop, darwin 25.1.0, **and a LIVE stack** —
+`demo-2`, 16 containers, none `Exited`. `billion` was not touched or probed. `stackseed` built from the
+**authoring copy** (not the stack's pinned clone) so the seeder fix under test was the one exercised.
+
+**Method:** four parallel read-only dimension scans (one per subsystem), then fixes written in-thread, then
+**every fix mutation-proven RED**. Scoped by risk rather than swept uniformly, per the pass mandate.
+
+### Bugs surfaced + fixed inline (9 findings, 14 mutants proven RED)
+
+1. **The statement that lands the capability was never observed** (`4f2b3aa`). `public.user_params` is
+   populated row-per-user at user-insert time, so `OnboardingParamsSeeder`'s COPY is a **no-op in production**
+   and the UPDATE is the whole capability — as the seeder's own comment says. Every test inspected only the
+   COPY. **Measured: deleting the entire heal loop left the whole `seeders` package GREEN.** Two more defects in
+   the same twenty lines: the post-condition was **aggregate** (`healed == 0` fires only when *every* hero
+   fails, so 1-of-2 landing passed while the error text already claimed per-hero coverage), and the `idx <= 0`
+   guard was **unreachable** — `personaUserIndexFor` falls back to **slot 1, the ADMIN seat**, so the failure it
+   named would have written the row onto the org admin. 4 tests; `recordingConn` gained `execZeroForArg0`
+   because a partial heal was not previously *expressible*.
+
+2. **The liveness fence counted `not.toBeVisible()` as a liveness WITNESS** (`53fb169`). `.toBeVisible(` is a
+   substring of `not.toBeVisible(`, LIVENESS was tested first and returned, so an absence assertion **disarmed
+   the state machine** and licensed every absence after it. The ABSENCE pattern's `not\.toBeVisible` alternative
+   was unreachable dead code. Separately `toHaveCount(0, {timeout})` escaped a pattern whose comment claimed it
+   was covered. `not.` is the discriminator **in both directions** (three live `not.toHaveCount(0, …)` sites).
+   Both defects were **LATENT** — which is why a fence that only runs over the corpus could not find either.
+
+3. **The bounded-interaction fence never scanned the loop it is named for** (`d75cabd`). D25's subject is a
+   **counted** retry (`for (let attempt = 0; …)`); the pattern matched only `for(;;)`/`while(true)`. Satisfied
+   instead by an unrelated loop 200 lines away. Its regression pin asserted a **per-file loop count**, so the
+   D25 retry could be deleted with the pin green — now four loops named individually by owning method.
+
+4. **The whole of snapshot Phase 5 could be deleted with the suite green** (`ace07fa`).
+   `AdvanceIdentitySequences` had **zero test call sites**; `replayAdapter` took the concrete `*pg.Conn` so its
+   body was untestable by construction. Gutting it left the pre-existing tests — **including `TestEndToEnd`** —
+   at rc 0. Also: `setval`'s return was **discarded** (it is STRICT — a NULL sequence no-ops and raises nothing,
+   yet the column was still reported advanced), and `SequencesAdvanced` had **no readers at all**.
+
+5. **A deleted Playthrough could not turn the run red — four ways at once** (`53f3c76`). Delete a use case AND
+   its spec: `ptvalidate` reports **VALID**, the Go suite passes, the runner exits **0**. (a) the runner threw
+   ptreport's exit code away with `|| echo` while playwright exits 0 on an *absent* spec; (b) **no presence pin**
+   for any of the six M256 landings; (c) both report gates were vacuous **and a test asserted the vacuity as
+   correct**, so the honest fence turned that test red; (d) `ptvalidate` printed VALID over an empty corpus
+   while `manifest.go` promised in a comment that it "will flag an entirely-empty corpus".
+
+6. **The binding gate went red via `set -e`, not via the code that decides** (`f2d5cd7`). Caught by running it
+   live: the gate *did* fail, but the diagnostic never printed. `set -euo pipefail` aborted the bare command
+   group before `PTREPORT_EXIT=$?` — so the full-run case was right **by accident** and the `--grep` case would
+   have aborted with no explanation, destroying the advisory path the change existed to preserve. **A right
+   answer reached by the wrong mechanism is not a right answer.**
+
+7. **seed-facts reconciled only the heroes someone had already enrolled** (`763ee22`). Facts→seed only: **11
+   heroes seeded, 6 enrolled**, and five of the unenrolled had their seeded name hardcoded in exactly the spec
+   that plays them (four of the five are M256's own). Renaming one left the fence green and reddened the
+   Playthrough, naming a product regression that had not happened. Added the reverse direction with a *justified*
+   exemption set (an excused hero may not be named by a literal anywhere), a cardinality floor, and
+   `org_membership: none` as a first-class reconciled fact — iter-32's entire deliverable, pinned nowhere.
+
+8. **A phantom test cited twice as proof, and a fence its subject could rename itself out of** (`4fafe4e`).
+   `orgless_footprint_test.go` is cited in two shipped comments as the compensating control for the half no
+   static fence covers. **It has never existed** — not on disk, not in git history. New `citation_fence_test.go`
+   generalises the `demo_knob_guard` citation-rot fix to source comments, with the exemption expressed as a
+   **property of the prose** (a block that *declares* a file absent is documenting, not citing) rather than a
+   roster. The org-less fence itself was bound to the literal identifiers `prefix`/`i` — its scope was a naming
+   convention, so a renamed writer was never scanned — and its not-vacuous floor was **6 against a true count of
+   8**, leaving room for exactly the two renames it exists to detect.
+
+9. **The sticky-sign-out guard was only ever observed through `/v1/me`** (`9e1ceb9`). That endpoint reads the
+   server's in-memory flag; the browser's state comes from the handshake cookies, and nothing after the guard
+   branches on `signedOut`. The only differentiator is an empty `sid`, asserted nowhere. **No live defect** —
+   the guard behaves correctly today — but a fallback to `sess_clerkenstein` hands the browser a token
+   indistinguishable from a live session with every `/v1/me` test green. Exactly one test now notices.
+
+### The standing mutant question — `PT-M256-standing-mutant-Q1`, partially discharged
+
+Asked of three **older, never-mutated** mutating Playthroughs, each on a **fresh reset-to-seed world** (the
+write is irreversible; iter-32 had two mutant runs confounded by exactly this):
+
+| Playthrough | action deleted | verdict |
+|---|---|---|
+| `pt-orgadmin-setting-toggle` | `settings.toggle(SETTING)` | **RED** |
+| `pt-skillpath-bookmark` | the save click | **RED** |
+| `pt-assignment-assign` | `confirmAssign()` — the WRITE | **RED** |
+
+**3 of 12 asked. 9 remain unasked** — see residuals. The corpus says 11 mutating Playthroughs; the machine
+registry reports **12**.
+
+### Live verification
+
+- **Suite green cold:** `204 passed, 0 failed, rc 0`; ptreport `passing=30 failing=0 unimplemented=1`.
+- **The new binding gate PROVEN RED live**, twice: one spec hidden → playwright `203 passed` **exit 0** while
+  the run exits **1** with the diagnostic naming the cause. The second run also confirmed the corrected
+  `set -e` handling; the **ADVISORY** branch was separately confirmed live on a `--grep` run.
+- **The drifted cockpit-manifest fixture was preserved.** Backed up before each `--reset` and restored
+  **byte-identically** — sha `99e2f315b1132383`, re-verified after the final run.
+
+### Coverage delta
+
+| suite | before | after |
+|---|---|---|
+| playthroughs playwright | 166 | **169** |
+| playthroughs Go | 4 pkgs | **4 pkgs** (+3 tests: M256 presence pin, gate witness, empty-corpus) |
+| `stack-seeding` Go | — | **+5** (heal ×4, citation fence) |
+| `stack-snapshot` Go | — | **+4** (the real Phase 5 adapter) |
+| `clerkenstein` Go | — | **+1** (cookie-level sign-out) |
+| **mutants proven RED** | 24 (passes 1–2) | **14 more** |
+
+### Flake gate
+
+**3 consecutive full cold reset-to-seed runs, rc captured per run, never off a pipe:**
+`FLAKE_RUN_1_RC=0 · FLAKE_RUN_2_RC=0 · FLAKE_RUN_3_RC=0` — each `204 passed`, each
+`passing=30 failing=0 unimplemented=1 unimplementable=0`. **Zero flake.**
+
+### Verification
+
+6 Go modules **rc 0 / 0 FAIL** (58 packages ok) · `gofmt -l` clean across every rext-owned section · Python
+**1,723 passed / 2 skipped / 0 failed** (stack-core 287 · demo-stack 999 · stack-verify 171 · stack-injection
+266), one invocation each, rc captured into a variable · playwright **169** unit + **204** full-suite ·
+`tsc --noEmit` clean · `bash -n` clean on the runner · `ptvalidate` **VALID** (10 products, 31 use cases, 30
+live Playthroughs, 1 TODO).
+
+### Knowledge backfill
+
+- `corpus/ops/verification.md` — three new sections: **"A DELETED subject cannot fail a check that iterates the
+  subjects"** (the four harden-final instances in one table, and why the fix is an *external* assertion with a
+  denominator, never "iterate harder"); **"A citation is a claim about the repository"**; and **"A gate whose
+  exit code is discarded is not a gate"**, carrying the `set -e` lesson.
+- `corpus/ops/demo/playthroughs.md` — the liveness fence's own half-enforcement (with the *latent is not fixed*
+  rule); **"A fence must scan the thing it is NAMED for"**; and the standing-mutant table.
+- `corpus/ops/seeding-spec.md` — **insert-then-heal**: test the statement that lands it, count per row, and the
+  `IS DISTINCT FROM` sibling contrast that makes the correct predicate genuinely different elsewhere.
+- `corpus/ops/snapshot-spec.md` — a new **Phase 5** section: no seam ⇒ no coverage, `setval` is STRICT, and a
+  result nobody reads.
+
+**Stop condition:** `cap reached without stabilization`.
+
+Not because the pass was truncated — every finding above is fixed, mutation-proven and live-verified — but
+because **the class is demonstrably not exhausted**, and saying otherwise would be the very thing this milestone
+exists to refuse. The four scans returned **more findings than one pass could responsibly land**, and the
+unaddressed remainder is named below rather than implied.
+
+**What is still uncovered (named, not implied):**
+
+- **9 of the 12 mutating Playthroughs have never been asked the standing question.** `pt-onboarding-*` (×4),
+  `pt-orgadmin-{member-tag,role-create,tag-create}`, `pt-onboarding-complete`, `pt-skillpath-legacy`. Each needs
+  its **own** reset-to-seed (~3 min), so the remainder is ~30 minutes of machine time, not a design problem.
+- **Scan findings triaged as lower-severity and NOT fixed**, each real: the `content_stories.go`
+  `eligiblePlayerOwnerSlots` org-less guard is **provably dead** (its comment claims `personaUserIndexFor`
+  hashes; it returns declaration order) and is what makes that file pass the writer fence; **8 of 16** org-less
+  guard sites sit outside the fence's static signature by design (the "quiet half"), with **no** automated
+  coverage; the org-less fence remains **file-scoped, not call-site-scoped**, so a second unguarded loop in an
+  already-compliant file is invisible; `TestResetMustNotDeleteP3PolicyRows` asserts tuple completeness, not the
+  reset invariant its name promises; `WriteText` truncates the iter-31 verdict at 80 **bytes** and drops
+  `[measured by: …]` entirely, so the D117 mechanism never reaches the text report; a TODO that also appears in
+  `unimplementable.yaml` silently swallows its written verdict, and nothing reconciles the two files; the three
+  `*-locators.unit.spec.ts` rosters are hand-maintained and **8 onboarding accessors added in iters 28–32 are
+  unenrolled**; `onboarding-hiring-candidate`'s declared negative control names two **unfalsifiable**
+  assertions and not the load-bearing one; hero-role distinctness is checked by **equality** but consumed with
+  `exact: false`.
+- **The five newly-enrolled heroes' specs still hold their name literals.** Reconciliation now covers them (a
+  seed rename reddens the fence and names the seed), but the specs do not yet *import* the constants, so the
+  single-source-of-truth half is incomplete.
+- **`ptvalidate` is invoked nowhere outside its own tests** — the written-verdict contract is enforced solely by
+  `go test ./manifest/...`. Combined with findings 5 and 8, the two artifacts a human reads (the run's exit code
+  and the four-state text map) are insulated from it. Structural; belongs to whoever next owns that CLI.
+
+**Routed forward (three-fate rule):**
+- Remaining 9 standing mutants → **Fate 3 → `/developer-kit:close-milestone`** (mechanical, ~30 min machine
+  time, no design decision).
+- The lower-severity scan findings above → **Fate 3 → a future v2.8 milestone.** They are recorded here with
+  file-level specificity so they need no re-discovery.
+- Spec-side import of the five enrolled heroes → **Fate 3 → whoever next edits those specs.**
