@@ -478,6 +478,44 @@
   inherits the moment it was made.* rext `b0b9e43` + `b4c802d`, tag `fast-build-m256-iter-24` **on origin**.
   — see [`iter-24/progress.md`](iter-24/progress.md)
 
+- iter-25 (tik, `closed-fixed`): **D-v28-5 is DISCHARGED and PROVEN LIVE — the gate's one non-Playthrough
+  clause.** iter-16 fixed the sign-out ROUTE and said honestly it was HALF a fix; this implements the **D81**
+  it specified (*an explicit sign-out is STICKY until an explicit login*) and proves **both halves on one
+  rebuilt `fake-fapi`**. The contract has three clauses and the third is the interesting one: a handshake
+  carrying `__clerk_identity` always establishes (the cockpit + every Playthrough), a **bare** handshake
+  after a sign-out must not, **but a bare handshake never preceded by a sign-out MUST still establish** —
+  first visit, and `autoverify` handshakes bare. So it is a sign-**OUT** flag, not "establish only when
+  asked", and it is deliberately **not** the negation of `signedIn` (a seat switch drops `signedIn` on
+  purpose). **All four of iter-16's measurements flipped:** after `/logout` the browser lands on **`/login`**
+  (was `/home`), `/v1/me` is **401** (was 200), re-visiting `/profile` serves **`/login`** with the hero
+  absent (was the logged-out hero's own profile), and — step 5, new — an explicit cockpit login after a
+  sign-out **works on the FIRST attempt** and lands the selected hero. The cookies are still all present, and
+  that is the point: the fix is **server-side**, because clerk-js's cookie behaviour is not ours to change;
+  what changed is that the mock no longer treats a leftover `__client_uat` as a licence to resurrect a
+  session. **THE HEADLINE IS THAT FIVE GREEN UNIT TESTS AND ONE LIVE RUN DISAGREED, AND THE LIVE RUN WAS
+  RIGHT.** The first live drive FAILED at step 5 — the guard meant to make logout work had broken logging
+  back **in** — because `loginAsHero` POSTs `/v1/demo/select` and then lets the middleware handshake, and
+  **that handshake is BARE**, so `handleSelectIdentity` dropping `signedIn` without clearing the sticky flag
+  stranded the presenter. A seat *selection* is an explicit *login intent*; it now clears the flag. *A
+  stateful flag needs a test per ENTRY DOOR — the `__clerk_identity` handshake, the sign-in form, and
+  `/v1/demo/select` — and the uncovered door was the one every presenter and every Playthrough uses.*
+  **And a mutant that PASSED was data for the second time this milestone** (after iter-17 D84): P3 (remove
+  `establishLocked`'s clearing) left the D81 test green, because a form sign-in sets `signedIn` and a later
+  bare handshake merely *declines* to establish — harmless while already signed in. The exposed sequence adds
+  a seat switch (`sign out → form sign-in → select → bare handshake == stranded`); a dedicated test now
+  drives it and P3 re-run is RED, so the line is load-bearing **and proven so** rather than kept on faith.
+  5 mutants RED (P1 unconditional establish · P2 seat-switch-as-sign-out · P4 bare-handshake-inert · P5
+  seat-select clearing removed · P3 after the coverage hole was closed), restores byte-identical. The rebuild
+  followed the **consumption-copy policy** — cross-compiled from the stack's OWN clone re-pinned to the
+  pushed tag, image rebuilt, container recreated `--no-deps --no-build`; **no `/demo-up`, no `/demo-down`, no
+  compose down, no `--purge`.** No-regression gate on the changed login path: **`187 passed` ×3 consecutive
+  cold reset-to-seed, rc 0 each, 0 flake**; `ptreport` 26/31, 0 failing, 0 unimplementable; `--policy-check`
+  rc 0; 16 containers Up, 0 exited; fixture restored byte-identically. **No Playthrough added** (the user's
+  explicit call). Side sighting: `FIX-M256-autoverify-fapi-libressl` re-confirmed — host `curl` returns
+  **HTTP 000** against the mkcert leaf on macOS, so the proof had to be driven in a browser. rext `36ff8d9`
+  + `7f0bc38`, tags `fast-build-m256-iter-25` / `-25b` **on origin**. — see
+  [`iter-25/progress.md`](iter-25/progress.md)
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -671,7 +709,8 @@ Fate-3 items land here.
 | `PT-M257-self-evaluation` | **Re-home recommendation (iter-09 D39).** `profile-skills.self-evaluation.UC1`'s M206 reservation is WEAK: its curated final is persist-then-observe (`user_skill_evidences.user_level`), needing no LLM, no integration, no fixture — exactly the MUTATING shape clause 2 hunted for four iters. Re-homing a reservation is a **roadmap decision**, so it is recorded as a recommendation, not actioned. | M257 (user/roadmap call) |
 | `PT-M257-talk-to-data` | `talk-to-data.query.UC1` — real + wired (`app/internal/askengine`), but needs the `ask_*` tables migrated on the demo **and live Bedrock credentials**. An unavailable credential is not something an iter can fix; it also belongs in the separately-budgeted integration lane, not the timed median. | M257+ |
 | `FIX-M256-cockpit-manifest-drift` | **NEW (iter-10 D41), and it BLOCKS D-v28-5.** `run-playthroughs.sh --reset` re-exports `fake-fapi-roster.json` (M211 iter-16) but **not** `cockpit-manifest.json`, so on any Playthrough-reset demo the cockpit lists heroes that no longer exist and every seat selection **silently** falls back to the last-active seat (`clerk-frontend/server.go:347-349`). 23 Playthroughs stay green while the human-facing cockpit is entirely stale. Fix shape: re-export the cockpit manifest alongside the roster so the two artifacts move together — **verify on a live bring-up**, and do not regress the roster refresh. Separately consider making the unknown-key fallback **loud** on a demo. | **next iter** |
-| `D-v28-5-cockpit-logout` | **HALF DONE (iter-16), and the remaining half is SPECIFIED.** Root cause: clerk-js 5.127.1 signs out via `POST /v1/client/sessions?_method=DELETE`; the mock registered `/{id}/remove`, the collection pattern was not on the mux, there was no catch-all and nothing read `_method` — so `handleSignOut` was dead code and `/v1/me` stayed 200 through a whole logout, while the unit test drove the same unused path (D79). **Fixed + test-proven RED→GREEN.** Remaining: implement **D81** — `handleHandshake` must not auto-establish on a *bare* handshake after an explicit sign-out (a handshake carrying `__clerk_identity` always establishes, which is the cockpit's and every Playthrough's path). Then prove BOTH halves on **one** rebuild: push the tag, re-pin `stack-demo/rosetta-extensions`, rebuild the `fake-fapi` container (the iter-11 precedent), and re-run iter-16's four-step browser measurement — step 3 must bounce to `/login`, step 4 must name the right hero on the FIRST click. Watch `autoverify`, which may handshake bare. **Still no Playthrough** (the user's explicit call). | **iter-17+** |
+| ~~`D-v28-5-cockpit-logout`~~ | **DONE (iter-25) — DISCHARGED AND PROVEN LIVE.** D81 implemented (an explicit sign-out is sticky until an explicit login), both halves proven on one rebuilt `fake-fapi` from the stack's own re-pinned clone. All four iter-16 measurements flipped (`/logout` → **`/login`**; `/v1/me` **401**; `/profile` no longer serves the logged-out hero) plus a fifth: an explicit cockpit login after a sign-out **works on the FIRST attempt**. The first live drive FAILED at that fifth step and exposed the door five green unit tests missed — `/v1/demo/select` followed by a **BARE** middleware handshake — so a seat *selection* now clears the sticky flag. 5 mutants RED (incl. P3, which PASSED first and was treated as **data**, revealing a coverage hole rather than a dead line). `187 passed` ×3 cold, rc 0, 0 flake. **No Playthrough added**, per the user's explicit call. | closed iter-25 |
+| ~~`D-v28-5-cockpit-logout` (iter-16 framing)~~ | **HALF DONE (iter-16), and the remaining half is SPECIFIED.** Root cause: clerk-js 5.127.1 signs out via `POST /v1/client/sessions?_method=DELETE`; the mock registered `/{id}/remove`, the collection pattern was not on the mux, there was no catch-all and nothing read `_method` — so `handleSignOut` was dead code and `/v1/me` stayed 200 through a whole logout, while the unit test drove the same unused path (D79). **Fixed + test-proven RED→GREEN.** Remaining: implement **D81** — `handleHandshake` must not auto-establish on a *bare* handshake after an explicit sign-out (a handshake carrying `__clerk_identity` always establishes, which is the cockpit's and every Playthrough's path). Then prove BOTH halves on **one** rebuild: push the tag, re-pin `stack-demo/rosetta-extensions`, rebuild the `fake-fapi` container (the iter-11 precedent), and re-run iter-16's four-step browser measurement — step 3 must bounce to `/login`, step 4 must name the right hero on the FIRST click. Watch `autoverify`, which may handshake bare. **Still no Playthrough** (the user's explicit call). | **iter-17+** |
 | ~~`D-v28-5-cockpit-logout` (iter-10 framing)~~ | **(Superseded by the row above.)** **BLOCKED on the above (iter-10 D42).** A gate clause in its own right, still unfixed after 10 iters — but no longer merely unstarted: it is **not measurable** until the cockpit can select a current hero. The double-click symptom is plausibly a *consequence* of the drift (a presenter who does not get the hero they clicked clicks again) — plausible, **unmeasured**. Re-measure on a cockpit whose manifest matches its roster BEFORE designing a fix. By the user's explicit call it gets **no Playthrough**. | after the drift fix |
 | ~~`BLOCKED-M256-refusal-surface`~~ | **DONE (iter-11) — clause 2's `blocked` sub-clause MET, 0 → 1.** Answered exactly as the routing predicted the *surface* but not the *mechanism*: the deny modal was right, and the way to reach it was a **seed** change, not a test one — `sim_feature_disabled: true` on `pt-world` Org B withholds the g3 grant so Sentinel's own enforcer refuses (`pt-aisim-org-feature-blocked`). It also exposed that `--reset` had been leaking g3 grants for four releases. Original note kept for the record: | closed iter-11 |
 | ~~(original)~~ | Clause 2's `>= 1 blocked` outcome, then **0**. `actor.entitlement` is declared-only (iter-01 D4), so it needs a REAL refusal. Strongest candidate, and the locator already exists: `SimulationPage.orgMemberCannotStartModal()` — which `pt-aisim-chat-launch` currently asserts **ABSENT**. Seed a member whose org lacks the `FEATURE_JOB_SIMULATIONS` g3 grant and the deny modal becomes the outcome (M203 iter-05 documented the mechanism from the other direction). | a later tik of M256 |
