@@ -122,8 +122,8 @@ user's order — *sharpen the detector before changing what it detects*.
   EMPTY. Shadow the authoring build on `PATH` for any reset. Cost the M256 close one run before it was found.
 - **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
   on their own cadence. **v2.5** and **v2.6** are likewise local-only.
-- rext code-of-record: authoring copy on `main`; M256's tooling ships at **`fast-build-m256-harden-final`**
-  (**on origin**), with the close's four commits on `main` above it.
+- rext code-of-record: authoring copy on `main`; M256's tooling ships at **`fast-build-m256-close`** @ `ce345e1`
+  — **on origin, rung-zero verified** — which is `fast-build-m256-harden-final` plus the close's **3** commits.
 - **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
   prove-it-live step.
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
