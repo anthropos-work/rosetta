@@ -120,3 +120,40 @@ user rather than assumed.
 **Separately and unconditionally: `DEFECT-M256-silent-forbidden-mutation`** (D98) should be reported whichever
 option is chosen — a refused mutation rendering as no user-visible error at all is a defect on its own terms,
 and worth sweeping across the other org-admin writes.
+
+## D99 — RESOLVED: the demo's seeded policy was incomplete; the platform is fine (2026-07-30)
+
+**The question.** iter-20 found `pt-orgadmin-role-create` blocked by authorization, not the form:
+`createJobRole` fires, Sentinel refuses it inside an HTTP 200, and the demo grants
+`org:feature:taxonomy:write` to **no role at all**. Landing the UC would mean granting ourselves the
+very permission whose enforcement the test exists to check — so the iter escalated instead of
+forcing a green. Two candidate readings: **(a)** our seed is missing a grant real orgs have, or
+**(b)** nobody has it anywhere and the feature is unreachable, a platform bug.
+
+**Decided by reading production, not by argument** (read-only; casbin policy is configuration, not
+tenant data, so it sits inside `db-access.md`'s boundary — and the user's constraint was *don't write*
+to the platform DB, which a read does not):
+
+| | `…taxonomy:read` | `…taxonomy:write` |
+|---|---|---|
+| **production** | admin, candidate, content_creator, member | **admin** |
+| **demo-2** | admin, candidate, content_creator, member | **NONE** |
+
+**(a) is correct. The delta is exactly one row** — `p3 | admin | org:feature:taxonomy:write`. The
+seeder replicated the four read grants and dropped the single write grant.
+
+**Bounded, and checked for siblings:** `org:feature:taxonomy:write` is the **only** `*:write` action in
+production's entire `p3` surface, so there is no wider sweep hiding behind this. One row, one fix.
+
+**Consequences.**
+1. The seeder writes the missing grant (a **demo**-DB write, never prod), and `org-admin` can complete 4/4.
+2. **iter-20's escalation was right and its hypothesis was wrong** — exactly the outcome escalating is
+   *for*. Had it guessed (b) it would have filed a platform bug that does not exist; had it granted
+   itself the permission blind, it would have papered over a real seed-fidelity defect.
+3. **A fidelity finding that outlives this UC:** every demo built to date has misrepresented what an
+   org admin can do. A presenter demonstrating role creation would have hit a silent refusal. That is
+   a seeder-fidelity bug, not a Playthrough bug, and it is the same class as this milestone's others —
+   a surface that *looks* correct because nothing compared it against the real thing.
+4. `DEFECT-M256-silent-forbidden-mutation` stands on its own and still routes to the platform: a
+   refused mutation renders **no user-visible error**. That is a real product defect independent of
+   who holds the grant, and the demo's missing grant is precisely what surfaced it.
