@@ -119,9 +119,13 @@ declared and carrying written verdicts**, and **added `workforce-intelligence.or
 more** (`pt-workforce-org-feedback` — un-homed for five releases until pricing it revealed its data was already
 seeded), and **opened the `ai-simulations.access-denied` story** as **1 more** (`pt-aisim-org-feature-blocked`) —
 **the suite's FIRST `outcome: blocked`**, i.e. the first Playthrough that proves the platform correctly says *no*
-(see § below). The corpus now stands at **24 live Playthroughs, 7 TODO** (31 use
-cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
-runs.
+(see § below). M256 then **COMPLETED the org-admin product 4 of 4** (`pt-orgadmin-member-tag` at iter-17,
+`pt-orgadmin-role-create` at iter-22 — the latter's parked draft *could not have passed*: the app navigates to
+`/enterprise/roles/<serverAssignedId>?setup=true` after Save and the list paginates at 20/page, so the new role
+is not on page 1 even after a **successful** create), and **landed the onboarding product's second use case**
+(`pt-onboarding-aireadiness-guided` at iter-26 — see § "The day-0 readiness seat" below). The corpus now stands
+at **27 live Playthroughs, 4 TODO** (31 use cases, 10 products), all proven live-GREEN on a local `demo-2`,
+0 flake over 3 consecutive cold reset-to-seed runs.
 
 > **Onboarding was thought unseedable, and it was a schema misreading (v2.8 M256 iter-07/08).** The milestone's
 > own KB-fidelity audit concluded there was **no pre-onboarding state and none could be declared**, reasoning
@@ -133,10 +137,58 @@ runs.
 > "no pre-X state exists" claim is usually a claim about the wrong column — check the writer, then check the
 > column, before pricing a cluster as impossible.**
 
-> The 2 `TODO`s are `org-admin.roles.UC1` + `org-admin.members.UC1`. Both are **diagnosed, not merely unbuilt**
-> — their specs are parked in `playthroughs/e2e/drafts/*.spec.ts.draft` (the `.draft` suffix keeps Playwright
-> from collecting them, so diagnosed work is preserved **without a red suite**), and `e2e/drafts/README.md`
-> carries the measured evidence. See the org-admin manifest header for the surfaces probed live.
+> The 2 org-admin `TODO`s (`org-admin.roles.UC1` + `org-admin.members.UC1`) were **diagnosed, not merely
+> unbuilt** — their specs were parked in `playthroughs/e2e/drafts/*.spec.ts.draft` (the `.draft` suffix keeps
+> Playwright from collecting them, so diagnosed work is preserved **without a red suite**) with the measured
+> evidence in `e2e/drafts/README.md`. **Both landed** (iter-17 / iter-22) and the product is 4 of 4. The
+> remaining 4 `TODO`s are all **onboarding**, each carrying a written verdict.
+
+### The day-0 readiness seat — *a seat that could not be DECLARED, and the green that would have hidden it*
+
+`onboarding.enterprise-workforce-ai-readiness.UC1` needs a member who **enters** her org's guided AI-readiness
+flow rather than resuming it. Its blocker was recorded twice (iter-08, iter-18) as *"needs an Org C stage-0
+seat"* — a seat merely **absent** from the seed, i.e. a YAML append. **Measured at iter-24, it was not
+declarable at all.** `stack-seeding/seeders/ai_readiness_funnel.go:aiReadinessStageFor` mapped a hero by persona
+kind — manager → stage 0, struggling → stage 1, **everything else → stage 3** — so any end-user hero appended to
+the readiness org arrived having **already completed** the journey.
+
+**The dangerous version of that gap is not a failure but a PASS.** A Playthrough written against such a seat
+drives its hero *past* the flow it means to watch her enter, and can satisfy itself on the completed surface — a
+green over onboarding that nobody onboarded. iter-24 held it with a failing-on-purpose test whose message
+carried the discharge instruction; **iter-26 discharged it** with a seeder capability, not a YAML edit:
+
+- **`blueprint.Persona.AIReadiness`** (`""` | `"not_started"`) declares the funnel stage **explicitly**, checked
+  *before* the trajectory-derived default, and read in **exactly one place**. It is deliberately **not** a third
+  `trajectory` value: readiness stage is orthogonal to the life-arc (the diagnostic is a time-boxed cycle, and a
+  member who joined mid-cycle has skills, a career and an activity history while having done none of its steps),
+  and a new trajectory would have rippled through the **five** seeders that switch on `Trajectory` via a silent
+  `default:` branch in each. The value is a **closed enum** — a typo would fall back to stage 3, i.e. produce
+  exactly the already-completed seat, so it fails the seed loudly instead.
+- **`pt-ai-onboard`** is the resulting seat, **appended last** to Org C (hero indices are declaration order —
+  `seat_append_test.go`), exposed as the `ai-readiness-dayzero-member` precondition.
+
+**Why the seat is worth a Playthrough at all is a measurement**, and it is also the trap: the funnel **names all
+three steps at every stage** (3/3 for the day-0 seat *and* for the started one), so an assertion on step names
+is satisfied by a hero who has already finished the step. The **step CARDS** discriminate —
+
+| locator | `pt-ai-onboard` (stage 0) | `pt-ai-started` (stage 1) |
+|---|---|---|
+| step NAME × 3 | 3 / 3 | 3 / 3 ← discriminates **nothing** |
+| step-1 `Start · ~8 min` | 1 | 0 |
+| step-1 `Done` badge | 0 | 1 |
+| `Update Skill Mapping` | 0 | 1 |
+| step-2 **CARD** (the step is locked) | 0 | 1 |
+
+— so the Playthrough's pre-state IS its negative control, and its finals read legitimately FALSE for the resumed
+member. Two more measured facts the spec depends on: the Step-1 wizard's forward control **relabels** (`Next` on
+screens 1–4, **`Go to the AI Simulation`** on screen 5 — the iter-18 relabel trap in a second surface), and
+**paging `Next` alone persists nothing** — the terminal control is the click that writes. It also *navigates the
+browser off `/home`*, which is why the read-back must re-navigate rather than read the post-modal client state.
+
+**P6 boundary, declared:** steps 2 and 3 are a real ~30-minute AI simulation and a live AI interview, so "all
+three steps" is not drivable inside a Playthrough budget. The use case is scoped to the flow being **entered from
+day-0** and its **first step completed and persisted** with the next step observably unlocked — the same
+discipline as `pt-aisim-chat-launch` (stops at `/start`).
 
 ### The `ai-readiness` product (M219) — and why a *blind area* is the worst kind of gap
 

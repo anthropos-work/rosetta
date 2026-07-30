@@ -516,6 +516,50 @@
   + `7f0bc38`, tags `fast-build-m256-iter-25` / `-25b` **on origin**. — see
   [`iter-25/progress.md`](iter-25/progress.md)
 
+- iter-26 (tik, `closed-fixed`): **onboarding 1 of 5 → 2 of 5 — the gate's LAST open clause moved — and the
+  thing that unblocked it was a seeder CAPABILITY, spent in the same iter.** iter-24 measured that a stage-0
+  (day-0) readiness seat **could not be declared**: `aiReadinessStageFor`'s hero branch is manager → 0,
+  struggling → 1, **everything else → 3**, so an appended end-user hero arrives COMPLETED and a Playthrough on
+  her **could PASS on the completed surface**. Discharged with `blueprint.Persona.AIReadiness`
+  (`""` | `"not_started"`) — read in **exactly one place**, checked before the derived default, and a CLOSED
+  enum because an unrecognised value falls back to stage 3, i.e. a typo produces exactly the already-finished
+  seat the field exists to remove. Deliberately **not** a third `trajectory` value (D104): readiness stage is
+  orthogonal to the life-arc, and five seeders switch on `Trajectory` through a silent `default:` each. iter-24's
+  held-gap test was discharged **per its own failure message** and replaced by two tests pinning the contract
+  from both sides — *the derived default is unmoved* (the real risk: every existing readiness seat is derived) and
+  *the declaration reaches 0* — plus a seeder-level test that asserts the day-0 seat has zero rows **while Aria
+  still lands 3 and Ben 1**, so a seeder that wrote nothing cannot pass it. 5 mutants RED. **Phase A probed live
+  first and got two answers reasoning would have missed:** a stage-0 vantage did not exist anywhere, so one was
+  *manufactured* (delete the started hero's one progress row, read, restore) — and it showed the funnel **names
+  all three steps at EVERY stage** (3/3 for both seats), so an assertion on step names is satisfied by a hero who
+  already finished the step; the **cards** discriminate (Start/Done/Update/locked-step-2 read 1/0/0/0 at stage 0
+  against 0/1/1/1 at stage 1). And the Step-1 wizard's forward control **RELABELS** (`Next` ×4 →
+  **`Go to the AI Simulation`**) — the iter-18 trap in a second surface — while **paging Next alone persists
+  nothing**; the terminal control is the click that writes, and it navigates the browser off `/home`, so the
+  read-back must re-navigate. `pt-onboarding-aireadiness-guided` GREEN first drive (8.6 s), its pre-state IS its
+  control. **6 Playthrough mutants — 5 RED and one that PASSED and was data** (P3: narrowing
+  `skillMappingForward` left it green, because the commit is checked first — a locator alternative that **could
+  never fire**, i.e. dead coverage reading as if the relabel were handled twice; the locator was narrowed and the
+  proof re-cut as P3b, RED). **P5 is the decisive mutant:** remove the seed declaration and reseed → Ola returns
+  with **3** progress rows and the guided funnel is absent — without the capability the Playthrough has no
+  subject. Plus 4 locator-fence tests, each mutation-verified. **And the gate cost two extra cycles for a reason
+  worth recording:** two runs went `1 failed / 192` on two different tests, D106 diagnosed a host stall from a
+  6-run duration table where every *passing* reading sat on the iter-25 baseline, hardened the succession
+  liveness assert to 45 s — **and the next run failed the same assert after the full 45 s.** D106 is
+  **retracted in place**. The real cause was **mine** (D107): the seat had been given `Data Analyst` *because
+  that role was known to resolve* — i.e. because Robin already held it — making it a **two-member** role, and
+  Org C's succession **key-role card for a two-member role is NON-DETERMINISTIC** (4 of 5 page loads at occupancy
+  2 vs **5 of 5** at occupancy 1). The casualty was the iter-14 cross-tenant control's own **LIVENESS floor**,
+  reading as *"succession failed to compute for the contrast tenant."* **A hero's role is an assertion anchor.**
+  Re-roled to `Supply Chain Analyst`; **fenced** (hero roles pairwise distinct within a story, self-test injects a
+  collision, mutant N1 names the org and role); warnings left at BOTH call sites. *Before hardening a flaky
+  assertion, make it flake on command — the reproduction took three minutes and the persuasive table was wrong.*
+  **`195 passed` ×3 consecutive cold reset-to-seed, rc 0 each, 0 flake**; `ptreport` **27/31, 0 failing, 0
+  unimplementable**; controls **25 of 27**, MUTATES **9**; `--policy-check` green after all 3 resets; 16
+  containers Up / 0 exited; drifted cockpit fixture restored byte-identically (`99e2f315`).
+  — see [`iter-26/progress.md`](iter-26/progress.md)
+
+
 ## Baseline — MEASURED (iter-02, 2026-07-28)
 
 | Figure | Value |
@@ -701,8 +745,8 @@ Fate-3 items land here.
 | `FIX-M256-studio-false-green` | **RE-AIMED (iter-07 D31) — the old diagnosis was FALSE.** iter-02 blamed the route's `Simulation Advanced Builder` header; a 5-minute poll of the real journey shows that string **NEVER renders**. The matcher actually fires on the designer's **empty section scaffolding** ("Scenario Characters" / "Mission Tasks" headings) at **+2.1 s**, before the LLM draft populates it. **Deleting the header alternative is a NO-OP — do not ship it as a fix.** Assert a **POPULATED** section instead (a character card / a non-zero `designer.actors.counter.label` count). Evidence is attached to the locator in `studio-builder-page.ts`. Until it lands, both studio Playthroughs stay `@pt-mutation: UNKNOWN`, never `MUTATES`. | a later tik of M256 |
 | `DOC-M256-llm-lane-premise` | `playthroughs.md` § the `studio` product + the M256 overview + D-v28-9 all describe the advanced builder as reaching a generation completion boundary. Correct **once**, against the fixed behaviour. **Still not dischargeable (iter-07):** a section *heading*'s presence does not answer *"did the generation complete on this host?"*. Measuring section **CONTENT** answers the fix and the doc premise together — keep them one piece of work. | the same tik as the fix |
 | ~~`ONBOARD-M256-build`~~ | **DONE (iter-08).** The onboarding product exists: `pt-onboarding-complete` live (mutating #6) + **all 5 curated onboarding UCs declared with written verdicts**, every verdict harness/seed work and **0 `unimplementable`**. | closed iter-08 |
-| `ONBOARD-M256-stage0-capability` | **NET-NEW (iter-24), and it REPLACES the "append a stage-0 seat" framing below.** `onboarding.enterprise-workforce-ai-readiness.UC1` was priced as *"needs an Org C stage-0 seat"*. **Measured: a stage-0 end-user seat cannot be DECLARED.** `aiReadinessStageFor`'s hero branch is manager → **0**, struggling → **1**, everything else → **3**, so an appended Org C end-user hero arrives **COMPLETED** — and a Playthrough on that seat would drive a hero *past* the flow it means to watch, and could **PASS** on the completed surface. Declaring her struggling is not a workaround (that is stage 1). The manager is the only stage-0 vantage and she is not an onboarding actor. So the work is a **seeder capability** (a stage-0 end-user vantage the AI-readiness funnel seeder can express), **not** a YAML append. The gap is held by `seat_append_test.go` test 3, whose failure message carries the discharge instruction — **when it fails, that is the signal, not a regression.** | **iter-25** |
-| ~~`ONBOARD-M256-seat-append`~~ | **RULE FENCED (iter-24).** `stack-seeding/seeders/seat_append_test.go` pins iter-18 D89 as a test: the baseline (1-based declaration order) **asserted rather than assumed**, no pre-existing index may move on an append, the appended seat takes the next free slot, and `personaIndexMapForStory` stays collision-free — plus a **self-test that performs the insertion**, so the fence is discriminating rather than trivially true. 3 mutants RED: insert-instead-of-append names the 2 renumbered personas; a reversed `personaUserIndexFor` fires the baseline assert *and* the self-test; a stage-0 default fires the held-gap test. The *use* of the mechanism belongs to whichever UC lands first. | closed iter-24 |
+| ~~`ONBOARD-M256-stage0-capability`~~ | **DONE (iter-26).** Discharged with a seeder capability, not a YAML append: `blueprint.Persona.AIReadiness` (`""` | `"not_started"`) declares funnel stage 0 explicitly, checked before the trajectory-derived default, read in exactly ONE place, and a CLOSED enum (an unrecognised value falls back to stage 3 = COMPLETED — a typo would produce the very already-finished seat the field removes). Not a third `trajectory` value (D104): readiness stage is orthogonal to the life-arc, and five seeders switch on `Trajectory` through a silent `default:` each. iter-24's held-gap test discharged per its own failure message and replaced by two tests pinning both sides + a seeder-level no-signals test with its own control. 5 mutants RED. Seat `pt-ai-onboard` appended last, reseeded, and PROVEN at stage 0 live (0 rows while Robin reads 3 and Theo 1). | closed iter-26 |
+| `PLATFORM-M256-keyrole-nondeterminism` | **NET-NEW (iter-26), routes to the PLATFORM.** A succession **key-role card**'s presence varies between page loads once its role has **2 occupants** — measured 4 of 5 loads at occupancy 2 against 5 of 5 at occupancy 1, most plausibly a top-N ranking with an unstable tiebreak. It cost two gate cycles: the iter-14 cross-tenant control anchors its LIVENESS floor on that card, so it went RED reading *"succession failed to compute for the contrast tenant"* — and a 45 s timeout did NOT fix it, because the cause was the seed's role occupancy, not the clock. Not a demo defect a presenter would see, and **zero platform edits** here. The suite is protected seed-side instead: hero roles must be pairwise distinct within a story (`seed-facts-fence.unit.spec.ts`, mutant N1 RED). | **captured iter-26 → platform** || ~~`ONBOARD-M256-seat-append`~~ | **RULE FENCED (iter-24).** `stack-seeding/seeders/seat_append_test.go` pins iter-18 D89 as a test: the baseline (1-based declaration order) **asserted rather than assumed**, no pre-existing index may move on an append, the appended seat takes the next free slot, and `personaIndexMapForStory` stays collision-free — plus a **self-test that performs the insertion**, so the fence is discriminating rather than trivially true. 3 mutants RED: insert-instead-of-append names the 2 renumbered personas; a reversed `personaUserIndexFor` fires the baseline assert *and* the self-test; a stage-0 default fires the held-gap test. The *use* of the mechanism belongs to whichever UC lands first. | closed iter-24 |
 | `ONBOARD-M256-import-path` | The **4 remaining** onboarding UCs, each with its specific missing piece already written into `manifest/onboarding.yaml`: a **résumé fixture** (spec §5.4's `fixtures/` dir is still EMPTY — this would be the suite's FIRST file-upload Playthrough) + an async LLM import; the **org-prepared trigger condition**, not yet identified (iter-08 measured the *import form* for a hero WITH a populated profile); an **org-less actor** (F5's one kernel of truth — needs a member-less user + a roster seat); an **Org C stage-0** seat; a **day-0 hiring-org** seat (the only onboarding UC whose final spans two apps). | a later tik of M256 |
 | ~~`VERDICT-M256-remaining-uncovered`~~ | **DONE (iter-09).** [`coverage-verdicts.md`](coverage-verdicts.md): all **28** curated UCs verdicted, **0 `unimplementable`**. Clause 3's verdict half is COMPLETE. | closed iter-09 |
 | `PT-M256-resume-fixture-pair` | `profile-skills.import.UC1` + `onboarding.enterprise-workforce-standard.UC1` share **one** blocker: a checked-in **résumé fixture**. `playthroughs/fixtures/` has been reserved and EMPTY since spec §5.4 — **no shipped Playthrough has ever exercised a file upload** — so the first pays the fixture *and* the real-file-chooser pattern. Land them **together** so that cost is paid once. | a later tik of M256 |

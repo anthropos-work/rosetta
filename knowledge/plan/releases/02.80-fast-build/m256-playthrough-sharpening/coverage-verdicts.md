@@ -15,8 +15,9 @@ UCs prove unimplementable"*) never fired.
 |---|---:|---|
 | M201 curated use cases | **28** | `knowledge/plan/releases/archive/02.00-opening-night/m201-manifest-corpus/manifest-draft.yaml` |
 | Covered before M256 | 12 | — |
-| Landed by M256 | **+2 org-admin** (iter-04) | `manifest/org-admin.yaml` |
-| Declared with verdicts by M256 | **+2 org-admin TODO** (iter-04/05) · **+5 onboarding** (iter-08) · **+7 here** | see below |
+| Landed by M256 | **+4 org-admin** (iter-04 × 2 · iter-17 · iter-22 — the product is **4 of 4**) · **+1 onboarding** (`enterprise-workforce-ai-readiness.UC1`, iter-26) | `manifest/org-admin.yaml` · `manifest/onboarding.yaml` |
+| Declared with verdicts by M256 | **+4 onboarding** (iter-08, re-priced iter-18/24/26) · **+7 here** | see below |
+| ↳ *superseded* | the 2 org-admin `TODO`s (iter-04/05) and the 5th onboarding verdict were **discharged by landing** | — |
 | Remaining with NO verdict | **0** | — |
 
 M256 also added **2 net-new, non-curated** use cases (`skill-paths.save-for-later.UC1` iter-06,
@@ -157,6 +158,7 @@ demo-infrastructure work, correctly M207's. **Re-confirmed 2026-07-28** with the
 |---|---:|---|
 | Buildable next, no blocker | **1** | A1 org-feedback |
 | Buildable, blocked on a checked-in fixture | **1** | A2 profile import (pairs with onboarding UC1) |
+| Buildable, blocked on a SEEDER CAPABILITY — **discharged by landing (iter-26)** | **1** | `onboarding.enterprise-workforce-ai-readiness.UC1`: a **stage-0 end-user seat could not be DECLARED** (`aiReadinessStageFor`: manager→0, struggling→1, else→3), so an appended hero arrived COMPLETED and a Playthrough on her could have **passed on the completed surface**. Fixed by `Persona.AIReadiness = "not_started"` + the `pt-ai-onboard` seat — **not** a YAML append, which is what its blocker was recorded as for two iters. |
 | Buildable, blocked on a live third-party credential | **1** | A3 talk-to-data |
 | Reservation confirmed (integration/mirror tier) | **3** | B1 code · B2 interview · C1 academy |
 | Reservation re-examined → recommend re-homing | **1** | B3 self-evaluation → M257 |
