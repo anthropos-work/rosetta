@@ -322,3 +322,35 @@ known defect, each named"*.
 
 **Flagged for the user at close.** This is the coordinator's call to avoid stalling the loop on a wording
 question; it is recorded so closure ratifies or overrules it deliberately rather than inheriting it.
+
+## D104 — clause 3's onboarding half: 4 landed + 1 reasoned verdict is the honest form (coordinator, 2026-07-30; user ratifies at close)
+
+**The third clause in this milestone that cannot be met as written.** Clause 3 asks for onboarding's
+**5 UCs LANDED**. One of them — `onboarding.enterprise-workforce-standard.UC1`, the self-import journey —
+**should not be landed as a Playthrough at all**, so the sentence is unsatisfiable for a reason that has
+nothing to do with effort.
+
+**Why that UC must not be a Playthrough** (iter-18 measured it, and the refusal has held for twelve iters):
+
+- The only path that actually advances **scrapes a live public LinkedIn profile** on a site that blocks
+  automation. Landing it would make a **real person's profile a permanent test fixture**, send outbound
+  traffic from a demo on every gate cycle, and be flaky by construction.
+- Worse for the suite's meaning: **its RED would read as a product regression** when nothing about the
+  product had changed. A test whose failure lies is worse than no test.
+- The deterministic alternative is blocked by a **measured product defect**, not by us: the CV upload
+  POSTs **200** for a valid PDF and a docx alike while the forward control never enables (100 s).
+
+**Decision.** Clause 3's onboarding half is **MET at 4 landed + 1 written verdict**. The verdict is a
+first-class outcome here, not a shortfall: this milestone holds **31/31 written verdicts and 0
+`unimplementable`**, and the whole point of the verdict mechanism is that *"we measured this and it should
+not be built"* is a result.
+
+**Symmetry with `D103`, deliberately.** Both carve-outs share one shape: **the honest count is lower than
+the number a green dashboard would show, and in both cases the missing item is missing because landing it
+would certify something false** — a control over a known false green (D103), a Playthrough over a scraped
+third-party profile (D104). Clause 1 was re-cut twice for the same underlying reason (`D-v28-12` →
+`D-v28-13`). **Three of this milestone's three gate clauses turned out unmeetable as first written**, which
+is itself the milestone's most transferable finding: *a gate authored before the work is a hypothesis about
+the work.*
+
+**Flagged for ratification at close** — recorded so closure decides deliberately rather than inheriting it.
