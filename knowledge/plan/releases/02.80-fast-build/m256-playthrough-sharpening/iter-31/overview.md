@@ -1,6 +1,6 @@
 ---
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-07-30
 ---
 

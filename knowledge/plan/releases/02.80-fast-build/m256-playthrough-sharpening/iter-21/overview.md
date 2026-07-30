@@ -2,7 +2,7 @@
 iter: 21
 iteration_type: tik
 iter_shape: standard
-status: in-progress
+status: archived
 opened: 2026-07-30
 ---
 

@@ -377,6 +377,29 @@
   production org carry `org:feature:taxonomy:write`?). No shipped code changed; 181 passed, 0 failing on a
   confirming cold run — see [`iter-20/progress.md`](iter-20/progress.md)
 
+- iter-21 (tik, `closed-fixed`): **three config gaps stacked behind one silent refusal, each measured by
+  driving the write rather than reasoning about it** — and the root cause was neither the form nor the policy.
+  **F1 `stack-snapshot`, the generalisable one:** replay `TRUNCATE … RESTART IDENTITY`s (deliberately, so
+  re-loaded rows keep stable ids) then COPYs rows back WITH explicit ids and never restored the sequences —
+  `job_role_embeddings` 18 920 rows / max 21 274 / **sequence at 4**; `skill_embeddings` 42 790 / 43 583 /
+  **at 1**. Those are the **only two identity columns in `public` and BOTH were broken**, so on **every demo
+  ever built** every taxonomy write duplicate-keyed. The new Phase 5 discovers sequence-backed columns from
+  the **target's live catalog** (whole-class — a future migration needs no re-capture) and setvals
+  `max+1, is_called=false`. **F2 `stack-seeding`:** the demo was faithful to `init_policy.sql` and
+  **unfaithful to production** — platform `c6096d1` deliberately dropped the default `taxonomy:write` grant
+  and shipped `local_superadmin_grants.sql` for exactly this use case, and **nobody had ever applied it**;
+  fixed by `PolicyGrantsSeeder` + **`stackseed --policy-check`, bidirectional** (MISSING = under-grant,
+  EXTRA = over-grant — the mechanical form of the judgement iter-20 made by hand). **F3 `stack-secrets`:**
+  three `SKILLER_AZURE_OPENAI_*` genes classified `standard` **by measurement**. Write path proven
+  end-to-end; **3× cold gate 181 passed / rc 0**, `--policy-check` green after all three resets.
+  ⚠️ **Ledger note (added at close):** this entry was **missing** until the close review's iter-ledger audit
+  found it — 31 bullets for 32 closed iters. The iter itself was real and complete (its `iter-21/progress.md`,
+  its routes row and four later iters all reference it); it was closed **by the coordinator directly, by
+  hand**, while API 529s were killing every sub-agent spawn, and the running-ledger line was the one artifact
+  that step missed. The same hand-verification (`ptvalidate` + `tsc` + *"the spec is a real test"*) also
+  **missed gofmt dirt and missed that snapshot Phase 5 had no test call sites at all** — see `retro.md`.
+  — see [`iter-21/progress.md`](iter-21/progress.md)
+
 - iter-22 (tik, `closed-fixed`): **the org-admin product is COMPLETE — 3 of 4 → 4 of 4** — and the spec
   that had been sitting written in `drafts/` since iter-04, referenced by four later iters as ready,
   **could not have passed on a working product.** One 9-second probe refuted every clause of its final:
@@ -957,6 +980,43 @@ as comparable to billion's 228 s** — the absolute billion re-measure is routed
 
 ## Next-iter routing
 
+> ## ⛔ CLOSED 2026-07-30 — this table is now the HISTORICAL RECORD. Every row's final fate is below.
+>
+> The close's deferral audit returned **RED**, and this table is why. **8 rows carried a target that no longer
+> exists** (*"a later tik of M256"*, *"next iter"*, *"iter-16+"*) after the gate fired, **6 rows still read
+> OPEN for work that had already landed**, and one row's stated blocker had been resolved 14 iters earlier
+> without the row being re-scoped. A ledger that reads open for closed work is how a chronic survives: it gets
+> re-typed into the next table instead of re-decided, and the longest one here was re-typed **~10 times**.
+>
+> **Final fates — the authoritative list.** Full reasoning per item in
+> [`decisions.md`](decisions.md) § *DEFERRAL GATE — RED, resolved item by item*.
+>
+> | item | fate | destination |
+> |---|---|---|
+> | `DOC-M256-claudemd-pt-count` | **LAND-NOW** ✅ | landed at close (2 sites still read "18 live Playthroughs") |
+> | `DOC-M256-ptworld-reset-comment` | **LAND-NOW** ✅ | landed at close |
+> | the 4 platform defects' durable home | **LAND-NOW** ✅ | net-new [`platform-defect-register.md`](../../../platform-defect-register.md) |
+> | spec-side import of the 5 enrolled heroes | **LAND-NOW** ✅ | landed at close — it was the review's own must-fix |
+> | `FIX-M256-studio-false-green` + `NEGCTL-M256-studio-pair` + `DOC-M256-llm-lane-premise` | **LAND-NEXT** | **M258** (`overview.md` § Inherited from the M256 close) |
+> | `PT-M256-standing-mutant-Q1` (9 remaining) | **LAND-NEXT** | **M258** |
+> | the 11 lower-severity harden-3 scan findings | **LAND-NEXT** | **M258** (risk of re-fating stated there) |
+> | `FIX-M257-content-stories-pair-count` | **LAND-NEXT** | **M258** |
+> | `ptvalidate` invoked nowhere outside its tests | **LAND-NEXT** | **M258** (also closes the runner gate's permissive half) |
+> | `BIND_HOST` / `D-M255-7` | **LAND-NEXT** | **M258** — M255 declared this routing and never applied it |
+> | `FIX-M256-demo2-service-self-termination` | **LAND-NEXT** | **M257** (its gate would pass on a half-dead stack) |
+> | `FIX-M256-autoverify-fapi-libressl` | **LAND-NEXT** | **M257** (its gate counts autoverify warnings) |
+> | `PT-M256-resume-fixture-pair` | **DROP** | premise dissolved at iter-18; its pair-member is now a verdict |
+> | `MEASURE-M256-clause1-sampling` | **Fate 2** ✅ | discharged by `D-v28-13`; absolute re-measure owned by M258 |
+> | `FIX-M256-cockpit-manifest-drift` | **already DONE** ✅ | landed in rext `0f36f71`; `run-playthroughs.sh:153-171` re-exports the manifest. The row was never struck — and harden-final's backup/restore of the drifted fixture was **this fix working**, not the bug persisting |
+> | `PT-M256-orgadmin-role-create` · `PT-M256-orgadmin-member-tag` · `NEGCTL-M256-cross-vantage` | **already DONE** ✅ | iter-22 · iter-17 · terminal at 28/30 — rows never struck |
+> | `PERF-M256-parallel-lane` · `PT-M257-self-evaluation` · `PT-M257-talk-to-data` | **KEEP-DEFERRED-WITH-SIGNOFF** | **needs the USER's signature — a roadmap call, not a routing one.** Surfaced in the close report |
+>
+> **The three platform-bound items cannot be Fate 1** (zero platform edits is binding) and are now filed with
+> their `file:line` in the register above: `PLATFORM-M256-onboarding-step-not-resumed`,
+> `PLATFORM-M256-keyrole-nondeterminism`, `DEFECT-M256-silent-forbidden-mutation` **and its sweep residual**
+> (only `createJobRole` was refused live; the three sibling writes are **inference** from the shared global
+> handler, and the register says so).
+
 Fate-3 items land here.
 
 | Handler | What | Target |
@@ -1004,3 +1064,208 @@ Fate-3 items land here.
 | `FIX-M257-content-stories-pair-count` | `run-content-stories.sh` re-implements `buildPairs()` inline, omits `manager_presence_only`, computes 47 against the pinned 45 and `sys.exit(2)`s — the content-stories sweep refuses to start (audit Gap 7). | M257 / M258 (they compose the sweep) |
 | ~~`PT-M256-orgadmin-role-create` (the Playthrough half)~~ | **DONE (iter-22) — org-admin 4 of 4.** `pt-orgadmin-role-create` is live, with an in-line negative control, so clause 3 advanced without clause 2's denominator regressing (controls 23/25 → **24 of 26**; mutating 7 → **8**). The drafted spec **could not have passed**: the app navigates to `/enterprise/roles/<serverAssignedId>?setup=true` 1 526 ms after Save, the list paginates at 20/page and the new role is not on page 1 (measured after a *successful* create). The final is now three facts — the server-assigned id served on a fresh navigation, a full-reload search naming it once, and the catalog **TOTAL** +1 (pagination-proof). Page object rebuilt: content rows subtract the placeholder **by text** (it is both the loading row and the empty row, so the old `roleCount() > 0` was satisfied by an empty table — proven live), the same row reused as the liveness witness, `totalRoles()` returns `null` never `0`. `ROLE_DETAIL_URL` splits the detail route from the list, which `ROLES_URL` could not. 10 mutants RED; `187 passed` ×3 cold, 0 flake. | closed iter-22 |
 | ~~`PT-M256-orgadmin-role-create` (the config half)~~ | **THREE gaps, stacked behind one silent refusal (iter-21 D100/D101/D102), each measured by driving the write rather than reasoning about it.** **F1 `stack-snapshot`, the root cause and the generalisable one:** replay `TRUNCATE … RESTART IDENTITY`s (deliberately, so re-loaded rows keep stable ids) then COPYs rows back WITH explicit ids and never restored the sequences — `job_role_embeddings` 18 920 rows / max 21 274 / **sequence at 4**, `skill_embeddings` 42 790 / 43 583 / **at 1**. Those are the **only two identity columns in `public` and BOTH were broken**, so on **every demo ever built** every taxonomy write duplicate-keyed. New Phase 5 discovers sequence-backed columns from the **target's live catalog** (whole-class; a future migration needs no re-capture) and setvals `max+1, is_called=false`. **F2 `stack-seeding`:** the demo was faithful to `init_policy.sql` and **unfaithful to production** — platform `c6096d1` deliberately dropped the default grant and shipped `local_superadmin_grants.sql` for exactly this use case; **nobody ever applied it**. `PolicyGrantsSeeder` + **`stackseed --policy-check`, bidirectional** (MISSING = under-grant, EXTRA = over-grant — the mechanical form of the judgement iter-20 made by hand, because *a Playthrough over a permission we granted ourselves is green about our own grant*). **F3 `stack-secrets`:** three `SKILLER_AZURE_OPENAI_*` genes, `standard` **by measurement** (critical → 86.7% + a standing red D-v28-3 forbids). Write path proven end-to-end; **3× cold gate 181 passed / rc 0**, and `--policy-check` **re-run green after all three resets** — the grant survives because the seeder writes it. | closed iter-21 |
+
+---
+
+## M256: Final Review (close, 2026-07-30)
+
+Findings from the close review's five parallel scans, and their disposition. **All addressed — no partial
+fixes, nothing carried as "noted".**
+
+### Scope
+- [x] **iter-21 was missing from the running ledger** — 31 bullets for 32 closed iters. The iter was real and
+      complete; it was closed by the coordinator **by hand** while API 529s were killing sub-agent spawns, and
+      the ledger line was what that step missed. Entry added, with the process gap named in `retro.md`.
+- [x] **18 open routing rows re-fated** — see the CLOSED banner above and `decisions.md`. 6 read OPEN for landed
+      work; 8 had targets that no longer exist.
+- [x] **TODO/FIXME/HACK scan: clean.** Zero FIXME/HACK anywhere in the touched sections. Every `TODO` hit is
+      **domain vocabulary** (the manifest's `TODOPlaythrough` sentinel, `IsTODO()`, the `[TODO]` report glyph,
+      the 4-state map) — deliberately *not* reported as deferrals. Three `XXX` hits are node-id/`mktemp`
+      placeholders.
+- [x] **Commit attribution.** All 44 rosetta commits map to an iter, a harden pass or a plan record. **11 early
+      rext commits (iter-01→12) carry no `(M256)` tag** — the convention stabilised at iter-13 — so
+      `git log --grep M256` in rext under-counts the footprint. Recorded rather than rewritten: history
+      rewriting is banned, and rosetta's own commits + `progress.md` fully attribute the content.
+
+### Code quality
+- [x] **[must-fix] The ptreport gate misfired on every `--grep` spelling but one.** `-g`, `--grep=<p>`,
+      `--grep-invert` and `-- --grep` all scoped the real Playwright run while leaving the runner's own
+      variable empty, so the gate graded a deliberately-narrowed run as FULL and **failed it** — every
+      un-selected id reporting *"did not run"*. A false RED teaches its operator to disbelieve the gate.
+      Decision now runs over every argv form; the fence **executes the extracted shell classifier** rather
+      than grepping for the new variable's name. 3 mutants RED.
+- [x] **[must-fix] Five heroes were enrolled in `seed-facts` and the specs kept their name literals.** All six
+      resulting constants had **zero importers**. The reconciliation ran against a copy nothing consumed while
+      the live assertion was an unlinked third copy — so a seed rename reddened the fence *and* the
+      Playthrough, and the Playthrough still misattributed a seed edit as a product regression. Five specs now
+      read through the constants; the missing rule (**an ENROLLED hero may not be named by a literal either**)
+      is now asserted beside the one for excused heroes. Mutants RED.
+- [x] **[must-fix] `bounded-interaction-fence`'s not-vacuous floor was 7 against a measured 11** — slack for
+      four disclosure methods to be renamed out of scope before it tripped, in a **name-keyed** rule. Raised to
+      11. Proven by renaming two methods with the old floor in place: **7 passed**.
+- [x] **[should-fix] The manifest validator never read `Expectations` at all.** A use case with no
+      preconditions and no expectations validated CLEAN and `ptvalidate` printed *"manifest VALID"* over it.
+      `checkFinalExpectations` added, required of TODO and verdicted use cases too. Mutant RED against the real
+      corpus. **Ten fixtures had to gain a `final`** — they had been asserting VALID over a use case declaring
+      no outcome, and **six of those failures were only visible in the full-module sweep**.
+- [x] **[should-fix] `--policy-check` could call a denied grant equal, and could not see a NULL over-grant.**
+      `v0||'|'||v1||'|'||v2` is NULL if any field is NULL and `string_agg` drops it, so the row vanished —
+      invisible in the EXTRA direction the file itself calls more insidious. And `v3..v5 are always EMPTY` was a
+      **comment, never a check**, so the expected tuple plus `v5='deny'` compared equal to the grant it negates.
+      Both fixed; verified live: `live=18 expected=18` rc 0.
+- [x] **[should-fix] Snapshot Phase 5 was structurally blind to unowned sequences.** A `nextval()` default whose
+      sequence is not `OWNED BY` the column is excluded from discovery, never advanced, and collides — and
+      `0 sequence(s) advanced` is *also* the correct reading for a sequence-free table, so zero meant both
+      "nothing to do" and "I am blind to this table". Now refused loudly by name. Both probes validated against
+      the live catalog.
+- [x] **[should-fix] The citation fence's absence exemption was whole-BLOCK** — one *"does not exist"* sentence
+      disarmed every filename in a comment. Now local to the mention. Three attempts, each failure recorded in
+      the code.
+- [x] **[should-fix] Dead `helpers.go` skip removed** from the org-less fence: unreachable *and* a standing
+      unobservable exemption for a file. **[nice-to-have]** a fence comment saying "6 heroes across 4 real
+      orgs" that enumerated seven and omitted four; a docstring claiming `orgName` is empty six lines above the
+      code setting it to `Halcyon Retail`.
+- [x] **REFUTED — `looksLikeCurrentPosition` is not dead code.** See the measurement finding below.
+
+### The measurement finding — a false conclusion reached twice, independently
+- [x] **`tests/url-shapes.unit.spec.ts` carried a raw NUL and 0x01**, so `file(1)` called it `data` and
+      `grep(1)` treated it as **binary — reporting NO MATCHES, with no error, no warning and no change to its
+      exit code.** Node, Playwright and `tsc` were unaffected; its 79 tests ran and passed throughout. The
+      largest unit pin in the harness, **43 KB and 79 tests, was invisible to every shell-based sweep over
+      `tests/`** — and invisible as an *absence of hits*.
+      **Two independent reviewers swept with grep, both got silence for that file, and both concluded that a
+      predicate it imports and exercises by name was dead code with zero consumers. One recommended deleting
+      it.** The conclusion was false, the reasoning was sound, and the instrument was lying by omission.
+      Bytes → escapes (identical runtime string, fuzz case preserved, 8 grep hits where there were none), and
+      the class fenced over `tests/` + `lib/`. **The fence's first catch was its own docstring.**
+
+### Documentation
+- [x] 13 fixes across 7 files. **The count reconciliation is exhaustive** — `playthroughs.md:14-16` and
+      `demo/README.md:216-220` still read **18 live Playthroughs** while the same file read 30 elsewhere; zero
+      `18 live Playthrough` hits remain. `1 of 18` → `1 of 30`.
+- [x] **A behavioural contradiction, which is the highest-value doc fix here:** `playthroughs.md:809-810` still
+      promised the runner's gate was *"non-fatal … the runner exits with Playwright's status"*, directly
+      contradicting `verification.md`. **Anything downstream that ran the suite and trusted a zero exit is now
+      genuinely gated**, and the pillar doc said otherwise.
+- [x] **Four undocumented mechanisms written up:** `stackseed --policy-check` + `PolicyGrantsSeeder` (absent
+      corpus-wide), the cockpit-manifest re-export on `--reset`, clerkenstein's **sticky sign-out** (zero corpus
+      hits for `sticky`/`signedOut`/`_method`/`D81`), and the three new persona axes + `OnboardingParamsSeeder`.
+- [x] **A reviewer's proposed fix REJECTED.** The docs scan wanted onboarding stated as "5 landed of 6
+      declared". True of the *manifest*, false of the **curated** denominator D104 and the exit gate are written
+      against — and merging them is the exact conflation `coverage-verdicts.md:23-25` forbids. Every onboarding
+      number now names its denominator.
+- [x] `ai-readiness.md` 4 → **5** Playthroughs; the `fixtures/` inventory ("still empty through M204" —
+      falsified at iter-18); `hardening-ledger.md:470`'s own stale "the corpus says 11" (corpus and machine
+      agree at **12**). **0 broken relative links** across 11 docs.
+
+### Tests & benchmarks
+- [x] **Full-suite sweep, not iter-scoped** — and it earned its keep: the validator change broke **6
+      `cmd/ptvalidate` tests** that the package I had changed did not surface.
+- [x] **Six Go modules rc 0 / 58 packages** · **four Python suites rc 0, one invocation each with rc captured
+      into a variable** (287 + 999 + 171 + 266 = **1,723 passed / 2 skipped**) · `gofmt -l` clean · `go vet`
+      clean ×6 · `tsc --noEmit` clean ×2 · `bash -n` clean · `ptvalidate` **VALID** rc 0.
+- [x] **Playwright 204 → 209 tests in 43 files** (unit 169 → **174**): +3 source-scannability, +2
+      enrolled-literal rule. Go +4 (classifier fence ×1, Phase 5 blind-shape ×3, final-expectation ×3, citation
+      scope ×1 — net of fixture edits).
+- [x] **Flake gate MET: 3 consecutive cold reset-to-seed runs, `209 passed` each, rc captured per run
+      (`0/0/0`), zero flake.** ptreport `passing=30 failing=0 unimplemented=1 unimplementable=0` on all three.
+- [x] **A trap found by running it: the stack's PINNED `stackseed` predates M256's persona fields**, so
+      `--reset` truncates the world and the re-seed then fails on `onboarding` / `org_membership` /
+      `ai_readiness`. The world is left EMPTY. Recovered by shadowing the authoring build on `PATH` — which is
+      what harden-final did too, without the failure being written down. **Now recorded** (see `retro.md`).
+- [x] **The drifted cockpit fixture survived** — backed up before the first reset and restored
+      **byte-identically**, sha `99e2f315b1132383` re-verified after the last run.
+
+### Decision triage
+- [x] `D103`, `D104`, the iter-31/32 deviation → **RATIFIED** at close under the user's standing delegation,
+      recorded in `decisions.md` with the user's right to overrule at release close preserved.
+- [x] `D99` + its mechanism correction → blended into `corpus/ops/seeding-spec.md` (the `PolicyGrantsSeeder`
+      section carries *a fidelity check against the wrong reference passes*).
+- [x] `D81` (sticky sign-out) → blended into `corpus/services/clerkenstein.md`, including the honest limitation
+      that it governs **establishment, not access**.
+- [x] `D118` (*a source read is a hypothesis; citing a `file:line` does not make it an observation*) → applied
+      in the register and cited in the `seed-facts` docstring fix.
+- [x] Remaining decisions → archive (maintainer-only).
+
+---
+
+## Gate Outcome Ledger (Phase 9-iter, close 2026-07-30)
+
+**Close status: `closed-on-gate`.** No `carry-forward.md` — the gate fired at iter-32 and was re-verified by
+harden-final and again by this close's own 3× cold run.
+
+### Gate
+
+| clause | target | achieved | status |
+|---|---|---|---|
+| **1 — FASTER** | per-mechanism **leg** measurement (`D-v28-13`), + **0 flake across 3 consecutive runs** | **flake half MET** — 3× cold reset-to-seed, `209 passed`, rc `0/0/0`. **Leg half N/A**: no speed mechanism landed in the closing iters, so `D-v28-13` has nothing to measure | **MET** (with the caveat below) |
+| **2 — EFFECTIVE** | every Playthrough passes a negative control · **≥ 5** mutating · **≥ 1** `blocked` | controls **28 of 30** (MET via the `D103` carve-out) · mutating **12** of ≥5 ✅ · `blocked` **1** of ≥1 ✅ | **MET** |
+| **3 — COVERED** | onboarding (5) + org-admin (4) LANDED · every remaining uncovered curated UC carries a written verdict | org-admin **4/4** ✅ · onboarding **4 landed + 1 written verdict** of the CURATED 5 (MET via `D104`) · verdicts **31/31, 0 `unimplementable`** ✅ | **MET** |
+| **plus `D-v28-5`** | the cockpit logout double-click defect FIXED, no Playthrough added | **FIXED and proven live** at iter-25, both halves on one rebuilt fake-FAPI | **MET** |
+
+**⚠️ Clause 1's caveat, carried deliberately rather than rounded off.** A known platform non-determinism
+(`PLATFORM-M256-keyrole-nondeterminism`) **can still redden a batch**. An earlier batch of three had exactly
+one such failure, and it was **reported and diagnosed rather than re-rolled away** — no timeout was bumped, no
+run was discarded. The 3/3 above is a clean batch, not a selected one.
+
+**And the honest headline: all three gate clauses turned out unmeetable as first authored.** Clause 1 was
+re-cut **twice** (`D-v28-12` → `D-v28-13`) once its threshold was measured to sit **inside its own 2.04× noise
+floor**; clauses 2 and 3 each needed a named carve-out. *A gate authored before the work is a hypothesis about
+the work.* The flattering reading was available each time and refused each time — most sharply at `D-v28-13`,
+where the original-16 control subset read `0.7063×`, **inside** the gate, and was rejected as a hand-picked
+denominator.
+
+### Iter ledger
+
+**32 iters, 32 closed, 32 accounted for.** Verdicts: 22 `closed-fixed` · 6 `closed-fixed-partial` ·
+4 `closed-no-lift`. 1 bootstrap tok, 0 triggered toks. 3 harden passes (2 incremental + 1 final).
+44 rosetta commits, all attributed. **1 orphan found and fixed at close: iter-21's running-ledger line.**
+
+### What the milestone is actually about — recorded because it outlives the gate
+
+**~35 checks that reported success without having checked.** Across 3 harden passes (6 → 11 → 9 — a **flat**
+yield, which is why the cap was accepted as un-stabilized rather than "nearly done") plus ~9 inside the iters
+and 8 more at this close. Worth naming:
+
+- a probe runner certifying *"all live probes passed"* over **zero probes** — an exit code **four other gates
+  read as health**
+- a committed `.only` shrinking the suite to **1 of 20 at exit 0**
+- a green gate that parsed a UTC timestamp as local and so **failed OPEN west of UTC**
+- **three capabilities whose entire implementation could be deleted with the suite green**, including **all of
+  snapshot Phase 5 under the end-to-end test**
+- **a declared Playthrough deletable story-and-spec without turning the run red — four ways at once**
+- and at this close: **a 43 KB / 79-test file that `grep` silently refused to read**
+
+**The two fences shipped as the generalisable fixes were themselves instances of the class.** The liveness
+fence counted `not.toBeVisible()` as **proof the page was alive** — an absence assertion serving as the
+liveness witness, the exact defect it exists to prevent. The bounded-interaction fence **never scanned the
+retry loop it is named after**. *The fences built to catch the class were instances of it.*
+
+**Seven confident conclusions refuted by measurement**, including three from iter-05 and **the coordinator's
+own `D99` mechanism**: the seeder had never written a `p3` row in its life, and the demo matched
+`init_policy.sql` **exactly** while still misrepresenting production — *a fidelity check against the wrong
+reference passes.*
+
+**Two refusals that are deliverables, not gaps.** iter-18 refused to ship a working onboarding journey whose
+green depends on scraping a real person's profile. iter-20 refused to grant itself the permission under test
+and escalated — **and its own hypothesis was then refuted**, which is exactly what escalating is for.
+
+### Routes carried forward
+
+Not a shortfall — the close is `closed-on-gate`. Full per-item table in the CLOSED banner above and
+`decisions.md`: **4 LAND-NOW** ✅ · **10 LAND-NEXT** (6 → M258, 2 → M257, 2 landed instead) · **1 DROP** ·
+**3 Fate-2 confirmed** · **4 platform-bound** → the register · **3 KEEP-DEFERRED-WITH-SIGNOFF, awaiting the
+user's signature** (`PERF-M256-parallel-lane`, `PT-M257-self-evaluation`, `PT-M257-talk-to-data` — each a
+roadmap call, not a routing one).
+
+### Protocol evolution
+
+- **`run-playthroughs.sh` is now BINDING** on a full run (advisory on a scoped one). It previously swallowed
+  ptreport's exit code with `|| echo`. **Anything downstream that ran the suite and trusted a zero exit is now
+  genuinely gated.**
+- A **written verdict** is a first-class terminal outcome, machine-checked in the manifest — *"we measured this
+  and it should not be built"* is a result, not a shortfall.
+- A mutating Playthrough's **pre-state read IS its negative control** when the final is a strict
+  inequality/negation.
+- **The standing-mutant question** — *delete the action and see whether anything fails* — is the cheapest
+  detector of the signature defect on a seeded world, and now the sanctioned check for any mutating Playthrough.

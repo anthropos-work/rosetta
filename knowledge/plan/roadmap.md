@@ -433,9 +433,90 @@ Metrics: [`metrics.json`](releases/02.80-fast-build/m255-build-bench-host-headro
 
 ### M256: Playthrough sharpening
 
-**Status:** `planned` · **Shape:** `iterative`
+**Status:** `done` (2026-07-30) · **Shape:** `iterative` · **`closed-on-gate`** — 32 iters, 3 harden passes
 **Goal:** Make the Playthrough suite a detector you can trust and afford — individually faster, actually
 proving function rather than presence, and covering the journeys that are silently unwatched.
+
+> ## Closure — 2026-07-30 · `closed-on-gate`
+>
+> **All four gate obligations MET.** Clause 1's flake half MET (**3 consecutive cold reset-to-seed runs,
+> `209 passed` each, rc captured per run `0/0/0`, zero flake**); its leg half **N/A**, no speed mechanism having
+> landed in the closing iters. Clause 2: controls **28 of 30** (`D103` carve-out) · mutating **12** of ≥5 ·
+> `blocked` **1** of ≥1. Clause 3: org-admin **4/4** · onboarding **4 landed + 1 written verdict** of the
+> CURATED 5 (`D104`) · verdicts **31/31, 0 `unimplementable`**. Plus **`D-v28-5` FIXED and proven live** at
+> iter-25. Full ledger: [`m256…/progress.md`](releases/02.80-fast-build/m256-playthrough-sharpening/progress.md)
+> § Gate Outcome Ledger.
+>
+> **What shipped.** **18 → 30 live Playthroughs** (+1 verdicted TODO), mutating **1 → 12**, negative controls
+> **0 → 28 of 30**, `blocked` **0 → 1**, and **two whole products** the curated corpus had left un-homed for
+> five releases: **org-admin** (0 → 4 of 4) and **onboarding** (0 → 4 of the curated 5, *the first thing every
+> real user does*, which the milestone's own pre-flight audit had priced as impossible). Net-new seed
+> capabilities: `Persona.AIReadiness` (funnel stage 0), `Persona.Onboarding` (`org_prepared`),
+> `Persona.OrgMembership: none` (the org-less user), `PolicyGrantsSeeder` + **`stackseed --policy-check`**
+> (bidirectional), and snapshot replay **Phase 5** (identity-sequence advancement — two `public` identity
+> columns had been broken on **every demo ever built**).
+>
+> **⚠️ Behavioural change downstream consumers must know:** **`run-playthroughs.sh` is now BINDING** on a full
+> run (advisory on a scoped one). It previously discarded ptreport's exit code with `|| echo`, and Playwright
+> exits 0 when a spec file is simply *absent* — so a deleted Playthrough produced a fully green run. **Anything
+> that ran the suite and trusted a zero exit is now genuinely gated.**
+>
+> **The transferable finding is about the gates, not the suite: all three clauses turned out unmeetable as
+> first authored.** Clause 1 was re-cut **twice** (`D-v28-12` → `D-v28-13`) once its threshold was measured to
+> sit **inside its own 2.04× noise floor**; clauses 2 and 3 each needed a named carve-out. *A gate authored
+> before the work is a hypothesis about the work.* The flattering reading was available every time and refused
+> every time — most sharply at `D-v28-13`, where the untouched control subset read `0.7063×`, **inside** the
+> gate, and was rejected as a hand-picked denominator; two earlier "clause 1 MET" readings were **retracted**.
+>
+> **~43 checks that reported success without having checked**, across 3 harden passes (**6 → 11 → 9 — a FLAT
+> yield**, which is why the cap was accepted un-stabilized with residuals *enumerated*: a flat yield means the
+> seam is broad, not nearly closed) plus ~9 inside the iters and 8 at close. Highlights: a probe runner
+> certifying *"all live probes passed"* over **zero probes** — an exit code **four other gates read as
+> health**; a committed `.only` shrinking the suite to **1 of 20 at exit 0**; a green gate that parsed UTC as
+> local and **failed OPEN west of UTC**; **three capabilities whose entire implementation could be deleted with
+> the suite green**, including **all of snapshot Phase 5 under the end-to-end test**; and **a declared
+> Playthrough deletable story-and-spec without turning the run red — four ways at once**.
+> **And the two fences shipped as the generalisable fixes were themselves instances of the class**: the liveness
+> fence counted `not.toBeVisible()` as *proof the page was alive*, and the bounded-interaction fence **never
+> scanned the retry loop it is named after**.
+>
+> **The close's own best finding is about measurement, not code.** A raw NUL byte inside an adversarial fuzz
+> input made `tests/url-shapes.unit.spec.ts` **`data` to `file(1)` and BINARY to `grep(1)`** — which then
+> reported **no matches, with no error and no change to its exit code**, while its **79 tests ran and passed**.
+> A 43 KB pin was invisible to every shell-based sweep, as an *absence of hits*. **Two independent reviewers
+> concluded from that silence that a predicate the file exercises by name was dead code**; one recommended
+> deleting it. Every *"nothing references this, so it is dead"* conclusion in this project rests on grep
+> reporting honestly, and it fails in the direction that looks clean. Fenced, and written into
+> [`retro.md`](releases/02.80-fast-build/m256-playthrough-sharpening/retro.md).
+>
+> **Two refusals that are deliverables.** iter-18 declined to ship an onboarding journey whose green depends on
+> **scraping a real person's public profile** (flaky by construction, and its RED would misreport as an
+> Anthropos regression) → a machine-checked `will-not-build` verdict `ptreport` now renders. iter-20 refused to
+> **grant itself the permission whose enforcement was under test** and escalated — **and its own hypothesis was
+> then refuted** by a production policy read, which is exactly what escalating is for.
+>
+> **Ratified at close** under the user's standing delegation, their right to overrule at release close
+> preserved: **`D103`** (clause 2 MET at 28/30, studio pair a named carve-out — *a control over a known false
+> green would certify the false green*), **`D104`** (clause 3's onboarding half MET at 4 landed + 1 written
+> verdict of the curated 5), and the **iter-31/32 deviation** (the routed repair was impossible — there is no
+> Role screen — after a source read had been relayed as an observation; **D118**).
+>
+> **Deferrals — the audit returned RED and every item was re-fated.** 8 items carried a target that no longer
+> existed (*"a later tik of M256"*), 6 rows read OPEN for landed work, and the longest chronic had been
+> re-typed **~10 times across 25 iters**. Resolution: **4 LAND-NOW** · **10 LAND-NEXT** (**6 → M258**, **2 →
+> M257**, 2 landed instead) · **1 DROP** · **3 Fate-2 confirmed** · **4 platform-bound** → the net-new
+> [`platform-defect-register.md`](platform-defect-register.md) (there was **no register anywhere in this
+> repo**, so all four would have archived with the milestone) · **3 KEEP-DEFERRED-WITH-SIGNOFF awaiting the
+> user** (`PERF-M256-parallel-lane`, `PT-M257-self-evaluation`, `PT-M257-talk-to-data` — roadmap calls, not
+> routing ones) · **0 escape-hatch to a future release**. Every Fate-3 destination is a **named milestone
+> whose own `overview.md` was edited** — M255's close routed four items to *"M255 harden resume"*, which was
+> not a milestone, and its retro says that should have been rejected when written.
+>
+> **Process:** **eight sub-agent deaths** (internet drop, session limit, stall watchdog, four API 529s) with
+> **zero work lost**, because every iter committed and pushed **both** repos before the next began. One iter
+> (21) was closed by the coordinator directly when spawns were failing — and its running-ledger line was the
+> one artifact that step missed, found only by this close's iter-ledger audit. **0 platform-repo edits ·
+> 0 net-new deps.**
 
 **Exit gate** (three clauses, all objective, all on `billion`, all measured on the **post-coverage** suite):
 1. **Faster** — **median per-Playthrough ≤ 5 s** *and* **full post-coverage suite p50 ≤ 200 s wall-clock**,

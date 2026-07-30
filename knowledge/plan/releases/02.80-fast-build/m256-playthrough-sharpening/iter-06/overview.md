@@ -2,7 +2,7 @@
 milestone: M256
 iter: 06
 iteration_type: tik
-status: in-progress
+status: archived
 active_strategy: TOK-01
 created: 2026-07-28
 ---

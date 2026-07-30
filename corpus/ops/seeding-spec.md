@@ -583,3 +583,37 @@ ids are deterministic, stale rows silently RE-GRANTED the feature to the new wor
 granted 20/20; `resetCasbin` now deletes the seeded grouping policies as a class (`g2` + `g3`). The reset half is
 [`idempotency.md`](idempotency.md) §"seed … the fixed `--reset`" #4; the Playthrough half is
 [`demo/playthroughs.md`](demo/playthroughs.md) §"The `blocked` outcome".
+
+**v2.8 "fast build" M256 iter-21 — the silent refusal.** Adds the **`PolicyGrantsSeeder`** (surface
+`"policy-grants"`) + the **`stackseed --policy-check --stack <N>`** gate. `p3` rows
+(`v0` = org scope, `v1` = role, `v2` = feature) are the role→feature grants Sentinel's `m3` matcher reads, and
+they are **platform bootstrap** (`sentinel/init_policy.sql`), not demo data — which is why no seeder had ever
+written one. That file deliberately **withholds** `org:feature:taxonomy:write` (platform commit `c6096d1`,
+*"drop default admin taxonomy:write, add on-demand grants file"*), parking it in
+`sentinel/local_superadmin_grants.sql` whose stated use case is verbatim *"Testing flows that require
+taxonomy:write"* — and **nothing, in any repo, had ever applied that file to a demo or dev stack**, while
+**production carries the row**. So a demo was **faithful to `init_policy.sql` and unfaithful to production**: a
+presenter demonstrating role creation hit a **silent refusal**, and fifteen iters passed before anyone noticed,
+because the product renders a refused mutation as nothing at all. **The generalisable finding: a fidelity check
+against the wrong reference passes.** The honesty line matters too — granting yourself the permission whose
+enforcement is under test *manufactures* the capability, so the milestone escalated rather than force a green;
+applying the **platform's own** on-demand grant, row-identical to production's, is the opposite move. The check
+is **bidirectional** — `MISSING` is an under-grant (the defect that caused this), `EXTRA` is an over-grant (the
+mechanical form of a judgement that had to be made by hand) — and it keys on the whole `(scope, role, feature)`
+tuple, so a grant that moves ROLE reads as a *different* grant rather than as the intended one being present.
+**Two consumers, two contracts:** `--policy-check` **hard-fails** on any drift; the bring-up's policy advisory
+line is **advisory, never fatal**.
+
+**v2.8 M256 also adds three PERSONA axes**, each read in exactly ONE place and each a **closed enum** that fails
+the seed loudly on an unrecognised value — a silent `default:` fall-through would produce precisely the state
+the axis exists to avoid. **`Persona.AIReadiness`** (`""` = derive from the trajectory | `"not_started"` = funnel
+**stage 0**, which an end-user hero could not otherwise be *declared* into: the derivation sends her to
+*already completed*, so a Playthrough on her would have passed on the completed surface — contract in
+[`../services/ai-readiness.md`](../services/ai-readiness.md)). **`Persona.Onboarding`** (`""` | `"org_prepared"`,
+driving the net-new **`OnboardingParamsSeeder`**, which writes `public.user_params.onboarding` — there is no
+onboarding table — with the **insert-then-heal** shape described above). **`Persona.OrgMembership`** (`""` |
+`"none"`: the `UsersSeeder` skips her membership row *and* its casbin grants, and validation **INVERTS** the
+end-user `verified > 0` rule — an org-less hero MUST declare `verified: 0`, because a verified skill's fan-out is
+org-scoped and would otherwise tie her to an org she is not in). The org-less write surface is fenced by a
+**source scan over the membership-uuid call sites**, because those call sites *are* the FK surface. The
+Playthrough-side account is in [`demo/playthroughs.md`](demo/playthroughs.md).

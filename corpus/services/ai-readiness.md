@@ -565,8 +565,10 @@ across bands). One of three **post-M246 drifts** the M250 fidelity sweep caught 
 manager-sweep confirmation is a slow ~150-page crawl routed to **M254** (its exit gate re-runs the same sweep on
 billion by design).
 
-**End-to-end proof:** the AI-readiness journeys are covered by **4 Playthroughs** (both member vantages + the
-manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+**End-to-end proof:** the AI-readiness journeys are covered by **5 Playthroughs** (both member vantages + the
+manager — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap)
+— plus the **day-0 guided onboarding** journey `pt-onboarding-aireadiness-guided` on the `not_started` seat
+documented above, v2.8 M256 iter-26).
 The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-completed` + manager `dana-manager`,
 Northwind, cold reset-to-seed, escapes=0) for parts 1/2/3/5 + the core part-4 sections. Code-of-record:
 `rosetta-extensions` @ `july-jitter-m250-iter07`. **Re-proven LIVE on billion at M254 (gate (d)):** both

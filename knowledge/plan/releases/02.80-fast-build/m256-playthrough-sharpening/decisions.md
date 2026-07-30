@@ -444,3 +444,93 @@ deleted with the suite green, including **all of snapshot Phase 5 under the end-
 
 *The fences built to catch the class were themselves instances of the class.* That is this milestone's
 most transferable finding, and it is why the honest stop condition was recorded rather than rounded up.
+
+---
+
+## RATIFIED at close (2026-07-30) — D103, D104, and the iter-31/32 deviation
+
+All three were recorded during the iters as coordinator calls **flagged for ratification at close**, and all
+three are now **RATIFIED** under the user's standing delegation for this milestone (*"as long as we don't
+touch the platform code and don't write on the platform db, for me i trust you call"*), the user having been
+shown all three with their full reasoning and having separately chosen the harden-cap option when asked.
+**The user's right to overrule any of them at release close is preserved.**
+
+They are ratified **as written**, not softened:
+
+| | what was ratified |
+|---|---|
+| **D103** | Clause 2's control requirement is **MET at 28 of 30**, the studio pair being an explicit, named carve-out discharged by `FIX-M256-studio-false-green` rather than by a control — because **a control over a known false green would certify the false green**. |
+| **D104** | Clause 3's onboarding half is **MET at 4 landed + 1 written verdict** against the **CURATED 5**. The unlanded one is the self-import journey, whose only advancing path scrapes a live third-party profile, so **its RED would misreport as a product regression**. (The *manifest* denominator reads 6 declared / 5 live, because M256 also added one net-new non-curated use case. The two denominators are deliberately distinct — see `coverage-verdicts.md` §"The arithmetic".) |
+| **iter-31/32** | The routed persistence repair was **impossible** — there is no Role screen for a reload to land on — and the coordinator had relayed iter-29's **source read as if it were an observation**. What shipped is a positive, hydration-proof assertion **labelled for exactly what it proves**, plus the platform defect routed. The absence-only assertion was **not** restored. |
+
+**And the finding the three of them add up to, stated plainly because it is this milestone's most transferable
+one: all three of the milestone's three gate clauses turned out unmeetable as first authored.** Clause 1 was
+re-cut **twice** (`D-v28-12` → `D-v28-13`) after its threshold was measured to sit **inside its own 2.04×
+noise floor**; clauses 2 and 3 each needed a carve-out. *A gate authored before the work is a hypothesis
+about the work* — and the honest response to a falsified hypothesis is to re-cut it in the open, with the
+measurement that falsified it, rather than to report the flattering reading. The flattering reading was
+available every time and refused every time (most sharply at `D-v28-13`, where the original-16 subset read
+`0.7063×` — inside the gate — and was rejected as a hand-picked denominator).
+
+---
+
+## DEFERRAL GATE — RED, resolved item by item (close, 2026-07-30)
+
+`/developer-kit:audit-deferrals --scope=milestone` returned **RED** on three grounds: **8 items carried a
+target that no longer exists** (`a later tik of M256` / `next iter` / `iter-16+` — the gate is MET and no
+further iters will run), **10 repeat/chronic deferrals** (one re-typed into the next routing table ~10 times),
+and **4 items routed to destinations that cannot hold them** (*"a future release milestone"*, *"whoever next
+edits those specs"*, *"a future v2.8 milestone"*).
+
+**The dead-target class is the priority, and it is the M255 failure repeating.** That close routed four items
+to *"M255 harden resume"* — not a milestone — and its own retro says the routing *"should have been rejected
+when written"*. A Fate-3 target that does not resolve is not a fate. **Every item below now names a real
+milestone, or is dropped with a reason.**
+
+### LAND-NOW (Fate 1 — landed in this close)
+
+| item | what landed |
+|---|---|
+| `DOC-M256-claudemd-pt-count` | The count reconciliation, exhaustively: `playthroughs.md:14-16` and `demo/README.md:216-220` still read **18 live Playthroughs** while the same file's own §line read 30. Both corrected to **30 live + 1 verdicted TODO (31 manifest use cases, 10 products)**, plus `CLAUDE.md`'s onboarding sub-count given its **denominator** (4 of the curated 5). Zero `18 live Playthrough` hits remain corpus-wide. |
+| `DOC-M256-ptworld-reset-comment` | `pt-world.seed.yaml`'s header claimed the showcase world is *"not touched by pt-world's reset"*. `doReset` takes **no org filter** (audit F6). A false comment is read as evidence by the next iter — the D118 rule this milestone wrote down. |
+| The 4 platform defects' **durable home** | Structural gap the audit found: there was **no platform-defect register anywhere in this repo**, so all four defects lived only in a milestone `decisions.md` that archives at release close. Created [`../../../platform-defect-register.md`](../../../platform-defect-register.md) with each defect's `file:line`, so nobody re-derives them. |
+
+### LAND-NEXT (Fate 3 — re-attached to a REAL milestone, its `overview.md` edited)
+
+| item | target | why THIS milestone |
+|---|---|---|
+| `FIX-M256-studio-false-green` + `NEGCTL-M256-studio-pair` + `DOC-M256-llm-lane-premise` (one bundle, by their own routing) | **M258** | The **longest chronic in the milestone (~10 pushes)** and the reason D103 needs a carve-out at all. M258 composes this suite into the bring-up and claims a stack *"proves itself"* — a known false green inside the suite is a direct claim on M258's gate, which makes M258 the owner rather than a convenient parking space. Fix shape is measured and known (`progress.md:981`): assert a POPULATED section, not the empty scaffolding the matcher fires on at +2.1 s. |
+| `PT-M256-standing-mutant-Q1` — the **9 remaining** standing mutants | **M258** | Mechanical (~30 min machine time, no design decision), each needing its own reset because the write is irreversible. Named Playthrough-by-Playthrough in `hardening-ledger.md` §residuals. Same reasoning: M258 runs the suite, so the suite's effectiveness is its business. `HARDEN-CAP-ACCEPTED-D105` accepted these as **named** residuals — that promise is only kept if they have a real home, which they now do. |
+| The **11 lower-severity harden-3 scan findings** | **M258** | Recorded with file-level specificity at `hardening-ledger.md:532-544` so none needs re-discovery. Routed as a batch to the milestone that owns suite quality. *Stated risk:* M258 is `complexity: medium` and expects to close in 1–2 iters, so this batch may need re-fating there rather than absorbed silently — which is exactly why it is written into its `overview.md` rather than left in a ledger. |
+| Spec-side import of the five enrolled heroes | **landed here instead** | Its stated target was *"whoever next edits those specs"* — not a milestone. It turned out to be the close review's own must-fix (the constants had **zero importers**), so it landed now. |
+| `FIX-M256-demo2-service-self-termination` | **M257** | **Gate-relevant, which is the reason and not a convenience.** M257's gate reads *"reaches `autoverify green:true / 0 warnings`"*. On this failure `docker ps` shows 14 of 16 "Up", the app surfaces no error, and every jobsimulation surface renders 20 content-free rows — so M257 could **declare a green gate on a half-dead stack**. |
+| `FIX-M256-autoverify-fapi-libressl` | **M257** | 31 iters with the target never advancing. It warns *"NOBODY CAN LOG IN"* on a working stack, and M257's gate reads autoverify's warning count — so a spurious warning is a gate problem. **Deliberately not landed here:** a TLS-probe fix that cannot be verified against a real bring-up is a fix on trust, and M257 brings stacks up repeatedly. |
+| `FIX-M257-content-stories-pair-count` | **M258** | The sweep `sys.exit(2)`s before starting (47 recomputed against a pinned 45, omitting `manager_presence_only`), so it refuses to run at all. M258 composes the verification batch. The `FIX-M257-` prefix is an artifact of when it was found, not a routing decision. |
+| `ptvalidate` is invoked nowhere outside its own tests | **M258** | Structural, and it is the honest home for the **permissive half of the runner's gate** this close left open: an all-matching `--grep` is still graded advisory, and the correct fix is a both-way `ptvalidate` pre-flight, which already implements the id-level question shell cannot. |
+| `BIND_HOST` / `D-M255-7` | **M258** | **M255's own Fate-3 routing was declared and never applied** — `grep BIND_HOST` in M258's `overview.md` returned 0 hits. Applied now, with a backref. The M255 failure mode again: a routing recorded in a closing milestone's decisions is not a routing until the *target's* doc says so. |
+
+### DROP (with reason)
+
+| item | reason |
+|---|---|
+| `PT-M256-resume-fixture-pair` | Its premise dissolved and nobody noticed for ~23 iters. It existed to make two use cases **share the cost of one checked-in résumé fixture**; the fixture landed at iter-18 (`playthroughs/fixtures/synthetic-cv-sre.{pdf,docx}`), and its second member — `onboarding.enterprise-workforce-standard.UC1` — is now a `will-not-build` **verdict** (D104/D122). A pairing with one member and no cost to share is not a work item. `profile-skills.import.UC1` keeps its own verdict (A2) and its own future. |
+
+### Fate 2 — already owned elsewhere, confirmed, no edit needed
+
+| item | owner | verified |
+|---|---|---|
+| `MEASURE-M256-clause1-sampling` | **discharged** by `D-v28-13` (user, 2026-07-29) — clause 1 re-cut to gate the leg, not the aggregate — with the comparable **absolute** billion re-measure inherited by **M258** (`m258/overview.md:112-123`, explicitly *"reporting only — this does NOT become a fourth gate clause"*). | quoted at source |
+| M255's 4 harden items | **M257** | `m257/overview.md:130-151` § *Inherited from the M255 close* names all four. |
+| `frontend-tier.md` §8.5 numeric rewrite | **M257** | `m257/overview.md:100-113`. |
+
+### KEEP-DEFERRED-WITH-SIGNOFF — **3 items, and each needs the USER's signature, not a re-route**
+
+These are the only three I did not fate myself, because each is a **roadmap decision** rather than a routing
+one, and assigning this fate to clear a gate is precisely the move the audit exists to catch. **Listed in the
+close report for the user.**
+
+| item | why it needs a signature |
+|---|---|
+| `PERF-M256-parallel-lane` | Its target was *"a future release milestone"* — not a milestone. It needs a **cookie/`__client`-scoped Clerkenstein registry or one fake-FAPI per worker**: a real build against an Alignment-DNA-gated mirror engine, not a lever. **No v2.8 gate clause needs it** (clause 1 gates the leg; M258's re-scope trigger already covers a wall-clock overrun). Naming v2.9 is a roadmap act. |
+| `PT-M257-self-evaluation` | Re-homing a **5-release-old M206 vision reservation** is explicitly a roadmap decision, recorded as a *recommendation not an action* at iter-09 D39. Its current `M257` target is a **mis-route** — M257 is a build-speed milestone that will not author Playthroughs. |
+| `PT-M257-talk-to-data` | Blocked on `ask_*` migrations **plus live Bedrock credentials**. A credential is not something a milestone can fix, and it belongs in the separately-budgeted integration lane. Its `M257+` target is likewise a mis-route. |

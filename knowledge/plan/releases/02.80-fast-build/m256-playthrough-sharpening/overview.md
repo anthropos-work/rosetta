@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M256
 title: "playthrough sharpening"
-status: in-progress
+status: archived
 release: v2.8 "fast build"
 exit_gate: "On a LOCAL demo stack (D-v28-12; clause 1 RE-CUT AGAIN by D-v28-13 — the environment MUST be stated with every number). (1) FASTER, measured AT THE LEG: for every speed mechanism the milestone lands, a DIRECT before/after measurement of the leg that mechanism targets, on the same stack, showing it worked — the model is iter-03s login leg 2854 ms -> 423 ms. The suite median and its observed RANGE are REPORTED with n, never gated: at n=6 on untouched code that statistic spans 0.5281x-1.0762x (2.04x), so any threshold near 0.79x sits inside its own noise floor and can be neither passed nor failed. 0 flake across 3 consecutive runs still gates. (2) EFFECTIVE — every Playthrough passes a negative control (demonstrably RED when its outcome is absent) AND >= 5 mutating Playthroughs, where MUTATING means mutates state AND reads it back, AND >= 1 `blocked` outcome. (3) COVERED — onboarding (5 UCs) + org-admin (4 UCs) LANDED, and every remaining uncovered curated UC carries a written verdict — zero silent gaps. Plus D-v28-5: the cockpit logout double-click defect FIXED (no Playthrough added). A comparable ABSOLUTE billion measurement is routed to M258 (Fate 3)."
 iteration_protocol_ref: corpus/ops/demo/playthroughs.md
@@ -11,12 +11,12 @@ depends_on: [M255]
 parallel_with: []
 complexity: very-large
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-07-30
 ---
 
 # M256 — playthrough sharpening  (`iterative`)
 
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-07-30, `closed-on-gate`) · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
 **Depends on:** M255
 
 > **Revised 2026-07-27** after the adversarial plan review, which found the headline speed lever's premise

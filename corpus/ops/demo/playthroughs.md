@@ -12,8 +12,9 @@ dedicated-seed + reset-to-seed lifecycle, the serial-default runner, and the fou
 are actually built, in the rext **`playthroughs` section** (v2.0 "opening night" M202 "Foundation"). It is also
 **the iteration protocol the coverage milestones followed** (M203 employee-vantage ∥ M204 manager-vantage — the
 `iterative` milestones that grew the real journey coverage against this foundation to 10 live Playthroughs, and
-then M219 `ai-readiness` → M225 `hiring` → M243 the assign-WRITE → M252 `studio` took it to the **18 live
-Playthroughs, 0 TODO** the corpus stands at today; see § "The iteration protocol" below). It is the *function*
+then M219 `ai-readiness` → M225 `hiring` → M243 the assign-WRITE → M252 `studio` → M256 `org-admin` +
+`onboarding` took it to the **30 live Playthroughs, 1 verdicted TODO** (31 manifest use cases across 10
+products) the corpus stands at today; see § "The iteration protocol" below). It is the *function*
 sibling of [`coverage-protocol.md`](coverage-protocol.md)'s *presence* sweep. **The `spec.md` v0.3 draft it
 graduates is FROZEN at 2026-06-28** (pre-M219): where the two disagree — notably §5.7's serial-concurrency
 rationale — **this runbook wins**.
@@ -114,8 +115,9 @@ live Playthroughs (`pt-orgadmin-tag-create` + `pt-orgadmin-setting-toggle`, both
 reload) with 2 declared `TODO` carrying written diagnoses, and **added `skill-paths.save-for-later`** as **1 more**
 (`pt-skillpath-bookmark`, a write + a delete, both read back), and **opened the `onboarding` product** — the
 LAST whole surface in the M201 curated corpus that no e2e suite had ever touched, *the first thing every real
-user does* — as **1 more** live Playthrough (`pt-onboarding-complete`) with **all 5 curated onboarding use cases
-declared and carrying written verdicts**, and **added `workforce-intelligence.organization-feedback`** as **1
+user does* — as **1 more** live Playthrough (`pt-onboarding-complete`, itself a **net-new, non-curated** use
+case) with **all 5 CURATED onboarding use cases declared and carrying written verdicts**, and **added
+`workforce-intelligence.organization-feedback`** as **1
 more** (`pt-workforce-org-feedback` — un-homed for five releases until pricing it revealed its data was already
 seeded), and **opened the `ai-simulations.access-denied` story** as **1 more** (`pt-aisim-org-feature-blocked`) —
 **the suite's FIRST `outcome: blocked`**, i.e. the first Playthrough that proves the platform correctly says *no*
@@ -127,13 +129,14 @@ is not on page 1 even after a **successful** create), and **landed the onboardin
 (`pt-onboarding-hiring-candidate` at iter-27 — the suite's first Playthrough to drive an onboarding flow in the
 **hiring** app; see § "The hiring-org day-0 candidate" below) **and its fourth**
 (`pt-onboarding-org-prepared` at iter-29 — the org-prepared variant; see § "The org-prepared onboarding
-variant") **and its fifth** (`pt-onboarding-individual` at iter-32 — **the ORG-LESS user**, the LAST un-homed
+variant") **and its fifth LIVE use case — the 5th of the 6 it declares in the manifest** (`pt-onboarding-individual`
+at iter-32 — **the ORG-LESS user**, the LAST un-homed
 use case in the M201 curated corpus and the one this milestone's own pre-flight audit had priced as
-impossible; see § "The org-less seat" below). The corpus stands at **30 live Playthroughs, 1 TODO** (31 use
-cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
+impossible; see § "The org-less seat" below). The corpus stands at **30 live Playthroughs, 1 verdicted TODO**
+(31 MANIFEST use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
 runs.
 
-**Onboarding's fifth curated use case is a WRITTEN VERDICT, and that is a result rather than a shortfall.**
+**Onboarding's one remaining CURATED use case is a WRITTEN VERDICT, and that is a result rather than a shortfall.**
 `enterprise-workforce-standard.UC1` (the self-import journey) is `disposition: will-not-build`: its only
 advancing path scrapes a live public third-party profile from a site that blocks automation, so shipping it
 would make a real person's profile a permanent fixture and **its RED would read as a product regression when
@@ -766,6 +769,17 @@ a **per-suite reset-to-seed** on `--reset`:
   `docker inspect`-discovered mount path, restarts `demo-N-fake-{fapi,bapi}`, and waits for the FAPI. This
   **completes the reset-to-seed** so the Playthroughs run on **any** demo, not only a `pt-world`-native one
   (M204 masked this by bringing its demo up `pt-world`-native). Non-fatal for a roster-native demo; zero platform edits.
+- **…and the COCKPIT MANIFEST too — the other half of "the world" (v2.8 M256 iter-10).** The roster refresh
+  above fixes *who the fake FAPI can mint*; the cockpit's `[Log in as]` menu is a **separate** projection
+  (`cockpit-manifest.json`, see [`cockpit-spec.md`](cockpit-spec.md)) and it was never re-exported — so after a
+  `--reset` the cockpit offered seats from the *previous* world and every selection **silently** fell back to
+  the last-active seat. 23 Playthroughs stayed green while the human-facing cockpit was entirely stale.
+  `--reset` now also runs `stackseed --cockpit-export --seed pt-world` to the manifest beside the roster mount
+  (same pure-function-of-the-seed property — no DB read). **A running cockpit holds its manifest in a closure**,
+  so refreshing the file is not enough on its own: `cockpit.py`'s `--roster` cross-check makes a stale
+  in-memory manifest **fail closed** rather than offer a dead seat, and the next cockpit start picks the
+  refreshed file up. Non-fatal — a demo with no cockpit manifest beside the roster is a valid shape and is
+  skipped with a stated reason.
 - The runner **refuses N=0** (the main dev stack) outright — a Playthrough run always targets a demo-N.
 - **Gate-run prereq — the pinned `stackseed` must be on PATH (M204 iter-05 D1).** The runner shells out to bare
   `stackseed` (the pinned tooling the demo consumes), which is **not on the login PATH**. When running the gate
@@ -806,8 +820,16 @@ a **per-suite reset-to-seed** on `--reset`:
   > this point by this section**.
 - **The runner reconciles inline** (M204 iter-02). After the Playwright run it invokes `ptreport` over the
   manifest + this run's fresh JSON results and prints the four-state map — so a single `run-playthroughs.sh`
-  invocation both *runs* and *reconciles*. The reconciliation is non-fatal (it never masks Playwright's own
-  verdict) and the runner exits with Playwright's status. **Reporter-override lesson (load-bearing):** a
+  invocation both *runs* and *reconciles*. **The reconciliation is BINDING on a full run and ADVISORY on a
+  scoped (`--grep`) run — v2.8 M256 harden-final.** It used to be unconditionally non-fatal (`|| echo`), with
+  the runner exiting on Playwright's status alone — but `report.go`'s `!ok` branch is the ONLY mechanism that
+  notices a **declared Playthrough that never ran**, and **Playwright exits 0 when a spec file is simply
+  absent**, so deleting a spec produced a fully green run (measured: `203 passed`, rc 0). A full run now exits
+  non-zero when the gate is unmet; a scoped run stays advisory with a stated reason, because every un-grepped id
+  correctly reports *"did not run"*. **Anything downstream that ran the suite and trusted a zero exit is now
+  genuinely gated.** Full account, plus the `set -e` trap the first version of the fix fell into:
+  [`../verification.md`](../verification.md) § *A gate whose exit code is discarded is not a gate*.
+  **Reporter-override lesson (load-bearing):** a
   Playwright CLI `--reporter=…` flag REPLACES the config's *entire* reporter list — so the runner must **not**
   pass one, or it silently suppresses the config's `['json', {outputFile: ./report/last-run.json}]` reporter,
   leaving `last-run.json` stale and decoupling `ptreport` from the actual run (a green-but-wrong-reconciliation
@@ -1440,13 +1462,16 @@ headers. The fences were correct about *whether* and wrong about *where*: a live
 place** (`m.replace(/[^\n]/g, ' ')`) rather than removing them. Cheap, and it is the difference between a fence
 that is trusted and one that is argued with.
 
-**One committed `.only` makes the whole suite report success on 1 of 18 (v2.8 M256 harden pass 2).** Both
+**One committed `.only` makes the whole suite report success on 1 of 30 (v2.8 M256 harden pass 2).** Both
 Playwright configs in rext set `forbidOnly: !!process.env.CI`, and **nothing that drives either harness sets
 `CI`** — not `run-playthroughs.sh`, not `run-coverage.sh`, not `run-latency.sh`. So a single `test.only` left in a
 committed spec silently reduces the run to that one test and exits **0**. Measured: a 20-test unit run plus
 `.only` on a third spec → `1 passed`, rc 0, no warning anywhere. For the Playthrough suite `ptreport` *would* flag
-the other 17 as *"did not run"* — but the runner swallows that reconciliation into a deliberate non-fatal
-`|| echo`, so the **run verdict** stays green having checked one Playthrough. For the `stack-verify` sweeps it is
+the other 29 as *"did not run"* — and at the time the runner swallowed that reconciliation into a deliberate
+non-fatal `|| echo`, so the **run verdict** stayed green having checked one Playthrough. (**v2.8 M256
+harden-final closed that half**: on a full run the `ptreport` gate is now **BINDING**, so 29 *"did not run"*
+entries fail the run — see [`../verification.md`](../verification.md) § *A gate whose exit code is discarded is
+not a gate*. `forbidOnly` remains the first line of defence.) For the `stack-verify` sweeps it is
 worse: their denominators (**29/29**, then **47/47** — figures this corpus quotes) are read from what ran, so a
 shrunken world reports as a complete one.
 
@@ -1489,10 +1514,14 @@ DB grant.
 
 - **Section:** `rosetta-extensions/playthroughs/` — `manifest/` (Go model + validator) · `cmd/ptvalidate` +
   `cmd/ptreport` (the CLIs) · `seed/` (the dedicated preset + the seed-worlds index) · `e2e/` (the Playwright
-  page-object layer + specs + the serial runner) · `report/` (the four-state map) · `fixtures/`
-  (reserved for version-controlled static fixtures fed to the real file chooser, spec §5.4 — **still
-  empty through M204**: no shipped Playthrough exercises a file-upload flow yet, so the dir stands
-  reserved for a future upload use-case rather than populated). Section README:
+  page-object layer + specs + the serial runner · `e2e/drafts/` — measured-but-unshipped specs, `.draft`-suffixed
+  so Playwright cannot collect them) · `report/` (the four-state map) · `fixtures/`
+  (version-controlled static input files fed to the real file chooser, spec §5.4 — **populated at v2.8 M256
+  iter-18**: `synthetic-cv-sre.pdf` + `synthetic-cv-sre.docx`, a wholly invented CV whose employers and school
+  occur nowhere in the seed, the taxonomy, or any real registry, so an assertion naming them can only be
+  satisfied by *this file having been imported*. No **shipped** Playthrough consumes them yet — the self-import
+  use case they exist for carries a `will-not-build` verdict and its CV route is blocked by a product defect
+  upstream of the fixture; the two files ARE the evidence for that verdict). Section README:
   [`playthroughs/README.md`](../../../.agentspace/rosetta-extensions/playthroughs/README.md).
 - **Mixed toolchain (M202-D1):** Go for the manifest/validator/report (matching the seeding module's
   `datadna`/`stackseed` CLI family + the datadna-gated requirement) + TypeScript for the Playwright layer
