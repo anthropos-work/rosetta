@@ -12,7 +12,7 @@
 
 It's completely automated - you provide a template or blueprint, and Studio-Room orchestrates the entire generation pipeline.
 
-Studio-Room does not run as its own deployment. It is embedded inside the **CMS container** (at `cms/studio/`) and is triggered by a CMS Asynq task rather than run directly by users — the CMS service shells out to it as a subprocess when a generation job is enqueued.
+Studio-Room does not run as its own deployment. Since **cms-in-app v8.0** it is embedded inside the **`app` (backend) container** — pulled into the image by CI (`additional_repo`, app v1.360.1) — and is triggered by an Asynq task rather than run directly by users; the Go side shells out to it as a subprocess when a generation job is enqueued. Before the merge it rode in the cms container at `cms/studio/`.
 
 ## Technical Deep Dive (For Engineers)
 
@@ -22,9 +22,9 @@ Studio-Room does not run as its own deployment. It is embedded inside the **CMS 
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | Python 3.x, asyncio |
-| **Deployment** | Embedded in the CMS container (`cms/studio/`) — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the CMS Asynq worker on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
+| **Deployment** | Embedded in the **`app` (backend)** container since cms-in-app — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the cms Asynq worker on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
 | **AI Providers** | OpenAI, Azure OpenAI, Anthropic |
-| **Repository** | Cloned into the CMS repo at `cms/studio/` (repo: `anthropos-studio-room`) |
+| **Repository** | `anthropos-studio-room`, pulled into the **`app`** image by CI (was cloned into the cms repo at `cms/studio/` before cms-in-app) |
 
 ### Architecture
 

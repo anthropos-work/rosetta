@@ -55,7 +55,7 @@ For building, starting, or set-dressing the Anthropos development environment:
 - For an additional `dev-N`: the M13 set-dress pass (cache-first snapshot replay + a light `dev-min` seed
   + the per-stack-Directus firewall check), default-on + non-fatal. The per-stack Directus itself is
   **opt-in for dev** via `--local-content` (v1.5 M22/M23): with it the recipe is EXECUTED (a per-stack
-  Directus boots on an offset port + `cms` is cut over → content self-contained); without it the stack
+  Directus boots on an offset port + `backend`'s cms domain is cut over → content self-contained); without it the stack
   reads content live from prod (the documented fallback)
 - Auto-improvement of documentation when issues are found (ops-reports → `/update-knowledge`)
 
@@ -177,13 +177,22 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 **Core Backend Services (Tier 1)**: Go microservices
 
+> **⚠️ `app` is the backend monolith.** Five services below are **folded into `app`** and run
+> in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
+> ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and
+> **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph 2→1).
+> There is no cms / jobsimulation / skiller / skillpath / roadrunner container, profile, port
+> or subgraph. Every application table lives in the **`public`** schema. Standalone-deployment
+> teardown for jobsimulation and cms is **M810**; skillpath's is **M507**.
+
 In the default local profile (`graphql`):
 - Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`) **and the skills domain** — taxonomy (60K skills, 18K roles), assessment, AI skill matching, and vector embeddings (RAG), absorbed from the former standalone Skiller service (its Ent models now live in `app`, data in the `public` schema; the old `skiller` DB schema is legacy). The skiller RPC surface (GetSkills, GetSkill, SearchSkill, MatchSkill, GetJobRole) is served by `app` — consumers keep the env var, re-pointed at `SKILLER_RPC_ADDR=http://backend:8083` (local; `http://backend:8081` in prod terraform); the `skiller` git repo still exists but is decommissioned. **Also hosts the skill-path progression engine** (per-user `SkillPathSession → ChapterSession → StepSession` state) — absorbed from the former standalone **Skillpath** service ("skillpath-in-app", platform M502→M507); session state now lives in `public.skill_path_sessions` (the old `skillpath` DB schema is a legacy husk), and the `SkillPathSessionService` RPC + the skill-path session GraphQL types are served by `app`'s `backend` subgraph. And the **newer app-owned domains**: course-builder (`corpus/services/coursebuilder.md`), AI Labs + credits (`corpus/services/ai-labs.md`), ask-engine / Talk-to-Data (`corpus/services/askengine.md`), and the server-owned academy store (`corpus/services/academy-backend.md`)
-- CMS: **The content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and embedded studio-room AI generation pipeline** (`cms/studio/` is the `anthropos-studio-room` repo, cloned via `cd cms && make init-studio` and gitignored — a submodule-style pattern, not a real `.gitmodules` entry). **NB: CMS — not the skill-path engine (now in `app`) or the `jobsimulation` service — owns skill-path and simulation content** (content-vs-runtime-state split below)
+  **Plus the cms, jobsimulation and roadrunner domains** (see the merge banner above):
+  - **cms domain** (`app/internal/cms/`): **the content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and the embedded studio-room AI generation pipeline** (the `anthropos-studio-room` repo is pulled into the `app` image by CI). Directus itself stays external at `content.anthropos.work`. **NB: the cms domain — not the skill-path or jobsimulation engines — owns skill-path and simulation content** (content-vs-runtime-state split below)
+  - **jobsimulation domain** (`app/internal/jobsimulation/`, wired by `internal/jobsimwiring/`): **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT read from the cms domain by ID — **in-process** now, no `cms.GetSimulation` RPC hop. It holds run/session state — not content
+  - **roadrunner domain**: Judge0 code execution, called directly via `JUDGE0_BASE_URL`
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Jobsimulation: **Runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT fetched from CMS by ID (`cms.GetSimulation` Connect-RPC). It holds run/session state — not content
 - Storage: File/blob storage management
-- Roadrunner: Code execution proxy to Judge0 sandbox
 - Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
 
 Available in other profiles but NOT started by default:
@@ -197,7 +206,10 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - Chronos (was: scheduling & time-based events) — removed via platform commit `045857c`
 - Intelligence (was: background data sync between backend and skiller schemas) — removed via platform commit `fdfa189`
 - Skiller (was: skills taxonomy, assessment, embeddings) — **merged into `app`** (July 2026, v2.1 "quick change"); domain now in the `public` schema, `skiller` repo decommissioned, no skiller container/subgraph. See `corpus/services/skiller.md` + the `backend.md` fact-sheet
-- Skillpath (was: per-user skill-path progression runtime engine) — **merged into `app` then decommissioned** ("skillpath-in-app", platform M502→M507); the engine now runs in `app`, session state moved to `public.skill_path_sessions` (old `skillpath` schema is a legacy husk), no skillpath container/subgraph (→ **3 subgraphs**). The skill-path *content* still lives in CMS. See `corpus/services/skillpath.md` (redirect) + the `backend.md` fact-sheet. **Next in the consolidation program: `jobsimulation` (jobsim-in-app, mid-merge — still standalone today)**
+- Skillpath (was: per-user skill-path progression runtime engine) — **merged into `app` then decommissioned** ("skillpath-in-app", platform M502→M507); the engine now runs in `app`, session state moved to `public.skill_path_sessions` (old `skillpath` schema is a legacy husk), no skillpath container/subgraph. The skill-path *content* lives in the cms domain. See `corpus/services/skillpath.md` (redirect) + the `backend.md` fact-sheet
+- Roadrunner (was: Judge0 code-execution proxy) — **merged into `app`** with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. See `corpus/services/roadrunner.md`
+- Jobsimulation (was: the AI-simulation runtime/session engine) — **merged into `app`** ("jobsim-in-app"); the engine is `app/internal/jobsimulation/`, its 23 run-state tables moved to `public`, no container/subgraph. `module.jobsimulation_euwest1` is still declared in production terraform as the **rollback path** (no traffic) and still **owns the LiveKit/Chime recording S3 buckets** that `backend` reuses by literal name — teardown is **M810**. See `corpus/services/jobsimulation.md`
+- CMS (was: the content layer + Studio) — **merged into `app`** ("cms-in-app v8.0", app **v1.360.0**); the domain is `app/internal/cms/`, its similarity/Studio tables moved to `public`, and the supergraph went **2 → 1 subgraph**. Directus stays external. `module.cms_euwest1` is still declared as the rollback path (no traffic) — teardown is **M810**. See `corpus/services/cms.md`
 
 **Shared Libraries** (imported as private Go modules — **not** cloned by `make init`/`repos.yml`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). See `corpus/architecture/shared_libraries.md`.
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
@@ -206,15 +218,17 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
 - taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app` (backend — the `public` schema, since the skiller→app merge)
 
+> Since the merges these libraries are imported by **app, sentinel, storage and messenger** only.
+
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
-- Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the cms container** as `cms/studio/` via `cd cms && make init-studio`; no longer a standalone deployment.
+- Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the `app` (backend) container** since cms-in-app — pulled into the image by CI (`additional_repo`, app v1.360.1); never a standalone deployment.
 - Ant Academy (Next.js 16 + Expo): Internal learning portal for `@anthropos.work` employees (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** **NOT in `repos.yml` (by design — v1.10b M49 #5)** — so `make init` does **not** clone it. For a **demo**, `ensure-clones.sh` clones it **explicitly** (phase d2, non-fatal — `repos.yml` lives in the ephemeral platform clone, so editing it is non-durable + a platform edit); for **dev**, it's a manual `git clone`. Runs natively via `cd ant-academy/code && npm run dev` (port 3077). Auth via Clerk; **since v0.5.1 the course catalog is DB-authoritative** — read from the platform academy subgraph over GraphQL (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`), degrading to an **empty grid** when the endpoint is unset or the academy DB is empty (the demo "empty academy" root cause — the v2.5 M229/M230 thread). See `corpus/services/ant-academy.md`.
 
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
-- GraphQL/Cosmo Router: Apollo Federation v2 gateway (3 subgraphs: backend/app, jobsimulation, cms — the former skiller and skillpath subgraphs were removed when those services merged into `app`; app's `backend` subgraph serves their types/queries, and `categoryTree`/`fullCategoryTree` were dropped, not ported)
+- GraphQL/Cosmo Router: Apollo Federation v2 gateway — **one subgraph** (`backend`). The skiller, skillpath, jobsimulation and cms subgraphs were all folded into it as those services merged into `app`; `categoryTree`/`fullCategoryTree` were dropped, not ported. Compose builds `graphql` from the **production** Dockerfile so it uses the committed `schemas/backend.graphqls`
 - AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
@@ -226,9 +240,9 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging
-- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 3 subgraphs)
-- **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via CMS service
+- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since the merges the only remaining cross-process RPC edges are backend → sentinel/storage and messenger → backend; the `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends
+- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, a single `backend` subgraph)
+- **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)
 
@@ -264,8 +278,8 @@ make status            # Git status across all repos
 make up                # Rebuild and start (auto-builds from local code)
 make down              # Stop all services
 make ps                # Show running containers
-make logs S=cms        # Tail logs for a service
-make dev S=cms         # Stop container, develop natively
+make logs S=backend    # Tail logs for a service
+make dev S=backend     # Stop container, develop natively
 make reset-db          # Wipe DB, restart, re-migrate (WARNING: data loss)
 ```
 

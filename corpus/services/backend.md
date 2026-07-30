@@ -1,18 +1,39 @@
 # Backend Service (`app`)
 
-> **Since the skiller-in-app merge (v2.1 "quick change", July 2026), `app` also owns the skills-taxonomy
-> domain** — the 60K+ skills graph, embeddings, and AI matching formerly owned by the standalone
-> [skiller](./skiller.md) service. See the authoritative [**§ Skiller-in-app merge — fact-sheet**](#skiller-in-app-merge--fact-sheet-v21-quick-change)
-> below (the merged-shape contract this release grades against). The body of this doc was re-pointed to the
-> merged shape in M210 of the v2.1 release.
+> ## `app` is the backend monolith
+>
+> **Five former microservices now run inside `app`**, in merge order:
+>
+> | Merged service | Program | What moved in |
+> |---|---|---|
+> | [skiller](./skiller.md) | skiller-in-app (v2.1 "quick change", July 2026) | 60K+ skills graph, embeddings, AI matching |
+> | [skillpath](./skillpath.md) | skillpath-in-app (M502→M507) | skill-path progression engine, session state |
+> | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
+> | [jobsimulation](./jobsimulation.md) | jobsim-in-app (teardown **M810**) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
+> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (teardown **M810**) | content layer + Directus edge + Studio — `internal/cms/` |
+>
+> Consequences that hold platform-wide:
+> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the 2→1 step.
+> * **All of their tables live in `public`**, with the same table names. The `skiller`, `skillpath`,
+>   `jobsimulation` and `cms` DB schemas are legacy and non-authoritative.
+> * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux.** `messenger` is the only
+>   remaining external caller.
+> * **`app` owns the `skiller`, `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both
+>   producer and consumer are in-process. Merge new handlers onto the existing subscriber with
+>   `.AddHandler(...)`; a second `AddSubscriber` for the same stream silently overwrites the first.
+> * **`module.jobsimulation_euwest1` and `module.cms_euwest1` are still declared in production terraform**
+>   as the rollback path and take no traffic. Teardown is **M810**.
+>
+> The skiller-specific detail below is the authoritative
+> [**§ Skiller-in-app merge — fact-sheet**](#skiller-in-app-merge--fact-sheet-v21-quick-change).
 
 ## Role & Responsibility
 
 `app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the 60K+ skills graph, skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
 
 * **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries — plus the taxonomy types/queries absorbed from the former skiller subgraph (`graph/schemas/skiller_taxonomy.graphqls`)
-* **Connect-RPC** for inter-service calls (consumed by jobsimulation, cms, messenger) — including the **skiller RPC surface** (`SkillerService`) and the **skill-path session RPC** (`SkillPathSessionService`), both now served by app (the skiller and skillpath services merged in)
-* **HTTP** endpoints on port 8082 for webhooks and miscellaneous integrations
+* **Connect-RPC** for inter-service calls (the only remaining external caller is **messenger**) — the mux carries `BackendUsersService`, `BackendOrganizationsService`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`
+* **HTTP** endpoints on port 8082 (local; 8080 in production) for webhooks and miscellaneous integrations — including `POST /api/webhook/directus`, which **fails closed** without `DIRECTUS_WEBHOOK_SECRET`
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
 
@@ -46,7 +67,7 @@ containerized bring-up + migrate, and read-only prod.
 - **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
   locally (all four occurrences in the merged `docker-compose.yml`), `http://backend:8081` in prod terraform.
-- **Federation is now 3 subgraphs**: **backend**, **jobsimulation**, **cms**. The skiller subgraph was removed
+- **Federation is now 1 subgraph**: **backend**. (At the time of the skiller merge it was 3 — jobsimulation and cms have since folded in too.) The skiller subgraph was removed
   at the skiller merge (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@c284453`); the **skillpath**
   subgraph was subsequently removed when the skillpath service merged into `app` ("skillpath-in-app", platform
   M502→M507). The former skiller taxonomy types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
@@ -64,8 +85,8 @@ containerized bring-up + migrate, and read-only prod.
 
 **Live de-risk (2026-07-08):** a cold containerized `make up` on stack-dev built the 86-commit merged
 image and brought up the federation with **no skiller container** (`SKILLER_RPC_ADDR=http://backend:8083`)
-— 4 subgraphs as it stood then; skillpath has since also merged into `app`, so the current supergraph is **3
-subgraphs** (backend, jobsimulation, cms).
+— 4 subgraphs as it stood then; skillpath, jobsimulation and cms have since also merged into `app`, so the
+current supergraph is **1 subgraph** (backend).
 A clean-slate `make reset-db` + `make migrate` created the full `public` taxonomy from scratch —
 `public.skills` (with an `organization_id` column), `job_roles`, `job_role_skills`, `skill_embeddings`,
 `categories`, `specializations` — with **no `skiller` schema on a clean DB**, once the `extensions` schema
@@ -109,7 +130,10 @@ internal/
   data/ent/                 Ent schema + generated code (public schema)
   deadletterqueue/          DLQ handling for Redis Streams
   experiencepoint/          User XP tracking
+  cms/                      Merged cms domain: directus edge, similarity, studio, library, importer/exporter (cms-in-app)
   jobsimfeedback/           Post-session signal routing
+  jobsimulation/            Merged jobsim domain: session engine, actors, calls, recording, anticheat, analytics (jobsim-in-app)
+  jobsimwiring/             Single construction entry point for the merged jobsim engine
   jobsimulations/           Backend's view of jobsim data
   labs/session/             AI Labs LabSession RPC handlers (+ labs/labsapi, labs/adapter, labs/catalog)
   linkedin/                 LinkedIn import / profile sync
@@ -148,7 +172,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by jobsim, cms, messenger via `BACKEND_USERS_RPC_ADDR=http://backend:8083`. Services include `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) registered in `main.go` as a third RPC handler after Users and Organizations, and `SkillerService` (`internal/rpc/skillerrpc/`) — consumers reach it via `SKILLER_RPC_ADDR=http://backend:8083` locally (`http://backend:8081` in production terraform).
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. The only remaining external caller is **messenger**, which points `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all at `http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production terraform). Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
@@ -161,16 +185,19 @@ internal/
 ### Downstream dependencies
 
 * **Sentinel** — authz on every request
-* **CMS** — content RPC for assignments, simulation metadata (incl. the skill-path content the in-process skill-path engine reads by ID)
 * **Storage** — file uploads
+* **Directus** (`content.anthropos.work`) — the external content edge read by the in-process cms domain
+* **Judge0** — sandboxed code execution, called directly (`JUDGE0_BASE_URL`) since roadrunner merged in
+* **LiveKit / AWS Chime** — simulation voice + recording, for the in-process jobsim engine
 * **Gotenberg** — Office → PDF conversion
 * **PostgreSQL** (`public` schema), **Redis** (cache + streams)
 * **External**: Clerk (auth), Stripe (payments), Customer.io, PostHog, Bedrock (AI), AI providers via the shared `ai` library (embeddings + skill matching — merged skiller domain), Brevo (via Messenger), Sentry
 
 ### Redis Streams
 
-* Producer: `backend` stream (user/org updates); `skiller` stream (skill score changes) + `skillpath` stream (session/chapter updates) — both ends of these two streams live inside app since the skiller and skillpath merges
-* Consumer: `cms`, `jobsimulation` events; the `skiller` + `skillpath` streams (both ends now in-process in app); `AI` usage stream (also produces)
+* app is **both producer and consumer** of all five application streams: `backend`, `skiller`, `skillpath`, `jobsimulation`, `cms`, plus the `AI`/`ai_usage` usage stream
+* The one external producer left is **Directus**, whose webhooks feed the `cms` stream
+* Each stream has exactly **one** subscriber with multiple handlers merged via `.AddHandler(...)` — colony keys by stream name, so a second `AddSubscriber` for the same stream silently overwrites the first
 
 ## Local Development
 

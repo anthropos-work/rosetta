@@ -1,11 +1,49 @@
 # Jobsimulation Service
 
+> ## ⚠️ Merged into `app` — no longer a standalone service
+>
+> As of the **"jobsim-in-app"** program (platform milestone **M810** tracks the final teardown), the standalone
+> `jobsimulation` Go microservice has been **merged into the `app` monolith** (the service the platform calls
+> "backend"). Jobsimulation no longer runs as a separate service — not in the local compose, not in the
+> supergraph. This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
+> [skillpath-in-app](./skillpath.md) merges.
+>
+> Where everything went:
+>
+> * **Domain / engine** — the whole simulation engine lives in `app/internal/jobsimulation/` (activity, agent,
+>   ai, analytics, anticheat, bunny, calls, graph, inbound, recording, …), constructed by the single wiring
+>   entry point **`app/internal/jobsimwiring/wiring.go`**.
+> * **Data** — the 23 session/run tables (`sessions`, `actors`, `interactions`, `validation_*`, `anticheat_*`,
+>   `recordings`, `chime_recordings`, `code_submissions`, …) were re-created in the **`public` schema** by
+>   `app/terraform/migrations/20260722081626_jobsim_data_model.sql`, with the **same table names**. The old
+>   `jobsimulation` DB schema is **legacy — no longer authoritative**.
+> * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux. `messenger` reaches it at
+>   `JOBSIMULATION_RPC_ADDR=http://backend:8083` locally / `http://backend.internal.anthropos:8081` in
+>   production. `app` itself makes **no** outbound jobsim RPC — those are in-process calls now.
+> * **GraphQL** — the jobsimulation subgraph was removed from the federation; its types/queries are served by
+>   `app`'s sole `backend` subgraph.
+> * **Events** — `app` owns the `JOBSIMULATION_STREAM` subscriber. The ported engine's handlers are merged onto
+>   app's **existing** subscriber via `.AddHandler(...)` (a second `AddSubscriber` for the same stream would
+>   silently overwrite the first — colony keys by stream name).
+> * **Dependencies that changed** — chronos is gone (session timers are Asynq jobs); roadrunner is gone (the
+>   in-process Judge0 runner executes code directly via `JUDGE0_BASE_URL`); the `BACKEND_USERS_RPC_ADDR`
+>   loopback is replaced by an in-process users reader.
+> * **Infrastructure** — `module.jobsimulation_euwest1` is **still declared** in
+>   `infrastructure/terraform/production/services.tf` as the **rollback path** and takes no traffic. It still
+>   **owns the LiveKit and Chime recording S3 buckets**, which `backend` reuses by literal name — move
+>   ownership before destroying it. Teardown is **M810**.
+> * **Repo** — the `jobsimulation` git repo still exists but is **frozen/legacy**; make changes in `app`.
+>
+> For current documentation of this domain, see [Backend (`app`)](./backend.md).
+
 > [!IMPORTANT]
-> **This service holds NO simulation content.** "Jobsimulation" the *service* ≠ simulation *content*. It is a **runtime/session engine** that *runs* a simulation; the simulation **definition/blueprint** it runs — roles, sequences, tasks, validation criteria, knowledge assets, library categories — is **owned by the CMS service** (the `simulations` Directus collection + the Studio `StudioDocument`/`StudioTask` authoring model) and fetched **by ID** over Connect-RPC (`cms.GetSimulation`). Jobsimulation does **not** hold a `DIRECTUS_BASE_ADDR` of its own — all its content reads flow *through* CMS. See **[CMS](./cms.md)** for the content side. (This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).)
+> **This service holds NO simulation content.** "Jobsimulation" the *service* ≠ simulation *content*. It is a **runtime/session engine** that *runs* a simulation; the simulation **definition/blueprint** it runs — roles, sequences, tasks, validation criteria, knowledge assets, library categories — is **owned by the CMS service** (the `simulations` Directus collection + the Studio `StudioDocument`/`StudioTask` authoring model) and fetched **by ID** — since the merge this is an **in-process call** into the folded cms domain (it was
+> `cms.GetSimulation` over Connect-RPC). The jobsim domain still holds no `DIRECTUS_BASE_ADDR` of its own — all
+> its content reads flow *through* the cms domain. See **[CMS](./cms.md)** for the content side. (This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).)
 
 ## Role & Responsibility
 
-Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation **definitions** from CMS (the content layer), hosts the interactive **session** (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to the App (which now hosts the in-process skill-path engine, formerly the standalone skillpath service). Its own `jobsimulation` DB schema holds the **run/session state** (sessions, interactions, recordings, validation/anti-cheat results) — never the definition.
+Jobsimulation runs **AI-powered workplace simulations** end-to-end: it loads simulation **definitions** from CMS (the content layer), hosts the interactive **session** (voice via LiveKit, chat, code, documents), records the interaction, generates post-session insights, and reports outcomes via Redis Streams to the App (which now hosts the in-process skill-path engine, formerly the standalone skillpath service). Its run/session state (sessions, interactions, recordings, validation/anti-cheat results) now lives in the shared **`public`** schema — never the definition.
 
 This is the user-facing "experience" service. Everything else (skills, content, auth, scoring) feeds it or consumes its outputs.
 
