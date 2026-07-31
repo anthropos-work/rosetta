@@ -62,6 +62,23 @@ is never cloned, so the schema is created and left empty. That is harmless today
 > **Rule.** A hand-maintained list of the platform's services is a list that will silently disagree with the
 > platform. Derive it, or fence it. Never both-hand-maintain-and-trust it.
 
+**M257x iter-02 executed this and found the rule needs a third clause.** Deriving the atlas pairs from
+`repos.yml` was clean — `app:public` alone, and the tuple was wrong on **3 of its 4** entries. But the
+CREATE SCHEMA list split into three kinds, only one of which is derivable:
+
+| kind | example | what to do |
+|---|---|---|
+| derivable | the `migrations: true` → `schema:` pairs | **derive** |
+| not derivable, correct indefinitely | `sentinel` — `migrations: false` **and** alive with its own schema (Trap A); `extensions` — rext-owned | **declare, with a reason** |
+| not derivable, and not yet deletable | `cms` / `jobsimulation` — the platform stopped declaring them, but rext still WRITES them | **declare as DEBT, and fence it against growth** |
+
+Deleting the third kind before re-pointing its writes trades a working-but-wrong bring-up for a
+knowingly-broken one. So: **derive it, or fence it, or declare it — with a per-entry reason and a test that
+forbids the list growing.** A no-growth fence that *also* fails when the list shrinks ("this failure is good
+news — update the expected set") is what makes paying the debt down a visible, deliberate act.
+
+Landed as `stack-core/lib/repos_yml.sh` + `stack-core/tests/test_migration_derivation_fence.py`.
+
 ---
 
 ## 3. Why nobody noticed — pinning disables drift detection
@@ -243,6 +260,25 @@ encode a falsehood.
   rationale;
 - assert the **positive** replacement, not only the negative absence;
 - keep `.md` prose out of scope; that is review, not a fence.
+
+### A fence over source must assert against a parsed construct, never a whole-file substring
+
+The corollary of "allow comments unconditionally", and M257x iter-02 paid for it twice in one iter.
+
+`test_migrates_the_four_merged_services_and_never_skiller` (v2.1 M209) asserted the four pairs were present
+in `migrate-dev.sh`. When the loop was changed to derive its set, the test **still passed** — satisfied by
+the tuple appearing in the new *comment* explaining why it had been removed. A test whose entire purpose was
+to pin the migrate set was satisfied by its own refutation. And the replacement fence's own prose-comment
+fixture initially **could not fail**, because it placed the lying values where the parser resets past them.
+
+Both are the M256 reports-success-without-checking class. Rules:
+
+1. Assert against the **construct** — the loop body, the derived value, the AST node — not `file.read()`.
+2. **Mutation-verify the fixtures too**, not only the fence. A fixture that cannot fail proves nothing, and
+   reads exactly like a passing test.
+3. A fence that pins **the current shape of the drift** is worse than no fence: it converts the bug into a
+   contract, and every future correct change has to argue with it. Pin the *mechanism* (where the list comes
+   from), not the *contents* (what happened to be in it).
 
 Static and live are **both** required. Static is the only honest offline check, because every seeder test
 asserts against a recording fake `Conn` that accepts any table name — *a fake cannot know a table was
