@@ -72,6 +72,14 @@ CREATE SCHEMA list split into three kinds, only one of which is derivable:
 | not derivable, correct indefinitely | `sentinel` — `migrations: false` **and** alive with its own schema (Trap A); `extensions` — rext-owned | **declare, with a reason** |
 | not derivable, and not yet deletable | `cms` / `jobsimulation` — the platform stopped declaring them, but rext still WRITES them | **declare as DEBT, and fence it against growth** |
 
+**iter-06 paid `jobsimulation` off, and the fence's shrink branch is what made that a deliberate act.**
+The no-growth fence was written to fail on a SHRINK too, with the message *"Debt paid down — update
+`_EXPECTED_TRANSITIONAL` to lock the win in. This failure is GOOD NEWS and the fix is a one-line edit."*
+It fired exactly as designed the moment the list went `cms jobsimulation` → `cms`. Without that branch
+the paydown would have been an invisible one-word diff; with it, the win has to be claimed in writing.
+**Design every debt list this way** — a set that may only shrink silently is a set nobody notices
+shrinking, and "we already fixed that, didn't we?" is how the same debt gets re-derived a release later.
+
 Deleting the third kind before re-pointing its writes trades a working-but-wrong bring-up for a
 knowingly-broken one. So: **derive it, or fence it, or declare it — with a per-entry reason and a test that
 forbids the list growing.** A no-growth fence that *also* fails when the list shrinks ("this failure is good
@@ -268,6 +276,21 @@ zero? All three yes ⇒ merged, regardless of whether the repo or its container 
 2. **Re-point to the canonical target, not to nothing.** Deleting a write is satisfiable and silently
    re-empties the surface (the M219/M222 render-gate trap). Every removed write needs its replacement
    asserted.
+
+   **The exception that proves it — the co-written PAIR.** Sometimes the canonical target is *already
+   being written on the next line*. In M257x iter-06 three seeders wrote the session twice — the same
+   rows, the same ids, into `jobsimulation.sessions` **and** `public.job_simulation_sessions` — because
+   M257 had added the app-side half beside the legacy one rather than replacing it. Re-pointing the
+   legacy half would have written one table twice. So the fix there is **removal**, and rule 2 is
+   satisfied *by inspection of the very next step*, not by adding anything. Before deleting either half
+   of a pair, check which half the platform reads today; before re-pointing either half, check they are
+   not about to become the same statement.
+
+   **And re-check the ORDER after a re-point.** Two writes in different schemas have no FK between them,
+   so their order was free; once both land in `public` the FK is real and the order is load-bearing.
+   iter-06 had to move `public.job_simulation_sessions` to the FRONT of two flush slices (every other row
+   in the fan-out FKs it) and move `actors`/`interactions` ABOVE it in `resetTables` (they became true
+   children of a list entry). **A re-point can silently turn an arbitrary ordering into a required one.**
 3. **Leave the history in a comment.** Name what the relation *was* and which migration removed it, so the
    next reader who greps the dead name lands on the explanation rather than on nothing.
 4. **Advance the pins deliberately** and record what the advance contained.
@@ -283,7 +306,7 @@ success without checking.
 | layer | asserts | lives in |
 |---|---|---|
 | map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo | `stack-core/platform_alignment_guard.py` (precedent: `corpus_index_guard.py`) |
-| static schema fence | no executable rext artifact names a dead schema in a quoted position | generalize `stack-core/tests/test_dropped_mirror_fence.py` off its hardcoded relation tuple |
+| static schema fence | every schema a seeder WRITES to is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
 
 The fence reads **only machine-readable fields** (`name` / `type` / `migrations` / `schema`) — never the prose
@@ -316,6 +339,14 @@ Both are the M256 reports-success-without-checking class. Rules:
 3. A fence that pins **the current shape of the drift** is worse than no fence: it converts the bug into a
    contract, and every future correct change has to argue with it. Pin the *mechanism* (where the list comes
    from), not the *contents* (what happened to be in it).
+4. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
+   fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly
+   flagged 40-odd casbin grants (`{"default", "admin", "org:feature:insights"}`) and the string
+   `"clerk.com"`. That is the *same* mistake as asserting on `file.read()`: the regex WAS the construct.
+   Recognising them only inside `var resetTables = []string{` and inside a `[]struct{ schema, table string
+   … }{` literal removed every false positive without weakening the true one — where the tempting
+   alternative, an allow-list, is Trap A's tune-until-it-catches-nothing in miniature. **A fence that cries
+   wolf gets disabled, and a disabled fence is indistinguishable from never having written one.**
 
 Static and live are **both** required. Static is the only honest offline check, because every seeder test
 asserts against a recording fake `Conn` that accepts any table name — *a fake cannot know a table was
