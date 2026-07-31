@@ -98,3 +98,46 @@ consumption clone **absent → pinned + guard-verified live**; derivation **fixt
   *state the environment with every number, and measure before asserting* — applies to progress reporting
   itself, not only to platform claims. An unmeasured number in a log is indistinguishable from a measured
   one to everyone downstream.
+
+---
+
+## Post-close addendum — the bootstrap COMPLETED after the iter closed
+
+The close above states the trailing `ensure-clones.sh` phases were "still executing at close" and routes the
+residual to iter-04. **That was true when written and is now superseded**: the script finished cleanly.
+
+    TOTAL_BOOTSTRAP_SECONDS=673        (11m 13s, cold, from nothing)
+    LOCKFILE PRESENT                   -> phase (e) reached; provenance written
+    1.4 GB, 13 repos + clones.lock.json + clones.pin.json
+    "stack-demo is now a true peer of stack-dev (own platform clone set)"
+
+Recorded rather than left stale precisely because this milestone exists to stop work being re-derived from
+scratch: an iter-04 that re-ran the bootstrap "to finish the trailing phases" would be chasing completed work.
+**`HOST-M257x-stack-demo` is DONE.** `673 s` is also the first honest cold-bootstrap number for the new dev
+host — the leg M257's paused speed gate has to budget for.
+
+### Two observations the completion surfaced (routed, NOT concluded)
+
+**1. Five `demopatch` manifests reported `⚠ pristine-ing skipped/failed` — all studio-desk:**
+
+    studio-desk-back-to-cockpit · -logo-url · -logout-url · -no-thirdparty · -shell-first-paint
+    (23 manifests swept in total; the other 18 were silent)
+
+Logged non-fatal. `demopatch-spec.md` is explicit that a **silently-refused patch shipped a 76 s members grid
+for four releases**, so a warning in this subsystem is not noise by default. Whether these five are the benign
+chain-rule case (a patch whose `pre_sha256` is another's `post_sha256` reads DRIFTED against a pristine file
+**by design**) or a real refusal is **not established here** — it needs the manifests read against the freshly
+cloned studio-desk. Routed as `CHECK-M257x-demopatch-pristine`.
+
+**2. `clones.lock.json` records `pin_state: pin-drift` for 2 of 11 freshly-cloned repos** (`platform`,
+`graphql-wundergraph`); the rest split `pinned-tag` (7) and `pinned` (2). Every entry is `ref: main` with
+`behind: 0`.
+
+Two things worth separating. First, iter-01's §3 root cause — *the behind-count is computed only when
+`ref != "HEAD"`, and every pinned clone is detached, so `behind` is `null`* — **does not fire on a cold
+bootstrap**: these clones are on `main`, so the count was genuinely computed, and it is genuinely 0. The blind
+spot is real but is a property of *re-pinned* clone sets, not fresh ones. Second, `pin-drift` on a clone that
+was created minutes ago is **surprising**, and `pin-drift` is one of the three states
+`DEMO_FRESHNESS_STRICT=1` escalates — so on a strict bring-up this could refuse a legitimately-fresh stack.
+The semantics of the three states were **not read**, so this is an observation, not a defect claim. Routed as
+`CHECK-M257x-pin-state-on-fresh-clone`.
