@@ -12,6 +12,22 @@ last_updated: "2026-07-30"
 **v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
 **2 of 4 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 — not here.
 
+## Hosts (D-v28-14, 2026-07-31)
+
+- 🔒 **`billion` — THE DEMO MACHINE.** Deploying a final working demo ONLY. **Not available for development
+  or testing.** Do not use it to build, measure, or iterate. (This replaces the old per-occasion sign-off
+  rule and is stricter, not looser.)
+- ✅ **`odysseus` — the dev/test host.** `devops@100.110.67.14` / `odysseus.taildc510.ts.net` (Tailscale).
+  User-signed-off for this milestone **and later ones**, including moving to a nearer-production machine
+  when a milestone needs it. Measured 2026-07-31: **8 cores / 7 GiB / x86_64 Linux 6.8, 189 G free,
+  Docker 29.6.2, NO Go** (the rext tooling is Go — install it).
+- 💻 **laptop** — 10 cores / 16 GiB. Free as of 2026-07-31 (demo-2 torn down, 244 GiB free, 0 containers).
+  M255's headroom model **refuses** it for two concurrent Next.js build lanes.
+
+**`666.29 s` is BILLION's baseline and does not transfer.** M257 must measure odysseus's own (n >= 3) and
+check in `odysseus.json` before pricing any lever against it.
+
+
 ## Active milestone
 
 **M257 — first-light build** (`iterative`, not started). Collapse the cold `--purge` + `demo-up` cycle
@@ -104,14 +120,7 @@ user's order — *sharpen the detector before changing what it detects*.
   · **M205** residual.
 
 ## Process flags (do NOT auto-push)
-- 🚫 **`billion` — STANDING RULE (user, 2026-07-28).** **Do not touch it, and do not even probe its status,
-  until there is a real need.** Use requires the **user's sign-off, per occasion**, and only when the work
-  genuinely cannot be done locally. **Try locally first**, accepting this laptop's limits (Docker VM ~9.7 GiB
-  vs the documented 12 GB UI-tier floor). This overrides every gate, protocol and default, including
-  `verification.md`'s prove-on-billion lineage. **Consequence:** M257's whole exit gate and M258's composed
-  cycle are billion-measured and **cannot fire without sign-off** — but each milestone's *code half* is local
-  and unblocked. **Last known state (2026-07-28, do not re-probe):** demo-1 up, cockpit at
-  `https://demo1.anthropos.work:17700`, rext pinned `cockpit-deeplinks-v1`.
+
 - 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z 2026-07-27, PRE-freeze**, with no
   overlap with third-party activity (user-confirmed; three totals across two sessions cluster within 2 % —
   658/666/672 s). **On the first post-freeze campaign, re-confirm three timing-derived claims:** the n=3 p50,
