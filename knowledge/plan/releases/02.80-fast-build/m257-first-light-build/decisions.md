@@ -135,3 +135,114 @@ OOM-killed service and a service that self-terminates `Exited 0` on a DB-health 
 cost an hour of misdiagnosis. So on odysseus a headroom breach will not announce itself as memory pressure —
 it will look like the silent-empty symptom this milestone already owes a fix for. **Fix the liveness check
 first; it is the instrument that tells those two apart.**
+
+---
+
+## TOK-01: instrument before baseline, baseline before levers — 2026-07-31
+
+**Tok type:** bootstrap (iter-01)
+
+**Initial strategy:** Do **not** touch a lever until three things are true, in this order:
+**(1)** odysseus can run a cycle at all, **(2)** the gate's own instrument is *proven able to fail*,
+and **(3)** odysseus's own `n ≥ 3` p50 baseline exists and is checked into
+`stack-core/hostprofiles/odysseus.json`. Then price levers **largest-measured-second first**, one per
+iter, re-measuring at `n ≥ 3` after each, and **land each falsifiable assert together with the lever
+that can trip it** — never after.
+
+**Rationale:**
+
+- **The distance to the gate is unknown, and that is the whole opening problem.** The `666.29 s`
+  baseline is `billion`'s. `D-v28-14` makes billion demo-only, and this release's own standing rule is
+  *state the environment with every number*. odysseus is a near-twin **on paper** — 8 cores / 7,780 MB /
+  x86_64 Linux 6.8 against billion's 8 vCPU / 7.3 GiB / x86_64 — which makes 666 s *plausible* there and
+  proves nothing. M255 measured what host difference does to identical inputs: the same Dockerfile and
+  context yield **4.84 GB on billion** and **2.88 GB on an arm64 laptop**. So `360 s` is a release
+  **thesis**, not a derived number, until step (3) lands. **No lever may be priced against a percentage
+  of a number measured on a machine this milestone cannot use.**
+- **The instrument comes before the measurement because this gate READS the instrument's verdict.**
+  Clause 2 is literally `autoverify green:true / 0 warnings`. M256 just found **43 checks that reported
+  success without having checked**, including a probe runner certifying *"all live probes passed"* over
+  **zero probes** whose exit code four other gates read as health. A gate nobody has watched fail is not
+  a gate. **So: prove `autoverify` can go RED before trusting its green.**
+- **And the two inherited M256 fixes make this gate lie in BOTH directions**, which is why they are
+  step (2) and not parked: `FIX-M256-demo2-service-self-termination` lets `green / 0 warnings` **PASS**
+  on a stack where two services sit at `Exited 0` (surfaces render empty, no error anywhere — it cost an
+  hour of misdiagnosis); `FIX-M256-autoverify-fapi-libressl` makes a **working** stack emit the warning
+  this gate counts. Until both are fixed the gate's verdict is unfalsifiable in the way this release
+  keeps finding.
+- **The compound risk forces the liveness check to the FRONT (coordinator, 2026-07-31).** odysseus has
+  **zero swap**; billion has 15 GiB and used **2,452 MB** of it at peak on the same measured lane. The
+  headroom clause still fits on arithmetic (`1×3900 + 1500 = 5400` MiB against `0.8×7780 = 6224`), but on
+  billion a transient overshoot met *swap* and on odysseus it meets the **OOM killer** — and **an
+  OOM-killed service is indistinguishable from an exit-0 self-termination**: containers "Up", surfaces
+  empty, no error. Every lever in this milestone pushes on memory. Without the liveness check, the first
+  thing an over-aggressive lever produces is a symptom I would misdiagnose for an hour, and the
+  misdiagnosis would read as *"my lever broke the stack"* — the same trap `build-budget.md` records for
+  a mid-campaign ENOSPC presenting as `redis exited (1)`.
+- **Largest-second-first, one lever per iter, because attribution is the deliverable.** L1 and L3 both
+  rewrite the same Dockerfiles; landing them together would conflate their attributions and neither
+  number would be quotable. The re-scope trigger is arithmetic on individual lever prices, so a blurred
+  attribution disarms the trigger too.
+- **L1 is the opening lever and it is already de-risked *for this host*.** It is proven real (M255:
+  hiring image `4.84 GB → 379 MB`, export leg `146.8 s → 2.9 s`) but proven **on billion**, and its price
+  depends on a host fact that was unrecorded until today: whether the containerd `unpacking to …` leg is
+  paid. **Recon F1 confirms odysseus is a containerd-image-store host** (`Storage Driver: overlayfs` but
+  `DriverStatus = io.containerd.snapshotter.v1` — the containerd store on its overlayfs *snapshotter*,
+  the same class as billion, **not** the laptop's classic overlay2 graphdriver). So L9's 85.7 s is real
+  here and **L1 keeps its full ~200–250 s** instead of losing ~86 s. Had that gone the other way,
+  L1+L2+L3 would fall to ~215–265 s against the 306 s the gate needs and a **re-scope signal would have
+  been on the table before a single lever was touched**.
+
+**Strategy class:** `new-direction` — the milestone's first strategy; no prior approach to compare against.
+
+**Distance-to-gate context:** **UNKNOWN and unmeasurable today** — this is the defining fact of the
+opening. Gate: **p50 ≤ 360 s** over 3 consecutive cold `--purge` + `demo-up` cycles reaching READY on
+**odysseus**, plus `autoverify green / 0 warnings`, 0 platform-repo edits, all 7 demopatch guards, and
+the two falsifiable asserts (HEADROOM, ISOLATION). Stretch ≤ 300 s. **If** odysseus lands near billion's
+666 s, the need is ~306 s and the big three are worth **200–250 (L1) + ≤45 (L2) + ~55 (L3) = 300–350 s** —
+i.e. **at L1's conservative end they miss the gate by themselves.** There is no cushion; L4/L5/L7/L8/L10
+(~93–158 s) are load-bearing, not garnish. **`re_scope_trigger`: p50 still > 420 s after L1+L2+L3** —
+escalate, do not grind.
+
+**Known-context carried from the Phase 0b YELLOW** (the strategy must account for these):
+
+1. **`verification.md:623-626` misattributes the cause of the exit-0 defect** — it reads as *"autoverify
+   cannot see this"*, but `stack-verify/lib/services.sh:43-44` **does** carry `jobsimulation` + `cms`
+   rows, so a **re-run would have gone red**. The M256 stack stayed green via the **stale-verdict**
+   class, not a blind check set. **Scope the fix to the real hole** — `fake-fapi`/`fake-bapi` have **no
+   `services.sh` row** (the 16-vs-13 gap) — and fix that paragraph. Building the fix the doc implies
+   would waste an iter.
+2. **The LibreSSL false-positive may not fire on odysseus at all** — it is a *macOS host `curl`* defect
+   (LibreSSL cannot handshake the mkcert leaf). odysseus is Linux/OpenSSL. **Determine empirically in
+   iter-02**, do not assume in either direction: if it does not fire there, it still threatens the
+   laptop path and still owes its one-sentence doc fix, but it is not a gate risk.
+3. **`verification.md` under-enumerates the check set it documents** — 8 of ~13 cheap-wins; **(g)
+   studio-desk appears 0 times in the whole file**; demo-only gating and the `DEMO_NO_*` skips are
+   undocumented. The gate reads this check set, so its denominator matters.
+4. **The fence now imposes an ordering**: prose may quote odysseus's p50 only **after**
+   `odysseus.json` carries it, or the un-hosted/unmatched claim FAILS. **Measure → write the profile →
+   then write prose.**
+5. **Clause zero (`require_measured`) fires first on a fresh host** — `unmeasured_disk_avail_gib` with
+   an unpopulated sampler. Expect it on odysseus's first assert; it is not a bug.
+6. **Provisioning:** Go **1.26.5 is installed** at `/usr/local/go/bin/go` but **not on PATH** → fix
+   PATH, do **not** install over it. **atlas is genuinely absent** → install. Confirm the six rext Go
+   modules build against 1.26.5 (prereq list says 1.25.x) rather than assuming newer-is-fine.
+7. **odysseus's Docker is completely empty** → rep 1 measures the **truly-cold** variant `D-v28-8` cut
+   from the gate. **A discarded warm-up cycle is mandatory**, not prudent.
+8. **The stack's pinned `stackseed` can be older than the authoring copy** — M256 added three `Persona`
+   fields, so a `--reset` with a stale binary **truncates the world then fails to re-seed, leaving it
+   EMPTY**. Shadow the authoring build on `PATH`.
+9. **Rung zero:** odysseus clones rext **from origin at a pinned tag**. A tag that exists only locally
+   is unreachable to it — M236 lost a whole iteration to exactly that. `git push --tags` is part of
+   shipping.
+
+**Next-tik direction (iter-02):** **Make odysseus a bench, and the instrument falsifiable.** Three
+deliverables, no lever and no gated number: **(a)** provision the host per
+`corpus/ops/demo/tailscale-serve.md:119-131` (PATH-fix Go, install atlas, ssh-agent, snapshot cache),
+verifying the rext modules build; **(b)** land both inherited `autoverify` fixes — a container-liveness
+cheap-win scoped to the **real** hole per known-context #1, and a fapi probe independent of the host TLS
+stack, *after* establishing empirically whether (d) even warns on Linux; **(c)** **prove `autoverify` can
+go RED** — a deliberate negative control (stop a service, confirm the verdict flips and names it), because
+this gate consumes that verdict directly. Expected lift on the primary metric: **zero, by design.** The
+iter grades on its planned deliverables — a host that can run a cycle and an instrument that can fail —
+per the Phase 4 Step 0 rule that *planned scope* is what the iter's `overview.md` committed to.
