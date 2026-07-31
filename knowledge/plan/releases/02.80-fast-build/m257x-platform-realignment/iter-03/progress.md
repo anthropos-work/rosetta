@@ -165,3 +165,40 @@ whose pattern could appear in the watcher's own argv needs `pgrep -fl` with an a
 a PID file, or `$!` captured at launch.
 
 Folded into `corpus/ops/platform-alignment.md` §5 as rule 7.
+
+### Correction: the demopatch warning count is 23 of 23, and it is probably benign
+
+The addendum above says "5 studio-desk manifests". **Wrong — it is 23 of 23, every manifest swept.** The 5
+came from a `tail -8` of the log; I reported a count from a truncated view. `grep -c` on the full log gives
+**23**, matching the swept total exactly, across `app`, `next-web-*`, `next-hiring-*`, `ant-academy-*`,
+`academy-fs-*` and `studio-desk-*`.
+
+A 100% rate is **not** the chain-rule case I speculated about — that affects specific paired patches, never
+all of them. But it points at a *more* benign reading, not a worse one: `demopatch` patches a demo's own
+ephemeral clone just before the image build and **reverts it after** (G5 self-revert). "R1 pristine-ing" is
+the pre-emptive revert. On a **clone set created minutes earlier there is nothing to revert** — every file is
+already pristine — so "skipped" for all 23 is exactly what a first-ever bootstrap should produce.
+
+**Still not established, and deliberately left routed.** The reason is the message itself:
+
+    ⚠ demopatch R1 pristine-ing skipped/failed for <manifest> (non-fatal)
+
+`skipped` and `failed` are collapsed into one string with one severity. "Nothing to revert" and "the revert
+was refused" are opposite conditions — one is the healthy steady state of a fresh clone, the other is the
+class `demopatch-spec.md` says shipped a 76 s members grid for four releases (and
+`next-web-members-pagination.yaml` is in this very list). A log line that cannot distinguish them means the
+healthy case trains the reader to ignore the dangerous one. **That observability defect is the finding**;
+which state actually occurred needs the code read. `CHECK-M257x-demopatch-pristine` stands, re-scoped to:
+split the two states in the log, then re-read.
+
+### And a third self-inflicted measurement error
+
+Checking for the manifests I ran `ls demo-stack/patches/*.yaml` → **0 files**, and briefly took that as
+evidence the manifests were missing. They are not: each patch is a **directory** containing its manifest, and
+the correct probe is `ls -A` (26 entries = 23 patch dirs + `README.md` + `demopatch` + `manifest_loader.py`).
+
+Three probe errors in one iter — `pgrep -f` self-matching, a count read off a truncated `tail`, and a glob
+assuming the wrong file layout — every one of which produced a confident wrong statement in a report. The
+corpus rule (`platform-alignment.md` §5) already covers this: **enumerate the search set, run a positive
+control, and check the shape before concluding absence.** I applied it to the platform's files and not to my
+own instrumentation.
