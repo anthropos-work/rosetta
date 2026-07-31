@@ -49,3 +49,36 @@ and **gate clause 1** (`green:true / 0 warnings` × 3 consecutive cold cycles).
 which is the precondition for paying the debt down deliberately rather than by inspection.
 
 - iter-05 (tik): **autoverify FAILED 3 → 2, containers 15 → 16/16, `verify live: all … probes passed`.** Two clause-1 blockers cleared: the `postgres-schemas` probe carried a **hand-written** expected list still demanding `skillpath` (the schema iter-02 correctly stopped creating) — now DERIVED from `repos.yml` via the same helper the migrator uses, fail-loud if the source is absent; and **`FIX-M257-directus-coldstart-order`, carried since M257 iter-02, is closed** — directus was the only service with neither a restart policy nor a readiness dependency, raced Postgres, and stayed `Exited(1)`; proven a pure ordering race (it serves 200 once started by hand) and fixed with the platform's own `restart: on-failure` + `depends_on: service_healthy`. 7 tests, both mutation-verified RED. Side: **iter-04's own edit shifted 7 `file:line` citations** in `demo-up-defaults.md` and the corpus fence caught it — repaired with the guard's `--fix` — see iter-05/progress.md
+
+### Pre-computed input for iter-06 (`REPOINT-M257x-jobsim-writes`) — measured, do NOT re-derive
+
+Measured against the live demo-1 database at the end of the iter-05 session, so the next iter starts from
+evidence rather than from a fresh survey. **The re-point mapping is very nearly 1:1.**
+
+    jobsimulation.<t>  ->  public.<t>     for 10 of 11:
+      actors · interactions · activity_events · interview_extraction_results ·
+      interview_aggregated_reports · validation_criterion_results ·
+      validation_attempt_skill_results · validation_attempt_results ·
+      code_submissions · collaborative_assets
+                                          (each already EXISTS in `public`, same name)
+
+    jobsimulation.sessions  ->  public.job_simulation_sessions      <- the ONE exception
+
+The exception is already explained by `D-M257x-1`: app created `sessions` and renamed it to
+`job_simulation_sessions` in the very next migration. `public.sessions` does not exist, which is why a naive
+re-point fails LOUD rather than silently reading blank.
+
+**Two things iter-06 must decide rather than assume** (neither is settled by the name mapping):
+
+1. **The session PAIR.** `stackseed/main.go:524` shows the hiring funnel already writes **both**
+   `jobsimulation.sessions` **and** `public.job_simulation_sessions` (the latter is where M257 re-pointed
+   the dropped `local_*` mirror). So for `sessions` the fix may be *removing* the legacy write rather than
+   re-pointing it — but `platform-alignment.md` §7 rule 2 forbids re-pointing to nothing without asserting
+   the replacement. Check each pair before deleting either half.
+2. **Column drift.** Same table NAME in `public` does not entail the same COLUMNS. The old
+   `jobsimulation.*` shapes are three-plus releases old. Verify column-by-column before trusting the 1:1
+   mapping — this is exactly the "a fidelity check against the wrong reference passes" trap (Trap A).
+
+Once the writes land, `stack-core/lib/repos_yml.sh`'s `REXT_TRANSITIONAL_SCHEMAS` ("cms jobsimulation") can
+shrink — and its no-growth fence is designed to fail on a SHRINK too, with "this failure is good news",
+which is the deliberate act that closes **gate clause 4**.
