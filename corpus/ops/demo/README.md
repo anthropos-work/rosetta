@@ -141,7 +141,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it. Defines **READY**
   (exit 0 **and** a green `autoverify.json`), the per-phase attribution model, the measured baseline
   (**n=3 p50 666.29 s on `billion`**, of which **65.5 % is UI-tier image builds and 46 % is export/unpack**), the
-  **headroom contract** (three clauses against a *measured, checked-in* host profile — and the derived fact
+  **headroom contract** (**four** clauses — a **clause zero** (`require_measured`) plus CPU/memory/disk — against a *measured, checked-in* host profile, and the derived fact
   that neither host fits two concurrent Next.js build lanes), the **campaign protocol** (the binding
   constraint is the ~18 GiB mid-cycle TRANSIENT, not the ~2 GiB a steady rep nets; reclaim is explicit and
   `until=24h` is **not** a guarantee that rep-touched records survive — one eviction cost 173 s; the pre-rep assert
