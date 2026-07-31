@@ -298,6 +298,28 @@ and a simplification lens) ran against the first draft of this section. Its mate
   runs a composed cold cycle on a host. **Until that lands, no M256 number may be quoted as comparable to
   billion's 228 s.**
 
+- **D-v28-14 — `billion` is the DEMO machine; `odysseus` is the dev/test host** (user, 2026-07-31). **`billion`
+  is now officially the main demo machine and must not be touched except to deploy a final working demo — it is
+  NOT available for development or testing.** All release development and testing moves to
+  **`devops@100.110.67.14` → `odysseus.taildc510.ts.net`** (Tailscale), and the user's sign-off covers this
+  milestone **and later ones**, including moving to a better/nearer-production machine when a milestone needs it.
+  **This supersedes the per-occasion sign-off rule for dev/test work** — that rule now protects `billion`
+  specifically, and protects it *more* strictly (demo deployment only), not less.
+
+  **What it costs M257, stated plainly: the gate's host changed, so its baseline is no longer measured.** The
+  `666.29 s` p50 is **billion's**, measured on billion. Odysseus is a near-twin on paper — **8 cores / 7 GiB /
+  x86_64 Linux, 189 G free**, against billion's 8 vCPU / 7.3 GiB / x86_64 — which makes the number *plausible*
+  there and **transfers nothing**. This release's own standing rule is *state the environment with every number*,
+  and M255 measured the consequence: the identical Dockerfile and context yield **4.84 GB on billion** and
+  **2.88 GB on an arm64 laptop**. **So M257 must measure odysseus's own cold baseline (n ≥ 3) and check in an
+  `odysseus.json` host profile BEFORE any lever is priced against it.** Until that lands, the `≤ 360 s` target is
+  a **release thesis, not a derived number** — 360 s stays the goal because time-to-ready is what the release is
+  *for*, but if odysseus's measured baseline puts a 46 % cut structurally out of reach, that is a re-scope
+  signal, not a target to grind against.
+
+  **Known prerequisite gap:** odysseus has Docker 29.6.2 but **no Go**, and the rext tooling (`stackseed`,
+  `buildbench`) is Go. The `tailscale-serve.md` fresh-Linux-VM prereq list (Go + atlas + tailscale) applies.
+
 - **D-v28-13 — clause 1 gates the LEG, not the suite ratio** (user, 2026-07-29). D-v28-12's relative
   `≤ 0.79×` was undecidable: iter-12 measured the statistic's noise floor at **2.04×**
   (0.5281×–1.0762×, six runs, untouched code, no trend), so the threshold sat *inside* its own spread,
