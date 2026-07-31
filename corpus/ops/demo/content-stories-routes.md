@@ -110,35 +110,64 @@ sessions (score, status, completion_status, result_status, ended_at, validation_
   ├─ actors (2–3 per session: the candidate + stakeholders)
   ├─ interactions (the transcript — action_type + action_payload)               [voice/chat/etc.]
   ├─ interview_extraction_results (user_report + manager_report JSON)           [INTERVIEW only]
-  └─ public.local_jobsimulation_sessions  ← the MIRROR (in app, NOT jobsimulation) — see below
+  └─ public.job_simulation_sessions  ← the APP-SIDE session copy (in app, NOT jobsimulation) — see below
 ```
 
-Prod-verified per-type (completed, org-scoped, sampled by pinned id): ASSESSMENT = 1 var + 3 actors + mirror
-(score-0 no-shows have 0 var); HIRING = 1 var + 3 skill + 6 criterion + 2 actors + mirror; INTERVIEW = 1 var +
-1 skill + 4–5 criterion + 2 actors + **1 interview_extraction_results** + mirror; TRAINING = 1 var + 1–3 skill +
-4–5 criterion + 2–3 actors + mirror.
+Prod-verified per-type (completed, org-scoped, sampled by pinned id): ASSESSMENT = 1 var + 3 actors + the app-side
+session (score-0 no-shows have 0 var); HIRING = 1 var + 3 skill + 6 criterion + 2 actors + app-side session;
+INTERVIEW = 1 var + 1 skill + 4–5 criterion + 2 actors + **1 interview_extraction_results** + app-side session;
+TRAINING = 1 var + 1–3 skill + 4–5 criterion + 2–3 actors + app-side session.
 
-### The manager-view MIRROR trap — generalized (M219/M222, now beyond hiring)
+### The manager-view APP-SIDE-SESSION trap — generalized (M219/M222; the mirrors collapsed at M257)
 
-The manager scoreboards do **NOT** read the runtime tables — they read an **`app`-side, event-populated MIRROR**:
+> **⚠️ RETRACTION (v2.8 M257).** This section used to say *"seed `local_jobsimulation_sessions` /
+> `local_skill_path_session` or the manager scoreboard is blank"*. **Both tables no longer exist.** app migration
+> [`terraform/migrations/20260729133514.sql:62-64`](https://github.com/anthropos-work/app) (2026-07-29, *"Collapse
+> the local_\* session mirrors (M709c + skill-path equivalent)"*) does `DROP TABLE local_jobsimulation_sessions` +
+> `DROP TABLE local_skill_path_sessions`, and `app/internal/data/ent/` now carries **zero** `local*` entities.
+> Following the old guidance is not merely stale — it **aborts the whole set-dress seed** with
+> `relation "public.local_jobsimulation_sessions" does not exist (SQLSTATE 42P01)`, which is exactly what it did:
+> **six `stack-seeding` seeders failed on every host**, the hiring org landed at **0** candidate sessions against a
+> want of ≥ 40, and because `green` is `warnings == 0` the v2.8 READY gate became unsatisfiable. Fixed in rext at
+> M257 iter-03 (B1) and fenced by name in `stack-core/tests/test_dropped_mirror_fence.py`.
 
-- **Sim manager** (`insightsJobSimulationByMemberships`, `app/internal/web/backend/graphql/graph/resolver_queries.go:1088`,
-  Casbin-gated `OrgFeatureInsights`) reads `app.public.local_jobsimulation_sessions.score`
-  (`app/internal/organization/intelligence.go:1692/1801`; Ent `local_jobsimulation_session.go:52`), populated by
-  the `app` Redis-Stream consumer (`JobSimulationSubscriber` → `updateOrCreateLocalSession`), NOT by writing
-  `jobsimulation.sessions`.
-- **Skill-path manager** (`insightsSkillPathByMemberships`, `resolver_queries.go:977`, same gate) reads
-  `app.public.local_skill_path_session.progress` (`intelligence.go:997/1142`), the exact analog.
+**The trap itself is unchanged, and still the sharpest one here: the manager scoreboards do NOT read the
+`jobsimulation` runtime schema — they read `app`'s OWN session tables in `public`.** Only the target moved:
 
-**⇒ seeding only the runtime rows renders an EMPTY manager SCOREBOARD.** The org aggregate views
-(`activity-dashboard`, workforce insights) MUST co-write the mirror row. In prod the mirror is ~1:1 with the
-source (`local_jobsimulation_sessions` 19,870 ≈ `jobsimulation.sessions` 19,873). This is the single sharpest
-seeding landmine for the manager **scoreboard** vantage. (The mirror trap is a **different surface** from the
-player result page in §1's proof — the player page reads jobsimulation's own tables directly and needs no mirror
-row.) **Scope note (M248):** the content-story manager **RESULT** CTA no longer touches the mirror — the
-non-interview family reads `jobsimulation.sessions` directly by `sessionId` on the `/sim/[slug]/[userId]/result/[sessionId]`
-route (`isManagerView`, persisted read). The mirror is still required for the org **scoreboard/aggregate** surfaces
-described here.
+- **Sim manager** (`insightsJobSimulationByMemberships`, `app/internal/web/backend/graphql/graph/resolver_queries.go:1033`,
+  Casbin-gated `OrgFeatureInsights`) reads **`app.public.job_simulation_sessions.score`**
+  (`app/internal/organization/intelligence.go:1689` → `:1595`/`:1611`; Ent schema
+  `internal/data/ent/schema/job_simulation_session.go`, table created by migration `20260722104506.sql`).
+- **Skill-path manager** (`insightsSkillPathByMemberships`, `resolver_queries.go:922`, same gate) reads
+  **`app.public.skill_path_sessions`** (`intelligence.go:1144`; schema `skill_path_session.go`, created by
+  `20260720103238_skillpath_sessions.sql` in the skillpath-in-app merge), the exact analog.
+
+**⇒ seeding only `jobsimulation.*` still renders an EMPTY manager SCOREBOARD.** The org aggregate views
+(`activity-dashboard`, workforce insights) MUST co-write the app-side session row.
+
+**What got SIMPLER, and it is worth knowing.** The old mirror was a *denormalized projection* — its own `id`, a
+`jobsimulation_session_id` join key, a misspelled `completition_status` — populated by the `app` Redis-Stream
+consumer (`JobSimulationSubscriber` → `updateOrCreateLocalSession`, now removed with the projection: see
+`app/internal/jobsimulations/jobsimulations.go:42`). `public.job_simulation_sessions` is instead
+**column-identical to `jobsimulation.sessions`** (all 18 columns rext seeds exist on both). So a seeder writes the
+**SAME ROW under the SAME id** to both tables rather than building a second shape — which is also what the
+migration itself did, remapping `organization_assignment_sessions.js_session_id` from the mirror id to the
+canonical session id. Two consequences for a seeder author:
+
+- **`public.skill_path_sessions` carries a `version` the mirror did not** (`character varying NOT NULL`, no
+  default), under a `UNIQUE (user_id, skill_path_id, version) WHERE status <> 'archived'`. `CopyRowsIdempotent`
+  guards only `ON CONFLICT (id)`, so a version shared with another writer aborts the live seed. Every writer owns
+  a distinct token: `"1"` (`SkillpathSessionsSeeder`), `"2"` (`contentStoryNonSimVersion`), `"hero-completed"`
+  (`HeroActivitySeeder`), `"assignment"` + `"hiring-assignment"` (M257).
+- **`organization_assignment_sessions.session_id` is now a REAL, enforced FK** to `skill_path_sessions(id)`
+  (`ON DELETE CASCADE`), where the mirror's own session ref was never FK-enforced and could dangle. An
+  assignment-session must name a skill-path session row that actually exists.
+
+(The trap is a **different surface** from the player result page in §1's proof — the player page reads
+jobsimulation's own tables directly and needs no app-side row.) **Scope note (M248):** the content-story manager
+**RESULT** CTA does not touch it either — the non-interview family reads `jobsimulation.sessions` directly by
+`sessionId` on the `/sim/[slug]/[userId]/result/[sessionId]` route (`isManagerView`, persisted read). The app-side
+session is required for the org **scoreboard/aggregate** surfaces described here.
 
 ### INTERVIEW is flag-gated → needs-demo-patch
 
@@ -170,8 +199,8 @@ milestone.)
 
 | Product | Manager result route? | Read-model | Notes |
 |---|---|---|---|
-| Sim TRAINING / ASSESSMENT | ✅ yes | per-session result: `jobsimulation.sessions` by `sessionId` (M248); scoreboard aggregates: `local_jobsimulation_sessions` mirror | **M248:** content-story CTA → `apps/web` `/sim/[slug]/[userId]/result/[sessionId]` (persisted read). The `activity-dashboard` → ai-simulations scoreboard still exists (org aggregates, mirror-backed) |
-| Sim HIRING | ✅ yes | same (per-session jobsim by `sessionId`; mirror for scoreboard aggregates) | **M248:** content-story CTA → `apps/hiring` `/sim/[slug]/[userId]/result/[sessionId]`. `apps/hiring` only (a genuine hiring org **ejects** from `apps/web` → `apps/hiring`, `UserStatusContext.tsx:168-169`, M224) |
+| Sim TRAINING / ASSESSMENT | ✅ yes | per-session result: `jobsimulation.sessions` by `sessionId` (M248); scoreboard aggregates: `public.job_simulation_sessions` (**M257:** ← the dropped `local_jobsimulation_sessions` mirror) | **M248:** content-story CTA → `apps/web` `/sim/[slug]/[userId]/result/[sessionId]` (persisted read). The `activity-dashboard` → ai-simulations scoreboard still exists (org aggregates, app-side-session-backed) |
+| Sim HIRING | ✅ yes | same (per-session jobsim by `sessionId`; `public.job_simulation_sessions` for scoreboard aggregates) | **M248:** content-story CTA → `apps/hiring` `/sim/[slug]/[userId]/result/[sessionId]`. `apps/hiring` only (a genuine hiring org **ejects** from `apps/web` → `apps/hiring`, `UserStatusContext.tsx:168-169`, M224) |
 | Sim INTERVIEW | ✅ yes (flag+admin-gated) | `interview_extraction_results.manager_report` | admin gate `OrgActionAssignmentsWrite`; PostHog `flag_interview_manager_report` |
 | Skill-path legacy | ❌ **no** (~~✅ yes, `apps/web` only~~ — **REFUTED M236 iter-07**) | — | The resolver exists; the **page does not render it** — `InsightsBySkillPathStudentSimulationsContainer` shows "Coming soon", table commented out, `userData` null. Not landable. |
 | Skill-path new (academy) | ❌ no manager result route today | — | academy has no manager review surface (workforce academy insights TBD) |
@@ -257,7 +286,7 @@ Classified from `information_schema` **without reading any customer value** (sha
   | `title`, `*_summary`, `*_feedback`, **`input_data`**, `skills` | `validation_criterion_results` | `input_data` (jsonb) = **the candidate's raw submission** — the sharpest edge |
   | `action_payload` | `interactions` | **the transcript** (candidate's own words) — highest PII risk; 284 MB table |
   | `user_report`, `manager_report`, `summary` | `interview_extraction_results` | LLM reports (may name/quote the candidate) |
-  | `anticheat_summary`, `anticheat_tagline` | `public.local_jobsimulation_sessions` | free-text anticheat |
+  | `summary`, `tagline` | `public.anticheat_results` | free-text anticheat. **M257 correction:** these were `anticheat_summary` / `anticheat_tagline` **columns on the dropped `local_jobsimulation_sessions` mirror**; they have **no counterpart** on `public.job_simulation_sessions` (see its DDL, migration `20260722104506.sql`). The free-text lives in the separate `anticheat_results` table (`summary`, `tagline`, plus an `evidences` jsonb this row never listed), FK'd to `job_simulation_sessions(id)`. **rext never wrote these fields** (they were absent from `localSessionCols()`), so the re-point lost nothing — but a scrub pass that looked for them on the session row would now find nothing and pass vacuously |
 
   M232 handles free-text per this contract: scrub/replace names structurally; for the LLM narrative + submission +
   transcript, either synthesize a scrubbed replacement or redact — the choice is M232's (the brief leans on
@@ -270,7 +299,8 @@ Classified from `information_schema` **without reading any customer value** (sha
 userId)`, a platform-native cloner that re-players a session to a **new userId**. **Running the built binary
 in-stack is within the zero-platform-edit wall** (using the tool, not editing the repo). BUT it only re-players to
 a new userId — it does **not** anonymize free-text or re-tenant `organization_id`, and it needs heavy client wiring
-(DB + CMS + Storage + AI + Auth). So M232's rext seeder still owns anonymize + re-tenant + the mirror co-write; the
+(DB + CMS + Storage + AI + Auth). So M232's rext seeder still owns anonymize + re-tenant + the app-side session
+co-write; the
 subcommand is a candidate primitive, not a complete solution.
 
 ### 3.5 Safety posture (the amendment M232 lands)
@@ -378,10 +408,10 @@ holds: content-product result pages read PERSISTED rows a clone can seed. Per-pr
 
 | Product | Disposition | Inherits |
 |---|---|---|
-| Sim TRAINING / ASSESSMENT | **GO** — seed the result fan-out + the manager mirror | M232 seeder; M234 both CTAs |
+| Sim TRAINING / ASSESSMENT | **GO** — seed the result fan-out + the app-side manager session | M232 seeder; M234 both CTAs |
 | Sim HIRING | **GO** — same, in `apps/hiring` (the M224 two-app pattern) | M232 + M234 (hiring base) |
 | Sim INTERVIEW | **GO w/ demo-patch** — seed `interview_extraction_results`; **enable `flag_interview_{player,manager}_report`** in the demo | M232 (flag-enablement, D3) |
-| Skill-path legacy | **GO, PLAYER-ONLY** — seed the skill-path runtime rows (player), now in `app`'s `public.skill_path_sessions`. ~~+ `local_skill_path_session` mirror (manager)~~ **REFUTED at M236 iter-07: there is no working manager surface** (below) | M232 + M234 (player CTA only) |
+| Skill-path legacy | **GO, PLAYER-ONLY** — seed the skill-path runtime rows (player), now in `app`'s `public.skill_path_sessions`. ~~+ `local_skill_path_session` mirror (manager)~~ **REFUTED at M236 iter-07: there is no working manager surface** (below); and **M257: that mirror no longer exists at all** | M232 + M234 (player CTA only) |
 | Skill-path new (academy) | **GO (presence + progress)** — ~~seed `academy_chapter_progress`~~ **REFUTED at M236 iter-08: `academy-seed` is moot in a demo** (below); the CTA is a real `/courses/<slug>` link into the FS catalog | M234 (player CTA only; no manager surface) |
 | **AI-labs** | **OUT (presence-only)** — no seedable result surface; list as activity/spend line | M234 (presence-only section, D4) |
 
@@ -392,11 +422,12 @@ a GraphQL schema change, both out of scope.
 
 > **Build status (v2.5 M235, run 3).** The three NON-simulation sections this map specifies are **built +
 > unit-proven** as a separate code-owned registry (`seeders/content_nonsim.go`, `ContentStoryNonSimSeeder`;
-> [`content-stories-spec.md`](content-stories-spec.md) §6): **skill-path-legacy** (`skill_path_sessions` +
-> the `local_skill_path_sessions` mirror), **ai-labs** (a `lab_sessions` presence/spend row, no CTA), and
+> [`content-stories-spec.md`](content-stories-spec.md) §6): **skill-path-legacy** (`skill_path_sessions` —
+> ~~+ the `local_skill_path_sessions` mirror~~, **dropped at M257**, so the one canonical row now serves both
+> vantages), **ai-labs** (a `lab_sessions` presence/spend row, no CTA), and
 > **academy** (a real `/courses/<slug>` course CTA — **not** `/library/<slug>`, which is not a route in
 > ant-academy). rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`. The LIVE
-> (session × action)-lands proof + the per-section live calibration (skill-path version/status/mirror; the
+> (session × action)-lands proof + the per-section live calibration (skill-path version/status; the
 > exact `lab_sessions` DDL; academy route + the M230 catalog fill) was executed at **M236 (prove-on-billion)**.
 
 <a id="m236-corrections"></a>
@@ -408,7 +439,8 @@ a GraphQL schema change, both out of scope.
 > denominator (31) that had to be corrected to **29** mid-milestone.
 >
 > **1. Skill-path legacy has NO manager result surface** (iter-07). §2's eligibility matrix marked it
-> `✅ yes … local_skill_path_session mirror`. The *resolver* (`insightsSkillPathByMemberships`) does exist —
+> `✅ yes … local_skill_path_session mirror` (a table M257 has since established was **dropped**). The *resolver*
+> (`insightsSkillPathByMemberships`) does exist —
 > but the **page that would render it does not**: next-web's `InsightsBySkillPathStudentSimulationsContainer`
 > hardcodes `userData = null`, has its results table **commented out**, and renders the literal string
 > **"Coming soon"**. No query touches the seeded session, so the page is byte-identical whether or not
@@ -423,10 +455,11 @@ a GraphQL schema change, both out of scope.
 > real `/courses/<slug>` CTA into that FS catalog (65 cards, 0 Draft chips, verified cold). The binary
 > remains correct for a *dev/prod-wired* stack — it is the **demo** configuration that makes it inert.
 
-**The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the manager MIRROR row**
-(`local_jobsimulation_sessions` / `local_skill_path_session`) or the manager **scoreboard/aggregate** views are blank —
-note (M248) the per-session manager RESULT CTA reads `jobsimulation.sessions` by `sessionId` and does **not** need the
-mirror; the mirror is for the org scoreboards; (2) **source only
+**The three seeding landmines M232 must honor** (each a documented trap): (1) **co-write the APP-SIDE session row**
+(`public.job_simulation_sessions` / `public.skill_path_sessions` — **M257:** ← the dropped
+`local_jobsimulation_sessions` / `local_skill_path_sessions` mirrors) or the manager **scoreboard/aggregate** views
+are blank — note (M248) the per-session manager RESULT CTA reads `jobsimulation.sessions` by `sessionId` and does
+**not** need it; the app-side row is for the org scoreboards; (2) **source only
 public-anchored sessions** (`sim_id` ∈ public-published) or the demo can't resolve the sim; (3) **enable the
 interview PostHog flags** or the interview report hides. Plus the standing rules: owner-is-player-vantage (never a
 manager seat), all G14-valid enums, `OrgFeatureInsights` grant for the manager scoreboards.
@@ -435,7 +468,7 @@ manager seat), all G14-valid enums, `OrgFeatureInsights` grant for the manager s
 - [`session-clone-spec.md`](session-clone-spec.md) (**M232**) — the copy+anonymize+re-tenant seeder this doc's contract feeds (the write side): the sourcing pattern, the anonymize-by-construction mechanism, the source-pin contract, the interview flag-gate demopatches.
 - [`db-access.md`](../db-access.md) — the read foundation + the public-vs-customer boundary the sourcing read honors.
 - [`safety.md`](../safety.md) — the tooling safety contract; §3.5's VPN/tailnet scope + the Part-3 amendment M232 lands for anonymized-real session data.
-- [`../seeding-spec.md`](../seeding-spec.md) + [`stories-spec.md`](stories-spec.md) — the seeding framework + the 7-table verified-skill fan-out the session substrate extends; the `local_jobsimulation_sessions` MIRROR trap origin (M219/M222).
-- [`../../services/hiring.md`](../../services/hiring.md) — the M224 two-app manager/player render path + the comparison MIRROR read-model.
+- [`../seeding-spec.md`](../seeding-spec.md) + [`stories-spec.md`](stories-spec.md) — the seeding framework + the 7-table verified-skill fan-out the session substrate extends; the app-side-session trap origin (M219/M222, when the target was the since-dropped `local_jobsimulation_sessions` mirror).
+- [`../../services/hiring.md`](../../services/hiring.md) — the M224 two-app manager/player render path + the comparison read-model (**M257:** now `public.job_simulation_sessions`, not the dropped mirror).
 - [`../../services/jobsimulation.md`](../../services/jobsimulation.md) · [`../../services/skillpath.md`](../../services/skillpath.md) · [`../../services/ai-readiness.md`](../../services/ai-readiness.md) — the runtime engines + read-models.
 - [`cockpit-spec.md`](cockpit-spec.md) — the presenter cockpit the M234 "Content stories" tab extends.
