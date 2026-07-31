@@ -621,10 +621,19 @@ What that looks like from the outside is the part worth internalising:
 - **Recovery is `docker start <container>`** — no build, no compose, no teardown. The same class of action
   `run-playthroughs.sh --reset` already performs on the fake services every run.
 
-**The gap this names:** `autoverify` probes HTTP endpoints and DB state, and a dead subgraph's surfaces answer
-`200` with empty data, so nothing in the cheap-win set fires. A **container-liveness assert** — *the stack's
-declared container set is all running* — is one line, costs nothing, and would have named this instead of an
-hour of Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258.
+**The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
+not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2494`), and an
+`Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
+rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
+the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,
+the same F-6/F-10 hazard recorded at `:252-260` and `:293-303` — **not** a missing check. The genuine coverage
+gap is narrower and was undocumented: the containers with **no `services.sh` row at all** — `fake-fapi`,
+`fake-bapi` and `hiring-app` (`gen_injected_override.py:353,560,581`). **That** is the 14-of-16 arithmetic:
+13 rows in the demo scope against 16 containers. A **container-liveness assert** — *the stack's declared
+container set is all running* — is one line, costs nothing, and would have named this instead of an hour of
+Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258; landed at M257 as
+`autoverify.sh` check **(h)**, which derives its expected set from `services.sh` and adds the injected trio.
 
 **The general rule: check container liveness BEFORE diagnosing a test.** It is the cheapest measurement
 available and it is the one that was taken fourth.

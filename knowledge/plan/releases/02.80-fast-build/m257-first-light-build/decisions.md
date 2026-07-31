@@ -125,7 +125,7 @@ changes where.
 
 ### And a compound risk the two findings make together (F3 × the M256 inheritance)
 
-**F3: odysseus has ZERO swap**; billion has 15 GiB and used **2,452 MB** at peak. The headroom clause still
+**F3: odysseus has ZERO swap**; billion has **16 GiB** (`billion.json:21`) and used **2,452 MB** at peak. The headroom clause still
 fits on arithmetic — `1×3900+1500 = 5400` MiB against `0.8×7780 = 6224` — but on billion a transient
 overshoot met *swap*, and on odysseus it meets the **OOM killer**.
 
@@ -171,7 +171,7 @@ that can trip it** — never after.
   this gate counts. Until both are fixed the gate's verdict is unfalsifiable in the way this release
   keeps finding.
 - **The compound risk forces the liveness check to the FRONT (coordinator, 2026-07-31).** odysseus has
-  **zero swap**; billion has 15 GiB and used **2,452 MB** of it at peak on the same measured lane. The
+  **zero swap**; billion has **16 GiB** and used **2,452 MB** of it at peak on the same measured lane. The
   headroom clause still fits on arithmetic (`1×3900 + 1500 = 5400` MiB against `0.8×7780 = 6224`), but on
   billion a transient overshoot met *swap* and on odysseus it meets the **OOM killer** — and **an
   OOM-killed service is indistinguishable from an exit-0 self-termination**: containers "Up", surfaces

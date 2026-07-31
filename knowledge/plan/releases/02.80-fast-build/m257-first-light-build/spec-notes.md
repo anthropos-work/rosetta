@@ -31,13 +31,13 @@ area #5 and adds **two findings that were not in the audit and change the campai
 |---|---|---|
 | cores | **8** | 8 vCPU |
 | RAM | **7,780 MB** | 7.3 GiB (≈7,475 MB) |
-| **swap** | **0 — none at all** | **15 GiB** |
+| **swap** | **0 — none at all** | **16 GiB** (`swap_mib: 16384`) |
 | disk free | **189 G of 193 G** | 36–42 GiB comfortable, 25 GiB floor |
 | arch / kernel | x86_64 · Linux 6.8.0-117 (Ubuntu) | x86_64 · Linux 6.8.0-134 |
 | Docker | 29.6.2 | 29.6.2 |
 | **image store** | **containerd** (`io.containerd.snapshotter.v1`, overlayfs snapshotter) | **containerd** |
-| Go | **absent** | present |
-| atlas | **absent** | present |
+| Go | **installed (`go1.26.5`, `/usr/local/go`) but NOT on `PATH`** — see F4; the first reading of this row said *absent* and was wrong | present |
+| atlas | **genuinely absent** | present |
 | tailscale | 1.98.10 | present |
 | git | 2.43.0 | present |
 
@@ -78,7 +78,11 @@ Reporting a p50 that includes it would restate the excluded variant as the gated
 
 Headroom clause 2 arithmetic on odysseus: `1 lane × 3,900 MiB + 1,500 idle = 5,400 MiB` against a
 budget of `0.8 × 7,780 = 6,224 MiB`. It **fits** — but billion peaked at **5,446 / 5,579 / 5,398 MB**
-with **15 GiB of swap underneath it and 2,452 MB of that swap in use at peak**. Odysseus has none.
+with **16 GiB of swap underneath it and 2,452 MB of that swap in use at peak**. Odysseus has none.
+(Corrected from *15 GiB* — `billion.json:21` says `swap_mib: 16384`. The corpus's own host-spec line at
+`build-budget.md:122` had said 15 GiB since M255, disagreeing with its machine-readable profile; fixed there
+too. The conclusion is unchanged — odysseus has none either way — but *state the environment with every
+number* does not get a rounding exemption.)
 
 The assert will pass on the arithmetic; what is untested is whether a lane that *transiently* exceeds
 its measured peak gets a swap cushion (billion) or the OOM killer (odysseus). Treat an OOM-killed

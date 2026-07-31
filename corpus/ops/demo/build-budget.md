@@ -119,7 +119,7 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 > `odysseus.json` host profile), and until it exists there is **no odysseus number to quote**, projected or
 > otherwise. A reduction target is measured against **the baseline of the host it runs on**.
 
-**`billion.taildc510.ts.net`** — 8 vCPU · 7.3 GiB RAM · 15 GiB swap · x86_64 · Linux 6.8.0-134 · Docker 29.6.2
+**`billion.taildc510.ts.net`** — 8 vCPU · 7.3 GiB RAM · **16 GiB** swap · x86_64 · Linux 6.8.0-134 · Docker 29.6.2
 with the **containerd image store** · demo-1 at offset 10000 with `--public-host`.
 
 First, the **instrumented `n=1` anatomy** — the run every lever in this release was ranked from. **It is not
