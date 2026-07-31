@@ -235,3 +235,37 @@ Added to `platform-alignment.md` §5 as **rule 10** — *read the lines AROUND t
 not on the existing false-absence list because it does not look like one: the substring was real, the line
 number right, the quote accurate. **The search succeeded and the conclusion was still false**, because a
 constant's meaning lives in its surroundings.
+
+---
+
+## iter-09 decisions — 2026-07-31
+
+### D-M257x-13 — a de-exposure is not proven by an exposure guard
+
+M221 tightened the academy's dev-server bind from `0.0.0.0` to `-H 127.0.0.1` because a *localhost* demo was
+answering HTTP 200 on the tailnet IP. The fix was right, the guard for it was right, and the guard
+(`stack-injection/exposure_claim_guard.py`) asked exactly one question: **does it still answer where it
+shouldn't?** It got the correct answer and the change shipped.
+
+Nobody asked the other half — **does it still answer where it should?** It did not. Next.js 16's dev server
+proxies to `http://localhost:$PORT/` rather than to the address it was told to bind, so an IPv4-only bind on
+a host that resolves `localhost` to `::1` first cannot reach itself. Measured: `500` in a flat 30.0 s versus
+`200` in 2.4 s on the pre-M221 bind.
+
+**An exposure guard can never notice that a service stopped working** — by construction, "no response" is
+its success condition. So it will confirm every over-tightening as a win.
+
+> **Rule.** Every tightening ships with a paired liveness assert on the surface it tightened. A guard that
+> only measures the property you removed is measuring half the change, and the half it measures always
+> passes.
+
+Two supporting method notes from the same measurement:
+
+- **A flat, repeatable duration is a timeout, not work.** 30.014 s then 30.007 s, identical on a warm second
+  request, is a configured limit. `ant-academy.sh`'s own comment attributed exactly this shape to Turbopack
+  cold-compilation and budgeted 120 s for it — a wait that could never succeed, because every attempt fails
+  identically. Compare the **variance**, not the magnitude. (Kin to `latency-budget.md`'s arithmetic
+  signatures.)
+- **A "not serving" verdict deserves one patient request before it is believed.** `--max-time 3` and
+  `--max-time 180` are different instruments; only the second can see a 30 s failure. A probe whose
+  per-attempt timeout is shorter than the failure mode it watches for cannot measure the thing it reports.
