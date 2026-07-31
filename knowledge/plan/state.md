@@ -1,10 +1,10 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257 — first-light build (iterative) — NOT STARTED. Gate: cold --purge + demo-up, from `billion`'s 666.29 s baseline → ≤ 360 s p50 measured on **odysseus** (D-v28-14 moved the gate host; odysseus's own baseline is UNMEASURED and M257 owes it), autoverify green / 0 warnings. re_scope_trigger re-derived 480 → 420 s."
+active_milestone: "M257x — platform re-alignment (iterative) — NOT STARTED. Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "Between milestones. M256 closed-on-gate + merged into release/02.80-fast-build. Both repos clean + pushed; rext tag fast-build-m256-harden-final on origin. demo-2 up (16 containers, pt-world re-seeded, drifted cockpit fixture sha 99e2f315 restored). Next: /developer-kit:work-milestone --milestone=M257."
-last_updated: "2026-07-30"
+phase: "M257 PAUSED 2026-07-31 after 3 iters (odysseus provisioned, both gate instruments landed, B1+B2 fixed — all BANKED). M257x inserted and scaffolded. Next: /developer-kit:work-mstone-iters --milestone=M257x."
+last_updated: "2026-07-31"
 ---
 
 # State
@@ -30,21 +30,24 @@ check in `odysseus.json` before pricing any lever against it.
 
 ## Active milestone
 
-**M257 — first-light build** (`iterative`, not started). Collapse the cold `--purge` + `demo-up` cycle
-from **`billion`'s 666.29 s → ≤ 360 s p50 on `odysseus`**. Levers L1–L10 are ranked by measured seconds in its `overview.md`; **L1 is already
-proven real** (M255: hiring image 4.84 GB → 379 MB, export leg 146.8 s → 2.9 s).
+**M257x — platform re-alignment** (`iterative`, not started). **The team is migrating the microservices back
+into `app` toward a monolithic design, and nobody on our side knows how far it has got.** Find out, write it
+down where it cannot rot, and make **both** repos work against the platform as it is.
 
-⚠️ **Tighter than first drafted.** Its `re_scope_trigger` was re-derived **480 → 420 s**: at 480 it could only
-fire if L1+L2+L3 returned under 186 s, so a 60 s gate miss could never have tripped it. 666.29 → 360 needs
-**306.29 s** against **300–350 s** of levers, so **at L1's conservative end the big three miss the gate** and
-L4/L5/L7/L8/L10 are load-bearing, not padding.
+Not speculative — **M257 hit the wall**: its iters found the demo **could not have been built cold on any
+machine for four days**, and the gate's own health check was reading a **dropped table** behind a `|| echo 0`
+that turned the error into `0`. Platform `repos.yml` @ origin `236771f10` now says cms/jobsimulation/roadrunner
+**own no local schema**, while rext still writes **~15 `jobsimulation.*` tables**. Our own
+`stack-dev/platform/repos.yml` still lists **skillpath**, decommissioned in v2.7.
 
-**It inherits 6 items** — 4 from the M255 close (`run_campaign` rep-body coverage · `demo_knob_guard` anchor
-mutants · `_manifest_lists` truncation · the `laptop` provisional field) and **2 from the M256 close, both
-gate-relevant**: `FIX-M256-demo2-service-self-termination` (two services self-terminate `Exited 0` while
-`docker ps` shows 14/16 "Up" and every grid renders 20 content-free rows — M257's gate would go **green on a
-half-dead stack**) and `FIX-M256-autoverify-fapi-libressl` (warns *"NOBODY CAN LOG IN"* about a working stack;
-M257's gate counts autoverify warnings). Both in its `overview.md`.
+**Third occurrence of one class** (v2.1 skiller · v2.7 skillpath · now jobsimulation), each re-derived from
+scratch — so `corpus/ops/platform-alignment.md` is a deliverable, not a formality.
+
+**M257 — first-light build: PAUSED** behind it. Banked and not to be redone: odysseus provisioned (rc=0,
+16/16, Go present off PATH), both gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed,
+mirror fence parameterised by host. Still owed: the odysseus baseline, and `INVESTIGATE-M257-load1-48` —
+peak `load1` **48.7** vs HEADROOM clause 1's limit of **6**.
+
 
 ## Phase
 

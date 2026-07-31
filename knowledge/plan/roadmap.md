@@ -614,14 +614,61 @@ control proves unimplementable for **> 3** Playthroughs, escalate.
 mutation classification, the batch-gate rule) **+ `corpus/services/clerkenstein.md`** (if the seat registry is
 re-scoped)
 
+### M257x: Platform re-alignment
+**Status:** `planned`
+**Shape:** `iterative`
+**Dir:** [`releases/02.80-fast-build/m257x-platform-realignment/`](releases/02.80-fast-build/m257x-platform-realignment/overview.md)
+**Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it
+down where it cannot rot, and make **both** rosetta (corpus) and rosetta-extensions (tooling) work against the
+platform as it is now.
+
+**Why it was inserted (2026-07-31, user call — M257 paused behind it).** M257's iters 02–03 found the demo
+**could not have been built cold on any machine for four days**, and that the gate's own health check queried a
+**dropped table** behind a `|| echo 0` that turned the error into `0` — a number indistinguishable from *"seeded,
+just thinly."* Two blockers were fixed; the third is not a fix. Platform `repos.yml` @ origin `236771f10`
+(2026-07-29T14:14Z) sets `migrations: false` for cms/jobsimulation/roadrunner — *"`app` is the ONLY repo with
+migrations… they own no local schema"* — so a fresh stack never creates the `jobsimulation` schema, while rext
+still writes **~15 `jobsimulation.*` tables**. Latent only because our clones are stale; our own
+`stack-dev/platform/repos.yml` still lists **skillpath**, decommissioned back in v2.7.
+
+**This is the THIRD occurrence of one class** — v2.1 skiller→app broke the seeder, v2.7 skillpath→app broke it
+again (and the corpus asserted skillpath live Tier-1 in ~30 files), now jobsimulation. Each time it was
+re-derived from scratch. **A recurring class with no written procedure will recur**, so the protocol doc is a
+deliverable, not a formality.
+
+**Exit gate** (both repos in the gate by construction — clauses 1/2/4 are rext, 3/5 are the corpus), against
+platform @ **origin HEAD**, never a pinned pre-drift commit:
+1. cold `--purge` + `demo-up` on **odysseus** → `autoverify green:true / 0 warnings`, **3 consecutive cycles**;
+2. the **full Playthrough suite passes on that stack** (30 live / 0 failing) — so a green bring-up cannot mean an empty world;
+3. a checked-in **migration-status map** — every service, its state, **cited to platform source**, **machine-fenced against `repos.yml`**;
+4. **zero rext writes to a schema the platform no longer creates**, by a FENCE watched going RED;
+5. KB-fidelity **GREEN, or YELLOW with 0 blockers**, over `corpus/services/**` + `corpus/architecture/**`.
+
+**Iteration protocol:** `corpus/ops/platform-alignment.md` — **Delivers →**, authored by iter-01. It does not
+exist yet, and that absence is the gap this milestone closes.
+**Re-scope trigger:** two consecutive alignment attempts invalidated by new platform commits landing
+mid-milestone ⇒ escalate; the answer is then a **pinning-and-tracking policy**, not more alignment work. The
+platform ships coordinated multi-repo changes — `repos.yml` moved **39 minutes after** the mirror-drop commit.
+**Depends on:** nothing — it unblocks M257 and M258.
+**Parallel with:** none. It changes the ground everything else stands on.
+**Estimated complexity:** large.
+
+
 ### M257: First-light build
 
-**Status:** `planned` · **Shape:** `iterative`
+**Status:** `paused` (2026-07-31) · **Shape:** `iterative`
+> ⏸️ **PAUSED behind M257x**, after 3 closed iters, on the user's call. Its iter-03 exit blocker turned out to
+> be the visible edge of a platform-wide migration whose status nobody on our side knew. **BANKED and not to be
+> redone:** odysseus provisioned as a working bench (rc=0, 16/16, Go present at `go1.26.5` off PATH), both
+> gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed, and the baseline mirror fence
+> parameterised by host (4 → 28 tests). **Still owed on resume:** the odysseus baseline itself, and
+> `INVESTIGATE-M257-load1-48` — peak `load1` **48.7** against HEADROOM clause 1's limit of **6** (billion read
+> 4.06–4.56); if real, **the gate's own clause cannot pass on this host**.
 **Goal:** Collapse the cold demo bring-up so going live is a coffee, not a lunch — spending the machine
 deliberately, never exhausting it, and without weakening a single safety guard.
 
 **Exit gate:** a cold-images `demo-down --purge` + `demo-up` reaches **`autoverify green:true / 0 warnings`**
-in **p50 ≤ 360 s across 3 consecutive cycles on `billion`** (from the **M255-measured n=3 p50 666.29 s** — a
+in **p50 ≤ 360 s across 3 consecutive cycles on `odysseus`** (host moved by **D-v28-14**; billion is demo-only, and **odysseus's own baseline is UNMEASURED** — M257 owes it) (from the **M255-measured n=3 p50 666.29 s** — a
 46 % cut), **0
 platform-repo edits**, **all 7 demopatch guards (G1–G7) passing**, and two **falsifiable** asserts (D-v28-6,
 D-v28-11) — *the gate FAILS if either trips*:

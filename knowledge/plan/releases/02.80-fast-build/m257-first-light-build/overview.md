@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M257
 title: "first-light build"
-status: in-progress
+status: paused
 release: v2.8 "fast build"
 exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **odysseus** (`devops@100.110.67.14` / `odysseus.taildc510.ts.net`) — the host CHANGED at D-v28-14 (billion is demo-only now), so **the baseline must be RE-MEASURED there (n >= 3) and an `odysseus.json` host profile checked in BEFORE any lever is priced**. billion's 666.29 s does not transfer: odysseus is a near-twin on paper (8 cores / 7 GiB / x86_64 vs 8 vCPU / 7.3 GiB / x86_64) and this release's own rule is *state the environment with every number*. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if odysseus's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
@@ -209,3 +209,35 @@ milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report t
 **Delivers → `corpus/ops/demo/frontend-tier.md`** (rewritten **once**, with achieved numbers: real image
 anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
 **Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
+
+## ⏸️ PAUSED 2026-07-31 — blocked behind M257x
+
+**Paused after iter-03, at 3 closed iters, on the user's call.** Not a failure: iter-03's own exit blocker
+(`DECIDE-M257-jobsim-schema-ownership`) turned out to be the visible edge of a platform-wide migration whose
+status nobody on our side knew. **M257x now owns that question**, and this milestone resumes when the platform
+is aligned.
+
+**Why it cannot proceed as-is:** the gate measures a cold `--purge` + `demo-up`. Against a platform whose
+schema ownership has moved out from under the tooling, that measures either a pinned-stale build or a broken
+one. Neither is the number v2.8 wants.
+
+**What is already banked and must NOT be redone:**
+- The Phase 0b RED cleared; `TOK-01` authored (*instrument before baseline, baseline before levers*).
+- **odysseus provisioned** as a working bench — rc=0 bring-up, 16/16 containers, remote HTTPS, Go present
+  (`go1.26.5`, off PATH — the "no Go" reading was a login-shell false negative).
+- **Both gate-honesty instruments landed** with mutation-proven negative controls — the autoverify check could
+  previously pass on a half-dead stack AND fail on a working one.
+- **B1 + B2 fixed** (dropped `local_*` mirrors → 34 sites/20 files; the unobtainable studio).
+- The baseline mirror fence **parameterised by host** (4 → 28 tests); on its first run it flagged 12 un-hosted
+  baseline claims, one of them this milestone's own gate line.
+
+**Still owed when it resumes:** the odysseus baseline itself (`PROFILE-M257-odysseus-json` — ship without a
+`gated_baseline`; `lane_heap_measured_peak_mib` must be measured, never guessed, because clause 2 consumes it),
+and **`INVESTIGATE-M257-load1-48`** — peak `load1` measured **48.7** against HEADROOM clause 1's limit of **6**
+(billion read 4.06–4.56). If that is real, **the gate's own clause cannot pass on this host**. Unstarted by
+design: it must be measured with `buildbench`'s sampler against a host running *this* tooling. Worth noting the
+hypothesis to test first — Linux load average counts tasks in uninterruptible sleep, so an I/O-heavy build can
+show a huge `load1` with the CPU nowhere near oversubscribed; and the gate text's own insistence on *"read from
+the sampler (NOT 'sampled, not asserted')"* raises the possibility that clause 1 was never actually asserted on
+billion either.
+
