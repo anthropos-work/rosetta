@@ -75,3 +75,63 @@ highest-value unknown, resolved in the gate's favour), and carries two newly-mea
 did not have: **it is a truly-cold box** (0 images / 0 build cache → rep 1 is the variant D-v28-8
 excluded, so a discarded warm-up cycle is mandatory) and **it has no swap** where billion used
 2,452 MB of it at peak. See `spec-notes.md` F1–F4.
+
+## D120 / D121 / D122 — the three pre-flight contract calls (coordinator, 2026-07-31; user delegated this class)
+
+### D120 — PARAMETERISE the mirror fence by host. Do not retire billion's baseline.
+
+`test_baseline_mirror_fence.py` pins `billion.json` as THE single baseline source and fences M257's own
+`overview.md`: any 3-digit seconds claim in the **640–700 s band** without `666` on the line reads as DRIFT.
+Writing odysseus's p50 into prose is this milestone's job, so **the fence I wrote at the M255 close now
+blocks the work it was written to protect.**
+
+**Decision: parameterise by host — the fence reads every `hostprofiles/*.json` and checks a prose claim
+against the profile whose host the line NAMES.** A baseline-shaped claim that names **no** host FAILS.
+
+Rejected: *retire billion's `gated_baseline`* — billion's 666.29 s is historically real, cited in eight
+places, and the record of what the release started from; deleting it to make room is destroying evidence.
+Rejected: *scope the fence historically* — weaker than what exists.
+
+**Why parameterising is the stronger fence, not a loosening:** it promotes this release's own standing rule —
+***state the environment with every number*** — from prose convention into a machine check. The rule exists
+because M255 measured the same Dockerfile at **4.84 GB on billion** and **2.88 GB on an arm64 laptop**. A
+fence that demands the host be named enforces exactly that, and would have caught the M257 gate's own
+un-hosted `666.29 s` inheritance before a human noticed.
+
+### D121 — Minimal correction NOW, full rewrite with achieved numbers at close.
+
+Six forward-looking "billion is the gate host" claims are live (`build-budget.md:139,230,240,261` +
+`billion.json:4,13`, the last two **machine-readable**). Two options were on the table: retract now, or fold
+into the §8.5 retraction already scoped here so each doc is rewritten **once**.
+
+**Decision: both, split by kind.** A **minimal** correction now — the host, and that billion's baseline does
+not transfer — because (a) the audit RED is *blocking the milestone* and must clear, and (b) leaving six
+false host claims live means anyone reading the protocol doc mid-milestone aims at the wrong machine. The
+**achieved-numbers** rewrite stays at close, where it was already scoped, so prose is not rewritten twice.
+
+Rationale for not doing it all now: a half-retracted doc set is its own defect class — `demopatch-spec.md`'s
+chain rule exists because a two-stage rewrite left one site reading DRIFTED against a pristine file *by
+design*. One correction now, one rewrite at close, no intermediate state that is wrong in a new way.
+
+### D122 — Re-home the orphaned re-confirmation to odysseus's baseline campaign.
+
+`build-budget.md:150-152` orders three timing claims re-confirmed "on the first post-freeze campaign" — on a
+host we can no longer use. **Decision: re-home to odysseus's baseline campaign.** It rides along free: the
+campaign already runs n ≥ 3 cold cycles with per-phase attribution, which is what those claims need.
+
+Closing them as superseded was the alternative and is wrong: they were explicitly marked for
+re-confirmation *because nobody had confirmed them*, and a host change does not discharge that — it just
+changes where.
+
+### And a compound risk the two findings make together (F3 × the M256 inheritance)
+
+**F3: odysseus has ZERO swap**; billion has 15 GiB and used **2,452 MB** at peak. The headroom clause still
+fits on arithmetic — `1×3900+1500 = 5400` MiB against `0.8×7780 = 6224` — but on billion a transient
+overshoot met *swap*, and on odysseus it meets the **OOM killer**.
+
+**Which lands exactly on `FIX-M256-demo2-service-self-termination`, inherited into this milestone.** An
+OOM-killed service and a service that self-terminates `Exited 0` on a DB-health monitor present
+**identically**: containers "Up" in `docker ps`, surfaces rendering empty, **no error anywhere**, and it once
+cost an hour of misdiagnosis. So on odysseus a headroom breach will not announce itself as memory pressure —
+it will look like the silent-empty symptom this milestone already owes a fix for. **Fix the liveness check
+first; it is the instrument that tells those two apart.**
