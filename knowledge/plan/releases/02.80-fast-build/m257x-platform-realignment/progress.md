@@ -54,6 +54,52 @@ which is the precondition for paying the debt down deliberately rather than by i
 
 - iter-06 (tik): **the milestone's headline route landed and was proven live — `stackseed: 7 seeder(s) failed` → 0, autoverify FAILED 2 → 1.** All **12** `jobsimulation.*` write targets re-pointed at the `public` tables jobsim-in-app created (the pre-compute listed 11 — `validation_check_results` was missing, found because the re-survey measured instead of trusting); the **three co-written session PAIRs** collapsed to their canonical half (`D-M257x-6`: for a pair, removal IS the re-point, and §7 rule 2's assertion is the very next step in the diff); the FK ordering that was free across schemas became load-bearing within one and was fixed in both flush slices and `resetTables`. `REXT_TRANSITIONAL_SCHEMAS` shrank `cms jobsimulation` → `cms` and the no-growth fence's **shrink branch fired as designed** (*"this failure is GOOD NEWS"*), so the paydown is a claim in writing. New **derived** fence `test_write_target_schema_fence.py` names no dead schema at all — it reads the legal set from the same `repos_yml.sh` the migrator and the verifier use, so the next fold goes RED offline; 2 mutations RED-proven, its fixture mutation-verified too. Side: a `shellcheck` guard RED since **iter-02** in a suite nobody re-ran — see iter-06/progress.md
 
+### Pre-computed input for iter-07 (`REPOINT-M257x-cms-similarity-writes`) — measured 2026-07-31, do NOT re-derive
+
+Measured against the live demo-1 DB + the snapshot cache at the end of the iter-06 session, so iter-07
+starts from evidence. **This one is NOT a re-point of a constant — it is a capture/replay ASYMMETRY**,
+and that is the whole finding.
+
+**1. The surface, and where its four tables actually are.** `stack-snapshot/simembeddings` declares
+`const Schema = "cms"` and replays `similarities` (274 rows) · `similarity_categories` (278) ·
+`similarity_features` (274) · `similarity_skills` (664). On demo-1 **all four exist in `public`**, all
+four hold **0 rows**, and the `cms` schema holds **0 tables**. That empty library IS the surface's own
+stated root cause #3 ("a fresh demo has 0 rows there, so /library/ai-simulations is EMPTY") recurring
+through a different door.
+
+**2. Column drift: NONE.** The cached manifest's column lists match `public.*` exactly, table for table
+(order differs; the manifest names its columns, so COPY is order-independent). Verified against
+`information_schema.columns` on demo-1 — the same check iter-06 ran, same result.
+
+**3. `Schema` is used for BOTH capture and replay, and they now disagree.** Capture reads **prod**,
+where the legacy `cms` schema survives pending platform **M810/M710**; replay writes a **fresh stack**,
+where the platform never creates it. This is exactly `D-M257x-3`'s two-states-per-row axis, and
+`D-M257x-7` (iter-06) already set the precedent: **the WRITE side moves, the prod-READ side stays.**
+The cached capture is dated **2026-06-29** — before cms-in-app — so re-capture freshness is a separate
+question that cannot be settled from this box (no prod access; `HOST-M257x-toolchain`).
+
+**4. The mechanism to change, and its size.** `replay/replay.go` reads `tb.Schema` straight off the
+manifest at `:135/152/163/173/184`. Only **three** types implement `Replayer` (`cmd/stacksnap/adapters.go`
++ two test fakes), so widening the interface is bounded.
+
+**The design decision iter-07 must make (do not default to the easy one).** A declared
+`ReplaySchema = "public"` on the surface is the two-line fix and is *the same hand-maintained-constant
+defect this milestone exists to end* — it would be wrong again at the next fold. The alternative is a
+**derived replay-time resolver**: for each manifest table, if `<manifest schema>.<table>` exists on the
+target use it unchanged (so taxonomy/directus are untouched); else if **exactly one** schema on the
+target holds that table, remap to it and say so LOUDLY; else fail loud naming the candidates. That is
+"follow the platform when it moves" implemented once, generically, and it self-heals for every future
+surface. It is more work and it changes a shared engine — which is why it is a decision, not a detail.
+
+**Two things not to miss.** (a) `stacksnap`'s pre-replay precondition probe fails first with
+`probe stack schema: pg: schema "cms": schema has no columns (empty digest)` — that gate reads the
+manifest schema too and must move with the resolver, or the surface still skips at rc=4 before any copy
+is attempted. (b) The firewall `ParentScope` predicates embed `"cms"."similarities"` inside the capture
+FILTER SQL; those run against **prod** and must NOT be re-pointed (`D-M257x-7`).
+
+**When it lands,** `REXT_TRANSITIONAL_SCHEMAS` can go `"cms"` → empty — the second and last firing of
+the debt fence's "this failure is GOOD NEWS" branch, and the act that makes **gate clause 4** claimable.
+
 ### Pre-computed input for iter-06 (`REPOINT-M257x-jobsim-writes`) — CONSUMED by iter-06; kept for provenance
 
 Measured against the live demo-1 database at the end of the iter-05 session, so the next iter starts from
