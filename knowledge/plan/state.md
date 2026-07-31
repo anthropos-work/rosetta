@@ -1,7 +1,7 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257 — first-light build (iterative) — NOT STARTED. Gate: cold --purge + demo-up 666.29 s → ≤ 360 s p50 on a host, autoverify green / 0 warnings. re_scope_trigger re-derived 480 → 420 s."
+active_milestone: "M257 — first-light build (iterative) — NOT STARTED. Gate: cold --purge + demo-up, from `billion`'s 666.29 s baseline → ≤ 360 s p50 measured on **odysseus** (D-v28-14 moved the gate host; odysseus's own baseline is UNMEASURED and M257 owes it), autoverify green / 0 warnings. re_scope_trigger re-derived 480 → 420 s."
 last_closed: "M256 — 2026-07-30"
 phase: "Between milestones. M256 closed-on-gate + merged into release/02.80-fast-build. Both repos clean + pushed; rext tag fast-build-m256-harden-final on origin. demo-2 up (16 containers, pt-world re-seeded, drifted cockpit fixture sha 99e2f315 restored). Next: /developer-kit:work-milestone --milestone=M257."
 last_updated: "2026-07-30"
@@ -31,7 +31,7 @@ check in `odysseus.json` before pricing any lever against it.
 ## Active milestone
 
 **M257 — first-light build** (`iterative`, not started). Collapse the cold `--purge` + `demo-up` cycle
-**666.29 s → ≤ 360 s p50**. Levers L1–L10 are ranked by measured seconds in its `overview.md`; **L1 is already
+from **`billion`'s 666.29 s → ≤ 360 s p50 on `odysseus`**. Levers L1–L10 are ranked by measured seconds in its `overview.md`; **L1 is already
 proven real** (M255: hiring image 4.84 GB → 379 MB, export leg 146.8 s → 2.9 s).
 
 ⚠️ **Tighter than first drafted.** Its `re_scope_trigger` was re-derived **480 → 420 s**: at 480 it could only
@@ -54,7 +54,7 @@ Between milestones. M256 is closed and merged; nothing is half-written.
 
 **M255 build-bench & host-headroom** (section, HARD barrier) ✅ **done 2026-07-28, VERDICT GO** →
 **M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257 first-light build**
-(666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
+(`billion` 666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
 user's order — *sharpen the detector before changing what it detects*.
 
 ## Binding user decisions (2026-07-27, + later)
@@ -99,7 +99,7 @@ user's order — *sharpen the detector before changing what it detects*.
   unmeetable as first authored** · ~43 checks that reported success without checking · 4 Fate-1, 10 Fate-3
   (6 → M258, 2 → M257), 1 drop, **3 awaiting the user's signature**, 0 escape-hatch · 0 platform edits.
 - **M255 — 2026-07-28** · build-bench & host-headroom (section, HARD barrier) · **VERDICT GO** · baseline
-  n=3 p50 666.29 s · 3 Fate-1, 4 Fate-3 → M257, 0 escape-hatch · 0 platform edits.
+  n=3 p50 666.29 s on `billion` · 3 Fate-1, 4 Fate-3 → M257, 0 escape-hatch · 0 platform edits.
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;

@@ -35,7 +35,7 @@ never exhausting it**, and without weakening a single safety guard.
 **The gate measures against the M255 `n=3` campaign, not the `n=1` annotation.** Both are listed because the
 annotation is where the lever ranking comes from; the campaign is what the exit gate is a percentage of.
 
-| | **n=3 p50 — THE BASELINE** | n=1 annotation |
+| on `billion` | **n=3 p50 — THE BASELINE** | n=1 annotation |
 |---|---|---|
 | Total cycle | **666.29 s (11 m 06 s)** | 672.4 s (11 m 12 s) |
 | Bring-up | 633.15 s (95.0 %) | 650.7 s (96.8 %) |
@@ -100,17 +100,32 @@ not required. **Document it; do not make it the default** (a wiped DB is usually
 ## Also in scope — the §8.5 corpus retraction (D-v28-10, moved here from M255)
 
 Landing **once**, with the *achieved* numbers, so `frontend-tier.md` is rewritten a single time.
-**Enumerated** mirror set (the first draft said "all four docs" and named none):
-`corpus/ops/demo/frontend-tier.md` **×4 sites** — `:231`, `:249`, `:262`, `:271` — plus
-`corpus/ops/demo/README.md:139` and `CLAUDE.md:318`.
+**Enumerated** mirror set — **RE-ANCHORED 2026-07-31, and every line below was re-verified by grepping the
+claim string.** The first draft's `:231 / :249 / :262 / :271` were **pre-M255 line numbers**: M255's own doc
+commit shifted them **+24** and this list was never re-anchored. The live set is
+`corpus/ops/demo/frontend-tier.md` **×4 sites** — **`:255`** (*"one ~3-minute, ~3.7 GB cached build per
+frontend"*), **`:273`** (*"a ~3.7 GB next-web compile"*), **`:274`** (*"pure memory starvation, not a slow
+build"* — a live claim this section previously named in prose with **no** line cite), **`:286`** (*"the ~3.7 GB
+next-web build spike"*) — plus `corpus/ops/demo/README.md:139` and `CLAUDE.md:318` (both **re-verified
+correct**). **Old `:271` is dropped from the work list: it is a NO-OP** — *"the ~3.7 GB build cache"* was
+**already retracted by M255** at `frontend-tier.md:299-306`, which now carries the measured 105.4 GB and the
+25 GiB floor.
 **Gated by a grep assertion** for the retracted strings: the first draft cited
 `stack-core/demo_knob_guard.py` as the machine fence, but that guard matches `${DEMO_*:-default}` knobs and
 `case` arms and **structurally cannot see prose numbers**. `demo-up-defaults.md` carries none of these claims
 and is **not** in the set. The claims:
-*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off) · *"~3 min per frontend"* → right for the two Next apps,
-**~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" zero times in 623 lines** ·
-*"~3.7 GB first build"* (`up-injected.sh:794`) → measured **4.77 / 4.67 GB** · studio *"pure memory
-starvation, not a slow build"* → refuted (export/unpack is 288.4 s; the box never exceeded load 4.90/8).
+*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off; **already retracted**, see above) · *"~3 min per
+frontend"* → right for the two Next apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions
+**"hiring" only 4 times in 676 lines** (`:24`, `:32`, `:294`, `:666` — the stale figure was *"zero times in 623
+lines"*; the substantive point stands, hiring is barely documented as a first-class frontend) ·
+*"~3.7 GB first build"* → **two** sites in `up-injected.sh`, **`:816` and `:1251`** (the stale cite was a single
+`:794`) → measured **4.77 / 4.67 GB** — and note `up-injected.sh:300` already hedges *"4.67-4.84 GB"*, the
+conflict `build-budget.md` resolves to the profile's **4.84 GB** · studio *"pure memory starvation, not a slow
+build"* → refuted (export/unpack is 288.4 s on `billion`; the box never exceeded load 4.90/8).
+
+> **Every retraction written here must NAME ITS HOST** (`D120`): the numbers being retracted are `billion`
+> measurements, M257's achieved numbers will be `odysseus` measurements, and the two must not be mixed in one
+> sentence without saying which is which.
 
 ## Dev path
 

@@ -15,7 +15,7 @@
 
 ---
 
-## The baseline — **`n=3 p50 = 666.29 s`** (2026-07-27)
+## The baseline — **`n=3 p50 = 666.29 s` on `billion`** (2026-07-27)
 
 The milestone's other deliverable: v2.8 now has a **measurement floor**, where before it had one `n=1` number
 from a one-off shell script that lived on a single box and was never in version control.
@@ -26,7 +26,7 @@ Artefacts: `billion:/home/devops/panorama/m255/campaign/`.
 
 | | p50 | min | max |
 |---|---|---|---|
-| **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
+| **total cycle** on `billion` | **666.29 s** | 658.15 s | 881.01 s |
 | UI-tier image builds (3) | **436.1 s — 65.5 %** | | |
 | image export + unpack alone | **307.5 s — 46.2 %** | | |
 

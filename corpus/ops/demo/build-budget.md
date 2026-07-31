@@ -105,6 +105,20 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 
 ## The baseline
 
+> ⚠️ **Host change — `D-v28-14` (2026-07-31): the gate host is `odysseus`, not `billion`.** Everything in this
+> section records **where the M255 baseline was measured**, and stays true as such. It is **not** a statement
+> about where v2.8's gates are graded: `billion` is the demo machine now (deploy-only, never dev/test), and
+> every `buildbench` campaign from here on runs on **`odysseus.taildc510.ts.net`** — 8 cores · 7,780 MB RAM ·
+> **zero swap** · 189 G free of 193 G · x86_64 · Linux 6.8.0-117 · Docker 29.6.2 · the **containerd image
+> store** (`Storage Driver: overlayfs` with `io.containerd.snapshotter.v1`, the same class as `billion`, so the
+> unpack leg is paid there too — *not* the laptop's classic overlay2 graphdriver).
+>
+> **`billion`'s figures do not transfer.** This doc's own first rule is why: the same Dockerfile and context
+> yield **4.84 GB on `billion`** and **2.88 GB on the arm64 laptop** (§*The rule that comes first*).
+> **`odysseus`'s own baseline is UNMEASURED at time of writing** — M257 owes it (`n ≥ 3`, plus a checked-in
+> `odysseus.json` host profile), and until it exists there is **no odysseus number to quote**, projected or
+> otherwise. A reduction target is measured against **the baseline of the host it runs on**.
+
 **`billion.taildc510.ts.net`** — 8 vCPU · 7.3 GiB RAM · 15 GiB swap · x86_64 · Linux 6.8.0-134 · Docker 29.6.2
 with the **containerd image store** · demo-1 at offset 10000 with `--public-host`.
 
@@ -113,7 +127,7 @@ the gated number**; the `n=3` campaign below is, and it lands within 0.9 % of th
 
 | | |
 |---|---|
-| **Total cycle** | **672.4 s — 11 m 12 s** *(n = 1, 2026-07-27 — superseded as the baseline by the 666.29 s p50 below)* |
+| **Total cycle** on `billion` | **672.4 s — 11 m 12 s** *(n = 1, 2026-07-27 — superseded as the baseline by the 666.29 s p50 below)* |
 | teardown | 19.7 s (2.9 %) |
 | bring-up | 650.7 s (96.8 %) |
 | **UI-tier image builds (3)** | **446.4 s — 66.4 % of the cycle** |
@@ -127,16 +141,18 @@ not compilation — it is writing the image to disk.**
 Full anatomy, including the ranked lever table: `releases/02.80-fast-build/evidence/build-annotation.md`
 in the plan tree.
 
-### The n ≥ 3 campaign — **the gated baseline**
+### The n ≥ 3 campaign on `billion` — **that host's gated baseline**
 
 **`buildbench run 1 --reps 3 --profile billion --public-host billion.taildc510.ts.net --label m255-baseline`**,
 2026-07-27, same host as above. Artefacts: `billion:/home/devops/panorama/m255/campaign/`. **All three reps
 `rc=0`, `autoverify green: true, warnings: 0`, `phases_complete: true`, zero missing anchors, headroom assert
 OK.**
 
-> **The baseline is `n=3 p50 = 666.29 s (11 m 06 s)`.** It supersedes the annotation's **672.4 s** — which
-> was `n=1` and, it turns out, an unusually representative one: the two differ by **0.9 %**. **Every v2.8
-> reduction target is measured against 666.29 s.**
+> **`billion`'s baseline is `n=3 p50 = 666.29 s (11 m 06 s)`.** It supersedes the same host's annotation figure
+> of **672.4 s on `billion`** — which was `n=1` and, it turns out, an unusually representative one: the two
+> differ by **0.9 %**. **A v2.8 reduction target is measured against the baseline of the host it runs on** — on
+> `billion`, against its 666.29 s; on `odysseus`, against `odysseus`'s own baseline, which per `D-v28-14` is
+> **not yet measured**.
 
 > 📌 **Provenance — read before quoting or re-deriving these numbers.** The campaign ran **09:59–11:37Z on
 > 2026-07-27** (reps completed 11:11 / 11:26 / 11:37; `campaign.json` written 11:37), on an otherwise-idle
@@ -147,15 +163,22 @@ OK.**
 > 206 s of its 215 s excess sits in two sub-phases, matched to a reclaim that evicted 7 cache records /
 > 356.8 MB. Host contention smears across sub-phases; it does not concentrate like that.
 >
-> **Re-confirm on the first post-freeze campaign** (`billion` is under a user freeze until ~2026-07-29, see
-> [`state.md`](../../../knowledge/plan/state.md) § Process flags): the **n=3 p50**, spike (a)'s
-> **146.8 s → 2.9 s** export cut, and spike (d)'s **disk-bound** attribution — the three timing-derived claims.
+> **Re-confirm on `odysseus`'s baseline campaign.** This note used to say *"re-confirm on the first post-freeze
+> campaign"* — that freeze has expired, and `D-v28-14` has since made `billion` demo-only, so there is no
+> "first post-freeze campaign on `billion`" to wait for. The three timing-derived claims re-home to the
+> `odysseus` baseline campaign M257 owes, and they **ride along free**: that campaign already runs `n ≥ 3` cold
+> cycles with per-phase attribution, which is the whole instrument each of them needs. The three: the **n=3 p50
+> of 666.29 s on `billion`**, spike (a)'s **146.8 s → 2.9 s** export cut, and spike (d)'s **disk-bound**
+> attribution. **What a different host can re-confirm is the SHAPE, not the seconds** — an `odysseus` figure
+> corroborates *that export dominates* or *that the run is not I/O-ceilinged*; it can never restate `billion`'s
+> numbers.
+>
 > The **barrier verdict needs no re-confirmation**: `4.84 GB → 379 MB` is bytes on disk, not a stopwatch, and
 > a 50× export reduction cannot be produced by host contention.
 
 | | p50 | min | max |
 |---|---|---|---|
-| **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
+| **total cycle** on `billion` | **666.29 s** | 658.15 s | 881.01 s |
 | teardown (P1) | 28.08 s | 24.99 s | 33.17 s |
 | bring-up (P4) | 633.15 s | 633.11 s | 852.92 s |
 
@@ -227,7 +250,8 @@ Three consequences, all of which are why the campaign protocol reads the way it 
 ### The informational laptop run
 
 **M1 Pro · macOS 25.1 · Docker Desktop 28.5.1 · 10 VM CPUs · 9,937 MiB VM RAM · 58 GiB VM disk · arm64 ·
-overlay2 · BuildKit cache EMPTY (truly cold).** Not gated — every v2.8 gate is measured on `billion`.
+overlay2 · BuildKit cache EMPTY (truly cold).** Not gated — a v2.8 gate is measured on the release's dedicated
+bench host (`billion` for the M255 baseline; **`odysseus`** since `D-v28-14`), never on a workstation.
 
 > **What was measured, and what was not — because the assert said no.** The intent was a full `n=1` cycle
 > here. It did not run: `buildbench assert-headroom --profile laptop` **FAILED clause 1** —
@@ -237,12 +261,18 @@ overlay2 · BuildKit cache EMPTY (truly cold).** Not gated — every v2.8 gate i
 > **That is the assert working, on its first live outing, and the result is reported rather than overridden.**
 > A cycle measured on a host at load 10.7/10 would have produced a number whose slowness says nothing about
 > the bring-up — precisely the class of number D-M255-1 exists to refuse. The lesson generalises: **a
-> developer workstation is not a bench.** It has other jobs. `billion` is the gate host because it does not.
+> developer workstation is not a bench.** It has other jobs. A **dedicated** bench host is used because it does
+> not — `billion` for the M255 baseline, and **`odysseus`** for every v2.8 gate since `D-v28-14`.
 >
 > What *is* measured below is one real `hiring.Dockerfile` build taken on a quiet box — the dominant leg, and
 > enough to fix the laptop profile's per-lane memory peak and to expose three host-shape differences that
 > matter more than a wall-clock total would have. The one field this leaves derived rather than measured is
-> the profile's `projected_image_gib`, and it is labelled as such in `laptop.json`.
+> the profile's `projected_image_gib` — and **the only thing labelling it is prose**, inside `laptop.json`'s
+> `notes` blob, **which no code reads**. The loader validates it *identically* to the four genuinely-measured
+> numeric fields (`buildbench.py:408-411`), so nothing mechanical stops a derived number being quoted as one.
+> **There is no `provisional_fields` list and no provenance object** — M257 owes the real mechanism (it is a
+> carried M255 item); until then, treat "measured or derived?" as a question the profile answers only to a
+> human who opens it.
 
 One real `hiring.Dockerfile` build, 2026-07-27:
 
@@ -251,29 +281,58 @@ One real `hiring.Dockerfile` build, 2026-07-27:
 | `pnpm install --frozen-lockfile` | **74.4 s** | 25.5 s |
 | `pnpm turbo build --filter=hiring-app` | **140.4 s** | 42.6 s |
 | export | **74.9 s** (layers only) | 136.7 s (99.0 layers + 37.6 unpack) |
-| image | **2.88 GB** | 4.67 GB |
+| image | **2.88 GB** | 4.84 GB (see below) |
 | total | **296 s** | 208 s |
 | VM memory: idle → peak | 615 → 4,838 MiB | 1,500 → 5,405 MiB |
+
+> **On the 4.67-vs-4.84 GB conflict — quote 4.84 GB.** `billion`'s hiring image was measured twice on
+> 2026-07-27: **4.67 GB** in the `n=1` annotation (the `demo-1-hiring` tag) and **4.84 GB** in spike (a)'s
+> baseline build; `up-injected.sh:300` hedges *"4.67-4.84 GB"*. **4.84 GB is the profile's value** — it is the
+> divisor behind `laptop.json`'s `projected_image_gib: 12` (billion's measured 18 GiB cycle peak scaled by
+> 2.88/4.84), and it is what §*The rule that comes first* and the spike (a) barrier verdict already use. An
+> `odysseus.json` `projected_image_gib` must be derived from a **measured odysseus** image, not from either.
 
 **Three things a laptop comparison teaches, and none of them is "the laptop is faster":**
 
 1. **Compilation is 3.3× SLOWER here** (140.4 s vs 42.6 s) despite ten cores and more RAM. A laptop is not a
-   faster `billion`; it is a differently-shaped host. This is why every v2.8 gate is measured on `billion`.
-2. **There is no unpack leg** — overlay2, not containerd. Lever L9 is a `billion`-only phenomenon.
+   faster `billion`; it is a differently-shaped host. This is why a v2.8 gate is measured on a **dedicated**
+   bench host — `billion` for the M255 baseline, `odysseus` since `D-v28-14` — and never on a workstation.
+2. **There is no unpack leg** — overlay2, not containerd. Lever L9 is a **containerd-image-store** phenomenon,
+   not a `billion` one: it is paid on `billion` **and on `odysseus`** (both use the containerd image store) and
+   on neither the laptop nor any other classic-overlay2 host.
 3. **The image is 40 % smaller** for arch reasons alone.
 
 ---
 
 ## The headroom contract
 
-Three clauses, evaluated against a **measured, checked-in host profile**
-(`rosetta-extensions/stack-core/hostprofiles/{billion,laptop}.json`). Any failure fails the whole assert.
+**Four clauses** — three thresholds plus a **clause zero** — evaluated against a **measured, checked-in host
+profile** (`rosetta-extensions/stack-core/hostprofiles/{billion,laptop}.json`; M257 adds `odysseus.json`). Any
+failure fails the whole assert.
 
 | # | clause | fails when |
 |---|---|---|
+| **0** | **measured-ness** (`require_measured`) | a **required input is `None`** — the instrument produced nothing, so there is no verdict to give |
 | 1 | **CPU** | peak `load1` > `cores − 2` |
 | 2 | **memory** | `lanes × measured-per-lane-peak + idle` > 80 % of the memory budget |
 | 3 | **disk** | free < `disk_floor_gib` + `projected_image_gib` |
+
+> **Clause zero is the one a brand-new host hits FIRST, and it is unpredictable from a three-clause reading.**
+> `buildbench.py:450` names it in its own comment (implemented `:460-469`) and it fires in **all three**
+> production call sites — `pre_rep_assert` requires `disk_avail_gib` (`:723`), the post-rep gate requires
+> `peak_load1` **and** `disk_avail_gib` (`:980`), the `assert-headroom` CLI requires `disk_avail_gib` (`:1271`).
+> It exists because the first version *skipped* any clause whose input was `None`, so a rep whose sampler died
+> handed in `peak_load1=None` and the gate **returned `ok=True` on a host it had never measured** — the same
+> "an empty result read as a pass" class the rest of `stack-core` refuses. The failures it emits are named
+> `unmeasured_peak_load1` / `unmeasured_disk_avail_gib`. **On a fresh host with an unpopulated sampler or a
+> disk probe that did not answer, `unmeasured_disk_avail_gib` is the first thing you will see** — that is the
+> assert working, not a broken profile.
+
+> **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
+> peak (`max` over the sampler's rows, `buildbench.py:978`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1267`) — and the failure message still
+> says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
+> transient spike fails. It is the `run` path's peak that gates a number.
 
 **Clause 2 uses the MEASURED per-lane peak, not the V8 ceiling — deliberately.** The effective ceiling is
 **8192 MiB** (`apps/web/package.json:98` and `apps/hiring/package.json:92` re-assign
@@ -290,8 +349,20 @@ to ~3 % across three independent cycles is a model, not a guess — which is wha
 
 **The derived consequence M257 has to price in:**
 
-> `max_parallel_ui_lanes = floor((0.8 × budget − idle) / measured-lane-peak)` = **1 on billion**, **1 on the
-> laptop.** Neither host fits two concurrent Next.js build lanes in RAM.
+> `max_parallel_ui_lanes = max(1, min(ui_image_count, floor((0.8 × budget − idle) / measured-lane-peak)))`
+> = **1 on billion**, **1 on the laptop.** Neither host fits two concurrent Next.js build lanes in RAM.
+
+**Both guards in that formula are load-bearing, and an earlier draft of this doc omitted them.** The code
+(`buildbench.py:429-435`) clamps at `ui_image_count` (3) and **floors at 1**; the bare `floor(…)` returns **0**
+on an undersized host where the code returns **1**. `billion` and the laptop agree with the bare version by
+coincidence (1.153 → 1, 1.736 → 1) — **a third host need not**, which matters now that `odysseus` is the gate
+host and its profile is unwritten.
+
+> **The floor of 1 is NOT a claim that one lane FITS** (`buildbench.py:424-427`, verbatim intent). A host too
+> small for a single lane still has to build one, so the *plan* is 1 either way — on such a host it is
+> `headroom_assert(lanes=1)` **clause 2** that fails, and that is where the fact gets reported. Do not read a
+> return of 1 as "headroom verified"; read it as "the plan is one lane". The two are checked in different
+> places on purpose. This is load-bearing for **L2**, whose entire premise is `max_parallel_ui_lanes = 1`.
 
 **On macOS the budget is the Docker VM allocation — never host totals.** A 16 GiB laptop has a 9,937 MiB
 engine. Reading host `free`/`df` there over-states RAM by ~60 % and disk without bound; that is precisely how
@@ -321,6 +392,24 @@ disk (measured across the campaign: 38.85 → 36.23 GiB free over three reps and
 it swings roughly **18 GiB** — `--purge` frees the old images, the rebuild re-writes them, and the export leg
 stages layers before unpacking them. Clause 3 is sized against that swing, which is why 36–42 GiB of free disk
 is comfortable and 25 GiB is the floor.
+
+> ### 🔴 Step zero on a host with an EMPTY BuildKit cache: run ONE warm-up cycle and DISCARD it
+>
+> The gated variant is *cold images, **warm** layer cache* (§*The variant*), and v2.8 deliberately **cut** the
+> truly-cold run from the gate (`D-v28-8`) because it is *a different, slower thing*. **A brand-new host has no
+> layer cache at all** — `odysseus` was probed on 2026-07-31 with **0 images, 0 containers, 0 build cache** — so
+> **rep 1 there measures the truly-cold variant the gate excludes.** That is a different *measurement class*,
+> not an unlucky rep, and a `p50` computed over it **restates the excluded variant as the gated one**.
+>
+> **THE RULE: on a host whose BuildKit cache is empty, at least one full warm-up cycle MUST run and be
+> DISCARDED before the `n ≥ 3` campaign begins**, so that every counted rep starts from a populated cache. The
+> warm-up is a cycle, not a rep: it is not written into the campaign dir and never enters the `p50`.
+>
+> **This is not the same warm-up as step 3's** — cross-reference, do not conflate. Step 3's exists for the
+> **one-off reclaim eviction** (7 records / 356.8 MB → **+173 s**) and protects *comparability between reps of
+> one campaign*. This one is about **measuring the right variant at all**. On a fresh host both apply and this
+> one is the stronger: step 3's warm-up saves a `p50` from an outlier; this one stops the campaign from grading
+> a variant the gate does not accept.
 
 1. **Declare the starting state.** Every ledger records `docker system df` before and after, plus the Docker
    VM's free disk and the host's.
@@ -414,13 +503,61 @@ fingerprint does not match. **Cache layers, never images.** M257 asserts it.
 
 `rosetta-extensions/stack-core/buildbench.py`, at a tag pushed to origin.
 
+> **Invoke it through `python3` — there is no wrapper.** Despite its shebang, `buildbench.py` is committed
+> **mode `100644`** (not executable), and the rext clone has no `bin/`, no `pyproject.toml`, and no
+> console-script entry point. `./buildbench.py` and a bare `buildbench.py` both fail; only the explicit
+> interpreter form runs. (Elsewhere in the corpus `rext <section>/<script>` is shorthand for *"that path inside
+> the rext clone"*, not a command on `PATH`.)
+
 ```bash
-buildbench.py run 1 --reps 3 --profile billion --public-host <magicdns> --label baseline
-buildbench.py report .buildbench/baseline-<ts>
-buildbench.py assert-headroom --profile laptop --lanes 2      # exit 1 = this plan oversubscribes the host
-buildbench.py env-snapshot                                    # every knob, value, and where it is read
-buildbench.py parse --log <an older cycle log>                # back-fill a past run into the same schema
+cd <the rext clone>
+# --profile names a checked-in hostprofiles/<name>.json; an unknown name exits 2.
+# `odysseus.json` is M257's first deliverable — until it lands this line cannot run.
+python3 stack-core/buildbench.py run 1 --reps 3 --profile odysseus \
+        --public-host <magicdns> --label baseline
+python3 stack-core/buildbench.py report stack-core/.buildbench/baseline-<ts>
+python3 stack-core/buildbench.py assert-headroom --profile laptop --lanes 2   # exit 1 = plan oversubscribes
+python3 stack-core/buildbench.py env-snapshot                                 # every knob + where it is read
+python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
+
+**The full flag surface** (verified against the argparse at `buildbench.py:1197-1234`). The ones above are the
+common path; these are the rest, and two of them decide whether a campaign is comparable at all:
+
+| verb | flag | default | what it does |
+|---|---|---|---|
+| `run` | `--out <dir>` | `<rext>/stack-core/.buildbench/<label\|campaign>-<utc-ts>` | where the campaign dir is written |
+| `run` | `--no-reclaim` | off | **skip the between-reps reclaim.** Changes the variant — reps then accumulate cache |
+| `run` | `--reclaim-until <dur>` | `24h` | the `docker builder prune --filter until=` window (§*The campaign protocol* step 3) |
+| `run` | `--dry-run` | off | plan the campaign without running a cycle |
+| `parse` | `--samples <file>` | — | fold a `samples.tsv` into the parsed ledger |
+| `parse` | `--build-logs <dir>` | — | fold per-image build logs in |
+| `parse` | `--n <int>` | `1` | the stack `N` the log came from (anchor matching is `demo-N`-aware) |
+| `parse` | `--no-public-host` | off | the run had no `--public-host` → its serve/registry anchors are *not applicable*, not missing |
+| `parse` | `--no-ui` | off | the run had `DEMO_NO_UI=1` → its UI-tier anchors are *not applicable*, not missing |
+| `report` / `assert-headroom` / `env-snapshot` | `--json` | off | machine-readable output instead of the printed summary |
+
+**Two env knobs, and the first is a trap now that the gate host has changed:**
+
+| knob | read at | default | note |
+|---|---|---|---|
+| `BUILDBENCH_PROFILE` | `:1205`, `:1217` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so an `odysseus` campaign must pass `--profile odysseus` explicitly or export `BUILDBENCH_PROFILE=odysseus`, or it will grade itself against the wrong host's profile |
+| `BUILDBENCH_LANES` | `:873` | `1` | the lane count `run` asserts headroom for. **Env-only — there is no `--lanes` flag on `run`** (`--lanes` exists on `assert-headroom` alone) |
+
+*(`--public-host` also falls back to `STACK_PUBLIC_HOST` (`:1206`) — the same stack-wide knob the rest of the
+demo family reads.)*
+
+> **`--reps 1` exits 0 and is NOT a gateable number.** The harness separates **integrity** (`ok`) from
+> **quotability** (`gateable`): `report["gateable"]` is `ok and len(ledgers) >= 3` (`buildbench.py:1126`), and a
+> sound sub-`n=3` campaign carries `not_gateable_reason` — *"n=1 is below the n>=3 floor — sound, but not a gate
+> number"* (`:1128`), printed by `report` at `:1185-1186`. **The exit code does not distinguish them**: a
+> `--reps 1` smoke run reports `ok: True` and exits `0`. That is exactly how a non-gateable figure gets quoted
+> as a gate — at `n=2` this very campaign would have reported **~773 s on `billion`** against its real
+> **666.29 s on `billion`** p50. **Read `gateable`, not the exit code, before quoting any number.**
+
+> **`parse --json` is a DEAD flag.** It is declared (`:1233`) and then never consulted: the `parse` branch ends
+> in an unconditional `print(json.dumps(out, indent=2))` (`:1312`), so `parse` **always** emits JSON with or
+> without it. Harmless, but do not read its presence as implying a non-JSON `parse` mode exists.
 
 **Every ledger entry is self-describing** — the exact `argv` of both legs, the rext HEAD and tag (and whether
 the clone was dirty), and **every `DEMO_*` knob with its effective value and whether that value came from the
@@ -437,14 +574,16 @@ not evidence.
 
 A campaign writes `campaign.json` plus a `rep-NN/` per rep holding `ledger.json` (the full phase/build/sample
 ledger), `samples.tsv`, and `cycle.log`. **The M255 baseline lives at
-`billion:/home/devops/panorama/m255/campaign/`** and is what every v2.8 comparison re-derives from — re-read it
-with `buildbench report`, don't re-type numbers out of this doc.
+`billion:/home/devops/panorama/m255/campaign/`** and is what a comparison **on `billion`** re-derives from; per
+`D-v28-14`, a comparison on another host re-derives from **that host's own** campaign dir (`odysseus`'s is owed
+by M257). Either way: re-read the ledger with `buildbench report`, don't re-type numbers out of this doc.
 
 ### Rung zero applies here too
 
 A remote stack consumes `rosetta-extensions` **at a tag fetched from origin** (the M217 FATAL pin guard). A
-`buildbench` that exists only in the authoring copy is **unreachable** to `billion`, and the failure looks like
-a missing feature rather than a missing tag. `git push --tags` is part of shipping the harness. See
+`buildbench` that exists only in the authoring copy is **unreachable** to the remote bench host — `odysseus`
+since `D-v28-14` — and the failure looks like a missing feature rather than a missing tag. `git push --tags` is
+part of shipping the harness. See
 [`../verification.md`](../verification.md) pre-flight rung zero.
 
 ---

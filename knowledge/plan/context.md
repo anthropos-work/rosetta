@@ -23,7 +23,7 @@ proves itself**.
 Designed from
 [`releases/02.80-fast-build/evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md)
 (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above
-load 4.90/8 — **superseded as the BASELINE by M255's `n=3 p50 666.29 s`**, which it lands within 0.9 % of) +
+load 4.90/8 — **superseded as the BASELINE by M255's `n=3 p50 666.29 s` on `billion`**, within 0.9 % of it) +
 [`releases/02.80-fast-build/evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md)
 (18/18 green, **1 of 18 proves a WRITE**, 12 curated use cases with no milestone home), joined at M255 by
 [`releases/02.80-fast-build/evidence/m255-spikes.md`](releases/02.80-fast-build/evidence/m255-spikes.md).

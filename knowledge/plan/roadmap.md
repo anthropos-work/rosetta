@@ -317,8 +317,19 @@ and a simplification lens) ran against the first draft of this section. Its mate
   *for*, but if odysseus's measured baseline puts a 46 % cut structurally out of reach, that is a re-scope
   signal, not a target to grind against.
 
-  **Known prerequisite gap:** odysseus has Docker 29.6.2 but **no Go**, and the rext tooling (`stackseed`,
-  `buildbench`) is Go. The `tailscale-serve.md` fresh-Linux-VM prereq list (Go + atlas + tailscale) applies.
+  **Known prerequisite gap — RE-PROBED 2026-07-31, and the first reading was WRONG.** Odysseus has Docker
+  29.6.2, and **Go IS installed: `go1.26.5` at `/usr/local/go/bin/go`** — it is simply **not on `PATH`** (no
+  `/etc/profile.d` entry, and `/usr/local/bin` is empty). So provisioning must **fix the `PATH`, not install
+  over the toolchain**. **`atlas` is genuinely absent** and does need installing; tailscale 1.98.10 and git
+  2.43.0 are present. The original probe reported "no Go" because it used `ssh host 'cmd'` — a **non-login
+  shell**, which is exactly the false-negative trap documented at
+  `corpus/ops/demo/tailscale-serve.md:133-152` (finding **F2b**): *a tool's absence and a tool's invisibility
+  produce identical output, and only one is fixed by installing anything.* Disprove it in one command before
+  installing: `ssh odysseus 'bash -lc "go version"'`. The `tailscale-serve.md` fresh-Linux-VM prereq list still
+  applies for **atlas** (+ the tailscale operator and the snapshot cache). **One thing to CONFIRM, not assume:**
+  that list specifies **Go 1.25.x** (matching rext's `toolchain go1.25.12`) and the installed toolchain is
+  **1.26.5** — newer than required, which is probably fine but has not been checked against the rext modules'
+  `go`/`toolchain` directives.
 
 - **D-v28-13 — clause 1 gates the LEG, not the suite ratio** (user, 2026-07-29). D-v28-12's relative
   `≤ 0.79×` was undecidable: iter-12 measured the statistic's noise floor at **2.04×**
@@ -419,7 +430,7 @@ demopatch (D-M255-2).
 
 **The measurement floor exists.** `buildbench` + two measured host profiles + a hard headroom assert + the
 union-apply fence + a `Read at` anchor fence, shipped in rext (tags `fast-build-m255-buildbench`, `-1`, `-2`,
-`-3` on origin). **Gated baseline: n=3 p50 `666.29 s`** (min 658.15, max 881.01), 3/3 reps green, superseding
+`-3` on origin). **Gated baseline on `billion`: n=3 p50 `666.29 s`** (min 658.15, max 881.01), 3/3 green, superseding
 the n=1 672.4 s it agrees with to **0.9 %**. The headroom model was *validated*, not merely applied: predicted
 5,400 MiB, reps peaked 5,446 / 5,579 / 5,398 MB (~3 %).
 
@@ -643,11 +654,18 @@ re-assign `--max_old_space_size=8192` inline for the `next build` child.
 folded into L1; it is not a build flag.)*
 
 **Also in scope (D-v28-10):** the **§8.5 corpus retraction**, landing **once**, with the *achieved* numbers.
-Enumerated mirror set: `corpus/ops/demo/frontend-tier.md` (**4 sites** — `:231`, `:249`, `:262`, `:271`),
-`corpus/ops/demo/README.md:139`, `CLAUDE.md:318`. Gated by a **grep assertion** for the retracted strings —
+Enumerated mirror set: `corpus/ops/demo/frontend-tier.md` (**4 live sites** — `:255`, `:273`, `:274`, `:286`),
+`corpus/ops/demo/README.md:139`, `CLAUDE.md:318`. **Re-anchored 2026-07-31** (M257 pre-flight): the four
+`frontend-tier.md` cites were `:231`, `:249`, `:262`, `:271` — **pre-M255 line numbers**. M255's own doc commit
+shifted them **+24** and neither this entry nor the M257 overview was re-anchored, so the enumeration that
+*is* the work list pointed at a cert callout, a minted-pk line, a non-fatal callout and a blank line. The old
+`:271` (*"the ~3.7 GB build cache"*) is additionally a **no-op** — M255 already retracted it at `:299-306` —
+and the live claim at `:274` (*"pure memory starvation"*) was named in prose with **no line cite at all**.
+Gated by a **grep assertion** for the retracted strings —
 `demo_knob_guard.py` matches knobs and `case` arms and **cannot see prose numbers**. The claims:
 *"~3.7 GB build cache"* (**actual 105.4 GB — ~28× off**) · *"~3 min per frontend"* (right for the two Next
-apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" zero times in 623 lines**) ·
+apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" 4 times in 676 lines** — the
+under-documentation point stands; the original *"zero times in 623 lines"* figure was stale) ·
 *"~3.7 GB first build"* (measured 4.77 / 4.67 GB) · studio *"pure memory starvation, not a slow build"*
 (refuted).
 

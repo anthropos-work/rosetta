@@ -87,15 +87,47 @@ it would present the way M239-F1's ENOSPC did: **as a downstream service dying, 
 `max_parallel_ui_lanes` is **1** here for the same reason it is 1 on billion; L2 must not be read as
 licence to run two compile lanes.
 
-### F4 — provisioning gap confirmed, and the prereq list the roadmap points at is real
+### F4 — ⚠️ **RETRACTED AND CORRECTED: Go IS installed.** Only atlas is absent.
 
-Go and atlas are both **absent**; Docker, tailscale, and git are present. `roadmap.md:321` claims
-`tailscale-serve.md` carries the fresh-Linux-VM prereq list — **it does** (`tailscale-serve.md:119-131`,
-a 6-row table with literal install commands, mirrored at `setup_guide.md:110-140`). That pointer is
-sound and needs no backfill.
+**The first reading of this finding was WRONG, and it was wrong in exactly the way the corpus predicts.**
+It is recorded here rather than quietly overwritten, because the error is the lesson.
 
-One trap to carry into provisioning: `tailscale-serve.md:133-152` documents **F2b, the login-shell
-trap** — `ssh host 'cmd'` runs a non-login shell and reports a false *"Go NOT on PATH"* for a Go that
-is installed. This recon's `NO GO` reading was taken that same way. It is corroborated by
-`ls -la ~` showing **no Go toolchain and no `.go` dir**, and by atlas being absent too — but the
-provisioning step must use the doc's disproof one-liner rather than re-running the same probe shape.
+**First reading (2026-07-31, WRONG):** *"Go and atlas are both absent."* Taken from
+`ssh devops@… 'go version'` → `command not found`, corroborated by `ls -la ~` showing no Go toolchain
+and no `.go` dir, and by atlas also being absent. That corroboration felt like enough. It was not.
+
+**Re-probe with a login shell (`ssh … 'bash -lc "…"'`) plus a filesystem check:**
+
+| | reading |
+|---|---|
+| `command -v go` (login shell) | still **not found** |
+| **`ls -la /usr/local/go/bin/`** | **`go` (15.4 MB) + `gofmt`, dated Jul 1** |
+| **`/usr/local/go/bin/go version`** | **`go version go1.26.5 linux/amd64`** |
+| `PATH` (login shell) | `…:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:…` — **no `/usr/local/go/bin`** |
+| `/etc/profile.d/*.sh` golang entry | **none** |
+| `ls /usr/local/bin/` | **empty** — so not even a symlink |
+| atlas, searched to depth 4 | **genuinely absent** |
+
+**So: Go 1.26.5 is installed at `/usr/local/go` and is simply NOT ON PATH.** Provisioning must
+**fix the PATH, not install over it** — installing a second toolchain on top of a working one is how a
+host ends up with two Gos and a version-skew bug that surfaces three iters later.
+
+**Why the first reading fooled its own corroboration.** `tailscale-serve.md:133-152` documents this
+exact trap as finding **F2b**: `ssh host 'cmd'` runs a **non-login** shell and reports a false
+*"Go NOT on PATH"* for a Go that is installed. The reason the corroboration did not save it is that
+**both** halves of it were consistent with either hypothesis — `~` has no Go dir because this Go lives
+in `/usr/local`, and atlas really is missing. **Two agreeing weak signals are not one strong signal.**
+The disproof needed a *different kind* of evidence (the filesystem), not more of the same kind.
+
+**And `roadmap.md:320-321` carried the wrong version of this claim** — *"odysseus has Docker 29.6.2 but
+**no Go**"* — so the error was not merely local to this recon; it was the release's recorded
+prerequisite. Corrected there as part of clearing the RED.
+
+**One thing to confirm, not assume:** the prereq list specifies **Go 1.25.x** and the installed
+toolchain is **1.26.5** — newer than required. Almost certainly fine, but "newer so it's fine" is the
+shape of assumption this finding exists to punish. Confirm the rext modules build against 1.26.5 before
+declaring the host provisioned.
+
+`roadmap.md:321`'s pointer to the prereq list is otherwise **sound and needs no backfill**:
+`tailscale-serve.md:119-131` really does carry a 6-row table with literal install commands, mirrored at
+`setup_guide.md:110-140`.

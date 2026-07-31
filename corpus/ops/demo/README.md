@@ -140,7 +140,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 - [`build-budget.md`](build-budget.md) — **the bring-up build budget** (v2.8 "fast build" M255): what *fast*
   means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it. Defines **READY**
   (exit 0 **and** a green `autoverify.json`), the per-phase attribution model, the measured baseline
-  (**n=3 p50 666.29 s**, of which **65.5 % is UI-tier image builds and 46 % is image export/unpack alone**), the
+  (**n=3 p50 666.29 s on `billion`**, of which **65.5 % is UI-tier image builds and 46 % is export/unpack**), the
   **headroom contract** (three clauses against a *measured, checked-in* host profile — and the derived fact
   that neither host fits two concurrent Next.js build lanes), the **campaign protocol** (the binding
   constraint is the ~18 GiB mid-cycle TRANSIENT, not the ~2 GiB a steady rep nets; reclaim is explicit and
