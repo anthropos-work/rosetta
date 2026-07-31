@@ -195,3 +195,43 @@ The mutation battery reported `RED (good)` for a mutant that had merely removed 
 The tell was an **empty list of failing test names**. Re-run with a compiling mutant, gated on an explicit
 build first, the fence fired for real. Promoted to `platform-alignment.md` §8 rule 5 — same family as §5
 rule 8 (*a check that SKIPS reads exactly like a check that PASSES*).
+
+---
+
+## iter-08 decisions — 2026-07-31
+
+### D-M257x-12 — a fence's SCOPE is a list of the system's parts, so derive it and fence it
+
+iter-02 deleted a hand-maintained tuple of the platform's services. iter-08 found the same shape one level
+up and in a worse place: **`SCORED_SECTIONS`, the write-target fence's own scope.**
+
+Worse, because *a fence only ever asserts about what it already scans.* Every other hand-maintained list in
+this milestone at least failed loudly when it drifted; an unclassified section is **invisible by
+construction** — it cannot go RED, because nothing looks at it. A new rext section (v9.0 is already adding
+surface) would simply be outside the fence, silently, forever.
+
+So `SECTION_COVERAGE` now declares a `(layer, reason)` for every Go-bearing section, `SCORED_SECTIONS` is
+**derived** from it, and the map is checked **against the repo** — a section that gains Go code and no
+classification goes RED naming itself. Widening scope means classifying a section, not editing a tuple.
+
+**Two sub-decisions worth carrying:**
+
+- **A `static` section that yields ZERO scoreable constructs is mis-classified, not covered.** It reports
+  GREEN, which is strictly worse than leaving it out — it *looks* fenced. Measured: widening the scored set
+  to the other five Go sections would have scored **0** constructs. Now asserted
+  (`test_the_static_layer_actually_scores_its_sections`), so the trap is unwritable rather than warned about.
+- **`stack-snapshot` belongs to the LIVE layer, and that is now written down.** After `D-M257x-8` its write
+  target is resolved at run time, so there is genuinely nothing static to score. *"Is it fenced?"* had a
+  correct answer recorded nowhere, and iter-07 guessed wrong.
+
+### The correction this iter had to make first
+
+iter-07 routed this forward claiming the scope limit was undocumented. **It was documented — in ten lines
+directly above the constant iter-07 quoted.** iter-08 refuted it by opening the file, and also refuted the
+proposed fix (widening would have scored nothing). The milestone's dominant defect class, committed by the
+milestone: a state reported without being measured.
+
+Added to `platform-alignment.md` §5 as **rule 10** — *read the lines AROUND the line you are quoting*. It is
+not on the existing false-absence list because it does not look like one: the substring was real, the line
+number right, the quote accurate. **The search succeeded and the conclusion was still false**, because a
+constant's meaning lives in its surroundings.

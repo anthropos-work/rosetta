@@ -266,6 +266,18 @@ Rules, in order of how often they actually catch something:
    fix is cheap and the sweep is cheaper than the second incident: `grep -n '>/dev/null 2>&1'` the file you
    just fixed, and justify every remaining one.
 
+10. **Read the lines AROUND the line you are quoting.** M257x iter-07 grepped to
+    `SCORED_SECTIONS = ("stack-seeding",)`, read that line and the module docstring, and reported the
+    scope limit undocumented — routing a fix forward for it. The justification was the **ten lines
+    immediately above the line it quoted**, and it was a good one. iter-08 refuted the finding by opening
+    the file.
+
+    This one is not on the list above because it does not look like a false absence: the substring was
+    real, the line number was right, and the quote was accurate. **The search succeeded and the
+    conclusion was still false**, because a constant's meaning lives in its surroundings. Grepping to a
+    line and reading only that line is the cheapest way to be confidently wrong about code you have
+    "checked". Open the file, or at least `sed -n 'N-15,N+5p'`.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
@@ -349,8 +361,41 @@ success without checking.
 | layer | asserts | lives in |
 |---|---|---|
 | map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo | `stack-core/platform_alignment_guard.py` (precedent: `corpus_index_guard.py`) |
-| static schema fence | every schema a seeder WRITES to is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
+| static schema fence | every schema a seeder WRITES to **through a statically-visible construct** is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
+
+### Say which layer covers which part — and derive that too (M257x iter-08)
+
+Three layers only help if something records **which one covers what**. Until iter-08 nothing did, and the
+cost was immediate: iter-07 read the static fence's scored-sections constant, concluded its scope limit was
+undocumented, and routed a fix forward. The limit *was* documented — in ten lines directly above the
+constant it quoted — and re-measurement refuted the finding. **The milestone's own dominant defect,
+committed by the milestone: a claim reported without being measured.** §5's closing rule already said it —
+*verify a claim before escalating it, including a claim made by an audit* — and it applies to your own audit
+of your own tooling.
+
+Two things came out of that, and both are worth copying:
+
+1. **A fence's SCOPE is a hand-maintained list of the system's parts, exactly like the migrate tuple §2
+   deleted** — and it is the worst place for one, because *a fence only ever asserts about what it already
+   scans.* An unclassified section cannot go RED; it is invisible by construction. So the scope is now
+   derived: every Go-bearing section on disk must carry a declared `(layer, reason)`, and a new section goes
+   RED naming itself. v9.0 adds surface; this is what makes that arrive loudly.
+
+2. **A section classified "static" that yields ZERO scoreable constructs is mis-classified, not covered** —
+   and it reports GREEN, which is strictly worse than leaving it out, because it *looks* fenced. Measured:
+   widening the scored set to the other five Go sections would have scored **0** constructs. `stack-snapshot`
+   genuinely belongs to the **live** layer, because after `D-M257x-8` its write target is resolved at run
+   time and there is nothing static left to see.
+
+   > **Rule.** Assert that each declared scope actually *matches something*. "I scanned it" and "I found
+   > nothing to check in it" are different findings, and only one of them is coverage.
+
+**And re-read a fence's stated rationale whenever the thing it justifies changes.** The pre-iter-08 comment
+argued `stack-snapshot` was safely out of scope because its one stale target *"already fails LOUD at replay
+time (rc=4)"* — a signal iter-07 had **removed** by making the replay resolve and succeed. A justification
+whose evidence has been deleted still reads as live. When you close a route, grep for the comments that
+cited it.
 
 The fence reads **only machine-readable fields** (`name` / `type` / `migrations` / `schema`) — never the prose
 comments, because per Trap B the prose can be false at the same sha, and fencing on it would mechanically

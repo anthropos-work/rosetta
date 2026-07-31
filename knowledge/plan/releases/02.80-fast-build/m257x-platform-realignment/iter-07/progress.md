@@ -206,7 +206,29 @@ shipped a 76 s members grid for four releases.
 defect and this test are Linux-host-only — verified live on billion"*). **Full sweep skip ledger: 11 skips,
 11 named, 8 of them closed.**
 
-## Why gate clause 4 is NOT being claimed, despite the debt list being empty
+## ⚠️ CORRECTION — iter-08 REFUTED most of the section below; read this first
+
+The finding below is **largely wrong**, and the correction is recorded here rather than only in iter-08
+because an inherited false finding is exactly what this milestone exists to stop.
+
+- **"nothing says so" is FALSE.** `test_write_target_schema_fence.py` carries a **ten-line justification
+  comment directly above `SCORED_SECTIONS`** explaining why `stack-snapshot` is out of scope, with a
+  correct Trap-A rationale. I read line 92 and the module docstring and did not read the ten lines
+  between them.
+- **"widen the tuple" would have been a no-op.** Running the fence's own scanner over every Go-bearing
+  section: `stack-seeding` 92 constructs, **every other section 0**. Widening would have scored nothing
+  and reported GREEN.
+- **The vacuity gap I assumed** was already closed — `test_the_seeders_actually_write_something` asserts
+  `found > 40`.
+
+**This is the milestone's own dominant defect class, committed by this iter: a claim reported without
+being measured** — and §5's closing rule names it precisely (*verify a claim before escalating it,
+including a claim made by an audit*). The residual that survived is narrower and real: the exemption's
+*reasons* had gone stale (they cited an `rc=4` signal this very iter removed), and nothing mapped a
+section to which of §8's three layers covers it. iter-08 fixed those and made the scope **derived** rather
+than hand-maintained. Gate clause 4's honest status is settled there, not here.
+
+## Why gate clause 4 was not claimed here, despite the debt list being empty <sub>(superseded — see the correction above)</sub>
 
 This is the iter's most important finding and it came out of the follow-up sweep, not the planned work —
 the third consecutive iter for which that is true.
