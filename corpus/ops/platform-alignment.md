@@ -193,6 +193,13 @@ Rules, in order of how often they actually catch something:
 4. **Enumerate the search set** (`rg --files | wc -l`) so you know what was actually searched.
 5. **Measure NUL bytes before blaming them**: `LC_ALL=C tr -dc '\000' < f | wc -c`.
 6. Use `-a` anyway. It costs nothing and removes one variable.
+7. **A probe must not be able to satisfy itself.** M257x iter-02 tracked a background script with
+   `pgrep -f "ensure-clones.sh"` — a pattern contained in the *watcher's own* command line, so it reported
+   `RUNNING` for minutes after the script had exited, and the iter reported a still-running process that did
+   not exist. Same family as the swallowed-stderr and wrong-field-name failures above: the probe answered
+   without measuring. For process checks use `pgrep -fl` with an anchored interpreter prefix, a PID file, or
+   the `$!` captured at launch — and confirm with a question that cannot self-match (`ps -Ao command | grep`,
+   then read what actually matched).
 
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then

@@ -141,3 +141,27 @@ was created minutes ago is **surprising**, and `pin-drift` is one of the three s
 `DEMO_FRESHNESS_STRICT=1` escalates — so on a strict bring-up this could refuse a legitimately-fresh stack.
 The semantics of the three states were **not read**, so this is an observation, not a defect claim. Routed as
 `CHECK-M257x-pin-state-on-fresh-clone`.
+
+### Measurement error in this iter's own instrumentation (self-match false positive)
+
+I tracked the bootstrap with `pgrep -f "ensure-clones.sh"`. That pattern matches **its own poller**: the
+check ran as `zsh -c '… until ! pgrep -f "ensure-clones.sh"; do sleep …'`, so the command line being searched
+for was present in the searching process. `pgrep` therefore reported `RUNNING` continuously — including for
+some minutes **after** the script had exited and written its lockfile.
+
+Disambiguated by asking a question that cannot self-match:
+
+    ps -Ao pid,ppid,command | grep ensure-clones      -> 13 hits, ALL my own polling shells + 1 grep
+    pgrep -fl "bash.*demo-stack/ensure-clones.sh"     -> (no output) — no such process
+
+**Consequences, both recorded against myself:** I waited on a false signal, and the iter's final report told
+the orchestrator a process was still running and that iter-04 should re-run it to resume — **both untrue**.
+
+This is the milestone's own defect class turned on the milestone's own tooling: *a check that reports a state
+without measuring it*, sibling to M256's 43 checks that reported success without checking and to M257's
+`|| echo 0`. The general rule the corpus already states — **run a positive control, and make sure the probe
+cannot satisfy itself** — applies to process probes exactly as it does to `rg`. Concretely: a `pgrep -f`
+whose pattern could appear in the watcher's own argv needs `pgrep -fl` with an anchored interpreter prefix,
+a PID file, or `$!` captured at launch.
+
+Folded into `corpus/ops/platform-alignment.md` §5 as rule 7.
