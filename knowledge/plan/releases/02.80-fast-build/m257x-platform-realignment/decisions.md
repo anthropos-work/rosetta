@@ -252,6 +252,25 @@ proxies to `http://localhost:$PORT/` rather than to the address it was told to b
 a host that resolves `localhost` to `::1` first cannot reach itself. Measured: `500` in a flat 30.0 s versus
 `200` in 2.4 s on the pre-M221 bind.
 
+> ⚠ **CORRECTION (iter-10) — the MECHANISM above is REFUTED; the RULE below is upheld and strengthened.**
+> "Next dev proxies to `localhost` rather than the bound address, so an IPv4-only bind on a `::1`-first host
+> cannot reach itself" is wrong. iter-10 measured three falsifications: `curl http://127.0.0.1:$PORT/` — a
+> dial that never utters the name `localhost` — fails **identically** (500 / 30.06 s);
+> `NODE_OPTIONS=--dns-result-order=ipv4first`, the direct repair for a resolution-order bug, changes
+> **nothing**; and `-H ::1` — which makes the first-resolved address the bound one — **also fails**.
+>
+> The real mechanism is an **origin-STRING equality**, not a resolution: `next@16` normalizes *every*
+> loopback hostname to the literal `localhost` when its middleware builds a rewrite URL
+> (`web/next-url.js:15-20`), builds the router's base URL from the **raw** `-H` string
+> (`resolve-routes.js:117`), and compares the two with `===` (`relativize-url.js`). Mismatched, the app's own
+> in-place rewrite is proxied *externally to itself* until `http-proxy`'s `30_000` ms default. Fixed with
+> `-H localhost`. See `iter-10/decisions.md` D-M257x-14.
+>
+> Why the correction matters beyond the fix: every candidate on iter-09's pre-computed fix menu followed from
+> the refuted story, and two of them (`-H ::1`, force the dial) were measured to **not work**. A mechanism
+> that explains the observation is not the same as the mechanism that produced it — and this one explained
+> the flat 30 s, the bind dependence, and the log line, while still being false.
+
 **An exposure guard can never notice that a service stopped working** — by construction, "no response" is
 its success condition. So it will confirm every over-tightening as a win.
 

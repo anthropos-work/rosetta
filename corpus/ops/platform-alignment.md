@@ -278,6 +278,36 @@ Rules, in order of how often they actually catch something:
     line and reading only that line is the cheapest way to be confidently wrong about code you have
     "checked". Open the file, or at least `sed -n 'N-15,N+5p'`.
 
+11. **A probe must exercise the surface whose health it claims — and a hardening change must be re-measured
+    on that surface, not on a neighbour.** M257x iter-10. `autoverify`'s academy check read
+    `:PORT/library/` and printed *"✓ AI Academy renders its catalog"*. Measured on a live demo:
+    `/library/` answered **200 in 9 ms** while `/` — the page the demo's own "AI Academy" link opens —
+    answered **500 after 30.0 s**. `/library` is public and short-circuits in Clerk's middleware *before*
+    the code path that was broken; `/` does not. The one route the check read was the one route the defect
+    spared, so a demo whose landing page was a 500 graded green for four releases.
+
+    The cause was a **security tightening** (M221 tightened `next dev`'s bind `0.0.0.0` → `127.0.0.1`, a
+    real and correct de-exposure) whose *literal* had a second, invisible effect: next@16 normalizes every
+    loopback hostname to `localhost` when its middleware builds a rewrite URL, keeps the raw `-H` string in
+    the router, and compares the two **origins by string equality** — so the tightened bind made the app's
+    own rewrite look external and the dev server proxied to itself until a 30 s timeout. The repair was to
+    keep the loopback bind and change the literal to `localhost`, the only loopback literal that is its own
+    normalized form.
+
+    Two rules fall out, and they are the ones to carry:
+
+    - **Every security tightening ships with a paired "does it still work?" check that exercises the
+      affected surface.** M221 shipped its exposure fence (which correctly stayed green — the bind *was*
+      loopback) and nothing else. The exposure claim was true; the app was broken.
+    - **A boolean probe hides the state it cannot express.** The launcher's own readiness probe used
+      `curl -fsS --max-time 3`: `-f` makes a 5xx indistinguishable from silence, and a 3 s per-attempt
+      window is *shorter than the 30 s failure it is watching for*. It printed "alive but NEVER ANSWERED"
+      over a server that was answering. Capture the status and the exit code separately, and name the state
+      you actually measured — *absent* / *hung* / *answering wrong* have different repairs.
+
+    Related to rule 7 (a probe must not satisfy itself) but distinct: here the probe measured something
+    real. It just measured the wrong thing, and reported a conclusion about the thing it had not touched.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

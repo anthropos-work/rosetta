@@ -524,10 +524,10 @@ localhost) so no site can drift:
 | **studio-desk redirects** (`CLERK_SIGN_IN_URL` / `WEB_APP_URL`) | `http://localhost:3000+off` | `https://$HOST:3000+off` | `gen_injected_override.py` (runtime env) |
 | **Baked browser URLs** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `_BACKEND_API_URL`, `_HOSTING_URL`, `_STUDIO_URL`, `_ACADEMY_URL`, `_PUBLIC_WEBSITE_URL`, `VITE_GRAPHQL_ENDPOINT`, `VITE_WEB_APP_URL`) | `http://localhost:…` | `https://$HOST:…` | `up-injected.sh` (`$SCHEME`) — the image cache-validators embed `$SCHEME` too, so an http-baked image is rebuilt under an https host |
 | **studio-desk SPA sign-in** (`VITE_CLERK_SIGN_IN_URL`) | *(was the un-offset `localhost:3000/login` default)* → now `http://localhost:3000+off/login` | `https://$HOST:3000+off/login` | `up-injected.sh` — baked via a gitignored `.env.production.local` overlay (no Dockerfile ARG; see §"The patch tail") |
-| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **`127.0.0.1:13077` bind** (`-H 127.0.0.1` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
+| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **loopback bind** (an explicit `-H` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`; the literal is `-H localhost` since v2.8 M257x iter-10 — same loopback property, and the only loopback literal next@16 does not re-normalize out from under its own origin check), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
 | **FAPI cert** | `mkcert`/openssl (local trust) | `tailscale cert` (tailnet-wide trust) | `up-injected.sh` (M213) |
 | **Cockpit bind** | `127.0.0.1` (loopback, `cockpit.py --host` default) | `0.0.0.0` | `up-injected.sh` (M212) |
-| **ant-academy bind** | **`127.0.0.1`** (loopback, `-H 127.0.0.1` — landed v2.3 M221 F-M220-5; was `*:13077` from `next dev`'s own `0.0.0.0` default) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
+| **ant-academy bind** | **loopback** (`-H localhost` — explicit loopback landed v2.3 M221 F-M220-5, was `*:13077` from `next dev`'s own `0.0.0.0` default; literal corrected `127.0.0.1` → `localhost` at v2.8 M257x iter-10, which fixed a 30 s 500 on `/`) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
 | **Registry** | no interaction | records `external_host` for `/stack-list` | `up-injected.sh` (M212) |
 
 **Mixed-content clean.** With HTTPS-everywhere, no browser-facing call resolves to plain `http://` — the scheme
@@ -709,7 +709,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   and the two servers *used to* differ: the **cockpit** (`cockpit.py --host`) defaults to **`127.0.0.1`**
   (loopback), while **ant-academy** (`next dev`) has an OWN default of **`0.0.0.0`** — so until M221 **the academy
   was world-published on `*:13077` on every demo, flag or no flag**, exactly like the containers. **✅ LANDED v2.3
-  M221 (F-M220-5):** `ant-academy.sh` now passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` only under
+  M221 (F-M220-5):** `ant-academy.sh` now passes an explicit loopback **`-H localhost`** on the localhost path (`-H 0.0.0.0` only under
   a public host), so **both** host-native servers now bind loopback by default on a localhost demo (the
   *"loopback by default"* framing is no longer cockpit-only — see [`../safety.md`](../safety.md) Part 3). The demo
   **container** ports remain `0.0.0.0` by design — that half is unchanged.
