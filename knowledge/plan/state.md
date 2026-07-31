@@ -3,7 +3,7 @@ active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fa
 active_branch: "release/02.80-fast-build"
 active_milestone: "M257x — platform re-alignment (iterative) — NOT STARTED. Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257 PAUSED 2026-07-31 after 3 iters (odysseus provisioned, both gate instruments landed, B1+B2 fixed — all BANKED). M257x inserted and scaffolded. Next: /developer-kit:work-mstone-iters --milestone=M257x."
+phase: "MACHINE MOVE (D-v28-15). Work stopped on odysseus + the old laptop; both repos move to a new Mac with a LOCAL dev stack. M257x iter-01 is KEPT (99f0aca pushed, rext tag on origin, protocol doc authored). M257 stays paused AND now has a host-class problem: its speed gate is un-measurable on a Mac. Everything is pushed; the new Mac clones and continues."
 last_updated: "2026-07-31"
 ---
 
@@ -12,20 +12,17 @@ last_updated: "2026-07-31"
 **v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
 **2 of 4 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 — not here.
 
-## Hosts (D-v28-14, 2026-07-31)
+## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
-- 🔒 **`billion` — THE DEMO MACHINE.** Deploying a final working demo ONLY. **Not available for development
-  or testing.** Do not use it to build, measure, or iterate. (This replaces the old per-occasion sign-off
-  rule and is stricter, not looser.)
-- ✅ **`odysseus` — the dev/test host.** `devops@100.110.67.14` / `odysseus.taildc510.ts.net` (Tailscale).
-  User-signed-off for this milestone **and later ones**, including moving to a nearer-production machine
-  when a milestone needs it. Measured 2026-07-31: **8 cores / 7 GiB / x86_64 Linux 6.8, 189 G free,
-  Docker 29.6.2, NO Go** (the rext tooling is Go — install it).
-- 💻 **laptop** — 10 cores / 16 GiB. Free as of 2026-07-31 (demo-2 torn down, 244 GiB free, 0 containers).
-  M255's headroom model **refuses** it for two concurrent Next.js build lanes.
-
-**`666.29 s` is BILLION's baseline and does not transfer.** M257 must measure odysseus's own (n >= 3) and
-check in `odysseus.json` before pricing any lever against it.
+- 🎬 **`billion` — the OFFICIAL host.** Demo deployment only. Not for development or testing.
+- 💻 **dev/test = LOCAL to the new Mac.** The old laptop and **`odysseus` are both retired** from this project.
+- ⚠️ **Host-class mismatch, and it blocks M257:** billion is **x86_64/containerd**, a Mac is **arm64/overlay2**.
+  M255 measured **4.84 GB vs 2.88 GB** for the same Dockerfile — **the Mac pays no unpack leg**, which is exactly
+  what M257's L1 (~200–250 s) optimises. **M257's speed gate is un-measurable on the sanctioned hosts as
+  written.** M257x is largely unaffected: its gate is correctness, not seconds.
+- 🔧 **New-Mac bootstrap:** `.agentspace/rext.tag` is **git-ignored** → a fresh clone has no pin, and a mismatch
+  is **FATAL** in `ensure-clones.sh:94-101`. Create it deliberately. (On the old box the SoT was 63 commits
+  behind `main`, so `/demo-up` aborted there.)
 
 
 ## Active milestone

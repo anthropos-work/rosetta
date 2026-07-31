@@ -210,6 +210,15 @@ milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report t
 anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
 **Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
 
+## ⚠️ HOST CLASS PROBLEM (D-v28-15, 2026-07-31) — read before resuming
+
+Dev moved to a **Mac (arm64/overlay2)**; billion (**x86_64/containerd**) is demo-only. M255 measured the same
+Dockerfile at **4.84 GB on billion vs 2.88 GB on an arm64 laptop** — the Mac **pays no image-unpack leg**. **L1,
+this milestone's biggest lever at ~200–250 s, targets exactly that leg**, so its headroom on a Mac is near zero
+and **local seconds will not transfer to billion**. This gate is **un-measurable on the sanctioned hosts as
+written**. Resolve deliberately — re-cut against a Mac-native baseline (arguably a different milestone), or take
+an explicit exception to measure on billion — do not resume and grind.
+
 ## ⏸️ PAUSED 2026-07-31 — blocked behind M257x
 
 **Paused after iter-03, at 3 closed iters, on the user's call.** Not a failure: iter-03's own exit blocker

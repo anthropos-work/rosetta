@@ -3,10 +3,10 @@ milestone: M257x
 title: "platform re-alignment"
 release: v2.8 "fast build"
 milestone_shape: iterative
-status: planned
+status: in-progress
 created: 2026-07-31
 iteration_protocol_ref: corpus/ops/platform-alignment.md
-exit_gate: "Against platform @ **origin HEAD** (never a pinned pre-drift commit): (1) a cold `demo-down --purge` + `demo-up` on **odysseus** reaches `autoverify green:true / 0 warnings` across **3 consecutive cycles**; (2) the **full Playthrough suite passes on that stack** (30 live / 0 failing / 0 error) — presence AND function, so a green bring-up cannot mean an empty world; (3) a **checked-in migration-status map** covering every service the platform has ever had — state ∈ {live-standalone, merged-into-app, decommissioned, net-new} — **each claim cited to platform source** (commit sha or file:line) and **machine-fenced against `repos.yml`** so it cannot silently drift; (4) **zero rext writes to a schema the platform no longer creates**, asserted by a FENCE that is watched going RED, not by inspection; (5) KB-fidelity audit **GREEN, or YELLOW with 0 blockers**, over `corpus/services/**` + `corpus/architecture/**`. Clauses 1/2/4 are rosetta-extensions; 3/5 are the rosetta corpus — both repos are in the gate by construction."
+exit_gate: "Against platform @ **origin HEAD** (never a pinned pre-drift commit): (1) a cold `demo-down --purge` + `demo-up` on the **dev host** (D-v28-15: local to the new Mac; odysseus retired, billion demo-only) reaches `autoverify green:true / 0 warnings` across **3 consecutive cycles**; (2) the **full Playthrough suite passes on that stack** (30 live / 0 failing / 0 error) — presence AND function, so a green bring-up cannot mean an empty world; (3) a **checked-in migration-status map** covering every service the platform has ever had — state ∈ {live-standalone, merged-into-app, decommissioned, net-new} — **each claim cited to platform source** (commit sha or file:line) and **machine-fenced against `repos.yml`** so it cannot silently drift; (4) **zero rext writes to a schema the platform no longer creates**, asserted by a FENCE that is watched going RED, not by inspection; (5) KB-fidelity audit **GREEN, or YELLOW with 0 blockers**, over `corpus/services/**` + `corpus/architecture/**`. Clauses 1/2/4 are rosetta-extensions; 3/5 are the rosetta corpus — both repos are in the gate by construction."
 re_scope_trigger: "If TWO consecutive full-alignment attempts are invalidated by new platform commits landing mid-milestone — i.e. the target moves faster than we can track it — STOP and escalate. The answer then is a pinning-and-tracking POLICY (how we choose a platform ref, how we notice it moved, who re-points), not more alignment work. Grinding against a moving target is the failure mode this trigger exists to catch. NOTE the specific arithmetic that would signal it: origin `repos.yml` moved at 2026-07-29T14:14Z, **39 minutes after** the mirror-drop commit — the platform team ships coordinated multi-repo changes, so 'we re-pointed everything' has a short shelf life unless the policy exists."
 ---
 
@@ -92,3 +92,32 @@ let the corpus describe a platform the tooling cannot build.
 `iterative`, and not by preference. **A fixed `In:` list would be speculative** — the deliverable set depends
 entirely on what the investigation finds, and the one thing we know for certain is that our picture of the
 platform is out of date. Committing to a checklist now would be committing to the stale picture.
+
+
+## ⏸️ MACHINE MOVE — 2026-07-31, mid-run
+
+Work **stopped on odysseus and on the old laptop** (`D-v28-15`). Both repos move to a new Mac with a **local**
+dev stack. **iter-01 is KEPT** — it is committed and pushed (`99f0aca`, rext tag `fast-build-m257x-iter-01` on
+origin) and its output is *platform knowledge*, not machine state. Re-deriving it would be the very
+"re-derived from scratch each time" waste this milestone exists to end.
+
+**What iter-01 established (carry it forward, do not re-measure):**
+- The consolidation is a **5-service PROGRAM**, with **the next two folds already in open PRs**.
+- **Root cause of the recurring class: pinning silently disables rext's own drift detection.** 11/11 clones
+  report `behind: null` while the log claims *"provably fresh"*, and the pin's source of truth
+  (`.agentspace/rext.tag`) is **git-ignored** — so it never appears in a diff and drifts unseen.
+- **Local mechanism:** `demo-stack/migrate-demo.sh:81-85` **creates the legacy schemas itself** and `:106`
+  atlas-applies a **hand-maintained 4-tuple**, never consulting `repos.yml`'s `migrations:` flag. Someone
+  edited it for skiller; nobody did for jobsim/cms. **Time bomb:** when the legacy repos leave the clone set,
+  `[ -d ] || continue` silently skips them and **13 write targets 42P01 at once**. The canary is already
+  visible — skillpath sits in the tuple but is absent from origin `repos.yml`.
+- The real jobsimulation surface is **12 tables (9 write / 3 read-only)**, not ~15 — two inherited names were
+  comments, one explicitly labelled a red herring.
+- **5 inherited/audited claims refuted by measurement**, including one from the KB audit that had **inverted**
+  the guard it described.
+- `corpus/ops/platform-alignment.md` **authored** (16 KB) — this milestone's `iteration_protocol_ref`, and it
+  proved the corpus index guard went RED on it before the index row was added, then GREEN after.
+
+**Gate read at the stop: 0 of 5 clauses met.** Clause 1 was **BLOCKED** — `/demo-up` aborts on a FATAL rext-pin
+mismatch, SoT 63 commits behind `main`. **That blocker follows us:** `rext.tag` is git-ignored, so the new Mac
+starts with no pin at all and must create one deliberately.

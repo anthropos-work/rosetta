@@ -298,6 +298,31 @@ and a simplification lens) ran against the first draft of this section. Its mate
   runs a composed cold cycle on a host. **Until that lands, no M256 number may be quoted as comparable to
   billion's 228 s.**
 
+- **D-v28-15 — SUPERSEDES D-v28-14. `billion` is the official host; dev/test is LOCAL to a new Mac. `odysseus`
+  is retired from this project** (user, 2026-07-31, mid-M257x). Work stops on odysseus and on the current laptop;
+  both repos move to a new Mac where the dev stack runs **locally**.
+
+  **What it costs, stated before it bites — and it lands squarely on M257.** `billion` is **x86_64 with the
+  containerd image store**; a Mac is **arm64 with overlay2**. M255 *measured* the consequence: the identical
+  Dockerfile and context yield **4.84 GB on billion** and **2.88 GB on an arm64 laptop**, because **the Mac pays
+  no image-unpack leg at all**. M257's **L1 — its single biggest lever, priced at ~200–250 s — targets exactly
+  that unpack/export leg.** On a Mac dev host L1's headroom is near zero, so **build-speed work measured locally
+  will not transfer to billion**, and billion is now demo-only. **M257's gate is therefore un-measurable on the
+  sanctioned hosts as currently written** — it needs either a re-cut against a Mac-native baseline (a different
+  milestone, honestly) or an explicit exception to measure on billion. Flagged, not silently inherited.
+  *(Odysseus was chosen one day earlier precisely because it was a containerd/x86_64 near-twin of billion. That
+  property is what a Mac cannot supply.)*
+
+  **M257x is less affected** — its gate is about *correctness against origin HEAD*, not seconds. Its cold-cycle
+  and Playthrough clauses run anywhere Docker runs; only the "which host" wording changes.
+
+  **Bootstrap gotcha the new Mac will hit immediately:** `.agentspace/rext.tag` — the rext pin's single source of
+  truth — **is git-ignored**, so a fresh clone has none. `ensure-clones.sh:94-101` treats a pin mismatch as
+  **FATAL exit 1**, and on the old box the SoT was already **63 commits behind main** with the stack-demo clone at
+  a *different* tag, which means **`/demo-up` aborts there today**. On the new Mac the tag must be created
+  deliberately as part of setup. Two docs still call that check "non-fatal" (`ensure-clones.sh:68`'s own header
+  and `corpus/ops/rosetta_demo.md:17-18`) — M257x iter-01 found this and it remains open.
+
 - **D-v28-14 — `billion` is the DEMO machine; `odysseus` is the dev/test host** (user, 2026-07-31). **`billion`
   is now officially the main demo machine and must not be touched except to deploy a final working demo — it is
   NOT available for development or testing.** All release development and testing moves to
