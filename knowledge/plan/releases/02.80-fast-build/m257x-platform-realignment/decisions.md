@@ -150,3 +150,48 @@ confirm the tag is **on origin** (`git ls-remote --tags origin` — tagging is n
 `stack-demo` consumption clone, and get a `/demo-up` past phase (a2) on **odysseus**. Then immediately
 `FIX-M257x-migrate-tuple` in the same or the following tik, since a bring-up that passes with the hand-maintained
 tuple still proves nothing about M810.
+
+---
+
+## iter-07 decisions — 2026-07-31
+
+Full text in [`iter-07/decisions.md`](iter-07/decisions.md). Summary, because two of them change how the
+next fold should be handled:
+
+### D-M257x-8 — the replay schema is DERIVED from the target, never declared
+
+`REPOINT-M257x-cms-similarity-writes` was NOT a re-point of a constant, and could not be:
+`simembeddings.Schema` is read by the prod CAPTURE *and* the stack REPLAY, and those two now **permanently**
+disagree (`D-M257x-7`). A second constant (`ReplaySchema = "public"`) is two lines and is the same
+hand-maintained-list defect that has been wrong three releases running.
+
+Adopted instead: ask the **target** which schemas hold **all** of a surface's tables, then — declared schema
+holds them → identity · exactly one other → remap loudly · none → fail loud (exit 4) · two or more → fail
+loud **naming them** (exit 1, *not* a provisioning problem). Explicitly NOT built, each being the same defect
+in costume: an allow-list of application schemas (Trap A in miniature), a preference for `public` (a constant
+with extra steps), a fallback to declared on lookup error (a probe that satisfies itself, §5 rule 7).
+
+**Consequence for v9.0** (`storage` + `messenger`, PRs open): the snapshot surfaces need **no edit at all**.
+
+### D-M257x-9 — the digest probe and the replay resolve as ONE construct
+
+The pre-compute's "thing not to miss": moving only the replay leaves the surface skipping at `rc=4` before a
+row is copied, with a diff that looks complete in review. Rather than move both and trust review, they are
+one function whose probe argument is computed inside itself — **no parameter for a caller to get wrong.**
+Generalized into `platform-alignment.md` §8 rule 4: *prefer a construct that cannot express the drift over a
+fence that catches it*, and make a must-decide value a **required positional**, not an option with a default.
+
+### D-M257x-10 — the resolution is LAZY, because an exit code is a contract with a human
+
+An eager first cut broke three tests whose own comments said a cache-miss verdict must be reachable without a
+live DB. It had silently turned exit 5 (*stale cache — capture fixes it*) into exit 4 (*unprovisioned stack —
+capture cannot help*), i.e. it would have sent an operator to repair a stack that was fine. Adding a
+precondition check ahead of an existing decision tree can re-answer "what should I go and do next" without
+crashing anything.
+
+### D-M257x-11 — a mutation that does not COMPILE is not a RED fence
+
+The mutation battery reported `RED (good)` for a mutant that had merely removed the last use of an import.
+The tell was an **empty list of failing test names**. Re-run with a compiling mutant, gated on an explicit
+build first, the fence fired for real. Promoted to `platform-alignment.md` §8 rule 5 — same family as §5
+rule 8 (*a check that SKIPS reads exactly like a check that PASSES*).

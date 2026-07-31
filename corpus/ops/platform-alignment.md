@@ -87,6 +87,49 @@ news — update the expected set") is what makes paying the debt down a visible,
 
 Landed as `stack-core/lib/repos_yml.sh` + `stack-core/tests/test_migration_derivation_fence.py`.
 
+**iter-07 paid `cms` off and the debt list is now EMPTY** — the derived CREATE SCHEMA set is `extensions ·
+sentinel · public`, i.e. infra plus exactly what `repos.yml` declares, so rext creates no schema the platform
+does not own. The shrink branch fired for the second and last time. **Keep an emptied debt list and its
+fence rather than deleting the mechanism**: v9.0 folds `storage` + `messenger`, and the next entry should
+have to argue with a fence instead of landing as a one-word diff.
+
+### The third option, and the one to reach for: derive it AT THE POINT OF USE
+
+`cms` was not paid off by re-pointing a constant. It could not be: `simembeddings.Schema` is read by the
+**prod capture** *and* the **stack replay**, and those two now legitimately disagree — permanently, because
+prod keeps the legacy schema pending teardown while a fresh stack never creates it (`D-M257x-7`: the write
+side moves, the prod-read side stays). A second declared constant (`ReplaySchema = "public"`) is two lines
+and is *the same defect in a new place*: it encodes today's answer to a question that has moved three times
+in three releases and is already scheduled to move again.
+
+What replaced it asks the **target** where the surface actually is:
+
+| the target says | resolution |
+|---|---|
+| the declared schema holds every table of the surface | **identity** — an aligned surface is untouched |
+| exactly one *other* schema holds them all | **remap**, announced loudly |
+| none does | fail loud — the surface is unprovisioned here |
+| two or more do | fail loud **naming the candidates** — never guess |
+
+Three things were deliberately NOT built, each being the same defect in costume: an **allow-list** of
+application schemas (Trap A in miniature — you tune it until it stops catching what it exists to catch); a
+**preference for `public`** (a constant with extra steps); a **fallback to the declared schema when the
+lookup errors** (a probe that satisfies itself — §5 rule 7).
+
+> **Rule.** When a value is a property of the environment rather than of your code, resolve it *from the
+> environment at the point of use*, and make every ambiguous answer a loud failure. Then the next fold needs
+> no edit at all — which is the difference between following the platform and chasing it.
+
+**And check whether the re-point is even expensive before designing around it.** The cached snapshot was
+assumed possibly-stale (captured before the fold). It was not: `pg.SchemaVersionSQL` digests
+`table.column:type` and uses the schema only as a `WHERE` filter, so for a table-narrowed surface the cache
+key is **schema-independent** — the digest computed over `public` on a fresh stack equalled the manifest's
+`cms`-captured version *exactly*. A one-line `md5` comparison answered a question that had been written down
+as unanswerable. Measure the artifact before assuming a migration invalidates it.
+
+Landed as `stack-snapshot/replay/schema.go` (`TargetSchema`, `ResolveTargetSchema`) +
+`pg.SchemasHoldingAllTablesSQL`.
+
 ---
 
 ## 3. Why nobody noticed — pinning disables drift detection
@@ -339,7 +382,31 @@ Both are the M256 reports-success-without-checking class. Rules:
 3. A fence that pins **the current shape of the drift** is worse than no fence: it converts the bug into a
    contract, and every future correct change has to argue with it. Pin the *mechanism* (where the list comes
    from), not the *contents* (what happened to be in it).
-4. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
+4. **Prefer a construct that cannot express the drift over a fence that catches it.** A fence can only
+   catch a drift someone has already written; a shape that makes the drift unwritable is strictly better
+   when it is cheap. M257x iter-07: the pre-replay digest probe and the replay itself both had to read a
+   schema, and moving only one of them leaves the surface skipping at `rc=4` before a row is copied — with
+   a diff that looks complete in review. Instead of moving both and trusting review, they were merged into
+   one function that computes the probe's schema argument *inside itself*: **there is no parameter for a
+   caller to supply, so there is no way to supply the wrong one.** Keep the fence too (the construct can
+   be refactored apart later), but spend the design first.
+
+   The same instinct applies to optional parameters: when a value must be decided at every call site, make
+   it **positional and required** rather than an option with a default. iter-07's `replay.Run` gained a
+   required `TargetSchema`, so the compiler forced all 18 existing call sites to state which behaviour they
+   meant. A forgettable optional with a silent identity default is a fence you have to remember to use.
+
+5. **A mutation that does not COMPILE is not a RED fence.** iter-07's mutation battery reported
+   `RED (good)` for a mutation that had merely removed the last use of an import: the package stopped
+   compiling, `go test` returned non-zero, and the harness read that as the fence firing. The tell was an
+   **empty list of failing test names**. A compile break proves the mutation was applied and proves nothing
+   about whether anything noticed the behaviour change. Re-run with a compiling mutant, it fired for real.
+
+   > **Rule.** Gate every mutation on an explicit build BEFORE the test run, and **name the test that went
+   > red**. A battery that reports only exit codes will sign off on a fence that does not fence — the same
+   > family as §5 rule 8 (*a check that SKIPS reads exactly like a check that PASSES*).
+
+6. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
    fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly
    flagged 40-odd casbin grants (`{"default", "admin", "org:feature:insights"}`) and the string
    `"clerk.com"`. That is the *same* mistake as asserting on `file.read()`: the regex WAS the construct.
