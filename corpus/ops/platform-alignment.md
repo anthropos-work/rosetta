@@ -201,9 +201,39 @@ Rules, in order of how often they actually catch something:
    the `$!` captured at launch — and confirm with a question that cannot self-match (`ps -Ao command | grep`,
    then read what actually matched).
 
+8. **A check that SKIPS reads exactly like a check that PASSES.** M257x iter-04: the rext suite's
+   `test_all_three_scripts_are_shellcheck_clean` skips when `shellcheck` is not installed. It was not
+   installed on the dev host, so it skipped — and the summary line said `1 skipped` next to a wall of
+   dots, which everyone read as green. Installing shellcheck immediately produced a real finding that had
+   been sitting there since the previous iter. Same for a suite nobody re-runs: the same iter found a test
+   that had been RED since iter-02 because only the newly-written tests were run. **Read the skip count,
+   and name what each skip covers.** A skip is a hole in the evidence, not a pass.
+9. **When you fix a swallowed-output site, sweep its siblings in the same file.** M217 fixed exactly this
+   defect — an applier invoked with `>/dev/null 2>&1`, so its diagnosis vanished — for
+   `apply-app-authz-skip`. The identical call to `apply-authn.sh` sat **one line above** it and was left
+   alone, so M257x iter-04's first bring-up on a new host died in 25 s showing nothing but `EXIT=128`. The
+   fix is cheap and the sweep is cheaper than the second incident: `grep -n '>/dev/null 2>&1'` the file you
+   just fixed, and justify every remaining one.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
+
+### Trap E — the tooling's own host preconditions are invisible until a clean host
+
+Everything above is about the platform moving. This one is about *us*: a tooling path that quietly depends on
+something the developer's machine happens to have will work on every machine that has it and fail on the first
+that does not — and it will fail at whatever moment the new machine arrives, which is never a convenient one.
+
+M257x iter-04, on the first bring-up ever attempted on a new Mac: `apply-authn.sh` cloned **colony — a private
+repo — from an anonymous `https://github.com/...` URL**. That URL can only succeed if git finds an ambient
+credential helper or an `url.insteadOf` rewrite. Every other rext acquisition already used
+`git@github.com:$ORG/...` and even told the operator to check `ssh -T git@github.com`; this was the lone
+outlier, and it had been fine for as long as nobody started from a clean box.
+
+> **Rule.** Acquisition uses ONE convention, and the failure names the credential it wanted. When a bring-up
+> fails on a new host, check what the tooling assumed about the host *before* concluding the platform moved —
+> the mirror image of §9's "check signals 2 and 3 first" on a familiar one.
 
 ---
 
