@@ -101,3 +101,30 @@ tripwire). **13 occurrences** of the dead router in `corpus/ops/**`:
 
 Routed forward: **`DOC-M257x-iter22-ops-guides-5050`**. The staging rows need a prior question answered (does
 staging still run a router?) that local compose cannot settle — split them out rather than bulk-editing.
+
+## D-M257x-22-6 — the full read found 53, not 21, and every batch's top cause was previously unnamed
+
+iter-21 established that a term-scoped audit measures the terms. iter-22 is the second data point, and it
+sharpens the rule: **fixing an enumerated hand-off measures the hand-off, not the corpus.**
+
+29 correct edits landed. The tree still held **53** blockers. The five per-batch dominant causes:
+
+| batch | dominant cause | ever named before? |
+|---|---|---|
+| A | the `jobsimulation` schema is GONE — tables → `public`, `sessions` → `job_simulation_sessions`, the `local_*` mirrors **DROPPED** (`app/terraform/migrations/20260729133514.sql:62`) | no |
+| B | *"merged into `app`"* over-applied to *"gone from local compose"* | no |
+| C | the **post-M809** end state written as current | no |
+| D | next-web-app went **Next 15 → 16**; `middleware.ts` → `proxy.ts` | no |
+| E | the frontend's real transport (~15 direct REST/SSE sites) | no |
+
+**Batch A's is the one that matters most to this milestone.** `hiring.md` exists specifically to name the one
+table that feeds the candidate-comparison score — and it names `public.local_jobsimulation_sessions`, a
+**dropped** table, then publishes a "minimal write-set per (candidate × sim)" whose two targets both no longer
+exist. A seeder built from that section writes to nothing. **That is the M257x class itself**, sitting
+undetected in the corpus while the milestone hunted it in the tooling — and no term sweep would find it,
+because every word in the section is still in the platform's vocabulary.
+
+**Method that worked, worth reusing verbatim:** 40 files / 5 sub-agents / whole-file reads / a `wc -l`
+positive control per file / the grading rule *"BLOCKER = false at origin HEAD **and** would misdirect real
+work; explicitly-fenced historical content is NOT a blocker."* The positive control is load-bearing — it is
+what distinguishes a full read from a confident sample, and it costs one line per file.
