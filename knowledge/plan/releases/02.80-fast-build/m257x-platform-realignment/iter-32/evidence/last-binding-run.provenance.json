@@ -1,0 +1,9 @@
+{
+  "binding": true,
+  "scoped": false,
+  "grep_pattern": "",
+  "stack": "demo-1",
+  "run_start_epoch": 1785621495,
+  "playwright_exit": 1,
+  "ptreport_exit": 1
+}

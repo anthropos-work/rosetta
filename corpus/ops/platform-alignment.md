@@ -435,6 +435,24 @@ Rules, in order of how often they actually catch something:
     code. **Record which path each run took**, or a battery of greens will certify a fix that was never
     invoked, and a flake will be filed as a regression.
 
+16. **An UNREAD metric is indistinguishable from an UNMOVED one — and the no-progress rule cannot tell them
+    apart.** M257x iter-32 opened with what the ledger showed as three consecutive no-progress iters, which
+    is the streak that fires a strategy revision. It was false. Iters 30 and 31 had each fixed a failing
+    Playthrough and verified it live; what they had declined to do was *re-read the headline number*,
+    because this protocol forbids quoting a scoped run as a binding one and the full read had been budgeted
+    as an entire iteration. The measurement, when finally taken, moved `25 → 27` and attributed both points.
+
+    A protocol that makes its primary measurement expensive **manufactures phantom stalls**, and the streak
+    rule will then revise a strategy that was working. **Decide a no-progress trigger by measuring, never by
+    counting ledger rows** — and where the two disagree, the ledger is the thing that was wrong.
+
+    **The second half is cheaper and matters more: re-measure your own cost estimates.** The budget that
+    caused the stall — *"~35–40 min serial, 209 specs"* — had been carried across seven hand-offs unchecked.
+    Measured: **4 min 50 s**, reset included. It was never a bad estimate so much as a bad *proxy*: only ~31
+    of those 209 specs are Playthroughs, the rest are unit specs at 0–1 ms, and the count had been standing
+    in for the duration. An inherited cost estimate is a claim like any other, and this one had been
+    silently scheduling the work.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
