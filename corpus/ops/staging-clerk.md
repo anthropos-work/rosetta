@@ -88,7 +88,11 @@ Then on each staging host, run the rebind procedure (§ 3 of [`staging_from_dump
 
 ## Allowed origins
 
-Clerk only accepts requests from origins in its `allowed_origins` list. Currently (2026-05-14) there are 13:
+Clerk only accepts requests from origins in its `allowed_origins` list. Currently (2026-05-14) there are 13
+— reproduced verbatim, so `http://localhost:5050` still appears: that is what the instance holds. **Since
+platform `2adcf71` (2026-07-31) nothing listens on `:5050`** (the Cosmo router was deleted from compose;
+GraphQL is `backend`'s `:8082/graphql/query`), so the entry is dead weight rather than a needed origin — but
+`:8082` **does** now need to be allowed wherever a browser calls GraphQL cross-origin:
 
 ```
 http://localhost:3000

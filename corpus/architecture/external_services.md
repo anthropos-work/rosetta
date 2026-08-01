@@ -126,10 +126,15 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 | **Purpose** | Content storage, media management, CMS |
 | **Website** | [directus.io](https://directus.io) |
 
-> **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — the cms domain in `backend`
-> reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR` (the only service the
-> compose gives these env vars), which point at the **production** instance `https://content.anthropos.work` in
-> the stock compose. A freshly-
+> **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — the cms
+> domain in `backend` reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR`,
+> which point at the **production** instance `https://content.anthropos.work` in the stock compose.
+> **⚠️ `backend` does NOT get those vars from its compose `environment:` block** — that block (`:43-77` @
+> `2adcf71`) has no `DIRECTUS_*` at all; `backend` picks them up from the shared `env_file: .env`. The only
+> service the compose sets them on **explicitly** is the still-running standalone **`cms`** (`:164-165`), which
+> survives as messenger's `CMS_RPC_ADDR` target + the rollback path until M810. This distinction is
+> load-bearing for any tooling that re-points the address per service — see the ⚠️ under *Architecture* below.
+ A freshly-
 > built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
 > `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` admin login
 > and an inline `docker-compose.yml` snippet — **all of that is false**; that service has never existed in the
@@ -154,13 +159,18 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 ### Architecture
 
 In the **default local posture**, Directus is **not** part of the local stack — `backend` (which hosts the cms
-domain since cms-in-app) reaches the **production** Directus over the network. Only the local Postgres +
-`backend` run in Docker Compose:
+domain since cms-in-app) reaches the **production** Directus over the network. The default `graphql` profile is
+**not** just Postgres + `backend`: it starts **nine** containers — `postgresql` + `redis` (from the included
+`common.yml`, profile-less so they always start) and seven application services, `sentinel` · `backend` ·
+`jobsimulation` · `cms` · `storage` · `roadrunner` · `gotenberg`. The `jobsimulation` and `cms` containers are
+**merged-into-`app` husks kept live as the rollback path** (teardown is M810) — merged in production is not the
+same claim as removed from compose:
 
 ```mermaid
 graph TB
     subgraph Docker[Docker Compose (local stack)]
-        CMS[CMS Service :8090-8091]
+        Backend[backend :8082 — hosts the cms domain in-process]
+        CMSHusk[cms :8090-8091 — merged-into-app husk, rollback path]
         Postgres[(PostgreSQL)]
     end
 
@@ -171,24 +181,41 @@ graph TB
     Frontend[Frontend Apps]
     StudioDesk[Studio-Desk]
 
-    Frontend --> CMS
-    StudioDesk --> CMS
-    CMS -->|DIRECTUS_BASE_ADDR| Directus
+    Frontend -->|:8082/graphql/query| Backend
+    StudioDesk -->|:8082/graphql/query| Backend
+    Backend -->|DIRECTUS_BASE_ADDR from env_file| Directus
+    CMSHusk -.->|DIRECTUS_BASE_ADDR from compose| Directus
     Directus --> ProdPG[(Prod PostgreSQL · directus schema)]
 ```
 
-> With the v1.5 "prop room" **local tooling** (`--local-content` / demo-default), a per-stack `directus`
-> container is added to the stack's compose (offset port) and `backend`'s `DIRECTUS_BASE_ADDR` is re-pointed at it,
-> so the whole content path stays in-stack. See [`directus-local.md`](../ops/directus-local.md).
+> **Both frontends target `backend`, not `cms`** (`docker-compose.yml:352`/`:361` for next-web-app, `:318`/`:334`
+> for studio-desk — all four are `:8082/graphql/query`). And `backend` does **not** proxy content through the
+> `cms` container: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
+> RPC server once Directus is configured, so every content read is *"a DIRECT domain call — no proto round-trip
+> … and no internal traffic to a standalone cms."* `backend` requires `DIRECTUS_BASE_ADDR` to boot at all
+> (`app/main.go:971-973` `log.Fatalf`s without it). The prose two paragraphs above already said this; the
+> diagram had not caught up.
+
+> **⚠️ The `--local-content` re-point targets `cms`, NOT `backend` — measured, not inferred.** With the v1.5
+> "prop room" **local tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to
+> the stack's compose on an offset port, and
+> `rosetta-extensions/stack-injection/gen_injected_override.py:579-580` re-points **only the services in
+> `DIRECTUS_DATA_CONSUMERS`** — which is `cms` — with `test_only_cms_is_repointed_not_other_services` asserting
+> that `backend` must **not** carry the re-point. On live `demo-1` (2026-08-01): `cms` has
+> `DIRECTUS_BASE_ADDR=http://directus:8055` while **`backend` has `DIRECTUS_BASE_ADDR=https://content.anthropos.work`**
+> with an empty `DIRECTUS_TOKEN`. Since `backend` reads content in-process rather than through `cms`, the
+> consumer that list names is no longer the consumer that reads. Tracked as
+> `FIX-M257x-iter23-backend-directus-not-repointed`; see [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
 
-**The CMS Service acts as a smart proxy** between applications and Directus:
+**The cms domain inside `backend` acts as a smart proxy** between applications and Directus (it was the
+standalone CMS Service until cms-in-app folded it into `app`):
 
-1. **Frontend/Studio-Desk** → GraphQL request
-2. **CMS Service** → Translates to Directus API call
+1. **Frontend/Studio-Desk** → GraphQL request to `backend:8082/graphql/query`
+2. **cms domain** (`app/internal/cms/directus/`) → Translates to Directus API call
 3. **Directus** → Queries PostgreSQL
-4. **CMS Service** ← Adds business logic, caching
+4. **cms domain** ← Adds business logic, caching
 5. **Frontend/Studio-Desk** ← Returns enriched data
 
 **Why the proxy pattern?**
@@ -205,10 +232,11 @@ revision of this doc reproduced a `directus:` compose block — image `10.10.1`,
 mounted uploads volume — and attributed it to `platform/docker-compose.yml`. That block is fictional; the
 platform compose has no such service.)
 
-The only Directus-related platform config is the address `backend` points at:
+The only Directus-related platform config is the address `backend` points at — set in the shared `.env`, which
+`backend` consumes via `env_file:` (its compose `environment:` block carries no `DIRECTUS_*`):
 
 ```bash
-# platform/.env (and the backend service environment)
+# platform/.env  — backend reads these through `env_file: .env`, NOT its compose environment: block
 DIRECTUS_BASE_ADDR=https://content.anthropos.work
 DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ```
@@ -617,9 +645,11 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ### Directus Issues
 
 **"Cannot connect to Directus"** (default posture — reading prod):
-- `cms` reads Directus **live from prod**; there is no local `directus` container to `ps`. Check the address
-  `cms` resolves: `DIRECTUS_BASE_ADDR` must be `https://content.anthropos.work` and reachable from the box.
-- `docker compose logs cms` (not `directus`) surfaces the content-fetch errors.
+- **`backend`** reads Directus **live from prod** (the fetch is `app/internal/cms/directus/` running inside the
+  `backend` container since cms-in-app); there is no local `directus` container to `ps`. Check the address
+  `backend` resolves: `DIRECTUS_BASE_ADDR` must be `https://content.anthropos.work` and reachable from the box.
+- `docker compose logs backend` (not `directus`, and not `cms` — that container is a merged husk that no longer
+  serves `backend`'s content reads) surfaces the content-fetch errors.
 
 **"Cannot connect to Directus"** (when running the local tooling, `--local-content` / demo):
 ```bash

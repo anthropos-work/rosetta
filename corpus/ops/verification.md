@@ -158,7 +158,9 @@ Directus) never false-warns even on an unscoped run:
 - **Liveness** — per service (`lib/services.sh::service_rows` + `probe_service`): docker-health /
   TCP-connect / HTTP-code, at `base+offset`, against `<project>-<svc>-1`.
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
-  `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
+  `PING`, GraphQL introspection (`:8082+offset` at `/graphql/query` — re-pointed at M257x iter-13 when the
+  `:5050` router was deleted; a wrong *host* refuses loudly but a wrong *path* connects and 404s, so both
+  halves moved), gotenberg version (`:3200+offset`), sentinel
   Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
   `directus-collections` registration check **and the `directus-serves-content` probe that reads an actual

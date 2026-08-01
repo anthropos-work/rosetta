@@ -220,7 +220,7 @@ make ps
 curl -s http://localhost:8082/health || echo "Backend not responding"
 
 # Test GraphQL
-curl -s http://localhost:5050/health || echo "GraphQL not responding"
+curl -s http://localhost:8082/api/health || echo "backend (which now serves GraphQL) not responding"
 ```
 
 ### Start and Test Frontend

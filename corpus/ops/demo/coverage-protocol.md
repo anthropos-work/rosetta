@@ -117,15 +117,17 @@ added as a sibling spec/runner under `stack-verify` so it reuses verify's offset
 > a way that looks exactly like a product bug:
 >
 > - A `--public-host` demo **bakes the MagicDNS origin into the frontend build**, so the app's own GraphQL
->   client calls `https://<magicdns>:<15050+offset>/graphql`.
+>   client calls `https://<magicdns>:<8082+offset>/graphql/query` (it was `<5050+offset>/graphql` until M257x
+>   iter-13 re-pointed it off the deleted Cosmo router).
 > - `docker-proxy` binds `0.0.0.0`, so a connection **from the demo host** to its own `100.x` tailscale IP hits
 >   the kernel socket and **bypasses `tailscale serve`** — the thing that terminates TLS. Plain HTTP then
 >   answers a TLS handshake: `ERR_SSL_PROTOCOL_ERROR` / *"wrong version number"*.
 > - Every GraphQL call fails ⇒ every page is a permanent loading spinner ⇒ **every section reports
 >   `region-not-found`** and the persona checks fail for want of an org name and an avatar.
 >
-> Measured on `billion`: from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS; **from a
-> tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
+> Measured on `billion` (M219, before the router deletion — `:15050` no longer exists; the finding is about
+> the loopback path, not that port): from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS;
+> **from a tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
 > `failingSections=21, personaFailures=3` — a **systemic false-RED**, and exactly the sort that gets "fixed" by
 > weakening asserts. From the correct vantage the same build reported `failingSections=0, personaFailures=0`.
 >

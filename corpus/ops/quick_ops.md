@@ -153,7 +153,7 @@ done
 | Service | Port |
 |---------|------|
 | Frontend | 3000 |
-| GraphQL | 5050 |
+| GraphQL | **8082** (`/graphql/query`, served by `backend`; the `:5050` Cosmo router was deleted from compose at platform `2adcf71`) |
 | Backend | 8082 |
 | Studio-Desk | 3100 |
 | PostgreSQL | 5432 |

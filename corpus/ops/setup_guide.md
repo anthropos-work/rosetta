@@ -525,8 +525,10 @@ instead of the manual hand-copy. The keys it needs: `CLERK_SECRET_KEY`, `NEXT_PU
 `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, and the Azure-OpenAI pair (see [`secrets-spec.md`](secrets-spec.md) for the
 full per-repo gene list).
 
-*Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082`, which are correct
-for local development.
+*Note*: The Backend URL already defaults to `localhost:8082`, which is correct for local development. **The
+GraphQL URL must be `http://localhost:8082/graphql/query`, not the old `localhost:5050`** — platform `2adcf71`
+(2026-07-31) deleted the Cosmo/WunderGraph router from compose and `backend` serves GraphQL itself. A stale
+`:5050` value produces a frontend whose every query fails against a port with no listener.
 
 *Verification*: `ls apps/web/.env` should show the file exists.
 

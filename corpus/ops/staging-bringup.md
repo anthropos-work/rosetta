@@ -41,7 +41,7 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 |  /home/<you>/rosetta/         this corpus                                  |
 |  /home/<you>/ant-singularity/ agent fleet & operations docs                |
 |                                                                            |
-|  docker stack on :3000 (next-web-app) / :5050 (graphql) / :8082 (backend)  |
+|  docker stack on :3000 (next-web-app) / :8082 (backend — GraphQL too)      |
 |       └── postgres restored from a 12 GB prod pg_dump                      |
 |       └── auth via dev Clerk app `national-elk-17` (shared with all eng)   |
 |                                                                            |
@@ -205,7 +205,7 @@ OPENAI_API_KEY=sk-…
 AZURE_OPENAI_ENDPOINT=…
 AZURE_OPENAI_API_KEY=…
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_…
-NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://<yourhost>staging:5050/graphql
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://<yourhost>staging:8082/graphql/query   # NOT :5050 — the router is gone (platform 2adcf71); the env-var NAME outlived it
 NEXT_PUBLIC_BACKEND_API_URL=http://<yourhost>staging:8082
 NEXT_PUBLIC_HOSTING_URL=http://<yourhost>staging:3000
 EOF
@@ -401,7 +401,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 7. **Quirks #8, #9, #14 — Postgres bind-mount + restore warnings** — already addressed in §4.
 
-8. **Quirk #10 — Backend GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns Apollo Sandbox UI; CORS preflight + auth happen at `/query`. The Wundergraph router (`:5050`) federates these into `/5050/graphql`. Tools that expect `/graphql` directly need to know.
+8. **Quirk #10 — Backend GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns Apollo Sandbox UI; CORS preflight + auth happen at `/query`. Tools that expect `/graphql` directly need to know. **⚠️ This quirk is now the WHOLE story:** platform `2adcf71` (2026-07-31) deleted the WunderGraph/Cosmo router, so there is no `:5050` federating layer in front — clients talk to `backend:8082/graphql/query` directly, and the path half is the one that bites (a wrong host refuses loudly; a wrong path connects, resolves and 404s).
 
 9. **Quirk #11 — `colony` has two separate Clerk auth bugs.** Both bite every staging today; the working fix on Ithaca + Calypso is a single vendored copy of `colony` that patches both. **Read both halves before reaching for the vendor recipe** — the recipe is identical, but knowing what each piece fixes is what lets you keep it pruned over time.
 
@@ -508,7 +508,7 @@ sudo tailscale serve --bg https://<yourhost>.taildc510.ts.net http://localhost:3
 
 Then ask Stefano to add `https://<yourhost>.taildc510.ts.net` to the Clerk `allowed_origins` list (see [`staging-clerk.md` § Adding a new staging host](./staging-clerk.md#adding-a-new-staging-host)).
 
-**Caveat: graphql/backend env-vars are baked HTTP at build time.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and `NEXT_PUBLIC_BACKEND_API_URL` get baked into the Next.js bundle pointing at `http://<host>:5050|8082/...`. Browser → HTTPS frontend → HTTP backend = Mixed Content blocking → blank dashboards. Use the plain `http://<yourhost>staging:3000` URL for end-to-end testing until those vars are HTTPS too (and the backend has TLS).
+**Caveat: graphql/backend env-vars are baked HTTP at build time.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and `NEXT_PUBLIC_BACKEND_API_URL` get baked into the Next.js bundle — **both now pointing at `http://<host>:8082/...`** (the `:5050` router is gone since platform `2adcf71`). Browser → HTTPS frontend → HTTP backend = Mixed Content blocking → blank dashboards. Use the plain `http://<yourhost>staging:3000` URL for end-to-end testing until those vars are HTTPS too (and the backend has TLS).
 
 ---
 

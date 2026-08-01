@@ -307,7 +307,8 @@ plaintext services are fronted by `tailscale serve` over the trusted cert, and t
 ```bash
 HOST=billion.taildc510.ts.net
 curl -s  https://$HOST:18082/api/health                                   # backend  (8082+off) → OK
-curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15050/health       # cosmo    (5050+off) → 200
+# NB (M257x iter-13): the cosmo row is GONE. `:15050` has no listener and is no longer fronted —
+# GraphQL rides `backend`'s :18082 at /graphql/query. The M215 run below predates the router deletion.
 curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15400/v1/client    # FAPI-own-TLS (5400+off) → 200
 ```
 
@@ -328,13 +329,15 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 > curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
 > ```
 >
-> Measured on `billion`: **from the VM, https on `:13000`, `:15050` and `:18082` ALL fail TLS; from a tailnet
-> peer all three answer 307/200/200.** From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
+> Measured on `billion` (M219, before the router deletion): **from the VM, https on `:13000`, `:15050` and
+> `:18082` ALL fail TLS; from a tailnet peer all three answer 307/200/200.** (`:15050` no longer exists —
+> the finding is about the loopback path, not about that particular port.) From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
 > the trusted cert — which is why `tailscale serve status` can list a mapping that nevertheless does not apply to
 > traffic you originate locally.
 >
 > **Consequence for testing.** A `--public-host` demo bakes the MagicDNS origin into the frontend build, so the
-> app's own GraphQL client calls `https://<magicdns>:15050/graphql`. Drive that app from a browser **on the VM**
+> app's own GraphQL client calls `https://<magicdns>:18082/graphql/query` (`:15050/graphql` before the M257x
+> iter-13 re-point). Drive that app from a browser **on the VM**
 > and every GraphQL call dies `ERR_SSL_PROTOCOL_ERROR`, every page renders a permanent loading spinner, and every
 > content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
 > coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
@@ -474,14 +477,15 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
 ## The topology — HTTPS everywhere, one MagicDNS host, per offset port
 
 A demo runs its browser-facing services on **offset ports** (`base + N*10000`): next-web `3000+off`, **the
-apps/hiring 2nd app `3001+off`** (the TOK-02 two-app hiring demo — v2.4 "casting call"), the Cosmo GraphQL router
-`5050+off`, the backend REST `8082+off`, studio-desk `9000+off`, ant-academy `3077+off`, and the fake Clerk FAPI
+apps/hiring 2nd app `3001+off`** (the TOK-02 two-app hiring demo — v2.4 "casting call"), the backend
+`8082+off` — **REST *and* GraphQL, since platform `2adcf71` deleted the Cosmo router and M257x iter-13 deleted
+its `("graphql", 5050)` front row** (fronting a port with no listener yields a trusted-cert endpoint that
+always refuses, which is worse than absent because it looks configured) — studio-desk `9000+off`, ant-academy `3077+off`, and the fake Clerk FAPI
 `5400+off`. Under `--public-host`, each is reached over **HTTPS on the MagicDNS host at the same offset port**:
 
 ```
 teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tailscale serve ──▶ http://127.0.0.1:13000  (next-web / apps/web)
                    ── https://billion.taildc510.ts.net:13001 ──▶  tailscale serve ──▶ http://127.0.0.1:13001  (apps/hiring — the recruiter's 2nd app)
-                   ── https://billion.taildc510.ts.net:15050 ──▶  tailscale serve ──▶ http://127.0.0.1:15050  (cosmo)
                    ── https://billion.taildc510.ts.net:18082 ──▶  tailscale serve ──▶ http://127.0.0.1:18082  (backend)
                    ── https://billion.taildc510.ts.net:19000 ──▶  tailscale serve ──▶ http://127.0.0.1:19000  (studio-desk)
                    ── https://billion.taildc510.ts.net:13077 ──▶  tailscale serve ──▶ http://127.0.0.1:13077  (ant-academy, native)
@@ -617,8 +621,9 @@ applied to the demo's **ephemeral clone** — **never a checked-in platform clon
 3. **next-web SSR GraphQL origin (`next-web-ssr-graphql-origin`, M218) — the one that exists *because of*
    `--public-host`.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` is a single build-time constant serving two consumers
    with **incompatible** reachability: the **browser** needs the public origin
-   (`https://<public-host>:15050+off/graphql`), the **SSR pass** needs the container origin
-   (`http://graphql:8080/graphql`). Because `NEXT_PUBLIC_*` is build-inlined into the *server* bundle too, the
+   (`https://<public-host>:8082+off/graphql/query`), the **SSR pass** needs the container origin
+   (`http://backend:8082/graphql/query` — `gen_injected_override.py:77-79`; both were `:5050+off/graphql` and
+   `http://graphql:8080/graphql` until M257x iter-13 re-pointed them off the deleted router). Because `NEXT_PUBLIC_*` is build-inlined into the *server* bundle too, the
    SSR pass fetched the public URL **from inside the container**, where the tailnet IP **blackholes** (ts-input
    drops the SYN-ACK on the docker bridge) → undici's 10 s connect timeout × 3 attempts + 6 s backoff
    ≈ **37.5 s per authenticated render**, on both vantages (they block on the same shared authenticated layout).

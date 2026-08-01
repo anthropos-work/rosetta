@@ -517,6 +517,40 @@ removed-from-compose.** `cms` and `jobsimulation` are `service_desired_count = 0
 subgraphs gone — and still start containers on every local `make up`, still answer RPC. Two service docs said
 *"not in the local compose"*; both were false. The map's word for this is `running_but_unfederated`. Use it.
 
+**A correction can be INCOMPLETE rather than wrong — and that is harder to catch (M257x iter-23).** iter-22's
+hand-off said colony was *"split: `app` + `messenger` @ `v0.35.2`; `sentinel` + `storage` @ `v0.34.3`"*, which
+is true of the four services it names. It names four of **six**: the `cms` and `jobsimulation` containers the
+default profile still starts are on a **third** pin, `v0.35.1`. Applying it verbatim would have replaced one
+incomplete claim about that table row with another, and the row would have read as freshly verified. **When a
+correction enumerates, re-derive the ENUMERATION, not just the values** — the question is not "are these two
+pins right?" but "is this the whole set?"
+
+### A named-consumer list survives the merge that moved the consumer (M257x iter-23)
+
+The founding class has a second face, and it is not about schema names. When a service folds into `app`, any
+**list of service names** that encodes "who talks to X" is silently wrong the moment the domain moves — and
+unlike a dropped table, **nothing errors**: the list still names a real, running container, which still starts,
+still holds the env var, and still answers. The read simply happens somewhere else.
+
+Measured instance: rext's `--local-content` cutover re-points `DIRECTUS_BASE_ADDR` at the per-stack Directus
+for every service in `DIRECTUS_DATA_CONSUMERS`, which is `cms` — correct when `cms` was the Directus consumer,
+with a test (`test_only_cms_is_repointed_not_other_services`) explicitly asserting `backend` must **not** carry
+it. Since cms-in-app, `app/cms_reader_switch.go` swaps `backend`'s content reader to the **in-process** cms
+server ("*no internal traffic to a standalone cms*"), so `backend` reads Directus directly, over its own
+`DIRECTUS_BASE_ADDR` — which comes from `env_file: .env`, which nothing re-points. Live on `demo-1`:
+`cms` → `http://directus:8055`, `backend` → `https://content.anthropos.work`, `DIRECTUS_TOKEN` empty. The
+per-stack Directus serves a consumer that no longer reads, and the reader is pointed at prod anonymously.
+
+**The test made it worse, not better.** It pinned the pre-merge shape as a contract (§8 rule 3) and would fail
+on the fix. Two of the three previous occurrences had the same signature — *the suite was not silent about the
+defect, it was arguing for it.*
+
+> **The check to run after any fold:** for each service the fold touched, grep the tooling for its **name** as
+> a value (consumer lists, `depends_on`, front/proxy port tables, probe targets, env re-point maps) — not just
+> for its schema or its tables. Then ask, per hit, *does the code that actually performs this read still live
+> in the named service?* A `docker inspect <container> | grep <VAR>` on a live stack answers it in one command
+> and beats any amount of reasoning.
+
 ---
 
 ## 6. Classification — the map

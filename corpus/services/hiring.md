@@ -14,6 +14,21 @@
 > **render-gate-bypasses-the-seed** class M219 hit with AI-readiness. The headline of this doc is the ONE table that
 > actually feeds the score. Read § *The comparison read-model* before seeding anything hiring-shaped.
 
+> **⚠️ RE-GROUNDED — v2.8 M257x iter-23, against platform origin `2adcf71` / `app` @ `5ba17044`.**
+> **This doc named a table the platform has since DROPPED — which is the worst possible version of the warning
+> directly above.** The score source was `public.local_jobsimulation_sessions`, a `Float32` MIRROR. `app`
+> migration `20260729133514.sql:58-62` — *"5. Drop the mirrors."* — back-fills it into the canonical entity and
+> then `DROP TABLE "local_jobsimulation_sessions"`. Everything below is re-pointed; the three facts that
+> changed:
+> 1. **Score source → `public.job_simulation_sessions.score`**, read by
+>    `app/internal/organization/intelligence.go:1700` (`m.ent.JobSimulationSession.Query()`). There is no
+>    mirror/canonical **pair** any more, so the write-set is **one** session row, not two.
+> 2. **Everything is in `public`.** `jobsimulation.sessions` was dropped (`20260722104506.sql:79`) and replaced
+>    by `public.job_simulation_sessions` (`:2`); `app/atlas.hcl:8` pins `search_path=public`, and the only
+>    `CREATE SCHEMA` in the entire migration set is `auth`.
+> 3. **One subgraph.** There is no second subgraph for `Session!` to resolve from — no join key, no
+>    NULL-bubble hazard.
+
 ## Role & Responsibility
 
 **Hiring** is a **sold product** (`hiring.anthropos.work`, the `@anthropos/hiring-app` at `apps/hiring`) AND an
@@ -84,13 +99,19 @@ candidate's name/role, so **every candidate the scoreboard shows must have an ac
   no `job_position` replay** (M222 D4 → M223 Scope.In refinement). A candidate is comparable to another when they
   share the same `jobsimulation_id` — the sim IS the position for scoreboard purposes.
 
-## The comparison read-model (THE HEADLINE) — the score is a MIRROR table in `app`
+## The comparison read-model (THE HEADLINE) — the score is `public.job_simulation_sessions.score`
 
 The recruiter's scoreboard is `/enterprise/activity-dashboard → AI-Simulations → [simId]`: one row per candidate who
-took the sim, ranked by a comparable **score**. **That score does NOT come from `jobsimulation.sessions.score`.** It
-comes from **`app.public.local_jobsimulation_sessions.score`** — a `Float32` **MIRROR** table in the `app` service's
-own `public` schema, read directly by the resolver. Seeding only `jobsimulation.sessions` renders an **empty**
-comparison.
+took the sim, ranked by a comparable **score**. That score comes from
+**`app.public.job_simulation_sessions.score`** — the **canonical** session entity in the `app` service's `public`
+schema, read directly by the resolver.
+
+> **History, because a seeder built from the old shape writes to nothing.** Until `app` migration
+> `20260729133514.sql` (2026-07-29) the score lived on `public.local_jobsimulation_sessions`, a `Float32`
+> **MIRROR** that shadowed a `jobsimulation.sessions` row. That migration back-filled the mirror into the
+> canonical entity and **dropped it** (`:58-62`), and the earlier `20260722104506.sql` had already dropped
+> `jobsimulation.sessions` (`:79`) in favour of `public.job_simulation_sessions` (`:2`). **Both halves of the
+> old pair are gone**; there is one row per (candidate × attempt) now.
 
 **The read-path, traced end-to-end (FE → GraphQL → resolver → Ent → table):**
 
@@ -99,10 +120,10 @@ comparison.
 | 1 | `apps/web/.../simulationScoreColumn.tsx:54,95-97` | renders `row.score` (the visible number) |
 | 2 | `packages/graphql/src/query/insights.ts:31-82` | query `insightsJobSimulationByMemberships` |
 | 3 | `app/.../resolver_queries.go:1088,1134` | resolver → `IntelligenceManager.InsightsJobSimulationByMemberships` |
-| 4 | `app/internal/organization/intelligence.go:1692` | reads **ONLY** `m.ent.LocalJobsimulationSession` (the mirror) |
+| 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
 | 5 | `intelligence.go:1728-1735` | best-attempt: `row_number() ORDER BY score DESC` per candidate |
 | 6 | `intelligence.go:1801` | `Score` ← `ls.Score` (the mirror's score column) |
-| 7 | `app/internal/data/ent/schema/local_jobsimulation_session.go:52` | Ent table `public.local_jobsimulation_sessions`, `field.Float32("score")` |
+| 7 | `app/internal/data/ent/schema/job_simulation_session.go` | Ent table `public.job_simulation_sessions`, `field.Float32("score")` (`local_jobsimulation_session.go` no longer exists) |
 
 **The best-attempt sort + the cohort** (`intelligence.go:1738-1751`): rows are grouped per `user_id`, reduced to
 **ONE best-attempt row per candidate** (the highest `score`), then sorted `score DESC, completition_status ASC,
@@ -115,8 +136,9 @@ regardless of data — so the seeder must replicate whatever grants the existing
 
 **BA-4 — the drill-down is a DIFFERENT set of tables (not the scoreboard).** Clicking a candidate opens the
 per-session competency / Job-Fit detail (`[simId]/[userId]`), which reads
-`jobsimulation.validation_attempt_results` / `validation_skill_results` / `validation_criterion_results` — three
-tables the `PersonaSeeder` also writes (`persona_write.go:69-71,143-167`). These are needed **only for the
+`public.validation_attempt_results` / `validation_attempt_skill_results` / `validation_criterion_results` — three
+tables (all in **`public`**, `20260722081626_jobsim_data_model.sql:336/355/376`; note the middle one is
+`validation_attempt_skill_results`, not `validation_skill_results`) the `PersonaSeeder` also writes (`persona_write.go:69-71,143-167`). These are needed **only for the
 drill-down**, NOT for the comparison list. `anticheat_summary` on the mirror row is a **decorative icon only**. So
 the open BA-1 question — *"does the list score need a per-session `validation_*`/eval row?"* — is answered **NO**:
 the scoreboard scores from the 2-table pair (+ membership + the Casbin gate) alone.
@@ -125,23 +147,26 @@ the scoreboard scores from the 2-table pair (+ membership + the Casbin gate) alo
 
 **Minimal write-set per (candidate × sim):**
 
-1. **`public.local_jobsimulation_sessions`** — the **score source** + row generator. Fields: `score` (0–100),
+1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
+   is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
    `completition_status` (**note the misspelled column**; values `passed`/`failed`/`pending`/`SIMULATION…`),
-   `user_id`, `jobsimulation_id`, `jobsimulation_session_id` (FK → #2), `organization_id`, `tenant_id` (NULL or
-   `=org`), `status`, `session_started_at`/`session_ended_at`, `validation_version`, `anticheat_summary` (optional).
-2. **`jobsimulation.sessions`** — required so the federated **non-null `Session!`** (status / startedAt) resolves;
-   else the whole list **NULL-bubbles** (a federation non-null on a missing row collapses the parent). Fields: `id`
-   (= #1's `jobsimulation_session_id`), non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`,
-   `sim_type`. **Empirically 393/393 local rows on `billion` carry this matching pair** — the mirror row and its
-   `jobsimulation.sessions` twin are always co-written.
-3. **`public.memberships`** — the candidate must be **active** (`GetMemberships`; status `active`/`invited`).
+   `organization_id`, `tenant_id` (NULL or `=org`), `validation_version`, `anticheat_summary` (optional).
+2. **`public.memberships`** — the candidate must be **active** (`GetMemberships`; status `active`/`invited`).
+
+> **The write-set used to be a PAIR and is now a single row** (M257x iter-23). Before the mirror drop it was
+> `public.local_jobsimulation_sessions` (score) + a co-written `jobsimulation.sessions` twin (so the federated
+> non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). Neither table exists and
+> there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.** The old
+> "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
 
 **Org prerequisites:** `public.organizations.is_hiring = true` (§ *the gate*) + Clerk `publicMetadata.isHiring =
 true` (M224) + the **`OrgFeatureInsights` Casbin permission** substrate.
 
-**The machinery already exists — M223 is NOT net-new.** The current **`PersonaSeeder` already writes exactly this
-pair** — `rosetta-extensions/stack-seeding/seeders/persona_write.go:68-73` writes both `jobsimulation.sessions` and
-`public.local_jobsimulation_sessions` (col builders `sessionCols()` / `localSessionCols()` at `:125-141`). M223's
+**The machinery already exists — M223 is NOT net-new.** The **`PersonaSeeder` already writes exactly this row** —
+`rosetta-extensions/stack-seeding/seeders/persona_write.go:91` writes
+`{"public", "job_simulation_sessions", sessionCols(), …}`. (Until M257 it wrote the **pair**, via a second col
+builder `localSessionCols()`; that builder was deleted with the mirror and `sessionCols()` at `:152` now serves
+the single canonical row.) M223's
 candidate-assessment funnel is a **direct generalization** of the same fan-out — each candidate on the **one**
 position they applied for (v2.4 "casting call" M227 fix #3; before M227 every candidate took all 5), round-robined
 evenly across the 5 shared sims so ~8 candidates rank per position (the M51 `AIReadinessFunnelSeeder` shape, 2 shared
@@ -170,26 +195,29 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 - **GraphQL** (federated, `apps/web`): `insightsJobSimulationByMemberships` (`packages/graphql/src/query/insights.ts`)
   → `app` subgraph resolver `resolver_queries.go` → `IntelligenceManager.InsightsJobSimulationByMemberships`
   (`app/internal/organization/intelligence.go`). Gated on the `OrgFeatureInsights` Casbin permission.
-- **The federated `Session!`** is resolved from `jobsimulation.sessions` (a different subgraph) — the mirror row's
-  `jobsimulation_session_id` is the join key. A missing twin NULL-bubbles the row out of the list.
+- **The `Session!` field** resolves from the **same** subgraph and the **same** row — there is only one subgraph
+  now, and only one session table. (Before the merges it resolved from `jobsimulation.sessions` in a *different*
+  subgraph, joined on the mirror's `jobsimulation_session_id`, and a missing twin NULL-bubbled the row out of the
+  list. **No join key, no NULL-bubble hazard, no twin to forget.**)
 - **Surface:** `apps/web` route `/enterprise/activity-dashboard → AI-Simulations → [simId]` (list) +
-  `.../[simId]/[userId]` (the per-candidate drill-down, reads the `jobsimulation.validation_*` tables).
+  `.../[simId]/[userId]` (the per-candidate drill-down, reads the `public.validation_*` tables).
 
 ## Local development
 
 To make a hiring org's comparison scoreboard render on a demo/dev stack: seed an org with `is_hiring=true`
 (+ Clerkenstein `publicMetadata.isHiring=true`, M224), an active membership per candidate, and — per (candidate ×
-sim) — the co-written `jobsimulation.sessions` + `public.local_jobsimulation_sessions` pair (the score lives on the
-mirror), plus the `OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured
+sim) — **one** `public.job_simulation_sessions` row (the score lives on it; the old co-written
+`jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** no longer exists — both tables were
+dropped), plus the `OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured
 snapshot as the org's positions. The scoreboard then reads `insightsJobSimulationByMemberships`, one best-attempt
-row per candidate. The drill-down additionally needs the `jobsimulation.validation_attempt_results`/`_skill_results`/
-`_criterion_results` rows (the PersonaSeeder pattern).
+row per candidate. The drill-down additionally needs the `public.validation_attempt_results` /
+`validation_attempt_skill_results` / `validation_criterion_results` rows (the PersonaSeeder pattern).
 
 > **This is IMPLEMENTED as of v2.4 "casting call" M223** (`rosetta-extensions/stack-seeding`): the
 > `stories.seed.yaml` 4th story (Meridian Talent, `narrative: hiring`, 5 admins + 45 candidates) + two seeders —
 > **`HiringConfigSeeder`** (the 5 positions via the type-aware `readHiringSimPool`, written as
 > `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored `SIMULATION_TYPE_HIRING`
-> MIRROR pair on the **one** position they applied for — round-robined evenly across the 5, ~8 per position (M227
+> session row — a MIRROR *pair* until the M257 re-point dropped the mirror — on the **one** position they applied for — round-robined evenly across the 5, ~8 per position (M227
 > fix #3) — SOME assigned-only, a differentiated score spread). The
 > `OrgFeatureInsights` substrate needs **no net-new grant** — the org's `admin` members inherit `org:feature:insights`
 > from the global `p3` admin policy via their standard g2 grant. Seeder chain: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel)
@@ -216,8 +244,9 @@ in the dockerized `apps/web` `/enterprise` and concluded it was reachable by the
 Results screen ships in `apps/hiring`
 (`.../enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx` → `InsightsByMembersContainer`), and it
 federates the **same** `insightsJobSimulationByMemberships` field (in the **app** subgraph SDL, **no feature
-gate**) over the **same** Cosmo router the demo already bakes, reading the **same** seeded
-`public.local_jobsimulation_sessions` M223 wrote. So the demo builds `apps/hiring` from the **untouched clone** as
+gate**) over the **same** GraphQL endpoint the demo already serves — which since platform `2adcf71`
+(2026-07-31) is **`backend`'s own `:8082/graphql/query`**, the Cosmo/WunderGraph router having been deleted
+from compose — reading the **same** seeded `public.job_simulation_sessions` M223 wrote. So the demo builds `apps/hiring` from the **untouched clone** as
 a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI + Cosmo
 + Postgres — **no re-skin, no new resolver, no data migration, zero platform-repo edits.** The recruiter logs in
 straight onto the hiring Results page (the cockpit's `CockpitHero.IsHiring` routes her to the hiring base); the
@@ -245,7 +274,8 @@ admins/recruiters keep `@meridian-talent.com` (#M227-D2). See
 **The M227 fix-#1 guard was INCOMPLETE — caught by the M228 live re-prove.** M227's "skip the generic seeders for a
 hiring org" listed the obvious activity seeders but **missed two mirror/FK writers**, and the gap only surfaced when
 the corrected seed actually ran on `billion` (the deterministic unit test had simply omitted them). **FeedbackSeeder**
-has written `public.local_jobsimulation_sessions` MIRROR rows on GENERIC sims since v1.10 M42m → unguarded it leaked a
+has written app-side session rows on GENERIC sims since v1.10 M42m (then
+`public.local_jobsimulation_sessions` MIRROR rows; `public.job_simulation_sessions` since the M257 re-point) → unguarded it leaked a
 training sim + a 2nd session per candidate into the recruiter's list; **SuccessionSeeder** FKs each member's first
 population session (now skipped for the hiring org) → the FK VIOLATED and the whole seed reported *"failed"*. Both now
 consult `skipGenericActivityForHiringOrg`; the regression enumerates **all 8** generic seeders (#M228 F1/F2/F3). The
@@ -268,10 +298,11 @@ click→ACCESS **1.27 s**. (#M228, render-probe `stack-verify/e2e/tests/render-h
 - The frontend split that hosts the surface: [`next-web-app.md`](next-web-app.md) (Workforce `apps/web` vs Hiring
   `apps/hiring`). **⚠️ M222 inferred the scoreboard was reachable in `apps/web`; M224 rendering proved it is not for a
   *genuine* hiring org — the demo serves the real `apps/hiring` as a second container (see § The render path above).**
-- The runtime that runs the sims + owns `jobsimulation.sessions` + the `validation_*` drill-down tables:
+- The simulation runtime — now a **domain inside `app`** (`app/internal/jobsimulation/`), owning
+  `public.job_simulation_sessions` + the `public.validation_*` drill-down tables:
   [`jobsimulation.md`](jobsimulation.md).
-- The `app` service that owns the **mirror** table `public.local_jobsimulation_sessions` + the `IntelligenceManager`
-  read-model + the `OrgFeatureInsights` Casbin gate: [`backend.md`](backend.md).
+- The `app` service that owns the session table + the `IntelligenceManager` read-model + the
+  `OrgFeatureInsights` Casbin gate: [`backend.md`](backend.md).
 - The Clerk mock that must emit `publicMetadata.isHiring` (M224): [`clerkenstein.md`](clerkenstein.md).
 - The closest seeding precedent (a narrative-gated org feature with a funnel seeder + the same
   render-gate-bypasses-the-seed lesson): [`ai-readiness.md`](ai-readiness.md).

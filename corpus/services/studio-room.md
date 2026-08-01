@@ -274,7 +274,11 @@ python gen.py --simid <uuid> --force
 #### Installation
 
 ```bash
-cd studio/studio-room
+# studio-room's root IS app/studio/ — it holds gen.py, requirements.txt, agents/, services/.
+# There is no studio/studio-room path. The Go side invokes `studio/gen.py` from the app repo
+# root (app/internal/cms/studio/studioManager.go:119), against the managed venv at
+# `studio/studio-venv` (studioManager.go:92-94).
+cd app/studio
 pip install -r requirements.txt
 ```
 

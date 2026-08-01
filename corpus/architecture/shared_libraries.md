@@ -38,8 +38,8 @@ third-party dependency. This keeps the services consistent and small.
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
-| **Version pin** | `v0.34.3` across all live services (archived `chronos` pins `v0.30.1`) |
-| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger (the decommissioned skiller / skillpath / roadrunner / jobsimulation / cms usage is all folded into app) |
+| **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; the still-running `cms` + `jobsimulation` husk containers → **`v0.35.1`**; `sentinel` + `storage` → `v0.34.3` (archived `chronos` pins `v0.30.1`). Measured from each repo's `go.mod` at platform `2adcf71`. |
+| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — plus the `cms` and `jobsimulation` containers, which the default `graphql` profile still starts as merged-into-`app` **husks** (rollback path; teardown is M810) even though their domains now run inside `app` |
 
 The platform framework. Each service composes its server out of colony packages:
 
@@ -101,7 +101,7 @@ e.g. `storage/internal/migration` imports `go/simulator/storage/v1` as `legacySt
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/ai` |
 | **Language** | Go (`go 1.25.0`) |
-| **Version pin** | `v1.40.1` across consumers |
+| **Version pin** | **`v1.40.2`** across consumers (`app`, and the `cms` / `jobsimulation` husks, all agree) |
 | **Imported by** | app — i.e. every folded domain (Go services only — **not** Studio-Desk, which is TypeScript) |
 
 A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,

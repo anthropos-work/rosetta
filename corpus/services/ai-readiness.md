@@ -164,9 +164,9 @@ All tables live in `app` (`public` schema); ent schemas under `app/internal/data
 | `ai_readiness_notification_log` (**net-new, M400**) | notification send log | the invitation/reminder/launch/digest lifecycle audit |
 | `ai_readiness_notification_optout` (**net-new, M400/M403**) | per-member unsubscribe | the reminder-cadence opt-out |
 | `organization_settings` (existing) | the enablement gate | `setting='ai_readiness'`, `is_enabled` |
-| **`jobsimulation.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
+| **`public.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
 
-### The Step-3 interview findings — `jobsimulation.interview_aggregated_reports` (M219 R-8)
+### The Step-3 interview findings — `public.interview_aggregated_reports` (M219 R-8)
 
 The manager's **How-we-measure → Step-3 breakdown** panel has four sub-sections. On the shipped demo **three
 rendered their HEADINGS WITH NO CONTENT** and **a fourth did not render at all**, and the coverage gate **passed
@@ -174,7 +174,7 @@ it under a disclosed exception**. An empty sub-section is a **FINDING, not a pas
 the seeder fills the blocks.
 
 **It was blamed on the wrong table.** The milestone's own DB corroboration pointed at
-`jobsimulation.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
+`public.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
 counts and *nothing on this surface reads it*. `interview_extraction_results` (165 rows, written by the
 `SuccessionSeeder`) feeds a **different** surface. `app/internal/aireadiness/how_we_measure.go`
 (`computeInterviewInsightsV2` — formerly `workforce/how_we_measure_v2.go`, folded in at the M247-refresh refactor)
@@ -521,11 +521,12 @@ sims pool that no general picker can draw (`contentref.go`), making the sets **p
 in ten.
 
 **3. An interview session with no turns is incoherent data.** `computeCycleTotals`
-(`how_we_measure.go:253-261`) counts `interviewQuestions` as `COUNT(jobsimulation.interactions)` joined through
-sessions to the org's interview sim. The funnel seeded the **session** and not one interaction, so the field was
-a hard **0**. The funnel now writes each stage-3 interview's two `jobsimulation.actors` (the AI interviewer +
-the member — the interaction FKs *require* them, and the DB enforces `source_id <> target_id`) and **6–11**
-`jobsimulation.interactions` turns (`action_type='call'` — the platform's enum is exactly `{email, call}`).
+(`how_we_measure.go:253-261`) counts `interviewQuestions` as `COUNT(public.interactions)` joined through
+sessions to the org's interview sim — the live query at `how_we_measure.go:285-287` reads
+`FROM public.interactions i JOIN public.job_simulation_sessions s`. The funnel seeded the **session** and not one
+interaction, so the field was a hard **0**. The funnel now writes each stage-3 interview's two
+`public.actors` (the AI interviewer + the member — the interaction FKs *require* them, and the DB enforces
+`source_id <> target_id`) and **6–11** `public.interactions` turns (`action_type='call'` — the platform's enum is exactly `{email, call}`).
 
 > **Measured, not assumed — and it corrects the finding that opened this thread.** The **current** dashboard's
 > *"✨ Handled for you this cycle"* tile renders **`skillsMapped` / `handsOnMinutes` / `interviewMinutes`** —

@@ -15,7 +15,7 @@ Once running, access these URLs in your browser:
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
 | **Ant Academy** | http://localhost:3077 | Internal learning portal (`@anthropos.work` only) |
-| **GraphQL Playground** | http://localhost:5050 | API gateway (Cosmo Router) |
+| **GraphQL Playground** | http://localhost:8082/graphql | Served by `backend` itself — the Cosmo Router was deleted from compose at platform `2adcf71`. The **endpoint** is `/graphql/query`; `/graphql` is the Apollo Sandbox UI |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
 ---
@@ -122,7 +122,10 @@ make logs
 ### Health Check: GraphQL Gateway
 
 ```bash
-curl -s http://localhost:5050/health || echo "GraphQL not responding"
+curl -s http://localhost:8082/api/health || echo "backend not responding"
+# GraphQL itself (POST an introspection query — there is no GET /health on the GraphQL path):
+curl -s -X POST http://localhost:8082/graphql/query \
+  -H 'Content-Type: application/json' -d '{"query":"{__typename}"}'
 ```
 
 *Expected*: Health check response or API info.

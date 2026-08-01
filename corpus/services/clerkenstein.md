@@ -65,7 +65,7 @@ selection, so a demo can present as any seeded hero; the multi-session FAPI sema
 with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express`
 ^1.3.47, M2c — RS256/JWKS, the genuine SDK *satisfied*, not reimplemented), and the **deployment/injection**
 surface (7/7 genes, `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against
-the platform's real `colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural*
+a real `colony`, pinned at **`v0.34.3`**, and satisfies its contract; added after **M3** showed *behavioural*
 alignment ≠ *deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
 The DNAs + mirror + goldens + runners live in the clerkenstein repo; the `/align-dna` + `/align-run`
 skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc live in rosetta, while the
@@ -90,7 +90,7 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 | `clerk-frontend/` | `@clerk/clerk-js` + `@clerk/nextjs` | fake Frontend API + publishable-key codec — **mints** JWTs |
 | `clerk-webhook/` | `svix` | the signed-webhook injector |
 | `shared/` | — | universal-key HS256 JWT (the mint side + verify side agree here) |
-| `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony @ v0.34.3`) |
+| `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony`, **pinned `v0.34.3` — behind `app`'s `v0.35.2`**, see the ⚠️ below) |
 | `cmd/` | — | standalone binaries: `mintpk` (authoritative publishable-key minter) · `fake-fapi` / `fake-bapi` (standalone fake servers for demos; `fake-fapi` loads `FAKE_FAPI_ROSTER` for M37 multi-identity) |
 | `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,multirun,expressrun,deployrun}` + `dna/` (five) + `golden{,-js,-multi,-express,-deploy}/` + `scripts/` |
 
@@ -254,8 +254,16 @@ and why a MagicDNS FQDN (`billion.taildc510.ts.net`, also dotted) validates nati
 mocks the standalone `colony/authn` interface), the platform actually consumes `colony/authn/provider/clerk`
 *inside* the `colony` module. So the **deployable** drop-in lives in `deploy/colony-authn/`: the disarmed
 provider — same package, same `Clerk` type, same `NewProvider(apiKey)` signature — compiled against the
-platform's **real** `colony @ v0.34.3` so an injected demo app accepts Clerkenstein-minted tokens with zero
-source changes. It is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
+**real** `colony`, pinned at `v0.34.3`, so an injected demo app accepts Clerkenstein-minted tokens with zero
+source changes.
+
+> **⚠️ The `v0.34.3` pin is the ARTIFACT's, and it is BEHIND the platform** (v2.8 M257x iter-23). At platform
+> `2adcf71`, `app/go.mod` reads `colony v0.35.2` — and `app` is the service an injected demo actually runs.
+> `sentinel` and `storage` are still on `v0.34.3`, so the pin is not wrong for the whole platform, but a
+> `clerk-deploy-1` score taken against `v0.34.3` **is not measuring the binary under test**. This is precisely
+> the drift the deployment DNA exists to catch, so re-run `deployrun` against `v0.35.2` before quoting 7/7 as
+> current. (`app` is likewise on `clerk-sdk-go/v2 v2.7.0`, not `v2.6.0` — `CHECK-M257x-iter22-clerk-sdk-drift`.)
+ It is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
 carries, not a hard-coded user). Its contract is checked at *compile time* and scored by the
 `alignment/cmd/deployrun` runner (the `clerk-deploy-1` DNA). `cmd/` ships the supporting standalone tools:
 `mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers

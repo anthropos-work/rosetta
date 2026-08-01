@@ -85,7 +85,7 @@ service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
-> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=backend` gives you the backend but no usable `:5050` endpoint.
+> * **There is no `graphql` gateway service any more.** Platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from `docker-compose.yml` outright — service, `repos.yml` entry and clone. GraphQL is served by **`backend` itself at `:8082/graphql/query`** (the `/graphql` path serves the Apollo Sandbox UI). The `graphql` **profile name survives** and still selects the seven-service set, so nothing about the profile wiring warns you. `make up PROFILE=backend` therefore *does* give you a usable GraphQL endpoint — on `:8082`, not the retired `:5050`.
 > * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it.
 > * Every Go service hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it.
 > * All app builds use BuildKit SSH forwarding (`ssh: ["default"]`) + `GH_ACCESS_TOKEN=$GH_PAT` to pull private Go modules — needs a loaded SSH agent **and** `GH_PAT` in `.env`.
@@ -116,7 +116,7 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 
 | studio-desk | 9000 (backend), 9100 (frontend) |
 
-| graphql (WunderGraph/Cosmo) | **5050 → container 8080** |
+| ~~graphql (WunderGraph/Cosmo)~~ | ~~5050 → container 8080~~ — **deleted from compose at platform `2adcf71`**; GraphQL is `backend`'s `8082/graphql/query` |
 | next-web-app | 3000 |
 | customerio-sync | 8080 |
 | gotenberg | 3200 |
@@ -136,7 +136,7 @@ cd platform
 cp .env_example .env
 brew install ariga/tap/atlas   # required on the host for migrations
 make init && make up && make migrate
-open http://localhost:5050     # GraphQL playground
+open http://localhost:8082/graphql   # GraphQL playground (Apollo Sandbox; the endpoint is /graphql/query)
 ```
 
 Key variables include `GH_PAT` (private Go modules), `CLERK_SECRET_KEY`, the
