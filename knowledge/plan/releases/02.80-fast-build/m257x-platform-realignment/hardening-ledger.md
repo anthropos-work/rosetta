@@ -246,3 +246,87 @@ harden pass. See §"Routed forward" in Pass 2 for the full table.
 the next iter — RF-4 is the clause-1 signature itself, still live in a file this milestone edited, and RF-1
 is the wrong-twin class with the demo half already fixed. The remaining test-only items (RF-3, RF-7, RF-9,
 RF-10, RF-11) are natural work for the **final** harden pass after the gate fires.
+
+---
+
+## Pass 4 — 2026-08-01 — incremental
+
+**Iters hardened this pass:** iter-24, iter-25 (the two most recent production fixes in the
+iter-16..26 window; iter-26 is a measurement tik with no runtime surface)
+**Tiks covered since prior pass:** 11 (iters 16–26; Passes 1–3 terminated at `e028c77` / rext `46f8cc3`)
+
+**Coverage delta on touched files:** no coverage instrumentation exists for these sections (stdlib
+`unittest`, no pytest on this host), so the measurement is test count + mutation kill, as in Passes 1–3.
+
+| section | before | after |
+|---|---|---|
+| `playthroughs` (Go) | **FAIL — 2 standing RED** | ok, +2 tests |
+| `stack-injection` | OK 288 | OK 297 (+9) |
+
+**Tests added:** iter-25 → `playthroughs/manifest/runner_safety_test.go`: 2 net-new (1 completeness
+fence, 1 executable behaviour test) + 3 corrected asserts + 3 helpers · iter-24 →
+`stack-injection/tests/test_directus_consumer_derivation.py`: 9 net-new (6 offline derivation, 2 twin,
+1 live).
+
+**Bugs surfaced + fixed inline:**
+
+1. **Two Go tests have been RED since iter-25 — and the milestone's baseline records "Go sections
+   green" (commit `8aad6ce`).** `TestRunnerSafety_ResetContract` and
+   `TestRunnerSafety_RosterRefreshGate` in `playthroughs/manifest` fail on `m257x/platform-realignment`
+   at `0ab2921`. The suite was not re-run after iter-25. Both are the same root cause and it is the
+   milestone's own defect class in its purest form: the fence read the **raw file**, so when iter-25
+   routed every call through a resolved `"$STACKSEED"` path, assert (1) — *"uses the real `stackseed
+   --reset --stack` path"* — went on passing, **satisfied by the ECHO line printed beside the call**
+   (`run-playthroughs.sh:126`) rather than by any call. The invariant it names (never an additive
+   re-seed as the reset) has therefore been unenforced since iter-25 **while reporting enforced**,
+   and its two siblings went RED against a runner that was correct. A fence that measures the
+   narration of a command instead of the command is exactly what this milestone exists to find.
+   Fixed by measuring EXECUTED lines only (`shellInvocationLines` — comments, blanks and
+   `echo`/`printf`-leading lines dropped) and by **deriving** the tool reference from the runner's own
+   `<VAR>="${PT_STACKSEED:-…}"` assignment instead of pinning the spelling `"$STACKSEED"`.
+2. **iter-25's sibling-sweep is now testable, which it was not (commit `8aad6ce`).** There were three
+   bare `stackseed` calls; the first fix swept one *while citing the sweep rule in its own commit
+   message*, and the two it missed are `|| true`-shaped, so they degraded in silence — after a
+   reset-to-seed swapped the world, the fake-FAPI kept serving the previous world's identities.
+   `TestRunnerSafety_StackseedResolution` asserts **completeness, not presence**: zero bare
+   invocations at *command position* anywhere in the file (string literals blanked; lines split on
+   `;`/`&&`/`||`/`|`/`if`/`then`/`do`; only each segment's first token considered), plus an
+   anti-vacuity floor — a "no occurrences" assert passes beautifully once the calls are *deleted*, so
+   all four legs must still be present through the resolved reference — plus an `[ -x ]` check on the
+   two non-fatal legs specifically. `TestRunnerSafety_RefusesUnresolvedStackseed` then **executes**
+   the runner: `--reset` with an unresolvable binary must exit 2 saying *"REFUSING to continue"*, and
+   its positive control demands a stub's own exit status **37** surface — proving the guard was passed
+   *and* the resolved path actually invoked. `bash` absence is a `t.Fatal`, never a `t.Skip`.
+3. **iter-24's consumer list is now DERIVED rather than asserted (commit `749ee0f`).** iter-24 fixed
+   the value; the class was untouched — nothing could notice a *reader moving*.
+   `derive_directus_readers()` computes the set from the platform's own Go source (`*.go` files naming
+   `DIRECTUS_BASE_ADDR`, mapped through `INJECTED`). Dated and citable: `app`'s Go source first
+   mentioned the var at platform **`38ee0c44` (2026-07-27**, "fold cms GraphQL subgraph into app"),
+   zero before — **this fence would have gone RED that day**; a human found it on 2026-08-01 by
+   reading 96 lines of 403 in a live backend log. `*.go` only is load-bearing: `app/terraform/main.tf`
+   and eight `app/knowledge/plan/…` roadmap docs carry the string and say nothing about who *reads*,
+   and counting them makes every repo a reader. It is also what makes the **pre-fold fixture derive
+   the pre-fold answer** — the property that separates a derivation from a constant in a function's
+   clothes. The twin check pins both emitters to the *derived* set rather than to each other, because
+   bare parity **passes on symmetric deletion** (empty both and they agree perfectly while every stack
+   reverts to reading production content — the hole Pass 2 found in another parity fence).
+
+**Mutation results this pass:** 15 mutants, **15/15 matching declared expectation** (12 declared-RED
+all killed, 3 declared-GREEN no-op controls all survived), controls GREEN before and after each
+battery, every shell mutant `bash -n`-gated.
+
+The three surviving controls are the point of the pass, not padding:
+- stripping the `stackseed` prose out of **every echo line** must not be noticed — it *could not have
+  passed before this pass*, because that prose was what the fence was reading;
+- renaming `STACKSEED` → `SEEDBIN` throughout must not be noticed — the guard asserts the derivation,
+  not the spelling;
+- reordering both consumer tuples to `("backend", "cms")` must not be noticed — semantically identical
+  for a membership test, so a test that reddens on it is asserting the literal.
+
+**Knowledge backfill:** none this pass (both findings are tooling-internal; no corpus claim moved).
+
+**Stop condition:** continue-to-next-pass — the iter-16..20 half of the window is unswept, and the
+scan has already named its targets: `platform_alignment_guard.py`'s live positive control skips
+itself when the git-ignored `stack-demo/platform/repos.yml` is absent, while
+`corpus/ops/platform-alignment.md:616` asserts it runs "on every suite run"; and iter-18's Directus
+bootstrap race has no test forcing both sides of the race.
