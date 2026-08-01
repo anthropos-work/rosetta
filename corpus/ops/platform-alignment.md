@@ -338,6 +338,35 @@ Rules, in order of how often they actually catch something:
       it truncated at the em-dash. A correct diagnostic that has to be read carefully is a weaker control
       than a parameter that no longer exists.
 
+13. **A catalog query that is correct in `psql` can be broken in the program — parameters change the plan.**
+    M257x iter-15. `stacksnap`'s sequence-discovery query raised
+    `column "sequence_catalog" of relation "sequences" does not exist` on every directus replay, and pasting
+    the same SQL into `psql` with the parameters substituted returned cleanly. Both observations were true.
+
+    The predicate was `pg_get_serial_sequence(quote_ident($1)||'.'||quote_ident($2), a.attname) IS NULL`,
+    which references only `a.attname` and the parameters — so it is a **restriction clause on
+    `pg_attribute`** and the planner is free to push it below the joins that select the relation, evaluating
+    it once per row of the whole catalog. `pg_get_serial_sequence` does not return NULL for a column of some
+    other relation; it **raises**. With literals Postgres picks a custom plan that resolves the relation
+    first and the hazard never fires. pgx PREPAREs, Postgres switches to a **generic plan on the sixth
+    execution**, and it fires.
+
+    So the reproduction that "proves the SQL is fine" is a different plan from the one that runs. Two rules:
+
+    - **Reproduce it the way the program sends it** — `PREPARE` + at least six `EXECUTE`s, not a literal
+      paste. The sixth is where a generic plan takes over.
+    - **A function that RAISES on unexpected input must not sit in a pushable qual.** Pin the relation
+      behind an evaluation barrier (`WITH … AS MATERIALIZED`) and derive the function's arguments from the
+      **same resolved object** — an OID, not a name re-spelled from the parameters. Then the two arguments
+      cannot disagree about which relation they mean under any plan (§8 rule 4). The repair that merely
+      makes the function tolerant leaves the correctness plan-dependent, which is how this survived months.
+
+    Blast radius, for calibration: the failed replay also cancelled the post-replay Directus restart (which
+    runs only on success), so the whole content layer 403'd — while autoverify reported `green:true /
+    0 warnings` on three consecutive cold cycles, because its Directus probe counts registry rows in Postgres
+    and never asks the running Directus for an item. **When a step's success gates a side effect, a failure
+    costs both**, and the second symptom looks like an unrelated bug.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
