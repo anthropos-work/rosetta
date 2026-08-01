@@ -47,7 +47,7 @@ graph TB
 - **Language**: Go
 - **Deployment**: Docker Compose with Makefile automation (local) / AWS ECS (production)
 - **Communication**: HTTP/RPC + Redis Streams
-- **Database**: PostgreSQL (dedicated schemas per service)
+- **Database**: PostgreSQL — **one schema, `public`, owned by `app`**, which is the only repo with migrations (`repos.yml:10-13`). `sentinel` keeps its own `sentinel` schema (`docker-compose.yml:18`, `search_path=sentinel`) **despite `migrations: false`** — the Trap-A case; the `cms`, `jobsimulation` and `skillpath` schemas are legacy husks
 - **Source**: Private GitHub repositories
 
 **Services** (current local docker-compose, as of 2026-07):
@@ -285,12 +285,12 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 | **Port** | 5050 |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
-| **Subgraphs** | backend/app, jobsimulation, cms (3 — skillpath's subgraph was folded into `backend` when skillpath merged into `app`, M505) |
+| **Subgraphs** | **`backend` alone (1)** — skillpath's subgraph folded in at M505, then jobsimulation's, then cms's at `graphql-wundergraph@915da06` (2026-07-29), the 2 → 1 step |
 
 > Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
 
 **Aggregates**:
-- Backend (app), CMS, Jobsimulation services
+- Backend (`app`) — the only subgraph left. CMS and Jobsimulation folded into it.
 
 **Consumed By**:
 - Next.js frontend applications
@@ -376,7 +376,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 
 | Tier | Count | Technology | Deployment | Management |
 |:-----|:------|:-----------|:-----------|:-----------|
-| **Core Backend (local `graphql` profile)** | 6 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Core Backend (local `graphql` profile)** | 6 Go services + Gotenberg (**no Cosmo Router** — deleted from compose at platform `2adcf71`) | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |

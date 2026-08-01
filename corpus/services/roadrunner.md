@@ -20,7 +20,7 @@
 > archived** (last push 2026-04-23), only removed from orchestration at platform `045857c`. The corpus called it
 > archived; the org disagrees. See [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
-> roadrunner is also **still a live `docker-compose.yml` service** and still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
+> roadrunner is also **still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
 > `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` is still *set* in jobsimulation's environment — but that variable is
 > now dead config, and a live container is not a live caller). It is **built + started but off every request path** —
 > so it stays classified **ORPHANED (Tier-1, running-but-unused)**, not ARCHIVED. **Everything below describes the

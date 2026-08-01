@@ -43,7 +43,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
 - **Frontend**: Next.js 15 + React 19 + TypeScript on Vercel
-- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM; each service has its own schema
+- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; `cms`/`jobsimulation`/`skillpath` are legacy husks (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
 - **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
@@ -53,7 +53,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `graphql` profile):
-1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage, Messenger (when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage, Messenger (when opted in) + Gotenberg (third-party PDF service). Dockerized. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only.
 
    Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and **cms**
