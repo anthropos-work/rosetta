@@ -149,7 +149,10 @@ the scoreboard scores from the 2-table pair (+ membership + the Casbin gate) alo
 
 1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
    is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
-   `completition_status` (**note the misspelled column**; values `passed`/`failed`/`pending`/`SIMULATION…`),
+   `completion_status` (values `passed`/`failed`/`pending`/`SIMULATION…`) — **spelled correctly in the DB**
+   (`app/terraform/migrations/20260722104506.sql:12`, `ent/schema/job_simulation_session.go:39`); the
+   `completition` misspelling survives only in the GraphQL sort-field enum
+   (`enum.InsightsSortFieldCompletitionStatus`) and a JSON tag, **never as a column name**,
    `organization_id`, `tenant_id` (NULL or `=org`), `validation_version`, `anticheat_summary` (optional).
 2. **`public.memberships`** — the candidate must be **active** (`GetMemberships`; status `active`/`invited`).
 

@@ -1,6 +1,6 @@
 # Anthropos Services Dependency Map
 
-This document outlines the inter-service dependencies inferred from configuration files (`docker-compose.yaml`) and code inspections.
+This document outlines the inter-service dependencies inferred from configuration files (`docker-compose.yml`) and code inspections.
 
 ## Dependency Matrix
 
@@ -10,7 +10,7 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **Backend** (`app`) — the monolith | Sentinel, **cms**, Storage (compose `depends_on`, `docker-compose.yml:66-80` — yes, the monolith still has a startup edge onto the cms **husk**); Gotenberg (runtime HTTP, no startup-order dep) | Postgres (`public` schema; `pgvector` in `extensions` — skiller embeddings, skill-path sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables), Redis, **Clerk**, **Directus**, **Judge0**, **LiveKit**, **AWS Chime**, **AI Providers** |
+| **Backend** (`app`) — the monolith | Sentinel, **cms**, Storage (compose `depends_on`, `docker-compose.yml:70-80` — yes, the monolith still has a startup edge onto the cms **husk**); Gotenberg (runtime HTTP, no startup-order dep) | Postgres (`public` schema; `pgvector` in `extensions` — skiller embeddings, skill-path sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables), Redis, **Clerk**, **Directus**, **Judge0**, **LiveKit**, **AWS Chime**, **AI Providers** |
 | **Sentinel** | - | Postgres |
 | ~~**CMS**~~ | **Merged into `app`** ("cms-in-app v8.0", app v1.360.0) — the content layer + Studio run in-process; Directus stays external | *(**husk container** — still defined at `docker-compose.yml:144` and still started by the default `graphql` profile; unfederated, still answers messenger's RPC until M809; teardown M810)* |
 | ~~**Jobsimulation**~~ | **Merged into `app`** ("jobsim-in-app") — the session engine runs in-process; simulation definitions come from the cms domain by ID without an RPC hop | *(**husk container** — `docker-compose.yml:83`, default `graphql` profile; unfederated; teardown M810)* |
@@ -55,7 +55,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 
 | Stream Name | Producer | Consumer(s) | Events |
 | :--- | :--- | :--- | :--- |
-| `backend` | App | CMS | User/org updates |
+| `backend` | App | App (cms **domain** in `app`; the `cms` husk also still subscribes until platform M810) | User/org updates |
 | `skiller` | App | App | Skill score changes — both producer and consumer live inside app since the skiller→app merge (stream name retained) |
 | `jobsimulation` | App | App (the jobsim engine + the skill-path engine, on ONE subscriber), Messenger (if running) | Session completed, insights generated |
 | `cms` | App (+ **Directus webhooks** → `POST /api/webhook/directus`, now authenticated via `DIRECTUS_WEBHOOK_SECRET`) | App (the cms similarity/Studio handlers + the jobsim handlers, merged onto ONE subscriber) | Content published/updated, translation & clone requests |

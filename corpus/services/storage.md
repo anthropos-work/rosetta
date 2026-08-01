@@ -2,7 +2,14 @@
 
 ## Role & Responsibility
 
-Storage is the **centralized file/blob service** for the platform. Other services (`jobsimulation`, `cms`, `app`) push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
+Storage is the **centralized file/blob service** for the platform.
+
+> **⚠️ Since the merges, the sole live caller is `app`.** The jobsimulation and cms domains run
+> **in-process inside `backend`** (`app/internal/jobsimulation/recording/recording.go:12`,
+> `anticheat.go:34`, `app/main.go:983` `storage.NewClient(…, storagens.CMS)`); their compose containers
+> are unfederated husks sitting off every storage path, and stay up only until platform **M810**.
+
+Callers push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
 
 Storage is stateless and owns no database: all state lives in S3 (the private manager falls back to local filesystem in dev when `STORAGE_S3_BUCKET` is unset; the public manager is wired to production S3 in compose).
 
@@ -101,7 +108,9 @@ storage sync <source> <dest> [--dry-run]      # bulk migrate
 
 ## Dependencies
 
-* **Upstream consumers**: jobsimulation (recordings, simulation documents), cms (content assets, media), app (user files, profile images)
+* **Upstream consumers**: **`app` only** — the jobsimulation domain (recordings, simulation documents),
+  the cms domain (content assets, media) and app itself (user files, profile images) all call from
+  inside the `backend` binary. The `jobsimulation`/`cms` husk containers call nothing (teardown M810).
 * **Downstream**: AWS S3 (production), CloudFront (public bucket), `colony` shared library, `proto` for RPC contracts
 * **No outbound RPC** to other platform services — storage is a leaf
 

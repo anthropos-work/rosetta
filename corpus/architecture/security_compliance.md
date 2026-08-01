@@ -62,9 +62,19 @@ Key guarantees:
 Three layers of isolation ensure tenant data cannot leak:
 
 ### Layer 1: Database
-- Every table has an `organization_id` foreign key
-- Ent ORM policies auto-filter all queries by organization
-- No cross-tenant data access is possible at the query level
+
+> **⚠️ Isolation is NOT automatic across the whole schema — do not rely on it as a blanket guarantee.**
+> Measured at `app` HEAD: of **139** Ent schemas, only **30** use `OrganizationMixin{}` — the one that
+> carries the privacy `Policy()` (`mixin.go:126`). Seven use `OrganizationIDMixin{}`, explicitly *"a plain
+> nullable organization_id column"* with **no policy**, and the rest never mention organization at all.
+> The platform states this itself: `job_simulation_session.go:5` — *"L2: NO Ent privacy Policy;
+> owner/org/tenant are plain fields"* — and `jobrole.go:18` / `category.go:15` note the taxonomy is
+> deliberately globally readable. **Scoping on the jobsim fan-out and the taxonomy is the caller's job.**
+
+- Org-scoped tables carry an `organization_id` column
+- Ent privacy policies auto-filter by organization **only on the 30 schemas using `OrganizationMixin{}`**
+- Cross-tenant reads are prevented at the query level **on those tables**; elsewhere isolation is
+  enforced by Layer 2 (Sentinel) and by explicit query scoping, not by the ORM
 
 ### Layer 2: Authorization
 - **Sentinel** service validates every API request using Casbin (RBAC/ABAC)

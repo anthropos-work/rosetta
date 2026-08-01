@@ -23,7 +23,10 @@
 >   entry point **`app/internal/jobsimwiring/wiring.go`**.
 > * **Data** — the 23 session/run tables (`sessions`, `actors`, `interactions`, `validation_*`, `anticheat_*`,
 >   `recordings`, `chime_recordings`, `code_submissions`, …) were re-created in the **`public` schema** by
->   `app/terraform/migrations/20260722081626_jobsim_data_model.sql`, with the **same table names**. The old
+>   `app/terraform/migrations/20260722081626_jobsim_data_model.sql`. **Most kept their names — but the
+>   headline one did NOT:** the very next migration, `20260722104506.sql`, creates
+>   `job_simulation_sessions` (`:2`) and `DROP TABLE "sessions"` (`:79`). **`public.sessions` does not
+>   exist**; the session table is `public.job_simulation_sessions`. The old
 >   `jobsimulation` DB schema is **legacy — no longer authoritative**.
 > * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux. `messenger` reaches it at
 >   `JOBSIMULATION_RPC_ADDR=`**`http://jobsimulation:8401`** locally — i.e. **still the husk**
@@ -94,17 +97,19 @@ internal/
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
 > played session render?" will not find here. (1) The **player** result page `/sim/<slug>/result/<sessionId>` is a
 > **persisted read**, not a live recompute — `internal/graph/queries.resolvers.go:70` does plain Ent SELECTs over
-> `validation_attempt_results`, so a seeded result fan-out renders a full result. (2) The **manager** view does
-> **not** read this service's `sessions` table at all — it reads an `app`-side MIRROR, `public.local_jobsimulation_sessions`
-> (the analog of skill-path's `local_skill_path_session`). Seed the runtime rows only and the manager scoreboard
-> is blank. Full route-by-route treatment lives in
+> `validation_attempt_results`, so a seeded result fan-out renders a full result. (2) The **manager** view
+> reads the **same** table — **the mirrors are GONE.** `app/terraform/migrations/20260729133514.sql:58-62`
+> (*"5. Drop the mirrors."*) back-fills then `DROP TABLE`s both `local_jobsimulation_sessions` and
+> `local_skill_path_sessions`, and `intelligence.go:1700` now reads `m.ent.JobSimulationSession.Query()`.
+> **There is one row to seed, not a pair** — the older "seed the mirror or the scoreboard is blank"
+> guidance is superseded. Full route-by-route treatment lives in
 > [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md); the write side is
 > [`../ops/demo/session-clone-spec.md`](../ops/demo/session-clone-spec.md).
 
 ### Direct dependencies (from compose `depends_on` + env)
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop); the **husk container** still holds `CMS_RPC_ADDR=http://cms:8091` (`docker-compose.yml:104`) and reaches the husk cms over RPC.** So the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) carries jobsimulation's content reads to local automatically; no jobsimulation env change is needed.
+* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop); the **husk container** still holds `CMS_RPC_ADDR=http://cms:8091` (`docker-compose.yml:104`) and reaches the husk cms over RPC.** **The M23 content cutover does NOT ride on the `cms` husk.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:971-973` `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`

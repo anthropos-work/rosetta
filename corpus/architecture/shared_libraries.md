@@ -66,8 +66,8 @@ colony does **not** actually enforce GraphQL rate limiting today.
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/proto` |
 | **Language** | Go (`go 1.25.0`); tooling: `buf` (CI pins `v1.57.0`), protoc-gen-go, protoc-gen-connect-go, goverter |
-| **Version pin** | one pin per live repo — the cms/jobsimulation version skew disappeared with the merge (they no longer have their own `go.mod`) |
-| **Imported by** | every live Go service that does RPC (app, sentinel, storage, messenger; the cms / jobsimulation / skiller / skillpath / roadrunner RPC surfaces are all served in-process by app) |
+| **Version pin** | one pin per repo, and the skew is **live and wider than the merge suggests**: app/messenger `v1.210.0`, cms `v1.207.0`, jobsimulation `v1.205.0`, sentinel `v1.200.0`, storage/roadrunner `v1.196.0`. The husk repos **still carry their own `go.mod`** — `repos.yml:14-19` still clones them and `docker-compose.yml:83,144` still builds them |
+| **Imported by** | every live Go service that does RPC (app, sentinel, storage, messenger). The cms / jobsimulation / **skiller** RPC surfaces are served in-process by `app`; **skillpath and roadrunner were REMOVED, not re-hosted** — `app/main.go` registers six Connect handlers (Users `:1178`, Organizations `:1179`, Skiller `:1187`, JobSimulation `:1195`, CMS `:1204`, LabSession `:1218`) and neither `SkillPathSessionService` nor a RoadRunner service is among them |
 
 The **single source of truth for RPC contracts**. Two layers:
 
@@ -76,7 +76,7 @@ The **single source of truth for RPC contracts**. Two layers:
 
 12 Connect-RPC services are defined: `UsersService`, `OrganizationsService`,
 `CMSService`, `JobSimulationService`, `SkillerService` (all served by app since the merges — one RPC mux),
-`SkillPathSessionService` (served by app since the skillpath merge, M502→M507),
+`SkillPathSessionService` (**contract still in `proto`, but NO LONGER SERVED** — like `ChronosService`. skillpath-in-app M506 *removed* the RPC rather than re-hosting it; `app/internal/skillpaths/skillpaths.go:27-31` calls its replacement "the drop-in for the **removed** skillpath RPC client". Likewise roadrunner: `backend` calls Judge0 over plain HTTP at `internal/jobsimwiring/wiring.go:118`, and `ROADRUNNER_RPC_ADDR` (`docker-compose.yml:118`) is read by no Go code in `app`),
 `LabSessionService` (served by app — the AI Labs domain, see `../services/ai-labs.md`),
 `AuthorizationService` (Sentinel), `MessengerService`, `RoadRunnerService`,
 `RealtimeService`, `ChronosService` (archived service, contract still present). Plus

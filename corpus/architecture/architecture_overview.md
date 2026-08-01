@@ -15,7 +15,8 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. **But a standalone container still starts here:** `docker-compose.yml:83` puts it in this very `graphql` profile as an unfederated husk, until **M810**.)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
     *   **Storage**: File/blob storage
-    *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
+    *   **Roadrunner**: **orphaned husk** — the container still starts, but nothing calls it;
+        `backend` reaches Judge0 directly (`app/internal/jobsimwiring/wiring.go:118`)
     *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
 
     Off by default (opt-in via Docker profile): **Messenger** (Brevo email), **CustomerIO Sync**.
@@ -30,7 +31,8 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
-    *   **GraphQL/Cosmo Router**: API federation gateway
+    *   **GraphQL/Cosmo Router**: API federation gateway **(prod only — deleted from local dev at
+        platform `2adcf71`)**
     *   **AI Providers**: OpenAI, Anthropic, Mistral (EU-first routing)
     *   **LiveKit**: Real-time voice engine for simulations
     *   **AWS Chime**: Video/audio recording
@@ -45,7 +47,8 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ^16.2.7` across all four apps)
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; `cms`/`jobsimulation`/`skillpath` are legacy husks (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
-- **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
+- **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router — **prod only**; local dev talks to
+  `backend` directly), gRPC/Connect-RPC (internal), Protocol Buffers
 - **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
 - **CMS**: Directus (self-hosted, headless)
 - **Infrastructure**: AWS ECS EC2 (EU-West-1 primary), Terraform IaC, Vercel (frontend)
@@ -60,7 +63,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
    ("cms-in-app v8.0", app v1.360.0). The federation is down to a **single subgraph**. `chronos` and
    `intelligence` are retired.
 2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is embedded in the **`app` (backend) image** since cms-in-app — it was in the cms container before the merge.
-3. **External Services**: Clerk, Directus, GraphQL, AI providers, LiveKit, AWS Chime
+3. **External Services**: Clerk, Directus, GraphQL (**prod only**), AI providers, LiveKit, AWS Chime
 4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
 5. **Production-only / not in local compose**: db-backup, archived Chronos/Intelligence
 
@@ -217,7 +220,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 
 | Application | Technology | Purpose | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Next Web App** | Next.js 15 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
+| **Next Web App** | Next.js 16 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
 | **Hiring App** | Next.js | Recruiting & hiring workflows | [→](./frontend_architecture.md) |
 | **Mobile App** | Expo/React Native | Mobile experience | [→](./frontend_architecture.md) |
 | **Ant Academy** | Next.js 16 + Expo | Internal learning portal for `@anthropos.work` employees (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
@@ -234,7 +237,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
-*   **Directus**: Proxied via CMS service (business logic layer)
+*   **Directus**: Proxied via the cms **domain** inside `backend` (business logic layer)
 *   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in (jobsimulation went earlier). Nothing is aggregated any more
 *   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
 

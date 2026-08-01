@@ -212,7 +212,7 @@ python gen.py --media simulation --template <name>
 **Development** (web):
 ```bash
 cd ant-academy/code
-cp .env.example .env   # fill Clerk + AI keys
+cp .env.example .env.local   # fill Clerk + AI keys (the app reads code/.env.local)
 npm install
 npm run dev            # next dev — port 3077
 ```
@@ -277,10 +277,14 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 
 **Integration Pattern**:
 ```
-Frontend → CMS Service → Directus API (content.anthropos.work) → PostgreSQL
+Frontend/Studio-Desk → `backend` :8082/graphql/query (cms **domain**,
+`app/internal/cms/directus/`) → Directus API (content.anthropos.work) → PostgreSQL
 ```
 
-The **CMS Service** acts as a smart proxy/adapter, adding business logic on top of Directus.
+The **cms domain inside `backend`** acts as a smart proxy/adapter, adding business logic on top of
+Directus. (Before cms-in-app this was a standalone `cms` service; that container still starts until
+platform M810 but no frontend reaches it — both are baked against `backend` at
+`docker-compose.yml:352`/`:361` and `:318`/`:334`.)
 
 > **A *local* Directus is a tooling feature, not a platform-compose service.** The Rosetta v1.5 "prop room"
 > tooling (`rosetta-extensions`, not the platform repo) can stand up a **per-stack local Directus** —
@@ -326,11 +330,12 @@ Locally, both of those now consume `backend` directly at `:8082/graphql/query`.
 
 ### Studio Services → Core Services
 - **Studio-Desk**: GraphQL via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (was `:5050/graphql` on the router)
-- **Studio-Room**: Direct integration with CMS service for blueprint retrieval
+- **Studio-Room**: runs inside the `app` image, orchestrated from `app/internal/cms/studio/` —
+  blueprint retrieval is in-process against the cms domain, not a call to a CMS service
 
 ### All Services → External Services
 - **Authentication**: Clerk SDK/API
-- **Content Storage**: Directus API (via CMS proxy for core services)
+- **Content Storage**: Directus API (via the cms **domain** in `app`, for core services)
 
 ---
 

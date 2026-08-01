@@ -7,7 +7,7 @@ This document describes all external services and third-party integrations used 
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-The Anthropos platform integrates with **three key external services**:
+The Anthropos platform integrates with **four key external services**:
 
 1. **Clerk** - Handles all user authentication and organization management (SaaS)
 2. **Directus** - Stores and manages platform content (self-hosted via Docker)
@@ -129,7 +129,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 > **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — the cms
 > domain in `backend` reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR`,
 > which point at the **production** instance `https://content.anthropos.work` in the stock compose.
-> **⚠️ `backend` does NOT get those vars from its compose `environment:` block** — that block (`:43-77` @
+> **⚠️ `backend` does NOT get those vars from its compose `environment:` block** — that block (`:43-67` @
 > `2adcf71`) has no `DIRECTUS_*` at all; `backend` picks them up from the shared `env_file: .env`. The only
 > service the compose sets them on **explicitly** is the still-running standalone **`cms`** (`:164-165`), which
 > survives as messenger's `CMS_RPC_ADDR` target + the rollback path until M810. This distinction is
@@ -274,9 +274,15 @@ so images stay real — no blob bytes are copied locally.
 - Directus handles upload to S3 automatically
 - CDN delivery for optimal performance
 
-### CMS Service Integration
+### cms-domain Directus integration
 
-The CMS service connects to Directus via:
+> **⚠️ This is the cms DOMAIN inside `backend`, not the `cms` container.** Since cms-in-app the
+> Directus client lives at `app/internal/cms/directus/` and runs in-process in `backend`;
+> `app/cms_reader_switch.go` swaps the content reader to the in-process cms server, and
+> `app/main.go:971-973` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`**. The
+> `cms` container still starts until platform M810 but serves none of `backend`'s content reads.
+
+The cms domain connects to Directus via:
 
 **Environment Variables**:
 ```bash
@@ -284,9 +290,9 @@ DIRECTUS_BASE_ADDR=https://content.anthropos.work
 DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ```
 
-**Code Integration** (from CMS service):
+**Code Integration** (`app/internal/cms/directus/`, compiled into `backend`):
 ```go
-// internal/directus/
+// app/internal/cms/directus/   (NOT the frozen cms repo's internal/directus/)
 // - Client initialization
 // - Collection queries
 // - File management
@@ -434,7 +440,7 @@ ENVIRONMENT_CONFIG=compose
 import { createClient } from '@/lib/graphql/client'
 
 const client = createClient({
-  endpoint: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT
+  endpoint: process.env.NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT
 })
 
 // Type-safe queries
@@ -536,7 +542,8 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
 4. **Studio-Room Pipeline**:
    - Uses abstract **AI Service Layer** (`services/ai.py`)
    - Configurable model slots (FAST, STRICT, EXECUTION, CREATIVE, REASONING)
-   - Configured in `studio-room/configs/*.ini`
+   - Configured in `anthropos-studio-room/configs/*.ini` (the repo is `anthropos-studio-room`;
+     it is baked into the `app` image and orchestrated from `app/internal/cms/studio/`)
 
 ---
 
@@ -591,7 +598,9 @@ docker compose up -d backend  # NOT `graphql` (deleted at `2adcf71`) and NOT `cm
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
-NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql
+# NB the var is WUNDERGRAPH, not GRAPHQL — `NEXT_PUBLIC_GRAPHQL_ENDPOINT` does not exist in
+# next-web-app. Set on the image at docker-compose.yml:352 (build arg) and :361 (runtime env).
 ```
 
 **For Studio-Desk**:
@@ -614,7 +623,8 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ### Clerk
 - Use **production Clerk application** (separate from dev)
 - Configure production URLs in Clerk dashboard
-- Set up webhooks to production Sentinel endpoint
+- Set up Clerk webhooks to the production **backend** endpoint `/api/webhook/clerk` — **not**
+  Sentinel, which is authorization-only and exposes no webhook route
 
 ### Directus
 - Deploy via Docker in production infrastructure
@@ -640,7 +650,8 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 **Users not syncing**:
 - Verify Tailscale funnel is running (dev)
 - Check Clerk webhooks are configured correctly
-- Inspect Sentinel logs for sync errors
+- Inspect **backend** logs (`docker compose logs backend`) for `/api/webhook/clerk` errors — Clerk
+  user/org sync is app/backend's job (`app/internal/web/backend/backend.go:130`), not Sentinel's
 
 ### Directus Issues
 

@@ -258,25 +258,29 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 
 ## Surfaces (UI) — **current vs legacy** (M219, v2.3 "cue to cue")
 
-> ⚠️ **There are TWO manager dashboards. Only one of them is the product.** Every AI-readiness demo pointer —
-> the cockpit deep-link catalog, the manager hero's `jump_to`, and the coverage sweep's page descriptor —
-> targeted the **legacy** one for four releases. Nothing ever failed, because the legacy page *does* render.
-> It just isn't the dashboard the product ships. **Establish which surface you are on before you conclude
-> anything about AI readiness.**
+> ⚠️ **HISTORICAL (M219) — there is now only ONE manager dashboard.** For four releases every AI-readiness
+> demo pointer (the cockpit deep-link catalog, the manager hero's `jump_to`, the coverage sweep's page
+> descriptor) targeted a **legacy** dashboard that still rendered but was not the shipped product. **That
+> surface no longer exists:** next-web-app `dae0fb2f7` (*"drop orphaned container"*, 2026-07-13) deleted
+> `AIReadinessContainer.tsx`, `AIReadinessIntro.tsx` and `AIReadinessView.tsx` (−653 lines), and
+> `/enterprise/workforce/ai-readiness` now **404s**. The section is kept because the *class* of defect —
+> an unlinked orphan surface that renders — is the one worth recognising, not because there is still a
+> choice to make.
 
 | Vantage | Surface | Route | Status |
 |---------|---------|-------|--------|
 | **Manager** | **`AIReadinessClient`** — HeroCard (org score + dominant archetype + **Steps-Completion %**) + tabs **Snapshot** (archetype matrix + donuts + by-tag), **How-we-measure** (3-step ribbon + skill strengths/gaps + sims + **interview findings**), **What-to-do-next** (archetype action groups + per-person **Diagnose** drawer). **Cycle-aware.** | **`/ai-readiness`** | ✅ **CURRENT** |
-| **Manager** | `AIReadinessContainer` → `AIReadinessView` — pre-v3.0 org-summary card + team table. **No cycle picker, no archetype matrix, no people, no How-we-measure, no What-to-do-next.** | `/enterprise/workforce/ai-readiness` | ❌ **LEGACY** |
+| **Manager** | `AIReadinessContainer` → `AIReadinessView` — pre-v3.0 org-summary card + team table. | `/enterprise/workforce/ai-readiness` | 🗑️ **DELETED** at next-web `dae0fb2f7` (2026-07-13); the route 404s |
 | **Employee** | `AIReadinessHero` (the 3-step funnel; modes new/progress/done/archived) + `AIReadinessRailCard`. **NO ROUTE OF ITS OWN — both are EMBEDDED in `/home`.** Step 1 = skill-mapping modal, Step 2 → a sim, Step 3 → an interview. | **`/home`** | ✅ **CURRENT** |
 
-**How to tell them apart in code** (there is no `@deprecated` marker, no `-v2` naming, and no feature flag
-switching between them — the legacy one is simply *unlinked*):
+**How the orphan was identified, while it still existed** (there was no `@deprecated` marker, no `-v2`
+naming and no feature flag switching between them — the legacy one was simply *unlinked*). Retained as the
+recognition pattern; the anchors below are pre-`dae0fb2f7` and no longer resolve:
 
 - **`/ai-readiness` is the only readiness route the navbar links** — `AI_READINESS_URL`
   (`packages/core-js/src/constants/urls.ts:50`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx:253-260`.
   It is also the only one next-web's own e2e covers (`e2e/specs/web.ai-readiness.spec.ts`).
-- **The legacy route is an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omits it),
+- **The legacy route was an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omitted it),
   no redirect points at it. Its hook (`hooks/useWorkforceAIReadiness.ts:23-27`) calls
   `GET /api/workforce/ai-readiness?tag=` — **there is no `cycle` param in it at all**, and it never calls `/cycles`.
 - The `(new)` in the legacy path is a Next.js **route group** for the workforce refactor — *not* a version marker.
