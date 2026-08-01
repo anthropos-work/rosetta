@@ -405,6 +405,28 @@ Rules, in order of how often they actually catch something:
     (serving, but the content is not there), *no response* (not serving) have three different repairs, and a
     boolean collapses them (rule 11).
 
+15. **"It only reproduces in the full pipeline" is a claim about the failing step's INPUTS — check them
+    before you pay for a pipeline run.** M257x iter-17 routed a Directus bootstrap failure forward with an
+    explicit *"do not try to reproduce this by hand — it has healed; the diagnosis arrives through a cold
+    cycle"*. That was true of **one artefact** (the `directus` schema on one stack, which the later replay
+    had since filled in) and was silently generalised to *the failure is not reproducible*. The failing
+    step's actual inputs were a DSN, a container image and an empty schema. Recreating them took **four
+    minutes** and refuted the routed hypothesis before a line was written: the command exits **0** on a
+    fresh schema, so the failure was context, not command.
+
+    The context turned out to be a **second actor nobody had enumerated** — the `directus/directus` image's
+    own `CMD` is `node cli.js bootstrap && pm2-runtime start`, so the compose service bootstraps the schema
+    itself and races the pass's one-shot. Enumerate who else writes the thing you are writing; a container
+    image's entrypoint is a participant, not scenery.
+
+    **And the second half, which is what makes this rule expensive to ignore: a nondeterministic defect
+    makes a green run weak evidence.** The race went our way on 2 of 3 cold cycles; those two cycles are
+    green on the *unfixed* code too, and prove only that the fix did not regress the winning path. Only the
+    third cycle exercised the branch under repair. It also dissolved a standing puzzle — the same
+    nondeterminism is why one set of three cycles read green and a later single cycle read red on the same
+    code. **Record which path each run took**, or a battery of greens will certify a fix that was never
+    invoked, and a flake will be filed as a regression.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
