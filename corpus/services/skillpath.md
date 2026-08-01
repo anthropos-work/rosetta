@@ -65,18 +65,29 @@
   simulations. It publishes `EventSkillPathSessionUpdated` + `EventChapterStepSessionCompleted` to the
   `skillpath` Redis stream (consumed by `app`). All of this now runs in-process inside `app`.
 
-* **The manager view reads an `app`-side MIRROR, not this runtime.** The **manager insights** surface
-  (`insightsSkillPathByMemberships`, the `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]`
-  scoreboard in `apps/web`) does **not** read the runtime session — it reads the `app`-side mirror table
-  **`public.local_skill_path_session`** (`app/internal/organization/intelligence.go`; Ent schema
-  `app/internal/data/ent/schema/local_skill_path_session.go` — `progress` 0-100, `status`, no `score`), the
-  analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the runtime session rows renders an
-  empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab
-  (no-surface). Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+* **The manager view reads the RUNTIME session directly — the mirror is GONE.** The **manager insights**
+  surface (`insightsSkillPathByMemberships`, the
+  `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]` scoreboard in `apps/web`) reads
+  `public.skill_path_sessions` — measured: `InsightsSkillPathByMemberships`
+  (`app/internal/organization/intelligence.go:1144`) queries `m.ent.SkillPathSession` filtered by
+  `skill_path_id` + `status ∈ {active, completed}` + the tenant predicate (`:1159-1170`).
+
+  > **⚠️ RETRACTION — this bullet previously said the opposite, and the instruction was actively harmful.**
+  > It told seeders that the scoreboard reads an `app`-side mirror **`public.local_skill_path_session`** with
+  > an Ent schema of its own, and that "the mirror row must be co-written." **Both mirrors were DROPPED** —
+  > `DROP TABLE "local_skill_path_sessions"` at
+  > `app/terraform/migrations/20260729133514.sql:63` (and `local_jobsimulation_sessions` at `:62`), the last
+  > migration in the repo — and no `local_skill_path_session.go` Ent schema exists. A seeder following the old
+  > text would write to a table that is not there. **Seeding the runtime `skill_path_sessions` row is now both
+  > necessary and sufficient for this scoreboard.** The generalized manager-view MIRROR trap described in
+  > `content-stories-routes.md` no longer applies to skill-paths.
+
+  `apps/hiring` has no skill-paths tab (no-surface). Full treatment:
+  [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
 * **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app` `origin/main`).
-  The mirror above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
-  (`InsightsBySkillPathStudentsContainer`) — a real table that genuinely requires the mirror row. The
+  The reader above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
+  (`InsightsBySkillPathStudentsContainer`) — a real table, fed by the runtime session row. The
   **per-member** route `…/skill-paths/[skillPathId]/[userId]`
   (`InsightsBySkillPathStudentSimulationsContainer`) is **not built**: `userData` is hardcoded `null`, its
   results table and totals block are commented out, and the body renders the literal string **"Coming soon"**.
@@ -88,5 +99,5 @@
 * [Backend (`app`)](./backend.md) — where the skillpath engine now lives
 * [CMS](./cms.md) — the content side of the content-vs-runtime split (owns the skill-path definitions)
 * [Jobsimulation](./jobsimulation.md) — the peer runtime engine whose completion events drive step completion
-* [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md) — the manager-mirror + player-link-only treatment
+* [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md) — the player-link-only treatment (its manager-view MIRROR trap no longer applies to skill-paths; see the retraction above)
 * [Service Taxonomy](../architecture/service_taxonomy.md) · [Dependency Map](../architecture/dependency_map.md)

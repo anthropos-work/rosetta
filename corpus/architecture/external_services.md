@@ -196,16 +196,21 @@ graph TB
 > (`app/main.go:971-973` `log.Fatalf`s without it). The prose two paragraphs above already said this; the
 > diagram had not caught up.
 
-> **⚠️ The `--local-content` re-point targets `cms`, NOT `backend` — measured, not inferred.** With the v1.5
-> "prop room" **local tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to
-> the stack's compose on an offset port, and
-> `rosetta-extensions/stack-injection/gen_injected_override.py:579-580` re-points **only the services in
-> `DIRECTUS_DATA_CONSUMERS`** — which is `cms` — with `test_only_cms_is_repointed_not_other_services` asserting
-> that `backend` must **not** carry the re-point. On live `demo-1` (2026-08-01): `cms` has
-> `DIRECTUS_BASE_ADDR=http://directus:8055` while **`backend` has `DIRECTUS_BASE_ADDR=https://content.anthropos.work`**
-> with an empty `DIRECTUS_TOKEN`. Since `backend` reads content in-process rather than through `cms`, the
-> consumer that list names is no longer the consumer that reads. Tracked as
-> `FIX-M257x-iter23-backend-directus-not-repointed`; see [`directus-local.md`](../ops/directus-local.md).
+> **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
+> tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to the stack's
+> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:598-599`
+> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:53`). `backend`
+> is in that tuple because — per the `cms_reader_switch` above — **`backend` is the service that actually
+> reads Directus**; re-pointing only `cms` would leave the real reader aimed at production content.
+>
+> **HISTORICAL — fixed at M257x iter-24 (rext `f9ac72f`).** The tuple originally named `cms` alone, and a
+> test (`test_only_cms_is_repointed_not_other_services`) asserted that `backend` must **not** carry the
+> re-point — i.e. the suite was *pinning the defect*. Measured on live `demo-1` (2026-08-01) before the fix:
+> `cms` had `DIRECTUS_BASE_ADDR=http://directus:8055` while `backend` still had
+> `https://content.anthropos.work` with an empty `DIRECTUS_TOKEN`, which surfaced as **96 all-403 lines** in
+> `backend`'s log. That test is gone, replaced by `test_backend_the_actual_reader_is_repointed`
+> (`stack-injection/tests/test_injection.py:1005`), which asserts the opposite. See
+> [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
 

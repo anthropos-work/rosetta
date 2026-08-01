@@ -55,7 +55,8 @@ and **member-facing** for the onboarding flow + **manager/analytics-facing** for
 
 ## Org enablement (the gate)
 
-The feature is off until an org turns it on. Two gates compose (both must be true for the UI to render):
+The feature is off until an org turns it on. Two gates exist — but **they do not both apply to every
+surface**, and assuming they do sends you hunting for a PostHog problem the manager dashboard does not have:
 
 1. **Org setting** — a row in `organization_settings` with `setting = 'ai_readiness'`, `is_enabled = true`
    (`app/internal/data/ent/enum/organization_settings.go:47` → `OrganizationSettingAIReadiness = "ai_readiness"`;
@@ -63,15 +64,26 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
    `workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
    off. Exposed to the FE as the GraphQL query `aiReadinessEnabled: Boolean!`
    (`resolver_ai_readiness.go` — returns `false`, not an error, for non-enabled orgs).
-2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
-   queries `aiReadinessEnabled` (`apps/web/.../ai-readiness/AIReadinessClient.tsx`).
+2. **PostHog flag** `flag_ai_readiness` — gates the **member-facing** surface only. Its **sole consumer
+   repo-wide** is `apps/web/src/components/ai-readiness/data/useAiReadinessActive.ts:22`
+   (`useFeatureFlagEnabled(AI_READINESS_FLAG)`; the constant is declared at
+   `components/ai-readiness/aiReadiness.constants.ts:26`).
+
+> **⚠️ The MANAGER dashboard does NOT check the flag.**
+> `apps/web/src/app/(authenticated)/(verified)/ai-readiness/AIReadinessClient.tsx` contains **no PostHog
+> reference at all** — measured: 0 occurrences of `posthog` and 0 of `flag_ai_readiness`. It gates on
+> `orgEnabled` alone (`:133-134`, `const { orgEnabled } = useAiReadinessEnabled(true)`). So **gate 1 alone**
+> renders the admin dashboard; gate 2 applies to the member/onboarding surface. A blank manager dashboard is
+> a gate-1 (org-setting) problem, never a PostHog one.
 
 > **These two gates are different layers — not a contradiction.** `stories-spec.md` (the `OrgSettingsSeeder` row)
 > calls enablement "an **org setting**, not a PostHog flag": that is precise about the **enablement/data layer**
 > (gate 1) the seeder writes — a `organization_settings` DB row, resolved from the M48 contract, which is *not*
-> stored in PostHog. It does **not** deny gate 2: the next-web client *additionally* checks the PostHog
-> `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and UI-also-checks-the-flag (gate 2)
-> are complementary, and both must hold for the dashboard to render.
+> stored in PostHog. It does **not** deny gate 2: the next-web **member** surface *additionally* checks the
+> PostHog `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and
+> member-UI-also-checks-the-flag (gate 2) are complementary — but per the callout above, **only gate 1 is
+> required for the manager dashboard**. The demo must satisfy gate 2 for the member journey, which is what
+> the next section is about.
 >
 > ### ⚠️ How the demo satisfies gate 2 (the FE flag) — CORRECTED, M219 (v2.3 "cue to cue")
 >
@@ -385,7 +397,7 @@ consumer is the Playthrough seat `pt-ai-onboard`; see
 decision):**
 
 - **Active cycle → the dashboard RECOMPUTES from signals.** `GetAIReadinessWithOptions` → `buildLiveResponse` →
-  `computeOrgBreakdowns` (`ai_readiness.go:283-343`) re-derives each member's score **from the underlying signals**:
+  `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
   `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no step-1 signal** from the
   aggregate. So an **active**-cycle dashboard requires the **signals-true** seed (write the real skill evidences +
@@ -399,11 +411,15 @@ decision):**
   frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
   completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
 
-  **⚠ The frozen path is CYCLE-SCOPED; the DEFAULT (`CycleID == nil`) GET does NOT take it.**
-  `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
-  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (line 301) is
-  hardcoded to `buildLiveResponse`. The **current** manager dashboard passes the cycle id, so this is not a
-  problem in practice — see the correction below.
+  **The frozen path is reachable BOTH cycle-scoped and by default.** `GetAIReadinessWithOptions`
+  (`app/internal/aireadiness/readiness.go:289`) has two routes into `buildResponseFromSnapshots`:
+
+  1. **cycle-scoped** — `opts.CycleID != nil` AND that cycle's `status == "closed"` (`:290-297`);
+  2. **default (`CycleID == nil`)** — when the org has **no active cycle** and a **latest closed cycle**
+     exists (`:307-312`). Only an org with neither falls through to `buildLiveResponse` (`:314`).
+
+  Route 2 is exactly the shape M51 seeds, so a snapshot-direct closed-cycle showcase renders frozen data
+  **even when the caller passes no cycle id**. The current manager dashboard passes the cycle id anyway.
 
   > **✅ CORRECTED M219 (v2.3 "cue to cue") — the old M51 iter-07 caveat here was MISATTRIBUTED, and it sent a
   > later milestone hunting for a demo-patch that was never needed.**
@@ -494,7 +510,7 @@ The M219 bar was *"every element and sub-section filled with spot data"*. Raisin
 mis-seeds into defects. Each is a **seeder** contract, and each is now fenced by a regression test that was
 **proven RED against the pre-fix code**.
 
-**1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`ai_readiness.go:133-170`) divides the
+**1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`aireadiness/readiness.go:139`) divides the
 member's **held** skill-weight by the org's **entire configured repertoire** — **since M250 the platform's real 31
 defaults: 19 core @ 1.0 + 12 enabling @ 0.5 = `25.0`** (was the invented 8-skill / `6.5` set) — normalized to 30.
 So *one* core skill alone is `round(1.0/25.0*30)` = **1/30**, and one *enabling* skill is also **1/30**: the

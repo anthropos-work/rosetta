@@ -239,7 +239,15 @@ Archived / merged — **but three of these still start locally** (repos still ex
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via the cms **domain** inside `backend` (business logic layer)
 *   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in (jobsimulation went earlier). Nothing is aggregated any more
-*   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
+*   **AI Providers**: EU-first routing — **Azure OpenAI EU → Azure OpenAI US → direct OpenAI**. Measured at
+    `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
+    `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
+    retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"
+    is not "EU-only" — one feature flag routes traffic to the US.** AWS Bedrock is a *per-call vendor*
+    (`AnthropicAws`, pinned to `eu-west-1` at `:85-88`), never a fallback tier. **Mistral is not part of this
+    routing chain** — but it *is* live in `app`: `internal/cms/studio/markdownManager.go:11,19` builds a
+    Mistral client from `MISTRAL_API_KEY` for **Studio document OCR** (called from `studioManager.go:583`).
+    It is a separate, single-purpose provider, not a tier in the simulation cascade
 
 For detailed integration patterns, see [External Services](./external_services.md).
 
@@ -275,9 +283,11 @@ The platform uses **shared database, shared schema**, with `organization_id` on 
 (**not** on every table — the taxonomy and other global reference data carry none by design). Data
 isolation is enforced at three layers:
 
-1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter **only the 30
-   schemas using `OrganizationMixin{}`** — see
-   [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split
+1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter by organization on
+   **only 31 of 135 schemas** (the 30 using `OrganizationMixin{}`, plus `Membership`, which declares its
+   own). **16 schemas carry an `organization_id` with no policy at all** — see
+   [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
+   the derivation
 2. **Authorization**: Sentinel (Casbin RBAC/ABAC) validates every API request
 3. **Identity**: Clerk JWT includes org context; sessions are org-scoped
 

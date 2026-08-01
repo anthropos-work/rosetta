@@ -64,20 +64,47 @@ Three layers of isolation ensure tenant data cannot leak:
 ### Layer 1: Database
 
 > **⚠️ Isolation is NOT automatic across the whole schema — do not rely on it as a blanket guarantee.**
-> Measured at `app` HEAD: of **139** Ent schemas, only **30** use `OrganizationMixin{}` — the one that
-> carries the privacy `Policy()` (`mixin.go:126`). Seven use `OrganizationIDMixin{}`, explicitly *"a plain
-> nullable organization_id column"* with **no policy** — **and a further ~18 declare a plain
-> `organization_id` field with no mixin and no policy at all** (`org_membership.go`, `org_subscription.go`,
-> `organization_settings.go`, `organization_feature.go`, `api_key.go`, `lab_session.go`,
-> `interview_aggregated_report.go`, `admin_audit_log.go`, `job_simulation_session.go`, …). **Those are the
-> rows most likely to be missed by an audit**: they look org-scoped and are not policed. The remainder
-> (the taxonomy, and other global reference data) carry no org column by design.
+> Measured at `app` HEAD: of **135** Ent schemas (139 `.go` files, 4 of which declare no schema), only
+> **30** use `OrganizationMixin{}` — the one that carries the privacy `Policy()` (`mixin.go:126`). Seven use
+> `OrganizationIDMixin{}`, explicitly *"a plain nullable organization_id column"* with **no policy** — **and
+> a further 18 declare a plain `organization_id` field with neither mixin**. Two of those 18 are policed by
+> other means: `org_membership.go` declares its own fail-closed org `Policy()` (`:172-188`, ending in
+> `privacy.AlwaysDenyRule()`), and `academy_feedback.go` carries `UserMixin{}`, whose `Policy()`
+> (`mixin.go:98`) applies a row-level **owner** filter (`rule.FilterOwnerRule()`) — scoped by *user*, not by
+> organization.
+>
+> **So: 31 schemas auto-filter by ORGANIZATION** (the 30 mixin users + `Membership`), and **16 carry an
+> `organization_id` with no policy of any kind**: `org_subscription.go`, `organization_settings.go`,
+> `organization_feature.go`, `api_key.go`, `lab_session.go`, `interview_aggregated_report.go`,
+> `admin_audit_log.go`, `job_simulation_session.go`, `jobsimulation_feedback.go`,
+> `ai_readiness_diagnose_narrative.go`, `ai_readiness_recommendation.go`, `assignment_invitation_link.go`,
+> `job_role_skill_suggestion_cache.go`, `org_membership_invitation.go`, `org_sim_link.go`,
+> `profile_history.go`. **Those 16 are the rows most likely to be missed by an audit**: they look org-scoped
+> and are not policed. The remainder (the taxonomy, and other global reference data) carry no org column by
+> design.
+>
+> **⚠️ This fence has now been wrong FOUR times. Re-derive it; do not quote it.** v1 asserted a blanket
+> guarantee. M257x iter-33 over-swung to "the non-mixin schemas never mention organization at all". iter-34
+> found `org_membership.go` listed as unpoliced when it polices itself. iter-34's *own* correction then
+> listed `academy_feedback.go` as unpoliced when `UserMixin` filters it. The first three failed toward
+> *"isolation is handled"*; the fourth failed toward alarm — **the error direction is not stable, so neither
+> reading is safe without measuring.**
+>
+> Derivation (restrict to schema files — a bare `*.go` glob pulls in `skiller_mixins.go` and returns 19):
+>
+> ```sh
+> cd app/internal/data/ent/schema
+> ALL=$(grep -l 'ent.Schema' *.go | sort)
+> comm -23 <(echo "$ALL") <(grep -lE 'Organization(ID)?Mixin\{\}' *.go | sort) \
+>   | xargs grep -l '"organization_id"'          # -> 18
+> # then subtract any that declare their own Policy() or carry UserMixin{} -> 16
+> ```
 > The platform states this itself: `job_simulation_session.go:5` — *"L2: NO Ent privacy Policy;
 > owner/org/tenant are plain fields"* — and `jobrole.go:18` / `category.go:15` note the taxonomy is
 > deliberately globally readable. **Scoping on the jobsim fan-out and the taxonomy is the caller's job.**
 
 - Org-scoped tables carry an `organization_id` column
-- Ent privacy policies auto-filter by organization **only on the 30 schemas using `OrganizationMixin{}`**
+- Ent privacy policies auto-filter by organization on **31** schemas — the 30 using `OrganizationMixin{}` plus `Membership`, which declares its own
 - Cross-tenant reads are prevented at the query level **on those tables**; elsewhere isolation is
   enforced by Layer 2 (Sentinel) and by explicit query scoping, not by the ORM
 
@@ -138,9 +165,18 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 
 ### EU Data Residency
 - **Primary region**: EU-West-1 (Ireland)
-- AI providers are routed through EU endpoints first (Azure OpenAI EU, AWS Bedrock EU, Mistral EU)
-- US providers (OpenAI Direct, Anthropic Direct) used only as fallback
-- No customer data stored in US by default
+- AI providers are routed through EU endpoints **first** — Azure OpenAI EU (`ai.go:262-266`), AWS Bedrock
+  pinned to `eu-west-1` (`:85-88`)
+- **⚠️ "EU-first" is not "EU-only", and the US path is a FLAG, not a fallback.** `getClient` swaps
+  `azureClientEu` → **`azureClientUs`** whenever the PostHog flag **`flag_use_azure_us`** is enabled
+  (`app/internal/jobsimulation/ai/ai.go:263-277`). That is a deliberate switch that can route live
+  simulation traffic to a US region with no error condition involved. Direct OpenAI is additionally used as
+  the **retry target on HTTP 429** (`isThrottlingError`, `:129` / `:166` / `:325`)
+- **"Anthropic Direct" is not used at all** — Anthropic is reached exclusively through **AWS Bedrock
+  `eu-west-1`** (`:85-95`)
+- No customer data stored in US **by default** — but the residency guarantee is contingent on
+  `flag_use_azure_us` being off, and that is a runtime flag, not a build-time property. **Check the flag
+  before asserting residency.**
 
 ### EU AI Act
 - AI Simulations classified as **Limited Risk** (not High Risk)

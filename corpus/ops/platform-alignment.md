@@ -453,6 +453,36 @@ Rules, in order of how often they actually catch something:
     in for the duration. An inherited cost estimate is a claim like any other, and this one had been
     silently scheduling the work.
 
+17. **A count can be exactly right while the claim it supports is false — verify the PREDICATE, not just
+    the denominator.** M257x iter-34, before any auditor reported, independently re-derived the corpus's
+    multi-tenancy fence — the one that had *already been wrong twice*, both times failing toward
+    *"isolation is handled."* Every number reproduced exactly: 30 schemas with the policy mixin, 7 with the
+    id-only mixin, 18 with a bare `organization_id` and neither, plus all nine named example files. The
+    re-derivation concluded the fence held.
+
+    It did not. The sentence read *"…with no mixin **and no policy at all**"*, and the check had tested only
+    the first conjunct. One of the 18 — the one listed **first** — declares its own fail-closed `Policy()`.
+    The real split is 31 policed / 17 unpoliced, and the fence had failed reassuringly for a **third**
+    consecutive generation.
+
+    **When a claim is a conjunction, a measurement of one conjunct is not a verification.** Read the
+    sentence as a predicate and test every clause of it. Where a list is load-bearing, ship the derivation
+    command next to it so the next reader re-derives instead of trusting.
+
+18. **Text written to repair fidelity debt is the highest-risk text in the corpus — measure the residual
+    split by swept vs unswept.** M257x iter-33 measured a **24 %** self-inflicted rate on its own repair
+    pass and recorded it as a caution. iter-34 re-measured across all 40 files and found the effect is the
+    *dominant* term, not a caution: **9 of 11** remaining blockers sat in the **13** files the repair had
+    touched, **2** in the **27** it had never opened — **0.69 vs 0.074 per file, a ~9× density difference.**
+    Two auditors reported their never-edited files clean across ~40 exact citations, unprompted.
+
+    Two consequences. **(a)** Never close a corrective sweep without an adversarial pass over the sweep's
+    own diff; the errors will not be in the `file:line` anchors — those verify — but in the surrounding
+    prose, the summary line above the section, and the bullet three paragraphs down that restates the
+    retracted claim in different words. **(b)** When a confirming pass runs, **partition it differently
+    from the pass before it.** Correlated blind spots are a property of how the corpus was divided, not
+    only of who read it.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

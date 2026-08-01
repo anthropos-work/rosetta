@@ -122,7 +122,7 @@ schema, read directly by the resolver.
 | 3 | `app/.../resolver_queries.go:1088,1134` | resolver → `IntelligenceManager.InsightsJobSimulationByMemberships` |
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
 | 5 | `intelligence.go:1728-1735` | best-attempt: `row_number() ORDER BY score DESC` per candidate |
-| 6 | `intelligence.go:1801` | `Score` ← `ls.Score` (the mirror's score column) |
+| 6 | `intelligence.go:1820` | `Score` ← the session's own `score` column — **not a mirror's** (see row 7) |
 | 7 | `app/internal/data/ent/schema/job_simulation_session.go` | Ent table `public.job_simulation_sessions`, `field.Float32("score")` — **the score column, read at
 `intelligence.go:1820` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer
 exists** |
@@ -141,7 +141,10 @@ per-session competency / Job-Fit detail (`[simId]/[userId]`), which reads
 `public.validation_attempt_results` / `validation_attempt_skill_results` / `validation_criterion_results` — three
 tables (all in **`public`**, `20260722081626_jobsim_data_model.sql:336/355/376`; note the middle one is
 `validation_attempt_skill_results`, not `validation_skill_results`) the `PersonaSeeder` also writes (`persona_write.go:69-71,143-167`). These are needed **only for the
-drill-down**, NOT for the comparison list. `anticheat_summary` on the mirror row is a **decorative icon only**. So
+drill-down**, NOT for the comparison list. The anticheat badge is a **decorative icon only**, and it is **not a
+column on the session row** — it is `summary` on the separate **`public.anticheat_results`** entity
+(`ent/schema/anticheat_result.go:24`), whose `session_id` FK was re-pointed at `job_simulation_sessions` by
+`20260722104506.sql:53`. So
 the open BA-1 question — *"does the list score need a per-session `validation_*`/eval row?"* — is answered **NO**:
 the scoreboard scores from the **single** `job_simulation_sessions` row (+ membership + the Casbin gate)
 alone — the write-set used to be a PAIR and is now one row, since the mirrors were dropped.
@@ -153,7 +156,11 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
    is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
    `completion_status` (values `passed`/`failed`/`pending`/`SIMULATION…`), `organization_id`,
-   `tenant_id` (NULL or `=org`), `validation_version`, `anticheat_summary` (optional).
+   `tenant_id` (NULL or `=org`), `validation_version`.
+   ⚠️ **Do NOT write `anticheat_summary` here — the column does not exist on this table.** It was a column of
+   the **dropped** `local_jobsimulation_sessions` mirror (added `20250416091037.sql:5`, dropped with the table
+   at `20260729133514.sql:62`); `job_simulation_session.go` declares no such field. An INSERT built from a
+   contract listing it fails. Anticheat is its own optional row in `public.anticheat_results`.
    ⚠️ **The column is spelled `completion_status` — correctly** (`20260722104506.sql:12`,
    `ent/schema/job_simulation_session.go:39`). The `completition` misspelling exists only in the GraphQL
    sort-field enum (`enum.InsightsSortFieldCompletitionStatus`), its GraphQL member and a JSON tag;
@@ -256,8 +263,9 @@ federates the **same** `insightsJobSimulationByMemberships` field (in the **app*
 gate**) over the **same** GraphQL endpoint the demo already serves — which since platform `2adcf71`
 (2026-07-31) is **`backend`'s own `:8082/graphql/query`**, the Cosmo/WunderGraph router having been deleted
 from compose — reading the **same** seeded `public.job_simulation_sessions` M223 wrote. So the demo builds `apps/hiring` from the **untouched clone** as
-a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI + Cosmo
-+ Postgres — **no re-skin, no new resolver, no data migration, zero platform-repo edits.** The recruiter logs in
+a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI +
+the same `backend` GraphQL endpoint + Postgres — **no re-skin, no new resolver, no data migration, zero
+platform-repo edits.** The recruiter logs in
 straight onto the hiring Results page (the cockpit's `CockpitHero.IsHiring` routes her to the hiring base); the
 platform's own symmetric guard keeps her *in*.
 

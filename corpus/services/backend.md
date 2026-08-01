@@ -32,7 +32,11 @@
 `app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the 60K+ skills graph, skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
 
 * **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries — plus the taxonomy types/queries absorbed from the former skiller subgraph (`graph/schemas/skiller_taxonomy.graphqls`)
-* **Connect-RPC** for inter-service calls (the only remaining external caller is **messenger**) — the mux carries `BackendUsersService`, `BackendOrganizationsService`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`
+* **Connect-RPC** for inter-service calls (the only remaining external caller is **messenger**) — the mux registers five handlers unconditionally (`main.go:1178-1218`): `UsersService`, `OrganizationsService`, `SkillerService`, `JobSimulationService` and `lab.v1.LabSessionService`, plus **`CMSService` only when the Directus edge is configured** (`if cmsRPCServer != nil`, `:1203-1205`).
+
+  **There is no `SkillPathSessionService`** — measured: **0** occurrences in Go source, and no `skillpath…v1connect` package is imported. Skill-path session state lives in `public.skill_path_sessions` and is reached through the GraphQL subgraph and in-process calls, not over RPC.
+
+  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:72`, `app/knowledge/architecture.md:28`), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
 * **HTTP** endpoints on port 8082 (local; 8080 in production) for webhooks and miscellaneous integrations — including `POST /api/webhook/directus`, which **fails closed** without `DIRECTUS_WEBHOOK_SECRET`
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
@@ -107,8 +111,12 @@ was bootstrapped (see prerequisite above).
 main.go, rpc.go             Entry points
 cmd/                        CLIs (bootstrap-org, migrations utilities)
 internal/
+  academy/                  Server-owned academy domain (chapter progress + catalog: academy_series /
+                            academy_skill_paths / academy_chapters / academy_chapter_bodies). These ARE the
+                            tables "Talk to Data" reads. NB: the legacy `internal/aiacademy` sync package and
+                            its `aiacademy_courses` read-model were REMOVED when this domain took ownership
+                            (`internal/academy/academy.go:6-9` states so).
   admin/                    Admin operations
-  aiacademy/                Periodic AI Academy catalog sync (fetches catalog.json, populates aiacademy_courses for Talk to Data)
   aiusage/                  AI usage / cost tracking ledger (AI Redis Stream)
   analytics/                PostHog / internal analytics
   app/                      Component wire-up
