@@ -320,3 +320,39 @@ later tiks. `CHECK-M257x-iter16-parity-fence-hand-maintained` joins them.
 carrying more than it normally would. When the gate fires, `/developer-kit:harden-mstone-iters --final` should
 be run in the knowledge that RF-2/RF-3/RF-5…RF-12 were never swept, rather than treating the ledger's most
 recent entry as a clean high-water mark.
+
+---
+
+## HARDEN-CAP-ACCEPTED (2nd) — 2026-08-01, recorded at iter-27 close
+
+The second incremental `/developer-kit:harden-mstone-iters` pass (passes 4–6) was **accepted by the
+orchestrator without stabilizing**, exactly as the first was. Recorded here so the residue is visible to
+whoever runs `--final`, rather than living only in a hand-off.
+
+**What the pass delivered:** 27 tests, 5 fences repaired or built, **44/44 mutants matched their declared
+expectation** (35 declared-RED killed, 9 declared-GREEN no-op controls survived). Five more guards that
+reported without measuring.
+
+**Two findings that change what can be trusted, and are load-bearing for later iters:**
+
+1. **The runner-safety invariant "never an additive re-seed" was UNENFORCED since iter-25 while reporting
+   enforced** — the fence read the raw file and was satisfied by an *echo line printed beside the call*.
+   Two Go tests were RED that whole time against a baseline recording "Go sections green". Consequence:
+   **never trust an inherited "playthroughs green"; re-run it.** (iter-27 did not need to — its only
+   `playthroughs` interaction was a read of the report artifact — but the rule stands.)
+2. **The corpus audit is now a DERIVATION, not a grep vocabulary**: the new service-doc fence reads the
+   migration map and holds every service doc to it. It caught a doc on its first run that three sweeps had
+   missed *because that doc never used the words being grepped*. **Clause 5's re-measurement must use it.**
+
+**The accepted residue, unchanged by iter-27:**
+
+- **iters 17, 19 and 26 were never scanned** — measurement/withdrawal tiks, the cheapest remaining, and
+  plausibly empty. iter-18 *was* scanned and deliberately left alone: its stub already drives both sides of
+  the bootstrap race end to end, and no gap was found.
+- **`RF-2`, `RF-3`, `RF-7`…`RF-12` remain open** in `hardening-ledger.md`. `RF-1`/`RF-4` landed in iter-16;
+  `RF-5`/`RF-6` landed in pass 3.
+
+**Consequence for `--final`:** it must be run **knowing** the above — an unqualified "cumulative sweep"
+claim would be false about three iters and eight RF items. This is the second consecutive cap accepted
+without stabilization; a third should be read as a signal about the harden cadence itself, not about the
+milestone's test debt.

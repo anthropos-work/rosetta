@@ -737,6 +737,22 @@ Both are the M256 reports-success-without-checking class. Rules:
    > (all killed) and 1 declared-GREEN no-op (survived). Also run the unmutated control **after** the
    > battery as well as before — a restore that silently failed otherwise reads as a result.
 
+   **Include the INVERTED mutant, because presence is not meaning.** M257x iter-27's new fence asserted
+   that a seeder's share-draw guard was "guarded by a condition referencing `isHero`" — and mutant M4
+   flipped that guard from `if !isHero && !memberInShare(…)` to `if isHero && !memberInShare(…)`: heroes
+   gated, everyone else free, **the exact opposite semantics**. The fence reported GREEN. It was checking
+   that a *token appeared in a construct*, which the inverse satisfies just as well as the original.
+   Removal-mutants (M1, M2, M3) all died correctly and could not have found this — deleting the guard and
+   reversing it are different edits, and only one of them is what a careless future editor actually writes.
+
+   > **Rule.** For any fence asserting that a guard is *present*, add a mutant that **inverts** it rather
+   > than removing it, and expect RED. A fence that a sign-flip satisfies is measuring the presence of a
+   > token, not the meaning of a guard — §5 rule 7's family (*a probe must not be able to satisfy itself*)
+   > seen from the mutation side. The repair is to assert against the **negation as a parsed node** (here
+   > an `*ast.UnaryExpr` with `token.NOT`), not against the identifier's appearance anywhere in the
+   > condition. Note which control found it: the battery's declared-GREEN no-op is what made the M4 result
+   > interpretable at all, so this rule and the one above are one instrument, not two.
+
 6. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
    fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly
    flagged 40-odd casbin grants (`{"default", "admin", "org:feature:insights"}`) and the string

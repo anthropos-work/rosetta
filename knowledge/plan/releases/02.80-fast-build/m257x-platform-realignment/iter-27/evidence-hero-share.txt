@@ -1,0 +1,122 @@
+iter-27 evidence — CHECK-M257x-iter15-manager-reads-empty, split per id
+=======================================================================
+
+A. THE FAILING SET, read from iter-26's full-run artifact BEFORE it was clobbered
+---------------------------------------------------------------------------------
+Source: playthroughs/e2e/report/last-run.json (the iter-26 full --reset run)
+  total specs 209, failing 7   -> 23 live / 7 failing / 1 unimplemented
+
+  pt-activity-drilldown          "the org's seeded hero (Pat Ellis) is among the per-member results"
+                                 expect(received).toBeGreaterThan(0)  Received: 0
+  pt-assignment-assign           "the assignable-affordance count drops by exactly one"
+                                 expect(received).toBe(expected)  Expected: 15  Received: 14
+  pt-onboarding-hiring-candidate her ASSIGNED position renders as a startable org-scoped link
+                                 locator a[href*="/sim/"][href*="organizationId="] not found
+  pt-orgadmin-role-create        page.waitForURL: Timeout 60000ms exceeded (waiting for navigation)
+  pt-workforce-funnel            "her card carries her seeded role (DevOps Engineer)"
+                                 -- NB the PRECEDING assert (her card is VISIBLE) PASSED
+  pt-workforce-org-feedback      "the org's seeded hero appears among the aggregated feedback rows"
+                                 expect(received).toBeGreaterThan(0)  Received: 0
+  pt-workforce-succession        "the succession/at-risk projection names the org's seeded hero"
+                                 expect(received).toBeGreaterThan(0)  Received: 0
+
+HAND-OFF CORRECTION (§5 re-derive the ENUMERATION): the hand-off attributed the
+"per-member results -> 0" text to `assignment-monitoring.assign-and-track.UC2`. It belongs to
+`pt-activity-drilldown`. `pt-assignment-assign` fails on an affordance COUNT (15 vs 14), not on a
+hero absence, so it is a SINGLETON and not a member of the class.
+
+
+B. THE HERO IS POPULATION SLOT 1 — computed, then matched against the live DB
+------------------------------------------------------------------------------
+  deterministicUUID("demo-1:story:pt-org-a:user:1")
+      = 23f24e3f-38fb-5027-9e07-2ef49a644af5
+  live DB  public.users                       -> Pat | Ellis | pat.ellis1@pt-meridian-labs.com
+  live DB  public.memberships                 -> active member of Meridian Labs
+  EXACT MATCH.
+
+  hashInt(k) = SHA1("stack-seeding:hash:"+k)[:8] big-endian
+  memberInShare("demo-1:story:pt-org-a", 1, "feedback", 0.45)
+      draw = 0.8305   ->  FALSE
+
+  predicted in-share slots 1..40 : [7, 12, 24, 27, 28, 34, 36, 38, 40]
+  actual feedback authors in org : 7, 12, 24, 27, 28, 34, 36, 38, 40
+      (liam.fischer7, sara.mensah12, lena.kovac24, liam.okafor27, chloe.schmidt28,
+       zara.kaur34, hassan.reyes36, arjun.costa38, sara.nakamura40)
+  EXACT MATCH, 9 of 9 — the model is confirmed, not guessed.
+
+  The key prefix is pinned by `stack: demo-1` IN THE SEED YAML (pt-world.seed.yaml:38), so the draw
+  varies neither by stack nor by run: the hero was excluded PERMANENTLY.
+
+
+C. FOUR IDS, AT LEAST THREE DISTINCT MECHANISMS — the "one signature" claim is REFUTED
+--------------------------------------------------------------------------------------
+  pt-workforce-org-feedback  SEED-SIDE ABSENCE.   feedback.go never asked whether a member was a
+                             hero; her share draw excluded her. FIXED this iter.
+  pt-workforce-succession    READ-SIDE.           Her row IS seeded: public.interview_extraction_results
+                             holds 957d5253-2b25-51bc-a0fa-8cbbbb93dc5b, FK'd to her real session
+                             f22d182d-7653-5997-ba69-f3dd0ec7e126, because succession.go:114 reads
+                             `if !isHero && !memberInShare(...)` — an explicit hero exemption.
+                             The data is present and the surface does not show it.
+  pt-workforce-funnel        NOT A HERO ABSENCE AT ALL. The `spotlight` visible assert PASSED — her
+                             card renders. Only the role text INSIDE the card is missing, and the
+                             role is present in the DB on every axis checked:
+                               user_basic_info.job_title = "DevOps Engineer"  (40/40 org members
+                                                                               have a job_title)
+                               user_experiences current  = "DevOps Engineer"  (to IS NULL)
+                               job_role_id               = J-DEVOPS-AECC
+                             So it is DOM/locator-shaped, not data-shaped.
+  pt-activity-drilldown      CONDITIONAL ON THE DRILL TARGET. The spec drills whichever content row
+                             `drillIntoActiveContent()` selects, then asserts the hero is among THAT
+                             content's per-member rows — which requires her to hold a session on that
+                             particular sim. Not measured further.
+
+
+D. THE FAMILY THE FIX RESTORES
+-------------------------------
+Six seeders draw a member share. Five resolve personaIndexMapForStory and make a decision:
+  succession.go:114           !isHero && !memberInShare      -> heroes ALWAYS included
+  population_evidence.go:121  if isHero { continue }         -> heroes deliberately EXCLUDED
+  ai_readiness_funnel.go:206  hero branch returns early      -> heroes never reach the draw
+  hiring_funnel.go:146        hero branch                    -> heroes never reach the draw
+  target_roles.go             (no hero reference)            -> legitimately indifferent
+  feedback.go                 (no hero reference)            -> NO DECISION AT ALL  <-- the defect
+
+The defect was never the choice. It was that one seeder made NO choice and nothing could tell that
+apart from a choice.
+
+
+E. LIVE PROOF ON demo-1 (rext consumed at fast-build-m257x-iter-27, b718149, from origin)
+------------------------------------------------------------------------------------------
+  BEFORE (negative control, measured before any edit):
+      hero feedback rows            0
+      org  feedback rows            9
+      total feedback rows          62
+  real reset-to-seed (stackseed --reset then --seed pt-world.seed.yaml):
+      66 audited write attempts, 55 733 rows, isolation clean
+      feedback surface: rows=66      (iter-26's same run: 55 729 rows, feedback 62)
+  AFTER:
+      hero feedback rows            1
+      org  feedback rows           11    (+2: pat.ellis1 AND morgan.reyes2 — both heroes)
+      total feedback rows          66    (+4 across all non-hiring, non-org-less stories)
+
+  SURFACE (scoped run, ADVISORY by the harness's own verdict — every un-selected id correctly
+  reports "did not run", and the ptreport gate binds only on a full run):
+      [PASS] workforce-intelligence.organization-feedback.UC1
+
+
+F. MUTATION BATTERY — 6/6 matched their declared expectation
+-------------------------------------------------------------
+harness: .agentspace/scratch/work-m257x/iter27/mutate27.py (restores from MEMORY, never from git;
+every mutant gated on `go build ./...` first — D-M257x-11)
+
+  M1 RED  guard removed while the declaration still says hero-always (the pre-iter-27 state)  KILLED
+  M2 RED  the declaration for a share-gated file disappears                                    KILLED
+  M3 RED  a stale entry for a file that draws no share                                         KILLED
+  M4 RED  the guard INVERTED: `if isHero && !memberInShare(...)`                               KILLED
+  M5 RED  the recogniser drifts off its construct (fail-closed branch)                         KILLED
+  M6 GREEN NO-OP CONTROL: two independent local map declarations swapped                     SURVIVED
+
+  M4 SURVIVED THE FIRST CUT. The fence asked only whether the guard's condition REFERENCED
+  `isHero`, so the inverted guard — heroes gated, everyone else free, the exact opposite semantics —
+  reported GREEN. Caught by this iter's own no-op control, not by design. The fence now requires a
+  NEGATED `isHero` as a parsed *ast.UnaryExpr.
