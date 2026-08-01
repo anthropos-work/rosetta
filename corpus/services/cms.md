@@ -51,7 +51,7 @@ This last point was the first structural shift: **studio-room is not a standalon
 > [!IMPORTANT]
 > **CMS owns content; the runtime engines own state.** Do not conflate the **skill-path engine** with skill-path content, or the **`jobsimulation`** service with simulation content. Those are **runtime/session engines** that hold *no* content and reference CMS artifacts **by ID**:
 > - **The [skill-path engine](./skillpath.md)** (merged into `app` — "skillpath-in-app", M502→M507; formerly the standalone `skillpath` service) tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %); it fetches the skill-path *structure* it tracks against from this CMS service over Connect-RPC (`CMS_RPC_ADDR`).
-> - **[`jobsimulation`](./jobsimulation.md)** runs the interactive simulation *session*; it fetches the simulation *definition* it runs from this CMS service over Connect-RPC (`cms.GetSimulation`) — it has no `DIRECTUS_BASE_ADDR` of its own, so all its content reads go *through* CMS.
+> - **[`jobsimulation`](./jobsimulation.md)** runs the interactive simulation *session*; it reads the simulation *definition* it runs from the cms domain **in-process** (it was a `cms.GetSimulation` Connect-RPC hop until both merged into `app`) — it has no `DIRECTUS_BASE_ADDR` of its own, so all its content reads go *through* CMS.
 >
 > So **content = CMS/Directus; the like-named service = the state machine over that content.** This split is the source of a recurring naming confusion — see the [Service Taxonomy](../architecture/service_taxonomy.md) and [Architecture Overview](../architecture/architecture_overview.md) content-vs-runtime callouts.
 
@@ -61,7 +61,7 @@ This last point was the first structural shift: **studio-room is not a standalon
 
 * **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/cms.git`)
 * **Language**: Go 1.25 (primary) + Python 3.11 (studio-room)
-* **Database**: PostgreSQL `cms` schema (via Ent)
+* **Database**: ~~PostgreSQL `cms` schema~~ — **`public`, via `app`'s Ent**. The `cms` schema is a legacy husk since cms-in-app v8.0; the similarity + Studio tables moved to `public`
 * **Ports**: 8090 (GraphQL/HTTP), 8091 (Connect-RPC)
 * **Docker image**: Two-stage build — Go binary built in `golang:1.25-bookworm`, copied into a `python:3.11-slim` final stage along with `cms/studio/` and its `pip install -r studio/requirements.txt`. The Go binary is the entrypoint; it shells out to Python when a generation task fires.
 

@@ -20,8 +20,8 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **Gotenberg** | - | - (stateless conversion service) |
 | **Messenger** (opt-in profile) | Backend (users, cms, jobsimulation and skiller RPC all at `http://backend:8083`) | Postgres, Redis, **Brevo** (email delivery) |
 | **CustomerIO Sync** (opt-in profile) | Postgres | **Customer.io** |
-| **Graphql (Cosmo Router)** | Backend (the **only** subgraph), Storage | - |
-| **Studio-Desk** (opt-in profile) | Graphql | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
+| ~~**Graphql (Cosmo Router)**~~ | **Not in a local stack** — platform `2adcf71` deleted the compose service and the `repos.yml` entry; the frontends call `backend` directly at `:8082/graphql/query`. Still declared in production terraform; repo archived 2026-07-30. Composed `backend` alone (1 subgraph) | *(no local service)* |
+| **Studio-Desk** (opt-in profile) | `backend`'s GraphQL endpoint directly (`:8082/graphql/query`) — the router it used to depend on is gone locally | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** | (runs inside the `app` container; depends on the backend process) | **OpenAI**, **Anthropic**, **Mistral** |
 
 > **Skiller merged into app (July 2026):** the standalone skiller service is gone from the compose file. Its RPC surface is now served by **backend** — consumers keep the `SKILLER_RPC_ADDR` env var, re-pointed at `http://backend:8083` (production terraform: `skiller_rpc_addr = http://backend:8081`). See [Backend](../services/backend.md) and the [skiller stub](../services/skiller.md).
@@ -80,7 +80,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 
 ### 3. Content Delivery
 `Frontend` -> `CMS` -> `Directus`
-*   CMS acts as the gateway to Directus content.
+*   The cms **domain inside `app`** acts as the gateway to Directus content — `Frontend -> app (cms domain) -> Directus`. It was a separate `CMS` service until cms-in-app v8.0; the hop is in-process now.
 
 ### 4. Studio Content Creation
 `Studio Desk` → `CMS` → (in-process) `Studio Room`
@@ -93,7 +93,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 `Jobsimulation` -> `Redis Stream` -> `App (skill-path engine, in-process)`
 *   When a user completes a simulation, **Jobsimulation** publishes an event.
 *   The **skill-path engine — now inside `app`** (merged from the standalone skillpath service, M502→M507) — subscribes to the Jobsimulation stream and updates step/chapter/path progress **state** (`SkillPathSession → ChapterSession → StepSession`, in `public.skill_path_sessions`) — it owns no content, only the per-user progression state.
-*   The engine queries **CMS** (RPC) for the skill-path **content** structure (chapters → steps it tracks against) and **Sentinel** for authorization. All of this now runs in-process inside `app`.
+*   The engine reads the skill-path **content** structure (chapters → steps it tracks against) from the **cms domain in-process** — it was a Connect-RPC call to the CMS service before the merge — and calls **Sentinel** for authorization, which is still a real network hop.
 
 ### 6. Document → PDF Conversion
 `Backend (app)` → `Gotenberg`
