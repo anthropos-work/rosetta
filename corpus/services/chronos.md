@@ -1,6 +1,6 @@
 # Chronos Service
 
-> ## ⚠️ Archived — no longer in local orchestration
+> ## ⚠️ Decommissioned — no longer in local orchestration (but the GitHub repo is NOT archived)
 >
 > Chronos was removed from `platform/docker-compose.yml` and `platform/repos.yml` in mid-2026:
 > - Platform: commit `045857c` — "remove chronos service from orchestration"

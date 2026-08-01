@@ -12,7 +12,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — 60K+ skills graph, vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is archived and there is no standalone service.)
+    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. **But a standalone container still starts here:** `docker-compose.yml:83` puts it in this very `graphql` profile as an unfederated husk, until **M810**.)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
     *   **Storage**: File/blob storage
     *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
@@ -26,7 +26,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the `app` (backend) image** since cms-in-app — it rode in the cms container before that, and was never a standalone deployment.
 *   **Standalone Internal Apps**: Independent products that reuse platform identity (Clerk) but do not depend on the backend services:
     *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel.
-*   **Frontend**: Next.js 15 applications deployed on Vercel
+*   **Frontend**: Next.js **16** applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
@@ -42,7 +42,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
-- **Frontend**: Next.js 15 + React 19 + TypeScript on Vercel
+- **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ^16.2.7` across all four apps)
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; `cms`/`jobsimulation`/`skillpath` are legacy husks (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
@@ -53,7 +53,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `graphql` profile):
-1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage, Messenger (when opted in) + Gotenberg (third-party PDF service). Dockerized. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only.
+1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage + Gotenberg (third-party PDF service) — **plus the three unfederated husks the default profile still starts**: `jobsimulation` (`docker-compose.yml:83`), `cms` (`:144`) and `roadrunner` (`:281`). Messenger when opted in. Dockerized. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only. So a bare `make up` gives you **six Go services**, not three.
 
    Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and **cms**
@@ -169,16 +169,21 @@ Production-only (deployed but not in local docker-compose):
 | :--- | :--- | :--- | :--- |
 | **db-backup** | Go | Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner | [→](../services/db-backup.md) |
 
-Archived / merged (removed from local orchestration; repos still exist):
+Archived / merged — **but three of these still start locally** (repos still exist):
+
+> **⚠️ This table and the *Default local development set* table above overlap by design, and the overlap is
+> the point.** CMS, Jobsimulation and Roadrunner appear in **both**: they are merged into `app` (no
+> subgraph, prod desired_count `0`) **and** still started by the default `graphql` profile as unfederated
+> husks. Only Chronos, Intelligence, Skiller and Skillpath are genuinely out of local orchestration.
 
 | Service Name | Status | Documentation |
 | :--- | :--- | :--- |
 | **Chronos** | Removed via platform commit `045857c` | [→](../services/chronos.md) |
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
-| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path, teardown **M810** | [→](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810** | [→](../services/cms.md) |
-| **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | [→](../services/roadrunner.md) |
+| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:83`, default profile) as an unfederated husk; teardown **M810** | [→](../services/jobsimulation.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:144`, default profile) and still answers `messenger`'s `CMS_RPC_ADDR` until **M809**; teardown **M810** | [→](../services/cms.md) |
+| **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. **Orphaned, not absent:** the container still starts locally (`docker-compose.yml:281`) and prod terraform still reads `= 1` | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 
 #### Shared Libraries (Not Deployed)

@@ -8,9 +8,17 @@ For the *categorised* view (tiers, ports, profiles, which repos are cloned where
 [`../architecture/service_taxonomy.md`](../architecture/service_taxonomy.md); for how the
 services talk to each other see [`../architecture/dependency_map.md`](../architecture/dependency_map.md).
 
-> **⚠️ `app` is the backend monolith.** Five services in this index — skiller, skillpath,
-> roadrunner, jobsimulation and cms — are **folded into `app`** and no longer deploy
-> separately. Their docs are kept for domain knowledge and carry a merge banner at the top.
+> **⚠️ `app` is the backend monolith.** **Four** services in this index — skiller, skillpath,
+> jobsimulation and cms — are **folded into `app`** and no longer deploy separately. Their docs are kept for
+> domain knowledge and carry a merge banner at the top.
+>
+> **`roadrunner` is the fifth, and it is different: orphaned, not merged-and-undeployed.** Nothing calls it,
+> but `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` — so it **does** still deploy,
+> unlike cms (`:39` = 0) and jobsimulation (`:40` = 0). It is the one row where prod and the platform's own
+> `repos.yml` contradict each other. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+>
+> And **three of the four** (cms, jobsimulation, roadrunner) still start CONTAINERS locally in the default
+> `graphql` profile as unfederated husks — *merged* is not *gone from compose*. Teardown is platform **M810**.
 > Read [`backend.md`](backend.md) for the current shape.
 
 ## Core backend services (Tier 1 — Go)
@@ -22,7 +30,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; teardown **M810** |
 | [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
-| [`roadrunner.md`](roadrunner.md) | Roadrunner — **merged into `app`** | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine; `backend` calls Judge0 directly via `JUDGE0_BASE_URL` |
+| [`roadrunner.md`](roadrunner.md) | Roadrunner — **orphaned** (not "merged and undeployed") | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL` — but prod terraform still reads `= 1` and the container still starts locally |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
 | [`messenger.md`](messenger.md) | Messenger | Centralized transactional email via Brevo + Liquid templates. Opt-in `messenger` profile; other services fire an RPC rather than calling Brevo |
 | [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync | One-directional background pipeline, Postgres `public` → Customer.io, for marketing automation. Opt-in profile; built from a GitHub URL, not cloned |
@@ -33,7 +41,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | Doc | Service | One-liner |
 |---|---|---|
 | [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — **ONE** subgraph (`backend`) since `915da06`. **Prod-only since platform `2adcf71`** (2026-07-31): deleted from local dev, repo ARCHIVED; locally the frontends hit `backend` at `:8082/graphql/query` |
-| [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
+| [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js **16** monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the `app` (backend) container** since cms-in-app |
 | [`ant-academy.md`](ant-academy.md) | Ant Academy | Internal Next.js 16 + Expo learning portal for `@anthropos.work` staff. Vercel-deployed, native-only, DB-authoritative catalog |
@@ -59,7 +67,7 @@ These describe services that no longer run. They stay because many docs still li
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
 | [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph. Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
-| [`chronos.md`](chronos.md) | **Archived** — removed from compose + `repos.yml` (platform `045857c`). Session timeouts are now in-process Asynq |
+| [`chronos.md`](chronos.md) | **Decommissioned** — removed from compose + `repos.yml` (platform `045857c`). **The GitHub repo is NOT archived** (last push 2026-04-23) — the corpus called it archived; the org disagrees. Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 
 ## Related

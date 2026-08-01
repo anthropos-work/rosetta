@@ -2,7 +2,7 @@
 
 ## Role & Responsibility
 
-Sentinel is the **centralized authorization service** of the platform. Every other service (`app`, `jobsimulation`, `cms`, `messenger`) calls Sentinel via Connect-RPC to check permissions before executing operations. It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+Sentinel is the **centralized authorization service** of the platform. Its live callers are **`app`** — including the jobsimulation and cms authz call sites it absorbed in-process — and **`messenger`**; both reach it over Connect-RPC to check permissions before executing operations. (The `cms` and `jobsimulation` husk containers still start and still receive `AUTHORIZATION_ADDRESS=http://sentinel:8087` at `docker-compose.yml:97,158`, but they sit off every request path.) It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
 
 Sentinel does **not** handle authentication — that's Clerk's job. It also does not validate JWTs (the shared `authn` library does that in each consuming service). Sentinel only answers *"is this subject allowed to perform this action on this object?"*.
 

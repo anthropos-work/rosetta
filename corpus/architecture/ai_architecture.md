@@ -39,7 +39,7 @@ All Go services access AI through the shared `ai` library, which provides:
 - A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
 - Per-provider client constructors that return provider token counts (`MetaData.Usage`)
 
-> **EU-first routing/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: routing/fallback in each service's `internal/ai/ai.go` (EU Azure default → US Azure via the PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic is always Bedrock `eu-west-1`), and cost tracking in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
+> **EU-first routing/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: routing/fallback in each consumer's own wrapper — in `app` @ `5ba17044` that is **`app/internal/jobsimulation/ai/ai.go:267,344`** and **`app/internal/skillerai/ai.go:347`**, *not* a bare `app/internal/ai/ai.go` (**no such file** — that path now resolves only inside the frozen `jobsimulation` husk repo). EU Azure default → US Azure via the PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic is always Bedrock `eu-west-1`, and cost tracking in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
 
 ---
 
@@ -47,9 +47,9 @@ All Go services access AI through the shared `ai` library, which provides:
 
 | Service | AI Use Case |
 |:--------|:------------|
-| **Jobsimulation** | Simulation conversations (chat + voice), document analysis, code evaluation |
+| **jobsimulation domain** *(in `app`)* | Simulation conversations (chat + voice), document analysis, code evaluation |
 | **Backend (`app`)** | Job role matching (embeddings + RAG), skill embeddings from 60K taxonomy — the merged skiller domain, July 2026 (see [Vector storage](#vector-storage-merged-skiller-domain)); plus Talk to Data (Bedrock) |
-| **CMS** | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
+| **cms domain** *(in `app`)* | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
 | **Studio-Desk** | Copilot AI assistant for content authoring (multi-provider chain: Azure OpenAI / OpenAI / Anthropic via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** (Python) | Full simulation generation pipeline. **Runs as a subprocess inside the `app` (backend) container** since cms-in-app — the `anthropos-studio-room` project is pulled into the image by CI. |
 

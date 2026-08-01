@@ -18,7 +18,7 @@
 ## Architecture & Code Map
 
 * **Codebase**: `next-web-app` (local) — repo `git@github.com:anthropos-work/next-web-app`
-* **Language / runtime**: **TypeScript**, **Next.js 15.5.16** (App Router, Turbopack), **React 19.2**, **Node ≥ 24**, **pnpm 10.30.3**
+* **Language / runtime**: **TypeScript**, **Next.js 16.2.7** (App Router, Turbopack), **React 19.2.7**, **Node ≥ 24**, **pnpm 10.30.3**. All four apps (`apps/{web,hiring,integration,maintenance}/package.json`) declare `"next": "^16.2.7"` and the lockfile resolves it; the repo carries `UPGRADE-IMPACT-next16.md`
 * **Build system**: Turborepo 2.9.x; `repos.yml` type `node-pnpm`
 * **Data layer**: `graphql-request` + **TanStack React Query** (⚠️ **not** Apollo Client) + `@graphql-codegen` client-preset
 * **Database**: none (org scoping comes from Clerk session claims; data lives in backend services)
@@ -45,7 +45,7 @@
 ## Interface Discovery
 
 * **GraphQL**: single endpoint `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — compose now bakes `http://localhost:8082/graphql/query` (`docker-compose.yml:352`); the env-var NAME still says wundergraph, the router behind it is gone locally; Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`.
-* **Auth edge**: `apps/web/src/middleware.ts` — `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
+* **Auth edge**: **`apps/web/src/proxy.ts`** (and `apps/hiring/src/proxy.ts`) — **not `middleware.ts`**, which does not exist at origin HEAD: **Next 16 renamed the `middleware.ts` convention to `proxy.ts`** (the repo's own `CLAUDE.md:55` says so). `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
 * **Observability proxies**: `/logpoint/*` → PostHog (EU); `/monitoring` tunnels Sentry/Better Stack events.
 
 ## Dependencies
@@ -67,7 +67,8 @@ pnpm dev:hiring                  # Hiring on :3001
 pnpm dev:integration             # Integration on :3002
 pnpm codegen                     # regenerate GraphQL types (needs the endpoint — :8082/graphql/query locally)
 pnpm check                       # tsc --noEmit + eslint --fix across the workspace
-pnpm storybook                   # Storybook on :6006
+# pnpm storybook                 # REMOVED — no `storybook` script and no `.storybook/` dir exist at
+                                 # origin HEAD; the only trace left is configs/tailwind/storybooks.css
 ```
 
 > Older Node fails with `WARN Unsupported engine`, and pnpm refuses to wipe
@@ -111,7 +112,7 @@ pnpm test            # turbo test → jest in apps/web and apps/hiring
 
 ## Notable Gotchas
 
-* **Next.js 15 / React 19**, not 14 — there's an in-repo `knowledge/next15-adoption-plan.md`; the repo's own `CLAUDE.md` still says 14 (stale).
+* **Next.js 16 / React 19** — the repo went 15 → 16 and the corpus missed it for four releases. Its own `CLAUDE.md:15` says *"Next.js 16 App Router"* and is **current** (an older note here claimed it still said 14; it does not). `knowledge/next15-adoption-plan.md` survives as a superseded plan beside `UPGRADE-IMPACT-next16.md`.
 * **Only one Dockerfile** (`Dockerfile.dev`) exists at the repo root — the repo `CLAUDE.md` "two Dockerfiles" note is stale.
 * **8 locales** on disk (Portuguese added) though some docs say 7.
 * Frontend data layer is `graphql-request` + React Query, **not Apollo Client**.

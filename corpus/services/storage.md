@@ -144,7 +144,7 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 | `PORT` | `8300` | HTTP health port (binary default 8080, overridden in compose) |
 | `RPC_PORT` | `8301` | Connect-RPC port (binary default 8081, overridden in compose) |
 | `STORAGE_S3_BUCKET` | (empty) | Private bucket. Absent from compose env and `.env` → local FS fallback at `/tmp/anthropos-storage/`. |
-| `STORAGE_S3_PUBLIC_BUCKET` | `production-storage-public20240919130721114900000001` | Public bucket — hardcoded to a real PRODUCTION S3 bucket in compose (`docker-compose.yml:324`). NOT empty in local dev. |
+| `STORAGE_S3_PUBLIC_BUCKET` | `production-storage-public20240919130721114900000001` | Public bucket — hardcoded to a real PRODUCTION S3 bucket in compose (**`docker-compose.yml:210`** @ platform `2adcf71`; `:324` is inside the *studio-desk* block). NOT empty in local dev. |
 | `AWS_REGION` / `AWS_DEFAULT_REGION` | `eu-west-1` | AWS region (EU-first) |
 | `ENVIRONMENT` | (empty) | Environment name |
 | `SERVICE_NAME` | `storage` | Logging label |

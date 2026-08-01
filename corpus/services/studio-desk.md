@@ -46,7 +46,7 @@ graph LR
     Backend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is prod-only]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
-    GraphQL --> CMS[CMS Service]
+    GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>NOT the cms husk container"]
     CMS --> Directus[(Directus CMS)]
 ```
 

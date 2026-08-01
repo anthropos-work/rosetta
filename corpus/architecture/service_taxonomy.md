@@ -50,7 +50,8 @@ graph TB
 - **Database**: PostgreSQL — **one schema, `public`, owned by `app`**, which is the only repo with migrations (`repos.yml:10-13`). `sentinel` keeps its own `sentinel` schema (`docker-compose.yml:18`, `search_path=sentinel`) **despite `migrations: false`** — the Trap-A case; the `cms`, `jobsimulation` and `skillpath` schemas are legacy husks
 - **Source**: Private GitHub repositories
 
-**Services** (current local docker-compose, as of 2026-07):
+**Services** (current local docker-compose @ platform `2adcf71`) — **the default `graphql` profile starts
+six Go services plus Gotenberg**, three of which are unfederated husks:
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
@@ -58,6 +59,9 @@ graph TB
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
 | **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
 | **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | graphql, backend | Third-party image `gotenberg/gotenberg:8` |
+| **Jobsimulation** *(husk)* | 8400-8401 | **`running_but_unfederated`** — merged into `app`; the container still starts (`docker-compose.yml:83`) but serves no subgraph and owns no schema. Teardown **M810** | graphql, jobsimulation | Local `../jobsimulation` (repo ARCHIVED) |
+| **CMS** *(husk)* | 8090-8091 | **`running_but_unfederated`** — merged into `app` (`docker-compose.yml:144`); serves no subgraph, but **still answers `messenger`'s `CMS_RPC_ADDR` until M809**. Teardown **M810** | graphql, cms | Local `../cms` (frozen) |
+| **Roadrunner** *(husk)* | 10400-10401 | **Orphaned** — nothing calls it; the container still starts (`docker-compose.yml:281`). Prod terraform still reads `= 1` | graphql, roadrunner | Local `../roadrunner` |
 | ~~**Graphql** (Cosmo Router)~~ | ~~5050~~ | **GONE from local dev** — platform `2adcf71` deleted the service and the `repos.yml` entry; frontends hit `backend` at **`:8082/graphql/query`**. Still declared in prod terraform; repo ARCHIVED 2026-07-30 | — | — |
 
 **Available but not in default `graphql` profile**:
@@ -73,17 +77,24 @@ graph TB
 - **PostgreSQL** :5432 (custom image with pgvector extension)
 - **Redis** :6379 (`bitnamilegacy/redis:latest`)
 
-**Archived / merged (removed from local orchestration; repo dirs may still exist on disk)**:
+**Archived / merged — but read the `Local container?` column** (repo dirs may still exist on disk):
 
-| Service | Why removed | Reference |
-|:--------|:------------|:----------|
-| **Chronos** | Removed from local dev orchestration | Platform commit `045857c` |
-| **Intelligence** | Removed from local dev orchestration | Platform commit `fdfa189` |
-| **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned | [skiller.md](../services/skiller.md) |
-| **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507); session state → `public.skill_path_sessions`; no container/subgraph; repo legacy | [skillpath.md](../services/skillpath.md) |
-| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app"); 23 run-state tables → `public`; no container/subgraph; ECS module kept as the rollback path, teardown **M810**; repo frozen | [jobsimulation.md](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810**; repo frozen | [cms.md](../services/cms.md) |
-| **Roadrunner** | Merged into Backend/App with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; no container | [roadrunner.md](../services/roadrunner.md) |
+> **⚠️ Two different fates share this table.** *Merged into `app`* does **not** imply *gone from compose*.
+> Chronos, Intelligence, Skiller and Skillpath really are out of local orchestration. **CMS,
+> Jobsimulation and Roadrunner are NOT** — all three are still defined in `docker-compose.yml` (`:144`,
+> `:83`, `:281`) **in the default `graphql` profile**, so a bare `make up` starts them as unfederated
+> husks. Consistent with the profile table at :371 and
+> [`platform-migration-status.md`](./platform-migration-status.md) (`running_but_unfederated`).
+
+| Service | Why removed | Local container? | Reference |
+|:--------|:------------|:-----------------|:----------|
+| **Chronos** | Removed from local dev orchestration | **no** | Platform commit `045857c` |
+| **Intelligence** | Removed from local dev orchestration | **no** | Platform commit `fdfa189` |
+| **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned, ARCHIVED 2026-07-01 | **no** | [skiller.md](../services/skiller.md) |
+| **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507); session state → `public.skill_path_sessions`; repo legacy, ARCHIVED 2026-07-31 | **no** | [skillpath.md](../services/skillpath.md) |
+| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app"); 23 run-state tables → `public`; **no subgraph**; ECS module kept as the rollback path; repo ARCHIVED 2026-07-31 | **YES — `docker-compose.yml:83`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810** | [jobsimulation.md](../services/jobsimulation.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1; ECS module kept as the rollback path; repo frozen, **not** archived | **YES — `docker-compose.yml:144`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810**. Still answers `messenger`'s `CMS_RPC_ADDR` until M809 | [cms.md](../services/cms.md) |
+| **Roadrunner** | Merged into Backend/App with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; **orphaned, not absent** — prod terraform still reads `= 1` | **YES — `docker-compose.yml:281`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810** | [roadrunner.md](../services/roadrunner.md) |
 
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
