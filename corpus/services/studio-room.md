@@ -1,5 +1,15 @@
 # Studio-Room Service
 
+> ## ⚠️ Merged into `app` — not a standalone deployment
+>
+> Since **cms-in-app v8.0** (`app` **v1.360.1**) the `anthropos-studio-room` Python pipeline is **pulled
+> into the `app` (backend) container image by CI** (`additional_repo`) and orchestrated from
+> `app/internal/cms/studio/`, which spawns it as a subprocess on an Asynq task. It is **not** a service,
+> **not** a container, and **not** in `repos.yml` — before the merge it rode inside the `cms` container at
+> `cms/studio/`. Note the repo is named `anthropos-studio-room`, not `studio-room`.
+> See [platform-migration-status.md](../architecture/platform-migration-status.md) for the authoritative
+> per-service state.
+
 ## High-Level Summary (For PMs & Non-Engineers)
 
 **Studio-Room** is an AI-powered content generation engine that transforms simulation blueprints into fully-realized interactive experiences. Think of it as the **manufacturing floor** where designs from Studio-Desk become actual products.
