@@ -753,6 +753,30 @@ Both are the M256 reports-success-without-checking class. Rules:
    > condition. Note which control found it: the battery's declared-GREEN no-op is what made the M4 result
    > interpretable at all, so this rule and the one above are one instrument, not two.
 
+   **And when the fix has two clauses, mutate BOTH — a single-clause mutant proves nothing about a
+   conjunction whose clauses are individually sufficient.** M257x iter-30 repaired a page accessor that
+   was picking the wrong one of eight matching cards, by adding a structural discriminator **and**
+   switching `.first()` → `.last()`. Its mutant battery then read:
+
+   | mutant | expected | actual |
+   |---|---|---|
+   | M0 no-op (comment) | GREEN | GREEN ✓ |
+   | M1 **inverted**: `.last()` → `.first()`, discriminator kept | RED | **GREEN** |
+   | M2 removal: discriminator dropped, `.last()` kept | RED | **GREEN** |
+   | M3 **full revert** to the pre-fix accessor | RED | RED ✓ |
+
+   M1 and M2 surviving looked, for a minute, like the fix was not attributable — the exact shape of a
+   result that should be reported rather than explained away. Re-derived: each clause **on its own**
+   selects a node carrying the asserted text, so each single-clause mutant is not a broken fix but a
+   *different working one*. The only mutant that reproduces the defect is the one that removes **both**.
+
+   > **Rule.** Before reading a surviving mutant as "the fix does not matter", check whether the fix is a
+   > conjunction of **individually sufficient** clauses. If it is, the discriminating control is the
+   > **full revert to the pre-fix construct**, and the single-clause mutants are measuring redundancy, not
+   > attribution. Run the full revert and require RED; keep the redundant clause anyway (it is what makes
+   > the accessor *mean* the thing it names), but say in the code comment that it is redundant today, so a
+   > later reader does not delete it believing it load-bearing — or keep it believing it is the fix.
+
 6. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
    fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly
    flagged 40-odd casbin grants (`{"default", "admin", "org:feature:insights"}`) and the string

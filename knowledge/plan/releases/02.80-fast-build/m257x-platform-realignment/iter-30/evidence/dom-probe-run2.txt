@@ -1,0 +1,601 @@
+
+Running 1 test using 1 worker
+
+=====FUNNEL_MAIN_TEXT_START=====
+Workforce Intelligence
+Live · last update Aug 1, 11:14 PM
+Refresh
+40
+Overall Members
+40 active
+103
+Skills Mapped
+across 39 roles
+54
+Skills Verified
+52.4% verification coverage
+17
+Skill Paths Completed
+35% of total
+112
+AI Simulations Completed
+81.3% pass rate
+Anthropos is tracking:
+103 skills
+·
+39 roles
+·
+28 certifications
+·
+12 languages
+·
+40 people
+Filter by tag
+38 roles below 30% skill match
+Click to review →
+Growth
+Skills & Verification
+Talent Pool
+Assignments
+Activity Log
+Time window applies to the whole tab
+Last 3 months
+6 months
+9 months
+12 months
+All time
+40
+Active users
+100% of all members
+40
+People joined
+100% of all members
+54
+Verified Skills
+52% of mapped Skills
+112
+AI Simulations
+81% passed
+57
+Hours consumed
+30 min avg per sim
+Skills growth over time
+Watch how your skill base expands month by month — the gap between mapped and verified shows how much has been proven vs. just declared.
+103
+mapped
+54
+verified
+Top verified skills
+Skills confirmed through assessments by the most people — shows where proven expertise is growing.
+#1
+ChatGPT
+3
+people
+#2
+Continuous Learning
+3
+people
+#3
+Problem Solving
+3
+people
+#4
+Prompt Engineering
+3
+people
+#5
+Verbal Communication
+3
+people
+#6
+Account Performance Management
+2
+people
+#7
+Active Listening
+2
+people
+#8
+Analytical Thinking
+2
+people
+#9
+Change Management
+2
+people
+#10
+Communication
+2
+people
+Top mapped skills
+Skills declared by the most people in the selected window — signals new investment areas or emerging capabilities.
+#1
+Ability to Implement Machine Learning Algorithms
+24
+people
+#2
+Communication
+9
+people
+#3
+Microsoft Excel
+9
+people
+#4
+Microsoft PowerPoint
+9
+people
+#5
+ChatGPT
+8
+people
+#6
+Kanban
+7
+people
+#7
+Prompt Engineering
+7
+people
+#8
+Verbal Communication
+7
+people
+#9
+Written Communication
+7
+people
+#10
+Active Listening
+6
+people
+Roles building expertise
+Which roles are building expertise or attracting headcount right now — spot where the momentum is concentrated.
+#1
+DevOps Engineer
+8
+verifications
+#2
+Accessibility Consultant
+4
+verifications
+#3
+Accounting Clerk
+4
+verifications
+#4
+Addetto Sistemi Di Gestione E Certificazioni
+4
+verifications
+#5
+AI and Automation Advisor
+4
+verifications
+#6
+AI Business Transformation Consultant
+4
+verifications
+#7
+AI Communication Specialist
+4
+verifications
+#8
+AI Designer
+4
+verifications
+#9
+AI Director
+4
+verifications
+#10
+AI Ethics Advocate
+4
+verifications
+Top areas of expertise
+Where the org is genuinely strong — many people verified (breadth) meeting a high level (depth). Top-right quadrant = core strengths.
+0
+1.3
+2.5
+3.8
+5
+0
+1
+3
+4
+5
+Breadth — people with the skill verified
+Depth — avg level (0–5)
+CORE STRENGTHS
+broad + deep
+HIDDEN DEPTH
+few but skilled
+WIDE BUT SHALLOW
+many at low level
+LONG TAIL
+emerging or rare
+Top-right quadrant = where you are strongest
+Hover a bubble for details · click to drill into the skill
+How your workforce is shaped
+How your active workforce is split across roles — a quick snapshot of the shape of the company.
+39
+roles
+Addetto Sistemi Di Gestione E Certificazioni
+2
+3D Graphics Programmer
+1
+5G Network Architect
+1
+Accessibility Architect
+1
+Accessibility Consultant
+1
+Accessibility Strategist
+1
+Accessibility Testing Analyst
+1
+Accounting Clerk
+1
+Other (31 roles)
+31
+Roles needing attention
+Roles with people on board but zero AI Simulation activity — the first candidates for onboarding, skill audits, or targeted training.
+All roles have at least one AI Simulation completed
+People who leveled up most
+Who raised their bar the most between first and latest AI Simulation — candidates for recognition, mentoring roles, or stretch assignments.
+Ethan Esposito
+2 sims
+2.5/5
+3.2/5
++0.7
+Design
+Liam Fischer
+3 sims
+3.1/5
+3.8/5
++0.7
+Engineering
+Bruno Reyes
+2 sims
+3.1/5
+3.8/5
++0.6
+mentor
+Platform
+Mateo Esposito
+3 sims
+2.9/5
+3.5/5
++0.6
+Design
+Diego Larsen
+3 sims
+3.3/5
+3.7/5
++0.5
+Security
+Pat Ellis
+25 sims
+3.9/5
+4.3/5
++0.5
+Product
+Theo Schmidt
+2 sims
+3.1/5
+3.6/5
++0.4
+Sales
+Tom Esposito
+3 sims
+3.2/5
+3.6/5
++0.4
+Platform
+Dan Moreau
+3 sims
+3.0/5
+3.4/5
+
+=====FUNNEL_MAIN_TEXT_END=====
+PAT_CARD_COUNT=8
+=====PAT_CARD_TEXT=====
+"Pat Ellis\n25 sims\n3.9/5\n4.3/5\n+0.5\nProduct"
+=====PAT_CARD_HTML=====
+<div class="ant-flex css-tql0nm css-var-_r_0_ ant-flex-align-center" style="gap: 12px;"><span class="ant-avatar ant-avatar-circle ant-avatar-image css-var-_r_0_ ant-avatar-css-var css-tql0nm" style="width: 40px; height: 40px; font-size: 18px; background: rgb(220, 252, 231); color: rgb(5, 150, 105); flex-shrink: 0;"><img src="data:image/jpeg;base64,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
+DEVOPS_IN_FUNNEL_PAGE=true
+=====FUNNEL_DEVOPS_CONTEXT=====
+"ve Listening\n2\npeople\n#8\nAnalytical Thinking\n2\npeople\n#9\nChange Management\n2\npeople\n#10\nCommunication\n2\npeople\nTop mapped skills\nSkills declared by the most people in the selected window — signals new investment areas or emerging capabilities.\n#1\nAbility to Implement Machine Learning Algorithms\n24\npeople\n#2\nCommunication\n9\npeople\n#3\nMicrosoft Excel\n9\npeople\n#4\nMicrosoft PowerPoint\n9\npeople\n#5\nChatGPT\n8\npeople\n#6\nKanban\n7\npeople\n#7\nPrompt Engineering\n7\npeople\n#8\nVerbal Communication\n7\npeople\n#9\nWritten Communication\n7\npeople\n#10\nActive Listening\n6\npeople\nRoles building expertise\nWhich roles are building expertise or attracting headcount right now — spot where the momentum is concentrated.\n#1\nDevOps Engineer\n8\nverifications\n#2\nAccessibility Consultant\n4\nverifications\n#3\nAccounting Clerk\n4\nverifications\n#4\nAddetto Sistemi Di Gestione E Certificazioni\n4\nverifications\n#5\nAI and Automation Advisor\n4\nverifications\n#6\nAI Business Transformation Consultant\n4\nverifications\n#7\nAI Communication Sp"
+PATCARD[0]="Pat Ellis\n25 sims\n3.9/5\n4.3/5\n+0.5\nProduct"
+PATCARD[1]="Pat Ellis\n25 sims\n3.9/5\n4.3/5\n+0.5"
+PATCARD[2]="Pat Ellis\n25 sims"
+PATCARD[3]="Pat Ellis\nDevOps Engineer\n25/25\npassed\n100%\nProduct\nMorgan Reyes\nEngineering Manager\n10/11\npassed\n91%\nFinance\nSofia Kaur\nAI for Social Good Specialist\n3/3\npassed\n100%\nSales\nMaya Chen\nAI Adoption\n3/3\np"
+PATCARD[4]="Pat Ellis\nDevOps Engineer\n25/25\npassed\n100%\nProduct\nMorgan Reyes\nEngineering Manager\n10/11\npassed\n91%\nFinance\nSofia Kaur\nAI for Social Good Specialist\n3/3\npassed\n100%\nSales\nMaya Chen\nAI Adoption\n3/3\np"
+PATCARD[5]="Pat Ellis\nDevOps Engineer\n25/25\npassed\n100%\nProduct"
+PATCARD[6]="Pat Ellis\nDevOps Engineer\n25/25\npassed\n100%"
+PATCARD[7]="Pat Ellis\nDevOps Engineer"
+=====SUCCESSION_MAIN_TEXT_START=====
+Succession Planning
+Good data coverage
+Re-run AI Interviews every 6 months to keep flight risk signals up to date.
+Critical roles
+28
+risk ≥ 50
+At-risk people
+14
+score ≥ 40
+Top talents (ready)
+0
+Data confidence
+full
+Skills 100% · Sims 100% · Interview 54%
+Roles by risk
+Agricultural Data Analyst
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Agri-Informatics and Data Science - Foundamentals
+Comprehensive Data Cleaning
+Dashboard Design and Development
+Data Visualization
+Predictive Modeling
++5 more
+AI Designer
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+AI and Machine Learning
+AI Ethics
+Cloud Computing Concepts
+Computer Vision Techniques
+Data Visualization
++5 more
+AI Infrastructure Engineer
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+AI Information Architecture
+AI/ML Tools and APIs Scalability
+Cloud Computing Concepts
+Data Pipelines
+Git
++5 more
+Accessibility Strategist
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Accessibility Testing and Evaluation
+Collaborative Teamwork
+Communication Abilities
+Conducting Accessibility Audits
+Design for Equality and Inclusion
++5 more
+AI and IoT Integration Manager
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 6%
+AI Integration
+Communication
+Cross-Functional Team Leadership
+Data Analysis
+Implementing IoT Technologies
++5 more
+AI for Social Good Specialist
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+AI Ethics
+AI/ML Model Development
+Community Engagement Strategies
+Data Analysis
+Data Visualization
++5 more
+AI Business Transformation Consultant
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Agile Methodologies
+AI and Machine Learning
+Artificial Intelligence Integration
+Business Process Reengineering
+Data Analysis
++5 more
+AI-Driven Emergency Response Coordinator
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+AI Ethics
+AI/ML Model Development
+Collaboration with Emergency Response Teams
+Data Analysis
+Decision-Making Skills
++5 more
+DevOps Engineer
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 91%
+Agile Methodologies
+Automation Tools
+Containerization (Docker, Kubernetes)
+Continuous Integration/Continuous Deployment (CI/CD) Pipelines
+Infrastructure-as-Code (IaC)
++5 more
+AI Network Security Specialist
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Advanced Technology Network Security Principles
+AI and Machine Learning
+Continuous Learning
+Cybersecurity Collaborative
+Python
++5 more
+Addetto Protezione Aziendale
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Access Control Procedures
+CCTV operation
+Data Security Regulations
+Emergency Management
+Incident Response Management
++5 more
+Accessibility Architect
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Accessibility and Ergonomics Training
+Accessibility Laws and Standards
+Assistive Technologies
+Conducting Accessibility Audits
+Cross-Functional Collaboration
++5 more
+AI/ML Training Specialist
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Cloud Platform Expertise (e.g., AWS, Azure, GCP)
+Communication
+Data Preparation
+Feature Extraction and Pattern Identification
+Jupyter Notebook
++5 more
+AI Business Analyst
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 3%
+AI and Machine Learning
+Business Intelligence Tools
+Business Objective Alignment
+Business Process Reengineering
+Communication
++5 more
+3D Graphics Programmer
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+3D Graphics Programming
+3D Math
+3D Modeling and Visual Rendering
+C++
+Creating Materials, Shaders, and Textures
++5 more
+AI Ethics Advocate
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Advocacy
+AI Bias Mitigation
+AI Ethics
+AI Risk Assessment
+Communication
++5 more
+Account Sales – Gestione Vendite Charter E Gruppi
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Account Planning and Management
+Account Selection
+Business-to-Business (B2B) Sales Fundamentals
+Customer Relationship Building
+Global Account Management
++5 more
+Addetto Sistemi Di Gestione E Certificazioni
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Audit Planning and Execution
+Continuous Improvement
+Corrective/Preventive Action
+Data Analysis
+Deployment and Management of Integrated Systems
++5 more
+Agile Project Manager
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+Adapting to Changing Work Environments
+Agile Methodologies
+Continuous Improvement
+Facilitation Skills
+Leadership and Teamwork
++5 more
+AI and IoT Integration Specialist
+1 incumbent · 10 required skills
+MEDIUM
+risk 68
+0 ready
+0 dev
+Avg fit 0%
+AI Algorithms
+Cloud Computing Concepts
+Data Analysis
+Data Visualization
+Internet of Things (IoT) Integration
++5 more
+Engineering Manager
+1 incumbent · 10
+=====SUCCESSION_MAIN_TEXT_END=====
+SUCCESSION_HEADINGS=["Succession Planning","Agricultural Data Analyst","AI Designer","AI Infrastructure Engineer","Accessibility Strategist","AI and IoT Integration Manager","AI for Social Good Specialist","AI Business Transformation Consultant","AI-Driven Emergency Response Coordinator","DevOps Engineer","AI Network Security Specialist","Addetto Protezione Aziendale","Accessibility Architect","AI/ML Training Specialist","AI Business Analyst","3D Graphics Programmer","AI Ethics Advocate","Account Sales – Gestione Vendite Charter E Gruppi","Addetto Sistemi Di Gestione E Certificazioni","Agile Project Manager","AI and IoT Integration Specialist","Engineering Manager","AI Engineer","AI Product Analyst","AI QA Specialist","AI Evaluator"]
+DEVOPS_IN_SUCCESSION_PAGE=true
+SUCC_TAIL="ty Specialist\nSkills not aligned with role (fit 0%)\n\tno\n\nAmara Romano\nAI Engineer\n\t50\t\nRare skill held only by this person\nIn fragile role: AI Engineer\nSkills not aligned with role (fit 0%)\n\tno\n\nClara Chen\nAccessibility Strategist\n\t50\t\nRare skill held only by this person\nIn fragile role: Accessibility Strategist\nSkills not aligned with role (fit 0%)\n\tno\n\nSofia Kaur\nAI for Social Good Specialist\n\t50\t\nRare skill held only by this person\nIn fragile role: AI for Social Good Specialist\nSkills not aligned with role (fit 0%)\n\tyes\n\nAisha Larsen\n3D Graphics Programmer\n\t50\t\nRare skill held only by this person\nIn fragile role: 3D Graphics Programmer\nSkills not aligned with role (fit 0%)\n\tyes\n\nTheo Schmidt\nAdministrator\n\t50\t\nRare skill held only by this person\nIn fragile role: Administrator\nSkills not aligned with role (fit 0%)\n\tno\n1\n2\n3\nTop talents ready for promotion\nNo ready successors identified"
+SUCC_BUTTONS=["Search...\n✦ AI Search","Meridian Labs\nWorkforce","","Morgan","Expand all","MAP","CUSTOMIZE","ASSIGN","TRACK & VERIFY","INTELLIGENCE","","","","",""]
+  ✓  1 [chromium] › tests/zz-iter30-probe.spec.ts:6:5 › iter30 dom read (14.7s)
+
+  1 passed (14.9s)
