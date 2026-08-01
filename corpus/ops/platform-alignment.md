@@ -595,6 +595,22 @@ Both are the M256 reports-success-without-checking class. Rules:
    actually write (here: *"make the helper total"* — drop the guard, add a default arm), and confirm it
    parses, collects, and goes red.
 
+   **So put a no-op mutant in the battery ON PURPOSE, and require it to survive.** iter-11 arrived at
+   "a mutant that changes nothing is not a survivor" as a *disqualification* rule — a way to throw out a
+   bad GREEN after the fact. It is more useful as a **positive control** run alongside the real mutants.
+   A battery of ten REDs tells you the tests fail when the source changes; it does not tell you they fail
+   for the right *reason*, and a fence that is merely brittle — keyed on a line number, a whitespace run,
+   a whole-file digest — produces exactly the same ten REDs as a fence that is discriminating. The
+   distinguishing observation is a mutation that alters no behaviour and must therefore stay GREEN. If it
+   goes red, the battery has been grading edits rather than behaviour, and every other verdict in it is
+   uninterpretable.
+
+   > **Rule.** Every mutation battery carries at least one **no-op mutant with an expected verdict of
+   > GREEN**, and the harness compares each mutant's verdict against its *declared expectation* rather
+   > than counting REDs. M257x iter-16 ran 11 mutants over the two bring-up verdict fixes: 10 declared-RED
+   > (all killed) and 1 declared-GREEN no-op (survived). Also run the unmutated control **after** the
+   > battery as well as before — a restore that silently failed otherwise reads as a result.
+
 6. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
    fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly
    flagged 40-odd casbin grants (`{"default", "admin", "org:feature:insights"}`) and the string

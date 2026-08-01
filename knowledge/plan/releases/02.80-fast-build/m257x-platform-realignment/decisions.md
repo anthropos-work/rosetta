@@ -288,3 +288,35 @@ Two supporting method notes from the same measurement:
 - **A "not serving" verdict deserves one patient request before it is believed.** `--max-time 3` and
   `--max-time 180` are different instruments; only the second can see a 30 s failure. A probe whose
   per-attempt timeout is shorter than the failure mode it watches for cannot measure the thing it reports.
+
+---
+
+## HARDEN-CAP-ACCEPTED — the incremental harden pass closed un-stabilized, and that is the accepted disposition (2026-08-01)
+
+**Recorded at iter-16 close so milestone close finds this stated rather than inferred.**
+
+`/developer-kit:harden-mstone-iters` (incremental) ran its capped passes and **did not reach stabilization**.
+Of 20 scanned findings it fixed **6**; the remaining **12 are routed forward as RF-1 … RF-12** in
+`hardening-ledger.md`, each carrying a file, a line, the claim-vs-measurement, and — the part that makes them
+actionable rather than a wish-list — **the source mutation that leaves the suite green today**. That last
+column is why closing un-stabilized is defensible: every routed finding is already proven to be a real gap in
+the safety net, not a suspicion about one.
+
+**The pass stopped for a reason worth stating.** The residual queue is dominated by **source changes to
+bring-up scripts** — RF-1 adds an `exit 1` to the dev migration path; RF-4 changes the verdict and exit code
+of the set-dress pass. A hardening pass's mandate is to deepen the tests around code, not to change what the
+code does; work with that blast radius belongs to an iter, where it gets a hypothesis, a mutation battery and
+a full section-suite comparison against a recorded baseline. Continuing the harden pass into them would have
+made large behavioural changes under the lighter discipline.
+
+**Disposition: ACCEPTED by the orchestrator on the user's standing full-milestone-autonomy delegation.**
+
+**Status of the routed set as of iter-16 close:** RF-4 and RF-1 are **landed** (iter-16 — see
+`iter-16/progress.md`; 11 mutants, 10 declared-RED all killed, 1 declared-GREEN no-op survived, every section
+back to its recorded baseline). **RF-2, RF-3 and RF-5 … RF-12 remain open** and are the standing queue for
+later tiks. `CHECK-M257x-iter16-parity-fence-hand-maintained` joins them.
+
+**One consequence to carry.** A harden pass that closes un-stabilized leaves the `--final` cumulative sweep
+carrying more than it normally would. When the gate fires, `/developer-kit:harden-mstone-iters --final` should
+be run in the knowledge that RF-2/RF-3/RF-5…RF-12 were never swept, rather than treating the ledger's most
+recent entry as a clean high-water mark.
