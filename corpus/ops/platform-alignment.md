@@ -165,6 +165,16 @@ diff, no review ever sees it change, and nothing makes it stale-visible. That is
 it reached 63 commits behind unnoticed. A pin that cannot be reviewed is a pin that will rot; either track it,
 or have the bring-up assert its freshness against origin.
 
+**Corollary — a freshness check that compares to a PIN cannot detect a stale CLONE** (M257x iter-12). The
+`stack-demo/platform` clone sat **3 commits behind origin/main** while the bring-up printed
+`⚠ FRESHNESS: … but clones.pin.json pins '28c5f0d' — PIN-DRIFT`. Both facts are true and the message names
+only one of them, so a **stale clone reads as a stale pin** — the reader's eye goes to the pin file, which is
+the thing that looks wrong. The pin is a *second* hand-maintained tuple element (§2), and comparing one
+hand-maintained value to another can never establish currency against the platform. **Measure distance to
+`origin/<default-branch>` explicitly, and say which of the three refs — checkout, pin, origin — is the one
+that moved.** M257x's gate says *"against platform @ origin HEAD"* precisely because a clause that does not
+name its ref will be satisfied against whatever happens to be checked out.
+
 ---
 
 ## 4. Detection — six signals, cheapest first

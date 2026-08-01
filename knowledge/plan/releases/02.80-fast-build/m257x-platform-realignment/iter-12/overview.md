@@ -2,7 +2,7 @@
 milestone: M257x
 iter: 12
 iteration_type: tik
-status: in-progress
+status: closed-fixed-partial
 opened: 2026-08-01
 ---
 
