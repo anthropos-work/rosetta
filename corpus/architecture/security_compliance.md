@@ -66,7 +66,12 @@ Three layers of isolation ensure tenant data cannot leak:
 > **⚠️ Isolation is NOT automatic across the whole schema — do not rely on it as a blanket guarantee.**
 > Measured at `app` HEAD: of **139** Ent schemas, only **30** use `OrganizationMixin{}` — the one that
 > carries the privacy `Policy()` (`mixin.go:126`). Seven use `OrganizationIDMixin{}`, explicitly *"a plain
-> nullable organization_id column"* with **no policy**, and the rest never mention organization at all.
+> nullable organization_id column"* with **no policy** — **and a further ~18 declare a plain
+> `organization_id` field with no mixin and no policy at all** (`org_membership.go`, `org_subscription.go`,
+> `organization_settings.go`, `organization_feature.go`, `api_key.go`, `lab_session.go`,
+> `interview_aggregated_report.go`, `admin_audit_log.go`, `job_simulation_session.go`, …). **Those are the
+> rows most likely to be missed by an audit**: they look org-scoped and are not policed. The remainder
+> (the taxonomy, and other global reference data) carry no org column by design.
 > The platform states this itself: `job_simulation_session.go:5` — *"L2: NO Ent privacy Policy;
 > owner/org/tenant are plain fields"* — and `jobrole.go:18` / `category.go:15` note the taxonomy is
 > deliberately globally readable. **Scoping on the jobsim fan-out and the taxonomy is the caller's job.**

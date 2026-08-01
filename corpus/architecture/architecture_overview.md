@@ -271,9 +271,13 @@ Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
 
 ### Multi-Tenancy
 
-The platform uses **shared database, shared schema** with `organization_id` on every table. Data isolation is enforced at three layers:
+The platform uses **shared database, shared schema**, with `organization_id` on **org-scoped** tables
+(**not** on every table — the taxonomy and other global reference data carry none by design). Data
+isolation is enforced at three layers:
 
-1. **Database**: `organization_id` foreign key on all tables; Ent ORM policies auto-filter queries
+1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter **only the 30
+   schemas using `OrganizationMixin{}`** — see
+   [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split
 2. **Authorization**: Sentinel (Casbin RBAC/ABAC) validates every API request
 3. **Identity**: Clerk JWT includes org context; sessions are org-scoped
 

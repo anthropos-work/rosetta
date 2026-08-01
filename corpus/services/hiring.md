@@ -123,7 +123,9 @@ schema, read directly by the resolver.
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
 | 5 | `intelligence.go:1728-1735` | best-attempt: `row_number() ORDER BY score DESC` per candidate |
 | 6 | `intelligence.go:1801` | `Score` ← `ls.Score` (the mirror's score column) |
-| 7 | `app/internal/data/ent/schema/job_simulation_session.go` | Ent table `public.job_simulation_sessions`, `field.Float32("score")` (`local_jobsimulation_session.go` no longer exists) |
+| 7 | `app/internal/data/ent/schema/job_simulation_session.go` | Ent table `public.job_simulation_sessions`, `field.Float32("score")` — **the score column, read at
+`intelligence.go:1820` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer
+exists** |
 
 **The best-attempt sort + the cohort** (`intelligence.go:1738-1751`): rows are grouped per `user_id`, reduced to
 **ONE best-attempt row per candidate** (the highest `score`), then sorted `score DESC, completition_status ASC,
@@ -141,7 +143,8 @@ tables (all in **`public`**, `20260722081626_jobsim_data_model.sql:336/355/376`;
 `validation_attempt_skill_results`, not `validation_skill_results`) the `PersonaSeeder` also writes (`persona_write.go:69-71,143-167`). These are needed **only for the
 drill-down**, NOT for the comparison list. `anticheat_summary` on the mirror row is a **decorative icon only**. So
 the open BA-1 question — *"does the list score need a per-session `validation_*`/eval row?"* — is answered **NO**:
-the scoreboard scores from the 2-table pair (+ membership + the Casbin gate) alone.
+the scoreboard scores from the **single** `job_simulation_sessions` row (+ membership + the Casbin gate)
+alone — the write-set used to be a PAIR and is now one row, since the mirrors were dropped.
 
 ## The seeder-output contract (the write-set M223/M224 build against)
 
@@ -149,11 +152,13 @@ the scoreboard scores from the 2-table pair (+ membership + the Casbin gate) alo
 
 1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
    is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
-   `completion_status` (values `passed`/`failed`/`pending`/`SIMULATION…`) — **spelled correctly in the DB**
-   (`app/terraform/migrations/20260722104506.sql:12`, `ent/schema/job_simulation_session.go:39`); the
-   `completition` misspelling survives only in the GraphQL sort-field enum
-   (`enum.InsightsSortFieldCompletitionStatus`) and a JSON tag, **never as a column name**,
-   `organization_id`, `tenant_id` (NULL or `=org`), `validation_version`, `anticheat_summary` (optional).
+   `completion_status` (values `passed`/`failed`/`pending`/`SIMULATION…`), `organization_id`,
+   `tenant_id` (NULL or `=org`), `validation_version`, `anticheat_summary` (optional).
+   ⚠️ **The column is spelled `completion_status` — correctly** (`20260722104506.sql:12`,
+   `ent/schema/job_simulation_session.go:39`). The `completition` misspelling exists only in the GraphQL
+   sort-field enum (`enum.InsightsSortFieldCompletitionStatus`), its GraphQL member and a JSON tag;
+   `insightsSortColumn` (`intelligence.go:885-886`) maps it back to `FieldCompletionStatus`, so it
+   **never reaches SQL**.
 2. **`public.memberships`** — the candidate must be **active** (`GetMemberships`; status `active`/`invited`).
 
 > **The write-set used to be a PAIR and is now a single row** (M257x iter-23). Before the mirror drop it was
@@ -226,7 +231,8 @@ row per candidate. The drill-down additionally needs the `public.validation_atte
 > from the global `p3` admin policy via their standard g2 grant. Seeder chain: [`../ops/demo/stories-spec.md`](../ops/demo/stories-spec.md#the-m223-hiring-chain--two-seeders-hiring-config--hiring-funnel)
 > + [`../ops/seeding-spec.md`](../ops/seeding-spec.md#the-recruiter-vantage--the-hiring-org--candidate-comparison-funnel-v24-casting-call-m223).
 > M223 does NOT ship the render proof or the cockpit heroes (M224); the per-candidate drill-down `validation_*`
-> rows are also M224+ (the M223 scoreboard needs only the 2-table pair).
+> rows are also M224+ (the M223 scoreboard needs only the single `job_simulation_sessions` row —
+> formerly a 2-table pair, until the mirrors were dropped).
 
 ## The render path (v2.4 "casting call" M224 — the two-app demo)
 

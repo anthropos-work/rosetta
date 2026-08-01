@@ -275,7 +275,10 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 
 **How the orphan was identified, while it still existed** (there was no `@deprecated` marker, no `-v2`
 naming and no feature flag switching between them — the legacy one was simply *unlinked*). Retained as the
-recognition pattern; the anchors below are pre-`dae0fb2f7` and no longer resolve:
+recognition pattern. **The three orphaned COMPONENTS are deleted; the surrounding anchors below still
+resolve at HEAD** — `urls.ts`, `useNavbarSections.tsx`, the e2e spec, `WorkforceNewClient.tsx` (still
+omitting readiness) and `useWorkforceAIReadiness.ts` (still cycle-less) are all live, so they remain
+checkable evidence rather than history:
 
 - **`/ai-readiness` is the only readiness route the navbar links** — `AI_READINESS_URL`
   (`packages/core-js/src/constants/urls.ts:50`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx:253-260`.
@@ -287,8 +290,8 @@ recognition pattern; the anchors below are pre-`dae0fb2f7` and no longer resolve
   Don't read it as "the new one".
 
 **The `flag_ai_readiness` PostHog flag gates the EMPLOYEE side only** (`useAiReadinessActive.ts:22`). It does
-**not** select between the two manager trees. The manager dashboard gates purely on the GraphQL
-`aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
+**not** select between manager trees — it never did, back when there were two. The (one) manager
+dashboard gates purely on the GraphQL `aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
 
 **Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
 **hard-gated off** — `AIReadinessClient.tsx:69` `const SHOW_SECONDARY_TABS = false;` strips it from the tab list.
