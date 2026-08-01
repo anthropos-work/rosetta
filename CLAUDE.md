@@ -214,7 +214,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
-- GraphQL/Cosmo Router: Apollo Federation v2 gateway (3 subgraphs: backend/app, jobsimulation, cms — the former skiller and skillpath subgraphs were removed when those services merged into `app`; app's `backend` subgraph serves their types/queries, and `categoryTree`/`fullCategoryTree` were dropped, not ported)
+- ~~GraphQL/Cosmo Router~~ — **DELETED from the platform** at `2adcf71` (2026-07-31, PR #23 *"drop the WunderGraph router; point local dev at backend"*). There is no `graphql` compose service, no `graphql-wundergraph` entry in `repos.yml`, and no federation gateway. **GraphQL is served directly by `backend`** at `:8082/graphql/query` — note the path moved too (`/graphql` → `/graphql/query`), so a host-only re-point 404s rather than errors. `.env_example` records that the `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` name is now historical. (Measured in M257x iter-12; the prior claim here of *"3 subgraphs"* was itself already stale — the cms-in-app merge had taken the supergraph to one.)
 - AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
@@ -227,7 +227,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 ### Communication Patterns
 
 - **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging
-- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, 3 subgraphs)
+- **Frontend/Studio → Backend**: GraphQL **straight to `backend`** at `:8082/graphql/query` — the Cosmo router was deleted at platform `2adcf71`, so there is no gateway hop and no federation
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via CMS service
 - **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)
@@ -273,7 +273,7 @@ Docker Compose profiles control which services start:
 
 | Profile | Services |
 |---------|----------|
-| `graphql` (default) | All backend + Cosmo Router |
+| `graphql` (default) | All backend services. **The profile name outlives the router it was named for** — `2adcf71` deleted the `graphql` *service* but kept the `graphql` *profile* on sentinel/backend/jobsimulation/cms/storage/roadrunner/gotenberg, so `COMPOSE_PROFILES=graphql` still selects the backend tier and nothing about the profile warns |
 | `backend` | app only |
 | `cms` | cms only |
 | `frontend` | next-web-app (containerized) |
