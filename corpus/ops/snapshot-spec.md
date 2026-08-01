@@ -416,7 +416,18 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    This was the M10 **"collection-schema gap"**. **Closed at the tooling level by M21** (`prop-room-m21`):
    `stacksnap` now captures the structure (DDL + PKs + sequences + serve rows) from the sanctioned `--dsn` and
    **auto-provisions** a bootstrapped-gap stack before the row replay, so the replay **exits 0** and a booted
-   Directus serves the captured catalog **anonymously**. See [`directus-local.md`](./directus-local.md) for the
+   Directus serves the captured catalog **anonymously**.
+
+   > **⚠ That sentence describes the DESIGN, and the design did not hold from M21 until v2.8 M257x iter-15.**
+   > The provisioned structure script emitted the sequences and the `DEFAULT nextval(...)` but never
+   > `ALTER SEQUENCE … OWNED BY …`, so the replay's Phase-5 sequence advance refused and **the replay exited
+   > 1 on every cold cycle** — 0 content rows, every anon `/items` read 403. Nothing noticed, because the
+   > only Directus check anywhere counted rows in the `directus_collections` REGISTRY (populated by the
+   > structure step, which *had* succeeded) and never asked the running Directus for an item. Fixed at
+   > iter-15; made **checkable** by the `directus-serves-content` probe (M257x harden pass 1). The rule is
+   > [`platform-alignment.md`](platform-alignment.md) §5 rule 14 — **REGISTERED is not SERVED.**
+
+   See [`directus-local.md`](./directus-local.md) for the
    structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
    *execution at bring-up* — booting the Directus as a per-stack compose service — landed in **M22**
    (`prop-room-m22`): a `--local-content` stack executes bootstrap → apply-structure → replay → boot. The
