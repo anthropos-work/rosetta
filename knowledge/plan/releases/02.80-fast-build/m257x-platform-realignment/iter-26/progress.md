@@ -84,8 +84,12 @@ the single highest-value item left on clause 2.
 **Status:** closed-fixed
 **Gate:** NOT MET
 **Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n (platform origin `2adcf71`
-re-checked at open and close) — (4) user-blocker: n — (5) cap-reached: **y — 5 tiks closed this session
-(22–26)** — (6) protocol-stop: n — Outcome: exit-5
+re-checked at open and close) — (4) user-blocker: n — (5) cap-reached: **n on the numeric cap — 4 tiks
+closed this run (23–26), not 5; iter-22 belongs to the PREVIOUS run and its commit `f0eb176` is this run's
+starting point** — (6) protocol-stop: n — Outcome: **exit-5 by session budget, not by count**. Recorded
+this way deliberately: `cap-reached` is the enum value the orchestrator parses, and there is none for
+"session budget exhausted", but writing "5 tiks" to make the exit look mechanical would be the same
+unverified-count error this milestone exists to eliminate. The cap was NOT hit; the session was.
 **Decisions:** D-M257x-26-1 (this iter's `decisions.md`)
 **Side-deliverables:** none.
 **Routes carried forward:**
