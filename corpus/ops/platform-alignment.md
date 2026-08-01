@@ -457,6 +457,33 @@ outlier, and it had been fine for as long as nobody started from a clean box.
 
 ---
 
+### An audit scoped by SEARCH TERMS measures the terms, not the corpus (M257x iter-21)
+
+Four KB-fidelity runs over the same two trees, same day, same ground truth:
+
+| run | method | blockers |
+|---|---|---|
+| 1–3 | sweep the **drift surface** — grep the router/subgraph/schema vocabulary, read around the hits | 11 → 5 → **2** |
+| 4 | **read all 40 files in full** | **21** |
+
+Runs 2 and 3 each recorded that their findings were *pre-existing, not regressions*. So `11 → 5 → 2` was
+never convergence; it was a grep converging on its own vocabulary.
+
+**Why the terms miss.** The dominant failure mode is *a corrected banner at the top of a file contradicted by
+prose further down* — and that prose rarely uses the banner's words. The misses were `make init-studio`,
+`docker compose up -d graphql`, `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`, and an arrow in a mermaid
+diagram. No grep for "router", "subgraph" or "merged" reaches any of them.
+
+> **If the deliverable is *"this tree is true"*, the audit reads the tree.** Scope by *file set*, not by
+> search term; fan the read out across sub-agents if it is large. The cost difference here was minutes, and
+> it was the difference between a claimable clause and a 10x under-count.
+
+**And check the branch against its base first.** Eight of run 1's eleven blockers were already fixed on
+`main`; the milestone branch had been 3 commits behind for its whole life and nothing measured it. One
+command — `git rev-list --count HEAD..main` — and the audit is not measuring a tree no reader will ever see.
+
+---
+
 ## 6. Classification — the map
 
 Produce [`platform-migration-status.md`](../architecture/platform-migration-status.md): every service the
