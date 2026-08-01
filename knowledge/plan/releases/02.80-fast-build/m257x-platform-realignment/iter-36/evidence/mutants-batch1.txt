@@ -1,0 +1,23 @@
+M1 assignments: NULL the plan FKs: COMPILE-BREAK (not a kill — mutant discarded)
+M2 hiring: NULL the plan FKs: COMPILE-BREAK (not a kill — mutant discarded)
+M3 cycle becomes ORDERED (steps lock): declared=RED actual=RED MATCH
+--- FAIL: TestPlanMaterializer_DerivesItemsAndEnrollments (0.00s)
+FAIL
+FAIL	github.com/anthropos-work/rosetta-extensions/stack-seeding/seeders	0.811s
+FAIL
+M4 enrollment reuse dropped (one per assignment): declared=RED actual=RED MATCH
+--- FAIL: TestPlanMaterializer_DerivesItemsAndEnrollments (0.00s)
+FAIL
+FAIL	github.com/anthropos-work/rosetta-extensions/stack-seeding/seeders	0.748s
+FAIL
+M5 (inverted) empty() returns its own negation: declared=RED actual=RED MATCH
+--- FAIL: TestAssignmentsSeeder_PlanMaterialized (0.00s)
+--- FAIL: TestHiringFunnelSeeder_PlanMaterialized (0.00s)
+--- FAIL: TestPlanModelWriteOrderIsFKSafe (0.00s)
+--- FAIL: TestPlanMaterializer_DerivesItemsAndEnrollments (0.00s)
+M6 plan model written AFTER the assignments: declared=RED actual=RED MATCH
+--- FAIL: TestPlanModelWriteOrderIsFKSafe (0.00s)
+FAIL
+FAIL	github.com/anthropos-work/rosetta-extensions/stack-seeding/seeders	0.743s
+FAIL
+M7 (declared GREEN, no-op control) rename the program card: declared=GREEN actual=GREEN MATCH
