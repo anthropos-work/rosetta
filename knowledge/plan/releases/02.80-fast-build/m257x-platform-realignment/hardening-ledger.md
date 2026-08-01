@@ -330,3 +330,75 @@ scan has already named its targets: `platform_alignment_guard.py`'s live positiv
 itself when the git-ignored `stack-demo/platform/repos.yml` is absent, while
 `corpus/ops/platform-alignment.md:616` asserts it runs "on every suite run"; and iter-18's Directus
 bootstrap race has no test forcing both sides of the race.
+
+---
+
+## Pass 5 — 2026-08-01 — incremental
+
+**Iters hardened this pass:** iter-16, iter-20 (the earlier half of the iter-16..26 window)
+**Tiks covered since prior pass:** continuation of the same 11-tik window (Pass 4 covered iter-24/25)
+
+**Coverage delta on touched files:** test count + mutation kill, as above.
+
+| section | before | after |
+|---|---|---|
+| `stack-core` | 14F of 390 | 14F of **392** (+2; the standing 14 unchanged) |
+| `dev-stack` | OK 132 | OK **138** (+6) |
+
+**Tests added:** iter-20 → `stack-core/tests/test_platform_alignment_guard.py`: +2 (a whole new
+unskippable class) · iter-16 → `dev-stack/tests/test_dev_stack.py`: +6 (`MigrateDevAtlasClassification`,
+the first tests that EXECUTE `migrate-dev.sh`'s atlas loop).
+
+**Bugs surfaced + fixed inline:**
+
+1. **The milestone's flagship fence skipped its own live control on any box without a demo stack**
+   (rext `79bbc0d`, corpus `e74dad6`). `platform_alignment_guard.py` is iter-20's durable deliverable
+   and **nothing in CI or any bring-up path invokes it** — its only automatic execution is its test
+   file. That file pointed at ONE hardcoded path, `stack-demo/platform/repos.yml`, and a platform
+   clone is git-ignored and ephemeral (`/demo-down` removes it; a fresh checkout never had one). On
+   such a box both real-artifact tests did not fail, they **skipped** — and a skip reports success.
+   RF-9's class, in the milestone's headline fence. Meanwhile
+   `corpus/ops/platform-alignment.md` §8 asserted the test runs the real map against the real
+   `repos.yml` *"on every suite run"*: a claim about a measurement that was not being taken, written
+   into the fence's own documentation.
+   The substantive fix is a **split**, not a wider search. Assertions **C** (state vocabulary), **D**
+   (every row cites evidence) and **E** (census/clone-set overlap) are properties of the **map
+   alone**; only A and B need a clone set. They now run against a `repos.yml` synthesized from the
+   map's own `yes` rows — A and B trivially satisfied by construction, deliberately — which makes
+   C/D/E **unskippable everywhere**, floored against vacuity (≥ 5 synthesized rows or the parsing has
+   broken). The A/B half then honours `PLATFORM_REPOS_YML` and searches every
+   `stack-*/platform/repos.yml`, and names what it looked for when it does skip. §8 corrected to say
+   which assertions actually run unconditionally.
+2. **iter-16's migration classifier had never been executed** (rext `f05c1cb`). Every test of the
+   RF-1 rewrite greps the source — `assertIn("mig_fail=1", guard[:600])`, `assertIn("FAILED (rc=",
+   loop)`. **RF-1's own note said it**: *no dev-stack test executes the loop*, and that stayed true
+   after the fix that note produced. The arm deciding whether a failed migration is FATAL is a
+   `grep -qiE` over five benign phrases; three of the four outcomes can be produced by a source that
+   passes every existing grep. `MigrateDevAtlasClassification` runs the real script against stubbed
+   `docker` + `atlas` and asserts the **verdict and the exit code** — including a table of four
+   plausible atlas errors that share vocabulary with the benign set without being benign (the
+   term-scoped-audit risk as a test: a widened regex silently deletes the fatal arm), and that the
+   closing *"the derived migration set applied"* line does **not** print over a failure.
+
+**Mutation results this pass:** 13 mutants, **13/13 matching declared expectation** (9 declared-RED
+killed, 4 declared-GREEN controls survived), controls GREEN before and after, shell mutants
+`bash -n`-gated.
+
+The two that carry the pass: **no platform clone on the box AND a broken map row still goes RED** —
+on the vocabulary and on the citation, both of which were previously green-by-skip. And the atlas
+battery **found a defect in this pass's own harness**: the stub printed its diagnosis on stdout, so
+restoring `2>/dev/null` on the atlas call stayed GREEN because stdout was captured either way. A test
+that cannot observe the defect it names is precisely what this milestone keeps finding; the stub now
+writes to stderr, as atlas does, and that mutant dies.
+
+**Knowledge backfill:** `corpus/ops/platform-alignment.md` §8 layer-1 row — corrected from "on every
+suite run" to the actual split (C/D/E unconditional; A/B clone-dependent, searched then skipped by
+name). The tooling change is what made the corrected claim *true* rather than merely weaker.
+
+**Flakes stabilized:** none observed.
+
+**Stop condition:** continue-to-next-pass — iter-17/18/19/21/22/23/26 have not been scanned to
+completion, and the iter-18 review found its own tests unusually strong (a docker stub that already
+forces both sides of the bootstrap race, `sys_tables` / `sys_tables_after` / `bootstrap_rc`), so the
+next pass should look at the corpus-side iters (21–23) and at the `--local-content` verdict path
+rather than re-covering iter-18.
