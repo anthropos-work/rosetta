@@ -340,6 +340,7 @@ Usage: `make up PROFILE=cms`
 
 ### Architecture Documentation
 - `corpus/architecture/architecture_overview.md`: High-level system design
+- `corpus/architecture/platform-migration-status.md`: **Where the microservice-into-`app` consolidation actually is** — one row per service the platform has ever had, **two states per row** (production vs a fresh local stack), every claim cited to a sha or `file:line`, plus the **net-new** org repos that appear in neither `repos.yml` nor the corpus. **Machine-fenced against the platform's own `repos.yml` in both directions** (`rosetta-extensions/stack-core/platform_alignment_guard.py`, v2.8 M257x) — a service entering *or leaving* the clone set turns a guard RED. **Read it before trusting any per-service claim below about whether that service still runs**; the merge banner in this file is prose and the map is fenced
 - `corpus/architecture/service_taxonomy.md`: Three-tier service categorization
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
 - `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime

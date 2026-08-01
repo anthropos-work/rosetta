@@ -188,13 +188,21 @@ Run these against **platform origin HEAD**, never against a pinned clone. Minute
 | 3 | declared schemas | `awk '/^  - name:/{n=$3} /schema:/{print n" -> "$2}'` | a `schema:` key removed ⇒ that schema is no longer created by the platform |
 | 4 | subgraph set | `graphql-wundergraph/supergraph-config-*.yaml` + `ls schemas/` | federation topology changed |
 | 5 | compose service set | platform `docker-compose.yml`, **parsed as YAML**, never grepped — plus the OPEN PR list | containers added or removed |
-| 6 | org repo census | `gh repo list anthropos-work --limit 300` | net-new repos; newly archived repos |
+| 6 | org repo census **+ the `archived` flag** | `gh repo list anthropos-work --limit 300` — or, on a box with no `gh`, `curl -H "Authorization: Bearer $GH_PAT" 'https://api.github.com/orgs/anthropos-work/repos?per_page=100&page=N'` with `GH_PAT` from `platform/.env` | net-new repos; **and the cheapest confirmation a fold has completed** |
 
 At 2026-07-31 these read: 10 repos · `migrations: true` → **`app` alone** · `schema:` → **`app -> public`
 alone** · **one** subgraph (`backend.graphqls`) · 14 compose services with cms/jobsimulation/roadrunner still
 in the default profile · **93** org repos.
 
 **Signals 2 and 3 are the load-bearing pair** — they are what moved under us all three times.
+
+> **Signal 6's `archived` flag is the cheapest fold-confirmation there is, and nothing used to say so
+> (M257x iter-20).** Measured 2026-08-01: `jobsimulation` and `skillpath` were archived **2026-07-31**,
+> `graphql-wundergraph` **2026-07-30**, `skiller` **2026-07-01** — each within days of its fold, and each a
+> one-field answer to a question that otherwise costs a terraform read plus a compose read plus a code read.
+> It is a *confirmation*, never a *precondition*: `cms` is folded and **not** archived, `roadrunner` is
+> declared folded and **not** archived. And it cuts the other way too — `chronos` is **not** archived while
+> the corpus called it archived, which is a corpus error the other five signals cannot see.
 
 ### Trap A — `migrations: false` entails nothing on its own
 
@@ -509,7 +517,7 @@ success without checking.
 
 | layer | asserts | lives in |
 |---|---|---|
-| map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo | `stack-core/platform_alignment_guard.py` (precedent: `corpus_index_guard.py`) |
+| map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo; every state is one of the seven; every row cites a sha or `file:line`; the net-new census does not overlap the clone set | `stack-core/platform_alignment_guard.py` (M257x iter-20) — landed, with `tests/test_platform_alignment_guard.py` running the **real** map against the **real** `repos.yml` on every suite run |
 | static schema fence | every schema a seeder WRITES to **through a statically-visible construct** is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
 
