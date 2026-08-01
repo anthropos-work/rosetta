@@ -27,20 +27,18 @@
 
 ## Role & Responsibility
 
-* **Primary Goal**: Federate the platform's Go GraphQL subgraphs into a single
-  Apollo Federation v2 **supergraph**, served by a WunderGraph **Cosmo Router** at one endpoint.
-  **Since `915da06` (2026-07-29) there is exactly ONE subgraph — `backend`** — so the supergraph
-  composes a single schema and the federation step is vestigial.
-  (The former `skiller` subgraph was removed when skiller merged into `app`, July 2026; the
-  former `skillpath` subgraph when skillpath merged into `app`, "skillpath-in-app"
-  M502→M507; and the `jobsimulation` + `cms` subgraphs at the v7.0/v8.0 folds — the `backend` subgraph
-  now serves the taxonomy, skill-path-session, simulation and content types/queries alike.)
+* **Primary Goal**: Serve the platform's Apollo Federation v2 **supergraph** from a WunderGraph
+  **Cosmo Router** at one endpoint. Since **cms-in-app v8.0** the supergraph composes a **single
+  subgraph** — `backend`. All four other subgraphs folded into it in sequence: `skiller` (July 2026),
+  `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` ("jobsim-in-app"), and `cms`
+  (the 2→1 step). The `backend` subgraph now serves the taxonomy, skill-path session, simulation and
+  content types/queries alike.
 * **Key Functions**:
-  * ~~Compose `app` (subgraph name `backend`), `jobsimulation`, and `cms` into one schema.~~ Compose
-    `backend` alone (`subgraphs.conf` = `BACKEND=v1.360.0`).
+  * Compose `app` (subgraph name `backend`) — the only entry in `supergraph-config-*.yaml`; `subgraphs.conf` carries a single `BACKEND=` pin.
   * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to. **In production
-    only** — locally, frontends now talk to `backend` at `:8082/graphql/query`.
-  * Carry `jobsimulation` GraphQL **subscriptions** over Server-Sent Events (`sse_post`).
+    only** — since platform `2adcf71` there is no router in compose, and locally the frontends talk to
+    `backend` at `:8082/graphql/query`.
+  * Carry the jobsimulation GraphQL **subscriptions** over Server-Sent Events (`sse_post`) — served by `backend` now.
   * Provide a GraphQL **playground + introspection** in dev/compose; both are disabled in production.
 
 > **"WunderGraph" vs "Cosmo Router" — same thing.** Cosmo is WunderGraph's
@@ -69,7 +67,7 @@ Dockerfile                              Prod build: composes from the committed 
 config.compose.yaml / .dev / .prod      Router runtime config (playground/introspection/CORS/35MB body)
 supergraph-config-compose.yaml / .dev / .prod   Subgraph routing URLs per environment
 subgraphs.conf                          Per-subgraph version pins consumed by CI (GitHub Releases path)
-schemas/                                Committed concatenated SDL (backend|cms|jobsimulation).graphqls
+schemas/                                Committed concatenated SDL — now just backend.graphqls
 ci/                                     update-subgraph.sh (gh release download), release-supergraph.sh, utils.sh
 terraform/                              ECS service "wundergraph" (eu-west-1, port 8080, /health)
 .github/workflows/                      release.yml (tag → ECR → infra dispatch), supergraph-update.yml
@@ -90,7 +88,7 @@ The two Dockerfiles source schemas differently:
 
 | Dockerfile | Schema source | Used by |
 |------------|---------------|---------|
-| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, `../cms`, …) and `awk`-concatenates | local `make up` (compose) |
+| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, …) and `awk`-concatenates. **Not used by compose since cms-in-app** — the `graphql` service now builds from the production `Dockerfile` so it composes the committed `schemas/backend.graphqls`. | (legacy local path) |
 | `Dockerfile` | Uses the **committed `schemas/*.graphqls`** as-is | production CI build |
 
 ## Interface Discovery
@@ -117,8 +115,10 @@ configs still contain these rows and a reader will find them there.
 | ~~`jobsimulation`~~ | ~~`http://jobsimulation:8400/query`~~ | folded into `backend` (jobsim-in-app) |
 | ~~`cms`~~ | ~~`http://cms:8090/query`~~ | folded into `backend` at `915da06` (cms-in-app v8.0) — the step that took the supergraph 2 → 1 |
 
-> The `skiller` and `skillpath` subgraphs were removed at their merges; `jobsimulation` and `cms` at
-> theirs. **One subgraph remains** — `supergraph-config-prod.yaml` lists `backend` alone.
+> All four non-`backend` subgraphs were removed as their services merged into `app`:
+> `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation`
+> ("jobsim-in-app"), and `cms` ("cms-in-app v8.0" — the 2→1 step). The `backend` subgraph
+> serves all of their types/queries. **Only 1 subgraph remains.**
 >
 > `dev` mode uses `host.docker.internal:<port>`; `prod` uses AWS service-discovery
 > DNS where all subgraphs share container port **8080**. Use the `-compose` config

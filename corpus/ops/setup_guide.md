@@ -303,13 +303,12 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 
 ### Initialize CMS Studio Submodule
 
-The CMS service requires the Studio-Room Python project inside `cms/studio/` for its Docker build. This is **not** included in `make init` and must be cloned separately:
+Since **cms-in-app**, the Studio-Room Python project rides in the **`app`** image and CI pulls it
+in (`additional_repo`, app v1.360.1) — there is no `make init-studio` step for a local stack any
+more. To run the pipeline by hand, clone `anthropos-studio-room` yourself and run it directly.
 
-```bash
-cd ../cms
-make init-studio
-```
-*Verification*: `ls cms/studio/requirements.txt` should show the file exists.
+*(Historical: this used to be `cd ../cms && make init-studio`, which cloned the project into
+`cms/studio/` for the cms image build.)*
 
 ### How Local Builds Work
 
@@ -488,9 +487,9 @@ This automatically runs Atlas migrations for all repos that have `migrations: tr
 
 *Verification*: Commands should complete without errors.
 
-To migrate a single service:
+To migrate a single service (`app` is the only one with migrations since the merge):
 ```bash
-make migrate S=cms
+make migrate S=app
 ```
 
 ### Profiles

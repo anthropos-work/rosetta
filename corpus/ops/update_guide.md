@@ -12,6 +12,13 @@ Run through this guide when:
 - You see dependency errors or schema mismatches
 - Before starting work on a new feature
 
+> **⚠️ The consolidation is COMPLETE — the backend is one monolith.** `jobsimulation`
+> (jobsim-in-app) and `cms` (cms-in-app v8.0, app v1.360.0) have since followed skiller and
+> skillpath into `app`, along with `roadrunner`. The router composes **1 subgraph** (`backend`),
+> there is no cms/jobsim/skiller/skillpath/roadrunner container or profile, `app` is the only
+> migration repo, and **every** application table lives in `public`. Read the note below as the
+> historical mid-program state.
+>
 > **⚠️ Consolidation re-sync (v2.7 "july jitter", M246) — skillpath is decommissioned into `app`.**
 > The skiller→app merge (v2.1) was one step of a program that consolidates every runtime engine into
 > `app`. As of current `origin/main`, **`skillpath` is fully decommissioned**: it is gone from
@@ -176,12 +183,12 @@ cd stack-dev/platform
 make migrate
 ```
 
-This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation — **skillpath is decommissioned into `app`** as of v2.7; see the consolidation re-sync note above).
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml`. Since the monolith merge that is **`app` alone** — the cms and jobsimulation tables were re-created in `public` under `app/terraform/migrations/`, so both dropped to `migrations: false` (skillpath and skiller are gone from `repos.yml` entirely).
 
 ### Apply Single Service Migration
 
 ```bash
-make migrate S=cms
+make migrate S=app
 ```
 
 *Expected*: Each command shows applied migrations or "No migration files to apply".

@@ -126,7 +126,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 | **Purpose** | Content storage, media management, CMS |
 | **Website** | [directus.io](https://directus.io) |
 
-> **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — `cms`
+> **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — the cms domain in `backend`
 > reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR` (the only service the
 > compose gives these env vars), which point at the **production** instance `https://content.anthropos.work` in
 > the stock compose. A freshly-
@@ -153,8 +153,9 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 
 ### Architecture
 
-In the **default local posture**, Directus is **not** part of the local stack — `cms` reaches the **production**
-Directus over the network. Only the local Postgres + `cms` run in Docker Compose:
+In the **default local posture**, Directus is **not** part of the local stack — `backend` (which hosts the cms
+domain since cms-in-app) reaches the **production** Directus over the network. Only the local Postgres +
+`backend` run in Docker Compose:
 
 ```mermaid
 graph TB
@@ -177,7 +178,7 @@ graph TB
 ```
 
 > With the v1.5 "prop room" **local tooling** (`--local-content` / demo-default), a per-stack `directus`
-> container is added to the stack's compose (offset port) and `cms`'s `DIRECTUS_BASE_ADDR` is re-pointed at it,
+> container is added to the stack's compose (offset port) and `backend`'s `DIRECTUS_BASE_ADDR` is re-pointed at it,
 > so the whole content path stays in-stack. See [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
@@ -198,16 +199,16 @@ graph TB
 
 ### Compose configuration
 
-There is **no `directus` service in `platform/docker-compose.yml`** — `cms` reaches the production Directus via
+There is **no `directus` service in `platform/docker-compose.yml`** — `backend` reaches the production Directus via
 the env vars below; the platform compose never defines, builds, or runs a Directus container. (A previous
 revision of this doc reproduced a `directus:` compose block — image `10.10.1`, `ADMIN_PASSWORD=password`, a
 mounted uploads volume — and attributed it to `platform/docker-compose.yml`. That block is fictional; the
 platform compose has no such service.)
 
-The only Directus-related platform config is the address `cms` points at:
+The only Directus-related platform config is the address `backend` points at:
 
 ```bash
-# platform/.env (and the cms service environment)
+# platform/.env (and the backend service environment)
 DIRECTUS_BASE_ADDR=https://content.anthropos.work
 DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ```
@@ -236,7 +237,7 @@ Directus uses a **dedicated PostgreSQL schema**:
 
 **Local Development**: there is no local Directus and no local uploads directory in the default posture. Image
 bytes are served from the **asset plane** — prod's anonymous public `<DIRECTUS_PUBLIC_BASE_ADDR>/assets/<uuid>`
-links, which browsers fetch token-less (`cms/internal/directus/directus.go`). Even when the v1.5 local tooling
+links, which browsers fetch token-less (now `app/internal/cms/directus/`). Even when the v1.5 local tooling
 serves the *data plane* (catalog rows) from a per-stack Directus, the *asset plane* stays on prod's public links
 so images stay real — no blob bytes are copied locally.
 
@@ -312,8 +313,8 @@ Directus can trigger webhooks on content changes:
 
 ### What the gateway provides
 
-- **Federation v2**: Composes **ONE** subgraph — `backend` — into the supergraph. All four others folded into it as their services merged into `app`: `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` (v7.0) and `cms` (`915da06`, 2026-07-29 — cms-in-app v8.0, the step that took the count 2 → 1). `supergraph-config-prod.yaml` lists `backend` alone; `schemas/` holds `backend.graphqls` alone; `subgraphs.conf` reads `BACKEND=v1.360.0`
-- **Subscriptions** for `jobsimulation` over SSE POST (`subscription.protocol: sse_post`)
+- **Federation v2**: Composes **one** subgraph — `backend`. All four former subgraphs were folded into it in sequence: `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` ("jobsim-in-app"), and `cms` ("cms-in-app v8.0", app v1.360.0 — the 2→1 step). The supergraph config now lists a single entry pointing at `http://backend.internal.anthropos:8080/graphql/query`, and `subgraphs.conf` tracks a single `BACKEND=` pin. `supergraph-config-prod.yaml` lists `backend` alone, `schemas/` holds `backend.graphqls` alone, and `subgraphs.conf` reads `BACKEND=v1.360.0` (the cms fold is `915da06`, 2026-07-29).
+- **Subscriptions** for the jobsimulation types over SSE POST (`subscription.protocol: sse_post`) — served by `backend` now
 - **Apollo-compatibility flags** enabled for stricter validation behavior
 - **Playground** at `/graphql` for local development
 - **Introspection** enabled in dev mode
@@ -332,29 +333,25 @@ graph TB
         WG[GraphQL — backend :8082/graphql/query locally; Cosmo Router :5050 in prod]
     end
 
-    subgraph Subgraphs[3 GraphQL Subgraphs]
-        Backend[backend :8082]
-        Jobsim[jobsimulation :8400]
-        CMS[cms :8090]
+    subgraph Subgraphs[1 GraphQL Subgraph]
+        Backend["backend<br/>(users, orgs, skiller, skillpath,<br/>jobsimulation, cms)"]
     end
 
     Web --> WG
     Hiring --> WG
     Desk --> WG
     WG --> Backend
-    WG --> Jobsim
-    WG --> CMS
 ```
 
 ### Service Dependencies
 
 From `docker-compose.yml`, the gateway `depends_on`:
 - backend
-- jobsimulation
-- cms
 - storage
 
-It starts after these services have reported "started" (not necessarily healthy — there are no per-subgraph healthchecks). The composed `config.json` is generated at image build time, so adding a new subgraph means rebuilding the gateway.
+It starts after these services have reported "started" (not necessarily healthy — there is no subgraph healthcheck). The composed `config.json` is generated at image build time, so **any** subgraph SDL change means rebuilding the gateway.
+
+> Since cms-in-app the compose `graphql` service builds from `graphql-wundergraph/Dockerfile` (the **production** one), so it composes the **committed** `schemas/backend.graphqls` rather than regenerating the SDL from a sibling `../app` checkout.
 
 ### Build-time composition
 

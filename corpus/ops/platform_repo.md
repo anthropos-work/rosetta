@@ -41,7 +41,7 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make up-frontend` | Start `next-web-app` together with the graphql backend stack |
 | `make down` / `make ps` | Stop all services / list containers |
 | `make logs [S=svc]` | Tail compose logs, optionally one service |
-| `make migrate [S=svc]` | `atlas migrate apply --env local` across the 3 migration repos (`app`, `cms`, `jobsimulation`), or a single repo via `S=` |
+| `make migrate [S=svc]` | `atlas migrate apply --env local`. **`app` is the only migration repo now** — the cms and jobsim tables were re-created in `public` under `app/terraform/migrations/`, so `repos.yml` drops both to `migrations: false` |
 | `make dev S=svc` | Stop a service container and print native-run instructions (`cd ../svc && go run .`) |
 | `make build-frontend` | `pnpm install && pnpm build` in `../next-web-app` |
 | `make reset-db` | **Confirm-gated** wipe of `data/postgresql/`, restart Postgres, re-migrate (waits on `pg_isready`) |
@@ -57,9 +57,16 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 ## Compose Profiles
 
 `docker-compose.yml` defines **11 app services**: `graphql`, `sentinel`, `backend`,
-`jobsimulation`, `cms`, `storage`, `customerio-sync`,
-`messenger`, `roadrunner`, `studio-desk`, `next-web-app` — plus the third-party
-`gotenberg` image and the two base services from `common.yml`. (The former `skiller`
+`storage`, `customerio-sync`, `messenger`, `studio-desk`, `next-web-app` — plus the
+third-party `gotenberg` image and the two base services from `common.yml`.
+
+> **Five services were folded into `backend`.** `skiller`, `skillpath`, `roadrunner`,
+> `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app v8.0) all run in-process inside
+> `app`; their compose services and profiles are gone, and the federation composes a single
+> `backend` subgraph. `backend` also has no `*_RPC_ADDR` loopbacks any more — only
+> `messenger` still reaches those surfaces, at `http://backend:8083`.
+
+(The former `skiller`
 service was merged into `app`/`backend` in July 2026 — its RPC surface is now served
 by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose. The former `skillpath`
 service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→M507 — and is
@@ -67,10 +74,10 @@ service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, jobsimulation, cms, storage, roadrunner, gotenberg, **graphql** |
+| `graphql` *(default)* | backend, sentinel, storage, gotenberg, **graphql** |
 | `backend` | backend, gotenberg |
-| `jobsimulation` / `cms` / `storage` / `roadrunner` | **only that one service** |
-| `messenger` | messenger (bring up its deps too: backend/cms/jobsimulation) |
+| `storage` | **only that one service** (the `jobsimulation`, `cms`, `skiller`, `skillpath` and `roadrunner` profiles are gone) |
+| `messenger` | messenger (bring up its dep too: backend — it now serves the cms/jobsim/skiller RPC surfaces) |
 | `customerio-sync` | customerio-sync |
 | `frontend` | next-web-app (containerized Workforce) |
 | `studio-desk` | studio-desk (containerized) |
@@ -78,7 +85,7 @@ service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
-> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=cms` gives you cms but no usable `:5050` endpoint.
+> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=backend` gives you the backend but no usable `:5050` endpoint.
 > * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it.
 > * Every Go service hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it.
 > * All app builds use BuildKit SSH forwarding (`ssh: ["default"]`) + `GH_ACCESS_TOKEN=$GH_PAT` to pull private Go modules — needs a loaded SSH agent **and** `GH_PAT` in `.env`.
@@ -89,7 +96,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
 
-* **Go**: `app` (public), `cms` (cms), `jobsimulation` (jobsimulation) — all `migrations: true`; `sentinel`, `storage`, `messenger`, `roadrunner` — `migrations: false`. (`skillpath` is decommissioned — no longer in `repos.yml`; its migrations/schema folded into `app`'s `public`.)
+* **Go**: `app` (public) is the only `migrations: true` entry. `cms`, `jobsimulation`, `roadrunner`, `sentinel`, `storage`, `messenger` are `migrations: false` — the first three are frozen legacy repos whose tables all live in `app`'s `public` schema. (`skillpath` and `skiller` are decommissioned and no longer in `repos.yml` at all.)
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm), `ant-academy` (node-npm), `graphql-wundergraph` (node-npm).
 
 > `ant-academy` is cloned but has **no compose service** (runs natively / Vercel). The
@@ -101,14 +108,14 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — also serves the merged skiller RPC surface **and** the merged skillpath `SkillPathSessionService` RPC, since "skillpath-in-app" M502→M507) |
+| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — one mux serving `BackendUsers`, `BackendOrganizations`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`), 8084 (`META_PORT`) |
 | sentinel | 8087 |
-| cms | 8090, 8091 (RPC) |
+
 | messenger | 8200, 8201 (RPC) |
 | storage | 8300, 8301 (RPC) |
-| jobsimulation | 8400 (`PORT`), 8401 (RPC) |
+
 | studio-desk | 9000 (backend), 9100 (frontend) |
-| roadrunner | 10400, 10401 (RPC) |
+
 | graphql (WunderGraph/Cosmo) | **5050 → container 8080** |
 | next-web-app | 3000 |
 | customerio-sync | 8080 |
@@ -116,7 +123,7 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 
 ## Infrastructure (`common.yml`)
 
-* **PostgreSQL 15** — a **built** image (`postgresql/Dockerfile` compiles **pgvector v0.4.4** onto `bitnamilegacy/postgresql:15`), `ALLOW_EMPTY_PASSWORD=yes`, `pg_isready` healthcheck, data persisted via `./data/postgresql`. Schema isolation by `search_path` per service (sentinel uses `sentinel`; the rest default to `public` — skills data lives in `public` since the skiller→app merge; the old `skiller` schema is legacy).
+* **PostgreSQL 15** — a **built** image (`postgresql/Dockerfile` compiles **pgvector v0.4.4** onto `bitnamilegacy/postgresql:15`), `ALLOW_EMPTY_PASSWORD=yes`, `pg_isready` healthcheck, data persisted via `./data/postgresql`. Schema isolation by `search_path` per service (sentinel uses `sentinel`; everything else defaults to `public`). Since the merges, **all** application data — skills, skill-path sessions, jobsim run state, cms similarity/Studio tables — lives in `public`; the old `skiller`, `skillpath`, `jobsimulation` and `cms` schemas are legacy.
 * **Redis** — `bitnamilegacy/redis:latest`, no password; Watermill streams at `REDIS_STREAMS_INDEX=4` plus per-service worker/recording indexes.
 
 ## Environment
@@ -138,8 +145,10 @@ Key variables include `GH_PAT` (private Go modules), `CLERK_SECRET_KEY`, the
 `NEXT_PUBLIC_*` URLs for remote VMs). Non-secret config baked into `docker-compose.yml`
 includes the Judge0 sandbox URL, the LiveKit cloud URL, and the Directus address.
 
-> Two OpenAI keys coexist and are easy to confuse: **`OPENAI_KEY`** (app/jobsim)
-> vs **`OPENAI_API_KEY`** (cms). CMS also has its own `CMS_AZURE_OPENAI_*` and `AZURE_API_KEY`.
+> Two OpenAI keys coexist and are easy to confuse: **`OPENAI_KEY`** (the app/jobsim domains)
+> vs **`OPENAI_API_KEY`** (the cms domain). The cms domain also has its own
+> `CMS_AZURE_OPENAI_*` and `AZURE_API_KEY`. Since cms-in-app all of these are read by the
+> single `backend` process.
 
 ## Related Documentation
 
