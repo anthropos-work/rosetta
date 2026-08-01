@@ -1,0 +1,141 @@
+▶ playthroughs: stack=demo-1 offset=10000
+    app=http://localhost:13000  hiring=http://localhost:13001  studio=http://localhost:19000  fapi=https://localhost:15400  seed=/Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/playthroughs/seed/pt-world.seed.yaml
+▶ reset-to-seed: stackseed --reset --stack demo-1  (full FK-ordered TRUNCATE; honors stackseed's N=0 guard)
+    stackseed: /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/bin/stackseed
+truncated public.activity_events
+truncated public.interview_extraction_results
+truncated public.interview_aggregated_reports
+truncated public.organization_assignment_sessions
+truncated public.job_simulation_feedbacks
+truncated public.membership_tags
+truncated public.tags
+truncated public.organization_target_roles
+truncated public.user_target_roles
+truncated public.membership_skills
+truncated public.validation_criterion_results
+truncated public.validation_attempt_skill_results
+truncated public.validation_attempt_results
+truncated public.ai_readiness_snapshots
+truncated public.ai_readiness_user_step_progresses
+truncated public.ai_readiness_live_snapshots
+truncated public.ai_readiness_diagnose_narratives
+truncated public.ai_readiness_skills
+truncated public.ai_readiness_sims
+truncated public.ai_readiness_steps
+truncated public.ai_readiness_cycles
+truncated public.user_skill_evidences
+truncated public.user_skills
+truncated public.interactions
+truncated public.actors
+truncated public.job_simulation_sessions
+truncated public.skill_path_sessions
+truncated public.organization_assignments
+truncated public.organization_sim_invitation_links
+truncated public.memberships
+truncated public.users
+truncated public.organizations
+deleted 361 casbin grant(s) (g2 role + g3 feature)
+reset complete for stack demo-1 (N=1, port=15432)
+▶ re-seed: stackseed --stack demo-1 --seed pt-world.seed.yaml
+
+Run results:
+  content   rows=307  ok
+  org       rows=5    ok
+  policy-grants rows=0    ok
+  taxonomy  rows=42790 ok
+  ai-readiness-config rows=39   ok
+  ai-readiness-sim-skills rows=3    ok
+  identity  rows=4    ok
+  org-settings rows=1    ok
+  users     rows=928  ok
+  assignments rows=172  ok
+  content-stories rows=2014 ok
+  content-stories-nonsim rows=2    ok
+  generated-batch rows=0    ok
+  hiring-config rows=5    ok
+  hiring-funnel rows=30   ok
+  jobsim-sessions rows=298  ok
+  member_languages rows=434  ok
+  membership-skills rows=1236 ok
+  onboarding-params rows=1    ok
+  personas  rows=704  ok
+  skillpath-sessions rows=150  ok
+  tags      rows=275  ok
+  target-roles rows=103  ok
+  activity  rows=596  ok
+  certificates rows=129  ok
+  feedback  rows=66   ok
+  hero-activity rows=48   ok
+  population-evidence rows=305  ok
+  profiles  rows=3229 ok
+  projects  rows=28   ok
+  succession rows=57   ok
+  ai-readiness-funnel rows=1749 ok
+
+Audit: 66 write attempt(s), 55708 row(s) on target "demo-1" (prod=false)
+isolation: clean (no shared/external writes landed; 66 audited write attempt(s) covering every surface that wrote)
+p3 policy advisory: OK (18 grants, matches expected)
+▶ sentinel reload: refresh the casbin enforcer so the seeded feature grants take effect (http://localhost:18087)
+  ✓ sentinel policy reloaded
+▶ roster refresh: stackseed --roster-export --seed pt-world → /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/fake-fapi-roster.json + restart fake services
+stackseed: exported 34-identity roster to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/fake-fapi-roster.json
+  ✓ roster refreshed + fake services restarted; waiting for the fake-FAPI to accept the seat-switch
+  ✓ fake-FAPI ready (HTTP 000000)
+▶ cockpit-manifest refresh: stackseed --cockpit-export --seed pt-world → /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/cockpit-manifest.json
+stackseed: exported cockpit manifest (11 heroes) to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/cockpit-manifest.json
+  ✓ cockpit manifest re-exported (restart the cockpit to pick it up; a running one now
+    withholds unserveable heroes and 409s them from /go rather than mis-authenticating)
+▶ running Playthroughs (serial by default: workers=1, fullyParallel=false)…
+
+Running 7 tests using 1 worker
+
+  ✓  1 [chromium] › tests/negative-controls.spec.ts:170:7 › negative controls — a Playthrough's own final locator, run against a contrast vantage › the AI-readiness surfaces are ABSENT for a manager whose org has no readiness cycle (2.4s)
+  ✓  2 [chromium] › tests/negative-controls.spec.ts:266:7 › negative controls — a Playthrough's own final locator, run against a contrast vantage › one hero's identity is ABSENT from another hero's profile (1.4s)
+  ✓  3 [chromium] › tests/negative-controls.spec.ts:316:7 › negative controls — a Playthrough's own final locator, run against a contrast vantage › another hero's SEEDED profile data is ABSENT from the contrast hero's profile (1.6s)
+  ✓  4 [chromium] › tests/negative-controls.spec.ts:429:7 › negative controls — a Playthrough's own final locator, run against a contrast vantage › another ORG's seeded workforce data is ABSENT from a different tenant's dashboards (5.7s)
+  ✓  5 [chromium] › tests/negative-controls.spec.ts:611:7 › negative controls — a Playthrough's own final locator, run against a contrast vantage › a hiring org's shared-position board is ABSENT from a Workforce tenant's activity grid (1.2s)
+  ✓  6 [chromium] › tests/workforce-funnel.spec.ts:35:7 › @pt:pt-workforce-funnel — manager Workforce-Intelligence funnel + org-scale gap › a manager sees the mapped->verified funnel and org-scale gap render (1.2s)
+  ✓  7 [chromium] › tests/workforce-succession.spec.ts:35:7 › @pt:pt-workforce-succession — manager succession / at-risk › a manager sees the succession candidates and at-risk signals render (1.2s)
+
+  7 passed (15.1s)
+▶ reconcile: ptreport (four-state map) over the manifest + this run's results
+Playthroughs coverage: 2/31 passing (6.5%)
+  passing=2  failing=28  unimplemented=1  unimplementable=0
+
+  [FAIL] ai-readiness.manager-dashboard.UC1       failing                                   — no test outcome for @pt:pt-aireadiness-manager-dashboard (the declared Playthro…
+  [FAIL] ai-readiness.manager-dashboard.UC2       failing                                   — no test outcome for @pt:pt-aireadiness-manager-howwemeasure (the declared Playt…
+  [FAIL] ai-readiness.member-funnel.UC1           failing                                   — no test outcome for @pt:pt-aireadiness-member-done (the declared Playthrough di…
+  [FAIL] ai-readiness.member-funnel.UC2           failing                                   — no test outcome for @pt:pt-aireadiness-member-progress (the declared Playthroug…
+  [FAIL] ai-simulations.access-denied.UC1         failing                                   — no test outcome for @pt:pt-aisim-org-feature-blocked (the declared Playthrough …
+  [FAIL] ai-simulations.chat.UC1                  failing                                   — no test outcome for @pt:pt-aisim-chat-launch (the declared Playthrough did not …
+  [FAIL] assignment-monitoring.assign-and-track.UC1 failing                                   — no test outcome for @pt:pt-assignment-assign (the declared Playthrough did not …
+  [FAIL] assignment-monitoring.assign-and-track.UC2 failing                                   — no test outcome for @pt:pt-activity-drilldown (the declared Playthrough did not…
+  [FAIL] hiring.recruiter-comparison.UC1          failing                                   — no test outcome for @pt:pt-hiring-recruiter-compare (the declared Playthrough d…
+  [FAIL] onboarding.completion.UC1                failing                                   — no test outcome for @pt:pt-onboarding-complete (the declared Playthrough did no…
+  [FAIL] onboarding.enterprise-hiring.UC1         failing                                   — no test outcome for @pt:pt-onboarding-hiring-candidate (the declared Playthroug…
+  [FAIL] onboarding.enterprise-workforce-ai-readiness.UC1 failing                                   — no test outcome for @pt:pt-onboarding-aireadiness-guided (the declared Playthro…
+  [TODO] onboarding.enterprise-workforce-standard.UC1 unimplemented                             — VERDICT will-not-build: MEASURED, then deliberately refused — and the refusal…
+  [FAIL] onboarding.enterprise-workforce-standard.UC2 failing                                   — no test outcome for @pt:pt-onboarding-org-prepared (the declared Playthrough di…
+  [FAIL] onboarding.individual.UC1                failing                                   — no test outcome for @pt:pt-onboarding-individual (the declared Playthrough did …
+  [FAIL] org-admin.feature-config.UC1             failing                                   — no test outcome for @pt:pt-orgadmin-setting-toggle (the declared Playthrough di…
+  [FAIL] org-admin.members.UC1                    failing                                   — no test outcome for @pt:pt-orgadmin-member-tag (the declared Playthrough did no…
+  [FAIL] org-admin.roles.UC1                      failing                                   — no test outcome for @pt:pt-orgadmin-role-create (the declared Playthrough did n…
+  [FAIL] org-admin.tags.UC1                       failing                                   — no test outcome for @pt:pt-orgadmin-tag-create (the declared Playthrough did no…
+  [FAIL] profile.foundation.UC1                   failing                                   — no test outcome for @pt:pt-profile-identity (the declared Playthrough did not r…
+  [FAIL] profile.growth.UC1                       failing                                   — no test outcome for @pt:pt-profile-growth (the declared Playthrough did not run…
+  [FAIL] profile.timeline.UC1                     failing                                   — no test outcome for @pt:pt-profile-timeline (the declared Playthrough did not r…
+  [FAIL] profile.verified.UC1                     failing                                   — no test outcome for @pt:pt-profile-verified (the declared Playthrough did not r…
+  [FAIL] skill-paths.legacy.UC1                   failing                                   — no test outcome for @pt:pt-skillpath-legacy (the declared Playthrough did not r…
+  [FAIL] skill-paths.save-for-later.UC1           failing                                   — no test outcome for @pt:pt-skillpath-bookmark (the declared Playthrough did not…
+  [FAIL] studio.simulation-builders.advanced      failing                                   — no test outcome for @pt:pt-studio-advanced-generate (the declared Playthrough d…
+  [FAIL] studio.simulation-builders.guided        failing                                   — no test outcome for @pt:pt-studio-guided-generate (the declared Playthrough did…
+  [FAIL] workforce-intelligence.organization-feedback.UC1 failing                                   — no test outcome for @pt:pt-workforce-org-feedback (the declared Playthrough did…
+  [FAIL] workforce-intelligence.roster.UC1        failing                                   — no test outcome for @pt:pt-workforce-roster (the declared Playthrough did not r…
+  [PASS] workforce-intelligence.skills-funnel.UC1 passing                                 
+  [PASS] workforce-intelligence.talent-pool.UC1   passing                                 
+
+report JSON → /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/playthroughs/report/last-report.json
+ptreport: GATE no-regressions FAILED (a Playthrough is failing)
+exit status 1
+  ℹ this run was SCOPED — its artifacts are advisory. The last BINDING run is preserved at report/last-binding-run.json (see last-run.provenance.json).
+  ⚠ ptreport gate not met — ADVISORY on a SCOPED run (a grep/shard/last-failed selection), where every un-selected id correctly reports 'did not run'. Re-run unscoped for a binding verdict.
