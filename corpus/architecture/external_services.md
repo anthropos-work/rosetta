@@ -343,15 +343,17 @@ graph TB
     WG --> Backend
 ```
 
-### Service Dependencies
+### Service Dependencies — **HISTORICAL**
 
-From `docker-compose.yml`, the gateway `depends_on`:
+> Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more (the name survives only as a **profile** label) and no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
+
+From `docker-compose.yml` *before the drop*, the gateway `depends_on`:
 - backend
 - storage
 
 It starts after these services have reported "started" (not necessarily healthy — there is no subgraph healthcheck). The composed `config.json` is generated at image build time, so **any** subgraph SDL change means rebuilding the gateway.
 
-> Since cms-in-app the compose `graphql` service builds from `graphql-wundergraph/Dockerfile` (the **production** one), so it composes the **committed** `schemas/backend.graphqls` rather than regenerating the SDL from a sibling `../app` checkout.
+> Since cms-in-app the compose `graphql` service built from `graphql-wundergraph/Dockerfile` (the **production** one), so it composed the **committed** `schemas/backend.graphqls` rather than regenerating the SDL from a sibling `../app` checkout. Then `2adcf71` removed the service outright.
 
 ### Build-time composition
 
@@ -374,13 +376,13 @@ The composed `config.json` is then served by the Cosmo router binary at runtime.
 
 ### Subgraph routing URLs
 
-From `graphql-wundergraph/supergraph-config-compose.yaml`:
+From `graphql-wundergraph/supergraph-config-compose.yaml` — **as the archived repo still has it.** Only the first row survives: `jobsimulation` and `cms` folded into `backend`, and `supergraph-config-prod.yaml` lists `backend` alone.
 
 | Subgraph | URL (Docker network) |
 |----------|----------------------|
-| backend | `http://backend:8082/graphql/query` |
-| jobsimulation | `http://jobsimulation:8400/query` (SSE POST for subscriptions) |
-| cms | `http://cms:8090/query` |
+| backend | `http://backend:8082/graphql/query` — **the only one left** |
+| ~~jobsimulation~~ | ~~`http://jobsimulation:8400/query`~~ (SSE POST for subscriptions) — folded into `backend` |
+| ~~cms~~ | ~~`http://cms:8090/query`~~ — folded into `backend` at `915da06` |
 
 ### Configuration
 

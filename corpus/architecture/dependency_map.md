@@ -79,7 +79,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 *   Voice flows go through LiveKit; video recordings via AWS Chime SDK.
 
 ### 3. Content Delivery
-`Frontend` -> `CMS` -> `Directus`
+`Frontend` -> `app` (cms domain) -> `Directus`   *(was `Frontend -> CMS -> Directus` before cms-in-app)*
 *   The cms **domain inside `app`** acts as the gateway to Directus content — `Frontend -> app (cms domain) -> Directus`. It was a separate `CMS` service until cms-in-app v8.0; the hop is in-process now.
 
 ### 4. Studio Content Creation

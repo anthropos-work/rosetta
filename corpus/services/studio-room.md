@@ -268,7 +268,7 @@ python gen.py --simid <uuid> --force
 ### Development Setup
 
 #### Prerequisites
-- Python 3.9+ (runtime image when embedded in CMS: `python:3.11-slim`)
+- Python 3.9+ (runtime image when embedded in the `app` container: `python:3.11-slim`; it was the cms container before cms-in-app)
 - AI API keys (OpenAI, Anthropic, or Azure)
 
 #### Installation
