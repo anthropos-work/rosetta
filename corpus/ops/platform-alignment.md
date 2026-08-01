@@ -308,6 +308,26 @@ Rules, in order of how often they actually catch something:
     Related to rule 7 (a probe must not satisfy itself) but distinct: here the probe measured something
     real. It just measured the wrong thing, and reported a conclusion about the thing it had not touched.
 
+12. **Say which INVOCATION produced the number, not just which tool.** M257x iter-10 handed forward
+    *"autoverify measured 2 FAILED on demo-1, and both are the evidence-log path"* — a precise, sourced,
+    confidently-wrong claim. The bring-up's own verdict, sitting in the stack dir the whole time, said
+    `warnings:1`. The 2 came from a **standalone re-run of the same script pointed at a different
+    directory**: same tool, same stack, different vantage, different answer. The two verdict files differed
+    by five hours and nobody compared their timestamps.
+
+    A verifier that takes *where to look* as a parameter can be aimed at a place the thing under test never
+    wrote to, and it will then report **absence of evidence in the tool's own voice** — which is exactly
+    what a real defect looks like. Two rules:
+
+    - **Record the invocation with the measurement**: the command, the vantage (which clone, which stack
+      dir), and the artifact's own timestamp. `warnings:2` is not a measurement; `warnings:2 from
+      $(clone A)/autoverify.sh --project demo-1 with STACK_DIR=<workspace root>, ts 20:37Z` is.
+    - **Then remove the parameter.** iter-11's fix was not a better message: it was deriving the receipts
+      directory from `--project` so the wrong-vantage run is unwritable (§2, and §8 rule 4). The message had
+      *already* named the alternative — `"(or STACK_DIR is not the bring-up's $STACK)"` — and iter-10 quoted
+      it truncated at the em-dash. A correct diagnostic that has to be read carefully is a weaker control
+      than a parameter that no longer exists.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
@@ -480,6 +500,23 @@ Both are the M256 reports-success-without-checking class. Rules:
    > **Rule.** Gate every mutation on an explicit build BEFORE the test run, and **name the test that went
    > red**. A battery that reports only exit codes will sign off on a fence that does not fence — the same
    > family as §5 rule 8 (*a check that SKIPS reads exactly like a check that PASSES*).
+
+   **And read the COUNT together with the exit code — "no tests collected" is a non-zero exit.** M257x
+   iter-11's own mutation harness reported a clean `RED` for a mutant nothing had tested: the harness had
+   invoked a `python3` without pytest, so every run returned non-zero and every mutant "fired". The same
+   shape occurs without any tooling accident, because **pytest exits 5 when a `-k` filter matches nothing**
+   — a renamed test makes its own mutation battery report RED forever. The tell is identical to iter-07's:
+   an empty list of failing tests, here surfaced as `collected=0`. Gate on `collected == 1` *and* an exit
+   code that means failure rather than emptiness; never on non-zero alone.
+
+   **A mutant that changes nothing is not a surviving fence.** The same iter recorded a `GREEN (mutation
+   SURVIVED)` that was neither: the mutant added an unreachable `case` arm below an early `return`, so the
+   function's behaviour was unchanged. The honest reading is *the mutation was a no-op*, and the reason it
+   was a no-op is worth keeping — the invariant was enforced **twice** (an early return AND a closed
+   `case`), which is §8 rule 4 working. When a single-point mutant survives, first ask whether it changed
+   behaviour at all; if the property is doubly enforced, write the two-point mutant a future editor would
+   actually write (here: *"make the helper total"* — drop the guard, add a default arm), and confirm it
+   parses, collects, and goes red.
 
 6. **Scope the construct to its BLOCK, or the fence cries wolf.** iter-06's first cut of the write-target
    fence recognised `{"<schema>", "<table>",` and `"<schema>.<table>",` anywhere in a file. It promptly

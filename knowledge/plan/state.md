@@ -1,10 +1,10 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. **5** milestones M255 (HARD barrier) → M256 → **M257x** → M257 → M258, strictly serial. **M257x was INSERTED 2026-07-31** — the platform is migrating its microservices back into `app`, and both rosetta and rosetta-extensions must be re-aligned before a bring-up can be honestly measured; **M257 is PAUSED behind it**. Tooling + docs only, 0 platform-repo edits."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — NOT STARTED. Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 11 iters closed (branch m257x/platform-realignment). Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "MACHINE MOVE (D-v28-15). Work stopped on odysseus + the old laptop; both repos move to a new Mac with a LOCAL dev stack. M257x iter-01 is KEPT (99f0aca pushed, rext tag on origin, protocol doc authored). M257 stays paused AND now has a host-class problem: its speed gate is un-measurable on a Mac. Everything is pushed; the new Mac clones and continues."
-last_updated: "2026-07-31"
+phase: "M257x ITER LOOP on the new Mac (the D-v28-15 machine move is DONE — a local demo stack builds + comes up here; odysseus retired, billion demo-only). Gate 5 clauses: (4) CLAIMABLE — REXT_TRANSITIONAL_SCHEMAS is EMPTY and coverage is machine-checked (iters 06-08); (1) UNBLOCKED at iter-11 — demo-1 autoverify now reads warnings:0/green:true, so the three consecutive cold demo-down --purge + demo-up cycles are the next work; (2)(3)(5) untouched. rext pinned at tag fast-build-m257x-iter-11 (on origin)."
+last_updated: "2026-08-01"
 ---
 
 # State
