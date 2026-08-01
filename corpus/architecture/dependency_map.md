@@ -10,25 +10,25 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **Backend** (`app`) — the monolith | Sentinel, Storage (compose `depends_on`); Gotenberg (runtime HTTP, no startup-order dep) | Postgres (`public` schema; `pgvector` in `extensions` — skiller embeddings, skill-path sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables), Redis, **Clerk**, **Directus**, **Judge0**, **LiveKit**, **AWS Chime**, **AI Providers** |
+| **Backend** (`app`) — the monolith | Sentinel, **cms**, Storage (compose `depends_on`, `docker-compose.yml:66-80` — yes, the monolith still has a startup edge onto the cms **husk**); Gotenberg (runtime HTTP, no startup-order dep) | Postgres (`public` schema; `pgvector` in `extensions` — skiller embeddings, skill-path sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables), Redis, **Clerk**, **Directus**, **Judge0**, **LiveKit**, **AWS Chime**, **AI Providers** |
 | **Sentinel** | - | Postgres |
-| ~~**CMS**~~ | **Merged into `app`** ("cms-in-app v8.0", app v1.360.0) — the content layer + Studio run in-process; Directus stays external | *(no standalone service)* |
-| ~~**Jobsimulation**~~ | **Merged into `app`** ("jobsim-in-app") — the session engine runs in-process; simulation definitions come from the cms domain by ID without an RPC hop | *(no standalone service)* |
+| ~~**CMS**~~ | **Merged into `app`** ("cms-in-app v8.0", app v1.360.0) — the content layer + Studio run in-process; Directus stays external | *(**husk container** — still defined at `docker-compose.yml:144` and still started by the default `graphql` profile; unfederated, still answers messenger's RPC until M809; teardown M810)* |
+| ~~**Jobsimulation**~~ | **Merged into `app`** ("jobsim-in-app") — the session engine runs in-process; simulation definitions come from the cms domain by ID without an RPC hop | *(**husk container** — `docker-compose.yml:83`, default `graphql` profile; unfederated; teardown M810)* |
 | ~~**Skillpath**~~ | **Merged into `app`** ("skillpath-in-app", M502→M507) — the skill-path engine's dependencies (cms content by ID, the jobsimulation Redis Stream, Sentinel) are now `app`'s, in-process | *(no standalone service)* |
-| ~~**Roadrunner**~~ | **Merged into `app`** with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | *(no standalone service)* |
+| ~~**Roadrunner**~~ | **Merged into `app`** with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | *(**husk container** — `docker-compose.yml:281`, default `graphql` profile; orphaned, nothing calls it, but prod terraform still reads `= 1`)* |
 | **Storage** | - | Postgres, Redis, **S3** |
 | **Gotenberg** | - | - (stateless conversion service) |
-| **Messenger** (opt-in profile) | Backend (users, cms, jobsimulation and skiller RPC all at `http://backend:8083`) | Postgres, Redis, **Brevo** (email delivery) |
+| **Messenger** (opt-in profile) | **Two of four addresses reach `backend`**, two still reach the husks — `BACKEND_USERS_RPC_ADDR` + `SKILLER_RPC_ADDR` = `http://backend:8083` (`docker-compose.yml:255,265`); `CMS_RPC_ADDR` = `http://cms:8091` (`:256`) and `JOBSIMULATION_RPC_ADDR` = `http://jobsimulation:8401` (`:258`) **until the M809 re-point** (`app/main.go:1196-1202`) | Postgres, Redis, **Brevo** (email delivery) |
 | **CustomerIO Sync** (opt-in profile) | Postgres | **Customer.io** |
 | ~~**Graphql (Cosmo Router)**~~ | **Not in a local stack** — platform `2adcf71` deleted the compose service and the `repos.yml` entry; the frontends call `backend` directly at `:8082/graphql/query`. Still declared in production terraform; repo archived 2026-07-30. Composed `backend` alone (1 subgraph) | *(no local service)* |
-| **Studio-Desk** (opt-in profile) | `backend`'s GraphQL endpoint directly (`:8082/graphql/query`) — the router it used to depend on is gone locally | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
+| **Studio-Desk** (opt-in profile) | `backend`'s GraphQL endpoint directly (`:8082/graphql/query`) — the router it used to depend on is gone locally. Compose `depends_on` is **`backend` + `cms`** (`docker-compose.yml:337-341`), not `graphql` | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
 | **Studio-Room** | (runs inside the `app` container; depends on the backend process) | **OpenAI**, **Anthropic**, **Mistral** |
 
 > **Skiller merged into app (July 2026):** the standalone skiller service is gone from the compose file. Its RPC surface is now served by **backend** — consumers keep the `SKILLER_RPC_ADDR` env var, re-pointed at `http://backend:8083` (production terraform: `skiller_rpc_addr = http://backend:8081`). See [Backend](../services/backend.md) and the [skiller stub](../services/skiller.md).
 >
 > **Skillpath merged into app (skillpath-in-app, M502→M507):** the standalone skillpath service is gone from the compose file / repos.yml / supergraph. Its skill-path progression engine now runs **in-process inside `app`**, with session state in `public.skill_path_sessions` (the legacy `skillpath` schema is an empty husk). See [Backend](../services/backend.md) and the [skillpath stub](../services/skillpath.md).
 >
-> **Jobsimulation + cms merged into app (jobsim-in-app, cms-in-app v8.0):** the last two subgraph services are gone from the compose file / repos.yml / supergraph — the federation now composes **one** subgraph. Their tables were re-created in `public` (the legacy `jobsimulation` and `cms` schemas are non-authoritative). Their ECS modules are **still declared** in production terraform as the rollback path and take no traffic; teardown is **M810**. See [Jobsimulation](../services/jobsimulation.md) and [CMS](../services/cms.md).
+> **Jobsimulation + cms merged into app (jobsim-in-app, cms-in-app v8.0):** the last two subgraph services are gone from the **supergraph** — the federation now composes **one** subgraph. **They are NOT gone from compose or `repos.yml`:** `docker-compose.yml:144` (cms) and `:83` (jobsimulation) still define both **in the default `graphql` profile**, and `repos.yml:14-19` still lists both (`migrations: false # legacy`). They start as **unfederated husks** (`running_but_unfederated`) until platform **M810**. Their tables were re-created in `public` (the legacy `jobsimulation` and `cms` schemas are non-authoritative). Their ECS modules are **still declared** in production terraform as the rollback path and take no traffic; teardown is **M810**. See [Jobsimulation](../services/jobsimulation.md) and [CMS](../services/cms.md).
 >
 > **Content-vs-runtime dependency (unchanged, now in-process):** both the skill-path engine and the jobsimulation engine depend on the **cms domain for content/definitions** — cms is the content layer; they are runtime/session engines that hold no content and reference cms artifacts **by ID**. The skill-path engine fetches a path's chapter/step structure when (re)building a session; the jobsimulation engine loads a simulation's definition before running it. Both calls used to be Connect-RPC (`CMS_RPC_ADDR`, `cms.GetSimulation`); they are **plain function calls** now. The jobsim domain still holds no `DIRECTUS_BASE_ADDR` of its own — its Directus reads flow *through* the cms domain. (See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).)
 
@@ -83,11 +83,13 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 *   The cms **domain inside `app`** acts as the gateway to Directus content — `Frontend -> app (cms domain) -> Directus`. It was a separate `CMS` service until cms-in-app v8.0; the hop is in-process now.
 
 ### 4. Studio Content Creation
-`Studio Desk` → `CMS` → (in-process) `Studio Room`
-*   **Studio-Desk** (TypeScript) creates blueprints, sent to CMS as `StudioDocument` rows.
-*   **CMS** (Go) creates `StudioTask` records and dispatches generation work.
+`Studio Desk` → `app` (cms domain) → (in-process) `Studio Room`   *(was `Studio Desk → CMS → Studio Room` before cms-in-app)*
+*   **Studio-Desk** (TypeScript) creates blueprints, sent to the **cms domain inside `app`** as `StudioDocument` rows
+    over `backend`'s GraphQL endpoint (`:8082/graphql/query`).
+*   The **cms domain** (Go, `app/internal/cms/`) creates `StudioTask` records and dispatches generation work —
+    an in-process hop since cms-in-app v8.0, not a service call. Consistent with :9/:15/:31 above.
 *   **Studio-Room** (Python, embedded inside the **`app`** container since cms-in-app) executes the generation pipeline against AI providers (OpenAI, Anthropic, Mistral).
-*   Final content is persisted via the CMS service; **Directus** is the underlying storage backend.
+*   Final content is persisted via the **cms domain** (in `app`); **Directus** is the underlying storage backend.
 
 ### 5. Skill Path Progress (Event-Driven)
 `Jobsimulation` -> `Redis Stream` -> `App (skill-path engine, in-process)`

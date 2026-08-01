@@ -104,8 +104,8 @@ For local development, set `BREVO_KEY=""` to route through the **console sender*
 | `REDIS_STREAMS_INDEX` | `4` | Redis DB index for streams |
 | `REDIS_WORKER_INDEX` | `0` | Set in docker-compose (=0) but NOT read by the code — there is no worker pool / separate worker Redis index; only `REDIS_STREAMS_INDEX` is consumed (`cmd/root.go:107`). |
 | `BACKEND_USERS_RPC_ADDR` | `http://backend:8083` | Backend RPC for user lookups |
-| `CMS_RPC_ADDR` | `http://cms:8091` | CMS RPC |
-| `JOBSIMULATION_RPC_ADDR` | `http://jobsimulation:8401` | Jobsimulation RPC |
+| `CMS_RPC_ADDR` | `http://cms:8091` | CMS RPC — **current, not stale** (`docker-compose.yml:256` @ platform `2adcf71`). Points at the **unfederated husk**, deliberately: `app/main.go:1199` calls the in-app CMSService edge *"additive + DORMANT … until the M809 re-point"* |
+| `JOBSIMULATION_RPC_ADDR` | `http://jobsimulation:8401` | Jobsimulation RPC — **current, not stale** (`docker-compose.yml:258`). Unlike `SKILLER_RPC_ADDR` below, this was **not** re-pointed at `backend`; it also resolves to the husk. Re-point is M809/M810 |
 | `SKILLER_RPC_ADDR` | `http://backend:8083` | Skiller RPC surface — served by `backend` since the skiller→app merge |
 | ~~`SKILLPATH_RPC_ADDR`~~ | *(removed)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:815`). |
 

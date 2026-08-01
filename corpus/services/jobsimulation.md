@@ -4,8 +4,16 @@
 >
 > As of the **"jobsim-in-app"** program (platform milestone **M810** tracks the final teardown), the standalone
 > `jobsimulation` Go microservice has been **merged into the `app` monolith** (the service the platform calls
-> "backend"). Jobsimulation no longer runs as a separate service — not in the local compose, not in the
-> supergraph. This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
+> "backend"). Jobsimulation no longer runs as a separate service **in production**
+> (`jobsimulation/terraform/main.tf:40` `service_desired_count = 0`), and its subgraph is gone from the
+> supergraph.
+>
+> **⚠️ But locally the husk still starts.** `docker-compose.yml:83` @ platform `2adcf71` still defines a
+> `jobsimulation` service **in the default `graphql` profile**, and `repos.yml:17-19` still lists the repo
+> (marked `migrations: false # legacy`) — even though the **GitHub repo was archived 2026-07-31**. State:
+> `running_but_unfederated`; container teardown is **M810**. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+>
+> This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
 > [skillpath-in-app](./skillpath.md) merges.
 >
 > Where everything went:
@@ -18,8 +26,10 @@
 >   `app/terraform/migrations/20260722081626_jobsim_data_model.sql`, with the **same table names**. The old
 >   `jobsimulation` DB schema is **legacy — no longer authoritative**.
 > * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux. `messenger` reaches it at
->   `JOBSIMULATION_RPC_ADDR=http://backend:8083` locally / `http://backend.internal.anthropos:8081` in
->   production. `app` itself makes **no** outbound jobsim RPC — those are in-process calls now.
+>   `JOBSIMULATION_RPC_ADDR=`**`http://jobsimulation:8401`** locally — i.e. **still the husk**
+>   (`docker-compose.yml:258` @ platform `2adcf71`); `http://backend.internal.anthropos:8081` in production.
+>   The local re-point onto `app` is **M809**, not yet done — see `app/main.go:1196-1202`. `app` itself makes
+>   **no** outbound jobsim RPC — those are in-process calls now.
 > * **GraphQL** — the jobsimulation subgraph was removed from the federation; its types/queries are served by
 >   `app`'s sole `backend` subgraph.
 > * **Events** — `app` owns the `JOBSIMULATION_STREAM` subscriber. The ported engine's handlers are merged onto
@@ -51,7 +61,7 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 
 * **Codebase**: `jobsimulation` (Local directory; repo `git@github.com:anthropos-work/jobsimulation`)
 * **Language**: Go
-* **Database**: PostgreSQL `jobsimulation` schema (via Ent + Atlas migrations)
+* **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the banner at :25-27
 * **Ports**: 8400 (GraphQL/HTTP), 8401 (Connect-RPC) — **as deployed by the platform**, which sets `PORT=8400` / `RPC_PORT=8401` and publishes `8400:8400` / `8401:8401` (`platform/docker-compose.yml`). Note the **repo's own defaults differ**: with those env vars unset `cmd/root.go` falls back to `8080`/`8081` (and the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. Both are correct in their own context — use 8400/8401 for anything driven through `platform`, and add the stack offset for a `dev-N`/`demo-N`.
 * **Profile**: `graphql` (default) and `jobsimulation`
 
@@ -79,7 +89,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
-* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
+* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`. **That address is CURRENT, not stale text** — re-verified against platform origin `2adcf71` (`docker-compose.yml:52` for backend, `:258` for messenger). Unlike `SKILLER_RPC_ADDR`, it was **not** re-pointed at `backend`: it still resolves to the **unfederated husk container**. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1195`); re-pointing the external callers is the M809/M810 work.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
 > played session render?" will not find here. (1) The **player** result page `/sim/<slug>/result/<sessionId>` is a
@@ -94,7 +104,7 @@ internal/
 ### Direct dependencies (from compose `depends_on` + env)
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities. **Jobsimulation reads Directus content *through* CMS over RPC — it does NOT hold a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own.** So the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) carries jobsimulation's content reads to local automatically; no jobsimulation env change is needed.
+* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop); the **husk container** still holds `CMS_RPC_ADDR=http://cms:8091` (`docker-compose.yml:104`) and reaches the husk cms over RPC.** So the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) carries jobsimulation's content reads to local automatically; no jobsimulation env change is needed.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
@@ -199,7 +209,9 @@ Make sure `.env` has the LiveKit + AWS credentials and that Postgres/Redis are r
 
 ```bash
 cd platform
-make migrate S=jobsimulation
+make migrate   # NOT `S=jobsimulation`. `repos.yml:17-19` sets `migrations: false`, so the
+               # migrating set is `app` ALONE. Forcing S=jobsimulation runs the frozen repo's
+               # atlas env and re-materialises the dead `jobsimulation` schema.
 ```
 
 ## Related Documentation

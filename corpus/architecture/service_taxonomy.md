@@ -277,12 +277,19 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 > content-self-contained. It's **demo-default / dev-opt-in (`--local-content`)** and lives entirely in the
 > stack-ops tooling. See [`corpus/ops/directus-local.md`](../ops/directus-local.md).
 
-#### GraphQL/Cosmo Router (Dockerized - API Gateway)
+#### GraphQL/Cosmo Router — **HISTORICAL / PROD-ONLY**
+
+> **⚠️ Not a local service.** Platform `2adcf71` (2026-07-31) deleted the `graphql` compose service **and** the
+> `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30**. **There is no `:5050` on
+> a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
+> describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
+> and in the archived repo; **do not follow it as a local-development instruction.** Consistent with :61 above.
+> Fenced source of truth: [`platform-migration-status.md`](./platform-migration-status.md).
 
 | Property | Value |
 |:---------|:------|
 | **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
-| **Port** | 5050 |
+| **Port** | 5050 — *prod only; no local listener since `2adcf71`* |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
 | **Subgraphs** | **`backend` alone (1)** — skillpath's subgraph folded in at M505, then jobsimulation's, then cms's at `graphql-wundergraph@915da06` (2026-07-29), the 2 → 1 step |
@@ -292,9 +299,11 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 **Aggregates**:
 - Backend (`app`) — the only subgraph left. CMS and Jobsimulation folded into it.
 
-**Consumed By**:
+**Consumed By** *(in production)*:
 - Next.js frontend applications
 - Studio-Desk
+
+Locally, both of those now consume `backend` directly at `:8082/graphql/query`.
 
 ---
 
@@ -359,7 +368,7 @@ go run .               # Run natively — this one process covers skiller,
 | Profile | Services started |
 |---------|------------------|
 | (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
+| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, jobsimulation, cms, storage, roadrunner, gotenberg — **and no `graphql` container**: platform `2adcf71` deleted the service, so the **profile name survives, the service does not**. `jobsimulation` / `cms` / `roadrunner` start as **unfederated husks** (M810) |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
 | `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
 | `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation — bring those up too) |

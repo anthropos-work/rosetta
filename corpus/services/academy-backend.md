@@ -9,13 +9,15 @@
 > - **Frontend — [`ant-academy`](./ant-academy.md)**: the Next.js/Expo *reader/UI* (Vercel-deployed).
 > - **Backend — `app/internal/academy/` (this doc)**: the *source of truth*. It owns the `series → skill_path →
 >   chapter → body` catalog **and** all per-user study state (progress, time, bookmarks, feedback, certificates),
->   and serves them to the frontend through the **`app` GraphQL subgraph** (via the Cosmo/WunderGraph router at
->   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`).
+>   and serves them to the frontend through the **`app` GraphQL subgraph**, reached at
+>   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — which on a local stack is **`backend`'s own `:8082/graphql/query`**
+>   since platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from compose. The env-var
+>   *name* outlived the router; in production the router is still declared. (Consistent with :74-76 below.)
 > - The backend became authoritative in app-side release **"v1.0 ground truth"** (PR #903, `0e37771f`, 2026-06-05):
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —
 >   when the FE started reading the DB catalog; the backend domain's labels are its own "v1.0/v1.05" line, distinct
->   from `app` SemVer, currently `v1.351.1`.)
+>   from `app` SemVer, currently **`v1.363.2`** @ `5ba17044`.)
 
 ## Role & Responsibility
 

@@ -112,7 +112,7 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 | **Sentry** | Error tracking, performance monitoring, cron job monitoring |
 | **PostHog** | Product analytics |
 | **Better Stack** | Incident escalation, uptime monitoring |
-| **AI Token Tracking** | Centralized usage, latency, and cost tracking via shared `ai` library |
+| **AI Token Tracking** | Centralized usage, latency, and cost tracking in **`app/internal/aiusage`** — **not** the shared `ai` library, which only wraps providers (consistent with `README.md:21` + `ai_architecture.md`) |
 
 - Structured logging uses Go `slog` + Sentry integration
 - ECS auto-scales on CPU/memory metrics

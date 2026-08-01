@@ -43,7 +43,7 @@
 
 > **"WunderGraph" vs "Cosmo Router" — same thing.** Cosmo is WunderGraph's
 > Apollo-Federation product. The repo is named `graphql-wundergraph`, the compose
-> service is `graphql`, the runtime binary is the Cosmo Router, and the frontend env
+> service **was** `graphql` (deleted at `2adcf71`), the runtime binary is the Cosmo Router, and the frontend env
 > var is `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. They all refer to this one gateway.
 
 ## Architecture & Code Map
@@ -81,14 +81,14 @@ The supergraph `config.json` is **baked into the image at build time** by
 
 * Adding/changing a subgraph **or a single field** requires re-running `wgc compose`
   and **rebuilding + restarting** the image — there is **no hot reload**.
-* `make up` rebuilds `graphql` whenever any subgraph schema changes because the build
+* ~~`make up` rebuilds `graphql`~~ — **HISTORICAL: there is no `graphql` compose service since `2adcf71`, so `make up` builds no router at all.** It *used to* rebuild whenever any subgraph schema changed, because the build
   context is the parent dir (`..`) holding all sibling repos.
 
 The two Dockerfiles source schemas differently:
 
 | Dockerfile | Schema source | Used by |
 |------------|---------------|---------|
-| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, …) and `awk`-concatenates. **Not used by compose since cms-in-app** — the `graphql` service now builds from the production `Dockerfile` so it composes the committed `schemas/backend.graphqls`. | (legacy local path) |
+| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, …) and `awk`-concatenates. **Not used by compose at all any more** — there is no `graphql` compose service since `2adcf71`. Before that it built from the production `Dockerfile`, composing the committed `schemas/backend.graphqls`. | (legacy local path) |
 | `Dockerfile` | Uses the **committed `schemas/*.graphqls`** as-is | production CI build |
 
 ## Interface Discovery
@@ -170,7 +170,7 @@ These are **Docker build args** (not runtime secrets) — they select which conf
 | `ENVIRONMENT` | `compose` | Picks `config.<ENVIRONMENT>.yaml` → `config.yaml` (router runtime behavior). Also an ECS env var in prod. |
 | `ENVIRONMENT_CONFIG` | `compose` | Picks `supergraph-config-<ENVIRONMENT_CONFIG>.yaml` → which routing URLs are baked in. |
 | `CONFIG_PATH` | `config.yaml` | Tells the Cosmo router which config file to load. |
-| `GH_PAT` / `GH_ACCESS_TOKEN` | — | CI/prod build only (pull private resources). The compose `graphql` service instead uses `build.ssh: [default]`. |
+| `GH_PAT` / `GH_ACCESS_TOKEN` | — | CI/prod build only (pull private resources). The compose `graphql` service **used to** use `build.ssh: [default]` — that service no longer exists (`2adcf71`). |
 | `VERSION` / `ARCHITECTURE` / `APOLLO_ELV2_LICENSE` | — | Prod CI build args (ECR image tag, `linux/amd64`, accept Apollo ELv2 license). |
 
 The router itself is **stateless** — no DB/Redis/secret env vars at runtime (the compose service mounts `.env` via `env_file` but the router does not consume secrets).
@@ -186,7 +186,7 @@ compose time by `wgc` (federation composition will fail the build on an invalid 
 * **Composition is static** — no live subgraph discovery; schema changes need a rebuild + restart.
 * **Pinned versions**: cosmo router `0.275.0`, `wgc 0.104.0`, federation `2.3.2`.
 * **Repo name is misspelled** `graphql-wundegraph` in `package.json` and the repo's own `CLAUDE.md` heading.
-* `repos.yml` tags it `type: node-npm`, but there are effectively **no npm deps** — the "node" stage exists only to run `wgc`.
+* `repos.yml` **used to** tag it `type: node-npm` (the entry was deleted at `2adcf71`), but there were effectively **no npm deps** — the "node" stage exists only to run `wgc`.
 * The repo's own `CLAUDE.md` "Version Tracking" line and `-local.yaml` references are **stale**; `subgraphs.conf` is the real version source of truth and the config variants are `compose`/`dev`/`prod`.
 
 ## Related Documentation

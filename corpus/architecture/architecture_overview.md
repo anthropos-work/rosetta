@@ -70,7 +70,7 @@ Services communicate via **Connect-RPC/HTTP** for synchronous operations and **R
 graph TD
     subgraph External["🌐 External Services"]
         Clerk[Clerk Auth]
-        GraphQL[GraphQL/Wundergraph]
+        GraphQL["GraphQL / Cosmo Router<br/>PROD ONLY — deleted from local dev<br/>at platform 2adcf71"]
     end
     
     subgraph Frontend["🖥️ Frontend Applications"]
@@ -80,7 +80,7 @@ graph TD
     
     subgraph Studio["🎨 Studio Services"]
         Desk[Studio-Desk<br/>Content Design]
-        Room[Studio-Room<br/>AI Generation]
+        Room["Studio-Room<br/>AI Generation<br/>(NOT a deployable — runs inside<br/>the app image since cms-in-app)"]
     end
 
     subgraph Core["⚙️ Core Backend Services (Go)"]
@@ -100,16 +100,19 @@ graph TD
     %% Frontend connections
     Web --> Clerk
     Hiring --> Clerk
-    Web --> GraphQL
-    Hiring --> GraphQL
+    Web -.->|prod only| GraphQL
+    Hiring -.->|prod only| GraphQL
+    Web -->|local: :8082/graphql/query| Gateway
+    Hiring -->|local: :8082/graphql/query| Gateway
     
     %% Studio connections
     Desk --> Clerk
-    Desk --> GraphQL
+    Desk -->|local: :8082/graphql/query| Gateway
     Room -.->|generates from| Desk
     
-    %% GraphQL aggregation (ONE subgraph: backend — cms folded in at 915da06, jobsimulation earlier)
-    GraphQL --> Gateway
+    %% Router aggregation — PROD ONLY. ONE subgraph: backend (cms folded in at 915da06, jobsimulation earlier).
+    %% Locally there is no router at all: the frontends and studio-desk hit Gateway directly (edges above).
+    GraphQL -.->|prod only| Gateway
 
     %% Core service dependencies
     Gateway --> Sentinel
@@ -236,12 +239,27 @@ For detailed integration patterns, see [External Services](./external_services.m
 
 A typical API request follows this path:
 
+**In production** (the router still exists there — `graphql-wundergraph/terraform/main.tf:20` `= 1`):
+
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
   → backend (the sole subgraph)
-    → gRPC to internal services (sentinel, storage, roadrunner, ...)
+    → Connect-RPC to internal services (sentinel, storage)
     → Redis Streams for async events
 ```
+
+**On a local stack** (platform `2adcf71` deleted the router — **there is no `:5050`**):
+
+```
+Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
+  → Connect-RPC to sentinel, storage
+  → Judge0 directly via JUDGE0_BASE_URL   (roadrunner is folded into app — no RPC hop)
+  → Redis Streams for async events
+```
+
+> `roadrunner` is **not** a gRPC hop from `backend` in either column — it was folded in with jobsim-in-app and
+> `backend` calls Judge0 directly. See [`roadrunner.md`](../services/roadrunner.md) and
+> [`platform-migration-status.md`](./platform-migration-status.md).
 
 ### Multi-Tenancy
 

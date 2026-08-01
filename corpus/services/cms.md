@@ -4,9 +4,17 @@
 >
 > As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
-> separate service — not in the local compose, not in the supergraph. It is the fourth and last engine
-> consolidated into `app`, after [skiller](./skiller.md), [skillpath](./skillpath.md) and
-> [jobsimulation](./jobsimulation.md).
+> separate service **in production** (`cms/terraform/main.tf:39` `service_desired_count = 0`), and its
+> subgraph is gone from the supergraph. It is the fourth and last engine consolidated into `app`, after
+> [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md).
+>
+> **⚠️ But locally the husk still starts — "merged" is not "removed from compose."**
+> `docker-compose.yml:144` @ platform `2adcf71` still defines a `cms` service **in the default `graphql`
+> profile**, `repos.yml:14-16` still lists the repo (marked `migrations: false # legacy`), and **messenger is
+> still pointed at it** (`CMS_RPC_ADDR=http://cms:8091`) — deliberately, until the **M809** re-point
+> (`app/main.go:1196-1202`: *"additive + DORMANT … until the M809 re-point"*). The state is
+> **`running_but_unfederated`**; container teardown is **M810**. See
+> [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > **The Directus content edge stays external.** The merge moved the *Go service*; the authored content still
 > lives in Directus at `content.anthropos.work`, which `app` reads over HTTP.
@@ -20,8 +28,10 @@
 >   `app/terraform/migrations/20260724132049_cms_data_model.sql`, with the **same table names**. The old `cms`
 >   DB schema is **legacy — no longer authoritative**.
 > * **RPC** — `CMSService` is served on `app`'s single RPC mux. `messenger` reaches it at
->   `CMS_RPC_ADDR=http://backend:8083` locally / `http://backend.internal.anthropos:8081` in production. `app`
->   itself makes **no** outbound cms RPC.
+>   `CMS_RPC_ADDR=`**`http://cms:8091`** locally — i.e. **still the husk** (`docker-compose.yml:256` @ platform
+>   `2adcf71`); `http://backend.internal.anthropos:8081` in production. `app/main.go:1196-1202` says why: the
+>   in-app edge is *"additive + DORMANT … until the **M809** re-point."* `app` itself makes **no** outbound
+>   cms RPC.
 > * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph, taking the **supergraph from 2
 >   subgraphs to 1**. Public (unauthenticated) library content queries are preserved — see app v1.360.2/v1.360.3.
 > * **Events** — `app` owns the `CMS_STREAM` subscriber. The folded similarity re-index + Studio handlers are
@@ -50,7 +60,7 @@ This last point was the first structural shift: **studio-room is not a standalon
 
 > [!IMPORTANT]
 > **CMS owns content; the runtime engines own state.** Do not conflate the **skill-path engine** with skill-path content, or the **`jobsimulation`** service with simulation content. Those are **runtime/session engines** that hold *no* content and reference CMS artifacts **by ID**:
-> - **The [skill-path engine](./skillpath.md)** (merged into `app` — "skillpath-in-app", M502→M507; formerly the standalone `skillpath` service) tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %); it fetches the skill-path *structure* it tracks against from this CMS service over Connect-RPC (`CMS_RPC_ADDR`).
+> - **The [skill-path engine](./skillpath.md)** (merged into `app` — "skillpath-in-app", M502→M507; formerly the standalone `skillpath` service) tracks per-user progression *state* (`SkillPathSession → ChapterSession → StepSession`, progress %); it reads the skill-path *structure* it tracks against from the **cms domain in-process** — `app/internal/skillpath/session.go:205-207` (`// cms-in-app deseam: cms is in-process`) calls `contentread.CmsContentReader.GetSkillPathDomain`. It was a `CMS_RPC_ADDR` Connect-RPC hop until both merged into `app`.
 > - **[`jobsimulation`](./jobsimulation.md)** runs the interactive simulation *session*; it reads the simulation *definition* it runs from the cms domain **in-process** (it was a `cms.GetSimulation` Connect-RPC hop until both merged into `app`) — it has no `DIRECTUS_BASE_ADDR` of its own, so all its content reads go *through* CMS.
 >
 > So **content = CMS/Directus; the like-named service = the state machine over that content.** This split is the source of a recurring naming confusion — see the [Service Taxonomy](../architecture/service_taxonomy.md) and [Architecture Overview](../architecture/architecture_overview.md) content-vs-runtime callouts.
@@ -138,17 +148,21 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ## Interface Discovery
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
-* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger`, via `CMS_RPC_ADDR=http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production).
+* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **until M809, still calls the husk**: `CMS_RPC_ADDR=http://cms:8091` locally (`docker-compose.yml:256`), `http://backend.internal.anthropos:8081` in production.
 * **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0, taking the supergraph from **2 subgraphs to 1**. Cosmo Router now composes `backend` alone.
 
 ### Upstream consumers
 * Next Web App (GraphQL)
 * Studio-Desk (GraphQL for studio entities)
-* Backend (incl. the in-process skill-path engine), Jobsimulation (RPC + Redis Streams)
+* Backend (`app`) — the skill-path engine, the jobsimulation engine and the cms domain all run **in the same
+  process**, so those hops are plain function calls, **not RPC**; the Redis Streams edge has `app` on both
+  ends. (The husk `cms` container does still receive real RPC — from **messenger** at
+  `CMS_RPC_ADDR=http://cms:8091`, until M809.)
 
 ### Downstream dependencies
 * Directus (content storage)
-* PostgreSQL (Ent ORM, `cms` schema)
+* PostgreSQL (Ent ORM, **`public` schema** — the cms tables were re-created there at cms-in-app v8.0; the
+  legacy `cms` schema is non-authoritative. Consistent with :64 above)
 * Redis (cache, Watermill streams)
 * AI providers (Anthropic, OpenAI, Mistral — used by `cms/studio/` Python pipeline)
 
@@ -156,11 +170,16 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 ### First-time setup
 
-The Python studio submodule must be cloned **before** any docker build, otherwise `make up` fails with `"/studio": not found`:
+> **⚠️ HISTORICAL — `cd cms; make init-studio` is NOT the onboarding path any more.** Since cms-in-app v8.0
+> the studio-room pipeline is pulled into the **`app`** image by CI via the `additional_repo` mechanism (app
+> v1.360.1) — see :37 in the banner at the top of this doc. Work on this domain in **`app`**, not in the
+> frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
+
+The Python studio submodule had to be cloned **before** any docker build, otherwise `make up` failed with `"/studio": not found`:
 
 ```bash
 cd cms
-make init-studio   # clones anthropos-studio-room into cms/studio/
+make init-studio   # HISTORICAL — clones anthropos-studio-room into cms/studio/
 make setup         # installs ent, atlas, gqlgen
 make gen           # regenerates GraphQL resolvers + Ent code
 ```

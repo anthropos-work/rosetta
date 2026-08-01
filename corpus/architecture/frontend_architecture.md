@@ -8,7 +8,7 @@ This document outlines the architecture of the Anthropos **main customer-facing 
 > - **[Studio-Desk](../services/studio-desk.md)** — Vite + Express, simulation design tool
 > - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo, internal learning portal for `@anthropos.work` employees
 >
-> Both are pulled by `make init` from `repos.yml` and run natively (not in docker-compose by default). The rest of this document is about `next-web-app` specifically.
+> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:311`). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. `repos.yml` @ `2adcf71` holds exactly **9** entries, and ant-academy is not one of them. The rest of this document is about `next-web-app` specifically.
 
 ## Monorepo Structure
 
@@ -36,7 +36,7 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **exclusively through the federated GraphQL gateway** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:5050/graphql` in prod — env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
+The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:5050/graphql` in prod — env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, ~15 sites hitting `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:362`): invitations (`invite/[token]/page.tsx`), assignment-builder (`useAssignmentBuilder.ts`), Stripe (`useStripe.tsx`), CSV bulk import, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
@@ -45,7 +45,7 @@ The frontend communicates with the backend **exclusively through the federated G
 
 ## Key Technologies
 
-* **Framework**: Next.js 15 (App Router, Turbopack), React 19
+* **Framework**: **Next.js 16** (App Router, Turbopack), React 19 — `apps/web/package.json:46` reads `"next": "^16.2.7"` (same in `apps/hiring` / `apps/integration` / `apps/maintenance`); the repo carries an `UPGRADE-IMPACT-next16.md`
 * **Build System**: Turborepo 2.x
 * **Package Manager**: pnpm 10.x (`packageManager: "pnpm@10.30.3"`)
 * **Node**: **v24+ required** (`engines.node: ">=24.0.0"` in `package.json`)

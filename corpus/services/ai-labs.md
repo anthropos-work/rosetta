@@ -15,7 +15,7 @@
 >   credits + an *enforcing* shared-pool wallet) is **DESIGNED / QUEUED, NOT BUILT** — a knowledge-plan release
 >   (`app` `knowledge/plan/releases/06.00-shared-purse/`, milestones M600–M607, all planned). In current `origin/main`
 >   there is **no `checkout.session.completed` webhook, no labs↔credits linkage, and `/credits/purchase` was removed
->   (Wave 13)**. `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (`app` is at `v1.351.1`).
+>   (Wave 13)**. `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (`app` is at **`v1.363.2`** @ `5ba17044`).
 > This doc documents the **shipped reality**; the shared-purse unification is flagged as planned where relevant.
 
 ## Role & Responsibility

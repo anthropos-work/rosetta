@@ -471,8 +471,14 @@ never convergence; it was a grep converging on its own vocabulary.
 
 **Why the terms miss.** The dominant failure mode is *a corrected banner at the top of a file contradicted by
 prose further down* — and that prose rarely uses the banner's words. The misses were `make init-studio`,
-`docker compose up -d graphql`, `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`, and an arrow in a mermaid
-diagram. No grep for "router", "subgraph" or "merged" reaches any of them.
+`docker compose up -d graphql`, a `depends_on` naming a deleted service, and an **arrow in a mermaid
+diagram**. No grep for "router", "subgraph" or "merged" reaches any of them. The mermaid edge is the sharpest
+case: `Web --> GraphQL` contains no drift vocabulary at all, and survived three audits for that reason.
+
+> **Correction (M257x iter-22).** This list originally also named
+> `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`. **It was not a miss — it is correct at origin HEAD**
+> (`docker-compose.yml:52`, `:258` @ `2adcf71`). See the rule below; the example is kept struck rather than
+> deleted because it is the one that taught the rule.
 
 > **If the deliverable is *"this tree is true"*, the audit reads the tree.** Scope by *file set*, not by
 > search term; fan the read out across sub-agents if it is large. The cost difference here was minutes, and
@@ -481,6 +487,35 @@ diagram. No grep for "router", "subgraph" or "merged" reaches any of them.
 **And check the branch against its base first.** Eight of run 1's eleven blockers were already fixed on
 `main`; the milestone branch had been 3 commits behind for its whole life and nothing measured it. One
 command — `git rev-list --count HEAD..main` — and the audit is not measuring a tree no reader will ever see.
+
+### Re-derive the CORRECTION, not just the anchor (M257x iter-22)
+
+iter-21 handed iter-22 an enumerated residual: 21 blockers, each with `file:line`, a verbatim quote, a
+refuting citation and a one-line correction — authored to be executed without re-exploration. **All 21
+anchors verified.** Two of the *corrections* were false.
+
+Items #8/#10 said `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` was stale and should read
+`http://backend:8083`. Origin HEAD `2adcf71` says otherwise: **only `SKILLER_RPC_ADDR` was re-pointed**;
+`CMS_RPC_ADDR=http://cms:8091` and `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` still address the husk
+containers — deliberately, per `app/main.go:1196-1202`, *"additive + DORMANT: external callers (messenger)
+keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."* Applying the correction
+would have replaced two true statements with false ones.
+
+**Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
+`corpus/services/backend.md:175` — a corpus line asserting messenger points *all four* addresses at
+`backend:8083`. It points two. **One false corpus line, cited as authority, produced two false corrections in
+a hand-off designed to be applied mechanically.** An audit that reads the corpus to correct the corpus is
+circular; the citation must terminate in platform source.
+
+> **The failure mode a mechanical hand-off invites is not a moved anchor — it is an inherited falsehood
+> wearing a `file:line`.** Anchors are cheap to verify and they were all fine. Verify the *correction* against
+> platform source (`docker-compose.yml` / `repos.yml` / the service's Go) before you apply it, every time. And
+> when a correction turns out to be wrong, the line that misled you is itself a blocker: hunt it.
+
+Corollary, worth stating because it reads as pedantry until it costs you: **merged-in-production is not
+removed-from-compose.** `cms` and `jobsimulation` are `service_desired_count = 0` in prod, folded into `app`,
+subgraphs gone — and still start containers on every local `make up`, still answer RPC. Two service docs said
+*"not in the local compose"*; both were false. The map's word for this is `running_but_unfederated`. Use it.
 
 ---
 

@@ -548,7 +548,10 @@ AWS Chime SDK captures the full simulation session (camera, screensharing, micro
 ### Required Services (via Docker)
 ```bash
 cd platform
-docker compose up -d graphql   # Directus is NOT a local service — cms reads it live from prod
+docker compose up -d backend  # NOT `graphql` (deleted at `2adcf71`) and NOT `cms` (that container is an
+                              # unfederated HUSK that serves no subgraph). The Directus reader is the cms
+                              # DOMAIN inside `backend` (`app/internal/cms/directus/`).
+                              # Directus is NOT a local service — it is read live from prod.
 ```
 > The platform compose has no `directus` service to start; `cms` points `DIRECTUS_BASE_ADDR` at
 > `content.anthropos.work`. To run content locally instead, use the v1.5 "prop room" tooling
@@ -634,8 +637,8 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 
 **"GraphQL endpoint not responding"**:
 ```bash
-# Ensure Wundergraph is running
-docker compose ps graphql
+# There is no `graphql` service since platform `2adcf71` — check the endpoint's real host:
+docker compose ps backend
 
 # Check dependent services are up
 docker compose ps backend cms jobsimulation storage
@@ -643,9 +646,11 @@ docker compose ps backend cms jobsimulation storage
 
 **Schema outdated**:
 ```bash
-# Restart Wundergraph to reload schemas
-docker compose restart graphql
+# ~~docker compose restart graphql~~ — no such service since `2adcf71`.
+# The schema is served by backend itself; restart it:
+docker compose restart backend
 ```
+> Consistent with :447 above, where the same correction is already recorded.
 
 ---
 

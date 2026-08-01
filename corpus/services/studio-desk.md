@@ -18,7 +18,7 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | TypeScript, Vite, Express.js (vanilla TS frontend, no framework) |
-| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (`make up PROFILE=studio-desk`; ports 9000/9100, depends on graphql + cms) |
+| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (`make up PROFILE=studio-desk`; ports 9000/9100. It `depends_on` **`backend` + `cms`** — `docker-compose.yml:337-341` @ platform `2adcf71`; **not** `graphql`, which is no longer a compose service — and is built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`) |
 | **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Authentication** | Clerk |
 | **Repository** | Local `studio-desk/` (sibling repo cloned by `make init`) |
@@ -280,7 +280,8 @@ Docker images are built automatically on tag push. Deployment managed via infras
 **GraphQL errors**: Ensure **`backend`** is up on port 8082 (there is no router service locally any more):
 ```bash
 cd platform
-docker compose up -d graphql
+docker compose up -d backend   # NOT `graphql` — that service no longer exists (platform `2adcf71`);
+                              # studio-desk talks to backend at :8082/graphql/query
 ```
 
 **Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match.

@@ -120,7 +120,7 @@ tools.
     The only gate is graceful degradation: routes stay unmounted if Bedrock creds are absent. Per-sub-feature
     kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`.
 *   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines); current app
-    `v1.351.1` (2026-07). The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is
+    **`v1.363.2`** @ `5ba17044` (2026-07-31). The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is
     the only path now.
 
 ## Related Documentation

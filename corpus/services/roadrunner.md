@@ -6,8 +6,17 @@
 > M247 against the CONSOLIDATED platform — the ~386-commit `app` bump).** Code execution moved **in-process into
 > jobsimulation** (`jobsimulation/internal/runner/runner.go`, an in-process Judge0 client whose own header comment
 > reads *"formerly the standalone 'roadrunner' service"*) — and with the **jobsim-in-app** merge that runner now
-> lives inside **`app`**. `backend` reads `JUDGE0_BASE_URL` and calls Judge0 directly; there is no roadrunner
-> service in production and it is not part of the platform stack. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
+> lives inside **`app`**. `backend` reads `JUDGE0_BASE_URL` and calls Judge0 directly, and **nothing calls the
+> roadrunner service any more.**
+>
+> **⚠️ Precision, because the declarations disagree (v2.8 M257x).** *"There is no roadrunner service in
+> production"* overstates it: `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` and has
+> not been touched since `87d8d44` (2026-06-19, before the fold), while `repos.yml:29-31` says *"legacy — folded
+> into app"* and `docker-compose.yml:281` still starts the container locally. This is the **one row where prod
+> and the platform's own declaration contradict each other** — recorded, not resolved. Say *orphaned* (nothing
+> calls it), not *absent*. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+>
+> It is not part of the *logical* platform stack. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
 > / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
 > on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
 >

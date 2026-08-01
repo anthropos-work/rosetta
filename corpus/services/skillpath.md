@@ -11,7 +11,9 @@
 > **Skillpath was always a runtime/session engine, never a content store** — it tracks per-user progression
 > *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path **content**
 > it tracks against (title, cover, curators, chapters → steps, skills-to-verify, versioning) **remains owned by
-> [CMS](./cms.md)** and is fetched by ID over Connect-RPC (`CMS_RPC_ADDR`). The consolidation moved the *engine*
+> the cms domain inside `app`** ([CMS](./cms.md)) and is read by ID **in-process** — `app/internal/skillpath/session.go:205-207`
+> (`// cms-in-app deseam: cms is in-process`) → `contentread.CmsContentReader.GetSkillPathDomain`. It was a
+> `CMS_RPC_ADDR` Connect-RPC hop before cms-in-app. The consolidation moved the *engine*
 > into `app`; it did not touch the content-vs-runtime split.
 >
 > Where everything went:
@@ -36,7 +38,7 @@
 >   `backend` subgraph** (`app/internal/web/backend/graphql/graph/schemas/skillpath_sessions.graphqls`). The fold
 >   landed dormant at **M505**; the router owner-swap that routes `SkillPathSession` to `app` was the atomic
 >   **M506** cutover.
-> * **Infrastructure** — skillpath was removed from `repos.yml` (now **10 repos**, 0 skillpath) and from
+> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath — skiller and the router have since left too) and from
 >   docker-compose (no skillpath service); the standalone service + its terraform module were decommissioned at
 >   **M507**. Only residual env plumbing remains (e.g. the `SKILLPATH_STREAM=skillpath` Redis-stream name).
 > * **Repo** — the `skillpath` git repo still exists but is **legacy/decommissioned**, no longer deployed or
@@ -48,7 +50,7 @@
 
 * **Content-vs-runtime split (unchanged).** "Skillpath" the engine ≠ skill-path *content*. The content it runs
   against — chapters → steps, curators, the job-simulation steps, skills-to-verify, versioning — is owned by
-  **[CMS](./cms.md)** (the `skill_paths` Directus collection) and fetched by ID over Connect-RPC (`CMS_RPC_ADDR`).
+  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app (that env var still exists, but it addresses the husk for messenger's pre-M809 path).
   This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).
 
 * **Session model.** The engine owns a hierarchical session: `SkillPathSession → ChapterSession → StepSession`,

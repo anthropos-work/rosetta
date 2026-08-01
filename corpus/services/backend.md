@@ -172,12 +172,12 @@ internal/
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the supergraph as the `backend` subgraph — **the only one left**, and on a local stack the frontends now reach it directly at `:8082/graphql/query` rather than through a router.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. The only remaining external caller is **messenger**, which points `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all at `http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production terraform). Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. The only remaining external caller is **messenger** — but **only two of its four addresses point here.** At platform `2adcf71`, `docker-compose.yml:255-265` sets `BACKEND_USERS_RPC_ADDR` and `SKILLER_RPC_ADDR` to `http://backend:8083`, while `CMS_RPC_ADDR` still reads `http://cms:8091` and `JOBSIMULATION_RPC_ADDR` still reads `http://jobsimulation:8401` — i.e. they resolve to the **unfederated husk containers**, not to `app`. That is **deliberate, not compose lag**: `app/main.go:1196-1202` (@ `5ba17044`) registers the in-app `CMSService` edge as *"additive + DORMANT: external callers (messenger) keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**"*. In production terraform the re-pointed pair is at `http://backend.internal.anthropos:8081`. Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
 
-* Next Web App (GraphQL via Cosmo, plus direct HTTP for SSE and webhooks)
+* Next Web App (GraphQL via **`backend`'s own endpoint, `:8082/graphql/query`** on a local stack since platform `2adcf71` deleted the router — the Cosmo Router is prod-only now — plus direct HTTP for SSE and webhooks)
 * Hiring App
 * Mobile App
 * Studio-Desk (for org-level metadata)
