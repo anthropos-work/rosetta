@@ -29,7 +29,7 @@
 >   over to read sessions **in-process** and the `SKILLPATH_RPC_ADDR` was dropped from terraform (**M506** caller
 >   cutover).
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
->   now **3 subgraphs** (backend/app, jobsimulation, cms). The skill-path session types/queries/mutations
+>   now **ONE subgraph** (`backend`) — it read *3* at the time of the skillpath fold; `915da06` (cms) and the v7.0 jobsimulation fold took it to 1. The skill-path session types/queries/mutations
 >   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
 >   `completeSkillPathStep`, `uncompleteSkillPathStep`, `upgradeSkillPathSessionToLatest`,
 >   `upgradeAllSkillPathSessionsToLatest`, and the deprecated `createSkillPathSession`) are **folded into `app`'s

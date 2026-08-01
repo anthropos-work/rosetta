@@ -29,19 +29,19 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 | Package Name | Path | Responsibility |
 | :--- | :--- | :--- |
 | **UI Kit** | `packages/ui` | Shared UI components (Design System). Recent work: `SkillCard` mini-card, `SkillCardCallout`, onboarding `SkillsRefinement` cluster card. |
-| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the Cosmo Router supergraph. |
+| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the supergraph — which is now the single `backend` subgraph, served locally by `backend` itself. |
 | **Core JS** | `packages/core-js` | Common utilities and helpers. |
 | **TSConfig** | `configs/tsconfig` (workspace-scoped as `@anthropos/tsconfig`) | Shared TypeScript configs. |
 | **i18n** | `configs/i18n` (workspace-scoped as `@anthropos/i18n`) | Translation messages for 8 locales (de, en, es, fr, it, ja, nl, pt) + next-intl config; consumed as a workspace dependency by all web apps. |
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **exclusively through the federated GraphQL gateway** (Cosmo Router at `:5050/graphql`, env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
+The frontend communicates with the backend **exclusively through the federated GraphQL gateway** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:5050/graphql` in prod — env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
 *   **Implementation**: `packages/graphql` contains the generated types and hooks.
-*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (Cosmo Router, `:5050/graphql`) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
+*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (`backend` at `:8082/graphql/query` locally; the Cosmo Router at `:5050/graphql` in prod) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
 
 ## Key Technologies
 

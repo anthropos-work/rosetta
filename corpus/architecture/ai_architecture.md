@@ -106,6 +106,14 @@ The primary voice engine uses **LiveKit rooms** with **OpenAI GPT Realtime** age
 Player → LiveKit Room → GPT Realtime Agent (anthropos-agent-eu / anthropos-agent-us)
 ```
 
+> **The agents have repos, and this corpus has never named one (v2.8 M257x).** The org holds **five**
+> LiveKit agent repositories — `livekit-agent`, `livekit-agent-chain`, `livekit-agent-azure-us`,
+> `livekit-agent-azure-eu`, `livekit-agent-azure-eu-fr` — none of which appear in `repos.yml`, in any
+> corpus document, or in the deployment picture below. Everything here documents the LiveKit *engine* and
+> the *platform side* of the call; the agent process itself is undocumented. `azure-eu` and `azure-eu-fr`
+> were measured at M257x iter-01 as dispatching nothing. Enumerated in
+> [`platform-migration-status.md` §3](./platform-migration-status.md).
+
 - **Audio**: Real-time voice conversation, recorded as MP3
 - **Transcript**: Generated from LiveKit conversation events
 - **Configuration**: Voice engine is selectable per simulation in CMS (`livekitgptrealtime`)

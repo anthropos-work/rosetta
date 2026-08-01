@@ -9,9 +9,16 @@
 > / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
 > on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
 >
-> **ORPHANED, but NOT archived — a deliberate M247 resolution.** Unlike chronos / intelligence / skiller (which were
-> *removed* from `repos.yml` + `docker-compose.yml` → archived/merged), roadrunner is **still in `repos.yml` (1 of
-> the 10 repos) and still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
+> **ORPHANED, but NOT archived — a deliberate M247 resolution.** Unlike intelligence / skiller / skillpath /
+> jobsimulation (which were *removed* from `repos.yml` + `docker-compose.yml`, **and whose GitHub repos really are
+> archived** — skiller 2026-07-01, skillpath + jobsimulation 2026-07-31), roadrunner is **still in `repos.yml` (1 of
+> the 9 repos — the count dropped when platform `2adcf71` deleted the router entry)**
+>
+> **Correction (v2.8 M257x, measured):** `chronos` does **not** belong in that list — its GitHub repo is **NOT
+> archived** (last push 2026-04-23), only removed from orchestration at platform `045857c`. The corpus called it
+> archived; the org disagrees. See [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md).
+>
+> roadrunner is also **still a live `docker-compose.yml` service** and still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
 > `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` is still *set* in jobsimulation's environment — but that variable is
 > now dead config, and a live container is not a live caller). It is **built + started but off every request path** —
 > so it stays classified **ORPHANED (Tier-1, running-but-unused)**, not ARCHIVED. **Everything below describes the

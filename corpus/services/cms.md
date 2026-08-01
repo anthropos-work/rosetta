@@ -101,7 +101,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 * **GraphQL**: schemas at `internal/graph/schemas/*.graphqls`. GraphQL API served at `:8090/query`; Apollo Sandbox playground at `:8090/` when running locally. (There is also a Directus webhook receiver at `:8090/webhooks/`.)
 * **RPC**: `internal/rpcsrv` — used by Backend (incl. the in-process skill-path engine) and Jobsimulation via `CMS_RPC_ADDR=http://cms:8091`.
-* **Federation**: CMS is one of the 3 subgraphs federated by Cosmo Router (`backend`, `jobsimulation`, `cms`) — the former `skillpath` subgraph was folded into `backend` when skillpath merged into `app`.
+* **Federation**: ~~one of 3 subgraphs~~ — **the cms subgraph was folded into `backend` at `graphql-wundergraph@915da06` (2026-07-29, cms-in-app v8.0), the step that took the supergraph 2 → 1.** There is now exactly **one** subgraph; `schemas/` holds `backend.graphqls` alone. (The `skillpath` subgraph had gone the same way at M502→M507, and `jobsimulation`'s at the v7.0 fold.)
 
 ### Upstream consumers
 * Next Web App (GraphQL)

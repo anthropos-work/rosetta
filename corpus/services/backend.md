@@ -46,7 +46,7 @@ containerized bring-up + migrate, and read-only prod.
 - **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
   locally (all four occurrences in the merged `docker-compose.yml`), `http://backend:8081` in prod terraform.
-- **Federation is now 3 subgraphs**: **backend**, **jobsimulation**, **cms**. The skiller subgraph was removed
+- **Federation is now ONE subgraph**: **backend**. (It read *3* until `915da06`, 2026-07-29, folded cms in — cms-in-app v8.0, the step that took the supergraph 2 → 1; jobsimulation's went at the v7.0 fold.) The skiller subgraph was removed
   at the skiller merge (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@c284453`); the **skillpath**
   subgraph was subsequently removed when the skillpath service merged into `app` ("skillpath-in-app", platform
   M502→M507). The former skiller taxonomy types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
@@ -147,7 +147,7 @@ internal/
 
 ## Interface Discovery
 
-* **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
+* **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the supergraph as the `backend` subgraph — **the only one left**, and on a local stack the frontends now reach it directly at `:8082/graphql/query` rather than through a router.
 * **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. Used by jobsim, cms, messenger via `BACKEND_USERS_RPC_ADDR=http://backend:8083`. Services include `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) registered in `main.go` as a third RPC handler after Users and Organizations, and `SkillerService` (`internal/rpc/skillerrpc/`) — consumers reach it via `SKILLER_RPC_ADDR=http://backend:8083` locally (`http://backend:8081` in production terraform).
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 

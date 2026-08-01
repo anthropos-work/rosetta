@@ -1,5 +1,8 @@
 # External Services & Integrations
 
+> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+
+
 This document describes all external services and third-party integrations used by the Anthropos platform. These are services the platform **depends on** but does not directly maintain in the core codebase.
 
 ## High-Level Summary (For PMs & Non-Engineers)
@@ -8,7 +11,7 @@ The Anthropos platform integrates with **three key external services**:
 
 1. **Clerk** - Handles all user authentication and organization management (SaaS)
 2. **Directus** - Stores and manages platform content (self-hosted via Docker)
-3. **GraphQL/Wundergraph** - Unifies all backend services into a single API
+3. **GraphQL/Wundergraph** - Unifies all backend services into a single API. **Prod-only since platform `2adcf71`** — see the two-state note in that section
 4. **AI Providers** - OpenAI, Anthropic, and Azure for intelligent features
 
 These services allow us to focus on core features while leveraging best-in-class solutions for authentication, content management, and API orchestration.
@@ -304,12 +307,12 @@ Directus can trigger webhooks on content changes:
 | **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
 | **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
 | **Port** | 5050 (host) → 8080 (container) |
-| **Purpose** | Federated GraphQL API gateway over 3 subgraphs |
+| **Purpose** | Federated GraphQL API gateway — **over ONE subgraph (`backend`) since `915da06`**, and **prod-only** since platform `2adcf71` deleted it from local dev |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
 ### What the gateway provides
 
-- **Federation v2**: Composes three subgraphs (`backend`, `jobsimulation`, `cms`) into one supergraph (the former `skiller` subgraph was removed when skiller merged into `app`, July 2026; the `skillpath` subgraph was removed when skillpath merged into `app` — "skillpath-in-app", platform M502→M507 — its session types/queries now served by the `backend` subgraph)
+- **Federation v2**: Composes **ONE** subgraph — `backend` — into the supergraph. All four others folded into it as their services merged into `app`: `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` (v7.0) and `cms` (`915da06`, 2026-07-29 — cms-in-app v8.0, the step that took the count 2 → 1). `supergraph-config-prod.yaml` lists `backend` alone; `schemas/` holds `backend.graphqls` alone; `subgraphs.conf` reads `BACKEND=v1.360.0`
 - **Subscriptions** for `jobsimulation` over SSE POST (`subscription.protocol: sse_post`)
 - **Apollo-compatibility flags** enabled for stricter validation behavior
 - **Playground** at `/graphql` for local development
@@ -326,7 +329,7 @@ graph TB
     end
 
     subgraph Gateway
-        WG[Cosmo Router :5050]
+        WG[GraphQL — backend :8082/graphql/query locally; Cosmo Router :5050 in prod]
     end
 
     subgraph Subgraphs[3 GraphQL Subgraphs]
@@ -421,14 +424,14 @@ const user = await client.query({
 // Types in app/__generated__/
 
 // Environment
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql on the router
 ```
 
 #### Playground
 
 Access GraphQL playground at:
 ```
-http://localhost:5050/
+http://localhost:8082/graphql   # Apollo Sandbox on `backend`; the router's :5050 playground is gone locally
 ```
 
 **Features**:
@@ -442,7 +445,7 @@ http://localhost:5050/
 When backend services add new GraphQL types or operations:
 
 1. **Backend service** updates its GraphQL schema
-2. **Restart Wundergraph**: `docker compose restart graphql`
+2. ~~**Restart Wundergraph**: `docker compose restart graphql`~~ — there is no `graphql` service locally any more; restart `backend`
 3. **Studio-Desk**: Run `npm run codegen` to regenerate types
 4. **Next.js apps**: Regenerate clients as needed
 
@@ -558,14 +561,14 @@ docker compose up -d graphql   # Directus is NOT a local service — cms reads i
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
-NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql
 ```
 
 **For Studio-Desk**:
 ```bash
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql on the router
 ```
 
 **For CMS Service**:

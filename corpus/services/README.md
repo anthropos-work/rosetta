@@ -27,7 +27,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — 3 subgraphs (backend/app, jobsimulation, cms) |
+| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — **ONE** subgraph (`backend`) since `915da06`. **Prod-only since platform `2adcf71`** (2026-07-31): deleted from local dev, repo ARCHIVED; locally the frontends hit `backend` at `:8082/graphql/query` |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the cms container** as `cms/studio/` |
@@ -53,7 +53,7 @@ These describe services that no longer run. They stay because many docs still li
 | Doc | Fate |
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
-| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph (→ 3 subgraphs). Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
+| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph (that fold took it to 3; the cms fold at `915da06` took it to **1**). Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
 | [`chronos.md`](chronos.md) | **Archived** — removed from compose + `repos.yml` (platform `045857c`). Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 

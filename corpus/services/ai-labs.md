@@ -1,7 +1,10 @@
 # AI Labs + Credits (`app` domain)
 
 > **Not a standalone service — a set of `app`-monolith domains** (the service the platform calls "backend").
-> There is no separate container, repo, or subgraph. Code lives under `app/internal/labs/`,
+> There is no separate container or subgraph. **There IS a separate repo, and this doc used to deny it**
+> (v2.8 M257x): `anthropos-work/AI-Labs` is the live Go control plane the sections below already call
+> **`labs-api`** — the thing behind `anthroposlabs.com` that owns the Firecracker microVM lifecycle. What is
+> in `app` is the *consumer* half. Code lives under `app/internal/labs/`,
 > `app/internal/credits/`, `app/internal/payments/`, `app/internal/subscriptions/`, plus the top-level
 > `app/stripe/` fixtures.
 

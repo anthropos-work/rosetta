@@ -40,7 +40,7 @@ internal/
 
 ## Interface Discovery
 
-* **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). Federated into the platform schema by Cosmo Router.
+* **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
 * **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a

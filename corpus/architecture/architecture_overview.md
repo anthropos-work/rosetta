@@ -1,5 +1,8 @@
 # Anthropos Architecture Overview
 
+> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+
+
 This document provides a high-level overview of the Anthropos platform architecture.
 
 ## High-Level Summary (For PMs & Non-Engineers)
@@ -102,7 +105,7 @@ graph TD
     Desk --> GraphQL
     Room -.->|generates from| Desk
     
-    %% GraphQL aggregation (3 subgraphs: backend, jobsimulation, cms)
+    %% GraphQL aggregation (ONE subgraph: backend — cms folded in at 915da06, jobsimulation earlier)
     GraphQL --> Gateway
     GraphQL --> CMS_Service
     GraphQL --> JobSim
@@ -199,7 +202,7 @@ Archived / merged (removed from local orchestration; repos still exist):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway (3 subgraphs: backend/app, jobsimulation, cms) | [→](../services/graphql-wundergraph.md) |
+| **GraphQL/Cosmo Router** | **prod only** — deleted from compose at platform `2adcf71` | Apollo Federation v2 gateway, **ONE** subgraph (`backend`) since `915da06` | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
@@ -217,13 +220,13 @@ Archived / merged (removed from local orchestration; repos still exist):
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 
 #### Frontend/Studio → Backend
-*   **Primary**: GraphQL via Cosmo Router (Apollo Federation v2 with 3 subgraphs)
+*   **Primary**: GraphQL — **`backend` directly on a local stack** (`:8082/graphql/query`), via the Cosmo Router in prod. Apollo Federation v2 with **one** subgraph
 *   **Direct**: Some services expose REST endpoints for specific use cases
 
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via CMS service (business logic layer)
-*   **GraphQL**: Cosmo Router aggregates 3 subgraph services (backend/app, jobsimulation, cms) into federated schema
+*   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in (jobsimulation went earlier). Nothing is aggregated any more
 *   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
 
 For detailed integration patterns, see [External Services](./external_services.md).

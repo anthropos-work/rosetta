@@ -72,7 +72,7 @@
 *   **How to find the API**:
     *   **Primary — GraphQL, on the `app` (backend) subgraph.** SDL: `internal/web/backend/graphql/graph/schemas/academy.graphqls`;
         resolvers: `resolver_academy.go`. **There is no separate "academy subgraph"** — these types live in the
-        `app`/`backend` federation subgraph. The frontend reaches them through the Cosmo/WunderGraph router
+        `app`/`backend` federation subgraph — **the only subgraph left**. The frontend reaches them at
         (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`).
         *   **Queries** (self-only unless `@public`): `academyProgress`, `academyLastActivity`, `academyChapterTime(s)`,
             `academyPathProgress`, `academyCertificates` + `academyCertificate @public` (unauthenticated verify),

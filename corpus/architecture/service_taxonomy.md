@@ -1,5 +1,8 @@
 # Anthropos Service Taxonomy
 
+> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+
+
 This document explains the three-tier service architecture of the Anthropos platform, categorizing all services by their deployment model, technology stack, and operational characteristics.
 
 ## High-Level Summary (For PMs & Non-Engineers)
@@ -59,7 +62,7 @@ graph TB
 | **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
 | **Roadrunner** | 10400-10401 | Code execution proxy to Judge0 | graphql, roadrunner | Local `../roadrunner` |
 | **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | graphql, backend | Third-party image `gotenberg/gotenberg:8` |
-| **Graphql** (Cosmo Router) | 5050 | Apollo Federation v2 gateway | graphql | Local `../graphql-wundergraph` (built into local image) |
+| ~~**Graphql** (Cosmo Router)~~ | ~~5050~~ | **GONE from local dev** — platform `2adcf71` deleted the service and the `repos.yml` entry; frontends hit `backend` at **`:8082/graphql/query`**. Still declared in prod terraform; repo ARCHIVED 2026-07-30 | — | — |
 
 **Available but not in default `graphql` profile**:
 
@@ -305,7 +308,7 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 - **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
 
 ### Studio Services → Core Services
-- **Studio-Desk**: GraphQL via Wundergraph (`VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql`)
+- **Studio-Desk**: GraphQL via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (was `:5050/graphql` on the router)
 - **Studio-Room**: Direct integration with CMS service for blueprint retrieval
 
 ### All Services → External Services

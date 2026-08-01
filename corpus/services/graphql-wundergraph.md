@@ -1,20 +1,45 @@
 # GraphQL Gateway (`graphql-wundergraph`)
 
+> ## ⚠️ THE ROUTER IS GONE FROM LOCAL DEV — and its two states differ
+>
+> | | production | a fresh local stack @ platform origin HEAD |
+> |---|---|---|
+> | the router | **still declared** — `graphql-wundergraph/terraform/main.tf:20` `service_desired_count = 1` | **deleted** — no `graphql` compose service, no `repos.yml` entry |
+> | the repo | **ARCHIVED on GitHub, 2026-07-30** (read-only) | not cloned by `make init` |
+> | what a frontend talks to | the router | **`backend` directly**, `http://localhost:8082/graphql/query` |
+>
+> Platform `b56d731` + `360efd4` (merged **`2adcf71`**, 2026-07-31) dropped the router from
+> `docker-compose.yml` **and** `repos.yml` and re-pointed local dev at `backend`. **There is no `:5050` on a
+> local stack.** The `graphql` *profile name* survives in compose and is now simply the default profile —
+> it no longer names a router service.
+>
+> The supergraph is **ONE** subgraph, not three: `915da06` (2026-07-29) folded the cms subgraph into
+> `backend` (cms-in-app v8.0), and jobsimulation's went the same way. `supergraph-config-prod.yaml` lists
+> `backend` alone and `schemas/` holds `backend.graphqls` alone.
+>
+> Everything below the fold describes the gateway **as it still exists in production and in the archived
+> repo**. Read [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md)
+> — the fenced map — before acting on any local-development instruction on this page.
+
 > Service-level / developer map for the federated GraphQL gateway. For the
 > integration view (how frontends consume it, Clerk/CORS, troubleshooting) see
 > [External Services → GraphQL Gateway](../architecture/external_services.md#graphql-gateway--wundergraph-cosmo-router).
 
 ## Role & Responsibility
 
-* **Primary Goal**: Federate the platform's three Go GraphQL subgraphs into a single
+* **Primary Goal**: Federate the platform's Go GraphQL subgraphs into a single
   Apollo Federation v2 **supergraph**, served by a WunderGraph **Cosmo Router** at one endpoint.
-  (The former `skiller` subgraph was removed when skiller merged into `app`, July 2026, and the
-  former `skillpath` subgraph was removed when skillpath merged into `app`, "skillpath-in-app"
-  M502→M507 — the `backend` subgraph now serves both the taxonomy types/queries and the
-  skill-path session types/queries.)
+  **Since `915da06` (2026-07-29) there is exactly ONE subgraph — `backend`** — so the supergraph
+  composes a single schema and the federation step is vestigial.
+  (The former `skiller` subgraph was removed when skiller merged into `app`, July 2026; the
+  former `skillpath` subgraph when skillpath merged into `app`, "skillpath-in-app"
+  M502→M507; and the `jobsimulation` + `cms` subgraphs at the v7.0/v8.0 folds — the `backend` subgraph
+  now serves the taxonomy, skill-path-session, simulation and content types/queries alike.)
 * **Key Functions**:
-  * Compose `app` (subgraph name `backend`), `jobsimulation`, and `cms` into one schema.
-  * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to (host `:5050` locally).
+  * ~~Compose `app` (subgraph name `backend`), `jobsimulation`, and `cms` into one schema.~~ Compose
+    `backend` alone (`subgraphs.conf` = `BACKEND=v1.360.0`).
+  * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to. **In production
+    only** — locally, frontends now talk to `backend` at `:8082/graphql/query`.
   * Carry `jobsimulation` GraphQL **subscriptions** over Server-Sent Events (`sse_post`).
   * Provide a GraphQL **playground + introspection** in dev/compose; both are disabled in production.
 
@@ -83,15 +108,17 @@ The two Dockerfiles source schemas differently:
 Routing URLs use Docker **service names** on `app-network` (deliberately avoiding
 `host.docker.internal`/`extra_hosts` so it works on Docker Desktop *and* native Linux):
 
+**Historical — compose no longer has a router service to route.** Kept because the archived repo's
+configs still contain these rows and a reader will find them there.
+
 | Subgraph | Routing URL (Docker network) | Notes |
 |----------|------------------------------|-------|
-| `backend` (the `app` service) | `http://backend:8082/graphql/query` | subgraph named `backend`, maps to repo/service `app` (includes the taxonomy queries absorbed from the former `skiller` subgraph) |
-| `jobsimulation` | `http://jobsimulation:8400/query` | **subscriptions** via `sse_post` |
-| `cms` | `http://cms:8090/query` | |
+| `backend` (the `app` service) | `http://backend:8082/graphql/query` | **the only surviving subgraph.** Named `backend`, maps to repo/service `app` — and now also serves everything the four folded subgraphs used to |
+| ~~`jobsimulation`~~ | ~~`http://jobsimulation:8400/query`~~ | folded into `backend` (jobsim-in-app) |
+| ~~`cms`~~ | ~~`http://cms:8090/query`~~ | folded into `backend` at `915da06` (cms-in-app v8.0) — the step that took the supergraph 2 → 1 |
 
-> The `skillpath` subgraph was removed when the skillpath service merged into `app`
-> ("skillpath-in-app", M502→M507); the `backend` subgraph now serves the skill-path
-> session types/queries. Only 3 subgraphs remain.
+> The `skiller` and `skillpath` subgraphs were removed at their merges; `jobsimulation` and `cms` at
+> theirs. **One subgraph remains** — `supergraph-config-prod.yaml` lists `backend` alone.
 >
 > `dev` mode uses `host.docker.internal:<port>`; `prod` uses AWS service-discovery
 > DNS where all subgraphs share container port **8080**. Use the `-compose` config
@@ -99,35 +126,33 @@ Routing URLs use Docker **service names** on `app-network` (deliberately avoidin
 
 ## Dependencies
 
-* **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile — hits the router at `:5050/graphql`.
-* **Downstream (composed subgraphs)**: `app` (as `backend`), `jobsimulation`, `cms`.
-* **Compose `depends_on`** (all `service_started`): `backend`, `jobsimulation`, `cms`, **`storage`** — note `storage` is **not** a GraphQL subgraph but is in the startup-order list.
+* **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile. **In production** they
+  hit the router; **locally they hit `backend` directly** at `:8082/graphql/query`
+  (`docker-compose.yml:334,352`), because the router service no longer exists in compose.
+* **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, `jobsimulation` and `cms`.
+* ~~**Compose `depends_on`**~~ — moot: there is no compose service. Historically `backend`, `jobsimulation`, `cms`, **`storage`** (note `storage` was **not** a GraphQL subgraph but was in the startup-order list).
 * **CI/prod**: GitHub Releases on `anthropos-work/{app,jobsimulation,cms}` (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`.
 
 ## Local Development
 
-### Run in Docker (normal path)
+### Run in Docker — **no longer possible; there is no service to start**
+
+`make up` starts the `graphql` **profile**, which since `2adcf71` contains no router. `make logs S=graphql`
+has nothing to tail and `http://localhost:5050` refuses the connection. If you are following an older
+runbook that says otherwise, the runbook predates 2026-07-31.
+
+### Smoke-test the endpoint — against `backend`
 
 ```bash
-cd platform
-make up                 # default graphql profile — builds & starts the gateway at :5050
-make logs S=graphql     # tail router logs
-# Open the playground:
-open http://localhost:5050
-```
-
-`graphql` lives in the **`graphql`** and **`all`** profiles only. A single-service
-profile like `make up PROFILE=cms` does **not** start the gateway — bring up the
-`graphql` profile (or `all`) to get a usable federated endpoint.
-
-### Smoke-test the endpoint
-
-```bash
-curl -s http://localhost:5050/graphql \
+# the local GraphQL endpoint IS the backend subgraph now
+curl -s http://localhost:8082/graphql/query \
   -H 'content-type: application/json' \
   -d '{"query":"{ __typename }"}'
 # → {"data":{"__typename":"Query"}}
 ```
+
+Note the path: **`/graphql/query`**, not `/graphql`. On `backend`, `/graphql` serves the Apollo Sandbox UI;
+CORS preflight and auth happen at `/query`.
 
 ### Recompose the supergraph manually
 
