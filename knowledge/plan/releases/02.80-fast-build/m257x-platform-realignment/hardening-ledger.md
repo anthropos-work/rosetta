@@ -402,3 +402,98 @@ completion, and the iter-18 review found its own tests unusually strong (a docke
 forces both sides of the bootstrap race, `sys_tables` / `sys_tables_after` / `bootstrap_rc`), so the
 next pass should look at the corpus-side iters (21–23) and at the `--local-content` verdict path
 rather than re-covering iter-18.
+
+---
+
+## Pass 6 — 2026-08-01 — incremental
+
+**Iters hardened this pass:** iter-21, iter-22, iter-23 (the corpus-audit half of the window)
+**Tiks covered since prior pass:** continuation of the same 11-tik window
+
+**Coverage delta on touched files:**
+
+| section | before | after |
+|---|---|---|
+| `stack-core` | 14F of 392 | 14F of **396** (+4; the standing 14 unchanged) |
+
+**Tests added:** iters 21–23 → `stack-core/tests/test_service_doc_status_fence.py`: 4 net-new.
+
+**Bugs surfaced + fixed inline:**
+
+1. **`corpus/services/studio-room.md` read as a live pipeline for five paragraphs** (rext `fa0028b`
+   found it; corpus fix `75c9ba7`). The map calls `anthropos-studio-room` `merged-into-app` on **both**
+   sides — pulled into the `app` image by CI, spawned as a subprocess from `app/internal/cms/studio/`,
+   not a service, not a container, not in `repos.yml`. The doc said so **in prose, in paragraph six**,
+   after five paragraphs introducing it as an AI content-generation engine and *"the manufacturing
+   floor"*. Seven of the corpus's eight gone-service docs open with the standing ⚠ banner; this was the
+   one that did not, and **three sweeps across iters 21–23 did not reach it** — because those sweeps
+   were grep-vocabulary-bound and this doc never used the words being grepped.
+
+**The fence, and why it is shaped this way.** iter-21's audit reported 11 residual claims, then 5,
+then 2 — a curve that looks like convergence and was not: it was **exhausting its own grep
+vocabulary**, and a full read found **53**. The lesson is not "grep harder". A vocabulary-based sweep
+converges on itself, and nothing it produces can fence itself. What *can* be fenced is a
+**derivation**: there is now exactly one place that says which services are merged —
+`platform-migration-status.md`, itself machine-checked against the platform's own `repos.yml`
+(layer 1, iter-20) — so `ServiceDocStatusFence` reads the map and holds every per-service doc to it.
+A service that folds tomorrow fails on the day the map records it, whatever words its doc uses.
+
+**One-way, deliberately.** Only *map-says-merged ⇒ doc-must-say-so*. The converse is not a finding,
+because a correct row already looks like it: `roadrunner` is `live-standalone` in prod (still
+deployed) while its doc rightly opens *"MERGED INTO `app` / ORPHANED"*. Reddening a nuanced, correct
+doc is how a fence gets disabled — iter-16 paid for that lesson from the other side. A service with no
+doc is likewise not a finding: `chromedp`/`simulator`/`realtime`/`web-app`/`nats` were never
+documented, and demanding docs would invent work rather than pin truth.
+
+**Mutation results this pass:** 8 mutants, **8/8 matching declared expectation**, control GREEN before
+and after. 6 declared-RED — `cms.md`'s banner deleted; its banner pushed below the 20-line window; the
+doc resolver blinded; `GONE_STATES` emptied; the detector widened to `return True`; and **a new row
+(`sentinel`) flipped to `merged-into-app` against an un-bannered doc**, which is the arrival direction
+and how this will actually fire. 2 declared-GREEN controls survive: `cms.md`'s banner **reworded**
+(mark + status word kept — the fence must assert the proposition, not the sentence) and an unrelated
+live row's whitespace.
+
+**Knowledge backfill:** `corpus/services/studio-room.md` — the ⚠ status banner, in the same shape as
+its six siblings, pointing at the map as the authoritative per-service state.
+
+**Flakes stabilized:** none observed. Flake gate clean — 3 consecutive green runs of every test added
+across passes 4–6.
+
+**Final suite state (both repos, all sections):**
+
+| section | result | vs baseline |
+|---|---|---|
+| `playthroughs` (Go) | **ok** | baseline recorded "green"; it was **FAIL (2)** — now genuinely ok, +2 tests |
+| `stack-core` | 14F of **396** | baseline 14F of 390 — **unchanged**, +6 tests |
+| `stack-injection` | **OK 297** (1 skip) | baseline OK 288 — +9 tests |
+| `dev-stack` | **OK 138** | baseline OK 132 — +6 tests |
+| `demo-stack` | 7F of 1030 | baseline 7 of 1030 — **unchanged** |
+| `stack-verify` | 11F + 1E of 237 | baseline 11F+1E of 237 — **unchanged** |
+| Go: alignment / stack-secrets / stack-seeding / stack-snapshot | all **green** | unchanged |
+| Go: clerkenstein | **environmental** — `go: downloading colony v0.34.3` fails, no GH credentials in this sandbox. Pre-existing, unrelated to this pass | — |
+
+No pre-existing failure was fixed and none was added. **Session total: 44 mutants, 44/44 matching
+declared expectation** (35 declared-RED killed, 9 declared-GREEN no-op controls survived).
+
+**Tag:** `fast-build-m257x-harden-p6` at rext `fa0028b`, **pushed and verified on origin**
+(`git ls-remote --tags origin`). `.agentspace/rext.tag` and the `stack-demo` consumption clone both
+still read `fast-build-m257x-iter-25b` — **deliberately not re-pinned**: this pass changed tests and one
+corpus doc only, no tooling runtime source, and re-pinning a live `demo-1` mid-milestone would change
+what the next gate measurement runs against.
+
+**Stop condition:** cap reached without stabilization — 3 incremental passes fired (4, 5, 6) and pass
+6 still surfaced a live drift on its first run, so the dimension scan is not clean. What remains:
+
+* **iters 17, 19, 26 unscanned** (all measurement/withdrawal tiks with little runtime surface — the
+  cheapest remaining work, and plausibly genuinely empty).
+* **iter-18 was scanned and deliberately left alone.** Its own tests are unusually strong: the docker
+  stub already forces both sides of the bootstrap race (`sys_tables` / `sys_tables_after` /
+  `bootstrap_rc`), and `test_bootstrap_race_lost_but_schema_present_reads_as_provisioned` drives the
+  race-lost branch end-to-end. The prompt's concern — *2 of 3 cold cycles never exercised the branch* —
+  is about the LIVE runs, not the suite. No gap found; not re-covered.
+* **The prior pass's routed-forward queue is only partly drained.** iter-16 landed RF-1 and RF-4;
+  Pass 3 landed RF-5 and RF-6. Still open and **unchanged**: **RF-2** (verified still live this pass —
+  `demo-stack/ant-academy.sh:700`'s "SERVES BUT DOES NOT RENDER" check is executed by zero tests),
+  **RF-3**, **RF-7**, **RF-8**, **RF-9** (verified still live — `test_apply_authn.py:608` still
+  `skipTest`s on absent shellcheck, in a test whose own comment names that class), **RF-10**, **RF-11**,
+  **RF-12**. This pass adds **nothing** to that queue — every finding it made was fixed inline.
