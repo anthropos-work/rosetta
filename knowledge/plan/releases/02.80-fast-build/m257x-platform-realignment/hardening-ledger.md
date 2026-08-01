@@ -168,3 +168,81 @@ per the fixable-inline boundary, a bundled fix of that size blurs the iter→har
 
 **Stop condition:** continue-to-next-pass — pass 2 fixed 4 of 20 findings and routed 12; the remaining
 queue is real, enumerated and evidence-backed, so coverage has demonstrably not stabilized.
+
+---
+
+## Pass 3 — 2026-08-01 — incremental
+
+**Iters hardened this pass:** iter-01 … iter-15 (working the Pass-2 routed-forward queue; scope
+`stack-core`'s iter-08 write-target fence — RF-5 and RF-6)
+**Tiks covered since prior pass:** 0 new tiks — third pass of one harden session
+**Pass cap:** 3 of 3 for incremental mode. This pass ends the session.
+
+**Coverage delta on touched files:** `stack-core` 365 → 372 tests. Again not a line-coverage story: both
+gaps were code that ran on every invocation and asserted nothing about itself.
+
+**Tests added:** 7 — 4 driving `scan_text`'s block state machine, 1 per-construct vacuity floor,
+2 proving the legal-schema derivation is actually read (both directions).
+
+**Bugs surfaced + fixed inline** (commit `46f8cc3`, rext) — both in **the very fence this milestone built
+because the class has now recurred three times**:
+
+1. **51 of 92 write targets could go dark with the fence green (RF-5).** Measured breakdown of the scored
+   targets: **41 COPY calls · 19 steps-slice entries · 32 `resetTables` entries**. Only the COPY rule was
+   exercised end-to-end — the existing behaviour test calls `scan_line()` with its *default*
+   `in_block=True`, so it never runs `scan_text` and never touches `RE_STEPS_TYPE`, `RE_RESET_OPEN`, or the
+   state machine at all. Make `scan_text` never open a block and both block-scoped constructs vanish,
+   including every `resetTables` entry — which is interpolated **raw into `TRUNCATE TABLE … CASCADE`**.
+   And the anti-vacuity guard could not notice: `found > 40` is cleared by the 41 COPY hits **alone**, so
+   the margin on the only vacuity check in the file was **exactly one**.
+   Fixed on both axes: 4 tests that drive `scan_text` (never `scan_line`), including block *closing* — so a
+   casbin-grant lookalike outside the block is still not re-scored, the false-RED that gets a fence disabled
+   — and a **per-construct** vacuity floor. *An aggregate a single construct satisfies cannot detect a
+   construct going blind, which is the one thing it exists to detect.*
+2. **The legal-schema derivation was never proven read (RF-6).** Its test asserted `"public" in legal` —
+   guaranteed by `out.add(ANCHOR_SCHEMA)`, not by any derivation — and `"skillpath" not in legal`, satisfied
+   by two hardcoded strings that never mention it. Removing the declared-schema half of the derivation from
+   `lib/repos_yml.sh` entirely returns a **byte-identical** set, because `app → public` is also what the
+   anchor supplies. Now driven with a fixture declaring a schema no anchor or infra constant could supply,
+   plus the other direction: a schema present in a **stale pre-fold** `repos.yml` must LEAVE the set when
+   the platform stops declaring it — the wrong-vantage class (iter-11), which would otherwise silently
+   re-admit the two dead schemas this fence exists to catch.
+
+**Mutation results this pass:** 4 mutants, **4 RED**, controls GREEN — state machine never opens ·
+`RE_RESET_OPEN` never matches · block never closes · declared-schema derivation removed.
+**Session total: 18 mutants, 18 RED.**
+
+**Flakes stabilized:** none observed. Flake gate clean — 3 consecutive green runs of every test added in
+passes 1–3.
+
+**Final suite state (both repos, all sections):**
+
+| section | result | vs baseline |
+|---|---|---|
+| `stack-verify` | 11 failures + 1 error of **237** | baseline 11F+1E of 224 — **unchanged**, +13 tests |
+| `stack-core` | 14 failures of **372** | baseline 14 of 363 — **unchanged**, +9 tests |
+| `stack-injection` | **OK** (286, 1 skip) | baseline OK (277) — +9 tests |
+| `dev-stack` | **OK** (122) | unchanged |
+| `demo-stack` | 7 failures of 1029 | baseline 7 of 1029 — **unchanged** |
+| Go sections | all **GREEN** | `stack-snapshot` `replay` 98.2% → **100.0%** |
+
+No pre-existing failure was fixed and none was added.
+
+**Live proof (pass 1's probe).** `probe_directus_serves_content` was run against the live `demo-1` stack
+rather than only against stubs: the derivation resolved `task_sub_checks` out of the real catalog, the anon
+`GET /items/task_sub_checks?limit=1` returned **200 with a real item**, and the probe exited 0. Aimed at an
+offset with no Directus it went RED naming the state correctly (*"no response from the Directus on port
+58055"*). Both verdicts observed on a real stack — a probe that has never executed is this milestone's own
+defect class.
+
+**Stop condition:** cap reached without stabilization — 3 incremental passes fired. Coverage has NOT
+stabilized: passes 2–3 fixed 6 of the 20 scanned findings and **RF-1 through RF-4 and RF-7 through RF-12
+remain open**, each with a named source mutation that leaves the suite green today. This is not a plea for
+a fourth pass — the remaining queue is dominated by **source** changes to bring-up scripts (RF-1's `exit 1`
+on the dev migration path, RF-4's `skipped(error)` verdict) whose blast radius belongs to an iter, not to a
+harden pass. See §"Routed forward" in Pass 2 for the full table.
+
+**Recommended disposition (for the orchestrator/user, not decided here):** route **RF-1** and **RF-4** into
+the next iter — RF-4 is the clause-1 signature itself, still live in a file this milestone edited, and RF-1
+is the wrong-twin class with the demo half already fixed. The remaining test-only items (RF-3, RF-7, RF-9,
+RF-10, RF-11) are natural work for the **final** harden pass after the gate fires.
