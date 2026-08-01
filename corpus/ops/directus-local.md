@@ -245,8 +245,17 @@ the directus **container actually existing** (a prod-read stack never false-warn
 - the per-stack **`directus` schema** is added to the readiness expected-schemas list **when the container is
   present** (a prod-read stack has neither, so it isn't expected).
 - a **`directus-collections` readiness probe** + an autoverify **"registered collections > 0" cheap-win** — the
-  silent-failure analog of the casbin assert: a Directus can be UP (health 200) but serve **nothing** if the
-  content-model never registered.
+  silent-failure analog of the casbin assert: a Directus can be UP (health 200) but have no content model at
+  all. **It proves REGISTRATION, not serving** — `directus_collections` is a registry table written by the
+  *structure* replay, so it is `> 0` on a Directus holding zero items and on one that 403s every read. That
+  is not hypothetical: it graded M257x clause 1's three cold cycles `green:true` over exactly that stack
+  (0 of 11986 content rows, every anon read 403). See [`platform-alignment.md`](platform-alignment.md)
+  §5 rule 14.
+- a **`directus-serves-content` readiness probe** (M257x harden pass 1) — the measurement the count cannot
+  make: an **unauthenticated HTTP read of one item** from the running Directus on the stack's own offset
+  port, against a collection **derived** from the stack's own catalog and **fail-closed** when the derivation
+  finds none. This is the probe that makes "the local Directus serves the captured catalog" a claim the
+  tooling has actually checked.
 - a **no-prod-read env assert** — the runtime mirror of the EnvContract gate: warns (non-fatal) if the local
   Directus's DB connection string resolves to a prod host.
 

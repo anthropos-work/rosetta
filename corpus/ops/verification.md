@@ -111,10 +111,30 @@ On a stack brought up with **local content** (demo default; dev `--local-content
 more cheap-wins — gated on the directus **container actually existing**, so a prod-read stack (no local
 Directus) never false-warns even on an unscoped run:
 
-3. **Directus serves the catalog** — `SELECT count(*) FROM directus.directus_collections` via `docker exec
-   <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin assert: a Directus
-   can be UP (`/server/health` 200) but serve **nothing** if the content-model never registered. (Also runs as
-   the `directus-collections` readiness probe.)
+3. **Directus REGISTERED the content model** — `SELECT count(*) FROM directus.directus_collections` via
+   `docker exec <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin
+   assert: a Directus can be UP (`/server/health` 200) and have no content model at all. (Also runs as the
+   `directus-collections` readiness probe.)
+
+   > **⚠ This assert used to be described — here and in its own `✓` line — as *"Directus serves the
+   > catalog"*, and it cannot know that.** `directus_collections` is a **registry** table written by the
+   > *structure* replay; the content rows are loaded by a later step and the anon read grants by a third, so
+   > the count is `> 0` on a Directus holding zero items and on one that 403s every read. On M257x clause
+   > 1's three cold cycles it was exactly that: the content replay raised on `directus.sequences`, **0 of
+   > 11986 rows** landed, every anon `/items` read returned 403 — and `autoverify` graded `green:true /
+   > 0 warnings` three times over it, because nothing anywhere in the verify path asked the *running*
+   > Directus for an item. Corrected in M257x harden pass 1; the rule it produced is
+   > [`platform-alignment.md`](platform-alignment.md) §5 rule 14 — **REGISTERED is not SERVED.**
+
+3b. **Directus actually SERVES an item** (`directus-serves-content` readiness probe, M257x harden pass 1) —
+   the measurement the count above cannot make. It asks the **running** Directus over HTTP, on the stack's
+   own offset port, **unauthenticated**, for one item out of a collection it did not choose: the target is
+   **derived** from the stack's own catalog (the non-system `directus.*` table holding the most rows), so a
+   re-modelled surface cannot make the probe stale and it cannot pick a target that guarantees its own
+   success. The derivation is **fail-closed** — no user collection holding a single row IS the defect, not a
+   skip. `403` (holds the content, serves it to nobody), `200` with an empty `data` array (serving, content
+   absent) and no-response are each named distinctly, because they have three different repairs. Scoped to
+   the `directus` service like the others, so a prod-read stack still skips cleanly.
 4. **No prod read** — the per-stack Directus's `DB_CONNECTION_STRING` (read from the container's env) must
    resolve to the stack's **own** Postgres, never a prod host. The runtime mirror of the executed-provision
    firewall gate; warns (non-fatal) if a mis-wired override pointed the local Directus at prod.
@@ -141,7 +161,9 @@ Directus) never false-warns even on an unscoped run:
   `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
   Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
-  `directus-collections` serve-check — each resolving the offset port + project container via the same
+  `directus-collections` registration check **and the `directus-serves-content` probe that reads an actual
+  item back over HTTP** (§"cheap-wins" 3/3b above — the registration count alone graded three cold cycles
+  green over a Directus that served nothing) — each resolving the offset port + project container via the same
   `target.sh` helpers. **Both** phases honour the `STACK_SERVICES` scope filter: the readiness phase skips a
   deep probe whose backing service isn't in scope (the same `target_service_selected` gate as liveness), so a
   reduced bring-up never produces a wall of false `down`s in *either* phase. (The directus row is scoped in

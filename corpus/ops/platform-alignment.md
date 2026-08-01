@@ -367,6 +367,44 @@ Rules, in order of how often they actually catch something:
     and never asks the running Directus for an item. **When a step's success gates a side effect, a failure
     costs both**, and the second symptom looks like an unrelated bug.
 
+14. **REGISTERED is not SERVED — a check must be a CLIENT of the surface it grades.** M257x, harden pass 1,
+    generalising the blast-radius note in rule 13 from an observation into a rule.
+
+    The only Directus check anywhere in the verify path counted rows in `directus.directus_collections`.
+    That table is a **registry**, populated by the *structure* replay; the content is loaded by a *later,
+    separate* step, and the anon read grants by a third. So the count is satisfied by a Directus holding
+    zero content, and by one that 403s every read — both of which is what the stack actually was. Three
+    consecutive cold cycles were graded `green:true / 0 warnings`, and those verdicts were checked in.
+
+    The shape generalises well past Directus, because most content-bearing systems have exactly this split:
+
+    | what you can count cheaply | what the user actually needs |
+    |---|---|
+    | rows in a registry / catalog / metadata table | an item returned by the running service |
+    | a migration recorded as applied | a query against the table it created |
+    | a role or grant row existing | an unauthenticated request that gets a 200 |
+    | a container reported `running` | the port answering the request the app makes |
+
+    The left column is populated by a *different step* from the right. Counting the left and reporting the
+    right is rule 7's self-satisfying probe wearing a convincing disguise — it measures something real, and
+    something that is genuinely necessary. It is just not the thing being claimed.
+
+    Three properties make the replacement a measurement rather than a second opinion:
+
+    - **Be a client.** Go over the wire the way the consumer does — the running service, the stack's own
+      offset port, an unauthenticated request if that is how the content is consumed. A DB count and an
+      HTTP read are *independent* measurements; two DB counts are one measurement twice.
+    - **Derive the target, never hardcode it.** Ask the environment what to read (here: the non-system
+      collection holding the most rows), so a re-modelled surface cannot make the check stale, and so the
+      check cannot pick a target chosen to guarantee its own success (§2, §5 rule 7).
+    - **Fail closed on an empty derivation.** "Nothing to check" and "nothing is there" are the same
+      observation from the check's side and opposite verdicts from the operator's. If the derivation finds
+      no target, that IS the defect — say so; do not pass. Every silent-skip in this milestone read as green.
+
+    And name the states distinctly: *403* (holds it, serves it to nobody), *200 with an empty payload*
+    (serving, but the content is not there), *no response* (not serving) have three different repairs, and a
+    boolean collapses them (rule 11).
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
