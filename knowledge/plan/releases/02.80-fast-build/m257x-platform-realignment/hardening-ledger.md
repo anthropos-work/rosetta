@@ -629,3 +629,87 @@ the block is inside blocker #5's own blockquote, and editing it is repairing one
 **Stop condition:** continue-to-next-pass — iters 27–30, 32–41 have not been scanned to completion; the
 open `CHECK-M257x-iter35-negative-control-rests-on-the-same-tie` is still unhardened, and the iters
 36–41 page-object/seed changes are unswept.
+
+---
+
+## Pass 9 — 2026-08-02 — incremental
+
+**Iters hardened this pass:** iter-35 (the drill-down tie) + its unrepaired twin
+**Tiks covered since prior pass:** continuation of the same 15-tik window
+
+**Coverage delta on touched files:**
+
+| section | before | after |
+|---|---|---|
+| `playthroughs/e2e` positional drills in specs | **1** (unfenced) | **0** (+1 fence file, 3 assertions) |
+| `stack-core` | 14F of 415 | 14F of **420** |
+| `stack-seeding/seeders` fences on `memberRoleAt` | 0 | **3** |
+
+**Tests added:** iter-35 → `playthroughs/e2e/tests/tie-ordering-fence.unit.spec.ts`: 3 net-new.
+
+**Bugs surfaced + fixed inline:**
+
+1. **`CHECK-M257x-iter35-negative-control-rests-on-the-same-tie` — CLOSED** (rext `e947401`). iter-35
+   measured that the activity grid's *"first row"* premise was never true: **11 distinct contents share
+   the same `max(started_at)` to the microsecond**, because the seeder stamps every backdated session
+   at one instant, so *"most-recent activity"* does not order the grid at all and **2 of the 11 carry
+   no hero session**. The two runs that "confirmed" the old selector were **two draws from a tie**. It
+   fixed the Playthrough, and booked the twin — `negative-controls.spec.ts` was still drilling row 0
+   one test over, *"currently green by luck"*. **It stayed that way for 8 iterations.** That is §5
+   rule 19 (*repair by CLAIM, not by FILE*) observed on the suite rather than the corpus. Repaired with
+   iter-35's own property-based selector; **strictly an improvement** — when row 0 does contain the
+   member the scan returns 0 immediately and the path is byte-for-byte the old one, so it differs only
+   in the runs the old form would have failed.
+
+**The fence, and why it is shaped this way.** `tie-ordering-fence.unit.spec.ts` makes the rule
+mechanical: a positional drill followed within its window by an assertion naming a seeded **person** is
+RED; `drillIntoContentContaining(name)` is exempt; `lib/` is out of scope because the page objects OWN
+the positional accessor. It **fails closed** on 0 specs or 0 sanctioned calls, and carries **its RED
+watch inline** — the recogniser is asserted to fire on the exact pre-fix shape *and* to stay silent on
+the sanctioned one, so "0 violations" cannot quietly mean "matches nothing". Measured: **30 specs, 0
+positional drills, 2 property drills**; re-introducing the pre-fix shape turns it RED at
+`negative-controls.spec.ts:577`.
+
+**Stated limitation (§5 rule 8 — a skip must not read as a pass).** The `playthroughs/e2e` dir has **no
+`node_modules` on this host**, so the fence was validated by running its scan logic under plain `node`
+against the real tree, and by the same mutation. **It has not yet been executed by the Playwright
+runner**, and the `negative-controls.spec.ts` edit has not been executed live. Both are covered by the
+next Playthrough run; recorded here rather than left to be discovered.
+
+**Flakes stabilized:** none observed. **Flake gate: 3 consecutive clean runs** of every test added
+across passes 7–9.
+
+**Final suite state (both repos, all sections):**
+
+| section | result | vs baseline |
+|---|---|---|
+| `stack-core` | 14F of **420** | baseline 14F of 415 — **unchanged**, +5 tests |
+| `stack-verify` | 11F + 1E of 237 | **unchanged** |
+| `demo-stack` | 7F of 1030 | **unchanged** |
+| `stack-injection` | **OK 299** (1 skip) | unchanged |
+| `dev-stack` | **OK 138** | unchanged |
+| Go: stack-seeding / stack-snapshot / stack-secrets / alignment / playthroughs | all **green** | unchanged |
+| Go: clerkenstein | **environmental** — private-module fetch, no GitHub creds in this sandbox. Pre-existing | — |
+
+No pre-existing failure was fixed and none was added. **Session total: 21 mutants, 21/21 matching
+declared expectation** (11 claim-twin, 5 role-tenancy, 5 tie-ordering incl. its inline watch), with a
+surviving no-op control in each battery.
+
+**The perishable fixture is intact** across all three passes, and **none of the 18 live corpus blockers
+was repaired** — TOK-02 step 4 still owns that, fence-assisted.
+
+**Stop condition:** cap reached without stabilization — 3 incremental passes fired (7, 8, 9) and pass 9
+still surfaced a live unrepaired twin on its first look, so the dimension scan is not clean. What
+remains:
+
+* **iters 27–30, 32–34, 36–41 not scanned to completion.** The seeder work (feedback hero policy,
+  hiring funnel, assignment plans) and the iters 36–41 page-object changes are unswept.
+* **`CHECK-M257x-iter35-seeder-writes-one-instant` is still open and is the ROOT of what pass 9 fixed.**
+  Pass 9 repaired the two *selectors*; the seeder still stamps every backdated session with a single
+  timestamp, which flattens **all** recency ordering in the product, not just these tests'. Every
+  future assertion about "most recent" anything rests on the same tie. This is a believability defect
+  as much as a test one and it is the highest-value item left in the queue.
+* **The prior routed-forward queue is unchanged and now one longer.** Still open: **RF-2**, **RF-3**,
+  **RF-7**, **RF-8**, **RF-9**, **RF-10**, **RF-11**, **RF-12**, and **RF-13** (new this session, pass
+  8 — the tenancy derivation block that stops one step short of the number in dispute; **joins** the
+  queue, supersedes nothing).
