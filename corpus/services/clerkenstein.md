@@ -68,7 +68,8 @@ It is the **first mirror produced by the M0 alignment process** (not a hand-buil
 Driven to the gate across: the Go surface (`clerk-sdk-go/v2 @ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
 **multi-identity seat-switch** surface (9/9 genes, `clerk-multi-1` — the v1.9 M37 registry + active-seat
 selection, so a demo can present as any seeded hero; the multi-session FAPI semantics real clerk-js exhibits
-with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express`
+with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (**13 genes across 5
+capabilities** — dependency-gated, so frequently *unmeasured*; see the ⚠ box above — `@clerk/express`
 ^1.3.47, M2c — RS256/JWKS, the genuine SDK *satisfied*, not reimplemented), and the **deployment/injection**
 surface (7/7 genes, `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against
 a real `colony`, pinned at **`v0.34.3`**, and satisfies its contract; added after **M3** showed *behavioural*
@@ -131,8 +132,11 @@ make the route correct, each pinned by a test in `clerk-frontend/meorgmembership
   user with **no** memberships gets an empty list at 200 (mirroring the BAPI contract).
 
 The data needed no new assembly: `/v1/me` already returns `userRes.OrganizationMemberships`. The role keeps
-Clerk's **prefixed** form (`org:admin`) — studio-desk's `STUDIO_ACCESS_ROLES` gate reads it, so dropping the
-prefix would bounce every hero.
+Clerk's **prefixed** form (`org:admin`) as a **fidelity** choice — it is what real Clerk emits on this route.
+It is *not* a hard gate requirement: studio-desk's `STUDIO_ACCESS_ROLES` accepts **both** forms
+(`['admin', 'org:admin', 'content_creator', 'org:content_creator']` — `src/index.ts:96` and
+`app/services/userService.ts:16`, each carrying the comment "Both the prefixed (`org:*`) and bare role keys
+are accepted"), so an unprefixed `admin` would pass too.
 
 > **Not yet a measured gene.** `alignment/dna/clerk-js-5.json` has a `Me` capability for `GET /v1/me` but
 > **no** gene for this route, so alignment scoring does not cover it — the unit tests do. Adding one needs a
@@ -269,7 +273,7 @@ source changes.
 > `clerk-deploy-1` score taken against `v0.34.3` **is not measuring the binary under test**. This is precisely
 > the drift the deployment DNA exists to catch, so re-run `deployrun` against `v0.35.2` before quoting 7/7 as
 > current. (`app` is likewise on `clerk-sdk-go/v2 v2.7.0`, not `v2.6.0` — `CHECK-M257x-iter22-clerk-sdk-drift`.)
- It is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
+That drop-in is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
 carries, not a hard-coded user). Its contract is checked at *compile time* and scored by the
 `alignment/cmd/deployrun` runner (the `clerk-deploy-1` DNA). `cmd/` ships the supporting standalone tools:
 `mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers
@@ -343,9 +347,14 @@ The **live cross-machine acceptance** is **M215**. The full remote-access recipe
 - **`knowledge/injection.md`** — the four per-library injection recipes (each labelled built+gated /
   spike-proven / recipe-only) for disarming the platform's Clerk with no platform-code change.
 - **`knowledge/alignment.md`** — how fidelity is measured against a pinned Clerk version + the **drift
-  runbook** (M1b: `gate.sh` / `drift-check.sh` exit-code contract / weekly CI; re-`/align-dna` +
-  re-`/align-run` on a Clerk bump). `ALIGN_DIR` default is `../../alignment` (the sibling section; scripts
-  live at `alignment/scripts/`).
+  runbook** (M1b: `gate.sh` / `drift-check.sh` exit-code contract; re-`/align-dna` + re-`/align-run` on a
+  Clerk bump). The scripts are **mirror-side**, at `clerkenstein/alignment/scripts/` — the reusable
+  `rosetta-extensions/alignment/` harness section has no `scripts/` dir; `ALIGN_DIR` (default
+  `../../alignment`, relative to `clerkenstein/alignment/`) is how they find the sibling harness's
+  `alignctl`. The weekly-cron CI workflow they reference (`clerkenstein/.github/workflows/alignment.yml`)
+  is **git-tracked but inert** — GitHub Actions only reads `.github/workflows` at the *repository root*, so
+  the gate is a manual `/align-run`; see
+  [`alignment_testing.md`](../architecture/alignment_testing.md#how-m1-m1b-m2-and-m2c-consume-this).
 - **`knowledge/coverage-index.md`** — per-package test coverage + known gaps.
 - Per-library `README.md` in each dir for the code-level entry point.
 

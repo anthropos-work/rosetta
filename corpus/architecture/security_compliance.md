@@ -4,7 +4,7 @@ This document describes the security architecture, data protection measures, and
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers are routed through EU endpoints first. The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, the per-check pass/fail verdicts it counts are produced by an LLM.
+Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers are routed through EU endpoints first. The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, but **most** of the per-check pass/fail verdicts it counts are produced by an LLM. *Most*, not all — deterministic `EngineTextDiff` checks are the exception, and "all verdicts are AI" is the opposite error. **The legal classification itself is a question for counsel; this corpus only records that the stated technical premise is false.**
 
 Key guarantees:
 - EU data residency (primary)

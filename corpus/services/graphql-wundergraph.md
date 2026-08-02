@@ -13,9 +13,10 @@
 > local stack.** The `graphql` *profile name* survives in compose and is now simply the default profile —
 > it no longer names a router service.
 >
-> The supergraph is **ONE** subgraph, not three: `915da06` (2026-07-29) folded the cms subgraph into
-> `backend` (cms-in-app v8.0), and jobsimulation's went the same way. `supergraph-config-prod.yaml` lists
-> `backend` alone and `schemas/` holds `backend.graphqls` alone.
+> The supergraph is **ONE** subgraph: `915da06` (2026-07-29) folded the cms subgraph into `backend`
+> (cms-in-app v8.0) and deleted the `jobsimulation` entry in the **same commit** — a **3 → 1** step,
+> not 2 → 1. `supergraph-config-prod.yaml` lists `backend` alone and `schemas/` holds
+> `backend.graphqls` alone.
 >
 > Everything below the fold describes the gateway **as it still exists in production and in the archived
 > repo**. Read [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md)
@@ -29,16 +30,38 @@
 
 * **Primary Goal**: Serve the platform's Apollo Federation v2 **supergraph** from a WunderGraph
   **Cosmo Router** at one endpoint. Since **cms-in-app v8.0** the supergraph composes a **single
-  subgraph** — `backend`. All four other subgraphs folded into it in sequence: `skiller` (July 2026),
-  `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` ("jobsim-in-app"), and `cms`
-  (the 2→1 step). The `backend` subgraph now serves the taxonomy, skill-path session, simulation and
-  content types/queries alike.
+  subgraph** — `backend`. All four other subgraphs folded into it, though **not one per service
+  merge**. Counting entries in `supergraph-config-prod.yaml` at each commit:
+
+  | commit | date | subgraphs | what changed |
+  |---|---|---|---|
+  | `749dc86~1` | — | **5** | `backend`, `skiller`, `jobsimulation`, `cms`, `skillpath` |
+  | `749dc86` | 2026-06-24 | **4** | `skiller` removed |
+  | `7c17e63` | 2026-07-21 | **3** | `skillpath` removed ("skillpath-in-app") |
+  | `915da06` | 2026-07-29 | **1** | `cms` **and** `jobsimulation` removed together (cms-in-app v8.0) |
+
+  So cms-in-app was the **3 → 1** step. The `jobsimulation` subgraph **outlived jobsim-in-app**: the
+  service merged into `app` well before its supergraph entry and `schemas/jobsimulation.graphqls`
+  were deleted, and both went at `915da06` alongside cms's (`git show --name-status 915da06` marks
+  the two SDL files `D`). `915da06`'s own subject line says *"supergraph 2→1"* and is **wrong** —
+  the tree it was committed against lists three. The `backend` subgraph now serves the taxonomy,
+  skill-path session, simulation and content types/queries alike.
 * **Key Functions**:
   * Compose `app` (subgraph name `backend`) — the only entry in `supergraph-config-*.yaml`; `subgraphs.conf` carries a single `BACKEND=` pin.
   * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to. **In production
     only** — since platform `2adcf71` there is no router in compose, and locally the frontends talk to
     `backend` at `:8082/graphql/query`.
-  * Carry the jobsimulation GraphQL **subscriptions** over Server-Sent Events (`sse_post`) — served by `backend` now.
+  * ~~Carry the jobsimulation GraphQL **subscriptions** over Server-Sent Events (`sse_post`)~~ —
+    **HISTORICAL, and there is nothing to carry today.** The `subscription: protocol: "sse_post"`
+    block sat on the `jobsimulation` entry alone and died with that entry at `915da06`; no
+    `supergraph-config-*.yaml` carries a `subscription:` block now. Nor is there anything to
+    subscribe to on `backend` directly: the composed `schemas/backend.graphqls` declares `type
+    Query` and `type Mutation` and **no `type Subscription`** (the `Subscription` substring hits in
+    that SDL are Stripe/plan field names — `activeSubscription`, `stripeSubscriptionId`, `type
+    PlanSubscription`). On mainline the protocol read `sse_post` for its whole life; `bba862f`
+    ("change subscription protocol from sse_post to ws", 2026-02-25) never merged — it exists only
+    on `remotes/origin/feat/use-web-socket`. See
+    [External Services → What the gateway provides](../architecture/external_services.md#graphql-gateway--wundergraph-cosmo-router).
   * Provide a GraphQL **playground + introspection** in dev/compose; both are disabled in production.
 
 > **"WunderGraph" vs "Cosmo Router" — same thing.** Cosmo is WunderGraph's
@@ -88,8 +111,18 @@ The two Dockerfiles source schemas differently:
 
 | Dockerfile | Schema source | Used by |
 |------------|---------------|---------|
-| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, …) and `awk`-concatenates. **Not used by compose at all any more** — there is no `graphql` compose service since `2adcf71`. Before that it built from the production `Dockerfile`, composing the committed `schemas/backend.graphqls`. | (legacy local path) |
+| `Dockerfile.dev` | COPYs SDL fresh from **sibling repos** (`../app`, …) and `awk`-concatenates. **Not used by compose at all any more** — there is no `graphql` compose service since `2adcf71`. It *was* what compose built, from `2c85211` (2026-02-27) right up to the deletion. | (legacy local path) |
 | `Dockerfile` | Uses the **committed `schemas/*.graphqls`** as-is | production CI build |
+
+> **Which one compose used, historically.** Verified against `platform`'s `docker-compose.yml`
+> history: the router service (`wundergraph`, renamed `graphql` at `d92e84e`) carried **no
+> `dockerfile:` key** from its introduction (`63d285c`) through `719befb`, so those builds took the
+> default — the **production `Dockerfile`**, committed schemas and all — first from a `git@…` context,
+> then from `../graphql-wundergraph` (`a2a3ee6`). `2c85211` (2026-02-27) added
+> `dockerfile: Dockerfile.dev`, `67ba772` moved the context to `..` (path becoming
+> `graphql-wundergraph/Dockerfile.dev`), and it stayed `Dockerfile.dev` until the service block was
+> deleted at `360efd4` (merged as `2adcf71`). So for its **final five months** compose built
+> `Dockerfile.dev` — which is why a subgraph SDL change rebuilt the router, as `:84` describes.
 
 ## Interface Discovery
 
@@ -112,13 +145,14 @@ configs still contain these rows and a reader will find them there.
 | Subgraph | Routing URL (Docker network) | Notes |
 |----------|------------------------------|-------|
 | `backend` (the `app` service) | `http://backend:8082/graphql/query` | **the only surviving subgraph.** Named `backend`, maps to repo/service `app` — and now also serves everything the four folded subgraphs used to |
-| ~~`jobsimulation`~~ | ~~`http://jobsimulation:8400/query`~~ | folded into `backend` (jobsim-in-app) |
-| ~~`cms`~~ | ~~`http://cms:8090/query`~~ | folded into `backend` at `915da06` (cms-in-app v8.0) — the step that took the supergraph 2 → 1 |
+| ~~`jobsimulation`~~ | ~~`http://jobsimulation:8400/query`~~ | service folded into `backend` (jobsim-in-app), but **the subgraph entry outlived the merge** — it was deleted at `915da06`, in the same commit as cms's |
+| ~~`cms`~~ | ~~`http://cms:8090/query`~~ | folded into `backend` at `915da06` (cms-in-app v8.0) — the step that took the supergraph **3 → 1** |
 
 > All four non-`backend` subgraphs were removed as their services merged into `app`:
-> `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation`
-> ("jobsim-in-app"), and `cms` ("cms-in-app v8.0" — the 2→1 step). The `backend` subgraph
-> serves all of their types/queries. **Only 1 subgraph remains.**
+> `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), and then `jobsimulation`
+> **and** `cms` together at `915da06` ("cms-in-app v8.0" — the **3 → 1** step; see the ladder under
+> *Role & Responsibility*, and note that `915da06`'s subject line's "2→1" is wrong). The `backend`
+> subgraph serves all of their types/queries. **Only 1 subgraph remains.**
 >
 > `dev` mode uses `host.docker.internal:<port>`; `prod` uses AWS service-discovery
 > DNS where all subgraphs share container port **8080**. Use the `-compose` config
@@ -145,11 +179,43 @@ runbook that says otherwise, the runbook predates 2026-07-31.
 
 ```bash
 # the local GraphQL endpoint IS the backend subgraph now
-curl -s http://localhost:8082/graphql/query \
+curl -s -w '\nHTTP=%{http_code}\n' http://localhost:8082/graphql/query \
   -H 'content-type: application/json' \
   -d '{"query":"{ __typename }"}'
-# → {"data":{"__typename":"Query"}}
+# → {"errors":[{"message":"unknown viewer: Forbidden"}],"data":null}
+#   HTTP=200
 ```
+
+**That rejection *is* the healthy response — do not read it as a failure.** The endpoint is
+default-closed: `app`'s GraphQL authorization middleware rejects any anonymous operation that isn't
+`@public`-annotated, a federation query, or (in local dev only) pure schema introspection
+(`app/internal/authorization/gqlauthz/gqlauthz.go:186`). `__typename` is **deliberately excluded**
+from the introspection exemption in every environment — the app pins that with its own regression
+tests, which drive `__typename` specifically (`gqlauthz_test.go`, `"bare __typename is not exempt"`
+and `TestAnonymousRejectionLogsAtWarn`). This is stock behaviour, not something a demo patch does.
+Note also that the transport is healthy at **HTTP 200**: GraphQL reports the refusal in the `errors`
+array, not in the status code.
+
+So what the probe actually proves is *the server is up, routing, parsing GraphQL and enforcing
+authz*. The real failure signals are **connection refused / HTTP 000** (nothing listening — wrong
+port; remember a demo stack's ports are offset, e.g. `18082` for `demo-1`), a **non-200 status**, or
+an HTML/proxy body instead of JSON.
+
+Two companion probes worth running:
+
+```bash
+curl -s http://localhost:8082/api/health                      # → "OK"   (liveness, no GraphQL)
+
+# pure schema introspection IS exempt anonymously — in local dev only
+curl -s http://localhost:8082/graphql/query \
+  -H 'content-type: application/json' \
+  -d '{"query":"{ __schema { queryType { name } } }"}'
+# → {"data":{"__schema":{"queryType":{"name":"Query"}}}}
+```
+
+The `__schema` form is the one that returns real `data` unauthenticated, and it is what the
+frontend's `pnpm codegen` relies on. It is gated on `colony.Development`, so on staging/prod it is
+refused like everything else.
 
 Note the path: **`/graphql/query`**, not `/graphql`. On `backend`, `/graphql` serves the Apollo Sandbox UI;
 CORS preflight and auth happen at `/query`.

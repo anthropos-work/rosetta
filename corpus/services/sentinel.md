@@ -2,7 +2,7 @@
 
 ## Role & Responsibility
 
-Sentinel is the **centralized authorization service** of the platform. Its live callers are **`app`** — including the jobsimulation and cms authz call sites it absorbed in-process — and **`messenger`**; both reach it over Connect-RPC to check permissions before executing operations. (The `cms` and `jobsimulation` husk containers still start and still receive `AUTHORIZATION_ADDRESS=http://sentinel:8087` at `docker-compose.yml:97,158`, but they sit off every request path.) It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+Sentinel is the **centralized authorization service** of the platform. Its **only** live caller is **`app`** — including the jobsimulation and cms authz call sites it absorbed in-process — which reaches it over Connect-RPC to check permissions before executing operations. (The `cms` and `jobsimulation` husk containers still start and still receive `AUTHORIZATION_ADDRESS=http://sentinel:8087` at `docker-compose.yml:99,160`, but they sit off every request path.) **`messenger` is not a caller** — its compose block sets no `AUTHORIZATION_ADDRESS` and declares no `depends_on: sentinel`, and its Go source imports no authorization client at all; [`clerk-integration.md`](./clerk-integration.md) says the same ("storage, messenger — no auth"). It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
 
 Sentinel does **not** handle authentication — that's Clerk's job. It also does not validate JWTs (the shared `authn` library does that in each consuming service). Sentinel only answers *"is this subject allowed to perform this action on this object?"*.
 
@@ -37,8 +37,15 @@ The enforcer defines **6 request types, 6 policy types, 3 role groupings, 6 matc
 Role groupings:
 
 * `g(user, tier)` — `TIER_FREE` / `TIER_PREMIUM`
-* `g2(org, user, role)` — `admin` / `member` / `manager` / `candidate` per org
+* `g2(org, user, role)` — `admin` / `member` / `candidate` / `content_creator` per org (the four `MembershipRole` values in `app/internal/data/ent/enum/membership.go:8-15`; `init_policy.sql` seeds policies for all four, `content_creator` in its own block at `init_policy.sql:88-118` with a dedicated `internal/authorization/casbin_content_creator_test.go`)
 * `g3(org, membership)` — enables/disables org memberships for feature access
+
+> **There is no `manager` role.** It appears nowhere in `init_policy.sql`, and only as a fixture string in
+> sentinel's own tests (`internal/authorization/casbin_test.go`, `internal/rpcsrv/rpc_test.go`); a live
+> stack's `select distinct v2 from sentinel.casbin_rules where p_type='g2'` returns `admin` / `member` /
+> `candidate` only. In the demo world "manager" is a **persona** label, not a Casbin role — granting it
+> yields a membership with **no policy rows at all**, which is exactly the silent-403 failure mode this
+> corpus warns about elsewhere.
 
 ### Key directories
 
@@ -75,11 +82,11 @@ terraform/                      AWS ECS (base_internal_service module)
 | `OrgGetOrganizationFeatureCredits` / `OrgSetOrganizationFeatureCredits` | Manage org feature credit budgets |
 | `Reload` | Hot-reload policies from DB |
 
-Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087` in every other service's compose env.
+Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **three** compose blocks — `docker-compose.yml:45` (**backend**), `:99` (jobsimulation husk), `:160` (cms husk) — of which only `backend` is on a request path. No other service sets it: `storage`, `messenger`, `roadrunner`, `customerio-sync`, `gotenberg`, `studio-desk` and `next-web-app` all have no such env and no sentinel dependency.
 
 ## Dependencies
 
-* **Upstream consumers**: every other Anthropos service that gates requests (`app`, `cms`, `jobsimulation`, `messenger`)
+* **Upstream consumers**: **`app` only** — the sole service that gates requests through Sentinel (the `cms` and `jobsimulation` husk containers still receive the address but sit off every request path; `messenger`, `storage` and `roadrunner` never call it)
 * **Downstream**: PostgreSQL (`sentinel` schema, table `casbin_rules`)
 * **No outbound RPC** to other platform services
 

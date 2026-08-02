@@ -62,8 +62,15 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names). This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
 backend-wired deployment. That binary is MOOT on a demo stack** (M236 iter-08): a demo academy has no
-`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it falls back to serving its **committed FS catalog** and nothing ever
-reads the seeded `academy_chapter_progresses` rows. Seeding them on a demo changes no pixel. The demo's academy
+`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so the backend read yields nothing and **nothing ever reads the seeded
+`academy_chapter_progresses` rows**. Seeding them on a demo changes no pixel. **⚠️ It does *not* "fall back to
+the committed FS catalog"** — there is **no FS-as-published fallback** in the app; `getServerCatalogView()`
+resolves a null backend result to the **empty view**, and `serverTenant.js:115-145` says so in-code: *"the
+cutover is intentional, not reversible-on-error."* A demo grid renders cards only because the rext demo-patch
+**`demo-stack/patches/academy-fs-published-fallback`** *restores* that removed fallback on the demo's ephemeral
+clone (applied by `demo-stack/ant-academy.sh` before `next dev`, env-gated on `ACADEMY_DEMO_FS_PUBLISHED`,
+reverted on `--stop`); if that patch is refused, the grid is empty. See
+[the empty-grid analysis below](#the-content-model--db-authoritative-catalog-v051-m7). The demo's academy
 story is therefore **presence-only** — a real `/courses/<slug>` link into a grid of 65 real cards — not a
 progress/result surface. See [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
@@ -230,7 +237,7 @@ is **not a code bug** — it decomposes into:
 | Layer | Technology |
 |:------|:-----------|
 | **Framework** | Next.js 16 App Router + React 19.2 (React Compiler enabled, Turbopack default) |
-| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/library/*`, `/free`, `/free/*`, `/local-content/*`, `/catalog.json`, `/academy-manifest.json` (other `/api/*` stay gated). The last three are public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest (gating any of them 307s the fetch through sign-in and breaks it). **NB these are middleware globs, not evidence a page exists** — `/library/*` and `/free/*` are matcher patterns, but the only real pages are `code/app/(public)/library/page.jsx` and `code/app/(public)/free/page.jsx`. **There is no `/library/[slug]` route** (M236 iter-08); the per-course page is `/courses/[slug]`, under `(authed)`. Link a course CTA at `/courses/<slug>`, never `/library/<slug>`. |
+| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate (`REQUIRE_ORGANIZATION_MEMBERSHIP`, default ON, fail-closed); `@anthropos.work` domain restriction is enforced in the Clerk app. **The public surface is much wider than "a few auth pages"** — it includes the catalog root `/`, `/courses/*` and `/chapters/*`, and three `/api/*` routes. Full enumeration below the table. |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
 | **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
@@ -239,6 +246,38 @@ is **not a code bug** — it decomposes into:
 | **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
 | **Deployment** | Vercel native (minimal `code/vercel.json` — only `{"framework": "nextjs"}`; Next.js handles routing). Mobile builds via Expo. |
 | **Node** | `>= 22` (declared in `code/package.json` `engines`) |
+
+#### Public routes — the complete `isPublic` matcher
+
+Derived from `code/proxy.js` (`createRouteMatcher([...])`, the `isPublic` list). **Do not paraphrase this
+from memory** — an earlier version of this doc listed a third of it and asserted that "other `/api/*` stay
+gated", which is false in three places:
+
+| Group | Patterns | Why public |
+|:------|:---------|:-----------|
+| Catalog front door | `/`, `/latest(.*)`, `/chapters/(.*)`, `/courses`, `/courses/(.*)` | The M4 public catalog. Anonymous visitors browse it; the RSC swaps in `getPublicCatalogView()` for sessionless requests. The pages still live in the `(authed)` route group under `ClerkProvider` (the catalog island uses Clerk hooks) — the *middleware* is what lets anonymous traffic through |
+| Public-launch listings | `/library`, `/library/(.*)`, `/free`, `/free/(.*)` | Phase-1 public launch: read-only catalog preview + the free-tier listing |
+| Auth / gate pages | `/sign-in(.*)`, `/no-organization` | Clerk hosts the auth UI itself; `/no-organization` is the gate page a signed-in org-less user lands on |
+| Certificate verification | `/verify/(.*)`, **`/api/verify/(.*)`** | Public-shareable cert verification — a recruiter on another device with no session resolves `academyCertificate(certId)` (a `@public` field) and gets the minimized PII-free projection |
+| AI proxy | `/api/ai/chat` | Does its own cookie-based `auth()` server-side |
+| Release provenance | **`/api/_meta(.*)`, `/api/meta(.*)`** | The academy's mirror of the Go services' `/_meta`, so uptime probes can read name/version/build-date without a session. Both spellings, because `next.config.js` rewrites `_meta` → `meta` and the middleware sees the pre-rewrite path |
+| Crawler / agent files | `/robots.txt`, `/sitemap.xml`, `/sitemap(.*)`, `/llms.txt`, `/llms-full.txt`, `/.well-known/(.*)` | Static, must be fetchable anonymously |
+| Assets & machine indexes | `/local-content/(.*)`, `/catalog.json`, `/academy-manifest.json` | Public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest. Gating any of them 307s the fetch through sign-in and breaks it |
+| **Dev-only**, `DEV_LOGIN_ENABLED` | `/api/dev/login-as`, `/dev/accept` | The real-Clerk-user login shortcut; must be reachable before a session exists. Production drops both entries *and* the route handler hard-404s |
+| **Dev-only**, `BENCHMARK_VISUAL_BYPASS=1` ∧ `NODE_ENV==='development'` | `/my-certificates`, `/my-activity`, `/bookmarks` | Opens the remaining authed-only surfaces for the benchmark/e2e Playwright pass. `NODE_ENV` is whitelisted, not blacklisted, so unset/`test`/typos stay closed |
+
+Everything not matched: missing session → `/sign-in`; signed-in with zero org memberships → `/no-organization`.
+
+Two things this table does **not** mean:
+
+- **An open route is not an open body.** Anonymous traffic on `/` is served `getPublicCatalogView()`, so no
+  tenant content is ever in the payload; chapter **section bodies** are walled separately by the chapter RSC
+  and the `/api/chapters/*` handler, which self-gate on tenancy (hard 404) and tier. `/api/chapters/*` is
+  **not** in the matcher and is gated at the edge as well.
+- **These are middleware globs, not evidence a page exists.** `/library/*` and `/free/*` are matcher
+  patterns, but the only real pages are `code/app/(public)/library/page.jsx` and
+  `code/app/(public)/free/page.jsx`. **There is no `/library/[slug]` route** (M236 iter-08); the per-course
+  page is `/courses/[slug]`. Link a course CTA at `/courses/<slug>`, never `/library/<slug>`.
 
 ### Local Development
 

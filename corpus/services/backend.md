@@ -6,14 +6,18 @@
 >
 > | Merged service | Program | What moved in |
 > |---|---|---|
-> | [skiller](./skiller.md) | skiller-in-app (v2.1 "quick change", July 2026) | 60K+ skills graph, embeddings, AI matching |
+> | [skiller](./skiller.md) | skiller-in-app (v2.1 "quick change", July 2026) | the skills-taxonomy graph (**≥42,790 skills / ≥22,470 job roles** — public subset; [not "60K/18K"](../architecture/shared_libraries.md#taxonomy-figures)), embeddings, AI matching |
 > | [skillpath](./skillpath.md) | skillpath-in-app (M502→M507) | skill-path progression engine, session state |
 > | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
 > | [jobsimulation](./jobsimulation.md) | jobsim-in-app (teardown **M810**) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
 > | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (teardown **M810**) | content layer + Directus edge + Studio — `internal/cms/` |
 >
 > Consequences that hold platform-wide:
-> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the 2→1 step.
+> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the **3 → 1** step: the single
+>   commit `graphql-wundergraph@915da06` (2026-07-29) deleted **both** `schemas/cms.graphqls` **and**
+>   `schemas/jobsimulation.graphqls`, taking the supergraph from (backend, jobsimulation, cms) to
+>   (backend) alone. The jobsimulation subgraph therefore **survived jobsim-in-app** and was removed
+>   here, not at its own merge.
 > * **All of their tables live in `public`**, with the same table names. The `skiller`, `skillpath`,
 >   `jobsimulation` and `cms` DB schemas are legacy and non-authoritative.
 > * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux.** `messenger` is the only
@@ -29,7 +33,7 @@
 
 ## Role & Responsibility
 
-`app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the 60K+ skills graph, skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
+`app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the skills graph (**≥42,790 skills** across **≥22,470 job roles**; that is the measured *public* subset, `organization_id IS NULL`, 2026-06-29 — the long-quoted "60K skills / 18K roles" is not a measurement, and [18K is outright refuted](../architecture/shared_libraries.md#taxonomy-figures)), skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
 
 * **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries — plus the taxonomy types/queries absorbed from the former skiller subgraph (`graph/schemas/skiller_taxonomy.graphqls`)
 * **Connect-RPC** for inter-service calls (the only remaining external caller is **messenger**) — the mux registers five handlers unconditionally (`main.go:1178-1218`): `UsersService`, `OrganizationsService`, `SkillerService`, `JobSimulationService` and `lab.v1.LabSessionService`, plus **`CMSService` only when the Directus edge is configured** (`if cmsRPCServer != nil`, `:1203-1205`).
@@ -66,14 +70,22 @@ containerized bring-up + migrate, and read-only prod.
   `organization_id`). Measured on prod 2026-07-08: **`public.skills WHERE organization_id IS NULL` =
   42,790** (43,584 total incl. 794 org-private), `public.job_roles` (org NULL) = 22,490, `categories` = 23,
   `specializations` = 1,447, `public.skill_embeddings` = 43,584. (The ~42,763 figure quoted in the roadmap
-  is this count; taxonomy grows over time.)
+  is this count; taxonomy grows over time.) The independent 2026-06-29 public-only snapshot capture agrees
+  within that drift — 42,790 skills / 22,470 job roles / 18,919 job-role embeddings; see
+  [the canonical "60K / 18K" statement](../architecture/shared_libraries.md#taxonomy-figures). **These are
+  floors, not totals** — a public-only measurement cannot see org-private rows.
 - **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
   locally (all four occurrences in the merged `docker-compose.yml`), `http://backend:8081` in prod terraform.
-- **Federation is now 1 subgraph**: **backend**. (At the time of the skiller merge it was 3 — jobsimulation and cms have since folded in too; the 2 → 1 step is `graphql-wundergraph@915da06`, 2026-07-29.) The skiller subgraph was removed
-  at the skiller merge (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@c284453`); the **skillpath**
-  subgraph was subsequently removed when the skillpath service merged into `app` ("skillpath-in-app", platform
-  M502→M507). The former skiller taxonomy types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
+- **Federation is now 1 subgraph**: **backend**. The skiller subgraph was removed at the skiller merge
+  (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@749dc86`, "remove skiller subgraph and update
+  related configurations", 2026-06-24), which left **4** — backend, jobsimulation, cms, skillpath. The
+  **skillpath** subgraph went next when the skillpath service merged into `app` ("skillpath-in-app", platform
+  M502→M507; `schemas/skillpath.graphqls` deleted at `graphql-wundergraph@7c17e63`, 2026-07-21) → **3**. The
+  last step is `graphql-wundergraph@915da06` (2026-07-29), which deleted **both** `schemas/cms.graphqls` and
+  `schemas/jobsimulation.graphqls` in one commit — **3 → 1**. (So the jobsimulation subgraph outlived
+  jobsim-in-app; its removal was staged and landed with cms-in-app.) The former skiller taxonomy
+  types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
   `mostPopularSkills`, `jobRoleCount`, …) **and** the skill-path session types/queries
   (`getOrCreateSkillPathSession`, `completeSkillPathStep`, …) are all served by the **backend** subgraph;
   `categoryTree`/`fullCategoryTree` were dropped, not ported.
@@ -170,7 +182,7 @@ internal/
 * **Workforce analytics** (v1.266.2): Skill + sim aggregations across org members with date filtering.
 * **AI Readiness** (v1.266+, the `internal/aireadiness` package): org-level AI-capability diagnostics — a 3-step onboarding/evaluation (skill-mapping 30 → simulation 40 → interview 30) yielding a per-member score + archetype, an org **manager dashboard** (funnel + Knowledge×Usage matrix + per-team/person drill-down), **org-gated** via `organization_settings.ai_readiness`, with persisted LLM diagnosis narratives. Engine: its own top-level package **`app/internal/aireadiness/`** (`manager.go`, `cycles.go`,
   `diagnosis.go`, `compare.go`, `csv.go`, …) — **not** `internal/workforce/`, which contains no `readi*`
-  file at HEAD; GraphQL `graph/schemas/ai_readiness.graphqls`; ~10 `/api/workforce/ai-readiness*` REST handlers + an `ai_readiness_refresh` worker task; **13** `ai_readiness_*` ent tables (`select count(*) … table_name like 'ai_readiness%'` on a migrated stack — the four FAMILIES a "9" omits — notification (**two** tables: logs + optouts), override, translation, live-snapshot, exactly the ones a seeder or schema audit then misses). **Full doc: [`ai-readiness.md`](ai-readiness.md).**
+  file at HEAD; GraphQL `graph/schemas/ai_readiness.graphqls`; ~10 `/api/workforce/ai-readiness*` REST handlers + an `ai_readiness_refresh` worker task; **13** `ai_readiness_*` ent tables (`select table_name … where table_name like 'ai_readiness%'` on a migrated stack). The four a "9" omits — the ones a seeder or schema audit then misses — are `ai_readiness_recommendations` (M219), `ai_readiness_email_overrides` (M408) and the notification **pair** `ai_readiness_notification_logs` + `ai_readiness_notification_optouts` (M400/M403). (`ai_readiness_live_snapshots` and `ai_readiness_text_translations` were already among the original 9 — they are *not* omissions.) **Full doc, with the authoritative per-table breakdown: [`ai-readiness.md`](ai-readiness.md).**
 * **Hiring talk-to-data** (`feat/hiring-talk-to-data` branch): Variant scoped to hiring workflows.
 * **Bedrock task role policy statements** (v1.267.1): IAM additions for Bedrock model access from the prod ECS task role.
 * **Company context (M1/M2)** (`feat/company-context-m1m2` branch): Org-level context propagation through AI calls.

@@ -56,23 +56,31 @@ graph LR
 studio-desk/
 ├── src/                # Backend (Express.js)
 │   ├── index.ts        # Server entry point
-│   ├── routes/         # API routes
-│   ├── services/       # Backend services
-│   └── prompts/        # AI prompt templates
-├── app/                # Frontend (Vite, vanilla TS)
-│   ├── core/           # Core components & utilities (main.ts bootstrap)
-│   ├── designer-sim/   # Simulation designer interface
+│   ├── routes/         # API routes (ai.ts, skillpath.ts, youtube.ts, dev.ts)
+│   ├── services/       # Backend services (aiService.ts, promptService.ts, textExtractor.ts, ai/)
+│   ├── prompts/        # AI prompt templates (per-builder dirs: start/, sim-advanced-builder/,
+│   │                   #   sim-guided-builder/, builder-skill-path/, documents/ + loose *.md)
+│   ├── lib/            # Backend helpers (devLogin.ts)
+│   └── types/          # Ambient type declarations (*.d.ts)
+├── app/                # Frontend (Vite, vanilla TS) — one *.html entry per feature (MPA)
+│   ├── core/           # Bootstrap (main.ts) + scaffold/ (header, sidemenu, footer) + components/
+│   ├── simulation-builder/     # "Start Composer" — compose intent once, fan out to both builders
+│   ├── sim-advanced-builder/   # The full simulation designer
+│   ├── sim-guided-builder/     # The guided interview flow
 │   ├── builder-skill-path/ # Skill Path Builder
 │   ├── generation/     # Generation workflow UI
 │   ├── listing/        # Catalog/listing UI
 │   ├── academy/        # Academy UI
 │   ├── home/           # Home page
 │   ├── skills/         # Skills management UI
+│   ├── dev-accept/     # Dev-only acceptance harness (dev-accept.html; not in the prod build)
 │   ├── shared/         # Shared frontend utilities
 │   ├── services/       # Frontend services
 │   │   ├── graphql/    # GraphQL queries/mutations
+│   │   ├── content/    # Content services (AntContentService, pathContentService, simulationContentService)
 │   │   └── __generated__/ # graphql-codegen output
-│   └── assets/         # Static assets
+│   ├── public/         # Statically served assets (fontawesome/, l12n/, templates/, avatars, images)
+│   └── assets/         # Bundled assets (favicons, logo)
 ├── tests/              # Test suite
 │   ├── frontend/       # Frontend tests
 │   ├── unit/           # Backend unit tests
@@ -96,7 +104,7 @@ studio-desk/
 
 #### 2. Skill Path Builder
 
-A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 (`YOUTUBE_API_KEY` / `GCLOUD_SERVICE_ACCOUNT`) through a `YouTubePicker`.
+A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 through a `YouTubePicker` — the route reads **`YOUTUBE_API_KEY` only** (`src/routes/youtube.ts:43`; with no key it serves a `_mock: true` fallback list). `GCLOUD_SERVICE_ACCOUNT` is declared in `.env.example:120` and injected by `terraform/main.tf:129`, but **no code in `src/` reads it** — treat it as vestigial, not a second YouTube credential.
 
 > **Demo/dev set-dressing (v1.5 "prop room", M23):** on a `--local-content` stack (demo default; dev opt-in) studio-desk is pointed at the **per-stack Directus** (`DIRECTUS_BASE_URL=http://directus:8055`, the in-network compose service) with a **locally-minted static admin token** (`DIRECTUS_TOKEN=local-directus-token-<stack>`). The token is stamped on the bootstrapped admin via Directus's `ADMIN_TOKEN` bootstrap env (a Bearer-usable static token — `bootstrap/index.js:81` in the pinned `directus/directus:11.6.1`; #M23-D2), so studio-desk's skill-path **writes target the per-stack instance, never prod**. On a non-`--local-content` stack the prod token is stripped to empty (the prod-write **disarm**) and studio-desk has no local instance to write to. (The cms `PostMultipart` hardcoded-prod-upload-URL is a separate upstream **platform** bug — disarmed by the token strip, owned as a user PR; cannot be fixed without a platform edit.)
 
@@ -188,7 +196,7 @@ BUNNY_LIBRARY_ID=...
 BUNNY_LIBRARY_API_KEY=...
 FORCE_READ_ONLY=0
 YOUTUBE_API_KEY=...
-GCLOUD_SERVICE_ACCOUNT=...
+GCLOUD_SERVICE_ACCOUNT=...   # declared in .env.example + terraform, but read by no code in src/
 ```
 
 #### Local Development
@@ -267,8 +275,16 @@ Docker images are built automatically on tag push. Deployment managed via infras
 
 #### With Core Platform
 - **Authentication**: Clerk (shared with main app)
-- **Data Layer**: GraphQL → CMS → Directus
-- **User Sync**: Optionally sync Clerk users to local DB via Tailscale funnel
+- **Data Layer**: GraphQL → the cms domain → Directus
+- **No local datastore — studio-desk has no database of any kind.** `package.json` declares no DB
+  driver (no `pg`/`postgres`/`prisma`/`sqlite`/`mysql`/`mongo`/`knex`/`drizzle`/`typeorm`/`sequelize`),
+  and nothing in `src/` reads a `DATABASE_URL` or opens a pool/client. All persistence is remote over
+  HTTP: skill-path content goes to **Directus** (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`,
+  `src/routes/skillpath.ts`), and per-user studio preferences (including the recoverable draft window in
+  `app/services/studioDB.js` — a facade, not a datastore) round-trip through the platform **GraphQL** API
+  via `GET_USER_STUDIO_PREFERENCES` / `SET_USER_STUDIO_PREFERENCES`. There is no Clerk-user sync job.
+  (The repo's only Tailscale-funnel mention is `app/core/main.ts:105` — the public ingest URL of the
+  self-hosted **GlitchTip** Sentry endpoint. Error telemetry, unrelated to users or data.)
 
 #### With Studio-Room
 - Studio-Desk **creates** simulation blueprints

@@ -10,7 +10,7 @@ This document provides a high-level overview of the Anthropos platform architect
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
 *   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
-    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — 60K+ skills graph, vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
+    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — a graph of **≥42,790 skills** across **≥22,470 job roles** (the measured *public* subset; see [Shared Libraries → the "60K / 18K" figures](./shared_libraries.md#taxonomy-figures)), vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
     *   **Sentinel**: Security and access control (the bouncer)
     *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. **But a standalone container still starts here:** `docker-compose.yml:83` puts it in this very `graphql` profile as an unfederated husk, until **M810**.)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
@@ -113,7 +113,8 @@ graph TD
     Desk -->|local: :8082/graphql/query| Gateway
     Room -.->|generates from| Desk
     
-    %% Router aggregation — PROD ONLY. ONE subgraph: backend (cms folded in at 915da06, jobsimulation earlier).
+    %% Router aggregation — PROD ONLY. ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation
+    %% entries in one commit (a 3 → 1 step) — the jobsimulation subgraph outlived jobsim-in-app.
     %% Locally there is no router at all: the frontends and studio-desk hit Gateway directly (edges above).
     GraphQL -.->|prod only| Gateway
 
@@ -185,7 +186,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:83`, default profile) as an unfederated husk; teardown **M810** | [→](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:144`, default profile) and still answers `messenger`'s `CMS_RPC_ADDR` until **M809**; teardown **M810** | [→](../services/cms.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:144`, default profile) and still answers `messenger`'s `CMS_RPC_ADDR` until **M809**; teardown **M810** | [→](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. **Orphaned, not absent:** the container still starts locally (`docker-compose.yml:281`) and prod terraform still reads `= 1` | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 
@@ -199,7 +200,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types |
 | **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) |
-| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app`'s `public` schema (former skiller service) |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills**, **≥22,470 job roles** — public subset, measured 2026-06-29) lives in `app`'s `public` schema (former skiller service). The long-quoted "60K skills / 18K roles" is not a measurement: [18K is refuted, 60K is unverified](./shared_libraries.md#taxonomy-figures) |
 
 #### Studio Services (Tier 2)
 
@@ -238,7 +239,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via the cms **domain** inside `backend` (business logic layer)
-*   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in (jobsimulation went earlier). Nothing is aggregated any more
+*   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in and deleted the `jobsimulation` entry in the same commit (**3 → 1**; the jobsimulation *subgraph* outlived the jobsim-in-app service merge). Nothing is aggregated any more
 *   **AI Providers**: EU-first routing — **Azure OpenAI EU → Azure OpenAI US → direct OpenAI**. Measured at
     `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
     `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the

@@ -38,8 +38,8 @@ third-party dependency. This keeps the services consistent and small.
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
-| **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; the still-running `cms` + `jobsimulation` husk containers → **`v0.35.1`**; `sentinel` + `storage` → `v0.34.3` (archived `chronos` pins `v0.30.1`). Measured from each repo's `go.mod` at platform `2adcf71`. |
-| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — plus the `cms` and `jobsimulation` containers, which the default `graphql` profile still starts as merged-into-`app` **husks** (rollback path; teardown is M810) even though their domains now run inside `app` |
+| **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; the still-running `cms` + `jobsimulation` husk containers → **`v0.35.1`**; `sentinel` + `storage` + **`roadrunner`** → `v0.34.3` (archived `chronos` pins `v0.30.1`). Measured from each repo's `go.mod` at platform `2adcf71`. |
+| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — plus the `cms`, `jobsimulation` and **`roadrunner`** containers, which the default `graphql` profile still starts as merged-into-`app` **husks** (rollback path; teardown is M810) even though their domains now run inside `app`. Roadrunner's import is minimal but real: `roadrunner/main.go:7` imports `colony` for `NewVersionConfig` (`go.mod:7` pins `v0.34.3`) |
 
 The platform framework. Each service composes its server out of colony packages:
 
@@ -102,7 +102,7 @@ e.g. `storage/internal/migration` imports `go/simulator/storage/v1` as `legacySt
 | **Module** | `github.com/anthropos-work/ai` |
 | **Language** | Go (`go 1.25.0`) |
 | **Version pin** | **`v1.40.2`** across consumers (`app`, and the `cms` / `jobsimulation` husks, all agree) |
-| **Imported by** | app — i.e. every folded domain (Go services only — **not** Studio-Desk, which is TypeScript) |
+| **Imported by** | app — i.e. every folded domain — **and, as their own direct `go.mod` requires, the still-running `cms` and `jobsimulation` husk containers** (`cms/go.mod:9`, `jobsimulation/go.mod:11`, both `v1.40.2`). Go services only — **not** Studio-Desk, which is TypeScript, and **not** roadrunner, whose only shared-lib requires are colony + proto |
 
 A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 `ChatCompletionStream`, `Response`, `CreateEmbeddings`, `CreateSpeech`, `OCRProcess`,
@@ -177,17 +177,39 @@ GraphQL servers.
 | **Module** | `github.com/anthropos-work/taxonomy` (README title: **"nodeid"**) |
 | **Language** | Go (`go 1.21.0`), **zero external dependencies** (stdlib only) |
 | **Version pin** | `v1.2.0` |
-| **Imported by** | directly: app, messenger; indirectly: storage, sentinel (**4 total** live services; the cms / jobsimulation / skillpath usage is folded into app) |
+| **Imported by** | directly: app, messenger — **and the still-running `cms` + `jobsimulation` husk containers**, which require it directly in their own `go.mod` (`cms/go.mod:13`, `jobsimulation/go.mod:15`, both `v1.2.0`, neither marked `// indirect`); indirectly (`// indirect`): storage, sentinel. **6 of the 7 live Go service repos** (app, sentinel, storage, messenger, cms, jobsimulation, roadrunner) — the sole exception is `roadrunner`, which requires only colony + proto. (The skillpath usage is folded into app.) |
 
 > ### ⚠️ Major correction: taxonomy is a LIBRARY, not data
 > Multiple corpus docs called this "Skills taxonomy data (60K skills, 18K roles)". That
-> is **wrong**. The repo is a **131-line** node-id library (`node.go`) and ships **no
-> dataset**. The 60K-skill / 18K-role data is owned by and stored in **app**'s
+> is **wrong twice over** — wrong about *where the data lives*, and wrong about *the
+> numbers themselves*.
+>
+> **Where it lives.** The repo is a **131-line** node-id library (`node.go`) and ships **no
+> dataset**. The taxonomy *data* is owned by and stored in **app**'s
 > `public` Postgres schema (the merged skiller domain — formerly the standalone skiller
 > service's schema), originally loaded from **external** CSV/JSON by the former skiller
 > importers (`importSkills` / `importJobRole`); taxonomy CLIs now live under `app/cmd/`
 > (e.g. `createTaxonomy`). The taxonomy module
 > only supplies the **ID type/format** used as keys.
+
+<a id="taxonomy-figures"></a>
+> ### ⚠️ Second correction: the "60K skills / 18K roles" figures
+> They are not measurements, and they fail in two *different* ways. Keep them apart.
+>
+> | Long-quoted figure | Verdict | What was actually measured |
+> |:-------------------|:--------|:---------------------------|
+> | **"18K roles"** | **REFUTED** | **22,470** public job roles. Public ⊆ total, so prod holds **≥ 22,470** — 18K is below the floor. The 18K almost certainly came from `job_role_embeddings` (**18,919** rows), a different table, mis-transcribed onto the role count |
+> | **"60K skills"** | **UNVERIFIED** (not refuted) | **42,790** public skills. A public-only capture cannot see org-scoped *private* skills, so the total could be higher — possibly much higher. Nothing measured supports 60K, and nothing measured rules it out |
+>
+> **Provenance.** Read-only production capture of the **public subset only**
+> (`organization_id IS NULL`): `.agentspace/snapshots/taxonomy/<digest>/manifest.json`,
+> `source: primary-read`, `public_only: true`, `predicate: org-null`, captured
+> **2026-06-29**. Both counts reproduce exactly against a live stack database
+> (`select count(*) … where organization_id is null`).
+>
+> **So how should this be written?** Say *"≥22,470 job roles and ≥42,790 skills (the public
+> subset, measured 2026-06-29; totals including org-private content are unmeasured)"*. Do
+> **not** write "42,790 skills" as though it were the total — it is a floor, not a count.
 
 The whole product is the `NodeID` type and its generators/validators:
 

@@ -63,8 +63,12 @@
 *   **How to find the API**: **HTTP + SSE only — there is NO GraphQL subgraph and NO Connect-RPC for Course
     Builder.** The routes are an Echo group mounted in `internal/web/backend/backend.go` under **`/coursebuilder`**,
     behind `cors + authn (Clerk JWT via colony/authn) + courseBuilderAccessGate` (**org-admin-gated**). Route table:
-    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** only when NEITHER model backend can build a client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — not on missing AWS creds alone; see the backend-selection note above. Historically this read as the Bedrock-backed
-    `Service` is nil (missing AWS creds) — no half-working surface.
+    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** when NEITHER
+    model backend can build a client — i.e. when the author or grader constructor fails, which on the
+    Bedrock path is typically missing AWS creds, but **not** on missing AWS creds alone once
+    `ANTHROPIC_API_KEY` is set (see the backend-selection note above). When that happens the routes stay
+    unmounted deliberately, **so callers get a clean 404 instead of a half-wired endpoint** — there is no
+    half-working surface (`main.go:755-766`).
 *   **Key routes**: `POST /coursebuilder/sessions` (+ `/sessions/mixed`, `/sessions/upload`), `GET /sessions` +
     `/sessions/:id`, **`POST /sessions/:id/messages`** (the **SSE** build/refine stream), `/sessions/:id/{queue,steer,
     cancel,publish,unpublish,duplicate,translate,cover}`, `PATCH /sessions/:id/draft`, `GET /sessions/:id/published-diff`,
@@ -118,8 +122,10 @@ tools.
 ## Status & Notes
 
 *   **Not behind a global feature flag** — GA to every organization, **org-admin-gated** (`courseBuilderAccessGate`).
-    The only gate is graceful degradation: routes stay unmounted if Bedrock creds are absent. Per-sub-feature
-    kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`.
+    The only gate is graceful degradation: routes stay unmounted if **neither** model backend can build a
+    client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — a clean 404, never a half-wired
+    endpoint. Per-sub-feature kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`,
+    `COURSEBUILDER_EMAILS_ENABLED`.
 *   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines); current app
     **`v1.363.2`** @ `5ba17044` (2026-07-31). The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is
     the only path now.

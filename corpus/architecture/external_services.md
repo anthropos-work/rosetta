@@ -134,8 +134,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 > service the compose sets them on **explicitly** is the still-running standalone **`cms`** (`:164-165`), which
 > survives as messenger's `CMS_RPC_ADDR` target + the rollback path until M810. This distinction is
 > load-bearing for any tooling that re-points the address per service — see the ⚠️ under *Architecture* below.
- A freshly-
-> built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
+> A freshly-built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
 > `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` admin login
 > and an inline `docker-compose.yml` snippet — **all of that is false**; that service has never existed in the
 > platform compose, verified against `stack-dev/platform/docker-compose.yml`.)
@@ -198,7 +197,7 @@ graph TB
 
 > **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
 > tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to the stack's
-> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:598-599`
+> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:636-637`
 > re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:53`). `backend`
 > is in that tuple because — per the `cms_reader_switch` above — **`backend` is the service that actually
 > reads Directus**; re-pointing only `cms` would leave the real reader aimed at production content.
@@ -209,7 +208,7 @@ graph TB
 > `cms` had `DIRECTUS_BASE_ADDR=http://directus:8055` while `backend` still had
 > `https://content.anthropos.work` with an empty `DIRECTUS_TOKEN`, which surfaced as **96 all-403 lines** in
 > `backend`'s log. That test is gone, replaced by `test_backend_the_actual_reader_is_repointed`
-> (`stack-injection/tests/test_injection.py:1005`), which asserts the opposite. See
+> (`stack-injection/tests/test_injection.py:1051`), which asserts the opposite. See
 > [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
@@ -346,14 +345,27 @@ Directus can trigger webhooks on content changes:
 | **Type** | Configured third-party (Dockerized) |
 | **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
 | **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
-| **Port** | 5050 (host) → 8080 (container) |
+| **Port** | **8080** everywhere the router still runs — container and ECS alike (`terraform/locals.tf:8` `port = 8080`, `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). `5050` was **only** the local compose host mapping (`"5050:8080"`), deleted with the service — **there is no `:5050` on a local stack** |
 | **Purpose** | Federated GraphQL API gateway — **over ONE subgraph (`backend`) since `915da06`**, and **prod-only** since platform `2adcf71` deleted it from local dev |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
 ### What the gateway provides
 
-- **Federation v2**: Composes **one** subgraph — `backend`. All four former subgraphs were folded into it in sequence: `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` ("jobsim-in-app"), and `cms` ("cms-in-app v8.0", app v1.360.0 — the 2→1 step). The supergraph config now lists a single entry pointing at `http://backend.internal.anthropos:8080/graphql/query`, and `subgraphs.conf` tracks a single `BACKEND=` pin. `supergraph-config-prod.yaml` lists `backend` alone, `schemas/` holds `backend.graphqls` alone, and `subgraphs.conf` reads `BACKEND=v1.360.0` (the cms fold is `915da06`, 2026-07-29).
-- **Subscriptions** for the jobsimulation types over SSE POST (`subscription.protocol: sse_post`) — served by `backend` now
+- **Federation v2**: Composes **one** subgraph — `backend`. All four former subgraphs were folded into it, but the supergraph did **not** shrink once per service merge. The count, read straight off `supergraph-config-prod.yaml` at each commit (`git show <sha>:supergraph-config-prod.yaml`):
+
+  | commit | date | subgraphs | what changed |
+  |---|---|---|---|
+  | `749dc86~1` | — | **5** | `backend`, `skiller`, `jobsimulation`, `cms`, `skillpath` |
+  | `749dc86` | 2026-06-24 | **4** | `skiller` removed |
+  | `7c17e63` | 2026-07-21 | **3** | `skillpath` removed ("skillpath-in-app") |
+  | `915da06` | 2026-07-29 | **1** | `cms` **and** `jobsimulation` removed together — cms-in-app v8.0, app v1.360.0 |
+
+  Two things follow that the corpus had wrong for four releases. **cms-in-app was the 3 → 1 step, not 2 → 1.** And **the `jobsimulation` subgraph outlived jobsim-in-app**: the service merged into `app` earlier, but its supergraph entry and `schemas/jobsimulation.graphqls` survived until `915da06` deleted them in the same commit as cms's (`git show --name-status 915da06` marks both `D`).
+
+  > **Do not take the count from `915da06`'s own commit subject** — it reads *"fold cms subgraph into backend (supergraph 2→1)"*, and the tree it was committed against lists **three**. This is where the 2 → 1 figure entered the corpus. The config file, not the commit message, is the source of truth.
+
+  The supergraph config now lists a single entry pointing at `http://backend.internal.anthropos:8080/graphql/query`, `schemas/` holds `backend.graphqls` alone, and `subgraphs.conf` tracks a single `BACKEND=v1.360.0` pin.
+- **No subscriptions — the supergraph is query/mutation only.** Two independent checks: (a) **no config** — none of the three `supergraph-config-*.yaml` files carries a `subscription:` block at all (`grep -rn "sse\|subscription" graphql-wundergraph/*.yaml` returns nothing; positive control — `grep -rln backend graphql-wundergraph/*.yaml` matches all three). The `subscription.protocol: sse_post` that used to sit on the `jobsimulation` entry read `sse_post` for its **entire mainline life**, from introduction to deletion at `915da06` — `git show 915da06~1:supergraph-config-prod.yaml` still reads `protocol: "sse_post"`, and `git log -S 'protocol: "ws"'` over the repo returns nothing (positive control: the same search for `sse_post` returns five commits). **Mainline never carried `ws`.** `bba862f` (2026-02-25, "change subscription protocol from sse_post to ws") is a real commit but an **unmerged** one — it exists only on `remotes/origin/feat/use-web-socket` (`git merge-base --is-ancestor bba862f HEAD` → rc **1**; `git branch -a --contains bba862f` names that branch and nothing else). Cite it as the abandoned branch it is, never as history. (b) **no schema** — the composed `schemas/backend.graphqls` declares `type Mutation` (`:4053`) and `type Query` (`:4912`) and **no `type Subscription`**; the six `Subscription` hits in that SDL are all Stripe/plan field names (`activeSubscription`, `stripeSubscriptionId`, `type PlanSubscription`). So there is nothing to subscribe to, through the router or on `backend` directly.
 - **Apollo-compatibility flags** enabled for stricter validation behavior
 - **Playground** at `/graphql` for local development
 - **Introspection** enabled in dev mode
@@ -392,24 +404,39 @@ From `docker-compose.yml` *before the drop*, the gateway `depends_on`:
 
 It starts after these services have reported "started" (not necessarily healthy — there is no subgraph healthcheck). The composed `config.json` is generated at image build time, so **any** subgraph SDL change means rebuilding the gateway.
 
-> Since cms-in-app the compose `graphql` service built from `graphql-wundergraph/Dockerfile` (the **production** one), so it composed the **committed** `schemas/backend.graphqls` rather than regenerating the SDL from a sibling `../app` checkout. Then `2adcf71` removed the service outright.
+> **From February 2026 until its deletion the compose service built from `Dockerfile.dev`, not the production `Dockerfile`** — so the local router **regenerated** `schemas/backend.graphqls` from the sibling `../app` checkout at image-build time, while the production `Dockerfile` (which composes the committed `schemas/` as-is) was the CI/prod path. Three eras, and the middle one is the whole point:
+>
+> | era | `build:` config | effective Dockerfile |
+> |---|---|---|
+> | `63d285c` (2024-06-20, then named `wundergraph`) → `719befb` | `context:` only, **no `dockerfile:` key** | Docker's default → the **production `Dockerfile`** |
+> | `2c85211` (2026-02-27) → `360efd4` | `dockerfile: Dockerfile.dev`; `67ba772` later raised the context `../graphql-wundergraph` → `..` | **`Dockerfile.dev`** |
+> | `360efd4` (2026-07-31), merged as `2adcf71` | block deleted | — |
+>
+> Verify with `git show 2c85211^:docker-compose.yml` (no `dockerfile:` key) against `git show 2c85211:docker-compose.yml` and `git show 1e8e754:docker-compose.yml` lines 6-8.
+>
+> **`b56d731` does not end the second era**, though its subject line ("drop the WunderGraph router; point local dev at backend") reads as if it does. It only parked the `graphql` block behind a `wundergraph-deprecated` profile — the block is still there, still `dockerfile: graphql-wundergraph/Dockerfile.dev`. `360efd4`, its sibling in the same PR, is the commit that actually deleted it: `git show b56d731:docker-compose.yml` still has `  graphql:` at `:22`, `git show 360efd4:docker-compose.yml` has no such key (positive control — `  backend:` is at `:28`). The [GraphQL Gateway service doc](../services/graphql-wundergraph.md) states it the same way.
+>
+> **A caution about how to check this, because it is what made the claim wrong for four releases.** `git log -S "graphql-wundergraph/Dockerfile" -- docker-compose.yml` returns exactly two commits and tempts the conclusion *"it always built from `Dockerfile.dev`."* It cannot see otherwise: that **prefixed** path only came into existence at `67ba772`, so the search is structurally blind to both earlier eras — including the one where no `dockerfile:` key existed at all and Docker silently defaulted to the production file. An absent key is invisible to every search for its value.
+>
+> **And a caution about the archived repo, which the fence above sends you into.** `graphql-wundergraph/CLAUDE.md:39` asserts the exact opposite of this section — *"Since cms-in-app the platform compose `graphql` service builds from the **production** Dockerfile"* — and it is not an old stale line: it was written on 2026-07-30 in `60c229f`, a commit titled *"correct the compose build path"*. It is wrong. **The compose file wins**, and it lives in `platform`, not here: `git show 1e8e754:docker-compose.yml` lines 6-8 read `dockerfile: graphql-wundergraph/Dockerfile.dev`. A doc in the composed repo cannot testify about the consuming repo's build config; do not "re-correct" this section back from it.
 
 ### Build-time composition
 
-The gateway's `Dockerfile.dev` does multi-stage composition with the WunderGraph CLI:
+The gateway's `Dockerfile.dev` does multi-stage composition with the WunderGraph CLI — **as the archived repo still has it**, post-fold:
 
 ```dockerfile
 RUN npm install -g wgc@0.104.0
-COPY graphql-wundergraph/supergraph-config-compose.yaml ./supergraph-config.yaml
-COPY graphql-wundergraph/config.compose.yaml ./config.yaml
+COPY graphql-wundergraph/supergraph-config-${ENVIRONMENT_CONFIG}.yaml ./supergraph-config.yaml
+COPY graphql-wundergraph/config.${ENVIRONMENT}.yaml ./config.yaml
+RUN mkdir -p schemas /tmp/schemas
 COPY app/internal/web/backend/graphql/graph/schemas/ /tmp/schemas/backend/
-COPY cms/internal/graph/schemas/ /tmp/schemas/cms/
-COPY jobsimulation/internal/graph/schemas/ /tmp/schemas/jobsimulation/
-RUN awk ... /tmp/schemas/backend/* > ./schemas/backend.graphqls && ...
+# cms + skillpath folded into the backend subgraph (cms-in-app / skillpath-in-app) — the backend
+# SDL now owns the cms content types + SkillPathSession, so there are no standalone subgraph SDLs.
+RUN awk '{ print $0 }' /tmp/schemas/backend/* > ./schemas/backend.graphqls
 RUN wgc router compose -i supergraph-config.yaml -o config.json
 ```
 
-In other words: **the gateway image is built from the platform's monorepo context with all subgraph repos as siblings**. This is why `make up` rebuilds gateway whenever any subgraph schema changes.
+There is **one** schema `COPY` (`Dockerfile.dev:18`) and **one** `awk` concatenation (`:23`) — the `cms/` and `jobsimulation/` copies were deleted at `915da06`, which left the comment at `:19-20` in their place. In other words: **the gateway image is built from the platform's monorepo context with the surviving subgraph's source repo (`app`) as a sibling** — one sibling now, all of them before the folds. This is why `make up` used to rebuild the gateway whenever a subgraph schema changed.
 
 The composed `config.json` is then served by the Cosmo router binary at runtime.
 
@@ -420,8 +447,8 @@ From `graphql-wundergraph/supergraph-config-compose.yaml` — **as the archived 
 | Subgraph | URL (Docker network) |
 |----------|----------------------|
 | backend | `http://backend:8082/graphql/query` — **the only one left** |
-| ~~jobsimulation~~ | ~~`http://jobsimulation:8400/query`~~ (SSE POST for subscriptions) — folded into `backend` |
-| ~~cms~~ | ~~`http://cms:8090/query`~~ — folded into `backend` at `915da06` |
+| ~~jobsimulation~~ | ~~`http://jobsimulation:8400/query`~~ — folded into `backend`; the entry itself survived jobsim-in-app and was deleted at `915da06`, in the same commit as cms's. This was the one entry that ever carried a `subscription:` block, and it read `sse_post` for its whole mainline life (`bba862f` would have made it `ws` but never merged — see *What the gateway provides*). No entry carries one today |
+| ~~cms~~ | ~~`http://cms:8090/query`~~ — folded into `backend` at `915da06`, the **3 → 1** step |
 
 ### Configuration
 
@@ -474,8 +501,7 @@ http://localhost:8082/graphql   # Apollo Sandbox on `backend`; the router's :505
 
 **Features**:
 - Schema exploration
-- Query testing
-- Subscription testing
+- Query **and mutation** testing (there is no `type Subscription` in `backend.graphqls` — see *What the gateway provides* above, so there is no subscription tab to exercise)
 - Auto-complete and validation
 
 ### Schema Updates
@@ -491,24 +517,71 @@ When backend services add new GraphQL types or operations:
 
 ## AI Providers (External Intelligence)
 
-The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides **unified provider access** behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). **EU-first routing and cost tracking are implemented in the consuming services, not in the `ai` library itself** — see [Shared Libraries → ai](./shared_libraries.md#ai).
+The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides **unified provider access** behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). **Provider selection and cost tracking are implemented in the consuming services, not in the `ai` library itself** — see [Shared Libraries → ai](./shared_libraries.md#ai). What that selection actually does is **not** an ordered EU-first ladder; see *Routing: what is actually implemented* below before relying on it for a residency argument.
 
 For full details on models, routing, voice engines, and recording architecture, see [AI Architecture](./ai_architecture.md).
 
 ### Supported Providers
 
-| Provider | Routing | Integration Points | Purpose |
+| Provider | Selected how | Integration Points | Purpose |
 |:---|:---|:---|:---|
-| **Azure OpenAI (EU)** | Primary | Jobsimulation, Backend (app — merged skiller domain), CMS, Studio | GPT-5.x, GPT-4.1 for simulations and content |
-| **AWS Bedrock (EU)** | Primary | Jobsimulation, Backend (app) | Claude 4.5/4 Sonnet for simulations |
-| **Mistral (EU)** | Primary | CMS | OCR and specialized tasks |
-| **OpenAI Direct (US)** | Fallback | All services | Fallback when EU unavailable |
-| **Anthropic Direct (US)** | Fallback | Studio-Room | Fallback for analytical tasks |
+| **Azure OpenAI (EU)** | `vendor = Azure` from the caller | Jobsimulation domain, Backend (app — merged skiller domain), cms domain, Studio | GPT-5.x, GPT-4.1 for simulations and content |
+| **Azure OpenAI (US)** | `vendor = Azure` **+ PostHog `flag_use_azure_us`** | same as above | The EU deployment's US twin — a flag flip, not a failure fallback |
+| **AWS Bedrock (EU)** | `vendor = AnthropicAws` **or** `Anthropic` — both resolve to the *same* Bedrock client | Jobsimulation domain, Backend (app) | `eu.anthropic.claude-sonnet-4-6` (simulation report agent, `app/internal/jobsimulation/agent/report_agent.go:31`; ask-engine, `app/internal/askengine/bedrock.go:25`) and `eu.anthropic.claude-opus-4-8` / `eu.anthropic.claude-sonnet-4-6` (course-builder author/grader, `app/internal/coursebuilder/bedrock.go:23,29`) |
+| **Mistral (EU)** | direct client, not via the AI manager | cms domain **only** | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19`, for studio attachment → markdown |
+| **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
+| **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, selected by `TARGET SERVICE = anthropic` in `configs/*.ini`) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:756-762`, `coursebuilder.ModelBackendName()`) |
 
-### EU-First Routing
+### Routing: what is actually implemented
 
-AI requests follow a strict EU-first policy for data residency compliance:
-1. Azure OpenAI (EU-West) → 2. AWS Bedrock (EU) → 3. Mistral (EU) → 4. OpenAI Direct (US) → 5. Anthropic Direct (US)
+There is **no ordered EU-first fallback chain.** The corpus asserted one for several releases
+("Azure → Bedrock → Mistral → OpenAI → Anthropic"); no such ladder exists in the code. The real
+mechanics, all in `app/internal/jobsimulation/ai/ai.go`:
+
+1. **The caller picks the vendor.** `ChatCompletion` / `Response` take a `vendor AIVendor` argument
+   and hand it to `getClient` (`:259-289`). The four vendors are consts at `:30-33` — `azure`,
+   `openai`, `anthropic-aws`, `anthropic`. **When the authored content names no vendor, the
+   caller's own default is `openai`** — that default lives in the cms content layer, not here; see
+   the residency note below.
+2. **`Azure` is EU by default**, swapped to the US deployment only when the PostHog flag
+   `flag_use_azure_us` evaluates true (`:264-276`); if the flag lookup errors, the code logs and
+   **keeps the EU client**. This is a deliberate flag flip, not a health-based failover.
+3. **`AnthropicAws` and `Anthropic` both return `a.anthropicClient`** (`:280-283`) — the Bedrock
+   client. There is **no US-direct Anthropic branch** in this manager.
+4. **The one automatic fallback is 429-only.** `isThrottlingError` matches an HTTP 429 from the
+   OpenAI or Anthropic SDK (`:130-141`); the retry wrapper then sets `vendor = Openai` on the next
+   attempt (`:150-155`, mirrored at `:296-302`/`:326`), i.e. **direct US OpenAI**. Nothing else —
+   not a timeout, not a 5xx, not a region outage — moves a request off its vendor.
+5. **Mistral is not in this manager at all.** Its only use anywhere in `app` is OCR in the cms
+   domain (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`), so it can neither
+   receive nor pass on a simulation request.
+
+**Residency consequence, stated plainly:** the EU posture rests on the *default* vendor clients
+being EU-resident (Azure EU, Bedrock `eu-west-1`), not on a chain that walks EU options before US
+ones. **Four** things can send a request outside the EU, none of them a region-health failover:
+
+1. the `flag_use_azure_us` PostHog flag;
+2. the 429 retry, which switches to direct OpenAI **without** trying another EU provider first;
+3. setting `ANTHROPIC_API_KEY`, which flips Course Builder / Studio-Room off Bedrock onto
+   Anthropic's first-party API;
+4. **an authored simulation sequence that simply leaves `ai_vendor` unset** — the easiest of the
+   four to miss, because nothing in the AI manager looks like a US default. `ai_vendor` is a
+   *nullable* Directus field (`app/internal/cms/directus/collections/jobsimulation.go:905`
+   `AIVendor *AIVendor`), and when it is nil the cms content layer supplies `openai` as the
+   default (`:1302-1305`, `aiVendor := simulation.Openai`). That value reaches
+   `internal/jobsimulation/simulator/ai/ai.go:58-59`, which maps `simulation.Openai` →
+   `internalAi.Openai`, and `getClient` resolves that to `a.openaiClient` — the plain
+   `openai.NewOpenAI(openaiKey)` client built at `internal/jobsimulation/ai/ai.go:80`, i.e.
+   **direct US OpenAI**, on the very first attempt rather than as a 429 retry. (The same switch's
+   own `default:` arm at `:114-115` is `internalAi.Openai` too, so an *unrecognized* vendor string
+   lands in the same place.)
+
+> **Why this one was missed, and how to avoid missing it again.** The "only three" version of this
+> paragraph was derived by reading `internal/jobsimulation/ai/ai.go` end to end. That file is
+> genuinely complete about what it does with a vendor it is *given* — but the vendor-defaulting
+> happens one layer up, in the **cms content layer**, which the AI manager cannot see and a reader
+> auditing the AI manager has no reason to open. **A residency claim needs the caller's default,
+> not just the callee's dispatch.**
 
 ### Configuration
 
@@ -536,8 +609,24 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
    - Document analysis and code evaluation
 
 2. **Skills Matching** (Backend `app` — merged skiller domain):
-   - Embeddings (Text Embedding 3 Small) for 60K skills + 18K roles
+   - Embeddings (Text Embedding 3 Small) over the taxonomy — `public.skill_embeddings` and
+     `public.job_role_embeddings`
    - RAG for job role matching
+
+   > **Taxonomy size — what is measured, and what is not.** The only read-only prod measurement the
+   > corpus holds is the **public-only** taxonomy capture
+   > (`.agentspace/snapshots/taxonomy/5afc0bccf1df7ef538b643321fc6362f/manifest.json`, `"public_only":
+   > true`, `"predicate": "org-null"`, captured 2026-06-29): **42,790 public skills** and **22,470
+   > public job roles**, with **42,790 skill embeddings** and **18,919 job-role embeddings**. Replayed
+   > into `demo-1` these reproduce exactly (`select count(*) … where organization_id is null` → 42,790 /
+   > 22,470).
+   >
+   > - The old **"18K roles"** figure is **refuted**. Public ⊆ total, so prod holds **at least 22,470**
+   >   job roles. 18,919 is the *job-role-embedding* row count, which appears to have been transcribed
+   >   onto the role count.
+   > - The old **"60K skills"** figure is **unsupported, not refuted**. A public-only capture cannot see
+   >   org-scoped private skills, so the total may still be ~60K; **42,790 is a floor, not the total**.
+   >   Do not quote it as the taxonomy size.
 
 3. **Studio-Desk Copilot**:
    - Uses a configurable multi-provider chain (Azure OpenAI / OpenAI / Anthropic) via backend proxy, with tier-based model selection and circuit-breaker failover (`AI_PROVIDER_CHAIN`, default `azure-openai,openai`)

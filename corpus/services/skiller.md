@@ -8,7 +8,8 @@
 >
 > Where everything went:
 >
-> * **Domain** — the skills taxonomy (60K+ skills graph), skill/job-role embeddings, AI skill matching, and
+> * **Domain** — the skills taxonomy (a tens-of-thousands-of-skills graph — see the sized statement under
+>   *Still-true domain knowledge* below), skill/job-role embeddings, AI skill matching, and
 >   job-role skills now live inside `app`: Ent models in `app/internal/data/ent/schema/` (`skill.go`,
 >   `jobrole.go`, `skill_embeddings.go`, `job_role_embeddings.go`, `category.go`, `specialization.go`, …),
 >   data in the **`public` schema** of the same PostgreSQL database. The old `skiller` DB schema is **legacy —
@@ -33,9 +34,19 @@
 
 ## Still-true domain knowledge
 
-* The **taxonomy data** (60K skills / 18K job roles) is a dataset owned by the service DB, not by the
+* The **taxonomy data** is a dataset owned by the service DB, not by the
   `anthropos-work/taxonomy` library — that library only supplies `NodeID` generation helpers
   (see [Shared Libraries → taxonomy](../architecture/shared_libraries.md#taxonomy)).
+* **How big it actually is.** The measured figures are **≥22,470 job roles** and **≥42,790 skills** —
+  those are the **public** rows (`organization_id IS NULL`) from the read-only production capture
+  `.agentspace/snapshots/taxonomy/<digest>/manifest.json` (`source: primary-read`, `public_only: true`,
+  `predicate: org-null`, captured **2026-06-29**), reproduced against a live stack DB. They are floors, not
+  totals: a public-only capture cannot see org-scoped private content.
+  The long-quoted **"60K skills / 18K roles" is not a measurement**, and the two halves fail differently:
+  **"18K roles" is refuted** (it is below the 22,470 public floor, and 18,919 is the `job_role_embeddings`
+  row count — a different table); **"60K skills" is merely unsupported** — unmeasured, not disproved, since
+  private skills are invisible to the capture. Full statement:
+  [Shared Libraries → the "60K / 18K" figures](../architecture/shared_libraries.md#taxonomy-figures).
 * **Embeddings** live in dedicated tables (`skill_embeddings`, `job_role_embeddings` — OpenAI
   text-embedding-3-small, `extensions.vector(1536)` with IVFFLAT indexes), now in the `public` schema. The
   `extensions` schema (housing `pgvector`) must exist before the vector migrations apply. See

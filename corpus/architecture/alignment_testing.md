@@ -247,20 +247,21 @@ alignctl dna coverage --dna P [--if-declared]     # M218. exit 2 = a consumed en
                                                   #   surface at all). gate.sh passes --if-declared.
 ```
 
-### The current scores — and the one that is deliberately red
+### The current scores — and the two things they once hid
 
 | surface | DNA | score | |
 |---|---|---|---|
-| Go SDK | `clerk-2.6.0` | **97.2% overall · 100% critical** (26/27 genes) | gate ≥95 / =100 ⇒ **MET** |
-| JS/FAPI | `clerk-js-5` | 100% / 100% (9 genes) | |
-| multi-identity | `clerk-multi-1` | 100% / 100% (9 genes) | |
-| deployment/injection | `clerk-deploy-1` | 100% / 100% (7 genes) | |
-| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**3**, **no score** *(was rc=2, indistinguishable from a real regression — split at M219)* | **not a pass** |
+| Go SDK | `clerk-2.6.0` | **100% overall · 100% critical** (27/27 genes, 14 capabilities) — *was 97.2% / 26-of-27 until M219 closed the deliberately-RED org-eid gene* | gate ≥95 / =100 ⇒ **MET** |
+| JS/FAPI | `clerk-js-5` | 100% / 100% (9 genes, 6 capabilities) | |
+| multi-identity | `clerk-multi-1` | 100% / 100% (9 genes, 5 capabilities) | |
+| deployment/injection | `clerk-deploy-1` | 100% / 100% (7 genes, 3 capabilities) | |
+| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**3**, **no score** *(was rc=2, indistinguishable from a real regression — split at M219)*. 13 genes / 5 capabilities when it *does* run | **not a pass** |
 
 Two things this table is designed to stop you from saying:
 
-1. **"Clerkenstein is at 100%."** The Go surface is at **97.2%**, on purpose. `MembershipOrgIdentity/real-org-eid`
-   is a **deliberately RED** `standard` gene (M218 **D16**): the fake BAPI fabricates the org's external id
+1. **"Clerkenstein is at 100%."** The Go surface sat at **97.2%** for a full milestone, on purpose:
+   `MembershipOrgIdentity/real-org-eid` was a **deliberately RED** `standard` gene (M218 **D16**) —
+   the fake BAPI fabricated the org's external id
    instead of returning the roster's real UUID. It could have been made green by **omitting the field from
    the gene** — which is precisely how the *user*-level version of the same stub survived four releases. The
    divergence was therefore printed on **every run** until the fix landed.
@@ -316,7 +317,11 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
 - **M1b (Clerk drift detection)** reuses the framework wholesale: on a Clerk version bump, `alignctl
   dna diff` shows what changed and `alignctl run` re-scores the existing mirror against the new
   source — turning a silent break into a flagged, mechanical update.
-  Mechanized as `alignment/scripts/{gate,drift-check}.sh`; the bump runbook + exit-code contract are in the
+  Mechanized as **`clerkenstein/alignment/scripts/{gate,drift-check}.sh`** — **mirror-side, not harness-side**:
+  the reusable `alignment/` section has no `scripts/` dir at all (it holds `cmd/`, `internal/`, `examples/`,
+  `go.mod`, `README.md`), and these scripts are Clerkenstein's, defaulting to `RUNNER_PKG=./cmd/clerkrun` and
+  `DNA=dna/clerk-2.6.0.json`; they locate the sibling harness's `alignctl` via `ALIGN_DIR` (default
+  `../../alignment`). The bump runbook + exit-code contract are in the
   repo's own [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
   [Clerkenstein](../services/clerkenstein.md)).
   > ⚠ **These scripts are run by hand, not by CI (corrected in M218; the correction itself corrected at the
@@ -343,7 +348,7 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
   browser↔backend coherence chain).
 - **M2c (`@clerk/express` backend session verification)** exercises the framework a **third** time, on the
-  Node backend surface: a *third* DNA — `clerk-express-1` (9 genes) — with its own runner (`expressrun`)
+  Node backend surface: a *third* DNA — `clerk-express-1` (**5 capabilities / 13 genes**) — with its own runner (`expressrun`)
   and goldens, scored by the same `alignctl` to the same gate. Its runner drives the **genuine
   `@clerk/express`/`@clerk/backend` SDK** (the *verify-against-the-real-library* discipline, the same one
   `clerk-webhook/` uses with `svix`) rather than a reimplementation — so the score measures whether the real
@@ -488,8 +493,8 @@ rosetta documents the discipline and ships the skills; **all executable machiner
 |---|---|
 | this doc — the alignment test class + method | `alignment/` — the reusable harness (`alignctl` + the toy) |
 | `/align-dna`, `/align-run` skills | each **mirror** section (e.g. `clerkenstein/`) — the mirror engine itself |
-| | the source's DNA(s) (the genome — e.g. Clerkenstein ships three) |
-| | the alignment tests + goldens + the engine's runner(s) (one per surface — `clerkrun`/`jsfapirun`/`expressrun`) |
+| | the source's DNA(s) (the genome — e.g. Clerkenstein ships **five**, in `clerkenstein/alignment/dna/`) |
+| | the alignment tests + goldens + the engine's runner(s) (one per surface — `clerkrun`/`jsfapirun`/`expressrun`/`deployrun`/`multirun`) + the mirror's own `gate.sh`/`drift-check.sh` |
 
 rosetta never contains executable alignment code — neither a specific mirror's source nor the reusable
 harness. Both are sections of the **rosetta-extensions** monorepo, which carries two clone roles: an

@@ -18,7 +18,7 @@ This directory contains all documentation related to the Anthropos platform arch
 
 *   **[external_services.md](./external_services.md)**: The third-party integrations — Clerk (auth), Directus (the production headless CMS the platform reads content from), the WunderGraph Cosmo GraphQL gateway, the AI providers, LiveKit (voice), and AWS Chime (recording) — how each is configured and consumed.
 
-*   **[shared_libraries.md](./shared_libraries.md)**: The five internal Go modules imported as private dependencies (colony, proto, ai, authn, taxonomy) — what each provides and where its responsibilities begin and end (e.g. cost tracking lives in `app`, not the `ai` library).
+*   **[shared_libraries.md](./shared_libraries.md)**: The five internal Go libraries — but only **four are imported as private modules** (`ai`, `colony`, `proto`, `taxonomy`). **`authn` is not a dependency of any service**: no checked-out `go.mod`/`go.sum` requires `github.com/anthropos-work/authn` (the standalone repo is legacy); it ships **inside colony** and is imported as `github.com/anthropos-work/colony/authn`. The doc covers what each provides and where its responsibilities begin and end (e.g. cost tracking lives in `app`, not the `ai` library).
 
 *   **[ai_architecture.md](./ai_architecture.md)**: The AI plane — models, EU-first provider routing (per-consumer wrappers, not the shared `ai` lib), the LiveKit voice engine, AWS Chime recording, and cost tracking (`app/internal/aiusage`).
 

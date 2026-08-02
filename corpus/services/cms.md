@@ -32,8 +32,12 @@
 >   `2adcf71`); `http://backend.internal.anthropos:8081` in production. `app/main.go:1196-1202` says why: the
 >   in-app edge is *"additive + DORMANT … until the **M809** re-point."* `app` itself makes **no** outbound
 >   cms RPC.
-> * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph, taking the **supergraph from 2
->   subgraphs to 1**. Public (unauthenticated) library content queries are preserved — see app v1.360.2/v1.360.3.
+> * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph. That single commit,
+>   `graphql-wundergraph@915da06` (2026-07-29), deleted **both** `schemas/cms.graphqls` **and**
+>   `schemas/jobsimulation.graphqls`, taking the supergraph from **3 subgraphs to 1** — not 2 to 1. (The
+>   jobsimulation subgraph outlived jobsim-in-app and was removed here; the ladder before it was 5 → 4 at
+>   `749dc86` → 3 at `7c17e63`.) Public (unauthenticated) library content queries are preserved — see app
+>   v1.360.2/v1.360.3.
 > * **Events** — `app` owns the `CMS_STREAM` subscriber. The folded similarity re-index + Studio handlers are
 >   merged onto app's **existing** CMS subscriber via `.AddHandler(...)`; they act on disjoint rows, so they
 >   compose. Directus webhooks land on `POST /api/webhook/directus`, which now **fails closed** without
@@ -70,10 +74,10 @@ This last point was the first structural shift: **studio-room is not a standalon
 ## Architecture & Code Map
 
 * **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/cms.git`)
-* **Language**: Go 1.25 (primary) + Python 3.11 (studio-room)
+* **Language**: Go 1.26 (primary — `cms/go.mod:3` `go 1.26.4`) + Python 3.11 (studio-room)
 * **Database**: ~~PostgreSQL `cms` schema~~ — **`public`, via `app`'s Ent**. The `cms` schema is a legacy husk since cms-in-app v8.0; the similarity + Studio tables moved to `public`
 * **Ports**: 8090 (GraphQL/HTTP), 8091 (Connect-RPC)
-* **Docker image**: Two-stage build — Go binary built in `golang:1.25-bookworm`, copied into a `python:3.11-slim` final stage along with `cms/studio/` and its `pip install -r studio/requirements.txt`. The Go binary is the entrypoint; it shells out to Python when a generation task fires.
+* **Docker image**: Two-stage build — Go binary built in `golang:1.26-bookworm` (`cms/Dockerfile:2`), copied into a `python:3.11-slim` final stage (`:23`) along with `cms/studio/` and its `pip install -r studio/requirements.txt`. The Go binary is the entrypoint; it shells out to Python when a generation task fires.
 
 ### Key directories
 
@@ -99,8 +103,10 @@ ent/                       Ent schema + generated code
 studio/                    Python AI generation pipeline (cloned via `make init-studio`)
   gen.py                   Pipeline entrypoint
   postgen.py               Post-generation steps
-  templates/               Generation templates
   agents/                  Agent definitions
+  configs/                 Per-environment AI model slots (`{env}_config.ini`)
+  services/                Provider wrappers (ai.py, …)
+  knowledge/, tools/       Pipeline knowledge + helper tooling
   requirements.txt         openai, anthropic, mistralai, rich, pyyaml, python-docx, requests, jinja2, pytest, pytest-asyncio (see studio/requirements.txt)
 terraform/                 IaC
 ```
@@ -123,7 +129,7 @@ sequenceDiagram
     CMS->>DB: INSERT studio_documents
     Desk->>CMS: generateContent(documentId)
     CMS->>DB: INSERT studio_tasks (pending)
-    CMS->>Studio: exec gen.py --media simulation --template <name>
+    CMS->>Studio: exec gen.py --media simulation --blueprint <file>.json
     Studio->>AI: prompts (FAST → STRICT → EXECUTION → CREATIVE slots)
     AI-->>Studio: generated content
     Studio->>CMS: results (stdout / files)
@@ -149,7 +155,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
 * **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **until M809, still calls the husk**: `CMS_RPC_ADDR=http://cms:8091` locally (`docker-compose.yml:256`), `http://backend.internal.anthropos:8081` in production.
-* **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0, taking the supergraph from **2 subgraphs to 1**. Cosmo Router now composes `backend` alone.
+* **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Cosmo Router now composes `backend` alone.
 
 ### Upstream consumers
 * Next Web App (GraphQL)
@@ -207,8 +213,19 @@ For Python pipeline development:
 ```bash
 cd cms/studio
 pip install -r requirements.txt
-python gen.py --media simulation --template <name>
+# the repo's own entry point (studio/CLAUDE.md:12-14)
+python gen.py --media simulation --prompt "..." --evaluation_skills "skill1, skill2" --branch stable
+# or, from a reusable blueprint JSON in the attachments directory
+python gen.py --media simulation --blueprint <file>.json
 ```
+
+> **⚠️ There is no `--template` flag** — and a stray one is **silently swallowed**, not rejected.
+> `gen.py:484-492` registers exactly nine arguments (`-i/--interactive`, `-m/--media`, `-f/--force`,
+> `--simid`, `--branch`, `--prompt`, `--annotations`, `--pipeline`, `--blueprint`), and
+> `parse_argument` (`gen.py:18-28`) calls `parse_known_args` and merges the leftovers into the args
+> dict. So `--template foo` parses cleanly, sets a key **nothing in the codebase reads**, and the
+> command *succeeds* while generating something unrelated. The reusable unit is a **blueprint**, not
+> a template — see [studio-room.md](./studio-room.md#blueprints-not-templates).
 
 > Note: when the Go service runs in development mode it auto-provisions a venv at `studio/studio-venv`, runs `pip3 install -r studio/requirements.txt`, and invokes `python3 studio/gen.py ...` / `studio/postgen.py` from the cms repo root via `bash -c` (paths are `studio/...`, not from inside `studio/`). For standalone Python work, use a venv to match the service's behavior.
 

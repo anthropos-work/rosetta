@@ -20,9 +20,10 @@ graph TB
         Directus[Directus - Content CMS]
     end
     
-    subgraph Studio["🎨 Studio Services"]
+    subgraph Studio["🎨 Studio Services & Standalone Internal Apps"]
         Desk[Studio-Desk - Design Tool]
         Room[Studio-Room - AI Pipeline]
+        Academy[Ant Academy - Learning Portal]
     end
     
     subgraph Core["⚙️ Core Backend Services"]
@@ -32,7 +33,8 @@ graph TB
         Others[+ Others]
     end
     
-    Desk --> Backend
+    Desk -->|GraphQL| Backend
+    Academy -->|GraphQL - academy subgraph| Backend
     Room --> Desk
     Core --> Directus
     Studio --> Clerk
@@ -93,7 +95,7 @@ six Go services plus Gotenberg**, three of which are unfederated husks:
 | **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned, ARCHIVED 2026-07-01 | **no** | [skiller.md](../services/skiller.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507); session state → `public.skill_path_sessions`; repo legacy, ARCHIVED 2026-07-31 | **no** | [skillpath.md](../services/skillpath.md) |
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app"); 23 run-state tables → `public`; **no subgraph**; ECS module kept as the rollback path; repo ARCHIVED 2026-07-31 | **YES — `docker-compose.yml:83`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810** | [jobsimulation.md](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1; ECS module kept as the rollback path; repo frozen, **not** archived | **YES — `docker-compose.yml:144`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810**. Still answers `messenger`'s `CMS_RPC_ADDR` until M809 | [cms.md](../services/cms.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph **3→1** (the one commit `graphql-wundergraph@915da06` deleted `cms.graphqls` **and** `jobsimulation.graphqls`); ECS module kept as the rollback path; repo frozen, **not** archived | **YES — `docker-compose.yml:144`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810**. Still answers `messenger`'s `CMS_RPC_ADDR` until M809 | [cms.md](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; **orphaned, not absent** — prod terraform still reads `= 1` | **YES — `docker-compose.yml:281`, default `graphql` profile.** **husk** — merged into `app` (no subgraph), but the container **still starts in the default `graphql` profile**; teardown **M810** | [roadrunner.md](../services/roadrunner.md) |
 
 **Production-only (deployed but not in local docker-compose)**:
@@ -105,9 +107,9 @@ six Go services plus Gotenberg**, three of which are unfederated husks:
 |:--------|:--------|:-----------|
 | **colony** | Platform framework: logging, DB/Redis, GraphQL/RPC servers, middleware, pub/sub (Watermill); also contains `authn` | `git@github.com:anthropos-work/colony.git` |
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types | `git@github.com:anthropos-work/proto.git` |
-| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib | `git@github.com:anthropos-work/ai.git` |
+| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). Cost tracking & **vendor selection** live in the **consumers**, not this lib — and that selection is a caller-supplied switch, **not** an EU-first fallback ladder ([no such ladder exists](./external_services.md#routing-what-is-actually-implemented)) | `git@github.com:anthropos-work/ai.git` |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) | `git@github.com:anthropos-work/authn.git` |
-| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K/18K data lives in `app`'s `public` schema (former skiller service) | `git@github.com:anthropos-work/taxonomy.git` |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills**, **≥22,470 job roles** — public subset, measured 2026-06-29) lives in `app`'s `public` schema (former skiller service). The long-quoted "60K skills / 18K roles" is not a measurement: [18K is refuted, 60K is unverified](./shared_libraries.md#taxonomy-figures) | `git@github.com:anthropos-work/taxonomy.git` |
 
 **Development Pattern**:
 ```bash
@@ -134,7 +136,7 @@ make dev S=backend       # Stop Docker container, develop natively
 - **Deployment**: Standalone processes (not in main docker-compose) — typically Vercel or local-only
 - **Purpose**: Content creation, AI-powered generation, and internal learning
 - **Users**: Internal content creators, designers, and Anthropos employees
-- **Integration**: Reuse platform identity (Clerk). Some connect to Core Services via GraphQL/HTTP (Studio-Desk); others are fully independent of the backend (Ant Academy).
+- **Integration**: Reuse platform identity (Clerk), and **both connect to Core Services over GraphQL** — Studio-Desk via `VITE_GRAPHQL_ENDPOINT`, Ant Academy via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. **Neither is independent of the backend.** *(This page previously called Ant Academy "fully independent of the backend"; that framing was retired at v2.5 M231 — see [`ant-academy.md`](../services/ant-academy.md) — and it is the documented root cause of the "empty academy" demo bug.)*
 
 #### Studio-Desk
 
@@ -172,7 +174,7 @@ npm run dev  # Starts both frontend (9100) and backend (9000)
 | **Runtime** | Baked into the `app` (backend) Docker image — Python deps installed alongside the Go binary |
 
 **Generation Pipeline**:
-1. **Pre-generation**: Load template, validate parameters
+1. **Pre-generation**: Load the prompt (or a **blueprint** JSON), validate parameters
 2. **AI Generation**: Execute multi-step generation workflow
 3. **Post-generation**: Translation, metadata, guidance generation
 
@@ -181,8 +183,19 @@ clone of `anthropos-studio-room`:
 ```bash
 cd ../anthropos-studio-room
 pip install -r requirements.txt
-python gen.py --media simulation --template <name>
+# the repo's own entry point (studio/CLAUDE.md:12-14)
+python gen.py --media simulation --prompt "..." --evaluation_skills "skill1, skill2" --branch stable
+# or, from a reusable blueprint JSON in the attachments directory
+python gen.py --media simulation --blueprint <file>.json
 ```
+
+> **⚠️ There is no `--template` flag.** `gen.py`'s parser registers exactly nine arguments
+> (`-i/--interactive`, `-m/--media`, `-f/--force`, `--simid`, `--branch`, `--prompt`,
+> `--annotations`, `--pipeline`, `--blueprint`), and `parse_argument` uses `parse_known_args`,
+> merging leftovers into the args dict — so a stray `--template foo` is **silently swallowed**, the
+> command *succeeds*, and it generates something unrelated to what you asked for. The reusable unit
+> is a **blueprint**, not a template. See
+> [studio-room.md](../services/studio-room.md#blueprints-not-templates).
 
 > Before cms-in-app this lived at `cms/studio/`, synced with `cd cms && make update-studio`.
 > The pipeline is unchanged — only where the code is pulled in changed.
@@ -200,10 +213,10 @@ python gen.py --media simulation --template <name>
 | **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
 | **Location** | Local `../ant-academy` — **NOT** in `platform/repos.yml`, so **not** cloned by `make init` (by design, v1.10b M49 #5). For a **demo**, `ensure-clones.sh` clones it explicitly; for **dev**, clone it manually. See [`ant-academy.md`](../services/ant-academy.md). |
 | **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |
-| **Platform dependencies** | **None at runtime.** Reuses platform Clerk; any AI calls go straight to the providers (never through the platform `ai` library). No GraphQL, no Connect-RPC, no Redis. |
+| **Platform dependencies** | **A GraphQL client of the platform `app` academy subgraph at runtime** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (`code/src/graphql/server.js:14,18` — it **throws** when unset). Reads: the course catalog is **DB-authoritative**, not the committed FS tree (`code/src/lib/backendContent.js:36,102-103`; `code/src/lib/serverTenant.js:145`). Writes: per-user progress, bookmarks, certificates and feedback POST through `code/app/api/academy/beacon/route.js:36,41-55` (`UPSERT_CHAPTER_PROGRESS`, `SET_LAST_ACTIVITY`, …). Server side: `app/internal/web/backend/graphql/graph/schemas/academy.graphqls`. Also reuses platform Clerk; AI calls go straight to the providers (never through the platform `ai` library). No Connect-RPC, no Redis. |
 
 **Key Features**:
-- Static chapter JSON in `code/public/content/<series>/<skill-path>/`
+- Static chapter *bodies* as JSON in `code/public/content/<series>/<skill-path>/` — but **the catalog that decides what is visible is read from the platform over GraphQL, not from this tree**. With `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` unset or the academy tables empty, the read degrades to an **empty grid**; it does *not* back-fill from the committed FS content (`code/src/lib/serverTenant.js:115-145` — *"there is NO FS-as-published fallback … not reversible-on-error"*). This is the "empty academy" demo symptom, and a **demo** only shows a populated grid because a rext demo-patch (`demo-stack/patches/academy-fs-published-fallback`) restores that fallback on the demo's ephemeral clone — it is not the shipped behaviour
 - **No service worker / no offline caching** — the Serwist 9 layer was REMOVED (v0.5 M1). `code/package.json` has no `serwist`/`workbox` dependency, no `sw.*` is emitted, `RegisterServiceWorker.jsx` is now a kill-switch that *unregisters* any surviving worker, and the repo regression-fences the removal (`code/tests/unit/next-scaffold.test.js:106,111`; `react-compiler-config.test.js:41`). **The web-app MANIFEST survives** (`public/academy-manifest.json`, `display: standalone`, declared at `code/app/layout.jsx:132`), so the app is still installable — it is simply online-only. Offline chapter bundling survives only in the Expo mobile app
 - Companion iOS / Android app (Expo SDK 54) bundling the same chapters at build time
 - Opt-in in-app "Cosmo" AI assistant (`NEXT_PUBLIC_FEATURE_TRAINING_COACH`, default OFF) — calls the OpenAI Responses API (`gpt-5.2`) directly from the browser via a per-user `localStorage` key
@@ -304,10 +317,10 @@ platform M810 but no frontend reaches it — both are baked against `backend` at
 | Property | Value |
 |:---------|:------|
 | **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
-| **Port** | 5050 — *prod only; no local listener since `2adcf71`* |
+| **Port** | **8080** everywhere the router still runs — container and ECS alike (`terraform/locals.tf:8` `port = 8080`; `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). **`5050` was never a production port** — it was only the LOCAL compose host mapping `"5050:8080"`, deleted with the service at `2adcf71` |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
-| **Subgraphs** | **`backend` alone (1)** — skillpath's subgraph folded in at M505, then jobsimulation's, then cms's at `graphql-wundergraph@915da06` (2026-07-29), the 2 → 1 step |
+| **Subgraphs** | **`backend` alone (1)**. The measured ladder in `supergraph-config-prod.yaml`: **5** (backend, skiller, jobsimulation, cms, skillpath) → **4** at `749dc86` (2026-06-24, skiller removed) → **3** at `7c17e63` (2026-07-21, skillpath folded in) → **1** at `915da06` (2026-07-29), which deleted `cms.graphqls` **and** `jobsimulation.graphqls` in a single commit. cms-in-app is therefore the **3 → 1** step, not "2 → 1" — the jobsimulation subgraph outlived jobsim-in-app and was removed here |
 
 > Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
 
