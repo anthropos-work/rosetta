@@ -35,15 +35,27 @@ What is actually implemented, in `app/internal/jobsimulation/ai/ai.go` (and mirr
 
 **EU data residency still holds — but by a different mechanism than the ladder implied.** The posture
 rests on the *default clients* being EU-resident (Azure EU, Bedrock `eu-west-1`), not on a policy that
-walks EU options before US ones. Within the manager exactly three things can send a request outside the
-EU, **none of them a region-health failover**: the `flag_use_azure_us` flag, the 429 retry (which goes
-straight to direct OpenAI **without** trying another EU provider first), and setting `ANTHROPIC_API_KEY`,
-which flips Course Builder / Studio-Room off Bedrock onto Anthropic's first-party API.
+walks EU options before US ones. **Two** levers inside the manager can send a request outside the EU,
+**neither a region-health failover**: the `flag_use_azure_us` flag, and the 429 retry (which goes straight
+to direct OpenAI **without** trying another EU provider first).
 
-One layer *above* the manager there is a fourth exit: an unrecognised `ai_vendor` string on a sequence
-falls through to `internalAi.Openai` — **direct US OpenAI** — in
-`app/internal/jobsimulation/simulator/ai/ai.go:114-115`. See
-[The three simulation model defaults](#the-three-simulation-model-defaults).
+**`ANTHROPIC_API_KEY` is a third exit but is NOT within the manager** — it flips Course Builder and
+Studio-Room off Bedrock onto Anthropic's first-party API, and neither of those ever touches `AIManager`.
+An earlier revision of this paragraph counted it as one of *"exactly three things … within the manager"*,
+which is a category error rather than a miscount, and it is why the number kept disagreeing with the
+enumeration below it. Corrected M257x iter-46.
+
+One layer *above* the manager, the sequence→vendor switch supplies **two more** routes to
+**direct US OpenAI**, both in `app/internal/jobsimulation/simulator/ai/ai.go`:
+
+1. **`ai_vendor` unset or unrecognised** falls through the `default:` arm at `:113-115`. `AIVendor` is a
+   **nullable** pointer on the sequence, so *unset* — not merely *mistyped* — is the ordinary way to reach
+   it, with **no error condition and on the first attempt**. An earlier revision named only the
+   "unrecognised string" case, which reads as a misconfiguration when it is in fact the default.
+2. **A caller may simply select it**: `case simulation.Openai:` at `:58-59` is an explicit, supported
+   choice, and it was not counted at all.
+
+See [The three simulation model defaults](#the-three-simulation-model-defaults).
 
 For the full per-line derivation see
 [External Services → Routing: what is actually implemented](external_services.md#routing-what-is-actually-implemented)
@@ -56,7 +68,7 @@ fallback order (there is none; see above).
 
 | Provider | Models | Default client |
 |:---------|:-------|:---------------|
-| **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US only via `flag_use_azure_us`; direct US OpenAI only on a 429 retry) |
+| **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US via `flag_use_azure_us`). **Direct US OpenAI is NOT only a 429 retry target**: a simulation sequence with `ai_vendor` unset or set to `Openai` reaches it on the first attempt with no error condition — `simulator/ai/ai.go:58-59` and the `default:` arm at `:113-115`. Corrected M257x iter-46 |
 | **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` (Course Builder / Studio-Room) |
 | **Mistral (EU)** | Mistral OCR | cms-domain OCR **only** — not reachable from the AI manager |
 | **Speech** | GPT-4o Mini TTS, TTS v2 HD, TTS v2 | Azure voice client (`CreateSpeech` is Azure-only) |
@@ -102,7 +114,11 @@ identical**, and `development_config.ini:26-36` is identical to both:
 > and still carries the older `gpt-4.1-mini` / `gpt-4.1` / `gpt-4o` / `o3` stable column; the corpus
 > asserted a hybrid of it for several releases. **`gpt-5.2` appears in no studio config at all** (only as a
 > pricing entry in `studio/services/ai.py:356,508`), and `gpt-4o` appears in no `*_MODEL` slot of any
-> studio config. Agrees with [`studio-room.md`](../services/studio-room.md#ai-service-configuration).
+> **shipping** studio config — it *is* in two slots of the non-shipping scaffold this blockquote opens by
+> telling you not to read: `configs/config_template.ini:39` (`EXECUTION_AI_STABLE_MODEL = azure, gpt-4o,
+> none`) and `:40` (`CREATIVE_AI_STABLE_MODEL`). The unqualified form contradicted this same blockquote two
+> lines earlier, which already says the template *"still carries"* `gpt-4o`; corrected M257x iter-46.
+> Agrees with [`studio-room.md`](../services/studio-room.md#ai-service-configuration).
 
 ### Embeddings & RAG (Backend `app` — merged skiller domain)
 

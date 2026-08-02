@@ -143,4 +143,3 @@ the stack dir. New tooling is authored + TESTED + TAGGED first in `.agentspace/r
 | `/dev-up` | First-time environment build / start a stack after updating |
 | `/stack-list` | List live stacks |
 | `/update-knowledge` | Process ops-reports into the corpus |
-```

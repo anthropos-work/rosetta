@@ -33,7 +33,8 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Directus**: Content storage (self-hosted)
     *   **GraphQL/Cosmo Router**: API federation gateway **(prod only — deleted from local dev at
         platform `2adcf71`)**
-    *   **AI Providers**: OpenAI, Anthropic, Mistral (EU-first routing)
+    *   **AI Providers**: OpenAI, Anthropic, Mistral — EU-resident clients by default, **not** an EU-first
+        fallback ladder (see [AI Providers](#ai-providers) below)
     *   **LiveKit**: Real-time voice engine for simulations
     *   **AWS Chime**: Video/audio recording
     *   **PostgreSQL & Redis**: Data infrastructure
@@ -198,7 +199,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 | :--- | :--- |
 | **colony** | Platform framework: logging+Sentry, DB/Redis helpers, GraphQL/RPC servers, middleware, pub/sub (Watermill); also contains `authn` |
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types |
-| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib |
+| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & **vendor selection** live in the **consumers**, not this lib — and that selection is a caller-supplied switch, **not** an EU-first fallback ladder ([no such ladder exists](./external_services.md#routing-what-is-actually-implemented)) |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) |
 | **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills**, **≥22,470 job roles** — public subset, measured 2026-06-29) lives in `app`'s `public` schema (former skiller service). The long-quoted "60K skills / 18K roles" is not a measurement: [18K is refuted, 60K is unverified](./shared_libraries.md#taxonomy-figures) |
 
@@ -240,7 +241,10 @@ Archived / merged — **but three of these still start locally** (repos still ex
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via the cms **domain** inside `backend` (business logic layer)
 *   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in and deleted the `jobsimulation` entry in the same commit (**3 → 1**; the jobsimulation *subgraph* outlived the jobsim-in-app service merge). Nothing is aggregated any more
-*   **AI Providers**: EU-first routing — **Azure OpenAI EU → Azure OpenAI US → direct OpenAI**. Measured at
+*   **AI Providers**: the default clients are EU-resident, and **there is no ordered EU-first fallback
+    ladder** — the chain *"Azure OpenAI EU → Azure OpenAI US → direct OpenAI"* was retracted at
+    [`external_services.md:537`](./external_services.md) and is corrected here (M257x iter-46); the two US
+    paths are a **feature flag** and a **429 retry target**, not fallback rungs. Measured at
     `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
     `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
     retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"

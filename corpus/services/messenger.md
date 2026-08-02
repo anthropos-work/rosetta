@@ -107,7 +107,7 @@ For local development, set `BREVO_KEY=""` to route through the **console sender*
 | `CMS_RPC_ADDR` | `http://cms:8091` | CMS RPC — **current, not stale** (`docker-compose.yml:256` @ platform `2adcf71`). Points at the **unfederated husk**, deliberately: `app/main.go:1199` calls the in-app CMSService edge *"additive + DORMANT … until the M809 re-point"* |
 | `JOBSIMULATION_RPC_ADDR` | `http://jobsimulation:8401` | Jobsimulation RPC — **current, not stale** (`docker-compose.yml:258`). Unlike `SKILLER_RPC_ADDR` below, this was **not** re-pointed at `backend`; it also resolves to the husk. Re-point is M809/M810 |
 | `SKILLER_RPC_ADDR` | `http://backend:8083` | Skiller RPC surface — served by `backend` since the skiller→app merge |
-| ~~`SKILLPATH_RPC_ADDR`~~ | *(removed)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:815`). |
+| ~~`SKILLPATH_RPC_ADDR`~~ | *(removed)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:828`, in `getSkillPath`). |
 
 > Values shown are what docker-compose injects. The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).
 

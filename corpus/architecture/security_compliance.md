@@ -4,7 +4,7 @@ This document describes the security architecture, data protection measures, and
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers are routed through EU endpoints first. The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, but **most** of the per-check pass/fail verdicts it counts are produced by an LLM. *Most*, not all — deterministic `EngineTextDiff` checks are the exception, and "all verdicts are AI" is the opposite error. **The legal classification itself is a question for counsel; this corpus only records that the stated technical premise is false.**
+Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers default to EU endpoints — but there is **no ordered EU-first fallback chain** (`external_services.md:537`): the US path is a PostHog **flag** (`flag_use_azure_us`), not a fallback rung, and Course Builder's `ANTHROPIC_API_KEY` path leaves the EU entirely. See [EU Data Residency](#eu-data-residency). The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, but **most** of the per-check pass/fail verdicts it counts are produced by an LLM. *Most*, not all — deterministic `EngineTextDiff` checks are the exception, and "all verdicts are AI" is the opposite error. **The legal classification itself is a question for counsel; this corpus only records that the stated technical premise is false.**
 
 Key guarantees:
 - EU data residency (primary)
@@ -73,15 +73,28 @@ Three layers of isolation ensure tenant data cannot leak:
 > (`mixin.go:98`) applies a row-level **owner** filter (`rule.FilterOwnerRule()`) — scoped by *user*, not by
 > organization.
 >
-> **So: 31 schemas auto-filter by ORGANIZATION** (the 30 mixin users + `Membership`), and **16 carry an
-> `organization_id` with no policy of any kind**: `org_subscription.go`, `organization_settings.go`,
+> **So: 31 schemas auto-filter by ORGANIZATION** (the 30 mixin users + `Membership`), and **23 carry an
+> `organization_id` with no policy of any kind.** Sixteen of the 23 have neither mixin — `org_subscription.go`, `organization_settings.go`,
 > `organization_feature.go`, `api_key.go`, `lab_session.go`, `interview_aggregated_report.go`,
 > `admin_audit_log.go`, `job_simulation_session.go`, `jobsimulation_feedback.go`,
 > `ai_readiness_diagnose_narrative.go`, `ai_readiness_recommendation.go`, `assignment_invitation_link.go`,
 > `job_role_skill_suggestion_cache.go`, `org_membership_invitation.go`, `org_sim_link.go`,
-> `profile_history.go`. **Those 16 are the rows most likely to be missed by an audit**: they look org-scoped
-> and are not policed. The remainder (the taxonomy, and other global reference data) carry no org column by
-> design.
+> `profile_history.go` — **and those 16 are the rows most likely to be missed by an audit**: they look
+> org-scoped and are not policed. **The remaining 7 of the 23** are the **7
+> `OrganizationIDMixin{}`** users named above (`category`, `jobrole`, `similarity`, `skill`,
+> `specialization`, `studio_document`, `studio_task`), which carry an `organization_id` and declare no
+> `Policy()` either. An earlier revision of this paragraph closed with *"the remainder … carry no org column
+> by design"*, which excluded those 7 from its own count **three lines after naming them as unpoliced** — a
+> contradiction inside a single blockquote, and in the direction that reads as *"isolation is handled"*.
+> The genuine remainder — global reference data with no `organization_id` at all — is what carries no org
+> column by design.
+>
+> **Re-measured M257x iter-46, at `app` @ `5ba17044`:** 139 `.go` files in `internal/data/ent/schema/`;
+> `OrganizationMixin{}` in 30, `OrganizationIDMixin{}` in 7, a plain `organization_id` with neither mixin in
+> 18 (a 19th hit, `skiller_mixins.go`, is a mixin definition and not a schema); and **only FOUR files in the
+> whole directory declare any `Policy()` at all** — `organization.go`, `mixin.go`, `user.go`,
+> `org_membership.go`. Two auditors disagreed on the base count (17+7 vs 16+7); the measurement says **16**,
+> because `org_membership.go` polices itself and `academy_feedback.go` is filtered by owner.
 >
 > **⚠️ This fence has now been wrong FOUR times. Re-derive it; do not quote it.** v1 asserted a blanket
 > guarantee. M257x iter-33 over-swung to "the non-mixin schemas never mention organization at all". iter-34
@@ -165,15 +178,25 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 
 ### EU Data Residency
 - **Primary region**: EU-West-1 (Ireland)
-- AI providers are routed through EU endpoints **first** — Azure OpenAI EU (`ai.go:262-266`), AWS Bedrock
-  pinned to `eu-west-1` (`:85-88`)
+- AI provider clients are **EU-resident by default** — Azure OpenAI EU (`ai.go:262-266`), AWS Bedrock pinned
+  to `eu-west-1` (`:85-88`). **Not "routed through EU endpoints first"**: there is no ordered EU-first
+  fallback chain (`external_services.md:537`), and the wording mattered because the two US paths below are
+  a flag and a retry target, which a "first" implies are tried only after an EU option fails. Corrected
+  M257x iter-46
 - **⚠️ "EU-first" is not "EU-only", and the US path is a FLAG, not a fallback.** `getClient` swaps
   `azureClientEu` → **`azureClientUs`** whenever the PostHog flag **`flag_use_azure_us`** is enabled
   (`app/internal/jobsimulation/ai/ai.go:263-277`). That is a deliberate switch that can route live
   simulation traffic to a US region with no error condition involved. Direct OpenAI is additionally used as
   the **retry target on HTTP 429** (`isThrottlingError`, `:129` / `:166` / `:325`)
-- **"Anthropic Direct" is not used at all** — Anthropic is reached exclusively through **AWS Bedrock
-  `eu-west-1`** (`:85-95`)
+- **Anthropic is reached through AWS Bedrock `eu-west-1` from the AI manager (`:85-95`) — but "Anthropic
+  Direct is not used at all" is FALSE at platform HEAD.** Course Builder routes **every** model call to
+  first-party `api.anthropic.com` whenever `ANTHROPIC_API_KEY` is set:
+  `app/internal/coursebuilder/bedrock.go:109-112` (`newUnderlyingClient` → `NewAnthropicClientWithModel`),
+  with `ModelBackendName()` (`:100`) returning `"anthropic-api"` to say so. That is a **US-terminating**
+  path outside the Bedrock EU region, selected by an env var rather than a flag — so it is not covered by
+  the `flag_use_azure_us` caveat below. `external_services.md:489` carries the provider row and
+  `coursebuilder.md:48` calls it *"the shipped path"*; this section said the opposite. Corrected M257x
+  iter-46
 - No customer data stored in US **by default** — but the residency guarantee is contingent on
   `flag_use_azure_us` being off, and that is a runtime flag, not a build-time property. **Check the flag
   before asserting residency.**
@@ -181,6 +204,7 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 ### EU AI Act
 - AI Simulations classified as **Limited Risk** (not High Risk)
 - Stated reason: AI is used for conversation/generation only; scoring is deterministic (rubric-based, 0-100 scale), NOT AI-scored
+- Stated consequence of that classification: transparency obligations only, not the strict requirements of High Risk systems
 
 > **⚠️ THE STATED REASON IS FALSE AT PLATFORM HEAD, AND THIS IS A COMPLIANCE CLAIM.** It is a conjunction
 > and **both conjuncts fail**. The *aggregation* is deterministic arithmetic — `calculateSkillScore`
@@ -202,7 +226,12 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 > candidates sits near Annex III. **Do not cite this section as evidence of a Limited-Risk
 > classification** — re-derive it. Measured M257x iter-38; the same false premise was stated
 > independently in `ai_architecture.md` and is corrected there too.
-- This classification means transparency obligations only, not the strict requirements of High Risk systems
+>
+> **Both bullets above are what is STATED, not what this corpus asserts** — including the consequence
+> bullet. It previously sat *after* this blockquote, at column 0, drawing the operative legal consequence
+> from the classification the blockquote had just retracted three lines earlier; the retraction had been
+> spliced into the middle of the list and the list resumed on the far side of it. Moved back inside the
+> stated-rationale list so the retraction governs it. Repaired M257x iter-46.
 
 ### GDPR / CCPA
 - **90-day auto-deletion** of personal data post-contract termination

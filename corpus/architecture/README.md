@@ -20,7 +20,7 @@ This directory contains all documentation related to the Anthropos platform arch
 
 *   **[shared_libraries.md](./shared_libraries.md)**: The five internal Go libraries — but only **four are imported as private modules** (`ai`, `colony`, `proto`, `taxonomy`). **`authn` is not a dependency of any service**: no checked-out `go.mod`/`go.sum` requires `github.com/anthropos-work/authn` (the standalone repo is legacy); it ships **inside colony** and is imported as `github.com/anthropos-work/colony/authn`. The doc covers what each provides and where its responsibilities begin and end (e.g. cost tracking lives in `app`, not the `ai` library).
 
-*   **[ai_architecture.md](./ai_architecture.md)**: The AI plane — models, EU-first provider routing (per-consumer wrappers, not the shared `ai` lib), the LiveKit voice engine, AWS Chime recording, and cost tracking (`app/internal/aiusage`).
+*   **[ai_architecture.md](./ai_architecture.md)**: The AI plane — models, provider routing (per-consumer wrappers, not the shared `ai` lib; EU-resident by default, and **not** an EU-first fallback ladder), the LiveKit voice engine, AWS Chime recording, and cost tracking (`app/internal/aiusage`).
 
 *   **[security_compliance.md](./security_compliance.md)**: Security, data protection, EU compliance, and the multi-tenant isolation model (shared DB / shared schema with `organization_id`, the 3-layer isolation: DB + Sentinel authz + Clerk identity).
 

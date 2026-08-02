@@ -624,9 +624,13 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     alternative — a CLOSED cycle whose read takes `buildResponseFromSnapshots` (a pre-computed frozen read).
     iter-07 seeded the cycle closed + a frozen `ai_readiness_snapshots` row per member (DB-verified correct:
     199 snapshots, 78.4% stage-3, heroes right) — and the GATED sweep STILL held at the same failing count.
-    The frozen branch EXISTS in code but the DEFAULT dashboard GET never takes it: `app
-    GetAIReadinessWithOptions` reaches `buildResponseFromSnapshots` ONLY for `opts.CycleID != nil &&
-    status=="closed"` — the nil-CycleID default is hardcoded to `buildLiveResponse`. An AUTHENTICATED network
+    The frozen branch EXISTS in code, and at the time of this iteration the DEFAULT dashboard GET did not
+    take it. **⚠️ That is no longer true of platform HEAD, and it is not a hardcode — corrected M257x
+    iter-46** (`FIX-M257x-iter43-coverage-protocol-livepath`): `app/internal/aireadiness/readiness.go:308-312`
+    reaches `buildResponseFromSnapshots` on the **nil-CycleID** path too, whenever the org has **no active
+    cycle and a latest closed one** — which is exactly the shape M51 seeds. Read the paragraph below as the
+    contemporaneous iter-07 finding it was, not as a current statement about the read path. An AUTHENTICATED
+    network
     probe (log in as the hero, log every outbound backend request URL + query params + whether it completes)
     proved the demo FE fires the data GET **WITHOUT `?cycle=`** (the live path — it hangs) and never fires the
     `/cycles` list that would supply `latestClosedCycle.id`. **Lesson: a server-side fast branch is necessary

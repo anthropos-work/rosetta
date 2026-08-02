@@ -9,7 +9,7 @@ Sentinel does **not** handle authentication — that's Clerk's job. It also does
 ## Architecture & Code Map
 
 * **Codebase**: `sentinel` (local) — repo `git@github.com:anthropos-work/sentinel`
-* **Language**: Go 1.25
+* **Language**: Go 1.26 (`go.mod:3` `go 1.26.0`; `Dockerfile:2` / `Dockerfile.dev:2` `golang:1.26-bookworm`)
 * **Framework**: Connect-RPC, Casbin v3
 * **Database**: PostgreSQL `sentinel` schema (single table: `casbin_rules`) — **no Ent ORM**
 * **Port**: 8087 (HTTP + Connect-RPC; `PORT=8087` in compose, same on host and inside container). The sentinel binary's default is 8080 (per its own README/CLAUDE.md), but the platform compose overrides it to 8087 explicitly.
@@ -19,7 +19,7 @@ Sentinel does **not** handle authentication — that's Clerk's job. It also does
 
 ### Why no Ent / no GraphQL?
 
-Sentinel's data model is exactly one table (Casbin's `casbin_rules`), and it doesn't participate in the federation gateway because its concerns are orthogonal to product data. Keeping it lean makes it cheap to operate (256 CPU / 256 MB on ECS) and easy to test (all unit tests use in-memory enforcers, no DB fixtures).
+Sentinel's data model is exactly one table (Casbin's `casbin_rules`), and it doesn't participate in the federation gateway because its concerns are orthogonal to product data. Keeping it lean makes it cheap to operate (256 CPU / 128 MB on ECS — `terraform/locals.tf:4-5`) and easy to test (all unit tests use in-memory enforcers, no DB fixtures).
 
 ### Casbin model
 

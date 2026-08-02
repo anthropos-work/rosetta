@@ -20,10 +20,17 @@
 > / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
 > on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
 >
-> **ORPHANED, but NOT archived — a deliberate M247 resolution.** Unlike intelligence / skiller / skillpath /
-> jobsimulation (which were *removed* from `repos.yml` + `docker-compose.yml`, **and whose GitHub repos really are
-> archived** — skiller 2026-07-01, skillpath + jobsimulation 2026-07-31), roadrunner is **still in `repos.yml` (1 of
+> **ORPHANED, but NOT archived — a deliberate M247 resolution.** Unlike intelligence / skiller / skillpath
+> (which were *removed* from `repos.yml` + `docker-compose.yml`, **and whose GitHub repos really are
+> archived** — skiller 2026-07-01, skillpath 2026-07-31), roadrunner is **still in `repos.yml` (1 of
 > the 9 repos — the count dropped when platform `2adcf71` deleted the router entry)**
+>
+> **`jobsimulation` was previously listed above as also *removed* from both files; it is not (corrected
+> M257x iter-46).** Its GitHub repo IS archived (2026-07-31), but it remains in `repos.yml:17` **and** in
+> `docker-compose.yml:83` with `profiles: [graphql, jobsimulation, all]` — so its container **starts on a
+> bare `make up`**. That is the same orphaned-but-still-orchestrated shape as roadrunner itself, which is
+> why listing it as removed contradicted `:26` of this very blockquote, plus
+> `../architecture/architecture_overview.md:188` and `README.md:20-21`.
 >
 > **Correction (v2.8 M257x, measured):** `chronos` does **not** belong in that list — its GitHub repo is **NOT
 > archived** (last push 2026-04-23), only removed from orchestration at platform `045857c`. The corpus called it

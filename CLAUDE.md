@@ -214,7 +214,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 **Shared Libraries** — five repos, of which **four are imported as private Go modules** (`ai`, `colony`, `proto`, `taxonomy`; **not** cloned by `make init`/`repos.yml` — pulled at Docker build via `GH_PAT`/`GOPRIVATE`). **`authn` is imported by nothing** — see its row. Full picture: `corpus/architecture/shared_libraries.md`.
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
 - proto: Protobuf definitions (RPC contracts) + hand-written domain types
-- ai: AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). NOTE: cost tracking lives in `app/internal/aiusage`, and EU-first routing lives in each consumer's wrapper — **not** in this library
+- ai: AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). NOTE: cost tracking lives in `app/internal/aiusage`, and **vendor selection** lives in each consumer's wrapper — **not** in this library, and it is a caller-supplied switch rather than an EU-first fallback ladder
 - authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
 - taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills / ≥22,470 job roles** — public subset, measured 2026-06-29; ["60K / 18K" is not a measurement](corpus/architecture/shared_libraries.md#taxonomy-figures)) lives in `app` (backend — the `public` schema, since the skiller→app merge)
 
@@ -229,7 +229,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
 - ~~GraphQL/Cosmo Router~~ — **DELETED from the platform** at `2adcf71` (2026-07-31, PR #23 *"drop the WunderGraph router; point local dev at backend"*). There is no `graphql` compose service, no `graphql-wundergraph` entry in `repos.yml`, and no federation gateway. **GraphQL is served directly by `backend`** at `:8082/graphql/query` — note the path moved too (`/graphql` → `/graphql/query`), so a host-only re-point 404s rather than errors. `.env_example` records that the `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` name is now historical. (Measured in M257x iter-12; the prior claim here of *"3 subgraphs"* was itself already stale — the cms-in-app merge had taken the supergraph to one.) `categoryTree`/`fullCategoryTree` were dropped, not ported.
-- AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
+- AI Providers: OpenAI, Anthropic, Mistral — EU-resident clients by default; **there is no ordered EU-first fallback ladder** (`corpus/architecture/external_services.md:537`)
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
 
@@ -243,7 +243,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since the merges the only remaining cross-process RPC edges are backend → sentinel/storage and messenger → backend; the `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends
 - **Frontend/Studio → Backend**: GraphQL **straight to `backend`** at `:8082/graphql/query` — the Cosmo router was deleted at platform `2adcf71`, so there is no gateway hop and no federation
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
-- **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
+- **AI**: vendor selection implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library. **Not a fallback ladder** (`corpus/architecture/external_services.md:537`): an EU Azure client by DEFAULT, a US Azure client swapped in by the PostHog flag `flag_use_azure_us`, and direct-OpenAI as the RETRY target on HTTP 429 — three independent levers, not three ordered rungs; Anthropic always Bedrock `eu-west-1`, except Course Builder's `ANTHROPIC_API_KEY` path to `api.anthropic.com`. Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema, `organization_id` on **most** application tables; 3-layer isolation (DB, Sentinel auth, Clerk identity). **⚠️ "on every table, so no cross-tenant access is possible" is RETRACTED** — the DB layer auto-filters only where an Ent schema declares the privacy policy; the rest are filtered by application code or not at all. The measured split and the derivation command live in `corpus/architecture/security_compliance.md`
 
 ### Environment Configuration

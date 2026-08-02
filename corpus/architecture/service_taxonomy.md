@@ -133,7 +133,12 @@ make dev S=backend       # Stop Docker container, develop natively
 ### Tier 2: Studio Services & Standalone Internal Apps
 
 **Characteristics**:
-- **Deployment**: Standalone processes (not in main docker-compose) — typically Vercel or local-only
+- **Deployment**: standalone processes — typically Vercel or local-only — **but not uniformly outside
+  docker-compose**: Studio-Desk, the first Tier-2 member listed below, IS in the platform compose at
+  `docker-compose.yml:311` behind `profiles: [studio-desk, all]` (`:342`), so it starts on
+  `make up PROFILE=studio-desk` and not on a bare `make up`. The unqualified *"not in main
+  docker-compose"* contradicted `:75` of this same file, `frontend_architecture.md:11` and
+  `studio-desk.md:21`; corrected M257x iter-46
 - **Purpose**: Content creation, AI-powered generation, and internal learning
 - **Users**: Internal content creators, designers, and Anthropos employees
 - **Integration**: Reuse platform identity (Clerk), and **both connect to Core Services over GraphQL** — Studio-Desk via `VITE_GRAPHQL_ENDPOINT`, Ant Academy via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. **Neither is independent of the backend.** *(This page previously called Ant Academy "fully independent of the backend"; that framing was retired at v2.5 M231 — see [`ant-academy.md`](../services/ant-academy.md) — and it is the documented root cause of the "empty academy" demo bug.)*
@@ -142,7 +147,10 @@ make dev S=backend       # Stop Docker container, develop natively
 
 | Property | Value |
 |:---------|:------|
-| **Technology** | TypeScript, Vite, Express.js, React |
+| **Technology** | TypeScript, Vite, Express.js — **no framework** (0 react/vue/angular entries in
+`package.json`, 0 `.tsx`/`.jsx` in the repo). *"React"* was published here and contradicted by
+[`studio-desk.md:20`](../services/studio-desk.md) (*"vanilla TS frontend, no framework"*); corrected
+M257x iter-46 |
 | **Port** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Purpose** | User-facing design tool for creating job simulation blueprints |
 | **Authentication** | Clerk |
@@ -284,9 +292,17 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 > point at the **production** instance `https://content.anthropos.work` in the stock compose. A freshly-built
 > local stack
 > reads its public content **live from prod**; there is no local Directus container, image pin, port, or
-> admin/password in the platform compose. (Earlier revisions of this doc wrongly described a
-> `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` login — that
-> service has never existed in the platform compose.)
+> admin/password in the platform compose. (Earlier revisions of this doc described a
+> `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` login as if
+> it were CURRENT, which it is not.)
+>
+> **That retraction over-corrected, and this corrects the correction (M257x iter-46).** The service DID exist,
+> with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
+> `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
+> `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. *"Does not
+> exist now"* became *"has never existed"* — and the stronger form contradicted the corpus's own fenced
+> source of truth, [`platform-migration-status.md:86`](./platform-migration-status.md), which the very
+> paragraph above links.)
 
 **Integration Pattern**:
 ```

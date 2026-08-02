@@ -120,8 +120,9 @@ A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 >    token counts. Dollar cost is computed by the **consumer** in
 >    `app/internal/aiusage/ai_usage.go` (a hardcoded model→price switch) and written to
 >    the `ai_usage` Postgres table, fed by an `Event_AiUsage` published over Redis Streams.
-> 2. **The `ai` library does NOT do EU-first routing.** It only exposes per-provider
->    constructors. EU-first/fallback behavior lives in each consumer's own
+> 2. **The `ai` library does NOT select a provider.** It only exposes per-provider
+>    constructors. (And what the consumers do is not an EU-first fallback *ladder* either —
+>    `external_services.md:537` retracts that chain.) Vendor selection lives in each consumer's own
 >    `internal/ai/ai.go` wrapper: an EU Azure client by default, a US Azure client gated
 >    by the PostHog flag `flag_use_azure_us`, and an Azure→direct-OpenAI fallback on
 >    HTTP 429. Anthropic is always Bedrock in `eu-west-1`.

@@ -39,8 +39,12 @@
 > file no longer exists — the call is now at **`app/internal/aireadiness/readiness.go`**, `buildResponseFromSnapshots`,
 > as **`m.workforce.LoadMembers(ctx, orgID, "")`** *through the `WorkforceDirectory` interface* (the bounded swap
 > `LoadMembers → LoadMembersByUserIDs` is now expressible at that interface call site, since `WorkforceDirectory`
-> already exposes `LoadMembersByUserIDs`). The patch **must re-anchor** — this is the M246 drift-ledger **D-07**
-> item, owned by **v2.7 M250**.
+> already exposes `LoadMembersByUserIDs`). **The re-anchor has LANDED** — v2.7 **M254**, not the M250 the M246
+> drift-ledger's **D-07** item originally assigned it to: the manifest reads `path:
+> internal/aireadiness/readiness.go` (`app-aireadiness-snapshot-loadmembers.yaml:42`) and its own header says
+> *"v2.7 M254 RE-POINT"* (`:33`), with `demo-stack/tests/test_aireadiness_snapshot_loadmembers_m254.py`
+> fencing it. This paragraph stated completed work as outstanding and contradicted `:458` of this same file,
+> which is already in the past tense; corrected M257x iter-46.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 

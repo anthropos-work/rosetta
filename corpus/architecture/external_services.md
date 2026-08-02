@@ -785,7 +785,7 @@ docker compose ps backend cms jobsimulation storage
 # The schema is served by backend itself; restart it:
 docker compose restart backend
 ```
-> Consistent with :447 above, where the same correction is already recorded.
+> Consistent with :512 above, where the same correction is already recorded.
 
 ---
 

@@ -168,7 +168,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ### Downstream dependencies
 * Directus (content storage)
 * PostgreSQL (Ent ORM, **`public` schema** — the cms tables were re-created there at cms-in-app v8.0; the
-  legacy `cms` schema is non-authoritative. Consistent with :64 above)
+  legacy `cms` schema is non-authoritative. Consistent with :27 above)
 * Redis (cache, Watermill streams)
 * AI providers (Anthropic, OpenAI, Mistral — used by `cms/studio/` Python pipeline)
 

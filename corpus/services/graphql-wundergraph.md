@@ -76,7 +76,10 @@
 * **Build tooling**: `wgc@0.104.0` (WunderGraph Cosmo CLI) on a `node:22.11-alpine` build stage
 * **Federation**: Apollo Federation v2, `federation_version: =2.3.2` (pinned)
 * **Database**: none — stateless gateway (no DB, no Redis)
-* **Ports**: host **5050 → container 8080** (router `listen_addr 0.0.0.0:8080`, `graphql_path /graphql`)
+* **Ports**: **8080 → 8080** (router `listen_addr 0.0.0.0:8080`, `graphql_path /graphql`). **There is no
+  `5050` at platform HEAD** — `grep -c 5050 docker-compose.yml` returns 0. The host-`5050` mapping was
+  published here in the present tense while `:174-176` of this same doc already said `localhost:5050`
+  refuses the connection; corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
 
 > **There is no application source here.** `package.json` is a stub
 > (`{"name":"graphql-wundegraph"}` — note the misspelling, carried in the repo).
