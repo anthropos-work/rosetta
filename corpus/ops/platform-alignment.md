@@ -1021,6 +1021,34 @@ Both are the M256 reports-success-without-checking class. Rules:
    alternative, an allow-list, is Trap A's tune-until-it-catches-nothing in miniature. **A fence that cries
    wolf gets disabled, and a disabled fence is indistinguishable from never having written one.**
 
+7. **A test that asserts a LIVE defect has an expiry date, and the thing that expires is the assertion —
+   not the defect.** M257x iter-45 built three fences and asserted all five of their target blockers
+   against the live corpus. Every assertion passed. Every one of them would have **failed on the next
+   iteration**, because that iteration's entire job is repairing those five sites — and the obvious way to
+   restore a green suite would have been to edit the fence's own test to match the repair. That is how a
+   fence stops asserting anything: not by being deleted, but by being *maintained*.
+
+   > **Rule.** What must go RED goes RED against a **captured answer key**. The live tree is asserted only
+   > on properties that **survive the repair** — that the resolver still resolves, that unmeasured inputs
+   > are still named, that the ratchet still grades the tree. If you cannot state why an assertion will
+   > still be true after the defect is fixed, it belongs in the fixture.
+
+   Two corollaries the same iteration paid for. **Capture the fixture in the shape the fence reads.**
+   iter-43's claim-twin fixture could snapshot ±2-line neighbourhoods because its fence matches text;
+   two of iter-45's five defects are *relationships between line numbers* — `:788` citing `:447` in the
+   same file, `:110` citing line 815 of another — and an excerpt destroys precisely the property under
+   test. The fixture there had to be a pair of **line-faithful trees**, with the one large vendored source
+   copied under line-preserving elision rather than compacted. And **the green twin must still be reached**:
+   assert not only that the repaired tree is silent but that it was *resolved* and *measured*, because a
+   fence that stopped reaching a site prints exactly the same clean run as one that passed it (§5 rule 8,
+   arriving through the fixture instead of through the code).
+
+   A last, smaller one, from the same iteration: a fixture is a **captured copy of someone else's source**,
+   not this repo's. Another fence walked it, reported `stack-core` as an unclassified Go-bearing rext
+   section — a section that ships no Go, over a file belonging to the platform — and would next have scored
+   the platform's source for rext's schema writes. **Prune `tests/fixtures/` from any walk that derives
+   what this repository contains.**
+
 Static and live are **both** required. Static is the only honest offline check, because every seeder test
 asserts against a recording fake `Conn` that accepts any table name — *a fake cannot know a table was
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
