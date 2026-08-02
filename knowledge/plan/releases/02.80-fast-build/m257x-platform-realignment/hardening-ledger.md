@@ -564,3 +564,68 @@ are untouched — TOK-02 step 4 still owns that repair.
 the iters 36–41 clause-2 fixes (including the open
 `CHECK-M257x-iter35-negative-control-rests-on-the-same-tie`), the fifth-generation tenancy fence, and
 the iters 27–35 seeder work.
+
+---
+
+## Pass 8 — 2026-08-02 — incremental
+
+**Iters hardened this pass:** iter-31 (the tenancy scoping fix) + the multi-tenancy fence claim carried
+through iters 33/34/38/39/41
+**Tiks covered since prior pass:** continuation of the same 15-tik window (Pass 7 covered iters 42–43)
+
+**Coverage delta on touched files:**
+
+| section | before | after |
+|---|---|---|
+| `stack-seeding/seeders` | 0 fences on `memberRoleAt` call sites | **3** (+1 new file, 5-mutant battery) |
+
+**Tests added:** iter-31 → `stack-seeding/seeders/role_tenancy_fence_test.go`: 3 net-new AST fences.
+
+**Bugs surfaced + fixed inline:**
+
+1. **The role-tenancy fix was proven in the function and unproven at its six call sites** (rext
+   `c597dcf`). iter-31's first cut handed every org every story's hero roles — *"DevOps Engineer"*
+   became a key-role card on the CONTRAST org's succession view and `negative-controls.spec.ts:429`
+   caught it **live**, not in Go. `jobroleref_test.go` proves `orgRoleSet` scopes correctly **given**
+   per-story input; nothing proved the **callers** supply it, and supplying the wrong thing IS the
+   defect that shipped. Six hand-copied call sites (users, membership_skills, population_evidence,
+   certificates, profile, target_roles) plus one forwarding helper. `memberRoleAt`'s own doc comment
+   is about this exact hazard one layer down — *"the identical expression appeared in SIX seeders […]
+   and the first sweep of this fix found only FOUR"* — so **the repetition moved up a level rather
+   than going away**. Three fences now hold it: the argument shape at every call site, the forwarding
+   helper's own callers (so the exemption cannot smuggle the aggregate out one frame), and
+   `storyHeroRoleNames`'s arity (variadic/slice re-creates the aggregate while the other two stay
+   green — §5 rule 17). Both scanners fail **closed** on zero sources / zero call sites / zero helper
+   calls.
+
+**Mutation results this pass:** 5 mutants, **5/5 matching declared expectation**, no-op control
+**SURVIVES**. Recorded in the fence's own header so it is reproducible. **The first cut of this battery
+had three mutants that did not COMPILE** — per §8 rule 5 that is not a kill, and taking it as one would
+have certified a fence that was never exercised. All five now compile.
+
+**The multi-tenancy corpus fence — measured, NOT repaired.** Re-derived against the live platform clone
+(`stack-demo/app` @ `v1.363.2`): the doc's own shell derivation **reproduces exactly** — 135 `ent.Schema`
+files of 139 `.go`, **30** `OrganizationMixin{}`, **7** `OrganizationIDMixin{}`, **18** plain
+`organization_id`. And **only four files in the whole schema dir declare any `Policy()`**
+(`mixin.go`, `org_membership.go`, `organization.go`, `user.go`), with `OrganizationIDMixin` declaring
+none — so iter-41's blocker **#5 is confirmed live**: *"16 carry an `organization_id` with no policy of
+any kind"* understates it, because the 7 `OrganizationIDMixin` users are unpoliced too (23). **Not
+repaired here — it is one of the 18, and TOK-02 step 4 owns that repair, fence-assisted.** It is class
+A, and iter-43's claim-twin fence already detects it.
+
+**Routed forward — RF-13 (new; joins RF-2/RF-3/RF-7..RF-12, supersedes none).** *The derivation block
+cannot produce the claim it supports.* `security_compliance.md`'s `Derivation:` snippet derives the
+**18** mechanically and then instructs, in a comment, *"then subtract any that declare their own
+`Policy()` or carry `UserMixin{}` -> 16"* — a **hand** step, un-derived, and **that is exactly where all
+five failures have lived**. It subtracts down to 16 while never **adding** the 7 `OrganizationIDMixin`
+users. A block that says *"Re-derive it; do not quote it"* while shipping a derivation that stops one
+step short of the number in dispute is the §5 rule 17 shape in its purest form. **When TOK-02 step 4
+repairs #5, the derivation must be made to derive the unpoliced set end-to-end** — otherwise the sixth
+generation is another hand-subtraction, which is how the previous five were produced. Not fixed here:
+the block is inside blocker #5's own blockquote, and editing it is repairing one of the 18.
+
+**Flakes stabilized:** none observed.
+
+**Stop condition:** continue-to-next-pass — iters 27–30, 32–41 have not been scanned to completion; the
+open `CHECK-M257x-iter35-negative-control-rests-on-the-same-tie` is still unhardened, and the iters
+36–41 page-object/seed changes are unswept.
