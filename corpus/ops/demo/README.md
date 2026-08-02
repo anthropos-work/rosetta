@@ -78,7 +78,7 @@ structural bring-up). You can still drive the steps **manually** for finer contr
 + `/stack-seed N` (a different preset / a custom `stack.seed.yaml`) — they accept `demo-N` or `dev-N` interchangeably.
 
 **The snapshot step is what makes the world *set-dressed* (v1.2).** A replay stamps the real **public** reference
-library — the ~60K-skill taxonomy + the global simulation / skill-path content templates — into the stack BEFORE
+library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, the measured public subset; [not "60K/18K"](../../architecture/shared_libraries.md#taxonomy-figures)) + the global simulation / skill-path content templates — into the stack BEFORE
 the seed, so the catalog view shows real skills and the seeded sessions link to real templates (not free
 placeholder ids). It's a **stack-global reference replay**, independent of which org you then seed; it's
 **optional** (a structural-only world still logs in — the seeder degrades gracefully), and almost always a

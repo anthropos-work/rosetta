@@ -1,7 +1,7 @@
 # Recipe — Set-dress a stack with the real public library (snapshot capture → replay)
 
 **Goal.** Turn a structural demo ("an org with users") into a **set-dressed** world ("an org browsing the real
-product catalog") by stamping the real **public** reference library — the ~60K-skill / 18K-role taxonomy and the
+product catalog") by stamping the real **public** reference library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, measured; [not "60K/18K"](../../architecture/shared_libraries.md#taxonomy-figures)) and the
 global simulation / skill-path content templates — into the stack. This is the v1.2 "set dressing" layer: the
 catalog view shows real skills, and seeded sessions/assignments link to real templates instead of placeholder ids.
 

@@ -483,6 +483,42 @@ Rules, in order of how often they actually catch something:
     from the pass before it.** Correlated blind spots are a property of how the corpus was divided, not
     only of who read it.
 
+19. **Repair by CLAIM, not by FILE — and half-repairing a uniformly-wrong corpus is worse than leaving it
+    alone.** The partition that is *correct for reading* is *wrong for repairing*. Six auditors each owning
+    a disjoint file set is precisely what surfaces independent double-finds (rule 18(b), which has now paid
+    three times — M257x iter-38 had two auditors refute the same false EU-AI-Act premise from two different
+    files; iter-39 had two find `hiring.md:86` independently). But a **claim does not respect a file
+    boundary**, and a repairer who owns `external_services.md` cannot fix the same sentence where it also
+    lives in `graphql-wundergraph.md`.
+
+    Measured: **5 of iter-39's 8 self-inflicted defects were cross-file drift** — a claim corrected in the
+    file its owner held while the identical claim stood in a twin owned by somebody else, or in no
+    partition at all. The EU-first fallback ladder, the subgraph count, the taxonomy figures, the
+    `--template` flag and the jobsimulation subscriptions each survived in one to seven sibling sites the
+    same sweep had edited for other reasons.
+
+    **Why it is worse than doing nothing.** A uniformly-wrong corpus is at least *self-consistent*: a
+    reader who catches the error once has caught it everywhere. A half-repaired one teaches the reader that
+    the corpus contradicts itself — and the next auditor spends its budget **adjudicating rather than
+    measuring**, which is the one thing a fidelity measurement cannot afford.
+
+    **The procedure.** Before editing, grep the **whole tree** for the claim — not the file set the audit
+    partitioned, and not only the audit's own scope. Fix every instance in one pass. Then re-run the same
+    grep as a post-condition.
+
+    **Corollary, and it is the half that gets missed: a claim leaks to the EDGE of the previous repair's
+    scope and stops there.** M257x iter-40 swept every claim iters 38/39 adjudicated and found the 40
+    in-scope files **uniform on all of them** — while every surviving instance sat just outside:
+    `corpus/ops/**`, `.claude/skills/**`, and `CLAUDE.md`, the repo's top-level instruction file and the
+    **highest-propagation site in the tree**. An audit's scope is a legitimate boundary for *reading*; it is
+    never one for *repair*. Sweep outward from the scope edge, and check the instruction files first — they
+    are read by every agent before any doc is.
+
+    **What a claim-scoped repair must NOT do: adjudicate.** It propagates a verdict already established
+    inside the audited scope, verbatim or by link to its canonical anchor. If a surviving site's correct
+    form is not already settled, route it — deriving a fresh claim during a repair pass is how rule 18's
+    highest-risk text gets written.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

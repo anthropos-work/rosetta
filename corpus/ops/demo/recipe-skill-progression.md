@@ -55,7 +55,7 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
 ## Notes
 - **Deterministic.** The generator uses no random source — a given `stack.seed.yaml` always produces the same
   world, so a re-seed reproduces the exact demo (good for scripted walkthroughs / screenshots).
-- **Set-dressed (v1.2).** With the snapshot replay in step 1, the catalog view shows the **real 60K-skill
+- **Set-dressed (v1.2).** With the snapshot replay in step 1, the catalog view shows the **real public
   taxonomy** and the seeded sessions link to the **real public simulation / skill-path templates** (the v1.2
   "set dressing" — both surfaces are now `snapshot-seeded`, **100%** data-DNA coverage, nothing `waived`). See
   [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the capture→replay mechanism. If you **skip** the

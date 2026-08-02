@@ -21,7 +21,7 @@ result page, does it render from a PERSISTED row a clone could seed, or recomput
 >    denominator **31 → 29**. *A resolver existing is not a surface existing.*
 > 2. **Academy is IN, but `app/cmd/academy-seed` is MOOT on a demo.** A demo academy runs with **no**
 >    `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it serves its **committed FS catalog** and never reads the seeded
->    `academy_chapter_progress` rows. The academy content-story is a real **`/courses/<slug>`** CTA into that
+>    `academy_chapter_progresses` rows. The academy content-story is a real **`/courses/<slug>`** CTA into that
 >    catalog — **not** rendered played progress. The seeding path stays correct for a *dev/prod-wired* stack.
 
 ## For PMs — one paragraph
@@ -384,15 +384,18 @@ academy backend over GraphQL.
   `SET_LAST_ACTIVITY` mutations to `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (the `app` academy subgraph).
 - **Store (in platform `app`, NOT in the DB-less academy repo):** Ent schemas
   `app/internal/data/ent/schema/academy_chapter_progress.go` (unique `user_id + chapter_slug`, "the FE upserts it
-  on every module/section completion and reads it back to render the chapter UI"), plus `academy_last_activity`,
-  `academy_chapter_time`, `academy_bookmark`, `academy_certificate`, `academy_feedback`. GraphQL: `academyProgress`
+  on every module/section completion and reads it back to render the chapter UI"), plus `academy_last_activities`,
+  `academy_chapter_times`, `academy_bookmarks`, `academy_certificates`, `academy_feedbacks`. GraphQL: `academyProgress`
+  — **note the split: the Ent schema FILE is singular (`academy_chapter_progress.go`), the TABLE it produces is
+  plural (`academy_chapter_progresses`). Querying the singular name errors.** Verified against `pg_tables` on a
+  live stack; do not "fix" the file path to match the table
   / `academyLastActivity` queries; `upsertChapterProgress[Batch]` / `setLastActivity` mutations.
 - **Purpose-built to seed:** `app/cmd/academy-seed/main.go` seeds realistic academy state (chapter progress +
   last-activity) for one user (fixtures `starter` / `in-progress` / `completed`, `--user-email`/`--user-id`,
   idempotent, seeds THROUGH the academy Manager). **⚠ MOOT ON A DEMO STACK — see the verdict correction below.**
 
 **Verdict (M231, ~~as written~~ — CORRECTED at M236 iter-08): the academy "session" = the per-user
-`academy_chapter_progress` + `academy_last_activity` rows** — a **seedable server row**. ~~so the academy
+`academy_chapter_progresses` + `academy_last_activities` rows** — a **seedable server row**. ~~so the academy
 content-product section renders REAL played progress~~ — **this half does not hold on a demo.** A demo academy
 runs with **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so it never queries the academy subgraph and instead serves
 its **committed FS catalog**; the seeded rows have **no reader**. The demo academy content-story is therefore a
@@ -451,7 +454,7 @@ a GraphQL schema change, both out of scope.
 > **2. `app/cmd/academy-seed` is MOOT in a demo** (iter-08). §6's verdict — "a seedable server row, so the
 > academy section renders REAL played progress" — assumes a reader for those rows. A demo academy runs with
 > **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so it serves its **committed FS catalog** and never queries the
-> academy subgraph; seeded `academy_chapter_progress` rows have no reader. The academy content-story is a
+> academy subgraph; seeded `academy_chapter_progresses` rows have no reader. The academy content-story is a
 > real `/courses/<slug>` CTA into that FS catalog (65 cards, 0 Draft chips, verified cold). The binary
 > remains correct for a *dev/prod-wired* stack — it is the **demo** configuration that makes it inert.
 

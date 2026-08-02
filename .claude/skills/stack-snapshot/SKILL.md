@@ -6,7 +6,8 @@ argument-hint: [dev-N|demo-N] [replay|capture|status] [--surface taxonomy|direct
 
 # Stack Snapshot — stamp the real public library into a stack (the v1.2 "set dressing" layer)
 
-Replays the real **public** reference library — the ~60K-skill / 18K-role taxonomy and the global simulation /
+Replays the real **public** reference library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, the
+measured public subset; ["60K / 18K" is not a measurement](../../../corpus/architecture/shared_libraries.md#taxonomy-figures)) and the global simulation /
 skill-path content templates — into `dev-N` or `demo-N` so the catalog view shows **real** skills and the
 seeded sessions link to **real** templates. It drives the `stacksnap` CLI: `replay` (the headline verb,
 per-stack), `capture` (the rare prod-read maintenance op), `status` (list the cache). Source of truth:

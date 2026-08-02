@@ -23,7 +23,7 @@ Complete architecture documentation for the Anthropos platform.
 *   [Frontend Architecture](./architecture/frontend_architecture.md): Deep dive into the Next.js monorepo.
 *   [External Services](./architecture/external_services.md): Third-party integrations (Clerk, Directus, GraphQL).
 *   [Dependency Map](./architecture/dependency_map.md): Matrix of service inter-dependencies.
-*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries (colony, proto, ai, authn, taxonomy).
+*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries — but only **four are imported as private modules** (`ai`, `colony`, `proto`, `taxonomy`). **`authn` is a dependency of no service**: it ships inside colony as `colony/authn`, and the standalone repo is legacy.
 
 *   [Security & Compliance](./architecture/security_compliance.md): Data protection, EU compliance, multi-tenancy isolation.
 *   [AI Architecture](./architecture/ai_architecture.md): Models, provider routing, voice engine, recording, cost tracking.

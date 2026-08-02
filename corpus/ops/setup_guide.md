@@ -592,8 +592,12 @@ Studio-Room is the AI generation pipeline. It runs **on-demand** for specific ge
     ```
 3.  Run a test generation:
     ```bash
-    python3 gen.py --media simulation --template default
+    python3 gen.py --media simulation
     ```
+
+    > **⚠️ There is no `--template` flag** — and a stray one is **silently swallowed**, not rejected, so
+    > `--template default` succeeds and generates something unrelated. See
+    > [`../services/studio-room.md`](../services/studio-room.md#command-line-interface) for the nine real arguments.
 
 ---
 

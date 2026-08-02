@@ -30,7 +30,7 @@ N=0 is the main dev stack (base ports). `demo-N` / `dev-N` add `N×10000`.
 | **next-web-app** (frontend) | **3000** (hiring 3001) | **13000** | **browser** ← smooth target |
 | **studio-desk** | **9000** | **19000** | **browser** ← smooth target |
 | **ant-academy** (native) | **3077** | **13077** | **browser** ← smooth target |
-| cosmo / graphql router | 5050 | 15050 | browser + subgraph fan-out |
+| ~~cosmo / graphql router~~ | ~~5050~~ | ~~15050~~ | **GONE** — deleted from compose at platform `2adcf71`; GraphQL is `backend`'s own `:8082/graphql/query` (row below) |
 | **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | router, other services |
 | cms | 8090 (RPC 8091) | 18090 | router, other services |
 | jobsimulation | 8400 (RPC 8401) | 18400 | router, other services |
@@ -111,14 +111,15 @@ $DC stop next-web-app
 tailscale serve --https=$((3000+OFF)) off
 
 # 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> the TAILNET HTTPS host:offset (router/backend are F12'd +
-#    tailscale-served on :$((5050+OFF))/$((8082+OFF))). Mirror the container's server-side Clerk keys. Point
+#    tailscale-served on :$((8082+OFF)) — the :5050 router is GONE since platform 2adcf71, backend serves
+#    GraphQL itself at /graphql/query). Mirror the container's server-side Clerk keys. Point
 #    CLERK_API_URL at the fake-bapi's REACHABLE IP — the host /etc/hosts `api.clerk.com` alias goes STALE on
 #    re-bring-up (new docker IP) => the #1 login failure (`resolve handshake: fetch failed ECONNREFUSED`).
 PK=$(grep -E '^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=' "$STACK/.env.demo-$N" | cut -d= -f2-)
 BIP=$(docker inspect demo-$N-fake-bapi-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 { echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK"
   echo "NEXT_PUBLIC_HOSTING_URL=https://$HOST:$((3000+OFF))"
-  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((5050+OFF))/graphql"
+  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((8082+OFF))/graphql/query"   # NOT :5050/graphql — router deleted at platform 2adcf71
   echo "NEXT_PUBLIC_BACKEND_API_URL=https://$HOST:$((8082+OFF))"
   echo "DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work"
   grep -E '^CLERK_SECRET_KEY=|^CLERK_JWT_KEY=|^CLERK_PUBLISHABLE_KEY=|^CLERK_WEBHOOK_SECRET=' /tmp/cenv.txt  # values-blind

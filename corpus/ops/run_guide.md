@@ -344,8 +344,13 @@ pip3 install -r requirements.txt
 
 ### Run a Generation
 ```bash
-python3 gen.py --media simulation --template default
+python3 gen.py --media simulation
 ```
+
+> **⚠️ There is no `--template` flag**, and passing one does **not** fail — `gen.py`'s `parse_known_args`
+> folds any unrecognised `--key value` into the request dict, so `--template default` sets a key nothing
+> reads and the run generates something unrelated *while reporting success*. The nine real arguments are
+> enumerated in [`../services/studio-room.md`](../services/studio-room.md#command-line-interface).
 
 ---
 

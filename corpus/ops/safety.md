@@ -1022,8 +1022,10 @@ read side, bounded by the (text-only) scrub + the VPN scope; for the video facet
 
 ## How this relates to the platform's own isolation
 
-The platform itself has a 3-layer **tenant-isolation** posture — DB (`organization_id` on every table, Ent
-auto-filtering), Authorization (Sentinel/Casbin), Identity (Clerk org-scoped JWTs) — documented in
+The platform itself has a 3-layer **tenant-isolation** posture — DB (`organization_id` on **most**
+application tables, with Ent auto-filtering **only where a schema declares the privacy policy** — *"on every
+table, so no cross-tenant access is possible"* is **retracted**; the measured split lives in the linked doc),
+Authorization (Sentinel/Casbin), Identity (Clerk org-scoped JWTs) — documented in
 [`../architecture/security_compliance.md`](../architecture/security_compliance.md#multi-tenant-data-isolation).
 That protects **customers from each other inside the running product**. *This* doc's two guarantees protect
 **production from the tooling**: the read-side firewall ensures the tooling only ever copies the *public* slice

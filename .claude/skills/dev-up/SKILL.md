@@ -52,9 +52,10 @@ before/after each step, request confirmation before installs or destructive ops,
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
    cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
-   init-studio`) → `platform/.env` configured → services up (`make up` — expect **11 containers** in
-   `graphql` post-merge; the `skiller` container is gone since July 2026, its taxonomy tables merged into
-   `app`'s `public` schema) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   init-studio`) → `platform/.env` configured → services up (`make up` — **re-derive the container count from `make ps`**;
+   the long-quoted "11" predates the merges. Gone from compose at origin `2adcf71`: `skiller` (July 2026,
+   taxonomy tables merged into `app`'s `public` schema), `skillpath` (M502→M507) and the `graphql`
+   Cosmo router. `cms`/`jobsimulation`/`roadrunner` still start as **husks** until platform M810) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
@@ -64,9 +65,12 @@ before/after each step, request confirmation before installs or destructive ops,
    closes the M25-D9 gap where the un-editable platform `make migrate` doesn't create `extensions` → a cold
    `make reset-db`/`make migrate` fails `schema "extensions" does not exist`). See `corpus/ops/setup_guide.md`
    § Full Database Reset.
-4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 11 healthy containers
-   (`make ps`) — the merged 4-subgraph platform (no `skiller` container), GraphQL gateway on
-   `localhost:5050`. Then **start native processes in tmux** (required —
+4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the containers are healthy via `make ps` — **re-derive the count; the
+   long-quoted "11" predates the merges** (it counted the now-gone `skillpath` and `graphql` services).
+   This is the merged **single-subgraph** platform (no `skiller`, `skillpath`, `cms`, `jobsimulation`
+   or `roadrunner` subgraph). **GraphQL is `backend` itself on `localhost:8082/graphql/query`** — the Cosmo
+   router was deleted from compose at platform `2adcf71` (2026-07-31); nothing listens on `:5050`.
+   Then **start native processes in tmux** (required —
    these are not in the `graphql` Docker profile and must outlive the Claude session):
    ```bash
    # next-web-app (always native — required)

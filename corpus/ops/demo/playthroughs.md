@@ -518,9 +518,15 @@ one is wrong even if it passes.
   outcome, resulting state — never exact copy, DOM structure, CSS, layout, or coordinates. Assert on the
   **outcome state the flow produced**, never on pre-seeded specifics that vary across captures. **AI-generated
   content is on the forbidden list** — for LLM output assert *structure / presence / range*, never the value.
-  (The inverse is load-bearing: simulation **scoring is deterministic rubric-based**, 0–100, NOT AI-scored — so
-  the *computed outcome* IS assertable exactly; only the generated content around it varies. See
-  [`../../architecture/ai_architecture.md`](../../architecture/ai_architecture.md) § Evaluation System.)
+  **⚠️ The old exemption here is RETRACTED (M257x iter-38/39).** This principle used to carve out simulation
+  scores as exactly-assertable on the ground that *"scoring is deterministic rubric-based, NOT AI-scored."*
+  That is a **conjunction, and only one conjunct holds**: the rubric *arithmetic* is deterministic, but
+  **most of the per-check verdicts it aggregates are LLM-produced** — a model is asked whether each check is
+  met. (*Most*, not all: deterministic `EngineTextDiff` checks are the minority exception, and "all verdicts
+  are AI" is the opposite error.) So a simulation **score is not exactly assertable** in general: assert
+  *range* / *presence* / *monotonicity*, exactly as for any other LLM-derived value, unless the sim under
+  test is provably all-`EngineTextDiff`. See
+  [`../../architecture/ai_architecture.md`](../../architecture/ai_architecture.md) § Evaluation System.
   Copy-immunity is *within a locale*, not across — the test locale is pinned to `en`.
 - **P3 — Implementation-agnostic, zero platform coupling.** Zero platform-repo edits means we **cannot** add
   `data-testid` hooks. Playthroughs locate by **semantics**: ARIA role, accessible name, label, the a11y tree —

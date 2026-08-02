@@ -35,12 +35,12 @@ cd cms && make init-studio && cd ..   # CMS studio submodule
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"
-make up                   # build from local code + start (graphql profile) — expect 11 containers
+make up                   # build from local code + start (graphql profile) — count re-derived per run, not 11
 make migrate              # apply migrations (app, cms, jobsimulation, skillpath)
 
 # Start / restart an already-built stack:
 make up                   # rebuild + start
-make ps                   # 11 healthy containers in graphql
+make ps                   # count re-derived per run — the old "11" predates the merges (see the service-set table below)
 ```
 
 ### Expected service set (default `graphql` profile, main dev stack)
@@ -50,18 +50,26 @@ make ps                   # 11 healthy containers in graphql
 | anthropos-postgresql-1 | 5432 | Health gate for others |
 | anthropos-redis-1 | 6379 | Health gate for others |
 | anthropos-sentinel-1 | 8087 | Always on (no profile) |
-| anthropos-backend-1 | 8081-8083 | Also serves the merged skiller RPC surface |
-| anthropos-skillpath-1 | 8100-8101 | |
-| anthropos-cms-1 | 8090-8091 | Embedded Python studio-room |
-| anthropos-jobsimulation-1 | 8400-8401 | |
+| anthropos-backend-1 | 8081-8083 | **The monolith.** Serves the merged skiller / skillpath / cms / jobsimulation / roadrunner domains in-process, **and GraphQL itself at `:8082/graphql/query`** |
+| anthropos-cms-1 | 8090-8091 | ⚠️ **HUSK** — the domain is merged into `backend`; the container is still declared until platform **M810**. Embedded Python studio-room now ships in the `app` image |
+| anthropos-jobsimulation-1 | 8400-8401 | ⚠️ **HUSK** — merged into `backend`; declared until **M810** |
 | anthropos-storage-1 | 8300-8301 | |
-| anthropos-roadrunner-1 | 10400-10401 | |
-| anthropos-graphql-1 | 5050 | Cosmo Router |
+| anthropos-roadrunner-1 | 10400-10401 | ⚠️ **HUSK** — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` |
 | anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
+
+> **⚠️ This table was stale in three ways and is re-derived from the platform clone at origin `2adcf71`**
+> (`docker-compose.yml`, M257x iter-40). **(1) `anthropos-skillpath-1` is GONE** — decommissioned at platform
+> M507; there is no `skillpath` service in compose. **(2) `anthropos-graphql-1` (`:5050`) is GONE** — the
+> Cosmo/WunderGraph router was deleted from compose at `2adcf71`; nothing listens on `:5050` and GraphQL is
+> `backend`'s own `:8082/graphql/query` (`/graphql` serves the Apollo Sandbox UI). **(3) cms / jobsimulation /
+> roadrunner are HUSKS** — the domains run in-process inside `backend`; the containers survive only as the
+> rollback path until M810, so a running container is **not** evidence the service handles traffic.
+> Consequently **the "11 healthy containers" figure above is no longer the expected count** — re-derive it
+> from `make ps` rather than trusting the number. See [`corpus/architecture/platform-migration-status.md`](../../../corpus/architecture/platform-migration-status.md).
 
 Not in this profile (don't expect running): `messenger`, `customerio-sync` (explicit profile),
 `ant-academy` (native-only on port 3077, never in docker-compose). Archived (not orchestrated locally):
-`chronos`, `intelligence`, `skiller` (merged into `app`, July 2026).
+`chronos`, `intelligence`, `skiller` (merged into `app`, July 2026) and **`skillpath`** (merged then decommissioned, platform M502→M507 — no compose service at origin `2adcf71`).
 
 ## Mode B — additional dev-N (N ≥ 1): bring up + set-dress
 
@@ -88,7 +96,9 @@ the `directus` replay skips with exit 4 — the stack reads content live from pr
 docker info > /dev/null 2>&1 && echo "Docker OK" || echo "Start Docker"
 docker exec anthropos-postgresql-1 pg_isready -U postgres
 docker exec anthropos-redis-1 redis-cli ping
-curl -s http://localhost:5050/health && echo "GraphQL OK"     # main stack; offset for dev-N
+curl -s http://localhost:8082/health && echo "GraphQL OK"     # main stack; offset for dev-N
+# NB: NOT :5050 — the Cosmo router was deleted from compose at platform 2adcf71. GraphQL is
+# backend's own :8082/graphql/query. Curling :5050 fails against a port with no listener.
 docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 ```
 
@@ -96,7 +106,7 @@ docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 
 ### Port already in use
 ```bash
-lsof -i :5050        # find the holder
+lsof -i :8082        # find the holder (was :5050 before the router was deleted at platform 2adcf71)
 # kill -9 <PID> (ask the user first) — or bring the stack up as dev-N on offset ports.
 ```
 

@@ -299,7 +299,7 @@ bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** 
   seam; **not** `/library/<slug>` — that route does not exist in ant-academy, M236 iter-08), no manager view.
   **`app/cmd/academy-seed` is MOOT in a demo** (see the §"academy" note above): with no
   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` the demo academy serves its committed FS catalog, so a seeded
-  `academy_chapter_progress` row has no reader. A
+  `academy_chapter_progresses` row has no reader. A
   `Label` field carries the believable row title (real course/lab names). Today's demo now renders all four
   product sections. rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`.
 - **Proving every CTA lands on a non-empty result page (a LIVE browser on a cold reset-to-seed) is M236**

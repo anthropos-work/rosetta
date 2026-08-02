@@ -14,7 +14,7 @@ cold start to a real-catalog stack, and it states plainly what is **not** a shor
 
 ## For PMs — the one-paragraph version
 
-A demo or dev stack shows the **real** product catalog (60K skills, the global content templates) by stamping in
+A demo or dev stack shows the **real** product catalog (**≥42,790 public skills**, the global content templates; [not "60K"](../architecture/shared_libraries.md#taxonomy-figures)) by stamping in
 a **snapshot** — a public-only copy of the catalog taken from production once per release and cached locally. On a
 machine that already has that cache, stamping it in is instant and reads nothing from production. On a **fresh**
 machine the cache is empty, so it has to be filled once — and filling it means reading the public catalog out of

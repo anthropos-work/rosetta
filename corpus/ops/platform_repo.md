@@ -108,7 +108,7 @@ Entries with `name` / `type` / `migrations` (+ `schema` for Go services with mig
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — one mux serving `BackendUsers`, `BackendOrganizations`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`), 8084 (`META_PORT`) |
+| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — one mux serving **six** Connect handlers: `BackendUsers`, `BackendOrganizations`, `SkillerService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`. **There is no `SkillPathSessionService`** — skillpath-in-app M506 *removed* the RPC rather than re-hosting it; likewise no RoadRunner service, `backend` calling Judge0 over plain HTTP), 8084 (`META_PORT`) |
 | sentinel | 8087 |
 
 | messenger | 8200, 8201 (RPC) |

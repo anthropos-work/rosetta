@@ -25,8 +25,9 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 
 ## For PMs — what it does
 
-A demo world needs more than an org with users — it needs the **library** behind the product: the ~60K-skill /
-18K-role taxonomy and the global content templates. That library is **public reference data** (the same for every
+A demo world needs more than an org with users — it needs the **library** behind the product: the taxonomy
+(**≥42,790 skills / ≥22,470 job roles** — the measured *public* subset; the long-quoted "60K / 18K" figures are
+[not measurements](../architecture/shared_libraries.md#taxonomy-figures)) and the global content templates. That library is **public reference data** (the same for every
 customer), but it lives in production. The snapshot mechanism copies the **public** part of that library out of
 prod **once**, in a way that **cannot slow the live product** and **cannot copy any customer's private data**,
 stores it locally (never in git — it's gigabytes), and **stamps it into each demo/dev stack** on demand. The
@@ -274,7 +275,7 @@ the firewall**. A live-run recipe (the DDL in `reference/reference.go`) stands t
 
 ## The taxonomy surface (M9b — the first REAL surface)
 
-M9b proves the framework on the live **public skills taxonomy** — the ~60K-skill / 18K-role library behind the
+M9b proves the framework on the live **public skills taxonomy** — the **≥42,790-skill / ≥22,470-role** library behind the
 product (~2.1 GB, prod-measured ~98% public). The surface is enumerated in `stack-snapshot/taxonomy/` (one source of
 truth shared by the CLI registry, the fidelity gene, and any live-run recipe): `stacksnap capture --surface taxonomy`.
 
