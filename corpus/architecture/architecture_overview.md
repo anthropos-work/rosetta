@@ -243,12 +243,17 @@ Archived / merged — **but three of these still start locally** (repos still ex
 *   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in and deleted the `jobsimulation` entry in the same commit (**3 → 1**; the jobsimulation *subgraph* outlived the jobsim-in-app service merge). Nothing is aggregated any more
 *   **AI Providers**: the default clients are EU-resident, and **there is no ordered EU-first fallback
     ladder** — the chain *"Azure OpenAI EU → Azure OpenAI US → direct OpenAI"* was retracted at
-    [`external_services.md:537`](./external_services.md) and is corrected here (M257x iter-46); the two US
-    paths are a **feature flag** and a **429 retry target**, not fallback rungs. Measured at
+    [`external_services.md:545`](./external_services.md) and is corrected here (M257x iter-46). Inside the
+    AI manager there are two US paths — a **feature flag** and a **429 retry target**, not fallback rungs —
+    but **that is not the whole set**: [`external_services.md:569`](./external_services.md) enumerates
+    **four** ways a request leaves the EU, and the two outside the manager are `ANTHROPIC_API_KEY` and **an
+    authored sequence with `ai_vendor` unset**, the latter reaching direct US OpenAI *unconditionally, on
+    the first attempt, with no flag and no 429*. Scope corrected M257x iter-48. Measured at
     `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
     `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
     retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"
-    is not "EU-only" — one feature flag routes traffic to the US.** AWS Bedrock is a *per-call vendor*
+    is not "EU-only" — a feature flag routes traffic to the US, and an unset `ai_vendor` does so with no flag
+    at all.** AWS Bedrock is a *per-call vendor*
     (`AnthropicAws`, pinned to `eu-west-1` at `:85-88`), never a fallback tier. **Mistral is not part of this
     routing chain** — but it *is* live in `app`: `internal/cms/studio/markdownManager.go:11,19` builds a
     Mistral client from `MISTRAL_API_KEY` for **Studio document OCR** (called from `studioManager.go:583`).

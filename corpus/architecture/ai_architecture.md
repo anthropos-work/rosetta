@@ -39,21 +39,33 @@ walks EU options before US ones. **Two** levers inside the manager can send a re
 **neither a region-health failover**: the `flag_use_azure_us` flag, and the 429 retry (which goes straight
 to direct OpenAI **without** trying another EU provider first).
 
-**`ANTHROPIC_API_KEY` is a third exit but is NOT within the manager** — it flips Course Builder and
-Studio-Room off Bedrock onto Anthropic's first-party API, and neither of those ever touches `AIManager`.
-An earlier revision of this paragraph counted it as one of *"exactly three things … within the manager"*,
-which is a category error rather than a miscount, and it is why the number kept disagreeing with the
-enumeration below it. Corrected M257x iter-46.
+**`ANTHROPIC_API_KEY` is a third exit but is NOT within the manager** — an either/or backend switch for
+**Course Builder** (`app/internal/coursebuilder/bedrock.go:106-113`), which never touches `AIManager`. An
+earlier revision counted it as one of *"exactly three things … within the manager"*, a category error
+rather than a miscount. *(It does **not** additionally "flip Studio-Room off Bedrock": Studio-Room was
+never on Bedrock — `grep -rin 'bedrock\|boto3' app/studio/` returns **0** hits, and there the key is a
+credential while the selector is the ini's `TARGET SERVICE`; see the provider row at
+[`external_services.md:541`](external_services.md). Corrected M257x iter-48.)*
 
-One layer *above* the manager, the sequence→vendor switch supplies **two more** routes to
-**direct US OpenAI**, both in `app/internal/jobsimulation/simulator/ai/ai.go`:
+One layer *above* the manager, a sequence whose **`ai_vendor` is unset** reaches **direct US OpenAI on the
+first attempt, with no error condition** — the residency-relevant route, and the one nothing in
+`app/internal/jobsimulation/ai/ai.go` can show you. The nullable field is on the **Directus DTO**
+(`app/internal/cms/directus/collections/jobsimulation.go:905`, `AIVendor *AIVendor`), not on the domain
+`simulation.Sequence`; nil is replaced by `simulation.Openai` at `:1302-1305` **before** the sequence is
+built at `:1307`, so the value reaching the vendor switch takes **`case simulation.Openai:`**
+(`simulator/ai/ai.go:58-59`) — the same arm an explicit caller takes. Full per-line derivation:
+[`external_services.md:577-587`](external_services.md).
 
-1. **`ai_vendor` unset or unrecognised** falls through the `default:` arm at `:113-115`. `AIVendor` is a
-   **nullable** pointer on the sequence, so *unset* — not merely *mistyped* — is the ordinary way to reach
-   it, with **no error condition and on the first attempt**. An earlier revision named only the
-   "unrecognised string" case, which reads as a misconfiguration when it is in fact the default.
-2. **A caller may simply select it**: `case simulation.Openai:` at `:58-59` is an explicit, supported
-   choice, and it was not counted at all.
+The switch's `default:` arm (`:114-115`) is a **separate** door: an *unrecognised* vendor string. The
+Directus enum has **five** members and the switch **four** cases (`Openai` `:58`, `Azure` `:69`,
+`AnthropicAws` `:86`, `Anthropic` `:102`), so `azureglobal` (`jobsimulation.go:971`) is the one with no
+case. It resolves to `internalAi.Openai` as well, which is why the *outcome* coincides with the unset
+route and the two are easy to conflate.
+
+> An earlier revision of this passage called `AIVendor` *"a **nullable** pointer on the sequence"* and
+> routed *unset* through the `default:` arm. Both halves are false, and both contradicted the per-line
+> derivation linked above that the same passage cites as authoritative. The **outcome** claim — direct US
+> OpenAI, first attempt, no error condition — survives unchanged. Corrected M257x iter-48.
 
 See [The three simulation model defaults](#the-three-simulation-model-defaults).
 
@@ -68,8 +80,8 @@ fallback order (there is none; see above).
 
 | Provider | Models | Default client |
 |:---------|:-------|:---------------|
-| **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US via `flag_use_azure_us`). **Direct US OpenAI is NOT only a 429 retry target**: a simulation sequence with `ai_vendor` unset or set to `Openai` reaches it on the first attempt with no error condition — `simulator/ai/ai.go:58-59` and the `default:` arm at `:113-115`. Corrected M257x iter-46 |
-| **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` (Course Builder / Studio-Room) |
+| **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US via `flag_use_azure_us`). **Direct US OpenAI is NOT only a 429 retry target**: a simulation sequence with `ai_vendor` unset or set to `Openai` reaches it on the first attempt with no error condition, via `case simulation.Openai:` at `simulator/ai/ai.go:58-59` (the `default:` arm at `:114-115` is the separate *unrecognised-vendor* door, not the unset one). Corrected M257x iter-46, mechanism corrected iter-48 |
+| **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` — for **Course Builder** it is the selector (key set → first-party API); for **Studio-Room**, which was never on Bedrock, it is only the credential the `anthropic` `TARGET SERVICE` needs ([`external_services.md:541`](external_services.md)) |
 | **Mistral (EU)** | Mistral OCR | cms-domain OCR **only** — not reachable from the AI manager |
 | **Speech** | GPT-4o Mini TTS, TTS v2 HD, TTS v2 | Azure voice client (`CreateSpeech` is Azure-only) |
 | **Transcription** | GPT-4o Transcribe | Azure EU (US via `flag_use_azure_us`) |
@@ -81,7 +93,7 @@ All Go services access AI through the shared `ai` library, which provides:
 - A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
 - Per-provider client constructors that return provider token counts (`MetaData.Usage`)
 
-> **Vendor selection/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: selection/fallback in each consumer's own wrapper — in `app` @ `5ba17044` that is **`app/internal/jobsimulation/ai/ai.go:267,344`** and **`app/internal/skillerai/ai.go:347`**, *not* a bare `app/internal/ai/ai.go` (**no such file** — that path now resolves only inside the frozen `jobsimulation` husk repo). EU Azure default → US Azure via the PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic is always Bedrock `eu-west-1`, and cost tracking in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
+> **Vendor selection/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: selection/fallback in each consumer's own wrapper — in `app` @ `5ba17044` that is **`app/internal/jobsimulation/ai/ai.go:267,344`** and **`app/internal/skillerai/ai.go:347`**, *not* a bare `app/internal/ai/ai.go` (**no such file** — that path now resolves only inside the frozen `jobsimulation` husk repo). The Azure client defaults to EU and swaps to US on the PostHog flag `flag_use_azure_us`; direct OpenAI is the retry target on HTTP 429; Anthropic is always Bedrock `eu-west-1`. **These are three independent mechanisms, not rungs of an ordered ladder** — the ⚠️ under *Provider Routing Strategy* at the head of this file (`:15-17`) retracts that ladder, and this line went on publishing it 68 lines below, in `→` form, until M257x iter-48. Cost tracking is in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
 
 ---
 

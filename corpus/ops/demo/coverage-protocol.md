@@ -611,10 +611,13 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     the aggregate's skill set — visible as a `context canceled` storm in `<stack>-backend-1` logs; the taxonomy
     translation surface is served by the backend subgraph since the skiller→app merge). That is the
     **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
-    snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
-    takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind
-    a *closed* `CycleID`), so seeding the snapshot table would NOT short-circuit the default call — the
-    short-circuit itself is a platform-read-path change. **Decompose like M46:** if a demo-patch can batch/relax
+    snapshot mirror only helps if the read path CONSULTS it** — *as of the M51 iteration this paragraph
+    records*, the default AI-readiness dashboard GET took the live-recompute branch (`buildLiveResponse`;
+    the `ai_readiness_live_snapshots` read was gated behind a *closed* `CycleID`), so seeding the snapshot
+    table would NOT short-circuit the default call. **⚠️ No longer true at platform HEAD** — see the
+    correction below (`readiness.go:308-312` also reaches `buildResponseFromSnapshots` on the nil-`CycleID`
+    path). This sentence stood in the PRESENT tense thirteen lines above its own retraction until M257x
+    iter-48. **Decompose like M46:** if a demo-patch can batch/relax
     the translation fan-out or make the default call read snapshots (the `app-targetrole-authz-skip` precedent),
     that's demo-local; if not, it's the milestone Re-scope trigger (`unimplementable-without-platform-edit`) —
     escalate, never edit the platform, and never widen the harness budget to mask a server that can't answer.
