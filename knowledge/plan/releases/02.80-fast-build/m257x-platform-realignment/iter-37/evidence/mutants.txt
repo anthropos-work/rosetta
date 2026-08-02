@@ -1,0 +1,4 @@
+N1 fallback never emitted: declared=RED actual=RED MATCH  [FAILED (failures=2, skipped=1)]
+N2 order inverted — AZURE wins over the operator: declared=RED actual=RED MATCH  [FAILED (failures=1, skipped=1)]
+N3 the generator RESOLVES the value itself: declared=RED actual=RED MATCH  [FAILED (failures=1, skipped=1)]
+N4 (no-op control) the two lines swap order: declared=GREEN actual=GREEN MATCH  [OK (skipped=1)]
