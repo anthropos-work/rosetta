@@ -519,6 +519,39 @@ Rules, in order of how often they actually catch something:
     form is not already settled, route it — deriving a fresh claim during a repair pass is how rule 18's
     highest-risk text gets written.
 
+    **Derive the claim LIST from the prior pass's ledger — never assemble it by hand.** M257x iter-40 swept
+    eight claims, reported the audited scope "uniform on all of them", and had in fact verified **five of
+    the eight**. The next pass found two consequences: a `:5050` port claim still live *inside* the audited
+    scope (fixed at eight sites outside it), and a retracted academy-fallback claim that was never on the
+    list at all. A hand-assembled list silently redefines "every instance" as "every instance I thought of",
+    and the post-condition re-grep then confirms exactly that smaller thing. **Enumerate from the ledger,
+    grep per ledger entry, and state the coverage as a fraction.**
+
+20. **Measure what the repair INDUCES, not only what it leaves.** Every corrective pass reports a residual;
+    almost none reports its own contribution to the next one. M257x ran six KB-fidelity passes returning
+    25 → 13 → 11 → 17 → 37 → 18. Only the last is comparable to its predecessor — the sixth held the
+    instrument fixed on every knob *and* read a corpus the intervening repair had not touched, so
+    **37 → 18 is a real measurement of the repair: it halved the residual.**
+
+    Then the decision-relevant number, which no earlier pass had computed: **9 of those 18 were
+    manufactured by the repair that preceded them** — over-corrections inside newly-written blockquotes, a
+    retraction that over-reached from *"does not exist now"* to *"never existed"*, a blockquote spliced into
+    a bullet list orphaning the member that stated a legal consequence, and half-applied edits that
+    corrected one twin and left the other. A clean **50/50 induced/genuine split**.
+
+    > **A repair loop whose induction rate approaches its removal rate has a fixed point, and it is not
+    > zero.** Without the induced/genuine split, `37 → 18` reads as convergence and justifies another pass.
+    > With it, the next pass is predictable: repair 18, induce ~9, measure ~9–15.
+
+    **So: before booking another pass, classify the current findings by whether the last repair created
+    them.** If the induced share is near half, the answer is not another pass — it is a fence, a narrower
+    clause, or an explicit decision to accept a bounded residual. **Two further regularities point the same
+    way:** across five consecutive passes **every `file:line` anchor a sweep introduced resolved
+    correctly**, and every defect was in surrounding prose — so the failures live exactly where a machine
+    check could reach and a hand sweep cannot. And in two consecutive iterations **the author of a
+    newly-written rule violated it while writing it**, which is evidence that a hand-applied discipline does
+    not survive a corpus of this size.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
