@@ -258,7 +258,7 @@ A typical API request follows this path:
 **In production** (the router still exists there — `graphql-wundergraph/terraform/main.tf:20` `= 1`):
 
 ```
-User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
+User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)
   → backend (the sole subgraph)
     → Connect-RPC to internal services (sentinel, storage)
     → Redis Streams for async events

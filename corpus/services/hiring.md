@@ -48,9 +48,17 @@ surface gated client-side on a Clerk org flag.
 `is_hiring` must be set in **TWO** places, because the platform derives the org's type differently on each side:
 
 1. **Backend — `public.organizations.is_hiring boolean NOT NULL default false`.** The server-side org-type. The
-   seeder writes it directly (M222 landed the gate — see § *The seeder-output contract*). The
-   `resolver_queries.go` insights path (below) requires it `true` for the org's data to be treated as a hiring
-   cohort.
+   seeder writes it directly (M222 landed the gate — see § *The seeder-output contract*).
+   **The `resolver_queries.go` insights path does NOT read it at all** — `InsightsJobSimulationByMemberships`
+   (`:1034-1080`) gates on exactly two things, the `OrgFeatureInsights` Casbin permission (`:1035`) and
+   membership status ∈ {active, invited} (`:1054`); `grep -in hiring` over that resolver and over
+   `internal/organization/intelligence.go` returns only sim-TYPE filters and nothing, respectively (positive
+   controls: `OrgFeatureInsights` ×8, `JobSimulationSession` ×44). **But "no read path reads it" would be a second false claim:** the CONTENT-LIBRARY read path does —
+   `PrivateJobSimulations` branches its result set on `GetOrganizationIsHiring`
+   (`resolver_cms_queries.go:95, 210, 258, 295`), as do `manager.go:448,485` and `siminvitationlink.go:62`.
+   And the client re-skin is **not** driven by this column either: it is read from Clerk
+   `publicMetadata.isHiring` (`:197-198`). So the column gates the content library and the org-type
+   surfaces; the *insights* scoreboard is indifferent to it.
 2. **Client — Clerk `publicMetadata.isHiring = true`.** The **entire `apps/web` re-skin is derived client-side from
    Clerk, never from a GraphQL call:**
 
@@ -75,8 +83,7 @@ surface gated client-side on a Clerk org flag.
    > re-skin reads (the server derives hiring from the `public.organizations.is_hiring` DB column) — a BAPI `isHiring` extension
    > is optional, only if a server-side consumer reads `organization.publicMetadata.isHiring`.
 
-> **Both, or the demo is half-lit.** DB-only → the browser doesn't re-skin. Clerk-only → the insights read-path
-> won't treat the cohort as hiring. The seeder writes #1; the mock emits #2; M224 wires the pair.
+> **Both, or the demo is half-lit.** DB-only → the browser doesn't re-skin. Clerk-only → the browser doesn't re-skin either (the re-skin reads Clerk, not the column) and the product boundary routes her to the wrong app. **Neither, however, gates the insights scoreboard** — the text here used to say Clerk-only meant *"the insights read-path won't treat the cohort as hiring"*, and that sent every empty-scoreboard debug to the wrong place. What actually gates it: the `OrgFeatureInsights` Casbin grant, membership status ∈ {active, invited}, and the presence of `public.job_simulation_sessions` rows. The seeder writes #1; the mock emits #2; M224 wires the pair.
 
 ## The `candidate` membership role
 
@@ -155,7 +162,7 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 
 1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
    is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
-   `completion_status` (values `passed`/`failed`/`pending`/`SIMULATION…`), `organization_id`,
+   `completion_status` (a closed 5-value enum — **exactly** `pending` / `passed` / `failed` / `discarded` / `timedout`, `app/internal/data/ent/enum/jobsimulation.go:27-45`; **no `SIMULATION…` member** — that prefix belongs to the adjacent `sim_type` column. The column is a plain `varchar` with **no CHECK**, so a raw-SQL seeder writing a `SIMULATION_…` value INSERTs cleanly and the row then vanishes at Ent scan / GraphQL enum marshal, with no seed-time error), `organization_id`,
    `tenant_id` (NULL or `=org`), `validation_version`.
    ⚠️ **Do NOT write `anticheat_summary` here — the column does not exist on this table.** It was a column of
    the **dropped** `local_jobsimulation_sessions` mirror (added `20250416091037.sql:5`, dropped with the table

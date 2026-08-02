@@ -369,7 +369,7 @@ graph TB
     end
 
     subgraph Gateway
-        WG[GraphQL — backend :8082/graphql/query locally; Cosmo Router :5050 in prod]
+        WG[GraphQL — backend :8082/graphql/query locally; Cosmo Router :8080 in prod]
     end
 
     subgraph Subgraphs[1 GraphQL Subgraph]

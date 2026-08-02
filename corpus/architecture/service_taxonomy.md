@@ -204,7 +204,7 @@ python gen.py --media simulation --template <name>
 
 **Key Features**:
 - Static chapter JSON in `code/public/content/<series>/<skill-path>/`
-- PWA via Serwist 9 (offline chapters)
+- **No service worker / no offline caching** — the Serwist 9 layer was REMOVED (v0.5 M1). `code/package.json` has no `serwist`/`workbox` dependency, no `sw.*` is emitted, `RegisterServiceWorker.jsx` is now a kill-switch that *unregisters* any surviving worker, and the repo regression-fences the removal (`code/tests/unit/next-scaffold.test.js:106,111`; `react-compiler-config.test.js:41`). **The web-app MANIFEST survives** (`public/academy-manifest.json`, `display: standalone`, declared at `code/app/layout.jsx:132`), so the app is still installable — it is simply online-only. Offline chapter bundling survives only in the Expo mobile app
 - Companion iOS / Android app (Expo SDK 54) bundling the same chapters at build time
 - Opt-in in-app "Cosmo" AI assistant (`NEXT_PUBLIC_FEATURE_TRAINING_COACH`, default OFF) — calls the OpenAI Responses API (`gpt-5.2`) directly from the browser via a per-user `localStorage` key
 - Repo-local Claude skills (`.claude/skills/`) for authoring chapters, podcasts, covers, and benchmarks

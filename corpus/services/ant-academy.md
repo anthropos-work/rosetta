@@ -28,10 +28,10 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
 
 ### Role & Responsibility
 
-- **Primary Goal**: Internal-only learning portal that delivers AI-engineering chapters to `@anthropos.work` employees, online and offline (PWA + mobile bundle).
+- **Primary Goal**: Internal-only learning portal that delivers AI-engineering chapters to `@anthropos.work` employees, online (installable via `public/academy-manifest.json`, but **no longer offline on the web** — the Serwist service worker was removed at v0.5 M1) and offline on the Expo mobile bundle.
 - **Key Functions**:
   - Serve chapter content as a Next.js App Router site at `/chapters/<slug>/`
-  - Cache chapters offline via a Serwist-built service worker
+  - ~~Cache chapters offline via a Serwist-built service worker~~ — **REMOVED at v0.5 M1.** `RegisterServiceWorker.jsx` is now a kill-switch that unregisters any surviving worker and deletes its caches; the web app is online-only
   - Bundle the same chapter JSON into the iOS / Android Expo app at build time
   - Provide an opt-in in-app AI assistant ("Cosmo", behind a feature flag) that talks to OpenAI directly from the browser
   - Author / publish / benchmark content via repo-local Claude skills (`.claude/skills/author-chapter`, `author-skill-path`, `author-podcast`, `author-cover`, `benchmark-chapter`, `build-index`, …)
@@ -60,10 +60,10 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 ### How It Fits Into the Platform
 
-Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progress` / `academy_last_activity` / … in `app`. This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
+Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names). This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
 backend-wired deployment. That binary is MOOT on a demo stack** (M236 iter-08): a demo academy has no
 `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it falls back to serving its **committed FS catalog** and nothing ever
-reads the seeded `academy_chapter_progress` rows. Seeding them on a demo changes no pixel. The demo's academy
+reads the seeded `academy_chapter_progresses` rows. Seeding them on a demo changes no pixel. The demo's academy
 story is therefore **presence-only** — a real `/courses/<slug>` link into a grid of 65 real cards — not a
 progress/result surface. See [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
@@ -234,7 +234,7 @@ is **not a code bug** — it decomposes into:
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
 | **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
-| **PWA** | Serwist 9 (configurator mode); service worker compiled by `serwist build` |
+| **PWA** | **manifest only** (`public/academy-manifest.json`, `display: standalone`, wired at `code/app/layout.jsx:132`) — installable but online-only. The Serwist 9 service worker was removed at v0.5 M1 and is regression-fenced against |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
 | **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
 | **Deployment** | Vercel native (minimal `code/vercel.json` — only `{"framework": "nextjs"}`; Next.js handles routing). Mobile builds via Expo. |

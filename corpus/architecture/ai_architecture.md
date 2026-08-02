@@ -4,7 +4,7 @@ This document describes the AI model inventory, provider routing, voice engine, 
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-Anthropos uses AI models from **multiple providers** to power its workplace simulations. AI actors in simulations can hold voice conversations, chat, analyze documents, and evaluate code — all powered by large language models. The platform routes AI requests through **EU providers first** for data residency compliance, falling back to US providers only when needed. Importantly, **simulation scoring is NOT done by AI** — it uses deterministic rubrics for EU AI Act compliance.
+Anthropos uses AI models from **multiple providers** to power its workplace simulations. AI actors in simulations can hold voice conversations, chat, analyze documents, and evaluate code — all powered by large language models. The platform routes AI requests through **EU providers first** for data residency compliance, falling back to US providers only when needed. **⚠️ The often-repeated claim that "simulation scoring is NOT done by AI" is false at platform HEAD** — the rubric *arithmetic* is deterministic, but the per-check pass/fail verdicts it aggregates come from an LLM. See [Evaluation System](#evaluation-system).
 
 ---
 
@@ -148,16 +148,33 @@ Both recordings are stored in S3 and linked to the simulation session.
 2. **Route**: Selected model from CMS field (e.g., `gpt-5`, `gpt-4.1`, `anthropic-45-sonnet-aws`; default: `gpt-5` via Azure)
 3. **Generate**: Per task type (voice/chat/code/document), AI generates responses or analysis
 4. **Record**: LiveKit captures voice; AWS Chime captures video
-5. **Score**: **Deterministic rubric scoring** (0-100 scale, NOT AI-scored) for EU AI Act compliance
+5. **Score**: deterministic rubric *arithmetic* (0-100 scale) over **per-check verdicts an LLM produced** — see [Evaluation System](#evaluation-system); this is NOT an AI-free scoring path
 6. **Insights**: AI generates post-session insights and feedback
 
 ### Evaluation System
 
-Scoring is deliberately kept deterministic:
-- Each skill has multiple criteria with binary checks (pass/fail)
-- Rubric scores (0-100) map to competency levels (0-5)
-- Thresholds: Level 1 ≥ 60, Level 2 ≥ 65, Level 3 ≥ 75, Level 4 ≥ 85, Level 5 ≥ 95
-- This ensures the platform classifies as **Limited Risk** under the EU AI Act
+**The ARITHMETIC is deterministic. The inputs to it are not** — measured at `app` HEAD, M257x iter-38:
+
+- Each skill has multiple criteria with binary checks (pass/fail), and **most of those verdicts are judged
+  by an LLM**. The dispatch is a hardcoded switch, not the `checkerEngines` map — that map is stored and
+  **never read** (`internal/jobsimulation/simulator/validation/v3/validator/validator.go:43,60-61,595`),
+  so do not cite it as the mechanism. `basevalidator/criterion.go:127` routes LLM checks to `validateLLM`
+  → `NewLLMBulkChecker(c.logger)` (`:428`), which sends `basevalidator/templates/checkValidationBulk.tmpl`
+  at temperature 0.0 and reads back `{"check_id", "feedback", "success"}`
+- **The exception, stated because "all verdicts are AI" would be the opposite error:** `EngineTextDiff`
+  checks are evaluated deterministically — `criterion.go:168` runs `validateCodeDiff` concurrently with the
+  LLM pass and `:450-475` sets `success` from a pure string comparison. A code simulation therefore mixes
+  deterministic and LLM-judged checks in one score
+- `calculateSkillScore` (`v3/validator/skills.go:53-64`) then counts those booleans and `:75` computes
+  `passed / total * 100` — deterministic, over AI-produced atoms
+- **There is no 60/65/75/85/95 threshold ladder.** The corpus asserted one for several releases; it does
+  not exist in `app`, `cms`, `jobsimulation` or `next-web-app`. The real conversion is
+  `calculateCompetencyLevelScore` (`v3/validator/skills.go:40-51`): `20` when `score < 60 && isPassed`,
+  `100` at `>= 100`, else `max(0, score*2-100)` — and it carries a `// TODO fix this formula` comment.
+  The 0-100 ↔ N-level mapping is a plain division (`app/internal/skill/skill.go:617-623`
+  `convertLevelTo100`; frontend `packages/ui/src/Competency/CompetencyReadLevel.tsx:18`)
+- **⚠️ Therefore this section does NOT support a Limited-Risk classification** under the EU AI Act. See
+  [Security & Compliance → EU AI Act](./security_compliance.md#eu-ai-act).
 
 ---
 

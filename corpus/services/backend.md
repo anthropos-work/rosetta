@@ -46,8 +46,7 @@ It also hosts a growing number of cross-cutting features that don't fit neatly i
 * **Job-simulation feedback** (`internal/jobsimfeedback`) — post-session signals routed back to the skills domain (in-process since the skiller merge)
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
 * **Bootstrap & admin** (`internal/admin`, `internal/bootstrap`, `cmd/bootstrap-org`) — provisioning utilities
-* **Copilot** (`internal/copilot`) — internal assistant flows
-* **AI Labs LabSession** (`internal/labs/session`; siblings `internal/labs/labsapi`, `internal/labs/adapter`, `internal/labs/catalog`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is currently wired as nil, so Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions).
+* **AI Labs LabSession** (`internal/labs/session`; siblings `internal/labs/labsapi`, `internal/labs/adapter`, `internal/labs/catalog`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is wired **only when `LABS_API_URL` is set** (`main.go:735-738`); with it unset — the usual local/demo case — Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions). It is NOT unconditionally nil.
 * **Document → PDF conversion** (`internal/converter/gotenberg.go`) — via the Gotenberg service
 
 ## Skiller-in-app merge — fact-sheet (v2.1 "quick change")
@@ -133,7 +132,6 @@ internal/
   clerk/                    Clerk webhook handlers
   companysearch/            Company search (LinkedIn / external sources)
   converter/                gotenberg.go for Office → PDF
-  copilot/                  Internal copilot flows
   cors/                     CORS configuration
   data/ent/                 Ent schema + generated code (public schema)
   deadletterqueue/          DLQ handling for Redis Streams
@@ -172,7 +170,7 @@ internal/
 * **Workforce analytics** (v1.266.2): Skill + sim aggregations across org members with date filtering.
 * **AI Readiness** (v1.266+, the `internal/aireadiness` package): org-level AI-capability diagnostics — a 3-step onboarding/evaluation (skill-mapping 30 → simulation 40 → interview 30) yielding a per-member score + archetype, an org **manager dashboard** (funnel + Knowledge×Usage matrix + per-team/person drill-down), **org-gated** via `organization_settings.ai_readiness`, with persisted LLM diagnosis narratives. Engine: its own top-level package **`app/internal/aireadiness/`** (`manager.go`, `cycles.go`,
   `diagnosis.go`, `compare.go`, `csv.go`, …) — **not** `internal/workforce/`, which contains no `readi*`
-  file at HEAD; GraphQL `graph/schemas/ai_readiness.graphqls`; ~10 `/api/workforce/ai-readiness*` REST handlers + an `ai_readiness_refresh` worker task; 9 `ai_readiness_*` ent tables. **Full doc: [`ai-readiness.md`](ai-readiness.md).**
+  file at HEAD; GraphQL `graph/schemas/ai_readiness.graphqls`; ~10 `/api/workforce/ai-readiness*` REST handlers + an `ai_readiness_refresh` worker task; **13** `ai_readiness_*` ent tables (`select count(*) … table_name like 'ai_readiness%'` on a migrated stack — the four FAMILIES a "9" omits — notification (**two** tables: logs + optouts), override, translation, live-snapshot, exactly the ones a seeder or schema audit then misses). **Full doc: [`ai-readiness.md`](ai-readiness.md).**
 * **Hiring talk-to-data** (`feat/hiring-talk-to-data` branch): Variant scoped to hiring workflows.
 * **Bedrock task role policy statements** (v1.267.1): IAM additions for Bedrock model access from the prod ECS task role.
 * **Company context (M1/M2)** (`feat/company-context-m1m2` branch): Org-level context propagation through AI calls.

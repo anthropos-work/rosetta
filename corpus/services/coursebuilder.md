@@ -45,7 +45,7 @@
     chapter shape + validators), `normalize.go` (widget normalization + XSS sanitization), `bedrock.go`/`model.go`/`usage.go`
     (LLM adapter + `MockClient` + cost formula), `embed.go` (`//go:embed assets/*.md` rubric), `imagegen/` (cover
     images).
-*   **LLM usage — AWS Bedrock (eu-west-1)** via the shared `internal/askengine/bedrock.go` transport:
+*   **LLM usage — the backend is SELECTED AT START-UP, and production is the first-party Anthropic API, not Bedrock.** `internal/coursebuilder/bedrock.go:105-114` returns an `api.anthropic.com` client with bare model ids whenever `ANTHROPIC_API_KEY` is set, reporting `ModelBackendName() == "anthropic-api"` (`:98-104`, logged at `main.go:762`); the Bedrock `eu-west-1` path via `internal/askengine/bedrock.go` is the fallback when it is not. **In production the key is required** — `terraform/variables.tf:635-638` declares it `sensitive` with no default, `ssm.tf:328-334` creates the parameter and `main.tf:555` injects it — so the shipped path is the direct API. Models:
     *   **Author/patch model**: Opus 4.8 (`eu.anthropic.claude-opus-4-8`, env `CB_AUTHOR_MODEL`; streaming, no
         sampling params — Opus 4.8 rejects them — at 32 K max_tokens).
     *   **Grader model**: Sonnet 4.6 (`eu.anthropic.claude-sonnet-4-6`, env `CB_GRADER_MODEL`; deliberately a
@@ -63,7 +63,7 @@
 *   **How to find the API**: **HTTP + SSE only — there is NO GraphQL subgraph and NO Connect-RPC for Course
     Builder.** The routes are an Echo group mounted in `internal/web/backend/backend.go` under **`/coursebuilder`**,
     behind `cors + authn (Clerk JWT via colony/authn) + courseBuilderAccessGate` (**org-admin-gated**). Route table:
-    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** when the Bedrock-backed
+    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** only when NEITHER model backend can build a client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — not on missing AWS creds alone; see the backend-selection note above. Historically this read as the Bedrock-backed
     `Service` is nil (missing AWS creds) — no half-working surface.
 *   **Key routes**: `POST /coursebuilder/sessions` (+ `/sessions/mixed`, `/sessions/upload`), `GET /sessions` +
     `/sessions/:id`, **`POST /sessions/:id/messages`** (the **SSE** build/refine stream), `/sessions/:id/{queue,steer,
@@ -84,13 +84,14 @@
 ## Local Development
 
 ### 1. Running Standalone
-*   **Prerequisites**: it runs **as part of `app`** (no separate binary/container). Needs AWS creds resolvable by the
-    default SDK chain (Bedrock, eu-west-1), Postgres (migrations applied), Redis (the Asynq worker), and a Clerk
-    secret. The routes stay unmounted if Bedrock creds are absent.
+*   **Prerequisites**: it runs **as part of `app`** (no separate binary/container). Needs a model backend — **either** `ANTHROPIC_API_KEY` (the production path)
+    **or** AWS creds resolvable by the default SDK chain (Bedrock, `eu-west-1`) — plus Postgres (migrations
+    applied), Redis (the Asynq worker), and a Clerk secret. The routes unmount only when **neither** backend
+    can build a client; AWS creds alone are not a prerequisite.
 *   **Command**: `go run .` in the app repo, or the platform `make up` (Course Builder ships inside the `backend`
     container).
 *   **Key env vars**: `CB_AUTHOR_MODEL` (default `eu.anthropic.claude-opus-4-8`), `CB_GRADER_MODEL` (default
-    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), `COURSEBUILDER_OPENAI_IMAGE_KEY`,
+    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), **`OPENAI_KEY`** (the cover generator reads this — `main.go:816-819`; the `COURSEBUILDER_OPENAI_IMAGE_KEY` this doc used to name was deleted at app `68c24512` and survives only in stale in-repo markdown, so setting it fixes nothing),
     `COURSEBUILDER_PLANNER_ENABLED` (multi-chapter kill-switch), `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`,
     `COURSEBUILDER_MAX_MONTHLY_COGS_USD` (default **500**, the primary per-org ceiling), `COURSEBUILDER_MAX_DAILY_COGS_USD`
     (default 0 = off), `AWS_REGION`, `CLERK_SECRET_KEY`. Cost/rate: session cap `DefaultSessionsPerOrgPerDay=50`

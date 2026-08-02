@@ -4,7 +4,7 @@ This document describes the security architecture, data protection measures, and
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers are routed through EU endpoints first. The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act because scoring is deterministic (rubric-based), not AI-generated.
+Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers are routed through EU endpoints first. The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, the per-check pass/fail verdicts it counts are produced by an LLM.
 
 Key guarantees:
 - EU data residency (primary)
@@ -116,7 +116,7 @@ Three layers of isolation ensure tenant data cannot leak:
 ### Layer 3: Identity
 - **Clerk** JWT tokens include organization context
 - Sessions are org-scoped — users can only access their active organization
-- Organization switching requires re-authentication
+- Organization switching **re-mints the session JWT with the new org claim — it is NOT a re-authentication.** It is a client-side `clerk.setActive({ organization })` call (`next-web-app/apps/{web,hiring}/src/hooks/useOrgSelection.tsx:94`, `useResolveActiveOrg.tsx:107`, `useActivateMembershipOrg.tsx:81`); no credential is re-presented and no sign-out occurs. The isolation that follows comes from the new claim, not from a fresh proof of identity
 
 ---
 
@@ -180,7 +180,28 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 
 ### EU AI Act
 - AI Simulations classified as **Limited Risk** (not High Risk)
-- Reason: AI is used for conversation/generation only; **scoring is deterministic** (rubric-based, 0-100 scale), NOT AI-scored
+- Stated reason: AI is used for conversation/generation only; scoring is deterministic (rubric-based, 0-100 scale), NOT AI-scored
+
+> **⚠️ THE STATED REASON IS FALSE AT PLATFORM HEAD, AND THIS IS A COMPLIANCE CLAIM.** It is a conjunction
+> and **both conjuncts fail**. The *aggregation* is deterministic arithmetic — `calculateSkillScore`
+> (`app/internal/jobsimulation/simulator/validation/v3/validator/skills.go:53-64`) counts booleans and
+> `:75` divides. **The booleans it counts are LLM output.** The validator registers exactly ONE check
+> engine — but **cite the DISPATCH, not that map**: `checkerEngines` is stored and never read, so it is
+> not the mechanism. The real path is the hardcoded switch at
+> `internal/jobsimulation/simulator/validation/basevalidator/criterion.go:127` → `validateLLM` →
+> `NewLLMBulkChecker(c.logger)` (`:428`), which sends
+> `basevalidator/templates/checkValidationBulk.tmpl` — a prompt asking a model to *"assess whether the
+> `<asset>` … meets or does not meet"* each check and to return `{"check_id", "feedback", "success"}`. So
+> "AI is used for conversation/generation only" is also false.
+>
+> **Not ALL verdicts are LLM-produced, and the honest claim is "most":** `EngineTextDiff` checks run
+> deterministically alongside them (`criterion.go:168` dispatches `validateCodeDiff`; `:450-475` sets
+> `success` from a pure string comparison, no model), and both result sets are appended together.
+>
+> **What follows is a question for counsel, not for this corpus**: a system that judges workers and
+> candidates sits near Annex III. **Do not cite this section as evidence of a Limited-Risk
+> classification** — re-derive it. Measured M257x iter-38; the same false premise was stated
+> independently in `ai_architecture.md` and is corrected there too.
 - This classification means transparency obligations only, not the strict requirements of High Risk systems
 
 ### GDPR / CCPA

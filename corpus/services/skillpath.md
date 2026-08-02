@@ -27,9 +27,13 @@
 >   `skillpath_mixins.go`). The old `skillpath` DB schema is **legacy — a decommissioned empty husk** (the table
 >   was kept but holds 0 rows; runtime state is authoritative in `public`). `askengine` and every other reader was
 >   re-pointed `skillpath.skill_path_sessions → public.skill_path_sessions`.
-> * **RPC** — the `SkillPathSessionService` surface (`GetSkillPathSession`) is served by `app`; callers were cut
->   over to read sessions **in-process** and the `SKILLPATH_RPC_ADDR` was dropped from terraform (**M506** caller
->   cutover).
+> * **RPC — there is NO `SkillPathSessionService` anywhere.** It was not re-hosted in `app`; it was DROPPED.
+>   Measured: **0** occurrences in Go source across the clone set and no `skillpath…v1connect` import; the
+>   platform's own M506 record says so — *"**No in-app RPC handler is served**"* / *"the client is simply
+>   deleted"*. Callers read sessions **in-process**, and `SKILLPATH_RPC_ADDR` was dropped from terraform.
+>   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:72` and
+>   `app/knowledge/architecture.md:28` still list the service — Trap C, *the platform's planning docs lag its
+>   own code*. Grade against `main.go`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
 >   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations
 >   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
@@ -61,7 +65,7 @@
 
 * **Event-driven step completion (unchanged).** The engine subscribes to the **jobsimulation Redis stream**
   (start/end events) to update `StepSession` status when a simulation completes, and additionally calls
-  jobsimulation over Connect-RPC (`GetSessions`) on session create/upgrade to reconcile already-completed
+  jobsimulation **in-process** (`GetSessions`) on session create/upgrade to reconcile already-completed
   simulations. It publishes `EventSkillPathSessionUpdated` + `EventChapterStepSessionCompleted` to the
   `skillpath` Redis stream (consumed by `app`). All of this now runs in-process inside `app`.
 

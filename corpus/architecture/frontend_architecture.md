@@ -36,12 +36,12 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:5050/graphql` in prod — env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, ~15 sites hitting `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:362`): invitations (`invite/[token]/page.tsx`), assignment-builder (`useAssignmentBuilder.ts`), Stripe (`useStripe.tsx`), CSV bulk import, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
+The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:8080/graphql` in prod — `:5050` was only ever the deleted LOCAL compose host mapping, never a production port; env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, ~15 sites hitting `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:362`): invitations (`invite/[token]/page.tsx`), assignment-builder (`useAssignmentBuilder.ts`), Stripe (`useStripe.tsx`), CSV bulk import, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
 *   **Implementation**: `packages/graphql` contains the generated types and hooks.
-*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (`backend` at `:8082/graphql/query` locally; the Cosmo Router at `:5050/graphql` in prod) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
+*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (`backend` at `:8082/graphql/query` locally; the Cosmo Router at `:8080/graphql` in prod) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
 
 ## Key Technologies
 

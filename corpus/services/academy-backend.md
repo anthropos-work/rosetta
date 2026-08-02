@@ -54,14 +54,16 @@
     *   `academy.AssetUploader` (`asset.go`) — uploads path cover images + intro audio to storage (S3 via
         `STORAGE_RPC_ADDR`).
 *   **Ent tables** (`internal/data/ent/schema/`, `public` schema):
-    *   **Per-user (UserMixin, owner-only):** `academy_chapter_progress` (jsonb completed-modules/sections;
-        `UNIQUE(user_id, chapter_slug)` — the hottest dataset), `academy_last_activity` (per-user singleton resume
-        pointer), `academy_chapter_time` (completion/reinforcement active-seconds split), `academy_certificate`
-        (immutable; `cert_id` unique `AAS-YYYY-XXXXXX`; nullable `learner_email` never public), `academy_bookmark`
-        (kind-discriminated; global `external_id` idempotency key), `academy_feedback` (one editable row per
+    *   **Per-user (UserMixin, owner-only)** — ⚠️ **these are Ent LABELS; the TABLE names are plural** (Ent
+        pluralizes, so `SELECT … FROM academy_certificate` errors with *relation does not exist*):
+        `academy_chapter_progresses` (jsonb completed-modules/sections;
+        `UNIQUE(user_id, chapter_slug)` — the hottest dataset), `academy_last_activities` (per-user singleton resume
+        pointer), `academy_chapter_times` (completion/reinforcement active-seconds split), `academy_certificates`
+        (immutable; `cert_id` unique `AAS-YYYY-XXXXXX`; nullable `learner_email` never public), `academy_bookmarks`
+        (kind-discriminated; global `external_id` idempotency key), `academy_feedbacks` (one editable row per
         (user, scope, target)).
     *   **Global catalog (no UserMixin):** `academy_series`, `academy_skill_paths` (`paid` default true — the tier
-        lives here; nullable `tenant_eid`; `lifecycle`), `academy_chapter` (metadata; own `tenant_eid`),
+        lives here; nullable `tenant_eid`; `lifecycle`), `academy_chapters` (metadata; own `tenant_eid`),
         `academy_chapter_bodies` (one row per `(chapter_slug, locale)`; `body` jsonb = {meta, modules[], references[]};
         EN base + de/es/fr/it/nl/pt overlays), `academy_path_embeddings` (pgvector `extensions.vector(1536)`,
         `source_hash` skip-key).
