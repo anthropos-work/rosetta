@@ -497,3 +497,70 @@ what the next gate measurement runs against.
   **RF-3**, **RF-7**, **RF-8**, **RF-9** (verified still live — `test_apply_authn.py:608` still
   `skipTest`s on absent shellcheck, in a test whose own comment names that class), **RF-10**, **RF-11**,
   **RF-12**. This pass adds **nothing** to that queue — every finding it made was fixed inline.
+
+---
+
+## Pass 7 — 2026-08-02 — incremental
+
+**Iters hardened this pass:** iter-42, iter-43 (the tok + the tooling iter that TOK-02 stakes clause 5 on)
+**Tiks covered since prior pass:** 15 (iters 27–43; Passes 4–6 terminated at `68eada7` / rext `fa0028b`)
+
+**Coverage delta on touched files:**
+
+| section | before | after |
+|---|---|---|
+| `stack-core` | 14F of 415 | 14F of **420** (+5; the standing 14 unchanged) |
+| `claim_twin_guard.py` + `claim_ledger.py` mutants | 8 | **11** (2 of the 3 added are inversions) |
+
+**Tests added:** iter-43 → `stack-core/tests/test_claim_twin_guard.py`: 5 net-new (`TestReachIsMeasured`);
+`tests/test_m257x_claim_twin_mutation_battery.py`: 3 net-new mutants.
+
+**Bugs surfaced + fixed inline:**
+
+1. **The documented coverage-decay report did not exist** (rext `b7a97f4`). `claim_ledger.py`'s module
+   docstring promises that an audit which *"invents a new shape is reported as contributing zero rows
+   (see `coverage()`), which is a finding rather than silence (§5 rule 8 — a check that SKIPS reads
+   exactly like one that PASSES)"*. It was never implemented. A `## BLOCKERS` table headed
+   `| # | Where | Claim | What is true |` matches no column pattern, so `is_ledger_table` drops it, so
+   `discover_ledgers` never returns the file, so it contributes to **no field at all** — `coverage()`
+   came back **byte-identical** to a run in which that audit did not exist. Measured directly, in a
+   temp milestone. **The honesty machinery committed the exact defect it cites**, which is the
+   milestone's signature class found for the 7th time inside its own instrumentation. Now measured as
+   `shape_misses` and named **with the header that defeated the derivation**, scoped to
+   BLOCKERS-sectioned tables so it cannot redden on ordinary or deliberately-excluded `Minors` tables.
+
+2. **The UNMATCHABLE report — the fence's declared 30-char fragment-floor boundary — had ZERO coverage.**
+   Deleting `main`'s entire reporting loop left **15 of 15 green**. The property the fence's own charter
+   rests on ("reports `UNMATCHABLE` **by name** rather than silently dropping") was itself droppable in
+   silence. This is the specific hazard the harden brief named, and it was live.
+
+3. **`--json` named none of the three fall-out classes.** It carried `coverage` (counts) and the hits.
+   A wrapper — the only consumer a JSON mode has — could watch the fence's reach shrink and never learn
+   what it lost. `unmatchable` / `unquoted_rows` / `shape_misses` now ship by name.
+
+**iter-42's classification: corroborated far beyond its spot check, and the correction is upward.**
+The brief flagged it as spot-verified on 4 of 18 rows, with TOK-02's whole sequence aimed by it. It is
+in fact **machine-corroborated**, and by an instrument built independently of it. The partition is
+exact — class A `{1..9,12,14,15,18}` (13) ∪ class B `{13,16,17}` (3) ∪ class C `{10,11}` (2) = `{1..18}`,
+no gap, no overlap, every `n` matching its own enumeration. And iter-43's fence, which targets **only**
+class A, went RED on **13 of 13** of it while its **two misses — #10 and #16 — both land outside it**
+(#10 class C, #11's sibling scalar; #16 class B). A classification that was wrong would not produce
+that alignment. Verified status: **15 of 18 rows machine-corroborated**, not 4. No defect; recorded so
+the next reader does not re-litigate it.
+
+**Mutation results this pass:** 11 mutants, **11/11 matching declared expectation**, no-op control GREEN
+before *and* after the battery. The 3 added: `unmatchable-report-goes-silent` (RED — the boundary going
+quiet), `shape-miss-detector-inverted` (RED — **an inversion**: it names the READABLE ledgers as misses
+and lets the unreadable one through, which no removal mutant can see, §8 rule 5), and
+`shape-miss-scoping-inverted` (RED — killed by the cry-wolf negative control, §8 rule 6).
+
+**The perishable fixture is intact.** `git status --short stack-core/tests/fixtures/claim_twin/` is
+empty. Nothing in `red/` was read-modified, normalised or repaired, and the live corpus's 18 blockers
+are untouched — TOK-02 step 4 still owns that repair.
+
+**Flakes stabilized:** none observed.
+
+**Stop condition:** continue-to-next-pass — the pass swept the two most recent iters only. Unswept:
+the iters 36–41 clause-2 fixes (including the open
+`CHECK-M257x-iter35-negative-control-rests-on-the-same-tie`), the fifth-generation tenancy fence, and
+the iters 27–35 seeder work.
