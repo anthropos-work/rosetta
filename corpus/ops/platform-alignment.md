@@ -770,6 +770,44 @@ success without checking.
 | static schema fence | every schema a seeder WRITES to **through a statically-visible construct** is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
 
+### A fourth layer, on a different axis: fence the PROSE against verdicts already recorded (M257x iter-43)
+
+The three layers above all fence **tooling against the platform**. None of them reads a sentence, and §5
+rules 20–21 measured what that costs: six KB-fidelity passes returning `25 → 13 → 11 → 17 → 37 → 18`,
+with **9 of the last 18 manufactured by the repair that preceded them** — and **8 of those 9 were one
+mechanical class**, a claim repaired at one site and left standing at another. The corpus contradicting
+*itself*, which needs no read of the platform to detect, because the verdict is already written down.
+
+| layer | asserts | lives in |
+|---|---|---|
+| claim-twin fence | no claim an audit has already refuted is still published anywhere in `corpus/**`, `.claude/skills/**` or `CLAUDE.md` | `stack-core/claim_twin_guard.py` + `claim_ledger.py`, with `tests/test_claim_twin_guard.py` and an 8-mutant battery |
+
+Four properties are what make it a fence rather than a linter, and each is a rule from this document
+applied to prose instead of to code:
+
+1. **The claim list is DERIVED, from the audits' own blocker-ledgers** — §5 rule 19's list-derivation
+   clause. It is recognised by table *structure*, not by a list of filenames, so it is not the
+   hand-maintained tuple §2 deleted wearing a new hat.
+2. **`## Minors` sections are excluded, and that cut decides whether the fence is usable.** A blocker
+   row records a claim that is *false*; a minor row overwhelmingly records an anchor that drifted while
+   *"the claim itself is TRUE"*. Matching those tree-wide fires on correct prose, and §8 rule 6 already
+   says where that ends: a fence that cries wolf gets disabled. Measured before the cut, **12 of 17**
+   minor-sourced hits were true prose with a stale anchor.
+3. **Scope is tree-wide from the first run** — §5 rule 19's corollary, that a claim leaks to the edge of
+   the previous repair's scope and stops there. Its first run found exactly that: a claim iter-34
+   refuted, repaired inside the audited scope, still standing in `corpus/ops/**`.
+4. **It was watched going RED on a fixture with a known answer key, before that fixture was spent.**
+   §5 rule 21's perishability clause, obeyed literally: the 18 sites were captured to
+   `tests/fixtures/claim_twin/` at rosetta `48ca53c`, together with a GREEN twin of each — because a
+   battery of REDs cannot tell a discriminating fence from a brittle one.
+
+**And it does revise one design decision below** — *"keep `.md` prose out of scope; that is review, not
+a fence."* That bullet is right about the fence it was written for, and it stays right: a write-target
+fence must not read prose, because per Trap B the prose can be false at the same sha. The claim-twin
+fence does not judge prose either. **It only ever asserts a verdict some auditor already recorded, with
+an anchor** — it never adjudicates, which is the same line §5 rule 19 draws for a claim-scoped repair.
+The distinction is worth stating rather than leaving for a reader to notice as a contradiction.
+
 ### Say which layer covers which part — and derive that too (M257x iter-08)
 
 Three layers only help if something records **which one covers what**. Until iter-08 nothing did, and the
