@@ -808,6 +808,50 @@ fence does not judge prose either. **It only ever asserts a verdict some auditor
 an anchor** — it never adjudicates, which is the same line §5 rule 19 draws for a claim-scoped repair.
 The distinction is worth stating rather than leaving for a reader to notice as a contradiction.
 
+### Run the fence at the COMMIT, or it cannot touch the number that matters (M257x iter-44)
+
+The fourth layer above is an *instrument*. Six passes measured what an instrument alone buys, and the
+answer is the one that ends the loop: **9 of iter-41's 18 findings were manufactured by the repair that
+preceded them.** An audit-time fence cannot reduce that term — by the time it runs, the induced defect
+is committed, and it is one of the findings being counted. The induced term is only reachable **between
+the repair and the commit**.
+
+| layer | asserts | lives in |
+|---|---|---|
+| repair post-condition | the set of published sites restating an already-refuted claim may **shrink or stay — never grow** across a commit | `stack-core/repair_postcondition.py`, with `tests/test_repair_postcondition.py` and a 12-mutant battery |
+
+The premise it rests on is measurable rather than rhetorical: an induced self-contradiction **is** a new
+`(file, claim)` pair — a repair wrote the correct sentence at one site while an adjudicated form of the
+same claim stayed published at another. That is the shape of all eight of the nine, so the class becomes
+unrepresentable in a commit rather than merely visible in the next pass.
+
+Three decisions decide whether that is a fence or a slogan, and each is a rule from this document:
+
+1. **The fence registry is DERIVED from disk, not held as a list.** Every `*_guard.py` declares a
+   `FENCE_KIND`, read *statically* (an import would let a guard that fails to import look like a guard
+   that declares nothing), and an undeclared guard makes the run **exit 2 naming itself**. §2 deleted a
+   hand-maintained tuple of services; a runner with a hardcoded list of fences is that tuple wearing a
+   new hat, and it fails the same way — silently, by omission, exactly as iter-08 measured (*a fence only
+   ever asserts about what it already scans*).
+2. **A site's identity carries no line number** — it is `(fence, path, claim_id)`. Keyed on `file:line`,
+   every edit above a known site would read as an induced defect, and §8 rule 6 already says where that
+   ends: a fence that cries wolf gets disabled. Lines are still reported; they are not the identity.
+3. **The baseline is a ratchet, not a diary.** `--accept` lowers, and **refuses to raise** for a fence
+   already recorded, naming the sites that grew. A fence *absent* from the baseline is the other case —
+   its first measurement is a registration, not a regression — so it is admitted and announced as a
+   baseline, never as a pass.
+
+**Two vehicles, because each covers the other's blind spot.** The suite runs it against the real tree in
+every clone; a `--install-hook` pre-commit runs it at the moment of the repair, when the fix is cheap.
+Git hooks are per-clone and unversioned — a real limitation, stated here rather than left for a reader to
+discover, and the reason the suite is the load-bearing vehicle.
+
+> **And every non-failure it reports has a mutant that silences it.** Harden passes 7–9 found that two of
+> the claim-twin fence's own honesty mechanisms did not exist: one deleted clean with 15/15 still green,
+> and one was promised by a docstring and never implemented. **A reporting path with no test is a
+> docstring**, which is the same claim-without-a-measurement shape this whole document exists to catch —
+> committed, twice, inside the tooling written to catch it.
+
 ### Say which layer covers which part — and derive that too (M257x iter-08)
 
 Three layers only help if something records **which one covers what**. Until iter-08 nothing did, and the

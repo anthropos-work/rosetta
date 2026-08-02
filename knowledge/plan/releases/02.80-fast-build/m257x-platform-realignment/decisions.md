@@ -500,3 +500,32 @@ for iters 17/19/26. iter-43 ships new guard code, which is exactly the material 
 Noting the counter-argument honestly: two consecutive passes have already closed **un-stabilized**, and that
 ledger entry says a third *"should be read as a signal about the harden cadence itself, not about the
 milestone's test debt."*
+
+---
+
+## HARDEN-CAP-ACCEPTED (3rd) — 2026-08-02, recorded at iter-44 close
+
+The incremental harden pass fired three sub-passes (7, 8, 9) and closed **un-stabilized** for the third
+consecutive time: pass 9 still surfaced a live unrepaired twin on its first look, so the dimension scan
+is not clean.
+
+**The disposition has changed, and this is the point of recording a third entry rather than another copy
+of the second.** The 2nd entry read the cap as a signal *about the harden cadence*. The evidence now says
+it is **structural**: the defect class the passes keep finding lives **outside the dimensions the sweep
+scans**. Pass 7 found the fence's own reporting paths — behaviour no coverage metric can see, because a
+`print` that never runs is not an unexecuted statement. Pass 8 found a fix proven **inside** a function
+while all six of its **call sites** were wide open, with `jobroleref.go` sitting at **100% statement
+coverage** the whole time. Pass 9 found a negative control drilling row 0 of an 11-way tie. None of
+these is reachable by "sweep the iters we have not swept yet"; each needed an AST or call-site
+assertion, which is a different instrument, not more of the same one.
+
+**So the accepted disposition is:** the cap is not test debt to be paid down by more passes of the same
+shape, and a fourth pass of that shape should not be expected to stabilize either. What the residue
+needs is the instrument change — prefer AST / call-site assertions over coverage — which passes 7–9 have
+now begun and which `platform-alignment.md` §8 records.
+
+**Unchanged and still open:** iters 27–30, 32–34, 36–41 unscanned to completion; **RF-2**, **RF-3**,
+**RF-7**…**RF-13**; and — the highest-value item in the queue —
+**`CHECK-M257x-iter35-seeder-writes-one-instant`**, the seeder stamping every backdated session at a
+single timestamp, which flattens recency ordering **in the product** and is the root cause behind two
+assertions that were found true by coin-flip.
